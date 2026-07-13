@@ -4,11 +4,12 @@ import { track } from '@/lib/telemetry';
 
 // Vote-results review (spec/39). Once a vote's results are revealed, the
 // facilitator walks the voted elements ONE AT A TIME, most dots first: the
-// current pick pulses an amber focus highlight and the viewport pans to it;
-// Previous / Next in the vote banner cycle through the order, and Done (on
-// the last pick) ends the walkthrough, falling back to the plain revealed
-// state (winner rings). The review index is LOCAL: every participant
-// reviews at their own pace; only the reveal itself is shared state.
+// current pick pulses an amber focus highlight and the viewport centres on
+// it; Previous / Next in the vote banner cycle through the order, and Done
+// (on the last pick) ends the walkthrough AND clears the vote session (the
+// review is the results' final act, so no separate Clear trip through the
+// tab menu). The review index is LOCAL: every participant reviews at their
+// own pace; only the reveal itself (and the Done clear) is shared state.
 
 export type VoteReview = {
   // The element under review, its 0-based position, the total number of
@@ -22,9 +23,13 @@ export type VoteReview = {
 export function useVoteReview({
   activeTab,
   scrollIntoView,
+  clearVote,
 }: {
   activeTab: Tab;
-  scrollIntoView: (x: number, y: number, w: number, h: number) => void;
+  // Removes the tab's vote session (useTabSession). Done calls it so
+  // finishing the walkthrough also clears the vote for everyone.
+  clearVote: () => void;
+  scrollIntoView: (x: number, y: number, w: number, h: number, opts?: { center?: boolean }) => void;
 }) {
   const vote = activeTab.vote ?? null;
 
@@ -53,13 +58,14 @@ export function useVoteReview({
 
   const focus = index !== null ? (results[index] ?? null) : null;
 
-  // Pan / zoom the focused pick into view whenever the WALK moves (not on
-  // unrelated element churn, hence the focused-id dep).
+  // Centre the focused pick on screen whenever the WALK moves (not on
+  // unrelated element churn, hence the focused-id dep). Always centres
+  // (not just an edge-pull pan) so every pick lands mid-screen.
   const focusId = focus?.id ?? null;
   useEffect(() => {
     if (!focusId) return;
     const el = activeTab.elements.find((e) => e.id === focusId);
-    if (el && isBoxed(el)) scrollIntoView(el.x, el.y, el.width, el.height);
+    if (el && isBoxed(el)) scrollIntoView(el.x, el.y, el.width, el.height, { center: true });
     // The pan follows the focus, never geometry churn mid-review.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [focusId]);
@@ -79,6 +85,7 @@ export function useVoteReview({
     },
     doneVoteReview: () => {
       setIndex(null);
+      clearVote();
       track('Tab', 'Ended', 'VoteReview');
     },
   };

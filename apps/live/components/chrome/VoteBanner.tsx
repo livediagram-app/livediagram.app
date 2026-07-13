@@ -8,11 +8,11 @@ import { TopCenterBanner } from '@/components/chrome/TopCenter';
 // tells each participant how many of their dots remain; once ended it
 // reads as closed. Once results are revealed it becomes the RESULTS
 // WALKTHROUGH bar: the ordered top picks are reviewed one at a time (the
-// canvas pulses the current one), with Previous / Next cycling the order
-// and Done (offered on the last pick) ending the walkthrough. After
-// Done it falls back to the plain revealed message (winner rings). The
-// facilitator's start / end / show-results / clear controls live in Tab
-// Settings; this is the live participant-facing status.
+// canvas pulses the current one and centres on it), with Previous / Next
+// cycling the order and Done (offered on the last pick) ending the
+// walkthrough AND clearing the vote session, which dismisses this banner.
+// The facilitator's start / end / show-results / clear controls live in
+// Tab Settings; this is the live participant-facing status.
 export function VoteBanner({
   vote,
   selfId,

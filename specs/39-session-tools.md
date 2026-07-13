@@ -81,14 +81,16 @@ live counts but can't control or vote. No extra gating code.
 - **Results walkthrough** (`useVoteReview`): revealing results starts a
   guided review of every voted element, most dots first (ties keep element
   order). The current pick pulses an amber focus highlight
-  (`lvd-vote-focus`) and the viewport pans to it; the `VoteBanner` swaps to
-  "Top result X of N" with **Previous** / **Next** buttons, and the last
-  pick shows **Done**, which exits the walkthrough back to the plain
-  revealed state (static amber rings on the joint winners, `voteWinners`).
-  The review index is local, so each participant walks the results at their
-  own pace; only the reveal itself is shared. While a participant's
-  walkthrough is active, the static winner rings are suppressed for them so
-  attention lands on the single focused pick.
+  (`lvd-vote-focus`) and the viewport **centres it on screen** (always, via
+  `scrollIntoView`'s `center` option, not just an edge-pull pan); the
+  `VoteBanner` swaps to "Top result X of N" with **Previous** / **Next**
+  buttons, and the last pick shows **Done**, which exits the walkthrough
+  **and clears the vote session** (same effect as Clear in the tab menu),
+  removing the banner, pills, and rings. The review index is local, so each
+  participant walks the results at their own pace; the reveal and the Done
+  clear are the shared state. While a participant's walkthrough is active,
+  the static winner rings are suppressed for them so attention lands on the
+  single focused pick.
 
 ## Telemetry (spec/22)
 

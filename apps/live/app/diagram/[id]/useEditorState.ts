@@ -1796,6 +1796,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   const { voteReview, nextVoteResult, prevVoteResult, doneVoteReview } = useVoteReview({
     activeTab,
     scrollIntoView,
+    clearVote,
   });
 
   // Keyboard nudge (spec/09 Move). See useNudgeSelection for the

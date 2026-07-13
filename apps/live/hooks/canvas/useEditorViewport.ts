@@ -71,8 +71,17 @@ type EditorViewportApi = {
   fitToScreen: () => void;
   // Pan (and zoom out if needed) until the given canvas-coord bounds
   // are fully on screen. Used by the mobile add-element reveal and the
-  // keyboard traversal's focus-follows-selection (spec/71).
-  scrollIntoView: (bx: number, by: number, bw: number, bh: number) => void;
+  // keyboard traversal's focus-follows-selection (spec/71). With
+  // `center: true` it always centres the bounds in the visible band
+  // instead of the minimal edge-pull pan; the vote-results walkthrough
+  // (spec/39) uses that so every reviewed pick lands mid-screen.
+  scrollIntoView: (
+    bx: number,
+    by: number,
+    bw: number,
+    bh: number,
+    opts?: { center?: boolean },
+  ) => void;
 };
 
 export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
@@ -114,83 +123,90 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
   // off-screen edge in. If it's too big to fit at the current zoom, zoom
   // OUT (never in) just enough that the WHOLE element shows, then centre
   // it. No-op if nothing needs to move. Used by the mobile new-element
-  // scroll below.
-  const scrollIntoView = useCallback((bx: number, by: number, bw: number, bh: number) => {
-    const rect = canvasMainRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const z0 = zoomRef.current;
-    const off0 = viewportOffsetRef.current;
-    // Visible band (screen px) we keep the element within.
-    const visLeft = rect.left + VIEW_MARGIN_SIDE;
-    const visRight = rect.right - VIEW_MARGIN_SIDE;
-    const visTop = rect.top + VIEW_MARGIN_TOP;
-    const visBottom = rect.bottom - VIEW_MARGIN_BOTTOM;
-    const visW = Math.max(1, visRight - visLeft);
-    const visH = Math.max(1, visBottom - visTop);
+  // scroll below. `center: true` skips the minimal-pan shortcut and
+  // always centres the bounds in the band.
+  const scrollIntoView = useCallback(
+    (bx: number, by: number, bw: number, bh: number, opts?: { center?: boolean }) => {
+      const rect = canvasMainRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      const z0 = zoomRef.current;
+      const off0 = viewportOffsetRef.current;
+      // Visible band (screen px) we keep the element within.
+      const visLeft = rect.left + VIEW_MARGIN_SIDE;
+      const visRight = rect.right - VIEW_MARGIN_SIDE;
+      const visTop = rect.top + VIEW_MARGIN_TOP;
+      const visBottom = rect.bottom - VIEW_MARGIN_BOTTOM;
+      const visW = Math.max(1, visRight - visLeft);
+      const visH = Math.max(1, visBottom - visTop);
 
-    // Zoom out to fit only when the element overflows the band at z0.
-    const overflows = bw * z0 > visW || bh * z0 > visH;
-    const z1 = overflows
-      ? Math.max(MIN_FIT_ZOOM, Math.min(z0, Math.min(visW / bw, visH / bh) * FIT_SAFETY))
-      : z0;
+      // Zoom out to fit only when the element overflows the band at z0.
+      const overflows = bw * z0 > visW || bh * z0 > visH;
+      const z1 = overflows
+        ? Math.max(MIN_FIT_ZOOM, Math.min(z0, Math.min(visW / bw, visH / bh) * FIT_SAFETY))
+        : z0;
 
-    // Canvas transform is `scale(z) translate(o)` with the scale centred
-    // on the wrapper (`origin-center`, see Canvas.tsx), so a canvas point
-    // p renders at screen x = rect.left + z*(p + off) + (W/2)*(1 - z). The
-    // last term is 0 at z = 1 (desktop) but ~70-130px at the 0.6 mobile
-    // zoom, so it MUST be included or the pan lands in the wrong place.
-    // screenX / screenY map a canvas coord to screen px at a given zoom.
-    const screenX = (cx: number, offX: number, z: number) =>
-      rect.left + z * (cx + offX) + (rect.width / 2) * (1 - z);
-    const screenY = (cy: number, offY: number, z: number) =>
-      rect.top + z * (cy + offY) + (rect.height / 2) * (1 - z);
+      // Canvas transform is `scale(z) translate(o)` with the scale centred
+      // on the wrapper (`origin-center`, see Canvas.tsx), so a canvas point
+      // p renders at screen x = rect.left + z*(p + off) + (W/2)*(1 - z). The
+      // last term is 0 at z = 1 (desktop) but ~70-130px at the 0.6 mobile
+      // zoom, so it MUST be included or the pan lands in the wrong place.
+      // screenX / screenY map a canvas coord to screen px at a given zoom.
+      const screenX = (cx: number, offX: number, z: number) =>
+        rect.left + z * (cx + offX) + (rect.width / 2) * (1 - z);
+      const screenY = (cy: number, offY: number, z: number) =>
+        rect.top + z * (cy + offY) + (rect.height / 2) * (1 - z);
 
-    let target: { x: number; y: number };
-    if (z1 === z0) {
-      // Fits at the current zoom: minimal pan to pull any off-screen edge
-      // in. The centre-origin term is constant, so it cancels in the delta
-      // (target = off + dxs/z) but is required for the off-screen test.
-      const sl = screenX(bx, off0.x, z0);
-      const st = screenY(by, off0.y, z0);
-      const sr = sl + z0 * bw;
-      const sb = st + z0 * bh;
-      let dxs = 0;
-      let dys = 0;
-      if (sl < visLeft) dxs = visLeft - sl;
-      else if (sr > visRight) dxs = visRight - sr;
-      if (st < visTop) dys = visTop - st;
-      else if (sb > visBottom) dys = visBottom - sb;
-      if (dxs === 0 && dys === 0) return;
-      target = { x: off0.x + dxs / z0, y: off0.y + dys / z0 };
-    } else {
-      // Zoomed to fit: centre the element in the band so all of it shows.
-      // Invert screenX/screenY at z1 for the band centre → the offset that
-      // puts the element centre there.
-      const ecx = bx + bw / 2;
-      const ecy = by + bh / 2;
-      const bcx = (visLeft + visRight) / 2;
-      const bcy = (visTop + visBottom) / 2;
-      target = {
-        x: (bcx - rect.left - (rect.width / 2) * (1 - z1)) / z1 - ecx,
-        y: (bcy - rect.top - (rect.height / 2) * (1 - z1)) / z1 - ecy,
+      let target: { x: number; y: number };
+      if (z1 === z0 && !opts?.center) {
+        // Fits at the current zoom: minimal pan to pull any off-screen edge
+        // in. The centre-origin term is constant, so it cancels in the delta
+        // (target = off + dxs/z) but is required for the off-screen test.
+        const sl = screenX(bx, off0.x, z0);
+        const st = screenY(by, off0.y, z0);
+        const sr = sl + z0 * bw;
+        const sb = st + z0 * bh;
+        let dxs = 0;
+        let dys = 0;
+        if (sl < visLeft) dxs = visLeft - sl;
+        else if (sr > visRight) dxs = visRight - sr;
+        if (st < visTop) dys = visTop - st;
+        else if (sb > visBottom) dys = visBottom - sb;
+        if (dxs === 0 && dys === 0) return;
+        target = { x: off0.x + dxs / z0, y: off0.y + dys / z0 };
+      } else {
+        // Zoomed to fit, or centring requested: centre the element in the
+        // band so all of it shows. Invert screenX/screenY at z1 for the band
+        // centre → the offset that puts the element centre there.
+        const ecx = bx + bw / 2;
+        const ecy = by + bh / 2;
+        const bcx = (visLeft + visRight) / 2;
+        const bcy = (visTop + visBottom) / 2;
+        target = {
+          x: (bcx - rect.left - (rect.width / 2) * (1 - z1)) / z1 - ecx,
+          y: (bcy - rect.top - (rect.height / 2) * (1 - z1)) / z1 - ecy,
+        };
+        // Already centred (sub-pixel) and no zoom change: skip the animation.
+        if (z1 === z0 && Math.abs(target.x - off0.x) < 0.5 && Math.abs(target.y - off0.y) < 0.5)
+          return;
+      }
+
+      const startOff = off0;
+      const t0 = performance.now();
+      const DUR = 280;
+      const step = (now: number) => {
+        const k = Math.min(1, (now - t0) / DUR);
+        const e = 1 - Math.pow(1 - k, 3); // ease-out cubic
+        setViewportOffset({
+          x: startOff.x + (target.x - startOff.x) * e,
+          y: startOff.y + (target.y - startOff.y) * e,
+        });
+        if (z1 !== z0) setViewportZoom(z0 + (z1 - z0) * e);
+        if (k < 1) requestAnimationFrame(step);
       };
-    }
-
-    const startOff = off0;
-    const t0 = performance.now();
-    const DUR = 280;
-    const step = (now: number) => {
-      const k = Math.min(1, (now - t0) / DUR);
-      const e = 1 - Math.pow(1 - k, 3); // ease-out cubic
-      setViewportOffset({
-        x: startOff.x + (target.x - startOff.x) * e,
-        y: startOff.y + (target.y - startOff.y) * e,
-      });
-      if (z1 !== z0) setViewportZoom(z0 + (z1 - z0) * e);
-      if (k < 1) requestAnimationFrame(step);
-    };
-    requestAnimationFrame(step);
-  }, []);
+      requestAnimationFrame(step);
+    },
+    [],
+  );
 
   // Mobile: when a new element is added (the add handlers select it),
   // scroll it into view if it isn't fully visible. Tracks the id set so a
