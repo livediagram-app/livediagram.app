@@ -88,6 +88,14 @@ export function SettingsDialog({ settings, onChange, onClose, aiCapable }: Setti
               track('UI', 'Toggled', v ? 'TourSeenOn' : 'TourSeenOff');
               onChange({ ...settings, tourSeen: v });
             }}
+            help={
+              <HelpArticleLink
+                article="welcomeTour"
+                variant="text"
+                title="The Welcome Tour"
+                description="What the tour covers and how replaying works."
+              />
+            }
           />
         </SettingsGroup>
         <SettingsGroup {...groupProps('Notifications')}>

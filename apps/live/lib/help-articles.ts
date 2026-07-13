@@ -57,6 +57,7 @@ export const HELP_ARTICLES = {
   palette: 'palette',
   // Settings
   minimalPanels: 'palette/minimal-panels',
+  welcomeTour: 'getting-started/welcome-tour',
   whatWeCollect: 'privacy-and-security/what-we-collect',
   offlineMode: 'privacy-and-security/offline-mode',
   // Onboarding / empty states

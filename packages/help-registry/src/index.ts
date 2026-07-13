@@ -80,7 +80,7 @@ export const categories: Category[] = [
     title: 'Getting Started',
     description:
       'Go from a blank canvas to a shared diagram in minutes, with the basics every new user needs.',
-    articleCount: 7,
+    articleCount: 8,
   },
   {
     slug: 'tips-and-tricks',
@@ -344,6 +344,14 @@ export const articles: Article[] = [
     title: 'Your First Diagram',
     description: 'Create a diagram and add your first shapes in under a minute.',
     keywords: 'start begin new create tutorial beginner basics quickstart onboarding',
+    category: 'Getting Started',
+    categorySlug: 'getting-started',
+  },
+  {
+    slug: 'welcome-tour',
+    title: 'The Welcome Tour',
+    description: 'The interactive editor walkthrough, offered once and replayable from Settings.',
+    keywords: 'tour walkthrough guide onboarding show me around intro tutorial replay rerun steps',
     category: 'Getting Started',
     categorySlug: 'getting-started',
   },

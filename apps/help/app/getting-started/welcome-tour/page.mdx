@@ -1,0 +1,65 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'The Welcome Tour',
+  description:
+    'Take the interactive editor tour: a guided walkthrough of the Palette, Explorer, tabs, themes, and search, offered on your first diagram and replayable any time from Settings.',
+  path: '/help/getting-started/welcome-tour/',
+});
+
+<ArticleLayout
+  title="The Welcome Tour"
+  description="A short interactive walkthrough of the editor's essentials, offered on your first diagram and replayable from Settings."
+  categoryTitle="Getting Started"
+  categorySlug="getting-started"
+>
+
+The welcome tour is a guided, interactive introduction to the editor. Rather than showing screenshots, it opens the real panels and menus one at a time, spotlighting each with a highlight ring and a short explanation. It takes about a minute, and you can leave at any point.
+
+## When it's offered
+
+The first diagram you ever create opens with a centred welcome card: **Show me around** starts the tour, **No thanks** dismisses it. The offer appears **once ever**. However you answer (decline, skip midway, or finish), it won't come back on its own, and if you're signed in the answer follows you to every device. You can always [replay it from Settings](#replaying-the-tour).
+
+## What it covers
+
+The tour walks the editor's chrome in a natural order:
+
+1. **The Palette**: the floating panel every shape, arrow, and icon comes from.
+2. **Selection modes**: the dropdown that changes what your pointer does (Select, Hand, Eraser, and friends). See [Selection modes](/help/user-interface/selection-modes/).
+3. **Shape categories**: the Palette's category dropdown, from Favourites through Shapes, Tools, Icons, and Technology.
+4. **The Explorer**: browsing and organising your diagrams without leaving the editor.
+5. **The element menu**: the right-click menu where styling, links, notes, comments, and actions live.
+6. **Tabs**: pages within one diagram, plus the **+** button and the tab menu.
+7. **Theme & Canvas** (desktop): the paintbrush button that restyles the whole tab.
+8. **Search** (desktop): the Cmd/Ctrl+K panel that finds diagrams, elements, and help articles, and can run actions.
+
+On a phone the tour is slightly shorter: the Theme & Canvas and Search steps are desktop surfaces, so they're skipped there.
+
+## During the tour
+
+- Each step shows a **step counter**, a title, a sentence or two of copy, and **Back** / **Next** buttons, with **Skip** always available.
+- The highlight ring **never blocks your pointer**: you're free to poke at whatever is highlighted while the step is up. The tour opens real menus, so what you see is exactly what you'll use afterwards.
+- Finishing (or skipping) closes anything the tour opened and returns you to a quiet editor, ready to work.
+
+## Replaying the tour
+
+You can rerun the tour whenever you like:
+
+<Step n={1}>Open **Settings** from the editor and find the **Editor** group.</Step>
+
+<Step n={2}>Untick the **Welcome Tour Completed** row.</Step>
+
+<Step n={3}>
+  Close Settings. The tour relaunches from the welcome card, exactly like the first run.
+</Step>
+
+Finishing the rerun marks it completed again.
+
+<Tip>
+  Prefer learning by doing? [Your First Diagram](/help/getting-started/your-first-diagram/) builds a
+  small connected flow from scratch, and [Keyboard
+  Essentials](/help/getting-started/keyboard-essentials/) covers the shortcuts that make it fast.
+</Tip>
+
+</ArticleLayout>
