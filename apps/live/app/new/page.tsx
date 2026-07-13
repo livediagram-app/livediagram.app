@@ -130,9 +130,13 @@ export default function NewDiagramPage() {
       // Just-Draw mode auto-creates on mount, so a bfcache restore would
       // either strand the user on a frozen "Creating…" card or (if we
       // re-fired the create) trap Back behind a page that always navigates
-      // forward again. Send them to the wizard instead.
+      // forward again. Send them to the wizard instead, keeping the
+      // ?folder / ?team placement context and dropping only the blank flag.
       if (justDraw) {
-        window.location.replace('/new');
+        const params = new URLSearchParams(window.location.search);
+        params.delete('blank');
+        const qs = params.toString();
+        window.location.replace(qs ? `/new?${qs}` : '/new');
         return;
       }
       setSubmitting(false);
