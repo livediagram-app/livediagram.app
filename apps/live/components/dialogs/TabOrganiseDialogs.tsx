@@ -16,6 +16,7 @@ import {
   NewFolderTile,
   PlacementCard,
 } from '@/components/placement/PlacementBrowser';
+import { DiagramThumbnail } from '@/components/panels/DiagramThumbnail';
 import { useEscape } from '@/hooks/ui/useEscape';
 import { matches } from '@/lib/search';
 
@@ -138,25 +139,36 @@ export function AddTabToFolderDialog({
   );
 }
 
-// A document-ish diagram glyph sized for the tile grid.
-function DiagramTileIcon() {
+// A destination-diagram tile: the diagram's snapshot preview (spec/67) over
+// its name, so the user picks by recognising the canvas rather than parsing
+// a list of near-identical "Untitled diagram" names. Styled to match the
+// PlacementCard tile grid, but its own component: the preview area is a
+// full-width box, not the icon-glyph slot the shared card centres.
+function DiagramPickCard({
+  ownerId,
+  diagram,
+  onPick,
+}: {
+  ownerId: string | null;
+  diagram: { id: string; name: string; savedAt?: number };
+  onPick: () => void;
+}) {
   return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 20 20"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
+    <button
+      type="button"
+      onClick={onPick}
+      className="flex flex-col gap-1.5 rounded-lg border border-slate-200 bg-white p-2 text-center transition hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-slate-600 dark:hover:bg-slate-700/60"
     >
-      <rect x="3" y="3" width="14" height="14" rx="2" />
-      <rect x="6" y="6.5" width="4" height="3" rx="0.8" />
-      <path d="M10 8h4M12 8v4.5" />
-      <rect x="10" y="11.5" width="4" height="3" rx="0.8" />
-    </svg>
+      <DiagramThumbnail
+        ownerId={ownerId}
+        diagramId={diagram.id}
+        version={diagram.savedAt ?? 0}
+        className="h-16 w-full rounded border border-slate-100 bg-slate-50 dark:border-slate-700 dark:bg-slate-900/40"
+      />
+      <span className="w-full truncate text-xs font-medium text-slate-700 dark:text-slate-200">
+        {diagram.name || 'Untitled diagram'}
+      </span>
+    </button>
   );
 }
 
@@ -164,11 +176,14 @@ function DiagramTileIcon() {
 // into (shared, not copied — one tab, live in both). A filter keeps long
 // libraries manageable; picking commits immediately and closes.
 export function AddTabToDiagramDialog({
+  ownerId,
   otherDiagrams,
   onPick,
   onClose,
 }: {
-  otherDiagrams: { id: string; name: string }[];
+  // Viewer identity for the authenticated thumbnail fetches.
+  ownerId: string | null;
+  otherDiagrams: { id: string; name: string; savedAt?: number }[];
   onPick: (targetDiagramId: string) => void;
   onClose: () => void;
 }) {
@@ -195,15 +210,13 @@ export function AddTabToDiagramDialog({
           No diagram matches.
         </p>
       ) : (
-        <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           {visible.map((d) => (
-            <PlacementCard
+            <DiagramPickCard
               key={d.id}
-              label={d.name || 'Untitled diagram'}
-              sub="Diagram"
-              icon={<DiagramTileIcon />}
-              selected={false}
-              onSelect={() => {
+              ownerId={ownerId}
+              diagram={d}
+              onPick={() => {
                 onPick(d.id);
                 onClose();
               }}

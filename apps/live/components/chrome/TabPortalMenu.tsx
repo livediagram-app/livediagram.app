@@ -54,6 +54,7 @@ export function PortalMenu({
   onCopyTo,
   onToggleLock,
   locked,
+  selfId,
   otherDiagrams,
   folderNames,
   currentFolder,
@@ -91,7 +92,9 @@ export function PortalMenu({
   onCopyTo: (targetDiagramId: string) => void;
   onToggleLock: () => void;
   locked: boolean;
-  otherDiagrams: { id: string; name: string }[];
+  // Viewer identity for the Add to Diagram dialog's thumbnail fetches.
+  selfId: string;
+  otherDiagrams: { id: string; name: string; savedAt?: number }[];
   folderNames: string[];
   currentFolder: string | null;
   onMoveToFolder: (folderName: string) => void;
@@ -224,7 +227,12 @@ export function PortalMenu({
   // above); dismissing them dismisses the menu.
   if (view === 'copyTo') {
     return (
-      <AddTabToDiagramDialog otherDiagrams={otherDiagrams} onPick={onCopyTo} onClose={onClose} />
+      <AddTabToDiagramDialog
+        ownerId={selfId}
+        otherDiagrams={otherDiagrams}
+        onPick={onCopyTo}
+        onClose={onClose}
+      />
     );
   }
   if (view === 'folder') {

@@ -27,6 +27,7 @@ export function EllipsisMenuButton({
   onCopyTo,
   onToggleLock,
   onDelete,
+  selfId,
   timer,
   vote,
   onStartTimer,
@@ -49,7 +50,9 @@ export function EllipsisMenuButton({
   canDelete: boolean;
   canClearContent: boolean;
   locked: boolean;
-  otherDiagrams: { id: string; name: string }[];
+  // Viewer identity, forwarded to the menu's Add to Diagram thumbnails.
+  selfId: string;
+  otherDiagrams: { id: string; name: string; savedAt?: number }[];
   folderNames: string[];
   currentFolder: string | null;
   onMoveToFolder: (folderName: string) => void;
@@ -106,6 +109,7 @@ export function EllipsisMenuButton({
           onCopyTo={onCopyTo}
           onToggleLock={onToggleLock}
           locked={locked}
+          selfId={selfId}
           otherDiagrams={otherDiagrams}
           folderNames={folderNames}
           currentFolder={currentFolder}

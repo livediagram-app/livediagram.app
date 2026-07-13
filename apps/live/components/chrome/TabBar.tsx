@@ -111,8 +111,9 @@ type TabBarProps = {
   onRevealVote: () => void;
   onClearVote: () => void;
   // The user's other diagrams (excluding the current one). Drives the
-  // "Add to Diagram" submenu in the tab ellipsis.
-  otherDiagrams: { id: string; name: string }[];
+  // "Add to Diagram" submenu in the tab ellipsis; savedAt versions the
+  // destination-picker thumbnails (spec/67).
+  otherDiagrams: { id: string; name: string; savedAt?: number }[];
   // Copy the active tab into another diagram. Callee handles the
   // round-trip to the API. Returns a promise so the menu can dismiss
   // after the operation completes.
@@ -221,6 +222,7 @@ export function TabBar({
     canDelete: tabs.length > 1,
     canClearContent: activeTabHasContent && !tab.locked,
     locked: tab.locked === true,
+    selfId,
     otherDiagrams,
     folderNames,
     currentFolder: tabFolderName(tab),
