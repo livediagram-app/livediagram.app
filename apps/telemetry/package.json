@@ -7,6 +7,7 @@
     "dev": "node ../../scripts/next-dev.mjs --port 3003",
     "build": "next build",
     "lint": "eslint .",
+    "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf .next out node_modules .turbo"
   },
@@ -20,12 +21,14 @@
   "devDependencies": {
     "@livediagram/eslint-config": "workspace:*",
     "@livediagram/tailwind-config": "workspace:*",
+    "@livediagram/vitest-config": "workspace:*",
     "@tailwindcss/postcss": "^4.0.0",
     "@types/node": "^22.10.2",
     "@types/react": "^19.0.2",
     "@types/react-dom": "^19.0.2",
     "eslint": "^9.17.0",
     "tailwindcss": "^4.0.0",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "vitest": "^3.2.6"
   }
 }

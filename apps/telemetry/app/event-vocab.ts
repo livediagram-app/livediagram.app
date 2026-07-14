@@ -32,7 +32,7 @@ export const CATEGORY_DESCRIPTIONS: Record<TelemetryCategory, string> = {
   Layer:
     'Tab layers (Photoshop-style stacking bands): add, rename, delete, restack, show / hide, lock, move elements between layers, open the panel.',
   Session: 'Account-level events when Clerk auth is configured: sign-in, sign-up, sign-out.',
-  AI: 'The optional in-editor AI assistant: running its Build / Ask / Review / Clean requests on the current tab.',
+  AI: 'The optional in-editor AI assistant: running its Ask / Clean requests on the current tab.',
   Team: 'Teams: creating and joining, renaming, role changes, member invites and removals, and the shared team library of diagrams.',
   Participant:
     'Visitor arrivals: a new browser identity minted (once per fresh visitor), and a returning browser reopening the app (once per day, split guest vs signed-in).',
