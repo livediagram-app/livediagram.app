@@ -34,12 +34,12 @@ pnpm typecheck
 pnpm lint
 pnpm format:check
 pnpm test
-pnpm build         # only if `pnpm dev` is NOT running
+pnpm build
 ```
 
 CI runs the same five steps on every push. Failing any of them blocks the merge.
 
-The repo is configured so that `pnpm build` and `pnpm dev` can NOT run simultaneously on `apps/live` (they race on `.next/`). Stop the dev server before running `pnpm build`.
+`pnpm build` is safe to run while a dev server is alive: every Next.js app's dev server goes through `scripts/next-dev.mjs`, which points dev at an isolated `.next-dev/` cache so a concurrent build's `.next/` can never corrupt it. The flip side is a rule for new apps: **a new Next.js app must copy the `NEXT_DISTDIR` read into its `next.config`** (see any existing app's config), or the old build/dev cache race comes back.
 
 ## Tests
 
@@ -76,7 +76,7 @@ A few hard rules from [`CLAUDE.md`](../CLAUDE.md) that constrain PRs:
 - **Database access goes through the api worker**, never from the browser.
 - **Worker apps target the Cloudflare Workers runtime.** Prefer Web APIs (`fetch`, `Request`, `Response`, `crypto.subtle`) over Node-only APIs.
 - **The router worker holds no business logic.** Only service bindings. If you're tempted to add logic, it belongs in whichever app the router forwards to.
-- **No `pnpm build` while `next dev` is alive on `apps/live`.** They race on the `.next/` output directory.
+- **New Next.js apps must adopt the `NEXT_DISTDIR` dev-cache isolation.** Dev servers run through `scripts/next-dev.mjs` with an isolated `.next-dev/`; a new app's `next.config` must read `NEXT_DISTDIR` the same way or builds and dev race on `.next/` again.
 
 ## Reporting issues
 
