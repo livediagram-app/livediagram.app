@@ -981,8 +981,8 @@ export const articles: Article[] = [
     slug: 'import-tabs',
     title: 'Importing a Tab',
     description:
-      'Import JSON, a Mermaid diagram (flowchart, state, or ER), or a Markdown outline into the active tab by pasting text or picking a file (it replaces the contents).',
-    keywords: 'import json mermaid markdown file paste upload load convert',
+      'Import JSON, a Mermaid diagram (flowchart, state, or ER), a Markdown outline, or an Excalidraw scene into the active tab by pasting text or picking a file (it replaces the contents).',
+    keywords: 'import json mermaid markdown excalidraw file paste upload load convert migrate',
     category: 'Tabs',
     categorySlug: 'tabs',
   },
@@ -990,8 +990,8 @@ export const articles: Article[] = [
     slug: 'export-tabs',
     title: 'Exporting a Tab',
     description:
-      'Export the active tab as JSON, a Mermaid flowchart, Markdown, PNG, SVG, or PDF — copy the text formats or set image options.',
-    keywords: 'export download save png svg pdf json mermaid markdown image picture',
+      'Export the active tab as JSON, a Mermaid flowchart, Markdown, an Excalidraw scene, PNG, SVG, or PDF — copy the text formats or set image options.',
+    keywords: 'export download save png svg pdf json mermaid markdown excalidraw image picture',
     category: 'Tabs',
     categorySlug: 'tabs',
   },
