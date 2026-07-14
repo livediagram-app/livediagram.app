@@ -28,8 +28,7 @@ describe('elementKindLabel', () => {
     expect(elementKindLabel(ofType('image'))).toBe('Image');
     expect(elementKindLabel(ofType('freehand'))).toBe('Sketch');
     // Freehand variants (spec/81 highlighter, spec/84 polygon tool).
-    const freehand = (extra: object) =>
-      ({ type: 'freehand', ...extra }) as unknown as Element;
+    const freehand = (extra: object) => ({ type: 'freehand', ...extra }) as unknown as Element;
     expect(elementKindLabel(freehand({ pen: 'highlighter' }))).toBe('Highlight');
     expect(elementKindLabel(freehand({ straightEdges: true }))).toBe('Polyline');
     expect(elementKindLabel(freehand({ straightEdges: true, closed: true }))).toBe('Polygon');
