@@ -82,6 +82,39 @@ describe('ALTERNATIVES catalogue', () => {
     }
   });
 
+  it('every entry has deep-dive sections with a heading and at least one paragraph', () => {
+    // spec/21 "Page shape": each page carries competitor-specific
+    // prose sections expanding the key value themes. The page renders
+    // each as an <h2> + <p> block; an empty heading or paragraph list
+    // would render a bare heading or an invisible section.
+    for (const alt of ALTERNATIVES) {
+      expect(alt.sections.length, `sections for ${alt.slug}`).toBeGreaterThan(0);
+      for (const section of alt.sections) {
+        expect(section.heading.length, `section heading for ${alt.slug}`).toBeGreaterThan(0);
+        expect(
+          section.paragraphs.length,
+          `paragraphs in "${section.heading}" for ${alt.slug}`,
+        ).toBeGreaterThan(0);
+        for (const p of section.paragraphs) expect(p.length).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it('every entry has FAQs with non-empty questions and answers', () => {
+    // The faqs feed both the on-page FAQ section and the FAQPage
+    // JSON-LD emitted per detail page (spec/21 "Metadata"). An empty
+    // question or answer would produce invalid structured data
+    // (Google rejects Question entries with empty acceptedAnswer
+    // text) alongside a visibly broken on-page block.
+    for (const alt of ALTERNATIVES) {
+      expect(alt.faqs.length, `faqs for ${alt.slug}`).toBeGreaterThan(0);
+      for (const faq of alt.faqs) {
+        expect(faq.q.length, `faq question for ${alt.slug}`).toBeGreaterThan(0);
+        expect(faq.a.length, `faq answer "${faq.q}" for ${alt.slug}`).toBeGreaterThan(0);
+      }
+    }
+  });
+
   it('ALTERNATIVE_SLUGS matches ALTERNATIVES.map(a => a.slug)', () => {
     // The dynamic-route generateStaticParams imports ALTERNATIVE_SLUGS
     // and the sitemap iterates the same constant. The two staying in

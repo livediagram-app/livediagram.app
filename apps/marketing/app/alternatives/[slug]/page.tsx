@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
+import { JsonLd } from '@/components/JsonLd';
 import { ALTERNATIVE_SLUGS, ALTERNATIVES_LAST_UPDATED, getAlternative } from '@/lib/alternatives';
 import { subpageMetadata } from '@/lib/subpage-metadata';
 
@@ -38,8 +39,24 @@ export default async function AlternativePage({ params }: { params: Promise<{ sl
   const alt = getAlternative(slug);
   if (!alt) notFound();
 
+  // FAQPage JSON-LD (spec/21 "Metadata"): the per-competitor questions
+  // target the long-tail queries around "<tool> alternative" searches
+  // and can surface as Google's expandable-FAQ rich result. Answers
+  // are plain strings in the data, so the structured-data text matches
+  // the on-page answer verbatim. Same pattern as /faq.
+  const faqJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: alt.faqs.map((f) => ({
+      '@type': 'Question',
+      name: f.q,
+      acceptedAnswer: { '@type': 'Answer', text: f.a },
+    })),
+  };
+
   return (
     <>
+      <JsonLd data={faqJsonLd} />
       <BreadcrumbJsonLd
         trail={[
           { name: 'Alternatives', path: '/alternatives' },
@@ -133,7 +150,39 @@ export default async function AlternativePage({ params }: { params: Promise<{ sl
           </div>
         </div>
 
-        <p className="mt-8 text-xs text-slate-400">
+        {/* Deep-dive sections (spec/21 "Page shape"): competitor-specific
+            prose expanding the key value themes behind the bullets above.
+            Pure data-driven render; the honesty rules live in the copy
+            itself in lib/alternatives.ts. */}
+        {alt.sections.map((section) => (
+          <section key={section.heading} className="mt-12">
+            <h2 className="text-xl font-semibold tracking-tight text-slate-900">
+              {section.heading}
+            </h2>
+            {section.paragraphs.map((paragraph) => (
+              <p key={paragraph} className="mt-4 leading-relaxed text-slate-600">
+                {paragraph}
+              </p>
+            ))}
+          </section>
+        ))}
+
+        {/* Per-competitor FAQ, mirrored into the FAQPage JSON-LD above. */}
+        <section className="mt-14">
+          <h2 className="text-xl font-semibold tracking-tight text-slate-900">
+            {alt.name} alternative FAQ
+          </h2>
+          <div className="mt-6 space-y-6">
+            {alt.faqs.map((faq) => (
+              <div key={faq.q}>
+                <h3 className="font-semibold text-slate-900">{faq.q}</h3>
+                <p className="mt-2 leading-relaxed text-slate-600">{faq.a}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <p className="mt-10 text-xs text-slate-400">
           Comparisons reflect each product&rsquo;s general positioning and may change. Check{' '}
           {alt.name}&rsquo;s own site for current details.
         </p>
