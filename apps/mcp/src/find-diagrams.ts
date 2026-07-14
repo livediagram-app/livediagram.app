@@ -7,12 +7,12 @@ import type { DiagramSummary, TeamListItem } from '@livediagram/api-schema';
 import { apiJson } from './api';
 import type { Env } from './env';
 
-export type TeamLibrary = { teamName: string; diagrams: DiagramSummary[] };
+type TeamLibrary = { teamName: string; diagrams: DiagramSummary[] };
 
 // One search hit. `library` is 'personal' or the team's name, so the
 // calling model can tell the user where a diagram lives (and disambiguate
 // same-named diagrams across libraries).
-export type FoundDiagram = {
+type FoundDiagram = {
   id: string;
   name: string;
   updatedAt: number;

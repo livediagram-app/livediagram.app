@@ -28,7 +28,7 @@ export async function recordSighting(env: Env, ownerId: string, email: string): 
   return res.meta.changes === 1;
 }
 
-export type LifecycleRow = { ownerId: string; email: string };
+type LifecycleRow = { ownerId: string; email: string };
 
 // Rows still owed `stage` and old enough for it: `cutoff` is the latest
 // qualifying created_at (now for welcome; now-7d / now-14d for the series).

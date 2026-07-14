@@ -9,7 +9,7 @@ import type { Env } from '../types';
 
 // Both flags default to true: a missing key / row / corrupt blob means
 // "notify" (the toggles are opt-OUT, mirroring spec/20's notificationsEnabled).
-export type NotificationPrefs = {
+type NotificationPrefs = {
   notifyDiagramJoin: boolean;
   notifyInviteResponse: boolean;
   notifyComments: boolean;

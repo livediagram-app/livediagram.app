@@ -238,7 +238,7 @@ export async function diagramsContainingTab(env: Env, tabId: string): Promise<st
 // PUT — so a content save can't clobber membership. `null`/omitted =
 // loose. A plain `string` is accepted for the legacy (pre-folder)
 // payload shape and treated as loose.
-export type ReorderEntry = string | { id: string; folder?: string | null };
+type ReorderEntry = string | { id: string; folder?: string | null };
 
 // Normalise one reorder entry to its (id, folder) form: legacy string
 // entries are loose, and empty / whitespace folder names collapse to

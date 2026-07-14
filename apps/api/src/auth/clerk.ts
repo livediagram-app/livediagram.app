@@ -34,7 +34,7 @@ function getJWKS(url: string): ReturnType<typeof createRemoteJWKSet> {
 // because it rides inside the JWKS-verified payload. Null when the
 // session token doesn't carry it; teams' invite auto-connection
 // degrades gracefully in that case.
-export type ClerkIdentity = {
+type ClerkIdentity = {
   userId: string;
   email: string | null;
 };

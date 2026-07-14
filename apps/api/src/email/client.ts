@@ -21,7 +21,7 @@ export function appBaseUrl(env: Env): string {
   return (env.APP_BASE_URL ?? DEFAULT_BASE_URL).replace(/\/+$/, '');
 }
 
-export type EmailMessage = {
+type EmailMessage = {
   to: string;
   subject: string;
   html: string;

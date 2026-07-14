@@ -94,7 +94,7 @@ export async function revokeApiToken(env: Env, ownerId: string, id: string): Pro
 // yet (live only). The daily cron uses this to send a one-time "expiring soon"
 // heads-up so a programmatic integration doesn't silently break. Bounded batch,
 // soonest-first.
-export type ExpiringToken = { id: string; ownerId: string; name: string | null; expiresAt: number };
+type ExpiringToken = { id: string; ownerId: string; name: string | null; expiresAt: number };
 export async function apiTokensExpiringSoon(
   env: Env,
   now: number,

@@ -13,7 +13,7 @@ import { apiFetch } from './api';
 import type { Env } from './env';
 
 export type Extra = RequestHandlerExtra<never, never>;
-export type ToolResult = {
+type ToolResult = {
   content: Array<
     { type: 'text'; text: string } | { type: 'image'; data: string; mimeType: string }
   >;
