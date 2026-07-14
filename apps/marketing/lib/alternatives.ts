@@ -16,7 +16,7 @@
 // ALTERNATIVES array so revising a competitor row + bumping the date
 // lands in one diff. Bump this when adding a competitor or revising
 // any row / claim / lede.
-export const ALTERNATIVES_LAST_UPDATED = new Date('2026-06-23');
+export const ALTERNATIVES_LAST_UPDATED = new Date('2026-07-14');
 
 type ComparisonRow = {
   label: string;
@@ -100,8 +100,8 @@ export const ALTERNATIVES: Alternative[] = [
     ],
     themBest: [
       'Deep, keyboard-fast mind-map outlining and dedicated brainstorming modes.',
-      'A refined native desktop experience, including offline use.',
-      'A built-in presentation mode for walking through a single map.',
+      'A refined native desktop experience with dedicated mobile apps.',
+      "Pitch mode turns a map's branches into presentation slides.",
     ],
     usBest: [
       'Brainstorm together in real time, with live cursors and comments, not just on your own machine.',
