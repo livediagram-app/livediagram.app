@@ -15,6 +15,7 @@ import {
   tabToMarkdownText,
 } from '@/lib/export-tab';
 import { exportTabAsPdf } from '@/lib/export-tab-pdf';
+import { tabToExcalidrawText } from '@/lib/excalidraw-export';
 import { ensureIconCatalogs } from '@/lib/icon-registry';
 import { track } from '@/lib/telemetry';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
@@ -25,6 +26,7 @@ const EXPORT_LABEL: Record<Format, string> = {
   file: 'JSON',
   mermaid: 'Mermaid',
   markdown: 'Markdown',
+  excalidraw: 'Excalidraw',
   png: 'PNG',
   svg: 'SVG',
   pdf: 'PDF',
@@ -47,14 +49,14 @@ type ExportTabDialogProps = {
   imageContext?: { ownerId: string; diagramId: string; shareCode: string | null };
 };
 
-export type Format = 'markdown' | 'mermaid' | 'pdf' | 'png' | 'svg' | 'file';
+export type Format = 'markdown' | 'mermaid' | 'excalidraw' | 'pdf' | 'png' | 'svg' | 'file';
 
-// The three text formats each open a view/edit/copy panel; the three image
+// The four text formats each open a view/edit/copy panel; the three image
 // formats each open an options-and-download panel (spec/48 / 73).
-type TextFormat = 'file' | 'mermaid' | 'markdown';
+type TextFormat = 'file' | 'mermaid' | 'markdown' | 'excalidraw';
 type ImageFormat = 'png' | 'svg' | 'pdf';
 const isTextFormat = (f: Format): f is TextFormat =>
-  f === 'file' || f === 'mermaid' || f === 'markdown';
+  f === 'file' || f === 'mermaid' || f === 'markdown' || f === 'excalidraw';
 
 // Grid card copy, in display order: text formats first, then image formats.
 const CARDS: { kind: Format; title: string; description: string }[] = [
@@ -73,6 +75,12 @@ const CARDS: { kind: Format; title: string; description: string }[] = [
     kind: 'markdown',
     title: 'Markdown',
     description: "A text outline of this tab's elements and connections. Copy it or save a .md.",
+  },
+  {
+    kind: 'excalidraw',
+    title: 'Excalidraw',
+    description:
+      'An .excalidraw scene to open at excalidraw.com. Rich shapes simplify to labelled boxes.',
   },
   {
     kind: 'png',
@@ -120,6 +128,14 @@ const TEXT_PANELS: Record<
     ext: 'md',
     mime: 'text/markdown',
     getText: tabToMarkdownText,
+  },
+  excalidraw: {
+    blurb:
+      'This tab as an Excalidraw scene: shapes Excalidraw lacks become labelled boxes. Edit it here to copy a variant.',
+    downloadLabel: 'Download .excalidraw',
+    ext: 'excalidraw',
+    mime: 'application/json',
+    getText: tabToExcalidrawText,
   },
 };
 

@@ -1,7 +1,8 @@
 // Tab import (spec/27 + spec/73), lifted out of useTabActions: the
 // id re-mint imported elements go through, the single-undo-step content
 // replace, and the format-dispatched importer (JSON / DSL / Markdown)
-// with its lazy-loaded parser cluster (JSON / Markdown / Mermaid).
+// with its lazy-loaded parser cluster (JSON / Markdown / Mermaid /
+// Excalidraw, spec/87).
 
 import type { Element, Tab } from '@livediagram/diagram';
 import type { ImportOutcome } from '@/lib/import-tab';
@@ -102,12 +103,29 @@ export function useTabImport({
   // code stays out of the editor's initial bundle. Never throws — returns
   // the outcome the dialog renders (close / stay / show error).
   const importTextIntoActiveTab = async (
-    format: 'json' | 'markdown' | 'mermaid',
+    format: 'json' | 'markdown' | 'mermaid' | 'excalidraw',
     text: string,
   ): Promise<ImportOutcome> => {
     const active = tabs.find((t) => t.id === activeId);
     if (active?.locked) {
       return { status: 'error', error: 'This tab is locked. Unlock it before importing.' };
+    }
+
+    if (format === 'excalidraw') {
+      const { buildElementsFromExcalidraw } = await import('@/lib/excalidraw-import');
+      const result = buildElementsFromExcalidraw(text);
+      if (!result.ok) return { status: 'error', error: result.error };
+      // Ids are already re-minted inside the converter (spec/87), so this
+      // skips the JSON path's remintElementIds step.
+      replaceActiveTabContent({
+        id: activeId,
+        name: active?.name ?? '',
+        elements: result.elements,
+        theme: active?.theme,
+        backgroundColor: result.backgroundColor,
+      });
+      track('Tab', 'Imported', 'Excalidraw');
+      return { status: 'done' };
     }
 
     if (format === 'mermaid') {
@@ -150,7 +168,7 @@ export function useTabImport({
   // file and paste paths converge on one parser. Returns the dialog
   // outcome; 'cancelled' when the file picker is dismissed.
   const importIntoActiveTab = async (
-    format: 'json' | 'markdown' | 'mermaid',
+    format: 'json' | 'markdown' | 'mermaid' | 'excalidraw',
   ): Promise<ImportOutcome> => {
     const active = tabs.find((t) => t.id === activeId);
     if (active?.locked) {
@@ -161,7 +179,9 @@ export function useTabImport({
         ? 'text/markdown,.md,.markdown,.mdown,.mkd,text/plain'
         : format === 'mermaid'
           ? '.mmd,.mermaid,.txt,text/plain'
-          : '.json,application/json';
+          : format === 'excalidraw'
+            ? '.excalidraw,.json,application/json'
+            : '.json,application/json';
     const { pickTabFile } = await import('@/lib/import-tab');
     const picked = await pickTabFile(accept);
     if (!picked) return { status: 'cancelled' };

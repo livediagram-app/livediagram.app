@@ -59,6 +59,32 @@ export function FormatIcon({ kind }: { kind: Format }) {
           </text>
         </svg>
       );
+    case 'excalidraw':
+      return (
+        <svg width="34" height="20" viewBox="0 0 34 20" aria-hidden>
+          <rect
+            x="1"
+            y="1"
+            width="32"
+            height="18"
+            rx="2"
+            fill="none"
+            stroke="rgb(148 163 184)"
+            strokeWidth="1.25"
+          />
+          <text
+            x="17"
+            y="14"
+            textAnchor="middle"
+            fontFamily="system-ui, sans-serif"
+            fontSize="8"
+            fontWeight="600"
+            fill="rgb(71 85 105)"
+          >
+            excali
+          </text>
+        </svg>
+      );
     case 'pdf':
       return (
         <svg width="22" height="28" viewBox="0 0 22 28" aria-hidden>

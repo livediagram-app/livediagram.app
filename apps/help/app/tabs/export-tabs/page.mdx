@@ -5,7 +5,7 @@ import { ExportMenu } from '@/components/illustrations/tabs';
 export const metadata = helpMetadata({
   title: 'Exporting a Tab',
   description:
-    'Export the active tab as JSON, a Mermaid flowchart, Markdown, PNG, SVG, or PDF. Text formats open an editor to copy or download; image formats offer isometric and background-pattern options.',
+    'Export the active tab as JSON, a Mermaid flowchart, Markdown, an Excalidraw scene, PNG, SVG, or PDF. Text formats open an editor to copy or download; image formats offer isometric and background-pattern options.',
   path: '/help/tabs/export-tabs/',
 });
 
@@ -25,19 +25,20 @@ From the tab ellipsis menu, expand the **Content** section and choose **Export**
 - **JSON** — a portable `.livediagram-tab.json` snapshot that [imports](/help/tabs/import-tabs/) back with full fidelity.
 - **Mermaid** — the tab as [Mermaid](https://mermaid.js.org/) flowchart text, which keeps every connection and its style (unlike Markdown); frames export as `subgraph` blocks.
 - **Markdown** — the tab's structure as a Markdown outline (a readable summary; it does not preserve every connection).
+- **Excalidraw** — a `.excalidraw` scene you can open at [excalidraw.com](https://excalidraw.com/). Boxes, text, arrows (with their connections), and drawings carry over; element kinds Excalidraw doesn't have (charts, tables, device frames, …) simplify to labelled boxes.
 - **PNG** — a raster image, good for pasting into docs and chat.
 - **SVG** — a crisp vector image that scales to any size.
 - **PDF** — a print-ready page of the tab.
 
-The three **text** formats (JSON, Mermaid, Markdown) each open an editor pre-filled with the tab as that format: tweak the text and **copy** it, or **download** the file. Your edits in that box never change the tab. The three **image** formats (PNG, SVG, PDF) open an options screen (see below) with a **Download** button.
+The four **text** formats (JSON, Mermaid, Markdown, Excalidraw) each open an editor pre-filled with the tab as that format: tweak the text and **copy** it, or **download** the file. Your edits in that box never change the tab. The three **image** formats (PNG, SVG, PDF) open an options screen (see below) with a **Download** button.
 
-<Figure caption="The Export submenu lists every format: JSON, Mermaid, Markdown, PNG, SVG, and PDF.">
+<Figure caption="The Export submenu lists every format: JSON, Mermaid, Markdown, Excalidraw, PNG, SVG, and PDF.">
   <ExportMenu />
 </Figure>
 
 ## What the image exports capture
 
-The PNG, SVG, and PDF exports show the tab as it looks. After you pick one, an options screen offers two switches: **Isometric view**, which tilts the export into the [isometric projection](/help/selection-modes/isometric-mode/), and **Background pattern**, which paints the canvas grid / dots behind the diagram. When the tab has layers hidden in the Layers panel, a third switch, **Hidden layers**, appears so you can choose whether those layers are included in the export. Set them and press **Download**, and what you get matches what you see. The JSON, Mermaid, and Markdown exports capture the underlying content rather than the picture.
+The PNG, SVG, and PDF exports show the tab as it looks. After you pick one, an options screen offers two switches: **Isometric view**, which tilts the export into the [isometric projection](/help/selection-modes/isometric-mode/), and **Background pattern**, which paints the canvas grid / dots behind the diagram. When the tab has layers hidden in the Layers panel, a third switch, **Hidden layers**, appears so you can choose whether those layers are included in the export. Set them and press **Download**, and what you get matches what you see. The JSON, Mermaid, Markdown, and Excalidraw exports capture the underlying content rather than the picture.
 
 <Tip>
   Reach for **SVG** when the image might be resized or printed large, it stays sharp at any scale,

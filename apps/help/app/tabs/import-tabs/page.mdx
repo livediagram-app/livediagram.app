@@ -5,13 +5,13 @@ import { ImportMenu, ImportWarning } from '@/components/illustrations/tabs';
 export const metadata = helpMetadata({
   title: 'Importing a Tab',
   description:
-    'Import a JSON file, a Mermaid diagram (flowchart, state, or ER), or a Markdown outline into the active tab, either by pasting the text or picking a file. Importing replaces the tab contents, so the dialog warns you first.',
+    'Import a JSON file, a Mermaid diagram (flowchart, state, or ER), a Markdown outline, or an Excalidraw scene into the active tab, either by pasting the text or picking a file. Importing replaces the tab contents, so the dialog warns you first.',
   path: '/help/tabs/import-tabs/',
 });
 
 <ArticleLayout
   title="Importing a Tab"
-  description="Bring a tab's contents in from pasted text or a file. Import a JSON tab, a Mermaid diagram, or a Markdown outline into the active tab."
+  description="Bring a tab's contents in from pasted text or a file. Import a JSON tab, a Mermaid diagram, a Markdown outline, or an Excalidraw scene into the active tab."
   categoryTitle="Tabs"
   categorySlug="tabs"
 >
@@ -25,10 +25,11 @@ From the tab ellipsis menu, expand the **Content** section and choose **Import**
 - **JSON** reads a livediagram tab export (a `.livediagram-tab.json` file) and restores its elements exactly, the highest-fidelity round trip.
 - **Mermaid** reads a [Mermaid](https://mermaid.js.org/) flowchart (`graph` / `flowchart`), state diagram (`stateDiagram`), or ER diagram (`erDiagram`) and lays it out on the canvas, keeping every connection, its style (dashed, thick, two-headed, headless), `click` links, and any `subgraph` or composite-state blocks, which come in as frames drawn around their nodes. Other Mermaid diagram types (sequence, gantt, pie, …) aren't supported.
 - **Markdown** turns a Markdown outline into a themed tree diagram, the same conversion as [Markdown Import](/help/tools/markdown-import/), so you can draft structure in text and bring it onto the canvas.
+- **Excalidraw** reads a `.excalidraw` scene (what [excalidraw.com](https://excalidraw.com/)'s Save to disk produces) and keeps its shapes, labels, arrow connections, groups, and freehand drawings. The hand-drawn look flattens to clean strokes, and embedded images come in as placeholders you can re-upload.
 
-Because all three are text, each format opens the same two-step panel: **paste or write** the content into the editor and press **Import**, or press **Import a file instead** to pick one from disk. Either way the tab updates once it parses.
+Because all four are text, each format opens the same two-step panel: **paste or write** the content into the editor and press **Import**, or press **Import a file instead** to pick one from disk. Either way the tab updates once it parses.
 
-<Figure caption="The Content section of the tab menu opens Import, offering JSON, Mermaid, and Markdown. Each opens a panel to paste the text or pick a file.">
+<Figure caption="The Content section of the tab menu opens Import, offering JSON, Mermaid, Markdown, and Excalidraw. Each opens a panel to paste the text or pick a file.">
   <ImportMenu />
 </Figure>
 

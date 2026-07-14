@@ -5,7 +5,7 @@ import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { TextImportPanel } from './TextImportPanel';
 import type { ImportOutcome } from '@/lib/import-tab';
 
-type Format = 'json' | 'markdown' | 'mermaid';
+type Format = 'json' | 'markdown' | 'mermaid' | 'excalidraw';
 
 type ImportTabDialogProps = {
   // The active tab's name — shown in the warning so it's clear which
@@ -49,6 +49,13 @@ const FORMATS: {
     description:
       'A .md outline (headings + lists), e.g. exported from XMind. Becomes a themed tree.',
     placeholder: '# Project\n\n- Research\n  - Interviews\n  - Survey\n- Build\n- Launch',
+  },
+  {
+    key: 'excalidraw',
+    title: 'Excalidraw',
+    description:
+      'A .excalidraw scene. Keeps shapes, labels, connections, and drawings. Paste it or pick a file.',
+    placeholder: '{\n  "type": "excalidraw",\n  "version": 2,\n  "elements": [ … ]\n}',
   },
 ];
 
@@ -169,7 +176,14 @@ function ImportCard({
 }
 
 function FormatIcon({ kind }: { kind: Format }) {
-  const label = kind === 'mermaid' ? 'mmd' : kind === 'markdown' ? 'md' : 'json';
+  const label =
+    kind === 'mermaid'
+      ? 'mmd'
+      : kind === 'markdown'
+        ? 'md'
+        : kind === 'excalidraw'
+          ? 'excali'
+          : 'json';
   return (
     <svg width="36" height="20" viewBox="0 0 36 20" aria-hidden>
       <rect
