@@ -10,7 +10,7 @@
 // Fonts is blocked (or a self-host opts out) text still renders — just in
 // the fallback face. Browsers only fetch a family that's actually applied.
 
-export type FontOption = {
+type FontOption = {
   // Stable id stored in the model (Element.font / Tab.font).
   id: string;
   label: string;

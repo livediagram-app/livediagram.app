@@ -6,10 +6,10 @@
 // the shared 8px edge margin (packages/ui popover convention).
 
 export type TourRect = { left: number; top: number; width: number; height: number };
-export type TourSize = { width: number; height: number };
-export type TourViewport = { width: number; height: number };
+type TourSize = { width: number; height: number };
+type TourViewport = { width: number; height: number };
 
-export type TourPlacement = {
+type TourPlacement = {
   left: number;
   top: number;
   side: 'right' | 'left' | 'below' | 'above' | 'center';

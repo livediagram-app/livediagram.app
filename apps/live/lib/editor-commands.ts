@@ -18,7 +18,7 @@ import type { CommandSearchItem } from './search';
 
 // A runnable command: the searchable shape (id / name / keywords) plus the
 // thunk the editor runs when it's picked.
-export type EditorCommand = CommandSearchItem & { run: () => void };
+type EditorCommand = CommandSearchItem & { run: () => void };
 
 // What the builder needs to know about the current editor to decide which
 // commands apply. Kept primitive so the builder stays pure + cheap to test.

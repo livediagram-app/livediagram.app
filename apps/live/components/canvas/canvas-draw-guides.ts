@@ -33,7 +33,7 @@ function boundingBoxOf(points: Point[]): { x: number; y: number; width: number; 
   return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
 }
 
-export interface DrawGuideInputs {
+interface DrawGuideInputs {
   drawDrag: DrawRect | null;
   pendingDraw: PendingDraw | null;
   elements: Element[];

@@ -80,7 +80,7 @@ export function SpeedTiles({
 // surface (boxed / arrow / icon / the data-shape anims) offers the same pair,
 // so the loop's pace and its play-once switch can't drift between pickers.
 // Repeat defaults on; off = the animation plays a single cycle and holds.
-export function SpeedAndRepeatRows({
+function SpeedAndRepeatRows({
   speed,
   repeat,
   onSetSpeed,

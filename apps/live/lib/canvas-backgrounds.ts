@@ -330,7 +330,7 @@ function wavesBg(stroke: string): string {
 // `scale` (the tab's pattern-size slider) is baked in: the tile grows and its
 // content scales with it, matching `scaleBackgroundSize`. `opacity` fades the
 // pattern colour in lockstep with the backdrop, like the CSS path.
-export type BackgroundPatternTile = { width: number; height: number; content: string };
+type BackgroundPatternTile = { width: number; height: number; content: string };
 
 export function backgroundPatternTile(
   pattern: BackgroundPattern,

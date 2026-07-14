@@ -25,7 +25,7 @@ import { ResetIcon } from '@/components/palette/palette-icons';
 import { Portal } from '@/components/primitives/Portal';
 import { useModalGuard } from '@/hooks/ui/useModalGuard';
 
-export type CanvasThemeTab = 'canvas' | 'theme';
+type CanvasThemeTab = 'canvas' | 'theme';
 
 type CanvasThemeDialogProps = {
   tab: CanvasThemeTab;

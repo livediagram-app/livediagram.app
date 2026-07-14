@@ -30,7 +30,7 @@ import { HISTORY_LIMIT } from '@/hooks/canvas/useDiagramHistory';
 
 // One marker per history step: the entry that step emitted (or null),
 // stamped with the caller-minted token that names the step.
-export type EntryMarker = ChangeLogEntry | null;
+type EntryMarker = ChangeLogEntry | null;
 type MarkerSlot = { token: number; entry: EntryMarker };
 
 export type EntryHistory = {

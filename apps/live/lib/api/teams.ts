@@ -33,7 +33,7 @@ export type TeamDetailResponse = {
 };
 type TeamMemberResponse = { member: TeamMember };
 type TeamInvitesResponse = { invites: TeamInvite[] };
-export type TeamLibraryResponse = { folders: Folder[]; diagrams: DiagramSummary[] };
+type TeamLibraryResponse = { folders: Folder[]; diagrams: DiagramSummary[] };
 
 // Same dedupe rationale as apiListFolders: the sidebar list is
 // fetched once per surface, and concurrent mounts must not fan out
@@ -121,7 +121,7 @@ export async function apiDeleteTeam(ownerId: string, id: string): Promise<void> 
   return apiDelete(`${API_BASE}/teams/${id}`, ownerId, { action: 'delete team' });
 }
 
-export type InviteTeamMemberResult =
+type InviteTeamMemberResult =
   | { ok: true; member: TeamMember }
   | { ok: false; reason: 'already_member' | 'invalid_email' };
 
@@ -141,7 +141,7 @@ export async function apiInviteTeamMember(
   return { ok: true, member };
 }
 
-export type TeamMemberMutationResult = { ok: true } | { ok: false; reason: 'last_admin' };
+type TeamMemberMutationResult = { ok: true } | { ok: false; reason: 'last_admin' };
 
 export async function apiUpdateTeamMemberRole(
   ownerId: string,

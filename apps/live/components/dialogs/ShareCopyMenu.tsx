@@ -13,7 +13,7 @@ import { track } from '@/lib/telemetry';
 // a list of "copy this as X" rows — so they live in one component rather
 // than two near-identical ones. Rendered for non-password links only by
 // the caller where an <img>/embed can't carry a password.
-export type ShareCopyItem = {
+type ShareCopyItem = {
   label: string;
   icon: ReactNode;
   // The text placed on the clipboard.

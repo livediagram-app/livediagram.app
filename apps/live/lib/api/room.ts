@@ -24,7 +24,7 @@ export type RoomHandlers = {
 };
 
 // Auth identifiers the connector rides on the room WebSocket URL.
-export type RoomAuthOptions = {
+type RoomAuthOptions = {
   shareCode?: string | null;
   ownerId?: string | null;
   // One-time room ticket (spec/11), minted over authenticated REST via

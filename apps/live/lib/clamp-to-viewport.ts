@@ -25,7 +25,7 @@ import { POPOVER_VIEWPORT_MARGIN } from '@livediagram/ui';
 // re-exported under the historical name so existing importers are unchanged.
 export const VIEWPORT_EDGE_MARGIN = POPOVER_VIEWPORT_MARGIN;
 
-export type ViewportAdjust = { x: number; y: number };
+type ViewportAdjust = { x: number; y: number };
 
 export function clampToViewport(
   rect: DOMRect,

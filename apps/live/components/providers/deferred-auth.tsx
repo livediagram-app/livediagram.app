@@ -18,7 +18,7 @@ import { clerkEnabled, clerkPublishableKey } from '@/lib/clerk-config';
 
 // The subset of the Clerk user the app actually renders (AuthControls
 // menu, ProfilePane identity card, the bootstrap's display name).
-export type DeferredAuthUser = {
+type DeferredAuthUser = {
   id: string;
   firstName: string | null;
   lastName: string | null;

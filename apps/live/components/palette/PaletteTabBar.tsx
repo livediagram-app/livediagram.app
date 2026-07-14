@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { readLocalStorageSafe, writeLocalStorageSafe } from '@/lib/local-storage-safe';
 import { PaletteDropdown } from '@/components/palette/PaletteDropdown';
 
-export type PaletteTab = {
+type PaletteTab = {
   id: string;
   label: string;
   description: string;

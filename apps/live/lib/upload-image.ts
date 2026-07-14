@@ -28,7 +28,7 @@ const MAX_BYTES = 10 * 1024 * 1024;
 export const UPLOAD_ACCEPT_ATTR = ACCEPTED_TYPES.join(',');
 export const UPLOAD_MAX_BYTES = MAX_BYTES;
 
-export type UploadResult = { image: ImageSummary; deduped: boolean };
+type UploadResult = { image: ImageSummary; deduped: boolean };
 
 // Thrown for any user-facing validation / upload failure. The
 // `message` is safe to render verbatim in the UI (the picker shows

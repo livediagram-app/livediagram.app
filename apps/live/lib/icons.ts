@@ -129,7 +129,7 @@ export function getIcon(id: string | undefined): IconDef {
 // drawing. Kept as id-lists here (rather than a per-icon field) so the
 // catalogue entries stay focused on geometry; an icon may sit in one
 // category. The picker prepends an "All" chip itself.
-export type IconCategory = { id: string; label: string; iconIds: string[] };
+type IconCategory = { id: string; label: string; iconIds: string[] };
 
 export const ICON_CATEGORIES: IconCategory[] = [
   {

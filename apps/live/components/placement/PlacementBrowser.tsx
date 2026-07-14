@@ -396,7 +396,7 @@ export function PlacementCard({
 }
 
 // Tile glyphs, sized to sit above the card label.
-export function MyWorkIcon() {
+function MyWorkIcon() {
   return (
     <svg
       width="20"
@@ -455,7 +455,7 @@ function FolderStackIcon() {
   );
 }
 
-export function TeamPlaceIcon() {
+function TeamPlaceIcon() {
   return (
     <svg
       width="20"

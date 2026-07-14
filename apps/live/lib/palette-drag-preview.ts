@@ -10,7 +10,7 @@ import type { ShapeKind } from '@livediagram/diagram';
 // Module-level because a drag is global, single-at-a-time, and transient; it
 // would be awkward to thread through the editor's prop tree.
 
-export type PaletteDragPreview = {
+type PaletteDragPreview = {
   kind: ShapeKind;
   iconId?: string;
   // The shape's default footprint (canvas units); the ghost scales it by zoom.

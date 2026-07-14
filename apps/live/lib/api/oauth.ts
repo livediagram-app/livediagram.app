@@ -4,7 +4,7 @@
 // rejects a guest.
 import { API_BASE, apiHeaders, expectOk } from './core';
 
-export type OauthExchangeResult = {
+type OauthExchangeResult = {
   token: string;
   id: string;
   name: string | null;

@@ -17,7 +17,7 @@ import type {
 // "alongside, or under on mobile" behaviour the timer needs next to a
 // banner.
 
-export type BannerTone = 'neutral' | 'brand' | 'danger';
+type BannerTone = 'neutral' | 'brand' | 'danger';
 
 const TONE_CLASS: Record<BannerTone, string> = {
   neutral:

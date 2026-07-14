@@ -37,7 +37,7 @@ const WIDTHS: Record<DialogSize, string> = {
   '3xl': 'w-[56rem]',
 };
 
-export type DialogProps = {
+type DialogProps = {
   open: boolean;
   onClose: () => void;
   // Wires aria-labelledby to the caller's heading element id. Use `ariaLabel`
