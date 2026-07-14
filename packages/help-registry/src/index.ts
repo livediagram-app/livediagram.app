@@ -184,8 +184,8 @@ export const categories: Category[] = [
     slug: 'canvas',
     title: 'Canvas',
     description:
-      'Master the infinite canvas where diagrams come together: placing, selecting, grouping, linking, annotating, layering, rotating, animating, locking, theming, and templating.',
-    articleCount: 15,
+      'Master the infinite canvas where diagrams come together: placing, selecting, grouping, linking, annotating, layering, rotating, animating, shadowing, locking, theming, and templating.',
+    articleCount: 16,
     kind: 'feature',
   },
   {
@@ -1262,6 +1262,14 @@ export const articles: Article[] = [
     title: 'Animating Elements',
     description: 'Loop a subtle animation on shapes, arrows, and icons.',
     keywords: 'animate motion pulse loop effects moving flow wiggle',
+    category: 'Canvas',
+    categorySlug: 'canvas',
+  },
+  {
+    slug: 'shadows',
+    title: 'Element Shadows',
+    description: 'Lift an element with a drop shadow: five presets plus offset/blur sliders.',
+    keywords: 'shadow drop depth elevation blur offset lift float soft hard card 3d shade',
     category: 'Canvas',
     categorySlug: 'canvas',
   },

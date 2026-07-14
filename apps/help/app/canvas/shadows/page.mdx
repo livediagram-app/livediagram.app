@@ -1,0 +1,51 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Element Shadows',
+  description:
+    'Give shapes, stickies, images, and link cards a soft drop shadow from the right-click menu: five presets plus offset, blur, and opacity sliders.',
+  path: '/help/canvas/shadows/',
+});
+
+<ArticleLayout
+  title="Element Shadows"
+  description="Add depth with a drop shadow: pick a preset or dial in the offset, blur, and strength with sliders."
+  categoryTitle="Canvas"
+  categorySlug="canvas"
+>
+
+A drop shadow lifts an element off the canvas: cards read as cards, hero shapes get depth, and a key element separates from a busy background. The **Shadow** controls live in the element's right-click menu, right after Border, and work on anything that draws a visible body — shapes (icons and data shapes included), sticky notes, images, and link cards. Text, arrows, and freehand strokes don't carry shadows (a rectangular shadow under a line reads as a glitch, not a style).
+
+## Picking a preset
+
+Right-click an element and open the **Shadow** category. Five tiles cover the common looks:
+
+- **None** removes the shadow.
+- **Soft**, **Drop**, and **Lifted** are increasing steps of elevation, from a whisper of depth to floating well off the page.
+- **Hard** is the zero-blur offset shadow, the crisp "poster" look.
+
+Hovering a tile previews it live on the element; clicking commits it. The same category appears in the multi-select toolbar's Style flyout, where a preset applies to the whole selection at once.
+
+## Dialling it in with sliders
+
+Below the presets, four sliders give you the exact shadow:
+
+- **Offset X** and **Offset Y** (each up to 24px either way) set where the shadow falls, which reads as where the light comes from.
+- **Blur** (0 to 48px) sets how soft the edge is; zero is a hard edge.
+- **Opacity** sets the shadow's strength.
+
+Dragging any slider while the element has no shadow starts you from the Drop preset rather than from nothing, so the first drag always produces a visible shadow you can then shape. A whole slider drag is one undo step.
+
+## Good to know
+
+- **The colour is fixed** to a dark ink, so shadows always read as shade and keep working when you switch [themes](/help/canvas/themes/). Themes never add or change shadows.
+- **Exports match the canvas**: PNG, SVG, and PDF exports, plus [snapshots and embeds](/help/collaboration/sharing/live-image/), render the same shadow you see.
+- **The [format painter](/help/tips-and-tricks/format-painter/) copies shadows** along with the rest of an element's styling. **Reset style** clears the shadow; **Reset to theme** leaves it alone, since it only touches colours.
+
+<Tip>
+  Shadows are strongest when they're scarce. Lift the one card that matters with **Drop** and leave
+  its neighbours flat, rather than shadowing everything, and the eye goes exactly where you want.
+</Tip>
+
+</ArticleLayout>
