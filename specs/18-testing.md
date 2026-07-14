@@ -94,42 +94,47 @@ pick it up.
 - **Tested now** (each bullet maps to one or more `*.test.ts` files in the
   named workspace; the inventory grew well past the original list as features
   landed, so this section captures the SHAPE of coverage rather than every
-  filename):
-  - `packages/diagram`: the diagram data model: arrow path geometry, group /
-    ungroup mutations, colour derivation, default value helpers, element
-    factories, geometry / anchor math, snap-to-element math, border presets.
-    Eight suites total, the package's logic is comprehensively covered.
-  - `apps/live/lib`: every helper in the lib layer that callers reach for,
-    including api client headers, auto-align, canvas geometry + backgrounds,
-    change-log mutations, clamp-to-viewport, dedupe, duplicate-diagram,
-    export-tab, format painter, identity, import-tab, laser buffer, local
-    identity, relative-time formatting, responsive breakpoint math, search
-    filters, template builders + the template catalogue, theme catalogue,
-    image upload validation, user preferences (the spec/20 flag set). Around
-    20 suites.
-  - `apps/live/hooks`: only the pure helpers behind `useDiagramHistory` today
-    (the `history*` functions exported from the hook file). Hook bodies need
-    `jsdom`, see "Ahead" below.
-  - `apps/live/components`: pure-logic helpers next to components, currently
-    `auth-shared.test.ts` (the auth UI's shared error message normaliser).
-    Components themselves are not tested for the same `jsdom` reason.
-  - `apps/api/src`: owner / share-code role guards (`auth/clerk`,
-    `auth/diagram-access`), every defensive row mapper that crosses D1 (the
-    `*-row.ts` modules: change-log, share-link, tab; plus the body parser in
-    `change-log-body`), the `DiagramRoom` Durable Object's security-critical
-    paths (broadcast fan-out, hello-frame role forcing, op echo guards),
-    response helpers, image MIME sniffing + stripping, comments mutation
-    helpers, the share-code generator, the SHA-256 wire-format contract from
-    `@livediagram/api-schema`, the telemetry-event validator. Around 14
-    suites.
-  - `apps/marketing/lib`: the metadata + content registries: alternatives
-    list + slug map, legal revision date, subpage metadata generator. Three
-    suites.
-  - `apps/help`: the hand-maintained article registry's consistency with the
-    filesystem (every registered article has a `page.mdx` and vice versa, plus
-    each category's `articleCount`), the registry query / href helpers
-    (`searchArticles`, `getArticlesByCategory`, ...), and the schema.org
-    JSON-LD builders (`articleJsonLd` / `webSiteJsonLd`). Two suites.
+  filename — counts below are as of 2026-07-14):
+  - `packages/diagram` (36 suites): the data model end to end — element
+    factories + defaults, geometry / anchor / snap math, arrow path +
+    avoidance + endpoint-spread + rebind stability, group + layer mutations,
+    auto-layout (clusters + styles), Mermaid import/export (flowchart, state,
+    ER), graph authoring, freehand + shape recognition, rich text, tables,
+    comments, session tools, the headless SVG renderer, validation.
+  - `apps/live` (93 suites): the lib layer's helpers (api client, auto-align,
+    canvas geometry + backgrounds, change-log, export/import-tab, search,
+    templates + theme catalogues, user preferences, telemetry policy,
+    draw-commit + quick-add placement, offline store, help deep links, and
+    more), pure helpers behind hooks (history, favourites, panel layout),
+    pure component-adjacent logic (template previews + bounds, placement,
+    auth-shared), and the cross-app guard that every `HELP_ARTICLES` deep
+    link resolves to a real help page.
+  - `apps/api` (47 suites): auth guards (Clerk, diagram access, tokens),
+    every defensive D1 row mapper, the `DiagramRoom` Durable Object's
+    security-critical paths, route handlers (diagrams, share, images,
+    thumbnails, folders, teams, unfurl, events, ai), the OpenAPI
+    manifest ↔ dispatch drift guards, email lifecycle, response helpers,
+    MIME sniffing, the SHA-256 wire-format contract, the telemetry-event
+    validator.
+  - `apps/mcp` (5 suites): tool argument schemas, tab builders, the
+    find-diagrams search, OAuth state handling, and the api service-binding
+    client.
+  - `apps/router` (1 suite): the dispatch table (prefix strips, clean live
+    routes, origin fallback, 503) plus the drift guard that every top-level
+    `apps/live/app` segment routes to the live worker rather than falling
+    through to marketing's 404.
+  - `packages/telemetry-client` (1 suite): the shared buffer / flush /
+    beacon engine both apps emit through — batching, caps, opt-in gates,
+    page-hide beacon, error-tracking caps.
+  - `packages/icons` (1 suite): the icon resolver.
+  - `apps/marketing/lib` (3 suites): the metadata + content registries:
+    alternatives list + slug map, legal revision date, subpage metadata
+    generator.
+  - `apps/help` (3 suites): the article registry's consistency with the
+    filesystem (slugs ↔ `page.mdx`, per-category `articleCount`), the
+    registry query / href helpers, the internal-link guard (every
+    `/help/...` cross-link in an article resolves to a real page), and the
+    schema.org JSON-LD builders.
 
 - **Ahead:**
   - React component + hook bodies in `apps/live`: current hook tests target
