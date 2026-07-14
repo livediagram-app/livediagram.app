@@ -16,10 +16,19 @@ No new element type. The stroke reuses the freehand pipeline end to end: normali
 
 Both renderers (the canvas `FreehandSvg` and the headless `svgFreehandShape` used by share thumbnails and the MCP render) apply the same recipe when `pen === 'highlighter'`:
 
-- **Stroke width**: a fixed wide stroke (14px, `vector-effect: non-scaling-stroke`), ignoring the `strokeWidth` border presets (they only reach hairline widths).
+- **Stroke width**: a wide round stroke (`penWidth ?? 14` px, `vector-effect: non-scaling-stroke`), ignoring the `strokeWidth` border presets (they only reach hairline widths). `penWidth?: number` is the model's second optional pen field (wire-validated 1..100), written at draw time from the banner's strength control.
 - **Round caps + joins**, never dashed, never filled.
 - **Translucency**: `stroke-opacity: 0.45` plus `mix-blend-mode: multiply`, so text and shapes underneath stay legible and overlapping strokes darken like a real marker. This is part of the pen recipe, independent of the user-facing `opacity` field, which still composes on top.
-- **Colour**: created with `strokeColor: '#fde047'` (marker yellow) regardless of theme; recolourable afterwards via the element context menu's Colours category like any element. The theme's `elementStroke` is deliberately not used — highlighters are yellow until the user says otherwise.
+- **Colour**: created with the banner's current colour (default `#fde047`, marker yellow) regardless of theme; recolourable afterwards via the element context menu's Colours category like any element. The theme's `elementStroke` is deliberately not used — highlighters are yellow until the user says otherwise.
+
+## Banner controls
+
+The highlighter's mode banner carries two popover buttons in the extras slot (where the pencil keeps its recognise-shapes toggle), both applying to the NEXT strokes:
+
+- **Stroke strength**: three presets — Thin (8), Medium (14, default), Bold (22) — drawn as translucent bars in the current colour.
+- **Colour**: five marker swatches — yellow (default), green, pink, blue, orange.
+
+Both settings are session-local editor state (`useShapeDrawing`), deliberately not a persisted preference: the marker resets to yellow / medium on a fresh load, like a real pen cup. The live draw preview follows the picked colour + width. Escape / outside-click closes an open popover without disarming the tool.
 
 The live draw preview (`CanvasDrawPreview`) paints the in-flight polyline with the same wide translucent yellow treatment so what you see while dragging is what commits.
 

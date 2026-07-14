@@ -1879,6 +1879,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "const": "highlighter",
         "type": "string"
       },
+      "penWidth": {
+        "type": "number"
+      },
       "points": {
         "items": {
           "additionalProperties": false,

@@ -131,6 +131,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
     penPoints,
     polygonVertices,
     polygonCursor,
+    highlighterColor,
+    highlighterWidth,
     readOnly,
     selfParticipant,
     snapGuides,
@@ -247,6 +249,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
         penPoints={penPoints}
         polygonVertices={polygonVertices}
         polygonCursor={polygonCursor}
+        highlighterColor={highlighterColor}
+        highlighterWidth={highlighterWidth}
         pendingDraw={pendingDraw}
         viewportZoom={viewportZoom}
         wrapperRef={wrapperRef}

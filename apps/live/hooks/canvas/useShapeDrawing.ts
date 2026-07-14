@@ -47,9 +47,12 @@ import {
 } from '@/lib/draw-commit';
 import type { CanvasTool } from '@/components/palette/CommandPalette';
 
-// Marker yellow (spec/81): every highlighter stroke starts this
-// colour regardless of theme; the Colours category recolours it.
-const HIGHLIGHTER_COLOR = '#fde047';
+// Marker yellow (spec/81): the highlighter's default colour regardless
+// of theme; the banner's colour popover (and the Colours category on a
+// committed stroke) can override it.
+export const HIGHLIGHTER_DEFAULT_COLOR = '#fde047';
+// Default marker width in px; the banner's strength popover overrides.
+export const HIGHLIGHTER_DEFAULT_WIDTH = 14;
 
 // Telemetry `type` per component kind (closed vocabulary, no user content).
 const COMPONENT_TELEMETRY: Record<ComponentKind, string> = {
@@ -107,6 +110,12 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
   // drag's bounding box for the shape's size. Escape clears the
   // pending state. See user-preferences.drawToAdd.
   const [pendingDraw, setPendingDraw] = useState<PendingDraw | null>(null);
+  // Highlighter banner settings (spec/81): the colour + stroke width the
+  // NEXT marker strokes commit with, adjusted from the mode banner's two
+  // popovers. Session-local by design — the marker resets to yellow /
+  // medium on a fresh editor load, like a real pen cup.
+  const [highlighterColor, setHighlighterColor] = useState(HIGHLIGHTER_DEFAULT_COLOR);
+  const [highlighterWidth, setHighlighterWidth] = useState(HIGHLIGHTER_DEFAULT_WIDTH);
   // The element selected when the gesture was armed, captured here because
   // beginDraw clears the selection (below). A tap-to-drop inherits this
   // element's size in commitDraw, preserving the old "new shapes match the
@@ -316,7 +325,8 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
       const stroke = {
         ...createFreehand(simplified, false),
         pen: 'highlighter' as const,
-        strokeColor: HIGHLIGHTER_COLOR,
+        strokeColor: highlighterColor,
+        ...(highlighterWidth !== HIGHLIGHTER_DEFAULT_WIDTH ? { penWidth: highlighterWidth } : {}),
       };
       commit((els) => [...els, stroke]);
       setSelectedId(stroke.id);
@@ -451,5 +461,9 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     beginPolygon,
     commitFreehand,
     commitPolygon,
+    highlighterColor,
+    setHighlighterColor,
+    highlighterWidth,
+    setHighlighterWidth,
   };
 }

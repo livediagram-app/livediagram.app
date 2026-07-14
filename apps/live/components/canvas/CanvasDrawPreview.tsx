@@ -9,6 +9,10 @@ type CanvasDrawPreviewProps = {
   penPoints: { x: number; y: number }[] | null;
   polygonVertices: { x: number; y: number }[];
   polygonCursor: { x: number; y: number } | null;
+  // The highlighter banner's live settings (spec/81), so the in-flight
+  // preview matches what will commit.
+  highlighterColor: string;
+  highlighterWidth: number;
   pendingDraw: PendingDraw | null;
   viewportZoom: number;
   wrapperRef: RefObject<HTMLDivElement | null>;
@@ -22,6 +26,8 @@ export function CanvasDrawPreview({
   penPoints,
   polygonVertices,
   polygonCursor,
+  highlighterColor,
+  highlighterWidth,
   pendingDraw,
   viewportZoom,
   wrapperRef,
@@ -72,8 +78,8 @@ export function CanvasDrawPreview({
                 <path
                   d={d}
                   fill="none"
-                  stroke={isHighlighter ? '#fde047' : 'rgb(14, 165, 233)'}
-                  strokeWidth={isHighlighter ? 14 : 2}
+                  stroke={isHighlighter ? highlighterColor : 'rgb(14, 165, 233)'}
+                  strokeWidth={isHighlighter ? highlighterWidth : 2}
                   strokeOpacity={isHighlighter ? 0.45 : undefined}
                   style={isHighlighter ? { mixBlendMode: 'multiply' } : undefined}
                   strokeLinecap="round"

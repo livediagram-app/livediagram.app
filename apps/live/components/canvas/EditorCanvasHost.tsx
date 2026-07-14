@@ -87,6 +87,10 @@ export function EditorCanvasHost() {
     beginHighlighter,
     beginPolygon,
     beginGroup,
+    highlighterColor,
+    highlighterWidth,
+    setHighlighterColor,
+    setHighlighterWidth,
     broadcastCursor,
     broadcastLaser,
     cancelConnect,
@@ -387,6 +391,10 @@ export function EditorCanvasHost() {
       onBeginFreehand={beginFreehand}
       onBeginHighlighter={beginHighlighter}
       onBeginPolygon={beginPolygon}
+      highlighterColor={highlighterColor}
+      highlighterWidth={highlighterWidth}
+      onSetHighlighterColor={setHighlighterColor}
+      onSetHighlighterWidth={setHighlighterWidth}
       pendingDraw={pendingDraw}
       onCommitDraw={commitDraw}
       onCommitFreehand={commitFreehand}

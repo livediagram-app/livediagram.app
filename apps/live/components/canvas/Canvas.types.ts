@@ -155,6 +155,13 @@ export type CanvasProps = {
   // click-to-place tool (spec/84), armed from the palette tiles.
   onBeginHighlighter: () => void;
   onBeginPolygon: () => void;
+  // Highlighter banner settings (spec/81): the colour + stroke width the
+  // next marker strokes commit with, plus their setters for the banner's
+  // two popovers. Session-local editor state, not a persisted preference.
+  highlighterColor: string;
+  highlighterWidth: number;
+  onSetHighlighterColor: (color: string) => void;
+  onSetHighlighterWidth: (width: number) => void;
   // Draw-to-size mode. When user-preferences.drawToAdd is on,
   // picking any palette element (shape, text, sticky, image, arrow)
   // stashes the intent here; the canvas then enters a drag-to-define

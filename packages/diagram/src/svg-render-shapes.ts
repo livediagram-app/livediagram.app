@@ -213,7 +213,7 @@ export function svgFreehandShape(el: FreehandElement, stroke: string, fill: stri
   // thumbnails / MCP renders match the canvas.
   if (el.pen === 'highlighter') {
     return (
-      `<path d="${d}" fill="none" stroke="${xmlEscape(stroke)}" stroke-width="14"` +
+      `<path d="${d}" fill="none" stroke="${xmlEscape(stroke)}" stroke-width="${r2(el.penWidth ?? 14)}"` +
       ` stroke-opacity="0.45" style="mix-blend-mode:multiply"` +
       ` stroke-linecap="round" stroke-linejoin="round"/>`
     );

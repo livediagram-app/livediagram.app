@@ -574,10 +574,13 @@ export type FreehandElement = {
   // renderer adds `Z` + a fill; open paths render stroke-only.
   closed: boolean;
   // Highlighter strokes (spec/81): the renderers swap the border
-  // presets for the marker recipe — a fixed wide round stroke,
-  // translucent multiply blend, never filled. The stroke colour
-  // stays user-overridable; the recipe owns width + translucency.
+  // presets for the marker recipe — a wide round stroke, translucent
+  // multiply blend, never filled. The stroke colour stays
+  // user-overridable; the recipe owns translucency.
   pen?: 'highlighter';
+  // Marker stroke width in px (spec/81), chosen from the highlighter
+  // banner's strength control at draw time. Absent = the default 14.
+  penWidth?: number;
   // Polygon-tool paths (spec/84): the canvas renderer draws straight
   // M/L segments instead of Catmull-Rom smoothing, so deliberately
   // placed corners stay corners. Absent on pencil / highlighter

@@ -6,6 +6,7 @@ import { GroupIcon } from '@/components/canvas/selection-popover-icons';
 import { ParticipantAvatar } from '@/components/primitives/ParticipantAvatar';
 import { TimerWidget } from '@/components/chrome/TimerWidget';
 import { Tooltip } from '@/components/primitives/Tooltip';
+import { HighlighterBannerControls } from '@/components/chrome/HighlighterBannerControls';
 import { TopCenterRow, TopCenterStack } from '@/components/chrome/TopCenter';
 import { VoteBanner } from '@/components/chrome/VoteBanner';
 
@@ -26,6 +27,10 @@ type TopCenterChromeProps = Pick<
   | 'onCancelDraw'
   | 'recogniseShapes'
   | 'onToggleRecogniseShapes'
+  | 'highlighterColor'
+  | 'highlighterWidth'
+  | 'onSetHighlighterColor'
+  | 'onSetHighlighterWidth'
   | 'onCancelFormatPainter'
   | 'onExitFormatTool'
   | 'canvasTool'
@@ -56,6 +61,10 @@ export function TopCenterChrome({
   onCancelDraw,
   recogniseShapes,
   onToggleRecogniseShapes,
+  highlighterColor,
+  highlighterWidth,
+  onSetHighlighterColor,
+  onSetHighlighterWidth,
   onCancelFormatPainter,
   onExitFormatTool,
   canvasTool,
@@ -158,9 +167,17 @@ export function TopCenterChrome({
             // across devices.
             extras={
               // Pencil only: the highlighter variant never runs
-              // recognition (spec/81), so it doesn't offer the toggle.
+              // recognition (spec/81), so it doesn't offer the toggle —
+              // it gets the marker's strength + colour popovers instead.
               pendingDraw.type === 'freehand' && pendingDraw.variant === undefined ? (
                 <RecogniseShapesToggle on={recogniseShapes} onToggle={onToggleRecogniseShapes} />
+              ) : pendingDraw.type === 'freehand' && pendingDraw.variant === 'highlighter' ? (
+                <HighlighterBannerControls
+                  color={highlighterColor}
+                  width={highlighterWidth}
+                  onSetColor={onSetHighlighterColor}
+                  onSetWidth={onSetHighlighterWidth}
+                />
               ) : undefined
             }
           />

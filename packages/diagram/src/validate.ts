@@ -186,6 +186,8 @@ export function isValidElement(el: unknown): el is Element {
     for (const p of el.points) if (!isObj(p) || !isNum(p.nx) || !isNum(p.ny)) return false;
     // Optional pen recipe (spec/81) + straight-edge flag (spec/84).
     if (el.pen !== undefined && el.pen !== 'highlighter') return false;
+    if (el.penWidth !== undefined && (!isNum(el.penWidth) || el.penWidth < 1 || el.penWidth > 100))
+      return false;
     if (el.straightEdges !== undefined && typeof el.straightEdges !== 'boolean') return false;
     return true;
   }

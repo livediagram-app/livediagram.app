@@ -126,7 +126,7 @@ export function FreehandSvg({
           // none so the bounding box doesn't read as a closed shape.
           fill={element.closed && !isHighlighter ? fill : 'none'}
           stroke={stroke}
-          strokeWidth={isHighlighter ? 14 : widthPx}
+          strokeWidth={isHighlighter ? (element.penWidth ?? 14) : widthPx}
           strokeOpacity={isHighlighter ? 0.45 : undefined}
           style={isHighlighter ? { mixBlendMode: 'multiply' } : undefined}
           strokeLinecap="round"

@@ -60,6 +60,9 @@ describe('isValidElement', () => {
     expect(isValidElement({ ...freehand, straightEdges: true })).toBe(true);
     expect(isValidElement({ ...freehand, pen: 'marker' })).toBe(false);
     expect(isValidElement({ ...freehand, straightEdges: 'yes' })).toBe(false);
+    expect(isValidElement({ ...freehand, pen: 'highlighter', penWidth: 22 })).toBe(true);
+    expect(isValidElement({ ...freehand, penWidth: 0 })).toBe(false);
+    expect(isValidElement({ ...freehand, penWidth: 101 })).toBe(false);
   });
 
   it('rejects a non-object / missing id / unknown type', () => {
