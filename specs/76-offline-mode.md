@@ -205,8 +205,11 @@ Track adoption without content, reusing the closed vocabulary:
 
 - On create, distinguish the mode via the `type` on the existing
   `Diagram`/`Created` event (e.g. `Offline` vs `Cloud`).
-- On conversion, a coarse event for each direction (types like `SavedToCloud` /
-  `TakenOffline`), so uptake and the destructive take-offline path are visible.
+- On conversion, a coarse event for each direction, so uptake and the
+  destructive take-offline path are visible: `Diagram`/`Moved` with type
+  `SavedToCloud` or `TakenOffline`, emitted from the shared
+  `useOfflineConversion` handlers after the conversion succeeds and before
+  the reload (the telemetry engine's pagehide beacon carries it through).
 - No diagram content or ids ever leave (the `type` bound in spec/22 holds).
 
 ## Non-goals

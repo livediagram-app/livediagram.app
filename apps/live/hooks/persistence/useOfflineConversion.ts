@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useConfirm } from '@/hooks/ui/useConfirm';
 import { useToast } from '@/hooks/ui/useToast';
+import { track } from '@/lib/telemetry';
 import {
   saveOfflineToCloud,
   syncFailureMessage,
@@ -30,6 +31,9 @@ export function useOfflineConversion(
     setConverting(true);
     try {
       await saveOfflineToCloud(diagram.id, ownerId);
+      // Before the reload on purpose: the telemetry engine's pagehide
+      // beacon carries the buffered event through the navigation.
+      track('Diagram', 'Moved', 'SavedToCloud');
       window.location.reload();
     } catch (e) {
       setConverting(false); // stays offline
@@ -51,6 +55,7 @@ export function useOfflineConversion(
     setConverting(true);
     try {
       await takeCloudOffline(diagram.id, ownerId, diagram.shareCode ?? null);
+      track('Diagram', 'Moved', 'TakenOffline');
       window.location.reload();
     } catch {
       setConverting(false); // stays on server (aborts roll the local copy back)
