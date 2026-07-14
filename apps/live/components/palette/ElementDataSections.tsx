@@ -45,6 +45,8 @@ import {
 } from '@/components/palette/context-menu-tiles';
 import {
   ChartMenuGlyph,
+  ChecklistRowsEditor,
+  CodeSummary,
   DataMenuGlyph,
   LineDataSummary,
   PieAnimTiles,
@@ -73,6 +75,8 @@ type ElementDataSectionsProps = {
   isRating: boolean;
   isChart: boolean;
   isLine: boolean;
+  isCodeBlock: boolean;
+  isChecklist: boolean;
   isIcon: boolean;
   boxed: boolean;
   sectionProps: Scaffold['sectionProps'];
@@ -87,6 +91,8 @@ export function ElementDataSections({
   isRating,
   isChart,
   isLine,
+  isCodeBlock,
+  isChecklist,
   isIcon,
   boxed,
   sectionProps,
@@ -99,7 +105,7 @@ export function ElementDataSections({
   // pattern as Style and Text, so a data element's menu doesn't grow a
   // band of bespoke rows. Animation stays top-level (every boxed
   // element has it).
-  const showTools = isProgress || isRail || isRating || isChart;
+  const showTools = isProgress || isRail || isRating || isChart || isCodeBlock || isChecklist;
   return (
     <>
       {showTools ? (
@@ -189,6 +195,30 @@ export function ElementDataSections({
                   onChange={props.onSetPieData}
                 />
               )}
+            </MenuAccordionSection>
+          ) : null}
+          {/* Code (spec/82) — the snippet summary + the modal opener (the
+            multi-line editor is too big for the menu, like the line grid). */}
+          {isCodeBlock ? (
+            <MenuAccordionSection title="Code" icon={<DataMenuGlyph />} {...sectionProps('code')}>
+              <CodeSummary
+                code={shapeTarget?.code ?? ''}
+                language={shapeTarget?.codeLanguage ?? 'plain'}
+                onEdit={() => target.type === 'shape' && props.onEditCodeBlock(target.id)}
+              />
+            </MenuAccordionSection>
+          ) : null}
+          {/* Checklist (spec/83) — the rows: done toggles, text, add / remove. */}
+          {isChecklist ? (
+            <MenuAccordionSection
+              title="Checklist"
+              icon={<DataMenuGlyph />}
+              {...sectionProps('checklist')}
+            >
+              <ChecklistRowsEditor
+                items={shapeTarget?.checklistItems ?? []}
+                onChange={props.onSetChecklistItems}
+              />
             </MenuAccordionSection>
           ) : null}
           {/* Chart (spec/53) — display options. Legend placement: Off + 4 sides. */}

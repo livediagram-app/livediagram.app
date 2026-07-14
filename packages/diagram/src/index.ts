@@ -392,6 +392,12 @@ export type ShapeKind =
   // Line chart (spec/53): a 2-D chart with `lineCategories` + `lineSeries`
   // (CSV-importable). Shares `pieAnim` / `chartLegend`.
   | 'line-chart'
+  // Code block (spec/82): a monospace snippet card. Carries `code` +
+  // `codeLanguage` (below); keeps a fixed dark identity regardless of theme.
+  | 'code-block'
+  // Checklist (spec/83): checkable to-do rows. Carries `checklistItems`
+  // (below); boxes toggle on-canvas like the rating's stars.
+  | 'checklist'
   // Curated single-colour glyph from the icon catalogue. Which glyph
   // is carried by `iconId` (a registry key resolved in the live app's
   // icon catalogue, NOT a closed enum here, so adding icons is a
@@ -701,6 +707,8 @@ export * from './arrow-avoidance';
 export * from './arrow-path';
 export * from './arrow-style';
 export * from './border-style';
+// Element drop shadows (spec/86): model, presets + render builders.
+export * from './shadow';
 export * from './shape-marker';
 export * from './comments';
 // Per-element assigned actions (spec/68).

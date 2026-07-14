@@ -4,6 +4,7 @@
 // consumers. `isBoxed` stays on './index' — it's only called inside
 // function bodies, after the cycle has settled.
 import {
+  CHECKLIST_DEFAULT_ITEMS,
   LINE_DEFAULT_CATEGORIES,
   LINE_DEFAULT_SERIES,
   PIE_DEFAULT_SLICES,
@@ -99,6 +100,10 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   'bar-chart': { width: 280, height: 180 },
   // Line chart: axes + lines + a legend; a touch wider for the x-axis labels.
   'line-chart': { width: 320, height: 200 },
+  // Code block: room for a dozen-ish monospace lines (spec/82).
+  'code-block': { width: 320, height: 180 },
+  // Checklist: a card of starter rows (spec/83).
+  checklist: { width: 240, height: 180 },
 };
 
 // New boxed elements default to Medium text size per spec 09 ("Text size").
@@ -167,6 +172,15 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       lineCategories: [...LINE_DEFAULT_CATEGORIES],
       lineSeries: LINE_DEFAULT_SERIES.map((s) => ({ ...s, values: [...s.values] })),
     };
+  }
+  // Code block: empty snippet, plain language; the view renders a
+  // double-click-to-edit placeholder until code lands. See spec/82.
+  if (kind === 'code-block') {
+    return { ...base, codeLanguage: 'plain' };
+  }
+  // Checklist: starter rows so the affordance is obvious on drop. See spec/83.
+  if (kind === 'checklist') {
+    return { ...base, checklistItems: CHECKLIST_DEFAULT_ITEMS.map((i) => ({ ...i })) };
   }
   return base;
 }

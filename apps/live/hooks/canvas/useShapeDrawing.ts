@@ -47,6 +47,10 @@ import {
 } from '@/lib/draw-commit';
 import type { CanvasTool } from '@/components/palette/CommandPalette';
 
+// Marker yellow (spec/81): every highlighter stroke starts this
+// colour regardless of theme; the Colours category recolours it.
+const HIGHLIGHTER_COLOR = '#fde047';
+
 // Telemetry `type` per component kind (closed vocabulary, no user content).
 const COMPONENT_TELEMETRY: Record<ComponentKind, string> = {
   banner: 'Banner',
@@ -169,11 +173,13 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
       track('Element', 'Added', 'Arrow');
       return;
     }
-    // Freehand never reaches commitDraw, it routes through
-    // commitFreehand (with the polyline). If a future regression
-    // mis-routes it here, bail rather than fall through into the boxed
-    // branch and mint a phantom element where the user expected a sketch.
-    if (intent.type === 'freehand') {
+    // Freehand / polygon never reach commitDraw: freehand routes
+    // through commitFreehand (with the polyline) and polygon through
+    // commitPolygon (with its vertices). If a future regression
+    // mis-routes either here, bail rather than fall through into the
+    // boxed branch and mint a phantom element where the user expected
+    // a sketch.
+    if (intent.type === 'freehand' || intent.type === 'polygon') {
       setPendingDraw(null);
       return;
     }
@@ -246,14 +252,31 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
   // intent so the canvas's pen-gesture effect picks up the next
   // drag. Clears selection like beginDrawIfEnabled does so the
   // selection popover doesn't hover over the about-to-be-drawn
-  // stroke.
-  const beginFreehand = () => {
+  // stroke. The highlighter (spec/81) is the same gesture with the
+  // marker variant riding the intent. Both stay zero-arg (rather than
+  // one variant parameter) because they're passed straight into
+  // onClick slots, where a parameter would swallow the event object.
+  const armFreehand = (variant?: 'highlighter') => {
     if (editsBlocked) return;
     setSelectedId(null);
     setMultiSelectedIds(new Set());
     setEditingId(null);
     if (canvasTool === 'laser') setCanvasTool('pan');
-    setPendingDraw({ type: 'freehand' });
+    setPendingDraw(variant ? { type: 'freehand', variant } : { type: 'freehand' });
+  };
+  const beginFreehand = () => armFreehand();
+  const beginHighlighter = () => armFreehand('highlighter');
+
+  // Polygon tool entry (spec/84): queues the click-to-place-vertices
+  // intent. The vertex accumulation lives canvas-side
+  // (useCanvasPolygonGesture); this just arms the mode.
+  const beginPolygon = () => {
+    if (editsBlocked) return;
+    setSelectedId(null);
+    setMultiSelectedIds(new Set());
+    setEditingId(null);
+    if (canvasTool === 'laser') setCanvasTool('pan');
+    setPendingDraw({ type: 'polygon' });
   };
 
   // Canvas-driven commit for the pen gesture. Receives the raw
@@ -283,6 +306,24 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
       return;
     }
     const theme = getTheme(activeTab.theme);
+
+    // Highlighter variant (spec/81): commit the marker recipe and
+    // skip both recognition and close-to-fill — a highlight is an
+    // annotation gesture, not a sketch-a-shape one. Colour is fixed
+    // marker yellow at creation (recolourable per element after);
+    // width + translucency live in the renderers' pen recipe.
+    if (pendingDraw?.type === 'freehand' && pendingDraw.variant === 'highlighter') {
+      const stroke = {
+        ...createFreehand(simplified, false),
+        pen: 'highlighter' as const,
+        strokeColor: HIGHLIGHTER_COLOR,
+      };
+      commit((els) => [...els, stroke]);
+      setSelectedId(stroke.id);
+      setPendingDraw(null);
+      track('Element', 'Added', 'Highlighter');
+      return;
+    }
 
     // Shape-recognition mode: try classifying the simplified
     // polyline before falling back to FreehandElement. Threshold
@@ -378,12 +419,37 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     track('Element', 'Added', 'Freehand');
   };
 
+  // Canvas-driven commit for the polygon tool (spec/84). Receives the
+  // deliberately placed vertices (no RDP simplification — the user
+  // chose every point) and whether the loop closed on the start
+  // vertex. Under-specified gestures (one stray click, or a 2-vertex
+  // "close") cancel rather than minting a degenerate element.
+  const commitPolygon = (vertices: { x: number; y: number }[], closed: boolean) => {
+    setPendingDraw(null);
+    if (editsBlocked) return;
+    if (vertices.length < (closed ? 3 : 2)) return;
+    const theme = getTheme(activeTab.theme);
+    const base = createFreehand(vertices, closed);
+    const polygon: typeof base = {
+      ...base,
+      straightEdges: true,
+      ...(theme.elementStroke ? { strokeColor: theme.elementStroke } : {}),
+      ...(closed && theme.elementFill ? { fillColor: theme.elementFill } : {}),
+    };
+    commit((els) => [...els, polygon]);
+    setSelectedId(polygon.id);
+    track('Element', 'Added', closed ? 'Polygon' : 'Polyline');
+  };
+
   return {
     pendingDraw,
     beginDraw,
     commitDraw,
     cancelDrawShape,
     beginFreehand,
+    beginHighlighter,
+    beginPolygon,
     commitFreehand,
+    commitPolygon,
   };
 }

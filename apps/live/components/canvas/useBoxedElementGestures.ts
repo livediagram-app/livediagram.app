@@ -26,6 +26,7 @@ export function useBoxedElementGestures({
   onBeginDrag,
   onBeginEdit,
   onEditLink,
+  onEditCode,
   onOpenNote,
   imageContext,
   onContextSelect,
@@ -39,6 +40,7 @@ export function useBoxedElementGestures({
   | 'onBeginDrag'
   | 'onBeginEdit'
   | 'onEditLink'
+  | 'onEditCode'
   | 'onOpenNote'
   | 'imageContext'
   | 'onContextSelect'
@@ -140,11 +142,17 @@ export function useBoxedElementGestures({
       onOpenNote?.(element.id);
       return;
     }
-    // The self-drawing data components (progress / rail / rating / charts) draw
-    // their own content and have no editable text label, so double-click never
-    // enters text-edit mode for them — it would pop an empty, confusing editor.
-    // (beginEdit also guards this; belt-and-braces so no entry point slips
-    // through.)
+    // A code block has no inline label — double-click opens its edit
+    // dialog (spec/82), the way a link card opens the link picker.
+    if (element.type === 'shape' && element.shape === 'code-block') {
+      onEditCode?.(element.id);
+      return;
+    }
+    // The self-drawing data components (progress / rail / rating / charts /
+    // checklist) draw their own content and have no editable text label, so
+    // double-click never enters text-edit mode for them — it would pop an
+    // empty, confusing editor. (beginEdit also guards this; belt-and-braces
+    // so no entry point slips through.)
     if (element.type === 'shape' && isSelfDrawingShape(element.shape)) {
       return;
     }

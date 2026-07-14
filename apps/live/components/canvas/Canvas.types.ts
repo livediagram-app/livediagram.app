@@ -151,6 +151,10 @@ export type CanvasProps = {
   onAddImage?: () => void;
   onAddArrow: () => void;
   onBeginFreehand: () => void;
+  // Highlighter variant of the pencil (spec/81) + the polygon
+  // click-to-place tool (spec/84), armed from the palette tiles.
+  onBeginHighlighter: () => void;
+  onBeginPolygon: () => void;
   // Draw-to-size mode. When user-preferences.drawToAdd is on,
   // picking any palette element (shape, text, sticky, image, arrow)
   // stashes the intent here; the canvas then enters a drag-to-define
@@ -178,6 +182,10 @@ export type CanvasProps = {
   // commitFreehand) runs the polyline through recogniseShape and may
   // mint a real shape primitive instead of a FreehandElement.
   onCommitFreehand: (points: { x: number; y: number }[], recogniseShapes: boolean) => void;
+  // Polygon commit (spec/84). Receives the deliberately clicked
+  // vertices in canvas coords (no simplification — the user placed
+  // each one) plus whether the loop closed on the start vertex.
+  onCommitPolygon: (vertices: { x: number; y: number }[], closed: boolean) => void;
   // Lifted recogniseShapes preference. Lives in editor-page's
   // userPreferences state (spec/20) so flipping the banner toggle
   // persists across pencil sessions and across devices for signed-
@@ -361,6 +369,8 @@ export type CanvasProps = {
   onAddTableColumn: () => void;
   // Edit one timeline-rail point's label (spec/51). Omitted in read-only.
   onSetRailLabel?: (elementId: string, index: number, text: string) => void;
+  // Toggle one checklist row's done state (spec/83). Omitted in read-only.
+  onToggleChecklistItem?: (elementId: string, index: number) => void;
   // Default chart slice colours derived from the active theme (spec/53), used
   // by pie charts for slices without an explicit colour.
   chartPalette: readonly string[];
@@ -399,6 +409,9 @@ export type CanvasProps = {
   // Open the link picker for a link-card element (spec/40), on double-click.
   // Omitted for read-only viewers.
   onEditLink?: (id: string) => void;
+  // Open the code edit dialog for a code-block shape (spec/82), on
+  // double-click. Omitted for read-only viewers.
+  onEditCode?: (id: string) => void;
   // Per-render context for image elements: identity + auth bits the
   // ImageElementView needs to fetch bitmap bytes. Optional so the
   // welcome / new-diagram surface (where Canvas mounts before

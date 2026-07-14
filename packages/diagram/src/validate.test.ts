@@ -40,6 +40,28 @@ describe('isValidElement', () => {
     expect(isValidElement({ id: 'x', type: 'text', ...box })).toBe(true);
   });
 
+  it('bounds the code block + checklist fields (spec/82, spec/83)', () => {
+    const shape = (o: object) => ({ id: 's', type: 'shape', shape: 'code-block', ...box, ...o });
+    expect(isValidElement(shape({ code: 'const x = 1;', codeLanguage: 'ts' }))).toBe(true);
+    expect(isValidElement(shape({ code: 'x'.repeat(4001) }))).toBe(false);
+    expect(isValidElement(shape({ codeLanguage: 'brainfuck' }))).toBe(false);
+    const list = (items: unknown) =>
+      isValidElement({ id: 'c', type: 'shape', shape: 'checklist', ...box, checklistItems: items });
+    expect(list([{ text: 'Task', done: false }])).toBe(true);
+    expect(list([{ text: 'Task', done: 'yes' }])).toBe(false);
+    expect(list([{ text: 42, done: true }])).toBe(false);
+    expect(list(Array.from({ length: 31 }, () => ({ text: 't', done: false })))).toBe(false);
+  });
+
+  it('accepts the freehand pen + straightEdges flags, rejects junk values', () => {
+    const freehand = { id: 'f', type: 'freehand', closed: false, points: [], ...box };
+    // Highlighter recipe (spec/81) + polygon straight edges (spec/84).
+    expect(isValidElement({ ...freehand, pen: 'highlighter' })).toBe(true);
+    expect(isValidElement({ ...freehand, straightEdges: true })).toBe(true);
+    expect(isValidElement({ ...freehand, pen: 'marker' })).toBe(false);
+    expect(isValidElement({ ...freehand, straightEdges: 'yes' })).toBe(false);
+  });
+
   it('rejects a non-object / missing id / unknown type', () => {
     expect(isValidElement(null)).toBe(false);
     expect(isValidElement({ type: 'shape', shape: 'square', ...box })).toBe(false);

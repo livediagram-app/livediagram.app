@@ -33,6 +33,11 @@ export function elementKindLabel(el: Element): string {
     case 'image':
       return 'Image';
     case 'freehand':
+      // The marker pen (spec/81) and polygon tool (spec/84) both commit
+      // freehands; name them by what the user drew (matching the live
+      // app's kindLabel in element-names.ts).
+      if (el.pen === 'highlighter') return 'Highlight';
+      if (el.straightEdges) return el.closed ? 'Polygon' : 'Polyline';
       return 'Sketch';
     case 'annotation':
       return 'Annotation';

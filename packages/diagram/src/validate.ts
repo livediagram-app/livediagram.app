@@ -16,6 +16,14 @@
 // too big).
 
 import type { Element, ShapeKind, Tab } from './index';
+// Value imports come from the data-shapes LEAF module (types only from
+// './index'), keeping this module out of the index ⇄ factories cycle.
+import {
+  CHECKLIST_MAX_ITEMS,
+  CHECKLIST_MAX_TEXT,
+  CODE_LANGUAGES,
+  CODE_MAX_LENGTH,
+} from './data-shapes';
 
 // Bounds. Generous vs any real diagram, tight vs an abuse payload.
 export const MAX_ELEMENTS_PER_TAB = 10_000;
@@ -74,6 +82,8 @@ export const SHAPE_KINDS = new Set<string>([
   'pie-chart',
   'bar-chart',
   'line-chart',
+  'code-block',
+  'checklist',
   'icon',
 ]);
 
@@ -137,6 +147,23 @@ export function isValidElement(el: unknown): el is Element {
       return false;
     if (el.pieSlices !== undefined && !boundedArray(el.pieSlices, MAX_DATA_ARRAY)) return false;
     if (el.lineSeries !== undefined && !boundedArray(el.lineSeries, MAX_DATA_ARRAY)) return false;
+    // Code block (spec/82): bounded snippet + closed language set.
+    if (el.code !== undefined && (typeof el.code !== 'string' || el.code.length > CODE_MAX_LENGTH))
+      return false;
+    if (
+      el.codeLanguage !== undefined &&
+      !(CODE_LANGUAGES as readonly string[]).includes(el.codeLanguage as string)
+    )
+      return false;
+    // Checklist (spec/83): bounded rows of { text, done }.
+    if (el.checklistItems !== undefined) {
+      if (!boundedArray(el.checklistItems, CHECKLIST_MAX_ITEMS)) return false;
+      for (const item of el.checklistItems) {
+        if (!isObj(item)) return false;
+        if (typeof item.text !== 'string' || item.text.length > CHECKLIST_MAX_TEXT) return false;
+        if (typeof item.done !== 'boolean') return false;
+      }
+    }
     return true;
   }
   if (t === 'table') {
@@ -157,6 +184,9 @@ export function isValidElement(el: unknown): el is Element {
     if (typeof el.closed !== 'boolean' || !boundedArray(el.points, MAX_FREEHAND_POINTS))
       return false;
     for (const p of el.points) if (!isObj(p) || !isNum(p.nx) || !isNum(p.ny)) return false;
+    // Optional pen recipe (spec/81) + straight-edge flag (spec/84).
+    if (el.pen !== undefined && el.pen !== 'highlighter') return false;
+    if (el.straightEdges !== undefined && typeof el.straightEdges !== 'boolean') return false;
     return true;
   }
   // text / sticky / annotation / link-card carry no extra required fields.

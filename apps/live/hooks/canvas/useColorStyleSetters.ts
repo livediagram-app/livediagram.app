@@ -7,9 +7,14 @@
 // file makes it auditable. `resetColorsSelected` (the "Reset to theme"
 // action) lives here too since it is the inverse of these writes.
 
-import type { Element, Tab } from '@livediagram/diagram';
+import type { Element, ElementShadow, Tab } from '@livediagram/diagram';
 import { getTheme } from '@/lib/themes';
-import { applyFillColorToEl, applyStrokeColorToEl, applyTextColorToEl } from '@/lib/style-presets';
+import {
+  applyFillColorToEl,
+  applyShadowToEl,
+  applyStrokeColorToEl,
+  applyTextColorToEl,
+} from '@/lib/style-presets';
 
 export function useColorStyleSetters(deps: {
   currentSelectionIds: () => Set<string>;
@@ -83,6 +88,13 @@ export function useColorStyleSetters(deps: {
 
   const setOpacitySelected = (opacity: number) =>
     commitSelectedStyle('elementOpacity', (el) => ({ ...el, opacity }));
+
+  // Shadow sliders (spec/86): four axes, same one-undo-step-per-gesture
+  // policy as opacity. `null` clears (the Shadow section's None tile
+  // commits through the preview path instead, but multi-callers may clear
+  // here too).
+  const setShadowSelected = (shadow: ElementShadow | null) =>
+    commitSelectedStyle('elementShadow', (el) => applyShadowToEl(el, shadow));
 
   // Clear per-element colour overrides so the element falls back to
   // whatever the current tab theme dictates. Each colour field is set
@@ -168,6 +180,7 @@ export function useColorStyleSetters(deps: {
     setTableHeaderFillSelected,
     setTableHeaderTextColorSelected,
     setOpacitySelected,
+    setShadowSelected,
     resetColorsSelected,
   };
 }

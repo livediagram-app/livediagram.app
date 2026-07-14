@@ -29,6 +29,11 @@ export type PaletteTileAction =
   | { type: 'shape'; kind: ShapeKind }
   | { type: 'text' }
   | { type: 'freehand' }
+  // Marker variant of the pencil (spec/81) and the click-to-place
+  // vertex tool (spec/84) — separate action types so each tile maps
+  // to its own arm-handler and pressed state.
+  | { type: 'highlighter' }
+  | { type: 'polygon' }
   | { type: 'arrow' }
   | { type: 'sticky' }
   | { type: 'table' }
@@ -385,6 +390,54 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
+    id: 'tools:highlighter',
+    section: 'tools',
+    label: 'Highlighter',
+    description: 'Wide translucent marker. Drag to call attention to a region.',
+    action: { type: 'highlighter' },
+    noTint: true,
+    icon: (
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 18 18"
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden
+      >
+        {/* Chisel-tip marker over a translucent yellow band, so the tile
+            reads "highlighter" beside the pencil. Fixed colours (noTint):
+            the yellow band is the tool's identity, like the sticky's amber. */}
+        <path d="M4 12 L10 6 L13 9 L7 15 Z" stroke="currentColor" strokeWidth="1.5" fill="none" />
+        <path d="M10 6 L12 3 L15 6 L13 9" stroke="currentColor" strokeWidth="1.5" fill="none" />
+        <path d="M2 16.5 H12" stroke="rgb(253 224 71)" strokeWidth="3" opacity="0.8" />
+      </svg>
+    ),
+  },
+  {
+    id: 'tools:polygon',
+    section: 'tools',
+    label: 'Polygon',
+    description: 'Click to place points. Click the start to close, double-click to finish a line.',
+    action: { type: 'polygon' },
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden>
+        {/* Irregular polygon with visible vertex dots: reads as
+            "place points", distinct from the fixed shape tiles. */}
+        <path
+          d="M4 14 L5.5 6 L12.5 4 L15 10 L10 15 Z"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinejoin="round"
+        />
+        <circle cx="5.5" cy="6" r="1.4" fill="currentColor" />
+        <circle cx="12.5" cy="4" r="1.4" fill="currentColor" />
+        <circle cx="10" cy="15" r="1.4" fill="currentColor" />
+      </svg>
+    ),
+  },
+  {
     id: 'tools:arrow',
     section: 'tools',
     label: 'Add arrow',
@@ -454,6 +507,58 @@ export const PALETTE_TILES: PaletteTileDef[] = [
         <line x1="2.5" y1="11" x2="15.5" y2="11" />
         <line x1="7" y1="3.5" x2="7" y2="14.5" />
         <line x1="11" y1="3.5" x2="11" y2="14.5" />
+      </svg>
+    ),
+  },
+  {
+    id: 'tools:code-block',
+    section: 'tools',
+    label: 'Add code block',
+    caption: 'Code',
+    description: 'Monospace code snippet with syntax highlighting. Double-click to edit.',
+    noTint: true,
+    action: { type: 'shape', kind: 'code-block' },
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
+        {/* Dark editor card with angle brackets: the tile mirrors the
+            element's fixed dark identity, so it stays untinted. */}
+        <rect x="1.5" y="2.5" width="15" height="13" rx="2" fill="rgb(15 23 42)" />
+        <path
+          d="M7 7 L5 9 L7 11 M11 7 L13 9 L11 11"
+          fill="none"
+          stroke="rgb(148 163 184)"
+          strokeWidth="1.4"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    ),
+  },
+  {
+    id: 'tools:checklist',
+    section: 'tools',
+    label: 'Add checklist',
+    caption: 'Checklist',
+    description: 'Checkable to-do rows. Tick boxes on the canvas; edit rows from the menu.',
+    filled: true,
+    action: { type: 'shape', kind: 'checklist' },
+    icon: (
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 18 18"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden
+      >
+        <rect x="2.5" y="3" width="4" height="4" rx="1" />
+        <path d="M3.7 5 L4.6 5.9 L6 4.3" strokeWidth="1.2" />
+        <path d="M9 5 H15.5" />
+        <rect x="2.5" y="10.5" width="4" height="4" rx="1" />
+        <path d="M9 12.5 H15.5" />
       </svg>
     ),
   },

@@ -7,10 +7,13 @@ import type { TextRun } from './rich-text';
 import type { CommentThread } from './comments';
 import type { ElementAction } from './element-action';
 import type { BorderStroke, BorderStyle, BorderRadius } from './border-style';
+import type { ElementShadow } from './shadow';
 import type { ShapeMarker } from './shape-marker';
 import type { IconSize } from './icon-size';
 import type {
   AnimationSpeed,
+  ChecklistItem,
+  CodeLanguage,
   ElementAnimation,
   ElementId,
   ElementLink,
@@ -168,6 +171,13 @@ export type ShapeElement = {
   // series (CSV-importable). Only meaningful on the 'line-chart' kind.
   lineCategories?: string[];
   lineSeries?: LineSeries[];
+  // Code block (spec/82): the snippet text + its highlight language. Only
+  // meaningful on the 'code-block' kind; bounded in validate.ts.
+  code?: string;
+  codeLanguage?: CodeLanguage;
+  // Checklist (spec/83): the checkable rows. Only meaningful on the
+  // 'checklist' kind; bounded in validate.ts.
+  checklistItems?: ChecklistItem[];
   // Status marker (spec/49): a small glyph (traffic-light dot / checkbox) shown
   // just left of the label, or centred when the shape has no label. `markerSize`
   // is a TextSize bucket where 'scale' tracks the element's text size.
@@ -175,6 +185,8 @@ export type ShapeElement = {
   markerSize?: TextSize;
   aspectLocked?: boolean;
   opacity?: number; // 0..1, defaults to 1
+  // Drop shadow (spec/86). Absent = no shadow; see shadow.ts.
+  shadow?: ElementShadow;
   // Clockwise rotation in degrees about the element's centre. Absent
   // or 0 means unrotated. See specs/09 "Rotation".
   rotation?: number;
@@ -415,6 +427,8 @@ export type StickyElement = {
   textColor?: string;
   aspectLocked?: boolean;
   opacity?: number; // 0..1, defaults to 1
+  // Drop shadow (spec/86). Absent = no shadow; see shadow.ts.
+  shadow?: ElementShadow;
   // Clockwise rotation in degrees about the element's centre. Absent
   // or 0 means unrotated. See specs/09 "Rotation".
   rotation?: number;
@@ -514,6 +528,8 @@ export type ImageElement = {
   groupId?: ElementId;
   aspectLocked?: boolean;
   opacity?: number;
+  // Drop shadow (spec/86). Absent = no shadow; see shadow.ts.
+  shadow?: ElementShadow;
   // Clockwise rotation in degrees about the element's centre. Absent
   // or 0 means unrotated. See specs/09 "Rotation".
   rotation?: number;
@@ -557,6 +573,16 @@ export type FreehandElement = {
   // True when the path auto-closes (release-near-start). The
   // renderer adds `Z` + a fill; open paths render stroke-only.
   closed: boolean;
+  // Highlighter strokes (spec/81): the renderers swap the border
+  // presets for the marker recipe — a fixed wide round stroke,
+  // translucent multiply blend, never filled. The stroke colour
+  // stays user-overridable; the recipe owns width + translucency.
+  pen?: 'highlighter';
+  // Polygon-tool paths (spec/84): the canvas renderer draws straight
+  // M/L segments instead of Catmull-Rom smoothing, so deliberately
+  // placed corners stay corners. Absent on pencil / highlighter
+  // strokes (which want the smoothing).
+  straightEdges?: boolean;
   // Shared boxed-element fields, see ImageElement above for the
   // rationale: the union code paths (change log, format painter,
   // export, Editor panel) all read these uniformly. Labels render
@@ -719,6 +745,8 @@ export type LinkCardElement = {
   locked?: boolean;
   groupId?: ElementId;
   opacity?: number;
+  // Drop shadow (spec/86). Absent = no shadow; see shadow.ts.
+  shadow?: ElementShadow;
   rotation?: number;
   // Looping CSS animation (spec/09 "Animated elements"). Undefined = static.
   animation?: ElementAnimation;

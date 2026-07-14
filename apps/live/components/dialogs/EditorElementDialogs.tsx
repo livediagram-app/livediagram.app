@@ -12,6 +12,9 @@ const LinkPickerDialog = dynamic(() =>
 const LineDataDialog = dynamic(() =>
   import('@/components/dialogs/LineDataDialog').then((m) => m.LineDataDialog),
 );
+const CodeEditDialog = dynamic(() =>
+  import('@/components/dialogs/CodeEditDialog').then((m) => m.CodeEditDialog),
+);
 const ImagePicker = dynamic(() =>
   import('@/components/panels/ImagePicker').then((m) => m.ImagePicker),
 );
@@ -39,6 +42,9 @@ export function EditorElementDialogs() {
     lineDataOpenForId,
     setLineDataSelected,
     setLineDataOpenForId,
+    codeEditOpenForId,
+    setCodeSelected,
+    setCodeEditOpenForId,
     imagePickerOpenFor,
     selfParticipant,
     removeImageFromElement,
@@ -116,6 +122,21 @@ export function EditorElementDialogs() {
                 }
                 onCommit={setLineDataSelected}
                 onClose={() => setLineDataOpenForId(null)}
+              />
+            );
+          })()
+        : null}
+      {/* Code block edit modal (spec/82): edits the block whose id is open. */}
+      {codeEditOpenForId !== null && !isReadOnly
+        ? (() => {
+            const el = activeTab.elements.find((e) => e.id === codeEditOpenForId);
+            if (!el || el.type !== 'shape') return null;
+            return (
+              <CodeEditDialog
+                code={el.code ?? ''}
+                language={el.codeLanguage ?? 'plain'}
+                onCommit={setCodeSelected}
+                onClose={() => setCodeEditOpenForId(null)}
               />
             );
           })()

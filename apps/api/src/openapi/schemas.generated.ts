@@ -632,6 +632,37 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "ChecklistItem": {
+    "additionalProperties": false,
+    "properties": {
+      "done": {
+        "type": "boolean"
+      },
+      "text": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "text",
+      "done"
+    ],
+    "type": "object"
+  },
+  "CodeLanguage": {
+    "enum": [
+      "plain",
+      "ts",
+      "js",
+      "python",
+      "json",
+      "bash",
+      "sql",
+      "html",
+      "css",
+      "yaml"
+    ],
+    "type": "string"
+  },
   "Comment": {
     "additionalProperties": false,
     "properties": {
@@ -838,6 +869,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
+          "checklist": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
           "circle": {
             "additionalProperties": false,
             "properties": {
@@ -854,6 +900,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "object"
           },
           "cloud": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "code-block": {
             "additionalProperties": false,
             "properties": {
               "fill": {
@@ -1594,6 +1655,30 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       }
     ]
   },
+  "ElementShadow": {
+    "additionalProperties": false,
+    "properties": {
+      "blur": {
+        "type": "number"
+      },
+      "offsetX": {
+        "type": "number"
+      },
+      "offsetY": {
+        "type": "number"
+      },
+      "opacity": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "offsetX",
+      "offsetY",
+      "blur",
+      "opacity"
+    ],
+    "type": "object"
+  },
   "Endpoint": {
     "anyOf": [
       {
@@ -1790,6 +1875,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "padding": {
         "$ref": "#/components/schemas/Padding"
       },
+      "pen": {
+        "const": "highlighter",
+        "type": "string"
+      },
       "points": {
         "items": {
           "additionalProperties": false,
@@ -1811,6 +1900,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "rotation": {
         "type": "number"
+      },
+      "straightEdges": {
+        "type": "boolean"
       },
       "strokeColor": {
         "type": "string"
@@ -1993,6 +2085,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "rotation": {
         "type": "number"
+      },
+      "shadow": {
+        "$ref": "#/components/schemas/ElementShadow"
       },
       "strokeColor": {
         "type": "string"
@@ -2197,6 +2292,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "rotation": {
         "type": "number"
       },
+      "shadow": {
+        "$ref": "#/components/schemas/ElementShadow"
+      },
       "strokeColor": {
         "type": "string"
       },
@@ -2382,6 +2480,18 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "chartLegendPosition": {
         "$ref": "#/components/schemas/ChartLegendPosition"
       },
+      "checklistItems": {
+        "items": {
+          "$ref": "#/components/schemas/ChecklistItem"
+        },
+        "type": "array"
+      },
+      "code": {
+        "type": "string"
+      },
+      "codeLanguage": {
+        "$ref": "#/components/schemas/CodeLanguage"
+      },
       "colorPreset": {
         "type": "string"
       },
@@ -2517,6 +2627,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "rotation": {
         "type": "number"
       },
+      "shadow": {
+        "$ref": "#/components/schemas/ElementShadow"
+      },
       "shape": {
         "$ref": "#/components/schemas/ShapeKind"
       },
@@ -2611,6 +2724,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "pie-chart",
       "bar-chart",
       "line-chart",
+      "code-block",
+      "checklist",
       "icon"
     ],
     "type": "string"
@@ -2783,6 +2898,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "rotation": {
         "type": "number"
+      },
+      "shadow": {
+        "$ref": "#/components/schemas/ElementShadow"
       },
       "strokeColor": {
         "type": "string"

@@ -84,6 +84,8 @@ export function EditorCanvasHost() {
     beginErase,
     beginFormatPainter,
     beginFreehand,
+    beginHighlighter,
+    beginPolygon,
     beginGroup,
     broadcastCursor,
     broadcastLaser,
@@ -108,6 +110,7 @@ export function EditorCanvasHost() {
     commentsPanelPosition,
     commitDraw,
     commitFreehand,
+    commitPolygon,
     commitLabel,
     commitTable,
     createFolder,
@@ -206,6 +209,7 @@ export function EditorCanvasHost() {
     setExplorerPosition,
     setExportOpen,
     setExportScope,
+    setCodeEditOpenForId,
     setFormatSourceId,
     setGroupSourceId,
     setLinkPickerOpenForId,
@@ -214,6 +218,7 @@ export function EditorCanvasHost() {
     setPalettePosition,
     setRailLabelSelected,
     setSelectedId,
+    toggleChecklistItem,
     setShareDialogOpen,
     setTextAlignSelected,
     setUserPreferences,
@@ -380,9 +385,12 @@ export function EditorCanvasHost() {
       onAddImage={addImage}
       onAddArrow={addArrow}
       onBeginFreehand={beginFreehand}
+      onBeginHighlighter={beginHighlighter}
+      onBeginPolygon={beginPolygon}
       pendingDraw={pendingDraw}
       onCommitDraw={commitDraw}
       onCommitFreehand={commitFreehand}
+      onCommitPolygon={commitPolygon}
       recogniseShapes={userPreferences.recogniseShapes !== false}
       settings={userPreferences}
       onChangeSettings={onChangeSettings}
@@ -583,6 +591,7 @@ export function EditorCanvasHost() {
       onAddTableRow={appendTableRowSelected}
       onAddTableColumn={appendTableColumnSelected}
       onSetRailLabel={isReadOnly ? undefined : setRailLabelSelected}
+      onToggleChecklistItem={isReadOnly ? undefined : toggleChecklistItem}
       chartPalette={themeChartPalette(getTheme(activeTab.theme))}
       onCancelEdit={cancelEdit}
       onBeginEndpointDrag={beginEndpointDrag}
@@ -606,6 +615,7 @@ export function EditorCanvasHost() {
       onOpenAction={openActionPopover}
       onOpenNote={openNote}
       onEditLink={isReadOnly ? undefined : setLinkPickerOpenForId}
+      onEditCode={isReadOnly ? undefined : setCodeEditOpenForId}
       imageContext={imageContext}
       showTemplatePicker={
         // The identity / join card (name entry) shows for EVERYONE

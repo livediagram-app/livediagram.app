@@ -1,11 +1,14 @@
 import type { RefObject } from 'react';
 import { isSelfDrawingShape } from '@livediagram/diagram';
 import { isSvgRenderedShape, ShapeSvgOverlay } from '@/components/canvas/shape-svg-overlay';
+import { POLYGON_CLOSE_PX } from '@/components/canvas/useCanvasPolygonGesture';
 import type { PendingDraw } from '@/lib/draw-mode';
 
 type CanvasDrawPreviewProps = {
   drawDrag: { startX: number; startY: number; currentX: number; currentY: number } | null;
   penPoints: { x: number; y: number }[] | null;
+  polygonVertices: { x: number; y: number }[];
+  polygonCursor: { x: number; y: number } | null;
   pendingDraw: PendingDraw | null;
   viewportZoom: number;
   wrapperRef: RefObject<HTMLDivElement | null>;
@@ -17,6 +20,8 @@ type CanvasDrawPreviewProps = {
 export function CanvasDrawPreview({
   drawDrag,
   penPoints,
+  polygonVertices,
+  polygonCursor,
   pendingDraw,
   viewportZoom,
   wrapperRef,
@@ -55,6 +60,54 @@ export function CanvasDrawPreview({
                   }`,
               )
               .join(' ');
+            // The highlighter variant previews with the committed
+            // marker recipe (wide translucent yellow, spec/81) so
+            // what you see while dragging is what lands.
+            const isHighlighter = pendingDraw.variant === 'highlighter';
+            return (
+              <svg
+                aria-hidden
+                className="pointer-events-none fixed inset-0 z-[var(--z-chrome)] h-screen w-screen"
+              >
+                <path
+                  d={d}
+                  fill="none"
+                  stroke={isHighlighter ? '#fde047' : 'rgb(14, 165, 233)'}
+                  strokeWidth={isHighlighter ? 14 : 2}
+                  strokeOpacity={isHighlighter ? 0.45 : undefined}
+                  style={isHighlighter ? { mixBlendMode: 'multiply' } : undefined}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            );
+          })()
+        : null}
+
+      {/* Polygon-tool preview (spec/84): the placed segments, a rubber-band
+          segment to the live cursor, a dot per vertex, and a snap ring on
+          the START vertex once the cursor is within closing range. */}
+      {pendingDraw?.type === 'polygon' && polygonVertices.length > 0
+        ? (() => {
+            const rect = wrapperRef.current?.getBoundingClientRect();
+            if (!rect) return null;
+            const toClient = (p: { x: number; y: number }) => ({
+              x: rect.left + p.x * viewportZoom,
+              y: rect.top + p.y * viewportZoom,
+            });
+            const pts = polygonVertices.map(toClient);
+            const cursor = polygonCursor ? toClient(polygonCursor) : null;
+            const first = polygonVertices[0]!;
+            const nearStart =
+              polygonCursor &&
+              polygonVertices.length >= 3 &&
+              Math.hypot(polygonCursor.x - first.x, polygonCursor.y - first.y) <=
+                POLYGON_CLOSE_PX / viewportZoom;
+            const d =
+              pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ') +
+              (cursor
+                ? ` L ${nearStart ? pts[0]!.x : cursor.x} ${nearStart ? pts[0]!.y : cursor.y}`
+                : '');
             return (
               <svg
                 aria-hidden
@@ -64,10 +117,22 @@ export function CanvasDrawPreview({
                   d={d}
                   fill="none"
                   stroke="rgb(14, 165, 233)"
-                  strokeWidth={2}
-                  strokeLinecap="round"
+                  strokeWidth={1.5}
                   strokeLinejoin="round"
                 />
+                {pts.map((p, i) => (
+                  <circle key={i} cx={p.x} cy={p.y} r={3} fill="rgb(14, 165, 233)" />
+                ))}
+                {nearStart ? (
+                  <circle
+                    cx={pts[0]!.x}
+                    cy={pts[0]!.y}
+                    r={8}
+                    fill="none"
+                    stroke="rgb(14, 165, 233)"
+                    strokeWidth={2}
+                  />
+                ) : null}
               </svg>
             );
           })()

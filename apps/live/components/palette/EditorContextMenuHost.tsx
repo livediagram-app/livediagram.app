@@ -57,6 +57,9 @@ export function EditorContextMenuHost() {
     commitBorderStyle,
     previewBorderRadius,
     commitBorderRadius,
+    setShadowSelected,
+    previewShadow,
+    commitShadow,
     previewRotation,
     commitRotation,
     commitMarker,
@@ -75,6 +78,8 @@ export function EditorContextMenuHost() {
     setChartLegendSelected,
     setChartLegendPositionSelected,
     setLineDataOpenForId,
+    setCodeEditOpenForId,
+    setChecklistItemsSelected,
     commitShapeColorPreset,
     previewShapeColorPreset,
     resetShapeStyleSelected,
@@ -188,6 +193,9 @@ export function EditorContextMenuHost() {
       onCommitBorderStyle={commitBorderStyle}
       onPreviewBorderRadius={previewBorderRadius}
       onCommitBorderRadius={commitBorderRadius}
+      onSetShadow={setShadowSelected}
+      onPreviewShadow={previewShadow}
+      onCommitShadow={commitShadow}
       onPreviewRotation={previewRotation}
       onCommitRotation={commitRotation}
       onSetMarker={commitMarker}
@@ -206,6 +214,8 @@ export function EditorContextMenuHost() {
       onSetChartLegend={setChartLegendSelected}
       onSetChartLegendPosition={setChartLegendPositionSelected}
       onEditLineData={setLineDataOpenForId}
+      onEditCodeBlock={setCodeEditOpenForId}
+      onSetChecklistItems={setChecklistItemsSelected}
       shapeColorPresets={shapeColorPresets(getTheme(activeTab.theme))}
       onApplyShapeColorPreset={commitShapeColorPreset}
       onPreviewShapeColorPreset={previewShapeColorPreset}

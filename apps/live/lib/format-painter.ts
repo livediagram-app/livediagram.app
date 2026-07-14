@@ -21,6 +21,7 @@ import type {
   BorderStroke,
   BorderStyle,
   BoxedElement,
+  ElementShadow,
   IconAnimation,
   IconSize,
   TextRun,
@@ -73,6 +74,8 @@ export function paintableBoxedFields(source: BoxedElement): Partial<BoxedElement
       height: source.height,
       aspectLocked: source.aspectLocked,
       opacity: source.opacity,
+      // Drop shadow (spec/86): a cosmetic field images carry too.
+      shadow: source.shadow,
     });
   }
   // Border + font live only on some boxed variants (shape / table carry
@@ -122,6 +125,9 @@ export function paintableBoxedFields(source: BoxedElement): Partial<BoxedElement
     animation: source.animation,
     animationSpeed: source.animationSpeed,
     animationRepeat: source.animationRepeat,
+    // Drop shadow (spec/86): cosmetic, painted alongside. Shape / sticky /
+    // link-card carry it; a target that lacks the field ignores the stray key.
+    shadow: (source as { shadow?: ElementShadow }).shadow,
     // Per-icon glyph animation + speed and the Technology mark's fixed
     // size preset (spec/09 / spec/41); cosmetic, painted alongside. Only
     // ShapeElement carries them, so read them off a structural view.

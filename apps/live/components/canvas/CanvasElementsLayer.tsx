@@ -92,6 +92,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onAddTableRow,
     onAddTableColumn,
     onSetRailLabel,
+    onToggleChecklistItem,
     chartPalette,
     onSpawnConnect,
     onStartArrow,
@@ -101,6 +102,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onOpenAction,
     onOpenNote,
     onEditLink,
+    onEditCode,
     onDropIcon,
     onLinkCell,
     onShiftSelect,
@@ -157,11 +159,13 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onSetTextAlign: readOnly ? undefined : onSetTextAlign,
     onCommitTable,
     onSetRailLabel,
+    onToggleChecklistItem: readOnly ? undefined : onToggleChecklistItem,
     onFollowLink,
     onOpenComments,
     onOpenAction,
     onOpenNote,
     onEditLink,
+    onEditCode,
     onDropIcon,
     onLinkCell,
   });
@@ -306,6 +310,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             onSetTextAlign={h.onSetTextAlign}
             onCommitTable={h.onCommitTable}
             onSetRailLabel={h.onSetRailLabel}
+            onToggleChecklistItem={h.onToggleChecklistItem}
             chartPalette={chartPalette}
             onCancelEdit={h.onCancelEdit}
             onFollowLink={h.onFollowLink}
@@ -313,6 +318,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             onOpenAction={h.onOpenAction}
             onOpenNote={h.onOpenNote}
             onEditLink={h.onEditLink}
+            onEditCode={h.onEditCode}
             onDropIcon={h.onDropIcon}
             onLinkCell={h.onLinkCell}
             imageContext={imageContext}

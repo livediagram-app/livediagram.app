@@ -69,6 +69,7 @@ function BoxedElementViewImpl({
   onSetTextAlign,
   onCommitTable,
   onSetRailLabel,
+  onToggleChecklistItem,
   chartPalette,
   onCancelEdit,
   onFollowLink,
@@ -76,6 +77,7 @@ function BoxedElementViewImpl({
   onOpenAction,
   onOpenNote,
   onEditLink,
+  onEditCode,
   vote,
   selfId,
   voteMax,
@@ -148,6 +150,7 @@ function BoxedElementViewImpl({
       onBeginDrag,
       onBeginEdit,
       onEditLink,
+      onEditCode,
       onOpenNote,
       imageContext,
       onContextSelect,
@@ -307,6 +310,7 @@ function BoxedElementViewImpl({
         isSelected={isSelected}
         readOnly={readOnly}
         onSetRailLabel={onSetRailLabel}
+        onToggleChecklistItem={onToggleChecklistItem}
         chartPalette={chartPalette}
         fontFamily={fontFamily}
         svgAnim={svgAnim}

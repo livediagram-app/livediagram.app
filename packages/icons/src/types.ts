@@ -11,7 +11,13 @@ export type IconPrim =
   | { t: 'rect'; x: number; y: number; w: number; h: number; rx?: number }
   | { t: 'polyline'; points: string }
   | { t: 'polygon'; points: string }
-  | { t: 'ellipse'; cx: number; cy: number; rx: number; ry: number };
+  | { t: 'ellipse'; cx: number; cy: number; rx: number; ry: number }
+  // A literal text glyph, centred on (x, y) at `size` px in the 0..24 art
+  // box. Exists for the Emoji catalogue entries (spec/85): colour-emoji
+  // font glyphs ignore SVG stroke / fill, so the line-art tint wrapper is
+  // a harmless no-op around them. Renderers set stroke="none" on the
+  // <text> so a non-emoji character wouldn't render hollow either.
+  | { t: 'text'; text: string; x: number; y: number; size: number };
 
 export type IconDef = {
   id: string;

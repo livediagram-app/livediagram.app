@@ -7,8 +7,13 @@ import {
   defaultFillColor,
   defaultStrokeColor,
   isChartShape,
+  isChecklistShape,
+  isCodeBlockShape,
   isRailShape,
   isRatingShape,
+  shadowBoxCss,
+  shadowFilterCss,
+  supportsShadow,
   type BoxedElement,
 } from '@livediagram/diagram';
 import { isCssNativeBorderStyle } from '@/components/canvas/border-css';
@@ -38,6 +43,16 @@ export function describeVariant(
   // and as an actual border on shape / sticky. The local selection ring
   // stays on top so the active user still sees their own selection.
   const remoteBorderWidth = remoteBorderColor ? 3 : 0;
+  // Element drop shadow (spec/86). Two render paths: box-shadow follows
+  // the border box + radius (right for opaque rectangular bodies, and
+  // cheap; the inline value overrides the cosmetic shadow-sm/md classes
+  // since both drive the same property); drop-shadow() follows the drawn
+  // alpha instead, needed when the wrapper is transparent and the visible
+  // body is an inner SVG / bitmap — a box-shadow there would draw a
+  // floating rectangle around nothing.
+  const shadow = supportsShadow(element) ? element.shadow : undefined;
+  const boxShadow: CSSProperties = shadow ? { boxShadow: shadowBoxCss(shadow) } : {};
+  const filterShadow: CSSProperties = shadow ? { filter: shadowFilterCss(shadow) } : {};
   switch (element.type) {
     case 'shape': {
       const ring = `${singleRing('ring-2 ring-brand-200')} ${multiRing}`.trim();
@@ -49,18 +64,21 @@ export function describeVariant(
       if (isSvgRenderedShape(element.shape)) {
         return {
           className: `text-brand-800 ${ring}`,
-          style: { borderRadius: '4px' },
+          style: { borderRadius: '4px', ...filterShadow },
         };
       }
-      // Timeline rail (spec/51) + rating (spec/52) + charts (spec/53) paint
-      // their own content, so the wrapper carries no box border / background —
-      // just the selection ring.
+      // Timeline rail (spec/51) + rating (spec/52) + charts (spec/53) +
+      // code block (spec/82) + checklist (spec/83) paint their own content,
+      // so the wrapper carries no box border / background — just the
+      // selection ring.
       if (
         isRailShape(element.shape) ||
         isRatingShape(element.shape) ||
-        isChartShape(element.shape)
+        isChartShape(element.shape) ||
+        isCodeBlockShape(element.shape) ||
+        isChecklistShape(element.shape)
       ) {
-        return { className: ring, style: { borderRadius: '4px' } };
+        return { className: ring, style: { borderRadius: '4px', ...filterShadow } };
       }
       // CSS-rendered shapes (square / circle / stadium and the
       // rectangular device frames). The user-pickable border
@@ -80,13 +98,18 @@ export function describeVariant(
       // double up. Remote-selection highlights are always a solid border,
       // so they keep the CSS path regardless of the picked pattern.
       const useSvgBorder = !remoteBorderColor && !isCssNativeBorderStyle(style);
+      // Transparent-fill shapes (icons, outline boxes) take the filter
+      // path: a box-shadow behind a see-through body reads as a floating
+      // grey rectangle.
+      const fill = element.fillColor ?? defaultFillColor(element);
       return {
         // Drop the border-2 class so we can drive border width from
         // the user's strokeWidth pick instead of a fixed 2px.
         className: `text-brand-800 shadow-sm ${ring}`,
         style: {
+          ...(fill === 'transparent' ? filterShadow : boxShadow),
           borderRadius: fixedRadius ?? (userRadius !== null ? `${userRadius}px` : '8px'),
-          backgroundColor: element.fillColor ?? defaultFillColor(element),
+          backgroundColor: fill,
           borderColor: remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element),
           borderWidth: useSvgBorder ? 0 : remoteBorderColor ? remoteBorderWidth : strokePx,
           borderStyle: useSvgBorder
@@ -121,6 +144,7 @@ export function describeVariant(
       return {
         className: `border text-amber-950 shadow-md ${ring}`,
         style: {
+          ...boxShadow,
           borderRadius: '4px',
           backgroundColor: element.fillColor ?? defaultFillColor(element),
           borderColor: remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element),
@@ -142,6 +166,10 @@ export function describeVariant(
       return {
         className: `rounded ${ring}`,
         style: {
+          // Filter path: the bitmap clips inside ImageElementView, so the
+          // wrapper is transparent and a box-shadow would outline the box,
+          // not the (possibly letterboxed) image.
+          ...filterShadow,
           borderColor: remoteBorderColor ?? undefined,
           borderWidth: remoteBorderColor ? remoteBorderWidth : undefined,
           borderStyle: remoteBorderColor ? 'solid' : undefined,
@@ -200,6 +228,7 @@ export function describeVariant(
       return {
         className: `overflow-hidden shadow-sm ${ring}`,
         style: {
+          ...boxShadow,
           borderRadius: '10px',
           backgroundColor: element.fillColor ?? defaultFillColor(element),
           borderColor: remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element),

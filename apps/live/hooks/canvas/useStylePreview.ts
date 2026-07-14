@@ -37,6 +37,7 @@ import type {
   ElementAnimation,
   IconAnimation,
   IconPosition,
+  ElementShadow,
   IconSize,
   Padding,
   ShapeKind,
@@ -54,6 +55,7 @@ import {
   applyColorPresetToEl,
   applyFillColorToEl,
   applyFontToEl,
+  applyShadowToEl,
   applyIconSizeToEl,
   applyInlineIconToEl,
   applyMarkerSizeToEl,
@@ -225,6 +227,11 @@ export function useStylePreview(deps: {
     previewBorderRadius: (v: BorderRadius) => previewStyle((el) => applyBorderRadiusToEl(el, v)),
     commitBorderRadius: (v: BorderRadius) =>
       commitStyle((el) => applyBorderRadiusToEl(el, v), 'BorderRadius'),
+    // Shadow preset tiles (spec/86); `null` is the None tile. The sliders
+    // stay on the debounced useColorStyleSetters path — only tiles preview.
+    previewShadow: (v: ElementShadow | null) => previewStyle((el) => applyShadowToEl(el, v)),
+    commitShadow: (v: ElementShadow | null) =>
+      commitStyle((el) => applyShadowToEl(el, v), 'Shadow'),
     // Rotation angle tiles (fixed 45° steps).
     previewRotation: (deg: number) => previewStyle((el) => applyRotationToEl(el, deg)),
     commitRotation: (deg: number) => commitStyle((el) => applyRotationToEl(el, deg), 'Rotation'),

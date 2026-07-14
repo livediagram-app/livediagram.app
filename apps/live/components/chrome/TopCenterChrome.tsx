@@ -157,7 +157,9 @@ export function TopCenterChrome({
             // editor-page, so it survives across pencil sessions and
             // across devices.
             extras={
-              pendingDraw.type === 'freehand' ? (
+              // Pencil only: the highlighter variant never runs
+              // recognition (spec/81), so it doesn't offer the toggle.
+              pendingDraw.type === 'freehand' && pendingDraw.variant === undefined ? (
                 <RecogniseShapesToggle on={recogniseShapes} onToggle={onToggleRecogniseShapes} />
               ) : undefined
             }

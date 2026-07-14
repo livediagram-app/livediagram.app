@@ -10,7 +10,9 @@ import type {
   BorderStroke,
   BorderStyle,
   ChartLegendPosition,
+  ChecklistItem,
   Element,
+  ElementShadow,
   Layer,
   ElementAnimation,
   IconAnimation,
@@ -99,6 +101,12 @@ export type EditorContextMenuProps = {
   onCommitBorderStyle: (value: BorderStyle) => void;
   onPreviewBorderRadius: (value: BorderRadius) => void;
   onCommitBorderRadius: (value: BorderRadius) => void;
+  // Drop shadow (spec/86): preset tiles commit/preview like the border
+  // tiles; the four sliders use the debounced onSetShadow (one undo step
+  // per gesture, like onSetOpacity). `null` clears.
+  onSetShadow: (shadow: ElementShadow | null) => void;
+  onPreviewShadow: (shadow: ElementShadow | null) => void;
+  onCommitShadow: (shadow: ElementShadow | null) => void;
   onPreviewRotation: (deg: number) => void;
   onCommitRotation: (deg: number) => void;
   // Status markers (spec/49): set / clear the shape's marker glyph and its
@@ -124,6 +132,11 @@ export type EditorContextMenuProps = {
   // Line chart (spec/53): open the data modal for the given element (the 2-D
   // grid is too wide for the menu, which just summarises the series).
   onEditLineData: (elementId: string) => void;
+  // Code block (spec/82): open the code edit modal for the given element
+  // (same too-big-for-the-menu rationale as the line chart's grid).
+  onEditCodeBlock: (elementId: string) => void;
+  // Checklist (spec/83): replace the selected checklist's rows.
+  onSetChecklistItems: (items: ChecklistItem[]) => void;
   // Style presets (spec/48): one-click colour + border looks for the selected
   // shape, plus a reset back to the theme default. `shapeColorPresets` are
   // theme-derived (see shapeColorPresets in lib/themes).

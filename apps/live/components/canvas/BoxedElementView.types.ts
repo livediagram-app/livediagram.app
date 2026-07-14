@@ -87,6 +87,12 @@ export type BoxedElementViewProps = {
   // Open the link picker for a link-card element (spec/40), on double-click.
   // Omitted for read-only viewers.
   onEditLink?: (id: string) => void;
+  // Open the code edit dialog for a code-block shape (spec/82), on
+  // double-click. Omitted for read-only viewers.
+  onEditCode?: (id: string) => void;
+  // Toggle one checklist row's done state (spec/83), from the on-canvas
+  // checkbox. Omitted for read-only viewers.
+  onToggleChecklistItem?: (elementId: string, index: number) => void;
   // Live dot-vote (spec/39). `vote` is the active tab's vote session
   // (undefined when none). `selfId` is the local participant (for "my
   // dots"); `voteMax` is the highest dot count on the tab (for the

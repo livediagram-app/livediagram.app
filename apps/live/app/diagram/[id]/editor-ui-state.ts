@@ -42,6 +42,10 @@ export function useEditorUiState(initialActiveId: string) {
   // Which line-chart's data modal is open (spec/53), or null. The context menu's
   // Data category opens it (the 2-D grid is too wide for the menu).
   const [lineDataOpenForId, setLineDataOpenForId] = useState<string | null>(null);
+  // Which code block's edit dialog is open (spec/82), or null. Opened by
+  // double-click on the card and by the context menu's Code category (a
+  // multi-line editor is too big for the menu, like the line chart's grid).
+  const [codeEditOpenForId, setCodeEditOpenForId] = useState<string | null>(null);
 
   return {
     activeId,
@@ -64,5 +68,7 @@ export function useEditorUiState(initialActiveId: string) {
     setTemplatePickerMode,
     lineDataOpenForId,
     setLineDataOpenForId,
+    codeEditOpenForId,
+    setCodeEditOpenForId,
   };
 }

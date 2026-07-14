@@ -11,10 +11,13 @@
 
 import {
   ARROW_THICKNESS_PX,
+  clampShadow,
   DEFAULT_ANIMATION_SPEED,
   isBoxed,
   supportsBorder,
+  supportsShadow,
   type ArrowFlow,
+  type ElementShadow,
   type ArrowThickness,
   type BorderRadius,
   type BorderStroke,
@@ -94,6 +97,14 @@ export function applyBorderStyleToEl(el: Element, value: BorderStyle): Element {
 
 export function applyBorderRadiusToEl(el: Element, value: BorderRadius): Element {
   return el.type === 'shape' ? { ...el, borderRadius: value } : el;
+}
+
+// Element drop shadow (spec/86). `null` clears the field; values clamp to
+// the slider limits so a preview / commit can never write an out-of-range
+// shadow. Gated to the body-drawing boxed types (shape / sticky / image /
+// link-card) via the shared supportsShadow predicate.
+export function applyShadowToEl(el: Element, shadow: ElementShadow | null): Element {
+  return supportsShadow(el) ? { ...el, shadow: shadow ? clampShadow(shadow) : undefined } : el;
 }
 
 // Rotation in degrees clockwise about the centre, normalised to 0..359; 0 is

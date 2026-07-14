@@ -62,5 +62,22 @@ describe('iconPrimMarkup', () => {
     expect(iconPrimMarkup({ t: 'ellipse', cx: 1, cy: 2, rx: 3, ry: 4 })).toBe(
       '<ellipse cx="1" cy="2" rx="3" ry="4"/>',
     );
+    // The text prim (spec/85 emoji entries): centred anchor + central
+    // baseline so the glyph sits on (x, y); an explicit fill so the
+    // line-art wrapper's fill="none" can't blank it, stroke="none" so it
+    // can't render hollow.
+    const text = iconPrimMarkup({ t: 'text', text: '👍', x: 12, y: 12, size: 20 });
+    expect(text).toBe(
+      '<text x="12" y="12" font-size="20"' +
+        ' font-family="system-ui, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, sans-serif"' +
+        ' text-anchor="middle" dominant-baseline="central" fill="currentColor"' +
+        ' stroke="none">👍</text>',
+    );
+  });
+
+  it('escapes XML specials in the text prim payload', () => {
+    const markup = iconPrimMarkup({ t: 'text', text: '<&>', x: 12, y: 12, size: 20 });
+    expect(markup).toContain('>&lt;&amp;&gt;</text>');
+    expect(markup).not.toContain('<&');
   });
 });

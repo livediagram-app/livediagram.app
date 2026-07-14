@@ -8,7 +8,13 @@
 // Text measurement degrades to a char-width estimate when there's no DOM
 // (Workers / jsdom), so wrapping still works headless.
 import { iconBandBounds, techIconMarkBounds } from './icon-size';
-import { hasShapeSilhouette, svgFreehandShape, svgShapeSilhouette } from './svg-render-shapes';
+import {
+  hasShapeSilhouette,
+  svgChecklistShape,
+  svgCodeBlockShape,
+  svgFreehandShape,
+  svgShapeSilhouette,
+} from './svg-render-shapes';
 import { svgTableShape } from './svg-render-table';
 // Text/number primitives shared with the per-element emitters — re-exported
 // below so existing importers of this module keep resolving.
@@ -39,6 +45,8 @@ import { svgArrow } from './svg-render-arrows';
 export { arrowHeadRefs, svgArrow, svgArrowhead } from './svg-render-arrows';
 import type { BoxedElement, Element, Tab } from './index';
 import { layerBands, layerOpacityOf, visibleLayerElements } from './layers';
+// Element drop shadows (spec/86): gate + deterministic filter defs.
+import { shadowFilterId, supportsShadow, svgShadowFilterDef } from './shadow';
 
 // The export descriptor layer (constants, ExportShape / resolver types,
 // describeBoxedExport) lives in svg-render-describe.ts; re-exported so
@@ -174,6 +182,11 @@ export function svgBoxed(
   const rotAttr = rotation
     ? ` transform="rotate(${r2(rotation)} ${r2(el.x + el.width / 2)} ${r2(el.y + el.height / 2)})"`
     : '';
+  // Drop shadow (spec/86): reference the shared feDropShadow def the
+  // document emitter collects via svgShadowDefs (deterministic id, so
+  // this stays in lockstep without threading the def through).
+  const shadow = supportsShadow(el) ? el.shadow : undefined;
+  const shadowAttr = shadow ? ` filter="url(#${shadowFilterId(shadow)})"` : '';
   const cx = el.x + el.width / 2;
   const cy = el.y + el.height / 2;
   let shapeStr = '';
@@ -186,6 +199,19 @@ export function svgBoxed(
   if (el.type === 'freehand' && shape.kind === 'rect') {
     // The sketch's actual polyline instead of its bounding box.
     return `<g${opAttr}${rotAttr}>${svgFreehandShape(el, shape.stroke, shape.fill)}</g>`;
+  }
+  if (el.type === 'shape' && el.shape === 'code-block') {
+    // The dark editor card + plain mono lines (spec/82); no label.
+    return `<g${opAttr}${rotAttr}${shadowAttr}>${svgCodeBlockShape(el)}</g>`;
+  }
+  if (el.type === 'shape' && el.shape === 'checklist' && shape.kind === 'rect') {
+    // The themed to-do card with its rows + done-count footer (spec/83).
+    return `<g${opAttr}${rotAttr}${shadowAttr}>${svgChecklistShape(
+      el,
+      shape.fill,
+      shape.stroke,
+      el.textColor ?? '#1e293b',
+    )}</g>`;
   }
   if (shape.kind === 'image') {
     shapeStr = shape.href
@@ -235,7 +261,21 @@ export function svgBoxed(
           label.italic,
           label.valign,
         );
-  return `<g${opAttr}${rotAttr}>${shapeStr}${labelStr}</g>`;
+  return `<g${opAttr}${rotAttr}${shadowAttr}>${shapeStr}${labelStr}</g>`;
+}
+
+// The <defs> block for every distinct element shadow in the list (spec/86):
+// one feDropShadow filter per unique value, ids matching what svgBoxed
+// references. Empty string when nothing carries a shadow, so shadow-less
+// documents stay byte-identical to before.
+export function svgShadowDefs(elements: Element[]): string {
+  const defs = new Map<string, string>();
+  for (const el of elements) {
+    if (el.type === 'arrow' || !supportsShadow(el) || !el.shadow) continue;
+    const id = shadowFilterId(el.shadow);
+    if (!defs.has(id)) defs.set(id, svgShadowFilterDef(el.shadow));
+  }
+  return defs.size ? `<defs>${[...defs.values()].join('')}</defs>` : '';
 }
 
 // True when svgBoxed draws something the PNG canvas drawers (drawBoxed)
@@ -244,6 +284,9 @@ export function svgBoxed(
 // rotation, and resolved icon art all fall in.
 export function boxedNeedsSvgRaster(el: BoxedElement, resolveIconArt?: ResolveIconArt): boolean {
   if (el.rotation) return true;
+  // A shadow renders via an feDropShadow filter def (spec/86), which the
+  // PNG canvas drawers can't reproduce natively.
+  if (supportsShadow(el) && el.shadow) return true;
   if (el.type === 'table' || el.type === 'freehand') return true;
   if (el.type === 'shape' && (hasShapeSilhouette(el.shape) || el.shape === 'stadium')) return true;
   if (el.type === 'shape' && el.shape === 'icon' && el.iconId && resolveIconArt?.(el.iconId))
@@ -278,6 +321,9 @@ export function renderElementsToSvg(
     `<svg xmlns="http://www.w3.org/2000/svg" width="${r2(vbW)}" height="${r2(vbH)}" viewBox="${r2(vbX)} ${r2(vbY)} ${r2(vbW)} ${r2(vbH)}">`,
     `<rect x="${r2(vbX)}" y="${r2(vbY)}" width="${r2(vbW)}" height="${r2(vbH)}" fill="${xmlEscape(bg)}"/>`,
   ];
+  // Element-shadow filter defs (spec/86); empty string when none.
+  const shadowDefs = svgShadowDefs(visible);
+  if (shadowDefs) parts.push(shadowDefs);
   // Per band: boxed first, then arrows; a dimmed layer wraps its band in
   // a <g opacity> (spec/74).
   for (const band of layerBands(tab.elements, tab.layers)) {

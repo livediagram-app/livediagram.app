@@ -26,8 +26,16 @@ export type PendingDraw =
   // pencil is gestural by definition) and the gesture collects a
   // stream of pointer samples during the drag, simplified +
   // smoothed on release into a FreehandElement (see spec/09 Pencil
-  // (freehand) subsection, spec/05 FreehandElement).
-  | { type: 'freehand' };
+  // (freehand) subsection, spec/05 FreehandElement). The
+  // 'highlighter' variant (spec/81) rides the same gesture but
+  // commits the marker recipe: no shape recognition, no
+  // close-to-fill, wide translucent stroke.
+  | { type: 'freehand'; variant?: 'highlighter' }
+  // Polygon tool (spec/84): click-to-place vertices rather than a
+  // drag gesture. The canvas accumulates clicked points; closing on
+  // the start vertex or double-click / Enter commits a
+  // straight-edged FreehandElement.
+  | { type: 'polygon' };
 
 // Title-cased shape label for the draw-to-size mode banner. Avoids the
 // "a / an" article problem by reading "Drag to draw {Rectangle}"
@@ -79,8 +87,16 @@ export function drawBannerMessage(intent: PendingDraw, isMobile: boolean): strin
       return `Tap to drop or drag to draw ${COMPONENT_LABELS[intent.kind]}`;
     case 'freehand':
       // Freehand is gestural only (no tap-to-drop): it collects the
-      // pointer stream, so it keeps the bare "Drag to draw".
+      // pointer stream, so it keeps the bare "Drag to draw". The
+      // highlighter variant never closes, so it skips the hint.
+      if (intent.variant === 'highlighter') return 'Drag to highlight';
       return isMobile ? 'Drag to draw' : 'Drag to draw (release near the start to close)';
+    case 'polygon':
+      // The close / finish affordances overflow a phone-width banner,
+      // same trade-off as the freehand close hint above.
+      return isMobile
+        ? 'Tap to place points'
+        : 'Click to place points — click the start to close, double-click to finish';
   }
 }
 
@@ -141,10 +157,24 @@ export function drawIntentCursor(intent: PendingDraw): string {
     );
   }
   if (intent.type === 'freehand') {
+    if (intent.variant === 'highlighter') {
+      // Marker glyph: a chisel-tip body with a SOLID YELLOW tip over a
+      // bold yellow underline band, so the cursor reads "highlighter"
+      // at a glance rather than another black pen nib.
+      return drawCursorFromGlyph(
+        `<path d="M15 20 L20 15 L23 18 L18 23 Z" fill="rgb(253 224 71)" stroke="black" stroke-width="1.3" stroke-linejoin="round" /><path d="M20 15 L22 12 L25 15 L23 18 Z" fill="none" stroke="black" stroke-width="1.3" stroke-linejoin="round" /><path d="M12 26 H24" stroke="rgb(250 204 21)" stroke-width="4" stroke-linecap="round" />`,
+      );
+    }
     // Pen nib glyph: a tiny diagonal point. Reads as "drawing
     // instrument", same as the palette button below.
     return drawCursorFromGlyph(
       `<path d="M14 22 L20 16 L23 19 L17 25 Z M20 16 L22 14 M14 22 L13 25" stroke="black" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" fill="none" />`,
+    );
+  }
+  if (intent.type === 'polygon') {
+    // Open polygon with vertex dots: reads as "place points".
+    return drawCursorFromGlyph(
+      `<path d="M14 23 L16 15 L23 13 L24 20 L19 24 Z" stroke="black" stroke-width="1.3" stroke-linejoin="round" fill="none" /><circle cx="16" cy="15" r="1.3" fill="black" /><circle cx="23" cy="13" r="1.3" fill="black" /><circle cx="19" cy="24" r="1.3" fill="black" />`,
     );
   }
   if (intent.type === 'component') {

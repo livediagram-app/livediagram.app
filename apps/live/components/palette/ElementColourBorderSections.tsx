@@ -13,10 +13,12 @@ import {
   defaultTextColor,
   supportsBorderRadius,
   supportsColours,
+  supportsShadow,
   type BorderRadius,
   type BorderStroke,
   type BorderStyle,
   type BoxedElement,
+  type ElementShadow,
 } from '@livediagram/diagram';
 import { SizeButton } from '@/components/palette/palette-controls';
 import {
@@ -28,6 +30,7 @@ import { BorderGlyph, PaletteMenuIcon } from '@/components/palette/context-menu-
 import { MenuAccordionSection, MenuActionButton } from '@/components/primitives/PortalMenu';
 import { isTechIconId } from '@/lib/tech-icons';
 import { BorderGrid, ColourRow } from '@/components/palette/context-menu-rows';
+import { ShadowSection } from '@/components/palette/ShadowSection';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import type { useContextMenuScaffold } from './useContextMenuScaffold';
 import { BORDER_RADII, BORDER_STROKES, BORDER_STYLES } from './context-menu-constants';
@@ -178,6 +181,18 @@ export function ElementColourBorderSections({
             </div>
           </MenuAccordionSection>
         </>
+      ) : null}
+      {/* Shadow (spec/86) — presets + sliders, for the body-drawing boxed
+          types. Sits after Border in the style band. */}
+      {supportsShadow(target) ? (
+        <ShadowSection
+          shadow={(target as { shadow?: ElementShadow }).shadow}
+          section={sectionProps('shadow')}
+          onSetShadow={props.onSetShadow}
+          onCommitPreset={props.onCommitShadow}
+          onPreviewPreset={props.onPreviewShadow}
+          onPreviewEnd={props.onPreviewStyleEnd}
+        />
       ) : null}
     </>
   );

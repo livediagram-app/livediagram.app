@@ -97,6 +97,43 @@ export function isLineShape(kind: ShapeKind): boolean {
   return kind === 'line-chart';
 }
 
+// Code block (spec/82): a monospace snippet card. The closed language set the
+// lazy tokenizer understands; 'plain' renders unhighlighted. Wire-validated so
+// a saved diagram can't smuggle an arbitrary string into the renderer.
+export const CODE_LANGUAGES = [
+  'plain',
+  'ts',
+  'js',
+  'python',
+  'json',
+  'bash',
+  'sql',
+  'html',
+  'css',
+  'yaml',
+] as const;
+export type CodeLanguage = (typeof CODE_LANGUAGES)[number];
+export const CODE_MAX_LENGTH = 4000;
+
+export function isCodeBlockShape(kind: ShapeKind): boolean {
+  return kind === 'code-block';
+}
+
+// Checklist (spec/83): checkable to-do rows. Bounds keep the card legible and
+// the wire payload small; the starter rows make the affordance obvious on drop.
+export type ChecklistItem = { text: string; done: boolean };
+export const CHECKLIST_MAX_ITEMS = 30;
+export const CHECKLIST_MAX_TEXT = 200;
+export const CHECKLIST_DEFAULT_ITEMS: readonly ChecklistItem[] = [
+  { text: 'First task', done: true },
+  { text: 'Second task', done: false },
+  { text: 'Third task', done: false },
+];
+
+export function isChecklistShape(kind: ShapeKind): boolean {
+  return kind === 'checklist';
+}
+
 // Pie + bar + line are the "Data" charts: they share the slice animation
 // (`pieAnim`), the legend toggle (`chartLegend`), and the Data / Chart /
 // Animation context-menu categories. Pie + bar share the 1-D `pieSlices`; the
@@ -108,11 +145,19 @@ export function isChartShape(kind: ShapeKind): boolean {
 }
 
 // The "self-drawing" shape kinds: progress (bar / ring), timeline rail, rating,
-// and the data charts. They render their own bespoke content (no fill/border
-// box) and carry no editable text label, so the editor suppresses markers, the
-// inline label editor, and double-click / type-to-edit for them.
+// the data charts, the code block, and the checklist. They render their own
+// bespoke content (no fill/border box) and carry no editable text label, so
+// the editor suppresses markers, the inline label editor, and double-click /
+// type-to-edit for them.
 export function isSelfDrawingShape(kind: ShapeKind): boolean {
-  return isProgressShape(kind) || isRailShape(kind) || isRatingShape(kind) || isChartShape(kind);
+  return (
+    isProgressShape(kind) ||
+    isRailShape(kind) ||
+    isRatingShape(kind) ||
+    isChartShape(kind) ||
+    isCodeBlockShape(kind) ||
+    isChecklistShape(kind)
+  );
 }
 
 // Round to a whole number and clamp into [0, max]. The fiddly half of the

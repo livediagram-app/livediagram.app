@@ -43,6 +43,7 @@ import { TabLoadOverlay } from '@/components/canvas/TabLoadOverlay';
 import { PaletteDragGhost } from '@/components/canvas/PaletteDragGhost';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { useCanvasDrawGesture } from '@/components/canvas/useCanvasDrawGesture';
+import { useCanvasPolygonGesture } from '@/components/canvas/useCanvasPolygonGesture';
 import { useCanvasSurfaceGestures } from '@/hooks/canvas/useCanvasSurfaceGestures';
 import { useCanvasSelectHandlers } from '@/hooks/canvas/useCanvasSelectHandlers';
 
@@ -75,6 +76,7 @@ export function Canvas(props: CanvasProps) {
     pendingDraw,
     onCommitDraw,
     onCommitFreehand,
+    onCommitPolygon,
     recogniseShapes,
     onDeselect,
     onSelect,
@@ -284,6 +286,20 @@ export function Canvas(props: CanvasProps) {
     onCommitFreehand,
   });
 
+  // Polygon click-to-place gesture (spec/84), composed IN FRONT of the
+  // drag-based draw gesture: while the polygon intent is armed it
+  // claims every draw-intercept press as a vertex placement.
+  const { polygonVertices, polygonCursor, beginPolygonPoint, handlePolygonDoubleClick } =
+    useCanvasPolygonGesture({
+      pendingDraw,
+      elements,
+      wrapperRef,
+      viewportZoom,
+      onCommitPolygon,
+    });
+  const beginPendingDrawOrPolygon = (e: React.PointerEvent): boolean =>
+    beginPolygonPoint(e) || beginPendingDrawGesture(e);
+
   // Bare-surface press routing (capture intercepts, background context
   // menu, pan-vs-marquee) lives in useCanvasSurfaceGestures; the JSX
   // below mounts its handlers verbatim.
@@ -300,7 +316,7 @@ export function Canvas(props: CanvasProps) {
     spotlight,
     isoCamera,
     canvasLongPress,
-    beginPendingDrawGesture,
+    beginPendingDrawGesture: beginPendingDrawOrPolygon,
     onEraseStart: props.onEraseStart,
     onCanvasContextMenu,
     onCanvasDoubleClick,
@@ -379,7 +395,12 @@ export function Canvas(props: CanvasProps) {
       <div
         ref={wrapperRef}
         onPointerDown={surface.onWrapperPointerDown}
-        onDoubleClick={surface.onWrapperDoubleClick}
+        onDoubleClick={(e) => {
+          // Polygon finish-line double-click (spec/84) wins over the
+          // add-text double-click while the intent is armed.
+          if (handlePolygonDoubleClick()) return;
+          surface.onWrapperDoubleClick(e);
+        }}
         // Spotlight (spec/09) is a non-editing presenter mode: make the whole
         // diagram layer ignore pointer events so NO element kind can be
         // selected, dragged, or edited (a per-element capture guard can't
@@ -469,6 +490,8 @@ export function Canvas(props: CanvasProps) {
         drawDrag={drawDrag}
         drawHover={drawHover}
         penPoints={penPoints}
+        polygonVertices={polygonVertices}
+        polygonCursor={polygonCursor}
         wrapperRef={wrapperRef}
         paletteBottomY={paletteBottomY}
         setPaletteBottomY={setPaletteBottomY}

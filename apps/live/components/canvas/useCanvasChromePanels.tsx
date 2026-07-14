@@ -110,6 +110,8 @@ export function useCanvasChromePanels({
     onAddTechIcon,
     onAddText,
     onBeginFreehand,
+    onBeginHighlighter,
+    onBeginPolygon,
     onChangeSettings,
     onClearActivity,
     onClearRevertPreview,
@@ -427,6 +429,8 @@ export function useCanvasChromePanels({
         onAddImage={onAddImage}
         onAddArrow={onAddArrow}
         onBeginFreehand={onBeginFreehand}
+        onBeginHighlighter={onBeginHighlighter}
+        onBeginPolygon={onBeginPolygon}
         pendingDraw={pendingDraw}
         themeTint={paletteTint}
         onSize={(size) => setPaletteBottomY(size.bottomY)}

@@ -20,10 +20,7 @@ import {
   arrowStyleOf,
   arrowThicknessOf,
   isBoxed,
-  isChartShape,
-  isProgressShape,
-  isRailShape,
-  isRatingShape,
+  isSelfDrawingShape,
 } from '@livediagram/diagram';
 import { ArrowLineControls, ArrowPointerControls } from '@/components/canvas/arrow-controls';
 import { ContextMenu, ContextMenuDivider } from '@/components/palette/ContextMenu';
@@ -108,20 +105,15 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
     const hasImage = target.type === 'image' && target.imageId != null;
     const hasLink = target.link != null;
     // Regular shapes (not the dedicated icon glyph, not a frame container, not
-    // a progress element which carries its own `progress` data) can morph to
+    // a self-drawing data shape which carries its own data) can morph to
     // another common kind in place.
-    const isProgress = target.type === 'shape' && isProgressShape(target.shape);
-    const isRail = target.type === 'shape' && isRailShape(target.shape);
-    const isRating = target.type === 'shape' && isRatingShape(target.shape);
-    const isChart = target.type === 'shape' && isChartShape(target.shape);
     const morphable =
       target.type === 'shape' &&
       !isIcon &&
       target.shape !== 'frame' &&
-      !isProgress &&
-      !isRail &&
-      !isRating &&
-      !isChart;
+      // Every self-drawing kind carries its own data (progress / rail /
+      // rating / charts / code block / checklist), so none of them morph.
+      !isSelfDrawingShape(target.shape);
     // Consistent category grouping (spec/09): placement (Layer / Shape /
     // Rotation) · appearance (Progress / Animation / Colours / Border) ·
     // content (Line / Pointer / Text / Icon / Image / Table / Link) ·

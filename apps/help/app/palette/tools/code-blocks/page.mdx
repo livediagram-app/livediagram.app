@@ -1,0 +1,53 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { CodeBlockCard } from '@/components/illustrations/palette-tools-cards';
+
+export const metadata = helpMetadata({
+  title: 'Code Blocks',
+  description:
+    'Drop a dark monospace code card on the canvas, double-click to edit the snippet in the code dialog, and pick from ten languages with syntax highlighting.',
+  path: '/help/palette/tools/code-blocks/',
+});
+
+<ArticleLayout
+  title="Code Blocks"
+  description="A dark monospace card for code snippets, with syntax highlighting in ten languages."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  parentArticle={{ title: 'Tools', slug: 'tools' }}
+  subArticles={getSubArticles('tools').filter((a) => a.slug !== 'code-blocks')}
+>
+
+A code block is a dark, editor-style card for the snippets that belong in a technical diagram: the payload next to an API arrow, the config beside an infrastructure node, the query under a database. It renders code in a monospace font with syntax highlighting, and it lives on the canvas like any other element, so you can place, resize, group, and move it freely.
+
+<Figure caption="A code block on the canvas: the dark monospace card with highlighted code and the language badge in the corner.">
+  <CodeBlockCard />
+</Figure>
+
+## Adding one
+
+<Step n={1}>Open the floating palette and switch to the **Tools** tab.</Step>
+<Step n={2}>
+  Click **Code block** to drop one on the canvas, or drag on the canvas to draw it at a size.
+</Step>
+<Step n={3}>**Double-click the block** to add your code.</Step>
+
+## Editing the code
+
+Double-clicking opens the **Edit code dialog**: a monospace editor where `Tab` inserts spaces instead of moving focus, so indenting works the way it does in a real editor. Pick the snippet's language from the dropdown, save, and the block updates in one undoable step. The same editor is available from the **Code** section of the block's right-click context menu.
+
+## Languages and highlighting
+
+Ten languages get syntax highlighting: **plain text, TypeScript, JavaScript, Python, JSON, Bash, SQL, HTML, CSS, and YAML**. The chosen language shows as a small badge in the block's top-right corner (hidden for plain text), so a reader can tell a SQL query from a YAML manifest at a glance.
+
+## A fixed dark look
+
+Like sticky notes staying amber, a code block keeps its **fixed dark look whatever the theme**: switching or restyling the tab's theme never recolours it. Code reads best on a dark background, and keeping every block identical means snippets look the same across every diagram.
+
+<Tip>
+  Reach for a code block instead of a text element whenever the content is code: you get monospace
+  alignment, preserved whitespace, and highlighting for free.
+</Tip>
+
+</ArticleLayout>

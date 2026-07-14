@@ -39,7 +39,29 @@ export function iconPrimMarkup(p: IconPrim): string {
       return `<polygon points="${p.points}"/>`;
     case 'ellipse':
       return `<ellipse cx="${num(p.cx)}" cy="${num(p.cy)}" rx="${num(p.rx)}" ry="${num(p.ry)}"/>`;
+    case 'text':
+      // Colour-emoji glyphs (spec/85). Centred anchor + central baseline
+      // so the character sits on (x, y). The caller's line-art wrapper
+      // sets fill="none", which would blank a <text> glyph — override
+      // with an explicit fill (colour-emoji glyphs ignore it; a
+      // non-emoji fallback character paints in currentColor) and
+      // stroke="none" so nothing renders hollow. The text payload is
+      // catalogue data but escape it anyway — this is the one prim
+      // carrying a string into markup.
+      return (
+        `<text x="${num(p.x)}" y="${num(p.y)}" font-size="${num(p.size)}"` +
+        ` font-family="system-ui, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, sans-serif"` +
+        ` text-anchor="middle" dominant-baseline="central" fill="currentColor"` +
+        ` stroke="none">${xmlEscapeText(p.text)}</text>`
+      );
   }
+}
+
+// Minimal XML text escaper for the text prim's character payload. The
+// other prims carry only numbers / path data, so this is the module's
+// single string-into-markup seam.
+function xmlEscapeText(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 // A line-art icon's primitives, colourless (see IconExportArt).

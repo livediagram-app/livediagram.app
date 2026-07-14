@@ -235,6 +235,70 @@ describe('renderElementsToSvg', () => {
       expect(svg).not.toContain('rx="6"');
     });
 
+    it('renders a code block as the dark card + mono lines (spec/82)', () => {
+      const svg = renderElementsToSvg(
+        tab([
+          shape('cb', {
+            shape: 'code-block',
+            width: 320,
+            height: 180,
+            code: 'const x = 1;\nreturn x;',
+            codeLanguage: 'ts',
+          }),
+        ]),
+      );
+      expect(svg).toContain('fill="#0f172a"'); // the dark card
+      expect(svg).toContain('const x = 1;');
+      expect(svg).toContain('return x;');
+      expect(svg).toContain('>ts</text>'); // language badge
+      expect(svg).toContain('ui-monospace');
+    });
+
+    it('renders a checklist as rows with ticked boxes + strike-through (spec/83)', () => {
+      const svg = renderElementsToSvg(
+        tab([
+          shape('cl', {
+            shape: 'checklist',
+            width: 240,
+            height: 180,
+            checklistItems: [
+              { text: 'Done thing', done: true },
+              { text: 'Open thing', done: false },
+            ],
+          }),
+        ]),
+      );
+      expect(svg).toContain('Done thing');
+      expect(svg).toContain('Open thing');
+      expect(svg).toContain('text-decoration="line-through"');
+      expect(svg).toContain('1/2'); // done-count footer
+    });
+
+    it('renders a highlighter stroke with the marker recipe (spec/81)', () => {
+      const el = {
+        id: 'hl',
+        type: 'freehand',
+        x: 0,
+        y: 0,
+        width: 100,
+        height: 10,
+        closed: false,
+        pen: 'highlighter',
+        points: [
+          { nx: 0, ny: 0.5 },
+          { nx: 1, ny: 0.5 },
+        ],
+        strokeColor: '#fde047',
+      } as Tab['elements'][number];
+      const svg = renderElementsToSvg(tab([el]));
+      // Fixed wide translucent multiply stroke, never filled — the
+      // border presets don't apply to the marker.
+      expect(svg).toContain('stroke-width="14"');
+      expect(svg).toContain('stroke-opacity="0.45"');
+      expect(svg).toContain('mix-blend-mode:multiply');
+      expect(svg).toContain('fill="none"');
+    });
+
     it('renders a hexagon silhouette instead of a rectangle', () => {
       const svg = renderElementsToSvg(tab([shape('h', { shape: 'hexagon' })]));
       expect(svg).toContain('polygon points="25,0 75,0 100,50 75,100 25,100 0,50"');
@@ -463,5 +527,40 @@ describe('renderElementsToSvg', () => {
       expect(svg).toContain('>Server</');
       expect(svg).not.toContain('viewBox="0 0 24');
     });
+  });
+});
+
+// Element drop shadows (spec/86): a shadowed element references a shared
+// feDropShadow def; shadow-less documents carry no <defs> so their output
+// stays byte-identical to before the feature.
+describe('renderElementsToSvg — element shadows (spec/86)', () => {
+  const shadow = { offsetX: 0, offsetY: 4, blur: 12, opacity: 0.25 };
+
+  it('emits one filter def per unique shadow and references it from the element group', () => {
+    const svg = renderElementsToSvg(
+      tab([shape('a', { shadow }), shape('b', { x: 200, shadow: { ...shadow } })]),
+    );
+    expect(svg).toContain('<feDropShadow');
+    // Two elements, one shared def (deterministic id).
+    expect(svg.match(/<filter /g)?.length).toBe(1);
+    expect(svg.match(/filter="url\(#elshadow-/g)?.length).toBe(2);
+  });
+
+  it('emits no defs block when nothing carries a shadow', () => {
+    const svg = renderElementsToSvg(tab([shape('a')]));
+    expect(svg).not.toContain('<defs>');
+    expect(svg).not.toContain('feDropShadow');
+  });
+
+  it('skips shadows on hidden layers (they are not rendered, so no orphan def)', () => {
+    const svg = renderElementsToSvg(
+      tab([shape('a', { shadow, layerId: 'l1' })], {
+        layers: [
+          { id: 'l0', name: 'Base' },
+          { id: 'l1', name: 'Hidden', visible: false },
+        ],
+      }),
+    );
+    expect(svg).not.toContain('feDropShadow');
   });
 });

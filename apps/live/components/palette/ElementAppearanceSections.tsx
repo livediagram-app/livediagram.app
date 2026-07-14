@@ -18,6 +18,8 @@ import {
   defaultPadding,
   isBoxed,
   isChartShape,
+  isChecklistShape,
+  isCodeBlockShape,
   isLineShape,
   isProgressShape,
   isRailShape,
@@ -110,6 +112,8 @@ export function ElementAppearanceSections({
   const isRating = target.type === 'shape' && isRatingShape(target.shape);
   const isChart = target.type === 'shape' && isChartShape(target.shape);
   const isLine = target.type === 'shape' && isLineShape(target.shape);
+  const isCodeBlock = target.type === 'shape' && isCodeBlockShape(target.shape);
+  const isChecklist = target.type === 'shape' && isChecklistShape(target.shape);
   // The Text band (spec/09): Markers + Alignment. Markers are regular-shape
   // only (self-drawing shapes have no label slot); Alignment applies to any
   // boxed element with a text slot.
@@ -139,11 +143,13 @@ export function ElementAppearanceSections({
   // The Style flyout shows when any of its children would: presets
   // (shapes with looks / arrow line looks), Colours, or Border — the
   // same gates the sections carry inside.
+  // Code blocks keep their fixed dark identity (spec/82) — no Style band.
   const showStyle =
-    shapeSupportsPresets(target) ||
-    target.type === 'arrow' ||
-    (boxed && supportsColours(target) && !isChart) ||
-    (borderable && !isChart);
+    !isCodeBlock &&
+    (shapeSupportsPresets(target) ||
+      target.type === 'arrow' ||
+      (boxed && supportsColours(target) && !isChart) ||
+      (borderable && !isChart));
   return (
     <>
       {showAppearanceGroup ? <MenuGroupSeparator /> : null}
@@ -207,6 +213,8 @@ export function ElementAppearanceSections({
         isRating={isRating}
         isChart={isChart}
         isLine={isLine}
+        isCodeBlock={isCodeBlock}
+        isChecklist={isChecklist}
         isIcon={isIcon}
         boxed={boxed}
         sectionProps={sectionProps}

@@ -26,7 +26,12 @@ import { NoMarkerGlyph, PercentSliderRow } from './context-menu-data-rows';
 // Data-shape rows (rail / rating / pie / progress editors + AnimTiles)
 // live in context-menu-data-rows.tsx; re-exported so importers keep
 // resolving.
-export { LineDataSummary, PieDataEditor } from './context-menu-data-editors';
+export {
+  ChecklistRowsEditor,
+  CodeSummary,
+  LineDataSummary,
+  PieDataEditor,
+} from './context-menu-data-editors';
 export {
   ChartMenuGlyph,
   DataMenuGlyph,

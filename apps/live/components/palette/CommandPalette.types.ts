@@ -81,6 +81,11 @@ export type CommandPaletteProps = {
   // centre, the pencil is gestural by design. See spec/09 Pencil
   // (freehand) subsection.
   onBeginFreehand: () => void;
+  // Highlighter (spec/81): the pencil gesture with the marker
+  // variant. Same one-shot arm semantics as onBeginFreehand.
+  onBeginHighlighter: () => void;
+  // Polygon tool (spec/84): arms the click-to-place-vertices mode.
+  onBeginPolygon: () => void;
   // Currently-queued draw-to-size intent, or null. When set, the
   // matching palette button (shape, text, sticky, image, arrow)
   // renders pressed so the user can see what's queued for the next

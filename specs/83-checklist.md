@@ -21,7 +21,7 @@ A themed boxed card (fill/stroke/text follow the tab theme like any shape — un
 
 - **Clicking a checkbox on the canvas toggles that row's `done`** — the rating shape's interactive-stars precedent. Edit-role only; locked elements, hidden/locked layers, and view-only sessions are gated exactly as rating is. Each toggle is one undoable history entry and syncs as a normal element op.
 - **Row text editing** follows the data-shape pattern: the element context menu gains a **Checklist** section (`ElementDataSections.tsx` + a rows component): one text input per row with its done toggle, an "Add row" button (capped at 30), and per-row remove. Same commit/undo semantics as the rail-label and chart-data editors.
-- Double-click on the card opens the context menu at the Checklist section (matching how self-drawing shapes otherwise ignore double-click; this one has an obvious edit intent).
+- Double-click on the card is deliberately inert, matching the other self-drawing shapes: the on-canvas interaction is the checkbox itself, and row editing lives in the context menu's Checklist section.
 
 ## Headless render (share thumbnails, MCP, exports)
 

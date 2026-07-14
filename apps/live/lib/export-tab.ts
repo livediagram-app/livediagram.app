@@ -29,8 +29,10 @@ import {
   EXPORT_IMAGE_STROKE,
   EXPORT_PADDING,
   r2,
+  supportsShadow,
   svgArrow,
   svgBoxed,
+  svgShadowDefs,
   xmlEscape,
   type ExportShape,
 } from '@livediagram/diagram';
@@ -199,13 +201,20 @@ export async function renderTabToCanvas(
     if (el.type === 'arrow' || !isBoxed(el)) continue;
     if (!boxedNeedsSvgRaster(el, resolveIconArtLoaded)) continue;
     const diag = Math.hypot(el.width, el.height);
-    const pad = el.rotation ? (diag - Math.min(el.width, el.height)) / 2 + 2 : 2;
+    // A shadow sweeps outside the box by its offset + blur (spec/86);
+    // grow the raster pad so it isn't clipped, and inline its filter
+    // def (the fragment has no document <defs> to resolve against).
+    const shadow = supportsShadow(el) && el.shadow ? el.shadow : undefined;
+    const shadowPad = shadow
+      ? Math.max(Math.abs(shadow.offsetX), Math.abs(shadow.offsetY)) + shadow.blur
+      : 0;
+    const pad = (el.rotation ? (diag - Math.min(el.width, el.height)) / 2 + 2 : 2) + shadowPad;
     const w = el.width + pad * 2;
     const h = el.height + pad * 2;
     const svg =
       `<svg xmlns="http://www.w3.org/2000/svg" width="${r2(w * scale)}" height="${r2(h * scale)}"` +
       ` viewBox="${r2(el.x - pad)} ${r2(el.y - pad)} ${r2(w)} ${r2(h)}">` +
-      `${svgBoxed(el, undefined, resolveIconArtLoaded)}</svg>`;
+      `${svgShadowDefs([el])}${svgBoxed(el, undefined, resolveIconArtLoaded)}</svg>`;
     try {
       rasterImages.set(el.id, { image: await svgToImage(svg), pad });
     } catch {
@@ -329,6 +338,9 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
   parts.push(
     `<rect x="${r2(vbX)}" y="${r2(vbY)}" width="${r2(vbW)}" height="${r2(vbH)}" fill="${xmlEscape(tab.backgroundColor ?? EXPORT_BG)}"/>`,
   );
+  // Element-shadow filter defs (spec/86); empty string when none.
+  const shadowDefs = svgShadowDefs(els);
+  if (shadowDefs) parts.push(shadowDefs);
   // Backdrop pattern (spec/48) over the colour, flat (never tilted — the
   // editor's backdrop doesn't tilt in isometric either).
   const bg = backgroundPatternDefs(tab, opts);

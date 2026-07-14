@@ -111,3 +111,52 @@ describe('describeVariant — remote-selector signal', () => {
     expect(style.borderWidth).toBe(3);
   });
 });
+
+describe('describeVariant — element shadows (spec/86)', () => {
+  const shadow = { offsetX: 0, offsetY: 4, blur: 12, opacity: 0.25 };
+  const boxCss = '0px 4px 12px rgba(15, 23, 42, 0.25)';
+  const filterCss = 'drop-shadow(0px 4px 12px rgba(15, 23, 42, 0.25))';
+
+  it('an opaque CSS shape takes the box-shadow path (follows the border radius)', () => {
+    const { style } = describeVariant(shape({ shadow }), false, false, null);
+    expect(style.boxShadow).toBe(boxCss);
+    expect(style.filter).toBeUndefined();
+  });
+
+  it('a transparent-fill shape takes the drop-shadow filter path (a box-shadow would outline nothing)', () => {
+    const { style } = describeVariant(
+      shape({ fillColor: 'transparent', shadow }),
+      false,
+      false,
+      null,
+    );
+    expect(style.filter).toBe(filterCss);
+    expect(style.boxShadow).toBeUndefined();
+  });
+
+  it('an SVG-rendered silhouette takes the filter path (shadow follows the drawn alpha)', () => {
+    const { style } = describeVariant(shape({ shape: 'diamond', shadow }), false, false, null);
+    expect(style.filter).toBe(filterCss);
+  });
+
+  it('sticky uses box-shadow, image uses the filter', () => {
+    expect(describeVariant(make('sticky', { shadow }), false, false, null).style.boxShadow).toBe(
+      boxCss,
+    );
+    expect(
+      describeVariant(make('image', { imageId: null, shadow }), false, false, null).style.filter,
+    ).toBe(filterCss);
+  });
+
+  it('no shadow field -> neither property is set (the cosmetic Tailwind classes stay in charge)', () => {
+    const { style } = describeVariant(shape(), false, false, null);
+    expect(style.boxShadow).toBeUndefined();
+    expect(style.filter).toBeUndefined();
+  });
+
+  it('unsupported types ignore a stray shadow field (spec/86 gate)', () => {
+    const { style } = describeVariant(make('text', { shadow }), false, false, null);
+    expect(style.boxShadow).toBeUndefined();
+    expect(style.filter).toBeUndefined();
+  });
+});

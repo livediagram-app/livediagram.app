@@ -165,6 +165,9 @@ export function useShapeStyleSetters({
           strokeWidth: undefined,
           strokeStyle: undefined,
           borderRadius: undefined,
+          // Reset style clears the drop shadow too (spec/86): the plain
+          // theme look carries none.
+          shadow: undefined,
           // Drop the colour-preset binding too — reset returns to the plain
           // theme look, so there's no preset to re-derive on a theme change.
           colorPreset: undefined,

@@ -46,6 +46,10 @@ type ChromeExtras = {
   // (pre-press start-snap preview); null when not armed / not snapped.
   drawHover: { x: number; y: number } | null;
   penPoints: { x: number; y: number }[] | null;
+  // Polygon tool in-flight state (spec/84): the placed vertices and
+  // the live rubber-band cursor position, both canvas coords.
+  polygonVertices: { x: number; y: number }[];
+  polygonCursor: { x: number; y: number } | null;
   wrapperRef: RefObject<HTMLDivElement | null>;
   paletteBottomY: number;
   setPaletteBottomY: Dispatch<SetStateAction<number>>;
@@ -125,6 +129,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
     onUndo,
     pendingDraw,
     penPoints,
+    polygonVertices,
+    polygonCursor,
     readOnly,
     selfParticipant,
     snapGuides,
@@ -239,6 +245,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
       <CanvasDrawPreview
         drawDrag={drawDrag}
         penPoints={penPoints}
+        polygonVertices={polygonVertices}
+        polygonCursor={polygonCursor}
         pendingDraw={pendingDraw}
         viewportZoom={viewportZoom}
         wrapperRef={wrapperRef}

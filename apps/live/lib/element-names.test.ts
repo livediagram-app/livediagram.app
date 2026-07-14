@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { createAnnotation, createShape, createSticky, createText } from '@livediagram/diagram';
+import {
+  createAnnotation,
+  createFreehand,
+  createShape,
+  createSticky,
+  createText,
+} from '@livediagram/diagram';
 import { describeMany, describeOne, elementAriaLabel, kindLabel } from './element-names';
 
 // Shared element naming (spec/71 + spec/12): the change log and the
@@ -22,6 +28,23 @@ describe('kindLabel', () => {
     expect(kindLabel(createSticky(0, 0))).toBe('Sticky note');
     expect(kindLabel(createText(0, 0))).toBe('Text');
     expect(kindLabel(createAnnotation(0, 0))).toBe('Annotation');
+  });
+
+  it('names freehand variants by what the user drew', () => {
+    const freehand = (extra: object) => ({
+      ...createFreehand(
+        [
+          { x: 0, y: 0 },
+          { x: 10, y: 10 },
+        ],
+        false,
+      ),
+      ...extra,
+    });
+    expect(kindLabel(freehand({}))).toBe('Sketch');
+    expect(kindLabel(freehand({ pen: 'highlighter' }))).toBe('Highlight');
+    expect(kindLabel(freehand({ straightEdges: true }))).toBe('Polyline');
+    expect(kindLabel(freehand({ straightEdges: true, closed: true }))).toBe('Polygon');
   });
 });
 

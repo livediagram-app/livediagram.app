@@ -8,6 +8,8 @@ const ALL_INTENTS: PendingDraw[] = [
   { type: 'image' },
   { type: 'arrow' },
   { type: 'freehand' },
+  { type: 'freehand', variant: 'highlighter' },
+  { type: 'polygon' },
 ];
 
 describe('drawBannerMessage', () => {
@@ -53,6 +55,24 @@ describe('drawBannerMessage', () => {
       'Drag to draw (release near the start to close)',
     );
     expect(drawBannerMessage({ type: 'freehand' }, true)).toBe('Drag to draw');
+  });
+
+  it('gives the highlighter variant its own copy with no close hint', () => {
+    // The highlighter never closes / fills (spec/81), so both viewports
+    // get the same short copy.
+    expect(drawBannerMessage({ type: 'freehand', variant: 'highlighter' }, false)).toBe(
+      'Drag to highlight',
+    );
+    expect(drawBannerMessage({ type: 'freehand', variant: 'highlighter' }, true)).toBe(
+      'Drag to highlight',
+    );
+  });
+
+  it('describes the polygon click-to-place gesture, shortened on mobile', () => {
+    expect(drawBannerMessage({ type: 'polygon' }, false)).toBe(
+      'Click to place points — click the start to close, double-click to finish',
+    );
+    expect(drawBannerMessage({ type: 'polygon' }, true)).toBe('Tap to place points');
   });
 
   it('returns a non-empty string for every intent on both viewports', () => {

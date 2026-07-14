@@ -203,6 +203,21 @@ export function svgShapeSilhouette(
 // closed paths fill like the canvas; open ones render stroke-only.
 export function svgFreehandShape(el: FreehandElement, stroke: string, fill: string): string {
   if (el.points.length === 0) return '';
+  const pts = el.points.map(
+    (p, i) => `${i === 0 ? 'M' : 'L'} ${r2(el.x + p.nx * el.width)} ${r2(el.y + p.ny * el.height)}`,
+  );
+  const d = pts.join(' ') + (el.closed ? ' Z' : '');
+  // Highlighter recipe (spec/81): the marker owns width + translucency
+  // (a fixed wide round stroke, multiply blend, never filled); the
+  // border presets don't apply. Mirrors FreehandSvg in the editor so
+  // thumbnails / MCP renders match the canvas.
+  if (el.pen === 'highlighter') {
+    return (
+      `<path d="${d}" fill="none" stroke="${xmlEscape(stroke)}" stroke-width="14"` +
+      ` stroke-opacity="0.45" style="mix-blend-mode:multiply"` +
+      ` stroke-linecap="round" stroke-linejoin="round"/>`
+    );
+  }
   const strokeWidth =
     BORDER_STROKE_PX[
       (el as { strokeWidth?: keyof typeof BORDER_STROKE_PX }).strokeWidth ?? 'medium'
@@ -211,13 +226,98 @@ export function svgFreehandShape(el: FreehandElement, stroke: string, fill: stri
     BORDER_DASH_ARRAY[
       (el as { strokeStyle?: keyof typeof BORDER_DASH_ARRAY }).strokeStyle ?? 'solid'
     ] ?? undefined;
-  const pts = el.points.map(
-    (p, i) => `${i === 0 ? 'M' : 'L'} ${r2(el.x + p.nx * el.width)} ${r2(el.y + p.ny * el.height)}`,
-  );
-  const d = pts.join(' ') + (el.closed ? ' Z' : '');
   const fillAttr = el.closed && fill !== 'transparent' ? xmlEscape(fill) : 'none';
   return (
     `<path d="${d}" fill="${fillAttr}" stroke="${xmlEscape(stroke)}" stroke-width="${strokeWidth}"` +
     `${dash ? ` stroke-dasharray="${dash}"` : ''} stroke-linecap="round" stroke-linejoin="round"/>`
   );
+}
+
+// Code block (spec/82): the fixed dark editor card + plain monospace lines.
+// No syntax highlighting here — the tokenizer is deliberately a live-editor
+// chunk, and un-highlighted mono is a faithful degrade for a thumbnail.
+const CODE_CARD_FILL = '#0f172a'; // slate-900
+const CODE_CARD_STROKE = '#334155'; // slate-700
+const CODE_TEXT = '#e2e8f0'; // slate-200
+const CODE_MUTED = '#64748b'; // slate-500
+const CODE_FONT = 'ui-monospace, SFMono-Regular, Menlo, monospace';
+const CODE_FONT_SIZE = 12;
+const CODE_LINE_HEIGHT = 16;
+const CODE_PAD = 12;
+
+export function svgCodeBlockShape(el: BoxedElement & { type: 'shape' }): string {
+  const card =
+    `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}"` +
+    ` rx="8" fill="${CODE_CARD_FILL}" stroke="${CODE_CARD_STROKE}" stroke-width="1.5"/>`;
+  const code = (el.code ?? '').replace(/\r\n/g, '\n');
+  const empty = code.trim().length === 0;
+  // Clip to the card: whole lines vertically, a crude char cap horizontally
+  // (12px mono is ~7.2px per char).
+  const maxLines = Math.max(1, Math.floor((el.height - CODE_PAD * 2) / CODE_LINE_HEIGHT));
+  const maxChars = Math.max(4, Math.floor((el.width - CODE_PAD * 2) / 7.2));
+  const lines = (empty ? ['// double-click to add code'] : code.split('\n')).slice(0, maxLines);
+  const textColor = empty ? CODE_MUTED : CODE_TEXT;
+  const lineStr = lines
+    .map(
+      (line, i) =>
+        `<text x="${r2(el.x + CODE_PAD)}" y="${r2(el.y + CODE_PAD + CODE_LINE_HEIGHT * i + CODE_FONT_SIZE * 0.85)}"` +
+        ` font-family="${CODE_FONT}" font-size="${CODE_FONT_SIZE}" fill="${textColor}"` +
+        ` xml:space="preserve">${xmlEscape(line.slice(0, maxChars))}</text>`,
+    )
+    .join('');
+  // Language badge, top-right, hidden for 'plain' (spec/82).
+  const lang = el.codeLanguage && el.codeLanguage !== 'plain' ? el.codeLanguage : null;
+  const badge = lang
+    ? `<text x="${r2(el.x + el.width - CODE_PAD)}" y="${r2(el.y + CODE_PAD + 2)}" font-family="${CODE_FONT}"` +
+      ` font-size="10" fill="${CODE_MUTED}" text-anchor="end">${xmlEscape(lang)}</text>`
+    : '';
+  return card + lineStr + badge;
+}
+
+// Checklist (spec/83): the themed card + one square-and-text row per item,
+// done rows ticked, struck through, and muted, plus the done-count footer.
+const CHECK_ROW_HEIGHT = 26;
+const CHECK_BOX_SIZE = 14;
+const CHECK_PAD = 12;
+
+export function svgChecklistShape(
+  el: BoxedElement & { type: 'shape' },
+  fill: string,
+  stroke: string,
+  textColor: string,
+): string {
+  const card =
+    `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}"` +
+    ` rx="8" fill="${xmlEscape(fill)}" stroke="${xmlEscape(stroke)}" stroke-width="1.5"/>`;
+  const items = el.checklistItems ?? [];
+  const maxRows = Math.max(1, Math.floor((el.height - CHECK_PAD * 2) / CHECK_ROW_HEIGHT));
+  const maxChars = Math.max(4, Math.floor((el.width - CHECK_PAD * 3 - CHECK_BOX_SIZE) / 7));
+  const rows = items
+    .slice(0, maxRows)
+    .map((item, i) => {
+      const rowY = el.y + CHECK_PAD + CHECK_ROW_HEIGHT * i;
+      const boxY = rowY + (CHECK_ROW_HEIGHT - CHECK_BOX_SIZE) / 2 - 2;
+      const box = item.done
+        ? `<rect x="${r2(el.x + CHECK_PAD)}" y="${r2(boxY)}" width="${CHECK_BOX_SIZE}" height="${CHECK_BOX_SIZE}"` +
+          ` rx="3" fill="${xmlEscape(stroke)}"/>` +
+          `<path d="M ${r2(el.x + CHECK_PAD + 3.2)} ${r2(boxY + 7.4)} l 2.6 2.6 l 5 -5.4"` +
+          ` fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>`
+        : `<rect x="${r2(el.x + CHECK_PAD)}" y="${r2(boxY)}" width="${CHECK_BOX_SIZE}" height="${CHECK_BOX_SIZE}"` +
+          ` rx="3" fill="none" stroke="${xmlEscape(stroke)}" stroke-width="1.5"/>`;
+      const text =
+        `<text x="${r2(el.x + CHECK_PAD * 2 + CHECK_BOX_SIZE)}" y="${r2(boxY + CHECK_BOX_SIZE - 3)}"` +
+        ` font-family="system-ui, sans-serif" font-size="13" fill="${xmlEscape(textColor)}"` +
+        `${item.done ? ' text-decoration="line-through" opacity="0.55"' : ''}>` +
+        `${xmlEscape(item.text.slice(0, maxChars))}</text>`;
+      return box + text;
+    })
+    .join('');
+  const doneCount = items.filter((i) => i.done).length;
+  const footer =
+    doneCount > 0
+      ? `<text x="${r2(el.x + el.width - CHECK_PAD)}" y="${r2(el.y + el.height - 8)}"` +
+        ` font-family="system-ui, sans-serif" font-size="10" fill="${xmlEscape(textColor)}"` +
+        ` opacity="0.6" text-anchor="end">${doneCount}/${items.length}</text>`
+      : '';
+  return card + rows + footer;
 }

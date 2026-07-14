@@ -15,10 +15,12 @@ import {
   supportsBorderControls,
   supportsBorderRadius,
   supportsColours,
+  supportsShadow,
   type BorderRadius,
   type BorderStroke,
   type BorderStyle,
   type BoxedElement,
+  type ElementShadow,
   type Padding,
   type ShapeElement,
   type TextAlignX,
@@ -116,6 +118,12 @@ export function MultiSelectionContextMenu({
           | undefined;
         const radiusSrc = sel.find((el) => supportsBorderRadius(el)) as
           | { borderRadius?: BorderRadius }
+          | undefined;
+        // Shadow (spec/86): the section shows when any member supports it;
+        // the sliders/active-tile read off the first such member, and the
+        // setters apply selection-wide (unsupported members no-op).
+        const shadowSrc = sel.find((el) => supportsShadow(el)) as
+          | { shadow?: ElementShadow }
           | undefined;
         const arrowSrc = arrowSel[0];
         // Arrow-with-label / table members get the content Text section
@@ -236,6 +244,7 @@ export function MultiSelectionContextMenu({
                   borderableSel={borderableSel}
                   borderSrc={borderSrc}
                   radiusSrc={radiusSrc}
+                  shadowSrc={shadowSrc}
                   techIconSrc={techIconSrc}
                   onClose={onClose}
                 />
@@ -257,6 +266,7 @@ export function MultiSelectionContextMenu({
               borderableSel={borderableSel}
               borderSrc={borderSrc}
               radiusSrc={radiusSrc}
+              shadowSrc={shadowSrc}
               techIconSrc={techIconSrc}
               onClose={onClose}
             />

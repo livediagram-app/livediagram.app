@@ -15,7 +15,13 @@ export function kindLabel(el: Element): string {
   if (el.type === 'table') return 'Table';
   if (el.type === 'image') return 'Image';
   if (el.type === 'annotation') return 'Annotation';
-  if (el.type === 'freehand') return 'Sketch';
+  if (el.type === 'freehand') {
+    // The marker pen (spec/81) and the polygon tool (spec/84) both
+    // commit FreehandElements; name them by what the user drew.
+    if (el.pen === 'highlighter') return 'Highlight';
+    if (el.straightEdges) return el.closed ? 'Polygon' : 'Polyline';
+    return 'Sketch';
+  }
   if (el.type === 'link-card') return 'Link card';
   if (el.type === 'shape') {
     // Hyphenated kinds read as prose ('pie-chart' → 'Pie chart').

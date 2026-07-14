@@ -1,8 +1,11 @@
 import {
   addTableColumn,
   addTableRow,
+  CHECKLIST_MAX_ITEMS,
+  CHECKLIST_MAX_TEXT,
   clampPercent,
   clampRating,
+  CODE_MAX_LENGTH,
   isChartShape,
   isProgressShape,
   RAIL_DEFAULT_POINTS,
@@ -11,6 +14,8 @@ import {
   RAIL_POINT_STEP_PX,
   type AnimationSpeed,
   type ChartLegendPosition,
+  type ChecklistItem,
+  type CodeLanguage,
   type Element,
   type LineSeries,
   type PieAnim,
@@ -141,6 +146,53 @@ export function useDataShapeSetters({ currentSelectionIds, commit }: DataShapeSe
     track('Element', 'Changed', 'TimelineRail');
   };
 
+  // Code block (spec/82): replace the snippet + language together (the edit
+  // dialog commits once on Save — one undo step), gated to code-block shapes.
+  const setCodeSelected = (code: string, language: CodeLanguage) => {
+    const ids = currentSelectionIds();
+    if (ids.size === 0) return;
+    commit((els) =>
+      els.map((el) =>
+        ids.has(el.id) && el.type === 'shape' && el.shape === 'code-block'
+          ? { ...el, code: code.slice(0, CODE_MAX_LENGTH), codeLanguage: language }
+          : el,
+      ),
+    );
+    track('Element', 'Changed', 'CodeBlock');
+  };
+
+  // Checklist (spec/83). The on-canvas checkbox toggles one row by element
+  // id (like the rail's inline label editor); the context-menu section
+  // replaces the whole rows array (add / remove / retitle).
+  const toggleChecklistItem = (elementId: string, index: number) => {
+    commit((els) =>
+      els.map((el) => {
+        if (el.id !== elementId || el.type !== 'shape' || el.shape !== 'checklist') return el;
+        const items = (el.checklistItems ?? []).map((item, i) =>
+          i === index ? { ...item, done: !item.done } : item,
+        );
+        return { ...el, checklistItems: items };
+      }),
+    );
+    // Box ticks deliberately don't track: high-frequency, low-signal,
+    // matching spec/39's vote-cast precedent.
+  };
+  const setChecklistItemsSelected = (items: ChecklistItem[]) => {
+    const ids = currentSelectionIds();
+    if (ids.size === 0) return;
+    const bounded = items
+      .slice(0, CHECKLIST_MAX_ITEMS)
+      .map((i) => ({ text: i.text.slice(0, CHECKLIST_MAX_TEXT), done: i.done }));
+    commit((els) =>
+      els.map((el) =>
+        ids.has(el.id) && el.type === 'shape' && el.shape === 'checklist'
+          ? { ...el, checklistItems: bounded }
+          : el,
+      ),
+    );
+    track('Element', 'Changed', 'Checklist');
+  };
+
   // Rating (spec/52): the star score + its optional animation, gated to rating
   // shapes. The setters share one body (differing only in the patched field +
   // telemetry type), mirroring the progress setters.
@@ -206,6 +258,9 @@ export function useDataShapeSetters({ currentSelectionIds, commit }: DataShapeSe
     appendTableRowSelected,
     appendTableColumnSelected,
     setRailLabelSelected,
+    setCodeSelected,
+    toggleChecklistItem,
+    setChecklistItemsSelected,
     setRatingSelected,
     setRatingAnimSelected,
     setRatingAnimSpeedSelected,

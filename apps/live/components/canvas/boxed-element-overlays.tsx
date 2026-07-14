@@ -95,9 +95,23 @@ export function FreehandSvg({
   // to an empty path; the renderer then draws nothing, which is the
   // right behaviour for a degenerate single-click "stroke".
   const vbPoints = element.points.map((p) => ({ x: p.nx * 100, y: p.ny * 100 }));
-  const d = vbPoints.length < 2 ? '' : catmullRomToBezierPath(vbPoints, element.closed);
+  // Polygon-tool paths (spec/84) keep their deliberate corners:
+  // straight M/L segments instead of the Catmull-Rom smoothing the
+  // sampled pencil strokes want.
+  const d =
+    vbPoints.length < 2
+      ? ''
+      : element.straightEdges
+        ? vbPoints.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ') +
+          (element.closed ? ' Z' : '')
+        : catmullRomToBezierPath(vbPoints, element.closed);
   const dasharray = BORDER_DASH_ARRAY[element.strokeStyle ?? DEFAULT_BORDER_STYLE];
   const widthPx = BORDER_STROKE_PX[element.strokeWidth ?? DEFAULT_BORDER_STROKE];
+  // Highlighter recipe (spec/81): the marker owns width + translucency
+  // (fixed wide round stroke, multiply blend, never filled) so the
+  // border-preset widths and dash styles don't apply. Kept in sync
+  // with svgFreehandShape (the headless twin) by the spec.
+  const isHighlighter = element.pen === 'highlighter';
   return (
     <svg
       className="pointer-events-none absolute inset-0 h-full w-full overflow-visible"
@@ -110,12 +124,14 @@ export function FreehandSvg({
           d={d}
           // Closed paths get the fill; open strokes leave fill at
           // none so the bounding box doesn't read as a closed shape.
-          fill={element.closed ? fill : 'none'}
+          fill={element.closed && !isHighlighter ? fill : 'none'}
           stroke={stroke}
-          strokeWidth={widthPx}
+          strokeWidth={isHighlighter ? 14 : widthPx}
+          strokeOpacity={isHighlighter ? 0.45 : undefined}
+          style={isHighlighter ? { mixBlendMode: 'multiply' } : undefined}
           strokeLinecap="round"
           strokeLinejoin="round"
-          strokeDasharray={dasharray ?? undefined}
+          strokeDasharray={isHighlighter ? undefined : (dasharray ?? undefined)}
           vectorEffect="non-scaling-stroke"
         />
       ) : null}

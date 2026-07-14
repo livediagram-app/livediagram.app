@@ -2,24 +2,25 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import { PencilStroke, ShapeRecognition } from '@/components/illustrations/palette-tools';
+import { HighlighterStroke, PolygonDraw } from '@/components/illustrations/palette-tools-drawing';
 
 export const metadata = helpMetadata({
   title: 'Drawing and Sketch',
   description:
-    'Sketch freehand with the Pencil tool, with an optional shape-recognition mode that turns rough strokes into real shapes.',
+    'Sketch freehand with the Pencil tool, call attention to things with the Highlighter, and place clean point-by-point outlines with the Polygon tool.',
   path: '/help/palette/tools/drawing/',
 });
 
 <ArticleLayout
   title="Drawing and Sketch"
-  description="Sketch freehand on the canvas with the Pencil, and optionally let livediagram tidy your strokes into real shapes."
+  description="Sketch freehand with the Pencil, highlight with the marker, place point-by-point polygons, and optionally let livediagram tidy your strokes into real shapes."
   categoryTitle="Palette"
   categorySlug="palette"
   parentArticle={{ title: "Tools", slug: "tools" }}
   subArticles={getSubArticles("drawing")}
 >
 
-Sometimes the fastest way to capture an idea is to draw it. The Pencil tool lets you sketch freehand on the canvas, producing smooth hand-drawn strokes you can move, resize, and style like any other element. An optional shape-recognition mode goes one step further and turns rough sketches into real shapes.
+Sometimes the fastest way to capture an idea is to draw it. The Tools tab holds three drawing tools: the **Pencil** for smooth freehand strokes, the **Highlighter** for calling attention to things with a wide translucent marker, and the **Polygon** tool for clean point-by-point outlines. Everything they draw is a regular element you can move, resize, and style, and an optional shape-recognition mode turns rough Pencil sketches into real shapes.
 
 ## The Pencil tool
 
@@ -44,6 +45,42 @@ A committed sketch is a regular boxed element. Its stroke colour follows the tab
 - Move it, resize it (the path scales proportionally), and lock or group it.
 - Recolour its stroke and fill from the element's Colours controls.
 - Apply the format painter, themes, and comments, exactly as with any shape.
+
+## The Highlighter
+
+The Highlighter sits directly beside the Pencil in the Tools tab and works the same way: pick it, then drag. Instead of a pen line it lays down a **wide, semi-transparent marker stroke**, so text and shapes underneath stay legible and overlapping strokes darken like a real marker. It is made for reviews and workshops, circling a region or underlining a label, rather than for sketching shapes.
+
+<Figure caption="A highlighter swipe over a shape: the wide translucent stroke leaves the label underneath legible.">
+  <HighlighterStroke />
+</Figure>
+
+A few deliberate differences from the Pencil:
+
+- **Always yellow on creation**, whatever the theme, so highlights read as annotations rather than diagram content. You can recolour a committed stroke afterwards from its Colours controls, like any element.
+- **No shape recognition.** Highlighter strokes always commit exactly as drawn, even with the Pencil's recognition mode on.
+- **No close-to-fill.** Ending a stroke back at its start never closes or fills it; a highlight is always an open stroke.
+
+The marker keeps its width when you resize the stroke, so a scaled-up highlight still looks like the same pen.
+
+## The Polygon tool
+
+The Polygon tool fills the gap between freehand sketching and the fixed shapes: clean, straight-edged outlines with exactly the corners you choose, for zones on an architecture diagram, floor plans, or any irregular region.
+
+<Step n={1}>Select the Polygon tool from the Tools tab.</Step>
+<Step n={2}>
+  Click to place each point. A preview line follows your pointer from the last point you placed.
+</Step>
+<Step n={3}>
+  Click the **start point** (a snap ring appears when you are close) to close the outline into a
+  **filled polygon**, or **double-click** (or press `Enter`) to finish an **open line** at the last
+  point.
+</Step>
+
+<Figure caption="Placing polygon points click by click, with the snap ring on the start point ready to close the outline.">
+  <PolygonDraw />
+</Figure>
+
+While placing points, `Backspace` removes the last point so you can walk a mistake back without starting over, and `Escape` clears the in-progress outline. A closed polygon fills with the theme's fill colour like any closed sketch; an open line stays stroke-only.
 
 ## Shape recognition
 

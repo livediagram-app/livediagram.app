@@ -6,6 +6,8 @@ import {
   defaultFillColor,
   defaultStrokeColor,
   isBarShape,
+  isChecklistShape,
+  isCodeBlockShape,
   isLineShape,
   isPieShape,
   isProgressShape,
@@ -20,13 +22,21 @@ import { ProgressView } from '@/components/canvas/ProgressView';
 import { RailView } from '@/components/canvas/RailView';
 import { RatingView } from '@/components/canvas/RatingView';
 import { PieChartView } from '@/components/canvas/PieChartView';
+import { CodeBlockView } from '@/components/canvas/CodeBlockView';
+import { ChecklistView } from '@/components/canvas/ChecklistView';
 import { BarChartView } from '@/components/canvas/BarChartView';
 import { LineChartView } from '@/components/canvas/LineChartView';
 import type { BoxedElementViewProps } from '@/components/canvas/BoxedElementView.types';
 
 type ShapeContentRouterProps = Pick<
   BoxedElementViewProps,
-  'element' | 'isSelected' | 'readOnly' | 'onSetRailLabel' | 'chartPalette' | 'fontFamily'
+  | 'element'
+  | 'isSelected'
+  | 'readOnly'
+  | 'onSetRailLabel'
+  | 'onToggleChecklistItem'
+  | 'chartPalette'
+  | 'fontFamily'
 > & {
   accent: string;
   textColor: string;
@@ -48,6 +58,7 @@ export function ShapeContentRouter({
   isSelected,
   readOnly,
   onSetRailLabel,
+  onToggleChecklistItem,
   chartPalette,
   fontFamily,
   svgAnim,
@@ -123,6 +134,22 @@ export function ShapeContentRouter({
       fontFamily={fontFamily}
       textColor={textColor}
       palette={chartPalette}
+    />
+  ) : element.type === 'shape' && isCodeBlockShape(element.shape) ? (
+    // Code block (spec/82): the fixed dark editor card. Deliberately takes
+    // no theme colours — the dark card is its identity.
+    <CodeBlockView element={element} />
+  ) : element.type === 'shape' && isChecklistShape(element.shape) ? (
+    // Checklist (spec/83): themed card of checkbox rows; boxes toggle
+    // on-canvas for anyone with edit access (no select-first required).
+    <ChecklistView
+      element={element}
+      accent={accent}
+      fill={element.fillColor ?? defaultFillColor(element)}
+      textColor={textColor}
+      fontFamily={fontFamily}
+      editable={!readOnly && !isLocked}
+      onToggle={onToggleChecklistItem}
     />
   ) : element.type === 'shape' && isLineShape(element.shape) ? (
     // Line chart (spec/53): multi-series lines + a legend.

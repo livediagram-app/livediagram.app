@@ -1,0 +1,51 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { ChecklistCard } from '@/components/illustrations/palette-tools-cards';
+
+export const metadata = helpMetadata({
+  title: 'Checklists',
+  description:
+    'Add a card of checkable to-do rows to the canvas, tick boxes with a click that syncs live to everyone, and edit the rows from the context menu.',
+  path: '/help/palette/tools/checklists/',
+});
+
+<ArticleLayout
+  title="Checklists"
+  description="A card of checkable to-do rows you tick right on the canvas."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  parentArticle={{ title: 'Tools', slug: 'tools' }}
+  subArticles={getSubArticles('tools').filter((a) => a.slug !== 'checklists')}
+>
+
+A checklist is a card of checkable to-do rows, a visual home for the task lists that end up on agile boards, retros, and project plans. It is a real canvas element, so you can place, resize, recolour, group, and move it like anything else, and its colours follow the tab's [theme](/help/canvas/themes/) like any shape.
+
+<Figure caption="A checklist card with two rows ticked off: done rows strike through, and the footer counts progress.">
+  <ChecklistCard />
+</Figure>
+
+## Adding one
+
+<Step n={1}>Open the floating palette and switch to the **Tools** tab.</Step>
+<Step n={2}>
+  Click **Checklist** to drop one on the canvas, or drag on the canvas to draw it at a size. It
+  starts with a few placeholder rows to overwrite.
+</Step>
+<Step n={3}>**Click a row's checkbox** to tick it off.</Step>
+
+## Ticking rows
+
+Clicking a checkbox on the canvas toggles that row, no edit mode needed. Done rows tick the box, **strike through** the text, and mute it, and a **done count** (for example "2/5") appears in the card's bottom-right corner once at least one row is done. Every toggle is a single undoable change and **syncs live**, so in a shared session everyone sees a box tick the moment it is clicked.
+
+## Editing the rows
+
+Right-click the checklist, open **Tools**, and choose **Checklist** to edit the rows: retitle any row, toggle its done state, remove it, or **Add row** (up to 30 rows per checklist). Edits commit as normal undoable changes, just like ticking a box.
+
+<Tip>
+  Pair a checklist with [assigned actions](/help/collaboration/assigned-actions/): the checklist
+  shows the plan at a glance on the board, while assigned actions put a specific person's name on a
+  piece of work.
+</Tip>
+
+</ArticleLayout>

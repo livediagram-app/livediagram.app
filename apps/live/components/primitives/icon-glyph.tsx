@@ -31,6 +31,27 @@ function Prim({ p }: { p: IconPrim }) {
       return <polygon points={p.points} vectorEffect={ve} />;
     case 'ellipse':
       return <ellipse cx={p.cx} cy={p.cy} rx={p.rx} ry={p.ry} vectorEffect={ve} />;
+    case 'text':
+      // Colour-emoji glyph (spec/85): the emoji font supplies the colours,
+      // so the wrapper's stroke tint is a harmless no-op. The wrapper svg
+      // sets fill="none" for the line-art prims, which would blank a
+      // <text> glyph — override with an explicit fill (colour-emoji
+      // glyphs ignore it; a non-emoji fallback character paints in the
+      // tint colour), and stroke="none" so nothing renders hollow.
+      return (
+        <text
+          x={p.x}
+          y={p.y}
+          fontSize={p.size}
+          fontFamily="system-ui, 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif"
+          textAnchor="middle"
+          dominantBaseline="central"
+          fill="currentColor"
+          stroke="none"
+        >
+          {p.text}
+        </text>
+      );
   }
 }
 

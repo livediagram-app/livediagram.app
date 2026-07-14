@@ -63,6 +63,8 @@ export function CommandPalette({
   onAddImage,
   onAddArrow,
   onBeginFreehand,
+  onBeginHighlighter,
+  onBeginPolygon,
   pendingDraw,
   onSize,
   mobileTopOverridePx,
@@ -182,6 +184,16 @@ export function CommandPalette({
     onDrawArmed?.();
     onMobileClose?.();
   };
+  const beginHighlighter = () => {
+    onBeginHighlighter();
+    onDrawArmed?.();
+    onMobileClose?.();
+  };
+  const beginPolygon = () => {
+    onBeginPolygon();
+    onDrawArmed?.();
+    onMobileClose?.();
+  };
   const addImage = () => {
     onAddImage?.();
     onMobileClose?.();
@@ -207,6 +219,8 @@ export function CommandPalette({
     addShape,
     addText,
     beginFreehand,
+    beginHighlighter,
+    beginPolygon,
     addArrow,
     addSticky,
     addTable,

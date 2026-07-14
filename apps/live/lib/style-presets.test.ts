@@ -9,6 +9,7 @@ import {
   applyColorPresetToEl,
   applyFillColorToEl,
   applyRotationToEl,
+  applyShadowToEl,
   applyStrokeColorToEl,
   applyTextColorToEl,
 } from './style-presets';
@@ -151,5 +152,32 @@ describe('applyArrowPresetToEl', () => {
   it('is a no-op on non-arrows', () => {
     const s = el('shape');
     expect(applyArrowPresetToEl(s, { style: 'solid', thickness: 'thin' })).toBe(s);
+  });
+});
+
+describe('applyShadowToEl', () => {
+  const shadow = { offsetX: 0, offsetY: 4, blur: 12, opacity: 0.25 };
+
+  it('sets a clamped shadow on the body-drawing boxed types (spec/86)', () => {
+    for (const type of ['shape', 'sticky', 'image', 'link-card']) {
+      const out = applyShadowToEl(el(type), shadow) as { shadow?: unknown };
+      expect(out.shadow, type).toEqual(shadow);
+    }
+    const wild = applyShadowToEl(el('shape'), { ...shadow, blur: 999 }) as {
+      shadow?: { blur: number };
+    };
+    expect(wild.shadow?.blur).toBe(48);
+  });
+
+  it('null clears the field (the None tile)', () => {
+    const out = applyShadowToEl(el('shape', { shadow }), null) as { shadow?: unknown };
+    expect(out.shadow).toBeUndefined();
+  });
+
+  it('no-ops (same reference) on unsupported types', () => {
+    for (const type of ['text', 'freehand', 'annotation', 'table', 'arrow']) {
+      const source = el(type);
+      expect(applyShadowToEl(source, shadow), type).toBe(source);
+    }
   });
 });

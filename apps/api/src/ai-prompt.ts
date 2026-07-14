@@ -28,6 +28,7 @@ ShapeKind — pick semantically, defaulting to "square":
   "diamond"       decisions and branch points ONLY
   "stadium"       flowchart Start/End terminals
   "cylinder"      databases and storage ONLY
+  "checklist"     to-do card for plans/retros; add checklistItems:[{text,done}] (max 30 rows)
   "parallelogram" input/output in flowcharts
   "hexagon"       process hubs, APIs, gateways
   "document"      documents, reports, files

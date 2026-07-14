@@ -12,6 +12,7 @@ import {
   type BorderStyle,
   type BoxedElement,
   type Element,
+  type ElementShadow,
   type ShapeElement,
 } from '@livediagram/diagram';
 import { onMouseHover } from '@/components/primitives/hover-preview';
@@ -35,6 +36,7 @@ import {
   IconSizeTiles,
 } from '@/components/palette/context-menu-tiles';
 import { BorderGrid, ColourRow, PieAnimTiles } from '@/components/palette/context-menu-rows';
+import { ShadowSection } from '@/components/palette/ShadowSection';
 import { BORDER_RADII, BORDER_STROKES, BORDER_STYLES } from './context-menu-constants';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import type { useContextMenuScaffold } from './useContextMenuScaffold';
@@ -62,6 +64,7 @@ export function MultiStyleSections({
   borderableSel,
   borderSrc,
   radiusSrc,
+  shadowSrc,
   techIconSrc,
   onClose,
 }: {
@@ -80,6 +83,9 @@ export function MultiStyleSections({
   // First member whose kind rounds corners — gates + feeds the Radius
   // grid, mirroring the single menu's supportsBorderRadius branch.
   radiusSrc: { borderRadius?: BorderRadius } | undefined;
+  // First shadow-supporting member (spec/86) — gates + feeds the Shadow
+  // section, mirroring the single menu's supportsShadow branch.
+  shadowSrc: { shadow?: ElementShadow } | undefined;
   techIconSrc: ShapeElement | undefined;
   onClose: () => void;
 }) {
@@ -254,6 +260,18 @@ export function MultiStyleSections({
             ) : null}
           </div>
         </MenuAccordionSection>
+      ) : null}
+      {/* Shadow (spec/86) — presets + sliders, selection-wide like Border.
+          Reads off the first shadow-supporting member. */}
+      {part === 'style' && shadowSrc ? (
+        <ShadowSection
+          shadow={shadowSrc.shadow}
+          section={sectionProps('m-shadow')}
+          onSetShadow={props.onSetShadow}
+          onCommitPreset={props.onCommitShadow}
+          onPreviewPreset={props.onPreviewShadow}
+          onPreviewEnd={props.onPreviewStyleEnd}
+        />
       ) : null}
       {/* Icon — a Technology icon's fixed tile size (spec/41), when
           the selection holds any; applies to every tech icon in it. */}
