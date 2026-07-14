@@ -29,35 +29,6 @@ function TextGlyph() {
   );
 }
 
-function PencilGlyph() {
-  return (
-    <g>
-      <path
-        d="M-7 7 L4 -4 l3 3 L-4 10 Z"
-        className="fill-brand-100 stroke-brand-500"
-        strokeWidth={1.6}
-        strokeLinejoin="round"
-      />
-      <path d="M3 -5 l3 3" className="stroke-brand-500" strokeWidth={1.6} />
-    </g>
-  );
-}
-
-function ArrowGlyph() {
-  return (
-    <g
-      className="stroke-brand-500"
-      strokeWidth={2}
-      fill="none"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M-8 0 h14" />
-      <path d="M2 -5 l5 5 l-5 5" />
-    </g>
-  );
-}
-
 function StickyGlyph() {
   return (
     <g>
@@ -77,91 +48,89 @@ function StickyGlyph() {
   );
 }
 
-function TableGlyph() {
-  return (
-    <g className="stroke-brand-500" strokeWidth={1.6} fill="none">
-      <rect x={-8} y={-7} width={16} height={14} rx={2} />
-      <path d="M-8 -1 h16 M-8 4 h16 M-2 -7 v14 M3 -7 v14" />
-    </g>
-  );
-}
-
-function ImageGlyph() {
+// A small note-marker circle for the Write group's Annotation tile.
+function AnnotationGlyph() {
   return (
     <g>
-      <rect
-        x={-8}
-        y={-7}
-        width={16}
-        height={14}
-        rx={2}
-        className="stroke-brand-500"
-        strokeWidth={1.6}
-        fill="none"
-      />
-      <circle cx={-3} cy={-2} r={2} className="fill-brand-400" />
-      <path
-        d="M-8 5 l5 -5 l5 4 l3 -2 l3 3"
-        className="stroke-brand-500"
-        strokeWidth={1.6}
-        fill="none"
-        strokeLinejoin="round"
-      />
+      <circle r={6} fill="none" stroke="currentColor" strokeWidth={1.6} className="text-current" />
+      <circle r={1.4} className="fill-current" />
     </g>
   );
 }
 
-function FrameGlyph() {
-  return (
-    <g className="stroke-brand-500" strokeWidth={1.6} fill="none">
-      <rect x={-8} y={-5} width={16} height={11} rx={2} />
-      <path d="M-8 -5 h16" />
-    </g>
-  );
-}
-
-function ChartGlyph() {
-  return (
-    <g className="stroke-slate-400" strokeWidth={1.8} fill="none" strokeLinecap="round">
-      <path d="M-7 7 h14" />
-      <path d="M-4 4 v-6 M0 4 v-9 M4 4 v-4" />
-    </g>
-  );
-}
-
-const TOOLS_TILES: [string, () => ReactElement][] = [
+// The Write group's tiles — the group the accordion shows open by default.
+const WRITE_TILES: [string, () => ReactElement][] = [
   ['Text', TextGlyph],
-  ['Pencil', PencilGlyph],
-  ['Arrow', ArrowGlyph],
-  ['Sticky', StickyGlyph],
-  ['Table', TableGlyph],
-  ['Image', ImageGlyph],
-  ['Frame', FrameGlyph],
-  ['Chart', ChartGlyph],
+  ['Note', StickyGlyph],
+  ['Annotation', AnnotationGlyph],
 ];
 
-/** The palette open on the Tools tab: a labelled grid of tool tiles, with the
- *  Pencil tile selected, exactly what you see when you switch tabs. */
-export function ToolsTab() {
-  const cols = 4;
-  const gx = 12;
-  const gy = 84;
-  const step = 56;
+// The collapsed accordion headers below the open Write group.
+const CLOSED_GROUPS = ['Draw', 'Structure', 'Blocks', 'People & media', 'Data'];
+
+/** One accordion header row: uppercase group label + a chevron (down when
+ *  open, right when collapsed), matching the editor's Tools-tab groups. */
+function AccordionHeader({
+  x,
+  y,
+  w,
+  label,
+  open,
+}: {
+  x: number;
+  y: number;
+  w: number;
+  label: string;
+  open?: boolean;
+}) {
+  const cx = x + w - 8;
+  const cy = y + 1;
   return (
-    <Scene w={300} h={236} bg="plain">
-      <Panel x={36} y={20} w={228} h={200} title="PALETTE">
+    <g>
+      <Label x={x} y={y + 4} size={8} tone="muted">
+        {label.toUpperCase()}
+      </Label>
+      <path
+        d={open ? `M${cx - 3} ${cy - 1.5} l3 3 l3 -3` : `M${cx - 1.5} ${cy - 3} l3 3 l-3 3`}
+        fill="none"
+        strokeWidth={1.5}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="stroke-slate-400"
+      />
+    </g>
+  );
+}
+
+/** The palette open on the Tools tab: grouped accordions with Write open
+ *  (Text / Note / Annotation tiles) and the other groups collapsed to
+ *  chevroned headers, exactly what you see when you switch tabs. */
+export function ToolsTab() {
+  const px = 48;
+  const pw = 204;
+  const gridY = 106;
+  const closedY = 172;
+  const rowStep = 20;
+  return (
+    <Scene w={300} h={310} bg="plain">
+      <Panel x={36} y={20} w={228} h={274} title="PALETTE">
         <Tabs x={48} y={54} items={['Shapes', 'Tools']} active={1} tabW={88} h={22} />
-        {TOOLS_TILES.map(([label, Glyph], i) => {
-          const col = i % cols;
-          const row = Math.floor(i / cols);
-          const tx = 36 + gx + col * step;
-          const ty = gy + row * step + (row === 0 ? 0 : 12);
-          return (
-            <Tile key={label} x={tx} y={ty} size={36} active={label === 'Pencil'} label={label}>
-              <Glyph />
-            </Tile>
-          );
-        })}
+        <AccordionHeader x={px} y={90} w={pw} label="Write" open />
+        {WRITE_TILES.map(([label, Glyph], i) => (
+          <Tile
+            key={label}
+            x={px + 6 + i * 66}
+            y={gridY}
+            size={36}
+            active={label === 'Text'}
+            label={label}
+          >
+            <Glyph />
+          </Tile>
+        ))}
+        {CLOSED_GROUPS.map((label, i) => (
+          <AccordionHeader key={label} x={px} y={closedY + i * rowStep} w={pw} label={label} />
+        ))}
       </Panel>
     </Scene>
   );

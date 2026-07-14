@@ -46,11 +46,29 @@ export type PaletteTileAction =
   | { type: 'icon'; iconId: string }
   | { type: 'tech-icon'; iconId: string };
 
+// Themed sub-groups within the Tools section (spec/09 "Sub-categories"):
+// the Tools tab renders one labelled grid per group instead of a flat
+// sixteen-tile wall. Group membership is metadata on the tile — ids stay
+// stable, so favourites persistence and search are untouched.
+export type ToolGroupId = 'write' | 'draw' | 'structure' | 'blocks' | 'media';
+
+// Display order + headings for the Tools tab's groups.
+export const TOOL_GROUPS: { id: ToolGroupId; label: string }[] = [
+  { id: 'write', label: 'Write' },
+  { id: 'draw', label: 'Draw' },
+  { id: 'structure', label: 'Structure' },
+  { id: 'blocks', label: 'Blocks' },
+  { id: 'media', label: 'People & media' },
+];
+
 export type PaletteTileDef = {
   // Stable id, persisted in the favourites list — never rename one without
   // accepting that saved favourites referencing it fall back silently.
   id: string;
   section: PaletteTileSection;
+  // Which Tools-tab group the tile renders under. Required exactly when
+  // `section === 'tools'` (a test pins this); meaningless elsewhere.
+  toolGroup?: ToolGroupId;
   label: string;
   // Overrides the caption derived from `label` where that runs too long
   // for the tile (see IconButton).
@@ -342,6 +360,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     id: 'tools:text',
     section: 'tools',
+    toolGroup: 'write',
     label: 'Add text',
     description: 'Text element. Double-click to edit.',
     shortcut: 'T',
@@ -360,6 +379,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     id: 'tools:pencil',
     section: 'tools',
+    toolGroup: 'draw',
     label: 'Pencil (freehand)',
     description:
       'Sketch a freehand stroke. Drag to draw; release near the start to close the shape.',
@@ -392,6 +412,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     id: 'tools:highlighter',
     section: 'tools',
+    toolGroup: 'draw',
     label: 'Highlighter',
     description: 'Wide translucent marker. Drag to call attention to a region.',
     action: { type: 'highlighter' },
@@ -418,6 +439,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     id: 'tools:polygon',
     section: 'tools',
+    toolGroup: 'draw',
     label: 'Polygon',
     description: 'Click to place points. Click the start to close, double-click to finish a line.',
     action: { type: 'polygon' },
@@ -440,6 +462,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     id: 'tools:arrow',
     section: 'tools',
+    toolGroup: 'draw',
     label: 'Add arrow',
     description: 'Plain connector. Add pointers in the Pointer accordion.',
     shortcut: 'A',
@@ -461,6 +484,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     id: 'tools:sticky',
     section: 'tools',
+    toolGroup: 'write',
     label: 'Add sticky note',
     caption: 'Note',
     description: 'Sticky note for short annotations.',
@@ -489,6 +513,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     id: 'tools:table',
     section: 'tools',
+    toolGroup: 'structure',
     label: 'Add table',
     description: 'Editable grid. Double-click a cell to type.',
     action: { type: 'table' },
@@ -513,6 +538,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     id: 'tools:code-block',
     section: 'tools',
+    toolGroup: 'blocks',
     label: 'Add code block',
     caption: 'Code',
     description: 'Monospace code snippet with syntax highlighting. Double-click to edit.',
@@ -537,6 +563,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     id: 'tools:checklist',
     section: 'tools',
+    toolGroup: 'blocks',
     label: 'Add checklist',
     caption: 'Checklist',
     description: 'Checkable to-do rows. Tick boxes on the canvas; edit rows from the menu.',
@@ -565,6 +592,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     id: 'tools:image',
     section: 'tools',
+    toolGroup: 'media',
     label: 'Add image',
     description: 'Drop an image placeholder + pick / upload a file.',
     shortcut: '9',
@@ -598,6 +626,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     id: 'tools:avatar',
     section: 'tools',
+    toolGroup: 'media',
     label: 'Add avatar',
     description:
       'Avatar. A circular image. Tap to drop or drag to size; double-click it to pick / upload a photo.',
@@ -625,6 +654,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     id: 'tools:user',
     section: 'tools',
+    toolGroup: 'media',
     label: 'Add user',
     description: 'User / actor. Use-case and architecture diagrams.',
     action: { type: 'shape', kind: 'actor' },
@@ -651,6 +681,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     id: 'tools:frame',
     section: 'tools',
+    toolGroup: 'structure',
     label: 'Add frame',
     description: 'Frame. A titled container you draw around a cluster of elements.',
     shortcut: 'F',
@@ -674,6 +705,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     id: 'tools:annotation',
     section: 'tools',
+    toolGroup: 'write',
     label: 'Add annotation',
     description: 'Annotation. A note marker: hover to read it, click to edit.',
     filled: true,
@@ -699,6 +731,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     id: 'tools:link-card',
     section: 'tools',
+    toolGroup: 'blocks',
     label: 'Add link card',
     description: "Link card. A bookmark preview with the page's title, favicon, and image.",
     noTint: true,
@@ -723,6 +756,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     id: 'tools:timeline',
     section: 'tools',
+    toolGroup: 'structure',
     label: 'Add timeline rail',
     caption: 'Timeline',
     description: 'A line with points above it. Add more points from its right-end button.',
@@ -1164,6 +1198,12 @@ export const PALETTE_TILES: PaletteTileDef[] = [
 
 export function tilesInSection(section: PaletteTileSection): PaletteTileDef[] {
   return PALETTE_TILES.filter((t) => t.section === section);
+}
+
+// The Tools tab's grouped view (spec/09 "Sub-categories"): the tools-section
+// tiles carrying the given group, in catalogue order.
+export function tilesInToolGroup(group: ToolGroupId): PaletteTileDef[] {
+  return PALETTE_TILES.filter((t) => t.section === 'tools' && t.toolGroup === group);
 }
 
 export function tileById(id: string): PaletteTileDef | undefined {
