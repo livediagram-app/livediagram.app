@@ -100,7 +100,7 @@ export const ALTERNATIVES: Alternative[] = [
       },
     ],
     themBest: [
-      'Big facilitated workshops: sticky-note voting, timers, and meeting tooling.',
+      'Facilitating very large workshops: breakout-scale sessions and a marketplace of meeting apps around the board.',
       'A deep template and integration marketplace (Jira, Slack, and more).',
       'Enterprise admin, SSO, and compliance at large scale.',
     ],
@@ -112,6 +112,7 @@ export const ALTERNATIVES: Alternative[] = [
       'Friction-free editing: tap once to add a shape, drag arrows that snap into place, and a format painter to copy a style across elements.',
       'Themed templates and one-click whole-canvas themes turn a blank board into a polished diagram fast.',
       'Walk a team through the board with the built-in present mode (laser pointer + spotlight), no export needed.',
+      'Run a retro or planning session with the built-in per-tab timer and dot-voting, synced live to every participant.',
       'Import Mermaid or Markdown, export PNG, SVG, PDF, or Mermaid text.',
     ],
     sections: [
@@ -159,7 +160,7 @@ export const ALTERNATIVES: Alternative[] = [
       },
       {
         q: 'Can livediagram run workshops the way Miro does?',
-        a: "Not really, and we'd rather be honest about it: there is no sticky-note voting, no timers, and no facilitation toolkit. Comments, assigned actions, and the built-in present mode cover lighter reviews and walkthroughs, but for big facilitated workshops Miro is the better pick.",
+        a: 'Sessions like retros, brainstorms, and planning work well: every tab has a built-in facilitator-run timer and sticky-note dot-voting synced live to all participants, alongside comments, assigned actions, and the present mode. What livediagram does not have is Miro’s large-scale facilitation ecosystem (breakout-style sessions, estimation apps, a meeting-app marketplace), so for big multi-team workshops Miro is still the deeper toolkit.',
       },
       {
         q: 'Can I self-host livediagram?',
