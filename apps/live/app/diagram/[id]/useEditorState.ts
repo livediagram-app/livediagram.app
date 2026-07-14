@@ -84,6 +84,7 @@ import { useLayersState } from './useLayersState';
 import { useInlineIconMutators } from './useInlineIconMutators';
 import { usePresenceBroadcast } from './usePresenceBroadcast';
 import { useSelectionEditing } from './useSelectionEditing';
+import { useFormatTool } from './useFormatTool';
 import { useTabEntryEffects } from './useTabEntryEffects';
 import { useEditorUiState } from './editor-ui-state';
 import { useEditorPersistence } from './editor-persistence';
@@ -245,33 +246,13 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // setter serves internal auto-switches, the tracked selectCanvasTool
   // serves the user-facing pickers.
   const { canvasTool, setCanvasTool, selectCanvasTool } = useCanvasTool({ defaultPan: embedMode });
-  // Persistent Format painter tool (spec/09). Active while the palette's
-  // Format tool is picked: clicking elements arms a source then paints its
-  // style onto each subsequent click (see useEditorDrag). Leaving the tool
-  // disarms the source so a stale source never drives the single-shot
-  // toolbar banner; entering it starts clean. A ref tracks the previous
-  // tool so the reset fires only on the format-tool boundary (a blanket
-  // `canvasTool !== 'format'` clear would wipe the single-shot painter the
-  // instant it armed, since that path runs with the Select tool active).
-  const formatToolActive = canvasTool === 'format';
-  const prevCanvasToolRef = useRef(canvasTool);
-  // The tool that was active when Format was entered, so wrapping up the
-  // Format tool returns the user to what they were doing (spec/09) rather
-  // than always dropping to Select.
-  const preFormatToolRef = useRef<typeof canvasTool>('select');
-  useEffect(() => {
-    const wasFormat = prevCanvasToolRef.current === 'format';
-    if (wasFormat !== formatToolActive) setFormatSourceId(null);
-    if (!wasFormat && formatToolActive) preFormatToolRef.current = prevCanvasToolRef.current;
-    prevCanvasToolRef.current = canvasTool;
-  }, [canvasTool, formatToolActive, setFormatSourceId]);
-  // Wrap up the Format tool (the mode banner's "Done", or a click on the
-  // empty canvas): restore the tool that was active before Format, falling
-  // back to Select (the boundary effect above clears the armed source).
-  const exitFormatTool = () => {
-    const prev = preFormatToolRef.current;
-    setCanvasTool(prev === 'format' ? 'select' : prev);
-  };
+  // Persistent Format painter tool (spec/09): the mode-boundary reset +
+  // the exit that restores the pre-Format tool. See useFormatTool.
+  const { formatToolActive, exitFormatTool } = useFormatTool({
+    canvasTool,
+    setCanvasTool,
+    setFormatSourceId,
+  });
   // templatePickerMode (from useEditorUiState) gates the derived
   // `identityOnlyScreenOpen` chrome flag; transitions live in
   // `openTemplatePicker` / `skipTemplatePicker` / `chooseTemplate`.
