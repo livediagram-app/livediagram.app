@@ -280,7 +280,7 @@ export const ALTERNATIVES: Alternative[] = [
       },
       {
         label: 'Import + export',
-        us: 'Mermaid + Markdown in; PNG, SVG, PDF, Mermaid out',
+        us: '.excalidraw, Mermaid + Markdown in; PNG, SVG, PDF, Mermaid + .excalidraw out',
         them: 'PNG, SVG + .excalidraw files',
       },
     ],
@@ -297,6 +297,7 @@ export const ALTERNATIVES: Alternative[] = [
       'Built-in charts, an icon library, comments and a present mode, without add-ons.',
       'Smart alignment guides and snapping line everything up as you drag.',
       'Mermaid in and out: import flowchart text, export the diagram back to it.',
+      'Bring your boards with you: import a .excalidraw file into a tab near-losslessly, and export back out.',
     ],
     sections: [
       {
@@ -337,7 +338,7 @@ export const ALTERNATIVES: Alternative[] = [
       },
       {
         q: 'Can I import my Excalidraw files?',
-        a: 'There is no .excalidraw importer. If the content is structured (a flowchart, a diagram with real connections), importing a Mermaid or Markdown version of it gets you a themed, laid-out livediagram version quickly.',
+        a: 'Yes. Import a .excalidraw file (the format excalidraw.com’s "Save to disk" produces) into any tab and your shapes, arrows, text, and groups come across near-losslessly, with arrow connections intact. You can also export a tab back to a .excalidraw file; since Excalidraw has fewer element types, richer livediagram elements simplify on the way out.',
       },
       {
         q: 'When should I pick Excalidraw instead?',
