@@ -125,7 +125,8 @@ same folders + diagrams as a responsive grid of cards (1 / 2 / 3 columns
 by width), each with a large snapshot and every column the list shows
 (name, owner, visibility badge, updated time, actions menu). List and
 card share one badge + actions-menu module (`diagram-row-shared.tsx`) so
-they can't drift.
+they can't drift. A real switch (not a click on the already-active side)
+emits `UI / Toggled / ExplorerViewList | ExplorerViewCard` (spec/22).
 
 The snapshot preview paints its letterbox in the diagram's own
 background colour (parsed client-side from the SVG's background rect)

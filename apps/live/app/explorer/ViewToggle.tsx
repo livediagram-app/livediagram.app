@@ -1,6 +1,7 @@
 'use client';
 
 import { Tooltip } from '@/components/primitives/Tooltip';
+import { track } from '@/lib/telemetry';
 import type { ExplorerViewMode } from './useExplorerViewMode';
 
 // The List / Card segmented toggle in the Explorer header (spec/67).
@@ -13,6 +14,14 @@ export function ViewToggle({
   mode: ExplorerViewMode;
   onChange: (mode: ExplorerViewMode) => void;
 }) {
+  // Track only real switches (spec/22): clicking the already-active
+  // side changes nothing, so it isn't a signal worth counting.
+  const choose = (next: ExplorerViewMode) => {
+    if (next !== mode) {
+      track('UI', 'Toggled', next === 'card' ? 'ExplorerViewCard' : 'ExplorerViewList');
+    }
+    onChange(next);
+  };
   return (
     <div
       role="group"
@@ -21,7 +30,7 @@ export function ViewToggle({
     >
       <ToggleButton
         active={mode === 'list'}
-        onClick={() => onChange('list')}
+        onClick={() => choose('list')}
         label="List view"
         description="Compact rows."
       >
@@ -29,7 +38,7 @@ export function ViewToggle({
       </ToggleButton>
       <ToggleButton
         active={mode === 'card'}
-        onClick={() => onChange('card')}
+        onClick={() => choose('card')}
         label="Card view"
         description="Cards with a large preview of each diagram."
       >
