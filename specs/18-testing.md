@@ -95,13 +95,14 @@ pick it up.
   named workspace; the inventory grew well past the original list as features
   landed, so this section captures the SHAPE of coverage rather than every
   filename — counts below are as of 2026-07-14):
-  - `packages/diagram` (36 suites): the data model end to end — element
+  - `packages/diagram` (37 suites): the data model end to end — element
     factories + defaults, geometry / anchor / snap math, arrow path +
     avoidance + endpoint-spread + rebind stability, group + layer mutations,
     auto-layout (clusters + styles), Mermaid import/export (flowchart, state,
     ER), graph authoring, freehand + shape recognition, rich text, tables,
-    comments, session tools, the headless SVG renderer, validation.
-  - `apps/live` (93 suites): the lib layer's helpers (api client, auto-align,
+    comments, session tools, element shadows, the headless SVG renderer,
+    validation.
+  - `apps/live` (96 suites): the lib layer's helpers (api client, auto-align,
     canvas geometry + backgrounds, change-log, export/import-tab, search,
     templates + theme catalogues, user preferences, telemetry policy,
     draw-commit + quick-add placement, offline store, help deep links, and
@@ -109,12 +110,12 @@ pick it up.
     pure component-adjacent logic (template previews + bounds, placement,
     auth-shared), and the cross-app guard that every `HELP_ARTICLES` deep
     link resolves to a real help page.
-  - `apps/api` (45 suites): auth guards (Clerk, diagram access, tokens),
+  - `apps/api` (46 suites): auth guards (Clerk, diagram access, tokens),
     every defensive D1 row mapper, the `DiagramRoom` Durable Object's
     security-critical paths, route handlers (diagrams, share, images,
-    thumbnails, folders, teams, unfurl, events, ai), the OpenAPI
-    manifest ↔ dispatch drift guards, email lifecycle, response helpers,
-    MIME sniffing.
+    thumbnails, folders, teams, unfurl, events, ai), the AI assistant's
+    prompt layer, the OpenAPI manifest ↔ dispatch drift guards, email
+    lifecycle, response helpers, MIME sniffing.
   - `packages/api-schema` (2 suites): the SHA-256 wire-format contract
     (FIPS 180-4 vectors) and the telemetry-event validator's closed
     vocabulary + type-pattern gate — both moved here from `apps/api`
@@ -134,6 +135,9 @@ pick it up.
   - `apps/marketing/lib` (3 suites): the metadata + content registries:
     alternatives list + slug map, legal revision date, subpage metadata
     generator.
+  - `apps/telemetry` (1 suite): the dashboard's event-vocab layer —
+    category grouping/ordering, row labels, category colours, and the
+    layered tooltip explanations' never-blank guarantee.
   - `apps/help` (3 suites): the article registry's consistency with the
     filesystem (slugs ↔ `page.mdx`, per-category `articleCount`), the
     registry query / href helpers, the internal-link guard (every
