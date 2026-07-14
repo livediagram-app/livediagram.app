@@ -1725,6 +1725,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     layerInertIds,
     adoptLayerName: layersState.adoptLayerNameFromLabel,
     formatSourceId,
+    formatToolActive,
     groupSourceId,
     multiSelectedIds,
     diagramName,

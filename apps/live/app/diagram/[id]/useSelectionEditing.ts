@@ -29,6 +29,11 @@ export function useSelectionEditing(opts: {
   // default-named layer can adopt the first one typed onto it.
   adoptLayerName: (elementId: string, label: string) => void;
   formatSourceId: string | null;
+  // Persistent Format canvas tool (spec/09). Boxed elements route their
+  // format-tool clicks through useBoxedDragHandlers.beginDrag; arrows have
+  // no drag entry for it (their clicks land here via selectElement), so
+  // selectElement owns the arm-then-paint cycle for them.
+  formatToolActive: boolean;
   groupSourceId: string | null;
   multiSelectedIds: Set<string>;
   diagramName: string;
@@ -40,7 +45,7 @@ export function useSelectionEditing(opts: {
   // history frame made Cmd+Z look like a no-op (it undid only the
   // invisible rename) and needed two undos for one action.
   tickTabs: (updater: (tabs: Tab[]) => Tab[]) => void;
-  applyFormatFromSource: (targetId: string) => void;
+  applyFormatFromSource: (targetId: string, opts?: { keepSource?: boolean }) => void;
   // True when ANOTHER participant currently has this element selected
   // (concurrent-selection lock, spec/07). Blocks select / edit so two
   // people don't fight over the same element. Advisory + presence-only.
@@ -76,6 +81,7 @@ export function useSelectionEditing(opts: {
     layerInertIds,
     adoptLayerName,
     formatSourceId,
+    formatToolActive,
     groupSourceId,
     multiSelectedIds,
     diagramName,
@@ -243,6 +249,16 @@ export function useSelectionEditing(opts: {
     // tooltip on the element communicate why. Hidden / locked-layer
     // elements (spec/74) are equally untouchable.
     if (lockedByOther(id) || layerInertIds.has(id)) return;
+    // Persistent Format tool: first click arms the source, each later click
+    // paints onto the target and KEEPS the source armed. Mirrors the boxed
+    // branch in useBoxedDragHandlers.beginDrag — arrows reach selection
+    // through here instead of a drag starter, so without this branch the
+    // Format tool simply couldn't arm from or paint onto an arrow.
+    if (formatToolActive) {
+      if (formatSourceId === null) setFormatSourceId(id);
+      else applyFormatFromSource(id, { keepSource: true });
+      return;
+    }
     if (formatSourceId !== null) {
       // Format-paint mode: apply the source's formatting to the
       // clicked target instead of selecting it. applyFormatFromSource

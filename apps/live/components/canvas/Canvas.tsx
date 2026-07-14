@@ -98,7 +98,11 @@ export function Canvas(props: CanvasProps) {
 
   const wrapperRef = useRef<HTMLDivElement>(null);
 
-  const isPaintMode = formatSourceId !== null;
+  // Paint mode covers BOTH painter entry points: a single-shot armed source
+  // (toolbar) and the persistent Format canvas tool — the tool must read as
+  // paint mode from its first click (copy cursor, handles/label-drag/dblclick
+  // suppressed on boxed elements AND arrows), not only once a source is armed.
+  const isPaintMode = formatSourceId !== null || canvasTool === 'format';
   const isGroupMode = groupSourceId !== null;
   // Nudge above the Fit button when the whole diagram has scrolled out of view.
   const offscreenContent = useOffscreenContent(elements, viewportOffset, viewportZoom, mainRef);

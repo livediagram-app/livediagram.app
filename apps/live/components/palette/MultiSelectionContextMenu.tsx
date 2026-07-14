@@ -108,7 +108,10 @@ export function MultiSelectionContextMenu({
         const colourSrcs = boxedSel.filter(
           (el) => supportsColours(el) && !(el.type === 'shape' && isChartShape(el.shape)),
         );
-        const colourable = colourSrcs.length > 0;
+        // An arrow-only selection still gets Colours (the Line swatch) —
+        // matching the single-arrow menu. Mixed selections don't need a
+        // separate row: the Border swatch's setter recolours arrows too.
+        const colourable = colourSrcs.length > 0 || arrowSel.length > 0;
         const textSrc = colourSrcs[0];
         const fillSrc = colourSrcs.find((el) => defaultFillColor(el) !== 'transparent');
         const strokeSrc = colourSrcs.find((el) => defaultStrokeColor(el) !== 'transparent');

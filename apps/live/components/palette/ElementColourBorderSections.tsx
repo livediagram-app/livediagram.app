@@ -8,6 +8,7 @@
 
 import { onMouseHover } from '@/components/primitives/hover-preview';
 import {
+  defaultArrowStrokeColor,
   defaultFillColor,
   defaultStrokeColor,
   defaultTextColor,
@@ -73,6 +74,35 @@ export function ElementColourBorderSections({
     (target as { borderRadius?: BorderRadius }).borderRadius ?? 'sm';
   return (
     <>
+      {/* Arrow Colours: the line colour swatch. Arrows lived in the old
+          editor side panel's Colours accordion via their strokeColor; the
+          menu rewrite gated Colours on `boxed`, silently dropping them —
+          this restores the control (label colour stays in the content Text
+          section, which needs a label to exist). */}
+      {target.type === 'arrow' ? (
+        <MenuAccordionSection
+          title="Colours"
+          icon={<PaletteMenuIcon />}
+          {...sectionProps('colours')}
+        >
+          <ColourRow
+            label="Line"
+            value={target.strokeColor ?? defaultArrowStrokeColor()}
+            {...strokeColorHandlers}
+            {...colorProps('border')}
+            presets={props.presetColors}
+          />
+          <div className="px-2 pb-1 pt-1.5">
+            <MenuActionButton
+              label="Reset to theme"
+              onClick={() => {
+                props.onResetColors();
+                onClose();
+              }}
+            />
+          </div>
+        </MenuAccordionSection>
+      ) : null}
       {boxed && supportsColours(target) && !isChart ? (
         <>
           <MenuAccordionSection

@@ -1,6 +1,7 @@
 import {
   animLoops,
   DEFAULT_ANIMATION_SPEED,
+  defaultArrowStrokeColor,
   defaultFillColor,
   defaultStrokeColor,
   defaultTextColor,
@@ -194,6 +195,18 @@ export function MultiStyleSections({
             <ColourRow
               label="Border"
               value={strokeSrc.strokeColor ?? defaultStrokeColor(strokeSrc)}
+              {...strokeColorHandlers}
+              {...colorProps('m-border')}
+              presets={props.presetColors}
+            />
+          ) : arrowSrc ? (
+            // Arrow-only selection: no boxed stroke member, so the stroke
+            // setter surfaces as the arrows' Line swatch (same control the
+            // single-arrow menu shows). Mixed selections use the Border row
+            // above — its setter recolours the arrows too.
+            <ColourRow
+              label="Line"
+              value={arrowSrc.strokeColor ?? defaultArrowStrokeColor()}
               {...strokeColorHandlers}
               {...colorProps('m-border')}
               presets={props.presetColors}

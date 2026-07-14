@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, type ReactNode } from 'react';
+import { useRef, useState, type ReactNode } from 'react';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { PaletteTileGrid, type PaletteTileActions } from './PaletteTileGrid';
-import { TOOL_GROUPS, tilesInToolGroup } from './palette-tile-defs';
+import { PaletteSearchInput } from './PaletteSearchInput';
+import { TOOL_GROUPS, tilesInSection, tilesInToolGroup } from './palette-tile-defs';
 import { track } from '@/lib/telemetry';
 
 // The palette's creation-category tab bodies. Since spec/78 every tile is
@@ -89,26 +90,67 @@ export function PaletteToolsTab({ pendingDraw, actions }: TabProps) {
     { id: 'data', label: 'Data' },
   ];
   const [openId, setOpenId] = useState<string | null>(sections[0]?.id ?? null);
+  // Search across the grouped tools (spec/09 "Sub-categories"): the
+  // accordions keep the tab one glance tall but hide most tiles, so a
+  // search box (mirroring the Icons / Technology pickers) surfaces any
+  // tool by name without knowing its group. A non-empty query swaps the
+  // accordions for one flat grid of matches across every group + Data.
+  const [query, setQuery] = useState('');
+  // One 'Searched' event per mount, on the first keystroke — same
+  // engagement-signal pattern as the editor's Search panel.
+  const searchedRef = useRef(false);
+  const q = query.trim().toLowerCase();
+  const matches = q
+    ? [...tilesInSection('tools'), ...tilesInSection('data')].filter((t) =>
+        [t.label, t.caption ?? '', t.description].some((s) => s.toLowerCase().includes(q)),
+      )
+    : null;
   const toggle = (id: string) => {
     track('UI', 'Toggled', 'ToolGroup');
     setOpenId((cur) => (cur === id ? null : id));
   };
   return (
     <div className="flex flex-col">
-      {sections.map((section) => (
-        <PaletteAccordionSection
-          key={section.id}
-          label={section.label}
-          open={openId === section.id}
-          onToggle={() => toggle(section.id)}
-        >
-          {section.tiles ? (
-            <PaletteTileGrid tiles={section.tiles} actions={actions} pendingDraw={pendingDraw} />
-          ) : (
-            <PaletteTileGrid section="data" actions={actions} pendingDraw={pendingDraw} />
-          )}
-        </PaletteAccordionSection>
-      ))}
+      <div className="mb-2 flex items-center">
+        <PaletteSearchInput
+          value={query}
+          onChange={(next) => {
+            setQuery(next);
+            if (!searchedRef.current && next.trim()) {
+              searchedRef.current = true;
+              track('UI', 'Searched', 'ToolSearch');
+            }
+          }}
+          placeholder="Search tools"
+          ariaLabel="Search tools"
+          clearAriaLabel="Clear tool search"
+          clearDescription="Clear the tool search query."
+        />
+      </div>
+      {matches ? (
+        matches.length > 0 ? (
+          <PaletteTileGrid tiles={matches} actions={actions} pendingDraw={pendingDraw} />
+        ) : (
+          <p className="px-1 py-2 text-center text-[11px] text-slate-400">
+            No tools match “{query}”.
+          </p>
+        )
+      ) : (
+        sections.map((section) => (
+          <PaletteAccordionSection
+            key={section.id}
+            label={section.label}
+            open={openId === section.id}
+            onToggle={() => toggle(section.id)}
+          >
+            {section.tiles ? (
+              <PaletteTileGrid tiles={section.tiles} actions={actions} pendingDraw={pendingDraw} />
+            ) : (
+              <PaletteTileGrid section="data" actions={actions} pendingDraw={pendingDraw} />
+            )}
+          </PaletteAccordionSection>
+        ))
+      )}
     </div>
   );
 }
