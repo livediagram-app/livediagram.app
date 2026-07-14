@@ -109,13 +109,17 @@ pick it up.
     pure component-adjacent logic (template previews + bounds, placement,
     auth-shared), and the cross-app guard that every `HELP_ARTICLES` deep
     link resolves to a real help page.
-  - `apps/api` (47 suites): auth guards (Clerk, diagram access, tokens),
+  - `apps/api` (45 suites): auth guards (Clerk, diagram access, tokens),
     every defensive D1 row mapper, the `DiagramRoom` Durable Object's
     security-critical paths, route handlers (diagrams, share, images,
     thumbnails, folders, teams, unfurl, events, ai), the OpenAPI
     manifest ↔ dispatch drift guards, email lifecycle, response helpers,
-    MIME sniffing, the SHA-256 wire-format contract, the telemetry-event
-    validator.
+    MIME sniffing.
+  - `packages/api-schema` (2 suites): the SHA-256 wire-format contract
+    (FIPS 180-4 vectors) and the telemetry-event validator's closed
+    vocabulary + type-pattern gate — both moved here from `apps/api`
+    once the package got its own harness, so they sit next to the code
+    they pin.
   - `apps/mcp` (5 suites): tool argument schemas, tab builders, the
     find-diagrams search, OAuth state handling, and the api service-binding
     client.
@@ -143,11 +147,6 @@ pick it up.
     `useEffect`) need `jsdom` + `@testing-library/react`, which would mean
     flipping the live workspace's environment to `jsdom` and pulling in the
     deps. None of that is in place today.
-  - Direct tests inside `@livediagram/api-schema`: the wire-format DTOs +
-    `sha256Hex` live there but the package has no vitest harness yet (the
-    SHA-256 contract IS pinned, just from `apps/api/src/sha256.test.ts` where
-    vitest is already wired up). Adding a harness in the schema package would
-    let DTO round-trip / type-guard tests sit next to the types they cover.
   - Worker-runtime tests for `apps/api`: the current suites run under plain
     vitest in the `node` environment with fakes for `WebSocket` / Durable
     Object state; a future move to `@cloudflare/vitest-pool-workers` would

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { sha256Hex } from '@livediagram/api-schema';
+import { sha256Hex } from './sha256';
 
 // sha256Hex is the load-bearing primitive for image dedup (spec/19):
 // the live editor hashes bytes before POSTing them and stamps the
@@ -7,12 +7,7 @@ import { sha256Hex } from '@livediagram/api-schema';
 // rejects any mismatch. If the hex encoding ever drifts (a missing
 // leading-zero pad in bytesToHex, an uppercased character, a stray
 // separator), every legitimate upload bounces with a hash mismatch.
-//
-// The implementation lives in packages/api-schema/src/sha256.ts but
-// that workspace has no vitest harness; pinning the contract here in
-// the api package (which depends on it and is already vitest-equipped)
-// keeps the test next to the most-affected consumer without setting up
-// a parallel test stack in the schema package.
+// (Lived in apps/api until this package got its vitest harness.)
 //
 // Test vectors come from the SHA-256 reference suite (FIPS 180-4):
 //   sha256("")    = e3b0c442…7852b855

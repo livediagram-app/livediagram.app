@@ -14,7 +14,7 @@ import {
   TELEMETRY_ACTIONS,
   TELEMETRY_CATEGORIES,
   TELEMETRY_TYPE_PATTERN,
-} from '@livediagram/api-schema';
+} from './telemetry-schema';
 
 describe('isValidTelemetryEvent', () => {
   describe('non-object inputs', () => {
