@@ -11,6 +11,7 @@ import {
   type TimerMode,
   type VotePrivacy,
 } from '@livediagram/diagram';
+import type { LivePoll, PollStyle } from '@livediagram/api-schema';
 import { useUiMode } from '@/hooks/ui/useUiMode';
 import type { AutoLayoutChoice } from '@/lib/auto-layout-choices';
 import type { Participant } from '@/lib/identity';
@@ -111,6 +112,10 @@ type TabBarProps = {
   onEndVote: () => void;
   onRevealVote: () => void;
   onClearVote: () => void;
+  // Live poll (spec/88): ephemeral room state, not a Tab field.
+  livePoll: LivePoll | null;
+  pollConnected: boolean;
+  onStartPoll: (draft: { question: string; style: PollStyle; options: string[] }) => void;
   // The user's other diagrams (excluding the current one). Drives the
   // "Add to Diagram" submenu in the tab ellipsis; savedAt versions the
   // destination-picker thumbnails (spec/67).
@@ -177,6 +182,9 @@ export function TabBar({
   onEndVote,
   onRevealVote,
   onClearVote,
+  livePoll,
+  pollConnected,
+  onStartPoll,
   otherDiagrams,
   onCopyTabTo,
   onToggleLockTab,
@@ -278,6 +286,9 @@ export function TabBar({
     onEndVote,
     onRevealVote,
     onClearVote,
+    livePoll,
+    pollConnected,
+    onStartPoll,
   });
 
   const activeTab = tabs.find((t) => t.id === activeId);

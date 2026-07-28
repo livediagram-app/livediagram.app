@@ -491,5 +491,6 @@ export type UnfurlResult = {
   favicon?: string;
 };
 
+export * from './poll';
 export * from './room-messages';
 export * from './telemetry-schema';

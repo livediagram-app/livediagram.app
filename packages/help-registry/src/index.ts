@@ -1183,8 +1183,9 @@ export const articles: Article[] = [
   {
     slug: 'session-tools',
     title: 'Session Tools',
-    description: 'A shared countdown or stopwatch and live dot-voting.',
-    keywords: 'timer voting workshop meeting facilitation retro countdown poll',
+    description: 'A shared countdown or stopwatch, live dot-voting, and polls.',
+    keywords:
+      'timer voting workshop meeting facilitation retro countdown poll polls survey pulse check',
     category: 'Collaboration',
     categorySlug: 'collaboration',
   },
@@ -1623,6 +1624,16 @@ export const articles: Article[] = [
     title: 'The Timer',
     description: 'Run a shared countdown or stopwatch on a tab.',
     keywords: 'countdown stopwatch timebox clock minutes workshop',
+    category: 'Collaboration',
+    categorySlug: 'collaboration/session-tools',
+    parentSlug: 'session-tools',
+  },
+  {
+    slug: 'polls',
+    title: 'Polls',
+    description: 'Ask the room a question and tally the answers, saving nothing.',
+    keywords:
+      'poll polls survey question vote pulse check sentiment anonymous ephemeral rating scale yes no abstain multiple choice free text audience presenter',
     category: 'Collaboration',
     categorySlug: 'collaboration/session-tools',
     parentSlug: 'session-tools',

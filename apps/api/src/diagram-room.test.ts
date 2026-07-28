@@ -456,6 +456,38 @@ describe('DiagramRoom op-role enforcement', () => {
     });
   }
 
+  // Live poll (spec/88): a presenter polling an audience is the main use,
+  // and audiences sit on view links — so answering must work at view role
+  // while starting / ending a poll stays behind the edit gate.
+  it('relays a poll answer from a view-role session', () => {
+    const { room } = newRoom();
+    const editor = connect(room, 'editor', 'edit');
+    const viewer = connect(room, 'viewer', 'view');
+    editor.ws.sent.length = 0;
+
+    sendFrame(room, viewer.ws, {
+      kind: 'op',
+      op: { kind: 'poll-answer', pollId: 'p1', value: 'Yes' },
+    });
+
+    expect(opsReceived(editor.ws)).toHaveLength(1);
+  });
+
+  for (const kind of ['poll-start', 'poll-end'] as const) {
+    it(`drops '${kind}' from a view-role session`, () => {
+      const { room } = newRoom();
+      const editor = connect(room, 'editor', 'edit');
+      const viewer = connect(room, 'viewer', 'view');
+      editor.ws.sent.length = 0;
+
+      // An audience member can answer, but can't open a poll on the room
+      // or tear down the host's.
+      sendFrame(room, viewer.ws, { kind: 'op', op: { kind, pollId: 'p1' } });
+
+      expect(opsReceived(editor.ws)).toHaveLength(0);
+    });
+  }
+
   it('still drops a mutation op from a view-role session', () => {
     const { room } = newRoom();
     const editor = connect(room, 'editor', 'edit');

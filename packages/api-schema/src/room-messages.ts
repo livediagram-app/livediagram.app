@@ -1,5 +1,6 @@
 import type { ElementOp, Tab } from '@livediagram/diagram';
 import type { ChangeLogEntry, ParticipantPresence } from './index';
+import type { LivePoll } from './poll';
 
 // ---------------------------------------------------------------------
 // Realtime room messages
@@ -115,6 +116,25 @@ export type RoomOp =
   // LaserOverlay. The active tab id scopes the rendering so peers on
   // a different tab don't see the laser.
   | { kind: 'laser'; tabId: string; x: number; y: number }
+  // --- Live poll (spec/88) -------------------------------------------
+  // Deliberately NOT a Tab field like the timer / dot-vote: a poll is
+  // ephemeral, so it exists only as these ops and the memory of the
+  // clients that received them. Nothing here reaches D1, the change log,
+  // or undo. All three relay unordered (no seq) and are never replayed to
+  // a reconnecting client — which is exactly why a late joiner isn't
+  // prompted.
+  //
+  // The host opened a poll. Replaces any poll already on screen (one at a
+  // time per diagram).
+  | { kind: 'poll-start'; poll: LivePoll }
+  // One participant's answer; `null` means they skipped. Keyed by sender
+  // on receipt, so re-sending REPLACES that person's earlier answer
+  // rather than stacking a second one. Allowed from view-role senders
+  // too (spec/88) — polling an audience on a view link is the point.
+  | { kind: 'poll-answer'; pollId: string; value: string | null }
+  // The host ended the poll: drop the question, the answers, and the
+  // panel everywhere. Edit-role only, like poll-start.
+  | { kind: 'poll-end'; pollId: string }
   // A share link was revoked by the diagram owner. Every connected
   // peer using that share code (the `X-Share-Code` they handed in to
   // hydrate) should hard-redirect to a "share revoked" surface so

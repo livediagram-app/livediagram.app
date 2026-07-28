@@ -8,6 +8,7 @@ import {
   type TimerMode,
   type VotePrivacy,
 } from '@livediagram/diagram';
+import type { LivePoll, PollStyle } from '@livediagram/api-schema';
 import { clampToViewport } from '@/lib/clamp-to-viewport';
 import { PencilIcon, TrashIcon } from '@/components/panels/explorer-icons';
 import { FileExportIcon, FileImportIcon } from '@/components/palette/palette-icons';
@@ -28,6 +29,7 @@ import {
 } from '@/components/primitives/PortalMenu';
 import {
   CountdownMenuIcon,
+  PollMenuIcon,
   TimerMenuIcon,
   VoteMenuIcon,
 } from '@/components/palette/context-menu-icons';
@@ -36,6 +38,7 @@ import {
   SessionStopwatchSection,
   SessionVoteSection,
 } from '@/components/panels/SessionToolsSection';
+import { SessionPollSection } from '@/components/panels/SessionPollSection';
 import { TabCanvasMenuSections } from './TabCanvasMenuSections';
 import {
   AddTabToDiagramDialog,
@@ -79,6 +82,9 @@ export function PortalMenu({
   onEndVote,
   onRevealVote,
   onClearVote,
+  livePoll,
+  pollConnected,
+  onStartPoll,
 }: {
   // Positioned EITHER above an anchor button (tab ellipsis) OR at a screen
   // point (canvas right-click / footer button). Exactly one is provided.
@@ -118,6 +124,12 @@ export function PortalMenu({
   onEndVote: () => void;
   onRevealVote: () => void;
   onClearVote: () => void;
+  // Live poll (spec/88). Ephemeral room state, not a Tab field like the
+  // timer / vote above — hence the separate props rather than a `poll`
+  // slot on the tab.
+  livePoll: LivePoll | null;
+  pollConnected: boolean;
+  onStartPoll: (draft: { question: string; style: PollStyle; options: string[] }) => void;
 }) {
   // The menu itself lists the verbs (Rename, Duplicate, Clear…); the two
   // organise pickers — "copyTo" (spec/17, link the tab into another
@@ -421,6 +433,16 @@ export function PortalMenu({
                 onEndVote={onEndVote}
                 onRevealVote={onRevealVote}
                 onClearVote={onClearVote}
+              />
+            </MenuAccordionSection>
+            {/* Poll (spec/88) sits in the session band but is NOT tab
+                state: it lives only in the realtime room and leaves no
+                trace on the diagram. */}
+            <MenuAccordionSection title="Poll" icon={<PollMenuIcon />} {...sectionProps('poll')}>
+              <SessionPollSection
+                poll={livePoll}
+                connected={pollConnected}
+                onStartPoll={onStartPoll}
               />
             </MenuAccordionSection>
           </>

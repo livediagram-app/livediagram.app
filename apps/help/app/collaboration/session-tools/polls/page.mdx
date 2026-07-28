@@ -1,0 +1,67 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Polls',
+  description:
+    'Ask everyone in the diagram a quick question and see the answers tally live, with nothing saved to the diagram afterwards.',
+  path: '/help/collaboration/session-tools/polls/',
+});
+
+<ArticleLayout title="Polls" description="Ask the room a question, watch the answers land, then wipe it without a trace." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Session Tools", slug: "session-tools" }} subArticles={getSubArticles("session-tools").filter((a) => a.slug !== "polls")}>
+
+A poll is a quick pulse-check on the people in the room: "does everyone approve of this design?", "how confident are we, 1 to 5?", "what would you change?". Unlike [dot voting](/help/collaboration/session-tools/voting/), a poll attaches to nothing on the canvas and leaves nothing behind.
+
+## Running a poll
+
+Polls live in the tab's menu under their own **Poll** category, beside Countdown, Stopwatch, and Vote.
+
+<Step n={1}>
+  Type your question, pick an answer style, and choose **Start poll**. If the style is
+  **Choices**, add your options first (between two and six of them).
+</Step>
+
+<Step n={2}>
+  Everyone currently in the diagram gets the question as a modal. They can answer, or press
+  **Skip** if they would rather not weigh in.
+</Step>
+
+<Step n={3}>
+  The results panel appears in the bottom-left corner and updates as answers land. Press **End
+  poll** when you're done, and the question, the answers, and the panel all disappear for
+  everyone at once.
+</Step>
+
+## Answer styles
+
+- **Yes / No**, and **+ Abstain** when you want to let people sit one out explicitly.
+- **Choices** — between two and six options you write yourself.
+- **Rating 1-5** — for confidence, priority, or "how did that go?".
+- **Free text** — short written answers, listed in the panel as they arrive.
+
+## Who can answer, and who can see results
+
+**Everyone in the diagram is asked, including view-only visitors.** That is the point: if you have shared a view link with an audience, a poll is how you hear back from them. Starting and ending a poll still needs edit access, so an audience member can answer but cannot open a poll of their own or close yours.
+
+**The results panel is for people who have responded**, plus whoever started the poll. Answering is what unlocks it. That way nobody can watch the numbers build up and let them sway their own answer.
+
+**Answers aren't shown against names.** The panel shows counts and free-text answers with nothing attached to any person, and neither the diagram nor the activity log records who said what. This is about the on-screen result rather than a cryptographic guarantee: a determined participant with browser developer tools open could still work out who sent which answer.
+
+## Nothing is saved
+
+A poll exists only while it is running, and only for the people connected at the time. It never reaches the diagram, so there is no poll in the activity log, nothing to undo, and nothing left over when you reopen the diagram tomorrow.
+
+Three things follow from that, and they are worth knowing before you rely on one:
+
+- **Someone who opens the diagram after the poll started is not asked.** Get everyone in first, then start.
+- **Refreshing the page drops you out of the poll.** You will not be asked again.
+- **If the host disconnects without ending the poll**, everyone else can press **Dismiss** to clear their own panel.
+
+<Tip>
+  Because nothing is stored, **Copy results** is the only way to keep the outcome. Press it before
+  you end the poll and the tally lands on your clipboard as plain text, ready to paste into notes
+  or a sticky on the canvas.
+</Tip>
+
+</ArticleLayout>

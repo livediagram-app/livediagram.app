@@ -6,13 +6,13 @@ import { SessionTools } from '@/components/illustrations/collaboration';
 export const metadata = helpMetadata({
   title: 'Session Tools',
   description:
-    'A per-tab timer and live dot-voting for running interactive workshops, synced to every participant.',
+    'A per-tab timer, live dot-voting, and instant polls for running interactive workshops, synced to every participant.',
   path: '/help/collaboration/session-tools/',
 });
 
-<ArticleLayout title="Session Tools" description="A per-tab timer and live dot-voting that turn a shared diagram into an interactive workshop board." categoryTitle="Collaboration" categorySlug="collaboration" subArticles={getSubArticles("session-tools")}>
+<ArticleLayout title="Session Tools" description="A timer, dot-voting, and polls that turn a shared diagram into an interactive workshop board." categoryTitle="Collaboration" categorySlug="collaboration" subArticles={getSubArticles("session-tools")}>
 
-Session tools make a shared diagram interactive for live workshops. There are two: a **timer** for time-boxing an activity, and **dot-voting** for prioritising as a group. Both are run by the facilitator and synced to everyone in the room in real time, so they pair naturally with collaborative boards like retros, brainstorms, and planning sessions.
+Session tools make a shared diagram interactive for live workshops. There are three: a **timer** for time-boxing an activity, **dot-voting** for prioritising as a group, and **polls** for asking the room a question. All are run by the facilitator and synced to everyone in real time, so they pair naturally with collaborative boards like retros, brainstorms, and planning sessions.
 
 <Figure caption="A shared countdown timer pill above a dot-voting tally: the two session tools on one canvas.">
   <SessionTools />
@@ -20,14 +20,19 @@ Session tools make a shared diagram interactive for live workshops. There are tw
 
 ## Built for facilitating live
 
-Both tools are controlled from the tab's menu, where **Countdown**, **Stopwatch**, and **Vote** are top-level categories sitting together at the end of the menu. Each is scoped to a single tab, so different tabs can run different activities, and it rides the same live sync as everything else on the canvas. That means people who join late or reload simply see what is happening now: a timer mid-countdown, or the votes cast so far, with nothing to set up again.
+The tools are controlled from the tab's menu, where **Countdown**, **Stopwatch**, **Vote**, and **Poll** are top-level categories sitting together at the end of the menu.
+
+The timer and the vote are scoped to a single tab, so different tabs can run different activities, and they ride the same live sync as everything else on the canvas. That means people who join late or reload simply see what is happening now: a timer mid-countdown, or the votes cast so far, with nothing to set up again. **Polls are the exception** — they are deliberately live-only, so they reach the people connected when you start one and vanish completely when you end it.
 
 - **Countdown** and **Stopwatch** time-box an activity (a fixed duration counting down, or counting up from zero; one of the two runs at a time), shown as a floating pill at the top of the canvas. See [The Timer](/help/collaboration/session-tools/timer/).
 - **Dot-voting** lets each participant spend a budget of dots on the elements they care about, with live tallies and a results reveal. See [Dot Voting](/help/collaboration/session-tools/voting/).
+- **Polls** ask everyone a question (yes/no, a rating, a choice, or free text) and tally the answers live, without touching the canvas or saving anything. See [Polls](/help/collaboration/session-tools/polls/).
 
 ## Who can do what
 
 Session tools follow the diagram's roles automatically. Anyone with an **edit** link can run the controls and take part: starting the timer, casting votes. **View-only** visitors can still watch, they see the timer ticking and the live vote counts, but they cannot control the session or cast a dot. Typically the facilitator and participants share an edit link, while observers follow a view link.
+
+**Polls bend that rule on purpose**: view-only visitors are asked, and can answer. Being able to hear back from an audience on a view link is the whole point of a poll. Starting and ending one still needs edit access.
 
 ## What does and does not get recorded
 

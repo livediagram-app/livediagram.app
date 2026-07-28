@@ -271,6 +271,29 @@ export function VoteMenuIcon() {
   );
 }
 
+// Three rising bars - the Poll session-tool category glyph (spec/88, a
+// live tally). Distinct from VoteMenuIcon's cast-a-dot check: a poll
+// counts answers from people, not dots on elements.
+export function PollMenuIcon() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M4 12V9.5" />
+      <path d="M8 12V4.5" />
+      <path d="M12 12V7" />
+    </svg>
+  );
+}
+
 // Two sparkles - the Cleanup category glyph (tidy / auto-align / auto-layout).
 export function CleanupMenuIcon() {
   return (

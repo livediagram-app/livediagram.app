@@ -30,6 +30,7 @@ import { track } from '@/lib/telemetry';
 import { useActivityLogDebounce } from '@/hooks/collab/useActivityLogDebounce';
 import { useActivityLogEmitter } from '@/hooks/collab/useActivityLogEmitter';
 import { useEditorBroadcast } from '@/hooks/collab/useEditorBroadcast';
+import { useLivePoll } from '@/hooks/collab/useLivePoll';
 import { useShortcutsEnabled } from '@/hooks/ui/useShortcutsEnabled';
 import { useEditorComments } from '@/hooks/collab/useEditorComments';
 import { useEditorDrag } from '@/hooks/canvas/useEditorDrag';
@@ -634,6 +635,10 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   useEffect(() => {
     selfParticipantRef.current = selfParticipant;
   }, [selfParticipant]);
+  // Live poll (spec/88): the ephemeral pulse-check. Declared before the
+  // room connection because that's what feeds it inbound ops. Nothing it
+  // holds is persisted — no tab field, no autosave, no change log.
+  const livePoll = useLivePoll({ roomRef });
   // Realtime room: WebSocket per shared diagram (presence + ops). See
   // useRoomConnection.
   useRoomConnection({
@@ -657,6 +662,9 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setChangeLog,
     setDiagramName,
     setSelfParticipant,
+    receivePoll: livePoll.receivePoll,
+    receivePollAnswer: livePoll.receiveAnswer,
+    receivePollEnd: livePoll.receivePollEnd,
   });
 
   // Broadcast local selection + active-tab focus to peers (presence
@@ -2153,6 +2161,9 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     applyCellLink,
     activeTabLoadState,
     livePresence,
+    // Live poll (spec/88) — the whole ephemeral surface in one object
+    // rather than a dozen flattened keys, since nothing else reads into it.
+    livePoll,
     loadAllTabs,
     loadedTabIds,
     loadingDiagram,

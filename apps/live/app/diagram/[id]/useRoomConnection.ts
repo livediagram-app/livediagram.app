@@ -1,6 +1,6 @@
 import { useEffect, type Dispatch, type MutableRefObject, type SetStateAction } from 'react';
 import { applyElementOp, type Tab } from '@livediagram/diagram';
-import { CHANGE_LOG_LIST_LIMIT } from '@livediagram/api-schema';
+import { CHANGE_LOG_LIST_LIMIT, type LivePoll } from '@livediagram/api-schema';
 import { nextFreeColor, type Participant } from '@/lib/identity';
 import {
   apiCreateRoomTicket,
@@ -51,6 +51,12 @@ export function useRoomConnection(opts: {
   setChangeLog: Dispatch<SetStateAction<ChangeLogEntry[]>>;
   setDiagramName: Dispatch<SetStateAction<string>>;
   setSelfParticipant: Dispatch<SetStateAction<Participant>>;
+  // Live poll (spec/88) inbound handlers, owned by useLivePoll. Stable
+  // (useCallback with no changing deps) so they don't reopen the socket —
+  // the effect's dep list stays [hydrated, diagramId, diagramShareable].
+  receivePoll: (poll: LivePoll) => void;
+  receivePollAnswer: (from: string, pollId: string, value: string | null) => void;
+  receivePollEnd: (pollId: string) => void;
 }) {
   const {
     hydrated,
@@ -73,6 +79,9 @@ export function useRoomConnection(opts: {
     setChangeLog,
     setDiagramName,
     setSelfParticipant,
+    receivePoll,
+    receivePollAnswer,
+    receivePollEnd,
   } = opts;
 
   useEffect(() => {
@@ -340,6 +349,17 @@ export function useRoomConnection(opts: {
             next.set(from, op.tabId);
             return next;
           });
+        } else if (op.kind === 'poll-start') {
+          // Live poll (spec/88). Purely ephemeral: it lands in the poll
+          // hook's memory and never touches tabs, autosave, or the change
+          // log, so there is nothing here to persist or undo.
+          receivePoll(op.poll);
+        } else if (op.kind === 'poll-answer') {
+          // `from` keys the answer so a peer changing their mind replaces
+          // it. It is never rendered — results carry no identity.
+          receivePollAnswer(from, op.pollId, op.value);
+        } else if (op.kind === 'poll-end') {
+          receivePollEnd(op.pollId);
         } else if (op.kind === 'log') {
           // Remote participant just emitted an audit entry. Prepend it
           // to the local list (de-duped by id so a sender that round-

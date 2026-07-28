@@ -1,5 +1,6 @@
 import { useRef } from 'react';
 import type { TabTimer, TabVote, TimerMode, VotePrivacy } from '@livediagram/diagram';
+import type { LivePoll, PollStyle } from '@livediagram/api-schema';
 
 import { PortalMenu } from './TabPortalMenu';
 import type { CanvasMenuActions } from './TabBar';
@@ -39,6 +40,9 @@ export function EllipsisMenuButton({
   onEndVote,
   onRevealVote,
   onClearVote,
+  livePoll,
+  pollConnected,
+  onStartPoll,
 }: {
   open: boolean;
   onToggle: () => void;
@@ -77,6 +81,10 @@ export function EllipsisMenuButton({
   onEndVote: () => void;
   onRevealVote: () => void;
   onClearVote: () => void;
+  // Live poll (spec/88): ephemeral room state, not a Tab field.
+  livePoll: LivePoll | null;
+  pollConnected: boolean;
+  onStartPoll: (draft: { question: string; style: PollStyle; options: string[] }) => void;
 }) {
   const buttonRef = useRef<HTMLButtonElement>(null);
   return (
@@ -129,6 +137,9 @@ export function EllipsisMenuButton({
           onEndVote={onEndVote}
           onRevealVote={onRevealVote}
           onClearVote={onClearVote}
+          livePoll={livePoll}
+          pollConnected={pollConnected}
+          onStartPoll={onStartPoll}
         />
       ) : null}
     </div>

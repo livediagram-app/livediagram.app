@@ -56,9 +56,17 @@ const MAX_TAB_ID_LEN = 128;
 // only ever forces the safe path (a resync), never data loss.
 const OP_LOG_LIMIT = 256;
 
-// Room op kinds that are ephemeral presence signals: they mutate no
-// diagram state, so they relay unordered (no seq) and from any role.
-const PRESENCE_OP_KINDS = new Set(['cursor', 'select', 'laser', 'tab-focus']);
+// Room op kinds that are ephemeral signals: they mutate no diagram state,
+// so they relay unordered (no seq) and from any role.
+//
+// `poll-answer` (spec/88) is here for the ROLE half rather than the
+// presence half: answering a poll changes nothing on the diagram, and a
+// presenter pulse-checking an audience on a view link is the main thing
+// polls are for, so a view-role participant must be able to send one.
+// `poll-start` / `poll-end` are deliberately NOT here — they stay behind
+// the edit-role gate below, so an audience member can answer a poll but
+// can't start one or end someone else's.
+const PRESENCE_OP_KINDS = new Set(['cursor', 'select', 'laser', 'tab-focus', 'poll-answer']);
 
 // One entry in the reconnect catch-up log: a mutation op plus the sequence
 // number the room assigned it within the current epoch.

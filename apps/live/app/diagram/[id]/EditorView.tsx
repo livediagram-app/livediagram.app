@@ -10,6 +10,8 @@ import { TabBar } from '@/components/chrome/TabBar';
 import { SignInBanner, SIGNIN_BANNER_DISMISS_KEY } from '@/components/chrome/SignInBanner';
 import { EmptyCanvasBanner } from '@/components/canvas/EmptyCanvasBanner';
 import { EditorModals } from '@/components/dialogs/EditorModals';
+import { PollPromptDialog } from '@/components/dialogs/PollPromptDialog';
+import { PollPanel } from '@/components/chrome/PollPanel';
 import { EditorTabDialogs } from '@/components/dialogs/EditorTabDialogs';
 import { EditorElementDialogs } from '@/components/dialogs/EditorElementDialogs';
 import { EditorContextMenuHost } from '@/components/palette/EditorContextMenuHost';
@@ -58,6 +60,7 @@ export function EditorView() {
     endVote,
     revealVote,
     clearVote,
+    livePoll,
     canvasTool,
     drag,
     clearTabContent,
@@ -276,6 +279,11 @@ export function EditorView() {
           onEndVote={endVote}
           onRevealVote={revealVote}
           onClearVote={clearVote}
+          livePoll={livePoll.poll}
+          // A poll only exists inside the realtime room (spec/88), so there
+          // is nobody to ask on a diagram that isn't shared or on a team.
+          pollConnected={diagramShareable || !!diagramTeamId}
+          onStartPoll={livePoll.startPoll}
           otherDiagrams={
             // Tab linking is a server-side row insert (spec/17), so neither an
             // offline diagram's tabs nor an offline destination can take part
@@ -337,6 +345,26 @@ export function EditorView() {
         />
       )}
       <EditorSearchPanel />
+      {/* Live poll (spec/88). The prompt is shown to EVERY participant
+          including view-role; the results panel unlocks once you've
+          responded (or if you're the host). Both vanish with the poll —
+          nothing here is persisted. */}
+      <PollPromptDialog
+        // Keyed on the poll so a second poll starts with a clean free-text
+        // box rather than inheriting the first one's half-typed answer.
+        key={livePoll.poll?.id ?? 'no-poll'}
+        poll={livePoll.poll && !livePoll.myAnswer ? livePoll.poll : null}
+        onAnswer={livePoll.answerPoll}
+      />
+      {livePoll.poll && !livePoll.dismissed && (livePoll.isHost || livePoll.myAnswer) ? (
+        <PollPanel
+          poll={livePoll.poll}
+          answers={livePoll.answers}
+          isHost={livePoll.isHost}
+          onEnd={livePoll.endPoll}
+          onDismiss={livePoll.dismissPoll}
+        />
+      ) : null}
       <EditorModals />
       <EditorAnchoredPopovers />
       <EditorContextMenuHost />
