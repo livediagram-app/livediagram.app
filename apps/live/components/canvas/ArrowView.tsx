@@ -21,6 +21,12 @@ import { ArrowFlowOverlays, useArrowFlow } from './arrow-flow';
 import { BRAND_600 } from './arrow-handle-style';
 import { useLongPress } from '@/hooks/ui/useLongPress';
 
+// The mask region + backdrop for route-behind (spec/90). Deliberately vast
+// rather than fitted to the arrow: a curve can bow well outside its chord,
+// and a region that ends where the geometry does clips the drawing instead
+// of the boxes.
+const MASK_SPAN = { origin: -100000, size: 200000 } as const;
+
 type ArrowViewProps = {
   arrow: ArrowElement;
   // Prebuilt id -> element index (one per Canvas render) so each
@@ -190,8 +196,28 @@ function ArrowViewImpl({
         // rather than the arrow's bbox: a curve can bow well outside the
         // chord, and a mask that ends where the chord does would clip the
         // bow instead of the boxes.
-        <mask id={behindMaskId} maskUnits="userSpaceOnUse">
-          <rect x={-100000} y={-100000} width={200000} height={200000} fill="white" />
+        <mask
+          id={behindMaskId}
+          maskUnits="userSpaceOnUse"
+          // The mask REGION, stated explicitly. Without x/y/width/height a
+          // mask defaults to -10%/120% of the referencing element's bounding
+          // box, and anything outside that region is masked away. A straight
+          // horizontal (or vertical) arrow has a zero-height bbox, so the
+          // default region collapsed to a hairline and swallowed the
+          // arrowhead — which sticks out above and below the line — along
+          // with part of the stroke. Same vast box as the backdrop below.
+          x={MASK_SPAN.origin}
+          y={MASK_SPAN.origin}
+          width={MASK_SPAN.size}
+          height={MASK_SPAN.size}
+        >
+          <rect
+            x={MASK_SPAN.origin}
+            y={MASK_SPAN.origin}
+            width={MASK_SPAN.size}
+            height={MASK_SPAN.size}
+            fill="white"
+          />
           {behindHoles.map((h, i) => (
             <rect
               key={i}

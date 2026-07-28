@@ -80,9 +80,15 @@ to the visible path and the selection halo:
 - A mask, not a split path, so the one path keeps its dash pattern, its flow
   animation class, and its markers. Splitting would mean re-deriving all three
   per segment.
-- The mask backdrop is deliberately vast rather than the arrow's bbox: a curve
-  can bow well outside its chord, and a backdrop ending at the chord would
-  clip the bow instead of the boxes.
+- The mask **region** (`x`/`y`/`width`/`height` on the `<mask>` itself) and its
+  white backdrop are both stated explicitly, and both vast. A mask with no
+  region defaults to `-10%`/`120%` **of the referencing element's bounding
+  box**, and everything outside that region is masked away — so a straight
+  horizontal or vertical arrow, whose bbox has zero height or width, collapsed
+  the region to a hairline that swallowed the **arrowhead** (it sticks out
+  either side of the line) along with part of the stroke. The vast box also
+  covers the other direction: a curve can bow well outside its chord, and a
+  region fitted to the geometry would clip the bow instead of the boxes.
 - The mask is only minted when something actually cuts the arrow. Nothing in
   the way is the common case, and an empty mask is pure overhead.
 - **The hit band is NOT masked.** The arrow stays clickable across the gap, so
