@@ -1,5 +1,6 @@
 'use client';
 
+import { truncateName } from '@livediagram/diagram';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { DiagramSummary, Folder } from '@livediagram/api-schema';
 import {
@@ -174,7 +175,8 @@ export function useTeamLibrary(ownerId: string | null, teamId: string) {
   const renameDiagram = useCallback(
     async (diagramId: string, name: string) => {
       if (!ownerId) return;
-      const trimmed = name.trim();
+      // spec/91.
+      const trimmed = truncateName(name);
       if (!trimmed) return;
       await apiSaveDiagramMeta(ownerId, { id: diagramId, name: trimmed }).catch(() => {});
       track('Diagram', 'Renamed');

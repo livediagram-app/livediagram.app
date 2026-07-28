@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { NAME_MAX_LENGTH } from '@livediagram/diagram';
 
 // Inline rename input shared by the diagram title (EditorHeader), tabs
 // (TabBar), and tab folders (TabFolderChip). Mounts focused with the
@@ -30,6 +31,9 @@ export function NameEditor({
     <input
       ref={ref}
       value={value}
+      // Names are capped (spec/91) — enforced here too so the limit shows
+      // while typing rather than truncating silently on commit.
+      maxLength={NAME_MAX_LENGTH}
       onChange={(e) => setValue(e.target.value)}
       onBlur={() => onCommit(value)}
       onKeyDown={(e) => {

@@ -1,5 +1,6 @@
 'use client';
 
+import { NAME_MAX_LENGTH } from '@livediagram/diagram';
 import { TextInput } from '@livediagram/ui';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
 import { PlacementBrowser, type PickerFolder } from '@/components/placement/PlacementBrowser';
@@ -58,6 +59,8 @@ export function NewDiagramSettingsStep({
         <TextInput
           value={diagramName}
           placeholder={placeholder}
+          // Capped (spec/91), same as every other name field.
+          maxLength={NAME_MAX_LENGTH}
           onChange={(e) => onDiagramName(e.target.value)}
           // rounded-lg keeps the wizard's field shape; the rest converges
           // on the shared input treatment (focus ring included).

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { NAME_MAX_LENGTH } from '@livediagram/diagram';
 
 // Shared inline-rename input used by every "click rename, type a
 // new name, press Enter or click away" interaction in the app
@@ -74,6 +75,10 @@ export function InlineRenameInput({
     <input
       ref={ref}
       value={draft}
+      // Names are capped (spec/91). Enforced on the input too, not only on
+      // commit, so the limit is visible as you type rather than silently
+      // eating the end of what you wrote.
+      maxLength={NAME_MAX_LENGTH}
       onChange={(e) => setDraft(e.target.value)}
       onKeyDown={(e) => {
         e.stopPropagation();

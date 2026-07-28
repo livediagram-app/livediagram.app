@@ -1,5 +1,6 @@
 'use client';
 
+import { truncateName } from '@livediagram/diagram';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
 import { ApiErrorPage } from '@/components/chrome/ApiErrorPage';
@@ -278,7 +279,9 @@ export default function NewDiagramPage() {
     lastCreateArgs.current = { kind: templateKind, name, themeId, settings };
     // The Settings step's name field wins; fall back to the per-template
     // default when it's left blank (spec/76).
-    const diagramName = settings.diagramName?.trim() || untitledNameForTemplate(templateKind);
+    // spec/91: the wizard's name field goes through the same cap.
+    const diagramName =
+      truncateName(settings.diagramName ?? '') || untitledNameForTemplate(templateKind);
     // Never create as the 'pending' placeholder — see resolveSelf above.
     const who = await resolveSelf();
     // Identity persistence first so any subsequent room broadcasts

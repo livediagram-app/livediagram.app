@@ -15,7 +15,13 @@
 // helper — those are separate concerns that stay in the page (or move
 // in their own pass).
 
-import { normalizeFolderOrder, tabFolderName, type Element, type Tab } from '@livediagram/diagram';
+import {
+  normalizeFolderOrder,
+  tabFolderName,
+  truncateName,
+  type Element,
+  type Tab,
+} from '@livediagram/diagram';
 import { apiLinkTab, type ChangeLogEntry } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
 import { remintElementIds, useTabImport } from './useTabImport';
@@ -162,9 +168,12 @@ export function useTabActions(deps: TabActionsDeps) {
 
   const renameTab = (id: string, name: string) => {
     const previous = tabs.find((t) => t.id === id)?.name ?? '';
-    const trimmed = name.trim();
+    // Capped here rather than at each input, so every route in (the tab
+    // pill's inline rename, the command palette, an import) lands under the
+    // same limit (spec/91).
+    const trimmed = truncateName(name);
     if (trimmed === previous.trim()) return;
-    commitTabs((ts) => ts.map((t) => (t.id === id ? { ...t, name } : t)));
+    commitTabs((ts) => ts.map((t) => (t.id === id ? { ...t, name: trimmed } : t)));
     emitTabMeta(
       id,
       previous ? `Renamed tab '${previous}' to '${trimmed}'` : `Renamed tab to '${trimmed}'`,

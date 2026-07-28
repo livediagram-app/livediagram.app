@@ -8,6 +8,7 @@
 // the pages were missing the Moved / Duplicated telemetry, and /new
 // dismissed Shared rows without the confirm.)
 
+import { truncateName } from '@livediagram/diagram';
 import type { Dispatch, SetStateAction } from 'react';
 import {
   apiDeleteDiagram,
@@ -93,7 +94,8 @@ export function useDiagramListActions(deps: DiagramListActionsDeps) {
   // changed.
   const renameDiagram = (id: string, name: string) => {
     if (!ownerId) return;
-    const trimmed = name.trim();
+    // spec/91: one cap for every rename route.
+    const trimmed = truncateName(name);
     if (!trimmed) return;
     const prev = diagramList.find((d) => d.id === id);
     const prevName = prev?.name?.trim() ?? '';

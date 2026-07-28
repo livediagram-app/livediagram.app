@@ -769,6 +769,8 @@ export * from './arrow-rebind';
 export * from './arrow-endpoint-spread';
 // Arrows breaking around intervening boxes at render time (spec/90).
 export * from './arrow-behind';
+// Tab + diagram name length cap (spec/91).
+export * from './names';
 export * from './geometry-snapping';
 export * from './geometry-guides';
 

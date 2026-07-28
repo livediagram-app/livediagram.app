@@ -1,5 +1,6 @@
 'use client';
 
+import { truncateName } from '@livediagram/diagram';
 import { track } from '@/lib/telemetry';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { getTheme } from '@/lib/themes';
@@ -207,8 +208,10 @@ export function EditorView() {
           }}
           onRename={(next) => {
             const prev = diagramName.trim();
-            const nextTrim = next.trim();
-            setDiagramName(next);
+            // spec/91: capped here so the header rename can't outrun the
+            // limit the auto-namer and the Explorer renames both respect.
+            const nextTrim = truncateName(next);
+            setDiagramName(nextTrim);
             // Keep the Explorer panel's row for THIS diagram in sync —
             // autosave persists the name, but the in-memory list would
             // otherwise show the old name until a reload re-fetched it.

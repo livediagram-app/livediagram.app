@@ -4,6 +4,7 @@ import {
   isBoxed,
   isSelfDrawingShape,
   normalizeRuns,
+  truncateName,
   type Element,
   type TableElement,
   type Tab,
@@ -185,7 +186,10 @@ export function useSelectionEditing(opts: {
     // typing on the welcome rectangle is a strong signal of intent. Once
     // the user has explicitly named the diagram (or named it via another
     // path), we stop tracking.
-    const trimmed = label.trim();
+    // Capped + whitespace-collapsed (spec/91). This is the path the cap
+    // exists for: paste a paragraph into the welcome rectangle and the whole
+    // paragraph used to become the diagram's name, newlines and all.
+    const trimmed = truncateName(label);
     if (diagramName === 'Untitled diagram') {
       const firstTab = tabs[0];
       const firstEl = firstTab?.elements[0];
