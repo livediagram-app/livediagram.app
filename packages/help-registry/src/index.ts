@@ -1630,8 +1630,9 @@ export const articles: Article[] = [
   {
     slug: 'voting',
     title: 'Dot Voting',
-    description: 'Let everyone vote live and tally the results.',
-    keywords: 'vote poll tally decide prioritise prioritize dots',
+    description: 'Let everyone vote live, privately if you want, and tally the results.',
+    keywords:
+      'vote poll tally decide prioritise prioritize dots anonymous private privacy secret blind hide hidden cursors pointers counts totals',
     category: 'Collaboration',
     categorySlug: 'collaboration/session-tools',
     parentSlug: 'session-tools',

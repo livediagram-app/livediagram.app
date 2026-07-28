@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import type { TabTimer, TabVote, TimerMode } from '@livediagram/diagram';
+import type { TabTimer, TabVote, TimerMode, VotePrivacy } from '@livediagram/diagram';
 
 import { PortalMenu } from './TabPortalMenu';
 import type { CanvasMenuActions } from './TabBar';
@@ -73,7 +73,7 @@ export function EllipsisMenuButton({
   onResumeTimer: () => void;
   onResetTimer: () => void;
   onClearTimer: () => void;
-  onStartVote: (votesPerPerson: number) => void;
+  onStartVote: (votesPerPerson: number, privacy?: VotePrivacy) => void;
   onEndVote: () => void;
   onRevealVote: () => void;
   onClearVote: () => void;

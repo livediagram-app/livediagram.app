@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   isBoxed,
   stampNewElementLayers,
+  voteHidesCursors,
   type BoxedElement,
   type Element,
   type Tab,
@@ -710,6 +711,14 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     enabled: !!clerkUserId,
   });
 
+  const activeTab = tabs.find((t) => t.id === activeId) ?? tabs[0]!;
+
+  // Vote privacy (spec/39): while a hide-cursors vote is open on this tab,
+  // peer cursors + laser trails are neither sent nor drawn. Derived here so
+  // the outbound gate (useEditorBroadcast) and the render gate
+  // (usePresenceRows) read the same value off the synced tab.
+  const voteCursorsHidden = voteHidesCursors(activeTab.vote);
+
   // Outbound realtime broadcasters (cursor + laser) and the local
   // laser-trail buffer live in useEditorBroadcast. Same throttle,
   // same gates, same trail-clears-on-tool-change behaviour as
@@ -722,6 +731,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     diagramTeamId,
     activeId,
     canvasTool,
+    cursorsHidden: voteCursorsHidden,
   });
   // Viewport state (pan offset, zoom, the canvas wrapper ref the
   // measurements read through, and a parallel zoomRef the drag hook
@@ -734,8 +744,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // on every name/colour change would be wasteful), so the
   // presence callback would otherwise close over a stale value
   // when reconciling unique colours.
-
-  const activeTab = tabs.find((t) => t.id === activeId) ?? tabs[0]!;
 
   // Reconcile a stranded activeId: undoing a tab add/duplicate (or a
   // remote peer deleting the tab under us) removes the tab the id
@@ -806,6 +814,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     remoteSelections,
     remoteLaserTrails,
     localLaserTrail,
+    cursorsHidden: voteCursorsHidden,
   });
   // Comment-bearing element rows for the floating Comments panel.
   // Only the boxed elements carry threads (arrows can't), so the
@@ -1295,6 +1304,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // stays in the page (also wired into useShareLinks) and is passed in.
   const { openTemplatePicker, skipTemplatePicker, chooseTemplate } = useTemplateFlow({
     activeId,
+    tabs,
     templatePickerMode,
     selfParticipant,
     getViewportCenter,

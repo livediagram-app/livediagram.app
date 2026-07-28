@@ -1,4 +1,4 @@
-import { isVotable, type BoxedElement, type TabVote } from '@livediagram/diagram';
+import { isVotable, voteHidesTallies, type BoxedElement, type TabVote } from '@livediagram/diagram';
 import { Tooltip } from '@/components/primitives/Tooltip';
 
 // The dot-vote overlay (spec/39), lifted out of BoxedElementView: the
@@ -31,9 +31,14 @@ export function ElementVoteOverlay({
   // Dot-vote tally for this element: total dots, how many are mine
   // (clicking the pill retracts one), and whether it is a revealed
   // winner. The pill only shows once at least one dot has landed.
-  const voteTotal = vote ? (vote.votes[element.id]?.length ?? 0) : 0;
   const myVotes =
     vote && selfId ? (vote.votes[element.id]?.filter((id) => id === selfId).length ?? 0) : 0;
+  // Vote privacy (spec/39): with "hide running counts" on, the pill counts
+  // only YOUR dots until the results are revealed — so you can still see
+  // and retract what you spent, but a climbing total can't snowball the
+  // room. "Show results" swaps every pill back to the true tally.
+  const tallyHidden = voteHidesTallies(vote);
+  const voteTotal = tallyHidden ? myVotes : vote ? (vote.votes[element.id]?.length ?? 0) : 0;
   const showVotePill = !!vote && voteTotal > 0 && isVotable(element);
   const isVoteWinner = !!vote?.revealed && voteTotal > 0 && voteTotal === (voteMax ?? 0);
   return (
@@ -56,8 +61,18 @@ export function ElementVoteOverlay({
           style={{ transform: `scale(${1 / zoom})` }}
         >
           <Tooltip
-            title={`${voteTotal} ${voteTotal === 1 ? 'vote' : 'votes'}`}
-            description={myVotes > 0 ? 'Click to remove one of your dots.' : undefined}
+            title={
+              tallyHidden
+                ? `Your ${voteTotal} ${voteTotal === 1 ? 'dot' : 'dots'}`
+                : `${voteTotal} ${voteTotal === 1 ? 'vote' : 'votes'}`
+            }
+            description={
+              tallyHidden
+                ? 'Totals stay hidden until the results are shown. Click to remove one.'
+                : myVotes > 0
+                  ? 'Click to remove one of your dots.'
+                  : undefined
+            }
           >
             <button
               type="button"
@@ -65,7 +80,7 @@ export function ElementVoteOverlay({
                 e.stopPropagation();
                 if (myVotes > 0) onRetractVote?.(element.id);
               }}
-              aria-label={`${voteTotal} votes`}
+              aria-label={tallyHidden ? `Your ${voteTotal} dots` : `${voteTotal} votes`}
               className={
                 'pointer-events-auto flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-[11px] font-semibold shadow-sm ' +
                 (myVotes > 0

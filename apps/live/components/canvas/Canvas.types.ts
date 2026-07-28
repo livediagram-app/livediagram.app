@@ -480,7 +480,10 @@ export type CanvasProps = {
   onResumeTimer: () => void;
   onResetTimer: () => void;
   onClearTimer: () => void;
-  onStartVote: (votesPerPerson: number) => void;
+  onStartVote: (
+    votesPerPerson: number,
+    privacy?: import('@livediagram/diagram').VotePrivacy,
+  ) => void;
   onEndVote: () => void;
   onRevealVote: () => void;
   onClearVote: () => void;

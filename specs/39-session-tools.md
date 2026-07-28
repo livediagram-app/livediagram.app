@@ -75,6 +75,8 @@ live counts but can't control or vote. No extra gating code.
   when it holds your dots; click it to retract one). A floating **`VoteBanner`**
   (the same `TopCenterStack`, stacked below the timer row) tells each
   participant how many dots they have left.
+- **Vote privacy** — two per-vote switches set before **Start vote** (see
+  "Vote privacy" below); they live on the vote, not as a user preference.
 - **End vote** closes casting (tallies stay). **Show results** sets
   `revealed`; the pill flags joint winners by comparing to the tab-wide max
   (`voteMax`). **Clear** removes the session.
@@ -92,6 +94,71 @@ live counts but can't control or vote. No extra gating code.
   the static winner rings are suppressed for them so attention lands on the
   single focused pick.
 
+## Vote privacy
+
+Dot-voting is only as honest as what participants can see before it closes.
+Two things leak the room's leaning while casting is open: **where everyone's
+pointer is** (peer cursors and laser trails visibly converge on the sticky
+they like) and **the running tallies** (a count pill that climbs tells you
+what to pile onto). Two independent switches on the vote address them:
+
+`tab.vote` carries `hideCursors?: boolean` and `hideCounts?: boolean`. Both
+are **optional** so a vote persisted before this shipped decodes unchanged
+and behaves as it always did (absent = off).
+
+- **Set once, at start.** Both switches sit in **Tab Settings → Session →
+  Vote** above **Start vote**, alongside the dots-per-person stepper, and are
+  written into the `TabVote` by `startVote`. There is **no mid-vote toggle**:
+  to change them, end the vote and start a new one. That keeps the rule a
+  participant can rely on ("cursors were hidden for the whole of this vote")
+  instead of a setting the facilitator can flip once they've seen where
+  people are pointing.
+- **Room-wide, not per-viewer.** The flags ride `tab.vote`, so every client
+  on the tab reads the same values off the synced tab — nobody can opt back
+  into seeing cursors. Late-joiners and reloads get the current setting for
+  free, like the rest of the session state.
+- **Any edit-role participant can start a privacy-mode vote**, exactly as
+  they can start any vote. No owner-only gate (spec/39 has never had one).
+
+### Hide participant cursors (default **on**)
+
+While `vote.active`, peer **cursors** and peer **laser trails** are neither
+drawn nor sent:
+
+- **Render:** `usePresenceRows` returns empty `remoteCursorRows` and drops
+  remote laser rows, so nothing reaches the canvas overlays.
+- **Wire:** `useEditorBroadcast` stops emitting `cursor` and `laser` room ops
+  altogether. Suppressing the send (not just the paint) is the point — a
+  render-only gate would still put every participant's coordinates on the
+  socket for anyone with devtools open. It also drops the room's busiest
+  packet stream for the duration of the vote.
+- Your **own** laser trail still draws on your own screen; only what peers
+  send is withheld. The banner says cursors are hidden so the mismatch reads
+  as the feature, not a bug.
+- **Presence stays**: the tab avatar stack, the "who's on this tab" dots and
+  the per-element **selection badges + selection lock** (spec/07) are
+  untouched. You can still see who is in the room, and an element someone
+  else holds still names them — silently locking an element with no
+  explanation would read as a bug, and the lock is a correctness mechanism
+  rather than an intent signal.
+- **Restored the moment casting closes** (`vote.active` goes false), i.e. on
+  **End vote** or **Clear**, not at **Show results**. Hidden is exactly
+  "while the vote is open", which is the rule that's easy to state and
+  impossible to get wrong.
+
+### Hide running counts (default **off**)
+
+While the vote is **unrevealed**, the tally pill on each element shows only
+**your own** dots (so you can still see and retract what you spent); other
+participants' dots are excluded from the number and no pill appears on an
+element you haven't voted on. **Show results** reveals the true totals and
+the winner rings as usual — the existing reveal step is the natural gate, so
+this switch changes _when_ counts appear rather than adding a new phase.
+
+It defaults **off** because live counts are load-bearing for ordinary
+dot-voting (see "Counts are **live**" above); a facilitator running a blind
+vote opts in.
+
 ## Telemetry (spec/22)
 
 `track('Tab', 'Started', 'CountdownTimer' | 'StopwatchTimer' | 'Vote')`,
@@ -103,5 +170,14 @@ walkthrough, and `track('Element', 'Voted')` on each dot. The `Started` /
 
 ## Out of scope (v1)
 
-Poll-style voting (options rather than dots), anonymous voting, a
-server-authoritative clock, a timer-end sound, and view-role casting.
+Poll-style voting (options rather than dots), a server-authoritative clock, a
+timer-end sound, and view-role casting.
+
+Anonymous voting was in this list until the two **Vote privacy** switches
+above shipped. What's still out of scope there: **anonymity in the stored
+data**. `vote.votes` remains `elementId -> participantId[]`, so the switches
+hide who's pointing where and (optionally) the running totals, but a
+determined participant reading the synced tab could still attribute dots.
+Making casts unattributable would mean dropping the participant id, which
+breaks both the per-person budget (`votesSpentBy`) and retraction — a real
+design change, not a toggle.

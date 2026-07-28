@@ -45,6 +45,12 @@ type EditorBroadcastDeps = {
   // switches away from 'laser' so a fresh laser session doesn't
   // start from a previous run's tail.
   canvasTool: CanvasTool;
+  // Vote privacy (spec/39): true while a hide-cursors vote is open on the
+  // active tab. Cursor + laser ops stop going out entirely, so a peer
+  // can't read positions off the socket even with devtools open — a
+  // render-only gate would leave the coordinates on the wire. The
+  // matching render gate lives in usePresenceRows.
+  cursorsHidden: boolean;
 };
 
 type EditorBroadcastApi = {
@@ -81,7 +87,26 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
     setLocalLaserTrail([]);
   }, [deps.canvasTool, deps.activeId]);
 
+  // Entering a hide-cursors vote, retract our indicator once. Without
+  // this, every peer keeps the LAST position we sent in their map: it's
+  // suppressed while the vote runs, but the moment casting closes and the
+  // render gate lifts, that frozen arrow re-appears pointing at whatever
+  // we were looking at mid-vote — exactly the leak the mode exists to
+  // prevent. A null cursor is the room's "pointer left the canvas" signal,
+  // so peers drop the entry outright. Sent before the gate below applies.
+  const cursorsHidden = deps.cursorsHidden;
+  const roomRef = deps.roomRef;
+  const activeId = deps.activeId;
+  useEffect(() => {
+    if (!cursorsHidden) return;
+    roomRef.current?.send({
+      kind: 'op',
+      op: { kind: 'cursor', tabId: activeId, x: null, y: null },
+    });
+  }, [cursorsHidden, roomRef, activeId]);
+
   const broadcastCursor = (pos: { x: number; y: number } | null) => {
+    if (deps.cursorsHidden) return;
     if (!deps.hydrated || !deps.diagramId || (!deps.diagramShareable && !deps.diagramTeamId))
       return;
     const now = performance.now();
@@ -110,6 +135,9 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
     if (now - lastLaserSentRef.current < BROADCAST_THROTTLE_MS) return;
     lastLaserSentRef.current = now;
     setLocalLaserTrail((prev) => trimLaserBuffer([...prev, { x, y, t: now }]));
+    // Your own trail still draws locally (it's your own pointer); only the
+    // outbound half is withheld while a hide-cursors vote is open.
+    if (deps.cursorsHidden) return;
     if (!deps.hydrated || !deps.diagramId || (!deps.diagramShareable && !deps.diagramTeamId))
       return;
     deps.roomRef.current?.send({

@@ -17,6 +17,7 @@ import {
   type Tab,
   type TabVote,
   type TimerMode,
+  type VotePrivacy,
 } from '@livediagram/diagram';
 import { track } from '@/lib/telemetry';
 
@@ -110,16 +111,36 @@ export function useTabSession(deps: TabSessionDeps) {
 
   // --- Voting --------------------------------------------------------------
 
-  const startVote = (votesPerPerson: number) => {
+  // Privacy is decided HERE, at start, and baked into the vote — spec/39
+  // has no mid-vote toggle, so a participant can trust that what was
+  // hidden stayed hidden for the whole vote.
+  const startVote = (votesPerPerson: number, privacy?: VotePrivacy) => {
     if (editsBlocked) return;
-    const vote: TabVote = { active: true, revealed: false, votesPerPerson, votes: {} };
+    const vote: TabVote = {
+      active: true,
+      revealed: false,
+      votesPerPerson,
+      votes: {},
+      hideCursors: privacy?.hideCursors === true,
+      hideCounts: privacy?.hideCounts === true,
+    };
     patchActive((t) => ({ ...t, vote }));
+    const privacyNote = [
+      vote.hideCursors ? 'cursors hidden' : null,
+      vote.hideCounts ? 'counts hidden' : null,
+    ].filter(Boolean);
     emitTabMeta(
       activeId,
-      `Started a vote (${votesPerPerson} ${votesPerPerson === 1 ? 'dot' : 'dots'} each)`,
+      `Started a vote (${votesPerPerson} ${votesPerPerson === 1 ? 'dot' : 'dots'} each${
+        privacyNote.length > 0 ? `, ${privacyNote.join(', ')}` : ''
+      })`,
       { undoable: false },
     );
     track('Tab', 'Started', 'Vote');
+    // A second, separate line for the privacy modes so the vote-start series
+    // stays comparable across the change (spec/22): cursors default ON, so
+    // folding it into the 'Vote' type would have hollowed out that series.
+    if (vote.hideCursors || vote.hideCounts) track('Tab', 'Started', 'PrivateVote');
   };
 
   const endVote = () => {

@@ -4,6 +4,8 @@ import {
   isVotable,
   timerDisplayMs,
   timerDone,
+  voteHidesCursors,
+  voteHidesTallies,
   voteTotals,
   voteWinners,
   votesSpentBy,
@@ -115,5 +117,46 @@ describe('vote tallies', () => {
     expect(
       voteWinners({ ...vote, votes: { a: ['x', 'y'], b: ['p', 'q'], c: ['z'] } }).sort(),
     ).toEqual(['a', 'b']);
+  });
+});
+
+describe('vote privacy (spec/39)', () => {
+  const open: TabVote = { active: true, revealed: false, votesPerPerson: 3, votes: {} };
+
+  it('a vote saved before privacy shipped (flags absent) hides nothing', () => {
+    expect(voteHidesCursors(open)).toBe(false);
+    expect(voteHidesTallies(open)).toBe(false);
+    expect(voteHidesTallies({ ...open, active: false })).toBe(false);
+  });
+
+  it('neither helper fires without a vote', () => {
+    expect(voteHidesCursors(null)).toBe(false);
+    expect(voteHidesCursors(undefined)).toBe(false);
+    expect(voteHidesTallies(null)).toBe(false);
+    expect(voteHidesTallies(undefined)).toBe(false);
+  });
+
+  it('hideCursors applies only while casting is open — End vote restores cursors', () => {
+    const v = { ...open, hideCursors: true };
+    expect(voteHidesCursors(v)).toBe(true);
+    // End vote: casting closed, results not yet shown. Cursors come back
+    // here rather than waiting for the reveal.
+    expect(voteHidesCursors({ ...v, active: false })).toBe(false);
+    expect(voteHidesCursors({ ...v, active: false, revealed: true })).toBe(false);
+  });
+
+  it('hideCounts survives End vote and lifts only at the reveal', () => {
+    const v = { ...open, hideCounts: true };
+    expect(voteHidesTallies(v)).toBe(true);
+    // Still hidden in the ended-but-unrevealed gap — "Show results" is the gate.
+    expect(voteHidesTallies({ ...v, active: false })).toBe(true);
+    expect(voteHidesTallies({ ...v, active: false, revealed: true })).toBe(false);
+  });
+
+  it('the two switches are independent', () => {
+    const cursorsOnly: TabVote = { ...open, hideCursors: true };
+    expect(voteHidesTallies(cursorsOnly)).toBe(false);
+    const countsOnly: TabVote = { ...open, hideCounts: true };
+    expect(voteHidesCursors(countsOnly)).toBe(false);
   });
 });

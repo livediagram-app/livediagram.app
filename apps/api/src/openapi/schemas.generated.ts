@@ -3092,6 +3092,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "active": {
         "type": "boolean"
       },
+      "hideCounts": {
+        "type": "boolean"
+      },
+      "hideCursors": {
+        "type": "boolean"
+      },
       "revealed": {
         "type": "boolean"
       },

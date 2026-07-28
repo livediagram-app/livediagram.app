@@ -9,6 +9,7 @@ import {
   type TabVote,
   type TextSize,
   type TimerMode,
+  type VotePrivacy,
 } from '@livediagram/diagram';
 import { useUiMode } from '@/hooks/ui/useUiMode';
 import type { AutoLayoutChoice } from '@/lib/auto-layout-choices';
@@ -106,7 +107,7 @@ type TabBarProps = {
   onResumeTimer: () => void;
   onResetTimer: () => void;
   onClearTimer: () => void;
-  onStartVote: (votesPerPerson: number) => void;
+  onStartVote: (votesPerPerson: number, privacy?: VotePrivacy) => void;
   onEndVote: () => void;
   onRevealVote: () => void;
   onClearVote: () => void;

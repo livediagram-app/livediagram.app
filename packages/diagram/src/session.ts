@@ -65,7 +65,43 @@ export type TabVote = {
   // elementId -> the participant ids that placed a dot there. A participant
   // id repeats once per dot, so stacking N dots on one element is N entries.
   votes: Record<string, string[]>;
+  // --- Vote privacy (spec/39) ----------------------------------------------
+  // Both are set once at startVote and never change mid-vote: to vote under
+  // different rules you end the vote and start another. Optional so a vote
+  // persisted before privacy shipped decodes unchanged (absent = off), and
+  // read through the two helpers below rather than tested directly, so the
+  // "only while it matters" phase check lives in one place.
+  //
+  // Suppress peer cursors + laser trails while casting is open, so nobody
+  // can watch the room converge on a favourite before the vote closes.
+  hideCursors?: boolean;
+  // Withhold OTHER participants' dots until the results are revealed, so a
+  // climbing tally can't snowball. Your own dots always stay visible.
+  hideCounts?: boolean;
 };
+
+// The privacy choices a facilitator makes BEFORE starting a vote, passed
+// to `startVote` and baked into the resulting `TabVote`. Separate from the
+// optional flags on `TabVote` itself (which are optional for back-compat)
+// because a fresh vote always states both answers explicitly.
+export type VotePrivacy = {
+  hideCursors: boolean;
+  hideCounts: boolean;
+};
+
+// Should peer cursors / laser trails be withheld right now? Only while
+// casting is OPEN: ending the vote restores them, ahead of the reveal
+// (spec/39 — "hidden" means exactly "while the vote is open").
+export function voteHidesCursors(vote: TabVote | null | undefined): boolean {
+  return !!vote && vote.active && vote.hideCursors === true;
+}
+
+// Should other people's dots be withheld right now? Until the results are
+// REVEALED, which spans both the open-casting and the ended-but-unrevealed
+// phases — "Show results" is the existing gate this switch defers to.
+export function voteHidesTallies(vote: TabVote | null | undefined): boolean {
+  return !!vote && !vote.revealed && vote.hideCounts === true;
+}
 
 // Which element kinds a dot-vote can land on (spec/39): stickies, images,
 // and shapes — but NOT a `frame` (it's a section backdrop, not content),

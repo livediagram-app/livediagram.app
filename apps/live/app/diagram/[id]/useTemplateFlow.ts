@@ -1,4 +1,4 @@
-import type { Dispatch, SetStateAction } from 'react';
+import { useEffect, useRef, type Dispatch, type SetStateAction } from 'react';
 import type { Tab } from '@livediagram/diagram';
 import { track, titleCaseType } from '@/lib/telemetry';
 import { getTheme, recolourElementsForTheme, switchThemeBackdrop, THEMES } from '@/lib/themes';
@@ -10,6 +10,23 @@ import { patchTab } from './editor-page-helpers';
 type SetState<T> = Dispatch<SetStateAction<T>>;
 type TemplatePickerMode = 'welcome' | 'templates' | 'identity';
 
+// What the Quick Start picker should do when the mode or the active tab
+// moves under it. Pure so the rule is testable without rendering the hook:
+//
+//   'reset'  — picker isn't open; forget which tab it belonged to
+//   'record' — picker just opened; remember the tab it's asking about
+//   'close'  — the user switched tabs; the picker is stale, dismiss it
+//   'keep'   — still on its own tab, leave it alone
+export function templatePickerTabAction(
+  mode: TemplatePickerMode,
+  pickerTabId: string | null,
+  activeId: string,
+): 'reset' | 'record' | 'close' | 'keep' {
+  if (mode !== 'templates') return 'reset';
+  if (pickerTabId === null) return 'record';
+  return pickerTabId === activeId ? 'keep' : 'close';
+}
+
 // Template / identity modal actions, lifted out of editor-page.tsx:
 // open the per-tab template picker, skip it, or choose a template (mint
 // the scaffold via the lazily-imported builders, recolour to the chosen
@@ -17,6 +34,9 @@ type TemplatePickerMode = 'welcome' | 'templates' | 'identity';
 // also wired into useShareLinks) and is passed in.
 export function useTemplateFlow(opts: {
   activeId: string;
+  // The live tab list, read only to check whether the tab a template is
+  // about to land on is genuinely empty (see chooseTemplate's backstop).
+  tabs: Tab[];
   templatePickerMode: TemplatePickerMode;
   selfParticipant: Participant;
   getViewportCenter: () => { x: number; y: number };
@@ -29,6 +49,7 @@ export function useTemplateFlow(opts: {
 }) {
   const {
     activeId,
+    tabs,
     templatePickerMode,
     selfParticipant,
     getViewportCenter,
@@ -39,6 +60,26 @@ export function useTemplateFlow(opts: {
     setSelfParticipant,
     setTemplatePickerMode,
   } = opts;
+
+  // Quick Start belongs to the tab it was opened on. Both entry points
+  // (adding a tab, the empty-canvas button) only fire for an EMPTY active
+  // tab, but the modal used to survive a tab switch underneath it — and
+  // `chooseTemplate` writes to whatever tab is active when you confirm.
+  // Add a tab, switch back to a tab with work on it, pick a template, and
+  // the scaffold replaced that tab's elements. Close the picker instead:
+  // the tab it was asking about is no longer the one on screen.
+  //
+  // The ref records the tab the picker opened on rather than diffing
+  // activeId, because `addTab` sets the new active tab AND opens the
+  // picker in the same commit — a plain "activeId changed" effect would
+  // close the picker in the very render that opened it.
+  const pickerTabRef = useRef<string | null>(null);
+  useEffect(() => {
+    const action = templatePickerTabAction(templatePickerMode, pickerTabRef.current, activeId);
+    if (action === 'reset') pickerTabRef.current = null;
+    else if (action === 'record') pickerTabRef.current = activeId;
+    else if (action === 'close') setTemplatePickerMode('welcome');
+  }, [templatePickerMode, activeId, setTemplatePickerMode]);
 
   const openTemplatePicker = () => {
     setTemplatePickerMode('templates');
@@ -65,6 +106,15 @@ export function useTemplateFlow(opts: {
         setSelfParticipant((p) => ({ ...p, name }));
       }
       confirmName();
+      setTemplatePickerMode('welcome');
+      return;
+    }
+    // Backstop against the same data loss the effect above prevents.
+    // Applying a template REPLACES the tab's elements, and every route
+    // into this picker is gated on an empty tab — so a confirm landing on
+    // a tab with work on it means the modal outlived the tab it was
+    // opened for. Dismiss it and touch nothing rather than wipe the tab.
+    if ((tabs.find((t) => t.id === activeId)?.elements.length ?? 0) > 0) {
       setTemplatePickerMode('welcome');
       return;
     }

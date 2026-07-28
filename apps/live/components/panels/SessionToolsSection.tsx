@@ -15,11 +15,15 @@
 import { useEffect, useState } from 'react';
 import {
   timerDisplayMs,
+  voteHidesCursors,
+  voteHidesTallies,
   type TabTimer,
   type TabVote,
   type TimerMode,
+  type VotePrivacy,
   formatTimerClock,
 } from '@livediagram/diagram';
+import { ToggleSwitch } from '@/components/palette/palette-controls';
 
 const sessChip = (on: boolean) =>
   on
@@ -213,14 +217,43 @@ export function SessionStopwatchSection({
 
 type VoteProps = {
   vote: TabVote | null;
-  onStartVote: (votesPerPerson: number) => void;
+  onStartVote: (votesPerPerson: number, privacy?: VotePrivacy) => void;
   onEndVote: () => void;
   onRevealVote: () => void;
   onClearVote: () => void;
 };
 
-// The Vote category body: the dots-per-person stepper before start, then the
-// live-vote controls (end / reveal / clear).
+// One privacy switch: label + explainer on the left, the iOS-style toggle
+// on the right, the whole row clickable (so the toggle is presentational
+// and we don't nest a button in a button).
+function VotePrivacyRow({
+  label,
+  hint,
+  checked,
+  onToggle,
+}: {
+  label: string;
+  hint: string;
+  checked: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      className="flex w-full items-center justify-between gap-2 rounded-md px-1 py-1 text-left transition hover:bg-slate-50 dark:hover:bg-slate-800/60"
+    >
+      <span className="flex flex-col">
+        <span className="text-[11px] text-slate-600 dark:text-slate-300">{label}</span>
+        <span className="text-[10px] leading-snug text-slate-400 dark:text-slate-500">{hint}</span>
+      </span>
+      <ToggleSwitch checked={checked} label={label} presentational />
+    </button>
+  );
+}
+
+// The Vote category body: the dots-per-person stepper and the two privacy
+// switches before start, then the live-vote controls (end / reveal / clear).
 export function SessionVoteSection({
   vote,
   onStartVote,
@@ -229,6 +262,12 @@ export function SessionVoteSection({
   onClearVote,
 }: VoteProps) {
   const [votesPerPerson, setVotesPerPerson] = useState(3);
+  // Vote privacy (spec/39). Cursors default ON — the leak they cause is
+  // invisible to the facilitator, so it's the safer default; running counts
+  // default OFF because live tallies are how ordinary dot-voting works.
+  // Both are baked into the vote at start and can't be changed mid-vote.
+  const [hideCursors, setHideCursors] = useState(true);
+  const [hideCounts, setHideCounts] = useState(false);
   const totalVotesCast = vote ? Object.values(vote.votes).reduce((n, ids) => n + ids.length, 0) : 0;
 
   return (
@@ -259,9 +298,21 @@ export function SessionVoteSection({
               </button>
             </div>
           </div>
+          <VotePrivacyRow
+            label="Hide cursors"
+            hint="Nobody sees where others are pointing."
+            checked={hideCursors}
+            onToggle={() => setHideCursors((v) => !v)}
+          />
+          <VotePrivacyRow
+            label="Hide running counts"
+            hint="Totals stay secret until you show results."
+            checked={hideCounts}
+            onToggle={() => setHideCounts((v) => !v)}
+          />
           <button
             type="button"
-            onClick={() => onStartVote(votesPerPerson)}
+            onClick={() => onStartVote(votesPerPerson, { hideCursors, hideCounts })}
             className={sessBtnPrimary}
           >
             Start vote
@@ -274,6 +325,19 @@ export function SessionVoteSection({
             <span className="font-semibold tabular-nums">{totalVotesCast}</span> cast ·{' '}
             {vote.votesPerPerson} each
           </p>
+          {voteHidesCursors(vote) || voteHidesTallies(vote) ? (
+            // Read-only: privacy is fixed for the life of the vote, so this
+            // states what's in force rather than offering a switch.
+            <p className="rounded-md bg-slate-50 px-2 py-1 text-[10px] leading-snug text-slate-500 dark:bg-slate-800/60 dark:text-slate-400">
+              {[
+                voteHidesCursors(vote) ? 'Cursors hidden' : null,
+                voteHidesTallies(vote) ? 'Counts hidden' : null,
+              ]
+                .filter(Boolean)
+                .join(' · ')}{' '}
+              &middot; end the vote to change this.
+            </p>
+          ) : null}
           <div className="grid grid-cols-2 gap-1">
             {vote.active ? (
               <button type="button" onClick={onEndVote} className={sessBtn}>

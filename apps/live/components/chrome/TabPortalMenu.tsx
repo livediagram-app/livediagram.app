@@ -2,7 +2,12 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useReposition } from '@/hooks/canvas/useReposition';
 import { Portal } from '@/components/primitives/Portal';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
-import { type TabTimer, type TabVote, type TimerMode } from '@livediagram/diagram';
+import {
+  type TabTimer,
+  type TabVote,
+  type TimerMode,
+  type VotePrivacy,
+} from '@livediagram/diagram';
 import { clampToViewport } from '@/lib/clamp-to-viewport';
 import { PencilIcon, TrashIcon } from '@/components/panels/explorer-icons';
 import { FileExportIcon, FileImportIcon } from '@/components/palette/palette-icons';
@@ -109,7 +114,7 @@ export function PortalMenu({
   onResumeTimer: () => void;
   onResetTimer: () => void;
   onClearTimer: () => void;
-  onStartVote: (votesPerPerson: number) => void;
+  onStartVote: (votesPerPerson: number, privacy?: VotePrivacy) => void;
   onEndVote: () => void;
   onRevealVote: () => void;
   onClearVote: () => void;

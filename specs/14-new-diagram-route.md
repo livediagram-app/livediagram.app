@@ -289,6 +289,17 @@ both of which set `templatePickerMode='templates'` (`templateGridOpen`). It no
 longer auto-opens just because a tab has no elements, so a freshly-created
 (truly blank) diagram lands on the canvas rather than behind the picker.
 
+**Quick Start belongs to the tab it was opened on, and closes if you leave
+it.** Applying a template REPLACES the active tab's elements, and both entry
+points above only fire for an empty tab — so the picker must not outlive that
+tab. It used to: adding Tab 2 opened the picker, switching back to Tab 1 left
+it open, and confirming a template there wiped Tab 1's work. `useTemplateFlow`
+records the tab the picker opened on and dismisses the picker when the active
+tab changes (a ref, not an activeId diff — `addTab` switches tab and opens the
+picker in one commit, which a naive diff would close immediately).
+`chooseTemplate` carries the matching backstop: a confirm that would land on a
+tab with elements dismisses the picker and writes nothing.
+
 The **empty-canvas hint** is a subdued **bottom banner** (`EmptyCanvasBanner`),
 shown while the active tab has no elements — not the old centre-of-canvas card,
 which read as a half-finished modal. It is **not dismissible** (it simply goes

@@ -1,6 +1,11 @@
 'use client';
 
-import { votesSpentBy, type TabVote } from '@livediagram/diagram';
+import {
+  voteHidesCursors,
+  voteHidesTallies,
+  votesSpentBy,
+  type TabVote,
+} from '@livediagram/diagram';
 import type { VoteReview } from '@/hooks/canvas/useVoteReview';
 import { TopCenterBanner } from '@/components/chrome/TopCenter';
 
@@ -57,10 +62,20 @@ export function VoteBanner({
       ? 'Results revealed: top picks are ringed.'
       : 'Voting ended.';
 
+  // Vote privacy (spec/39). Worth stating outright: without it, vanished
+  // cursors and a pill showing only your own dots both read as breakage.
+  const privacy = [
+    voteHidesCursors(vote) ? 'Cursors hidden' : null,
+    voteHidesTallies(vote) ? 'Counts hidden until results' : null,
+  ].filter(Boolean);
+
   return (
     <TopCenterBanner tone="brand" className="gap-2 px-3 py-1 text-[11px] font-medium">
       <span aria-hidden className="inline-block h-2 w-2 rounded-full bg-brand-500" />
       {message}
+      {privacy.length > 0 ? (
+        <span className="text-slate-500 dark:text-slate-400">{privacy.join(' · ')}</span>
+      ) : null}
     </TopCenterBanner>
   );
 }
