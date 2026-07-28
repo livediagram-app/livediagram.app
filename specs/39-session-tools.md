@@ -78,7 +78,10 @@ live counts but can't control or vote. No extra gating code.
   Counts are **live** — every element with dots shows a tally pill (brand-filled
   when it holds your dots; click it to retract one). A floating **`VoteBanner`**
   (the same `TopCenterStack`, stacked below the timer row) tells each
-  participant how many dots they have left.
+  participant how many dots they have left — and **only** that. It floats
+  over the canvas for the whole vote, so it carries one glanceable phrase
+  ("2 of 3 dots left") rather than instructions or status chips; anything
+  longer turns a status pill into a paragraph parked on the board.
 - **Vote privacy** — two per-vote switches set before **Start vote** (see
   "Vote privacy" below); they live on the vote, not as a user preference.
 - **End vote** closes casting (tallies stay). **Show results** sets
@@ -137,8 +140,12 @@ drawn nor sent:
   socket for anyone with devtools open. It also drops the room's busiest
   packet stream for the duration of the vote.
 - Your **own** laser trail still draws on your own screen; only what peers
-  send is withheld. The banner says cursors are hidden so the mismatch reads
-  as the feature, not a bug.
+  send is withheld.
+- **Which switches are in force is shown in the tab menu's Vote section**
+  (a read-only "Cursors hidden · end the vote to change this" line), not on
+  the floating banner. The banner is a status pill, and privacy state
+  doesn't change during a vote — putting it there widened the pill
+  permanently to restate something fixed.
 - **Presence stays**: the tab avatar stack, the "who's on this tab" dots and
   the per-element **selection badges + selection lock** (spec/07) are
   untouched. You can still see who is in the room, and an element someone

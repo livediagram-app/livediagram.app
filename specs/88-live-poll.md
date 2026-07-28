@@ -97,7 +97,8 @@ when an op arrives so a hand-crafted frame can't blow up a peer's panel:
    poll never inherits the first one's half-typed free-text answer.
 3. **Results.** A **`PollPanel`** built on the shared `MovablePanel`, like
    Collaborate / Layers / Activity: draggable, resettable, and dockable
-   into a corner stack, homed **bottom-left**. It registers as a real
+   into a corner stack, homed **top-right directly under the Palette**
+   (the corner the panels you act on live in). It registers as a real
    `PanelId` rather than floating outside the panel system, but it is the
    only panel that isn't always present — it joins and leaves its corner
    stack with the poll. It carries no mobile-dock entry on purpose: the
@@ -125,8 +126,12 @@ display name — so a participant with devtools open can attribute answers. The
 client even relies on the sender id, to key answers so a person changing their
 mind replaces their earlier answer rather than stacking a second one.
 
-This is a deliberate v1 limit, and the UI is worded to match: it says answers
-**aren't shown against names**, never that the poll is anonymous. Closing the
+This is a deliberate v1 limit, and the UI is worded to match: where it says
+anything at all it says answers **aren't shown against names**, never that the
+poll is anonymous. It says it **once**, on the prompt (plus the compose form),
+where it informs the decision a participant is about to make. The results
+panel does not repeat it: by then the answer is in, and the line was just
+chrome on a panel whose footer should read `N answered · N skipped`. Closing the
 gap means the room stripping the sender id on `poll-answer` before rebroadcast,
 which costs the per-sender dedupe (a client could then answer repeatedly). See
 "Out of scope".

@@ -72,10 +72,11 @@ export const DEFAULT_PANEL_CORNER: Record<PanelId, PanelCorner> = {
   // Layers (spec/74): the one panel homed bottom-right, above the fixed
   // zoom cluster (that corner's inset already clears it).
   layers: 'bottom-right',
-  // Live poll (spec/88): bottom-left with the other read-only readouts.
-  // Unlike every other panel it only EXISTS while a poll is running, so
-  // it joins and leaves its corner stack rather than sitting there.
-  poll: 'bottom-left',
+  // Live poll (spec/88): top-right under the Palette, where the panels
+  // you act on live. Unlike every other panel it only EXISTS while a poll
+  // is running, so it joins and leaves its corner stack rather than
+  // sitting there.
+  poll: 'top-right',
 };
 
 export const STORAGE_KEY = 'livediagram:panel-layout:v1';
@@ -92,8 +93,8 @@ export function defaultPanelLayout(): PanelLayout {
   // Order within a corner matters (it's the stack order); list them in
   // the order they stacked historically rather than PANEL_IDS order.
   corners['top-left'] = ['explorer'];
-  corners['top-right'] = ['palette', 'collaborate', 'ai'];
-  corners['bottom-left'] = ['poll', 'activity', 'minimap'];
+  corners['top-right'] = ['palette', 'poll', 'collaborate', 'ai'];
+  corners['bottom-left'] = ['activity', 'minimap'];
   corners['bottom-right'] = ['layers'];
   return { corners, free: {} };
 }

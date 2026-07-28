@@ -502,6 +502,7 @@ export function useCanvasChromePanels({
         onEnd={pollPanel.onEnd}
         onDismiss={pollPanel.onDismiss}
         position={pollWiring.position}
+        stackBelowY={dockingActive ? undefined : legacyStackBelowY}
         onMoveTo={onMovePollPanel}
         onReset={pollWiring.onReset}
         dock={pollWiring.dock}

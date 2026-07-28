@@ -6,8 +6,8 @@
 // stack, rather than a bespoke fixed card of its own.
 //
 // Unlike its neighbours the panel only EXISTS while a poll is running, so
-// it joins and leaves the bottom-left corner stack instead of sitting
-// there permanently. Shown to the host and to anyone who has responded:
+// it joins and leaves its corner stack (top-right, under the Palette)
+// instead of sitting there permanently. Shown to the host and to anyone who has responded:
 // answering is what buys you the tally, so a participant who hasn't
 // answered can't be nudged by the running numbers.
 //
@@ -40,6 +40,7 @@ export function PollPanel({
   onMoveTo,
   onReset,
   dock,
+  stackBelowY,
 }: {
   poll: LivePoll;
   answers: Map<string, string | null>;
@@ -50,6 +51,9 @@ export function PollPanel({
   onMoveTo: (x: number, y: number) => void;
   onReset?: () => void;
   dock?: MovablePanelDockProps;
+  // Measured bottom of the Palette, so the panel stacks beneath it in
+  // the legacy (non-docking) layout the same way Collaborate / AI do.
+  stackBelowY?: number;
 }) {
   const [copied, setCopied] = useState(false);
   const { rows, textAnswers, answered, skipped } = tallyPoll(poll, answers);
@@ -68,14 +72,10 @@ export function PollPanel({
   return (
     <MovablePanel
       title="Poll"
-      headerExtra={
-        <span className="inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-brand-500 px-1 text-[10px] font-semibold text-white">
-          {answered}
-        </span>
-      }
       position={position}
-      defaultCorner="bottom-left"
+      defaultCorner="top-right-stacked"
       width="w-auto sm:w-64"
+      stackBelowY={stackBelowY}
       onMoveTo={onMoveTo}
       onReset={onReset}
       {...dock}
@@ -109,7 +109,7 @@ export function PollPanel({
         </div>
 
         <p className="text-[10px] text-slate-400 dark:text-slate-500">
-          {answered} answered &middot; {skipped} skipped &middot; not shown against names
+          {answered} answered &middot; {skipped} skipped
         </p>
 
         <div className="flex items-center gap-1">

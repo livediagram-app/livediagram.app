@@ -230,13 +230,23 @@ export function PortalMenu({
       // it; its buttons must not dismiss the menu they're pointing at.
       const inTour =
         e.target instanceof Element && e.target.closest('[data-tour-popover]') !== null;
+      // A MenuFlyoutSection (the Collaborate row) portals its panel to
+      // <body> to escape this menu's overflow-hidden, so every click
+      // inside it — picking Poll, typing a question — lands "outside"
+      // and used to close the whole menu, making the flyout unusable.
+      // The panel marks itself data-menu-flyout for exactly this; the
+      // element ContextMenu and the primitives PortalMenu already honour
+      // it, and this dismisser is the third that had to.
+      const inFlyout =
+        e.target instanceof Element && e.target.closest('[data-menu-flyout]') !== null;
       if (
         e.target instanceof Node &&
         !ref.current.contains(e.target) &&
         e.target !== anchor &&
         !inConfirm &&
         !onTrigger &&
-        !inTour
+        !inTour &&
+        !inFlyout
       ) {
         onClose();
       }
