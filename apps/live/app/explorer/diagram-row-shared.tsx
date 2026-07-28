@@ -34,6 +34,41 @@ export function hrefForDiagram(diagram: PaneDiagram): string {
 const badgeBase =
   'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ring-1';
 
+// Where a diagram lives, shown on Recent rows (spec/94). Recent spans every
+// folder, so without this you can't tell a "Q3 plan" in Design from one in
+// Archive without opening it.
+//
+// Deliberately NOT the badgeBase treatment: those badges are uppercase,
+// ring-outlined statements about the diagram (Offline / Shared / Team /
+// Private). This is a quiet, lower-case location that happens to be
+// clickable, so it reads as a link rather than competing with them.
+//
+// Only the IMMEDIATE parent is shown. Folders nest arbitrarily deep, and a
+// full path would be unbounded on a row that has to stay compact; the
+// containing folder is the identifying bit in practice.
+export function FolderChip({ label, onOpen }: { label: string; onOpen: () => void }) {
+  return (
+    <Tooltip title={label} description="Go to this folder.">
+      <button
+        type="button"
+        onClick={(e) => {
+          // The whole row is a link to the diagram; this jumps to the
+          // folder instead, so it must not bubble into that.
+          e.preventDefault();
+          e.stopPropagation();
+          onOpen();
+        }}
+        className="inline-flex max-w-[10rem] items-center gap-1 rounded px-1 py-0.5 text-[11px] text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:text-slate-500 dark:hover:bg-slate-800 dark:hover:text-slate-300"
+      >
+        <span className="shrink-0 [&_svg]:h-3 [&_svg]:w-3">
+          <MenuFolderIcon />
+        </span>
+        <span className="truncate">{label}</span>
+      </button>
+    </Tooltip>
+  );
+}
+
 // The visibility badge: Offline (saved only in this browser, spec/76), Shared
 // (a shared-with-me row / a share-link owned row), Team, or Private. Each
 // carries a concise hover tooltip explaining what the state means. Offline

@@ -1,12 +1,12 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useExplorer } from './ExplorerContext';
 import { NewTokenButton } from '@/components/panels/NewTokenButton';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
 import type { HelpArticleKey } from '@/lib/help-articles';
-import { ListView, PaneHeader, SharedList, SkeletonRows } from './views';
+import { ListView, PaneHeader, SharedList, SkeletonRows, type PaneDiagram } from './views';
 import { CardView } from './CardView';
 import { useExplorerViewMode } from './useExplorerViewMode';
 import { EmptyPane } from './ExplorerEmptyState';
@@ -105,6 +105,7 @@ const ProfilePane = dynamic(() =>
 export function ExplorerPane() {
   const {
     prefs,
+    folderById,
     toggleRecentExclusion,
     selected,
     go,
@@ -153,6 +154,35 @@ export function ExplorerPane() {
   useEffect(() => {
     setTeamNotFound(false);
   }, [selected]);
+  // Where each Recent row lives (spec/94). Recent is the only pane that
+  // spans folders — every other one IS a folder, so a chip there would just
+  // repeat the pane's own title.
+  //
+  // Rows shared WITH you carry no folderId at all (they live in the sharer's
+  // library, not yours), so they get no chip rather than a misleading one.
+  const folderChipFor = useCallback(
+    (d: PaneDiagram): { label: string; onOpen: () => void } | null => {
+      if (selected.kind !== 'recent' || d.shared) return null;
+      // A team diagram's folder belongs to the team's library, so the chip
+      // jumps into that team rather than your personal tree.
+      if (d.team) {
+        // Team folders live in the team's own tree, which `folderById`
+        // (your personal folders) doesn't index — so the chip names the
+        // TEAM and opens its library, which is the location that matters
+        // for a team row anyway.
+        return { label: d.team.name, onOpen: () => go({ kind: 'team', id: d.team!.id }) };
+      }
+      if (!d.folderId) {
+        // No folder is still a location: the synthetic Unsorted view.
+        return { label: 'Unsorted', onOpen: () => go({ kind: 'unsorted' }) };
+      }
+      const folder = folderById.get(d.folderId);
+      if (!folder) return null;
+      return { label: folder.name, onOpen: () => go({ kind: 'folder', id: folder.id }) };
+    },
+    [selected.kind, folderById, go],
+  );
+
   const hideTeamTitle = selected.kind === 'team' && teamNotFound;
   const sectionHelp = SECTION_HELP[selected.kind];
   const [viewMode, setViewMode] = useExplorerViewMode();
@@ -325,6 +355,7 @@ export function ExplorerPane() {
               onDismissShared={dismissShared}
               recentExcludedIds={prefs.recentExcludedIds ?? []}
               onToggleRecentExclusion={toggleRecentExclusion}
+              folderChipFor={folderChipFor}
               childrenCount={(id) => childrenByParent.get(id)?.length ?? 0}
               diagramsCount={(id) => diagramsByFolder.get(id)?.length ?? 0}
               // Owner column (desktop): Recent mixes personal + team rows

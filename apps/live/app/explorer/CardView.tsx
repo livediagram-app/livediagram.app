@@ -14,7 +14,12 @@ import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
 import { DiagramThumbnail } from '@/components/panels/DiagramThumbnail';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { DynamicFolderIcon, OfflineFolderIcon, SparkleIcon, UnsortedIcon } from './icons';
-import { DiagramActionsMenu, hrefForDiagram, VisibilityBadge } from './diagram-row-shared';
+import {
+  DiagramActionsMenu,
+  FolderChip,
+  hrefForDiagram,
+  VisibilityBadge,
+} from './diagram-row-shared';
 import { cardShell, FolderCard, previewArea, SyntheticFolderCard } from './explorer-folder-cards';
 import type { Folder } from '@/lib/api-client';
 import type { PaneDiagram } from './views';
@@ -54,6 +59,7 @@ export function CardView({
   onMoveDiagram,
   onDismissShared,
   recentExcludedIds,
+  folderChipFor,
   onToggleRecentExclusion,
   childrenCount,
   diagramsCount,
@@ -92,6 +98,8 @@ export function CardView({
   onDismissShared?: (id: string) => void;
   // Hide / show in Recent (spec/93).
   recentExcludedIds?: string[];
+  // Resolves a card's folder chip (spec/94).
+  folderChipFor?: (d: PaneDiagram) => { label: string; onOpen: () => void } | null;
   onToggleRecentExclusion?: (id: string) => void;
   childrenCount: (id: string) => number;
   diagramsCount: (id: string) => number;
@@ -100,6 +108,8 @@ export function CardView({
   // in that grid is a team diagram, so a per-card "Team"/"Private" badge is
   // noise — its list view omits it too. Defaults on for the Explorer.
   showVisibilityBadge?: boolean;
+  // Where the diagram lives (spec/94). Recent only.
+  folderChip?: { label: string; onOpen: () => void } | null;
 }) {
   useRelativeTimeTick();
   return (
@@ -163,6 +173,7 @@ export function CardView({
           onDelete={() => onDeleteDiagram(d.id)}
           onMove={(anchor) => onMoveDiagram(d.id, anchor)}
           onDismiss={d.shared && onDismissShared ? () => onDismissShared(d.id) : undefined}
+          folderChip={folderChipFor?.(d) ?? null}
           recentExcluded={recentExcludedIds?.includes(d.id) === true}
           onToggleRecentExclusion={
             onToggleRecentExclusion ? () => onToggleRecentExclusion(d.id) : undefined
@@ -178,6 +189,7 @@ function DiagramCard({
   ownerId,
   showOwner,
   showVisibilityBadge,
+  folderChip,
   renaming,
   onStartRename,
   onCommitRename,
@@ -193,6 +205,8 @@ function DiagramCard({
   ownerId: string | null;
   showOwner: boolean;
   showVisibilityBadge: boolean;
+  // Where the diagram lives (spec/94). Recent only.
+  folderChip?: { label: string; onOpen: () => void } | null;
   renaming: boolean;
   onStartRename: () => void;
   onCommitRename: (name: string) => void;
@@ -283,6 +297,7 @@ function DiagramCard({
         {/* Keep every column the list shows: owner, visibility, updated. */}
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
           {showVisibilityBadge ? <VisibilityBadge diagram={diagram} /> : null}
+          {folderChip ? <FolderChip label={folderChip.label} onOpen={folderChip.onOpen} /> : null}
           <span className="text-[11px] uppercase tracking-wider text-slate-400 dark:text-slate-500">
             {relativeSince(diagram.savedAt)}
           </span>

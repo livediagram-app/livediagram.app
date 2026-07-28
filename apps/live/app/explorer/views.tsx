@@ -95,6 +95,7 @@ export function ListView({
   onMoveDiagram,
   onDismissShared,
   recentExcludedIds,
+  folderChipFor,
   onToggleRecentExclusion,
   childrenCount,
   diagramsCount,
@@ -154,6 +155,9 @@ export function ListView({
   onDismissShared?: (id: string) => void;
   // Hide / show in Recent (spec/93).
   recentExcludedIds?: string[];
+  // Resolves a row's folder chip (spec/94). Null / omitted = no chip,
+  // which is every pane except Recent.
+  folderChipFor?: (d: PaneDiagram) => { label: string; onOpen: () => void } | null;
   onToggleRecentExclusion?: (id: string) => void;
   childrenCount: (id: string) => number;
   diagramsCount: (id: string) => number;
@@ -216,6 +220,7 @@ export function ListView({
             onDelete={() => onDeleteDiagram(d.id)}
             onMove={(anchor) => onMoveDiagram(d.id, anchor)}
             onDismiss={d.shared && onDismissShared ? () => onDismissShared(d.id) : undefined}
+            folderChip={folderChipFor?.(d) ?? null}
             recentExcluded={recentExcludedIds?.includes(d.id) === true}
             onToggleRecentExclusion={
               onToggleRecentExclusion ? () => onToggleRecentExclusion(d.id) : undefined

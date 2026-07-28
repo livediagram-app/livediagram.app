@@ -1065,7 +1065,7 @@ export const articles: Article[] = [
     title: 'Recent Diagrams',
     description: 'The default view: the diagrams you opened or edited most recently.',
     keywords:
-      'history last opened latest edited previously hide exclude remove clutter show restore visible',
+      'history last opened latest edited previously hide exclude remove clutter show restore visible folder location where filed unsorted breadcrumb',
     category: 'Explorer',
     categorySlug: 'explorer',
   },
