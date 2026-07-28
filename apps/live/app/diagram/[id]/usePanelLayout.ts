@@ -29,6 +29,8 @@ export function usePanelLayout() {
   // because it isn't always there to minimise — it exists only while a
   // poll is running, and the host's End (or a local Dismiss) removes it.
   const [pollPanelPosition, setPollPanelPosition] = useState<Pos | null>(null);
+  // Live vote (spec/39): same deal — present only while a vote is running.
+  const [votePanelPosition, setVotePanelPosition] = useState<Pos | null>(null);
   // Zen / focus mode (spec/26): hide all floating chrome (header, tab
   // bar, panels, docks) so only the canvas content + zoom controls
   // remain. Purely a view flag — not persisted, not synced.
@@ -57,6 +59,8 @@ export function usePanelLayout() {
     setLayersMinimized,
     pollPanelPosition,
     setPollPanelPosition,
+    votePanelPosition,
+    setVotePanelPosition,
     zenMode,
     setZenMode,
   };

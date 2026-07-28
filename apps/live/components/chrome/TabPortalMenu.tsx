@@ -430,7 +430,7 @@ export function PortalMenu({
               {...flyoutProps('collaborate')}
             >
               <MenuAccordionSection
-                title="Countdown"
+                title="Timer"
                 icon={<CountdownMenuIcon />}
                 {...sectionProps('countdown')}
               >
@@ -460,6 +460,7 @@ export function PortalMenu({
               <MenuAccordionSection title="Vote" icon={<VoteMenuIcon />} {...sectionProps('vote')}>
                 <SessionVoteSection
                   vote={vote}
+                  selfId={selfId}
                   onStartVote={onStartVote}
                   onEndVote={onEndVote}
                   onRevealVote={onRevealVote}

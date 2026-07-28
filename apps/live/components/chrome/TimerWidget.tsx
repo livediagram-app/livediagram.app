@@ -36,10 +36,37 @@ export function TimerWidget({
   const btn =
     'flex h-6 w-6 items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800';
 
+  // Countdowns drain: the pill starts fully tinted and empties left-to-right
+  // as time runs out, so the remaining time is readable at a glance from
+  // across a room without parsing the digits. Same read as the progress
+  // track in the tab menu's timer card.
+  //
+  // Painted as a hard-stop background gradient rather than an absolutely
+  // positioned fill layer — no extra DOM, and the clock / buttons stay on
+  // top without a stacking context. A stopwatch counts UP with no known
+  // end, so it has nothing to drain and gets no fill.
+  const remaining =
+    timer.mode === 'countdown' && timer.durationMs
+      ? Math.max(0, Math.min(1, ms / timer.durationMs))
+      : null;
+  const fillPct = remaining === null ? null : remaining * 100;
+  const fillColor = done
+    ? 'rgb(244 63 94 / 0.22)'
+    : 'color-mix(in srgb, var(--color-brand-500) 22%, transparent)';
+
   return (
     <TopCenterBanner
       tone={done ? 'danger' : 'neutral'}
       className={'gap-2 py-1 pl-3 pr-1.5' + (done ? ' animate-pulse' : '')}
+      style={
+        fillPct === null
+          ? undefined
+          : {
+              // Hard stop = a crisp fill edge rather than a smear.
+              backgroundImage: `linear-gradient(to right, ${fillColor} ${fillPct}%, transparent ${fillPct}%)`,
+              transition: 'background-image 250ms linear',
+            }
+      }
     >
       <span className="select-none text-[10px] font-medium uppercase tracking-wide opacity-70">
         {timer.mode === 'countdown' ? 'Timer' : 'Stopwatch'}

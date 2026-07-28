@@ -95,11 +95,79 @@ live counts but can't control or vote. No extra gating code.
   `VoteBanner` swaps to "Top result X of N" with **Previous** / **Next**
   buttons, and the last pick shows **Done**, which exits the walkthrough
   **and clears the vote session** (same effect as Clear in the tab menu),
-  removing the banner, pills, and rings. The review index is local, so each
-  participant walks the results at their own pace; the reveal and the Done
-  clear are the shared state. While a participant's walkthrough is active,
-  the static winner rings are suppressed for them so attention lands on the
-  single focused pick.
+  removing the banner, pills, and rings. While a walkthrough is active the
+  static winner rings are suppressed so attention lands on the single
+  focused pick.
+- **The walkthrough position is SHARED** (`vote.reviewIndex`), and only the
+  host moves it. It used to be per-participant local state — "everyone
+  reviews at their own pace" — but that meant a facilitator saying "look at
+  this one" had no way to actually put the room on it, which is the whole
+  point of walking results together. Followers get the readout and the
+  focus; the Previous / Next / Done buttons and the Vote panel's clickable
+  rows are hidden for them rather than rendered as no-ops.
+
+## The Vote panel
+
+A **`VotePanel`** on the shared `MovablePanel` (like Poll / Collaborate /
+Layers), homed **top-right under the Palette**. Present only while a vote is
+on the tab, so it joins and leaves its corner stack rather than sitting in
+it. Two phases, one panel:
+
+- **While casting is open — turnout.** Dots cast against dots available, how
+  many people have finished, and one row per voter showing their budget as
+  filled / hollow pips. This exists because the canvas pills answer "what is
+  winning" but never "is everyone done", which is the question that decides
+  when to press End vote. It deliberately counts **people, not just dots**:
+  "8 of 12 dots" reads as nearly finished when one person holds all four
+  remaining, which is exactly when you shouldn't call it.
+- **Once results are revealed — the ranked list.** Every voted element, most
+  dots first, each row clickable to **jump the results walkthrough** straight
+  to that element (`jumpToVoteResult`, the same clamped setter Previous /
+  Next use). The list renders from the SAME `results` array the walkthrough
+  steps through, so the two can never disagree about the ranking. Joint
+  winners are flagged by comparing to the top count, matching the amber rings
+  rather than "index 0".
+
+**Voter rows carry no names, and can't.** Dots are keyed by the local
+participant id, while the room's presence roster is keyed by a server-random
+per-connection id (spec/61 §6) — the two never match, so a client has no way
+to turn a voter into a person. For a dot-vote that is a happy accident, and
+the turnout numbers answer the facilitator's actual question without it.
+Naming voters would mean writing names alongside the dots, which would make
+every dot trivially attributable in stored data — the opposite of the
+direction "Vote privacy" below takes.
+
+The panel is **read-only for view-role** (the End vote / Show results buttons
+are hidden); viewers still watch turnout and results, matching the rest of
+spec/39.
+
+Turnout stays visible under **hide running counts**: it reports participation
+(who has spent what budget), never which element anyone chose, so it doesn't
+leak what that switch protects. The ranked list is the tallies, so it only
+ever renders after the reveal.
+
+## Who runs a vote
+
+`vote.startedBy` records the participant that started it, and `isVoteHost`
+is the single gate. **Only the host can End / Show results / Clear the vote,
+or move the results focus.** Everyone else casts dots and watches.
+
+Ending is the reason: you can always start another vote, but you cannot get
+the dots back, so an accidental End by a participant costs the room the whole
+round. The same gate covers reveal, clear, and the walkthrough so "whose vote
+is this" has one answer rather than three.
+
+- Enforced in `useTabSession` (the handlers no-op for a non-host) **and** in
+  the UI (the controls aren't rendered for one). This is a facilitation
+  guard, not a security boundary: the vote is an ordinary tab field, so any
+  edit-role peer could still write it directly. That matches the rest of
+  spec/39, where roles are the only real gate.
+- `startedBy` is **optional**, and `isVoteHost` treats its absence as "anyone
+  may drive". A vote persisted before this shipped would otherwise become
+  unendable — nobody matches a missing starter.
+- The host's controls live on the **Vote panel** as well as the tab menu, so
+  running a vote never requires a trip back into the menu: **End vote** while
+  casting, then **Show results**, then **Clear vote** once results are up.
 
 ## Vote privacy
 

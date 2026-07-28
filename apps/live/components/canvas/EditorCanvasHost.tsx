@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { DEFAULT_BACKGROUND_COLOR, DEFAULT_PATTERN_COLOR } from '@livediagram/diagram';
+import { DEFAULT_BACKGROUND_COLOR, DEFAULT_PATTERN_COLOR, isVoteHost } from '@livediagram/diagram';
 import { resolveOwnerBadge } from '@/lib/presence-rows';
 import { usePreferenceHandlers } from '@/hooks/ui/usePreferenceHandlers';
 import { useQuickConnectStart } from '@/hooks/canvas/useQuickConnectStart';
@@ -32,6 +32,10 @@ export function EditorCanvasHost() {
     layersPanelPosition,
     pollPanelPosition,
     setPollPanelPosition,
+    votePanelPosition,
+    setVotePanelPosition,
+    voteResults,
+    jumpToVoteResult,
     livePoll,
     setLayersPanelPosition,
     layersMinimized,
@@ -468,6 +472,14 @@ export function EditorCanvasHost() {
       pollPanelPosition={pollPanelPosition}
       onMovePollPanel={(x, y) => setPollPanelPosition({ x, y })}
       onResetPollPanel={() => setPollPanelPosition(null)}
+      votePanelPosition={votePanelPosition}
+      onMoveVotePanel={(x, y) => setVotePanelPosition({ x, y })}
+      onResetVotePanel={() => setVotePanelPosition(null)}
+      voteResults={voteResults}
+      onJumpToVoteResult={jumpToVoteResult}
+      isVoteHost={isVoteHost(activeTab.vote, selfParticipant.id)}
+      // +1 for the local participant: livePresence is the REMOTE roster.
+      participantCount={livePresence.length + 1}
       onToggleLayersMinimized={() => {
         // Emit only the open transition, matching the Activity dock.
         if (layersMinimized) track('Layer', 'Opened', 'Panel');

@@ -30,8 +30,8 @@ Dot-voting is controlled from the tab's menu, under **Collaborate → Vote**.
 
 <Step n={3}>
   Choose **End vote** to close casting (the tallies stay put), then **Show results** to start the
-  guided results walkthrough. Finishing the walkthrough with **Done** clears the session; **Clear**
-  in the tab menu ends it early at any point.
+  guided results walkthrough, then **Clear vote** to put the board back. All three are on the Vote
+  panel, so you never have to go back into the menu mid-session.
 </Step>
 
 ## Casting and retracting dots
@@ -56,13 +56,23 @@ A vote is only honest if nobody can read the room before it closes. Two switches
 
 Both switches are fixed for the life of the vote. There is no way to turn them off halfway through, which is the point: end the vote and start another if you want different rules.
 
+## Knowing when to stop
+
+A **Vote** panel appears at the top right, under the Palette, for as long as the vote is running. While voting is open it shows how far the room has got: dots cast against dots available, how many people have finished, and a row per voter with their remaining dots as hollow pips. The tally pills on the canvas tell you what is winning; this tells you whether anyone is still deciding, which is the thing that decides when to press **End vote**.
+
+Voter rows aren't labelled with names. Dots aren't recorded against people in a way the app can turn back into a name, so the panel shows the shape of the room rather than a register: all-filled rows are done, part-filled rows are who you are waiting on.
+
 ## Reviewing the results
 
-**Show results** starts a guided walkthrough of everything that received dots, most votes first. The current pick pulses an amber highlight and the canvas centres on it, while the vote banner shows where you are ("Top result 1 of 4") with **Previous** and **Next** buttons to step through in order. Each participant walks the results at their own pace, so nobody's screen jumps because someone else pressed Next.
+**Show results** starts a guided walkthrough of everything that received dots, most votes first. The current pick pulses an amber highlight and the canvas centres on it, while the vote banner shows where you are ("Top result 1 of 4") with **Previous** and **Next** buttons to step through in order. The walkthrough is shared: the person who started the vote drives it, and everyone else's canvas follows to the same element. That is the point of reviewing together, and it means "everyone look at this one" actually works.
+
+The Vote panel switches to the **ranked list** at the same moment: every element that got a dot, most votes first, with the winners flagged. If you started the vote, click any row to move the room straight to that element instead of stepping through in order. Everyone else sees the same list and follows along.
 
 On the last pick, Next becomes **Done**. Pressing it ends the walkthrough and clears the whole vote session: the banner, the tally pills, and the highlights all go together, leaving the board clean for whatever comes next.
 
 View-only visitors can watch the counts, the reveal, and the walkthrough but cannot cast a dot, so observers see the outcome without skewing it.
+
+**A vote belongs to whoever started it.** Only they can end it, reveal the results, clear it, or move the walkthrough. You can always run another vote, but you can't get the dots back, so an accidental **End vote** from a participant would cost the room the whole round.
 
 <Tip>
   A common rule of thumb is roughly one dot per three or four options. Set the stepper before you

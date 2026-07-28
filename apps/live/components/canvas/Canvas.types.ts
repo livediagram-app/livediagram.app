@@ -273,6 +273,19 @@ export type CanvasProps = {
   pollPanelPosition: { x: number; y: number } | null;
   onMovePollPanel: (x: number, y: number) => void;
   onResetPollPanel: () => void;
+  // Live vote panel (spec/39): turnout while casting is open, then the
+  // clickable ranked results. Null when no vote is running on this tab.
+  votePanelPosition: { x: number; y: number } | null;
+  onMoveVotePanel: (x: number, y: number) => void;
+  onResetVotePanel: () => void;
+  voteResults: { id: string; votes: number }[];
+  onJumpToVoteResult: (index: number) => void;
+  // Whether the local participant started the running vote — the only
+  // one who may end / reveal / clear it or move the results focus.
+  isVoteHost: boolean;
+  // Everyone in the room right now (remote presence + you), the turnout
+  // denominator.
+  participantCount: number;
   // Bottom-dock "Theme & Canvas" button (spec/42): opens the
   // CanvasThemeDialog. Omitted in read-only / embed sessions (no button).
   onOpenCanvasTheme?: () => void;

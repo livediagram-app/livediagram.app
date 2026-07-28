@@ -12,6 +12,7 @@
 // vote casts deliberately do NOT log.
 
 import {
+  isVoteHost,
   timerDisplayMs,
   votesSpentBy,
   type Tab,
@@ -123,6 +124,9 @@ export function useTabSession(deps: TabSessionDeps) {
       votes: {},
       hideCursors: privacy?.hideCursors === true,
       hideCounts: privacy?.hideCounts === true,
+      // A vote is one person's to run (spec/39): the starter is the only
+      // one who can end / reveal / clear it or move the results focus.
+      startedBy: selfId,
     };
     patchActive((t) => ({ ...t, vote }));
     const privacyNote = [
@@ -145,6 +149,11 @@ export function useTabSession(deps: TabSessionDeps) {
 
   const endVote = () => {
     if (editsBlocked) return;
+    // Host-only (spec/39). Ending is destructive-ish — you can restart a
+    // vote but every dot is lost — so a participant can't do it by
+    // accident. Re-checked here as well as hidden in the UI, since the
+    // handler is reachable from more than one surface.
+    if (!isVoteHost(deps.activeTab.vote, selfId)) return;
     patchActive((t) => (t.vote ? { ...t, vote: { ...t.vote, active: false } } : t));
     emitTabMeta(activeId, 'Ended the vote', { undoable: false });
     track('Tab', 'Ended', 'Vote');
@@ -152,13 +161,19 @@ export function useTabSession(deps: TabSessionDeps) {
 
   const revealVote = () => {
     if (editsBlocked) return;
-    patchActive((t) => (t.vote ? { ...t, vote: { ...t.vote, revealed: true } } : t));
+    if (!isVoteHost(deps.activeTab.vote, selfId)) return;
+    // Revealing also seats the shared walkthrough on the top pick, so
+    // every participant lands on the same element as the host.
+    patchActive((t) =>
+      t.vote ? { ...t, vote: { ...t.vote, revealed: true, reviewIndex: 0 } } : t,
+    );
     emitTabMeta(activeId, 'Revealed the vote results', { undoable: false });
     track('Tab', 'Revealed', 'Vote');
   };
 
   const clearVote = () => {
     if (editsBlocked) return;
+    if (!isVoteHost(deps.activeTab.vote, selfId)) return;
     patchActive((t) => {
       if (!t.vote) return t;
       const { vote: _drop, ...rest } = t;
@@ -181,6 +196,15 @@ export function useTabSession(deps: TabSessionDeps) {
       };
     });
     track('Element', 'Voted');
+  };
+
+  // Move the shared results walkthrough to a rank. Host-only: the room
+  // reviews the picks together, so participants follow rather than each
+  // wandering the list on their own screen (spec/39).
+  const setVoteReviewIndex = (index: number) => {
+    if (editsBlocked) return;
+    if (!isVoteHost(deps.activeTab.vote, selfId)) return;
+    patchActive((t) => (t.vote ? { ...t, vote: { ...t.vote, reviewIndex: index } } : t));
   };
 
   // Remove ONE of my dots from an element (if any).
@@ -208,6 +232,7 @@ export function useTabSession(deps: TabSessionDeps) {
     endVote,
     revealVote,
     clearVote,
+    setVoteReviewIndex,
     castVote,
     retractVote,
   };

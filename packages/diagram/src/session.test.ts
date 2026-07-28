@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { ShapeElement } from './index';
 import {
   isVotable,
+  isVoteHost,
   timerDisplayMs,
   timerDone,
   voteHidesCursors,
@@ -117,6 +118,27 @@ describe('vote tallies', () => {
     expect(
       voteWinners({ ...vote, votes: { a: ['x', 'y'], b: ['p', 'q'], c: ['z'] } }).sort(),
     ).toEqual(['a', 'b']);
+  });
+});
+
+describe('vote host (spec/39)', () => {
+  const base: TabVote = { active: true, revealed: false, votesPerPerson: 3, votes: {} };
+
+  it('only the starter drives their vote', () => {
+    const v: TabVote = { ...base, startedBy: 'ann' };
+    expect(isVoteHost(v, 'ann')).toBe(true);
+    expect(isVoteHost(v, 'bob')).toBe(false);
+  });
+
+  it('a vote saved before hosts existed stays drivable by anyone', () => {
+    // Otherwise an in-flight legacy vote would be unendable — nobody
+    // matches an absent starter.
+    expect(isVoteHost(base, 'anyone')).toBe(true);
+  });
+
+  it('no vote means nobody to host', () => {
+    expect(isVoteHost(null, 'ann')).toBe(false);
+    expect(isVoteHost(undefined, 'ann')).toBe(false);
   });
 });
 

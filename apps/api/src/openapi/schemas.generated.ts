@@ -3101,6 +3101,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "revealed": {
         "type": "boolean"
       },
+      "reviewIndex": {
+        "type": "number"
+      },
+      "startedBy": {
+        "type": "string"
+      },
       "votes": {
         "additionalProperties": {
           "items": {

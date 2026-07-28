@@ -78,7 +78,28 @@ export type TabVote = {
   // Withhold OTHER participants' dots until the results are revealed, so a
   // climbing tally can't snowball. Your own dots always stay visible.
   hideCounts?: boolean;
+  // --- Facilitation (spec/39) --------------------------------------------
+  // The participant id that started this vote. Only they can end / reveal /
+  // clear it and drive the results walkthrough — a vote is one person's to
+  // run, and an accidental End by a participant mid-round can't be undone
+  // (starting again loses every dot). Optional for back-compat: a vote
+  // persisted before this shipped has no host, and `isVoteHost` treats that
+  // as "anyone may drive" so an in-flight legacy vote can still be ended.
+  startedBy?: string;
+  // Which rank the results walkthrough is currently on. SHARED, not local:
+  // the host steps the room through the picks together and everyone else
+  // follows. Absent until the host reveals results.
+  reviewIndex?: number;
 };
+
+// May this participant drive the vote (end / reveal / clear it, and move
+// the results focus)? A vote written before `startedBy` existed has no
+// host, so it stays drivable by anyone rather than becoming unendable.
+export function isVoteHost(vote: TabVote | null | undefined, selfId: string): boolean {
+  if (!vote) return false;
+  if (vote.startedBy === undefined) return true;
+  return vote.startedBy === selfId;
+}
 
 // The privacy choices a facilitator makes BEFORE starting a vote, passed
 // to `startVote` and baked into the resulting `TabVote`. Separate from the

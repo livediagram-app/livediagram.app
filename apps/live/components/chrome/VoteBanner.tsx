@@ -37,14 +37,19 @@ export function VoteBanner({
           Top result {review.index + 1} of {review.total} &middot; {review.votes}{' '}
           {review.votes === 1 ? 'vote' : 'votes'}
         </span>
-        <span className="flex items-center gap-1">
-          <ReviewButton label="Previous" disabled={review.index === 0} onClick={onPrev} />
-          {isLast ? (
-            <ReviewButton label="Done" emphasis onClick={onDone} />
-          ) : (
-            <ReviewButton label="Next" emphasis onClick={onNext} />
-          )}
-        </span>
+        {/* Only the vote's host drives the walk (spec/39). Everyone else
+            follows the shared focus, so they get the readout without
+            controls rather than buttons that would silently no-op. */}
+        {review.canControl ? (
+          <span className="flex items-center gap-1">
+            <ReviewButton label="Previous" disabled={review.index === 0} onClick={onPrev} />
+            {isLast ? (
+              <ReviewButton label="Done" emphasis onClick={onDone} />
+            ) : (
+              <ReviewButton label="Next" emphasis onClick={onNext} />
+            )}
+          </span>
+        ) : null}
       </TopCenterBanner>
     );
   }

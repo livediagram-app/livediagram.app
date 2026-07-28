@@ -1380,6 +1380,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     endVote,
     revealVote,
     clearVote,
+    setVoteReviewIndex,
     castVote,
     retractVote,
   } = useTabSession({
@@ -1783,10 +1784,19 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
 
   // Vote-results review (spec/39): the local walkthrough of revealed top
   // picks — focus highlight + Previous / Next / Done in the vote banner.
-  const { voteReview, nextVoteResult, prevVoteResult, doneVoteReview } = useVoteReview({
+  const {
+    voteReview,
+    voteResults,
+    jumpToVoteResult,
+    nextVoteResult,
+    prevVoteResult,
+    doneVoteReview,
+  } = useVoteReview({
     activeTab,
+    selfId: selfParticipant.id,
     scrollIntoView,
     clearVote,
+    setVoteReviewIndex,
   });
 
   // Keyboard nudge (spec/09 Move). See useNudgeSelection for the
@@ -2172,6 +2182,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     moveDiagramTo,
     nameConfirmed,
     voteReview,
+    voteResults,
+    jumpToVoteResult,
     nextVoteResult,
     prevVoteResult,
     doneVoteReview,

@@ -25,7 +25,8 @@ export type PanelId =
   | 'ai'
   | 'minimap'
   | 'layers'
-  | 'poll';
+  | 'poll'
+  | 'vote';
 
 export const PANEL_CORNERS: readonly PanelCorner[] = [
   'top-left',
@@ -43,6 +44,7 @@ export const PANEL_IDS: readonly PanelId[] = [
   'minimap',
   'layers',
   'poll',
+  'vote',
 ];
 
 // Internal: a free panel's pixel position. Not exported — callers pass
@@ -77,6 +79,9 @@ export const DEFAULT_PANEL_CORNER: Record<PanelId, PanelCorner> = {
   // is running, so it joins and leaves its corner stack rather than
   // sitting there.
   poll: 'top-right',
+  // Live vote (spec/39): beside the poll panel, and like it only present
+  // while a vote is running.
+  vote: 'top-right',
 };
 
 export const STORAGE_KEY = 'livediagram:panel-layout:v1';
@@ -93,7 +98,7 @@ export function defaultPanelLayout(): PanelLayout {
   // Order within a corner matters (it's the stack order); list them in
   // the order they stacked historically rather than PANEL_IDS order.
   corners['top-left'] = ['explorer'];
-  corners['top-right'] = ['palette', 'poll', 'collaborate', 'ai'];
+  corners['top-right'] = ['palette', 'vote', 'poll', 'collaborate', 'ai'];
   corners['bottom-left'] = ['activity', 'minimap'];
   corners['bottom-right'] = ['layers'];
   return { corners, free: {} };

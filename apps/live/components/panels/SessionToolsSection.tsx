@@ -14,6 +14,7 @@
 
 import { useEffect, useState } from 'react';
 import {
+  isVoteHost,
   timerDisplayMs,
   voteHidesCursors,
   voteHidesTallies,
@@ -122,7 +123,7 @@ function RunningTimerCard({
 
 // One-line heads-up that starting this tool replaces the other one (a tab
 // runs a single timer, spec/39).
-function ReplacesNote({ other }: { other: 'countdown' | 'stopwatch' }) {
+function ReplacesNote({ other }: { other: 'timer' | 'stopwatch' }) {
   return (
     <p className="rounded-md bg-amber-50 px-2 py-1 text-[10px] leading-snug text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">
       Starting resets the running {other}.
@@ -171,7 +172,7 @@ export function SessionCountdownSection({
             onClick={() => onStartTimer('countdown', durationMin * 60_000)}
             className={sessBtnPrimary}
           >
-            Start {durationMin}m countdown
+            Start {durationMin}m timer
           </button>
         </div>
       )}
@@ -201,7 +202,7 @@ export function SessionStopwatchSection({
         />
       ) : (
         <div className="flex flex-col gap-1.5">
-          {timer ? <ReplacesNote other="countdown" /> : null}
+          {timer ? <ReplacesNote other="timer" /> : null}
           <button
             type="button"
             onClick={() => onStartTimer('stopwatch')}
@@ -217,6 +218,9 @@ export function SessionStopwatchSection({
 
 type VoteProps = {
   vote: TabVote | null;
+  // The local participant id, matched against the vote's starter: only
+  // the host may end / reveal / clear it (spec/39).
+  selfId: string;
   onStartVote: (votesPerPerson: number, privacy?: VotePrivacy) => void;
   onEndVote: () => void;
   onRevealVote: () => void;
@@ -256,6 +260,7 @@ function VotePrivacyRow({
 // switches before start, then the live-vote controls (end / reveal / clear).
 export function SessionVoteSection({
   vote,
+  selfId,
   onStartVote,
   onEndVote,
   onRevealVote,
@@ -338,22 +343,30 @@ export function SessionVoteSection({
               &middot; end the vote to change this.
             </p>
           ) : null}
-          <div className="grid grid-cols-2 gap-1">
-            {vote.active ? (
-              <button type="button" onClick={onEndVote} className={sessBtn}>
-                End vote
+          {/* Host-only (spec/39). A participant sees the state but no
+              controls — buttons that silently no-op are worse than none. */}
+          {isVoteHost(vote, selfId) ? (
+            <div className="grid grid-cols-2 gap-1">
+              {vote.active ? (
+                <button type="button" onClick={onEndVote} className={sessBtn}>
+                  End vote
+                </button>
+              ) : !vote.revealed ? (
+                <button type="button" onClick={onRevealVote} className={sessBtn}>
+                  Show results
+                </button>
+              ) : (
+                <span />
+              )}
+              <button type="button" onClick={onClearVote} className={sessBtn}>
+                Clear
               </button>
-            ) : !vote.revealed ? (
-              <button type="button" onClick={onRevealVote} className={sessBtn}>
-                Show results
-              </button>
-            ) : (
-              <span />
-            )}
-            <button type="button" onClick={onClearVote} className={sessBtn}>
-              Clear
-            </button>
-          </div>
+            </div>
+          ) : (
+            <p className="text-[10px] leading-snug text-slate-400 dark:text-slate-500">
+              Only the person who started this vote can end it.
+            </p>
+          )}
         </div>
       )}
     </div>
