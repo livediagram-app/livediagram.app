@@ -38,12 +38,50 @@ export function createTelemetryEmitter(opts: {
   const { apiBase, enabled, isOptedIn } = opts;
 
   let buffer: TelemetryEvent[] = [];
+  // Events from exactly one failed flush, waiting for one more attempt.
+  // Kept separate from `buffer` so "has this already been retried?" is a
+  // property of which list an event is in, rather than a flag we'd have to
+  // carry on the wire or track by index (spec/22).
+  let retryBuffer: TelemetryEvent[] = [];
   let flushTimer: ReturnType<typeof setTimeout> | null = null;
   let listenersAttached = false;
 
+  function armTimer(): void {
+    if (flushTimer !== null) return;
+    flushTimer = setTimeout(() => {
+      flushTimer = null;
+      flush();
+    }, FLUSH_DELAY_MS);
+  }
+
+  // A network-level failure means the request never got a response, so the
+  // events almost certainly didn't land — worth one more attempt. Retried
+  // events go to the FRONT of the next batch so the wire order still
+  // matches the order they happened in.
+  //
+  // Deliberately one attempt and no more. A retry trades a small chance of
+  // over-counting (the request reached the server and only the response was
+  // lost) against a systematic under-count, and that trade is only worth
+  // making once: an endlessly retried batch on a dead network would grow
+  // the buffer, duplicate on every recovery, and still be lost at unload.
+  function requeue(events: TelemetryEvent[], alreadyRetried: number): void {
+    // Drop the portion that had already used its one retry.
+    const fresh = events.slice(alreadyRetried);
+    if (fresh.length === 0) return;
+    // Bound it exactly like the live buffer. On overflow the OLDEST go,
+    // because they're the ones that have already had their chance and the
+    // newest events are the ones still worth reporting.
+    retryBuffer = [...retryBuffer, ...fresh].slice(-MAX_BUFFER);
+    // Nothing else may be scheduled (a failure with an idle buffer arms no
+    // timer), so make sure the retry actually gets a moment to happen.
+    armTimer();
+  }
+
   function flush(useBeacon = false): void {
-    if (buffer.length === 0) return;
-    const events = buffer;
+    if (buffer.length === 0 && retryBuffer.length === 0) return;
+    const retriedCount = retryBuffer.length;
+    const events = [...retryBuffer, ...buffer];
+    retryBuffer = [];
     buffer = [];
     if (flushTimer !== null) {
       clearTimeout(flushTimer);
@@ -57,8 +95,12 @@ export function createTelemetryEmitter(opts: {
         typeof navigator !== 'undefined' &&
         typeof navigator.sendBeacon === 'function'
       ) {
-        navigator.sendBeacon(url, new Blob([body], { type: 'application/json' }));
-        return;
+        // sendBeacon returns false when the UA's queue is full, and that
+        // batch is simply gone. It used to be ignored; fall through to the
+        // keepalive fetch instead, which is the same "outlive the page"
+        // guarantee by another route. No requeue on this path either way —
+        // we're unloading, so there's no later to retry in.
+        if (navigator.sendBeacon(url, new Blob([body], { type: 'application/json' }))) return;
       }
       // `keepalive` lets the POST outlive a navigation the same way a
       // beacon would, for the timer-driven flush path.
@@ -67,7 +109,14 @@ export function createTelemetryEmitter(opts: {
         headers: { 'Content-Type': 'application/json' },
         body,
         keepalive: true,
-      }).catch(() => {});
+      }).catch(() => {
+        // Only on a REJECTION — a network failure, where the request never
+        // got a response. A non-2xx is deliberately not retried: the server
+        // answered, so re-sending risks duplicating something it already
+        // stored, and a 429 would only make the thing it's complaining
+        // about worse.
+        if (!useBeacon) requeue(events, retriedCount);
+      });
     } catch {
       // Swallow — telemetry can never throw into the host app.
     }
@@ -92,12 +141,7 @@ export function createTelemetryEmitter(opts: {
       flush();
       return;
     }
-    if (flushTimer === null) {
-      flushTimer = setTimeout(() => {
-        flushTimer = null;
-        flush();
-      }, FLUSH_DELAY_MS);
-    }
+    armTimer();
   }
 
   return { track };

@@ -118,6 +118,131 @@ describe('createTelemetryEmitter', () => {
     expect(sendBeacon).toHaveBeenCalledTimes(1);
   });
 
+  // --- Retry on a failed flush (spec/22, issue #37) ---------------------
+  //
+  // Emitting is fire-and-forget, so a dropped batch is invisible. The losses
+  // also aren't evenly spread: they concentrate in flaky-network sessions,
+  // which biases the data rather than just thinning it.
+
+  it('retries a batch once after a network rejection', async () => {
+    const reject = vi.fn(() => Promise.reject(new Error('offline')));
+    vi.stubGlobal('fetch', reject);
+    const emitter = makeEmitter();
+    emitter.track('UI', 'Opened');
+    vi.advanceTimersByTime(10_000);
+    await Promise.resolve();
+    expect(reject).toHaveBeenCalledTimes(1);
+
+    // The failure arms a fresh timer even with nothing new tracked, so the
+    // retry happens on its own rather than waiting for the next event.
+    const ok = vi.fn(() => Promise.resolve());
+    vi.stubGlobal('fetch', ok);
+    vi.advanceTimersByTime(10_000);
+    expect(ok).toHaveBeenCalledTimes(1);
+    expect(sentEvents(ok.mock.calls[0]!)).toEqual([
+      { category: 'UI', action: 'Opened', type: null },
+    ]);
+  });
+
+  it('gives up after the one retry rather than looping forever', async () => {
+    const reject = vi.fn(() => Promise.reject(new Error('offline')));
+    vi.stubGlobal('fetch', reject);
+    const emitter = makeEmitter();
+    emitter.track('UI', 'Opened');
+    vi.advanceTimersByTime(10_000);
+    await Promise.resolve();
+    // The retry, which also fails.
+    vi.advanceTimersByTime(10_000);
+    await Promise.resolve();
+    expect(reject).toHaveBeenCalledTimes(2);
+
+    const ok = vi.fn(() => Promise.resolve());
+    vi.stubGlobal('fetch', ok);
+    vi.advanceTimersByTime(60_000);
+    expect(ok).not.toHaveBeenCalled();
+  });
+
+  it('puts retried events at the front, ahead of newer ones', async () => {
+    const reject = vi.fn(() => Promise.reject(new Error('offline')));
+    vi.stubGlobal('fetch', reject);
+    const emitter = makeEmitter();
+    emitter.track('UI', 'Opened');
+    vi.advanceTimersByTime(10_000);
+    await Promise.resolve();
+
+    const ok = vi.fn(() => Promise.resolve());
+    vi.stubGlobal('fetch', ok);
+    emitter.track('UI', 'Closed');
+    vi.advanceTimersByTime(10_000);
+    expect(sentEvents(ok.mock.calls[0]!)).toEqual([
+      { category: 'UI', action: 'Opened', type: null },
+      { category: 'UI', action: 'Closed', type: null },
+    ]);
+  });
+
+  // A non-2xx means the server ANSWERED, so re-sending risks duplicating
+  // something it already stored — and retrying a 429 would only make the
+  // thing it is complaining about worse.
+  it('does not retry when the server responded', async () => {
+    const ok = vi.fn(() => Promise.resolve({ ok: false, status: 500 }));
+    vi.stubGlobal('fetch', ok);
+    const emitter = makeEmitter();
+    emitter.track('UI', 'Opened');
+    vi.advanceTimersByTime(10_000);
+    await Promise.resolve();
+    vi.advanceTimersByTime(60_000);
+    expect(ok).toHaveBeenCalledTimes(1);
+  });
+
+  // We are unloading: there is no later to retry in, and a requeue would
+  // just hold the events until they're discarded with the page.
+  it('does not retry the beacon path', async () => {
+    sendBeacon.mockReturnValue(false);
+    const fetchAfterBeacon = vi.fn(() => Promise.reject(new Error('offline')));
+    vi.stubGlobal('fetch', fetchAfterBeacon);
+    const emitter = makeEmitter();
+    emitter.track('UI', 'Opened');
+    windowTarget.fire('pagehide');
+    await Promise.resolve();
+    // The beacon refused, so it fell through to the keepalive fetch...
+    expect(fetchAfterBeacon).toHaveBeenCalledTimes(1);
+    // ...but that failing does NOT arm a retry.
+    vi.advanceTimersByTime(60_000);
+    expect(fetchAfterBeacon).toHaveBeenCalledTimes(1);
+  });
+
+  // sendBeacon returns false when the UA's queue is full. That used to be
+  // ignored, losing the batch silently at exactly the moment it mattered.
+  it('falls through to keepalive fetch when the beacon is refused', () => {
+    sendBeacon.mockReturnValue(false);
+    const emitter = makeEmitter();
+    emitter.track('UI', 'Opened');
+    windowTarget.fire('pagehide');
+    expect(sendBeacon).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(sentEvents(fetchMock.mock.calls[0]!)).toEqual([
+      { category: 'UI', action: 'Opened', type: null },
+    ]);
+  });
+
+  it('caps the retry buffer so a dead network cannot grow it', async () => {
+    const reject = vi.fn(() => Promise.reject(new Error('offline')));
+    vi.stubGlobal('fetch', reject);
+    const emitter = makeEmitter();
+    // Two full batches fail back-to-back; the requeue must stay bounded.
+    for (let i = 0; i < 50; i++) emitter.track('UI', 'Opened');
+    expect(reject).toHaveBeenCalledTimes(2);
+    // Let both rejection handlers run before inspecting what was requeued.
+    await vi.waitFor(() => expect(reject.mock.settledResults.length).toBe(2));
+
+    const ok = vi.fn(() => Promise.resolve());
+    vi.stubGlobal('fetch', ok);
+    vi.advanceTimersByTime(10_000);
+    expect(ok).toHaveBeenCalledTimes(1);
+    // 50 events failed, but only one buffer's worth is ever held.
+    expect(sentEvents(ok.mock.calls[0]!)).toHaveLength(25);
+  });
+
   it('never throws into the host app when the transport fails', () => {
     vi.stubGlobal(
       'fetch',
