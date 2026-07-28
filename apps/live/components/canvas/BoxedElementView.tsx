@@ -289,7 +289,9 @@ function BoxedElementViewImpl({
       onDragOver={acceptsIconDrop ? handleIconDragOver : undefined}
       onDragLeave={acceptsIconDrop ? handleIconDragLeave : undefined}
       onDrop={acceptsIconDrop ? handleIconDrop : undefined}
-      className={`absolute origin-center touch-none select-none ${
+      // `group` so the vote stepper inside can fade up on element hover
+      // (spec/39) without threading a hover state through props.
+      className={`group absolute origin-center touch-none select-none ${
         // A looping animation (spec/09) replaces the one-shot pop-in entry
         // class (both drive the `animation` property, so they can't co-exist).
         wrapperAnimClass

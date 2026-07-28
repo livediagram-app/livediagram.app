@@ -996,6 +996,28 @@
   animation: lvd-vote-focus 1.4s ease-in-out infinite;
 }
 
+/* Vote stepper (spec/39): translucent at rest so the label underneath stays
+ * readable on a small box — during a vote the label is what you're choosing
+ * between — and solid on hover so it's clear what you're aiming at. Hover is
+ * taken from the ELEMENT (`.group`), not the stepper, which is far too small
+ * a target to require landing on first.
+ *
+ * Gated on a genuine hover pointer. On touch there is nothing to restore the
+ * opacity with, so a permanently faded control would be worse than an
+ * occluding one; a coarse pointer keeps the plain opaque stepper. Written
+ * here rather than as a Tailwind variant chain because it needs the
+ * two-condition media query AND an ancestor-hover selector. */
+@media (hover: hover) and (pointer: fine) {
+  .lvd-vote-stepper {
+    opacity: 0.45;
+  }
+  .group:hover .lvd-vote-stepper,
+  .lvd-vote-stepper:hover,
+  .lvd-vote-stepper:focus-within {
+    opacity: 1;
+  }
+}
+
 /* Flowing arrows: marching dashes (stroke-dashoffset) + a travelling dot
  * (offset-path). The dash pattern is set inline on the path so the march
  * loops seamlessly regardless of the arrow's own stroke style. */

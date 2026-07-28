@@ -82,7 +82,17 @@ export function ElementVoteOverlay({
           // the corner: the stepper is a control you aim at, so it wants
           // clearance from the edge (and from a neighbour's stepper on a
           // tightly packed board).
-          className="absolute bottom-1.5 right-1.5 origin-bottom-right"
+          // Semi-transparent at rest, fully opaque on hover. On a small box
+          // the stepper covers the label, and during a vote the label is the
+          // whole point — you're choosing between them, so you have to be
+          // able to read them. Hovering the ELEMENT (not the stepper, which
+          // is a small target) brings it up solid to click.
+          //
+          // Gated on a real hover pointer: on touch there is no hover to
+          // restore it with, so a permanently faded control would be worse
+          // than an occluding one. `pointer-fine` covers both conditions —
+          // a coarse pointer keeps the plain opaque stepper.
+          className="lvd-vote-stepper absolute bottom-1.5 right-1.5 origin-bottom-right transition-opacity"
           style={{ transform: `scale(${1 / zoom})` }}
           // The stepper sits ON the element, whose own press casts a dot
           // too (spec/39). Without this a click meant for minus would
