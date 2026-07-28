@@ -19,6 +19,9 @@ import { VIEWPORT_EDGE_MARGIN } from '@/lib/clamp-to-viewport';
 // outside-click guard treats clicks inside it as inside the menu (ContextMenu
 // and PortalMenu both honour that marker) — the flyout runs its own
 // outside-click to close only itself when you click another row or off-menu.
+// Consecutive frames agreeing on the position before the tracker stops.
+const SETTLE_FRAMES = 3;
+
 export function MenuFlyoutSection({
   title,
   icon,
@@ -62,55 +65,100 @@ export function MenuFlyoutSection({
   );
 
   // Place the flyout beside the trigger row: to the right when it fits, else
-  // to the left. Top-aligned with the row, clamped inside the viewport. Runs
-  // before paint (useReposition) and again on scroll / resize / content grow.
+  // to the left. Top-aligned with the row; when the panel would overflow the
+  // bottom it BOTTOM-ALIGNS to the row (opening upward) before falling back
+  // to a plain clamp. Runs before paint (useReposition) and again on scroll /
+  // resize / content grow.
+  //
+  // Returns whether the position it computed matches what's already on
+  // screen, so the tracker below can stop once things have settled.
   const measure = useCallback(() => {
     const trigger = triggerRef.current;
     const panel = panelRef.current;
-    if (!trigger || !panel) return;
+    if (!trigger || !panel) return true;
     const tr = trigger.getBoundingClientRect();
     const pr = panel.getBoundingClientRect();
     const m = VIEWPORT_EDGE_MARGIN;
     const gap = 2;
     const fitsRight = tr.right + gap + pr.width + m <= window.innerWidth;
     const rawLeft = fitsRight ? tr.right + gap : tr.left - gap - pr.width;
-    const left = Math.max(m, Math.min(rawLeft, window.innerWidth - pr.width - m));
-    const top = Math.max(m, Math.min(tr.top, window.innerHeight - pr.height - m));
-    setPos((prev) => (prev && prev.left === left && prev.top === top ? prev : { left, top }));
+    // Prefer hanging DOWN from the row. If that overflows the bottom, hang UP
+    // from it instead (the flip the trigger's own row anchors), and only if
+    // neither fits fall back to pinning at the top margin. Flipping keeps the
+    // panel attached to the row it belongs to; the old clamp-only version slid
+    // it up the screen until it no longer lined up with anything.
+    const rawTop =
+      tr.top + pr.height + m <= window.innerHeight ? tr.top : Math.max(m, tr.bottom - pr.height);
+    // ROUND to whole pixels. getBoundingClientRect returns sub-pixel floats,
+    // and this used to be stored raw: a trigger sitting on a fractional
+    // boundary produced a hair-different `top` on every measurement, so the
+    // equality bail-out below never engaged and the panel re-rendered (and
+    // visibly jittered) on every frame of the tracker. Whole pixels give the
+    // comparison something stable to latch onto.
+    const left = Math.round(Math.max(m, Math.min(rawLeft, window.innerWidth - pr.width - m)));
+    const top = Math.round(Math.max(m, Math.min(rawTop, window.innerHeight - pr.height - m)));
+    let settled = true;
+    setPos((prev) => {
+      if (prev && prev.left === left && prev.top === top) return prev;
+      settled = false;
+      return { left, top };
+    });
+    return settled;
   }, []);
 
+  const [trackNonce, setTrackNonce] = useState(0);
+  const retrack = useCallback(() => setTrackNonce((n) => n + 1), []);
+
   useReposition(() => {
-    if (open) measure();
-  }, [open, measure]);
+    if (!open) return;
+    measure();
+    retrack();
+  }, [open, measure, retrack]);
 
   // Re-clamp when a section inside the flyout expands and grows the panel.
   useEffect(() => {
     if (!open) return;
     const panel = panelRef.current;
     if (!panel) return;
-    const ro = new ResizeObserver(() => measure());
+    const ro = new ResizeObserver(() => {
+      measure();
+      // A content change can also move the host menu (and so the trigger),
+      // so wake the tracker rather than relying on this one reading.
+      retrack();
+    });
     ro.observe(panel);
     return () => ro.disconnect();
-  }, [open, measure]);
+  }, [open, measure, retrack]);
 
   // Track the TRIGGER while open. The host menu can grow or shrink under
   // us with no scroll / resize event and no panel size change — expanding
   // or collapsing one of its inline accordions re-lays the rows out, and
   // a bottom-clamped menu then shifts wholesale — which left the flyout
-  // floating where its row USED to be. No observer fires for "an
-  // unrelated element moved", so poll the trigger's rect once per frame
-  // for the flyout's short open lifetime; measure() already no-ops the
-  // state write when nothing changed.
+  // floating where its row USED to be. No observer fires for "an unrelated
+  // element moved", so poll the trigger's rect.
+  //
+  // The poll SETTLES: it stops after a few consecutive frames that agree on
+  // the position, and re-arms whenever something that could move the trigger
+  // happens (the panel resizing, a scroll, a viewport resize). It used to run
+  // unconditionally for the whole open lifetime, forcing two synchronous
+  // layout reads every frame forever — which is both wasteful and, when a
+  // measurement was unstable, an endless reposition the popover never
+  // recovered from.
   useEffect(() => {
     if (!open) return;
     let raf = 0;
+    // Consecutive agreeing frames before we call it settled. More than one so
+    // a mid-animation measurement can't end the poll early.
+    let stable = 0;
     const track = () => {
-      measure();
+      if (measure()) stable += 1;
+      else stable = 0;
+      if (stable >= SETTLE_FRAMES) return;
       raf = window.requestAnimationFrame(track);
     };
     raf = window.requestAnimationFrame(track);
     return () => window.cancelAnimationFrame(raf);
-  }, [open, measure]);
+  }, [open, measure, trackNonce]);
 
   // Close the flyout on a click that's neither on its trigger nor inside its
   // panel — i.e. another menu row, or off the menu entirely. The host menu
