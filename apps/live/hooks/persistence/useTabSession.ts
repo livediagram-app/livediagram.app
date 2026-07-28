@@ -58,17 +58,26 @@ export function useTabSession(deps: TabSessionDeps) {
     track('Tab', 'Started', mode === 'countdown' ? 'CountdownTimer' : 'StopwatchTimer');
   };
 
+  // Timer telemetry (spec/22) covers the whole lifecycle, not just the
+  // start: how many timers get paused, reset, or abandoned versus run to
+  // the end is the thing that says whether the feature actually works in a
+  // session. Each is gated on the state actually changing, so a press that
+  // does nothing (pausing an already-paused timer) counts nothing.
   const pauseTimer = () => {
     if (editsBlocked) return;
+    if (!deps.activeTab.timer?.running) return;
     patchActive((t) => {
       if (!t.timer?.running) return t;
       const frozenMs = timerDisplayMs(t.timer, Date.now());
       return { ...t, timer: { ...t.timer, running: false, anchorAt: undefined, frozenMs } };
     });
+    track('Tab', 'Toggled', 'TimerPaused');
   };
 
   const resumeTimer = () => {
     if (editsBlocked) return;
+    const current = deps.activeTab.timer;
+    if (!current || current.running) return;
     const now = Date.now();
     patchActive((t) => {
       const timer = t.timer;
@@ -79,10 +88,12 @@ export function useTabSession(deps: TabSessionDeps) {
       const anchorAt = timer.mode === 'countdown' ? now + base : now - base;
       return { ...t, timer: { ...timer, running: true, anchorAt, frozenMs: undefined } };
     });
+    track('Tab', 'Toggled', 'TimerResumed');
   };
 
   const resetTimer = () => {
     if (editsBlocked) return;
+    if (!deps.activeTab.timer) return;
     patchActive((t) => {
       const timer = t.timer;
       if (!timer) return t;
@@ -99,15 +110,21 @@ export function useTabSession(deps: TabSessionDeps) {
             : { mode: 'stopwatch', running: false, frozenMs: 0 },
       };
     });
+    track('Tab', 'Changed', 'TimerReset');
   };
 
   const clearTimer = () => {
     if (editsBlocked) return;
+    // Read the mode BEFORE the patch drops it — this is the counterpart to
+    // the typed Started event, so the two are directly comparable.
+    const mode = deps.activeTab.timer?.mode;
+    if (!mode) return;
     patchActive((t) => {
       if (!t.timer) return t;
       const { timer: _drop, ...rest } = t;
       return rest;
     });
+    track('Tab', 'Ended', mode === 'countdown' ? 'CountdownTimer' : 'StopwatchTimer');
   };
 
   // --- Voting --------------------------------------------------------------
@@ -181,11 +198,16 @@ export function useTabSession(deps: TabSessionDeps) {
   const clearVote = () => {
     if (editsBlocked) return;
     if (!isVoteHost(deps.activeTab.vote, selfId)) return;
+    if (!deps.activeTab.vote) return;
     patchActive((t) => {
       if (!t.vote) return t;
       const { vote: _drop, ...rest } = t;
       return rest;
     });
+    // Distinct from Ended: ending closes casting and keeps the tallies,
+    // clearing discards the round entirely. Conflating them would hide how
+    // often a vote gets thrown away and restarted.
+    track('Tab', 'Cleared', 'Vote');
   };
 
   // Add one of MY dots to an element, if a vote is open and I have budget
@@ -217,6 +239,7 @@ export function useTabSession(deps: TabSessionDeps) {
   // Remove ONE of my dots from an element (if any).
   const retractVote = (elementId: string) => {
     if (editsBlocked) return;
+    let retracted = false;
     patchActive((t) => {
       const vote = t.vote;
       if (!vote) return t;
@@ -225,8 +248,12 @@ export function useTabSession(deps: TabSessionDeps) {
       const idx = existing.lastIndexOf(selfId);
       if (idx === -1) return t;
       const next = [...existing.slice(0, idx), ...existing.slice(idx + 1)];
+      retracted = true;
       return { ...t, vote: { ...vote, votes: { ...vote.votes, [elementId]: next } } };
     });
+    // The counterpart to Element·Voted, so "dots cast" can be read net of
+    // second thoughts. Only when a dot actually came off.
+    if (retracted) track('Element', 'Removed', 'Vote');
   };
 
   return {
