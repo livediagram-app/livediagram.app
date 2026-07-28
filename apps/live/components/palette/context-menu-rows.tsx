@@ -75,8 +75,9 @@ export function MarkersMenuGlyph() {
 }
 
 // Markers control (spec/49): a None option + one illustrated tile per marker,
-// then a Size row (Scale / S / M / L, mirroring the Text size control) once a
-// marker is chosen. 'scale' tracks the element's text size.
+// then a Size row (Scale / S / M / L, mirroring the Text size control).
+// 'scale' tracks the element's text size. The Size row is always present —
+// see the note on it below (spec/98).
 export function MarkerTiles({
   marker,
   size,
@@ -114,19 +115,27 @@ export function MarkerTiles({
           </SizeButton>
         ))}
       </div>
-      {marker ? (
-        <>
-          <p className="px-3 pb-1 text-[10px] font-medium text-slate-500 dark:text-slate-400">
-            Size
-          </p>
-          <TextSizeTiles
-            current={size}
-            onSet={onSetSize}
-            onPreview={onPreviewSize}
-            onPreviewEnd={onPreviewEnd}
-          />
-        </>
-      ) : null}
+      {/* The Size row is ALWAYS rendered, dimmed and inert until a marker is
+          chosen, rather than mounted on demand. Mounting it changed the
+          flyout's height mid-hover: the panel grew (or, when bottom-aligned,
+          shifted up), which slid its edge past a stationary pointer, the
+          hover-dismiss fired, the marker preview reverted, the panel shrank
+          back under the pointer — and the whole thing oscillated. A fixed
+          height can't chase the cursor. */}
+      <div
+        className={
+          'transition-opacity ' + (marker ? '' : 'pointer-events-none select-none opacity-40')
+        }
+        aria-hidden={marker ? undefined : true}
+      >
+        <p className="px-3 pb-1 text-[10px] font-medium text-slate-500 dark:text-slate-400">Size</p>
+        <TextSizeTiles
+          current={size}
+          onSet={onSetSize}
+          onPreview={onPreviewSize}
+          onPreviewEnd={onPreviewEnd}
+        />
+      </div>
     </>
   );
 }
