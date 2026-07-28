@@ -78,6 +78,22 @@ describe('routeBehindHoles', () => {
     expect(holes).toEqual([]);
   });
 
+  it('never cuts a box the arrow merely stops SHORT of — that would eat the arrowhead', () => {
+    // The endpoint sits in the margin ring rather than inside the box: an
+    // unpinned arrow ending a few units shy of it. The arrowhead lives at
+    // that endpoint, so punching the hole erased the head and left the
+    // line running into nothing.
+    const nearTo = box('target', to.x + 4, 0);
+    expect(routeBehindHoles(arrow(), from, to, [nearTo])).toEqual([]);
+    // Same at the tail end.
+    const nearFrom = box('src', from.x - 100 - 4, 0);
+    expect(routeBehindHoles(arrow(), from, to, [nearFrom])).toEqual([]);
+    // But a box a clear distance past the endpoint is still fair game
+    // (it just won't intersect the arrow's bounds, so no hole either).
+    const wellPast = box('far', to.x + 5 * ROUTE_BEHIND_MARGIN, 0);
+    expect(routeBehindHoles(arrow(), from, to, [wellPast])).toEqual([]);
+  });
+
   it('ignores frames — a section backdrop must never break the arrows inside it', () => {
     const holes = routeBehindHoles(arrow(), from, to, [
       box('section', -100, -100, { shape: 'frame', width: 800, height: 400 }),

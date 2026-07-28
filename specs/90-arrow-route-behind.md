@@ -44,9 +44,14 @@ a wrong obstacle **erases a line that should be visible**:
 - **Arrows and freehand never cut**: not boxes.
 - **The arrow's own endpoint elements never cut.** The line has to reach their
   edges, and the arrowhead sits on one.
-- **A box CONTAINING an endpoint never cuts.** An arrow drawn out of an
-  overlapping element would otherwise be erased at its own start. Same rule
-  spec/77 uses for the same reason.
+- **A box containing an endpoint never cuts** — and containment is tested
+  against the **inflated hole**, not the raw box. Two cases, one rule: an
+  arrow drawn out of an overlapping element (which would otherwise be erased
+  at its own start, the same rule spec/77 uses), and an arrow that merely
+  stops SHORT of a box it isn't pinned to. The second bit was a shipped bug:
+  the endpoint sat in the margin ring rather than inside the box, so the hole
+  swallowed the **arrowhead** and left the line running into nothing.
+  Whatever we would cut is exactly what must not contain an endpoint.
 
 Everything else opaque — shapes, stickies, images, tables, link cards — cuts.
 **Every** crossed box does, not just the first: the mask below takes N holes

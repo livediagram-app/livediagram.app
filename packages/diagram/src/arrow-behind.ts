@@ -87,18 +87,21 @@ export function routeBehindHoles(
     // Never cut the arrow on the elements it connects: the line has to
     // reach their edges, and the arrowhead sits on one of them.
     if (el.id === endpointId(arrow, 'from') || el.id === endpointId(arrow, 'to')) continue;
-    const rect: Rect = { x: el.x, y: el.y, width: el.width, height: el.height };
-    // A box CONTAINING an endpoint can't be cleared — an arrow drawn out of
-    // an overlapping element, or one pinned inside a container — so cutting
-    // it would erase the line at its own start. Same rule spec/77 uses.
-    if (contains(rect, from) || contains(rect, to)) continue;
-    if (!intersects(rect, bounds)) continue;
-    holes.push({
-      x: rect.x - ROUTE_BEHIND_MARGIN,
-      y: rect.y - ROUTE_BEHIND_MARGIN,
-      width: rect.width + 2 * ROUTE_BEHIND_MARGIN,
-      height: rect.height + 2 * ROUTE_BEHIND_MARGIN,
-    });
+    const hole: Rect = {
+      x: el.x - ROUTE_BEHIND_MARGIN,
+      y: el.y - ROUTE_BEHIND_MARGIN,
+      width: el.width + 2 * ROUTE_BEHIND_MARGIN,
+      height: el.height + 2 * ROUTE_BEHIND_MARGIN,
+    };
+    // Test the endpoints against the INFLATED hole, not the raw box. An
+    // arrow that stops just short of a box it isn't pinned to (a free
+    // endpoint, or a gap left by the anchor) has its endpoint inside the
+    // margin ring — and the arrowhead lives at that endpoint, so punching
+    // the hole erased the head and left the line running into nothing.
+    // Whatever we would cut is exactly what must not contain an endpoint.
+    if (contains(hole, from) || contains(hole, to)) continue;
+    if (!intersects(hole, bounds)) continue;
+    holes.push(hole);
   }
   return holes;
 }
