@@ -53,6 +53,15 @@ type FakeState = {
   sockets: WebSocket[];
   acceptWebSocket: (ws: WebSocket) => void;
   getWebSockets: () => WebSocket[];
+  // Backs the persisted epoch/seq (spec/97). Shared across DiagramRoom
+  // instances built from the same FakeState, which is exactly what a
+  // hibernation wake looks like: same storage, fresh instance.
+  store: Map<string, unknown>;
+  storage: {
+    get: (key: string) => Promise<unknown>;
+    put: (key: string, value: unknown) => Promise<void>;
+  };
+  blockConcurrencyWhile: (fn: () => Promise<void>) => Promise<void>;
 };
 
 const asWs = (s: FakeSocket) => s as unknown as WebSocket;
@@ -74,13 +83,22 @@ function makeSocket(): FakeSocket {
   return socket;
 }
 
-function makeState(): FakeState {
+function makeState(store: Map<string, unknown> = new Map()): FakeState {
   const state: FakeState = {
     sockets: [],
     acceptWebSocket: (ws) => {
       state.sockets.push(ws);
     },
     getWebSockets: () => [...state.sockets],
+    store,
+    storage: {
+      get: (key) => Promise.resolve(store.get(key)),
+      put: (key, value) => {
+        store.set(key, value);
+        return Promise.resolve();
+      },
+    },
+    blockConcurrencyWhile: (fn) => fn(),
   };
   return state;
 }
@@ -782,12 +800,48 @@ describe('DiagramRoom op ordering + reconnect catch-up (spec/75, Level 1)', () =
     expect(lastCatchup(editor).resync).toBe(true);
   });
 
-  it('gets a fresh epoch on a simulated hibernation wake', () => {
-    const state = makeState();
-    const before = new DiagramRoom(state as unknown as DurableObjectState);
-    const after = new DiagramRoom(state as unknown as DurableObjectState);
-    expect(before.epoch).not.toBe(after.epoch);
-    expect(after.seq).toBe(0);
+  // Spec/97: the room used to mint a fresh epoch on every hibernation
+  // wake, so any client reconnecting afterwards mismatched and resynced —
+  // which cost it a full page reload. Both values now survive the wake.
+  it('keeps its epoch and seq across a simulated hibernation wake', async () => {
+    const store = new Map<string, unknown>();
+    const before = new DiagramRoom(makeState(store) as unknown as DurableObjectState);
+    await Promise.resolve();
+    const { editor } = editorAndPeer(before);
+    sendFrame(before, editor, {
+      kind: 'op',
+      op: { kind: 'el', tabId: 't', op: { kind: 'remove', id: 'a' } },
+    });
+    expect(before.seq).toBe(1);
+
+    const after = new DiagramRoom(makeState(store) as unknown as DurableObjectState);
+    await Promise.resolve();
+    expect(after.epoch).toBe(before.epoch);
+    expect(after.seq).toBe(before.seq);
+    // The replay buffer is deliberately NOT persisted — it's a cache of
+    // ops, not the ordering identity.
     expect(after.opLog).toEqual([]);
+  });
+
+  it('sends a caught-up client an empty delta after a wake, not a resync', async () => {
+    const store = new Map<string, unknown>();
+    const before = new DiagramRoom(makeState(store) as unknown as DurableObjectState);
+    await Promise.resolve();
+    const seeded = editorAndPeer(before);
+    sendFrame(before, seeded.editor, {
+      kind: 'op',
+      op: { kind: 'el', tabId: 't', op: { kind: 'remove', id: 'a' } },
+    });
+
+    const after = new DiagramRoom(makeState(store) as unknown as DurableObjectState);
+    await Promise.resolve();
+    const { editor } = editorAndPeer(after);
+    editor.sent.length = 0;
+    // The client reconnects having seen everything the room issued.
+    sendFrame(after, editor, { kind: 'sync', epoch: before.epoch, lastSeq: 1 });
+
+    const catchup = lastCatchup(editor);
+    expect(catchup.resync).toBe(false);
+    expect(catchup.ops).toEqual([]);
   });
 });

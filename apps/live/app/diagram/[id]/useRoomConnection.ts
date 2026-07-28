@@ -9,7 +9,6 @@ import {
   type RoomHandlers,
 } from '@/lib/api-client';
 import { trimLaserBuffer, type LaserPoint } from '@/lib/laser-buffer';
-import { track } from '@/lib/telemetry';
 import type { RemoteSelection } from '@/lib/presence-rows';
 import { pruneMapToPresent } from './editor-page-helpers';
 
@@ -57,6 +56,10 @@ export function useRoomConnection(opts: {
   receivePoll: (poll: LivePoll) => void;
   receivePollAnswer: (from: string, pollId: string, value: string | null) => void;
   receivePollEnd: (pollId: string) => void;
+  // Re-hydrate tab content from D1 when the room can't replay our gap
+  // (spec/97). Stable, like the poll handlers, so it can't reopen the
+  // socket — the effect's dep list stays [hydrated, diagramId, shareable].
+  resyncFromServer: () => Promise<void>;
 }) {
   const {
     hydrated,
@@ -82,6 +85,7 @@ export function useRoomConnection(opts: {
     receivePoll,
     receivePollAnswer,
     receivePollEnd,
+    resyncFromServer,
   } = opts;
 
   useEffect(() => {
@@ -394,11 +398,11 @@ export function useRoomConnection(opts: {
       onResync: () => {
         // The room couldn't bridge our reconnect gap from its op log
         // (spec/75, Level 1) -- we fell too far behind or it restarted.
-        // Re-hydrate from D1 the same way the error boundary recovers: a
-        // full reload. Rare (only after a real disconnect), so the coarse
-        // recovery is acceptable; the telemetry makes regressions visible.
-        track('Error', 'Client', 'RealtimeResync');
-        window.location.reload();
+        // Re-fetch the tab rows from D1 IN PLACE (spec/97). This used to
+        // be a full page reload, on the assumption it was rare; live
+        // telemetry said otherwise, and a reload also destroyed the
+        // viewport, selection, and undo history to fix stale content.
+        void resyncFromServer();
       },
     };
     // Team diagrams need a one-time room ticket (spec/11): membership is

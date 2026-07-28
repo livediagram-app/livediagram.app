@@ -77,6 +77,7 @@ import { createTab, deriveTabLoadState, mergeAiElements, patchTab } from './edit
 import { useAutosave } from './useAutosave';
 import { usePerTabLoad } from './usePerTabLoad';
 import { useRoomConnection } from './useRoomConnection';
+import { useRoomResync } from './useRoomResync';
 import { useIdentityBootstrap } from './useIdentityBootstrap';
 import { useEditorHistory } from './useEditorHistory';
 import { useRevertPreview } from './useRevertPreview';
@@ -659,6 +660,19 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // room connection because that's what feeds it inbound ops. Nothing it
   // holds is persisted — no tab field, no autosave, no change log.
   const livePoll = useLivePoll({ roomRef });
+  // In-place recovery when the room can't replay our reconnect gap
+  // (spec/97), in place of the page reload this used to do.
+  const resyncFromServer = useRoomResync({
+    diagramId,
+    selfId: selfParticipant.id,
+    sessionShareCode,
+    tabsRef,
+    loadedTabIdsRef,
+    applyRemoteTabs,
+    lastSavedTabsRef,
+    remoteUpdateRef,
+    setTabLoadErrors,
+  });
   // Realtime room: WebSocket per shared diagram (presence + ops). See
   // useRoomConnection.
   useRoomConnection({
@@ -685,6 +699,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     receivePoll: livePoll.receivePoll,
     receivePollAnswer: livePoll.receiveAnswer,
     receivePollEnd: livePoll.receivePollEnd,
+    resyncFromServer,
   });
 
   // Broadcast local selection + active-tab focus to peers (presence

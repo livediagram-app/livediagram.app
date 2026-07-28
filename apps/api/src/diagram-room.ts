@@ -56,6 +56,10 @@ const MAX_TAB_ID_LEN = 128;
 // only ever forces the safe path (a resync), never data loss.
 const OP_LOG_LIMIT = 256;
 
+// DO storage key holding `{ epoch, seq }` so the room keeps its ordering
+// identity across a hibernation wake (spec/97).
+const ORDER_STATE_KEY = 'order-state';
+
 // Room op kinds that are ephemeral signals: they mutate no diagram state,
 // so they relay unordered (no seq) and from any role.
 //
@@ -117,24 +121,54 @@ export class DiagramRoom implements DurableObject {
   // in-memory period.
   opRates: Map<WebSocket, { count: number; windowStart: number }> = new Map();
 
-  // Ordering state for reconnect catch-up (spec/75, Level 1). All three
-  // live in memory only — deliberately, like opRates. A hibernation wake
-  // re-runs the constructor: `seq` restarts at 0, `opLog` empties, and
-  // `epoch` becomes a fresh id. A client that stayed connected across the
-  // wake simply adopts the new epoch off the next op (it missed nothing —
-  // the socket stayed open). A client that RECONNECTS across a wake finds
-  // its epoch no longer matches and re-hydrates from D1 (the safe fallback).
-  // So the reset never loses data; it only ever forces a resync. Persisting
-  // would add a storage write per mutation for no correctness gain.
+  // Ordering state for reconnect catch-up (spec/75, Level 1).
+  //
+  // `epoch` + `seq` are PERSISTED (spec/97); `opLog` is not. This split used
+  // to be "all three in memory", on the reasoning that a hibernation wake
+  // only ever forces a resync, which is safe and rare. The first half held;
+  // the second didn't. Hibernation is routine — it's the whole point of the
+  // WebSocket Hibernation API — so every wake minted a fresh epoch, and any
+  // client that reconnected afterwards mismatched and resynced. Live
+  // telemetry had `RealtimeResync` as the single most common client error.
+  //
+  // With both values restored on wake, a client that reconnects fully
+  // caught-up matches the epoch AND satisfies `lastSeq >= this.seq`, so it
+  // gets an empty delta instead of a resync. The cost is one storage write
+  // per mutation op, which is dwarfed by the fan-out broadcast beside it.
+  //
+  // `opLog` stays in memory: it's a replay buffer, and a client that fell
+  // behind across a wake genuinely did miss ops it can no longer be sent.
+  // `floor` in sendCatchup already reports an empty log honestly, so that
+  // client still resyncs — correctly, and now only when it really must.
   seq = 0;
   opLog: LoggedOp[] = [];
-  // Random per DO instantiation. Scopes seq numbers: a client compares the
-  // epoch on an incoming op against the last it saw to know whether the
-  // room restarted (seq reset) versus advanced.
+  // Stable for the life of the room, not per DO instantiation. Scopes seq
+  // numbers: a client compares the epoch on an incoming op against the last
+  // it saw to know whether the room restarted (seq reset) versus advanced.
   epoch: string = crypto.randomUUID();
 
   constructor(state: DurableObjectState) {
     this.state = state;
+    // Restore before any request can observe `epoch`/`seq`. A wake re-runs
+    // the constructor, so without this gate a socket could be handed the
+    // freshly-minted field values above and defeat the whole point.
+    void state.blockConcurrencyWhile(async () => {
+      const saved = await state.storage.get<{ epoch: string; seq: number }>(ORDER_STATE_KEY);
+      if (saved) {
+        this.epoch = saved.epoch;
+        this.seq = saved.seq;
+      } else {
+        // First instantiation for this diagram: adopt the random epoch above.
+        await state.storage.put(ORDER_STATE_KEY, { epoch: this.epoch, seq: this.seq });
+      }
+    });
+  }
+
+  // Record the seq we just handed out. Not awaited: the DO output gate holds
+  // outbound messages until pending writes land, so a peer can never see an
+  // op whose seq failed to persist.
+  private persistOrder(): void {
+    void this.state.storage.put(ORDER_STATE_KEY, { epoch: this.epoch, seq: this.seq });
   }
 
   async fetch(request: Request): Promise<Response> {
@@ -348,6 +382,7 @@ export class DiagramRoom implements DurableObject {
         this.broadcast({ kind: 'op', from: sender.id, op: msg.op }, ws);
       } else {
         const seq = ++this.seq;
+        this.persistOrder();
         this.opLog.push({ seq, from: sender.id, op: msg.op });
         if (this.opLog.length > OP_LOG_LIMIT) this.opLog.shift();
         this.broadcast({ kind: 'op', from: sender.id, op: msg.op, seq, epoch: this.epoch }, ws);
