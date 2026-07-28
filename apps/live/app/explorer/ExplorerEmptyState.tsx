@@ -18,11 +18,20 @@ import {
   PlusIcon,
   ShareIcon,
   SparkleIcon,
+  StarIcon,
   UnsortedIcon,
 } from './icons';
 import type { SelectedNode } from './views';
 
-type EmptyKind = 'recent' | 'shared' | 'unsorted' | 'generated' | 'offline' | 'folder' | 'default';
+type EmptyKind =
+  | 'recent'
+  | 'shared'
+  | 'unsorted'
+  | 'favourites'
+  | 'generated'
+  | 'offline'
+  | 'folder'
+  | 'default';
 
 const CONTENT: Record<
   EmptyKind,
@@ -43,6 +52,14 @@ const CONTENT: Record<
     icon: <UnsortedIcon />,
     title: 'Nothing unsorted',
     description: 'Diagrams not filed into a folder collect here, ready to organise.',
+  },
+  favourites: {
+    icon: <StarIcon />,
+    title: 'No favourites yet',
+    // No CTA: a new diagram doesn't land here, starring an existing one
+    // does — so the generic "New diagram" button would be a dead end
+    // (spec/95). Same reason Shared and Unsorted carry none.
+    description: 'Mark a diagram as a favourite to show it here.',
   },
   generated: {
     icon: <SparkleIcon />,
@@ -76,6 +93,7 @@ function kindFor(selected: SelectedNode): EmptyKind {
   if (selected.kind === 'recent') return 'recent';
   if (selected.kind === 'shared') return 'shared';
   if (selected.kind === 'unsorted') return 'unsorted';
+  if (selected.kind === 'favourites') return 'favourites';
   if (selected.kind === 'generated') return 'generated';
   if (selected.kind === 'offline') return 'offline';
   if (selected.kind === 'folder') return 'folder';

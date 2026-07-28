@@ -16,6 +16,7 @@ import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { DynamicFolderIcon, OfflineFolderIcon, SparkleIcon, UnsortedIcon } from './icons';
 import {
   DiagramActionsMenu,
+  FavouriteMarker,
   FolderChip,
   hrefForDiagram,
   VisibilityBadge,
@@ -308,6 +309,7 @@ function DiagramCard({
         {/* Keep every column the list shows: owner, visibility, updated. */}
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
           {showVisibilityBadge ? <VisibilityBadge diagram={diagram} /> : null}
+          {favourite ? <FavouriteMarker /> : null}
           {folderChip ? <FolderChip label={folderChip.label} onOpen={folderChip.onOpen} /> : null}
           <span className="text-[11px] uppercase tracking-wider text-slate-400 dark:text-slate-500">
             {relativeSince(diagram.savedAt)}

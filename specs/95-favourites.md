@@ -59,6 +59,19 @@ asked for it "within My Work", and it behaves like the other synthetic folders
   diagram, the team name for a team one. That chip was previously Recent-only;
   Favourites is the second pane that aggregates across folders, so the gate
   became "panes that aggregate" rather than "Recent".
+- **A starred diagram shows a star wherever it's listed**, before its name in
+  the list view (so a column of rows lines its stars up in one scannable
+  vertical, rather than at ragged name-end positions) and in the meta row on a
+  card. Amber rather than brand, because it's a personal mark sitting beside
+  status badges that describe the diagram itself.
+
+  This is the opposite call to hidden-from-Recent (spec/93), which stays
+  menu-only — deliberately: hiding is a set-and-forget negative you rarely
+  revisit, where a favourite is a positive you actively scan for.
+
+- **The empty state has no CTA.** Creating a diagram doesn't land it here,
+  starring an existing one does, so the generic "New diagram" button would be
+  a dead end — same reason Shared and Unsorted carry none.
 - **Shared-with-you diagrams can't be starred.** They're not in your library —
   they live in the sharer's — and the existing **Dismiss** already covers
   "stop showing me this".

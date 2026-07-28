@@ -10,6 +10,7 @@ import { DiagramThumbnail } from '@/components/panels/DiagramThumbnail';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import {
   DiagramActionsMenu,
+  FavouriteMarker,
   FolderChip,
   hrefForDiagram,
   VisibilityBadge,
@@ -111,6 +112,10 @@ export function DiagramRow({
           shareCode={diagram.shared?.shareCode}
           offline={diagram.ownerId === OFFLINE_OWNER_ID}
         />
+        {/* Before the name, so a column of rows shows its stars in one
+            vertical line you can scan rather than at ragged name-end
+            positions (spec/95). */}
+        {favourite ? <FavouriteMarker /> : null}
         {titleNode}
         {folderChip ? (
           <span className="hidden shrink-0 sm:inline-flex">

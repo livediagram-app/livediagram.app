@@ -35,6 +35,25 @@ export function hrefForDiagram(diagram: PaneDiagram): string {
 const badgeBase =
   'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ring-1';
 
+// The star a favourited diagram carries wherever it's listed (spec/95),
+// so you can tell a starred diagram from an unstarred one without opening
+// its menu. Amber rather than the brand colour: it's a personal mark on
+// someone else's palette of status badges, and reads as "mine" next to
+// them.
+//
+// Unlike hidden-from-Recent (spec/93), which stays menu-only, this IS
+// worth a marker: hiding is a set-and-forget negative you rarely revisit,
+// where a favourite is a positive you actively scan for.
+export function FavouriteMarker() {
+  return (
+    <Tooltip title="Favourite" description="Starred by you. Find it under My Work > Favourites.">
+      <span className="inline-flex shrink-0 items-center text-amber-500 dark:text-amber-400">
+        <StarIcon filled />
+      </span>
+    </Tooltip>
+  );
+}
+
 // Where a diagram lives, shown on Recent rows (spec/94). Recent spans every
 // folder, so without this you can't tell a "Q3 plan" in Design from one in
 // Archive without opening it.
