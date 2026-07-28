@@ -350,6 +350,12 @@ export function TeamSharedDiagrams({
             onMoveDiagram={(id) => setMoveTarget({ kind: 'diagram', id })}
             childrenCount={(id) => lib.childrenByParent.get(id)?.length ?? 0}
             diagramsCount={(id) => lib.diagramsByFolder.get(id)?.length ?? 0}
+            // Folder content previews (spec/99), from the team library's
+            // own indexes — the same ones the counts above read.
+            folderContents={(id) => ({
+              folders: lib.childrenByParent.get(id) ?? [],
+              diagrams: lib.diagramsByFolder.get(id) ?? [],
+            })}
             showVisibilityBadge={false}
           />
         </div>

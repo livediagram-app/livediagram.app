@@ -22,9 +22,22 @@ export const cardShell =
 export const previewArea =
   'flex h-48 w-full items-center justify-center border-b border-slate-100 bg-slate-50/70 dark:border-slate-700/60 dark:bg-slate-900/30';
 
+// The plain folder mark that fills a folder card's preview box when
+// there's nothing inside to preview (spec/99). Exported so FolderPreview
+// falls back to exactly this glyph for an empty folder rather than
+// leaving the box blank.
+export function FolderCardGlyph() {
+  return (
+    <span className="[&_svg]:h-9 [&_svg]:w-9">
+      <FolderIcon open={false} />
+    </span>
+  );
+}
+
 export function FolderCard({
   folder,
   childCount,
+  preview,
   renaming,
   onOpen,
   onCommitRename,
@@ -33,6 +46,10 @@ export function FolderCard({
 }: {
   folder: Folder;
   childCount: number;
+  // A content preview of what's inside (spec/99), built by the caller so
+  // this card stays presentational. Absent (or an empty folder, which
+  // renders as null) falls back to the plain folder glyph.
+  preview?: ReactNode;
   renaming: boolean;
   onOpen: () => void;
   onCommitRename: (name: string) => void;
@@ -66,9 +83,7 @@ export function FolderCard({
         className={`${previewArea} text-brand-400 dark:text-brand-300`}
         aria-label={`Open folder ${folder.name}`}
       >
-        <span className="[&_svg]:h-9 [&_svg]:w-9">
-          <FolderIcon open={false} />
-        </span>
+        {preview ?? <FolderCardGlyph />}
       </button>
       <div className="flex items-start gap-1 p-2.5">
         {renaming ? (

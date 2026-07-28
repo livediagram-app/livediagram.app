@@ -15,6 +15,7 @@ import { EmptyPane } from './ExplorerEmptyState';
 import { DiagramRow } from './explorer-route-diagram-row';
 import { FolderRow } from './folder-row';
 import { DiagramThumbnail } from '@/components/panels/DiagramThumbnail';
+import type { FolderPreviewContents } from './folder-preview-tiles';
 import {
   CloseIcon,
   DynamicFolderIcon,
@@ -168,6 +169,10 @@ export function ListView({
   onToggleRecentExclusion?: (id: string) => void;
   childrenCount: (id: string) => number;
   diagramsCount: (id: string) => number;
+  // Card view only (spec/99): folder rows keep their count badge, since
+  // four snapshots don't fit a list row. Declared (and ignored) here so
+  // ExplorerPane can keep building ONE props object for both views.
+  folderContents?: (id: string) => FolderPreviewContents;
 }) {
   return (
     <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">

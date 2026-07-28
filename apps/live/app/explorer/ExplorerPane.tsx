@@ -367,6 +367,12 @@ export function ExplorerPane() {
               folderChipFor={folderChipFor}
               childrenCount={(id) => childrenByParent.get(id)?.length ?? 0}
               diagramsCount={(id) => diagramsByFolder.get(id)?.length ?? 0}
+              // What each folder card previews (spec/99) — the same
+              // client-side indexes the counts come from, so no extra fetch.
+              folderContents={(id) => ({
+                folders: childrenByParent.get(id) ?? [],
+                diagrams: diagramsByFolder.get(id) ?? [],
+              })}
               // Owner column (desktop): Recent mixes personal + team rows
               // (spec/35), so it's the one list where ownership varies.
               showOwner={selected.kind === 'recent'}

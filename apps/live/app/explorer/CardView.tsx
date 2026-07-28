@@ -22,6 +22,8 @@ import {
   VisibilityBadge,
 } from './diagram-row-shared';
 import { cardShell, FolderCard, previewArea, SyntheticFolderCard } from './explorer-folder-cards';
+import { FolderPreview } from './FolderPreview';
+import type { FolderPreviewContents } from './folder-preview-tiles';
 import type { Folder } from '@/lib/api-client';
 import type { PaneDiagram } from './views';
 
@@ -66,6 +68,7 @@ export function CardView({
   onToggleRecentExclusion,
   childrenCount,
   diagramsCount,
+  folderContents,
   showOwner = false,
   showVisibilityBadge = true,
 }: {
@@ -109,6 +112,9 @@ export function CardView({
   onToggleRecentExclusion?: (id: string) => void;
   childrenCount: (id: string) => number;
   diagramsCount: (id: string) => number;
+  // What a folder directly contains, for its card's content preview
+  // (spec/99). Omitted = no preview, just the folder glyph.
+  folderContents?: (id: string) => FolderPreviewContents;
   showOwner?: boolean;
   // Team library cards (spec/35) hide the visibility badge: every diagram
   // in that grid is a team diagram, so a per-card "Team"/"Private" badge is
@@ -158,6 +164,11 @@ export function CardView({
           folder={f}
           renaming={renamingFolderId === f.id}
           childCount={childrenCount(f.id) + diagramsCount(f.id)}
+          preview={
+            folderContents ? (
+              <FolderPreview contents={folderContents(f.id)} ownerId={ownerId} />
+            ) : null
+          }
           onOpen={() => onOpenFolder(f.id)}
           onCommitRename={(name) => onCommitRenameFolder(f.id, name)}
           onCancelRename={onCancelRenameFolder}
