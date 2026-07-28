@@ -23,6 +23,11 @@ const DATA = {
   strikethrough: 'data-rt-strike',
   size: 'data-rt-size',
   color: 'data-rt-color',
+  // spec/92 (notes): the address of a linked run, and the line-level
+  // heading level. Carried as data-* like everything else so a typed
+  // character inside a heading or a link inherits it.
+  link: 'data-rt-link',
+  heading: 'data-rt-heading',
 } as const;
 
 // Marks the render-only trailing <br>. A '\n' at the very end of the content
@@ -59,6 +64,8 @@ export function dataAttrsForRun(run: TextRun): Record<string, string> {
   if (run.strikethrough !== undefined) out[DATA.strikethrough] = String(run.strikethrough);
   if (run.size !== undefined) out[DATA.size] = run.size;
   if (run.color !== undefined) out[DATA.color] = run.color;
+  if (run.link !== undefined) out[DATA.link] = run.link;
+  if (run.heading !== undefined) out[DATA.heading] = String(run.heading);
   return out;
 }
 
@@ -82,6 +89,10 @@ function attrsFromElement(el: HTMLElement): Omit<TextRun, 'text'> {
   if (size === 'sm' || size === 'md' || size === 'lg') out.size = size as RunSize;
   const color = el.getAttribute(DATA.color);
   if (color) out.color = color;
+  const link = el.getAttribute(DATA.link);
+  if (link) out.link = link;
+  const heading = el.getAttribute(DATA.heading);
+  if (heading === '1' || heading === '2') out.heading = heading === '1' ? 1 : 2;
   return out;
 }
 

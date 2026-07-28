@@ -1747,3 +1747,15 @@
 [data-iso] [data-frame] {
   transform: translateZ(-1px);
 }
+
+/* Rich-text notes (spec/92): the ink a linked run takes. Declared as a
+   variable rather than a Tailwind class because the note editor paints its
+   spans imperatively with inline CSS (see note-run-style.ts) and so can't
+   carry a `dark:` class; the surface sets the variable, both renderers read
+   it. Scoped to the note surfaces so nothing else inherits it. */
+[data-note-surface] {
+  --note-link-color: var(--color-brand-700);
+}
+.dark [data-note-surface] {
+  --note-link-color: var(--color-brand-200);
+}

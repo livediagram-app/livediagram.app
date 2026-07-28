@@ -18,19 +18,13 @@ import {
   UnderlineIcon,
 } from '@/components/palette/palette-icons';
 import { Tooltip } from '@/components/primitives/Tooltip';
-import { BulletListIcon, NoListIcon, NumberedListIcon } from './rich-text-toolbar-icons';
+import {
+  BulletListIcon,
+  NoListIcon,
+  NumberedListIcon,
+} from '@/components/rich-text/rich-text-toolbar-icons';
+import type { ActiveFormat } from '@/components/rich-text/rich-text-format';
 import type { ListStyle, RunBoolKey, TextAlignX, TextAlignY } from '@livediagram/diagram';
-
-// The resolved formatting of the current selection: each boolean is true
-// when EVERY character in the selection is effectively-on; color is the
-// uniform value across the selection, or null when mixed.
-export type ActiveFormat = {
-  bold: boolean;
-  italic: boolean;
-  underline: boolean;
-  strikethrough: boolean;
-  color: string | null;
-};
 
 // preventDefault on mousedown keeps focus + the live selection in the
 // contentEditable when a control is clicked (the classic rich-text-toolbar

@@ -21,7 +21,7 @@
 
 import type { RunBoolKey } from '@livediagram/diagram';
 import { ALIGN_ITEMS, TEXT_ALIGN } from '@/components/canvas/label-style';
-import { insertTextAtCaret } from '@/components/canvas/rich-text-dom';
+import { insertTextAtCaret } from '@/components/rich-text/rich-text-dom';
 import { RichTextToolbar } from '@/components/canvas/RichTextToolbar';
 import type { RichTextEditorProps } from './RichTextEditor.types';
 import { useRichTextSession } from './useRichTextSession';

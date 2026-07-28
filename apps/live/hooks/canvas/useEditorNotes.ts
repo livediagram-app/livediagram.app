@@ -1,16 +1,17 @@
 // Per-element note popover, lifted out of editor-page.tsx. Notes are
-// simpler than comments: a single plain-text paragraph, no author, no
-// thread. The state machine is just an open-id (`noteOpenId`, null
-// when no popover is open); the actual text lives on `element.note?`
-// (see packages/diagram BoxedElement schema).
+// simpler than comments: one small document per element, no author, no
+// thread. The state machine is just an open-id (`noteOpenId`, null when no
+// popover is open); the content lives on the element as `note?` (the
+// plain-text mirror) plus `noteRich?` (its formatting runs, spec/92) — see
+// packages/diagram BoxedElement.
 //
 // Unlike comments (which bypass history on purpose), note edits run
 // through the page's `commit` so they snapshot history + emit the
-// activity log like any other element field. This hook only relocates
-// that code, it doesn't change the contract.
+// activity log like any other element field.
 
 import { useState } from 'react';
-import { isBoxed, type Element } from '@livediagram/diagram';
+import { isBoxed, type Element, type TextRun } from '@livediagram/diagram';
+import { canonicalNote } from '@/lib/note-value';
 import { track } from '@/lib/telemetry';
 
 type EditorNotesDeps = {
@@ -36,19 +37,19 @@ export function useEditorNotes(deps: EditorNotesDeps) {
   };
   const closeNote = () => setNoteOpenId(null);
 
-  const setNote = (elementId: string, next: string) => {
-    const trimmed = next.trim();
-    // Empty / whitespace-only note: drop the field entirely so
-    // persisted JSON stays clean and the badge / picker active
-    // state correctly reads "no note".
+  // `runs` carries the formatting; `next` is its plain-text mirror. Both are
+  // normalised through `canonicalNote` so the stored pair can't drift.
+  const setNote = (elementId: string, next: string, runs?: TextRun[]) => {
+    const { note, noteRich } = canonicalNote(next, runs);
+    // Empty / whitespace-only note: drop BOTH fields entirely so persisted
+    // JSON stays clean and the badge / picker active state correctly reads
+    // "no note".
     commit((els) =>
       els.map((el) => {
         if (el.id !== elementId || !isBoxed(el)) return el;
-        if (!trimmed) {
-          const { note: _drop, ...rest } = el;
-          return rest as typeof el;
-        }
-        return { ...el, note: trimmed };
+        const { note: _dropNote, noteRich: _dropRuns, ...rest } = el;
+        if (!note) return rest as typeof el;
+        return (noteRich ? { ...rest, note, noteRich } : { ...rest, note }) as typeof el;
       }),
     );
   };

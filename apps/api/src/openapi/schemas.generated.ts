@@ -142,6 +142,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "note": {
         "type": "string"
       },
+      "noteRich": {
+        "items": {
+          "$ref": "#/components/schemas/TextRun"
+        },
+        "type": "array"
+      },
       "opacity": {
         "type": "number"
       },
@@ -1872,6 +1878,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "note": {
         "type": "string"
       },
+      "noteRich": {
+        "items": {
+          "$ref": "#/components/schemas/TextRun"
+        },
+        "type": "array"
+      },
       "opacity": {
         "type": "number"
       },
@@ -2075,6 +2087,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "note": {
         "type": "string"
+      },
+      "noteRich": {
+        "items": {
+          "$ref": "#/components/schemas/TextRun"
+        },
+        "type": "array"
       },
       "objectFit": {
         "enum": [
@@ -2289,6 +2307,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "note": {
         "type": "string"
       },
+      "noteRich": {
+        "items": {
+          "$ref": "#/components/schemas/TextRun"
+        },
+        "type": "array"
+      },
       "opacity": {
         "type": "number"
       },
@@ -2451,6 +2475,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "RunHeading": {
+    "enum": [
+      1,
+      2
+    ],
+    "type": "number"
+  },
   "RunSize": {
     "enum": [
       "sm",
@@ -2569,6 +2600,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "note": {
         "type": "string"
+      },
+      "noteRich": {
+        "items": {
+          "$ref": "#/components/schemas/TextRun"
+        },
+        "type": "array"
       },
       "opacity": {
         "type": "number"
@@ -2889,6 +2926,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "note": {
         "type": "string"
+      },
+      "noteRich": {
+        "items": {
+          "$ref": "#/components/schemas/TextRun"
+        },
+        "type": "array"
       },
       "opacity": {
         "type": "number"
@@ -3257,6 +3300,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "note": {
         "type": "string"
+      },
+      "noteRich": {
+        "items": {
+          "$ref": "#/components/schemas/TextRun"
+        },
+        "type": "array"
       },
       "opacity": {
         "type": "number"
@@ -3831,6 +3880,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "note": {
         "type": "string"
       },
+      "noteRich": {
+        "items": {
+          "$ref": "#/components/schemas/TextRun"
+        },
+        "type": "array"
+      },
       "opacity": {
         "type": "number"
       },
@@ -3906,8 +3961,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "color": {
         "type": "string"
       },
+      "heading": {
+        "$ref": "#/components/schemas/RunHeading"
+      },
       "italic": {
         "type": "boolean"
+      },
+      "link": {
+        "type": "string"
       },
       "size": {
         "$ref": "#/components/schemas/RunSize"

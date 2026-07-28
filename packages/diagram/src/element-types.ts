@@ -203,13 +203,17 @@ export type ShapeElement = {
   // Assigned action (spec/68): at most one per element, non-undoable like
   // the comment thread. See element-action.ts.
   action?: ElementAction;
-  // Optional plain-text note. Distinct from `commentThread`: one
-  // note per element, no author / timestamp / multi-message
-  // structure, just a multi-line paragraph the user can leave on
-  // any shape / text / sticky to capture private context. Empty
-  // string strips the field on commit (see `setNote` in
-  // editor-page.tsx) so persisted JSON stays clean.
+  // Optional note. Distinct from `commentThread`: one note per
+  // element, no author / timestamp / multi-message structure, just a
+  // small document the user can leave on any shape / text / sticky to
+  // capture private context. Empty string strips the field on commit
+  // (see `setNote` in useEditorNotes.ts) so persisted JSON stays clean.
   note?: string;
+  // Per-range note formatting (spec/92): runs carrying bold / italic /
+  // underline / heading / link deltas. `note` stays the plain-text mirror,
+  // always === runsPlainText(noteRich). Absent = an unformatted note, which
+  // renders exactly as it always did.
+  noteRich?: TextRun[];
   padding?: Padding;
   // Per-range label formatting (spec/09): runs storing only the deltas
   // over the whole-element text* fields above. Absent, empty, or a single
@@ -270,13 +274,17 @@ export type TextElement = {
   // Assigned action (spec/68): at most one per element, non-undoable like
   // the comment thread. See element-action.ts.
   action?: ElementAction;
-  // Optional plain-text note. Distinct from `commentThread`: one
-  // note per element, no author / timestamp / multi-message
-  // structure, just a multi-line paragraph the user can leave on
-  // any shape / text / sticky to capture private context. Empty
-  // string strips the field on commit (see `setNote` in
-  // editor-page.tsx) so persisted JSON stays clean.
+  // Optional note. Distinct from `commentThread`: one note per
+  // element, no author / timestamp / multi-message structure, just a
+  // small document the user can leave on any shape / text / sticky to
+  // capture private context. Empty string strips the field on commit
+  // (see `setNote` in useEditorNotes.ts) so persisted JSON stays clean.
   note?: string;
+  // Per-range note formatting (spec/92): runs carrying bold / italic /
+  // underline / heading / link deltas. `note` stays the plain-text mirror,
+  // always === runsPlainText(noteRich). Absent = an unformatted note, which
+  // renders exactly as it always did.
+  noteRich?: TextRun[];
   padding?: Padding;
   // Per-range label formatting (spec/09); see ShapeElement.richText.
   richText?: TextRun[];
@@ -388,6 +396,11 @@ export type TableElement = {
   // the comment thread. See element-action.ts.
   action?: ElementAction;
   note?: string;
+  // Per-range note formatting (spec/92): runs carrying bold / italic /
+  // underline / heading / link deltas. `note` stays the plain-text mirror,
+  // always === runsPlainText(noteRich). Absent = an unformatted note, which
+  // renders exactly as it always did.
+  noteRich?: TextRun[];
   padding?: Padding;
 };
 
@@ -445,13 +458,17 @@ export type StickyElement = {
   // Assigned action (spec/68): at most one per element, non-undoable like
   // the comment thread. See element-action.ts.
   action?: ElementAction;
-  // Optional plain-text note. Distinct from `commentThread`: one
-  // note per element, no author / timestamp / multi-message
-  // structure, just a multi-line paragraph the user can leave on
-  // any shape / text / sticky to capture private context. Empty
-  // string strips the field on commit (see `setNote` in
-  // editor-page.tsx) so persisted JSON stays clean.
+  // Optional note. Distinct from `commentThread`: one note per
+  // element, no author / timestamp / multi-message structure, just a
+  // small document the user can leave on any shape / text / sticky to
+  // capture private context. Empty string strips the field on commit
+  // (see `setNote` in useEditorNotes.ts) so persisted JSON stays clean.
   note?: string;
+  // Per-range note formatting (spec/92): runs carrying bold / italic /
+  // underline / heading / link deltas. `note` stays the plain-text mirror,
+  // always === runsPlainText(noteRich). Absent = an unformatted note, which
+  // renders exactly as it always did.
+  noteRich?: TextRun[];
   padding?: Padding;
   // Per-range label formatting (spec/09); see ShapeElement.richText.
   richText?: TextRun[];
@@ -547,6 +564,11 @@ export type ImageElement = {
   // the comment thread. See element-action.ts.
   action?: ElementAction;
   note?: string;
+  // Per-range note formatting (spec/92): runs carrying bold / italic /
+  // underline / heading / link deltas. `note` stays the plain-text mirror,
+  // always === runsPlainText(noteRich). Absent = an unformatted note, which
+  // renders exactly as it always did.
+  noteRich?: TextRun[];
 };
 
 // Freehand "pencil tool" element (spec/09 Pencil (freehand)
@@ -637,6 +659,11 @@ export type FreehandElement = {
   // the comment thread. See element-action.ts.
   action?: ElementAction;
   note?: string;
+  // Per-range note formatting (spec/92): runs carrying bold / italic /
+  // underline / heading / link deltas. `note` stays the plain-text mirror,
+  // always === runsPlainText(noteRich). Absent = an unformatted note, which
+  // renders exactly as it always did.
+  noteRich?: TextRun[];
 };
 
 // --- Annotations -----------------------------------------------------------
@@ -661,6 +688,11 @@ export type AnnotationElement = {
   // The note this marker carries. Edited via NotePopover / useEditorNotes,
   // previewed on hover. Empty string strips the field on commit.
   note?: string;
+  // Per-range note formatting (spec/92): runs carrying bold / italic /
+  // underline / heading / link deltas. `note` stays the plain-text mirror,
+  // always === runsPlainText(noteRich). Absent = an unformatted note, which
+  // renders exactly as it always did.
+  noteRich?: TextRun[];
   // fillColor tints the circle; strokeColor draws the ring + the note glyph.
   // textColor is unused (no inline label) but declared for the generic
   // colour code paths.
@@ -765,6 +797,11 @@ export type LinkCardElement = {
   // the comment thread. See element-action.ts.
   action?: ElementAction;
   note?: string;
+  // Per-range note formatting (spec/92): runs carrying bold / italic /
+  // underline / heading / link deltas. `note` stays the plain-text mirror,
+  // always === runsPlainText(noteRich). Absent = an unformatted note, which
+  // renders exactly as it always did.
+  noteRich?: TextRun[];
   // Declared for the generic union code paths (format painter, geometry,
   // search), unused by the card UI — mirrors AnnotationElement.
   padding?: Padding;

@@ -1,30 +1,27 @@
-// The rich-text editor's session state (spec/09), lifted out of
-// RichTextEditor on the usual host + orchestration-hook split: the runs
-// / selection / composition refs, the imperative paint + DOM read-back,
-// the mount / repaint / selection / toolbar-flip effects, and the
-// commit-on-blur-or-unmount lifecycle. RichTextEditor keeps the JSX and
-// its event handlers and mounts what this returns.
+// The LABEL rich-text editor's session state (spec/09): everything that is
+// specific to editing an element's label on the canvas — the element-derived
+// run styling, the mount caret policy, the toolbar flip, the focus guards for
+// the context menu riding alongside, and the commit-on-blur-or-unmount
+// lifecycle. RichTextEditor keeps the JSX and its event handlers and mounts
+// what this returns.
+//
+// The generic runs ⇄ contentEditable machine (paint, read-back, selection
+// restore, active format, format commands) lives in useRichTextDocument,
+// shared with the note editor (spec/92).
 
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { runsFromPlainText, runsPlainText, type TextRun } from '@livediagram/diagram';
 import {
-  normalizeRuns,
-  runsFromPlainText,
-  runsPlainText,
-  type TextRun,
-} from '@livediagram/diagram';
-import { effectiveRunStyle, FIXED_FONT_PX, MULTI_FONT_PX, MULTI_RUN_PX } from './label-style';
-import {
-  dataAttrsForRun,
-  domSelectionToOffsets,
-  offsetsToDomRange,
-  readRunsFromDom,
-  reconcileTrailingNewline,
-  selectRange,
-} from '@/components/canvas/rich-text-dom';
-import type { ActiveFormat } from '@/components/canvas/RichTextToolbar';
+  effectiveRunStyle,
+  elementRunDefaults,
+  FIXED_FONT_PX,
+  MULTI_FONT_PX,
+  MULTI_RUN_PX,
+} from './label-style';
+import { offsetsToDomRange, selectRange } from '@/components/rich-text/rich-text-dom';
+import { useRichTextDocument } from '@/components/rich-text/useRichTextDocument';
+import { track } from '@/lib/telemetry';
 import type { RichTextEditorProps } from './RichTextEditor.types';
-import { applyCss, computeActiveFormat } from './rich-text-editor-helpers';
-import { useRichTextFormatActions } from './useRichTextFormatActions';
 
 export function useRichTextSession({
   element,
@@ -46,28 +43,13 @@ export function useRichTextSession({
   | 'onCommit'
   | 'onCancel'
 >) {
-  const editorRef = useRef<HTMLDivElement>(null);
   const toolbarWrapRef = useRef<HTMLDivElement>(null);
-  const runsRef = useRef<TextRun[]>(
-    normalizeRuns(
-      initialRuns && initialRuns.length ? initialRuns : runsFromPlainText(initialLabel),
-    ),
-  );
-  const initialKey = useRef(JSON.stringify(runsRef.current));
   const settledRef = useRef(false);
-  const composingRef = useRef(false);
   // True from a pointerdown anywhere in the toolbar until the matching
   // pointerup. The colour <input> must take focus to open its OS picker,
   // which blurs the editor with an unreliable relatedTarget; this flag is
   // the robust "don't commit, we're using the toolbar" signal for onBlur.
   const pointerInToolbarRef = useRef(false);
-  const selectionRef = useRef<{ start: number; end: number } | null>(null);
-  const pendingSelectionRef = useRef<{ start: number; end: number } | null>(null);
-  const skipFirstVersionEffect = useRef(true);
-  const [version, setVersion] = useState(0);
-  const [active, setActive] = useState<ActiveFormat>(() =>
-    computeActiveFormat(runsRef.current, null, element),
-  );
   const [placeBelow, setPlaceBelow] = useState(false);
   // Type-to-edit sessions must start with the caret at the END; see the
   // mount effect. Consumed by the first beforeinput.
@@ -80,51 +62,32 @@ export function useRichTextSession({
       ? 16
       : FIXED_FONT_PX[textSize];
 
-  // Collapse the selection to the true end of the editor's painted content.
-  const placeCaretAtEnd = (el: HTMLElement) => {
-    const r = document.createRange();
-    r.selectNodeContents(el);
-    r.collapse(false);
-    selectRange(r);
-  };
+  const doc = useRichTextDocument({
+    initialRuns: initialRuns && initialRuns.length ? initialRuns : runsFromPlainText(initialLabel),
+    runStyle: (run: TextRun) => effectiveRunStyle(run, element, runSizePx),
+    defaults: elementRunDefaults(element),
+    // A label is one short string: a command with no selection applies to all
+    // of it, as it always has.
+    collapsedScope: 'all',
+    trackFormat: () => track('Element', 'Changed', 'TextFormat'),
+  });
+  const {
+    editorRef,
+    runsRef,
+    selectionRef,
+    composingRef,
+    active,
+    paintRuns,
+    refreshActive,
+    syncFromDom,
+    currentRuns,
+    placeCaretAtEnd,
+    onToggle,
+    onPatch,
+    applyList,
+  } = doc;
 
-  // Render the current runs into the contentEditable as styled spans.
-  const paintRuns = () => {
-    const el = editorRef.current;
-    if (!el) return;
-    el.replaceChildren();
-    for (const run of runsRef.current) {
-      const span = document.createElement('span');
-      applyCss(span.style, effectiveRunStyle(run, element, runSizePx));
-      for (const [k, v] of Object.entries(dataAttrsForRun(run))) span.setAttribute(k, v);
-      span.textContent = run.text;
-      el.appendChild(span);
-    }
-    // Render the empty last line when the text ends in a newline.
-    reconcileTrailingNewline(el);
-  };
-
-  const refreshActive = () => {
-    const el = editorRef.current;
-    if (!el) return;
-    const offsets = domSelectionToOffsets(el);
-    if (offsets) selectionRef.current = offsets;
-    setActive(computeActiveFormat(runsRef.current, offsets ?? selectionRef.current, element));
-  };
-
-  // Read the live DOM back into runs + refresh the toolbar. Used after every
-  // edit (input, Enter, paste, IME end) since our programmatic inserts don't
-  // fire React's onInput.
-  const syncFromDom = () => {
-    const el = editorRef.current;
-    if (el) {
-      runsRef.current = readRunsFromDom(el);
-      // Keep the trailing-newline sentinel in step: typing past a trailing
-      // newline drops it, an Enter at the end adds it.
-      reconcileTrailingNewline(el);
-    }
-    refreshActive();
-  };
+  const initialKey = useRef(JSON.stringify(runsRef.current));
 
   // Mount: paint, focus, place the caret (select-all on double-click,
   // caret-at-end on type-to-edit), seed the toolbar state.
@@ -162,33 +125,7 @@ export function useRichTextSession({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // A format apply bumps `version`: re-paint from the new runs and restore
-  // the selection (+ focus, in case the colour input had stolen it).
-  useLayoutEffect(() => {
-    if (skipFirstVersionEffect.current) {
-      skipFirstVersionEffect.current = false;
-      return;
-    }
-    const el = editorRef.current;
-    if (!el) return;
-    paintRuns();
-    el.focus();
-    const sel = pendingSelectionRef.current;
-    if (sel) {
-      selectRange(offsetsToDomRange(el, sel.start, sel.end));
-      pendingSelectionRef.current = null;
-    }
-    refreshActive();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [version]);
-
-  // Keep the toolbar active-state in sync as the caret / selection moves.
   useEffect(() => {
-    const onSel = () => {
-      if (document.activeElement !== editorRef.current) return;
-      refreshActive();
-    };
-    document.addEventListener('selectionchange', onSel);
     // Clear the toolbar-interaction flag once the pointer is released, so a
     // later click on the canvas blurs + commits normally.
     const onUp = () => {
@@ -212,11 +149,9 @@ export function useRichTextSession({
     };
     document.addEventListener('mousedown', onMenuDown, true);
     return () => {
-      document.removeEventListener('selectionchange', onSel);
       document.removeEventListener('pointerup', onUp);
       document.removeEventListener('mousedown', onMenuDown, true);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Flip the toolbar below the element when there isn't room above it. Measure
@@ -241,8 +176,7 @@ export function useRichTextSession({
   const commitNow = () => {
     if (settledRef.current) return;
     settledRef.current = true;
-    const el = editorRef.current;
-    const runs = el ? readRunsFromDom(el) : runsRef.current;
+    const runs = currentRuns();
     onCommit(runsPlainText(runs), runs);
   };
 
@@ -256,8 +190,7 @@ export function useRichTextSession({
     /* eslint-disable react-hooks/exhaustive-deps */
     return () => {
       if (settledRef.current) return;
-      const el = editorRef.current;
-      const runs = el ? readRunsFromDom(el) : runsRef.current;
+      const runs = currentRuns();
       if (JSON.stringify(runs) === initialKey.current) return;
       onCommit(runsPlainText(runs), runs);
     };
@@ -270,17 +203,6 @@ export function useRichTextSession({
     settledRef.current = true;
     onCancel();
   };
-
-  // Formatting command dispatch (toggles / patches / lists) lives in
-  // useRichTextFormatActions; a bump repaints via the version effect.
-  const { onToggle, onPatch, applyList } = useRichTextFormatActions({
-    editorRef,
-    runsRef,
-    selectionRef,
-    pendingSelectionRef,
-    bumpVersion: () => setVersion((v) => v + 1),
-    element,
-  });
 
   return {
     editorRef,

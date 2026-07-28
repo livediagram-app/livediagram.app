@@ -25,6 +25,13 @@ export type RunSize = 'sm' | 'md' | 'lg';
 
 export type RunBoolKey = 'bold' | 'italic' | 'underline' | 'strikethrough';
 
+// Line-level emphasis (spec/92). Like the list markers below, it rides the
+// FLAT run model rather than introducing block nodes: the attribute is
+// written across every character of the lines the selection touches, which
+// keeps `runsPlainText(runs).length` the single offset space every
+// caller — renderer, contentEditable bridge, selection maths — walks.
+export type RunHeading = 1 | 2;
+
 export type TextRun = {
   text: string;
   bold?: boolean;
@@ -33,6 +40,11 @@ export type TextRun = {
   strikethrough?: boolean;
   size?: RunSize;
   color?: string; // hex
+  // Hyperlink over this slice (spec/92). Stored as the address the user
+  // entered, already passed through the app's `normaliseUrl` guard
+  // (http / https / mailto only); renderers re-check before following.
+  link?: string;
+  heading?: RunHeading;
 };
 
 // The attributes to write over a range. A key present with `undefined`
@@ -45,11 +57,23 @@ export type RunPatch = Partial<{
   strikethrough: boolean | undefined;
   size: RunSize | undefined;
   color: string | undefined;
+  link: string | undefined;
+  heading: RunHeading | undefined;
 }>;
 
-// The six attribute keys, used to compare/copy run formatting without
-// touching `text`.
-const ATTR_KEYS = ['bold', 'italic', 'underline', 'strikethrough', 'size', 'color'] as const;
+// The attribute keys, used to compare/copy run formatting without touching
+// `text`. Every new attribute must land here or split / merge / patch will
+// silently drop it.
+const ATTR_KEYS = [
+  'bold',
+  'italic',
+  'underline',
+  'strikethrough',
+  'size',
+  'color',
+  'link',
+  'heading',
+] as const;
 
 /** Concatenated plain text of the runs. `element.label` is kept === this. */
 export function runsPlainText(runs: TextRun[]): string {
@@ -346,6 +370,57 @@ export function applyListStyle(
     const prefixChars: RunChar[] = [...prefix].map((ch) => ({ ch, attrs: {} }));
     return [...prefixChars, ...lineChars];
   });
+}
+
+/**
+ * Drop leading + trailing whitespace, keeping every surviving character's
+ * formatting. The runs-level equivalent of `String.trim()`, used where a
+ * stored plain-text mirror is trimmed (`element.note`, spec/92) and the runs
+ * beside it must stay exactly equal to it.
+ */
+export function trimRuns(runs: TextRun[]): TextRun[] {
+  const text = runsPlainText(runs);
+  const start = text.length - text.trimStart().length;
+  const end = text.trimEnd().length;
+  if (start >= end) return [];
+  return normalizeRuns(sliceRuns(runs, start, end));
+}
+
+// --- Headings (line-level attribute) ---------------------------------------
+
+/**
+ * Grow a character range out to whole-line boundaries — from the start of the
+ * line containing `start` to the end of the line containing `end`. A collapsed
+ * range yields the single line the caret sits on. Used by the line-level
+ * commands (headings, and the note editor's caret-scoped list apply) so
+ * "make this a heading" never splits a line in half.
+ */
+export function expandRangeToLines(
+  text: string,
+  range: { start: number; end: number },
+): { start: number; end: number } {
+  const len = text.length;
+  const s = Math.max(0, Math.min(Math.min(range.start, range.end), len));
+  const e = Math.max(0, Math.min(Math.max(range.start, range.end), len));
+  const lineStart = text.lastIndexOf('\n', s - 1) + 1;
+  const nextBreak = text.indexOf('\n', e);
+  return { start: lineStart, end: nextBreak === -1 ? len : nextBreak };
+}
+
+/**
+ * Set (or clear, with `null`) the heading level across every line the range
+ * touches. Without a range the whole text is treated as one target. Returns
+ * normalized runs; clearing re-inherits the base body style.
+ */
+export function applyHeadingToLines(
+  runs: TextRun[],
+  level: RunHeading | null,
+  range?: { start: number; end: number },
+): TextRun[] {
+  const text = runsPlainText(runs);
+  const target = expandRangeToLines(text, range ?? { start: 0, end: text.length });
+  if (target.start >= target.end) return normalizeRuns(runs);
+  return applyFormatToRange(runs, target.start, target.end, { heading: level ?? undefined });
 }
 
 // The run that contains character `offset` (clamped). Empty runs → a

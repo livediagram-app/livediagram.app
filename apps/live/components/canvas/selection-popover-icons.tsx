@@ -8,7 +8,7 @@
 
 // The 16px overflow ellipsis, shared with the rich-text toolbar (the
 // same more-actions motif on the two floating canvas toolbars).
-export { EllipsisIcon } from '@/components/canvas/rich-text-toolbar-icons';
+export { EllipsisIcon } from '@/components/rich-text/rich-text-toolbar-icons';
 
 // "Edit text" button — a serif capital T, the universal text glyph (matches
 // the palette's Add-text tile). Shown on the toolbar only when the selected

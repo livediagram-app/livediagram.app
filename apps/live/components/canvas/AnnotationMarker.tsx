@@ -1,6 +1,8 @@
 'use client';
 
 import { useLayoutEffect, useState } from 'react';
+import type { TextRun } from '@livediagram/diagram';
+import { NoteRichText } from '@/components/notes/NoteRichText';
 import { Portal } from '@/components/primitives/Portal';
 import { VIEWPORT_EDGE_MARGIN as EDGE_MARGIN } from '@/lib/clamp-to-viewport';
 
@@ -40,8 +42,18 @@ const MAX_W = 280;
 // the marker. Anchors to the marker's live DOM rect (which already
 // includes the canvas pan + zoom) the same way NotePopover does, so it
 // stays attached as the canvas moves. No interactivity — hovering is a
-// read gesture; clicking the marker opens the editable popover instead.
-export function AnnotationHoverNote({ elementId, note }: { elementId: string; note: string }) {
+// read gesture; clicking the marker opens the editable popover instead. The
+// note is drawn by the shared NoteRichText renderer (spec/92), so headings /
+// lists / links read the same here as they do in the popover.
+export function AnnotationHoverNote({
+  elementId,
+  note,
+  noteRich,
+}: {
+  elementId: string;
+  note: string;
+  noteRich?: TextRun[];
+}) {
   const [pos, setPos] = useState<{ left: number; top: number; below: boolean } | null>(null);
 
   useLayoutEffect(() => {
@@ -72,7 +84,7 @@ export function AnnotationHoverNote({ elementId, note }: { elementId: string; no
   return (
     <Portal>
       <div
-        className="pointer-events-none fixed z-[var(--z-toast)] max-h-60 overflow-hidden whitespace-pre-wrap break-words rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs leading-snug text-slate-800 shadow-xl shadow-slate-900/15 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/50"
+        className="pointer-events-none fixed z-[var(--z-toast)] max-h-60 overflow-hidden rounded-lg border border-slate-200 bg-white px-3 py-2 leading-snug text-slate-800 shadow-xl shadow-slate-900/15 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/50"
         style={{
           left: pos.left,
           top: pos.top,
@@ -80,7 +92,7 @@ export function AnnotationHoverNote({ elementId, note }: { elementId: string; no
           transform: `translate(-50%, ${pos.below ? '0' : '-100%'})`,
         }}
       >
-        {note}
+        <NoteRichText note={note} noteRich={noteRich} />
       </div>
     </Portal>
   );

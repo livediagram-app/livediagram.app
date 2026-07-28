@@ -5,6 +5,7 @@ import { apiSetDiagramFolder } from '@/lib/api-client';
 import { isBoxed } from '@livediagram/diagram';
 
 import { track } from '@/lib/telemetry';
+import { canonicalNote, noteFieldsEqual } from '@/lib/note-value';
 import { apiAddComment, apiDeleteComment } from '@/lib/api-client';
 import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
 
@@ -12,7 +13,7 @@ const CommentThreadPopover = dynamic(() =>
   import('@/components/panels/CommentThreadPopover').then((m) => m.CommentThreadPopover),
 );
 const NotePopover = dynamic(() =>
-  import('@/components/canvas/NotePopover').then((m) => m.NotePopover),
+  import('@/components/notes/NotePopover').then((m) => m.NotePopover),
 );
 const ActionPopover = dynamic(() =>
   import('@/components/panels/ActionPopover').then((m) => m.ActionPopover),
@@ -222,14 +223,19 @@ export function EditorAnchoredPopovers() {
               <NotePopover
                 elementId={target.id}
                 initial={target.note ?? ''}
+                initialRuns={target.noteRich}
                 readOnly={isReadOnly}
-                onCommit={(next) => {
-                  const prev = (target.note ?? '').trim();
-                  const nextTrim = next.trim();
-                  setNote(target.id, next);
-                  if (prev === nextTrim) return;
-                  if (!prev && nextTrim) track('Note', 'Added');
-                  else if (prev && !nextTrim) track('Note', 'Deleted');
+                onCommit={(next, runs) => {
+                  // Compare the CANONICAL forms (the same normalisation
+                  // `setNote` stores), so reopening a note and clicking away
+                  // reports nothing, and a formatting-only edit — which
+                  // leaves the plain mirror identical — still reports.
+                  const prev = canonicalNote(target.note ?? '', target.noteRich);
+                  const now = canonicalNote(next, runs);
+                  setNote(target.id, next, runs);
+                  if (noteFieldsEqual(prev, now)) return;
+                  if (!prev.note) track('Note', 'Added');
+                  else if (!now.note) track('Note', 'Deleted');
                   else track('Note', 'Changed');
                 }}
                 onClose={closeNote}

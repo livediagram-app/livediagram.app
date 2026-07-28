@@ -5,6 +5,19 @@
 // element-labels.tsx (which imports the editor).
 
 import type { BoxedElement, RunSize, TextAlignX, TextAlignY, TextRun } from '@livediagram/diagram';
+import type { RunDefaults } from '@/components/rich-text/rich-text-format';
+
+// The base a label run's unset deltas inherit: the element's whole-element
+// text fields. Notes have no such base and use PLAIN_RUN_DEFAULTS instead.
+export function elementRunDefaults(el: BoxedElement): RunDefaults {
+  return {
+    bold: !!el.textBold,
+    italic: !!el.textItalic,
+    underline: !!el.textUnderline,
+    strikethrough: !!el.textStrikethrough,
+    color: el.textColor ?? null,
+  };
+}
 
 export const ALIGN_ITEMS: Record<TextAlignY, 'flex-start' | 'center' | 'flex-end'> = {
   top: 'flex-start',

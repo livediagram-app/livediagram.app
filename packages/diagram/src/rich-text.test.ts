@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
   applyFormatToRange,
+  applyHeadingToLines,
   applyListStyle,
+  expandRangeToLines,
   hasRichFormatting,
   normalizeRuns,
   runsFromPlainText,
@@ -197,5 +199,77 @@ describe('applyListStyle / stripListPrefixes', () => {
     // The bold "b" survives as its own run; no marker run is bold.
     expect(runs.some((r) => r.text === 'b' && r.bold === true)).toBe(true);
     expect(runs.every((r) => !r.text.includes('•') || r.bold === undefined)).toBe(true);
+  });
+});
+
+describe('link + heading run attributes (spec/92)', () => {
+  it('splits and merges on link like any other attribute', () => {
+    const runs = applyFormatToRange(runsFromPlainText('see the docs'), 4, 12, {
+      link: 'https://example.com',
+    });
+    expect(runs).toEqual([{ text: 'see ' }, { text: 'the docs', link: 'https://example.com' }]);
+    // Clearing re-merges into one plain run.
+    expect(applyFormatToRange(runs, 0, 12, { link: undefined })).toEqual([
+      { text: 'see the docs' },
+    ]);
+  });
+
+  it('does not merge adjacent runs that point at different links', () => {
+    const runs = normalizeRuns([
+      { text: 'a', link: 'https://a.example' },
+      { text: 'b', link: 'https://b.example' },
+    ]);
+    expect(runs).toHaveLength(2);
+  });
+
+  it('counts as rich formatting', () => {
+    expect(hasRichFormatting([{ text: 'x', link: 'https://example.com' }])).toBe(true);
+    expect(hasRichFormatting([{ text: 'x', heading: 1 }])).toBe(true);
+  });
+});
+
+describe('expandRangeToLines', () => {
+  const text = 'one\ntwo\nthree';
+
+  it('grows a mid-line range out to the whole line', () => {
+    expect(expandRangeToLines(text, { start: 5, end: 6 })).toEqual({ start: 4, end: 7 });
+  });
+
+  it('resolves a collapsed caret to the line it sits on', () => {
+    expect(expandRangeToLines(text, { start: 0, end: 0 })).toEqual({ start: 0, end: 3 });
+    expect(expandRangeToLines(text, { start: 9, end: 9 })).toEqual({ start: 8, end: 13 });
+  });
+
+  it('spans every line a multi-line range touches, and clamps', () => {
+    expect(expandRangeToLines(text, { start: 2, end: 9 })).toEqual({ start: 0, end: 13 });
+    expect(expandRangeToLines(text, { start: 99, end: 99 })).toEqual({ start: 8, end: 13 });
+  });
+
+  it('normalises a backwards range', () => {
+    expect(expandRangeToLines(text, { start: 6, end: 5 })).toEqual({ start: 4, end: 7 });
+  });
+});
+
+describe('applyHeadingToLines', () => {
+  it('marks every character of the touched line, not just the selection', () => {
+    const runs = applyHeadingToLines(runsFromPlainText('Title\nbody'), 1, { start: 1, end: 2 });
+    expect(runs).toEqual([{ text: 'Title', heading: 1 }, { text: '\nbody' }]);
+  });
+
+  it('spans several lines when the range does', () => {
+    const runs = applyHeadingToLines(runsFromPlainText('a\nb\nc'), 2, { start: 0, end: 3 });
+    expect(runsPlainText(runs)).toBe('a\nb\nc');
+    expect(runs[0]).toEqual({ text: 'a\nb', heading: 2 });
+  });
+
+  it('clears with null and leaves the rest of the formatting alone', () => {
+    const heading = applyHeadingToLines([{ text: 'Title', bold: true }], 1);
+    expect(heading).toEqual([{ text: 'Title', bold: true, heading: 1 }]);
+    expect(applyHeadingToLines(heading, null)).toEqual([{ text: 'Title', bold: true }]);
+  });
+
+  it('is a no-op on an empty line', () => {
+    const runs = applyHeadingToLines(runsFromPlainText('a\n\nb'), 1, { start: 2, end: 2 });
+    expect(runs).toEqual([{ text: 'a\n\nb' }]);
   });
 });

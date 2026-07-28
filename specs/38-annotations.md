@@ -8,7 +8,9 @@ Annotations are a first-class element type. They build on the existing
 per-element **note** feature (`note?: string` on every boxed element, edited
 through `NotePopover` / `useEditorNotes`, see [spec/09](09-canvas-and-palette.md));
 an annotation is just the dedicated, palette-addable element whose entire
-purpose is to carry one.
+purpose is to carry one. The note is a small **rich-text** document as of
+[spec/92](92-rich-text-notes.md) — formatting lives in `noteRich?: TextRun[]`
+and `note` stays the plain-text mirror, so everything below is unchanged.
 
 ## What it is
 
@@ -37,7 +39,8 @@ purpose is to carry one.
 
 - **Hover → read.** Pointer-entering an annotation that has note text floats a
   read-only preview of the note in a portal **above every canvas element**
-  (z-index above the element layer), so the note is legible even when other
+  (rendered by `NoteRichText`, so headings / lists / links read the same as
+  they do in the popover — spec/92), so the note is legible even when other
   elements are painted on top of the annotation. The preview disappears on
   pointer-leave. An annotation with no note yet shows nothing on hover. The
   hover preview is suppressed while the annotation is selected (the click /
@@ -56,7 +59,7 @@ purpose is to carry one.
 `AnnotationElement` is a boxed element (`type: 'annotation'`), so it flows
 through every generic boxed path (selection, drag, layering, lock, group,
 link, colours, comments, the note feature). It carries the shared boxed
-fields plus `note?: string`. `createAnnotation(x, y)` (in
+fields plus `note?: string` (and `noteRich?: TextRun[]`, spec/92). `createAnnotation(x, y)` (in
 `packages/diagram/src/factories.ts`) returns one at the default 44×44 marker
 size. `isBoxed` and the `BoxedElement` union include it.
 

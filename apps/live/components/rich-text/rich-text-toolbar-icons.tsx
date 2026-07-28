@@ -89,3 +89,15 @@ export function FontGlyph() {
     </svg>
   );
 }
+
+// Heading / subheading glyph (spec/92): the typographic "H1" / "H2" the rest
+// of the world uses, matching the letterform Bold / Italic / Underline take
+// in palette-icons rather than inventing a pictogram for it.
+export function HeadingIcon({ level }: { level: 1 | 2 }) {
+  return (
+    <span className="flex items-baseline leading-none text-slate-700 dark:text-slate-200">
+      <span className="text-[13px] font-bold">H</span>
+      <span className="text-[9px] font-semibold">{level}</span>
+    </span>
+  );
+}

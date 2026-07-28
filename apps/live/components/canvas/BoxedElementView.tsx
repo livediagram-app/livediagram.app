@@ -492,7 +492,11 @@ function BoxedElementViewImpl({
           (spec/38). Suppressed while selected — the click/edit popover owns
           that surface then — and only when there's note text to show. */}
       {isAnnotation && hovering && !isSelected && !isEditing && element.note ? (
-        <AnnotationHoverNote elementId={element.id} note={element.note} />
+        <AnnotationHoverNote
+          elementId={element.id}
+          note={element.note}
+          noteRich={element.noteRich}
+        />
       ) : null}
     </div>
   );
