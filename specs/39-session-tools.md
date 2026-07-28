@@ -33,9 +33,12 @@ live counts but can't control or vote. No extra gating code.
 - Controlled from the tab menu's **Collaborate** row — a side-flyout
   parent (`MenuFlyoutSection`, the same parent/child pattern the element
   menu uses for Style / Text / Tools) that groups every live session tool
-  under one entry instead of four top-level rows: **Countdown**,
-  **Stopwatch**, **Vote**, and the ephemeral **Poll** (spec/88). Countdown
-  carries a duration (1 / 3 / 5 / 10 min presets); both timers offer
+  under one entry instead of four top-level rows: **Timer**,
+  **Stopwatch**, **Vote**, and the ephemeral **Poll** (spec/88). The Timer
+  category was originally labelled "Countdown"; it reads **Timer** in the UI
+  (the countdown/stopwatch split is a mode, not two features), and the
+  telemetry type stays `CountdownTimer` so the series doesn't break.
+  Timer carries a duration (1 / 3 / 5 / 10 min presets); both timers offer
   **Start / Pause / Resume / Reset / Clear**
   (`useTabSession`). The open category shows a live big-digit clock with a
   running/paused status and, for countdowns, a progress track.

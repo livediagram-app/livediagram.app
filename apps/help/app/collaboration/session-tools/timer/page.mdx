@@ -15,14 +15,14 @@ The timer time-boxes an activity for the whole room. Set it going and a clock pi
 
 ## Setting it up
 
-Countdown and Stopwatch live in the tab's menu under **Collaborate**, side by side with Vote and Poll.
+Timer and Stopwatch live in the tab's menu under **Collaborate**, side by side with Vote and Poll.
 
-<Figure caption="The Countdown category offers minute presets and Start; Stopwatch starts counting up with one press.">
+<Figure caption="The Timer category offers minute presets and Start; Stopwatch starts counting up with one press.">
   <TimerControl />
 </Figure>
 
 <Step n={1}>
-  Open the **Countdown** category and pick a duration (1, 3, 5, or 10 minute presets), or open
+  Open the **Timer** category and pick a duration (1, 3, 5, or 10 minute presets), or open
   **Stopwatch** to count up from zero.
 </Step>
 
@@ -35,7 +35,7 @@ While one runs, its category shows a live clock with a running or paused status,
 
 ## What everyone sees
 
-The live clock shows as a floating pill near the top of the canvas, ticking smoothly while it runs. A countdown **flashes when it reaches 0:00** so the room knows time is up. People with edit access get inline pause, resume, and reset controls on the pill itself; view-only visitors see the same clock as a read-only display.
+The live clock shows as a floating pill near the top of the canvas, ticking smoothly while it runs. A countdown also **drains**: the pill starts fully tinted and empties from left to right as the time goes, so someone across the room can read how long is left without parsing the digits. It **flashes when it reaches 0:00** so the room knows time is up. A stopwatch has no end to work towards, so it gets no fill. People with edit access get inline pause, resume, and reset controls on the pill itself; view-only visitors see the same clock as a read-only display.
 
 The pill sits in the shared top row of floating controls, alongside things like mode banners and the selection toolbar, so it never overlaps them: to the right of them on desktop, and underneath on mobile.
 

@@ -645,7 +645,7 @@ function VoteShape({
 export function SessionTools() {
   return (
     <Scene w={420} h={230}>
-      <TimerPill x={136} y={16} time="4:32" label="COUNTDOWN" />
+      <TimerPill x={136} y={16} time="4:32" label="TIMER" />
       <VoteShape x={24} y={110} label="Idea A" count={3} mine winner />
       <VoteShape x={158} y={110} label="Idea B" count={1} />
       <VoteShape x={292} y={110} label="Idea C" count={2} />
@@ -679,7 +679,7 @@ export function TimerControl() {
           strokeWidth={1}
         />
         <Label x={158} y={66} anchor="middle" size={11} weight={700} tone="accent">
-          Countdown
+          Timer
         </Label>
         <Label x={262} y={66} anchor="middle" size={11} weight={500} tone="muted">
           Stopwatch

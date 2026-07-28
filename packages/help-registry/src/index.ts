@@ -184,8 +184,8 @@ export const categories: Category[] = [
     slug: 'canvas',
     title: 'Canvas',
     description:
-      'Master the infinite canvas where diagrams come together: placing, selecting, grouping, linking, annotating, layering, rotating, animating, shadowing, locking, theming, and templating.',
-    articleCount: 16,
+      'Master the infinite canvas where diagrams come together: placing, selecting, grouping, linking, annotating, noting, layering, rotating, animating, shadowing, locking, theming, and templating.',
+    articleCount: 17,
     kind: 'feature',
   },
   {
@@ -1213,7 +1213,17 @@ export const articles: Article[] = [
     slug: 'annotations',
     title: 'Annotations',
     description: 'Drop a marker with a note that readers hover to read.',
-    keywords: 'note marker callout tooltip pin footnote comment hover',
+    keywords: 'note marker callout tooltip pin footnote comment hover rich text formatting',
+    category: 'Canvas',
+    categorySlug: 'canvas',
+  },
+  {
+    slug: 'notes',
+    title: 'Notes',
+    description:
+      'Attach a longer written note to any element, formatted and out of sight until opened.',
+    keywords:
+      'note notes memo remark caveat detail context description rich text formatting bold italic underline heading bullet numbered list link popover badge resources',
     category: 'Canvas',
     categorySlug: 'canvas',
   },
