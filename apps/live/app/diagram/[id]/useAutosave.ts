@@ -1,5 +1,6 @@
 import {
   useEffect,
+  useRef,
   type Dispatch,
   type MutableRefObject,
   type RefObject,
@@ -7,6 +8,7 @@ import {
 } from 'react';
 import type { Tab } from '@livediagram/diagram';
 import {
+  ApiError,
   apiDeleteTab,
   apiSaveDiagramMeta,
   apiSaveTab,
@@ -68,9 +70,25 @@ export function useAutosave(opts: {
     setDiagramList,
   } = opts;
 
+  // Set once the server has told us we may not write to this diagram at all
+  // (403). Unlike a network failure that's worth another go on the next edit,
+  // this can never succeed: the share link was revoked, we were removed from
+  // the team, or the role changed under us. Retrying anyway meant a user could
+  // edit for an hour against a diagram that would never take the writes,
+  // seeing only a toast blaming their connection — and each edit fired another
+  // doomed PUT, which is what produced hundreds of 403s in a single day.
+  const writesForbiddenRef = useRef(false);
+
+  // A different diagram gets a clean slate: the block is about THIS one.
+  useEffect(() => {
+    writesForbiddenRef.current = false;
+  }, [diagramId]);
+
   useEffect(() => {
     if (!hydrated || !diagramId || isReadOnly) return;
     const handler = () => {
+      // Nothing we send can be accepted; don't beacon on the way out either.
+      if (writesForbiddenRef.current) return;
       // The user just deleted this diagram (navigating to /explorer fires
       // beforeunload): don't beacon its tabs/meta back and re-create it.
       if (isDiagramDeleted(diagramId)) return;
@@ -106,6 +124,11 @@ export function useAutosave(opts: {
   useEffect(() => {
     if (!hydrated || !diagramId) return;
     if (isReadOnly) return;
+    // The server has already refused a write to this diagram. Every further
+    // attempt would fail the same way, so stop: the point is that the user is
+    // told once, clearly, instead of being told to check their connection
+    // every few seconds while their work goes nowhere.
+    if (writesForbiddenRef.current) return;
     // A hover-preview is showing: its tick mutated `tabs`, but it's ephemeral
     // and will revert (or be replaced by a real commit), so don't persist it.
     // The commit/revert flips this ref off and re-runs the effect, which then
@@ -195,7 +218,12 @@ export function useAutosave(opts: {
             prev.map((d) => (d.id === diagramId ? { ...d, savedAt: now, name: diagramName } : d)),
           );
         })
-        .catch(() => {
+        .catch((err: unknown) => {
+          if (err instanceof ApiError && err.status === 403) {
+            writesForbiddenRef.current = true;
+            setSaveStatus('forbidden');
+            return;
+          }
           setSaveStatus('error');
         });
     }, 600);

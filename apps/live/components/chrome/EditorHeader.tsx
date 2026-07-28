@@ -9,7 +9,12 @@ import { Tooltip } from '@/components/primitives/Tooltip';
 // editor is autosave-driven, so silent failures (offline, API down,
 // wrong env var pointing at unreachable host) used to look identical
 // to a successful save. Now they don't.
-export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
+// 'error' is a save that FAILED and may well work next time (offline, a
+// blip, a 5xx). 'forbidden' is a save the server refused outright — the
+// share link was revoked, we were removed from the team — which no amount
+// of retrying fixes, so it gets its own state and its own wording rather
+// than telling the user to check a connection that is fine.
+export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error' | 'forbidden';
 
 // Full-height, edge-flush header action button: the icon stacked over a small
 // label, a left divider, hugging the top + bottom of the bar so the right-edge

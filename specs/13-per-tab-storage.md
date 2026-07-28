@@ -137,6 +137,34 @@ never flashes a loader and drops straight into the per-tab template
 picker. A tab whose elements a realtime peer already delivered likewise
 renders immediately rather than showing a spinner over real content.
 
+### A refused save stops; a failed save doesn't
+
+The autosave used to treat every rejection as one thing: set the status to
+`error`, toast "Couldn't save your changes. Check your connection.", and try
+again on the next edit. That's right for a blip, a 5xx, or a dropped
+connection — the next attempt may well work.
+
+It's wrong for a **403**. The server isn't failing, it's refusing: the share
+link was revoked, we were removed from the team, or the role changed under us.
+No retry can succeed. Yet every subsequent keystroke fired another doomed PUT,
+and the only feedback blamed a connection that was fine — so someone could
+edit for an hour against a diagram that would never take a single write. Live
+telemetry showed the shape of it: **297 `Http403` in one day** against a
+baseline in single digits, which is one long session failing over and over.
+
+So a 403 sets `writesForbiddenRef` and a distinct `forbidden` save status:
+
+- The debounced save and the `beforeunload` beacon both bail while it's set,
+  so the doomed retries stop.
+- The toast fires **once** and says what actually happened, naming the likely
+  cause and the way out (export a copy) rather than a connection to check.
+- The Activity panel badge reads **No access** instead of **Not saved**.
+- Opening a different diagram clears it — the block is about this one.
+
+The user still loses the unsaved work, and no client-side design can prevent
+that once the server has withdrawn write access. What it can do is say so
+immediately and clearly, instead of an hour later.
+
 ### Autosave guard: never persist an unloaded tab
 
 The loading overlay above protects the **active** tab. A separate, subtler

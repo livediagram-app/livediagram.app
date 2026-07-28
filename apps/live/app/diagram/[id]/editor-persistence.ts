@@ -79,6 +79,15 @@ export function useEditorPersistence({ toast }: { toast: ReturnType<typeof useTo
     if (saveStatus === 'error') {
       toast.error('Couldn’t save your changes. Check your connection.');
     }
+    // A refusal, not a failure: retrying is pointless and the autosave has
+    // already stopped, so this fires once and has to carry the whole message.
+    // It names the likely cause and the way out, because the alternative is a
+    // user who keeps working on changes that will never leave the browser.
+    if (saveStatus === 'forbidden') {
+      toast.error(
+        'You no longer have permission to edit this diagram, so your recent changes aren’t being saved. Export a copy to keep them.',
+      );
+    }
   }, [saveStatus, toast]);
 
   // Diagram-list refresh, fired after every autosave so the
