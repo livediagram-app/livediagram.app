@@ -253,6 +253,26 @@ export function ClockIcon() {
   );
 }
 
+// Star — per-user favourites (spec/95). Filled when starred so the
+// tile's glyph carries the state alongside its label.
+export function StarIcon({ filled = false }: { filled?: boolean }) {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 16 16"
+      fill={filled ? 'currentColor' : 'none'}
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M8 2.2l1.75 3.55 3.92.57-2.84 2.76.67 3.9L8 11.15l-3.5 1.83.67-3.9L2.33 6.32l3.92-.57z" />
+    </svg>
+  );
+}
+
 export function PlusIcon() {
   return (
     <svg

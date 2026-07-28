@@ -59,6 +59,8 @@ export function CardView({
   onMoveDiagram,
   onDismissShared,
   recentExcludedIds,
+  favouriteIds,
+  onToggleFavourite,
   folderChipFor,
   onToggleRecentExclusion,
   childrenCount,
@@ -98,6 +100,9 @@ export function CardView({
   onDismissShared?: (id: string) => void;
   // Hide / show in Recent (spec/93).
   recentExcludedIds?: string[];
+  // Per-user stars (spec/95).
+  favouriteIds?: Set<string>;
+  onToggleFavourite?: (id: string) => void;
   // Resolves a card's folder chip (spec/94).
   folderChipFor?: (d: PaneDiagram) => { label: string; onOpen: () => void } | null;
   onToggleRecentExclusion?: (id: string) => void;
@@ -174,6 +179,8 @@ export function CardView({
           onMove={(anchor) => onMoveDiagram(d.id, anchor)}
           onDismiss={d.shared && onDismissShared ? () => onDismissShared(d.id) : undefined}
           folderChip={folderChipFor?.(d) ?? null}
+          favourite={favouriteIds?.has(d.id) === true}
+          onToggleFavourite={onToggleFavourite ? () => onToggleFavourite(d.id) : undefined}
           recentExcluded={recentExcludedIds?.includes(d.id) === true}
           onToggleRecentExclusion={
             onToggleRecentExclusion ? () => onToggleRecentExclusion(d.id) : undefined
@@ -198,6 +205,8 @@ function DiagramCard({
   onDelete,
   onMove,
   onDismiss,
+  favourite,
+  onToggleFavourite,
   recentExcluded,
   onToggleRecentExclusion,
 }: {
@@ -215,6 +224,8 @@ function DiagramCard({
   onDelete: () => void;
   onMove: (anchor: HTMLElement | null) => void;
   onDismiss?: () => void;
+  favourite?: boolean;
+  onToggleFavourite?: () => void;
   recentExcluded?: boolean;
   onToggleRecentExclusion?: () => void;
 }) {
@@ -317,6 +328,8 @@ function DiagramCard({
           onMove={onMove}
           onDelete={onDelete}
           onDismiss={onDismiss}
+          favourite={favourite}
+          onToggleFavourite={onToggleFavourite}
           recentExcluded={recentExcluded}
           onToggleRecentExclusion={onToggleRecentExclusion}
         />

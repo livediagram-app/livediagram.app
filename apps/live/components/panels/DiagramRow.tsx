@@ -21,6 +21,7 @@ import {
   SharedDiagramIcon,
   TrashIcon,
   ClockIcon,
+  StarIcon,
 } from '@/components/panels/explorer-icons';
 import { DiagramThumbnail } from '@/components/panels/DiagramThumbnail';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
@@ -97,6 +98,8 @@ export function DiagramRow({
   onMoveRequest,
   recentExcluded,
   onToggleRecentExclusion,
+  favourite,
+  onToggleFavourite,
   onOpenShare,
   thumbnailShareCode,
   draggable: isDraggable,
@@ -126,6 +129,9 @@ export function DiagramRow({
   // viewer's state; absent where the surface can't offer it.
   recentExcluded?: boolean;
   onToggleRecentExclusion?: () => void;
+  // Per-user star (spec/95).
+  favourite?: boolean;
+  onToggleFavourite?: () => void;
   // Opens the Share dialog in place — set only on the row for the diagram
   // already open in this editor session, where a `?share=1` navigation
   // would pointlessly reload the editor (see openShareSettings).
@@ -365,6 +371,16 @@ export function DiagramRow({
                       setMenuOpen(false);
                     }}
                   />
+                  {onToggleFavourite ? (
+                    <MenuTile
+                      icon={<StarIcon filled={favourite} />}
+                      label={favourite ? 'Unfavourite' : 'Favourite'}
+                      onClick={() => {
+                        onToggleFavourite();
+                        setMenuOpen(false);
+                      }}
+                    />
+                  ) : null}
                   {onToggleRecentExclusion ? (
                     <MenuTile
                       icon={<ClockIcon />}

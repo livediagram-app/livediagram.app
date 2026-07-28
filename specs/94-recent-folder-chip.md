@@ -4,12 +4,15 @@ Status: shipped
 
 ## What
 
-Every row and card in the Explorer's **Recent** view carries a small chip
-naming the folder the diagram lives in. Clicking it goes to that folder
-instead of opening the diagram.
+Every row and card in the Explorer's **Recent** and **Favourites** views
+carries a small chip naming the folder the diagram lives in. Clicking it goes
+to that folder instead of opening the diagram.
 
-Recent is the one pane that spans folders, so without this there is no way to
-tell a "Q3 plan" filed in Design from one in Archive without opening it.
+Those are the two panes that AGGREGATE across folders, so without this there
+is no way to tell a "Q3 plan" filed in Design from one in Archive without
+opening it. Every other pane _is_ a folder, where the chip would just repeat
+the pane's own title. (Favourites arrived with spec/95, which needs exactly
+this as its "which team did this come from" indicator.)
 
 ## Immediate parent only
 

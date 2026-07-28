@@ -20,6 +20,7 @@ const BROWSE_KINDS = new Set([
   'all',
   'folder',
   'unsorted',
+  'favourites',
   'generated',
   'offline',
   'dynamic',
@@ -106,6 +107,8 @@ export function ExplorerPane() {
   const {
     prefs,
     folderById,
+    favouriteIds,
+    toggleFavourite,
     toggleRecentExclusion,
     selected,
     go,
@@ -162,7 +165,11 @@ export function ExplorerPane() {
   // library, not yours), so they get no chip rather than a misleading one.
   const folderChipFor = useCallback(
     (d: PaneDiagram): { label: string; onOpen: () => void } | null => {
-      if (selected.kind !== 'recent' || d.shared) return null;
+      // Recent AND Favourites both aggregate across folders, so both need
+      // to say where a row actually lives (spec/94, spec/95). Every other
+      // pane IS a folder, where the chip would just repeat its title.
+      const aggregates = selected.kind === 'recent' || selected.kind === 'favourites';
+      if (!aggregates || d.shared) return null;
       // A team diagram's folder belongs to the team's library, so the chip
       // jumps into that team rather than your personal tree.
       if (d.team) {
@@ -355,6 +362,8 @@ export function ExplorerPane() {
               onDismissShared={dismissShared}
               recentExcludedIds={prefs.recentExcludedIds ?? []}
               onToggleRecentExclusion={toggleRecentExclusion}
+              favouriteIds={favouriteIds}
+              onToggleFavourite={toggleFavourite}
               folderChipFor={folderChipFor}
               childrenCount={(id) => childrenByParent.get(id)?.length ?? 0}
               diagramsCount={(id) => diagramsByFolder.get(id)?.length ?? 0}

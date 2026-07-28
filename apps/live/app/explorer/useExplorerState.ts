@@ -19,6 +19,7 @@ import {
   type UserPreferences,
 } from '@/lib/user-preferences';
 import { trackDailyReturn } from '@/lib/daily-return';
+import { useFavourites } from '@/hooks/persistence/useFavourites';
 import { useFolders } from '@/hooks/persistence/useFolders';
 import { useTeamLibrariesSweep } from '@/hooks/persistence/useTeamLibrariesSweep';
 import { useTeams } from '@/hooks/persistence/useTeams';
@@ -373,6 +374,10 @@ export function useExplorerState() {
 
   // Right-pane derivations (buckets, synthetic folders, pane content /
   // title / crumbs, Recent badge) live in useExplorerPane.
+  // Per-user diagram stars (spec/95). Its own D1 table rather than the
+  // preferences blob, which is 4 KB-capped; favourites are unlimited.
+  const { favouriteIds, toggleFavourite } = useFavourites(ownerId);
+
   const {
     diagramsByFolder,
     unsortedDiagrams,
@@ -393,6 +398,7 @@ export function useExplorerState() {
     breadcrumb,
     go,
     recentExcludedIds: prefs.recentExcludedIds ?? [],
+    favouriteIds,
   });
 
   // Merge the authoritative D1 preferences in once the owner is known.
@@ -480,6 +486,9 @@ export function useExplorerState() {
     offlineDiagrams,
     paneContent,
     recentCount,
+    // Per-user diagram stars (spec/95).
+    favouriteIds,
+    toggleFavourite,
     // Preferences (spec/20) + the Recent exclusion toggle (spec/93).
     prefs,
     setPrefs,

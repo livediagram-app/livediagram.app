@@ -20,6 +20,7 @@ import {
   SparkleIcon,
   TeamIcon,
   UnsortedIcon,
+  StarIcon,
 } from './icons';
 import {
   SearchSidebarIcon,
@@ -53,6 +54,9 @@ export function ExplorerSidebar() {
     setRenamingFolderId,
     folderActions,
     unsortedDiagrams,
+    favouriteIds,
+    diagrams,
+    teamDiagrams,
     generatedDiagrams,
     offlineDiagrams,
     shared,
@@ -69,6 +73,12 @@ export function ExplorerSidebar() {
   // The Dynamic group's expand state. Session-local and open by default so
   // Unsorted stays one click away; collapsing it is a per-visit tidy-up.
   const [dynamicOpen, setDynamicOpen] = useState(true);
+  // Only count stars pointing at diagrams still in view: the FK cascade
+  // drops rows for deleted diagrams, but a star on a team diagram you've
+  // since left would linger server-side until touched.
+  const favouriteCount = [...diagrams, ...teamDiagrams].filter((d) =>
+    favouriteIds.has(d.id),
+  ).length;
 
   // Per-team folder tree, indexed by parentId, for the expandable
   // team subtrees (spec/35). Built from the lazy library sweep.
@@ -170,7 +180,10 @@ export function ExplorerSidebar() {
         onClick={() => go({ kind: 'dynamic' })}
         depth={0}
         badge={
-          unsortedDiagrams.length + generatedDiagrams.length + offlineDiagrams.length || undefined
+          unsortedDiagrams.length +
+            generatedDiagrams.length +
+            offlineDiagrams.length +
+            favouriteCount || undefined
         }
         hasChildren
         expanded={dynamicOpen}
@@ -185,6 +198,14 @@ export function ExplorerSidebar() {
             onClick={() => go({ kind: 'unsorted' })}
             depth={1}
             badge={unsortedDiagrams.length || undefined}
+          />
+          <SidebarRow
+            icon={<StarIcon />}
+            label="Favourites"
+            selected={selected.kind === 'favourites'}
+            onClick={() => go({ kind: 'favourites' })}
+            depth={1}
+            badge={favouriteCount || undefined}
           />
           <SidebarRow
             icon={<SparkleIcon />}

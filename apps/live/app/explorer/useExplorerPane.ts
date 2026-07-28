@@ -26,6 +26,7 @@ export function useExplorerPane({
   breadcrumb,
   go,
   recentExcludedIds,
+  favouriteIds,
 }: {
   selected: SelectedNode;
   diagrams: DiagramListItem[];
@@ -39,6 +40,9 @@ export function useExplorerPane({
   // Diagrams this user hid from Recent (spec/93). Only Recent honours it;
   // every other pane still lists them normally.
   recentExcludedIds: string[];
+  // Diagrams this user starred (spec/95). Spans personal AND team rows,
+  // which is why the Favourites branch below reads both lists.
+  favouriteIds: Set<string>;
 }) {
   const diagramsByFolder = useMemo(() => {
     const m = new Map<string | null, DiagramListItem[]>();
@@ -141,6 +145,21 @@ export function useExplorerPane({
     if (selected.kind === 'unsorted') {
       return { showUnsortedRow: false, folders: [], diagrams: unsortedDiagrams };
     }
+    if (selected.kind === 'favourites') {
+      // Aggregates across personal AND team libraries: a star is about the
+      // diagram, not where it happens to live (spec/95). Shared-with-you
+      // rows are excluded — you can't star what isn't in your library.
+      //
+      // Ordering matches every other pane (most recently updated first)
+      // rather than "when I starred it", so there's nothing new to learn;
+      // the source chip tells you which team each one came from.
+      const starred = [...diagrams, ...teamDiagrams].filter((d) => favouriteIds.has(d.id));
+      return {
+        showUnsortedRow: false,
+        folders: [],
+        diagrams: starred.sort((a, b) => b.savedAt - a.savedAt),
+      };
+    }
     if (selected.kind === 'generated') {
       return { showUnsortedRow: false, folders: [], diagrams: generatedDiagrams };
     }
@@ -176,6 +195,7 @@ export function useExplorerPane({
     generatedDiagrams,
     offlineDiagrams,
     excluded,
+    favouriteIds,
   ]);
 
   // Count for the sidebar "Recent diagrams" badge (spec/35), mirroring
@@ -203,6 +223,7 @@ export function useExplorerPane({
     if (selected.kind === 'invites') return 'Invites';
     if (selected.kind === 'all') return 'My Work';
     if (selected.kind === 'unsorted') return 'Unsorted';
+    if (selected.kind === 'favourites') return 'Favourites';
     if (selected.kind === 'generated') return 'Generated';
     if (selected.kind === 'offline') return 'Offline';
     if (selected.kind === 'dynamic') return 'Dynamic';
@@ -227,6 +248,7 @@ export function useExplorerPane({
     const dynamic: Crumb = { name: 'Dynamic', onClick: () => go({ kind: 'dynamic' }) };
     if (selected.kind === 'dynamic') return [all, { name: 'Dynamic' }];
     if (selected.kind === 'unsorted') return [all, dynamic, { name: 'Unsorted' }];
+    if (selected.kind === 'favourites') return [all, dynamic, { name: 'Favourites' }];
     if (selected.kind === 'generated') return [all, dynamic, { name: 'Generated' }];
     if (selected.kind === 'offline') return [all, dynamic, { name: 'Offline' }];
     const chain = breadcrumb(selected.id);

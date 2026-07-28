@@ -51,6 +51,8 @@ export type SelectedNode =
   | { kind: 'recent' }
   | { kind: 'all' }
   | { kind: 'unsorted' }
+  // Diagrams this user starred, personal or team (spec/95).
+  | { kind: 'favourites' }
   | { kind: 'generated' }
   | { kind: 'offline' }
   | { kind: 'dynamic' }
@@ -95,6 +97,8 @@ export function ListView({
   onMoveDiagram,
   onDismissShared,
   recentExcludedIds,
+  favouriteIds,
+  onToggleFavourite,
   folderChipFor,
   onToggleRecentExclusion,
   childrenCount,
@@ -155,6 +159,9 @@ export function ListView({
   onDismissShared?: (id: string) => void;
   // Hide / show in Recent (spec/93).
   recentExcludedIds?: string[];
+  // Per-user stars (spec/95).
+  favouriteIds?: Set<string>;
+  onToggleFavourite?: (id: string) => void;
   // Resolves a row's folder chip (spec/94). Null / omitted = no chip,
   // which is every pane except Recent.
   folderChipFor?: (d: PaneDiagram) => { label: string; onOpen: () => void } | null;
@@ -221,6 +228,8 @@ export function ListView({
             onMove={(anchor) => onMoveDiagram(d.id, anchor)}
             onDismiss={d.shared && onDismissShared ? () => onDismissShared(d.id) : undefined}
             folderChip={folderChipFor?.(d) ?? null}
+            favourite={favouriteIds?.has(d.id) === true}
+            onToggleFavourite={onToggleFavourite ? () => onToggleFavourite(d.id) : undefined}
             recentExcluded={recentExcludedIds?.includes(d.id) === true}
             onToggleRecentExclusion={
               onToggleRecentExclusion ? () => onToggleRecentExclusion(d.id) : undefined

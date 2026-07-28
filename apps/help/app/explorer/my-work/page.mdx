@@ -5,7 +5,7 @@ import { MyWorkTree } from '@/components/illustrations/explorer';
 export const metadata = helpMetadata({
   title: 'My Work and Folders',
   description:
-    'My Work is your own diagram library: the Dynamic buckets (Unsorted, Generated, Offline) plus the nested folders you create to group diagrams by project, customer, or topic.',
+    'My Work is your own diagram library: the Dynamic buckets (Unsorted, Favourites, Generated, Offline) plus the nested folders you create to group diagrams by project, customer, or topic.',
   path: '/help/explorer/my-work/',
 });
 
@@ -23,8 +23,17 @@ export const metadata = helpMetadata({
 At the top of My Work, a collapsible **Dynamic** parent groups three live views that file themselves, so your own folders lead the tree:
 
 - **Unsorted** catches diagrams you have not filed anywhere, so a freshly created diagram always has a home without you deciding anything first.
+- **Favourites** collects the diagrams you have starred, wherever they live (below).
 - **Generated** collects AI-made diagrams you have not filed yet, keeping them apart from the ones you drew.
 - **Offline** collects diagrams saved only in this browser ([Offline Mode](/help/privacy-and-security/offline-mode/)).
+
+### Favourites
+
+Choose **Favourite** in any diagram's menu to star it, and it collects under **Favourites**. It's the answer to a busy team library: a shared folder fills up with diagrams that aren't all yours to care about, and starring the handful that are gives you one short list to work from. The same menu reads **Unfavourite** to take it back off.
+
+Favourites gathers from everywhere at once, your own folders and every team you're in, so each row shows where the diagram actually lives, its folder for a personal diagram or the team name for a team one. Click that to jump to the real location.
+
+**Starring is yours alone.** Favouriting a diagram in a team folder doesn't favourite it for your teammates, and there's no limit on how many you keep.
 
 None of the buckets can be renamed or deleted, and each shows a count badge only when it holds something. Filing a diagram into a folder of your own moves it out of Unsorted or Generated; Offline is different, listing every browser-only diagram whatever folder it sits in, so there is always one place to find them.
 

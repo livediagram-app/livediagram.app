@@ -181,6 +181,27 @@ export function ClockOffIcon() {
   );
 }
 
+// Star — the synthetic "Favourites" folder (spec/95). Filled when the
+// diagram is starred, hollow when it isn't, so the menu tile's glyph
+// carries the state alongside its label.
+export function StarIcon({ filled = false }: { filled?: boolean }) {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 16 16"
+      fill={filled ? 'currentColor' : 'none'}
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M8 2.2l1.75 3.55 3.92.57-2.84 2.76.67 3.9L8 11.15l-3.5 1.83.67-3.9L2.33 6.32l3.92-.57z" />
+    </svg>
+  );
+}
+
 // Sparkle for the synthetic "Generated" folder (AI / MCP-created diagrams).
 export function SparkleIcon() {
   return (

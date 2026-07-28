@@ -30,6 +30,8 @@ export function DiagramRow({
   onDelete,
   onMove,
   onDismiss,
+  favourite,
+  onToggleFavourite,
   recentExcluded,
   onToggleRecentExclusion,
   showOwner = false,
@@ -48,6 +50,9 @@ export function DiagramRow({
   onMove: (anchor: HTMLElement | null) => void;
   // Shared-row menu action (spec/35): drop it from "Shared with me".
   onDismiss?: () => void;
+  // Per-user star (spec/95).
+  favourite?: boolean;
+  onToggleFavourite?: () => void;
   // Hide / show in Recent (spec/93).
   recentExcluded?: boolean;
   onToggleRecentExclusion?: () => void;
@@ -149,6 +154,8 @@ export function DiagramRow({
           onMove={onMove}
           onDelete={onDelete}
           onDismiss={onDismiss}
+          favourite={favourite}
+          onToggleFavourite={onToggleFavourite}
           recentExcluded={recentExcluded}
           onToggleRecentExclusion={onToggleRecentExclusion}
         />

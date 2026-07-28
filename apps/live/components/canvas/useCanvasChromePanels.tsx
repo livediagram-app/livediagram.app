@@ -88,6 +88,8 @@ export function useCanvasChromePanels({
     onResetLayersPanel,
     userPreferences,
     onToggleRecentExclusion,
+    favouriteIds,
+    onToggleFavourite,
     pollPanel,
     pollPanelPosition,
     onMovePollPanel,
@@ -284,6 +286,8 @@ export function useCanvasChromePanels({
     <Explorer
       recentExcludedIds={userPreferences.recentExcludedIds ?? []}
       onToggleRecentExclusion={onToggleRecentExclusion}
+      favouriteIds={favouriteIds}
+      onToggleFavourite={onToggleFavourite}
       position={explorerWiring.position}
       diagrams={diagramList}
       ownerId={selfParticipant?.id ?? null}

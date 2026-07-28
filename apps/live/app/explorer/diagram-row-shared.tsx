@@ -20,6 +20,7 @@ import {
   TeamIcon,
   ClockIcon,
   ClockOffIcon,
+  StarIcon,
 } from './icons';
 import type { PaneDiagram } from './views';
 
@@ -181,6 +182,8 @@ export function DiagramActionsMenu({
   onDismiss,
   recentExcluded,
   onToggleRecentExclusion,
+  favourite,
+  onToggleFavourite,
 }: {
   diagram: PaneDiagram;
   anchor: HTMLElement | null;
@@ -196,6 +199,10 @@ export function DiagramActionsMenu({
   // viewer's state; omitted where the surface can't offer it.
   recentExcluded?: boolean;
   onToggleRecentExclusion?: () => void;
+  // Per-user star (spec/95). Personal + team diagrams only; a
+  // shared-with-you row isn't in your library to star.
+  favourite?: boolean;
+  onToggleFavourite?: () => void;
 }) {
   const href = hrefForDiagram(diagram);
   const offline = diagram.ownerId === OFFLINE_OWNER_ID;
@@ -269,6 +276,20 @@ export function DiagramActionsMenu({
             onClose();
           }}
         />
+        {onToggleFavourite ? (
+          <MenuTile
+            icon={
+              <span className="[&_svg]:h-5 [&_svg]:w-5">
+                <StarIcon filled={favourite} />
+              </span>
+            }
+            label={favourite ? 'Unfavourite' : 'Favourite'}
+            onClick={() => {
+              onToggleFavourite();
+              onClose();
+            }}
+          />
+        ) : null}
         {onToggleRecentExclusion ? (
           <MenuTile
             icon={

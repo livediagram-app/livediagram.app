@@ -32,6 +32,7 @@ import { handleImages } from './routes/images';
 import { handleMigrate } from './routes/migrate';
 import { handleGuestId } from './routes/guest-id';
 import { handleParticipants } from './routes/participants';
+import { handleFavourites } from './routes/favourites';
 import { handlePreferences } from './routes/preferences';
 import { handleShare } from './routes/share';
 import { handleTeams } from './routes/teams';
@@ -258,6 +259,8 @@ export default {
           return await handleOauthExchange(ctx);
         case 'account':
           return await handleAccount(ctx);
+        case 'favourites':
+          return await handleFavourites(ctx);
         case 'preferences':
           return await handlePreferences(ctx);
         case 'migrate':

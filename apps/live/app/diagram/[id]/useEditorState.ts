@@ -35,6 +35,7 @@ import { useActivityLogDebounce } from '@/hooks/collab/useActivityLogDebounce';
 import { useActivityLogEmitter } from '@/hooks/collab/useActivityLogEmitter';
 import { useEditorBroadcast } from '@/hooks/collab/useEditorBroadcast';
 import { useLivePoll } from '@/hooks/collab/useLivePoll';
+import { useFavourites } from '@/hooks/persistence/useFavourites';
 import { useShortcutsEnabled } from '@/hooks/ui/useShortcutsEnabled';
 import { useEditorComments } from '@/hooks/collab/useEditorComments';
 import { useEditorDrag } from '@/hooks/canvas/useEditorDrag';
@@ -397,6 +398,9 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // Read-modify-writes from the CACHE, not the React snapshot: the PUT
   // sends the whole preferences blob, so a stale snapshot would clobber
   // flags another tab wrote.
+  // Per-user diagram stars (spec/95), for the Explorer panel's rows.
+  const { favouriteIds, toggleFavourite } = useFavourites(selfParticipant.id);
+
   const toggleRecentExclusion = (diagramId: string) => {
     const latest = readUserPreferences();
     setUserPreferences({
@@ -2409,6 +2413,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     updateParticipantName,
     userPreferences,
     toggleRecentExclusion,
+    favouriteIds,
+    toggleFavourite,
     viewportOffset,
     viewportZoom,
     writeUserPreferences,

@@ -42,6 +42,9 @@ export type ExplorerProps = {
   // is the only section that honours the list.
   recentExcludedIds: string[];
   onToggleRecentExclusion: (diagramId: string) => void;
+  // Per-user stars (spec/95).
+  favouriteIds: Set<string>;
+  onToggleFavourite: (diagramId: string) => void;
   onMoveTo: (x: number, y: number) => void;
   onReset: () => void;
   onOpenDiagram: (id: string, shareCode?: string) => void;

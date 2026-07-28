@@ -700,6 +700,39 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [204, 400, 401],
   },
 
+  // ---- Favourites (spec/95) ----
+  {
+    method: 'GET',
+    path: '/favourites',
+    segment: 'favourites',
+    tag: 'Account',
+    summary: 'The diagram ids the caller has starred, newest first.',
+    auth: 'guest-or-clerk',
+    responseSchema: {
+      type: 'object',
+      properties: { ids: { type: 'array', items: { type: 'string' } } },
+    },
+    statuses: [200, 401],
+  },
+  {
+    method: 'PUT',
+    path: '/favourites/{diagramId}',
+    segment: 'favourites',
+    tag: 'Account',
+    summary: 'Star a diagram for the caller. Idempotent.',
+    auth: 'guest-or-clerk',
+    statuses: [204, 401],
+  },
+  {
+    method: 'DELETE',
+    path: '/favourites/{diagramId}',
+    segment: 'favourites',
+    tag: 'Account',
+    summary: 'Un-star a diagram for the caller.',
+    auth: 'guest-or-clerk',
+    statuses: [204, 401],
+  },
+
   // ---- Account ----
   {
     method: 'DELETE',

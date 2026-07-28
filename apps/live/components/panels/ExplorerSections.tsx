@@ -44,6 +44,8 @@ export function ExplorerSections({
   onDismissShared,
   recentExcludedIds,
   onToggleRecentExclusion,
+  favouriteIds,
+  onToggleFavourite,
   onRenameFolder,
   onDeleteFolder,
   onCreateChild,
@@ -57,6 +59,9 @@ export function ExplorerSections({
   // Hide / show in Recent (spec/93).
   recentExcludedIds?: string[];
   onToggleRecentExclusion?: (diagramId: string) => void;
+  // Per-user stars (spec/95).
+  favouriteIds?: Set<string>;
+  onToggleFavourite?: (diagramId: string) => void;
   currentDiagramId: string | null;
   diagrams: DiagramListItem[];
   folders: Folder[];
@@ -206,6 +211,10 @@ export function ExplorerSections({
                     // Hiding from Recent is a per-user view choice, so it
                     // applies to team rows too even though their rename /
                     // move / delete live on the /explorer page (spec/93).
+                    favourite={favouriteIds?.has(entry.d.id) === true}
+                    onToggleFavourite={
+                      onToggleFavourite ? () => onToggleFavourite(entry.d.id) : undefined
+                    }
                     recentExcluded={recentExcludedIds?.includes(entry.d.id) === true}
                     onToggleRecentExclusion={
                       onToggleRecentExclusion

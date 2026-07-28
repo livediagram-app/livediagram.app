@@ -279,6 +279,9 @@ export type CanvasProps = {
   // (spec/93), for the Explorer panel's Recent list.
   userPreferences: import('@/lib/user-preferences').UserPreferences;
   onToggleRecentExclusion: (diagramId: string) => void;
+  // Per-user stars (spec/95).
+  favouriteIds: Set<string>;
+  onToggleFavourite: (diagramId: string) => void;
   votePanelPosition: { x: number; y: number } | null;
   onMoveVotePanel: (x: number, y: number) => void;
   onResetVotePanel: () => void;

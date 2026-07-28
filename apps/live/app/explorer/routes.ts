@@ -4,6 +4,7 @@
 //
 //   recent   → /explorer/recent          all     → /explorer/all
 //   unsorted → /explorer/unsorted        shared  → /explorer/shared
+//   favourites → /explorer/favourites
 //   gallery  → /explorer/images          invites → /explorer/invites
 //   folder   → /explorer/folder?id=<id>  team    → /explorer/team?id=<id>
 //
@@ -26,6 +27,8 @@ export function explorerPathFor(node: SelectedNode): string {
       return '/explorer/all';
     case 'unsorted':
       return '/explorer/unsorted';
+    case 'favourites':
+      return '/explorer/favourites';
     case 'generated':
       return '/explorer/generated';
     case 'offline':
@@ -63,6 +66,8 @@ export function selectedFromRoute(pathname: string, search: URLSearchParams): Se
       return { kind: 'all' };
     case '/explorer/unsorted':
       return { kind: 'unsorted' };
+    case '/explorer/favourites':
+      return { kind: 'favourites' };
     case '/explorer/generated':
       return { kind: 'generated' };
     case '/explorer/offline':

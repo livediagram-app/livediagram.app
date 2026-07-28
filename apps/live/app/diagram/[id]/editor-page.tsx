@@ -86,6 +86,8 @@ export default function LivePage({ embed = false }: { embed?: boolean } = {}) {
     <Explorer
       recentExcludedIds={state.userPreferences?.recentExcludedIds ?? []}
       onToggleRecentExclusion={state.toggleRecentExclusion}
+      favouriteIds={state.favouriteIds ?? new Set()}
+      onToggleFavourite={state.toggleFavourite}
       position={explorerPosition}
       diagrams={diagramList}
       ownerId={state.selfParticipant?.id ?? null}

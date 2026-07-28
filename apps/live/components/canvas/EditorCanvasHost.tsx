@@ -35,6 +35,8 @@ export function EditorCanvasHost() {
     votePanelPosition,
     setVotePanelPosition,
     toggleRecentExclusion,
+    favouriteIds,
+    toggleFavourite,
     voteResults,
     jumpToVoteResult,
     livePoll,
@@ -475,6 +477,8 @@ export function EditorCanvasHost() {
       onResetPollPanel={() => setPollPanelPosition(null)}
       userPreferences={userPreferences}
       onToggleRecentExclusion={toggleRecentExclusion}
+      favouriteIds={favouriteIds}
+      onToggleFavourite={toggleFavourite}
       votePanelPosition={votePanelPosition}
       onMoveVotePanel={(x, y) => setVotePanelPosition({ x, y })}
       onResetVotePanel={() => setVotePanelPosition(null)}

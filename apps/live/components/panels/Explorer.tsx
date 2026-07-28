@@ -59,6 +59,8 @@ function ExplorerImpl({
   forceDockMode,
   recentExcludedIds,
   onToggleRecentExclusion,
+  favouriteIds,
+  onToggleFavourite,
 }: ExplorerProps) {
   // Mobile viewport ⇒ render nothing. Mobile users reach the
   // Explorer from the AuthControls "Explorer" menu item (spec/07)
@@ -410,6 +412,8 @@ function ExplorerImpl({
           ownerId={ownerId}
           recentExcludedIds={recentExcludedIds}
           onToggleRecentExclusion={onToggleRecentExclusion}
+          favouriteIds={favouriteIds}
+          onToggleFavourite={onToggleFavourite}
           currentDiagramId={currentDiagramId}
           diagrams={diagrams}
           folders={folders}
