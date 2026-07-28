@@ -90,6 +90,13 @@ export type Env = {
   // default, so OSS forks never ingest or serve analytics unless they
   // opt in.
   TELEMETRY_ENABLED?: string;
+  // Shared secret proving a /api/events post came from one of our own
+  // workers over a service binding, not the open internet (spec/22, issue
+  // #36). Those calls carry no CF-Connecting-IP, so they all collapsed onto
+  // one 'anonymous' rate-limit key and throttled each other. Optional:
+  // unset means no caller is ever exempt, which is the pre-existing
+  // behaviour and keeps self-hosting working with no configuration.
+  INTERNAL_EVENTS_KEY?: string;
   // Resend API key for transactional + lifecycle email (spec/64). When absent
   // the whole email feature is inert: no sends, and the email_lifecycle table
   // is never touched. Set via `wrangler secret put RESEND_API_KEY` for prod;

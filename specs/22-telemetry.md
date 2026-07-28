@@ -144,7 +144,25 @@ Telemetry drifts silently and there is no runtime signal when it does: emitting 
 
 Pairs are pinned but `type` values generally are not — types are open-ended by design (a shape kind, a template id, an article slug) and pinning them all would fail on every new shape. The palette tokens are the exception because that is where drift is both invisible and costly.
 
-**Known, accepted losses** (documented so nobody reads a dip as a product signal): a flush that fails is dropped, never retried (`telemetry-client` clears its buffer before the request, and swallows the result); `navigator.sendBeacon`'s return value is ignored, so a full UA queue loses that batch; and client errors cap at 10 per kind per page load. All three are the "telemetry must never affect the host app" trade, and all three under-count rather than over-count.
+## Delivery losses, and the two that were worth fixing
+
+Emitting is fire-and-forget, so a dropped batch is invisible by construction. Audited alongside the coverage work; the losses split into ones we accept and ones we didn't.
+
+**Fixed — a failed flush is now retried once.** The buffer used to be cleared before the request went out, with the result swallowed, so any network failure discarded that batch permanently. The problem wasn't the volume so much as the _distribution_: the losses concentrated in flaky-network and close-the-tab-quickly sessions, which biases the data rather than just thinning it. A rejected `fetch` now re-queues its events at the front of the next batch and gets exactly one more attempt.
+
+The bounds matter more than the retry:
+
+- **Only on a rejection**, never on a non-2xx. A rejection means the request got no response, so the events almost certainly didn't land. A server that _answered_ may well have stored them, and re-sending would double-count — while retrying a 429 would worsen the thing it's complaining about.
+- **Exactly one attempt.** A retry trades a small over-count risk (request arrived, response lost) against a systematic under-count; that trade is worth making once. An endlessly retried batch on a dead network would grow the buffer, duplicate on every recovery, and still die at unload.
+- **Bounded by the same 25-event cap**, oldest dropped first — the retried events have already had their chance.
+- **Never on the beacon path.** We're unloading; there is no later.
+- A failure **arms a fresh timer**, so the retry happens on its own rather than waiting for the next tracked event.
+
+**Fixed — `sendBeacon`'s return value is no longer ignored.** It returns `false` when the UA's queue is full, and that batch was simply gone, at exactly the moment it mattered (page-hide, the tail of a session). It now falls through to the `keepalive` fetch, which is the same "outlive the page" guarantee by another route.
+
+**Fixed — internal callers no longer share one rate-limit bucket.** Our own workers reach `/api/events` over a service binding, which carries no `CF-Connecting-IP`, so `clientIp` fell back to the literal `'anonymous'` and every internal caller worldwide contended for a single 120/min key, with the overflow dropped as a 204 nobody could observe. Since the MCP worker posts one request per tool call, that ceiling was roughly two tool calls per second globally — enough to make a growing integration look flat. A matching `INTERNAL_EVENTS_KEY` (a worker secret on both sides, compared in constant time) now exempts them from the per-IP limiter, which exists to stop _anonymous_ abuse of a public endpoint and was never aimed at us. Unset on either side means nobody is exempt, exactly as before, so self-hosting needs no configuration.
+
+**Still accepted:** client errors cap at 10 per kind per page load (an error loop must not flood the pipeline, and the dashboard reads presence and order of magnitude, not exact storm size); events buffered when a tab is hard-killed are gone (nothing is persisted, deliberately — telemetry must not own storage); and a second consecutive failure discards the batch, per the one-retry bound above. All of these under-count rather than over-count, which is the safer direction for a usage chart.
 
 Extend by adding to the `TELEMETRY_CATEGORIES` / `TELEMETRY_ACTIONS` enums (if needed) + a one-line `track()` call at the interaction's handler. Page hits are deliberately not wired; new-visitor counting goes through `Participant`/Created above.
 

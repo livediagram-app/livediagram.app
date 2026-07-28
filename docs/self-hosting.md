@@ -179,6 +179,8 @@ The api worker's telemetry ingest (`/api/events`) is off unless `TELEMETRY_ENABL
 
 Turning telemetry on end-to-end takes BOTH the server gate above AND a build-time gate on the editor. The api flag is the authoritative gate (ingest + summary refuse to serve without it), but the live editor also reads `NEXT_PUBLIC_TELEMETRY_ENABLED` at build time and skips emission entirely when it isn't `"true"`. So a fork that only flips the api flag will see "ingest on" but no events flow. To turn it fully on, set `NEXT_PUBLIC_TELEMETRY_ENABLED=true` in your CI build env (or `apps/live/.env.production`) alongside the api flag. The `/telemetry` dashboard has no client-side gate of its own: it just reads `/api/telemetry/summary`, and the api worker returns an empty `enabled: false` payload until you flip `TELEMETRY_ENABLED`. Per-user opt-out via the Settings dialog (spec/20) still overrides the editor emission when off.
 
+If you also deploy the MCP worker, set the **same** `INTERNAL_EVENTS_KEY` secret on both `apps/api` and `apps/mcp` (`wrangler secret put INTERNAL_EVENTS_KEY` in each). The MCP worker reaches the api over a service binding, which carries no `CF-Connecting-IP`, so without a matching key its telemetry lands in the anonymous per-IP rate-limit bucket and throttles itself. Leaving it unset is safe and needs no configuration — you just get the shared-bucket behaviour.
+
 ## AI assistance: off by default, needs an OpenAI key
 
 The in-editor AI panel (spec/25) is hidden entirely unless the api worker has an OpenAI key. Forks that don't want it provision nothing and get zero AI surface: `GET /api/capabilities` reports `{ aiEnabled: false }`, `POST /api/ai` returns 503, and the editor never renders the toggle or panel.

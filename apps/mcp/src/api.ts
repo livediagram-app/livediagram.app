@@ -39,10 +39,17 @@ export async function apiFetch(
 // worker-to-worker call sends no Origin header, so the same-origin guard
 // passes. Off unless the api has TELEMETRY_ENABLED.
 export function postTelemetry(env: Env, category: string, action: string, type: string): void {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  // Identifies us as an internal caller so the api worker doesn't put us in
+  // the anonymous per-IP rate-limit bucket (spec/22, issue #36). A service
+  // binding carries no CF-Connecting-IP, so without this every MCP tool call
+  // in the world contended for one 120/min key and the overflow was dropped
+  // as a 204 we can't even see. Optional on both sides.
+  if (env.INTERNAL_EVENTS_KEY) headers['X-Internal-Events-Key'] = env.INTERNAL_EVENTS_KEY;
   void env.API.fetch(
     new Request(apiUrl('/events'), {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify({ events: [{ category, action, type }] }),
     }),
   ).catch(() => {});

@@ -5,6 +5,8 @@ import { insertTelemetryEvents } from '../db';
 import { isLocalhostPair } from '../origin-check';
 import { noContent, notFound } from '../responses';
 import { clientIp } from '../client-ip';
+import { timingSafeEqual } from '../auth/timing-safe';
+import type { Env } from '../types';
 import type { RouteContext } from './context';
 
 // Anonymous telemetry ingest (spec/22). Batched POST of
@@ -36,10 +38,21 @@ export async function handleEvents(ctx: RouteContext): Promise<Response> {
   //       must never surface an error.
   const origin = request.headers.get('Origin');
   if (origin && origin !== url.origin && !isLocalhostPair(origin, url.origin)) return noop;
-  if (env.EVENTS_RATE_LIMITER) {
-    const ip = clientIp(request);
-    const { success } = await env.EVENTS_RATE_LIMITER.limit({ key: ip });
-    if (!success) return noop;
+  // Our own workers reach this over a service binding, which carries no
+  // CF-Connecting-IP — so `clientIp` fell back to the literal 'anonymous'
+  // and every internal caller in the world shared ONE 120/min bucket,
+  // silently dropping the overflow as a 204 (spec/22, issue #36). A
+  // matching secret exempts them: the limiter exists to stop anonymous
+  // abuse of a public endpoint, and a caller holding a worker secret is
+  // neither anonymous nor unbounded (it's bounded by its own OAuth'd
+  // traffic). Unset on either side = nobody is exempt, exactly as before,
+  // so self-hosting needs no configuration.
+  if (!(await isInternalCaller(request, env))) {
+    if (env.EVENTS_RATE_LIMITER) {
+      const ip = clientIp(request);
+      const { success } = await env.EVENTS_RATE_LIMITER.limit({ key: ip });
+      if (!success) return noop;
+    }
   }
   let body: unknown;
   try {
@@ -65,4 +78,15 @@ export async function handleEvents(ctx: RouteContext): Promise<Response> {
     // (the batch is lost either way; telemetry is fire-and-forget).
   }
   return noop;
+}
+
+// Does this request carry the internal shared secret? Compared in constant
+// time like the share-password check: the endpoint always answers 204, but
+// the comparison shouldn't be the thing that leaks the key.
+async function isInternalCaller(request: Request, env: Env): Promise<boolean> {
+  const expected = env.INTERNAL_EVENTS_KEY;
+  if (!expected) return false;
+  const provided = request.headers.get('X-Internal-Events-Key');
+  if (!provided) return false;
+  return timingSafeEqual(provided, expected);
 }
