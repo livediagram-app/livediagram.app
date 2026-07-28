@@ -25,7 +25,11 @@ import { useNudgeSelection } from '@/hooks/canvas/useNudgeSelection';
 import { useFolders } from '@/hooks/persistence/useFolders';
 import { useConfirm } from '@/hooks/ui/useConfirm';
 import { useToast } from '@/hooks/ui/useToast';
-import { writeUserPreferences } from '@/lib/user-preferences';
+import {
+  readUserPreferences,
+  toggleRecentExcluded,
+  writeUserPreferences,
+} from '@/lib/user-preferences';
 import { track } from '@/lib/telemetry';
 import { useActivityLogDebounce } from '@/hooks/collab/useActivityLogDebounce';
 import { useActivityLogEmitter } from '@/hooks/collab/useActivityLogEmitter';
@@ -388,6 +392,18 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
       passwordGated: sharePasswordGate !== null,
       setAiPanelVisible: panelLayout.setAiPanelVisible,
     });
+
+  // Hide / show a diagram in the Explorer panel's Recent list (spec/93).
+  // Read-modify-writes from the CACHE, not the React snapshot: the PUT
+  // sends the whole preferences blob, so a stale snapshot would clobber
+  // flags another tab wrote.
+  const toggleRecentExclusion = (diagramId: string) => {
+    const latest = readUserPreferences();
+    setUserPreferences({
+      ...latest,
+      recentExcludedIds: toggleRecentExcluded(latest, diagramId),
+    });
+  };
 
   // Per-element note popover (state + open/close/setNote handlers)
   // lives in useEditorNotes. Invoked further down, after `commit`
@@ -2392,6 +2408,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     unresolveThread,
     updateParticipantName,
     userPreferences,
+    toggleRecentExclusion,
     viewportOffset,
     viewportZoom,
     writeUserPreferences,

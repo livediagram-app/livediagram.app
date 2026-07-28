@@ -158,6 +158,29 @@ export function ClockIcon() {
   );
 }
 
+// The clock with a strike-through: a diagram hidden from Recent
+// (spec/93). Paired with ClockIcon so the menu tile's glyph flips with
+// its label rather than relying on the wording alone.
+export function ClockOffIcon() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <circle cx="8" cy="8" r="6" />
+      <path d="M8 4.5V8l2 1.5" />
+      <path d="M3 13L13 3" />
+    </svg>
+  );
+}
+
 // Sparkle for the synthetic "Generated" folder (AI / MCP-created diagrams).
 export function SparkleIcon() {
   return (

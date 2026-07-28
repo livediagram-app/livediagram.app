@@ -94,6 +94,8 @@ export function ListView({
   onDeleteDiagram,
   onMoveDiagram,
   onDismissShared,
+  recentExcludedIds,
+  onToggleRecentExclusion,
   childrenCount,
   diagramsCount,
   showOwner = false,
@@ -150,6 +152,9 @@ export function ListView({
   onMoveDiagram: (id: string, anchor: HTMLElement | null) => void;
   // Shared-row action (spec/35), used by Recent's "shared with me" rows.
   onDismissShared?: (id: string) => void;
+  // Hide / show in Recent (spec/93).
+  recentExcludedIds?: string[];
+  onToggleRecentExclusion?: (id: string) => void;
   childrenCount: (id: string) => number;
   diagramsCount: (id: string) => number;
 }) {
@@ -211,6 +216,10 @@ export function ListView({
             onDelete={() => onDeleteDiagram(d.id)}
             onMove={(anchor) => onMoveDiagram(d.id, anchor)}
             onDismiss={d.shared && onDismissShared ? () => onDismissShared(d.id) : undefined}
+            recentExcluded={recentExcludedIds?.includes(d.id) === true}
+            onToggleRecentExclusion={
+              onToggleRecentExclusion ? () => onToggleRecentExclusion(d.id) : undefined
+            }
           />
         ))}
       </ul>

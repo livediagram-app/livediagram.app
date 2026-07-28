@@ -138,7 +138,37 @@ export type UserPreferences = {
   // Settings as "I've seen the editor tour"; unchecking it there and
   // closing Settings replays the tour. Missing / undefined === not seen.
   tourSeen?: boolean;
+  // Diagrams this user has hidden from the Explorer's Recent list
+  // (spec/93). PER-USER rather than a field on the diagram: your Recent
+  // is your view of your own work, and on a shared diagram one
+  // collaborator hiding it must not hide it from everyone else.
+  //
+  // Ids only, so the list stays small; the whole preferences blob has a
+  // 4 KB server-side cap, which `toggleRecentExcluded` below budgets for.
+  // Missing / undefined === nothing excluded.
+  recentExcludedIds?: string[];
 };
+
+// How many excluded ids we keep. A diagram id is a 36-char UUID, so 200
+// of them is ~7.4 KB of JSON on its own — well past the api's 4 KB cap on
+// the serialised preferences blob, which would start rejecting EVERY
+// preference write, not just this one. 60 is far more than anyone will
+// hide by hand and leaves plenty of room for the other flags.
+export const RECENT_EXCLUDED_LIMIT = 60;
+
+// Is this diagram hidden from Recent?
+export function isRecentExcluded(prefs: UserPreferences, diagramId: string): boolean {
+  return prefs.recentExcludedIds?.includes(diagramId) === true;
+}
+
+// Flip a diagram's Recent exclusion, returning the NEXT id list. Newest
+// exclusions are kept at the front so the cap drops the oldest choice
+// rather than the one just made.
+export function toggleRecentExcluded(prefs: UserPreferences, diagramId: string): string[] {
+  const current = prefs.recentExcludedIds ?? [];
+  if (current.includes(diagramId)) return current.filter((id) => id !== diagramId);
+  return [diagramId, ...current].slice(0, RECENT_EXCLUDED_LIMIT);
+}
 
 export const STORAGE_KEY = 'livediagram:user-preferences:v1';
 export const PREFERENCES_CHANGED_EVENT = 'livediagram:preferences-changed';

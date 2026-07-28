@@ -25,6 +25,8 @@ export function DiagramRow({
   onDelete,
   onMove,
   onDismiss,
+  recentExcluded,
+  onToggleRecentExclusion,
   showOwner = false,
 }: {
   diagram: PaneDiagram;
@@ -40,6 +42,9 @@ export function DiagramRow({
   onMove: (anchor: HTMLElement | null) => void;
   // Shared-row menu action (spec/35): drop it from "Shared with me".
   onDismiss?: () => void;
+  // Hide / show in Recent (spec/93).
+  recentExcluded?: boolean;
+  onToggleRecentExclusion?: () => void;
   // Adds the desktop Owner cell ("You", the team name, or the sharer).
   showOwner?: boolean;
 }) {
@@ -130,6 +135,8 @@ export function DiagramRow({
           onMove={onMove}
           onDelete={onDelete}
           onDismiss={onDismiss}
+          recentExcluded={recentExcluded}
+          onToggleRecentExclusion={onToggleRecentExclusion}
         />
       ) : null}
     </li>

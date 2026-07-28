@@ -42,6 +42,8 @@ export function ExplorerSections({
   exitingDiagramIds,
   onOpenDiagram,
   onDismissShared,
+  recentExcludedIds,
+  onToggleRecentExclusion,
   onRenameFolder,
   onDeleteFolder,
   onCreateChild,
@@ -52,6 +54,9 @@ export function ExplorerSections({
 }: {
   loading: boolean;
   ownerId: string | null;
+  // Hide / show in Recent (spec/93).
+  recentExcludedIds?: string[];
+  onToggleRecentExclusion?: (diagramId: string) => void;
   currentDiagramId: string | null;
   diagrams: DiagramListItem[];
   folders: Folder[];
@@ -196,6 +201,15 @@ export function ExplorerSections({
                     onMoveRequest={
                       entry.kind === 'own' && onMoveDiagramRequest
                         ? () => onMoveDiagramRequest(entry.d.id)
+                        : undefined
+                    }
+                    // Hiding from Recent is a per-user view choice, so it
+                    // applies to team rows too even though their rename /
+                    // move / delete live on the /explorer page (spec/93).
+                    recentExcluded={recentExcludedIds?.includes(entry.d.id) === true}
+                    onToggleRecentExclusion={
+                      onToggleRecentExclusion
+                        ? () => onToggleRecentExclusion(entry.d.id)
                         : undefined
                     }
                   />

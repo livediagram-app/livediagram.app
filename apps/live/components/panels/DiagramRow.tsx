@@ -20,6 +20,7 @@ import {
   PencilIcon,
   SharedDiagramIcon,
   TrashIcon,
+  ClockIcon,
 } from '@/components/panels/explorer-icons';
 import { DiagramThumbnail } from '@/components/panels/DiagramThumbnail';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
@@ -94,6 +95,8 @@ export function DiagramRow({
   onDelete,
   onDuplicate,
   onMoveRequest,
+  recentExcluded,
+  onToggleRecentExclusion,
   onOpenShare,
   thumbnailShareCode,
   draggable: isDraggable,
@@ -119,6 +122,10 @@ export function DiagramRow({
   // anchored to the supplied element. Stored at the panel level so
   // the portal isn't nested inside another PortalMenu.
   onMoveRequest?: (anchor: HTMLElement | null) => void;
+  // Hide / show in Recent (spec/93). Per-user, so the label reflects THIS
+  // viewer's state; absent where the surface can't offer it.
+  recentExcluded?: boolean;
+  onToggleRecentExclusion?: () => void;
   // Opens the Share dialog in place — set only on the row for the diagram
   // already open in this editor session, where a `?share=1` navigation
   // would pointlessly reload the editor (see openShareSettings).
@@ -349,14 +356,28 @@ export function DiagramRow({
               {...sectionProps('organise')}
             >
               <div className="px-2 py-1.5">
-                <MenuTile
-                  icon={<FolderIcon />}
-                  label="Change Folder"
-                  onClick={() => {
-                    onMoveRequest(menuButtonRef.current);
-                    setMenuOpen(false);
-                  }}
-                />
+                <MenuTileGrid cols={2}>
+                  <MenuTile
+                    icon={<FolderIcon />}
+                    label="Change Folder"
+                    onClick={() => {
+                      onMoveRequest(menuButtonRef.current);
+                      setMenuOpen(false);
+                    }}
+                  />
+                  {onToggleRecentExclusion ? (
+                    <MenuTile
+                      icon={<ClockIcon />}
+                      // The label says what the click does, which is also
+                      // how you learn the current state (spec/93).
+                      label={recentExcluded ? 'Show in Recent' : 'Hide from Recent'}
+                      onClick={() => {
+                        onToggleRecentExclusion();
+                        setMenuOpen(false);
+                      }}
+                    />
+                  ) : null}
+                </MenuTileGrid>
               </div>
             </MenuAccordionSection>
           ) : null}

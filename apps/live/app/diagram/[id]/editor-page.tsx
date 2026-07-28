@@ -84,6 +84,8 @@ export default function LivePage({ embed = false }: { embed?: boolean } = {}) {
   // free when no status screen shows.
   const fullExplorer = (
     <Explorer
+      recentExcludedIds={state.userPreferences?.recentExcludedIds ?? []}
+      onToggleRecentExclusion={state.toggleRecentExclusion}
       position={explorerPosition}
       diagrams={diagramList}
       ownerId={state.selfParticipant?.id ?? null}

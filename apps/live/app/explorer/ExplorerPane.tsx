@@ -104,6 +104,8 @@ const ProfilePane = dynamic(() =>
 // the section itself is derived from the URL in useExplorerState.
 export function ExplorerPane() {
   const {
+    prefs,
+    toggleRecentExclusion,
     selected,
     go,
     loading,
@@ -321,6 +323,8 @@ export function ExplorerPane() {
               onDeleteDiagram={deleteDiagram}
               onMoveDiagram={openMovePickerForDiagram}
               onDismissShared={dismissShared}
+              recentExcludedIds={prefs.recentExcludedIds ?? []}
+              onToggleRecentExclusion={toggleRecentExclusion}
               childrenCount={(id) => childrenByParent.get(id)?.length ?? 0}
               diagramsCount={(id) => diagramsByFolder.get(id)?.length ?? 0}
               // Owner column (desktop): Recent mixes personal + team rows

@@ -34,6 +34,7 @@ export function EditorCanvasHost() {
     setPollPanelPosition,
     votePanelPosition,
     setVotePanelPosition,
+    toggleRecentExclusion,
     voteResults,
     jumpToVoteResult,
     livePoll,
@@ -472,6 +473,8 @@ export function EditorCanvasHost() {
       pollPanelPosition={pollPanelPosition}
       onMovePollPanel={(x, y) => setPollPanelPosition({ x, y })}
       onResetPollPanel={() => setPollPanelPosition(null)}
+      userPreferences={userPreferences}
+      onToggleRecentExclusion={toggleRecentExclusion}
       votePanelPosition={votePanelPosition}
       onMoveVotePanel={(x, y) => setVotePanelPosition({ x, y })}
       onResetVotePanel={() => setVotePanelPosition(null)}

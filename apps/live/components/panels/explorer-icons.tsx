@@ -232,6 +232,27 @@ export function OpenIcon() {
   );
 }
 
+// Clock — the Recent list. Used by the row menu's hide/show-in-Recent
+// tile (spec/93); the label carries the direction, the glyph the topic.
+export function ClockIcon() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <circle cx="8" cy="8" r="6" />
+      <path d="M8 4.5V8l2 1.5" />
+    </svg>
+  );
+}
+
 export function PlusIcon() {
   return (
     <svg

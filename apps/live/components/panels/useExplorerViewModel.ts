@@ -7,7 +7,12 @@ import type { ExplorerProps } from './Explorer.types';
 type ExplorerViewModelDeps = Pick<
   ExplorerProps,
   'diagrams' | 'folders' | 'currentDiagramId' | 'shared' | 'teamFolders' | 'teamDiagrams'
-> & { deletedTeamIds: Set<string> };
+> & {
+  deletedTeamIds: Set<string>;
+  // Diagrams this user hid from Recent (spec/93). Recent only — every
+  // other section of the panel still lists them.
+  recentExcludedIds: string[];
+};
 
 // Derives the Explorer panel's view-model from the raw diagram / folder / team
 // / shared inputs: the current diagram (resolved across personal, team, and
@@ -22,6 +27,7 @@ export function useExplorerViewModel({
   teamFolders = [],
   teamDiagrams = [],
   deletedTeamIds,
+  recentExcludedIds,
 }: ExplorerViewModelDeps) {
   const current = useMemo(
     () => (currentDiagramId ? (diagrams.find((d) => d.id === currentDiagramId) ?? null) : null),
@@ -60,6 +66,7 @@ export function useExplorerViewModel({
   // Recent mirrors the /explorer page (spec/35): personal + team +
   // shared diagrams, interleaved by recency, the current one excluded.
   // Tagged so the render picks the right row component per source.
+  const recentExcluded = useMemo(() => new Set(recentExcludedIds), [recentExcludedIds]);
   const recents = useMemo(() => {
     type RecentEntry =
       | {
@@ -68,19 +75,22 @@ export function useExplorerViewModel({
           d: DiagramListItem & { team?: { id: string; name: string } };
         }
       | { kind: 'shared'; savedAt: number; s: SharedWithItem };
+    // Hidden-from-Recent (spec/93) drops out alongside the currently-open
+    // diagram, and BEFORE the cap, so hiding one promotes the next in.
+    const keep = (id: string) => id !== currentDiagramId && !recentExcluded.has(id);
     const own: RecentEntry[] = diagrams
-      .filter((d) => d.id !== currentDiagramId)
+      .filter((d) => keep(d.id))
       .map((d) => ({ kind: 'own', savedAt: d.savedAt, d }));
     const team: RecentEntry[] = visibleTeamDiagrams
-      .filter((d) => d.id !== currentDiagramId)
+      .filter((d) => keep(d.id))
       .map((d) => ({ kind: 'team', savedAt: d.savedAt, d }));
     const sharedEntries: RecentEntry[] = shared
-      .filter((s) => s.id !== currentDiagramId)
+      .filter((s) => keep(s.id))
       .map((s) => ({ kind: 'shared', savedAt: s.savedAt, s }));
     return [...own, ...team, ...sharedEntries]
       .sort((a, b) => b.savedAt - a.savedAt)
       .slice(0, RECENT_LIMIT);
-  }, [diagrams, visibleTeamDiagrams, shared, currentDiagramId]);
+  }, [diagrams, visibleTeamDiagrams, shared, currentDiagramId, recentExcluded]);
   // This team's folder rows, indexed by team, for the Teams accordion.
   const foldersByTeam = useMemo(() => {
     const map = new Map<string, { id: string; name: string; parentId: string | null }[]>();

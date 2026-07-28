@@ -86,6 +86,8 @@ export function useCanvasChromePanels({
     layersMinimized,
     onMoveLayersPanel,
     onResetLayersPanel,
+    userPreferences,
+    onToggleRecentExclusion,
     pollPanel,
     pollPanelPosition,
     onMovePollPanel,
@@ -280,6 +282,8 @@ export function useCanvasChromePanels({
 
   const explorerEl = zenMode ? null : (
     <Explorer
+      recentExcludedIds={userPreferences.recentExcludedIds ?? []}
+      onToggleRecentExclusion={onToggleRecentExclusion}
       position={explorerWiring.position}
       diagrams={diagramList}
       ownerId={selfParticipant?.id ?? null}

@@ -25,6 +25,7 @@ export function useExplorerPane({
   teams,
   breadcrumb,
   go,
+  recentExcludedIds,
 }: {
   selected: SelectedNode;
   diagrams: DiagramListItem[];
@@ -35,6 +36,9 @@ export function useExplorerPane({
   teams: { id: string; name: string }[];
   breadcrumb: (folderId: string | null) => Folder[];
   go: (sel: SelectedNode) => void;
+  // Diagrams this user hid from Recent (spec/93). Only Recent honours it;
+  // every other pane still lists them normally.
+  recentExcludedIds: string[];
 }) {
   const diagramsByFolder = useMemo(() => {
     const m = new Map<string | null, DiagramListItem[]>();
@@ -93,6 +97,9 @@ export function useExplorerPane({
   //   leading row when there are unsorted diagrams.
   // - `unsorted`: just diagrams with folderId === null.
   // - `folder`: direct subfolders + direct diagrams in that folder.
+  // Set for O(1) lookups in the two memos below.
+  const excluded = useMemo(() => new Set(recentExcludedIds), [recentExcludedIds]);
+
   const paneContent = useMemo<{
     showUnsortedRow: boolean;
     folders: Folder[];
@@ -113,9 +120,11 @@ export function useExplorerPane({
         ownerId: '',
         shared: { ownerName: s.ownerName, role: s.role, shareCode: s.shareCode },
       }));
-      const sorted = [...diagrams, ...teamDiagrams, ...sharedRows].sort(
-        (a, b) => b.savedAt - a.savedAt,
-      );
+      const sorted = [...diagrams, ...teamDiagrams, ...sharedRows]
+        // Hidden-from-Recent (spec/93). Filtered BEFORE the cap so hiding
+        // one diagram promotes the next one in rather than leaving a gap.
+        .filter((d) => !excluded.has(d.id))
+        .sort((a, b) => b.savedAt - a.savedAt);
       return { showUnsortedRow: false, folders: [], diagrams: sorted.slice(0, RECENT_LIMIT) };
     }
     if (
@@ -166,14 +175,20 @@ export function useExplorerPane({
     unsortedDiagrams,
     generatedDiagrams,
     offlineDiagrams,
+    excluded,
   ]);
 
   // Count for the sidebar "Recent diagrams" badge (spec/35), mirroring
   // "Shared with me": how many items the Recent list holds, capped.
-  const recentCount = useMemo(
-    () => Math.min(RECENT_LIMIT, diagrams.length + teamDiagrams.length + shared.length),
-    [diagrams, teamDiagrams, shared],
-  );
+  const recentCount = useMemo(() => {
+    // Counts what Recent will actually SHOW, so the badge can't promise
+    // rows the pane then filters out (spec/93).
+    const visible =
+      diagrams.filter((d) => !excluded.has(d.id)).length +
+      teamDiagrams.filter((d) => !excluded.has(d.id)).length +
+      shared.filter((s) => !excluded.has(s.id)).length;
+    return Math.min(RECENT_LIMIT, visible);
+  }, [diagrams, teamDiagrams, shared, excluded]);
 
   const paneTitle = useMemo(() => {
     if (selected.kind === 'recent') return 'Recent';

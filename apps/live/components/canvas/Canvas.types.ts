@@ -275,6 +275,10 @@ export type CanvasProps = {
   onResetPollPanel: () => void;
   // Live vote panel (spec/39): turnout while casting is open, then the
   // clickable ranked results. Null when no vote is running on this tab.
+  // Per-user preferences (spec/20) + the Recent exclusion toggle
+  // (spec/93), for the Explorer panel's Recent list.
+  userPreferences: import('@/lib/user-preferences').UserPreferences;
+  onToggleRecentExclusion: (diagramId: string) => void;
   votePanelPosition: { x: number; y: number } | null;
   onMoveVotePanel: (x: number, y: number) => void;
   onResetVotePanel: () => void;

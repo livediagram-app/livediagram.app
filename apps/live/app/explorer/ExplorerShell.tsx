@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useEffect, useState, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Brand, ProductNav } from '@livediagram/ui';
 import { AuthControls } from '@/components/chrome/AuthControls';
 import { ChromeControls } from '@/components/chrome/ChromeControls';
@@ -11,12 +11,7 @@ import { SettingsDialog } from '@/components/dialogs/SettingsDialog';
 import { SignInBanner, SIGNIN_BANNER_DISMISS_KEY } from '@/components/chrome/SignInBanner';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { HELP_SEARCH_ITEMS } from '@/lib/help-search';
-import {
-  fetchUserPreferences,
-  readUserPreferences,
-  writeUserPreferences,
-  type UserPreferences,
-} from '@/lib/user-preferences';
+import { writeUserPreferences } from '@/lib/user-preferences';
 import { useDismissibleBanner } from '@/hooks/ui/useDismissibleBanner';
 import { CustomThemeProvider } from '@/components/primitives/CustomThemeProvider';
 import { ExplorerProvider, useExplorer } from './ExplorerContext';
@@ -86,23 +81,16 @@ function ShellChrome({ children }: { children: ReactNode }) {
     hookCreateTeam,
     clerkUserId,
     ownerId,
+    prefs,
+    setPrefs,
   } = useExplorer();
 
   // Settings live in the bottom bar's gear (same synced UserPreferences as
-  // the editor, spec/20). Seed from the localStorage cache for an instant
-  // first paint, then merge the authoritative D1 copy in on mount.
+  // the editor, spec/20). The prefs themselves are owned by
+  // useExplorerState — the pane reads them too (Recent honours the
+  // hidden-from-Recent list, spec/93), and a second useState here would
+  // drift the moment either wrote.
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [prefs, setPrefs] = useState<UserPreferences>(() => readUserPreferences());
-  useEffect(() => {
-    if (!ownerId) return;
-    let cancelled = false;
-    void fetchUserPreferences(ownerId).then((merged) => {
-      if (!cancelled && merged) setPrefs(merged);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [ownerId]);
 
   // Guest sign-in nudge (spec/36): only when Clerk is actually wired
   // up for this deployment, the visitor isn't signed in (a guest owner

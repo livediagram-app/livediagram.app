@@ -18,6 +18,8 @@ import {
   MenuPencilIcon,
   MenuTrashIcon,
   TeamIcon,
+  ClockIcon,
+  ClockOffIcon,
 } from './icons';
 import type { PaneDiagram } from './views';
 
@@ -142,6 +144,8 @@ export function DiagramActionsMenu({
   onMove,
   onDelete,
   onDismiss,
+  recentExcluded,
+  onToggleRecentExclusion,
 }: {
   diagram: PaneDiagram;
   anchor: HTMLElement | null;
@@ -153,6 +157,10 @@ export function DiagramActionsMenu({
   onMove: (anchor: HTMLElement | null) => void;
   onDelete: () => void;
   onDismiss?: () => void;
+  // Hide / show in Recent (spec/93). Per-user, so the label reflects THIS
+  // viewer's state; omitted where the surface can't offer it.
+  recentExcluded?: boolean;
+  onToggleRecentExclusion?: () => void;
 }) {
   const href = hrefForDiagram(diagram);
   const offline = diagram.ownerId === OFFLINE_OWNER_ID;
@@ -226,6 +234,23 @@ export function DiagramActionsMenu({
             onClose();
           }}
         />
+        {onToggleRecentExclusion ? (
+          <MenuTile
+            icon={
+              <span className="[&_svg]:h-5 [&_svg]:w-5">
+                {recentExcluded ? <ClockOffIcon /> : <ClockIcon />}
+              </span>
+            }
+            // The label states what the click DOES, and by doing so tells
+            // you the current state — which is why the diagram needs no
+            // badge anywhere else (spec/93).
+            label={recentExcluded ? 'Show in Recent' : 'Hide from Recent'}
+            onClick={() => {
+              onToggleRecentExclusion();
+              onClose();
+            }}
+          />
+        ) : null}
         {diagram.team ? (
           <MenuTile
             icon={

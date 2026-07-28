@@ -1064,7 +1064,8 @@ export const articles: Article[] = [
     slug: 'recent',
     title: 'Recent Diagrams',
     description: 'The default view: the diagrams you opened or edited most recently.',
-    keywords: 'history last opened latest edited previously',
+    keywords:
+      'history last opened latest edited previously hide exclude remove clutter show restore visible',
     category: 'Explorer',
     categorySlug: 'explorer',
   },

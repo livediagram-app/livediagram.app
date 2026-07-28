@@ -38,6 +38,10 @@ export type ExplorerProps = {
   // diagrams" before the API call resolves.
   loading: boolean;
   currentDiagramId: string | null;
+  // Diagrams this user hid from Recent, and the toggle (spec/93). Recent
+  // is the only section that honours the list.
+  recentExcludedIds: string[];
+  onToggleRecentExclusion: (diagramId: string) => void;
   onMoveTo: (x: number, y: number) => void;
   onReset: () => void;
   onOpenDiagram: (id: string, shareCode?: string) => void;

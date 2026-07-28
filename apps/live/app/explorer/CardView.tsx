@@ -53,6 +53,8 @@ export function CardView({
   onDeleteDiagram,
   onMoveDiagram,
   onDismissShared,
+  recentExcludedIds,
+  onToggleRecentExclusion,
   childrenCount,
   diagramsCount,
   showOwner = false,
@@ -88,6 +90,9 @@ export function CardView({
   onDeleteDiagram: (id: string) => void;
   onMoveDiagram: (id: string, anchor: HTMLElement | null) => void;
   onDismissShared?: (id: string) => void;
+  // Hide / show in Recent (spec/93).
+  recentExcludedIds?: string[];
+  onToggleRecentExclusion?: (id: string) => void;
   childrenCount: (id: string) => number;
   diagramsCount: (id: string) => number;
   showOwner?: boolean;
@@ -158,6 +163,10 @@ export function CardView({
           onDelete={() => onDeleteDiagram(d.id)}
           onMove={(anchor) => onMoveDiagram(d.id, anchor)}
           onDismiss={d.shared && onDismissShared ? () => onDismissShared(d.id) : undefined}
+          recentExcluded={recentExcludedIds?.includes(d.id) === true}
+          onToggleRecentExclusion={
+            onToggleRecentExclusion ? () => onToggleRecentExclusion(d.id) : undefined
+          }
         />
       ))}
     </div>
@@ -177,6 +186,8 @@ function DiagramCard({
   onDelete,
   onMove,
   onDismiss,
+  recentExcluded,
+  onToggleRecentExclusion,
 }: {
   diagram: PaneDiagram;
   ownerId: string | null;
@@ -190,6 +201,8 @@ function DiagramCard({
   onDelete: () => void;
   onMove: (anchor: HTMLElement | null) => void;
   onDismiss?: () => void;
+  recentExcluded?: boolean;
+  onToggleRecentExclusion?: () => void;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLButtonElement>(null);
@@ -289,6 +302,8 @@ function DiagramCard({
           onMove={onMove}
           onDelete={onDelete}
           onDismiss={onDismiss}
+          recentExcluded={recentExcluded}
+          onToggleRecentExclusion={onToggleRecentExclusion}
         />
       ) : null}
     </div>

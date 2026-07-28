@@ -11,6 +11,13 @@ import {
   type SharedWithItem,
 } from '@/lib/api-client';
 import { ensureSignedGuestIdentity } from '@/lib/guest-identity';
+import {
+  fetchUserPreferences,
+  readUserPreferences,
+  toggleRecentExcluded,
+  writeUserPreferences,
+  type UserPreferences,
+} from '@/lib/user-preferences';
 import { trackDailyReturn } from '@/lib/daily-return';
 import { useFolders } from '@/hooks/persistence/useFolders';
 import { useTeamLibrariesSweep } from '@/hooks/persistence/useTeamLibrariesSweep';
@@ -47,6 +54,13 @@ export function useExplorerState() {
   );
 
   const { authLoaded, clerkUserId, clerkDisplayName, isSignedIn } = useClerkApiBootstrap();
+
+  // Synced user preferences (spec/20). Owned HERE rather than in
+  // ExplorerShell because the pane needs them too (Recent honours the
+  // hidden-from-Recent list, spec/93) — two useState copies would drift
+  // the moment one of them wrote. Seeded from the localStorage cache for
+  // an instant first paint; the authoritative D1 copy merges in on mount.
+  const [prefs, setPrefs] = useState<UserPreferences>(() => readUserPreferences());
   // Owner id resolution mirrors new/page.tsx + editor-page.tsx: a
   // signed-in user is keyed by Clerk userId, a guest is keyed by the
   // localStorage UUID (minted on first visit). Null until Clerk has
@@ -378,7 +392,36 @@ export function useExplorerState() {
     teams,
     breadcrumb,
     go,
+    recentExcludedIds: prefs.recentExcludedIds ?? [],
   });
+
+  // Merge the authoritative D1 preferences in once the owner is known.
+  useEffect(() => {
+    if (!ownerId) return;
+    let cancelled = false;
+    void fetchUserPreferences(ownerId).then((merged) => {
+      if (!cancelled && merged) setPrefs(merged);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [ownerId]);
+
+  // Hide / show a diagram in Recent (spec/93). Read-modify-writes from the
+  // CACHE rather than the React snapshot: the PUT sends the whole blob, so
+  // a stale snapshot would clobber sibling flags written by another tab.
+  const toggleRecentExclusion = useCallback(
+    (diagramId: string) => {
+      const latest = readUserPreferences();
+      const next: UserPreferences = {
+        ...latest,
+        recentExcludedIds: toggleRecentExcluded(latest, diagramId),
+      };
+      setPrefs(next);
+      writeUserPreferences(next, ownerId ?? undefined);
+    },
+    [ownerId],
+  );
 
   const toggleExpand = (id: string) => {
     setExpanded((prev) => {
@@ -437,6 +480,10 @@ export function useExplorerState() {
     offlineDiagrams,
     paneContent,
     recentCount,
+    // Preferences (spec/20) + the Recent exclusion toggle (spec/93).
+    prefs,
+    setPrefs,
+    toggleRecentExclusion,
     paneTitle,
     paneCrumbs,
     // Sidebar state

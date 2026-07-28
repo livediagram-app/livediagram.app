@@ -57,6 +57,8 @@ function ExplorerImpl({
   onMobileClose,
   mobileDockAnchor,
   forceDockMode,
+  recentExcludedIds,
+  onToggleRecentExclusion,
 }: ExplorerProps) {
   // Mobile viewport ⇒ render nothing. Mobile users reach the
   // Explorer from the AuthControls "Explorer" menu item (spec/07)
@@ -142,6 +144,7 @@ function ExplorerImpl({
     teamFolders,
     teamDiagrams,
     deletedTeamIds,
+    recentExcludedIds,
   });
 
   const toggleFolder = (key: string) =>
@@ -405,6 +408,8 @@ function ExplorerImpl({
         <ExplorerSections
           loading={loading}
           ownerId={ownerId}
+          recentExcludedIds={recentExcludedIds}
+          onToggleRecentExclusion={onToggleRecentExclusion}
           currentDiagramId={currentDiagramId}
           diagrams={diagrams}
           folders={folders}
