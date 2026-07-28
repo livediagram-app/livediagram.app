@@ -25,6 +25,7 @@ import { duplicateGroupedElements, type Element, type Tab } from '@livediagram/d
 import { anyModalOpen } from '@/lib/modal-guard';
 import { addImageFileForDiagram } from '@/lib/upload-image';
 import { track } from '@/lib/telemetry';
+import { trackDuplicated } from '@/lib/element-telemetry';
 import type { useToast } from '@/hooks/ui/useToast';
 
 // Written to the OS clipboard on an in-app element copy purely to displace
@@ -140,7 +141,7 @@ export function useClipboard(deps: ClipboardDeps) {
       setSelectedId(null);
       setMultiSelectedIds(new Set(newElements.map((el) => el.id)));
     }
-    track('Element', 'Duplicated');
+    trackDuplicated(newElements);
   };
 
   // Paste a file (typically a clipboard image) by routing it through

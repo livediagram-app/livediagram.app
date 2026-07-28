@@ -31,6 +31,7 @@ import {
   type Element,
 } from '@livediagram/diagram';
 import { track } from '@/lib/telemetry';
+import { trackDuplicated } from '@/lib/element-telemetry';
 import { isTechIconId } from '@/lib/tech-icons';
 import { iconDropSide, type DragState } from '@/lib/canvas';
 import { elementHostsAtPoint } from '@/lib/dom-hit-test';
@@ -641,7 +642,13 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
           isBoxed(current) &&
           (current.x !== start.x || current.y !== start.y);
         if (movedAway && e.shiftKey) {
-          track('Element', 'Duplicated', 'ShiftDrag');
+          // Resolve the clones off the live tab so the per-element Added
+          // events report what actually landed, not what was cloned at
+          // press time (spec/22).
+          trackDuplicated(
+            d.activeTab.elements.filter((el) => swap.cloneIds.has(el.id)),
+            'ShiftDrag',
+          );
         } else {
           // Dissolve: remove the clones and land the ORIGINALS at the
           // release point, so a shift-up at the last moment still reads

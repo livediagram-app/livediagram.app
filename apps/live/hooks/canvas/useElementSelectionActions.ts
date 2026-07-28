@@ -24,6 +24,7 @@ import { type QuickConnectDirection, type QuickConnectKind } from '@/lib/canvas'
 import { quickAddPlacement } from '@/lib/quick-add-placement';
 import { useElementDuplication } from './useElementDuplication';
 import { track, titleCaseType } from '@/lib/telemetry';
+import { trackDuplicated } from '@/lib/element-telemetry';
 import { announce } from '@/lib/announcer';
 import { describeMany, describeOne } from '@/lib/element-names';
 
@@ -286,11 +287,7 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
       if (!sourceCopyId) return;
       commit((els) => [...els, ...newElements]);
       setSelectedId(sourceCopyId);
-      track(
-        'Element',
-        'Duplicated',
-        titleCaseType(source.type === 'shape' ? source.shape : source.type),
-      );
+      trackDuplicated(newElements);
       return;
     }
 

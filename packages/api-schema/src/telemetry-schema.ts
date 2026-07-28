@@ -106,7 +106,6 @@ export const TELEMETRY_ACTIONS = [
   'Toggled',
   'Zoomed',
   'Moved',
-  'Rotated',
   'Closed',
   'Copied',
   'Reverted',
@@ -206,6 +205,73 @@ export type TelemetryDaily = {
 export function metricKey(category: string, action: string, type: string | null): string {
   return `${category}|${action}|${type ?? ''}`;
 }
+
+// The `Element·Added` type tokens that correspond to a PALETTE item, in
+// the buckets the public dashboard ranks them by (spec/22).
+//
+// Shared here, rather than hand-mirrored in the dashboard, because both
+// ends of this have to agree exactly: the editor picks the token when it
+// emits, the dashboard buckets by it when it renders, and a token in one
+// but not the other is invisible in the worst way — the event is emitted,
+// validated, and stored, and simply never appears on the page. That had
+// already happened once: the dashboard still expected `Code-block` long
+// after the editor settled on `CodeBlock`, so every code block anyone
+// drew was missing from the Palette ranking.
+//
+// Not every `Element·Added` token belongs here. `TableRow` / `TableColumn`
+// are structure edits inside an existing table, not palette picks, so they
+// are deliberately absent.
+export const PALETTE_TELEMETRY_TYPES = {
+  shapes: [
+    'Square',
+    'Circle',
+    'Diamond',
+    'Cylinder',
+    'Parallelogram',
+    'Hexagon',
+    'Document',
+    'Stadium',
+    'Cloud',
+    'Triangle',
+    'Trapezoid',
+    'Star',
+    'Speech-bubble',
+  ],
+  tools: [
+    'Text',
+    'Freehand',
+    'Arrow',
+    'Sticky',
+    'Table',
+    'Image',
+    'Avatar',
+    'Actor',
+    'Frame',
+    'Annotation',
+    'LinkCard',
+    'Highlighter',
+    'Polygon',
+    'Polyline',
+    'Timeline-rail',
+    'CodeBlock',
+    'Checklist',
+    'Pie-chart',
+    'Bar-chart',
+    'Line-chart',
+    'Progress-bar',
+    'Progress-ring',
+    'Rating',
+  ],
+  components: ['Banner', 'Hero', 'Header', 'Callout', 'StatRow', 'ProcessSteps'],
+  devices: ['Browser', 'Monitor', 'Laptop', 'Phone', 'Tablet', 'Smartwatch'],
+  icons: ['Icon', 'TechIcon'],
+} as const satisfies Record<string, readonly string[]>;
+
+export type PaletteTelemetryBucket = keyof typeof PALETTE_TELEMETRY_TYPES;
+
+// Every palette token, flattened — the set an emitter can be checked against.
+export const ALL_PALETTE_TELEMETRY_TYPES: readonly string[] =
+  Object.values(PALETTE_TELEMETRY_TYPES).flat();
 
 export type TelemetrySummary = {
   enabled: boolean;

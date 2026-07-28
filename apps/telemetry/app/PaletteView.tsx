@@ -1,5 +1,6 @@
 'use client';
 
+import { PALETTE_TELEMETRY_TYPES } from '@livediagram/api-schema';
 import type { TelemetryCount, TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
 import { RankCard, rank } from './RankCard';
 import { windowLabel } from './windows';
@@ -11,54 +12,22 @@ import { windowLabel } from './windows';
 // not palette elements, so they get their own card. Only items with events in
 // the selected window appear.
 
-// The palette tabs, mirrored from apps/live's palette-create-tabs + the
-// CommandPalette device/icon tabs. Keep in sync if the palette gains items.
-const SHAPES = new Set([
-  'Square',
-  'Circle',
-  'Diamond',
-  'Cylinder',
-  'Parallelogram',
-  'Hexagon',
-  'Document',
-  'Stadium',
-  'Cloud',
-  'Triangle',
-  'Trapezoid',
-  'Star',
-  'Speech-bubble',
-]);
-const TOOLS = new Set([
-  'Text',
-  'Freehand',
-  'Arrow',
-  'Sticky',
-  'Table',
-  'Image',
-  'Avatar',
-  'Actor',
-  'Frame',
-  'Annotation',
-  'LinkCard',
-  'Highlighter',
-  'Polygon',
-  'Polyline',
-  'Timeline-rail',
-  'Code-block',
-  'Checklist',
-  'Pie-chart',
-  'Bar-chart',
-  'Line-chart',
-  'Progress-bar',
-  'Progress-ring',
-  'Rating',
-]);
-const COMPONENTS = new Set(['Banner', 'Hero', 'Header', 'Callout', 'StatRow', 'ProcessSteps']);
-const DEVICES = new Set(['Browser', 'Monitor', 'Laptop', 'Phone', 'Tablet', 'Smartwatch']);
-const ICONS = new Set(['Icon', 'TechIcon']);
+// The palette tabs come from the SHARED catalogue in @livediagram/api-schema
+// (spec/22), not a local copy. They used to be hand-mirrored here with a
+// "keep in sync" comment, and they didn't stay in sync: this file still
+// expected `Code-block` long after the editor settled on `CodeBlock`, so
+// every code block anyone drew was emitted, stored, and silently missing
+// from the ranking below.
+const {
+  shapes: SHAPES,
+  tools: TOOLS,
+  components: COMPONENTS,
+  devices: DEVICES,
+  icons: ICONS,
+} = PALETTE_TELEMETRY_TYPES;
 
-const addedIn = (kinds: Set<string>) => (r: TelemetryCount) =>
-  r.category === 'Element' && r.action === 'Added' && kinds.has(r.type ?? '');
+const addedIn = (kinds: readonly string[]) => (r: TelemetryCount) =>
+  r.category === 'Element' && r.action === 'Added' && kinds.includes(r.type ?? '');
 
 export function PaletteView({
   summary,

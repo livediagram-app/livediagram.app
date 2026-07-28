@@ -13,7 +13,7 @@ import {
   type Element,
   type Tab,
 } from '@livediagram/diagram';
-import { track } from '@/lib/telemetry';
+import { trackDuplicated } from '@/lib/element-telemetry';
 
 export function useElementDuplication(deps: {
   selectedId: string | null;
@@ -43,7 +43,6 @@ export function useElementDuplication(deps: {
   // visual layout of the duplicated cluster matches the source.
   const duplicateMultiSelected = () => {
     if (multiSelectedIds.size === 0) return;
-    track('Element', 'Duplicated');
     const offset = 24;
     const boxedSources = activeTab.elements.filter(
       (el): el is BoxedElement => multiSelectedIds.has(el.id) && isBoxed(el),
@@ -87,6 +86,7 @@ export function useElementDuplication(deps: {
     }));
     const copies: Element[] = [...boxedCopies, ...arrowCopies];
     commit((els) => [...els, ...copies]);
+    trackDuplicated(copies);
     setMultiSelectedIds(new Set(copies.map((c) => c.id)));
   };
 
@@ -94,7 +94,6 @@ export function useElementDuplication(deps: {
     if (!selectedId) return;
     const source = activeTab.elements.find((el) => el.id === selectedId);
     if (!source) return;
-    track('Element', 'Duplicated');
     // Element-only duplicate: clones just this element (not arrows attached
     // to it), offset diagonally so it's visible next to the original.
     const offset = 24;
@@ -115,6 +114,7 @@ export function useElementDuplication(deps: {
         );
         const sourceCopyId = idMap.get(source.id);
         commit((els) => [...els, ...newElements]);
+        trackDuplicated(newElements);
         if (sourceCopyId) setSelectedId(sourceCopyId);
         return;
       }
@@ -127,6 +127,7 @@ export function useElementDuplication(deps: {
         groupId: undefined,
       };
       commit((els) => [...els, copy]);
+      trackDuplicated([copy]);
       setSelectedId(copy.id);
       return;
     }
@@ -143,6 +144,7 @@ export function useElementDuplication(deps: {
         to: shift(source.to),
       };
       commit((els) => [...els, copy]);
+      trackDuplicated([copy]);
       setSelectedId(copy.id);
     }
   };

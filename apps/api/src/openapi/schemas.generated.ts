@@ -3620,7 +3620,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "Toggled",
       "Zoomed",
       "Moved",
-      "Rotated",
       "Closed",
       "Copied",
       "Reverted",
