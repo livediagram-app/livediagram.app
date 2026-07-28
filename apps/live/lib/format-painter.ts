@@ -154,6 +154,11 @@ export function paintableArrowFields(source: ArrowElement): Partial<ArrowElement
     arrowheadSize: source.arrowheadSize,
     arrowheadShape: source.arrowheadShape,
     arrowStyle: source.arrowStyle,
+    // Route behind boxes (spec/90): a look choice like the rest, so the
+    // painter carries it. `stripUndefined` drops it when the source is on
+    // the default, which leaves the target on ITS default — right either
+    // way, since absent means on for both.
+    routeBehind: source.routeBehind,
     // Flow animation (spec/09): marching dashes / travelling dot.
     flow: source.flow,
     flowSpeed: source.flowSpeed,

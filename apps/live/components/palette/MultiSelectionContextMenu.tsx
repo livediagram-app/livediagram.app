@@ -353,7 +353,12 @@ export function MultiSelectionContextMenu({
                       strokeStyle={arrowSrc.strokeStyle ?? 'solid'}
                       onSetThickness={props.onSetArrowThickness}
                       onSetStyle={props.onSetArrowStyle}
+                      // Hidden in a multi-selection: the row is a toggle
+                      // reflecting one arrow's state, and arrows in the
+                      // selection can disagree. Set it per arrow.
+                      routeBehind={null}
                       onSetStrokeStyle={props.onSetArrowStrokeStyle}
+                      onSetRouteBehind={props.onSetArrowRouteBehind}
                     />
                   </div>
                 </MenuAccordionSection>

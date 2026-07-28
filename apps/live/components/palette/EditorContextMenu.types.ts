@@ -200,6 +200,8 @@ export type EditorContextMenuProps = {
   onSetArrowThickness: (v: ArrowThickness) => void;
   onSetArrowStyle: (v: ArrowStyle) => void;
   onSetArrowStrokeStyle: (v: BorderStyle) => void;
+  // Route behind boxes (spec/90).
+  onSetArrowRouteBehind: (v: boolean) => void;
   onSetArrowEnds: (v: ArrowEnds) => void;
   onSetArrowheadSize: (v: ArrowheadSize) => void;
   onSetArrowheadShape: (v: ArrowheadShape) => void;

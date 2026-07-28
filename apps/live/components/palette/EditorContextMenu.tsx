@@ -17,6 +17,7 @@ import { onMouseHover, useRevertOnUnmount } from '@/components/primitives/hover-
 import {
   arrowheadShapeOf,
   arrowheadSizeOf,
+  arrowRoutesBehind,
   arrowStyleOf,
   arrowThicknessOf,
   isBoxed,
@@ -262,9 +263,11 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
                   thickness={arrowThicknessOf(target)}
                   style={arrowStyleOf(target)}
                   strokeStyle={target.strokeStyle ?? 'solid'}
+                  routeBehind={arrowRoutesBehind(target)}
                   onSetThickness={props.onSetArrowThickness}
                   onSetStyle={props.onSetArrowStyle}
                   onSetStrokeStyle={props.onSetArrowStrokeStyle}
+                  onSetRouteBehind={props.onSetArrowRouteBehind}
                 />
               </div>
             </MenuAccordionSection>

@@ -16,7 +16,7 @@ import {
   type ArrowThickness,
   type BorderStyle,
 } from '@livediagram/diagram';
-import { SizeButton } from '@/components/palette/palette-controls';
+import { SizeButton, ToggleSwitch } from '@/components/palette/palette-controls';
 import {
   ArrowEndsIcon,
   ArrowheadShapeIcon,
@@ -74,16 +74,21 @@ export function ArrowLineControls({
   thickness,
   style,
   strokeStyle,
+  routeBehind,
   onSetThickness,
   onSetStyle,
   onSetStrokeStyle,
+  onSetRouteBehind,
 }: {
   thickness: ArrowThickness | null;
   style: ArrowStyle | null;
   strokeStyle: BorderStyle | null;
+  // Route behind boxes (spec/90). Null hides the row (mixed selection).
+  routeBehind: boolean | null;
   onSetThickness: (v: ArrowThickness) => void;
   onSetStyle: (v: ArrowStyle) => void;
   onSetStrokeStyle: (v: BorderStyle) => void;
+  onSetRouteBehind: (v: boolean) => void;
 }) {
   return (
     <>
@@ -151,6 +156,26 @@ export function ArrowLineControls({
               </Tooltip>
             ))}
           </div>
+        </>
+      ) : null}
+      {routeBehind !== null ? (
+        <>
+          <div className={divider} />
+          <button
+            type="button"
+            onClick={() => onSetRouteBehind(!routeBehind)}
+            className="flex w-full items-center justify-between gap-2 rounded-md px-1 py-1 text-left transition hover:bg-slate-50 dark:hover:bg-slate-800/60"
+          >
+            <span className="flex flex-col">
+              <span className="text-[11px] text-slate-600 dark:text-slate-300">
+                Pass behind boxes
+              </span>
+              <span className="text-[10px] leading-snug text-slate-400 dark:text-slate-500">
+                Break the line where it crosses another box.
+              </span>
+            </span>
+            <ToggleSwitch checked={routeBehind} label="Pass behind boxes" presentational />
+          </button>
         </>
       ) : null}
     </>

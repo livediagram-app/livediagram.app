@@ -1,10 +1,12 @@
-import { memo, useRef, type PointerEvent as ReactPointerEvent } from 'react';
+import { memo, useMemo, useRef, type PointerEvent as ReactPointerEvent } from 'react';
 import {
   arrowheadShapeOf,
   arrowheadSizeOf,
   BORDER_DASH_ARRAY,
   DEFAULT_BORDER_STYLE,
   defaultArrowStrokeColor,
+  routeBehindHoles,
+  ROUTE_BEHIND_MARGIN,
   type ArrowElement,
   type ElementIndex,
 } from '@livediagram/diagram';
@@ -137,6 +139,22 @@ function ArrowViewImpl({
   const { from, to, pathD, curveAnchors, curveControl, elbowPoint, labelText, labelPos } =
     deriveArrowViewFrame(arrow, elementIndex, isEditing);
   const showLabel = isEditing || labelText.length > 0;
+  // Route behind boxes (spec/90). Where the line would cross an unrelated
+  // box it breaks a little before it and resumes past it, so a fan of
+  // arrows to nearby children doesn't draw over the children in between.
+  //
+  // Done as a MASK rather than by splitting the path into segments: the one
+  // path keeps its dash pattern, its flow animation class, and its markers,
+  // and N holes cost the same as one. Memoised on the element map identity
+  // so a pan / selection re-render doesn't rescan every element per arrow.
+  const behindHoles = useMemo(
+    () => routeBehindHoles(arrow, from, to, elementIndex.values()),
+    [arrow, from, to, elementIndex],
+  );
+  // Only mint a mask when something actually cuts this arrow — the common
+  // case is nothing in the way, and an empty mask is pure overhead.
+  const behindMaskId = behindHoles.length > 0 ? `lvd-behind-${arrow.id}` : null;
+  const behindMask = behindMaskId ? `url(#${behindMaskId})` : undefined;
   // Flow derivations + the phase-sync pinning (spec/09) live in
   // useArrowFlow; the visible path below mounts flowPathRef and the
   // travelling overlays render via ArrowFlowOverlays.
@@ -167,9 +185,30 @@ function ArrowViewImpl({
     // Screen-reader name (spec/71): arrows are SVG, so the group carries
     // the same kind-plus-label name a boxed element's wrapper does.
     <g style={{ opacity }} role="img" aria-label={elementAriaLabel(arrow)}>
+      {behindMaskId ? (
+        // White paints, black cuts. The backdrop is deliberately vast
+        // rather than the arrow's bbox: a curve can bow well outside the
+        // chord, and a mask that ends where the chord does would clip the
+        // bow instead of the boxes.
+        <mask id={behindMaskId} maskUnits="userSpaceOnUse">
+          <rect x={-100000} y={-100000} width={200000} height={200000} fill="white" />
+          {behindHoles.map((h, i) => (
+            <rect
+              key={i}
+              x={h.x}
+              y={h.y}
+              width={h.width}
+              height={h.height}
+              fill="black"
+              rx={ROUTE_BEHIND_MARGIN}
+            />
+          ))}
+        </mask>
+      ) : null}
       {isSelected ? (
         <path
           d={pathD}
+          mask={behindMask}
           fill="none"
           stroke={BRAND_600}
           strokeWidth={strokeWidth + 2}
@@ -182,6 +221,10 @@ function ArrowViewImpl({
       <path
         ref={flowPathRef}
         d={pathD}
+        // The break itself. The hit band below is deliberately NOT masked:
+        // the arrow stays clickable across the gap, so selecting one that
+        // runs behind a box doesn't require finding a visible stub.
+        mask={behindMask}
         fill="none"
         stroke={baseStroke}
         strokeWidth={strokeWidth}

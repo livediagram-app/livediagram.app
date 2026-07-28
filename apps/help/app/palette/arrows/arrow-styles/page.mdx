@@ -23,15 +23,24 @@ An arrow is far more than a plain line. Select a connector and open its right-cl
 
 ## Line shape and weight
 
-The **Line** category holds three controls:
+The **Line** category holds four controls:
 
 - **Line style** picks the geometry: **Straight** (a single line), **Curved** (a gentle bezier bow), or **Angled** (an axis-aligned L-shaped elbow). Curved and angled lines expose a draggable handle so you can shape the path by hand, covered in [Curve and elbow handles](/help/palette/arrows/curve-and-elbow-handles/).
 - **Line thickness** snaps to four presets (Thin, Medium, Thick, Extra-thick).
 - **Line pattern** sets the stroke to Solid, Dashed, Dotted, Dash-dot, Long dash, or Dash-dot-dot.
+- **Pass behind boxes** controls what happens where the line crosses another box (below).
 
 <Figure caption="The same connector shown straight, curved, and angled.">
   <ArrowStyles />
 </Figure>
+
+## Passing behind boxes
+
+With boxes packed close together, an arrow reaching past one of them used to draw straight over the top, so it looked like it belonged to the box it crossed. Instead, the line now **breaks a little before the box and picks up again on the far side**, as though passing underneath. A fan of arrows from one parent out to several children stays readable instead of turning into a thicket.
+
+This is **on by default** for every arrow, and applies to every box in the way, not just the first. Boxes the arrow actually connects are never cut, and neither are section frames (everything inside a frame sits on top of it) or plain text and annotations (there is no fill to hide behind, so a gap would just look broken).
+
+Turn it off for a particular arrow with **Pass behind boxes** in its Line category, for the times drawing over the top is what you want. The arrow stays clickable across the gap either way, so you never have to hunt for a visible piece of it to select.
 
 ## Line colour
 

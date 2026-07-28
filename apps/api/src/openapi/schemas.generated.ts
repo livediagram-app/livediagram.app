@@ -355,6 +355,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "opacity": {
         "type": "number"
       },
+      "routeBehind": {
+        "type": "boolean"
+      },
       "strokeColor": {
         "type": "string"
       },

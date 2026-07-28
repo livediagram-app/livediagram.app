@@ -1335,8 +1335,9 @@ export const articles: Article[] = [
   {
     slug: 'arrow-styles',
     title: 'Arrow Styles',
-    description: 'Straight, curved, and elbow arrows and how to switch between them.',
-    keywords: 'straight curved elbow bezier connector line switch kind',
+    description: 'Straight, curved, and elbow arrows, and passing behind boxes.',
+    keywords:
+      'straight curved elbow bezier connector line switch kind behind under overlap cross crossing break gap route occlude z-index on top',
     category: 'Palette',
     categorySlug: 'palette/arrows',
     parentSlug: 'arrows',

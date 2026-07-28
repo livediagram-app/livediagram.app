@@ -496,6 +496,12 @@ export type ArrowElement = {
   // 'angled' renders the connector as an axis-aligned L-shape with
   // a single right-angle bend. See `arrowStyleOf`.
   arrowStyle?: ArrowStyle;
+  // Route behind intervening boxes (spec/90): where the line would cross an
+  // unrelated box it breaks a short distance before it and resumes on the far
+  // side, so a dense parent-to-children fan doesn't draw arrows over the
+  // boxes between. Absent = ON: this is the default reading for an arrow, and
+  // `false` is the explicit opt-out for the cases where crossing is wanted.
+  routeBehind?: boolean;
   // Flowing-arrow animation (spec/09): marching dashes or a travelling dot
   // along the path to show flow direction. Undefined = static.
   flow?: ArrowFlow;
@@ -761,6 +767,8 @@ export * from './anchor-choice';
 export * from './geometry';
 export * from './arrow-rebind';
 export * from './arrow-endpoint-spread';
+// Arrows breaking around intervening boxes at render time (spec/90).
+export * from './arrow-behind';
 export * from './geometry-snapping';
 export * from './geometry-guides';
 
