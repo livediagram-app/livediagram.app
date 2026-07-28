@@ -39,7 +39,7 @@ const resolveOwner = () => clerkUserId ?? request.headers.get('X-Owner-Id');
 
 Every endpoint uses `resolveOwner()` instead of reading the header directly, so adding new endpoints inherits the hybrid behaviour automatically.
 
-`CLERK_JWKS_URL` lives in `wrangler.toml` `[vars]` (not `secret`, since the JWKS is public). Leaving it as an empty string puts the api in pure-guest mode — useful for local dev or for environments where Clerk hasn't been provisioned yet.
+`CLERK_JWKS_URL` is a **worker secret** (`wrangler secret put`, synced from a GitHub repo secret on deploy), not a `[vars]` entry — the JWKS itself is public, but the URL names the tenant, and keeping every out-of-band value in one mechanism is simpler than reasoning about which ones are safe in the open (spec/06). Leaving it unset puts the api in pure-guest mode — useful for local dev or for environments where Clerk hasn't been provisioned yet.
 
 Visitor-edit endpoints (`PUT /api/diagrams/:id/tabs/:tabId`, the change-log writes) still also accept `X-Share-Code` for share-link auth — that header is checked via `canEditDiagram()` and is orthogonal to the Clerk-vs-guest choice. A visitor following a share link is a guest who provides a code, regardless of whether they're separately signed in. When the diagram has a **share password** (spec/24), the same `canEditDiagram()` / `canReadDiagram()` checks also require a matching `X-Share-Password` header, so every share-code read and write is gated, not just the initial resolve. The owner identity short-circuits the password check. The realtime room upgrade carries the password as the `p` query param (browsers can't set headers on a WS upgrade) and refuses to open the room for a non-owner without it.
 

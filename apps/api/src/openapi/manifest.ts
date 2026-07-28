@@ -1020,6 +1020,11 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'events',
     tag: 'Telemetry',
     summary: 'Ingest a batch of anonymous first-party telemetry events.',
+    // The route also honours an `X-Internal-Events-Key` header that exempts
+    // our own workers from the per-IP rate limiter (spec/22). Deliberately
+    // NOT documented here: the public spec describes what a public caller
+    // can use, and advertising the bypass header would only invite guessing
+    // at the secret. Its absence is a choice, not an oversight.
     auth: 'public',
     requestSchema: {
       type: 'object',

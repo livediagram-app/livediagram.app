@@ -226,3 +226,31 @@ simple = { limit = 120, period = 60 }
 # signature, closing the "observe a guest id, claim its data" hole
 # (spec/04). Generate with `openssl rand -hex 32`. Unset = legacy unsigned
 # migrate (pure-guest / single-user self-host).
+
+# INTERNAL_EVENTS_KEY marks a POST to /api/events as coming from one of our
+# OWN workers over a service binding, rather than from the open internet
+# (spec/22, issue #36). Provisioned out-of-band like the two above; never in
+# [vars] — it is secret material:
+#
+#   - Local dev: `INTERNAL_EVENTS_KEY=...` in `apps/api/.dev.vars`
+#     (gitignored). Rarely needed — local dev doesn't run the MCP worker
+#     over a service binding.
+#   - Production: `wrangler secret put INTERNAL_EVENTS_KEY`, and the SAME
+#     value on the mcp worker (`wrangler secret put INTERNAL_EVENTS_KEY`
+#     from apps/mcp). Generate with `openssl rand -hex 32`.
+#
+# Why it exists: a service-binding call carries no CF-Connecting-IP, so
+# `clientIp` fell back to the literal 'anonymous' and every internal caller
+# in the world shared ONE 120/min EVENTS_RATE_LIMITER key, with the overflow
+# dropped as a 204 the caller can't distinguish from success. Since the mcp
+# worker posts one request per tool call, that ceiling was roughly two tool
+# calls per second globally. A matching key exempts those calls from the
+# per-IP limiter, which exists to stop ANONYMOUS abuse of a public endpoint
+# and was never aimed at us.
+#
+# Unset on either side = nobody is exempt, which is the pre-existing
+# behaviour and needs no configuration, so a self-host can ignore this.
+# The two sides MUST match: a mismatch is silent (the caller simply lands
+# back in the shared bucket), so check `wrangler secret list` on both if
+# Mcp·Used counts look flat.
+

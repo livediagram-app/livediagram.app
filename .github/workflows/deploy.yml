@@ -231,6 +231,7 @@ jobs:
     env:
       CLERK_JWKS_URL: ${{ secrets.CLERK_JWKS_URL }}
       GUEST_ID_HMAC_SECRET: ${{ secrets.GUEST_ID_HMAC_SECRET }}
+      INTERNAL_EVENTS_KEY: ${{ secrets.INTERNAL_EVENTS_KEY }}
     steps:
       - uses: actions/checkout@v4
 
@@ -311,6 +312,21 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
         run: printf '%s' "$GUEST_ID_HMAC_SECRET" | pnpm exec wrangler secret put GUEST_ID_HMAC_SECRET
 
+      # INTERNAL_EVENTS_KEY (spec/22) has to hold the SAME value on the api and
+      # mcp workers, and a mismatch is silent — the MCP's telemetry just lands
+      # back in the throttled anonymous bucket with no error anywhere. Driving
+      # both from one GitHub secret is what makes them agree by construction;
+      # provisioning them by hand in two terminals is exactly how they drift.
+      # Unset = both steps skip, which leaves whatever is already on the
+      # workers (including a pair set by hand) untouched.
+      - name: Sync INTERNAL_EVENTS_KEY secret
+        if: ${{ env.INTERNAL_EVENTS_KEY != '' }}
+        working-directory: apps/api
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+        run: printf '%s' "$INTERNAL_EVENTS_KEY" | pnpm exec wrangler secret put INTERNAL_EVENTS_KEY
+
       - name: Deploy to Cloudflare Workers
         working-directory: apps/api
         env:
@@ -332,6 +348,10 @@ jobs:
     needs: deploy-api
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # Lifted to job level for the same reason as deploy-api's: the `secrets`
+    # context isn't readable from a step `if:`.
+    env:
+      INTERNAL_EVENTS_KEY: ${{ secrets.INTERNAL_EVENTS_KEY }}
     steps:
       - uses: actions/checkout@v4
 
@@ -346,6 +366,17 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      # The matching half of deploy-api's sync — same GitHub secret, so the two
+      # workers can't disagree (spec/22). Skipped when unset, leaving whatever
+      # is already on the worker in place.
+      - name: Sync INTERNAL_EVENTS_KEY secret
+        if: ${{ env.INTERNAL_EVENTS_KEY != '' }}
+        working-directory: apps/mcp
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+        run: printf '%s' "$INTERNAL_EVENTS_KEY" | pnpm exec wrangler secret put INTERNAL_EVENTS_KEY
 
       - name: Deploy to Cloudflare Workers
         working-directory: apps/mcp

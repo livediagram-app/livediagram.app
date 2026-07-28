@@ -356,6 +356,27 @@ malformed elements is expected, model-correctable input, not a fault, and
 reporting it would flood the view (an empty Exceptions view is the goal).
 Fire-and-forget, generic tokens only — never a message, stack, or user content.
 
+### 4.13 Worker configuration
+
+The MCP worker reads three bindings and two out-of-band values. Bindings
+(`API` service binding, `OAUTH_KV`) are declared in `wrangler.toml`; the rest:
+
+| Name                  | Where                          | Absent means                                                                                                                 |
+| --------------------- | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| `CONSENT_BASE_URL`    | `[vars]` (not secret)          | Defaults to `https://livediagram.app`, so a self-host's OAuth callers land on the hosted consent screen instead of their own |
+| `INTERNAL_EVENTS_KEY` | worker secret, **also on api** | This worker's telemetry shares the anonymous per-IP rate-limit bucket and throttles itself (spec/22)                         |
+
+`INTERNAL_EVENTS_KEY` exists because §4.12's telemetry posts travel over the
+**service binding**, which carries no `CF-Connecting-IP` — so the api's
+`clientIp` fell back to a literal `'anonymous'` and every internal caller in
+the world contended for one 120/min key, the overflow dropped as a 204 this
+worker can't distinguish from success. Since we post one request per tool
+call, that ceiling was roughly two tool calls per second globally: enough to
+make a growing integration read as flat in the very dashboard meant to show
+it growing. The value **must match** the api worker's, and a mismatch is
+silent — the deploy workflow drives both from one GitHub secret for exactly
+that reason. See [spec/06](06-secrets-policy.md) for the secrets table.
+
 ## 5. Visualise — inline image render
 
 `read_diagram`, `create_diagram`, and `update_diagram` all return an **inline

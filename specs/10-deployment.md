@@ -72,6 +72,16 @@ Set in the repo under **Settings → Secrets and variables → Actions**:
 | `CF_API_TOKEN`  | A Cloudflare API token with permissions to deploy Workers and apply migrations. |
 | `CF_ACCOUNT_ID` | The Cloudflare account ID the workers belong to.                                |
 
+**Optional**, each synced into `wrangler secret put` by the deploy workflow and skipped when unset, so a fork that sets none still deploys:
+
+| Secret                 | Synced to       | See                                                                        |
+| ---------------------- | --------------- | -------------------------------------------------------------------------- |
+| `CLERK_JWKS_URL`       | api             | [04](04-auth-and-guest-access.md)                                          |
+| `GUEST_ID_HMAC_SECRET` | api             | [04](04-auth-and-guest-access.md)                                          |
+| `INTERNAL_EVENTS_KEY`  | api **and** mcp | [22](22-telemetry.md) — one GitHub secret drives both, so they can't drift |
+
+Syncing on every deploy means these rotate by editing the GitHub secret rather than by running `wrangler` against production. [spec/06](06-secrets-policy.md) holds the full worker-secret table.
+
 ### Creating the API token
 
 Cloudflare dashboard → **My Profile → API Tokens → Create Token → Custom Token**.
@@ -112,4 +122,4 @@ The workers themselves remain reachable at their default `*.workers.dev` URLs fo
 - Preview deploys for PRs.
 - Staging environment.
 - Rollback procedure (currently: `wrangler rollback` via dashboard or CLI).
-- Per-worker secrets (`wrangler secret put`).
+- Per-worker secrets that are **not** in the optional sync table above (e.g. `OPENAI_API_KEY`, `RESEND_API_KEY`) — those are set by hand with `wrangler secret put` and persist across deploys.

@@ -83,6 +83,8 @@ The dashboard surfaces three fixed windows that top out at **30 days** (Last mon
 
 `TELEMETRY_ENABLED` (worker, `wrangler.toml [vars]`, default off) is **authoritative**: it gates both `POST /api/events` and `GET /api/telemetry/summary`. The live editor also reads `NEXT_PUBLIC_TELEMETRY_ENABLED` (baked at build) to avoid emitting at all when off — a client optimisation; the server flag is the real gate. Both absent → fully off, which is the self-host default. On top of these, each user has a per-device opt-out flag stored alongside the other user preferences (spec/20, `telemetryEnabled`, default true). When that flag is false, `track()` is a no-op for that browser regardless of the server's stance; this is the user-facing lever the landing page and `/telemetry` reference when they say "first-party, no creepy tracking".
 
+One further var, easy to miss because it changes no behaviour you can see: **`INTERNAL_EVENTS_KEY`** (a worker secret, the same value on the **api and mcp** workers) exempts our own service-binding callers from the anonymous per-IP rate limiter. Unset, MCP telemetry still flows — it just shares one 120/min bucket with every other internal caller and the overflow is dropped as a 204 nobody can observe, so `Mcp·Used` under-reports without any error to notice. See "Delivery losses" below, [spec/06](06-secrets-policy.md) for the secrets table, and `apps/api/wrangler.toml` for the operator notes.
+
 ## Abuse controls
 
 `POST /api/events` is public + unauthenticated by design, so it's guarded in layers without identifying users (it's anonymous trend data, not billing — the goal is "not worth it" + protect cost, not "impossible"):
@@ -197,6 +199,7 @@ Charts render in inline SVG (a line with a shaded selected-window span and a das
 
 1. Apply the migration: `wrangler d1 migrations apply DB --remote` (the deploy workflow already does this).
 2. Set `TELEMETRY_ENABLED = "true"` in `apps/api/wrangler.toml [vars]` (and `NEXT_PUBLIC_TELEMETRY_ENABLED=true` for the live + telemetry builds) to turn it on. Leaving them unset keeps telemetry off — the self-host default.
+3. **Only if you also deploy the mcp worker:** generate a key (`openssl rand -hex 32`) and set the _same_ value on both workers — `wrangler secret put INTERNAL_EVENTS_KEY` from `apps/api`, then again from `apps/mcp`. Without it the MCP's telemetry throttles itself, silently. Skipping this is safe for a self-host that doesn't run the MCP; nothing else depends on it. Verify with `wrangler secret list` on both, because a mismatch produces no error — just quietly lower numbers.
 
 ## Privacy posture
 

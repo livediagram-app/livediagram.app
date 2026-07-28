@@ -26,6 +26,15 @@ globs = ["**/*.ttf"]
 # live origin; the authorize endpoint redirects the signed-in user here.
 CONSENT_BASE_URL = "https://livediagram.app"
 
+# INTERNAL_EVENTS_KEY is deliberately NOT here — it's secret material, so it
+# goes through `wrangler secret put INTERNAL_EVENTS_KEY` (spec/06), and the
+# api worker needs the SAME value. It marks this worker's telemetry posts as
+# internal so they skip the anonymous per-IP rate-limit bucket that was
+# silently throttling them (spec/22, issue #36). Optional: unset on either
+# side just restores the old shared-bucket behaviour, so a self-host that
+# doesn't run telemetry can ignore it. See apps/api/wrangler.toml for the
+# full rationale and apps/mcp/.env.example for the operator summary.
+
 # Its own hostname `mcp.livediagram.app` (spec/62) — NOT declared here. Like
 # every other worker on this platform (the router included), the public hostname
 # is attached in the Cloudflare dashboard, not via wrangler: the deploy

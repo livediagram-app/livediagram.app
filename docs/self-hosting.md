@@ -61,7 +61,7 @@ If you're deploying via GitHub Actions (the default workflow), set two repo secr
 - `CF_API_TOKEN`: the token from the step above.
 - `CF_ACCOUNT_ID`: your Cloudflare account id.
 
-That's it. The deploy workflow uses raw `pnpm exec wrangler deploy` against these credentials.
+Those two are the only **required** ones — the deploy workflow uses raw `pnpm exec wrangler deploy` against them. Optionally, it also syncs three worker secrets from repo secrets of the same name, each skipped when unset: `CLERK_JWKS_URL`, `GUEST_ID_HMAC_SECRET`, and `INTERNAL_EVENTS_KEY`. Setting them here rather than by hand means they rotate by editing the GitHub secret — and, for `INTERNAL_EVENTS_KEY`, that the api and mcp workers can't drift apart. See [spec/06](../specs/06-secrets-policy.md) for the full table.
 
 ## Optional Clerk auth
 
@@ -169,6 +169,10 @@ nothing. To run it:
    deploy workflow already orders `mcp` after `api`. Tokens minted via the MCP
    are ordinary `lvd_` API tokens — they appear in the Explorer's API tokens
    page and are revocable there.
+
+4. **Only if you've turned telemetry on:** set the same `INTERNAL_EVENTS_KEY` on
+   both workers — see [Telemetry](#telemetry-off-by-default-for-self-hosters)
+   below. Skip it otherwise; it affects nothing else.
 
 The MCP carries no model of its own and makes no LLM calls; the connected AI
 tool does the thinking. See [spec/62](../specs/62-mcp-server.md).
