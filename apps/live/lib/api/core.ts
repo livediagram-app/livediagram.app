@@ -237,13 +237,17 @@ export async function apiHeaders(
 // as setTokenProvider above). Reports the HTTP status of every ApiError
 // the helpers below throw; a no-op while unwired (SSR, tests, other
 // hosts of this lib).
-let apiErrorReporter: ((status: number) => void) | null = null;
-export function setApiErrorReporter(fn: ((status: number) => void) | null): void {
+let apiErrorReporter: ((status: number, action: string) => void) | null = null;
+export function setApiErrorReporter(fn: ((status: number, action: string) => void) | null): void {
   apiErrorReporter = fn;
 }
-function reportApiError(status: number): void {
+// `action` is the caller's own intent string ('save tab', 'create folder'),
+// forwarded so the reported error says WHICH request failed. Reporting only
+// the status made a spike unattributable: 297 `Http403` in a day tells you
+// something is being refused and nothing about what.
+function reportApiError(status: number, action: string): void {
   try {
-    apiErrorReporter?.(status);
+    apiErrorReporter?.(status, action);
   } catch {
     // Telemetry can never throw into the caller's error handling.
   }
@@ -294,7 +298,7 @@ async function readErrorCode(res: Response): Promise<string | null> {
 // message so debugging keeps the caller's intent without a stack walk.
 export async function expectOk<T>(res: Response, action: string): Promise<T> {
   if (!res.ok) {
-    reportApiError(res.status);
+    reportApiError(res.status, action);
     throw new ApiError(action, res.status, await readErrorCode(res));
   }
   return (await res.json()) as T;
@@ -306,7 +310,7 @@ export async function expectOk<T>(res: Response, action: string): Promise<T> {
 export async function expectOkOrNull<T>(res: Response, action: string): Promise<T | null> {
   if (res.status === 404) return null;
   if (!res.ok) {
-    reportApiError(res.status);
+    reportApiError(res.status, action);
     throw new ApiError(action, res.status, await readErrorCode(res));
   }
   return (await res.json()) as T;
@@ -316,7 +320,7 @@ export async function expectOkOrNull<T>(res: Response, action: string): Promise<
 // error-on-non-ok contract; nothing to return.
 export async function expectOkVoid(res: Response, action: string): Promise<void> {
   if (!res.ok) {
-    reportApiError(res.status);
+    reportApiError(res.status, action);
     throw new ApiError(action, res.status, await readErrorCode(res));
   }
 }
@@ -326,7 +330,7 @@ export async function expectOkVoid(res: Response, action: string): Promise<void>
 // throw.
 async function expectOkOr404Void(res: Response, action: string): Promise<void> {
   if (!res.ok && res.status !== 404) {
-    reportApiError(res.status);
+    reportApiError(res.status, action);
     throw new ApiError(action, res.status, await readErrorCode(res));
   }
 }
