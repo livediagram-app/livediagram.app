@@ -25,6 +25,10 @@ const CollaboratePanel = dynamic(() =>
   import('@/components/panels/CollaboratePanel').then((m) => m.CollaboratePanel),
 );
 
+// Lazy for the same reason, and more so: the poll panel (spec/88) only
+// mounts while a poll is actually running, which is rare and brief.
+const PollPanel = dynamic(() => import('@/components/panels/PollPanel').then((m) => m.PollPanel));
+
 // Lazy for the same reason: the Actions panel (spec/68) only mounts when
 // the active tab has at least one element with an OPEN assigned action.
 
@@ -78,6 +82,10 @@ export function useCanvasChromePanels({
     layersMinimized,
     onMoveLayersPanel,
     onResetLayersPanel,
+    pollPanel,
+    pollPanelPosition,
+    onMovePollPanel,
+    onResetPollPanel,
     onToggleLayersMinimized,
     onSelectLayer,
     onAddLayer,
@@ -247,6 +255,7 @@ export function useCanvasChromePanels({
   );
   const aiWiring = aiPanel ? panelWiringFor('ai', aiPanel.position, aiPanel.onReset) : null;
   const layersWiring = panelWiringFor('layers', layersPanelPosition, onResetLayersPanel);
+  const pollWiring = panelWiringFor('poll', pollPanelPosition, onResetPollPanel);
   // In docking mode the corner flex columns own stacking, so the legacy
   // measured stack-below-the-palette offset is dropped.
   const legacyStackBelowY =
@@ -481,6 +490,24 @@ export function useCanvasChromePanels({
       />
     ) : null;
 
+  // Live poll (spec/88). Unlike its neighbours this panel is absent most
+  // of the time: it exists only while a poll is running and the viewer is
+  // entitled to the results, so it joins and leaves its corner stack.
+  const pollEl =
+    !chromeHidden && pollPanel ? (
+      <PollPanel
+        poll={pollPanel.poll}
+        answers={pollPanel.answers}
+        isHost={pollPanel.isHost}
+        onEnd={pollPanel.onEnd}
+        onDismiss={pollPanel.onDismiss}
+        position={pollWiring.position}
+        onMoveTo={onMovePollPanel}
+        onReset={pollWiring.onReset}
+        dock={pollWiring.dock}
+      />
+    ) : null;
+
   // Map of panel id → element for the docked-layout distribution.
   const panelEls: Partial<Record<PanelId, ReactNode>> = {
     explorer: explorerEl,
@@ -490,6 +517,7 @@ export function useCanvasChromePanels({
     activity: activityEl,
     minimap: minimapEl,
     layers: layersEl,
+    poll: pollEl,
   };
   return { panelEls };
 }

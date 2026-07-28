@@ -19,7 +19,11 @@ describe('panel-layout', () => {
     const layout = defaultPanelLayout();
     expect(layout.corners['top-left']).toEqual(['explorer']);
     expect(layout.corners['top-right']).toEqual(['palette', 'collaborate', 'ai']);
-    expect(layout.corners['bottom-left']).toEqual(['activity', 'minimap']);
+    // Poll (spec/88) sits bottom-most in the bottom-left stack. It's the
+    // one panel that isn't always present — it only exists while a live
+    // poll is running — so most of the time this corner still renders as
+    // just activity + minimap.
+    expect(layout.corners['bottom-left']).toEqual(['poll', 'activity', 'minimap']);
     expect(layout.corners['bottom-right']).toEqual(['layers']);
     expect(layout.free).toEqual({});
   });

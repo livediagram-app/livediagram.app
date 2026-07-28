@@ -30,6 +30,9 @@ export function EditorCanvasHost() {
     layerInertIds,
     layerCounts,
     layersPanelPosition,
+    pollPanelPosition,
+    setPollPanelPosition,
+    livePoll,
     setLayersPanelPosition,
     layersMinimized,
     setLayersMinimized,
@@ -448,6 +451,23 @@ export function EditorCanvasHost() {
       layersMinimized={layersMinimized}
       onMoveLayersPanel={(x, y) => setLayersPanelPosition({ x, y })}
       onResetLayersPanel={() => setLayersPanelPosition(null)}
+      pollPanel={
+        // Results are for the host and for anyone who has responded
+        // (spec/88) — answering is what buys you the tally. A local
+        // Dismiss hides it without ending the poll for everyone.
+        livePoll.poll && !livePoll.dismissed && (livePoll.isHost || livePoll.myAnswer)
+          ? {
+              poll: livePoll.poll,
+              answers: livePoll.answers,
+              isHost: livePoll.isHost,
+              onEnd: livePoll.endPoll,
+              onDismiss: livePoll.dismissPoll,
+            }
+          : null
+      }
+      pollPanelPosition={pollPanelPosition}
+      onMovePollPanel={(x, y) => setPollPanelPosition({ x, y })}
+      onResetPollPanel={() => setPollPanelPosition(null)}
       onToggleLayersMinimized={() => {
         // Emit only the open transition, matching the Activity dock.
         if (layersMinimized) track('Layer', 'Opened', 'Panel');

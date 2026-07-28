@@ -85,14 +85,24 @@ when an op arrives so a hand-crafted frame can't blow up a peer's panel:
 
 ## Lifecycle
 
-1. **Compose.** Tab menu → **Poll**: question, style, options if the style
-   needs them, then **Start poll**. Edit-role only.
+1. **Compose.** Tab menu → **Collaborate → Poll**: question, style, options
+   if the style needs them, then **Start poll**. Edit-role only. Collaborate
+   is the side-flyout parent row that groups the live session tools
+   (Countdown / Stopwatch / Vote / Poll) under one entry, the same
+   parent/child pattern the element menu uses.
 2. **Prompt.** Every connected participant gets a modal with the question and
    a **Skip** escape (Escape and a backdrop click both skip, so dismissing is
    an answer of "no opinion" rather than a silent drop). Answering or skipping
    both count as responding. The dialog is keyed on the poll id so a second
    poll never inherits the first one's half-typed free-text answer.
-3. **Results.** Shown to the host and to anyone who has responded — so
+3. **Results.** A **`PollPanel`** built on the shared `MovablePanel`, like
+   Collaborate / Layers / Activity: draggable, resettable, and dockable
+   into a corner stack, homed **bottom-left**. It registers as a real
+   `PanelId` rather than floating outside the panel system, but it is the
+   only panel that isn't always present — it joins and leaves its corner
+   stack with the poll. It carries no mobile-dock entry on purpose: the
+   dock is a row of toggles for panels you go looking for, and a poll
+   presents itself. Shown to the host and to anyone who has responded — so
    answering is what buys you the tally, and a participant who hasn't yet
    can't be nudged by the running numbers. The panel updates live and reports
    how many people skipped, separately from the answer counts.

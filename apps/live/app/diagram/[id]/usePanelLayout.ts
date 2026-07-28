@@ -25,6 +25,10 @@ export function usePanelLayout() {
   // dock button until the user opts in, so default chrome is unchanged.
   const [layersPanelPosition, setLayersPanelPosition] = useState<Pos | null>(null);
   const [layersMinimized, setLayersMinimized] = useState(true);
+  // Live poll (spec/88): position only. The panel has no minimised state
+  // because it isn't always there to minimise — it exists only while a
+  // poll is running, and the host's End (or a local Dismiss) removes it.
+  const [pollPanelPosition, setPollPanelPosition] = useState<Pos | null>(null);
   // Zen / focus mode (spec/26): hide all floating chrome (header, tab
   // bar, panels, docks) so only the canvas content + zoom controls
   // remain. Purely a view flag — not persisted, not synced.
@@ -51,6 +55,8 @@ export function usePanelLayout() {
     setLayersPanelPosition,
     layersMinimized,
     setLayersMinimized,
+    pollPanelPosition,
+    setPollPanelPosition,
     zenMode,
     setZenMode,
   };

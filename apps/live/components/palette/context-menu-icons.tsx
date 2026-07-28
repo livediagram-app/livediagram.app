@@ -271,6 +271,30 @@ export function VoteMenuIcon() {
   );
 }
 
+// Two figures - the Collaborate parent category glyph: the side-flyout row
+// that groups the live session tools (Countdown / Stopwatch / Vote / Poll)
+// under one entry instead of four top-level rows.
+export function CollaborateMenuIcon() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <circle cx="6" cy="5.5" r="2.2" />
+      <path d="M2.5 13c0-2 1.6-3.2 3.5-3.2s3.5 1.2 3.5 3.2" />
+      <path d="M11 4.2a2.2 2.2 0 010 4.3" />
+      <path d="M12.2 13c0-1.5-.5-2.5-1.4-3.1" />
+    </svg>
+  );
+}
+
 // Three rising bars - the Poll session-tool category glyph (spec/88, a
 // live tally). Distinct from VoteMenuIcon's cast-a-dot check: a poll
 // counts answers from people, not dots on elements.

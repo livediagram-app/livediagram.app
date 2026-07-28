@@ -30,9 +30,13 @@ live counts but can't control or vote. No extra gating code.
 
 `tab.timer: { mode: 'countdown' | 'stopwatch'; running; durationMs?; anchorAt?; frozenMs? }`.
 
-- Controlled from the tab menu's session band as two top-level categories,
-  **Countdown** (with a duration: 1 / 3 / 5 / 10 min presets) and
-  **Stopwatch**, each with **Start / Pause / Resume / Reset / Clear**
+- Controlled from the tab menu's **Collaborate** row — a side-flyout
+  parent (`MenuFlyoutSection`, the same parent/child pattern the element
+  menu uses for Style / Text / Tools) that groups every live session tool
+  under one entry instead of four top-level rows: **Countdown**,
+  **Stopwatch**, **Vote**, and the ephemeral **Poll** (spec/88). Countdown
+  carries a duration (1 / 3 / 5 / 10 min presets); both timers offer
+  **Start / Pause / Resume / Reset / Clear**
   (`useTabSession`). The open category shows a live big-digit clock with a
   running/paused status and, for countdowns, a progress track.
 - **One timer per tab**: `tab.timer` is a single value, so starting either
@@ -61,7 +65,7 @@ live counts but can't control or vote. No extra gating code.
 `tab.vote: { active; revealed; votesPerPerson; votes: Record<elementId, participantId[]> }`
 — one participant id per dot, so stacking N dots on one element is N entries.
 
-- Controlled from **Tab Settings → Session → Vote**: a **dots-per-person**
+- Controlled from **Tab menu → Collaborate → Vote**: a **dots-per-person**
   stepper, then **Start vote** → **End vote** → **Show results** → **Clear**,
   with a live "N cast" readout.
 - **Votable targets** (`isVotable`): shapes, sticky notes, and images — **not**
@@ -106,7 +110,7 @@ what to pile onto). Two independent switches on the vote address them:
 are **optional** so a vote persisted before this shipped decodes unchanged
 and behaves as it always did (absent = off).
 
-- **Set once, at start.** Both switches sit in **Tab Settings → Session →
+- **Set once, at start.** Both switches sit in **Tab menu → Collaborate →
   Vote** above **Start vote**, alongside the dots-per-person stepper, and are
   written into the `TabVote` by `startVote`. There is **no mid-vote toggle**:
   to change them, end the vote and start a new one. That keeps the rule a

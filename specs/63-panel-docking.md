@@ -92,7 +92,19 @@ Shape:
 
 ```ts
 type PanelCorner = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
-type PanelId = 'palette' | 'explorer' | 'activity' | 'comments' | 'ai' | 'minimap';
+// 'collaborate' is the merged Comments + Actions panel; 'layers' is
+// spec/74; 'poll' is spec/88 and is the ONE panel that isn't always
+// available — it exists only while a live poll is running, so it joins
+// and leaves its corner stack rather than sitting in it.
+type PanelId =
+  | 'palette'
+  | 'explorer'
+  | 'activity'
+  | 'collaborate'
+  | 'ai'
+  | 'minimap'
+  | 'layers'
+  | 'poll';
 
 type PanelLayout = {
   // Ordered stack per corner. Order is top→bottom (top corners) /
@@ -150,7 +162,7 @@ later, or reading a layout written by a newer client, never strands the UI.
   in its current container (it just lifts to fixed); only free-placement panels render in a
   separate free layer. The whole corner-container path is gated behind "not mobile, not
   `minimalPanels`, not zen"; otherwise the existing inline rendering runs as before. The
-  Minimap is rendered here as the sixth panel rather than from `Canvas.tsx`.
+  Minimap is rendered here alongside the others rather than from `Canvas.tsx`.
 
 ## Telemetry
 

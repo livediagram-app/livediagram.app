@@ -260,6 +260,19 @@ export type CanvasProps = {
   onMoveLayersPanel: (x: number, y: number) => void;
   onResetLayersPanel: () => void;
   onToggleLayersMinimized: () => void;
+  // Live poll (spec/88). The panel exists only while a poll is running,
+  // so `poll` null means it isn't rendered at all — there is no minimised
+  // state to keep, unlike Layers / Activity.
+  pollPanel: {
+    poll: import('@livediagram/api-schema').LivePoll;
+    answers: Map<string, string | null>;
+    isHost: boolean;
+    onEnd: () => void;
+    onDismiss: () => void;
+  } | null;
+  pollPanelPosition: { x: number; y: number } | null;
+  onMovePollPanel: (x: number, y: number) => void;
+  onResetPollPanel: () => void;
   // Bottom-dock "Theme & Canvas" button (spec/42): opens the
   // CanvasThemeDialog. Omitted in read-only / embed sessions (no button).
   onOpenCanvasTheme?: () => void;

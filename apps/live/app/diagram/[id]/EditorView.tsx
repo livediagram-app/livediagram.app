@@ -11,7 +11,6 @@ import { SignInBanner, SIGNIN_BANNER_DISMISS_KEY } from '@/components/chrome/Sig
 import { EmptyCanvasBanner } from '@/components/canvas/EmptyCanvasBanner';
 import { EditorModals } from '@/components/dialogs/EditorModals';
 import { PollPromptDialog } from '@/components/dialogs/PollPromptDialog';
-import { PollPanel } from '@/components/chrome/PollPanel';
 import { EditorTabDialogs } from '@/components/dialogs/EditorTabDialogs';
 import { EditorElementDialogs } from '@/components/dialogs/EditorElementDialogs';
 import { EditorContextMenuHost } from '@/components/palette/EditorContextMenuHost';
@@ -356,15 +355,6 @@ export function EditorView() {
         poll={livePoll.poll && !livePoll.myAnswer ? livePoll.poll : null}
         onAnswer={livePoll.answerPoll}
       />
-      {livePoll.poll && !livePoll.dismissed && (livePoll.isHost || livePoll.myAnswer) ? (
-        <PollPanel
-          poll={livePoll.poll}
-          answers={livePoll.answers}
-          isHost={livePoll.isHost}
-          onEnd={livePoll.endPoll}
-          onDismiss={livePoll.dismissPoll}
-        />
-      ) : null}
       <EditorModals />
       <EditorAnchoredPopovers />
       <EditorContextMenuHost />

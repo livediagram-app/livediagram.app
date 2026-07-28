@@ -28,6 +28,7 @@ import {
   MenuToolButton,
 } from '@/components/primitives/PortalMenu';
 import {
+  CollaborateMenuIcon,
   CountdownMenuIcon,
   PollMenuIcon,
   TimerMenuIcon,
@@ -38,6 +39,7 @@ import {
   SessionStopwatchSection,
   SessionVoteSection,
 } from '@/components/panels/SessionToolsSection';
+import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
 import { SessionPollSection } from '@/components/panels/SessionPollSection';
 import { TabCanvasMenuSections } from './TabCanvasMenuSections';
 import {
@@ -148,6 +150,16 @@ export function PortalMenu({
     onToggle: () => setOpenSection((s) => (s === id ? null : id)),
     // Rows sit flush (no per-row hairline); the only rules are the
     // MenuGroupSeparator bands, matching the element context menu.
+    flush: true,
+  });
+  // Which side-flyout row is open — SEPARATE from openSection, because the
+  // accordions nested inside a flyout draw from that same pool and would
+  // otherwise close their own parent. Mirrors useContextMenuScaffold's
+  // split for the element menu's Style / Text / Tools rows.
+  const [openFlyout, setOpenFlyout] = useState<string | null>(null);
+  const flyoutProps = (id: string) => ({
+    open: openFlyout === id,
+    onToggle: () => setOpenFlyout((f) => (f === id ? null : id)),
     flush: true,
   });
   // Delete confirmation: an inline popover anchored to the Delete row
@@ -393,58 +405,65 @@ export function PortalMenu({
                 sectionProps={sectionProps}
               />
             ) : null}
-            {/* ── Session band: Countdown + Stopwatch + Vote as separate
-                categories. One timer per tab (spec/39): each timer section
-                offers Start and warns it resets the other when that other
-                is running. ── */}
+            {/* ── Collaborate: the live session tools grouped under ONE
+                side-flyout row rather than four top-level categories, the
+                same parent/child pattern the element menu uses for Style /
+                Text / Tools. Countdown, Stopwatch and Vote are per-tab
+                state (spec/39, one timer per tab — each Start warns it
+                resets the other); Poll is NOT tab state at all (spec/88):
+                it lives only in the realtime room and leaves no trace on
+                the diagram. ── */}
             <MenuGroupSeparator />
-            <MenuAccordionSection
-              title="Countdown"
-              icon={<CountdownMenuIcon />}
-              {...sectionProps('countdown')}
+            <MenuFlyoutSection
+              title="Collaborate"
+              icon={<CollaborateMenuIcon />}
+              {...flyoutProps('collaborate')}
             >
-              <SessionCountdownSection
-                timer={timer}
-                onStartTimer={onStartTimer}
-                onPauseTimer={onPauseTimer}
-                onResumeTimer={onResumeTimer}
-                onResetTimer={onResetTimer}
-                onClearTimer={onClearTimer}
-              />
-            </MenuAccordionSection>
-            <MenuAccordionSection
-              title="Stopwatch"
-              icon={<TimerMenuIcon />}
-              {...sectionProps('stopwatch')}
-            >
-              <SessionStopwatchSection
-                timer={timer}
-                onStartTimer={onStartTimer}
-                onPauseTimer={onPauseTimer}
-                onResumeTimer={onResumeTimer}
-                onResetTimer={onResetTimer}
-                onClearTimer={onClearTimer}
-              />
-            </MenuAccordionSection>
-            <MenuAccordionSection title="Vote" icon={<VoteMenuIcon />} {...sectionProps('vote')}>
-              <SessionVoteSection
-                vote={vote}
-                onStartVote={onStartVote}
-                onEndVote={onEndVote}
-                onRevealVote={onRevealVote}
-                onClearVote={onClearVote}
-              />
-            </MenuAccordionSection>
-            {/* Poll (spec/88) sits in the session band but is NOT tab
-                state: it lives only in the realtime room and leaves no
-                trace on the diagram. */}
-            <MenuAccordionSection title="Poll" icon={<PollMenuIcon />} {...sectionProps('poll')}>
-              <SessionPollSection
-                poll={livePoll}
-                connected={pollConnected}
-                onStartPoll={onStartPoll}
-              />
-            </MenuAccordionSection>
+              <MenuAccordionSection
+                title="Countdown"
+                icon={<CountdownMenuIcon />}
+                {...sectionProps('countdown')}
+              >
+                <SessionCountdownSection
+                  timer={timer}
+                  onStartTimer={onStartTimer}
+                  onPauseTimer={onPauseTimer}
+                  onResumeTimer={onResumeTimer}
+                  onResetTimer={onResetTimer}
+                  onClearTimer={onClearTimer}
+                />
+              </MenuAccordionSection>
+              <MenuAccordionSection
+                title="Stopwatch"
+                icon={<TimerMenuIcon />}
+                {...sectionProps('stopwatch')}
+              >
+                <SessionStopwatchSection
+                  timer={timer}
+                  onStartTimer={onStartTimer}
+                  onPauseTimer={onPauseTimer}
+                  onResumeTimer={onResumeTimer}
+                  onResetTimer={onResetTimer}
+                  onClearTimer={onClearTimer}
+                />
+              </MenuAccordionSection>
+              <MenuAccordionSection title="Vote" icon={<VoteMenuIcon />} {...sectionProps('vote')}>
+                <SessionVoteSection
+                  vote={vote}
+                  onStartVote={onStartVote}
+                  onEndVote={onEndVote}
+                  onRevealVote={onRevealVote}
+                  onClearVote={onClearVote}
+                />
+              </MenuAccordionSection>
+              <MenuAccordionSection title="Poll" icon={<PollMenuIcon />} {...sectionProps('poll')}>
+                <SessionPollSection
+                  poll={livePoll}
+                  connected={pollConnected}
+                  onStartPoll={onStartPoll}
+                />
+              </MenuAccordionSection>
+            </MenuFlyoutSection>
           </>
         ) : null}
       </div>
