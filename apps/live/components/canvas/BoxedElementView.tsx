@@ -509,6 +509,7 @@ function BoxedElementViewImpl({
         isVoteFocus={isVoteFocus}
         zoom={zoom}
         onRetractVote={onRetractVote}
+        onCastVote={onCastVote}
       />
 
       {/* Selection chrome (resize / edge-grip handles) rides in its own

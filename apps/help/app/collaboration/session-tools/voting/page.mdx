@@ -36,9 +36,11 @@ Dot-voting is controlled from the tab's menu, under **Collaborate → Vote**.
 
 ## Casting and retracting dots
 
-While a vote is open, clicking a votable element places one of your dots on it. Stacking several of your dots on one element is allowed, each one counts separately. You can only spend up to your budget; once it is gone, the banner shows nothing left to place.
+While a vote is open, every votable element carries a small **− 0 +** counter in its bottom-right corner. Press **+** to add one of your dots and **−** to take one back; clicking the element itself also adds a dot, which is quicker when you are working through a wall of stickies. Stacking several dots on one element is allowed, each counts separately.
 
-Every element with dots shows a **tally pill**. The pill is filled in your brand colour when it holds one of your dots, and clicking it **retracts** one of yours. Non-votable elements still behave normally, so the board stays fully editable during a vote.
+The counter starts at zero, so you can always see which elements are in play and how many dots each has. **−** greys out at zero and **+** greys out once your budget is spent, rather than disappearing, so the buttons stay where your pointer expects them. Non-votable elements show no counter and behave normally, so the board stays fully editable during a vote.
+
+Once the vote ends the buttons go and the counter becomes a plain tally, since at that point it is a result to read rather than something to change.
 
 <Figure caption="Each votable element carries a tally pill, with a banner tracking how many dots you have left.">
   <DotVoting />

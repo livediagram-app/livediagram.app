@@ -75,8 +75,20 @@ live counts but can't control or vote. No extra gating code.
   your dots (`BoxedElementView` intercepts the pointer-down before
   select/drag); your budget (`votesPerPerson`) is enforced via `votesSpentBy`.
   Non-votable elements still select normally so the board stays editable.
-  Counts are **live** — every element with dots shows a tally pill (brand-filled
-  when it holds your dots; click it to retract one). A floating **`VoteBanner`**
+  Counts are **live**. While casting is open, every votable element carries a
+  **stepper** — minus, the count, plus — reading `0` before anything lands.
+  Plus casts one of your dots, minus retracts one. It replaced a bare
+  click-to-retract count that only appeared once an element already had a
+  dot, which made the first dot on a board an act of faith: nothing on
+  screen said an element was a target or how to add to it. Minus is
+  disabled at zero and plus once your budget is spent, rather than
+  hidden, so the row's width — and so the plus's position — never shifts
+  under the pointer mid-vote. The stepper sits INSIDE the element's
+  bottom-right corner (clearance from the edge, and from a neighbour's
+  stepper on a packed board) and stops its own pointer events so a minus
+  can't bubble into the element-body cast and re-add what it just removed.
+  Once casting closes it reverts to a read-only count: a result to read,
+  not a control. A floating **`VoteBanner`**
   (the same `TopCenterStack`, stacked below the timer row) tells each
   participant how many dots they have left — and **only** that. It floats
   over the canvas for the whole vote, so it carries one glanceable phrase
