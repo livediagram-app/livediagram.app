@@ -4,6 +4,7 @@ import {
   buildElementIndex,
   isBoxed,
   isRailShape,
+  isVotableInVote,
   layerBands,
   layerOpacityOf,
 } from '@livediagram/diagram';
@@ -281,6 +282,10 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
           <BoxedElementView
             key={element.id}
             element={element}
+            // Resolved once here, where both the vote and the tab's layers
+            // are in scope, rather than threading `layers` down to the
+            // gesture hook and the overlay separately (spec/96).
+            votableInVote={isVotableInVote(element, tabVote, tabLayers)}
             layerOpacity={effOpacity < 1 ? effOpacity : undefined}
             isSelected={memberIds.has(element.id) || multiSelectedIds.has(element.id)}
             isMultiSelected={multiSelectedIds.has(element.id)}

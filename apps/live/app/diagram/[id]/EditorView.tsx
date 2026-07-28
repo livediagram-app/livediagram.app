@@ -61,6 +61,8 @@ export function EditorView() {
     revealVote,
     clearVote,
     livePoll,
+    layers,
+    activeLayerId,
     canvasTool,
     drag,
     clearTabContent,
@@ -286,6 +288,8 @@ export function EditorView() {
           // is nobody to ask on a diagram that isn't shared or on a team.
           pollConnected={diagramShareable || !!diagramTeamId}
           onStartPoll={livePoll.startPoll}
+          voteLayers={layers}
+          activeLayerId={activeLayerId}
           otherDiagrams={
             // Tab linking is a server-side row insert (spec/17), so neither an
             // offline diagram's tabs nor an offline destination can take part

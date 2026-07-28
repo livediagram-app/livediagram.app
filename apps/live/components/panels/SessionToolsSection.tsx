@@ -19,9 +19,10 @@ import {
   voteHidesCursors,
   voteHidesTallies,
   type TabTimer,
+  type Layer,
   type TabVote,
   type TimerMode,
-  type VotePrivacy,
+  type VoteSetup,
   formatTimerClock,
 } from '@livediagram/diagram';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
@@ -218,10 +219,15 @@ export function SessionStopwatchSection({
 
 type VoteProps = {
   vote: TabVote | null;
+  // The tab's layers + which one is active (spec/74), for the vote's
+  // layer scope (spec/96). One layer = no picker, since scoping to the
+  // only layer is the same as not scoping at all.
+  layers: Layer[];
+  activeLayerId: string;
   // The local participant id, matched against the vote's starter: only
   // the host may end / reveal / clear it (spec/39).
   selfId: string;
-  onStartVote: (votesPerPerson: number, privacy?: VotePrivacy) => void;
+  onStartVote: (votesPerPerson: number, setup?: VoteSetup) => void;
   onEndVote: () => void;
   onRevealVote: () => void;
   onClearVote: () => void;
@@ -261,6 +267,8 @@ function VotePrivacyRow({
 export function SessionVoteSection({
   vote,
   selfId,
+  layers,
+  activeLayerId,
   onStartVote,
   onEndVote,
   onRevealVote,
@@ -273,6 +281,12 @@ export function SessionVoteSection({
   // Both are baked into the vote at start and can't be changed mid-vote.
   const [hideCursors, setHideCursors] = useState(true);
   const [hideCounts, setHideCounts] = useState(false);
+  // Layer scope (spec/96). Pre-selected to the layer the editor is on,
+  // which is almost always the one the facilitator just built. '' is the
+  // explicit "all layers" choice — without it a multi-layer tab couldn't
+  // reproduce an ordinary whole-tab vote.
+  const [voteLayerId, setVoteLayerId] = useState<string>(activeLayerId);
+  const multiLayer = layers.length > 1;
   const totalVotesCast = vote ? Object.values(vote.votes).reduce((n, ids) => n + ids.length, 0) : 0;
 
   return (
@@ -303,6 +317,26 @@ export function SessionVoteSection({
               </button>
             </div>
           </div>
+          {multiLayer ? (
+            <label className="flex flex-col gap-1">
+              <span className="text-[11px] text-slate-600 dark:text-slate-300">Votable layer</span>
+              <select
+                value={voteLayerId}
+                onChange={(e) => setVoteLayerId(e.target.value)}
+                className="w-full rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] text-slate-700 outline-none transition focus:border-brand-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+              >
+                <option value="">All layers</option>
+                {layers.map((l) => (
+                  <option key={l.id} value={l.id}>
+                    {l.name}
+                  </option>
+                ))}
+              </select>
+              <span className="text-[10px] leading-snug text-slate-400 dark:text-slate-500">
+                Only this layer takes dots. The rest stay visible, dimmed.
+              </span>
+            </label>
+          ) : null}
           <VotePrivacyRow
             label="Hide cursors"
             hint="Nobody sees where others are pointing."
@@ -317,7 +351,14 @@ export function SessionVoteSection({
           />
           <button
             type="button"
-            onClick={() => onStartVote(votesPerPerson, { hideCursors, hideCounts })}
+            onClick={() =>
+              onStartVote(votesPerPerson, {
+                hideCursors,
+                hideCounts,
+                // '' means all layers; a single-layer tab never scopes.
+                layerId: multiLayer && voteLayerId ? voteLayerId : undefined,
+              })
+            }
             className={sessBtnPrimary}
           >
             Start vote
@@ -330,11 +371,14 @@ export function SessionVoteSection({
             <span className="font-semibold tabular-nums">{totalVotesCast}</span> cast ·{' '}
             {vote.votesPerPerson} each
           </p>
-          {voteHidesCursors(vote) || voteHidesTallies(vote) ? (
+          {vote.voteLayerId || voteHidesCursors(vote) || voteHidesTallies(vote) ? (
             // Read-only: privacy is fixed for the life of the vote, so this
             // states what's in force rather than offering a switch.
             <p className="rounded-md bg-slate-50 px-2 py-1 text-[10px] leading-snug text-slate-500 dark:bg-slate-800/60 dark:text-slate-400">
               {[
+                vote.voteLayerId
+                  ? `${layers.find((l) => l.id === vote.voteLayerId)?.name ?? 'One layer'} only`
+                  : null,
                 voteHidesCursors(vote) ? 'Cursors hidden' : null,
                 voteHidesTallies(vote) ? 'Counts hidden' : null,
               ]

@@ -7,9 +7,10 @@ import {
   type Tab,
   type TabTimer,
   type TabVote,
+  type Layer,
   type TextSize,
   type TimerMode,
-  type VotePrivacy,
+  type VoteSetup,
 } from '@livediagram/diagram';
 import type { LivePoll, PollStyle } from '@livediagram/api-schema';
 import { useUiMode } from '@/hooks/ui/useUiMode';
@@ -108,7 +109,7 @@ type TabBarProps = {
   onResumeTimer: () => void;
   onResetTimer: () => void;
   onClearTimer: () => void;
-  onStartVote: (votesPerPerson: number, privacy?: VotePrivacy) => void;
+  onStartVote: (votesPerPerson: number, setup?: VoteSetup) => void;
   onEndVote: () => void;
   onRevealVote: () => void;
   onClearVote: () => void;
@@ -116,6 +117,9 @@ type TabBarProps = {
   livePoll: LivePoll | null;
   pollConnected: boolean;
   onStartPoll: (draft: { question: string; style: PollStyle; options: string[] }) => void;
+  // The tab's layers + the active one, for the vote's layer scope (spec/96).
+  voteLayers: Layer[];
+  activeLayerId: string;
   // The user's other diagrams (excluding the current one). Drives the
   // "Add to Diagram" submenu in the tab ellipsis; savedAt versions the
   // destination-picker thumbnails (spec/67).
@@ -185,6 +189,8 @@ export function TabBar({
   livePoll,
   pollConnected,
   onStartPoll,
+  voteLayers,
+  activeLayerId,
   otherDiagrams,
   onCopyTabTo,
   onToggleLockTab,
@@ -289,6 +295,8 @@ export function TabBar({
     livePoll,
     pollConnected,
     onStartPoll,
+    voteLayers,
+    activeLayerId,
   });
 
   const activeTab = tabs.find((t) => t.id === activeId);

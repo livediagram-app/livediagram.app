@@ -1,5 +1,5 @@
 import type { PointerEvent as ReactPointerEvent, RefObject } from 'react';
-import { isSelfDrawingShape, isVotable } from '@livediagram/diagram';
+import { isSelfDrawingShape } from '@livediagram/diagram';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
 import { useLongPress } from '@/hooks/ui/useLongPress';
 import type { BoxedElementViewProps } from './BoxedElementView.types';
@@ -21,6 +21,7 @@ export function useBoxedElementGestures({
   isMultiSelected,
   isSelected,
   vote,
+  votableInVote,
   onCastVote,
   onShiftSelect,
   onBeginDrag,
@@ -35,6 +36,7 @@ export function useBoxedElementGestures({
   | 'element'
   | 'isEditing'
   | 'vote'
+  | 'votableInVote'
   | 'onCastVote'
   | 'onShiftSelect'
   | 'onBeginDrag'
@@ -70,7 +72,7 @@ export function useBoxedElementGestures({
     // element casts one of your dots instead of selecting / dragging it.
     // Non-votable elements (text / frame / arrow / …) still select, so
     // the facilitator can keep arranging the board.
-    if (vote?.active && onCastVote && isVotable(element)) {
+    if (vote?.active && onCastVote && votableInVote) {
       onCastVote(element.id);
       return;
     }

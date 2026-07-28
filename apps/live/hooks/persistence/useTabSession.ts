@@ -18,7 +18,7 @@ import {
   type Tab,
   type TabVote,
   type TimerMode,
-  type VotePrivacy,
+  type VoteSetup,
 } from '@livediagram/diagram';
 import { track } from '@/lib/telemetry';
 
@@ -115,21 +115,28 @@ export function useTabSession(deps: TabSessionDeps) {
   // Privacy is decided HERE, at start, and baked into the vote — spec/39
   // has no mid-vote toggle, so a participant can trust that what was
   // hidden stayed hidden for the whole vote.
-  const startVote = (votesPerPerson: number, privacy?: VotePrivacy) => {
+  const startVote = (votesPerPerson: number, setup?: VoteSetup) => {
     if (editsBlocked) return;
     const vote: TabVote = {
       active: true,
       revealed: false,
       votesPerPerson,
       votes: {},
-      hideCursors: privacy?.hideCursors === true,
-      hideCounts: privacy?.hideCounts === true,
+      hideCursors: setup?.hideCursors === true,
+      hideCounts: setup?.hideCounts === true,
+      // Layer scope (spec/96). Undefined = every layer, which is what a
+      // single-layer tab always gets since the picker never shows there.
+      voteLayerId: setup?.layerId,
       // A vote is one person's to run (spec/39): the starter is the only
       // one who can end / reveal / clear it or move the results focus.
       startedBy: selfId,
     };
     patchActive((t) => ({ ...t, vote }));
+    const layerName = vote.voteLayerId
+      ? (deps.activeTab.layers ?? []).find((l) => l.id === vote.voteLayerId)?.name
+      : undefined;
     const privacyNote = [
+      layerName ? `on ${layerName}` : null,
       vote.hideCursors ? 'cursors hidden' : null,
       vote.hideCounts ? 'counts hidden' : null,
     ].filter(Boolean);

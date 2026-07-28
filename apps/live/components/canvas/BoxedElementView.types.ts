@@ -99,6 +99,10 @@ export type BoxedElementViewProps = {
   // winner highlight once revealed). cast/retract are omitted for
   // read-only viewers, who watch but can't vote.
   vote?: import('@livediagram/diagram').TabVote;
+  // Whether THIS element can take a dot in the running vote: the kind
+  // rule AND the vote's layer scope (spec/96). Resolved by the caller,
+  // which has the tab's layers; false also drives the dimming.
+  votableInVote?: boolean;
   selfId?: string;
   voteMax?: number;
   // Vote-results walkthrough (spec/39): while active, the plain winner

@@ -1,4 +1,4 @@
-import { isVotable, voteHidesTallies, type BoxedElement, type TabVote } from '@livediagram/diagram';
+import { voteHidesTallies, type BoxedElement, type TabVote } from '@livediagram/diagram';
 import { Tooltip } from '@/components/primitives/Tooltip';
 
 // The dot-vote overlay (spec/39), lifted out of BoxedElementView: the
@@ -11,6 +11,7 @@ export function ElementVoteOverlay({
   vote,
   selfId,
   voteMax,
+  votableInVote,
   voteReviewActive,
   isVoteFocus,
   zoom,
@@ -20,6 +21,8 @@ export function ElementVoteOverlay({
   vote: TabVote | null | undefined;
   selfId: string | null | undefined;
   voteMax: number | null | undefined;
+  // Kind rule AND the vote's layer scope (spec/96), resolved upstream.
+  votableInVote?: boolean;
   // Vote-results walkthrough (spec/39): while it runs, the static winner
   // rings yield to ONE pulsing focus on the currently-reviewed element,
   // so attention lands on a single pick at a time.
@@ -39,7 +42,7 @@ export function ElementVoteOverlay({
   // room. "Show results" swaps every pill back to the true tally.
   const tallyHidden = voteHidesTallies(vote);
   const voteTotal = tallyHidden ? myVotes : vote ? (vote.votes[element.id]?.length ?? 0) : 0;
-  const showVotePill = !!vote && voteTotal > 0 && isVotable(element);
+  const showVotePill = !!vote && voteTotal > 0 && votableInVote;
   const isVoteWinner = !!vote?.revealed && voteTotal > 0 && voteTotal === (voteMax ?? 0);
   return (
     <>

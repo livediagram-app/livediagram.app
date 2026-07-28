@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { ShapeElement } from './index';
 import {
   isVotable,
+  isVotableInVote,
   isVoteHost,
   timerDisplayMs,
   timerDone,
@@ -180,5 +181,52 @@ describe('vote privacy (spec/39)', () => {
     expect(voteHidesTallies(cursorsOnly)).toBe(false);
     const countsOnly: TabVote = { ...open, hideCounts: true };
     expect(voteHidesCursors(countsOnly)).toBe(false);
+  });
+});
+
+describe('vote layer scoping (spec/96)', () => {
+  const vote = (over: Partial<TabVote> = {}): TabVote => ({
+    active: true,
+    revealed: false,
+    votesPerPerson: 3,
+    votes: {},
+    ...over,
+  });
+  const layers = [
+    { id: 'layer:default', name: 'Layer 1' },
+    { id: 'l2', name: 'Layer 2' },
+  ];
+
+  it('an unscoped vote leaves every layer votable', () => {
+    const el = shape('a', { layerId: 'l2' });
+    expect(isVotableInVote(el, vote(), layers)).toBe(true);
+    expect(isVotableInVote(el, vote({ voteLayerId: undefined }), layers)).toBe(true);
+  });
+
+  it('a scoped vote takes dots only on its own layer', () => {
+    const on = shape('a', { layerId: 'l2' });
+    const off = shape('b', { layerId: 'layer:default' });
+    const v = vote({ voteLayerId: 'l2' });
+    expect(isVotableInVote(on, v, layers)).toBe(true);
+    expect(isVotableInVote(off, v, layers)).toBe(false);
+  });
+
+  it('pre-layers elements resolve to the base layer rather than becoming unvotable', () => {
+    // Everything authored before spec/74 carries no layerId. A raw
+    // comparison would drop all of it the moment a scope was set.
+    const legacy = shape('a');
+    expect(legacy.layerId).toBeUndefined();
+    expect(isVotableInVote(legacy, vote({ voteLayerId: 'layer:default' }), layers)).toBe(true);
+    expect(isVotableInVote(legacy, vote({ voteLayerId: 'l2' }), layers)).toBe(false);
+  });
+
+  it('the kind rule still wins — a frame on the votable layer is still not votable', () => {
+    const frame = shape('f', { shape: 'frame', layerId: 'l2' });
+    expect(isVotableInVote(frame, vote({ voteLayerId: 'l2' }), layers)).toBe(false);
+  });
+
+  it('with no vote, only the kind rule applies (there is no scope to fail)', () => {
+    expect(isVotableInVote(shape('a'), null, layers)).toBe(true);
+    expect(isVotableInVote(shape('f', { shape: 'frame' }), null, layers)).toBe(false);
   });
 });

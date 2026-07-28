@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import type { TabTimer, TabVote, TimerMode, VotePrivacy } from '@livediagram/diagram';
+import type { Layer, TabTimer, TabVote, TimerMode, VoteSetup } from '@livediagram/diagram';
 import type { LivePoll, PollStyle } from '@livediagram/api-schema';
 
 import { PortalMenu } from './TabPortalMenu';
@@ -43,6 +43,8 @@ export function EllipsisMenuButton({
   livePoll,
   pollConnected,
   onStartPoll,
+  voteLayers,
+  activeLayerId,
 }: {
   open: boolean;
   onToggle: () => void;
@@ -77,7 +79,7 @@ export function EllipsisMenuButton({
   onResumeTimer: () => void;
   onResetTimer: () => void;
   onClearTimer: () => void;
-  onStartVote: (votesPerPerson: number, privacy?: VotePrivacy) => void;
+  onStartVote: (votesPerPerson: number, setup?: VoteSetup) => void;
   onEndVote: () => void;
   onRevealVote: () => void;
   onClearVote: () => void;
@@ -85,6 +87,8 @@ export function EllipsisMenuButton({
   livePoll: LivePoll | null;
   pollConnected: boolean;
   onStartPoll: (draft: { question: string; style: PollStyle; options: string[] }) => void;
+  voteLayers: Layer[];
+  activeLayerId: string;
 }) {
   const buttonRef = useRef<HTMLButtonElement>(null);
   return (
@@ -140,6 +144,8 @@ export function EllipsisMenuButton({
           livePoll={livePoll}
           pollConnected={pollConnected}
           onStartPoll={onStartPoll}
+          voteLayers={voteLayers}
+          activeLayerId={activeLayerId}
         />
       ) : null}
     </div>

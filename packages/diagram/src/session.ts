@@ -8,7 +8,8 @@
 // countdown / stopwatch and the vote tallies are unit-testable and the
 // clients tick locally off an absolute anchor rather than over the wire.
 
-import type { Element } from './index';
+import type { Element, Layer } from './index';
+import { resolveLayerId, tabLayers } from './layers';
 
 // --- Timer -----------------------------------------------------------------
 
@@ -86,6 +87,11 @@ export type TabVote = {
   // persisted before this shipped has no host, and `isVoteHost` treats that
   // as "anyone may drive" so an in-flight legacy vote can still be ended.
   startedBy?: string;
+  // Restrict voting to ONE layer (spec/96). Absent = every layer is
+  // votable, which is both the pre-layer-scoping behaviour and what a
+  // single-layer tab always gets. Set once at start, like the privacy
+  // switches: changing it means ending the vote and starting another.
+  voteLayerId?: string;
   // Which rank the results walkthrough is currently on. SHARED, not local:
   // the host steps the room through the picks together and everyone else
   // follows. Absent until the host reveals results.
@@ -110,6 +116,16 @@ export type VotePrivacy = {
   hideCounts: boolean;
 };
 
+// Everything the facilitator chooses BEFORE starting a vote: the privacy
+// switches plus the optional layer scope (spec/96). One object because
+// they share a lifecycle — all of it is baked into the TabVote at start
+// and none of it can change while the vote runs.
+export type VoteSetup = VotePrivacy & {
+  // Restrict casting to this layer. Undefined = every layer, which is
+  // what a single-layer tab always gets (the picker doesn't even show).
+  layerId?: string;
+};
+
 // Should peer cursors / laser trails be withheld right now? Only while
 // casting is OPEN: ending the vote restores them, ahead of the reveal
 // (spec/39 — "hidden" means exactly "while the vote is open").
@@ -130,6 +146,24 @@ export function voteHidesTallies(vote: TabVote | null | undefined): boolean {
 export function isVotable(element: Element): boolean {
   if (element.type === 'sticky' || element.type === 'image') return true;
   return element.type === 'shape' && element.shape !== 'frame';
+}
+
+// Can this element take a dot in THIS vote? The kind rule above, plus
+// the vote's optional layer scope (spec/96).
+//
+// Layer resolution goes through `resolveLayerId` rather than comparing
+// `element.layerId` directly: elements authored before spec/74 carry no
+// layerId at all and belong to the base layer, so a raw comparison would
+// make every one of them unvotable the moment a scope was set.
+export function isVotableInVote(
+  element: Element,
+  vote: TabVote | null | undefined,
+  layers: Layer[] | undefined,
+): boolean {
+  if (!isVotable(element)) return false;
+  const scope = vote?.voteLayerId;
+  if (!scope) return true;
+  return resolveLayerId(element.layerId, tabLayers(layers)) === scope;
 }
 
 // How many dots a given participant has spent across the whole tab.

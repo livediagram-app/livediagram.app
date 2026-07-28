@@ -3,10 +3,11 @@ import { useReposition } from '@/hooks/canvas/useReposition';
 import { Portal } from '@/components/primitives/Portal';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import {
+  type Layer,
   type TabTimer,
   type TabVote,
   type TimerMode,
-  type VotePrivacy,
+  type VoteSetup,
 } from '@livediagram/diagram';
 import type { LivePoll, PollStyle } from '@livediagram/api-schema';
 import { clampToViewport } from '@/lib/clamp-to-viewport';
@@ -87,6 +88,8 @@ export function PortalMenu({
   livePoll,
   pollConnected,
   onStartPoll,
+  voteLayers,
+  activeLayerId,
 }: {
   // Positioned EITHER above an anchor button (tab ellipsis) OR at a screen
   // point (canvas right-click / footer button). Exactly one is provided.
@@ -122,7 +125,7 @@ export function PortalMenu({
   onResumeTimer: () => void;
   onResetTimer: () => void;
   onClearTimer: () => void;
-  onStartVote: (votesPerPerson: number, privacy?: VotePrivacy) => void;
+  onStartVote: (votesPerPerson: number, setup?: VoteSetup) => void;
   onEndVote: () => void;
   onRevealVote: () => void;
   onClearVote: () => void;
@@ -132,6 +135,9 @@ export function PortalMenu({
   livePoll: LivePoll | null;
   pollConnected: boolean;
   onStartPoll: (draft: { question: string; style: PollStyle; options: string[] }) => void;
+  // The tab's layers + the active one, for the vote's layer scope (spec/96).
+  voteLayers: Layer[];
+  activeLayerId: string;
 }) {
   // The menu itself lists the verbs (Rename, Duplicate, Clear…); the two
   // organise pickers — "copyTo" (spec/17, link the tab into another
@@ -461,6 +467,8 @@ export function PortalMenu({
                 <SessionVoteSection
                   vote={vote}
                   selfId={selfId}
+                  layers={voteLayers}
+                  activeLayerId={activeLayerId}
                   onStartVote={onStartVote}
                   onEndVote={onEndVote}
                   onRevealVote={onRevealVote}

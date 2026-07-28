@@ -3153,6 +3153,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "startedBy": {
         "type": "string"
       },
+      "voteLayerId": {
+        "type": "string"
+      },
       "votes": {
         "additionalProperties": {
           "items": {

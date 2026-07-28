@@ -50,6 +50,11 @@ import type { BoxedElementViewProps } from './BoxedElementView.types';
 // the function body (rather than the destructure) so the memo's
 // shallow check sees the underlying undefined vs concrete value
 // rather than the defaulted boolean.
+// How far a non-votable element recedes during a layer-scoped vote.
+// Enough to push it back clearly, not so far it stops being legible
+// context for the elements you ARE voting on.
+const VOTE_DIMMED_OPACITY = 0.35;
+
 function BoxedElementViewImpl({
   element,
   isSelected,
@@ -64,6 +69,7 @@ function BoxedElementViewImpl({
   onBeginDrag,
   onShiftSelect,
   layerOpacity,
+  votableInVote,
   onBeginEdit,
   onCommitLabel,
   onSetTextAlign,
@@ -110,6 +116,14 @@ function BoxedElementViewImpl({
   // reset) restores resize.
   const rotation = element.rotation ?? 0;
   const isRotated = rotation % 360 !== 0;
+  // Layer-scoped vote (spec/96). Only while casting is OPEN: after End
+  // vote the board goes back to normal so the results walkthrough reads
+  // against the full diagram. `votableInVote` already folds in the kind
+  // rule, so a text element on the votable layer dims too — correct, it
+  // can't take a dot either.
+  const voteScoped = vote?.active === true && !!vote.voteLayerId;
+  const voteDimmed = voteScoped && !votableInVote;
+  const voteHighlighted = voteScoped && votableInVote === true;
   const label = element.label ?? '';
   const textSize: TextSize = element.textSize ?? 'scale';
   const defaultAlign = defaultTextAlign(element);
@@ -145,6 +159,7 @@ function BoxedElementViewImpl({
       isMultiSelected,
       isSelected,
       vote,
+      votableInVote,
       onCastVote,
       onShiftSelect,
       onBeginDrag,
@@ -285,7 +300,13 @@ function BoxedElementViewImpl({
         width: element.width,
         height: element.height,
         color: textColor,
-        opacity: (element.opacity ?? 1) * (layerOpacity ?? 1),
+        // Layer-scoped vote (spec/96): elements off the votable layer stay
+        // VISIBLE — you still need the board's context to judge what
+        // you're voting on — but drop back so the votable set reads as the
+        // foreground. Only while casting is open; once the vote ends the
+        // board returns to normal for the results walkthrough.
+        opacity:
+          (element.opacity ?? 1) * (layerOpacity ?? 1) * (voteDimmed ? VOTE_DIMMED_OPACITY : 1),
         ...variant.style,
         ...animStyle,
         // Spin about the centre (the wrapper already has origin-center).
@@ -463,6 +484,19 @@ function BoxedElementViewImpl({
         />
       ) : null}
 
+      {/* Layer-scoped vote (spec/96): a soft brand ring marking what CAN
+          take a dot. Paired with the dimming of everything else — the two
+          together answer "where do I click" without the user having to
+          work out which layer each element is on. Pointer-events-none so
+          it never intercepts the cast. */}
+      {voteHighlighted ? (
+        <div
+          className="pointer-events-none absolute -inset-0.5 ring-2 ring-brand-400/70"
+          style={{ borderRadius: 'inherit' }}
+          aria-hidden
+        />
+      ) : null}
+
       {/* Dot-vote tally pill + winner ring (spec/39) — see
           ElementVoteOverlay. */}
       <ElementVoteOverlay
@@ -470,6 +504,7 @@ function BoxedElementViewImpl({
         vote={vote}
         selfId={selfId}
         voteMax={voteMax}
+        votableInVote={votableInVote}
         voteReviewActive={voteReviewActive}
         isVoteFocus={isVoteFocus}
         zoom={zoom}
