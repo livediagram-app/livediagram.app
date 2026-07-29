@@ -102,7 +102,12 @@ export function CanvasThemeDialog({
           role="dialog"
           aria-modal="true"
           aria-label="Tab appearance"
-          className="flex max-h-[calc(100%-2rem)] w-[44rem] max-w-[calc(100%-2rem)] flex-col rounded-xl border border-slate-200 bg-white shadow-xl outline-none dark:border-slate-700 dark:bg-slate-900"
+          // Edge to edge on a phone, matching the shared Dialog's rule for its
+          // larger sizes. This one predates that component and carries its own
+          // portal + backdrop, so it repeats the classes rather than inheriting
+          // them — the theme grid is exactly the kind of content that wants the
+          // whole screen.
+          className="flex max-h-[calc(100%-2rem)] w-[44rem] max-w-[calc(100%-2rem)] flex-col rounded-xl border border-slate-200 bg-white shadow-xl outline-none max-sm:h-full max-sm:max-h-none max-sm:w-full max-sm:max-w-none max-sm:rounded-none max-sm:border-0 dark:border-slate-700 dark:bg-slate-900"
         >
           {/* Header + the full-width tab bar live in one band so the modal
               reads as a single unit rather than two stacked divider rows. */}

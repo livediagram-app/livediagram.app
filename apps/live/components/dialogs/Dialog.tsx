@@ -29,8 +29,10 @@ type DialogSize = 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl';
 // on a 390px screen wastes the margin twice over and leaves the content
 // (share links, theme grids) fighting for room. The small dialogs stay cards:
 // a confirm or a rename blown up to full screen reads as a page navigation
-// rather than the quick question it is.
-const EDGE_TO_EDGE_SIZES = new Set<DialogSize>(['lg', 'xl', '2xl', '3xl']);
+// rather than the quick question it is. `md` is in because everything using
+// it is a real panel (Settings, Shortcuts, the import / export panes), not a
+// question.
+const EDGE_TO_EDGE_SIZES = new Set<DialogSize>(['md', 'lg', 'xl', '2xl', '3xl']);
 
 const WIDTHS: Record<DialogSize, string> = {
   sm: 'w-[26rem]',

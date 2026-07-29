@@ -34,6 +34,10 @@ export function TableOfContents() {
     });
 
     if (tocItems.length > 1) {
+      // The heading list only exists once the MDX article has rendered, so the
+      // DOM is the external system being read here and there is no render-time
+      // source to derive it from. Runs once on mount, so no render cascade.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setItems(tocItems);
     }
   }, []);

@@ -350,67 +350,71 @@ export function SpotlightMode() {
   );
 }
 
+// Project flat (cx, cy) onto a simple isometric plane around a centre.
+const ISO_OX = 236;
+const ISO_OY = 168;
+function iso(cx: number, cy: number): [number, number] {
+  return [ISO_OX + (cx - cy) * 0.86, ISO_OY + (cx + cy) * 0.5];
+}
+
+// Draw an isometric "card" (a top face) for a flat box centred at (cx, cy).
+// Module scope, not nested inside IsometricMode: a component declared during
+// render is a brand-new type on every pass, so React unmounts and remounts the
+// subtree instead of updating it.
+function IsoCard({
+  cx,
+  cy,
+  half = 36,
+  accent = false,
+  label,
+}: {
+  cx: number;
+  cy: number;
+  half?: number;
+  accent?: boolean;
+  label?: string;
+}) {
+  const tl = iso(cx - half, cy - half * 0.55);
+  const tr = iso(cx + half, cy - half * 0.55);
+  const br = iso(cx + half, cy + half * 0.55);
+  const bl = iso(cx - half, cy + half * 0.55);
+  const c = iso(cx, cy);
+  const d = `M${tl[0]} ${tl[1]} L${tr[0]} ${tr[1]} L${br[0]} ${br[1]} L${bl[0]} ${bl[1]} Z`;
+  // A short extruded side for depth.
+  const side = `M${bl[0]} ${bl[1]} L${br[0]} ${br[1]} L${br[0]} ${br[1] + 12} L${bl[0]} ${bl[1] + 12} Z`;
+  return (
+    <g>
+      <path
+        d={side}
+        className={accent ? 'fill-brand-600 stroke-brand-700' : 'fill-slate-200 stroke-slate-300'}
+        strokeWidth={1.5}
+        strokeLinejoin="round"
+      />
+      <path
+        d={d}
+        className={accent ? 'fill-brand-500 stroke-brand-600' : 'fill-white stroke-brand-300'}
+        strokeWidth={2}
+        strokeLinejoin="round"
+      />
+      {label && (
+        <Label
+          x={c[0]}
+          y={c[1]}
+          anchor="middle"
+          size={11}
+          weight={600}
+          tone={accent ? 'onAccent' : 'strong'}
+        >
+          {label}
+        </Label>
+      )}
+    </g>
+  );
+}
+
 /** Isometric mode: the picker with Iso lit and the same shapes tilted into an
  *  isometric, three-dimensional view. */
 export function IsometricMode() {
-  // Project flat (cx, cy) onto a simple isometric plane around a centre.
-  const ox = 236;
-  const oy = 168;
-  const iso = (cx: number, cy: number): [number, number] => [
-    ox + (cx - cy) * 0.86,
-    oy + (cx + cy) * 0.5,
-  ];
-  // Draw an isometric "card" (a top face) for a flat box centred at (cx, cy).
-  function IsoCard({
-    cx,
-    cy,
-    half = 36,
-    accent = false,
-    label,
-  }: {
-    cx: number;
-    cy: number;
-    half?: number;
-    accent?: boolean;
-    label?: string;
-  }) {
-    const tl = iso(cx - half, cy - half * 0.55);
-    const tr = iso(cx + half, cy - half * 0.55);
-    const br = iso(cx + half, cy + half * 0.55);
-    const bl = iso(cx - half, cy + half * 0.55);
-    const c = iso(cx, cy);
-    const d = `M${tl[0]} ${tl[1]} L${tr[0]} ${tr[1]} L${br[0]} ${br[1]} L${bl[0]} ${bl[1]} Z`;
-    // A short extruded side for depth.
-    const side = `M${bl[0]} ${bl[1]} L${br[0]} ${br[1]} L${br[0]} ${br[1] + 12} L${bl[0]} ${bl[1] + 12} Z`;
-    return (
-      <g>
-        <path
-          d={side}
-          className={accent ? 'fill-brand-600 stroke-brand-700' : 'fill-slate-200 stroke-slate-300'}
-          strokeWidth={1.5}
-          strokeLinejoin="round"
-        />
-        <path
-          d={d}
-          className={accent ? 'fill-brand-500 stroke-brand-600' : 'fill-white stroke-brand-300'}
-          strokeWidth={2}
-          strokeLinejoin="round"
-        />
-        {label && (
-          <Label
-            x={c[0]}
-            y={c[1]}
-            anchor="middle"
-            size={11}
-            weight={600}
-            tone={accent ? 'onAccent' : 'strong'}
-          >
-            {label}
-          </Label>
-        )}
-      </g>
-    );
-  }
   const a = iso(-70, -30);
   const b = iso(70, 30);
   return (

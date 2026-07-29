@@ -56,19 +56,22 @@ function SearchOverlay({
   const groupGap = 8;
   const groupHeadH = 16;
 
-  // Lay out rows top-down, tracking the running y.
+  // Lay out rows top-down, tracking the running y. Plain loops rather than
+  // map(), because map's callbacks would close over the running cursor and
+  // reassigning a captured binding mid-render is what react-hooks/refs flags.
+  const laidGroups: { title: string; headY: number; rows: (Row & { y: number })[] }[] = [];
   let cursorY = fieldY + fieldH + 14;
-  const laidGroups = groups.map((g) => {
+  for (const g of groups) {
     const headY = cursorY;
     cursorY += groupHeadH;
-    const rows = g.rows.map((r) => {
-      const y = cursorY;
+    const rows: (Row & { y: number })[] = [];
+    for (const r of g.rows) {
+      rows.push({ ...r, y: cursorY });
       cursorY += rowH;
-      return { ...r, y };
-    });
+    }
     cursorY += groupGap;
-    return { title: g.title, headY, rows };
-  });
+    laidGroups.push({ title: g.title, headY, rows });
+  }
   const overlayH = cursorY - 16 + 14;
   const sceneH = h ?? overlayH + 28;
 

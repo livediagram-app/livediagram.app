@@ -53,7 +53,13 @@ export function StickyWindowBar({
         if (!entry) return;
         // Visible only once the panel has scrolled ABOVE the viewport
         // (its box sits past the top), not when it's still below the fold.
-        setStuck(!entry.isIntersecting && entry.boundingClientRect.top < 0);
+        const next = !entry.isIntersecting && entry.boundingClientRect.top < 0;
+        setStuck(next);
+        // Close the view menu as the bar hides (e.g. scrolling back up).
+        // Done here rather than in an effect keyed on `stuck`: this callback
+        // is where the transition actually happens, so there is no second
+        // render pass just to observe our own state change.
+        if (!next) setMenuOpen(false);
       },
       // Negative top margin ≈ the sticky SiteHeader height, so the bar
       // appears as the panel slips under the header rather than off-screen.
@@ -62,11 +68,6 @@ export function StickyWindowBar({
     observer.observe(el);
     return () => observer.disconnect();
   }, [watchRef]);
-
-  // Close the view menu whenever the bar hides (e.g. scrolling back up).
-  useEffect(() => {
-    if (!stuck) setMenuOpen(false);
-  }, [stuck]);
 
   const activeView = views.find((v) => v.key === view);
 

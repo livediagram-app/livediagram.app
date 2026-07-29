@@ -1,29 +1,31 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { articleHref, searchArticles, type Article } from '@/lib/articles';
+import { articleHref, searchArticles } from '@/lib/articles';
+
+// Below this many characters a query is treated as too short to search.
+const MIN_QUERY = 2;
 
 export function SearchInput({ large = false }: { large?: boolean }) {
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<Article[]>([]);
-  const [isOpen, setIsOpen] = useState(false);
+  // The dropdown is open whenever the query is long enough, unless the user
+  // has explicitly dismissed it by clicking away. Tracking the dismissal
+  // rather than the openness keeps `results` and `isOpen` derived from
+  // `query` instead of copied into state by an effect, which is what made
+  // every keystroke cost two renders.
+  const [dismissed, setDismissed] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (query.trim().length > 1) {
-      setResults(searchArticles(query));
-      setIsOpen(true);
-    } else {
-      setResults([]);
-      setIsOpen(false);
-    }
-  }, [query]);
+  const trimmed = query.trim();
+  const hasQuery = trimmed.length >= MIN_QUERY;
+  const results = useMemo(() => (hasQuery ? searchArticles(query) : []), [hasQuery, query]);
+  const isOpen = hasQuery && !dismissed;
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
-        setIsOpen(false);
+        setDismissed(true);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -53,8 +55,11 @@ export function SearchInput({ large = false }: { large?: boolean }) {
           type="text"
           placeholder="Search help articles..."
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onFocus={() => query.trim().length > 1 && setIsOpen(true)}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setDismissed(false);
+          }}
+          onFocus={() => setDismissed(false)}
           aria-label="Search help articles"
           className={`w-full rounded-xl border border-slate-200 bg-white text-slate-900 placeholder-slate-400 shadow-sm transition-all duration-200 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500/50 ${
             large ? 'py-4 pl-12 pr-4 text-lg' : 'py-2.5 pl-10 pr-4 text-sm'
@@ -68,8 +73,8 @@ export function SearchInput({ large = false }: { large?: boolean }) {
               key={`${article.categorySlug}/${article.slug}`}
               href={articleHref(article)}
               onClick={() => {
-                setIsOpen(false);
                 setQuery('');
+                setDismissed(false);
               }}
               className="block border-b border-slate-100 px-4 py-3 transition-colors last:border-b-0 hover:bg-brand-50/60"
             >

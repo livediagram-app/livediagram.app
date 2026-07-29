@@ -135,28 +135,32 @@ const PIE_SLICES: { label: string; value: number; cls: string }[] = [
 /** A pie chart of the shared slice set, drawn around (`cx`,`cy`). */
 function Pie({ cx, cy, r = 56 }: { cx: number; cy: number; r?: number }) {
   const total = PIE_SLICES.reduce((s, x) => s + x.value, 0);
+  // Sweep the slices in a plain loop rather than map(): the callback would
+  // close over the running angle, and reassigning a captured binding
+  // mid-render is what react-hooks/refs flags.
+  const wedges: { key: number; d: string; cls: string }[] = [];
   let acc = -Math.PI / 2;
+  for (const [i, s] of PIE_SLICES.entries()) {
+    const frac = s.value / total;
+    const a0 = acc;
+    const a1 = acc + frac * Math.PI * 2;
+    acc = a1;
+    const x0 = cx + r * Math.cos(a0);
+    const y0 = cy + r * Math.sin(a0);
+    const x1 = cx + r * Math.cos(a1);
+    const y1 = cy + r * Math.sin(a1);
+    const large = a1 - a0 > Math.PI ? 1 : 0;
+    wedges.push({
+      key: i,
+      d: `M${cx} ${cy} L${x0.toFixed(2)} ${y0.toFixed(2)} A${r} ${r} 0 ${large} 1 ${x1.toFixed(2)} ${y1.toFixed(2)} Z`,
+      cls: s.cls,
+    });
+  }
   return (
     <g>
-      {PIE_SLICES.map((s, i) => {
-        const frac = s.value / total;
-        const a0 = acc;
-        const a1 = acc + frac * Math.PI * 2;
-        acc = a1;
-        const x0 = cx + r * Math.cos(a0);
-        const y0 = cy + r * Math.sin(a0);
-        const x1 = cx + r * Math.cos(a1);
-        const y1 = cy + r * Math.sin(a1);
-        const large = a1 - a0 > Math.PI ? 1 : 0;
-        return (
-          <path
-            key={i}
-            d={`M${cx} ${cy} L${x0.toFixed(2)} ${y0.toFixed(2)} A${r} ${r} 0 ${large} 1 ${x1.toFixed(2)} ${y1.toFixed(2)} Z`}
-            className={`${s.cls} stroke-white`}
-            strokeWidth={2}
-          />
-        );
-      })}
+      {wedges.map((wedge) => (
+        <path key={wedge.key} d={wedge.d} className={`${wedge.cls} stroke-white`} strokeWidth={2} />
+      ))}
     </g>
   );
 }

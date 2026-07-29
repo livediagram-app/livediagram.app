@@ -14,3 +14,4 @@ export { Select, type SelectProps, type SelectVariant, type SelectSize } from '.
 export { Tooltip } from './Tooltip';
 export { EmptyState } from './EmptyState';
 export { POPOVER_VIEWPORT_MARGIN, clampIntoRange } from './popover';
+export { useMediaQuery, PREFERS_REDUCED_MOTION } from './useMediaQuery';

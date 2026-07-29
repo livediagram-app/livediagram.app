@@ -19,14 +19,17 @@ const CIRC = 2 * Math.PI * R;
 export function CategoryDonut({ groups, total }: { groups: Group[]; total: number }) {
   if (total === 0) return null;
 
-  // Accumulate each category's start offset around the ring.
+  // Accumulate each category's start offset around the ring. A plain loop
+  // rather than map(), because map's callback would close over a running
+  // total and reassigning a captured binding mid-render is exactly what
+  // react-hooks/refs flags: the callback outlives the render it was made in.
+  const segments: { group: Group; len: number; start: number }[] = [];
   let offset = 0;
-  const segments = groups.map((g) => {
+  for (const g of groups) {
     const len = (g.subtotal / total) * CIRC;
-    const seg = { group: g, len, start: offset };
+    segments.push({ group: g, len, start: offset });
     offset += len;
-    return seg;
-  });
+  }
 
   return (
     <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-900">

@@ -40,9 +40,13 @@ export async function handlePreferences(ctx: RouteContext): Promise<Response> {
     if (text.length > 4096) {
       return badRequest('preferences payload too large (4 KB max)');
     }
-    let body: { prefs?: unknown } | null = null;
+    // No initialiser: the catch returns, so control only reaches past the block
+    // when the assignment succeeded. The `| null` stays because JSON.parse
+    // legitimately yields null for the body "null", which the check below
+    // rejects.
+    let body: { prefs?: unknown } | null;
     try {
-      body = JSON.parse(text) as { prefs?: unknown };
+      body = JSON.parse(text) as { prefs?: unknown } | null;
     } catch {
       return badRequest('invalid JSON');
     }

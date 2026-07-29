@@ -185,7 +185,9 @@ export function Tooltip({
 function Arrow({ placement, offset }: { placement: Placement; offset: number }) {
   const style: React.CSSProperties = { position: 'absolute' };
   const size = 10;
-  let borderClass = '';
+  // No initialiser: the chain below is exhaustive over Placement, so any
+  // starting value would be dead. TypeScript proves the definite assignment.
+  let borderClass: string;
   if (placement === 'top') {
     style.bottom = -size / 2;
     style.left = offset - size / 2;
