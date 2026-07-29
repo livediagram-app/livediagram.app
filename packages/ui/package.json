@@ -20,7 +20,7 @@
   },
   "devDependencies": {
     "@livediagram/eslint-config": "workspace:*",
-    "@types/react": "^19.0.2",
+    "@types/react": "^19.2.17",
     "@types/react-dom": "^19.0.2",
     "eslint": "^9.17.0",
     "typescript": "^5.7.2"
