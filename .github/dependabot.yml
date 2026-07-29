@@ -11,3 +11,32 @@ updates:
     directory: '/' # Location of package manifests
     schedule:
       interval: 'weekly'
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: 'chore(deps)'
+      prefix-development: 'chore(deps-dev)'
+    groups:
+      # Non-majors are batched so a normal week is two PRs, not twenty. Dev and
+      # production stay apart because they carry different risk: a bad dev bump
+      # breaks CI, a bad production one ships.
+      dev-dependencies:
+        dependency-type: 'development'
+        update-types: ['minor', 'patch']
+      production-dependencies:
+        dependency-type: 'production'
+        update-types: ['minor', 'patch']
+      # Majors are deliberately left out of both groups, so each one arrives as
+      # its own PR. A Next or React major is real work and should not ride along
+      # with a batch of patches.
+
+  # Keeps the actions in ci.yml / deploy.yml / e2e.yml current. Same class of
+  # drift as the npm tree, and easy to forget because nothing here has a lockfile.
+  - package-ecosystem: 'github-actions'
+    directory: '/' # Scans .github/workflows
+    schedule:
+      interval: 'weekly'
+    commit-message:
+      prefix: 'chore(actions)'
+    groups:
+      github-actions:
+        patterns: ['*']
