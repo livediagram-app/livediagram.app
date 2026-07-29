@@ -40,7 +40,7 @@ importers:
         version: 5.9.3
       wrangler:
         specifier: ^4.40.0
-        version: 4.95.0(@cloudflare/workers-types@4.20260529.1)(@types/node@22.19.19)
+        version: 4.95.0(@cloudflare/workers-types@4.20260529.1)
 
   apps/api:
     dependencies:
@@ -58,8 +58,8 @@ importers:
         version: 5.10.0
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: ^4.20241218.0
-        version: 4.20260529.1
+        specifier: ^5.20260729.1
+        version: 5.20260729.1
       '@livediagram/eslint-config':
         specifier: workspace:*
         version: link:../../packages/eslint-config
@@ -83,7 +83,7 @@ importers:
         version: 3.2.6(@types/debug@4.1.13)(@types/node@22.19.19)(jiti@2.7.0)(lightningcss@1.32.0)
       wrangler:
         specifier: ^4.40.0
-        version: 4.95.0(@cloudflare/workers-types@4.20260529.1)(@types/node@22.19.19)
+        version: 4.95.0(@cloudflare/workers-types@5.20260729.1)(@types/node@22.19.19)
 
   apps/help:
     dependencies:
@@ -317,8 +317,8 @@ importers:
         version: 3.25.76
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: ^4.20241218.0
-        version: 4.20260529.1
+        specifier: ^5.20260729.1
+        version: 5.20260729.1
       '@livediagram/eslint-config':
         specifier: workspace:*
         version: link:../../packages/eslint-config
@@ -339,13 +339,13 @@ importers:
         version: 3.2.6(@types/debug@4.1.13)(@types/node@22.19.19)(jiti@2.7.0)(lightningcss@1.32.0)
       wrangler:
         specifier: ^4.40.0
-        version: 4.95.0(@cloudflare/workers-types@4.20260529.1)(@types/node@22.19.19)
+        version: 4.95.0(@cloudflare/workers-types@5.20260729.1)(@types/node@22.19.19)
 
   apps/router:
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: ^4.20241218.0
-        version: 4.20260529.1
+        specifier: ^5.20260729.1
+        version: 5.20260729.1
       '@livediagram/eslint-config':
         specifier: workspace:*
         version: link:../../packages/eslint-config
@@ -363,7 +363,7 @@ importers:
         version: 3.2.6(@types/debug@4.1.13)(@types/node@22.19.19)(jiti@2.7.0)(lightningcss@1.32.0)
       wrangler:
         specifier: ^4.40.0
-        version: 4.95.0(@cloudflare/workers-types@4.20260529.1)(@types/node@22.19.19)
+        version: 4.95.0(@cloudflare/workers-types@5.20260729.1)(@types/node@22.19.19)
 
   apps/telemetry:
     dependencies:
@@ -692,6 +692,9 @@ packages:
 
   '@cloudflare/workers-types@4.20260529.1':
     resolution: {integrity: sha512-33n3nsaWELSgn4DLKj1X9dwZc3kVDnO+jF/hLH9fdaXG9mQzKDeUkQaVRWLJXvrPXPa9RaIuSAFO4Zh9YOqOog==}
+
+  '@cloudflare/workers-types@5.20260729.1':
+    resolution: {integrity: sha512-X5r/4y0gKMq/B72qkz/tEwNK4c3v2regT3to6Ia8qqC66E0+YIN/fU7x0JG6ej2rLxtU3TV3aVhfK9y8+jMMAw==}
 
   '@cspotcode/source-map-support@0.8.1':
     resolution: {integrity: sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==}
@@ -3314,7 +3317,10 @@ snapshots:
   '@cloudflare/workerd-windows-64@1.20260526.1':
     optional: true
 
-  '@cloudflare/workers-types@4.20260529.1': {}
+  '@cloudflare/workers-types@4.20260529.1':
+    optional: true
+
+  '@cloudflare/workers-types@5.20260729.1': {}
 
   '@cspotcode/source-map-support@0.8.1':
     dependencies:
@@ -6071,7 +6077,7 @@ snapshots:
       '@cloudflare/workerd-linux-arm64': 1.20260526.1
       '@cloudflare/workerd-windows-64': 1.20260526.1
 
-  wrangler@4.95.0(@cloudflare/workers-types@4.20260529.1)(@types/node@22.19.19):
+  wrangler@4.95.0(@cloudflare/workers-types@4.20260529.1):
     dependencies:
       '@cloudflare/kv-asset-handler': 0.5.0
       '@cloudflare/unenv-preset': 2.16.1(unenv@2.0.0-rc.24)(workerd@1.20260526.1)
@@ -6084,6 +6090,25 @@ snapshots:
       workerd: 1.20260526.1
     optionalDependencies:
       '@cloudflare/workers-types': 4.20260529.1
+      fsevents: 2.3.3
+    transitivePeerDependencies:
+      - '@types/node'
+      - bufferutil
+      - utf-8-validate
+
+  wrangler@4.95.0(@cloudflare/workers-types@5.20260729.1)(@types/node@22.19.19):
+    dependencies:
+      '@cloudflare/kv-asset-handler': 0.5.0
+      '@cloudflare/unenv-preset': 2.16.1(unenv@2.0.0-rc.24)(workerd@1.20260526.1)
+      blake3-wasm: 2.1.5
+      esbuild: 0.28.1
+      miniflare: 4.20260526.0(@types/node@22.19.19)
+      path-to-regexp: 6.3.0
+      rosie-skills: 0.6.4
+      unenv: 2.0.0-rc.24
+      workerd: 1.20260526.1
+    optionalDependencies:
+      '@cloudflare/workers-types': 5.20260729.1
       fsevents: 2.3.3
     transitivePeerDependencies:
       - '@types/node'
