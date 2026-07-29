@@ -23,6 +23,6 @@
     "@livediagram/vitest-config": "workspace:*",
     "eslint": "^10.8.0",
     "typescript": "^5.7.2",
-    "vitest": "^3.2.6"
+    "vitest": "^4.1.10"
   }
 }

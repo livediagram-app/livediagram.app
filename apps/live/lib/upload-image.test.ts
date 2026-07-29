@@ -49,14 +49,18 @@ class FakeImage {
 // reader's lifecycle calls don't throw. The exact URL value doesn't
 // matter; FakeImage ignores it.
 function stubBrowserGlobals(opts: { width: number; height: number }) {
+  // A real class rather than `vi.fn(() => …)`. The code under test does
+  // `new Image()`, and an arrow function is not a constructor: vitest 3
+  // happened to wrap mock implementations in a constructible function, so
+  // returning an object from one worked; vitest 4 does not, and `new` on the
+  // arrow throws. A subclass carrying this test's dimensions is what the stub
+  // always meant anyway.
   vi.stubGlobal(
     'Image',
-    vi.fn(() => {
-      const img = new FakeImage();
-      img.naturalWidth = opts.width;
-      img.naturalHeight = opts.height;
-      return img;
-    }),
+    class StubImage extends FakeImage {
+      override naturalWidth = opts.width;
+      override naturalHeight = opts.height;
+    },
   );
   vi.stubGlobal('URL', {
     ...URL,
@@ -174,18 +178,17 @@ describe('uploadImageFile, happy path', () => {
   it('returns null-dimension failure as a friendly ImageUploadError, not as a thrown raw error', async () => {
     // Override the global Image to fire onerror instead of onload
     // so readImageDimensions resolves null.
+    // A class for the same reason as the happy-path stub: `new Image()` needs
+    // a constructor, which an arrow function is not.
     vi.stubGlobal(
       'Image',
-      vi.fn(() => {
-        const img = {
-          onload: null as (() => void) | null,
-          onerror: null as (() => void) | null,
-          set src(_url: string) {
-            queueMicrotask(() => img.onerror?.());
-          },
-        };
-        return img;
-      }),
+      class FailingImage {
+        onload: (() => void) | null = null;
+        onerror: (() => void) | null = null;
+        set src(_url: string) {
+          queueMicrotask(() => this.onerror?.());
+        }
+      },
     );
     const file = makeFile([1, 2, 3, 4], 'image/png');
     const err = await uploadImageFile('owner-a', file).catch((e: unknown) => e);
