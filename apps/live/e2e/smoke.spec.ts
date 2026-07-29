@@ -51,3 +51,62 @@ test('create a blank diagram, add a shape, and it survives a reload', async ({
 
   expectNoPageErrors(pageErrors);
 });
+
+// The one mobile test (spec/72). Not a general phone suite: it guards a
+// specific class of bug that a desktop-only run is structurally blind to —
+// a popover that only OVERLAPS its host when the viewport is too narrow to
+// put it alongside, and so only then has to win the stacking contest.
+//
+// The bug it is a tombstone for: the Collaborate flyout was z-overlay while
+// the tab menu it opens from is z-modal. On desktop the flyout sits beside
+// the menu and the z-order never matters; on a phone it clamps on top of the
+// menu and rendered behind it, so tapping Collaborate did nothing at all.
+test.describe('mobile', () => {
+  // Only the properties that create the condition — a narrow viewport and a
+  // real touch pointer. Spreading a whole `devices[...]` entry would also set
+  // defaultBrowserType, which Playwright forbids inside a describe.
+  test.use({
+    viewport: { width: 390, height: 664 },
+    hasTouch: true,
+    isMobile: true,
+    deviceScaleFactor: 3,
+  });
+
+  test('the tab menu opens the Collaborate flyout in front of the menu', async ({
+    page,
+    pageErrors,
+  }) => {
+    await startBlankDiagram(page);
+    // A fresh guest gets the tour offer over a scrim that eats taps.
+    const declineTour = page.getByRole('button', { name: /^no thanks$/i });
+    if (await declineTour.count()) await declineTour.tap();
+
+    await page.getByRole('button', { name: 'Tab menu' }).tap();
+    const collaborate = page.getByRole('button', { name: /collaborate/i });
+    await expect(collaborate).toBeVisible();
+    await collaborate.tap();
+
+    // Present in the DOM is not the assertion that matters — it was present
+    // and painted behind the menu before the fix. Ask the browser what is
+    // actually on top at the flyout's own centre.
+    const flyout = page.locator('[data-menu-flyout]');
+    await expect(flyout).toBeVisible();
+    const onTop = await page.evaluate(() => {
+      const panel = document.querySelector('[data-menu-flyout]');
+      if (!panel) return false;
+      const r = panel.getBoundingClientRect();
+      const hit = document.elementFromPoint(
+        Math.round(r.x + r.width / 2),
+        Math.round(r.y + r.height / 2),
+      );
+      return !!hit && panel.contains(hit);
+    });
+    expect(onTop).toBe(true);
+
+    // And the session tools are genuinely reachable, not just painted.
+    await expect(page.getByRole('button', { name: /^timer$/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /^poll$/i })).toBeVisible();
+
+    expectNoPageErrors(pageErrors);
+  });
+});

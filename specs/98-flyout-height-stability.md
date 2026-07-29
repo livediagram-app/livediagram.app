@@ -45,6 +45,30 @@ Both halves earn their place: the settle window is a guard against reflows we
 don't control (fonts, scrollbars, a late-loading glyph), and the height rule is
 what keeps our own content from causing them.
 
+## It must also stack above its host
+
+A second way the same panel could be on screen and invisible, found on a
+phone: the flyout was `z-overlay` (40) while the tab menu it opens from is
+`z-modal` (50).
+
+On a wide screen that never showed. The panel fits _beside_ the menu, so the
+two never overlap and the stacking order is moot. On a narrow one there is no
+room to the side, the viewport clamp puts the panel directly on top of the
+menu, and it painted behind it — so tapping **Collaborate** on a phone did
+nothing at all, with the panel mounted, positioned, and `visibility: visible`
+the whole time.
+
+It is now `z-popover` (55), the token that already existed for exactly this
+relationship ("a context / dropdown menu opened from inside a dialog renders
+on top of it rather than behind"). The element context menu is itself
+`z-overlay`, so there the flyout tied with its host and won on DOM order,
+which is why only the tab menu's flyout broke.
+
+Guarded by the suite's one mobile e2e test (spec/72). It deliberately does
+**not** assert the panel is in the DOM — it was, before the fix. It asks
+`document.elementFromPoint` what is actually painted at the panel's own
+centre, because "present" and "visible" were both true of the broken state.
+
 ## Out of scope
 
 - **Click-to-dismiss flyouts.** Pointer-leave dismissal is what makes the

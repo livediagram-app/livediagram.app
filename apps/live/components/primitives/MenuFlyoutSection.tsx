@@ -228,7 +228,15 @@ export function MenuFlyoutSection({
             data-menu-flyout=""
             onPointerDown={(e) => e.stopPropagation()}
             onContextMenu={(e) => e.preventDefault()}
-            className="fixed z-[var(--z-overlay)] flex w-56 animate-fade-in flex-col overflow-hidden rounded-md border border-slate-200 bg-white/95 text-sm shadow-lg backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/95 dark:shadow-slate-950/40"
+            // z-popover, not z-overlay: this panel opens FROM a menu that is itself
+            // z-modal, so at z-overlay it lost the stacking contest with its own
+            // host. On a wide screen that never showed, because the panel fits
+            // beside the menu and never overlaps it. On a narrow one there is no
+            // room to the side, the clamp puts it directly over the menu, and it
+            // rendered behind — tapping Collaborate on a phone appeared to do
+            // nothing at all. Same reason the token exists for menus opened inside
+            // a dialog.
+            className="fixed z-[var(--z-popover)] flex w-56 animate-fade-in flex-col overflow-hidden rounded-md border border-slate-200 bg-white/95 text-sm shadow-lg backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/95 dark:shadow-slate-950/40"
             style={{
               left: pos?.left ?? 0,
               top: pos?.top ?? 0,
