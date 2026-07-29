@@ -107,6 +107,33 @@ test.describe('mobile', () => {
     await expect(page.getByRole('button', { name: /^timer$/i })).toBeVisible();
     await expect(page.getByRole('button', { name: /^poll$/i })).toBeVisible();
 
+    // Covering the parent hides which row is open and the way back, so the
+    // mobile panel carries its own header: the category name, and a Close
+    // that returns to the menu underneath.
+    await expect(flyout.getByText('COLLABORATE')).toBeVisible();
+    const close = flyout.getByRole('button', { name: /close collaborate/i });
+    await expect(close).toBeVisible();
+
+    // It sits ON the parent rather than beside it — the whole reason the
+    // header is needed.
+    const covers = await page.evaluate(() => {
+      const panel = document.querySelector('[data-menu-flyout]');
+      const host = document.querySelector('[data-tour-id="tab-menu"]');
+      if (!panel || !host) return null;
+      const p = panel.getBoundingClientRect();
+      const h = host.getBoundingClientRect();
+      return {
+        sameLeft: Math.abs(p.left - h.left) <= 1,
+        sameWidth: Math.abs(p.width - h.width) <= 1,
+      };
+    });
+    expect(covers).toEqual({ sameLeft: true, sameWidth: true });
+
+    // Close returns to the parent menu.
+    await close.tap();
+    await expect(flyout).toHaveCount(0);
+    await expect(page.getByRole('button', { name: /collaborate/i })).toBeVisible();
+
     expectNoPageErrors(pageErrors);
   });
 });

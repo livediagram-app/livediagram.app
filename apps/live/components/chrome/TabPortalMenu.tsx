@@ -218,7 +218,15 @@ export function PortalMenu({
     // graced.
     const openedAt = performance.now();
     const GRACE_MS = 400;
-    const handler = (e: MouseEvent) => {
+    // POINTERDOWN, not mousedown. A touch only produces a compatibility
+    // mousedown when the gesture wasn't preventDefault'd, and the canvas
+    // surface does preventDefault on several of its pointer paths — so
+    // tapping the canvas on a phone never reached this listener and the menu
+    // stayed open. pointerdown fires for mouse, touch and pen alike, before
+    // any of that. PointerEvent extends MouseEvent, so every target guard
+    // below is unchanged, and the grace window still covers the long-press
+    // that opened the menu (its own pointerdown precedes the listener).
+    const handler = (e: PointerEvent) => {
       if (!ref.current) return;
       if (performance.now() - openedAt < GRACE_MS) return;
       // The delete-confirm popover is portaled outside this menu's DOM,
@@ -260,10 +268,10 @@ export function PortalMenu({
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
     };
-    document.addEventListener('mousedown', handler);
+    document.addEventListener('pointerdown', handler);
     document.addEventListener('keydown', onKey);
     return () => {
-      document.removeEventListener('mousedown', handler);
+      document.removeEventListener('pointerdown', handler);
       document.removeEventListener('keydown', onKey);
     };
   }, [onClose, anchor]);

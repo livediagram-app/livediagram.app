@@ -69,6 +69,38 @@ Guarded by the suite's one mobile e2e test (spec/72). It deliberately does
 `document.elementFromPoint` what is actually painted at the panel's own
 centre, because "present" and "visible" were both true of the broken state.
 
+## On a phone it covers the parent, with a way back
+
+Fixing the stacking order made the panel visible; it did not make it usable.
+On a phone the flyout lands directly on the menu that opened it, and a panel
+sitting on top of its own parent with no title and no exit is a dead end —
+you can't see which category you're in, and the only way out is a lucky tap.
+
+So on a mobile viewport (`useIsMobileViewport`, Tailwind's `sm` breakpoint)
+the flyout stops pretending to be a side panel and becomes a **drill-down**:
+
+- It takes the host menu's **left, width and height**, covering it completely.
+  A shorter child used to leave the parent's remaining rows poking out below,
+  which both read as a stray panel and left those rows tappable, so the two
+  menus fought over the same gesture.
+- It gains a **header** — the category's icon and name, and a **Close** button
+  that returns to the parent. On desktop neither is needed: the panel sits
+  beside the menu, so the parent is still on screen and still shows which row
+  is open.
+
+Desktop keeps the side layout and the fixed `w-56` exactly as before; the
+mobile branch only engages when there genuinely isn't room beside the menu.
+
+## Both dismissers listen for `pointerdown`, not `mousedown`
+
+A touch emits a compatibility `mousedown` only when the gesture wasn't
+`preventDefault`ed — and the canvas surface does preventDefault on several of
+its pointer paths. So on a phone, tapping the canvas never reached the tab
+menu's outside-click dismisser and the menu simply stayed open. `pointerdown`
+fires for mouse, touch and pen alike, ahead of all that. `PointerEvent`
+extends `MouseEvent`, so every target guard is unchanged, and the grace window
+that protects the long-press which opened the menu still applies.
+
 ## Out of scope
 
 - **Click-to-dismiss flyouts.** Pointer-leave dismissal is what makes the

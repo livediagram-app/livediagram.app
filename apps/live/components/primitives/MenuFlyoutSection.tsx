@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { Portal } from '@/components/primitives/Portal';
+import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { useReposition } from '@/hooks/canvas/useReposition';
 import { VIEWPORT_EDGE_MARGIN } from '@/lib/clamp-to-viewport';
 
@@ -52,7 +53,18 @@ export function MenuFlyoutSection({
   const [localOpen, setLocalOpen] = useState(false);
   const controlled = controlledOpen !== undefined;
   const open = controlled ? controlledOpen : localOpen;
-  const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
+  // On a phone the flyout COVERS its parent menu instead of sitting beside it
+  // (spec/98): there is no room to the side, so the side layout degenerated
+  // into an unlabelled panel dropped on top of the menu with no way back.
+  // `width` is only set in that mode, where the panel matches the menu it
+  // replaces; the desktop panel keeps its fixed w-56.
+  const isMobile = useIsMobileViewport();
+  const [pos, setPos] = useState<{
+    left: number;
+    top: number;
+    width?: number;
+    minHeight?: number;
+  } | null>(null);
   const setOpen = useCallback(
     (next: boolean) => {
       if (controlled) {
@@ -80,6 +92,42 @@ export function MenuFlyoutSection({
     const pr = panel.getBoundingClientRect();
     const m = VIEWPORT_EDGE_MARGIN;
     const gap = 2;
+    // Mobile: sit exactly over the host menu, matching its box, so the child
+    // reads as having replaced the parent rather than as a stray panel. Falls
+    // through to the side layout if the trigger somehow has no menu ancestor.
+    if (isMobile) {
+      const host = trigger.closest('[role="menu"]')?.getBoundingClientRect();
+      if (host) {
+        const width = Math.round(host.width);
+        const left = Math.round(
+          Math.max(m, Math.min(host.left, Math.max(m, window.innerWidth - width - m))),
+        );
+        // Prefer the menu's own top. A taller child hangs off the bottom, so
+        // pull it up just enough to fit rather than letting it run off-screen.
+        const maxTop = Math.max(m, window.innerHeight - pr.height - m);
+        const top = Math.round(Math.max(m, Math.min(host.top, maxTop)));
+        // Cover the parent COMPLETELY. A child shorter than its parent left
+        // the parent's remaining rows poking out below it, which reads as a
+        // stray panel dropped on the menu rather than as having drilled into
+        // it — and those rows are still tappable, so the two menus fight.
+        // Bounded by the viewport so a tall parent can't push it off-screen.
+        const minHeight = Math.round(Math.min(host.height, window.innerHeight - top - m));
+        let settledMobile = true;
+        setPos((prev) => {
+          if (
+            prev &&
+            prev.left === left &&
+            prev.top === top &&
+            prev.width === width &&
+            prev.minHeight === minHeight
+          )
+            return prev;
+          settledMobile = false;
+          return { left, top, width, minHeight };
+        });
+        return settledMobile;
+      }
+    }
     const fitsRight = tr.right + gap + pr.width + m <= window.innerWidth;
     const rawLeft = fitsRight ? tr.right + gap : tr.left - gap - pr.width;
     // Prefer hanging DOWN from the row. If that overflows the bottom, hang UP
@@ -104,7 +152,7 @@ export function MenuFlyoutSection({
       return { left, top };
     });
     return settled;
-  }, []);
+  }, [isMobile]);
 
   const [trackNonce, setTrackNonce] = useState(0);
   const retrack = useCallback(() => setTrackNonce((n) => n + 1), []);
@@ -166,7 +214,10 @@ export function MenuFlyoutSection({
   // marker, so the two guards don't fight.
   useEffect(() => {
     if (!open) return;
-    const onDown = (e: MouseEvent) => {
+    // pointerdown, not mousedown: a touch only emits a compatibility mousedown
+    // when the gesture wasn't preventDefault'd, so on a phone this dismisser
+    // could simply never fire — the same flaw the tab menu's own dismisser had.
+    const onDown = (e: PointerEvent) => {
       const t = e.target;
       if (!(t instanceof Node)) return;
       if (panelRef.current?.contains(t) || triggerRef.current?.contains(t)) return;
@@ -183,8 +234,8 @@ export function MenuFlyoutSection({
       if (t instanceof Element && t.closest('[data-element-id]')) return;
       setOpen(false);
     };
-    document.addEventListener('mousedown', onDown);
-    return () => document.removeEventListener('mousedown', onDown);
+    document.addEventListener('pointerdown', onDown);
+    return () => document.removeEventListener('pointerdown', onDown);
   }, [open, setOpen]);
 
   return (
@@ -240,9 +291,40 @@ export function MenuFlyoutSection({
             style={{
               left: pos?.left ?? 0,
               top: pos?.top ?? 0,
+              ...(pos?.width ? { width: pos.width } : null),
+              ...(pos?.minHeight ? { minHeight: pos.minHeight } : null),
               visibility: pos ? 'visible' : 'hidden',
             }}
           >
+            {/* Mobile only. On desktop the flyout sits BESIDE its parent, so
+                the parent is still on screen and still shows which row is
+                open — the panel needs no title and no way back. Covering the
+                parent takes both of those away, so the header restores them:
+                it says which category you are in, and Close is the way back
+                to the menu underneath. */}
+            {isMobile ? (
+              <div className="flex items-center justify-between gap-2 border-b border-slate-200 px-3 py-2 dark:border-slate-700">
+                <span className="flex min-w-0 items-center gap-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  <span className="flex w-4 shrink-0 items-center justify-center">{icon}</span>
+                  <span className="truncate">{title}</span>
+                </span>
+                <button
+                  type="button"
+                  aria-label={`Close ${title}`}
+                  onClick={() => setOpen(false)}
+                  className="-mr-1 flex h-7 w-7 shrink-0 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                >
+                  <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden>
+                    <path
+                      d="M4 4l8 8M12 4l-8 8"
+                      stroke="currentColor"
+                      strokeWidth="1.6"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                </button>
+              </div>
+            ) : null}
             {children}
           </div>
         </Portal>
