@@ -20,13 +20,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         with:
           version: 9.15.0
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: pnpm
@@ -58,28 +58,28 @@ jobs:
         run: pnpm build
 
       - name: Upload marketing build
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: marketing-out
           path: apps/marketing/out
           retention-days: 1
 
       - name: Upload live build
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: live-out
           path: apps/live/out
           retention-days: 1
 
       - name: Upload telemetry build
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: telemetry-out
           path: apps/telemetry/out
           retention-days: 1
 
       - name: Upload help build
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: help-out
           path: apps/help/out
@@ -91,13 +91,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         with:
           version: 9.15.0
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: pnpm
@@ -106,7 +106,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Download build
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: marketing-out
           path: apps/marketing/out
@@ -124,13 +124,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         with:
           version: 9.15.0
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: pnpm
@@ -139,7 +139,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Download build
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: telemetry-out
           path: apps/telemetry/out
@@ -157,13 +157,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         with:
           version: 9.15.0
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: pnpm
@@ -172,7 +172,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Download build
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: help-out
           path: apps/help/out
@@ -190,13 +190,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         with:
           version: 9.15.0
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: pnpm
@@ -205,7 +205,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Download build
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: live-out
           path: apps/live/out
@@ -233,13 +233,13 @@ jobs:
       GUEST_ID_HMAC_SECRET: ${{ secrets.GUEST_ID_HMAC_SECRET }}
       INTERNAL_EVENTS_KEY: ${{ secrets.INTERNAL_EVENTS_KEY }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         with:
           version: 9.15.0
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: pnpm
@@ -353,13 +353,13 @@ jobs:
     env:
       INTERNAL_EVENTS_KEY: ${{ secrets.INTERNAL_EVENTS_KEY }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         with:
           version: 9.15.0
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: pnpm
@@ -393,13 +393,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         with:
           version: 9.15.0
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: pnpm
