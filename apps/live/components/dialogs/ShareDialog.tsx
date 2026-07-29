@@ -213,7 +213,13 @@ export function ShareDialog({
               description="How link lifetime works and where expired links go."
             />
           </div>
-          <div className="flex items-center gap-2">
+          {/* Three controls that do NOT fit one line on a phone: the role
+              toggle alone wants most of the width, which squeezed the expiry
+              select down to "Never exp" and left Create cramped against the
+              edge. Below sm: it becomes two rows — role on its own, then
+              expiry (growing) beside Create. From sm: up it is the single row
+              it always was. */}
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
             <div className="flex flex-1 items-stretch gap-1 rounded-md border border-slate-200 bg-slate-50 p-0.5 dark:border-slate-700 dark:bg-slate-800">
               <RoleButton
                 active={newRole === 'edit'}
@@ -228,25 +234,32 @@ export function ShareDialog({
                 description="Read-only: visitors can look but not edit."
               />
             </div>
-            <Tooltip
-              title="Link lifetime"
-              description="The link stops working after this long and moves to Inactive, where you can extend or delete it. Never keeps it working until you revoke it."
-            >
-              <Select
-                value={newExpiry}
-                onChange={(e) => setNewExpiry(e.target.value as ShareLinkExpiry)}
-                aria-label="Link lifetime"
+            <div className="flex items-center gap-2">
+              {/* The growth goes on the TOOLTIP, which is the actual flex
+                  child — the Select sits inside its wrapper span, so flex-1
+                  there would have had nothing to grow against. */}
+              <Tooltip
+                title="Link lifetime"
+                description="The link stops working after this long and moves to Inactive, where you can extend or delete it. Never keeps it working until you revoke it."
+                className="min-w-0 flex-1 sm:flex-none"
               >
-                <option value="never">Never expires</option>
-                <option value="week">Expires in 1 week</option>
-                <option value="month">Expires in 1 month</option>
-                <option value="sixMonths">Expires in 6 months</option>
-              </Select>
-            </Tooltip>
-            <Button onClick={create} disabled={busy} size="xs" className="shadow-sm">
-              <LinkIcon />
-              Create
-            </Button>
+                <Select
+                  value={newExpiry}
+                  onChange={(e) => setNewExpiry(e.target.value as ShareLinkExpiry)}
+                  aria-label="Link lifetime"
+                  className="w-full"
+                >
+                  <option value="never">Never expires</option>
+                  <option value="week">Expires in 1 week</option>
+                  <option value="month">Expires in 1 month</option>
+                  <option value="sixMonths">Expires in 6 months</option>
+                </Select>
+              </Tooltip>
+              <Button onClick={create} disabled={busy} size="xs" className="shrink-0 shadow-sm">
+                <LinkIcon />
+                Create
+              </Button>
+            </div>
           </div>
         </div>
 
