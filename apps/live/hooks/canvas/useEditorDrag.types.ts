@@ -143,6 +143,9 @@ export type EditorDragApi = {
     opts?: {
       clickToPlace?: boolean;
       placeOutPx?: number;
+      // Enter a real drag, but remember what a no-movement TAP should do
+      // (touch quick-connect, spec/09).
+      tapPlaceOutPx?: number;
       fromGroup?: { groupId: string; point: { x: number; y: number } };
     },
   ) => void;

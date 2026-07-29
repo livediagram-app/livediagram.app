@@ -146,6 +146,7 @@ export function useBoxedDragHandlers({
     opts?: {
       clickToPlace?: boolean;
       placeOutPx?: number;
+      tapPlaceOutPx?: number;
       fromGroup?: { groupId: string; point: { x: number; y: number } };
     },
   ) => {
@@ -233,6 +234,9 @@ export function useBoxedDragHandlers({
       clickToPlace: opts?.clickToPlace ?? false,
       pressClientX: e.clientX,
       pressClientY: e.clientY,
+      ...(opts?.tapPlaceOutPx
+        ? { tapPlace: { anchor, sourceId: elementId, placeOutPx: opts.tapPlaceOutPx } }
+        : {}),
     });
   };
 

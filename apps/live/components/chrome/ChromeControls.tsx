@@ -54,10 +54,16 @@ export function ChromeControls({
         </span>
       ) : null}
       {/* Open-source repo link (the codebase is public + MIT, spec/03). An
-          external <a>, not a callback, so it needs no wiring. */}
+          external <a>, not a callback, so it needs no wiring.
+
+          Hidden below sm: the bottom bar is tight on a phone and this is the
+          one control here that leaves the app entirely — the others (search,
+          shortcuts, settings, dark mode) are things you reach for mid-edit.
+          Still reachable from the marketing site and the help centre. */}
       <Tooltip
         title="Source on GitHub"
         description="View livediagram's open-source code on GitHub."
+        className="hidden sm:inline-flex"
       >
         <a
           href="https://github.com/livediagram-app/monorepo"

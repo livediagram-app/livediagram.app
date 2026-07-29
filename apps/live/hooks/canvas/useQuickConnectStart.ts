@@ -35,10 +35,16 @@ export function useQuickConnectStart({
     const anchor: Anchor =
       direction === 'right' ? 'e' : direction === 'left' ? 'w' : direction === 'below' ? 's' : 'n';
     if (e.pointerType === 'touch') {
-      // Touch: drop a free arrow running straight out from the anchor (~50px)
-      // and select it, so the user can drag it where they want — no
-      // tap-target step.
-      beginAnchorDrag(sourceId, anchor, e, { placeOutPx: 50, fromGroup });
+      // Touch enters a REAL drag, like the desktop press-drag: drag from the +
+      // onto another shape and the arrow connects to it. It used to commit a
+      // 50px free stub and return, so a drag had nothing to drag — the arrow
+      // was already placed before the finger moved.
+      //
+      // A plain TAP still has to mean something, so the gesture carries a
+      // fallback: on a release that never moved, the pointer-up attaches the
+      // far end to whatever sits on that side, or drops the old stub when
+      // there's nothing there.
+      beginAnchorDrag(sourceId, anchor, e, { tapPlaceOutPx: 50, fromGroup });
       return;
     }
     beginAnchorDrag(sourceId, anchor, e, { clickToPlace: true, fromGroup });

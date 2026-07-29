@@ -710,6 +710,7 @@ export function elementSupportsText(element: Element): boolean {
 
 // --- Re-exported resource modules -----------------------------------------
 export * from './arrow-avoidance';
+export * from './nearest-towards';
 export * from './arrow-path';
 export * from './arrow-style';
 export * from './border-style';

@@ -26,6 +26,9 @@ import {
   acceptsInlineIcon,
   duplicateGroupedElements,
   isBoxed,
+  nearestElementTowards,
+  opposingAnchor,
+  type Anchor,
   rebindArrowAnchorsAfterMove,
   type ArrowElement,
   type Element,
@@ -56,6 +59,19 @@ import { useBoxedDragHandlers } from './useBoxedDragHandlers';
 // rotate / arrow-endpoint grabs are deliberate handle pulls and aren't
 // gated.
 const DRAG_ENGAGE_PX = 4;
+
+// Unit vector out of each anchor, for placing a tapped quick-connect arrow's
+// free end when there's nothing on that side to attach to.
+const ANCHOR_OUT: Record<Anchor, { x: number; y: number }> = {
+  n: { x: 0, y: -1 },
+  s: { x: 0, y: 1 },
+  e: { x: 1, y: 0 },
+  w: { x: -1, y: 0 },
+  ne: { x: 0.707, y: -0.707 },
+  nw: { x: -0.707, y: -0.707 },
+  se: { x: 0.707, y: 0.707 },
+  sw: { x: -0.707, y: 0.707 },
+};
 
 export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
   const [drag, setDrag] = useState<DragState | null>(null);
@@ -597,6 +613,61 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
         const moved = Math.hypot(e.clientX - px, e.clientY - py) > 6;
         if (!moved) {
           setDrag({ ...drag, clickToPlace: false, following: true });
+          return;
+        }
+      }
+      // Touch quick-connect tap (spec/09): the gesture entered a real drag so
+      // a finger CAN drag to a target, but this release never moved. Attach
+      // the far end to whatever sits on that side, or fall back to the short
+      // free stub when there's nothing there — either way the user gets a
+      // usable arrow from one tap instead of a stub they must then place by
+      // hand on the device least suited to it.
+      if (drag?.kind === 'arrow-endpoint' && drag.tapPlace && !drag.following) {
+        const px = drag.pressClientX ?? drag.startClientX;
+        const py = drag.pressClientY ?? drag.startClientY;
+        if (Math.hypot(e.clientX - px, e.clientY - py) <= 6) {
+          const { anchor, sourceId, placeOutPx } = drag.tapPlace;
+          const arrowId = drag.arrowId;
+          const source = d.activeTab.elements.find((el) => el.id === sourceId);
+          const target =
+            source && isBoxed(source)
+              ? nearestElementTowards(
+                  d.activeTab.elements,
+                  source,
+                  anchor,
+                  // Never land on a sibling of the source's own group: the
+                  // group moves as one thing, so an arrow inside it is noise.
+                  new Set(
+                    source.groupId === undefined
+                      ? []
+                      : d.activeTab.elements
+                          .filter((el) => isBoxed(el) && el.groupId === source.groupId)
+                          .map((el) => el.id),
+                  ),
+                )
+              : null;
+          const out = ANCHOR_OUT[anchor];
+          d.commit((els) =>
+            els.map((el) =>
+              el.id !== arrowId || el.type !== 'arrow'
+                ? el
+                : {
+                    ...el,
+                    to:
+                      target &&
+                      (anchor === 'n' || anchor === 's' || anchor === 'e' || anchor === 'w')
+                        ? { kind: 'pinned', elementId: target.id, anchor: opposingAnchor(anchor) }
+                        : {
+                            kind: 'free',
+                            x: drag.startCanvasX + out.x * placeOutPx,
+                            y: drag.startCanvasY + out.y * placeOutPx,
+                          },
+                  },
+            ),
+          );
+          setDrag(null);
+          scheduleGuides([]);
+          scheduleSnapTargets([]);
           return;
         }
       }

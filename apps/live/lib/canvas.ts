@@ -1,5 +1,6 @@
 import {
   isBoxed,
+  type Anchor,
   type BoxedElement,
   type Element,
   type IconPosition,
@@ -253,6 +254,12 @@ export type DragState =
       // is anchored to the element's anchor (not the far-out ring button).
       pressClientX?: number;
       pressClientY?: number;
+      // Touch quick-connect (spec/09). A finger can't drag the + ring the way
+      // a mouse can, so the touch gesture enters a REAL drag (drag to a target
+      // and it connects) but a plain tap has to mean something too. This
+      // carries the source anchor so the pointer-up can attach the far end to
+      // whatever sits on that side, falling back to a short free stub.
+      tapPlace?: { anchor: Anchor; sourceId: string; placeOutPx: number };
       // True when the user is repositioning an EXISTING arrow's endpoint
       // (a deliberate manual correction), as opposed to drawing a new
       // arrow. A reposition that lands on an anchor marks the endpoint
