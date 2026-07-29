@@ -24,6 +24,14 @@ import { useModalGuard } from '@/hooks/ui/useModalGuard';
 // bespoke `w-[..]`.
 type DialogSize = 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl';
 
+// The dialogs big enough to be worth the whole phone screen. Below sm: they
+// drop their inset, radius and border and fill the viewport — a 92%-wide card
+// on a 390px screen wastes the margin twice over and leaves the content
+// (share links, theme grids) fighting for room. The small dialogs stay cards:
+// a confirm or a rename blown up to full screen reads as a page navigation
+// rather than the quick question it is.
+const EDGE_TO_EDGE_SIZES = new Set<DialogSize>(['lg', 'xl', '2xl', '3xl']);
+
 const WIDTHS: Record<DialogSize, string> = {
   sm: 'w-[26rem]',
   md: 'w-[30rem]',
@@ -118,6 +126,10 @@ export function Dialog({
           // Dialogs that set their own max-h (e.g. ShareDialog, Export) opt out
           // of the default and manage their own scroll region.
           className={`flex ${WIDTHS[size]} max-w-[92%] animate-fly-up-in flex-col rounded-xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/10 outline-none dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40${
+            EDGE_TO_EDGE_SIZES.has(size)
+              ? ' max-sm:h-full max-sm:max-h-none max-sm:w-full max-sm:max-w-none max-sm:rounded-none max-sm:border-0'
+              : ''
+          }${
             className?.includes('max-h') ? '' : ' max-h-[calc(100dvh-2rem)] overflow-y-auto'
           }${className ? ` ${className}` : ''}`}
         >

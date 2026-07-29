@@ -252,11 +252,14 @@ export function CountdownMenuIcon() {
 }
 
 // Check-in-circle - the Vote session-tool category glyph (a cast dot-vote).
-export function VoteMenuIcon() {
+// `size` defaults to the 12px the context menus use; the mobile dock passes
+// 16 so these sit at the same weight as the other dock icons, which are all
+// 16px. Without it Vote and Poll read as visibly smaller than their neighbours.
+export function VoteMenuIcon({ size = 12 }: { size?: number } = {}) {
   return (
     <svg
-      width="12"
-      height="12"
+      width={size}
+      height={size}
       viewBox="0 0 16 16"
       fill="none"
       stroke="currentColor"
@@ -298,11 +301,14 @@ export function CollaborateMenuIcon() {
 // Three rising bars - the Poll session-tool category glyph (spec/88, a
 // live tally). Distinct from VoteMenuIcon's cast-a-dot check: a poll
 // counts answers from people, not dots on elements.
-export function PollMenuIcon() {
+// `size` defaults to the 12px the context menus use; the mobile dock passes
+// 16 so these sit at the same weight as the other dock icons, which are all
+// 16px. Without it Vote and Poll read as visibly smaller than their neighbours.
+export function PollMenuIcon({ size = 12 }: { size?: number } = {}) {
   return (
     <svg
-      width="12"
-      height="12"
+      width={size}
+      height={size}
       viewBox="0 0 16 16"
       fill="none"
       stroke="currentColor"

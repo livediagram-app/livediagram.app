@@ -146,7 +146,7 @@ export function CanvasMobileDock({
                 {
                   id: 'vote' as const,
                   label: 'Vote',
-                  icon: <VoteMenuIcon />,
+                  icon: <VoteMenuIcon size={16} />,
                 },
               ]
             : []),
@@ -155,7 +155,7 @@ export function CanvasMobileDock({
                 {
                   id: 'poll' as const,
                   label: 'Poll',
-                  icon: <PollMenuIcon />,
+                  icon: <PollMenuIcon size={16} />,
                 },
               ]
             : []),

@@ -38,7 +38,23 @@ const TONE_CLASS: Record<BannerTone, string> = {
 // events for itself.
 export function TopCenterStack({ children }: { children: ReactNode }) {
   return (
-    <div className="pointer-events-none absolute left-3 top-3 z-[var(--z-chrome)] flex max-w-[calc(100%-1.5rem)] flex-col items-start gap-2 sm:left-1/2 sm:-translate-x-1/2 sm:items-center">
+    // On mobile this stack starts BELOW the dock rather than beside it. Both
+    // used to sit at top-3, and the stack spans the full width, so anything
+    // wide enough — the vote-results banner, the timer pill, the mode banners
+    // — ran underneath the dock buttons and covered them. Reserving width
+    // instead was the obvious alternative and doesn't work: the dock's width
+    // changes with its button count (Collaborate, AI, Poll and Vote all come
+    // and go), while its height is a stable single row. 4.75rem clears the
+    // dock's 12px top + 57px height with a small gap; revisit it if the dock
+    // ever becomes two rows. From sm: up the stack is centred and the dock is
+    // hidden (or, with minimal panels, far to the right), so it goes back to
+    // top-3.
+    //
+    // It also drops BELOW the dock popovers on mobile (z-panel, under the
+    // popovers' z-toolbar) so opening a panel simply covers the banners
+    // instead of them punching through it. Desktop keeps z-chrome, where the
+    // stack is centred and nothing overlaps it.
+    <div className="pointer-events-none absolute left-3 top-[4.75rem] z-[var(--z-panel)] flex max-w-[calc(100%-1.5rem)] flex-col items-start gap-2 sm:left-1/2 sm:top-3 sm:z-[var(--z-chrome)] sm:-translate-x-1/2 sm:items-center">
       {children}
     </div>
   );
