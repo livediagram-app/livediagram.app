@@ -46,6 +46,7 @@ export function VotePanel({
   onReset,
   dock,
   mobileOpenOverride,
+  mobileDockAnchor,
   stackBelowY,
   readOnly,
 }: {
@@ -76,6 +77,12 @@ export function VotePanel({
   // while its session tool is running (spec/07), so it hides unless the
   // dock has it open — like every other docked panel.
   mobileOpenOverride?: boolean;
+  // Where the dock button that opened this panel sits, so the popover
+  // hangs under it with the pointer arrow. Without it MovablePanel falls
+  // back to a fixed top-right corner with no arrow, which is why these two
+  // looked flush against the dock while every other docked panel floated
+  // beneath its own button.
+  mobileDockAnchor?: { left: number; top: number; arrowOffset: number };
   stackBelowY?: number;
   // View-role visitors watch the vote but never drive it (spec/39).
   readOnly: boolean;
@@ -85,6 +92,7 @@ export function VotePanel({
   return (
     <MovablePanel
       mobileOpenOverride={mobileOpenOverride}
+      mobileDockAnchor={mobileDockAnchor}
       title="Vote"
       position={position}
       defaultCorner="top-right-stacked"

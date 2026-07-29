@@ -41,6 +41,7 @@ export function PollPanel({
   onReset,
   dock,
   mobileOpenOverride,
+  mobileDockAnchor,
   stackBelowY,
 }: {
   poll: LivePoll;
@@ -56,6 +57,12 @@ export function PollPanel({
   // while its session tool is running (spec/07), so it hides unless the
   // dock has it open — like every other docked panel.
   mobileOpenOverride?: boolean;
+  // Where the dock button that opened this panel sits, so the popover
+  // hangs under it with the pointer arrow. Without it MovablePanel falls
+  // back to a fixed top-right corner with no arrow, which is why these two
+  // looked flush against the dock while every other docked panel floated
+  // beneath its own button.
+  mobileDockAnchor?: { left: number; top: number; arrowOffset: number };
   // Measured bottom of the Palette, so the panel stacks beneath it in
   // the legacy (non-docking) layout the same way Collaborate / AI do.
   stackBelowY?: number;
@@ -77,6 +84,7 @@ export function PollPanel({
   return (
     <MovablePanel
       mobileOpenOverride={mobileOpenOverride}
+      mobileDockAnchor={mobileDockAnchor}
       title="Poll"
       position={position}
       defaultCorner="top-right-stacked"
