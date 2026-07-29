@@ -22,7 +22,7 @@
     "prettier": "^3.4.2",
     "turbo": "^2.3.3",
     "typescript": "^5.7.2",
-    "wrangler": "^4.40.0"
+    "wrangler": "^4.115.0"
   },
   "engines": {
     "node": ">=22",

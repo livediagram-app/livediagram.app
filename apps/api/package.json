@@ -31,6 +31,6 @@
     "ts-json-schema-generator": "^2.9.0",
     "typescript": "^5.7.2",
     "vitest": "^3.2.6",
-    "wrangler": "^4.40.0"
+    "wrangler": "^4.115.0"
   }
 }
