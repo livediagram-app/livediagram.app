@@ -16,15 +16,20 @@ import {
 
 const HEADER_RE = /^stateDiagram(?:-v2)?$/i;
 // `A --> B`, `[*] --> A`, `A --> [*] : label` — ids may carry hyphens.
-const TRANSITION_RE = /^(\[\*\]|[A-Za-z0-9_-]+)\s*-->\s*(\[\*\]|[A-Za-z0-9_-]+)\s*(?::\s*(.+))?$/;
+// Labels are `(\S.*)`, never `(.+)`: after a `\s*` the two both match a space,
+// which gives the engine several ways to split a run of spaces and turns a
+// failed match into quadratic backtracking. `\S` cannot overlap `\s*`, so the
+// split is forced, and requiring one non-space still means "at least one
+// character" exactly as `(.+)` did.
+const TRANSITION_RE = /^(\[\*\]|[A-Za-z0-9_-]+)\s*-->\s*(\[\*\]|[A-Za-z0-9_-]+)\s*(?::\s*(\S.*))?$/;
 // `state "Long description" as s1` (optionally opening a composite `{`).
 const STATE_AS_RE = /^state\s+"([^"]*)"\s+as\s+([A-Za-z0-9_-]+)\s*(\{)?$/i;
 // `state s1 <<choice>>` / `<<fork>>` / `<<join>>`.
 const STEREOTYPE_RE = /^state\s+([A-Za-z0-9_-]+)\s*<<(choice|fork|join)>>$/i;
 // `state Composite {` — a plain composite state block.
 const COMPOSITE_RE = /^state\s+([A-Za-z0-9_-]+)\s*\{$/i;
-// `s1 : description text`.
-const DESCRIPTION_RE = /^([A-Za-z0-9_-]+)\s*:\s*(.+)$/;
+// `s1 : description text`. Same `\S.*` treatment as TRANSITION_RE.
+const DESCRIPTION_RE = /^([A-Za-z0-9_-]+)\s*:\s*(\S.*)$/;
 
 const STEREOTYPE_SHAPE: Record<string, GraphNode['shape']> = {
   choice: 'diamond',

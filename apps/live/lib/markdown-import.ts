@@ -45,7 +45,23 @@ export function cleanInline(input: string): string {
   s = s.replace(/(\*\*|__)(.*?)\1/g, '$2'); // bold
   s = s.replace(/(\*|_)(.*?)\1/g, '$2'); // italic
   s = s.replace(/~~(.*?)~~/g, '$1'); // strikethrough
-  s = s.replace(/<[^>]+>/g, ''); // raw HTML tags
+
+  // Raw HTML tags. Repeated until the string stops changing, because one pass
+  // is not a fixpoint: the scanner resumes after each match, so removing an
+  // inner tag can splice the text either side of it into a fresh tag that is
+  // never re-examined, and an unterminated `<script` survives untouched.
+  // Each pass strictly shortens the string so this terminates; the guard caps
+  // the work on adversarial input rather than trading one denial of service
+  // for another.
+  //
+  // This is a readability pass, not the security boundary. Labels are escaped
+  // where they are rendered (xmlEscape in the SVG renderer, React on the
+  // canvas); nothing downstream interpolates a label as raw markup.
+  for (let pass = 0; pass < 5; pass += 1) {
+    const next = s.replace(/<[^>]*>/g, '');
+    if (next === s) break;
+    s = next;
+  }
   return s.replace(/\s+/g, ' ').trim();
 }
 

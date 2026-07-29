@@ -355,7 +355,9 @@ function parseFlowchart(lines: string[]): ParseMermaidResult {
     }
     if (/^click\b/i.test(line)) continue;
 
-    const sub = /^subgraph\s+(.+)$/i.exec(line);
+    // `(\S.*)` not `(.+)`: `\s+` and `.` both match a space, so `\s+(.+)` lets
+    // the engine split a run of spaces many ways and backtrack quadratically.
+    const sub = /^subgraph\s+(\S.*)$/i.exec(line);
     if (sub) {
       subgraphDepth += 1;
       // Only top-level subgraphs become frames; nested ones fold into

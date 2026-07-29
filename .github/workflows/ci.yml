@@ -5,6 +5,12 @@ on:
   push:
     branches: [main]
 
+# Least privilege: this workflow only checks out and verifies. It never writes
+# to the repo, so the default token stays read-only rather than inheriting
+# whatever the repository-wide default happens to be.
+permissions:
+  contents: read
+
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true

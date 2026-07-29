@@ -10,6 +10,12 @@ name: Deploy
 on:
   workflow_dispatch:
 
+# Least privilege: deploys authenticate to Cloudflare with CF_API_TOKEN, which
+# is a secret rather than a token permission, so no job here needs write access
+# to the repository itself.
+permissions:
+  contents: read
+
 concurrency:
   group: deploy-main
   cancel-in-progress: false

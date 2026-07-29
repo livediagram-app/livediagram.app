@@ -10,6 +10,10 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# Least privilege: checkout + a browser run, no writes back to the repo.
+permissions:
+  contents: read
+
 concurrency:
   group: e2e-${{ github.ref }}
   cancel-in-progress: true

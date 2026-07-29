@@ -19,12 +19,23 @@ export function directionOf(token: string | undefined): MermaidDirection {
 }
 
 // Strip trailing %% comments and statement-terminating semicolons, then trim.
+//
+// Deliberately scans instead of using /%%.*$/ and /;+\s*$/. Both of those are
+// unanchored, so on a line the tail doesn't match the engine retries from every
+// offset, which is quadratic in the line length: a pasted diagram of a few
+// thousand '%%' or ';' characters would lock the importing tab. Indexing and a
+// reverse scan do the same job in one pass.
 export function cleanLine(rawLine: string): string {
-  return rawLine
-    .replace(/%%.*$/, '')
-    .replace(/;+\s*$/, '')
-    .trim();
+  const commentAt = rawLine.indexOf('%%');
+  const body = commentAt === -1 ? rawLine : rawLine.slice(0, commentAt);
+
+  const trimmed = body.trim();
+  let end = trimmed.length;
+  while (end > 0 && trimmed.charCodeAt(end - 1) === SEMICOLON) end -= 1;
+  return trimmed.slice(0, end).trim();
 }
+
+const SEMICOLON = ';'.charCodeAt(0);
 
 // Label text -> element label: strip surrounding quotes, turn <br> line
 // breaks into real newlines, decode the entities the export emits.

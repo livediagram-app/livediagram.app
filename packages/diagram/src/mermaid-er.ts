@@ -11,8 +11,10 @@ import { cleanLine, decodeLabel, type ParseMermaidResult } from './mermaid-share
 const HEADER_RE = /^erDiagram$/i;
 // `CUSTOMER ||--o{ ORDER : places` — left tokens |o || }o }| , right tokens
 // o| || o{ |{ , line -- (identifying) or .. (non-identifying).
+// The label is `(\S.*)` rather than `(.+)`: after `\s*` the two both match a
+// space, and that overlap is what makes a failed match backtrack quadratically.
 const REL_RE =
-  /^([A-Za-z0-9_-]+)\s+(\|o|\|\||\}o|\}\|)(--|\.\.)(o\||\|\||o\{|\|\{)\s+([A-Za-z0-9_-]+)\s*(?::\s*(.+))?$/;
+  /^([A-Za-z0-9_-]+)\s+(\|o|\|\||\}o|\}\|)(--|\.\.)(o\||\|\||o\{|\|\{)\s+([A-Za-z0-9_-]+)\s*(?::\s*(\S.*))?$/;
 // `CUSTOMER {` opens an attribute block; `CUSTOMER {}` is an empty one.
 const BLOCK_OPEN_RE = /^([A-Za-z0-9_-]+)\s*\{\s*(\})?$/;
 // `string name PK "comment"` — keep `type name`, drop keys + comments.

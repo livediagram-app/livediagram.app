@@ -18,8 +18,17 @@ export function emailEnabled(env: Env): boolean {
 // Public origin for links in emails. Trailing slashes stripped so callers can
 // always template `${appBaseUrl(env)}/path`.
 export function appBaseUrl(env: Env): string {
-  return (env.APP_BASE_URL ?? DEFAULT_BASE_URL).replace(/\/+$/, '');
+  const base = env.APP_BASE_URL ?? DEFAULT_BASE_URL;
+  // A reverse scan rather than /\/+$/. That pattern is unanchored, so on a
+  // value that does not end in a slash the engine retries from every offset,
+  // which is quadratic in the length. This one only ever sees a configured env
+  // var, but a linear strip costs nothing and stops the shape being copied.
+  let end = base.length;
+  while (end > 0 && base.charCodeAt(end - 1) === SLASH) end -= 1;
+  return base.slice(0, end);
 }
+
+const SLASH = '/'.charCodeAt(0);
 
 type EmailMessage = {
   to: string;
