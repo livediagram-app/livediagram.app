@@ -15,7 +15,7 @@
     "@livediagram/api-schema": "workspace:*",
     "@livediagram/ui": "workspace:*",
     "next": "^15.5.21",
-    "react": "^19.0.0",
+    "react": "^19.2.8",
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
@@ -24,7 +24,7 @@
     "@livediagram/vitest-config": "workspace:*",
     "@tailwindcss/postcss": "^4.0.0",
     "@types/node": "^22.10.2",
-    "@types/react": "^19.0.2",
+    "@types/react": "^19.2.17",
     "@types/react-dom": "^19.0.2",
     "eslint": "^9.17.0",
     "tailwindcss": "^4.0.0",
