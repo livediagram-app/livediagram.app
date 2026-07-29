@@ -267,6 +267,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
         readOnly={readOnly}
         hasCollaborate={props.commentRows.length > 0 || props.actionRows.length > 0}
         hasAi={!!aiPanel}
+        hasPoll={!!props.pollPanel}
+        hasVote={!!props.tabVote}
         activeMobilePanel={activeMobilePanel}
         dockButtonRefs={dockButtonRefs}
         onDockButtonClick={handleDockButtonClick}
@@ -291,6 +293,13 @@ export function CanvasChrome(props: CanvasChromeProps) {
           {panelEls.palette}
           {panelEls.minimap}
           {panelEls.layers}
+          {/* The session panels were missing from this list, so on mobile (and
+              any other non-docking layout) they were never rendered at all —
+              a live poll or vote simply had no panel. The docked branch above
+              iterates PANEL_IDS and so picked them up for free, which is why
+              it only ever showed on the layouts that take this path. */}
+          {panelEls.poll}
+          {panelEls.vote}
         </>
       )}
 

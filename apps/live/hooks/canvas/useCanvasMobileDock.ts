@@ -10,7 +10,18 @@ import { computeDockAnchor } from '@/lib/canvas-chrome';
 
 const POPOVER_WIDTH = 256;
 
-export type MobilePanel = 'explorer' | 'palette' | 'collaborate' | 'ai' | 'layers';
+// 'poll' and 'vote' only ever appear while a poll / dot-vote is running on the
+// tab (spec/88, spec/39). Without them the dock had no button for either, so
+// on a phone the one panel that matters during a live session was the one you
+// could not get back to once it was dismissed.
+export type MobilePanel =
+  | 'explorer'
+  | 'palette'
+  | 'collaborate'
+  | 'ai'
+  | 'layers'
+  | 'poll'
+  | 'vote';
 
 export type DockAnchor = { left: number; top: number; arrowOffset: number };
 

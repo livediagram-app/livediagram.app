@@ -40,6 +40,7 @@ export function PollPanel({
   onMoveTo,
   onReset,
   dock,
+  mobileOpenOverride,
   stackBelowY,
 }: {
   poll: LivePoll;
@@ -51,6 +52,10 @@ export function PollPanel({
   onMoveTo: (x: number, y: number) => void;
   onReset?: () => void;
   dock?: MovablePanelDockProps;
+  // Dock selection on mobile: this panel is one of the dock's buttons
+  // while its session tool is running (spec/07), so it hides unless the
+  // dock has it open — like every other docked panel.
+  mobileOpenOverride?: boolean;
   // Measured bottom of the Palette, so the panel stacks beneath it in
   // the legacy (non-docking) layout the same way Collaborate / AI do.
   stackBelowY?: number;
@@ -71,6 +76,7 @@ export function PollPanel({
 
   return (
     <MovablePanel
+      mobileOpenOverride={mobileOpenOverride}
       title="Poll"
       position={position}
       defaultCorner="top-right-stacked"

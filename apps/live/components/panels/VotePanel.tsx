@@ -45,6 +45,7 @@ export function VotePanel({
   onMoveTo,
   onReset,
   dock,
+  mobileOpenOverride,
   stackBelowY,
   readOnly,
 }: {
@@ -71,6 +72,10 @@ export function VotePanel({
   onMoveTo: (x: number, y: number) => void;
   onReset?: () => void;
   dock?: MovablePanelDockProps;
+  // Dock selection on mobile: this panel is one of the dock's buttons
+  // while its session tool is running (spec/07), so it hides unless the
+  // dock has it open — like every other docked panel.
+  mobileOpenOverride?: boolean;
   stackBelowY?: number;
   // View-role visitors watch the vote but never drive it (spec/39).
   readOnly: boolean;
@@ -79,6 +84,7 @@ export function VotePanel({
 
   return (
     <MovablePanel
+      mobileOpenOverride={mobileOpenOverride}
       title="Vote"
       position={position}
       defaultCorner="top-right-stacked"

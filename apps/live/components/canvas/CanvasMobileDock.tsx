@@ -1,5 +1,6 @@
 import type { ReactNode, RefObject } from 'react';
 import { LayersStackIcon } from '@/components/panels/layers-panel-icons';
+import { PollMenuIcon, VoteMenuIcon } from '@/components/palette/context-menu-icons';
 import type { MobilePanel } from '@/hooks/canvas/useCanvasMobileDock';
 
 // Top-right mobile dock (spec/07 "Mobile chrome"): a compact button row
@@ -13,6 +14,8 @@ export function CanvasMobileDock({
   readOnly,
   hasCollaborate,
   hasAi,
+  hasPoll,
+  hasVote,
   activeMobilePanel,
   dockButtonRefs,
   onDockButtonClick,
@@ -24,6 +27,11 @@ export function CanvasMobileDock({
   // the same gate that mounts the Collaborate panel (spec/68 §5).
   hasCollaborate: boolean;
   hasAi: boolean;
+  // A live poll / dot-vote is running on this tab. Both are transient, so
+  // their buttons come and go with the session rather than sitting there
+  // permanently disabled.
+  hasPoll: boolean;
+  hasVote: boolean;
   activeMobilePanel: MobilePanel | null;
   dockButtonRefs: RefObject<Record<string, HTMLButtonElement | null>>;
   onDockButtonClick: (id: MobilePanel) => void;
@@ -126,6 +134,28 @@ export function CanvasMobileDock({
                   id: 'layers' as const,
                   label: 'Layers',
                   icon: <LayersStackIcon size={16} />,
+                },
+              ]
+            : []),
+          // Session tools go LAST, so the buttons that are always there keep
+          // their positions and a poll starting mid-session doesn't shuffle
+          // the row under someone's thumb. Not gated on readOnly: a view-only
+          // participant answers polls and watches vote results (spec/88).
+          ...(hasVote
+            ? [
+                {
+                  id: 'vote' as const,
+                  label: 'Vote',
+                  icon: <VoteMenuIcon />,
+                },
+              ]
+            : []),
+          ...(hasPoll
+            ? [
+                {
+                  id: 'poll' as const,
+                  label: 'Poll',
+                  icon: <PollMenuIcon />,
                 },
               ]
             : []),

@@ -531,6 +531,7 @@ export function useCanvasChromePanels({
         onMoveTo={onMovePollPanel}
         onReset={pollWiring.onReset}
         dock={pollWiring.dock}
+        mobileOpenOverride={activeMobilePanel === 'poll'}
       />
     ) : null;
 
@@ -554,6 +555,7 @@ export function useCanvasChromePanels({
         onMoveTo={onMoveVotePanel}
         onReset={voteWiring.onReset}
         dock={voteWiring.dock}
+        mobileOpenOverride={activeMobilePanel === 'vote'}
         readOnly={!!readOnly}
       />
     ) : null;
