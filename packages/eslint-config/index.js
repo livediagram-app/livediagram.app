@@ -46,6 +46,17 @@ export default tseslint.config(
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
       ],
       ...reactHooks.configs.recommended.rules,
+      // React Compiler rules, new in eslint-plugin-react-hooks v7. They catch
+      // real problems (we fixed ten across marketing / telemetry / help / ui
+      // when they first ran) but apps/live starts with 161 findings across 103
+      // files, mostly in the editor's hot paths. Erroring would either block
+      // every build or force a rushed refactor of the most intricate app in the
+      // repo, so they warn: the signal stays visible and gets burned down
+      // deliberately. Promote each back to 'error' once its count reaches zero.
+      'react-hooks/refs': 'warn',
+      'react-hooks/set-state-in-effect': 'warn',
+      'react-hooks/purity': 'warn',
+      'react-hooks/immutability': 'warn',
     },
   },
   prettier,

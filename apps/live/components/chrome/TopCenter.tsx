@@ -50,11 +50,16 @@ export function TopCenterStack({ children }: { children: ReactNode }) {
     // hidden (or, with minimal panels, far to the right), so it goes back to
     // top-3.
     //
+    // Right-aligned on mobile, not left: these sit UNDER the dock, which is
+    // itself pinned top-right, so lining them up with it keeps the pair
+    // reading as one column of chrome instead of a banner adrift on the
+    // opposite side of the canvas.
+    //
     // It also drops BELOW the dock popovers on mobile (z-panel, under the
     // popovers' z-toolbar) so opening a panel simply covers the banners
     // instead of them punching through it. Desktop keeps z-chrome, where the
     // stack is centred and nothing overlaps it.
-    <div className="pointer-events-none absolute left-3 top-[4.75rem] z-[var(--z-panel)] flex max-w-[calc(100%-1.5rem)] flex-col items-start gap-2 sm:left-1/2 sm:top-3 sm:z-[var(--z-chrome)] sm:-translate-x-1/2 sm:items-center">
+    <div className="pointer-events-none absolute right-3 top-[4.75rem] z-[var(--z-panel)] flex max-w-[calc(100%-1.5rem)] flex-col items-end gap-2 sm:left-1/2 sm:right-auto sm:top-3 sm:z-[var(--z-chrome)] sm:-translate-x-1/2 sm:items-center">
       {children}
     </div>
   );
