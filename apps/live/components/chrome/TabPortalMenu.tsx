@@ -487,7 +487,15 @@ export function PortalMenu({
                 <SessionPollSection
                   poll={livePoll}
                   connected={pollConnected}
-                  onStartPoll={onStartPoll}
+                  // Starting a poll puts the question on screen for everyone,
+                  // including the facilitator — and this menu sits right on
+                  // top of it. Close on start: the poll panel carries the
+                  // results and the End control from here on, so there is
+                  // nothing left in the menu to come back for.
+                  onStartPoll={(draft) => {
+                    onStartPoll(draft);
+                    onClose();
+                  }}
                 />
               </MenuAccordionSection>
             </MenuFlyoutSection>
