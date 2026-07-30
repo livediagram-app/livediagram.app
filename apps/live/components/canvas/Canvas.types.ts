@@ -91,6 +91,10 @@ export type CanvasProps = {
   onSelectMarquee: (ids: Set<string>) => void;
   canvasTool: CanvasTool;
   onSetCanvasTool: (tool: CanvasTool) => void;
+  // Press a Mode Button element (spec/103): hands the LOCAL participant the
+  // mode the element carries. Optional — the read-only embed has no tool picker
+  // to drive, so its buttons render inert.
+  onPressModeButton?: (element: import('@livediagram/diagram').ShapeElement) => void;
   // Leaves Avatar mode (spec/101) for the tool that preceded it. Wired to the
   // palette (any tile pick) and to a palette drag-drop, both of which are
   // edits the read-only mode would otherwise swallow.

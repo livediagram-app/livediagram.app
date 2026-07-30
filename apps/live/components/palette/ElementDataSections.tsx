@@ -23,18 +23,30 @@ import {
   RAIL_DEFAULT_POINTS,
   RATING_DEFAULT,
   RATING_LOOPING_ANIMS,
+  DEFAULT_BUTTON_MODE,
+  SELECTION_MODES,
   type AnimationSpeed,
   type ArrowFlow,
   type ElementAnimation,
   type IconAnimation,
 } from '@livediagram/diagram';
-import {} from '@/components/palette/palette-icons';
+import {
+  AvatarModeIcon,
+  EraserIcon,
+  FormatPainterIcon,
+  IsometricIcon,
+  LaserIcon,
+  PanIcon,
+  SelectIcon,
+  SpotlightIcon,
+} from '@/components/palette/palette-icons';
+import { MODE_LABEL } from '@/components/canvas/ModeButtonFace';
 import {
   AnimationMenuGlyph,
   ProgressMenuGlyph,
   ToolsMenuGlyph,
 } from '@/components/palette/context-menu-icons';
-import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
+import { MenuAccordionSection, MenuTile, MenuTileGrid } from '@/components/primitives/PortalMenu';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
 
 import {
@@ -77,10 +89,24 @@ type ElementDataSectionsProps = {
   isLine: boolean;
   isCodeBlock: boolean;
   isChecklist: boolean;
+  isModeButton: boolean;
   isIcon: boolean;
   boxed: boolean;
   sectionProps: Scaffold['sectionProps'];
   flyoutProps: Scaffold['flyoutProps'];
+};
+
+// The mode tiles' glyphs — the palette picker's own icons, so a button's
+// configured mode is recognisable from the same artwork everywhere (spec/103).
+const MODE_TILE_ICON: Record<(typeof SELECTION_MODES)[number], React.ReactNode> = {
+  select: <SelectIcon />,
+  pan: <PanIcon />,
+  laser: <LaserIcon />,
+  spotlight: <SpotlightIcon />,
+  avatar: <AvatarModeIcon />,
+  eraser: <EraserIcon />,
+  format: <FormatPainterIcon />,
+  isometric: <IsometricIcon />,
 };
 
 export function ElementDataSections({
@@ -93,6 +119,7 @@ export function ElementDataSections({
   isLine,
   isCodeBlock,
   isChecklist,
+  isModeButton,
   isIcon,
   boxed,
   sectionProps,
@@ -105,7 +132,8 @@ export function ElementDataSections({
   // pattern as Style and Text, so a data element's menu doesn't grow a
   // band of bespoke rows. Animation stays top-level (every boxed
   // element has it).
-  const showTools = isProgress || isRail || isRating || isChart || isCodeBlock || isChecklist;
+  const showTools =
+    isProgress || isRail || isRating || isChart || isCodeBlock || isChecklist || isModeButton;
   return (
     <>
       {showTools ? (
@@ -219,6 +247,31 @@ export function ElementDataSections({
                 items={shapeTarget?.checklistItems ?? []}
                 onChange={props.onSetChecklistItems}
               />
+            </MenuAccordionSection>
+          ) : null}
+          {/* Mode button (spec/103) — which selection mode pressing it hands
+            whoever clicked. Tiles rather than a list so the icons match the
+            palette's own mode picker. */}
+          {isModeButton ? (
+            <MenuAccordionSection
+              title="Button"
+              icon={<ToolsMenuGlyph />}
+              {...sectionProps('button-mode')}
+            >
+              <p className="px-3 pt-1 text-[10px] font-medium text-slate-500 dark:text-slate-400">
+                Switches the presser to
+              </p>
+              <MenuTileGrid cols={3}>
+                {SELECTION_MODES.map((mode) => (
+                  <MenuTile
+                    key={mode}
+                    icon={MODE_TILE_ICON[mode]}
+                    label={MODE_LABEL[mode]}
+                    active={(shapeTarget?.mode ?? DEFAULT_BUTTON_MODE) === mode}
+                    onClick={() => props.onSetButtonMode(mode)}
+                  />
+                ))}
+              </MenuTileGrid>
             </MenuAccordionSection>
           ) : null}
           {/* Chart (spec/53) — display options. Legend placement: Off + 4 sides. */}

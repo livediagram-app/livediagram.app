@@ -256,6 +256,7 @@ export const PALETTE_TELEMETRY_TYPES = {
     'CodeBlock',
     'Page',
     'Checklist',
+    'ModeButton',
     'Pie-chart',
     'Bar-chart',
     'Line-chart',

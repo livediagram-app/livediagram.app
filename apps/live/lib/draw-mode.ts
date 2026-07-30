@@ -48,6 +48,13 @@ export type PendingDraw =
 function prettyShapeLabel(kind: ShapeKind): string {
   if (kind === 'square') return 'Rectangle';
   if (kind === 'circle') return 'Oval';
+  // A hyphenated kind would read as 'Mode-button' / 'Code-block' with the
+  // capitalise-the-first-letter fallback below; spell the words out.
+  if (kind.includes('-'))
+    return kind
+      .split('-')
+      .join(' ')
+      .replace(/^./, (c) => c.toUpperCase());
   return kind.charAt(0).toUpperCase() + kind.slice(1);
 }
 

@@ -6,6 +6,7 @@ import {
   MAX_ELEMENTS_PER_TAB,
   MAX_FREEHAND_POINTS,
 } from './validate';
+import { SELECTION_MODES } from './selection-mode';
 
 const box = { x: 0, y: 0, width: 100, height: 60 };
 
@@ -175,5 +176,32 @@ describe('coerceShapeKind', () => {
     expect(coerceShapeKind('oval')).toBe('square');
     expect(coerceShapeKind(undefined)).toBe('square');
     expect(coerceShapeKind(42)).toBe('square');
+  });
+});
+
+describe('mode button validation (spec/103)', () => {
+  const button = {
+    id: 'b1',
+    type: 'shape',
+    shape: 'mode-button',
+    x: 0,
+    y: 0,
+    width: 180,
+    height: 44,
+  };
+
+  it('accepts a button with no mode (it falls back to the Avatar default)', () => {
+    expect(isValidElement(button)).toBe(true);
+  });
+
+  it('accepts every selection mode the editor can switch to', () => {
+    for (const mode of SELECTION_MODES) {
+      expect(isValidElement({ ...button, mode })).toBe(true);
+    }
+  });
+
+  it('rejects a mode outside the vocabulary rather than silently rewriting it', () => {
+    expect(isValidElement({ ...button, mode: 'teleport' })).toBe(false);
+    expect(isValidElement({ ...button, mode: 42 })).toBe(false);
   });
 });

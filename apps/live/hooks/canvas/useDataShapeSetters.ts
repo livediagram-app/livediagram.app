@@ -15,6 +15,7 @@ import {
   type AnimationSpeed,
   type ChartLegendPosition,
   type ChecklistItem,
+  type SelectionMode,
   type CodeLanguage,
   type Element,
   type LineSeries,
@@ -193,6 +194,20 @@ export function useDataShapeSetters({ currentSelectionIds, commit }: DataShapeSe
     track('Element', 'Changed', 'Checklist');
   };
 
+  // Mode button (spec/103): which selection mode the button hands whoever
+  // presses it. Gated to the button kind, so a multi-selection of mixed
+  // elements only rewrites the buttons in it.
+  const setButtonModeSelected = (mode: SelectionMode) => {
+    const ids = currentSelectionIds();
+    if (ids.size === 0) return;
+    commit((els) =>
+      els.map((el) =>
+        ids.has(el.id) && el.type === 'shape' && el.shape === 'mode-button' ? { ...el, mode } : el,
+      ),
+    );
+    track('Element', 'Changed', 'ModeButton');
+  };
+
   // Rating (spec/52): the star score + its optional animation, gated to rating
   // shapes. The setters share one body (differing only in the patched field +
   // telemetry type), mirroring the progress setters.
@@ -261,6 +276,7 @@ export function useDataShapeSetters({ currentSelectionIds, commit }: DataShapeSe
     setCodeSelected,
     toggleChecklistItem,
     setChecklistItemsSelected,
+    setButtonModeSelected,
     setRatingSelected,
     setRatingAnimSelected,
     setRatingAnimSpeedSelected,

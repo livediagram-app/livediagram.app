@@ -25,6 +25,8 @@ import { ImageElementView } from '@/components/canvas/ImageElementView';
 import { isSvgRenderedShape } from '@/components/canvas/shape-svg-overlay';
 import { BoxBorderOverlay } from '@/components/canvas/BoxBorderOverlay';
 import { PageCornerFold } from '@/components/canvas/PageCornerFold';
+import { ModeButtonFace } from '@/components/canvas/ModeButtonFace';
+import { DEFAULT_BUTTON_MODE } from '@livediagram/diagram';
 import { isCssNativeBorderStyle } from '@/components/canvas/border-css';
 import { describeVariant } from '@/components/canvas/element-variant';
 import { BadgeStrip, RemoteSelectorsStrip } from '@/components/canvas/element-badges';
@@ -80,6 +82,7 @@ function BoxedElementViewImpl({
   chartPalette,
   onCancelEdit,
   onFollowLink,
+  onPressModeButton,
   onOpenComments,
   onOpenAction,
   onOpenNote,
@@ -379,7 +382,18 @@ function BoxedElementViewImpl({
         />
       ) : null}
 
-      {element.type === 'annotation' ? (
+      {/* Mode button (spec/103): a pressable face instead of a plain label —
+          the mode's glyph plus the author's call to action. Mid-edit it falls
+          through to the normal label editor below, so the text is retyped like
+          any other shape's. */}
+      {element.type === 'shape' && element.shape === 'mode-button' && !isEditing ? (
+        <ModeButtonFace
+          mode={element.mode ?? DEFAULT_BUTTON_MODE}
+          label={label}
+          textColor={textColor}
+          onPress={onPressModeButton ? () => onPressModeButton(element) : undefined}
+        />
+      ) : element.type === 'annotation' ? (
         <AnnotationGlyph
           stroke={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element)}
         />

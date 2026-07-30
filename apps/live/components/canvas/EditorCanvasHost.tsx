@@ -1,5 +1,6 @@
 'use client';
 
+import { DEFAULT_BUTTON_MODE } from '@livediagram/diagram';
 import { useMemo } from 'react';
 import { DEFAULT_BACKGROUND_COLOR, DEFAULT_PATTERN_COLOR, isVoteHost } from '@livediagram/diagram';
 import { resolveOwnerBadge } from '@/lib/presence-rows';
@@ -369,6 +370,10 @@ export function EditorCanvasHost() {
       canvasTool={canvasTool}
       onSetCanvasTool={setCanvasTool}
       onExitAvatarMode={exitAvatarTool}
+      // Mode button (spec/103): pressing one is exactly picking that mode from
+      // the palette, so it goes through the same setter — telemetry, the
+      // selection clear, and the empty-canvas guard all included.
+      onPressModeButton={(element) => setCanvasTool(element.mode ?? DEFAULT_BUTTON_MODE)}
       onEraseStart={isReadOnly ? undefined : beginErase}
       onDuplicateMultiSelected={duplicateMultiSelected}
       onDeleteMultiSelected={deleteMultiSelected}

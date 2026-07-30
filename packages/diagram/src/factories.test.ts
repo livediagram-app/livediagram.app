@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  DEFAULT_BUTTON_MODE,
   createLinkCard,
   activeCommentCount,
   createAnnotation,
@@ -601,3 +602,24 @@ describe('comment helpers', () => {
 // Sanity: the Element union import is exercised so the type stays referenced.
 const _typecheck: Element = createShape('square', 0, 0);
 void _typecheck;
+
+describe('createShape (mode button, spec/103)', () => {
+  it('arrives looking like a button, pointed at Avatar mode', () => {
+    const button = createShape('mode-button', 10, 20);
+    expect(button.shape).toBe('mode-button');
+    // Pill-shaped, bold, with a call to action already written: it has to read
+    // as pressable before anyone configures it.
+    expect(button.borderRadius).toBe('full');
+    expect(button.textBold).toBe(true);
+    expect(button.label).toBeTruthy();
+    // Avatar is the default because walkthroughs are what the element is for.
+    expect(button.mode).toBe(DEFAULT_BUTTON_MODE);
+    expect(button.mode).toBe('avatar');
+  });
+
+  it('is big enough to hit with a thumb', () => {
+    const button = createShape('mode-button', 0, 0);
+    expect(button.height).toBeGreaterThanOrEqual(40);
+    expect(button.width).toBeGreaterThanOrEqual(120);
+  });
+});

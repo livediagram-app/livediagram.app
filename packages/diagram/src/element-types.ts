@@ -9,6 +9,7 @@ import type { ElementAction } from './element-action';
 import type { BorderStroke, BorderStyle, BorderRadius } from './border-style';
 import type { ElementShadow } from './shadow';
 import type { ShapeMarker } from './shape-marker';
+import type { SelectionMode } from './selection-mode';
 import type { IconSize } from './icon-size';
 import type {
   AnimationSpeed,
@@ -143,6 +144,11 @@ export type ShapeElement = {
   // moment the user hand-edits a colour or resets to theme, since the binding
   // no longer holds. Only meaningful on shapes.
   colorPreset?: string;
+  // Mode Button (spec/103): which selection mode pressing this element hands
+  // whoever clicked it. Only meaningful on the 'mode-button' kind, and absent
+  // means DEFAULT_BUTTON_MODE ('avatar') — so a button authored without one
+  // still does the thing it looks like it should.
+  mode?: SelectionMode;
   // Timeline rail (spec/51): how many evenly-spaced points sit above the rail
   // line. Only meaningful on the 'timeline-rail' kind; clamped to
   // RAIL_MIN_POINTS..RAIL_MAX_POINTS.

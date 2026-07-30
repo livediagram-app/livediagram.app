@@ -137,6 +137,8 @@ export type EditorContextMenuProps = {
   onEditCodeBlock: (elementId: string) => void;
   // Checklist (spec/83): replace the selected checklist's rows.
   onSetChecklistItems: (items: ChecklistItem[]) => void;
+  // Mode button (spec/103): which selection mode pressing it hands out.
+  onSetButtonMode: (mode: import('@livediagram/diagram').SelectionMode) => void;
   // Style presets (spec/48): one-click colour + border looks for the selected
   // shape, plus a reset back to the theme default. `shapeColorPresets` are
   // theme-derived (see shapeColorPresets in lib/themes).

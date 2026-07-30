@@ -359,6 +359,10 @@ export type ShapeKind =
   // Document element (spec/100). Named 'page' because 'document' above is
   // the flowchart output symbol.
   | 'page'
+  // Mode button (spec/103): a pressable pill that switches whoever clicks it
+  // into a selection mode — Avatar by default. Which mode lives in the
+  // element's `mode` field.
+  | 'mode-button'
   | 'stadium'
   | 'actor'
   | 'cloud'
@@ -720,6 +724,8 @@ export * from './border-style';
 // Element drop shadows (spec/86): model, presets + render builders.
 export * from './shadow';
 export * from './shape-marker';
+// Selection modes a Mode Button can switch to (spec/103).
+export * from './selection-mode';
 export * from './comments';
 // Per-element assigned actions (spec/68).
 export * from './element-action';

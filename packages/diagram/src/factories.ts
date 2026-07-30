@@ -3,6 +3,7 @@
 // read through the index ⇄ factories cycle TDZ-crashes plain-Node ESM
 // consumers. `isBoxed` stays on './index' — it's only called inside
 // function bodies, after the cycle has settled.
+import { DEFAULT_BUTTON_MODE } from './selection-mode';
 import {
   CHECKLIST_DEFAULT_ITEMS,
   LINE_DEFAULT_CATEGORIES,
@@ -107,6 +108,9 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   'code-block': { width: 320, height: 180 },
   // Checklist: a card of starter rows (spec/83).
   checklist: { width: 240, height: 180 },
+  // Mode button (spec/103): a pill sized like a real button — wide enough for
+  // a short call to action, tall enough to hit on a phone.
+  'mode-button': { width: 180, height: 44 },
 };
 
 // New boxed elements default to Medium text size per spec 09 ("Text size").
@@ -122,6 +126,20 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
     height,
     textSize: 'md',
   };
+  // Mode button (spec/103): looks like a button, so it arrives pill-shaped
+  // with a call to action already written and pointed at Avatar mode — the
+  // walkthrough case it exists for. The author retypes the label like any
+  // other shape's, and picks a different mode from the element menu.
+  if (kind === 'mode-button') {
+    return {
+      ...base,
+      label: 'Walk with me',
+      mode: DEFAULT_BUTTON_MODE,
+      borderRadius: 'full',
+      textSize: 'sm',
+      textBold: true,
+    };
+  }
   // Document (spec/100): prose sits TOP-LEFT. Centred body text is the
   // strongest tell that something is a label pretending to be a document,
   // and every other shape defaults to centred.

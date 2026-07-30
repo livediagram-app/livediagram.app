@@ -594,6 +594,41 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
+    // Mode button (spec/103): a control you press to change your own selection
+    // mode — Avatar by default, so a diagram can invite people to walk it.
+    id: 'tools:mode-button',
+    section: 'tools',
+    toolGroup: 'blocks',
+    label: 'Add mode button',
+    caption: 'Mode button',
+    description:
+      'A button on the canvas that switches whoever presses it into a selection mode. Avatar by default; pick another from the element menu.',
+    filled: true,
+    action: { type: 'shape', kind: 'mode-button' },
+    icon: (
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 18 18"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden
+      >
+        {/* a pill with a pressing cursor at its corner */}
+        <rect x="2" y="5" width="14" height="6" rx="3" />
+        <path d="M5.5 8h5" strokeWidth="1.2" />
+        <path
+          d="M11.5 10.5 L11.5 15.5 L13 14 L14.2 16 L15.4 15.4 L14.2 13.4 L16 13 Z"
+          fill="currentColor"
+          stroke="none"
+        />
+      </svg>
+    ),
+  },
+  {
     id: 'tools:checklist',
     section: 'tools',
     toolGroup: 'blocks',

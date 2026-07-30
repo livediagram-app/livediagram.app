@@ -23,6 +23,8 @@ const SHAPE_KIND_OVERRIDES: Record<string, string> = {
   // titleCaseType only capitalises the first character, so this would be
   // 'Code-block' — the Changed events already say 'CodeBlock'.
   'code-block': 'CodeBlock',
+  // Same hyphen problem (spec/103).
+  'mode-button': 'ModeButton',
 };
 
 const tokenForShapeKind = (kind: string) => SHAPE_KIND_OVERRIDES[kind] ?? titleCaseType(kind);

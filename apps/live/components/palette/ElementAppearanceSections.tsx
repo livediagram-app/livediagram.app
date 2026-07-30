@@ -114,6 +114,8 @@ export function ElementAppearanceSections({
   const isLine = target.type === 'shape' && isLineShape(target.shape);
   const isCodeBlock = target.type === 'shape' && isCodeBlockShape(target.shape);
   const isChecklist = target.type === 'shape' && isChecklistShape(target.shape);
+  // Mode button (spec/103): its one setting is which mode it hands out.
+  const isModeButton = target.type === 'shape' && target.shape === 'mode-button';
   // The Text band (spec/09): Markers + Alignment. Markers are regular-shape
   // only (self-drawing shapes have no label slot); Alignment applies to any
   // boxed element with a text slot.
@@ -215,6 +217,7 @@ export function ElementAppearanceSections({
         isLine={isLine}
         isCodeBlock={isCodeBlock}
         isChecklist={isChecklist}
+        isModeButton={isModeButton}
         isIcon={isIcon}
         boxed={boxed}
         sectionProps={sectionProps}

@@ -38,6 +38,17 @@ describe('drawBannerMessage', () => {
     );
   });
 
+  it('spells out a hyphenated kind instead of leaving the hyphen in', () => {
+    // 'Mode-button' / 'Code-block' is the capitalise-the-first-letter fallback
+    // showing through; these are two-word names.
+    expect(drawBannerMessage({ type: 'shape', kind: 'mode-button' }, false)).toBe(
+      'Tap to drop or drag to draw Mode button',
+    );
+    expect(drawBannerMessage({ type: 'shape', kind: 'code-block' }, false)).toBe(
+      'Tap to drop or drag to draw Code block',
+    );
+  });
+
   it('capitalises any other shape kind for the banner', () => {
     expect(drawBannerMessage({ type: 'shape', kind: 'cylinder' }, false)).toBe(
       'Tap to drop or drag to draw Cylinder',

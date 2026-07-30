@@ -75,6 +75,8 @@ export function elementTelemetryType(element: Element): string {
       // titleCaseType would yield 'Code-Block' (it capitalises at the
       // hyphen), which would split the feature across two tokens.
       if (element.shape === 'code-block') return 'CodeBlock';
+      // Same reason: 'Mode-Button' would be a second token for one feature.
+      if (element.shape === 'mode-button') return 'ModeButton';
       return titleCaseType(element.shape);
     }
   }

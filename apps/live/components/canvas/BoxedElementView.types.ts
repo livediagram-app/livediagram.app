@@ -63,6 +63,10 @@ export type BoxedElementViewProps = {
   chartPalette?: readonly string[];
   onCancelEdit: () => void;
   onFollowLink: (link: import('@livediagram/diagram').ElementLink) => void;
+  // Press a Mode Button element (spec/103): switches the LOCAL participant into
+  // the mode the element carries. Optional — a surface that can't change tools
+  // (the read-only embed) leaves the face inert.
+  onPressModeButton?: (element: import('@livediagram/diagram').ShapeElement) => void;
   onOpenComments: (id: string) => void;
   // Open the element's assigned-action popover (spec/68). The badge only
   // renders while the element carries an OPEN action; everyone (including

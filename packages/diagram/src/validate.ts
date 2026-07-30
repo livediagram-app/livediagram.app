@@ -18,6 +18,7 @@
 import type { Element, ShapeKind, Tab } from './index';
 // Value imports come from the data-shapes LEAF module (types only from
 // './index'), keeping this module out of the index ⇄ factories cycle.
+import { isSelectionMode } from './selection-mode';
 import {
   CHECKLIST_MAX_ITEMS,
   CHECKLIST_MAX_TEXT,
@@ -65,6 +66,9 @@ export const SHAPE_KINDS = new Set<string>([
   // prose into. Named 'page' internally because the flowchart output symbol
   // above already owns 'document'.
   'page',
+  // Mode button (spec/103): a pressable pill that switches whoever clicks it
+  // into a selection mode.
+  'mode-button',
   'stadium',
   'actor',
   'cloud',
@@ -151,6 +155,11 @@ export function isValidElement(el: unknown): el is Element {
       return false;
     if (el.pieSlices !== undefined && !boundedArray(el.pieSlices, MAX_DATA_ARRAY)) return false;
     if (el.lineSeries !== undefined && !boundedArray(el.lineSeries, MAX_DATA_ARRAY)) return false;
+    // Mode button (spec/103): the mode it hands out must be one we know how to
+    // switch to. A junk value is rejected outright rather than coerced — the
+    // element still renders (absent = the Avatar default), so silently
+    // rewriting someone's configured mode would be the worse failure.
+    if (el.mode !== undefined && !isSelectionMode(el.mode)) return false;
     // Code block (spec/82): bounded snippet + closed language set.
     if (el.code !== undefined && (typeof el.code !== 'string' || el.code.length > CODE_MAX_LENGTH))
       return false;

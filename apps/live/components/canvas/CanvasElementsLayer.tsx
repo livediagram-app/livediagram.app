@@ -99,6 +99,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onStartArrow,
     onStartPencil,
     onFollowLink,
+    onPressModeButton,
     onOpenComments,
     onOpenAction,
     onOpenNote,
@@ -162,6 +163,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onSetRailLabel,
     onToggleChecklistItem: readOnly ? undefined : onToggleChecklistItem,
     onFollowLink,
+    onPressModeButton,
     onOpenComments,
     onOpenAction,
     onOpenNote,
@@ -319,6 +321,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             chartPalette={chartPalette}
             onCancelEdit={h.onCancelEdit}
             onFollowLink={h.onFollowLink}
+            onPressModeButton={h.onPressModeButton}
             onOpenComments={h.onOpenComments}
             onOpenAction={h.onOpenAction}
             onOpenNote={h.onOpenNote}

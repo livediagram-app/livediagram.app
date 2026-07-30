@@ -828,7 +828,8 @@ export const articles: Article[] = [
     slug: 'tools',
     title: 'Tools',
     description: 'Text, pencil, tables, frames, charts and the rest of the Tools tab.',
-    keywords: 'text pencil table frame chart sticky note image draw',
+    keywords:
+      'text pencil table frame chart sticky note image draw button mode button clickable press switch mode',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Elements',

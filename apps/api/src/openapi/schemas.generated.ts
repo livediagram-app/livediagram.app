@@ -1058,6 +1058,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
+          "mode-button": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
           "monitor": {
             "additionalProperties": false,
             "properties": {
@@ -2506,6 +2521,19 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "SelectionMode": {
+    "enum": [
+      "select",
+      "pan",
+      "laser",
+      "spotlight",
+      "avatar",
+      "eraser",
+      "format",
+      "isometric"
+    ],
+    "type": "string"
+  },
   "ShapeElement": {
     "additionalProperties": false,
     "properties": {
@@ -2613,6 +2641,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "markerSize": {
         "$ref": "#/components/schemas/TextSize"
+      },
+      "mode": {
+        "$ref": "#/components/schemas/SelectionMode"
       },
       "note": {
         "type": "string"
@@ -2763,6 +2794,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "hexagon",
       "document",
       "page",
+      "mode-button",
       "stadium",
       "actor",
       "cloud",
