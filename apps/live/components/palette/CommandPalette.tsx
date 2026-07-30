@@ -343,6 +343,10 @@ export function CommandPalette({
               // Tile grid (spec/108): nine tools in one column was a lot of
               // travel for a flat choice between equal-weight modes.
               grid
+              // The three bands the tools fall into (spec/108): what you do TO
+              // the diagram, what you do in front of an audience, and the
+              // whole-canvas views.
+              groupLabels={{ 0: 'Edit', 1: 'Present', 2: 'Preview' }}
               // 'zen' is an action entry, not a tool: fire the toggle and
               // keep the current tool selected (see canvas-tool-options).
               onChange={(id) => {

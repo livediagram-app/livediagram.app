@@ -56,6 +56,7 @@ export function PaletteDropdown({
   variant = 'bordered',
   autoHeight = false,
   grid = false,
+  groupLabels,
   dataTourId,
 }: {
   value: string;
@@ -96,6 +97,12 @@ export function PaletteDropdown({
   // menu systems read alike. Leave off for text-only or long scrolling lists,
   // where a column is genuinely easier to scan.
   grid?: boolean;
+  // Titles for the `group` bands, keyed by group index (spec/108). Grid mode
+  // only: a band header needs a full row to itself, which a list doesn't
+  // have. Given as a map rather than a field on the first option because the
+  // SELECTED option is filtered out of the menu — hang the label on an option
+  // and it disappears exactly when that option is the current one.
+  groupLabels?: Record<number, string>;
   // Interactive-tour anchor (spec/79): rendered as data-tour-id on the
   // trigger and `<id>-menu` on the portalled listbox so tour steps can open
   // this dropdown and anchor to its menu.
@@ -283,13 +290,34 @@ export function PaletteDropdown({
                       i > 0 && opt.group !== undefined && prev?.group !== undefined
                         ? opt.group !== prev.group
                         : false;
+                    // A header opens each band, including the first — which has
+                    // no divider before it, so `divide` alone would skip it.
+                    const heading =
+                      opt.group !== undefined && (i === 0 || divide)
+                        ? groupLabels?.[opt.group]
+                        : undefined;
                     return (
                       <Fragment key={opt.id}>
-                        {divide ? (
+                        {divide && !heading ? (
                           <div
                             role="separator"
                             className="col-span-full mx-1 my-0.5 border-t border-slate-200 dark:border-slate-700"
                           />
+                        ) : null}
+                        {heading ? (
+                          // The title replaces the rule rather than sitting under
+                          // it: a band that is named does not also need a line to
+                          // say it started.
+                          <div
+                            role="presentation"
+                            className={`col-span-full px-1.5 pb-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 ${
+                              i === 0
+                                ? 'pt-0.5'
+                                : 'mt-1 border-t border-slate-200 pt-1.5 dark:border-slate-700'
+                            }`}
+                          >
+                            {heading}
+                          </div>
                         ) : null}
                         <button
                           type="button"
