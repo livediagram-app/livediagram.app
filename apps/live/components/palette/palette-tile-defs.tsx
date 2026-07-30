@@ -358,6 +358,39 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   // --- Tools --------------------------------------------------------------
   {
+    // Page (spec/100). Sits first in Write: it is the largest writing
+    // surface, and the group reads shortest-to-longest from there. Called
+    // Page, not Document, so the palette and the selection toolbar agree —
+    // and so it never collides with the Shapes tab's flowchart "document".
+    id: 'tools:page',
+    section: 'tools',
+    toolGroup: 'write',
+    label: 'Add page',
+    caption: 'Page',
+    description: 'A paper-sized surface for rich text. Double-click to write.',
+    action: { type: 'shape', kind: 'page' },
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
+        <rect
+          x="3.5"
+          y="1.5"
+          width="11"
+          height="15"
+          rx="1.5"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.3"
+        />
+        <path
+          d="M6 5.5h6M6 8.5h6M6 11.5h3.5"
+          stroke="currentColor"
+          strokeWidth="1.3"
+          strokeLinecap="round"
+        />
+      </svg>
+    ),
+  },
+  {
     id: 'tools:text',
     section: 'tools',
     toolGroup: 'write',

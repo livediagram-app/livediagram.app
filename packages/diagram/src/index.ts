@@ -356,6 +356,9 @@ export type ShapeKind =
   | 'parallelogram'
   | 'hexagon'
   | 'document'
+  // Document element (spec/100). Named 'page' because 'document' above is
+  // the flowchart output symbol.
+  | 'page'
   | 'stadium'
   | 'actor'
   | 'cloud'

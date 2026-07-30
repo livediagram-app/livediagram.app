@@ -254,6 +254,7 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Polyline',
     'Timeline-rail',
     'CodeBlock',
+    'Page',
     'Checklist',
     'Pie-chart',
     'Bar-chart',

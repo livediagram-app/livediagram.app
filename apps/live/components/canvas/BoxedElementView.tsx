@@ -24,6 +24,7 @@ import { LockBadge, SelectionChromeLayer } from '@/components/canvas/element-par
 import { ImageElementView } from '@/components/canvas/ImageElementView';
 import { isSvgRenderedShape } from '@/components/canvas/shape-svg-overlay';
 import { BoxBorderOverlay } from '@/components/canvas/BoxBorderOverlay';
+import { PageCornerFold } from '@/components/canvas/PageCornerFold';
 import { isCssNativeBorderStyle } from '@/components/canvas/border-css';
 import { describeVariant } from '@/components/canvas/element-variant';
 import { BadgeStrip, RemoteSelectorsStrip } from '@/components/canvas/element-badges';
@@ -355,6 +356,15 @@ function BoxedElementViewImpl({
           strokeWidth={BORDER_STROKE_PX[element.strokeWidth ?? DEFAULT_BORDER_STROKE]}
           dasharray={BORDER_DASH_ARRAY[element.strokeStyle ?? DEFAULT_BORDER_STYLE] ?? ''}
           radiusPx={element.borderRadius !== undefined ? BORDER_RADIUS_PX[element.borderRadius] : 8}
+        />
+      ) : null}
+      {/* A Page's turned-back bottom-right corner (spec/100). */}
+      {element.type === 'shape' && element.shape === 'page' ? (
+        <PageCornerFold
+          width={element.width}
+          height={element.height}
+          fill={element.fillColor ?? '#ffffff'}
+          stroke={element.strokeColor ?? defaultStrokeColor(element)}
         />
       ) : null}
       {/* Browser-only HTML chrome overlay. SVG handles only the

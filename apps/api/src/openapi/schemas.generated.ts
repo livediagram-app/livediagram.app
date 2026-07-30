@@ -1073,6 +1073,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
+          "page": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
           "parallelogram": {
             "additionalProperties": false,
             "properties": {
@@ -2746,6 +2761,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "parallelogram",
       "hexagon",
       "document",
+      "page",
       "stadium",
       "actor",
       "cloud",

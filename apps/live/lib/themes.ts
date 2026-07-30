@@ -79,6 +79,11 @@ export function deriveNewBoxedColours(
   const colours: { fillColor?: string; strokeColor?: string; textColor?: string } = {};
   const bg = tab.backgroundColor ?? DEFAULT_BACKGROUND_COLOR;
   const patternColor = tab.patternColor ?? DEFAULT_PATTERN_COLOR;
+  // A page (spec/100) is paper, not a node in the diagram's colour scheme.
+  // Tinting it with the backdrop-derived shape colours is what stopped it
+  // reading as a page at all, so it keeps the fill / stroke createShape gave
+  // it. The user can still recolour it from the menu like anything else.
+  if (base.type === 'shape' && base.shape === 'page') return colours;
   if (base.type === 'shape' || base.type === 'annotation') {
     // Annotation markers derive fill + stroke from the backdrop like a shape
     // does (text isn't used — the note is plain). See spec/38.

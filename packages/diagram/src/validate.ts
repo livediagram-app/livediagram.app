@@ -61,6 +61,10 @@ export const SHAPE_KINDS = new Set<string>([
   'parallelogram',
   'hexagon',
   'document',
+  // Document element (spec/100): a paper-proportioned page you write
+  // prose into. Named 'page' internally because the flowchart output symbol
+  // above already owns 'document'.
+  'page',
   'stadium',
   'actor',
   'cloud',
