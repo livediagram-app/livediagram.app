@@ -23,6 +23,7 @@ Putting the tools ON the board makes the board self-facilitating. A retro templa
 
 - The press routes through the **same entry points the menus use** (`startTimer`, `startVote`, `startPoll`), so every rule those already enforce still applies: the edit-role gate, the "one vote at a time" rule, the change-log entry, the telemetry.
 - **It starts the tool for the room**, unlike the Selection Mode button, which only ever changes the presser's own mode. That asymmetry is the point: a timer nobody else can see is not a timer. The tooltip says so.
+- **A timer button is the timer's control, not a reset.** With a timer already on the tab, pressing PAUSES it; pressing again CONTINUES it from where it stopped. Only a tab with no timer starts a fresh countdown. Someone pressing it mid-session means "hold on", and silently restarting five minutes is the one behaviour nobody wants. The face follows the state — "Start 5 min timer" / "Pause the timer" / "Continue the timer" — so the board says what the next press will do. Clearing a timer stays with the timer's own controls ([spec/39](39-session-tools.md)), because that is the destructive one.
 - **A read-only visitor's press does nothing**, and the face says why rather than looking live: starting a timer or a vote is an edit-role action ([spec/39](39-session-tools.md) "Roles"). Answering the poll it starts is not — an audience on a view link can still take part.
 - **Dragging it does not press it** (`usePressWithoutDrag`), same as every other Behaviour element.
 

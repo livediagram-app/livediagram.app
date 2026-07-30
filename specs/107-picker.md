@@ -19,10 +19,11 @@ It belongs on the canvas rather than in a menu for the same reason the other Beh
 
 ## Rolling
 
-- Pressing it **spins for about a second** and lands on the result. The spin is local animation over a result decided at press time — a peer never watches a different reel land on a different name.
+- Pressing it **spins the candidates past and slows to a stop** on the result, over about a second and a half. The frames are spaced on a quadratic ease-out, so it reads as a wheel losing speed rather than a list being flicked at a constant rate — the last few names are the ones the room is actually watching. The spin is local animation over a result decided at press time, so a peer never watches a different reel land on a different name.
+- **People spin past as themselves**: when the source is the room, each candidate is drawn with its participant avatar (their colour and initials, the same `ParticipantAvatar` the presence stack uses) beside the name. The stored result is matched back to whoever is still here, so the winner keeps their avatar after a reload and quietly loses it once they leave.
 - The result is **written to the element**, so everyone sees the same one. That makes it an ordinary edit: it syncs, it lands in the change log, and it undoes.
 - **A read-only visitor can still press it**, and sees the spin and the result on their own screen; it simply isn't written back. Being able to roll for yourself is harmless, and the alternative — a dead control on a view link — is worse.
-- **Participants** are read from live presence at press time, so it can only pick someone who is actually here. With nobody else in the room it picks you, because a picker that refuses to choose is a broken picker.
+- **Participants** are read from live presence at press time, so it can only pick someone who is actually here. With nobody else in the room it picks you, because a picker that refuses to choose is a broken picker. Candidates are keyed by participant id: you appear once even though you arrive from both local identity and presence, and two people who happen to share a name are still two candidates.
 - Randomness comes from `apps/live/lib/random.ts` (`crypto.getRandomValues`), like every other roll in the editor.
 - **Dragging it does not roll it** (`usePressWithoutDrag`).
 

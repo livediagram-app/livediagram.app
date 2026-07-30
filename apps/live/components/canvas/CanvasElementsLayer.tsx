@@ -102,6 +102,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onPressModeButton,
     onPressSessionButton,
     sessionStartBlocked,
+    timerState,
     revealedIds,
     onToggleReveal,
     onRollPicker,
@@ -334,6 +335,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             onPressModeButton={h.onPressModeButton}
             onPressSessionButton={h.onPressSessionButton}
             sessionStartBlocked={sessionStartBlocked}
+            timerState={timerState}
             revealedForMe={revealedIds?.has(element.id)}
             onToggleReveal={h.onToggleReveal}
             onRollPicker={h.onRollPicker}

@@ -11,7 +11,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { Tooltip } from '@/components/primitives/Tooltip';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
-import { PICKER_SPIN_MS, spinReel } from '@/lib/picker';
+import { spinFrameDelays, spinReel, type PickerCandidate } from '@/lib/picker';
+import { ParticipantAvatar } from '@/components/primitives/ParticipantAvatar';
 
 export function PickerFace({
   label,
@@ -27,13 +28,13 @@ export function PickerFace({
   result: string | undefined;
   // What a roll can land on right now, resolved by the caller (presence for
   // the participants source, the written list otherwise).
-  candidates: string[];
+  candidates: PickerCandidate[];
   textColor: string;
   // Rolls and returns the result to show; absent on a surface that can't roll.
-  onRoll?: () => string | null;
+  onRoll?: () => PickerCandidate | null;
 }) {
   // The frame currently on the reel, or null when standing still.
-  const [spinning, setSpinning] = useState<string | null>(null);
+  const [spinning, setSpinning] = useState<PickerCandidate | null>(null);
   const timers = useRef<number[]>([]);
   useEffect(() => {
     const pending = timers.current;
@@ -46,14 +47,14 @@ export function PickerFace({
     if (!onRoll || spinning !== null) return;
     const landed = onRoll();
     if (landed === null) return;
-    // Frames are evenly spaced across the spin and land on the result, so the
-    // last thing the eye sees is the answer.
+    // The reel decelerates into the answer (see spinFrameDelays), so it reads
+    // as a wheel slowing rather than a list being flicked.
     const reel = spinReel(candidates, landed);
-    const step = PICKER_SPIN_MS / Math.max(1, reel.length);
-    reel.forEach((name, i) => {
+    const delays = spinFrameDelays(reel.length);
+    reel.forEach((candidate, i) => {
       const id = window.setTimeout(
-        () => setSpinning(i === reel.length - 1 ? null : name),
-        step * i,
+        () => setSpinning(i === reel.length - 1 ? null : candidate),
+        delays[i] ?? 0,
       );
       timers.current.push(id);
     });
@@ -61,7 +62,14 @@ export function PickerFace({
   const press = usePressWithoutDrag(roll);
 
   const empty = candidates.length === 0;
-  const shown = spinning ?? result ?? (empty ? 'Nothing to pick from' : '—');
+  // Standing still, the shown candidate is the stored result matched back to a
+  // live person where we can — so the winner keeps their avatar after a
+  // reload, and gracefully loses it once they've left the room.
+  const settled: PickerCandidate | null = result
+    ? (candidates.find((c) => c.label === result) ?? { label: result })
+    : null;
+  const shown = spinning ?? settled;
+  const shownText = shown?.label ?? (empty ? 'Nothing to pick from' : '—');
 
   return (
     <div className="flex h-full w-full flex-col items-center justify-center gap-1 px-3 py-2">
@@ -73,16 +81,22 @@ export function PickerFace({
           {label.trim()}
         </span>
       ) : null}
-      <span
-        // The result is the content, so it gets the room. `line-clamp-2` keeps
-        // a long option from pushing the button out of the card.
-        className={`line-clamp-2 text-center text-[17px] font-semibold leading-tight transition-opacity ${
-          spinning ? 'opacity-70' : 'opacity-100'
-        } ${empty && !spinning ? 'text-[13px] font-normal opacity-60' : ''}`}
-        style={{ color: textColor }}
-        aria-live="polite"
-      >
-        {shown}
+      <span className="flex min-w-0 items-center gap-2" aria-live="polite">
+        {/* A person spins past as themselves — their colour and initials — so
+            the reel reads as the room rather than as a list of strings. */}
+        {shown?.participant ? (
+          <ParticipantAvatar participant={shown.participant} size={26} />
+        ) : null}
+        <span
+          // The result is the content, so it gets the room. `line-clamp-2`
+          // keeps a long option from pushing the button out of the card.
+          className={`line-clamp-2 text-center text-[17px] font-semibold leading-tight transition-opacity ${
+            spinning ? 'opacity-80' : 'opacity-100'
+          } ${empty && !spinning ? 'text-[13px] font-normal opacity-60' : ''}`}
+          style={{ color: textColor }}
+        >
+          {shownText}
+        </span>
       </span>
       {onRoll ? (
         <Tooltip

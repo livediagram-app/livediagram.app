@@ -9,6 +9,12 @@
 //
 // Deliberately NOT a pointerdown-swallow: capturing the press would stop the
 // element being dragged at all, which is the thing we're protecting.
+//
+// `requireDouble` makes it a double-press instead — used by the Reveal zone
+// (spec/106), where a stray single click would undo the element's entire
+// purpose. Detected from two clicks in a window rather than the DOM's own
+// `dblclick`, because that event is unreliable on touch (it competes with
+// double-tap-to-zoom) and this way a tap and a click behave identically.
 
 import { useRef, type PointerEvent as ReactPointerEvent, type MouseEvent } from 'react';
 
@@ -16,9 +22,29 @@ import { useRef, type PointerEvent as ReactPointerEvent, type MouseEvent } from 
 // trackpad micro-slip; anything beyond it was a deliberate move.
 const DRAG_SLOP_PX = 5;
 
-export function usePressWithoutDrag(onPress?: () => void) {
+// Milliseconds between two presses that still count as one double-press. The
+// platform default sits around 500ms; a touch below that keeps a deliberate
+// double-tap comfortable without pairing two unrelated clicks.
+export const DOUBLE_PRESS_MS = 450;
+
+// Pure so the window itself is testable: was this press the second half of a
+// double? `last` is the previous press time, or null when there wasn't one.
+export function isDoublePress(last: number | null, now: number): boolean {
+  return last !== null && now - last <= DOUBLE_PRESS_MS && now >= last;
+}
+
+export function usePressWithoutDrag(
+  onPress?: () => void,
+  { requireDouble = false }: { requireDouble?: boolean } = {},
+) {
   const startRef = useRef<{ x: number; y: number } | null>(null);
+  const lastPressRef = useRef<number | null>(null);
   return {
+    // A double-press would otherwise ALSO reach the canvas as a dblclick and
+    // open the label editor over the thing we just revealed.
+    onDoubleClick: (e: MouseEvent) => {
+      if (requireDouble) e.stopPropagation();
+    },
     onPointerDown: (e: ReactPointerEvent) => {
       startRef.current = { x: e.clientX, y: e.clientY };
     },
@@ -29,6 +55,14 @@ export function usePressWithoutDrag(onPress?: () => void) {
       const start = startRef.current;
       startRef.current = null;
       if (start && Math.hypot(e.clientX - start.x, e.clientY - start.y) > DRAG_SLOP_PX) return;
+      if (requireDouble) {
+        const now = e.timeStamp || performance.now();
+        if (!isDoublePress(lastPressRef.current, now)) {
+          lastPressRef.current = now;
+          return;
+        }
+        lastPressRef.current = null;
+      }
       onPress?.();
     },
   };

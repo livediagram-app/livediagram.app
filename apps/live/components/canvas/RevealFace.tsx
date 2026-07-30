@@ -6,7 +6,12 @@
 // still in the document, the export, and the API response. The tooltip says
 // so, and the spec is the honest record of it.
 //
-// Local reveal (a click) is a viewer's own business and never touches the
+// Uncovering locally takes a DOUBLE press: a cover exists to stay closed, and
+// one stray click on a board people are dragging things around would undo the
+// whole point of it. The Hide pill stays a single click — putting the cover
+// back by accident costs nothing.
+//
+// Local reveal is a viewer's own business and never touches the
 // document; the shared reveal lives in `revealed` on the element and is an
 // ordinary edit. When it is uncovered locally, the panel gets out of the way
 // completely — pointer-events included, so the content underneath is editable
@@ -14,6 +19,7 @@
 
 import { Tooltip } from '@/components/primitives/Tooltip';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
+import { useCoarsePointer } from '@/hooks/ui/useCoarsePointer';
 
 function EyeIcon({ off = false }: { off?: boolean }) {
   return (
@@ -52,7 +58,11 @@ export function RevealFace({
   // Absent on a surface with no interaction at all (an export render).
   onToggleForMe?: () => void;
 }) {
-  const press = usePressWithoutDrag(onToggleForMe);
+  // The cover needs two presses; the pill needs one (see the header).
+  const coverPress = usePressWithoutDrag(onToggleForMe, { requireDouble: true });
+  const pillPress = usePressWithoutDrag(onToggleForMe);
+  const coarse = useCoarsePointer();
+  const gesture = coarse ? 'Double-tap' : 'Double-click';
   const uncovered = revealedForAll || revealedForMe;
 
   // Uncovered for the room: nothing to draw. The element is still selectable
@@ -72,7 +82,7 @@ export function RevealFace({
         >
           <button
             type="button"
-            {...press}
+            {...pillPress}
             className="flex cursor-pointer items-center gap-1 rounded-full bg-slate-900/80 px-2 py-1 text-[10px] font-medium text-white shadow-sm transition hover:bg-slate-900"
           >
             <EyeIcon off />
@@ -88,12 +98,12 @@ export function RevealFace({
       block
       className="h-full w-full"
       title={label.trim() || 'Hidden'}
-      description="Click to uncover it on your screen only. Anyone can move the cover, so it hides content from a reader, not from a determined one."
+      description={`${gesture} to uncover it on your screen only. Anyone can move the cover, so it hides content from a reader, not from a determined one.`}
     >
       <button
         type="button"
-        aria-label={`${label.trim() || 'Hidden'} — click to reveal`}
-        {...press}
+        aria-label={`${label.trim() || 'Hidden'} — ${gesture.toLowerCase()} to reveal`}
+        {...coverPress}
         // The cover itself: a solid frosted panel, dashed to read as
         // temporary rather than as a box someone drew.
         className="pointer-events-auto flex h-full w-full cursor-pointer flex-col items-center justify-center gap-1 rounded-[inherit] border-2 border-dashed bg-slate-100/95 transition hover:bg-slate-50 dark:bg-slate-800/95 dark:hover:bg-slate-800"
@@ -109,7 +119,7 @@ export function RevealFace({
           className="text-[10px] font-medium uppercase tracking-[0.08em] opacity-60"
           style={{ color: textColor }}
         >
-          Click to reveal
+          {gesture} to reveal
         </span>
       </button>
     </Tooltip>

@@ -26,9 +26,18 @@ const TOOL_ICON: Record<SessionPlan['tool'], React.ReactNode> = {
 // What the face says when the author hasn't written their own label. Derived
 // from the SETTING, not just the tool, so re-pointing a button relabels it and
 // the board reads as instructions ("Vote — 3 dots each").
-export function sessionButtonText(plan: SessionPlan | null): { kicker: string; action: string } {
+export function sessionButtonText(
+  plan: SessionPlan | null,
+  // What the tab's timer is doing, so a timer button reads as the control it
+  // is mid-session ("Pause timer") rather than always promising a fresh start.
+  timerState: TimerState = 'none',
+): { kicker: string; action: string } {
   if (!plan) return { kicker: 'Poll', action: 'Not set up' };
-  if (plan.tool === 'timer') return { kicker: 'Start', action: `${plan.minutes} min timer` };
+  if (plan.tool === 'timer') {
+    if (timerState === 'running') return { kicker: 'Pause', action: 'the timer' };
+    if (timerState === 'paused') return { kicker: 'Continue', action: 'the timer' };
+    return { kicker: 'Start', action: `${plan.minutes} min timer` };
+  }
   if (plan.tool === 'vote') {
     return {
       kicker: 'Start vote',
@@ -37,6 +46,9 @@ export function sessionButtonText(plan: SessionPlan | null): { kicker: string; a
   }
   return { kicker: 'Ask the room', action: plan.question };
 }
+
+// A tab's timer is either absent, counting, or held.
+export type TimerState = 'none' | 'running' | 'paused';
 
 const TOOL_BLURB: Record<SessionPlan['tool'], string> = {
   timer: 'Starts a countdown everyone in the room can see.',
@@ -53,16 +65,18 @@ export function SessionButtonFace({
   // False on a read-only surface (a view-role visitor, an embed): the face
   // renders inert and says why rather than looking live.
   canStart,
+  timerState = 'none',
   onPress,
 }: {
   config: SessionButtonConfig | undefined;
   label: string;
   textColor: string;
   canStart: boolean;
+  timerState?: TimerState;
   onPress?: () => void;
 }) {
   const plan = sessionButtonPlan(config);
-  const derived = sessionButtonText(plan);
+  const derived = sessionButtonText(plan, timerState);
   const text = label.trim();
   const press = usePressWithoutDrag(onPress);
   const tool = plan?.tool ?? 'poll';
@@ -145,7 +159,13 @@ export function SessionButtonFace({
       block
       className="h-full w-full"
       title={text || `${derived.kicker} ${derived.action}`}
-      description={TOOL_BLURB[plan.tool]}
+      description={
+        plan.tool === 'timer' && timerState !== 'none'
+          ? timerState === 'running'
+            ? 'Holds the countdown for everyone. Press again to continue it.'
+            : 'Continues the countdown from where it was paused.'
+          : TOOL_BLURB[plan.tool]
+      }
     >
       <button
         type="button"

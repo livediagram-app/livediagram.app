@@ -25,7 +25,10 @@ export function useBehaviourElements({
   editsBlocked,
   selfParticipant,
   livePresence,
+  activeTimer,
   startTimer,
+  pauseTimer,
+  resumeTimer,
   startVote,
   startPoll,
 }: {
@@ -37,7 +40,13 @@ export function useBehaviourElements({
   editsBlocked: boolean;
   selfParticipant: Participant;
   livePresence: Participant[];
+  // The tab's timer right now, so a timer button can act on it rather than
+  // stomping it (spec/105): pressing while one is running PAUSES, pressing
+  // while one is paused RESUMES. Only a tab with no timer starts a new one.
+  activeTimer: { running: boolean } | undefined;
   startTimer: (mode: TimerMode, durationMs?: number) => void;
+  pauseTimer: () => void;
+  resumeTimer: () => void;
   startVote: (votesPerPerson: number) => void;
   startPoll: (draft: { question: string; style: 'text'; options: string[] }) => void;
 }) {
@@ -50,7 +59,13 @@ export function useBehaviourElements({
     const plan = sessionButtonPlan(element.session);
     if (!plan) return;
     if (plan.tool === 'timer') {
-      startTimer('countdown', plan.minutes * 60_000);
+      // Mid-session the button is the timer's control, not a reset: someone
+      // pressing it while five minutes are running means "hold on", and
+      // silently restarting the countdown would be the one behaviour nobody
+      // wants. Clearing a timer stays with the timer's own controls.
+      if (!activeTimer) startTimer('countdown', plan.minutes * 60_000);
+      else if (activeTimer.running) pauseTimer();
+      else resumeTimer();
       return;
     }
     if (plan.tool === 'vote') {
@@ -81,13 +96,16 @@ export function useBehaviourElements({
     const candidates = pickerCandidates({
       source: element.pickerSource ?? 'participants',
       options: element.pickerOptions,
-      participantNames: [selfParticipant.name, ...livePresence.map((p) => p.name)],
+      // Ourselves first: presence lists the OTHERS, and a picker that can't
+      // pick the person pressing it is a picker that lies.
+      participants: [selfParticipant, ...livePresence],
     });
     return {
       candidates,
       roll: () => {
-        const result = rollPicker(candidates);
-        if (result === null) return null;
+        const picked = rollPicker(candidates);
+        if (picked === null) return null;
+        const result = picked.label;
         // A view-role visitor still gets their roll — it just stays on their
         // screen. Everyone else writes it, so the room lands on one answer.
         if (!editsBlocked) {
@@ -105,7 +123,7 @@ export function useBehaviourElements({
           );
           track('Element', 'Changed', 'Picker');
         }
-        return result;
+        return picked;
       },
     };
   };

@@ -91,6 +91,7 @@ function BoxedElementViewImpl({
   onPressModeButton,
   onPressSessionButton,
   sessionStartBlocked,
+  timerState,
   revealedForMe,
   onToggleReveal,
   onRollPicker,
@@ -418,6 +419,7 @@ function BoxedElementViewImpl({
           label={label}
           textColor={textColor}
           canStart={!!onPressSessionButton && !sessionStartBlocked}
+          timerState={timerState}
           onPress={onPressSessionButton ? () => onPressSessionButton(element) : undefined}
         />
       ) : element.type === 'shape' && element.shape === 'reveal' && !isEditing ? (

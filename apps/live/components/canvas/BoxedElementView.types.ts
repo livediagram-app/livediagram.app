@@ -73,6 +73,9 @@ export type BoxedElementViewProps = {
   // role), so the face renders inert and explains rather than lying.
   onPressSessionButton?: (element: import('@livediagram/diagram').ShapeElement) => void;
   sessionStartBlocked?: boolean;
+  // What the tab's timer is doing, so a timer button can say "Pause" /
+  // "Continue" instead of always promising a fresh countdown.
+  timerState?: import('@/components/canvas/SessionButtonFace').TimerState;
   // Reveal zone (spec/106): whether THIS viewer has lifted the cover (local,
   // ephemeral — the shared state lives on the element), and the toggle.
   revealedForMe?: boolean;
@@ -80,8 +83,8 @@ export type BoxedElementViewProps = {
   // Picker (spec/107): resolves what a roll can land on right now and performs
   // one, returning the result to animate towards.
   onRollPicker?: (element: import('@livediagram/diagram').ShapeElement) => {
-    candidates: string[];
-    roll: () => string | null;
+    candidates: import('@/lib/picker').PickerCandidate[];
+    roll: () => import('@/lib/picker').PickerCandidate | null;
   };
   // The viewer's current mode, so a Selection Mode button offering it renders
   // disabled (spec/103).

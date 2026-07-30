@@ -1470,7 +1470,10 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     editsBlocked,
     selfParticipant,
     livePresence,
+    activeTimer: activeTab.timer,
     startTimer,
+    pauseTimer,
+    resumeTimer,
     startVote,
     startPoll: livePoll.startPoll,
   });

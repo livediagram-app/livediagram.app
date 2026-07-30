@@ -395,6 +395,7 @@ export function EditorCanvasHost() {
       // element and calls the tool that already exists.
       onPressSessionButton={pressSessionButton}
       sessionStartBlocked={isReadOnly}
+      timerState={activeTab.timer ? (activeTab.timer.running ? 'running' : 'paused') : 'none'}
       revealedIds={revealedIds}
       onToggleReveal={toggleRevealForMe}
       onRollPicker={pickerFor}
