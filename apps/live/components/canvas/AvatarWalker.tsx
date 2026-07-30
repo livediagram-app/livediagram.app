@@ -20,6 +20,7 @@ export function AvatarWalker({
   stepFrame,
   lift = 0,
   wave = null,
+  pose = null,
   shirt,
   standingOn,
   name,
@@ -36,6 +37,8 @@ export function AvatarWalker({
   lift?: number;
   // Flag-wave frame (0..2), or null for no flag.
   wave?: number | null;
+  // Active reaction pose (spec/101), or null when standing / walking.
+  pose?: import('@/lib/avatar-reactions').ReactionPose | null;
   // Shirt colour — the participant's presence colour, so your character on a
   // shared diagram matches your cursor / name chip. Falls back to the brand
   // cyan inside the sprite when undefined.
@@ -102,6 +105,7 @@ export function AvatarWalker({
           stepFrame={stepFrame}
           lift={lift}
           wave={wave}
+          pose={pose}
           shirt={shirt}
           scale={scale}
         />

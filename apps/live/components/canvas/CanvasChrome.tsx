@@ -80,6 +80,9 @@ type ChromeExtras = {
     field: K,
     value: import('@/lib/avatar-config').AvatarConfig[K],
   ) => void;
+  // Roll a whole new character, and play one of the panel's reactions.
+  onRandomiseAvatar: () => void;
+  onAvatarReaction: (kind: import('@/lib/avatar-reactions').AvatarReactionKind) => void;
 };
 
 export type CanvasChromeProps = CanvasProps & ChromeExtras;

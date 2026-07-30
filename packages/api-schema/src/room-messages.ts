@@ -25,6 +25,13 @@ export type AvatarPresence = {
     hair: 'short' | 'buzz' | 'curly' | 'long' | 'ponytail' | 'bun' | 'mohawk' | 'bald';
     size: 'small' | 'regular' | 'tall';
   };
+  // A reaction in progress (spec/101): which one, and how far into it the
+  // sender is. The pose is derived from these two by a pure function on both
+  // ends, so the wire carries a kind and a clock rather than a pose.
+  reaction?: {
+    kind: 'jumping-jacks' | 'wave' | 'spin' | 'cheer' | 'dance';
+    elapsedMs: number;
+  };
   walking: boolean;
   // Two-frame leg swing (0 | 1).
   stepFrame: number;

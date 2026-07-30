@@ -173,6 +173,8 @@ export function useCanvasChromePanels({
     onExitAvatarMode,
     avatarConfig,
     onChangeAvatarField,
+    onRandomiseAvatar,
+    onAvatarReaction,
     avatarPanelPosition,
     onMoveAvatarPanel,
     onResetAvatarPanel,
@@ -582,6 +584,8 @@ export function useCanvasChromePanels({
       <AvatarPanel
         config={avatarConfig}
         onChange={(field, value) => onChangeAvatarField?.(field, value)}
+        onRandomise={onRandomiseAvatar}
+        onReaction={onAvatarReaction}
         shirt={selfParticipant?.color}
         position={avatarWiring.position}
         stackBelowY={dockingActive ? undefined : legacyStackBelowY}

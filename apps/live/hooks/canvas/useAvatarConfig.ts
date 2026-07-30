@@ -71,10 +71,15 @@ export function useAvatarConfig({ active }: { active: boolean }) {
     setField('gender', config.gender === 'male' ? 'female' : 'male');
   };
 
-  // Reset rolls a NEW random character rather than returning the plain default
-  // one — "reset" here means "give me a different one", the same thing the
-  // first-use roll does.
-  const reset = () => setConfig(randomAvatarConfig());
+  // The panel's dice button: roll a new character, but KEEP the chosen size —
+  // size decides how much canvas the character covers, so re-rolling it would
+  // resize someone's presentation out from under them. Same reasoning as the
+  // first-use roll leaving size alone.
+  const randomise = () => {
+    const rolled = randomAvatarConfig();
+    setConfig({ ...rolled, size: config.size });
+    track('UI', 'Changed', 'AvatarRandomised');
+  };
 
-  return { config, setField, toggleGender, reset };
+  return { config, setField, toggleGender, randomise };
 }

@@ -19,6 +19,7 @@
 
 import type { AvatarConfig } from '@/lib/avatar-config';
 import { BARE_ARM_CLOTHING, BARE_LEG_CLOTHING } from '@/lib/avatar-config';
+import type { ReactionPose } from '@/lib/avatar-reactions';
 import type { AvatarFacing } from '@/lib/avatar-walk';
 import {
   AVATAR_GRID_HEIGHT,
@@ -103,27 +104,37 @@ function LowerFront({
   mid,
   walking,
   airborne,
+  legsApart,
 }: {
   clothing: AvatarConfig['clothing'];
   shirtDark: string;
   mid: boolean;
   walking: boolean;
   airborne: boolean;
+  // Mid-jumping-jack: legs splayed rather than striding.
+  legsApart: boolean;
 }) {
   const strideLift = walking && !airborne;
+  // Splayed stance for a jack; otherwise the two legs sit under the body. The
+  // split is wide (right out to the sprite's edges) because at canvas size a
+  // one-pixel stagger doesn't read as a jumping jack at all.
+  const leftX = legsApart ? 1 : 5;
+  const rightX = legsApart ? 12 : 9;
+  const leftLift = legsApart ? 0 : mid && strideLift ? 1 : 0;
+  const rightLift = legsApart ? 0 : !mid && strideLift ? 1 : 0;
   if (BARE_LEG_CLOTHING.has(clothing)) {
     return (
       <>
-        <BareLeg x={5} lift={mid && strideLift ? 1 : 0} />
-        <BareLeg x={9} lift={!mid && strideLift ? 1 : 0} />
+        <BareLeg x={leftX} lift={leftLift} />
+        <BareLeg x={rightX} lift={rightLift} />
         <Skirt shirtDark={shirtDark} />
       </>
     );
   }
   return (
     <>
-      <Leg x={5} lift={mid && strideLift ? 1 : 0} />
-      <Leg x={9} lift={!mid && strideLift ? 1 : 0} />
+      <Leg x={leftX} lift={leftLift} />
+      <Leg x={rightX} lift={rightLift} />
     </>
   );
 }
@@ -231,18 +242,91 @@ function OutfitDetail({
 
 // The front / back torso with sleeves. `swing` moves the arms in opposition
 // for the walk cycle; the female build narrows the shoulders by a pixel.
+// The arms. Normally two sleeves swinging in opposition with the walk; a
+// reaction (spec/101) can instead throw them straight out to the sides (jumping
+// jacks), raise both (cheer), or raise one and swing it (wave / dance). Only one
+// of those is ever set at a time — reactionPose guarantees it.
+function Arms({
+  inset,
+  swing,
+  sleeve,
+  sleeveDark,
+  armsOut,
+  armsUp,
+  waveArm,
+  waveOut,
+}: {
+  inset: number;
+  swing: number;
+  sleeve: string;
+  sleeveDark: string;
+  armsOut: boolean;
+  armsUp: boolean;
+  waveArm: boolean;
+  // Which half of the wave's swing we're on — the raised hand crosses in and
+  // out rather than just sitting there.
+  waveOut: boolean;
+}) {
+  if (armsOut) {
+    return (
+      <g>
+        <rect x={0} y={9} width={4} height={2} fill={sleeve} />
+        <rect x={-2} y={9} width={2} height={2} fill={SKIN} />
+        <rect x={12} y={9} width={4} height={2} fill={sleeveDark} />
+        <rect x={16} y={9} width={2} height={2} fill={SKIN_DARK} />
+      </g>
+    );
+  }
+  if (armsUp) {
+    return (
+      <g>
+        <rect x={2 + inset} y={4} width={2} height={6} fill={sleeve} />
+        <rect x={2 + inset} y={2} width={2} height={2} fill={SKIN} />
+        <rect x={12 - inset} y={4} width={2} height={6} fill={sleeveDark} />
+        <rect x={12 - inset} y={2} width={2} height={2} fill={SKIN_DARK} />
+      </g>
+    );
+  }
+  if (waveArm) {
+    return (
+      <g>
+        {/* left arm down, right arm up and waving */}
+        <rect x={2 + inset} y={9} width={2} height={4} fill={sleeve} />
+        <rect x={2 + inset} y={13} width={2} height={2} fill={SKIN} />
+        <rect x={12 - inset} y={5} width={2} height={5} fill={sleeveDark} />
+        <rect x={waveOut ? 14 - inset : 12 - inset} y={3} width={2} height={2} fill={SKIN} />
+      </g>
+    );
+  }
+  return (
+    <g>
+      <g transform={`translate(0 ${swing})`}>
+        <rect x={2 + inset} y={9} width={2} height={4} fill={sleeve} />
+        <rect x={2 + inset} y={13} width={2} height={2} fill={SKIN} />
+      </g>
+      <g transform={`translate(0 ${-swing})`}>
+        <rect x={12 - inset} y={9} width={2} height={4} fill={sleeveDark} />
+        <rect x={12 - inset} y={13} width={2} height={2} fill={SKIN_DARK} />
+      </g>
+    </g>
+  );
+}
+
 function Torso({
   swing,
   shirt,
   shirtDark,
   clothing,
   gender,
+  pose,
 }: {
   swing: number;
   shirt: string;
   shirtDark: string;
   clothing: AvatarConfig['clothing'];
   gender: AvatarConfig['gender'];
+  // Active reaction pose, when one is playing.
+  pose?: ReactionPose | null;
 }) {
   const inset = gender === 'female' ? 1 : 0;
   // A vest leaves the arms bare, so the sleeve blocks take skin tones.
@@ -254,15 +338,16 @@ function Torso({
       <rect x={4 + inset} y={9} width={8 - inset * 2} height={6} fill={shirt} />
       <rect x={10 - inset} y={9} width={2} height={6} fill={shirtDark} />
       <OutfitDetail clothing={clothing} shirtDark={shirtDark} />
-      {/* Sleeves + hands, swinging opposite each other. */}
-      <g transform={`translate(0 ${swing})`}>
-        <rect x={2 + inset} y={9} width={2} height={4} fill={sleeve} />
-        <rect x={2 + inset} y={13} width={2} height={2} fill={SKIN} />
-      </g>
-      <g transform={`translate(0 ${-swing})`}>
-        <rect x={12 - inset} y={9} width={2} height={4} fill={sleeveDark} />
-        <rect x={12 - inset} y={13} width={2} height={2} fill={SKIN_DARK} />
-      </g>
+      <Arms
+        inset={inset}
+        swing={swing}
+        sleeve={sleeve}
+        sleeveDark={sleeveDark}
+        armsOut={pose?.armsOut ?? false}
+        armsUp={pose?.armsUp ?? false}
+        waveArm={pose?.waveArm ?? false}
+        waveOut={(pose?.leanX ?? 0) !== 0}
+      />
     </g>
   );
 }
@@ -515,6 +600,7 @@ export function AvatarSprite({
   shirt,
   scale = 1,
   portrait = false,
+  pose = null,
 }: {
   facing: AvatarFacing;
   config: AvatarConfig;
@@ -528,6 +614,9 @@ export function AvatarSprite({
   // Draw as a cropped standing portrait (the Avatar Panel's preview): the box
   // hugs the figure instead of reserving room for the hop and the flag.
   portrait?: boolean;
+  // Active reaction (spec/101): overrides the arms / legs / lean for the length
+  // of the performance. Null when the character is just standing or walking.
+  pose?: ReactionPose | null;
 }) {
   const mid = walking && stepFrame === 1;
   // A one-pixel body bob on the mid-stride frame; mid-air the legs tuck
@@ -561,8 +650,8 @@ export function AvatarSprite({
       <g
         transform={
           facing === 'right'
-            ? `translate(16 ${bob - liftPx}) scale(-1 1)`
-            : `translate(0 ${bob - liftPx})`
+            ? `translate(${16 - (pose?.leanX ?? 0)} ${bob - liftPx}) scale(-1 1)`
+            : `translate(${pose?.leanX ?? 0} ${bob - liftPx})`
         }
       >
         {profile ? (
@@ -591,6 +680,7 @@ export function AvatarSprite({
               mid={mid}
               walking={walking}
               airborne={airborne}
+              legsApart={pose?.legsApart ?? false}
             />
             <Torso
               swing={swing}
@@ -598,6 +688,7 @@ export function AvatarSprite({
               shirtDark={shirtDark}
               clothing={config.clothing}
               gender={config.gender}
+              pose={pose}
             />
             {config.clothing === 'hoodie' ? <Hood shirtDark={shirtDark} /> : null}
             {facing === 'up' ? (

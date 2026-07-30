@@ -41,6 +41,7 @@ import { AvatarWalker } from '@/components/canvas/AvatarWalker';
 import { useAvatarWalk } from '@/hooks/canvas/useAvatarWalk';
 import { useAvatarConfig } from '@/hooks/canvas/useAvatarConfig';
 import { parseAvatarConfig } from '@/lib/avatar-config';
+import { reactionPose } from '@/lib/avatar-reactions';
 import { useOffscreenContent } from '@/hooks/canvas/useOffscreenContent';
 import { Portal } from '@/components/primitives/Portal';
 import { TabLoadOverlay } from '@/components/canvas/TabLoadOverlay';
@@ -529,6 +530,13 @@ export function Canvas(props: CanvasProps) {
             stepFrame={peer.avatar.stepFrame}
             lift={peer.avatar.lift}
             wave={peer.avatar.wave}
+            // Replayed locally from the kind + elapsed time in their packet, by
+            // the same pure function the sender used (spec/101).
+            pose={
+              peer.avatar.reaction
+                ? reactionPose(peer.avatar.reaction.kind, peer.avatar.reaction.elapsedMs)
+                : null
+            }
             shirt={peer.color}
             name={peer.name}
             standingOn={null}
@@ -543,6 +551,7 @@ export function Canvas(props: CanvasProps) {
             stepFrame={avatar.stepFrame}
             lift={avatar.lift}
             wave={avatar.wave}
+            pose={avatar.pose}
             shirt={props.selfParticipant.color}
             standingOn={avatarStandingOn}
           />
@@ -570,6 +579,8 @@ export function Canvas(props: CanvasProps) {
         isGroupMode={isGroupMode}
         avatarConfig={avatarLook.config}
         onChangeAvatarField={avatarLook.setField}
+        onRandomiseAvatar={avatarLook.randomise}
+        onAvatarReaction={avatar.playReaction}
         offscreenContent={offscreenContent}
         marquee={marquee}
         drawDrag={drawDrag}

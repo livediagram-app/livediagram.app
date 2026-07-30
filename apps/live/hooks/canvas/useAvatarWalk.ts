@@ -13,6 +13,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Element } from '@livediagram/diagram';
 import { avatarScale, type AvatarConfig } from '@/lib/avatar-config';
+import { reactionPose, type AvatarReactionKind, type ReactionPose } from '@/lib/avatar-reactions';
 import { useAvatarKeys, NO_KEYS_HELD, type AvatarHeldKeys } from '@/hooks/canvas/useAvatarKeys';
 import {
   arrowDirection,
@@ -40,6 +41,10 @@ export type AvatarSnapshot = {
   x: number;
   y: number;
   facing: AvatarFacing;
+  // A reaction in progress (spec/101), as the kind plus how far into it the
+  // sender is: `reactionPose` is pure, so a peer replays the same performance
+  // from this rather than us shipping every pose field over the wire.
+  reaction?: { kind: AvatarReactionKind; elapsedMs: number };
   // The whole costume (spec/101), so a peer draws the character you built.
   config: AvatarConfig;
   walking: boolean;
@@ -92,6 +97,8 @@ export function useAvatarWalk({
   // Jump height above the ground (canvas px) and the flag-wave frame.
   const [lift, setLift] = useState(0);
   const [wave, setWave] = useState<number | null>(null);
+  // The pose of a reaction in progress, or null while just standing / walking.
+  const [pose, setPose] = useState<ReactionPose | null>(null);
 
   // Loop-internal state. Refs (not state) because the rAF tick reads and
   // writes these many times between renders.
@@ -103,20 +110,36 @@ export function useAvatarWalk({
   const liftRef = useRef(0);
   const jumpVyRef = useRef(0);
   const waveStartRef = useRef<number | null>(null);
+  // Which reaction is playing and when it started (performance.now()).
+  const reactionRef = useRef<{ kind: AvatarReactionKind; startedAt: number } | null>(null);
   // The costume last published as a standing snapshot; null = nothing published
   // since the mode was entered. Keeps the entry publish to once per change.
   const publishedLookRef = useRef<string | null>(null);
   // Live costume for the loop's presence packets + the hit-test scale.
   const configRef = useRef(config);
   configRef.current = config;
-  posRef.current = pos;
-  // Latest viewport offset, for the camera follow. The loop can't take a
-  // functional state update (Canvas's prop is a value setter), so it reads the
-  // current offset through a ref repointed on every render. Safe because the
-  // follow correction is recomputed from the LIVE wrapper rect each frame, so
-  // it converges even if a frame lands before React has re-rendered.
+  // NOTE: posRef is deliberately NOT re-synced from `pos` on every render. The
+  // LOOP owns the position; `pos` is a copy for rendering. Assigning
+  // `posRef.current = pos` here used to walk the character BACKWARDS whenever
+  // two animation frames landed between React commits (the render reset the ref
+  // to the older committed position, so the next frame stepped from there
+  // again) — which is why a diagonal, where the camera-follow queues extra
+  // renders on both axes at once, jittered visibly.
+  //
+  // Camera follow. The loop can't take a functional state update (Canvas's prop
+  // is a value setter), so it accumulates into this ref and remembers what it
+  // wrote: a second frame before the commit then builds on the first instead of
+  // overwriting it. A viewport change from ANYWHERE ELSE (pan, zoom, fit) won't
+  // match what we last wrote, and is adopted.
   const offsetRef = useRef(viewportOffset);
-  offsetRef.current = viewportOffset;
+  const offsetWrittenRef = useRef<AvatarPoint | null>(null);
+  if (
+    offsetWrittenRef.current === null ||
+    viewportOffset.x !== offsetWrittenRef.current.x ||
+    viewportOffset.y !== offsetWrittenRef.current.y
+  ) {
+    offsetRef.current = viewportOffset;
+  }
   // Presence publisher, reached through a ref so the loop never re-attaches
   // just because the editor re-rendered.
   const presenceRef = useRef(onPresence);
@@ -155,6 +178,8 @@ export function useAvatarWalk({
       liftRef.current = 0;
       jumpVyRef.current = 0;
       waveStartRef.current = null;
+      reactionRef.current = null;
+      setPose(null);
       publishedLookRef.current = null;
       setWalking(false);
       setLift(0);
@@ -191,6 +216,15 @@ export function useAvatarWalk({
   // while keys are held (the walk target would fight it).
   const walkTo = (point: AvatarPoint) => {
     if (!arrowDirection(heldRef.current)) targetRef.current = point;
+  };
+
+  // Play one of the panel's reactions (spec/101). It performs ON THE SPOT, so
+  // any walk in progress is dropped — sliding through a routine looks like a
+  // bug — and re-clicking restarts it rather than queueing.
+  const playReaction = (kind: AvatarReactionKind) => {
+    targetRef.current = null;
+    heldRef.current = { ...NO_KEYS_HELD };
+    reactionRef.current = { kind, startedAt: performance.now() };
   };
 
   // Space: hop, and wave the flag for the hop plus a short tail. Ignored
@@ -255,8 +289,28 @@ export function useAvatarWalk({
         const dx = next.x - from.x;
         const dy = next.y - from.y;
         const moved = Math.hypot(dx, dy);
+        // --- Reactions (spec/101) ---
+        // A reaction owns the pose (and its own hop height) for its duration.
+        const playing = reactionRef.current;
+        if (playing) {
+          const elapsed = now - playing.startedAt;
+          const next = reactionPose(playing.kind, elapsed);
+          if (next.done) {
+            reactionRef.current = null;
+            setPose(null);
+            setLift(0);
+            liftRef.current = 0;
+          } else {
+            setPose(next);
+            // The reaction's hop drives the same lift the jump uses, so the
+            // contact shadow and the sprite's rise come along for free.
+            liftRef.current = next.lift;
+            setLift(next.lift);
+            if (next.facing) setFacing(next.facing);
+          }
+        }
         // --- Jump + flag wave ---
-        if (liftRef.current > 0) {
+        if (!playing && liftRef.current > 0) {
           const hop = jumpStep(liftRef.current, jumpVyRef.current, dt);
           liftRef.current = hop.lift;
           jumpVyRef.current = hop.vy;
@@ -296,7 +350,10 @@ export function useAvatarWalk({
             );
             if (fix.x !== 0 || fix.y !== 0) {
               const prev = offsetRef.current;
-              setViewportOffset({ x: prev.x + fix.x, y: prev.y + fix.y });
+              const nextOffset = { x: prev.x + fix.x, y: prev.y + fix.y };
+              offsetRef.current = nextOffset;
+              offsetWrittenRef.current = nextOffset;
+              setViewportOffset(nextOffset);
             }
           }
         } else {
@@ -305,7 +362,13 @@ export function useAvatarWalk({
         // Publish to the room. The broadcaster throttles; sending only on
         // frames where the character is doing something (moving, airborne, or
         // waving) keeps an idle avatar off the wire entirely.
-        if (moved > 0 || liftRef.current > 0 || waveStartRef.current !== null) {
+        if (
+          moved > 0 ||
+          liftRef.current > 0 ||
+          waveStartRef.current !== null ||
+          reactionRef.current !== null
+        ) {
+          const live = reactionRef.current;
           presenceRef.current?.({
             x: next.x,
             y: next.y,
@@ -315,6 +378,7 @@ export function useAvatarWalk({
             stepFrame: Math.floor(travelledRef.current / STEP_LENGTH) % 2,
             lift: liftRef.current,
             wave: waveStartRef.current === null ? null : 0,
+            ...(live ? { reaction: { kind: live.kind, elapsedMs: now - live.startedAt } } : null),
           });
         }
       }
@@ -368,8 +432,10 @@ export function useAvatarWalk({
     // Two-frame leg swing, advanced by distance walked.
     stepFrame: Math.floor(travelled / STEP_LENGTH) % 2,
     standingOnId,
+    pose,
     walkTo,
     jump,
+    playReaction,
     toggleLookAt,
   };
 }

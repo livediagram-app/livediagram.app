@@ -36,12 +36,21 @@ While the mode is active, an **Avatar** panel is present — the character sheet
 
 Contents, top to bottom:
 
-- A **cropped portrait** of the character, drawn by the same sprite component the canvas uses (standing, front-on). The box hugs the figure — the walking sprite's box reserves headroom for the hop and slack for the flag, which as a preview frame was mostly empty space — and the preview holds a fixed scale so switching to Small / Tall doesn't resize the panel.
+- A **cropped portrait** of the character, drawn by the same sprite component the canvas uses (standing, front-on). The box hugs the figure — the walking sprite's box reserves headroom for the hop and slack for the flag, which as a preview frame was mostly empty space — and the preview holds a fixed scale so switching to Small / Tall doesn't resize the panel. A **randomise button** (icon only, no label) sits in its top-right corner: one click rolls a whole new character, **keeping the chosen size** for the same reason the first-use roll leaves it alone. It reuses the `RefreshIcon` the welcome flow's shuffle-a-name button uses — same meaning, same glyph.
 - Four **accordion rows**, one per choice, **single-open and all closed to start**, each showing its current value in the collapsed header. Sixteen outfit + hairstyle chips laid out flat would be most of the canvas; collapsed, the panel is a four-line summary of your character and you expand only the row you came to change. Built on the shared `AccordionSection` primitive (extracted on this third consumer, alongside the Settings and Shortcuts dialogs).
   - **Gender** — Male / Female.
   - **Clothing** — T-shirt / Stripes / Jumper / Hoodie / Vest / Suit / Dress / Skirt. Each is a change on the same body: stripes and a jumper's collar + ribbed hem are chest detail, the hoodie adds a hood behind the head and a kangaroo pocket, the vest bares the arms, the suit is an open jacket over a white shirt with a tie, and the dress / skirt swap trousers for bare legs. The two silhouette rules travel as sets (`BARE_LEG_CLOTHING`, `BARE_ARM_CLOTHING`) so the front, back, and profile views can't disagree about what an outfit implies.
   - **Hair** — Short / Buzz / Curly / Long / Ponytail / Bun / Mohawk / Bald, each drawn per view (the bun and the tail read from behind; the mohawk shaves the sides to stubble).
   - **Size** — Small / Regular / Tall, a scale on the whole sprite (**1.15 / 1.5 / 1.95**). Every step sits above the base 40x56 sprite: at 1x the character read as a detail on the canvas rather than someone standing in the room, and the costume details (a tie, a bun, a pocket) were too small to see. Size scales the right-click hit box and the name chip's offset with it, so a small character isn't clickable well outside itself.
+
+- **Reactions**, below the accordion and deliberately NOT in one: they are actions, not settings, so mid-presentation they are one click rather than a click plus a disclosure. Five of them, each a short one-shot performance:
+  - **Jumping jacks** — five hops, arms out and legs splayed at the top of each.
+  - **Wave** — a raised hand crossing back and forth for about a second and a half.
+  - **Spin** — two full turns on the spot through all four facings.
+  - **Cheer** — both arms up and two bounces.
+  - **Dance** — a side-to-side sway with the arms alternating.
+
+  A reaction performs **on the spot**: starting one drops any walk in progress (sliding through a routine reads as a bug) and clicking again restarts it rather than queueing. Peers see it: the presence packet carries the **kind plus how far into it the sender is**, and each receiver derives the pose with the same pure `reactionPose` function — a kind and a clock on the wire rather than a pose.
 
 **No colour picker**, deliberately — see above.
 
@@ -92,6 +101,7 @@ Per the no-god-files rule:
 - **`apps/live/lib/avatar-walk.ts`** also holds the jump integration (`jumpStep`), the flag-wave frame clock (`waveFrame`), and the sprite hit-test (`hitTestAvatar`) the right-click look toggle uses.
 - **`apps/live/lib/avatar-config.ts`** — the four choices, their option catalogues (one source for the panel's rows AND the parser's validation), the silhouette sets, the size scale, the random first-use roll, the field-by-field parser, and the localStorage read / write. Unit-tested (including that every rolled value parses back, so the catalogues and the roll can't drift); no React.
 - **`apps/live/components/primitives/AccordionSection.tsx`** — the shared single-open accordion row (header + chevron + grid-rows body), now used by the Avatar Panel, the Settings dialog, and the Shortcuts dialog.
+- **`apps/live/lib/avatar-reactions.ts`** — the five reactions, their durations, and `reactionPose(kind, elapsedMs)`: a pure timeline that turns "this reaction, this far in" into the pose inputs the sprite already draws (hop height, facing, arms, stance, lean). Unit-tested (five jack reps, two spin turns, no arms-up-two-ways-at-once, everything back to standing when done), and pure precisely so a peer can replay a performance from a kind + a clock.
 - **`apps/live/hooks/canvas/useAvatarConfig.ts`** — the costume state slice: load on mount, persist + report telemetry on each pick, and the gender toggle the right-click uses.
 - **`apps/live/components/panels/AvatarPanel.tsx`** — the panel: the preview plus four radiogroups, on the shared `MovablePanel` like every other panel.
 - **`apps/live/hooks/canvas/useAvatarWalk.ts`** — the state slice: position / target / facing / hop / wave, the `requestAnimationFrame` loop, the camera nudge, and the presence publisher.
@@ -102,12 +112,12 @@ Per the no-god-files rule:
 
 ## Telemetry
 
-Per [spec/22](22-telemetry.md): `track('Canvas', 'Used', 'AvatarMode')` on entry, emitted from `selectCanvasTool` beside the Laser / Spotlight / Eraser lines. `AvatarMode` (not `Avatar`) keeps the mode distinct from the `Element·Added·Avatar` token the palette's photo tile already emits. Each customisation fires `track('UI', 'Changed', 'AvatarGender' | 'AvatarClothing' | 'AvatarHair' | 'AvatarSize')` — which KIND of choice was made, never the value, so the signal is "do people dress their character" without recording what they picked. No per-step or per-click walk events (chatty, no signal).
+Per [spec/22](22-telemetry.md): `track('Canvas', 'Used', 'AvatarMode')` on entry, emitted from `selectCanvasTool` beside the Laser / Spotlight / Eraser lines. `AvatarMode` (not `Avatar`) keeps the mode distinct from the `Element·Added·Avatar` token the palette's photo tile already emits. Each customisation fires `track('UI', 'Changed', 'AvatarGender' | 'AvatarClothing' | 'AvatarHair' | 'AvatarSize')`, and the dice button fires `AvatarRandomised` — which KIND of choice was made, never the value, so the signal is "do people dress their character" without recording what they picked. No per-step, per-click, or per-reaction events (chatty, no signal).
 
 ## Out of scope (v1)
 
 - Collision or pathfinding around elements (walk-around-the-box, walkable frames).
 - Avatar customisation beyond the four choices and the presence-coloured shirt (hats, accessories, skin tones, a picked photo, a colour picker — the shirt colour is load-bearing).
-- Emotes beyond the flag wave; sitting, dancing, speech bubbles.
+- Emotes beyond the five reactions and the flag wave: sitting, speech bubbles, a reaction someone else can trigger on your character.
 - A mobile on-screen direction pad (touch gets tap-to-walk only — no arrow keys, no Space).
 - Any persistence of where the avatar was left (only the costume persists), or syncing the costume to an account across devices.
