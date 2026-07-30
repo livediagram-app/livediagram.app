@@ -149,6 +149,10 @@ export type ShapeElement = {
   // means DEFAULT_BUTTON_MODE ('avatar') — so a button authored without one
   // still does the thing it looks like it should.
   mode?: SelectionMode;
+  // Door (spec/104): the id of the door this one leads to, on the same tab.
+  // Only meaningful on the 'door' kind. Absent = an unpaired door, which is
+  // inert and says so — a portal to nowhere shouldn't silently swallow clicks.
+  doorTarget?: ElementId;
   // Timeline rail (spec/51): how many evenly-spaced points sit above the rail
   // line. Only meaningful on the 'timeline-rail' kind; clamped to
   // RAIL_MIN_POINTS..RAIL_MAX_POINTS.

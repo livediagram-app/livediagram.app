@@ -81,6 +81,7 @@ export function EditorContextMenuHost() {
     setCodeEditOpenForId,
     setChecklistItemsSelected,
     setButtonModeSelected,
+    setDoorTargetSelected,
     commitShapeColorPreset,
     previewShapeColorPreset,
     resetShapeStyleSelected,
@@ -219,6 +220,7 @@ export function EditorContextMenuHost() {
       onEditCodeBlock={setCodeEditOpenForId}
       onSetChecklistItems={setChecklistItemsSelected}
       onSetButtonMode={setButtonModeSelected}
+      onSetDoorTarget={setDoorTargetSelected}
       shapeColorPresets={shapeColorPresets(getTheme(activeTab.theme))}
       onApplyShapeColorPreset={commitShapeColorPreset}
       onPreviewShapeColorPreset={previewShapeColorPreset}

@@ -604,22 +604,43 @@ const _typecheck: Element = createShape('square', 0, 0);
 void _typecheck;
 
 describe('createShape (mode button, spec/103)', () => {
-  it('arrives looking like a button, pointed at Avatar mode', () => {
+  it('arrives looking like a real button, not a themed box', () => {
     const button = createShape('mode-button', 10, 20);
     expect(button.shape).toBe('mode-button');
-    // Pill-shaped, bold, with a call to action already written: it has to read
-    // as pressable before anyone configures it.
-    expect(button.borderRadius).toBe('full');
+    // It has to read as pressable before anyone styles it: a solid fill, a
+    // legible label colour, a lift off the surface, and rounded corners.
+    expect(button.fillColor).toBeTruthy();
+    expect(button.textColor).toBeTruthy();
+    expect(button.shadow).toBeTruthy();
+    expect(button.borderRadius).toBe('lg');
     expect(button.textBold).toBe(true);
-    expect(button.label).toBeTruthy();
     // Avatar is the default because walkthroughs are what the element is for.
     expect(button.mode).toBe(DEFAULT_BUTTON_MODE);
     expect(button.mode).toBe('avatar');
   });
 
-  it('is big enough to hit with a thumb', () => {
+  it('carries no label, so the face can say "Switch to <Mode>" instead', () => {
+    // A hardcoded label would go stale the moment the button is re-pointed at
+    // a different mode.
+    expect(createShape('mode-button', 0, 0).label).toBeUndefined();
+  });
+
+  it('is a square-ish tile, big enough to hit with a thumb', () => {
     const button = createShape('mode-button', 0, 0);
-    expect(button.height).toBeGreaterThanOrEqual(40);
-    expect(button.width).toBeGreaterThanOrEqual(120);
+    expect(button.height).toBeGreaterThanOrEqual(72);
+    expect(button.width).toBeGreaterThanOrEqual(72);
+    // Roughly square — an icon over a label, not a wide pill.
+    expect(Math.abs(button.width - button.height)).toBeLessThan(40);
+  });
+
+  it('makes a door door-shaped and unpaired (spec/104)', () => {
+    const door = createShape('door', 0, 0);
+    expect(door.shape).toBe('door');
+    expect(door.height).toBeGreaterThan(door.width);
+    // Nothing to pair with until a second door exists.
+    expect(door.doorTarget).toBeUndefined();
+    expect(door.label).toBe('Door');
+    // Stretched wide it stops reading as a door, so the aspect is locked.
+    expect(door.aspectLocked).toBe(true);
   });
 });

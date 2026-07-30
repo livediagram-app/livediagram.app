@@ -69,6 +69,8 @@ export const SHAPE_KINDS = new Set<string>([
   // Mode button (spec/103): a pressable pill that switches whoever clicks it
   // into a selection mode.
   'mode-button',
+  // Door (spec/104): a portal to the door it is paired with.
+  'door',
   'stadium',
   'actor',
   'cloud',
@@ -155,6 +157,11 @@ export function isValidElement(el: unknown): el is Element {
       return false;
     if (el.pieSlices !== undefined && !boundedArray(el.pieSlices, MAX_DATA_ARRAY)) return false;
     if (el.lineSeries !== undefined && !boundedArray(el.lineSeries, MAX_DATA_ARRAY)) return false;
+    // Door (spec/104): the pairing is an element id, so a non-string is a
+    // broken write. An id pointing at something that isn't a door (or isn't
+    // there any more) is NOT a structural error — the door renders unpaired
+    // and the editor resolves the target at press time.
+    if (el.doorTarget !== undefined && !isNonEmptyStr(el.doorTarget)) return false;
     // Mode button (spec/103): the mode it hands out must be one we know how to
     // switch to. A junk value is rejected outright rather than coerced — the
     // element still renders (absent = the Avatar default), so silently

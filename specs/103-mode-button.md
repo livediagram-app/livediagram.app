@@ -1,4 +1,4 @@
-# 103 — Mode button
+# 103 — Selection Mode button
 
 Status: **implemented**.
 
@@ -13,9 +13,11 @@ It also gives a presenter somewhere to put a control bar — a row of buttons th
 ## The element
 
 - A **shape kind**, `mode-button`, rather than a new element type — exactly the call [spec/100](100-page-element.md) made for the Page. It inherits everything a shape already has: label, colours, border, shadow, resize, rotation, layers, groups, comments, actions, export.
-- It arrives **pill-shaped** (`borderRadius: 'full'`), **bold**, 180x44, labelled **"Walk with me"**, and pointed at **Avatar** mode: it has to read as pressable and useful before anyone configures it.
-- The face draws the **target mode's own palette glyph** beside the label, so a button advertises what it does with the same artwork the picker uses. An empty label falls back to naming the mode, so a button is never a blank pill.
-- The label is the author's text and is retyped like any other shape's (double-click, or type with it selected).
+- It looks like a **button**, not a labelled box: a square-ish 104x96 tile, rounded, **bold white text on a solid brand fill with a soft lift** (spec/86), with the **mode's glyph ABOVE the label** — the shape a toolbar button has. Those are ELEMENT colours, so they behave like any user-picked colour and are changeable from the menu, and the kind is **exempt from the backdrop-derived colour projection** (like a Page) because tinting a control with the diagram's node colours is exactly what made the first version read as "one more box with words in it".
+- Hover brightens it and a press scales + sinks it. Hover is **desktop-only** — a touch device has no hover, and a sticky `:hover` after a tap reads as a stuck button.
+- **The face text is derived: "Switch to Avatar".** It carries no default label, so re-pointing a button at another mode relabels it instead of leaving yesterday's copy on it. An author who types their own label wins — it is still a shape's label — and an empty one falls back to the derived text, so a button is never blank.
+- **A button offering the mode you are already in is disabled**: the face dims, stops taking clicks, and the tooltip says "Already in Avatar" rather than leaving a live-looking control that does nothing.
+- Every mode's tooltip also explains what that mode does, since the author's label ("Walk with me") doesn't have to.
 - Which mode it hands out lives in **`ShapeElement.mode`** (a `SelectionMode`). Absent means `DEFAULT_BUTTON_MODE` — `'avatar'` — so a button authored without one, or by an older client, still does the thing it looks like it should.
 
 ## Pressing it
@@ -27,6 +29,8 @@ It also gives a presenter somewhere to put a control bar — a row of buttons th
 - **Read-only surfaces**: the embed ([spec/33](33-embeds.md)) has no tool picker to drive, so it renders the face inert rather than pretending.
 
 ## Configuring it
+
+In the palette it is **Selection Mode**, in the Tools tab's **Behaviour** group — the group for elements that DO something when someone interacts with them, rather than elements that say something. (The tile's internal id is unchanged: ids are persisted in saved favourites, so renaming one would silently drop it for anyone who had favourited it.)
 
 Right-click the button → **Tools › Button**: a "Switches the presser to" tile grid of all eight modes (Select, Hand, Laser, Spotlight, Avatar, Eraser, Format, Isometric), the current one marked active. Tiles rather than a list so the icons match the palette's own mode picker.
 
@@ -45,7 +49,7 @@ Per [spec/22](22-telemetry.md): adding one emits `Element·Added·ModeButton` (s
 
 - **`packages/diagram`**: `selection-mode.ts` (vocabulary + default + guard); `'mode-button'` in the `ShapeKind` union, `SHAPE_KINDS`, and `SHAPE_DEFAULT_SIZE`; the `mode` field on `ShapeElement`; the `createShape` branch; the `mode` check in `validate.ts`; `Mode Button` in `element-kind-label.ts`. Unit-tested.
 - **`apps/live/components/canvas/ModeButtonFace.tsx`** — the pressable face (glyph + label + tooltip), and the `MODE_LABEL` map the element menu also reads.
-- Wiring, one small edit each: `BoxedElementView` (render the face instead of a plain label), `CanvasElementsLayer` + `Canvas.types` + `EditorCanvasHost` (thread the press to the tool setter), `palette-tile-defs.tsx` (the Tools tile), `ElementDataSections` + `ElementAppearanceSections` + `EditorContextMenu.types` + `EditorContextMenuHost` (the Button section), `useDataShapeSetters` (the `mode` patch), `element-telemetry.ts` (the token), `draw-mode.ts` (spell a hyphenated kind out in the draw banner).
+- Wiring, one small edit each: `BoxedElementView` (render the face instead of a plain label), `CanvasElementsLayer` + `Canvas.types` + `EditorCanvasHost` (thread the press to the tool setter, and the viewer's current mode down for the disabled state), `shape-svg-overlay.ts` (the kind renders on the CSS box path — left on the SVG path it drew a TRANSPARENT box, since the overlay has no case for it, which is why the first version had no fill at all), `lib/themes.ts` (exempt from the colour projection), `palette-tile-defs.tsx` (the tile + the Behaviour group), `ElementDataSections` + `ElementAppearanceSections` + `EditorContextMenu.types` + `EditorContextMenuHost` (the Button section), `useDataShapeSetters` (the `mode` patch), `element-telemetry.ts` (the token), `draw-mode.ts` (spell a hyphenated kind out in the draw banner).
 
 ## Out of scope (v1)
 

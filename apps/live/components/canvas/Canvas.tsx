@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { isAnimatedPattern, isBoxed } from '@livediagram/diagram';
+import { isAnimatedPattern, isBoxed, type ShapeElement } from '@livediagram/diagram';
 import { tabBackgroundStyle } from '@/lib/canvas-backgrounds';
 import { AnimatedCanvasBackground } from '@/components/canvas/AnimatedCanvasBackground';
 import { pointerToCanvas } from '@/lib/canvas';
@@ -42,6 +42,7 @@ import { useAvatarWalk } from '@/hooks/canvas/useAvatarWalk';
 import { useAvatarConfig } from '@/hooks/canvas/useAvatarConfig';
 import { parseAvatarConfig } from '@/lib/avatar-config';
 import { reactionPose } from '@/lib/avatar-reactions';
+import { doorExitPoint, doorName, resolveDoorTarget, viewportOffsetCentredOn } from '@/lib/doors';
 import { useOffscreenContent } from '@/hooks/canvas/useOffscreenContent';
 import { Portal } from '@/components/primitives/Portal';
 import { TabLoadOverlay } from '@/components/canvas/TabLoadOverlay';
@@ -254,6 +255,9 @@ export function Canvas(props: CanvasProps) {
     viewportZoom,
     setViewportOffset,
     onPresence: props.onAvatarPresence,
+    // Walking the character into a door travels through it (spec/104) — the same
+    // action the door's own click fires.
+    onWalkIntoDoor: (element) => enterDoorRef.current(element),
   });
   // Bounds of whatever the avatar is standing on, for its "you are here" ring.
   const avatarStandingOn = useMemo(() => {
@@ -261,6 +265,40 @@ export function Canvas(props: CanvasProps) {
     const el = elements.find((e) => e.id === avatar.standingOnId);
     return el && isBoxed(el) ? { x: el.x, y: el.y, width: el.width, height: el.height } : null;
   }, [avatar.standingOnId, elements]);
+
+  // Doors (spec/104). Travelling means two things at once: the CAMERA centres on
+  // the paired door, and — if the traveller is walking around in Avatar mode —
+  // their character steps out of it. One function behind both the door face's
+  // click and the avatar's walk-in, so the two can't drift apart.
+  // `enterDoor` needs the avatar hook (to place the character) and the hook
+  // needs `enterDoor` (for the walk-in), so the callback goes through a ref:
+  // declared here, repointed on every render, read at call time.
+  const enterDoorRef = useRef<(from: ShapeElement) => void>(() => {});
+  const enterDoor = (from: ShapeElement) => {
+    const target = resolveDoorTarget(elements, from);
+    if (!target) return;
+    const node = mainRef && 'current' in mainRef ? mainRef.current : null;
+    const rect = node?.getBoundingClientRect();
+    if (rect) {
+      setViewportOffset(
+        viewportOffsetCentredOn(target, { width: rect.width, height: rect.height }, viewportZoom),
+      );
+    }
+    // Step out of the far door, and tell the walk hook to ignore that door until
+    // the character leaves it, so it doesn't bounce straight back.
+    avatar.teleportTo(doorExitPoint(target), target.id);
+  };
+  enterDoorRef.current = enterDoor;
+  // What the door face needs: the far door's name for the tooltip, and the
+  // travel action — absent when the door is unpaired, which is what makes the
+  // face render inert and say so.
+  const resolveDoor = (element: ShapeElement) => {
+    const target = resolveDoorTarget(elements, element);
+    return {
+      targetName: target ? doorName(elements, target) : null,
+      travel: target ? () => enterDoor(element) : undefined,
+    };
+  };
 
   // Isometric view (spec/45): the orbit-able camera + the innermost
   // transform fragment, pivoted on the content centre — see
@@ -496,6 +534,9 @@ export function Canvas(props: CanvasProps) {
         {canvasTool === 'isometric' ? <IsometricDepthLayer elements={elements} /> : null}
         <CanvasElementsLayer
           {...props}
+          // Door travel is resolved HERE (Canvas owns the viewport + the avatar),
+          // so the prop from the host is overridden with the local resolver.
+          onEnterDoor={resolveDoor}
           hasArrows={hasArrows}
           memberIds={memberIds}
           showHandles={showHandles}

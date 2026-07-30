@@ -67,6 +67,16 @@ export type BoxedElementViewProps = {
   // the mode the element carries. Optional — a surface that can't change tools
   // (the read-only embed) leaves the face inert.
   onPressModeButton?: (element: import('@livediagram/diagram').ShapeElement) => void;
+  // The viewer's current mode, so a Selection Mode button offering it renders
+  // disabled (spec/103).
+  activeMode?: import('@livediagram/diagram').SelectionMode;
+  // Door (spec/104): resolves a door's pairing for the face — the paired door's
+  // name for the tooltip, and the travel action (undefined when unpaired, so the
+  // face renders inert and says why).
+  onEnterDoor?: (element: import('@livediagram/diagram').ShapeElement) => {
+    targetName: string | null;
+    travel?: () => void;
+  };
   onOpenComments: (id: string) => void;
   // Open the element's assigned-action popover (spec/68). The badge only
   // renders while the element carries an OPEN action; everyone (including

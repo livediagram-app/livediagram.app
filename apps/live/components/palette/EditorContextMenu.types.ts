@@ -139,6 +139,8 @@ export type EditorContextMenuProps = {
   onSetChecklistItems: (items: ChecklistItem[]) => void;
   // Mode button (spec/103): which selection mode pressing it hands out.
   onSetButtonMode: (mode: import('@livediagram/diagram').SelectionMode) => void;
+  // Door (spec/104): which door this one leads to; null unpairs it.
+  onSetDoorTarget: (targetId: string | null) => void;
   // Style presets (spec/48): one-click colour + border looks for the selected
   // shape, plus a reset back to the theme default. `shapeColorPresets` are
   // theme-derived (see shapeColorPresets in lib/themes).

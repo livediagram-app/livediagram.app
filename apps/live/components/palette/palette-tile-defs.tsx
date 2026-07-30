@@ -50,7 +50,7 @@ type PaletteTileAction =
 // the Tools tab renders one labelled grid per group instead of a flat
 // sixteen-tile wall. Group membership is metadata on the tile — ids stay
 // stable, so favourites persistence and search are untouched.
-export type ToolGroupId = 'write' | 'draw' | 'structure' | 'blocks' | 'media';
+export type ToolGroupId = 'write' | 'draw' | 'structure' | 'blocks' | 'media' | 'behaviour';
 
 // Display order + headings for the Tools tab's groups.
 export const TOOL_GROUPS: { id: ToolGroupId; label: string }[] = [
@@ -59,6 +59,10 @@ export const TOOL_GROUPS: { id: ToolGroupId; label: string }[] = [
   { id: 'structure', label: 'Structure' },
   { id: 'blocks', label: 'Blocks' },
   { id: 'media', label: 'People & media' },
+  // Behaviour (spec/103): elements that DO something when someone interacts
+  // with them, rather than elements that say something. Last, because a
+  // diagram is drawn before it is wired up.
+  { id: 'behaviour', label: 'Behaviour' },
 ];
 
 export type PaletteTileDef = {
@@ -594,13 +598,16 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
-    // Mode button (spec/103): a control you press to change your own selection
-    // mode — Avatar by default, so a diagram can invite people to walk it.
+    // Selection Mode button (spec/103): a control you press to change your own
+    // selection mode — Avatar by default, so a diagram can invite people to
+    // walk it. The tile id is NOT renamed with the label: it is persisted in
+    // saved favourites, and changing it would silently drop the tile from
+    // anyone who had favourited it.
     id: 'tools:mode-button',
     section: 'tools',
-    toolGroup: 'blocks',
-    label: 'Add mode button',
-    caption: 'Mode button',
+    toolGroup: 'behaviour',
+    label: 'Add selection mode button',
+    caption: 'Selection Mode',
     description:
       'A button on the canvas that switches whoever presses it into a selection mode. Avatar by default; pick another from the element menu.',
     filled: true,
@@ -625,6 +632,35 @@ export const PALETTE_TILES: PaletteTileDef[] = [
           fill="currentColor"
           stroke="none"
         />
+      </svg>
+    ),
+  },
+  {
+    // Door (spec/104): a portal you click — or walk an Avatar-mode character
+    // into — that takes you to the door it is paired with.
+    id: 'tools:door',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add door',
+    caption: 'Door',
+    description:
+      'A portal. Click it, or walk your Avatar character into it, and you travel to the door it is paired with. Pair them from the element menu.',
+    filled: true,
+    action: { type: 'shape', kind: 'door' },
+    icon: (
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 18 18"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden
+      >
+        <rect x="4" y="2" width="10" height="14" rx="1.5" />
+        <circle cx="11.5" cy="9" r="0.9" fill="currentColor" stroke="none" />
       </svg>
     ),
   },

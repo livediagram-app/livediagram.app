@@ -8,6 +8,9 @@ const SHAPE_LABELS: Partial<Record<ShapeKind, string>> = {
   icon: 'Icon',
   'progress-bar': 'Progress Bar',
   'progress-ring': 'Progress Ring',
+  // Named for what it does, not its internal kind — titleCase would say
+  // 'Mode Button' (spec/103).
+  'mode-button': 'Selection Mode',
 };
 
 function titleCase(s: string): string {

@@ -47,6 +47,7 @@ import {
   ToolsMenuGlyph,
 } from '@/components/palette/context-menu-icons';
 import { MenuAccordionSection, MenuTile, MenuTileGrid } from '@/components/primitives/PortalMenu';
+import { doorName, doorsOnTab } from '@/lib/doors';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
 
 import {
@@ -90,6 +91,7 @@ type ElementDataSectionsProps = {
   isCodeBlock: boolean;
   isChecklist: boolean;
   isModeButton: boolean;
+  isDoor: boolean;
   isIcon: boolean;
   boxed: boolean;
   sectionProps: Scaffold['sectionProps'];
@@ -120,12 +122,19 @@ export function ElementDataSections({
   isCodeBlock,
   isChecklist,
   isModeButton,
+  isDoor,
   isIcon,
   boxed,
   sectionProps,
   flyoutProps,
 }: ElementDataSectionsProps) {
   const shapeTarget = target.type === 'shape' ? target : null;
+  // Doors this one could lead to: every OTHER door on the tab (spec/104).
+  const doorCandidates = isDoor
+    ? doorsOnTab(props.elements)
+        .filter((d) => d.id !== target.id)
+        .map((d) => ({ id: d.id, name: doorName(props.elements, d) }))
+    : [];
   // The Tools flyout (spec/09): the data-shape-specific controls —
   // Progress (bar / ring), Timeline rail, Rating, and the chart Data +
   // Chart sections — fold behind one "Tools" row, the same side-flyout
@@ -133,7 +142,14 @@ export function ElementDataSections({
   // band of bespoke rows. Animation stays top-level (every boxed
   // element has it).
   const showTools =
-    isProgress || isRail || isRating || isChart || isCodeBlock || isChecklist || isModeButton;
+    isProgress ||
+    isRail ||
+    isRating ||
+    isChart ||
+    isCodeBlock ||
+    isChecklist ||
+    isModeButton ||
+    isDoor;
   return (
     <>
       {showTools ? (
@@ -272,6 +288,43 @@ export function ElementDataSections({
                   />
                 ))}
               </MenuTileGrid>
+            </MenuAccordionSection>
+          ) : null}
+          {/* Door (spec/104) — which door this one leads to. The candidates are
+            the OTHER doors on the tab, named by their label (or positionally
+            when unlabelled), so pairing is a pick rather than an id. */}
+          {isDoor ? (
+            <MenuAccordionSection
+              title="Door"
+              icon={<ToolsMenuGlyph />}
+              {...sectionProps('door-target')}
+            >
+              <p className="px-3 pt-1 text-[10px] font-medium text-slate-500 dark:text-slate-400">
+                Leads to
+              </p>
+              {doorCandidates.length === 0 ? (
+                <p className="px-3 pb-2 text-[10px] leading-snug text-slate-400 dark:text-slate-500">
+                  Add a second door to pair this one with.
+                </p>
+              ) : (
+                <MenuTileGrid cols={2}>
+                  {doorCandidates.map((candidate) => (
+                    <MenuTile
+                      key={candidate.id}
+                      icon={<ToolsMenuGlyph />}
+                      label={candidate.name}
+                      active={shapeTarget?.doorTarget === candidate.id}
+                      onClick={() =>
+                        props.onSetDoorTarget(
+                          // Picking the current target again unpairs it, so the
+                          // tiles double as an off switch.
+                          shapeTarget?.doorTarget === candidate.id ? null : candidate.id,
+                        )
+                      }
+                    />
+                  ))}
+                </MenuTileGrid>
+              )}
             </MenuAccordionSection>
           ) : null}
           {/* Chart (spec/53) — display options. Legend placement: Off + 4 sides. */}

@@ -84,6 +84,13 @@ export function deriveNewBoxedColours(
   // reading as a page at all, so it keeps the fill / stroke createShape gave
   // it. The user can still recolour it from the menu like anything else.
   if (base.type === 'shape' && base.shape === 'page') return colours;
+  // A mode button (spec/103) is a CONTROL and a door (spec/104) is scenery you
+  // walk through — neither is a node in the diagram's colour scheme. They ship
+  // with their own colours (a solid button fill, timber) and tinting them from
+  // the backdrop is what made them look like boxes with words in them. Both stay
+  // recolourable from the menu like anything else.
+  if (base.type === 'shape' && (base.shape === 'mode-button' || base.shape === 'door'))
+    return colours;
   if (base.type === 'shape' || base.type === 'annotation') {
     // Annotation markers derive fill + stroke from the backdrop like a shape
     // does (text isn't used — the note is plain). See spec/38.

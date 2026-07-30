@@ -108,9 +108,12 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   'code-block': { width: 320, height: 180 },
   // Checklist: a card of starter rows (spec/83).
   checklist: { width: 240, height: 180 },
-  // Mode button (spec/103): a pill sized like a real button — wide enough for
-  // a short call to action, tall enough to hit on a phone.
-  'mode-button': { width: 180, height: 44 },
+  // Mode button (spec/103): a square-ish tile, sized for an icon ABOVE its
+  // label — the shape a toolbar button has, rather than a wide pill that read
+  // as just another labelled box.
+  'mode-button': { width: 104, height: 96 },
+  // Door (spec/104): door-shaped — taller than it is wide, like a door.
+  door: { width: 72, height: 112 },
 };
 
 // New boxed elements default to Medium text size per spec 09 ("Text size").
@@ -133,11 +136,47 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
   if (kind === 'mode-button') {
     return {
       ...base,
-      label: 'Walk with me',
+      // NO default label: the face reads "Switch to <Mode>", derived from the
+      // mode it carries, so re-pointing a button relabels it instead of leaving
+      // yesterday's copy on it. An author who types their own label wins — it
+      // is still a shape's label — but the useful default is the derived one.
       mode: DEFAULT_BUTTON_MODE,
-      borderRadius: 'full',
+      // A button has to look pressable BEFORE anyone styles it, and the
+      // theme-derived shape fill made it read as one more labelled box on the
+      // canvas. So it ships with a real button's colours — a solid brand fill,
+      // white text, a soft lift off the surface (spec/86) — as ELEMENT colours,
+      // so they behave like any user-picked colour and can still be changed
+      // from the menu. deriveNewBoxedColours skips the kind for the same
+      // reason it skips a page.
+      fillColor: '#0ea5e9',
+      strokeColor: '#0284c7',
+      textColor: '#ffffff',
+      shadow: { offsetX: 0, offsetY: 2, blur: 6, opacity: 0.24 },
+      borderRadius: 'lg',
       textSize: 'sm',
       textBold: true,
+    };
+  }
+  // Door (spec/104): ships unpaired (there is nothing to pair with until a
+  // second door exists) with a label the author replaces. Warm timber colours
+  // rather than the theme's node fill, because a door is scenery you walk
+  // through, not a box in the diagram.
+  if (kind === 'door') {
+    return {
+      ...base,
+      label: 'Door',
+      fillColor: '#b45309',
+      strokeColor: '#78350f',
+      textColor: '#ffffff',
+      borderRadius: 'md',
+      textSize: 'sm',
+      textBold: true,
+      textAlignY: 'bottom',
+      // A door has a natural shape: stretched wide it stops reading as one at
+      // all (the panel and knob distort with the box). Locking the aspect keeps
+      // drag-to-draw and every later resize door-shaped; the user can still
+      // unlock it from the menu like any other element.
+      aspectLocked: true,
     };
   }
   // Document (spec/100): prose sits TOP-LEFT. Centred body text is the

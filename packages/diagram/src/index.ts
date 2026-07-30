@@ -363,6 +363,10 @@ export type ShapeKind =
   // into a selection mode — Avatar by default. Which mode lives in the
   // element's `mode` field.
   | 'mode-button'
+  // Door (spec/104): a portal. Clicking one — or walking an Avatar-mode
+  // character into it — takes you to the door it is paired with, in
+  // `doorTarget`.
+  | 'door'
   | 'stadium'
   | 'actor'
   | 'cloud'

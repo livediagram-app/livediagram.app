@@ -26,6 +26,7 @@ import { isSvgRenderedShape } from '@/components/canvas/shape-svg-overlay';
 import { BoxBorderOverlay } from '@/components/canvas/BoxBorderOverlay';
 import { PageCornerFold } from '@/components/canvas/PageCornerFold';
 import { ModeButtonFace } from '@/components/canvas/ModeButtonFace';
+import { DoorFace } from '@/components/canvas/DoorFace';
 import { DEFAULT_BUTTON_MODE } from '@livediagram/diagram';
 import { isCssNativeBorderStyle } from '@/components/canvas/border-css';
 import { describeVariant } from '@/components/canvas/element-variant';
@@ -83,6 +84,8 @@ function BoxedElementViewImpl({
   onCancelEdit,
   onFollowLink,
   onPressModeButton,
+  onEnterDoor,
+  activeMode,
   onOpenComments,
   onOpenAction,
   onOpenNote,
@@ -390,8 +393,18 @@ function BoxedElementViewImpl({
         <ModeButtonFace
           mode={element.mode ?? DEFAULT_BUTTON_MODE}
           label={label}
+          activeMode={activeMode}
           textColor={textColor}
           onPress={onPressModeButton ? () => onPressModeButton(element) : undefined}
+        />
+      ) : element.type === 'shape' && element.shape === 'door' && !isEditing ? (
+        /* Door (spec/104): the drawn door + its label, pressable when paired. */
+        <DoorFace
+          label={label || 'Door'}
+          textColor={textColor}
+          strokeColor={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element)}
+          targetName={onEnterDoor?.(element).targetName ?? null}
+          onEnter={onEnterDoor?.(element).travel}
         />
       ) : element.type === 'annotation' ? (
         <AnnotationGlyph

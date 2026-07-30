@@ -983,6 +983,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
+          "door": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
           "frame": {
             "additionalProperties": false,
             "properties": {
@@ -2579,6 +2594,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "commentThread": {
         "$ref": "#/components/schemas/CommentThread"
       },
+      "doorTarget": {
+        "$ref": "#/components/schemas/ElementId"
+      },
       "fillColor": {
         "type": "string"
       },
@@ -2795,6 +2813,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "document",
       "page",
       "mode-button",
+      "door",
       "stadium",
       "actor",
       "cloud",

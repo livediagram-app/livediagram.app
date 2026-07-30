@@ -116,6 +116,8 @@ export function ElementAppearanceSections({
   const isChecklist = target.type === 'shape' && isChecklistShape(target.shape);
   // Mode button (spec/103): its one setting is which mode it hands out.
   const isModeButton = target.type === 'shape' && target.shape === 'mode-button';
+  // Door (spec/104): its one setting is which door it leads to.
+  const isDoor = target.type === 'shape' && target.shape === 'door';
   // The Text band (spec/09): Markers + Alignment. Markers are regular-shape
   // only (self-drawing shapes have no label slot); Alignment applies to any
   // boxed element with a text slot.
@@ -218,6 +220,7 @@ export function ElementAppearanceSections({
         isCodeBlock={isCodeBlock}
         isChecklist={isChecklist}
         isModeButton={isModeButton}
+        isDoor={isDoor}
         isIcon={isIcon}
         boxed={boxed}
         sectionProps={sectionProps}

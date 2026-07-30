@@ -113,6 +113,8 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onCastVote,
     onRetractVote,
     readOnly,
+    canvasTool,
+    onEnterDoor,
     remoteCursors,
     remoteSelectionsByElement,
     selectedId,
@@ -322,6 +324,8 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             onCancelEdit={h.onCancelEdit}
             onFollowLink={h.onFollowLink}
             onPressModeButton={h.onPressModeButton}
+            activeMode={canvasTool}
+            onEnterDoor={onEnterDoor}
             onOpenComments={h.onOpenComments}
             onOpenAction={h.onOpenAction}
             onOpenNote={h.onOpenNote}

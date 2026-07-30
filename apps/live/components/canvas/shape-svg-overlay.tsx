@@ -30,12 +30,18 @@ export function isSvgRenderedShape(kind: ShapeKind): boolean {
   // A page (spec/100) is a plain rectangle with a fill and a border, so it
   // belongs on the CSS box path with square — the SVG overlay has no case for
   // it and would draw an invisible element.
+  // A mode button (spec/103) and a door (spec/104) are likewise plain filled
+  // rounded boxes with their own content drawn on top, so they belong on the CSS
+  // box path too. Left on the SVG path they rendered as a TRANSPARENT box — the
+  // overlay has no case for either kind, so nothing drew the fill at all.
   return (
     kind !== 'square' &&
     kind !== 'circle' &&
     kind !== 'stadium' &&
     kind !== 'browser' &&
-    kind !== 'page'
+    kind !== 'page' &&
+    kind !== 'mode-button' &&
+    kind !== 'door'
   );
 }
 
