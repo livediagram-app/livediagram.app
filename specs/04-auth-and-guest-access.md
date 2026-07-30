@@ -32,7 +32,7 @@ Because `NEXT_PUBLIC_*` vars are baked at build time, the choice is a compile-ti
 The api worker accepts **two equivalent ways** of identifying the request owner, in this order of preference:
 
 1. **Clerk Bearer JWT** — `Authorization: Bearer <token>`. Verified against `env.CLERK_JWKS_URL` in `apps/api/src/auth/clerk.ts` (using `jose`'s `createRemoteJWKSet` + `jwtVerify`). The token's `sub` claim is the owner id.
-2. **Guest header** — `X-Owner-Id: <participant-id>`. The participant id is a `crypto.randomUUID()` minted on first visit and persisted in `localStorage` under `livediagram:v2:self-id`.
+2. **Guest header** — `X-Owner-Id: <participant-id>`. The participant id is a `crypto.randomUUID()` minted on first visit and persisted in `localStorage` under `livediagram:v2:self-id`. Every other random value the editor rolls for a guest — the display name, the presence colour, an avatar's costume — goes through `apps/live/lib/random.ts`, which draws from `crypto.getRandomValues` rather than `Math.random`. None of it guards a secret, but a weak generator feeding values that read as identity is what static analysis flags, and the strong one is free in every runtime we target.
 
 When both are present the Bearer wins. When verification fails (expired token, missing JWKS URL, etc.) the worker silently falls through to the guest header — never 401, because the guest path must always serve.
 

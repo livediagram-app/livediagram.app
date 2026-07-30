@@ -8,11 +8,13 @@
 // components/TemplatePicker.tsx and spec/14-new-diagram-route.md.
 //
 // `rng` is injectable so tests can pin the order deterministically; it
-// defaults to `Math.random`.
+// defaults to the shared CSPRNG-backed unit draw (see lib/random.ts).
+import { randomUnit } from './random';
+
 export function shufflePinned<T>(
   items: T[],
   isPinned: (item: T) => boolean,
-  rng: () => number = Math.random,
+  rng: () => number = randomUnit,
 ): T[] {
   const pinned = items.filter(isPinned);
   const rest = items.filter((item) => !isPinned(item));

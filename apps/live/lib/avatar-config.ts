@@ -12,6 +12,7 @@
 // colour so a character matches its owner's cursor and name chip.
 
 import { readLocalStorageSafe, writeLocalStorageSafe } from './local-storage-safe';
+import { randomPick } from './random';
 
 export type AvatarGender = 'male' | 'female';
 export type AvatarClothing =
@@ -149,8 +150,7 @@ export function avatarScale(size: AvatarSize): number {
 // much of the canvas the character covers, so it starts Regular and stays a
 // deliberate choice.
 export function randomAvatarConfig(): AvatarConfig {
-  const pick = <T>(options: readonly T[]): T | undefined =>
-    options[Math.floor(Math.random() * options.length)];
+  const pick = randomPick;
   return {
     gender: pick(AVATAR_GENDERS)?.id ?? DEFAULT_AVATAR_CONFIG.gender,
     clothing: pick(AVATAR_CLOTHING)?.id ?? DEFAULT_AVATAR_CONFIG.clothing,

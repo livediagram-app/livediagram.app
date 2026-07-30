@@ -3,6 +3,8 @@
 // random colour from a curated palette. This module is the single source
 // for that name/colour generation plus presence-status semantics.
 
+import { randomPick } from './random';
+
 export type ParticipantStatus = 'online' | 'away' | 'offline';
 
 // Idle thresholds driving the presence ring colour. Aligned with the
@@ -98,7 +100,8 @@ const COLORS = [
 ];
 
 function pick<T>(arr: T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)]!;
+  // Non-empty by construction (the catalogues above), so the bang is safe.
+  return randomPick(arr)!;
 }
 
 export function randomName(): string {
