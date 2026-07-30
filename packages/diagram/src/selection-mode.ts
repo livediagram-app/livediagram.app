@@ -28,3 +28,13 @@ export const DEFAULT_BUTTON_MODE: SelectionMode = 'avatar';
 export function isSelectionMode(value: unknown): value is SelectionMode {
   return typeof value === 'string' && (SELECTION_MODES as readonly string[]).includes(value);
 }
+
+// Shape kinds that are a FIXED SIZE: a control, not a box you draw. They get no
+// resize handles, ignore a drag-to-draw's size, and are left alone when a
+// multi-selection is scaled — a button that is 40px on one diagram and 400 on
+// another stops looking like part of the product.
+export const FIXED_SIZE_SHAPES: ReadonlySet<string> = new Set(['mode-button']);
+
+export function isFixedSizeShape(kind: string): boolean {
+  return FIXED_SIZE_SHAPES.has(kind);
+}

@@ -25,6 +25,7 @@ import {
   stepTowards,
   waveFrame,
   AVATAR_JUMP_VELOCITY,
+  AVATAR_SHOVE_DISTANCE,
   AVATAR_SPEED,
   AVATAR_WAVE_TAIL_MS,
   type AvatarFacing,
@@ -65,8 +66,9 @@ export function useAvatarWalk({
   viewportOffset,
   viewportZoom,
   setViewportOffset,
+  spawnAtRef,
   onPresence,
-  onWalkIntoDoor,
+  onWalkIntoPortal,
 }: {
   // True while the Avatar canvas tool is the active tool.
   active: boolean;
@@ -82,13 +84,20 @@ export function useAvatarWalk({
   viewportOffset: AvatarPoint;
   viewportZoom: number;
   setViewportOffset: (offset: AvatarPoint) => void;
+  // A one-shot spawn point for the NEXT entry into the mode, in canvas px:
+  // pressing a Selection Mode button (spec/103) puts the character at that
+  // button rather than the viewport centre. A ref, not a value, because it is
+  // written during the same interaction that flips `active` and is consumed by
+  // the entry effect below — which then clears it, so the palette's own way in
+  // still spawns centre-screen.
+  spawnAtRef?: React.MutableRefObject<AvatarPoint | null>;
   // Publishes the local character to the room so peers can see it, and
   // `null` on exit so they drop it. Throttling lives in the broadcaster.
   onPresence?: (snapshot: AvatarSnapshot | null) => void;
-  // Door (spec/104): the character walked onto a door element. Fired once on
-  // ARRIVAL, not every frame it stands there, and never for the door it just
+  // Portal (spec/104): the character walked onto a portal element. Fired once on
+  // ARRIVAL, not every frame it stands there, and never for the portal it just
   // came out of.
-  onWalkIntoDoor?: (element: import('@livediagram/diagram').ShapeElement) => void;
+  onWalkIntoPortal?: (element: import('@livediagram/diagram').ShapeElement) => void;
 }) {
   // Rendered state. `pos` survives a detour to another tool (Canvas stays
   // mounted), so coming back finds the avatar where you left it; null until
@@ -117,13 +126,15 @@ export function useAvatarWalk({
   const waveStartRef = useRef<number | null>(null);
   // Which reaction is playing and when it started (performance.now()).
   const reactionRef = useRef<{ kind: AvatarReactionKind; startedAt: number } | null>(null);
-  // Doors (spec/104): the element the feet were on last frame (so a walk-in
-  // fires once, on arrival), and the door the character was just teleported
+  // Portals (spec/104): the element the feet were on last frame (so a walk-in
+  // fires once, on arrival), and the portal the character was just teleported
   // into — ignored until it steps off, so a portal doesn't ping-pong.
   const lastUnderFeetRef = useRef<string | null>(null);
-  const arrivedDoorRef = useRef<string | null>(null);
-  const doorRef = useRef(onWalkIntoDoor);
-  doorRef.current = onWalkIntoDoor;
+  const arrivedPortalRef = useRef<string | null>(null);
+  // Fires once when the current walk target is reached, then clears itself.
+  const arriveRef = useRef<(() => void) | null>(null);
+  const portalRef = useRef(onWalkIntoPortal);
+  portalRef.current = onWalkIntoPortal;
   // The costume last published as a standing snapshot; null = nothing published
   // since the mode was entered. Keeps the entry publish to once per change.
   const publishedLookRef = useRef<string | null>(null);
@@ -200,6 +211,16 @@ export function useAvatarWalk({
       presenceRef.current?.(null);
       return;
     }
+    // A button asked for the character HERE: honour it even if the remembered
+    // position is still on screen, since the press is a fresh instruction.
+    const requested = spawnAtRef?.current ?? null;
+    if (requested) {
+      if (spawnAtRef) spawnAtRef.current = null;
+      posRef.current = requested;
+      setPos(requested);
+      setFacing('down');
+      return;
+    }
     const r = rects();
     const centre = viewportCentre();
     if (!centre) return;
@@ -225,9 +246,28 @@ export function useAvatarWalk({
   }, [active]);
 
   // Click / tap anywhere on the canvas: walk there. Arrow-key steering wins
-  // while keys are held (the walk target would fight it).
-  const walkTo = (point: AvatarPoint) => {
-    if (!arrowDirection(heldRef.current)) targetRef.current = point;
+  // while keys are held (the walk target would fight it). `onArrive` fires once
+  // when the character reaches the point — clicking a PEER walks over and
+  // shoves them (spec/101), and the shove has to land on arrival, not on click.
+  const walkTo = (point: AvatarPoint, onArrive?: () => void) => {
+    if (arrowDirection(heldRef.current)) return;
+    targetRef.current = point;
+    arriveRef.current = onArrive ?? null;
+  };
+
+  // Take a shove from a peer: slide a short way along their direction. It walks
+  // rather than teleports, so both people see the same little stumble, and it
+  // drops whatever walk was in progress — being pushed interrupts you.
+  const shove = (dx: number, dy: number) => {
+    const from = posRef.current;
+    if (!from) return;
+    const len = Math.hypot(dx, dy) || 1;
+    heldRef.current = { ...NO_KEYS_HELD };
+    arriveRef.current = null;
+    targetRef.current = {
+      x: from.x + (dx / len) * AVATAR_SHOVE_DISTANCE,
+      y: from.y + (dy / len) * AVATAR_SHOVE_DISTANCE,
+    };
   };
 
   // Play one of the panel's reactions (spec/101). It performs ON THE SPOT, so
@@ -239,16 +279,16 @@ export function useAvatarWalk({
     reactionRef.current = { kind, startedAt: performance.now() };
   };
 
-  // Doors (spec/104): drop the character at a point (the far door's threshold),
-  // without walking there. `arrivedDoorId` is remembered so standing in the exit
-  // door doesn't immediately trigger it again.
-  const teleportTo = (point: AvatarPoint, arrivedDoorId?: string) => {
+  // Portals (spec/104): drop the character at a point (the far portal's threshold),
+  // without walking there. `arrivedPortalId` is remembered so standing in the exit
+  // portal doesn't immediately trigger it again.
+  const teleportTo = (point: AvatarPoint, arrivedPortalId?: string) => {
     targetRef.current = null;
     heldRef.current = { ...NO_KEYS_HELD };
     posRef.current = point;
     setPos(point);
-    arrivedDoorRef.current = arrivedDoorId ?? null;
-    lastUnderFeetRef.current = arrivedDoorId ?? null;
+    arrivedPortalRef.current = arrivedPortalId ?? null;
+    lastUnderFeetRef.current = arrivedPortalId ?? null;
   };
 
   // Space: hop, and wave the flag for the hop plus a short tail. Ignored
@@ -308,8 +348,12 @@ export function useAvatarWalk({
           targetRef.current &&
           next.x === targetRef.current.x &&
           next.y === targetRef.current.y
-        )
+        ) {
           targetRef.current = null;
+          const arrived = arriveRef.current;
+          arriveRef.current = null;
+          arrived?.();
+        }
         const dx = next.x - from.x;
         const dy = next.y - from.y;
         const moved = Math.hypot(dx, dy);
@@ -447,27 +491,27 @@ export function useAvatarWalk({
   // rectangle scan, and only while the mode is on.
   const standingOnId = active && pos ? elementUnderFeet(elements, pos) : null;
 
-  // Doors (spec/104): walking a character ONTO a door travels through it. Fired
+  // Portals (spec/104): walking a character ONTO a portal travels through it. Fired
   // from an effect on ARRIVAL (the element under the feet changed) rather than
-  // every frame it stands there, and skipped for the door it was just teleported
+  // every frame it stands there, and skipped for the portal it was just teleported
   // into until it steps off — otherwise the pair would bounce the character back
   // and forth forever.
   useEffect(() => {
     if (!active) {
       lastUnderFeetRef.current = null;
-      arrivedDoorRef.current = null;
+      arrivedPortalRef.current = null;
       return;
     }
     const previous = lastUnderFeetRef.current;
     lastUnderFeetRef.current = standingOnId;
     if (standingOnId === null) {
-      // Stepped off whatever it was on, including the door it arrived in.
-      arrivedDoorRef.current = null;
+      // Stepped off whatever it was on, including the portal it arrived in.
+      arrivedPortalRef.current = null;
       return;
     }
-    if (standingOnId === previous || standingOnId === arrivedDoorRef.current) return;
+    if (standingOnId === previous || standingOnId === arrivedPortalRef.current) return;
     const el = elements.find((e) => e.id === standingOnId);
-    if (el && el.type === 'shape' && el.shape === 'door') doorRef.current?.(el);
+    if (el && el.type === 'shape' && el.shape === 'portal') portalRef.current?.(el);
     // `elements` is read for the arrival lookup only; the trigger is the change
     // in what the feet are on.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -488,5 +532,6 @@ export function useAvatarWalk({
     playReaction,
     teleportTo,
     toggleLookAt,
+    shove,
   };
 }

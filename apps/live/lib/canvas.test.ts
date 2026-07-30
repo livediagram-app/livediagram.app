@@ -127,6 +127,17 @@ describe('inheritedSizeFor', () => {
     expect(inheritedSizeFor(marker, bigSelected)).toEqual({ width: 44, height: 44 });
     expect(inheritedSizeFor(marker, null)).toEqual({ width: 44, height: 44 });
   });
+
+  it('keeps a portal at its intrinsic size regardless of selection (spec/104)', () => {
+    const portal = createShape('portal', 0, 0);
+    // A wide banner selected when the portal is dropped must not stretch the
+    // ring into a letterbox — the silhouette IS the element.
+    const wideSelected = { ...createShape('square', 0, 0), width: 1666, height: 16 };
+    expect(inheritedSizeFor(portal, wideSelected)).toEqual({
+      width: portal.width,
+      height: portal.height,
+    });
+  });
 });
 
 describe('withFrameContents', () => {

@@ -21,8 +21,38 @@ export type AvatarPresence = {
   // cosmetic, and never an identity claim.
   config?: {
     gender: 'male' | 'female';
-    clothing: 'tee' | 'stripes' | 'jumper' | 'hoodie' | 'vest' | 'suit' | 'dress' | 'skirt';
-    hair: 'short' | 'buzz' | 'curly' | 'long' | 'ponytail' | 'bun' | 'mohawk' | 'bald';
+    clothing:
+      | 'tee'
+      | 'stripes'
+      | 'jumper'
+      | 'hoodie'
+      | 'vest'
+      | 'suit'
+      | 'dress'
+      | 'skirt'
+      | 'polo'
+      | 'flannel'
+      | 'overalls'
+      | 'labcoat'
+      | 'hawaiian'
+      | 'varsity'
+      | 'turtleneck'
+      | 'apron';
+    hair:
+      | 'short'
+      | 'buzz'
+      | 'curly'
+      | 'long'
+      | 'ponytail'
+      | 'bun'
+      | 'mohawk'
+      | 'bald'
+      | 'pigtails'
+      | 'afro'
+      | 'spiky'
+      | 'bob'
+      | 'braid'
+      | 'topknot';
     size: 'small' | 'regular' | 'tall';
   };
   // A reaction in progress (spec/101): which one, and how far into it the
@@ -157,6 +187,13 @@ export type RoomOp =
   // reconnecting client, and `avatar: null` means "I left the mode, drop my
   // character". The tab id scopes rendering to peers looking at the same tab.
   | { kind: 'avatar'; tabId: string; avatar: AvatarPresence | null }
+  // One character SHOVES another (spec/101). Sent by the pusher when their
+  // character reaches the person they clicked; only the participant named in
+  // `targetId` acts on it, by sliding their own character a short way along
+  // (`dx`, `dy`) — a unit vector. Everyone's character stays authoritative on
+  // its owner's machine, so a push is a request, never a remote write, and a
+  // peer who has left the mode simply ignores it.
+  | { kind: 'avatar-push'; tabId: string; targetId: string; dx: number; dy: number }
   // --- Live poll (spec/88) -------------------------------------------
   // Deliberately NOT a Tab field like the timer / dot-vote: a poll is
   // ephemeral, so it exists only as these ops and the memory of the

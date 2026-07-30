@@ -32,7 +32,13 @@ export function useCanvasTool({ defaultPan = false }: { defaultPan?: boolean } =
   // picking a palette tile can put the user back exactly where they were
   // rather than guessing Select. Same idea as useFormatTool's preFormatToolRef.
   const preAvatarToolRef = useRef<CanvasTool>('select');
+  // The general form of the same idea: whatever tool you were in before the
+  // current one, for any mode. A Selection Mode button (spec/103) presses back
+  // out of its own mode with this, so a button that switches you in is never a
+  // one-way door.
+  const priorToolRef = useRef<CanvasTool>('select');
   const selectCanvasTool = (tool: CanvasTool) => {
+    if (tool !== canvasTool) priorToolRef.current = canvasTool;
     if (tool === 'avatar' && canvasTool !== 'avatar') preAvatarToolRef.current = canvasTool;
     if (tool === 'laser' && canvasTool !== 'laser') track('Canvas', 'Used', 'Laser');
     if (tool === 'spotlight' && canvasTool !== 'spotlight') track('Canvas', 'Used', 'Spotlight');
@@ -55,5 +61,9 @@ export function useCanvasTool({ defaultPan = false }: { defaultPan?: boolean } =
     const back = preAvatarToolRef.current;
     setCanvasTool(back === 'avatar' ? 'select' : back);
   };
-  return { canvasTool, setCanvasTool, selectCanvasTool, exitAvatarTool };
+  // Where "go back" leads: the tool before the current one, never the current
+  // one itself (a stale ref must not trap the user in the mode they're leaving).
+  const toolBeforeCurrent = (): CanvasTool =>
+    priorToolRef.current === canvasTool ? 'select' : priorToolRef.current;
+  return { canvasTool, setCanvasTool, selectCanvasTool, exitAvatarTool, toolBeforeCurrent };
 }

@@ -57,6 +57,9 @@ export function useRoomConnection(opts: {
   // Live poll (spec/88) inbound handlers, owned by useLivePoll. Stable
   // (useCallback with no changing deps) so they don't reopen the socket —
   // the effect's dep list stays [hydrated, diagramId, diagramShareable].
+  // Avatar mode (spec/101): somebody pushed our character. Stable, like the
+  // poll handlers below, so it can't reopen the socket.
+  receiveAvatarPush: (dx: number, dy: number) => void;
   receivePoll: (poll: LivePoll) => void;
   receivePollAnswer: (from: string, pollId: string, value: string | null) => void;
   receivePollEnd: (pollId: string) => void;
@@ -87,6 +90,7 @@ export function useRoomConnection(opts: {
     setChangeLog,
     setDiagramName,
     setSelfParticipant,
+    receiveAvatarPush,
     receivePoll,
     receivePollAnswer,
     receivePollEnd,
@@ -379,6 +383,12 @@ export function useRoomConnection(opts: {
           // character has one position at a time.
           pendingAvatars.set(from, op.avatar ? { tabId: op.tabId, avatar: op.avatar } : null);
           schedulePresenceFlush();
+        } else if (op.kind === 'avatar-push') {
+          // A shove is addressed to ONE participant; everyone else ignores it.
+          // Nothing is written to anyone's document — the target's own client
+          // decides what to do with it (and does nothing if they've left the
+          // mode), which is what keeps every character owned by its owner.
+          if (op.targetId === selfParticipantRef.current.id) receiveAvatarPush(op.dx, op.dy);
         } else if (op.kind === 'tab-focus') {
           setRemoteTabFocus((prev) => {
             const next = new Map(prev);

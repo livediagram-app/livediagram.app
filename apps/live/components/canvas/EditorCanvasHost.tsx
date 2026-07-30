@@ -105,6 +105,8 @@ export function EditorCanvasHost() {
     setHighlighterColor,
     setHighlighterWidth,
     broadcastAvatar,
+    broadcastAvatarPush,
+    avatarShove,
     broadcastCursor,
     broadcastLaser,
     cancelConnect,
@@ -219,6 +221,8 @@ export function EditorCanvasHost() {
     setActivityPosition,
     setAiPanelPosition,
     exitAvatarTool,
+    pressModeButton,
+    tabs,
     setCanvasTool,
     setCanvasThemeTab,
     setCommentsPanelPosition,
@@ -310,6 +314,9 @@ export function EditorCanvasHost() {
     <Canvas
       tabName={activeTab.name}
       tabSummaries={tabSummaries}
+      // Portals (spec/104) can lead to another tab; see Canvas.enterPortal.
+      portalTabs={tabs}
+      activeTabId={activeTab.id}
       tabLocked={activeTabLocked}
       readOnly={isReadOnly}
       // Three-tier owner-badge resolution (self / live presence row /
@@ -355,6 +362,10 @@ export function EditorCanvasHost() {
       remoteCursors={remoteCursorRows}
       remoteAvatars={remoteAvatarRows}
       onAvatarPresence={broadcastAvatar}
+      // Avatar mode (spec/101): clicking a peer's character walks over and
+      // shoves it; their own client decides what to do with the request.
+      onAvatarPush={broadcastAvatarPush}
+      avatarShove={avatarShove}
       laserTrails={laserTrailRows}
       onCanvasPointerMove={(x, y) => {
         if (canvasTool === 'laser' && x !== null && y !== null) {
@@ -372,8 +383,9 @@ export function EditorCanvasHost() {
       onExitAvatarMode={exitAvatarTool}
       // Mode button (spec/103): pressing one is exactly picking that mode from
       // the palette, so it goes through the same setter — telemetry, the
-      // selection clear, and the empty-canvas guard all included.
-      onPressModeButton={(element) => setCanvasTool(element.mode ?? DEFAULT_BUTTON_MODE)}
+      // selection clear, and the empty-canvas guard all included. Pressing it
+      // again, while already in that mode, hands you back your previous one.
+      onPressModeButton={(element) => pressModeButton(element.mode ?? DEFAULT_BUTTON_MODE)}
       onEraseStart={isReadOnly ? undefined : beginErase}
       onDuplicateMultiSelected={duplicateMultiSelected}
       onDeleteMultiSelected={deleteMultiSelected}

@@ -1,8 +1,9 @@
 'use client';
 
-import { useRef, useState, type ReactNode } from 'react';
+import { useRef, useState } from 'react';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { PaletteTileGrid, type PaletteTileActions } from './PaletteTileGrid';
+import { ToolsBreadcrumb, ToolsCategoryGrid } from './palette-tools-nav';
 import { PaletteSearchInput } from './PaletteSearchInput';
 import { TOOL_GROUPS, tilesInSection, tilesInToolGroup } from './palette-tile-defs';
 import { track } from '@/lib/telemetry';
@@ -25,71 +26,38 @@ export function PaletteShapesTab({ pendingDraw, actions }: TabProps) {
   return <PaletteTileGrid section="shapes" actions={actions} pendingDraw={pendingDraw} />;
 }
 
-// One collapsible group row in the Tools tab (spec/09 "Sub-categories"):
-// an uppercase heading in the PaletteSectionLabel voice, promoted to a
-// chevroned toggle button, with the same animated grid-rows collapse the
-// context-menu accordions use (MenuAccordionSection) so the two accordion
-// surfaces feel like one control.
-function PaletteAccordionSection({
-  label,
-  open,
-  onToggle,
-  children,
-}: {
-  label: string;
-  open: boolean;
-  onToggle: () => void;
-  children: ReactNode;
-}) {
-  return (
-    <div>
-      <button
-        type="button"
-        onClick={onToggle}
-        aria-expanded={open}
-        className="flex w-full cursor-pointer items-center justify-between rounded-md px-1 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-slate-400 transition hover:bg-slate-50 hover:text-slate-600 dark:text-slate-500 dark:hover:bg-slate-800/60 dark:hover:text-slate-300"
-      >
-        {label}
-        <svg
-          width="10"
-          height="10"
-          viewBox="0 0 12 12"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden
-          className={`transition-transform duration-200 ${open ? '' : '-rotate-90'}`}
-        >
-          <path d="M3 4.5 6 7.5 9 4.5" />
-        </svg>
-      </button>
-      <div
-        className={`grid transition-all duration-200 ease-out ${
-          open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
-        }`}
-      >
-        <div className="overflow-hidden">
-          <div className="pb-1">{children}</div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// The Tools tab's grouped accordions (spec/09 "Sub-categories"): the tools
-// grouped by theme (Write / Draw / Structure / Blocks / People & media, from
-// TOOL_GROUPS — a flat sixteen-tile wall stopped scanning), plus the Data
-// charts (spec/53, folded in from the old standalone Data category). One
-// group open at a time, the first open by default, so the tab stays one
-// glance tall; clicking the open header collapses it.
+// The Tools tab (spec/09 "Sub-categories"): the tools grouped by theme (Write &
+// Draw / Structure / Blocks / People & Media / Behaviour, from TOOL_GROUPS — a
+// flat twenty-tile wall stopped scanning), plus the Data charts (spec/53,
+// folded in from the old standalone Data category).
+//
+// Navigation is DRILL-IN: a grid of category tiles, then that category's tools
+// with a breadcrumb back. It replaced a stack of accordions,
+// where the tools were invisible until you opened a group, opening one pushed
+// the others off the bottom, and the palette — a wall of pictures everywhere
+// else — presented itself as a list of words.
 export function PaletteToolsTab({ pendingDraw, actions }: TabProps) {
-  const sections: { id: string; label: string; tiles?: ReturnType<typeof tilesInToolGroup> }[] = [
-    ...TOOL_GROUPS.map((g) => ({ id: g.id, label: g.label, tiles: tilesInToolGroup(g.id) })),
-    { id: 'data', label: 'Data' },
+  const sections: {
+    id: string;
+    label: string;
+    description: string;
+    tiles?: ReturnType<typeof tilesInToolGroup>;
+  }[] = [
+    ...TOOL_GROUPS.map((g) => ({
+      id: g.id,
+      label: g.label,
+      description: g.description,
+      tiles: tilesInToolGroup(g.id),
+    })),
+    {
+      id: 'data',
+      label: 'Data',
+      description: 'Charts and meters: pie, bar and line charts, progress bars and rings, ratings.',
+    },
   ];
-  const [openId, setOpenId] = useState<string | null>(sections[0]?.id ?? null);
+  // null = the category grid. Starts there, so opening Tools shows every
+  // category at once rather than one arbitrary group's contents.
+  const [openId, setOpenId] = useState<string | null>(null);
   // Search across the grouped tools (spec/09 "Sub-categories"): the
   // accordions keep the tab one glance tall but hide most tiles, so a
   // search box (mirroring the Icons / Technology pickers) surfaces any
@@ -105,10 +73,22 @@ export function PaletteToolsTab({ pendingDraw, actions }: TabProps) {
         [t.label, t.caption ?? '', t.description].some((s) => s.toLowerCase().includes(q)),
       )
     : null;
-  const toggle = (id: string) => {
-    track('UI', 'Toggled', 'ToolGroup');
-    setOpenId((cur) => (cur === id ? null : id));
+  const openCategory = (id: string) => {
+    track('UI', 'Opened', 'ToolGroup');
+    setOpenId(id);
   };
+  const openSection = sections.find((s) => s.id === openId) ?? null;
+  // Category artwork = the group's first tile, so a category always looks like
+  // what it holds. Data's tiles come from its own catalogue section.
+  const categories = sections.map((section) => {
+    const tiles = section.tiles ?? tilesInSection('data');
+    return {
+      id: section.id,
+      label: section.label,
+      icon: tiles[0]?.icon ?? null,
+      description: section.description,
+    };
+  });
   return (
     <div className="flex flex-col">
       <div className="mb-2 flex items-center">
@@ -128,6 +108,8 @@ export function PaletteToolsTab({ pendingDraw, actions }: TabProps) {
         />
       </div>
       {matches ? (
+        // Searching cuts across categories, so it replaces the whole navigation
+        // with one flat grid of hits — the breadcrumb would be lying.
         matches.length > 0 ? (
           <PaletteTileGrid tiles={matches} actions={actions} pendingDraw={pendingDraw} />
         ) : (
@@ -135,21 +117,21 @@ export function PaletteToolsTab({ pendingDraw, actions }: TabProps) {
             No tools match “{query}”.
           </p>
         )
+      ) : openSection ? (
+        <>
+          <ToolsBreadcrumb label={openSection.label} onBack={() => setOpenId(null)} />
+          {openSection.tiles ? (
+            <PaletteTileGrid
+              tiles={openSection.tiles}
+              actions={actions}
+              pendingDraw={pendingDraw}
+            />
+          ) : (
+            <PaletteTileGrid section="data" actions={actions} pendingDraw={pendingDraw} />
+          )}
+        </>
       ) : (
-        sections.map((section) => (
-          <PaletteAccordionSection
-            key={section.id}
-            label={section.label}
-            open={openId === section.id}
-            onToggle={() => toggle(section.id)}
-          >
-            {section.tiles ? (
-              <PaletteTileGrid tiles={section.tiles} actions={actions} pendingDraw={pendingDraw} />
-            ) : (
-              <PaletteTileGrid section="data" actions={actions} pendingDraw={pendingDraw} />
-            )}
-          </PaletteAccordionSection>
-        ))
+        <ToolsCategoryGrid categories={categories} onOpen={openCategory} />
       )}
     </div>
   );

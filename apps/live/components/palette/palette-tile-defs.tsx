@@ -50,19 +50,46 @@ type PaletteTileAction =
 // the Tools tab renders one labelled grid per group instead of a flat
 // sixteen-tile wall. Group membership is metadata on the tile — ids stay
 // stable, so favourites persistence and search are untouched.
-export type ToolGroupId = 'write' | 'draw' | 'structure' | 'blocks' | 'media' | 'behaviour';
+export type ToolGroupId = 'write' | 'structure' | 'blocks' | 'media' | 'behaviour';
 
-// Display order + headings for the Tools tab's groups.
-export const TOOL_GROUPS: { id: ToolGroupId; label: string }[] = [
-  { id: 'write', label: 'Write' },
-  { id: 'draw', label: 'Draw' },
-  { id: 'structure', label: 'Structure' },
-  { id: 'blocks', label: 'Blocks' },
-  { id: 'media', label: 'People & media' },
+// Display order, headings, and a one-line "what's in here" for the Tools tab's
+// groups. The description is what the category tile's tooltip says: a count
+// ("6 tools") tells you nothing you can act on, whereas naming the contents
+// answers the actual question — is the thing I want in this box?
+export const TOOL_GROUPS: { id: ToolGroupId; label: string; description: string }[] = [
+  {
+    // Writing and drawing are one category: both are "put a mark on the canvas
+    // yourself", and split across two tiles the pair mostly made you guess
+    // which half an arrow or a sticky note lived in.
+    id: 'write',
+    label: 'Write & Draw',
+    description:
+      'Put your own marks down: pages, text and sticky notes, plus pencil, highlighter, polygon and arrows.',
+  },
+  {
+    id: 'structure',
+    label: 'Structure',
+    description: 'Containers and grids: frames to group a section, tables, and timeline rails.',
+  },
+  {
+    id: 'blocks',
+    label: 'Blocks',
+    description: 'Rich cards: syntax-highlighted code, tickable checklists, and link previews.',
+  },
+  {
+    id: 'media',
+    label: 'People & Media',
+    description: 'Pictures and people: images, photo avatars, and user figures.',
+  },
   // Behaviour (spec/103): elements that DO something when someone interacts
   // with them, rather than elements that say something. Last, because a
   // diagram is drawn before it is wired up.
-  { id: 'behaviour', label: 'Behaviour' },
+  {
+    id: 'behaviour',
+    label: 'Behaviour',
+    description:
+      'Elements that do something when pressed: switch someone’s selection mode, or portal them across the canvas.',
+  },
 ];
 
 export type PaletteTileDef = {
@@ -416,7 +443,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     id: 'tools:pencil',
     section: 'tools',
-    toolGroup: 'draw',
+    toolGroup: 'write',
     label: 'Pencil (freehand)',
     description:
       'Sketch a freehand stroke. Drag to draw; release near the start to close the shape.',
@@ -449,7 +476,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     id: 'tools:highlighter',
     section: 'tools',
-    toolGroup: 'draw',
+    toolGroup: 'write',
     label: 'Highlighter',
     description: 'Wide translucent marker. Drag to call attention to a region.',
     action: { type: 'highlighter' },
@@ -476,7 +503,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     id: 'tools:polygon',
     section: 'tools',
-    toolGroup: 'draw',
+    toolGroup: 'write',
     label: 'Polygon',
     description: 'Click to place points. Click the start to close, double-click to finish a line.',
     action: { type: 'polygon' },
@@ -499,7 +526,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     id: 'tools:arrow',
     section: 'tools',
-    toolGroup: 'draw',
+    toolGroup: 'write',
     label: 'Add arrow',
     description: 'Plain connector. Add pointers in the Pointer accordion.',
     shortcut: 'A',
@@ -624,11 +651,13 @@ export const PALETTE_TILES: PaletteTileDef[] = [
         strokeLinejoin="round"
         aria-hidden
       >
-        {/* a pill with a pressing cursor at its corner */}
-        <rect x="2" y="5" width="14" height="6" rx="3" />
-        <path d="M5.5 8h5" strokeWidth="1.2" />
+        {/* A square button, sunk under a pointer that is pressing it: the two
+            halves of what the element is. The press lines sell the click. */}
+        <rect x="1.6" y="2.4" width="11" height="11" rx="2.6" />
+        <path d="M4.4 6.1h5.4M4.4 8.6h3.4" strokeWidth="1.2" />
+        <path d="M1.1 4.2 A2.6 2.6 0 0 1 3.4 2" strokeWidth="1" opacity="0.55" />
         <path
-          d="M11.5 10.5 L11.5 15.5 L13 14 L14.2 16 L15.4 15.4 L14.2 13.4 L16 13 Z"
+          d="M9.8 8.7 L16.9 12.1 L13.6 13 L15.4 16.2 L14 17 L12.2 13.8 L10 16 Z"
           fill="currentColor"
           stroke="none"
         />
@@ -636,17 +665,19 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
-    // Door (spec/104): a portal you click — or walk an Avatar-mode character
-    // into — that takes you to the door it is paired with.
+    // Portal (spec/104): step in here, come out of the portal it is linked to.
+    // The tile id keeps its original 'door' word because it is persisted in
+    // saved favourites — renaming it would silently drop the tile for anyone
+    // who had favourited it.
     id: 'tools:door',
     section: 'tools',
     toolGroup: 'behaviour',
-    label: 'Add door',
-    caption: 'Door',
+    label: 'Add portal',
+    caption: 'Portal',
     description:
-      'A portal. Click it, or walk your Avatar character into it, and you travel to the door it is paired with. Pair them from the element menu.',
+      'Click it, or walk your Avatar character into it, and you come out of the portal it is linked to. Link a pair from the element menu.',
     filled: true,
-    action: { type: 'shape', kind: 'door' },
+    action: { type: 'shape', kind: 'portal' },
     icon: (
       <svg
         width="18"
@@ -659,8 +690,9 @@ export const PALETTE_TILES: PaletteTileDef[] = [
         strokeLinejoin="round"
         aria-hidden
       >
-        <rect x="4" y="2" width="10" height="14" rx="1.5" />
-        <circle cx="11.5" cy="9" r="0.9" fill="currentColor" stroke="none" />
+        {/* The standing oval ring, with the far side showing through it. */}
+        <ellipse cx="9" cy="9" rx="4.6" ry="7" />
+        <ellipse cx="9" cy="9" rx="2.1" ry="3.6" strokeWidth="1.1" opacity="0.6" />
       </svg>
     ),
   },

@@ -1,3 +1,4 @@
+import { isFixedSizeShape } from '@livediagram/diagram';
 import { ARROW_SNAP_THRESHOLD_PX, inheritedSizeFor } from '@/lib/canvas';
 import {
   COMPONENT_SIZE,
@@ -128,8 +129,13 @@ export function buildDrawnBoxed(
           ? createSticky(startX, startY)
           : createImage(startX, startY);
   const tapSize = inheritedSizeFor(base, inheritFrom);
-  const width = isTap ? tapSize.width : Math.max(TAP_TRAVEL_PX, Math.abs(endX - startX));
-  const height = isTap ? tapSize.height : Math.max(TAP_TRAVEL_PX, Math.abs(endY - startY));
+  // A fixed-size kind (spec/103) ignores the drag entirely: dragging one out
+  // still places it, at the one size it is meant to be.
+  const fixedSize = base.type === 'shape' && isFixedSizeShape(base.shape);
+  const width =
+    fixedSize || isTap ? tapSize.width : Math.max(TAP_TRAVEL_PX, Math.abs(endX - startX));
+  const height =
+    fixedSize || isTap ? tapSize.height : Math.max(TAP_TRAVEL_PX, Math.abs(endY - startY));
   const x = isTap ? startX - width / 2 : Math.min(startX, endX);
   const y = isTap ? startY - height / 2 : Math.min(startY, endY);
   const colours = deriveNewBoxedColours(base, {

@@ -633,14 +633,15 @@ describe('createShape (mode button, spec/103)', () => {
     expect(Math.abs(button.width - button.height)).toBeLessThan(40);
   });
 
-  it('makes a door door-shaped and unpaired (spec/104)', () => {
-    const door = createShape('door', 0, 0);
-    expect(door.shape).toBe('door');
-    expect(door.height).toBeGreaterThan(door.width);
-    // Nothing to pair with until a second door exists.
-    expect(door.doorTarget).toBeUndefined();
-    expect(door.label).toBe('Door');
-    // Stretched wide it stops reading as a door, so the aspect is locked.
-    expect(door.aspectLocked).toBe(true);
+  it('makes a portal portal-shaped and unpaired (spec/104)', () => {
+    const portal = createShape('portal', 0, 0);
+    expect(portal.shape).toBe('portal');
+    expect(portal.height).toBeGreaterThan(portal.width);
+    // Nothing to pair with until a second portal exists.
+    expect(portal.portalTarget).toBeUndefined();
+    // Unlabelled on purpose: the name is positional until someone types one.
+    expect(portal.label).toBeUndefined();
+    // Stretched wide it stops reading as a portal, so the aspect is locked.
+    expect(portal.aspectLocked).toBe(true);
   });
 });

@@ -70,10 +70,10 @@ export type BoxedElementViewProps = {
   // The viewer's current mode, so a Selection Mode button offering it renders
   // disabled (spec/103).
   activeMode?: import('@livediagram/diagram').SelectionMode;
-  // Door (spec/104): resolves a door's pairing for the face — the paired door's
+  // Portal (spec/104): resolves a portal's pairing for the face — the paired portal's
   // name for the tooltip, and the travel action (undefined when unpaired, so the
   // face renders inert and says why).
-  onEnterDoor?: (element: import('@livediagram/diagram').ShapeElement) => {
+  onEnterPortal?: (element: import('@livediagram/diagram').ShapeElement) => {
     targetName: string | null;
     travel?: () => void;
   };

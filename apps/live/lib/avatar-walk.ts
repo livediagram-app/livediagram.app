@@ -8,6 +8,19 @@ import { isBoxed, type Element } from '@livediagram/diagram';
 
 // Walk speed in CANVAS px per second. Constant on purpose: an eased
 // glide reads as a camera move, a constant walk reads as a character.
+// How far below a Selection Mode button the character appears when that button
+// is what put you in Avatar mode (spec/103): clear of the button's own box, so
+// it reads as standing in front of it rather than on top of it.
+export const AVATAR_SPAWN_GAP = 12;
+
+// How far a shoved character slides, in canvas px (spec/101). Far enough to be
+// unmistakably a push, short enough that nobody gets flung across the diagram.
+export const AVATAR_SHOVE_DISTANCE = 70;
+
+// How close the pusher stands before shoving: just outside the other
+// character, so the two meet rather than overlap.
+export const AVATAR_SHOVE_REACH = 46;
+
 export const AVATAR_SPEED = 260;
 
 // Sprite footprint in canvas px at the REGULAR size. The position point is the

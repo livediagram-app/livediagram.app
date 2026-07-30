@@ -208,21 +208,6 @@ export function useDataShapeSetters({ currentSelectionIds, commit }: DataShapeSe
     track('Element', 'Changed', 'ModeButton');
   };
 
-  // Door (spec/104): pair this door with another. Gated to the door kind, and
-  // `null` unpairs (a door with no target is inert and says so).
-  const setDoorTargetSelected = (targetId: string | null) => {
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    commit((els) =>
-      els.map((el) =>
-        ids.has(el.id) && el.type === 'shape' && el.shape === 'door'
-          ? { ...el, doorTarget: targetId ?? undefined }
-          : el,
-      ),
-    );
-    track('Element', 'Changed', 'Door');
-  };
-
   // Rating (spec/52): the star score + its optional animation, gated to rating
   // shapes. The setters share one body (differing only in the patched field +
   // telemetry type), mirroring the progress setters.
@@ -292,7 +277,6 @@ export function useDataShapeSetters({ currentSelectionIds, commit }: DataShapeSe
     toggleChecklistItem,
     setChecklistItemsSelected,
     setButtonModeSelected,
-    setDoorTargetSelected,
     setRatingSelected,
     setRatingAnimSelected,
     setRatingAnimSpeedSelected,

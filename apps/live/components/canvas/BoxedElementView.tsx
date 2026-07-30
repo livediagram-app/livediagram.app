@@ -26,7 +26,7 @@ import { isSvgRenderedShape } from '@/components/canvas/shape-svg-overlay';
 import { BoxBorderOverlay } from '@/components/canvas/BoxBorderOverlay';
 import { PageCornerFold } from '@/components/canvas/PageCornerFold';
 import { ModeButtonFace } from '@/components/canvas/ModeButtonFace';
-import { DoorFace } from '@/components/canvas/DoorFace';
+import { PortalFace } from '@/components/canvas/PortalFace';
 import { DEFAULT_BUTTON_MODE } from '@livediagram/diagram';
 import { isCssNativeBorderStyle } from '@/components/canvas/border-css';
 import { describeVariant } from '@/components/canvas/element-variant';
@@ -84,7 +84,7 @@ function BoxedElementViewImpl({
   onCancelEdit,
   onFollowLink,
   onPressModeButton,
-  onEnterDoor,
+  onEnterPortal,
   activeMode,
   onOpenComments,
   onOpenAction,
@@ -397,14 +397,13 @@ function BoxedElementViewImpl({
           textColor={textColor}
           onPress={onPressModeButton ? () => onPressModeButton(element) : undefined}
         />
-      ) : element.type === 'shape' && element.shape === 'door' && !isEditing ? (
-        /* Door (spec/104): the drawn door + its label, pressable when paired. */
-        <DoorFace
-          label={label || 'Door'}
-          textColor={textColor}
+      ) : element.type === 'shape' && element.shape === 'portal' && !isEditing ? (
+        /* Portal (spec/104): the drawn portal + its label, pressable when paired. */
+        <PortalFace
+          label={label || 'Portal'}
           strokeColor={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element)}
-          targetName={onEnterDoor?.(element).targetName ?? null}
-          onEnter={onEnterDoor?.(element).travel}
+          targetName={onEnterPortal?.(element).targetName ?? null}
+          onEnter={onEnterPortal?.(element).travel}
         />
       ) : element.type === 'annotation' ? (
         <AnnotationGlyph

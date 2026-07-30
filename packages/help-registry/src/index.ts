@@ -1452,6 +1452,16 @@ export const articles: Article[] = [
     parentSlug: 'tools',
   },
   {
+    slug: 'portals',
+    title: 'Portals',
+    description: 'Link two rings of energy and jump — or walk — between them, across tabs too.',
+    keywords:
+      'portal door teleport jump travel warp link pair navigate shortcut across tabs walk through',
+    category: 'Palette',
+    categorySlug: 'palette/tools',
+    parentSlug: 'tools',
+  },
+  {
     slug: 'data-elements',
     title: 'Data and Chart Elements',
     description: 'Progress bars, ratings, pie charts, and timeline rails.',

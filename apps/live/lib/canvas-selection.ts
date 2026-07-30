@@ -4,6 +4,7 @@
 // selection bounds, and every "should this chrome show?" predicate the
 // Canvas render reads. Lifted out of Canvas.tsx so this decision logic
 // is unit-testable in isolation (the component itself has no tests).
+import { isFixedSizeShape } from '@livediagram/diagram';
 import {
   elementBounds,
   isBoxed,
@@ -153,9 +154,19 @@ export function deriveCanvasSelection(input: {
   // Arrow-anchor dots are suppressed for tables: connecting a
   // connector to a grid is an unlikely flow and the external dots
   // clash with the table's own in-cell controls. Resize handles
-  // (handleVisible) still show.
+  // (resizeVisible) still show.
   const anchorVisible = (id: string) =>
     handleVisible(id) && elements.find((el) => el.id === id)?.type !== 'table';
+
+  // Resize handles additionally skip the FIXED-SIZE kinds (spec/103): a
+  // Selection Mode button is a control at one size, so offering the handles
+  // would advertise a resize that the drag paths deliberately ignore. Anchors
+  // stay — an arrow can still point at a button.
+  const resizeVisible = (id: string) => {
+    if (!handleVisible(id)) return false;
+    const el = elements.find((e) => e.id === id);
+    return !(el?.type === 'shape' && isFixedSizeShape(el.shape));
+  };
 
   const unionResizeIds: Set<string> | null =
     multiSelectedIds.size > 1 ? multiSelectedIds : memberIds.size > 1 ? memberIds : null;
@@ -205,7 +216,7 @@ export function deriveCanvasSelection(input: {
     selectedLocked,
     showPopover,
     showPlus,
-    showHandlesFor: handleVisible,
+    showHandlesFor: resizeVisible,
     showAnchorsFor: anchorVisible,
     unionResizeIds,
     unionResizeBounds,

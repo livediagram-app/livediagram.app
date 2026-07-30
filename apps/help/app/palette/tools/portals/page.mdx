@@ -1,0 +1,82 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Portals',
+  description:
+    'Link two portals and travel between them: click one, or walk an Avatar-mode character into it, and the canvas jumps to the far side — on the same tab or another one.',
+  path: '/help/palette/tools/portals/',
+});
+
+<ArticleLayout
+  title="Portals"
+  description="A ring of energy you link to another one, for jumping across a big diagram in one click."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  parentArticle={{ title: 'Tools', slug: 'tools' }}
+  subArticles={getSubArticles('tools').filter((a) => a.slug !== 'portals')}
+>
+
+A portal is a tall ring of energy you drop on the canvas and link to another one. Click it and the canvas jumps to its partner. It is the quickest way to move around a diagram that has outgrown one screen, and in [Avatar mode](/help/selection-modes/avatar-mode/) you can simply walk your character into it.
+
+## Adding a pair
+
+<Step n={1}>
+  Open the floating palette, switch to the **Tools** tab, and open the **Behaviour** category.
+</Step>
+<Step n={2}>Click **Portal** to drop one on the canvas.</Step>
+<Step n={3}>
+  Right-click it and open **Tools › Portal**, then click **Create portal**. A second portal appears
+  beside the first, already linked to it — drag it wherever it belongs.
+</Step>
+
+To link portals that already exist, pick one from the **Leads to** grid instead. Clicking the
+currently linked portal again unlinks the pair.
+
+## Links go both ways
+
+Linking A to B links B back to A: whatever you can step into, you can step back out of. A portal
+leads to exactly one place, so pointing one at a new partner releases the old link at both ends.
+
+## Travelling
+
+Clicking a linked portal centres the canvas on its partner. If you are in Avatar mode, your
+character steps out of the far portal at the same moment, and **walking into a portal** does exactly
+what clicking it does — no click needed. The portal you arrive in is ignored until you walk off it,
+so a pair never bounces you back and forth.
+
+## Across tabs
+
+A portal can lead to a portal on **another tab**. Off-tab options in the **Leads to** grid are
+labelled with their tab name (for example "Portal 2 · Detail"), and travelling switches tab for you
+before landing you at the far side. It is the tidiest way to build a walkthrough that spans several
+tabs.
+
+## Naming them
+
+Portals are numbered as you add them — Portal 1, Portal 2, and so on — so you can tell them apart in
+the **Leads to** grid without doing anything. Give one a proper name ("Back to overview") in the
+**Name** field of the same menu section. Names live in the menu and in tooltips: nothing is drawn
+over the ring itself.
+
+<Tip>
+  An unlinked portal is dimmed and does not respond to clicks — that is how you spot the half of a
+  pair you have not wired up yet.
+</Tip>
+
+## Recolouring
+
+The ring takes its colour from the element's **stroke** colour, so the Colours section of the
+context menu recolours the whole effect. A classic pairing is one blue portal and one orange.
+
+<FeatureGrid>
+  <Feature slug="avatar-mode" title="Avatar Mode">
+    Walk a little character around the diagram, and straight through your portals.
+  </Feature>
+  <Feature slug="tools" title="Tools">
+    The rest of the Tools tab, including the Selection Mode button beside the Portal.
+  </Feature>
+</FeatureGrid>
+
+</ArticleLayout>

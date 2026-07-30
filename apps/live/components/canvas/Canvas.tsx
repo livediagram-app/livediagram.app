@@ -1,5 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { isAnimatedPattern, isBoxed, type ShapeElement } from '@livediagram/diagram';
+import {
+  DEFAULT_BUTTON_MODE,
+  isAnimatedPattern,
+  isBoxed,
+  type ShapeElement,
+} from '@livediagram/diagram';
 import { tabBackgroundStyle } from '@/lib/canvas-backgrounds';
 import { AnimatedCanvasBackground } from '@/components/canvas/AnimatedCanvasBackground';
 import { pointerToCanvas } from '@/lib/canvas';
@@ -39,10 +44,17 @@ import { SpotlightOverlay } from '@/components/canvas/SpotlightOverlay';
 import { useSpotlight } from '@/hooks/canvas/useSpotlight';
 import { AvatarWalker } from '@/components/canvas/AvatarWalker';
 import { useAvatarWalk } from '@/hooks/canvas/useAvatarWalk';
+import { AVATAR_SPAWN_GAP, type AvatarPoint } from '@/lib/avatar-walk';
 import { useAvatarConfig } from '@/hooks/canvas/useAvatarConfig';
 import { parseAvatarConfig } from '@/lib/avatar-config';
 import { reactionPose } from '@/lib/avatar-reactions';
-import { doorExitPoint, doorName, resolveDoorTarget, viewportOffsetCentredOn } from '@/lib/doors';
+import {
+  portalExitPoint,
+  portalName,
+  resolvePortalSite,
+  resolvePortalTarget,
+  viewportOffsetCentredOn,
+} from '@/lib/portals';
 import { useOffscreenContent } from '@/hooks/canvas/useOffscreenContent';
 import { Portal } from '@/components/primitives/Portal';
 import { TabLoadOverlay } from '@/components/canvas/TabLoadOverlay';
@@ -244,6 +256,21 @@ export function Canvas(props: CanvasProps) {
   // browser. Owned here because both the sprite and the Avatar Panel (down in
   // CanvasChrome) read it, and it outlives any one walk.
   const avatarLook = useAvatarConfig({ active: canvasTool === 'avatar' });
+  // Where the next entry into Avatar mode should place the character, when it
+  // was entered by pressing a button on the canvas. Cleared once used, so a
+  // later entry from the palette spawns at the viewport centre as before.
+  const avatarSpawnRef = useRef<AvatarPoint | null>(null);
+  const pressModeButton = (element: ShapeElement) => {
+    if ((element.mode ?? DEFAULT_BUTTON_MODE) === 'avatar') {
+      // Feet just below the button, centred on it: standing ON the button would
+      // read as the character having pressed itself out of existence.
+      avatarSpawnRef.current = {
+        x: element.x + element.width / 2,
+        y: element.y + element.height + AVATAR_SPAWN_GAP,
+      };
+    }
+    props.onPressModeButton?.(element);
+  };
   const avatar = useAvatarWalk({
     active: canvasTool === 'avatar',
     config: avatarLook.config,
@@ -254,11 +281,25 @@ export function Canvas(props: CanvasProps) {
     viewportOffset,
     viewportZoom,
     setViewportOffset,
+    spawnAtRef: avatarSpawnRef,
     onPresence: props.onAvatarPresence,
-    // Walking the character into a door travels through it (spec/104) — the same
-    // action the door's own click fires.
-    onWalkIntoDoor: (element) => enterDoorRef.current(element),
+    // Walking the character into a portal travels through it (spec/104) — the same
+    // action the portal's own click fires.
+    onWalkIntoPortal: (element) => enterPortalRef.current(element),
   });
+  // Somebody pushed us (spec/101): slide along their direction, once per push.
+  // Keyed on the sequence number, not the vector, so two identical shoves in a
+  // row both land.
+  const lastShoveRef = useRef<number | null>(null);
+  useEffect(() => {
+    const shove = props.avatarShove;
+    if (!shove || shove.seq === lastShoveRef.current) return;
+    lastShoveRef.current = shove.seq;
+    avatar.shove(shove.dx, shove.dy);
+    // `avatar` is a fresh object every render; the shove is the trigger.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.avatarShove]);
+
   // Bounds of whatever the avatar is standing on, for its "you are here" ring.
   const avatarStandingOn = useMemo(() => {
     if (!avatar.standingOnId) return null;
@@ -266,37 +307,58 @@ export function Canvas(props: CanvasProps) {
     return el && isBoxed(el) ? { x: el.x, y: el.y, width: el.width, height: el.height } : null;
   }, [avatar.standingOnId, elements]);
 
-  // Doors (spec/104). Travelling means two things at once: the CAMERA centres on
-  // the paired door, and — if the traveller is walking around in Avatar mode —
-  // their character steps out of it. One function behind both the door face's
+  // Portals (spec/104). Travelling means two things at once: the CAMERA centres on
+  // the paired portal, and — if the traveller is walking around in Avatar mode —
+  // their character steps out of it. One function behind both the portal face's
   // click and the avatar's walk-in, so the two can't drift apart.
-  // `enterDoor` needs the avatar hook (to place the character) and the hook
-  // needs `enterDoor` (for the walk-in), so the callback goes through a ref:
+  // `enterPortal` needs the avatar hook (to place the character) and the hook
+  // needs `enterPortal` (for the walk-in), so the callback goes through a ref:
   // declared here, repointed on every render, read at call time.
-  const enterDoorRef = useRef<(from: ShapeElement) => void>(() => {});
-  const enterDoor = (from: ShapeElement) => {
-    const target = resolveDoorTarget(elements, from);
-    if (!target) return;
+  const enterPortalRef = useRef<(from: ShapeElement) => void>(() => {});
+  // Where a portal leads, searched across every tab when the canvas was given
+  // them (spec/104) and within this tab otherwise.
+  const portalDestination = (from: ShapeElement) => {
+    const site = props.portalTabs ? resolvePortalSite(props.portalTabs, from) : null;
+    if (site) {
+      const tab = props.portalTabs?.find((t) => t.id === site.tabId);
+      return { portal: site.portal, tabId: site.tabId, elements: tab?.elements ?? elements };
+    }
+    const target = resolvePortalTarget(elements, from);
+    return target ? { portal: target, tabId: props.activeTabId, elements } : null;
+  };
+  const enterPortal = (from: ShapeElement) => {
+    const to = portalDestination(from);
+    if (!to) return;
+    // A link across tabs switches tab first, through the same follow-a-link
+    // path a tab link uses, so selection / edit state is cleaned up the same
+    // way. The camera + character then land on the far side.
+    if (props.activeTabId && to.tabId && to.tabId !== props.activeTabId) {
+      props.onFollowLink({ kind: 'tab', tabId: to.tabId });
+    }
     const node = mainRef && 'current' in mainRef ? mainRef.current : null;
     const rect = node?.getBoundingClientRect();
     if (rect) {
       setViewportOffset(
-        viewportOffsetCentredOn(target, { width: rect.width, height: rect.height }, viewportZoom),
+        viewportOffsetCentredOn(
+          to.portal,
+          { width: rect.width, height: rect.height },
+          viewportZoom,
+        ),
       );
     }
-    // Step out of the far door, and tell the walk hook to ignore that door until
+    // Step out of the far portal, and tell the walk hook to ignore that portal until
     // the character leaves it, so it doesn't bounce straight back.
-    avatar.teleportTo(doorExitPoint(target), target.id);
+    avatar.teleportTo(portalExitPoint(to.portal), to.portal.id);
   };
-  enterDoorRef.current = enterDoor;
-  // What the door face needs: the far door's name for the tooltip, and the
-  // travel action — absent when the door is unpaired, which is what makes the
+  enterPortalRef.current = enterPortal;
+  // What the portal face needs: the far portal's name for the tooltip, and the
+  // travel action — absent when the portal is unlinked, which is what makes the
   // face render inert and say so.
-  const resolveDoor = (element: ShapeElement) => {
-    const target = resolveDoorTarget(elements, element);
+  const resolvePortal = (element: ShapeElement) => {
+    const to = portalDestination(element);
     return {
-      targetName: target ? doorName(elements, target) : null,
-      travel: target ? () => enterDoor(element) : undefined,
+      targetName: to ? portalName(to.elements, to.portal) : null,
+      travel: to ? () => enterPortal(element) : undefined,
     };
   };
 
@@ -396,6 +458,8 @@ export function Canvas(props: CanvasProps) {
     setMarquee,
     spotlight,
     avatar,
+    peerAvatars: props.remoteAvatars,
+    onPushPeer: props.onAvatarPush,
     isoCamera,
     canvasLongPress,
     beginPendingDrawGesture: beginPendingDrawOrPolygon,
@@ -534,9 +598,14 @@ export function Canvas(props: CanvasProps) {
         {canvasTool === 'isometric' ? <IsometricDepthLayer elements={elements} /> : null}
         <CanvasElementsLayer
           {...props}
-          // Door travel is resolved HERE (Canvas owns the viewport + the avatar),
+          // Portal travel is resolved HERE (Canvas owns the viewport + the avatar),
           // so the prop from the host is overridden with the local resolver.
-          onEnterDoor={resolveDoor}
+          onEnterPortal={resolvePortal}
+          // Pressing a Selection Mode button that hands out Avatar mode drops
+          // the character at THAT button (see avatarSpawn), not the viewport
+          // centre: you pressed a thing on the canvas, so the character should
+          // appear where you pressed it.
+          onPressModeButton={pressModeButton}
           hasArrows={hasArrows}
           memberIds={memberIds}
           showHandles={showHandles}

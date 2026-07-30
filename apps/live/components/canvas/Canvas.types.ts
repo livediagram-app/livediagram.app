@@ -95,9 +95,9 @@ export type CanvasProps = {
   // mode the element carries. Optional — the read-only embed has no tool picker
   // to drive, so its buttons render inert.
   onPressModeButton?: (element: import('@livediagram/diagram').ShapeElement) => void;
-  // Door (spec/104): resolve a door's pairing — the paired door's name and, when
+  // Portal (spec/104): resolve a portal's pairing — the paired portal's name and, when
   // it has one, the action that travels there.
-  onEnterDoor?: (element: import('@livediagram/diagram').ShapeElement) => {
+  onEnterPortal?: (element: import('@livediagram/diagram').ShapeElement) => {
     targetName: string | null;
     travel?: () => void;
   };
@@ -130,6 +130,12 @@ export type CanvasProps = {
   // Publishes the local character to the room (null when leaving the mode).
   // Optional: a private, un-shared diagram has no room to publish to.
   onAvatarPresence?: (avatar: import('@livediagram/api-schema').AvatarPresence | null) => void;
+  // Shove a peer's character (spec/101): sent when our character finishes
+  // walking up to the one we clicked. Optional — no room, no push.
+  onAvatarPush?: (targetId: string, dx: number, dy: number) => void;
+  // A shove somebody sent US, as a direction plus a sequence number so the same
+  // push isn't replayed on every render. Null until someone pushes.
+  avatarShove?: { dx: number; dy: number; seq: number } | null;
   // Laser-pointer trails for the LaserOverlay — local user first
   // followed by any peers laser-pointing on the active tab. The
   // overlay handles fading and cleanup; Canvas just renders.
@@ -255,6 +261,11 @@ export type CanvasProps = {
   // tooltip can name the tab/element a link points at (spec/09). Kept
   // minimal + memoised by the caller so element edits don't churn it.
   tabSummaries: { id: string; name: string }[];
+  // Portals (spec/104) link ACROSS tabs, so the canvas needs every tab's
+  // elements to resolve where one leads, plus which tab is showing. Optional so
+  // read-only / embed mounts that never travel can omit them.
+  portalTabs?: import('@livediagram/diagram').Tab[];
+  activeTabId?: string;
   folders: Folder[];
   // Shared-with-you list. Empty by default so legacy callers can
   // omit it.

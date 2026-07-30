@@ -45,6 +45,13 @@ const EYE = '#243044';
 const SHIRT_WHITE = '#f8fafc';
 const FLAG_POLE = '#b8845a';
 const FLAG_CLOTH = '#f43f5e';
+// Tones the later outfits need beyond the shirt colour: denim for overalls, a
+// clinical white-coat body, and a leather-ish apron.
+const DENIM = '#41597f';
+const DENIM_DARK = '#2f4260';
+const COAT = '#eef2f6';
+const COAT_DARK = '#cfd8e3';
+const APRON = '#8b5e34';
 
 // A darker companion to an arbitrary shirt colour, for the shaded side. Mixes
 // the hex toward black; falls back to the default pair when the colour isn't a
@@ -235,6 +242,88 @@ function OutfitDetail({
     case 'skirt':
       // A tucked-in top: a belt line where the skirt starts.
       return <rect x={4} y={13} width={8} height={1} fill={shirtDark} />;
+    case 'polo':
+      // A short placket with two buttons and a flat collar.
+      return (
+        <g>
+          <rect x={5} y={9} width={6} height={1} fill={SHIRT_WHITE} />
+          <rect x={7} y={10} width={2} height={3} fill={shirtDark} />
+          <rect x={7} y={10} width={1} height={1} fill={SHIRT_WHITE} />
+        </g>
+      );
+    case 'flannel':
+      // A check: two verticals crossed by two horizontals.
+      return (
+        <g>
+          <rect x={6} y={9} width={1} height={6} fill={shirtDark} />
+          <rect x={9} y={9} width={1} height={6} fill={shirtDark} />
+          <rect x={4} y={11} width={8} height={1} fill={shirtDark} />
+          <rect x={4} y={13} width={8} height={1} fill={shirtDark} />
+        </g>
+      );
+    case 'overalls':
+      // Denim bib with two straps over a plain tee.
+      return (
+        <g>
+          <rect x={5} y={11} width={6} height={4} fill={DENIM} />
+          <rect x={9} y={11} width={2} height={4} fill={DENIM_DARK} />
+          <rect x={5} y={9} width={1} height={2} fill={DENIM} />
+          <rect x={10} y={9} width={1} height={2} fill={DENIM_DARK} />
+          <rect x={7} y={12} width={2} height={1} fill={DENIM_DARK} />
+        </g>
+      );
+    case 'labcoat':
+      // An open white coat over the shirt, lapels and all.
+      return (
+        <g>
+          <rect x={4} y={9} width={3} height={6} fill={COAT} />
+          <rect x={9} y={9} width={3} height={6} fill={COAT} />
+          <rect x={11} y={9} width={1} height={6} fill={COAT_DARK} />
+          <rect x={6} y={9} width={1} height={2} fill={COAT_DARK} />
+          <rect x={9} y={9} width={1} height={2} fill={COAT_DARK} />
+        </g>
+      );
+    case 'hawaiian':
+      // A loud print: scattered blooms on an open shirt (bare arms come from
+      // BARE_ARM_CLOTHING).
+      return (
+        <g>
+          <rect x={5} y={10} width={1} height={1} fill={SHIRT_WHITE} />
+          <rect x={8} y={11} width={1} height={1} fill={SHIRT_WHITE} />
+          <rect x={6} y={13} width={1} height={1} fill={SHIRT_WHITE} />
+          <rect x={10} y={13} width={1} height={1} fill={FLAG_CLOTH} />
+          <rect x={9} y={9} width={1} height={1} fill={FLAG_CLOTH} />
+          <rect x={6} y={9} width={4} height={1} fill={SHIRT_WHITE} />
+        </g>
+      );
+    case 'varsity':
+      // A letterman: white sleeves-stripe band and a chest letter.
+      return (
+        <g>
+          <rect x={4} y={12} width={8} height={1} fill={SHIRT_WHITE} />
+          <rect x={6} y={9} width={1} height={3} fill={SHIRT_WHITE} />
+          <rect x={7} y={10} width={1} height={1} fill={SHIRT_WHITE} />
+          <rect x={8} y={9} width={1} height={3} fill={SHIRT_WHITE} />
+        </g>
+      );
+    case 'turtleneck':
+      // The collar IS the outfit: a raised neck plus a smooth body.
+      return (
+        <g>
+          <rect x={5} y={7} width={6} height={2} fill={shirtDark} />
+          <rect x={9} y={7} width={2} height={2} fill={shirtDark} />
+        </g>
+      );
+    case 'apron':
+      // A bib apron with neck strap, over whatever shirt is underneath.
+      return (
+        <g>
+          <rect x={5} y={10} width={6} height={5} fill={APRON} />
+          <rect x={6} y={9} width={1} height={1} fill={APRON} />
+          <rect x={9} y={9} width={1} height={1} fill={APRON} />
+          <rect x={5} y={12} width={6} height={1} fill={SHIRT_WHITE} />
+        </g>
+      );
     default:
       return null;
   }
@@ -377,6 +466,39 @@ function TorsoProfile({
       ) : null}
       {clothing === 'jumper' ? <rect x={5} y={14} width={7} height={1} fill={shirtDark} /> : null}
       {clothing === 'skirt' ? <rect x={5} y={13} width={7} height={1} fill={shirtDark} /> : null}
+      {clothing === 'flannel' ? (
+        <>
+          <rect x={5} y={11} width={7} height={1} fill={shirtDark} />
+          <rect x={8} y={9} width={1} height={6} fill={shirtDark} />
+        </>
+      ) : null}
+      {clothing === 'overalls' ? (
+        <>
+          <rect x={5} y={11} width={7} height={4} fill={DENIM} />
+          <rect x={10} y={11} width={2} height={4} fill={DENIM_DARK} />
+          <rect x={6} y={9} width={1} height={2} fill={DENIM} />
+        </>
+      ) : null}
+      {clothing === 'labcoat' ? (
+        <>
+          <rect x={5} y={9} width={2} height={6} fill={COAT} />
+          <rect x={10} y={9} width={2} height={6} fill={COAT_DARK} />
+        </>
+      ) : null}
+      {clothing === 'turtleneck' ? (
+        <rect x={5} y={7} width={7} height={2} fill={shirtDark} />
+      ) : null}
+      {clothing === 'apron' ? <rect x={4} y={10} width={3} height={5} fill={APRON} /> : null}
+      {clothing === 'varsity' ? (
+        <rect x={5} y={12} width={7} height={1} fill={SHIRT_WHITE} />
+      ) : null}
+      {clothing === 'polo' ? <rect x={5} y={9} width={5} height={1} fill={SHIRT_WHITE} /> : null}
+      {clothing === 'hawaiian' ? (
+        <>
+          <rect x={6} y={10} width={1} height={1} fill={SHIRT_WHITE} />
+          <rect x={9} y={12} width={1} height={1} fill={FLAG_CLOTH} />
+        </>
+      ) : null}
       {/* One visible arm, swinging fore and aft rather than up and down. */}
       <g transform={`translate(${-swing} 0)`}>
         <rect
@@ -414,6 +536,30 @@ function HairFront({ hair }: { hair: AvatarConfig['hair'] }) {
       <g>
         <rect x={4} y={0} width={8} height={2} fill={HAIR} />
         <rect x={10} y={0} width={2} height={2} fill={HAIR_DARK} />
+      </g>
+    );
+  }
+  if (hair === 'spiky') {
+    // Points above the hairline rather than a rounded crown.
+    return (
+      <g>
+        <rect x={3} y={0} width={10} height={2} fill={HAIR} />
+        <rect x={11} y={0} width={2} height={2} fill={HAIR_DARK} />
+        <rect x={4} y={-2} width={1} height={2} fill={HAIR} />
+        <rect x={6} y={-3} width={1} height={3} fill={HAIR} />
+        <rect x={8} y={-2} width={1} height={2} fill={HAIR} />
+        <rect x={10} y={-3} width={1} height={3} fill={HAIR_DARK} />
+      </g>
+    );
+  }
+  if (hair === 'afro') {
+    // A tall round halo, wider than the head on both sides.
+    return (
+      <g>
+        <rect x={2} y={-3} width={12} height={5} fill={HAIR} />
+        <rect x={1} y={-1} width={1} height={4} fill={HAIR} />
+        <rect x={14} y={-1} width={1} height={4} fill={HAIR_DARK} />
+        <rect x={11} y={-3} width={3} height={5} fill={HAIR_DARK} />
       </g>
     );
   }
@@ -458,6 +604,40 @@ function HairFront({ hair }: { hair: AvatarConfig['hair'] }) {
           {/* the tail, gathered high on the right */}
           <rect x={13} y={2} width={2} height={2} fill={HAIR} />
           <rect x={14} y={4} width={2} height={4} fill={HAIR_DARK} />
+        </>
+      ) : null}
+      {hair === 'pigtails' ? (
+        <>
+          {/* a bunch either side, level with the ears */}
+          <rect x={1} y={2} width={2} height={4} fill={HAIR} />
+          <rect x={13} y={2} width={2} height={4} fill={HAIR_DARK} />
+          <rect x={3} y={3} width={1} height={2} fill={HAIR} />
+          <rect x={12} y={3} width={1} height={2} fill={HAIR_DARK} />
+        </>
+      ) : null}
+      {hair === 'bob' ? (
+        <>
+          {/* a blunt chin-length cut, straight sides */}
+          <rect x={2} y={2} width={2} height={5} fill={HAIR} />
+          <rect x={12} y={2} width={2} height={5} fill={HAIR_DARK} />
+          <rect x={2} y={6} width={12} height={1} fill={HAIR_DARK} />
+        </>
+      ) : null}
+      {hair === 'braid' ? (
+        <>
+          {/* a single plait down one side, drawn as linked segments */}
+          <rect x={3} y={3} width={1} height={3} fill={HAIR_DARK} />
+          <rect x={12} y={3} width={2} height={3} fill={HAIR} />
+          <rect x={13} y={6} width={2} height={2} fill={HAIR_DARK} />
+          <rect x={13} y={9} width={2} height={2} fill={HAIR} />
+        </>
+      ) : null}
+      {hair === 'topknot' ? (
+        <>
+          {/* shaved-ish sides with a knot pulled high */}
+          <rect x={7} y={-4} width={3} height={3} fill={HAIR} />
+          <rect x={9} y={-4} width={1} height={3} fill={HAIR_DARK} />
+          <rect x={7} y={-1} width={2} height={1} fill={HAIR_DARK} />
         </>
       ) : null}
     </g>
@@ -516,6 +696,35 @@ function HeadBack({ hair }: { hair: AvatarConfig['hair'] }) {
           {hair === 'long' ? <rect x={3} y={5} width={10} height={6} fill={HAIR} /> : null}
           {hair === 'bun' ? <rect x={6} y={-3} width={4} height={3} fill={HAIR} /> : null}
           {hair === 'ponytail' ? <rect x={6} y={6} width={4} height={6} fill={HAIR_DARK} /> : null}
+          {hair === 'pigtails' ? (
+            <>
+              <rect x={1} y={2} width={2} height={5} fill={HAIR} />
+              <rect x={13} y={2} width={2} height={5} fill={HAIR_DARK} />
+            </>
+          ) : null}
+          {hair === 'afro' ? (
+            <>
+              <rect x={2} y={-3} width={12} height={4} fill={HAIR} />
+              <rect x={11} y={-3} width={3} height={4} fill={HAIR_DARK} />
+            </>
+          ) : null}
+          {hair === 'spiky' ? (
+            <>
+              <rect x={4} y={-2} width={1} height={2} fill={HAIR} />
+              <rect x={6} y={-3} width={1} height={3} fill={HAIR} />
+              <rect x={8} y={-2} width={1} height={2} fill={HAIR} />
+              <rect x={10} y={-3} width={1} height={3} fill={HAIR_DARK} />
+            </>
+          ) : null}
+          {hair === 'bob' ? <rect x={3} y={5} width={10} height={3} fill={HAIR} /> : null}
+          {hair === 'braid' ? (
+            <>
+              <rect x={7} y={6} width={2} height={2} fill={HAIR} />
+              <rect x={7} y={9} width={2} height={2} fill={HAIR_DARK} />
+              <rect x={7} y={12} width={2} height={2} fill={HAIR} />
+            </>
+          ) : null}
+          {hair === 'topknot' ? <rect x={6} y={-4} width={4} height={3} fill={HAIR} /> : null}
         </>
       )}
       <rect x={5} y={7} width={6} height={1} fill={SKIN_DARK} />
@@ -554,6 +763,28 @@ function HeadProfile({ hair }: { hair: AvatarConfig['hair'] }) {
           {hair === 'long' ? <rect x={9} y={7} width={4} height={5} fill={HAIR} /> : null}
           {hair === 'bun' ? <rect x={11} y={-2} width={4} height={3} fill={HAIR} /> : null}
           {hair === 'ponytail' ? <rect x={12} y={4} width={3} height={4} fill={HAIR_DARK} /> : null}
+          {hair === 'pigtails' ? <rect x={11} y={3} width={3} height={4} fill={HAIR} /> : null}
+          {hair === 'afro' ? (
+            <>
+              <rect x={3} y={-3} width={11} height={4} fill={HAIR} />
+              <rect x={11} y={-3} width={3} height={7} fill={HAIR_DARK} />
+            </>
+          ) : null}
+          {hair === 'spiky' ? (
+            <>
+              <rect x={5} y={-2} width={1} height={2} fill={HAIR} />
+              <rect x={7} y={-3} width={1} height={3} fill={HAIR} />
+              <rect x={9} y={-2} width={1} height={2} fill={HAIR_DARK} />
+            </>
+          ) : null}
+          {hair === 'bob' ? <rect x={9} y={6} width={4} height={2} fill={HAIR} /> : null}
+          {hair === 'braid' ? (
+            <>
+              <rect x={11} y={7} width={2} height={2} fill={HAIR} />
+              <rect x={11} y={10} width={2} height={2} fill={HAIR_DARK} />
+            </>
+          ) : null}
+          {hair === 'topknot' ? <rect x={9} y={-3} width={3} height={3} fill={HAIR} /> : null}
         </>
       )}
       <rect x={5} y={5} width={1} height={1} fill={EYE} />

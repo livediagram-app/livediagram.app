@@ -71,12 +71,15 @@ export function describeVariant(
       // code block (spec/82) + checklist (spec/83) paint their own content,
       // so the wrapper carries no box border / background — just the
       // selection ring.
+      // A portal (spec/104) is in the same family: its ring IS the element, so
+      // a wrapper box behind it would frame the energy in a rectangle.
       if (
         isRailShape(element.shape) ||
         isRatingShape(element.shape) ||
         isChartShape(element.shape) ||
         isCodeBlockShape(element.shape) ||
-        isChecklistShape(element.shape)
+        isChecklistShape(element.shape) ||
+        element.shape === 'portal'
       ) {
         return { className: ring, style: { borderRadius: '4px', ...filterShadow } };
       }

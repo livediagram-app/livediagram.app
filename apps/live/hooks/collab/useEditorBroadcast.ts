@@ -66,6 +66,9 @@ type EditorBroadcastApi = {
   // Publish the local Avatar-mode character (spec/101) to the room, or
   // `null` to tell peers to drop it. Throttled like the cursor.
   broadcastAvatar: (avatar: AvatarPresence | null) => void;
+  // Ask one peer's character to step aside (spec/101): a unit direction and
+  // who it is aimed at. Never throttled — it is an event, not a sample.
+  broadcastAvatarPush: (targetId: string, dx: number, dy: number) => void;
   // The local trail buffer (canvas-coords + timestamps), consumed
   // by the LaserOverlay via the laserTrailRows aggregator in
   // editor-page.
@@ -167,5 +170,24 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
     });
   };
 
-  return { broadcastCursor, broadcastLaser, broadcastAvatar, localLaserTrail };
+  // One character shoving another (spec/101). A discrete event, so unlike the
+  // avatar snapshot it is never throttled or dropped — but it rides the same
+  // presence gate: no room, no push.
+  const broadcastAvatarPush = (targetId: string, dx: number, dy: number) => {
+    if (deps.cursorsHidden) return;
+    if (!deps.hydrated || !deps.diagramId || (!deps.diagramShareable && !deps.diagramTeamId))
+      return;
+    deps.roomRef.current?.send({
+      kind: 'op',
+      op: { kind: 'avatar-push', tabId: deps.activeId, targetId, dx, dy },
+    });
+  };
+
+  return {
+    broadcastCursor,
+    broadcastLaser,
+    broadcastAvatar,
+    broadcastAvatarPush,
+    localLaserTrail,
+  };
 }

@@ -114,7 +114,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onRetractVote,
     readOnly,
     canvasTool,
-    onEnterDoor,
+    onEnterPortal,
     remoteCursors,
     remoteSelectionsByElement,
     selectedId,
@@ -325,7 +325,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             onFollowLink={h.onFollowLink}
             onPressModeButton={h.onPressModeButton}
             activeMode={canvasTool}
-            onEnterDoor={onEnterDoor}
+            onEnterPortal={onEnterPortal}
             onOpenComments={h.onOpenComments}
             onOpenAction={h.onOpenAction}
             onOpenNote={h.onOpenNote}

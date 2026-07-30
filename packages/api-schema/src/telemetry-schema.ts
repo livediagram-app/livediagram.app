@@ -257,7 +257,7 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Page',
     'Checklist',
     'ModeButton',
-    'Door',
+    'Portal',
     'Pie-chart',
     'Bar-chart',
     'Line-chart',

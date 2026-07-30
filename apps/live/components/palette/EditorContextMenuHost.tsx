@@ -81,7 +81,10 @@ export function EditorContextMenuHost() {
     setCodeEditOpenForId,
     setChecklistItemsSelected,
     setButtonModeSelected,
-    setDoorTargetSelected,
+    setPortalTargetSelected,
+    setPortalNameSelected,
+    createLinkedPortal,
+    tabs,
     commitShapeColorPreset,
     previewShapeColorPreset,
     resetShapeStyleSelected,
@@ -220,7 +223,11 @@ export function EditorContextMenuHost() {
       onEditCodeBlock={setCodeEditOpenForId}
       onSetChecklistItems={setChecklistItemsSelected}
       onSetButtonMode={setButtonModeSelected}
-      onSetDoorTarget={setDoorTargetSelected}
+      onSetPortalTarget={setPortalTargetSelected}
+      onSetPortalName={setPortalNameSelected}
+      onCreateLinkedPortal={createLinkedPortal}
+      tabs={tabs}
+      activeTabId={activeTab.id}
       shapeColorPresets={shapeColorPresets(getTheme(activeTab.theme))}
       onApplyShapeColorPreset={commitShapeColorPreset}
       onPreviewShapeColorPreset={previewShapeColorPreset}

@@ -10,7 +10,7 @@
 //  2. It keeps `pointer-events: auto` even inside a pointer-inert diagram
 //     layer, which is what makes a button still work while someone is walking
 //     around in Avatar mode. A control bar of these is useless if the mode it
-//     hands out is a one-way door.
+//     hands out is a one-way portal.
 //  3. It carries the affordances a button needs to look pressable: the glyph
 //     over the label (the toolbar-button shape), a hover lift, and a press that
 //     scales and sinks. Hover is desktop-only — a touch device has no hover, and
@@ -18,6 +18,7 @@
 
 import type { SelectionMode } from '@livediagram/diagram';
 import { Tooltip } from '@/components/primitives/Tooltip';
+import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import {
   AvatarModeIcon,
   EraserIcon,
@@ -70,7 +71,7 @@ const MODE_BLURB: Record<SelectionMode, string> = {
 // The glyphs are 13px for the palette; on a button face they need to read from
 // across a room, so the wrapper scales the child SVG up. CSS beats the SVG's own
 // width/height attributes, and vectors stay crisp.
-const ICON_BOX = 'flex items-center justify-center [&>svg]:h-[26px] [&>svg]:w-[26px]';
+const ICON_BOX = 'flex items-center justify-center [&>svg]:h-[22px] [&>svg]:w-[22px]';
 
 export function ModeButtonFace({
   mode,
@@ -84,56 +85,91 @@ export function ModeButtonFace({
   // action — "Switch to Avatar" — so the face never goes stale when the button
   // is re-pointed, and an author who types their own copy still wins.
   label: string;
-  // The mode the viewer is in RIGHT NOW. A button offering the mode you are
-  // already in is disabled: pressing it would do nothing, and a control that
-  // does nothing should say so rather than look live.
+  // The mode the viewer is in RIGHT NOW. A button for the mode you are already
+  // in becomes the way back out — it reads "Leave Avatar" and presses you into
+  // the tool you came from — because on a read-only walkthrough it can be the
+  // only control on screen, and a one-way door strands the viewer.
   activeMode?: SelectionMode;
   textColor: string;
   // Undefined on a read-only surface that can't switch tools (an embed).
   onPress?: () => void;
 }) {
-  const text = label.trim() || `Switch to ${MODE_LABEL[mode]}`;
   const isCurrent = activeMode === mode;
+  const press = usePressWithoutDrag(onPress);
+  const kicker = isCurrent ? 'Leave' : 'Switch to';
+  const text = label.trim() || `${kicker} ${MODE_LABEL[mode]}`;
+  // The face: the glyph in a translucent chip (which is what reads as "this is
+  // a control" rather than "this is a box with a picture in it"), a small
+  // kicker, and the destination in the element's own text weight. A derived
+  // label splits into kicker + mode; an author's own label takes the whole
+  // width and skips the kicker.
+  const derived = !label.trim();
   const inner = (
     <>
-      <span className={ICON_BOX} style={{ color: textColor }} aria-hidden>
+      <span
+        className={`${ICON_BOX} h-9 w-9 shrink-0 rounded-full bg-black/[0.055] ring-1 ring-inset ring-black/[0.07] dark:bg-white/10 dark:ring-white/15`}
+        style={{ color: textColor }}
+        aria-hidden
+      >
         {MODE_ICON[mode]}
       </span>
-      <span className="w-full px-1.5 text-center leading-tight" style={{ color: textColor }}>
-        {text}
-      </span>
+      {derived ? (
+        <span className="flex flex-col items-center gap-0.5 leading-none">
+          <span
+            className="text-[9px] font-medium uppercase tracking-[0.08em] opacity-70"
+            style={{ color: textColor }}
+          >
+            {kicker}
+          </span>
+          <span className="text-[13px] font-semibold" style={{ color: textColor }}>
+            {MODE_LABEL[mode]}
+          </span>
+        </span>
+      ) : (
+        <span
+          className="w-full px-2 text-center text-[12px] font-semibold leading-tight"
+          style={{ color: textColor }}
+        >
+          {text}
+        </span>
+      )}
     </>
   );
   // Layout is shared by the live and inert renders so a read-only embed looks
-  // identical, minus the interaction.
-  const layout = 'flex h-full w-full flex-col items-center justify-center gap-1.5 py-1';
+  // identical, minus the interaction. Deliberately UNTINTED: the element's own
+  // fill (a plain surface by default) is the button, and a gradient wash over
+  // it only muddied whatever colour the author picked. What sells "raised" is
+  // the hairline highlight along the top edge, which works on any fill.
+  const layout =
+    'flex h-full w-full flex-col items-center justify-center gap-2 rounded-[inherit] py-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]';
   if (!onPress) {
     return <div className={`pointer-events-none ${layout}`}>{inner}</div>;
   }
-  // Already in this mode: the face dims and stops taking clicks, and the
-  // tooltip says why rather than leaving the user to wonder.
-  if (isCurrent) {
-    return (
-      <Tooltip title={`Already in ${MODE_LABEL[mode]}`} description={MODE_BLURB[mode]}>
-        <div aria-disabled className={`pointer-events-auto cursor-default opacity-60 ${layout}`}>
-          {inner}
-        </div>
-      </Tooltip>
-    );
-  }
+  // Already in this mode: the button becomes the way back out — pressing it
+  // returns you to the tool you came from — so it stays live and says "Leave"
+  // rather than pretending it can switch you somewhere you already are.
   return (
-    <Tooltip title={`Switch to ${MODE_LABEL[mode]}`} description={MODE_BLURB[mode]}>
+    <Tooltip
+      block
+      className="h-full w-full"
+      title={isCurrent ? `Leave ${MODE_LABEL[mode]}` : `Switch to ${MODE_LABEL[mode]}`}
+      description={
+        isCurrent ? 'Takes you back to the tool you were using before.' : MODE_BLURB[mode]
+      }
+    >
       <button
         type="button"
         // The label is already the accessible name; naming the action as well
         // keeps it unambiguous for a screen reader.
-        aria-label={`${text} — switch to ${MODE_LABEL[mode]} mode`}
-        onClick={(e) => {
-          // Don't let the click fall through to the canvas (which would walk an
-          // avatar to the button, or deselect).
-          e.stopPropagation();
-          onPress();
-        }}
+        aria-label={
+          isCurrent
+            ? `${text} — back to your previous mode`
+            : `${text} — switch to ${MODE_LABEL[mode]} mode`
+        }
+        // Press on a click, silent on a drag: the button is an element too, so
+        // dragging it must move it without also switching everyone's mode.
+        // See usePressWithoutDrag.
+        {...press}
         // `pointer-events-auto` survives the inert diagram layer of Avatar /
         // Spotlight / Isometric mode; see the file header. The hover / active
         // treatment is what sells "pressable": a brightening lift on hover

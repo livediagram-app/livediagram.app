@@ -1,5 +1,7 @@
 import type { PointerEvent as ReactPointerEvent, MouseEvent as ReactMouseEvent } from 'react';
 import { pointerToCanvas } from '@/lib/canvas';
+import { AVATAR_SHOVE_REACH, hitTestAvatar } from '@/lib/avatar-walk';
+import { avatarScale, parseAvatarConfig } from '@/lib/avatar-config';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import type { useCanvasPanAndMarquee } from '@/hooks/canvas/useCanvasPanAndMarquee';
 import type { useIsometricCamera } from '@/hooks/canvas/useIsometricCamera';
@@ -30,6 +32,8 @@ export function useCanvasSurfaceGestures({
   setMarquee,
   spotlight,
   avatar,
+  peerAvatars,
+  onPushPeer,
   isoCamera,
   canvasLongPress,
   beginPendingDrawGesture,
@@ -48,6 +52,10 @@ export function useCanvasSurfaceGestures({
   setMarquee: PanAndMarquee['setMarquee'];
   spotlight: ReturnType<typeof useSpotlight>;
   avatar: ReturnType<typeof useAvatarWalk>;
+  // Peers' characters on this tab (spec/101), so a click can land on one.
+  peerAvatars: CanvasProps['remoteAvatars'];
+  // Shove a peer: fired once our character has walked up to theirs.
+  onPushPeer?: (targetId: string, dx: number, dy: number) => void;
   isoCamera: ReturnType<typeof useIsometricCamera>;
   canvasLongPress: ReturnType<typeof useLongPress>;
   // Starts the queued draw-to-size / freehand gesture; true when it
@@ -57,6 +65,33 @@ export function useCanvasSurfaceGestures({
   onCanvasContextMenu?: (x: number, y: number) => void;
   onCanvasDoubleClick: (x: number, y: number) => void;
 }) {
+  // Which peer's character a click landed on, plus where to stand to shove it
+  // and which way the shove goes. Null when the click hit bare canvas.
+  const peerAvatarAt = (point: { x: number; y: number }) => {
+    const here = avatar.pos;
+    for (const peer of peerAvatars) {
+      const feet = { x: peer.avatar.x, y: peer.avatar.y };
+      const scale = avatarScale(parseAvatarConfig(peer.avatar.config).size);
+      if (!hitTestAvatar(feet, point, peer.avatar.lift, scale)) continue;
+      // Direction of the shove: from us to them, so we push them away. With no
+      // character of our own yet, push straight down — any direction beats none.
+      const dx = here ? feet.x - here.x : 0;
+      const dy = here ? feet.y - here.y : 1;
+      const len = Math.hypot(dx, dy) || 1;
+      return {
+        id: peer.id,
+        dx: dx / len,
+        dy: dy / len,
+        // Stop just short of them rather than walking through them.
+        standAt: {
+          x: feet.x - (dx / len) * AVATAR_SHOVE_REACH,
+          y: feet.y - (dy / len) * AVATAR_SHOVE_REACH,
+        },
+      };
+    }
+    return null;
+  };
+
   const focusCanvas = () => {
     const node = mainRef && 'current' in mainRef ? mainRef.current : null;
     node?.focus({ preventScroll: true });
@@ -146,8 +181,16 @@ export function useCanvasSurfaceGestures({
       // Left-click walks there; right-click ON the character changes who it
       // is (male / female), and a right-click anywhere else is swallowed —
       // the context menu stays shut in this mode either way.
-      if (e.button === 0) avatar.walkTo(point);
-      else if (e.button === 2) avatar.toggleLookAt(point);
+      if (e.button === 0) {
+        // Clicking someone ELSE's character walks over and pushes them
+        // (spec/101), rather than walking to the spot they're standing on.
+        const peer = peerAvatarAt(point);
+        if (peer) {
+          avatar.walkTo(peer.standAt, () => onPushPeer?.(peer.id, peer.dx, peer.dy));
+        } else {
+          avatar.walkTo(point);
+        }
+      } else if (e.button === 2) avatar.toggleLookAt(point);
       return;
     }
     // Eraser tool (spec/09): a primary-button press deletes whatever

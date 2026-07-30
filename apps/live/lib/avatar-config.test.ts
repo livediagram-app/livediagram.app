@@ -100,6 +100,14 @@ describe('the option catalogues', () => {
       'suit',
       'dress',
       'skirt',
+      'polo',
+      'flannel',
+      'overalls',
+      'labcoat',
+      'hawaiian',
+      'varsity',
+      'turtleneck',
+      'apron',
     ]);
     expect(AVATAR_HAIR.map((o) => o.id)).toEqual([
       'short',
@@ -110,11 +118,17 @@ describe('the option catalogues', () => {
       'bun',
       'mohawk',
       'bald',
+      'pigtails',
+      'afro',
+      'spiky',
+      'bob',
+      'braid',
+      'topknot',
     ]);
   });
 
   it('marks the outfits that change the silhouette', () => {
     expect([...BARE_LEG_CLOTHING].sort()).toEqual(['dress', 'skirt']);
-    expect([...BARE_ARM_CLOTHING]).toEqual(['vest']);
+    expect([...BARE_ARM_CLOTHING].sort()).toEqual(['hawaiian', 'vest']);
   });
 });

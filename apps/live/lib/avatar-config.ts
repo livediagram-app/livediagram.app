@@ -22,7 +22,15 @@ export type AvatarClothing =
   | 'vest'
   | 'suit'
   | 'dress'
-  | 'skirt';
+  | 'skirt'
+  | 'polo'
+  | 'flannel'
+  | 'overalls'
+  | 'labcoat'
+  | 'hawaiian'
+  | 'varsity'
+  | 'turtleneck'
+  | 'apron';
 export type AvatarHair =
   | 'short'
   | 'buzz'
@@ -31,7 +39,13 @@ export type AvatarHair =
   | 'ponytail'
   | 'bun'
   | 'mohawk'
-  | 'bald';
+  | 'bald'
+  | 'pigtails'
+  | 'afro'
+  | 'spiky'
+  | 'bob'
+  | 'braid'
+  | 'topknot';
 export type AvatarSize = 'small' | 'regular' | 'tall';
 
 export type AvatarConfig = {
@@ -69,6 +83,14 @@ export const AVATAR_CLOTHING: readonly { id: AvatarClothing; label: string }[] =
   { id: 'suit', label: 'Suit' },
   { id: 'dress', label: 'Dress' },
   { id: 'skirt', label: 'Skirt' },
+  { id: 'polo', label: 'Polo' },
+  { id: 'flannel', label: 'Flannel' },
+  { id: 'overalls', label: 'Overalls' },
+  { id: 'labcoat', label: 'Lab coat' },
+  { id: 'hawaiian', label: 'Hawaiian' },
+  { id: 'varsity', label: 'Varsity' },
+  { id: 'turtleneck', label: 'Turtleneck' },
+  { id: 'apron', label: 'Apron' },
 ];
 
 export const AVATAR_HAIR: readonly { id: AvatarHair; label: string }[] = [
@@ -80,6 +102,12 @@ export const AVATAR_HAIR: readonly { id: AvatarHair; label: string }[] = [
   { id: 'bun', label: 'Bun' },
   { id: 'mohawk', label: 'Mohawk' },
   { id: 'bald', label: 'Bald' },
+  { id: 'pigtails', label: 'Pigtails' },
+  { id: 'afro', label: 'Afro' },
+  { id: 'spiky', label: 'Spiky' },
+  { id: 'bob', label: 'Bob' },
+  { id: 'braid', label: 'Braid' },
+  { id: 'topknot', label: 'Top knot' },
 ];
 
 // Which outfits swap trousers for bare legs, and which leave the arms bare.
@@ -89,7 +117,10 @@ export const BARE_LEG_CLOTHING: ReadonlySet<AvatarClothing> = new Set<AvatarClot
   'dress',
   'skirt',
 ]);
-export const BARE_ARM_CLOTHING: ReadonlySet<AvatarClothing> = new Set<AvatarClothing>(['vest']);
+export const BARE_ARM_CLOTHING: ReadonlySet<AvatarClothing> = new Set<AvatarClothing>([
+  'vest',
+  'hawaiian',
+]);
 
 export const AVATAR_SIZES: readonly { id: AvatarSize; label: string }[] = [
   { id: 'small', label: 'Small' },

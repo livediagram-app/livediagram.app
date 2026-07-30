@@ -81,6 +81,9 @@ const PRESENCE_OP_KINDS = new Set([
   'tab-focus',
   'poll-answer',
   'avatar',
+  // A shove (spec/101) moves nothing on the server and nothing in the
+  // document — it asks one peer to step aside. Same trust level as `avatar`.
+  'avatar-push',
 ]);
 
 // One entry in the reconnect catch-up log: a mutation op plus the sequence

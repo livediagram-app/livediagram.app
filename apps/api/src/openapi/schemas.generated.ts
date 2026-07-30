@@ -983,21 +983,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
-          "door": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
           "frame": {
             "additionalProperties": false,
             "properties": {
@@ -1149,6 +1134,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "object"
           },
           "pie-chart": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "portal": {
             "additionalProperties": false,
             "properties": {
               "fill": {
@@ -2594,9 +2594,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "commentThread": {
         "$ref": "#/components/schemas/CommentThread"
       },
-      "doorTarget": {
-        "$ref": "#/components/schemas/ElementId"
-      },
       "fillColor": {
         "type": "string"
       },
@@ -2692,6 +2689,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "$ref": "#/components/schemas/PieSlice"
         },
         "type": "array"
+      },
+      "portalTarget": {
+        "$ref": "#/components/schemas/ElementId"
       },
       "progress": {
         "type": "number"
@@ -2813,7 +2813,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "document",
       "page",
       "mode-button",
-      "door",
+      "portal",
       "stadium",
       "actor",
       "cloud",

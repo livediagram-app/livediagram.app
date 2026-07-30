@@ -139,8 +139,16 @@ export type EditorContextMenuProps = {
   onSetChecklistItems: (items: ChecklistItem[]) => void;
   // Mode button (spec/103): which selection mode pressing it hands out.
   onSetButtonMode: (mode: import('@livediagram/diagram').SelectionMode) => void;
-  // Door (spec/104): which door this one leads to; null unpairs it.
-  onSetDoorTarget: (targetId: string | null) => void;
+  // Portal (spec/104): which portal this one leads to; null unpairs it.
+  onSetPortalTarget: (targetId: string | null) => void;
+  // Portal (spec/104): its name (menu-only — the canvas ring stays clean), and
+  // "create the far end for me" for the common case where it doesn't exist yet.
+  onSetPortalName: (name: string) => void;
+  onCreateLinkedPortal: () => void;
+  // Every tab, because a portal link can cross tabs, plus which one is active
+  // so the picker can mark the off-tab candidates.
+  tabs: import('@livediagram/diagram').Tab[];
+  activeTabId: string;
   // Style presets (spec/48): one-click colour + border looks for the selected
   // shape, plus a reset back to the theme default. `shapeColorPresets` are
   // theme-derived (see shapeColorPresets in lib/themes).

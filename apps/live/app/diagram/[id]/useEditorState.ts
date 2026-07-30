@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   isBoxed,
   stampNewElementLayers,
@@ -12,6 +12,7 @@ import {
 
 import { useCanvasEraser } from '@/hooks/canvas/useCanvasEraser';
 import { useCanvasTool } from '@/hooks/canvas/useCanvasTool';
+import { usePortalSetters } from '@/hooks/canvas/usePortalSetters';
 import type { CanvasTool } from '@/components/palette/CommandPalette';
 import { useCellLinkPicker } from '@/hooks/canvas/useCellLinkPicker';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
@@ -253,9 +254,10 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // Canvas tool (Pan / Select / Laser). See useCanvasTool: the raw
   // setter serves internal auto-switches, the tracked selectCanvasTool
   // serves the user-facing pickers.
-  const { canvasTool, setCanvasTool, selectCanvasTool, exitAvatarTool } = useCanvasTool({
-    defaultPan: embedMode,
-  });
+  const { canvasTool, setCanvasTool, selectCanvasTool, exitAvatarTool, toolBeforeCurrent } =
+    useCanvasTool({
+      defaultPan: embedMode,
+    });
   // Persistent Format painter tool (spec/09): the mode-boundary reset +
   // the exit that restores the pre-Format tool. See useFormatTool.
   const { formatToolActive, exitFormatTool } = useFormatTool({
@@ -321,6 +323,13 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
       setMultiSelectedIds(new Set());
     }
     selectCanvasTool(tool);
+  };
+  // Pressing a Selection Mode button (spec/103). Pressing the button for the
+  // mode you are ALREADY in takes you back where you came from: on a read-only
+  // walkthrough the button may be the only control on screen, so it has to work
+  // in both directions. Everything else is an ordinary pick, guards included.
+  const pressModeButton = (mode: CanvasTool) => {
+    pickCanvasTool(canvasTool === mode ? toolBeforeCurrent() : mode);
   };
   // Local-session participant. Initialised to a stable placeholder so the
   // SSG output and the first client paint agree (Math.random() in a lazy
@@ -682,6 +691,15 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   });
   // Realtime room: WebSocket per shared diagram (presence + ops). See
   // useRoomConnection.
+  // Avatar mode (spec/101): a shove somebody sent us, bumped by a sequence
+  // number so two identical pushes both land. Canvas replays it onto our own
+  // character — a push is a request to its owner, never a remote write.
+  const [avatarShove, setAvatarShove] = useState<{ dx: number; dy: number; seq: number } | null>(
+    null,
+  );
+  const receiveAvatarPush = useCallback((dx: number, dy: number) => {
+    setAvatarShove((prev) => ({ dx, dy, seq: (prev?.seq ?? 0) + 1 }));
+  }, []);
   useRoomConnection({
     hydrated,
     diagramId,
@@ -704,6 +722,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setChangeLog,
     setDiagramName,
     setSelfParticipant,
+    receiveAvatarPush,
     receivePoll: livePoll.receivePoll,
     receivePollAnswer: livePoll.receiveAnswer,
     receivePollEnd: livePoll.receivePollEnd,
@@ -774,16 +793,17 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // laser-trail buffer live in useEditorBroadcast. Same throttle,
   // same gates, same trail-clears-on-tool-change behaviour as
   // before, just out of the page file.
-  const { broadcastCursor, broadcastLaser, broadcastAvatar, localLaserTrail } = useEditorBroadcast({
-    roomRef,
-    hydrated,
-    diagramId,
-    diagramShareable,
-    diagramTeamId,
-    activeId,
-    canvasTool,
-    cursorsHidden: voteCursorsHidden,
-  });
+  const { broadcastCursor, broadcastLaser, broadcastAvatar, broadcastAvatarPush, localLaserTrail } =
+    useEditorBroadcast({
+      roomRef,
+      hydrated,
+      diagramId,
+      diagramShareable,
+      diagramTeamId,
+      activeId,
+      canvasTool,
+      cursorsHidden: voteCursorsHidden,
+    });
   // Viewport state (pan offset, zoom, the canvas wrapper ref the
   // measurements read through, and a parallel zoomRef the drag hook
   // reads each pointer-move) lives in useEditorViewport. The hook
@@ -1649,7 +1669,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     toggleChecklistItem,
     setChecklistItemsSelected,
     setButtonModeSelected,
-    setDoorTargetSelected,
     setRatingSelected,
     setRatingAnimSelected,
     setRatingAnimSpeedSelected,
@@ -1689,6 +1708,18 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     tickTabs,
     markCheckpoint,
     scheduleElementChangeLog,
+  });
+
+  // Portal links (spec/104) live off the style hook: a link can point at a
+  // portal on ANOTHER tab, so these setters need the whole tab list and a
+  // tabs-wide commit rather than the active tab's element mapper.
+  const { setPortalTargetSelected, setPortalNameSelected, createLinkedPortal } = usePortalSetters({
+    currentSelectionIds,
+    contextTargetId: contextMenu?.mode === 'element' ? contextMenu.elementId : null,
+    commitTabs,
+    tabs,
+    activeId,
+    setSelectedId,
   });
 
   // Hover-to-preview for the style-preset tiles (spec/48): hovering a preset on
@@ -2140,6 +2171,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     beginGroup,
     bringSelectedToFront,
     broadcastAvatar,
+    broadcastAvatarPush,
+    avatarShove,
     broadcastCursor,
     broadcastLaser,
     canRedo,
@@ -2351,7 +2384,9 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     toggleChecklistItem,
     setChecklistItemsSelected,
     setButtonModeSelected,
-    setDoorTargetSelected,
+    setPortalTargetSelected,
+    setPortalNameSelected,
+    createLinkedPortal,
     setRatingSelected,
     setRatingAnimSelected,
     setRatingAnimSpeedSelected,
@@ -2379,6 +2414,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setIconAnimationRepeatSelected,
     setFlowRepeatSelected,
     setCanvasTool: pickCanvasTool,
+    pressModeButton,
     setContextMenu,
     setDiagramSharePassword,
     setFillColorSelected,

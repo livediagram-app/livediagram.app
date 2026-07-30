@@ -1,5 +1,6 @@
 import {
   isBoxed,
+  isFixedSizeShape,
   type Anchor,
   type BoxedElement,
   type Element,
@@ -47,6 +48,14 @@ export function inheritedSizeFor(
   // selection's dimensions, so a marker added while a big shape is selected
   // doesn't balloon. It stays its intrinsic 44×44.
   if (base.type === 'annotation') return { width: base.width, height: base.height };
+  // Same for the kinds whose silhouette IS the element: a portal's ring
+  // (spec/104) and the fixed-size Selection Mode button (spec/103). Inheriting
+  // whatever box happened to be selected — a wide banner, a thin rail — hands
+  // you something that doesn't read as the thing you asked for, and for a
+  // fixed-size control it is simply not resizable afterwards.
+  if (base.type === 'shape' && (base.shape === 'portal' || isFixedSizeShape(base.shape))) {
+    return { width: base.width, height: base.height };
+  }
   const inherit = selected && isBoxed(selected) ? selected : null;
   let width = inherit?.width ?? base.width;
   let height = inherit?.height ?? base.height;

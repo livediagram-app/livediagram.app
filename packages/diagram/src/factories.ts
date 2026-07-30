@@ -112,8 +112,8 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // label — the shape a toolbar button has, rather than a wide pill that read
   // as just another labelled box.
   'mode-button': { width: 104, height: 96 },
-  // Door (spec/104): door-shaped — taller than it is wide, like a door.
-  door: { width: 72, height: 112 },
+  // Portal (spec/104): portal-shaped — taller than it is wide, like a portal.
+  portal: { width: 72, height: 112 },
 };
 
 // New boxed elements default to Medium text size per spec 09 ("Text size").
@@ -143,38 +143,44 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       mode: DEFAULT_BUTTON_MODE,
       // A button has to look pressable BEFORE anyone styles it, and the
       // theme-derived shape fill made it read as one more labelled box on the
-      // canvas. So it ships with a real button's colours — a solid brand fill,
-      // white text, a soft lift off the surface (spec/86) — as ELEMENT colours,
-      // so they behave like any user-picked colour and can still be changed
-      // from the menu. deriveNewBoxedColours skips the kind for the same
-      // reason it skips a page.
-      fillColor: '#0ea5e9',
-      strokeColor: '#0284c7',
-      textColor: '#ffffff',
+      // canvas. So it ships with a real UI button's colours: a light surface, a
+      // hairline border, dark text, and a soft lift off the canvas (spec/86).
+      // Deliberately NOT a saturated brand block — a solid slab of colour on
+      // the canvas reads as a shape someone drew, not as a control, and it
+      // fought every diagram's own palette. These are ELEMENT colours, so they
+      // behave like any user-picked colour and are changeable from the menu;
+      // deriveNewBoxedColours skips the kind for the same reason it skips a
+      // page.
+      fillColor: '#ffffff',
+      strokeColor: '#cbd5e1',
+      textColor: '#0f172a',
       shadow: { offsetX: 0, offsetY: 2, blur: 6, opacity: 0.24 },
       borderRadius: 'lg',
       textSize: 'sm',
       textBold: true,
     };
   }
-  // Door (spec/104): ships unpaired (there is nothing to pair with until a
-  // second door exists) with a label the author replaces. Warm timber colours
-  // rather than the theme's node fill, because a door is scenery you walk
-  // through, not a box in the diagram.
-  if (kind === 'door') {
+  // Portal (spec/104): ships unlinked (there is nothing to link to until a
+  // second portal exists) with a label the author replaces. It paints its own
+  // ring, so the box behind it is transparent, and `strokeColor` is the colour
+  // of the energy rather than of a border — electric blue by default, the
+  // colour everyone already reads as "portal", and recolourable like any other
+  // element (an orange pair is the obvious second half).
+  if (kind === 'portal') {
     return {
       ...base,
-      label: 'Door',
-      fillColor: '#b45309',
-      strokeColor: '#78350f',
+      // Deliberately UNLABELLED: an unnamed portal is named positionally
+      // ("Portal 1", "Portal 2") wherever it's shown, so a diagram full of them
+      // is navigable without anyone typing a name. A label the author types
+      // wins over the number. See portalName in apps/live/lib/portals.ts.
+      fillColor: 'transparent',
+      strokeColor: '#38bdf8',
       textColor: '#ffffff',
-      borderRadius: 'md',
       textSize: 'sm',
       textBold: true,
-      textAlignY: 'bottom',
-      // A door has a natural shape: stretched wide it stops reading as one at
+      // A portal has a natural shape: stretched wide it stops reading as one at
       // all (the panel and knob distort with the box). Locking the aspect keeps
-      // drag-to-draw and every later resize door-shaped; the user can still
+      // drag-to-draw and every later resize portal-shaped; the user can still
       // unlock it from the menu like any other element.
       aspectLocked: true,
     };
