@@ -24,6 +24,7 @@ import {
   jumpStep,
   stepTowards,
   waveFrame,
+  AVATAR_HEARTBEAT_MS,
   AVATAR_JUMP_VELOCITY,
   AVATAR_SHOVE_DISTANCE,
   AVATAR_SPEED,
@@ -141,6 +142,10 @@ export function useAvatarWalk({
   // Live costume for the loop's presence packets + the hit-test scale.
   const configRef = useRef(config);
   configRef.current = config;
+  // Facing, for the heartbeat below: a ref so the timer's dep list stays fixed
+  // (a dep array that changes length is a React error) and it never re-arms.
+  const facingRef = useRef(facing);
+  facingRef.current = facing;
   // NOTE: posRef is deliberately NOT re-synced from `pos` on every render. The
   // LOOP owns the position; `pos` is a copy for rendering. Assigning
   // `posRef.current = pos` here used to walk the character BACKWARDS whenever
@@ -338,17 +343,16 @@ export function useAvatarWalk({
         // key listeners clear the target, so only one is ever live.
         const held = arrowDirection(heldRef.current);
         const travel = AVATAR_SPEED * dt;
+        const step = held ? null : stepTowards(from, targetRef.current, dt);
         const next = held
           ? { x: from.x + held.x * travel, y: from.y + held.y * travel }
-          : stepTowards(from, targetRef.current, dt).pos;
+          : step!.pos;
         // Target reached — drop it so the avatar goes idle rather than
-        // re-arriving on every subsequent frame.
-        if (
-          !held &&
-          targetRef.current &&
-          next.x === targetRef.current.x &&
-          next.y === targetRef.current.y
-        ) {
+        // re-arriving on every subsequent frame, and fire whatever was waiting
+        // on the arrival (the shove, spec/101). `stepTowards` already decides
+        // this, including the within-a-hair case; re-deriving it here from the
+        // coordinates was a second, subtly different definition of "arrived".
+        if (!held && targetRef.current && step?.arrived) {
           targetRef.current = null;
           const arrived = arriveRef.current;
           arriveRef.current = null;
@@ -490,6 +494,33 @@ export function useAvatarWalk({
   // Which element the avatar is standing on (the "you are here" ring). Cheap
   // rectangle scan, and only while the mode is on.
   const standingOnId = active && pos ? elementUnderFeet(elements, pos) : null;
+
+  // Standing heartbeat. The publish above only fires on a CHANGE, so a
+  // character that arrived before you did was invisible to you until it next
+  // moved — the worst case being a presenter standing still while they talk.
+  // A slow republish (every few seconds, only while idle) fixes that for the
+  // price of one packet per peer per interval, well under the ~30 Hz the walk
+  // itself costs.
+  useEffect(() => {
+    if (!active) return;
+    const beat = window.setInterval(() => {
+      const at = posRef.current;
+      // Only while genuinely idle: a walk publishes at its own rate, and a
+      // reaction / jump is a performance the peer is already following.
+      if (!at || targetRef.current || reactionRef.current || liftRef.current > 0) return;
+      presenceRef.current?.({
+        x: at.x,
+        y: at.y,
+        facing: facingRef.current,
+        config: configRef.current,
+        walking: false,
+        stepFrame: 0,
+        lift: 0,
+        wave: null,
+      });
+    }, AVATAR_HEARTBEAT_MS);
+    return () => window.clearInterval(beat);
+  }, [active]);
 
   // Portals (spec/104): walking a character ONTO a portal travels through it. Fired
   // from an effect on ARRIVAL (the element under the feet changed) rather than

@@ -1,19 +1,21 @@
 import { memo, useRef, useState } from 'react';
 import {
-  activeCommentCount,
-  isOpenAction,
   BORDER_DASH_ARRAY,
   BORDER_RADIUS_PX,
   BORDER_STROKE_PX,
   DEFAULT_BORDER_STROKE,
   DEFAULT_BORDER_STYLE,
+  MODE_BUTTON_SKIN,
+  PADDING_PX,
+  activeCommentCount,
   defaultFillColor,
   defaultPadding,
   defaultStrokeColor,
   defaultTextAlign,
   defaultTextColor,
+  isLegacyModeButtonSkin,
+  isOpenAction,
   isSelfDrawingShape,
-  PADDING_PX,
   type ShapeMarker,
   type TextSize,
 } from '@livediagram/diagram';
@@ -136,7 +138,11 @@ function BoxedElementViewImpl({
   const defaultAlign = defaultTextAlign(element);
   const alignX = element.textAlignX ?? defaultAlign.x;
   const alignY = element.textAlignY ?? defaultAlign.y;
-  const textColor = element.textColor ?? defaultTextColor(element);
+  // A pre-redesign Selection Mode button (spec/103) wore white-on-blue; it now
+  // renders in today's skin, text included, so the two halves can't disagree.
+  const textColor = isLegacyModeButtonSkin(element)
+    ? MODE_BUTTON_SKIN.text
+    : (element.textColor ?? defaultTextColor(element));
 
   // Annotation marker (spec/38): a fixed-size note circle. Hovering it
   // floats its note above everything; clicking it (handled in the drag

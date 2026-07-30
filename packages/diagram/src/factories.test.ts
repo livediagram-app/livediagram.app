@@ -1,3 +1,4 @@
+import { isLegacyModeButtonSkin, MODE_BUTTON_SKIN } from './selection-mode';
 import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_BUTTON_MODE,
@@ -631,6 +632,32 @@ describe('createShape (mode button, spec/103)', () => {
     expect(button.width).toBeGreaterThanOrEqual(72);
     // Roughly square — an icon over a label, not a wide pill.
     expect(Math.abs(button.width - button.height)).toBeLessThan(40);
+  });
+
+  it('treats the pre-redesign button skin as unset, not as a colour choice', () => {
+    const fresh = createShape('mode-button', 0, 0);
+    // Today's default is the light surface, and it must NOT be mistaken for the
+    // legacy one (or every new button would be re-skinned forever).
+    expect(fresh.fillColor).toBe(MODE_BUTTON_SKIN.fill);
+    expect(isLegacyModeButtonSkin(fresh)).toBe(false);
+    // A button saved before the redesign wore white-on-brand-blue.
+    expect(
+      isLegacyModeButtonSkin({
+        shape: 'mode-button',
+        fillColor: '#0ea5e9',
+        strokeColor: '#0284c7',
+        textColor: '#ffffff',
+      }),
+    ).toBe(true);
+    // A deliberate blue on a modern button (dark text) is a real choice.
+    expect(
+      isLegacyModeButtonSkin({
+        shape: 'mode-button',
+        fillColor: '#0ea5e9',
+        strokeColor: '#0284c7',
+        textColor: '#0f172a',
+      }),
+    ).toBe(false);
   });
 
   it('makes a portal portal-shaped and unpaired (spec/104)', () => {

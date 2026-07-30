@@ -3,7 +3,7 @@
 // read through the index ⇄ factories cycle TDZ-crashes plain-Node ESM
 // consumers. `isBoxed` stays on './index' — it's only called inside
 // function bodies, after the cycle has settled.
-import { DEFAULT_BUTTON_MODE } from './selection-mode';
+import { DEFAULT_BUTTON_MODE, MODE_BUTTON_SKIN } from './selection-mode';
 import {
   CHECKLIST_DEFAULT_ITEMS,
   LINE_DEFAULT_CATEGORIES,
@@ -151,9 +151,9 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       // behave like any user-picked colour and are changeable from the menu;
       // deriveNewBoxedColours skips the kind for the same reason it skips a
       // page.
-      fillColor: '#ffffff',
-      strokeColor: '#cbd5e1',
-      textColor: '#0f172a',
+      fillColor: MODE_BUTTON_SKIN.fill,
+      strokeColor: MODE_BUTTON_SKIN.stroke,
+      textColor: MODE_BUTTON_SKIN.text,
       shadow: { offsetX: 0, offsetY: 2, blur: 6, opacity: 0.24 },
       borderRadius: 'lg',
       textSize: 'sm',

@@ -17,6 +17,12 @@ export const AVATAR_SPAWN_GAP = 12;
 // unmistakably a push, short enough that nobody gets flung across the diagram.
 export const AVATAR_SHOVE_DISTANCE = 70;
 
+// How often a STANDING character republishes itself to the room (spec/101).
+// Presence is published on change, so without this a motionless character is
+// invisible to anyone who joins after it stopped moving. Slow on purpose: it
+// only has to beat "how long before the newcomer wonders where you are".
+export const AVATAR_HEARTBEAT_MS = 3000;
+
 // How close the pusher stands before shoving: just outside the other
 // character, so the two meet rather than overlap.
 export const AVATAR_SHOVE_REACH = 46;
@@ -148,6 +154,42 @@ export function hitTestAvatar(feet: AvatarPoint, point: AvatarPoint, lift = 0, s
     point.y <= feet.y - lift &&
     point.y >= feet.y - lift - height
   );
+}
+
+// Clicking a PEER's character walks over and shoves it (spec/101). Given the
+// click point, our own feet, and the peers on screen, this returns who was hit,
+// where to stand to reach them, and which way the shove goes — or null when the
+// click landed on bare canvas.
+//
+// Pure so the whole decision is testable: the alternative (working it out
+// inside the pointer handler) can only be checked by driving two browsers.
+export function peerPushTarget(
+  peers: { id: string; feet: AvatarPoint; lift?: number; scale?: number }[],
+  point: AvatarPoint,
+  here: AvatarPoint | null,
+): { id: string; dx: number; dy: number; standAt: AvatarPoint } | null {
+  for (const peer of peers) {
+    if (!hitTestAvatar(peer.feet, point, peer.lift ?? 0, peer.scale ?? 1)) continue;
+    // The shove points from us to them, so they travel away from us. Standing
+    // on the same spot (or having no character yet) pushes straight down —
+    // any direction beats none.
+    const rawX = here ? peer.feet.x - here.x : 0;
+    const rawY = here ? peer.feet.y - here.y : 1;
+    const len = Math.hypot(rawX, rawY);
+    const dx = len === 0 ? 0 : rawX / len;
+    const dy = len === 0 ? 1 : rawY / len;
+    return {
+      id: peer.id,
+      dx,
+      dy,
+      // Stop just short of them rather than walking through them.
+      standAt: {
+        x: peer.feet.x - dx * AVATAR_SHOVE_REACH,
+        y: peer.feet.y - dy * AVATAR_SHOVE_REACH,
+      },
+    };
+  }
+  return null;
 }
 
 // One frame of walking toward `target`, moving at most `speed * dt`.

@@ -11,6 +11,7 @@ import {
   followCorrection,
   hitTestAvatar,
   jumpStep,
+  peerPushTarget,
   stepTowards,
   waveFrame,
 } from './avatar-walk';
@@ -200,5 +201,53 @@ describe('elementUnderFeet', () => {
   it('ignores frames, which would otherwise ring on every step', () => {
     expect(elementUnderFeet([frame], { x: 400, y: 400 })).toBeNull();
     expect(elementUnderFeet([frame, box], { x: 150, y: 150 })).toBe('a');
+  });
+});
+
+describe('peerPushTarget', () => {
+  // A regular-size character: the sprite is 40x56 at scale 1, drawn centred on
+  // its feet, so this box runs 30px either side and 84px up from (0, 0).
+  const peer = (id: string, x: number, y: number) => ({ id, feet: { x, y }, scale: 1.5 });
+
+  it('returns null when the click missed everyone', () => {
+    expect(peerPushTarget([peer('a', 0, 0)], { x: 400, y: 0 }, { x: -100, y: 0 })).toBeNull();
+  });
+
+  it('picks the peer under the click', () => {
+    const hit = peerPushTarget([peer('a', 0, 0), peer('b', 300, 0)], { x: 300, y: -40 }, null);
+    expect(hit?.id).toBe('b');
+  });
+
+  it('shoves away from the pusher and stops short of the target', () => {
+    // Standing to the LEFT of them: the shove points right (+x), and we stand
+    // one reach short of their feet on our side.
+    const hit = peerPushTarget([peer('a', 200, 0)], { x: 200, y: -40 }, { x: 0, y: 0 });
+    expect(hit).not.toBeNull();
+    expect(hit!.dx).toBeCloseTo(1);
+    expect(hit!.dy).toBeCloseTo(0);
+    expect(hit!.standAt.x).toBeLessThan(200);
+    expect(Math.hypot(hit!.standAt.x - 200, hit!.standAt.y)).toBeCloseTo(46);
+  });
+
+  it('pushes down when the pusher has no character yet', () => {
+    // No position of our own (the mode was just entered) still has to yield a
+    // direction — a zero vector would leave the target unmoved.
+    const hit = peerPushTarget([peer('a', 0, 0)], { x: 0, y: -20 }, null);
+    expect(hit?.dx).toBe(0);
+    expect(hit?.dy).toBe(1);
+  });
+
+  it('pushes down rather than nowhere when both stand on the same spot', () => {
+    const hit = peerPushTarget([peer('a', 50, 50)], { x: 50, y: 30 }, { x: 50, y: 50 });
+    expect(hit?.dx).toBe(0);
+    expect(hit?.dy).toBe(1);
+  });
+
+  it('honours the peer size, so a click beside a small character misses', () => {
+    const small = { id: 'a', feet: { x: 0, y: 0 }, scale: 1 };
+    // 25px out: inside a regular character's 30px half-width, outside a small
+    // one's 20px.
+    expect(peerPushTarget([small], { x: 25, y: -10 }, null)).toBeNull();
+    expect(peerPushTarget([{ ...small, scale: 1.5 }], { x: 25, y: -10 }, null)).not.toBeNull();
   });
 });

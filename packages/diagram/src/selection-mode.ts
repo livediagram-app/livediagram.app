@@ -38,3 +38,32 @@ export const FIXED_SIZE_SHAPES: ReadonlySet<string> = new Set(['mode-button']);
 export function isFixedSizeShape(kind: string): boolean {
   return FIXED_SIZE_SHAPES.has(kind);
 }
+
+// The Selection Mode button's original default skin (spec/103): a solid brand
+// fill with white text. It was replaced by a light button surface, but the
+// colours are stored ON the element, so every button authored before the
+// change would keep the old slab look forever.
+//
+// So the exact original trio is treated as "the author never picked colours",
+// and such a button renders with today's defaults. An author who genuinely
+// wants that blue can pick it again from the menu — at which point it is a
+// deliberate choice on a NEW-look button (the text colour differs), and this
+// no longer matches.
+const LEGACY_BUTTON_SKIN = { fill: '#0ea5e9', stroke: '#0284c7', text: '#ffffff' };
+
+export function isLegacyModeButtonSkin(el: {
+  shape?: string;
+  fillColor?: string;
+  strokeColor?: string;
+  textColor?: string;
+}): boolean {
+  return (
+    el.shape === 'mode-button' &&
+    el.fillColor === LEGACY_BUTTON_SKIN.fill &&
+    el.strokeColor === LEGACY_BUTTON_SKIN.stroke &&
+    el.textColor === LEGACY_BUTTON_SKIN.text
+  );
+}
+
+// Today's default skin, for the elements above.
+export const MODE_BUTTON_SKIN = { fill: '#ffffff', stroke: '#cbd5e1', text: '#0f172a' } as const;

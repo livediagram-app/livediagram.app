@@ -384,11 +384,14 @@ export function useRoomConnection(opts: {
           pendingAvatars.set(from, op.avatar ? { tabId: op.tabId, avatar: op.avatar } : null);
           schedulePresenceFlush();
         } else if (op.kind === 'avatar-push') {
-          // A shove is addressed to ONE participant; everyone else ignores it.
-          // Nothing is written to anyone's document — the target's own client
-          // decides what to do with it (and does nothing if they've left the
-          // mode), which is what keeps every character owned by its owner.
-          if (op.targetId === selfParticipantRef.current.id) receiveAvatarPush(op.dx, op.dy);
+          // A shove is ADDRESSED: the room delivers it to the named session and
+          // nobody else, so anything that arrives here was aimed at us. We
+          // can't check that ourselves — peers are identified by server-minted
+          // presence ids precisely so nobody learns anyone's real owner id
+          // (spec/61 §6), and that includes not recognising our own. Nothing is
+          // written to the document either way: our client decides what to do
+          // with the request, and does nothing if we've left the mode.
+          receiveAvatarPush(op.dx, op.dy);
         } else if (op.kind === 'tab-focus') {
           setRemoteTabFocus((prev) => {
             const next = new Map(prev);

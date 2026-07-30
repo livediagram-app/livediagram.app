@@ -1,6 +1,6 @@
 import type { PointerEvent as ReactPointerEvent, MouseEvent as ReactMouseEvent } from 'react';
 import { pointerToCanvas } from '@/lib/canvas';
-import { AVATAR_SHOVE_REACH, hitTestAvatar } from '@/lib/avatar-walk';
+import { peerPushTarget } from '@/lib/avatar-walk';
 import { avatarScale, parseAvatarConfig } from '@/lib/avatar-config';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import type { useCanvasPanAndMarquee } from '@/hooks/canvas/useCanvasPanAndMarquee';
@@ -65,32 +65,20 @@ export function useCanvasSurfaceGestures({
   onCanvasContextMenu?: (x: number, y: number) => void;
   onCanvasDoubleClick: (x: number, y: number) => void;
 }) {
-  // Which peer's character a click landed on, plus where to stand to shove it
-  // and which way the shove goes. Null when the click hit bare canvas.
-  const peerAvatarAt = (point: { x: number; y: number }) => {
-    const here = avatar.pos;
-    for (const peer of peerAvatars) {
-      const feet = { x: peer.avatar.x, y: peer.avatar.y };
-      const scale = avatarScale(parseAvatarConfig(peer.avatar.config).size);
-      if (!hitTestAvatar(feet, point, peer.avatar.lift, scale)) continue;
-      // Direction of the shove: from us to them, so we push them away. With no
-      // character of our own yet, push straight down — any direction beats none.
-      const dx = here ? feet.x - here.x : 0;
-      const dy = here ? feet.y - here.y : 1;
-      const len = Math.hypot(dx, dy) || 1;
-      return {
+  // Which peer's character a click landed on, plus where to stand and which way
+  // to shove. The decision itself is pure (see peerPushTarget); this only feeds
+  // it the peers as the presence packets describe them.
+  const peerAvatarAt = (point: { x: number; y: number }) =>
+    peerPushTarget(
+      peerAvatars.map((peer) => ({
         id: peer.id,
-        dx: dx / len,
-        dy: dy / len,
-        // Stop just short of them rather than walking through them.
-        standAt: {
-          x: feet.x - (dx / len) * AVATAR_SHOVE_REACH,
-          y: feet.y - (dy / len) * AVATAR_SHOVE_REACH,
-        },
-      };
-    }
-    return null;
-  };
+        feet: { x: peer.avatar.x, y: peer.avatar.y },
+        lift: peer.avatar.lift,
+        scale: avatarScale(parseAvatarConfig(peer.avatar.config).size),
+      })),
+      point,
+      avatar.pos,
+    );
 
   const focusCanvas = () => {
     const node = mainRef && 'current' in mainRef ? mainRef.current : null;
@@ -148,6 +136,16 @@ export function useCanvasSurfaceGestures({
     // start a gesture at the click point and drop the pending shape
     // behind the panel. Bail before any canvas gesture starts.
     if ((e.target as Element | null)?.closest?.('[data-floating-panel]')) return;
+    // Same for anything rendered through a PORTAL — the palette's category
+    // dropdown, a context menu, a dialog. React routes events through the
+    // component tree rather than the DOM tree, so a click inside a portal whose
+    // owner lives under <main> still reaches this handler, and the guard above
+    // can't see it: the portal's DOM is elsewhere entirely. In Avatar mode that
+    // meant picking a palette category walked the character off behind the
+    // palette. If the press didn't land inside <main>, it isn't a canvas
+    // gesture.
+    const surface = mainRef && 'current' in mainRef ? mainRef.current : null;
+    if (surface && e.target instanceof Node && !surface.contains(e.target)) return;
     // Spotlight tool (spec/09): a non-editing presenter mode. Left-click
     // grows the light; right-click shrinks it (the shrink itself runs in
     // onContextMenuCapture below). Handled in the capture phase so it

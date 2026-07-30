@@ -475,6 +475,66 @@ describe('DiagramRoom op-role enforcement', () => {
     });
   }
 
+  // Avatar-mode shove (spec/101). It is ADDRESSED, not broadcast: the room
+  // delivers it to the named presence and nobody else. That routing has to live
+  // here because presence ids are server-minted (spec/61 §6) — a client never
+  // learns its own, so it cannot recognise a push aimed at it, and an earlier
+  // build that made the receiver check `targetId` against its local id dropped
+  // every real push on the floor.
+  it('delivers an avatar-push only to the addressed session', () => {
+    const { room } = newRoom();
+    const pusher = connect(room, 'pusher', 'edit');
+    const target = connect(room, 'target', 'edit');
+    const bystander = connect(room, 'bystander', 'edit');
+    for (const c of [pusher, target, bystander]) c.ws.sent.length = 0;
+
+    const targetId = storedPresence(target.ws)?.id;
+    sendFrame(room, pusher.ws, {
+      kind: 'op',
+      op: { kind: 'avatar-push', tabId: 't', targetId, dx: 1, dy: 0 },
+    });
+
+    expect(opsReceived(target.ws)).toHaveLength(1);
+    expect(opsReceived(bystander.ws)).toHaveLength(0);
+    expect(opsReceived(pusher.ws)).toHaveLength(0);
+  });
+
+  it('drops an avatar-push aimed at nobody rather than broadcasting it', () => {
+    const { room } = newRoom();
+    const pusher = connect(room, 'pusher', 'edit');
+    const peer = connect(room, 'peer', 'edit');
+    peer.ws.sent.length = 0;
+
+    sendFrame(room, pusher.ws, {
+      kind: 'op',
+      op: { kind: 'avatar-push', tabId: 't', targetId: 'nobody-here', dx: 1, dy: 0 },
+    });
+
+    expect(opsReceived(peer.ws)).toHaveLength(0);
+  });
+
+  // A shove relays from a view-role session too: an audience member walking a
+  // diagram someone linked them to can push back.
+  it('relays an avatar-push from a view-role session', () => {
+    const { room } = newRoom();
+    const viewer = connect(room, 'viewer', 'view');
+    const target = connect(room, 'target', 'edit');
+    target.ws.sent.length = 0;
+
+    sendFrame(room, viewer.ws, {
+      kind: 'op',
+      op: {
+        kind: 'avatar-push',
+        tabId: 't',
+        targetId: storedPresence(target.ws)?.id,
+        dx: 0,
+        dy: 1,
+      },
+    });
+
+    expect(opsReceived(target.ws)).toHaveLength(1);
+  });
+
   // Live poll (spec/88): a presenter polling an audience is the main use,
   // and audiences sit on view links — so answering must work at view role
   // while starting / ending a poll stays behind the edit gate.
