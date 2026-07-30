@@ -4,7 +4,14 @@
 // tables + per-run style resolution without an import cycle through
 // element-labels.tsx (which imports the editor).
 
-import type { BoxedElement, RunSize, TextAlignX, TextAlignY, TextRun } from '@livediagram/diagram';
+import type {
+  BoxedElement,
+  RunSize,
+  TextAlignX,
+  TextAlignY,
+  TextRun,
+  RunHeading,
+} from '@livediagram/diagram';
 import type { RunDefaults } from '@/components/rich-text/rich-text-format';
 
 // The base a label run's unset deltas inherit: the element's whole-element
@@ -92,6 +99,13 @@ export function labelTextStyleCss(style: LabelTextStyle): React.CSSProperties {
 // overrides them — otherwise the span inherits the wrapper's base font and
 // the element's resolved text colour (set as `color`/currentColor on the
 // parent element view, same as the legacy label path).
+// Heading levels as multipliers on the inherited size (spec/102).
+const HEADING_SCALE: Record<RunHeading, { scale: number; weight: number }> = {
+  1: { scale: 1.7, weight: 700 },
+  2: { scale: 1.35, weight: 700 },
+  3: { scale: 1.15, weight: 600 },
+};
+
 export function effectiveRunStyle(
   run: TextRun,
   el: BoxedElement,
@@ -106,5 +120,15 @@ export function effectiveRunStyle(
   });
   if (run.color) css.color = run.color;
   if (run.size) css.fontSize = `${runSizePx[run.size]}px`;
+  // Headings (spec/102). Expressed as `em` rather than px so a heading scales
+  // with whatever base size the element carries — a label, a sticky and a
+  // page all have different bases, and pinning heading px like the note
+  // renderer does would make an H1 smaller than the body on a large element.
+  if (run.heading) {
+    const h = HEADING_SCALE[run.heading];
+    css.fontSize = `${h.scale}em`;
+    css.fontWeight = h.weight;
+    css.lineHeight = '1.25';
+  }
   return css;
 }

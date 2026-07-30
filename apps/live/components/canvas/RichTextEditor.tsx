@@ -23,6 +23,8 @@ import type { RunBoolKey } from '@livediagram/diagram';
 import { ALIGN_ITEMS, TEXT_ALIGN } from '@/components/canvas/label-style';
 import { insertTextAtCaret } from '@/components/rich-text/rich-text-dom';
 import { RichTextToolbar } from '@/components/canvas/RichTextToolbar';
+import { listStyleOfText } from '@/components/rich-text/block-type';
+import { runsPlainText } from '@livediagram/diagram';
 import type { RichTextEditorProps } from './RichTextEditor.types';
 import { useRichTextSession } from './useRichTextSession';
 
@@ -61,6 +63,8 @@ export function RichTextEditor({
     onToggle,
     onPatch,
     applyList,
+    applyHeading,
+    currentRuns,
   } = useRichTextSession({
     element,
     initialLabel,
@@ -237,6 +241,8 @@ export function RichTextEditor({
           alignY={alignY}
           onToggle={onToggle}
           onApplyList={applyList}
+          onApplyHeading={applyHeading}
+          listStyle={listStyleOfText(runsPlainText(currentRuns()))}
           onColor={(color) => onPatch({ color })}
           onSetAlign={(x, y) => onSetAlign?.(x, y)}
         />

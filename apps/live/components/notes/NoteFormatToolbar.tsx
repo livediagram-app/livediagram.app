@@ -72,9 +72,10 @@ export function NoteFormatToolbar({
       },
     ];
 
-  const headings: { level: RunHeading; label: string; description: string }[] = [
-    { level: 1, label: 'Heading', description: 'Turn the current lines into a heading.' },
-    { level: 2, label: 'Subheading', description: 'Turn the current lines into a subheading.' },
+  const headings: { level: 1 | 2 | 3; label: string; description: string }[] = [
+    { level: 1, label: 'H1', description: 'Turn the current lines into a heading.' },
+    { level: 2, label: 'H2', description: 'Turn the current lines into a subheading.' },
+    { level: 3, label: 'H3', description: 'Turn the current lines into a sub-section heading.' },
   ];
 
   const lists: { style: ListStyle; label: string; description: string; icon: React.ReactNode }[] = [

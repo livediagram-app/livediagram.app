@@ -22,6 +22,7 @@ export const NOTE_RUN_PX: Record<RunSize, number> = { sm: 11, md: 13, lg: 16 };
 const NOTE_HEADING: Record<RunHeading, { px: number; weight: number }> = {
   1: { px: 17, weight: 700 },
   2: { px: 14.5, weight: 600 },
+  3: { px: 13.5, weight: 600 },
 };
 
 /**

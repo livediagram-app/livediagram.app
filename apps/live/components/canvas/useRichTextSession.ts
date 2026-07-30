@@ -85,6 +85,7 @@ export function useRichTextSession({
     onToggle,
     onPatch,
     applyList,
+    applyHeading,
   } = doc;
 
   const initialKey = useRef(JSON.stringify(runsRef.current));
@@ -220,5 +221,7 @@ export function useRichTextSession({
     onToggle,
     onPatch,
     applyList,
+    applyHeading,
+    currentRuns,
   };
 }

@@ -19,12 +19,20 @@ import {
 } from '@/components/palette/palette-icons';
 import { Tooltip } from '@/components/primitives/Tooltip';
 import {
-  BulletListIcon,
-  NoListIcon,
-  NumberedListIcon,
-} from '@/components/rich-text/rich-text-toolbar-icons';
+  BLOCK_TYPES,
+  blockTypeApplies,
+  blockTypeLabel,
+  blockTypeOf,
+  type BlockType,
+} from '@/components/rich-text/block-type';
 import type { ActiveFormat } from '@/components/rich-text/rich-text-format';
-import type { ListStyle, RunBoolKey, TextAlignX, TextAlignY } from '@livediagram/diagram';
+import type {
+  ListStyle,
+  RunBoolKey,
+  RunHeading,
+  TextAlignX,
+  TextAlignY,
+} from '@livediagram/diagram';
 
 // preventDefault on mousedown keeps focus + the live selection in the
 // contentEditable when a control is clicked (the classic rich-text-toolbar
@@ -129,6 +137,8 @@ export function RichTextToolbar({
   alignY,
   onToggle,
   onApplyList,
+  onApplyHeading,
+  listStyle,
   onColor,
   onSetAlign,
 }: {
@@ -137,6 +147,9 @@ export function RichTextToolbar({
   alignY: TextAlignY;
   onToggle: (key: RunBoolKey) => void;
   onApplyList: (style: ListStyle) => void;
+  onApplyHeading: (level: RunHeading | null) => void;
+  // What the current lines already are, so the picker can show it.
+  listStyle: ListStyle;
   onColor: (color: string) => void;
   onSetAlign: (x: TextAlignX, y: TextAlignY) => void;
 }) {
@@ -162,28 +175,18 @@ export function RichTextToolbar({
         icon: <StrikethroughIcon />,
       },
     ];
-  // List controls (spec/09): applied to the selected lines. Plain icon
-  // buttons since the ⋯ menu that used to hold them is gone.
-  const lists: { style: ListStyle; label: string; description: string; icon: React.ReactNode }[] = [
-    {
-      style: 'bullet',
-      label: 'Bullet list',
-      description: 'Turn the selected lines into a bullet list.',
-      icon: <BulletListIcon />,
-    },
-    {
-      style: 'numbered',
-      label: 'Numbered list',
-      description: 'Turn the selected lines into a numbered list.',
-      icon: <NumberedListIcon />,
-    },
-    {
-      style: 'none',
-      label: 'Remove list',
-      description: 'Turn the selected lines back into plain text.',
-      icon: <NoListIcon />,
-    },
-  ];
+  // Block type (spec/102): heading level and list style are one choice to a
+  // writer, so they are one control. Applies to the selected lines, or to the
+  // whole label when nothing is selected (the session's collapsedScope).
+  const blockType = blockTypeOf(active.heading, listStyle);
+  const applyBlockType = (next: BlockType) => {
+    const { heading, list } = blockTypeApplies(next);
+    // Both always run: picking a heading has to clear a bullet, and picking a
+    // bullet has to clear a heading, or a line lands in a state the picker
+    // cannot describe.
+    onApplyList(list);
+    onApplyHeading(heading);
+  };
   // Same spacer the element toolbar's Divider uses, so both read alike.
   const divider = (
     <span className="mx-0.5 h-6 w-px shrink-0 bg-slate-200 dark:bg-slate-700" aria-hidden />
@@ -206,19 +209,30 @@ export function RichTextToolbar({
         </Tooltip>
       ))}
       {divider}
-      {lists.map((l) => (
-        <Tooltip key={l.style} title={l.label} description={l.description}>
+      <ToolbarDropdown
+        label="Block type"
+        description="Heading level, paragraph, or a list — applied to the selected lines."
+        menuClassName="min-w-[10rem]"
+        trigger={<span className="px-1 text-xs font-medium">{blockTypeLabel(blockType)}</span>}
+      >
+        {BLOCK_TYPES.map((b) => (
           <button
+            key={b.id}
             type="button"
-            aria-label={l.label}
+            role="option"
+            aria-selected={blockType === b.id}
             onMouseDown={noFocusSteal}
-            onClick={() => onApplyList(l.style)}
-            className={btnClass(false)}
+            onClick={() => applyBlockType(b.id)}
+            className={`flex w-full items-center justify-between gap-3 px-2.5 py-1.5 text-left text-xs transition ${
+              blockType === b.id
+                ? 'bg-brand-50 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
+                : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
+            }`}
           >
-            {l.icon}
+            {b.label}
           </button>
-        </Tooltip>
-      ))}
+        ))}
+      </ToolbarDropdown>
       {divider}
       {/* Alignment — the shared 3×3 grid, reused. The trigger is the
           familiar word-processor glyph (stacked lines whose ends follow the

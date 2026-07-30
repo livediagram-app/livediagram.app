@@ -30,7 +30,11 @@ export type RunBoolKey = 'bold' | 'italic' | 'underline' | 'strikethrough';
 // written across every character of the lines the selection touches, which
 // keeps `runsPlainText(runs).length` the single offset space every
 // caller — renderer, contentEditable bridge, selection maths — walks.
-export type RunHeading = 1 | 2;
+// Three levels (spec/102). Level 3 arrived with the toolbar's block-type
+// picker, where "Heading 1 / 2 / 3 / Paragraph" is the vocabulary people
+// already expect from a word processor; two levels made the third option
+// conspicuously missing.
+export type RunHeading = 1 | 2 | 3;
 
 export type TextRun = {
   text: string;
