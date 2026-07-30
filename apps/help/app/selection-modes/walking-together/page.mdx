@@ -1,0 +1,49 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Walking Together',
+  description:
+    'On a shared livediagram diagram, everyone in Avatar mode can see everyone else: each person walks their own pixel character, in their own colour, with their name above their head.',
+  path: '/help/selection-modes/walking-together/',
+});
+
+<ArticleLayout
+  title="Walking Together"
+  description="Everyone on a shared diagram sees everyone else's character."
+  categoryTitle="Selection Modes"
+  categorySlug="selection-modes"
+  subArticles={getSubArticles("walking-together")}
+>
+
+[Avatar mode](/help/selection-modes/avatar-mode/) is not just for you. On a shared diagram — a share link or a team diagram — every person in Avatar mode appears on everyone else's canvas, walking around in real time.
+
+## What everyone sees
+
+Each character is drawn in its owner's **participant colour**, with their **name on a small chip above the head**, so a room with several people walking about stays readable. Your own character has no chip, because you already know which one you are.
+
+You do not have to be in Avatar mode yourself to see other people's characters. If a colleague is walking you through their diagram, their character appears while you stay in Select and keep taking notes.
+
+Characters are **per tab**: someone walking around Tab 2 does not appear on Tab 1. When a person leaves Avatar mode — or closes the diagram — their character disappears immediately rather than being left standing on your canvas.
+
+## Presenting to a group
+
+This makes a walkthrough work without screen sharing. Send the share link, ask everyone to press <strong>`W`</strong>, and you can each walk to the part you are asking about. A jump with a flag (<strong>`Space`</strong>) is a quick way to say "over here" when several characters are on screen at once.
+
+Viewers on a view-only link can walk around too. Walking changes nothing on the diagram, so it needs no edit access.
+
+## Privacy
+
+Characters travel the same way cursors do, and they are treated with the same care:
+
+- Nothing about a character is saved. It is not part of the diagram, it is not in the change log, and it is never restored later — closing the tab is the end of it.
+- Which look you picked is a local, temporary choice; it is not part of your profile.
+- If a session vote is running with **Hide participant cursors** on, other people's characters are hidden along with their cursors and laser trails, since a character is a position on the canvas like any other.
+
+<Note>
+  A private diagram with no share link and no team has nobody to broadcast to, so your character is
+  yours alone. Sharing the diagram is what makes it visible to others.
+</Note>
+
+</ArticleLayout>

@@ -101,6 +101,7 @@ export function EditorCanvasHost() {
     highlighterWidth,
     setHighlighterColor,
     setHighlighterWidth,
+    broadcastAvatar,
     broadcastCursor,
     broadcastLaser,
     cancelConnect,
@@ -189,6 +190,7 @@ export function EditorCanvasHost() {
     pauseTimer,
     pendingDraw,
     redo,
+    remoteAvatarRows,
     remoteCursorRows,
     remoteSelectionsByElement,
     renameFolder,
@@ -213,6 +215,7 @@ export function EditorCanvasHost() {
     setActivityMinimized,
     setActivityPosition,
     setAiPanelPosition,
+    exitAvatarTool,
     setCanvasTool,
     setCanvasThemeTab,
     setCommentsPanelPosition,
@@ -347,6 +350,8 @@ export function EditorCanvasHost() {
       multiSelectedIds={multiSelectedIds}
       remoteSelectionsByElement={remoteSelectionsByElement}
       remoteCursors={remoteCursorRows}
+      remoteAvatars={remoteAvatarRows}
+      onAvatarPresence={broadcastAvatar}
       laserTrails={laserTrailRows}
       onCanvasPointerMove={(x, y) => {
         if (canvasTool === 'laser' && x !== null && y !== null) {
@@ -361,6 +366,7 @@ export function EditorCanvasHost() {
       onSelectMarquee={selectMarquee}
       canvasTool={canvasTool}
       onSetCanvasTool={setCanvasTool}
+      onExitAvatarMode={exitAvatarTool}
       onEraseStart={isReadOnly ? undefined : beginErase}
       onDuplicateMultiSelected={duplicateMultiSelected}
       onDeleteMultiSelected={deleteMultiSelected}

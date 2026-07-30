@@ -49,7 +49,8 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       groupSourceId === null &&
       pendingDraw === null &&
       canvasTool !== 'format' &&
-      canvasTool !== 'isometric'
+      canvasTool !== 'isometric' &&
+      canvasTool !== 'avatar'
     )
       return;
     const onKey = (e: KeyboardEvent) => {
@@ -69,6 +70,11 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         // Select on desktop, Hand (pan) on touch where Select isn't the
         // default. Mirrors how Spotlight reverts to Select.
         if (liveRef.current.canvasTool === 'isometric') {
+          liveRef.current.setCanvasTool(isMobileViewportSync() ? 'pan' : 'select');
+        }
+        // Avatar mode (spec/101): Escape puts the walking character away and
+        // hands editing back, same revert rule as Isometric.
+        if (liveRef.current.canvasTool === 'avatar') {
           liveRef.current.setCanvasTool(isMobileViewportSync() ? 'pan' : 'select');
         }
         if (liveRef.current.pendingDraw !== null) {
@@ -132,6 +138,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         live.pendingDraw === null &&
         live.canvasTool !== 'format' &&
         live.canvasTool !== 'isometric' &&
+        live.canvasTool !== 'avatar' &&
         live.selectedId === null &&
         live.multiSelectedIds.size === 0
       ) {
@@ -156,6 +163,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         live.pendingDraw === null &&
         live.canvasTool !== 'format' &&
         live.canvasTool !== 'isometric' &&
+        live.canvasTool !== 'avatar' &&
         (live.selectedId !== null || live.multiSelectedIds.size > 0)
       ) {
         e.preventDefault();
@@ -302,6 +310,9 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       // letter shortcuts; arrow keys never collide with them.
       if (key === 'ArrowUp' || key === 'ArrowDown' || key === 'ArrowLeft' || key === 'ArrowRight') {
         if (live.isReadOnly) return;
+        // Avatar mode (spec/101) owns the arrow keys: they steer the walking
+        // character (useAvatarWalk), and the mode is read-only anyway.
+        if (live.canvasTool === 'avatar') return;
         const hasSelection = live.multiSelectedIds.size > 0 || live.selectedId !== null;
         if (!hasSelection) return;
         const step = e.shiftKey ? 10 : 1;
@@ -354,6 +365,11 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       }
 
       if (live.isReadOnly) return;
+      // Avatar mode (spec/101) is read-only FOR THE PRESENTER too: the
+      // element-add / Eraser / Pencil keys stay dormant while walking, so a
+      // stray keypress can't drop a shape mid-narration. The view tools above
+      // already ran, so V / H / K / I / Z remain the way out.
+      if (live.canvasTool === 'avatar') return;
 
       // Image (`9`): separate from EDIT_KEYS because its callback is
       // nullable on guest deploys without an api worker.

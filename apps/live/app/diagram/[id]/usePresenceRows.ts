@@ -8,9 +8,11 @@ import { useCallback, useMemo, type MutableRefObject } from 'react';
 import type { Tab } from '@livediagram/diagram';
 import type { Participant } from '@/lib/identity';
 import type { LaserPoint } from '@/lib/laser-buffer';
+import type { AvatarPresence } from '@livediagram/api-schema';
 import {
   buildLaserTrailRows,
   buildParticipantsByTab,
+  buildRemoteAvatarRows,
   buildRemoteCursorRows,
   buildRemoteSelectionsByElement,
   type RemoteSelection,
@@ -33,6 +35,8 @@ type PresenceRowsDeps = {
   remoteCursors: Map<string, { tabId: string; x: number; y: number } | null>;
   remoteSelections: Map<string, RemoteSelection>;
   remoteLaserTrails: Map<string, { tabId: string; points: LaserPoint[] }>;
+  // Peers' Avatar-mode characters (spec/101), latest snapshot each.
+  remoteAvatars: Map<string, { tabId: string; avatar: AvatarPresence }>;
   localLaserTrail: LaserPoint[];
   // Vote privacy (spec/39): true while a hide-cursors vote is open on the
   // active tab. Peer cursors and peer laser trails are withheld from the
@@ -56,6 +60,7 @@ export function usePresenceRows(deps: PresenceRowsDeps) {
     remoteCursors,
     remoteSelections,
     remoteLaserTrails,
+    remoteAvatars,
     localLaserTrail,
     cursorsHidden,
   } = deps;
@@ -135,6 +140,17 @@ export function usePresenceRows(deps: PresenceRowsDeps) {
       activeId,
     ],
   );
+  // Peer characters for the avatar layer (spec/101). Gated by the same
+  // hide-cursors vote as cursors: a walking character is a position on the
+  // canvas, so withholding cursors while showing avatars would leak exactly
+  // what the vote hides.
+  const remoteAvatarRows = useMemo(
+    () =>
+      cursorsHidden
+        ? []
+        : buildRemoteAvatarRows(remoteAvatars, livePresenceById, selfParticipant.id, activeId),
+    [cursorsHidden, remoteAvatars, livePresenceById, selfParticipant.id, activeId],
+  );
   const remoteSelectionsByElement = useMemo(
     () =>
       buildRemoteSelectionsByElement(
@@ -160,6 +176,7 @@ export function usePresenceRows(deps: PresenceRowsDeps) {
     livePresenceById,
     participantsByTab,
     remoteCursorRows,
+    remoteAvatarRows,
     laserTrailRows,
     remoteSelectionsByElement,
     lockedByOther,

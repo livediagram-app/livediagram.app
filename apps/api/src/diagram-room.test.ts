@@ -458,10 +458,11 @@ describe('DiagramRoom op-role enforcement', () => {
     expect(opsReceived(editor.ws)).toHaveLength(0);
   });
 
-  // Presence ops are ephemeral (cursor / selection / tab-focus / laser) and
-  // must relay from a view-role session too, otherwise a viewer is invisible
-  // to peers — no cursor, no selection highlight, no "which tab they're on".
-  for (const kind of ['cursor', 'select', 'tab-focus', 'laser'] as const) {
+  // Presence ops are ephemeral (cursor / selection / tab-focus / laser /
+  // avatar) and must relay from a view-role session too, otherwise a viewer is
+  // invisible to peers — no cursor, no selection highlight, no "which tab
+  // they're on", and no walking character (spec/101).
+  for (const kind of ['cursor', 'select', 'tab-focus', 'laser', 'avatar'] as const) {
     it(`relays a '${kind}' presence op from a view-role session`, () => {
       const { room } = newRoom();
       const editor = connect(room, 'editor', 'edit');

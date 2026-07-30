@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
+import type { AvatarPresence } from '@livediagram/api-schema';
 import type { RemoteSelection } from '@/lib/presence-rows';
 import type { Participant } from '@/lib/identity';
 import type { LaserPoint } from '@/lib/laser-buffer';
 
 // Realtime presence state for the diagram room: who's connected, each
 // peer's last-seen timestamp, and their tab focus / selection / cursor /
-// laser trail. useRoomConnection writes these through the returned
+// laser trail / walking character (spec/101). useRoomConnection writes these through the returned
 // setters; useEditorState reads them (via lib/presence-rows) to build the
 // avatar / cursor / laser / selection rows the editor renders.
 export function usePresenceState() {
@@ -58,6 +59,13 @@ export function usePresenceState() {
   const [remoteLaserTrails, setRemoteLaserTrails] = useState<
     Map<string, { tabId: string; points: LaserPoint[] }>
   >(new Map());
+  // Per-participant Avatar-mode characters (spec/101), keyed by participant
+  // id: the latest presence snapshot each peer published, or absent once they
+  // leave the mode (an `avatar: null` op deletes the entry). Scoped per tab in
+  // the op itself, like cursors.
+  const [remoteAvatars, setRemoteAvatars] = useState<
+    Map<string, { tabId: string; avatar: AvatarPresence }>
+  >(new Map());
 
   return {
     livePresence,
@@ -71,5 +79,7 @@ export function usePresenceState() {
     setRemoteCursors,
     remoteLaserTrails,
     setRemoteLaserTrails,
+    remoteAvatars,
+    setRemoteAvatars,
   };
 }

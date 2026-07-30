@@ -212,12 +212,15 @@ and behaves as it always did (absent = off).
 
 ### Hide participant cursors (default **on**)
 
-While `vote.active`, peer **cursors** and peer **laser trails** are neither
-drawn nor sent:
+While `vote.active`, peer **cursors**, peer **laser trails**, and peer
+**Avatar-mode characters** ([spec/101](101-avatar-mode.md)) are neither drawn
+nor sent:
 
-- **Render:** `usePresenceRows` returns empty `remoteCursorRows` and drops
-  remote laser rows, so nothing reaches the canvas overlays.
-- **Wire:** `useEditorBroadcast` stops emitting `cursor` and `laser` room ops
+- **Render:** `usePresenceRows` returns empty `remoteCursorRows` and
+  `remoteAvatarRows` and drops remote laser rows, so nothing reaches the canvas
+  overlays.
+- **Wire:** `useEditorBroadcast` stops emitting `cursor`, `laser`, and `avatar`
+  room ops
   altogether. Suppressing the send (not just the paint) is the point — a
   render-only gate would still put every participant's coordinates on the
   socket for anyone with devtools open. It also drops the room's busiest

@@ -540,6 +540,36 @@ export function SpotlightIcon() {
   );
 }
 
+// Avatar mode (spec/101): a mid-stride walking figure — a head, a body,
+// and legs caught in a step — so the picker entry reads as "a character
+// that walks" rather than a person / profile photo (which is what the
+// palette's Avatar ELEMENT tile means).
+export function AvatarModeIcon() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <circle cx="8.6" cy="3" r="1.7" />
+      {/* torso */}
+      <path d="M8.4 5.4v4" />
+      {/* stride */}
+      <path d="M8.4 9.4l-2.4 4.4" />
+      <path d="M8.4 9.4l2.6 4.4" />
+      {/* swinging arms */}
+      <path d="M8.4 6.6L5.6 8" />
+      <path d="M8.4 6.6l2.8 1" />
+    </svg>
+  );
+}
+
 // Zen / focus mode (spec/26): an "expand to fullscreen" glyph (four
 // corner arrows pushing outward) for the palette enter button.
 export function ZenIcon() {

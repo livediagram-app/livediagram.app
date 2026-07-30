@@ -171,6 +171,7 @@ export const VIEW_TOOL_KEYS: Record<string, ShortcutAction> = {
   h: (l) => l.setCanvasTool('pan'),
   k: (l) => l.setCanvasTool('laser'),
   i: (l) => l.setCanvasTool('isometric'), // spec/45: pans like Hand, non-mutating
+  w: (l) => l.setCanvasTool('avatar'), // spec/101: walk mode, read-only canvas
   z: (l) => l.onToggleZen(), // spec/26 focus mode
 };
 

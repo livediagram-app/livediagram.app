@@ -49,6 +49,7 @@ const SECTIONS: ShortcutSection[] = [
       { keys: ['K'], label: 'Laser pointer' },
       { keys: ['E'], label: 'Eraser (click / drag to delete)' },
       { keys: ['P'], label: 'Pencil (freehand)' },
+      { keys: ['W'], label: 'Avatar mode (click / arrows to walk)' },
       { keys: ['I'], label: 'Isometric view' },
       { keys: ['⇧', 'drag'], label: 'Rotate isometric camera' },
       { keys: ['Z'], label: 'Zen mode (focus)' },

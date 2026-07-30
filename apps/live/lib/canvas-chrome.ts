@@ -45,6 +45,9 @@ export function canvasCursorClass(input: {
   // in globals.css) pins the exact centre of the light. Space still pans, so
   // defer to the grab cursor while it's held.
   if (canvasTool === 'spotlight' && !spaceHeld) return 'cursor-spotlight';
+  // Avatar mode (spec/101): every click is "walk over there", so the pointer
+  // cursor is the honest affordance. Space still pans, so defer to grab.
+  if (canvasTool === 'avatar' && !spaceHeld) return 'cursor-pointer';
   // Eraser shows a custom eraser glyph (see .cursor-eraser in globals.css),
   // unless Space is held for a temporary pan.
   if (canvasTool === 'eraser' && !spaceHeld) return 'cursor-eraser';

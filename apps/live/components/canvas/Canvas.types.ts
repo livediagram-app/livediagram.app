@@ -91,6 +91,10 @@ export type CanvasProps = {
   onSelectMarquee: (ids: Set<string>) => void;
   canvasTool: CanvasTool;
   onSetCanvasTool: (tool: CanvasTool) => void;
+  // Leaves Avatar mode (spec/101) for the tool that preceded it. Wired to the
+  // palette (any tile pick) and to a palette drag-drop, both of which are
+  // edits the read-only mode would otherwise swallow.
+  onExitAvatarMode?: () => void;
   // Map of elementId -> remote participants currently focused on that
   // element. Drives a small badge ring on each element so participants
   // can see in real time what others are working on.
@@ -99,6 +103,18 @@ export type CanvasProps = {
   // participant identity. Rendered inside the transformed wrapper so
   // they pan and zoom with the canvas.
   remoteCursors: { id: string; name: string; color: string; x: number; y: number }[];
+  // Peers' Avatar-mode characters (spec/101) on the active tab, with their
+  // name + presence colour. Rendered inside the transformed wrapper beside the
+  // local character, so everyone sees everyone walking around.
+  remoteAvatars: {
+    id: string;
+    name: string;
+    color: string;
+    avatar: import('@livediagram/api-schema').AvatarPresence;
+  }[];
+  // Publishes the local character to the room (null when leaving the mode).
+  // Optional: a private, un-shared diagram has no room to publish to.
+  onAvatarPresence?: (avatar: import('@livediagram/api-schema').AvatarPresence | null) => void;
   // Laser-pointer trails for the LaserOverlay — local user first
   // followed by any peers laser-pointing on the active tab. The
   // overlay handles fading and cleanup; Canvas just renders.

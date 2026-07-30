@@ -70,7 +70,18 @@ const ORDER_STATE_KEY = 'order-state';
 // `poll-start` / `poll-end` are deliberately NOT here — they stay behind
 // the edit-role gate below, so an audience member can answer a poll but
 // can't start one or end someone else's.
-const PRESENCE_OP_KINDS = new Set(['cursor', 'select', 'laser', 'tab-focus', 'poll-answer']);
+// `avatar` (spec/101) is presence in the plainest sense: someone's walking
+// character, at cursor rates, mutating nothing. View-role senders included —
+// an audience member walking around a diagram they were shown a link to is
+// the same kind of harmless as their cursor.
+const PRESENCE_OP_KINDS = new Set([
+  'cursor',
+  'select',
+  'laser',
+  'tab-focus',
+  'poll-answer',
+  'avatar',
+]);
 
 // One entry in the reconnect catch-up log: a mutation op plus the sequence
 // number the room assigned it within the current epoch.

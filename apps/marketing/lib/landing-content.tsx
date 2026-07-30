@@ -9,6 +9,7 @@ import {
   ApiArt,
   ArrowsArt,
   AutosaveArt,
+  AvatarModeArt,
   BorderStyleArt,
   CanvasBackdropArt,
   AssignedActionsArt,
@@ -215,6 +216,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Laser pointer for presenting',
         description:
           'Switch to the laser tool and your cursor leaves a glowing trail everyone can see. Point at the thing you mean while you talk it through. Trails fade on their own.',
+      },
+      {
+        art: <AvatarModeArt />,
+        href: '/help/selection-modes/avatar-mode/',
+        group: 'Present & facilitate',
+        title: 'Walk a character through your diagram',
+        description:
+          'Avatar mode drops a little pixel character onto the canvas. Click to walk it to whatever you are talking about, steer with the arrow keys, and press Space to hop and wave a flag. The box it stands on gets a ring, the canvas is read-only while you walk, and on a shared diagram everyone sees everyone else walking about in their own colour.',
       },
       {
         art: <SpotlightArt />,

@@ -1,4 +1,4 @@
-// Outbound realtime traffic: throttled cursor + laser broadcasters
+// Outbound realtime traffic: throttled cursor + laser + avatar broadcasters
 // and the local laser-trail buffer that feeds the on-screen overlay.
 // Lifted out of editor-page.tsx so the page file stays focused on
 // orchestration; the inbound side (the connectRoom + handlers
@@ -11,7 +11,7 @@
 // dropped on the wire.
 
 import { useEffect, useRef, useState } from 'react';
-import type { RoomOutgoing } from '@livediagram/api-schema';
+import type { AvatarPresence, RoomOutgoing } from '@livediagram/api-schema';
 import type { CanvasTool } from '@/components/palette/CommandPalette';
 import { trimLaserBuffer, type LaserPoint } from '@/lib/laser-buffer';
 
@@ -63,6 +63,9 @@ type EditorBroadcastApi = {
   // the gate state + throttle. The overlay's RAF loop is what
   // makes trails visibly decay over the lifetime window.
   broadcastLaser: (x: number, y: number) => void;
+  // Publish the local Avatar-mode character (spec/101) to the room, or
+  // `null` to tell peers to drop it. Throttled like the cursor.
+  broadcastAvatar: (avatar: AvatarPresence | null) => void;
   // The local trail buffer (canvas-coords + timestamps), consumed
   // by the LaserOverlay via the laserTrailRows aggregator in
   // editor-page.
@@ -73,6 +76,7 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
   const [localLaserTrail, setLocalLaserTrail] = useState<LaserPoint[]>([]);
   const lastCursorSentRef = useRef(0);
   const lastLaserSentRef = useRef(0);
+  const lastAvatarSentRef = useRef(0);
 
   // Clear the local trail when leaving laser mode (or switching tabs)
   // so a partial path doesn't persist past the tool / tab change.
@@ -146,5 +150,22 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
     });
   };
 
-  return { broadcastCursor, broadcastLaser, localLaserTrail };
+  // Avatar mode (spec/101): publish the local character so peers can see it
+  // walking. Same gate + throttle as the cursor, because it IS a cursor as far
+  // as the wire is concerned. `null` (leaving the mode) always goes out
+  // un-throttled, otherwise a peer keeps a ghost standing on their canvas.
+  const broadcastAvatar = (avatar: AvatarPresence | null) => {
+    if (deps.cursorsHidden) return;
+    if (!deps.hydrated || !deps.diagramId || (!deps.diagramShareable && !deps.diagramTeamId))
+      return;
+    const now = performance.now();
+    if (avatar && now - lastAvatarSentRef.current < BROADCAST_THROTTLE_MS) return;
+    lastAvatarSentRef.current = now;
+    deps.roomRef.current?.send({
+      kind: 'op',
+      op: { kind: 'avatar', tabId: deps.activeId, avatar },
+    });
+  };
+
+  return { broadcastCursor, broadcastLaser, broadcastAvatar, localLaserTrail };
 }

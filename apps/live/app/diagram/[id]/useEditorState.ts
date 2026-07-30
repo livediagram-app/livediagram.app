@@ -253,7 +253,9 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // Canvas tool (Pan / Select / Laser). See useCanvasTool: the raw
   // setter serves internal auto-switches, the tracked selectCanvasTool
   // serves the user-facing pickers.
-  const { canvasTool, setCanvasTool, selectCanvasTool } = useCanvasTool({ defaultPan: embedMode });
+  const { canvasTool, setCanvasTool, selectCanvasTool, exitAvatarTool } = useCanvasTool({
+    defaultPan: embedMode,
+  });
   // Persistent Format painter tool (spec/09): the mode-boundary reset +
   // the exit that restores the pre-Format tool. See useFormatTool.
   const { formatToolActive, exitFormatTool } = useFormatTool({
@@ -307,11 +309,14 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
         tool === 'format' ||
         tool === 'laser' ||
         tool === 'spotlight' ||
+        tool === 'avatar' ||
         tool === 'isometric')
     ) {
       return;
     }
-    if (tool === 'spotlight') {
+    // Spotlight and Avatar mode (spec/101) are both non-editing presenter
+    // modes, so both clear the selection on entry.
+    if (tool === 'spotlight' || tool === 'avatar') {
       setSelectedId(null);
       setMultiSelectedIds(new Set());
     }
@@ -474,6 +479,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setRemoteCursors,
     remoteLaserTrails,
     setRemoteLaserTrails,
+    remoteAvatars,
+    setRemoteAvatars,
   } = usePresenceState();
   // Local laser trail — held in state so the overlay re-renders when
   // we append a point, but mutations stay cheap by always producing a
@@ -693,6 +700,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setRemoteCursors,
     setRemoteTabFocus,
     setRemoteLaserTrails,
+    setRemoteAvatars,
     setChangeLog,
     setDiagramName,
     setSelfParticipant,
@@ -766,7 +774,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // laser-trail buffer live in useEditorBroadcast. Same throttle,
   // same gates, same trail-clears-on-tool-change behaviour as
   // before, just out of the page file.
-  const { broadcastCursor, broadcastLaser, localLaserTrail } = useEditorBroadcast({
+  const { broadcastCursor, broadcastLaser, broadcastAvatar, localLaserTrail } = useEditorBroadcast({
     roomRef,
     hydrated,
     diagramId,
@@ -841,6 +849,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   const {
     participantsByTab,
     remoteCursorRows,
+    remoteAvatarRows,
     laserTrailRows,
     remoteSelectionsByElement,
     lockedByOther,
@@ -856,6 +865,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     remoteCursors,
     remoteSelections,
     remoteLaserTrails,
+    remoteAvatars,
     localLaserTrail,
     cursorsHidden: voteCursorsHidden,
   });
@@ -2127,6 +2137,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     beginPolygon,
     beginGroup,
     bringSelectedToFront,
+    broadcastAvatar,
     broadcastCursor,
     broadcastLaser,
     canRedo,
@@ -2135,6 +2146,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     cancelEdit,
     canvasMainRef,
     canvasTool,
+    exitAvatarTool,
     exitFormatTool,
     beginErase,
     chooseTemplate,
@@ -2234,6 +2246,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     pendingDraw,
     redo,
     refreshRecentImages,
+    remoteAvatarRows,
     remoteCursorRows,
     remoteSelectionsByElement,
     removeImageFromElement,

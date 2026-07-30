@@ -918,6 +918,96 @@ export function SpotlightArt() {
   );
 }
 
+// Avatar mode (spec/101): a little pixel character stands in the diagram and
+// walks to whatever the presenter is talking about. Two characters here — the
+// presenter's and a peer's, in a second colour — so the art carries the "you
+// can all walk around together" half of the feature. Pure rects on a coarse
+// grid, matching the editor's sprite look.
+function PixelWalker({ x, shirt, flag = false }: { x: number; shirt: string; flag?: boolean }) {
+  const s = 2.2; // pixel size
+  const p = (n: number) => n * s;
+  return (
+    <g transform={`translate(${x} 34)`} shapeRendering="crispEdges">
+      <ellipse cx={p(8)} cy={p(23)} rx={p(4.6)} ry={p(1.1)} fill="rgba(15,23,42,0.22)" />
+      {/* legs + shoes */}
+      <rect x={p(5)} y={p(15)} width={p(3)} height={p(6)} fill="#3f4c63" />
+      <rect x={p(9)} y={p(15)} width={p(3)} height={p(6)} fill="#3f4c63" />
+      <rect x={p(5)} y={p(21)} width={p(3)} height={p(2)} fill="#1e293b" />
+      <rect x={p(9)} y={p(21)} width={p(3)} height={p(2)} fill="#1e293b" />
+      {/* torso + sleeves in the participant's colour */}
+      <rect x={p(4)} y={p(9)} width={p(8)} height={p(6)} fill={shirt} />
+      <rect x={p(2)} y={p(9)} width={p(2)} height={p(4)} fill={shirt} />
+      <rect x={p(12)} y={p(9)} width={p(2)} height={p(4)} fill={shirt} />
+      {/* head, hair, eyes */}
+      <rect x={p(4)} y={p(1)} width={p(8)} height={p(8)} fill="#f4c99b" />
+      <rect x={p(3)} y={0} width={p(10)} height={p(3)} fill="#6b4423" />
+      <rect x={p(6)} y={p(5)} width={s} height={s} fill="#243044" />
+      <rect x={p(9)} y={p(5)} width={s} height={s} fill="#243044" />
+      {flag ? (
+        <>
+          <rect x={p(12)} y={p(-3)} width={s} height={p(12)} fill="#b8845a" />
+          <rect x={p(13)} y={p(-3)} width={p(5)} height={p(3)} fill="#f43f5e" />
+        </>
+      ) : null}
+    </g>
+  );
+}
+
+export function AvatarModeArt() {
+  return (
+    <Frame canvas>
+      <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
+        <rect
+          x="16"
+          y="18"
+          width="44"
+          height="20"
+          rx="5"
+          fill={BLUE_FILL}
+          stroke={BLUE_STROKE}
+          strokeWidth="2"
+        />
+        <rect
+          x="150"
+          y="18"
+          width="52"
+          height="22"
+          rx="5"
+          fill={BLUE_FILL}
+          stroke={BLUE_STROKE}
+          strokeWidth="2"
+        />
+        {/* "you are here" ring on the box being talked about */}
+        <rect
+          x="146"
+          y="14"
+          width="60"
+          height="30"
+          rx="8"
+          fill="none"
+          stroke={SKY}
+          strokeWidth="2"
+        />
+        <line x1="60" y1="28" x2="146" y2="28" stroke="#cbd5e1" strokeWidth="2" />
+        {/* the walked path */}
+        <path
+          d="M70 78 q46 8 84 -4"
+          fill="none"
+          stroke="#7dd3fc"
+          strokeWidth="2"
+          strokeDasharray="4 5"
+          strokeLinecap="round"
+        />
+        <PixelWalker x={58} shirt={SKY} flag />
+        <PixelWalker x={148} shirt={PINK} />
+      </svg>
+      <span className="absolute bottom-1.5 right-2 z-10 rounded bg-white/90 px-1.5 py-0.5 text-[8px] font-medium text-slate-500 shadow-sm">
+        avatar mode
+      </span>
+    </Frame>
+  );
+}
+
 // Custom themes (spec/44): build your own palette, save it to your account,
 // and reuse it across diagrams like any built-in theme. A swatch row with one
 // selected, then a preview adopting the custom (brand-purple) colours.

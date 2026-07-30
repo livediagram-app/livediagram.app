@@ -30,6 +30,7 @@ import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 
 import type { CanvasTool, CommandPaletteProps } from './CommandPalette.types';
 import { buildCanvasToolOptions } from './canvas-tool-options';
+import { withTileActionPreamble } from './palette-tile-actions';
 
 export type { CanvasTool };
 
@@ -37,6 +38,7 @@ export function CommandPalette({
   position,
   canvasTool,
   onSetCanvasTool,
+  onExitAvatarMode,
   onToggleZen,
   onMoveTo,
   onReset,
@@ -215,23 +217,32 @@ export function CommandPalette({
   // The add-handler bundle every catalogue-driven tile grid consumes
   // (spec/78). All handlers above already wrap the mobile-close /
   // draw-armed behaviour, so a tile behaves the same from any tab.
-  const tileActions: PaletteTileActions = {
-    addShape,
-    addText,
-    beginFreehand,
-    beginHighlighter,
-    beginPolygon,
-    addArrow,
-    addSticky,
-    addTable,
-    addImage,
-    addAnnotation,
-    addLinkCard,
-    addComponent,
-    addIcon,
-    addTechIcon,
-    hasImage: !!onAddImage,
-  };
+  // Avatar mode (spec/101) is read-only, so reaching for a tile means the user
+  // wants to edit again: every add leaves the mode first (back to whichever
+  // tool preceded it) and then drops as normal. Wrapping the bundle covers
+  // every tile, including ones added later.
+  const tileActions: PaletteTileActions = withTileActionPreamble<PaletteTileActions>(
+    {
+      addShape,
+      addText,
+      beginFreehand,
+      beginHighlighter,
+      beginPolygon,
+      addArrow,
+      addSticky,
+      addTable,
+      addImage,
+      addAnnotation,
+      addLinkCard,
+      addComponent,
+      addIcon,
+      addTechIcon,
+      hasImage: !!onAddImage,
+    },
+    () => {
+      if (canvasTool === 'avatar') onExitAvatarMode?.();
+    },
+  );
   // Per-element + tab formatting now lives in the right-click context
   // menus (element / canvas / tab) and the Tab Appearance modal, not in a
   // side panel. The palette now hosts the canvas-tool toggle row at the

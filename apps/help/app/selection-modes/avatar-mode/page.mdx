@@ -1,0 +1,64 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { AvatarMode } from '@/components/illustrations/palette-modes';
+
+export const metadata = helpMetadata({
+  title: 'Avatar Mode',
+  description:
+    'Use Avatar mode in livediagram to drop a walking pixel character onto the canvas, click or use the arrow keys to walk it to whatever you are talking about, hop with a flag, and present your diagram as a tour.',
+  path: '/help/selection-modes/avatar-mode/',
+});
+
+<ArticleLayout
+  title="Avatar Mode"
+  description="Walk a little character around the diagram while you talk through it."
+  categoryTitle="Selection Modes"
+  categorySlug="selection-modes"
+  subArticles={getSubArticles("avatar-mode")}
+>
+
+Avatar mode drops a small pixel character onto the canvas and lets you walk it around. Instead of waving a cursor at the part of the diagram you are describing, you walk over to it, so the room follows a character moving between places. Choose it from the mode picker at the top of the floating palette, or press **`W`**.
+
+## Walking
+
+**Click anywhere on the canvas and the character walks there**, in a straight line, facing the way it is going. Click somewhere else while it is still walking and it turns and heads for the new spot instead.
+
+**The arrow keys steer it directly**: hold one and the character walks that way for as long as you hold it, and holding two walks a diagonal. Release and it stops where it stands. On a touchscreen, tapping is the way to move it.
+
+When the character ends up standing on an element, that element gets a soft ring around it, so your audience can see exactly which box you have arrived at. The canvas scrolls to follow the character when it gets close to the edge of the view, and the zoom is left alone.
+
+<Figure caption="Avatar mode is lit in the mode picker; the character has walked over to the shape being discussed, which is ringed.">
+  <AvatarMode />
+</Figure>
+
+## Jump and wave a flag
+
+Press **`Space`** and the character hops, waving a small flag on the way up and for a beat after it lands. It is there for the moment in a walkthrough when you want to say "this bit here" with a little more emphasis than a ring around a box, and it works well for a round of applause at the end of a review.
+
+One press is one hop: holding the key down will not pogo, and pressing again mid-air does nothing until the character is back on the ground.
+
+## Change who the character is
+
+**Right-click the character** to switch between the two looks. Right-clicking anywhere else on the canvas does nothing while you are in this mode (the usual context menus stay shut so a menu cannot interrupt a walkthrough).
+
+The character's shirt takes **your participant colour** — the same colour as your cursor and your name in the tab bar — so on a shared diagram it is obvious which character is yours.
+
+## The diagram is read-only while you walk
+
+Every click means "walk over there", so nothing on the canvas can be selected, moved, resized, or edited while Avatar mode is on, and the element shortcuts stay dormant. That is deliberate: you can click around your diagram freely mid-presentation without any chance of nudging a shape out of place.
+
+**Reaching for the palette lets you edit again.** Pick any palette tile — or drag one onto the canvas — and Avatar mode steps aside, back to whichever mode you were in before, and the element drops as normal. You do not have to leave the mode by hand first.
+
+Press **`Esc`** (or pick another mode) to put the character away. Panning still works the usual ways while walking: middle-mouse drag, a two-finger trackpad scroll, or the zoom controls.
+
+## Availability
+
+Avatar mode is disabled on an empty canvas — add something to walk to first. It is available on desktop and touch, and to view-only visitors, since it changes nothing.
+
+<Tip>
+  Everyone on a shared diagram can walk around at the same time, and you can see each other's
+  characters. See [Walking Together](/help/selection-modes/walking-together/).
+</Tip>
+
+</ArticleLayout>

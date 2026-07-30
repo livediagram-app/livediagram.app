@@ -1,4 +1,5 @@
 import {
+  AvatarModeIcon,
   EraserIcon,
   FormatPainterIcon,
   IsometricIcon,
@@ -11,8 +12,8 @@ import {
 import type { PaletteDropdownOption } from '@/components/palette/PaletteDropdown';
 
 // The canvas-tool dropdown's option set (Select / Hand / Eraser / Format /
-// Laser / Spotlight / Isometric / Zen), grouped (group index drives the menu
-// dividers): editing tools, then presenter tools, then the view modes.
+// Laser / Spotlight / Avatar / Isometric / Zen), grouped (group index drives
+// the menu dividers): editing tools, then presenter tools, then the view modes.
 // Eraser and everything after act on existing content, so they disable on an
 // empty canvas; Spotlight is desktop-only. Zen is an ACTION, not a persistent
 // tool: picking it fires the toggle and leaves the current tool selected (the
@@ -73,6 +74,17 @@ export function buildCanvasToolOptions({
             disabled: canvasEmpty,
           },
         ]),
+    // Avatar mode (spec/101): a walking character you steer to whatever
+    // you're narrating. A presenter tool like Laser / Spotlight, but it
+    // works on touch too (tap-to-walk), so no mobile carve-out.
+    {
+      id: 'avatar',
+      label: 'Avatar',
+      shortcut: 'W',
+      icon: <AvatarModeIcon />,
+      group: 1,
+      disabled: canvasEmpty,
+    },
     {
       id: 'isometric',
       label: 'Isometric',

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { isAnimatedPattern } from '@livediagram/diagram';
+import { isAnimatedPattern, isBoxed } from '@livediagram/diagram';
 import { tabBackgroundStyle } from '@/lib/canvas-backgrounds';
 import { AnimatedCanvasBackground } from '@/components/canvas/AnimatedCanvasBackground';
 import { pointerToCanvas } from '@/lib/canvas';
@@ -37,6 +37,8 @@ import { IsometricDepthLayer } from '@/components/canvas/IsometricDepthLayer';
 import { useIsometricView } from '@/hooks/canvas/useIsometricView';
 import { SpotlightOverlay } from '@/components/canvas/SpotlightOverlay';
 import { useSpotlight } from '@/hooks/canvas/useSpotlight';
+import { AvatarWalker } from '@/components/canvas/AvatarWalker';
+import { useAvatarWalk } from '@/hooks/canvas/useAvatarWalk';
 import { useOffscreenContent } from '@/hooks/canvas/useOffscreenContent';
 import { Portal } from '@/components/primitives/Portal';
 import { TabLoadOverlay } from '@/components/canvas/TabLoadOverlay';
@@ -156,7 +158,15 @@ export function Canvas(props: CanvasProps) {
   // Palette drag-drop onto the canvas (onDragOver / onDrop), lifted into
   // usePaletteDrop so the canvas body keeps to layout + pointer routing.
   const paletteDrop = usePaletteDrop({
-    onDropPalette: props.onDropPalette,
+    // A tile DRAGGED onto the canvas is an edit too (spec/101), so it leaves
+    // Avatar mode the same way a tile click does — otherwise the element
+    // landed while the canvas still read as read-only.
+    onDropPalette: props.onDropPalette
+      ? (kind, x, y, iconId) => {
+          if (canvasTool === 'avatar') props.onExitAvatarMode?.();
+          props.onDropPalette?.(kind, x, y, iconId);
+        }
+      : undefined,
     viewportZoom,
     wrapperRef,
   });
@@ -222,6 +232,26 @@ export function Canvas(props: CanvasProps) {
   // the overlay share one source of truth; survives Pan/Select detours
   // because Canvas stays mounted.
   const spotlight = useSpotlight();
+
+  // Avatar mode (spec/101): the walking character's position / facing / step
+  // frame, its click-to-walk entry point, and the camera follow. Owns its own
+  // rAF loop, dormant unless the tool is active.
+  const avatar = useAvatarWalk({
+    active: canvasTool === 'avatar',
+    elements,
+    mainRef,
+    wrapperRef,
+    viewportOffset,
+    viewportZoom,
+    setViewportOffset,
+    onPresence: props.onAvatarPresence,
+  });
+  // Bounds of whatever the avatar is standing on, for its "you are here" ring.
+  const avatarStandingOn = useMemo(() => {
+    if (!avatar.standingOnId) return null;
+    const el = elements.find((e) => e.id === avatar.standingOnId);
+    return el && isBoxed(el) ? { x: el.x, y: el.y, width: el.width, height: el.height } : null;
+  }, [avatar.standingOnId, elements]);
 
   // Isometric view (spec/45): the orbit-able camera + the innermost
   // transform fragment, pivoted on the content centre — see
@@ -318,6 +348,7 @@ export function Canvas(props: CanvasProps) {
     setPan,
     setMarquee,
     spotlight,
+    avatar,
     isoCamera,
     canvasLongPress,
     beginPendingDrawGesture: beginPendingDrawOrPolygon,
@@ -416,8 +447,13 @@ export function Canvas(props: CanvasProps) {
         // pointer-events-none so NO element kind can be selected / dragged —
         // it's a read-only view tool. Clicks fall through to <main>, where a
         // drag pans (canvasTool === 'isometric' is added to `wantsPan`).
+        // Avatar mode (spec/101): same treatment for the same reason — the mode
+        // is read-only, so the diagram layer goes inert and every click falls
+        // through to <main>, where the capture handler turns it into a walk.
         className={`absolute inset-0 origin-center touch-none ${
-          canvasTool === 'spotlight' || canvasTool === 'isometric' ? 'pointer-events-none' : ''
+          canvasTool === 'spotlight' || canvasTool === 'isometric' || canvasTool === 'avatar'
+            ? 'pointer-events-none'
+            : ''
         } ${pendingDraw ? '' : cursorClass}`}
         // Scopes the [data-iso] CSS (globals.css): frames settle just under
         // the base plane while the camera orbits so they can't z-fight
@@ -468,6 +504,39 @@ export function Canvas(props: CanvasProps) {
           quickRingOpen={quickRingOpen}
           setQuickRingOpen={setQuickRingOpen}
         />
+        {/* Avatar mode (spec/101): the walking characters, INSIDE the
+            transformed wrapper so they pan / zoom with the diagram, and after
+            the element layer so they stand in front of the content they walk
+            over. Peers' characters render whether or not WE are in the mode —
+            someone else walking their diagram is worth seeing regardless. */}
+        {props.remoteAvatars.map((peer) => (
+          <AvatarWalker
+            key={peer.id}
+            pos={{ x: peer.avatar.x, y: peer.avatar.y }}
+            facing={peer.avatar.facing}
+            look={peer.avatar.look}
+            walking={peer.avatar.walking}
+            stepFrame={peer.avatar.stepFrame}
+            lift={peer.avatar.lift}
+            wave={peer.avatar.wave}
+            shirt={peer.color}
+            name={peer.name}
+            standingOn={null}
+          />
+        ))}
+        {avatar.pos ? (
+          <AvatarWalker
+            pos={avatar.pos}
+            facing={avatar.facing}
+            look={avatar.look}
+            walking={avatar.walking}
+            stepFrame={avatar.stepFrame}
+            lift={avatar.lift}
+            wave={avatar.wave}
+            shirt={props.selfParticipant.color}
+            standingOn={avatarStandingOn}
+          />
+        ) : null}
       </div>
 
       {/* Spotlight presenter shroud (spec/09). Screen-space sibling of the

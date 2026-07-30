@@ -1,6 +1,6 @@
 import { useEffect, type Dispatch, type MutableRefObject, type SetStateAction } from 'react';
 import { applyElementOp, type Tab } from '@livediagram/diagram';
-import { CHANGE_LOG_LIST_LIMIT, type LivePoll } from '@livediagram/api-schema';
+import { CHANGE_LOG_LIST_LIMIT, type AvatarPresence, type LivePoll } from '@livediagram/api-schema';
 import { nextFreeColor, type Participant } from '@/lib/identity';
 import {
   apiCreateRoomTicket,
@@ -47,6 +47,10 @@ export function useRoomConnection(opts: {
   setRemoteCursors: Dispatch<SetStateAction<Map<string, CursorPos>>>;
   setRemoteTabFocus: Dispatch<SetStateAction<Map<string, string>>>;
   setRemoteLaserTrails: Dispatch<SetStateAction<Map<string, LaserTrail>>>;
+  // Avatar mode (spec/101): peers' walking characters, latest snapshot each.
+  setRemoteAvatars: Dispatch<
+    SetStateAction<Map<string, { tabId: string; avatar: AvatarPresence }>>
+  >;
   setChangeLog: Dispatch<SetStateAction<ChangeLogEntry[]>>;
   setDiagramName: Dispatch<SetStateAction<string>>;
   setSelfParticipant: Dispatch<SetStateAction<Participant>>;
@@ -79,6 +83,7 @@ export function useRoomConnection(opts: {
     setRemoteCursors,
     setRemoteTabFocus,
     setRemoteLaserTrails,
+    setRemoteAvatars,
     setChangeLog,
     setDiagramName,
     setSelfParticipant,
@@ -108,6 +113,10 @@ export function useRoomConnection(opts: {
     // starts clean.
     const pendingCursors = new Map<string, { tabId: string; x: number; y: number } | null>();
     const pendingLasers = new Map<string, LaserTrail>();
+    // Avatar mode (spec/101): the latest character snapshot per peer, or null
+    // for "they left the mode". Coalesced exactly like cursors — a walking
+    // avatar publishes at the same ~30 Hz.
+    const pendingAvatars = new Map<string, { tabId: string; avatar: AvatarPresence } | null>();
     let presenceRafId: number | null = null;
     const flushPresence = () => {
       presenceRafId = null;
@@ -117,6 +126,21 @@ export function useRoomConnection(opts: {
         setRemoteCursors((prev) => {
           const next = new Map(prev);
           for (const [id, pos] of moves) next.set(id, pos);
+          return next;
+        });
+      }
+      if (pendingAvatars.size > 0) {
+        const moves = new Map(pendingAvatars);
+        pendingAvatars.clear();
+        setRemoteAvatars((prev) => {
+          const next = new Map(prev);
+          for (const [id, entry] of moves) {
+            // Leaving the mode DELETES the entry rather than storing a null:
+            // nothing renders a character that isn't there, so the map stays
+            // exactly as big as the number of people walking around.
+            if (entry) next.set(id, entry);
+            else next.delete(id);
+          }
           return next;
         });
       }
@@ -224,6 +248,9 @@ export function useRoomConnection(opts: {
         });
         setRemoteSelections((prev) => pruneMapToPresent(prev, present));
         setRemoteCursors((prev) => pruneMapToPresent(prev, present));
+        // A peer who disconnects takes their character with them (spec/101),
+        // so a closed tab can't leave someone standing on the canvas forever.
+        setRemoteAvatars((prev) => pruneMapToPresent(prev, present));
         // Same for the lastSeen idle tracker (a plain ref, not state):
         // drop departed peers so it can't grow unbounded over a
         // long-lived room with people joining / leaving via share links.
@@ -346,6 +373,11 @@ export function useRoomConnection(opts: {
               { x: op.x, y: op.y, t: performance.now() },
             ],
           });
+          schedulePresenceFlush();
+        } else if (op.kind === 'avatar') {
+          // Latest-wins per peer (no accumulation, unlike laser points): the
+          // character has one position at a time.
+          pendingAvatars.set(from, op.avatar ? { tabId: op.tabId, avatar: op.avatar } : null);
           schedulePresenceFlush();
         } else if (op.kind === 'tab-focus') {
           setRemoteTabFocus((prev) => {

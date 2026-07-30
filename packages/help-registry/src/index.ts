@@ -168,8 +168,8 @@ export const categories: Category[] = [
     slug: 'selection-modes',
     title: 'Selection Modes',
     description:
-      'The pointer modes at the top of the palette: Select, Hand, Eraser, Format Painter, Laser, Spotlight, and Isometric.',
-    articleCount: 7,
+      'The pointer modes at the top of the palette: Select, Hand, Eraser, Format Painter, Laser, Spotlight, Avatar, and Isometric.',
+    articleCount: 9,
     kind: 'feature',
   },
   {
@@ -768,6 +768,25 @@ export const articles: Article[] = [
     keywords: 'dim focus highlight presentation emphasis attention darken',
     category: 'Selection Modes',
     categorySlug: 'selection-modes',
+  },
+  {
+    slug: 'avatar-mode',
+    title: 'Avatar Mode',
+    description: 'Walk a pixel character around the diagram while you talk through it.',
+    keywords:
+      'walk walking character habbo person figure sprite avatar presentation present tour narrate arrow keys steer jump hop flag wave space male female right-click read-only',
+    category: 'Selection Modes',
+    categorySlug: 'selection-modes',
+  },
+  {
+    slug: 'walking-together',
+    title: 'Walking Together',
+    description: "Everyone on a shared diagram sees everyone else's walking character.",
+    keywords:
+      'multiplayer together shared collaborate collaboration peers others everyone realtime real-time avatars characters names colour color presence',
+    category: 'Selection Modes',
+    categorySlug: 'selection-modes',
+    parentSlug: 'avatar-mode',
   },
   {
     slug: 'isometric-mode',

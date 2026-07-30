@@ -4,6 +4,7 @@ import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import type { useCanvasPanAndMarquee } from '@/hooks/canvas/useCanvasPanAndMarquee';
 import type { useIsometricCamera } from '@/hooks/canvas/useIsometricCamera';
 import type { useSpotlight } from '@/hooks/canvas/useSpotlight';
+import type { useAvatarWalk } from '@/hooks/canvas/useAvatarWalk';
 import type { useLongPress } from '@/hooks/ui/useLongPress';
 
 type PanAndMarquee = ReturnType<typeof useCanvasPanAndMarquee>;
@@ -28,6 +29,7 @@ export function useCanvasSurfaceGestures({
   setPan,
   setMarquee,
   spotlight,
+  avatar,
   isoCamera,
   canvasLongPress,
   beginPendingDrawGesture,
@@ -45,6 +47,7 @@ export function useCanvasSurfaceGestures({
   setPan: PanAndMarquee['setPan'];
   setMarquee: PanAndMarquee['setMarquee'];
   spotlight: ReturnType<typeof useSpotlight>;
+  avatar: ReturnType<typeof useAvatarWalk>;
   isoCamera: ReturnType<typeof useIsometricCamera>;
   canvasLongPress: ReturnType<typeof useLongPress>;
   // Starts the queued draw-to-size / freehand gesture; true when it
@@ -127,6 +130,26 @@ export function useCanvasSurfaceGestures({
       if (e.button === 0) spotlight.grow();
       return;
     }
+    // Avatar mode (spec/101): a non-editing presenter mode where a primary
+    // click means "walk over there". Handled in the capture phase for the
+    // same reason as Spotlight: the diagram layer is pointer-inert, but arrow
+    // hit-bands re-enable themselves via `pointer-events: stroke` and select
+    // on ANY button, so we swallow the secondary button too. Middle-mouse
+    // (pan) and held-Space (temporary pan) fall through untouched.
+    if (canvasTool === 'avatar' && !spaceHeldRef.current && e.button !== 1) {
+      focusCanvas();
+      e.preventDefault();
+      e.stopPropagation();
+      const rect = wrapperRef.current?.getBoundingClientRect();
+      const point = rect ? pointerToCanvas(e.clientX, e.clientY, rect, viewportZoom) : null;
+      if (!point) return;
+      // Left-click walks there; right-click ON the character changes who it
+      // is (male / female), and a right-click anywhere else is swallowed —
+      // the context menu stays shut in this mode either way.
+      if (e.button === 0) avatar.walkTo(point);
+      else if (e.button === 2) avatar.toggleLookAt(point);
+      return;
+    }
     // Eraser tool (spec/09): a primary-button press deletes whatever
     // it lands on and starts a drag-to-erase gesture. Handled in the
     // capture phase so it wins over an element's own select/drag and
@@ -192,8 +215,9 @@ export function useCanvasSurfaceGestures({
     // shrink gesture, handled in onContextMenuCapture). Isometric
     // (spec/45) likewise: right-click-drag orbits the camera, so the
     // canvas / tab menu must never open in that tool or it interrupts
-    // the orbit gesture.
-    if (canvasTool === 'spotlight' || canvasTool === 'isometric') return;
+    // the orbit gesture. Avatar mode (spec/101) is read-only and mid-
+    // narration: a menu popping open would interrupt the tour.
+    if (canvasTool === 'spotlight' || canvasTool === 'isometric' || canvasTool === 'avatar') return;
     onCanvasContextMenu?.(e.clientX, e.clientY);
   };
 

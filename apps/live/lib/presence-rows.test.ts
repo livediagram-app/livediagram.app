@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import type { Participant } from './identity';
+import type { AvatarPresence } from '@livediagram/api-schema';
 import {
   buildLaserTrailRows,
   buildParticipantsByTab,
+  buildRemoteAvatarRows,
   buildRemoteCursorRows,
   buildRemoteSelectionsByElement,
   resolveOwnerBadge,
@@ -126,6 +128,41 @@ describe('buildRemoteCursorRows', () => {
     ]);
     const rows = buildRemoteCursorRows(cursors, byId(self, a, p('c')), 'me', 't1');
     expect(rows).toEqual([{ id: 'a', name: 'A', color: '#123456', x: 5, y: 6 }]);
+  });
+});
+
+describe('buildRemoteAvatarRows', () => {
+  const walker: AvatarPresence = {
+    x: 10,
+    y: 20,
+    facing: 'left',
+    look: 'female',
+    walking: true,
+    stepFrame: 1,
+    lift: 0,
+    wave: null,
+  };
+  const entry = (tabId: string) => ({ tabId, avatar: walker });
+
+  it('joins each peer character with their live name + colour', () => {
+    const peer = p('peer', { name: 'Ada', color: '#ff0000' });
+    const rows = buildRemoteAvatarRows(new Map([['peer', entry('t1')]]), byId(peer), 'me', 't1');
+    expect(rows).toEqual([{ id: 'peer', name: 'Ada', color: '#ff0000', avatar: walker }]);
+  });
+
+  it('drops self, other tabs, and participants who have left the room', () => {
+    const peer = p('peer');
+    const rows = buildRemoteAvatarRows(
+      new Map([
+        ['me', entry('t1')],
+        ['peer', entry('t2')],
+        ['ghost', entry('t1')],
+      ]),
+      byId(peer),
+      'me',
+      't1',
+    );
+    expect(rows).toEqual([]);
   });
 });
 

@@ -1,7 +1,8 @@
 // Palette-category illustrations (spec/55): the mode picker (Select, Hand,
-// Eraser, Format Painter, Laser, Spotlight, Isometric) and the palette settings
-// popover (Auto-Attach Arrows, Alignment Guides, Minimal Panels, Reset Palette
-// Position). Composed only from the shared primitives so the house style holds.
+// Eraser, Format Painter, Laser, Spotlight, Avatar, Isometric) and the palette
+// settings popover (Auto-Attach Arrows, Alignment Guides, Minimal Panels, Reset
+// Palette Position). Composed only from the shared primitives so the house style
+// holds — except the Avatar sprite, which is deliberately pixel art.
 
 import { useId } from 'react';
 import { Scene, Shape, Arrow, SelectionBox, Panel, Tile, Label, Button } from './primitives';
@@ -104,6 +105,19 @@ function SpotlightGlyph({ on = false }: { on?: boolean }) {
   );
 }
 
+/** A mid-stride walking figure (Avatar mode). */
+function AvatarGlyph({ on = false }: { on?: boolean }) {
+  const cls = on ? 'stroke-white' : 'stroke-slate-500';
+  return (
+    <g className={cls} strokeWidth={1.5} fill="none" strokeLinecap="round">
+      <circle r={2} cx={0.5} cy={-5} className={on ? 'stroke-white' : 'stroke-slate-500'} />
+      <path d="M0.5 -2.4 v4" />
+      <path d="M0.5 1.6 l-3 4.4 M0.5 1.6 l3.2 4.4" />
+      <path d="M0.5 -1.2 l-3.4 1.6 M0.5 -1.2 l3.4 1.2" />
+    </g>
+  );
+}
+
 /** An isometric cube glyph. */
 function IsometricGlyph({ on = false }: { on?: boolean }) {
   const cls = on ? 'stroke-white' : 'stroke-slate-500';
@@ -122,6 +136,7 @@ const MODES = [
   { key: 'painter', label: 'Painter', Glyph: PainterGlyph },
   { key: 'laser', label: 'Laser', Glyph: LaserGlyph },
   { key: 'spotlight', label: 'Spot', Glyph: SpotlightGlyph },
+  { key: 'avatar', label: 'Walk', Glyph: AvatarGlyph },
   { key: 'isometric', label: 'Iso', Glyph: IsometricGlyph },
 ] as const;
 
@@ -409,6 +424,60 @@ function IsoCard({
         </Label>
       )}
     </g>
+  );
+}
+
+/** Avatar mode: the picker with Walk lit, the pixel character standing on the
+ *  shape being talked about (ringed), and the dashed path it walked from the
+ *  previous shape. */
+export function AvatarMode() {
+  // The sprite, at 3x the editor's pixel grid so it reads at article size.
+  const px = 3;
+  const p = (n: number) => n * px;
+  return (
+    <Scene w={420} h={230}>
+      <ModeRow active="avatar" />
+      <Shape x={68} y={150} w={76} h={44} label="A" />
+      <Shape x={248} y={128} w={88} h={50} accent label="B" />
+      {/* Walked path + the click that started it */}
+      <path
+        d="M116 186 q54 6 104 -12"
+        className="stroke-brand-300"
+        strokeWidth={2}
+        fill="none"
+        strokeDasharray="4 5"
+        strokeLinecap="round"
+      />
+      <circle cx={116} cy={186} r={4} className="fill-brand-300/60" />
+      {/* "You are here" ring on the shape the avatar arrived at */}
+      <rect
+        x={244}
+        y={124}
+        width={96}
+        height={58}
+        rx={8}
+        className="fill-none stroke-brand-400"
+        strokeWidth={2}
+      />
+      {/* The character, standing on the ringed shape (feet on its lower edge) */}
+      <g transform={`translate(${272 - p(8)} ${182 - p(23)})`} shapeRendering="crispEdges">
+        <ellipse cx={p(8)} cy={p(23)} rx={p(5)} ry={p(1.2)} className="fill-slate-900/25" />
+        {/* legs + shoes */}
+        <rect x={p(5)} y={p(15)} width={p(3)} height={p(6)} className="fill-slate-600" />
+        <rect x={p(9)} y={p(15)} width={p(3)} height={p(6)} className="fill-slate-600" />
+        <rect x={p(5)} y={p(21)} width={p(3)} height={p(2)} className="fill-slate-800" />
+        <rect x={p(9)} y={p(21)} width={p(3)} height={p(2)} className="fill-slate-800" />
+        {/* torso + sleeves */}
+        <rect x={p(4)} y={p(9)} width={p(8)} height={p(6)} className="fill-brand-500" />
+        <rect x={p(2)} y={p(9)} width={p(2)} height={p(4)} className="fill-brand-500" />
+        <rect x={p(12)} y={p(9)} width={p(2)} height={p(4)} className="fill-brand-600" />
+        {/* head + hair + eyes */}
+        <rect x={p(4)} y={p(1)} width={p(8)} height={p(8)} className="fill-amber-200" />
+        <rect x={p(3)} y={0} width={p(10)} height={p(3)} className="fill-amber-900" />
+        <rect x={p(6)} y={p(5)} width={px} height={px} className="fill-slate-800" />
+        <rect x={p(9)} y={p(5)} width={px} height={px} className="fill-slate-800" />
+      </g>
+    </Scene>
   );
 }
 

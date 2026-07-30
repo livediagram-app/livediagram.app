@@ -6,6 +6,25 @@ import type { LivePoll } from './poll';
 // Realtime room messages
 // ---------------------------------------------------------------------
 
+// One participant's Avatar-mode character (spec/101), as it travels over the
+// presence channel. Position is the character's FEET in canvas coords; the
+// animation inputs ride along so a peer draws the same walk cycle, hop, and
+// flag wave the sender sees. Deliberately small — this goes out at cursor
+// rates — and purely cosmetic: `look` is a costume, never an identity claim.
+export type AvatarPresence = {
+  x: number;
+  y: number;
+  facing: 'down' | 'up' | 'left' | 'right';
+  look: 'male' | 'female';
+  walking: boolean;
+  // Two-frame leg swing (0 | 1).
+  stepFrame: number;
+  // Height above the ground mid-hop, in canvas px (0 = standing).
+  lift: number;
+  // Flag-wave frame, or null when the flag is down.
+  wave: number | null;
+};
+
 // Outgoing WebSocket frames the room sends to clients.
 // `presence` is the full participant list refreshed on join / leave;
 // `op` is an arbitrary diagram change rebroadcast from another client.
@@ -116,6 +135,12 @@ export type RoomOp =
   // LaserOverlay. The active tab id scopes the rendering so peers on
   // a different tab don't see the laser.
   | { kind: 'laser'; tabId: string; x: number; y: number }
+  // The sender's Avatar-mode character (spec/101), so everyone in the room
+  // sees everyone else walking around. Ephemeral presence exactly like
+  // cursor / laser: throttled to ~30 Hz, never logged, never replayed to a
+  // reconnecting client, and `avatar: null` means "I left the mode, drop my
+  // character". The tab id scopes rendering to peers looking at the same tab.
+  | { kind: 'avatar'; tabId: string; avatar: AvatarPresence | null }
   // --- Live poll (spec/88) -------------------------------------------
   // Deliberately NOT a Tab field like the timer / dot-vote: a poll is
   // ephemeral, so it exists only as these ops and the memory of the

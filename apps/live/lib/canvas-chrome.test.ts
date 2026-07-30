@@ -79,6 +79,12 @@ describe('canvasCursorClass', () => {
       'cursor-grab',
     );
   });
+  it('avatar mode shows the pointer cursor (click to walk) unless Space is held', () => {
+    expect(canvasCursorClass({ ...rest, canvasTool: 'avatar' })).toBe('cursor-pointer');
+    expect(canvasCursorClass({ ...rest, canvasTool: 'avatar', spaceHeld: true })).toBe(
+      'cursor-grab',
+    );
+  });
   it('the eraser tool shows the eraser cursor unless Space is held', () => {
     expect(canvasCursorClass({ ...rest, canvasTool: 'eraser' })).toBe('cursor-eraser');
     // Space held suppresses the eraser cursor, falling through to the rest

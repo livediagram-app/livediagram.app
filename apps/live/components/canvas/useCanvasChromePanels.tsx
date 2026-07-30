@@ -169,6 +169,7 @@ export function useCanvasChromePanels({
     onRevertChange,
     onPreviewRevert,
     onSetCanvasTool,
+    onExitAvatarMode,
     onToggleActivityMinimized,
     onToggleMinimalPanels,
     onUndo,
@@ -436,6 +437,7 @@ export function useCanvasChromePanels({
         position={paletteWiring.position}
         canvasTool={canvasTool}
         onSetCanvasTool={onSetCanvasTool}
+        onExitAvatarMode={onExitAvatarMode}
         onToggleZen={onToggleZen}
         onMoveTo={onMovePalette}
         onReset={paletteWiring.onReset}
