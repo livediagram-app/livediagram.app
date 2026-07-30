@@ -94,6 +94,9 @@ export function PaletteTabBar({
           // Icons / Technology) rather than capping at max-h + scrolling — the
           // list is short and fixed, so a scrollbar just looked cramped.
           autoHeight
+          // Tile grid (spec/108): seven equal-weight, icon-bearing categories
+          // read faster as a grid than as a column you scan top to bottom.
+          grid
           onChange={setActiveId}
           options={tabs.map((tab) => ({ id: tab.id, label: tab.label, icon: tab.icon }))}
         />

@@ -117,3 +117,5 @@ The numeric prefix is the suggested read order (purpose → constraints → arch
 - Reference specs by filename in PRs and discussions.
 - If two specs conflict, that's the bug — fix the specs first, then the code.
 - Keep specs terse but unambiguous. Update them when something changes; don't let them drift.
+
+| 108 | [Dropdown tile grids](108-dropdown-tile-grid.md) | The canvas-tool and palette-category pickers lay their options out as an icon-over-label tile grid instead of a long column, matching the context menus' MenuTileGrid |

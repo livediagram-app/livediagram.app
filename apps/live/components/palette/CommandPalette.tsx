@@ -340,6 +340,9 @@ export function CommandPalette({
               value={canvasTool}
               variant="flush"
               autoHeight
+              // Tile grid (spec/108): nine tools in one column was a lot of
+              // travel for a flat choice between equal-weight modes.
+              grid
               // 'zen' is an action entry, not a tool: fire the toggle and
               // keep the current tool selected (see canvas-tool-options).
               onChange={(id) => {

@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Portal } from '@/components/primitives/Portal';
 import { Tooltip } from '@/components/primitives/Tooltip';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
@@ -55,6 +55,7 @@ export function PaletteDropdown({
   menuClassName = 'w-max min-w-[7rem] max-w-[12rem]',
   variant = 'bordered',
   autoHeight = false,
+  grid = false,
   dataTourId,
 }: {
   value: string;
@@ -87,6 +88,14 @@ export function PaletteDropdown({
   // lists (the canvas-tool picker) where every option should always be
   // visible; leave off for long lists (icon categories) that need to scroll.
   autoHeight?: boolean;
+  // Lay the options out as an icon-over-label TILE GRID instead of one long
+  // vertical list (spec/108). For pickers whose options are all icon-bearing
+  // and roughly equal weight — the canvas tool, the palette category — where
+  // a nine-item column is a lot of travel and a lot of reading for what is
+  // really a flat choice. Matches the context menu's MenuTileGrid, so the two
+  // menu systems read alike. Leave off for text-only or long scrolling lists,
+  // where a column is genuinely easier to scan.
+  grid?: boolean;
   // Interactive-tour anchor (spec/79): rendered as data-tour-id on the
   // trigger and `<id>-menu` on the portalled listbox so tour steps can open
   // this dropdown and anchor to its menu.
@@ -228,6 +237,10 @@ export function PaletteDropdown({
             // reads as motion rather than a pop — including when the editor
             // tour opens these programmatically (spec/79).
             className={`fixed z-[var(--z-overlay)] w-max border border-slate-200 bg-white py-1 shadow-lg dark:border-slate-700 dark:bg-slate-900 ${
+              // The grid needs its own columns + a floor width; the list keeps
+              // hugging its content as before.
+              grid ? 'grid min-w-[13.5rem] grid-cols-3 gap-1 px-1.5' : ''
+            } ${
               coords?.flipUp
                 ? 'origin-bottom animate-dropdown-up'
                 : 'origin-top animate-dropdown-down'
@@ -259,58 +272,110 @@ export function PaletteDropdown({
                 first, THEN decide dividers from the surviving list — a divider
                 sits before an option whose group differs from the previous
                 visible one (never at the top, so no stray leading rule). */}
-            {options
-              .filter((opt) => opt.id !== value)
-              .map((opt, i, visible) => {
-                const prev = visible[i - 1];
-                const divide =
-                  i > 0 && opt.group !== undefined && prev?.group !== undefined
-                    ? opt.group !== prev.group
-                    : false;
-                return (
-                  <div key={opt.id}>
-                    {divide ? (
-                      <div
-                        role="separator"
-                        className="mx-2 my-1 border-t border-slate-200 dark:border-slate-700"
-                      />
-                    ) : null}
-                    <button
-                      type="button"
-                      role="option"
-                      aria-selected={false}
-                      // Stable per-option hook for the tour (and tests) to
-                      // click a specific option, e.g. the Tools category.
-                      data-option-id={opt.id}
-                      disabled={opt.disabled}
-                      onClick={() => {
-                        if (opt.disabled) return;
-                        onChange(opt.id);
-                        setOpen(false);
-                      }}
-                      className={`flex w-full items-center gap-2 text-left text-slate-600 dark:text-slate-300 ${
-                        opt.disabled
-                          ? 'cursor-not-allowed opacity-40'
-                          : 'hover:bg-slate-100 dark:hover:bg-slate-800'
-                      } ${
-                        // Match the trigger's sizing so the options read as the
-                        // same control AND are the same height as the selected
-                        // item (`py-3`), which is an easier tap target on touch.
-                        // Flush pickers are roomier than the compact filter pills.
-                        connected ? 'px-3.5 py-3 text-xs' : 'px-2.5 py-1.5 text-[11px]'
-                      }`}
-                    >
-                      {opt.icon ? <span className={ICON_WRAP}>{opt.icon}</span> : null}
-                      <span className="flex-1 truncate">{opt.label}</span>
-                      {opt.shortcut ? (
-                        <kbd className="rounded-[3px] border border-slate-300 bg-white px-1 text-[8px] font-semibold uppercase leading-[1.4] text-slate-500 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-400">
-                          {opt.shortcut}
-                        </kbd>
-                      ) : null}
-                    </button>
-                  </div>
-                );
-              })}
+            {grid
+              ? // Tile grid. The group index still separates bands, but as a
+                // full-width rule between rows rather than between items.
+                options
+                  .filter((opt) => opt.id !== value)
+                  .map((opt, i, visible) => {
+                    const prev = visible[i - 1];
+                    const divide =
+                      i > 0 && opt.group !== undefined && prev?.group !== undefined
+                        ? opt.group !== prev.group
+                        : false;
+                    return (
+                      <Fragment key={opt.id}>
+                        {divide ? (
+                          <div
+                            role="separator"
+                            className="col-span-full mx-1 my-0.5 border-t border-slate-200 dark:border-slate-700"
+                          />
+                        ) : null}
+                        <button
+                          type="button"
+                          role="option"
+                          aria-selected={false}
+                          data-option-id={opt.id}
+                          disabled={opt.disabled}
+                          onClick={() => {
+                            if (opt.disabled) return;
+                            onChange(opt.id);
+                            setOpen(false);
+                          }}
+                          className={`relative flex cursor-pointer flex-col items-center justify-start gap-1.5 rounded-md px-1.5 py-2 text-center text-[11px] font-medium leading-tight text-slate-700 transition dark:text-slate-200 ${
+                            opt.disabled
+                              ? 'cursor-not-allowed opacity-40'
+                              : 'hover:bg-slate-100 dark:hover:bg-slate-800'
+                          }`}
+                        >
+                          {opt.icon ? (
+                            <span className="text-slate-400 dark:text-slate-400">{opt.icon}</span>
+                          ) : null}
+                          <span className="w-full truncate">{opt.label}</span>
+                          {/* Kept, but tucked into the corner: the shortcut is
+                              worth discovering and worth nothing at the cost of
+                              the label's line. */}
+                          {opt.shortcut ? (
+                            <kbd className="absolute right-0.5 top-0.5 rounded-[3px] px-0.5 text-[8px] font-semibold uppercase leading-[1.4] text-slate-400 dark:text-slate-500">
+                              {opt.shortcut}
+                            </kbd>
+                          ) : null}
+                        </button>
+                      </Fragment>
+                    );
+                  })
+              : options
+                  .filter((opt) => opt.id !== value)
+                  .map((opt, i, visible) => {
+                    const prev = visible[i - 1];
+                    const divide =
+                      i > 0 && opt.group !== undefined && prev?.group !== undefined
+                        ? opt.group !== prev.group
+                        : false;
+                    return (
+                      <div key={opt.id}>
+                        {divide ? (
+                          <div
+                            role="separator"
+                            className="mx-2 my-1 border-t border-slate-200 dark:border-slate-700"
+                          />
+                        ) : null}
+                        <button
+                          type="button"
+                          role="option"
+                          aria-selected={false}
+                          // Stable per-option hook for the tour (and tests) to
+                          // click a specific option, e.g. the Tools category.
+                          data-option-id={opt.id}
+                          disabled={opt.disabled}
+                          onClick={() => {
+                            if (opt.disabled) return;
+                            onChange(opt.id);
+                            setOpen(false);
+                          }}
+                          className={`flex w-full items-center gap-2 text-left text-slate-600 dark:text-slate-300 ${
+                            opt.disabled
+                              ? 'cursor-not-allowed opacity-40'
+                              : 'hover:bg-slate-100 dark:hover:bg-slate-800'
+                          } ${
+                            // Match the trigger's sizing so the options read as the
+                            // same control AND are the same height as the selected
+                            // item (`py-3`), which is an easier tap target on touch.
+                            // Flush pickers are roomier than the compact filter pills.
+                            connected ? 'px-3.5 py-3 text-xs' : 'px-2.5 py-1.5 text-[11px]'
+                          }`}
+                        >
+                          {opt.icon ? <span className={ICON_WRAP}>{opt.icon}</span> : null}
+                          <span className="flex-1 truncate">{opt.label}</span>
+                          {opt.shortcut ? (
+                            <kbd className="rounded-[3px] border border-slate-300 bg-white px-1 text-[8px] font-semibold uppercase leading-[1.4] text-slate-500 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-400">
+                              {opt.shortcut}
+                            </kbd>
+                          ) : null}
+                        </button>
+                      </div>
+                    );
+                  })}
           </div>
         </Portal>
       ) : null}
