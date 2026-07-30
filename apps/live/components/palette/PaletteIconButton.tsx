@@ -1,6 +1,7 @@
 import { SHAPE_DEFAULT_SIZE, type ShapeKind } from '@livediagram/diagram';
 import { PALETTE_DND_MIME } from '@/lib/icons';
 import { setPaletteDragPreview, suppressNativeDragImage } from '@/lib/palette-drag-preview';
+import { tileCaption } from './tile-caption';
 import { Tooltip } from '@/components/primitives/Tooltip';
 import { useModKeyHeld } from '@/hooks/ui/useModKeyHeld';
 import { createContext, useContext } from 'react';
@@ -143,15 +144,9 @@ export function IconButton({
       } as React.CSSProperties)
     : undefined;
   const glyphClass = tintFill ? 'palette-tile-filled ' : '';
-  // Short caption under the icon, derived from the action label: drop a
-  // leading "Add " and any parenthetical, then sentence-case. "Add web
-  // browser" → "Web browser", "Pencil (freehand)" → "Pencil". An explicit
-  // `caption` prop overrides this where the derived name is too long.
-  const captionBase = label
-    .replace(/^add\s+/i, '')
-    .replace(/\s*\([^)]*\)/g, '')
-    .trim();
-  const caption = captionOverride ?? captionBase.charAt(0).toUpperCase() + captionBase.slice(1);
+  // Short caption under the icon (see tileCaption — shared with the Tools
+  // tab's rows so the same tool is never named two ways).
+  const caption = tileCaption(label, captionOverride);
   const button = (
     <button
       type="button"

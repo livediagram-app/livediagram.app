@@ -29,6 +29,32 @@ describe('PALETTE_TILES catalogue', () => {
   });
 });
 
+describe('tool blurbs', () => {
+  // The Tools tab renders a row per tool with a one-line explanation under the
+  // name (see PaletteToolRows). A tool without one leaves a bare row, so this
+  // is the same kind of registration rule the help centre has.
+  const toolTiles = [...tilesInSection('tools'), ...tilesInSection('data')];
+
+  it('gives every tool in the Tools tab a blurb', () => {
+    const missing = toolTiles.filter((t) => !t.blurb?.trim()).map((t) => t.id);
+    expect(missing).toEqual([]);
+  });
+
+  it('keeps each blurb short enough for a palette-width row', () => {
+    // Roughly two lines at the rendered size. Past that it stops being a
+    // caption and starts being the tooltip, which already exists.
+    const tooLong = toolTiles.filter((t) => (t.blurb ?? '').length > 60).map((t) => t.id);
+    expect(tooLong).toEqual([]);
+  });
+
+  it('does not just repeat the tile caption', () => {
+    const echoes = toolTiles
+      .filter((t) => t.blurb?.trim().toLowerCase() === (t.caption ?? '').trim().toLowerCase())
+      .map((t) => t.id);
+    expect(echoes).toEqual([]);
+  });
+});
+
 describe('TOOL_GROUPS', () => {
   it('has unique ids and non-empty labels (each renders as a PaletteSectionLabel heading)', () => {
     const ids = TOOL_GROUPS.map((g) => g.id);

@@ -37,7 +37,7 @@ export type PaletteTileActions = {
   hasImage: boolean;
 };
 
-function tileHandler(def: PaletteTileDef, actions: PaletteTileActions): () => void {
+export function tileHandler(def: PaletteTileDef, actions: PaletteTileActions): () => void {
   const a = def.action;
   switch (a.type) {
     case 'shape':
@@ -74,7 +74,10 @@ function tileHandler(def: PaletteTileDef, actions: PaletteTileActions): () => vo
 // Whether this tile is the armed draw-to-size intent (the pressed
 // highlight). Table / annotation / link-card drop immediately and never
 // arm, so they have no active state.
-function tileActive(def: PaletteTileDef, pendingDraw: PendingDraw | null | undefined): boolean {
+export function tileActive(
+  def: PaletteTileDef,
+  pendingDraw: PendingDraw | null | undefined,
+): boolean {
   if (!pendingDraw) return false;
   const a = def.action;
   switch (a.type) {

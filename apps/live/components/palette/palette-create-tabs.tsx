@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { PaletteTileGrid, type PaletteTileActions } from './PaletteTileGrid';
+import { PaletteToolRows } from './PaletteToolRows';
 import { ToolsBreadcrumb, ToolsCategoryGrid } from './palette-tools-nav';
 import { PaletteSearchInput } from './PaletteSearchInput';
 import { TOOL_GROUPS, tilesInSection, tilesInToolGroup } from './palette-tile-defs';
@@ -111,7 +112,7 @@ export function PaletteToolsTab({ pendingDraw, actions }: TabProps) {
         // Searching cuts across categories, so it replaces the whole navigation
         // with one flat grid of hits — the breadcrumb would be lying.
         matches.length > 0 ? (
-          <PaletteTileGrid tiles={matches} actions={actions} pendingDraw={pendingDraw} />
+          <PaletteToolRows tiles={matches} actions={actions} pendingDraw={pendingDraw} />
         ) : (
           <p className="px-1 py-2 text-center text-[11px] text-slate-400">
             No tools match “{query}”.
@@ -120,15 +121,11 @@ export function PaletteToolsTab({ pendingDraw, actions }: TabProps) {
       ) : openSection ? (
         <>
           <ToolsBreadcrumb label={openSection.label} onBack={() => setOpenId(null)} />
-          {openSection.tiles ? (
-            <PaletteTileGrid
-              tiles={openSection.tiles}
-              actions={actions}
-              pendingDraw={pendingDraw}
-            />
-          ) : (
-            <PaletteTileGrid section="data" actions={actions} pendingDraw={pendingDraw} />
-          )}
+          <PaletteToolRows
+            tiles={openSection.tiles ?? tilesInSection('data')}
+            actions={actions}
+            pendingDraw={pendingDraw}
+          />
         </>
       ) : (
         <ToolsCategoryGrid categories={categories} onOpen={openCategory} />

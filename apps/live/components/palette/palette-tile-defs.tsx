@@ -106,6 +106,11 @@ export type PaletteTileDef = {
   // for the tile (see IconButton).
   caption?: string;
   description: string;
+  // A short line rendered UNDER the tile in list layouts (the Tools tab).
+  // Separate from `description`, which is the fuller tooltip / search text:
+  // this one has to fit a palette-width row, so it is a clause, not a
+  // sentence, and it says what the tool IS rather than how to use it.
+  blurb?: string;
   icon: React.ReactNode;
   shortcut?: string;
   // IconButton flags (spec/09 theme tinting): `filled` tiles preview the
@@ -395,6 +400,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     // Page, not Document, so the palette and the selection toolbar agree —
     // and so it never collides with the Shapes tab's flowchart "document".
     id: 'tools:page',
+    blurb: 'A paper-shaped page for prose',
     section: 'tools',
     toolGroup: 'write',
     label: 'Add page',
@@ -424,6 +430,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   {
     id: 'tools:text',
+    blurb: 'A free-standing text label',
     section: 'tools',
     toolGroup: 'write',
     label: 'Add text',
@@ -443,6 +450,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   {
     id: 'tools:pencil',
+    blurb: 'Freehand sketching, or snap to shapes',
     section: 'tools',
     toolGroup: 'write',
     label: 'Pencil (freehand)',
@@ -476,6 +484,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   {
     id: 'tools:highlighter',
+    blurb: 'A wide translucent marker stroke',
     section: 'tools',
     toolGroup: 'write',
     label: 'Highlighter',
@@ -503,6 +512,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   {
     id: 'tools:polygon',
+    blurb: 'Straight edges, point by point',
     section: 'tools',
     toolGroup: 'write',
     label: 'Polygon',
@@ -526,6 +536,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   {
     id: 'tools:arrow',
+    blurb: 'A connector you place by hand',
     section: 'tools',
     toolGroup: 'write',
     label: 'Add arrow',
@@ -548,6 +559,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   {
     id: 'tools:sticky',
+    blurb: 'A coloured note card',
     section: 'tools',
     toolGroup: 'write',
     label: 'Add sticky note',
@@ -577,6 +589,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   {
     id: 'tools:table',
+    blurb: 'An editable grid of cells',
     section: 'tools',
     toolGroup: 'structure',
     label: 'Add table',
@@ -602,6 +615,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   {
     id: 'tools:code-block',
+    blurb: 'Syntax-highlighted code card',
     section: 'tools',
     toolGroup: 'blocks',
     label: 'Add code block',
@@ -632,6 +646,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     // saved favourites, and changing it would silently drop the tile from
     // anyone who had favourited it.
     id: 'tools:mode-button',
+    blurb: 'Switches your selection mode',
     section: 'tools',
     toolGroup: 'behaviour',
     label: 'Add selection mode button',
@@ -671,6 +686,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     // saved favourites — renaming it would silently drop the tile for anyone
     // who had favourited it.
     id: 'tools:door',
+    blurb: 'Step through to its linked portal',
     section: 'tools',
     toolGroup: 'behaviour',
     label: 'Add portal',
@@ -700,6 +716,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     // Session button (spec/105): starts a timer / vote / poll for the room.
     id: 'tools:session-button',
+    blurb: 'Starts a timer, vote or poll',
     section: 'tools',
     toolGroup: 'behaviour',
     label: 'Add session button',
@@ -713,6 +730,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     // Reveal zone (spec/106): a cover you click to see what is underneath.
     id: 'tools:reveal',
+    blurb: 'Double-click to look underneath',
     section: 'tools',
     toolGroup: 'behaviour',
     label: 'Add reveal zone',
@@ -726,6 +744,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     // Picker (spec/107): rolls a person or a written option.
     id: 'tools:picker',
+    blurb: 'Picks someone or something at random',
     section: 'tools',
     toolGroup: 'behaviour',
     label: 'Add picker',
@@ -738,6 +757,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   {
     id: 'tools:checklist',
+    blurb: 'Tickable to-do rows',
     section: 'tools',
     toolGroup: 'blocks',
     label: 'Add checklist',
@@ -767,6 +787,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   {
     id: 'tools:image',
+    blurb: 'Place an uploaded picture',
     section: 'tools',
     toolGroup: 'media',
     label: 'Add image',
@@ -801,6 +822,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   {
     id: 'tools:avatar',
+    blurb: 'A circular photo of a person',
     section: 'tools',
     toolGroup: 'media',
     label: 'Add avatar',
@@ -829,6 +851,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   {
     id: 'tools:user',
+    blurb: 'An actor figure for a person',
     section: 'tools',
     toolGroup: 'media',
     label: 'Add user',
@@ -856,6 +879,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   {
     id: 'tools:frame',
+    blurb: 'A labelled box that groups a section',
     section: 'tools',
     toolGroup: 'structure',
     label: 'Add frame',
@@ -880,6 +904,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   {
     id: 'tools:annotation',
+    blurb: 'A marker that holds a note',
     section: 'tools',
     toolGroup: 'write',
     label: 'Add annotation',
@@ -906,6 +931,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   {
     id: 'tools:link-card',
+    blurb: 'A clickable preview of a link',
     section: 'tools',
     toolGroup: 'blocks',
     label: 'Add link card',
@@ -931,6 +957,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   {
     id: 'tools:timeline',
+    blurb: 'A track for sequencing events',
     section: 'tools',
     toolGroup: 'structure',
     label: 'Add timeline rail',
@@ -958,6 +985,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   // --- Data (spec/53) -------------------------------------------------------
   {
     id: 'data:pie',
+    blurb: 'Proportions of a whole',
     section: 'data',
     label: 'Add pie chart',
     caption: 'Pie',
@@ -973,6 +1001,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   {
     id: 'data:bar',
+    blurb: 'Compare values side by side',
     section: 'data',
     label: 'Add bar chart',
     caption: 'Bar',
@@ -989,6 +1018,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   {
     id: 'data:line',
+    blurb: 'A trend over time',
     section: 'data',
     label: 'Add line chart',
     caption: 'Line',
@@ -1014,6 +1044,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   {
     id: 'data:progress-bar',
+    blurb: 'How far along something is',
     section: 'data',
     label: 'Add progress bar',
     caption: 'Progress',
@@ -1038,6 +1069,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   {
     id: 'data:progress-ring',
+    blurb: 'The same, as a donut meter',
     section: 'data',
     label: 'Add progress ring',
     caption: 'Donut',
@@ -1053,6 +1085,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   {
     id: 'data:rating',
+    blurb: 'A score out of five stars',
     section: 'data',
     label: 'Add rating',
     caption: 'Rating',
