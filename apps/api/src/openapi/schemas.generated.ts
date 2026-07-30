@@ -2493,7 +2493,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "RunHeading": {
     "enum": [
       1,
-      2
+      2,
+      3
     ],
     "type": "number"
   },
