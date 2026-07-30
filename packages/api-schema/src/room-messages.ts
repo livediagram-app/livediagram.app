@@ -8,14 +8,23 @@ import type { LivePoll } from './poll';
 
 // One participant's Avatar-mode character (spec/101), as it travels over the
 // presence channel. Position is the character's FEET in canvas coords; the
-// animation inputs ride along so a peer draws the same walk cycle, hop, and
-// flag wave the sender sees. Deliberately small — this goes out at cursor
-// rates — and purely cosmetic: `look` is a costume, never an identity claim.
+// animation inputs and the costume ride along so a peer draws the same
+// character, walk cycle, hop, and flag wave the sender sees. Deliberately
+// small — this goes out at cursor rates.
 export type AvatarPresence = {
   x: number;
   y: number;
   facing: 'down' | 'up' | 'left' | 'right';
-  look: 'male' | 'female';
+  // The sender's costume (spec/101): gender / clothing / hair / size, each a
+  // preset token from a closed set. Optional so a packet from an older client
+  // still parses — the receiver falls back to the default character. Purely
+  // cosmetic, and never an identity claim.
+  config?: {
+    gender: 'male' | 'female';
+    clothing: 'tee' | 'hoodie' | 'suit' | 'dress';
+    hair: 'short' | 'long' | 'ponytail' | 'bald';
+    size: 'small' | 'regular' | 'tall';
+  };
   walking: boolean;
   // Two-frame leg swing (0 | 1).
   stepFrame: number;

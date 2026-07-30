@@ -8,6 +8,7 @@ import type { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import type { PanelId } from '@/lib/panel-layout';
 import { ActivityPanel } from '@/components/panels/ActivityPanel';
 import { LayersPanel } from '@/components/panels/LayersPanel';
+import { AvatarPanel } from '@/components/panels/AvatarPanel';
 import { visibleLayerElements } from '@livediagram/diagram';
 import { CanvasAiPanel } from './CanvasAiPanel';
 import { CommandPalette } from '@/components/palette/CommandPalette';
@@ -170,6 +171,11 @@ export function useCanvasChromePanels({
     onPreviewRevert,
     onSetCanvasTool,
     onExitAvatarMode,
+    avatarConfig,
+    onChangeAvatarField,
+    avatarPanelPosition,
+    onMoveAvatarPanel,
+    onResetAvatarPanel,
     onToggleActivityMinimized,
     onToggleMinimalPanels,
     onUndo,
@@ -278,6 +284,9 @@ export function useCanvasChromePanels({
   const layersWiring = panelWiringFor('layers', layersPanelPosition, onResetLayersPanel);
   const pollWiring = panelWiringFor('poll', pollPanelPosition, onResetPollPanel);
   const voteWiring = panelWiringFor('vote', votePanelPosition, onResetVotePanel);
+  const avatarWiring = panelWiringFor('avatar', avatarPanelPosition ?? null, () =>
+    onResetAvatarPanel?.(),
+  );
   // In docking mode the corner flex columns own stacking, so the legacy
   // measured stack-below-the-palette offset is dropped.
   const legacyStackBelowY =
@@ -564,6 +573,28 @@ export function useCanvasChromePanels({
       />
     ) : null;
 
+  // Avatar Panel (spec/101): the character sheet, mounted only while Avatar
+  // mode is active — so it joins and leaves its corner stack the way the
+  // session-tool panels do. Available to view-role too (the mode is), and on
+  // mobile / minimal it opens from its dock button like every other panel.
+  const avatarEl =
+    !chromeHidden && canvasTool === 'avatar' && avatarConfig ? (
+      <AvatarPanel
+        config={avatarConfig}
+        onChange={(field, value) => onChangeAvatarField?.(field, value)}
+        shirt={selfParticipant?.color}
+        position={avatarWiring.position}
+        stackBelowY={dockingActive ? undefined : legacyStackBelowY}
+        onMoveTo={(x, y) => onMoveAvatarPanel?.(x, y)}
+        onReset={avatarWiring.onReset}
+        dock={avatarWiring.dock}
+        mobileOpenOverride={activeMobilePanel === 'avatar'}
+        mobileDockAnchor={activeDockAnchor ?? undefined}
+        forceDockMode={!!minimalPanels}
+        onMobileClose={closeMobilePanel}
+      />
+    ) : null;
+
   // Map of panel id → element for the docked-layout distribution.
   const panelEls: Partial<Record<PanelId, ReactNode>> = {
     explorer: explorerEl,
@@ -575,6 +606,7 @@ export function useCanvasChromePanels({
     layers: layersEl,
     poll: pollEl,
     vote: voteEl,
+    avatar: avatarEl,
   };
   return { panelEls };
 }

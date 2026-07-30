@@ -21,7 +21,10 @@ export type MobilePanel =
   | 'ai'
   | 'layers'
   | 'poll'
-  | 'vote';
+  | 'vote'
+  // 'avatar' (spec/101) appears only while Avatar mode is active, like the
+  // session-tool panels above it.
+  | 'avatar';
 
 export type DockAnchor = { left: number; top: number; arrowOffset: number };
 

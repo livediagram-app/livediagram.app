@@ -136,7 +136,7 @@ describe('buildRemoteAvatarRows', () => {
     x: 10,
     y: 20,
     facing: 'left',
-    look: 'female',
+    config: { gender: 'female', clothing: 'dress', hair: 'long', size: 'regular' },
     walking: true,
     stepFrame: 1,
     lift: 0,

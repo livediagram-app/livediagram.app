@@ -4,15 +4,21 @@
 //
 // Grid: 16 wide x 24 tall, `crispEdges`, flat fills only. The bottom row is
 // the ground — the contact shadow lives there and does NOT rise with a jump,
-// so a hop reads as leaving the floor. Two facings are drawn (front / back /
+// so a hop reads as leaving the floor. Three facings are drawn (front, back,
 // left profile), with the right profile mirrored from the left.
 //
-// Two looks (spec/101): `male` (short hair, trousers) and `female` (long hair,
-// a skirt). They are costumes on the same skeleton, so the walk, hop, and flag
-// animations are shared.
+// Everything the Avatar Panel offers is a costume on ONE skeleton, so the walk
+// cycle, the hop, and the flag wave are shared across every combination:
+//   - gender   → shoulder width + a softer face
+//   - clothing → tee / hoodie / suit / dress (the dress swaps trousers for
+//     bare legs, the hoodie adds a hood behind the head, the suit adds lapels)
+//   - hair     → short / long / ponytail / bald
+//   - size     → a scale on the whole sprite, applied by the caller's box
+// Colour is not a choice: the shirt takes the participant's presence colour.
 
-import type { AvatarFacing, AvatarLook } from '@/lib/avatar-walk';
-import { AVATAR_BOX, AVATAR_HEIGHT } from '@/lib/avatar-walk';
+import type { AvatarConfig } from '@/lib/avatar-config';
+import type { AvatarFacing } from '@/lib/avatar-walk';
+import { AVATAR_GRID_HEIGHT, AVATAR_HEIGHT, AVATAR_VIEW_BOX, avatarBox } from '@/lib/avatar-walk';
 
 // Sprite palette. Warm skin + brown hair, with one darker tone per material
 // for the shaded edge that gives pixel art its volume. The shirt is the
@@ -26,6 +32,7 @@ const TROUSERS = '#3f4c63';
 const TROUSERS_DARK = '#2c3648';
 const SHOE = '#1e293b';
 const EYE = '#243044';
+const SHIRT_WHITE = '#f8fafc';
 const FLAG_POLE = '#b8845a';
 const FLAG_CLOTH = '#f43f5e';
 
@@ -46,8 +53,10 @@ function shade(hex: string | undefined): { base: string; dark: string } {
   return { base, dark };
 }
 
-// One leg, as a trouser column with a shoe at the bottom. `lift` raises the
-// whole leg by a pixel for the mid-stride frame.
+// --- Legs -------------------------------------------------------------------
+
+// A trousered leg: a column with a shoe at the bottom. `lift` raises the whole
+// leg by a pixel for the mid-stride frame.
 function Leg({ x, lift = 0 }: { x: number; lift?: number }) {
   return (
     <g transform={`translate(0 ${-lift})`}>
@@ -58,17 +67,7 @@ function Leg({ x, lift = 0 }: { x: number; lift?: number }) {
   );
 }
 
-// The skirt the female look wears instead of trouser columns: a flared block
-// over two bare lower legs.
-function Skirt({ shirtDark }: { shirtDark: string }) {
-  return (
-    <g>
-      <rect x={3} y={14} width={10} height={4} fill={shirtDark} />
-      <rect x={2} y={17} width={12} height={1} fill={shirtDark} />
-    </g>
-  );
-}
-
+// A bare leg, worn under the dress.
 function BareLeg({ x, lift = 0 }: { x: number; lift?: number }) {
   return (
     <g transform={`translate(0 ${-lift})`}>
@@ -78,38 +77,170 @@ function BareLeg({ x, lift = 0 }: { x: number; lift?: number }) {
   );
 }
 
-// The front / back torso block with sleeves. `swing` moves the arms in
-// opposition for the walk cycle.
-function Torso({ swing, shirt, shirtDark }: { swing: number; shirt: string; shirtDark: string }) {
+// The dress's flared skirt, over two bare legs.
+function Skirt({ shirtDark }: { shirtDark: string }) {
   return (
     <g>
-      <rect x={4} y={9} width={8} height={6} fill={shirt} />
-      <rect x={10} y={9} width={2} height={6} fill={shirtDark} />
+      <rect x={3} y={14} width={10} height={4} fill={shirtDark} />
+      <rect x={2} y={17} width={12} height={1} fill={shirtDark} />
+    </g>
+  );
+}
+
+// The lower half, front / back view: trousers for every outfit but the dress.
+function LowerFront({
+  clothing,
+  shirtDark,
+  mid,
+  walking,
+  airborne,
+}: {
+  clothing: AvatarConfig['clothing'];
+  shirtDark: string;
+  mid: boolean;
+  walking: boolean;
+  airborne: boolean;
+}) {
+  const strideLift = walking && !airborne;
+  if (clothing === 'dress') {
+    return (
+      <>
+        <BareLeg x={5} lift={mid && strideLift ? 1 : 0} />
+        <BareLeg x={9} lift={!mid && strideLift ? 1 : 0} />
+        <Skirt shirtDark={shirtDark} />
+      </>
+    );
+  }
+  return (
+    <>
+      <Leg x={5} lift={mid && strideLift ? 1 : 0} />
+      <Leg x={9} lift={!mid && strideLift ? 1 : 0} />
+    </>
+  );
+}
+
+// The lower half in profile: one leg forward, one back.
+function LowerProfile({
+  clothing,
+  shirtDark,
+  mid,
+  walking,
+  airborne,
+}: {
+  clothing: AvatarConfig['clothing'];
+  shirtDark: string;
+  mid: boolean;
+  walking: boolean;
+  airborne: boolean;
+}) {
+  const strideLift = walking && !airborne ? 1 : 0;
+  if (clothing === 'dress') {
+    return (
+      <>
+        <BareLeg x={mid ? 9 : 7} />
+        <BareLeg x={mid ? 6 : 8} lift={strideLift} />
+        <Skirt shirtDark={shirtDark} />
+      </>
+    );
+  }
+  return (
+    <>
+      <Leg x={mid ? 8 : 6} />
+      <Leg x={mid ? 5 : 7} lift={strideLift} />
+    </>
+  );
+}
+
+// --- Torso ------------------------------------------------------------------
+
+// Outfit detailing painted over the plain torso block: a hoodie's drawstring
+// pocket, a suit's lapels + tie, a dress's neckline. The tee gets nothing —
+// it IS the plain block.
+function OutfitDetail({
+  clothing,
+  shirtDark,
+}: {
+  clothing: AvatarConfig['clothing'];
+  shirtDark: string;
+}) {
+  if (clothing === 'hoodie') {
+    return (
+      <g>
+        {/* drawstrings + a kangaroo pocket */}
+        <rect x={7} y={9} width={1} height={3} fill={SHIRT_WHITE} />
+        <rect x={9} y={9} width={1} height={3} fill={SHIRT_WHITE} />
+        <rect x={5} y={12} width={6} height={2} fill={shirtDark} />
+      </g>
+    );
+  }
+  if (clothing === 'suit') {
+    return (
+      <g>
+        {/* open jacket over a white shirt, with a tie down the middle */}
+        <rect x={7} y={9} width={2} height={5} fill={SHIRT_WHITE} />
+        <rect x={5} y={9} width={2} height={2} fill={shirtDark} />
+        <rect x={9} y={9} width={2} height={2} fill={shirtDark} />
+        <rect x={7} y={10} width={1} height={4} fill={FLAG_CLOTH} />
+      </g>
+    );
+  }
+  if (clothing === 'dress') {
+    return <rect x={6} y={9} width={4} height={1} fill={SHIRT_WHITE} />;
+  }
+  return null;
+}
+
+// The front / back torso with sleeves. `swing` moves the arms in opposition
+// for the walk cycle; the female build narrows the shoulders by a pixel.
+function Torso({
+  swing,
+  shirt,
+  shirtDark,
+  clothing,
+  gender,
+}: {
+  swing: number;
+  shirt: string;
+  shirtDark: string;
+  clothing: AvatarConfig['clothing'];
+  gender: AvatarConfig['gender'];
+}) {
+  const inset = gender === 'female' ? 1 : 0;
+  return (
+    <g>
+      <rect x={4 + inset} y={9} width={8 - inset * 2} height={6} fill={shirt} />
+      <rect x={10 - inset} y={9} width={2} height={6} fill={shirtDark} />
+      <OutfitDetail clothing={clothing} shirtDark={shirtDark} />
+      {/* Sleeves + hands, swinging opposite each other. */}
       <g transform={`translate(0 ${swing})`}>
-        <rect x={2} y={9} width={2} height={4} fill={shirt} />
-        <rect x={2} y={13} width={2} height={2} fill={SKIN} />
+        <rect x={2 + inset} y={9} width={2} height={4} fill={shirt} />
+        <rect x={2 + inset} y={13} width={2} height={2} fill={SKIN} />
       </g>
       <g transform={`translate(0 ${-swing})`}>
-        <rect x={12} y={9} width={2} height={4} fill={shirtDark} />
-        <rect x={12} y={13} width={2} height={2} fill={SKIN_DARK} />
+        <rect x={12 - inset} y={9} width={2} height={4} fill={shirtDark} />
+        <rect x={12 - inset} y={13} width={2} height={2} fill={SKIN_DARK} />
       </g>
     </g>
   );
 }
 
-function TorsoLeft({
+function TorsoProfile({
   swing,
   shirt,
   shirtDark,
+  clothing,
 }: {
   swing: number;
   shirt: string;
   shirtDark: string;
+  clothing: AvatarConfig['clothing'];
 }) {
   return (
     <g>
       <rect x={5} y={9} width={7} height={6} fill={shirt} />
       <rect x={10} y={9} width={2} height={6} fill={shirtDark} />
+      {clothing === 'suit' ? <rect x={6} y={9} width={1} height={5} fill={SHIRT_WHITE} /> : null}
+      {clothing === 'hoodie' ? <rect x={6} y={12} width={5} height={2} fill={shirtDark} /> : null}
       {/* One visible arm, swinging fore and aft rather than up and down. */}
       <g transform={`translate(${-swing} 0)`}>
         <rect x={4} y={10} width={2} height={4} fill={shirt} />
@@ -119,25 +250,55 @@ function TorsoLeft({
   );
 }
 
-// Facing the viewer: hair, two eyes, a mouth pixel. The female look adds hair
-// down both sides of the face.
-function HeadDown({ look }: { look: AvatarLook }) {
+// --- Head + hair ------------------------------------------------------------
+
+// Hair, front view. Each style is a few rects over the scalp; `bald` draws
+// nothing but the crown shading.
+function HairFront({ hair }: { hair: AvatarConfig['hair'] }) {
+  if (hair === 'bald') return <rect x={4} y={1} width={8} height={1} fill={SKIN_DARK} />;
   return (
     <g>
-      <rect x={4} y={1} width={8} height={8} fill={SKIN} />
-      <rect x={10} y={1} width={2} height={8} fill={SKIN_DARK} />
       <rect x={3} y={0} width={10} height={3} fill={HAIR} />
-      {look === 'female' ? (
-        <>
-          <rect x={2} y={2} width={2} height={8} fill={HAIR} />
-          <rect x={12} y={2} width={2} height={8} fill={HAIR_DARK} />
-        </>
-      ) : (
+      {hair === 'short' ? (
         <>
           <rect x={3} y={3} width={2} height={3} fill={HAIR_DARK} />
           <rect x={11} y={3} width={2} height={3} fill={HAIR_DARK} />
         </>
-      )}
+      ) : null}
+      {hair === 'long' ? (
+        <>
+          <rect x={2} y={2} width={2} height={9} fill={HAIR} />
+          <rect x={12} y={2} width={2} height={9} fill={HAIR_DARK} />
+        </>
+      ) : null}
+      {hair === 'ponytail' ? (
+        <>
+          <rect x={3} y={3} width={1} height={3} fill={HAIR_DARK} />
+          <rect x={12} y={3} width={1} height={3} fill={HAIR_DARK} />
+          {/* the tail, gathered high on the right */}
+          <rect x={13} y={2} width={2} height={2} fill={HAIR} />
+          <rect x={14} y={4} width={2} height={4} fill={HAIR_DARK} />
+        </>
+      ) : null}
+    </g>
+  );
+}
+
+// Facing the viewer: face, eyes, a mouth pixel. The female build gets a
+// slightly softer jaw (one pixel narrower at the chin).
+function HeadFront({
+  gender,
+  hair,
+}: {
+  gender: AvatarConfig['gender'];
+  hair: AvatarConfig['hair'];
+}) {
+  return (
+    <g>
+      <rect x={4} y={1} width={8} height={8} fill={SKIN} />
+      <rect x={10} y={1} width={2} height={8} fill={SKIN_DARK} />
+      {gender === 'female' ? <rect x={4} y={8} width={1} height={1} fill={SKIN_DARK} /> : null}
+      <HairFront hair={hair} />
       <rect x={6} y={5} width={1} height={1} fill={EYE} />
       <rect x={9} y={5} width={1} height={1} fill={EYE} />
       <rect x={7} y={7} width={2} height={1} fill={SKIN_DARK} />
@@ -145,42 +306,59 @@ function HeadDown({ look }: { look: AvatarLook }) {
   );
 }
 
-// Walking away: the back of the head is all hair, no face.
-function HeadUp({ look }: { look: AvatarLook }) {
+// Walking away: the back of the head, no face. Long hair / a ponytail read
+// most clearly from here.
+function HeadBack({ hair }: { hair: AvatarConfig['hair'] }) {
   return (
     <g>
       <rect x={4} y={1} width={8} height={8} fill={SKIN_DARK} />
-      <rect x={3} y={0} width={10} height={7} fill={HAIR} />
-      <rect x={11} y={0} width={2} height={7} fill={HAIR_DARK} />
-      {look === 'female' ? <rect x={3} y={5} width={10} height={6} fill={HAIR} /> : null}
+      {hair === 'bald' ? null : (
+        <>
+          <rect x={3} y={0} width={10} height={7} fill={HAIR} />
+          <rect x={11} y={0} width={2} height={7} fill={HAIR_DARK} />
+          {hair === 'long' ? <rect x={3} y={5} width={10} height={6} fill={HAIR} /> : null}
+          {hair === 'ponytail' ? <rect x={6} y={6} width={4} height={6} fill={HAIR_DARK} /> : null}
+        </>
+      )}
       <rect x={5} y={7} width={6} height={1} fill={SKIN_DARK} />
     </g>
   );
 }
 
 // Profile (drawn facing LEFT; the right-facing sprite mirrors this one).
-function HeadLeft({ look }: { look: AvatarLook }) {
+function HeadProfile({ hair }: { hair: AvatarConfig['hair'] }) {
   return (
     <g>
       <rect x={4} y={1} width={7} height={8} fill={SKIN} />
-      {/* Nose pixel + the hair mass at the back of the head. */}
+      {/* Nose pixel */}
       <rect x={3} y={5} width={1} height={2} fill={SKIN} />
-      <rect x={4} y={0} width={9} height={3} fill={HAIR} />
-      <rect x={9} y={3} width={4} height={5} fill={HAIR} />
-      <rect x={11} y={3} width={2} height={5} fill={HAIR_DARK} />
-      {look === 'female' ? <rect x={9} y={7} width={4} height={5} fill={HAIR} /> : null}
+      {hair === 'bald' ? null : (
+        <>
+          <rect x={4} y={0} width={9} height={3} fill={HAIR} />
+          <rect x={9} y={3} width={4} height={5} fill={HAIR} />
+          <rect x={11} y={3} width={2} height={5} fill={HAIR_DARK} />
+          {hair === 'long' ? <rect x={9} y={7} width={4} height={5} fill={HAIR} /> : null}
+          {hair === 'ponytail' ? <rect x={12} y={4} width={3} height={4} fill={HAIR_DARK} /> : null}
+        </>
+      )}
       <rect x={5} y={5} width={1} height={1} fill={EYE} />
       <rect x={4} y={7} width={2} height={1} fill={SKIN_DARK} />
     </g>
   );
 }
 
-// The flag: an arm raised above the head holding a pole, with a cloth that
-// snaps through three frames. Drawn last so it sits in front of the body, and
-// drawn UP into the box's reserved headroom / side slack (see AVATAR_BOX) so
-// nothing clips at the sprite grid's edges.
+// The hoodie's hood, sitting behind the head. Drawn before the head so it
+// reads as being behind it.
+function Hood({ shirtDark }: { shirtDark: string }) {
+  return <rect x={3} y={6} width={10} height={4} fill={shirtDark} />;
+}
+
+// --- Flag -------------------------------------------------------------------
+
+// An arm raised above the head holding a pole, with a cloth that snaps through
+// three frames. Drawn last so it sits in front of the body, and drawn UP into
+// the box's reserved headroom / side slack so nothing clips at the grid edges.
 function Flag({ frame }: { frame: number }) {
-  // Cloth shapes per frame: furled, mid-snap, fully out.
   const cloth =
     frame === 0
       ? 'M14 -6 h4 v3 h-4 Z'
@@ -189,7 +367,6 @@ function Flag({ frame }: { frame: number }) {
         : 'M14 -5 h5 v3 h-5 Z';
   return (
     <g>
-      {/* The raised arm, then the pole in its hand. */}
       <rect x={12} y={4} width={2} height={6} fill={SKIN} />
       <rect x={12} y={2} width={2} height={2} fill={SKIN} />
       <rect x={13} y={-7} width={1} height={10} fill={FLAG_POLE} />
@@ -200,20 +377,23 @@ function Flag({ frame }: { frame: number }) {
 
 export function AvatarSprite({
   facing,
-  look,
+  config,
   walking,
   stepFrame,
   lift,
   wave,
   shirt,
+  scale = 1,
 }: {
   facing: AvatarFacing;
-  look: AvatarLook;
+  config: AvatarConfig;
   walking: boolean;
   stepFrame: number;
   lift: number;
   wave: number | null;
   shirt?: string;
+  // Size multiplier from the config (or a fixed one for the panel preview).
+  scale?: number;
 }) {
   const mid = walking && stepFrame === 1;
   // A one-pixel body bob on the mid-stride frame; mid-air the legs tuck
@@ -223,15 +403,15 @@ export function AvatarSprite({
   const swing = airborne ? -1 : walking ? (mid ? 1 : -1) : 0;
   const profile = facing === 'left' || facing === 'right';
   const { base: shirtBase, dark: shirtDark } = shade(shirt);
-  // The hop is expressed in SPRITE pixels (the grid is 24 tall over
-  // AVATAR_HEIGHT + 4 canvas px), so the whole body rises while the ground
-  // row — and the shadow drawn on it — stays put.
-  const liftPx = (lift / (AVATAR_HEIGHT + 4)) * AVATAR_BOX.gridHeight;
+  const box = avatarBox(scale);
+  // The hop is expressed in SPRITE pixels, so the whole body rises while the
+  // ground row — and the shadow drawn on it — stays put.
+  const liftPx = (lift / (AVATAR_HEIGHT + 4)) * AVATAR_GRID_HEIGHT;
   return (
     <svg
-      width={AVATAR_BOX.width}
-      height={AVATAR_BOX.height}
-      viewBox={AVATAR_BOX.viewBox}
+      width={box.width}
+      height={box.height}
+      viewBox={AVATAR_VIEW_BOX}
       shapeRendering="crispEdges"
       aria-hidden
     >
@@ -253,38 +433,44 @@ export function AvatarSprite({
       >
         {profile ? (
           <>
-            {/* Profile stride: one leg forward, one back. */}
-            {look === 'female' ? (
-              <>
-                <BareLeg x={mid ? 9 : 7} />
-                <BareLeg x={mid ? 6 : 8} lift={walking && !airborne ? 1 : 0} />
-                <Skirt shirtDark={shirtDark} />
-              </>
-            ) : (
-              <>
-                <Leg x={mid ? 8 : 6} />
-                <Leg x={mid ? 5 : 7} lift={walking && !airborne ? 1 : 0} />
-              </>
-            )}
-            <TorsoLeft swing={swing} shirt={shirtBase} shirtDark={shirtDark} />
-            <HeadLeft look={look} />
+            <LowerProfile
+              clothing={config.clothing}
+              shirtDark={shirtDark}
+              mid={mid}
+              walking={walking}
+              airborne={airborne}
+            />
+            <TorsoProfile
+              swing={swing}
+              shirt={shirtBase}
+              shirtDark={shirtDark}
+              clothing={config.clothing}
+            />
+            {config.clothing === 'hoodie' ? <Hood shirtDark={shirtDark} /> : null}
+            <HeadProfile hair={config.hair} />
           </>
         ) : (
           <>
-            {look === 'female' ? (
-              <>
-                <BareLeg x={5} lift={mid && !airborne ? 1 : 0} />
-                <BareLeg x={9} lift={!mid && walking && !airborne ? 1 : 0} />
-                <Skirt shirtDark={shirtDark} />
-              </>
+            <LowerFront
+              clothing={config.clothing}
+              shirtDark={shirtDark}
+              mid={mid}
+              walking={walking}
+              airborne={airborne}
+            />
+            <Torso
+              swing={swing}
+              shirt={shirtBase}
+              shirtDark={shirtDark}
+              clothing={config.clothing}
+              gender={config.gender}
+            />
+            {config.clothing === 'hoodie' ? <Hood shirtDark={shirtDark} /> : null}
+            {facing === 'up' ? (
+              <HeadBack hair={config.hair} />
             ) : (
-              <>
-                <Leg x={5} lift={mid && !airborne ? 1 : 0} />
-                <Leg x={9} lift={!mid && walking && !airborne ? 1 : 0} />
-              </>
+              <HeadFront gender={config.gender} hair={config.hair} />
             )}
-            <Torso swing={swing} shirt={shirtBase} shirtDark={shirtDark} />
-            {facing === 'up' ? <HeadUp look={look} /> : <HeadDown look={look} />}
           </>
         )}
         {wave !== null ? <Flag frame={wave} /> : null}

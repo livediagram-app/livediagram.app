@@ -95,6 +95,11 @@ export type CanvasProps = {
   // palette (any tile pick) and to a palette drag-drop, both of which are
   // edits the read-only mode would otherwise swallow.
   onExitAvatarMode?: () => void;
+  // Avatar Panel placement (spec/101 + spec/63). Position is null until the
+  // user drags it; the panel itself only exists while the mode is active.
+  avatarPanelPosition?: { x: number; y: number } | null;
+  onMoveAvatarPanel?: (x: number, y: number) => void;
+  onResetAvatarPanel?: () => void;
   // Map of elementId -> remote participants currently focused on that
   // element. Drives a small badge ring on each element so participants
   // can see in real time what others are working on.

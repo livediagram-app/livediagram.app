@@ -39,6 +39,8 @@ import { SpotlightOverlay } from '@/components/canvas/SpotlightOverlay';
 import { useSpotlight } from '@/hooks/canvas/useSpotlight';
 import { AvatarWalker } from '@/components/canvas/AvatarWalker';
 import { useAvatarWalk } from '@/hooks/canvas/useAvatarWalk';
+import { useAvatarConfig } from '@/hooks/canvas/useAvatarConfig';
+import { parseAvatarConfig } from '@/lib/avatar-config';
 import { useOffscreenContent } from '@/hooks/canvas/useOffscreenContent';
 import { Portal } from '@/components/primitives/Portal';
 import { TabLoadOverlay } from '@/components/canvas/TabLoadOverlay';
@@ -236,8 +238,14 @@ export function Canvas(props: CanvasProps) {
   // Avatar mode (spec/101): the walking character's position / facing / step
   // frame, its click-to-walk entry point, and the camera follow. Owns its own
   // rAF loop, dormant unless the tool is active.
+  // The character's gender / clothing / hair / size (spec/101), persisted per
+  // browser. Owned here because both the sprite and the Avatar Panel (down in
+  // CanvasChrome) read it, and it outlives any one walk.
+  const avatarLook = useAvatarConfig();
   const avatar = useAvatarWalk({
     active: canvasTool === 'avatar',
+    config: avatarLook.config,
+    onToggleGender: avatarLook.toggleGender,
     elements,
     mainRef,
     wrapperRef,
@@ -514,7 +522,9 @@ export function Canvas(props: CanvasProps) {
             key={peer.id}
             pos={{ x: peer.avatar.x, y: peer.avatar.y }}
             facing={peer.avatar.facing}
-            look={peer.avatar.look}
+            // Parsed, not trusted: an older peer omits the costume entirely and
+            // a future one may send an option this build doesn't know.
+            config={parseAvatarConfig(peer.avatar.config)}
             walking={peer.avatar.walking}
             stepFrame={peer.avatar.stepFrame}
             lift={peer.avatar.lift}
@@ -528,7 +538,7 @@ export function Canvas(props: CanvasProps) {
           <AvatarWalker
             pos={avatar.pos}
             facing={avatar.facing}
-            look={avatar.look}
+            config={avatarLook.config}
             walking={avatar.walking}
             stepFrame={avatar.stepFrame}
             lift={avatar.lift}
@@ -558,6 +568,8 @@ export function Canvas(props: CanvasProps) {
         {...props}
         isPaintMode={isPaintMode}
         isGroupMode={isGroupMode}
+        avatarConfig={avatarLook.config}
+        onChangeAvatarField={avatarLook.setField}
         offscreenContent={offscreenContent}
         marquee={marquee}
         drawDrag={drawDrag}

@@ -31,6 +31,10 @@ export function usePanelLayout() {
   const [pollPanelPosition, setPollPanelPosition] = useState<Pos | null>(null);
   // Live vote (spec/39): same deal — present only while a vote is running.
   const [votePanelPosition, setVotePanelPosition] = useState<Pos | null>(null);
+  // Avatar Panel (spec/101): present only while Avatar mode is active, so
+  // position only — there is nothing to minimise when leaving the mode
+  // dismisses the panel outright.
+  const [avatarPanelPosition, setAvatarPanelPosition] = useState<Pos | null>(null);
   // Zen / focus mode (spec/26): hide all floating chrome (header, tab
   // bar, panels, docks) so only the canvas content + zoom controls
   // remain. Purely a view flag — not persisted, not synced.
@@ -61,6 +65,8 @@ export function usePanelLayout() {
     setPollPanelPosition,
     votePanelPosition,
     setVotePanelPosition,
+    avatarPanelPosition,
+    setAvatarPanelPosition,
     zenMode,
     setZenMode,
   };

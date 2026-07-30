@@ -33,7 +33,9 @@ export function EditorCanvasHost() {
     pollPanelPosition,
     setPollPanelPosition,
     votePanelPosition,
+    avatarPanelPosition,
     setVotePanelPosition,
+    setAvatarPanelPosition,
     toggleRecentExclusion,
     favouriteIds,
     toggleFavourite,
@@ -488,6 +490,9 @@ export function EditorCanvasHost() {
       votePanelPosition={votePanelPosition}
       onMoveVotePanel={(x, y) => setVotePanelPosition({ x, y })}
       onResetVotePanel={() => setVotePanelPosition(null)}
+      avatarPanelPosition={avatarPanelPosition}
+      onMoveAvatarPanel={(x, y) => setAvatarPanelPosition({ x, y })}
+      onResetAvatarPanel={() => setAvatarPanelPosition(null)}
       voteResults={voteResults}
       onJumpToVoteResult={jumpToVoteResult}
       isVoteHost={isVoteHost(activeTab.vote, selfParticipant.id)}

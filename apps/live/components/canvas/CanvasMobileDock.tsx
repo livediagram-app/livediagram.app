@@ -1,6 +1,7 @@
 import type { ReactNode, RefObject } from 'react';
 import { LayersStackIcon } from '@/components/panels/layers-panel-icons';
 import { PollMenuIcon, VoteMenuIcon } from '@/components/palette/context-menu-icons';
+import { AvatarModeIcon } from '@/components/palette/palette-icons';
 import type { MobilePanel } from '@/hooks/canvas/useCanvasMobileDock';
 
 // Top-right mobile dock (spec/07 "Mobile chrome"): a compact button row
@@ -16,6 +17,7 @@ export function CanvasMobileDock({
   hasAi,
   hasPoll,
   hasVote,
+  hasAvatar,
   activeMobilePanel,
   dockButtonRefs,
   onDockButtonClick,
@@ -32,6 +34,9 @@ export function CanvasMobileDock({
   // permanently disabled.
   hasPoll: boolean;
   hasVote: boolean;
+  // Avatar mode (spec/101) is active, so its customisation panel has a dock
+  // button. Same come-and-go treatment as the session tools.
+  hasAvatar: boolean;
   activeMobilePanel: MobilePanel | null;
   dockButtonRefs: RefObject<Record<string, HTMLButtonElement | null>>;
   onDockButtonClick: (id: MobilePanel) => void;
@@ -147,6 +152,15 @@ export function CanvasMobileDock({
                   id: 'vote' as const,
                   label: 'Vote',
                   icon: <VoteMenuIcon size={16} />,
+                },
+              ]
+            : []),
+          ...(hasAvatar
+            ? [
+                {
+                  id: 'avatar' as const,
+                  label: 'Avatar',
+                  icon: <AvatarModeIcon />,
                 },
               ]
             : []),

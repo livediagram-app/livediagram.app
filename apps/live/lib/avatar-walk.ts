@@ -10,8 +10,9 @@ import { isBoxed, type Element } from '@livediagram/diagram';
 // glide reads as a camera move, a constant walk reads as a character.
 export const AVATAR_SPEED = 260;
 
-// Sprite footprint in canvas px. The position point is the FEET, so the
-// body is drawn above it and centred on it.
+// Sprite footprint in canvas px at the REGULAR size. The position point is the
+// FEET, so the body is drawn above it and centred on it. The Size choice in the
+// Avatar Panel (spec/101) scales these via avatarBox(scale).
 export const AVATAR_WIDTH = 40;
 export const AVATAR_HEIGHT = 56;
 // Empty space reserved ABOVE the standing sprite so a jump has somewhere to go.
@@ -32,20 +33,32 @@ export const AVATAR_UNIT = (AVATAR_HEIGHT + 4) / GRID_H;
 const SLACK_UNITS = 5;
 const HEADROOM_UNITS = AVATAR_JUMP_HEADROOM / AVATAR_UNIT;
 
-export const AVATAR_BOX = {
-  // Element size in canvas px.
-  width: (GRID_W + SLACK_UNITS * 2) * AVATAR_UNIT,
-  height: (GRID_H + HEADROOM_UNITS) * AVATAR_UNIT,
-  // Where the character's feet sit inside that box, so the caller can place
-  // the box from a feet position.
-  offsetX: (GRID_W / 2 + SLACK_UNITS) * AVATAR_UNIT,
-  offsetY: AVATAR_HEIGHT + AVATAR_JUMP_HEADROOM,
-  // Matching viewBox: origin shifted up and left into the reserved space, so
-  // the art keeps drawing on the plain 0..16 / 0..24 grid.
-  viewBox: `${-SLACK_UNITS} ${-HEADROOM_UNITS} ${GRID_W + SLACK_UNITS * 2} ${GRID_H + HEADROOM_UNITS}`,
-  // Sprite units per canvas px of jump, for the lift transform.
-  gridHeight: GRID_H,
-} as const;
+// The viewBox every sprite draws into: origin shifted up and left into the
+// reserved space, so the art keeps working on the plain 0..16 / 0..24 grid
+// whatever size the character is.
+export const AVATAR_VIEW_BOX = `${-SLACK_UNITS} ${-HEADROOM_UNITS} ${GRID_W + SLACK_UNITS * 2} ${GRID_H + HEADROOM_UNITS}`;
+// Sprite grid rows, for the lift transform (canvas px of jump -> grid units).
+export const AVATAR_GRID_HEIGHT = GRID_H;
+
+// The sprite's drawing box at a given size scale, in one place so the placement
+// (AvatarWalker), the art (AvatarSprite), and the right-click hit-test can't
+// drift apart.
+export function avatarBox(scale = 1): {
+  width: number;
+  height: number;
+  offsetX: number;
+  offsetY: number;
+} {
+  return {
+    // Element size in canvas px.
+    width: (GRID_W + SLACK_UNITS * 2) * AVATAR_UNIT * scale,
+    height: (GRID_H + HEADROOM_UNITS) * AVATAR_UNIT * scale,
+    // Where the character's feet sit inside that box, so the caller can place
+    // the box from a feet position.
+    offsetX: (GRID_W / 2 + SLACK_UNITS) * AVATAR_UNIT * scale,
+    offsetY: (AVATAR_HEIGHT + AVATAR_JUMP_HEADROOM) * scale,
+  };
+}
 
 // How close (canvas px) counts as "arrived", so a target is never chased
 // by sub-pixel remainders forever.
@@ -56,10 +69,6 @@ const ARRIVE_EPSILON = 1.5;
 export const AVATAR_FOLLOW_MARGIN = 120;
 
 export type AvatarFacing = 'down' | 'up' | 'left' | 'right';
-
-// Which sprite to draw. Right-clicking the character toggles between the two
-// (spec/101); it is a costume choice, nothing more, and never persisted.
-export type AvatarLook = 'male' | 'female';
 
 export type AvatarPoint = { x: number; y: number };
 
@@ -99,15 +108,18 @@ export function waveFrame(elapsedMs: number, waveForMs: number): number | null {
 
 // Is `point` (canvas coords) on the character? The sprite is drawn centred on
 // its feet, so the box runs half a width either side and a full height up.
-// Used by the right-click look toggle, which must only fire when the press
+// Used by the right-click gender toggle, which must only fire when the press
 // actually lands on the figure. `lift` raises the box mid-jump so a right-click
-// still hits a character in the air.
-export function hitTestAvatar(feet: AvatarPoint, point: AvatarPoint, lift = 0): boolean {
+// still hits a character in the air, and `scale` follows the Size choice so a
+// small character isn't clickable well outside itself (nor a tall one short).
+export function hitTestAvatar(feet: AvatarPoint, point: AvatarPoint, lift = 0, scale = 1): boolean {
+  const halfWidth = (AVATAR_WIDTH / 2) * scale;
+  const height = AVATAR_HEIGHT * scale;
   return (
-    point.x >= feet.x - AVATAR_WIDTH / 2 &&
-    point.x <= feet.x + AVATAR_WIDTH / 2 &&
+    point.x >= feet.x - halfWidth &&
+    point.x <= feet.x + halfWidth &&
     point.y <= feet.y - lift &&
-    point.y >= feet.y - lift - AVATAR_HEIGHT
+    point.y >= feet.y - lift - height
   );
 }
 

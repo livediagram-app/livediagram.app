@@ -12,6 +12,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import type { Element } from '@livediagram/diagram';
+import { avatarScale, type AvatarConfig } from '@/lib/avatar-config';
 import { useAvatarKeys, NO_KEYS_HELD, type AvatarHeldKeys } from '@/hooks/canvas/useAvatarKeys';
 import {
   arrowDirection,
@@ -26,7 +27,6 @@ import {
   AVATAR_SPEED,
   AVATAR_WAVE_TAIL_MS,
   type AvatarFacing,
-  type AvatarLook,
   type AvatarPoint,
 } from '@/lib/avatar-walk';
 
@@ -40,7 +40,8 @@ export type AvatarSnapshot = {
   x: number;
   y: number;
   facing: AvatarFacing;
-  look: AvatarLook;
+  // The whole costume (spec/101), so a peer draws the character you built.
+  config: AvatarConfig;
   walking: boolean;
   stepFrame: number;
   // Height above the ground mid-jump, canvas px (0 = standing).
@@ -51,6 +52,8 @@ export type AvatarSnapshot = {
 
 export function useAvatarWalk({
   active,
+  config,
+  onToggleGender,
   elements,
   mainRef,
   wrapperRef,
@@ -61,6 +64,12 @@ export function useAvatarWalk({
 }: {
   // True while the Avatar canvas tool is the active tool.
   active: boolean;
+  // The character's costume (useAvatarConfig): published to peers, and its
+  // size scales the right-click hit box.
+  config: AvatarConfig;
+  // Right-clicking the character flips male / female — the costume state lives
+  // in useAvatarConfig (it persists), so the flip is delegated to it.
+  onToggleGender: () => void;
   elements: Element[];
   mainRef: React.RefObject<HTMLElement | null> | React.ForwardedRef<HTMLElement>;
   wrapperRef: React.RefObject<HTMLDivElement | null>;
@@ -83,8 +92,6 @@ export function useAvatarWalk({
   // Jump height above the ground (canvas px) and the flag-wave frame.
   const [lift, setLift] = useState(0);
   const [wave, setWave] = useState<number | null>(null);
-  // Which sprite is drawn. Right-clicking the character flips it.
-  const [look, setLook] = useState<AvatarLook>('male');
 
   // Loop-internal state. Refs (not state) because the rAF tick reads and
   // writes these many times between renders.
@@ -96,9 +103,12 @@ export function useAvatarWalk({
   const liftRef = useRef(0);
   const jumpVyRef = useRef(0);
   const waveStartRef = useRef<number | null>(null);
-  // Which look was last published as a standing snapshot; null = nothing
-  // published since the mode was entered. Keeps the entry publish to once.
-  const publishedLookRef = useRef<AvatarLook | null>(null);
+  // The costume last published as a standing snapshot; null = nothing published
+  // since the mode was entered. Keeps the entry publish to once per change.
+  const publishedLookRef = useRef<string | null>(null);
+  // Live costume for the loop's presence packets + the hit-test scale.
+  const configRef = useRef(config);
+  configRef.current = config;
   posRef.current = pos;
   // Latest viewport offset, for the camera follow. The loop can't take a
   // functional state update (Canvas's prop is a value setter), so it reads the
@@ -194,11 +204,12 @@ export function useAvatarWalk({
 
   // Right-click ON the character toggles male / female (spec/101). Returns
   // true when the press actually landed on the figure, so the caller knows
-  // whether the right-click was consumed.
+  // whether the right-click was consumed. The hit box follows the Size choice.
   const toggleLookAt = (point: AvatarPoint): boolean => {
     const feet = posRef.current;
-    if (!feet || !hitTestAvatar(feet, point, liftRef.current)) return false;
-    setLook((prev) => (prev === 'male' ? 'female' : 'male'));
+    if (!feet || !hitTestAvatar(feet, point, liftRef.current, avatarScale(config.size)))
+      return false;
+    onToggleGender();
     return true;
   };
 
@@ -299,7 +310,7 @@ export function useAvatarWalk({
             x: next.x,
             y: next.y,
             facing: facingFromDelta(dx, dy) ?? facing,
-            look,
+            config: configRef.current,
             walking: moved > 0,
             stepFrame: Math.floor(travelledRef.current / STEP_LENGTH) % 2,
             lift: liftRef.current,
@@ -313,7 +324,8 @@ export function useAvatarWalk({
     return () => cancelAnimationFrame(raf);
     // setViewportOffset is a stable state setter; viewportZoom is read for
     // the follow maths and re-attaching the loop on a zoom change is fine.
-    // `facing` / `look` are only read as fallbacks for the presence packet.
+    // `facing` is only read as a fallback for the presence packet; the costume
+    // comes through configRef.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active, viewportZoom, setViewportOffset]);
 
@@ -325,13 +337,14 @@ export function useAvatarWalk({
   // walker moved (which needs animation frames the tab may not be getting).
   useEffect(() => {
     if (!active || !pos) return;
-    if (publishedLookRef.current === look) return;
-    publishedLookRef.current = look;
+    const costume = JSON.stringify(config);
+    if (publishedLookRef.current === costume) return;
+    publishedLookRef.current = costume;
     presenceRef.current?.({
       x: pos.x,
       y: pos.y,
       facing,
-      look,
+      config,
       walking: false,
       stepFrame: 0,
       lift: 0,
@@ -340,7 +353,7 @@ export function useAvatarWalk({
     // `facing` is read as the snapshot's value only; re-publishing on a turn
     // would fight the loop, which already publishes while walking.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [active, pos, look]);
+  }, [active, pos, config]);
 
   // Which element the avatar is standing on (the "you are here" ring). Cheap
   // rectangle scan, and only while the mode is on.
@@ -350,7 +363,6 @@ export function useAvatarWalk({
     pos: active ? pos : null,
     facing,
     walking,
-    look,
     lift,
     wave,
     // Two-frame leg swing, advanced by distance walked.

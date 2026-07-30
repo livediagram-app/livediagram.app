@@ -71,6 +71,15 @@ type ChromeExtras = {
   // Reset the isometric camera to its default angle (wired to
   // `isoCamera.reset`) — fired when the dock orbit button is clicked.
   onIsoReset: () => void;
+  // Avatar mode (spec/101): the character's customisation, owned by
+  // useAvatarConfig in Canvas (it persists per browser, so it lives with the
+  // sprite rather than in the editor's diagram state) and edited by the
+  // Avatar Panel down in the chrome.
+  avatarConfig: import('@/lib/avatar-config').AvatarConfig;
+  onChangeAvatarField: <K extends keyof import('@/lib/avatar-config').AvatarConfig>(
+    field: K,
+    value: import('@/lib/avatar-config').AvatarConfig[K],
+  ) => void;
 };
 
 export type CanvasChromeProps = CanvasProps & ChromeExtras;
@@ -269,6 +278,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
         hasAi={!!aiPanel}
         hasPoll={!!props.pollPanel}
         hasVote={!!props.tabVote}
+        hasAvatar={props.canvasTool === 'avatar'}
         activeMobilePanel={activeMobilePanel}
         dockButtonRefs={dockButtonRefs}
         onDockButtonClick={handleDockButtonClick}
@@ -300,6 +310,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
               it only ever showed on the layouts that take this path. */}
           {panelEls.poll}
           {panelEls.vote}
+          {panelEls.avatar}
         </>
       )}
 

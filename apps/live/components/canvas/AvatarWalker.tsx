@@ -1,24 +1,21 @@
-// The Avatar-mode character (spec/101): a chunky Habbo-Hotel-style pixel
-// figure that stands in the diagram, walks where you click, and hops with a
-// flag when you press Space.
+// The Avatar-mode character's placement (spec/101): where the sprite sits in
+// canvas coords, the "you are here" ring under it, and a peer's name chip.
+// The pixel art itself lives in avatar-sprite.tsx.
 //
-// Drawn as inline SVG on a coarse 16x24 pixel grid with `shapeRendering:
-// crispEdges` and flat fills — no gradients, no anti-aliased curves — so it
-// reads as sprite art rather than a vector illustration. It lives INSIDE the
-// canvas's transformed wrapper, so it pans / zooms with the diagram; its
-// position is the FEET, so it stands on the point you clicked.
-//
-// The same component draws PEERS' characters (their presence snapshot), which
+// It lives INSIDE the canvas's transformed wrapper, so it pans / zooms with the
+// diagram; its position is the FEET, so it stands on the point you clicked. The
+// same component draws PEERS' characters (from their presence snapshot), which
 // is why every animation input is a prop rather than read from the walk hook.
 
-import type { AvatarFacing, AvatarLook } from '@/lib/avatar-walk';
-import { AVATAR_BOX, AVATAR_JUMP_HEADROOM } from '@/lib/avatar-walk';
+import { avatarScale, type AvatarConfig } from '@/lib/avatar-config';
+import type { AvatarFacing } from '@/lib/avatar-walk';
+import { AVATAR_HEIGHT, avatarBox } from '@/lib/avatar-walk';
 import { AvatarSprite } from '@/components/canvas/avatar-sprite';
 
 export function AvatarWalker({
   pos,
   facing,
-  look,
+  config,
   walking,
   stepFrame,
   lift = 0,
@@ -30,7 +27,8 @@ export function AvatarWalker({
   // Feet position in canvas coords.
   pos: { x: number; y: number };
   facing: AvatarFacing;
-  look: AvatarLook;
+  // Gender / clothing / hair / size, from the Avatar Panel (or a peer's packet).
+  config: AvatarConfig;
   walking: boolean;
   // 0 / 1 — the two-frame leg swing, advanced by distance walked.
   stepFrame: number;
@@ -49,6 +47,8 @@ export function AvatarWalker({
   // character (you know who you are).
   name?: string;
 }) {
+  const scale = avatarScale(config.size);
+  const box = avatarBox(scale);
   return (
     <>
       {/* Standing-on ring: what makes the mode useful for narration — the
@@ -72,23 +72,24 @@ export function AvatarWalker({
         className="pointer-events-none absolute"
         style={{
           // The box is bigger than the figure: it reserves headroom above for
-          // the hop and slack either side for the waved flag (see AVATAR_BOX),
+          // the hop and slack either side for the waved flag (see avatarBox),
           // so placing it means offsetting from the feet rather than the
           // sprite's own corner. The contact shadow stays on the ground while
           // the body rises.
-          left: pos.x - AVATAR_BOX.offsetX,
-          top: pos.y - AVATAR_BOX.offsetY,
-          width: AVATAR_BOX.width,
-          height: AVATAR_BOX.height,
+          left: pos.x - box.offsetX,
+          top: pos.y - box.offsetY,
+          width: box.width,
+          height: box.height,
         }}
       >
         {name ? (
           <div
             className="absolute left-1/2 max-w-[120px] -translate-x-1/2 truncate rounded px-1.5 py-0.5 text-[10px] font-semibold leading-tight text-white"
-            // Pinned just above the HEAD, not the (headroom-extended) box.
+            // Pinned just above the HEAD, not the (headroom-extended) box, and
+            // tracking the size choice so it hugs a small character too.
             style={{
               backgroundColor: shirt ?? '#0ea5e9',
-              top: AVATAR_JUMP_HEADROOM - 18,
+              top: box.offsetY - AVATAR_HEIGHT * scale - 16,
             }}
           >
             {name}
@@ -96,12 +97,13 @@ export function AvatarWalker({
         ) : null}
         <AvatarSprite
           facing={facing}
-          look={look}
+          config={config}
           walking={walking}
           stepFrame={stepFrame}
           lift={lift}
           wave={wave}
           shirt={shirt}
+          scale={scale}
         />
       </div>
     </>

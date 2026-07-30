@@ -93,9 +93,10 @@ Shape:
 ```ts
 type PanelCorner = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 // 'collaborate' is the merged Comments + Actions panel; 'layers' is
-// spec/74; 'poll' is spec/88 and is the ONE panel that isn't always
-// available — it exists only while a live poll is running, so it joins
-// and leaves its corner stack rather than sitting in it.
+// spec/74. Three panels are NOT always available — they exist only while
+// their session tool / mode is running, so they join and leave their
+// corner stack rather than sitting in it: 'poll' (spec/88), 'vote'
+// (spec/39), and 'avatar' (spec/101, the Avatar-mode character sheet).
 type PanelId =
   | 'palette'
   | 'explorer'
@@ -104,7 +105,9 @@ type PanelId =
   | 'ai'
   | 'minimap'
   | 'layers'
-  | 'poll';
+  | 'poll'
+  | 'vote'
+  | 'avatar';
 
 type PanelLayout = {
   // Ordered stack per corner. Order is top→bottom (top corners) /

@@ -26,7 +26,8 @@ export type PanelId =
   | 'minimap'
   | 'layers'
   | 'poll'
-  | 'vote';
+  | 'vote'
+  | 'avatar';
 
 export const PANEL_CORNERS: readonly PanelCorner[] = [
   'top-left',
@@ -45,6 +46,7 @@ export const PANEL_IDS: readonly PanelId[] = [
   'layers',
   'poll',
   'vote',
+  'avatar',
 ];
 
 // Internal: a free panel's pixel position. Not exported — callers pass
@@ -82,6 +84,9 @@ export const DEFAULT_PANEL_CORNER: Record<PanelId, PanelCorner> = {
   // Live vote (spec/39): beside the poll panel, and like it only present
   // while a vote is running.
   vote: 'top-right',
+  // Avatar mode (spec/101): under the Palette, where the mode picker that
+  // opened it lives. Like poll / vote it exists only while its mode does.
+  avatar: 'top-right',
 };
 
 export const STORAGE_KEY = 'livediagram:panel-layout:v1';
