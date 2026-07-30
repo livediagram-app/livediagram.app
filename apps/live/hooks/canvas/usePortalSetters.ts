@@ -1,7 +1,9 @@
-// Portal element setters (spec/104), off useEditorState rather than the style
-// hook: a portal link is the one element setting that reaches ACROSS TABS, so
-// these need the whole tab list and a tabs-wide commit, not the active tab's
-// element mapper every other setter uses.
+// Setters for the Behaviour elements (spec/104-107), off useEditorState rather
+// than the style hook: a portal link is the one element setting that reaches
+// ACROSS TABS, so these need the whole tab list and a tabs-wide commit, not the
+// active tab's element mapper every other setter uses — and the session button,
+// reveal zone, and picker settings sit beside it because they are configured
+// from the same menu, on the same kinds of element.
 //
 // Three actions, all keyed off the current selection:
 //  - link this portal to another (either tab), or unlink it,
@@ -9,7 +11,13 @@
 //  - create a fresh portal already linked to this one, for when the place you
 //    want to lead to doesn't exist yet.
 
-import { createShape, type ShapeElement, type Tab } from '@livediagram/diagram';
+import {
+  createShape,
+  type PickerSource,
+  type SessionButtonConfig,
+  type ShapeElement,
+  type Tab,
+} from '@livediagram/diagram';
 import { track } from '@/lib/telemetry';
 
 // How far to the right of its partner a freshly created portal lands, in canvas
@@ -138,5 +146,49 @@ export function usePortalSetters({
     track('Element', 'Added', 'Portal');
   };
 
-  return { setPortalTargetSelected, setPortalNameSelected, createLinkedPortal };
+  // The remaining Behaviour settings are ordinary active-tab patches on the
+  // element the menu is acting on: what a session button starts (spec/105),
+  // whether a cover is off for everyone (spec/106), and where a picker draws
+  // its candidates from (spec/107).
+  const patchTarget = (patch: Partial<ShapeElement>, kind: string, telemetry: string) => {
+    const tab = tabs.find((t) => t.id === activeId);
+    const ids = currentSelectionIds();
+    const targets = (tab?.elements ?? []).filter(
+      (el): el is ShapeElement =>
+        el.type === 'shape' && el.shape === kind && (ids.has(el.id) || el.id === contextTargetId),
+    );
+    if (targets.length === 0) return;
+    const targetIds = new Set(targets.map((t) => t.id));
+    commitTabs((ts) =>
+      ts.map((t) =>
+        t.id !== activeId
+          ? t
+          : {
+              ...t,
+              elements: t.elements.map((el) =>
+                el.type === 'shape' && targetIds.has(el.id) ? { ...el, ...patch } : el,
+              ),
+            },
+      ),
+    );
+    track('Element', 'Changed', telemetry);
+  };
+
+  const setSessionConfigSelected = (session: SessionButtonConfig) =>
+    patchTarget({ session }, 'session-button', 'SessionButton');
+  const setRevealedSelected = (revealed: boolean) => patchTarget({ revealed }, 'reveal', 'Reveal');
+  const setPickerSourceSelected = (pickerSource: PickerSource) =>
+    patchTarget({ pickerSource }, 'picker', 'Picker');
+  const setPickerOptionsSelected = (pickerOptions: string[]) =>
+    patchTarget({ pickerOptions }, 'picker', 'Picker');
+
+  return {
+    setPortalTargetSelected,
+    setPortalNameSelected,
+    createLinkedPortal,
+    setSessionConfigSelected,
+    setRevealedSelected,
+    setPickerSourceSelected,
+    setPickerOptionsSelected,
+  };
 }

@@ -1,4 +1,5 @@
 import type { ComponentKind, ShapeKind } from '@livediagram/diagram';
+import { PickerIcon, RevealIcon, TimerIcon } from '@/components/palette/palette-icons';
 
 // The shared palette tile catalogue (spec/78): every creation tile across
 // the Shapes / Tools / Data / Components / Devices categories as one data
@@ -88,7 +89,7 @@ export const TOOL_GROUPS: { id: ToolGroupId; label: string; description: string 
     id: 'behaviour',
     label: 'Behaviour',
     description:
-      'Elements that do something when pressed: switch someone’s selection mode, or portal them across the canvas.',
+      'Elements that do something when pressed: switch a mode, portal across the canvas, start a timer or vote, cover something up, or pick at random.',
   },
 ];
 
@@ -695,6 +696,45 @@ export const PALETTE_TILES: PaletteTileDef[] = [
         <ellipse cx="9" cy="9" rx="2.1" ry="3.6" strokeWidth="1.1" opacity="0.6" />
       </svg>
     ),
+  },
+  {
+    // Session button (spec/105): starts a timer / vote / poll for the room.
+    id: 'tools:session-button',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add session button',
+    caption: 'Session',
+    description:
+      'A button that starts a session tool for everyone: a countdown timer, a dot vote, or a poll you write in advance.',
+    filled: true,
+    action: { type: 'shape', kind: 'session-button' },
+    icon: <TimerIcon />,
+  },
+  {
+    // Reveal zone (spec/106): a cover you click to see what is underneath.
+    id: 'tools:reveal',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add reveal zone',
+    caption: 'Reveal',
+    description:
+      'A cover over part of the canvas. Click it to uncover it just for you, or reveal it for everyone from the menu.',
+    filled: true,
+    action: { type: 'shape', kind: 'reveal' },
+    icon: <RevealIcon />,
+  },
+  {
+    // Picker (spec/107): rolls a person or a written option.
+    id: 'tools:picker',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add picker',
+    caption: 'Picker',
+    description:
+      'Press it to choose at random — one of the people in the room, or one of the options you write on it.',
+    filled: true,
+    action: { type: 'shape', kind: 'picker' },
+    icon: <PickerIcon />,
   },
   {
     id: 'tools:checklist',

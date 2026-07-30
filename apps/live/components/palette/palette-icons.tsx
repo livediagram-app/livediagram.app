@@ -709,3 +709,118 @@ export function AlignIcon({ x, y }: { x: TextAlignX; y: TextAlignY }) {
     </svg>
   );
 }
+
+// --- Session tools (spec/105) ------------------------------------------------
+// The three glyphs a Session button wears, in the same 16-grid, 1.4-stroke
+// house style as the mode icons above so a row of Behaviour tiles matches.
+
+export function TimerIcon() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      {/* a stopwatch: crown, dial, and a hand at ten past */}
+      <path d="M6.4 1.6h3.2" />
+      <path d="M8 1.6v1.6" />
+      <circle cx="8" cy="9" r="5" />
+      <path d="M8 9V6.4" />
+      <path d="M8 9l2 1.6" />
+    </svg>
+  );
+}
+
+export function VoteIcon() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      {/* three dots landing on a card — dot voting, spec/39 */}
+      <rect x="2" y="8.4" width="12" height="5.6" rx="1.4" />
+      <circle cx="5" cy="4.4" r="1.5" fill="currentColor" stroke="none" />
+      <circle cx="9" cy="3.2" r="1.5" fill="currentColor" stroke="none" />
+      <circle cx="12.6" cy="5.2" r="1.5" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+export function PollIcon() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      {/* a question with two answer bars beneath it */}
+      <path d="M5.6 4.2a2.4 2.4 0 1 1 2.8 2.4v1" />
+      <circle cx="8.4" cy="9.6" r="0.7" fill="currentColor" stroke="none" />
+      <path d="M2.6 12.6h10.8" />
+      <path d="M4.6 14.6h6.8" />
+    </svg>
+  );
+}
+
+// --- Reveal zone (spec/106) + Picker (spec/107) ------------------------------
+
+export function RevealIcon() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      {/* a card being lifted off what is underneath */}
+      <path d="M2.4 9.6l5.6-3.2 5.6 3.2-5.6 3.2z" />
+      <path d="M4.6 4.6l3.4-2 3.4 2" opacity="0.55" />
+    </svg>
+  );
+}
+
+export function PickerIcon() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      {/* a die mid-roll */}
+      <rect x="2.6" y="2.6" width="10.8" height="10.8" rx="2.2" />
+      <circle cx="5.8" cy="5.8" r="0.9" fill="currentColor" stroke="none" />
+      <circle cx="10.2" cy="10.2" r="0.9" fill="currentColor" stroke="none" />
+      <circle cx="8" cy="8" r="0.9" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}

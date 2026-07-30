@@ -9,7 +9,7 @@ import type { ElementAction } from './element-action';
 import type { BorderStroke, BorderStyle, BorderRadius } from './border-style';
 import type { ElementShadow } from './shadow';
 import type { ShapeMarker } from './shape-marker';
-import type { SelectionMode } from './selection-mode';
+import type { PickerSource, SelectionMode, SessionButtonConfig } from './selection-mode';
 import type { IconSize } from './icon-size';
 import type {
   AnimationSpeed,
@@ -153,6 +153,21 @@ export type ShapeElement = {
   // Only meaningful on the 'portal' kind. Absent = an unpaired portal, which is
   // inert and says so — a portal to nowhere shouldn't silently swallow clicks.
   portalTarget?: ElementId;
+  // Session button (spec/105): which session tool pressing this element starts
+  // for the room, and its one setting. Only meaningful on 'session-button';
+  // absent means a default five-minute timer, so a button authored without one
+  // still does something sensible.
+  session?: SessionButtonConfig;
+  // Reveal zone (spec/106): whether the cover is off FOR EVERYONE. A viewer
+  // uncovering it for themselves is local and ephemeral and never touches this.
+  // Only meaningful on the 'reveal' kind.
+  revealed?: boolean;
+  // Picker (spec/107): where the candidates come from, the written list when
+  // that source is 'options', and the last result — kept on the element so the
+  // board still shows it after a reload. Only meaningful on the 'picker' kind.
+  pickerSource?: PickerSource;
+  pickerOptions?: string[];
+  pickerResult?: string;
   // Timeline rail (spec/51): how many evenly-spaced points sit above the rail
   // line. Only meaningful on the 'timeline-rail' kind; clamped to
   // RAIL_MIN_POINTS..RAIL_MAX_POINTS.

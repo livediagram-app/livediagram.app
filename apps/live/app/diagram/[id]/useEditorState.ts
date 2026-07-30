@@ -13,6 +13,7 @@ import {
 import { useCanvasEraser } from '@/hooks/canvas/useCanvasEraser';
 import { useCanvasTool } from '@/hooks/canvas/useCanvasTool';
 import { usePortalSetters } from '@/hooks/canvas/usePortalSetters';
+import { useBehaviourElements } from '@/hooks/canvas/useBehaviourElements';
 import type { CanvasTool } from '@/components/palette/CommandPalette';
 import { useCellLinkPicker } from '@/hooks/canvas/useCellLinkPicker';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
@@ -1460,6 +1461,20 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     selfId: selfParticipant.id,
   });
 
+  // The interactive Behaviour elements that act on the SESSION rather than the
+  // document (spec/105, /106, /107): the session button's press, the reveal
+  // zone's local uncover, and the picker's roll.
+  const { pressSessionButton, revealedIds, toggleRevealForMe, pickerFor } = useBehaviourElements({
+    activeId,
+    commitTabs,
+    editsBlocked,
+    selfParticipant,
+    livePresence,
+    startTimer,
+    startVote,
+    startPoll: livePoll.startPoll,
+  });
+
   // Image domain (picker state, recent-images list, placement + fill
   // handlers). Lives in its own hook so the page no longer carries
   // that state or its six handlers — see useEditorImages + spec/19.
@@ -1713,7 +1728,15 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // Portal links (spec/104) live off the style hook: a link can point at a
   // portal on ANOTHER tab, so these setters need the whole tab list and a
   // tabs-wide commit rather than the active tab's element mapper.
-  const { setPortalTargetSelected, setPortalNameSelected, createLinkedPortal } = usePortalSetters({
+  const {
+    setPortalTargetSelected,
+    setPortalNameSelected,
+    createLinkedPortal,
+    setSessionConfigSelected,
+    setRevealedSelected,
+    setPickerSourceSelected,
+    setPickerOptionsSelected,
+  } = usePortalSetters({
     currentSelectionIds,
     contextTargetId: contextMenu?.mode === 'element' ? contextMenu.elementId : null,
     commitTabs,
@@ -2387,6 +2410,14 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setPortalTargetSelected,
     setPortalNameSelected,
     createLinkedPortal,
+    setSessionConfigSelected,
+    setRevealedSelected,
+    setPickerSourceSelected,
+    setPickerOptionsSelected,
+    pressSessionButton,
+    revealedIds,
+    toggleRevealForMe,
+    pickerFor,
     setRatingSelected,
     setRatingAnimSelected,
     setRatingAnimSpeedSelected,

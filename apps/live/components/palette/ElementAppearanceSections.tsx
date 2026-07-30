@@ -118,6 +118,10 @@ export function ElementAppearanceSections({
   const isModeButton = target.type === 'shape' && target.shape === 'mode-button';
   // Portal (spec/104): its one setting is which portal it leads to.
   const isPortal = target.type === 'shape' && target.shape === 'portal';
+  // The other Behaviour kinds with settings (spec/105, /106, /107).
+  const isSessionButton = target.type === 'shape' && target.shape === 'session-button';
+  const isReveal = target.type === 'shape' && target.shape === 'reveal';
+  const isPicker = target.type === 'shape' && target.shape === 'picker';
   // The Text band (spec/09): Markers + Alignment. Markers are regular-shape
   // only (self-drawing shapes have no label slot); Alignment applies to any
   // boxed element with a text slot.
@@ -221,6 +225,9 @@ export function ElementAppearanceSections({
         isChecklist={isChecklist}
         isModeButton={isModeButton}
         isPortal={isPortal}
+        isSessionButton={isSessionButton}
+        isReveal={isReveal}
+        isPicker={isPicker}
         isIcon={isIcon}
         boxed={boxed}
         sectionProps={sectionProps}

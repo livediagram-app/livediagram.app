@@ -100,6 +100,11 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onStartPencil,
     onFollowLink,
     onPressModeButton,
+    onPressSessionButton,
+    sessionStartBlocked,
+    revealedIds,
+    onToggleReveal,
+    onRollPicker,
     onOpenComments,
     onOpenAction,
     onOpenNote,
@@ -166,6 +171,9 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onToggleChecklistItem: readOnly ? undefined : onToggleChecklistItem,
     onFollowLink,
     onPressModeButton,
+    onPressSessionButton,
+    onToggleReveal,
+    onRollPicker,
     onOpenComments,
     onOpenAction,
     onOpenNote,
@@ -324,6 +332,11 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             onCancelEdit={h.onCancelEdit}
             onFollowLink={h.onFollowLink}
             onPressModeButton={h.onPressModeButton}
+            onPressSessionButton={h.onPressSessionButton}
+            sessionStartBlocked={sessionStartBlocked}
+            revealedForMe={revealedIds?.has(element.id)}
+            onToggleReveal={h.onToggleReveal}
+            onRollPicker={h.onRollPicker}
             activeMode={canvasTool}
             onEnterPortal={onEnterPortal}
             onOpenComments={h.onOpenComments}

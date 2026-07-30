@@ -26,6 +26,10 @@ control + every dot cast is naturally **edit-role only** — the facilitator and
 participants share an edit link; **view-role visitors watch** the timer and
 live counts but can't control or vote. No extra gating code.
 
+## Starting one from the canvas
+
+Both tools can also be started by a [Session button](105-session-button.md) — a canvas element carrying "5 minute timer" or "vote, 3 dots each" — so a board can carry its own facilitation instead of relying on whoever built it. It presses through the same entry points described below, so every rule here still applies, the edit-role gate included.
+
 ## Timer
 
 `tab.timer: { mode: 'countdown' | 'stopwatch'; running; durationMs?; anchorAt?; frozenMs? }`.

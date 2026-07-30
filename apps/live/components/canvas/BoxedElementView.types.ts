@@ -67,6 +67,22 @@ export type BoxedElementViewProps = {
   // the mode the element carries. Optional — a surface that can't change tools
   // (the read-only embed) leaves the face inert.
   onPressModeButton?: (element: import('@livediagram/diagram').ShapeElement) => void;
+  // Session button (spec/105): press it to start the tool it carries. Absent
+  // on a surface with no session to run; `sessionStartBlocked` is the softer
+  // case — there IS a session, but this viewer may not start things (view
+  // role), so the face renders inert and explains rather than lying.
+  onPressSessionButton?: (element: import('@livediagram/diagram').ShapeElement) => void;
+  sessionStartBlocked?: boolean;
+  // Reveal zone (spec/106): whether THIS viewer has lifted the cover (local,
+  // ephemeral — the shared state lives on the element), and the toggle.
+  revealedForMe?: boolean;
+  onToggleReveal?: (elementId: string) => void;
+  // Picker (spec/107): resolves what a roll can land on right now and performs
+  // one, returning the result to animate towards.
+  onRollPicker?: (element: import('@livediagram/diagram').ShapeElement) => {
+    candidates: string[];
+    roll: () => string | null;
+  };
   // The viewer's current mode, so a Selection Mode button offering it renders
   // disabled (spec/103).
   activeMode?: import('@livediagram/diagram').SelectionMode;

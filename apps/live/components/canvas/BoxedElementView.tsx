@@ -28,6 +28,9 @@ import { isSvgRenderedShape } from '@/components/canvas/shape-svg-overlay';
 import { BoxBorderOverlay } from '@/components/canvas/BoxBorderOverlay';
 import { PageCornerFold } from '@/components/canvas/PageCornerFold';
 import { ModeButtonFace } from '@/components/canvas/ModeButtonFace';
+import { SessionButtonFace } from '@/components/canvas/SessionButtonFace';
+import { RevealFace } from '@/components/canvas/RevealFace';
+import { PickerFace } from '@/components/canvas/PickerFace';
 import { PortalFace } from '@/components/canvas/PortalFace';
 import { DEFAULT_BUTTON_MODE } from '@livediagram/diagram';
 import { isCssNativeBorderStyle } from '@/components/canvas/border-css';
@@ -86,6 +89,11 @@ function BoxedElementViewImpl({
   onCancelEdit,
   onFollowLink,
   onPressModeButton,
+  onPressSessionButton,
+  sessionStartBlocked,
+  revealedForMe,
+  onToggleReveal,
+  onRollPicker,
   onEnterPortal,
   activeMode,
   onOpenComments,
@@ -402,6 +410,34 @@ function BoxedElementViewImpl({
           activeMode={activeMode}
           textColor={textColor}
           onPress={onPressModeButton ? () => onPressModeButton(element) : undefined}
+        />
+      ) : element.type === 'shape' && element.shape === 'session-button' && !isEditing ? (
+        /* Session button (spec/105): starts a timer / vote / poll for the room. */
+        <SessionButtonFace
+          config={element.session}
+          label={label}
+          textColor={textColor}
+          canStart={!!onPressSessionButton && !sessionStartBlocked}
+          onPress={onPressSessionButton ? () => onPressSessionButton(element) : undefined}
+        />
+      ) : element.type === 'shape' && element.shape === 'reveal' && !isEditing ? (
+        /* Reveal zone (spec/106): a cover, off for me / off for everyone. */
+        <RevealFace
+          label={label}
+          textColor={textColor}
+          strokeColor={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element)}
+          revealedForAll={element.revealed === true}
+          revealedForMe={!!revealedForMe}
+          onToggleForMe={onToggleReveal ? () => onToggleReveal(element.id) : undefined}
+        />
+      ) : element.type === 'shape' && element.shape === 'picker' && !isEditing ? (
+        /* Picker (spec/107): rolls a person or an option. */
+        <PickerFace
+          label={label}
+          result={element.pickerResult}
+          candidates={onRollPicker?.(element).candidates ?? []}
+          textColor={textColor}
+          onRoll={onRollPicker ? () => onRollPicker(element).roll() : undefined}
         />
       ) : element.type === 'shape' && element.shape === 'portal' && !isEditing ? (
         /* Portal (spec/104): the drawn portal + its label, pressable when paired. */

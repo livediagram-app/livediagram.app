@@ -95,6 +95,20 @@ export type CanvasProps = {
   // mode the element carries. Optional — the read-only embed has no tool picker
   // to drive, so its buttons render inert.
   onPressModeButton?: (element: import('@livediagram/diagram').ShapeElement) => void;
+  // Session button (spec/105): starts the tool the pressed element carries.
+  onPressSessionButton?: (element: import('@livediagram/diagram').ShapeElement) => void;
+  // True when this viewer can't start session tools (view role): the button
+  // renders inert and says why instead of failing silently on press.
+  sessionStartBlocked?: boolean;
+  // Reveal zones (spec/106) this viewer has lifted for themselves. Ephemeral
+  // and local — the shared state is `revealed` on the element.
+  revealedIds?: ReadonlySet<string>;
+  onToggleReveal?: (elementId: string) => void;
+  // Picker (spec/107): the candidates a roll can land on, and the roll itself.
+  onRollPicker?: (element: import('@livediagram/diagram').ShapeElement) => {
+    candidates: string[];
+    roll: () => string | null;
+  };
   // Portal (spec/104): resolve a portal's pairing — the paired portal's name and, when
   // it has one, the action that travels there.
   onEnterPortal?: (element: import('@livediagram/diagram').ShapeElement) => {

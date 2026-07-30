@@ -25,6 +25,8 @@ const SHAPE_KIND_OVERRIDES: Record<string, string> = {
   'code-block': 'CodeBlock',
   // Same hyphen problem (spec/103).
   'mode-button': 'ModeButton',
+  // And again for the session button (spec/105).
+  'session-button': 'SessionButton',
 };
 
 const tokenForShapeKind = (kind: string) => SHAPE_KIND_OVERRIDES[kind] ?? titleCaseType(kind);

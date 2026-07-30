@@ -84,6 +84,10 @@ export function EditorContextMenuHost() {
     setPortalTargetSelected,
     setPortalNameSelected,
     createLinkedPortal,
+    setSessionConfigSelected,
+    setRevealedSelected,
+    setPickerSourceSelected,
+    setPickerOptionsSelected,
     tabs,
     commitShapeColorPreset,
     previewShapeColorPreset,
@@ -226,6 +230,10 @@ export function EditorContextMenuHost() {
       onSetPortalTarget={setPortalTargetSelected}
       onSetPortalName={setPortalNameSelected}
       onCreateLinkedPortal={createLinkedPortal}
+      onSetSession={setSessionConfigSelected}
+      onSetRevealed={setRevealedSelected}
+      onSetPickerSource={setPickerSourceSelected}
+      onSetPickerOptions={setPickerOptionsSelected}
       tabs={tabs}
       activeTabId={activeTab.id}
       shapeColorPresets={shapeColorPresets(getTheme(activeTab.theme))}

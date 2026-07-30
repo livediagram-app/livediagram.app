@@ -41,7 +41,10 @@ export function isSvgRenderedShape(kind: ShapeKind): boolean {
     kind !== 'browser' &&
     kind !== 'page' &&
     kind !== 'mode-button' &&
-    kind !== 'portal'
+    kind !== 'portal' &&
+    kind !== 'session-button' &&
+    kind !== 'reveal' &&
+    kind !== 'picker'
   );
 }
 

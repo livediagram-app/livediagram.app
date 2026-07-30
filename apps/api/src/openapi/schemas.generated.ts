@@ -1133,6 +1133,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
+          "picker": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
           "pie-chart": {
             "additionalProperties": false,
             "properties": {
@@ -1194,6 +1209,36 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "object"
           },
           "rating": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "reveal": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "session-button": {
             "additionalProperties": false,
             "properties": {
               "fill": {
@@ -2475,6 +2520,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "PickerSource": {
+    "enum": [
+      "participants",
+      "options"
+    ],
+    "type": "string"
+  },
   "PieAnim": {
     "enum": [
       "grow",
@@ -2546,6 +2598,41 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "eraser",
       "format",
       "isometric"
+    ],
+    "type": "string"
+  },
+  "SessionButtonConfig": {
+    "additionalProperties": false,
+    "properties": {
+      "dots": {
+        "type": "number"
+      },
+      "minutes": {
+        "type": "number"
+      },
+      "options": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "question": {
+        "type": "string"
+      },
+      "tool": {
+        "$ref": "#/components/schemas/SessionTool"
+      }
+    },
+    "required": [
+      "tool"
+    ],
+    "type": "object"
+  },
+  "SessionTool": {
+    "enum": [
+      "timer",
+      "vote",
+      "poll"
     ],
     "type": "string"
   },
@@ -2675,6 +2762,18 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "padding": {
         "$ref": "#/components/schemas/Padding"
       },
+      "pickerOptions": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "pickerResult": {
+        "type": "string"
+      },
+      "pickerSource": {
+        "$ref": "#/components/schemas/PickerSource"
+      },
       "pieAnim": {
         "$ref": "#/components/schemas/PieAnim"
       },
@@ -2726,6 +2825,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "ratingAnimSpeed": {
         "$ref": "#/components/schemas/AnimationSpeed"
       },
+      "revealed": {
+        "type": "boolean"
+      },
       "richText": {
         "items": {
           "$ref": "#/components/schemas/TextRun"
@@ -2734,6 +2836,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "rotation": {
         "type": "number"
+      },
+      "session": {
+        "$ref": "#/components/schemas/SessionButtonConfig"
       },
       "shadow": {
         "$ref": "#/components/schemas/ElementShadow"
@@ -2814,6 +2919,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "page",
       "mode-button",
       "portal",
+      "session-button",
+      "reveal",
+      "picker",
       "stadium",
       "actor",
       "cloud",

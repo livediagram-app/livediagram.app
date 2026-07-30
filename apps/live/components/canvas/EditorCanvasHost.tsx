@@ -222,6 +222,10 @@ export function EditorCanvasHost() {
     setAiPanelPosition,
     exitAvatarTool,
     pressModeButton,
+    pressSessionButton,
+    revealedIds,
+    toggleRevealForMe,
+    pickerFor,
     tabs,
     setCanvasTool,
     setCanvasThemeTab,
@@ -386,6 +390,14 @@ export function EditorCanvasHost() {
       // selection clear, and the empty-canvas guard all included. Pressing it
       // again, while already in that mode, hands you back your previous one.
       onPressModeButton={(element) => pressModeButton(element.mode ?? DEFAULT_BUTTON_MODE)}
+      // Session button (spec/105) / Reveal zone (spec/106) / Picker (spec/107):
+      // see useBehaviourElements — the press resolves what to do from the
+      // element and calls the tool that already exists.
+      onPressSessionButton={pressSessionButton}
+      sessionStartBlocked={isReadOnly}
+      revealedIds={revealedIds}
+      onToggleReveal={toggleRevealForMe}
+      onRollPicker={pickerFor}
       onEraseStart={isReadOnly ? undefined : beginErase}
       onDuplicateMultiSelected={duplicateMultiSelected}
       onDeleteMultiSelected={deleteMultiSelected}

@@ -81,7 +81,10 @@ export function describeVariant(
         isChartShape(element.shape) ||
         isCodeBlockShape(element.shape) ||
         isChecklistShape(element.shape) ||
-        element.shape === 'portal'
+        element.shape === 'portal' ||
+        // Reveal zone (spec/106): the cover IS the element, and it must not
+        // sit on a second box that would show around its dashed edge.
+        element.shape === 'reveal'
       ) {
         return { className: ring, style: { borderRadius: '4px', ...filterShadow } };
       }

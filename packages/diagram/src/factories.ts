@@ -3,7 +3,13 @@
 // read through the index ⇄ factories cycle TDZ-crashes plain-Node ESM
 // consumers. `isBoxed` stays on './index' — it's only called inside
 // function bodies, after the cycle has settled.
-import { DEFAULT_BUTTON_MODE, MODE_BUTTON_SKIN } from './selection-mode';
+import {
+  DEFAULT_BUTTON_MODE,
+  DEFAULT_PICKER_SOURCE,
+  DEFAULT_SESSION_TOOL,
+  DEFAULT_TIMER_MINUTES,
+  MODE_BUTTON_SKIN,
+} from './selection-mode';
 import {
   CHECKLIST_DEFAULT_ITEMS,
   LINE_DEFAULT_CATEGORIES,
@@ -114,6 +120,14 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   'mode-button': { width: 104, height: 96 },
   // Portal (spec/104): portal-shaped — taller than it is wide, like a portal.
   portal: { width: 72, height: 112 },
+  // Session button (spec/105): the Selection Mode button's tile, so a row of
+  // Behaviour controls lines up.
+  'session-button': { width: 104, height: 96 },
+  // Reveal zone (spec/106): a cover, so it arrives big enough to actually
+  // cover something — a column of notes rather than one sticky.
+  reveal: { width: 320, height: 220 },
+  // Picker (spec/107): a card wide enough for a name at a readable size.
+  picker: { width: 220, height: 132 },
 };
 
 // New boxed elements default to Medium text size per spec 09 ("Text size").
@@ -183,6 +197,51 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       // drag-to-draw and every later resize portal-shaped; the user can still
       // unlock it from the menu like any other element.
       aspectLocked: true,
+    };
+  }
+  // Session button (spec/105): same skin and rules as the Selection Mode
+  // button — it IS one, pointed at a session tool instead of a mode — with a
+  // default five-minute timer so a fresh one already does something.
+  if (kind === 'session-button') {
+    return {
+      ...base,
+      session: { tool: DEFAULT_SESSION_TOOL, minutes: DEFAULT_TIMER_MINUTES },
+      fillColor: MODE_BUTTON_SKIN.fill,
+      strokeColor: MODE_BUTTON_SKIN.stroke,
+      textColor: MODE_BUTTON_SKIN.text,
+      shadow: { offsetX: 0, offsetY: 2, blur: 6, opacity: 0.24 },
+      borderRadius: 'lg',
+      textSize: 'sm',
+      textBold: true,
+    };
+  }
+  // Reveal zone (spec/106): a frosted cover. It paints itself, so the element
+  // box carries no fill of its own; the label names what is underneath and
+  // sits at the top, out of the way of the middle where the hint goes.
+  if (kind === 'reveal') {
+    return {
+      ...base,
+      label: 'Hidden',
+      fillColor: 'transparent',
+      strokeColor: '#94a3b8',
+      textColor: '#0f172a',
+      borderRadius: 'lg',
+      textAlignY: 'top',
+      textBold: true,
+    };
+  }
+  // Picker (spec/107): a plain card — the result is the content, so it gets
+  // the room by default rather than a written list.
+  if (kind === 'picker') {
+    return {
+      ...base,
+      pickerSource: DEFAULT_PICKER_SOURCE,
+      fillColor: '#ffffff',
+      strokeColor: '#cbd5e1',
+      textColor: '#0f172a',
+      shadow: { offsetX: 0, offsetY: 2, blur: 6, opacity: 0.2 },
+      borderRadius: 'lg',
+      textSize: 'sm',
     };
   }
   // Document (spec/100): prose sits TOP-LEFT. Centred body text is the

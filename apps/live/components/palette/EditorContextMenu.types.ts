@@ -145,6 +145,12 @@ export type EditorContextMenuProps = {
   // "create the far end for me" for the common case where it doesn't exist yet.
   onSetPortalName: (name: string) => void;
   onCreateLinkedPortal: () => void;
+  // Session button (spec/105) / Reveal zone (spec/106) / Picker (spec/107):
+  // their settings, applied to the element the menu is acting on.
+  onSetSession: (config: import('@livediagram/diagram').SessionButtonConfig) => void;
+  onSetRevealed: (revealed: boolean) => void;
+  onSetPickerSource: (source: import('@livediagram/diagram').PickerSource) => void;
+  onSetPickerOptions: (options: string[]) => void;
   // Every tab, because a portal link can cross tabs, plus which one is active
   // so the picker can mark the off-tab candidates.
   tabs: import('@livediagram/diagram').Tab[];

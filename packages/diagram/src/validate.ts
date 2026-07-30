@@ -18,7 +18,7 @@
 import type { Element, ShapeKind, Tab } from './index';
 // Value imports come from the data-shapes LEAF module (types only from
 // './index'), keeping this module out of the index ⇄ factories cycle.
-import { isSelectionMode } from './selection-mode';
+import { isPickerSource, isSelectionMode, isSessionTool } from './selection-mode';
 import {
   CHECKLIST_MAX_ITEMS,
   CHECKLIST_MAX_TEXT,
@@ -71,6 +71,12 @@ export const SHAPE_KINDS = new Set<string>([
   'mode-button',
   // Portal (spec/104): a portal to the portal it is paired with.
   'portal',
+  // Session button (spec/105): starts a timer / vote / poll for the room.
+  'session-button',
+  // Reveal zone (spec/106): a cover you click to see what is underneath.
+  'reveal',
+  // Picker (spec/107): rolls a random person or option.
+  'picker',
   'stadium',
   'actor',
   'cloud',
@@ -167,6 +173,25 @@ export function isValidElement(el: unknown): el is Element {
     // element still renders (absent = the Avatar default), so silently
     // rewriting someone's configured mode would be the worse failure.
     if (el.mode !== undefined && !isSelectionMode(el.mode)) return false;
+    // Session button (spec/105): same rule as the mode above — the tool it
+    // starts must be one we know how to start. Its settings are NOT validated
+    // for range here: an out-of-bounds duration is clamped where it is read
+    // (see sessionButtonPlan), because a tab shouldn't fail to load over a
+    // number someone can fix from the menu.
+    if (el.session !== undefined) {
+      if (typeof el.session !== 'object' || el.session === null) return false;
+      if (!isSessionTool((el.session as { tool?: unknown }).tool)) return false;
+      const options = (el.session as { options?: unknown }).options;
+      if (options !== undefined && !boundedArray(options, MAX_DATA_ARRAY)) return false;
+    }
+    // Reveal zone (spec/106): shared-uncovered is a plain flag.
+    if (el.revealed !== undefined && typeof el.revealed !== 'boolean') return false;
+    // Picker (spec/107): a known source, and a bounded list. The RESULT is
+    // free text (a name someone typed), so it is only length-checked with the
+    // rest of the strings.
+    if (el.pickerSource !== undefined && !isPickerSource(el.pickerSource)) return false;
+    if (el.pickerOptions !== undefined && !boundedArray(el.pickerOptions, MAX_DATA_ARRAY))
+      return false;
     // Code block (spec/82): bounded snippet + closed language set.
     if (el.code !== undefined && (typeof el.code !== 'string' || el.code.length > CODE_MAX_LENGTH))
       return false;

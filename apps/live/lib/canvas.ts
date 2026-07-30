@@ -53,7 +53,10 @@ export function inheritedSizeFor(
   // whatever box happened to be selected — a wide banner, a thin rail — hands
   // you something that doesn't read as the thing you asked for, and for a
   // fixed-size control it is simply not resizable afterwards.
-  if (base.type === 'shape' && (base.shape === 'portal' || isFixedSizeShape(base.shape))) {
+  if (
+    base.type === 'shape' &&
+    (base.shape === 'portal' || base.shape === 'reveal' || isFixedSizeShape(base.shape))
+  ) {
     return { width: base.width, height: base.height };
   }
   const inherit = selected && isBoxed(selected) ? selected : null;

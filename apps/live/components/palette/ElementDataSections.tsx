@@ -49,6 +49,11 @@ import {
 import { MenuAccordionSection, MenuTile, MenuTileGrid } from '@/components/primitives/PortalMenu';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
 import { PortalMenuSection } from '@/components/palette/PortalMenuSection';
+import {
+  PickerMenuSection,
+  RevealMenuSection,
+  SessionMenuSection,
+} from '@/components/palette/BehaviourMenuSections';
 
 import {
   AnimationTiles,
@@ -92,6 +97,9 @@ type ElementDataSectionsProps = {
   isChecklist: boolean;
   isModeButton: boolean;
   isPortal: boolean;
+  isSessionButton: boolean;
+  isReveal: boolean;
+  isPicker: boolean;
   isIcon: boolean;
   boxed: boolean;
   sectionProps: Scaffold['sectionProps'];
@@ -123,6 +131,9 @@ export function ElementDataSections({
   isChecklist,
   isModeButton,
   isPortal,
+  isSessionButton,
+  isReveal,
+  isPicker,
   isIcon,
   boxed,
   sectionProps,
@@ -143,7 +154,10 @@ export function ElementDataSections({
     isCodeBlock ||
     isChecklist ||
     isModeButton ||
-    isPortal;
+    isPortal ||
+    isSessionButton ||
+    isReveal ||
+    isPicker;
   return (
     <>
       {showTools ? (
@@ -295,6 +309,32 @@ export function ElementDataSections({
               onSetPortalName={props.onSetPortalName}
               onCreateLinkedPortal={props.onCreateLinkedPortal}
               sectionProps={sectionProps('portal-target')}
+            />
+          ) : null}
+          {/* Session button (spec/105) — which tool a press starts, and its
+            one setting. See BehaviourMenuSections. */}
+          {isSessionButton && shapeTarget ? (
+            <SessionMenuSection
+              element={shapeTarget}
+              onSetSession={props.onSetSession}
+              sectionProps={sectionProps('session')}
+            />
+          ) : null}
+          {/* Reveal zone (spec/106) — off for everyone, or back on. */}
+          {isReveal && shapeTarget ? (
+            <RevealMenuSection
+              element={shapeTarget}
+              onSetRevealed={props.onSetRevealed}
+              sectionProps={sectionProps('reveal')}
+            />
+          ) : null}
+          {/* Picker (spec/107) — where it draws candidates from. */}
+          {isPicker && shapeTarget ? (
+            <PickerMenuSection
+              element={shapeTarget}
+              onSetPickerSource={props.onSetPickerSource}
+              onSetPickerOptions={props.onSetPickerOptions}
+              sectionProps={sectionProps('picker')}
             />
           ) : null}
           {/* Chart (spec/53) — display options. Legend placement: Off + 4 sides. */}
