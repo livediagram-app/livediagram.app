@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useEscape } from '@/hooks/ui/useEscape';
 import { Dialog } from '@/components/dialogs/Dialog';
-import { ChevronIcon } from '@/components/primitives/ChevronIcon';
+import { AccordionSection } from '@/components/primitives/AccordionSection';
 import { CloseIcon } from '@/components/primitives/CloseIcon';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 
@@ -201,45 +201,34 @@ function ShortcutSection({
   onToggle: () => void;
 }) {
   return (
-    <div>
-      <button
-        type="button"
-        onClick={onToggle}
-        className="flex w-full items-center justify-between py-2 text-left"
-      >
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-400">
-          {section.heading}
-        </span>
-        <ChevronIcon open={open} className="text-slate-400 dark:text-slate-400" />
-      </button>
-      <div
-        className={`grid transition-[grid-template-rows] duration-200 ease-out ${
-          open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
-        }`}
-      >
-        <div className="overflow-hidden">
-          <ul className="flex flex-col divide-y divide-slate-100 pb-2 dark:divide-slate-800">
-            {section.rows.map((s) => (
-              <li
-                key={s.keys.join('+')}
-                className="flex items-center justify-between gap-3 py-1.5 text-xs"
-              >
-                <span className="text-slate-700 dark:text-slate-200">{s.label}</span>
-                <span className="flex shrink-0 items-center gap-1">
-                  {s.keys.map((k, i) => (
-                    <kbd
-                      key={`${k}-${i}`}
-                      className="inline-flex min-w-[1.4rem] items-center justify-center rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[10px] font-medium text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
-                    >
-                      {k}
-                    </kbd>
-                  ))}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
-    </div>
+    <AccordionSection
+      title={section.heading}
+      open={open}
+      onToggle={onToggle}
+      titleClassName="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-400"
+      chevronClassName="text-slate-400 dark:text-slate-400"
+      bodyClassName=""
+    >
+      <ul className="flex flex-col divide-y divide-slate-100 pb-2 dark:divide-slate-800">
+        {section.rows.map((s) => (
+          <li
+            key={s.keys.join('+')}
+            className="flex items-center justify-between gap-3 py-1.5 text-xs"
+          >
+            <span className="text-slate-700 dark:text-slate-200">{s.label}</span>
+            <span className="flex shrink-0 items-center gap-1">
+              {s.keys.map((k, i) => (
+                <kbd
+                  key={`${k}-${i}`}
+                  className="inline-flex min-w-[1.4rem] items-center justify-center rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[10px] font-medium text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                >
+                  {k}
+                </kbd>
+              ))}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </AccordionSection>
   );
 }

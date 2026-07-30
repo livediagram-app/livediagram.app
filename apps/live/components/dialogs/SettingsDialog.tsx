@@ -2,7 +2,7 @@
 
 import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { useRef, useState, type ReactNode } from 'react';
-import { ChevronIcon } from '@/components/primitives/ChevronIcon';
+import { AccordionSection } from '@/components/primitives/AccordionSection';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
@@ -184,27 +184,15 @@ function SettingsGroup({
   onToggle: () => void;
 }) {
   return (
-    <div>
-      <button
-        type="button"
-        onClick={onToggle}
-        className="flex w-full items-center justify-between px-4 py-2.5 text-left"
-      >
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-          {title}
-        </span>
-        <ChevronIcon open={open} />
-      </button>
-      <div
-        className={`grid transition-[grid-template-rows] duration-200 ease-out ${
-          open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
-        }`}
-      >
-        <div className="overflow-hidden">
-          <div className="flex flex-col gap-2 px-4 pb-3">{children}</div>
-        </div>
-      </div>
-    </div>
+    <AccordionSection
+      title={title}
+      open={open}
+      onToggle={onToggle}
+      headerClassName="flex w-full items-center justify-between px-4 py-2.5 text-left"
+      bodyClassName="flex flex-col gap-2 px-4 pb-3"
+    >
+      {children}
+    </AccordionSection>
   );
 }
 

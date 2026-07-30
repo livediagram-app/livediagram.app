@@ -10,15 +10,24 @@
 // Everything the Avatar Panel offers is a costume on ONE skeleton, so the walk
 // cycle, the hop, and the flag wave are shared across every combination:
 //   - gender   → shoulder width + a softer face
-//   - clothing → tee / hoodie / suit / dress (the dress swaps trousers for
-//     bare legs, the hoodie adds a hood behind the head, the suit adds lapels)
-//   - hair     → short / long / ponytail / bald
+//   - clothing → eight outfits. Two rules travel with them rather than being
+//     re-checked per view: BARE_LEG_CLOTHING (dress / skirt) swaps trousers for
+//     bare legs, BARE_ARM_CLOTHING (vest) drops the sleeves.
+//   - hair     → eight styles, drawn per view (front / back / profile)
 //   - size     → a scale on the whole sprite, applied by the caller's box
 // Colour is not a choice: the shirt takes the participant's presence colour.
 
 import type { AvatarConfig } from '@/lib/avatar-config';
+import { BARE_ARM_CLOTHING, BARE_LEG_CLOTHING } from '@/lib/avatar-config';
 import type { AvatarFacing } from '@/lib/avatar-walk';
-import { AVATAR_GRID_HEIGHT, AVATAR_HEIGHT, AVATAR_VIEW_BOX, avatarBox } from '@/lib/avatar-walk';
+import {
+  AVATAR_GRID_HEIGHT,
+  AVATAR_HEIGHT,
+  AVATAR_PORTRAIT_VIEW_BOX,
+  AVATAR_VIEW_BOX,
+  avatarBox,
+  avatarPortraitBox,
+} from '@/lib/avatar-walk';
 
 // Sprite palette. Warm skin + brown hair, with one darker tone per material
 // for the shaded edge that gives pixel art its volume. The shirt is the
@@ -102,7 +111,7 @@ function LowerFront({
   airborne: boolean;
 }) {
   const strideLift = walking && !airborne;
-  if (clothing === 'dress') {
+  if (BARE_LEG_CLOTHING.has(clothing)) {
     return (
       <>
         <BareLeg x={5} lift={mid && strideLift ? 1 : 0} />
@@ -134,7 +143,7 @@ function LowerProfile({
   airborne: boolean;
 }) {
   const strideLift = walking && !airborne ? 1 : 0;
-  if (clothing === 'dress') {
+  if (BARE_LEG_CLOTHING.has(clothing)) {
     return (
       <>
         <BareLeg x={mid ? 9 : 7} />
@@ -153,9 +162,9 @@ function LowerProfile({
 
 // --- Torso ------------------------------------------------------------------
 
-// Outfit detailing painted over the plain torso block: a hoodie's drawstring
-// pocket, a suit's lapels + tie, a dress's neckline. The tee gets nothing —
-// it IS the plain block.
+// Outfit detailing painted over the plain torso block. The tee gets nothing —
+// it IS the plain block — and every other outfit is a few rects on top, so the
+// silhouette work (legs / sleeves) stays in the shared sets.
 function OutfitDetail({
   clothing,
   shirtDark,
@@ -163,31 +172,61 @@ function OutfitDetail({
   clothing: AvatarConfig['clothing'];
   shirtDark: string;
 }) {
-  if (clothing === 'hoodie') {
-    return (
-      <g>
-        {/* drawstrings + a kangaroo pocket */}
-        <rect x={7} y={9} width={1} height={3} fill={SHIRT_WHITE} />
-        <rect x={9} y={9} width={1} height={3} fill={SHIRT_WHITE} />
-        <rect x={5} y={12} width={6} height={2} fill={shirtDark} />
-      </g>
-    );
+  switch (clothing) {
+    case 'stripes':
+      // Two bands across the chest.
+      return (
+        <g>
+          <rect x={4} y={10} width={8} height={1} fill={SHIRT_WHITE} />
+          <rect x={4} y={12} width={8} height={1} fill={SHIRT_WHITE} />
+        </g>
+      );
+    case 'jumper':
+      // A crew collar plus a ribbed hem, the two things that read as knitwear
+      // at this size.
+      return (
+        <g>
+          <rect x={6} y={9} width={4} height={1} fill={shirtDark} />
+          <rect x={4} y={14} width={8} height={1} fill={shirtDark} />
+        </g>
+      );
+    case 'hoodie':
+      // Drawstrings + a kangaroo pocket (the hood itself is drawn behind the
+      // head, see Hood).
+      return (
+        <g>
+          <rect x={7} y={9} width={1} height={3} fill={SHIRT_WHITE} />
+          <rect x={9} y={9} width={1} height={3} fill={SHIRT_WHITE} />
+          <rect x={5} y={12} width={6} height={2} fill={shirtDark} />
+        </g>
+      );
+    case 'vest':
+      // A tank top: narrow straps over the chest (the bare arms come from
+      // BARE_ARM_CLOTHING in the torso).
+      return (
+        <g>
+          <rect x={4} y={9} width={1} height={2} fill={SKIN} />
+          <rect x={11} y={9} width={1} height={2} fill={SKIN} />
+        </g>
+      );
+    case 'suit':
+      // Open jacket over a white shirt, with a tie down the middle.
+      return (
+        <g>
+          <rect x={7} y={9} width={2} height={5} fill={SHIRT_WHITE} />
+          <rect x={5} y={9} width={2} height={2} fill={shirtDark} />
+          <rect x={9} y={9} width={2} height={2} fill={shirtDark} />
+          <rect x={7} y={10} width={1} height={4} fill={FLAG_CLOTH} />
+        </g>
+      );
+    case 'dress':
+      return <rect x={6} y={9} width={4} height={1} fill={SHIRT_WHITE} />;
+    case 'skirt':
+      // A tucked-in top: a belt line where the skirt starts.
+      return <rect x={4} y={13} width={8} height={1} fill={shirtDark} />;
+    default:
+      return null;
   }
-  if (clothing === 'suit') {
-    return (
-      <g>
-        {/* open jacket over a white shirt, with a tie down the middle */}
-        <rect x={7} y={9} width={2} height={5} fill={SHIRT_WHITE} />
-        <rect x={5} y={9} width={2} height={2} fill={shirtDark} />
-        <rect x={9} y={9} width={2} height={2} fill={shirtDark} />
-        <rect x={7} y={10} width={1} height={4} fill={FLAG_CLOTH} />
-      </g>
-    );
-  }
-  if (clothing === 'dress') {
-    return <rect x={6} y={9} width={4} height={1} fill={SHIRT_WHITE} />;
-  }
-  return null;
 }
 
 // The front / back torso with sleeves. `swing` moves the arms in opposition
@@ -206,6 +245,10 @@ function Torso({
   gender: AvatarConfig['gender'];
 }) {
   const inset = gender === 'female' ? 1 : 0;
+  // A vest leaves the arms bare, so the sleeve blocks take skin tones.
+  const bareArms = BARE_ARM_CLOTHING.has(clothing);
+  const sleeve = bareArms ? SKIN : shirt;
+  const sleeveDark = bareArms ? SKIN_DARK : shirtDark;
   return (
     <g>
       <rect x={4 + inset} y={9} width={8 - inset * 2} height={6} fill={shirt} />
@@ -213,11 +256,11 @@ function Torso({
       <OutfitDetail clothing={clothing} shirtDark={shirtDark} />
       {/* Sleeves + hands, swinging opposite each other. */}
       <g transform={`translate(0 ${swing})`}>
-        <rect x={2 + inset} y={9} width={2} height={4} fill={shirt} />
+        <rect x={2 + inset} y={9} width={2} height={4} fill={sleeve} />
         <rect x={2 + inset} y={13} width={2} height={2} fill={SKIN} />
       </g>
       <g transform={`translate(0 ${-swing})`}>
-        <rect x={12 - inset} y={9} width={2} height={4} fill={shirtDark} />
+        <rect x={12 - inset} y={9} width={2} height={4} fill={sleeveDark} />
         <rect x={12 - inset} y={13} width={2} height={2} fill={SKIN_DARK} />
       </g>
     </g>
@@ -241,9 +284,23 @@ function TorsoProfile({
       <rect x={10} y={9} width={2} height={6} fill={shirtDark} />
       {clothing === 'suit' ? <rect x={6} y={9} width={1} height={5} fill={SHIRT_WHITE} /> : null}
       {clothing === 'hoodie' ? <rect x={6} y={12} width={5} height={2} fill={shirtDark} /> : null}
+      {clothing === 'stripes' ? (
+        <>
+          <rect x={5} y={10} width={7} height={1} fill={SHIRT_WHITE} />
+          <rect x={5} y={12} width={7} height={1} fill={SHIRT_WHITE} />
+        </>
+      ) : null}
+      {clothing === 'jumper' ? <rect x={5} y={14} width={7} height={1} fill={shirtDark} /> : null}
+      {clothing === 'skirt' ? <rect x={5} y={13} width={7} height={1} fill={shirtDark} /> : null}
       {/* One visible arm, swinging fore and aft rather than up and down. */}
       <g transform={`translate(${-swing} 0)`}>
-        <rect x={4} y={10} width={2} height={4} fill={shirt} />
+        <rect
+          x={4}
+          y={10}
+          width={2}
+          height={4}
+          fill={BARE_ARM_CLOTHING.has(clothing) ? SKIN : shirt}
+        />
         <rect x={4} y={14} width={2} height={2} fill={SKIN} />
       </g>
     </g>
@@ -253,9 +310,28 @@ function TorsoProfile({
 // --- Head + hair ------------------------------------------------------------
 
 // Hair, front view. Each style is a few rects over the scalp; `bald` draws
-// nothing but the crown shading.
+// nothing but the crown shading, and `mohawk` shaves the sides back to skin.
 function HairFront({ hair }: { hair: AvatarConfig['hair'] }) {
   if (hair === 'bald') return <rect x={4} y={1} width={8} height={1} fill={SKIN_DARK} />;
+  if (hair === 'mohawk') {
+    return (
+      <g>
+        {/* a crest up the middle, sides shaved to stubble */}
+        <rect x={4} y={1} width={8} height={1} fill={SKIN_DARK} />
+        <rect x={7} y={-3} width={2} height={5} fill={HAIR} />
+        <rect x={8} y={-3} width={1} height={5} fill={HAIR_DARK} />
+      </g>
+    );
+  }
+  if (hair === 'buzz') {
+    // A close crop: one row, hugging the skull.
+    return (
+      <g>
+        <rect x={4} y={0} width={8} height={2} fill={HAIR} />
+        <rect x={10} y={0} width={2} height={2} fill={HAIR_DARK} />
+      </g>
+    );
+  }
   return (
     <g>
       <rect x={3} y={0} width={10} height={3} fill={HAIR} />
@@ -265,10 +341,29 @@ function HairFront({ hair }: { hair: AvatarConfig['hair'] }) {
           <rect x={11} y={3} width={2} height={3} fill={HAIR_DARK} />
         </>
       ) : null}
+      {hair === 'curly' ? (
+        <>
+          {/* bumps along the crown, plus curls at the temples */}
+          <rect x={3} y={-1} width={2} height={1} fill={HAIR} />
+          <rect x={7} y={-2} width={2} height={2} fill={HAIR} />
+          <rect x={11} y={-1} width={2} height={1} fill={HAIR_DARK} />
+          <rect x={2} y={2} width={2} height={3} fill={HAIR} />
+          <rect x={12} y={2} width={2} height={3} fill={HAIR_DARK} />
+        </>
+      ) : null}
       {hair === 'long' ? (
         <>
           <rect x={2} y={2} width={2} height={9} fill={HAIR} />
           <rect x={12} y={2} width={2} height={9} fill={HAIR_DARK} />
+        </>
+      ) : null}
+      {hair === 'bun' ? (
+        <>
+          {/* a knot on top, hair gathered back at the sides */}
+          <rect x={6} y={-3} width={4} height={3} fill={HAIR} />
+          <rect x={9} y={-3} width={1} height={3} fill={HAIR_DARK} />
+          <rect x={3} y={3} width={1} height={3} fill={HAIR_DARK} />
+          <rect x={12} y={3} width={1} height={3} fill={HAIR_DARK} />
         </>
       ) : null}
       {hair === 'ponytail' ? (
@@ -306,17 +401,35 @@ function HeadFront({
   );
 }
 
-// Walking away: the back of the head, no face. Long hair / a ponytail read
-// most clearly from here.
+// Walking away: the back of the head, no face. Long hair, a bun, and a tail
+// read most clearly from here.
 function HeadBack({ hair }: { hair: AvatarConfig['hair'] }) {
   return (
     <g>
       <rect x={4} y={1} width={8} height={8} fill={SKIN_DARK} />
-      {hair === 'bald' ? null : (
+      {hair === 'bald' ? null : hair === 'mohawk' ? (
+        <>
+          <rect x={7} y={-3} width={2} height={9} fill={HAIR} />
+          <rect x={8} y={-3} width={1} height={9} fill={HAIR_DARK} />
+        </>
+      ) : hair === 'buzz' ? (
+        <>
+          <rect x={4} y={0} width={8} height={5} fill={HAIR} />
+          <rect x={10} y={0} width={2} height={5} fill={HAIR_DARK} />
+        </>
+      ) : (
         <>
           <rect x={3} y={0} width={10} height={7} fill={HAIR} />
           <rect x={11} y={0} width={2} height={7} fill={HAIR_DARK} />
+          {hair === 'curly' ? (
+            <>
+              <rect x={3} y={-1} width={2} height={1} fill={HAIR} />
+              <rect x={7} y={-2} width={2} height={2} fill={HAIR} />
+              <rect x={11} y={-1} width={2} height={1} fill={HAIR_DARK} />
+            </>
+          ) : null}
           {hair === 'long' ? <rect x={3} y={5} width={10} height={6} fill={HAIR} /> : null}
+          {hair === 'bun' ? <rect x={6} y={-3} width={4} height={3} fill={HAIR} /> : null}
           {hair === 'ponytail' ? <rect x={6} y={6} width={4} height={6} fill={HAIR_DARK} /> : null}
         </>
       )}
@@ -332,12 +445,29 @@ function HeadProfile({ hair }: { hair: AvatarConfig['hair'] }) {
       <rect x={4} y={1} width={7} height={8} fill={SKIN} />
       {/* Nose pixel */}
       <rect x={3} y={5} width={1} height={2} fill={SKIN} />
-      {hair === 'bald' ? null : (
+      {hair === 'bald' ? null : hair === 'mohawk' ? (
+        <>
+          <rect x={6} y={-3} width={4} height={4} fill={HAIR} />
+          <rect x={9} y={-3} width={1} height={4} fill={HAIR_DARK} />
+        </>
+      ) : hair === 'buzz' ? (
+        <>
+          <rect x={4} y={0} width={9} height={2} fill={HAIR} />
+          <rect x={10} y={2} width={3} height={3} fill={HAIR_DARK} />
+        </>
+      ) : (
         <>
           <rect x={4} y={0} width={9} height={3} fill={HAIR} />
           <rect x={9} y={3} width={4} height={5} fill={HAIR} />
           <rect x={11} y={3} width={2} height={5} fill={HAIR_DARK} />
+          {hair === 'curly' ? (
+            <>
+              <rect x={5} y={-1} width={2} height={1} fill={HAIR} />
+              <rect x={9} y={-2} width={3} height={2} fill={HAIR} />
+            </>
+          ) : null}
           {hair === 'long' ? <rect x={9} y={7} width={4} height={5} fill={HAIR} /> : null}
+          {hair === 'bun' ? <rect x={11} y={-2} width={4} height={3} fill={HAIR} /> : null}
           {hair === 'ponytail' ? <rect x={12} y={4} width={3} height={4} fill={HAIR_DARK} /> : null}
         </>
       )}
@@ -384,6 +514,7 @@ export function AvatarSprite({
   wave,
   shirt,
   scale = 1,
+  portrait = false,
 }: {
   facing: AvatarFacing;
   config: AvatarConfig;
@@ -394,6 +525,9 @@ export function AvatarSprite({
   shirt?: string;
   // Size multiplier from the config (or a fixed one for the panel preview).
   scale?: number;
+  // Draw as a cropped standing portrait (the Avatar Panel's preview): the box
+  // hugs the figure instead of reserving room for the hop and the flag.
+  portrait?: boolean;
 }) {
   const mid = walking && stepFrame === 1;
   // A one-pixel body bob on the mid-stride frame; mid-air the legs tuck
@@ -403,7 +537,7 @@ export function AvatarSprite({
   const swing = airborne ? -1 : walking ? (mid ? 1 : -1) : 0;
   const profile = facing === 'left' || facing === 'right';
   const { base: shirtBase, dark: shirtDark } = shade(shirt);
-  const box = avatarBox(scale);
+  const box = portrait ? avatarPortraitBox(scale) : avatarBox(scale);
   // The hop is expressed in SPRITE pixels, so the whole body rises while the
   // ground row — and the shadow drawn on it — stays put.
   const liftPx = (lift / (AVATAR_HEIGHT + 4)) * AVATAR_GRID_HEIGHT;
@@ -411,7 +545,7 @@ export function AvatarSprite({
     <svg
       width={box.width}
       height={box.height}
-      viewBox={AVATAR_VIEW_BOX}
+      viewBox={portrait ? AVATAR_PORTRAIT_VIEW_BOX : AVATAR_VIEW_BOX}
       shapeRendering="crispEdges"
       aria-hidden
     >

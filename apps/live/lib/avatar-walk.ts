@@ -37,6 +37,20 @@ const HEADROOM_UNITS = AVATAR_JUMP_HEADROOM / AVATAR_UNIT;
 // reserved space, so the art keeps working on the plain 0..16 / 0..24 grid
 // whatever size the character is.
 export const AVATAR_VIEW_BOX = `${-SLACK_UNITS} ${-HEADROOM_UNITS} ${GRID_W + SLACK_UNITS * 2} ${GRID_H + HEADROOM_UNITS}`;
+// A CROPPED viewBox for a standing portrait — the figure with a little room for
+// tall hair, and none of the jump headroom / flag slack. The panel preview uses
+// it so the box hugs the character instead of framing mostly empty space.
+const PORTRAIT_TOP_UNITS = 4;
+export const AVATAR_PORTRAIT_VIEW_BOX = `0 ${-PORTRAIT_TOP_UNITS} ${GRID_W} ${GRID_H + PORTRAIT_TOP_UNITS}`;
+
+// Size of that cropped portrait in px at a given scale, for the preview's own
+// box (the walking box above is deliberately much bigger).
+export function avatarPortraitBox(scale = 1): { width: number; height: number } {
+  return {
+    width: GRID_W * AVATAR_UNIT * scale,
+    height: (GRID_H + PORTRAIT_TOP_UNITS) * AVATAR_UNIT * scale,
+  };
+}
 // Sprite grid rows, for the lift transform (canvas px of jump -> grid units).
 export const AVATAR_GRID_HEIGHT = GRID_H;
 

@@ -7,20 +7,36 @@
 // the slice the Avatar Panel edits and the sprite reads — it outlives any one
 // walk, and it is the only avatar state that persists at all.
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
-  DEFAULT_AVATAR_CONFIG,
+  hasStoredAvatarConfig,
   loadAvatarConfig,
+  randomAvatarConfig,
   saveAvatarConfig,
   type AvatarConfig,
 } from '@/lib/avatar-config';
 import { track } from '@/lib/telemetry';
 
-export function useAvatarConfig() {
+export function useAvatarConfig({ active }: { active: boolean }) {
   // Lazy initial read: localStorage is unavailable during the static-export
-  // render, and loadAvatarConfig's safe wrapper returns the defaults there, so
-  // the first client paint matches the server's.
+  // render, and loadAvatarConfig's safe wrapper falls back there, so the first
+  // client paint matches the server's. On a browser that has never used the
+  // mode this rolls a RANDOM character rather than handing everyone the same
+  // default one.
   const [config, setConfigState] = useState<AvatarConfig>(() => loadAvatarConfig());
+
+  // Pin that first roll, the first time the mode is actually ENTERED. Without
+  // pinning, "random on first use" would be random on every use — the character
+  // is meant to become yours. Gated on `active` so a user who never opens Avatar
+  // mode never has a character written for them, and done in an effect (not the
+  // state initialiser) so the write happens once, after commit, rather than
+  // during a render React may discard.
+  useEffect(() => {
+    if (!active) return;
+    if (!hasStoredAvatarConfig()) saveAvatarConfig(config);
+    // Only the entry edge matters; later changes persist through setConfig.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [active]);
 
   // Persist on every change (the panel edits one field at a time), and tell
   // telemetry WHICH kind of choice was made — never the value's meaning beyond
@@ -55,7 +71,10 @@ export function useAvatarConfig() {
     setField('gender', config.gender === 'male' ? 'female' : 'male');
   };
 
-  const reset = () => setConfig({ ...DEFAULT_AVATAR_CONFIG });
+  // Reset rolls a NEW random character rather than returning the plain default
+  // one — "reset" here means "give me a different one", the same thing the
+  // first-use roll does.
+  const reset = () => setConfig(randomAvatarConfig());
 
   return { config, setField, toggleGender, reset };
 }

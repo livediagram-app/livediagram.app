@@ -241,7 +241,7 @@ export function Canvas(props: CanvasProps) {
   // The character's gender / clothing / hair / size (spec/101), persisted per
   // browser. Owned here because both the sprite and the Avatar Panel (down in
   // CanvasChrome) read it, and it outlives any one walk.
-  const avatarLook = useAvatarConfig();
+  const avatarLook = useAvatarConfig({ active: canvasTool === 'avatar' });
   const avatar = useAvatarWalk({
     active: canvasTool === 'avatar',
     config: avatarLook.config,

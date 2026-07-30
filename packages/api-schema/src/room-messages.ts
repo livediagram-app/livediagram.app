@@ -21,8 +21,8 @@ export type AvatarPresence = {
   // cosmetic, and never an identity claim.
   config?: {
     gender: 'male' | 'female';
-    clothing: 'tee' | 'hoodie' | 'suit' | 'dress';
-    hair: 'short' | 'long' | 'ponytail' | 'bald';
+    clothing: 'tee' | 'stripes' | 'jumper' | 'hoodie' | 'vest' | 'suit' | 'dress' | 'skirt';
+    hair: 'short' | 'buzz' | 'curly' | 'long' | 'ponytail' | 'bun' | 'mohawk' | 'bald';
     size: 'small' | 'regular' | 'tall';
   };
   walking: boolean;

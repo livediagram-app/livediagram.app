@@ -32,22 +32,24 @@ Narrating a diagram on a call today means waving a cursor around, or reaching fo
 
 ## The Avatar Panel
 
-While the mode is active, a small **Avatar** panel is present — the character sheet. It is a normal floating panel ([spec/63](63-panel-docking.md)): draggable, dockable to any corner, and homed **top-right under the Palette**, where the mode picker that opened it lives. Like the Poll / Vote panels it exists only while its mode does, so it joins and leaves its corner stack rather than sitting there, and its position is remembered for the session but never minimised (leaving the mode dismisses it outright). In the **minimal panel layout and on mobile** it is one of the dock buttons, opening as a popover under its own button exactly like Layers. View-role visitors get it too — the mode is theirs as well.
+While the mode is active, an **Avatar** panel is present — the character sheet. It is a normal floating panel ([spec/63](63-panel-docking.md)): draggable, dockable to any corner, **the same width as the Palette** it stacks under (so the top-right column reads as one edge), and homed **top-right under the Palette**, where the mode picker that opened it lives. Like the Poll / Vote panels it exists only while its mode does, so it joins and leaves its corner stack rather than sitting there, and its position is remembered for the session but never minimised (leaving the mode dismisses it outright). In the **minimal panel layout and on mobile** it is one of the dock buttons, opening as a popover under its own button exactly like Layers. View-role visitors get it too — the mode is theirs as well.
 
 Contents, top to bottom:
 
-- A **live preview** of the character, drawn by the same sprite component the canvas uses (standing, front-on, at a fixed scale so switching to Small / Tall doesn't resize the panel).
-- **Gender** — Male / Female.
-- **Clothing** — T-shirt / Hoodie / Suit / Dress. Each is a silhouette change on the same body: the hoodie adds a hood behind the head and a kangaroo pocket, the suit an open jacket over a white shirt with a tie, the dress a flared skirt over bare legs.
-- **Hair** — Short / Long / Ponytail / Bald.
-- **Size** — Small / Regular / Tall, a scale on the whole sprite (0.75 / 1 / 1.3). It scales the right-click hit box and the name chip's offset with it, so a small character isn't clickable well outside itself.
-- A one-line note that the shirt takes your participant colour and the character is remembered in this browser.
+- A **cropped portrait** of the character, drawn by the same sprite component the canvas uses (standing, front-on). The box hugs the figure — the walking sprite's box reserves headroom for the hop and slack for the flag, which as a preview frame was mostly empty space — and the preview holds a fixed scale so switching to Small / Tall doesn't resize the panel.
+- Four **accordion rows**, one per choice, **single-open and all closed to start**, each showing its current value in the collapsed header. Sixteen outfit + hairstyle chips laid out flat would be most of the canvas; collapsed, the panel is a four-line summary of your character and you expand only the row you came to change. Built on the shared `AccordionSection` primitive (extracted on this third consumer, alongside the Settings and Shortcuts dialogs).
+  - **Gender** — Male / Female.
+  - **Clothing** — T-shirt / Stripes / Jumper / Hoodie / Vest / Suit / Dress / Skirt. Each is a change on the same body: stripes and a jumper's collar + ribbed hem are chest detail, the hoodie adds a hood behind the head and a kangaroo pocket, the vest bares the arms, the suit is an open jacket over a white shirt with a tie, and the dress / skirt swap trousers for bare legs. The two silhouette rules travel as sets (`BARE_LEG_CLOTHING`, `BARE_ARM_CLOTHING`) so the front, back, and profile views can't disagree about what an outfit implies.
+  - **Hair** — Short / Buzz / Curly / Long / Ponytail / Bun / Mohawk / Bald, each drawn per view (the bun and the tail read from behind; the mohawk shaves the sides to stubble).
+  - **Size** — Small / Regular / Tall, a scale on the whole sprite (**1.15 / 1.5 / 1.95**). Every step sits above the base 40x56 sprite: at 1x the character read as a detail on the canvas rather than someone standing in the room, and the costume details (a tie, a bun, a pocket) were too small to see. Size scales the right-click hit box and the name chip's offset with it, so a small character isn't clickable well outside itself.
 
 **No colour picker**, deliberately — see above.
 
 ## Persistence
 
-The four choices are **remembered per browser** under `livediagram:v2:avatar-config`, so the character you built is the one waiting next time you enter the mode. Device-local by design, like the panel layout ([spec/63](63-panel-docking.md)) and the palette favourites ([spec/78](78-palette-favourites.md)): which character you walk around as is a personal / ergonomic choice, not diagram data, so it never reaches the api, D1, or the synced preferences blob — and guests get it for free.
+**First use rolls a random character.** A browser with nothing stored gets a random gender, clothing, and hair rather than the same default figure everyone else starts as — two people walking into a diagram shouldn't arrive as twins. **Size is not rolled**: it changes how much of the canvas the character covers, so it starts Regular and stays a deliberate choice. The roll is **pinned to storage the first time the mode is actually entered** (not on editor mount), so it becomes _your_ character rather than re-rolling every time, and a user who never opens Avatar mode never has one written for them. `Reset position`'s sibling behaviour follows: resetting the character rolls a new random one rather than returning the plain default.
+
+The four choices are then **remembered per browser** under `livediagram:v2:avatar-config`, so the character you built is the one waiting next time you enter the mode. Device-local by design, like the panel layout ([spec/63](63-panel-docking.md)) and the palette favourites ([spec/78](78-palette-favourites.md)): which character you walk around as is a personal / ergonomic choice, not diagram data, so it never reaches the api, D1, or the synced preferences blob — and guests get it for free.
 
 Parsing is **field by field with per-field fallbacks**: a value this build doesn't recognise (an option retired in a later release, a hand-edited key) costs only that one choice rather than resetting the whole character, and a config written by an older build loads with the new fields defaulted. Position of the avatar itself is still never persisted — only the costume.
 
@@ -88,7 +90,8 @@ Per the no-god-files rule:
 
 - **`apps/live/lib/avatar-walk.ts`** — the pure geometry: one frame's step toward a target, the arrow-key direction vector, the facing from a delta, the camera-follow correction, and the element-under-the-feet lookup. Unit-tested (`avatar-walk.test.ts`); no React, no DOM.
 - **`apps/live/lib/avatar-walk.ts`** also holds the jump integration (`jumpStep`), the flag-wave frame clock (`waveFrame`), and the sprite hit-test (`hitTestAvatar`) the right-click look toggle uses.
-- **`apps/live/lib/avatar-config.ts`** — the four choices, their option catalogues (one source for the panel's rows AND the parser's validation), the size scale, the field-by-field parser, and the localStorage read / write. Unit-tested; no React.
+- **`apps/live/lib/avatar-config.ts`** — the four choices, their option catalogues (one source for the panel's rows AND the parser's validation), the silhouette sets, the size scale, the random first-use roll, the field-by-field parser, and the localStorage read / write. Unit-tested (including that every rolled value parses back, so the catalogues and the roll can't drift); no React.
+- **`apps/live/components/primitives/AccordionSection.tsx`** — the shared single-open accordion row (header + chevron + grid-rows body), now used by the Avatar Panel, the Settings dialog, and the Shortcuts dialog.
 - **`apps/live/hooks/canvas/useAvatarConfig.ts`** — the costume state slice: load on mount, persist + report telemetry on each pick, and the gender toggle the right-click uses.
 - **`apps/live/components/panels/AvatarPanel.tsx`** — the panel: the preview plus four radiogroups, on the shared `MovablePanel` like every other panel.
 - **`apps/live/hooks/canvas/useAvatarWalk.ts`** — the state slice: position / target / facing / hop / wave, the `requestAnimationFrame` loop, the camera nudge, and the presence publisher.
