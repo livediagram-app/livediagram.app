@@ -683,10 +683,24 @@
     var(--lvd-anim-iter, infinite);
 }
 
-/* Gradient — a soft sheen sweeping across the letters. Clipped to the text
- * (background-clip: text + transparent fill), blending the element's own text
- * colour (--lvd-anim-text) toward the accent. Reuses the lvd-gradient-shift
- * keyframes the box version rides. */
+/* Gradient on a STICKER: its own colours cycle, rather than a background
+ * clipped to glyphs it doesn't have. Same idea — a colour that moves — on a
+ * surface that actually has one. Follows the speed / repeat variables the
+ * other animations use, so the speed control works on it too. */
+.lvd-anim-sticker-gradient {
+  animation: lvd-sticker-hue calc(3.2s * var(--lvd-anim-speed, 1)) linear
+    var(--lvd-anim-iter, infinite);
+}
+
+@keyframes lvd-sticker-hue {
+  from {
+    filter: hue-rotate(0deg);
+  }
+  to {
+    filter: hue-rotate(360deg);
+  }
+}
+
 .lvd-anim-text-gradient {
   background-image: linear-gradient(
     120deg,

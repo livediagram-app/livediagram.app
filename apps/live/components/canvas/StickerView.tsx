@@ -32,7 +32,13 @@ export function StickerArt({ def, className }: { def: StickerDef; className?: st
   );
 }
 
-export function StickerView({ stickerId }: { stickerId: string | undefined }) {
+export function StickerView({
+  stickerId,
+  animClass,
+}: {
+  stickerId: string | undefined;
+  animClass?: string;
+}) {
   // The catalogue rides the async icon chunk (lib/icon-registry.ts); subscribe
   // so the sticker pops in the moment it lands.
   useIconCatalogs();
@@ -43,7 +49,7 @@ export function StickerView({ stickerId }: { stickerId: string | undefined }) {
   if (!def) return null;
   return (
     <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-      <StickerArt def={def} className="h-full w-full overflow-visible" />
+      <StickerArt def={def} className={`h-full w-full overflow-visible ${animClass ?? ''}`} />
     </div>
   );
 }

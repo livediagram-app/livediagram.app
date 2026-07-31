@@ -37,6 +37,10 @@ import { SessionButtonFace } from '@/components/canvas/SessionButtonFace';
 import { RevealFace } from '@/components/canvas/RevealFace';
 import { PickerFace } from '@/components/canvas/PickerFace';
 import { PortalFace } from '@/components/canvas/PortalFace';
+import { CollabFaceRouter } from '@/components/canvas/collab/CollabFaceRouter';
+import { DecisionView } from '@/components/canvas/collab/DecisionView';
+import { ChairView } from '@/components/canvas/collab/ChairView';
+import { isCollabPanelShape } from '@livediagram/diagram';
 import { DEFAULT_BUTTON_MODE } from '@livediagram/diagram';
 import { isCssNativeBorderStyle } from '@/components/canvas/border-css';
 import { describeVariant } from '@/components/canvas/element-variant';
@@ -103,6 +107,8 @@ function BoxedElementViewImpl({
   revealedForMe,
   onToggleReveal,
   onRollPicker,
+  collab,
+  chairSitters,
   onEnterPortal,
   activeMode,
   onOpenComments,
@@ -369,6 +375,7 @@ function BoxedElementViewImpl({
     >
       <ShapeContentRouter
         element={element}
+        labelAnimClass={labelAnimClass}
         accent={accent}
         textColor={textColor}
         remoteBorderColor={remoteBorderColor}
@@ -403,6 +410,16 @@ function BoxedElementViewImpl({
       {/* A Record's rows (spec/120), under its title label. */}
       {element.type === 'shape' && element.shape === 'entity' ? (
         <EntityView element={element} textColor={textColor} fontFamily={fontFamily} />
+      ) : null}
+      {/* A decision record's chip, drivers and date (spec/128), drawn around
+          its label — which IS the decision statement. */}
+      {element.type === 'shape' && element.shape === 'decision' ? (
+        <DecisionView element={element} textColor={textColor} fontFamily={fontFamily} />
+      ) : null}
+      {/* A chair (spec/130): the furniture itself, plus whoever presence says
+          is sitting in it. */}
+      {element.type === 'shape' && element.shape === 'chair' ? (
+        <ChairView element={element} sitters={chairSitters?.(element.id) ?? []} />
       ) : null}
       {/* A Lane's title gutter (spec/119), behind the label. */}
       {element.type === 'shape' && element.shape === 'lane' ? (
@@ -470,6 +487,12 @@ function BoxedElementViewImpl({
           textColor={textColor}
           onRoll={onRollPicker ? () => onRollPicker(element).roll() : undefined}
         />
+      ) : element.type === 'shape' && isCollabPanelShape(element.shape) && !isEditing ? (
+        /* The collaboration panels (spec/123 to spec/129): an estimate card,
+           a temperature check, an idea box, an agenda, or a roll call. Like
+           every other face above, mid-edit it falls through to the ordinary
+           label editor below, so the title is retyped like any shape's. */
+        <CollabFaceRouter element={element} label={label} textColor={textColor} collab={collab} />
       ) : element.type === 'shape' && element.shape === 'portal' && !isEditing ? (
         /* Portal (spec/104): the drawn portal + its label, pressable when paired. */
         <PortalFace

@@ -21,13 +21,28 @@ export function useBoxedElementAnimation(element: BoxedElement, textColor: strin
   // and the label content node gets the matching .lvd-anim-text-* class. The
   // transform animations (bounce, float, swing, …) already move the text with
   // the box, so they stay on the wrapper unchanged.
-  const isTextNativeAnim =
-    element.type === 'text' &&
-    (element.animation === 'glow' ||
-      element.animation === 'pulse' ||
-      element.animation === 'trace' ||
-      element.animation === 'gradient');
-  const labelAnimClass = isTextNativeAnim ? `lvd-anim-text-${element.animation}` : undefined;
+  //
+  // A STICKER has the same problem for the same reason, one step further on: it
+  // is a die-cut shape that paints its own art, so a box-shadow would ring its
+  // bounding rectangle. It also counts as SVG-rendered, which made the wrapper
+  // drop the class on the assumption ShapeSvgOverlay would paint it — and the
+  // overlay never renders for a sticker, so glow and pulse did nothing at all.
+  // Routing it down this same filter path is what makes them appear.
+  const silhouetteAnim =
+    element.animation === 'glow' ||
+    element.animation === 'pulse' ||
+    element.animation === 'trace' ||
+    element.animation === 'gradient';
+  const isSticker = element.type === 'shape' && element.shape === 'sticker';
+  const isTextNativeAnim = (element.type === 'text' || isSticker) && silhouetteAnim;
+  // `gradient` is a background clipped to the glyphs, which an <svg> sticker
+  // has nothing to clip to — it gets a hue cycle over its own colours instead,
+  // which is the same idea (a colour that moves) on a surface that has one.
+  const labelAnimClass = !isTextNativeAnim
+    ? undefined
+    : isSticker && element.animation === 'gradient'
+      ? 'lvd-anim-sticker-gradient'
+      : `lvd-anim-text-${element.animation}`;
 
   // trace / gradient / pulse / glow on an SVG-rendered shape (diamond,
   // triangle, hexagon, …) render against the true outline / fill / silhouette

@@ -60,6 +60,16 @@ mistaken for an icon fold), `supportsColours` false, membership in
 label editor, no markers, no text alignment, no morph), and exclusion from
 `acceptsInlineIcon` and from the isometric extrusion.
 
+**Animations all work.** Glow, Pulse, Trace and Gradient did nothing at all: a
+sticker counts as SVG-rendered, so the wrapper dropped its animation class on
+the assumption `ShapeSvgOverlay` would paint it — and the overlay never renders
+for a sticker, which paints its own art. They now ride the same filter-based
+path standalone text uses (`drop-shadow` off the real silhouette, since a
+box-shadow would ring the bounding rectangle). `gradient` is the one that
+can't: it is a background clipped to glyphs, and a sticker has none, so it gets
+a hue cycle over its own colours instead — the same idea on a surface that has
+one. The other eleven were already fine on the wrapper.
+
 **Presets go too.** A preset (spec/48) is nothing but fill + stroke + text
 colours, so a shape that takes no element colour has nothing for it to set —
 a sticker showed a full grid of preset tiles where every one did nothing.
