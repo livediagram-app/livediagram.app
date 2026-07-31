@@ -1770,6 +1770,19 @@
   transform: translateZ(-1px);
 }
 
+/* Arrows get the same treatment in the other direction: an arrow's SVG is
+   coplanar with the boxes it crosses under preserve-3d, so the two z-fight.
+   On a static arrow that only shows while the camera orbits; on a FLOWING one
+   (spec/09 animated arrows) the path repaints every frame, so the fight is
+   continuous and reads as a shimmer that never settles. +1px puts arrows just
+   ABOVE the base plane, which is also where they belong visually — a
+   connector should paint over the shapes it joins. Invisible at any tilt, and
+   the per-arrow <svg> carries no transform of its own, so nothing is
+   clobbered. */
+[data-iso] [data-arrow-svg] {
+  transform: translateZ(1px);
+}
+
 /* Rich-text notes (spec/92): the ink a linked run takes. Declared as a
    variable rather than a Tailwind class because the note editor paints its
    spans imperatively with inline CSS (see note-run-style.ts) and so can't

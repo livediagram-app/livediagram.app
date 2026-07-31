@@ -257,6 +257,14 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             <svg
               key={element.id}
               className="absolute inset-0 h-full w-full"
+              // Tagged so isometric mode can lift arrows just off the base
+              // plane (globals.css [data-iso] rule): an arrow's surface is
+              // coplanar with the boxes it crosses under preserve-3d, and
+              // coplanar layers z-fight — which is what made a FLOWING arrow
+              // shimmer in isometric while a static one looked fine (the
+              // animation repaints every frame, so the fight is visible
+              // continuously rather than only while the camera orbits).
+              data-arrow-svg=""
               style={{
                 pointerEvents: 'none',
                 overflow: 'visible',
