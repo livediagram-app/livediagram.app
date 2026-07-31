@@ -155,6 +155,7 @@ export function AvatarPanel({
       forceDockMode={forceDockMode}
       onMobileClose={onMobileClose}
       {...dock}
+      collapsible
     >
       <div className="flex flex-col px-2 pb-2">
         {/* Cropped portrait: the canvas sprite standing front-on in a box that

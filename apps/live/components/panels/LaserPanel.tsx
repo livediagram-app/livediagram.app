@@ -204,6 +204,7 @@ export function LaserPanel({
       forceDockMode={forceDockMode}
       onMobileClose={onMobileClose}
       {...dock}
+      collapsible
     >
       <div className="flex flex-col px-2 pb-2">
         <PenPreview config={config} colour={selfColour} />

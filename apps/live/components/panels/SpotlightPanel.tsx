@@ -176,6 +176,7 @@ export function SpotlightPanel({
       forceDockMode={forceDockMode}
       onMobileClose={onMobileClose}
       {...dock}
+      collapsible
     >
       <div className="flex flex-col px-2 pb-2">
         <ShroudPreview config={config} radius={radius} />
