@@ -93,6 +93,18 @@ type ChromeExtras = {
   laserPanelPosition?: { x: number; y: number } | null;
   onMoveLaserPanel?: (x: number, y: number) => void;
   onResetLaserPanel?: () => void;
+  // Spotlight Panel (spec/112): the light's look, owned by useSpotlightConfig
+  // in Canvas, plus the live radius the canvas clicks also change.
+  spotlightConfig?: import('@/lib/spotlight-config').SpotlightConfig;
+  onChangeSpotlightField?: <K extends keyof import('@/lib/spotlight-config').SpotlightConfig>(
+    field: K,
+    value: import('@/lib/spotlight-config').SpotlightConfig[K],
+  ) => void;
+  spotlightRadius?: number;
+  onSetSpotlightRadius?: (radius: number) => void;
+  spotlightPanelPosition?: { x: number; y: number } | null;
+  onMoveSpotlightPanel?: (x: number, y: number) => void;
+  onResetSpotlightPanel?: () => void;
 };
 
 export type CanvasChromeProps = CanvasProps & ChromeExtras;
@@ -293,6 +305,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
         hasVote={!!props.tabVote}
         hasAvatar={props.canvasTool === 'avatar'}
         hasLaser={props.canvasTool === 'laser'}
+        hasSpotlight={props.canvasTool === 'spotlight'}
         activeMobilePanel={activeMobilePanel}
         dockButtonRefs={dockButtonRefs}
         onDockButtonClick={handleDockButtonClick}
@@ -326,6 +339,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
           {panelEls.vote}
           {panelEls.avatar}
           {panelEls.laser}
+          {panelEls.spotlight}
         </>
       )}
 

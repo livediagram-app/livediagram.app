@@ -10,6 +10,7 @@ import { ActivityPanel } from '@/components/panels/ActivityPanel';
 import { LayersPanel } from '@/components/panels/LayersPanel';
 import { AvatarPanel } from '@/components/panels/AvatarPanel';
 import { LaserPanel } from '@/components/panels/LaserPanel';
+import { SpotlightPanel } from '@/components/panels/SpotlightPanel';
 import { visibleLayerElements } from '@livediagram/diagram';
 import { CanvasAiPanel } from './CanvasAiPanel';
 import { CommandPalette } from '@/components/palette/CommandPalette';
@@ -177,6 +178,13 @@ export function useCanvasChromePanels({
     onChangeAvatarField,
     laserConfig,
     onChangeLaserField,
+    spotlightConfig,
+    onChangeSpotlightField,
+    spotlightRadius,
+    onSetSpotlightRadius,
+    spotlightPanelPosition,
+    onMoveSpotlightPanel,
+    onResetSpotlightPanel,
     laserPanelPosition,
     onMoveLaserPanel,
     onResetLaserPanel,
@@ -298,6 +306,9 @@ export function useCanvasChromePanels({
   );
   const laserWiring = panelWiringFor('laser', laserPanelPosition ?? null, () =>
     onResetLaserPanel?.(),
+  );
+  const spotlightWiring = panelWiringFor('spotlight', spotlightPanelPosition ?? null, () =>
+    onResetSpotlightPanel?.(),
   );
   // In docking mode the corner flex columns own stacking, so the legacy
   // measured stack-below-the-palette offset is dropped.
@@ -631,6 +642,27 @@ export function useCanvasChromePanels({
       />
     ) : null;
 
+  // Spotlight Panel (spec/112): the light's look, mounted only while the
+  // Spotlight tool is active — the Laser Panel's sibling in every respect.
+  const spotlightEl =
+    !chromeHidden && canvasTool === 'spotlight' && spotlightConfig ? (
+      <SpotlightPanel
+        config={spotlightConfig}
+        onChange={(field, value) => onChangeSpotlightField?.(field, value)}
+        radius={spotlightRadius ?? 170}
+        onSetRadius={(r) => onSetSpotlightRadius?.(r)}
+        position={spotlightWiring.position}
+        stackBelowY={dockingActive ? undefined : legacyStackBelowY}
+        onMoveTo={(x, y) => onMoveSpotlightPanel?.(x, y)}
+        onReset={spotlightWiring.onReset}
+        dock={spotlightWiring.dock}
+        mobileOpenOverride={activeMobilePanel === 'spotlight'}
+        mobileDockAnchor={activeDockAnchor ?? undefined}
+        forceDockMode={!!minimalPanels}
+        onMobileClose={closeMobilePanel}
+      />
+    ) : null;
+
   // Map of panel id → element for the docked-layout distribution.
   const panelEls: Partial<Record<PanelId, ReactNode>> = {
     explorer: explorerEl,
@@ -644,6 +676,7 @@ export function useCanvasChromePanels({
     vote: voteEl,
     avatar: avatarEl,
     laser: laserEl,
+    spotlight: spotlightEl,
   };
   return { panelEls };
 }

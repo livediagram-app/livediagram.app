@@ -30,7 +30,9 @@ export type PanelId =
   | 'avatar'
   // Laser Panel (spec/111): the pen's settings, present only while the Laser
   // tool is, exactly like the avatar's.
-  | 'laser';
+  | 'laser'
+  // Spotlight Panel (spec/112): the light's look, on the same terms.
+  | 'spotlight';
 
 export const PANEL_CORNERS: readonly PanelCorner[] = [
   'top-left',
@@ -51,6 +53,7 @@ export const PANEL_IDS: readonly PanelId[] = [
   'vote',
   'avatar',
   'laser',
+  'spotlight',
 ];
 
 // Internal: a free panel's pixel position. Not exported — callers pass
@@ -92,6 +95,7 @@ export const DEFAULT_PANEL_CORNER: Record<PanelId, PanelCorner> = {
   // opened it lives. Like poll / vote it exists only while its mode does.
   avatar: 'top-right',
   laser: 'top-right',
+  spotlight: 'top-right',
 };
 
 export const STORAGE_KEY = 'livediagram:panel-layout:v1';

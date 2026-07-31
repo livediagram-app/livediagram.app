@@ -138,6 +138,10 @@ export type CanvasProps = {
   laserPanelPosition?: { x: number; y: number } | null;
   onMoveLaserPanel?: (x: number, y: number) => void;
   onResetLaserPanel?: () => void;
+  // Spotlight Panel (spec/112): where it sits.
+  spotlightPanelPosition?: { x: number; y: number } | null;
+  onMoveSpotlightPanel?: (x: number, y: number) => void;
+  onResetSpotlightPanel?: () => void;
   // Map of elementId -> remote participants currently focused on that
   // element. Drives a small badge ring on each element so participants
   // can see in real time what others are working on.

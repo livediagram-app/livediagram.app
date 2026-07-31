@@ -42,6 +42,7 @@ import { IsometricDepthLayer } from '@/components/canvas/IsometricDepthLayer';
 import { useIsometricView } from '@/hooks/canvas/useIsometricView';
 import { SpotlightOverlay } from '@/components/canvas/SpotlightOverlay';
 import { useSpotlight } from '@/hooks/canvas/useSpotlight';
+import { useSpotlightConfig } from '@/hooks/canvas/useSpotlightConfig';
 import { AvatarWalker } from '@/components/canvas/AvatarWalker';
 import { useAvatarWalk } from '@/hooks/canvas/useAvatarWalk';
 import { AVATAR_SPAWN_GAP, type AvatarPoint } from '@/lib/avatar-walk';
@@ -247,6 +248,9 @@ export function Canvas(props: CanvasProps) {
   // the overlay share one source of truth; survives Pan/Select detours
   // because Canvas stays mounted.
   const spotlight = useSpotlight();
+  // The spotlight's look (spec/112): persisted per browser, read by the
+  // overlay and edited from the Spotlight Panel down in the chrome.
+  const spotlightLook = useSpotlightConfig();
 
   // Avatar mode (spec/101): the walking character's position / facing / step
   // frame, its click-to-walk entry point, and the camera follow. Owns its own
@@ -672,7 +676,11 @@ export function Canvas(props: CanvasProps) {
           palette + chrome paint ON TOP and stay reachable to switch tools
           back; pointer-events-none lets clicks fall through to <main>. */}
       {canvasTool === 'spotlight' ? (
-        <SpotlightOverlay pos={spotlight.pos} radius={spotlight.radius} />
+        <SpotlightOverlay
+          pos={spotlight.pos}
+          radius={spotlight.radius}
+          config={spotlightLook.config}
+        />
       ) : null}
 
       <CanvasSelectionToolbars
@@ -689,6 +697,13 @@ export function Canvas(props: CanvasProps) {
         onChangeAvatarField={avatarLook.setField}
         laserConfig={props.laserConfig}
         onChangeLaserField={props.onChangeLaserField}
+        spotlightConfig={spotlightLook.config}
+        onChangeSpotlightField={spotlightLook.setField}
+        spotlightRadius={spotlight.radius}
+        onSetSpotlightRadius={spotlight.setRadius}
+        spotlightPanelPosition={props.spotlightPanelPosition}
+        onMoveSpotlightPanel={props.onMoveSpotlightPanel}
+        onResetSpotlightPanel={props.onResetSpotlightPanel}
         laserPanelPosition={props.laserPanelPosition}
         onMoveLaserPanel={props.onMoveLaserPanel}
         onResetLaserPanel={props.onResetLaserPanel}

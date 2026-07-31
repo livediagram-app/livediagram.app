@@ -33,5 +33,8 @@ export function useSpotlight() {
   const [radius, setRadius] = useState(SPOTLIGHT_DEFAULT_RADIUS);
   const grow = () => setRadius((r) => clampRadius(r * SPOTLIGHT_STEP));
   const shrink = () => setRadius((r) => clampRadius(r / SPOTLIGHT_STEP));
-  return { pos, setPos, radius, grow, shrink };
+  // The Spotlight Panel's Size row (spec/112) sets the radius outright; the
+  // clamp is shared so a preset can never land outside the click bounds.
+  const setRadiusClamped = (r: number) => setRadius(clampRadius(r));
+  return { pos, setPos, radius, grow, shrink, setRadius: setRadiusClamped };
 }

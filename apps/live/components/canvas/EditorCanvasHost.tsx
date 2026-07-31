@@ -36,6 +36,8 @@ export function EditorCanvasHost() {
     votePanelPosition,
     avatarPanelPosition,
     laserPanelPosition,
+    spotlightPanelPosition,
+    setSpotlightPanelPosition,
     laserConfig,
     onChangeLaserField,
     setLaserPanelPosition,
@@ -526,6 +528,9 @@ export function EditorCanvasHost() {
       onResetVotePanel={() => setVotePanelPosition(null)}
       avatarPanelPosition={avatarPanelPosition}
       laserPanelPosition={laserPanelPosition}
+      spotlightPanelPosition={spotlightPanelPosition}
+      onMoveSpotlightPanel={(x, y) => setSpotlightPanelPosition({ x, y })}
+      onResetSpotlightPanel={() => setSpotlightPanelPosition(null)}
       laserConfig={laserConfig}
       onChangeLaserField={onChangeLaserField}
       onMoveLaserPanel={(x, y) => setLaserPanelPosition({ x, y })}

@@ -27,7 +27,10 @@ export type MobilePanel =
   | 'avatar'
   // 'laser' (spec/111) likewise: the pen's settings, only while the Laser
   // tool is active.
-  | 'laser';
+  | 'laser'
+  // 'spotlight' (spec/112): the light's look, likewise only while its mode is
+  // active.
+  | 'spotlight';
 
 export type DockAnchor = { left: number; top: number; arrowOffset: number };
 

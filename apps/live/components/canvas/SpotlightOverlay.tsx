@@ -1,3 +1,11 @@
+import {
+  DEFAULT_SPOTLIGHT_CONFIG,
+  spotlightExtent,
+  spotlightFeather,
+  spotlightShroud,
+  type SpotlightConfig,
+} from '@/lib/spotlight-config';
+
 // Spotlight presenter overlay (spec/09). A full-bleed, pointer-transparent
 // shroud over the canvas with a single soft circle of clarity around the
 // cursor. The shroud + the hole are one radial-gradient: transparent at the
@@ -14,21 +22,25 @@
 // pointer-events-none so clicks fall through to <main>, where the Canvas
 // capture handlers turn left-click into grow and right-click into shrink.
 
-// Shroud colour (slate-950 at 82%) — dark enough to mute the diagram, not so
-// opaque that a faint sense of the surrounding shapes is lost.
-const SHROUD = 'rgba(2, 6, 23, 0.82)';
-// Rim softness in px: the gradient ramps from clear to full shroud over this
-// distance just inside the radius, so the light fades out rather than
-// stopping at a crisp line.
-const FEATHER = 60;
+// The shroud's darkness, the rim's softness, and the light's shape all come
+// from the Spotlight Panel (spec/112) now; the defaults below are exactly what
+// they were before it existed — slate-950 at 82%, a 60px feathered rim, a
+// circle — so someone who never opens the panel sees no change.
 
 export function SpotlightOverlay({
   pos,
   radius,
+  config = DEFAULT_SPOTLIGHT_CONFIG,
 }: {
   pos: { x: number; y: number } | null;
   radius: number;
+  config?: SpotlightConfig;
 }) {
+  const SHROUD = spotlightShroud(config);
+  const FEATHER = spotlightFeather(config);
+  // A circle is the radius both ways; "wide" spreads sideways to light a lane
+  // or a table row without dragging the rows around it into the dark.
+  const { rx, ry } = spotlightExtent(config, radius);
   // Before the first pointer-move we don't know where the cursor is, so park
   // the light in the middle of the canvas (a percentage avoids a measure
   // pass); once `pos` lands every update is a px offset that tracks live.
@@ -37,8 +49,10 @@ export function SpotlightOverlay({
   const dotLeft = centred ? '50%' : `${pos.x}px`;
   const dotTop = centred ? '50%' : `${pos.y}px`;
   // Clear core ends where the feather begins; clamp so a small light still
-  // has a usable centre.
+  // has a usable centre. With an ellipse the ramp is expressed as a
+  // percentage of each axis, so the feather stays even all the way round.
   const core = Math.max(0, radius - FEATHER);
+  const corePct = radius === 0 ? 0 : Math.round((core / radius) * 100);
 
   return (
     <div
@@ -50,7 +64,7 @@ export function SpotlightOverlay({
       // still reach the tool picker to switch back.
       className="pointer-events-none absolute inset-0"
       style={{
-        background: `radial-gradient(circle ${radius}px at ${at}, transparent ${core}px, ${SHROUD} ${radius}px)`,
+        background: `radial-gradient(${rx}px ${ry}px at ${at}, transparent ${corePct}%, ${SHROUD} 100%)`,
       }}
     >
       {/* Glowing dot marking the exact centre of the light (the hidden OS
