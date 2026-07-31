@@ -1,6 +1,16 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import {
+  Children,
+  cloneElement,
+  isValidElement,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ReactElement,
+  type ReactNode,
+} from 'react';
 import { Portal } from '@/components/primitives/Portal';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { useReposition } from '@/hooks/canvas/useReposition';
@@ -22,6 +32,31 @@ import { VIEWPORT_EDGE_MARGIN } from '@/lib/clamp-to-viewport';
 // outside-click to close only itself when you click another row or off-menu.
 // Consecutive frames agreeing on the position before the tracker stops.
 const SETTLE_FRAMES = 3;
+
+// A flyout that renders exactly ONE section forces it open (spec/109).
+//
+// The children are conditional — a Tools flyout shows Progress, Rail, Rating,
+// Chart, Picker … depending on the element — so on a picker the panel is one
+// collapsed row you must click to reach the thing you already asked for. Two
+// taps for a menu with no choice in it.
+//
+// `Children.toArray` drops the `false` / `null` a conditional branch leaves
+// behind, so its length is the number of sections ACTUALLY rendered. The lone
+// child is cloned open, with a no-op toggle: there is nothing else in the
+// panel to collapse it in favour of.
+function soleChild(children: ReactNode): ReactNode {
+  const rendered = Children.toArray(children);
+  if (rendered.length !== 1) return children;
+  const only = rendered[0];
+  if (!isValidElement(only)) return children;
+  const props = only.props as { open?: unknown; onToggle?: unknown };
+  // Only meaningful for a controlled accordion; anything else passes through.
+  if (typeof props.open !== 'boolean' || typeof props.onToggle !== 'function') return children;
+  return cloneElement(only as ReactElement<{ open: boolean; onToggle: () => void }>, {
+    open: true,
+    onToggle: () => {},
+  });
+}
 
 export function MenuFlyoutSection({
   title,
@@ -325,7 +360,7 @@ export function MenuFlyoutSection({
                 </button>
               </div>
             ) : null}
-            {children}
+            {soleChild(children)}
           </div>
         </Portal>
       ) : null}

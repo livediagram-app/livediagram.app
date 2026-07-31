@@ -143,9 +143,25 @@ export function voteHidesTallies(vote: TabVote | null | undefined): boolean {
 // Which element kinds a dot-vote can land on (spec/39): stickies, images,
 // and shapes — but NOT a `frame` (it's a section backdrop, not content),
 // and not text / freehand / table / arrow / annotation.
+// Interactive Behaviour elements (spec/103, /104, /105, /106, /107): a mode
+// button, portal, session button, reveal or picker DOES something when you
+// press it. Voting turns a press into a dot, so a votable behaviour element
+// would have two conflicting meanings for the same tap — and the one the user
+// gets would depend on whether a vote happens to be running. They are
+// controls, not candidates.
+const NON_VOTABLE_SHAPES = new Set([
+  // A section backdrop, not content.
+  'frame',
+  'mode-button',
+  'portal',
+  'session-button',
+  'reveal',
+  'picker',
+]);
+
 export function isVotable(element: Element): boolean {
   if (element.type === 'sticky' || element.type === 'image') return true;
-  return element.type === 'shape' && element.shape !== 'frame';
+  return element.type === 'shape' && !NON_VOTABLE_SHAPES.has(element.shape);
 }
 
 // Can this element take a dot in THIS vote? The kind rule above, plus

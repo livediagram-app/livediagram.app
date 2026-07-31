@@ -71,6 +71,15 @@ describe('isVotable', () => {
     ).toBe(true);
   });
 
+  // Behaviour elements (spec/103-107) DO something when pressed. A votable
+  // one would give the same tap two meanings, decided by whether a vote
+  // happened to be running.
+  it('rejects the interactive Behaviour shapes', () => {
+    for (const kind of ['mode-button', 'portal', 'session-button', 'reveal', 'picker'] as const) {
+      expect(isVotable(shape(kind, { shape: kind } as Partial<ShapeElement>))).toBe(false);
+    }
+  });
+
   it('rejects frames (section backdrops) and non-content kinds', () => {
     expect(isVotable(shape('f', { shape: 'frame' }))).toBe(false);
     expect(isVotable({ id: 't', type: 'text', x: 0, y: 0, width: 1, height: 1, label: 'x' })).toBe(

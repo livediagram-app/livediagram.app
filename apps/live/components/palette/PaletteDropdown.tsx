@@ -42,6 +42,19 @@ const ICON_WRAP =
 // clipped (or forced the panel to scroll) whenever the palette was short.
 // Portalling escapes that clip and lets the menu flip above the trigger
 // when there's no room below.
+// Each band sits a shade deeper than the one above it (spec/108), so the
+// groups read as separate blocks rather than as one field of tiles with rules
+// through it. Deliberately faint and capped at three steps: this is grouping,
+// not hierarchy — the third band is not more important than the first, and a
+// stronger ramp would say it was.
+const BAND_TINT = [
+  '',
+  'bg-slate-50/70 dark:bg-slate-800/30',
+  'bg-slate-100/70 dark:bg-slate-800/60',
+] as const;
+const bandTint = (group: number | undefined): string =>
+  group === undefined ? '' : (BAND_TINT[Math.min(group, BAND_TINT.length - 1)] ?? '');
+
 export function PaletteDropdown({
   value,
   options,
@@ -308,7 +321,7 @@ export function PaletteDropdown({
                         // say it started.
                         <div
                           role="presentation"
-                          className={`col-span-full px-1.5 pb-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 ${
+                          className={`col-span-full px-1.5 pb-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 ${bandTint(opt.group)} ${
                             i === 0
                               ? 'pt-0.5'
                               : 'mt-1 border-t border-slate-200 pt-1.5 dark:border-slate-700'
@@ -328,11 +341,11 @@ export function PaletteDropdown({
                           onChange(opt.id);
                           setOpen(false);
                         }}
-                        className={`relative flex cursor-pointer flex-col items-center justify-start gap-1.5 rounded-md px-1.5 py-2 text-center text-[11px] font-medium leading-tight transition ${
+                        className={`relative flex cursor-pointer flex-col items-center justify-start gap-1.5 px-1.5 py-2 text-center text-[11px] font-medium leading-tight transition ${bandTint(opt.group)} ${
                           opt.disabled
                             ? 'cursor-not-allowed text-slate-700 opacity-40 dark:text-slate-200'
                             : opt.id === value
-                              ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
+                              ? 'rounded-md bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
                               : 'text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800'
                         }`}
                       >
