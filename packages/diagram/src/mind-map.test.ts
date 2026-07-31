@@ -116,3 +116,32 @@ describe('growMindSibling', () => {
     expect(growMindSibling([orphan], orphan).arrow).toBeNull();
   });
 });
+
+describe('size inheritance', () => {
+  // A node widened by a long label (or resized by hand) should hand that size
+  // on, or a branch comes out as a row of mismatched boxes.
+  const wide = (id: string, parent?: string): ShapeElement => ({
+    ...node(id, 0, 0, parent),
+    width: 260,
+    height: 70,
+  });
+
+  it('a child takes its parent size', () => {
+    const p = wide('p');
+    const { node: child } = growMindChild([p], p);
+    expect([child.width, child.height]).toEqual([260, 70]);
+  });
+
+  it('a sibling takes the size of the node you grew FROM, not the parent', () => {
+    const p = node('p', 0, 0);
+    const from = wide('c1', 'p');
+    const { node: sib } = growMindSibling([p, from], from);
+    expect([sib.width, sib.height]).toEqual([260, 70]);
+  });
+
+  it('a second root takes the first root size', () => {
+    const root = wide('r');
+    const { node: sib } = growMindSibling([root], root);
+    expect([sib.width, sib.height]).toEqual([260, 70]);
+  });
+});

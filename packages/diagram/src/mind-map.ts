@@ -79,10 +79,18 @@ export function nextMindChildPosition(
 export function growMindChild(
   elements: Element[],
   parent: ShapeElement,
+  // The node the user grew FROM, when that isn't the parent — pressing Enter
+  // on a child makes a sibling, and the size should match the sibling you were
+  // standing on, not its parent.
+  sizeFrom: ShapeElement = parent,
 ): { node: ShapeElement; arrow: ArrowElement } {
   const base = createShape('mind-node', 0, 0) as ShapeElement;
-  const at = nextMindChildPosition(elements, parent, base);
-  const node: ShapeElement = { ...base, x: at.x, y: at.y, mindParentId: parent.id };
+  // Inherit the source node's size. Resizing one node (or letting a long
+  // label widen it) and then growing from it otherwise produced a branch of
+  // mismatched boxes, which reads as a mistake rather than a hierarchy.
+  const size = { width: sizeFrom.width, height: sizeFrom.height };
+  const at = nextMindChildPosition(elements, parent, size);
+  const node: ShapeElement = { ...base, ...size, x: at.x, y: at.y, mindParentId: parent.id };
   // East to west: the arrow always leaves the parent's right edge and enters
   // the child's left, so a branch reads as one continuous run regardless of
   // how far the child has been stacked down.
@@ -102,10 +110,16 @@ export function growMindSibling(
   const parent = node.mindParentId
     ? elements.find((el) => el.id === node.mindParentId && isMindNode(el))
     : undefined;
-  if (parent && isMindNode(parent)) return growMindChild(elements, parent);
+  if (parent && isMindNode(parent)) return growMindChild(elements, parent, node);
   const base = createShape('mind-node', 0, 0) as ShapeElement;
   return {
-    node: { ...base, x: node.x, y: node.y + node.height + MIND_SIBLING_GAP_Y },
+    node: {
+      ...base,
+      width: node.width,
+      height: node.height,
+      x: node.x,
+      y: node.y + node.height + MIND_SIBLING_GAP_Y,
+    },
     arrow: null,
   };
 }
