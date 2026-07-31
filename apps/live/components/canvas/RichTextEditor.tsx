@@ -20,6 +20,8 @@
 // JSX and its event handlers.
 
 import type { RunBoolKey } from '@livediagram/diagram';
+import { isMindNode } from '@livediagram/diagram';
+import { useMindGrow } from '@/components/canvas/MindGrowContext';
 import { ALIGN_ITEMS, TEXT_ALIGN } from '@/components/canvas/label-style';
 import { insertTextAtCaret } from '@/components/rich-text/rich-text-dom';
 import { RichTextToolbar } from '@/components/canvas/RichTextToolbar';
@@ -47,6 +49,8 @@ export function RichTextEditor({
   onSetAlign,
   inline = false,
 }: RichTextEditorProps) {
+  // Mind map (spec/118): present only inside the editor canvas.
+  const growMind = useMindGrow();
   const {
     editorRef,
     toolbarWrapRef,
@@ -152,6 +156,25 @@ export function RichTextEditor({
               onToggle(key);
               return;
             }
+          }
+          // Mind map (spec/118): on a mind node, Tab and Enter COMMIT this
+          // label and grow the next node, so a whole branch is typed without
+          // leaving the editor. Handled here rather than in the global
+          // shortcut handler because the label has to be committed first —
+          // the global one would move the edit to the new node and lose what
+          // was just typed.
+          //
+          // Shift+Enter still inserts a newline, so a multi-line node label
+          // is not lost to the shortcut.
+          if (
+            growMind &&
+            isMindNode(element) &&
+            (e.key === 'Tab' || (e.key === 'Enter' && !e.shiftKey))
+          ) {
+            e.preventDefault();
+            commitNow();
+            growMind(element.id, e.key === 'Tab' ? 'child' : 'sibling');
+            return;
           }
           if (e.key === 'Enter') {
             // Insert a newline as a real '\n' text node (never <br>/<div>)

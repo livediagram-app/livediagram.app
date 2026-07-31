@@ -55,6 +55,9 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // Document (spec/100): 420x594 is the A-series root-2 ratio, at a size that
   // reads as a page beside a 120px square without swallowing the canvas.
   page: { width: 420, height: 594 },
+  // Mind node (spec/118): a caption-width pill. Wide enough for a phrase,
+  // short enough that a column of siblings stays readable.
+  'mind-node': { width: 170, height: 48 },
   // Stadium / pill — the conventional flowchart "Start / End" terminator
   // shape. Wider than tall by default; the CSS `border-radius: 9999px`
   // render path means the ends stay perfectly semicircular at any

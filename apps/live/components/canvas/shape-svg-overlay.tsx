@@ -44,7 +44,11 @@ export function isSvgRenderedShape(kind: ShapeKind): boolean {
     kind !== 'portal' &&
     kind !== 'session-button' &&
     kind !== 'reveal' &&
-    kind !== 'picker'
+    kind !== 'picker' &&
+    // A mind node (spec/118) is a rounded filled box with a label, same as
+    // the four above. This predicate is allow-BY-DEFAULT, so a new CSS-drawn
+    // kind that isn't listed here renders as a transparent nothing.
+    kind !== 'mind-node'
   );
 }
 

@@ -1061,6 +1061,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
+          "mind-node": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
           "mode-button": {
             "additionalProperties": false,
             "properties": {
@@ -2762,6 +2777,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "markerSize": {
         "$ref": "#/components/schemas/TextSize"
       },
+      "mindParentId": {
+        "$ref": "#/components/schemas/ElementId"
+      },
       "mode": {
         "$ref": "#/components/schemas/SelectionMode"
       },
@@ -2944,6 +2962,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "hexagon",
       "document",
       "page",
+      "mind-node",
       "mode-button",
       "portal",
       "session-button",

@@ -79,6 +79,7 @@ export function elementTelemetryType(element: Element): string {
       if (element.shape === 'code-block') return 'CodeBlock';
       // Same reason: 'Mode-Button' would be a second token for one feature.
       if (element.shape === 'mode-button') return 'ModeButton';
+      if (element.shape === 'mind-node') return 'MindNode';
       return titleCaseType(element.shape);
     }
   }

@@ -387,6 +387,36 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   // --- Tools --------------------------------------------------------------
   {
+    id: 'tools:mind-node',
+    blurb: 'Tab adds a child, Enter a sibling',
+    caption: 'Mind node',
+    section: 'tools',
+    toolGroup: 'write',
+    label: 'Add mind node',
+    description:
+      'A mind-map node. With one selected, Tab adds a child to its right and Enter adds a sibling below — each connected and ready to type into.',
+    action: { type: 'shape', kind: 'mind-node' },
+    icon: (
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden
+      >
+        {/* A parent node with two branches: the picture IS the behaviour. */}
+        <rect x="1.5" y="9" width="8" height="6" rx="2" />
+        <rect x="15" y="3" width="7.5" height="5" rx="2" />
+        <rect x="15" y="16" width="7.5" height="5" rx="2" />
+        <path d="M9.5 12h2.5v-6.5H15M12 12v6.5h3" />
+      </svg>
+    ),
+  },
+  {
     // Page (spec/100). Sits first in Write: it is the largest writing
     // surface, and the group reads shortest-to-longest from there. Called
     // Page, not Document, so the palette and the selection toolbar agree —

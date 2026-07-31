@@ -21,6 +21,8 @@ import {
 } from '@livediagram/diagram';
 import { renderLabel } from '@/components/canvas/element-labels';
 import { PageMasthead } from '@/components/canvas/PageMasthead';
+import { MindNodeHint } from '@/components/canvas/MindNodeHint';
+import { isMobileViewportSync } from '@/lib/responsive';
 import { elementAriaLabel } from '@/lib/element-names';
 import { captionBandAlignY, captionBandClass } from '@/components/primitives/icon-band';
 import { LockBadge, SelectionChromeLayer } from '@/components/canvas/element-parts';
@@ -573,6 +575,21 @@ function BoxedElementViewImpl({
           a brand ring + a translucent band on the side the icon will
           land. Cleared on drop / drag-leave. */}
       {dropSide ? <IconDropPreview side={dropSide} /> : null}
+
+      {/* Mind map (spec/118): the keys are the whole feature, and a hint on a
+          palette tile is read once, months before it matters. Suppressed while
+          editing (the keys mean something else in a label) and on touch, where
+          there is no keyboard to hint at. */}
+      {element.type === 'shape' &&
+      element.shape === 'mind-node' &&
+      isSelected &&
+      !isMultiSelected &&
+      !isEditing &&
+      !isLocked &&
+      !readOnly &&
+      !isMobileViewportSync() ? (
+        <MindNodeHint zoom={zoom} />
+      ) : null}
 
       {isLocked ? <LockBadge zoom={zoom} /> : null}
 

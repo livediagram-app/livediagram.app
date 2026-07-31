@@ -68,6 +68,8 @@ export const SHAPE_KINDS = new Set<string>([
   // prose into. Named 'page' internally because the flowchart output symbol
   // above already owns 'document'.
   'page',
+  // Mind node (spec/118).
+  'mind-node',
   // Mode button (spec/103): a pressable pill that switches whoever clicks it
   // into a selection mode.
   'mode-button',
@@ -203,6 +205,10 @@ export function isValidElement(el: unknown): el is Element {
       !(CODE_LANGUAGES as readonly string[]).includes(el.codeLanguage as string)
     )
       return false;
+    // Mind node (spec/118): a parent pointer, or absent for a root. Only an
+    // id shape is checked — a pointer at a deleted node is legal and simply
+    // makes the child a root.
+    if (el.mindParentId !== undefined && typeof el.mindParentId !== 'string') return false;
     // Page masthead (spec/100): two bounded single-line strings.
     for (const field of [el.pageTitle, el.pageSubtitle]) {
       if (field !== undefined && (typeof field !== 'string' || field.length > PAGE_HEADING_MAX))

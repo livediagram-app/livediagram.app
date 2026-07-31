@@ -361,6 +361,9 @@ export type ShapeKind =
   // Document element (spec/100). Named 'page' because 'document' above is
   // the flowchart output symbol.
   | 'page'
+  // Mind node (spec/118): a labelled node that knows its parent, grown from
+  // the keyboard with Tab (child) and Enter (sibling).
+  | 'mind-node'
   // Mode button (spec/103): a pressable pill that switches whoever clicks it
   // into a selection mode — Avatar by default. Which mode lives in the
   // element's `mode` field.
@@ -741,6 +744,7 @@ export function elementSupportsText(element: Element): boolean {
 // --- Re-exported resource modules -----------------------------------------
 export * from './arrow-avoidance';
 export * from './nearest-towards';
+export * from './mind-map';
 export * from './youtube';
 export * from './arrow-path';
 export * from './arrow-style';

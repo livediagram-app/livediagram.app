@@ -37,6 +37,7 @@ import { CanvasSelectionToolbars } from '@/components/canvas/CanvasSelectionTool
 
 import { CanvasChrome } from '@/components/canvas/CanvasChrome';
 import { CanvasElementsLayer } from '@/components/canvas/CanvasElementsLayer';
+import { MindGrowProvider } from '@/components/canvas/MindGrowContext';
 import { CanvasLiveRegion } from '@/components/canvas/CanvasLiveRegion';
 import { IsometricDepthLayer } from '@/components/canvas/IsometricDepthLayer';
 import { useIsometricView } from '@/hooks/canvas/useIsometricView';
@@ -608,33 +609,35 @@ export function Canvas(props: CanvasProps) {
             behind the real element layer, which caps each column at z=0.
             Only mounted while the tool is active. */}
         {canvasTool === 'isometric' ? <IsometricDepthLayer elements={elements} /> : null}
-        <CanvasElementsLayer
-          {...props}
-          // Portal travel is resolved HERE (Canvas owns the viewport + the avatar),
-          // so the prop from the host is overridden with the local resolver.
-          onEnterPortal={resolvePortal}
-          // Pressing a Selection Mode button that hands out Avatar mode drops
-          // the character at THAT button (see avatarSpawn), not the viewport
-          // centre: you pressed a thing on the canvas, so the character should
-          // appear where you pressed it.
-          onPressModeButton={pressModeButton}
-          hasArrows={hasArrows}
-          memberIds={memberIds}
-          showHandles={showHandles}
-          showAnchorsFor={showAnchorsFor}
-          badgeColor={badgeColor}
-          selectionBounds={selectionBounds}
-          showPlus={showPlus}
-          showUnionResize={showUnionResize}
-          unionResizeBounds={unionResizeBounds}
-          unionResizePrimaryId={unionResizePrimaryId}
-          isPaintMode={isPaintMode}
-          isGroupMode={isGroupMode}
-          handleArrowSelect={handleArrowSelect}
-          handleElementContextSelect={handleElementContextSelect}
-          quickRingOpen={quickRingOpen}
-          setQuickRingOpen={setQuickRingOpen}
-        />
+        <MindGrowProvider value={props.onGrowMindNode}>
+          <CanvasElementsLayer
+            {...props}
+            // Portal travel is resolved HERE (Canvas owns the viewport + the avatar),
+            // so the prop from the host is overridden with the local resolver.
+            onEnterPortal={resolvePortal}
+            // Pressing a Selection Mode button that hands out Avatar mode drops
+            // the character at THAT button (see avatarSpawn), not the viewport
+            // centre: you pressed a thing on the canvas, so the character should
+            // appear where you pressed it.
+            onPressModeButton={pressModeButton}
+            hasArrows={hasArrows}
+            memberIds={memberIds}
+            showHandles={showHandles}
+            showAnchorsFor={showAnchorsFor}
+            badgeColor={badgeColor}
+            selectionBounds={selectionBounds}
+            showPlus={showPlus}
+            showUnionResize={showUnionResize}
+            unionResizeBounds={unionResizeBounds}
+            unionResizePrimaryId={unionResizePrimaryId}
+            isPaintMode={isPaintMode}
+            isGroupMode={isGroupMode}
+            handleArrowSelect={handleArrowSelect}
+            handleElementContextSelect={handleElementContextSelect}
+            quickRingOpen={quickRingOpen}
+            setQuickRingOpen={setQuickRingOpen}
+          />
+        </MindGrowProvider>
         {/* Avatar mode (spec/101): the walking characters, INSIDE the
             transformed wrapper so they pan / zoom with the diagram, and after
             the element layer so they stand in front of the content they walk

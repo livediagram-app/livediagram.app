@@ -210,6 +210,12 @@ export type ShapeElement = {
   // meaningful on the 'code-block' kind; bounded in validate.ts.
   code?: string;
   codeLanguage?: CodeLanguage;
+  // Mind node (spec/118): which node owns this one. Absent = a root.
+  //
+  // A child pointer rather than a `children[]` array: single-valued, so it
+  // cannot disagree with itself, and deleting a parent leaves a dangling id
+  // (which reads as "this is a root now") rather than a corrupt tree.
+  mindParentId?: ElementId;
   // Page masthead (spec/100): the fixed heading + subtitle above the body.
   // Only meaningful on the 'page' kind; bounded in validate.ts.
   //

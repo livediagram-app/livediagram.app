@@ -135,6 +135,52 @@ export function useElementHelpers(opts: {
     setSelectedId(el.id);
   };
 
+  // Place ALREADY-BUILT elements, keeping every side effect a normal add has:
+  // theme colours on the boxed ones, the template-picker dismissal, the
+  // activity-log entry, and selecting the primary.
+  //
+  // placeBoxed above makes exactly one element and centres it on a point.
+  // Mind-map growth (spec/118) makes a node AND its connector, at a position
+  // it has already worked out from the branch, so it needs neither of those —
+  // but it needs all of the rest, and re-implementing them at the call site is
+  // how an add path ends up missing its activity-log entry.
+  const placePrebuilt = (added: Element[], primaryId: string) => {
+    if (editsBlocked) return;
+    const themed = added.map((el) =>
+      isBoxed(el)
+        ? {
+            ...el,
+            ...deriveNewBoxedColours(el, {
+              backgroundColor: activeTab.backgroundColor,
+              patternColor: activeTab.patternColor,
+              theme: activeTab.theme,
+            }),
+            ...(activeTab.defaultTextSize ? { textSize: activeTab.defaultTextSize } : {}),
+          }
+        : el,
+    );
+    // Appends inside the updater, against whatever the tab holds NOW, rather
+    // than against a captured `activeTab.elements`.
+    //
+    // This matters because of who calls it: the mind-map grower runs
+    // immediately after the label editor commits the text you just typed
+    // (spec/118), in the same tick. A snapshot taken at render time predates
+    // that commit, so writing it back silently threw the label away — every
+    // node in a chain came out blank.
+    commitTabs((ts) =>
+      ts.map((t) =>
+        t.id === activeId
+          ? { ...t, elements: [...t.elements, ...themed], templateChosen: true }
+          : t,
+      ),
+    );
+    // The log entry describes the ADD, which is correct even if `before` is a
+    // beat stale: any label change committed just now emitted its own entry.
+    const before = activeTab.elements;
+    emitChange(activeId, before, [...before, ...themed]);
+    setSelectedId(primaryId);
+  };
+
   // --- Selection helpers ---------------------------------------------------
 
   const memberIdsOf = (id: string | null): Set<string> => {
@@ -226,6 +272,7 @@ export function useElementHelpers(opts: {
   return {
     addBoxed,
     addBoxedAt,
+    placePrebuilt,
     memberIdsOf,
     currentSelectionIds,
     selectionPrimary,

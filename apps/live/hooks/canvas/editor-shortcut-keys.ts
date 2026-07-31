@@ -82,6 +82,11 @@ export type EditorKeyboardShortcutsDeps = {
   // drag), but it lives next to them in the keyboard surface so the
   // user reaches for the same row of letters for every tool.
   onBeginFreehand: () => void;
+  // Mind map (spec/118): whether Tab / Enter should grow from this element,
+  // and the grower itself. Asked per keystroke rather than held as a flag so
+  // it can't go stale against the selection.
+  canGrowMindNode: (id: string) => boolean;
+  onGrowMindNode: (id: string, kind: 'child' | 'sibling') => void;
   // S arms the shape pen — the same gesture as the pencil, but the stroke is
   // run through shape recognition on release (spec/115).
   onBeginShapePen: () => void;

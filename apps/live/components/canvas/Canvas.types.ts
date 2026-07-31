@@ -504,6 +504,8 @@ export type CanvasProps = {
   onToggleChecklistItem?: (elementId: string, index: number) => void;
   // The Page masthead (spec/100): its heading and subtitle are their own
   // fields, so they commit through here rather than the label editor.
+  // Mind map (spec/118): grows the next node from the label editor.
+  onGrowMindNode: (id: string, kind: 'child' | 'sibling') => void;
   onSetPageHeading: (elementId: string, field: 'pageTitle' | 'pageSubtitle', value: string) => void;
   // Default chart slice colours derived from the active theme (spec/53), used
   // by pie charts for slices without an explicit colour.

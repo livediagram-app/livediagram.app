@@ -1229,6 +1229,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   const {
     addBoxed,
     addBoxedAt,
+    placePrebuilt,
     memberIdsOf,
     currentSelectionIds,
     selectionPrimary,
@@ -1559,6 +1560,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
 
   // Palette element-creation handlers. See useElementCreation.
   const {
+    canGrowMindNode,
+    growMindNode,
     addShape,
     addIcon,
     addSticker,
@@ -1592,6 +1595,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setEditingId,
     addBoxed,
     addBoxedAt,
+    placePrebuilt,
     beginDraw,
   });
 
@@ -2055,6 +2059,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     addArrow,
     onAddImage: addImage ?? null,
     onBeginFreehand: beginFreehand,
+    canGrowMindNode,
+    onGrowMindNode: growMindNode,
     onBeginShapePen: beginShapePen,
     onBeginEditSelected: beginEdit,
     onNudgeSelection: nudgeSelection,
@@ -2432,6 +2438,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setCodeSelected,
     toggleChecklistItem,
     setPageHeading,
+    growMindNode,
     setChecklistItemsSelected,
     setButtonModeSelected,
     setPortalTargetSelected,

@@ -7,11 +7,15 @@ import {
   createLinkCard,
   createVideo,
   createShape,
+  growMindChild,
+  growMindSibling,
+  isMindNode,
   createTable,
   createText,
   isBoxed,
   type ArrowElement,
   type BoxedElement,
+  type Element,
   type ShapeKind,
   type Tab,
 } from '@livediagram/diagram';
@@ -40,6 +44,7 @@ export function useElementCreation(opts: {
   setSelectedId: SetState<string | null>;
   setEditingId: SetState<string | null>;
   addBoxed: <T extends BoxedElement>(make: (x: number, y: number) => T) => void;
+  placePrebuilt: (added: Element[], primaryId: string) => void;
   addBoxedAt: <T extends BoxedElement>(
     canvasX: number,
     canvasY: number,
@@ -56,6 +61,7 @@ export function useElementCreation(opts: {
     setSelectedId,
     setEditingId,
     addBoxed,
+    placePrebuilt,
     addBoxedAt,
     beginDraw,
   } = opts;
@@ -360,7 +366,34 @@ export function useElementCreation(opts: {
     track('Element', 'Added', 'Text');
   };
 
+  // Mind map growth (spec/118). Tab adds a child, Enter a sibling; the new
+  // node is placed clear of the branch, wired to its parent with a pinned
+  // arrow, selected, and put straight into label editing — the whole point is
+  // typing a branch without reaching for the mouse.
+  const canGrowMindNode = (id: string) => {
+    if (editsBlocked) return false;
+    const el = activeTab.elements.find((e) => e.id === id);
+    return !!el && isMindNode(el);
+  };
+
+  const growMindNode = (id: string, kind: 'child' | 'sibling') => {
+    if (editsBlocked) return;
+    const from = activeTab.elements.find((e) => e.id === id);
+    if (!from || !isMindNode(from)) return;
+    const grown =
+      kind === 'child'
+        ? growMindChild(activeTab.elements, from)
+        : growMindSibling(activeTab.elements, from);
+    // Through the shared placer so the node picks up the tab's theme colours
+    // and the add reaches the activity log, exactly like a palette add.
+    placePrebuilt(grown.arrow ? [grown.node, grown.arrow] : [grown.node], grown.node.id);
+    setEditingId(grown.node.id);
+    track('Element', 'Added', 'MindNode');
+  };
+
   return {
+    canGrowMindNode,
+    growMindNode,
     addShape,
     addIcon,
     addSticker,

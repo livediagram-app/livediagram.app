@@ -267,6 +267,7 @@ export function EditorCanvasHost() {
     setSelectedId,
     toggleChecklistItem,
     setPageHeading,
+    growMindNode,
     setShareDialogOpen,
     setTextAlignSelected,
     setUserPreferences,
@@ -740,6 +741,7 @@ export function EditorCanvasHost() {
       onSetRailLabel={isReadOnly ? undefined : setRailLabelSelected}
       onToggleChecklistItem={isReadOnly ? undefined : toggleChecklistItem}
       onSetPageHeading={setPageHeading}
+      onGrowMindNode={growMindNode}
       chartPalette={themeChartPalette(getTheme(activeTab.theme))}
       onCancelEdit={cancelEdit}
       onBeginEndpointDrag={beginEndpointDrag}

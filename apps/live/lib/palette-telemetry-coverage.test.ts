@@ -27,6 +27,8 @@ const SHAPE_KIND_OVERRIDES: Record<string, string> = {
   'mode-button': 'ModeButton',
   // And again for the session button (spec/105).
   'session-button': 'SessionButton',
+  // And the mind node (spec/118).
+  'mind-node': 'MindNode',
 };
 
 const tokenForShapeKind = (kind: string) => SHAPE_KIND_OVERRIDES[kind] ?? titleCaseType(kind);

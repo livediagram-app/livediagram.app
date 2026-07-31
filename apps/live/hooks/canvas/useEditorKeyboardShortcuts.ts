@@ -120,6 +120,30 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       const key = e.key;
       const lower = key.toLowerCase();
 
+      // --- Mind map growth (spec/118) ---
+      // Tab adds a child, Enter a sibling, both off the selected mind node.
+      // Placed before every other branch because Tab is otherwise the
+      // browser's focus key: left to bubble it would walk the chrome behind
+      // the canvas, which is never what someone mid-mind-map wants.
+      //
+      // Only ever fires with a single mind node selected and no editor open,
+      // so Tab keeps its normal meaning everywhere else in the app.
+      if (
+        (key === 'Tab' || key === 'Enter') &&
+        !inText &&
+        !mod &&
+        !e.shiftKey &&
+        !live.isReadOnly &&
+        live.editingId === null &&
+        live.selectedId !== null &&
+        live.multiSelectedIds.size === 0 &&
+        live.canGrowMindNode(live.selectedId)
+      ) {
+        e.preventDefault();
+        live.onGrowMindNode(live.selectedId, key === 'Tab' ? 'child' : 'sibling');
+        return;
+      }
+
       // --- Zen mode exit (spec/26) ---
       // Escape leaves zen mode. Only when actually in zen, not mid-
       // edit / typing (there Escape cancels the label edit instead),

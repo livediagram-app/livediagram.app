@@ -87,7 +87,15 @@ export function describeVariant(
       // free-corner shapes (NOT circle / stadium, whose radii
       // are part of the silhouette).
       const fixedRadius =
-        element.shape === 'circle' ? '50%' : element.shape === 'stadium' ? '9999px' : null;
+        element.shape === 'circle'
+          ? '50%'
+          : element.shape === 'stadium'
+            ? '9999px'
+            : // A mind node (spec/118) is a soft-cornered pill-ish box: rounded
+              // enough to read as a node in a tree rather than a flowchart box.
+              element.shape === 'mind-node'
+              ? '12px'
+              : null;
       const userRadius =
         element.borderRadius !== undefined ? BORDER_RADIUS_PX[element.borderRadius] : null;
       const strokePx = BORDER_STROKE_PX[element.strokeWidth ?? DEFAULT_BORDER_STROKE];

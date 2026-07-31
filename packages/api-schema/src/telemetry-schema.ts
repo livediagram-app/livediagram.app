@@ -255,6 +255,8 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Timeline-rail',
     'CodeBlock',
     'Page',
+    // Mind node (spec/118).
+    'MindNode',
     'Checklist',
     'ModeButton',
     'Portal',
