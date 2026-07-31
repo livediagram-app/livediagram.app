@@ -7,7 +7,7 @@ import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/proto
 import { renderElementsToSvg, type Tab } from '@livediagram/diagram';
 // Static-import icon resolver (Worker bundle, size not user-facing) so icon
 // elements render their real glyph in the inline image.
-import { resolveIconExportArt } from '@livediagram/icons/resolve';
+import { resolveIconExportArt, resolveStickerArt } from '@livediagram/icons/resolve';
 import { bytesToBase64, svgToPngBase64 } from './render';
 import { apiFetch } from './api';
 import type { Env } from './env';
@@ -94,7 +94,11 @@ export async function imageResult(
 ): Promise<ToolResult> {
   const resolveImageHref = auth ? await buildImageResolver(auth.env, auth.token, tab) : undefined;
   const png = await svgToPngBase64(
-    renderElementsToSvg(tab, { resolveImageHref, resolveIconArt: resolveIconExportArt }),
+    renderElementsToSvg(tab, {
+      resolveImageHref,
+      resolveIconArt: resolveIconExportArt,
+      resolveStickerArt,
+    }),
   );
   return {
     content: [

@@ -1,60 +1,49 @@
-import { ICON_DND_MIME, type IconDef } from '@/lib/icons';
-import { STICKER_CATEGORIES, stickersInCategory } from '@/lib/stickers';
-import { IconButton } from '@/components/palette/palette-controls';
-import { IconPrims } from '@/components/primitives/icon-glyph';
+import type { StickerDef } from '@livediagram/icons';
+import { STICKER_CATEGORIES, STICKER_DND_MIME, stickersInCategory } from '@/lib/stickers';
+import { StickerArt } from '@/components/canvas/StickerView';
 import { PaletteCategoryBrowser } from '@/components/palette/PaletteCategoryBrowser';
+import { Tooltip } from '@/components/primitives/Tooltip';
 
-// Stickers draw bigger than the Icons tab's 18px glyphs (spec/116): a line-art
-// icon is a shape you read from its outline and survives being small, while a
-// sticker is a tiny illustration — 😌 against 😔 at 18px is a guess. 24px in a
-// 4-column grid, against the icon grid's 18px in 5.
-const STICKER_GLYPH_PX = 24;
-
-function StickerGlyph({ iconId, size }: { iconId: string; size: number }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <IconPrims iconId={iconId} />
-    </svg>
-  );
-}
-
-// One sticker. Same add / drag behaviour as an icon tile, because a sticker IS
-// an icon (spec/116): click drops it on the canvas, dragging it onto a shape
-// makes it that shape's inline glyph — which is what a status sticker wants.
+// One sticker in the picker, drawn as the sticker it actually is — plate,
+// shadow and all — rather than as a glyph on a palette button (spec/116). The
+// tile IS the artwork, so what you click is exactly what lands.
 //
-// Unlike the icon grid this keeps its tooltip: "Pleading face" vs "Weary face"
-// is exactly the thing 190 small pictures can't tell you on their own.
-function StickerTile({ sticker, onAdd }: { sticker: IconDef; onAdd: (id: string) => void }) {
+// Deliberately not IconButton: that draws a themed, tinted, captioned tile,
+// and every one of those treatments is wrong for a sticker. It keeps a
+// tooltip, though — 220 small pictures can't tell you "Pleading face" from
+// "Weary face" on their own.
+function StickerTile({ sticker, onAdd }: { sticker: StickerDef; onAdd: (id: string) => void }) {
+  // A badge pill takes two of the four columns: at one column's width its word
+  // would be unreadable. The span lives on THIS wrapper, not on the button —
+  // Tooltip wraps its child, so the button is a grandchild of the grid and a
+  // col-span on it would do nothing.
+  const wide = sticker.kind === 'badge';
   return (
-    <IconButton
-      label={sticker.label}
-      description="Click to add, or drag onto a shape to set its icon."
-      hideCaption
-      onClick={() => onAdd(sticker.id)}
-      draggable
-      onDragStart={(e) => {
-        e.dataTransfer.setData(ICON_DND_MIME, sticker.id);
-        e.dataTransfer.effectAllowed = 'copy';
-      }}
-    >
-      <StickerGlyph iconId={sticker.id} size={STICKER_GLYPH_PX} />
-    </IconButton>
+    <div className={wide ? 'col-span-2 w-full' : ''}>
+      <Tooltip title={sticker.label} description="Click to add, or drag it onto the canvas.">
+        <button
+          type="button"
+          aria-label={sticker.label}
+          onClick={() => onAdd(sticker.id)}
+          draggable
+          onDragStart={(e) => {
+            e.dataTransfer.setData(STICKER_DND_MIME, sticker.id);
+            e.dataTransfer.effectAllowed = 'copy';
+          }}
+          className={`flex items-center justify-center rounded-lg p-0.5 transition hover:bg-slate-100 dark:hover:bg-slate-800 ${
+            wide ? 'h-11 w-full' : 'h-11 w-11'
+          }`}
+        >
+          <StickerArt def={sticker} className="h-full w-full overflow-visible" />
+        </button>
+      </Tooltip>
+    </div>
   );
 }
 
 // The palette's Stickers category (spec/116): the drill-in browse every
-// catalogue tab uses (spec/109), over the colour-emoji half of the icon
-// catalogue. Ten groups — Reactions, Feelings, Status, Direction, Celebrate,
+// catalogue tab uses (spec/109), over the sticker catalogue. Eleven groups —
+// Badges first, then Reactions, Feelings, Status, Direction, Celebrate,
 // Decorate, Meeting, Work, People, Fun — with search across all of them.
 export function StickerPickerTab({
   addSticker,
@@ -63,27 +52,27 @@ export function StickerPickerTab({
   stickerResults,
   loading = false,
 }: {
-  addSticker: (iconId: string) => void;
+  addSticker: (stickerId: string) => void;
   stickerQuery: string;
   setStickerQuery: (q: string) => void;
   // Every sticker matching the query, across all groups. The tab derives its
   // per-group slices itself from STICKER_CATEGORIES.
-  stickerResults: IconDef[];
-  // True while the async icon-catalogue chunk is still in flight — the grid is
+  stickerResults: StickerDef[];
+  // True while the async catalogue chunk is still in flight — the grid is
   // empty then, so show a loading note rather than a false "no matches".
   loading?: boolean;
 }) {
   // Group artwork = the group's first sticker, the same "a category looks like
-  // what it holds" rule the Icons and Tools tabs follow. Drawn a shade smaller
-  // than a tile glyph so the label under it stays the loudest thing in a
-  // category tile.
+  // what it holds" rule the Icons and Tools tabs follow.
   const categories = STICKER_CATEGORIES.map((cat) => {
     const items = stickersInCategory(cat.id);
     const first = items[0];
     return {
       id: cat.id,
       label: cat.label,
-      icon: first ? <StickerGlyph iconId={first.id} size={20} /> : null,
+      icon: first ? (
+        <StickerArt def={first} className="h-[22px] w-[22px] overflow-visible" />
+      ) : null,
       items,
     };
   });
@@ -95,11 +84,10 @@ export function StickerPickerTab({
       // come back rather than being recomputed here.
       search={() => stickerResults}
       renderItems={(stickers) => (
-        // Four across rather than the icon grid's five: the tiles are wider
-        // because the glyphs are. overflow-x-hidden for the same reason as the
-        // icon grid — a vertical scrollbar would otherwise surface a
-        // horizontal one too.
-        <div className="grid max-h-72 grid-cols-4 justify-items-center gap-1 overflow-y-auto overflow-x-hidden">
+        // Four columns, with a badge spanning two of them — a word pill at
+        // one column's width would be unreadable, and a separate grid per
+        // flavour would break the "search shows you everything at once" rule.
+        <div className="grid max-h-72 grid-cols-4 items-center justify-items-center gap-1 overflow-y-auto overflow-x-hidden">
           {stickers.map((sticker) => (
             <StickerTile key={sticker.id} sticker={sticker} onAdd={addSticker} />
           ))}

@@ -3,7 +3,7 @@
 import { useMemo, useRef, type Ref } from 'react';
 import { endpointPosition, isBoxed, svgArrow, svgBoxed, type Element } from '@livediagram/diagram';
 import { framesFirst, ZOOM_MAX, ZOOM_MIN } from '@/lib/canvas';
-import { resolveIconArtLoaded } from '@/lib/icon-registry';
+import { resolveIconArtLoaded, resolveStickerArtLoaded } from '@/lib/icon-registry';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 import { MovablePanel, type MovablePanelDockProps } from '@/components/primitives/MovablePanel';
 import { MapSettingsPopover } from '@/components/canvas/MapSettingsPopover';
@@ -108,7 +108,7 @@ export function Minimap({
     for (const el of framesFirst(elements)) {
       if (el.type === 'arrow') continue;
       if (!isBoxed(el)) continue;
-      parts.push(svgBoxed(el, undefined, resolveIconArtLoaded));
+      parts.push(svgBoxed(el, undefined, resolveIconArtLoaded, resolveStickerArtLoaded));
       acc(el.x, el.y);
       acc(el.x + el.width, el.y + el.height);
     }

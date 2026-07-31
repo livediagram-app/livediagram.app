@@ -18,6 +18,7 @@ import {
 import { deriveNewBoxedColours } from '@/lib/themes';
 import type { ThemeDefinition } from '@livediagram/diagram';
 import { isTechIconId } from '@/lib/tech-icons';
+import { getSticker, stickerDropSize, stickerTilt } from '@/lib/stickers';
 import type { PendingDraw } from '@/lib/draw-mode';
 
 // The pure element construction behind commitDraw (spec/09 draw-to-add),
@@ -132,10 +133,18 @@ export function buildDrawnBoxed(
   // A fixed-size kind (spec/103) ignores the drag entirely: dragging one out
   // still places it, at the one size it is meant to be.
   const fixedSize = base.type === 'shape' && isFixedSizeShape(base.shape);
-  const width =
+  const drawnWidth =
     fixedSize || isTap ? tapSize.width : Math.max(TAP_TRAVEL_PX, Math.abs(endX - startX));
   const height =
     fixedSize || isTap ? tapSize.height : Math.max(TAP_TRAVEL_PX, Math.abs(endY - startY));
+  // A tapped sticker (spec/116) takes its flavour's aspect rather than the
+  // per-kind default: emoji stickers are square, badge pills are wide, and
+  // both are the one `sticker` kind, so the default-size table can't say it.
+  // A DRAGGED one keeps the box the user dragged, like anything else.
+  const width =
+    isTap && intent.type === 'shape' && intent.kind === 'sticker' && intent.stickerId
+      ? stickerDropSize(getSticker(intent.stickerId), { width: drawnWidth, height }).width
+      : drawnWidth;
   const x = isTap ? startX - width / 2 : Math.min(startX, endX);
   const y = isTap ? startY - height / 2 : Math.min(startY, endY);
   const colours = deriveNewBoxedColours(base, {
@@ -163,6 +172,13 @@ export function buildDrawnBoxed(
     // in would only fight resizing the caption room, so drop it.
     ...(intent.type === 'shape' && intent.iconId && isTechIconId(intent.iconId)
       ? { aspectLocked: false }
+      : {}),
+    // Sticker draw intent (spec/116): carry the chosen art, and land it at a
+    // jaunty tilt — the thing that makes it read as stuck on rather than
+    // drawn in. The angle is derived from the element id, so it is the same
+    // on every client, across reloads, and in the export.
+    ...(intent.type === 'shape' && intent.kind === 'sticker' && intent.stickerId
+      ? { stickerId: intent.stickerId, rotation: stickerTilt(base.id) }
       : {}),
   } as typeof base;
 }

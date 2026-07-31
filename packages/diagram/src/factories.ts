@@ -96,6 +96,10 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // two-line caption (e.g. "Durable Objects") clears the glyph rather than
   // crowding it.
   icon: { width: 120, height: 120 },
+  // A sticker's default is square, which is right for the emoji half; the
+  // creation path widens it for a word badge off STICKER_ASPECT, since the
+  // default table is per-kind and a badge and an emoji are one kind.
+  sticker: { width: 104, height: 104 },
   // Progress bar: a wide, short pill. Progress ring: a square donut
   // (aspect-locked on create so it stays circular).
   'progress-bar': { width: 220, height: 44 },
@@ -280,6 +284,13 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
   // the glyph (the icon fills the box, text below reads as a caption).
   if (kind === 'icon') {
     return { ...base, aspectLocked: true, textAlignY: 'bottom' };
+  }
+  // Stickers (spec/116): aspect-locked, because the plate + its content are
+  // one drawn object and stretching it is never what anyone wants. No label
+  // at all — a sticker says what it says in its own art, and the caption band
+  // an icon carries would undo the die-cut look.
+  if (kind === 'sticker') {
+    return { ...base, aspectLocked: true };
   }
   // Frame: a container drawn around other elements. Its label sits in the
   // top-right (like a section title) rather than centred, and the body is

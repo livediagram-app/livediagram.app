@@ -16,7 +16,7 @@ import { renderElementsToSvg, type Tab } from '@livediagram/diagram';
 // Static-import icon resolver (bundle size is fine in a Worker) so icon
 // elements render their real glyph in the snapshot / live image instead of
 // the renderer's box-with-label fallback.
-import { resolveIconExportArt } from '@livediagram/icons/resolve';
+import { resolveIconExportArt, resolveStickerArt } from '@livediagram/icons/resolve';
 import {
   getFirstTabData,
   getTabData,
@@ -138,6 +138,7 @@ async function renderTabDataToSvg(
   return renderElementsToSvg(tab, {
     resolveImageHref: (id) => images.get(id),
     resolveIconArt: resolveIconExportArt,
+    resolveStickerArt,
   });
 }
 

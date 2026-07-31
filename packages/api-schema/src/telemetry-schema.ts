@@ -270,7 +270,7 @@ export const PALETTE_TELEMETRY_TYPES = {
   ],
   components: ['Banner', 'Hero', 'Header', 'Callout', 'StatRow', 'ProcessSteps'],
   devices: ['Browser', 'Monitor', 'Laptop', 'Phone', 'Tablet', 'Smartwatch'],
-  icons: ['Icon', 'TechIcon'],
+  icons: ['Icon', 'TechIcon', 'Sticker'],
 } as const satisfies Record<string, readonly string[]>;
 
 export type PaletteTelemetryBucket = keyof typeof PALETTE_TELEMETRY_TYPES;

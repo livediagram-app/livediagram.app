@@ -89,7 +89,7 @@ export function drawBoxedExtrusion(
   // on-screen IsometricDepthLayer so screen + export can't drift).
   if (!isoExtrudes(el)) return;
   const { shape, opacity } = describeBoxedExport(el);
-  if (shape.kind === 'none') return; // no body to extrude
+  if (shape.kind === 'none' || shape.kind === 'sticker') return; // no body to extrude
   const accent = shape.kind === 'image' ? EXPORT_IMAGE_STROKE : shape.stroke;
   const az = (ISO_TILT_DEG.z * Math.PI) / 180;
   const k = Math.tan((ISO_TILT_DEG.x * Math.PI) / 180);
@@ -168,7 +168,10 @@ export function drawBoxed(
       ctx.stroke();
       ctx.setLineDash([]);
     }
-  } else if (shape.kind !== 'none') {
+  } else if (shape.kind !== 'none' && shape.kind !== 'sticker') {
+    // Stickers are excluded because they are drawn art, not a fill + stroke
+    // silhouette: `boxedNeedsSvgRaster` routes every one of them through its
+    // own SVG before this drawer is reached (spec/116).
     ctx.fillStyle = shape.fill;
     ctx.strokeStyle = shape.stroke;
     boxedSilhouettePath(ctx, el, shape.kind);

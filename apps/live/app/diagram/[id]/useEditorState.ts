@@ -1556,6 +1556,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   const {
     addShape,
     addIcon,
+    addSticker,
     addTechIcon,
     addTable,
     addAnnotation,
@@ -2149,6 +2150,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     addComment,
     replaceCommentId,
     addIcon,
+    addSticker,
     addTechIcon,
     connectSourceId,
     connectArrowTo,

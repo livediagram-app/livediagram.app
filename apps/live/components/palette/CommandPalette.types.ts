@@ -50,6 +50,9 @@ export type CommandPaletteProps = {
   // catalogue id at the viewport centre. Picked from the Icons
   // accordion's searchable grid.
   onAddIcon: (iconId: string) => void;
+  // Sticker (spec/116) — its own element kind, so its own handler: unlike an
+  // icon it never folds into the selected shape.
+  onAddSticker: (stickerId: string) => void;
   // Drops a Technology (brand) icon (spec/41) as a STANDALONE 'icon'
   // element carrying the chosen tech-catalogue id. Picked from the
   // Technology tab's searchable grid; never dropped inside a shape.

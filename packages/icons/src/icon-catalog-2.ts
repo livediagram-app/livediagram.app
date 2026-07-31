@@ -1,11 +1,30 @@
 // Icon catalogue data, part 2 of 2 (tech / people / security / files /
-// charts / ui / furniture / animated), plus the Sticker entries (spec/116,
-// colour emoji) concatenated at the end from sticker-catalog.ts. See
-// icon-catalog-1.ts for why this is split and why it loads async;
-// concatenated after part 1 by the editor's lib/icon-registry.ts (or the
-// Workers' ./resolve).
+// charts / ui / furniture / animated), plus the LEGACY emoji entries appended
+// at the end. See icon-catalog-1.ts for why this is split and why it loads
+// async; concatenated after part 1 by the editor's lib/icon-registry.ts (or
+// the Workers' ./resolve).
+//
+// The legacy entries are the compatibility half of spec/116. Emoji shipped as
+// icons under spec/85, so saved diagrams hold `iconId: 'emoji-*'` elements;
+// they are derived from the sticker catalogue (never hand-copied) so the two
+// can't drift, and they keep rendering as the bare tinted glyph those
+// elements have always been. The palette does not offer them — the Stickers
+// category owns them now, as their own element kind with their own artwork.
 import { STICKER_CATALOG } from './sticker-catalog';
 import type { IconDef } from './types';
+
+const LEGACY_EMOJI_ICONS: IconDef[] = STICKER_CATALOG.flatMap((s) =>
+  s.kind === 'emoji'
+    ? [
+        {
+          id: s.id,
+          label: s.label,
+          keywords: s.keywords,
+          prims: [{ t: 'text' as const, text: s.glyph, x: 12, y: 12, size: 20 }],
+        },
+      ]
+    : [],
+);
 
 export const ICON_CATALOG_2: IconDef[] = [
   {
@@ -631,5 +650,5 @@ export const ICON_CATALOG_2: IconDef[] = [
       { t: 'circle', cx: 12, cy: 18.5, r: 1 },
     ],
   },
-  ...STICKER_CATALOG,
+  ...LEGACY_EMOJI_ICONS,
 ];

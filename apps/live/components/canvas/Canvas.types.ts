@@ -209,6 +209,8 @@ export type CanvasProps = {
   canRedo: boolean;
   onAddShape: (kind: ShapeKind) => void;
   onAddIcon: (iconId: string) => void;
+  // Sticker (spec/116): its own kind, its own handler.
+  onAddSticker: (stickerId: string) => void;
   // Add a Technology (brand) icon as a standalone element (spec/41).
   onAddTechIcon: (iconId: string) => void;
   onAddTable: () => void;
@@ -629,8 +631,15 @@ export type CanvasProps = {
   // handler branches on the pointer type), or enters freehand draw.
   onSpawnConnect: (direction: QuickConnectDirection, kind: QuickConnectKind) => void;
   // Drag-from-palette drop: a palette tile dropped on the canvas places that
-  // element kind centred on the drop point (iconId set for icon tiles).
-  onDropPalette?: (kind: ShapeKind, canvasX: number, canvasY: number, iconId?: string) => void;
+  // element kind centred on the drop point. `art` carries the catalogue id
+  // for the two catalogue-driven kinds — `iconId` for an icon or brand mark,
+  // `stickerId` for a sticker (spec/116).
+  onDropPalette?: (
+    kind: ShapeKind,
+    canvasX: number,
+    canvasY: number,
+    art?: { iconId?: string; stickerId?: string },
+  ) => void;
   onStartArrow: (direction: QuickConnectDirection, e: ReactPointerEvent) => void;
   onStartPencil: () => void;
   onToggleLockSelected: () => void;

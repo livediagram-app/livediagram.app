@@ -102,6 +102,7 @@ export const SHAPE_KINDS = new Set<string>([
   'code-block',
   'checklist',
   'icon',
+  'sticker',
 ]);
 
 // Map an arbitrary shape value to a real ShapeKind, defaulting an unknown /

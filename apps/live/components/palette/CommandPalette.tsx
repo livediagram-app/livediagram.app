@@ -60,6 +60,7 @@ export function CommandPalette({
   canvasEmpty,
   onAddShape,
   onAddIcon,
+  onAddSticker,
   onAddTechIcon,
   onAddText,
   onAddSticky,
@@ -123,6 +124,13 @@ export function CommandPalette({
   };
   const addIcon = (iconId: string) => {
     onAddIcon(iconId);
+    onMobileClose?.();
+  };
+  const addSticker = (stickerId: string) => {
+    onAddSticker(stickerId);
+    // Draw-armed like a shape: a sticker taps or drags to place, so the
+    // mobile dock reopens the palette once the drop lands.
+    onDrawArmed?.();
     onMobileClose?.();
   };
   const addTechIcon = (iconId: string) => {
@@ -457,10 +465,7 @@ export function CommandPalette({
               icon: <StickersTabIcon />,
               content: (
                 <StickerPickerTab
-                  // A sticker is an icon (spec/116), so it adds down exactly
-                  // the same path: click to drop, or drag onto a shape to
-                  // become its inline glyph.
-                  addSticker={addIcon}
+                  addSticker={addSticker}
                   stickerQuery={stickerQuery}
                   setStickerQuery={setStickerQuery}
                   stickerResults={stickerResults}

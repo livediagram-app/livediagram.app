@@ -1331,6 +1331,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
+          "sticker": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
           "tablet": {
             "additionalProperties": false,
             "properties": {
@@ -2849,6 +2864,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "shape": {
         "$ref": "#/components/schemas/ShapeKind"
       },
+      "stickerId": {
+        "type": "string"
+      },
       "strokeColor": {
         "type": "string"
       },
@@ -2948,7 +2966,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "line-chart",
       "code-block",
       "checklist",
-      "icon"
+      "icon",
+      "sticker"
     ],
     "type": "string"
   },

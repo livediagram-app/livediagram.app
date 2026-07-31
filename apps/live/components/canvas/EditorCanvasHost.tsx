@@ -78,6 +78,7 @@ export function EditorCanvasHost() {
     addHeader,
     addHero,
     addIcon,
+    addSticker,
     addImage,
     addLinkCard,
     addVideo,
@@ -431,6 +432,7 @@ export function EditorCanvasHost() {
       canRedo={canRedo && !activeTabLocked}
       onAddShape={addShape}
       onAddIcon={addIcon}
+      onAddSticker={addSticker}
       onAddTechIcon={addTechIcon}
       onDropIcon={isReadOnly ? undefined : dropIconOnElement}
       onLinkCell={isReadOnly ? undefined : openCellLinkPicker}

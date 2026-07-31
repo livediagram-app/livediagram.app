@@ -12,7 +12,7 @@ import {
   type Element,
   type Layer,
 } from '@livediagram/diagram';
-import { resolveIconArtLoaded } from '@/lib/icon-registry';
+import { resolveIconArtLoaded, resolveStickerArtLoaded } from '@/lib/icon-registry';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 
 // Per-layer preview markup (spec/74), shared by the Layers panel rows and
@@ -38,7 +38,7 @@ export function useLayerThumbnails(
       const parts: string[] = [];
       for (const el of band.elements) {
         if (el.type !== 'arrow' && isBoxed(el)) {
-          parts.push(svgBoxed(el, undefined, resolveIconArtLoaded));
+          parts.push(svgBoxed(el, undefined, resolveIconArtLoaded, resolveStickerArtLoaded));
         }
       }
       for (const el of band.elements) {

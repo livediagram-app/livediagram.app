@@ -20,9 +20,12 @@
 
 import {
   iconPrimsMarkup,
+  stickerArt,
   techIconArtMarkup,
   type IconDef,
   type IconExportArt,
+  type StickerArt,
+  type StickerDef,
   type TechIconDef,
 } from '@livediagram/icons';
 
@@ -34,6 +37,11 @@ type LoadedCatalogs = {
   iconById: Map<string, IconDef>;
   techIcons: TechIconDef[];
   techIconById: Map<string, TechIconDef>;
+  // Stickers (spec/116) ride the same chunk: they are a different element
+  // kind, but the load timing and the "empty until it lands" contract are
+  // identical, and a second loader would be a second thing to get wrong.
+  stickers: StickerDef[];
+  stickerById: Map<string, StickerDef>;
 };
 
 let loaded: LoadedCatalogs | null = null;
@@ -55,8 +63,9 @@ export function ensureIconCatalogs(): Promise<void> {
       import('@livediagram/icons/icon-catalog-1'),
       import('@livediagram/icons/icon-catalog-2'),
       import('@livediagram/icons/tech-icon-catalog'),
+      import('@livediagram/icons/sticker-catalog'),
     ])
-      .then(([part1, part2, tech]) => {
+      .then(([part1, part2, tech, stickers]) => {
         // Order matters for the line-art catalogue: part 1 then part 2, so
         // the first entry stays the default icon (same rule the old static
         // concatenation in icons.ts followed).
@@ -66,6 +75,8 @@ export function ensureIconCatalogs(): Promise<void> {
           iconById: new Map(icons.map((i) => [i.id, i])),
           techIcons: tech.TECH_ICON_CATALOG,
           techIconById: new Map(tech.TECH_ICON_CATALOG.map((i) => [i.id, i])),
+          stickers: stickers.STICKER_CATALOG,
+          stickerById: new Map(stickers.STICKER_CATALOG.map((s) => [s.id, s])),
         };
         // Snapshot the listener set: a notified component may unsubscribe /
         // resubscribe synchronously and Set iteration mid-mutation is fragile.
@@ -117,6 +128,17 @@ export function getLoadedTechIconCatalog(): TechIconDef[] {
   return loaded?.techIcons ?? [];
 }
 
+export function getLoadedStickerCatalog(): StickerDef[] {
+  return loaded?.stickers ?? [];
+}
+
+// Sync sticker lookup: undefined until the chunk lands (or for an unknown
+// id), at which point the canvas draws nothing for that element rather than
+// guessing at art it doesn't have.
+export function getStickerLoaded(id: string | undefined): StickerDef | undefined {
+  return id ? loaded?.stickerById.get(id) : undefined;
+}
+
 // Export-art resolver over the loaded catalogues (the editor-side
 // counterpart of @livediagram/icons/resolve, which static-imports the data
 // for the Workers). Passed to the shared SVG renderer / export pipeline so
@@ -129,4 +151,13 @@ export function resolveIconArtLoaded(iconId: string): IconExportArt | undefined 
   if (tech) return { markup: techIconArtMarkup(tech), colored: true };
   const line = loaded?.iconById.get(iconId);
   return line ? { markup: iconPrimsMarkup(line.prims), colored: false } : undefined;
+}
+
+// Sticker-art resolver for the export pipeline, the counterpart of
+// resolveIconArtLoaded above. Returns the built art (viewBox + markup) so the
+// exported sticker is pixel-identical to the on-canvas one — both call
+// `stickerArt`.
+export function resolveStickerArtLoaded(stickerId: string): StickerArt | undefined {
+  const def = loaded?.stickerById.get(stickerId);
+  return def ? stickerArt(def) : undefined;
 }

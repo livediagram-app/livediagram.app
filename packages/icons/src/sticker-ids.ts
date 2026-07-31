@@ -1,17 +1,30 @@
-// Sticker identity, as a lightweight first-load module — the entries
-// themselves live in the async sticker-catalog (concatenated into
-// icon-catalog-2). Stickers and line-art icons share one catalogue and one
-// element kind by design (spec/116), so the only thing that tells them apart
-// is the id prefix; this is where that prefix is written down.
+// Sticker identity, as a lightweight first-load module — the catalogue itself
+// (art + words) loads async. Two jobs.
 //
-// The prefix is `emoji-`, not `sticker-`, and stays that way: the ids shipped
-// under spec/85 and are what saved elements, API payloads and MCP calls carry.
-// Renaming them would blank the glyph on every diagram already using one.
-export const STICKER_ID_PREFIX = 'emoji-';
+// 1. `isStickerId` tells a sticker id from an icon id. Sticker ids carry no
+//    single prefix (`emoji-*` and `badge-*`), so both are listed here.
+//
+// 2. `isLegacyEmojiIconId` is the compatibility hinge. Under spec/85 these
+//    emoji shipped as ICONS: real diagrams out there hold
+//    `{ shape: 'icon', iconId: 'emoji-thumbs-up' }`. Spec/116 made stickers
+//    their own element kind, and those elements are NOT migrated — silently
+//    restyling somebody's saved diagram with a plate, a shadow and a tilt is
+//    not ours to do. So the icon catalogue keeps rendering them exactly as it
+//    did, and only the palette moved.
 
-// True for a sticker (colour emoji) id. Used by the palette to keep the two
-// catalogues in their own tabs: the Icons tab browses and searches line art
-// only, the Stickers tab owns these.
+export const STICKER_ID_PREFIXES = ['emoji-', 'badge-'] as const;
+
+// The prefix the emoji half carries. Kept as its own export because the
+// legacy-icon path below keys off precisely that set and not the badges,
+// which never existed as icons.
+export const LEGACY_EMOJI_ID_PREFIX = 'emoji-';
+
 export function isStickerId(id: string): boolean {
-  return id.startsWith(STICKER_ID_PREFIX);
+  return STICKER_ID_PREFIXES.some((p) => id.startsWith(p));
+}
+
+// True for an `iconId` that predates spec/116 — an emoji placed back when the
+// palette offered them in the Icons tab. Such an element stays an icon.
+export function isLegacyEmojiIconId(id: string | undefined): boolean {
+  return !!id && id.startsWith(LEGACY_EMOJI_ID_PREFIX);
 }

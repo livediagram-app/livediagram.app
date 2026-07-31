@@ -18,6 +18,7 @@ import { isSvgRenderedShape, ShapeSvgOverlay } from '@/components/canvas/shape-s
 import { isTechIconId } from '@/lib/tech-icons';
 import { TechIconGlyph } from '@/components/primitives/tech-icon-glyph';
 import { IconGlyph } from '@/components/primitives/icon-glyph';
+import { StickerView } from '@/components/canvas/StickerView';
 import { ProgressView } from '@/components/canvas/ProgressView';
 import { RailView } from '@/components/canvas/RailView';
 import { RatingView } from '@/components/canvas/RatingView';
@@ -45,7 +46,8 @@ type ShapeContentRouterProps = Pick<
   svgAnim: 'trace' | 'gradient' | 'pulse' | 'glow' | undefined;
 };
 
-// The per-shape-type inner content of a boxed element: tech / curated icons,
+// The per-shape-type inner content of a boxed element: stickers, tech /
+// curated icons,
 // progress / rail / rating data shapes, pie / bar / line charts, and the
 // SVG-rendered geometric shapes. Returns null for a plain box (whose text +
 // border render in BoxedElementView itself). Extracted from BoxedElementView.
@@ -63,7 +65,12 @@ export function ShapeContentRouter({
   fontFamily,
   svgAnim,
 }: ShapeContentRouterProps) {
-  return element.type === 'shape' && element.shape === 'icon' && isTechIconId(element.iconId) ? (
+  return element.type === 'shape' && element.shape === 'sticker' ? (
+    // Sticker (spec/116): its own die-cut art, drawn edge to edge. Takes no
+    // element colours and gets no caption band — a sticker says what it says
+    // in its own artwork.
+    <StickerView stickerId={element.stickerId} />
+  ) : element.type === 'shape' && element.shape === 'icon' && isTechIconId(element.iconId) ? (
     // Technology (brand) icon: a fixed-colour tile + white glyph
     // (spec/41). Same shape kind as a curated icon, but the id
     // resolves in the tech catalogue, so it renders coloured rather

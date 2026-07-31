@@ -425,7 +425,14 @@ export type ShapeKind =
   // one-file change with no model migration). Tinted by `strokeColor`
   // like a line drawing; keeps aspect ratio when resized. See spec/09
   // "Icons" accordion.
-  | 'icon';
+  | 'icon'
+  // Sticker (spec/116): a die-cut colour sticker you slap on the board — a
+  // colour emoji, or a word badge like APPROVED / BLOCKED. Which one is
+  // carried by `stickerId` (a catalogue key, not a closed enum here, same as
+  // `iconId`). Deliberately NOT an icon: it paints its own plate + shadow,
+  // is never tinted by the theme, carries no caption, and never folds into
+  // another shape as an inline glyph.
+  | 'sticker';
 
 // --- Arrows ----------------------------------------------------------------
 

@@ -5,18 +5,21 @@ Status: shipped
 ## What
 
 A **Stickers** category in the palette, in the **Decorate** band (spec/110),
-between Icons and Tech.
+between Icons and Tech — and a **`sticker` shape kind** behind it.
 
-It holds the colour-emoji art a board actually reaches for: reactions to
-somebody else's work, feelings, status marks, things that point, celebration,
-decoration, meeting props, work objects, people, and a bit of fun. Around 190
-of them, browsed by group with a breadcrumb and searched across all groups at
-once — the same drill-in every catalogue tab uses (spec/109).
+A sticker is the thing you slap on a board: a die-cut plate with a soft shadow,
+landing at a jaunty angle, in colours that are its own. Two flavours:
 
-The groups, in order:
+- **Emoji** — ~193 colour emoji on a white die-cut plate.
+- **Badges** — 32 word pills that no emoji says: APPROVED, BLOCKED, WIP,
+  NEEDS REVIEW, AT RISK, P0, OUT OF SCOPE, OWNER?, MVP, …
+
+Eleven groups, browsed by drill-in with a breadcrumb and searched across all of
+them at once — the same navigation every catalogue tab uses (spec/109):
 
 | Group         | What it holds                                                               |
 | ------------- | --------------------------------------------------------------------------- |
+| **Badges**    | The word pills, tone-coloured by what they mean                             |
 | **Reactions** | Responding to somebody's work: thumbs, clap, heart, fire, 💯, eyes          |
 | **Feelings**  | The face set: happy, laughing, thinking, confused, sad, angry, mind-blown   |
 | **Status**    | Check, cross, warning, traffic-light dots, blocked, WIP, new, trend arrows  |
@@ -29,70 +32,109 @@ The groups, in order:
 | **Fun**       | Robot, alien, unicorn, cat, pizza, dice, controller, music                  |
 
 Groups are **disjoint** — every sticker has exactly one home, pinned by a test,
-the same rule the icon categories follow. Search cuts across all ten, so a
-sticker filed under Work is still one keystroke away from anywhere.
+the same rule the icon categories follow. Search cuts across all eleven, and a
+badge also matches on the word on its pill, so "blocked" finds BLOCKED.
 
-## A sticker IS an icon
+## A sticker is NOT an icon
 
-No new element kind, no new shape kind, no second catalogue, no second drag
-MIME, no separate renderer. A sticker is an ordinary `IconDef` whose art is one
-`text` prim — exactly what spec/85 built emoji as — so it inherits, for free:
+The first cut of this made stickers ordinary `icon` elements, on the reasoning
+that everything an icon does on the canvas a sticker also wants. That was
+wrong, and it showed the moment one landed: it looked exactly like an icon,
+because it _was_ one. An icon is a glyph you tint, caption and fold into a
+shape's label. A sticker is a physical-feeling object you stick on the board.
+Those want opposite treatment on every axis, so a sticker is its own shape kind
+carrying its own `stickerId`:
 
-- click-to-add and draw-to-size placement (`addIcon`)
-- **drag onto a shape** to become that shape's inline icon beside the label,
-  which is precisely what a status sticker wants to be
-- drag-to-canvas via `ICON_DND_MIME`, Favourites tiles (spec/78), the global
-  search "Add to canvas" group, canvas rendering, export, the api share
-  thumbnail, and the MCP render
-- theme tint being a natural no-op: colour-emoji glyphs ignore SVG stroke and
-  fill, so a thumbs up stays yellow however the diagram is restyled
+|                     | Icon                            | Sticker                         |
+| ------------------- | ------------------------------- | ------------------------------- |
+| Artwork             | line art, one colour            | die-cut plate + shadow + art    |
+| Theme tint          | takes the element stroke colour | never — its colours are its own |
+| Caption             | a label band under the glyph    | none, ever                      |
+| Fold into a shape   | yes, becomes an inline glyph    | never                           |
+| Angle               | square to the canvas            | tilted on drop                  |
+| Colours / Border UI | stroke + text swatches          | none (nothing to recolour)      |
 
-Telemetry rides the existing `Element·Added·Icon`; the browse + search events
-are `UI·Opened·StickerGroup` and `UI·Searched·StickerSearch`.
+Mechanically that means: `'sticker'` in `ShapeKind`, `stickerId` on
+`ShapeElement`, its own `STICKER_DND_MIME` (so a drag onto a shape can't be
+mistaken for an icon fold), `supportsColours` false, membership in
+`SELF_PAINTING_SHAPES` (no wrapper border) and in `isSelfDrawingShape` (no
+label editor, no markers, no text alignment, no morph), and exclusion from
+`acceptsInlineIcon` and from the isometric extrusion.
 
-## It replaces the Emoji category inside Icons
+**No text, by any route.** The selection toolbar drops its Add-text button,
+double-click doesn't open an editor, and type-to-edit refuses — all three off
+the one `isSelfDrawingShape` predicate, which already documented itself as
+exactly this behaviour. A caption under a die-cut sticker is the icon treatment
+it exists not to be.
 
-Spec/85 shipped ~60 emoji as a category **inside** the Icons tab. That was the
-cheap way in, and it was the wrong home: Icons is a catalogue of single-colour
-line art that takes the theme colour, and one category in it did neither.
+## The artwork is built once
 
-So the Emoji category is **gone from `ICON_CATEGORIES`**, the Icons tab's
-search **excludes sticker ids**, and Stickers is the one place you browse or
-search them. There is no duplication between the two tabs in either direction.
+`stickerArt(def)` in `@livediagram/icons` returns `{ viewBox, markup }` and is
+the ONLY place a sticker is drawn. The editor canvas, the palette tile, the
+SVG / PNG / PDF export, the api worker's share thumbnail and the MCP render all
+call it. A sticker that looked one way in the editor and another in the export
+would defeat the point of it being a sticker.
 
-What did NOT change: the **ids**. Every entry keeps its shipped `emoji-`
-prefix (`emoji-thumbs-up`, ...), because an id is what a saved element, an API
-payload and an MCP call carry — renaming them would blank the glyph on every
-diagram that already uses one. `STICKER_ID_PREFIX` names the prefix in one
-place so the "is this a sticker" check isn't a bare string literal.
+Three layers: a soft shadow, the white die-cut plate, then the content (an
+emoji glyph, or a word on a tone-coloured pill whose font size is computed from
+the character count so "P0" and "OUT OF SCOPE" both fit).
 
-The catalogue data moved from `emoji-catalog.ts` / `EMOJI_CATALOG` to
-`sticker-catalog.ts` / `STICKER_CATALOG` and grew from 59 entries to ~190. It
-is still concatenated onto `ICON_CATALOG_2`, so every headless renderer and the
-editor's async icon chunk keep seeing exactly one line-art catalogue.
+Deliberately **no SVG `<filter>`** for the shadow. A filter needs a `defs` id,
+and the export packs every element into one document where those ids collide;
+the shadow is an offset rounded rect at low opacity instead, which renders
+identically everywhere including headless.
 
-## Bigger tiles
+## The tilt
 
-Sticker tiles draw the glyph at 24px, not the Icons tab's 18px, in a 4-column
-grid rather than 5. A line-art glyph is a shape you read from its outline and
-survives being small; an emoji is a tiny illustration, and 😌 against 😔 at
-18px is a guess.
+A sticker lands at a small angle — the thing that makes it read as stuck on
+rather than drawn in. It is stored as the element's ordinary `rotation`, so it
+survives save, export, and every renderer with no new field.
+
+The angle is **derived from the element id**, not randomised: the same sticker
+is the same angle on every client, across reloads, and in the export. A tilt
+that changed under a reload would be a bug, not a flourish.
+
+This surfaced a pre-existing bug worth naming, because it was not
+sticker-specific. The pop-in entry animation sets `transform: scale(...)`, and a
+keyframe that touches `transform` **replaces** the element's inline
+`transform: rotate(Ndeg)` for its whole duration — so any rotated element popped
+in flat and then visibly snapped to its angle when the class dropped. The
+keyframe now multiplies in `--lvd-enter-rot` (0deg when unset), which
+BoxedElementView publishes alongside the rotation. Every rotated element
+benefits, not just stickers.
+
+## Legacy emoji stay icons
+
+Spec/85 shipped ~60 of these emoji as **icons**, so saved diagrams hold
+`{ shape: 'icon', iconId: 'emoji-thumbs-up' }` elements. Those are **not
+migrated**: silently restyling somebody's saved diagram with a plate, a shadow
+and a tilt is not ours to do.
+
+So the icon catalogue keeps rendering them exactly as it always has. Those
+entries are **derived** from the sticker catalogue rather than hand-copied
+(`LEGACY_EMOJI_ICONS` in `icon-catalog-2.ts`), so the two can't drift. Only the
+palette moved: the Emoji category is gone from `ICON_CATEGORIES`, the Icons
+tab's search and the global "Add to canvas" list both filter legacy emoji ids
+out, and Stickers is the one place you browse or place them.
+
+Sticker ids keep the `emoji-` prefix for the same reason — an id is what a
+saved element, an API payload and an MCP call carry.
 
 ## What we deliberately did NOT build
 
 - **A raster / vector sticker pack of our own art.** Native emoji render at any
-  size, in every export path we already have, on every platform, in colour, for
-  zero bytes. Hand-drawn sticker art would be a new asset pipeline for a
-  worse result.
-- **A "sticker" element kind.** Everything a sticker does on the canvas — sit
-  there, scale, tint-proof, fold into a shape — the icon element already does.
+  size, in every export path we have, on every platform, in colour, for zero
+  bytes. Hand-drawn art would be a new asset pipeline for a worse result.
+- **Editable badge text.** A badge says one of 32 agreed things; a free-text
+  badge is a sticky note, which the palette already has.
 - **Very new emoji.** Entries stay at Emoji 13.0 and below so a sticker never
   lands as a tofu box on an older machine. That rules out 🫡, 🫧 and friends.
 
 ## Tests
 
-`stickers.test.ts` pins: every group id resolves to a catalogue entry, every
-sticker sits in exactly one group, the ~190-entry floor, and that no sticker
-strays from the one-`text`-prim geometry. `icons.test.ts`'s "every icon is in
-exactly one category" check now excludes sticker ids — they are covered by the
-sticker test instead — so an unfiled sticker still fails a build.
+`stickers.test.ts` pins the group coverage (every sticker in exactly one group,
+every group id resolving), the catalogue floors for both flavours, that every
+entry builds art drawing both the plate and its own content, the drop geometry
+for each flavour, and that the tilt is deterministic and varied. The public
+OpenAPI schema is regenerated, so `sticker` / `stickerId` are part of the
+documented wire format.

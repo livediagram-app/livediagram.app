@@ -131,15 +131,21 @@
      EmptyState animates alike; see packages/ui/src/EmptyState.tsx. */
 }
 
+/* The entry pop for a newly added element. It carries the element's own
+   rotation through every frame via --lvd-enter-rot (0deg when unset): a
+   keyframe that sets `transform` at all REPLACES the inline
+   `transform: rotate(Ndeg)` for its whole duration, so without this a tilted
+   element — a rotated shape, or any sticker (spec/116) — popped in flat and
+   then visibly snapped to its angle when the class dropped. */
 @keyframes pop-in {
   0% {
-    transform: scale(0);
+    transform: rotate(var(--lvd-enter-rot, 0deg)) scale(0);
   }
   60% {
-    transform: scale(1.06);
+    transform: rotate(var(--lvd-enter-rot, 0deg)) scale(1.06);
   }
   100% {
-    transform: scale(1);
+    transform: rotate(var(--lvd-enter-rot, 0deg)) scale(1);
   }
 }
 

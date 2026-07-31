@@ -6,26 +6,35 @@ import { StickersCatalogue } from '@/components/illustrations/palette-catalogues
 export const metadata = helpMetadata({
   title: 'Stickers',
   description:
-    'The palette Stickers category holds around 190 colour emoji, grouped into Reactions, Feelings, Status, Direction, Celebrate, Decorate, Meeting, Work, People, and Fun, for reacting to a board, marking status, pointing things out, and brightening a diagram up.',
+    'The palette Stickers category holds around 190 colour emoji plus 32 word badges like APPROVED, BLOCKED and WIP, each landing as a die-cut sticker with a shadow and a slight tilt, for reacting to a board, marking status, pointing things out, and brightening a diagram up.',
   path: '/help/palette/stickers/',
 });
 
 <ArticleLayout
   title="Stickers"
-  description="Colour emoji for reacting, showing how you feel, marking status, pointing at things, and prettying a board up."
+  description="Colour emoji and word badges that land as die-cut stickers: react, mark status, point things out, and pretty a board up."
   categoryTitle="Palette"
   categorySlug="palette"
   subArticles={getSubArticles("stickers")}
 >
 
-The **Stickers** category holds around 190 colour emoji you can drop straight onto the canvas. They are the informal half of a board: a thumbs up on somebody's idea, a red flag on the risky step, an arrow pointing at the thing everyone should be looking at, or a few flowers in the corner because a workshop board should not look like a spreadsheet.
+The **Stickers** category holds around 190 colour emoji and 32 word badges you can drop straight onto the canvas. They are the informal half of a board: a thumbs up on somebody's idea, a **BLOCKED** badge on the step that is stuck, an arrow pointing at the thing everyone should be looking at, or a few flowers in the corner because a workshop board should not look like a spreadsheet.
 
-Unlike the line-art [Icons](/help/palette/icons/), stickers are real colour glyphs, so they **keep their own colours whatever the theme**: a thumbs up stays yellow and a fire stays orange however you restyle the diagram.
+Every sticker lands the way a real one would: on a **die-cut white plate** with a soft shadow, at a **slight tilt**. The tilt is fixed per sticker, so it looks the same to everyone in the room and in an export.
 
-## The ten groups
+## A sticker is not an icon
+
+Stickers and [Icons](/help/palette/icons/) look like near neighbours in the palette and behave nothing alike:
+
+- A sticker **keeps its own colours whatever the theme**. A thumbs up stays yellow, an APPROVED badge stays green, however you restyle the diagram. A line-art icon takes your theme's colour.
+- A sticker **takes no text**. There is no caption under it and no editor when you double-click, because it says what it says in its own artwork. An icon can carry a caption.
+- A sticker is **always its own element**. Dragging one onto a shape drops a sticker on top; it never folds into that shape's label the way an icon does.
+
+## The eleven groups
 
 The category opens on a grid of group tiles, each showing one of the stickers inside it. Click a group to see everything it holds, and use the breadcrumb at the top to come back.
 
+- **Badges** — the word pills, coloured by what they mean: APPROVED, DONE, SHIPPED, BLOCKED, REJECTED, URGENT, AT RISK, WIP, ON HOLD, IN REVIEW, NEEDS REVIEW, P0, P1, OWNER?, DISCUSS, OPEN QUESTION, NEW, IDEA, MUST HAVE, MVP, NICE TO HAVE, QUICK WIN, TO DO, DRAFT, PARKED, LATER, OUT OF SCOPE, and more.
 - **Reactions** — responding to somebody else's work: thumbs up and down, clapping, raised hands, a heart, fire, 💯, eyes.
 - **Feelings** — the face set, from delighted to confused to completely done in.
 - **Status** — check, cross, warning, red / amber / green dots, blocked, under construction, new, coming soon, trends up and down.
@@ -37,30 +46,30 @@ The category opens on a grid of group tiles, each showing one of the stickers in
 - **People** — a person, a group, someone raising a hand, a worker, a detective.
 - **Fun** — robot, alien, unicorn, cat, pizza, dice, a game controller.
 
-<Figure caption="The Stickers category browses by group and searches across all of them at once, with tiles drawn larger than the Icons grid.">
+<Figure caption="Every sticker is drawn as the sticker it is: a die-cut plate with a shadow, or a coloured word badge. What you click is what lands.">
   <StickersCatalogue />
 </Figure>
 
 ## Finding one
 
-Search by what you mean, not by the emoji's official name. The catalogue matches on synonyms, so "celebrate" finds the party popper, "blocked" finds the no-entry sign, "wip" finds the roadworks, and "thanks" finds the folded hands. Search always runs across **every** group, so you never have to guess where something was filed.
+Search by what you mean, not by the emoji's official name. The catalogue matches on synonyms, so "celebrate" finds the party popper, "wip" finds both the WIP badge and the roadworks, and "thanks" finds the folded hands. A badge also answers to the word printed on it. Search always runs across **every** group, so you never have to guess where something was filed.
 
 ## Placing one
 
 <Step n={1}>Open the palette and choose **Stickers** from the category dropdown.</Step>
 
-<Step n={2}>Pick a group, or type in the search box to look across all ten at once.</Step>
+<Step n={2}>Pick a group, or type in the search box to look across all eleven at once.</Step>
 
 <Step n={3}>
   Click a sticker to add it to the canvas, or drag it out and drop it where you want it.
 </Step>
 
 <Step n={4}>
-  Or **drag a sticker onto a shape** to make it that shape's icon, sitting beside the label. This is
-  the quickest way to mark a box as done, blocked, or at risk.
+  Drop a **BLOCKED** or **AT RISK** badge over the step it applies to. A sticker always sits on top
+  as its own element, so you can move it away again without touching what is underneath.
 </Step>
 
-A sticker behaves like any other element once it is on the canvas: move it, resize it, put it in a group or a layer, and it exports with the diagram.
+A sticker behaves like any other element once it is on the canvas: move it, resize it, rotate it, put it in a group or a layer, and it exports with the diagram. What it will not do is take text or take your theme's colours, by design.
 
 <Tip>
   Stickers work especially well with a [Reaction](/help/collaboration/) round in a workshop: drop a
@@ -69,9 +78,8 @@ A sticker behaves like any other element once it is on the canvas: move it, resi
 </Tip>
 
 <Note>
-  Stickers used to live as an Emoji category inside the Icons tab. They have their own category now,
-  so the Icons tab is purely line art and Stickers is the one place to browse or search the colour
-  glyphs.
+  Emoji used to live as a category inside the Icons tab, and anything you placed back then stays
+  exactly as it was — a plain tinted glyph, not a die-cut sticker. New ones come from here.
 </Note>
 
 </ArticleLayout>

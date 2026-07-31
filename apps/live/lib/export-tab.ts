@@ -37,7 +37,7 @@ import {
   type ExportShape,
 } from '@livediagram/diagram';
 import { backgroundPatternTile } from './canvas-backgrounds';
-import { resolveIconArtLoaded } from './icon-registry';
+import { resolveIconArtLoaded, resolveStickerArtLoaded } from './icon-registry';
 import {
   isoCanvasMatrix,
   isoDepthLayers,
@@ -199,7 +199,7 @@ export async function renderTabToCanvas(
   const rasterImages = new Map<string, { image: HTMLImageElement; pad: number }>();
   for (const el of els) {
     if (el.type === 'arrow' || !isBoxed(el)) continue;
-    if (!boxedNeedsSvgRaster(el, resolveIconArtLoaded)) continue;
+    if (!boxedNeedsSvgRaster(el, resolveIconArtLoaded, resolveStickerArtLoaded)) continue;
     const diag = Math.hypot(el.width, el.height);
     // A shadow sweeps outside the box by its offset + blur (spec/86);
     // grow the raster pad so it isn't clipped, and inline its filter
@@ -214,7 +214,7 @@ export async function renderTabToCanvas(
     const svg =
       `<svg xmlns="http://www.w3.org/2000/svg" width="${r2(w * scale)}" height="${r2(h * scale)}"` +
       ` viewBox="${r2(el.x - pad)} ${r2(el.y - pad)} ${r2(w)} ${r2(h)}">` +
-      `${svgShadowDefs([el])}${svgBoxed(el, undefined, resolveIconArtLoaded)}</svg>`;
+      `${svgShadowDefs([el])}${svgBoxed(el, undefined, resolveIconArtLoaded, resolveStickerArtLoaded)}</svg>`;
     try {
       rasterImages.set(el.id, { image: await svgToImage(svg), pad });
     } catch {
@@ -290,7 +290,7 @@ function svgBoxedExtrusion(el: BoxedElement): string {
   // on-screen IsometricDepthLayer + the canvas exporter).
   if (!isoExtrudes(el)) return '';
   const { shape, opacity } = describeBoxedExport(el);
-  if (shape.kind === 'none') return '';
+  if (shape.kind === 'none' || shape.kind === 'sticker') return '';
   const accent = shape.kind === 'image' ? EXPORT_IMAGE_STROKE : shape.stroke;
   const az = (ISO_TILT_DEG.z * Math.PI) / 180;
   const k = Math.tan((ISO_TILT_DEG.x * Math.PI) / 180);
@@ -369,7 +369,8 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
   for (const band of bands) {
     const inner: string[] = [];
     for (const el of band.elements) {
-      if (el.type !== 'arrow') inner.push(svgBoxed(el, resolveImageHref, resolveIconArtLoaded));
+      if (el.type !== 'arrow')
+        inner.push(svgBoxed(el, resolveImageHref, resolveIconArtLoaded, resolveStickerArtLoaded));
     }
     for (const el of band.elements) {
       if (el.type === 'arrow') inner.push(svgArrow(el, tab.elements));

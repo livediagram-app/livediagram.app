@@ -11,7 +11,8 @@
     "./icon-catalog-1": "./src/icon-catalog-1.ts",
     "./icon-catalog-2": "./src/icon-catalog-2.ts",
     "./tech-icon-catalog": "./src/tech-icon-catalog.ts",
-    "./resolve": "./src/resolve.ts"
+    "./resolve": "./src/resolve.ts",
+    "./sticker-catalog": "./src/sticker-catalog.ts"
   },
   "scripts": {
     "lint": "eslint .",

@@ -1,13 +1,18 @@
-// Assembles the palette catalogue (shapes + line-art icons + technology
-// icons) into the flat, keyword-tagged list the global search surfaces as
+// Assembles the palette catalogue (shapes + line-art icons + technology icons
+// + stickers) into the flat, keyword-tagged list the global search surfaces as
 // "Add to canvas" results (spec/09). Built here, not in lib/search.ts, so the
 // search matcher stays catalogue-agnostic and the Explorer (which never adds
 // elements) doesn't pull the icon data into its bundle.
 
 import type { ShapeKind } from '@livediagram/diagram';
-import { isStickerId } from '@livediagram/icons';
+
 import type { PaletteSearchItem } from '@/lib/search';
-import { getLoadedIconCatalog, getLoadedTechIconCatalog } from '@/lib/icon-registry';
+import {
+  getLoadedIconCatalog,
+  getLoadedStickerCatalog,
+  getLoadedTechIconCatalog,
+} from '@/lib/icon-registry';
+import { isLegacyEmojiIconId } from '@livediagram/icons';
 
 // The shapes offered in the palette's Shapes tab, with search keywords so
 // e.g. "database" finds the cylinder and "decision" finds the diamond. Kept
@@ -45,14 +50,24 @@ export function buildPaletteSearchItems(): PaletteSearchItem[] {
       keywords: `shape ${s.keywords}`,
       add: { type: 'shape' as const, shapeKind: s.kind },
     })),
-    // Line-art icons and stickers share one catalogue and one add path
-    // (spec/116), so they're one map here — only the leading keyword differs,
-    // so "sticker" finds the emoji and "icon" the line art.
-    ...getLoadedIconCatalog().map((i) => ({
-      id: `icon:${i.id}`,
-      name: i.label,
-      keywords: `${isStickerId(i.id) ? 'sticker emoji' : 'icon'} ${i.keywords}`,
-      add: { type: 'icon' as const, iconId: i.id },
+    // Line art only. The catalogue still carries the legacy emoji entries so
+    // pre-spec/116 elements keep rendering, but offering them here would add
+    // a second way to place something that is a sticker now.
+    ...getLoadedIconCatalog()
+      .filter((i) => !isLegacyEmojiIconId(i.id))
+      .map((i) => ({
+        id: `icon:${i.id}`,
+        name: i.label,
+        keywords: `icon ${i.keywords}`,
+        add: { type: 'icon' as const, iconId: i.id },
+      })),
+    // Stickers (spec/116), added through their own path. A badge also
+    // matches on the word on its pill, so "blocked" finds BLOCKED.
+    ...getLoadedStickerCatalog().map((s) => ({
+      id: `sticker:${s.id}`,
+      name: s.label,
+      keywords: `sticker ${s.kind === 'badge' ? `${s.text.toLowerCase()} badge ` : 'emoji '}${s.keywords}`,
+      add: { type: 'sticker' as const, stickerId: s.id },
     })),
     ...getLoadedTechIconCatalog().map((t) => ({
       id: `tech:${t.id}`,

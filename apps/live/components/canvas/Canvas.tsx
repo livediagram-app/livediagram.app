@@ -180,9 +180,9 @@ export function Canvas(props: CanvasProps) {
     // Avatar mode the same way a tile click does — otherwise the element
     // landed while the canvas still read as read-only.
     onDropPalette: props.onDropPalette
-      ? (kind, x, y, iconId) => {
+      ? (kind, x, y, art) => {
           if (canvasTool === 'avatar') props.onExitAvatarMode?.();
-          props.onDropPalette?.(kind, x, y, iconId);
+          props.onDropPalette?.(kind, x, y, art);
         }
       : undefined,
     viewportZoom,

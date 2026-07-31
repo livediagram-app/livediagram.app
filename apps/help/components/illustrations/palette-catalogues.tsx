@@ -543,35 +543,63 @@ export function IconsCatalogue() {
   );
 }
 
-/** Stickers tab: a grid of colour-emoji tiles, drawn bigger than the Icons
- *  grid's glyphs because a sticker is a small picture rather than an outline
- *  (spec/116). Real emoji characters rather than line art — that IS what the
- *  tab holds, and no drawn approximation would be more honest. */
+/** Stickers tab: die-cut stickers — a white plate with a soft shadow under a
+ *  colour emoji, plus the word badges (spec/116). Real emoji characters rather
+ *  than line art: that IS what the tab holds, and no drawn approximation would
+ *  be more honest. */
 export function StickersCatalogue() {
-  const stickers = ['👍', '🎉', '🔥', '❤️', '✅', '⚠️', '🚀', '💡', '👀', '🙌', '⭐', '🤔'];
+  const emoji = ['👍', '🎉', '🔥', '❤️', '✅', '⚠️', '🚀', '💡'];
+  const badges: { text: string; fill: string }[] = [
+    { text: 'APPROVED', fill: '#16a34a' },
+    { text: 'BLOCKED', fill: '#dc2626' },
+  ];
   return (
-    <CatalogueGrid active={1} search="celebrate" tabs={['Icons', 'Stickers', 'Tech', 'Media']}>
-      {stickers.map((glyph, i) => {
-        const col = i % 5;
-        const row = Math.floor(i / 5);
-        const tx = 62 + col * 56;
-        const ty = 124 + row * 46;
-        const sel = i === 1;
+    <CatalogueGrid active={1} search="approved" tabs={['Icons', 'Stickers', 'Tech', 'Media']}>
+      {/* Badge pills, two columns wide each — a word at one tile's width
+          would be unreadable, in the illustration as in the palette. */}
+      {badges.map((b, i) => {
+        const tx = 62 + i * 142;
+        return (
+          <g key={b.text}>
+            <rect x={tx} y={127} width={130} height={38} rx={14} fill="#0f172a" opacity={0.14} />
+            <rect
+              x={tx}
+              y={124}
+              width={130}
+              height={38}
+              rx={14}
+              className="fill-white stroke-slate-200"
+              strokeWidth={1.5}
+            />
+            <rect x={tx + 7} y={131} width={116} height={24} rx={10} fill={b.fill} />
+            <Label x={tx + 65} y={144} anchor="middle" size={11} weight={700} tone="onAccent">
+              {b.text}
+            </Label>
+          </g>
+        );
+      })}
+      {/* Emoji stickers on their die-cut plates. */}
+      {emoji.map((glyph, i) => {
+        const col = i % 4;
+        const row = Math.floor(i / 4);
+        const tx = 62 + col * 72;
+        const ty = 174 + row * 50;
         return (
           <g key={glyph}>
+            <rect x={tx} y={ty + 3} width={42} height={42} rx={13} fill="#0f172a" opacity={0.14} />
             <rect
               x={tx}
               y={ty}
-              width={44}
-              height={38}
-              rx={7}
-              className={sel ? 'fill-brand-50 stroke-brand-500' : 'fill-white stroke-slate-200'}
-              strokeWidth={sel ? 2 : 1.5}
+              width={42}
+              height={42}
+              rx={13}
+              className="fill-white stroke-slate-200"
+              strokeWidth={1.5}
             />
             <text
-              x={tx + 22}
-              y={ty + 19}
-              fontSize={20}
+              x={tx + 21}
+              y={ty + 21}
+              fontSize={22}
               textAnchor="middle"
               dominantBaseline="central"
             >

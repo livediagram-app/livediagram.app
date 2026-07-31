@@ -145,10 +145,14 @@ export function isChartShape(kind: ShapeKind): boolean {
 }
 
 // The "self-drawing" shape kinds: progress (bar / ring), timeline rail, rating,
-// the data charts, the code block, and the checklist. They render their own
-// bespoke content (no fill/border box) and carry no editable text label, so
-// the editor suppresses markers, the inline label editor, and double-click /
-// type-to-edit for them.
+// the data charts, the code block, the checklist, and the sticker. They render
+// their own bespoke content (no fill/border box) and carry no editable text
+// label, so the editor suppresses markers, text alignment, the inline label
+// editor, morphing, and double-click / type-to-edit for them.
+//
+// The sticker (spec/116) is here for the label half specifically: it says what
+// it says in its own artwork, so there is nothing to type into it — a caption
+// under a die-cut sticker is exactly the icon treatment it exists not to be.
 export function isSelfDrawingShape(kind: ShapeKind): boolean {
   return (
     isProgressShape(kind) ||
@@ -156,7 +160,8 @@ export function isSelfDrawingShape(kind: ShapeKind): boolean {
     isRatingShape(kind) ||
     isChartShape(kind) ||
     isCodeBlockShape(kind) ||
-    isChecklistShape(kind)
+    isChecklistShape(kind) ||
+    kind === 'sticker'
   );
 }
 

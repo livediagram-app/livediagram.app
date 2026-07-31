@@ -17,6 +17,7 @@ import {
 } from '@livediagram/diagram';
 import { getTheme } from '@/lib/themes';
 import { getTechIcon, isTechIconId } from '@/lib/tech-icons';
+import { getSticker, stickerDropSize, stickerTilt } from '@/lib/stickers';
 import { track, titleCaseType } from '@/lib/telemetry';
 import type { PendingDraw } from '@/lib/draw-mode';
 
@@ -105,6 +106,15 @@ export function useElementCreation(opts: {
     // size) just like a shape, carrying the glyph id. Telemetry fires on
     // commit (see useShapeDrawing.commitDraw).
     beginDraw({ type: 'shape', kind: 'icon', iconId });
+  };
+
+  // Sticker (spec/116). Its own shape kind, so unlike addIcon there is no
+  // "fold into the selected shape" branch: a sticker never becomes another
+  // element's inline glyph, it lands as a sticker wherever it is dropped.
+  // Telemetry fires on commit (see useShapeDrawing.commitDraw).
+  const addSticker = (stickerId: string) => {
+    if (editsBlocked) return;
+    beginDraw({ type: 'shape', kind: 'sticker', stickerId });
   };
 
   // Technology (brand) icon (spec/41). Reuses the 'icon' shape kind but is
@@ -279,9 +289,28 @@ export function useElementCreation(opts: {
   };
 
   // Drag-from-palette drop (spec/09): place the dragged kind centred on the
-  // drop point. Shapes / devices use createShape; an icon carries iconId.
-  const dropPaletteItem = (kind: ShapeKind, canvasX: number, canvasY: number, iconId?: string) => {
+  // drop point. Shapes / devices use createShape; an icon carries `iconId`,
+  // a sticker `stickerId` (spec/116).
+  const dropPaletteItem = (
+    kind: ShapeKind,
+    canvasX: number,
+    canvasY: number,
+    art?: { iconId?: string; stickerId?: string },
+  ) => {
     if (editsBlocked) return;
+    const iconId = art?.iconId;
+    const stickerId = art?.stickerId;
+    if (stickerId) {
+      // A dragged sticker lands at its flavour's natural size and its tilt,
+      // exactly like a tapped one — the drop point is the only difference.
+      addBoxedAt(canvasX, canvasY, (x, y) => {
+        const el = createShape('sticker', x, y);
+        const size = stickerDropSize(getSticker(stickerId), el);
+        return { ...el, ...size, stickerId, rotation: stickerTilt(el.id) };
+      });
+      track('Element', 'Added', 'Sticker');
+      return;
+    }
     addBoxedAt(canvasX, canvasY, (x, y) =>
       iconId
         ? {
@@ -333,6 +362,7 @@ export function useElementCreation(opts: {
   return {
     addShape,
     addIcon,
+    addSticker,
     addTechIcon,
     addTable,
     addAnnotation,

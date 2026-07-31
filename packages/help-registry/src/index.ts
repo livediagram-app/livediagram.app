@@ -874,9 +874,9 @@ export const articles: Article[] = [
   {
     slug: 'stickers',
     title: 'Stickers',
-    description: 'Colour emoji for reactions, status, direction, and decoration.',
+    description: 'Die-cut colour emoji and word badges for reactions and status.',
     keywords:
-      'emoji sticker reaction smiley face thumbs up heart fire celebrate party status flag arrow decorate pretty feelings emotion',
+      'emoji sticker badge label approved blocked wip reaction smiley face thumbs up heart fire celebrate party status flag arrow decorate pretty feelings emotion',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Elements',

@@ -8,8 +8,11 @@
 import { ICON_CATALOG_1 } from './icon-catalog-1';
 import { ICON_CATALOG_2 } from './icon-catalog-2';
 import { iconPrimsMarkup, techIconArtMarkup, type IconExportArt } from './markup';
+import { STICKER_CATALOG } from './sticker-catalog';
+import { stickerArt, type StickerArt } from './sticker-markup';
 import { TECH_ICON_CATALOG } from './tech-icon-catalog';
 
+const stickerById = new Map(STICKER_CATALOG.map((s) => [s.id, s]));
 const techById = new Map(TECH_ICON_CATALOG.map((i) => [i.id, i]));
 const lineById = new Map([...ICON_CATALOG_1, ...ICON_CATALOG_2].map((i) => [i.id, i]));
 
@@ -21,4 +24,14 @@ export function resolveIconExportArt(iconId: string): IconExportArt | undefined 
   if (tech) return { markup: techIconArtMarkup(tech), colored: true };
   const line = lineById.get(iconId);
   return line ? { markup: iconPrimsMarkup(line.prims), colored: false } : undefined;
+}
+
+// Resolve a sticker element's `stickerId` to its built artwork (spec/116), or
+// undefined for an unknown id — the renderer then falls back to a plain box,
+// the same way an unknown icon id does. Goes through `stickerArt`, the one
+// builder the editor canvas uses too, so a shared thumbnail and the board
+// show the same sticker.
+export function resolveStickerArt(stickerId: string): StickerArt | undefined {
+  const def = stickerById.get(stickerId);
+  return def ? stickerArt(def) : undefined;
 }

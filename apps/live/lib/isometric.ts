@@ -17,7 +17,13 @@ import type { BoxedElement, ShapeKind } from '@livediagram/diagram';
 //   anonymous block and buries the artwork.
 export function isoExtrudes(el: BoxedElement): boolean {
   if (el.type === 'text') return false;
-  if (el.type === 'shape' && (el.shape === 'frame' || el.shape === 'icon')) return false;
+  // A sticker is a flat thing stuck ON the board (spec/116), so it gets no
+  // extruded column — the same reason a glyph and a frame section don't.
+  if (
+    el.type === 'shape' &&
+    (el.shape === 'frame' || el.shape === 'icon' || el.shape === 'sticker')
+  )
+    return false;
   return true;
 }
 

@@ -40,6 +40,10 @@ export type ExportShape =
   | { kind: 'diamond'; fill: string; stroke: string }
   | { kind: 'rect'; fill: string; stroke: string }
   | { kind: 'icon'; art: ExportIconArt; fill: string; stroke: string }
+  // A sticker (spec/116): fully self-coloured art (plate, shadow, content)
+  // that fills the element box. No fill / stroke, because a sticker has
+  // neither — its colours are its own.
+  | { kind: 'sticker'; art: ExportStickerArt }
   | { kind: 'none' };
 
 // Resolves an image element's `imageId` to a data URL to embed, or undefined
@@ -61,12 +65,22 @@ export type ResolveImageHref = (imageId: string) => string | undefined;
 export type ExportIconArt = { markup: string; colored: boolean };
 export type ResolveIconArt = (iconId: string) => ExportIconArt | undefined;
 
+// Resolved artwork for a shape==='sticker' element (spec/116): self-coloured
+// markup plus the viewBox it was drawn in. Structural, for the same reason
+// ExportIconArt is — this package never imports the catalogue; each caller
+// passes a resolver (the editor from its async registry, the Workers from
+// @livediagram/icons/resolve). No resolver, or an unknown id, falls back to
+// the plain box-with-label output.
+export type ExportStickerArt = { viewBox: string; markup: string };
+export type ResolveStickerArt = (stickerId: string) => ExportStickerArt | undefined;
+
 export type BoxedExport = { opacity: number; shape: ExportShape; label: ExportLabel | null };
 
 export function describeBoxedExport(
   el: BoxedElement,
   resolveImageHref?: ResolveImageHref,
   resolveIconArt?: ResolveIconArt,
+  resolveStickerArt?: ResolveStickerArt,
 ): BoxedExport {
   const opacity = el.opacity ?? 1;
   if (el.type === 'image') {
@@ -95,6 +109,16 @@ export function describeBoxedExport(
             italic: false,
           },
     };
+  }
+  // Stickers (spec/116) come before any colour work: the art is entirely
+  // self-coloured and there is never a label, so a sticker is its plate and
+  // nothing else.
+  const stickerArt =
+    el.type === 'shape' && el.shape === 'sticker' && el.stickerId
+      ? resolveStickerArt?.(el.stickerId)
+      : undefined;
+  if (stickerArt) {
+    return { opacity, shape: { kind: 'sticker', art: stickerArt }, label: null };
   }
   const fill = el.fillColor ?? defaultFillColor(el);
   const stroke = el.strokeColor ?? defaultStrokeColor(el);

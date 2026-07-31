@@ -336,7 +336,18 @@ function BoxedElementViewImpl({
         ...animStyle,
         // Spin about the centre (the wrapper already has origin-center).
         // Handles + anchors are children, so they rotate with the box.
-        ...(isRotated ? { transform: `rotate(${rotation}deg)` } : {}),
+        //
+        // The angle is ALSO published as --lvd-enter-rot, which the pop-in
+        // entry keyframe multiplies into its scale. A keyframe that touches
+        // `transform` replaces this inline value while it runs, so without
+        // that variable a tilted element (any rotated shape, and every
+        // sticker) popped in flat and then snapped to its angle at the end.
+        ...(isRotated
+          ? ({
+              transform: `rotate(${rotation}deg)`,
+              '--lvd-enter-rot': `${rotation}deg`,
+            } as React.CSSProperties)
+          : {}),
         // Deliberately do NOT raise z-index on plain selection. Keeping
         // the element at its natural paint order means selecting a
         // container doesn't jump it above the content layered on top of

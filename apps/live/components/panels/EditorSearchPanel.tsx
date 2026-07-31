@@ -33,6 +33,7 @@ export function EditorSearchPanel() {
     isReadOnly,
     addShape,
     addIcon,
+    addSticker,
     addTechIcon,
     setSearchOpen,
   } = useEditorContext();
@@ -97,6 +98,7 @@ export function EditorSearchPanel() {
           : (add) => {
               if (add.type === 'shape') addShape(add.shapeKind);
               else if (add.type === 'icon') addIcon(add.iconId);
+              else if (add.type === 'sticker') addSticker(add.stickerId);
               else addTechIcon(add.iconId);
             }
       }

@@ -53,6 +53,16 @@ export type ShapeElement = {
   // live app's icon catalogue; an unknown key falls back to a placeholder
   // glyph so a diagram authored against a newer catalogue still renders.
   iconId?: string;
+  // Registry key for a `sticker` shape's art (spec/116) — e.g.
+  // 'emoji-thumbs-up', 'badge-blocked'. Only meaningful when
+  // `shape === 'sticker'`; the entry resolves in the sticker catalogue
+  // (@livediagram/icons), and an unknown key renders nothing rather than
+  // guessing, so a diagram authored against a newer catalogue still opens.
+  //
+  // Kept separate from `iconId` on purpose: an element that predates
+  // spec/116 carries an emoji as an `iconId` on an `icon` shape and must
+  // keep rendering as one. See `isLegacyEmojiIconId`.
+  stickerId?: string;
   // Looping animation for an `icon` shape's glyph (spec/09 "Animated icons").
   // Independent of the boxed-element `animation` field above: icons get their
   // own motion set (the icon context menu swaps in IconAnimationTiles), since

@@ -191,6 +191,10 @@ export function defaultStrokeColor(element: BoxedElement): string {
 }
 
 export function supportsColours(element: Element): boolean {
+  // A sticker's colours are the sticker (spec/116): a green APPROVED that
+  // could be recoloured violet would be a worse APPROVED, and there is no
+  // fill or stroke on a die-cut plate to expose anyway.
+  if (element.type === 'shape' && element.shape === 'sticker') return false;
   return (
     element.type === 'shape' ||
     element.type === 'sticky' ||
@@ -233,12 +237,15 @@ export function supportsBorder(element: Element): element is ShapeElement | Free
 // the menu still offered Border on a code block, a checklist, a portal and a
 // reveal long after the renderer stopped painting one.
 //
-// The actor and icons are here for a different reason — a stick figure and a
-// glyph have no enclosing outline to stroke — but the outcome is the same, so
-// they share the predicate rather than a second condition.
+// The actor, icons and stickers are here for a different reason — a stick
+// figure, a glyph and a die-cut plate have no enclosing outline to stroke —
+// but the outcome is the same, so they share the predicate rather than a
+// second condition.
 export const SELF_PAINTING_SHAPES = new Set<string>([
   'actor',
   'icon',
+  // A sticker paints its own plate, shadow and content (spec/116).
+  'sticker',
   'timeline-rail',
   'rating',
   'pie-chart',
@@ -266,7 +273,12 @@ export function supportsBorderControls(element: Element): boolean {
 // three fold paths (palette drag-drop, add-while-selected, drag an
 // existing icon onto a shape) agree.
 export function acceptsInlineIcon(element: Element): element is ShapeElement {
-  return element.type === 'shape' && element.shape !== 'icon' && element.shape !== 'frame';
+  return (
+    element.type === 'shape' &&
+    element.shape !== 'icon' &&
+    element.shape !== 'sticker' &&
+    element.shape !== 'frame'
+  );
 }
 
 // Whether an element exposes a user-adjustable corner radius. Only the

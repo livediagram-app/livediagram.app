@@ -12,7 +12,9 @@ export type PendingDraw =
   // `iconId` (+ seed `label`) ride the shape intent for the `icon` kind, so a
   // palette icon / tech icon draws to size exactly like a shape (tap to drop,
   // drag to size) instead of dropping at a fixed size.
-  | { type: 'shape'; kind: ShapeKind; iconId?: string; label?: string }
+  // `stickerId` rides the same intent for the `sticker` kind (spec/116), the
+  // way `iconId` does for `icon`.
+  | { type: 'shape'; kind: ShapeKind; iconId?: string; stickerId?: string; label?: string }
   | { type: 'text' }
   | { type: 'sticky' }
   | { type: 'image' }

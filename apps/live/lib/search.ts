@@ -86,7 +86,10 @@ type ElementItem = {
 export type PaletteAdd =
   | { type: 'shape'; shapeKind: ShapeKind }
   | { type: 'icon'; iconId: string }
-  | { type: 'tech'; iconId: string };
+  | { type: 'tech'; iconId: string }
+  // A sticker (spec/116) is its own element kind, so it adds through its own
+  // handler rather than the icon one.
+  | { type: 'sticker'; stickerId: string };
 type PaletteItem = { kind: 'palette'; id: string; name: string; add: PaletteAdd };
 // A synthetic command result — performing it changes the diagram / a
 // selection rather than navigating somewhere. Modelled like a palette item

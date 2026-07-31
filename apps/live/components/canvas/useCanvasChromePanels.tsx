@@ -132,6 +132,7 @@ export function useCanvasChromePanels({
     onAddHeader,
     onAddHero,
     onAddIcon,
+    onAddSticker,
     onAddImage,
     onAddLinkCard,
     onAddVideo,
@@ -491,6 +492,7 @@ export function useCanvasChromePanels({
         canvasEmpty={elements.length === 0}
         onAddShape={onAddShape}
         onAddIcon={onAddIcon}
+        onAddSticker={onAddSticker}
         onAddTechIcon={onAddTechIcon}
         onAddTable={onAddTable}
         onAddAnnotation={onAddAnnotation}

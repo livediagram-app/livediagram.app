@@ -236,12 +236,16 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
           // path; line-art icons + plain shapes use the kind.
           intent.iconId && isTechIconId(intent.iconId)
           ? 'TechIcon'
-          : intent.kind === 'code-block'
-            ? // titleCase would emit 'Code-Block' (it capitalises at the
-              // hyphen), splitting the feature across two dashboard tokens:
-              // the Changed events already report 'CodeBlock' (spec/82).
-              'CodeBlock'
-            : titleCaseType(intent.kind)
+          : intent.kind === 'sticker'
+            ? // Stickers are their own element kind (spec/116), so their own
+              // dashboard token rather than riding Icon's.
+              'Sticker'
+            : intent.kind === 'code-block'
+              ? // titleCase would emit 'Code-Block' (it capitalises at the
+                // hyphen), splitting the feature across two dashboard tokens:
+                // the Changed events already report 'CodeBlock' (spec/82).
+                'CodeBlock'
+              : titleCaseType(intent.kind)
         : intent.type === 'text'
           ? 'Text'
           : intent.type === 'sticky'

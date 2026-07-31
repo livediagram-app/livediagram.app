@@ -1,19 +1,25 @@
-// The Stickers palette category (spec/116): the browse groups over the colour
-// emoji held in the shared icon catalogue, plus the lookups the Stickers tab
-// needs.
+// The Stickers palette category (spec/116): the browse groups over the sticker
+// catalogue, plus the lookups the Stickers tab and the canvas need.
 //
-// A sticker IS an icon — same `IconDef`, same `icon` shape kind, same add /
-// drag / favourite / export paths — so there is no data of our own here beyond
-// the grouping. The one thing that separates the two catalogues is the id
-// prefix (`isStickerId`), which keeps the Icons tab to line art and this tab
-// to stickers with no overlap in either direction.
+// A sticker is its own element kind (`shape: 'sticker'` carrying a
+// `stickerId`), not an icon: it paints its own die-cut plate and shadow, tilts
+// when you drop it, is never tinted by the theme, carries no caption, and
+// never folds into another shape. This module owns the grouping and the
+// lookups; the artwork itself lives in @livediagram/icons so every renderer
+// draws the same sticker.
 //
 // Like lib/icons.ts this is a SYNCHRONOUS surface over an async catalogue
 // chunk: until it lands the lists come back empty and the tab shows its
 // loading note (consumers subscribe via useIconCatalogs).
 
-import { isStickerId, type IconDef } from '@livediagram/icons';
-import { getLoadedIconCatalog } from '@/lib/icon-registry';
+import { STICKER_ASPECT, type StickerDef } from '@livediagram/icons';
+import { getLoadedStickerCatalog, getStickerLoaded } from '@/lib/icon-registry';
+
+// DataTransfer MIME for dragging a sticker out of the palette onto the canvas.
+// Its OWN mime, not the icon one: an icon dropped on a shape folds into that
+// shape's label, and a sticker must never do that — it lands as a sticker
+// wherever you let go.
+export const STICKER_DND_MIME = 'application/x-livediagram-sticker';
 
 export type StickerCategory = {
   id: string;
@@ -21,12 +27,51 @@ export type StickerCategory = {
   stickerIds: string[];
 };
 
-// The ten groups, in palette order: what you say back to someone, how you
-// feel, what state a thing is in, where to look, and then the decorative and
-// prop sets. Groups are disjoint — a sticker has exactly one home, pinned by
-// stickers.test.ts — so browsing never shows the same tile twice; search runs
-// across all ten regardless.
+// The eleven groups, in palette order: the badges first (the ones that direct
+// a board), then what you say back to someone, how you feel, what state a
+// thing is in, where to look, and the decorative and prop sets. Groups are
+// disjoint — a sticker has exactly one home, pinned by stickers.test.ts — so
+// browsing never shows the same tile twice; search runs across all of them
+// regardless.
 export const STICKER_CATEGORIES: StickerCategory[] = [
+  {
+    id: 'badges',
+    label: 'Badges',
+    stickerIds: [
+      'badge-approved',
+      'badge-done',
+      'badge-shipped',
+      'badge-final',
+      'badge-decided',
+      'badge-blocked',
+      'badge-rejected',
+      'badge-urgent',
+      'badge-priority',
+      'badge-deadline',
+      'badge-p0',
+      'badge-at-risk',
+      'badge-wip',
+      'badge-on-hold',
+      'badge-p1',
+      'badge-in-review',
+      'badge-needs-review',
+      'badge-next',
+      'badge-owner',
+      'badge-discuss',
+      'badge-question',
+      'badge-new',
+      'badge-idea',
+      'badge-must-have',
+      'badge-mvp',
+      'badge-nice-to-have',
+      'badge-quick-win',
+      'badge-todo',
+      'badge-draft',
+      'badge-parked',
+      'badge-later',
+      'badge-out-of-scope',
+    ],
+  },
   {
     id: 'reactions',
     label: 'Reactions',
@@ -282,28 +327,62 @@ export const STICKER_CATEGORIES: StickerCategory[] = [
   },
 ];
 
-// Every sticker in the loaded catalogue, in catalogue order. Empty until the
-// async chunk lands.
-export function getStickerCatalog(): IconDef[] {
-  return getLoadedIconCatalog().filter((i) => isStickerId(i.id));
+// The whole catalogue, in catalogue order. Empty until the async chunk lands.
+export function getStickerCatalog(): StickerDef[] {
+  return getLoadedStickerCatalog();
+}
+
+// One sticker by id, or undefined for an unknown id / a not-yet-loaded
+// catalogue. Unlike `getIcon` there is deliberately NO placeholder: a
+// question-mark plate would be a worse answer than an empty box that fills in
+// when the chunk arrives.
+export function getSticker(id: string | undefined): StickerDef | undefined {
+  return getStickerLoaded(id);
 }
 
 // Stickers in a group (existing catalogue entries only), in catalogue order.
 // Unknown group id → empty.
-export function stickersInCategory(categoryId: string): IconDef[] {
+export function stickersInCategory(categoryId: string): StickerDef[] {
   const cat = STICKER_CATEGORIES.find((c) => c.id === categoryId);
   if (!cat) return [];
   const ids = new Set(cat.stickerIds);
-  return getStickerCatalog().filter((i) => ids.has(i.id));
+  return getStickerCatalog().filter((s) => ids.has(s.id));
 }
 
-// Cross-group search over label / keywords / id, matching how the Icons tab
-// searches. An empty query returns the whole sticker catalogue so the caller
-// can treat "no query" and "every sticker" the same way.
-export function searchStickers(query: string): IconDef[] {
+// Cross-group search over label / keywords / id, and — for a badge — the word
+// on the pill, so typing "approved" finds APPROVED even though nothing else
+// about the entry says it. An empty query returns everything, so a caller can
+// treat "no query" and "every sticker" the same way.
+export function searchStickers(query: string): StickerDef[] {
   const q = query.trim().toLowerCase();
   if (!q) return getStickerCatalog();
   return getStickerCatalog().filter(
-    (i) => i.label.toLowerCase().includes(q) || i.keywords.includes(q) || i.id.includes(q),
+    (s) =>
+      s.label.toLowerCase().includes(q) ||
+      s.keywords.includes(q) ||
+      s.id.includes(q) ||
+      (s.kind === 'badge' && s.text.toLowerCase().includes(q)),
   );
+}
+
+// The drop size for a sticker, off its flavour's natural aspect (spec/116):
+// an emoji is square, a badge is a wide pill, and both are one shape kind, so
+// the per-kind default table can't express it alone.
+export function stickerDropSize(
+  def: StickerDef | undefined,
+  base: { width: number; height: number },
+): { width: number; height: number } {
+  const aspect = STICKER_ASPECT[def?.kind ?? 'emoji'];
+  return { width: Math.round(base.height * aspect), height: base.height };
+}
+
+// The jaunty tilt a sticker lands at (spec/116). Derived from the element id
+// rather than randomised, so the same sticker is the same angle on every
+// client, in every re-render, and in the export — a tilt that changed under a
+// reload would be a bug, not a flourish.
+const TILTS = [-6, -3, 4, 7, -4.5, 2.5];
+export function stickerTilt(elementId: string): number {
+  let hash = 0;
+  for (let i = 0; i < elementId.length; i++) hash = (hash * 31 + elementId.charCodeAt(i)) >>> 0;
+  return TILTS[hash % TILTS.length]!;
 }

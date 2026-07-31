@@ -61,8 +61,10 @@ export {
   type BoxedExport,
   type ExportIconArt,
   type ExportShape,
+  type ExportStickerArt,
   type ResolveIconArt,
   type ResolveImageHref,
+  type ResolveStickerArt,
 } from './svg-render-describe';
 import {
   describeBoxedExport,
@@ -73,6 +75,7 @@ import {
   type ExportIconArt,
   type ResolveIconArt,
   type ResolveImageHref,
+  type ResolveStickerArt,
 } from './svg-render-describe';
 
 // Bounding box of the visible content. Arrows count via free endpoints; boxed
@@ -173,8 +176,14 @@ export function svgBoxed(
   el: BoxedElement,
   resolveImageHref?: ResolveImageHref,
   resolveIconArt?: ResolveIconArt,
+  resolveStickerArt?: ResolveStickerArt,
 ): string {
-  const { opacity, shape, label } = describeBoxedExport(el, resolveImageHref, resolveIconArt);
+  const { opacity, shape, label } = describeBoxedExport(
+    el,
+    resolveImageHref,
+    resolveIconArt,
+    resolveStickerArt,
+  );
   const opAttr = opacity !== 1 ? ` opacity="${r2(opacity)}"` : '';
   // Rotation applies to the whole element (body + label) about its centre,
   // exactly like the canvas wrapper's CSS rotate.
@@ -238,6 +247,14 @@ export function svgBoxed(
       `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="${r2(rx)}" fill="${xmlEscape(shape.fill)}" stroke="${xmlEscape(shape.stroke)}" stroke-width="1.5"/>`;
   } else if (shape.kind === 'icon') {
     shapeStr = svgIconShape(el, shape.art, shape.stroke);
+  } else if (shape.kind === 'sticker') {
+    // The sticker's own art, nested over the whole element box. Its viewBox
+    // comes from the builder (square for an emoji, a wide pill for a badge)
+    // and `meet` keeps the plate un-warped, matching the canvas.
+    shapeStr =
+      `<svg x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}"` +
+      ` viewBox="${shape.art.viewBox}" preserveAspectRatio="xMidYMid meet" overflow="visible">` +
+      `${shape.art.markup}</svg>`;
   }
   const labelStr = !label
     ? ''
@@ -282,7 +299,11 @@ export function svgShadowDefs(elements: Element[]): string {
 // can't reproduce natively — the caller then rasterises this element's
 // svgBoxed markup instead. Tables, freehand sketches, shape silhouettes,
 // rotation, and resolved icon art all fall in.
-export function boxedNeedsSvgRaster(el: BoxedElement, resolveIconArt?: ResolveIconArt): boolean {
+export function boxedNeedsSvgRaster(
+  el: BoxedElement,
+  resolveIconArt?: ResolveIconArt,
+  resolveStickerArt?: ResolveStickerArt,
+): boolean {
   if (el.rotation) return true;
   // A shadow renders via an feDropShadow filter def (spec/86), which the
   // PNG canvas drawers can't reproduce natively.
@@ -290,6 +311,15 @@ export function boxedNeedsSvgRaster(el: BoxedElement, resolveIconArt?: ResolveIc
   if (el.type === 'table' || el.type === 'freehand') return true;
   if (el.type === 'shape' && (hasShapeSilhouette(el.shape) || el.shape === 'stadium')) return true;
   if (el.type === 'shape' && el.shape === 'icon' && el.iconId && resolveIconArt?.(el.iconId))
+    return true;
+  // A sticker is drawn art (plate + shadow + emoji or badge text) with no
+  // canvas-drawer equivalent, so it always rasterises through its SVG.
+  if (
+    el.type === 'shape' &&
+    el.shape === 'sticker' &&
+    el.stickerId &&
+    resolveStickerArt?.(el.stickerId)
+  )
     return true;
   return false;
 }
@@ -307,6 +337,7 @@ export function renderElementsToSvg(
     background?: string;
     resolveImageHref?: ResolveImageHref;
     resolveIconArt?: ResolveIconArt;
+    resolveStickerArt?: ResolveStickerArt;
   } = {},
 ): string {
   const padding = opts.padding ?? EXPORT_PADDING;
@@ -329,7 +360,10 @@ export function renderElementsToSvg(
   for (const band of layerBands(tab.elements, tab.layers)) {
     const inner: string[] = [];
     for (const el of band.elements) {
-      if (el.type !== 'arrow') inner.push(svgBoxed(el, opts.resolveImageHref, opts.resolveIconArt));
+      if (el.type !== 'arrow')
+        inner.push(
+          svgBoxed(el, opts.resolveImageHref, opts.resolveIconArt, opts.resolveStickerArt),
+        );
     }
     for (const el of band.elements) {
       if (el.type === 'arrow') inner.push(svgArrow(el, tab.elements));
