@@ -58,3 +58,10 @@ a grid is not always the better shape:
 - The menu takes a **floor width** (13.5rem) in grid mode. Without it the
   `w-max` sizing that suits a list collapses three columns into something
   unusable.
+- **The glyph lifts on hover.** Pointing at a tile raises and grows its icon
+  slightly (`translateY(-2px) scale(1.12)`, 160ms). The whole TILE is the
+  hover target, so the row acknowledges being pointed at rather than only the
+  18px picture, but it is the **glyph** that moves: moving the tile itself
+  would shift its own label out from under the cursor. The rule lives in
+  `globals.css` keyed off `[role='option']:hover .lvd-opt-glyph` rather than a
+  Tailwind named-group variant, which produced no rule at all here.

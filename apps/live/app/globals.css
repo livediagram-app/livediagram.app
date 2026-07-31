@@ -1789,6 +1789,19 @@
    GPU a stable depth order. (Frames don't rotate, so overriding the
    wrapper transform is safe; their depth-extrusion column is skipped in
    IsometricDepthLayer for the same reason.) */
+/* Dropdown tile glyphs lift on hover (spec/108).
+   The whole tile is the target — pointing at a row should acknowledge the
+   row, not just its 18px picture — but it is the GLYPH that moves, because
+   moving the tile would shift its own label out from under the cursor.
+   Written here rather than as a Tailwind group-hover variant: the named-group
+   form produced no rule at all, and this is one selector. */
+[role='listbox'] [role='option'] .lvd-opt-glyph {
+  transition: transform 160ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+[role='listbox'] [role='option']:hover:not(:disabled) .lvd-opt-glyph {
+  transform: translateY(-2px) scale(1.12);
+}
+
 /* Isometric z-fighting, generally (spec/45).
    Under preserve-3d every element sits at z=0, so ANY two that overlap are
    coplanar and the compositor picks a winner per frame — which reads as

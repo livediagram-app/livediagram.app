@@ -384,7 +384,15 @@ export function PaletteDropdown({
                       >
                         {opt.icon ? (
                           <span
-                            className={opt.id === value ? '' : 'text-slate-400 dark:text-slate-400'}
+                            // The glyph lifts and grows on hover (the rule is
+                            // in globals.css). The TILE is the hover target, so
+                            // the whole row reacts to being pointed at rather
+                            // than only the 18px glyph — and it is the glyph
+                            // that moves, because a tile that moved would shift
+                            // its own label.
+                            className={`lvd-opt-glyph ${
+                              opt.id === value ? '' : 'text-slate-400 dark:text-slate-400'
+                            }`}
                           >
                             {opt.icon}
                           </span>
