@@ -43,8 +43,8 @@ const VotePanel = dynamic(() => import('@/components/panels/VotePanel').then((m)
 // reopen-after-draw behaviour, and each panel's element with its own
 // visibility gate. CanvasChrome distributes the returned map into the
 // corner stacks (docking) or renders the elements inline (mobile /
-// minimal / zen). The five tool-config panels — on screen only while
-// their own tool is active — live in useCanvasToolPanels.
+// minimal / zen). The five tool-config panels, on screen only while
+// their own tool is active, live in useCanvasToolPanels.
 export function useCanvasChromePanels({
   props,
   chromeHidden,
@@ -292,7 +292,7 @@ export function useCanvasChromePanels({
       : paletteBottomY;
 
   // The five tool-config panels (avatar / laser / spotlight / eraser /
-  // format) — see useCanvasToolPanels. They share one contract: on screen
+  // format), see useCanvasToolPanels. They share one contract: on screen
   // only while their own tool is active.
   const { avatarEl, laserEl, spotlightEl, eraserEl, formatEl } = useCanvasToolPanels({
     props,

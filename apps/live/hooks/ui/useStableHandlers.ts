@@ -24,7 +24,7 @@ export function useStableHandlers<T extends Record<string, AnyFn | undefined>>(h
   latest.current = handlers;
   // A plain record rather than a Map: `wrappers.current[key] = ...` is an
   // assignment, where `map.set(key, wrapper)` hands a ref-reading closure
-  // to a function during render — which react-hooks/refs rejects. Same
+  // to a function during render, which react-hooks/refs rejects. Same
   // one-wrapper-per-key-for-the-lifetime behaviour either way.
   const wrappers = useRef<Record<string, AnyFn>>({});
   // Key set + presence pattern; call sites pass a literal object, so

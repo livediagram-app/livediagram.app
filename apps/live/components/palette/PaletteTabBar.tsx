@@ -189,10 +189,7 @@ export function PaletteTabBar({
         className={`overflow-x-hidden ${capped ? 'overflow-y-auto' : 'overflow-y-hidden'}${
           animate ? ' transition-[height] duration-200 ease-out' : ''
         }`}
-        style={{
-          height:
-            height === null ? undefined : available === null ? height : Math.min(height, available),
-        }}
+        style={{ height: bodyHeight }}
       >
         <div ref={contentRef} className="px-2 pb-2.5 pt-2.5">
           <div key={displayed?.id ?? 'empty'} className="animate-fade-in">
