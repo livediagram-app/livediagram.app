@@ -96,7 +96,8 @@ type PanelCorner = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 // spec/74. Three panels are NOT always available — they exist only while
 // their session tool / mode is running, so they join and leave their
 // corner stack rather than sitting in it: 'poll' (spec/88), 'vote'
-// (spec/39), and 'avatar' (spec/101, the Avatar-mode character sheet).
+// (spec/39), 'avatar' (spec/101, the Avatar-mode character sheet), and
+// 'laser' (spec/111, the laser pen's settings).
 type PanelId =
   | 'palette'
   | 'explorer'
@@ -107,7 +108,8 @@ type PanelId =
   | 'layers'
   | 'poll'
   | 'vote'
-  | 'avatar';
+  | 'avatar'
+  | 'laser';
 
 type PanelLayout = {
   // Ordered stack per corner. Order is top→bottom (top corners) /
