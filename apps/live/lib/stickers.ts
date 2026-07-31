@@ -1,4 +1,4 @@
-// The Stickers palette category (spec/113): the browse groups over the colour
+// The Stickers palette category (spec/116): the browse groups over the colour
 // emoji held in the shared icon catalogue, plus the lookups the Stickers tab
 // needs.
 //

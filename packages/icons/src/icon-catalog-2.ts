@@ -1,5 +1,5 @@
 // Icon catalogue data, part 2 of 2 (tech / people / security / files /
-// charts / ui / furniture / animated), plus the Sticker entries (spec/113,
+// charts / ui / furniture / animated), plus the Sticker entries (spec/116,
 // colour emoji) concatenated at the end from sticker-catalog.ts. See
 // icon-catalog-1.ts for why this is split and why it loads async;
 // concatenated after part 1 by the editor's lib/icon-registry.ts (or the

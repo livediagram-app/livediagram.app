@@ -545,7 +545,7 @@ export function IconsCatalogue() {
 
 /** Stickers tab: a grid of colour-emoji tiles, drawn bigger than the Icons
  *  grid's glyphs because a sticker is a small picture rather than an outline
- *  (spec/113). Real emoji characters rather than line art — that IS what the
+ *  (spec/116). Real emoji characters rather than line art — that IS what the
  *  tab holds, and no drawn approximation would be more honest. */
 export function StickersCatalogue() {
   const stickers = ['👍', '🎉', '🔥', '❤️', '✅', '⚠️', '🚀', '💡', '👀', '🙌', '⭐', '🤔'];

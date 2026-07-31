@@ -1,7 +1,7 @@
 // Sticker identity, as a lightweight first-load module — the entries
 // themselves live in the async sticker-catalog (concatenated into
 // icon-catalog-2). Stickers and line-art icons share one catalogue and one
-// element kind by design (spec/113), so the only thing that tells them apart
+// element kind by design (spec/116), so the only thing that tells them apart
 // is the id prefix; this is where that prefix is written down.
 //
 // The prefix is `emoji-`, not `sticker-`, and stays that way: the ids shipped

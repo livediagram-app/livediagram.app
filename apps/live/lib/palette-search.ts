@@ -46,7 +46,7 @@ export function buildPaletteSearchItems(): PaletteSearchItem[] {
       add: { type: 'shape' as const, shapeKind: s.kind },
     })),
     // Line-art icons and stickers share one catalogue and one add path
-    // (spec/113), so they're one map here — only the leading keyword differs,
+    // (spec/116), so they're one map here — only the leading keyword differs,
     // so "sticker" finds the emoji and "icon" the line art.
     ...getLoadedIconCatalog().map((i) => ({
       id: `icon:${i.id}`,

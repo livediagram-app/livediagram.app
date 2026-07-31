@@ -12,7 +12,7 @@ category of its own, and a tab with no categories left is not a tab.
 The full set, in band order: **Favourites**, then **Shapes / Write / Draw /
 Devices**, then **Icons / Stickers / Technology / Media / Components**, then
 **Data / Behaviour**. (Stickers joined the Decorate band later, in
-[spec/113](113-stickers.md).)
+[spec/116](116-stickers.md).)
 
 Where things landed, for anything that moved:
 

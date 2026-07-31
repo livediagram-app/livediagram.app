@@ -127,7 +127,7 @@ export function getIcon(id: string | undefined): IconDef {
 
 // The line-art catalogue only: everything the Icons tab browses, searches
 // and adds. The shared catalogue also carries the Stickers (colour emoji,
-// spec/113), which have their own palette category and are filtered out here
+// spec/116), which have their own palette category and are filtered out here
 // so neither tab shows the other's entries.
 export function getLineArtIconCatalog(): IconDef[] {
   return getLoadedIconCatalog().filter((i) => !isStickerId(i.id));
@@ -141,7 +141,7 @@ export function getLineArtIconCatalog(): IconDef[] {
 //
 // Stickers are deliberately absent: they used to sit here as an "Emoji"
 // category (spec/85) and moved out to their own palette category in
-// spec/113. See lib/stickers.ts for their groups.
+// spec/116. See lib/stickers.ts for their groups.
 type IconCategory = { id: string; label: string; iconIds: string[] };
 
 export const ICON_CATEGORIES: IconCategory[] = [

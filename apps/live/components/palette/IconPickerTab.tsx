@@ -60,7 +60,7 @@ function IconTile({ icon, onAdd }: { icon: IconDef; onAdd: (id: string) => void 
 // structure on screen; search still cuts across all of it.
 //
 // "All of it" is the LINE-ART catalogue: the colour emoji that used to sit
-// here as an Emoji category are their own palette category now (spec/113), and
+// here as an Emoji category are their own palette category now (spec/116), and
 // the results this tab is handed are filtered to match.
 export function IconPickerTab({
   addIcon,

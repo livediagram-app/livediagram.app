@@ -288,14 +288,14 @@ export function CommandPalette({
   // category (spec/109) rather than filtering by one, so narrowing here would
   // make a search silently miss the categories you weren't looking at. It is
   // the line-art half specifically: stickers share the catalogue but have
-  // their own category (spec/113), and showing them in both would be the
+  // their own category (spec/116), and showing them in both would be the
   // duplication that move removed.
   const iconResults = getLineArtIconCatalog().filter((i) => {
     const q = iconQuery.trim().toLowerCase();
     if (!q) return true;
     return i.label.toLowerCase().includes(q) || i.keywords.includes(q) || i.id.includes(q);
   });
-  // Stickers tab (spec/113): colour emoji, browsed in ten groups. Same shape
+  // Stickers tab (spec/116): colour emoji, browsed in ten groups. Same shape
   // as the Icons tab — a search box over a drill-in browse.
   const [stickerQuery, setStickerQuery] = useState('');
   const stickerResults = searchStickers(stickerQuery);
@@ -457,7 +457,7 @@ export function CommandPalette({
               icon: <StickersTabIcon />,
               content: (
                 <StickerPickerTab
-                  // A sticker is an icon (spec/113), so it adds down exactly
+                  // A sticker is an icon (spec/116), so it adds down exactly
                   // the same path: click to drop, or drag onto a shape to
                   // become its inline glyph.
                   addSticker={addIcon}

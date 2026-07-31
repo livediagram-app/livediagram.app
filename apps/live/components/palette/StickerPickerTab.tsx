@@ -4,7 +4,7 @@ import { IconButton } from '@/components/palette/palette-controls';
 import { IconPrims } from '@/components/primitives/icon-glyph';
 import { PaletteCategoryBrowser } from '@/components/palette/PaletteCategoryBrowser';
 
-// Stickers draw bigger than the Icons tab's 18px glyphs (spec/113): a line-art
+// Stickers draw bigger than the Icons tab's 18px glyphs (spec/116): a line-art
 // icon is a shape you read from its outline and survives being small, while a
 // sticker is a tiny illustration — 😌 against 😔 at 18px is a guess. 24px in a
 // 4-column grid, against the icon grid's 18px in 5.
@@ -29,7 +29,7 @@ function StickerGlyph({ iconId, size }: { iconId: string; size: number }) {
 }
 
 // One sticker. Same add / drag behaviour as an icon tile, because a sticker IS
-// an icon (spec/113): click drops it on the canvas, dragging it onto a shape
+// an icon (spec/116): click drops it on the canvas, dragging it onto a shape
 // makes it that shape's inline glyph — which is what a status sticker wants.
 //
 // Unlike the icon grid this keeps its tooltip: "Pleading face" vs "Weary face"
@@ -52,7 +52,7 @@ function StickerTile({ sticker, onAdd }: { sticker: IconDef; onAdd: (id: string)
   );
 }
 
-// The palette's Stickers category (spec/113): the drill-in browse every
+// The palette's Stickers category (spec/116): the drill-in browse every
 // catalogue tab uses (spec/109), over the colour-emoji half of the icon
 // catalogue. Ten groups — Reactions, Feelings, Status, Direction, Celebrate,
 // Decorate, Meeting, Work, People, Fun — with search across all of them.

@@ -31,6 +31,19 @@ This is quicker than selecting elements and then deleting them, especially when 
   <EraserMode />
 </Figure>
 
+## Setting up the brush
+
+While the mode is active an **Eraser** panel sits under the palette, over a preview of the brush:
+
+- **Mode** — **Sweep** (drag across things to erase them) or **Tap** (one press, one thing), which is the safer choice on a crowded canvas.
+- **Size** — **Point** for the exact pixel, or Small, Medium, and Large brushes. Above Point, a ring follows the cursor at the brush's real size, so you can see what a sweep will take before you press.
+- **Erases** — **Anything**, **Drawings only** (pencil and highlighter strokes), or **Arrows only**. Drawings only is what makes sketching over a diagram safe: sweep the whole thing at Large and the diagram underneath is untouched. Arrows only lets you rewire without disturbing the boxes.
+- **Groups** — whether erasing one member of a group takes **just the piece** or the **whole group**.
+
+The ring turns amber whenever a filter is on, so a restricted eraser never looks like a broken one. Your settings are remembered on this device.
+
+Locked elements, and anything on a locked or hidden layer, are never erased whatever the panel says — and a whole sweep is still a single undo.
+
 ## When it is unavailable
 
 The Eraser is disabled when the canvas is empty, since there is nothing to erase. Add at least one element and the mode becomes available again.

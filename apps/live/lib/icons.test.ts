@@ -33,7 +33,7 @@ describe('icon catalogue', () => {
     }
   });
 
-  // The sticker entries (spec/113) share this catalogue but have their own
+  // The sticker entries (spec/116) share this catalogue but have their own
   // palette category; their geometry, grouping and search are pinned in
   // stickers.test.ts. What matters here is that the line-art half — the only
   // half the Icons tab shows — is the one everything below reasons about.
@@ -71,7 +71,7 @@ describe('icon categories', () => {
     // The Icons tab browses BY category since spec/109 — there is no longer
     // an "All" filter to fall back on, so an icon in no category is an icon
     // nobody can reach except by guessing its name in the search box.
-    // Stickers are exempt because they are not in this tab at all (spec/113);
+    // Stickers are exempt because they are not in this tab at all (spec/116);
     // stickers.test.ts holds them to the same rule against their own groups.
     const seen = new Map<string, string[]>();
     for (const cat of ICON_CATEGORIES) {

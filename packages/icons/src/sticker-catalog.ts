@@ -1,4 +1,4 @@
-// Sticker catalogue data (spec/113, formerly the emoji catalogue of spec/85):
+// Sticker catalogue data (spec/116, formerly the emoji catalogue of spec/85):
 // native colour emoji as ordinary line-art catalogue entries, each a single
 // `text` prim centred in the 0..24 art box. Concatenated onto the end of
 // ICON_CATALOG_2 so every consumer sees one line-art catalogue and no
@@ -8,7 +8,7 @@
 // Ids keep the shipped `emoji-` prefix even though the product surface is now
 // called Stickers: an id is what a saved element, an API payload and an MCP
 // call carry, so renaming them would blank the glyph on every diagram that
-// already uses one (spec/113).
+// already uses one (spec/116).
 //
 // Only Emoji 13.0 and below, deliberately: a newer codepoint lands as a tofu
 // box on an older machine, which is the one failure mode a decoration must
