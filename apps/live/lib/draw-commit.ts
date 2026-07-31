@@ -18,7 +18,7 @@ import {
 import { deriveNewBoxedColours } from '@/lib/themes';
 import type { ThemeDefinition } from '@livediagram/diagram';
 import { isTechIconId } from '@/lib/tech-icons';
-import { getSticker, stickerDropSize, stickerTilt } from '@/lib/stickers';
+import { getSticker, stickerDropSize } from '@/lib/stickers';
 import type { PendingDraw } from '@/lib/draw-mode';
 
 // The pure element construction behind commitDraw (spec/09 draw-to-add),
@@ -173,12 +173,11 @@ export function buildDrawnBoxed(
     ...(intent.type === 'shape' && intent.iconId && isTechIconId(intent.iconId)
       ? { aspectLocked: false }
       : {}),
-    // Sticker draw intent (spec/116): carry the chosen art, and land it at a
-    // jaunty tilt — the thing that makes it read as stuck on rather than
-    // drawn in. The angle is derived from the element id, so it is the same
-    // on every client, across reloads, and in the export.
+    // Sticker draw intent (spec/116): carry the chosen art. Lands SQUARE to
+    // the canvas — an automatic tilt was tried and dropped, see the spec.
+    // Rotation is still available by hand, from the element's Rotation menu.
     ...(intent.type === 'shape' && intent.kind === 'sticker' && intent.stickerId
-      ? { stickerId: intent.stickerId, rotation: stickerTilt(base.id) }
+      ? { stickerId: intent.stickerId }
       : {}),
   } as typeof base;
 }

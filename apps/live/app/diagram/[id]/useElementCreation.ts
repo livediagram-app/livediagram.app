@@ -17,7 +17,7 @@ import {
 } from '@livediagram/diagram';
 import { getTheme } from '@/lib/themes';
 import { getTechIcon, isTechIconId } from '@/lib/tech-icons';
-import { getSticker, stickerDropSize, stickerTilt } from '@/lib/stickers';
+import { getSticker, stickerDropSize } from '@/lib/stickers';
 import { track, titleCaseType } from '@/lib/telemetry';
 import type { PendingDraw } from '@/lib/draw-mode';
 
@@ -301,12 +301,13 @@ export function useElementCreation(opts: {
     const iconId = art?.iconId;
     const stickerId = art?.stickerId;
     if (stickerId) {
-      // A dragged sticker lands at its flavour's natural size and its tilt,
-      // exactly like a tapped one — the drop point is the only difference.
+      // A dragged sticker lands at its flavour's natural size, square to the
+      // canvas, exactly like a tapped one — the drop point is the only
+      // difference.
       addBoxedAt(canvasX, canvasY, (x, y) => {
         const el = createShape('sticker', x, y);
         const size = stickerDropSize(getSticker(stickerId), el);
-        return { ...el, ...size, stickerId, rotation: stickerTilt(el.id) };
+        return { ...el, ...size, stickerId };
       });
       track('Element', 'Added', 'Sticker');
       return;

@@ -375,14 +375,3 @@ export function stickerDropSize(
   const aspect = STICKER_ASPECT[def?.kind ?? 'emoji'];
   return { width: Math.round(base.height * aspect), height: base.height };
 }
-
-// The jaunty tilt a sticker lands at (spec/116). Derived from the element id
-// rather than randomised, so the same sticker is the same angle on every
-// client, in every re-render, and in the export — a tilt that changed under a
-// reload would be a bug, not a flourish.
-const TILTS = [-6, -3, 4, 7, -4.5, 2.5];
-export function stickerTilt(elementId: string): number {
-  let hash = 0;
-  for (let i = 0; i < elementId.length; i++) hash = (hash * 31 + elementId.charCodeAt(i)) >>> 0;
-  return TILTS[hash % TILTS.length]!;
-}

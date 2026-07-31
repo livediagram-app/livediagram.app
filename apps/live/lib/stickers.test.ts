@@ -6,7 +6,6 @@ import {
   getStickerCatalog,
   searchStickers,
   stickerDropSize,
-  stickerTilt,
   stickersInCategory,
 } from './stickers';
 import { ensureIconCatalogs } from './icon-registry';
@@ -111,13 +110,5 @@ describe('drop geometry', () => {
     expect(stickerDropSize(getSticker('badge-blocked'), base)).toEqual({ width: 260, height: 104 });
     // Unknown / not-yet-loaded id falls back to the square, never to NaN.
     expect(stickerDropSize(undefined, base)).toEqual({ width: 104, height: 104 });
-  });
-
-  it('tilts deterministically, so every client and the export agree', () => {
-    expect(stickerTilt('abc123')).toBe(stickerTilt('abc123'));
-    expect(stickerTilt('abc123')).not.toBe(0);
-    // Different elements do not all land at the same angle.
-    const angles = new Set(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'].map(stickerTilt));
-    expect(angles.size).toBeGreaterThan(1);
   });
 });

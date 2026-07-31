@@ -8,7 +8,7 @@ A **Stickers** category in the palette, in the **Decorate** band (spec/110),
 between Icons and Tech — and a **`sticker` shape kind** behind it.
 
 A sticker is the thing you slap on a board: a die-cut plate with a soft shadow,
-landing at a jaunty angle, in colours that are its own. Two flavours:
+in colours that are its own. Two flavours:
 
 - **Emoji** — ~193 colour emoji on a white die-cut plate.
 - **Badges** — 32 word pills that no emoji says: APPROVED, BLOCKED, WIP,
@@ -51,7 +51,6 @@ carrying its own `stickerId`:
 | Theme tint          | takes the element stroke colour | never — its colours are its own |
 | Caption             | a label band under the glyph    | none, ever                      |
 | Fold into a shape   | yes, becomes an inline glyph    | never                           |
-| Angle               | square to the canvas            | tilted on drop                  |
 | Colours / Border UI | stroke + text swatches          | none (nothing to recolour)      |
 
 Mechanically that means: `'sticker'` in `ShapeKind`, `stickerId` on
@@ -84,24 +83,25 @@ and the export packs every element into one document where those ids collide;
 the shadow is an offset rounded rect at low opacity instead, which renders
 identically everywhere including headless.
 
-## The tilt
+## No automatic tilt
 
-A sticker lands at a small angle — the thing that makes it read as stuck on
-rather than drawn in. It is stored as the element's ordinary `rotation`, so it
-survives save, export, and every renderer with no new field.
+A sticker was briefly given a small tilt on drop, on the theory that an angle
+is what makes one read as stuck on rather than drawn in. It was wrong in
+practice: an element that arrives at an angle you did not ask for reads as a
+glitch, not as character, and the first thing you want to do is straighten it.
 
-The angle is **derived from the element id**, not randomised: the same sticker
-is the same angle on every client, across reloads, and in the export. A tilt
-that changed under a reload would be a bug, not a flourish.
+Stickers land **square to the canvas**, like every other element. Rotation is
+still there by hand, from the element's Rotation menu, for anyone who wants the
+scrapbook look.
 
-This surfaced a pre-existing bug worth naming, because it was not
-sticker-specific. The pop-in entry animation sets `transform: scale(...)`, and a
-keyframe that touches `transform` **replaces** the element's inline
-`transform: rotate(Ndeg)` for its whole duration — so any rotated element popped
-in flat and then visibly snapped to its angle when the class dropped. The
-keyframe now multiplies in `--lvd-enter-rot` (0deg when unset), which
-BoxedElementView publishes alongside the rotation. Every rotated element
-benefits, not just stickers.
+The attempt did surface a real bug, which is fixed and worth naming because it
+was never sticker-specific. The pop-in entry animation sets
+`transform: scale(...)`, and a keyframe that touches `transform` **replaces**
+the element's inline `transform: rotate(Ndeg)` for its whole duration — so any
+rotated element popped in flat and then visibly snapped to its angle when the
+class dropped. The keyframe now multiplies in `--lvd-enter-rot` (0deg when
+unset), which BoxedElementView publishes alongside the rotation. Duplicate a
+rotated shape, or paste one, and it now enters at its angle.
 
 ## Legacy emoji stay icons
 
@@ -134,7 +134,7 @@ saved element, an API payload and an MCP call carry.
 
 `stickers.test.ts` pins the group coverage (every sticker in exactly one group,
 every group id resolving), the catalogue floors for both flavours, that every
-entry builds art drawing both the plate and its own content, the drop geometry
-for each flavour, and that the tilt is deterministic and varied. The public
+entry builds art drawing both the plate and its own content, and the drop
+geometry for each flavour. The public
 OpenAPI schema is regenerated, so `sticker` / `stickerId` are part of the
 documented wire format.
