@@ -115,7 +115,26 @@ export function youtubeWatchUrl(videoId: string): string {
 // provider chip and a Load button, which keeps the rule that matters — nothing
 // third-party loads until the user asks.
 
-export type EmbedProvider = 'youtube' | 'vimeo' | 'loom' | 'figma' | 'gdocs';
+export const EMBED_PROVIDERS = ['youtube', 'vimeo', 'loom', 'figma', 'gdocs'] as const;
+export type EmbedProvider = (typeof EMBED_PROVIDERS)[number];
+
+/** Display name for a provider, for the palette tile and the empty state. */
+export const EMBED_PROVIDER_LABEL: Record<EmbedProvider, string> = {
+  youtube: 'YouTube',
+  vimeo: 'Vimeo',
+  loom: 'Loom',
+  figma: 'Figma',
+  gdocs: 'Google Docs',
+};
+
+/** What to type in the link dialog, per provider. */
+export const EMBED_PROVIDER_HINT: Record<EmbedProvider, string> = {
+  youtube: 'Watch, share (youtu.be), Shorts and embed links all work.',
+  vimeo: 'A vimeo.com video link.',
+  loom: 'A Loom share or embed link.',
+  figma: 'Any Figma file, prototype or board link.',
+  gdocs: 'A Google Doc, Sheet or Slides link you have shared.',
+};
 
 export type EmbedTarget = {
   provider: EmbedProvider;

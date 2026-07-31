@@ -5,6 +5,8 @@ import {
   isBoxed,
   LINE_DEFAULT_CATEGORIES,
   LINE_DEFAULT_SERIES,
+  EMBED_PROVIDER_HINT,
+  EMBED_PROVIDER_LABEL,
   embedTargetFor,
 } from '@livediagram/diagram';
 
@@ -62,13 +64,24 @@ export function EditorElementDialogs() {
   // only, validated as a YouTube link. Every other element keeps the full
   // tab / diagram / URL choice.
   const linkTarget = activeTab.elements.find((e) => e.id === linkPickerOpenForId);
+  // The provider the embed was created for, when it came from one of the
+  // provider tiles (spec/121). Names the dialog; the validator still accepts
+  // ANY supported link, because refusing one that plainly works is pedantry.
+  const embedNamed =
+    linkTarget?.type === 'video' && linkTarget.embedProvider
+      ? EMBED_PROVIDER_LABEL[linkTarget.embedProvider]
+      : null;
   const urlOnly =
     linkTarget?.type === 'video'
       ? {
-          subtitle: 'Paste a link. The content plays or loads right here on the canvas.',
-          fieldLabel: 'Embed link',
+          subtitle: embedNamed
+            ? `Paste a ${embedNamed} link. It loads right here on the canvas.`
+            : 'Paste a link. The content plays or loads right here on the canvas.',
+          fieldLabel: embedNamed ? `${embedNamed} link` : 'Embed link',
           placeholder: 'https://www.youtube.com/watch?v=…',
-          hint: 'YouTube, Vimeo, Loom, Figma, and Google Docs / Sheets / Slides.',
+          hint: embedNamed
+            ? EMBED_PROVIDER_HINT[linkTarget.embedProvider!]
+            : 'YouTube, Vimeo, Loom, Figma, and Google Docs / Sheets / Slides.',
           validate: (url: string) =>
             embedTargetFor(url)
               ? null

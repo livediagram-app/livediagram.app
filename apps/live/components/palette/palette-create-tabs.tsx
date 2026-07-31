@@ -3,6 +3,7 @@
 import type { PendingDraw } from '@/lib/draw-mode';
 import { PaletteTileGrid, type PaletteTileActions } from './PaletteTileGrid';
 import { PaletteToolRows } from './PaletteToolRows';
+import { PaletteEmbedGroup } from './PaletteEmbedGroup';
 import { tilesInSection, tilesInToolGroup } from './palette-tile-defs';
 
 // The palette's creation-category tab bodies. Since spec/78 every tile is
@@ -74,8 +75,18 @@ export function PaletteBehaviourTab({ pendingDraw, actions }: TabProps) {
 // picture frames look near-identical at 18px, and "an uploaded picture" vs "a
 // picture cropped to a circle" is the whole difference.
 export function PaletteMediaTab({ pendingDraw, actions }: TabProps) {
+  // The embed providers collapse behind one row (spec/121); Media's own two
+  // elements stay on top where they were.
+  const media = tilesInSection('media');
+  const embeds = media.filter((t) => t.embedGroup);
+  const rest = media.filter((t) => !t.embedGroup);
   return (
-    <PaletteToolRows tiles={tilesInSection('media')} actions={actions} pendingDraw={pendingDraw} />
+    <div className="flex flex-col gap-0.5">
+      <PaletteToolRows tiles={rest} actions={actions} pendingDraw={pendingDraw} />
+      {embeds.length > 0 ? (
+        <PaletteEmbedGroup tiles={embeds} actions={actions} pendingDraw={pendingDraw} />
+      ) : null}
+    </div>
   );
 }
 

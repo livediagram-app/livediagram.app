@@ -1,4 +1,5 @@
 import type { ComponentKind, ShapeKind } from '@livediagram/diagram';
+import type { EmbedProvider } from '@livediagram/diagram';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { IconButton } from '@/components/palette/palette-controls';
 import { ICON_DND_MIME } from '@/lib/icons';
@@ -27,7 +28,7 @@ export type PaletteTileActions = {
   addImage: () => void;
   addAnnotation: () => void;
   addLinkCard: () => void;
-  addVideo: () => void;
+  addVideo: (provider?: EmbedProvider) => void;
   addSticker: (stickerId: string) => void;
   addComponent: (kind: ComponentKind) => void;
   // Dynamic icon favourites (spec/78): drop a single line-art / Technology
@@ -68,7 +69,7 @@ export function tileHandler(def: PaletteTileDef, actions: PaletteTileActions): (
     case 'link-card':
       return actions.addLinkCard;
     case 'video':
-      return actions.addVideo;
+      return () => actions.addVideo(a.provider);
     case 'sticker':
       return () => actions.addSticker(a.stickerId);
     case 'component':

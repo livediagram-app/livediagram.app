@@ -24,6 +24,7 @@ import {
   type Anchor,
   type AnnotationElement,
   type LinkCardElement,
+  type EmbedProvider,
   type VideoElement,
   type ArrowElement,
   type Element,
@@ -468,7 +469,7 @@ export function createLinkCard(x: number, y: number): LinkCardElement {
 // via the same link picker a link card uses, and the id is parsed from it on
 // render. 480x270 is a true 16:9, and `aspectLocked` keeps it that way: a
 // stretched video frame is never what anyone wants.
-export function createVideo(x: number, y: number): VideoElement {
+export function createVideo(x: number, y: number, provider?: EmbedProvider): VideoElement {
   return {
     id: crypto.randomUUID(),
     type: 'video',
@@ -477,6 +478,9 @@ export function createVideo(x: number, y: number): VideoElement {
     width: 480,
     height: 270,
     aspectLocked: true,
+    // Which tile it came from (spec/121), so the empty state can name the
+    // service rather than listing all five.
+    ...(provider ? { embedProvider: provider } : {}),
   };
 }
 

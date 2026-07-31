@@ -18,6 +18,7 @@
 import type { Element, ShapeKind, Tab } from './index';
 // Value imports come from the data-shapes LEAF module (types only from
 // './index'), keeping this module out of the index ⇄ factories cycle.
+import { EMBED_PROVIDERS } from './youtube';
 import { isPickerSource, isSelectionMode, isSessionTool } from './selection-mode';
 import {
   CHECKLIST_MAX_ITEMS,
@@ -209,6 +210,12 @@ export function isValidElement(el: unknown): el is Element {
     if (
       el.codeLanguage !== undefined &&
       !(CODE_LANGUAGES as readonly string[]).includes(el.codeLanguage as string)
+    )
+      return false;
+    // Embed provider (spec/121): a creation-time hint, one of a closed set.
+    if (
+      el.embedProvider !== undefined &&
+      !EMBED_PROVIDERS.includes(el.embedProvider as (typeof EMBED_PROVIDERS)[number])
     )
       return false;
     // Mind node (spec/118): a parent pointer, or absent for a root. Only an

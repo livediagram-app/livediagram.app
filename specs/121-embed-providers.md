@@ -52,6 +52,24 @@ That keeps the rule that actually matters (spec/114): nothing third-party loads
 until the user asks. A card that fetched a preview to look nicer would trade
 away the whole reason the poster-then-iframe design exists.
 
+## One tile per provider
+
+The palette shows **five tiles, not one generic Embed** — YouTube, Vimeo,
+Loom, Figma, Google Docs — collapsed behind a single **Embed** row in the Media
+tab that opens in place.
+
+A single generic tile hid which services actually work: somebody wanting to
+drop a Figma file had no way to know they could. Five always-visible rows would
+have made Media mostly embeds and buried Image and Avatar. A drill-in (the
+Icons pattern) costs a whole screen and a breadcrumb to show five rows, so the
+group opens in place instead, keeping Image and Avatar visible above it.
+
+The tile writes `embedProvider` onto the element. It is a **creation-time hint
+only**: it names the empty state ("Add a Figma link") and the link dialog, and
+that is all. The link stays authoritative — paste a Vimeo URL into an embed
+made from the Figma tile and it renders Vimeo, because refusing a link that
+plainly works would be pedantry.
+
 ## The link dialog
 
 The video's restricted picker (spec/114) now validates with `embedTargetFor`

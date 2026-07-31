@@ -1841,6 +1841,16 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "EmbedProvider": {
+    "enum": [
+      "youtube",
+      "vimeo",
+      "loom",
+      "figma",
+      "gdocs"
+    ],
+    "type": "string"
+  },
   "Endpoint": {
     "anyOf": [
       {
@@ -4329,6 +4339,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "commentThread": {
         "$ref": "#/components/schemas/CommentThread"
+      },
+      "embedProvider": {
+        "$ref": "#/components/schemas/EmbedProvider"
       },
       "fillColor": {
         "type": "string"

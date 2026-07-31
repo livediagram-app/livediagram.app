@@ -1,7 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { embedTargetFor, type EmbedTarget, type VideoElement } from '@livediagram/diagram';
+import {
+  EMBED_PROVIDER_HINT,
+  EMBED_PROVIDER_LABEL,
+  embedTargetFor,
+  type EmbedProvider,
+  type EmbedTarget,
+  type VideoElement,
+} from '@livediagram/diagram';
 import { track } from '@/lib/telemetry';
 
 // Inner content of a video element (spec/114): a YouTube poster frame with a
@@ -35,7 +42,7 @@ export function VideoView({ element }: { element: VideoElement }) {
   }, [target?.embedUrl]);
 
   if (!target) {
-    return <EmptyState url={url} />;
+    return <EmptyState url={url} provider={element.embedProvider} />;
   }
 
   if (playing) {
@@ -241,7 +248,16 @@ function PlayBadge() {
 // Neutral glyph, not the YouTube badge: this element carries Figma files and
 // Google Docs too (spec/121), and a red play button on an empty card told the
 // user it was a video element and nothing else.
-function EmptyState({ url }: { url: string | undefined }) {
+function EmptyState({
+  url,
+  provider,
+}: {
+  url: string | undefined;
+  provider: EmbedProvider | undefined;
+}) {
+  // Name the service this embed was made for, when it was made from one of
+  // the provider tiles (spec/121); the generic list is the fallback.
+  const named = provider ? EMBED_PROVIDER_LABEL[provider] : null;
   return (
     <div className="pointer-events-none flex h-full w-full flex-col items-center justify-center gap-1.5 rounded-[inherit] px-4 text-center">
       <EmbedGlyph />
@@ -252,9 +268,11 @@ function EmptyState({ url }: { url: string | undefined }) {
         </>
       ) : (
         <>
-          <span className="text-[11px] font-medium text-slate-200">Add a link — double-click</span>
+          <span className="text-[11px] font-medium text-slate-200">
+            {named ? `Add a ${named} link` : 'Add a link'} — double-click
+          </span>
           <span className="text-[10px] leading-snug text-slate-400">
-            YouTube, Vimeo, Loom, Figma, Google Docs
+            {provider ? EMBED_PROVIDER_HINT[provider] : 'YouTube, Vimeo, Loom, Figma, Google Docs'}
           </span>
         </>
       )}

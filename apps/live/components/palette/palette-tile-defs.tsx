@@ -1,3 +1,4 @@
+import type { EmbedProvider } from '@livediagram/diagram';
 import type { ComponentKind, ShapeKind } from '@livediagram/diagram';
 import { PickerIcon, RevealIcon, TimerIcon } from '@/components/palette/palette-icons';
 
@@ -37,7 +38,7 @@ type PaletteTileAction =
   // to its own arm-handler and pressed state.
   | { type: 'highlighter' }
   | { type: 'shape-pen' }
-  | { type: 'video' }
+  | { type: 'video'; provider?: EmbedProvider }
   | { type: 'sticker'; stickerId: string }
   | { type: 'polygon' }
   | { type: 'arrow' }
@@ -95,6 +96,9 @@ export type PaletteTileDef = {
   // Which Tools-tab group the tile renders under. Required exactly when
   // `section === 'tools'` (a test pins this); meaningless elsewhere.
   toolGroup?: ToolGroupId;
+  // Media section only: this tile is one of the embed providers, so the Media
+  // tab can collapse them behind one Embed row (spec/121).
+  embedGroup?: boolean;
   label: string;
   // Overrides the caption derived from `label` where that runs too long
   // for the tile (see IconButton).
@@ -875,21 +879,118 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
-    id: 'media:video',
-    blurb: 'YouTube, Vimeo, Loom, Figma, Docs',
-    caption: 'Embed',
+    id: 'media:embed-youtube',
+    embedGroup: true,
+    blurb: 'A YouTube video',
+    caption: 'YouTube',
     section: 'media',
-    label: 'Add embed',
+    label: 'Add YouTube embed',
     description:
-      'An embedded page: a YouTube or Vimeo video, a Loom recording, a Figma file, or a Google Doc, Sheet or Slide deck. Double-click to set its link; it loads when you press play.',
-    action: { type: 'video' },
+      'Embeds a YouTube link on the canvas. Double-click it to set the link; it loads when you press play.',
+    action: { type: 'video', provider: 'youtube' },
     icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
-        {/* The YouTube lozenge + triangle, so the tile names the service
-            rather than showing a generic film glyph. */}
-        <rect x="2" y="5" width="20" height="14" rx="4" fill="currentColor" />
-        <path d="M10.5 8.75 16 12l-5.5 3.25z" fill="#ffffff" />
-      </svg>
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        aria-hidden
+        dangerouslySetInnerHTML={{
+          __html: `<rect x="2" y="5" width="20" height="14" rx="4" fill="currentColor" /><path d="M10.5 8.75 16 12l-5.5 3.25z" fill="#ffffff" />`,
+        }}
+      />
+    ),
+  },
+  {
+    id: 'media:embed-vimeo',
+    embedGroup: true,
+    blurb: 'A Vimeo video',
+    caption: 'Vimeo',
+    section: 'media',
+    label: 'Add Vimeo embed',
+    description:
+      'Embeds a Vimeo link on the canvas. Double-click it to set the link; it loads when you press play.',
+    action: { type: 'video', provider: 'vimeo' },
+    icon: (
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        aria-hidden
+        dangerouslySetInnerHTML={{
+          __html: `<rect x="2" y="4" width="20" height="16" rx="3" fill="none" stroke="currentColor" stroke-width="1.7" /><path d="M7 9c1.6-1.5 3 .4 3.4 2 .5 2 1 3.6 2 1.4C13.6 9.9 12.4 8 15 8c2 0 2.4 2.2 1.3 4.4C15 15.4 12.6 17 11 16c-1.7-1-2-4.2-2.6-5.4-.4-.8-.9-.4-1.4 0z" fill="currentColor" stroke="none" />`,
+        }}
+      />
+    ),
+  },
+  {
+    id: 'media:embed-loom',
+    embedGroup: true,
+    blurb: 'A Loom recording',
+    caption: 'Loom',
+    section: 'media',
+    label: 'Add Loom embed',
+    description:
+      'Embeds a Loom link on the canvas. Double-click it to set the link; it loads when you press play.',
+    action: { type: 'video', provider: 'loom' },
+    icon: (
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        aria-hidden
+        dangerouslySetInnerHTML={{
+          __html: `<circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.7" /><circle cx="12" cy="12" r="3.2" fill="currentColor" /><path d="M12 3v5M12 16v5M3 12h5M16 12h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />`,
+        }}
+      />
+    ),
+  },
+  {
+    id: 'media:embed-figma',
+    embedGroup: true,
+    blurb: 'A Figma file or prototype',
+    caption: 'Figma',
+    section: 'media',
+    label: 'Add Figma embed',
+    description:
+      'Embeds a Figma link on the canvas. Double-click it to set the link; it loads when you press play.',
+    action: { type: 'video', provider: 'figma' },
+    icon: (
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        aria-hidden
+        dangerouslySetInnerHTML={{
+          __html: `<rect x="7" y="2.5" width="5" height="6" rx="3" fill="none" stroke="currentColor" stroke-width="1.6" /><rect x="12" y="2.5" width="5" height="6" rx="3" fill="none" stroke="currentColor" stroke-width="1.6" /><rect x="7" y="8.5" width="5" height="6" rx="3" fill="none" stroke="currentColor" stroke-width="1.6" /><circle cx="14.5" cy="11.5" r="3" fill="none" stroke="currentColor" stroke-width="1.6" /><rect x="7" y="14.5" width="5" height="6" rx="3" fill="none" stroke="currentColor" stroke-width="1.6" />`,
+        }}
+      />
+    ),
+  },
+  {
+    id: 'media:embed-gdocs',
+    embedGroup: true,
+    blurb: 'A Doc, Sheet or Slide deck',
+    caption: 'Google Docs',
+    section: 'media',
+    label: 'Add Google Docs embed',
+    description:
+      'Embeds a Google Docs link on the canvas. Double-click it to set the link; it loads when you press play.',
+    action: { type: 'video', provider: 'gdocs' },
+    icon: (
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        aria-hidden
+        dangerouslySetInnerHTML={{
+          __html: `<path d="M6 2.5h7l5 5v14H6z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" /><path d="M13 2.5v5h5M9 12h6M9 15.5h6M9 19h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />`,
+        }}
+      />
     ),
   },
   {

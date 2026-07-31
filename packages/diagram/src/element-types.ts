@@ -11,6 +11,7 @@ import type { ElementShadow } from './shadow';
 import type { ShapeMarker } from './shape-marker';
 import type { PickerSource, SelectionMode, SessionButtonConfig } from './selection-mode';
 import type { IconSize } from './icon-size';
+import type { EmbedProvider } from './youtube';
 import type {
   AnimationSpeed,
   ChecklistItem,
@@ -891,6 +892,13 @@ export type VideoElement = {
   y: number;
   width: number;
   height: number;
+  // Which provider this embed was created FOR (spec/121). A creation-time
+  // hint only: it names the empty state and the link dialog, so a Figma embed
+  // says "Add a Figma link" rather than something generic. The link itself
+  // stays authoritative — paste a Vimeo URL into one made from the Figma tile
+  // and it renders Vimeo, because refusing a link that plainly works would be
+  // pedantry.
+  embedProvider?: EmbedProvider;
   // NOTE there is no `videoId` field, deliberately. The YouTube URL lives in
   // `link` (a url-kind ElementLink) and the id is parsed from it on demand by
   // `youtubeVideoId` (youtube.ts). A link card caches its preview in `meta`

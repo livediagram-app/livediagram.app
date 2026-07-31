@@ -1,3 +1,4 @@
+import type { EmbedProvider } from '@livediagram/diagram';
 import { useEffect, useState } from 'react';
 import { MOBILE_BREAKPOINT_PX, isMobileViewportSync } from '@/lib/responsive';
 import { PaletteTintProvider } from '@/components/palette/palette-controls';
@@ -159,8 +160,8 @@ export function CommandPalette({
     onAddLinkCard();
     onMobileClose?.();
   };
-  const addVideo = () => {
-    onAddVideo();
+  const addVideo = (provider?: EmbedProvider) => {
+    onAddVideo(provider);
     onMobileClose?.();
   };
   // Components arm the draw gesture (tap-or-drag), so they signal onDrawArmed

@@ -6,6 +6,7 @@ import {
   createAnnotation,
   createLinkCard,
   createVideo,
+  type EmbedProvider,
   createShape,
   growMindChild,
   growMindSibling,
@@ -168,9 +169,9 @@ export function useElementCreation(opts: {
   // A YouTube video (spec/114) dropped at the viewport centre, empty. Same
   // shape as the link card above, and deliberately so: both keep their URL in
   // `link`, and double-clicking either opens the one link picker.
-  const addVideo = () => {
+  const addVideo = (provider?: EmbedProvider) => {
     if (editsBlocked) return;
-    addBoxed((x, y) => createVideo(x, y));
+    addBoxed((x, y) => createVideo(x, y, provider));
     track('Element', 'Added', 'Video');
   };
 

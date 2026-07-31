@@ -1,3 +1,4 @@
+import type { EmbedProvider } from '@livediagram/diagram';
 // Prop contract for the Canvas component, split out of Canvas.tsx
 // (it was a 320-line inline type). Most field types are referenced
 // via inline import('...') so this file only needs the bare-named
@@ -225,7 +226,7 @@ export type CanvasProps = {
   onAddTable: () => void;
   onAddAnnotation: () => void;
   onAddLinkCard: () => void;
-  onAddVideo: () => void;
+  onAddVideo: (provider?: EmbedProvider) => void;
   // Composite "Components" (spec/09), dropped at the viewport centre. Hero /
   // Header / Avatar carry an image and open the picker on drop.
   onAddBanner: () => void;
