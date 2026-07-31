@@ -1016,7 +1016,7 @@ export const articles: Article[] = [
   {
     slug: 'text-and-fonts',
     title: 'Text and Fonts',
-    description: 'Editing labels and choosing from eight fonts per element or tab.',
+    description: 'Editing labels and choosing from eleven fonts per element or tab.',
     keywords: 'label typography font family typeface type writing edit',
     category: 'Canvas',
     categorySlug: 'canvas',
