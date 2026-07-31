@@ -14,6 +14,7 @@
 //     Workers, where bundle size is not user-facing.
 
 export type { IconDef, IconPrim, TechIconDef, TechProvider } from './types';
+export { xmlEscape } from './xml';
 export { iconPrimMarkup, iconPrimsMarkup, techIconArtMarkup, type IconExportArt } from './markup';
 export { isTechIconId, TECH_ICON_IDS } from './tech-icon-ids';
 export {

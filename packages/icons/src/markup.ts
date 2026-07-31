@@ -6,6 +6,7 @@
 // ./resolve).
 
 import type { IconPrim, TechIconDef } from './types';
+import { xmlEscape } from './xml';
 
 // The resolved art a renderer draws for one `iconId`, in a 0..24 art box.
 // `colored: false` is line art — the markup carries no colours, the caller
@@ -52,16 +53,9 @@ export function iconPrimMarkup(p: IconPrim): string {
         `<text x="${num(p.x)}" y="${num(p.y)}" font-size="${num(p.size)}"` +
         ` font-family="system-ui, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, sans-serif"` +
         ` text-anchor="middle" dominant-baseline="central" fill="currentColor"` +
-        ` stroke="none">${xmlEscapeText(p.text)}</text>`
+        ` stroke="none">${xmlEscape(p.text)}</text>`
       );
   }
-}
-
-// Minimal XML text escaper for the text prim's character payload. The
-// other prims carry only numbers / path data, so this is the module's
-// single string-into-markup seam.
-function xmlEscapeText(s: string): string {
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 // A line-art icon's primitives, colourless (see IconExportArt).

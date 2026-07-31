@@ -12,6 +12,7 @@
 // every target including headless ones.
 
 import { STICKER_TONE_COLOR, type StickerDef } from './sticker-types';
+import { xmlEscape } from './xml';
 
 // Inner SVG markup plus the viewBox it is drawn in. The caller owns the <svg>
 // element, so the same art serves an 18px palette tile and a 400px element.
@@ -22,15 +23,6 @@ const SHADOW_OPACITY = 0.14;
 // The hairline around the white plate. Without it a white sticker on a white
 // canvas is invisible except for its shadow.
 const PLATE_EDGE = '#e2e8f0';
-
-function xmlEscape(s: string): string {
-  return s
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
 
 // A badge's word has to fit its pill, and the words run from "P0" to
 // "OUT OF SCOPE". Bold uppercase at this letter-spacing measures ~0.70em per

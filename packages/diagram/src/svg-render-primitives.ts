@@ -4,19 +4,16 @@
 // keeping the graph cycle-free.
 import type { BoxedElement } from './index';
 
+// XML-escape for both text nodes and attribute values. Re-exported rather
+// than defined here: @livediagram/icons owns the one escaper the monorepo's
+// SVG builders share, and this package already depends on it. Every existing
+// `xmlEscape` import from here (and from the package barrel) still resolves.
+export { xmlEscape } from '@livediagram/icons';
+
 export const LABEL_LINE_HEIGHT = 1.25;
 
 export function r2(n: number): number {
   return Math.round(n * 100) / 100;
-}
-
-// XML-escape for both text nodes and attribute values.
-export function xmlEscape(s: string): string {
-  return s
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
 }
 
 export function fontSizeFor(textSize: BoxedElement['textSize']): number {
