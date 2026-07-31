@@ -10,6 +10,7 @@ import {
 import { deriveNewBoxedColours } from '@/lib/themes';
 import { inheritedSizeFor } from '@/lib/canvas';
 import { paintableArrowFields, paintableBoxedFields } from '@/lib/format-painter';
+import { filterPaintedFields, formatPaintsAnything, type FormatConfig } from '@/lib/format-config';
 import { track } from '@/lib/telemetry';
 import { patchTab } from './editor-page-helpers';
 
@@ -33,6 +34,9 @@ export function useElementHelpers(opts: {
   editsBlocked: boolean;
   multiSelectedIds: Set<string>;
   formatSourceId: string | null;
+  // The Format Panel's settings (spec/117): which parts of a copied style
+  // travel, and whether the brush stays loaded.
+  formatConfig: FormatConfig;
   groupSourceId: string | null;
   getViewportCenter: () => { x: number; y: number };
   commit: (updater: (els: Element[]) => Element[]) => void;
@@ -50,6 +54,7 @@ export function useElementHelpers(opts: {
     editsBlocked,
     multiSelectedIds,
     formatSourceId,
+    formatConfig,
     groupSourceId,
     getViewportCenter,
     commit,
@@ -172,10 +177,16 @@ export function useElementHelpers(opts: {
   // one apply.
   const applyFormatFromSource = (targetId: string, opts?: { keepSource?: boolean }) => {
     if (!formatSourceId) return;
+    // Every toggle off means there is nothing to paint: leave the brush and
+    // the target alone rather than committing an empty change per tap.
+    if (!formatPaintsAnything(formatConfig)) return;
+    // "Paint once" (spec/117) empties the brush after one apply, whatever the
+    // caller asked for; the single-shot toolbar painter never asks to keep it.
+    const keepSource = opts?.keepSource === true && formatConfig.mode === 'keep';
     const source = activeTab.elements.find((el) => el.id === formatSourceId);
     const target = activeTab.elements.find((el) => el.id === targetId);
     if (!source || !target || source.id === target.id) {
-      if (!opts?.keepSource) setFormatSourceId(null);
+      if (!keepSource) setFormatSourceId(null);
       return;
     }
     track('Element', 'Changed', 'FormatPainter');
@@ -186,21 +197,23 @@ export function useElementHelpers(opts: {
     // arrow-to-boxed paints are no-ops: the two kinds share
     // almost no formattable fields.
     if (isBoxed(source) && isBoxed(target)) {
-      const projection = paintableBoxedFields(source);
+      // The Format Panel (spec/117) decides which parts travel; the projection
+      // above still decides which parts CAN.
+      const projection = filterPaintedFields(paintableBoxedFields(source), formatConfig);
       commit((els) =>
         els.map((el) =>
           el.id === targetId && isBoxed(el) ? ({ ...el, ...projection } as typeof el) : el,
         ),
       );
     } else if (source.type === 'arrow' && target.type === 'arrow') {
-      const projection = paintableArrowFields(source);
+      const projection = filterPaintedFields(paintableArrowFields(source), formatConfig);
       commit((els) =>
         els.map((el) =>
           el.id === targetId && el.type === 'arrow' ? ({ ...el, ...projection } as typeof el) : el,
         ),
       );
     }
-    if (!opts?.keepSource) setFormatSourceId(null);
+    if (!keepSource) setFormatSourceId(null);
   };
 
   const completeGrouping = (targetId: string) => {

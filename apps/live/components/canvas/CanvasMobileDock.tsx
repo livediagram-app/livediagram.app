@@ -4,6 +4,7 @@ import { PollMenuIcon, VoteMenuIcon } from '@/components/palette/context-menu-ic
 import {
   AvatarModeIcon,
   EraserIcon,
+  FormatPainterIcon,
   LaserIcon,
   SpotlightIcon,
 } from '@/components/palette/palette-icons';
@@ -26,6 +27,7 @@ export function CanvasMobileDock({
   hasLaser,
   hasSpotlight,
   hasEraser,
+  hasFormat,
   activeMobilePanel,
   dockButtonRefs,
   onDockButtonClick,
@@ -52,6 +54,8 @@ export function CanvasMobileDock({
   hasSpotlight: boolean;
   // The Eraser tool (spec/113) is active, so its panel gets a dock button.
   hasEraser: boolean;
+  // The Format painter (spec/116) is active, so its panel gets a dock button.
+  hasFormat: boolean;
   activeMobilePanel: MobilePanel | null;
   dockButtonRefs: RefObject<Record<string, HTMLButtonElement | null>>;
   onDockButtonClick: (id: MobilePanel) => void;
@@ -203,6 +207,15 @@ export function CanvasMobileDock({
                   id: 'eraser' as const,
                   label: 'Eraser',
                   icon: <EraserIcon />,
+                },
+              ]
+            : []),
+          ...(hasFormat
+            ? [
+                {
+                  id: 'format' as const,
+                  label: 'Format',
+                  icon: <FormatPainterIcon />,
                 },
               ]
             : []),

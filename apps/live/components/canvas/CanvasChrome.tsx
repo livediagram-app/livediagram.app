@@ -115,6 +115,20 @@ type ChromeExtras = {
   eraserPanelPosition?: { x: number; y: number } | null;
   onMoveEraserPanel?: (x: number, y: number) => void;
   onResetEraserPanel?: () => void;
+  // Format Panel (spec/117): what the painter copies, owned in editor state
+  // (the paint lives there), plus a description of the loaded element.
+  formatConfig?: import('@/lib/format-config').FormatConfig;
+  onToggleFormatGroup?: (group: import('@/lib/format-config').FormatGroup) => void;
+  onSetFormatMode?: (mode: import('@/lib/format-config').FormatMode) => void;
+  formatBrushSource?: {
+    name: string;
+    fill?: string;
+    stroke?: string;
+    textColor?: string;
+  } | null;
+  formatPanelPosition?: { x: number; y: number } | null;
+  onMoveFormatPanel?: (x: number, y: number) => void;
+  onResetFormatPanel?: () => void;
 };
 
 export type CanvasChromeProps = CanvasProps & ChromeExtras;
@@ -317,6 +331,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
         hasLaser={props.canvasTool === 'laser'}
         hasSpotlight={props.canvasTool === 'spotlight'}
         hasEraser={props.canvasTool === 'eraser'}
+        hasFormat={props.canvasTool === 'format'}
         activeMobilePanel={activeMobilePanel}
         dockButtonRefs={dockButtonRefs}
         onDockButtonClick={handleDockButtonClick}
@@ -352,6 +367,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
           {panelEls.laser}
           {panelEls.spotlight}
           {panelEls.eraser}
+          {panelEls.format}
         </>
       )}
 

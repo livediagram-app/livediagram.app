@@ -149,6 +149,15 @@ export type CanvasProps = {
     field: K,
     value: import('@/lib/eraser-config').EraserConfig[K],
   ) => void;
+  // The format painter's settings (spec/117) and what its brush holds. Owned
+  // in editor state, where the paint happens; Canvas forwards them.
+  formatConfig?: import('@/lib/format-config').FormatConfig;
+  onToggleFormatGroup?: (group: import('@/lib/format-config').FormatGroup) => void;
+  onSetFormatMode?: (mode: import('@/lib/format-config').FormatMode) => void;
+  formatBrushSource?: { name: string; fill?: string; stroke?: string; textColor?: string } | null;
+  formatPanelPosition?: { x: number; y: number } | null;
+  onMoveFormatPanel?: (x: number, y: number) => void;
+  onResetFormatPanel?: () => void;
   // Eraser Panel (spec/113): where it sits.
   eraserPanelPosition?: { x: number; y: number } | null;
   onMoveEraserPanel?: (x: number, y: number) => void;
@@ -269,7 +278,7 @@ export type CanvasProps = {
   // and Catmull-Rom-to-Bezier smoothing before minting the
   // FreehandElement, both for storage size and visual smoothness.
   // `recogniseShapes` says whether this stroke came from the Shape Pen
-  // (spec/115); when true the caller (commitFreehand) runs the polyline
+  // (spec/116); when true the caller (commitFreehand) runs the polyline
   // through recogniseShape and may mint a real shape primitive instead of a
   // FreehandElement. It reads off the armed intent's variant, not a
   // preference — the toggle that used to set it is gone.
@@ -493,6 +502,9 @@ export type CanvasProps = {
   onSetRailLabel?: (elementId: string, index: number, text: string) => void;
   // Toggle one checklist row's done state (spec/83). Omitted in read-only.
   onToggleChecklistItem?: (elementId: string, index: number) => void;
+  // The Page masthead (spec/100): its heading and subtitle are their own
+  // fields, so they commit through here rather than the label editor.
+  onSetPageHeading: (elementId: string, field: 'pageTitle' | 'pageSubtitle', value: string) => void;
   // Default chart slice colours derived from the active theme (spec/53), used
   // by pie charts for slices without an explicit colour.
   chartPalette: readonly string[];

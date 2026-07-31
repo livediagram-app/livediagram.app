@@ -32,7 +32,9 @@ export type MobilePanel =
   // active.
   | 'spotlight'
   // 'eraser' (spec/113): the brush's settings, while the Eraser is active.
-  | 'eraser';
+  | 'eraser'
+  // 'format' (spec/117): the painter's settings, while the Format tool is on.
+  | 'format';
 
 export type DockAnchor = { left: number; top: number; arrowOffset: number };
 

@@ -12,6 +12,7 @@ import { AvatarPanel } from '@/components/panels/AvatarPanel';
 import { LaserPanel } from '@/components/panels/LaserPanel';
 import { SpotlightPanel } from '@/components/panels/SpotlightPanel';
 import { EraserPanel } from '@/components/panels/EraserPanel';
+import { FormatPanel } from '@/components/panels/FormatPanel';
 import { visibleLayerElements } from '@livediagram/diagram';
 import { CanvasAiPanel } from './CanvasAiPanel';
 import { CommandPalette } from '@/components/palette/CommandPalette';
@@ -185,6 +186,13 @@ export function useCanvasChromePanels({
     onChangeSpotlightField,
     eraserConfig,
     onChangeEraserField,
+    formatConfig,
+    onToggleFormatGroup,
+    onSetFormatMode,
+    formatBrushSource,
+    formatPanelPosition,
+    onMoveFormatPanel,
+    onResetFormatPanel,
     eraserPanelPosition,
     onMoveEraserPanel,
     onResetEraserPanel,
@@ -320,6 +328,9 @@ export function useCanvasChromePanels({
   );
   const eraserWiring = panelWiringFor('eraser', eraserPanelPosition ?? null, () =>
     onResetEraserPanel?.(),
+  );
+  const formatWiring = panelWiringFor('format', formatPanelPosition ?? null, () =>
+    onResetFormatPanel?.(),
   );
   // In docking mode the corner flex columns own stacking, so the legacy
   // measured stack-below-the-palette offset is dropped.
@@ -695,6 +706,27 @@ export function useCanvasChromePanels({
       />
     ) : null;
 
+  // Format Panel (spec/117): what the painter copies, mounted only while the
+  // Format tool is active.
+  const formatEl =
+    !chromeHidden && canvasTool === 'format' && formatConfig ? (
+      <FormatPanel
+        config={formatConfig}
+        onToggleGroup={(group) => onToggleFormatGroup?.(group)}
+        onSetMode={(mode) => onSetFormatMode?.(mode)}
+        source={formatBrushSource ?? null}
+        position={formatWiring.position}
+        stackBelowY={dockingActive ? undefined : legacyStackBelowY}
+        onMoveTo={(x, y) => onMoveFormatPanel?.(x, y)}
+        onReset={formatWiring.onReset}
+        dock={formatWiring.dock}
+        mobileOpenOverride={activeMobilePanel === 'format'}
+        mobileDockAnchor={activeDockAnchor ?? undefined}
+        forceDockMode={!!minimalPanels}
+        onMobileClose={closeMobilePanel}
+      />
+    ) : null;
+
   // Map of panel id → element for the docked-layout distribution.
   const panelEls: Partial<Record<PanelId, ReactNode>> = {
     explorer: explorerEl,
@@ -710,6 +742,7 @@ export function useCanvasChromePanels({
     laser: laserEl,
     spotlight: spotlightEl,
     eraser: eraserEl,
+    format: formatEl,
   };
   return { panelEls };
 }

@@ -726,6 +726,13 @@ export function Canvas(props: CanvasProps) {
         onResetSpotlightPanel={props.onResetSpotlightPanel}
         eraserConfig={props.eraserConfig}
         onChangeEraserField={props.onChangeEraserField}
+        formatConfig={props.formatConfig}
+        onToggleFormatGroup={props.onToggleFormatGroup}
+        onSetFormatMode={props.onSetFormatMode}
+        formatBrushSource={props.formatBrushSource}
+        formatPanelPosition={props.formatPanelPosition}
+        onMoveFormatPanel={props.onMoveFormatPanel}
+        onResetFormatPanel={props.onResetFormatPanel}
         eraserPanelPosition={props.eraserPanelPosition}
         onMoveEraserPanel={props.onMoveEraserPanel}
         onResetEraserPanel={props.onResetEraserPanel}

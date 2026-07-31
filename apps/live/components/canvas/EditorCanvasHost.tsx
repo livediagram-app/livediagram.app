@@ -1,5 +1,6 @@
 'use client';
 
+import { describeOne } from '@/lib/element-names';
 import { DEFAULT_BUTTON_MODE } from '@livediagram/diagram';
 import { useMemo } from 'react';
 import { DEFAULT_BACKGROUND_COLOR, DEFAULT_PATTERN_COLOR, isVoteHost } from '@livediagram/diagram';
@@ -42,6 +43,11 @@ export function EditorCanvasHost() {
     setEraserPanelPosition,
     eraserConfig,
     onChangeEraserField,
+    formatConfig,
+    onToggleFormatGroup,
+    onSetFormatMode,
+    formatPanelPosition,
+    setFormatPanelPosition,
     laserConfig,
     onChangeLaserField,
     setLaserPanelPosition,
@@ -260,6 +266,7 @@ export function EditorCanvasHost() {
     setRailLabelSelected,
     setSelectedId,
     toggleChecklistItem,
+    setPageHeading,
     setShareDialogOpen,
     setTextAlignSelected,
     setUserPreferences,
@@ -326,6 +333,13 @@ export function EditorCanvasHost() {
     setUserPreferences,
     selfParticipantId: selfParticipant?.id ?? null,
   });
+  // The element the format brush is loaded from (spec/116), for the panel's
+  // preview. Resolved here rather than in the panel so the panel stays a
+  // renderer and never reaches into the tab.
+  const formatSource = formatSourceId
+    ? (activeTab.elements.find((el) => el.id === formatSourceId) ?? null)
+    : null;
+
   return (
     <Canvas
       tabName={activeTab.name}
@@ -540,6 +554,24 @@ export function EditorCanvasHost() {
       eraserPanelPosition={eraserPanelPosition}
       eraserConfig={eraserConfig}
       onChangeEraserField={onChangeEraserField}
+      formatConfig={formatConfig}
+      onToggleFormatGroup={onToggleFormatGroup}
+      onSetFormatMode={onSetFormatMode}
+      // What the brush holds, described for the panel's preview (spec/116):
+      // the loaded element's name and the three colours the swatch draws.
+      formatBrushSource={
+        formatSource
+          ? {
+              name: describeOne(formatSource),
+              fill: 'fillColor' in formatSource ? formatSource.fillColor : undefined,
+              stroke: 'strokeColor' in formatSource ? formatSource.strokeColor : undefined,
+              textColor: 'textColor' in formatSource ? formatSource.textColor : undefined,
+            }
+          : null
+      }
+      formatPanelPosition={formatPanelPosition}
+      onMoveFormatPanel={(x, y) => setFormatPanelPosition({ x, y })}
+      onResetFormatPanel={() => setFormatPanelPosition(null)}
       onMoveEraserPanel={(x, y) => setEraserPanelPosition({ x, y })}
       onResetEraserPanel={() => setEraserPanelPosition(null)}
       onMoveSpotlightPanel={(x, y) => setSpotlightPanelPosition({ x, y })}
@@ -707,6 +739,7 @@ export function EditorCanvasHost() {
       onAddTableColumn={appendTableColumnSelected}
       onSetRailLabel={isReadOnly ? undefined : setRailLabelSelected}
       onToggleChecklistItem={isReadOnly ? undefined : toggleChecklistItem}
+      onSetPageHeading={setPageHeading}
       chartPalette={themeChartPalette(getTheme(activeTab.theme))}
       onCancelEdit={cancelEdit}
       onBeginEndpointDrag={beginEndpointDrag}

@@ -41,6 +41,8 @@ export function usePanelLayout() {
   const [spotlightPanelPosition, setSpotlightPanelPosition] = useState<Pos | null>(null);
   // Eraser Panel (spec/113): the same.
   const [eraserPanelPosition, setEraserPanelPosition] = useState<Pos | null>(null);
+  // Format Panel (spec/117): the same.
+  const [formatPanelPosition, setFormatPanelPosition] = useState<Pos | null>(null);
   // Zen / focus mode (spec/26): hide all floating chrome (header, tab
   // bar, panels, docks) so only the canvas content + zoom controls
   // remain. Purely a view flag — not persisted, not synced.
@@ -79,6 +81,8 @@ export function usePanelLayout() {
     setSpotlightPanelPosition,
     eraserPanelPosition,
     setEraserPanelPosition,
+    formatPanelPosition,
+    setFormatPanelPosition,
     zenMode,
     setZenMode,
   };

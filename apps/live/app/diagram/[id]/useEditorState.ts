@@ -14,6 +14,7 @@ import { useCanvasEraser } from '@/hooks/canvas/useCanvasEraser';
 import { useCanvasTool } from '@/hooks/canvas/useCanvasTool';
 import { useLaserConfig } from '@/hooks/canvas/useLaserConfig';
 import { useEraserConfig } from '@/hooks/canvas/useEraserConfig';
+import { useFormatConfig } from '@/hooks/canvas/useFormatConfig';
 import { usePortalSetters } from '@/hooks/canvas/usePortalSetters';
 import { useBehaviourElements } from '@/hooks/canvas/useBehaviourElements';
 import type { CanvasTool } from '@/components/palette/CommandPalette';
@@ -263,6 +264,9 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // The eraser's settings (spec/113): read by the erase gesture below and
   // edited from the Eraser Panel.
   const eraserSettings = useEraserConfig();
+  // The format painter's settings (spec/117): which parts of a copied style
+  // travel, read by the paint and edited from the Format Panel.
+  const formatSettings = useFormatConfig();
   const { canvasTool, setCanvasTool, selectCanvasTool, exitAvatarTool, toolBeforeCurrent } =
     useCanvasTool({
       defaultPan: embedMode,
@@ -1242,6 +1246,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     editsBlocked: createBlocked,
     multiSelectedIds,
     formatSourceId,
+    formatConfig: formatSettings.config,
     groupSourceId,
     getViewportCenter,
     commit,
@@ -1698,6 +1703,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setRailLabelSelected,
     setCodeSelected,
     toggleChecklistItem,
+    setPageHeading,
     setChecklistItemsSelected,
     setButtonModeSelected,
     setRatingSelected,
@@ -2425,6 +2431,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setRailLabelSelected,
     setCodeSelected,
     toggleChecklistItem,
+    setPageHeading,
     setChecklistItemsSelected,
     setButtonModeSelected,
     setPortalTargetSelected,
@@ -2469,6 +2476,9 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     onChangeLaserField: laserPen.setField,
     eraserConfig: eraserSettings.config,
     onChangeEraserField: eraserSettings.setField,
+    formatConfig: formatSettings.config,
+    onToggleFormatGroup: formatSettings.toggleGroup,
+    onSetFormatMode: formatSettings.setMode,
     pressModeButton,
     setContextMenu,
     setDiagramSharePassword,

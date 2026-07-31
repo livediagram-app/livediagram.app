@@ -34,7 +34,9 @@ export type PanelId =
   // Spotlight Panel (spec/112): the light's look, on the same terms.
   | 'spotlight'
   // Eraser Panel (spec/113): the brush's settings, on the same terms.
-  | 'eraser';
+  | 'eraser'
+  // Format Panel (spec/117): what the painter copies, on the same terms.
+  | 'format';
 
 export const PANEL_CORNERS: readonly PanelCorner[] = [
   'top-left',
@@ -57,6 +59,7 @@ export const PANEL_IDS: readonly PanelId[] = [
   'laser',
   'spotlight',
   'eraser',
+  'format',
 ];
 
 // Internal: a free panel's pixel position. Not exported — callers pass
@@ -100,6 +103,7 @@ export const DEFAULT_PANEL_CORNER: Record<PanelId, PanelCorner> = {
   laser: 'top-right',
   spotlight: 'top-right',
   eraser: 'top-right',
+  format: 'top-right',
 };
 
 export const STORAGE_KEY = 'livediagram:panel-layout:v1';
