@@ -426,3 +426,64 @@ export function TableElement() {
     </Scene>
   );
 }
+
+// A Page element (spec/100): the A-series sheet with its masthead (heading +
+// subtitle above a hairline rule), a top-left body of prose, the wide margin,
+// and the turned-back bottom-right corner that marks it as paper laid ON the
+// canvas. A 120px square sits alongside at true relative scale, which is the
+// point of the scene: a page is a writing surface, not another node.
+export function PageSheet() {
+  // Sheet geometry, kept in one place so the fold and the rule stay pinned to
+  // the corner and the masthead when the sheet moves.
+  const x = 96;
+  const y = 20;
+  const w = 148;
+  const h = 200;
+  const fold = 18;
+  return (
+    <Scene w={420} h={240}>
+      {/* The sheet. A white body with a hairline border and a soft shadow, so
+          it reads as paper rather than as a filled node. */}
+      <rect x={x + 3} y={y + 4} width={w} height={h} rx={3} className="fill-slate-900/10" />
+      <path
+        d={`M${x} ${y} H${x + w} V${y + h - fold} L${x + w - fold} ${y + h} H${x} Z`}
+        className="fill-white stroke-slate-300"
+        strokeWidth={1.5}
+      />
+      {/* The turned-back corner: the cut, then a slightly darker leaf laid
+          over it. Two triangles, not a curl. */}
+      <path
+        d={`M${x + w - fold} ${y + h} V${y + h - fold} H${x + w} Z`}
+        className="fill-slate-200 stroke-slate-300"
+        strokeWidth={1.5}
+      />
+
+      {/* Masthead: heading, subtitle, hairline rule. Always present, so the
+          page has the same shape before and after anyone writes in it. */}
+      <rect x={x + 16} y={y + 18} width={72} height={9} rx={2} className="fill-brand-500" />
+      <TextBar x={x + 16} y={y + 34} w={54} tone="faint" />
+      <line
+        x1={x + 16}
+        y1={y + 46}
+        x2={x + w - 16}
+        y2={y + 46}
+        className="stroke-slate-200"
+        strokeWidth={1.5}
+      />
+
+      {/* Body: top-left, inside a wide margin, the way a word processor sets
+          prose. Never centred, which is what makes a label look like a label. */}
+      {[0, 1, 2, 3, 4, 5, 6].map((i) => (
+        <TextBar key={i} x={x + 16} y={y + 62 + i * 15} w={i === 3 ? 84 : i === 6 ? 62 : w - 32} />
+      ))}
+
+      {/* A 120px square beside the 420-wide sheet, drawn at the same relative
+          scale (148/420 of true size), so the size gap is honest rather than
+          decorative. */}
+      <Shape x={286} y={99} w={42} h={42} label="Node" />
+      <Label x={286} y={162} size={11} tone="muted">
+        A shape, to scale
+      </Label>
+    </Scene>
+  );
+}

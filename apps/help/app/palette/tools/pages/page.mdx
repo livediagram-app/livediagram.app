@@ -1,0 +1,73 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { PageSheet } from '@/components/illustrations/palette-tools';
+
+export const metadata = helpMetadata({
+  title: 'Pages',
+  description:
+    'Add a paper-sized Page to the canvas for the prose a diagram needs: a brief, a decision record, or the notes a workshop is built around.',
+  path: '/help/palette/tools/pages/',
+});
+
+<ArticleLayout
+  title="Pages"
+  description="A paper-sized surface for the prose a label cannot hold."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  parentArticle={{ title: 'Tools', slug: 'tools' }}
+  subArticles={getSubArticles('tools').filter((a) => a.slug !== 'pages')}
+>
+
+Everything else on the canvas is a label on a thing: short, centred, sized to its box. A **Page** is the exception. It is a paper-proportioned surface you write into, for the prose a diagram needs but a label cannot hold: a brief, a decision record, the notes a workshop board is built around.
+
+Without one, that writing lives in a separate doc, and the diagram stops being the whole artefact.
+
+<Figure caption="A Page on the canvas, with its masthead, its wide margin, and a shape beside it at true relative scale.">
+  <PageSheet />
+</Figure>
+
+## Adding one
+
+<Step n={1}>Open the floating palette and switch to the **Tools** tab.</Step>
+<Step n={2}>Click **Add page**. It is the first tile in the **Write** group.</Step>
+<Step n={3}>Double-click the page to write in the body.</Step>
+
+## The masthead
+
+A Page carries a heading and a subtitle above its body, separated by a hairline rule. Click either line to edit it, then press **Enter** to commit or **Escape** to restore what was there before.
+
+These are their own fields, not the first two lines of your text. That means you can reorder, reformat, or empty the body without the heading moving or disappearing. Both lines are always there: an empty one shows a placeholder rather than collapsing, so a page looks the same before and after anyone writes in it.
+
+<Note>
+  Headings are plain text, capped at 200 characters. A title has one look and the element sets it,
+  so the formatting toolbar does not apply there.
+</Note>
+
+## Writing in the body
+
+Double-click opens the same rich-text editor every label uses, so there is one editing surface to learn and one set of shortcuts. See [text and fonts](/help/canvas/text-and-fonts/) for the formatting available.
+
+The body sits top-left inside a wide margin, the way a word processor sets prose, rather than centred like every other element. When your text outgrows the sheet it scrolls inside the page instead of the page growing without bound.
+
+## It behaves like any other element
+
+A Page moves, resizes, groups, locks and layers exactly like a shape. It takes [links](/help/canvas/links/), [notes](/help/canvas/notes/), [comments](/help/collaboration/comments/) and [assigned actions](/help/collaboration/assigned-actions/) too.
+
+Two deliberate differences:
+
+- **It keeps its own colours.** New elements pick up a tint from the tab's theme and backdrop; a page does not, because tinting it like the nodes around it is exactly what stops it reading as paper. You can still recolour it from the right-click menu.
+- **Its proportions are not locked.** The default is 420 × 594, the A-series ratio, but nothing pins it there. A landscape page is a legitimate thing to want.
+
+<Tip>
+  Pair a Page with a [portal](/help/palette/tools/portals/) when a board needs a written brief: keep
+  the prose on one tab and link straight to the diagram it describes.
+</Tip>
+
+## What a Page is not
+
+A Page is one sheet, not a document that flows onto a second one. There is no pagination, and the body holds text rather than tables, images or embeds. Put an [image](/help/palette/tools/images/) or a [table](/help/palette/tools/tables/) element beside the page instead.
+
+On export it behaves like any other element: its text in Markdown, its box in PNG and SVG.
+
+</ArticleLayout>

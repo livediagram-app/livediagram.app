@@ -1514,6 +1514,16 @@ export const articles: Article[] = [
     parentSlug: 'tools',
   },
   {
+    slug: 'pages',
+    title: 'Pages',
+    description: 'A paper-sized surface for the prose a label cannot hold.',
+    keywords:
+      'page document doc paper sheet a4 prose writing write rich text brief memo report notes longform masthead heading subtitle word processor',
+    category: 'Palette',
+    categorySlug: 'palette/tools',
+    parentSlug: 'tools',
+  },
+  {
     slug: 'sticky-notes',
     title: 'Sticky Notes',
     description: 'A coloured note card for short annotations and brainstorm items.',
