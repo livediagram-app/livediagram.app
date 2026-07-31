@@ -24,29 +24,21 @@ type RoomHandle = { send: (msg: RoomOutgoing) => void };
 // it is never rendered (spec/88 — results carry no identity).
 export type PollAnswers = Map<string, string | null>;
 
-export type LivePollState = {
-  poll: LivePoll | null;
-  answers: PollAnswers;
-  // Did WE open this poll? Local-only: it decides who sees the host
-  // controls (End poll / copy). Deliberately not on the wire — no peer
-  // needs to know, and a reload drops the whole poll anyway.
-  isHost: boolean;
-  // Have we responded yet? Answering or skipping both count, and both
-  // unlock the results panel. null = not responded.
-  myAnswer: { value: string | null } | null;
-  // Local-only hide, so a participant isn't stuck with a panel when the
-  // host disconnects without ending the poll.
-  dismissed: boolean;
-};
-
 export function useLivePoll(deps: { roomRef: React.RefObject<RoomHandle | null> }) {
   const { roomRef } = deps;
   const [poll, setPoll] = useState<LivePoll | null>(null);
   const [answers, setAnswers] = useState<PollAnswers>(() => new Map());
+  // Have we responded yet? Answering or skipping both count, and both
+  // unlock the results panel. null = not responded.
   const [myAnswer, setMyAnswer] = useState<{ value: string | null } | null>(null);
+  // Local-only hide, so a participant isn't stuck with a panel when the
+  // host disconnects without ending the poll.
   const [dismissed, setDismissed] = useState(false);
   // Which poll id we opened, if any. A ref rather than state because
-  // nothing renders off it directly — `isHost` below derives it.
+  // nothing renders off it directly — `isHost` below derives it. Being the
+  // host is local-only: it decides who sees the host controls (End poll /
+  // copy), is deliberately not on the wire since no peer needs to know,
+  // and a reload drops the whole poll anyway.
   const hostedPollRef = useRef<string | null>(null);
   // Mirror of `poll` for the handlers below. They need to READ the current
   // poll (to drop ops for a poll we don't have) while also writing other

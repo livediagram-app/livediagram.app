@@ -287,8 +287,6 @@ export const PALETTE_TELEMETRY_TYPES = {
   icons: ['Icon', 'TechIcon', 'Sticker'],
 } as const satisfies Record<string, readonly string[]>;
 
-export type PaletteTelemetryBucket = keyof typeof PALETTE_TELEMETRY_TYPES;
-
 // Every palette token, flattened — the set an emitter can be checked against.
 export const ALL_PALETTE_TELEMETRY_TYPES: readonly string[] =
   Object.values(PALETTE_TELEMETRY_TYPES).flat();

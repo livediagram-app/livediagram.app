@@ -168,10 +168,6 @@ export function isChairFacing(value: unknown): value is ChairFacing {
   return (CHAIR_FACINGS as readonly string[]).includes(value as string);
 }
 
-export function isChairShape(kind: ShapeKind): boolean {
-  return kind === 'chair';
-}
-
 // Where a seated character's FEET go, in canvas coords: the middle of the
 // chair, a little below centre so the figure sits ON the seat rather than
 // floating at the box's midpoint. Shared by the walk hook (which snaps the

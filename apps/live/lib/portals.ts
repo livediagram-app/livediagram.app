@@ -60,12 +60,6 @@ export function resolvePortalSite(tabs: Tab[], portal: ShapeElement): PortalSite
   );
 }
 
-// A portal's display name within its own tab, for the picker and tooltips.
-export function portalSiteName(site: PortalSite, tabs: Tab[]): string {
-  const tab = tabs.find((t) => t.id === site.tabId);
-  return portalName(tab?.elements ?? [site.portal], site.portal);
-}
-
 // The portal `portal` leads to, or null when it is unlinked / mis-linked. Never
 // returns the portal itself: a portal to where you already are is a no-op, and
 // silently doing nothing on click is the confusing case we're avoiding.

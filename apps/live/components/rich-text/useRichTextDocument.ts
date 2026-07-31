@@ -32,8 +32,6 @@ import {
 } from '@/components/rich-text/rich-text-format';
 import { useRichTextFormatActions } from '@/components/rich-text/useRichTextFormatActions';
 
-export type RichTextDocument = ReturnType<typeof useRichTextDocument>;
-
 export function useRichTextDocument({
   initialRuns,
   runStyle,
