@@ -1,10 +1,10 @@
-# 120 — The record
+# 120 — The entity
 
 Status: shipped
 
 ## What
 
-A **Record**: a title bar over a list of `name: Type` rows. One element covering
+An **Entity**: a title bar over a list of `name: Type` rows. One element covering
 the UML class box and the ER entity box.
 
 ## Why
@@ -23,16 +23,16 @@ and engineering teams sketching architecture are the first group
 
 ## The element
 
-`shape: 'record'`, one new field:
+`shape: 'entity'`, one new field:
 
 ```ts
-recordFields?: { name: string; type?: string }[];
+entityFields?: { name: string; type?: string }[];
 ```
 
 Bounded at 40 rows / 80 characters, like the checklist (spec/83), so a paste
 can't produce an element nobody can read.
 
-**The element's `label` is the title.** A record needs no separate name field,
+**The element's `label` is the title.** An entity needs no separate name field,
 and using the ordinary label means the title edits, formats, aligns and exports
 like every other label. Only the rows are bespoke.
 

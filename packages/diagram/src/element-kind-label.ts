@@ -47,7 +47,9 @@ export function elementKindLabel(el: Element): string {
     case 'link-card':
       return 'Link';
     case 'video':
-      return 'Video';
+      // The kind stays 'video' (it is persisted); the NAME is Embed, since it
+      // carries Figma files and Google Docs as well now (spec/121).
+      return 'Embed';
     case 'arrow':
       return 'Arrow';
   }

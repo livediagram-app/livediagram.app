@@ -21,6 +21,7 @@ export type PaletteTileSection =
   | 'media'
   | 'components'
   | 'devices'
+  | 'stickers'
   | 'icons'
   | 'technology';
 
@@ -37,6 +38,7 @@ type PaletteTileAction =
   | { type: 'highlighter' }
   | { type: 'shape-pen' }
   | { type: 'video' }
+  | { type: 'sticker'; stickerId: string }
   | { type: 'polygon' }
   | { type: 'arrow' }
   | { type: 'sticky' }
@@ -874,12 +876,12 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   {
     id: 'media:video',
-    blurb: 'A YouTube video that plays here',
-    caption: 'Video',
+    blurb: 'YouTube, Vimeo, Loom, Figma, Docs',
+    caption: 'Embed',
     section: 'media',
-    label: 'Add video',
+    label: 'Add embed',
     description:
-      'A YouTube video. Double-click to set its link; it plays inline when you press play.',
+      'An embedded page: a YouTube or Vimeo video, a Loom recording, a Figma file, or a Google Doc, Sheet or Slide deck. Double-click to set its link; it loads when you press play.',
     action: { type: 'video' },
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
@@ -919,14 +921,14 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
-    id: 'tools:record',
-    blurb: 'A class or entity: title over fields',
-    caption: 'Record',
+    id: 'tools:entity',
+    blurb: 'A class or table: title over fields',
+    caption: 'Entity',
     section: 'components',
-    label: 'Add record',
+    label: 'Add entity',
     description:
       'A UML class or ER entity: a title bar over a list of name / type fields. Edit the fields from its right-click menu.',
-    action: { type: 'shape', kind: 'record' },
+    action: { type: 'shape', kind: 'entity' },
     icon: (
       <svg
         width="18"

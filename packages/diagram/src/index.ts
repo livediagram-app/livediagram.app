@@ -367,7 +367,7 @@ export type ShapeKind =
   // Lane (spec/119): a titled horizontal band that carries its contents.
   | 'lane'
   // Record (spec/120): a UML class / ER entity box — a title over rows.
-  | 'record'
+  | 'entity'
   // Mode button (spec/103): a pressable pill that switches whoever clicks it
   // into a selection mode — Avatar by default. Which mode lives in the
   // element's `mode` field.

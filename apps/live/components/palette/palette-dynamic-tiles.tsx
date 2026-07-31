@@ -1,6 +1,8 @@
-import type { IconDef, TechIconDef } from '@livediagram/icons';
+import type { IconDef, StickerDef, TechIconDef } from '@livediagram/icons';
 import { getIconCatalog } from '@/lib/icons';
 import { getTechIcon, searchTechIcons } from '@/lib/tech-icons';
+import { getSticker, searchStickers } from '@/lib/stickers';
+import { StickerArt } from '@/components/canvas/StickerView';
 import { IconPrims } from '@/components/primitives/icon-glyph';
 import { TechIconArt } from '@/components/primitives/tech-icon-glyph';
 import { tileById, type PaletteTileDef } from './palette-tile-defs';
@@ -16,6 +18,7 @@ import { tileById, type PaletteTileDef } from './palette-tile-defs';
 
 const ICON_FAVOURITE_PREFIX = 'icon:';
 const TECH_FAVOURITE_PREFIX = 'tech:';
+const STICKER_FAVOURITE_PREFIX = 'sticker:';
 
 function iconTileDef(icon: IconDef): PaletteTileDef {
   return {
@@ -60,6 +63,17 @@ function techTileDef(icon: TechIconDef): PaletteTileDef {
   };
 }
 
+function stickerTileDef(sticker: StickerDef): PaletteTileDef {
+  return {
+    id: `${STICKER_FAVOURITE_PREFIX}${sticker.id}`,
+    section: 'stickers',
+    label: `Add ${sticker.label}`,
+    description: 'Drops this sticker at the viewport centre.',
+    action: { type: 'sticker', stickerId: sticker.id },
+    icon: <StickerArt def={sticker} className="h-[18px] w-[18px]" />,
+  };
+}
+
 // Search each catalogue for the edit-favourites dialog. Line icons match the
 // same fields the Icons tab searches (label / keywords / id); tech icons
 // reuse the Technology tab's search.
@@ -76,6 +90,10 @@ export function searchTechTiles(query: string): PaletteTileDef[] {
   return searchTechIcons(query, 'all').map(techTileDef);
 }
 
+export function searchStickerTiles(query: string): PaletteTileDef[] {
+  return searchStickers(query).map(stickerTileDef);
+}
+
 // A favourite id → its tile def: fixed catalogue ids resolve through
 // PALETTE_TILES, prefixed ids through the icon catalogues. Returns undefined
 // for a stale id — and for a dynamic id whose catalogue chunk hasn't loaded
@@ -85,6 +103,10 @@ export function resolveFavouriteTile(id: string): PaletteTileDef | undefined {
     const iconId = id.slice(ICON_FAVOURITE_PREFIX.length);
     const icon = getIconCatalog().find((i) => i.id === iconId);
     return icon ? iconTileDef(icon) : undefined;
+  }
+  if (id.startsWith(STICKER_FAVOURITE_PREFIX)) {
+    const sticker = getSticker(id.slice(STICKER_FAVOURITE_PREFIX.length));
+    return sticker ? stickerTileDef(sticker) : undefined;
   }
   if (id.startsWith(TECH_FAVOURITE_PREFIX)) {
     const icon = getTechIcon(id.slice(TECH_FAVOURITE_PREFIX.length));

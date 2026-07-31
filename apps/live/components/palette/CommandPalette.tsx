@@ -266,6 +266,7 @@ export function CommandPalette({
       addAnnotation,
       addLinkCard,
       addVideo,
+      addSticker,
       addComponent,
       addIcon,
       addTechIcon,

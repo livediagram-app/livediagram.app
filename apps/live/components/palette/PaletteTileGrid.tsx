@@ -28,6 +28,7 @@ export type PaletteTileActions = {
   addAnnotation: () => void;
   addLinkCard: () => void;
   addVideo: () => void;
+  addSticker: (stickerId: string) => void;
   addComponent: (kind: ComponentKind) => void;
   // Dynamic icon favourites (spec/78): drop a single line-art / Technology
   // catalogue icon, same handlers the Icons / Technology tabs use.
@@ -68,6 +69,8 @@ export function tileHandler(def: PaletteTileDef, actions: PaletteTileActions): (
       return actions.addLinkCard;
     case 'video':
       return actions.addVideo;
+    case 'sticker':
+      return () => actions.addSticker(a.stickerId);
     case 'component':
       return () => actions.addComponent(a.kind);
     case 'icon':
@@ -105,6 +108,7 @@ export function tileActive(
     case 'annotation':
     case 'link-card':
     case 'video':
+    case 'sticker':
     case 'icon':
     case 'tech-icon':
       return false;

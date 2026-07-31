@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react';
 import {
   CHECKLIST_MAX_ITEMS,
   CHECKLIST_MAX_TEXT,
-  RECORD_MAX_FIELDS,
-  RECORD_MAX_TEXT,
-  type RecordField,
+  ENTITY_MAX_FIELDS,
+  ENTITY_MAX_TEXT,
+  type EntityField,
   PIE_PALETTE,
   type ChecklistItem,
   type LineSeries,
@@ -126,14 +126,14 @@ export function LineDataSummary({ series, onEdit }: { series: LineSeries[]; onEd
 // A record's fields (spec/120): one row per `name: Type`. Mirrors the
 // checklist editor below — same shape of problem (a bounded list of short
 // strings edited in a narrow menu), so same shape of control.
-export function RecordFieldsEditor({
+export function EntityFieldsEditor({
   fields,
   onChange,
 }: {
-  fields: RecordField[];
-  onChange: (fields: RecordField[]) => void;
+  fields: EntityField[];
+  onChange: (fields: EntityField[]) => void;
 }) {
-  const [rows, setRows] = useState<RecordField[]>(fields);
+  const [rows, setRows] = useState<EntityField[]>(fields);
   useEffect(() => setRows(fields), [fields]);
   const cellInput =
     'min-w-0 rounded border border-slate-200 bg-white px-1 py-0.5 text-[11px] text-slate-700 outline-none focus:border-brand-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200';
@@ -147,7 +147,7 @@ export function RecordFieldsEditor({
               value={f.name}
               placeholder="name"
               aria-label={`Field ${i + 1} name`}
-              maxLength={RECORD_MAX_TEXT}
+              maxLength={ENTITY_MAX_TEXT}
               onChange={(e) =>
                 setRows((r) => r.map((s, j) => (j === i ? { ...s, name: e.target.value } : s)))
               }
@@ -158,7 +158,7 @@ export function RecordFieldsEditor({
               value={f.type ?? ''}
               placeholder="type"
               aria-label={`Field ${i + 1} type`}
-              maxLength={RECORD_MAX_TEXT}
+              maxLength={ENTITY_MAX_TEXT}
               onChange={(e) =>
                 setRows((r) =>
                   // Empty stores as undefined, so a row without a type
@@ -181,7 +181,7 @@ export function RecordFieldsEditor({
       </div>
       <button
         type="button"
-        disabled={rows.length >= RECORD_MAX_FIELDS}
+        disabled={rows.length >= ENTITY_MAX_FIELDS}
         onClick={() => onChange([...rows, { name: '' }])}
         className="mt-1.5 inline-flex w-full items-center justify-center rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] font-medium text-slate-700 transition enabled:cursor-pointer enabled:hover:border-brand-300 enabled:hover:bg-brand-50 disabled:opacity-40 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:enabled:hover:border-brand-500/60 dark:enabled:hover:bg-brand-500/15"
       >

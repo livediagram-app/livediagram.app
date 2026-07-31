@@ -1,6 +1,6 @@
 'use client';
 
-import type { RecordField, ShapeElement } from '@livediagram/diagram';
+import type { EntityField, ShapeElement } from '@livediagram/diagram';
 
 // A record box (spec/120): a title bar over a list of `name: Type` rows — a
 // UML class, an ER entity, a struct.
@@ -14,7 +14,7 @@ import type { RecordField, ShapeElement } from '@livediagram/diagram';
 // The TITLE is the element's ordinary `label`, so it edits, formats and
 // exports like every other label; only the rows are bespoke.
 
-export function RecordView({
+export function EntityView({
   element,
   textColor,
   fontFamily,
@@ -23,7 +23,7 @@ export function RecordView({
   textColor: string;
   fontFamily: string | undefined;
 }) {
-  const fields = element.recordFields ?? [];
+  const fields = element.entityFields ?? [];
   const rule = element.strokeColor ?? '#cbd5e1';
   return (
     // Inert as a whole: the canvas owns press-drag on an element, and nothing
@@ -49,7 +49,7 @@ export function RecordView({
   );
 }
 
-function Row({ field, color }: { field: RecordField; color: string }) {
+function Row({ field, color }: { field: EntityField; color: string }) {
   return (
     <div className="flex min-w-0 items-baseline gap-1 text-[11px] leading-tight" style={{ color }}>
       <span className="min-w-0 truncate">{field.name}</span>

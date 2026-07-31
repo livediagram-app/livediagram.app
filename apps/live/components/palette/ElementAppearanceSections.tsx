@@ -114,7 +114,7 @@ export function ElementAppearanceSections({
   const isLine = target.type === 'shape' && isLineShape(target.shape);
   const isCodeBlock = target.type === 'shape' && isCodeBlockShape(target.shape);
   const isChecklist = target.type === 'shape' && isChecklistShape(target.shape);
-  const isRecord = target.type === 'shape' && target.shape === 'record';
+  const isEntity = target.type === 'shape' && target.shape === 'entity';
   // Mode button (spec/103): its one setting is which mode it hands out.
   const isModeButton = target.type === 'shape' && target.shape === 'mode-button';
   // Portal (spec/104): its one setting is which portal it leads to.
@@ -224,7 +224,7 @@ export function ElementAppearanceSections({
         isLine={isLine}
         isCodeBlock={isCodeBlock}
         isChecklist={isChecklist}
-        isRecord={isRecord}
+        isEntity={isEntity}
         isModeButton={isModeButton}
         isPortal={isPortal}
         isSessionButton={isSessionButton}

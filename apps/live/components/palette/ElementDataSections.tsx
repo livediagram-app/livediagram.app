@@ -64,7 +64,7 @@ import {
 import {
   ChartMenuGlyph,
   ChecklistRowsEditor,
-  RecordFieldsEditor,
+  EntityFieldsEditor,
   CodeSummary,
   DataMenuGlyph,
   LineDataSummary,
@@ -96,7 +96,7 @@ type ElementDataSectionsProps = {
   isLine: boolean;
   isCodeBlock: boolean;
   isChecklist: boolean;
-  isRecord: boolean;
+  isEntity: boolean;
   isModeButton: boolean;
   isPortal: boolean;
   isSessionButton: boolean;
@@ -131,7 +131,7 @@ export function ElementDataSections({
   isLine,
   isCodeBlock,
   isChecklist,
-  isRecord,
+  isEntity,
   isModeButton,
   isPortal,
   isSessionButton,
@@ -156,7 +156,7 @@ export function ElementDataSections({
     isChart ||
     isCodeBlock ||
     isChecklist ||
-    isRecord ||
+    isEntity ||
     isModeButton ||
     isPortal ||
     isSessionButton ||
@@ -265,15 +265,15 @@ export function ElementDataSections({
             </MenuAccordionSection>
           ) : null}
           {/* Record (spec/120) — the fields: name + optional type, add / remove. */}
-          {isRecord ? (
+          {isEntity ? (
             <MenuAccordionSection
               title="Fields"
               icon={<DataMenuGlyph />}
-              {...sectionProps('record')}
+              {...sectionProps('entity')}
             >
-              <RecordFieldsEditor
-                fields={shapeTarget?.recordFields ?? []}
-                onChange={props.onSetRecordFields}
+              <EntityFieldsEditor
+                fields={shapeTarget?.entityFields ?? []}
+                onChange={props.onSetEntityFields}
               />
             </MenuAccordionSection>
           ) : null}

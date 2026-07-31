@@ -22,8 +22,8 @@ import { isPickerSource, isSelectionMode, isSessionTool } from './selection-mode
 import {
   CHECKLIST_MAX_ITEMS,
   PAGE_HEADING_MAX,
-  RECORD_MAX_FIELDS,
-  RECORD_MAX_TEXT,
+  ENTITY_MAX_FIELDS,
+  ENTITY_MAX_TEXT,
   CHECKLIST_MAX_TEXT,
   CODE_LANGUAGES,
   CODE_MAX_LENGTH,
@@ -75,7 +75,7 @@ export const SHAPE_KINDS = new Set<string>([
   // Lane (spec/119).
   'lane',
   // Record (spec/120).
-  'record',
+  'entity',
   // Mode button (spec/103): a pressable pill that switches whoever clicks it
   // into a selection mode.
   'mode-button',
@@ -221,12 +221,12 @@ export function isValidElement(el: unknown): el is Element {
         return false;
     }
     // Record (spec/120): bounded rows of { name, type? }.
-    if (el.recordFields !== undefined) {
-      if (!boundedArray(el.recordFields, RECORD_MAX_FIELDS)) return false;
-      for (const f of el.recordFields) {
+    if (el.entityFields !== undefined) {
+      if (!boundedArray(el.entityFields, ENTITY_MAX_FIELDS)) return false;
+      for (const f of el.entityFields) {
         if (!isObj(f)) return false;
-        if (typeof f.name !== 'string' || f.name.length > RECORD_MAX_TEXT) return false;
-        if (f.type !== undefined && (typeof f.type !== 'string' || f.type.length > RECORD_MAX_TEXT))
+        if (typeof f.name !== 'string' || f.name.length > ENTITY_MAX_TEXT) return false;
+        if (f.type !== undefined && (typeof f.type !== 'string' || f.type.length > ENTITY_MAX_TEXT))
           return false;
       }
     }

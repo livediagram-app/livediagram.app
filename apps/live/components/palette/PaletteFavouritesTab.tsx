@@ -4,7 +4,12 @@ import { track } from '@/lib/telemetry';
 import { loadPaletteFavourites, savePaletteFavourites } from '@/lib/palette-favourites';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 import { PALETTE_TILES, type PaletteTileDef } from './palette-tile-defs';
-import { resolveFavouriteTile } from './palette-dynamic-tiles';
+import {
+  resolveFavouriteTile,
+  searchIconTiles,
+  searchStickerTiles,
+  searchTechTiles,
+} from './palette-dynamic-tiles';
 import {
   PaletteTileGrid,
   tileHandler,
@@ -28,10 +33,13 @@ import { PaletteFavouritesDialog } from '@/components/dialogs/PaletteFavouritesD
 // right place: typing searches the whole fixed catalogue and replaces the
 // grid with the matches.
 //
-// The Icons and Technology catalogues are deliberately NOT searched here —
-// 183 glyphs would bury the twenty-odd element types under near-duplicate
-// icon names, and each of those tabs has its own search over its own
-// catalogue (spec/109).
+// It searches the icon, sticker and technology catalogues too, but always
+// AFTER the element types and capped, so a glyph named like an element can
+// never push the element itself off the top of the list.
+
+// Per-catalogue cap on search results. Enough to find what you meant, few
+// enough that three catalogues can't turn one query into a wall.
+const CATALOGUE_MATCH_LIMIT = 12;
 
 export function PaletteFavouritesTab({
   pendingDraw,
@@ -79,15 +87,26 @@ export function PaletteFavouritesTab({
   // Matches on caption, label and description, so "chart" finds the pie chart
   // and "youtube" finds Video whether or not you know what it is called.
   const q = query.trim().toLowerCase();
+  // Element types FIRST, then the catalogues. Ordering rather than excluding
+  // them: the catalogues are ~180 line icons, ~40 brand marks and the sticker
+  // set, so interleaving by relevance would bury the two dozen element types
+  // under near-duplicate glyph names — searching "table" should offer the
+  // Table element before nine table-ish icons. Each catalogue is capped for
+  // the same reason.
   const matches = q
-    ? visibleTiles(
-        PALETTE_TILES.filter((t) =>
-          [t.label, t.caption ?? '', t.blurb ?? '', t.description].some((s) =>
-            s.toLowerCase().includes(q),
+    ? [
+        ...visibleTiles(
+          PALETTE_TILES.filter((t) =>
+            [t.label, t.caption ?? '', t.blurb ?? '', t.description].some((s) =>
+              s.toLowerCase().includes(q),
+            ),
           ),
+          actions.hasImage,
         ),
-        actions.hasImage,
-      )
+        ...searchIconTiles(q).slice(0, CATALOGUE_MATCH_LIMIT),
+        ...searchStickerTiles(q).slice(0, CATALOGUE_MATCH_LIMIT),
+        ...searchTechTiles(q).slice(0, CATALOGUE_MATCH_LIMIT),
+      ]
     : null;
   // One 'Searched' event per mount, on the first keystroke — the same
   // engagement-signal pattern the other palette searches use.

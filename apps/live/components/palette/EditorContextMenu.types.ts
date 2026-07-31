@@ -11,7 +11,7 @@ import type {
   BorderStyle,
   ChartLegendPosition,
   ChecklistItem,
-  RecordField,
+  EntityField,
   Element,
   ElementShadow,
   Layer,
@@ -138,7 +138,7 @@ export type EditorContextMenuProps = {
   onEditCodeBlock: (elementId: string) => void;
   // Checklist (spec/83): replace the selected checklist's rows.
   onSetChecklistItems: (items: ChecklistItem[]) => void;
-  onSetRecordFields: (fields: RecordField[]) => void;
+  onSetEntityFields: (fields: EntityField[]) => void;
   // Mode button (spec/103): which selection mode pressing it hands out.
   onSetButtonMode: (mode: import('@livediagram/diagram').SelectionMode) => void;
   // Portal (spec/104): which portal this one leads to; null unpairs it.

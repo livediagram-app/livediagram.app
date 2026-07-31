@@ -53,7 +53,7 @@ export function isSvgRenderedShape(kind: ShapeKind): boolean {
     // path, same as the rest of this list.
     kind !== 'lane' &&
     // A record (spec/120) is a filled box with rows drawn on top.
-    kind !== 'record'
+    kind !== 'entity'
   );
 }
 

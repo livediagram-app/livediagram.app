@@ -235,24 +235,52 @@ function PlayBadge() {
 }
 
 // Two different problems, so two different messages: no link at all is a
-// prompt to add one, whereas a link that isn't a YouTube URL is a mistake
-// worth naming rather than silently rendering a broken poster.
+// prompt to add one, whereas a link we can't embed is a mistake worth naming
+// with the list of what WOULD work.
+//
+// Neutral glyph, not the YouTube badge: this element carries Figma files and
+// Google Docs too (spec/121), and a red play button on an empty card told the
+// user it was a video element and nothing else.
 function EmptyState({ url }: { url: string | undefined }) {
   return (
-    <div className="pointer-events-none flex h-full w-full flex-col items-center justify-center gap-1.5 rounded-[inherit] px-3 text-center">
-      <span className="aspect-[68/48] h-8 opacity-60">
-        <PlayBadge />
-      </span>
+    <div className="pointer-events-none flex h-full w-full flex-col items-center justify-center gap-1.5 rounded-[inherit] px-4 text-center">
+      <EmbedGlyph />
       {url ? (
         <>
-          <span className="text-[11px] font-medium text-slate-200">Not a YouTube link</span>
+          <span className="text-[11px] font-medium text-slate-200">Can&apos;t embed that link</span>
           <span className="w-full truncate text-[10px] text-slate-400">{url}</span>
         </>
       ) : (
-        <span className="text-[11px] font-medium text-slate-300">
-          Add a YouTube link — double-click
-        </span>
+        <>
+          <span className="text-[11px] font-medium text-slate-200">Add a link — double-click</span>
+          <span className="text-[10px] leading-snug text-slate-400">
+            YouTube, Vimeo, Loom, Figma, Google Docs
+          </span>
+        </>
       )}
     </div>
+  );
+}
+
+// A framed play triangle: "something loads in here", without claiming which
+// service it comes from.
+function EmbedGlyph() {
+  return (
+    <svg
+      width="30"
+      height="30"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+      className="text-slate-400 opacity-80"
+    >
+      <rect x="2.5" y="4" width="19" height="16" rx="2.5" />
+      <path d="M2.5 8h19" />
+      <path d="M10.5 12.2v3.6l3.2-1.8z" fill="currentColor" stroke="none" />
+    </svg>
   );
 }

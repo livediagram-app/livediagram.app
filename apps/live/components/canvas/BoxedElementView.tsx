@@ -23,7 +23,7 @@ import { renderLabel } from '@/components/canvas/element-labels';
 import { PageMasthead } from '@/components/canvas/PageMasthead';
 import { MindNodeHint } from '@/components/canvas/MindNodeHint';
 import { LaneGutter } from '@/components/canvas/LaneGutter';
-import { RecordView } from '@/components/canvas/RecordView';
+import { EntityView } from '@/components/canvas/EntityView';
 import { isMobileViewportSync } from '@/lib/responsive';
 import { elementAriaLabel } from '@/lib/element-names';
 import { captionBandAlignY, captionBandClass } from '@/components/primitives/icon-band';
@@ -398,12 +398,12 @@ function BoxedElementViewImpl({
         />
       ) : null}
       {/* A Record's rows (spec/120), under its title label. */}
-      {element.type === 'shape' && element.shape === 'record' ? (
-        <RecordView element={element} textColor={textColor} fontFamily={fontFamily} />
+      {element.type === 'shape' && element.shape === 'entity' ? (
+        <EntityView element={element} textColor={textColor} fontFamily={fontFamily} />
       ) : null}
       {/* A Lane's title gutter (spec/119), behind the label. */}
       {element.type === 'shape' && element.shape === 'lane' ? (
-        <LaneGutter stroke={element.strokeColor ?? defaultStrokeColor(element)} />
+        <LaneGutter stroke={element.strokeColor ?? defaultStrokeColor(element)} alignX={alignX} />
       ) : null}
       {/* A Page's turned-back bottom-right corner (spec/100). */}
       {element.type === 'shape' && element.shape === 'page' ? (

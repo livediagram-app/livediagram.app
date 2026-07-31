@@ -23,7 +23,7 @@ export function kindLabel(el: Element): string {
     return 'Sketch';
   }
   if (el.type === 'link-card') return 'Link card';
-  if (el.type === 'video') return 'Video';
+  if (el.type === 'video') return 'Embed';
   if (el.type === 'shape') {
     // Hyphenated kinds read as prose ('pie-chart' → 'Pie chart').
     const s = el.shape.split('-').join(' ');

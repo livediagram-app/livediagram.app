@@ -80,7 +80,7 @@ export function EditorContextMenuHost() {
     setLineDataOpenForId,
     setCodeEditOpenForId,
     setChecklistItemsSelected,
-    setRecordFieldsSelected,
+    setEntityFieldsSelected,
     setButtonModeSelected,
     setPortalTargetSelected,
     setPortalNameSelected,
@@ -227,7 +227,7 @@ export function EditorContextMenuHost() {
       onEditLineData={setLineDataOpenForId}
       onEditCodeBlock={setCodeEditOpenForId}
       onSetChecklistItems={setChecklistItemsSelected}
-      onSetRecordFields={setRecordFieldsSelected}
+      onSetEntityFields={setEntityFieldsSelected}
       onSetButtonMode={setButtonModeSelected}
       onSetPortalTarget={setPortalTargetSelected}
       onSetPortalName={setPortalNameSelected}

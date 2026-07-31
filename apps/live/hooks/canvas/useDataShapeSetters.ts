@@ -3,9 +3,9 @@ import {
   addTableRow,
   CHECKLIST_MAX_ITEMS,
   CHECKLIST_MAX_TEXT,
-  RECORD_MAX_FIELDS,
-  RECORD_MAX_TEXT,
-  type RecordField,
+  ENTITY_MAX_FIELDS,
+  ENTITY_MAX_TEXT,
+  type EntityField,
   clampPercent,
   clampRating,
   CODE_MAX_LENGTH,
@@ -198,23 +198,23 @@ export function useDataShapeSetters({ currentSelectionIds, commit }: DataShapeSe
     );
   };
 
-  // Record fields (spec/120). Bounded on write like the checklist's rows, so
+  // Entity fields (spec/120). Bounded on write like the checklist's rows, so
   // a paste into the menu can't produce an element nobody can read.
-  const setRecordFieldsSelected = (fields: RecordField[]) => {
+  const setEntityFieldsSelected = (fields: EntityField[]) => {
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
-    const bounded = fields.slice(0, RECORD_MAX_FIELDS).map((f) => ({
-      name: f.name.slice(0, RECORD_MAX_TEXT),
-      ...(f.type ? { type: f.type.slice(0, RECORD_MAX_TEXT) } : {}),
+    const bounded = fields.slice(0, ENTITY_MAX_FIELDS).map((f) => ({
+      name: f.name.slice(0, ENTITY_MAX_TEXT),
+      ...(f.type ? { type: f.type.slice(0, ENTITY_MAX_TEXT) } : {}),
     }));
     commit((els) =>
       els.map((el) =>
-        ids.has(el.id) && el.type === 'shape' && el.shape === 'record'
-          ? { ...el, recordFields: bounded }
+        ids.has(el.id) && el.type === 'shape' && el.shape === 'entity'
+          ? { ...el, entityFields: bounded }
           : el,
       ),
     );
-    track('Element', 'Changed', 'Record');
+    track('Element', 'Changed', 'Entity');
   };
 
   const setChecklistItemsSelected = (items: ChecklistItem[]) => {
@@ -316,7 +316,7 @@ export function useDataShapeSetters({ currentSelectionIds, commit }: DataShapeSe
     toggleChecklistItem,
     setPageHeading,
     setChecklistItemsSelected,
-    setRecordFieldsSelected,
+    setEntityFieldsSelected,
     setButtonModeSelected,
     setRatingSelected,
     setRatingAnimSelected,

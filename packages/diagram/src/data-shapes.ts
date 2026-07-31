@@ -131,13 +131,13 @@ export const PAGE_HEADING_MAX = 200;
 // Record (spec/120): a UML class / ER entity box. One row per field, each a
 // name with an optional type. Bounded like the checklist so a paste can't
 // produce an element nobody can scroll.
-export const RECORD_MAX_FIELDS = 40;
-export const RECORD_MAX_TEXT = 80;
+export const ENTITY_MAX_FIELDS = 40;
+export const ENTITY_MAX_TEXT = 80;
 
 // A row in a record box. `type` is optional because half the uses (an ER
 // entity's attribute list, a rough class sketch) don't carry one, and an empty
 // column reads better than a placeholder.
-export type RecordField = { name: string; type?: string };
+export type EntityField = { name: string; type?: string };
 export const CHECKLIST_MAX_TEXT = 200;
 export const CHECKLIST_DEFAULT_ITEMS: readonly ChecklistItem[] = [
   { text: 'First task', done: true },
