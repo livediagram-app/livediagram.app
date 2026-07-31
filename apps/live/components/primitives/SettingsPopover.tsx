@@ -49,7 +49,23 @@ export function SettingsPopover({
       if (!t) return;
       // Right-align under the trigger, then clamp the left edge on-screen.
       const left = Math.max(EDGE, Math.min(t.right - width, window.innerWidth - width - EDGE));
-      setPos({ left, top: t.bottom + GAP });
+      // Flip ABOVE the trigger when there isn't room below. These gears sit in
+      // panel headers, and a panel docked near the bottom of the window (the
+      // Map, usually) put its popover mostly off-screen — the controls were
+      // there but unreachable.
+      //
+      // Measured, not assumed: the panel is already rendered (parked
+      // off-screen until placed), so its real height is available here and the
+      // decision doesn't depend on anyone keeping a hard-coded number in step
+      // with the contents.
+      const h = panelRef.current?.offsetHeight ?? 0;
+      const below = t.bottom + GAP;
+      const above = t.top - GAP - h;
+      const roomBelow = window.innerHeight - below - EDGE >= h;
+      // Only flip if ABOVE is actually better; on a window too short for
+      // either, stay below and let the max-height below make it scroll.
+      const top = roomBelow || above < EDGE ? below : above;
+      setPos({ left, top });
     };
     place();
     window.addEventListener('resize', place);
@@ -92,8 +108,16 @@ export function SettingsPopover({
             role="dialog"
             aria-label={title}
             onPointerDown={(e) => e.stopPropagation()}
-            className="fixed z-[var(--z-overlay)] flex animate-fade-in flex-col gap-0.5 rounded-lg border border-slate-200 bg-white p-1.5 shadow-xl shadow-slate-900/15 dark:border-slate-700 dark:bg-slate-900"
-            style={{ left: pos?.left ?? -9999, top: pos?.top ?? -9999, width }}
+            className="fixed z-[var(--z-overlay)] flex animate-fade-in flex-col gap-0.5 overflow-y-auto rounded-lg border border-slate-200 bg-white p-1.5 shadow-xl shadow-slate-900/15 dark:border-slate-700 dark:bg-slate-900"
+            style={{
+              left: pos?.left ?? -9999,
+              top: pos?.top ?? -9999,
+              width,
+              // The last resort: a popover taller than the window scrolls
+              // rather than running off it. Unset until placed, so the first
+              // render measures its natural height.
+              maxHeight: pos ? `calc(100vh - ${pos.top + EDGE}px)` : undefined,
+            }}
           >
             {children(() => setOpen(false))}
           </div>
