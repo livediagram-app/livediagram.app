@@ -16,3 +16,4 @@ export * from './feature-art/features';
 export * from './feature-art/motion';
 export * from './feature-art/versatility';
 export * from './feature-art/content';
+export * from './feature-art/structure';

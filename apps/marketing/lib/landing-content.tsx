@@ -15,6 +15,10 @@ import {
   AssignedActionsArt,
   CommentsArt,
   ComponentsArt,
+  EmbedArt,
+  EntityArt,
+  LanesArt,
+  MindMapArt,
   CustomThemesArt,
   DarkModeArt,
   DepthArt,
@@ -599,6 +603,34 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Full-colour technology icons',
         description:
           'Build cloud architecture diagrams with brand-accurate icons for AWS, Azure, Cloudflare, and Firebase, plus a vendor-neutral set (Kubernetes, Docker, PostgreSQL, Redis and more), spanning compute, storage, databases, and networking. Search the Technology picker, drop one in, and it lands labelled with its product name.',
+      },
+      {
+        art: <MindMapArt />,
+        href: '/help/palette/mind-maps/',
+        title: 'Mind maps from the keyboard',
+        description:
+          'Type a thought, press Tab for a child or Enter for a sibling, and keep typing. Every node arrives already connected, already selected, and ready for the next word, so a whole branch goes down at the speed you can say it. Nothing re-flows underneath you; tidy it with Auto Layout when you are done.',
+      },
+      {
+        art: <LanesArt />,
+        href: '/help/palette/lanes/',
+        title: 'Swimlanes that hold their contents',
+        description:
+          'Drop a lane for each role, team, or system, and lay the flow inside it. Drag the band and everything fully inside comes along, so reordering a process is one gesture rather than a careful multi-select. The title lives in its own gutter, clear of the work.',
+      },
+      {
+        art: <EntityArt />,
+        href: '/help/palette/entities/',
+        title: 'Class and entity boxes',
+        description:
+          'A title bar over a list of name and type rows: the box at the heart of a UML class diagram and an ER model alike. Edit the fields from its menu, join them with the hollow triangle and diamond arrowheads UML expects, and skip building one out of stacked tables.',
+      },
+      {
+        art: <EmbedArt />,
+        href: '/help/palette/embed-elements/',
+        title: 'Videos, Figma, and Docs in place',
+        description:
+          'Paste a YouTube or Vimeo link, a Loom recording, a Figma file, or a Google Doc, and it sits on the canvas where the discussion is. Nothing loads until somebody presses play, and the player never steals the pointer, so the board stays draggable while it runs.',
       },
       {
         art: <ComponentsArt />,
