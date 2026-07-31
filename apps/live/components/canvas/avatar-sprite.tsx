@@ -74,7 +74,23 @@ function shade(hex: string | undefined): { base: string; dark: string } {
 
 // A trousered leg: a column with a shoe at the bottom. `lift` raises the whole
 // leg by a pixel for the mid-stride frame.
-function Leg({ x, lift = 0 }: { x: number; lift?: number }) {
+function Leg({ x, lift = 0, seated = false }: { x: number; lift?: number; seated?: boolean }) {
+  // Seated (spec/130): the thigh goes AWAY from the viewer, so from the front
+  // it is a short stub, and the shin drops in front of it to a foot planted
+  // forward. Two rows shorter overall, which is what makes the silhouette read
+  // as folded rather than standing.
+  if (seated) {
+    return (
+      <g transform={`translate(0 ${-lift})`}>
+        {/* Thigh: one row, wide, foreshortened. */}
+        <rect x={x - 1} y={16} width={5} height={2} fill={TROUSERS} />
+        <rect x={x + 3} y={16} width={1} height={2} fill={TROUSERS_DARK} />
+        {/* Shin, dropping to the floor in front of the seat. */}
+        <rect x={x} y={18} width={3} height={3} fill={TROUSERS_DARK} />
+        <rect x={x} y={21} width={3} height={2} fill={SHOE} />
+      </g>
+    );
+  }
   return (
     <g transform={`translate(0 ${-lift})`}>
       <rect x={x} y={15} width={3} height={6} fill={TROUSERS} />
@@ -85,7 +101,16 @@ function Leg({ x, lift = 0 }: { x: number; lift?: number }) {
 }
 
 // A bare leg, worn under the dress.
-function BareLeg({ x, lift = 0 }: { x: number; lift?: number }) {
+function BareLeg({ x, lift = 0, seated = false }: { x: number; lift?: number; seated?: boolean }) {
+  if (seated) {
+    return (
+      <g transform={`translate(0 ${-lift})`}>
+        <rect x={x - 1} y={17} width={4} height={2} fill={SKIN} />
+        <rect x={x} y={19} width={2} height={2} fill={SKIN} />
+        <rect x={x} y={21} width={2} height={2} fill={SHOE} />
+      </g>
+    );
+  }
   return (
     <g transform={`translate(0 ${-lift})`}>
       <rect x={x} y={18} width={2} height={3} fill={SKIN} />
@@ -112,6 +137,7 @@ function LowerFront({
   walking,
   airborne,
   legsApart,
+  seated = false,
 }: {
   clothing: AvatarConfig['clothing'];
   shirtDark: string;
@@ -120,28 +146,32 @@ function LowerFront({
   airborne: boolean;
   // Mid-jumping-jack: legs splayed rather than striding.
   legsApart: boolean;
+  // Sitting (spec/130): knees apart and the legs drawn folded.
+  seated?: boolean;
 }) {
   const strideLift = walking && !airborne;
   // Splayed stance for a jack; otherwise the two legs sit under the body. The
   // split is wide (right out to the sprite's edges) because at canvas size a
   // one-pixel stagger doesn't read as a jumping jack at all.
-  const leftX = legsApart ? 1 : 5;
-  const rightX = legsApart ? 12 : 9;
+  // Seated: knees a touch apart, which is what a person sitting looks like
+  // from the front and also stops the two folded legs merging into one block.
+  const leftX = legsApart ? 1 : seated ? 4 : 5;
+  const rightX = legsApart ? 12 : seated ? 10 : 9;
   const leftLift = legsApart ? 0 : mid && strideLift ? 1 : 0;
   const rightLift = legsApart ? 0 : !mid && strideLift ? 1 : 0;
   if (BARE_LEG_CLOTHING.has(clothing)) {
     return (
       <>
-        <BareLeg x={leftX} lift={leftLift} />
-        <BareLeg x={rightX} lift={rightLift} />
+        <BareLeg x={leftX} lift={leftLift} seated={seated} />
+        <BareLeg x={rightX} lift={rightLift} seated={seated} />
         <Skirt shirtDark={shirtDark} />
       </>
     );
   }
   return (
     <>
-      <Leg x={leftX} lift={leftLift} />
-      <Leg x={rightX} lift={rightLift} />
+      <Leg x={leftX} lift={leftLift} seated={seated} />
+      <Leg x={rightX} lift={rightLift} seated={seated} />
     </>
   );
 }
@@ -153,12 +183,14 @@ function LowerProfile({
   mid,
   walking,
   airborne,
+  seated = false,
 }: {
   clothing: AvatarConfig['clothing'];
   shirtDark: string;
   mid: boolean;
   walking: boolean;
   airborne: boolean;
+  seated?: boolean;
 }) {
   const strideLift = walking && !airborne ? 1 : 0;
   if (BARE_LEG_CLOTHING.has(clothing)) {
@@ -172,8 +204,8 @@ function LowerProfile({
   }
   return (
     <>
-      <Leg x={mid ? 8 : 6} />
-      <Leg x={mid ? 5 : 7} lift={strideLift} />
+      <Leg x={mid ? 8 : 6} seated={seated} />
+      <Leg x={mid ? 5 : 7} lift={strideLift} seated={seated} />
     </>
   );
 }
@@ -861,11 +893,18 @@ export function AvatarSprite({
   // A one-pixel body bob on the mid-stride frame; mid-air the legs tuck
   // together instead of striding.
   const airborne = lift > 0;
-  // How far the body drops onto the seat, in sprite pixels.
-  const sitDrop = seated ? 3 : 0;
+  // How far the body drops onto the seat, in sprite pixels. The legs also
+  // fold (see Leg), so the whole figure loses about five rows of height —
+  // three of drop and two of folded leg — which is what reads as sitting. At
+  // the old 3 with straight legs it just looked like standing on the chair.
+  const sitDrop = seated ? 5 : 0;
   const bob = airborne ? 0 : mid ? -1 : 0;
   const swing = airborne ? -1 : walking ? (mid ? 1 : -1) : 0;
-  const profile = facing === 'left' || facing === 'right';
+  // Seated (spec/130): always face the reader. A chair's occupant drawn in
+  // profile reads as perched on the arm rather than sitting in it, and which
+  // way you happened to walk in from is not information worth keeping.
+  const facingNow = seated ? 'down' : facing;
+  const profile = facingNow === 'left' || facingNow === 'right';
   const { base: shirtBase, dark: shirtDark } = shade(shirt);
   const box = portrait ? avatarPortraitBox(scale) : avatarBox(scale);
   // The hop is expressed in SPRITE pixels, so the whole body rises while the
@@ -894,7 +933,7 @@ export function AvatarSprite({
       )}
       <g
         transform={
-          facing === 'right'
+          facingNow === 'right'
             ? `translate(${16 - (pose?.leanX ?? 0)} ${bob - liftPx + sitDrop}) scale(-1 1)`
             : `translate(${pose?.leanX ?? 0} ${bob - liftPx + sitDrop})`
         }
@@ -906,7 +945,8 @@ export function AvatarSprite({
               shirtDark={shirtDark}
               mid={mid}
               walking={walking}
-              airborne={airborne || seated}
+              airborne={airborne}
+              seated={seated}
             />
             <TorsoProfile
               swing={swing}
@@ -924,8 +964,9 @@ export function AvatarSprite({
               shirtDark={shirtDark}
               mid={mid}
               walking={walking}
-              airborne={airborne || seated}
+              airborne={airborne}
               legsApart={pose?.legsApart ?? false}
+              seated={seated}
             />
             <Torso
               swing={swing}
@@ -936,7 +977,7 @@ export function AvatarSprite({
               pose={pose}
             />
             {config.clothing === 'hoodie' ? <Hood shirtDark={shirtDark} /> : null}
-            {facing === 'up' ? (
+            {facingNow === 'up' ? (
               <HeadBack hair={config.hair} />
             ) : (
               <HeadFront gender={config.gender} hair={config.hair} />

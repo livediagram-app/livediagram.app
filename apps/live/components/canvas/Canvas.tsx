@@ -715,6 +715,7 @@ export function Canvas(props: CanvasProps) {
             seated={avatar.seatedOn !== null}
             shirt={props.selfParticipant.color}
             standingOn={avatarStandingOn}
+            onStand={avatar.standUp}
           />
         ) : null}
       </div>

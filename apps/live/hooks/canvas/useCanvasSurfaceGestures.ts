@@ -180,6 +180,14 @@ export function useCanvasSurfaceGestures({
       // is (male / female), and a right-click anywhere else is swallowed —
       // the context menu stays shut in this mode either way.
       if (e.button === 0) {
+        // Seated (spec/130): a double-click is one of the two deliberate ways
+        // out of a chair. A single click deliberately does nothing — walkTo
+        // refuses while seated, so you cannot be dragged out by a stray click
+        // — which left no pointer-only way out at all until this.
+        if (avatar.seatedOn && e.detail >= 2) {
+          avatar.standUp();
+          return;
+        }
         // Clicking someone ELSE's character walks over and pushes them
         // (spec/101), rather than walking to the spot they're standing on.
         const peer = peerAvatarAt(point);

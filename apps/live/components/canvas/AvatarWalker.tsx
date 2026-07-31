@@ -25,6 +25,7 @@ export function AvatarWalker({
   shirt,
   standingOn,
   name,
+  onStand,
 }: {
   // Feet position in canvas coords.
   pos: { x: number; y: number };
@@ -52,6 +53,8 @@ export function AvatarWalker({
   // Peer name, rendered as a small chip above the head. Omitted for your own
   // character (you know who you are).
   name?: string;
+  // Stand up from a chair (spec/130). Absent for peers' characters.
+  onStand?: () => void;
 }) {
   const scale = avatarScale(config.size);
   const box = avatarBox(scale);
@@ -75,6 +78,8 @@ export function AvatarWalker({
       ) : null}
       <div
         aria-hidden
+        data-avatar={onStand ? 'self' : 'peer'}
+        data-seated={seated ? '' : undefined}
         className="pointer-events-none absolute"
         style={{
           // The box is bigger than the figure: it reserves headroom above for
@@ -113,6 +118,23 @@ export function AvatarWalker({
           shirt={shirt}
           scale={scale}
         />
+        {/* Stand (spec/130). Arrow keys and a double-click both get you out of
+            a chair, and neither exists on a touch device — so the seat carries
+            its own press. Only for your OWN character: you cannot stand
+            somebody else up. */}
+        {seated && onStand ? (
+          <button
+            type="button"
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              onStand();
+            }}
+            className="pointer-events-auto absolute left-1/2 top-full -translate-x-1/2 translate-y-1 whitespace-nowrap rounded-full bg-slate-900/85 px-2 py-0.5 text-[10px] font-medium text-white shadow-sm"
+          >
+            Stand
+          </button>
+        ) : null}
       </div>
     </>
   );
