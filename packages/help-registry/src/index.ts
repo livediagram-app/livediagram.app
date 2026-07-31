@@ -177,7 +177,7 @@ export const categories: Category[] = [
     title: 'Palette',
     description:
       'Your launchpad for everything on the canvas: every element and palette setting explained.',
-    articleCount: 14,
+    articleCount: 15,
     kind: 'feature',
   },
   {
@@ -839,6 +839,16 @@ export const articles: Article[] = [
     title: 'Components',
     description: 'Pre-assembled blocks like banners, callouts, and stat rows.',
     keywords: 'banner callout stat block prebuilt widgets cards sections',
+    category: 'Palette',
+    categorySlug: 'palette',
+    group: 'Elements',
+  },
+  {
+    slug: 'behaviour',
+    title: 'Behaviour Elements',
+    description: 'Mode buttons, portals, session buttons, reveal zones, and pickers.',
+    keywords:
+      'behaviour behavior interactive button portal session timer vote poll reveal hide cover picker random spinner control mode switch',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Elements',

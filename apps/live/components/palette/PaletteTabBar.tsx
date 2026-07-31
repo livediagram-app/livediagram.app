@@ -8,6 +8,24 @@ type PaletteTab = {
   description: string;
   icon: React.ReactNode;
   content: React.ReactNode;
+  // Which band of the category dropdown this tab sits in — an index into
+  // CATEGORY_BANDS below (spec/110). Nine equal-weight categories in one grid
+  // is a wall; three named bands say what kind of thing each category is.
+  //
+  // Left unset for Favourites, which is not a kind of thing at all — it is
+  // every category at once, so it sits full width above the first band with
+  // no heading over it.
+  group?: number;
+  fullWidth?: boolean;
+};
+
+// The category dropdown's bands, in order. Tabs are listed in band order in
+// the caller's `tabs` array, so the grid renders them under these headings
+// without a sort here.
+const CATEGORY_BANDS: Record<number, string> = {
+  0: 'Common',
+  1: 'Decorate',
+  2: 'Interactive',
 };
 
 // Renders the palette's category switcher as a single right-hand dropdown
@@ -90,15 +108,23 @@ export function PaletteTabBar({
           value={activeId}
           align="right"
           variant="flush"
-          // Grow to fit every category (Shapes / Tools / Components / Devices /
-          // Icons / Technology) rather than capping at max-h + scrolling — the
-          // list is short and fixed, so a scrollbar just looked cramped.
+          // Grow to fit every category rather than capping at max-h +
+          // scrolling — the list is short and fixed, so a scrollbar just
+          // looked cramped.
           autoHeight
-          // Tile grid (spec/108): seven equal-weight, icon-bearing categories
-          // read faster as a grid than as a column you scan top to bottom.
+          // Tile grid (spec/108): nine equal-weight, icon-bearing categories
+          // read faster as a grid than as a column you scan top to bottom,
+          // and the bands (spec/110) group them by what they are for.
           grid
+          groupLabels={CATEGORY_BANDS}
           onChange={setActiveId}
-          options={tabs.map((tab) => ({ id: tab.id, label: tab.label, icon: tab.icon }))}
+          options={tabs.map((tab) => ({
+            id: tab.id,
+            label: tab.label,
+            icon: tab.icon,
+            group: tab.group,
+            fullWidth: tab.fullWidth,
+          }))}
         />
       </div>
       <div

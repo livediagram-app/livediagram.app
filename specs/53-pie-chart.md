@@ -1,17 +1,19 @@
 # 53 — Data charts (pie + bar + line)
 
 Data charts are elements whose marks are sized by value, in a categorical
-palette, with an optional legend. The palette holds them in the **Data**
-sub-section of the **Tools** tab (folded in from a former standalone Data
-category so the palette spends one fewer top-level tab) — **Pie**, **Bar**, and
+palette, with an optional legend. The palette holds them in its own top-level **Data**
+category (it was folded into the Tools tab for a while; [spec/110](110-palette-top-level-categories.md)
+pulled it back out) — **Pie**, **Bar**, and
 **Line** today, built so more chart kinds slot in beside them. They share the
 animation set, legend toggle, and context-menu categories; pie + bar also share
 the same 1-D data model, while the line chart carries a 2-D dataset (see Model).
 
 ## Behaviour
 
-- Drag a **Pie**, **Bar**, or **Line** chart in from the **Data** sub-section
-  of the palette's **Tools** tab. It drops with sample data.
+- Drag a **Pie**, **Bar**, or **Line** chart in from the palette's **Data**
+  category. It drops with sample data. Each is a row with a one-line blurb
+  ("Proportions of a whole", "A trend over time") rather than a caption tile:
+  the picture names the chart, not the job it does.
 - A **Data** context-menu category edits the chart. Pie / bar edit inline: one
   row per datum — a recolourable swatch, a **label**, and a **value** — plus
   add / remove. The line chart's 2-D grid is too wide for the narrow menu, so
@@ -75,4 +77,4 @@ groups all three (they're all in `isSelfDrawingShape` too).
 Follows the composite-component pattern (spec/51, 52): a dedicated `ShapeKind`
 
 - small `ShapeElement` fields + a bespoke `*View` + a borderless variant + a
-  context-menu category. New chart kinds reuse it under the same Data palette tab.
+  context-menu category. New chart kinds reuse it under the same Data palette category.

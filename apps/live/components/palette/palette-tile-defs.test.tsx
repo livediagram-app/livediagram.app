@@ -30,12 +30,18 @@ describe('PALETTE_TILES catalogue', () => {
 });
 
 describe('tool blurbs', () => {
-  // The Tools tab renders a row per tool with a one-line explanation under the
-  // name (see PaletteToolRows). A tool without one leaves a bare row, so this
-  // is the same kind of registration rule the help centre has.
-  const toolTiles = [...tilesInSection('tools'), ...tilesInSection('data')];
+  // Four tabs render a row per tile with a one-line explanation under the name
+  // (see PaletteToolRows): Tools, and the three categories whose glyphs cannot
+  // say what the thing does — Behaviour, Data, and Components. A tile without
+  // one leaves a bare row, so this is the same kind of registration rule the
+  // help centre has.
+  const toolTiles = [
+    ...tilesInSection('tools'),
+    ...tilesInSection('data'),
+    ...tilesInSection('components'),
+  ];
 
-  it('gives every tool in the Tools tab a blurb', () => {
+  it('gives every row-rendered tile a blurb', () => {
     const missing = toolTiles.filter((t) => !t.blurb?.trim()).map((t) => t.id);
     expect(missing).toEqual([]);
   });

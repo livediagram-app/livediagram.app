@@ -5,7 +5,12 @@ import type { PendingDraw } from '@/lib/draw-mode';
 import { PaletteTileGrid, type PaletteTileActions } from './PaletteTileGrid';
 import { PaletteToolRows } from './PaletteToolRows';
 import { PaletteCategoryBrowser } from './PaletteCategoryBrowser';
-import { TOOL_GROUPS, tilesInSection, tilesInToolGroup } from './palette-tile-defs';
+import {
+  TOOL_GROUPS,
+  tilesInSection,
+  tilesInToolGroup,
+  type ToolGroupId,
+} from './palette-tile-defs';
 
 // The palette's creation-category tab bodies. Since spec/78 every tile is
 // a data entry in the shared catalogue (palette-tile-defs.tsx) rendered
@@ -15,6 +20,12 @@ import { TOOL_GROUPS, tilesInSection, tilesInToolGroup } from './palette-tile-de
 // catalogue. The search-driven tabs (Icons / Technology) stay in
 // CommandPalette since they own their search / filter state; the
 // Favourites tab (spec/78) has its own file (PaletteFavouritesTab).
+
+// Tool groups promoted OUT of the Tools tab into their own top-level palette
+// category (spec/110). They keep their `toolGroup` on the tile defs — the
+// favourites dialog and the group catalogue still address them by it — so this
+// set is what the Tools tab subtracts rather than a second source of truth.
+const TOP_LEVEL_GROUPS = new Set<ToolGroupId>(['behaviour']);
 
 type TabProps = {
   pendingDraw: PendingDraw | null | undefined;
@@ -27,8 +38,8 @@ export function PaletteShapesTab({ pendingDraw, actions }: TabProps) {
 
 // The Tools tab (spec/09 "Sub-categories"): the tools grouped by theme (Write &
 // Draw / Structure / Blocks / People & Media / Behaviour, from TOOL_GROUPS — a
-// flat twenty-tile wall stopped scanning), plus the Data charts (spec/53,
-// folded in from the old standalone Data category).
+// flat twenty-tile wall stopped scanning). The Data charts and the Behaviour
+// elements are NOT here: each is its own top-level category (spec/110).
 //
 // Navigation is DRILL-IN: a grid of category tiles, then that category's tools
 // with a breadcrumb back. It replaced a stack of accordions,
@@ -40,22 +51,17 @@ export function PaletteToolsTab({ pendingDraw, actions }: TabProps) {
   // filter you'd expect to survive leaving it.
   const [query, setQuery] = useState('');
   // Category artwork = the group's first tile, so a category always looks like
-  // what it holds. Data's tiles come from its own catalogue section rather
-  // than a tool group.
-  const categories = [
-    ...TOOL_GROUPS.map((g) => ({
+  // what it holds.
+  const categories = TOOL_GROUPS.filter((g) => !TOP_LEVEL_GROUPS.has(g.id)).map((g) => {
+    const items = tilesInToolGroup(g.id);
+    return {
       id: g.id,
       label: g.label,
       description: g.description,
-      items: tilesInToolGroup(g.id),
-    })),
-    {
-      id: 'data',
-      label: 'Data',
-      description: 'Charts and meters: pie, bar and line charts, progress bars and rings, ratings.',
-      items: tilesInSection('data'),
-    },
-  ].map((c) => ({ ...c, icon: c.items[0]?.icon ?? null }));
+      items,
+      icon: items[0]?.icon ?? null,
+    };
+  });
   return (
     <PaletteCategoryBrowser
       root="Tools"
@@ -64,9 +70,11 @@ export function PaletteToolsTab({ pendingDraw, actions }: TabProps) {
       // finds the pie chart whether or not you know what it's called.
       search={(query) => {
         const q = query.toLowerCase();
-        return [...tilesInSection('tools'), ...tilesInSection('data')].filter((t) =>
-          [t.label, t.caption ?? '', t.description].some((s) => s.toLowerCase().includes(q)),
-        );
+        return tilesInSection('tools')
+          .filter((t) => !t.toolGroup || !TOP_LEVEL_GROUPS.has(t.toolGroup))
+          .filter((t) =>
+            [t.label, t.caption ?? '', t.description].some((s) => s.toLowerCase().includes(q)),
+          );
       }}
       renderItems={(tiles) => (
         <PaletteToolRows tiles={tiles} actions={actions} pendingDraw={pendingDraw} />
@@ -85,8 +93,49 @@ export function PaletteToolsTab({ pendingDraw, actions }: TabProps) {
   );
 }
 
+// Charts and meters (spec/53): pie / bar / line charts, progress bars and
+// rings, ratings. Its own top-level category rather than a group inside Tools
+// (spec/110) — a chart is a thing you place, not a tool you pick up, and
+// burying six tiles two levels down made them the hardest elements in the
+// palette to reach.
+export function PaletteDataTab({ pendingDraw, actions }: TabProps) {
+  // Rows with a blurb, like Behaviour: "Pie" and "Donut" name the picture but
+  // not the job, and "Proportions of a whole" vs "How far along something is"
+  // is the thing you are actually choosing between.
+  return (
+    <PaletteToolRows tiles={tilesInSection('data')} actions={actions} pendingDraw={pendingDraw} />
+  );
+}
+
+// The elements that DO something when somebody interacts with them (spec/103
+// to spec/107): Selection Mode buttons, Portals, Session buttons, Reveal
+// zones, Pickers. Its own top-level category (spec/110) rather than a group
+// inside Tools, because these are the palette's newest and least discoverable
+// elements and two levels of navigation is where they went to hide.
+//
+// Rows, not a tile grid: half of these are behaviours whose glyph cannot say
+// what they do, so each keeps its one-line blurb (spec/09).
+export function PaletteBehaviourTab({ pendingDraw, actions }: TabProps) {
+  return (
+    <PaletteToolRows
+      tiles={tilesInToolGroup('behaviour')}
+      actions={actions}
+      pendingDraw={pendingDraw}
+    />
+  );
+}
+
+// Ready-made composites (spec/09 "Components"). Rows with a blurb, like
+// Behaviour and Data: a composite's thumbnail is a grey wireframe of a layout,
+// which shows its arrangement but not its job, so each says what it is for.
 export function PaletteComponentsTab({ pendingDraw, actions }: TabProps) {
-  return <PaletteTileGrid section="components" actions={actions} pendingDraw={pendingDraw} />;
+  return (
+    <PaletteToolRows
+      tiles={tilesInSection('components')}
+      actions={actions}
+      pendingDraw={pendingDraw}
+    />
+  );
 }
 
 // Wireframing device-frame primitives (browser / monitor / laptop / phone /

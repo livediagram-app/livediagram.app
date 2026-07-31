@@ -1108,6 +1108,8 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   // --- Components (spec/09) -------------------------------------------------
   {
     id: 'components:banner',
+    blurb: 'A themed title block for the top',
+    caption: 'Banner',
     section: 'components',
     label: 'Add banner',
     description:
@@ -1134,6 +1136,8 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   {
     id: 'components:callout',
+    blurb: 'A note box with an icon and title',
+    caption: 'Callout',
     section: 'components',
     label: 'Add callout',
     description:
@@ -1160,6 +1164,8 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   {
     id: 'components:stat',
+    blurb: 'Three KPI cards side by side',
+    caption: 'Stat row',
     section: 'components',
     label: 'Add stat row',
     description:
@@ -1187,6 +1193,8 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   {
     id: 'components:process',
+    blurb: 'Numbered steps joined by arrows',
+    caption: 'Process',
     section: 'components',
     label: 'Add process steps',
     description:
@@ -1214,6 +1222,8 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   {
     id: 'components:hero',
+    blurb: 'A big image with a title card',
+    caption: 'Hero',
     section: 'components',
     label: 'Add hero',
     description:
@@ -1241,6 +1251,8 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   {
     id: 'components:header',
+    blurb: 'A website-style nav bar',
+    caption: 'Header',
     section: 'components',
     label: 'Add header',
     description:

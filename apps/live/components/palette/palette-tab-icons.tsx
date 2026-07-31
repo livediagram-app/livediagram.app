@@ -86,9 +86,8 @@ export function ComponentsTabIcon() {
   );
 }
 
-// The Data SECTION's glyph (spec/53) — Data lives as a sub-section of the
-// Tools tab, not its own top-level category, but the edit-favourites
-// dialog's category pills (spec/78) give it a face of its own.
+// The Data category's glyph (spec/53): a bar chart, the most literal picture
+// of what the tab holds.
 export function DataTabIcon() {
   return (
     <svg
@@ -102,6 +101,27 @@ export function DataTabIcon() {
       aria-hidden
     >
       <path d="M5 20V10M12 20V4M19 20v-8" />
+    </svg>
+  );
+}
+
+// The Behaviour category's glyph (spec/110): a cursor over a target, for the
+// elements that DO something when somebody interacts with them.
+export function BehaviourTabIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M4 4l6.5 16 2.3-6.6 6.7-2.4z" />
+      <path d="M14.5 14.5 20 20" />
     </svg>
   );
 }

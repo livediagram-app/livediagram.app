@@ -1,0 +1,43 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Behaviour Elements',
+  description:
+    'The palette Behaviour category holds the elements that do something when somebody interacts with them: Selection Mode buttons, Portals, Session buttons, Reveal zones, and Pickers.',
+  path: '/help/palette/behaviour/',
+});
+
+<ArticleLayout
+  title="Behaviour Elements"
+  description="Elements that do something when somebody interacts with them, so a board can carry its own controls."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  subArticles={getSubArticles("behaviour")}
+>
+
+The **Behaviour** category (under **Interactive** in the palette's category picker) holds the elements that _do_ something when somebody interacts with them. Everywhere else in the palette you are placing a picture; here you are placing a control.
+
+Each is a row with its name and a one-line description of what it does, because a glyph cannot say what a Picker picks or where a Portal goes.
+
+## What the category contains
+
+A **Selection Mode** button reads "Switch to Avatar" and switches whoever presses it into that mode; right-click it and open **Tools › Button** to point it at any other mode — Select, Hand, Laser, Spotlight, Avatar, Eraser, Format, or Isometric — or type your own label over the derived one. Pressing it changes the mode for **the person who pressed it** and nobody else, pressing it again while you are in that mode hands you back your previous one, and it keeps working while you are in a mode that makes the rest of the canvas read-only, so a row of them makes a usable little control bar. A **Portal** is a ring of energy you link to another portal: click it — or walk an Avatar-mode character into it — and you come out the far side, even on another tab. See [Portals](/help/palette/tools/portals/).
+
+A **Session** button starts a session tool for everyone in the room: a countdown **timer**, a **dot vote**, or a **poll** you write in advance. Once a timer is running, the same button **pauses** it, and pressing again **continues** it — it becomes the timer's control rather than restarting the countdown. Right-click it and open **Tools › Session** to pick which, and its one setting — the number of minutes, the dots per person, or the question and its answers. It is how a board carries its own running order: put "5 minutes" over the writing column and "Vote — 3 dots each" over the results, and anyone can run the session. Starting a tool needs edit access, so on a view-only link the button shows as unavailable, though you can still take part once somebody starts it.
+
+A **Reveal** zone is a cover you put over part of the canvas — answers, estimates, a retro column nobody should read early. **Double-click** (or double-tap) uncovers it **on your screen only**, with a small Hide pill to put it back — two presses, so a stray click on a busy board doesn't give the game away; **Tools › Reveal › Reveal for all** takes it off for everyone at once. It hides content from a reader's eye, not from a determined reader: everything underneath is still in the diagram, so don't put anything genuinely private under one.
+
+A **Picker** chooses at random when you press it — one of the people currently in the room, or one of the options you write in **Tools › Picker**. It spins the candidates past and slows to a stop on the answer — people appear with their own avatar as they go by — and everyone sees the same result: handy for "who demos next" without anyone having to volunteer.
+
+## Working with them
+
+Each behaves like any other element once placed: select, restyle, group, and move it freely. They keep working while you are in a selection mode that makes the rest of the canvas read-only, which is the point of a control bar made of them.
+
+<Tip>
+  Put a row of these along the top of a board and it carries its own running order: a Session button
+  for the timer, a Reveal zone over the answers, and a Picker for who goes next.
+</Tip>
+
+</ArticleLayout>

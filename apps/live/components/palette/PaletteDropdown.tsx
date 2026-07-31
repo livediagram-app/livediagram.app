@@ -22,6 +22,10 @@ export type PaletteDropdownOption = {
   // only ever fall between groups that both still have visible items, never
   // leading / trailing / doubled. Options without a group never divide.
   group?: number;
+  // Grid layout only: span the whole row instead of taking one column. For an
+  // option that belongs above the bands rather than inside one (spec/110 —
+  // Favourites is every category at once, so it has no band of its own).
+  fullWidth?: boolean;
 };
 
 // Normalises whatever <svg> an option carries to a consistent 14px box so
@@ -297,10 +301,11 @@ export function PaletteDropdown({
                 // full-width rule between rows rather than between items.
                 options.map((opt, i, visible) => {
                   const prev = visible[i - 1];
-                  const divide =
-                    i > 0 && opt.group !== undefined && prev?.group !== undefined
-                      ? opt.group !== prev.group
-                      : false;
+                  // Compared against `prev?.group` rather than requiring both
+                  // to be defined, so an UNGROUPED option sitting above the
+                  // first band (Favourites) still lets that band open with its
+                  // own heading.
+                  const divide = i > 0 && opt.group !== prev?.group;
                   // A header opens each band, including the first — which has
                   // no divider before it, so `divide` alone would skip it.
                   const heading =
@@ -341,7 +346,21 @@ export function PaletteDropdown({
                           onChange(opt.id);
                           setOpen(false);
                         }}
-                        className={`relative flex cursor-pointer flex-col items-center justify-start gap-2 rounded-md px-2 py-3 text-center text-[11px] font-medium leading-tight transition ${bandTint(opt.group)} ${
+                        className={`relative flex cursor-pointer items-center rounded-md text-[11px] font-medium leading-tight transition ${
+                          // A full-width tile reads as a banner, not a tall
+                          // one-column card stretched sideways, so it lays its
+                          // glyph BESIDE the label rather than above it.
+                          opt.fullWidth
+                            ? 'col-span-full justify-center gap-2 px-2 py-2 text-left'
+                            : 'flex-col justify-start gap-2 px-2 py-3 text-center'
+                        } ${
+                          // The band tint is DROPPED on the selected tile.
+                          // Both set a background, and which one wins is
+                          // stylesheet order rather than class order — so the
+                          // untinted first band showed its selection and the
+                          // tinted ones silently did not.
+                          opt.id === value ? '' : bandTint(opt.group)
+                        } ${
                           opt.disabled
                             ? 'cursor-not-allowed text-slate-700 opacity-40 dark:text-slate-200'
                             : opt.id === value
@@ -356,7 +375,9 @@ export function PaletteDropdown({
                             {opt.icon}
                           </span>
                         ) : null}
-                        <span className="w-full truncate">{opt.label}</span>
+                        <span className={opt.fullWidth ? 'truncate' : 'w-full truncate'}>
+                          {opt.label}
+                        </span>
                         {/* Kept, but tucked into the corner: the shortcut is
                               worth discovering and worth nothing at the cost of
                               the label's line. */}

@@ -6,7 +6,7 @@ import { ToolsTab } from '@/components/illustrations/palette-tools';
 export const metadata = helpMetadata({
   title: 'Tools',
   description:
-    'The palette Tools tab gathers everything that is not a plain shape: text, freehand drawing, arrows, sticky notes, tables, code blocks, checklists, mode buttons, images, frames, and a Data sub-section of charts and meters.',
+    'The palette Tools tab gathers everything that is not a plain shape: text, pages, freehand drawing, arrows, sticky notes, tables, code blocks, checklists, images, and frames.',
   path: '/help/palette/tools/',
 });
 
@@ -18,7 +18,7 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles("tools")}
 >
 
-The palette's **Tools** tab gathers the elements that are not plain shapes. It opens on a grid of **categories** — one tile each for **Write &amp; Draw**, **Structure**, **Blocks**, **People &amp; Media**, **Behaviour**, and **Data**. Click a category to see its tools; a **breadcrumb** at the top ("‹ Tools › Write &amp; Draw") tells you where you are and takes you back in one click. Hovering a category tile describes what is inside it.
+The palette's **Tools** tab gathers the elements that are not plain shapes. It opens on a grid of **categories** — one tile each for **Write &amp; Draw**, **Structure**, **Blocks**, and **People &amp; Media**. (**Behaviour** and **Data** used to live here; each is now its own palette category, one click away in the category picker.) Click a category to see its tools; a **breadcrumb** at the top ("‹ Tools › Write &amp; Draw") tells you where you are and takes you back in one click. Hovering a category tile describes what is inside it.
 
 Not sure which category holds the tool you're after? A **search box** sits above the navigation, just like the one on the Icons tab: type a name ("table", "chart", "pencil") and the categories give way to a single grid of every matching tool. Clear the search to return to where you were.
 
@@ -34,13 +34,9 @@ Not sure which category holds the tool you're after? A **search box** sits above
 
 **Blocks** holds the rich content cards: **Code Block** is a dark monospace card for syntax-highlighted snippets, **Checklist** is a card of tickable to-do rows, and **Link Card** is a clickable preview of a URL.
 
-**Behaviour** holds the elements that _do_ something when somebody interacts with them. A **Selection Mode** button reads "Switch to Avatar" and switches whoever presses it into that mode; right-click it and open **Tools › Button** to point it at any other mode — Select, Hand, Laser, Spotlight, Avatar, Eraser, Format, or Isometric — or type your own label over the derived one. Pressing it changes the mode for **the person who pressed it** and nobody else, pressing it again while you are in that mode hands you back your previous one, and it keeps working while you are in a mode that makes the rest of the canvas read-only, so a row of them makes a usable little control bar. A **Portal** is a ring of energy you link to another portal: click it — or walk an Avatar-mode character into it — and you come out the far side, even on another tab. See [Portals](/help/palette/tools/portals/).
+**Behaviour** is no longer one of these categories — the elements that _do_ something when somebody interacts with them (Selection Mode buttons, Portals, Session buttons, Reveal zones, and Pickers) are their own palette category now. See [Behaviour Elements](/help/palette/behaviour/).
 
-A **Session** button starts a session tool for everyone in the room: a countdown **timer**, a **dot vote**, or a **poll** you write in advance. Once a timer is running, the same button **pauses** it, and pressing again **continues** it — it becomes the timer's control rather than restarting the countdown. Right-click it and open **Tools › Session** to pick which, and its one setting — the number of minutes, the dots per person, or the question and its answers. It is how a board carries its own running order: put "5 minutes" over the writing column and "Vote — 3 dots each" over the results, and anyone can run the session. Starting a tool needs edit access, so on a view-only link the button shows as unavailable, though you can still take part once somebody starts it.
-
-A **Reveal** zone is a cover you put over part of the canvas — answers, estimates, a retro column nobody should read early. **Double-click** (or double-tap) uncovers it **on your screen only**, with a small Hide pill to put it back — two presses, so a stray click on a busy board doesn't give the game away; **Tools › Reveal › Reveal for all** takes it off for everyone at once. It hides content from a reader's eye, not from a determined reader: everything underneath is still in the diagram, so don't put anything genuinely private under one.
-
-A **Picker** chooses at random when you press it — one of the people currently in the room, or one of the options you write in **Tools › Picker**. It spins the candidates past and slows to a stop on the answer — people appear with their own avatar as they go by — and everyone sees the same result: handy for "who demos next" without anyone having to volunteer.
+**Data** likewise: the charts and meters are their own category. See [Data and Chart Elements](/help/palette/tools/data-elements/).
 
 **People &amp; Media** covers pictures and figures: **Image** places an uploaded picture, **Avatar** places a circular image, and **User** places an actor figure, both handy for people in a flow.
 
@@ -57,7 +53,8 @@ Several tools have their own walkthroughs, listed below and linked here:
 - [Code Blocks](/help/palette/tools/code-blocks/) covers the dark monospace card for syntax-highlighted snippets.
 - [Checklists](/help/palette/tools/checklists/) covers the card of checkable to-do rows you tick on the canvas.
 - [Portals](/help/palette/tools/portals/) covers linking two portals and travelling between them, including across tabs.
-- [Data and Chart Elements](/help/palette/tools/data-elements/) covers the Data sub-section: Pie Chart, Bar Chart, Line Chart, Progress Bar, Progress Ring (a donut meter), and Rating (stars).
+- [Data and Chart Elements](/help/palette/tools/data-elements/) covers the **Data** category: Pie Chart, Bar Chart, Line Chart, Progress Bar, Progress Ring (a donut meter), and Rating (stars).
+- [Behaviour Elements](/help/palette/behaviour/) covers the **Behaviour** category: Selection Mode buttons, Portals, Session buttons, Reveal zones, and Pickers.
 
 The **Arrow** tool lives here too, but arrows are deep enough to deserve their own guide: see [Arrows](/help/palette/arrows/).
 
