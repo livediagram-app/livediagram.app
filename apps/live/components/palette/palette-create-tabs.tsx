@@ -3,7 +3,8 @@
 import type { PendingDraw } from '@/lib/draw-mode';
 import { PaletteTileGrid, type PaletteTileActions } from './PaletteTileGrid';
 import { PaletteToolRows } from './PaletteToolRows';
-import { PaletteEmbedGroup } from './PaletteEmbedGroup';
+import { PaletteTileGroup } from './PaletteTileGroup';
+import { EmbedGroupIcon, WebGroupIcon } from './palette-group-icons';
 import { tilesInSection, tilesInToolGroup } from './palette-tile-defs';
 
 // The palette's creation-category tab bodies. Since spec/78 every tile is
@@ -78,25 +79,47 @@ export function PaletteMediaTab({ pendingDraw, actions }: TabProps) {
   // The embed providers collapse behind one row (spec/121); Media's own two
   // elements stay on top where they were.
   const media = tilesInSection('media');
-  const embeds = media.filter((t) => t.embedGroup);
-  const rest = media.filter((t) => !t.embedGroup);
   return (
     <div className="flex flex-col gap-0.5">
-      <PaletteToolRows tiles={rest} actions={actions} pendingDraw={pendingDraw} />
-      {embeds.length > 0 ? (
-        <PaletteEmbedGroup tiles={embeds} actions={actions} pendingDraw={pendingDraw} />
-      ) : null}
+      <PaletteToolRows
+        tiles={media.filter((t) => !t.tileGroup)}
+        actions={actions}
+        pendingDraw={pendingDraw}
+      />
+      <PaletteTileGroup
+        title="Embed"
+        blurb={(n) => `${n} services that play on the canvas`}
+        icon={<EmbedGroupIcon />}
+        tiles={media.filter((t) => t.tileGroup === 'embed')}
+        actions={actions}
+        pendingDraw={pendingDraw}
+      />
     </div>
   );
 }
 
+// The website composites (Banner, Hero, Header, Callout, Stat row, Process)
+// collapse behind one Web Elements row, the same way Media's embeds do: they
+// are six of the eleven tiles here and were crowding out the diagram content
+// that moved in beside them (spec/110).
 export function PaletteComponentsTab({ pendingDraw, actions }: TabProps) {
+  const components = tilesInSection('components');
   return (
-    <PaletteToolRows
-      tiles={tilesInSection('components')}
-      actions={actions}
-      pendingDraw={pendingDraw}
-    />
+    <div className="flex flex-col gap-0.5">
+      <PaletteToolRows
+        tiles={components.filter((t) => !t.tileGroup)}
+        actions={actions}
+        pendingDraw={pendingDraw}
+      />
+      <PaletteTileGroup
+        title="Web Elements"
+        blurb={(n) => `${n} themed page sections`}
+        icon={<WebGroupIcon />}
+        tiles={components.filter((t) => t.tileGroup === 'web')}
+        actions={actions}
+        pendingDraw={pendingDraw}
+      />
+    </div>
   );
 }
 

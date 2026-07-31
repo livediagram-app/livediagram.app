@@ -96,9 +96,10 @@ export type PaletteTileDef = {
   // Which Tools-tab group the tile renders under. Required exactly when
   // `section === 'tools'` (a test pins this); meaningless elsewhere.
   toolGroup?: ToolGroupId;
-  // Media section only: this tile is one of the embed providers, so the Media
-  // tab can collapse them behind one Embed row (spec/121).
-  embedGroup?: boolean;
+  // Collapses this tile into a named group inside its category, rather than
+  // showing it as a top-level row (spec/121). 'embed' = the Media tab's embed
+  // providers; 'web' = the Components tab's website composites.
+  tileGroup?: 'embed' | 'web';
   label: string;
   // Overrides the caption derived from `label` where that runs too long
   // for the tile (see IconButton).
@@ -880,7 +881,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   {
     id: 'media:embed-youtube',
-    embedGroup: true,
+    tileGroup: 'embed',
     blurb: 'A YouTube video',
     caption: 'YouTube',
     section: 'media',
@@ -903,7 +904,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   {
     id: 'media:embed-vimeo',
-    embedGroup: true,
+    tileGroup: 'embed',
     blurb: 'A Vimeo video',
     caption: 'Vimeo',
     section: 'media',
@@ -926,7 +927,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   {
     id: 'media:embed-loom',
-    embedGroup: true,
+    tileGroup: 'embed',
     blurb: 'A Loom recording',
     caption: 'Loom',
     section: 'media',
@@ -949,7 +950,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   {
     id: 'media:embed-figma',
-    embedGroup: true,
+    tileGroup: 'embed',
     blurb: 'A Figma file or prototype',
     caption: 'Figma',
     section: 'media',
@@ -972,7 +973,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   {
     id: 'media:embed-gdocs',
-    embedGroup: true,
+    tileGroup: 'embed',
     blurb: 'A Doc, Sheet or Slide deck',
     caption: 'Google Docs',
     section: 'media',
@@ -1306,6 +1307,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   // --- Components (spec/09) -------------------------------------------------
   {
     id: 'components:banner',
+    tileGroup: 'web',
     blurb: 'A themed title block for the top',
     caption: 'Banner',
     section: 'components',
@@ -1334,6 +1336,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   {
     id: 'components:callout',
+    tileGroup: 'web',
     blurb: 'A note box with an icon and title',
     caption: 'Callout',
     section: 'components',
@@ -1362,6 +1365,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   {
     id: 'components:stat',
+    tileGroup: 'web',
     blurb: 'Three KPI cards side by side',
     caption: 'Stat row',
     section: 'components',
@@ -1391,6 +1395,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   {
     id: 'components:process',
+    tileGroup: 'web',
     blurb: 'Numbered steps joined by arrows',
     caption: 'Process',
     section: 'components',
@@ -1420,6 +1425,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   {
     id: 'components:hero',
+    tileGroup: 'web',
     blurb: 'A big image with a title card',
     caption: 'Hero',
     section: 'components',
@@ -1449,6 +1455,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   {
     id: 'components:header',
+    tileGroup: 'web',
     blurb: 'A website-style nav bar',
     caption: 'Header',
     section: 'components',

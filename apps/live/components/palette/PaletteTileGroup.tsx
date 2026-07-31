@@ -7,23 +7,31 @@ import { PaletteToolRows } from './PaletteToolRows';
 import type { PaletteTileDef } from './palette-tile-defs';
 import type { PaletteTileActions } from './PaletteTileGrid';
 
-// The Embed group in the Media tab (spec/121): one row that opens to reveal
-// the five providers.
+// A collapsible group of tiles inside a palette category: one row that opens
+// in place to reveal its members.
 //
-// A collapsible group rather than five rows always on show, and rather than
-// one generic "Embed" tile: five rows would make Media mostly embeds and bury
-// Image and Avatar, while a single tile hid which services actually work —
-// somebody wanting to drop a Figma file had no way to know they could.
-//
-// A drill-in (the Icons / Technology pattern) would also have worked, but it
-// costs a whole screen and a breadcrumb to show five rows; opening in place
-// keeps Image and Avatar visible right above.
+// Used by Media's Embed group (spec/121) and Components' Web Elements group.
+// The problem is the same in both: a handful of tiles that belong together and
+// would otherwise crowd out the category's other elements. Always-visible rows
+// bury the rest; a single umbrella tile hides what is inside (somebody wanting
+// a Figma embed had no way to know they could); and a drill-in — the
+// Icons / Technology pattern — spends a whole screen and a breadcrumb to show
+// five rows. Opening in place keeps the category's other elements visible
+// right above.
 
-export function PaletteEmbedGroup({
+export function PaletteTileGroup({
+  title,
+  blurb,
+  icon,
   tiles,
   actions,
   pendingDraw,
 }: {
+  title: string;
+  // One line under the title. Takes the tile count so a group says how much
+  // is behind it without the caller counting.
+  blurb: (count: number) => string;
+  icon: React.ReactNode;
   tiles: PaletteTileDef[];
   actions: PaletteTileActions;
   pendingDraw: PendingDraw | null | undefined;
@@ -45,28 +53,14 @@ export function PaletteEmbedGroup({
         {/* The same glyph chip the rows below use, so the group reads as one
             of them rather than as panel chrome. */}
         <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.6"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden
-          >
-            <rect x="2.5" y="4" width="19" height="16" rx="2.5" />
-            <path d="M2.5 8h19" />
-            <path d="M10.5 12.2v3.6l3.2-1.8z" fill="currentColor" stroke="none" />
-          </svg>
+          {icon}
         </span>
         <span className="min-w-0 flex-1">
           <span className="block truncate text-[11px] font-semibold text-slate-700 dark:text-slate-200">
-            Embed
+            {title}
           </span>
           <span className="line-clamp-2 text-[10px] leading-snug text-slate-500 dark:text-slate-400">
-            {tiles.length} services that play on the canvas
+            {blurb(tiles.length)}
           </span>
         </span>
         <span className="shrink-0 text-slate-400">
@@ -74,8 +68,8 @@ export function PaletteEmbedGroup({
         </span>
       </button>
       {open ? (
-        // Indented so the providers read as belonging to the row above rather
-        // than as more Media elements.
+        // Indented so the members read as belonging to the row above rather
+        // than as more of the category's own elements.
         <div className="mt-0.5 pl-4">
           <PaletteToolRows tiles={tiles} actions={actions} pendingDraw={pendingDraw} />
         </div>
