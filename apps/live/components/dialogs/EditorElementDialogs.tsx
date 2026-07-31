@@ -1,7 +1,12 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { isBoxed, LINE_DEFAULT_CATEGORIES, LINE_DEFAULT_SERIES } from '@livediagram/diagram';
+import {
+  isBoxed,
+  LINE_DEFAULT_CATEGORIES,
+  LINE_DEFAULT_SERIES,
+  youtubeVideoId,
+} from '@livediagram/diagram';
 
 import { track } from '@/lib/telemetry';
 import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
@@ -53,12 +58,29 @@ export function EditorElementDialogs() {
     refreshRecentImages,
   } = useEditorContext();
 
+  // A video's link IS its content (spec/114), so its picker is the URL mode
+  // only, validated as a YouTube link. Every other element keeps the full
+  // tab / diagram / URL choice.
+  const linkTarget = activeTab.elements.find((e) => e.id === linkPickerOpenForId);
+  const urlOnly =
+    linkTarget?.type === 'video'
+      ? {
+          subtitle: 'Paste a YouTube link. The video plays right here on the canvas.',
+          fieldLabel: 'YouTube link',
+          placeholder: 'https://www.youtube.com/watch?v=…',
+          hint: 'Watch, share (youtu.be), Shorts and embed links all work.',
+          validate: (url: string) =>
+            youtubeVideoId(url) ? null : "That isn't a YouTube video link.",
+        }
+      : undefined;
+
   return (
     <>
       {linkPickerOpenForId !== null && !isReadOnly ? (
         <LinkPickerDialog
-          title="Link element"
-          currentLink={activeTab.elements.find((e) => e.id === linkPickerOpenForId)?.link ?? null}
+          title={linkTarget?.type === 'video' ? 'Link video' : 'Link element'}
+          urlOnly={urlOnly}
+          currentLink={linkTarget?.link ?? null}
           tabs={tabs.map((t) => ({ id: t.id, name: t.name }))}
           currentTabId={activeId}
           initialMode={linkPickerInitialMode ?? undefined}

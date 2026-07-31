@@ -21,6 +21,16 @@ new-type surface, following the `link-card` precedent (spec/40): `isBoxed`,
 existing `LinkPickerDialog` and `applyElementLink` commits it — no second URL
 editor, no new dialog.
 
+The picker opens **restricted**, though. A link card can legitimately point at
+a tab or another diagram; a video cannot, because its link is not a
+destination, it is the content — a video pointed at a tab has nothing to play.
+So `LinkPickerDialog` gained a `urlOnly` config (caller-supplied copy plus a
+validator) which hides the mode switcher entirely and validates as you type:
+a non-YouTube URL shows "That isn't a YouTube video link" and Save stays
+disabled. The validator runs again at commit, so Enter cannot slip past a
+message the user has not read. It runs on the **normalised** URL, so a bare
+`youtu.be/...` is judged as the `https://youtu.be/...` that would be stored.
+
 The video id is **parsed at render time** from that link by a pure helper
 (`youtubeVideoId` in `packages/diagram/src/youtube.ts`), never stored. Link
 cards cache their preview in `meta` because unfurling costs a network round

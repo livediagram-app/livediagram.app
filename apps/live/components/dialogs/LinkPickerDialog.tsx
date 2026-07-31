@@ -33,8 +33,26 @@ type LinkPickerDialogProps = {
   // straight onto webpage / tab / diagram). Falls back to the current link's
   // kind, then 'url', when unset.
   initialMode?: 'tab' | 'diagram' | 'url';
+  // Restricts the dialog to the URL mode, with caller-supplied copy and
+  // validation. For an element whose link IS its content — a video's YouTube
+  // URL (spec/114) — the tab and diagram modes are not a narrower choice, they
+  // are a meaningless one: a video pointed at a tab has nothing to play.
+  urlOnly?: UrlOnlyConfig;
   onCommit: (link: ElementLink | null) => void;
   onClose: () => void;
+};
+
+export type UrlOnlyConfig = {
+  // Replaces the header's "Jump to a tab, open another diagram, ..." line.
+  subtitle: string;
+  fieldLabel: string;
+  placeholder: string;
+  // Sits under the field, replacing the generic "Opens in a new tab" note.
+  hint: string;
+  // Returns a message when the URL is not acceptable, or null when it is.
+  // Runs on the NORMALISED url (so a bare host has gained its https://),
+  // matching what would actually be stored.
+  validate: (url: string) => string | null;
 };
 
 type Mode = 'tab' | 'diagram' | 'url';
@@ -52,13 +70,15 @@ export function LinkPickerDialog({
   currentTabId,
   recentDiagrams,
   initialMode,
+  urlOnly,
   onCommit,
   onClose,
 }: LinkPickerDialogProps) {
   // A caller-requested mode wins; otherwise open on the existing link's mode,
   // else External URL.
   const [mode, setMode] = useState<Mode>(
-    initialMode ??
+    (urlOnly ? 'url' : undefined) ??
+      initialMode ??
       (currentLink?.kind === 'diagram'
         ? 'diagram'
         : currentLink?.kind === 'tab' || currentLink?.kind === 'element'
@@ -66,6 +86,10 @@ export function LinkPickerDialog({
           : 'url'),
   );
   const [urlInput, setUrlInput] = useState(currentLink?.kind === 'url' ? currentLink.url : '');
+  // The validation message for what's typed so far, or null. Computed rather
+  // than held in state so it can't go stale against the field.
+  const typed = urlInput.trim();
+  const urlError = urlOnly && typed ? urlOnly.validate(normaliseUrl(typed) ?? typed) : null;
 
   const commit = (link: ElementLink | null) => {
     onCommit(link);
@@ -75,6 +99,9 @@ export function LinkPickerDialog({
   const saveUrl = () => {
     const url = normaliseUrl(urlInput);
     if (!url) return;
+    // The same validator the field shows, run again at the point of commit so
+    // an Enter keypress can't slip past a message the user hasn't read.
+    if (urlOnly?.validate(url)) return;
     commit({ kind: 'url', url });
   };
 
@@ -88,7 +115,9 @@ export function LinkPickerDialog({
         <div>
           <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{title}</h2>
           <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-            Jump to a tab, open another diagram, or go to a web address.
+            {urlOnly
+              ? urlOnly.subtitle
+              : 'Jump to a tab, open another diagram, or go to a web address.'}
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-0.5">
@@ -105,24 +134,27 @@ export function LinkPickerDialog({
         </div>
       </div>
 
-      {/* Mode switcher */}
-      <div className="flex gap-1 border-b border-slate-100 px-6 py-3 dark:border-slate-800">
-        {MODES.map((m) => (
-          <button
-            key={m.id}
-            type="button"
-            onClick={() => setMode(m.id)}
-            aria-pressed={mode === m.id}
-            className={
-              mode === m.id
-                ? 'rounded-md bg-brand-100 px-3 py-1.5 text-xs font-semibold text-brand-700 dark:bg-brand-500/20 dark:text-brand-200'
-                : 'rounded-md px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
-            }
-          >
-            {m.label}
-          </button>
-        ))}
-      </div>
+      {/* Mode switcher — hidden entirely when the caller restricts to a URL:
+          a one-button switcher is a control that can't do anything. */}
+      {urlOnly ? null : (
+        <div className="flex gap-1 border-b border-slate-100 px-6 py-3 dark:border-slate-800">
+          {MODES.map((m) => (
+            <button
+              key={m.id}
+              type="button"
+              onClick={() => setMode(m.id)}
+              aria-pressed={mode === m.id}
+              className={
+                mode === m.id
+                  ? 'rounded-md bg-brand-100 px-3 py-1.5 text-xs font-semibold text-brand-700 dark:bg-brand-500/20 dark:text-brand-200'
+                  : 'rounded-md px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
+              }
+            >
+              {m.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="flex-1 overflow-y-auto px-6 py-4">
         {mode === 'tab' ? (
@@ -168,14 +200,16 @@ export function LinkPickerDialog({
         ) : (
           <div className="flex flex-col gap-2">
             <label className="text-xs font-medium text-slate-600 dark:text-slate-300">
-              Web address
+              {urlOnly ? urlOnly.fieldLabel : 'Web address'}
             </label>
             <TextInput
               type="url"
               inputMode="url"
               autoFocus
               value={urlInput}
-              placeholder="https://example.com"
+              placeholder={urlOnly ? urlOnly.placeholder : 'https://example.com'}
+              aria-invalid={!!urlError}
+              aria-describedby={urlError ? 'link-picker-url-error' : undefined}
               onChange={(e) => setUrlInput(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
@@ -184,13 +218,24 @@ export function LinkPickerDialog({
                 }
               }}
             />
-            <p className="text-[11px] text-slate-400 dark:text-slate-400">
-              Opens in a new tab. We&apos;ll add https:// if you leave off the scheme.
-            </p>
+            {urlError ? (
+              <p
+                id="link-picker-url-error"
+                className="text-[11px] font-medium text-rose-600 dark:text-rose-400"
+              >
+                {urlError}
+              </p>
+            ) : (
+              <p className="text-[11px] text-slate-400 dark:text-slate-400">
+                {urlOnly
+                  ? urlOnly.hint
+                  : "Opens in a new tab. We'll add https:// if you leave off the scheme."}
+              </p>
+            )}
             <Button
               size="xs"
               onClick={saveUrl}
-              disabled={!urlInput.trim()}
+              disabled={!typed || !!urlError}
               className="mt-1 self-start shadow-sm"
             >
               Save link
