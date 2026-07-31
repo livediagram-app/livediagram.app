@@ -826,10 +826,10 @@ export const articles: Article[] = [
   },
   {
     slug: 'tools',
-    title: 'Tools',
-    description: 'Text, pencil, tables, frames, charts and the rest of the Tools tab.',
+    title: 'Where each tool lives',
+    description: 'A map of the palette categories and which elements are in each.',
     keywords:
-      'text pencil table frame chart sticky note image draw button mode button clickable press switch mode',
+      'tools tab category where find text pencil pen table frame chart sticky note image draw write components media behaviour data moved',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Elements',

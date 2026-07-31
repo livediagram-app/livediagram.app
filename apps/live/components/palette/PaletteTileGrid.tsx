@@ -19,6 +19,7 @@ export type PaletteTileActions = {
   addText: () => void;
   beginFreehand: () => void;
   beginHighlighter: () => void;
+  beginShapePen: () => void;
   beginPolygon: () => void;
   addArrow: () => void;
   addSticky: () => void;
@@ -48,6 +49,8 @@ export function tileHandler(def: PaletteTileDef, actions: PaletteTileActions): (
       return actions.beginFreehand;
     case 'highlighter':
       return actions.beginHighlighter;
+    case 'shape-pen':
+      return actions.beginShapePen;
     case 'polygon':
       return actions.beginPolygon;
     case 'arrow':
@@ -85,12 +88,14 @@ export function tileActive(
       return pendingDraw.type === 'shape' && pendingDraw.kind === a.kind;
     case 'component':
       return pendingDraw.type === 'component' && pendingDraw.kind === a.kind;
-    // The pencil and the highlighter share the freehand intent, split
-    // by the variant payload — each tile lights only for its own arm.
+    // The three pens share the freehand intent, split by the variant
+    // payload — each tile lights only for its own arm (spec/112).
     case 'freehand':
       return pendingDraw.type === 'freehand' && pendingDraw.variant === undefined;
     case 'highlighter':
       return pendingDraw.type === 'freehand' && pendingDraw.variant === 'highlighter';
+    case 'shape-pen':
+      return pendingDraw.type === 'freehand' && pendingDraw.variant === 'shape-pen';
     // Icon tiles drop immediately too (matching the Icons / Technology
     // tabs, which carry no pressed state).
     case 'table':

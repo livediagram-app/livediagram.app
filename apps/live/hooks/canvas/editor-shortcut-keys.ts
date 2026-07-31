@@ -82,6 +82,9 @@ export type EditorKeyboardShortcutsDeps = {
   // drag), but it lives next to them in the keyboard surface so the
   // user reaches for the same row of letters for every tool.
   onBeginFreehand: () => void;
+  // S arms the shape pen — the same gesture as the pencil, but the stroke is
+  // run through shape recognition on release (spec/112).
+  onBeginShapePen: () => void;
   // Cmd/Ctrl+G: group multi-selected boxed elements, or ungroup the
   // currently-selected element's group. The callback handles both
   // cases (caller checks multi vs single selection state).
@@ -180,6 +183,11 @@ export const EDIT_KEYS: Record<string, ShortcutAction> = {
   '0': (l) => l.setCanvasTool('eraser'),
   p: (l) => l.onBeginFreehand(), // Pencil (P is free now Hand owns H)
   '7': (l) => l.onBeginFreehand(),
+  // Shape pen (spec/112): the same stroke as the pencil, recognised on
+  // release. A number rather than a letter because `s` is still the legacy
+  // Select alias, and 6 is the one gap in the numeric tool row — right beside
+  // the pencil's 7.
+  '6': (l) => l.onBeginShapePen(),
   f: (l) => l.addShape('frame'), // Frame (was a pencil alias; P owns Pencil)
   r: (l) => l.addShape('square'),
   '2': (l) => l.addShape('square'),

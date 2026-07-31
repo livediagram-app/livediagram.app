@@ -31,17 +31,11 @@ export type UserPreferences = {
   // NEXT_PUBLIC_TELEMETRY_ENABLED gate and the api worker's
   // TELEMETRY_ENABLED gate. Missing / undefined === on.
   telemetryEnabled?: boolean;
-  // Pencil tool's shape-recognition toggle (spec/09 Pencil
-  // subsection). When `true`, every freehand commit while the
-  // pencil banner is up runs the polyline through recogniseShape
-  // and may mint a primitive instead of a FreehandElement. The
-  // toggle ALSO lives in the pencil ModeBanner as an icon button:
-  // flipping it from the banner writes here so the preference
-  // survives across sessions, but the flag is deliberately NOT
-  // surfaced in the Settings dialog (Settings is for global
-  // editor behaviour; this is a per-tool toggle that belongs
-  // where the tool is). Missing / undefined / false === raw-
-  // sketch mode, the historical default.
+  // DEAD as of spec/112: shape recognition is now which pen you picked
+  // (Freehand or Shape Pen), not a persisted mode. Nothing reads this any
+  // more. It stays in the type because it is already stored in D1 for
+  // existing users, and removing it would make a stored preference fail to
+  // parse rather than simply be ignored.
   recogniseShapes?: boolean;
   // AI Assistance panel (spec/25). When `true`, the AI panel is
   // rendered in the editor. Defaults to false (opt-in). Only

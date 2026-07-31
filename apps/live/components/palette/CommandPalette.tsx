@@ -11,19 +11,23 @@ import {
   ComponentsTabIcon,
   DataTabIcon,
   DevicesTabIcon,
+  MediaTabIcon,
   FavouritesTabIcon,
   IconsTabIcon,
   ShapesTabIcon,
   TechTabIcon,
-  ToolsTabIcon,
+  DrawTabIcon,
+  WriteTabIcon,
 } from './palette-tab-icons';
 import { PaletteDropdown } from '@/components/palette/PaletteDropdown';
 import {
   DevicePickerTab,
   PaletteBehaviourTab,
   PaletteDataTab,
+  PaletteMediaTab,
+  PaletteDrawTab,
+  PaletteWriteTab,
   PaletteShapesTab,
-  PaletteToolsTab,
   PaletteComponentsTab,
 } from '@/components/palette/palette-create-tabs';
 import { PaletteFavouritesTab } from '@/components/palette/PaletteFavouritesTab';
@@ -70,6 +74,7 @@ export function CommandPalette({
   onAddArrow,
   onBeginFreehand,
   onBeginHighlighter,
+  onBeginShapePen,
   onBeginPolygon,
   pendingDraw,
   onSize,
@@ -190,6 +195,11 @@ export function CommandPalette({
     onDrawArmed?.();
     onMobileClose?.();
   };
+  const beginShapePen = () => {
+    onBeginShapePen();
+    onDrawArmed?.();
+    onMobileClose?.();
+  };
   const beginHighlighter = () => {
     onBeginHighlighter();
     onDrawArmed?.();
@@ -231,6 +241,7 @@ export function CommandPalette({
       addText,
       beginFreehand,
       beginHighlighter,
+      beginShapePen,
       beginPolygon,
       addArrow,
       addSticky,
@@ -381,13 +392,20 @@ export function CommandPalette({
               content: <PaletteShapesTab pendingDraw={pendingDraw} actions={tileActions} />,
             },
             {
-              id: 'tools',
-              label: 'Tools',
+              id: 'write',
+              label: 'Write',
               group: 0,
-              description:
-                'Write and draw, structure, blocks, people and media: text, pages, pencil, arrows, sticky notes, tables, frames, code blocks, checklists, and more.',
-              icon: <ToolsTabIcon />,
-              content: <PaletteToolsTab pendingDraw={pendingDraw} actions={tileActions} />,
+              description: 'The wordy elements: pages, text, sticky notes, and annotations.',
+              icon: <WriteTabIcon />,
+              content: <PaletteWriteTab pendingDraw={pendingDraw} actions={tileActions} />,
+            },
+            {
+              id: 'draw',
+              label: 'Draw',
+              group: 0,
+              description: 'The gesture tools: pencil, highlighter, polygon, and arrows.',
+              icon: <DrawTabIcon />,
+              content: <PaletteDrawTab pendingDraw={pendingDraw} actions={tileActions} />,
             },
             {
               id: 'devices',
@@ -430,6 +448,14 @@ export function CommandPalette({
                   loading={!iconCatalogsLoaded}
                 />
               ),
+            },
+            {
+              id: 'media',
+              label: 'Media',
+              group: 1,
+              description: 'Pictures and figures: an uploaded image, or a circular avatar.',
+              icon: <MediaTabIcon />,
+              content: <PaletteMediaTab pendingDraw={pendingDraw} actions={tileActions} />,
             },
             {
               id: 'components',

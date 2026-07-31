@@ -95,7 +95,6 @@ export function Canvas(props: CanvasProps) {
     onCommitDraw,
     onCommitFreehand,
     onCommitPolygon,
-    recogniseShapes,
     onDeselect,
     onSelect,
     onCanvasContextMenu,
@@ -424,7 +423,6 @@ export function Canvas(props: CanvasProps) {
     wrapperRef,
     viewportZoom,
     isPinchingRef,
-    recogniseShapes,
     onCommitDraw,
     onCommitFreehand,
   });
@@ -689,6 +687,11 @@ export function Canvas(props: CanvasProps) {
         isGroupMode={isGroupMode}
         avatarConfig={avatarLook.config}
         onChangeAvatarField={avatarLook.setField}
+        laserConfig={props.laserConfig}
+        onChangeLaserField={props.onChangeLaserField}
+        laserPanelPosition={props.laserPanelPosition}
+        onMoveLaserPanel={props.onMoveLaserPanel}
+        onResetLaserPanel={props.onResetLaserPanel}
         onRandomiseAvatar={avatarLook.randomise}
         onAvatarReaction={avatar.playReaction}
         offscreenContent={offscreenContent}

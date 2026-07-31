@@ -35,6 +35,10 @@ export function EditorCanvasHost() {
     setPollPanelPosition,
     votePanelPosition,
     avatarPanelPosition,
+    laserPanelPosition,
+    laserConfig,
+    onChangeLaserField,
+    setLaserPanelPosition,
     setVotePanelPosition,
     setAvatarPanelPosition,
     toggleRecentExclusion,
@@ -98,6 +102,7 @@ export function EditorCanvasHost() {
     beginFormatPainter,
     beginFreehand,
     beginHighlighter,
+    beginShapePen,
     beginPolygon,
     beginGroup,
     highlighterColor,
@@ -308,12 +313,11 @@ export function EditorCanvasHost() {
 
   // Preference writes (Settings save + the two quick toggles) — see
   // usePreferenceHandlers.
-  const { onChangeSettings, onToggleMinimalPanels, onToggleRecogniseShapes } =
-    usePreferenceHandlers({
-      userPreferences,
-      setUserPreferences,
-      selfParticipantId: selfParticipant?.id ?? null,
-    });
+  const { onChangeSettings, onToggleMinimalPanels } = usePreferenceHandlers({
+    userPreferences,
+    setUserPreferences,
+    selfParticipantId: selfParticipant?.id ?? null,
+  });
   return (
     <Canvas
       tabName={activeTab.name}
@@ -373,7 +377,8 @@ export function EditorCanvasHost() {
       laserTrails={laserTrailRows}
       onCanvasPointerMove={(x, y) => {
         if (canvasTool === 'laser' && x !== null && y !== null) {
-          broadcastLaser(x, y);
+          // The pen rides the sample so peers draw MY laser (spec/111).
+          broadcastLaser(x, y, laserConfig);
           // Laser mode hides the cursor indicator on peer screens —
           // the laser dot is the cursor. Clear any prior position.
           broadcastCursor(null);
@@ -438,6 +443,7 @@ export function EditorCanvasHost() {
       onAddArrow={addArrow}
       onBeginFreehand={beginFreehand}
       onBeginHighlighter={beginHighlighter}
+      onBeginShapePen={beginShapePen}
       onBeginPolygon={beginPolygon}
       highlighterColor={highlighterColor}
       highlighterWidth={highlighterWidth}
@@ -447,12 +453,10 @@ export function EditorCanvasHost() {
       onCommitDraw={commitDraw}
       onCommitFreehand={commitFreehand}
       onCommitPolygon={commitPolygon}
-      recogniseShapes={userPreferences.recogniseShapes !== false}
       settings={userPreferences}
       onChangeSettings={onChangeSettings}
       minimalPanels={userPreferences.minimalPanels === true}
       onToggleMinimalPanels={onToggleMinimalPanels}
-      onToggleRecogniseShapes={onToggleRecogniseShapes}
       onCancelDraw={cancelDrawShape}
       onUndo={undo}
       onRedo={redo}
@@ -521,6 +525,11 @@ export function EditorCanvasHost() {
       onMoveVotePanel={(x, y) => setVotePanelPosition({ x, y })}
       onResetVotePanel={() => setVotePanelPosition(null)}
       avatarPanelPosition={avatarPanelPosition}
+      laserPanelPosition={laserPanelPosition}
+      laserConfig={laserConfig}
+      onChangeLaserField={onChangeLaserField}
+      onMoveLaserPanel={(x, y) => setLaserPanelPosition({ x, y })}
+      onResetLaserPanel={() => setLaserPanelPosition(null)}
       onMoveAvatarPanel={(x, y) => setAvatarPanelPosition({ x, y })}
       onResetAvatarPanel={() => setAvatarPanelPosition(null)}
       voteResults={voteResults}

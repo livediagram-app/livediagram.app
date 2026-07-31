@@ -126,6 +126,66 @@ export function BehaviourTabIcon() {
   );
 }
 
+// The Write category's glyph (spec/110): a pen nib over a line of text.
+export function WriteTabIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7.5 18.5 3 20l1.5-4.5z" />
+      <path d="m14.5 5.5 4 4" />
+    </svg>
+  );
+}
+
+// The Draw category's glyph (spec/110): a freehand squiggle.
+export function DrawTabIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M3 16c3-6 5.5-9 7-9s1.5 4 0 8 1 5 3.5 2 4.5-6 7.5-6" />
+    </svg>
+  );
+}
+
+// The Media category's glyph (spec/110): a picture frame, for Image + Avatar.
+export function MediaTabIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <rect x="3" y="4.5" width="18" height="15" rx="2" />
+      <circle cx="8.5" cy="10" r="1.6" />
+      <path d="m4 16.5 4.5-4 3.5 3 3-2.5 5 4" />
+    </svg>
+  );
+}
+
 export function DevicesTabIcon() {
   return (
     <svg

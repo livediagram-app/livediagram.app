@@ -13,7 +13,6 @@ type CanvasDrawGestureDeps = Pick<
   | 'elements'
   | 'viewportZoom'
   | 'isPinchingRef'
-  | 'recogniseShapes'
   | 'onCommitDraw'
   | 'onCommitFreehand'
 > & { wrapperRef: RefObject<HTMLDivElement | null> };
@@ -30,7 +29,6 @@ export function useCanvasDrawGesture({
   wrapperRef,
   viewportZoom,
   isPinchingRef,
-  recogniseShapes,
   onCommitDraw,
   onCommitFreehand,
 }: CanvasDrawGestureDeps) {
@@ -292,7 +290,9 @@ export function useCanvasDrawGesture({
       const snapshot = buffer;
       setPenPoints(null);
       if (snapshot.length >= 2) {
-        onCommitFreehand(snapshot, recogniseShapes);
+        // Recognition is which PEN you picked, not a preference (spec/112):
+        // the Shape Pen converts, plain Freehand and the highlighter never do.
+        onCommitFreehand(snapshot, pendingDraw?.variant === 'shape-pen');
       }
     };
     window.addEventListener('pointermove', onMove);

@@ -270,7 +270,7 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
   // marker variant riding the intent. Both stay zero-arg (rather than
   // one variant parameter) because they're passed straight into
   // onClick slots, where a parameter would swallow the event object.
-  const armFreehand = (variant?: 'highlighter') => {
+  const armFreehand = (variant?: 'highlighter' | 'shape-pen') => {
     if (editsBlocked) return;
     setSelectedId(null);
     setMultiSelectedIds(new Set());
@@ -280,6 +280,9 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
   };
   const beginFreehand = () => armFreehand();
   const beginHighlighter = () => armFreehand('highlighter');
+  // The shape pen (spec/112): the same gesture, but the stroke is run through
+  // shape recognition on release. Which pen you picked IS the setting.
+  const beginShapePen = () => armFreehand('shape-pen');
 
   // Polygon tool entry (spec/84): queues the click-to-place-vertices
   // intent. The vertex accumulation lives canvas-side
@@ -463,6 +466,7 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     cancelDrawShape,
     beginFreehand,
     beginHighlighter,
+    beginShapePen,
     beginPolygon,
     commitFreehand,
     commitPolygon,

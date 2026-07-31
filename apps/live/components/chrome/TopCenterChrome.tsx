@@ -5,7 +5,6 @@ import { ModeBanner } from '@/components/chrome/ModeBanner';
 import { GroupIcon } from '@/components/canvas/selection-popover-icons';
 import { ParticipantAvatar } from '@/components/primitives/ParticipantAvatar';
 import { TimerWidget } from '@/components/chrome/TimerWidget';
-import { Tooltip } from '@/components/primitives/Tooltip';
 import { HighlighterBannerControls } from '@/components/chrome/HighlighterBannerControls';
 import { TopCenterRow, TopCenterStack } from '@/components/chrome/TopCenter';
 import { VoteBanner } from '@/components/chrome/VoteBanner';
@@ -25,8 +24,6 @@ type TopCenterChromeProps = Pick<
   | 'readOnly'
   | 'pendingDraw'
   | 'onCancelDraw'
-  | 'recogniseShapes'
-  | 'onToggleRecogniseShapes'
   | 'highlighterColor'
   | 'highlighterWidth'
   | 'onSetHighlighterColor'
@@ -60,8 +57,6 @@ export function TopCenterChrome({
   readOnly,
   pendingDraw,
   onCancelDraw,
-  recogniseShapes,
-  onToggleRecogniseShapes,
   highlighterColor,
   highlighterWidth,
   onSetHighlighterColor,
@@ -158,22 +153,12 @@ export function TopCenterChrome({
             icon={<DrawIcon />}
             message={drawBannerMessage(pendingDraw, isMobileViewportSync())}
             onAction={onCancelDraw}
-            // Pen-mode-only extras slot: the "recognise shapes" toggle.
-            // Icon-only with a Tooltip (bold title + one-line description)
-            // so the symbol's meaning is discoverable without clutter; the
-            // pressed state (brand-200 fill) signals when the mode is
-            // active so the user always knows whether the next stroke will
-            // convert or stay as a sketch. The on/off state is a persisted
-            // user preference (spec/20 `recogniseShapes`) lifted to
-            // editor-page, so it survives across pencil sessions and
-            // across devices.
+            // Pen-mode-only extras slot. The "recognise shapes" toggle that
+            // used to live here is gone (spec/112): recognition is now which
+            // pen you picked — Freehand or Shape Pen — rather than a hidden
+            // mode you had to check before every stroke.
             extras={
-              // Pencil only: the highlighter variant never runs
-              // recognition (spec/81), so it doesn't offer the toggle —
-              // it gets the marker's strength + colour popovers instead.
-              pendingDraw.type === 'freehand' && pendingDraw.variant === undefined ? (
-                <RecogniseShapesToggle on={recogniseShapes} onToggle={onToggleRecogniseShapes} />
-              ) : pendingDraw.type === 'freehand' && pendingDraw.variant === 'highlighter' ? (
+              pendingDraw.type === 'freehand' && pendingDraw.variant === 'highlighter' ? (
                 <HighlighterBannerControls
                   color={highlighterColor}
                   width={highlighterWidth}
@@ -212,49 +197,6 @@ export function TopCenterChrome({
         />
       ) : null}
     </TopCenterStack>
-  );
-}
-
-function RecogniseShapesToggle({ on, onToggle }: { on: boolean; onToggle: () => void }) {
-  return (
-    <Tooltip
-      title={on ? 'Recognise shapes: on' : 'Recognise shapes: off'}
-      description={
-        on
-          ? 'Strokes that resemble rectangles, circles, diamonds, or lines auto-convert. Click to keep sketches as-is.'
-          : 'Click to auto-convert strokes that resemble rectangles, circles, diamonds, or lines.'
-      }
-    >
-      <button
-        type="button"
-        onClick={onToggle}
-        aria-label="Toggle shape recognition"
-        aria-pressed={on}
-        className={
-          'flex h-7 w-7 items-center justify-center rounded-full text-xs font-medium transition ' +
-          (on
-            ? 'bg-brand-200 text-brand-900 hover:bg-brand-300'
-            : 'bg-white text-slate-700 hover:bg-slate-50')
-        }
-      >
-        {/* Sparkle / magic-wand glyph signals "auto" without being a
-            literal AI motif. Two-star composition so it parses at 14px. */}
-        <svg
-          width="14"
-          height="14"
-          viewBox="0 0 16 16"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden
-        >
-          <path d="M6 2 L6.9 4.6 L9.5 5.5 L6.9 6.4 L6 9 L5.1 6.4 L2.5 5.5 L5.1 4.6 Z" />
-          <path d="M11.5 9 L12.1 10.4 L13.5 11 L12.1 11.6 L11.5 13 L10.9 11.6 L9.5 11 L10.9 10.4 Z" />
-        </svg>
-      </button>
-    </Tooltip>
   );
 }
 

@@ -30,15 +30,17 @@ describe('PALETTE_TILES catalogue', () => {
 });
 
 describe('tool blurbs', () => {
-  // Four tabs render a row per tile with a one-line explanation under the name
-  // (see PaletteToolRows): Tools, and the three categories whose glyphs cannot
-  // say what the thing does — Behaviour, Data, and Components. A tile without
-  // one leaves a bare row, so this is the same kind of registration rule the
-  // help centre has.
+  // Most categories render a row per tile with a one-line explanation under
+  // the name (see PaletteToolRows) — every one whose glyph cannot say what the
+  // thing does. A tile without a blurb leaves a bare row, so this is the same
+  // kind of registration rule the help centre has. Only Shapes, Icons and
+  // Technology are exempt: there the picture IS the explanation.
   const toolTiles = [
     ...tilesInSection('tools'),
     ...tilesInSection('data'),
     ...tilesInSection('components'),
+    ...tilesInSection('media'),
+    ...tilesInSection('devices'),
   ];
 
   it('gives every row-rendered tile a blurb', () => {

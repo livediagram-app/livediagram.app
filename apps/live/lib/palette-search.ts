@@ -26,7 +26,6 @@ const SHAPES: { kind: ShapeKind; name: string; keywords: string }[] = [
   { kind: 'trapezoid', name: 'Trapezoid', keywords: 'manual operation' },
   { kind: 'star', name: 'Star', keywords: 'favourite highlight rating' },
   { kind: 'speech-bubble', name: 'Speech bubble', keywords: 'comment callout chat note' },
-  { kind: 'actor', name: 'User', keywords: 'actor person stick figure uml' },
   { kind: 'frame', name: 'Frame', keywords: 'section container group region' },
 ];
 

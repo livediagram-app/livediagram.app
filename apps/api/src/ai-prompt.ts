@@ -32,7 +32,6 @@ ShapeKind — pick semantically, defaulting to "square":
   "parallelogram" input/output in flowcharts
   "hexagon"       process hubs, APIs, gateways
   "document"      documents, reports, files
-  "actor"         human users/people ONLY — use for any person, role, user, customer
   "cloud"         external cloud services / third-party systems
   "browser"       browser wireframe frames
   "monitor"       desktop screen wireframes

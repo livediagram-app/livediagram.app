@@ -6,47 +6,47 @@ import { ToolsTab } from '@/components/illustrations/palette-tools';
 export const metadata = helpMetadata({
   title: 'Tools',
   description:
-    'The palette Tools tab gathers everything that is not a plain shape: text, pages, freehand drawing, arrows, sticky notes, tables, code blocks, checklists, images, and frames.',
+    'Where every element lives in the palette now that the Tools tab has been split into categories: Write, Draw, Components, Data, Behaviour, Media, Devices, Shapes, Icons, and Technology.',
   path: '/help/palette/tools/',
 });
 
 <ArticleLayout
-  title="Tools"
-  description="The palette tab for everything that is not a plain shape, from text and freehand sketches to images and charts."
+  title="Where each tool lives"
+  description="A map of the palette's categories, now that the Tools tab has been split into Write, Draw, Components, Data, Behaviour, and Media."
   categoryTitle="Palette"
   categorySlug="palette"
   subArticles={getSubArticles("tools")}
 >
 
-The palette's **Tools** tab gathers the elements that are not plain shapes. It opens on a grid of **categories** — one tile each for **Write &amp; Draw**, **Structure**, **Blocks**, and **People &amp; Media**. (**Behaviour** and **Data** used to live here; each is now its own palette category, one click away in the category picker.) Click a category to see its tools; a **breadcrumb** at the top ("‹ Tools › Write &amp; Draw") tells you where you are and takes you back in one click. Hovering a category tile describes what is inside it.
+There is no longer a **Tools** tab. Every group it held is now a palette **category** of its own, one click away in the category picker rather than two, so this page is a map of where each tool went.
 
-Not sure which category holds the tool you're after? A **search box** sits above the navigation, just like the one on the Icons tab: type a name ("table", "chart", "pencil") and the categories give way to a single grid of every matching tool. Clear the search to return to where you were.
+The categories are grouped into three bands: **Common** (Shapes, Write, Draw, Devices), **Decorate** (Icons, Technology, Media, Components), and **Dynamic** (Data, Behaviour), with your **Favourites** across the top.
 
-<Figure caption="The palette open on the Tools tab, showing the category tiles you click to drill into.">
+<Figure caption="The palette's category picker, grouped into Common, Decorate, and Dynamic bands.">
   <ToolsTab />
 </Figure>
 
-## The categories
+## Where each tool lives
 
-**Write &amp; Draw** holds everything you put down yourself. The wordy elements: **Text** drops a free-standing label, **Sticky Note** is a coloured note card, and **Annotation** is a small note marker for callouts. And the gesture tools: **Pencil** lets you sketch freehand, with an optional shape-recognition mode; **Highlighter** lays a wide translucent marker stroke for calling attention to things; **Polygon** places straight-edged outlines point by point; and **Arrow** drops a plain connector you can position by hand.
+**Write** holds the wordy elements: **Text** drops a free-standing label, **Page** is a paper-sized sheet you write into, **Sticky Note** is a coloured note card, and **Annotation** is a small note marker for callouts.
 
-**Structure** is for organising: **Table** is an editable grid of cells, **Frame** is a labelled container you group work inside, and **Timeline Rail** is a horizontal track for sequencing events.
+**Draw** holds the gesture tools: **Freehand** sketches a stroke and keeps it exactly as drawn, the **Shape Pen** turns a rough sketch into a real shape, **Highlighter** lays a wide translucent marker stroke, **Polygon** places straight-edged outlines point by point, **Arrow** drops a plain connector you position by hand, and **Frame** is a labelled container you group work inside. See [Drawing and Sketch](/help/palette/tools/drawing/).
 
-**Blocks** holds the rich content cards: **Code Block** is a dark monospace card for syntax-highlighted snippets, **Checklist** is a card of tickable to-do rows, and **Link Card** is a clickable preview of a URL.
+**Components** holds the ready-made pieces: **Code Block**, **Checklist**, **Link Card**, **Timeline Rail**, and the themed composites (Banner, Callout, Stat row, Process, Hero, Header).
 
-**Behaviour** is no longer one of these categories — the elements that _do_ something when somebody interacts with them (Selection Mode buttons, Portals, Session buttons, Reveal zones, and Pickers) are their own palette category now. See [Behaviour Elements](/help/palette/behaviour/).
+**Data** holds the charts and meters, plus **Table**, the editable grid of cells. See [Data and Chart Elements](/help/palette/tools/data-elements/).
 
-**Data** likewise: the charts and meters are their own category. See [Data and Chart Elements](/help/palette/tools/data-elements/).
+**Behaviour** holds the elements that _do_ something when somebody interacts with them: Selection Mode buttons, Portals, Session buttons, Reveal zones, and Pickers. See [Behaviour Elements](/help/palette/behaviour/).
 
-**People &amp; Media** covers pictures and figures: **Image** places an uploaded picture, **Avatar** places a circular image, and **User** places an actor figure, both handy for people in a flow.
+**Media** covers pictures and figures: **Image** places an uploaded picture and **Avatar** places a circular one.
 
 Each behaves like any other element once placed: select, restyle, group, and move it freely.
 
-## Guides in this tab
+## Guides for these tools
 
 Several tools have their own walkthroughs, listed below and linked here:
 
-- [Drawing and Sketch](/help/palette/tools/drawing/) covers the Pencil, Highlighter, and Polygon tools, plus shape recognition.
+- [Drawing and Sketch](/help/palette/tools/drawing/) covers Freehand, the Shape Pen, the Highlighter, and the Polygon tool.
 - [Images](/help/palette/tools/images/) covers uploading and placing pictures, avatars, and user figures.
 - [Tables](/help/palette/tools/tables/) covers the editable grid: adding one, filling cells, and rows/columns.
 - [Sticky Notes](/help/palette/tools/sticky-notes/) covers the coloured note card for short annotations.
@@ -56,7 +56,7 @@ Several tools have their own walkthroughs, listed below and linked here:
 - [Data and Chart Elements](/help/palette/tools/data-elements/) covers the **Data** category: Pie Chart, Bar Chart, Line Chart, Progress Bar, Progress Ring (a donut meter), and Rating (stars).
 - [Behaviour Elements](/help/palette/behaviour/) covers the **Behaviour** category: Selection Mode buttons, Portals, Session buttons, Reveal zones, and Pickers.
 
-The **Arrow** tool lives here too, but arrows are deep enough to deserve their own guide: see [Arrows](/help/palette/arrows/).
+Arrows are deep enough to deserve their own guide: see [Arrows](/help/palette/arrows/).
 
 <Tip>
   Reach for a Frame when a diagram grows past one screen: it keeps a section labelled and easy to
@@ -68,7 +68,7 @@ The **Arrow** tool lives here too, but arrows are deep enough to deserve their o
     Connect elements with arrows of every style, with draggable curve and elbow handles.
   </Feature>
   <Feature slug="shapes" title="Shapes">
-    The plain rectangles, circles, and more that the Tools tab complements.
+    The plain rectangles, circles, and more, in their own Shapes category.
   </Feature>
 </FeatureGrid>
 

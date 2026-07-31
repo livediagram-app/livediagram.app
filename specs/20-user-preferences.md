@@ -117,11 +117,11 @@ type UserPreferences = {
   // subsection). When true, every freehand commit while the
   // pencil banner is up runs through recogniseShape and may
   // mint a primitive instead of a FreehandElement. Deliberately
-  // NOT surfaced in the Settings dialog: the flag is a per-tool
-  // toggle, set + read from the pencil ModeBanner's icon button,
-  // and Settings is reserved for global editor preferences. The
-  // toggle's state still persists here so flipping it once
-  // sticks across sessions.
+  // DEAD as of spec/112. Shape recognition is now which pen you
+  // picked — Freehand or Shape Pen — rather than a persisted mode,
+  // so nothing reads this. It stays in the type because it is
+  // already stored for existing users and removing it would make a
+  // stored preference fail to parse rather than be ignored.
   recogniseShapes?: boolean;
 
   // When true, the AI Assistant panel renders in the editor.
@@ -219,10 +219,9 @@ Missing key === undefined === default behaviour. Concretely:
     endpoint, not a preference.
 - `telemetryEnabled` undefined → telemetry on (the default).
   Setting it to `false` is the only state that opts out.
-- `recogniseShapes` undefined → raw-sketch pencil (the default).
-  Setting it to `true` makes every pencil commit attempt
-  classification first. Flipped from the pencil ModeBanner icon
-  button rather than from the Settings dialog.
+- `recogniseShapes` is ignored whatever its value (spec/112): the
+  Shape Pen recognises, Freehand does not, and no stored flag
+  changes either.
 - `aiAssistanceEnabled` undefined → AI panel hidden (the default).
   Setting it to `true` shows the panel; the toggle only appears in
   Settings when the api worker advertises AI capability.
@@ -282,10 +281,10 @@ on" state.
 Global preferences (draw-to-add, minimal-panels, AI, telemetry) sit
 in the Settings dialog. Canvas-behaviour preferences (`autoRebindArrows`,
 `alignmentGuides`) sit in a Palette settings popover, next to the canvas
-they affect. Per-tool preferences (today: `recogniseShapes` for the
-pencil) sit next to the tool they affect, because walking the user back
-to a separate dialog to flip a per-tool behaviour is friction the tool's
-banner already solves.
+they affect. There are no per-tool preferences left: the one there was
+(`recogniseShapes`, flipped from the pencil's banner) became two palette
+tiles instead (spec/112), which is the same idea taken further — the
+setting is not near the tool, it IS the tool.
 
 The Palette popover is the first step in retiring the Settings dialog
 entirely: settings move out to the surfaces they govern, so the user
@@ -347,14 +346,12 @@ modal.
   notes that errors are always shown regardless. The
   Accessibility group holds `reduceMotion`, noting the OS setting is
   always respected and this only adds a user-forced override.
-- **Per-tool surfaces**: today only the pencil's ModeBanner (a
-  sparkle / magic-wand icon button to the left of Cancel) carries
-  the `recogniseShapes` toggle. The button reads the value from
-  the lifted `userPreferences` state in editor-page and writes
-  through `writeUserPreferences` with the resolved owner id, so
-  the round-trip is identical to a Settings dialog flip. See
-  spec/09's Shape-recognition subsection for the user-visible
-  contract.
+- **Per-tool surfaces**: none today. The pencil's ModeBanner used to
+  carry a `recogniseShapes` toggle; spec/112 replaced it with two
+  palette tiles, so no preference is set from a tool's own chrome any
+  more. The highlighter's banner popovers (spec/81) are the closest
+  thing, and those set element style for the next stroke rather than a
+  persisted preference.
 
 ## Read / write helpers
 

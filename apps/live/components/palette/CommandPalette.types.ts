@@ -90,6 +90,7 @@ export type CommandPaletteProps = {
   // Highlighter (spec/81): the pencil gesture with the marker
   // variant. Same one-shot arm semantics as onBeginFreehand.
   onBeginHighlighter: () => void;
+  onBeginShapePen: () => void;
   // Polygon tool (spec/84): arms the click-to-place-vertices mode.
   onBeginPolygon: () => void;
   // Currently-queued draw-to-size intent, or null. When set, the

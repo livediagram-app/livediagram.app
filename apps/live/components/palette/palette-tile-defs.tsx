@@ -18,6 +18,7 @@ export type PaletteTileSection =
   | 'shapes'
   | 'tools'
   | 'data'
+  | 'media'
   | 'components'
   | 'devices'
   | 'icons'
@@ -34,6 +35,7 @@ type PaletteTileAction =
   // vertex tool (spec/84) — separate action types so each tile maps
   // to its own arm-handler and pressed state.
   | { type: 'highlighter' }
+  | { type: 'shape-pen' }
   | { type: 'polygon' }
   | { type: 'arrow' }
   | { type: 'sticky' }
@@ -51,7 +53,7 @@ type PaletteTileAction =
 // the Tools tab renders one labelled grid per group instead of a flat
 // sixteen-tile wall. Group membership is metadata on the tile — ids stay
 // stable, so favourites persistence and search are untouched.
-export type ToolGroupId = 'write' | 'structure' | 'blocks' | 'media' | 'behaviour';
+export type ToolGroupId = 'write' | 'draw' | 'behaviour';
 
 // Display order, headings, and a one-line "what's in here" for the Tools tab's
 // groups. The description is what the category tile's tooltip says: a count
@@ -59,28 +61,17 @@ export type ToolGroupId = 'write' | 'structure' | 'blocks' | 'media' | 'behaviou
 // answers the actual question — is the thing I want in this box?
 export const TOOL_GROUPS: { id: ToolGroupId; label: string; description: string }[] = [
   {
-    // Writing and drawing are one category: both are "put a mark on the canvas
-    // yourself", and split across two tiles the pair mostly made you guess
-    // which half an arrow or a sticky note lived in.
     id: 'write',
-    label: 'Write & Draw',
-    description:
-      'Put your own marks down: pages, text and sticky notes, plus pencil, highlighter, polygon and arrows.',
+    label: 'Write',
+    description: 'The wordy elements: pages, text, sticky notes, and annotations.',
   },
   {
-    id: 'structure',
-    label: 'Structure',
-    description: 'Containers and grids: frames to group a section, tables, and timeline rails.',
-  },
-  {
-    id: 'blocks',
-    label: 'Blocks',
-    description: 'Rich cards: syntax-highlighted code, tickable checklists, and link previews.',
-  },
-  {
-    id: 'media',
-    label: 'People & Media',
-    description: 'Pictures and people: images, photo avatars, and user figures.',
+    // Split back out from a combined "Write & Draw" (spec/110): once both were
+    // one click from the category picker rather than two inside Tools, the
+    // pairing bought nothing and the combined list ran to eight rows.
+    id: 'draw',
+    label: 'Draw',
+    description: 'The gesture tools: pencil, highlighter, polygon, and arrows.',
   },
   // Behaviour (spec/103): elements that DO something when someone interacts
   // with them, rather than elements that say something. Last, because a
@@ -450,12 +441,13 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   {
     id: 'tools:pencil',
-    blurb: 'Freehand sketching, or snap to shapes',
+    blurb: 'Sketch a stroke, left as drawn',
     section: 'tools',
-    toolGroup: 'write',
-    label: 'Pencil (freehand)',
+    toolGroup: 'draw',
+    caption: 'Freehand',
+    label: 'Freehand pencil',
     description:
-      'Sketch a freehand stroke. Drag to draw; release near the start to close the shape.',
+      'Sketch a freehand stroke, kept exactly as you drew it. Drag to draw; release near the start to close the shape.',
     shortcut: 'P',
     action: { type: 'freehand' },
     icon: (
@@ -483,10 +475,43 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
+    id: 'tools:shape-pen',
+    blurb: 'A rough shape snaps to the real one',
+    section: 'tools',
+    toolGroup: 'draw',
+    caption: 'Shape Pen',
+    label: 'Shape pen',
+    description:
+      'Draw a rough circle, square, triangle or line and it converts to the real shape on release.',
+    shortcut: 'S',
+    action: { type: 'shape-pen' },
+    icon: (
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 18 18"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden
+      >
+        {/* The same diagonal nib as Freehand, shrunk to make room for a
+            dashed square: the nib says "drawing", the square says "this one
+            lands as a shape". Pairs with the shape-pen cursor glyph. */}
+        <path d="M1.5 16.5 L4 14" />
+        <path d="M3.5 14.5 L9 9 L10.5 10.5 L5 16 Z" />
+        <path d="M9 9 L11 7 L12.5 8.5 L10.5 10.5" />
+        <rect x="9.5" y="1.5" width="7" height="7" rx="0.8" strokeDasharray="2 1.6" />
+      </svg>
+    ),
+  },
+  {
     id: 'tools:highlighter',
     blurb: 'A wide translucent marker stroke',
     section: 'tools',
-    toolGroup: 'write',
+    toolGroup: 'draw',
     label: 'Highlighter',
     description: 'Wide translucent marker. Drag to call attention to a region.',
     action: { type: 'highlighter' },
@@ -514,7 +539,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     id: 'tools:polygon',
     blurb: 'Straight edges, point by point',
     section: 'tools',
-    toolGroup: 'write',
+    toolGroup: 'draw',
     label: 'Polygon',
     description: 'Click to place points. Click the start to close, double-click to finish a line.',
     action: { type: 'polygon' },
@@ -538,7 +563,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     id: 'tools:arrow',
     blurb: 'A connector you place by hand',
     section: 'tools',
-    toolGroup: 'write',
+    toolGroup: 'draw',
     label: 'Add arrow',
     description: 'Plain connector. Add pointers in the Pointer accordion.',
     shortcut: 'A',
@@ -590,8 +615,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     id: 'tools:table',
     blurb: 'An editable grid of cells',
-    section: 'tools',
-    toolGroup: 'structure',
+    section: 'data',
     label: 'Add table',
     description: 'Editable grid. Double-click a cell to type.',
     action: { type: 'table' },
@@ -616,8 +640,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     id: 'tools:code-block',
     blurb: 'Syntax-highlighted code card',
-    section: 'tools',
-    toolGroup: 'blocks',
+    section: 'components',
     label: 'Add code block',
     caption: 'Code',
     description: 'Monospace code snippet with syntax highlighting. Double-click to edit.',
@@ -758,8 +781,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     id: 'tools:checklist',
     blurb: 'Tickable to-do rows',
-    section: 'tools',
-    toolGroup: 'blocks',
+    section: 'components',
     label: 'Add checklist',
     caption: 'Checklist',
     description: 'Checkable to-do rows. Tick boxes on the canvas; edit rows from the menu.',
@@ -788,8 +810,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     id: 'tools:image',
     blurb: 'Place an uploaded picture',
-    section: 'tools',
-    toolGroup: 'media',
+    section: 'media',
     label: 'Add image',
     description: 'Drop an image placeholder + pick / upload a file.',
     shortcut: '9',
@@ -823,8 +844,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     id: 'tools:avatar',
     blurb: 'A circular photo of a person',
-    section: 'tools',
-    toolGroup: 'media',
+    section: 'media',
     label: 'Add avatar',
     description:
       'Avatar. A circular image. Tap to drop or drag to size; double-click it to pick / upload a photo.',
@@ -850,38 +870,10 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
-    id: 'tools:user',
-    blurb: 'An actor figure for a person',
-    section: 'tools',
-    toolGroup: 'media',
-    label: 'Add user',
-    description: 'User / actor. Use-case and architecture diagrams.',
-    action: { type: 'shape', kind: 'actor' },
-    icon: (
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 18 18"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden
-      >
-        <circle cx="9" cy="4" r="2.4" />
-        <path d="M9 6.4 L9 11.5" />
-        <path d="M4.8 8.4 L13.2 8.4" />
-        <path d="M9 11.5 L6 15.5" />
-        <path d="M9 11.5 L12 15.5" />
-      </svg>
-    ),
-  },
-  {
     id: 'tools:frame',
     blurb: 'A labelled box that groups a section',
     section: 'tools',
-    toolGroup: 'structure',
+    toolGroup: 'draw',
     label: 'Add frame',
     description: 'Frame. A titled container you draw around a cluster of elements.',
     shortcut: 'F',
@@ -910,7 +902,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     // that happens to hold text, not a surface you write on like Text, a
     // sticky or a Page. Grouping it with the writing surfaces implied you
     // compose in it.
-    toolGroup: 'blocks',
+    toolGroup: 'write',
     label: 'Add annotation',
     description: 'Annotation. A note marker: hover to read it, click to edit.',
     filled: true,
@@ -936,8 +928,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     id: 'tools:link-card',
     blurb: 'A clickable preview of a link',
-    section: 'tools',
-    toolGroup: 'blocks',
+    section: 'components',
     label: 'Add link card',
     description: "Link card. A bookmark preview with the page's title, favicon, and image.",
     noTint: true,
@@ -962,8 +953,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     id: 'tools:timeline',
     blurb: 'A track for sequencing events',
-    section: 'tools',
-    toolGroup: 'structure',
+    section: 'components',
     label: 'Add timeline rail',
     caption: 'Timeline',
     description: 'A line with points above it. Add more points from its right-end button.',
@@ -1281,6 +1271,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   // --- Devices (spec/09) ------------------------------------------------------
   {
     id: 'devices:browser',
+    blurb: 'A desktop web page frame',
     section: 'devices',
     label: 'Add web browser',
     caption: 'Browser',
@@ -1305,6 +1296,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   {
     id: 'devices:monitor',
+    blurb: 'A full-screen desktop layout',
     section: 'devices',
     label: 'Add computer monitor',
     caption: 'Monitor',
@@ -1330,6 +1322,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   {
     id: 'devices:laptop',
+    blurb: 'A portable-screen view',
     section: 'devices',
     label: 'Add laptop',
     description: 'Laptop. Screen plus keyboard base.',
@@ -1353,6 +1346,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   {
     id: 'devices:phone',
+    blurb: 'A mobile app or page',
     section: 'devices',
     label: 'Add phone',
     description: 'Phone. Wireframe a mobile screen.',
@@ -1375,6 +1369,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   {
     id: 'devices:tablet',
+    blurb: 'A larger touch layout',
     section: 'devices',
     label: 'Add tablet',
     description: 'Tablet. Larger than a phone, smaller than a laptop screen.',
@@ -1397,6 +1392,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   {
     id: 'devices:smartwatch',
+    blurb: 'A compact wearable screen',
     section: 'devices',
     label: 'Add smartwatch',
     caption: 'Watch',

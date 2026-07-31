@@ -30,7 +30,13 @@ export type PendingDraw =
   // 'highlighter' variant (spec/81) rides the same gesture but
   // commits the marker recipe: no shape recognition, no
   // close-to-fill, wide translucent stroke.
-  | { type: 'freehand'; variant?: 'highlighter' }
+  //
+  // 'shape-pen' (spec/112) is the same gesture WITH recognition: a rough
+  // circle becomes a circle. Recognition used to be a toggle in the pen's
+  // mode banner, which made "will this stroke convert?" a hidden mode you had
+  // to check before every stroke. It is now which pen you picked, so the
+  // answer is the tile you clicked.
+  | { type: 'freehand'; variant?: 'highlighter' | 'shape-pen' }
   // Polygon tool (spec/84): click-to-place vertices rather than a
   // drag gesture. The canvas accumulates clicked points; closing on
   // the start vertex or double-click / Enter commits a
@@ -97,6 +103,10 @@ export function drawBannerMessage(intent: PendingDraw, isMobile: boolean): strin
       // pointer stream, so it keeps the bare "Drag to draw". The
       // highlighter variant never closes, so it skips the hint.
       if (intent.variant === 'highlighter') return 'Drag to highlight';
+      // The shape pen says what it will do, since that is the whole
+      // difference between it and Freehand (spec/112).
+      if (intent.variant === 'shape-pen')
+        return isMobile ? 'Draw a shape' : 'Draw a rough shape — it snaps to the real one';
       return isMobile ? 'Drag to draw' : 'Drag to draw (release near the start to close)';
     case 'polygon':
       // The close / finish affordances overflow a phone-width banner,
@@ -170,6 +180,13 @@ export function drawIntentCursor(intent: PendingDraw): string {
       // at a glance rather than another black pen nib.
       return drawCursorFromGlyph(
         `<path d="M15 20 L20 15 L23 18 L18 23 Z" fill="rgb(253 224 71)" stroke="black" stroke-width="1.3" stroke-linejoin="round" /><path d="M20 15 L22 12 L25 15 L23 18 Z" fill="none" stroke="black" stroke-width="1.3" stroke-linejoin="round" /><path d="M12 26 H24" stroke="rgb(250 204 21)" stroke-width="4" stroke-linecap="round" />`,
+      );
+    }
+    if (intent.variant === 'shape-pen') {
+      // Pen nib with a dashed square beside it: the nib says "drawing", the
+      // square says "this one lands as a shape" (spec/112).
+      return drawCursorFromGlyph(
+        `<path d="M12 24 L17 19 L19.5 21.5 L14.5 26.5 Z M17 19 L19 17" stroke="black" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" fill="none" /><rect x="17.5" y="12" width="9" height="9" rx="1" fill="none" stroke="black" stroke-width="1.3" stroke-dasharray="2.4 2" />`,
       );
     }
     // Pen nib glyph: a tiny diagonal point. Reads as "drawing

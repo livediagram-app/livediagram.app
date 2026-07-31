@@ -25,7 +25,7 @@ type PaletteTab = {
 const CATEGORY_BANDS: Record<number, string> = {
   0: 'Common',
   1: 'Decorate',
-  2: 'Interactive',
+  2: 'Dynamic',
 };
 
 // Renders the palette's category switcher as a single right-hand dropdown
@@ -76,8 +76,16 @@ export function PaletteTabBar({
   // transition on until after the first measured frame so the
   // default-open panel doesn't animate itself open on page load.
   const contentRef = useRef<HTMLDivElement | null>(null);
+  const bodyRef = useRef<HTMLDivElement | null>(null);
   const [height, setHeight] = useState<number | null>(null);
   const [animate, setAnimate] = useState(false);
+  // How much room is left below the body's top edge (spec/110). A category
+  // like Components runs to ten rows, which on a short window ran off the
+  // bottom of the screen with no way to reach the last few — the body took
+  // its measured content height unconditionally. It is capped here instead,
+  // and only then does it scroll: a category that fits still shows no
+  // scrollbar and still animates its height.
+  const [available, setAvailable] = useState<number | null>(null);
   useEffect(() => {
     const el = contentRef.current;
     if (!el) return;
@@ -91,6 +99,41 @@ export function PaletteTabBar({
       cancelAnimationFrame(raf);
     };
   }, []);
+
+  // Re-measured on resize and after a drag (the panel is movable, so its top
+  // edge changes without the window changing size), plus whenever the
+  // category switches.
+  useEffect(() => {
+    const GUTTER = 12;
+    // The floor is the bottom CHROME, not the viewport edge: the zoom dock
+    // and the tab bar are the things a long category actually disappears
+    // under. Measured rather than assumed a height, since the dock hides in
+    // Zen mode and moves on mobile.
+    const chromeTop = (selector: string): number => {
+      const el = document.querySelector(selector);
+      return el ? el.getBoundingClientRect().top : Number.POSITIVE_INFINITY;
+    };
+    const measure = () => {
+      const top = bodyRef.current?.getBoundingClientRect().top;
+      if (top === undefined) return;
+      const floor = Math.min(
+        window.innerHeight,
+        chromeTop('[data-zoom-controls]'),
+        chromeTop('[data-editor-tabbar]'),
+      );
+      setAvailable(Math.max(120, floor - top - GUTTER));
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    // Pointer-up rather than a move handler: the cap only has to be right
+    // once the panel lands, and re-measuring every frame of a drag would
+    // fight the drag for layout.
+    window.addEventListener('pointerup', measure);
+    return () => {
+      window.removeEventListener('resize', measure);
+      window.removeEventListener('pointerup', measure);
+    };
+  }, [activeId]);
 
   return (
     // The host MovablePanel is given `flushTop` so this header band sits
@@ -128,8 +171,17 @@ export function PaletteTabBar({
         />
       </div>
       <div
-        className={`overflow-hidden${animate ? ' transition-[height] duration-200 ease-out' : ''}`}
-        style={{ height: height ?? undefined }}
+        ref={bodyRef}
+        data-palette-body=""
+        // Scrolls ONLY when it has to: `overflow-y-auto` shows no bar while
+        // the content fits under the cap.
+        className={`overflow-y-auto overflow-x-hidden${
+          animate ? ' transition-[height] duration-200 ease-out' : ''
+        }`}
+        style={{
+          height:
+            height === null ? undefined : available === null ? height : Math.min(height, available),
+        }}
       >
         <div ref={contentRef} className="px-2 pb-2.5 pt-2.5">
           <div key={displayed?.id ?? 'empty'} className="animate-fade-in">

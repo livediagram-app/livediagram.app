@@ -19,19 +19,21 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles("drawing").filter((a) => a.slug !== "shape-recognition")}
 >
 
-Shape recognition is an opt-in mode for the [Pencil tool](/help/palette/tools/drawing/). With it on, a rough sketch is matched against real shapes when you release, so a wobbly square becomes a proper square and a quick loop becomes a circle, no need to draw precisely.
+Shape recognition is what the **Shape Pen** does. Draw with it and a rough sketch is matched against real shapes when you release, so a wobbly square becomes a proper square and a quick loop becomes a circle, no need to draw precisely.
 
-<Figure caption="A wobbly hand-drawn outline matched into a clean square once the wand toggle is on.">
+<Figure caption="A wobbly hand-drawn outline matched into a clean square by the Shape Pen.">
   <ShapeRecognition />
 </Figure>
 
-## Turning it on
+## Picking it
 
-A magic-wand toggle sits in the Pencil's mode banner, to the left of Cancel, with a tooltip describing whether recognition is on or off. Toggle it on, then draw as normal. The setting is remembered as a per-tool preference, so it sticks across pencil sessions (and across devices when you are signed in). It deliberately lives on the tool itself rather than in the Settings dialog, so it is right where you draw.
+Open the palette's **Draw** category and choose **Shape Pen** (or press `6`). Its neighbour, **Freehand** (`P`), is the same gesture with recognition off: it keeps your stroke exactly as you drew it.
+
+There is no setting to remember and nothing to switch on. This used to be a magic-wand toggle in the Pencil's banner, which meant whether your next stroke would convert depended on a choice you might have made days ago on another device. Two pens put the answer where the decision is.
 
 ## What it recognises
 
-When the mode is on, your simplified stroke is scored against a handful of shapes, and if it is a confident enough match, a real shape is created instead of a freehand sketch:
+Your simplified stroke is scored against a handful of shapes, and if it is a confident enough match, a real shape is created instead of a freehand sketch:
 
 - A rough four-corner outline becomes a **square**.
 - A closed loop becomes a **circle**.

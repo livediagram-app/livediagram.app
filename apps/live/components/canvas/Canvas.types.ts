@@ -126,6 +126,18 @@ export type CanvasProps = {
   avatarPanelPosition?: { x: number; y: number } | null;
   onMoveAvatarPanel?: (x: number, y: number) => void;
   onResetAvatarPanel?: () => void;
+  // The laser pen (spec/112). Owned in editor state, not here: the broadcaster
+  // stamps it onto every sample and the trail rows carry it, both of which sit
+  // above Canvas — so Canvas forwards it to the panel rather than owning it.
+  laserConfig?: import('@/lib/laser-config').LaserConfig;
+  onChangeLaserField?: <K extends keyof import('@/lib/laser-config').LaserConfig>(
+    field: K,
+    value: import('@/lib/laser-config').LaserConfig[K],
+  ) => void;
+  // Laser Panel (spec/112): where it sits, same as the avatar's above.
+  laserPanelPosition?: { x: number; y: number } | null;
+  onMoveLaserPanel?: (x: number, y: number) => void;
+  onResetLaserPanel?: () => void;
   // Map of elementId -> remote participants currently focused on that
   // element. Drives a small badge ring on each element so participants
   // can see in real time what others are working on.
@@ -207,6 +219,7 @@ export type CanvasProps = {
   // Highlighter variant of the pencil (spec/81) + the polygon
   // click-to-place tool (spec/84), armed from the palette tiles.
   onBeginHighlighter: () => void;
+  onBeginShapePen: () => void;
   onBeginPolygon: () => void;
   // Highlighter banner settings (spec/81): the colour + stroke width the
   // next marker strokes commit with, plus their setters for the banner's
@@ -237,23 +250,16 @@ export type CanvasProps = {
   // polyline in canvas coords. The editor applies RDP simplification
   // and Catmull-Rom-to-Bezier smoothing before minting the
   // FreehandElement, both for storage size and visual smoothness.
-  // `recogniseShapes` is the user-preference toggle exposed via the
-  // pencil ModeBanner; when true, the caller (editor-page
-  // commitFreehand) runs the polyline through recogniseShape and may
-  // mint a real shape primitive instead of a FreehandElement.
+  // `recogniseShapes` says whether this stroke came from the Shape Pen
+  // (spec/112); when true the caller (commitFreehand) runs the polyline
+  // through recogniseShape and may mint a real shape primitive instead of a
+  // FreehandElement. It reads off the armed intent's variant, not a
+  // preference — the toggle that used to set it is gone.
   onCommitFreehand: (points: { x: number; y: number }[], recogniseShapes: boolean) => void;
   // Polygon commit (spec/84). Receives the deliberately clicked
   // vertices in canvas coords (no simplification — the user placed
   // each one) plus whether the loop closed on the start vertex.
   onCommitPolygon: (vertices: { x: number; y: number }[], closed: boolean) => void;
-  // Lifted recogniseShapes preference. Lives in editor-page's
-  // userPreferences state (spec/20) so flipping the banner toggle
-  // persists across pencil sessions and across devices for signed-
-  // in users. Canvas reads the value to drive the toggle button's
-  // pressed state and passes it through to onCommitFreehand; the
-  // setter writes through writeUserPreferences so D1 syncs.
-  recogniseShapes: boolean;
-  onToggleRecogniseShapes: () => void;
   // Minimal panel layout preference (spec/20). When true, the floating
   // panels render as dock popovers on desktop too (always on mobile).
   minimalPanels?: boolean;

@@ -9,6 +9,7 @@ import type { PanelId } from '@/lib/panel-layout';
 import { ActivityPanel } from '@/components/panels/ActivityPanel';
 import { LayersPanel } from '@/components/panels/LayersPanel';
 import { AvatarPanel } from '@/components/panels/AvatarPanel';
+import { LaserPanel } from '@/components/panels/LaserPanel';
 import { visibleLayerElements } from '@livediagram/diagram';
 import { CanvasAiPanel } from './CanvasAiPanel';
 import { CommandPalette } from '@/components/palette/CommandPalette';
@@ -140,6 +141,7 @@ export function useCanvasChromePanels({
     onAddText,
     onBeginFreehand,
     onBeginHighlighter,
+    onBeginShapePen,
     onBeginPolygon,
     onChangeSettings,
     onClearActivity,
@@ -173,6 +175,11 @@ export function useCanvasChromePanels({
     onExitAvatarMode,
     avatarConfig,
     onChangeAvatarField,
+    laserConfig,
+    onChangeLaserField,
+    laserPanelPosition,
+    onMoveLaserPanel,
+    onResetLaserPanel,
     onRandomiseAvatar,
     onAvatarReaction,
     avatarPanelPosition,
@@ -288,6 +295,9 @@ export function useCanvasChromePanels({
   const voteWiring = panelWiringFor('vote', votePanelPosition, onResetVotePanel);
   const avatarWiring = panelWiringFor('avatar', avatarPanelPosition ?? null, () =>
     onResetAvatarPanel?.(),
+  );
+  const laserWiring = panelWiringFor('laser', laserPanelPosition ?? null, () =>
+    onResetLaserPanel?.(),
   );
   // In docking mode the corner flex columns own stacking, so the legacy
   // measured stack-below-the-palette offset is dropped.
@@ -477,6 +487,7 @@ export function useCanvasChromePanels({
         onAddArrow={onAddArrow}
         onBeginFreehand={onBeginFreehand}
         onBeginHighlighter={onBeginHighlighter}
+        onBeginShapePen={onBeginShapePen}
         onBeginPolygon={onBeginPolygon}
         pendingDraw={pendingDraw}
         themeTint={paletteTint}
@@ -599,6 +610,27 @@ export function useCanvasChromePanels({
       />
     ) : null;
 
+  // Laser Panel (spec/111): the pen's settings, mounted only while the Laser
+  // tool is active — the avatar panel's twin in every respect, including the
+  // view-role availability (the laser is theirs too) and the dock button.
+  const laserEl =
+    !chromeHidden && canvasTool === 'laser' && laserConfig ? (
+      <LaserPanel
+        config={laserConfig}
+        onChange={(field, value) => onChangeLaserField?.(field, value)}
+        selfColour={selfParticipant?.color ?? '#0ea5e9'}
+        position={laserWiring.position}
+        stackBelowY={dockingActive ? undefined : legacyStackBelowY}
+        onMoveTo={(x, y) => onMoveLaserPanel?.(x, y)}
+        onReset={laserWiring.onReset}
+        dock={laserWiring.dock}
+        mobileOpenOverride={activeMobilePanel === 'laser'}
+        mobileDockAnchor={activeDockAnchor ?? undefined}
+        forceDockMode={!!minimalPanels}
+        onMobileClose={closeMobilePanel}
+      />
+    ) : null;
+
   // Map of panel id → element for the docked-layout distribution.
   const panelEls: Partial<Record<PanelId, ReactNode>> = {
     explorer: explorerEl,
@@ -611,6 +643,7 @@ export function useCanvasChromePanels({
     poll: pollEl,
     vote: voteEl,
     avatar: avatarEl,
+    laser: laserEl,
   };
   return { panelEls };
 }
