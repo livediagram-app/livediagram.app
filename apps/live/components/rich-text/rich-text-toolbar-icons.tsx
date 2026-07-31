@@ -1,80 +1,15 @@
-// Inline SVG icons for the rich-text toolbar (overflow ellipsis, the three
-// list-style glyphs, and the font-family glyph). Pure presentational; split
-// out of RichTextToolbar.
+// Inline SVG icons for the rich-text toolbars (the overflow ellipsis and the
+// font-family glyph). Pure presentational; split out of RichTextToolbar.
+//
+// The bullet / numbered / no-list / heading glyphs that lived here went with
+// the buttons they labelled: both toolbars now use the block-type picker
+// (spec/102), which is a word list, not a row of pictograms.
 export function EllipsisIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden>
       <circle cx="4" cy="8" r="1.4" fill="currentColor" />
       <circle cx="8" cy="8" r="1.4" fill="currentColor" />
       <circle cx="12" cy="8" r="1.4" fill="currentColor" />
-    </svg>
-  );
-}
-
-// Bulleted-list glyph: three dots + lines.
-export function BulletListIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      aria-hidden
-    >
-      <circle cx="3" cy="4" r="1" fill="currentColor" stroke="none" />
-      <circle cx="3" cy="8" r="1" fill="currentColor" stroke="none" />
-      <circle cx="3" cy="12" r="1" fill="currentColor" stroke="none" />
-      <path d="M6.5 4h7M6.5 8h7M6.5 12h7" />
-    </svg>
-  );
-}
-
-// Numbered-list glyph: 1/2/3 + lines.
-export function NumberedListIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M6.5 4h7M6.5 8h7M6.5 12h7" />
-      <text x="1.5" y="5.5" fontSize="5" fill="currentColor" stroke="none">
-        1
-      </text>
-      <text x="1.5" y="9.5" fontSize="5" fill="currentColor" stroke="none">
-        2
-      </text>
-      <text x="1.5" y="13.5" fontSize="5" fill="currentColor" stroke="none">
-        3
-      </text>
-    </svg>
-  );
-}
-
-// "Remove list" glyph: lines with a slash.
-export function NoListIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      aria-hidden
-    >
-      <path d="M6.5 4h7M6.5 8h7M6.5 12h7" />
-      <path d="M2.5 13.5l11-11" />
     </svg>
   );
 }
@@ -87,17 +22,5 @@ export function FontGlyph() {
         A
       </text>
     </svg>
-  );
-}
-
-// Heading / subheading glyph (spec/92): the typographic "H1" / "H2" the rest
-// of the world uses, matching the letterform Bold / Italic / Underline take
-// in palette-icons rather than inventing a pictogram for it.
-export function HeadingIcon({ level }: { level: 1 | 2 | 3 }) {
-  return (
-    <span className="flex items-baseline leading-none text-slate-700 dark:text-slate-200">
-      <span className="text-[13px] font-bold">H</span>
-      <span className="text-[9px] font-semibold">{level}</span>
-    </span>
   );
 }

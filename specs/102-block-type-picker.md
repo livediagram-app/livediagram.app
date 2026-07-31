@@ -1,6 +1,6 @@
 # 102 — The block-type picker
 
-Status: partly shipped — see "Still to do"
+Status: shipped
 
 ## What
 
@@ -50,12 +50,28 @@ so the picker reads the prefix — there is nothing to ask. It reports the
 **first** line of the selection: a selection spanning a bullet and a paragraph
 has no single honest answer, so it reports where the selection starts.
 
-## Still to do
+## Both toolbars, one control
 
-- **The note toolbar has not been consolidated.** It gained the third heading
-  level, but still shows H1 / H2 / H3 buttons beside bullet / numbered /
-  remove-list rather than this picker. The shared module
-  (`components/rich-text/block-type.ts`) exists for it to adopt.
-- **No tests** on `blockTypeOf` / `blockTypeApplies` / `listStyleOfText`, which
-  are pure functions and should have them.
-- **Not verified in a browser.** Typechecks and the diagram suite passes.
+The label toolbar (`RichTextToolbar`) and the note toolbar
+(`NoteFormatToolbar`) render the same `BlockTypePicker`. The note toolbar's six
+old buttons (H1 / H2 / H3 beside bullet / numbered / remove-list) are gone, and
+so are the four glyphs that labelled them.
+
+Only the apply **scope** differs, and it lives in each editor's session rather
+than in the picker: a collapsed caret means the whole text in a label and the
+current line in a note (spec/92).
+
+`ToolbarDropdown` moved out of `RichTextToolbar` into
+`components/rich-text/ToolbarDropdown.tsx` for the same reason — one menu
+behaviour (inline, not portalled; closes on outside pointerdown; never steals
+the editor's selection), not two copies to drift.
+
+## Verified
+
+`block-type.test.ts` covers `blockTypeOf` / `blockTypeApplies` /
+`listStyleOfText`, including the round-trip that makes the vocabulary closed:
+applying any type and reading it back gives the same type.
+
+Driven in a browser on both surfaces. In a note: Paragraph → Bullet point turns
+`First line` into `• First line` and the trigger reads "Bullet point"; picking
+Heading 2 next clears the bullet (`First line`) and the trigger follows.

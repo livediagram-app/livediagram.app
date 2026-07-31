@@ -82,12 +82,11 @@ edit.
 Controls, left to right, in one row of the shared toolbar-button styling
 (`h-8 w-8` icon buttons with the standard tooltip, dividers between groups):
 
-| Group  | Controls                                |
-| ------ | --------------------------------------- |
-| Inline | Bold, Italic, Underline                 |
-| Block  | Heading, Subheading                     |
-| Lists  | Bullet list, Numbered list, Remove list |
-| Link   | Link (opens an inline address field)    |
+| Group  | Controls                                                        |
+| ------ | --------------------------------------------------------------- |
+| Inline | Bold, Italic, Underline                                         |
+| Block  | Block type (one dropdown, [spec/102](102-block-type-picker.md)) |
+| Link   | Link (opens an inline address field)                            |
 
 `Cmd/Ctrl+B` / `I` / `U` drive the same run toggles as the buttons, so the
 native contentEditable commands (which would inject `<b>`/`<i>` tags the run
@@ -96,8 +95,9 @@ model never sees) never fire.
 **Scope of a command with no selection.** The label editor formats the whole
 label when the caret is collapsed; that is wrong for a multi-paragraph note.
 In a note a collapsed caret scopes an inline command to the **word** it sits
-in, and a block command (heading, list) to the **line** — a per-caller option
-on the shared format-actions hook, so label behaviour is untouched.
+in, and a block command (whatever the block-type picker applies) to the **line** —
+a per-caller option on the shared format-actions hook, so label behaviour is
+untouched.
 
 **Links.** The Link button opens a one-line address field under the toolbar,
 pre-filled when the selection already sits on a link, with Apply / Remove.

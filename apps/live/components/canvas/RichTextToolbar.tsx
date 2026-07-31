@@ -8,7 +8,6 @@
 // selection + apply handlers); this component is presentation + the
 // focus-preservation detail.
 
-import { useEffect, useRef, useState } from 'react';
 import { AlignmentGrid } from '@/components/palette/palette-controls';
 import { AlignIcon as AlignLinesIcon } from '@/components/canvas/table-icons';
 import {
@@ -18,13 +17,8 @@ import {
   UnderlineIcon,
 } from '@/components/palette/palette-icons';
 import { Tooltip } from '@/components/primitives/Tooltip';
-import {
-  BLOCK_TYPES,
-  blockTypeApplies,
-  blockTypeLabel,
-  blockTypeOf,
-  type BlockType,
-} from '@/components/rich-text/block-type';
+import { BlockTypePicker } from '@/components/rich-text/BlockTypePicker';
+import { noFocusSteal, ToolbarDropdown } from '@/components/rich-text/ToolbarDropdown';
 import type { ActiveFormat } from '@/components/rich-text/rich-text-format';
 import type {
   ListStyle,
@@ -34,11 +28,6 @@ import type {
   TextAlignY,
 } from '@livediagram/diagram';
 
-// preventDefault on mousedown keeps focus + the live selection in the
-// contentEditable when a control is clicked (the classic rich-text-toolbar
-// bug). Shared by every button so the editor never blurs mid-format.
-const noFocusSteal = (e: React.MouseEvent) => e.preventDefault();
-
 // Matches the element toolbar's PopoverButton (h-8 w-8 rounded-md, same
 // active + hover tones) so the two toolbars read as one system.
 function btnClass(active: boolean): string {
@@ -47,88 +36,6 @@ function btnClass(active: boolean): string {
       ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
       : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
   }`;
-}
-
-const CHEVRON = (
-  <svg
-    width="10"
-    height="10"
-    viewBox="0 0 12 12"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.5"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    aria-hidden
-  >
-    <path d="M3 4.5 6 7.5 9 4.5" />
-  </svg>
-);
-
-// A compact dropdown kept INLINE (not portalled) so it stays inside the
-// toolbar wrapper, where the editor's focus + canvas-propagation guards
-// already apply. Closes on an option click (the menu's bubble handler) or an
-// outside pointerdown (capture phase, so it fires before the wrapper stops
-// propagation). The trigger preventDefaults mousedown so the editor keeps its
-// selection while the menu is open.
-function ToolbarDropdown({
-  label,
-  description,
-  trigger,
-  menuClassName = 'min-w-[8rem]',
-  hideChevron = false,
-  children,
-}: {
-  label: string;
-  description: string;
-  trigger: React.ReactNode;
-  menuClassName?: string;
-  hideChevron?: boolean;
-  children: React.ReactNode;
-}) {
-  const [open, setOpen] = useState(false);
-  const rootRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (!open) return;
-    const onDown = (e: PointerEvent) => {
-      if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener('pointerdown', onDown, true);
-    return () => document.removeEventListener('pointerdown', onDown, true);
-  }, [open]);
-  return (
-    <div className="relative" ref={rootRef}>
-      <Tooltip title={label} description={description}>
-        <button
-          type="button"
-          aria-haspopup="listbox"
-          aria-expanded={open}
-          aria-label={label}
-          onMouseDown={noFocusSteal}
-          onClick={() => setOpen((o) => !o)}
-          className={`flex h-8 items-center gap-0.5 rounded-md px-1.5 transition ${
-            open
-              ? 'bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-white'
-              : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
-          }`}
-        >
-          {trigger}
-          {hideChevron ? null : CHEVRON}
-        </button>
-      </Tooltip>
-      {open ? (
-        <div
-          role="listbox"
-          // An option click bubbles here and closes the menu after its own
-          // handler runs.
-          onClick={() => setOpen(false)}
-          className={`absolute left-0 top-full z-[var(--z-panel)] mt-1 rounded-md border border-slate-200 bg-white py-1 shadow-lg dark:border-slate-700 dark:bg-slate-900 ${menuClassName}`}
-        >
-          {children}
-        </div>
-      ) : null}
-    </div>
-  );
 }
 
 export function RichTextToolbar({
@@ -175,18 +82,6 @@ export function RichTextToolbar({
         icon: <StrikethroughIcon />,
       },
     ];
-  // Block type (spec/102): heading level and list style are one choice to a
-  // writer, so they are one control. Applies to the selected lines, or to the
-  // whole label when nothing is selected (the session's collapsedScope).
-  const blockType = blockTypeOf(active.heading, listStyle);
-  const applyBlockType = (next: BlockType) => {
-    const { heading, list } = blockTypeApplies(next);
-    // Both always run: picking a heading has to clear a bullet, and picking a
-    // bullet has to clear a heading, or a line lands in a state the picker
-    // cannot describe.
-    onApplyList(list);
-    onApplyHeading(heading);
-  };
   // Same spacer the element toolbar's Divider uses, so both read alike.
   const divider = (
     <span className="mx-0.5 h-6 w-px shrink-0 bg-slate-200 dark:bg-slate-700" aria-hidden />
@@ -209,30 +104,16 @@ export function RichTextToolbar({
         </Tooltip>
       ))}
       {divider}
-      <ToolbarDropdown
-        label="Block type"
-        description="Heading level, paragraph, or a list — applied to the selected lines."
-        menuClassName="min-w-[10rem]"
-        trigger={<span className="px-1 text-xs font-medium">{blockTypeLabel(blockType)}</span>}
-      >
-        {BLOCK_TYPES.map((b) => (
-          <button
-            key={b.id}
-            type="button"
-            role="option"
-            aria-selected={blockType === b.id}
-            onMouseDown={noFocusSteal}
-            onClick={() => applyBlockType(b.id)}
-            className={`flex w-full items-center justify-between gap-3 px-2.5 py-1.5 text-left text-xs transition ${
-              blockType === b.id
-                ? 'bg-brand-50 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
-                : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
-            }`}
-          >
-            {b.label}
-          </button>
-        ))}
-      </ToolbarDropdown>
+      {/* Block type (spec/102): heading level and list style are one choice
+          to a writer, so they are one control. Applies to the selected lines,
+          or to the whole label when nothing is selected (the session's
+          collapsedScope). */}
+      <BlockTypePicker
+        heading={active.heading}
+        listStyle={listStyle}
+        onApplyHeading={onApplyHeading}
+        onApplyList={onApplyList}
+      />
       {divider}
       {/* Alignment — the shared 3×3 grid, reused. The trigger is the
           familiar word-processor glyph (stacked lines whose ends follow the

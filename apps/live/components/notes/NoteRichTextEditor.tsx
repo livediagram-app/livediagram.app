@@ -8,8 +8,9 @@
 // Nothing is committed from here. The popover owns the note's lifecycle and
 // receives the current value through `onChange`.
 
+import { listStyleOfText } from '@/components/rich-text/block-type';
 import { insertTextAtCaret } from '@/components/rich-text/rich-text-dom';
-import type { RunBoolKey, TextRun } from '@livediagram/diagram';
+import { runsPlainText, type RunBoolKey, type TextRun } from '@livediagram/diagram';
 import { NOTE_BASE_PX } from './note-run-style';
 import { NoteFormatToolbar } from './NoteFormatToolbar';
 import { useNoteRichTextSession } from './useNoteRichTextSession';
@@ -31,6 +32,7 @@ export function NoteRichTextEditor({
     editorRef,
     composingRef,
     active,
+    currentRuns,
     handleInput,
     onToggle,
     applyList,
@@ -42,6 +44,7 @@ export function NoteRichTextEditor({
     <div className="flex flex-col gap-1.5">
       <NoteFormatToolbar
         active={active}
+        listStyle={listStyleOfText(runsPlainText(currentRuns()))}
         onToggle={onToggle}
         onApplyList={applyList}
         onApplyHeading={applyHeading}

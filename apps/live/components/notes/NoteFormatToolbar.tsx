@@ -12,12 +12,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { ListStyle, RunBoolKey, RunHeading } from '@livediagram/diagram';
 import { BoldIcon, ItalicIcon, UnderlineIcon } from '@/components/palette/palette-icons';
 import { LinkMenuIcon } from '@/components/palette/context-menu-icons';
-import {
-  BulletListIcon,
-  HeadingIcon,
-  NoListIcon,
-  NumberedListIcon,
-} from '@/components/rich-text/rich-text-toolbar-icons';
+import { BlockTypePicker } from '@/components/rich-text/BlockTypePicker';
 import type { ActiveFormat } from '@/components/rich-text/rich-text-format';
 import { Tooltip } from '@/components/primitives/Tooltip';
 import { normaliseUrl } from '@/lib/url-safety';
@@ -42,12 +37,17 @@ const DIVIDER = (
 
 export function NoteFormatToolbar({
   active,
+  listStyle,
   onToggle,
   onApplyList,
   onApplyHeading,
   onApplyLink,
 }: {
   active: ActiveFormat;
+  // The list style of the line the caret sits on, read from the note's plain
+  // text (a list is a literal line prefix, spec/92) — the picker needs it to
+  // show what the current line already is.
+  listStyle: ListStyle;
   onToggle: (key: RunBoolKey) => void;
   onApplyList: (style: ListStyle) => void;
   onApplyHeading: (level: RunHeading | null) => void;
@@ -72,33 +72,6 @@ export function NoteFormatToolbar({
       },
     ];
 
-  const headings: { level: 1 | 2 | 3; label: string; description: string }[] = [
-    { level: 1, label: 'H1', description: 'Turn the current lines into a heading.' },
-    { level: 2, label: 'H2', description: 'Turn the current lines into a subheading.' },
-    { level: 3, label: 'H3', description: 'Turn the current lines into a sub-section heading.' },
-  ];
-
-  const lists: { style: ListStyle; label: string; description: string; icon: React.ReactNode }[] = [
-    {
-      style: 'bullet',
-      label: 'Bullet list',
-      description: 'Turn the current lines into a bullet list.',
-      icon: <BulletListIcon />,
-    },
-    {
-      style: 'numbered',
-      label: 'Numbered list',
-      description: 'Turn the current lines into a numbered list.',
-      icon: <NumberedListIcon />,
-    },
-    {
-      style: 'none',
-      label: 'Remove list',
-      description: 'Turn the current lines back into plain text.',
-      icon: <NoListIcon />,
-    },
-  ];
-
   return (
     <div className="flex flex-col gap-1.5">
       <div className="flex flex-wrap items-center gap-0.5 rounded-md border border-slate-200 bg-slate-50 p-1 dark:border-slate-700 dark:bg-slate-800/60">
@@ -117,36 +90,17 @@ export function NoteFormatToolbar({
           </Tooltip>
         ))}
         {DIVIDER}
-        {headings.map((h) => (
-          <Tooltip key={h.level} title={h.label} description={h.description}>
-            <button
-              type="button"
-              aria-label={h.label}
-              aria-pressed={active.heading === h.level}
-              onMouseDown={noFocusSteal}
-              // Clicking the level a line already carries clears it, so the
-              // pair doubles as its own "back to body text".
-              onClick={() => onApplyHeading(active.heading === h.level ? null : h.level)}
-              className={btnClass(active.heading === h.level)}
-            >
-              <HeadingIcon level={h.level} />
-            </button>
-          </Tooltip>
-        ))}
-        {DIVIDER}
-        {lists.map((l) => (
-          <Tooltip key={l.style} title={l.label} description={l.description}>
-            <button
-              type="button"
-              aria-label={l.label}
-              onMouseDown={noFocusSteal}
-              onClick={() => onApplyList(l.style)}
-              className={btnClass(false)}
-            >
-              {l.icon}
-            </button>
-          </Tooltip>
-        ))}
+        {/* One block-type picker (spec/102) rather than three heading buttons
+            beside bullet / numbered / remove-list: to a writer a line is a
+            heading, or a paragraph, or a bullet, and five toggles made that
+            one decision look like several. Same control as the label
+            toolbar. */}
+        <BlockTypePicker
+          heading={active.heading}
+          listStyle={listStyle}
+          onApplyHeading={onApplyHeading}
+          onApplyList={onApplyList}
+        />
         {DIVIDER}
         <Tooltip title="Link" description="Point the selected text at a web address.">
           <button

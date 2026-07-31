@@ -4,7 +4,7 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Notes',
   description:
-    'Attach a longer written note to any element: a rich-text editor with bold, italic, underline, headings, bullet and numbered lists, and links, kept off the canvas until someone opens it.',
+    'Attach a longer written note to any element: a rich-text editor with bold, italic, underline, a block-type picker for headings and lists, and links, kept off the canvas until someone opens it.',
   path: '/help/canvas/notes/',
 });
 
@@ -16,9 +16,7 @@ Every boxed element can carry one: shapes, text, sticky notes, images, tables, l
 
 ## Adding a note
 
-<Step n={1}>
-  Right-click the element to open its menu and go to **Resources**.
-</Step>
+<Step n={1}>Right-click the element to open its menu and go to **Resources**.</Step>
 
 <Step n={2}>
   Choose **Add Note** (it reads **Edit Note** once there is one). The note popover opens beside the
@@ -35,16 +33,15 @@ Every boxed element can carry one: shapes, text, sticky notes, images, tables, l
 The toolbar sits above the writing area and is **always visible** — a note is read at least as often as it is written, and a toolbar that appeared only on focus would make the popover jump the moment you clicked into it.
 
 - **Bold**, **Italic**, **Underline** — also on `Cmd/Ctrl+B`, `I`, and `U`.
-- **Heading** and **Subheading**, for a note long enough to want sections.
-- **Bullet list**, **Numbered list**, and **Remove list**.
+- **Block type**, a single dropdown holding **Paragraph**, **Heading 1**, **Heading 2**, **Heading 3**, **Bullet point**, and **Numbered point**. It shows what the current line already is, and picking an entry makes it that: choosing a heading clears a bullet, choosing a bullet clears a heading, and **Paragraph** is how you go back to plain text.
 - **Link**, which opens a one-line address field under the toolbar.
 
 The writing area starts at a comfortable few lines and can be **dragged taller** by its bottom edge if you are writing something substantial.
 
 <Tip>
   You don't have to select text first. With the cursor sitting in a word, **Bold** and its siblings
-  apply to that whole word; **Heading** and the list buttons apply to the whole line. Select a range
-  and it does what you'd expect instead.
+  apply to that whole word; **Block type** applies to the whole line. Select a range and it does
+  what you'd expect instead.
 </Tip>
 
 ## Links inside a note
