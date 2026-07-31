@@ -121,13 +121,18 @@ export function LinkPickerDialog({
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-0.5">
+          {/* A URL-restricted picker is an embed's link dialog (spec/121), so
+              it points at the embed article rather than the generic links one:
+              "which links work here" is the question being asked. */}
           <HelpArticleLink
-            article={mode === 'tab' ? 'linkingTabs' : 'links'}
-            title={mode === 'tab' ? 'Linking tabs' : 'Links'}
+            article={urlOnly ? 'embedElements' : mode === 'tab' ? 'linkingTabs' : 'links'}
+            title={urlOnly ? 'Embeds' : mode === 'tab' ? 'Linking tabs' : 'Links'}
             description={
-              mode === 'tab'
-                ? 'How linking to another tab works.'
-                : 'Linking elements to tabs, diagrams, and web addresses.'
+              urlOnly
+                ? 'Which services can be embedded, and how they load.'
+                : mode === 'tab'
+                  ? 'How linking to another tab works.'
+                  : 'Linking elements to tabs, diagrams, and web addresses.'
             }
           />
           <DialogCloseButton onClick={onClose} />

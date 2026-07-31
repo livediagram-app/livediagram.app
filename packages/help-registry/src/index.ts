@@ -177,7 +177,7 @@ export const categories: Category[] = [
     title: 'Palette',
     description:
       'Your launchpad for everything on the canvas: every element and palette setting explained.',
-    articleCount: 16,
+    articleCount: 20,
     kind: 'feature',
   },
   {
@@ -839,6 +839,45 @@ export const articles: Article[] = [
     title: 'Components',
     description: 'Pre-assembled blocks like banners, callouts, and stat rows.',
     keywords: 'banner callout stat block prebuilt widgets cards sections',
+    category: 'Palette',
+    categorySlug: 'palette',
+    group: 'Elements',
+  },
+  {
+    slug: 'mind-maps',
+    title: 'Mind Maps',
+    description: 'Tab adds a child, Enter a sibling — build a branch from the keyboard.',
+    keywords:
+      'mind map mindmap node branch child sibling tab enter keyboard tree hierarchy brainstorm outline',
+    category: 'Palette',
+    categorySlug: 'palette',
+    group: 'Elements',
+  },
+  {
+    slug: 'lanes',
+    title: 'Lanes',
+    description: 'Titled bands for swimlanes; dragging one carries its contents.',
+    keywords: 'lane swimlane swim band row role team process cross-functional container pool track',
+    category: 'Palette',
+    categorySlug: 'palette',
+    group: 'Elements',
+  },
+  {
+    slug: 'entities',
+    title: 'Entities',
+    description: 'A title over name / type rows, for class diagrams and data models.',
+    keywords:
+      'entity class uml er erd record table schema model field attribute method database column',
+    category: 'Palette',
+    categorySlug: 'palette',
+    group: 'Elements',
+  },
+  {
+    slug: 'embed-elements',
+    title: 'Embeds on the canvas',
+    description: 'Play a video, or open a Figma file or Google Doc, on the canvas.',
+    keywords:
+      'embed video youtube vimeo loom figma google docs sheets slides play iframe media link',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Elements',

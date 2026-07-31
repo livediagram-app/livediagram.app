@@ -21,6 +21,13 @@ export const HELP_ARTICLES = {
   sharePasswords: 'collaboration/sharing/share-passwords',
   // Palette behaviour
   autoAttachArrows: 'palette/auto-attach-arrows',
+  // The elements added in spec/114 and spec/118-121, linked from the surfaces
+  // where someone first meets them.
+  mindMaps: 'palette/mind-maps',
+  lanes: 'palette/lanes',
+  entities: 'palette/entities',
+  embedElements: 'palette/embed-elements',
+  behaviourElements: 'palette/behaviour',
   alignmentGuides: 'palette/alignment-guides',
   panelOpacity: 'palette/panel-opacity',
   quickAddOnHover: 'palette/quick-add-on-hover',

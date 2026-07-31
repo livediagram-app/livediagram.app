@@ -1,0 +1,49 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Lanes',
+  description:
+    'A lane is a titled horizontal band for swimlane diagrams. Dragging it carries everything inside it, so a whole role or team moves as one.',
+  path: '/help/palette/lanes/',
+});
+
+<ArticleLayout
+  title="Lanes"
+  description="Titled bands for swimlane diagrams: one role, team or system per lane."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  subArticles={getSubArticles("lanes")}
+>
+
+A **Lane** is a wide band with a titled gutter down one edge, for cross-functional flows: a role, a team or a system per lane, with its steps laid inside.
+
+It sits in the palette's **Draw** category, beside Frame.
+
+## Dragging a lane takes its contents
+
+Drag a lane and everything **fully inside** it comes along. That is the difference between a lane and a plain rectangle: a swimlane is a container, so moving the band moves the work.
+
+Two rules make that predictable:
+
+- Only elements the lane **completely** contains travel with it. Something half in and half out stays where it is.
+- If two containers overlap, an element belongs to the one **furthest back**, so it travels with that one and not with whichever you happened to drag.
+
+Resizing a lane is deliberately different: it resizes the band and leaves the contents where they are.
+
+## The title
+
+The title is an ordinary element label, so you edit, format and align it like any other. The tinted gutter is its backdrop and **follows its alignment** — align the title right and the gutter moves with it.
+
+## Stacking lanes
+
+Lanes are placed like anything else and are not auto-stacked; snapping and the alignment guides make butting one under another straightforward. Flush lanes look right: a lane's outline is a single hairline, so two touching lanes do not double into a heavier line.
+
+<Tip>
+  Build the flow first and drop the lanes underneath it afterwards. Because a lane picks up whatever
+  it fully contains, sizing a band around a finished row is often quicker than placing the band and
+  then working inside it.
+</Tip>
+
+</ArticleLayout>

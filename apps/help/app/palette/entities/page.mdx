@@ -1,0 +1,48 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Entities',
+  description:
+    'An entity is a title bar over a list of name and type rows: the UML class box and the ER entity box in one element.',
+  path: '/help/palette/entities/',
+});
+
+<ArticleLayout
+  title="Entities"
+  description="A title over name / type rows, for class diagrams and data models."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  subArticles={getSubArticles("entities")}
+>
+
+An **Entity** is a title bar over a list of fields, each a name with an optional type. It is the box at the heart of a UML class diagram and an entity-relationship diagram alike, and it lives in the palette's **Components** category.
+
+## Adding one and filling it in
+
+<Step n={1}>
+  Add an **Entity** from the Components category. It arrives with two example fields.
+</Step>
+
+<Step n={2}>Double-click its title to rename it — the title is an ordinary element label.</Step>
+
+<Step n={3}>
+  Right-click the entity and open **Tools → Fields** to edit the rows: a name, an optional type, a
+  remove button, and **Add field**.
+</Step>
+
+The type column is optional. Leave it blank for a rough sketch or an attribute list where the type does not matter, and the row simply shows the name.
+
+## Modelling with them
+
+- **Class diagrams.** Put attributes and methods in the same list; a method reads naturally as `render(): void` in the name column.
+- **Data models.** One entity per table, one row per column, with the type beside it.
+- **Relationships** are ordinary arrows. Pin one to each entity and it stays attached as you move them; the arrow styles include the hollow triangle and hollow diamond heads UML uses for inheritance and aggregation.
+
+<Tip>
+  Entities are ordinary elements underneath, so a theme recolours them, the format painter copies
+  their look, and they export with everything else.
+</Tip>
+
+</ArticleLayout>

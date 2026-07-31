@@ -1,0 +1,61 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Embeds on the canvas',
+  description:
+    'Put a YouTube or Vimeo video, a Loom recording, a Figma file or a Google Doc on the canvas, and play or load it in place.',
+  path: '/help/palette/embed-elements/',
+});
+
+<ArticleLayout
+  title="Embeds on the canvas"
+  description="Play a video or open a Figma file and a Google Doc right on the canvas."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  subArticles={getSubArticles("embed-elements")}
+>
+
+An **Embed** puts someone else's page on your canvas: a video that plays where it sits, a Figma file, a Google Doc. They live in the palette's **Media** category, behind the **Embed** row — open it and pick the service you want.
+
+| Service     | Links that work                                         |
+| ----------- | ------------------------------------------------------- |
+| **YouTube** | watch, share (`youtu.be`), Shorts, live and embed links |
+| **Vimeo**   | a `vimeo.com` video link                                |
+| **Loom**    | a share or embed link                                   |
+| **Figma**   | any file, prototype or board link                       |
+| **Google**  | a Doc, Sheet or Slides link you have shared             |
+
+## Adding one
+
+<Step n={1}>Open **Media → Embed** in the palette and pick a service.</Step>
+
+<Step n={2}>
+  Double-click the card and paste the link. It tells you straight away if it can't embed that
+  address.
+</Step>
+
+<Step n={3}>Press play, or **Load embed**, when you want it running.</Step>
+
+## Nothing loads until you ask
+
+An embed does not start on its own. A YouTube card shows the video's poster frame and waits for you to press play; every other service shows a named card with a **Load embed** button.
+
+That is deliberate, and not only for tidiness. A board with eight videos would otherwise open eight players every time anyone looked at it, and simply opening a diagram would report you to those services. YouTube embeds play through **youtube-nocookie.com**, which sets nothing until playback actually starts.
+
+## Keeping the canvas usable
+
+An embedded page would normally swallow every click inside its rectangle, which would leave a hole in your canvas that you could not drag or select. So the player **ignores the pointer by default**, even while it is playing — you can always drag an embed around.
+
+When you want to use the player itself, two small controls appear in its top-left corner while it runs:
+
+- **Use the player** hands the pointer over so you can seek, change the volume or go fullscreen. Press it again to get dragging back.
+- **Stop** closes the player and returns to the card. This is also how you pause, since pausing means clicking the player.
+
+<Note>
+  The link badge in the corner still opens the original page in a new tab. Playing something here
+  and opening it at the source are different intentions, and both are worth having.
+</Note>
+
+</ArticleLayout>

@@ -1,0 +1,64 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Mind Maps',
+  description:
+    'Build a mind map from the keyboard: Tab adds a child, Enter adds a sibling, and each new node is connected, selected and ready to type into.',
+  path: '/help/palette/mind-maps/',
+});
+
+<ArticleLayout
+  title="Mind Maps"
+  description="Grow a branch without touching the mouse: Tab for a child, Enter for a sibling."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  subArticles={getSubArticles("mind-maps")}
+>
+
+A **Mind node** is a labelled node that knows its parent. It lives in the palette's **Write** category, and the whole point of it is the keyboard: you can build an entire branch while you are still talking.
+
+## The two keys
+
+<Step n={1}>Add a Mind node from the palette and type its label.</Step>
+
+<Step n={2}>
+  Press **Tab** to add a **child** to its right, then keep typing. The new node is already
+  connected, already selected, and already in edit mode.
+</Step>
+
+<Step n={3}>Press **Enter** to add a **sibling** below instead, and keep typing.</Step>
+
+<Step n={4}>Press **Escape** when you are done to leave the editor.</Step>
+
+You never have to stop typing to reach for the palette, and you never have to draw the connectors: each new node arrives joined to its parent.
+
+<Tip>
+  The keys work from **inside** the label editor as well as from a selected node. Typing a name and
+  pressing Tab commits what you typed and starts the next node in one keystroke, which is what makes
+  a whole branch flow.
+</Tip>
+
+## Where nodes land
+
+A child appears to the right of its parent. A sibling stacks below the last node in that branch, including any grandchildren that have grown down past it, so a new branch never lands on top of one that is already there.
+
+Nodes are placed where they fit and then **stay put**. Nothing silently re-flows as you type, because a mind map that rearranged itself on every keystroke would fight anyone who had deliberately arranged one. When you do want it tidied, **Auto Layout → Mindmap** re-flows the whole thing radially on demand.
+
+## Sizes and shapes
+
+A new node inherits the size of the one you grew from, so renaming or resizing a node carries through to the rest of the branch rather than leaving a row of mismatched boxes.
+
+Everything else about a mind node is an ordinary element: recolour it, restyle it, move it, group it, or link it to another tab.
+
+## Deleting
+
+Deleting a node leaves its children in place, promoted to roots. It does not cascade, because deleting one node and silently losing nine is the kind of thing you only notice after the undo stack has moved on.
+
+<Note>
+  A selected mind node shows a small **Tab child · Enter sibling** hint under it, so the shortcut is
+  where the work is rather than in a menu you have to remember.
+</Note>
+
+</ArticleLayout>
