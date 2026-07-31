@@ -832,6 +832,7 @@ export function AvatarSprite({
   scale = 1,
   portrait = false,
   pose = null,
+  seated = false,
 }: {
   facing: AvatarFacing;
   config: AvatarConfig;
@@ -848,11 +849,20 @@ export function AvatarSprite({
   // Active reaction (spec/101): overrides the arms / legs / lean for the length
   // of the performance. Null when the character is just standing or walking.
   pose?: ReactionPose | null;
+  // Chair (spec/130): drawn sitting. The body drops onto the seat and the legs
+  // tuck together rather than striding — the same leg treatment the hop
+  // already uses, so sitting needs no second set of artwork. It is a pose, not
+  // a new sprite: a character who sits down is still the character you built.
+  seated?: boolean;
 }) {
-  const mid = walking && stepFrame === 1;
+  // Seated characters never walk (walkTo refuses while seated), so the stride
+  // is forced off rather than merely unlikely.
+  const mid = !seated && walking && stepFrame === 1;
   // A one-pixel body bob on the mid-stride frame; mid-air the legs tuck
   // together instead of striding.
   const airborne = lift > 0;
+  // How far the body drops onto the seat, in sprite pixels.
+  const sitDrop = seated ? 3 : 0;
   const bob = airborne ? 0 : mid ? -1 : 0;
   const swing = airborne ? -1 : walking ? (mid ? 1 : -1) : 0;
   const profile = facing === 'left' || facing === 'right';
@@ -871,18 +881,22 @@ export function AvatarSprite({
     >
       {/* Contact shadow on the ground row. It shrinks as the character rises,
           which is what sells the jump. */}
-      <ellipse
-        cx={8}
-        cy={23}
-        rx={Math.max(2.4, 5 - liftPx / 4)}
-        ry={1.2}
-        fill="rgb(15 23 42 / 0.28)"
-      />
+      {/* No contact shadow while seated: the chair draws its own, and a
+          shadow under a sitting figure reads as hovering. */}
+      {seated ? null : (
+        <ellipse
+          cx={8}
+          cy={23}
+          rx={Math.max(2.4, 5 - liftPx / 4)}
+          ry={1.2}
+          fill="rgb(15 23 42 / 0.28)"
+        />
+      )}
       <g
         transform={
           facing === 'right'
-            ? `translate(${16 - (pose?.leanX ?? 0)} ${bob - liftPx}) scale(-1 1)`
-            : `translate(${pose?.leanX ?? 0} ${bob - liftPx})`
+            ? `translate(${16 - (pose?.leanX ?? 0)} ${bob - liftPx + sitDrop}) scale(-1 1)`
+            : `translate(${pose?.leanX ?? 0} ${bob - liftPx + sitDrop})`
         }
       >
         {profile ? (
@@ -892,7 +906,7 @@ export function AvatarSprite({
               shirtDark={shirtDark}
               mid={mid}
               walking={walking}
-              airborne={airborne}
+              airborne={airborne || seated}
             />
             <TorsoProfile
               swing={swing}
@@ -910,7 +924,7 @@ export function AvatarSprite({
               shirtDark={shirtDark}
               mid={mid}
               walking={walking}
-              airborne={airborne}
+              airborne={airborne || seated}
               legsApart={pose?.legsApart ?? false}
             />
             <Torso

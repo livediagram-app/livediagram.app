@@ -29,6 +29,12 @@ export function ChairView({
   sitters: ChairSitter[];
 }) {
   const stroke = element.strokeColor ?? '#94a3b8';
+  // The seat's surface. `transparent` is the element default (the chair is
+  // furniture, not a box), so it falls back to a light neutral rather than
+  // inheriting the label's text colour through currentColor — which drew a
+  // black chair.
+  const seat =
+    element.fillColor && element.fillColor !== 'transparent' ? element.fillColor : '#e2e8f0';
   const facing = element.chairFacing ?? DEFAULT_CHAIR_FACING;
   const occupied = sitters.length > 0;
   // The ring takes the first sitter's presence colour, so an occupied chair
@@ -48,47 +54,51 @@ export function ChairView({
       >
         {/* Contact shadow, so the chair sits ON the canvas rather than
             floating over it — the same trick the Avatar-mode sprite uses. */}
-        <ellipse cx="32" cy="64" rx="20" ry="4.5" fill="#0f172a" opacity="0.12" />
-        {/* Back */}
+        <ellipse cx="32" cy="66" rx="19" ry="4" fill="#0f172a" opacity="0.12" />
+        {/* Backrest: TALL, so the silhouette reads as a chair. Squat and wide
+            it just stacks two pills on top of each other. */}
         <rect
-          x="14"
-          y="6"
-          width="36"
-          height="20"
-          rx="5"
-          fill="currentColor"
-          stroke={stroke}
-          strokeWidth="2"
-          opacity="0.9"
-        />
-        {/* Seat, seen from slightly above so the chair reads as facing the
-            reader rather than as a flat plan symbol. */}
-        <rect
-          x="9"
-          y="28"
-          width="46"
-          height="24"
-          rx="6"
-          fill="currentColor"
+          x="17"
+          y="3"
+          width="30"
+          height="31"
+          rx="4"
+          fill={seat}
           stroke={stroke}
           strokeWidth="2"
         />
-        {/* Legs */}
+        {/* A slat down the back, which is what makes it furniture rather than
+            a rounded rectangle. */}
+        <path d="M32 8v21" stroke={stroke} strokeWidth="1.5" opacity="0.5" fill="none" />
+        {/* Seat: a shallow slab, wider than the back and overhanging it. */}
+        <rect
+          x="10"
+          y="34"
+          width="44"
+          height="13"
+          rx="3"
+          fill={seat}
+          stroke={stroke}
+          strokeWidth="2"
+        />
+        {/* Front legs, splayed very slightly so the chair stands rather than
+            hovers, with a stretcher between them. */}
         <path
-          d="M15 52v10M49 52v10"
+          d="M15 47v16M49 47v16"
           stroke={stroke}
           strokeWidth="2.5"
           strokeLinecap="round"
           fill="none"
         />
+        <path d="M15 57h34" stroke={stroke} strokeWidth="1.5" opacity="0.5" fill="none" />
         {occupied ? (
           // A soft ring in the sitter's colour. Drawn on the SEAT, which is
           // where the character's feet land (chairSeatPoint).
           <ellipse
             cx="32"
-            cy="42"
-            rx="21"
-            ry="12"
+            cy="40"
+            rx="24"
+            ry="10"
             fill="none"
             stroke={ringColor}
             strokeWidth="3"

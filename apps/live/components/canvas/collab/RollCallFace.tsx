@@ -67,11 +67,11 @@ export function RollCallFace({
       ) : (
         <>
           {takenAt ? (
-            <p className="mb-1 text-[10px] opacity-50" style={{ color: textColor }}>
+            <p className="mb-2 text-[10px] opacity-50" style={{ color: textColor }}>
               {new Date(takenAt).toLocaleString()}
             </p>
           ) : null}
-          <ul className="grid grid-cols-2 gap-x-2 gap-y-1">
+          <ul className="grid grid-cols-2 gap-x-3 gap-y-2">
             {entries.map((entry, i) => (
               <li key={`${i}-${entry.name}`} className="flex min-w-0 items-center gap-1.5">
                 <RollAvatar entry={entry} />

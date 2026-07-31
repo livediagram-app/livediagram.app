@@ -907,7 +907,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     blurb: 'What was decided, why, and whether it stands',
     section: 'collaborate',
     label: 'Add decision record',
-    caption: 'Decision',
+    caption: 'Decision record',
     description:
       'A decision on the diagram beside the thing it decided: the statement, a status, the date, and what drove it.',
     filled: true,

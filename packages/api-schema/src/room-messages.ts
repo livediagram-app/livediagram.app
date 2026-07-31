@@ -69,6 +69,15 @@ export type AvatarPresence = {
   lift: number;
   // Flag-wave frame, or null when the flag is down.
   wave: number | null;
+  // Chair (spec/130): the element id of the chair this character is sitting
+  // on, or null / absent when standing.
+  //
+  // Occupancy rides HERE, on ephemeral presence, and is deliberately never
+  // written to the diagram: a chair therefore cannot be left permanently
+  // occupied by somebody who closed their laptop, cannot conflict between two
+  // clients, and reaches D1, the change log and undo not at all. Optional so a
+  // packet from an older client still parses as "standing".
+  seatedOn?: string | null;
 };
 
 // Outgoing WebSocket frames the room sends to clients.

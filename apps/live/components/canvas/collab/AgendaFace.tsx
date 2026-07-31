@@ -57,7 +57,7 @@ function AgendaRow({
         disabled={!onPress}
         aria-label={`Start ${label || `segment ${index + 1}`} — ${minutes} minutes`}
         aria-current={state === 'current' ? 'step' : undefined}
-        className={`pointer-events-auto flex w-full cursor-pointer items-baseline justify-between gap-2 rounded-md px-1.5 py-1 text-left transition disabled:cursor-default ${
+        className={`pointer-events-auto flex w-full cursor-pointer items-baseline justify-between gap-2 rounded-md px-2 py-1.5 text-left transition disabled:cursor-default ${
           state === 'current'
             ? 'bg-black/[0.12] dark:bg-white/20'
             : 'hover:bg-black/[0.06] dark:hover:bg-white/10'
@@ -127,7 +127,7 @@ export function AgendaFace({
           No segments yet. Add them from the element’s menu, under Segments.
         </CollabEmpty>
       ) : (
-        <ul className="flex flex-col gap-0.5">
+        <ul className="flex flex-col gap-1">
           {items.map((item, i) => (
             <AgendaRow
               key={`${i}-${item.label}`}

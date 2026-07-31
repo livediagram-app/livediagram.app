@@ -33,6 +33,24 @@ like any other label — the same reasoning the record box uses for its title
 - **`ShapeElement.decisionDrivers`** — the short list of reasons. Bounded in
   `validate.ts`.
 
+## The card draws itself
+
+The statement is the element's ordinary `label`, but the card **owns its own
+layout** rather than letting that label flow over the box with the chip and
+drivers drawn around it.
+
+That was the first shape, copied from the record box (spec/120), and the
+difference is what the label holds: a record's title is a name, a decision's is
+a sentence. A three-line statement ran straight under the status chip and over
+the drivers, because nothing constrained it to a band. Owning the layout means
+the three parts **cannot** collide, at the cost of clamping a very long
+statement — which is the right trade, since a decision nobody can read in three
+lines is a decision that needs rewriting.
+
+The label is still an ordinary label: typed, formatted and exported like every
+other, and mid-edit the card gives way to the inline editor exactly as the
+other collaboration faces do.
+
 ## The face
 
 - A **status chip** in the top-right, colour-coded and always spelled out in

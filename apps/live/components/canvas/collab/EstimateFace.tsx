@@ -56,7 +56,7 @@ export function EstimateFace({
     <CollabPanel
       title={label.trim() || 'Estimate'}
       textColor={textColor}
-      aside={responses.length ? `${responses.length} of ${inRoom} in` : undefined}
+      aside={responses.length ? `${responses.length}/${inRoom} answered` : undefined}
       footer={
         <>
           <CollabButton
@@ -85,7 +85,7 @@ export function EstimateFace({
         </>
       }
     >
-      <div className="flex flex-wrap gap-1">
+      <div className="flex flex-wrap gap-1.5">
         {values.map((value) => (
           <CollabChip
             key={value}
@@ -98,7 +98,7 @@ export function EstimateFace({
           />
         ))}
       </div>
-      <div className="mt-2">
+      <div>
         {responses.length === 0 ? (
           <CollabEmpty textColor={textColor}>
             Nobody has picked yet. Your own pick stays hidden from everyone else until Reveal.
@@ -106,7 +106,7 @@ export function EstimateFace({
         ) : revealed ? (
           <>
             <p
-              className="mb-1 text-[11px] font-semibold uppercase tracking-[0.06em] opacity-70"
+              className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.06em] opacity-70"
               style={{ color: textColor }}
             >
               {spreadLine(element)}
@@ -132,22 +132,27 @@ export function EstimateFace({
           // Before the reveal: WHO, deliberately not what. Knowing Sam has
           // answered is what stops the wait; knowing Sam said 13 is the thing
           // being prevented (spec/123).
-          <div className="flex flex-wrap items-center gap-1">
-            {responses.map((r) => {
-              const who = named(r.participantId);
-              return who ? (
-                <ParticipantAvatar key={r.participantId} participant={who} size={20} />
-              ) : (
-                <span
-                  key={r.participantId}
-                  className="inline-block h-[20px] w-[20px] rounded-full bg-black/15 dark:bg-white/20"
-                  aria-label="Someone who has since left the room"
-                />
-              );
-            })}
-            <span className="ml-1 text-[11px] opacity-55" style={{ color: textColor }}>
-              in
-            </span>
+          <div>
+            <p
+              className="mb-1.5 text-[10px] uppercase tracking-[0.06em] opacity-55"
+              style={{ color: textColor }}
+            >
+              Answered
+            </p>
+            <div className="flex flex-wrap items-center gap-1.5">
+              {responses.map((r) => {
+                const who = named(r.participantId);
+                return who ? (
+                  <ParticipantAvatar key={r.participantId} participant={who} size={22} />
+                ) : (
+                  <span
+                    key={r.participantId}
+                    className="inline-block h-[22px] w-[22px] rounded-full bg-black/15 dark:bg-white/20"
+                    aria-label="Someone who has since left the room"
+                  />
+                );
+              })}
+            </div>
           </div>
         )}
       </div>

@@ -53,6 +53,10 @@ export type AvatarSnapshot = {
   stepFrame: number;
   // Height above the ground mid-jump, canvas px (0 = standing).
   lift: number;
+  // Chair (spec/130): the chair this character is sitting on, or undefined
+  // when standing. Occupancy is presence, never document state, so a chair is
+  // vacated for free when its sitter disconnects.
+  seatedOn?: string | null;
   // Flag-wave frame, or null when the flag is down.
   wave: number | null;
 };
@@ -70,6 +74,7 @@ export function useAvatarWalk({
   spawnAtRef,
   onPresence,
   onWalkIntoPortal,
+  onWalkIntoChair,
 }: {
   // True while the Avatar canvas tool is the active tool.
   active: boolean;
@@ -99,6 +104,9 @@ export function useAvatarWalk({
   // ARRIVAL, not every frame it stands there, and never for the portal it just
   // came out of.
   onWalkIntoPortal?: (element: import('@livediagram/diagram').ShapeElement) => void;
+  // Chair (spec/130): the character walked onto a chair. Fired once on ARRIVAL,
+  // like the portal above.
+  onWalkIntoChair?: (element: import('@livediagram/diagram').ShapeElement) => void;
 }) {
   // Rendered state. `pos` survives a detour to another tool (Canvas stays
   // mounted), so coming back finds the avatar where you left it; null until
@@ -114,6 +122,10 @@ export function useAvatarWalk({
   const [wave, setWave] = useState<number | null>(null);
   // The pose of a reaction in progress, or null while just standing / walking.
   const [pose, setPose] = useState<ReactionPose | null>(null);
+  // Chair (spec/130): the chair this character is sitting on, or null when
+  // standing. Kept in state (the sprite and the presence packet both read it)
+  // AND in a ref (the rAF tick and walkTo read it between renders).
+  const [seatedOn, setSeatedOn] = useState<string | null>(null);
 
   // Loop-internal state. Refs (not state) because the rAF tick reads and
   // writes these many times between renders.
@@ -136,6 +148,9 @@ export function useAvatarWalk({
   const arriveRef = useRef<(() => void) | null>(null);
   const portalRef = useRef(onWalkIntoPortal);
   portalRef.current = onWalkIntoPortal;
+  const chairRef = useRef(onWalkIntoChair);
+  chairRef.current = onWalkIntoChair;
+  const seatedRef = useRef<string | null>(null);
   // The costume last published as a standing snapshot; null = nothing published
   // since the mode was entered. Keeps the entry publish to once per change.
   const publishedLookRef = useRef<string | null>(null);
@@ -214,6 +229,9 @@ export function useAvatarWalk({
       setWave(null);
       // Tell peers to drop our character.
       presenceRef.current?.(null);
+      // Leaving the mode vacates the chair, like disconnecting does.
+      seatedRef.current = null;
+      setSeatedOn(null);
       return;
     }
     // A button asked for the character HERE: honour it even if the remembered
@@ -256,6 +274,10 @@ export function useAvatarWalk({
   // shoves them (spec/101), and the shove has to land on arrival, not on click.
   const walkTo = (point: AvatarPoint, onArrive?: () => void) => {
     if (arrowDirection(heldRef.current)) return;
+    // Seated (spec/130): clicking elsewhere on the canvas must not drag the
+    // character out of its chair by accident. Standing up is a deliberate act
+    // — an arrow key, or the seat's own Stand press.
+    if (seatedRef.current) return;
     targetRef.current = point;
     arriveRef.current = onArrive ?? null;
   };
@@ -282,6 +304,29 @@ export function useAvatarWalk({
     targetRef.current = null;
     heldRef.current = { ...NO_KEYS_HELD };
     reactionRef.current = { kind, startedAt: performance.now() };
+  };
+
+  // Chair (spec/130): sit down. Snaps the feet to the seat point (so the
+  // figure sits ON the chair rather than wherever it happened to arrive),
+  // drops any walk in progress, and remembers the chair so the sprite draws a
+  // seated pose and peers see the seat taken.
+  const sitOn = (chairId: string, seat: AvatarPoint) => {
+    targetRef.current = null;
+    arriveRef.current = null;
+    heldRef.current = { ...NO_KEYS_HELD };
+    posRef.current = seat;
+    setPos(seat);
+    seatedRef.current = chairId;
+    setSeatedOn(chairId);
+    // Remembered as "what the feet are on" so standing up and staying put
+    // doesn't immediately re-seat the character.
+    lastUnderFeetRef.current = chairId;
+  };
+
+  const standUp = () => {
+    if (!seatedRef.current) return;
+    seatedRef.current = null;
+    setSeatedOn(null);
   };
 
   // Portals (spec/104): drop the character at a point (the far portal's threshold),
@@ -323,6 +368,12 @@ export function useAvatarWalk({
     // directions.
     onSteer: () => {
       targetRef.current = null;
+      // An arrow key is how you stand up (spec/130): a deliberate act, and one
+      // that leaves the character where the chair put it, free to walk off.
+      if (seatedRef.current) {
+        seatedRef.current = null;
+        setSeatedOn(null);
+      }
     },
     onJump: jump,
   });
@@ -450,6 +501,7 @@ export function useAvatarWalk({
             stepFrame: Math.floor(travelledRef.current / STEP_LENGTH) % 2,
             lift: liftRef.current,
             wave: waveStartRef.current === null ? null : 0,
+            seatedOn: seatedRef.current,
             ...(live ? { reaction: { kind: live.kind, elapsedMs: now - live.startedAt } } : null),
           });
         }
@@ -485,6 +537,7 @@ export function useAvatarWalk({
       stepFrame: 0,
       lift: 0,
       wave: null,
+      seatedOn: seatedRef.current,
     });
     // `facing` is read as the snapshot's value only; re-publishing on a turn
     // would fight the loop, which already publishes while walking.
@@ -517,6 +570,7 @@ export function useAvatarWalk({
         stepFrame: 0,
         lift: 0,
         wave: null,
+        seatedOn: seatedRef.current,
       });
     }, AVATAR_HEARTBEAT_MS);
     return () => window.clearInterval(beat);
@@ -543,6 +597,11 @@ export function useAvatarWalk({
     if (standingOnId === previous || standingOnId === arrivedPortalRef.current) return;
     const el = elements.find((e) => e.id === standingOnId);
     if (el && el.type === 'shape' && el.shape === 'portal') portalRef.current?.(el);
+    // Chair (spec/130): the same arrival hook, so sitting down costs no second
+    // mechanism. Skipped while already seated somewhere.
+    if (el && el.type === 'shape' && el.shape === 'chair' && !seatedRef.current) {
+      chairRef.current?.(el);
+    }
     // `elements` is read for the arrival lookup only; the trigger is the change
     // in what the feet are on.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -558,6 +617,9 @@ export function useAvatarWalk({
     stepFrame: Math.floor(travelled / STEP_LENGTH) % 2,
     standingOnId,
     pose,
+    seatedOn,
+    sitOn,
+    standUp,
     walkTo,
     jump,
     playReaction,

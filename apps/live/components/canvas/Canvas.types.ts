@@ -367,6 +367,9 @@ export type CanvasProps = {
     answers: Map<string, string | null>;
     isHost: boolean;
     onEnd: () => void;
+    // End AND keep the tallies on the canvas (spec/126). Absent for a viewer
+    // who can't add elements.
+    onEndAndKeep?: () => void;
     onDismiss: () => void;
   } | null;
   pollPanelPosition: { x: number; y: number } | null;

@@ -12,6 +12,7 @@ import { TemperatureFace } from './TemperatureFace';
 import { IdeaBoxFace } from './IdeaBoxFace';
 import { AgendaFace } from './AgendaFace';
 import { RollCallFace } from './RollCallFace';
+import { DecisionFace } from './DecisionFace';
 
 // What a collaboration face needs from the editor. Absent entirely on a
 // surface with no session behind it (the read-only embed, the export
@@ -92,6 +93,11 @@ export function CollabFaceRouter({
         onScatter={api?.scatterIdeas ? () => api.scatterIdeas!(element) : undefined}
       />
     );
+  }
+  if (element.shape === 'decision') {
+    // Nothing to press: a decision is set from its menu. It routes here anyway
+    // because it draws its own card (see DecisionFace).
+    return <DecisionFace element={element} label={label} textColor={textColor} />;
   }
   if (element.shape === 'agenda') {
     return (

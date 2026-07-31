@@ -30,7 +30,10 @@ the host, from the tallies already in their own memory.
 
 ## What it drops
 
-A **bar chart** (spec/53), not a new element kind:
+Neither case is a new element kind, which is the point: the thing a poll
+produces already has an element that renders, themes, exports and edits it.
+
+### A token poll → a bar chart (spec/53)
 
 - `label` — the poll's question.
 - `pieSlices` — one entry per option, `value` = that option's count. Options
@@ -39,14 +42,27 @@ A **bar chart** (spec/53), not a new element kind:
   every other added element, so it can be moved / themed / exported
   immediately.
 
-It is an **ordinary undoable element** from the moment it lands. A poll result
-that couldn't be undone would be the only un-undoable add on the canvas.
+The tallies ARE a labelled dataset, and the bar chart already renders, themes,
+animates, exports to SVG and imports to Mermaid. A second chart kind would need
+every one of those paths rebuilt to show the same bars, and would be worse the
+moment someone wants to edit a label or recolour a bar.
 
-Why not a bespoke `poll-result` kind: the tallies ARE a labelled dataset, and
-the bar chart already renders, themes, animates, exports to SVG and imports to
-Mermaid. A second chart kind would need every one of those paths rebuilt to
-show the same bars, and would be worse the moment someone wants to edit a label
-or recolour a bar.
+### A free-text poll → an opened idea box ([spec/125](125-idea-box.md))
+
+A free-text poll has no tallies to chart — it has a set of short, unattributed
+answers, which is exactly what an idea box holds. So it drops one, with the
+question as the prompt and the answers as its cards.
+
+It arrives **already open**: the room has just read these answers off the
+panel, and a box that landed closed would be hiding what everyone has seen. The
+answers keep the poll's own anonymity for free, because the idea box has
+nowhere to record an author (spec/125) — and they can be scattered to sticky
+notes from there like any other idea.
+
+### Both
+
+An **ordinary undoable element** from the moment it lands. A poll result that
+couldn't be undone would be the only un-undoable add on the canvas.
 
 ## What does not change
 

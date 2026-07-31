@@ -87,14 +87,23 @@ describe('chair', () => {
 });
 
 describe('isCollabPanelShape', () => {
-  it('covers the five pressable panels', () => {
-    for (const kind of ['estimate', 'temperature', 'idea-box', 'agenda', 'roll-call'] as const) {
+  it('covers every kind that draws its own card', () => {
+    for (const kind of [
+      'estimate',
+      'temperature',
+      'idea-box',
+      'agenda',
+      'roll-call',
+      // The decision has nothing to press, but it owns its layout for the
+      // same reason: its label is a sentence, and letting the generic label
+      // flow over the whole box put it under the status chip (spec/128).
+      'decision',
+    ] as const) {
       expect(isCollabPanelShape(kind)).toBe(true);
     }
   });
 
-  it('excludes the two that keep a plain label (spec/128, spec/130)', () => {
-    expect(isCollabPanelShape('decision')).toBe(false);
+  it('excludes the chair, which keeps a plain label (spec/130)', () => {
     expect(isCollabPanelShape('chair')).toBe(false);
   });
 });

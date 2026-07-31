@@ -37,6 +37,7 @@ import {
   writeUserPreferences,
 } from '@/lib/user-preferences';
 import { track } from '@/lib/telemetry';
+import { pollResultElement } from '@/lib/poll-capture';
 import { useActivityLogDebounce } from '@/hooks/collab/useActivityLogDebounce';
 import { useActivityLogEmitter } from '@/hooks/collab/useActivityLogEmitter';
 import { useEditorBroadcast } from '@/hooks/collab/useEditorBroadcast';
@@ -1507,6 +1508,19 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     startTimer,
   });
 
+  // Keeping a poll's results (spec/126). Ends the poll for the room through
+  // the SAME `endPoll` the plain End uses — one op, so a participant sees no
+  // difference and no new op kind exists — and additionally drops the tallies
+  // onto the canvas as an ordinary, undoable element.
+  const endPollKeepingResults = () => {
+    const poll = livePoll.poll;
+    if (!poll) return;
+    const answers = livePoll.answers;
+    addBoxed((x, y) => pollResultElement(poll, answers, x, y));
+    livePoll.endPoll();
+    track('Tab', 'Ended', 'Poll');
+  };
+
   // Image domain (picker state, recent-images list, placement + fill
   // handlers). Lives in its own hook so the page no longer carries
   // that state or its six handlers — see useEditorImages + spec/19.
@@ -2333,6 +2347,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     // Live poll (spec/88) — the whole ephemeral surface in one object
     // rather than a dozen flattened keys, since nothing else reads into it.
     livePoll,
+    endPollKeepingResults,
     loadAllTabs,
     loadedTabIds,
     loadingDiagram,

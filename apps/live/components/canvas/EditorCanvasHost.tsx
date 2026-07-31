@@ -246,6 +246,7 @@ export function EditorCanvasHost() {
     toggleRevealForMe,
     pickerFor,
     collabElements,
+    endPollKeepingResults,
     tabs,
     setCanvasTool,
     setCanvasThemeTab,
@@ -555,6 +556,10 @@ export function EditorCanvasHost() {
               answers: livePoll.answers,
               isHost: livePoll.isHost,
               onEnd: livePoll.endPoll,
+              // spec/126: ends the poll for the room exactly as End does (the
+              // same op), and additionally drops the tallies onto the canvas.
+              // Read-only visitors never see it — they are never the host.
+              onEndAndKeep: isReadOnly ? undefined : endPollKeepingResults,
               onDismiss: livePoll.dismissPoll,
             }
           : null

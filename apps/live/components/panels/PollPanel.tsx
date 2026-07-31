@@ -35,6 +35,7 @@ export function PollPanel({
   answers,
   isHost,
   onEnd,
+  onEndAndKeep,
   onDismiss,
   position,
   onMoveTo,
@@ -48,6 +49,9 @@ export function PollPanel({
   answers: Map<string, string | null>;
   isHost: boolean;
   onEnd: () => void;
+  // End the poll AND drop its results onto the canvas (spec/126). Absent on a
+  // surface that can't add elements, which leaves the plain End alone.
+  onEndAndKeep?: () => void;
   onDismiss: () => void;
   position: { x: number; y: number } | null;
   onMoveTo: (x: number, y: number) => void;
@@ -126,29 +130,50 @@ export function PollPanel({
           {answered} answered &middot; {skipped} skipped
         </p>
 
-        <div className="flex items-center gap-1">
+        {/* Two rows, not three side-by-side buttons. Three in a ~230px panel
+            wrap to different line counts, and a row of buttons at three
+            different heights is the first thing anyone notices. Each row's
+            buttons share a fixed height so wrapping can't reintroduce it. */}
+        <div className="flex flex-col gap-1">
           {isHost ? (
             <>
-              <button
-                type="button"
-                onClick={copy}
-                className="flex-1 rounded-md border border-slate-200 px-2 py-1 text-[11px] font-medium text-slate-600 transition hover:border-brand-300 hover:text-brand-700 dark:border-slate-700 dark:text-slate-300"
-              >
-                {copied ? 'Copied' : 'Copy results'}
-              </button>
-              <button
-                type="button"
-                onClick={onEnd}
-                className="flex-1 rounded-md bg-brand-500 px-2 py-1 text-[11px] font-semibold text-white transition hover:bg-brand-600"
-              >
-                End poll
-              </button>
+              {/* Keeping the result is the LOUD action (spec/126): a poll that
+                  leaves no trace is still one press away, but the board is the
+                  record of the session and the tallies belong on it. So it
+                  gets the full-width primary row. */}
+              {onEndAndKeep ? (
+                <button
+                  type="button"
+                  onClick={onEndAndKeep}
+                  title="End the poll and drop the results onto the canvas"
+                  className="flex h-7 w-full items-center justify-center rounded-md bg-brand-500 px-2 text-[11px] font-semibold text-white transition hover:bg-brand-600"
+                >
+                  End &amp; keep results
+                </button>
+              ) : null}
+              <div className="flex items-stretch gap-1">
+                <button
+                  type="button"
+                  onClick={copy}
+                  className="flex h-7 flex-1 items-center justify-center rounded-md border border-slate-200 px-2 text-[11px] font-medium text-slate-600 transition hover:border-brand-300 hover:text-brand-700 dark:border-slate-700 dark:text-slate-300"
+                >
+                  {copied ? 'Copied' : 'Copy'}
+                </button>
+                <button
+                  type="button"
+                  onClick={onEnd}
+                  title="End the poll and leave no trace of it"
+                  className="flex h-7 flex-1 items-center justify-center rounded-md border border-slate-200 px-2 text-[11px] font-medium text-slate-600 transition hover:border-brand-300 hover:text-brand-700 dark:border-slate-700 dark:text-slate-300"
+                >
+                  End poll
+                </button>
+              </div>
             </>
           ) : (
             <button
               type="button"
               onClick={onDismiss}
-              className="w-full rounded-md border border-slate-200 px-2 py-1 text-[11px] font-medium text-slate-600 transition hover:border-brand-300 hover:text-brand-700 dark:border-slate-700 dark:text-slate-300"
+              className="flex h-7 w-full items-center justify-center rounded-md border border-slate-200 px-2 text-[11px] font-medium text-slate-600 transition hover:border-brand-300 hover:text-brand-700 dark:border-slate-700 dark:text-slate-300"
             >
               Dismiss
             </button>

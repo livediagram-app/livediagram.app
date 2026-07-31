@@ -1,4 +1,4 @@
-import { SHAPE_KINDS, type ShapeKind } from '@livediagram/diagram';
+import { SHAPE_KINDS, isCollabPanelShape, type ShapeKind } from '@livediagram/diagram';
 import { useShapeSvgAnimation, type ShapeSvgAnimation } from './useShapeSvgAnimation';
 
 // Shape-shape SVG primitives, used by both BoxedElementView (the
@@ -53,7 +53,14 @@ export function isSvgRenderedShape(kind: ShapeKind): boolean {
     // path, same as the rest of this list.
     kind !== 'lane' &&
     // A record (spec/120) is a filled box with rows drawn on top.
-    kind !== 'entity'
+    kind !== 'entity' &&
+    // The collaboration elements (spec/123 to spec/129) are filled rounded
+    // cards with their own face drawn on top — the CSS box path, like every
+    // kind above. Left off this list they rendered as a transparent nothing,
+    // exactly as the mind-node comment above warns.
+    !isCollabPanelShape(kind) &&
+    // A chair (spec/130) draws its own furniture and wants no box behind it.
+    kind !== 'chair'
   );
 }
 

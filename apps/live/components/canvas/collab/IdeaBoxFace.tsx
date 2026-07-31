@@ -74,7 +74,7 @@ export function IdeaBoxFace({
       }
     >
       {onAddIdea ? (
-        <div className="flex gap-1">
+        <div className="flex gap-1.5">
           <input
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
@@ -91,7 +91,7 @@ export function IdeaBoxFace({
             placeholder="Add an idea…"
             aria-label="Add an anonymous idea"
             maxLength={500}
-            className="pointer-events-auto min-w-0 flex-1 rounded-md border border-black/10 bg-white/70 px-2 py-1 text-[11px] outline-none placeholder:opacity-50 focus:border-black/25 dark:border-white/15 dark:bg-white/10 dark:focus:border-white/35"
+            className="pointer-events-auto min-w-0 flex-1 rounded-md border border-black/10 bg-white/70 px-2.5 py-1.5 text-[11px] outline-none placeholder:opacity-50 focus:border-black/25 dark:border-white/15 dark:bg-white/10 dark:focus:border-white/35"
             style={{ color: textColor }}
           />
           <CollabButton textColor={textColor} onPress={submit} label="Submit idea">
@@ -99,17 +99,17 @@ export function IdeaBoxFace({
           </CollabButton>
         </div>
       ) : null}
-      <div className="mt-2">
+      <div>
         {cards.length === 0 ? (
           <CollabEmpty textColor={textColor}>
             Nothing in the box yet. Nobody’s name is recorded against what they add.
           </CollabEmpty>
         ) : open ? (
-          <ul className="flex flex-col gap-1">
+          <ul className="flex flex-col gap-1.5">
             {cards.map((card, i) => (
               <li
                 key={`${i}-${card.slice(0, 12)}`}
-                className="rounded-md bg-black/[0.05] px-2 py-1 text-[11px] leading-snug dark:bg-white/10"
+                className="rounded-md bg-black/[0.05] px-2.5 py-1.5 text-[11px] leading-relaxed dark:bg-white/10"
                 style={{ color: textColor }}
               >
                 {card}

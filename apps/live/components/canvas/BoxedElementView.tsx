@@ -38,7 +38,6 @@ import { RevealFace } from '@/components/canvas/RevealFace';
 import { PickerFace } from '@/components/canvas/PickerFace';
 import { PortalFace } from '@/components/canvas/PortalFace';
 import { CollabFaceRouter } from '@/components/canvas/collab/CollabFaceRouter';
-import { DecisionView } from '@/components/canvas/collab/DecisionView';
 import { ChairView } from '@/components/canvas/collab/ChairView';
 import { isCollabPanelShape } from '@livediagram/diagram';
 import { DEFAULT_BUTTON_MODE } from '@livediagram/diagram';
@@ -410,11 +409,6 @@ function BoxedElementViewImpl({
       {/* A Record's rows (spec/120), under its title label. */}
       {element.type === 'shape' && element.shape === 'entity' ? (
         <EntityView element={element} textColor={textColor} fontFamily={fontFamily} />
-      ) : null}
-      {/* A decision record's chip, drivers and date (spec/128), drawn around
-          its label — which IS the decision statement. */}
-      {element.type === 'shape' && element.shape === 'decision' ? (
-        <DecisionView element={element} textColor={textColor} fontFamily={fontFamily} />
       ) : null}
       {/* A chair (spec/130): the furniture itself, plus whoever presence says
           is sitting in it. */}

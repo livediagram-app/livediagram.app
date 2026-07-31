@@ -21,6 +21,7 @@ export function AvatarWalker({
   lift = 0,
   wave = null,
   pose = null,
+  seated = false,
   shirt,
   standingOn,
   name,
@@ -39,6 +40,8 @@ export function AvatarWalker({
   wave?: number | null;
   // Active reaction pose (spec/101), or null when standing / walking.
   pose?: import('@/lib/avatar-reactions').ReactionPose | null;
+  // Chair (spec/130): this character is sitting on one, so it draws seated.
+  seated?: boolean;
   // Shirt colour — the participant's presence colour, so your character on a
   // shared diagram matches your cursor / name chip. Falls back to the brand
   // cyan inside the sprite when undefined.
@@ -57,7 +60,7 @@ export function AvatarWalker({
       {/* Standing-on ring: what makes the mode useful for narration — the
           audience sees which box the character has arrived at. Sits under the
           sprite, inert to pointers like everything in this layer. */}
-      {standingOn ? (
+      {standingOn && !seated ? (
         <div
           aria-hidden
           className="pointer-events-none absolute rounded-lg ring-2 ring-brand-400/70"
@@ -106,6 +109,7 @@ export function AvatarWalker({
           lift={lift}
           wave={wave}
           pose={pose}
+          seated={seated}
           shirt={shirt}
           scale={scale}
         />

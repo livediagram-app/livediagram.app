@@ -49,6 +49,7 @@ import { useSpotlightConfig } from '@/hooks/canvas/useSpotlightConfig';
 import { AvatarWalker } from '@/components/canvas/AvatarWalker';
 import { useAvatarWalk } from '@/hooks/canvas/useAvatarWalk';
 import { AVATAR_SPAWN_GAP, type AvatarPoint } from '@/lib/avatar-walk';
+import { chairSeatPoint } from '@livediagram/diagram';
 import { useAvatarConfig } from '@/hooks/canvas/useAvatarConfig';
 import { parseAvatarConfig } from '@/lib/avatar-config';
 import { reactionPose } from '@/lib/avatar-reactions';
@@ -281,6 +282,10 @@ export function Canvas(props: CanvasProps) {
     }
     props.onPressModeButton?.(element);
   };
+  // Declared before the hook that fills it: the walk hook's chair callback
+  // needs `sitOn`, which the same hook returns (see enterPortalRef below for
+  // the identical knot).
+  const avatarRef = useRef<ReturnType<typeof useAvatarWalk> | null>(null);
   const avatar = useAvatarWalk({
     active: canvasTool === 'avatar',
     config: avatarLook.config,
@@ -296,7 +301,33 @@ export function Canvas(props: CanvasProps) {
     // Walking the character into a portal travels through it (spec/104) — the same
     // action the portal's own click fires.
     onWalkIntoPortal: (element) => enterPortalRef.current(element),
+    // Chair (spec/130): walking onto one sits the character down, snapped to
+    // the seat point so it sits ON the chair rather than wherever it arrived.
+    onWalkIntoChair: (element) => avatarRef.current?.sitOn(element.id, chairSeatPoint(element)),
   });
+  // `sitOn` is returned by the very hook whose callback needs it, so the call
+  // goes through a ref — declared above, repointed here, read at arrival time.
+  // Same shape as `enterPortalRef` below, for the same reason.
+  avatarRef.current = avatar;
+
+  // Who is sitting in each chair, from PRESENCE — never from the diagram. Our
+  // own character plus every peer's, keyed by chair id, so a chair empties by
+  // itself the moment its occupant leaves the mode, changes tab or drops off.
+  const chairSitters = useMemo(() => {
+    const byChair = new Map<string, { name: string; color: string }[]>();
+    const add = (chairId: string, sitter: { name: string; color: string }) => {
+      const list = byChair.get(chairId);
+      if (list) list.push(sitter);
+      else byChair.set(chairId, [sitter]);
+    };
+    if (avatar.seatedOn) {
+      add(avatar.seatedOn, { name: 'You', color: props.selfParticipant.color });
+    }
+    for (const peer of props.remoteAvatars) {
+      if (peer.avatar.seatedOn) add(peer.avatar.seatedOn, { name: peer.name, color: peer.color });
+    }
+    return byChair;
+  }, [avatar.seatedOn, props.remoteAvatars, props.selfParticipant.color]);
   // Somebody pushed us (spec/101): slide along their direction, once per push.
   // Keyed on the sequence number, not the vector, so two identical shoves in a
   // row both land.
@@ -615,6 +646,9 @@ export function Canvas(props: CanvasProps) {
             // Portal travel is resolved HERE (Canvas owns the viewport + the avatar),
             // so the prop from the host is overridden with the local resolver.
             onEnterPortal={resolvePortal}
+            // Chair (spec/130): occupancy resolved here, where peer presence
+            // lives, rather than threaded from the page.
+            chairSitters={(elementId) => chairSitters.get(elementId) ?? []}
             // Pressing a Selection Mode button that hands out Avatar mode drops
             // the character at THAT button (see avatarSpawn), not the viewport
             // centre: you pressed a thing on the canvas, so the character should
@@ -655,6 +689,7 @@ export function Canvas(props: CanvasProps) {
             stepFrame={peer.avatar.stepFrame}
             lift={peer.avatar.lift}
             wave={peer.avatar.wave}
+            seated={!!peer.avatar.seatedOn}
             // Replayed locally from the kind + elapsed time in their packet, by
             // the same pure function the sender used (spec/101).
             pose={
@@ -677,6 +712,7 @@ export function Canvas(props: CanvasProps) {
             lift={avatar.lift}
             wave={avatar.wave}
             pose={avatar.pose}
+            seated={avatar.seatedOn !== null}
             shirt={props.selfParticipant.color}
             standingOn={avatarStandingOn}
           />

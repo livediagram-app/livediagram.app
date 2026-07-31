@@ -153,21 +153,24 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // character — a seat the sprite fits into rather than a throne it rattles
   // around in.
   chair: { width: 76, height: 84 },
-  // Estimate card (spec/123): wide enough for the eight fibonacci chips in one
-  // row, tall enough for the chips plus the room's avatars under them.
-  estimate: { width: 320, height: 210 },
+  // Estimate card (spec/123): the eight fibonacci chips wrap to two rows, and
+  // the card has to hold them PLUS the answered avatars PLUS the two footer
+  // buttons without clipping — a card that arrives already cut off is the
+  // first thing anybody sees.
+  estimate: { width: 360, height: 310 },
   // Temperature check (spec/124): five buttons over five bars, plus the
-  // average. Narrower than the estimate card — five chips, not eight.
-  temperature: { width: 260, height: 220 },
+  // average. Narrower than the estimate card — five chips, not eight — but
+  // tall enough for all three bands.
+  temperature: { width: 300, height: 270 },
   // Idea box (spec/125): a box that holds a stack of cards, so it arrives
   // sized like a retro column rather than a sticky.
-  'idea-box': { width: 280, height: 300 },
+  'idea-box': { width: 320, height: 340 },
   // Agenda (spec/127): a run of six segments before it needs resizing.
-  agenda: { width: 300, height: 260 },
+  agenda: { width: 330, height: 300 },
   // Decision record (spec/128): a card for a sentence plus three drivers.
-  decision: { width: 300, height: 190 },
+  decision: { width: 330, height: 220 },
   // Roll call (spec/129): two columns of names, six rows deep.
-  'roll-call': { width: 260, height: 220 },
+  'roll-call': { width: 300, height: 260 },
 };
 
 // New boxed elements default to Medium text size per spec 09 ("Text size").

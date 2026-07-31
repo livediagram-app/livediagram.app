@@ -193,16 +193,20 @@ export function chairSeatPoint(box: { x: number; y: number; width: number; heigh
 // back to the ordinary label editor mid-edit. So the label is still typed,
 // formatted and exported like any other; it is just drawn by the face.
 //
-// The decision record and the chair are NOT here. Neither has anything to
-// press: a decision renders its chip and drivers AROUND its label and a chair
-// renders furniture under one, both the way the record box (spec/120) renders
-// its rows — so both keep the plain label render with a view beside it.
+// The decision record is here despite having nothing to press, because it owns
+// its whole layout for the same reason: its label is a SENTENCE, and a
+// free-flowing label sized to the box ran under the status chip and over the
+// drivers. Drawing the card itself is what makes the collision impossible.
+//
+// The chair is NOT here — it renders furniture under an ordinary label, the
+// way the record box (spec/120) renders its rows under its title.
 export function isCollabPanelShape(kind: ShapeKind): boolean {
   return (
     isEstimateShape(kind) ||
     isTemperatureShape(kind) ||
     isIdeaBoxShape(kind) ||
     isAgendaShape(kind) ||
-    isRollCallShape(kind)
+    isRollCallShape(kind) ||
+    isDecisionShape(kind)
   );
 }

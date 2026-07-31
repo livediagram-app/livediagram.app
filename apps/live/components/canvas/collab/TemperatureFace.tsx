@@ -43,9 +43,9 @@ export function TemperatureFace({
     <CollabPanel
       title={label.trim() || 'How are we feeling?'}
       textColor={textColor}
-      aside={stats.count ? `${stats.count} in` : undefined}
+      aside={stats.count ? `${stats.count} answered` : undefined}
     >
-      <div className="flex gap-1">
+      <div className="flex gap-1.5">
         {TEMPERATURE_VALUES.map((value) => (
           <CollabChip
             key={value}
@@ -65,31 +65,37 @@ export function TemperatureFace({
           {/* The SHAPE of the room, not just its average: a flat 3 across the
               board and a split between 1s and 5s average the same and mean
               opposite things (spec/124). */}
-          <div className="mt-2 flex h-[46px] items-end gap-1" aria-hidden>
+          <div className="flex gap-1.5" aria-hidden>
             {tally.map((count, i) => (
-              <div
-                key={TEMPERATURE_VALUES[i]}
-                className="flex flex-1 flex-col items-center gap-0.5"
-              >
+              <div key={TEMPERATURE_VALUES[i]} className="flex flex-1 flex-col items-center gap-1">
+                {/* Each column is a TRACK with the count filling it from the
+                    bottom. Bare bars sitting on nothing made an unchosen value
+                    a stray coloured dash floating at the baseline, which read
+                    as a broken axis rather than as "nobody picked this". */}
                 <span
-                  className="w-full rounded-sm transition-all"
-                  style={{
-                    height: `${Math.max(count === 0 ? 2 : 8, (count / peak) * 38)}px`,
-                    backgroundColor: BAR_COLORS[i],
-                    opacity: count === 0 ? 0.28 : 1,
-                  }}
-                />
+                  // Capped in width so a wide card doesn't turn five readings
+                  // into five slabs.
+                  className="flex h-[48px] w-full max-w-[26px] items-end overflow-hidden rounded bg-black/[0.06] dark:bg-white/10"
+                >
+                  <span
+                    className="w-full rounded-t transition-all"
+                    style={{
+                      height: count === 0 ? 0 : `${Math.max(8, (count / peak) * 48)}px`,
+                      backgroundColor: BAR_COLORS[i],
+                    }}
+                  />
+                </span>
                 <span className="text-[9px] tabular-nums opacity-60" style={{ color: textColor }}>
                   {count}
                 </span>
               </div>
             ))}
           </div>
-          <p className="mt-1.5 leading-none" style={{ color: textColor }}>
+          <p className="leading-none" style={{ color: textColor }}>
             <span className="text-[20px] font-semibold tabular-nums">
               {stats.average === null ? '—' : stats.average.toFixed(1)}
             </span>
-            <span className="ml-1.5 text-[11px] opacity-55">
+            <span className="ml-2 text-[11px] opacity-55">
               average from {stats.count} {stats.count === 1 ? 'person' : 'people'}
             </span>
           </p>
