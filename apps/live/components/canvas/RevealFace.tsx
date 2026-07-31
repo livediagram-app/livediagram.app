@@ -106,7 +106,11 @@ export function RevealFace({
         {...coverPress}
         // The cover itself: a solid frosted panel, dashed to read as
         // temporary rather than as a box someone drew.
-        className="pointer-events-auto flex h-full w-full cursor-pointer flex-col items-center justify-center gap-1 rounded-[inherit] border-2 border-dashed bg-slate-100/95 transition hover:bg-slate-50 dark:bg-slate-800/95 dark:hover:bg-slate-800"
+        // FULLY opaque. This was bg-slate-100/95, and that 5% let the thing
+        // being hidden show straight through — which defeats the entire
+        // element: a cover you can read through is not a cover. (The hover
+        // state was already opaque, so the two disagreed.)
+        className="pointer-events-auto flex h-full w-full cursor-pointer flex-col items-center justify-center gap-1 rounded-[inherit] border-2 border-dashed bg-slate-100 transition hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700"
         style={{ borderColor: strokeColor }}
       >
         <span style={{ color: textColor }} className="opacity-70">
