@@ -50,6 +50,16 @@ export type CommandContext = {
   // Offline diagram (spec/76): nothing on the server to share, so the Share
   // command is withheld even though the session counts as the owner's.
   isOffline: boolean;
+  // The canvas tool in force, so the command for the CURRENT tool is dropped
+  // (offering "Hand tool" while holding the hand does nothing).
+  canvasTool: string;
+  // Nothing drawn yet. Every tool but Select and Hand acts on existing
+  // content, so they disable on an empty canvas exactly as the palette's
+  // tool dropdown disables them.
+  canvasEmpty: boolean;
+  // Spotlight is desktop-only (hover + click-to-resize don't map to touch),
+  // so it is withheld on a phone the same way the dropdown omits it.
+  isMobile: boolean;
 };
 
 // The handlers the commands call. Injected by useEditorCommands; each is the
@@ -83,7 +93,89 @@ export type CommandHandlers = {
   openSettings: () => void;
   openShortcuts: () => void;
   openTemplates: () => void;
+  // Switches the canvas tool — the same setter the palette's tool dropdown
+  // calls, so the pressed state and telemetry are identical either way.
+  setTool: (tool: string) => void;
 };
+
+// The canvas tools reachable from search, in the tool dropdown's own order.
+// `ids` here MUST stay in step with buildCanvasToolOptions (a test pins it):
+// the whole point is that a tool the palette offers is also typeable, and a
+// stale id would hand the setter a tool that does not exist.
+//
+// Only the id + the words are restated. The gating (empty canvas, mobile,
+// read-only) is expressed once, below.
+const CANVAS_TOOLS: {
+  id: string;
+  name: string;
+  keywords: string;
+  // Acts on existing content, so it goes away on an empty canvas.
+  needsContent?: boolean;
+  // Changes the diagram, so a view-only visitor never sees it.
+  mutates?: boolean;
+  desktopOnly?: boolean;
+}[] = [
+  { id: 'select', name: 'Select tool', keywords: 'select pointer arrow cursor pick v' },
+  { id: 'pan', name: 'Hand tool', keywords: 'hand pan grab drag move canvas scroll h' },
+  {
+    id: 'eraser',
+    name: 'Eraser tool',
+    keywords: 'eraser erase rub out delete remove e',
+    needsContent: true,
+    mutates: true,
+  },
+  {
+    id: 'format',
+    name: 'Format painter',
+    keywords: 'format painter copy style paste style match appearance brush',
+    needsContent: true,
+    mutates: true,
+  },
+  {
+    id: 'laser',
+    name: 'Laser pointer',
+    keywords: 'laser pointer present point highlight temporary trail k',
+    needsContent: true,
+  },
+  {
+    id: 'spotlight',
+    name: 'Spotlight',
+    keywords: 'spotlight focus dim darken present attention',
+    needsContent: true,
+    desktopOnly: true,
+  },
+  {
+    id: 'avatar',
+    name: 'Avatar mode',
+    keywords: 'avatar walk character presence walkthrough tour steer w',
+    needsContent: true,
+  },
+  {
+    id: 'isometric',
+    name: 'Isometric view',
+    keywords: 'isometric 3d tilt perspective depth angle i',
+    needsContent: true,
+  },
+];
+
+// The tool switches, minus whichever tool is already in force. Grouped with
+// the view-safe commands because most of them only change how you LOOK at the
+// canvas; the two that change it (eraser, format painter) opt in via
+// `mutates` and drop out for a read-only visitor.
+function toolCommands(ctx: CommandContext, h: CommandHandlers): EditorCommand[] {
+  return CANVAS_TOOLS.filter(
+    (t) =>
+      t.id !== ctx.canvasTool &&
+      !(t.needsContent && ctx.canvasEmpty) &&
+      !(t.desktopOnly && ctx.isMobile) &&
+      !(t.mutates && ctx.isReadOnly),
+  ).map((t) => ({
+    id: `tool:${t.id}`,
+    name: t.name,
+    keywords: `tool mode switch ${t.keywords}`,
+    run: () => h.setTool(t.id),
+  }));
+}
 
 // Human-readable marker names for the "Add … marker" commands. The raw ids
 // ('green-circle', 'checkbox-checked', ...) aren't search-friendly.
@@ -118,6 +210,7 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
       keywords: 'export download png svg image markdown save file',
       run: h.openExport,
     },
+    ...toolCommands(ctx, h),
   ];
   if (ctx.isReadOnly) return viewSafe;
 

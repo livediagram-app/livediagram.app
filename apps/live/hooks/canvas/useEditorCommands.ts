@@ -12,7 +12,9 @@
 import { useCallback, useMemo } from 'react';
 import { isBoxed } from '@livediagram/diagram';
 import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
+import type { CanvasTool } from '@/components/palette/CommandPalette.types';
 import { useIsOfflineDiagram } from '@/hooks/persistence/useIsOfflineDiagram';
+import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { buildEditorCommands, type CommandContext } from '@/lib/editor-commands';
 import type { CommandSearchItem } from '@/lib/search';
 import { track } from '@/lib/telemetry';
@@ -66,11 +68,16 @@ export function useEditorCommands(): {
     setSettingsOpen,
     setShortcutsOpen,
     openTemplatePicker,
+    canvasTool,
+    setCanvasTool,
   } = ctx;
 
   // Offline diagrams (spec/76) have nothing on the server to share, so the
   // Share command is withheld the same way the header hides its button.
   const isOffline = useIsOfflineDiagram(diagramId);
+  // Spotlight is desktop-only, so the tool commands need the same viewport
+  // answer the palette's tool dropdown uses.
+  const isMobile = useIsMobileViewport();
 
   const isMulti = multiSelectedIds.size > 0;
   const selectionCount = isMulti ? multiSelectedIds.size : selectedId ? 1 : 0;
@@ -102,6 +109,12 @@ export function useEditorCommands(): {
       marker,
       isOwner,
       isOffline,
+      canvasTool,
+      // Same emptiness test the palette's tool dropdown uses to disable the
+      // content-dependent tools, so search can never offer a tool the palette
+      // has greyed out.
+      canvasEmpty: activeTab.elements.length === 0,
+      isMobile,
     };
     return buildEditorCommands(cmdCtx, {
       deleteSelection: () => (isMulti ? deleteMultiSelected() : deleteSelected()),
@@ -166,6 +179,9 @@ export function useEditorCommands(): {
         track('UI', 'Opened', 'Shortcuts');
       },
       openTemplates: openTemplatePicker,
+      // The context's setter, not the raw one: it carries the pressed-state
+      // and telemetry the dropdown's onChange relies on.
+      setTool: (tool) => setCanvasTool(tool as CanvasTool),
     });
     // The handlers are stable enough (editor action callbacks); the gating
     // inputs are what actually change the catalogue.
@@ -186,6 +202,9 @@ export function useEditorCommands(): {
     canUndo,
     canRedo,
     zenMode,
+    canvasTool,
+    activeTab.elements.length,
+    isMobile,
   ]);
 
   const runCommand = useCallback(

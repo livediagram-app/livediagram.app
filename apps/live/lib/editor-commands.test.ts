@@ -33,6 +33,7 @@ function handlers(): CommandHandlers {
     openSettings: vi.fn(),
     openShortcuts: vi.fn(),
     openTemplates: vi.fn(),
+    setTool: vi.fn(),
   };
 }
 
@@ -48,6 +49,11 @@ const base: CommandContext = {
   marker: null,
   isOwner: true,
   isOffline: false,
+  // A drawn-on desktop canvas in Select, which is where most of these
+  // assertions live; the tool commands have their own describe block.
+  canvasTool: 'select',
+  canvasEmpty: false,
+  isMobile: false,
 };
 
 const ids = (ctx: CommandContext) => buildEditorCommands(ctx, handlers()).map((c) => c.id);
@@ -206,7 +212,20 @@ describe('buildEditorCommands — app-level commands (spec/70)', () => {
   });
 
   it('read-only sessions get exactly the view-safe subset', () => {
-    expect(ids({ ...base, isReadOnly: true })).toEqual(['zen', 'fit-to-screen', 'export']);
+    // The three view verbs plus the tools that only change how you LOOK at
+    // the canvas. Nothing here writes to the diagram, which is the property
+    // this test exists to hold: the eraser and the format painter are
+    // withheld, and so is every command below the read-only return.
+    expect(ids({ ...base, isReadOnly: true })).toEqual([
+      'zen',
+      'fit-to-screen',
+      'export',
+      'tool:pan',
+      'tool:laser',
+      'tool:spotlight',
+      'tool:avatar',
+      'tool:isometric',
+    ]);
   });
 
   it('names the zen command by its direction', () => {
@@ -243,5 +262,55 @@ describe('buildEditorCommands — app-level commands (spec/70)', () => {
 
   it('withholds the layout style commands from read-only sessions', () => {
     expect(ids({ ...base, isReadOnly: true })).not.toContain('auto-layout-mindmap');
+  });
+});
+
+// Canvas-tool switches (spec/09 "Search panel"). The palette's tool dropdown
+// was the only way to reach Hand / Eraser / Laser / Spotlight / Avatar /
+// Isometric; the search panel offered none of them.
+describe('canvas tool commands', () => {
+  it('offers every tool but the one already in force', () => {
+    const got = ids(base).filter((id) => id.startsWith('tool:'));
+    expect(got).toEqual([
+      'tool:pan',
+      'tool:eraser',
+      'tool:format',
+      'tool:laser',
+      'tool:spotlight',
+      'tool:avatar',
+      'tool:isometric',
+    ]);
+    // Select is the current tool, so it is not offered.
+    expect(got).not.toContain('tool:select');
+    // ...and it comes back once you are somewhere else.
+    expect(ids({ ...base, canvasTool: 'pan' })).toContain('tool:select');
+  });
+
+  it('runs the tool setter with the tool id', () => {
+    const h = handlers();
+    buildEditorCommands(base, h)
+      .find((c) => c.id === 'tool:avatar')!
+      .run();
+    expect(h.setTool).toHaveBeenCalledWith('avatar');
+  });
+
+  it('drops the content-dependent tools on an empty canvas', () => {
+    const got = ids({ ...base, canvasEmpty: true }).filter((id) => id.startsWith('tool:'));
+    // Only Hand survives: Select is current, and everything else needs
+    // something drawn — the same gating the tool dropdown applies.
+    expect(got).toEqual(['tool:pan']);
+  });
+
+  it('withholds Spotlight on mobile', () => {
+    expect(ids({ ...base, isMobile: true })).not.toContain('tool:spotlight');
+    expect(ids({ ...base, isMobile: true })).toContain('tool:laser');
+  });
+
+  it('gives a read-only visitor the presenting tools but not the editing ones', () => {
+    const got = ids({ ...base, isReadOnly: true }).filter((id) => id.startsWith('tool:'));
+    expect(got).toContain('tool:laser');
+    expect(got).toContain('tool:isometric');
+    expect(got).not.toContain('tool:eraser');
+    expect(got).not.toContain('tool:format');
   });
 });
