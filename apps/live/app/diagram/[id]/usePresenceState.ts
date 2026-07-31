@@ -63,6 +63,11 @@ export function usePresenceState() {
   // id: the latest presence snapshot each peer published, or absent once they
   // leave the mode (an `avatar: null` op deletes the entry). Scoped per tab in
   // the op itself, like cursors.
+  // Follow-me (spec/131): where each peer is looking. Unsolicited, so it is
+  // collected for everyone and read only while somebody is being followed.
+  const [remoteViewports, setRemoteViewports] = useState<
+    Map<string, { tabId: string; pan: { x: number; y: number }; zoom: number }>
+  >(new Map());
   const [remoteAvatars, setRemoteAvatars] = useState<
     Map<string, { tabId: string; avatar: AvatarPresence }>
   >(new Map());
@@ -80,6 +85,8 @@ export function usePresenceState() {
     remoteLaserTrails,
     setRemoteLaserTrails,
     remoteAvatars,
+    remoteViewports,
+    setRemoteViewports,
     setRemoteAvatars,
   };
 }

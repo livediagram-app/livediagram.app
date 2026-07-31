@@ -229,6 +229,18 @@ export type RoomOp =
   // its owner's machine, so a push is a request, never a remote write, and a
   // peer who has left the mode simply ignores it.
   | { kind: 'avatar-push'; tabId: string; targetId: string; dx: number; dy: number }
+  // The sender's VIEWPORT (spec/131): where they are looking, so anyone who
+  // has chosen to follow them can mirror it. Ephemeral presence exactly like
+  // cursor / laser / avatar: throttled, never logged, never ordered (no
+  // `seq`), never replayed to a reconnecting client.
+  //
+  // Sent by everyone on change rather than on request. The alternative — a
+  // follower asks, the presenter starts publishing — needs a second op kind, a
+  // re-request on every reconnect, and a rule for what happens when the
+  // presenter reloads mid-follow, all for three numbers on an
+  // already-throttled channel. The cost is accepted and written down: a room
+  // where nobody follows anybody still carries these while people scroll.
+  | { kind: 'viewport'; tabId: string; pan: { x: number; y: number }; zoom: number }
   // --- Live poll (spec/88) -------------------------------------------
   // Deliberately NOT a Tab field like the timer / dot-vote: a poll is
   // ephemeral, so it exists only as these ops and the memory of the

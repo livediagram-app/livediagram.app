@@ -25,10 +25,19 @@ export function TabPresenceStack({
   participants,
   selfId,
   selfRole,
+  followingId,
+  onFollow,
+  onStopFollowing,
 }: {
   participants: Participant[];
   selfId: string;
   selfRole: 'edit' | 'view';
+  // Follow-me (spec/131): who we are currently following, and the two acts.
+  // Absent on a surface with no room behind it, which leaves the avatars as
+  // the plain presence indicators they have always been.
+  followingId?: string | null;
+  onFollow?: (participantId: string) => void;
+  onStopFollowing?: () => void;
 }) {
   type Slot = { p: Participant; leaving: boolean };
   const [rendered, setRendered] = useState<Slot[]>(() =>
@@ -110,11 +119,8 @@ export function TabPresenceStack({
           }`}
           style={{ zIndex: slots - i, transformOrigin: 'center' }}
         >
-          <ParticipantAvatar
-            participant={slot.p}
-            size={16}
-            withTooltip
-            badges={(() => {
+          {(() => {
+            const badges = (() => {
               if (slot.p.id === selfId) {
                 return ['You', selfRole === 'view' ? 'Viewer' : 'Editor'];
               }
@@ -122,8 +128,36 @@ export function TabPresenceStack({
                 return [slot.p.role === 'view' ? 'Viewer' : 'Editor'];
               }
               return undefined;
-            })()}
-          />
+            })();
+            const avatar = (
+              <ParticipantAvatar
+                participant={slot.p}
+                size={16}
+                withTooltip
+                badges={followingId === slot.p.id ? [...(badges ?? []), 'Following'] : badges}
+              />
+            );
+            // Follow-me (spec/131): the presence stack is already where you go
+            // to find out who is here, so it is where you say "take me to
+            // them". Yourself is not followable, for obvious reasons.
+            if (!onFollow || slot.p.id === selfId) return avatar;
+            const following = followingId === slot.p.id;
+            return (
+              <button
+                type="button"
+                onClick={() => (following ? onStopFollowing?.() : onFollow(slot.p.id))}
+                aria-pressed={following}
+                aria-label={
+                  following ? `Stop following ${slot.p.name}` : `Follow ${slot.p.name}'s view`
+                }
+                className={`inline-flex cursor-pointer rounded-full transition ${
+                  following ? 'ring-2 ring-brand-400 ring-offset-1 dark:ring-offset-slate-900' : ''
+                }`}
+              >
+                {avatar}
+              </button>
+            );
+          })()}
         </span>
       ))}
       {overflow > 0 ? (

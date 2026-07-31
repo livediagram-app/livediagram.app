@@ -246,6 +246,7 @@ export function EditorCanvasHost() {
     toggleRevealForMe,
     pickerFor,
     collabElements,
+    followMe,
     endPollKeepingResults,
     tabs,
     setCanvasTool,
@@ -429,6 +430,14 @@ export function EditorCanvasHost() {
       revealedIds={revealedIds}
       onToggleReveal={toggleRevealForMe}
       onRollPicker={pickerFor}
+      // Follow-me (spec/131): resolved to a NAME here, where presence lives,
+      // so the pill doesn't have to look one up.
+      followingName={
+        followMe.followingId
+          ? (livePresence.find((p) => p.id === followMe.followingId)?.name ?? 'someone')
+          : null
+      }
+      onStopFollowing={followMe.stopFollowing}
       // The collaboration elements (spec/123 to spec/129). One prop for all
       // five faces; the write handlers drop out entirely for a view-role
       // visitor, so the faces render readable but inert rather than offering

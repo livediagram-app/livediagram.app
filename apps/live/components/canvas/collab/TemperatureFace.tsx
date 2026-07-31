@@ -12,7 +12,7 @@ import {
   responseTally,
   type ShapeElement,
 } from '@livediagram/diagram';
-import { CollabChip, CollabEmpty, CollabPanel } from './collab-chrome';
+import { CollabChip, CollabEmpty, CollabPanel, tint } from './collab-chrome';
 
 // Cool to warm across the five bars. Fixed hues rather than the theme's
 // palette: a temperature check that recoloured with the tab theme would read
@@ -75,7 +75,8 @@ export function TemperatureFace({
                 <span
                   // Capped in width so a wide card doesn't turn five readings
                   // into five slabs.
-                  className="flex h-[48px] w-full max-w-[26px] items-end overflow-hidden rounded bg-black/[0.06] dark:bg-white/10"
+                  className="flex h-[48px] w-full max-w-[26px] items-end overflow-hidden rounded"
+                  style={{ backgroundColor: tint(textColor, 0.08) }}
                 >
                   <span
                     className="w-full rounded-t transition-all"

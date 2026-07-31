@@ -18,6 +18,7 @@ import { useFormatConfig } from '@/hooks/canvas/useFormatConfig';
 import { usePortalSetters } from '@/hooks/canvas/usePortalSetters';
 import { useBehaviourElements } from '@/hooks/canvas/useBehaviourElements';
 import { useCollabElements } from '@/hooks/canvas/useCollabElements';
+import { useFollowMe } from '@/hooks/collab/useFollowMe';
 import type { CanvasTool } from '@/components/palette/CommandPalette';
 import { useCellLinkPicker } from '@/hooks/canvas/useCellLinkPicker';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
@@ -505,6 +506,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setRemoteLaserTrails,
     remoteAvatars,
     setRemoteAvatars,
+    remoteViewports,
+    setRemoteViewports,
   } = usePresenceState();
   // Local laser trail — held in state so the overlay re-renders when
   // we append a point, but mutations stay cheap by always producing a
@@ -734,6 +737,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setRemoteTabFocus,
     setRemoteLaserTrails,
     setRemoteAvatars,
+    setRemoteViewports,
     setChangeLog,
     setDiagramName,
     setSelfParticipant,
@@ -808,17 +812,23 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // laser-trail buffer live in useEditorBroadcast. Same throttle,
   // same gates, same trail-clears-on-tool-change behaviour as
   // before, just out of the page file.
-  const { broadcastCursor, broadcastLaser, broadcastAvatar, broadcastAvatarPush, localLaserTrail } =
-    useEditorBroadcast({
-      roomRef,
-      hydrated,
-      diagramId,
-      diagramShareable,
-      diagramTeamId,
-      activeId,
-      canvasTool,
-      cursorsHidden: voteCursorsHidden,
-    });
+  const {
+    broadcastCursor,
+    broadcastLaser,
+    broadcastAvatar,
+    broadcastAvatarPush,
+    broadcastViewport,
+    localLaserTrail,
+  } = useEditorBroadcast({
+    roomRef,
+    hydrated,
+    diagramId,
+    diagramShareable,
+    diagramTeamId,
+    activeId,
+    canvasTool,
+    cursorsHidden: voteCursorsHidden,
+  });
   // Viewport state (pan offset, zoom, the canvas wrapper ref the
   // measurements read through, and a parallel zoomRef the drag hook
   // reads each pointer-move) lives in useEditorViewport. The hook
@@ -854,6 +864,32 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     fitToScreen,
     scrollIntoView,
   } = useEditorViewport({ activeTab, selectedId });
+
+  // Publish where WE are looking, on change (spec/131). Unsolicited by design
+  // — see the RoomOp comment — and throttled to ~10 Hz inside the broadcaster,
+  // so an idle participant sends nothing at all.
+  useEffect(() => {
+    broadcastViewport(viewportOffset, viewportZoom);
+    // `broadcastViewport` is re-created every render; the viewport IS the
+    // trigger.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [viewportOffset, viewportZoom, activeId]);
+
+  // Follow-me viewport (spec/131): pin our pan / zoom / tab to a peer's until
+  // we take the canvas back. View-role visitors can both follow and be
+  // followed — it mutates nothing, and the audience on a view link is exactly
+  // who most needs it.
+  const followMe = useFollowMe({
+    remoteViewports,
+    livePresenceIds: livePresence.map((p) => p.id),
+    activeId,
+    viewportOffset,
+    viewportZoom,
+    setViewportOffset,
+    setZoom: setViewportZoom,
+    onFollowTab: setActiveId,
+    onNotice: (message) => toast.info(message),
+  });
 
   // Server capabilities (spec/25). Fetched once at mount; determines
   // whether the AI panel option is shown in Settings and rendered.
@@ -2348,6 +2384,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     // rather than a dozen flattened keys, since nothing else reads into it.
     livePoll,
     endPollKeepingResults,
+    followMe,
     loadAllTabs,
     loadedTabIds,
     loadingDiagram,

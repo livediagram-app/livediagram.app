@@ -8,6 +8,38 @@
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { Tooltip } from '@/components/primitives/Tooltip';
 
+// A translucent wash of the card's OWN text colour.
+//
+// Every chip, track and row background here is derived from `textColor`
+// rather than written as `bg-black/6 dark:bg-white/10`. Those Tailwind pairs
+// follow the APP's dark mode, and an element's colours come from the TAB
+// theme (spec/29) — so a dark card on a light-mode editor got black-on-dark
+// chips that vanished, and a light card in dark mode got the opposite. Tying
+// them to the text colour makes every part of the card agree with the card,
+// whichever way either setting is pointed.
+export function tint(textColor: string, alpha: number): string {
+  const hex = textColor.trim();
+  const match = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(hex);
+  if (!match) {
+    // A named / rgb() / oklch() colour we can't parse. `color-mix` handles any
+    // of them, and a browser without it falls back to the declaration being
+    // dropped — which leaves the surface untinted rather than wrong.
+    return `color-mix(in srgb, ${hex} ${Math.round(alpha * 100)}%, transparent)`;
+  }
+  const body = match[1]!;
+  const full =
+    body.length === 3
+      ? body
+          .split('')
+          .map((c) => c + c)
+          .join('')
+      : body;
+  const r = parseInt(full.slice(0, 2), 16);
+  const g = parseInt(full.slice(2, 4), 16);
+  const b = parseInt(full.slice(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 export function CollabPanel({
   title,
   textColor,
@@ -65,8 +97,15 @@ export function CollabPanel({
       </div>
       {/* The body scrolls rather than overflowing the element box: a card with
           twelve agenda rows on it is a normal card, and clipping the last few
-          with no way to reach them is the bug that would report. */}
-      <div className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto">{children}</div>
+          with no way to reach them is the bug that would report.
+
+          The negative margin + matching padding buys 4px of interior room
+          before the scroller clips, without moving anything: a participant
+          avatar draws its presence ring as a box-shadow OUTSIDE its own box,
+          and `overflow` clipped a slice off every ring. */}
+      <div className="-mx-1 -my-1 flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto px-1 py-1">
+        {children}
+      </div>
       {footer ? <div className="flex shrink-0 flex-wrap gap-2 pt-0.5">{footer}</div> : null}
     </div>
   );
@@ -101,12 +140,8 @@ export function CollabButton({
       {...press}
       disabled={disabled || !onPress}
       aria-label={label}
-      className={`pointer-events-auto shrink-0 cursor-pointer rounded-full px-3 py-1.5 text-[11px] font-semibold transition disabled:cursor-default disabled:opacity-45 ${
-        tone === 'loud'
-          ? 'bg-black/[0.12] hover:bg-black/[0.18] dark:bg-white/15 dark:hover:bg-white/25'
-          : 'bg-black/[0.06] hover:bg-black/[0.1] dark:bg-white/10 dark:hover:bg-white/15'
-      }`}
-      style={{ color: textColor }}
+      className="pointer-events-auto shrink-0 cursor-pointer rounded-full px-3 py-1.5 text-[11px] font-semibold transition hover:brightness-95 disabled:cursor-default disabled:opacity-45"
+      style={{ color: textColor, backgroundColor: tint(textColor, tone === 'loud' ? 0.16 : 0.08) }}
     >
       {children}
     </button>
@@ -143,12 +178,12 @@ export function CollabChip({
       disabled={disabled || !onPress}
       aria-pressed={mine}
       aria-label={`Choose ${value}`}
-      className={`pointer-events-auto min-w-[34px] shrink-0 cursor-pointer rounded-lg border px-2 py-1.5 text-[13px] font-semibold tabular-nums transition disabled:cursor-default disabled:opacity-45 ${
-        mine
-          ? 'border-transparent bg-black/[0.16] dark:bg-white/25'
-          : 'border-black/10 bg-black/[0.03] hover:bg-black/[0.08] dark:border-white/15 dark:bg-white/[0.06] dark:hover:bg-white/15'
-      }`}
-      style={{ color: textColor }}
+      className="pointer-events-auto min-w-[34px] shrink-0 cursor-pointer rounded-lg border px-2 py-1.5 text-[13px] font-semibold tabular-nums transition hover:brightness-95 disabled:cursor-default disabled:opacity-45"
+      style={{
+        color: textColor,
+        backgroundColor: tint(textColor, mine ? 0.2 : 0.05),
+        borderColor: tint(textColor, mine ? 0 : 0.14),
+      }}
     >
       {value}
     </button>

@@ -316,11 +316,12 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
     kind === 'agenda' ||
     kind === 'roll-call'
   ) {
+    // Deliberately NO fill / stroke / text colour: the card takes the tab
+    // theme's element colours like a plain square does, so a dark theme gives
+    // a dark card. Pinning white here made them the only elements on the board
+    // that stayed bright when everything around them darkened.
     const seed: ShapeElement = {
       ...base,
-      fillColor: '#ffffff',
-      strokeColor: '#cbd5e1',
-      textColor: '#0f172a',
       shadow: { offsetX: 0, offsetY: 2, blur: 6, opacity: 0.2 },
       borderRadius: 'lg',
       textSize: 'sm',
@@ -359,9 +360,7 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       decisionStatus: DEFAULT_DECISION_STATUS,
       textAlignX: 'left',
       textAlignY: 'top',
-      fillColor: '#ffffff',
-      strokeColor: '#cbd5e1',
-      textColor: '#0f172a',
+      // Theme colours, like the collaboration cards above.
       borderRadius: 'lg',
       shadow: { offsetX: 0, offsetY: 2, blur: 6, opacity: 0.18 },
     };

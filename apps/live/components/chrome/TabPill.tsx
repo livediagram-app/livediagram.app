@@ -30,6 +30,10 @@ export type TabPillCtx = {
   participantsByTab: Map<string, Participant[]>;
   selfId: string;
   selfRole: 'edit' | 'view';
+  // Follow-me (spec/131), threaded to the presence stack.
+  followingId?: string | null;
+  onFollow?: (participantId: string) => void;
+  onStopFollowing?: () => void;
   canvasActions?: CanvasMenuActions;
   // The shared tab-menu callback bundle (see TabBar.tabMenuProps): the
   // exact props EllipsisMenuButton's menu needs, minus its own
@@ -55,6 +59,9 @@ export function TabPill({ tab, ctx }: { tab: Tab; ctx: TabPillCtx }) {
     participantsByTab,
     selfId,
     selfRole,
+    followingId,
+    onFollow,
+    onStopFollowing,
     canvasActions,
     tabMenuProps,
   } = ctx;
@@ -153,6 +160,9 @@ export function TabPill({ tab, ctx }: { tab: Tab; ctx: TabPillCtx }) {
         participants={participantsByTab.get(tab.id) ?? []}
         selfId={selfId}
         selfRole={selfRole}
+        followingId={followingId}
+        onFollow={onFollow}
+        onStopFollowing={onStopFollowing}
       />
       {isActive && !isEditing && !readOnly ? (
         <EllipsisMenuButton

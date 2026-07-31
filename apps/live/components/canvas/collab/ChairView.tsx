@@ -1,6 +1,7 @@
 'use client';
 
 import { DEFAULT_CHAIR_FACING, type ChairFacing, type ShapeElement } from '@livediagram/diagram';
+import { tint } from './collab-chrome';
 
 // A chair (spec/130): furniture an Avatar-mode character sits down in.
 //
@@ -30,11 +31,15 @@ export function ChairView({
 }) {
   const stroke = element.strokeColor ?? '#94a3b8';
   // The seat's surface. `transparent` is the element default (the chair is
-  // furniture, not a box), so it falls back to a light neutral rather than
-  // inheriting the label's text colour through currentColor — which drew a
-  // black chair.
+  // furniture, not a box), so it falls back to a wash of its own STROKE —
+  // which the tab theme sets — rather than to a fixed light grey. A hard grey
+  // stayed bright on a dark-themed board, the one thing furniture must not do.
+  // (Not `currentColor`: that inherits the label's text colour and drew a
+  // black chair.)
   const seat =
-    element.fillColor && element.fillColor !== 'transparent' ? element.fillColor : '#e2e8f0';
+    element.fillColor && element.fillColor !== 'transparent'
+      ? element.fillColor
+      : tint(stroke, 0.32);
   const facing = element.chairFacing ?? DEFAULT_CHAIR_FACING;
   const occupied = sitters.length > 0;
   // The ring takes the first sitter's presence colour, so an occupied chair

@@ -17,6 +17,10 @@ import { trimLaserBuffer, type LaserPoint } from '@/lib/laser-buffer';
 import type { LaserConfig } from '@/lib/laser-config';
 
 const BROADCAST_THROTTLE_MS = 33;
+// The viewport (spec/131) publishes at ~10 Hz, a third of the cursor's rate: a
+// camera is not a pointer, 10 Hz is smooth for a pan, and an idle participant
+// sends nothing at all because this only fires on change.
+const VIEWPORT_THROTTLE_MS = 100;
 
 // Minimal shape of the room-handle the realtime effect stashes in a
 // ref. We only need `send` here; the rest of the connectRoom API
@@ -72,6 +76,8 @@ type EditorBroadcastApi = {
   // Ask one peer's character to step aside (spec/101): a unit direction and
   // who it is aimed at. Never throttled — it is an event, not a sample.
   broadcastAvatarPush: (targetId: string, dx: number, dy: number) => void;
+  // Publish where we are looking (spec/131), for anyone following us.
+  broadcastViewport: (pan: { x: number; y: number }, zoom: number) => void;
   // The local trail buffer (canvas-coords + timestamps), consumed
   // by the LaserOverlay via the laserTrailRows aggregator in
   // editor-page.
@@ -83,6 +89,7 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
   const lastCursorSentRef = useRef(0);
   const lastLaserSentRef = useRef(0);
   const lastAvatarSentRef = useRef(0);
+  const lastViewportSentRef = useRef(0);
 
   // Clear the local trail when leaving laser mode (or switching tabs)
   // so a partial path doesn't persist past the tool / tab change.
@@ -175,6 +182,21 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
     });
   };
 
+  // Viewport (spec/131): where we are looking. Same presence gate as the
+  // cursor — no room, no publish — on its own slower throttle.
+  const broadcastViewport = (pan: { x: number; y: number }, zoom: number) => {
+    if (deps.cursorsHidden) return;
+    if (!deps.hydrated || !deps.diagramId || (!deps.diagramShareable && !deps.diagramTeamId))
+      return;
+    const now = performance.now();
+    if (now - lastViewportSentRef.current < VIEWPORT_THROTTLE_MS) return;
+    lastViewportSentRef.current = now;
+    deps.roomRef.current?.send({
+      kind: 'op',
+      op: { kind: 'viewport', tabId: deps.activeId, pan, zoom },
+    });
+  };
+
   // One character shoving another (spec/101). A discrete event, so unlike the
   // avatar snapshot it is never throttled or dropped — but it rides the same
   // presence gate: no room, no push.
@@ -193,6 +215,7 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
     broadcastLaser,
     broadcastAvatar,
     broadcastAvatarPush,
+    broadcastViewport,
     localLaserTrail,
   };
 }

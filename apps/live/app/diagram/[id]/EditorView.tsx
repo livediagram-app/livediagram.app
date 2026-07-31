@@ -46,6 +46,7 @@ export function EditorView() {
     activeId,
     activeTab,
     addTab,
+    followMe,
     anyWelcomeOpen,
     embedMode,
     autoAlignTab,
@@ -250,6 +251,11 @@ export function EditorView() {
         <TabBar
           tabs={tabs}
           activeId={activeId}
+          // Follow-me (spec/131): clicking a peer's avatar in the presence
+          // stack pins your view to theirs.
+          followingId={followMe.followingId}
+          onFollow={followMe.startFollowing}
+          onStopFollowing={followMe.stopFollowing}
           onMoveTabToFolder={moveTabToFolder}
           onRemoveTabFromFolder={removeTabFromFolder}
           onRenameFolder={renameTabFolder}

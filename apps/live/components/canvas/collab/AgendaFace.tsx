@@ -11,7 +11,7 @@ import {
   type TabTimer,
 } from '@livediagram/diagram';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
-import { CollabEmpty, CollabPanel } from './collab-chrome';
+import { CollabEmpty, CollabPanel, tint } from './collab-chrome';
 
 // "1h 5m" / "45m". The number in the header is what tells you the plan doesn't
 // fit before you start.
@@ -57,11 +57,10 @@ function AgendaRow({
         disabled={!onPress}
         aria-label={`Start ${label || `segment ${index + 1}`} — ${minutes} minutes`}
         aria-current={state === 'current' ? 'step' : undefined}
-        className={`pointer-events-auto flex w-full cursor-pointer items-baseline justify-between gap-2 rounded-md px-2 py-1.5 text-left transition disabled:cursor-default ${
-          state === 'current'
-            ? 'bg-black/[0.12] dark:bg-white/20'
-            : 'hover:bg-black/[0.06] dark:hover:bg-white/10'
-        }`}
+        className="pointer-events-auto flex w-full cursor-pointer items-baseline justify-between gap-2 rounded-md px-2 py-1.5 text-left transition hover:brightness-95 disabled:cursor-default"
+        style={{
+          backgroundColor: state === 'current' ? tint(textColor, 0.14) : 'transparent',
+        }}
       >
         <span
           className={`min-w-0 truncate text-[11px] leading-snug ${

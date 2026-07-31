@@ -7,7 +7,7 @@
 
 import { useState } from 'react';
 import type { ShapeElement } from '@livediagram/diagram';
-import { CollabButton, CollabEmpty, CollabPanel } from './collab-chrome';
+import { CollabButton, CollabEmpty, CollabPanel, tint } from './collab-chrome';
 
 export function IdeaBoxFace({
   element,
@@ -91,8 +91,12 @@ export function IdeaBoxFace({
             placeholder="Add an idea…"
             aria-label="Add an anonymous idea"
             maxLength={500}
-            className="pointer-events-auto min-w-0 flex-1 rounded-md border border-black/10 bg-white/70 px-2.5 py-1.5 text-[11px] outline-none placeholder:opacity-50 focus:border-black/25 dark:border-white/15 dark:bg-white/10 dark:focus:border-white/35"
-            style={{ color: textColor }}
+            className="pointer-events-auto min-w-0 flex-1 rounded-md border px-2.5 py-1.5 text-[11px] outline-none placeholder:opacity-50"
+            style={{
+              color: textColor,
+              backgroundColor: tint(textColor, 0.05),
+              borderColor: tint(textColor, 0.18),
+            }}
           />
           <CollabButton textColor={textColor} onPress={submit} label="Submit idea">
             Add
@@ -109,8 +113,8 @@ export function IdeaBoxFace({
             {cards.map((card, i) => (
               <li
                 key={`${i}-${card.slice(0, 12)}`}
-                className="rounded-md bg-black/[0.05] px-2.5 py-1.5 text-[11px] leading-relaxed dark:bg-white/10"
-                style={{ color: textColor }}
+                className="rounded-md px-2.5 py-1.5 text-[11px] leading-relaxed"
+                style={{ color: textColor, backgroundColor: tint(textColor, 0.07) }}
               >
                 {card}
               </li>

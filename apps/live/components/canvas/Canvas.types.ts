@@ -115,6 +115,10 @@ export type CanvasProps = {
   // The collaboration elements (spec/123 to spec/129): the viewer's identity,
   // the room, and the writes they may make — one prop for all five faces.
   collab?: import('@/components/canvas/collab/CollabFaceRouter').CollabApi;
+  // Follow-me (spec/131): the name of whoever we are following, for the pill,
+  // and the way out of it. Null / absent = not following anybody.
+  followingName?: string | null;
+  onStopFollowing?: () => void;
   // Chair (spec/130): who presence says is seated on a given chair.
   chairSitters?: (
     elementId: string,

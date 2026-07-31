@@ -54,6 +54,12 @@ export function useRoomConnection(opts: {
   setRemoteAvatars: Dispatch<
     SetStateAction<Map<string, { tabId: string; avatar: AvatarPresence }>>
   >;
+  // Follow-me (spec/131): where each peer is looking, latest sample each.
+  // Only read while somebody is being followed; kept for everyone because the
+  // op is unsolicited (see the RoomOp comment).
+  setRemoteViewports: Dispatch<
+    SetStateAction<Map<string, { tabId: string; pan: { x: number; y: number }; zoom: number }>>
+  >;
   setChangeLog: Dispatch<SetStateAction<ChangeLogEntry[]>>;
   setDiagramName: Dispatch<SetStateAction<string>>;
   setSelfParticipant: Dispatch<SetStateAction<Participant>>;
@@ -90,6 +96,7 @@ export function useRoomConnection(opts: {
     setRemoteTabFocus,
     setRemoteLaserTrails,
     setRemoteAvatars,
+    setRemoteViewports,
     setChangeLog,
     setDiagramName,
     setSelfParticipant,
@@ -390,6 +397,16 @@ export function useRoomConnection(opts: {
           // character has one position at a time.
           pendingAvatars.set(from, op.avatar ? { tabId: op.tabId, avatar: op.avatar } : null);
           schedulePresenceFlush();
+        } else if (op.kind === 'viewport') {
+          // Latest-wins per peer, like the avatar: a camera has one position.
+          // Applied straight through rather than batched with the presence
+          // flush — a follower's view should track the presenter's hand, and a
+          // 10 Hz stream needs no coalescing.
+          setRemoteViewports((prev) => {
+            const next = new Map(prev);
+            next.set(from, { tabId: op.tabId, pan: op.pan, zoom: op.zoom });
+            return next;
+          });
         } else if (op.kind === 'avatar-push') {
           // A shove is ADDRESSED: the room delivers it to the named session and
           // nobody else, so anything that arrives here was aimed at us. We

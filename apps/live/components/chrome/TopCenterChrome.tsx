@@ -47,6 +47,11 @@ type TopCenterChromeProps = Pick<
   // From CanvasChrome's computed ChromeExtras, not CanvasProps.
   isPaintMode: boolean;
   isGroupMode: boolean;
+  // Follow-me (spec/131): who we are following, so the pill can say so and
+  // offer the way out. Any canvas gesture also ends it silently — this is the
+  // explicit door, not the only one.
+  followingName?: string | null;
+  onStopFollowing?: () => void;
 };
 
 export function TopCenterChrome({
@@ -78,9 +83,32 @@ export function TopCenterChrome({
   onNextVoteResult,
   onPrevVoteResult,
   onDoneVoteReview,
+  followingName,
+  onStopFollowing,
 }: TopCenterChromeProps) {
   return (
     <TopCenterStack>
+      {/* Follow-me (spec/131). Shown on every viewport and in Zen mode: being
+          moved around by somebody else without being told why is the one state
+          this feature must never leave you in. */}
+      {followingName ? (
+        <TopCenterRow>
+          <div className="flex items-center gap-2 rounded-full bg-brand-500 px-3 py-1 text-[11px] font-medium text-white shadow-sm">
+            <span className="relative flex h-1.5 w-1.5" aria-hidden>
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white/80" />
+              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-white" />
+            </span>
+            <span className="max-w-[12rem] truncate">Following {followingName}</span>
+            <button
+              type="button"
+              onClick={onStopFollowing}
+              className="cursor-pointer rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-semibold transition hover:bg-white/30"
+            >
+              Stop
+            </button>
+          </div>
+        </TopCenterRow>
+      ) : null}
       {/* Visitor-only owner + role badge. Desktop-only: the top row is
           too tight on a phone, and the role stays discoverable from the
           no-add palette + locked-element affordances. */}
