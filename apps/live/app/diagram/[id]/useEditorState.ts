@@ -12,6 +12,7 @@ import {
 
 import { useCanvasEraser } from '@/hooks/canvas/useCanvasEraser';
 import { useCanvasTool } from '@/hooks/canvas/useCanvasTool';
+import { useLaserConfig } from '@/hooks/canvas/useLaserConfig';
 import { usePortalSetters } from '@/hooks/canvas/usePortalSetters';
 import { useBehaviourElements } from '@/hooks/canvas/useBehaviourElements';
 import type { CanvasTool } from '@/components/palette/CommandPalette';
@@ -255,6 +256,9 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // Canvas tool (Pan / Select / Laser). See useCanvasTool: the raw
   // setter serves internal auto-switches, the tracked selectCanvasTool
   // serves the user-facing pickers.
+  // The laser pen (spec/111): persisted per browser, published with every
+  // laser sample, and edited from the Laser Panel.
+  const laserPen = useLaserConfig();
   const { canvasTool, setCanvasTool, selectCanvasTool, exitAvatarTool, toolBeforeCurrent } =
     useCanvasTool({
       defaultPan: embedMode,
@@ -888,6 +892,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     remoteLaserTrails,
     remoteAvatars,
     localLaserTrail,
+    selfLaserConfig: laserPen.config,
     cursorsHidden: voteCursorsHidden,
   });
   // Comment-bearing element rows for the floating Comments panel.
@@ -2451,6 +2456,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setIconAnimationRepeatSelected,
     setFlowRepeatSelected,
     setCanvasTool: pickCanvasTool,
+    laserConfig: laserPen.config,
+    onChangeLaserField: laserPen.setField,
     pressModeButton,
     setContextMenu,
     setDiagramSharePassword,

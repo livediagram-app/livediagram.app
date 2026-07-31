@@ -14,6 +14,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { AvatarPresence, RoomOutgoing } from '@livediagram/api-schema';
 import type { CanvasTool } from '@/components/palette/CommandPalette';
 import { trimLaserBuffer, type LaserPoint } from '@/lib/laser-buffer';
+import type { LaserConfig } from '@/lib/laser-config';
 
 const BROADCAST_THROTTLE_MS = 33;
 
@@ -62,7 +63,9 @@ type EditorBroadcastApi = {
   // local append happens unconditionally; the broadcast respects
   // the gate state + throttle. The overlay's RAF loop is what
   // makes trails visibly decay over the lifetime window.
-  broadcastLaser: (x: number, y: number) => void;
+  // `look` is the sender's pen (spec/111); omitted by callers that have no
+  // panel behind them, which draws the original laser.
+  broadcastLaser: (x: number, y: number, look?: LaserConfig) => void;
   // Publish the local Avatar-mode character (spec/101) to the room, or
   // `null` to tell peers to drop it. Throttled like the cursor.
   broadcastAvatar: (avatar: AvatarPresence | null) => void;
@@ -130,7 +133,7 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
     });
   };
 
-  const broadcastLaser = (x: number, y: number) => {
+  const broadcastLaser = (x: number, y: number, look?: LaserConfig) => {
     const now = performance.now();
     // Throttle the LOCAL trail append (the setState) as well as the
     // network send — both at ~30 Hz. Beyond matching the wire rate, this
@@ -149,7 +152,9 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
       return;
     deps.roomRef.current?.send({
       kind: 'op',
-      op: { kind: 'laser', tabId: deps.activeId, x, y },
+      // The pen rides the sample (spec/111) so peers draw MY laser, not
+      // their own default.
+      op: { kind: 'laser', tabId: deps.activeId, x, y, ...(look ? { look } : {}) },
     });
   };
 

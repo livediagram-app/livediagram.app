@@ -180,7 +180,33 @@ export type RoomOp =
   // participant buffer and fade the trail out over ~1 s — see
   // LaserOverlay. The active tab id scopes the rendering so peers on
   // a different tab don't see the laser.
-  | { kind: 'laser'; tabId: string; x: number; y: number }
+  | {
+      kind: 'laser';
+      tabId: string;
+      x: number;
+      y: number;
+      // The sender's pen (spec/111): width / colour / trail / effect, each a
+      // preset token. Optional, so a packet from an older client still parses
+      // and simply draws the original laser. It rides the sample rather than a
+      // separate op because a second packet would need ordering against the
+      // samples it describes, for a couple of dozen bytes on a frame that is
+      // already throttled to ~30 Hz. Receivers parse it field by field.
+      look?: {
+        width: 'fine' | 'medium' | 'bold';
+        colour:
+          | 'presence'
+          | 'red'
+          | 'orange'
+          | 'yellow'
+          | 'green'
+          | 'cyan'
+          | 'blue'
+          | 'violet'
+          | 'white';
+        trail: 'quick' | 'normal' | 'long';
+        effect: 'beam' | 'glow' | 'comet' | 'spark';
+      };
+    }
   // The sender's Avatar-mode character (spec/101), so everyone in the room
   // sees everyone else walking around. Ephemeral presence exactly like
   // cursor / laser: throttled to ~30 Hz, never logged, never replayed to a

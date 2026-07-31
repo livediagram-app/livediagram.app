@@ -35,6 +35,8 @@ export function usePanelLayout() {
   // position only — there is nothing to minimise when leaving the mode
   // dismisses the panel outright.
   const [avatarPanelPosition, setAvatarPanelPosition] = useState<Pos | null>(null);
+  // Laser Panel (spec/111): the same — present only while the Laser tool is.
+  const [laserPanelPosition, setLaserPanelPosition] = useState<Pos | null>(null);
   // Zen / focus mode (spec/26): hide all floating chrome (header, tab
   // bar, panels, docks) so only the canvas content + zoom controls
   // remain. Purely a view flag — not persisted, not synced.
@@ -67,6 +69,8 @@ export function usePanelLayout() {
     setVotePanelPosition,
     avatarPanelPosition,
     setAvatarPanelPosition,
+    laserPanelPosition,
+    setLaserPanelPosition,
     zenMode,
     setZenMode,
   };

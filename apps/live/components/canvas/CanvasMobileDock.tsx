@@ -1,7 +1,7 @@
 import type { ReactNode, RefObject } from 'react';
 import { LayersStackIcon } from '@/components/panels/layers-panel-icons';
 import { PollMenuIcon, VoteMenuIcon } from '@/components/palette/context-menu-icons';
-import { AvatarModeIcon } from '@/components/palette/palette-icons';
+import { AvatarModeIcon, LaserIcon } from '@/components/palette/palette-icons';
 import type { MobilePanel } from '@/hooks/canvas/useCanvasMobileDock';
 
 // Top-right mobile dock (spec/07 "Mobile chrome"): a compact button row
@@ -18,6 +18,7 @@ export function CanvasMobileDock({
   hasPoll,
   hasVote,
   hasAvatar,
+  hasLaser,
   activeMobilePanel,
   dockButtonRefs,
   onDockButtonClick,
@@ -37,6 +38,9 @@ export function CanvasMobileDock({
   // Avatar mode (spec/101) is active, so its customisation panel has a dock
   // button. Same come-and-go treatment as the session tools.
   hasAvatar: boolean;
+  // The Laser tool (spec/111) is active, so its pen panel gets a dock button —
+  // same come-and-go treatment as Avatar mode's.
+  hasLaser: boolean;
   activeMobilePanel: MobilePanel | null;
   dockButtonRefs: RefObject<Record<string, HTMLButtonElement | null>>;
   onDockButtonClick: (id: MobilePanel) => void;
@@ -161,6 +165,15 @@ export function CanvasMobileDock({
                   id: 'avatar' as const,
                   label: 'Avatar',
                   icon: <AvatarModeIcon />,
+                },
+              ]
+            : []),
+          ...(hasLaser
+            ? [
+                {
+                  id: 'laser' as const,
+                  label: 'Laser',
+                  icon: <LaserIcon />,
                 },
               ]
             : []),

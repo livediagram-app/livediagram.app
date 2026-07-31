@@ -9,12 +9,20 @@
 import type { AvatarPresence } from '@livediagram/api-schema';
 import { statusFromIdleMs, type Participant } from './identity';
 import type { LaserPoint } from './laser-buffer';
+import type { LaserConfig } from './laser-config';
 
 // Row shapes the builders below return. Module-private: only this file's own
 // functions name them, so they carry no `export` (consumers get the inferred
 // return types).
 type CursorRow = { id: string; name: string; color: string; x: number; y: number };
-type LaserTrailRow = { participantId: string; color: string; points: LaserPoint[] };
+type LaserTrailRow = {
+  participantId: string;
+  color: string;
+  points: LaserPoint[];
+  // The pen this trail was drawn with (spec/111). Absent for a peer on an
+  // older client, which draws the original laser.
+  config?: LaserConfig;
+};
 type RemoteSelector = { id: string; name: string; color: string };
 
 // Group participants by the tab they're focused on, so each TabBar entry
@@ -125,24 +133,40 @@ export function buildRemoteAvatarRows(
 // whose latest sample is on the active tab and who are still present.
 export function buildLaserTrailRows(input: {
   localLaserTrail: LaserPoint[];
-  remoteLaserTrails: Map<string, { tabId: string; points: LaserPoint[] }>;
+  remoteLaserTrails: Map<string, { tabId: string; points: LaserPoint[]; config?: LaserConfig }>;
   livePresenceById: Map<string, Participant>;
   selfId: string;
   selfColor: string;
   activeId: string;
+  // Our own pen (spec/111). Peers' pens arrive with their samples; ours is
+  // read straight from the panel's state, so our trail never lags a change we
+  // just made.
+  selfLaserConfig?: LaserConfig;
 }): LaserTrailRow[] {
-  const { localLaserTrail, remoteLaserTrails, livePresenceById, selfId, selfColor, activeId } =
-    input;
+  const {
+    localLaserTrail,
+    remoteLaserTrails,
+    livePresenceById,
+    selfId,
+    selfColor,
+    activeId,
+    selfLaserConfig,
+  } = input;
   const rows: LaserTrailRow[] = [];
   if (localLaserTrail.length > 0) {
-    rows.push({ participantId: selfId, color: selfColor, points: localLaserTrail });
+    rows.push({
+      participantId: selfId,
+      color: selfColor,
+      points: localLaserTrail,
+      config: selfLaserConfig,
+    });
   }
   for (const [id, entry] of remoteLaserTrails) {
     if (id === selfId) continue;
     if (entry.tabId !== activeId) continue;
     const p = livePresenceById.get(id);
     if (!p) continue;
-    rows.push({ participantId: id, color: p.color, points: entry.points });
+    rows.push({ participantId: id, color: p.color, points: entry.points, config: entry.config });
   }
   return rows;
 }

@@ -24,7 +24,10 @@ export type MobilePanel =
   | 'vote'
   // 'avatar' (spec/101) appears only while Avatar mode is active, like the
   // session-tool panels above it.
-  | 'avatar';
+  | 'avatar'
+  // 'laser' (spec/111) likewise: the pen's settings, only while the Laser
+  // tool is active.
+  | 'laser';
 
 export type DockAnchor = { left: number; top: number; arrowOffset: number };
 

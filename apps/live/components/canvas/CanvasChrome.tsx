@@ -83,6 +83,16 @@ type ChromeExtras = {
   // Roll a whole new character, and play one of the panel's reactions.
   onRandomiseAvatar: () => void;
   onAvatarReaction: (kind: import('@/lib/avatar-reactions').AvatarReactionKind) => void;
+  // Laser Panel (spec/111): the pen, owned by useLaserConfig in Canvas (it
+  // persists per browser, like the avatar's costume) and edited down here.
+  laserConfig?: import('@/lib/laser-config').LaserConfig;
+  onChangeLaserField?: <K extends keyof import('@/lib/laser-config').LaserConfig>(
+    field: K,
+    value: import('@/lib/laser-config').LaserConfig[K],
+  ) => void;
+  laserPanelPosition?: { x: number; y: number } | null;
+  onMoveLaserPanel?: (x: number, y: number) => void;
+  onResetLaserPanel?: () => void;
 };
 
 export type CanvasChromeProps = CanvasProps & ChromeExtras;
@@ -282,6 +292,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
         hasPoll={!!props.pollPanel}
         hasVote={!!props.tabVote}
         hasAvatar={props.canvasTool === 'avatar'}
+        hasLaser={props.canvasTool === 'laser'}
         activeMobilePanel={activeMobilePanel}
         dockButtonRefs={dockButtonRefs}
         onDockButtonClick={handleDockButtonClick}
@@ -314,6 +325,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
           {panelEls.poll}
           {panelEls.vote}
           {panelEls.avatar}
+          {panelEls.laser}
         </>
       )}
 

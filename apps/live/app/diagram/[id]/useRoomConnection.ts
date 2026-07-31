@@ -9,11 +9,14 @@ import {
   type RoomHandlers,
 } from '@/lib/api-client';
 import { trimLaserBuffer, type LaserPoint } from '@/lib/laser-buffer';
+import { parseLaserConfig, type LaserConfig } from '@/lib/laser-config';
 import type { RemoteSelection } from '@/lib/presence-rows';
 import { pruneMapToPresent } from './editor-page-helpers';
 
 type CursorPos = { tabId: string; x: number; y: number } | null;
-type LaserTrail = { tabId: string; points: LaserPoint[] };
+// The pen (spec/111) rides along with the samples so peers render the
+// sender's laser rather than their own default.
+type LaserTrail = { tabId: string; points: LaserPoint[]; config?: LaserConfig };
 
 // Realtime room: one WebSocket per diagram, opened only while the
 // diagram is shared. Lifted out of editor-page.tsx verbatim — the
@@ -376,6 +379,10 @@ export function useRoomConnection(opts: {
               ...(buffered && buffered.tabId === op.tabId ? buffered.points : []),
               { x: op.x, y: op.y, t: performance.now() },
             ],
+            // The sender's pen (spec/111), parsed field by field so a token
+            // from a newer client costs that field and not the trail. Latest
+            // wins: they may change it mid-sweep.
+            config: op.look ? parseLaserConfig(op.look) : buffered?.config,
           });
           schedulePresenceFlush();
         } else if (op.kind === 'avatar') {
