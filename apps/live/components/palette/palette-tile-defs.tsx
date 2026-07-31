@@ -906,7 +906,11 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     id: 'tools:annotation',
     blurb: 'A marker that holds a note',
     section: 'tools',
-    toolGroup: 'write',
+    // Blocks, not Write: an annotation is a MARKER you drop on the diagram
+    // that happens to hold text, not a surface you write on like Text, a
+    // sticky or a Page. Grouping it with the writing surfaces implied you
+    // compose in it.
+    toolGroup: 'blocks',
     label: 'Add annotation',
     description: 'Annotation. A note marker: hover to read it, click to edit.',
     filled: true,

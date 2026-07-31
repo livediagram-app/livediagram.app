@@ -168,7 +168,14 @@ export function PaletteTileGrid({
     // 3-column grid of fixed tiles (matching the Icons catalogue) so tiles
     // pack into even rows; overflow-x-hidden absorbs the few-px slack when
     // fixed tiles slightly exceed the cell width.
-    <div className="grid grid-cols-3 justify-items-center gap-1 overflow-x-hidden">
+    //
+    // py-px is load-bearing: `overflow-x: hidden` cannot exist alone — the
+    // spec makes the other axis compute to `auto`, so this box clips
+    // VERTICALLY too, flush against the first row. That took a pixel off the
+    // top border of every tile in row one (and the bottom of the last row).
+    // One pixel of vertical padding gives the border somewhere to live
+    // without changing how the columns pack.
+    <div className="grid grid-cols-3 justify-items-center gap-1 overflow-x-hidden py-px">
       {defs.map((def) => (
         <PaletteTile key={def.id} def={def} actions={actions} pendingDraw={pendingDraw} />
       ))}

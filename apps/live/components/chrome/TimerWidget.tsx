@@ -15,12 +15,17 @@ export function TimerWidget({
   onPause,
   onResume,
   onReset,
+  onClear,
 }: {
   timer: TabTimer;
   readOnly: boolean;
   onPause: () => void;
   onResume: () => void;
   onReset: () => void;
+  // Dismiss the timer entirely. Reset only returns it to its starting value,
+  // so without this the pill could be stopped but never got off the canvas
+  // except by going back into the tab menu that started it.
+  onClear: () => void;
 }) {
   // Re-render ~4x/sec while running so the clock advances. Paused timers
   // are static, so we don't spin a timer then.
@@ -86,9 +91,25 @@ export function TimerWidget({
           <button type="button" aria-label="Reset timer" onClick={onReset} className={btn}>
             <ResetIcon />
           </button>
+          <button type="button" aria-label="Remove timer" onClick={onClear} className={btn}>
+            <CloseIcon />
+          </button>
         </div>
       ) : null}
     </TopCenterBanner>
+  );
+}
+
+function CloseIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden>
+      <path
+        d="M4.5 4.5l7 7M11.5 4.5l-7 7"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+    </svg>
   );
 }
 

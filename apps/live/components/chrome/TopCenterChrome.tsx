@@ -41,6 +41,7 @@ type TopCenterChromeProps = Pick<
   | 'onPauseTimer'
   | 'onResumeTimer'
   | 'onResetTimer'
+  | 'onClearTimer'
   | 'voteReview'
   | 'onNextVoteResult'
   | 'onPrevVoteResult'
@@ -77,6 +78,7 @@ export function TopCenterChrome({
   onPauseTimer,
   onResumeTimer,
   onResetTimer,
+  onClearTimer,
   voteReview,
   onNextVoteResult,
   onPrevVoteResult,
@@ -191,6 +193,7 @@ export function TopCenterChrome({
             onPause={onPauseTimer}
             onResume={onResumeTimer}
             onReset={onResetTimer}
+            onClear={onClearTimer}
           />
         ) : null}
       </TopCenterRow>
