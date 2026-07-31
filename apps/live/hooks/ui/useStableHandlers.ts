@@ -22,7 +22,11 @@ type AnyFn = (...args: any[]) => unknown;
 export function useStableHandlers<T extends Record<string, AnyFn | undefined>>(handlers: T): T {
   const latest = useRef(handlers);
   latest.current = handlers;
-  const wrappers = useRef(new Map<string, AnyFn>());
+  // A plain record rather than a Map: `wrappers.current[key] = ...` is an
+  // assignment, where `map.set(key, wrapper)` hands a ref-reading closure
+  // to a function during render — which react-hooks/refs rejects. Same
+  // one-wrapper-per-key-for-the-lifetime behaviour either way.
+  const wrappers = useRef<Record<string, AnyFn>>({});
   // Key set + presence pattern; call sites pass a literal object, so
   // the keys are constant and this only varies when a handler flips
   // between defined and undefined (e.g. entering read-only).
@@ -36,10 +40,10 @@ export function useStableHandlers<T extends Record<string, AnyFn | undefined>>(h
         out[key] = undefined;
         continue;
       }
-      let wrapper = wrappers.current.get(key);
+      let wrapper = wrappers.current[key];
       if (!wrapper) {
         wrapper = (...args: unknown[]) => (latest.current[key] as AnyFn)(...args);
-        wrappers.current.set(key, wrapper);
+        wrappers.current[key] = wrapper;
       }
       out[key] = wrapper;
     }

@@ -135,6 +135,12 @@ export function PaletteTabBar({
     };
   }, [activeId]);
 
+  // The cap, and whether it bites. Both are needed below: the height to set,
+  // and whether to allow a scrollbar at all.
+  const bodyHeight =
+    height === null ? undefined : available === null ? height : Math.min(height, available);
+  const capped = height !== null && available !== null && height > available;
+
   return (
     // The host MovablePanel is given `flushTop` so this header band sits
     // flush under the panel title (floating) / popover top edge (dock), in
@@ -175,7 +181,12 @@ export function PaletteTabBar({
         data-palette-body=""
         // Scrolls ONLY when it has to: `overflow-y-auto` shows no bar while
         // the content fits under the cap.
-        className={`overflow-y-auto overflow-x-hidden${
+        // Scrolls ONLY when the content is genuinely taller than the space
+        // (height === the cap). `overflow-y-auto` unconditionally meant a
+        // scrollbar flashed on every category switch: the height animates to
+        // the new content's size, so for those 200ms the content overflows a
+        // box that is still the old size, and the bar appeared and vanished.
+        className={`overflow-x-hidden ${capped ? 'overflow-y-auto' : 'overflow-y-hidden'}${
           animate ? ' transition-[height] duration-200 ease-out' : ''
         }`}
         style={{

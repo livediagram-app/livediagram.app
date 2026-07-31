@@ -37,13 +37,14 @@ const VotePanel = dynamic(() => import('@/components/panels/VotePanel').then((m)
 // Lazy for the same reason: the Actions panel (spec/68) only mounts when
 // the active tab has at least one element with an OPEN assigned action.
 
-// The six floating panels as elements (spec/63), lifted out of
-// CanvasChrome: the stable handler bundles for the memo'd panels, the
-// docking-aware wiring per panel, the palette's theme tint + dock-mode
+// The floating panels as elements (spec/63), lifted out of CanvasChrome:
+// the stable handler bundles for the memo'd panels, the docking-aware
+// wiring per panel, the palette's theme tint + dock-mode
 // reopen-after-draw behaviour, and each panel's element with its own
 // visibility gate. CanvasChrome distributes the returned map into the
 // corner stacks (docking) or renders the elements inline (mobile /
-// minimal / zen).
+// minimal / zen). The five tool-config panels — on screen only while
+// their own tool is active — live in useCanvasToolPanels.
 export function useCanvasChromePanels({
   props,
   chromeHidden,
@@ -284,9 +285,11 @@ export function useCanvasChromePanels({
   const voteWiring = panelWiringFor('vote', votePanelPosition, onResetVotePanel);
   // In docking mode the corner flex columns own stacking, so the legacy
   // measured stack-below-the-palette offset is dropped.
-  const legacyStackBelowY =
-    palettePosition !== null || paletteBottomY === 0 ? undefined : paletteBottomY;
-  const stackBelowY = dockingActive ? undefined : legacyStackBelowY;
+  const stackBelowY = dockingActive
+    ? undefined
+    : palettePosition !== null || paletteBottomY === 0
+      ? undefined
+      : paletteBottomY;
 
   // The five tool-config panels (avatar / laser / spotlight / eraser /
   // format) — see useCanvasToolPanels. They share one contract: on screen
@@ -294,7 +297,7 @@ export function useCanvasChromePanels({
   const { avatarEl, laserEl, spotlightEl, eraserEl, formatEl } = useCanvasToolPanels({
     props,
     chromeHidden,
-    legacyStackBelowY: stackBelowY,
+    stackBelowY,
     panelWiringFor,
     closeMobilePanel,
   });
@@ -346,7 +349,7 @@ export function useCanvasChromePanels({
         position={collaborateWiring.position}
         commentRows={commentRows}
         actionRows={actionRows}
-        stackBelowY={dockingActive ? undefined : legacyStackBelowY}
+        stackBelowY={stackBelowY}
         onMoveTo={onMoveCommentsPanel}
         onReset={collaborateWiring.onReset}
         dock={collaborateWiring.dock}
@@ -364,7 +367,7 @@ export function useCanvasChromePanels({
       <CanvasAiPanel
         aiPanel={aiPanel}
         wiring={aiWiring}
-        stackBelowY={dockingActive ? undefined : legacyStackBelowY}
+        stackBelowY={stackBelowY}
         tabName={tabName}
         settings={settings}
         onChangeSettings={onChangeSettings}
@@ -569,7 +572,7 @@ export function useCanvasChromePanels({
         onEndAndKeep={pollPanel.onEndAndKeep}
         onDismiss={pollPanel.onDismiss}
         position={pollWiring.position}
-        stackBelowY={dockingActive ? undefined : legacyStackBelowY}
+        stackBelowY={stackBelowY}
         onMoveTo={onMovePollPanel}
         onReset={pollWiring.onReset}
         dock={pollWiring.dock}
@@ -594,119 +597,13 @@ export function useCanvasChromePanels({
         onClearVote={onClearVote}
         isHost={isVoteHost}
         position={voteWiring.position}
-        stackBelowY={dockingActive ? undefined : legacyStackBelowY}
+        stackBelowY={stackBelowY}
         onMoveTo={onMoveVotePanel}
         onReset={voteWiring.onReset}
         dock={voteWiring.dock}
         mobileOpenOverride={activeMobilePanel === 'vote'}
         mobileDockAnchor={activeDockAnchor ?? undefined}
         readOnly={!!readOnly}
-      />
-    ) : null;
-
-  // Avatar Panel (spec/101): the character sheet, mounted only while Avatar
-  // mode is active — so it joins and leaves its corner stack the way the
-  // session-tool panels do. Available to view-role too (the mode is), and on
-  // mobile / minimal it opens from its dock button like every other panel.
-  const avatarEl =
-    !chromeHidden && canvasTool === 'avatar' && avatarConfig ? (
-      <AvatarPanel
-        config={avatarConfig}
-        onChange={(field, value) => onChangeAvatarField?.(field, value)}
-        onRandomise={onRandomiseAvatar}
-        onReaction={onAvatarReaction}
-        shirt={selfParticipant?.color}
-        position={avatarWiring.position}
-        stackBelowY={dockingActive ? undefined : legacyStackBelowY}
-        onMoveTo={(x, y) => onMoveAvatarPanel?.(x, y)}
-        onReset={avatarWiring.onReset}
-        dock={avatarWiring.dock}
-        mobileOpenOverride={activeMobilePanel === 'avatar'}
-        mobileDockAnchor={activeDockAnchor ?? undefined}
-        forceDockMode={!!minimalPanels}
-        onMobileClose={closeMobilePanel}
-      />
-    ) : null;
-
-  // Laser Panel (spec/111): the pen's settings, mounted only while the Laser
-  // tool is active — the avatar panel's twin in every respect, including the
-  // view-role availability (the laser is theirs too) and the dock button.
-  const laserEl =
-    !chromeHidden && canvasTool === 'laser' && laserConfig ? (
-      <LaserPanel
-        config={laserConfig}
-        onChange={(field, value) => onChangeLaserField?.(field, value)}
-        selfColour={selfParticipant?.color ?? '#0ea5e9'}
-        position={laserWiring.position}
-        stackBelowY={dockingActive ? undefined : legacyStackBelowY}
-        onMoveTo={(x, y) => onMoveLaserPanel?.(x, y)}
-        onReset={laserWiring.onReset}
-        dock={laserWiring.dock}
-        mobileOpenOverride={activeMobilePanel === 'laser'}
-        mobileDockAnchor={activeDockAnchor ?? undefined}
-        forceDockMode={!!minimalPanels}
-        onMobileClose={closeMobilePanel}
-      />
-    ) : null;
-
-  // Spotlight Panel (spec/112): the light's look, mounted only while the
-  // Spotlight tool is active — the Laser Panel's sibling in every respect.
-  const spotlightEl =
-    !chromeHidden && canvasTool === 'spotlight' && spotlightConfig ? (
-      <SpotlightPanel
-        config={spotlightConfig}
-        onChange={(field, value) => onChangeSpotlightField?.(field, value)}
-        radius={spotlightRadius ?? 170}
-        onSetRadius={(r) => onSetSpotlightRadius?.(r)}
-        position={spotlightWiring.position}
-        stackBelowY={dockingActive ? undefined : legacyStackBelowY}
-        onMoveTo={(x, y) => onMoveSpotlightPanel?.(x, y)}
-        onReset={spotlightWiring.onReset}
-        dock={spotlightWiring.dock}
-        mobileOpenOverride={activeMobilePanel === 'spotlight'}
-        mobileDockAnchor={activeDockAnchor ?? undefined}
-        forceDockMode={!!minimalPanels}
-        onMobileClose={closeMobilePanel}
-      />
-    ) : null;
-
-  // Eraser Panel (spec/113): the brush's settings, mounted only while the
-  // Eraser tool is active.
-  const eraserEl =
-    !chromeHidden && canvasTool === 'eraser' && eraserConfig ? (
-      <EraserPanel
-        config={eraserConfig}
-        onChange={(field, value) => onChangeEraserField?.(field, value)}
-        position={eraserWiring.position}
-        stackBelowY={dockingActive ? undefined : legacyStackBelowY}
-        onMoveTo={(x, y) => onMoveEraserPanel?.(x, y)}
-        onReset={eraserWiring.onReset}
-        dock={eraserWiring.dock}
-        mobileOpenOverride={activeMobilePanel === 'eraser'}
-        mobileDockAnchor={activeDockAnchor ?? undefined}
-        forceDockMode={!!minimalPanels}
-        onMobileClose={closeMobilePanel}
-      />
-    ) : null;
-
-  // Format Panel (spec/117): what the painter copies, mounted only while the
-  // Format tool is active.
-  const formatEl =
-    !chromeHidden && canvasTool === 'format' && formatConfig ? (
-      <FormatPanel
-        config={formatConfig}
-        onToggleGroup={(group) => onToggleFormatGroup?.(group)}
-        onSetMode={(mode) => onSetFormatMode?.(mode)}
-        source={formatBrushSource ?? null}
-        position={formatWiring.position}
-        stackBelowY={dockingActive ? undefined : legacyStackBelowY}
-        onMoveTo={(x, y) => onMoveFormatPanel?.(x, y)}
-        onReset={formatWiring.onReset}
-        dock={formatWiring.dock}
-        mobileOpenOverride={activeMobilePanel === 'format'}
-        mobileDockAnchor={activeDockAnchor ?? undefined}
-        forceDockMode={!!minimalPanels}
-        onMobileClose={closeMobilePanel}
       />
     ) : null;
 
