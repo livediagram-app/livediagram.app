@@ -159,7 +159,11 @@ export function tabToExcalidrawText(tab: Tab): string {
     const labelText =
       el.type === 'link-card'
         ? (el.meta?.title ?? (el.link?.kind === 'url' ? el.link.url : el.label)) || undefined
-        : el.label || undefined;
+        : // A video has no cached title (it stores no metadata, spec/114), so
+          // it exports as its URL — the only thing Excalidraw can hold.
+          el.type === 'video'
+          ? ((el.link?.kind === 'url' ? el.link.url : el.label) ?? undefined)
+          : el.label || undefined;
 
     if (el.type === 'text') {
       const color = el.textColor ?? defaultTextColor(el);

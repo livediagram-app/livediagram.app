@@ -23,7 +23,7 @@ Both renderers (the canvas `FreehandSvg` and the headless `svgFreehandShape` use
 
 ## Banner controls
 
-The highlighter's mode banner carries two popover buttons in the extras slot (the pencil's recognise-shapes toggle used to sit here; it is gone as of spec/112), both applying to the NEXT strokes:
+The highlighter's mode banner carries two popover buttons in the extras slot (the pencil's recognise-shapes toggle used to sit here; it is gone as of spec/115), both applying to the NEXT strokes:
 
 - **Stroke strength**: three presets — Thin (8), Medium (14, default), Bold (22) — drawn as translucent bars in the current colour.
 - **Colour**: five marker swatches — yellow (default), green, pink, blue, orange.
@@ -36,7 +36,7 @@ The live draw preview (`CanvasDrawPreview`) paints the in-flight polyline with t
 
 - New tile `tools:highlighter` in the shared tile catalogue (`palette-tile-defs.tsx`), Tools section, directly after the Pencil. Like every catalogue tile it is favouritable (spec/78). No single-letter shortcut (spec/09: only the common flowchart vocabulary gets letters).
 - Arming reuses the freehand intent with a payload: `PendingDraw` gains `{ type: 'freehand'; variant?: 'highlighter' }`. The tile arms the variant; the Pencil tile keeps arming the bare intent.
-- Banner copy: "Drag to highlight". Recognition never runs for the highlighter variant — that is the Shape Pen's job (spec/112), and the highlighter is a third variant of the same gesture.
+- Banner copy: "Drag to highlight". Recognition never runs for the highlighter variant — that is the Shape Pen's job (spec/115), and the highlighter is a third variant of the same gesture.
 - Cursor: a highlighter-nib glyph, distinct from the pencil nib.
 - Commit path: same sampling + simplification as the pencil, then always `createFreehand(points, false)` + the pen field — no recognition branch, no auto-close.
 

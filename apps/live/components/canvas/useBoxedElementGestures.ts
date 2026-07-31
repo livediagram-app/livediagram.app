@@ -132,9 +132,9 @@ export function useBoxedElementGestures({
     // Tables edit per-cell (TableView handles the cell double-click),
     // so the element-level label editor never applies.
     if (element.type === 'table') return;
-    // A link card has no inline label — double-click opens the link picker
-    // to set / change its URL (spec/40).
-    if (element.type === 'link-card') {
+    // Neither a link card nor a video has an inline label — double-click
+    // opens the link picker to set / change its URL (spec/40, spec/114).
+    if (element.type === 'link-card' || element.type === 'video') {
       onEditLink?.(element.id);
       return;
     }

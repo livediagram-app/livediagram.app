@@ -1,0 +1,77 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { StickersCatalogue } from '@/components/illustrations/palette-catalogues';
+
+export const metadata = helpMetadata({
+  title: 'Stickers',
+  description:
+    'The palette Stickers category holds around 190 colour emoji, grouped into Reactions, Feelings, Status, Direction, Celebrate, Decorate, Meeting, Work, People, and Fun, for reacting to a board, marking status, pointing things out, and brightening a diagram up.',
+  path: '/help/palette/stickers/',
+});
+
+<ArticleLayout
+  title="Stickers"
+  description="Colour emoji for reacting, showing how you feel, marking status, pointing at things, and prettying a board up."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  subArticles={getSubArticles("stickers")}
+>
+
+The **Stickers** category holds around 190 colour emoji you can drop straight onto the canvas. They are the informal half of a board: a thumbs up on somebody's idea, a red flag on the risky step, an arrow pointing at the thing everyone should be looking at, or a few flowers in the corner because a workshop board should not look like a spreadsheet.
+
+Unlike the line-art [Icons](/help/palette/icons/), stickers are real colour glyphs, so they **keep their own colours whatever the theme**: a thumbs up stays yellow and a fire stays orange however you restyle the diagram.
+
+## The ten groups
+
+The category opens on a grid of group tiles, each showing one of the stickers inside it. Click a group to see everything it holds, and use the breadcrumb at the top to come back.
+
+- **Reactions** — responding to somebody else's work: thumbs up and down, clapping, raised hands, a heart, fire, 💯, eyes.
+- **Feelings** — the face set, from delighted to confused to completely done in.
+- **Status** — check, cross, warning, red / amber / green dots, blocked, under construction, new, coming soon, trends up and down.
+- **Direction** — arrows in every direction, pointing hands, map pins, a compass, play, and a chequered flag for the finish.
+- **Celebrate** — party popper, confetti, trophy, medals, cake, gift, crown, rocket.
+- **Decorate** — sparkles, rainbow, sun, snowflake, flowers, hearts in every colour, gems.
+- **Meeting** — timers, calendar, speech and thought bubbles, megaphone, microphone, ballot box, brain, coffee.
+- **Work** — bug, wrench, gear, key, folder, package, laptop, money bag, target.
+- **People** — a person, a group, someone raising a hand, a worker, a detective.
+- **Fun** — robot, alien, unicorn, cat, pizza, dice, a game controller.
+
+<Figure caption="The Stickers category browses by group and searches across all of them at once, with tiles drawn larger than the Icons grid.">
+  <StickersCatalogue />
+</Figure>
+
+## Finding one
+
+Search by what you mean, not by the emoji's official name. The catalogue matches on synonyms, so "celebrate" finds the party popper, "blocked" finds the no-entry sign, "wip" finds the roadworks, and "thanks" finds the folded hands. Search always runs across **every** group, so you never have to guess where something was filed.
+
+## Placing one
+
+<Step n={1}>Open the palette and choose **Stickers** from the category dropdown.</Step>
+
+<Step n={2}>Pick a group, or type in the search box to look across all ten at once.</Step>
+
+<Step n={3}>
+  Click a sticker to add it to the canvas, or drag it out and drop it where you want it.
+</Step>
+
+<Step n={4}>
+  Or **drag a sticker onto a shape** to make it that shape's icon, sitting beside the label. This is
+  the quickest way to mark a box as done, blocked, or at risk.
+</Step>
+
+A sticker behaves like any other element once it is on the canvas: move it, resize it, put it in a group or a layer, and it exports with the diagram.
+
+<Tip>
+  Stickers work especially well with a [Reaction](/help/collaboration/) round in a workshop: drop a
+  handful of thumbs and hearts near the ideas that landed, then move on. Because a sticker is just an
+  element, everything you place is still there when you come back to the board.
+</Tip>
+
+<Note>
+  Stickers used to live as an Emoji category inside the Icons tab. They have their own category now,
+  so the Icons tab is purely line art and Stickers is the one place to browse or search the colour
+  glyphs.
+</Note>
+
+</ArticleLayout>

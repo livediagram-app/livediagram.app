@@ -180,6 +180,9 @@ const THEME_COLOUR_FIELDS: Record<Element['type'], ThemeColourField[]> = {
   // Link cards keep their neutral bookmark-card look regardless of theme
   // (like sticky / image); the user can still recolour per-card. See spec/40.
   'link-card': [],
+  // A video keeps its own look across themes, like image and sticky: the
+  // poster frame is the content, and tinting the surround would only fight it.
+  video: [],
 };
 
 // The colour fields a given element actually exposes to theming. Starts

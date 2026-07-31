@@ -13,6 +13,8 @@ export function PaletteSearchInput({
   ariaLabel,
   clearAriaLabel,
   clearDescription,
+  onKeyDown,
+  activeDescendantId,
 }: {
   value: string;
   onChange: (next: string) => void;
@@ -21,6 +23,13 @@ export function PaletteSearchInput({
   clearAriaLabel: string;
   // Tooltip body for the clear button, e.g. "Clear the icon search query."
   clearDescription: string;
+  // Optional keyboard passthrough. The box stays generic — what Arrow / Enter
+  // MEAN belongs to whichever results list is underneath, so the caller owns
+  // it (spec/110: the Favourites search walks its results this way).
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  // The id of the currently walked result, for screen readers: focus stays in
+  // the box while the highlight moves, which is the combobox pattern.
+  activeDescendantId?: string;
 }) {
   return (
     <div className="relative flex-1">
@@ -28,8 +37,10 @@ export function PaletteSearchInput({
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        onKeyDown={onKeyDown}
         placeholder={placeholder}
         aria-label={ariaLabel}
+        aria-activedescendant={activeDescendantId}
         className="w-full rounded-md border border-slate-200 bg-white py-1 pl-2 pr-7 text-xs text-slate-700 placeholder:text-slate-400 focus:border-brand-400 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
       />
       {value ? (

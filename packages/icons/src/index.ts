@@ -14,3 +14,4 @@
 export type { IconDef, IconPrim, TechIconDef, TechProvider } from './types';
 export { iconPrimMarkup, iconPrimsMarkup, techIconArtMarkup, type IconExportArt } from './markup';
 export { isTechIconId, TECH_ICON_IDS } from './tech-icon-ids';
+export { isStickerId, STICKER_ID_PREFIX } from './sticker-ids';

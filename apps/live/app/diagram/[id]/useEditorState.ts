@@ -13,6 +13,7 @@ import {
 import { useCanvasEraser } from '@/hooks/canvas/useCanvasEraser';
 import { useCanvasTool } from '@/hooks/canvas/useCanvasTool';
 import { useLaserConfig } from '@/hooks/canvas/useLaserConfig';
+import { useEraserConfig } from '@/hooks/canvas/useEraserConfig';
 import { usePortalSetters } from '@/hooks/canvas/usePortalSetters';
 import { useBehaviourElements } from '@/hooks/canvas/useBehaviourElements';
 import type { CanvasTool } from '@/components/palette/CommandPalette';
@@ -259,6 +260,9 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // The laser pen (spec/111): persisted per browser, published with every
   // laser sample, and edited from the Laser Panel.
   const laserPen = useLaserConfig();
+  // The eraser's settings (spec/113): read by the erase gesture below and
+  // edited from the Eraser Panel.
+  const eraserSettings = useEraserConfig();
   const { canvasTool, setCanvasTool, selectCanvasTool, exitAvatarTool, toolBeforeCurrent } =
     useCanvasTool({
       defaultPan: embedMode,
@@ -1556,6 +1560,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     addTable,
     addAnnotation,
     addLinkCard,
+    addVideo,
     addBanner,
     addHero,
     addHeader,
@@ -1633,6 +1638,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // pointer touches, as a single-undo gesture. Canvas calls beginErase
   // from its capture-phase pointerdown. See useCanvasEraser.
   const { beginErase } = useCanvasEraser({
+    config: eraserSettings.config,
     editsBlocked,
     layerInertIds,
     activeId,
@@ -2156,6 +2162,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     addTable,
     addAnnotation,
     addLinkCard,
+    addVideo,
     addBanner,
     addHero,
     addHeader,
@@ -2458,6 +2465,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setCanvasTool: pickCanvasTool,
     laserConfig: laserPen.config,
     onChangeLaserField: laserPen.setField,
+    eraserConfig: eraserSettings.config,
+    onChangeEraserField: eraserSettings.setField,
     pressModeButton,
     setContextMenu,
     setDiagramSharePassword,

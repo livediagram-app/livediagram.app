@@ -58,6 +58,8 @@ export function elementTelemetryType(element: Element): string {
       return 'Table';
     case 'link-card':
       return 'LinkCard';
+    case 'video':
+      return 'Video';
     case 'annotation':
       return 'Annotation';
     case 'freehand':

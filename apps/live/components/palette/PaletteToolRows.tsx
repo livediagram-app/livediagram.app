@@ -12,6 +12,7 @@
 // screen, which the drill-in categories already made affordable: you arrive
 // here having chosen a group of three to eight tools, not facing all 28.
 
+import { useEffect, useRef } from 'react';
 import type { PendingDraw } from '@/lib/draw-mode';
 import type { PaletteTileDef } from './palette-tile-defs';
 import { tileCaption } from './tile-caption';
@@ -21,22 +22,40 @@ function PaletteToolRow({
   def,
   actions,
   pendingDraw,
+  id,
+  highlighted = false,
 }: {
   def: PaletteTileDef;
   actions: PaletteTileActions;
   pendingDraw: PendingDraw | null | undefined;
+  id?: string;
+  // The keyboard-walked row (spec/110). Distinct from `armed`, which means a
+  // draw gesture is queued: this is only "the arrow keys are pointing here".
+  highlighted?: boolean;
 }) {
   const armed = tileActive(def, pendingDraw);
+  const rowRef = useRef<HTMLButtonElement>(null);
+  // Keep the walked row on screen when the list scrolls. `nearest` rather
+  // than centring, so a short list doesn't jump on every keystroke.
+  useEffect(() => {
+    if (highlighted) rowRef.current?.scrollIntoView({ block: 'nearest' });
+  }, [highlighted]);
   return (
     <button
+      ref={rowRef}
+      id={id}
       type="button"
+      role="option"
+      aria-selected={highlighted}
       onClick={tileHandler(def, actions)}
       aria-label={def.label}
       aria-pressed={armed}
       className={`flex w-full items-center gap-2.5 rounded-lg border px-2 py-1.5 text-left transition ${
         armed
           ? 'border-brand-300 bg-brand-50 dark:border-brand-500 dark:bg-brand-950/40'
-          : 'border-transparent hover:border-slate-200 hover:bg-slate-50 dark:hover:border-slate-700 dark:hover:bg-slate-800/60'
+          : highlighted
+            ? 'border-brand-300 bg-brand-50/70 dark:border-brand-500 dark:bg-brand-950/30'
+            : 'border-transparent hover:border-slate-200 hover:bg-slate-50 dark:hover:border-slate-700 dark:hover:bg-slate-800/60'
       }`}
     >
       {/* The glyph keeps its own tile chip so the column of icons still scans
@@ -73,16 +92,31 @@ export function PaletteToolRows({
   tiles,
   actions,
   pendingDraw,
+  activeIndex,
+  optionIdPrefix,
 }: {
   tiles: PaletteTileDef[];
   actions: PaletteTileActions;
   pendingDraw: PendingDraw | null | undefined;
+  // Index of the keyboard-walked row, or -1 / undefined for none. Set by a
+  // search box that owns the arrow keys (spec/110) — the list itself takes no
+  // focus, so the caller drives it.
+  activeIndex?: number;
+  // Prefix for the per-row DOM ids the caller points aria-activedescendant at.
+  optionIdPrefix?: string;
 }) {
   const defs = visibleTiles(tiles, actions.hasImage);
   return (
-    <div className="flex flex-col gap-0.5">
-      {defs.map((def) => (
-        <PaletteToolRow key={def.id} def={def} actions={actions} pendingDraw={pendingDraw} />
+    <div className="flex flex-col gap-0.5" role={optionIdPrefix ? 'listbox' : undefined}>
+      {defs.map((def, i) => (
+        <PaletteToolRow
+          key={def.id}
+          def={def}
+          actions={actions}
+          pendingDraw={pendingDraw}
+          id={optionIdPrefix ? `${optionIdPrefix}-${i}` : undefined}
+          highlighted={activeIndex === i}
+        />
       ))}
     </div>
   );

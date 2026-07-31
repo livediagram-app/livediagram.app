@@ -115,8 +115,13 @@
   /* Dropdown listbox opening: a short drop/rise toward the trigger so the
      menu visibly unfolds (PaletteDropdown; -down for below-the-trigger,
      -up for the flipped variant). Pair with origin-top / origin-bottom. */
-  --animate-dropdown-down: dropdown-down 180ms cubic-bezier(0.16, 1, 0.3, 1);
-  --animate-dropdown-up: dropdown-up 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  /* Menus unfold FROM their trigger. The keyframe is direction-agnostic (a
+     uniform scale + a settle); which corner it grows out of is the
+     transform-origin the caller sets, so a menu anchored top-right visibly
+     comes out of the top-right control rather than appearing whole. See
+     PaletteDropdown. */
+  --animate-dropdown-down: dropdown-open 190ms cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-dropdown-up: dropdown-open 190ms cubic-bezier(0.16, 1, 0.3, 1);
   /* Touch long-press "hold" ring: grows + fades over the remaining hold
      window (reveal at 180ms, fires at 500ms) so the press reads as deliberate.
      Centring lives in the keyframe so it survives the scale transform. */
@@ -186,21 +191,19 @@
   }
 }
 
-@keyframes dropdown-down {
+/* One keyframe for every direction: a uniform scale out of the
+   transform-origin, which the caller pins to the trigger's corner. Uniform
+   rather than the old scaleY-only, because a corner origin is what carries the
+   direction — squashing the Y axis on top of it read as a blind coming down
+   rather than a menu growing out of a button. The tiny overshoot in the easing
+   (cubic-bezier 0.16,1,0.3,1) does the rest. */
+@keyframes dropdown-open {
   from {
     opacity: 0;
-    transform: translateY(-6px) scaleY(0.95);
+    transform: scale(0.86);
   }
-  to {
+  60% {
     opacity: 1;
-    transform: none;
-  }
-}
-
-@keyframes dropdown-up {
-  from {
-    opacity: 0;
-    transform: translateY(6px) scaleY(0.95);
   }
   to {
     opacity: 1;

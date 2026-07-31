@@ -1,5 +1,11 @@
 # 85 — Emoji section in the Icons tab
 
+> **Superseded by [spec/113](113-stickers.md)** for where they live. The model
+> below is unchanged and still correct — emoji are catalogue entries with a
+> `text` prim, and their ids are unchanged — but they are no longer a category
+> inside the Icons tab. They are the top-level **Stickers** category, and the
+> set grew from ~60 to ~190.
+
 Native colour emoji as first-class icon-catalogue entries, browsable under a new **Emoji** category in the palette's Icons tab. Stickies, retros, and reactions want emoji; the icon pipeline already gives us every behaviour for free once emoji are catalogue entries.
 
 ## Model: emoji are line-art catalogue entries with a text prim
@@ -18,7 +24,7 @@ Native colour emoji as first-class icon-catalogue entries, browsable under a new
 
   Rendered as an SVG `<text>` with `text-anchor: middle`, `dominant-baseline: central`, `font-family: system-ui, sans-serif`. Emoji entries use `x: 12, y: 12, size: 20` in the 0..24 viewBox. The two prim renderers each gain a case: `Prim` in the editor's `icon-glyph.tsx` and `iconPrimMarkup` in `packages/icons/src/markup.ts` (which also gains an XML text escaper — every existing prim payload is numeric, so none exists yet).
 
-- Each emoji is an ordinary `IconDef` — `id` prefixed `emoji-` (flat namespace, uniqueness is test-pinned), `label`, and `keywords` carrying the search synonyms ("rocket launch ship" etc.). The entries live in their own pure-data file in `packages/icons/src` (size-exempt data catalogue), concatenated into the part-2 export so consumers see one line-art catalogue and the async icon chunk (`icon-registry.ts`) needs no changes.
+- Each emoji is an ordinary `IconDef` — `id` prefixed `emoji-` (flat namespace, uniqueness is test-pinned), `label`, and `keywords` carrying the search synonyms ("rocket launch ship" etc.). The entries live in their own pure-data file in `packages/icons/src` (`sticker-catalog.ts` since spec/113) (size-exempt data catalogue), concatenated into the part-2 export so consumers see one line-art catalogue and the async icon chunk (`icon-registry.ts`) needs no changes.
 
 - A new `ICON_CATEGORIES` entry `{ id: 'emoji', label: 'Emoji', iconIds: [...] }` in `apps/live/lib/icons.ts` makes it a filter chip in the Icons tab. The starter set is roughly 60 emoji weighted toward collaboration and status: smileys/reactions (thumbs up/down, clapping, party, thinking, heart), status marks (check, cross, warning, question, fire, star, sparkles, rocket, bulb, target, trophy, hourglass), work objects (calendar, clock, pin, lock, key, bug, wrench, memo, folder, chart), and hands/people.
 

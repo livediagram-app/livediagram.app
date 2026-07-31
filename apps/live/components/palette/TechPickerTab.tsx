@@ -51,7 +51,7 @@ export function TechPickerTab({
   });
   return (
     <PaletteCategoryBrowser
-      root="Technology"
+      root="Tech"
       categories={categories}
       // The parent already searched every provider for this query.
       search={() => techResults}
@@ -86,7 +86,7 @@ export function TechPickerTab({
       query={techQuery}
       onQueryChange={setTechQuery}
       searchInput={{
-        placeholder: 'Search technology',
+        placeholder: 'Search tech',
         ariaLabel: 'Search technology icons',
         clearAriaLabel: 'Clear technology search',
         clearDescription: 'Clear the technology search query.',

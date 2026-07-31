@@ -46,6 +46,8 @@ export function elementKindLabel(el: Element): string {
       return 'Annotation';
     case 'link-card':
       return 'Link';
+    case 'video':
+      return 'Video';
     case 'arrow':
       return 'Arrow';
   }

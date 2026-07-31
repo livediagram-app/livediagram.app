@@ -54,10 +54,14 @@ function IconTile({ icon, onAdd }: { icon: IconDef; onAdd: (id: string) => void 
 // Tools tab uses, over the line-art catalogue.
 //
 // It used to be one flat scroll of 183 glyphs behind a category-filter
-// dropdown. The catalogue's own shape — that there IS a People set, an Emoji
+// dropdown. The catalogue's own shape — that there IS a People set, a Charts
 // set, a Furniture set — was hidden inside a control you had to open to read,
 // and the default view was a wall you scrolled. The category tiles put that
 // structure on screen; search still cuts across all of it.
+//
+// "All of it" is the LINE-ART catalogue: the colour emoji that used to sit
+// here as an Emoji category are their own palette category now (spec/113), and
+// the results this tab is handed are filtered to match.
 export function IconPickerTab({
   addIcon,
   iconQuery,

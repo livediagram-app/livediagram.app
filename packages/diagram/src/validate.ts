@@ -45,6 +45,7 @@ export const ELEMENT_TYPES = new Set([
   'freehand',
   'annotation',
   'link-card',
+  'video',
   'arrow',
 ]);
 export const ANCHORS = new Set(['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw']);

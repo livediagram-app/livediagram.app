@@ -117,7 +117,7 @@ type UserPreferences = {
   // subsection). When true, every freehand commit while the
   // pencil banner is up runs through recogniseShape and may
   // mint a primitive instead of a FreehandElement. Deliberately
-  // DEAD as of spec/112. Shape recognition is now which pen you
+  // DEAD as of spec/115. Shape recognition is now which pen you
   // picked — Freehand or Shape Pen — rather than a persisted mode,
   // so nothing reads this. It stays in the type because it is
   // already stored for existing users and removing it would make a
@@ -219,7 +219,7 @@ Missing key === undefined === default behaviour. Concretely:
     endpoint, not a preference.
 - `telemetryEnabled` undefined → telemetry on (the default).
   Setting it to `false` is the only state that opts out.
-- `recogniseShapes` is ignored whatever its value (spec/112): the
+- `recogniseShapes` is ignored whatever its value (spec/115): the
   Shape Pen recognises, Freehand does not, and no stored flag
   changes either.
 - `aiAssistanceEnabled` undefined → AI panel hidden (the default).
@@ -283,7 +283,7 @@ in the Settings dialog. Canvas-behaviour preferences (`autoRebindArrows`,
 `alignmentGuides`) sit in a Palette settings popover, next to the canvas
 they affect. There are no per-tool preferences left: the one there was
 (`recogniseShapes`, flipped from the pencil's banner) became two palette
-tiles instead (spec/112), which is the same idea taken further — the
+tiles instead (spec/115), which is the same idea taken further — the
 setting is not near the tool, it IS the tool.
 
 The Palette popover is the first step in retiring the Settings dialog
@@ -347,7 +347,7 @@ modal.
   Accessibility group holds `reduceMotion`, noting the OS setting is
   always respected and this only adds a user-forced override.
 - **Per-tool surfaces**: none today. The pencil's ModeBanner used to
-  carry a `recogniseShapes` toggle; spec/112 replaced it with two
+  carry a `recogniseShapes` toggle; spec/115 replaced it with two
   palette tiles, so no preference is set from a tool's own chrome any
   more. The highlighter's banner popovers (spec/81) are the closest
   thing, and those set element style for the next stroke rather than a

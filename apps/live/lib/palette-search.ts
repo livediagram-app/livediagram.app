@@ -5,6 +5,7 @@
 // elements) doesn't pull the icon data into its bundle.
 
 import type { ShapeKind } from '@livediagram/diagram';
+import { isStickerId } from '@livediagram/icons';
 import type { PaletteSearchItem } from '@/lib/search';
 import { getLoadedIconCatalog, getLoadedTechIconCatalog } from '@/lib/icon-registry';
 
@@ -44,10 +45,13 @@ export function buildPaletteSearchItems(): PaletteSearchItem[] {
       keywords: `shape ${s.keywords}`,
       add: { type: 'shape' as const, shapeKind: s.kind },
     })),
+    // Line-art icons and stickers share one catalogue and one add path
+    // (spec/113), so they're one map here — only the leading keyword differs,
+    // so "sticker" finds the emoji and "icon" the line art.
     ...getLoadedIconCatalog().map((i) => ({
       id: `icon:${i.id}`,
       name: i.label,
-      keywords: `icon ${i.keywords}`,
+      keywords: `${isStickerId(i.id) ? 'sticker emoji' : 'icon'} ${i.keywords}`,
       add: { type: 'icon' as const, iconId: i.id },
     })),
     ...getLoadedTechIconCatalog().map((t) => ({

@@ -32,6 +32,7 @@ import type {
   FreehandElement,
   AnnotationElement,
   LinkCardElement,
+  VideoElement,
 } from './element-types';
 export type {
   ChartLegendPosition,
@@ -45,6 +46,7 @@ export type {
   AnnotationElement,
   LinkCardMeta,
   LinkCardElement,
+  VideoElement,
 } from './element-types';
 
 // Arrow appearance preset types used by ArrowElement's fields below. The
@@ -600,7 +602,8 @@ export type BoxedElement =
   | FreehandElement
   | TableElement
   | AnnotationElement
-  | LinkCardElement;
+  | LinkCardElement
+  | VideoElement;
 export type Element = BoxedElement | ArrowElement;
 
 export type Tab = {
@@ -691,7 +694,8 @@ export function isBoxed(element: Element): element is BoxedElement {
     element.type === 'freehand' ||
     element.type === 'table' ||
     element.type === 'annotation' ||
-    element.type === 'link-card'
+    element.type === 'link-card' ||
+    element.type === 'video'
   );
 }
 
@@ -730,6 +734,7 @@ export function elementSupportsText(element: Element): boolean {
 // --- Re-exported resource modules -----------------------------------------
 export * from './arrow-avoidance';
 export * from './nearest-towards';
+export * from './youtube';
 export * from './arrow-path';
 export * from './arrow-style';
 export * from './border-style';

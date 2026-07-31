@@ -18,6 +18,12 @@
 // (shapes, arrows, text, images — all of them). Locked elements, and
 // everything on a locked tab, are skipped (spec/09 Locking).
 //
+// The Eraser Panel's settings (spec/113) ride on top of that same hit test:
+// a SIZE asks it at a ring of points rather than one, a TARGET filter drops
+// what the brush touched but isn't allowed to remove, GROUPS expands a touch
+// to its group, and TAP mode skips the drag listeners entirely. None of them
+// can reach a locked element — that check stays where it was.
+//
 // Canvas only calls beginErase (from its capture-phase pointerdown, so it
 // intercepts before an element's own select/drag); the move + release of
 // the gesture are tracked here via window listeners so an erase keeps
@@ -28,10 +34,22 @@ import type { ChangeLogEntry } from '@livediagram/api-schema';
 import { arrowReferencesAny, type Element, type Tab } from '@livediagram/diagram';
 
 import { elementHostsAtPoint } from '@/lib/dom-hit-test';
+import {
+  DEFAULT_ERASER_CONFIG,
+  eraserAllows,
+  eraserIdsFor,
+  eraserRadius,
+  eraserSamplePoints,
+  type EraserConfig,
+} from '@/lib/eraser-config';
 import { track } from '@/lib/telemetry';
 
 type EraserDeps = {
   editsBlocked: boolean;
+  // The panel's settings (spec/113). Absent falls back to the original
+  // eraser: a one-pixel sweep that removes anything it touches, one element
+  // at a time.
+  config?: EraserConfig;
   // Elements on a hidden or locked layer (spec/74): the eraser passes
   // over them like element-locked ones.
   layerInertIds: Set<string>;
@@ -77,15 +95,28 @@ export function useCanvasEraser(deps: EraserDeps) {
 
   const eraseAtPoint = (clientX: number, clientY: number) => {
     const { activeTab, tick, markCheckpoint, layerInertIds } = depsRef.current;
+    const config = depsRef.current.config ?? DEFAULT_ERASER_CONFIG;
     let changed = false;
-    for (const { id } of elementHostsAtPoint(clientX, clientY)) {
-      if (erasedRef.current.has(id)) continue;
-      const el = activeTab.elements.find((e) => e.id === id);
-      // Skip unknown ids (a wrapper for something on another layer) and
-      // locked / hidden-or-locked-LAYER elements (protected, spec/74).
-      if (!el || el.locked === true || layerInertIds.has(id)) continue;
-      erasedRef.current.add(id);
-      changed = true;
+    // One sample for a Point brush; a ring of them for a sized one.
+    const samples = eraserSamplePoints(clientX, clientY, eraserRadius(config));
+    for (const point of samples) {
+      for (const { id } of elementHostsAtPoint(point.x, point.y)) {
+        if (erasedRef.current.has(id)) continue;
+        const el = activeTab.elements.find((e) => e.id === id);
+        // Skip unknown ids (a wrapper for something on another layer) and
+        // locked / hidden-or-locked-LAYER elements (protected, spec/74).
+        if (!el || el.locked === true || layerInertIds.has(id)) continue;
+        // And skip what the target filter protects — a sweep set to Drawings
+        // passes straight over the diagram underneath.
+        if (!eraserAllows(el, config.target)) continue;
+        // A touch takes the element, or its whole group.
+        for (const memberId of eraserIdsFor(el, activeTab.elements, config.groups)) {
+          const member = activeTab.elements.find((e) => e.id === memberId);
+          if (!member || member.locked === true || layerInertIds.has(memberId)) continue;
+          erasedRef.current.add(memberId);
+          changed = true;
+        }
+      }
     }
     if (!changed) return;
     // First removal of the gesture: take the single undo checkpoint now.
@@ -116,7 +147,12 @@ export function useCanvasEraser(deps: EraserDeps) {
     setEditingId(null);
     eraseAtPoint(clientX, clientY);
 
-    const onMove = (ev: PointerEvent) => eraseAtPoint(ev.clientX, ev.clientY);
+    // Tap mode (spec/113) is one press, one thing: the move listener is what
+    // makes a two-pixel wobble take a neighbour with it, so it isn't attached.
+    const tapOnly = (depsRef.current.config ?? DEFAULT_ERASER_CONFIG).mode === 'tap';
+    const onMove = (ev: PointerEvent) => {
+      if (!tapOnly) eraseAtPoint(ev.clientX, ev.clientY);
+    };
     const onUp = () => {
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);

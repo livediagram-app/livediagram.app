@@ -38,6 +38,10 @@ export function EditorCanvasHost() {
     laserPanelPosition,
     spotlightPanelPosition,
     setSpotlightPanelPosition,
+    eraserPanelPosition,
+    setEraserPanelPosition,
+    eraserConfig,
+    onChangeEraserField,
     laserConfig,
     onChangeLaserField,
     setLaserPanelPosition,
@@ -76,6 +80,7 @@ export function EditorCanvasHost() {
     addIcon,
     addImage,
     addLinkCard,
+    addVideo,
     addProcess,
     addRailPointSelected,
     addShape,
@@ -432,6 +437,7 @@ export function EditorCanvasHost() {
       onAddTable={addTable}
       onAddAnnotation={addAnnotation}
       onAddLinkCard={addLinkCard}
+      onAddVideo={addVideo}
       onAddBanner={addBanner}
       onAddHero={addHero}
       onAddHeader={addHeader}
@@ -529,6 +535,11 @@ export function EditorCanvasHost() {
       avatarPanelPosition={avatarPanelPosition}
       laserPanelPosition={laserPanelPosition}
       spotlightPanelPosition={spotlightPanelPosition}
+      eraserPanelPosition={eraserPanelPosition}
+      eraserConfig={eraserConfig}
+      onChangeEraserField={onChangeEraserField}
+      onMoveEraserPanel={(x, y) => setEraserPanelPosition({ x, y })}
+      onResetEraserPanel={() => setEraserPanelPosition(null)}
       onMoveSpotlightPanel={(x, y) => setSpotlightPanelPosition({ x, y })}
       onResetSpotlightPanel={() => setSpotlightPanelPosition(null)}
       laserConfig={laserConfig}

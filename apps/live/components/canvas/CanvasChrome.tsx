@@ -105,6 +105,16 @@ type ChromeExtras = {
   spotlightPanelPosition?: { x: number; y: number } | null;
   onMoveSpotlightPanel?: (x: number, y: number) => void;
   onResetSpotlightPanel?: () => void;
+  // Eraser Panel (spec/113): the brush's settings, owned by useEraserConfig in
+  // Canvas (the erase gesture reads it too).
+  eraserConfig?: import('@/lib/eraser-config').EraserConfig;
+  onChangeEraserField?: <K extends keyof import('@/lib/eraser-config').EraserConfig>(
+    field: K,
+    value: import('@/lib/eraser-config').EraserConfig[K],
+  ) => void;
+  eraserPanelPosition?: { x: number; y: number } | null;
+  onMoveEraserPanel?: (x: number, y: number) => void;
+  onResetEraserPanel?: () => void;
 };
 
 export type CanvasChromeProps = CanvasProps & ChromeExtras;
@@ -306,6 +316,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
         hasAvatar={props.canvasTool === 'avatar'}
         hasLaser={props.canvasTool === 'laser'}
         hasSpotlight={props.canvasTool === 'spotlight'}
+        hasEraser={props.canvasTool === 'eraser'}
         activeMobilePanel={activeMobilePanel}
         dockButtonRefs={dockButtonRefs}
         onDockButtonClick={handleDockButtonClick}
@@ -340,6 +351,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
           {panelEls.avatar}
           {panelEls.laser}
           {panelEls.spotlight}
+          {panelEls.eraser}
         </>
       )}
 

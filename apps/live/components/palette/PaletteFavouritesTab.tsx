@@ -1,11 +1,18 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { track } from '@/lib/telemetry';
 import { loadPaletteFavourites, savePaletteFavourites } from '@/lib/palette-favourites';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 import { PALETTE_TILES, type PaletteTileDef } from './palette-tile-defs';
 import { resolveFavouriteTile } from './palette-dynamic-tiles';
-import { PaletteTileGrid, visibleTiles, type PaletteTileActions } from './PaletteTileGrid';
+import {
+  PaletteTileGrid,
+  tileHandler,
+  visibleTiles,
+  type PaletteTileActions,
+} from './PaletteTileGrid';
+import { PaletteToolRows } from './PaletteToolRows';
+import { PaletteSearchInput } from './PaletteSearchInput';
 import { PaletteFavouritesDialog } from '@/components/dialogs/PaletteFavouritesDialog';
 
 // The Favourites category (spec/78): the user's go-to creation tiles in one
@@ -13,6 +20,18 @@ import { PaletteFavouritesDialog } from '@/components/dialogs/PaletteFavouritesD
 // exactly like their home tabs (same tiles, tinting, draw-to-size, drag);
 // curation happens in the edit-favourites MODAL (search + category filter +
 // per-row Add / Remove), opened from the footer band below the grid.
+//
+// It also carries the palette's CROSS-CATEGORY search (spec/110). Flattening
+// the palette put every element one click away but spread them over ten
+// categories, so "where does Checklist live now" needed an answer that isn't
+// "open each one". Favourites is the default landing, which makes it the
+// right place: typing searches the whole fixed catalogue and replaces the
+// grid with the matches.
+//
+// The Icons and Technology catalogues are deliberately NOT searched here —
+// 183 glyphs would bury the twenty-odd element types under near-duplicate
+// icon names, and each of those tabs has its own search over its own
+// catalogue (spec/109).
 
 export function PaletteFavouritesTab({
   pendingDraw,
@@ -22,6 +41,7 @@ export function PaletteFavouritesTab({
   actions: PaletteTileActions;
 }) {
   const validIds = useMemo(() => new Set(PALETTE_TILES.map((t) => t.id)), []);
+  const [query, setQuery] = useState('');
   const [favourites, setFavourites] = useState<string[]>(() => loadPaletteFavourites(validIds));
   const [editing, setEditing] = useState(false);
   // Dynamic icon favourites (`icon:` / `tech:` ids) resolve from the async
@@ -56,9 +76,92 @@ export function PaletteFavouritesTab({
     track('UI', 'Added', 'PaletteFavourite');
   };
 
+  // Matches on caption, label and description, so "chart" finds the pie chart
+  // and "youtube" finds Video whether or not you know what it is called.
+  const q = query.trim().toLowerCase();
+  const matches = q
+    ? visibleTiles(
+        PALETTE_TILES.filter((t) =>
+          [t.label, t.caption ?? '', t.blurb ?? '', t.description].some((s) =>
+            s.toLowerCase().includes(q),
+          ),
+        ),
+        actions.hasImage,
+      )
+    : null;
+  // One 'Searched' event per mount, on the first keystroke — the same
+  // engagement-signal pattern the other palette searches use.
+  const searchedRef = useRef(false);
+  // Which result the arrow keys are pointing at. -1 = none, so the first
+  // ArrowDown lands on the first row rather than the second. Focus never
+  // leaves the input (the combobox pattern), so typing to refine still works
+  // with a row highlighted.
+  const [active, setActive] = useState(-1);
+  const onSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!matches || matches.length === 0) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setActive((i) => (i + 1) % matches.length);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setActive((i) => (i <= 0 ? matches.length - 1 : i - 1));
+    } else if (e.key === 'Enter') {
+      // Enter with nothing walked adds the FIRST match: having typed enough
+      // to leave one obvious result, pressing Enter should take it.
+      const pick = matches[active >= 0 ? active : 0];
+      if (!pick) return;
+      e.preventDefault();
+      tileHandler(pick, actions)();
+      setQuery('');
+      setActive(-1);
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      if (query) setQuery('');
+      setActive(-1);
+    }
+  };
+
   return (
     <div className="flex flex-col">
-      {favouriteTiles.length === 0 ? (
+      <div className="mb-2 flex items-center">
+        <PaletteSearchInput
+          value={query}
+          onChange={(next) => {
+            setQuery(next);
+            // A new query is a new result list, so the old position is
+            // meaningless — start again from "nothing walked".
+            setActive(-1);
+            if (!searchedRef.current && next.trim()) {
+              searchedRef.current = true;
+              track('UI', 'Searched', 'PaletteSearch');
+            }
+          }}
+          placeholder="Search all elements"
+          ariaLabel="Search all elements"
+          clearAriaLabel="Clear element search"
+          clearDescription="Clear the element search query."
+          onKeyDown={onSearchKeyDown}
+          activeDescendantId={active >= 0 ? `palette-search-${active}` : undefined}
+        />
+      </div>
+      {matches ? (
+        // Searching cuts across every category, so it replaces the favourites
+        // grid entirely. Rows rather than tiles: a result can come from any
+        // category, and the blurb is what says which thing you found.
+        matches.length > 0 ? (
+          <PaletteToolRows
+            tiles={matches}
+            actions={actions}
+            pendingDraw={pendingDraw}
+            activeIndex={active}
+            optionIdPrefix="palette-search"
+          />
+        ) : (
+          <p className="px-1 py-2 text-center text-[11px] text-slate-400">
+            No elements match “{query}”.
+          </p>
+        )
+      ) : favouriteTiles.length === 0 ? (
         showEmptyHint ? (
           <p className="px-1 py-2 text-center text-[11px] text-slate-400 dark:text-slate-500">
             No favourites yet — Edit to add some.

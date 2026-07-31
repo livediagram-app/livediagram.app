@@ -280,7 +280,7 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
   };
   const beginFreehand = () => armFreehand();
   const beginHighlighter = () => armFreehand('highlighter');
-  // The shape pen (spec/112): the same gesture, but the stroke is run through
+  // The shape pen (spec/115): the same gesture, but the stroke is run through
   // shape recognition on release. Which pen you picked IS the setting.
   const beginShapePen = () => armFreehand('shape-pen');
 

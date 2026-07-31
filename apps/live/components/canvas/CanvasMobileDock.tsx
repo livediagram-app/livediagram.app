@@ -1,7 +1,12 @@
 import type { ReactNode, RefObject } from 'react';
 import { LayersStackIcon } from '@/components/panels/layers-panel-icons';
 import { PollMenuIcon, VoteMenuIcon } from '@/components/palette/context-menu-icons';
-import { AvatarModeIcon, LaserIcon, SpotlightIcon } from '@/components/palette/palette-icons';
+import {
+  AvatarModeIcon,
+  EraserIcon,
+  LaserIcon,
+  SpotlightIcon,
+} from '@/components/palette/palette-icons';
 import type { MobilePanel } from '@/hooks/canvas/useCanvasMobileDock';
 
 // Top-right mobile dock (spec/07 "Mobile chrome"): a compact button row
@@ -20,6 +25,7 @@ export function CanvasMobileDock({
   hasAvatar,
   hasLaser,
   hasSpotlight,
+  hasEraser,
   activeMobilePanel,
   dockButtonRefs,
   onDockButtonClick,
@@ -44,6 +50,8 @@ export function CanvasMobileDock({
   hasLaser: boolean;
   // The Spotlight tool (spec/112) is active, so its panel gets a dock button.
   hasSpotlight: boolean;
+  // The Eraser tool (spec/113) is active, so its panel gets a dock button.
+  hasEraser: boolean;
   activeMobilePanel: MobilePanel | null;
   dockButtonRefs: RefObject<Record<string, HTMLButtonElement | null>>;
   onDockButtonClick: (id: MobilePanel) => void;
@@ -186,6 +194,15 @@ export function CanvasMobileDock({
                   id: 'spotlight' as const,
                   label: 'Spotlight',
                   icon: <SpotlightIcon />,
+                },
+              ]
+            : []),
+          ...(hasEraser
+            ? [
+                {
+                  id: 'eraser' as const,
+                  label: 'Eraser',
+                  icon: <EraserIcon />,
                 },
               ]
             : []),

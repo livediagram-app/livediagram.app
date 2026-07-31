@@ -10,8 +10,9 @@ A flattening of the palette's category structure.
 category of its own, and a tab with no categories left is not a tab.
 
 The full set, in band order: **Favourites**, then **Shapes / Write / Draw /
-Devices**, then **Icons / Technology / Media / Components**, then **Data /
-Behaviour**.
+Devices**, then **Icons / Stickers / Technology / Media / Components**, then
+**Data / Behaviour**. (Stickers joined the Decorate band later, in
+[spec/113](113-stickers.md).)
 
 Where things landed, for anything that moved:
 
@@ -30,12 +31,12 @@ tools plus Frame). The **User / actor** tile was deleted outright — see below.
 **The category dropdown gets bands**, the way the canvas-tool dropdown got them
 (spec/108):
 
-| Band           | Categories                           |
-| -------------- | ------------------------------------ |
-| _(no heading)_ | Favourites, full width               |
-| **Common**     | Shapes, Write, Draw, Devices         |
-| **Decorate**   | Icons, Technology, Media, Components |
-| **Dynamic**    | Data, Behaviour                      |
+| Band           | Categories                                     |
+| -------------- | ---------------------------------------------- |
+| _(no heading)_ | Favourites, full width                         |
+| **Common**     | Shapes, Write, Draw, Devices                   |
+| **Decorate**   | Icons, Stickers, Technology, Media, Components |
+| **Dynamic**    | Data, Behaviour                                |
 
 ## Why flatten
 
@@ -69,9 +70,9 @@ mistake.
 Write, Draw, Behaviour, Data, Components, Media and Devices render as **rows
 with a one-line blurb**, not as the icon-over-caption grid.
 
-The rule is whether the picture explains the thing, and only three categories
-pass it: **Shapes**, **Icons** and **Technology**, where the glyph IS the
-answer. A square tile explains a square. A cursor-on-a-target does not explain
+The rule is whether the picture explains the thing, and only four categories
+pass it: **Shapes**, **Icons**, **Stickers** and **Technology**, where the
+glyph IS the answer. A square tile explains a square. A cursor-on-a-target does not explain
 a Picker, a donut does not explain "how far along something is", a wireframe
 thumbnail shows a composite's arrangement but not its job, six device outlines
 are six grey rectangles of slightly different proportions, and two picture
@@ -102,6 +103,42 @@ capped at the space between its top edge and the bottom chrome — the zoom dock
 and the tab bar, both measured rather than assumed, since the dock hides in Zen
 mode — and only then does it scroll. A category that fits shows no scrollbar
 and still animates its height on switch.
+
+## Searching across the categories
+
+Flattening put every element one click away but spread them over ten
+categories, so "where does Checklist live now" needed an answer that isn't
+"open each one".
+
+A **search box sits at the top of Favourites**, the default landing. Typing
+searches the whole fixed tile catalogue by caption, label, blurb and
+description, and replaces the favourites grid with the matches as rows.
+
+The **Icons and Technology catalogues are deliberately not searched here**:
+183 glyphs would bury the twenty-odd element types under near-duplicate icon
+names, and each of those tabs already searches its own catalogue (spec/109).
+
+It is keyboard-driven, in the combobox pattern — focus never leaves the input,
+so you can keep typing to refine with a row highlighted:
+
+| Key            | Does                                                       |
+| -------------- | ---------------------------------------------------------- |
+| `ArrowDown/Up` | walks the results, wrapping at each end                    |
+| `Enter`        | adds the walked result, or the first one if none is walked |
+| `Escape`       | clears the query                                           |
+
+## The pickers unfold from their trigger
+
+Both palette dropdowns grew from their own centre-top, which made opening the
+canvas-tool picker and the category picker look identical — the one thing the
+animation exists to distinguish.
+
+The menu's `transform-origin` is now the corner its trigger sits at: top-left
+for the left-aligned canvas-tool picker, top-right for the right-aligned
+category picker (and the bottom corners when a menu flips up). One
+direction-agnostic keyframe scales uniformly out of that origin, replacing the
+old `scaleY`-only pair — squashing the Y axis on top of a corner origin read as
+a blind coming down rather than a menu growing out of a button.
 
 ## What did not move
 

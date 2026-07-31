@@ -154,7 +154,7 @@ export function TopCenterChrome({
             message={drawBannerMessage(pendingDraw, isMobileViewportSync())}
             onAction={onCancelDraw}
             // Pen-mode-only extras slot. The "recognise shapes" toggle that
-            // used to live here is gone (spec/112): recognition is now which
+            // used to live here is gone (spec/115): recognition is now which
             // pen you picked — Freehand or Shape Pen — rather than a hidden
             // mode you had to check before every stroke.
             extras={

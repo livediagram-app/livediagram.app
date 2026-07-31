@@ -181,8 +181,10 @@ export function ElementContentSections({
           />
         </MenuAccordionSection>
       ) : null}
-      {/* Link — set / change / remove a link-card's destination (spec/40). */}
-      {target.type === 'link-card' ? (
+      {/* Link — set / change / remove a link-card's destination (spec/40), or
+          a video's YouTube URL (spec/114). Both keep their URL in `link`, so
+          both use this one section rather than a second URL editor. */}
+      {target.type === 'link-card' || target.type === 'video' ? (
         <MenuAccordionSection title="Link" icon={<LinkMenuIcon />} {...sectionProps('link')}>
           {hasLink ? (
             <MenuTileGrid cols={2}>
@@ -258,7 +260,7 @@ export function ElementContentSections({
         >
           {/* Link-cards have their own Link category (set / change / remove),
                 so the generic "Add Link" is dropped here for them. */}
-          {target.type !== 'link-card' ? (
+          {target.type !== 'link-card' && target.type !== 'video' ? (
             <MenuTileGrid cols={2}>
               <MenuTile
                 icon={<LinkMenuIcon />}

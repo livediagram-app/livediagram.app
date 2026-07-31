@@ -76,6 +76,7 @@ type ElementItem = {
     | 'table'
     | 'annotation'
     | 'link-card'
+    | 'video'
     | 'arrow';
 };
 

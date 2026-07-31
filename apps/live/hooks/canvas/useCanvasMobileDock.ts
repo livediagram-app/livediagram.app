@@ -30,7 +30,9 @@ export type MobilePanel =
   | 'laser'
   // 'spotlight' (spec/112): the light's look, likewise only while its mode is
   // active.
-  | 'spotlight';
+  | 'spotlight'
+  // 'eraser' (spec/113): the brush's settings, while the Eraser is active.
+  | 'eraser';
 
 export type DockAnchor = { left: number; top: number; arrowOffset: number };
 

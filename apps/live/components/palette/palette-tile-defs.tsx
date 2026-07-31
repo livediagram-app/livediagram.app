@@ -36,6 +36,7 @@ type PaletteTileAction =
   // to its own arm-handler and pressed state.
   | { type: 'highlighter' }
   | { type: 'shape-pen' }
+  | { type: 'video' }
   | { type: 'polygon' }
   | { type: 'arrow' }
   | { type: 'sticky' }
@@ -838,6 +839,24 @@ export const PALETTE_TILES: PaletteTileDef[] = [
           strokeLinejoin="round"
           strokeLinecap="round"
         />
+      </svg>
+    ),
+  },
+  {
+    id: 'media:video',
+    blurb: 'A YouTube video that plays here',
+    caption: 'Video',
+    section: 'media',
+    label: 'Add video',
+    description:
+      'A YouTube video. Double-click to set its link; it plays inline when you press play.',
+    action: { type: 'video' },
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+        {/* The YouTube lozenge + triangle, so the tile names the service
+            rather than showing a generic film glyph. */}
+        <rect x="2" y="5" width="20" height="14" rx="4" fill="currentColor" />
+        <path d="M10.5 8.75 16 12l-5.5 3.25z" fill="#ffffff" />
       </svg>
     ),
   },

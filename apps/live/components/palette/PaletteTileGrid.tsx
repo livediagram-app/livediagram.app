@@ -27,6 +27,7 @@ export type PaletteTileActions = {
   addImage: () => void;
   addAnnotation: () => void;
   addLinkCard: () => void;
+  addVideo: () => void;
   addComponent: (kind: ComponentKind) => void;
   // Dynamic icon favourites (spec/78): drop a single line-art / Technology
   // catalogue icon, same handlers the Icons / Technology tabs use.
@@ -65,6 +66,8 @@ export function tileHandler(def: PaletteTileDef, actions: PaletteTileActions): (
       return actions.addAnnotation;
     case 'link-card':
       return actions.addLinkCard;
+    case 'video':
+      return actions.addVideo;
     case 'component':
       return () => actions.addComponent(a.kind);
     case 'icon':
@@ -89,7 +92,7 @@ export function tileActive(
     case 'component':
       return pendingDraw.type === 'component' && pendingDraw.kind === a.kind;
     // The three pens share the freehand intent, split by the variant
-    // payload — each tile lights only for its own arm (spec/112).
+    // payload — each tile lights only for its own arm (spec/115).
     case 'freehand':
       return pendingDraw.type === 'freehand' && pendingDraw.variant === undefined;
     case 'highlighter':
@@ -101,6 +104,7 @@ export function tileActive(
     case 'table':
     case 'annotation':
     case 'link-card':
+    case 'video':
     case 'icon':
     case 'tech-icon':
       return false;

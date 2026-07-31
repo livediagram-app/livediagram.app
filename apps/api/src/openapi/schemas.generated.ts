@@ -545,6 +545,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       {
         "$ref": "#/components/schemas/LinkCardElement"
+      },
+      {
+        "$ref": "#/components/schemas/VideoElement"
       }
     ]
   },
@@ -4206,6 +4209,126 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     },
     "required": [
       "url"
+    ],
+    "type": "object"
+  },
+  "VideoElement": {
+    "additionalProperties": false,
+    "properties": {
+      "action": {
+        "$ref": "#/components/schemas/ElementAction"
+      },
+      "animation": {
+        "$ref": "#/components/schemas/ElementAnimation"
+      },
+      "animationRepeat": {
+        "type": "boolean"
+      },
+      "animationSpeed": {
+        "$ref": "#/components/schemas/AnimationSpeed"
+      },
+      "aspectLocked": {
+        "type": "boolean"
+      },
+      "commentThread": {
+        "$ref": "#/components/schemas/CommentThread"
+      },
+      "fillColor": {
+        "type": "string"
+      },
+      "font": {
+        "type": "string"
+      },
+      "groupId": {
+        "$ref": "#/components/schemas/ElementId"
+      },
+      "height": {
+        "type": "number"
+      },
+      "id": {
+        "$ref": "#/components/schemas/ElementId"
+      },
+      "label": {
+        "type": "string"
+      },
+      "layerId": {
+        "type": "string"
+      },
+      "link": {
+        "$ref": "#/components/schemas/ElementLink"
+      },
+      "locked": {
+        "type": "boolean"
+      },
+      "note": {
+        "type": "string"
+      },
+      "noteRich": {
+        "items": {
+          "$ref": "#/components/schemas/TextRun"
+        },
+        "type": "array"
+      },
+      "opacity": {
+        "type": "number"
+      },
+      "padding": {
+        "$ref": "#/components/schemas/Padding"
+      },
+      "rotation": {
+        "type": "number"
+      },
+      "shadow": {
+        "$ref": "#/components/schemas/ElementShadow"
+      },
+      "strokeColor": {
+        "type": "string"
+      },
+      "textAlignX": {
+        "$ref": "#/components/schemas/TextAlignX"
+      },
+      "textAlignY": {
+        "$ref": "#/components/schemas/TextAlignY"
+      },
+      "textBold": {
+        "type": "boolean"
+      },
+      "textColor": {
+        "type": "string"
+      },
+      "textItalic": {
+        "type": "boolean"
+      },
+      "textSize": {
+        "$ref": "#/components/schemas/TextSize"
+      },
+      "textStrikethrough": {
+        "type": "boolean"
+      },
+      "textUnderline": {
+        "type": "boolean"
+      },
+      "type": {
+        "const": "video",
+        "type": "string"
+      },
+      "width": {
+        "type": "number"
+      },
+      "x": {
+        "type": "number"
+      },
+      "y": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "id",
+      "type",
+      "x",
+      "y",
+      "width",
+      "height"
     ],
     "type": "object"
   }

@@ -1,9 +1,10 @@
 // Icon catalogue data, part 2 of 2 (tech / people / security / files /
-// charts / ui / furniture / animated), plus the Emoji entries (spec/85)
-// concatenated at the end from emoji-catalog.ts. See icon-catalog-1.ts for
-// why this is split and why it loads async; concatenated after part 1 by
-// the editor's lib/icon-registry.ts (or the Workers' ./resolve).
-import { EMOJI_CATALOG } from './emoji-catalog';
+// charts / ui / furniture / animated), plus the Sticker entries (spec/113,
+// colour emoji) concatenated at the end from sticker-catalog.ts. See
+// icon-catalog-1.ts for why this is split and why it loads async;
+// concatenated after part 1 by the editor's lib/icon-registry.ts (or the
+// Workers' ./resolve).
+import { STICKER_CATALOG } from './sticker-catalog';
 import type { IconDef } from './types';
 
 export const ICON_CATALOG_2: IconDef[] = [
@@ -630,5 +631,5 @@ export const ICON_CATALOG_2: IconDef[] = [
       { t: 'circle', cx: 12, cy: 18.5, r: 1 },
     ],
   },
-  ...EMOJI_CATALOG,
+  ...STICKER_CATALOG,
 ];

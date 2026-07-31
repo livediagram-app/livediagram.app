@@ -126,7 +126,8 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
       target.type === 'arrow' ||
       target.type === 'table' ||
       target.type === 'image' ||
-      target.type === 'link-card';
+      target.type === 'link-card' ||
+      target.type === 'video';
     const showCollaborateGroup = boxed;
     return (
       <ContextMenu position={position} onClose={onClose} flush anchorBottom={anchorBottom}>

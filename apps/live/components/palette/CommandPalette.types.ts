@@ -62,6 +62,7 @@ export type CommandPaletteProps = {
   onAddAnnotation: () => void;
   // Drop a link-card / bookmark at the viewport centre. See spec/40.
   onAddLinkCard: () => void;
+  onAddVideo: () => void;
   // Composite "Components" (spec/09): each arms the tap-or-drag draw gesture.
   // Banner / Callout / Stat row / Process need no image and always show; Hero
   // / Header (and the Tools-tab Avatar) carry an image, so they're gated on

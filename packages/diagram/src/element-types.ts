@@ -839,3 +839,74 @@ export type LinkCardElement = {
   textStrikethrough?: boolean;
   font?: string;
 };
+
+// --- Video -----------------------------------------------------------------
+
+// See specs/114-youtube-video.md. A 16:9 card showing a YouTube video's poster
+// frame, which plays inline when pressed. Added through the same new-type
+// surface as the link card above, and shares its URL-editing flow: the user
+// sets the link with the normal element-link UI.
+//
+// Aspect-locked to 16:9 on resize (`aspectLocked` defaults true from
+// createVideo) — a stretched video frame is never what anyone wants.
+export type VideoElement = {
+  id: ElementId;
+  type: 'video';
+  // Layer membership (spec/74) — see ShapeElement.layerId.
+  layerId?: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  // NOTE there is no `videoId` field, deliberately. The YouTube URL lives in
+  // `link` (a url-kind ElementLink) and the id is parsed from it on demand by
+  // `youtubeVideoId` (youtube.ts). A link card caches its preview in `meta`
+  // because unfurling costs a network round trip; parsing an id costs
+  // nothing, so storing it would only be a second copy of the truth that can
+  // drift from the link.
+  //
+  // fillColor = card background; strokeColor = card border; textColor = the
+  // caption text.
+  fillColor?: string;
+  strokeColor?: string;
+  textColor?: string;
+  // The URL source + everyday boxed fields.
+  link?: ElementLink;
+  label?: string;
+  locked?: boolean;
+  groupId?: ElementId;
+  opacity?: number;
+  // Drop shadow (spec/86). Absent = no shadow; see shadow.ts.
+  shadow?: ElementShadow;
+  rotation?: number;
+  // Looping CSS animation (spec/09 "Animated elements"). Undefined = static.
+  animation?: ElementAnimation;
+  // Speed of `animation` (multiplier on its base duration). Default 'slow'
+  // (DEFAULT_ANIMATION_SPEED).
+  animationSpeed?: AnimationSpeed;
+  // Whether `animation` loops. Undefined / true = loop forever (the
+  // default); false = play once and hold.
+  animationRepeat?: boolean;
+  aspectLocked?: boolean;
+  commentThread?: CommentThread;
+  // Assigned action (spec/68): at most one per element, non-undoable like
+  // the comment thread. See element-action.ts.
+  action?: ElementAction;
+  note?: string;
+  // Per-range note formatting (spec/92): runs carrying bold / italic /
+  // underline / heading / link deltas. `note` stays the plain-text mirror,
+  // always === runsPlainText(noteRich). Absent = an unformatted note, which
+  // renders exactly as it always did.
+  noteRich?: TextRun[];
+  // Declared for the generic union code paths (format painter, geometry,
+  // search), unused by the card UI — mirrors AnnotationElement.
+  padding?: Padding;
+  textSize?: TextSize;
+  textAlignX?: TextAlignX;
+  textAlignY?: TextAlignY;
+  textBold?: boolean;
+  textItalic?: boolean;
+  textUnderline?: boolean;
+  textStrikethrough?: boolean;
+  font?: string;
+};

@@ -1,6 +1,8 @@
 import { beforeAll, describe, expect, it } from 'vitest';
+import { isStickerId } from '@livediagram/icons';
 import {
   getIconCatalog,
+  getLineArtIconCatalog,
   ICON_CATEGORIES,
   PLACEHOLDER_ICON,
   getIcon,
@@ -31,24 +33,16 @@ describe('icon catalogue', () => {
     }
   });
 
-  // The emoji entries (spec/85) are plain catalogue entries whose entire
-  // art is one text prim at the shared geometry; pin that shape so a new
-  // entry can't drift off-centre or pick up stray line-art prims.
-  it('every emoji- entry is exactly one text prim at the shared geometry', () => {
-    const emoji = getIconCatalog().filter((i) => i.id.startsWith('emoji-'));
-    expect(emoji.length).toBeGreaterThan(0);
-    for (const icon of emoji) {
-      expect(icon.prims, icon.id).toHaveLength(1);
-      const prim = icon.prims[0];
-      expect(prim?.t, icon.id).toBe('text');
-      if (prim?.t !== 'text') continue; // unreachable; narrows the prim union
-      expect(prim.text.length, icon.id).toBeGreaterThan(0);
-      expect({ x: prim.x, y: prim.y, size: prim.size }, icon.id).toEqual({
-        x: 12,
-        y: 12,
-        size: 20,
-      });
-    }
+  // The sticker entries (spec/113) share this catalogue but have their own
+  // palette category; their geometry, grouping and search are pinned in
+  // stickers.test.ts. What matters here is that the line-art half — the only
+  // half the Icons tab shows — is the one everything below reasons about.
+  it('getLineArtIconCatalog is the catalogue minus the stickers', () => {
+    const all = getIconCatalog();
+    const lineArt = getLineArtIconCatalog();
+    expect(lineArt.length).toBeGreaterThan(0);
+    expect(lineArt.some((i) => isStickerId(i.id))).toBe(false);
+    expect(all.length - lineArt.length).toBe(all.filter((i) => isStickerId(i.id)).length);
   });
 });
 
@@ -73,15 +67,17 @@ describe('icon categories', () => {
     }
   });
 
-  it('puts every catalogue icon in exactly one category', () => {
+  it('puts every line-art icon in exactly one category', () => {
     // The Icons tab browses BY category since spec/109 — there is no longer
     // an "All" filter to fall back on, so an icon in no category is an icon
     // nobody can reach except by guessing its name in the search box.
+    // Stickers are exempt because they are not in this tab at all (spec/113);
+    // stickers.test.ts holds them to the same rule against their own groups.
     const seen = new Map<string, string[]>();
     for (const cat of ICON_CATEGORIES) {
       for (const id of cat.iconIds) seen.set(id, [...(seen.get(id) ?? []), cat.id]);
     }
-    const orphans = getIconCatalog()
+    const orphans = getLineArtIconCatalog()
       .map((i) => i.id)
       .filter((id) => !seen.has(id));
     expect(orphans, 'icons in no ICON_CATEGORIES entry are unreachable in the palette').toEqual([]);

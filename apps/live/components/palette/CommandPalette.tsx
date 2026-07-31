@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { MOBILE_BREAKPOINT_PX, isMobileViewportSync } from '@/lib/responsive';
 import { PaletteTintProvider } from '@/components/palette/palette-controls';
 import { IconPickerTab } from '@/components/palette/IconPickerTab';
+import { StickerPickerTab } from '@/components/palette/StickerPickerTab';
 import { TechPickerTab } from '@/components/palette/TechPickerTab';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { PaletteSettingsPopover } from '@/components/palette/PaletteSettingsPopover';
@@ -15,6 +16,7 @@ import {
   FavouritesTabIcon,
   IconsTabIcon,
   ShapesTabIcon,
+  StickersTabIcon,
   TechTabIcon,
   DrawTabIcon,
   WriteTabIcon,
@@ -32,7 +34,8 @@ import {
 } from '@/components/palette/palette-create-tabs';
 import { PaletteFavouritesTab } from '@/components/palette/PaletteFavouritesTab';
 import type { PaletteTileActions } from '@/components/palette/PaletteTileGrid';
-import { getIconCatalog } from '@/lib/icons';
+import { getLineArtIconCatalog } from '@/lib/icons';
+import { searchStickers } from '@/lib/stickers';
 import { searchTechIcons } from '@/lib/tech-icons';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 
@@ -63,6 +66,7 @@ export function CommandPalette({
   onAddTable,
   onAddAnnotation,
   onAddLinkCard,
+  onAddVideo,
   onAddBanner,
   onAddHero,
   onAddHeader,
@@ -145,6 +149,10 @@ export function CommandPalette({
   };
   const addLinkCard = () => {
     onAddLinkCard();
+    onMobileClose?.();
+  };
+  const addVideo = () => {
+    onAddVideo();
     onMobileClose?.();
   };
   // Components arm the draw gesture (tap-or-drag), so they signal onDrawArmed
@@ -249,6 +257,7 @@ export function CommandPalette({
       addImage,
       addAnnotation,
       addLinkCard,
+      addVideo,
       addComponent,
       addIcon,
       addTechIcon,
@@ -275,14 +284,21 @@ export function CommandPalette({
   // they're empty and the picker tabs show a brief "Loading icons" note
   // (via `iconCatalogsLoaded`) instead of a false "no matches".
   const iconCatalogsLoaded = useIconCatalogs();
-  // Search hits across the WHOLE catalogue — the tab browses by category
-  // (spec/109) rather than filtering by one, so narrowing here would make a
-  // search silently miss the categories you weren't looking at.
-  const iconResults = getIconCatalog().filter((i) => {
+  // Search hits across the WHOLE line-art catalogue — the tab browses by
+  // category (spec/109) rather than filtering by one, so narrowing here would
+  // make a search silently miss the categories you weren't looking at. It is
+  // the line-art half specifically: stickers share the catalogue but have
+  // their own category (spec/113), and showing them in both would be the
+  // duplication that move removed.
+  const iconResults = getLineArtIconCatalog().filter((i) => {
     const q = iconQuery.trim().toLowerCase();
     if (!q) return true;
     return i.label.toLowerCase().includes(q) || i.keywords.includes(q) || i.id.includes(q);
   });
+  // Stickers tab (spec/113): colour emoji, browsed in ten groups. Same shape
+  // as the Icons tab — a search box over a drill-in browse.
+  const [stickerQuery, setStickerQuery] = useState('');
+  const stickerResults = searchStickers(stickerQuery);
   // Technology tab (spec/41): full-colour brand icons. Mirrors the Icons
   // tab — a search box over provider categories.
   const [techQuery, setTechQuery] = useState('');
@@ -433,8 +449,28 @@ export function CommandPalette({
               ),
             },
             {
+              id: 'stickers',
+              label: 'Stickers',
+              group: 1,
+              description:
+                'Colour emoji for reacting, showing how you feel, marking status, pointing at things, celebrating, and prettying the board up.',
+              icon: <StickersTabIcon />,
+              content: (
+                <StickerPickerTab
+                  // A sticker is an icon (spec/113), so it adds down exactly
+                  // the same path: click to drop, or drag onto a shape to
+                  // become its inline glyph.
+                  addSticker={addIcon}
+                  stickerQuery={stickerQuery}
+                  setStickerQuery={setStickerQuery}
+                  stickerResults={stickerResults}
+                  loading={!iconCatalogsLoaded}
+                />
+              ),
+            },
+            {
               id: 'technology',
-              label: 'Technology',
+              label: 'Tech',
               group: 1,
               description:
                 'Full-colour AWS, Azure, and generic-infrastructure icons for system-architecture diagrams.',

@@ -19,6 +19,7 @@
 // when the data arrives).
 
 import type { CSSProperties } from 'react';
+import { isStickerId } from '@livediagram/icons';
 import {
   ANIMATION_SPEED_FACTOR,
   DEFAULT_ANIMATION_SPEED,
@@ -124,11 +125,23 @@ export function getIcon(id: string | undefined): IconDef {
   return getIconLoaded(id) ?? PLACEHOLDER_ICON;
 }
 
+// The line-art catalogue only: everything the Icons tab browses, searches
+// and adds. The shared catalogue also carries the Stickers (colour emoji,
+// spec/113), which have their own palette category and are filtered out here
+// so neither tab shows the other's entries.
+export function getLineArtIconCatalog(): IconDef[] {
+  return getLoadedIconCatalog().filter((i) => !isStickerId(i.id));
+}
+
 // Theme chips for the Icons accordion: a handful of categories so the
 // user can narrow ~35 glyphs to the dozen related to what they're
 // drawing. Kept as id-lists here (rather than a per-icon field) so the
 // catalogue entries stay focused on geometry; an icon may sit in one
 // category. The picker prepends an "All" chip itself.
+//
+// Stickers are deliberately absent: they used to sit here as an "Emoji"
+// category (spec/85) and moved out to their own palette category in
+// spec/113. See lib/stickers.ts for their groups.
 type IconCategory = { id: string; label: string; iconIds: string[] };
 
 export const ICON_CATEGORIES: IconCategory[] = [
@@ -290,72 +303,6 @@ export const ICON_CATEGORIES: IconCategory[] = [
       'sun',
       'moon',
       'alert-octagon',
-    ],
-  },
-  {
-    id: 'emoji',
-    label: 'Emoji',
-    iconIds: [
-      'emoji-thumbs-up',
-      'emoji-thumbs-down',
-      'emoji-clap',
-      'emoji-party-popper',
-      'emoji-thinking-face',
-      'emoji-heart',
-      'emoji-smile',
-      'emoji-laughing',
-      'emoji-sad',
-      'emoji-surprised',
-      'emoji-eyes',
-      'emoji-hundred',
-      'emoji-check',
-      'emoji-cross',
-      'emoji-warning',
-      'emoji-question',
-      'emoji-fire',
-      'emoji-star',
-      'emoji-sparkles',
-      'emoji-rocket',
-      'emoji-bulb',
-      'emoji-target',
-      'emoji-trophy',
-      'emoji-hourglass',
-      'emoji-red-circle',
-      'emoji-green-circle',
-      'emoji-yellow-circle',
-      'emoji-flag',
-      'emoji-calendar',
-      'emoji-clock',
-      'emoji-pushpin',
-      'emoji-lock',
-      'emoji-key',
-      'emoji-bug',
-      'emoji-wrench',
-      'emoji-hammer',
-      'emoji-memo',
-      'emoji-folder',
-      'emoji-chart-up',
-      'emoji-chart-down',
-      'emoji-clipboard',
-      'emoji-email',
-      'emoji-phone',
-      'emoji-laptop',
-      'emoji-magnifier',
-      'emoji-gear',
-      'emoji-link',
-      'emoji-scissors',
-      'emoji-package',
-      'emoji-books',
-      'emoji-money-bag',
-      'emoji-speech-balloon',
-      'emoji-bell',
-      'emoji-wave',
-      'emoji-handshake',
-      'emoji-muscle',
-      'emoji-point-right',
-      'emoji-raised-hand',
-      'emoji-person',
-      'emoji-people',
     ],
   },
 ];

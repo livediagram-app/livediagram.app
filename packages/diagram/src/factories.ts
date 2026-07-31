@@ -24,6 +24,7 @@ import {
   type Anchor,
   type AnnotationElement,
   type LinkCardElement,
+  type VideoElement,
   type ArrowElement,
   type Element,
   type ElementId,
@@ -413,6 +414,22 @@ export function createLinkCard(x: number, y: number): LinkCardElement {
     y,
     width: 280,
     height: 120,
+  };
+}
+
+// A YouTube video (spec/114) at (x, y). No link yet — the user sets the URL
+// via the same link picker a link card uses, and the id is parsed from it on
+// render. 480x270 is a true 16:9, and `aspectLocked` keeps it that way: a
+// stretched video frame is never what anyone wants.
+export function createVideo(x: number, y: number): VideoElement {
+  return {
+    id: crypto.randomUUID(),
+    type: 'video',
+    x,
+    y,
+    width: 480,
+    height: 270,
+    aspectLocked: true,
   };
 }
 

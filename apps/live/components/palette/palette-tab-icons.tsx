@@ -228,6 +228,28 @@ export function IconsTabIcon() {
   );
 }
 
+export function StickersTabIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      {/* A die-cut sticker: a rounded square with its bottom-right
+            corner peeled back. The universal "sticker" mark, and
+            unmistakable next to the Icons tab's smiley. */}
+      <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5V14l-6 7H6.5A2.5 2.5 0 0 1 4 18.5z" />
+      <path d="M20 14h-4a2 2 0 0 0-2 2v5" />
+    </svg>
+  );
+}
+
 export function TechTabIcon() {
   return (
     <svg

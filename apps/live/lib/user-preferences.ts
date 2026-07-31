@@ -31,7 +31,7 @@ export type UserPreferences = {
   // NEXT_PUBLIC_TELEMETRY_ENABLED gate and the api worker's
   // TELEMETRY_ENABLED gate. Missing / undefined === on.
   telemetryEnabled?: boolean;
-  // DEAD as of spec/112: shape recognition is now which pen you picked
+  // DEAD as of spec/115: shape recognition is now which pen you picked
   // (Freehand or Shape Pen), not a persisted mode. Nothing reads this any
   // more. It stays in the type because it is already stored in D1 for
   // existing users, and removing it would make a stored preference fail to

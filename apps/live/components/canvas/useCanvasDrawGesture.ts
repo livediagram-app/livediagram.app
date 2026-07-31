@@ -290,7 +290,7 @@ export function useCanvasDrawGesture({
       const snapshot = buffer;
       setPenPoints(null);
       if (snapshot.length >= 2) {
-        // Recognition is which PEN you picked, not a preference (spec/112):
+        // Recognition is which PEN you picked, not a preference (spec/115):
         // the Shape Pen converts, plain Freehand and the highlighter never do.
         onCommitFreehand(snapshot, pendingDraw?.variant === 'shape-pen');
       }

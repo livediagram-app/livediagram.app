@@ -244,5 +244,22 @@ export function describeVariant(
         },
       };
     }
+    case 'video': {
+      // A video (spec/114): the poster / player fills the box edge to edge, so
+      // this is a dark rounded frame with a hairline, not a padded card.
+      // overflow-hidden clips the poster and the iframe to the radius.
+      const ring = `${singleRing('ring-2 ring-brand-200')} ${multiRing}`.trim();
+      return {
+        className: `overflow-hidden shadow-sm ${ring}`,
+        style: {
+          ...boxShadow,
+          borderRadius: '10px',
+          backgroundColor: element.fillColor ?? defaultFillColor(element),
+          borderColor: remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element),
+          borderWidth: remoteBorderColor ? remoteBorderWidth : 1,
+          borderStyle: 'solid',
+        },
+      };
+    }
   }
 }

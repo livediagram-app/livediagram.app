@@ -60,6 +60,8 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Element·Ungrouped',
   'Element·Unlinked',
   'Element·Unlocked',
+  // Playback started on a video element (spec/114).
+  'Element·Used',
   'Element·Voted',
   'Error·Api',
   'Error·Client',

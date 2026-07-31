@@ -5,6 +5,7 @@ import {
   rebindArrowAnchorsAfterMove,
   createAnnotation,
   createLinkCard,
+  createVideo,
   createShape,
   createTable,
   createText,
@@ -146,6 +147,15 @@ export function useElementCreation(opts: {
     if (editsBlocked) return;
     addBoxed((x, y) => createLinkCard(x, y));
     track('Element', 'Added', 'LinkCard');
+  };
+
+  // A YouTube video (spec/114) dropped at the viewport centre, empty. Same
+  // shape as the link card above, and deliberately so: both keep their URL in
+  // `link`, and double-clicking either opens the one link picker.
+  const addVideo = () => {
+    if (editsBlocked) return;
+    addBoxed((x, y) => createVideo(x, y));
+    track('Element', 'Added', 'Video');
   };
 
   // Components (spec/09) arm the combined tap-or-drag draw gesture, exactly
@@ -327,6 +337,7 @@ export function useElementCreation(opts: {
     addTable,
     addAnnotation,
     addLinkCard,
+    addVideo,
     addBanner,
     addHero,
     addHeader,

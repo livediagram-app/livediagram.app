@@ -11,6 +11,7 @@ import { LayersPanel } from '@/components/panels/LayersPanel';
 import { AvatarPanel } from '@/components/panels/AvatarPanel';
 import { LaserPanel } from '@/components/panels/LaserPanel';
 import { SpotlightPanel } from '@/components/panels/SpotlightPanel';
+import { EraserPanel } from '@/components/panels/EraserPanel';
 import { visibleLayerElements } from '@livediagram/diagram';
 import { CanvasAiPanel } from './CanvasAiPanel';
 import { CommandPalette } from '@/components/palette/CommandPalette';
@@ -133,6 +134,7 @@ export function useCanvasChromePanels({
     onAddIcon,
     onAddImage,
     onAddLinkCard,
+    onAddVideo,
     onAddProcess,
     onAddShape,
     onAddStatRow,
@@ -180,6 +182,11 @@ export function useCanvasChromePanels({
     onChangeLaserField,
     spotlightConfig,
     onChangeSpotlightField,
+    eraserConfig,
+    onChangeEraserField,
+    eraserPanelPosition,
+    onMoveEraserPanel,
+    onResetEraserPanel,
     spotlightRadius,
     onSetSpotlightRadius,
     spotlightPanelPosition,
@@ -309,6 +316,9 @@ export function useCanvasChromePanels({
   );
   const spotlightWiring = panelWiringFor('spotlight', spotlightPanelPosition ?? null, () =>
     onResetSpotlightPanel?.(),
+  );
+  const eraserWiring = panelWiringFor('eraser', eraserPanelPosition ?? null, () =>
+    onResetEraserPanel?.(),
   );
   // In docking mode the corner flex columns own stacking, so the legacy
   // measured stack-below-the-palette offset is dropped.
@@ -485,6 +495,7 @@ export function useCanvasChromePanels({
         onAddTable={onAddTable}
         onAddAnnotation={onAddAnnotation}
         onAddLinkCard={onAddLinkCard}
+        onAddVideo={onAddVideo}
         onAddBanner={onAddBanner}
         onAddHero={onAddHero}
         onAddHeader={onAddHeader}
@@ -663,6 +674,25 @@ export function useCanvasChromePanels({
       />
     ) : null;
 
+  // Eraser Panel (spec/113): the brush's settings, mounted only while the
+  // Eraser tool is active.
+  const eraserEl =
+    !chromeHidden && canvasTool === 'eraser' && eraserConfig ? (
+      <EraserPanel
+        config={eraserConfig}
+        onChange={(field, value) => onChangeEraserField?.(field, value)}
+        position={eraserWiring.position}
+        stackBelowY={dockingActive ? undefined : legacyStackBelowY}
+        onMoveTo={(x, y) => onMoveEraserPanel?.(x, y)}
+        onReset={eraserWiring.onReset}
+        dock={eraserWiring.dock}
+        mobileOpenOverride={activeMobilePanel === 'eraser'}
+        mobileDockAnchor={activeDockAnchor ?? undefined}
+        forceDockMode={!!minimalPanels}
+        onMobileClose={closeMobilePanel}
+      />
+    ) : null;
+
   // Map of panel id → element for the docked-layout distribution.
   const panelEls: Partial<Record<PanelId, ReactNode>> = {
     explorer: explorerEl,
@@ -677,6 +707,7 @@ export function useCanvasChromePanels({
     avatar: avatarEl,
     laser: laserEl,
     spotlight: spotlightEl,
+    eraser: eraserEl,
   };
   return { panelEls };
 }

@@ -41,6 +41,8 @@ import { CanvasLiveRegion } from '@/components/canvas/CanvasLiveRegion';
 import { IsometricDepthLayer } from '@/components/canvas/IsometricDepthLayer';
 import { useIsometricView } from '@/hooks/canvas/useIsometricView';
 import { SpotlightOverlay } from '@/components/canvas/SpotlightOverlay';
+import { EraserBrushRing } from '@/components/canvas/EraserBrushRing';
+import { DEFAULT_ERASER_CONFIG, eraserRadius } from '@/lib/eraser-config';
 import { useSpotlight } from '@/hooks/canvas/useSpotlight';
 import { useSpotlightConfig } from '@/hooks/canvas/useSpotlightConfig';
 import { AvatarWalker } from '@/components/canvas/AvatarWalker';
@@ -251,6 +253,10 @@ export function Canvas(props: CanvasProps) {
   // The spotlight's look (spec/112): persisted per browser, read by the
   // overlay and edited from the Spotlight Panel down in the chrome.
   const spotlightLook = useSpotlightConfig();
+  // Where to draw the eraser's brush ring, in <main>-relative px. Null until
+  // the pointer has been over the canvas — an eraser ring parked in the middle
+  // of the screen would claim a brush that isn't there.
+  const [eraserPos, setEraserPos] = useState<{ x: number; y: number } | null>(null);
 
   // Avatar mode (spec/101): the walking character's position / facing / step
   // frame, its click-to-walk entry point, and the camera follow. Owns its own
@@ -394,10 +400,14 @@ export function Canvas(props: CanvasProps) {
     // not canvas-coords: its light must stay put on screen as the diagram
     // pans / zooms under it. <main> is `position: relative` with no border,
     // so its content origin is its bounding-rect top-left.
-    if (canvasTool === 'spotlight') {
+    if (canvasTool === 'spotlight' || canvasTool === 'eraser') {
       const node = mainRef && 'current' in mainRef ? mainRef.current : null;
       const mr = node?.getBoundingClientRect();
-      if (mr) spotlight.setPos({ x: e.clientX - mr.left, y: e.clientY - mr.top });
+      const at = mr ? { x: e.clientX - mr.left, y: e.clientY - mr.top } : null;
+      // The eraser's brush ring (spec/113) needs the same screen-space point
+      // the spotlight's light does, so they share the measurement.
+      if (at && canvasTool === 'spotlight') spotlight.setPos(at);
+      if (at && canvasTool === 'eraser') setEraserPos(at);
     }
     const rect = wrapperRef.current?.getBoundingClientRect();
     if (!rect) return;
@@ -675,6 +685,16 @@ export function Canvas(props: CanvasProps) {
           diagram pans / zooms underneath. Rendered before CanvasChrome so the
           palette + chrome paint ON TOP and stay reachable to switch tools
           back; pointer-events-none lets clicks fall through to <main>. */}
+      {/* The eraser's brush ring (spec/113): the same screen-space layer as
+          the shroud, for the same reason — it must not pan or zoom with the
+          diagram, and it must never take a pointer event. */}
+      {canvasTool === 'eraser' ? (
+        <EraserBrushRing
+          pos={eraserPos}
+          radius={eraserRadius(props.eraserConfig ?? DEFAULT_ERASER_CONFIG)}
+          filtered={(props.eraserConfig ?? DEFAULT_ERASER_CONFIG).target !== 'anything'}
+        />
+      ) : null}
       {canvasTool === 'spotlight' ? (
         <SpotlightOverlay
           pos={spotlight.pos}
@@ -704,6 +724,11 @@ export function Canvas(props: CanvasProps) {
         spotlightPanelPosition={props.spotlightPanelPosition}
         onMoveSpotlightPanel={props.onMoveSpotlightPanel}
         onResetSpotlightPanel={props.onResetSpotlightPanel}
+        eraserConfig={props.eraserConfig}
+        onChangeEraserField={props.onChangeEraserField}
+        eraserPanelPosition={props.eraserPanelPosition}
+        onMoveEraserPanel={props.onMoveEraserPanel}
+        onResetEraserPanel={props.onResetEraserPanel}
         laserPanelPosition={props.laserPanelPosition}
         onMoveLaserPanel={props.onMoveLaserPanel}
         onResetLaserPanel={props.onResetLaserPanel}

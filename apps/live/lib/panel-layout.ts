@@ -32,7 +32,9 @@ export type PanelId =
   // tool is, exactly like the avatar's.
   | 'laser'
   // Spotlight Panel (spec/112): the light's look, on the same terms.
-  | 'spotlight';
+  | 'spotlight'
+  // Eraser Panel (spec/113): the brush's settings, on the same terms.
+  | 'eraser';
 
 export const PANEL_CORNERS: readonly PanelCorner[] = [
   'top-left',
@@ -54,6 +56,7 @@ export const PANEL_IDS: readonly PanelId[] = [
   'avatar',
   'laser',
   'spotlight',
+  'eraser',
 ];
 
 // Internal: a free panel's pixel position. Not exported — callers pass
@@ -96,6 +99,7 @@ export const DEFAULT_PANEL_CORNER: Record<PanelId, PanelCorner> = {
   avatar: 'top-right',
   laser: 'top-right',
   spotlight: 'top-right',
+  eraser: 'top-right',
 };
 
 export const STORAGE_KEY = 'livediagram:panel-layout:v1';

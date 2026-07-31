@@ -38,6 +38,7 @@ import { describeVariant } from '@/components/canvas/element-variant';
 import { BadgeStrip, RemoteSelectorsStrip } from '@/components/canvas/element-badges';
 import { AnnotationGlyph, AnnotationHoverNote } from '@/components/canvas/AnnotationMarker';
 import { LinkCardView } from '@/components/canvas/LinkCardView';
+import { VideoView } from '@/components/canvas/VideoView';
 import { ShapeInlineIconLayout } from '@/components/canvas/shape-inline-icon-layout';
 import { useBoxedElementGestures } from '@/components/canvas/useBoxedElementGestures';
 import { useBoxedElementAnimation } from '@/components/canvas/useBoxedElementAnimation';
@@ -453,6 +454,8 @@ function BoxedElementViewImpl({
         <AnnotationGlyph
           stroke={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element)}
         />
+      ) : element.type === 'video' ? (
+        <VideoView element={element} />
       ) : element.type === 'link-card' ? (
         <LinkCardView
           element={element}

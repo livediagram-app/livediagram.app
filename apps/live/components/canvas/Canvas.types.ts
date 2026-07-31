@@ -142,6 +142,17 @@ export type CanvasProps = {
   spotlightPanelPosition?: { x: number; y: number } | null;
   onMoveSpotlightPanel?: (x: number, y: number) => void;
   onResetSpotlightPanel?: () => void;
+  // The eraser's settings (spec/113). Owned in editor state, where the erase
+  // gesture lives; Canvas forwards them to the panel.
+  eraserConfig?: import('@/lib/eraser-config').EraserConfig;
+  onChangeEraserField?: <K extends keyof import('@/lib/eraser-config').EraserConfig>(
+    field: K,
+    value: import('@/lib/eraser-config').EraserConfig[K],
+  ) => void;
+  // Eraser Panel (spec/113): where it sits.
+  eraserPanelPosition?: { x: number; y: number } | null;
+  onMoveEraserPanel?: (x: number, y: number) => void;
+  onResetEraserPanel?: () => void;
   // Map of elementId -> remote participants currently focused on that
   // element. Drives a small badge ring on each element so participants
   // can see in real time what others are working on.
@@ -203,6 +214,7 @@ export type CanvasProps = {
   onAddTable: () => void;
   onAddAnnotation: () => void;
   onAddLinkCard: () => void;
+  onAddVideo: () => void;
   // Composite "Components" (spec/09), dropped at the viewport centre. Hero /
   // Header / Avatar carry an image and open the picker on drop.
   onAddBanner: () => void;
@@ -255,7 +267,7 @@ export type CanvasProps = {
   // and Catmull-Rom-to-Bezier smoothing before minting the
   // FreehandElement, both for storage size and visual smoothness.
   // `recogniseShapes` says whether this stroke came from the Shape Pen
-  // (spec/112); when true the caller (commitFreehand) runs the polyline
+  // (spec/115); when true the caller (commitFreehand) runs the polyline
   // through recogniseShape and may mint a real shape primitive instead of a
   // FreehandElement. It reads off the armed intent's variant, not a
   // preference — the toggle that used to set it is gone.

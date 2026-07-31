@@ -177,7 +177,7 @@ export const categories: Category[] = [
     title: 'Palette',
     description:
       'Your launchpad for everything on the canvas: every element and palette setting explained.',
-    articleCount: 15,
+    articleCount: 16,
     kind: 'feature',
   },
   {
@@ -866,7 +866,17 @@ export const articles: Article[] = [
     slug: 'icons',
     title: 'Icons',
     description: 'A searchable catalogue of single-colour glyphs.',
-    keywords: 'glyph symbol pictogram emoji search catalogue catalog reaction smiley thumbs status',
+    keywords: 'glyph symbol pictogram line art search catalogue catalog theme colour color tint',
+    category: 'Palette',
+    categorySlug: 'palette',
+    group: 'Elements',
+  },
+  {
+    slug: 'stickers',
+    title: 'Stickers',
+    description: 'Colour emoji for reactions, status, direction, and decoration.',
+    keywords:
+      'emoji sticker reaction smiley face thumbs up heart fire celebrate party status flag arrow decorate pretty feelings emotion',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Elements',

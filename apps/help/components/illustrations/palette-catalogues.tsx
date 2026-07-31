@@ -1,7 +1,7 @@
-// Palette catalogue-tab illustrations (spec/55): the Components, Devices, Icons,
-// and Technology tabs of the floating palette. Composed only from the shared
-// primitives so the house style holds; the four scenes share one catalogue
-// frame so the palette chrome is drawn once, not redrawn per tab.
+// Palette catalogue-tab illustrations (spec/55): the Components, Devices,
+// Icons, Stickers, and Technology tabs of the floating palette. Composed only
+// from the shared primitives so the house style holds; the scenes share one
+// catalogue frame so the palette chrome is drawn once, not redrawn per tab.
 
 import type { ReactNode } from 'react';
 
@@ -13,23 +13,21 @@ import { Scene, Panel, Tabs, Label, TextBar, Tile } from './primitives';
 function CatalogueGrid({
   active,
   search,
+  // The tab strip to draw. Defaults to the four this frame was built for; the
+  // Stickers scene passes its own neighbours so the strip stays true to where
+  // that category actually sits in the Decorate band.
+  tabs = ['Components', 'Devices', 'Icons', 'Technology'],
   children,
 }: {
   active: number;
   search: string;
+  tabs?: string[];
   children: ReactNode;
 }) {
   return (
     <Scene w={400} h={252} bg="plain">
       <Panel x={40} y={18} w={320} h={216} title="PALETTE">
-        <Tabs
-          x={56}
-          y={54}
-          items={['Components', 'Devices', 'Icons', 'Technology']}
-          active={active}
-          tabW={72}
-          h={22}
-        />
+        <Tabs x={56} y={54} items={tabs} active={active} tabW={72} h={22} />
         {/* Search field */}
         <rect
           x={56}
@@ -538,6 +536,47 @@ export function IconsCatalogue() {
               strokeWidth={sel ? 2 : 1.5}
             />
             <g transform={`translate(${tx + 21} ${ty + 19})`}>{g}</g>
+          </g>
+        );
+      })}
+    </CatalogueGrid>
+  );
+}
+
+/** Stickers tab: a grid of colour-emoji tiles, drawn bigger than the Icons
+ *  grid's glyphs because a sticker is a small picture rather than an outline
+ *  (spec/113). Real emoji characters rather than line art — that IS what the
+ *  tab holds, and no drawn approximation would be more honest. */
+export function StickersCatalogue() {
+  const stickers = ['👍', '🎉', '🔥', '❤️', '✅', '⚠️', '🚀', '💡', '👀', '🙌', '⭐', '🤔'];
+  return (
+    <CatalogueGrid active={1} search="celebrate" tabs={['Icons', 'Stickers', 'Tech', 'Media']}>
+      {stickers.map((glyph, i) => {
+        const col = i % 5;
+        const row = Math.floor(i / 5);
+        const tx = 62 + col * 56;
+        const ty = 124 + row * 46;
+        const sel = i === 1;
+        return (
+          <g key={glyph}>
+            <rect
+              x={tx}
+              y={ty}
+              width={44}
+              height={38}
+              rx={7}
+              className={sel ? 'fill-brand-50 stroke-brand-500' : 'fill-white stroke-slate-200'}
+              strokeWidth={sel ? 2 : 1.5}
+            />
+            <text
+              x={tx + 22}
+              y={ty + 19}
+              fontSize={20}
+              textAnchor="middle"
+              dominantBaseline="central"
+            >
+              {glyph}
+            </text>
           </g>
         );
       })}

@@ -263,11 +263,21 @@ export function PaletteDropdown({
             className={`fixed z-[var(--z-overlay)] w-max border border-slate-200 bg-white py-1 shadow-lg dark:border-slate-700 dark:bg-slate-900 ${
               // The grid needs its own columns + a floor width; the list keeps
               // hugging its content as before.
-              grid ? 'grid min-w-[15rem] grid-cols-3 gap-1.5 px-2 pb-1.5' : ''
+              grid ? 'grid min-w-[15rem] grid-cols-3 gap-1.5 px-2 pb-1.5 pt-2' : ''
             } ${
+              // The menu grows out of the CORNER its trigger sits at, so
+              // opening the canvas-tool picker (top-left of the palette)
+              // unfolds from the left and the category picker (top-right)
+              // unfolds from the right. Without this both grew from their own
+              // centre-top and the two openings looked identical, which is
+              // the one thing the animation is there to distinguish.
               coords?.flipUp
-                ? 'origin-bottom animate-dropdown-up'
-                : 'origin-top animate-dropdown-down'
+                ? align === 'right'
+                  ? 'origin-bottom-right animate-dropdown-up'
+                  : 'origin-bottom-left animate-dropdown-up'
+                : align === 'right'
+                  ? 'origin-top-right animate-dropdown-down'
+                  : 'origin-top-left animate-dropdown-down'
             } ${autoHeight ? '' : 'max-h-56 overflow-y-auto'} ${
               // Connected pickers drop the corner that meets the trigger so the
               // menu reads as one piece with it; bordered pills stay fully

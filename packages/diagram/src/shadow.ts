@@ -62,7 +62,11 @@ export function supportsShadow(
   el: Pick<Element, 'type'>,
 ): el is Extract<Element, { shadow?: ElementShadow }> {
   return (
-    el.type === 'shape' || el.type === 'sticky' || el.type === 'image' || el.type === 'link-card'
+    el.type === 'shape' ||
+    el.type === 'sticky' ||
+    el.type === 'image' ||
+    el.type === 'link-card' ||
+    el.type === 'video'
   );
 }
 
