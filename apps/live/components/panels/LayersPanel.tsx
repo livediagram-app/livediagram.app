@@ -59,6 +59,10 @@ export function LayersPanel({
   onPreviewLayer,
   hoverPreviewEnabled,
   onSetHoverPreviewEnabled,
+  showPreview,
+  onSetShowPreview,
+  showCount,
+  onSetShowCount,
   resettable,
 }: {
   // Normalised layers, BOTTOM -> TOP (the data order); rendered reversed.
@@ -99,6 +103,12 @@ export function LayersPanel({
   // the header gear alongside Reset position.
   hoverPreviewEnabled: boolean;
   onSetHoverPreviewEnabled: (value: boolean) => void;
+  // Row density (spec/74): the thumbnail and the element count are each
+  // optional, so a diagram with many layers reads as a compact list.
+  showPreview: boolean;
+  onSetShowPreview: (value: boolean) => void;
+  showCount: boolean;
+  onSetShowCount: (value: boolean) => void;
   // True when the panel has left its default corner (enables Reset).
   resettable: boolean;
 }) {
@@ -260,6 +270,10 @@ export function LayersPanel({
         <LayersSettingsPopover
           hoverPreview={hoverPreviewEnabled}
           onSetHoverPreview={onSetHoverPreviewEnabled}
+          showPreview={showPreview}
+          onSetShowPreview={onSetShowPreview}
+          showCount={showCount}
+          onSetShowCount={onSetShowCount}
           onResetPosition={() => onReset?.()}
           resettable={resettable}
         />
@@ -331,17 +345,19 @@ export function LayersPanel({
                     {visible ? <EyeIcon /> : <EyeOffIcon />}
                   </button>
                 </Tooltip>
-                <span className="flex h-11 w-16 shrink-0 items-center justify-center overflow-hidden rounded border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-950">
-                  {thumbViewBox && thumbMarkup.get(layer.id) ? (
-                    <svg
-                      viewBox={thumbViewBox}
-                      preserveAspectRatio="xMidYMid meet"
-                      className="h-full w-full"
-                      aria-hidden
-                      dangerouslySetInnerHTML={{ __html: thumbMarkup.get(layer.id)! }}
-                    />
-                  ) : null}
-                </span>
+                {showPreview ? (
+                  <span className="flex h-11 w-16 shrink-0 items-center justify-center overflow-hidden rounded border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-950">
+                    {thumbViewBox && thumbMarkup.get(layer.id) ? (
+                      <svg
+                        viewBox={thumbViewBox}
+                        preserveAspectRatio="xMidYMid meet"
+                        className="h-full w-full"
+                        aria-hidden
+                        dangerouslySetInnerHTML={{ __html: thumbMarkup.get(layer.id)! }}
+                      />
+                    ) : null}
+                  </span>
+                ) : null}
                 {renamingId === layer.id ? (
                   <input
                     autoFocus
@@ -368,6 +384,13 @@ export function LayersPanel({
                     {layer.name}
                   </span>
                 )}
+                {/* How much is on this layer. Same quiet chip as the Empty
+                    tag below, so a column of rows reads as one thing. */}
+                {showCount && !empty && renamingId !== layer.id ? (
+                  <span className="shrink-0 rounded bg-slate-100 px-1 py-0.5 text-[9px] font-semibold tabular-nums text-slate-400 dark:bg-slate-800 dark:text-slate-500">
+                    {counts.get(layer.id) ?? 0}
+                  </span>
+                ) : null}
                 {/* Empty layers wear a quiet tag so they're easy to spot
                     (and prune) at a glance — the blank preview alone
                     doesn't read as "nothing here". */}

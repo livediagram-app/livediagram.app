@@ -824,3 +824,109 @@ export function PickerIcon() {
     </svg>
   );
 }
+
+// --- Chair + the collaboration family (spec/130, spec/123 to spec/129) -----
+// One shared frame so the seven read as a set beside PickerIcon above: 13px
+// rendered on a 16-unit grid, 1.4 stroke, round caps.
+
+function CollabGlyph({ children }: { children: React.ReactNode }) {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      {children}
+    </svg>
+  );
+}
+
+export function ChairIcon() {
+  return (
+    <CollabGlyph>
+      {/* a chair from the side: back, seat, two legs */}
+      <path d="M4.5 2.4v6.2" />
+      <path d="M4.5 8.6h7.2" />
+      <path d="M5.6 8.6v4.8" />
+      <path d="M10.8 8.6v4.8" />
+    </CollabGlyph>
+  );
+}
+
+export function EstimateIcon() {
+  return (
+    <CollabGlyph>
+      {/* two poker cards, the front one face-down */}
+      <rect x="2.2" y="3.4" width="7" height="9.6" rx="1.4" />
+      <path d="M11 3.9l2.4.9a1.2 1.2 0 0 1 .7 1.6l-2.5 6.4" />
+      <path d="M4.6 8.2h2.2" />
+    </CollabGlyph>
+  );
+}
+
+export function TemperatureIcon() {
+  return (
+    <CollabGlyph>
+      {/* five rising bars: the shape of the room, not an average */}
+      <path d="M2.6 12.4v-1.8" />
+      <path d="M5.3 12.4v-4" />
+      <path d="M8 12.4v-6.6" />
+      <path d="M10.7 12.4v-3.2" />
+      <path d="M13.4 12.4v-5" />
+    </CollabGlyph>
+  );
+}
+
+export function IdeaBoxIcon() {
+  return (
+    <CollabGlyph>
+      {/* a ballot box with a card going in through the slot */}
+      <path d="M2.6 7.4h10.8v6H2.6z" />
+      <path d="M5.4 7.4V4.2h5.2v3.2" />
+      <path d="M6.6 5.6h2.8" />
+    </CollabGlyph>
+  );
+}
+
+export function AgendaIcon() {
+  return (
+    <CollabGlyph>
+      {/* a run of segments, each with its time against it */}
+      <path d="M2.6 4.4h6.2" />
+      <path d="M2.6 8h6.2" />
+      <path d="M2.6 11.6h6.2" />
+      <circle cx="12.6" cy="8" r="2.6" />
+      <path d="M12.6 6.8V8l.9.7" />
+    </CollabGlyph>
+  );
+}
+
+export function DecisionIcon() {
+  return (
+    <CollabGlyph>
+      {/* a record card with a tick in its corner chip */}
+      <rect x="2.4" y="2.8" width="11.2" height="10.4" rx="1.6" />
+      <path d="M4.8 6.2h4.4" />
+      <path d="M4.8 9h2.6" />
+      <path d="M9.4 10.6l1.3 1.3 2.2-2.6" />
+    </CollabGlyph>
+  );
+}
+
+export function RollCallIcon() {
+  return (
+    <CollabGlyph>
+      {/* three heads: who was here, not who is here */}
+      <circle cx="5" cy="5.6" r="2" />
+      <circle cx="11.2" cy="5.6" r="2" />
+      <path d="M1.8 12.4a3.4 3.4 0 0 1 6.4 0" />
+      <path d="M8.6 12.4a3.4 3.4 0 0 1 5.6-1.5" />
+    </CollabGlyph>
+  );
+}

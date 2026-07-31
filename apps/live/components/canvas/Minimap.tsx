@@ -7,6 +7,15 @@ import { resolveIconArtLoaded, resolveStickerArtLoaded } from '@/lib/icon-regist
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 import { MovablePanel, type MovablePanelDockProps } from '@/components/primitives/MovablePanel';
 import { MapSettingsPopover } from '@/components/canvas/MapSettingsPopover';
+import type { MapSize } from '@/lib/user-preferences';
+
+// Panel body heights per map size. Tailwind classes rather than inline styles
+// so the dark-mode / responsive tooling still applies.
+const MAP_HEIGHT: Record<MapSize, string> = {
+  short: 'h-24',
+  medium: 'h-36',
+  tall: 'h-56',
+};
 
 // The "Map" panel (spec/59): a movable floating panel — like the Palette — with
 // a zoomed-out, true-to-shape overview of the whole tab. Each boxed element is
@@ -47,6 +56,11 @@ type MinimapProps = {
   // "Enable Map" toggle state in the header's settings popover.
   enabled: boolean;
   onSetEnabled: (value: boolean) => void;
+  // Map options (spec/59), all persisted preferences.
+  dimOutside: boolean;
+  onSetDimOutside: (value: boolean) => void;
+  size: MapSize;
+  onSetSize: (value: MapSize) => void;
 };
 
 // Padding around the content (a fraction of its size plus a floor) so elements
@@ -74,6 +88,10 @@ export function Minimap({
   dock,
   enabled,
   onSetEnabled,
+  dimOutside,
+  onSetDimOutside,
+  size,
+  onSetSize,
 }: MinimapProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const draggingRef = useRef(false);
@@ -205,6 +223,10 @@ export function Minimap({
         <MapSettingsPopover
           enabled={enabled}
           onSetEnabled={onSetEnabled}
+          dimOutside={dimOutside}
+          onSetDimOutside={onSetDimOutside}
+          size={size}
+          onSetSize={onSetSize}
           onResetPosition={onResetPosition}
           resettable={resettable}
         />
@@ -217,7 +239,7 @@ export function Minimap({
           ref={svgRef}
           viewBox={vb}
           preserveAspectRatio="xMidYMid meet"
-          className="block h-36 w-full cursor-pointer touch-none bg-slate-50/60 text-slate-400 dark:bg-slate-950/40 dark:text-slate-500"
+          className={`block w-full cursor-pointer touch-none bg-slate-50/60 text-slate-400 dark:bg-slate-950/40 dark:text-slate-500 ${MAP_HEIGHT[size]}`}
           role="img"
           aria-label="Canvas map — tap or drag to navigate, scroll to zoom"
           onPointerDown={(e) => {
@@ -240,12 +262,15 @@ export function Minimap({
             <>
               {/* Dim everything outside the current view (even-odd: outer box
                 minus the view hole) so the lit window reads at a glance as
-                "where you are on the canvas". */}
-              <path
-                d={`M${x0} ${y0}H${x1}V${y1}H${x0}Z M${vx} ${vy}H${vx1}V${vy1}H${vx}Z`}
-                fillRule="evenodd"
-                className="fill-slate-500/25 dark:fill-slate-950/55"
-              />
+                "where you are on the canvas". Optional: on a dense board some
+                people would rather read the whole map. */}
+              {dimOutside ? (
+                <path
+                  d={`M${x0} ${y0}H${x1}V${y1}H${x0}Z M${vx} ${vy}H${vx1}V${vy1}H${vx}Z`}
+                  fillRule="evenodd"
+                  className="fill-slate-500/25 dark:fill-slate-950/55"
+                />
+              ) : null}
               <rect
                 x={vx}
                 y={vy}

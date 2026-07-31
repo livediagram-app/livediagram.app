@@ -1,6 +1,7 @@
 'use client';
 
 import { ToggleSwitch } from '@/components/palette/palette-controls';
+import type { MapSize } from '@/lib/user-preferences';
 import { SettingsPopover, SettingsPopoverResetRow } from '@/components/primitives/SettingsPopover';
 
 // Settings popover for the Map panel (spec/59): a gear in the panel header
@@ -8,14 +9,28 @@ import { SettingsPopover, SettingsPopoverResetRow } from '@/components/primitive
 // "Enable Map" toggle; turning it off hides the Map (showMinimap = false),
 // which the master Settings dialog can flip back on. Shell + reset row come from
 // the shared SettingsPopover so all three panel gear popovers stay in lockstep.
+const SIZES: { id: MapSize; label: string }[] = [
+  { id: 'short', label: 'Short' },
+  { id: 'medium', label: 'Medium' },
+  { id: 'tall', label: 'Tall' },
+];
+
 export function MapSettingsPopover({
   enabled,
   onSetEnabled,
+  dimOutside,
+  onSetDimOutside,
+  size,
+  onSetSize,
   onResetPosition,
   resettable,
 }: {
   enabled: boolean;
   onSetEnabled: (value: boolean) => void;
+  dimOutside: boolean;
+  onSetDimOutside: (value: boolean) => void;
+  size: MapSize;
+  onSetSize: (value: MapSize) => void;
   // Reset-to-default-corner lives here (not a header button) so the Map's
   // header stays a single gear; greyed out when already at the default.
   onResetPosition: () => void;
@@ -47,6 +62,45 @@ export function MapSettingsPopover({
             </span>
             <ToggleSwitch checked={enabled} label="Enable Map" presentational />
           </button>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={dimOutside}
+            onClick={() => onSetDimOutside(!dimOutside)}
+            className="flex w-full items-center justify-between gap-3 rounded-md px-2 py-1.5 text-left transition hover:bg-slate-50 dark:hover:bg-slate-800"
+          >
+            <span className="flex min-w-0 flex-col">
+              <span className="text-xs font-medium text-slate-700 dark:text-slate-200">
+                Dim outside the view
+              </span>
+              <span className="text-[10px] leading-snug text-slate-400 dark:text-slate-500">
+                Shades the rest of the board so your window stands out.
+              </span>
+            </span>
+            <ToggleSwitch checked={dimOutside} label="Dim outside the view" presentational />
+          </button>
+          <div className="px-2 py-1.5">
+            <span className="mb-1 block text-xs font-medium text-slate-700 dark:text-slate-200">
+              Map size
+            </span>
+            <div className="flex gap-1">
+              {SIZES.map((s) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  aria-pressed={size === s.id}
+                  onClick={() => onSetSize(s.id)}
+                  className={`flex-1 rounded-md px-2 py-1 text-[11px] font-medium transition ${
+                    size === s.id
+                      ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
+                      : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
+                  }`}
+                >
+                  {s.label}
+                </button>
+              ))}
+            </div>
+          </div>
           <SettingsPopoverResetRow
             onReset={onResetPosition}
             resettable={resettable}

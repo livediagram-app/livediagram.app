@@ -1,3 +1,5 @@
+export type MapSize = 'short' | 'medium' | 'tall';
+
 // Per-user editor preference flags. See spec/20.
 //
 // Storage:
@@ -37,6 +39,24 @@ export type UserPreferences = {
   // existing users, and removing it would make a stored preference fail to
   // parse rather than simply be ignored.
   recogniseShapes?: boolean;
+  // Map panel options (spec/59). Both default ON / medium via `!== false`
+  // and `?? 'medium'`, so an existing user's map is unchanged.
+  //
+  // `mapDimOutside` shades everything outside the current view. It reads as
+  // "you are here" at a glance, but on a dense board some people want the
+  // whole map bright, so it is a toggle rather than a rule.
+  mapDimOutside?: boolean;
+  // How tall the map is. A big diagram is unreadable in a 144px strip; a
+  // small one doesn't need more.
+  mapSize?: MapSize;
+  // Layers panel options (spec/74). Both default ON via `!== false`.
+  //
+  // The row thumbnail is the quickest way to tell two similarly-named layers
+  // apart, but it is also the tallest thing in a row — turning it off gives a
+  // compact list on a diagram with many layers.
+  layersShowPreview?: boolean;
+  // The per-layer element count, beside the name.
+  layersShowCount?: boolean;
   // AI Assistance panel (spec/25). When `true`, the AI panel is
   // rendered in the editor. Defaults to false (opt-in). Only
   // surfaced in Settings when the api worker reports aiEnabled:true

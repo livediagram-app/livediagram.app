@@ -481,6 +481,16 @@ export function useCanvasChromePanels({
           track('UI', 'Toggled', v ? 'LayerHoverPreviewOn' : 'LayerHoverPreviewOff');
           onChangeSettings({ ...settings, layerHoverPreview: v });
         }}
+        showPreview={settings?.layersShowPreview !== false}
+        onSetShowPreview={(v) => {
+          track('UI', 'Toggled', v ? 'LayerPreviewOn' : 'LayerPreviewOff');
+          onChangeSettings({ ...settings, layersShowPreview: v });
+        }}
+        showCount={settings?.layersShowCount !== false}
+        onSetShowCount={(v) => {
+          track('UI', 'Toggled', v ? 'LayerCountOn' : 'LayerCountOff');
+          onChangeSettings({ ...settings, layersShowCount: v });
+        }}
         resettable={layersWiring.resettable}
       />
     ) : null;
@@ -570,6 +580,16 @@ export function useCanvasChromePanels({
         onSetEnabled={(v) => {
           track('UI', 'Toggled', v ? 'MinimapOn' : 'MinimapOff');
           onChangeSettings({ ...settings, showMinimap: v });
+        }}
+        dimOutside={settings?.mapDimOutside !== false}
+        onSetDimOutside={(v) => {
+          track('UI', 'Toggled', v ? 'MapDimOn' : 'MapDimOff');
+          onChangeSettings({ ...settings, mapDimOutside: v });
+        }}
+        size={settings?.mapSize ?? 'medium'}
+        onSetSize={(v) => {
+          track('UI', 'Changed', 'MapSize');
+          onChangeSettings({ ...settings, mapSize: v });
         }}
       />
     ) : null;

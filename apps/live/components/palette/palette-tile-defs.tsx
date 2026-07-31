@@ -1,6 +1,17 @@
 import type { EmbedProvider } from '@livediagram/diagram';
 import type { ComponentKind, ShapeKind } from '@livediagram/diagram';
-import { PickerIcon, RevealIcon, TimerIcon } from '@/components/palette/palette-icons';
+import {
+  AgendaIcon,
+  ChairIcon,
+  DecisionIcon,
+  EstimateIcon,
+  IdeaBoxIcon,
+  PickerIcon,
+  RevealIcon,
+  RollCallIcon,
+  TemperatureIcon,
+  TimerIcon,
+} from '@/components/palette/palette-icons';
 
 // The shared palette tile catalogue (spec/78): every creation tile across
 // the Shapes / Tools / Data / Components / Devices categories as one data
@@ -19,6 +30,13 @@ export type PaletteTileSection =
   | 'shapes'
   | 'tools'
   | 'data'
+  // The collaboration family (spec/123 to spec/129): elements that record what
+  // the ROOM thinks rather than what one author drew. Its own category rather
+  // than a Behaviour sub-group, on spec/110's reasoning — Behaviour is
+  // "pressing this does something to your session", these are "the board is
+  // collecting an answer from everybody", and six rows under one heading is
+  // where a category earns its place in the picker.
+  | 'collaborate'
   | 'media'
   | 'components'
   | 'devices'
@@ -815,6 +833,98 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'picker' },
     icon: <PickerIcon />,
+  },
+  {
+    // Chair (spec/130): Behaviour, because what it does only happens when
+    // somebody interacts with it — here by walking an Avatar-mode character
+    // into it rather than by pressing it.
+    id: 'tools:chair',
+    blurb: 'An Avatar-mode character sits down in it',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add chair',
+    caption: 'Chair',
+    description:
+      'Furniture for Avatar mode: walk your character into one and it sits down. Give the room a seating plan.',
+    filled: true,
+    action: { type: 'shape', kind: 'chair' },
+    icon: <ChairIcon />,
+  },
+  // --- Collaborate (spec/123 to spec/129) ----------------------------------
+  // Elements that collect what the ROOM thinks. Rows with a blurb, like
+  // Behaviour: none of these glyphs can say what the element does, and
+  // "everyone picks privately, then all at once" is the thing being chosen.
+  {
+    id: 'collab:estimate',
+    blurb: 'Planning poker: pick privately, reveal together',
+    section: 'collaborate',
+    label: 'Add estimate card',
+    caption: 'Estimate',
+    description:
+      'Planning poker on the canvas. Everyone picks a number privately, then one Reveal shows every answer and the spread.',
+    filled: true,
+    action: { type: 'shape', kind: 'estimate' },
+    icon: <EstimateIcon />,
+  },
+  {
+    id: 'collab:temperature',
+    blurb: 'Fist of five: how does the room feel?',
+    section: 'collaborate',
+    label: 'Add temperature check',
+    caption: 'Temperature',
+    description:
+      'A fist-of-five gauge. Everyone registers 1 to 5 and the bars and average move as the answers land.',
+    filled: true,
+    action: { type: 'shape', kind: 'temperature' },
+    icon: <TemperatureIcon />,
+  },
+  {
+    id: 'collab:idea-box',
+    blurb: 'Anonymous ideas, held until you open it',
+    section: 'collaborate',
+    label: 'Add idea box',
+    caption: 'Idea box',
+    description:
+      'Anyone can drop in an idea without their name on it. Nothing shows until you open the box.',
+    filled: true,
+    action: { type: 'shape', kind: 'idea-box' },
+    icon: <IdeaBoxIcon />,
+  },
+  {
+    id: 'collab:agenda',
+    blurb: 'Segments with minutes that start the timer',
+    section: 'collaborate',
+    label: 'Add agenda',
+    caption: 'Agenda',
+    description:
+      'The run of the session. Press a segment and it starts the tab timer for that long and marks where the room is.',
+    filled: true,
+    action: { type: 'shape', kind: 'agenda' },
+    icon: <AgendaIcon />,
+  },
+  {
+    id: 'collab:decision',
+    blurb: 'What was decided, why, and whether it stands',
+    section: 'collaborate',
+    label: 'Add decision record',
+    caption: 'Decision',
+    description:
+      'A decision on the diagram beside the thing it decided: the statement, a status, the date, and what drove it.',
+    filled: true,
+    action: { type: 'shape', kind: 'decision' },
+    icon: <DecisionIcon />,
+  },
+  {
+    id: 'collab:roll-call',
+    blurb: 'Freezes who was in the room, right now',
+    section: 'collaborate',
+    label: 'Add roll call',
+    caption: 'Roll call',
+    description:
+      'Press Take roll and it records everyone in the room at that moment, and keeps them after they leave.',
+    filled: true,
+    action: { type: 'shape', kind: 'roll-call' },
+    icon: <RollCallIcon />,
   },
   {
     id: 'tools:checklist',
