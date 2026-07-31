@@ -51,10 +51,14 @@ const ICON_WRAP =
 // through it. Deliberately faint and capped at three steps: this is grouping,
 // not hierarchy — the third band is not more important than the first, and a
 // stronger ramp would say it was.
+// The FIRST band is tinted too, faintly. It used to be bare on the reasoning
+// that "lightest" could mean "none", but against two tinted neighbours it read
+// as a rendering fault rather than as the top of a ramp — the eye sees three
+// groups and asks why one is missing its surface.
 const BAND_TINT = [
-  '',
-  'bg-slate-50/70 dark:bg-slate-800/30',
-  'bg-slate-100/70 dark:bg-slate-800/60',
+  'bg-slate-50/50 dark:bg-slate-800/20',
+  'bg-slate-100/60 dark:bg-slate-800/40',
+  'bg-slate-100 dark:bg-slate-800/70',
 ] as const;
 const bandTint = (group: number | undefined): string =>
   group === undefined ? '' : (BAND_TINT[Math.min(group, BAND_TINT.length - 1)] ?? '');

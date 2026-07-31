@@ -11,6 +11,8 @@ import type { MapSize } from '@/lib/user-preferences';
 
 // Panel body heights per map size. Tailwind classes rather than inline styles
 // so the dark-mode / responsive tooling still applies.
+// Panel body heights per map size, in Tailwind's 4px scale: h-24 = 96px,
+// h-36 = 144px, h-56 = 224px. MAP_RATIO above must match these.
 const MAP_HEIGHT: Record<MapSize, string> = {
   short: 'h-24',
   medium: 'h-36',
@@ -71,7 +73,16 @@ const PAD_MIN = 48;
 // its h-36 svg). The viewBox is expanded to this aspect ratio so the wireframe
 // fills the panel edge-to-edge rather than letterboxing into white bars under
 // preserveAspectRatio="meet".
-const MAP_RATIO = 256 / 144;
+// The panel body's aspect ratio, per map size (spec/59). It has to track
+// MAP_HEIGHT below: the viewBox is grown on its short axis to THIS ratio so
+// the map fills the panel edge to edge, and a stale number here letterboxes —
+// picking Tall grew the panel but left the drawing its old shape, so all the
+// new height went to blank bars above and below.
+const MAP_RATIO: Record<MapSize, number> = {
+  short: 256 / 96,
+  medium: 256 / 144,
+  tall: 256 / 224,
+};
 
 export function Minimap({
   elements,
@@ -175,12 +186,13 @@ export function Minimap({
   let y0 = bounds.y - padY;
   let x1 = bounds.x + bounds.width + padX;
   let y1 = bounds.y + bounds.height + padY;
-  if ((x1 - x0) / (y1 - y0) < MAP_RATIO) {
-    const grow = ((y1 - y0) * MAP_RATIO - (x1 - x0)) / 2;
+  const ratio = MAP_RATIO[size];
+  if ((x1 - x0) / (y1 - y0) < ratio) {
+    const grow = ((y1 - y0) * ratio - (x1 - x0)) / 2;
     x0 -= grow;
     x1 += grow;
   } else {
-    const grow = ((x1 - x0) / MAP_RATIO - (y1 - y0)) / 2;
+    const grow = ((x1 - x0) / ratio - (y1 - y0)) / 2;
     y0 -= grow;
     y1 += grow;
   }

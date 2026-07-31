@@ -12,15 +12,21 @@ export function MindNodeHint({ zoom }: { zoom: number }) {
     <div
       // Inert: it is a label, and the canvas owns every pointer event in this
       // rectangle.
-      className="pointer-events-none absolute left-1/2 top-full flex items-center gap-1 whitespace-nowrap rounded-full bg-slate-900/85 px-2 py-0.5 text-[10px] font-medium text-white shadow-sm"
+      // Anchored to the element's LEFT edge, not its centre. The quick-add
+      // "+" buttons sit at the middle of each side, so a centred chip below
+      // the box lands underneath the bottom one — which is exactly where it
+      // was, hidden behind it.
+      className="pointer-events-none absolute left-0 top-full flex items-center gap-1 whitespace-nowrap rounded-full bg-slate-900/85 px-2 py-0.5 text-[10px] font-medium text-white shadow-sm"
       style={{
         // translate(-50%) centres it; the zoom division keeps the chip a
         // constant on-screen size, and the 6px offset is in element space so
         // it has to be divided too.
-        // 18px clears the bottom-centre resize handle, which sits on the edge
-        // the chip hangs from.
-        transform: `translate(-50%, ${18 / zoom}px) scale(${1 / zoom})`,
-        transformOrigin: 'top center',
+        // Clear of the quick-add "+", which is a 24px ring centred on the
+        // bottom edge and so reaches ~12px below it, plus the ring's own
+        // shadow. Measured rather than guessed: 10px and 26px both still
+        // overlapped it.
+        transform: `translate(0, ${46 / zoom}px) scale(${1 / zoom})`,
+        transformOrigin: 'top left',
       }}
     >
       <Key>Tab</Key>

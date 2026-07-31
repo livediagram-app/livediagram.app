@@ -62,9 +62,15 @@ export function SettingsPopover({
       const below = t.bottom + GAP;
       const above = t.top - GAP - h;
       const roomBelow = window.innerHeight - below - EDGE >= h;
-      // Only flip if ABOVE is actually better; on a window too short for
-      // either, stay below and let the max-height below make it scroll.
-      const top = roomBelow || above < EDGE ? below : above;
+      // A gear in the BOTTOM half of the window opens upward even when there
+      // is technically room below, because "room below" is measured against
+      // the viewport and the thing actually in the way is the panel itself:
+      // the popover hangs off a header, so opening down covers the panel it
+      // configures. Above the halfway line the panel is below its header and
+      // opening down covers nothing.
+      const lowerHalf = t.top > window.innerHeight / 2;
+      const roomAbove = above >= EDGE;
+      const top = roomAbove && (lowerHalf || !roomBelow) ? above : below;
       setPos({ left, top });
     };
     place();
