@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react';
 import {
+  SELF_PAINTING_SHAPES,
   BORDER_RADIUS_PX,
   BORDER_STROKE_PX,
   DEFAULT_BORDER_STROKE,
@@ -7,12 +8,7 @@ import {
   MODE_BUTTON_SKIN,
   defaultFillColor,
   defaultStrokeColor,
-  isChartShape,
-  isChecklistShape,
-  isCodeBlockShape,
   isLegacyModeButtonSkin,
-  isRailShape,
-  isRatingShape,
   shadowBoxCss,
   shadowFilterCss,
   supportsShadow,
@@ -75,17 +71,13 @@ export function describeVariant(
       // selection ring.
       // A portal (spec/104) is in the same family: its ring IS the element, so
       // a wrapper box behind it would frame the energy in a rectangle.
-      if (
-        isRailShape(element.shape) ||
-        isRatingShape(element.shape) ||
-        isChartShape(element.shape) ||
-        isCodeBlockShape(element.shape) ||
-        isChecklistShape(element.shape) ||
-        element.shape === 'portal' ||
-        // Reveal zone (spec/106): the cover IS the element, and it must not
-        // sit on a second box that would show around its dashed edge.
-        element.shape === 'reveal'
-      ) {
+      // SELF_PAINTING_SHAPES (@livediagram/diagram) is the single list of
+      // kinds that draw their own body. The menu reads the same set to decide
+      // whether to offer Border at all — they used to keep separate lists and
+      // drifted, leaving dead Border controls on a code block, a checklist, a
+      // portal and a reveal. `actor` / `icon` are in the set too but reach
+      // this branch already handled above, so including them changes nothing.
+      if (SELF_PAINTING_SHAPES.has(element.shape)) {
         return { className: ring, style: { borderRadius: '4px', ...filterShadow } };
       }
       // CSS-rendered shapes (square / circle / stadium and the

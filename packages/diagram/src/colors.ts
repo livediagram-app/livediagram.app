@@ -219,23 +219,34 @@ export function supportsBorder(element: Element): element is ShapeElement | Free
 // stroke-field writes + type narrowing. A boolean visibility gate: it adds
 // tables (which carry borders) and drops the `actor`, a stick figure with no
 // enclosing outline for which a border is meaningless.
+// Shape kinds that DRAW THEIR OWN BODY, so the wrapper carries no border or
+// background and every border control is dead for them. One list, exported,
+// because the renderer and the menu were each keeping their own and drifted:
+// the menu still offered Border on a code block, a checklist, a portal and a
+// reveal long after the renderer stopped painting one.
+//
+// The actor and icons are here for a different reason — a stick figure and a
+// glyph have no enclosing outline to stroke — but the outcome is the same, so
+// they share the predicate rather than a second condition.
+export const SELF_PAINTING_SHAPES = new Set<string>([
+  'actor',
+  'icon',
+  'timeline-rail',
+  'rating',
+  'pie-chart',
+  'bar-chart',
+  'line-chart',
+  'code-block',
+  'checklist',
+  // Behaviour elements (spec/104, /106): the ring / cover IS the element.
+  'portal',
+  'reveal',
+]);
+
 export function supportsBorderControls(element: Element): boolean {
   if (element.type === 'table') return true;
   if (!supportsBorder(element)) return false;
-  // Kinds that render no wrapper border, so the controls would be dead:
-  // the actor stick figure, icons (a glyph, and a Technology mark carries
-  // fixed colours), and the self-drawing data shapes (rail / rating /
-  // charts paint their own content with no enclosing box).
-  return !(
-    element.type === 'shape' &&
-    (element.shape === 'actor' ||
-      element.shape === 'icon' ||
-      element.shape === 'timeline-rail' ||
-      element.shape === 'rating' ||
-      element.shape === 'pie-chart' ||
-      element.shape === 'bar-chart' ||
-      element.shape === 'line-chart')
-  );
+  return !(element.type === 'shape' && SELF_PAINTING_SHAPES.has(element.shape));
 }
 
 // Whether a shape can carry an INLINE icon beside its label — i.e. whether

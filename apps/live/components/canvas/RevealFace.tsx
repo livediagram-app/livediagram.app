@@ -93,13 +93,13 @@ export function RevealFace({
     );
   }
 
+  // No tooltip on the cover. It wrapped the WHOLE element, so hovering
+  // anywhere on a reveal popped a card over the selection toolbar sitting
+  // just above it — and it was redundant besides: the face already shows the
+  // label and "<gesture> to reveal" in the middle of it, and the button's
+  // aria-label carries the same for screen readers.
   return (
-    <Tooltip
-      block
-      className="h-full w-full"
-      title={label.trim() || 'Hidden'}
-      description={`${gesture} to uncover it on your screen only. Anyone can move the cover, so it hides content from a reader, not from a determined one.`}
-    >
+    <>
       <button
         type="button"
         aria-label={`${label.trim() || 'Hidden'} — ${gesture.toLowerCase()} to reveal`}
@@ -126,6 +126,6 @@ export function RevealFace({
           {gesture} to reveal
         </span>
       </button>
-    </Tooltip>
+    </>
   );
 }
