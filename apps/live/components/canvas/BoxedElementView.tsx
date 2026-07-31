@@ -92,6 +92,7 @@ function BoxedElementViewImpl({
   onSetRailLabel,
   onToggleChecklistItem,
   onSetPageHeading,
+  isoDepth,
   chartPalette,
   onCancelEdit,
   onFollowLink,
@@ -326,6 +327,8 @@ function BoxedElementViewImpl({
         wrapperAnimClass
       } ${variant.className} ${cursor}`}
       style={{
+        // Isometric depth stagger (spec/45) — see globals.css [data-iso].
+        ...({ '--iso-z': isoDepth } as React.CSSProperties),
         left: element.x,
         top: element.y,
         width: element.width,

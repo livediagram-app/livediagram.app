@@ -248,7 +248,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             above all boxes inside a single SVG layer). Each arrow
             gets its own <svg> overlay; pointer events on the SVG are
             disabled in CSS, only the inner arrow line picks them up. */}
-      {ordered.map(({ element, layerOpacity }) => {
+      {ordered.map(({ element, layerOpacity }, isoDepth) => {
         // Shift-duplicate ghost (spec/80): the dragged set renders
         // translucent while its materialised copy holds the start
         // position, multiplied over any per-layer opacity.
@@ -305,6 +305,10 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
           <BoxedElementView
             key={element.id}
             element={element}
+            // Paint index, used only by isometric mode to stagger each element
+            // onto its own z-plane (globals.css --iso-z): coplanar layers
+            // z-fight under preserve-3d, which is the flicker.
+            isoDepth={isoDepth}
             // Resolved once here, where both the vote and the tab's layers
             // are in scope, rather than threading `layers` down to the
             // gesture hook and the overlay separately (spec/96).

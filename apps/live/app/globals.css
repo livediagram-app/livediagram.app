@@ -1775,8 +1775,41 @@
    GPU a stable depth order. (Frames don't rotate, so overriding the
    wrapper transform is safe; their depth-extrusion column is skipped in
    IsometricDepthLayer for the same reason.) */
+/* Isometric z-fighting, generally (spec/45).
+   Under preserve-3d every element sits at z=0, so ANY two that overlap are
+   coplanar and the compositor picks a winner per frame — which reads as
+   flicker while the camera orbits, and as flicker on repaint even when it
+   doesn't. The two rules that used to live here only de-conflicted frames and
+   arrows; every other pair of overlapping elements still fought.
+   So each element is staggered by its own paint index (--iso-z, set in
+   CanvasElementsLayer). A hundredth of a pixel is far too small to see and far
+   more than enough to order the layers, and it restores DOM paint order in 3D,
+   where painting goes by z rather than by document position.
+   The independent `translate` property is used rather than `transform` on
+   purpose: it COMPOSES with an element's own rotation, where a transform would
+   replace it. */
+[data-iso] [data-element-id],
+[data-iso] [data-arrow-svg] {
+  translate: 0 0 calc(var(--iso-z, 0) * 0.01px);
+}
+
+/* The floating chrome gets its OWN compositing layer.
+   Isometric puts a large preserve-3d scene on the page, and the panels sit
+   above it in z but shared its repaint region — which is why the palette
+   flickered too, not just the diagram. `will-change` is the promotion hint
+   that doesn't touch `transform`, which MovablePanel needs for dragging.
+   Unconditional rather than gated on [data-iso]: these are a handful of small
+   panels, promoting them costs almost nothing, and a rule that only applies
+   mid-mode would itself cause a layer churn on every mode switch. */
+[data-floating-panel] {
+  will-change: transform;
+}
+
+/* Frames still settle BELOW the base plane rather than taking their index:
+   a frame is a backdrop its contents sit on, and it is often added after the
+   things inside it, so paint order alone would float it over them. */
 [data-iso] [data-frame] {
-  transform: translateZ(-1px);
+  translate: 0 0 -1px;
 }
 
 /* Arrows get the same treatment in the other direction: an arrow's SVG is
@@ -1789,7 +1822,9 @@
    the per-arrow <svg> carries no transform of its own, so nothing is
    clobbered. */
 [data-iso] [data-arrow-svg] {
-  transform: translateZ(1px);
+  /* Arrows keep their nudge ON TOP of the index stagger: a connector should
+     cross above the boxes it joins, whatever order it was added in. */
+  translate: 0 0 calc(1px + var(--iso-z, 0) * 0.01px);
 }
 
 /* Rich-text notes (spec/92): the ink a linked run takes. Declared as a
