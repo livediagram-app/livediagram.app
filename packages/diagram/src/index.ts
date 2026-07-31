@@ -384,6 +384,30 @@ export type ShapeKind =
   | 'reveal'
   // Picker (spec/107): press it to choose a person or an option at random.
   | 'picker'
+  // Chair (spec/130): furniture an Avatar-mode character sits down in when it
+  // walks into one. Which way the seat points lives in `chairFacing`.
+  | 'chair'
+  // The collaboration family — elements that record what the ROOM thinks
+  // rather than what one author drew.
+  //
+  // Estimate card (spec/123): planning poker. Everyone picks privately from
+  // `estimateScale`, and `responsesRevealed` shows every answer at once.
+  | 'estimate'
+  // Temperature check (spec/124): a fist-of-five gauge. Same `responses`
+  // primitive, deliberately never hidden.
+  | 'temperature'
+  // Idea box (spec/125): anonymous submissions in `ideaCards`, held until
+  // `ideasRevealed`. There is nowhere to put an author, on purpose.
+  | 'idea-box'
+  // Agenda (spec/127): ordered `agendaItems` with minutes; pressing one starts
+  // the tab timer and sets `agendaCurrent`.
+  | 'agenda'
+  // Decision record (spec/128): the statement (the label) plus a status chip,
+  // a date and the drivers.
+  | 'decision'
+  // Roll call (spec/129): a frozen snapshot of who was in the room, in
+  // `rollCall`.
+  | 'roll-call'
   | 'stadium'
   | 'actor'
   | 'cloud'
@@ -762,6 +786,10 @@ export * from './comments';
 // Per-element assigned actions (spec/68).
 export * from './element-action';
 export * from './data-shapes';
+// Per-participant responses (spec/122) + the collaboration element family
+// (spec/123 to spec/130). Both leaf modules, for the factories cycle.
+export * from './responses';
+export * from './collab-shapes';
 export * from './colors';
 export * from './icon-size';
 

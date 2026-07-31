@@ -17,6 +17,7 @@ import { useEraserConfig } from '@/hooks/canvas/useEraserConfig';
 import { useFormatConfig } from '@/hooks/canvas/useFormatConfig';
 import { usePortalSetters } from '@/hooks/canvas/usePortalSetters';
 import { useBehaviourElements } from '@/hooks/canvas/useBehaviourElements';
+import { useCollabElements } from '@/hooks/canvas/useCollabElements';
 import type { CanvasTool } from '@/components/palette/CommandPalette';
 import { useCellLinkPicker } from '@/hooks/canvas/useCellLinkPicker';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
@@ -1493,6 +1494,19 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     startPoll: livePoll.startPoll,
   });
 
+  // The collaboration elements (spec/122 to spec/129). Sibling of the
+  // behaviour hook above: these write to the document, so they take
+  // `commitTabs` (which does NOT push undo history — one person's Ctrl+Z must
+  // never retract another person's answer).
+  const collabElements = useCollabElements({
+    activeId,
+    commitTabs,
+    editsBlocked,
+    selfParticipant,
+    livePresence,
+    startTimer,
+  });
+
   // Image domain (picker state, recent-images list, placement + fill
   // handlers). Lives in its own hook so the page no longer carries
   // that state or its six handlers — see useEditorImages + spec/19.
@@ -1710,6 +1724,12 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setPageHeading,
     setChecklistItemsSelected,
     setEntityFieldsSelected,
+    setEstimateScaleSelected,
+    setAgendaItemsSelected,
+    setDecisionStatusSelected,
+    setDecisionDateSelected,
+    setDecisionDriversSelected,
+    setChairFacingSelected,
     setButtonModeSelected,
     setRatingSelected,
     setRatingAnimSelected,
@@ -2442,6 +2462,12 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     growMindNode,
     setChecklistItemsSelected,
     setEntityFieldsSelected,
+    setEstimateScaleSelected,
+    setAgendaItemsSelected,
+    setDecisionStatusSelected,
+    setDecisionDateSelected,
+    setDecisionDriversSelected,
+    setChairFacingSelected,
     setButtonModeSelected,
     setPortalTargetSelected,
     setPortalNameSelected,
@@ -2454,6 +2480,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     revealedIds,
     toggleRevealForMe,
     pickerFor,
+    collabElements,
     setRatingSelected,
     setRatingAnimSelected,
     setRatingAnimSpeedSelected,

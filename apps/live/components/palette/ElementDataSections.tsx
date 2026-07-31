@@ -50,6 +50,12 @@ import { MenuAccordionSection, MenuTile, MenuTileGrid } from '@/components/primi
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
 import { PortalMenuSection } from '@/components/palette/PortalMenuSection';
 import {
+  AgendaMenuSection,
+  ChairMenuSection,
+  DecisionMenuSection,
+  EstimateMenuSection,
+} from '@/components/palette/CollabMenuSections';
+import {
   PickerMenuSection,
   RevealMenuSection,
   SessionMenuSection,
@@ -102,6 +108,13 @@ type ElementDataSectionsProps = {
   isSessionButton: boolean;
   isReveal: boolean;
   isPicker: boolean;
+  // The collaboration elements that carry settings (spec/123, 127, 128, 130).
+  // The temperature check, idea box and roll call have none — they are entirely
+  // driven from their own faces — so they get no flag.
+  isEstimate: boolean;
+  isAgenda: boolean;
+  isDecision: boolean;
+  isChair: boolean;
   isIcon: boolean;
   boxed: boolean;
   sectionProps: Scaffold['sectionProps'];
@@ -137,6 +150,10 @@ export function ElementDataSections({
   isSessionButton,
   isReveal,
   isPicker,
+  isEstimate,
+  isAgenda,
+  isDecision,
+  isChair,
   isIcon,
   boxed,
   sectionProps,
@@ -161,7 +178,11 @@ export function ElementDataSections({
     isPortal ||
     isSessionButton ||
     isReveal ||
-    isPicker;
+    isPicker ||
+    isEstimate ||
+    isAgenda ||
+    isDecision ||
+    isChair;
   return (
     <>
       {showTools ? (
@@ -263,6 +284,38 @@ export function ElementDataSections({
                 onEdit={() => target.type === 'shape' && props.onEditCodeBlock(target.id)}
               />
             </MenuAccordionSection>
+          ) : null}
+          {/* The collaboration elements' settings (spec/123, 127, 128, 130).
+            Each is a small form of its own — see CollabMenuSections. */}
+          {isEstimate ? (
+            <EstimateMenuSection
+              target={shapeTarget ?? undefined}
+              sectionProps={sectionProps}
+              onSetScale={props.onSetEstimateScale}
+            />
+          ) : null}
+          {isAgenda ? (
+            <AgendaMenuSection
+              target={shapeTarget ?? undefined}
+              sectionProps={sectionProps}
+              onSetItems={props.onSetAgendaItems}
+            />
+          ) : null}
+          {isDecision ? (
+            <DecisionMenuSection
+              target={shapeTarget ?? undefined}
+              sectionProps={sectionProps}
+              onSetStatus={props.onSetDecisionStatus}
+              onSetDate={props.onSetDecisionDate}
+              onSetDrivers={props.onSetDecisionDrivers}
+            />
+          ) : null}
+          {isChair ? (
+            <ChairMenuSection
+              target={shapeTarget ?? undefined}
+              sectionProps={sectionProps}
+              onSetFacing={props.onSetChairFacing}
+            />
           ) : null}
           {/* Record (spec/120) — the fields: name + optional type, add / remove. */}
           {isEntity ? (

@@ -20,6 +20,21 @@ import type { Element, ShapeKind, Tab } from './index';
 // './index'), keeping this module out of the index ⇄ factories cycle.
 import { EMBED_PROVIDERS } from './youtube';
 import { isPickerSource, isSelectionMode, isSessionTool } from './selection-mode';
+import { RESPONSES_MAX, RESPONSE_VALUE_MAX } from './responses';
+import {
+  AGENDA_MAX_ITEMS,
+  AGENDA_MAX_TEXT,
+  DECISION_MAX_DRIVERS,
+  DECISION_MAX_TEXT,
+  IDEA_MAX_CARDS,
+  IDEA_MAX_TEXT,
+  ROLL_CALL_MAX,
+  ROLL_CALL_MAX_TEXT,
+  isChairFacing,
+  isDecisionDate,
+  isDecisionStatus,
+  isEstimateScale,
+} from './collab-shapes';
 import {
   CHECKLIST_MAX_ITEMS,
   PAGE_HEADING_MAX,
@@ -88,6 +103,15 @@ export const SHAPE_KINDS = new Set<string>([
   'reveal',
   // Picker (spec/107): rolls a random person or option.
   'picker',
+  // Chair (spec/130): an Avatar-mode character sits down in one.
+  'chair',
+  // The collaboration family (spec/123 to spec/129).
+  'estimate',
+  'temperature',
+  'idea-box',
+  'agenda',
+  'decision',
+  'roll-call',
   'stadium',
   'actor',
   'cloud',
@@ -235,6 +259,78 @@ export function isValidElement(el: unknown): el is Element {
         if (typeof f.name !== 'string' || f.name.length > ENTITY_MAX_TEXT) return false;
         if (f.type !== undefined && (typeof f.type !== 'string' || f.type.length > ENTITY_MAX_TEXT))
           return false;
+      }
+    }
+    // Chair (spec/130): a closed facing. Occupancy is presence, never a field,
+    // so there is nothing else on a chair to check.
+    if (el.chairFacing !== undefined && !isChairFacing(el.chairFacing)) return false;
+    // Per-participant responses (spec/122): bounded list of
+    // { participantId, value, at }. The one-per-participant rule is enforced
+    // by `setResponse` on write, NOT here — a duplicate arriving from an older
+    // client renders as the first entry rather than failing the whole tab to
+    // load, which is the same leniency the rest of this file takes.
+    if (el.responses !== undefined) {
+      if (!boundedArray(el.responses, RESPONSES_MAX)) return false;
+      for (const r of el.responses) {
+        if (!isObj(r)) return false;
+        if (typeof r.participantId !== 'string') return false;
+        if (typeof r.value !== 'string' || r.value.length > RESPONSE_VALUE_MAX) return false;
+        if (typeof r.at !== 'number' || !Number.isFinite(r.at)) return false;
+      }
+    }
+    if (el.responsesRevealed !== undefined && typeof el.responsesRevealed !== 'boolean')
+      return false;
+    // Estimate card (spec/123): a closed scale.
+    if (el.estimateScale !== undefined && !isEstimateScale(el.estimateScale)) return false;
+    // Idea box (spec/125): bounded anonymous strings. There is deliberately no
+    // author to validate.
+    if (el.ideaCards !== undefined) {
+      if (!boundedArray(el.ideaCards, IDEA_MAX_CARDS)) return false;
+      for (const card of el.ideaCards) {
+        if (typeof card !== 'string' || card.length > IDEA_MAX_TEXT) return false;
+      }
+    }
+    if (el.ideasRevealed !== undefined && typeof el.ideasRevealed !== 'boolean') return false;
+    // Agenda (spec/127): bounded rows of { label, minutes }. Minutes are
+    // clamped where they're read (clampAgendaMinutes), not rejected here — a
+    // tab shouldn't fail to load over a number someone can fix from the menu,
+    // the same rule the session button's duration takes.
+    if (el.agendaItems !== undefined) {
+      if (!boundedArray(el.agendaItems, AGENDA_MAX_ITEMS)) return false;
+      for (const item of el.agendaItems) {
+        if (!isObj(item)) return false;
+        if (typeof item.label !== 'string' || item.label.length > AGENDA_MAX_TEXT) return false;
+        if (typeof item.minutes !== 'number' || !Number.isFinite(item.minutes)) return false;
+      }
+    }
+    if (
+      el.agendaCurrent !== undefined &&
+      (typeof el.agendaCurrent !== 'number' || !Number.isFinite(el.agendaCurrent))
+    )
+      return false;
+    // Decision record (spec/128): a closed status, a `YYYY-MM-DD` date, and
+    // bounded drivers.
+    if (el.decisionStatus !== undefined && !isDecisionStatus(el.decisionStatus)) return false;
+    if (
+      el.decisionDate !== undefined &&
+      (typeof el.decisionDate !== 'string' || !isDecisionDate(el.decisionDate))
+    )
+      return false;
+    if (el.decisionDrivers !== undefined) {
+      if (!boundedArray(el.decisionDrivers, DECISION_MAX_DRIVERS)) return false;
+      for (const d of el.decisionDrivers) {
+        if (typeof d !== 'string' || d.length > DECISION_MAX_TEXT) return false;
+      }
+    }
+    // Roll call (spec/129): bounded frozen entries of { name, color, at }.
+    if (el.rollCall !== undefined) {
+      if (!boundedArray(el.rollCall, ROLL_CALL_MAX)) return false;
+      for (const entry of el.rollCall) {
+        if (!isObj(entry)) return false;
+        if (typeof entry.name !== 'string' || entry.name.length > ROLL_CALL_MAX_TEXT) return false;
+        if (typeof entry.color !== 'string' || entry.color.length > ROLL_CALL_MAX_TEXT)
+          return false;
+        if (typeof entry.at !== 'number' || !Number.isFinite(entry.at)) return false;
       }
     }
     // Checklist (spec/83): bounded rows of { text, done }.

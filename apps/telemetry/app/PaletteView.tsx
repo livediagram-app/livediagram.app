@@ -21,6 +21,7 @@ import { windowLabel } from './windows';
 const {
   shapes: SHAPES,
   tools: TOOLS,
+  collaborate: COLLABORATE,
   components: COMPONENTS,
   devices: DEVICES,
   icons: ICONS,
@@ -39,6 +40,7 @@ export function PaletteView({
   const rows = summary.windows[active].rows;
   const shapes = rank(rows, addedIn(SHAPES));
   const tools = rank(rows, addedIn(TOOLS));
+  const collaborate = rank(rows, addedIn(COLLABORATE));
   const components = rank(rows, addedIn(COMPONENTS));
   const devices = rank(rows, addedIn(DEVICES));
   const icons = rank(rows, addedIn(ICONS));
@@ -60,6 +62,15 @@ export function PaletteView({
           items={shapes}
           daily={summary.daily}
           emptyLabel="No shapes were added in this window yet."
+        />
+        <RankCard
+          title="Collaborate"
+          subtitle="Estimate cards, temperature checks, idea boxes, agendas, decisions and roll calls"
+          category="Element"
+          action="Added"
+          items={collaborate}
+          daily={summary.daily}
+          emptyLabel="No collaboration elements were added in this window yet."
         />
         <RankCard
           title="Tools"

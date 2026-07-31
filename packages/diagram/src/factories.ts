@@ -20,6 +20,12 @@ import {
   RATING_DEFAULT,
 } from './data-shapes';
 import {
+  AGENDA_DEFAULT_MINUTES,
+  DEFAULT_CHAIR_FACING,
+  DEFAULT_DECISION_STATUS,
+  DEFAULT_ESTIMATE_SCALE,
+} from './collab-shapes';
+import {
   isBoxed,
   type Anchor,
   type AnnotationElement,
@@ -143,6 +149,25 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   reveal: { width: 320, height: 220 },
   // Picker (spec/107): a card wide enough for a name at a readable size.
   picker: { width: 220, height: 132 },
+  // Chair (spec/130): furniture at human scale beside a 40px-wide Avatar-mode
+  // character — a seat the sprite fits into rather than a throne it rattles
+  // around in.
+  chair: { width: 76, height: 84 },
+  // Estimate card (spec/123): wide enough for the eight fibonacci chips in one
+  // row, tall enough for the chips plus the room's avatars under them.
+  estimate: { width: 320, height: 210 },
+  // Temperature check (spec/124): five buttons over five bars, plus the
+  // average. Narrower than the estimate card — five chips, not eight.
+  temperature: { width: 260, height: 220 },
+  // Idea box (spec/125): a box that holds a stack of cards, so it arrives
+  // sized like a retro column rather than a sticky.
+  'idea-box': { width: 280, height: 300 },
+  // Agenda (spec/127): a run of six segments before it needs resizing.
+  agenda: { width: 300, height: 260 },
+  // Decision record (spec/128): a card for a sentence plus three drivers.
+  decision: { width: 300, height: 190 },
+  // Roll call (spec/129): two columns of names, six rows deep.
+  'roll-call': { width: 260, height: 220 },
 };
 
 // New boxed elements default to Medium text size per spec 09 ("Text size").
@@ -257,6 +282,85 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       shadow: { offsetX: 0, offsetY: 2, blur: 6, opacity: 0.2 },
       borderRadius: 'lg',
       textSize: 'sm',
+    };
+  }
+  // Chair (spec/130): furniture, so it paints its own seat and back and the
+  // element box carries no fill. The label (a name, a role) sits UNDER the
+  // chair, out of the way of the character that will sit in it.
+  if (kind === 'chair') {
+    return {
+      ...base,
+      chairFacing: DEFAULT_CHAIR_FACING,
+      fillColor: 'transparent',
+      strokeColor: '#94a3b8',
+      textColor: '#0f172a',
+      textSize: 'sm',
+      textAlignY: 'bottom',
+      // A chair stretched wide stops reading as a chair, the same reason the
+      // portal locks its aspect. Unlockable from the menu like any element.
+      aspectLocked: true,
+    };
+  }
+  // The collaboration panels (spec/123, 124, 125, 127, 129): each paints a
+  // card with its own pressable face, so they share one skin — a white
+  // surface, a soft shadow, a small top-aligned title. The label is the
+  // question / prompt / session name, which belongs at the top of the card
+  // rather than centred over the controls.
+  if (
+    kind === 'estimate' ||
+    kind === 'temperature' ||
+    kind === 'idea-box' ||
+    kind === 'agenda' ||
+    kind === 'roll-call'
+  ) {
+    const seed: ShapeElement = {
+      ...base,
+      fillColor: '#ffffff',
+      strokeColor: '#cbd5e1',
+      textColor: '#0f172a',
+      shadow: { offsetX: 0, offsetY: 2, blur: 6, opacity: 0.2 },
+      borderRadius: 'lg',
+      textSize: 'sm',
+      textBold: true,
+      textAlignX: 'left',
+      textAlignY: 'top',
+    };
+    if (kind === 'estimate') {
+      return { ...seed, label: 'Estimate', estimateScale: DEFAULT_ESTIMATE_SCALE };
+    }
+    if (kind === 'temperature') return { ...seed, label: 'How are we feeling?' };
+    if (kind === 'idea-box') return { ...seed, label: 'Ideas' };
+    if (kind === 'agenda') {
+      return {
+        ...seed,
+        label: 'Agenda',
+        // A fresh agenda is a real one-hour-shaped session rather than an
+        // empty list, so a dropped element demonstrates what it does.
+        agendaItems: [
+          { label: 'Set the scene', minutes: AGENDA_DEFAULT_MINUTES },
+          { label: 'Gather input', minutes: 10 },
+          { label: 'Discuss', minutes: 15 },
+          { label: 'Agree actions', minutes: AGENDA_DEFAULT_MINUTES },
+        ],
+      };
+    }
+    return { ...seed, label: 'Roll call' };
+  }
+  // Decision record (spec/128): the label IS the decision statement, so it
+  // reads left-aligned from the top like a sentence rather than centred like a
+  // node caption, with the chip and the drivers drawn around it.
+  if (kind === 'decision') {
+    return {
+      ...base,
+      label: 'We will …',
+      decisionStatus: DEFAULT_DECISION_STATUS,
+      textAlignX: 'left',
+      textAlignY: 'top',
+      fillColor: '#ffffff',
+      strokeColor: '#cbd5e1',
+      textColor: '#0f172a',
+      borderRadius: 'lg',
+      shadow: { offsetX: 0, offsetY: 2, blur: 6, opacity: 0.18 },
     };
   }
   // Document (spec/100): prose sits TOP-LEFT. Centred body text is the

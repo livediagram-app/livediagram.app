@@ -12,6 +12,10 @@ import type {
   ChartLegendPosition,
   ChecklistItem,
   EntityField,
+  AgendaItem,
+  ChairFacing,
+  DecisionStatus,
+  EstimateScale,
   Element,
   ElementShadow,
   Layer,
@@ -153,6 +157,15 @@ export type EditorContextMenuProps = {
   onSetRevealed: (revealed: boolean) => void;
   onSetPickerSource: (source: import('@livediagram/diagram').PickerSource) => void;
   onSetPickerOptions: (options: string[]) => void;
+  // The collaboration elements (spec/123, 127, 128, 130). The temperature
+  // check, idea box and roll call carry no settings — everything they do
+  // happens on their own faces — so they need no setter here.
+  onSetEstimateScale: (scale: EstimateScale) => void;
+  onSetAgendaItems: (items: AgendaItem[]) => void;
+  onSetDecisionStatus: (status: DecisionStatus) => void;
+  onSetDecisionDate: (date: string | undefined) => void;
+  onSetDecisionDrivers: (drivers: string[]) => void;
+  onSetChairFacing: (facing: ChairFacing) => void;
   // Every tab, because a portal link can cross tabs, plus which one is active
   // so the picker can mark the off-tab candidates.
   tabs: import('@livediagram/diagram').Tab[];

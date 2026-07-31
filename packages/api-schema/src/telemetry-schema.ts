@@ -267,6 +267,8 @@ export const PALETTE_TELEMETRY_TYPES = {
     'SessionButton',
     'Reveal',
     'Picker',
+    // Chair (spec/130): a Behaviour element, so it ranks with them.
+    'Chair',
     'Pie-chart',
     'Bar-chart',
     'Line-chart',
@@ -274,6 +276,12 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Progress-ring',
     'Rating',
   ],
+  // The Collaborate category (spec/123 to spec/129) — its own bucket rather
+  // than more entries under `tools`, because the palette gave it its own
+  // category and the dashboard's cards are the palette's own tabs. The Chair
+  // (spec/130) is NOT here: it ships in Behaviour, so it buckets with the
+  // other behaviour elements under `tools` above.
+  collaborate: ['Estimate', 'Temperature', 'Idea-box', 'Agenda', 'Decision', 'Roll-call'],
   components: ['Banner', 'Hero', 'Header', 'Callout', 'StatRow', 'ProcessSteps'],
   devices: ['Browser', 'Monitor', 'Laptop', 'Phone', 'Tablet', 'Smartwatch'],
   icons: ['Icon', 'TechIcon', 'Sticker'],

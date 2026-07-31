@@ -245,6 +245,7 @@ export function EditorCanvasHost() {
     revealedIds,
     toggleRevealForMe,
     pickerFor,
+    collabElements,
     tabs,
     setCanvasTool,
     setCanvasThemeTab,
@@ -427,6 +428,25 @@ export function EditorCanvasHost() {
       revealedIds={revealedIds}
       onToggleReveal={toggleRevealForMe}
       onRollPicker={pickerFor}
+      // The collaboration elements (spec/123 to spec/129). One prop for all
+      // five faces; the write handlers drop out entirely for a view-role
+      // visitor, so the faces render readable but inert rather than offering
+      // presses the room would discard.
+      collab={{
+        selfId: selfParticipant.id,
+        // Ourselves first: livePresence is the REMOTE roster, and an estimate
+        // card that can't show your own avatar is showing the wrong room.
+        participants: [selfParticipant, ...livePresence],
+        tabTimer: activeTab.timer,
+        respond: isReadOnly ? undefined : collabElements.respond,
+        setResponsesRevealed: isReadOnly ? undefined : collabElements.setResponsesRevealed,
+        clearResponses: isReadOnly ? undefined : collabElements.clearResponses,
+        addIdea: isReadOnly ? undefined : collabElements.addIdea,
+        revealIdeas: isReadOnly ? undefined : collabElements.revealIdeas,
+        scatterIdeas: isReadOnly ? undefined : collabElements.scatterIdeas,
+        pressAgendaItem: isReadOnly ? undefined : collabElements.pressAgendaItem,
+        takeRoll: isReadOnly ? undefined : collabElements.takeRoll,
+      }}
       onEraseStart={isReadOnly ? undefined : beginErase}
       onDuplicateMultiSelected={duplicateMultiSelected}
       onDeleteMultiSelected={deleteMultiSelected}

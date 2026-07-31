@@ -107,6 +107,8 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     revealedIds,
     onToggleReveal,
     onRollPicker,
+    collab,
+    chairSitters,
     onOpenComments,
     onOpenAction,
     onOpenNote,
@@ -354,6 +356,8 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             revealedForMe={revealedIds?.has(element.id)}
             onToggleReveal={h.onToggleReveal}
             onRollPicker={h.onRollPicker}
+            collab={collab}
+            chairSitters={chairSitters}
             activeMode={canvasTool}
             onEnterPortal={onEnterPortal}
             onOpenComments={h.onOpenComments}

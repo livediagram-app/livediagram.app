@@ -86,6 +86,18 @@ export type BoxedElementViewProps = {
     candidates: import('@/lib/picker').PickerCandidate[];
     roll: () => import('@/lib/picker').PickerCandidate | null;
   };
+  // The collaboration elements (spec/123 to spec/129): who the viewer is, who
+  // else is in the room, and the writes they may make. One prop for all five
+  // faces — see CollabFaceRouter. Absent on a surface with no session behind
+  // it, which renders them readable but inert.
+  collab?: import('@/components/canvas/collab/CollabFaceRouter').CollabApi;
+  // Chair (spec/130): who peer presence says is seated on this chair right
+  // now. A function of the element id rather than a map prop so the common
+  // case (no chairs on the tab) costs nothing. Occupancy is never in the
+  // document, so a disconnected sitter vacates for free.
+  chairSitters?: (
+    elementId: string,
+  ) => import('@/components/canvas/collab/ChairView').ChairSitter[];
   // The viewer's current mode, so a Selection Mode button offering it renders
   // disabled (spec/103).
   activeMode?: import('@livediagram/diagram').SelectionMode;

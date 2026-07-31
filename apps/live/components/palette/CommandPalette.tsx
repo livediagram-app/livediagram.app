@@ -10,6 +10,7 @@ import { PaletteSettingsPopover } from '@/components/palette/PaletteSettingsPopo
 import { PaletteTabBar } from '@/components/palette/PaletteTabBar';
 import {
   BehaviourTabIcon,
+  CollaborateTabIcon,
   ComponentsTabIcon,
   DataTabIcon,
   DevicesTabIcon,
@@ -26,6 +27,7 @@ import { PaletteDropdown } from '@/components/palette/PaletteDropdown';
 import {
   DevicePickerTab,
   PaletteBehaviourTab,
+  PaletteCollaborateTab,
   PaletteDataTab,
   PaletteMediaTab,
   PaletteDrawTab,
@@ -526,6 +528,19 @@ export function CommandPalette({
                 'Elements that do something when somebody interacts with them: Selection Mode buttons, Portals, Session buttons, Reveal zones, and Pickers.',
               icon: <BehaviourTabIcon />,
               content: <PaletteBehaviourTab pendingDraw={pendingDraw} actions={tileActions} />,
+            },
+            {
+              // Collaborate (spec/123 to spec/129): the elements that collect
+              // what the room thinks. Dynamic band, beside Behaviour — both
+              // hold elements whose content arrives at runtime rather than
+              // being drawn by the author.
+              id: 'collaborate',
+              label: 'Collaborate',
+              group: 2,
+              description:
+                'Elements that collect what the room thinks: estimate cards, temperature checks, idea boxes, agendas, decision records, and roll calls.',
+              icon: <CollaborateTabIcon />,
+              content: <PaletteCollaborateTab pendingDraw={pendingDraw} actions={tileActions} />,
             },
           ]}
         />

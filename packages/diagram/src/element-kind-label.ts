@@ -11,6 +11,11 @@ const SHAPE_LABELS: Partial<Record<ShapeKind, string>> = {
   // Named for what it does, not its internal kind — titleCase would say
   // 'Mode Button' (spec/103).
   'mode-button': 'Selection Mode',
+  // Both would title-case to a bare noun that says the wrong thing on its own
+  // ('Decision', 'Temperature'), so they carry the full name (spec/124,
+  // spec/128).
+  decision: 'Decision Record',
+  temperature: 'Temperature Check',
 };
 
 function titleCase(s: string): string {

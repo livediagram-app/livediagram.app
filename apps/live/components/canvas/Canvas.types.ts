@@ -112,6 +112,13 @@ export type CanvasProps = {
     candidates: import('@/lib/picker').PickerCandidate[];
     roll: () => import('@/lib/picker').PickerCandidate | null;
   };
+  // The collaboration elements (spec/123 to spec/129): the viewer's identity,
+  // the room, and the writes they may make — one prop for all five faces.
+  collab?: import('@/components/canvas/collab/CollabFaceRouter').CollabApi;
+  // Chair (spec/130): who presence says is seated on a given chair.
+  chairSitters?: (
+    elementId: string,
+  ) => import('@/components/canvas/collab/ChairView').ChairSitter[];
   // Portal (spec/104): resolve a portal's pairing — the paired portal's name and, when
   // it has one, the action that travels there.
   onEnterPortal?: (element: import('@livediagram/diagram').ShapeElement) => {

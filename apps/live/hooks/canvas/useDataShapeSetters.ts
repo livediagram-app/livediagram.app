@@ -5,6 +5,14 @@ import {
   CHECKLIST_MAX_TEXT,
   ENTITY_MAX_FIELDS,
   ENTITY_MAX_TEXT,
+  AGENDA_MAX_ITEMS,
+  AGENDA_MAX_TEXT,
+  DECISION_MAX_DRIVERS,
+  DECISION_MAX_TEXT,
+  type AgendaItem,
+  type ChairFacing,
+  type DecisionStatus,
+  type EstimateScale,
   type EntityField,
   clampPercent,
   clampRating,
@@ -217,6 +225,61 @@ export function useDataShapeSetters({ currentSelectionIds, commit }: DataShapeSe
     track('Element', 'Changed', 'Entity');
   };
 
+  // --- The collaboration elements (spec/123, 127, 128, 130) ----------------
+  // Selection-wide like every other setter here, each gated to its own kind so
+  // a multi-selection containing a chair and a chart only writes the chair.
+  const setCollabFieldSelected = (
+    kind: ShapeElement['shape'],
+    patch: Partial<ShapeElement>,
+    telemetryType: string,
+  ) => {
+    const ids = currentSelectionIds();
+    if (ids.size === 0) return;
+    commit((els) =>
+      els.map((el) =>
+        ids.has(el.id) && el.type === 'shape' && el.shape === kind ? { ...el, ...patch } : el,
+      ),
+    );
+    track('Element', 'Changed', telemetryType);
+  };
+
+  const setEstimateScaleSelected = (scale: EstimateScale) =>
+    setCollabFieldSelected('estimate', { estimateScale: scale }, 'Estimate');
+
+  const setAgendaItemsSelected = (items: AgendaItem[]) =>
+    setCollabFieldSelected(
+      'agenda',
+      {
+        agendaItems: items.slice(0, AGENDA_MAX_ITEMS).map((item) => ({
+          label: item.label.slice(0, AGENDA_MAX_TEXT),
+          minutes: item.minutes,
+        })),
+      },
+      'Agenda',
+    );
+
+  const setDecisionStatusSelected = (status: DecisionStatus) =>
+    setCollabFieldSelected('decision', { decisionStatus: status }, 'Decision');
+
+  // An empty date CLEARS the field, so an undated card renders nothing at all
+  // rather than an empty slot (spec/128).
+  const setDecisionDateSelected = (date: string | undefined) =>
+    setCollabFieldSelected('decision', { decisionDate: date || undefined }, 'Decision');
+
+  const setDecisionDriversSelected = (drivers: string[]) =>
+    setCollabFieldSelected(
+      'decision',
+      {
+        decisionDrivers: drivers
+          .slice(0, DECISION_MAX_DRIVERS)
+          .map((d) => d.slice(0, DECISION_MAX_TEXT)),
+      },
+      'Decision',
+    );
+
+  const setChairFacingSelected = (facing: ChairFacing) =>
+    setCollabFieldSelected('chair', { chairFacing: facing }, 'Chair');
+
   const setChecklistItemsSelected = (items: ChecklistItem[]) => {
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
@@ -317,6 +380,12 @@ export function useDataShapeSetters({ currentSelectionIds, commit }: DataShapeSe
     setPageHeading,
     setChecklistItemsSelected,
     setEntityFieldsSelected,
+    setEstimateScaleSelected,
+    setAgendaItemsSelected,
+    setDecisionStatusSelected,
+    setDecisionDateSelected,
+    setDecisionDriversSelected,
+    setChairFacingSelected,
     setButtonModeSelected,
     setRatingSelected,
     setRatingAnimSelected,

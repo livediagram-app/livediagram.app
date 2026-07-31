@@ -126,6 +126,30 @@ export function BehaviourTabIcon() {
   );
 }
 
+// The Collaborate category's glyph (spec/123 to spec/129): raised hands over a
+// board, for the elements that collect an answer from the whole room rather
+// than showing what one author drew.
+export function CollaborateTabIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <circle cx="8.5" cy="7" r="3" />
+      <circle cx="16.5" cy="9.5" r="2.4" />
+      <path d="M3 19a5.5 5.5 0 0 1 11 0" />
+      <path d="M15 19a4.4 4.4 0 0 1 6-3.8" />
+    </svg>
+  );
+}
+
 // The Write category's glyph (spec/110): a pen nib over a line of text.
 export function WriteTabIcon() {
   return (

@@ -12,6 +12,14 @@ import type { ShapeMarker } from './shape-marker';
 import type { PickerSource, SelectionMode, SessionButtonConfig } from './selection-mode';
 import type { IconSize } from './icon-size';
 import type { EmbedProvider } from './youtube';
+import type { ParticipantResponse } from './responses';
+import type {
+  AgendaItem,
+  ChairFacing,
+  DecisionStatus,
+  EstimateScale,
+  RollCallEntry,
+} from './collab-shapes';
 import type {
   AnimationSpeed,
   ChecklistItem,
@@ -180,6 +188,42 @@ export type ShapeElement = {
   pickerSource?: PickerSource;
   pickerOptions?: string[];
   pickerResult?: string;
+  // Chair (spec/130): which way the seat points. Only meaningful on the
+  // 'chair' kind; absent = DEFAULT_CHAIR_FACING ('n'). WHO is sitting in it is
+  // deliberately NOT here — occupancy rides the avatar presence op, so a chair
+  // can't be left stuck by someone who disconnected.
+  chairFacing?: ChairFacing;
+  // --- The collaboration family (spec/122 to spec/129) ---------------------
+  // One value per participant (spec/122), shared by the estimate card and the
+  // temperature check. At most one entry per participant: re-casting REPLACES,
+  // via `setResponse`. Bounded in validate.ts.
+  responses?: ParticipantResponse[];
+  // Whether the values are out, for everyone (spec/123). Only meaningful on
+  // 'estimate' — the temperature check is deliberately never hidden.
+  responsesRevealed?: boolean;
+  // Estimate card (spec/123): which ladder of values the card offers. Absent =
+  // DEFAULT_ESTIMATE_SCALE ('fibonacci').
+  estimateScale?: EstimateScale;
+  // Idea box (spec/125): the anonymous submissions, in submission order, and
+  // whether the box is open. There is NO author field, and adding one would
+  // undo the feature — the anonymity guarantee is that the schema has nowhere
+  // to record who wrote a card. Bounded in validate.ts.
+  ideaCards?: string[];
+  ideasRevealed?: boolean;
+  // Agenda (spec/127): the ordered segments, and the index of the one the room
+  // is in (absent = not started). Only meaningful on 'agenda'.
+  agendaItems?: AgendaItem[];
+  agendaCurrent?: number;
+  // Decision record (spec/128): the status chip, the day it was taken
+  // (`YYYY-MM-DD`, a date rather than a timestamp), and the reasons. The
+  // element's `label` is the decision STATEMENT, so it needs no extra field.
+  decisionStatus?: DecisionStatus;
+  decisionDate?: string;
+  decisionDrivers?: string[];
+  // Roll call (spec/129): a FROZEN snapshot of who was in the room when the
+  // roll was taken — names and colours copied, never re-joined to the live
+  // participant. Only meaningful on 'roll-call'.
+  rollCall?: RollCallEntry[];
   // Timeline rail (spec/51): how many evenly-spaced points sit above the rail
   // line. Only meaningful on the 'timeline-rail' kind; clamped to
   // RAIL_MIN_POINTS..RAIL_MAX_POINTS.

@@ -72,6 +72,21 @@ export function PaletteBehaviourTab({ pendingDraw, actions }: TabProps) {
   );
 }
 
+// The elements that collect what the ROOM thinks (spec/123 to spec/129):
+// estimate cards, temperature checks, idea boxes, agendas, decision records
+// and roll calls. Rows, not a tile grid, for the same reason Behaviour is: a
+// glyph cannot distinguish "everyone answers privately then all at once" from
+// "everyone answers and you watch it move", and that IS the choice.
+export function PaletteCollaborateTab({ pendingDraw, actions }: TabProps) {
+  return (
+    <PaletteToolRows
+      tiles={tilesInSection('collaborate')}
+      actions={actions}
+      pendingDraw={pendingDraw}
+    />
+  );
+}
+
 // Pictures and figures (spec/110): Image and Avatar. Rows with a blurb — two
 // picture frames look near-identical at 18px, and "an uploaded picture" vs "a
 // picture cropped to a circle" is the whole difference.

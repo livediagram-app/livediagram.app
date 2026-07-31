@@ -81,6 +81,12 @@ export function EditorContextMenuHost() {
     setCodeEditOpenForId,
     setChecklistItemsSelected,
     setEntityFieldsSelected,
+    setEstimateScaleSelected,
+    setAgendaItemsSelected,
+    setDecisionStatusSelected,
+    setDecisionDateSelected,
+    setDecisionDriversSelected,
+    setChairFacingSelected,
     setButtonModeSelected,
     setPortalTargetSelected,
     setPortalNameSelected,
@@ -228,6 +234,12 @@ export function EditorContextMenuHost() {
       onEditCodeBlock={setCodeEditOpenForId}
       onSetChecklistItems={setChecklistItemsSelected}
       onSetEntityFields={setEntityFieldsSelected}
+      onSetEstimateScale={setEstimateScaleSelected}
+      onSetAgendaItems={setAgendaItemsSelected}
+      onSetDecisionStatus={setDecisionStatusSelected}
+      onSetDecisionDate={setDecisionDateSelected}
+      onSetDecisionDrivers={setDecisionDriversSelected}
+      onSetChairFacing={setChairFacingSelected}
       onSetButtonMode={setButtonModeSelected}
       onSetPortalTarget={setPortalTargetSelected}
       onSetPortalName={setPortalNameSelected}
