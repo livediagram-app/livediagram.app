@@ -210,6 +210,18 @@ export type ShapeElement = {
   // meaningful on the 'code-block' kind; bounded in validate.ts.
   code?: string;
   codeLanguage?: CodeLanguage;
+  // Page masthead (spec/100): the fixed heading + subtitle above the body.
+  // Only meaningful on the 'page' kind; bounded in validate.ts.
+  //
+  // Separate fields, not the first two lines of the body: a page's title is
+  // structure, not prose. Keeping them apart means the body can be reordered,
+  // reformatted or emptied without the heading moving or vanishing, and the
+  // masthead can be styled as a masthead rather than as whatever the first
+  // line of the rich text happens to be.
+  //
+  // Plain strings, not rich runs: a title has one look, set by the element.
+  pageTitle?: string;
+  pageSubtitle?: string;
   // Checklist (spec/83): the checkable rows. Only meaningful on the
   // 'checklist' kind; bounded in validate.ts.
   checklistItems?: ChecklistItem[];

@@ -21,6 +21,7 @@ import type { Element, ShapeKind, Tab } from './index';
 import { isPickerSource, isSelectionMode, isSessionTool } from './selection-mode';
 import {
   CHECKLIST_MAX_ITEMS,
+  PAGE_HEADING_MAX,
   CHECKLIST_MAX_TEXT,
   CODE_LANGUAGES,
   CODE_MAX_LENGTH,
@@ -202,6 +203,11 @@ export function isValidElement(el: unknown): el is Element {
       !(CODE_LANGUAGES as readonly string[]).includes(el.codeLanguage as string)
     )
       return false;
+    // Page masthead (spec/100): two bounded single-line strings.
+    for (const field of [el.pageTitle, el.pageSubtitle]) {
+      if (field !== undefined && (typeof field !== 'string' || field.length > PAGE_HEADING_MAX))
+        return false;
+    }
     // Checklist (spec/83): bounded rows of { text, done }.
     if (el.checklistItems !== undefined) {
       if (!boundedArray(el.checklistItems, CHECKLIST_MAX_ITEMS)) return false;

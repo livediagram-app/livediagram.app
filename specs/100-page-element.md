@@ -51,6 +51,46 @@ Renaming the flowchart shape was considered and rejected: its id is persisted
 in palette favourites, and "Document" is its correct name in flowchart
 vocabulary.
 
+## The masthead
+
+A Page carries a **fixed heading and subtitle** above its body, separated by a
+hairline rule. Two plain-string fields on the shape — `pageTitle` and
+`pageSubtitle` — bounded at `PAGE_HEADING_MAX` (200) and validated with the
+rest.
+
+**Not the first two lines of the body.** A page's title is structure, not
+prose. Kept as their own fields, the body can be reordered, reformatted, or
+emptied without the heading moving or vanishing, and the masthead is styled as
+a masthead rather than as whatever the first line of the rich text happens to
+be.
+
+**Fixed means always there.** An empty heading renders a placeholder rather
+than collapsing, so a page has the same shape before and after anyone writes in
+it, and the body never creeps up into the title's space.
+
+Plain strings, not rich runs: a title has one look and the element sets it.
+
+### Editing them
+
+Each line is a `contentEditable` span that commits on blur, in
+`PageMasthead.tsx` — deliberately **not** the shared label editor. That editor
+owns one field per element (`label` plus its runs), and threading a second and
+third target through it would complicate every element in the app to serve one.
+A single-line plain string does not need the runs machinery.
+
+Three details the canvas forces:
+
+- `pointerdown` is stopped on each line, or the canvas reads the press as the
+  start of a drag and never hands over the caret.
+- Every `keydown` is stopped, or typing "d" in a title also fires the editor's
+  add-a-diamond shortcut.
+- The surrounding gaps stay pointer-inert, so pressing between the lines still
+  drags the page.
+
+Enter commits, Escape restores. The commit stores `undefined` for an emptied
+line, so a page typed into and cleared serialises identically to one never
+touched.
+
 ## Paper, not a big box
 
 - **420 × 594** — √2, the A-series ratio, at a size that reads as a page next

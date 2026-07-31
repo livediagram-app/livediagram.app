@@ -60,6 +60,15 @@ mistaken for an icon fold), `supportsColours` false, membership in
 label editor, no markers, no text alignment, no morph), and exclusion from
 `acceptsInlineIcon` and from the isometric extrusion.
 
+**Presets go too.** A preset (spec/48) is nothing but fill + stroke + text
+colours, so a shape that takes no element colour has nothing for it to set —
+a sticker showed a full grid of preset tiles where every one did nothing.
+`shapeSupportsPresets` now asks `supportsColours` rather than keeping a second
+exclusion list of its own, which is what let stickers through: the list knew
+about icons and charts because those predated it, and had never heard of a
+sticker. With Presets, Colours and Border all empty, the whole **Style flyout
+stops rendering** for a sticker rather than opening onto nothing.
+
 **No text, by any route.** The selection toolbar drops its Add-text button,
 double-click doesn't open an editor, and type-to-edit refuses — all three off
 the one `isSelfDrawingShape` predicate, which already documented itself as

@@ -123,6 +123,10 @@ export function isCodeBlockShape(kind: ShapeKind): boolean {
 // the wire payload small; the starter rows make the affordance obvious on drop.
 export type ChecklistItem = { text: string; done: boolean };
 export const CHECKLIST_MAX_ITEMS = 30;
+
+// Page masthead (spec/100). A title line, not a paragraph — the renderer
+// clamps it to one line anyway, so anything longer is a paste accident.
+export const PAGE_HEADING_MAX = 200;
 export const CHECKLIST_MAX_TEXT = 200;
 export const CHECKLIST_DEFAULT_ITEMS: readonly ChecklistItem[] = [
   { text: 'First task', done: true },

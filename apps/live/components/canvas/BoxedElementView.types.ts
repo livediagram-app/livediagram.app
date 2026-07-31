@@ -126,6 +126,8 @@ export type BoxedElementViewProps = {
   // Toggle one checklist row's done state (spec/83), from the on-canvas
   // checkbox. Omitted for read-only viewers.
   onToggleChecklistItem?: (elementId: string, index: number) => void;
+  // The Page masthead (spec/100).
+  onSetPageHeading: (elementId: string, field: 'pageTitle' | 'pageSubtitle', value: string) => void;
   // Live dot-vote (spec/39). `vote` is the active tab's vote session
   // (undefined when none). `selfId` is the local participant (for "my
   // dots"); `voteMax` is the highest dot count on the tab (for the

@@ -20,6 +20,7 @@ import {
   type TextSize,
 } from '@livediagram/diagram';
 import { renderLabel } from '@/components/canvas/element-labels';
+import { PageMasthead } from '@/components/canvas/PageMasthead';
 import { elementAriaLabel } from '@/lib/element-names';
 import { captionBandAlignY, captionBandClass } from '@/components/primitives/icon-band';
 import { LockBadge, SelectionChromeLayer } from '@/components/canvas/element-parts';
@@ -86,6 +87,7 @@ function BoxedElementViewImpl({
   onCommitTable,
   onSetRailLabel,
   onToggleChecklistItem,
+  onSetPageHeading,
   chartPalette,
   onCancelEdit,
   onFollowLink,
@@ -532,6 +534,32 @@ function BoxedElementViewImpl({
         // Progress / rail / rating / chart elements draw their own content, so
         // they render no standard editable label.
         <></>
+      ) : element.type === 'shape' && element.shape === 'page' ? (
+        // A Page stacks a fixed masthead over its body (spec/100). The body
+        // node positions itself `absolute inset-0`, so it gets a `relative`
+        // region of its own that starts under the rule rather than the whole
+        // box — that is what stops the prose from running up into the title.
+        <div
+          className="absolute inset-0 flex flex-col"
+          style={{ padding: PADDING_PX[element.padding ?? defaultPadding(element)] }}
+        >
+          <PageMasthead
+            element={element}
+            readOnly={isLocked || readOnly}
+            onSetHeading={onSetPageHeading}
+            fontFamily={fontFamily}
+            zoom={zoom}
+          />
+          {/* The body keeps its own padding, which reads as the gap under the
+              rule; only the horizontal padding would double up, so the label's
+              is left to do the work and this container has none. */}
+          <div
+            className="relative min-h-0 flex-1"
+            style={{ marginInline: -PADDING_PX[element.padding ?? defaultPadding(element)] }}
+          >
+            {labelNode}
+          </div>
+        </div>
       ) : iconCaptionBand ? (
         // Icon caption band (spec/41): the label (and the inline editor while
         // typing) fills this positioned container instead of the whole box,

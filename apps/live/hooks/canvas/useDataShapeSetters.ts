@@ -178,6 +178,23 @@ export function useDataShapeSetters({ currentSelectionIds, commit }: DataShapeSe
     // Box ticks deliberately don't track: high-frequency, low-signal,
     // matching spec/39's vote-cast precedent.
   };
+  // The Page masthead (spec/100). One setter for both lines rather than two
+  // near-identical ones, since the only difference is which field.
+  const setPageHeading = (
+    elementId: string,
+    field: 'pageTitle' | 'pageSubtitle',
+    value: string,
+  ) => {
+    commit((els) =>
+      els.map((el) => {
+        if (el.id !== elementId || el.type !== 'shape' || el.shape !== 'page') return el;
+        // An empty line stores as undefined rather than '', so a page that was
+        // typed into and cleared serialises the same as one never touched.
+        return { ...el, [field]: value.trim() ? value : undefined };
+      }),
+    );
+  };
+
   const setChecklistItemsSelected = (items: ChecklistItem[]) => {
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
@@ -275,6 +292,7 @@ export function useDataShapeSetters({ currentSelectionIds, commit }: DataShapeSe
     setRailLabelSelected,
     setCodeSelected,
     toggleChecklistItem,
+    setPageHeading,
     setChecklistItemsSelected,
     setButtonModeSelected,
     setRatingSelected,

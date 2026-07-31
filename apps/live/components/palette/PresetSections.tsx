@@ -9,6 +9,7 @@
 
 import {
   isChartShape,
+  supportsColours,
   type ArrowFlow,
   type BorderStyle,
   type Element,
@@ -27,7 +28,17 @@ type AccordionProps = { open: boolean; onToggle: () => void; flush: boolean };
 // to preset) or a pie / line chart (which styles per-slice via its Data
 // category). The single and multi menus share this eligibility test.
 export function shapeSupportsPresets(el: Element): el is ShapeElement {
-  return el.type === 'shape' && el.shape !== 'icon' && !isChartShape(el.shape);
+  if (el.type !== 'shape') return false;
+  // A preset is nothing but fill + stroke + text colours, so a shape that
+  // takes no element colour has nothing for it to set. Asking the shared
+  // predicate rather than keeping a second exclusion list here: a sticker
+  // (spec/116) paints its own plate and showed a full Presets grid where every
+  // tile did nothing, because this list had never heard of stickers.
+  if (!supportsColours(el)) return false;
+  // The two that DO take colours but still can't show a preset: an icon is
+  // line art with no fill, and a chart paints its series from its own
+  // palette.
+  return el.shape !== 'icon' && !isChartShape(el.shape);
 }
 
 // Presets (spec/48) — one-click theme-colour + border looks for a shape, plus a

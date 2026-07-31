@@ -2780,6 +2780,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "padding": {
         "$ref": "#/components/schemas/Padding"
       },
+      "pageSubtitle": {
+        "type": "string"
+      },
+      "pageTitle": {
+        "type": "string"
+      },
       "pickerOptions": {
         "items": {
           "type": "string"

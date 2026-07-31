@@ -94,6 +94,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onAddTableColumn,
     onSetRailLabel,
     onToggleChecklistItem,
+    onSetPageHeading,
     chartPalette,
     onSpawnConnect,
     onStartArrow,
@@ -170,6 +171,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onCommitTable,
     onSetRailLabel,
     onToggleChecklistItem: readOnly ? undefined : onToggleChecklistItem,
+    onSetPageHeading,
     onFollowLink,
     onPressModeButton,
     onPressSessionButton,
@@ -337,6 +339,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             onCommitTable={h.onCommitTable}
             onSetRailLabel={h.onSetRailLabel}
             onToggleChecklistItem={h.onToggleChecklistItem}
+            onSetPageHeading={h.onSetPageHeading}
             chartPalette={chartPalette}
             onCancelEdit={h.onCancelEdit}
             onFollowLink={h.onFollowLink}
