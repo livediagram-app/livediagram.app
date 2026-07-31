@@ -1,16 +1,14 @@
-import { ICON_DND_MIME, type IconDef } from '@/lib/icons';
+import { ICON_CATEGORIES, ICON_DND_MIME, iconsInCategory, type IconDef } from '@/lib/icons';
 import { IconButton } from '@/components/palette/palette-controls';
 import { IconPrims } from '@/components/primitives/icon-glyph';
-import { PaletteDropdown } from '@/components/palette/PaletteDropdown';
-import { PaletteSearchInput } from '@/components/palette/PaletteSearchInput';
+import { PaletteCategoryBrowser } from '@/components/palette/PaletteCategoryBrowser';
 
 type IconPickerTabProps = {
   addIcon: (iconId: string) => void;
   iconQuery: string;
   setIconQuery: (q: string) => void;
-  iconCategory: string;
-  setIconCategory: (c: string) => void;
-  iconFilters: { id: string; label: string }[];
+  // Every icon matching the query, across all categories. The tab derives its
+  // per-category slices itself from ICON_CATEGORIES.
   iconResults: IconDef[];
   // True while the async icon-catalogue chunk (lib/icon-registry.ts) is still
   // in flight — the grid is empty then, so show a loading note instead of the
@@ -18,109 +16,114 @@ type IconPickerTabProps = {
   loading?: boolean;
 };
 
-// The command palette's Icons tab: a searchable, category-filtered catalogue
-// of single-colour glyphs. Clicking one drops it at the viewport centre as an
-// 'icon' shape tinted by the element stroke; each is also drag-droppable.
-// Split out of CommandPalette.
+// One glyph, drawn small. Clicking adds it at the viewport centre as an 'icon'
+// shape tinted by the element stroke; dragging drops it at the pointer, or
+// onto a shape to become that shape's inline icon. See spec/09 "Icons".
+function IconTile({ icon, onAdd }: { icon: IconDef; onAdd: (id: string) => void }) {
+  return (
+    <IconButton
+      label={`Add ${icon.label}`}
+      description="Click to add, or drag onto a shape to set its icon."
+      hideTooltip
+      hideCaption
+      onClick={() => onAdd(icon.id)}
+      draggable
+      onDragStart={(e) => {
+        e.dataTransfer.setData(ICON_DND_MIME, icon.id);
+        e.dataTransfer.effectAllowed = 'copy';
+      }}
+    >
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden
+      >
+        <IconPrims iconId={icon.id} />
+      </svg>
+    </IconButton>
+  );
+}
+
+// The command palette's Icons tab (spec/109): the same drill-in browse the
+// Tools tab uses, over the line-art catalogue.
+//
+// It used to be one flat scroll of 183 glyphs behind a category-filter
+// dropdown. The catalogue's own shape — that there IS a People set, an Emoji
+// set, a Furniture set — was hidden inside a control you had to open to read,
+// and the default view was a wall you scrolled. The category tiles put that
+// structure on screen; search still cuts across all of it.
 export function IconPickerTab({
   addIcon,
   iconQuery,
   setIconQuery,
-  iconCategory,
-  setIconCategory,
-  iconFilters,
   iconResults,
   loading = false,
 }: IconPickerTabProps) {
+  // Category artwork = the category's first glyph, mirroring the Tools tab's
+  // "a category looks like what it holds".
+  const categories = ICON_CATEGORIES.map((cat) => {
+    const items = iconsInCategory(cat.id);
+    const first = items[0];
+    return {
+      id: cat.id,
+      label: cat.label,
+      // No description: "People" and "Arrows" say what they hold, and a
+      // tooltip restating the label would just be a delay.
+      icon: first ? (
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden
+        >
+          <IconPrims iconId={first.id} />
+        </svg>
+      ) : null,
+      items,
+    };
+  });
   return (
-    <>
-      {/* Searchable catalogue of single-colour glyphs. Clicking one
-            drops it at the viewport centre as an 'icon' shape tinted
-            by the element's stroke colour. See spec/09 "Icons". */}
-      {/* Filter dropdown sits LEFT of the search (flex-row-reverse) so
-                    it doesn't stack under the category picker at the top-right. */}
-      <div className="relative mb-2 flex flex-row-reverse items-center gap-1.5">
-        <PaletteSearchInput
-          value={iconQuery}
-          onChange={setIconQuery}
-          placeholder="Search icons"
-          ariaLabel="Search icons"
-          clearAriaLabel="Clear icon search"
-          clearDescription="Clear the icon search query."
-        />
-        {/* Category filter dropdown (replaces the chip row): pick one
-                      category to narrow the grid; "All" clears it. */}
-        <div className="shrink-0">
-          <PaletteDropdown
-            ariaLabel="Filter icons by category"
-            value={iconCategory}
-            onChange={setIconCategory}
-            align="left"
-            accent={iconCategory !== 'all'}
-            options={iconFilters}
-            triggerLeading={
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 16 16"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.6"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden
-                className="shrink-0"
-              >
-                <path d="M2 4h12M4.5 8h7M7 12h2" />
-              </svg>
-            }
-          />
+    <PaletteCategoryBrowser
+      root="Icons"
+      categories={categories}
+      // The parent already searched the whole catalogue for this query, so
+      // the results come back rather than being recomputed here.
+      search={() => iconResults}
+      renderItems={(icons) => (
+        // overflow-x-hidden: a vertical scrollbar narrows the row enough that
+        // five fixed-width tiles overflow by a few px, and `overflow-y-auto`
+        // would otherwise also surface a horizontal scrollbar (CSS resolves
+        // the other axis to auto). justify-items-center keeps the slack
+        // symmetric so nothing visible clips.
+        <div className="grid max-h-72 grid-cols-5 justify-items-center gap-1 overflow-y-auto overflow-x-hidden">
+          {icons.map((icon) => (
+            <IconTile key={icon.id} icon={icon} onAdd={addIcon} />
+          ))}
         </div>
-      </div>
-      {/* overflow-x-hidden: a vertical scrollbar narrows the row
-                    enough that six fixed-width tiles overflow by a few px,
-                    and `overflow-y-auto` would otherwise also surface a
-                    horizontal scrollbar (CSS resolves the other axis to
-                    auto). justify-items-center keeps the slack symmetric so
-                    nothing visible clips. */}
-      <div className="grid max-h-72 grid-cols-5 justify-items-center gap-1 overflow-y-auto overflow-x-hidden">
-        {iconResults.map((icon) => (
-          <IconButton
-            key={icon.id}
-            label={`Add ${icon.label}`}
-            description={`Click to add, or drag onto a shape to set its icon.`}
-            hideTooltip
-            hideCaption
-            onClick={() => addIcon(icon.id)}
-            draggable
-            onDragStart={(e) => {
-              e.dataTransfer.setData(ICON_DND_MIME, icon.id);
-              e.dataTransfer.effectAllowed = 'copy';
-            }}
-          >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden
-            >
-              <IconPrims iconId={icon.id} />
-            </svg>
-          </IconButton>
-        ))}
-        {iconResults.length === 0 ? (
-          <p className="col-span-6 px-1 py-2 text-center text-[11px] text-slate-400">
-            {/* While the catalogue chunk is loading, an empty grid means
-                "data not here yet", not "your search found nothing". */}
-            {loading ? 'Loading icons…' : `No icons match “${iconQuery}”.`}
-          </p>
-        ) : null}
-      </div>
-    </>
+      )}
+      query={iconQuery}
+      onQueryChange={setIconQuery}
+      searchInput={{
+        placeholder: 'Search icons',
+        ariaLabel: 'Search icons',
+        clearAriaLabel: 'Clear icon search',
+        clearDescription: 'Clear the icon search query.',
+      }}
+      telemetry={{ openedType: 'IconGroup', searchedType: 'IconSearch' }}
+      emptyMessage={(q) => `No icons match “${q}”.`}
+      loading={loading}
+      loadingMessage="Loading icons…"
+    />
   );
 }

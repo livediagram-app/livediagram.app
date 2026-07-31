@@ -98,12 +98,14 @@ adding `TechIconDef` entries.
 ## Palette — the Technology tab
 
 A new tab in `PaletteTabBar` (`CommandPalette.tsx`), alongside Shapes / Tools /
-Devices / Icons. It mirrors the Icons tab: a search box plus a **provider**
-filter dropdown (All / AWS / Azure / Generic). Clicking a tile adds the icon at
+Devices / Icons. It mirrors the Icons tab: a search box over a grid of
+**provider** category tiles you drill into (AWS / Azure / Cloudflare / Firebase
+/ Generic), with a breadcrumb back — see spec/109, which replaced the provider
+filter dropdown this originally shipped with. Clicking a tile adds the icon at
 the viewport centre; dragging a tile onto the canvas drops it at the pointer.
 
 Unlike the line-art Icons grid (5 across, no captions — a labelled line icon's
-shape reads on its own), the Technology grid is **4 across with a caption under
+shape reads on its own), the Technology grid is **3 across with a caption under
 each tile**: the brand glyphs aren't self-explanatory at thumbnail size, so the
 name sits beneath each one. A handful of long names carry a `short` caption
 (`Virtual Machine` → `VM`, `Virtual Network` → `VNet`, `Load Balancer` →

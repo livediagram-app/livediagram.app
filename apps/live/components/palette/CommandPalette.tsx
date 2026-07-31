@@ -24,8 +24,8 @@ import {
 } from '@/components/palette/palette-create-tabs';
 import { PaletteFavouritesTab } from '@/components/palette/PaletteFavouritesTab';
 import type { PaletteTileActions } from '@/components/palette/PaletteTileGrid';
-import { getIconCatalog, ICON_CATEGORIES, iconsInCategory } from '@/lib/icons';
-import { searchTechIcons, TECH_PROVIDERS, type TechProvider } from '@/lib/tech-icons';
+import { getIconCatalog } from '@/lib/icons';
+import { searchTechIcons } from '@/lib/tech-icons';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 
 import type { CanvasTool, CommandPaletteProps } from './CommandPalette.types';
@@ -254,31 +254,24 @@ export function CommandPalette({
   // Icon-picker search query (Icons tab). Filters the catalogue
   // by label / keyword as the user types.
   const [iconQuery, setIconQuery] = useState('');
-  // Category filter ('all' = no narrowing). Combines with the search box:
-  // search runs WITHIN the selected category. Picked from a dropdown beside
-  // the search box (replacing the old chip row).
-  const [iconCategory, setIconCategory] = useState<string>('all');
   // Both icon catalogues load as one async chunk (lib/icon-registry.ts).
   // Subscribing here re-renders the palette when the data lands, so the two
   // result lists below re-derive from the populated catalogue; until then
   // they're empty and the picker tabs show a brief "Loading icons" note
   // (via `iconCatalogsLoaded`) instead of a false "no matches".
   const iconCatalogsLoaded = useIconCatalogs();
-  const iconFilters = [{ id: 'all', label: 'All' }, ...ICON_CATEGORIES];
-  const iconResults = (
-    iconCategory === 'all' ? getIconCatalog() : iconsInCategory(iconCategory)
-  ).filter((i) => {
+  // Search hits across the WHOLE catalogue — the tab browses by category
+  // (spec/109) rather than filtering by one, so narrowing here would make a
+  // search silently miss the categories you weren't looking at.
+  const iconResults = getIconCatalog().filter((i) => {
     const q = iconQuery.trim().toLowerCase();
     if (!q) return true;
     return i.label.toLowerCase().includes(q) || i.keywords.includes(q) || i.id.includes(q);
   });
   // Technology tab (spec/41): full-colour brand icons. Mirrors the Icons
-  // tab — a search box plus a provider filter ('all' = no narrowing) over a
-  // grid of coloured thumbnails.
+  // tab — a search box over provider categories.
   const [techQuery, setTechQuery] = useState('');
-  const [techProvider, setTechProvider] = useState<TechProvider | 'all'>('all');
-  const techFilters = [{ id: 'all', label: 'All' }, ...TECH_PROVIDERS];
-  const techResults = searchTechIcons(techQuery, techProvider);
+  const techResults = searchTechIcons(techQuery, 'all');
   return (
     <MovablePanel
       title="Palette"
@@ -410,9 +403,6 @@ export function CommandPalette({
                   addIcon={addIcon}
                   iconQuery={iconQuery}
                   setIconQuery={setIconQuery}
-                  iconCategory={iconCategory}
-                  setIconCategory={setIconCategory}
-                  iconFilters={iconFilters}
                   iconResults={iconResults}
                   loading={!iconCatalogsLoaded}
                 />
@@ -429,9 +419,6 @@ export function CommandPalette({
                   addTechIcon={addTechIcon}
                   techQuery={techQuery}
                   setTechQuery={setTechQuery}
-                  techProvider={techProvider}
-                  setTechProvider={setTechProvider}
-                  techFilters={techFilters}
                   techResults={techResults}
                   loading={!iconCatalogsLoaded}
                 />

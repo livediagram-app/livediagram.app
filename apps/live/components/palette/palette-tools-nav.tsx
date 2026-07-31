@@ -22,7 +22,12 @@ export type ToolsCategory = {
   icon: ReactNode;
   // What's inside, in one line — the tooltip's job is to answer "is the thing
   // I want in here?", which a tool count never does.
-  description: string;
+  //
+  // Optional, because that question only needs answering when the label
+  // doesn't. "Blocks" is worth a sentence; the Icons tab's "People" and the
+  // Technology tab's "AWS" are not, and a tooltip restating the label is
+  // noise you have to wait for.
+  description?: string;
 };
 
 export function ToolsCategoryGrid({
@@ -34,8 +39,8 @@ export function ToolsCategoryGrid({
 }) {
   return (
     <div className="grid grid-cols-2 gap-2">
-      {categories.map((category) => (
-        <Tooltip key={category.id} title={category.label} description={category.description}>
+      {categories.map((category) => {
+        const tile = (
           <button
             type="button"
             onClick={() => onOpen(category.id)}
@@ -53,15 +58,34 @@ export function ToolsCategoryGrid({
               {category.label}
             </span>
           </button>
-        </Tooltip>
-      ))}
+        );
+        // No description, no tooltip: a tooltip that only repeats the label
+        // already under the glyph is a delay in exchange for nothing.
+        return category.description ? (
+          <Tooltip key={category.id} title={category.label} description={category.description}>
+            {tile}
+          </Tooltip>
+        ) : (
+          <div key={category.id}>{tile}</div>
+        );
+      })}
     </div>
   );
 }
 
 // "Tools › Write", where Tools goes back. Also the label for where you are, so
 // a drilled-in palette never leaves you guessing which set you're looking at.
-export function ToolsBreadcrumb({ label, onBack }: { label: string; onBack: () => void }) {
+// `root` is the tab's own name, since Icons and Technology drill in the same
+// way ("Icons › People").
+export function ToolsBreadcrumb({
+  root = 'Tools',
+  label,
+  onBack,
+}: {
+  root?: string;
+  label: string;
+  onBack: () => void;
+}) {
   return (
     // A bar, not a line of small print: the "back" half is the most-used
     // control on this screen, so it gets a surface, a full-height target, and
@@ -76,7 +100,7 @@ export function ToolsBreadcrumb({ label, onBack }: { label: string; onBack: () =
         <span className="rotate-90">
           <ChevronIcon open={false} />
         </span>
-        Tools
+        {root}
       </button>
       <span aria-hidden className="text-slate-400 dark:text-slate-500">
         ›

@@ -73,6 +73,24 @@ describe('icon categories', () => {
     }
   });
 
+  it('puts every catalogue icon in exactly one category', () => {
+    // The Icons tab browses BY category since spec/109 — there is no longer
+    // an "All" filter to fall back on, so an icon in no category is an icon
+    // nobody can reach except by guessing its name in the search box.
+    const seen = new Map<string, string[]>();
+    for (const cat of ICON_CATEGORIES) {
+      for (const id of cat.iconIds) seen.set(id, [...(seen.get(id) ?? []), cat.id]);
+    }
+    const orphans = getIconCatalog()
+      .map((i) => i.id)
+      .filter((id) => !seen.has(id));
+    expect(orphans, 'icons in no ICON_CATEGORIES entry are unreachable in the palette').toEqual([]);
+    // Two categories claiming one icon would show it twice; harmless, but it
+    // always means one of the two lists is wrong.
+    const duplicated = [...seen].filter(([, cats]) => cats.length > 1);
+    expect(duplicated).toEqual([]);
+  });
+
   it('iconsInCategory returns catalogue entries in catalogue order', () => {
     const catalog = getIconCatalog();
     const tech = iconsInCategory('tech');

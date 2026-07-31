@@ -259,7 +259,7 @@ export function PaletteDropdown({
             className={`fixed z-[var(--z-overlay)] w-max border border-slate-200 bg-white py-1 shadow-lg dark:border-slate-700 dark:bg-slate-900 ${
               // The grid needs its own columns + a floor width; the list keeps
               // hugging its content as before.
-              grid ? 'grid min-w-[13.5rem] grid-cols-3 gap-1 px-1.5' : ''
+              grid ? 'grid min-w-[15rem] grid-cols-3 gap-1.5 px-2 pb-1.5' : ''
             } ${
               coords?.flipUp
                 ? 'origin-bottom animate-dropdown-up'
@@ -341,7 +341,7 @@ export function PaletteDropdown({
                           onChange(opt.id);
                           setOpen(false);
                         }}
-                        className={`relative flex cursor-pointer flex-col items-center justify-start gap-1.5 px-1.5 py-2 text-center text-[11px] font-medium leading-tight transition ${bandTint(opt.group)} ${
+                        className={`relative flex cursor-pointer flex-col items-center justify-start gap-2 rounded-md px-2 py-3 text-center text-[11px] font-medium leading-tight transition ${bandTint(opt.group)} ${
                           opt.disabled
                             ? 'cursor-not-allowed text-slate-700 opacity-40 dark:text-slate-200'
                             : opt.id === value

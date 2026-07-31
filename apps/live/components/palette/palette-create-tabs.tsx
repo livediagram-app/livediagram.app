@@ -1,13 +1,11 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { PaletteTileGrid, type PaletteTileActions } from './PaletteTileGrid';
 import { PaletteToolRows } from './PaletteToolRows';
-import { ToolsBreadcrumb, ToolsCategoryGrid } from './palette-tools-nav';
-import { PaletteSearchInput } from './PaletteSearchInput';
+import { PaletteCategoryBrowser } from './PaletteCategoryBrowser';
 import { TOOL_GROUPS, tilesInSection, tilesInToolGroup } from './palette-tile-defs';
-import { track } from '@/lib/telemetry';
 
 // The palette's creation-category tab bodies. Since spec/78 every tile is
 // a data entry in the shared catalogue (palette-tile-defs.tsx) rendered
@@ -38,99 +36,52 @@ export function PaletteShapesTab({ pendingDraw, actions }: TabProps) {
 // the others off the bottom, and the palette — a wall of pictures everywhere
 // else — presented itself as a list of words.
 export function PaletteToolsTab({ pendingDraw, actions }: TabProps) {
-  const sections: {
-    id: string;
-    label: string;
-    description: string;
-    tiles?: ReturnType<typeof tilesInToolGroup>;
-  }[] = [
+  // Search box state is local: it's a way to get somewhere in this tab, not a
+  // filter you'd expect to survive leaving it.
+  const [query, setQuery] = useState('');
+  // Category artwork = the group's first tile, so a category always looks like
+  // what it holds. Data's tiles come from its own catalogue section rather
+  // than a tool group.
+  const categories = [
     ...TOOL_GROUPS.map((g) => ({
       id: g.id,
       label: g.label,
       description: g.description,
-      tiles: tilesInToolGroup(g.id),
+      items: tilesInToolGroup(g.id),
     })),
     {
       id: 'data',
       label: 'Data',
       description: 'Charts and meters: pie, bar and line charts, progress bars and rings, ratings.',
+      items: tilesInSection('data'),
     },
-  ];
-  // null = the category grid. Starts there, so opening Tools shows every
-  // category at once rather than one arbitrary group's contents.
-  const [openId, setOpenId] = useState<string | null>(null);
-  // Search across the grouped tools (spec/09 "Sub-categories"): the
-  // accordions keep the tab one glance tall but hide most tiles, so a
-  // search box (mirroring the Icons / Technology pickers) surfaces any
-  // tool by name without knowing its group. A non-empty query swaps the
-  // accordions for one flat grid of matches across every group + Data.
-  const [query, setQuery] = useState('');
-  // One 'Searched' event per mount, on the first keystroke — same
-  // engagement-signal pattern as the editor's Search panel.
-  const searchedRef = useRef(false);
-  const q = query.trim().toLowerCase();
-  const matches = q
-    ? [...tilesInSection('tools'), ...tilesInSection('data')].filter((t) =>
-        [t.label, t.caption ?? '', t.description].some((s) => s.toLowerCase().includes(q)),
-      )
-    : null;
-  const openCategory = (id: string) => {
-    track('UI', 'Opened', 'ToolGroup');
-    setOpenId(id);
-  };
-  const openSection = sections.find((s) => s.id === openId) ?? null;
-  // Category artwork = the group's first tile, so a category always looks like
-  // what it holds. Data's tiles come from its own catalogue section.
-  const categories = sections.map((section) => {
-    const tiles = section.tiles ?? tilesInSection('data');
-    return {
-      id: section.id,
-      label: section.label,
-      icon: tiles[0]?.icon ?? null,
-      description: section.description,
-    };
-  });
+  ].map((c) => ({ ...c, icon: c.items[0]?.icon ?? null }));
   return (
-    <div className="flex flex-col">
-      <div className="mb-2 flex items-center">
-        <PaletteSearchInput
-          value={query}
-          onChange={(next) => {
-            setQuery(next);
-            if (!searchedRef.current && next.trim()) {
-              searchedRef.current = true;
-              track('UI', 'Searched', 'ToolSearch');
-            }
-          }}
-          placeholder="Search tools"
-          ariaLabel="Search tools"
-          clearAriaLabel="Clear tool search"
-          clearDescription="Clear the tool search query."
-        />
-      </div>
-      {matches ? (
-        // Searching cuts across categories, so it replaces the whole navigation
-        // with one flat grid of hits — the breadcrumb would be lying.
-        matches.length > 0 ? (
-          <PaletteToolRows tiles={matches} actions={actions} pendingDraw={pendingDraw} />
-        ) : (
-          <p className="px-1 py-2 text-center text-[11px] text-slate-400">
-            No tools match “{query}”.
-          </p>
-        )
-      ) : openSection ? (
-        <>
-          <ToolsBreadcrumb label={openSection.label} onBack={() => setOpenId(null)} />
-          <PaletteToolRows
-            tiles={openSection.tiles ?? tilesInSection('data')}
-            actions={actions}
-            pendingDraw={pendingDraw}
-          />
-        </>
-      ) : (
-        <ToolsCategoryGrid categories={categories} onOpen={openCategory} />
+    <PaletteCategoryBrowser
+      root="Tools"
+      categories={categories}
+      // Matches on caption and description as well as the label, so "chart"
+      // finds the pie chart whether or not you know what it's called.
+      search={(query) => {
+        const q = query.toLowerCase();
+        return [...tilesInSection('tools'), ...tilesInSection('data')].filter((t) =>
+          [t.label, t.caption ?? '', t.description].some((s) => s.toLowerCase().includes(q)),
+        );
+      }}
+      renderItems={(tiles) => (
+        <PaletteToolRows tiles={tiles} actions={actions} pendingDraw={pendingDraw} />
       )}
-    </div>
+      query={query}
+      onQueryChange={setQuery}
+      searchInput={{
+        placeholder: 'Search tools',
+        ariaLabel: 'Search tools',
+        clearAriaLabel: 'Clear tool search',
+        clearDescription: 'Clear the tool search query.',
+      }}
+      telemetry={{ openedType: 'ToolGroup', searchedType: 'ToolSearch' }}
+      emptyMessage={(q) => `No tools match “${q}”.`}
+    />
   );
 }
 
