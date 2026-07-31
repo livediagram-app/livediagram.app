@@ -7,6 +7,7 @@
 import type { ShapeKind } from '@livediagram/diagram';
 
 import type { PaletteSearchItem } from '@/lib/search';
+import { PALETTE_TILES, tileDisplayName } from '@/components/palette/palette-tile-defs';
 import {
   getLoadedIconCatalog,
   getLoadedStickerCatalog,
@@ -14,26 +15,72 @@ import {
 } from '@/lib/icon-registry';
 import { isLegacyEmojiIconId } from '@livediagram/icons';
 
-// The shapes offered in the palette's Shapes tab, with search keywords so
-// e.g. "database" finds the cylinder and "decision" finds the diamond. Kept
-// inline (rather than re-derived from the palette JSX) so search stays
-// decoupled from the palette's rendering.
-const SHAPES: { kind: ShapeKind; name: string; keywords: string }[] = [
-  { kind: 'square', name: 'Rectangle', keywords: 'square box rect node' },
-  { kind: 'circle', name: 'Circle', keywords: 'oval ellipse round node' },
-  { kind: 'diamond', name: 'Diamond', keywords: 'decision rhombus flowchart' },
-  { kind: 'cylinder', name: 'Cylinder', keywords: 'database storage db disk' },
-  { kind: 'parallelogram', name: 'Parallelogram', keywords: 'input output io flowchart' },
-  { kind: 'hexagon', name: 'Hexagon', keywords: 'preparation milestone' },
-  { kind: 'document', name: 'Document', keywords: 'page report file' },
-  { kind: 'stadium', name: 'Stadium', keywords: 'pill terminator start end rounded' },
-  { kind: 'cloud', name: 'Cloud', keywords: 'internet network external' },
-  { kind: 'triangle', name: 'Triangle', keywords: 'warning delta' },
-  { kind: 'trapezoid', name: 'Trapezoid', keywords: 'manual operation' },
-  { kind: 'star', name: 'Star', keywords: 'favourite highlight rating' },
-  { kind: 'speech-bubble', name: 'Speech bubble', keywords: 'comment callout chat note' },
-  { kind: 'frame', name: 'Frame', keywords: 'section container group region' },
-];
+// Search synonyms per shape: the words somebody types when they don't know
+// what we called it ("database" for the cylinder, "swimlane" for the lane).
+// Only the extra vocabulary lives here — the NAME and the description come
+// from the shared tile catalogue, so a new element type shows up in search the
+// moment its tile exists, with or without an entry below.
+//
+// This used to be a hand-written list of the shapes themselves, and it had
+// silently fallen 22 kinds behind the palette: every Devices, Data, Media and
+// Behaviour element was unfindable from the search panel.
+const SHAPE_KEYWORDS: Partial<Record<ShapeKind, string>> = {
+  square: 'square box rect node',
+  circle: 'oval ellipse round node',
+  diamond: 'decision rhombus flowchart',
+  cylinder: 'database storage db disk',
+  parallelogram: 'input output io flowchart',
+  hexagon: 'preparation milestone',
+  document: 'page report file',
+  stadium: 'pill terminator start end rounded',
+  cloud: 'internet network external',
+  triangle: 'warning delta',
+  trapezoid: 'manual operation',
+  star: 'favourite highlight rating',
+  'speech-bubble': 'comment callout chat note',
+  frame: 'section container group region',
+  page: 'document doc write article heading',
+  'mind-node': 'mind map brainstorm branch idea tree',
+  lane: 'swimlane band row track process',
+  entity: 'record table uml class er schema field',
+  'mode-button': 'mode switch button press avatar',
+  portal: 'teleport jump link warp travel',
+  'session-button': 'timer vote poll session start',
+  reveal: 'hide cover spoiler blur uncover',
+  picker: 'random pick spinner wheel choose',
+  chair: 'seat sit stool furniture',
+  estimate: 'points sizing poker fist estimate vote',
+  temperature: 'mood check pulse gauge feeling',
+  'idea-box': 'suggestions ideas inbox submit',
+  agenda: 'plan schedule topics running order',
+  decision: 'decided outcome record resolution',
+  'roll-call': 'attendance present who register',
+  actor: 'person stick figure user role uml',
+  browser: 'web page window chrome site',
+  monitor: 'screen desktop display computer',
+  laptop: 'macbook notebook computer',
+  phone: 'mobile iphone android handset',
+  tablet: 'ipad slate',
+  smartwatch: 'watch wearable wrist',
+  'progress-bar': 'bar meter percent loading completion',
+  'progress-ring': 'donut ring percent gauge dial',
+  'timeline-rail': 'timeline roadmap milestones track',
+  rating: 'stars score review out of five',
+  'pie-chart': 'donut share split proportion chart',
+  'bar-chart': 'column histogram chart graph',
+  'line-chart': 'trend series graph chart plot',
+  'code-block': 'code snippet syntax monospace program',
+  checklist: 'todo tasks tick checkbox list',
+};
+
+// The shape-placing tiles, in palette order. Derived from the shared
+// catalogue (spec/78) rather than restated, which is what keeps search from
+// drifting behind the palette again. Icon / sticker / tech tiles are excluded
+// deliberately: those catalogues are enumerated in full below, so including
+// their single "open the picker" tile would add a duplicate result.
+const SHAPE_TILES = PALETTE_TILES.filter(
+  (t) => t.action.type === 'shape' && t.action.kind !== 'icon' && t.action.kind !== 'sticker',
+);
 
 // A function, not a module-load constant: the icon catalogues load as an
 // async chunk (lib/icon-registry.ts), so the list must be rebuilt once they
@@ -44,12 +91,18 @@ const SHAPES: { kind: ShapeKind; name: string; keywords: string }[] = [
 // render without memoisation.
 export function buildPaletteSearchItems(): PaletteSearchItem[] {
   return [
-    ...SHAPES.map((s) => ({
-      id: `shape:${s.kind}`,
-      name: s.name,
-      keywords: `shape ${s.keywords}`,
-      add: { type: 'shape' as const, shapeKind: s.kind },
-    })),
+    ...SHAPE_TILES.map((tile) => {
+      const kind = (tile.action as { type: 'shape'; kind: ShapeKind }).kind;
+      return {
+        id: `shape:${kind}`,
+        name: tileDisplayName(tile),
+        // The tile's own description joins the keywords, so the sentence the
+        // palette already writes about an element ("a titled band that carries
+        // its contents") is searchable without being written twice.
+        keywords: `shape ${SHAPE_KEYWORDS[kind] ?? ''} ${tile.description}`,
+        add: { type: 'shape' as const, shapeKind: kind },
+      };
+    }),
     // Line art only. The catalogue still carries the legacy emoji entries so
     // pre-spec/116 elements keep rendering, but offering them here would add
     // a second way to place something that is a sticker now.
