@@ -8,11 +8,6 @@ import type { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import type { PanelId } from '@/lib/panel-layout';
 import { ActivityPanel } from '@/components/panels/ActivityPanel';
 import { LayersPanel } from '@/components/panels/LayersPanel';
-import { AvatarPanel } from '@/components/panels/AvatarPanel';
-import { LaserPanel } from '@/components/panels/LaserPanel';
-import { SpotlightPanel } from '@/components/panels/SpotlightPanel';
-import { EraserPanel } from '@/components/panels/EraserPanel';
-import { FormatPanel } from '@/components/panels/FormatPanel';
 import { visibleLayerElements } from '@livediagram/diagram';
 import { CanvasAiPanel } from './CanvasAiPanel';
 import { CommandPalette } from '@/components/palette/CommandPalette';
@@ -20,6 +15,7 @@ import { Explorer } from '@/components/panels/Explorer';
 import { Minimap } from '@/components/canvas/Minimap';
 import type { CanvasChromeProps } from './CanvasChrome';
 import { usePaletteChrome } from './usePaletteChrome';
+import { useCanvasToolPanels } from './useCanvasToolPanels';
 
 // Lazy-load CommentsPanel: only mounts when the active tab has at
 // least one element with comments. It stacks below the Palette (the
@@ -178,37 +174,6 @@ export function useCanvasChromePanels({
     onPreviewRevert,
     onSetCanvasTool,
     onExitAvatarMode,
-    avatarConfig,
-    onChangeAvatarField,
-    laserConfig,
-    onChangeLaserField,
-    spotlightConfig,
-    onChangeSpotlightField,
-    eraserConfig,
-    onChangeEraserField,
-    formatConfig,
-    onToggleFormatGroup,
-    onSetFormatMode,
-    formatBrushSource,
-    formatPanelPosition,
-    onMoveFormatPanel,
-    onResetFormatPanel,
-    eraserPanelPosition,
-    onMoveEraserPanel,
-    onResetEraserPanel,
-    spotlightRadius,
-    onSetSpotlightRadius,
-    spotlightPanelPosition,
-    onMoveSpotlightPanel,
-    onResetSpotlightPanel,
-    laserPanelPosition,
-    onMoveLaserPanel,
-    onResetLaserPanel,
-    onRandomiseAvatar,
-    onAvatarReaction,
-    avatarPanelPosition,
-    onMoveAvatarPanel,
-    onResetAvatarPanel,
     onToggleActivityMinimized,
     onToggleMinimalPanels,
     onUndo,
@@ -317,25 +282,22 @@ export function useCanvasChromePanels({
   const layersWiring = panelWiringFor('layers', layersPanelPosition, onResetLayersPanel);
   const pollWiring = panelWiringFor('poll', pollPanelPosition, onResetPollPanel);
   const voteWiring = panelWiringFor('vote', votePanelPosition, onResetVotePanel);
-  const avatarWiring = panelWiringFor('avatar', avatarPanelPosition ?? null, () =>
-    onResetAvatarPanel?.(),
-  );
-  const laserWiring = panelWiringFor('laser', laserPanelPosition ?? null, () =>
-    onResetLaserPanel?.(),
-  );
-  const spotlightWiring = panelWiringFor('spotlight', spotlightPanelPosition ?? null, () =>
-    onResetSpotlightPanel?.(),
-  );
-  const eraserWiring = panelWiringFor('eraser', eraserPanelPosition ?? null, () =>
-    onResetEraserPanel?.(),
-  );
-  const formatWiring = panelWiringFor('format', formatPanelPosition ?? null, () =>
-    onResetFormatPanel?.(),
-  );
   // In docking mode the corner flex columns own stacking, so the legacy
   // measured stack-below-the-palette offset is dropped.
   const legacyStackBelowY =
     palettePosition !== null || paletteBottomY === 0 ? undefined : paletteBottomY;
+  const stackBelowY = dockingActive ? undefined : legacyStackBelowY;
+
+  // The five tool-config panels (avatar / laser / spotlight / eraser /
+  // format) — see useCanvasToolPanels. They share one contract: on screen
+  // only while their own tool is active.
+  const { avatarEl, laserEl, spotlightEl, eraserEl, formatEl } = useCanvasToolPanels({
+    props,
+    chromeHidden,
+    legacyStackBelowY: stackBelowY,
+    panelWiringFor,
+    closeMobilePanel,
+  });
 
   const explorerEl = zenMode ? null : (
     <Explorer

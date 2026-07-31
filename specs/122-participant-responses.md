@@ -62,3 +62,18 @@ element knows who said 8. That is right for these two consumers (a team that
 cannot see who estimated what cannot discuss the outlier) and wrong for a
 brainstorm, which is why the idea box ([spec/125](125-idea-box.md)) does not use
 this field and has nowhere to put an author at all.
+
+## The card scales to its box
+
+A Collaborate card lays out ONCE at its kind's default size and is then scaled
+uniformly onto the element's real box (`CollabScale` in `collab-chrome.tsx`),
+rather than reflowing into it.
+
+That is the difference between "the card gets bigger" and "the card gets more
+padding". Resizing one is how a facilitator makes it readable from the back of
+the room; a fist-of-five stretched to fill a wide box still had 13px type and
+6px bars, which is exactly what nobody can read from there.
+
+Uniform scale on the smaller axis, centred, so nothing distorts and a box with
+a different aspect ratio to the default leaves even margins instead of pinning
+to a corner.

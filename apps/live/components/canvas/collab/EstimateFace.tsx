@@ -54,6 +54,7 @@ export function EstimateFace({
 
   return (
     <CollabPanel
+      element={element}
       title={label.trim() || 'Estimate'}
       textColor={textColor}
       aside={responses.length ? `${responses.length}/${inRoom} answered` : undefined}

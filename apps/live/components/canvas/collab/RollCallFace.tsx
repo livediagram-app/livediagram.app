@@ -41,6 +41,7 @@ export function RollCallFace({
 
   return (
     <CollabPanel
+      element={element}
       title={label.trim() || 'Roll call'}
       textColor={textColor}
       aside={entries.length ? `${entries.length} present` : undefined}

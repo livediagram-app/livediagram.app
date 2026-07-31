@@ -36,6 +36,7 @@ export function DecisionFace({
 
   return (
     <CollabPanel
+      element={element}
       title={label.trim() || 'We will …'}
       textColor={textColor}
       // Three lines: enough for a real decision statement, bounded so a long

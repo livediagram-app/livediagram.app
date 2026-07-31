@@ -39,6 +39,7 @@ export function IdeaBoxFace({
 
   return (
     <CollabPanel
+      element={element}
       title={label.trim() || 'Ideas'}
       textColor={textColor}
       aside={cards.length ? `${cards.length} ${cards.length === 1 ? 'idea' : 'ideas'}` : undefined}

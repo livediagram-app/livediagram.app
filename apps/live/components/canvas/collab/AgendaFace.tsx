@@ -117,6 +117,7 @@ export function AgendaFace({
 
   return (
     <CollabPanel
+      element={element}
       title={label.trim() || 'Agenda'}
       textColor={textColor}
       aside={items.length ? formatMinutes(agendaTotalMinutes(items)) : undefined}

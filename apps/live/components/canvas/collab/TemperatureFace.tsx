@@ -41,6 +41,7 @@ export function TemperatureFace({
 
   return (
     <CollabPanel
+      element={element}
       title={label.trim() || 'How are we feeling?'}
       textColor={textColor}
       aside={stats.count ? `${stats.count} answered` : undefined}
