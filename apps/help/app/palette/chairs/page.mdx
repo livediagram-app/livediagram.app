@@ -1,0 +1,56 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Chairs',
+  description:
+    'Furniture for Avatar mode: walk your character into a chair and it sits down, so a board can have a seating plan.',
+  path: '/help/palette/chairs/',
+});
+
+<ArticleLayout
+  title="Chairs"
+  description="Walk an Avatar-mode character into one and it sits down."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  subArticles={getSubArticles("chairs")}
+>
+
+A **Chair** is furniture. Walk your Avatar-mode character into one and it sits down.
+
+It lives in the palette's **Behaviour** category, beside Portals and Session buttons.
+
+## Sitting down
+
+1. Switch to **Avatar** mode (the canvas-tool picker, or press **W**).
+2. Click the chair. Your character walks over and takes the seat.
+
+While seated:
+
+- Your character **ignores clicks elsewhere on the canvas**, so you can't be dragged out of your chair by a stray click.
+- Press any **arrow key** to stand up and walk away.
+- You can still wave and play reactions. Sitting takes away walking, not personality.
+
+## Everyone sees who is sitting where
+
+An occupied chair shows a ring in the sitter's colour with their name above it, on everyone's screen.
+
+Seating is **presence**, not part of the diagram. That means:
+
+- A chair is never left stuck by somebody who closed their laptop — leaving the mode, switching tab or disconnecting frees the seat immediately.
+- Nothing about who sat where is saved, logged, or undoable.
+
+Two people can end up in the same chair. That is allowed on purpose: a rule that stopped it would need a lock, and a locked chair is one that eventually gets stuck.
+
+## Setting it up
+
+- **Facing** (element menu → Chair) points the seat one of four ways, so a ring of chairs around a table faces inward.
+- Give the chair a **label** to make it somebody's chair: a name, or a role like "Facilitator" or "Scribe".
+- Otherwise it behaves like any element: move, resize, rotate, theme, group, lock, copy and export.
+
+## What it's for
+
+Eight chairs around a drawn table is a seating plan, an attendance display and a turn-taking device at once, built from elements you already know how to place. "Everyone grab a seat" becomes something the board can actually do.
+
+</ArticleLayout>

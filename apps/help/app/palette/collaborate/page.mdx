@@ -1,0 +1,86 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Collaborate elements',
+  description:
+    'Six elements that collect what the whole room thinks: estimate cards, temperature checks, idea boxes, agendas, decision records and roll calls.',
+  path: '/help/palette/collaborate/',
+});
+
+<ArticleLayout
+  title="Collaborate elements"
+  description="Elements that ask the room a question and keep the answer."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  subArticles={getSubArticles("collaborate")}
+>
+
+Most elements show what one person drew. The **Collaborate** category holds six that collect what **everybody** thinks, and keep it on the board afterwards.
+
+Open the palette's category dropdown and pick **Collaborate**.
+
+## Estimate card
+
+Planning poker. Everyone picks a number privately; one **Reveal** shows every answer at once.
+
+- Pick from **Fibonacci** (1 2 3 5 8 13 21 ?), **T-shirt** (XS to XL) or **Powers of two**. Change the scale from the element's menu, under Scale.
+- Before the reveal the card shows **who** has answered, not what they said. That is the point: seeing a number first is what anchors a room.
+- Press your own pick again to withdraw it. Picking a different one replaces it.
+- After the reveal, every answer appears under its author with the **spread** called out, or "Unanimous" when everyone agreed.
+- **Clear** empties the card for the next story.
+
+Every scale ends in **?**, which is a real answer: "I can't size this."
+
+## Temperature check
+
+A fist-of-five gauge. Everyone registers 1 (blocked) to 5 (enthusiastic), and the bars and the average move as the answers land.
+
+This one is **never hidden**, deliberately. Watching the shape of the room appear is the reading — a flat 3 across the board and a split between 1s and 5s have the same average and mean opposite things.
+
+## Idea box
+
+Anonymous submissions, held until you open the box.
+
+- Anyone types into **Add an idea**. No name is recorded against it — the element has nowhere to store one.
+- While it is closed the box shows a **count only**, not the text, and not even to the person who wrote it.
+- **Open the box** shows everything to the room. There is no closing it again: the flag protects the writing round, it isn't a toggle.
+- **Scatter to stickies** turns the ideas into ordinary sticky notes beside the box, so you can group, move and dot-vote them.
+
+Use it for retro round one, pre-mortems, and anything where the honest answer needs the safety of not being attributed.
+
+## Agenda
+
+The run of the session, with minutes against each segment.
+
+- Press a segment and it starts the tab timer for that long and marks itself as where the room is.
+- Done segments strike through; the current one shows the time remaining.
+- The header shows the **total**, which is the number that tells you the plan doesn't fit before you start.
+- Add, rename, re-time and reorder segments from the element's menu, under **Segments**.
+
+Nothing advances by itself when a timer ends. A segment running out is a prompt for a person, not an instruction.
+
+## Decision record
+
+What was decided, why, when, and whether it still stands — beside the thing it decided.
+
+- The element's **label** is the decision itself ("Use D1 for durable storage").
+- A **status** chip: Proposed, Accepted, Rejected or Superseded.
+- A **date**, and the **drivers** that led to it.
+
+All three are set from the element's menu, under Decision. To show that one decision replaced another, draw an arrow between the two cards.
+
+## Roll call
+
+Who was in the room, frozen into the diagram.
+
+Press **Take roll** and it records everyone present at that moment — and keeps them after they leave. It is minutes, not a live list, which is why it still means something tomorrow. Taking the roll again replaces the list.
+
+## Who can use them
+
+Anyone with an **edit** link. Someone on a view-only link sees every card and its answers but can't cast, reveal or clear — the controls render but stay inactive rather than pretending to work.
+
+Answers **aren't undoable**: your Ctrl+Z should never retract somebody else's answer.
+
+</ArticleLayout>

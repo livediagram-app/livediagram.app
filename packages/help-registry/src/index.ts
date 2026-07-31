@@ -177,7 +177,7 @@ export const categories: Category[] = [
     title: 'Palette',
     description:
       'Your launchpad for everything on the canvas: every element and palette setting explained.',
-    articleCount: 20,
+    articleCount: 22,
     kind: 'feature',
   },
   {
@@ -185,7 +185,7 @@ export const categories: Category[] = [
     title: 'Canvas',
     description:
       'Master the infinite canvas where diagrams come together: placing, selecting, grouping, linking, annotating, noting, layering, rotating, animating, shadowing, locking, theming, and templating.',
-    articleCount: 17,
+    articleCount: 18,
     kind: 'feature',
   },
   {
@@ -854,6 +854,27 @@ export const articles: Article[] = [
     group: 'Elements',
   },
   {
+    slug: 'collaborate',
+    title: 'Collaborate elements',
+    description:
+      'Estimate cards, temperature checks, idea boxes, agendas, decisions and roll calls.',
+    keywords:
+      'collaborate collaboration estimate estimation planning poker story points fibonacci tshirt t-shirt temperature check fist of five pulse mood vote idea box anonymous brainstorm brainwriting retro retrospective agenda run of show timebox segments decision record adr architecture decision roll call attendance register present room team workshop facilitate facilitation',
+    category: 'Palette',
+    categorySlug: 'palette',
+    group: 'Elements',
+  },
+  {
+    slug: 'chairs',
+    title: 'Chairs',
+    description: 'Furniture for Avatar mode: walk a character in and it sits down.',
+    keywords:
+      'chair chairs seat seating sit sitting sat furniture avatar character walk stand table room seating plan attendance behaviour',
+    category: 'Palette',
+    categorySlug: 'palette',
+    group: 'Elements',
+  },
+  {
     slug: 'lanes',
     title: 'Lanes',
     description: 'Titled bands for swimlanes; dragging one carries its contents.',
@@ -999,6 +1020,16 @@ export const articles: Article[] = [
     keywords: 'label typography font family typeface type writing edit',
     category: 'Canvas',
     categorySlug: 'canvas',
+  },
+  {
+    slug: 'follow-along',
+    title: 'Following someone',
+    description: "Pin your pan, zoom and tab to a collaborator's until you move the canvas.",
+    keywords:
+      'follow following follow me follow along presenter presentation present audience viewport view camera pan zoom tab sync synchronise synchronize mirror watch spectate lead guide tour walkthrough demo',
+    category: 'Canvas',
+    categorySlug: 'canvas',
+    group: 'Collaboration',
   },
   {
     slug: 'themes',

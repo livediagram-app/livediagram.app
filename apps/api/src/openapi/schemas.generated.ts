@@ -5,6 +5,22 @@
 import type { ComponentSchemas } from './types';
 
 export const COMPONENT_SCHEMAS: ComponentSchemas = {
+  "AgendaItem": {
+    "additionalProperties": false,
+    "properties": {
+      "label": {
+        "type": "string"
+      },
+      "minutes": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "label",
+      "minutes"
+    ],
+    "type": "object"
+  },
   "AiConversationTurn": {
     "additionalProperties": false,
     "properties": {
@@ -566,6 +582,15 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "ChairFacing": {
+    "enum": [
+      "n",
+      "e",
+      "s",
+      "w"
+    ],
+    "type": "string"
+  },
   "ChangeLogEntry": {
     "additionalProperties": false,
     "properties": {
@@ -851,6 +876,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
+          "agenda": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
           "bar-chart": {
             "additionalProperties": false,
             "properties": {
@@ -867,6 +907,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "object"
           },
           "browser": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "chair": {
             "additionalProperties": false,
             "properties": {
               "fill": {
@@ -956,6 +1011,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
+          "decision": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
           "diamond": {
             "additionalProperties": false,
             "properties": {
@@ -1001,6 +1071,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
+          "estimate": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
           "frame": {
             "additionalProperties": false,
             "properties": {
@@ -1032,6 +1117,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "object"
           },
           "icon": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "idea-box": {
             "additionalProperties": false,
             "properties": {
               "fill": {
@@ -1286,6 +1386,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
+          "roll-call": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
           "session-button": {
             "additionalProperties": false,
             "properties": {
@@ -1406,6 +1521,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
+          "temperature": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
           "timeline-rail": {
             "additionalProperties": false,
             "properties": {
@@ -1464,6 +1594,15 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "elementText"
     ],
     "type": "object"
+  },
+  "DecisionStatus": {
+    "enum": [
+      "proposed",
+      "accepted",
+      "rejected",
+      "superseded"
+    ],
+    "type": "string"
   },
   "Diagram": {
     "additionalProperties": false,
@@ -1956,6 +2095,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "name"
     ],
     "type": "object"
+  },
+  "EstimateScale": {
+    "enum": [
+      "fibonacci",
+      "tshirt",
+      "powers"
+    ],
+    "type": "string"
   },
   "Folder": {
     "additionalProperties": false,
@@ -2608,6 +2755,26 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "ParticipantResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "at": {
+        "type": "number"
+      },
+      "participantId": {
+        "type": "string"
+      },
+      "value": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "participantId",
+      "value",
+      "at"
+    ],
+    "type": "object"
+  },
   "PickerSource": {
     "enum": [
       "participants",
@@ -2659,6 +2826,26 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "rock"
     ],
     "type": "string"
+  },
+  "RollCallEntry": {
+    "additionalProperties": false,
+    "properties": {
+      "at": {
+        "type": "number"
+      },
+      "color": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "name",
+      "color",
+      "at"
+    ],
+    "type": "object"
   },
   "RunHeading": {
     "enum": [
@@ -2730,6 +2917,15 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "action": {
         "$ref": "#/components/schemas/ElementAction"
       },
+      "agendaCurrent": {
+        "type": "number"
+      },
+      "agendaItems": {
+        "items": {
+          "$ref": "#/components/schemas/AgendaItem"
+        },
+        "type": "array"
+      },
       "animation": {
         "$ref": "#/components/schemas/ElementAnimation"
       },
@@ -2744,6 +2940,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "borderRadius": {
         "$ref": "#/components/schemas/BorderRadius"
+      },
+      "chairFacing": {
+        "$ref": "#/components/schemas/ChairFacing"
       },
       "chartLegend": {
         "type": "boolean"
@@ -2769,11 +2968,26 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "commentThread": {
         "$ref": "#/components/schemas/CommentThread"
       },
+      "decisionDate": {
+        "type": "string"
+      },
+      "decisionDrivers": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "decisionStatus": {
+        "$ref": "#/components/schemas/DecisionStatus"
+      },
       "entityFields": {
         "items": {
           "$ref": "#/components/schemas/EntityField"
         },
         "type": "array"
+      },
+      "estimateScale": {
+        "$ref": "#/components/schemas/EstimateScale"
       },
       "fillColor": {
         "type": "string"
@@ -2807,6 +3021,15 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "id": {
         "$ref": "#/components/schemas/ElementId"
+      },
+      "ideaCards": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "ideasRevealed": {
+        "type": "boolean"
       },
       "label": {
         "type": "string"
@@ -2928,12 +3151,27 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "ratingAnimSpeed": {
         "$ref": "#/components/schemas/AnimationSpeed"
       },
+      "responses": {
+        "items": {
+          "$ref": "#/components/schemas/ParticipantResponse"
+        },
+        "type": "array"
+      },
+      "responsesRevealed": {
+        "type": "boolean"
+      },
       "revealed": {
         "type": "boolean"
       },
       "richText": {
         "items": {
           "$ref": "#/components/schemas/TextRun"
+        },
+        "type": "array"
+      },
+      "rollCall": {
+        "items": {
+          "$ref": "#/components/schemas/RollCallEntry"
         },
         "type": "array"
       },
@@ -3031,6 +3269,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "session-button",
       "reveal",
       "picker",
+      "chair",
+      "estimate",
+      "temperature",
+      "idea-box",
+      "agenda",
+      "decision",
+      "roll-call",
       "stadium",
       "actor",
       "cloud",
