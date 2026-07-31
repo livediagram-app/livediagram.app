@@ -3,6 +3,9 @@ import {
   addTableRow,
   CHECKLIST_MAX_ITEMS,
   CHECKLIST_MAX_TEXT,
+  RECORD_MAX_FIELDS,
+  RECORD_MAX_TEXT,
+  type RecordField,
   clampPercent,
   clampRating,
   CODE_MAX_LENGTH,
@@ -195,6 +198,25 @@ export function useDataShapeSetters({ currentSelectionIds, commit }: DataShapeSe
     );
   };
 
+  // Record fields (spec/120). Bounded on write like the checklist's rows, so
+  // a paste into the menu can't produce an element nobody can read.
+  const setRecordFieldsSelected = (fields: RecordField[]) => {
+    const ids = currentSelectionIds();
+    if (ids.size === 0) return;
+    const bounded = fields.slice(0, RECORD_MAX_FIELDS).map((f) => ({
+      name: f.name.slice(0, RECORD_MAX_TEXT),
+      ...(f.type ? { type: f.type.slice(0, RECORD_MAX_TEXT) } : {}),
+    }));
+    commit((els) =>
+      els.map((el) =>
+        ids.has(el.id) && el.type === 'shape' && el.shape === 'record'
+          ? { ...el, recordFields: bounded }
+          : el,
+      ),
+    );
+    track('Element', 'Changed', 'Record');
+  };
+
   const setChecklistItemsSelected = (items: ChecklistItem[]) => {
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
@@ -294,6 +316,7 @@ export function useDataShapeSetters({ currentSelectionIds, commit }: DataShapeSe
     toggleChecklistItem,
     setPageHeading,
     setChecklistItemsSelected,
+    setRecordFieldsSelected,
     setButtonModeSelected,
     setRatingSelected,
     setRatingAnimSelected,

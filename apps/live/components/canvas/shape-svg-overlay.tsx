@@ -51,7 +51,9 @@ export function isSvgRenderedShape(kind: ShapeKind): boolean {
     kind !== 'mind-node' &&
     // A lane (spec/119) is a filled band with a gutter drawn on top — CSS box
     // path, same as the rest of this list.
-    kind !== 'lane'
+    kind !== 'lane' &&
+    // A record (spec/120) is a filled box with rows drawn on top.
+    kind !== 'record'
   );
 }
 

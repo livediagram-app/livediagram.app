@@ -64,6 +64,7 @@ import {
 import {
   ChartMenuGlyph,
   ChecklistRowsEditor,
+  RecordFieldsEditor,
   CodeSummary,
   DataMenuGlyph,
   LineDataSummary,
@@ -95,6 +96,7 @@ type ElementDataSectionsProps = {
   isLine: boolean;
   isCodeBlock: boolean;
   isChecklist: boolean;
+  isRecord: boolean;
   isModeButton: boolean;
   isPortal: boolean;
   isSessionButton: boolean;
@@ -129,6 +131,7 @@ export function ElementDataSections({
   isLine,
   isCodeBlock,
   isChecklist,
+  isRecord,
   isModeButton,
   isPortal,
   isSessionButton,
@@ -153,6 +156,7 @@ export function ElementDataSections({
     isChart ||
     isCodeBlock ||
     isChecklist ||
+    isRecord ||
     isModeButton ||
     isPortal ||
     isSessionButton ||
@@ -257,6 +261,19 @@ export function ElementDataSections({
                 code={shapeTarget?.code ?? ''}
                 language={shapeTarget?.codeLanguage ?? 'plain'}
                 onEdit={() => target.type === 'shape' && props.onEditCodeBlock(target.id)}
+              />
+            </MenuAccordionSection>
+          ) : null}
+          {/* Record (spec/120) — the fields: name + optional type, add / remove. */}
+          {isRecord ? (
+            <MenuAccordionSection
+              title="Fields"
+              icon={<DataMenuGlyph />}
+              {...sectionProps('record')}
+            >
+              <RecordFieldsEditor
+                fields={shapeTarget?.recordFields ?? []}
+                onChange={props.onSetRecordFields}
               />
             </MenuAccordionSection>
           ) : null}

@@ -61,6 +61,9 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // Lane (spec/119): a band, not a box — wide enough to lay a flow across and
   // tall enough for a row of steps.
   lane: { width: 900, height: 200 },
+  // Record (spec/120): a class box — wide enough for "name: Type" rows,
+  // tall enough for a title plus four of them before it needs resizing.
+  record: { width: 240, height: 170 },
   // Stadium / pill — the conventional flowchart "Start / End" terminator
   // shape. Wider than tall by default; the CSS `border-radius: 9999px`
   // render path means the ends stay perfectly semicircular at any
@@ -258,6 +261,20 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
   // Document (spec/100): prose sits TOP-LEFT. Centred body text is the
   // strongest tell that something is a label pretending to be a document,
   // and every other shape defaults to centred.
+  if (kind === 'record') {
+    return {
+      ...base,
+      // The title sits in its own bar and the rows read left to right, so
+      // neither wants the centred default every other shape has.
+      textAlignX: 'left',
+      textAlignY: 'top',
+      label: 'Entity',
+      recordFields: [
+        { name: 'id', type: 'string' },
+        { name: 'name', type: 'string' },
+      ],
+    };
+  }
   if (kind === 'lane') {
     return {
       ...base,

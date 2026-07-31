@@ -1031,6 +1031,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
+          "lane": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
           "laptop": {
             "additionalProperties": false,
             "properties": {
@@ -1227,6 +1242,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "object"
           },
           "rating": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "record": {
             "additionalProperties": false,
             "properties": {
               "fill": {
@@ -2605,6 +2635,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "RecordField": {
+    "additionalProperties": false,
+    "properties": {
+      "name": {
+        "type": "string"
+      },
+      "type": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "name"
+    ],
+    "type": "object"
+  },
   "RunHeading": {
     "enum": [
       1,
@@ -2867,6 +2912,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "ratingAnimSpeed": {
         "$ref": "#/components/schemas/AnimationSpeed"
       },
+      "recordFields": {
+        "items": {
+          "$ref": "#/components/schemas/RecordField"
+        },
+        "type": "array"
+      },
       "revealed": {
         "type": "boolean"
       },
@@ -2963,6 +3014,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "document",
       "page",
       "mind-node",
+      "lane",
+      "record",
       "mode-button",
       "portal",
       "session-button",

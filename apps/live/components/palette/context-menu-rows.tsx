@@ -28,6 +28,7 @@ import { NoMarkerGlyph, PercentSliderRow } from './context-menu-data-rows';
 // resolving.
 export {
   ChecklistRowsEditor,
+  RecordFieldsEditor,
   CodeSummary,
   LineDataSummary,
   PieDataEditor,

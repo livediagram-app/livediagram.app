@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { youtubeEmbedUrl, youtubePosterUrl, youtubeVideoId, youtubeWatchUrl } from './youtube';
+import {
+  embedTargetFor,
+  youtubeEmbedUrl,
+  youtubePosterUrl,
+  youtubeVideoId,
+  youtubeWatchUrl,
+} from './youtube';
 
 // A real-shaped id: 11 chars of the URL-safe base64 alphabet, including both
 // of the non-alphanumeric ones so the character class is actually exercised.
@@ -107,5 +113,56 @@ describe('url builders', () => {
 
   it('builds the canonical watch url', () => {
     expect(youtubeWatchUrl(ID)).toBe(`https://www.youtube.com/watch?v=${ID}`);
+  });
+});
+
+describe('embedTargetFor', () => {
+  it('recognises YouTube, with a poster', () => {
+    const t = embedTargetFor(`https://youtu.be/${ID}`);
+    expect(t?.provider).toBe('youtube');
+    expect(t?.posterUrl).toContain('ytimg.com');
+  });
+
+  it('recognises Vimeo', () => {
+    expect(embedTargetFor('https://vimeo.com/76979871')?.embedUrl).toBe(
+      'https://player.vimeo.com/video/76979871',
+    );
+  });
+
+  it('recognises Loom', () => {
+    const t = embedTargetFor('https://www.loom.com/share/abcdefghij0123456789');
+    expect(t?.embedUrl).toBe('https://www.loom.com/embed/abcdefghij0123456789');
+  });
+
+  it('recognises Figma, carrying the original url through', () => {
+    const t = embedTargetFor('https://www.figma.com/file/abc123/My-Design');
+    expect(t?.provider).toBe('figma');
+    expect(t?.embedUrl).toContain(
+      encodeURIComponent('https://www.figma.com/file/abc123/My-Design'),
+    );
+  });
+
+  it('rewrites a Google Doc to its preview form', () => {
+    expect(
+      embedTargetFor('https://docs.google.com/document/d/abc123/edit?usp=sharing')?.embedUrl,
+    ).toBe('https://docs.google.com/document/d/abc123/preview');
+    expect(embedTargetFor('https://docs.google.com/spreadsheets/d/xyz/edit#gid=0')?.embedUrl).toBe(
+      'https://docs.google.com/spreadsheets/d/xyz/preview',
+    );
+  });
+
+  it('returns null for a Google host that is not an embeddable doc', () => {
+    expect(embedTargetFor('https://docs.google.com/forms/d/abc/viewform')).toBeNull();
+  });
+
+  it('returns null for anything else, and for dangerous schemes', () => {
+    expect(embedTargetFor('https://example.com/video/123')).toBeNull();
+    expect(embedTargetFor('javascript:https://vimeo.com/76979871')).toBeNull();
+    expect(embedTargetFor(undefined)).toBeNull();
+  });
+
+  it('does not mistake a lookalike host', () => {
+    expect(embedTargetFor('https://evil-vimeo.com/76979871')).toBeNull();
+    expect(embedTargetFor('https://loom.com.evil.test/share/abcdefghij0123456789')).toBeNull();
   });
 });

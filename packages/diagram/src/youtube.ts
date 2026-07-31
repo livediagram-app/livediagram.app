@@ -103,3 +103,95 @@ export function youtubeEmbedUrl(videoId: string): string {
 export function youtubeWatchUrl(videoId: string): string {
   return `https://www.youtube.com/watch?v=${videoId}`;
 }
+
+// --- Other providers (spec/121) --------------------------------------------
+//
+// The video element was built YouTube-only (spec/114), and its own spec noted
+// that the parser, the poster URL and the embed origin were the only
+// YouTube-specific parts. This is those three, generalised.
+//
+// Everything below returns a plain embed URL and no poster: only YouTube
+// publishes a predictable thumbnail host. Without one the card shows a
+// provider chip and a Load button, which keeps the rule that matters — nothing
+// third-party loads until the user asks.
+
+export type EmbedProvider = 'youtube' | 'vimeo' | 'loom' | 'figma' | 'gdocs';
+
+export type EmbedTarget = {
+  provider: EmbedProvider;
+  /** The URL to put in the iframe once the user presses play / load. */
+  embedUrl: string;
+  /** Poster frame, when the provider publishes one at a predictable URL. */
+  posterUrl?: string;
+  /** Display name for the card's chip. */
+  label: string;
+};
+
+const VIMEO_ID = /^\/(?:video\/)?(\d{6,})/;
+const LOOM_ID = /^\/(?:share|embed)\/([A-Za-z0-9]{16,})/;
+
+/**
+ * What, if anything, this URL embeds.
+ *
+ * YouTube first, because it has the richest matching (five URL shapes) and its
+ * own dedicated parser; the rest are one pattern each.
+ */
+export function embedTargetFor(url: string | undefined | null): EmbedTarget | null {
+  const videoId = youtubeVideoId(url);
+  if (videoId) {
+    return {
+      provider: 'youtube',
+      embedUrl: youtubeEmbedUrl(videoId),
+      posterUrl: youtubePosterUrl(videoId),
+      label: 'YouTube',
+    };
+  }
+  if (!url) return null;
+  let parsed: URL;
+  try {
+    parsed = new URL(url.trim());
+  } catch {
+    return null;
+  }
+  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return null;
+  const host = parsed.hostname.toLowerCase().replace(/^www\./, '');
+  const path = parsed.pathname;
+
+  if (host === 'vimeo.com' || host === 'player.vimeo.com') {
+    const m = VIMEO_ID.exec(path);
+    if (m)
+      return {
+        provider: 'vimeo',
+        embedUrl: `https://player.vimeo.com/video/${m[1]}`,
+        label: 'Vimeo',
+      };
+    return null;
+  }
+  if (host === 'loom.com') {
+    const m = LOOM_ID.exec(path);
+    if (m)
+      return { provider: 'loom', embedUrl: `https://www.loom.com/embed/${m[1]}`, label: 'Loom' };
+    return null;
+  }
+  if (host === 'figma.com' || host === 'figma.site') {
+    // Figma embeds the ORIGINAL url as a query parameter rather than
+    // rewriting the path, so anything it accepts keeps working without this
+    // having to know Figma's file-url grammar.
+    return {
+      provider: 'figma',
+      embedUrl: `https://www.figma.com/embed?embed_host=livediagram&url=${encodeURIComponent(parsed.toString())}`,
+      label: 'Figma',
+    };
+  }
+  if (host === 'docs.google.com') {
+    // /edit -> /preview is the documented read-only embed form for Docs,
+    // Sheets and Slides alike.
+    if (!/^\/(document|spreadsheets|presentation)\//.test(path)) return null;
+    return {
+      provider: 'gdocs',
+      embedUrl: parsed.toString().replace(/\/(edit|view)(\?|#|$).*$/, '/preview'),
+      label: 'Google Docs',
+    };
+  }
+  return null;
+}

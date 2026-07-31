@@ -259,6 +259,8 @@ export const PALETTE_TELEMETRY_TYPES = {
     'MindNode',
     // Lane (spec/119).
     'Lane',
+    // Record (spec/120).
+    'Record',
     'Checklist',
     'ModeButton',
     'Portal',

@@ -1,12 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import {
-  youtubeEmbedUrl,
-  youtubePosterUrl,
-  youtubeVideoId,
-  type VideoElement,
-} from '@livediagram/diagram';
+import { embedTargetFor, type EmbedTarget, type VideoElement } from '@livediagram/diagram';
 import { track } from '@/lib/telemetry';
 
 // Inner content of a video element (spec/114): a YouTube poster frame with a
@@ -27,7 +22,7 @@ import { track } from '@/lib/telemetry';
 
 export function VideoView({ element }: { element: VideoElement }) {
   const url = element.link?.kind === 'url' ? element.link.url : undefined;
-  const videoId = youtubeVideoId(url);
+  const target = embedTargetFor(url);
   const [playing, setPlaying] = useState(false);
   // Whether the player is taking pointer events. Off by default so dragging
   // the element always works; the user turns it on to seek or change volume.
@@ -37,9 +32,9 @@ export function VideoView({ element }: { element: VideoElement }) {
   useEffect(() => {
     setPlaying(false);
     setControls(false);
-  }, [videoId]);
+  }, [target?.embedUrl]);
 
-  if (!videoId) {
+  if (!target) {
     return <EmptyState url={url} />;
   }
 
@@ -47,8 +42,8 @@ export function VideoView({ element }: { element: VideoElement }) {
     return (
       <div className="group relative h-full w-full overflow-hidden rounded-[inherit] bg-black">
         <iframe
-          src={youtubeEmbedUrl(videoId)}
-          title="YouTube video"
+          src={target.embedUrl}
+          title={`${target.label} embed`}
           // `allow` is the modern feature-policy list YouTube's own embed
           // snippet uses; without `autoplay` here the autoplay=1 in the URL is
           // ignored and the user has to press play a second time.
@@ -77,6 +72,13 @@ export function VideoView({ element }: { element: VideoElement }) {
     );
   }
 
+  // A provider with no published thumbnail (everything but YouTube) gets a
+  // named card instead of a poster. The rule that matters is unchanged:
+  // nothing third-party loads until the user asks.
+  if (!target.posterUrl) {
+    return <LoadCard target={target} onLoad={() => setPlaying(true)} />;
+  }
+
   return (
     // The card itself is pointer-INERT, exactly like a link card's top half
     // (spec/40): the canvas owns press-drag-release on an element, and a
@@ -87,7 +89,7 @@ export function VideoView({ element }: { element: VideoElement }) {
       {/* Poster from the static image host. `hqdefault` exists for every
           video, unlike maxresdefault, which 404s on older uploads. */}
       <img
-        src={youtubePosterUrl(videoId)}
+        src={target.posterUrl}
         alt=""
         aria-hidden
         // object-cover: hqdefault is 4:3 with black bars baked in, so
@@ -116,6 +118,29 @@ export function VideoView({ element }: { element: VideoElement }) {
           <PlayBadge />
         </button>
       </div>
+    </div>
+  );
+}
+
+// The pre-load card for a provider that publishes no thumbnail: its name, and
+// a button. Deliberately not an auto-mounted iframe — see the header.
+function LoadCard({ target, onLoad }: { target: EmbedTarget; onLoad: () => void }) {
+  return (
+    <div className="pointer-events-none flex h-full w-full flex-col items-center justify-center gap-2 rounded-[inherit] px-3 text-center">
+      <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-300">
+        {target.label}
+      </span>
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          onLoad();
+          track('Element', 'Used', 'Video');
+        }}
+        className="pointer-events-auto cursor-pointer rounded-md bg-white/15 px-2.5 py-1 text-[11px] font-medium text-white transition hover:bg-white/25"
+      >
+        Load embed
+      </button>
     </div>
   );
 }

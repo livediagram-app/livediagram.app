@@ -14,6 +14,7 @@ import type { IconSize } from './icon-size';
 import type {
   AnimationSpeed,
   ChecklistItem,
+  RecordField,
   CodeLanguage,
   ElementAnimation,
   ElementId,
@@ -210,6 +211,10 @@ export type ShapeElement = {
   // meaningful on the 'code-block' kind; bounded in validate.ts.
   code?: string;
   codeLanguage?: CodeLanguage;
+  // Record (spec/120): the rows of a UML class / ER entity box. Only
+  // meaningful on the 'record' kind; bounded in validate.ts. The element's
+  // `label` is the record's TITLE, so a record needs no extra name field.
+  recordFields?: RecordField[];
   // Mind node (spec/118): which node owns this one. Absent = a root.
   //
   // A child pointer rather than a `children[]` array: single-valued, so it

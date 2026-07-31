@@ -919,6 +919,33 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
+    id: 'tools:record',
+    blurb: 'A class or entity: title over fields',
+    caption: 'Record',
+    section: 'components',
+    label: 'Add record',
+    description:
+      'A UML class or ER entity: a title bar over a list of name / type fields. Edit the fields from its right-click menu.',
+    action: { type: 'shape', kind: 'record' },
+    icon: (
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden
+      >
+        {/* A titled box with rows: the classic class-diagram silhouette. */}
+        <rect x="3.5" y="3" width="17" height="18" rx="2" />
+        <path d="M3.5 8.5h17M7 12h6M7 15.5h9" />
+      </svg>
+    ),
+  },
+  {
     id: 'tools:lane',
     blurb: 'A titled band that carries its steps',
     caption: 'Lane',

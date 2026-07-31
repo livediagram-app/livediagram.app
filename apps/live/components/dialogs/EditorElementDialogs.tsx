@@ -5,7 +5,7 @@ import {
   isBoxed,
   LINE_DEFAULT_CATEGORIES,
   LINE_DEFAULT_SERIES,
-  youtubeVideoId,
+  embedTargetFor,
 } from '@livediagram/diagram';
 
 import { track } from '@/lib/telemetry';
@@ -65,12 +65,14 @@ export function EditorElementDialogs() {
   const urlOnly =
     linkTarget?.type === 'video'
       ? {
-          subtitle: 'Paste a YouTube link. The video plays right here on the canvas.',
-          fieldLabel: 'YouTube link',
+          subtitle: 'Paste a link. The content plays or loads right here on the canvas.',
+          fieldLabel: 'Embed link',
           placeholder: 'https://www.youtube.com/watch?v=…',
-          hint: 'Watch, share (youtu.be), Shorts and embed links all work.',
+          hint: 'YouTube, Vimeo, Loom, Figma, and Google Docs / Sheets / Slides.',
           validate: (url: string) =>
-            youtubeVideoId(url) ? null : "That isn't a YouTube video link.",
+            embedTargetFor(url)
+              ? null
+              : "That isn't a link we can embed. Try YouTube, Vimeo, Loom, Figma or a Google Doc.",
         }
       : undefined;
 
@@ -78,7 +80,7 @@ export function EditorElementDialogs() {
     <>
       {linkPickerOpenForId !== null && !isReadOnly ? (
         <LinkPickerDialog
-          title={linkTarget?.type === 'video' ? 'Link video' : 'Link element'}
+          title={linkTarget?.type === 'video' ? 'Link embed' : 'Link element'}
           urlOnly={urlOnly}
           currentLink={linkTarget?.link ?? null}
           tabs={tabs.map((t) => ({ id: t.id, name: t.name }))}
