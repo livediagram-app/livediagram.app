@@ -70,6 +70,8 @@ export const SHAPE_KINDS = new Set<string>([
   'page',
   // Mind node (spec/118).
   'mind-node',
+  // Lane (spec/119).
+  'lane',
   // Mode button (spec/103): a pressable pill that switches whoever clicks it
   // into a selection mode.
   'mode-button',

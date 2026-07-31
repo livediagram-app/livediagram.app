@@ -22,6 +22,7 @@ import {
 import { renderLabel } from '@/components/canvas/element-labels';
 import { PageMasthead } from '@/components/canvas/PageMasthead';
 import { MindNodeHint } from '@/components/canvas/MindNodeHint';
+import { LaneGutter } from '@/components/canvas/LaneGutter';
 import { isMobileViewportSync } from '@/lib/responsive';
 import { elementAriaLabel } from '@/lib/element-names';
 import { captionBandAlignY, captionBandClass } from '@/components/primitives/icon-band';
@@ -394,6 +395,10 @@ function BoxedElementViewImpl({
           dasharray={BORDER_DASH_ARRAY[element.strokeStyle ?? DEFAULT_BORDER_STYLE] ?? ''}
           radiusPx={element.borderRadius !== undefined ? BORDER_RADIUS_PX[element.borderRadius] : 8}
         />
+      ) : null}
+      {/* A Lane's title gutter (spec/119), behind the label. */}
+      {element.type === 'shape' && element.shape === 'lane' ? (
+        <LaneGutter stroke={element.strokeColor ?? defaultStrokeColor(element)} />
       ) : null}
       {/* A Page's turned-back bottom-right corner (spec/100). */}
       {element.type === 'shape' && element.shape === 'page' ? (

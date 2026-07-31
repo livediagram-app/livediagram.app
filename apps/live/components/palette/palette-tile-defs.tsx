@@ -919,6 +919,35 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
+    id: 'tools:lane',
+    blurb: 'A titled band that carries its steps',
+    caption: 'Lane',
+    section: 'tools',
+    toolGroup: 'draw',
+    label: 'Add lane',
+    description:
+      'A swimlane: a horizontal band with a title down its left edge. Dragging it carries everything inside, like a frame.',
+    action: { type: 'shape', kind: 'lane' },
+    icon: (
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden
+      >
+        {/* Two stacked bands, each with its title gutter. */}
+        <rect x="2" y="5" width="20" height="6.5" rx="1.5" />
+        <rect x="2" y="13" width="20" height="6.5" rx="1.5" />
+        <path d="M8 5v6.5M8 13v6.5" />
+      </svg>
+    ),
+  },
+  {
     id: 'tools:frame',
     blurb: 'A labelled box that groups a section',
     section: 'tools',

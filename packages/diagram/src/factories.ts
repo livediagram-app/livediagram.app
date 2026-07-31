@@ -58,6 +58,9 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // Mind node (spec/118): a caption-width pill. Wide enough for a phrase,
   // short enough that a column of siblings stays readable.
   'mind-node': { width: 170, height: 48 },
+  // Lane (spec/119): a band, not a box — wide enough to lay a flow across and
+  // tall enough for a row of steps.
+  lane: { width: 900, height: 200 },
   // Stadium / pill — the conventional flowchart "Start / End" terminator
   // shape. Wider than tall by default; the CSS `border-radius: 9999px`
   // render path means the ends stay perfectly semicircular at any
@@ -255,6 +258,16 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
   // Document (spec/100): prose sits TOP-LEFT. Centred body text is the
   // strongest tell that something is a label pretending to be a document,
   // and every other shape defaults to centred.
+  if (kind === 'lane') {
+    return {
+      ...base,
+      // The title lives in the left gutter (spec/119), so it aligns to the
+      // leading edge rather than floating over the work.
+      textAlignX: 'left',
+      textAlignY: 'middle',
+      label: 'Lane',
+    };
+  }
   if (kind === 'page') {
     return {
       ...base,

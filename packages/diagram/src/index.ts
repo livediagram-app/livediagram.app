@@ -364,6 +364,8 @@ export type ShapeKind =
   // Mind node (spec/118): a labelled node that knows its parent, grown from
   // the keyboard with Tab (child) and Enter (sibling).
   | 'mind-node'
+  // Lane (spec/119): a titled horizontal band that carries its contents.
+  | 'lane'
   // Mode button (spec/103): a pressable pill that switches whoever clicks it
   // into a selection mode — Avatar by default. Which mode lives in the
   // element's `mode` field.

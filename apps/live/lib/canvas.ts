@@ -59,7 +59,15 @@ export function inheritedSizeFor(
   ) {
     return { width: base.width, height: base.height };
   }
-  const inherit = selected && isBoxed(selected) ? selected : null;
+  // A CONTAINER never donates its size. A frame or a lane (spec/119) is a big
+  // backdrop you put things in, so a square added while one is selected came
+  // out 900x200 — the size of the lane, which is never what anyone meant. The
+  // rule reads the other way round from the guards above: those are about what
+  // the NEW element is, this is about what the selected one is.
+  const donor = selected && isBoxed(selected) ? selected : null;
+  const isContainer =
+    donor?.type === 'shape' && (donor.shape === 'frame' || donor.shape === 'lane');
+  const inherit = isContainer ? null : donor;
   let width = inherit?.width ?? base.width;
   let height = inherit?.height ?? base.height;
   if (base.type === 'shape' && (base.shape === 'circle' || base.shape === 'diamond')) {
@@ -92,9 +100,12 @@ export function inheritedSizeFor(
 //      closest to the BACK of the canvas (lowest z-order = earliest in the
 //      `elements` array). So it travels only when that backmost owner is the
 //      one being dragged, not when some other overlapping frame is.
-// A frame shape (the section-container kind, spec/09). The check recurs across
-// the frame-section + frames-first logic below; one definition keeps it in step.
-const isFrameEl = (el: Element): boolean => el.type === 'shape' && el.shape === 'frame';
+// A CONTAINER shape: the frame section (spec/09) and the lane (spec/119).
+// Both carry their contents when moved, and both resolve overlap the same way,
+// so they share one predicate — the check recurs across the containment logic
+// below, and two copies would drift.
+const isFrameEl = (el: Element): boolean =>
+  el.type === 'shape' && (el.shape === 'frame' || el.shape === 'lane');
 
 export function withFrameContents(elements: Element[], ids: Set<string>): Set<string> {
   const draggedFrameIds = new Set(
