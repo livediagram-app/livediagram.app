@@ -91,9 +91,6 @@ importers:
 
   apps/help:
     dependencies:
-      '@livediagram/api-schema':
-        specifier: workspace:*
-        version: link:../../packages/api-schema
       '@livediagram/help-registry':
         specifier: workspace:*
         version: link:../../packages/help-registry
