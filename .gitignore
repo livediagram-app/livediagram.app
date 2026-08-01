@@ -6,6 +6,14 @@ node_modules/
 # Build output
 dist/
 build/
+# ...except a help ARTICLE whose route is named `build`. The palette's Build
+# category (spec/132) lives at /help/palette/build/, and the blanket rule above
+# silently untracked its page.mdx: the site still built locally, because the
+# file was on disk, and the registry-to-disk test still passed for the same
+# reason. On a fresh clone the article would simply be missing. Every real
+# build output in this repo sits inside .next/, .next-dev/ or out/, all ignored
+# in their own right, so this exception costs nothing.
+!apps/help/app/**/build/
 .next/
 .next-dev/
 out/

@@ -398,9 +398,10 @@ export function CommandPalette({
               })}
             />
           }
-          // Ordered by BAND (spec/110): Common, then Decorate, then
-          // Interactive. PaletteTabBar renders the dropdown straight from this
-          // order, so the array IS the grid layout.
+          // Ordered by BAND (spec/110): Common, then Decorate, then Dynamic
+          // (the headings PaletteTabBar's CATEGORY_BANDS actually renders).
+          // It renders the dropdown straight from this order, so the array IS
+          // the grid layout.
           tabs={[
             {
               id: 'favourites',

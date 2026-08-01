@@ -1,0 +1,54 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Build Elements',
+  description:
+    'The palette Build category holds the elements you lay a diagram out with: mind nodes, lanes, frames, timelines, and tables.',
+  path: '/help/palette/build/',
+});
+
+<ArticleLayout
+  title="Build Elements"
+  description="The elements you lay a diagram out with, as opposed to the ones you draw on it."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  subArticles={getSubArticles('build')}
+>
+
+The **Build** category (under **Common** in the palette's category picker, right after Shapes) holds the elements you lay a diagram _out_ with. Everywhere else in the palette you are adding something to the canvas; here you are deciding how the canvas is arranged.
+
+What the five have in common is that **each one holds other work**. A frame gathers a region, a lane carries the steps in a row, a timeline sequences events along a track, a table organises cells, and a mind node hangs children off itself. You reach for them at the same moment: once you know how the diagram is arranged, before you have decided what goes in it.
+
+## What the category contains
+
+- A **Mind node** is a node that knows its parent. **Tab** adds a child to its right, **Enter** a sibling below, each one connected, selected, and ready to type into, so a whole branch is built from the keyboard. See [Mind Maps](/help/palette/mind-maps/).
+- A **Lane** is a titled horizontal band for swimlane diagrams. Dragging the lane carries everything sitting in it, so a row of steps moves as one. See [Lanes](/help/palette/lanes/).
+- A **Frame** is a labelled box that groups a section of the canvas. It draws behind its contents and carries them when you move it, and it is what exports treat as a section backdrop. `F` draws one.
+- A **Timeline** is a track for sequencing events, with evenly spaced points you add to from the end. See [Timeline Rail](/help/palette/tools/data-elements/timeline-rail/).
+- A **Table** is an editable grid of cells you can style, link, and fill row by row. See [Tables](/help/palette/tools/tables/).
+
+## Why they are rows, not tiles
+
+Most catalogue categories show a grid of pictures, because the picture is the explanation. These five are all containers, and at tile size all containers are a rectangle. So Build renders as rows with a one-line description each: "Tab adds a child, Enter a sibling" against "a titled band that carries its steps" is what you are actually choosing between, and no icon says that.
+
+<Note>
+  These five used to live in four different places, filed by what they look like rather than what
+  they do: the mind node with the wordy elements, the lane and frame with the drawing tools, the
+  timeline with the components, the table with the charts. If you have a favourite pointing at one
+  of them, it still works, because only the category moved.
+</Note>
+
+## Working with them
+
+Each behaves like any other element once placed: select, restyle, group, lock, and move it freely, and each can carry a [link](/help/canvas/links/), a note, or a [comment](/help/collaboration/comments/) like anything else on the canvas.
+
+Because they hold other work, two habits pay off. Put the container down **first** and fill it afterwards, so the things inside are captured by it as you go. And when you move one, check what came with it: a frame and a lane deliberately carry their contents, which is usually what you want and occasionally a surprise.
+
+<Tip>
+  Reach for Build at the start of a board and the rest goes faster: lay out the lanes or frames you
+  know you need, then switch to Shapes and fill them in.
+</Tip>
+
+</ArticleLayout>

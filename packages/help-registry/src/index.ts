@@ -177,7 +177,7 @@ export const categories: Category[] = [
     title: 'Palette',
     description:
       'Your launchpad for everything on the canvas: every element and palette setting explained.',
-    articleCount: 22,
+    articleCount: 23,
     kind: 'feature',
   },
   {
@@ -830,6 +830,16 @@ export const articles: Article[] = [
     description: 'A map of the palette categories and which elements are in each.',
     keywords:
       'tools tab category where find text pencil pen table frame chart sticky note image draw write build structure mind node lane timeline components media behaviour collaborate data moved',
+    category: 'Palette',
+    categorySlug: 'palette',
+    group: 'Elements',
+  },
+  {
+    slug: 'build',
+    title: 'Build Elements',
+    description: 'Mind nodes, lanes, frames, timelines, and tables: the elements that hold others.',
+    keywords:
+      'build structure layout container holds frame lane timeline table mind node arrange scaffold group section band track grid organise',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Elements',
