@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { DiagramRowShell } from './DiagramRowShell';
 import type { DiagramListItem, Folder } from '@/lib/api-client';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
 import { MenuTile, PortalMenu } from '@/components/primitives/PortalMenu';
@@ -264,14 +265,10 @@ export function FolderNode({
             />
           ))}
           {childDiagrams.map((d) => (
-            <li
+            <DiagramRowShell
               key={d.id}
-              style={{ paddingLeft: 4 + (depth + 1) * 12 }}
-              className={
-                exitingDiagramIds.has(d.id)
-                  ? 'animate-slide-row-out overflow-hidden'
-                  : 'animate-slide-row-in overflow-hidden'
-              }
+              exiting={exitingDiagramIds.has(d.id)}
+              indent={4 + (depth + 1) * 12}
             >
               <DiagramRow
                 item={d}
@@ -285,7 +282,7 @@ export function FolderNode({
                   onMoveDiagramRequest ? (anchor) => onMoveDiagramRequest(d.id, anchor) : undefined
                 }
               />
-            </li>
+            </DiagramRowShell>
           ))}
         </ul>
       ) : null}

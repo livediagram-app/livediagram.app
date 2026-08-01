@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { DiagramRowShell } from './DiagramRowShell';
 import type { DiagramListItem, Folder } from '@/lib/api-client';
 import {
   DiagramRow,
@@ -175,14 +176,7 @@ export function ExplorerSections({
                   onDismiss={onDismissShared ? () => onDismissShared(entry.s.id) : undefined}
                 />
               ) : (
-                <li
-                  key={entry.d.id}
-                  className={
-                    exitingDiagramIds.has(entry.d.id)
-                      ? 'animate-slide-row-out overflow-hidden'
-                      : 'animate-slide-row-in overflow-hidden'
-                  }
-                >
+                <DiagramRowShell key={entry.d.id} exiting={exitingDiagramIds.has(entry.d.id)}>
                   <DiagramRow
                     item={entry.d}
                     ownerId={ownerId}
@@ -222,7 +216,7 @@ export function ExplorerSections({
                         : undefined
                     }
                   />
-                </li>
+                </DiagramRowShell>
               ),
             )}
           </ul>

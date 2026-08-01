@@ -1,6 +1,7 @@
 'use client';
 
 import { memo, useEffect, useState } from 'react';
+import { DiagramRowShell } from './DiagramRowShell';
 import { useRelativeTimeTick } from '@/lib/relative-time';
 import { MOBILE_BREAKPOINT_PX, isMobileViewportSync } from '@/lib/responsive';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
@@ -324,13 +325,7 @@ function ExplorerImpl({
             </p>
             <ul className="flex flex-col gap-0.5 overflow-hidden">
               {current ? (
-                <li
-                  className={
-                    exitingDiagramIds.has(current.id)
-                      ? 'animate-slide-row-out overflow-hidden'
-                      : 'animate-slide-row-in overflow-hidden'
-                  }
-                >
+                <DiagramRowShell exiting={exitingDiagramIds.has(current.id)}>
                   <DiagramRow
                     item={current}
                     ownerId={ownerId}
@@ -351,7 +346,7 @@ function ExplorerImpl({
                       onMoveDiagramToFolder ? () => openMovePicker(current.id) : undefined
                     }
                   />
-                </li>
+                </DiagramRowShell>
               ) : currentTeam ? (
                 <li className="animate-slide-row-in overflow-hidden">
                   <DiagramRow

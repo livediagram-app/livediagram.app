@@ -15,8 +15,8 @@ export function useExplorerRowDelete({
   teamDiagrams: NonNullable<ExplorerProps['teamDiagrams']>;
 }) {
   // Diagrams currently mid slide-out animation. Adding the id to this
-  // set switches the row's <li> className from animate-slide-row-in to
-  // animate-slide-row-out for ~220ms, then we forward the real delete
+  // set flips the row's DiagramRowShell from its enter class to its exit
+  // one for ~220ms, then we forward the real delete
   // to the parent so the row is removed from the underlying
   // `diagrams` prop. Without the delay the row disappears instantly
   // and a fresh "5 with the same name" Explorer feels unresponsive.

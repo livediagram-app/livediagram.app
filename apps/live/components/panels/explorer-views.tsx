@@ -1,6 +1,7 @@
 'use client';
 
 import { DiagramThumbnail } from '@/components/panels/DiagramThumbnail';
+import { DiagramRowShell } from './DiagramRowShell';
 
 // Presentational primitives for the floating Explorer panel
 // (apps/live/components/Explorer.tsx). Lifted here so the
@@ -112,15 +113,7 @@ export function UnsortedNode({
       {isExpanded ? (
         <ul className="flex flex-col gap-0.5">
           {diagrams.map((d) => (
-            <li
-              key={d.id}
-              style={{ paddingLeft: 16 }}
-              className={
-                exitingDiagramIds.has(d.id)
-                  ? 'animate-slide-row-out overflow-hidden'
-                  : 'animate-slide-row-in overflow-hidden'
-              }
-            >
+            <DiagramRowShell key={d.id} exiting={exitingDiagramIds.has(d.id)} indent={16}>
               <DiagramRow
                 item={d}
                 ownerId={ownerId}
@@ -133,7 +126,7 @@ export function UnsortedNode({
                   onMoveDiagramRequest ? (anchor) => onMoveDiagramRequest(d.id, anchor) : undefined
                 }
               />
-            </li>
+            </DiagramRowShell>
           ))}
         </ul>
       ) : null}
@@ -209,15 +202,7 @@ export function OfflineNode({
         ) : (
           <ul className="flex flex-col gap-0.5">
             {diagrams.map((d) => (
-              <li
-                key={d.id}
-                style={{ paddingLeft: 16 }}
-                className={
-                  exitingDiagramIds.has(d.id)
-                    ? 'animate-slide-row-out overflow-hidden'
-                    : 'animate-slide-row-in overflow-hidden'
-                }
-              >
+              <DiagramRowShell key={d.id} exiting={exitingDiagramIds.has(d.id)} indent={16}>
                 <DiagramRow
                   item={d}
                   ownerId={ownerId}
@@ -231,7 +216,7 @@ export function OfflineNode({
                       : undefined
                   }
                 />
-              </li>
+              </DiagramRowShell>
             ))}
           </ul>
         )
