@@ -48,7 +48,7 @@ marketing/      off-site copy + media for listings and promotion (see specs/23)
 
 Each app pulls these in via `workspace:*`:
 
-- **`@livediagram/diagram`** owns the diagram data model: `Tab`, every `Element` type (Shape / Text / Sticky / Image / Freehand / Table / Annotation / Link card / Arrow), defaults, geometry helpers, snap math, group operations, and the pencil's shape-recognition heuristics. The single source of what a diagram IS.
+- **`@livediagram/diagram`** owns the diagram data model: `Tab`, every `Element` type (Shape / Text / Sticky / Image / Freehand / Table / Annotation / Link card / Arrow), defaults, geometry helpers, snap math, group operations, and the Shape Pen's shape-recognition heuristics. The single source of what a diagram IS.
 - **`@livediagram/api-schema`** owns the wire format between the api worker and the live editor: every request / response shape, plus the small shared pure helpers it backs (`sha256Hex` for image-upload dedupe, `titleCase` for display-casing preset values across the editor + telemetry dashboard). Adding a field on the server without updating the client used to be routine drift; the typechecker catches it now.
 - **`@livediagram/ui`** owns the cross-app UI primitives (`Brand`, the logo + wordmark, and `Tooltip`, the shared hover/focus tooltip; more arrive as common patterns emerge).
 - **`@livediagram/icons`** owns the two icon catalogues (the line-art glyphs and the Technology brand marks) plus pure SVG-markup builders for them. The editor dynamic-imports the data modules through its icon registry so they stay out of its first-load JS; the api + mcp workers static-import `@livediagram/icons/resolve` so headless renders (the live image, Explorer thumbnails, MCP inline images) draw the real glyphs.

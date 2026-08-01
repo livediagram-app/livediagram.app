@@ -207,7 +207,7 @@ export const ALTERNATIVES: Alternative[] = [
       'More than mind maps: flowcharts, kanban, timelines, wireframes and charts on the same canvas.',
       'Nothing to install: open a link in any browser and start, no account needed.',
       'Bring existing maps across: export Markdown from XMind and import it as a themed diagram.',
-      'Sketch freehand with the pencil and let shape-recognition tidy it into clean shapes.',
+      'Sketch with the Freehand pen, or the Shape Pen to have a rough shape tidied into a clean one.',
       'Themed templates and one-click canvas themes make a map look polished instantly.',
       'Free, open source, and self-hostable.',
     ],
@@ -293,7 +293,7 @@ export const ALTERNATIVES: Alternative[] = [
       'Start from a real template (flowchart, kanban, retro, org chart…) instead of a blank page.',
       'Keep a whole project together: several tabs in one diagram, organised in folders, with per-tab layers.',
       'Themes recolour the whole canvas, shapes and arrows, in one click.',
-      'Prefer the sketchy look? A pencil tool with optional shape-recognition keeps that freehand feel.',
+      'Prefer the sketchy look? The Freehand pen keeps your stroke exactly as drawn.',
       'Built-in charts, an icon library, comments and a present mode, without add-ons.',
       'Smart alignment guides and snapping line everything up as you drag.',
       'Mermaid in and out: import flowchart text, export the diagram back to it.',
@@ -310,7 +310,7 @@ export const ALTERNATIVES: Alternative[] = [
       {
         heading: 'Keep the sketch when you want it',
         paragraphs: [
-          "The hand-drawn look is Excalidraw's signature, and if that aesthetic is the point, Excalidraw wins it outright. But sketching itself isn't exclusive to it: livediagram's pencil tool draws freehand, and its optional shape-recognition mode tidies a rough box or arrow into a clean element as you draw. You get the fast, thinking-with-your-hands feel while the result stays presentation-ready.",
+          "The hand-drawn look is Excalidraw's signature, and if that aesthetic is the point, Excalidraw wins it outright. But sketching itself isn't exclusive to it: livediagram's Freehand pen keeps a stroke exactly as drawn, and its Shape Pen tidies a rough box into a clean element on release. You get the fast, thinking-with-your-hands feel while the result stays presentation-ready.",
         ],
       },
       {
@@ -334,7 +334,7 @@ export const ALTERNATIVES: Alternative[] = [
       },
       {
         q: 'Can I get the hand-drawn look in livediagram?',
-        a: "Partially. The pencil tool draws freehand, and shape-recognition can tidy sketches into clean shapes. But livediagram's shapes are clean and themed by design; if the signature sketchy aesthetic is what you want, Excalidraw is the better pick.",
+        a: "Partially. The Freehand pen draws a stroke and keeps it, and the Shape Pen tidies a rough sketch into a clean shape. But livediagram's shapes are clean and themed by design; if the signature sketchy aesthetic is what you want, Excalidraw is the better pick.",
       },
       {
         q: 'Can I import my Excalidraw files?',
@@ -486,7 +486,7 @@ export const ALTERNATIVES: Alternative[] = [
         heading: 'Start from a diagram, not a blank slide',
         paragraphs: [
           'Slides has slide templates; it has no idea what a flowchart is. livediagram starts you from real diagram templates (flowcharts, mind maps, kanban boards, org charts, timelines and more) and themes the whole canvas in one click, so the result looks deliberate without manual styling.',
-          'The palette is diagram-native too: an icon library, full-colour technology icons for architecture diagrams, charts, freehand pencil sketching with shape recognition, and device frames for wireframes. And the canvas is infinite and pannable, with a minimap for navigating big diagrams, instead of a fixed 16:9 rectangle.',
+          'The palette is diagram-native too: an icon library, full-colour technology icons for architecture diagrams, charts, freehand sketching with a Shape Pen that tidies rough shapes, and device frames for wireframes. And the canvas is infinite and pannable, with a minimap for navigating big diagrams, instead of a fixed 16:9 rectangle.',
         ],
       },
       {
