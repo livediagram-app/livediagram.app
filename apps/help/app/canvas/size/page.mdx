@@ -1,0 +1,63 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Size',
+  description:
+    'Type an exact width and height for an element in canvas pixels, lock its aspect ratio, or reset it to its default proportion.',
+  path: '/help/canvas/size/',
+});
+
+<ArticleLayout
+  title="Size"
+  description="Type an exact width and height, lock the ratio, or put a stretched shape back to its natural proportion."
+  categoryTitle="Canvas"
+  categorySlug="canvas"
+>
+
+Dragging a handle is the quick way to size an element, and for most work it is the only way you need. When you want two boxes to match exactly, or a frame to be a precise size, the **Size** category in the element menu lets you type the numbers instead.
+
+Right-click any element (or use the **⋯** button on its selection toolbar) and open **Size**.
+
+## Typing a width and height
+
+The two boxes hold the element's width and height in **canvas pixels at 100% zoom**. That is the only unit the diagram has: if you are drawing to a scale of your own, say ten pixels per centimetre, the numbers here are still pixels and the scale is yours to keep track of.
+
+Two things behave the way you would want but are worth knowing:
+
+- **The box you type in commits when you leave it**, on **Enter** or by clicking away, and **Escape** puts back what was there. It does not resize as you type, so typing `120` does not briefly make the element 1px then 12px wide, and your undo history gets one step rather than three.
+- **The top-left corner stays put.** Typing a width grows or shrinks the element to the right, so whatever edge you had lined up stays lined up. Resizing is a layout act, and the alignment you already have is the thing worth preserving.
+
+Values are kept between **8** and **20000** pixels. Below that is not really a shape, and a stray extra digit should not produce something you cannot pan back from.
+
+The boxes always show the element's current size, so they update when you drag a handle, undo, or let the lock carry the other dimension.
+
+## Lock aspect ratio
+
+With **Lock aspect ratio** on, changing one dimension carries the other, so the element keeps its proportions. This is the same lock that applies while you drag a corner handle, so it means one thing everywhere.
+
+Setting both boxes yourself still works while the lock is on. Typing two numbers is a clear statement of what you want, and the lock does not overrule it.
+
+<Note>
+  The lock used to sit at the bottom of the **Layer** category, below the opacity slider. It is in
+  Size now, with the other two controls that answer "how big is this".
+</Note>
+
+## Reset aspect ratio
+
+**Reset aspect ratio** returns a shape that has been stretched to its natural proportion, keeping roughly the same area, so a squashed circle becomes a circle again without becoming a different size.
+
+It holds the **centre** rather than the top-left, because changing a proportion is not a layout act: holding an edge would make the shape drift sideways as it un-warps.
+
+The button appears only for shapes that have a natural proportion to return to, which is the same set the **Shape** category offers to morph between.
+
+## What has a size
+
+Size applies to boxed elements: shapes, text, notes, images, frames, tables, and the rest of the things that occupy a rectangle. Arrows have no width and height to type, so they have no Size category. See [Arrows](/help/palette/arrows/) for how those are shaped instead.
+
+<Tip>
+  To make several elements match, size the first one exactly, then use the [format
+  painter](/help/selection-modes/format-painter/) to copy its size onto the others.
+</Tip>
+
+</ArticleLayout>

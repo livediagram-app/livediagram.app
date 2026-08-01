@@ -185,7 +185,7 @@ export const categories: Category[] = [
     title: 'Canvas',
     description:
       'Master the infinite canvas where diagrams come together: placing, selecting, grouping, linking, annotating, noting, layering, rotating, animating, shadowing, locking, theming, and templating.',
-    articleCount: 18,
+    articleCount: 19,
     kind: 'feature',
   },
   {
@@ -1379,6 +1379,15 @@ export const articles: Article[] = [
     description: 'Send elements to the front or back layer, and fade them with opacity.',
     keywords:
       'transparency transparent translucent alpha fade see through bring to front send to back stacking z index overlap behind above',
+    category: 'Canvas',
+    categorySlug: 'canvas',
+  },
+  {
+    slug: 'size',
+    title: 'Size',
+    description: 'Type an exact width and height, lock the ratio, or reset a stretched shape.',
+    keywords:
+      'size width height dimensions exact pixels px resize scale bigger smaller aspect ratio lock proportion square stretch squash reset match',
     category: 'Canvas',
     categorySlug: 'canvas',
   },
