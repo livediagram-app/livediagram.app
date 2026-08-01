@@ -14,6 +14,7 @@ import {
 } from '@/lib/api-client';
 import { duplicateDiagram as duplicateDiagramApi } from '@/lib/duplicate-diagram';
 import { track } from '@/lib/telemetry';
+import { indexFolders, folderBreadcrumb } from '@/lib/folder-tree';
 
 // One team's shared library (spec/35): the folder tree + diagrams the
 // "Shared diagrams" section on the team page renders, plus the
@@ -49,20 +50,7 @@ export function useTeamLibrary(ownerId: string | null, teamId: string) {
   }, [refresh]);
 
   const { folderById, childrenByParent, rootFolders } = useMemo(() => {
-    const byId = new Map<string, Folder>();
-    const byParent = new Map<string | null, Folder[]>();
-    for (const f of folders) {
-      byId.set(f.id, f);
-      const bucket = byParent.get(f.parentId) ?? [];
-      bucket.push(f);
-      byParent.set(f.parentId, bucket);
-    }
-    for (const bucket of byParent.values()) bucket.sort((a, b) => a.name.localeCompare(b.name));
-    return {
-      folderById: byId,
-      childrenByParent: byParent,
-      rootFolders: byParent.get(null) ?? [],
-    };
+    return indexFolders(folders);
   }, [folders]);
 
   const diagramsByFolder = useMemo(() => {
@@ -80,16 +68,7 @@ export function useTeamLibrary(ownerId: string | null, teamId: string) {
   // mid-refresh (same shape as the personal explorer's).
   const breadcrumb = useCallback(
     (folderId: string | null): Folder[] => {
-      if (!folderId) return [];
-      const chain: Folder[] = [];
-      let cursor: Folder | undefined = folderById.get(folderId);
-      const seen = new Set<string>();
-      while (cursor && !seen.has(cursor.id)) {
-        seen.add(cursor.id);
-        chain.unshift(cursor);
-        cursor = cursor.parentId ? folderById.get(cursor.parentId) : undefined;
-      }
-      return chain;
+      return folderBreadcrumb(folderById, folderId);
     },
     [folderById],
   );

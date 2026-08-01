@@ -31,6 +31,7 @@ import { explorerPathFor, selectedFromRoute } from './routes';
 import { useExplorerMoves } from './useExplorerMoves';
 import { useExplorerPane } from './useExplorerPane';
 import type { SelectedNode } from './views';
+import { indexFolders, folderBreadcrumb, folderDescendants } from '@/lib/folder-tree';
 
 // All Explorer state + handlers, lifted out of the old single-page
 // component when the sections became routes (spec/15): the layout's
@@ -209,20 +210,7 @@ export function useExplorerState() {
   // children in O(1) per node, and by id so breadcrumb-from-id can
   // walk parents without re-scanning the list.
   const { folderById, childrenByParent, rootFolders } = useMemo(() => {
-    const byId = new Map<string, Folder>();
-    const byParent = new Map<string | null, Folder[]>();
-    for (const f of folders) {
-      byId.set(f.id, f);
-      const bucket = byParent.get(f.parentId) ?? [];
-      bucket.push(f);
-      byParent.set(f.parentId, bucket);
-    }
-    for (const bucket of byParent.values()) bucket.sort((a, b) => a.name.localeCompare(b.name));
-    return {
-      folderById: byId,
-      childrenByParent: byParent,
-      rootFolders: byParent.get(null) ?? [],
-    };
+    return indexFolders(folders);
   }, [folders]);
 
   // Build a breadcrumb path from root → folderId, used both by the
@@ -231,16 +219,7 @@ export function useExplorerState() {
   // the server response). Returns [] for `all` / virtual nodes.
   const breadcrumb = useCallback(
     (folderId: string | null): Folder[] => {
-      if (!folderId) return [];
-      const chain: Folder[] = [];
-      let cursor: Folder | undefined = folderById.get(folderId);
-      const seen = new Set<string>();
-      while (cursor && !seen.has(cursor.id)) {
-        seen.add(cursor.id);
-        chain.unshift(cursor);
-        cursor = cursor.parentId ? folderById.get(cursor.parentId) : undefined;
-      }
-      return chain;
+      return folderBreadcrumb(folderById, folderId);
     },
     [folderById],
   );
@@ -252,18 +231,7 @@ export function useExplorerState() {
   // honest).
   const descendantSet = useCallback(
     (rootId: string): Set<string> => {
-      const out = new Set<string>([rootId]);
-      const stack = [rootId];
-      while (stack.length > 0) {
-        const cur = stack.pop()!;
-        const kids = childrenByParent.get(cur) ?? [];
-        for (const k of kids)
-          if (!out.has(k.id)) {
-            out.add(k.id);
-            stack.push(k.id);
-          }
-      }
-      return out;
+      return folderDescendants(childrenByParent, rootId);
     },
     [childrenByParent],
   );
