@@ -20,7 +20,7 @@
     "@livediagram/api-schema": "workspace:*",
     "@livediagram/diagram": "workspace:*",
     "@livediagram/icons": "workspace:*",
-    "jose": "^5.9.6"
+    "jose": "^6.2.4"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20260729.1",
