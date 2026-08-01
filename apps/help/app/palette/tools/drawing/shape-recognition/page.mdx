@@ -27,7 +27,7 @@ Shape recognition is what the **Shape Pen** does. Draw with it and a rough sketc
 
 ## Picking it
 
-Open the palette's **Draw** category and choose **Shape Pen** (or press `6`). Its neighbour, **Freehand** (`P`), is the same gesture with recognition off: it keeps your stroke exactly as you drew it.
+Open the palette's **Draw** category and choose **Shape Pen**. Its neighbour, **Freehand** (`P`), is the same gesture with recognition off: it keeps your stroke exactly as you drew it.
 
 There is no setting to remember and nothing to switch on. This used to be a magic-wand toggle in the Pencil's banner, which meant whether your next stroke would convert depended on a choice you might have made days ago on another device. Two pens put the answer where the decision is.
 
@@ -46,11 +46,11 @@ A few shapes are intentionally not recognised, such as trapezoids, speech bubble
 
 ## How it decides
 
-Recognition uses heuristics rather than template matching, measuring how closely your sample points hug each idealised shape, so it tolerates strokes drawn at any rotation or size. The confidence threshold leans toward converting: once you have turned the mode on you have stated you want strokes classified, and a false positive is a single undo away. The frustrating case is a wobbly square that stays a sketch when you wanted a real one, so the detector errs toward conversion.
+Recognition uses heuristics rather than template matching, measuring how closely your sample points hug each idealised shape, so it tolerates strokes drawn at any rotation or size. The confidence threshold leans toward converting: reaching for the Shape Pen rather than Freehand is itself the statement that you want strokes classified, and a false positive is a single undo away. The frustrating case is a wobbly square that stays a sketch when you wanted a real one, so the detector errs toward conversion.
 
 <Tip>
   Recognition only changes confident matches, so you can keep an irregular doodle as a genuine
-  sketch even with the mode on, then draw a deliberate square when you want it converted.
+  sketch with the Shape Pen too, then draw a deliberate square when you want it converted.
 </Tip>
 
 </ArticleLayout>

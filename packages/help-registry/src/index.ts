@@ -1488,7 +1488,8 @@ export const articles: Article[] = [
   {
     slug: 'drawing',
     title: 'Drawing and Sketch',
-    description: 'The Pencil, Highlighter, and Polygon tools, plus shape recognition.',
+    description:
+      'The Freehand and Shape Pen, Highlighter, and Polygon tools, plus shape recognition.',
     keywords:
       'pencil freehand sketch draw doodle pen scribble ink highlighter marker highlight translucent polygon polyline vertex points outline zone region',
     category: 'Palette',
@@ -1573,8 +1574,8 @@ export const articles: Article[] = [
   {
     slug: 'shape-recognition',
     title: 'Shape Recognition',
-    description: 'Let the Pencil snap rough sketches into clean shapes.',
-    keywords: 'auto detect convert sketch clean up smart drawing',
+    description: 'Let the Shape Pen snap rough sketches into clean shapes.',
+    keywords: 'shape pen pencil auto detect convert sketch clean up smart drawing snap',
     category: 'Palette',
     categorySlug: 'palette/tools/drawing',
     parentSlug: 'drawing',
