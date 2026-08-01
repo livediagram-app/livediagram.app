@@ -1,4 +1,5 @@
 import {
+  isBoxed,
   SHAPE_DEFAULT_SIZE,
   type BorderRadius,
   type BorderStroke,
@@ -27,6 +28,16 @@ type ShapeStyleSetterDeps = {
   activeTab: Tab;
   selectedId: string | null;
 };
+
+/**
+ * Bounds for a typed-in size (spec/134). A zero or negative box is not a
+ * shape, and a runaway one (a stray extra digit) is a diagram nobody can pan
+ * out of, so the box is clamped rather than trusted.
+ */
+export const MIN_SIZE_PX = 8;
+export const MAX_SIZE_PX = 20000;
+const clampSizePx = (n: number): number =>
+  Math.round(Math.min(MAX_SIZE_PX, Math.max(MIN_SIZE_PX, Number.isFinite(n) ? n : MIN_SIZE_PX)));
 
 // The selection-wide setters for shape geometry + styling: kind (morph),
 // aspect-ratio reset, rotation, border weight / pattern / radius, status
@@ -70,6 +81,45 @@ export function useShapeStyleSetters({
       }),
     );
     track('Element', 'Changed', 'AspectRatioReset');
+  };
+
+  // Set the selected element's size in exact pixels (spec/134).
+  //
+  // Canvas pixels at 100% zoom, which is the only unit the model has — a
+  // floorplan drawn at "10px per cm" is the user's own scale, and inventing a
+  // units system to hold it would be a much bigger feature than a number box.
+  //
+  // Anchored at the TOP-LEFT, not the centre, unlike the aspect reset above.
+  // Typing a width is a layout act: you want the edge you are aligned to to
+  // stay put. (The aspect reset is a proportion act, where holding the centre
+  // is what stops it drifting.)
+  //
+  // Honours the aspect lock: with it on, changing one dimension carries the
+  // other, so the lock means the same thing here as it does on a drag handle.
+  const setSizeSelected = (size: { width?: number; height?: number }) => {
+    if (!selectedId) return;
+    commit((els) =>
+      els.map((el) => {
+        if (el.id !== selectedId || !isBoxed(el)) return el;
+        const locked = (el as { aspectLocked?: boolean }).aspectLocked === true;
+        const ratio = el.height > 0 ? el.width / el.height : 1;
+        let width = size.width ?? el.width;
+        let height = size.height ?? el.height;
+        if (locked && ratio > 0) {
+          if (size.width !== undefined && size.height === undefined) {
+            height = Math.round(width / ratio);
+          } else if (size.height !== undefined && size.width === undefined) {
+            width = Math.round(height * ratio);
+          }
+        }
+        return {
+          ...el,
+          width: clampSizePx(width),
+          height: clampSizePx(height),
+        };
+      }),
+    );
+    track('Element', 'Changed', 'Size');
   };
 
   // Set the selected element's rotation to a fixed angle (degrees clockwise
@@ -180,6 +230,7 @@ export function useShapeStyleSetters({
   return {
     setShapeKindSelected,
     resetAspectRatioSelected,
+    setSizeSelected,
     setRotationSelected,
     setBorderStrokeSelected,
     setBorderStyleSelected,

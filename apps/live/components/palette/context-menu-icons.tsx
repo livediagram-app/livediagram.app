@@ -1348,6 +1348,28 @@ export function ProgressAnimKindGlyph({ kind }: { kind: ProgressAnim | null }) {
   return <AnimNoneGlyph />;
 }
 
+// A box with a double-headed arrow across it - the Size category glyph
+// (spec/134). Reads as "how big", against the aspect-lock mark below which
+// reads as "keep the proportion".
+export function SizeMenuIcon() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <rect x="2" y="3.5" width="12" height="9" rx="1.2" />
+      <path d="M5 8h6M5 8l1.4-1.4M5 8l1.4 1.4M11 8l-1.4-1.4M11 8l-1.4 1.4" />
+    </svg>
+  );
+}
+
 // Rectangle with corner ticks - the "lock aspect ratio" Layer-row glyph.
 export function AspectLockMenuIcon() {
   return (

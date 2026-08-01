@@ -144,6 +144,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
   const {
     setShapeKindSelected,
     resetAspectRatioSelected,
+    setSizeSelected,
     setRotationSelected,
     setBorderStrokeSelected,
     setBorderStyleSelected,
@@ -354,6 +355,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     setArrowRouteBehindSelected,
     setShapeKindSelected,
     resetAspectRatioSelected,
+    setSizeSelected,
     setRotationSelected,
     setBorderStrokeSelected,
     setBorderStyleSelected,

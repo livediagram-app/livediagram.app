@@ -28,13 +28,13 @@ import { ContextMenu, ContextMenuDivider } from '@/components/palette/ContextMen
 import { SizeButton, ToggleSwitch } from '@/components/palette/palette-controls';
 import {} from '@/components/palette/palette-icons';
 import {
-  AspectLockMenuIcon,
   LayerDownIcon,
   LayersGlyph,
   LayerUpIcon,
   LineGlyph,
   PointerGlyph,
   RotationGlyph,
+  SizeMenuIcon,
   SquareMenuIcon,
 } from '@/components/palette/context-menu-icons';
 import {
@@ -45,6 +45,7 @@ import {
   MenuTileGrid,
 } from '@/components/primitives/PortalMenu';
 import { ShapeIcon } from '@/components/primitives/shape-icon';
+import { SizeSection } from '@/components/palette/SizeSection';
 
 import {} from '@/components/palette/context-menu-tiles';
 import { OpacityRow } from '@/components/palette/context-menu-rows';
@@ -161,32 +162,27 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
             value={(target as { opacity?: number }).opacity ?? 1}
             onChange={props.onSetOpacity}
           />
-          {boxed ? (
-            <>
-              <ContextMenuDivider />
-              {/* Lock aspect ratio — the whole row toggles (the switch is a
-                  presentational <span> so we don't nest a button in a button). */}
-              <button
-                type="button"
-                onClick={props.onToggleAspectLock}
-                aria-pressed={!!(target as { aspectLocked?: boolean }).aspectLocked}
-                className="flex w-full cursor-pointer items-center justify-between px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
-              >
-                <span className="flex items-center gap-2">
-                  <span className="text-slate-400 dark:text-slate-400">
-                    <AspectLockMenuIcon />
-                  </span>
-                  Lock aspect ratio
-                </span>
-                <ToggleSwitch
-                  presentational
-                  checked={!!(target as { aspectLocked?: boolean }).aspectLocked}
-                  label="Lock aspect ratio"
-                />
-              </button>
-            </>
-          ) : null}
         </MenuAccordionSection>
+        {/* Size — the exact box (spec/134). Gathers the three controls that
+            all answer "how big is this": the width / height boxes, the aspect
+            lock (which lived in Layer) and the reset (which lived in Shape,
+            so it only appeared for morphable kinds). */}
+        {boxed ? (
+          <MenuAccordionSection title="Size" icon={<SizeMenuIcon />} {...sectionProps('size')}>
+            <SizeSection
+              width={(target as { width: number }).width}
+              height={(target as { height: number }).height}
+              aspectLocked={!!(target as { aspectLocked?: boolean }).aspectLocked}
+              onSetSize={props.onSetSize}
+              onToggleAspectLock={props.onToggleAspectLock}
+              onResetAspectRatio={() => {
+                props.onResetAspectRatio();
+                onClose();
+              }}
+              showReset={morphable}
+            />
+          </MenuAccordionSection>
+        ) : null}
         {/* Shape — morph to another common kind, preserving size + colour. */}
         {morphable ? (
           <MenuAccordionSection title="Shape" icon={<SquareMenuIcon />} {...sectionProps('shape')}>
@@ -202,15 +198,6 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
                   <ShapeIcon kind={kind} />
                 </SizeButton>
               ))}
-            </div>
-            <div className="px-2 pb-1.5 pt-0.5">
-              <MenuActionButton
-                label="Reset aspect ratio"
-                onClick={() => {
-                  props.onResetAspectRatio();
-                  onClose();
-                }}
-              />
             </div>
           </MenuAccordionSection>
         ) : null}

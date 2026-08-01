@@ -246,6 +246,10 @@ export type EditorContextMenuProps = {
   // Reset the shape back to its kind's default aspect ratio (keeps area,
   // snaps the width:height proportion back to the canonical look).
   onResetAspectRatio: () => void;
+  // Set the selection's exact size in canvas pixels (spec/134). Either
+  // dimension alone is allowed: the omitted one is left as-is, or carried by
+  // the aspect lock when that is on.
+  onSetSize: (size: { width?: number; height?: number }) => void;
   // Preset colour swatches for the colour pickers, derived from the active
   // theme so the offered presets match it.
   presetColors: string[];

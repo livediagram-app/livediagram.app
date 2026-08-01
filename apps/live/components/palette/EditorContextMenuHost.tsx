@@ -137,6 +137,7 @@ export function EditorContextMenuHost() {
     commitShapeKind,
     previewShapeKind,
     resetAspectRatioSelected,
+    setSizeSelected,
     setTableHeaderRowSelected,
     setTableHeaderColumnSelected,
     setTableZebraSelected,
@@ -296,6 +297,7 @@ export function EditorContextMenuHost() {
       onSetShapeKind={commitShapeKind}
       onPreviewShapeKind={previewShapeKind}
       onResetAspectRatio={resetAspectRatioSelected}
+      onSetSize={setSizeSelected}
       presetColors={themePresetColors(getTheme(activeTab.theme))}
       onToggleTableHeaderRow={setTableHeaderRowSelected}
       onToggleTableHeaderColumn={setTableHeaderColumnSelected}
