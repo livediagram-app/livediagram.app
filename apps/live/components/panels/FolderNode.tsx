@@ -11,7 +11,7 @@ import {
   PlusIcon,
   TrashIcon,
 } from '@/components/panels/explorer-icons';
-import { DIAGRAM_DRAG_MIME } from './explorer-drag-mime';
+import { useDiagramDropTarget } from './useDiagramDropTarget';
 import { DiagramRow } from './DiagramRow';
 
 // Recursive folder node in the panel's tree. Renders its label +
@@ -75,7 +75,7 @@ export function FolderNode({
   const childCount = childFolders.length + childDiagrams.length;
 
   const [editing, setEditing] = useState(false);
-  const [isDragOver, setIsDragOver] = useState(false);
+  const drop = useDiagramDropTarget(folder.id, onMoveDiagramToFolder);
 
   // Auto-enter rename mode for freshly-created folders.
   useEffect(() => {
@@ -96,35 +96,17 @@ export function FolderNode({
   // slash cursor. dataTransfer.types is consulted on enter so a
   // random text drag from another app doesn't trigger our hover
   // styling.
-  const acceptsDrop = (e: React.DragEvent) =>
-    !!onMoveDiagramToFolder && e.dataTransfer.types.includes(DIAGRAM_DRAG_MIME);
-  const handleDragOver = (e: React.DragEvent) => {
-    if (!acceptsDrop(e)) return;
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-    if (!isDragOver) setIsDragOver(true);
-  };
-  const handleDragLeave = () => {
-    if (isDragOver) setIsDragOver(false);
-  };
-  const handleDrop = (e: React.DragEvent) => {
-    if (!acceptsDrop(e)) return;
-    e.preventDefault();
-    const id = e.dataTransfer.getData(DIAGRAM_DRAG_MIME);
-    setIsDragOver(false);
-    if (id && onMoveDiagramToFolder) onMoveDiagramToFolder(id, folder.id);
-  };
 
   return (
     <li>
       <div
         className={`group flex items-center gap-1 rounded-md px-2 py-1.5 text-xs text-slate-700 transition hover:bg-slate-100 dark:text-white dark:hover:bg-slate-800 ${
-          isDragOver ? 'ring-2 ring-brand-400 ring-inset bg-brand-50 dark:bg-brand-500/15' : ''
+          drop.isDragOver ? 'ring-2 ring-brand-400 ring-inset bg-brand-50 dark:bg-brand-500/15' : ''
         }`}
         style={{ paddingLeft: 4 + depth * 12 }}
-        onDragOver={onMoveDiagramToFolder ? handleDragOver : undefined}
-        onDragLeave={onMoveDiagramToFolder ? handleDragLeave : undefined}
-        onDrop={onMoveDiagramToFolder ? handleDrop : undefined}
+        onDragOver={onMoveDiagramToFolder ? drop.onDragOver : undefined}
+        onDragLeave={onMoveDiagramToFolder ? drop.onDragLeave : undefined}
+        onDrop={onMoveDiagramToFolder ? drop.onDrop : undefined}
         // Right-click anywhere on the folder row opens the same actions
         // menu as the ellipsis button (anchored to it).
         onContextMenu={

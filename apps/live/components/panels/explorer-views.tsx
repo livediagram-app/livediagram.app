@@ -17,7 +17,6 @@ import { DiagramThumbnail } from '@/components/panels/DiagramThumbnail';
 // owns the floating-panel shape (pill rows, drag source / drop
 // target, recursive tree). The two coexist by design.
 
-import { useState } from 'react';
 // Row data shapes come straight from the api client (the same rows
 // apiListDiagrams / useFolders / apiListSharedWith return) so the
 // panel and the /explorer route can't drift apart on what a list
@@ -31,7 +30,7 @@ import {
   RemoveIcon,
   UnsortedIcon,
 } from '@/components/panels/explorer-icons';
-import { DIAGRAM_DRAG_MIME } from './explorer-drag-mime';
+import { useDiagramDropTarget } from './useDiagramDropTarget';
 import { DiagramRow } from './DiagramRow';
 
 export { FolderNode } from './FolderNode';
@@ -69,39 +68,18 @@ export function UnsortedNode({
   onMoveDiagramToFolder?: (diagramId: string, folderId: string | null) => void;
 }) {
   const isExpanded = expanded['unsorted'] ?? false;
-  const [isDragOver, setIsDragOver] = useState(false);
-
-  // Same drop wiring as FolderNode but the move callback gets a
-  // null folderId so the diagram lands in Unsorted (the root
-  // bucket).
-  const acceptsDrop = (e: React.DragEvent) =>
-    !!onMoveDiagramToFolder && e.dataTransfer.types.includes(DIAGRAM_DRAG_MIME);
-  const handleDragOver = (e: React.DragEvent) => {
-    if (!acceptsDrop(e)) return;
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-    if (!isDragOver) setIsDragOver(true);
-  };
-  const handleDragLeave = () => {
-    if (isDragOver) setIsDragOver(false);
-  };
-  const handleDrop = (e: React.DragEvent) => {
-    if (!acceptsDrop(e)) return;
-    e.preventDefault();
-    const id = e.dataTransfer.getData(DIAGRAM_DRAG_MIME);
-    setIsDragOver(false);
-    if (id && onMoveDiagramToFolder) onMoveDiagramToFolder(id, null);
-  };
+  // null target: a diagram dropped here lands in Unsorted, the root bucket.
+  const drop = useDiagramDropTarget(null, onMoveDiagramToFolder);
 
   return (
     <li>
       <div
         className={`flex items-center gap-1 rounded-md px-2 py-1.5 text-xs text-slate-700 transition hover:bg-slate-100 dark:text-white dark:hover:bg-slate-800 ${
-          isDragOver ? 'ring-2 ring-brand-400 ring-inset bg-brand-50 dark:bg-brand-500/15' : ''
+          drop.isDragOver ? 'ring-2 ring-brand-400 ring-inset bg-brand-50 dark:bg-brand-500/15' : ''
         }`}
-        onDragOver={onMoveDiagramToFolder ? handleDragOver : undefined}
-        onDragLeave={onMoveDiagramToFolder ? handleDragLeave : undefined}
-        onDrop={onMoveDiagramToFolder ? handleDrop : undefined}
+        onDragOver={onMoveDiagramToFolder ? drop.onDragOver : undefined}
+        onDragLeave={onMoveDiagramToFolder ? drop.onDragLeave : undefined}
+        onDrop={onMoveDiagramToFolder ? drop.onDrop : undefined}
       >
         <button
           type="button"
