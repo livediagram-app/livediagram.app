@@ -14,8 +14,8 @@ import {
 } from '@livediagram/diagram';
 import { chartAnim, chartFrame } from '@/lib/chart';
 import { useChartHover } from '@/hooks/canvas/useChartHover';
-import { ChartLegend } from '@/components/primitives/ChartLegend';
 import { ChartTooltip } from '@/components/primitives/ChartTooltip';
+import { ChartSurface } from '@/components/primitives/ChartSurface';
 
 export function LineChartView({
   element,
@@ -68,89 +68,84 @@ export function LineChartView({
   const legendItems = series.map((s) => ({ label: s.name, value: 0, color: s.color }));
 
   return (
-    <div className="absolute inset-0">
-      <svg
-        width="100%"
-        height="100%"
-        viewBox={`0 0 ${w} ${h}`}
-        className="pointer-events-none absolute inset-0"
-        aria-hidden
-      >
-        {/* Axes. */}
-        <line
-          x1={plotX0}
-          y1={plotY0}
-          x2={plotX0}
-          y2={plotY0 + plotH}
-          stroke="#e2e8f0"
-          strokeWidth={1}
-        />
-        <line
-          x1={plotX0}
-          y1={plotY0 + plotH}
-          x2={plotX0 + plotW}
-          y2={plotY0 + plotH}
-          stroke="#cbd5e1"
-          strokeWidth={1}
-        />
-        <g className={group.className} style={group.style}>
-          {series.map((s, si) => {
-            const color = colorAt(si, s);
-            const pts = categories.map((_, i) => `${xAt(i)},${yAt(valAt(si, i))}`).join(' ');
-            return (
-              <g key={si}>
-                <polyline
-                  points={pts}
-                  fill="none"
-                  stroke={color}
-                  strokeWidth={2}
-                  strokeLinejoin="round"
-                  strokeLinecap="round"
-                />
-                {categories.map((_, i) => (
-                  <circle
-                    key={i}
-                    cx={xAt(i)}
-                    cy={yAt(valAt(si, i))}
-                    r={3}
-                    fill={color}
-                    {...markProps({ s: si, i })}
-                  />
-                ))}
-              </g>
-            );
-          })}
-        </g>
-        {/* X-axis category labels (truncated; may overlap when very dense). */}
-        {categories.map((c, i) => (
-          <text
-            key={i}
-            x={xAt(i)}
-            y={plotY0 + plotH + 13}
-            textAnchor="middle"
-            fontSize={9}
-            fill={textColor}
-            fontFamily={fontFamily}
-          >
-            {c.length > 6 ? `${c.slice(0, 5)}…` : c}
-          </text>
-        ))}
-      </svg>
-      {hover ? (
-        <ChartTooltip
-          leftPct={(xAt(hover.i) / w) * 100}
-          topPct={(yAt(valAt(hover.s, hover.i)) / h) * 100}
-          label={`${categories[hover.i] ?? ''} · ${series[hover.s]?.name ?? ''}`}
-          value={valAt(hover.s, hover.i)}
-        />
-      ) : null}
-      <ChartLegend
-        items={legendItems}
-        colorAt={colorAt}
-        legend={legend}
-        textColor={textColor}
-        fontFamily={fontFamily}
+    <ChartSurface
+      w={w}
+      h={h}
+      items={legendItems}
+      colorAt={colorAt}
+      legend={legend}
+      textColor={textColor}
+      fontFamily={fontFamily}
+      tooltip={
+        hover ? (
+          <ChartTooltip
+            leftPct={(xAt(hover.i) / w) * 100}
+            topPct={(yAt(valAt(hover.s, hover.i)) / h) * 100}
+            label={`${categories[hover.i] ?? ''} · ${series[hover.s]?.name ?? ''}`}
+            value={valAt(hover.s, hover.i)}
+          />
+        ) : null
+      }
+    >
+      {/* Axes. */}
+      <line
+        x1={plotX0}
+        y1={plotY0}
+        x2={plotX0}
+        y2={plotY0 + plotH}
+        stroke="#e2e8f0"
+        strokeWidth={1}
       />
-    </div>
+      <line
+        x1={plotX0}
+        y1={plotY0 + plotH}
+        x2={plotX0 + plotW}
+        y2={plotY0 + plotH}
+        stroke="#cbd5e1"
+        strokeWidth={1}
+      />
+      <g className={group.className} style={group.style}>
+        {series.map((s, si) => {
+          const color = colorAt(si, s);
+          const pts = categories.map((_, i) => `${xAt(i)},${yAt(valAt(si, i))}`).join(' ');
+          return (
+            <g key={si}>
+              <polyline
+                points={pts}
+                fill="none"
+                stroke={color}
+                strokeWidth={2}
+                strokeLinejoin="round"
+                strokeLinecap="round"
+              />
+              {categories.map((_, i) => (
+                <circle
+                  key={i}
+                  cx={xAt(i)}
+                  cy={yAt(valAt(si, i))}
+                  r={3}
+                  fill={color}
+                  {...markProps({ s: si, i })}
+                />
+              ))}
+            </g>
+          );
+        })}
+      </g>
+      {/* X-axis category labels (truncated; may overlap when very dense). */}
+      {categories.map((c, i) => (
+        <text
+          key={i}
+          x={xAt(i)}
+          y={plotY0 + plotH + 13}
+          textAnchor="middle"
+          fontSize={9}
+          fill={textColor}
+          fontFamily={fontFamily}
+        >
+          {c.length > 6 ? `${c.slice(0, 5)}…` : c}
+        </text>
+      ))}
+    </ChartSurface>
   );
 }

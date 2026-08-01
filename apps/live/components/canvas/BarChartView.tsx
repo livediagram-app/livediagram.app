@@ -10,8 +10,8 @@
 import { type ShapeElement } from '@livediagram/diagram';
 import { chartAnim, chartFrame } from '@/lib/chart';
 import { useChartHover } from '@/hooks/canvas/useChartHover';
-import { ChartLegend } from '@/components/primitives/ChartLegend';
 import { ChartTooltip } from '@/components/primitives/ChartTooltip';
+import { ChartSurface } from '@/components/primitives/ChartSurface';
 
 export function BarChartView({
   element,
@@ -43,50 +43,45 @@ export function BarChartView({
   const group = chartAnim(element, `${area.x + area.w / 2}px ${baseY}px`);
 
   return (
-    <div className="absolute inset-0">
-      <svg
-        width="100%"
-        height="100%"
-        viewBox={`0 0 ${w} ${h}`}
-        className="pointer-events-none absolute inset-0"
-        aria-hidden
-      >
-        {/* Baseline. */}
-        <line x1={x0} y1={baseY} x2={x0 + innerW} y2={baseY} stroke="#cbd5e1" strokeWidth={1} />
-        <g className={group.className} style={group.style}>
-          {data.map((d, i) => {
-            const barH = (Math.max(0, d.value) / maxVal) * fullH;
-            const cx = x0 + slot * (i + 0.5);
-            return (
-              <rect
-                key={i}
-                x={cx - barW / 2}
-                y={baseY - barH}
-                width={barW}
-                height={barH}
-                rx={Math.min(3, barW / 4)}
-                fill={colorAt(i, d)}
-                {...markProps(i)}
-              />
-            );
-          })}
-        </g>
-      </svg>
-      {hover !== null && data[hover] ? (
-        <ChartTooltip
-          leftPct={((x0 + slot * (hover + 0.5)) / w) * 100}
-          topPct={((baseY - (Math.max(0, data[hover]!.value) / maxVal) * fullH) / h) * 100}
-          label={data[hover]!.label}
-          value={data[hover]!.value}
-        />
-      ) : null}
-      <ChartLegend
-        items={data}
-        colorAt={colorAt}
-        legend={legend}
-        textColor={textColor}
-        fontFamily={fontFamily}
-      />
-    </div>
+    <ChartSurface
+      w={w}
+      h={h}
+      items={data}
+      colorAt={colorAt}
+      legend={legend}
+      textColor={textColor}
+      fontFamily={fontFamily}
+      tooltip={
+        hover !== null && data[hover] ? (
+          <ChartTooltip
+            leftPct={((x0 + slot * (hover + 0.5)) / w) * 100}
+            topPct={((baseY - (Math.max(0, data[hover]!.value) / maxVal) * fullH) / h) * 100}
+            label={data[hover]!.label}
+            value={data[hover]!.value}
+          />
+        ) : null
+      }
+    >
+      {/* Baseline. */}
+      <line x1={x0} y1={baseY} x2={x0 + innerW} y2={baseY} stroke="#cbd5e1" strokeWidth={1} />
+      <g className={group.className} style={group.style}>
+        {data.map((d, i) => {
+          const barH = (Math.max(0, d.value) / maxVal) * fullH;
+          const cx = x0 + slot * (i + 0.5);
+          return (
+            <rect
+              key={i}
+              x={cx - barW / 2}
+              y={baseY - barH}
+              width={barW}
+              height={barH}
+              rx={Math.min(3, barW / 4)}
+              fill={colorAt(i, d)}
+              {...markProps(i)}
+            />
+          );
+        })}
+      </g>
+    </ChartSurface>
   );
 }

@@ -11,8 +11,8 @@
 import { type ShapeElement } from '@livediagram/diagram';
 import { chartAnim, chartFrame } from '@/lib/chart';
 import { useChartHover } from '@/hooks/canvas/useChartHover';
-import { ChartLegend } from '@/components/primitives/ChartLegend';
 import { ChartTooltip } from '@/components/primitives/ChartTooltip';
+import { ChartSurface } from '@/components/primitives/ChartSurface';
 
 export function PieChartView({
   element,
@@ -68,46 +68,41 @@ export function PieChartView({
   const group = chartAnim(element, `${cx}px ${cy}px`);
 
   return (
-    <div className="absolute inset-0">
-      <svg
-        width="100%"
-        height="100%"
-        viewBox={`0 0 ${w} ${h}`}
-        className="pointer-events-none absolute inset-0"
-        aria-hidden
-      >
-        <g className={group.className} style={group.style}>
-          {wedges.map((wedge, i) =>
-            wedge.full ? (
-              <circle key={i} cx={cx} cy={cy} r={rad} fill={wedge.color} {...markProps(i)} />
-            ) : (
-              <path
-                key={i}
-                d={wedge.d}
-                fill={wedge.color}
-                stroke="#ffffff"
-                strokeWidth={1}
-                {...markProps(i)}
-              />
-            ),
-          )}
-        </g>
-      </svg>
-      {hover !== null && wedges[hover] ? (
-        <ChartTooltip
-          leftPct={wedges[hover]!.leftPct}
-          topPct={wedges[hover]!.topPct}
-          label={slices[hover]!.label}
-          value={slices[hover]!.value}
-        />
-      ) : null}
-      <ChartLegend
-        items={slices}
-        colorAt={colorAt}
-        legend={legend}
-        textColor={textColor}
-        fontFamily={fontFamily}
-      />
-    </div>
+    <ChartSurface
+      w={w}
+      h={h}
+      items={slices}
+      colorAt={colorAt}
+      legend={legend}
+      textColor={textColor}
+      fontFamily={fontFamily}
+      tooltip={
+        hover !== null && wedges[hover] ? (
+          <ChartTooltip
+            leftPct={wedges[hover]!.leftPct}
+            topPct={wedges[hover]!.topPct}
+            label={slices[hover]!.label}
+            value={slices[hover]!.value}
+          />
+        ) : null
+      }
+    >
+      <g className={group.className} style={group.style}>
+        {wedges.map((wedge, i) =>
+          wedge.full ? (
+            <circle key={i} cx={cx} cy={cy} r={rad} fill={wedge.color} {...markProps(i)} />
+          ) : (
+            <path
+              key={i}
+              d={wedge.d}
+              fill={wedge.color}
+              stroke="#ffffff"
+              strokeWidth={1}
+              {...markProps(i)}
+            />
+          ),
+        )}
+      </g>
+    </ChartSurface>
   );
 }
