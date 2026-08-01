@@ -17,6 +17,7 @@ import {
   MediaTabIcon,
   FavouritesTabIcon,
   IconsTabIcon,
+  BuildTabIcon,
   ShapesTabIcon,
   StickersTabIcon,
   TechTabIcon,
@@ -31,6 +32,7 @@ import {
   PaletteDataTab,
   PaletteMediaTab,
   PaletteDrawTab,
+  PaletteBuildTab,
   PaletteWriteTab,
   PaletteShapesTab,
   PaletteComponentsTab,
@@ -418,6 +420,15 @@ export function CommandPalette({
               description: 'Square, circle, diamond, and the flowchart shape vocabulary.',
               icon: <ShapesTabIcon />,
               content: <PaletteShapesTab pendingDraw={pendingDraw} actions={tileActions} />,
+            },
+            {
+              id: 'build',
+              label: 'Build',
+              group: 0,
+              description:
+                'The structural elements: mind nodes, lanes, frames, timelines, and tables.',
+              icon: <BuildTabIcon />,
+              content: <PaletteBuildTab pendingDraw={pendingDraw} actions={tileActions} />,
             },
             {
               id: 'write',

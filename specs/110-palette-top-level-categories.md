@@ -34,9 +34,9 @@ tools plus Frame). The **User / actor** tile was deleted outright — see below.
 | Band           | Categories                                     |
 | -------------- | ---------------------------------------------- |
 | _(no heading)_ | Favourites, full width                         |
-| **Common**     | Shapes, Write, Draw, Devices                   |
+| **Common**     | Shapes, Build, Write, Draw, Devices            |
 | **Decorate**   | Icons, Stickers, Technology, Media, Components |
-| **Dynamic**    | Data, Behaviour                                |
+| **Dynamic**    | Data, Behaviour, Collaborate                   |
 
 ## Why flatten
 

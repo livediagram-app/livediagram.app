@@ -829,7 +829,7 @@ export const articles: Article[] = [
     title: 'Where each tool lives',
     description: 'A map of the palette categories and which elements are in each.',
     keywords:
-      'tools tab category where find text pencil pen table frame chart sticky note image draw write components media behaviour data moved',
+      'tools tab category where find text pencil pen table frame chart sticky note image draw write build structure mind node lane timeline components media behaviour collaborate data moved',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Elements',

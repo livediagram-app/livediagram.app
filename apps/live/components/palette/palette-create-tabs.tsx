@@ -27,6 +27,17 @@ export function PaletteShapesTab({ pendingDraw, actions }: TabProps) {
   return <PaletteTileGrid section="shapes" actions={actions} pendingDraw={pendingDraw} />;
 }
 
+// The structural elements (spec/132): Mind node, Lane, Frame, Timeline, Table.
+// Rows with a blurb rather than a bare icon grid: these are all "a container
+// that holds other work", so the picture alone doesn't separate them — "Tab
+// adds a child, Enter a sibling" vs "A titled band that carries its steps" is
+// the thing you are choosing between.
+export function PaletteBuildTab({ pendingDraw, actions }: TabProps) {
+  return (
+    <PaletteToolRows tiles={tilesInSection('build')} actions={actions} pendingDraw={pendingDraw} />
+  );
+}
+
 // The wordy elements (spec/110): Page, Text, Sticky Note, Annotation.
 export function PaletteWriteTab({ pendingDraw, actions }: TabProps) {
   return (

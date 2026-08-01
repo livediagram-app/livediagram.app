@@ -45,6 +45,28 @@ export function ShapesTabIcon() {
   );
 }
 
+// Build (spec/132): a frame with a band across its top and a node hanging off
+// it — scaffolding rather than content, which is what this category holds.
+export function BuildTabIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 18 18"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.4"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <rect x="1.6" y="3" width="9.4" height="12" rx="1.2" />
+      <path d="M1.6 6.6h9.4" />
+      <path d="M11 10.8h2.2" />
+      <rect x="13.2" y="8.6" width="3.2" height="4.4" rx="0.9" />
+    </svg>
+  );
+}
+
 export function ToolsTabIcon() {
   return (
     <svg

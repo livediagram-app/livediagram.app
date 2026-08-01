@@ -28,6 +28,11 @@ import {
 // them, so tilesInSection never returns them.
 export type PaletteTileSection =
   | 'shapes'
+  // Structure (spec/132): the elements you lay a diagram OUT with rather than
+  // draw on it — a mind node, a lane, a frame, a timeline, a table. They were
+  // scattered across Write, Draw, Data and Components, filed by what they look
+  // like; what they have in common is that they hold other work.
+  | 'build'
   | 'tools'
   | 'data'
   // The collaboration family (spec/123 to spec/129): elements that record what
@@ -415,8 +420,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     id: 'tools:mind-node',
     blurb: 'Tab adds a child, Enter a sibling',
     caption: 'Mind node',
-    section: 'tools',
-    toolGroup: 'write',
+    section: 'build',
     label: 'Add mind node',
     description:
       'A mind-map node. With one selected, Tab adds a child to its right and Enter adds a sibling below — each connected and ready to type into.',
@@ -671,7 +675,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     id: 'tools:table',
     blurb: 'An editable grid of cells',
-    section: 'data',
+    section: 'build',
     label: 'Add table',
     description: 'Editable grid. Double-click a cell to type.',
     action: { type: 'table' },
@@ -1163,8 +1167,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     id: 'tools:lane',
     blurb: 'A titled band that carries its steps',
     caption: 'Lane',
-    section: 'tools',
-    toolGroup: 'draw',
+    section: 'build',
     label: 'Add lane',
     description:
       'A swimlane: a horizontal band with a title down its left edge. Dragging it carries everything inside, like a frame.',
@@ -1191,8 +1194,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     id: 'tools:frame',
     blurb: 'A labelled box that groups a section',
-    section: 'tools',
-    toolGroup: 'draw',
+    section: 'build',
     label: 'Add frame',
     description: 'Frame. A titled container you draw around a cluster of elements.',
     shortcut: 'F',
@@ -1272,7 +1274,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     id: 'tools:timeline',
     blurb: 'A track for sequencing events',
-    section: 'components',
+    section: 'build',
     label: 'Add timeline rail',
     caption: 'Timeline',
     description: 'A line with points above it. Add more points from its right-end button.',
