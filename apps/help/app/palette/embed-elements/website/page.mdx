@@ -37,7 +37,14 @@ That means the label follows the address. Change the address and the label chang
 
 Plenty of sites send a header that forbids being displayed inside another page. News sites, banks and most things behind a login do it as standard.
 
-When one of those is framed, **the rectangle comes up empty**, and there is genuinely nothing the editor can do about it. The refusal happens in the browser, on the site's own instruction, and a page cannot tell from the outside whether the page inside it loaded. That is why the palette tile, the empty card and the address hint all warn you before you try rather than leaving you to interpret a blank box.
+When one of those is framed, **the rectangle comes up empty**. The refusal happens in the browser on the site's own instruction, and the editor genuinely cannot see it: from the outside, a page that refused to be framed and a page that loaded perfectly look identical in every signal a browser exposes. So you will not get a message saying "this site refused", because that would be a guess dressed up as a diagnosis.
+
+What you get instead is the thing you actually want:
+
+- **Open in a new tab** sits beside a website embed's controls at all times, not only when something goes wrong. If the rectangle is blank, that is the button.
+- **If nothing loads at all**, the card says so after a few seconds — hedged, because the honest reading covers both causes: the site may be refusing, or it may just be slow or unreachable.
+
+The palette tile, the empty card and the address hint all warn you about framing before you try, so a blank rectangle is never the first you hear of it.
 
 <Tip>
   If a site refuses to be framed, a [link card](/help/canvas/links/link-cards/) is the better tool.
@@ -59,6 +66,8 @@ The named services carry no sandbox at all, because those hosts were each chosen
 
 ## Using it, and moving it
 
-An embedded page ignores the pointer by default, so it never becomes a hole you can't drag or select through. When you want to scroll or click inside the page, use the **Use the player** control in its top-left corner, and press it again to get dragging back. This works exactly as it does for the video embeds, covered in [Embeds on the canvas](/help/palette/embed-elements/).
+An embedded page ignores the pointer by default, so it never becomes a hole you can't drag or select through. When you want to scroll or click inside the page, use the **Use the player** control in its top-left corner, and press it again to get dragging back. This works as it does for the video embeds, covered in [Embeds on the canvas](/help/palette/embed-elements/).
+
+A website embed carries one control the others do not: **Open in a new tab**, alongside the rest. It is there whether or not the page loaded, because a framed page is a convenience and the real page is always the fallback.
 
 </ArticleLayout>

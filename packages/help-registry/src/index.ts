@@ -919,7 +919,7 @@ export const articles: Article[] = [
     description:
       'Frame any web address on the canvas, for anything the named services do not cover.',
     keywords:
-      'website embed url address site web page iframe frame browser https link any site blank refused x-frame-options sandbox load embed host label',
+      'website embed url address site web page iframe frame browser https link any site blank refused x-frame-options sandbox load embed host label not loading empty open in new tab escape hatch',
     category: 'Palette',
     categorySlug: 'palette/embed-elements',
     parentSlug: 'embed-elements',
