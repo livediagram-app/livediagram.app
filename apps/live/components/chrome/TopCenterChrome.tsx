@@ -115,7 +115,11 @@ export function TopCenterChrome({
       {!isOwner && !zenMode ? (
         <TopCenterRow className="hidden sm:flex">
           {ownerParticipant ? (
-            <div className="flex items-center gap-1.5 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-medium text-slate-700 shadow-sm dark:bg-slate-900/90 dark:text-slate-200">
+            // gap-2.5, not the 1.5 this row would otherwise take: the
+            // avatar's presence ring is a box-shadow sitting 4px outside its
+            // layout box, so it eats the gap on both sides and the name ends
+            // up touching it.
+            <div className="flex items-center gap-2.5 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-medium text-slate-700 shadow-sm dark:bg-slate-900/90 dark:text-slate-200">
               <span className="text-slate-500 dark:text-slate-400">Owner:</span>
               <ParticipantAvatar participant={ownerParticipant} size={14} />
               <span className="max-w-[10rem] truncate">{ownerParticipant.name}</span>

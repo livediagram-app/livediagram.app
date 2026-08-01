@@ -66,23 +66,35 @@ export function TemperatureFace({
           {/* The SHAPE of the room, not just its average: a flat 3 across the
               board and a split between 1s and 5s average the same and mean
               opposite things (spec/124). */}
-          <div className="flex gap-1.5" aria-hidden>
+          {/* The chart takes whatever height the card has spare (min-h-0 so it
+              can also shrink below the tracks' natural size). A fixed 48px
+              track left a tall card with a band of dead space under the
+              average line, and the chart is the one thing here that reads
+              better bigger. */}
+          <div className="flex min-h-[56px] flex-1 gap-1.5" aria-hidden>
             {tally.map((count, i) => (
-              <div key={TEMPERATURE_VALUES[i]} className="flex flex-1 flex-col items-center gap-1">
+              <div
+                key={TEMPERATURE_VALUES[i]}
+                className="flex min-h-0 flex-1 flex-col items-center gap-1"
+              >
                 {/* Each column is a TRACK with the count filling it from the
                     bottom. Bare bars sitting on nothing made an unchosen value
                     a stray coloured dash floating at the baseline, which read
                     as a broken axis rather than as "nobody picked this". */}
                 <span
                   // Capped in width so a wide card doesn't turn five readings
-                  // into five slabs.
-                  className="flex h-[48px] w-full max-w-[26px] items-end overflow-hidden rounded"
+                  // into five slabs. Height comes from the row now, not a
+                  // constant, so the tracks grow with the card.
+                  className="flex min-h-0 w-full max-w-[26px] flex-1 items-end overflow-hidden rounded"
                   style={{ backgroundColor: tint(textColor, 0.08) }}
                 >
                   <span
                     className="w-full rounded-t transition-all"
                     style={{
-                      height: count === 0 ? 0 : `${Math.max(8, (count / peak) * 48)}px`,
+                      // A proportion of the track, with an 8px floor so a
+                      // single vote in a tall card is still a visible bar
+                      // rather than a hairline.
+                      height: count === 0 ? 0 : `max(8px, ${(count / peak) * 100}%)`,
                       backgroundColor: BAR_COLORS[i],
                     }}
                   />

@@ -99,24 +99,34 @@ export function EstimateFace({
           />
         ))}
       </div>
-      <div>
+      {/* Fills the room between the chips and the footer, and centres what it
+          holds. Pinned to the top, a round with one or two voters left a band
+          of dead space above the buttons; a long round fills it by itself. */}
+      <div className="flex min-h-0 flex-1 flex-col justify-center">
         {responses.length === 0 ? (
           <CollabEmpty textColor={textColor}>
             Nobody has picked yet. Your own pick stays hidden from everyone else until Reveal.
           </CollabEmpty>
         ) : revealed ? (
-          <>
+          <div>
             <p
               className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.06em] opacity-70"
               style={{ color: textColor }}
             >
               {spreadLine(element)}
             </p>
-            <div className="flex flex-wrap gap-x-2.5 gap-y-1.5">
+            {/* Gaps here have to clear the avatar's presence RING, which is a
+                box-shadow and so paints outside the layout box without
+                reserving any space: every gap loses 4px per adjacent avatar.
+                Hence the between-pair gap of 4 (12px clear) and the
+                within-pair gap of 2 (4px clear) — which still reads as
+                tighter inside a pair than between them, the thing the
+                grouping depends on. */}
+            <div className="flex flex-wrap gap-x-4 gap-y-2">
               {responses.map((r) => {
                 const who = named(r.participantId);
                 return (
-                  <span key={r.participantId} className="flex items-center gap-1">
+                  <span key={r.participantId} className="flex items-center gap-2">
                     {who ? <ParticipantAvatar participant={who} size={18} /> : null}
                     <span
                       className="text-[13px] font-semibold tabular-nums"
@@ -128,7 +138,7 @@ export function EstimateFace({
                 );
               })}
             </div>
-          </>
+          </div>
         ) : (
           // Before the reveal: WHO, deliberately not what. Knowing Sam has
           // answered is what stops the wait; knowing Sam said 13 is the thing
@@ -140,7 +150,11 @@ export function EstimateFace({
             >
               Answered
             </p>
-            <div className="flex flex-wrap items-center gap-1.5">
+            {/* Avatar to avatar, so BOTH rings eat into the gap: 3 (12px)
+                leaves the same 4px clear as a single-ring gap of 2. At the
+                old 1.5 the rings overlapped by 2px, which read as a stack
+                nobody asked for. */}
+            <div className="flex flex-wrap items-center gap-3">
               {responses.map((r) => {
                 const who = named(r.participantId);
                 return who ? (

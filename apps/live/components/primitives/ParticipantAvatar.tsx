@@ -2,9 +2,20 @@ import { initialsOf, statusLabel, statusRingColor, type Participant } from '@/li
 import { relativeSince, useRelativeTimeTick } from '@/lib/relative-time';
 import { Tooltip } from '@/components/primitives/Tooltip';
 
+// How far the presence ring paints BEYOND the avatar's layout box, per side.
+//
+// It is drawn as a box-shadow, which reserves no space, so an avatar is
+// visually this much wider than the `size` you asked for. Any flex gap next to
+// one loses this much on that side: a `gap-1` beside an avatar renders as zero
+// clearance, which is exactly how the Estimate card ended up with a vote value
+// touching the ring. Rule of thumb: a gap between an avatar and text wants
+// 8px+, and between two avatars 12px+.
+export const AVATAR_RING_OVERHANG_PX = 4;
+
 type ParticipantAvatarProps = {
   participant: Participant;
-  // Diameter of the avatar circle in px (the status ring sits outside it).
+  // Diameter of the avatar circle in px (the status ring sits outside it —
+  // see AVATAR_RING_OVERHANG_PX before laying one out beside text).
   size?: number;
   // When true, wrap in a Tooltip with the participant's name + status.
   withTooltip?: boolean;
@@ -42,7 +53,7 @@ export function ParticipantAvatar({
         width: size,
         height: size,
         backgroundColor: participant.color,
-        boxShadow: `0 0 0 2px white, 0 0 0 4px ${ringColor}`,
+        boxShadow: `0 0 0 2px white, 0 0 0 ${AVATAR_RING_OVERHANG_PX}px ${ringColor}`,
       }}
       className="flex items-center justify-center rounded-full text-xs font-semibold text-white select-none"
     >
