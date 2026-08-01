@@ -1,5 +1,5 @@
 import type { ClientMessage, ParticipantPresence, ServerMessage } from './types';
-import { MAX_COLOR_LEN, MAX_PARTICIPANT_NAME_LEN } from './limits';
+import { helloPresence, resolveCatchup, MAX_TAB_ID_LEN, type LoggedOp } from './diagram-room-rules';
 
 // One Durable Object instance per diagram id. Holds the set of currently
 // connected WebSockets plus their participant identity, and broadcasts
@@ -45,8 +45,8 @@ const MAX_MESSAGE_CHARS = 256 * 1024;
 // Length clamp on the tab id we persist into the attachment from hello /
 // tab-focus frames. Real tab ids are UUIDs (36 chars); the clamp only
 // exists so a hostile frame can't balloon the attachment (see the size
-// note on SessionAttachment).
-const MAX_TAB_ID_LEN = 128;
+// note on SessionAttachment). MAX_TAB_ID_LEN comes from ./diagram-room-rules,
+// which owns the clamp it applies to a hello frame's tabId.
 
 // How many recent mutation ops the room keeps for reconnect catch-up
 // (spec/75, Level 1). A reconnecting client within this many ops of the
@@ -88,7 +88,6 @@ const PRESENCE_OP_KINDS = new Set([
 
 // One entry in the reconnect catch-up log: a mutation op plus the sequence
 // number the room assigned it within the current epoch.
-type LoggedOp = { seq: number; from: string; op: unknown };
 
 // Everything the room knows about one session, persisted in the socket's
 // serialized attachment so it SURVIVES HIBERNATION (an in-memory Map
@@ -352,16 +351,7 @@ export class DiagramRoom implements DurableObject {
       // explicitly (not spread) and length-clamped so a hostile hello can't
       // smuggle arbitrary keys or oversize strings into the attachment —
       // see the size note on SessionAttachment.
-      const claimed = msg.participant ?? ({} as ParticipantPresence);
-      const presence: ParticipantPresence = {
-        id: session.presenceId,
-        name:
-          typeof claimed.name === 'string' ? claimed.name.slice(0, MAX_PARTICIPANT_NAME_LEN) : '',
-        color: typeof claimed.color === 'string' ? claimed.color.slice(0, MAX_COLOR_LEN) : '',
-        role: session.verifiedRole,
-      };
-      if (typeof claimed.tabId === 'string')
-        presence.tabId = claimed.tabId.slice(0, MAX_TAB_ID_LEN);
+      const presence = helloPresence(msg.participant, session);
       ws.serializeAttachment({ ...session, presence } satisfies SessionAttachment);
       this.broadcastPresence();
       return;
@@ -449,18 +439,10 @@ export class DiagramRoom implements DurableObject {
   //   - Any other epoch mismatch with prior progress → resync: the client
   //     saw a previous room instance and we can't map its seq onto ours.
   private sendCatchup(ws: WebSocket, epoch: string | null, lastSeq: number): void {
-    const floor = this.opLog.length ? this.opLog[0]!.seq : this.seq + 1;
-    let ops: LoggedOp[] = [];
-    let resync = false;
-    if (epoch === this.epoch) {
-      if (lastSeq >= this.seq) ops = [];
-      else if (lastSeq + 1 >= floor) ops = this.opLog.filter((e) => e.seq > lastSeq);
-      else resync = true;
-    } else if (!epoch && lastSeq === 0) {
-      ops = this.opLog.slice();
-    } else {
-      resync = true;
-    }
+    const { ops, resync } = resolveCatchup(
+      { epoch, lastSeq },
+      { epoch: this.epoch, seq: this.seq, opLog: this.opLog },
+    );
     const payload: ServerMessage = {
       kind: 'catchup',
       epoch: this.epoch,
