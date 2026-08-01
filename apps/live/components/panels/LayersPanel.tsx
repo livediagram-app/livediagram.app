@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
+import { useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { isLayerLocked, isLayerVisible, type Element, type Layer } from '@livediagram/diagram';
 import { useLayerThumbnails } from '@/hooks/ui/useLayerThumbnails';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
@@ -9,6 +9,7 @@ import { LayersSettingsPopover } from '@/components/panels/LayersSettingsPopover
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import type { MovablePanelDockProps } from '@/components/primitives/MovablePanel.types';
 import { Tooltip } from '@/components/primitives/Tooltip';
+import { onMouseHover, useRevertOnUnmount } from '@/components/primitives/hover-preview';
 import {
   EllipsisIcon,
   EyeIcon,
@@ -169,14 +170,14 @@ export function LayersPanel({
   };
 
   // The hover-solo preview must never outlive the panel (rows unmount
-  // without firing pointerleave when it collapses).
-  useEffect(
-    () => () => {
-      clearPreviewTimer();
-      onPreviewLayer(null);
-    },
-    [onPreviewLayer],
-  );
+  // without firing pointerleave when it collapses). useRevertOnUnmount is the
+  // shared primitive every other hover-preview surface uses for this; it holds
+  // the callback in a latest-ref, so unlike the local effect this replaces it
+  // reverts on unmount ONLY, not whenever onPreviewLayer changes identity.
+  useRevertOnUnmount(() => {
+    clearPreviewTimer();
+    onPreviewLayer(null);
+  });
 
   // Top layer first, matching the paint stack top-down.
   const rows = [...layers].reverse();
@@ -294,8 +295,8 @@ export function LayersPanel({
               <li
                 key={layer.id}
                 data-layer-id={layer.id}
-                onPointerEnter={() => enterRowPreview(layer.id)}
-                onPointerLeave={leaveRowPreview}
+                onPointerEnter={onMouseHover(() => enterRowPreview(layer.id))}
+                onPointerLeave={onMouseHover(leaveRowPreview)}
                 onPointerDown={rowPointerDown(layer.id)}
                 onPointerMove={rowPointerMove}
                 onPointerUp={rowPointerUp}
