@@ -25,8 +25,7 @@ import {
 } from '@livediagram/diagram';
 import { ArrowLineControls, ArrowPointerControls } from '@/components/canvas/arrow-controls';
 import { ContextMenu, ContextMenuDivider } from '@/components/palette/ContextMenu';
-import { SizeButton, ToggleSwitch } from '@/components/palette/palette-controls';
-import {} from '@/components/palette/palette-icons';
+import { SizeButton } from '@/components/palette/palette-controls';
 import {
   LayerDownIcon,
   LayersGlyph,
@@ -39,7 +38,6 @@ import {
 } from '@/components/palette/context-menu-icons';
 import {
   MenuAccordionSection,
-  MenuActionButton,
   MenuGroupSeparator,
   MenuTile,
   MenuTileGrid,
@@ -47,7 +45,6 @@ import {
 import { ShapeIcon } from '@/components/primitives/shape-icon';
 import { SizeSection } from '@/components/palette/SizeSection';
 
-import {} from '@/components/palette/context-menu-tiles';
 import { OpacityRow } from '@/components/palette/context-menu-rows';
 import { MoveToLayerRow } from '@/components/palette/MoveToLayerRow';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';

@@ -20,22 +20,6 @@ import { IconPickerTab } from '@/components/palette/IconPickerTab';
 import { StickerPickerTab } from '@/components/palette/StickerPickerTab';
 import { TechPickerTab } from '@/components/palette/TechPickerTab';
 import {
-  BehaviourTabIcon,
-  CollaborateTabIcon,
-  ComponentsTabIcon,
-  DataTabIcon,
-  DevicesTabIcon,
-  MediaTabIcon,
-  FavouritesTabIcon,
-  IconsTabIcon,
-  BuildTabIcon,
-  ShapesTabIcon,
-  StickersTabIcon,
-  TechTabIcon,
-  DrawTabIcon,
-  WriteTabIcon,
-} from './palette-tab-icons';
-import {
   DevicePickerTab,
   PaletteBehaviourTab,
   PaletteCollaborateTab,
