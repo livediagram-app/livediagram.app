@@ -15,6 +15,7 @@
 // array, grouping by `group` under the CATEGORY_BANDS headings (0 Common,
 // 1 Decorate, 2 Dynamic).
 
+import { PALETTE_CATEGORIES } from './palette-categories';
 import { IconPickerTab } from '@/components/palette/IconPickerTab';
 import { StickerPickerTab } from '@/components/palette/StickerPickerTab';
 import { TechPickerTab } from '@/components/palette/TechPickerTab';
@@ -67,6 +68,8 @@ type TechDeps = Pick<
   'addTechIcon' | 'techQuery' | 'setTechQuery' | 'techResults'
 >;
 
+export { PALETTE_CATEGORIES };
+
 export function paletteCategoryTabs(
   deps: {
     pendingDraw: PendingDraw | null | undefined;
@@ -94,156 +97,48 @@ export function paletteCategoryTabs(
   } = deps;
   // The Icons body takes `loading`; the caller holds the loaded flag.
   const iconCatalogsLoaded = !iconCatalogsLoadedInverse;
-  return [
-    {
-      id: 'favourites',
-      label: 'Favourites',
-      // No band: it is every category at once, so it spans the row
-      // above the first heading rather than sitting under one.
-      fullWidth: true,
-      description:
-        'Your go-to tiles from every category in one grid. Edit to add or remove controls.',
-      icon: <FavouritesTabIcon />,
-      content: <PaletteFavouritesTab pendingDraw={pendingDraw} actions={tileActions} />,
-    },
-    {
-      id: 'shapes',
-      label: 'Shapes',
-      group: 0,
-      description: 'Square, circle, diamond, and the flowchart shape vocabulary.',
-      icon: <ShapesTabIcon />,
-      content: <PaletteShapesTab pendingDraw={pendingDraw} actions={tileActions} />,
-    },
-    {
-      id: 'build',
-      label: 'Build',
-      group: 0,
-      description: 'The structural elements: mind nodes, lanes, frames, timelines, and tables.',
-      icon: <BuildTabIcon />,
-      content: <PaletteBuildTab pendingDraw={pendingDraw} actions={tileActions} />,
-    },
-    {
-      id: 'write',
-      label: 'Write',
-      group: 0,
-      description: 'The wordy elements: pages, text, sticky notes, and annotations.',
-      icon: <WriteTabIcon />,
-      content: <PaletteWriteTab pendingDraw={pendingDraw} actions={tileActions} />,
-    },
-    {
-      id: 'draw',
-      label: 'Draw',
-      group: 0,
-      description: 'The gesture tools: pencil, highlighter, polygon, and arrows.',
-      icon: <DrawTabIcon />,
-      content: <PaletteDrawTab pendingDraw={pendingDraw} actions={tileActions} />,
-    },
-    {
-      id: 'devices',
-      label: 'Devices',
-      group: 0,
-      description:
-        'Wireframing device frames: browser, monitor, laptop, phone, tablet, smartwatch.',
-      icon: <DevicesTabIcon />,
-      content: <DevicePickerTab pendingDraw={pendingDraw} actions={tileActions} />,
-    },
-    {
-      id: 'icons',
-      label: 'Icons',
-      group: 1,
-      description: 'Searchable catalogue of single-colour glyphs.',
-      icon: <IconsTabIcon />,
-      content: (
-        <IconPickerTab
-          addIcon={addIcon}
-          iconQuery={iconQuery}
-          setIconQuery={setIconQuery}
-          iconResults={iconResults}
-          loading={!iconCatalogsLoaded}
-        />
-      ),
-    },
-    {
-      id: 'stickers',
-      label: 'Stickers',
-      group: 1,
-      description:
-        'Colour emoji for reacting, showing how you feel, marking status, pointing at things, celebrating, and prettying the board up.',
-      icon: <StickersTabIcon />,
-      content: (
-        <StickerPickerTab
-          addSticker={addSticker}
-          stickerQuery={stickerQuery}
-          setStickerQuery={setStickerQuery}
-          stickerResults={stickerResults}
-          loading={!iconCatalogsLoaded}
-        />
-      ),
-    },
-    {
-      id: 'technology',
-      label: 'Tech',
-      group: 1,
-      description:
-        'Full-colour AWS, Azure, and generic-infrastructure icons for system-architecture diagrams.',
-      icon: <TechTabIcon />,
-      content: (
-        <TechPickerTab
-          addTechIcon={addTechIcon}
-          techQuery={techQuery}
-          setTechQuery={setTechQuery}
-          techResults={techResults}
-          loading={!iconCatalogsLoaded}
-        />
-      ),
-    },
-    {
-      id: 'media',
-      label: 'Media',
-      group: 1,
-      description: 'Pictures and figures: an uploaded image, or a circular avatar.',
-      icon: <MediaTabIcon />,
-      content: <PaletteMediaTab pendingDraw={pendingDraw} actions={tileActions} />,
-    },
-    {
-      id: 'components',
-      label: 'Components',
-      group: 1,
-      description:
-        'Ready-made composites that follow the tab theme: Banner, Hero, and Header. Each drops as a group you can recolour, retitle, or ungroup.',
-      icon: <ComponentsTabIcon />,
-      content: <PaletteComponentsTab pendingDraw={pendingDraw} actions={tileActions} />,
-    },
-    {
-      id: 'data',
-      label: 'Data',
-      group: 2,
-      description:
-        'Charts and meters: pie, bar and line charts, progress bars and rings, and ratings.',
-      icon: <DataTabIcon />,
-      content: <PaletteDataTab pendingDraw={pendingDraw} actions={tileActions} />,
-    },
-    {
-      id: 'behaviour',
-      label: 'Behaviour',
-      group: 2,
-      description:
-        'Elements that do something when somebody interacts with them: Selection Mode buttons, Portals, Session buttons, Reveal zones, and Pickers.',
-      icon: <BehaviourTabIcon />,
-      content: <PaletteBehaviourTab pendingDraw={pendingDraw} actions={tileActions} />,
-    },
-    {
-      // Collaborate (spec/123 to spec/129): the elements that collect
-      // what the room thinks. Dynamic band, beside Behaviour — both
-      // hold elements whose content arrives at runtime rather than
-      // being drawn by the author.
-      id: 'collaborate',
-      label: 'Collaborate',
-      group: 2,
-      description:
-        'Elements that collect what the room thinks: estimate cards, temperature checks, idea boxes, agendas, decision records, and roll calls.',
-      icon: <CollaborateTabIcon />,
-      content: <PaletteCollaborateTab pendingDraw={pendingDraw} actions={tileActions} />,
-    },
-  ];
+  // Bodies only. The identity of each category (label, blurb, glyph,
+  // band) lives in PALETTE_CATEGORIES above and is zipped on below, so
+  // adding a category is one edit rather than two that can disagree.
+  const content: Record<string, React.ReactNode> = {
+    favourites: <PaletteFavouritesTab pendingDraw={pendingDraw} actions={tileActions} />,
+    shapes: <PaletteShapesTab pendingDraw={pendingDraw} actions={tileActions} />,
+    build: <PaletteBuildTab pendingDraw={pendingDraw} actions={tileActions} />,
+    write: <PaletteWriteTab pendingDraw={pendingDraw} actions={tileActions} />,
+    draw: <PaletteDrawTab pendingDraw={pendingDraw} actions={tileActions} />,
+    devices: <DevicePickerTab pendingDraw={pendingDraw} actions={tileActions} />,
+    icons: (
+      <IconPickerTab
+        addIcon={addIcon}
+        iconQuery={iconQuery}
+        setIconQuery={setIconQuery}
+        iconResults={iconResults}
+        loading={!iconCatalogsLoaded}
+      />
+    ),
+    stickers: (
+      <StickerPickerTab
+        addSticker={addSticker}
+        stickerQuery={stickerQuery}
+        setStickerQuery={setStickerQuery}
+        stickerResults={stickerResults}
+        loading={!iconCatalogsLoaded}
+      />
+    ),
+    technology: (
+      <TechPickerTab
+        addTechIcon={addTechIcon}
+        techQuery={techQuery}
+        setTechQuery={setTechQuery}
+        techResults={techResults}
+        loading={!iconCatalogsLoaded}
+      />
+    ),
+    media: <PaletteMediaTab pendingDraw={pendingDraw} actions={tileActions} />,
+    components: <PaletteComponentsTab pendingDraw={pendingDraw} actions={tileActions} />,
+    data: <PaletteDataTab pendingDraw={pendingDraw} actions={tileActions} />,
+    behaviour: <PaletteBehaviourTab pendingDraw={pendingDraw} actions={tileActions} />,
+    collaborate: <PaletteCollaborateTab pendingDraw={pendingDraw} actions={tileActions} />,
+  };
+  return PALETTE_CATEGORIES.map((c) => ({ ...c, content: content[c.id] }));
 }

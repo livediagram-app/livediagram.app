@@ -1793,3 +1793,23 @@ export function tileDisplayName(def: PaletteTileDef): string {
     .trim();
   return base.charAt(0).toUpperCase() + base.slice(1);
 }
+
+/**
+ * The tiles behind a palette CATEGORY id, which is not the same thing as a
+ * section id.
+ *
+ * Most categories are a section. Three are not: Write, Draw and Behaviour are
+ * tool GROUPS inside the tools section (spec/110), so `tilesInSection('write')`
+ * is empty and a caller that assumed otherwise silently showed nothing. The
+ * Edit Favourites dialog assumed exactly that and dropped all three.
+ *
+ * Returns [] for the open-ended catalogues (Icons / Stickers / Technology),
+ * whose contents are async data rather than fixed tiles — callers handle
+ * those through their own search.
+ */
+export function tilesForCategory(categoryId: string): PaletteTileDef[] {
+  if (TOOL_GROUPS.some((g) => g.id === categoryId)) {
+    return tilesInToolGroup(categoryId as ToolGroupId);
+  }
+  return PALETTE_TILES.filter((t) => t.section === categoryId);
+}

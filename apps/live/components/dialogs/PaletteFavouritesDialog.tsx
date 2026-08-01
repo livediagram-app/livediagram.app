@@ -15,20 +15,11 @@ import { Dialog } from '@/components/dialogs/Dialog';
 import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { matches } from '@/lib/search';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
-import {
-  ComponentsTabIcon,
-  DataTabIcon,
-  DevicesTabIcon,
-  IconsTabIcon,
-  ShapesTabIcon,
-  TechTabIcon,
-  ToolsTabIcon,
-} from '@/components/palette/palette-tab-icons';
+import { PALETTE_CATEGORIES } from '@/components/palette/palette-category-tabs';
 import {
   tileDisplayName,
-  tilesInSection,
+  tilesForCategory,
   type PaletteTileDef,
-  type PaletteTileSection,
 } from '@/components/palette/palette-tile-defs';
 import { searchIconTiles, searchTechTiles } from '@/components/palette/palette-dynamic-tiles';
 
@@ -42,19 +33,28 @@ type PaletteFavouritesDialogProps = {
   onClose: () => void;
 };
 
-// The category pills, each with its palette-category glyph (Data borrows a
-// bar-chart mark — it's a Tools sub-section elsewhere, spec/53). Icons and
-// Technology surface their open-ended catalogues here too, so individual
-// icons are favouritable alongside the fixed creation tiles.
-const CATEGORY_PILLS: { id: PaletteTileSection; label: string; icon: React.ReactNode }[] = [
-  { id: 'shapes', label: 'Shapes', icon: <ShapesTabIcon /> },
-  { id: 'tools', label: 'Tools', icon: <ToolsTabIcon /> },
-  { id: 'data', label: 'Data', icon: <DataTabIcon /> },
-  { id: 'components', label: 'Components', icon: <ComponentsTabIcon /> },
-  { id: 'devices', label: 'Devices', icon: <DevicesTabIcon /> },
-  { id: 'icons', label: 'Icons', icon: <IconsTabIcon /> },
-  { id: 'technology', label: 'Technology', icon: <TechTabIcon /> },
-];
+// The category pills, DERIVED from the palette's own category catalogue
+// rather than restated (spec/78).
+//
+// This used to be its own hand-written list and it drifted the moment the
+// palette changed: by the time anyone noticed, the dialog was offering a
+// "Tools" category that had been deleted and hiding six that existed —
+// Build, Write, Draw, Media, Stickers, Collaborate. Deriving it means a new
+// category shows up here the day it is added.
+//
+// Two adjustments to the palette's list:
+//   - Favourites is dropped. It is what this dialog EDITS, so offering it as
+//     a source to pick from is circular.
+//   - Categories with no favouritable tiles are dropped, so a pill can never
+//     lead to an empty grid. Icons / Stickers / Technology are kept
+//     regardless: their catalogues are open-ended and load async, so they are
+//     empty at this moment rather than empty as such.
+const OPEN_ENDED: string[] = ['icons', 'stickers', 'technology'];
+const CATEGORY_PILLS: { id: string; label: string; icon: React.ReactNode }[] =
+  PALETTE_CATEGORIES.filter(
+    (c) =>
+      c.id !== 'favourites' && (OPEN_ENDED.includes(c.id) || tilesForCategory(c.id).length > 0),
+  ).map((c) => ({ id: c.id, label: c.label, icon: c.icon }));
 
 // One toggleable tile: glyph + caption with the add / remove corner badge.
 function ToggleTile({
@@ -111,7 +111,7 @@ export function PaletteFavouritesDialog({
   onClose,
 }: PaletteFavouritesDialogProps) {
   const [query, setQuery] = useState('');
-  const [category, setCategory] = useState<PaletteTileSection>('shapes');
+  const [category, setCategory] = useState<string>('shapes');
   // The Icons / Technology pills read the async icon catalogues; subscribing
   // re-renders when the chunk lands so their grids fill in.
   const iconCatalogsLoaded = useIconCatalogs();
@@ -121,7 +121,7 @@ export function PaletteFavouritesDialog({
       ? searchIconTiles(query)
       : category === 'technology'
         ? searchTechTiles(query)
-        : tilesInSection(category).filter(
+        : tilesForCategory(category).filter(
             (t) =>
               (!t.needsImage || hasImage) &&
               (matches(query, tileDisplayName(t)) || matches(query, t.label)),
