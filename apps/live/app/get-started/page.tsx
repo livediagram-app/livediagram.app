@@ -21,14 +21,14 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useRef, useState } from 'react';
 import {
-  authHrefWithReturn,
   AuthCard,
   AuthDisabledNotice,
-  CodeInputRow,
+  EmailCodeStep,
   GoogleAuthButton,
-  messageOf,
   OrDivider,
   RedirectingCard,
+  authHrefWithReturn,
+  messageOf,
   resolveOAuthCompleteUrl,
   resolvePostAuthDestination,
 } from '@/components/chrome/auth-shared';
@@ -298,51 +298,21 @@ function GetStartedContent() {
           </Button>
         </form>
       ) : (
-        <form onSubmit={handleVerifyCode} className="space-y-4">
-          <p className="text-sm text-slate-600 dark:text-slate-400">
-            We sent a verification code to{' '}
-            <strong className="text-slate-900 dark:text-slate-100">{email}</strong>. Enter it below.
-          </p>
-          <CodeInputRow
-            codeDigits={codeDigits}
-            setCodeDigits={setCodeDigits}
-            inputRefs={codeInputRefs}
-            onComplete={(full) => {
-              if (!loading && clerkSignUp) {
-                void handleVerifyCode({ preventDefault: () => {} } as React.FormEvent, full);
-              }
-            }}
-          />
-          <Button
-            type="submit"
-            size="md"
-            disabled={loading || codeDigits.join('').length !== 6}
-            className="w-full shadow-sm"
-          >
-            {loading ? 'Verifying…' : 'Verify'}
-          </Button>
-          <div className="flex justify-between text-sm">
-            <button
-              type="button"
-              onClick={handleResendCode}
-              disabled={loading}
-              className="text-slate-600 hover:text-slate-900 disabled:opacity-50 dark:text-slate-400 dark:hover:text-slate-100"
-            >
-              Resend code
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setPhase(1);
-                setError('');
-                setCodeDigits(['', '', '', '', '', '']);
-              }}
-              className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
-            >
-              Back
-            </button>
-          </div>
-        </form>
+        <EmailCodeStep
+          email={email}
+          codeDigits={codeDigits}
+          setCodeDigits={setCodeDigits}
+          inputRefs={codeInputRefs}
+          loading={loading}
+          ready={clerkSignUp}
+          onSubmit={handleVerifyCode}
+          onResend={handleResendCode}
+          onBack={() => {
+            setPhase(1);
+            setError('');
+            setCodeDigits(['', '', '', '', '', '']);
+          }}
+        />
       )}
     </AuthCard>
   );

@@ -12,7 +12,7 @@
 // no other workspace consumes it yet. If marketing later grows its
 // own auth surface this can be promoted to `packages/ui`.
 
-import { Brand, buttonClassName } from '@livediagram/ui';
+import { Brand, Button, buttonClassName } from '@livediagram/ui';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState, type MutableRefObject, type ReactNode } from 'react';
 import { AnimatedLinesBackdrop } from '@/components/canvas/AnimatedLinesBackdrop';
@@ -117,7 +117,7 @@ export function AuthDisabledNotice() {
 // reset / refocus between submissions.
 // ---------------------------------------------------------------------
 
-export function CodeInputRow({
+function CodeInputRow({
   codeDigits,
   setCodeDigits,
   inputRefs,
@@ -168,6 +168,90 @@ export function CodeInputRow({
         />
       ))}
     </div>
+  );
+}
+
+// ---------------------------------------------------------------------
+// The email-code verification step
+// ---------------------------------------------------------------------
+
+// Phase two of both flows: the code has been sent, and the user types
+// it in. Sign-in and sign-up had literally the same form here — the
+// "we sent a code to <email>" line, the CodeInputRow, the Verify
+// button and its 6-digit gate, and the Resend / Back row.
+//
+// Only two things ever differed, and both are passed in. `ready` is
+// the page's Clerk object (`clerkSignIn` / `clerkSignUp`), which the
+// auto-submit checks before firing so a completed code cannot submit
+// against an SDK that has not loaded. `onBack` differs because the two
+// pages return to different places: sign-in drops the code step, while
+// sign-up steps its phase counter back.
+export function EmailCodeStep({
+  email,
+  codeDigits,
+  setCodeDigits,
+  inputRefs,
+  loading,
+  ready,
+  onSubmit,
+  onResend,
+  onBack,
+}: {
+  email: string;
+  codeDigits: string[];
+  setCodeDigits: (digits: string[]) => void;
+  inputRefs: MutableRefObject<(HTMLInputElement | null)[]>;
+  loading: boolean;
+  // Truthy once the page's Clerk object is available.
+  ready: unknown;
+  // Takes the code directly on auto-submit, since the sixth keystroke
+  // fires before the state holding it has been committed.
+  onSubmit: (e: React.FormEvent, code?: string) => void;
+  onResend: () => void;
+  onBack: () => void;
+}) {
+  return (
+    <form onSubmit={onSubmit} className="space-y-4">
+      <p className="text-sm text-slate-600 dark:text-slate-400">
+        We sent a verification code to{' '}
+        <strong className="text-slate-900 dark:text-slate-100">{email}</strong>. Enter it below.
+      </p>
+      <CodeInputRow
+        codeDigits={codeDigits}
+        setCodeDigits={setCodeDigits}
+        inputRefs={inputRefs}
+        onComplete={(full) => {
+          if (!loading && ready) {
+            onSubmit({ preventDefault: () => {} } as React.FormEvent, full);
+          }
+        }}
+      />
+      <Button
+        type="submit"
+        size="md"
+        disabled={loading || codeDigits.join('').length !== 6}
+        className="w-full shadow-sm"
+      >
+        {loading ? 'Verifying…' : 'Verify'}
+      </Button>
+      <div className="flex justify-between text-sm">
+        <button
+          type="button"
+          onClick={onResend}
+          disabled={loading}
+          className="text-slate-600 hover:text-slate-900 disabled:opacity-50 dark:text-slate-400 dark:hover:text-slate-100"
+        >
+          Resend code
+        </button>
+        <button
+          type="button"
+          onClick={onBack}
+          className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+        >
+          Back
+        </button>
+      </div>
+    </form>
   );
 }
 
