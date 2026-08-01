@@ -39,12 +39,14 @@ import {
   buildFishbone,
   buildFlywheel,
   buildJourney,
-  buildMilestoneTimeline,
-  buildMilestoneTimelineVertical,
   buildPyramid,
-  buildTimeline,
   buildVenn,
 } from './template-builders-diagrams';
+import {
+  buildMilestoneTimeline,
+  buildMilestoneTimelineVertical,
+  buildTimeline,
+} from './template-builders-timelines';
 import {
   buildApprovalWorkflow,
   buildBlank,
