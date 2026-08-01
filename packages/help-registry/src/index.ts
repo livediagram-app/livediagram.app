@@ -914,6 +914,17 @@ export const articles: Article[] = [
     group: 'Elements',
   },
   {
+    slug: 'website',
+    title: 'Website embeds',
+    description:
+      'Frame any web address on the canvas, for anything the named services do not cover.',
+    keywords:
+      'website embed url address site web page iframe frame browser https link any site blank refused x-frame-options sandbox load embed host label',
+    category: 'Palette',
+    categorySlug: 'palette/embed-elements',
+    parentSlug: 'embed-elements',
+  },
+  {
     slug: 'behaviour',
     title: 'Behaviour Elements',
     description: 'Mode buttons, portals, session buttons, reveal zones, and pickers.',

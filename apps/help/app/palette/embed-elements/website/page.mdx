@@ -1,0 +1,64 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Website embeds',
+  description:
+    'Frame any web address on the canvas, next to the named services. What the card is labelled, why some sites come up blank, and what a framed page is and is not allowed to do.',
+  path: '/help/palette/embed-elements/website/',
+});
+
+<ArticleLayout
+  title="Website embeds"
+  description="Frame any web address on the canvas, for everything the named services do not cover."
+  categoryTitle="Palette"
+  categorySlug="palette"
+>
+
+The other embeds each know one service. **Website** knows none of them, which is the point: type any `http` or `https` address, press **Load embed**, and the page renders inside the element. A status page beside the architecture it monitors, a spec next to the flow it describes, a dashboard on the retro board.
+
+Add one from **Media → Embed → Website** in the palette, then double-click the card and paste the address.
+
+## The named services still win
+
+Adding a website embed does not stop YouTube being YouTube. Every named service is checked first, so a `youtube.com` link is still a player and a `docs.google.com` link is still a document, however you added the card. Only addresses on hosts the editor has no opinion about are framed as plain websites.
+
+One case is worth knowing because it looks like a bug and is not. A **broken** link for a service we _do_ know is refused rather than framed: `vimeo.com/nonsense` says it can't embed that link instead of quietly showing you Vimeo's 404 page. "That is not a Vimeo video" is the more useful answer, and you would not have wanted the 404 anyway.
+
+The flip side is that a **lookalike** host is framed, because it is not a host we know. `evil-vimeo.com` loads as an anonymous website; it never gets to wear Vimeo's name or badge. You typed an address and framing addresses is the feature, so the card shows you exactly what you asked for and no more.
+
+## The card is labelled with the host
+
+A website card reads **`bbc.co.uk`**, not the word "Website". Three cards side by side saying "Website" tell you nothing; three saying `bbc.co.uk`, `status.example.com` and `docs.internal` tell you what the board holds at a glance.
+
+That means the label follows the address. Change the address and the label changes with it.
+
+## Some sites will come up blank
+
+Plenty of sites send a header that forbids being displayed inside another page. News sites, banks and most things behind a login do it as standard.
+
+When one of those is framed, **the rectangle comes up empty**, and there is genuinely nothing the editor can do about it. The refusal happens in the browser, on the site's own instruction, and a page cannot tell from the outside whether the page inside it loaded. That is why the palette tile, the empty card and the address hint all warn you before you try rather than leaving you to interpret a blank box.
+
+<Tip>
+  If a site refuses to be framed, a [link card](/help/canvas/links/link-cards/) is the better tool.
+  It shows the title and a preview and opens the real page in a new tab, which is usually what you
+  wanted from the blank rectangle anyway.
+</Tip>
+
+## Nothing loads until you ask
+
+Like every other embed, a website card fetches nothing until you press **Load embed**. Opening a board with five website cards must not quietly fetch five third-party pages and announce your visit to all of them. It matters more here than anywhere: with the named services you at least chose the service, whereas a website card could be pointing anywhere at all.
+
+## What a framed page may and may not do
+
+A framed website runs in a **sandbox**. Scripts, forms and pop-ups are allowed, because a page without them is not really a page.
+
+The permission deliberately left out is the one that lets a framed page **navigate the tab it sits in**. Without it, a page inside an embed cannot replace your editor with itself, which is the single thing a "frame any address" feature must not allow. Your diagram stays where it is no matter what the framed page tries.
+
+The named services carry no sandbox at all, because those hosts were each chosen on purpose and several of them break under one.
+
+## Using it, and moving it
+
+An embedded page ignores the pointer by default, so it never becomes a hole you can't drag or select through. When you want to scroll or click inside the page, use the **Use the player** control in its top-left corner, and press it again to get dragging back. This works exactly as it does for the video embeds, covered in [Embeds on the canvas](/help/palette/embed-elements/).
+
+</ArticleLayout>
