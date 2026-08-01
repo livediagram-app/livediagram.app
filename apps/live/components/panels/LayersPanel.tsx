@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
+import { useRef, useState } from 'react';
 import { isLayerLocked, isLayerVisible, type Element, type Layer } from '@livediagram/diagram';
 import { useLayerThumbnails } from '@/hooks/ui/useLayerThumbnails';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
@@ -9,6 +9,7 @@ import { LayersSettingsPopover } from '@/components/panels/LayersSettingsPopover
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import type { MovablePanelDockProps } from '@/components/primitives/MovablePanel.types';
 import { Tooltip } from '@/components/primitives/Tooltip';
+import { useLayerRowDrag } from '@/components/panels/useLayerRowDrag';
 import { onMouseHover, useRevertOnUnmount } from '@/components/primitives/hover-preview';
 import {
   EllipsisIcon,
@@ -123,8 +124,6 @@ export function LayersPanel({
   // (native HTML5 drag-and-drop is unreliable inside the panel and dead
   // on touch): the dragged layer id + the row currently under the
   // pointer (whose slot is the drop position).
-  const [dragId, setDragId] = useState<string | null>(null);
-  const [dropTargetId, setDropTargetId] = useState<string | null>(null);
   const listRef = useRef<HTMLUListElement>(null);
 
   // Per-row layer previews — shared with the context menu's Move-to-layer
@@ -205,58 +204,13 @@ export function LayersPanel({
     }
   };
 
-  // Which row the pointer is over, by live geometry (rows carry their
-  // layer id in a data attribute).
-  const rowLayerIdAt = (clientY: number): string | null => {
-    const list = listRef.current;
-    if (!list) return null;
-    for (const child of Array.from(list.children)) {
-      const r = child.getBoundingClientRect();
-      if (clientY >= r.top && clientY <= r.bottom) {
-        return (child as HTMLElement).dataset.layerId ?? null;
-      }
-    }
-    return null;
-  };
-
-  // Drag-to-restack starts from ANYWHERE on a row (the grip stays as
-  // the visual affordance): pointerdown records the press, and the drag
-  // only engages once the pointer travels a few px — so plain clicks
-  // (activate) and double-clicks (rename) still work. Presses on the
-  // row's buttons / rename input keep their own gestures. Pointer
-  // capture on the row keeps move / up flowing during the drag.
-  const pressRef = useRef<{ id: string; x: number; y: number } | null>(null);
-  const rowPointerDown = (layerId: string) => (e: ReactPointerEvent<HTMLElement>) => {
-    if (e.button !== 0 || renamingId === layerId) return;
-    if (e.target instanceof HTMLElement && e.target.closest('button, input')) return;
-    pressRef.current = { id: layerId, x: e.clientX, y: e.clientY };
-  };
-  const rowPointerMove = (e: ReactPointerEvent<HTMLElement>) => {
-    const press = pressRef.current;
-    if (press && !dragId) {
-      if (Math.hypot(e.clientX - press.x, e.clientY - press.y) > 4) {
-        e.currentTarget.setPointerCapture(e.pointerId);
-        setDragId(press.id);
-      }
-      return;
-    }
-    if (dragId) {
-      const over = rowLayerIdAt(e.clientY);
-      setDropTargetId(over && over !== dragId ? over : null);
-    }
-  };
-  const rowPointerUp = () => {
-    pressRef.current = null;
-    if (!dragId) return;
-    if (dropTargetId) {
-      // Dropping ON a row means "take that row's slot": convert the
-      // target's position back to the bottom->top data index.
-      const toIndex = layers.findIndex((l) => l.id === dropTargetId);
-      if (toIndex >= 0) onReorderLayer(dragId, toIndex);
-    }
-    setDragId(null);
-    setDropTargetId(null);
-  };
+  // Row drag-to-restack — see useLayerRowDrag.
+  const { dragId, dropTargetId, rowPointerDown, rowPointerMove, rowPointerUp } = useLayerRowDrag({
+    listRef,
+    layers,
+    renamingId,
+    onReorderLayer,
+  });
 
   return (
     <MovablePanel
