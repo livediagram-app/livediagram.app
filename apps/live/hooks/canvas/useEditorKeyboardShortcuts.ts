@@ -21,6 +21,7 @@ import { anyModalOpen } from '@/lib/modal-guard';
 import { isMobileViewportSync } from '@/lib/responsive';
 import {
   EDIT_KEYS,
+  runModShortcut,
   VIEW_TOOL_KEYS,
   type EditorKeyboardShortcutsDeps,
 } from './editor-shortcut-keys';
@@ -211,100 +212,12 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       }
 
       // --- Cmd / Ctrl modified shortcuts ---
-      // Cmd+V is intentionally NOT handled here. The browser's
-      // native `paste` event fires on Cmd/Ctrl+V and carries the
-      // system clipboard contents (text, files, images). editor-page
-      // listens for paste directly so it can route images from the
-      // system clipboard to image-upload, falling back to the
-      // in-app element clipboard when no system content is present.
+      // The chord table lives in editor-shortcut-keys beside the plain-key
+      // ones. A modified key returns either way: one we don't handle must
+      // not fall through to the plain-key table and drop a shape.
       if (mod) {
         if (inText) return;
-        // Zoom: allowed for view-role visitors — doesn't mutate the diagram.
-        // + / = zoom in (= is the unshifted + key), - zooms out, 0 resets.
-        if (key === '=' || key === '+') {
-          e.preventDefault();
-          live.onZoomIn();
-          return;
-        }
-        if (key === '-') {
-          e.preventDefault();
-          live.onZoomOut();
-          return;
-        }
-        if (key === '0') {
-          e.preventDefault();
-          live.onZoomReset();
-          return;
-        }
-        // Cmd/Ctrl+. and Cmd/Ctrl+K: open the global search panel.
-        // Before the read-only gate — search only navigates. ('.'
-        // instead of 'T' because browsers reserve Cmd/Ctrl+T for "new
-        // tab" and won't let the page intercept it; 'K' is the
-        // command-palette convention, spec/70.)
-        if (key === '.' || lower === 'k') {
-          e.preventDefault();
-          live.onOpenSearch();
-          return;
-        }
-        if (live.isReadOnly) return;
-        // Redo: Cmd-Shift-Z, Ctrl-Y, Ctrl-Shift-Z.
-        if (lower === 'y' || (lower === 'z' && e.shiftKey)) {
-          e.preventDefault();
-          live.redo();
-          return;
-        }
-        if (lower === 'z') {
-          e.preventDefault();
-          live.undo();
-          return;
-        }
-        if (lower === 'c') {
-          e.preventDefault();
-          live.copySelection();
-          return;
-        }
-        // Cut: copy + delete in one. The caller composes the two.
-        if (lower === 'x') {
-          e.preventDefault();
-          live.onCut();
-          return;
-        }
-        // Duplicate. Plain `d` is Diamond; the modifier disambiguates.
-        if (lower === 'd') {
-          e.preventDefault();
-          live.onDuplicate();
-          return;
-        }
-        if (lower === 'g') {
-          e.preventDefault();
-          live.onGroupOrUngroup();
-          return;
-        }
-        // Lock on Cmd/Ctrl+Shift+L (not plain Cmd+L, which the browser
-        // reserves for the address bar).
-        if (lower === 'l' && e.shiftKey) {
-          e.preventDefault();
-          live.onToggleLock();
-          return;
-        }
-        if (lower === 'a') {
-          e.preventDefault();
-          live.onSelectAll();
-          return;
-        }
-        // Z-order: Cmd/Ctrl+Shift+] front, +[ back. Match on `code` so
-        // the shifted bracket characters (`}` / `{`) don't fool the key
-        // compare on non-US layouts.
-        if (e.shiftKey && (e.code === 'BracketRight' || key === ']' || key === '}')) {
-          e.preventDefault();
-          live.onBringToFront();
-          return;
-        }
-        if (e.shiftKey && (e.code === 'BracketLeft' || key === '[' || key === '{')) {
-          e.preventDefault();
-          live.onSendToBack();
-          return;
-        }
+        runModShortcut(e, live);
         return;
       }
 

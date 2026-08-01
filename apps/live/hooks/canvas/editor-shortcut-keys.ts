@@ -208,3 +208,116 @@ export const EDIT_KEYS: Record<string, ShortcutAction> = {
   a: (l) => l.addArrow(),
   '5': (l) => l.addArrow(),
 };
+
+// Cmd / Ctrl modified shortcuts. Returns true when it consumed the event.
+//
+// Lifted out of useEditorKeyboardShortcuts' keydown, which was 477 lines with
+// this as its largest branch. It lives here beside VIEW_TOOL_KEYS / EDIT_KEYS
+// because it answers the same question they do (which editor action does this
+// key run?), just for the chord case, where a plain Record can't express the
+// Shift and `code` variants below.
+//
+// The caller keeps what only it can know: that a modal isn't open, that the
+// event wasn't already handled, and that focus isn't in a text field. It also
+// keeps swallowing a modified key we do NOT handle, so a stray Cmd+J can't
+// fall through to the plain-key table and drop a shape.
+//
+// Cmd+V is intentionally absent. The browser's native `paste` event fires on
+// Cmd/Ctrl+V and carries the system clipboard (text, files, images);
+// editor-page listens for paste directly so it can route images from the
+// system clipboard to image-upload, falling back to the in-app element
+// clipboard when no system content is present.
+export function runModShortcut(e: KeyboardEvent, live: EditorKeyboardShortcutsDeps): boolean {
+  const key = e.key;
+  const lower = key.toLowerCase();
+  // Zoom: allowed for view-role visitors — doesn't mutate the diagram.
+  // + / = zoom in (= is the unshifted + key), - zooms out, 0 resets.
+  if (key === '=' || key === '+') {
+    e.preventDefault();
+    live.onZoomIn();
+    return true;
+  }
+  if (key === '-') {
+    e.preventDefault();
+    live.onZoomOut();
+    return true;
+  }
+  if (key === '0') {
+    e.preventDefault();
+    live.onZoomReset();
+    return true;
+  }
+  // Cmd/Ctrl+. and Cmd/Ctrl+K: open the global search panel.
+  // Before the read-only gate — search only navigates. ('.'
+  // instead of 'T' because browsers reserve Cmd/Ctrl+T for "new
+  // tab" and won't let the page intercept it; 'K' is the
+  // command-palette convention, spec/70.)
+  if (key === '.' || lower === 'k') {
+    e.preventDefault();
+    live.onOpenSearch();
+    return true;
+  }
+  // A view-role visitor gets the zoom + search chords above and nothing
+  // below. Nothing was dispatched, so this is `false` — the caller
+  // swallows the key either way.
+  if (live.isReadOnly) return false;
+  // Redo: Cmd-Shift-Z, Ctrl-Y, Ctrl-Shift-Z.
+  if (lower === 'y' || (lower === 'z' && e.shiftKey)) {
+    e.preventDefault();
+    live.redo();
+    return true;
+  }
+  if (lower === 'z') {
+    e.preventDefault();
+    live.undo();
+    return true;
+  }
+  if (lower === 'c') {
+    e.preventDefault();
+    live.copySelection();
+    return true;
+  }
+  // Cut: copy + delete in one. The caller composes the two.
+  if (lower === 'x') {
+    e.preventDefault();
+    live.onCut();
+    return true;
+  }
+  // Duplicate. Plain `d` is Diamond; the modifier disambiguates.
+  if (lower === 'd') {
+    e.preventDefault();
+    live.onDuplicate();
+    return true;
+  }
+  if (lower === 'g') {
+    e.preventDefault();
+    live.onGroupOrUngroup();
+    return true;
+  }
+  // Lock on Cmd/Ctrl+Shift+L (not plain Cmd+L, which the browser
+  // reserves for the address bar).
+  if (lower === 'l' && e.shiftKey) {
+    e.preventDefault();
+    live.onToggleLock();
+    return true;
+  }
+  if (lower === 'a') {
+    e.preventDefault();
+    live.onSelectAll();
+    return true;
+  }
+  // Z-order: Cmd/Ctrl+Shift+] front, +[ back. Match on `code` so
+  // the shifted bracket characters (`}` / `{`) don't fool the key
+  // compare on non-US layouts.
+  if (e.shiftKey && (e.code === 'BracketRight' || key === ']' || key === '}')) {
+    e.preventDefault();
+    live.onBringToFront();
+    return true;
+  }
+  if (e.shiftKey && (e.code === 'BracketLeft' || key === '[' || key === '{')) {
+    e.preventDefault();
+    live.onSendToBack();
+    return true;
+  }
+  return false;
+}
