@@ -113,12 +113,13 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   'timeline-rail': { width: RAIL_DEFAULT_POINTS * RAIL_POINT_STEP_PX, height: 96 },
   // Rating: a row of five stars.
   rating: { width: 200, height: 44 },
-  // Pie chart: the pie + a legend beside it.
-  'pie-chart': { width: 280, height: 180 },
-  // Bar chart: bars + a legend beside them.
-  'bar-chart': { width: 280, height: 180 },
-  // Line chart: axes + lines + a legend; a touch wider for the x-axis labels.
-  'line-chart': { width: 320, height: 200 },
+  // Charts default their legend BELOW the plot (spec/53), so the starting box
+  // is squarer than it was when the legend took a side strip: the width goes to
+  // the plot and the extra height carries the legend band.
+  'pie-chart': { width: 260, height: 220 },
+  'bar-chart': { width: 260, height: 220 },
+  // Line chart: a touch wider for the x-axis labels.
+  'line-chart': { width: 300, height: 240 },
   // Code block: room for a dozen-ish monospace lines (spec/82).
   'code-block': { width: 320, height: 180 },
   // Checklist: a card of starter rows (spec/83).

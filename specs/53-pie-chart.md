@@ -28,8 +28,13 @@ the same 1-D data model, while the line chart carries a 2-D dataset (see Model).
   placement picker — **Off / Top / Left / Right / Below** (glyph-over-label
   tiles). Picking a side both turns the legend on and positions it (setting
   `chartLegend: true` and `chartLegendPosition`), while **Off** sets
-  `chartLegend: false`. The default is **Right** (the historical placement), so
-  existing charts are unchanged. The chart layout (`chartFrame`) reserves a
+  `chartLegend: false`. The default is **Below**: a side legend spends up to
+  130px of a 280px-wide chart on series names, squeezing the plot into a third
+  of the card, and it is the plot people are reading — a bottom band costs
+  height, which these charts have more of to give. (It was Right historically;
+  changing the resolved default moves any existing chart that never picked a
+  placement, which is the point of a default rather than a per-element field.)
+  The chart default sizes are squarer to match. The chart layout (`chartFrame`) reserves a
   vertical strip for a left/right legend or a horizontal band for a top/bottom
   one, and the chart body fills the remaining `area`; `ChartLegend` stacks in a
   column on the side, or wraps in a centred row on top/bottom.

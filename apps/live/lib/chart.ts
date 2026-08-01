@@ -27,8 +27,13 @@ export function chartFrame(element: ShapeElement, palette?: readonly string[]) {
   // Legend placement (spec/53). A left/right legend takes a vertical strip; a
   // top/bottom legend a horizontal band. `area` is the rect left for the chart
   // body (each view draws inside it); `legend` is the strip ChartLegend paints
-  // into. Both default to the historical right-hand legend.
-  const pos = element.chartLegendPosition ?? 'right';
+  // into.
+  //
+  // BELOW by default: a side legend spends up to 130px of a 280px-wide chart on
+  // series names, which squeezes the plot into a third of the card, and it is
+  // the plot people are reading. A bottom band costs height, which these charts
+  // have more of to give.
+  const pos = element.chartLegendPosition ?? 'bottom';
   const vertical = pos === 'left' || pos === 'right';
   const legendW = showLegend && vertical ? Math.max(0, Math.min(w * 0.4, 130)) : 0;
   const legendH = showLegend && !vertical ? Math.max(0, Math.min(h * 0.32, 72)) : 0;

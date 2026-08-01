@@ -418,7 +418,7 @@ export function ElementDataSections({
                 Legend
               </p>
               <LegendPositionTiles
-                position={shapeTarget?.chartLegendPosition ?? 'right'}
+                position={shapeTarget?.chartLegendPosition ?? 'bottom'}
                 show={shapeTarget?.chartLegend !== false}
                 onSetOff={() => props.onSetChartLegend(false)}
                 onSetPosition={props.onSetChartLegendPosition}

@@ -15,15 +15,25 @@ const el = (over: Record<string, unknown> = {}): ShapeElement =>
   }) as unknown as ShapeElement;
 
 describe('chartFrame', () => {
-  it('lays out a right-hand legend by default (vertical strip)', () => {
+  // The default is BELOW the plot: a side legend spent up to 130px of a
+  // 280px-wide chart on series names and squeezed the plot into a third of
+  // the card (spec/53).
+  it('lays out a legend below the plot by default (horizontal band)', () => {
     const f = chartFrame(el());
     expect(f.showLegend).toBe(true);
+    // legendH = min(100 * 0.32, 72) = 32
+    expect(f.area).toEqual({ x: 0, y: 0, w: 200, h: 68 });
+    expect(f.legend).toEqual({ show: true, pos: 'bottom', x: 0, y: 68, w: 200, h: 32 });
+  });
+
+  it('lays out a right-hand legend when asked for one (vertical strip)', () => {
+    const f = chartFrame(el({ chartLegendPosition: 'right' }));
     expect(f.area).toEqual({ x: 0, y: 0, w: 120, h: 100 }); // legendW = min(200*0.4, 130) = 80
     expect(f.legend).toEqual({ show: true, pos: 'right', x: 120, y: 0, w: 80, h: 100 });
   });
 
   it('reclaims the full body and zeroes the strip when the legend is hidden', () => {
-    const f = chartFrame(el({ chartLegend: false }));
+    const f = chartFrame(el({ chartLegend: false, chartLegendPosition: 'right' }));
     expect(f.showLegend).toBe(false);
     expect(f.area).toEqual({ x: 0, y: 0, w: 200, h: 100 });
     expect(f.legend.show).toBe(false);
@@ -50,7 +60,7 @@ describe('chartFrame', () => {
   });
 
   it('caps the legend strip on large charts', () => {
-    expect(chartFrame(el({ width: 1000 })).legend.w).toBe(130); // capped from 400
+    expect(chartFrame(el({ width: 1000, chartLegendPosition: 'right' })).legend.w).toBe(130); // capped from 400
     expect(chartFrame(el({ height: 1000, chartLegendPosition: 'top' })).legend.h).toBe(72); // capped from 320
   });
 
