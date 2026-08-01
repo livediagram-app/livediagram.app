@@ -10,6 +10,7 @@ import {
   type VideoElement,
 } from '@livediagram/diagram';
 import { track } from '@/lib/telemetry';
+import { useFrameBlocked } from '@/components/canvas/use-frame-blocked';
 
 // Inner content of a video element (spec/114): a YouTube poster frame with a
 // play button, which swaps for the real player when pressed.
@@ -34,6 +35,9 @@ export function VideoView({ element }: { element: VideoElement }) {
   // Whether the player is taking pointer events. Off by default so dragging
   // the element always works; the user turns it on to seek or change volume.
   const [controls, setControls] = useState(false);
+  // Website embeds can be refused by the site itself (spec/133); the frame
+  // says nothing when that happens, so we watch for it.
+  const frame = useFrameBlocked(playing ? target?.embedUrl : undefined);
   // Changing the link tears the player down. Without this, editing the URL of
   // a playing video would leave the OLD video playing behind the new poster.
   useEffect(() => {
@@ -49,6 +53,8 @@ export function VideoView({ element }: { element: VideoElement }) {
     return (
       <div className="group relative h-full w-full overflow-hidden rounded-[inherit] bg-black">
         <iframe
+          ref={frame.ref}
+          onLoad={frame.onLoad}
           src={target.embedUrl}
           title={`${target.label} embed`}
           // `allow` is the modern feature-policy list YouTube's own embed
@@ -83,13 +89,18 @@ export function VideoView({ element }: { element: VideoElement }) {
             controls ? '' : 'pointer-events-none'
           }`}
         />
+        {/* Over the frame, not instead of it: the blank error page underneath
+            is what the user would otherwise be staring at. */}
+        {frame.failed ? <BlockedNotice target={target} /> : null}
         <PlayerControls
           controls={controls}
           onToggleControls={() => setControls((c) => !c)}
           onStop={() => {
             setControls(false);
             setPlaying(false);
+            frame.reset();
           }}
+          openUrl={target.provider === 'website' ? target.embedUrl : undefined}
         />
       </div>
     );
@@ -145,6 +156,62 @@ export function VideoView({ element }: { element: VideoElement }) {
   );
 }
 
+// Shown when a frame produced no load event at all (spec/133) — a hung or
+// unreachable site.
+//
+// Deliberately hedged: a REFUSED frame is indistinguishable from a working one
+// (see use-frame-blocked for the measurements), so this cannot promise which
+// of the two happened. It names the likely cause, names the site, and offers
+// the one thing that always works: opening the page properly.
+function BlockedNotice({ target }: { target: EmbedTarget }) {
+  return (
+    <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-1.5 rounded-[inherit] bg-slate-900/95 px-5 text-center">
+      <span className="text-slate-400">
+        <BlockedGlyph />
+      </span>
+      <span className="text-[11px] font-medium text-slate-200">
+        {target.label} isn&apos;t loading
+      </span>
+      <span className="max-w-full text-[10px] leading-snug text-slate-400">
+        Many sites refuse to be shown inside another page, and some are just slow. Either way the
+        site decides, not the canvas.
+      </span>
+      <a
+        href={target.embedUrl}
+        target="_blank"
+        rel="noreferrer noopener"
+        // The one live target on an otherwise inert overlay, so the element
+        // stays draggable everywhere else.
+        onClick={(e) => e.stopPropagation()}
+        onPointerDown={(e) => e.stopPropagation()}
+        className="pointer-events-auto mt-1 cursor-pointer rounded-md bg-white/15 px-2.5 py-1 text-[11px] font-medium text-white transition hover:bg-white/25"
+      >
+        Open in a new tab
+      </a>
+    </div>
+  );
+}
+
+// A frame with a slash through it: "this will not go in here".
+function BlockedGlyph() {
+  return (
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      aria-hidden
+    >
+      <rect x="3" y="4.5" width="18" height="15" rx="2" />
+      <path d="M3 8.5h18" />
+      <path d="m5 20.5 14-16" />
+    </svg>
+  );
+}
+
 // The pre-load card for a provider that publishes no thumbnail: its name, and
 // a button. Deliberately not an auto-mounted iframe — see the header.
 function LoadCard({ target, onLoad }: { target: EmbedTarget; onLoad: () => void }) {
@@ -178,10 +245,15 @@ function PlayerControls({
   controls,
   onToggleControls,
   onStop,
+  openUrl,
 }: {
   controls: boolean;
   onToggleControls: () => void;
   onStop: () => void;
+  // Website embeds only (spec/133): the escape hatch for a site that refuses
+  // to be framed. Always offered rather than shown on detection, because a
+  // refusal is indistinguishable from a successful load (see use-frame-blocked).
+  openUrl?: string;
 }) {
   return (
     <div
@@ -204,6 +276,34 @@ function PlayerControls({
       <ControlButton onClick={onStop} label="Stop video">
         <rect x="4.5" y="4.5" width="7" height="7" rx="1.2" fill="currentColor" stroke="none" />
       </ControlButton>
+      {openUrl ? (
+        <a
+          href={openUrl}
+          target="_blank"
+          rel="noreferrer noopener"
+          aria-label="Open this page in a new tab"
+          title="Blank? Open this page in a new tab"
+          onClick={(e) => e.stopPropagation()}
+          onPointerDown={(e) => e.stopPropagation()}
+          className="pointer-events-auto flex h-6 w-6 cursor-pointer items-center justify-center rounded-md bg-slate-900/70 text-white transition hover:bg-slate-900/90"
+        >
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
+            <path
+              d="M9 3.5h3.5V7M12.5 3.5 8 8"
+              stroke="currentColor"
+              strokeWidth="1.4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M11.5 9.5v2.2a1 1 0 0 1-1 1h-6a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1h2.2"
+              stroke="currentColor"
+              strokeWidth="1.4"
+              strokeLinecap="round"
+            />
+          </svg>
+        </a>
+      ) : null}
     </div>
   );
 }

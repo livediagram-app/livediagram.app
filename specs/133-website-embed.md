@@ -54,7 +54,39 @@ be silently shipping their users anywhere on page load.
 
 ## Honest about framing
 
-Plenty of sites send `X-Frame-Options: DENY` and will come up blank; there is
-no cross-origin way to detect it. So the palette tile, the link dialog hint and
-the provider hint all say so up front rather than leaving a blank rectangle to
-be interpreted.
+Plenty of sites send `X-Frame-Options: DENY` or a CSP `frame-ancestors` and
+will come up blank. **This is not detectable from the page**, and the code says
+so at length rather than pretending otherwise.
+
+Measured in Chrome, bbc.co.uk (which sends both headers) against example.com
+(which sends neither):
+
+| signal                   | example.com | bbc.co.uk |
+| ------------------------ | ----------- | --------- |
+| `load` event             | fires       | fires     |
+| `error` event            | no          | no        |
+| `contentWindow.location` | throws      | throws    |
+| `contentDocument`        | null        | null      |
+| `contentWindow.origin`   | throws      | throws    |
+| `contentWindow.length`   | 0           | 0         |
+| resource-timing entry    | present     | present   |
+
+Chrome serves its refusal page as a cross-origin document, so the familiar
+"read `location.href`, see `about:blank`" trick reports success for both. A
+first cut used exactly that with a timeout behind it, and the timeout is what
+actually fired: every website embed grew a "won't load" notice eight seconds
+after loading perfectly.
+
+So the product does two things instead of one clever thing:
+
+- **What is provable is reported.** `useFrameBlocked` claims only that the
+  frame produced no `load` event at all inside 8s, which catches a hung or
+  unreachable site. The notice it shows is hedged accordingly ("isn't loading",
+  naming both possible causes) rather than asserting a refusal it cannot see.
+- **What is not provable gets an escape hatch.** A website embed always carries
+  an **Open in a new tab** control beside its player controls. That covers the
+  refusal case without a diagnosis, and it is the action the user wants anyway.
+
+The palette tile, the link dialog hint and the provider hint also warn up front
+that some sites refuse framing, so a blank rectangle is never the first the
+user hears of it.
