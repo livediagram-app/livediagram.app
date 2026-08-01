@@ -155,14 +155,39 @@ describe('embedTargetFor', () => {
     expect(embedTargetFor('https://docs.google.com/forms/d/abc/viewform')).toBeNull();
   });
 
-  it('returns null for anything else, and for dangerous schemes', () => {
-    expect(embedTargetFor('https://example.com/video/123')).toBeNull();
+  it('refuses a dangerous scheme and a missing url', () => {
+    // The scheme check is the one that matters: a javascript: url must never
+    // reach an iframe, and the website catch-all below must not give it a way
+    // in through the back door.
     expect(embedTargetFor('javascript:https://vimeo.com/76979871')).toBeNull();
+    expect(embedTargetFor('data:text/html,<script>alert(1)</script>')).toBeNull();
+    expect(embedTargetFor('not a url at all')).toBeNull();
     expect(embedTargetFor(undefined)).toBeNull();
   });
 
-  it('does not mistake a lookalike host', () => {
-    expect(embedTargetFor('https://evil-vimeo.com/76979871')).toBeNull();
-    expect(embedTargetFor('https://loom.com.evil.test/share/abcdefghij0123456789')).toBeNull();
+  it('treats any other http(s) host as a plain website embed', () => {
+    const t = embedTargetFor('https://www.bbc.co.uk');
+    expect(t?.provider).toBe('website');
+    expect(t?.embedUrl).toBe('https://www.bbc.co.uk/');
+    // Labelled by HOST: three cards all reading "Website" say nothing.
+    expect(t?.label).toBe('bbc.co.uk');
+    expect(t?.posterUrl).toBeUndefined();
+  });
+
+  it('does not mistake a lookalike host for the provider it imitates', () => {
+    // The point of this test is that a lookalike is never treated AS the
+    // trusted provider. It is still framed, because the user typed it and
+    // framing a url is the feature, but it is framed as an anonymous website.
+    expect(embedTargetFor('https://evil-vimeo.com/76979871')?.provider).toBe('website');
+    expect(embedTargetFor('https://loom.com.evil.test/share/abcdefghij0123456789')?.provider).toBe(
+      'website',
+    );
+  });
+
+  it('still refuses a malformed link for a provider it does know', () => {
+    // A bad Vimeo link is a bad Vimeo link, not a website: "that isn't a
+    // video" is more useful than silently framing a 404 page.
+    expect(embedTargetFor('https://vimeo.com/nonsense')).toBeNull();
+    expect(embedTargetFor('https://docs.google.com/forms/d/abc/viewform')).toBeNull();
   });
 });

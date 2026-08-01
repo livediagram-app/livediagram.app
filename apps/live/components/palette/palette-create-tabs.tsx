@@ -114,7 +114,7 @@ export function PaletteMediaTab({ pendingDraw, actions }: TabProps) {
       />
       <PaletteTileGroup
         title="Embed"
-        blurb={(n) => `${n} services that play on the canvas`}
+        blurb={(n) => `${n} ways to load a page on the canvas`}
         icon={<EmbedGroupIcon />}
         tiles={media.filter((t) => t.tileGroup === 'embed')}
         actions={actions}

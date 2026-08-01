@@ -71,21 +71,33 @@ export function EditorElementDialogs() {
     linkTarget?.type === 'video' && linkTarget.embedProvider
       ? EMBED_PROVIDER_LABEL[linkTarget.embedProvider]
       : null;
+  // A website embed (spec/133) is a free address, not a link into a named
+  // service, so its dialog says so: a YouTube watch-url placeholder under a
+  // field labelled "Website link" is just misleading.
+  const isWebsiteEmbed = linkTarget?.type === 'video' && linkTarget.embedProvider === 'website';
   const urlOnly =
     linkTarget?.type === 'video'
       ? {
-          subtitle: embedNamed
-            ? `Paste a ${embedNamed} link. It loads right here on the canvas.`
-            : 'Paste a link. The content plays or loads right here on the canvas.',
-          fieldLabel: embedNamed ? `${embedNamed} link` : 'Embed link',
-          placeholder: 'https://www.youtube.com/watch?v=…',
+          subtitle: isWebsiteEmbed
+            ? 'Paste any web address. The page loads right here on the canvas.'
+            : embedNamed
+              ? `Paste a ${embedNamed} link. It loads right here on the canvas.`
+              : 'Paste a link. The content plays or loads right here on the canvas.',
+          fieldLabel: isWebsiteEmbed
+            ? 'Web address'
+            : embedNamed
+              ? `${embedNamed} link`
+              : 'Embed link',
+          placeholder: isWebsiteEmbed
+            ? 'https://www.bbc.co.uk'
+            : 'https://www.youtube.com/watch?v=…',
           hint: embedNamed
             ? EMBED_PROVIDER_HINT[linkTarget.embedProvider!]
-            : 'YouTube, Vimeo, Loom, Figma, and Google Docs / Sheets / Slides.',
+            : 'YouTube, Vimeo, Loom, Figma, Google Docs / Sheets / Slides, or any website.',
           validate: (url: string) =>
             embedTargetFor(url)
               ? null
-              : "That isn't a link we can embed. Try YouTube, Vimeo, Loom, Figma or a Google Doc.",
+              : "That isn't a link we can embed. Check it starts with https:// — or, for a named service, that it is a link to a real file.",
         }
       : undefined;
 

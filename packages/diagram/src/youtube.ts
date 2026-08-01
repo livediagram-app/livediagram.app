@@ -115,7 +115,7 @@ export function youtubeWatchUrl(videoId: string): string {
 // provider chip and a Load button, which keeps the rule that matters — nothing
 // third-party loads until the user asks.
 
-export const EMBED_PROVIDERS = ['youtube', 'vimeo', 'loom', 'figma', 'gdocs'] as const;
+export const EMBED_PROVIDERS = ['youtube', 'vimeo', 'loom', 'figma', 'gdocs', 'website'] as const;
 export type EmbedProvider = (typeof EMBED_PROVIDERS)[number];
 
 /** Display name for a provider, for the palette tile and the empty state. */
@@ -125,6 +125,7 @@ export const EMBED_PROVIDER_LABEL: Record<EmbedProvider, string> = {
   loom: 'Loom',
   figma: 'Figma',
   gdocs: 'Google Docs',
+  website: 'Website',
 };
 
 /** What to type in the link dialog, per provider. */
@@ -134,6 +135,7 @@ export const EMBED_PROVIDER_HINT: Record<EmbedProvider, string> = {
   loom: 'A Loom share or embed link.',
   figma: 'Any Figma file, prototype or board link.',
   gdocs: 'A Google Doc, Sheet or Slides link you have shared.',
+  website: 'Any https link. Some sites refuse to be framed and will come up blank.',
 };
 
 export type EmbedTarget = {
@@ -212,5 +214,21 @@ export function embedTargetFor(url: string | undefined | null): EmbedTarget | nu
       label: 'Google Docs',
     };
   }
-  return null;
+  // Anything else http(s) is a plain website embed: the URL goes into the
+  // iframe untouched (spec/133).
+  //
+  // Deliberately the LAST branch, and deliberately not reached by a malformed
+  // link for a provider we DO know: `vimeo.com/nonsense` still returns null
+  // above, because "that isn't a Vimeo video" is a more useful answer than
+  // silently framing a 404 page. Only hosts we have no opinion about land
+  // here.
+  //
+  // The label is the host, not the word "Website": a card reading `bbc.co.uk`
+  // says what it holds, and a row of three cards all labelled "Website" says
+  // nothing at all.
+  return {
+    provider: 'website',
+    embedUrl: parsed.toString(),
+    label: host || 'Website',
+  };
 }

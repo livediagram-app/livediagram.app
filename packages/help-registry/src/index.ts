@@ -896,9 +896,9 @@ export const articles: Article[] = [
   {
     slug: 'embed-elements',
     title: 'Embeds on the canvas',
-    description: 'Play a video, or open a Figma file or Google Doc, on the canvas.',
+    description: 'Play a video, or open a Figma file, Google Doc or any website, on the canvas.',
     keywords:
-      'embed video youtube vimeo loom figma google docs sheets slides play iframe media link',
+      'embed video youtube vimeo loom figma google docs sheets slides play iframe media link website web page site url address browser frame',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Elements',

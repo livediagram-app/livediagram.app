@@ -1986,7 +1986,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "vimeo",
       "loom",
       "figma",
-      "gdocs"
+      "gdocs",
+      "website"
     ],
     "type": "string"
   },

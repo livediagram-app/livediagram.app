@@ -56,6 +56,22 @@ export function VideoView({ element }: { element: VideoElement }) {
           // ignored and the user has to press play a second time.
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
           allowFullScreen
+          // Arbitrary websites (spec/133) get a sandbox; the named providers
+          // do not, because a sandbox breaks several of them and we chose
+          // those hosts deliberately.
+          //
+          // The permission that MATTERS is the one absent from this list:
+          // `allow-top-navigation`. Without it a framed page cannot navigate
+          // the editor tab out from under the user, which is the one thing an
+          // embed of "any URL you like" must not be able to do. Scripts and
+          // forms stay on, since a page without them is not a page.
+          // (`allow-same-origin` is safe here: it means same-origin with the
+          // FRAMED site, which is never us.)
+          sandbox={
+            target.provider === 'website'
+              ? 'allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox'
+              : undefined
+          }
           // Pointer-inert by DEFAULT, even while playing and even while
           // selected. An iframe swallows every event inside its rectangle, so
           // an interactive one is a hole in the canvas: the element could not
@@ -269,10 +285,19 @@ function EmptyState({
       ) : (
         <>
           <span className="text-[11px] font-medium text-slate-200">
-            {named ? `Add a ${named} link` : 'Add a link'} — double-click
+            {/* "Add a Website link" reads like a typo; a website has an
+                address, not a link. */}
+            {provider === 'website'
+              ? 'Add a web address'
+              : named
+                ? `Add a ${named} link`
+                : 'Add a link'}{' '}
+            — double-click
           </span>
           <span className="text-[10px] leading-snug text-slate-400">
-            {provider ? EMBED_PROVIDER_HINT[provider] : 'YouTube, Vimeo, Loom, Figma, Google Docs'}
+            {provider
+              ? EMBED_PROVIDER_HINT[provider]
+              : 'YouTube, Vimeo, Loom, Figma, Google Docs, or any website'}
           </span>
         </>
       )}
