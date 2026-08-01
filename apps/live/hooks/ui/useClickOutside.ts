@@ -9,10 +9,9 @@ import { useEffect, useRef, type RefObject } from 'react';
 // banner), and the extraction was driven by their accidentally-
 // divergent open-coded implementations: window+capture vs
 // document+bubble, `target as Node` cast vs `instanceof Node`
-// guard, an accident of order, not intent. Today four surfaces
-// share the hook (AuthControls + MovablePanel + ShareDialog +
-// CommentThreadPopover) and any new modal / popover should reach
-// for it rather than rebuilding the listener from scratch.
+// guard, an accident of order, not intent. Any modal / popover that
+// dismisses on an outside press should reach for it rather than
+// rebuilding the listener from scratch.
 //
 // Listener is registered on `window` in the capture phase: that
 // fires before any descendant React `onClick` handlers, so we get

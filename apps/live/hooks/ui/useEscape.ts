@@ -6,28 +6,34 @@ import { useEffect, useRef } from 'react';
 // `useClickOutside`: most modal / popover surfaces in the editor
 // pair "Escape closes" with "click-outside closes", and the
 // useEffect to wire up each was being open-coded in every one.
-// Seven surfaces today (SettingsDialog, ImagePicker,
-// ShortcutsDialog, SearchPanel, DeleteAccountDialog, ShareDialog,
-// CommentThreadPopover) plus one (ContextMenu) that still combines
-// Escape with a click-outside handler in the same useEffect because
-// it also listens to the `contextmenu` event so a second right-click
+// Reach for it from any surface that closes on Escape, rather than
+// rebuilding the listener. Most dialogs never call it directly: they
+// render <Dialog>, which calls it once for all of them. The direct
+// callers are the popovers, menus and one-off modals that have no
+// such wrapper.
+//
+// One surface deliberately does NOT use it: ContextMenu still combines
+// Escape with a click-outside handler in the same useEffect, because it
+// also listens to the `contextmenu` event so a second right-click
 // stack-replaces the menu, which useClickOutside doesn't cover.
 //
 // Options:
 //   `enabled` (default true): when false, no listener is registered.
-//      Used by DeleteAccountDialog to suppress Escape mid-submit so
-//      the user can't cancel a request that's already in flight.
+//      For a surface that is mounted while closed, and for
+//      DeleteAccountDialog, which suppresses Escape mid-submit so the
+//      user can't cancel a request that's already in flight.
 //   `capture` (default false): when true, register on `window` in
 //      the capture phase so the surface fires BEFORE the editor's
-//      global shortcuts at `document` bubble. Used by ShortcutsDialog
-//      and SearchPanel which need Escape to be theirs alone, even
-//      though the editor maps Escape to "deselect current element".
+//      global shortcuts at `document` bubble. For a surface that needs
+//      Escape to be its alone, even though the editor maps Escape to
+//      "deselect current element".
 //   `stopPropagation` (default false): call e.stopPropagation() on
 //      the captured event so the global listener (which is still
-//      registered, just lost the race) doesn't fire too.
+//      registered, just lost the race) doesn't fire too. In practice
+//      it travels with `capture`: winning the race is only half of
+//      taking the key, and every caller that passes one passes both.
 //   `preventDefault` (default false): call e.preventDefault() on the
-//      Escape keydown, for the surfaces (ConfirmDialog,
-//      TeamInviteLinkDialog) that previously open-coded that.
+//      Escape keydown, for surfaces that previously open-coded that.
 //
 // `onEscape` is captured through a ref so the hook doesn't re-bind
 // the listener on every render that produces a fresh callback

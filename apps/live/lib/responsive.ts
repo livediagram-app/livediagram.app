@@ -12,8 +12,11 @@
 //     the raw threshold (e.g. legacy `innerWidth` comparisons
 //     that haven't been migrated, or use a different operator).
 //
-// Touch-device detection (`(hover: none)`) is a different
-// concept and lives inline in the Tooltip component for now.
+// Touch-device detection (`(hover: none)`) is a different concept
+// and lives in the `useCoarsePointer` hook, for the places where the
+// COPY has to name the gesture ("double-tap" vs "double-click"): a
+// tablet is a wide viewport and still touch-only, so neither helper
+// here can answer it.
 
 export const MOBILE_BREAKPOINT_PX = 640;
 
