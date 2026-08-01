@@ -1,5 +1,6 @@
 import type { ElementOp, Tab } from '@livediagram/diagram';
 import type { ChangeLogEntry, ParticipantPresence } from './index';
+import type { AvatarConfig } from './avatar';
 import type { LivePoll } from './poll';
 
 // ---------------------------------------------------------------------
@@ -11,6 +12,7 @@ import type { LivePoll } from './poll';
 // animation inputs and the costume ride along so a peer draws the same
 // character, walk cycle, hop, and flag wave the sender sees. Deliberately
 // small — this goes out at cursor rates.
+
 export type AvatarPresence = {
   x: number;
   y: number;
@@ -19,42 +21,7 @@ export type AvatarPresence = {
   // preset token from a closed set. Optional so a packet from an older client
   // still parses — the receiver falls back to the default character. Purely
   // cosmetic, and never an identity claim.
-  config?: {
-    gender: 'male' | 'female';
-    clothing:
-      | 'tee'
-      | 'stripes'
-      | 'jumper'
-      | 'hoodie'
-      | 'vest'
-      | 'suit'
-      | 'dress'
-      | 'skirt'
-      | 'polo'
-      | 'flannel'
-      | 'overalls'
-      | 'labcoat'
-      | 'hawaiian'
-      | 'varsity'
-      | 'turtleneck'
-      | 'apron';
-    hair:
-      | 'short'
-      | 'buzz'
-      | 'curly'
-      | 'long'
-      | 'ponytail'
-      | 'bun'
-      | 'mohawk'
-      | 'bald'
-      | 'pigtails'
-      | 'afro'
-      | 'spiky'
-      | 'bob'
-      | 'braid'
-      | 'topknot';
-    size: 'small' | 'regular' | 'tall';
-  };
+  config?: AvatarConfig;
   // A reaction in progress (spec/101): which one, and how far into it the
   // sender is. The pose is derived from these two by a pure function on both
   // ends, so the wire carries a kind and a clock rather than a pose.

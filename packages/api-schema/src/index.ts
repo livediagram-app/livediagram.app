@@ -16,6 +16,8 @@
 
 import type { BackgroundPattern, ShapeKind, Tab } from '@livediagram/diagram';
 
+export type { AvatarClothing, AvatarConfig, AvatarGender, AvatarHair, AvatarSize } from './avatar';
+
 // ---------------------------------------------------------------------
 // Diagrams
 // ---------------------------------------------------------------------

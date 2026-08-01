@@ -14,47 +14,24 @@
 import { readLocalStorageSafe, writeLocalStorageSafe } from './local-storage-safe';
 import { randomPick } from './random';
 
-export type AvatarGender = 'male' | 'female';
-export type AvatarClothing =
-  | 'tee'
-  | 'stripes'
-  | 'jumper'
-  | 'hoodie'
-  | 'vest'
-  | 'suit'
-  | 'dress'
-  | 'skirt'
-  | 'polo'
-  | 'flannel'
-  | 'overalls'
-  | 'labcoat'
-  | 'hawaiian'
-  | 'varsity'
-  | 'turtleneck'
-  | 'apron';
-export type AvatarHair =
-  | 'short'
-  | 'buzz'
-  | 'curly'
-  | 'long'
-  | 'ponytail'
-  | 'bun'
-  | 'mohawk'
-  | 'bald'
-  | 'pigtails'
-  | 'afro'
-  | 'spiky'
-  | 'bob'
-  | 'braid'
-  | 'topknot';
-export type AvatarSize = 'small' | 'regular' | 'tall';
-
-export type AvatarConfig = {
-  gender: AvatarGender;
-  clothing: AvatarClothing;
-  hair: AvatarHair;
-  size: AvatarSize;
-};
+// The costume vocabulary itself lives in @livediagram/api-schema, because the
+// presence packet carries it to peers and both ends must agree on the tokens
+// (see that package's avatar.ts). Re-exported here so the ~10 editor modules
+// that already import from this file keep their import path.
+export type {
+  AvatarClothing,
+  AvatarConfig,
+  AvatarGender,
+  AvatarHair,
+  AvatarSize,
+} from '@livediagram/api-schema';
+import type {
+  AvatarClothing,
+  AvatarConfig,
+  AvatarGender,
+  AvatarHair,
+  AvatarSize,
+} from '@livediagram/api-schema';
 
 // The fallback character: what a missing / unreadable FIELD falls back to.
 // Whole-config absence is different — a first-time visitor gets a RANDOM
