@@ -28,73 +28,12 @@ import {
 } from '@/lib/avatar-config';
 import { AVATAR_REACTIONS, type AvatarReactionKind } from '@/lib/avatar-reactions';
 import { AvatarSprite } from '@/components/canvas/avatar-sprite';
-import { AccordionSection } from '@/components/primitives/AccordionSection';
 import { MovablePanel, type MovablePanelDockProps } from '@/components/primitives/MovablePanel';
 import { Tooltip } from '@/components/primitives/Tooltip';
 // The same glyph the welcome flow's "shuffle a random name" button uses — same
 // meaning (give me another random one), so it stays the same icon.
 import { RefreshIcon } from '@/components/palette/template-picker-icons';
-
-// One accordion row of mutually-exclusive choices. A radiogroup rather than a
-// select: seeing every option at once is the point when you're dressing a
-// character, and they only cost space while the row is open.
-function OptionSection<T extends string>({
-  label,
-  options,
-  value,
-  open,
-  onToggle,
-  onPick,
-}: {
-  label: string;
-  options: readonly { id: T; label: string }[];
-  value: T;
-  open: boolean;
-  onToggle: () => void;
-  onPick: (id: T) => void;
-}) {
-  const current = options.find((o) => o.id === value);
-  return (
-    <AccordionSection
-      title={label}
-      open={open}
-      onToggle={onToggle}
-      headerClassName="flex w-full items-center justify-between gap-2 py-1.5 text-left"
-      titleClassName="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500"
-      chevronClassName="text-slate-400 dark:text-slate-500"
-      bodyClassName="pb-2"
-      // The value stays visible while collapsed, so the panel reads as a
-      // summary of the character rather than four mystery rows.
-      trailing={
-        <span className="text-[11px] font-medium text-slate-600 dark:text-slate-300">
-          {current?.label}
-        </span>
-      }
-    >
-      <div className="flex flex-wrap gap-1" role="radiogroup" aria-label={label}>
-        {options.map((option) => {
-          const active = option.id === value;
-          return (
-            <button
-              key={option.id}
-              type="button"
-              role="radio"
-              aria-checked={active}
-              onClick={() => onPick(option.id)}
-              className={`rounded-md border px-2 py-1 text-[11px] font-medium transition ${
-                active
-                  ? 'border-brand-400 bg-brand-50 text-brand-700 dark:border-brand-500 dark:bg-brand-500/15 dark:text-brand-200'
-                  : 'border-slate-200 text-slate-600 hover:border-brand-300 hover:text-brand-700 dark:border-slate-700 dark:text-slate-300 dark:hover:border-brand-500'
-              }`}
-            >
-              {option.label}
-            </button>
-          );
-        })}
-      </div>
-    </AccordionSection>
-  );
-}
+import { ToolOptionRow } from '@/components/panels/ToolOptionRow';
 
 type Row = 'gender' | 'clothing' | 'hair' | 'size';
 
@@ -187,7 +126,7 @@ export function AvatarPanel({
           </Tooltip>
         </div>
         <div className="divide-y divide-slate-100 dark:divide-slate-800">
-          <OptionSection
+          <ToolOptionRow
             label="Gender"
             options={AVATAR_GENDERS}
             value={config.gender}
@@ -195,7 +134,7 @@ export function AvatarPanel({
             onToggle={() => toggle('gender')}
             onPick={(id) => onChange('gender', id)}
           />
-          <OptionSection
+          <ToolOptionRow
             label="Clothing"
             options={AVATAR_CLOTHING}
             value={config.clothing}
@@ -203,7 +142,7 @@ export function AvatarPanel({
             onToggle={() => toggle('clothing')}
             onPick={(id) => onChange('clothing', id)}
           />
-          <OptionSection
+          <ToolOptionRow
             label="Hair"
             options={AVATAR_HAIR}
             value={config.hair}
@@ -211,7 +150,7 @@ export function AvatarPanel({
             onToggle={() => toggle('hair')}
             onPick={(id) => onChange('hair', id)}
           />
-          <OptionSection
+          <ToolOptionRow
             label="Size"
             options={AVATAR_SIZES}
             value={config.size}

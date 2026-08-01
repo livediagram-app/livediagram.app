@@ -23,77 +23,10 @@ import {
   SPOTLIGHT_SIZES,
   type SpotlightConfig,
 } from '@/lib/spotlight-config';
-import { AccordionSection } from '@/components/primitives/AccordionSection';
 import { MovablePanel, type MovablePanelDockProps } from '@/components/primitives/MovablePanel';
-import { Tooltip } from '@/components/primitives/Tooltip';
+import { ToolOptionRow } from '@/components/panels/ToolOptionRow';
 
 type Row = 'size' | 'dim' | 'edge' | 'shape';
-
-function OptionRow<T extends string>({
-  label,
-  options,
-  value,
-  valueLabel,
-  open,
-  onToggle,
-  onPick,
-}: {
-  label: string;
-  options: readonly { id: T; label: string; hint?: string }[];
-  value: T | null;
-  // What the collapsed header shows. Usually the option's own label, but the
-  // Size row says "Custom" when a click has nudged the radius off a preset.
-  valueLabel: string;
-  open: boolean;
-  onToggle: () => void;
-  onPick: (id: T) => void;
-}) {
-  return (
-    <AccordionSection
-      title={label}
-      open={open}
-      onToggle={onToggle}
-      headerClassName="flex w-full items-center justify-between gap-2 py-1.5 text-left"
-      titleClassName="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500"
-      chevronClassName="text-slate-400 dark:text-slate-500"
-      bodyClassName="pb-2"
-      trailing={
-        <span className="text-[11px] font-medium text-slate-600 dark:text-slate-300">
-          {valueLabel}
-        </span>
-      }
-    >
-      <div className="flex flex-wrap gap-1" role="radiogroup" aria-label={label}>
-        {options.map((option) => {
-          const active = option.id === value;
-          const button = (
-            <button
-              key={option.id}
-              type="button"
-              role="radio"
-              aria-checked={active}
-              onClick={() => onPick(option.id)}
-              className={`rounded-md border px-2 py-1 text-[11px] font-medium transition ${
-                active
-                  ? 'border-brand-400 bg-brand-50 text-brand-700 dark:border-brand-500 dark:bg-brand-500/15 dark:text-brand-200'
-                  : 'border-slate-200 text-slate-600 hover:border-brand-300 hover:text-brand-700 dark:border-slate-700 dark:text-slate-300 dark:hover:border-brand-500'
-              }`}
-            >
-              {option.label}
-            </button>
-          );
-          return option.hint ? (
-            <Tooltip key={option.id} title={option.label} description={option.hint}>
-              {button}
-            </Tooltip>
-          ) : (
-            button
-          );
-        })}
-      </div>
-    </AccordionSection>
-  );
-}
 
 // A miniature of the real thing: the same gradient recipe over a scrap of
 // "diagram", so Blackout-with-a-crisp-edge can be seen before it is inflicted
@@ -181,7 +114,7 @@ export function SpotlightPanel({
       <div className="flex flex-col px-2 pb-2">
         <ShroudPreview config={config} radius={radius} />
         <div className="divide-y divide-slate-100 dark:divide-slate-800">
-          <OptionRow
+          <ToolOptionRow
             label="Size"
             options={SPOTLIGHT_SIZES}
             value={currentSize}
@@ -195,7 +128,7 @@ export function SpotlightPanel({
               onSetRadius(spotlightRadius(id));
             }}
           />
-          <OptionRow
+          <ToolOptionRow
             label="Dim"
             options={SPOTLIGHT_DIMS}
             value={config.dim}
@@ -204,7 +137,7 @@ export function SpotlightPanel({
             onToggle={() => toggle('dim')}
             onPick={(id) => onChange('dim', id)}
           />
-          <OptionRow
+          <ToolOptionRow
             label="Edge"
             options={SPOTLIGHT_EDGES}
             value={config.edge}
@@ -213,7 +146,7 @@ export function SpotlightPanel({
             onToggle={() => toggle('edge')}
             onPick={(id) => onChange('edge', id)}
           />
-          <OptionRow
+          <ToolOptionRow
             label="Shape"
             options={SPOTLIGHT_SHAPES}
             value={config.shape}

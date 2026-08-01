@@ -19,74 +19,10 @@ import {
   ERASER_TARGETS,
   type EraserConfig,
 } from '@/lib/eraser-config';
-import { AccordionSection } from '@/components/primitives/AccordionSection';
 import { MovablePanel, type MovablePanelDockProps } from '@/components/primitives/MovablePanel';
-import { Tooltip } from '@/components/primitives/Tooltip';
+import { ToolOptionRow } from '@/components/panels/ToolOptionRow';
 
 type Row = 'mode' | 'size' | 'target' | 'groups';
-
-function OptionRow<T extends string>({
-  label,
-  options,
-  value,
-  open,
-  onToggle,
-  onPick,
-}: {
-  label: string;
-  options: readonly { id: T; label: string; hint?: string }[];
-  value: T;
-  open: boolean;
-  onToggle: () => void;
-  onPick: (id: T) => void;
-}) {
-  const current = options.find((o) => o.id === value);
-  return (
-    <AccordionSection
-      title={label}
-      open={open}
-      onToggle={onToggle}
-      headerClassName="flex w-full items-center justify-between gap-2 py-1.5 text-left"
-      titleClassName="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500"
-      chevronClassName="text-slate-400 dark:text-slate-500"
-      bodyClassName="pb-2"
-      trailing={
-        <span className="text-[11px] font-medium text-slate-600 dark:text-slate-300">
-          {current?.label}
-        </span>
-      }
-    >
-      <div className="flex flex-wrap gap-1" role="radiogroup" aria-label={label}>
-        {options.map((option) => {
-          const active = option.id === value;
-          const button = (
-            <button
-              key={option.id}
-              type="button"
-              role="radio"
-              aria-checked={active}
-              onClick={() => onPick(option.id)}
-              className={`rounded-md border px-2 py-1 text-[11px] font-medium transition ${
-                active
-                  ? 'border-brand-400 bg-brand-50 text-brand-700 dark:border-brand-500 dark:bg-brand-500/15 dark:text-brand-200'
-                  : 'border-slate-200 text-slate-600 hover:border-brand-300 hover:text-brand-700 dark:border-slate-700 dark:text-slate-300 dark:hover:border-brand-500'
-              }`}
-            >
-              {option.label}
-            </button>
-          );
-          return option.hint ? (
-            <Tooltip key={option.id} title={option.label} description={option.hint}>
-              {button}
-            </Tooltip>
-          ) : (
-            button
-          );
-        })}
-      </div>
-    </AccordionSection>
-  );
-}
 
 // The brush at its true size over a scrap of diagram, so "Large" is a size
 // rather than a word. Capped to the preview box: a 72px radius is bigger than
@@ -163,7 +99,7 @@ export function EraserPanel({
       <div className="flex flex-col px-2 pb-2">
         <BrushPreview config={config} />
         <div className="divide-y divide-slate-100 dark:divide-slate-800">
-          <OptionRow
+          <ToolOptionRow
             label="Mode"
             options={ERASER_MODES}
             value={config.mode}
@@ -171,7 +107,7 @@ export function EraserPanel({
             onToggle={() => toggle('mode')}
             onPick={(id) => onChange('mode', id)}
           />
-          <OptionRow
+          <ToolOptionRow
             label="Size"
             options={ERASER_SIZES}
             value={config.size}
@@ -179,7 +115,7 @@ export function EraserPanel({
             onToggle={() => toggle('size')}
             onPick={(id) => onChange('size', id)}
           />
-          <OptionRow
+          <ToolOptionRow
             label="Erases"
             options={ERASER_TARGETS}
             value={config.target}
@@ -187,7 +123,7 @@ export function EraserPanel({
             onToggle={() => toggle('target')}
             onPick={(id) => onChange('target', id)}
           />
-          <OptionRow
+          <ToolOptionRow
             label="Groups"
             options={ERASER_GROUPS}
             value={config.groups}
