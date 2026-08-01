@@ -7,6 +7,7 @@
 // menu come from diagram-row-shared, so list and card can't drift.
 
 import Link from 'next/link';
+import type { CardViewProps } from '@/app/explorer/explorer-view-props';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
 import { useRef, useState } from 'react';
 import { relativeSince, useRelativeTimeTick } from '@/lib/relative-time';
@@ -23,14 +24,7 @@ import {
 } from './diagram-row-shared';
 import { cardShell, FolderCard, previewArea, SyntheticFolderCard } from './explorer-folder-cards';
 import { FolderPreview } from './FolderPreview';
-import type { FolderPreviewContents } from './folder-preview-tiles';
-import type { Folder } from '@/lib/api-client';
 import type { PaneDiagram } from './views';
-
-type FolderActions = (
-  f: Folder,
-  anchor: HTMLElement | null,
-) => { rename: () => void; newSubfolder: () => void; move: () => void; delete: () => void };
 
 export function CardView({
   folders,
@@ -71,58 +65,7 @@ export function CardView({
   folderContents,
   showOwner = false,
   showVisibilityBadge = true,
-}: {
-  folders: Folder[];
-  diagrams: PaneDiagram[];
-  ownerId: string | null;
-  showUnsortedRow: boolean;
-  unsortedCount: number;
-  onOpenUnsorted: () => void;
-  showGeneratedRow?: boolean;
-  generatedCount?: number;
-  onOpenGenerated?: () => void;
-  // The Offline synthetic folder card (spec/76), beside Generated on My Work.
-  showOfflineRow?: boolean;
-  offlineCount?: number;
-  onOpenOffline?: () => void;
-  // The "Dynamic" parent folder card on My Work (/all).
-  showDynamicRow?: boolean;
-  dynamicCount?: number;
-  onOpenDynamic?: () => void;
-  onOpenFolder: (id: string) => void;
-  onCommitRenameFolder: (id: string, name: string) => void;
-  onCancelRenameFolder: () => void;
-  renamingFolderId: string | null;
-  renamingDiagramId: string | null;
-  onCommitRenameDiagram: (id: string, name: string) => void;
-  onCancelRenameDiagram: () => void;
-  folderActions: FolderActions;
-  onStartRenameDiagram: (id: string) => void;
-  onDuplicateDiagram: (id: string) => void;
-  onDeleteDiagram: (id: string) => void;
-  onMoveDiagram: (id: string, anchor: HTMLElement | null) => void;
-  onDismissShared?: (id: string) => void;
-  // Hide / show in Recent (spec/93).
-  recentExcludedIds?: string[];
-  // Per-user stars (spec/95).
-  favouriteIds?: Set<string>;
-  onToggleFavourite?: (id: string) => void;
-  // Resolves a card's folder chip (spec/94).
-  folderChipFor?: (d: PaneDiagram) => { label: string; onOpen: () => void } | null;
-  onToggleRecentExclusion?: (id: string) => void;
-  childrenCount: (id: string) => number;
-  diagramsCount: (id: string) => number;
-  // What a folder directly contains, for its card's content preview
-  // (spec/99). Omitted = no preview, just the folder glyph.
-  folderContents?: (id: string) => FolderPreviewContents;
-  showOwner?: boolean;
-  // Team library cards (spec/35) hide the visibility badge: every diagram
-  // in that grid is a team diagram, so a per-card "Team"/"Private" badge is
-  // noise — its list view omits it too. Defaults on for the Explorer.
-  showVisibilityBadge?: boolean;
-  // Where the diagram lives (spec/94). Recent only.
-  folderChip?: { label: string; onOpen: () => void } | null;
-}) {
+}: CardViewProps) {
   useRelativeTimeTick();
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

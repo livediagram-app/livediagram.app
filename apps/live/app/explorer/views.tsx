@@ -8,14 +8,14 @@
 // level state, no api calls. The page wires them together.
 
 import Link from 'next/link';
+import type { ExplorerViewProps } from '@/app/explorer/explorer-view-props';
 import { type ReactNode } from 'react';
-import type { DiagramListItem, Folder, SharedWithItem } from '@/lib/api-client';
+import type { DiagramListItem, SharedWithItem } from '@/lib/api-client';
 import { relativeSince, useRelativeTimeTick } from '@/lib/relative-time';
 import { EmptyPane } from './ExplorerEmptyState';
 import { DiagramRow } from './explorer-route-diagram-row';
 import { FolderRow } from './folder-row';
 import { DiagramThumbnail } from '@/components/panels/DiagramThumbnail';
-import type { FolderPreviewContents } from './folder-preview-tiles';
 import {
   CloseIcon,
   DynamicFolderIcon,
@@ -105,75 +105,7 @@ export function ListView({
   childrenCount,
   diagramsCount,
   showOwner = false,
-}: {
-  folders: Folder[];
-  diagrams: PaneDiagram[];
-  // Viewer identity, threaded to each row's thumbnail fetch (spec/67).
-  // Null while a guest id is still resolving.
-  ownerId: string | null;
-  // Adds the desktop Owner column (Recent: "You" vs the team name).
-  showOwner?: boolean;
-  // True on the "All diagrams" (My Work) view: the synthetic Unsorted
-  // row renders at the very top so the root has the same "folder row per
-  // child" feel as any non-root folder. Always shown there now (even
-  // empty, badge hidden at zero) so My Work isn't bare before anything
-  // is filed; Generated renders next to it the same way (spec/15).
-  showUnsortedRow: boolean;
-  unsortedCount: number;
-  onOpenUnsorted: () => void;
-  // The Generated synthetic folder row, shown on the My Work (/all) list
-  // beside Unsorted (spec/15). Optional: defaults to hidden.
-  showGeneratedRow?: boolean;
-  generatedCount?: number;
-  onOpenGenerated?: () => void;
-  // The Offline synthetic folder row (spec/76): diagrams saved only in this
-  // browser. Shown on the My Work (/all) list beside Generated.
-  showOfflineRow?: boolean;
-  offlineCount?: number;
-  onOpenOffline?: () => void;
-  // The "Dynamic" parent folder row on My Work (/all): opens the
-  // /explorer/dynamic view listing the three synthetic folders.
-  showDynamicRow?: boolean;
-  dynamicCount?: number;
-  onOpenDynamic?: () => void;
-  onOpenFolder: (id: string) => void;
-  onCommitRenameFolder: (id: string, name: string) => void;
-  onCancelRenameFolder: () => void;
-  renamingFolderId: string | null;
-  renamingDiagramId: string | null;
-  onCommitRenameDiagram: (id: string, name: string) => void;
-  onCancelRenameDiagram: () => void;
-  folderActions: (
-    f: Folder,
-    anchor: HTMLElement | null,
-  ) => {
-    rename: () => void;
-    newSubfolder: () => void;
-    move: () => void;
-    delete: () => void;
-  };
-  onStartRenameDiagram: (id: string) => void;
-  onDuplicateDiagram: (id: string) => void;
-  onDeleteDiagram: (id: string) => void;
-  onMoveDiagram: (id: string, anchor: HTMLElement | null) => void;
-  // Shared-row action (spec/35), used by Recent's "shared with me" rows.
-  onDismissShared?: (id: string) => void;
-  // Hide / show in Recent (spec/93).
-  recentExcludedIds?: string[];
-  // Per-user stars (spec/95).
-  favouriteIds?: Set<string>;
-  onToggleFavourite?: (id: string) => void;
-  // Resolves a row's folder chip (spec/94). Null / omitted = no chip,
-  // which is every pane except Recent.
-  folderChipFor?: (d: PaneDiagram) => { label: string; onOpen: () => void } | null;
-  onToggleRecentExclusion?: (id: string) => void;
-  childrenCount: (id: string) => number;
-  diagramsCount: (id: string) => number;
-  // Card view only (spec/99): folder rows keep their count badge, since
-  // four snapshots don't fit a list row. Declared (and ignored) here so
-  // ExplorerPane can keep building ONE props object for both views.
-  folderContents?: (id: string) => FolderPreviewContents;
-}) {
+}: ExplorerViewProps) {
   return (
     <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
       <div
