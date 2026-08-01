@@ -15,18 +15,8 @@
 
 export type { IconDef, IconPrim, TechIconDef, TechProvider } from './types';
 export { xmlEscape } from './xml';
-export { iconPrimMarkup, iconPrimsMarkup, techIconArtMarkup, type IconExportArt } from './markup';
+export { iconPrimsMarkup, techIconArtMarkup, type IconExportArt } from './markup';
 export { isTechIconId, TECH_ICON_IDS } from './tech-icon-ids';
-export {
-  isStickerId,
-  isLegacyEmojiIconId,
-  LEGACY_EMOJI_ID_PREFIX,
-  STICKER_ID_PREFIXES,
-} from './sticker-ids';
-export {
-  STICKER_ASPECT,
-  STICKER_TONE_COLOR,
-  type StickerDef,
-  type StickerTone,
-} from './sticker-types';
-export { stickerArt, stickerArtMarkup, type StickerArt } from './sticker-markup';
+export { isStickerId, isLegacyEmojiIconId } from './sticker-ids';
+export { STICKER_ASPECT, type StickerDef, type StickerTone } from './sticker-types';
+export { stickerArt, type StickerArt } from './sticker-markup';

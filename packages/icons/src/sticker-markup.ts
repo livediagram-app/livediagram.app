@@ -61,13 +61,3 @@ export function stickerArt(def: StickerDef): StickerArt {
       ` font-size="54" stroke="none" text-anchor="middle" dominant-baseline="central">${xmlEscape(def.glyph)}</text>`,
   };
 }
-
-// The whole sticker as a standalone <svg> string, for callers that paste
-// markup rather than compose SVG nodes (the export renderers).
-export function stickerArtMarkup(def: StickerDef, x: number, y: number, w: number, h: number) {
-  const art = stickerArt(def);
-  return (
-    `<svg x="${x}" y="${y}" width="${w}" height="${h}" viewBox="${art.viewBox}"` +
-    ` preserveAspectRatio="xMidYMid meet" overflow="visible">${art.markup}</svg>`
-  );
-}
