@@ -13,14 +13,7 @@
 // Element[]. Sizing constants live inline so each template is
 // self-describing. See spec/09 "Templates" for the catalogue.
 
-import {
-  createArrow,
-  createPinnedArrow,
-  createShape,
-  createTable,
-  createText,
-  type Element,
-} from '@livediagram/diagram';
+import { createArrow, createPinnedArrow, createShape, type Element } from '@livediagram/diagram';
 import { isTechIconId } from '@livediagram/icons';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
 
@@ -159,9 +152,11 @@ export function buildCloudArchitecture(cx: number, cy: number): Element[] {
 // as one), wired by relationship arrows carrying their cardinality.
 export function buildErDiagram(cx: number, cy: number): Element[] {
   const tableW = 250;
-  const rowH = 34;
+  // Entity row + title-band heights (spec/120), not the old table's 34px row:
+  // an entity draws 11px rows on a 3px gap, so a table-sized row left a band
+  // of empty box under the last field.
+  const rowH = 26;
   const titleH = 34;
-  const titleGap = 8;
   const colHalfGap = 340; // half-distance between the two entity columns
   const rowHalfGap = 250; // half-distance between the two entity rows
 
@@ -226,37 +221,20 @@ export function buildErDiagram(cx: number, cy: number): Element[] {
   for (const entity of entities) {
     const centerX = cx + (entity.col === 0 ? -colHalfGap : colHalfGap);
     const centerY = cy + (entity.row === 0 ? -rowHalfGap : rowHalfGap);
-    const tableX = centerX - tableW / 2;
-    // The header row labels the two columns; the entity name rides a
-    // bold title directly above, grouped with the table so they drag
-    // together.
-    const cells: string[][] = [['Field', 'Type'], ...entity.fields];
-    const tableH = cells.length * rowH;
-    const tableY = centerY - tableH / 2;
-    const groupId = crypto.randomUUID();
-
-    elements.push({
-      ...createText(tableX, tableY - titleH - titleGap),
+    // One ENTITY element per table (spec/120), not a bold text label grouped
+    // with a two-column table. That was three objects pretending to be one,
+    // held together by a groupId, and the field rows could not be edited as
+    // fields — only as table cells that happened to be laid out like fields.
+    const height = titleH + entity.fields.length * rowH;
+    const box = {
+      ...createShape('entity', centerX - tableW / 2, centerY - height / 2),
       width: tableW,
-      height: titleH,
+      height,
       label: entity.name,
-      textSize: 'md',
-      textBold: true,
-      textAlignX: 'center',
-      groupId,
-    });
-
-    const table = {
-      ...createTable(tableX, tableY),
-      width: tableW,
-      height: tableH,
-      cells,
-      headerRow: true,
-      textSize: 'sm' as const,
-      groupId,
+      entityFields: entity.fields.map(([name, type]) => ({ name, type })),
     };
-    tableIdByName.set(entity.name, table.id);
-    elements.push(table);
+    tableIdByName.set(entity.name, box.id);
+    elements.push(box);
   }
 
   // Relationships, each a "one-to-many" crow's-foot read as a labelled

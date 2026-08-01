@@ -12,21 +12,31 @@
 import {
   createPinnedArrow,
   createShape,
-  createTable,
   type Element,
-  type TableElement,
+  type EntityField,
 } from '@livediagram/diagram';
 
 // A small media-library class model: an abstract MediaItem with Song /
-// Podcast subclasses and a Playlist aggregating items. Each class is
-// the classic three-compartment box, built as two flush-stacked tables
-// sharing a groupId: the top table's header row carries the class name
-// over the attribute rows, and the bottom table carries the methods,
-// so the seam between the tables draws the attribute / method
-// separator. Members use UML visibility markers (- private, + public).
+// Podcast subclasses and a Playlist aggregating items.
+//
+// Each class is one ENTITY element (spec/120) — a title bar over member
+// rows. It used to be two flush-stacked tables sharing a groupId, where the
+// SEAM between them stood in for the attribute / method separator: three
+// objects pretending to be one class, and members that could only be edited
+// as table cells rather than as members.
+//
+// The separator goes with it, which is the honest trade. UML's three
+// compartments were never the point of this template; a class you can add a
+// member to from its own menu is worth more than a rule drawn by an accident
+// of stacking. Methods keep their `()` so they still read as methods, and
+// attributes keep their types in the type column where they belong.
+//
+// Members use UML visibility markers (- private, + public).
 export function buildUmlClass(cx: number, cy: number): Element[] {
   const classW = 270;
-  const rowH = 34;
+  const rowH = 26;
+  // The entity's title band (spec/120) at the default text size.
+  const TITLE_H = 30;
 
   type UmlClass = {
     name: string;
@@ -70,51 +80,38 @@ export function buildUmlClass(cx: number, cy: number): Element[] {
   ];
 
   const elements: Element[] = [];
-  // The methods table is the taller of the two boxes' seam-side, so
-  // arrows pin to it for the bottom row and to the header table for
-  // the top row; keep both handy per class.
-  const headerTableByName = new Map<string, TableElement>();
-  const methodsTableByName = new Map<string, TableElement>();
+  const boxByName = new Map<string, Element>();
 
   for (const c of classes) {
-    const x = c.centerX - classW / 2;
-    const groupId = crypto.randomUUID();
-
-    const headerCells = [[c.name], ...c.attributes.map((a) => [a])];
-    const headerTable: TableElement = {
-      ...createTable(x, c.topY),
+    // Attributes carry their type in the type column; methods are name-only,
+    // so the column stays empty for them rather than repeating "()" twice.
+    const fields: EntityField[] = [
+      ...c.attributes.map((a) => {
+        const [name, type] = a.split(': ');
+        return type ? { name: name ?? a, type } : { name: a };
+      }),
+      ...c.methods.map((m) => ({ name: m })),
+    ];
+    const height = TITLE_H + fields.length * rowH;
+    const box = {
+      ...createShape('entity', c.centerX - classW / 2, c.topY),
       width: classW,
-      height: headerCells.length * rowH,
-      cells: headerCells,
-      headerRow: true,
-      textSize: 'sm',
-      textAlignX: 'left',
-      groupId,
+      height,
+      label: c.name,
+      entityFields: fields,
     };
-    const methodCells = c.methods.map((m) => [m]);
-    const methodsTable: TableElement = {
-      ...createTable(x, c.topY + headerCells.length * rowH),
-      width: classW,
-      height: methodCells.length * rowH,
-      cells: methodCells,
-      headerRow: false,
-      textSize: 'sm',
-      textAlignX: 'left',
-      groupId,
-    };
-    headerTableByName.set(c.name, headerTable);
-    methodsTableByName.set(c.name, methodsTable);
-    elements.push(headerTable, methodsTable);
+    boxByName.set(c.name, box);
+    elements.push(box);
   }
 
   // Inheritance: hollow triangle pointing at the parent (UML
   // generalisation). The subclasses sit below MediaItem, so the arrows
   // rise from their header tables into the parent's methods
   // compartment edge, converging on the shared bottom anchor.
-  const parentMethods = methodsTableByName.get('MediaItem')!;
+  const parent = boxByName.get('MediaItem')!;
   for (const child of ['Song', 'Podcast']) {
     elements.push({
-      ...createPinnedArrow(headerTableByName.get(child)!.id, 'n', parentMethods.id, 's'),
+      ...createPinnedArrow(boxByName.get(child)!.id, 'n', parent.id, 's'),
       arrowheadShape: 'triangle-hollow',
     });
   }
@@ -123,12 +120,7 @@ export function buildUmlClass(cx: number, cy: number): Element[] {
   // multiplicity as the edge label. Items live independently of any
   // playlist, hence aggregation rather than composition.
   elements.push({
-    ...createPinnedArrow(
-      headerTableByName.get('MediaItem')!.id,
-      'w',
-      headerTableByName.get('Playlist')!.id,
-      'e',
-    ),
+    ...createPinnedArrow(boxByName.get('MediaItem')!.id, 'w', boxByName.get('Playlist')!.id, 'e'),
     arrowheadShape: 'diamond-hollow',
     label: '0..*',
   });

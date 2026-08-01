@@ -16,6 +16,11 @@ export function buildBlank(): Element[] {
 // Tree mind map (spec/09): a left-to-right hierarchy — root, a vertical stack
 // of branches, and one leaf per branch — connected by plain lines. Distinct
 // from the radial 'mindmap' for users who think in outlines.
+//
+// Built from MIND NODES (spec/118), not plain squares, so the template hands
+// you a live tree rather than a picture of one: select any node and Tab
+// grows a child, Enter a sibling, each inheriting the size of the node you
+// stood on. Squares looked identical and did nothing.
 export function buildMindMapTree(cx: number, cy: number): Element[] {
   const rootW = 170;
   const rootH = 72;
@@ -27,7 +32,7 @@ export function buildMindMapTree(cx: number, cy: number): Element[] {
   const branchX = cx - 110;
   const leafX = cx + 150;
   const root = {
-    ...createShape('square', rootX, cy - rootH / 2),
+    ...createShape('mind-node', rootX, cy - rootH / 2),
     width: rootW,
     height: rootH,
     label: 'Content strategy',
@@ -40,20 +45,24 @@ export function buildMindMapTree(cx: number, cy: number): Element[] {
   const leafLabels = ['SEO articles', 'Campaigns', 'Newsletter', 'Tutorials'];
   const branchYs = branchLabels.map((_, i) => cy + (i - (branchLabels.length - 1) / 2) * 110);
   const branches = branchLabels.map((label, i) => ({
-    ...createShape('square', branchX, branchYs[i]! - branchH / 2),
+    ...createShape('mind-node', branchX, branchYs[i]! - branchH / 2),
     width: branchW,
     height: branchH,
     label,
+    // The parent pointer is what makes this a tree the keyboard can grow,
+    // rather than four boxes that happen to sit in a column.
+    mindParentId: root.id,
     borderRadius: 'md' as const,
     // First-level branches: a gentle tint sits below the bold root, above
     // the plain leaves — a legible three-tier hierarchy.
     colorPreset: 'soft',
   }));
   const leaves = leafLabels.map((label, i) => ({
-    ...createShape('square', leafX, branchYs[i]! - leafH / 2),
+    ...createShape('mind-node', leafX, branchYs[i]! - leafH / 2),
     width: leafW,
     height: leafH,
     label,
+    mindParentId: branches[i]!.id,
     borderRadius: 'md' as const,
   }));
   const arrows: Element[] = [];
@@ -121,47 +130,41 @@ export function buildBubbleMap(cx: number, cy: number): Element[] {
 }
 
 // Swimlane flowchart (spec/09): an order fulfilment process flowing across
-// three role lanes. Lanes are frame containers (they paint behind their
-// contents via framesFirst) with a DEDICATED label cell at the left edge —
-// the old design put the role label mid-lane where the first process box
-// overlapped it — so the flow area starts cleanly after the label gutter.
-// The flow crosses lanes both downward (hand-offs) and back up (the
-// delivery confirmation), with an out-of-stock detour that rejoins the
-// happy path, so the template demonstrates every swimlane idiom: hand-off,
-// branch, rejoin, and round trip.
+// three role lanes.
+//
+// The lanes are LANE elements (spec/119). They used to be a frame plus a
+// separate square "gutter cell" holding the role name — two elements
+// pretending to be one, because there was nowhere on a frame for a title to
+// live. The lane element has a title gutter built in, so the role is now the
+// lane's own label: it edits, formats, aligns and exports like any other
+// label, and dragging the lane takes its name with it.
+//
+// The flow crosses lanes both downward (hand-offs) and back up (the delivery
+// confirmation), with an out-of-stock detour that rejoins the happy path, so
+// the template demonstrates every swimlane idiom: hand-off, branch, rejoin,
+// and round trip.
 export function buildSwimlane(cx: number, cy: number): Element[] {
   const roles = ['Customer', 'Sales', 'Warehouse'];
-  const labelW = 150;
   const laneW = 1230;
   const laneH = 170;
-  // Lanes sit slightly apart: flush frames doubled their borders into a
-  // heavier line with a hairline sliver between (the old design's visual
-  // glitch), while a deliberate gap reads as three clean bands.
+  // Lanes sit slightly apart: flush borders doubled into a heavier line with
+  // a hairline sliver between, while a deliberate gap reads as three bands.
   const laneGap = 14;
   const left = cx - laneW / 2;
   const top0 = cy - (roles.length * laneH + (roles.length - 1) * laneGap) / 2;
   const laneTop = (i: number) => top0 + i * (laneH + laneGap);
-  const lanes = roles.map((_, i) => ({
-    ...createShape('frame', left, laneTop(i)),
+  const lanes = roles.map((role, i) => ({
+    ...createShape('lane', left, laneTop(i)),
     width: laneW,
-    height: laneH,
-    // createShape defaults frames to a "Frame" section title; the role
-    // lives in the gutter cell instead, so blank the frame's own label.
-    label: '',
-  }));
-  // Role labels live in their own gutter cells so no step can overlap them.
-  const labels = roles.map((role, i) => ({
-    ...createShape('square', left, laneTop(i)),
-    width: labelW,
     height: laneH,
     label: role,
     textSize: 'md' as const,
-    // A muted tint separates the gutter from the flow area.
-    colorPreset: 'muted',
   }));
+  // Steps start clear of the title gutter (LANE_GUTTER_PX, 132) so nothing
+  // lands on top of a role name.
   const stepW = 140;
   const stepH = 60;
-  const colX = (col: number) => left + labelW + 100 + col * 180;
+  const colX = (col: number) => left + 232 + col * 180;
   const laneCY = (i: number) => laneTop(i) + laneH / 2;
   const box = (label: string, col: number, lane: number, kind: ShapeKind = 'square') => ({
     ...createShape(kind, colX(col) - stepW / 2, laneCY(lane) - stepH / 2),
@@ -202,7 +205,7 @@ export function buildSwimlane(cx: number, cy: number): Element[] {
     // round trip the process started with.
     { ...createPinnedArrow(ship.id, 'e', delivered.id, 's'), label: 'Notify' },
   ];
-  return [...lanes, ...labels, ...arrows, order, review, inStock, restock, pick, ship, delivered];
+  return [...lanes, ...arrows, order, review, inStock, restock, pick, ship, delivered];
 }
 
 // Decision tree (spec/09): a root question that branches yes / no, with one

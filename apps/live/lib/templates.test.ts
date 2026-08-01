@@ -257,7 +257,7 @@ describe('layered templates (spec/74)', () => {
     retrospective: { names: ['Board', 'Stickies'], scaffold: 6, content: 9 },
     'prioritization-matrix': { names: ['Axes', 'Items'], scaffold: 8, content: 5 },
     'affinity-map': { names: ['Board', 'Stickies'], scaffold: 5, content: 9 },
-    'user-story-map': { names: ['Backbone', 'Stories'], scaffold: 7, content: 12 },
+    'user-story-map': { names: ['Backbone', 'Stories'], scaffold: 6, content: 12 },
     roadmap: { names: ['Lanes', 'Cards'], scaffold: 10, content: 27 },
     gantt: { names: ['Grid', 'Bars'], scaffold: 25, content: 6 },
     swot: { names: ['Quadrants', 'Notes'], scaffold: 12, content: 13 },
@@ -608,11 +608,19 @@ describe('planning + strategy templates', () => {
     // Twelve story stickies: two MVP + one later per activity.
     const stickies = tab.elements.filter((el) => el.type === 'sticky');
     expect(stickies).toHaveLength(12);
-    // The release cut line is a headless dashed rule.
-    const rules = tab.elements.filter(
-      (el) => el.type === 'arrow' && el.arrowEnds === 'none' && el.strokeStyle === 'dashed',
+    // The release slices are real LANES (spec/119), titled in their own
+    // gutters. They used to be a dashed cut line plus two free-floating text
+    // labels off to the left, which named a band nothing was attached to.
+    const lanes = tab.elements.filter(
+      (el): el is Extract<(typeof tab.elements)[number], { type: 'shape' }> =>
+        el.type === 'shape' && el.shape === 'lane',
     );
-    expect(rules).toHaveLength(1);
+    expect(lanes.map((l) => l.label)).toEqual(['MVP', 'Release 2']);
+    expect(
+      tab.elements.filter(
+        (el) => el.type === 'arrow' && el.arrowEnds === 'none' && el.strokeStyle === 'dashed',
+      ),
+    ).toHaveLength(0);
   });
 
   it('affinity map drops dashed theme clusters of tilted stickies plus an unsorted pile', () => {
@@ -738,20 +746,28 @@ describe('technical templates (later batch)', () => {
     expect(dashed).toHaveLength(2);
   });
 
-  it('class diagram drops four two-compartment classes with UML arrowheads', () => {
+  it('class diagram drops four entity classes with UML arrowheads', () => {
     const tab = buildTemplatedTab('uml-class', 'brand', 'tab-1', 'uml');
-    const tables = tab.elements.filter(
-      (el): el is Extract<(typeof tab.elements)[number], { type: 'table' }> => el.type === 'table',
+    // One ENTITY per class (spec/120). It used to be two flush-stacked tables
+    // per class sharing a groupId, with the seam standing in for the
+    // attribute / method rule.
+    const classes = tab.elements.filter(
+      (el): el is Extract<(typeof tab.elements)[number], { type: 'shape' }> =>
+        el.type === 'shape' && el.shape === 'entity',
     );
-    // Two flush-stacked tables per class (name+attributes over methods).
-    expect(tables).toHaveLength(8);
-    const cellText = tables.flatMap((t) => t.cells.flat());
+    expect(classes).toHaveLength(4);
+    expect(tab.elements.filter((el) => el.type === 'table')).toHaveLength(0);
     for (const name of ['MediaItem', 'Playlist', 'Song', 'Podcast']) {
-      expect(cellText).toContain(name);
+      expect(classes.map((c) => c.label)).toContain(name);
     }
+    // Members land as real entity FIELDS, not table cells.
+    const members = classes.flatMap((c) => c.entityFields ?? []);
     // Visibility markers survive.
-    expect(cellText.some((c) => c.startsWith('- '))).toBe(true);
-    expect(cellText.some((c) => c.startsWith('+ '))).toBe(true);
+    expect(members.some((m) => m.name.startsWith('- '))).toBe(true);
+    expect(members.some((m) => m.name.startsWith('+ '))).toBe(true);
+    // An attribute keeps its type in the type column; a method is name-only.
+    expect(members.some((m) => m.name === '- title' && m.type === 'string')).toBe(true);
+    expect(members.some((m) => m.name === '+ play()' && m.type === undefined)).toBe(true);
     const heads = tab.elements
       .filter(
         (el): el is Extract<(typeof tab.elements)[number], { type: 'arrow' }> =>

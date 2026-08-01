@@ -9,13 +9,7 @@
 // Element[]. Sizing constants live inline so each template is
 // self-describing. See spec/09 "Templates" for the catalogue.
 
-import {
-  createArrow,
-  createShape,
-  createSticky,
-  createText,
-  type Element,
-} from '@livediagram/diagram';
+import { createShape, createSticky, createText, type Element } from '@livediagram/diagram';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
 
 // Affinity map: a research question up top, three dashed cluster frames
@@ -142,7 +136,8 @@ export function buildUserStoryMap(cx: number, cy: number): Element[] {
   const backboneGap = 40;
   const stickyH = 100;
   const stickyGap = 18;
-  const bandGap = 56; // vertical clearance around the release cut line
+  const bandGap = 56; // vertical clearance between the two release bands
+  const bandPad = 20; // breathing room inside a band, above and below its stories
 
   type Activity = { label: string; mvp: string[]; later: string[] };
   const activities: Activity[] = [
@@ -200,30 +195,24 @@ export function buildUserStoryMap(cx: number, cy: number): Element[] {
     });
   });
 
-  // Release cut line: a dashed rule across the story grid separating
-  // the MVP slice from the next release.
-  elements.push({
-    ...createArrow(x0, cutY, gridX + gridW, cutY),
-    arrowEnds: 'none',
-    strokeStyle: 'dashed',
-    strokeColor: '#94a3b8',
-    layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
-  });
-
-  // Left-rail band labels, one per slice.
-  const bandLabel = (y: number, h: number, label: string): Element => ({
-    ...createText(x0, y + h / 2 - 24),
-    width: railW,
-    height: 48,
+  // Release bands: one LANE per slice (spec/119), sitting behind the stories
+  // it holds.
+  //
+  // This used to be a dashed rule with two free-floating text labels off to
+  // the left — a band you had to infer from a line and a word that were not
+  // attached to each other or to anything else. A lane carries its own title
+  // in its gutter, so "MVP" moves with the band it names, and dragging the
+  // band takes its stories' backdrop with it.
+  const band = (top: number, height: number, label: string): Element => ({
+    ...createShape('lane', x0, top - bandPad),
+    width: totalW,
+    height: height + bandPad * 2,
     label,
     textSize: 'md',
-    textBold: true,
-    textAlignX: 'left',
-    textColor: '#64748b',
     layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
   });
-  elements.push(bandLabel(mvpTop, mvpBandH, 'MVP'));
-  elements.push(bandLabel(laterTop, laterBandH, 'Release 2'));
+  elements.push(band(mvpTop, mvpBandH, 'MVP'));
+  elements.push(band(laterTop, laterBandH, 'Release 2'));
 
   // Story stickies under each activity, banded by release.
   activities.forEach((activity, i) => {
