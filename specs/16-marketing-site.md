@@ -42,12 +42,21 @@ Both the landing advertising block and the detail-page hero use the same per-sec
 
 ## Social sharing
 
-Word of mouth is part of the acquisition funnel, so the page lets a happy visitor pass it on in one click. `components/ShareButtons.tsx` renders a **"Share" button** (share-nodes icon) in the header, just left of the "Start drawing" CTA. Clicking it opens a small **popover** listing the share targets (X, LinkedIn, Facebook, WhatsApp, email) plus a **Copy link** action. The popover closes on outside click or Escape; the button keeps its icon at every width and shows the "Share" label from the `sm` breakpoint up.
+Word of mouth is part of the acquisition funnel, so the page lets a happy visitor pass it on in one click. `packages/ui/src/ShareRail.tsx` renders a **vertical rail pinned to the right edge of the page**: a rotated "Share" label above the share targets (X, LinkedIn, Facebook, WhatsApp, email) and a **Copy link** action.
 
-- **Share targets are plain anchor links** to each network's public share-intent URL (`twitter.com/intent/tweet`, `linkedin.com/sharing/share-offsite`, `facebook.com/sharer`, `wa.me`, `mailto:`). No SDKs, no tracking pixels (keeps the "no tracking pixels" claim honest under [03](03-open-source-and-business-model.md)). They open in a new tab (`target="_blank"` + `rel="noopener noreferrer"`) and close the popover on click.
-- **Copy link** uses the Clipboard API to copy the canonical URL and flips its row to "Link copied" for a beat.
-- The shared URL is the canonical production site (`https://livediagram.app`) and the share text mirrors the product's one-line description. Both live as constants in the component, update them together if the positioning copy changes.
-- `ShareButtons`, the `UseCaseCarousel` (a stateful featured/side rotation), and the `HeroIllustration` (the click-to-centre three-window stage) are the `'use client'` boundaries on the page; everything else stays a server component for static export.
+It began as a "Share" popover in the header and moved out to the edge to give the header room to breathe. Two consequences of where it ended up:
+
+- **It lives in `@livediagram/ui`, not in the marketing app**, because `SiteHeader` renders it. Every surface that uses the shared header carries the rail, which is right: the help centre and the telemetry dashboard are just as worth passing on as the landing page.
+- **It renders as a _sibling_ of the header, not a descendant.** The header's `backdrop-filter` establishes a containing block that would trap the rail's `fixed` positioning against the header instead of the viewport.
+
+Beyond that:
+
+- **Wide desktop only (`xl`, 1280px).** Page content is `max-w-6xl` (1152px), so only past `xl` is there a real gutter for a fixed rail to sit in without overlapping the content. Below that it is hidden, and a page URL is inherently shareable anyway.
+- **Share targets are plain anchor links** to each network's public share-intent URL (`twitter.com/intent/tweet`, `linkedin.com/sharing/share-offsite`, `facebook.com/sharer`, `wa.me`, `mailto:`). No SDKs, no tracking pixels (keeps the "no tracking pixels" claim honest under [03](03-open-source-and-business-model.md)). They open in a new tab (`target="_blank"` + `rel="noopener noreferrer"`).
+- **Copy link** uses the Clipboard API to copy the canonical URL and flips to a tick for a beat, via the shared `useCopiedFlash`, so a rapid second copy restarts its own countdown rather than inheriting the first one's remainder.
+- The shared URL is the canonical production site (`https://livediagram.app`) and the share text mirrors the product's one-line description. Both live as constants in the component (mirroring `apps/marketing/lib/site`), so the rail stays self-contained enough to render from any app; update them together if the positioning copy changes.
+- The icons are stored as raw `<path>` `d` strings rather than JSX, so the module evaluates no top-level JSX at import time and the shared barrel stays importable from non-React test transforms.
+- On the landing page itself the `'use client'` boundaries are the `UseCaseCarousel` (a stateful featured/side rotation), the `HeroIllustration` (the click-to-centre three-window stage), and `ShowcaseStagger`; everything else stays a server component for static export. The rail is a client component too, but it now arrives via the shared header rather than the page.
 
 **Feature-card illustrations.** Every feature card carries a small animated mock of the real editor surface it describes (`components/FeatureArt.tsx`), passed via the card's `art` slot. Like the hero, the motion is **pure CSS**, shared keyframe classes (`fa-*`) live in `app/globals.css`, so it works under static export with no JS and settles to a finished frame under `prefers-reduced-motion`. The mocks must stay faithful to how the feature actually looks (brand-blue rounded shapes, dot-grid canvas, presence avatars, the explorer / share / activity panels); when a feature's UI changes, update its art. This is part of the golden rule above, an illustration is a claim too.
 

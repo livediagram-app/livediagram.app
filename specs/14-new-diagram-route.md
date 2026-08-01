@@ -243,9 +243,12 @@ explored instead of always seeing the same curated first rows.
 
 Implementation: `lib/shuffle.ts` (`shufflePinned`, a pinned-first
 Fisher-Yates) feeds `components/TemplatePicker.tsx`, which drives the
-count-based mode of `hooks/useShowMoreList.ts`. The per-tab Current Tab
-theme/pattern grids (`components/TabSection.tsx`) keep their stable,
-flag-gated order — only the new-diagram / template picker shuffles.
+count-based mode of `hooks/useShowMoreList.ts`. The theme and pattern
+grids keep their stable, flag-gated order wherever they render (the
+theme browse of `components/palette/ThemeCategoryBrowser.tsx`, shared
+with the right-click Theme dialog per [42](42-canvas-and-theme-dialog.md),
+and the pattern controls in `components/palette/palette-controls.tsx`)
+— only the new-diagram / template picker shuffles.
 
 ## Two-step wizard
 
