@@ -59,8 +59,8 @@ export function useEditorPreferences(deps: EditorPreferencesDeps) {
 
   // Load the cached preferences once on mount. Missing or unparseable
   // entries collapse to `{}`; the per-flag default then depends on
-  // the consumer's comparison: `telemetryEnabled` and
-  // `recogniseShapes` read via `!== false` so undefined = on, while
+  // the consumer's comparison: `telemetryEnabled` reads via
+  // `!== false` so undefined = on, while
   // `autoRebindArrows` (via autoRebindArrowsEnabled) and `drawToAdd`
   // read via `=== true` so undefined = off (matches spec/20's
   // defaults).

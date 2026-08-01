@@ -26,9 +26,10 @@
 //
 // Each branch returns a confidence in [0, 1]. The caller's threshold
 // (today 0.40 in commitFreehand) leans hard toward "convert it":
-// turning the recognise-shape mode on is an explicit opt-in via the
-// persisted spec/20 `recogniseShapes` preference, so the user has
-// already asked for classification. A false-positive convert is one
+// picking the Shape Pen rather than Freehand is itself the request to
+// classify (spec/115 replaced the persisted `recogniseShapes`
+// preference with the choice of pen), so the user has already asked
+// for it. A false-positive convert is one
 // Cmd-Z away; a false negative (a wobbly square that stayed a
 // sketch) is more frustrating, so the bar is set well below the
 // detector's internal reject points. Previous values: 0.72 (too
@@ -307,8 +308,8 @@ function recogniseCircle(points: Point[], bbox: ReturnType<typeof aabb>): Recogn
 // the registered shape kinds, or null when no kind clears its
 // branch's reject threshold. Callers should compare the score to
 // their own threshold before acting; the editor currently uses
-// 0.40 because the mode is opt-in via the persisted spec/20
-// `recogniseShapes` preference (see the header comment).
+// 0.40 because reaching for the Shape Pen is itself the opt-in
+// (see the header comment).
 export function recogniseShape(points: Point[]): RecognisedShape | null {
   if (points.length < 4) return null;
   const bbox = aabb(points);
