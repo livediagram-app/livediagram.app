@@ -6,6 +6,7 @@
 // without the JSX being copy-pasted three times.
 
 import type { TemplateDescriptor, TemplateKind } from '@livediagram/templates';
+import { PickerCard } from '@/components/palette/PickerCard';
 import { TemplatePreview } from '@/components/palette/template-preview';
 
 // A single selectable template tile. Click selects; double-click is the
@@ -22,31 +23,19 @@ export function TemplateCard({
   onCommit: () => void;
 }) {
   return (
-    <button
-      type="button"
-      onClick={onSelect}
-      onDoubleClick={onCommit}
-      aria-pressed={active}
-      className={
-        active
-          ? 'flex flex-col items-start gap-1.5 rounded-lg border-2 border-brand-400 bg-brand-50 p-2 text-left dark:border-brand-500 dark:bg-brand-500/15'
-          : 'flex flex-col items-start gap-1.5 rounded-lg border border-slate-200 bg-white p-2 text-left transition hover:border-brand-300 hover:bg-brand-50/40 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/10'
-      }
+    <PickerCard
+      active={active}
+      onSelect={onSelect}
+      onCommit={onCommit}
+      label={template.title}
+      description={template.description}
     >
       {/* Preview tiles are illustrative mini-canvases (light SVG), so the
           tile keeps a light backdrop in dark mode to stay legible. */}
       <div className="flex h-14 w-full items-center justify-center rounded-md bg-slate-50 dark:bg-slate-200">
         <TemplatePreview kind={template.kind} />
       </div>
-      <div className="min-w-0">
-        <p className="truncate text-xs font-semibold text-slate-900 dark:text-slate-100">
-          {template.title}
-        </p>
-        <p className="mt-0.5 line-clamp-2 text-[11px] leading-snug text-slate-500 dark:text-slate-300">
-          {template.description}
-        </p>
-      </div>
-    </button>
+    </PickerCard>
   );
 }
 
@@ -68,16 +57,13 @@ export function CategoryCard({
   onOpen: () => void;
 }) {
   return (
-    <button
-      type="button"
-      onClick={onOpen}
-      aria-label={`Browse ${label} templates`}
-      aria-pressed={selected}
-      className={
-        selected
-          ? 'flex flex-col items-start gap-1.5 rounded-lg border-2 border-brand-400 bg-brand-50 p-2 text-left dark:border-brand-500 dark:bg-brand-500/15'
-          : 'flex flex-col items-start gap-1.5 rounded-lg border border-slate-200 bg-white p-2 text-left transition hover:border-brand-300 hover:bg-brand-50/40 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/10'
-      }
+    <PickerCard
+      active={selected}
+      onSelect={onOpen}
+      ariaLabel={`Browse ${label} templates`}
+      label={label}
+      description={description}
+      count={count}
     >
       <div className="grid h-14 w-full grid-cols-2 grid-rows-2 gap-0.5 overflow-hidden rounded-md bg-slate-50 p-1 dark:bg-slate-200">
         {previews.slice(0, 4).map((kind) => (
@@ -89,21 +75,6 @@ export function CategoryCard({
           </div>
         ))}
       </div>
-      <div className="w-full min-w-0">
-        <div className="flex items-center justify-between gap-1">
-          <p className="truncate text-xs font-semibold text-slate-900 dark:text-slate-100">
-            {label}
-          </p>
-          {/* Count badge, pinned far right (w-full row + justify-between) so it
-              sits in the same spot on every card regardless of label length. */}
-          <span className="shrink-0 rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold leading-none text-slate-500 dark:bg-slate-700 dark:text-slate-300">
-            {count}
-          </span>
-        </div>
-        <p className="mt-0.5 line-clamp-2 text-[11px] leading-snug text-slate-500 dark:text-slate-300">
-          {description}
-        </p>
-      </div>
-    </button>
+    </PickerCard>
   );
 }
