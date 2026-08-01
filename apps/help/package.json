@@ -28,14 +28,14 @@
     "@livediagram/eslint-config": "workspace:*",
     "@livediagram/tailwind-config": "workspace:*",
     "@livediagram/vitest-config": "workspace:*",
-    "@tailwindcss/postcss": "^4.0.0",
+    "@tailwindcss/postcss": "^4.3.3",
     "@vitest/coverage-v8": "^4.1.10",
     "@types/mdx": "^2.0.13",
     "@types/node": "^22.10.2",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.0.2",
     "eslint": "^10.8.0",
-    "tailwindcss": "^4.0.0",
+    "tailwindcss": "^4.3.3",
     "typescript": "^5.7.2",
     "vitest": "^4.1.10"
   }
