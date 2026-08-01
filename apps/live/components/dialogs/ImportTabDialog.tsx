@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { Dialog } from '@/components/dialogs/Dialog';
+import { FormatCard } from './FormatCard';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { TextImportPanel } from './TextImportPanel';
 import type { ImportOutcome } from '@/lib/import-tab';
@@ -119,13 +120,14 @@ export function ImportTabDialog({
           <>
             <div className="grid grid-cols-3 gap-3">
               {FORMATS.map((f) => (
-                <ImportCard
+                <FormatCard
                   key={f.key}
-                  kind={f.key}
                   title={f.title}
                   description={f.description}
                   onClick={() => setActive(f.key)}
-                />
+                >
+                  <FormatIcon kind={f.key} />
+                </FormatCard>
               ))}
             </div>
             <p className="mt-3 text-[11px] text-slate-500 dark:text-slate-400">
@@ -142,36 +144,6 @@ export function ImportTabDialog({
         )}
       </div>
     </Dialog>
-  );
-}
-
-function ImportCard({
-  kind,
-  title,
-  description,
-  onClick,
-}: {
-  kind: Format;
-  title: string;
-  description: string;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="flex flex-col items-start gap-1.5 rounded-lg border border-slate-200 bg-white p-3 text-left transition hover:border-brand-300 hover:bg-brand-50/40 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/10"
-    >
-      <div className="flex h-12 w-full items-center justify-center rounded-md bg-slate-50 dark:bg-slate-200">
-        <FormatIcon kind={kind} />
-      </div>
-      <div className="min-w-0">
-        <p className="truncate text-xs font-semibold text-slate-900 dark:text-slate-100">{title}</p>
-        <p className="mt-0.5 line-clamp-2 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
-          {description}
-        </p>
-      </div>
-    </button>
   );
 }
 
