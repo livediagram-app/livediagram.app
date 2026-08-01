@@ -49,9 +49,9 @@ apps/
   mcp/          # Cloudflare Worker MCP server for AI tools (OAuth + tools, mcp.livediagram.app)
   router/       # Cloudflare Worker stitching the apps under one hostname
 packages/
-  ui/             # shared UI primitives (Brand, etc.)
+  ui/             # shared UI primitives (Brand, SiteHeader, Button, TextInput, Select, Tooltip, hooks)
   diagram/        # diagram data model (Tab, Element types + element helpers)
-  icons/          # icon catalogues (line-art + Technology marks) + SVG markup builders
+  icons/          # icon catalogues (line-art + Technology + stickers) + SVG markup builders + xmlEscape
   templates/      # template catalogue + pure element builders (editor Quick Start + MCP)
   help-registry/  # help-centre article/category registry + keywords (help app + editor search)
   api-schema/     # wire-format DTOs the api worker emits + the live editor consumes
