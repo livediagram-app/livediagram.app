@@ -14,6 +14,7 @@
 import {
   createShape,
   type PickerSource,
+  type Reaction,
   type SessionButtonConfig,
   type ShapeElement,
   type Tab,
@@ -181,6 +182,9 @@ export function usePortalSetters({
     patchTarget({ pickerSource }, 'picker', 'Picker');
   const setPickerOptionsSelected = (pickerOptions: string[]) =>
     patchTarget({ pickerOptions }, 'picker', 'Picker');
+  // Reaction pad (spec/135): which burst it throws.
+  const setReactionSelected = (reaction: Reaction) =>
+    patchTarget({ reaction }, 'reaction-pad', 'ReactionPad');
 
   return {
     setPortalTargetSelected,
@@ -190,5 +194,6 @@ export function usePortalSetters({
     setRevealedSelected,
     setPickerSourceSelected,
     setPickerOptionsSelected,
+    setReactionSelected,
   };
 }

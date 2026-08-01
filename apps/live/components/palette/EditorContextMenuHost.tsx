@@ -94,6 +94,7 @@ export function EditorContextMenuHost() {
     setSessionConfigSelected,
     setRevealedSelected,
     setPickerSourceSelected,
+    setReactionSelected,
     setPickerOptionsSelected,
     tabs,
     commitShapeColorPreset,
@@ -248,6 +249,7 @@ export function EditorContextMenuHost() {
       onSetSession={setSessionConfigSelected}
       onSetRevealed={setRevealedSelected}
       onSetPickerSource={setPickerSourceSelected}
+      onSetReaction={setReactionSelected}
       onSetPickerOptions={setPickerOptionsSelected}
       tabs={tabs}
       activeTabId={activeTab.id}

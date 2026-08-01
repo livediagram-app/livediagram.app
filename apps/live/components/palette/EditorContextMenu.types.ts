@@ -157,6 +157,8 @@ export type EditorContextMenuProps = {
   onSetRevealed: (revealed: boolean) => void;
   onSetPickerSource: (source: import('@livediagram/diagram').PickerSource) => void;
   onSetPickerOptions: (options: string[]) => void;
+  // Reaction pad (spec/135): which burst the pad throws.
+  onSetReaction: (reaction: import('@livediagram/diagram').Reaction) => void;
   // The collaboration elements (spec/123, 127, 128, 130). The temperature
   // check, idea box and roll call carry no settings — everything they do
   // happens on their own faces — so they need no setter here.

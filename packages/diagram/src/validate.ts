@@ -103,6 +103,8 @@ export const SHAPE_KINDS = new Set<string>([
   'reveal',
   // Picker (spec/107): rolls a random person or option.
   'picker',
+  // Reaction pad (spec/135).
+  'reaction-pad',
   // Chair (spec/130): an Avatar-mode character sits down in one.
   'chair',
   // The collaboration family (spec/123 to spec/129).

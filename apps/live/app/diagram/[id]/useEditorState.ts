@@ -7,6 +7,7 @@ import {
   voteHidesCursors,
   type BoxedElement,
   type Element,
+  type ShapeElement,
   type Tab,
 } from '@livediagram/diagram';
 
@@ -84,6 +85,7 @@ import { useEditorActions } from '@/hooks/collab/useEditorActions';
 import { createTab, deriveTabLoadState, mergeAiElements, patchTab } from './editor-page-helpers';
 import { useAutosave } from './useAutosave';
 import { usePerTabLoad } from './usePerTabLoad';
+import { useReactionBursts } from '@/hooks/canvas/useReactionBursts';
 import { useRoomConnection } from './useRoomConnection';
 import { useRoomResync } from './useRoomResync';
 import { useIdentityBootstrap } from './useIdentityBootstrap';
@@ -718,6 +720,9 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   const receiveAvatarPush = useCallback((dx: number, dy: number) => {
     setAvatarShove((prev) => ({ dx, dy, seq: (prev?.seq ?? 0) + 1 }));
   }, []);
+  // Reaction bursts (spec/135): ephemeral, per-client, never document state.
+  const reactions = useReactionBursts();
+
   useRoomConnection({
     hydrated,
     diagramId,
@@ -742,6 +747,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setDiagramName,
     setSelfParticipant,
     receiveAvatarPush,
+    receiveReaction: reactions.receive,
     receivePoll: livePoll.receivePoll,
     receivePollAnswer: livePoll.receiveAnswer,
     receivePollEnd: livePoll.receivePollEnd,
@@ -817,6 +823,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     broadcastLaser,
     broadcastAvatar,
     broadcastAvatarPush,
+    broadcastReaction,
     broadcastViewport,
     localLaserTrail,
   } = useEditorBroadcast({
@@ -834,6 +841,21 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // reads each pointer-move) lives in useEditorViewport. The hook
   // is invoked further down, once `activeTab` is in scope; it
   // also owns `getViewportCenter` and `fitToScreen`.
+
+  // Set a reaction pad off (spec/135): play it here, then tell the room.
+  //
+  // Local-first rather than round-tripping through the server: the press has
+  // to feel instant, and a burst is not shared state that could disagree — it
+  // is the same animation run independently on every machine.
+  const fireReaction = useCallback(
+    (element: ShapeElement) => {
+      const played = reactions.play(element.id, element.reaction);
+      broadcastReaction(element.id, played);
+      track('Element', 'Used', 'ReactionPad');
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [reactions.play, broadcastReaction],
+  );
 
   // Same trick for selfParticipant — the WS effect intentionally
   // omits selfParticipant from its dep list (re-opening the socket
@@ -1833,6 +1855,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setSessionConfigSelected,
     setRevealedSelected,
     setPickerSourceSelected,
+    setReactionSelected,
     setPickerOptionsSelected,
   } = usePortalSetters({
     currentSelectionIds,
@@ -2300,6 +2323,9 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     broadcastAvatar,
     broadcastAvatarPush,
     avatarShove,
+    fireReaction,
+    reactionBursts: reactions.bursts,
+    clearReactionBurst: reactions.clear,
     broadcastCursor,
     broadcastLaser,
     canRedo,
@@ -2528,6 +2554,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setSessionConfigSelected,
     setRevealedSelected,
     setPickerSourceSelected,
+    setReactionSelected,
     setPickerOptionsSelected,
     pressSessionButton,
     revealedIds,

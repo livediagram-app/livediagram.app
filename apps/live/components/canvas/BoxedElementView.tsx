@@ -37,9 +37,11 @@ import { SessionButtonFace } from '@/components/canvas/SessionButtonFace';
 import { RevealFace } from '@/components/canvas/RevealFace';
 import { PickerFace } from '@/components/canvas/PickerFace';
 import { PortalFace } from '@/components/canvas/PortalFace';
+import { ReactionPadFace } from '@/components/canvas/ReactionPadFace';
+import { ReactionBurst } from '@/components/canvas/ReactionBurst';
 import { CollabFaceRouter } from '@/components/canvas/collab/CollabFaceRouter';
 import { ChairView } from '@/components/canvas/collab/ChairView';
-import { isCollabPanelShape } from '@livediagram/diagram';
+import { isCollabPanelShape, REACTION_DEFAULT } from '@livediagram/diagram';
 import { DEFAULT_BUTTON_MODE } from '@livediagram/diagram';
 import { isCssNativeBorderStyle } from '@/components/canvas/border-css';
 import { describeVariant } from '@/components/canvas/element-variant';
@@ -109,6 +111,9 @@ function BoxedElementViewImpl({
   collab,
   chairSitters,
   onEnterPortal,
+  onFireReaction,
+  reactionBurst,
+  onReactionBurstDone,
   activeMode,
   onOpenComments,
   onOpenAction,
@@ -487,6 +492,17 @@ function BoxedElementViewImpl({
            every other face above, mid-edit it falls through to the ordinary
            label editor below, so the title is retyped like any shape's. */
         <CollabFaceRouter element={element} label={label} textColor={textColor} collab={collab} />
+      ) : element.type === 'shape' && element.shape === 'reaction-pad' && !isEditing ? (
+        /* Reaction pad (spec/135): a pressable glyph. The burst it throws is
+           rendered OUTSIDE this label stack, below, so it can overflow the
+           element's box — a burst confined to the pad is a burst nobody
+           notices. */
+        <ReactionPadFace
+          label={label}
+          reaction={element.reaction ?? REACTION_DEFAULT}
+          textColor={textColor}
+          onFire={onFireReaction ? () => onFireReaction(element) : undefined}
+        />
       ) : element.type === 'shape' && element.shape === 'portal' && !isEditing ? (
         /* Portal (spec/104): the drawn portal + its label, pressable when paired. */
         <PortalFace
@@ -619,6 +635,17 @@ function BoxedElementViewImpl({
       !readOnly &&
       !isMobileViewportSync() ? (
         <MindNodeHint zoom={zoom} />
+      ) : null}
+
+      {/* The burst (spec/135), a sibling of the label stack rather than a
+          child of it: the particles leave the pad's box on purpose, and the
+          face above clips to its own rounded corners. */}
+      {reactionBurst ? (
+        <ReactionBurst
+          reaction={reactionBurst.reaction}
+          seed={reactionBurst.seed}
+          onDone={() => onReactionBurstDone?.(element.id)}
+        />
       ) : null}
 
       {isLocked ? <LockBadge zoom={zoom} /> : null}

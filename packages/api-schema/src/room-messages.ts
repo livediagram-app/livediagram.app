@@ -229,6 +229,16 @@ export type RoomOp =
   // its owner's machine, so a push is a request, never a remote write, and a
   // peer who has left the mode simply ignores it.
   | { kind: 'avatar-push'; tabId: string; targetId: string; dx: number; dy: number }
+  // Somebody set off a REACTION PAD (spec/135). Ephemeral exactly like cursor
+  // / laser / avatar: never logged, never ordered, never replayed to a
+  // reconnecting client — a burst you missed is a burst that is over.
+  //
+  // Carries the pad's id rather than coordinates: the burst is drawn around
+  // the element, and the element is where everyone already agrees it is.
+  // Sending x/y would mean a peer who has since moved the pad draws confetti
+  // over empty canvas. The reaction rides along so a peer plays the right one
+  // even if the pad's field changed under them mid-flight.
+  | { kind: 'reaction'; tabId: string; elementId: string; reaction: string }
   // The sender's VIEWPORT (spec/131): where they are looking, so anyone who
   // has chosen to follow them can mirror it. Ephemeral presence exactly like
   // cursor / laser / avatar: throttled, never logged, never ordered (no

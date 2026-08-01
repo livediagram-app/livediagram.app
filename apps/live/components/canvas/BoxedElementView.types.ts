@@ -3,6 +3,11 @@ import type { BoxedElement, IconPosition, TextRun } from '@livediagram/diagram';
 import type { DragMode } from '@/lib/canvas';
 
 export type BoxedElementViewProps = {
+  // Reaction pad (spec/135): set it off, plus the burst it is currently
+  // playing and the way to retire that burst when its animation ends.
+  onFireReaction?: (element: import('@livediagram/diagram').ShapeElement) => void;
+  reactionBurst?: { reaction: import('@livediagram/diagram').Reaction; seed: number };
+  onReactionBurstDone?: (elementId: string) => void;
   element: BoxedElement;
   isSelected: boolean;
   // True when this element is part of an active marquee multi-selection.

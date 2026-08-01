@@ -1371,6 +1371,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
+          "reaction-pad": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
           "reveal": {
             "additionalProperties": false,
             "properties": {
@@ -2828,6 +2843,16 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "Reaction": {
+    "enum": [
+      "confetti",
+      "sparkles",
+      "hearts",
+      "applause",
+      "fireworks"
+    ],
+    "type": "string"
+  },
   "RollCallEntry": {
     "additionalProperties": false,
     "properties": {
@@ -3152,6 +3177,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "ratingAnimSpeed": {
         "$ref": "#/components/schemas/AnimationSpeed"
       },
+      "reaction": {
+        "$ref": "#/components/schemas/Reaction"
+      },
       "responses": {
         "items": {
           "$ref": "#/components/schemas/ParticipantResponse"
@@ -3270,6 +3298,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "session-button",
       "reveal",
       "picker",
+      "reaction-pad",
       "chair",
       "estimate",
       "temperature",

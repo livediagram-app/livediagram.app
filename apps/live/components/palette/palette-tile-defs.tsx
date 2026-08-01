@@ -825,6 +825,36 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     icon: <RevealIcon />,
   },
   {
+    // Reaction pad (spec/135): press it or walk onto it, and a burst plays.
+    id: 'tools:reaction-pad',
+    blurb: 'Sets off a burst everyone can see',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add reaction pad',
+    caption: 'Reaction pad',
+    description:
+      'Press it, or walk a character onto it in Avatar mode, and a reaction bursts over the pad for everyone in the room. Pick which one from its right-click menu.',
+    filled: true,
+    action: { type: 'shape', kind: 'reaction-pad' },
+    icon: (
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden
+      >
+        {/* A pad with a burst coming off it. */}
+        <rect x="4" y="13" width="16" height="7.5" rx="1.8" />
+        <path d="M12 10.5V7M8.7 11.4 6.9 8.6M15.3 11.4l1.8-2.8M5.6 13.2 3.4 12M18.4 13.2l2.2-1.2" />
+      </svg>
+    ),
+  },
+  {
     // Picker (spec/107): rolls a person or a written option.
     id: 'tools:picker',
     blurb: 'Picks someone or something at random',

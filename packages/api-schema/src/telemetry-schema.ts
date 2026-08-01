@@ -267,6 +267,7 @@ export const PALETTE_TELEMETRY_TYPES = {
     'SessionButton',
     'Reveal',
     'Picker',
+    'ReactionPad',
     // Chair (spec/130): a Behaviour element, so it ranks with them.
     'Chair',
     'Pie-chart',

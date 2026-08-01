@@ -124,6 +124,9 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     readOnly,
     canvasTool,
     onEnterPortal,
+    onFireReaction,
+    reactionBursts,
+    onReactionBurstDone,
     remoteCursors,
     remoteSelectionsByElement,
     selectedId,
@@ -360,6 +363,9 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             chairSitters={chairSitters}
             activeMode={canvasTool}
             onEnterPortal={onEnterPortal}
+            onFireReaction={onFireReaction}
+            reactionBurst={reactionBursts?.get(element.id)}
+            onReactionBurstDone={onReactionBurstDone}
             onOpenComments={h.onOpenComments}
             onOpenAction={h.onOpenAction}
             onOpenNote={h.onOpenNote}

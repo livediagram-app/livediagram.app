@@ -24,6 +24,7 @@ import type {
   AnimationSpeed,
   ChecklistItem,
   EntityField,
+  Reaction,
   CodeLanguage,
   ElementAnimation,
   ElementId,
@@ -260,6 +261,9 @@ export type ShapeElement = {
   // meaningful on the 'entity' kind; bounded in validate.ts. The element's
   // `label` is the record's TITLE, so a record needs no extra name field.
   entityFields?: EntityField[];
+  // Reaction pad (spec/135): which burst this pad throws. Absent falls back to
+  // REACTION_DEFAULT at render, so a pad from an older file still works.
+  reaction?: Reaction;
   // Mind node (spec/118): which node owns this one. Absent = a root.
   //
   // A child pointer rather than a `children[]` array: single-valued, so it

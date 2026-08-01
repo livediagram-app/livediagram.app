@@ -129,6 +129,13 @@ export type CanvasProps = {
     targetName: string | null;
     travel?: () => void;
   };
+  // Reaction pad (spec/135): set one off. Absent on a read-only surface, which
+  // renders the pad inert rather than hiding it.
+  onFireReaction?: (element: import('@livediagram/diagram').ShapeElement) => void;
+  // The bursts currently playing, keyed by the pad's element id, plus the way
+  // to retire one when its animation ends. Ephemeral: never document state.
+  reactionBursts?: Map<string, { reaction: import('@livediagram/diagram').Reaction; seed: number }>;
+  onReactionBurstDone?: (elementId: string) => void;
   // Leaves Avatar mode (spec/101) for the tool that preceded it. Wired to the
   // palette (any tile pick) and to a palette drag-drop, both of which are
   // edits the read-only mode would otherwise swallow.

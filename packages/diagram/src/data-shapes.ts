@@ -198,3 +198,43 @@ export function clampRating(value: number): number {
 export function clampPercent(value: number): number {
   return clampRound(value, 100);
 }
+
+// Reaction pads (spec/135). Five reactions, chosen to cover distinct THINGS
+// PEOPLE MEAN rather than five ways of saying "nice": celebrate a result,
+// admire an idea, show warmth to a person, thank a speaker, mark the moment a
+// thing shipped. A sixth would be decoration.
+export const REACTIONS = ['confetti', 'sparkles', 'hearts', 'applause', 'fireworks'] as const;
+export type Reaction = (typeof REACTIONS)[number];
+
+/** Menu + tooltip name for a reaction. */
+export const REACTION_LABEL: Record<Reaction, string> = {
+  confetti: 'Confetti',
+  sparkles: 'Sparkles',
+  hearts: 'Hearts',
+  applause: 'Applause',
+  fireworks: 'Fireworks',
+};
+
+/** The glyph the pad wears, and the particle each burst throws. */
+export const REACTION_EMOJI: Record<Reaction, string> = {
+  confetti: '🎉',
+  sparkles: '✨',
+  hearts: '💜',
+  applause: '👏',
+  fireworks: '🎆',
+};
+
+/** One line on what the reaction is FOR, for the menu tile. */
+export const REACTION_HINT: Record<Reaction, string> = {
+  confetti: 'A result worth celebrating',
+  sparkles: 'A good idea, nicely done',
+  hearts: 'Warmth for a person, not a result',
+  applause: 'Thanks for the talk or the demo',
+  fireworks: 'It shipped',
+};
+
+export const REACTION_DEFAULT: Reaction = 'confetti';
+
+export function isReaction(value: unknown): value is Reaction {
+  return typeof value === 'string' && (REACTIONS as readonly string[]).includes(value);
+}

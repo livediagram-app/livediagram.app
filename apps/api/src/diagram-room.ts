@@ -84,6 +84,10 @@ const PRESENCE_OP_KINDS = new Set([
   // A shove (spec/101) moves nothing on the server and nothing in the
   // document — it asks one peer to step aside. Same trust level as `avatar`.
   'avatar-push',
+  // A reaction burst (spec/135) is pure theatre: nothing on the server,
+  // nothing in the document, and nothing worth replaying to somebody who
+  // arrives after it finished.
+  'reaction',
 ]);
 
 // One entry in the reconnect catch-up log: a mutation op plus the sequence

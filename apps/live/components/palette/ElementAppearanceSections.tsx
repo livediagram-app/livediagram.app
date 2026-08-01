@@ -123,6 +123,7 @@ export function ElementAppearanceSections({
   const isSessionButton = target.type === 'shape' && target.shape === 'session-button';
   const isReveal = target.type === 'shape' && target.shape === 'reveal';
   const isPicker = target.type === 'shape' && target.shape === 'picker';
+  const isReactionPad = target.type === 'shape' && target.shape === 'reaction-pad';
   // The collaboration elements that carry settings (spec/123, 127, 128, 130).
   const isEstimate = target.type === 'shape' && target.shape === 'estimate';
   const isAgenda = target.type === 'shape' && target.shape === 'agenda';
@@ -235,6 +236,7 @@ export function ElementAppearanceSections({
         isSessionButton={isSessionButton}
         isReveal={isReveal}
         isPicker={isPicker}
+        isReactionPad={isReactionPad}
         isEstimate={isEstimate}
         isAgenda={isAgenda}
         isDecision={isDecision}

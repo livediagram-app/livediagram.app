@@ -247,6 +247,10 @@ export type ShapeKind =
   | 'reveal'
   // Picker (spec/107): press it to choose a person or an option at random.
   | 'picker'
+  // Reaction pad (spec/135): press it, or walk an Avatar-mode character onto
+  // it, and a burst of reaction plays over the pad. Which reaction lives in
+  // the element's `reaction` field.
+  | 'reaction-pad'
   // Chair (spec/130): furniture an Avatar-mode character sits down in when it
   // walks into one. Which way the seat points lives in `chairFacing`.
   | 'chair'

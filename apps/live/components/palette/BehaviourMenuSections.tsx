@@ -1,7 +1,8 @@
 'use client';
 
 // The element-menu sections for the Behaviour elements that carry settings:
-// the Session button (spec/105) and the Picker (spec/107). The Reveal zone
+// the Session button (spec/105), the Picker (spec/107) and the Reaction pad
+// (spec/135). The Reveal zone
 // (spec/106) has no settings — only the two reveal actions — so it lives here
 // too rather than growing a third file for four rows.
 //
@@ -11,6 +12,12 @@
 
 import { useEffect, useState } from 'react';
 import {
+  REACTION_DEFAULT,
+  REACTION_EMOJI,
+  REACTION_HINT,
+  REACTION_LABEL,
+  REACTIONS,
+  type Reaction,
   DEFAULT_PICKER_SOURCE,
   DEFAULT_SESSION_TOOL,
   DEFAULT_TIMER_MINUTES,
@@ -250,6 +257,47 @@ export function RevealMenuSection({
           onClick={() => onSetRevealed(false)}
         />
       </MenuTileGrid>
+    </MenuAccordionSection>
+  );
+}
+
+// Reaction pad (spec/135): which burst the pad throws.
+//
+// A tile grid rather than a dropdown, because the five reactions differ in
+// FEELING rather than in name — the glyph is the thing being chosen, and a
+// list of five words hides exactly the part the user is picking on. The hints
+// spell out what each one is FOR, since "confetti or fireworks?" is a real
+// question and both answers look like celebration.
+export function ReactionMenuSection({
+  element,
+  onSetReaction,
+  sectionProps,
+}: {
+  element: ShapeElement;
+  onSetReaction: (reaction: Reaction) => void;
+  sectionProps: { open: boolean; onToggle: () => void };
+}) {
+  const current = element.reaction ?? REACTION_DEFAULT;
+  return (
+    <MenuAccordionSection
+      title="Reaction"
+      icon={<span className="text-[13px] leading-none">{REACTION_EMOJI[current]}</span>}
+      {...sectionProps}
+    >
+      <MenuTileGrid cols={3}>
+        {REACTIONS.map((reaction) => (
+          <MenuTile
+            key={reaction}
+            icon={<span className="text-[15px] leading-none">{REACTION_EMOJI[reaction]}</span>}
+            label={REACTION_LABEL[reaction]}
+            active={reaction === current}
+            onClick={() => onSetReaction(reaction)}
+          />
+        ))}
+      </MenuTileGrid>
+      <p className="px-3 pb-1.5 pt-1 text-[10px] leading-snug text-slate-500 dark:text-slate-400">
+        {REACTION_HINT[current]}. Press the pad, or walk a character onto it in Avatar mode.
+      </p>
     </MenuAccordionSection>
   );
 }

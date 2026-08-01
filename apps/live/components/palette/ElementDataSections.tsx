@@ -57,6 +57,7 @@ import {
 } from '@/components/palette/CollabMenuSections';
 import {
   PickerMenuSection,
+  ReactionMenuSection,
   RevealMenuSection,
   SessionMenuSection,
 } from '@/components/palette/BehaviourMenuSections';
@@ -108,6 +109,7 @@ type ElementDataSectionsProps = {
   isSessionButton: boolean;
   isReveal: boolean;
   isPicker: boolean;
+  isReactionPad: boolean;
   // The collaboration elements that carry settings (spec/123, 127, 128, 130).
   // The temperature check, idea box and roll call have none — they are entirely
   // driven from their own faces — so they get no flag.
@@ -150,6 +152,7 @@ export function ElementDataSections({
   isSessionButton,
   isReveal,
   isPicker,
+  isReactionPad,
   isEstimate,
   isAgenda,
   isDecision,
@@ -179,6 +182,7 @@ export function ElementDataSections({
     isSessionButton ||
     isReveal ||
     isPicker ||
+    isReactionPad ||
     isEstimate ||
     isAgenda ||
     isDecision ||
@@ -405,6 +409,14 @@ export function ElementDataSections({
               onSetPickerSource={props.onSetPickerSource}
               onSetPickerOptions={props.onSetPickerOptions}
               sectionProps={sectionProps('picker')}
+            />
+          ) : null}
+          {/* Reaction pad (spec/135) — which burst it throws. */}
+          {isReactionPad && shapeTarget ? (
+            <ReactionMenuSection
+              element={shapeTarget}
+              onSetReaction={props.onSetReaction}
+              sectionProps={sectionProps('reaction')}
             />
           ) : null}
           {/* Chart (spec/53) — display options. Legend placement: Off + 4 sides. */}

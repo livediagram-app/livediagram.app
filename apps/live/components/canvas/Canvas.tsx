@@ -304,6 +304,9 @@ export function Canvas(props: CanvasProps) {
     // Chair (spec/130): walking onto one sits the character down, snapped to
     // the seat point so it sits ON the chair rather than wherever it arrived.
     onWalkIntoChair: (element) => avatarRef.current?.sitOn(element.id, chairSeatPoint(element)),
+    // Reaction pad (spec/135): walking onto one is the same act as pressing
+    // it, so it runs the same handler.
+    onWalkIntoReactionPad: (element) => props.onFireReaction?.(element),
   });
   // `sitOn` is returned by the very hook whose callback needs it, so the call
   // goes through a ref — declared above, repointed here, read at arrival time.
@@ -646,6 +649,9 @@ export function Canvas(props: CanvasProps) {
             // Portal travel is resolved HERE (Canvas owns the viewport + the avatar),
             // so the prop from the host is overridden with the local resolver.
             onEnterPortal={resolvePortal}
+            onFireReaction={props.onFireReaction}
+            reactionBursts={props.reactionBursts}
+            onReactionBurstDone={props.onReactionBurstDone}
             // Chair (spec/130): occupancy resolved here, where peer presence
             // lives, rather than threaded from the page.
             chairSitters={(elementId) => chairSitters.get(elementId) ?? []}

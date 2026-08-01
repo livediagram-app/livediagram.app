@@ -144,7 +144,8 @@ export function voteHidesTallies(vote: TabVote | null | undefined): boolean {
 // and shapes — but NOT a `frame` (it's a section backdrop, not content),
 // and not text / freehand / table / arrow / annotation.
 // Interactive Behaviour elements (spec/103, /104, /105, /106, /107): a mode
-// button, portal, session button, reveal or picker DOES something when you
+// button, portal, session button, reveal, picker or reaction pad DOES
+// something when you
 // press it. Voting turns a press into a dot, so a votable behaviour element
 // would have two conflicting meanings for the same tap — and the one the user
 // gets would depend on whether a vote happens to be running. They are
@@ -157,6 +158,7 @@ const NON_VOTABLE_SHAPES = new Set([
   'session-button',
   'reveal',
   'picker',
+  'reaction-pad',
 ]);
 
 export function isVotable(element: Element): boolean {

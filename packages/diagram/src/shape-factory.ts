@@ -23,6 +23,7 @@ import {
   RAIL_DEFAULT_POINTS,
   RAIL_POINT_STEP_PX,
   RATING_DEFAULT,
+  REACTION_DEFAULT,
 } from './data-shapes';
 import {
   AGENDA_DEFAULT_MINUTES,
@@ -56,6 +57,8 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // Lane (spec/119): a band, not a box — wide enough to lay a flow across and
   // tall enough for a row of steps.
   lane: { width: 900, height: 200 },
+  // Reaction pad: a press-me square, sized like the other Behaviour buttons.
+  'reaction-pad': { width: 150, height: 110 },
   // Record (spec/120): a class box — wide enough for "name: Type" rows,
   // tall enough for a title plus four of them before it needs resizing.
   entity: { width: 240, height: 170 },
@@ -369,6 +372,17 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
         { name: 'id', type: 'string' },
         { name: 'name', type: 'string' },
       ],
+    };
+  }
+  if (kind === 'reaction-pad') {
+    return {
+      ...base,
+      reaction: REACTION_DEFAULT,
+      // The glyph carries the meaning, so the label names the ACT rather than
+      // repeating it: "Celebrate" over a 🎉 says what pressing does.
+      label: 'Celebrate',
+      textAlignY: 'bottom',
+      borderRadius: 'lg',
     };
   }
   if (kind === 'lane') {

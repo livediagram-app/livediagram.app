@@ -126,6 +126,9 @@ export function EditorCanvasHost() {
     broadcastAvatar,
     broadcastAvatarPush,
     avatarShove,
+    fireReaction,
+    reactionBursts,
+    clearReactionBurst,
     broadcastCursor,
     broadcastLaser,
     cancelConnect,
@@ -400,6 +403,9 @@ export function EditorCanvasHost() {
       // shoves it; their own client decides what to do with the request.
       onAvatarPush={broadcastAvatarPush}
       avatarShove={avatarShove}
+      onFireReaction={isReadOnly ? undefined : fireReaction}
+      reactionBursts={reactionBursts}
+      onReactionBurstDone={clearReactionBurst}
       laserTrails={laserTrailRows}
       onCanvasPointerMove={(x, y) => {
         if (canvasTool === 'laser' && x !== null && y !== null) {

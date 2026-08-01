@@ -75,6 +75,7 @@ export function useAvatarWalk({
   onPresence,
   onWalkIntoPortal,
   onWalkIntoChair,
+  onWalkIntoReactionPad,
 }: {
   // True while the Avatar canvas tool is the active tool.
   active: boolean;
@@ -107,6 +108,9 @@ export function useAvatarWalk({
   // Chair (spec/130): the character walked onto a chair. Fired once on ARRIVAL,
   // like the portal above.
   onWalkIntoChair?: (element: import('@livediagram/diagram').ShapeElement) => void;
+  // Reaction pad (spec/135): the character walked onto a pad. Same arrival
+  // hook as the portal and the chair, so a pad costs no third mechanism.
+  onWalkIntoReactionPad?: (element: import('@livediagram/diagram').ShapeElement) => void;
 }) {
   // Rendered state. `pos` survives a detour to another tool (Canvas stays
   // mounted), so coming back finds the avatar where you left it; null until
@@ -150,6 +154,8 @@ export function useAvatarWalk({
   portalRef.current = onWalkIntoPortal;
   const chairRef = useRef(onWalkIntoChair);
   chairRef.current = onWalkIntoChair;
+  const padRef = useRef(onWalkIntoReactionPad);
+  padRef.current = onWalkIntoReactionPad;
   const seatedRef = useRef<string | null>(null);
   // The costume last published as a standing snapshot; null = nothing published
   // since the mode was entered. Keeps the entry publish to once per change.
@@ -602,6 +608,10 @@ export function useAvatarWalk({
     if (el && el.type === 'shape' && el.shape === 'chair' && !seatedRef.current) {
       chairRef.current?.(el);
     }
+    // Reaction pad (spec/135). Fires on ARRIVAL like the others, so standing
+    // on a pad throws one burst rather than one per frame; stepping off and
+    // back on is a deliberate second press.
+    if (el && el.type === 'shape' && el.shape === 'reaction-pad') padRef.current?.(el);
     // `elements` is read for the arrival lookup only; the trigger is the change
     // in what the feet are on.
     // eslint-disable-next-line react-hooks/exhaustive-deps

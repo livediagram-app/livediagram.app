@@ -69,6 +69,9 @@ export function useRoomConnection(opts: {
   // Avatar mode (spec/101): somebody pushed our character. Stable, like the
   // poll handlers below, so it can't reopen the socket.
   receiveAvatarPush: (dx: number, dy: number) => void;
+  // A peer set off a reaction pad (spec/135). Purely visual: nothing is
+  // written, so there is nothing here to persist, order, or undo.
+  receiveReaction: (elementId: string, reaction: string) => void;
   receivePoll: (poll: LivePoll) => void;
   receivePollAnswer: (from: string, pollId: string, value: string | null) => void;
   receivePollEnd: (pollId: string) => void;
@@ -101,6 +104,7 @@ export function useRoomConnection(opts: {
     setDiagramName,
     setSelfParticipant,
     receiveAvatarPush,
+    receiveReaction,
     receivePoll,
     receivePollAnswer,
     receivePollEnd,
@@ -416,6 +420,12 @@ export function useRoomConnection(opts: {
           // written to the document either way: our client decides what to do
           // with the request, and does nothing if we've left the mode.
           receiveAvatarPush(op.dx, op.dy);
+        } else if (op.kind === 'reaction') {
+          // No tab check here, unlike the laser: a burst is keyed to the
+          // ELEMENT, and only the active tab's elements are rendered, so a
+          // burst for a pad on another tab has nothing to draw itself on and
+          // expires quietly.
+          receiveReaction(op.elementId, op.reaction);
         } else if (op.kind === 'tab-focus') {
           setRemoteTabFocus((prev) => {
             const next = new Map(prev);

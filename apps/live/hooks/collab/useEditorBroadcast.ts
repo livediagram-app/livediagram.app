@@ -76,6 +76,9 @@ type EditorBroadcastApi = {
   // Ask one peer's character to step aside (spec/101): a unit direction and
   // who it is aimed at. Never throttled — it is an event, not a sample.
   broadcastAvatarPush: (targetId: string, dx: number, dy: number) => void;
+  // Reaction pad (spec/135): tell the room a pad went off, so the burst plays
+  // for everyone rather than only the person who pressed it.
+  broadcastReaction: (elementId: string, reaction: string) => void;
   // Publish where we are looking (spec/131), for anyone following us.
   broadcastViewport: (pan: { x: number; y: number }, zoom: number) => void;
   // The local trail buffer (canvas-coords + timestamps), consumed
@@ -210,8 +213,21 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
     });
   };
 
+  // A reaction burst (spec/135). Discrete like the shove above: never
+  // throttled, never dropped, same presence gate.
+  const broadcastReaction = (elementId: string, reaction: string) => {
+    if (deps.cursorsHidden) return;
+    if (!deps.hydrated || !deps.diagramId || (!deps.diagramShareable && !deps.diagramTeamId))
+      return;
+    deps.roomRef.current?.send({
+      kind: 'op',
+      op: { kind: 'reaction', tabId: deps.activeId, elementId, reaction },
+    });
+  };
+
   return {
     broadcastCursor,
+    broadcastReaction,
     broadcastLaser,
     broadcastAvatar,
     broadcastAvatarPush,

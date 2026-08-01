@@ -87,10 +87,18 @@ export function deriveNewBoxedColours(
   // The Behaviour elements are CONTROLS and scenery, not nodes in the diagram's
   // colour scheme: buttons you press (spec/103, spec/105), a portal you walk
   // through (spec/104), a cover you lift (spec/106), a card that rolls
-  // (spec/107). They ship with their own colours, and tinting them from the
+  // (spec/107), a pad you set off (spec/135). They ship with their own
+  // colours, and tinting them from the
   // backdrop is what made the first button look like a box with words in it.
   // All stay recolourable from the menu like anything else.
-  const BEHAVIOUR_KINDS = new Set(['mode-button', 'portal', 'session-button', 'reveal', 'picker']);
+  const BEHAVIOUR_KINDS = new Set([
+    'mode-button',
+    'portal',
+    'session-button',
+    'reveal',
+    'picker',
+    'reaction-pad',
+  ]);
   if (base.type === 'shape' && BEHAVIOUR_KINDS.has(base.shape)) return colours;
   if (base.type === 'shape' || base.type === 'annotation') {
     // Annotation markers derive fill + stroke from the backdrop like a shape
