@@ -16,11 +16,33 @@
 //   - hair     → eight styles, drawn per view (front / back / profile)
 //   - size     → a scale on the whole sprite, applied by the caller's box
 // Colour is not a choice: the shirt takes the participant's presence colour.
+//
+// This file draws the body and assembles the whole figure. Two pieces sit
+// beside it: avatar-sprite-head.tsx (everything above the neck, where the
+// eight-hairstyles-by-three-facings combinations live) and
+// avatar-sprite-palette.ts (the colours both halves have to agree on).
 
 import type { AvatarConfig } from '@/lib/avatar-config';
 import { BARE_ARM_CLOTHING, BARE_LEG_CLOTHING } from '@/lib/avatar-config';
 import type { ReactionPose } from '@/lib/avatar-reactions';
 import type { AvatarFacing } from '@/lib/avatar-walk';
+import { HeadBack, HeadFront, HeadProfile, Hood } from '@/components/canvas/avatar-sprite-head';
+import {
+  APRON,
+  COAT,
+  COAT_DARK,
+  DENIM,
+  DENIM_DARK,
+  FLAG_CLOTH,
+  FLAG_POLE,
+  SHIRT_WHITE,
+  SHOE,
+  SKIN,
+  SKIN_DARK,
+  TROUSERS,
+  TROUSERS_DARK,
+  shade,
+} from '@/components/canvas/avatar-sprite-palette';
 import {
   AVATAR_GRID_HEIGHT,
   AVATAR_HEIGHT,
@@ -29,46 +51,6 @@ import {
   avatarBox,
   avatarPortraitBox,
 } from '@/lib/avatar-walk';
-
-// Sprite palette. Warm skin + brown hair, with one darker tone per material
-// for the shaded edge that gives pixel art its volume. The shirt is the
-// participant's presence colour (brand cyan when there isn't one).
-const SKIN = '#f4c99b';
-const SKIN_DARK = '#d9a674';
-const HAIR = '#6b4423';
-const HAIR_DARK = '#4a2e17';
-const DEFAULT_SHIRT = '#0ea5e9';
-const TROUSERS = '#3f4c63';
-const TROUSERS_DARK = '#2c3648';
-const SHOE = '#1e293b';
-const EYE = '#243044';
-const SHIRT_WHITE = '#f8fafc';
-const FLAG_POLE = '#b8845a';
-const FLAG_CLOTH = '#f43f5e';
-// Tones the later outfits need beyond the shirt colour: denim for overalls, a
-// clinical white-coat body, and a leather-ish apron.
-const DENIM = '#41597f';
-const DENIM_DARK = '#2f4260';
-const COAT = '#eef2f6';
-const COAT_DARK = '#cfd8e3';
-const APRON = '#8b5e34';
-
-// A darker companion to an arbitrary shirt colour, for the shaded side. Mixes
-// the hex toward black; falls back to the default pair when the colour isn't a
-// plain 6-digit hex (a CSS name or rgb() string from an older presence packet).
-function shade(hex: string | undefined): { base: string; dark: string } {
-  const base = hex ?? DEFAULT_SHIRT;
-  const m = /^#([0-9a-f]{6})$/i.exec(base);
-  if (!m) return { base, dark: base };
-  const n = parseInt(m[1] ?? '', 16);
-  const mix = (c: number) => Math.round(c * 0.78);
-  const dark =
-    '#' +
-    [mix((n >> 16) & 255), mix((n >> 8) & 255), mix(n & 255)]
-      .map((c) => c.toString(16).padStart(2, '0'))
-      .join('');
-  return { base, dark };
-}
 
 // --- Legs -------------------------------------------------------------------
 
@@ -544,291 +526,6 @@ function TorsoProfile({
       </g>
     </g>
   );
-}
-
-// --- Head + hair ------------------------------------------------------------
-
-// Hair, front view. Each style is a few rects over the scalp; `bald` draws
-// nothing but the crown shading, and `mohawk` shaves the sides back to skin.
-function HairFront({ hair }: { hair: AvatarConfig['hair'] }) {
-  if (hair === 'bald') return <rect x={4} y={1} width={8} height={1} fill={SKIN_DARK} />;
-  if (hair === 'mohawk') {
-    return (
-      <g>
-        {/* a crest up the middle, sides shaved to stubble */}
-        <rect x={4} y={1} width={8} height={1} fill={SKIN_DARK} />
-        <rect x={7} y={-3} width={2} height={5} fill={HAIR} />
-        <rect x={8} y={-3} width={1} height={5} fill={HAIR_DARK} />
-      </g>
-    );
-  }
-  if (hair === 'buzz') {
-    // A close crop: one row, hugging the skull.
-    return (
-      <g>
-        <rect x={4} y={0} width={8} height={2} fill={HAIR} />
-        <rect x={10} y={0} width={2} height={2} fill={HAIR_DARK} />
-      </g>
-    );
-  }
-  if (hair === 'spiky') {
-    // Points above the hairline rather than a rounded crown.
-    return (
-      <g>
-        <rect x={3} y={0} width={10} height={2} fill={HAIR} />
-        <rect x={11} y={0} width={2} height={2} fill={HAIR_DARK} />
-        <rect x={4} y={-2} width={1} height={2} fill={HAIR} />
-        <rect x={6} y={-3} width={1} height={3} fill={HAIR} />
-        <rect x={8} y={-2} width={1} height={2} fill={HAIR} />
-        <rect x={10} y={-3} width={1} height={3} fill={HAIR_DARK} />
-      </g>
-    );
-  }
-  if (hair === 'afro') {
-    // A tall round halo, wider than the head on both sides.
-    return (
-      <g>
-        <rect x={2} y={-3} width={12} height={5} fill={HAIR} />
-        <rect x={1} y={-1} width={1} height={4} fill={HAIR} />
-        <rect x={14} y={-1} width={1} height={4} fill={HAIR_DARK} />
-        <rect x={11} y={-3} width={3} height={5} fill={HAIR_DARK} />
-      </g>
-    );
-  }
-  return (
-    <g>
-      <rect x={3} y={0} width={10} height={3} fill={HAIR} />
-      {hair === 'short' ? (
-        <>
-          <rect x={3} y={3} width={2} height={3} fill={HAIR_DARK} />
-          <rect x={11} y={3} width={2} height={3} fill={HAIR_DARK} />
-        </>
-      ) : null}
-      {hair === 'curly' ? (
-        <>
-          {/* bumps along the crown, plus curls at the temples */}
-          <rect x={3} y={-1} width={2} height={1} fill={HAIR} />
-          <rect x={7} y={-2} width={2} height={2} fill={HAIR} />
-          <rect x={11} y={-1} width={2} height={1} fill={HAIR_DARK} />
-          <rect x={2} y={2} width={2} height={3} fill={HAIR} />
-          <rect x={12} y={2} width={2} height={3} fill={HAIR_DARK} />
-        </>
-      ) : null}
-      {hair === 'long' ? (
-        <>
-          <rect x={2} y={2} width={2} height={9} fill={HAIR} />
-          <rect x={12} y={2} width={2} height={9} fill={HAIR_DARK} />
-        </>
-      ) : null}
-      {hair === 'bun' ? (
-        <>
-          {/* a knot on top, hair gathered back at the sides */}
-          <rect x={6} y={-3} width={4} height={3} fill={HAIR} />
-          <rect x={9} y={-3} width={1} height={3} fill={HAIR_DARK} />
-          <rect x={3} y={3} width={1} height={3} fill={HAIR_DARK} />
-          <rect x={12} y={3} width={1} height={3} fill={HAIR_DARK} />
-        </>
-      ) : null}
-      {hair === 'ponytail' ? (
-        <>
-          <rect x={3} y={3} width={1} height={3} fill={HAIR_DARK} />
-          <rect x={12} y={3} width={1} height={3} fill={HAIR_DARK} />
-          {/* the tail, gathered high on the right */}
-          <rect x={13} y={2} width={2} height={2} fill={HAIR} />
-          <rect x={14} y={4} width={2} height={4} fill={HAIR_DARK} />
-        </>
-      ) : null}
-      {hair === 'pigtails' ? (
-        <>
-          {/* a bunch either side, level with the ears */}
-          <rect x={1} y={2} width={2} height={4} fill={HAIR} />
-          <rect x={13} y={2} width={2} height={4} fill={HAIR_DARK} />
-          <rect x={3} y={3} width={1} height={2} fill={HAIR} />
-          <rect x={12} y={3} width={1} height={2} fill={HAIR_DARK} />
-        </>
-      ) : null}
-      {hair === 'bob' ? (
-        <>
-          {/* a blunt chin-length cut, straight sides */}
-          <rect x={2} y={2} width={2} height={5} fill={HAIR} />
-          <rect x={12} y={2} width={2} height={5} fill={HAIR_DARK} />
-          <rect x={2} y={6} width={12} height={1} fill={HAIR_DARK} />
-        </>
-      ) : null}
-      {hair === 'braid' ? (
-        <>
-          {/* a single plait down one side, drawn as linked segments */}
-          <rect x={3} y={3} width={1} height={3} fill={HAIR_DARK} />
-          <rect x={12} y={3} width={2} height={3} fill={HAIR} />
-          <rect x={13} y={6} width={2} height={2} fill={HAIR_DARK} />
-          <rect x={13} y={9} width={2} height={2} fill={HAIR} />
-        </>
-      ) : null}
-      {hair === 'topknot' ? (
-        <>
-          {/* shaved-ish sides with a knot pulled high */}
-          <rect x={7} y={-4} width={3} height={3} fill={HAIR} />
-          <rect x={9} y={-4} width={1} height={3} fill={HAIR_DARK} />
-          <rect x={7} y={-1} width={2} height={1} fill={HAIR_DARK} />
-        </>
-      ) : null}
-    </g>
-  );
-}
-
-// Facing the viewer: face, eyes, a mouth pixel. The female build gets a
-// slightly softer jaw (one pixel narrower at the chin).
-function HeadFront({
-  gender,
-  hair,
-}: {
-  gender: AvatarConfig['gender'];
-  hair: AvatarConfig['hair'];
-}) {
-  return (
-    <g>
-      <rect x={4} y={1} width={8} height={8} fill={SKIN} />
-      <rect x={10} y={1} width={2} height={8} fill={SKIN_DARK} />
-      {gender === 'female' ? <rect x={4} y={8} width={1} height={1} fill={SKIN_DARK} /> : null}
-      <HairFront hair={hair} />
-      <rect x={6} y={5} width={1} height={1} fill={EYE} />
-      <rect x={9} y={5} width={1} height={1} fill={EYE} />
-      <rect x={7} y={7} width={2} height={1} fill={SKIN_DARK} />
-    </g>
-  );
-}
-
-// Walking away: the back of the head, no face. Long hair, a bun, and a tail
-// read most clearly from here.
-function HeadBack({ hair }: { hair: AvatarConfig['hair'] }) {
-  return (
-    <g>
-      <rect x={4} y={1} width={8} height={8} fill={SKIN_DARK} />
-      {hair === 'bald' ? null : hair === 'mohawk' ? (
-        <>
-          <rect x={7} y={-3} width={2} height={9} fill={HAIR} />
-          <rect x={8} y={-3} width={1} height={9} fill={HAIR_DARK} />
-        </>
-      ) : hair === 'buzz' ? (
-        <>
-          <rect x={4} y={0} width={8} height={5} fill={HAIR} />
-          <rect x={10} y={0} width={2} height={5} fill={HAIR_DARK} />
-        </>
-      ) : (
-        <>
-          <rect x={3} y={0} width={10} height={7} fill={HAIR} />
-          <rect x={11} y={0} width={2} height={7} fill={HAIR_DARK} />
-          {hair === 'curly' ? (
-            <>
-              <rect x={3} y={-1} width={2} height={1} fill={HAIR} />
-              <rect x={7} y={-2} width={2} height={2} fill={HAIR} />
-              <rect x={11} y={-1} width={2} height={1} fill={HAIR_DARK} />
-            </>
-          ) : null}
-          {hair === 'long' ? <rect x={3} y={5} width={10} height={6} fill={HAIR} /> : null}
-          {hair === 'bun' ? <rect x={6} y={-3} width={4} height={3} fill={HAIR} /> : null}
-          {hair === 'ponytail' ? <rect x={6} y={6} width={4} height={6} fill={HAIR_DARK} /> : null}
-          {hair === 'pigtails' ? (
-            <>
-              <rect x={1} y={2} width={2} height={5} fill={HAIR} />
-              <rect x={13} y={2} width={2} height={5} fill={HAIR_DARK} />
-            </>
-          ) : null}
-          {hair === 'afro' ? (
-            <>
-              <rect x={2} y={-3} width={12} height={4} fill={HAIR} />
-              <rect x={11} y={-3} width={3} height={4} fill={HAIR_DARK} />
-            </>
-          ) : null}
-          {hair === 'spiky' ? (
-            <>
-              <rect x={4} y={-2} width={1} height={2} fill={HAIR} />
-              <rect x={6} y={-3} width={1} height={3} fill={HAIR} />
-              <rect x={8} y={-2} width={1} height={2} fill={HAIR} />
-              <rect x={10} y={-3} width={1} height={3} fill={HAIR_DARK} />
-            </>
-          ) : null}
-          {hair === 'bob' ? <rect x={3} y={5} width={10} height={3} fill={HAIR} /> : null}
-          {hair === 'braid' ? (
-            <>
-              <rect x={7} y={6} width={2} height={2} fill={HAIR} />
-              <rect x={7} y={9} width={2} height={2} fill={HAIR_DARK} />
-              <rect x={7} y={12} width={2} height={2} fill={HAIR} />
-            </>
-          ) : null}
-          {hair === 'topknot' ? <rect x={6} y={-4} width={4} height={3} fill={HAIR} /> : null}
-        </>
-      )}
-      <rect x={5} y={7} width={6} height={1} fill={SKIN_DARK} />
-    </g>
-  );
-}
-
-// Profile (drawn facing LEFT; the right-facing sprite mirrors this one).
-function HeadProfile({ hair }: { hair: AvatarConfig['hair'] }) {
-  return (
-    <g>
-      <rect x={4} y={1} width={7} height={8} fill={SKIN} />
-      {/* Nose pixel */}
-      <rect x={3} y={5} width={1} height={2} fill={SKIN} />
-      {hair === 'bald' ? null : hair === 'mohawk' ? (
-        <>
-          <rect x={6} y={-3} width={4} height={4} fill={HAIR} />
-          <rect x={9} y={-3} width={1} height={4} fill={HAIR_DARK} />
-        </>
-      ) : hair === 'buzz' ? (
-        <>
-          <rect x={4} y={0} width={9} height={2} fill={HAIR} />
-          <rect x={10} y={2} width={3} height={3} fill={HAIR_DARK} />
-        </>
-      ) : (
-        <>
-          <rect x={4} y={0} width={9} height={3} fill={HAIR} />
-          <rect x={9} y={3} width={4} height={5} fill={HAIR} />
-          <rect x={11} y={3} width={2} height={5} fill={HAIR_DARK} />
-          {hair === 'curly' ? (
-            <>
-              <rect x={5} y={-1} width={2} height={1} fill={HAIR} />
-              <rect x={9} y={-2} width={3} height={2} fill={HAIR} />
-            </>
-          ) : null}
-          {hair === 'long' ? <rect x={9} y={7} width={4} height={5} fill={HAIR} /> : null}
-          {hair === 'bun' ? <rect x={11} y={-2} width={4} height={3} fill={HAIR} /> : null}
-          {hair === 'ponytail' ? <rect x={12} y={4} width={3} height={4} fill={HAIR_DARK} /> : null}
-          {hair === 'pigtails' ? <rect x={11} y={3} width={3} height={4} fill={HAIR} /> : null}
-          {hair === 'afro' ? (
-            <>
-              <rect x={3} y={-3} width={11} height={4} fill={HAIR} />
-              <rect x={11} y={-3} width={3} height={7} fill={HAIR_DARK} />
-            </>
-          ) : null}
-          {hair === 'spiky' ? (
-            <>
-              <rect x={5} y={-2} width={1} height={2} fill={HAIR} />
-              <rect x={7} y={-3} width={1} height={3} fill={HAIR} />
-              <rect x={9} y={-2} width={1} height={2} fill={HAIR_DARK} />
-            </>
-          ) : null}
-          {hair === 'bob' ? <rect x={9} y={6} width={4} height={2} fill={HAIR} /> : null}
-          {hair === 'braid' ? (
-            <>
-              <rect x={11} y={7} width={2} height={2} fill={HAIR} />
-              <rect x={11} y={10} width={2} height={2} fill={HAIR_DARK} />
-            </>
-          ) : null}
-          {hair === 'topknot' ? <rect x={9} y={-3} width={3} height={3} fill={HAIR} /> : null}
-        </>
-      )}
-      <rect x={5} y={5} width={1} height={1} fill={EYE} />
-      <rect x={4} y={7} width={2} height={1} fill={SKIN_DARK} />
-    </g>
-  );
-}
-
-// The hoodie's hood, sitting behind the head. Drawn before the head so it
-// reads as being behind it.
-function Hood({ shirtDark }: { shirtDark: string }) {
-  return <rect x={3} y={6} width={10} height={4} fill={shirtDark} />;
 }
 
 // --- Flag -------------------------------------------------------------------
