@@ -539,7 +539,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     label: 'Shape pen',
     description:
       'Draw a rough circle, square, triangle or line and it converts to the real shape on release.',
-    shortcut: 'S',
+    shortcut: '6',
     action: { type: 'shape-pen' },
     icon: (
       <svg
