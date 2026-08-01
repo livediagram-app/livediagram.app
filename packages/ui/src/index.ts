@@ -15,3 +15,4 @@ export { Tooltip } from './Tooltip';
 export { EmptyState } from './EmptyState';
 export { POPOVER_VIEWPORT_MARGIN, clampIntoRange } from './popover';
 export { useMediaQuery, PREFERS_REDUCED_MOTION } from './useMediaQuery';
+export { useCopiedFlash } from './useCopiedFlash';

@@ -11,6 +11,7 @@ import { Button } from '@livediagram/ui';
 import { useRef, useState } from 'react';
 import { PortalMenu } from '@/components/primitives/PortalMenu';
 import type { TokensController } from '@/hooks/persistence/useTokens';
+import { useCopiedFlash } from '@livediagram/ui';
 
 const MAX_NAME = 60;
 
@@ -19,12 +20,12 @@ export function NewTokenButton({ tokens }: { tokens: TokensController }) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
   const [secret, setSecret] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
+  const { copied, flash, reset: resetCopied } = useCopiedFlash(1500);
 
   const close = () => {
     setOpen(false);
     setSecret(null);
-    setCopied(false);
+    resetCopied();
     setName('');
   };
 
@@ -66,8 +67,13 @@ export function NewTokenButton({ tokens }: { tokens: TokensController }) {
                   <button
                     type="button"
                     onClick={() => {
-                      void navigator.clipboard?.writeText(secret);
-                      setCopied(true);
+                      // Flash only after the write RESOLVES: this used to set
+                      // the label regardless, so a blocked clipboard still
+                      // said "Copied". It also never reset.
+                      void navigator.clipboard
+                        ?.writeText(secret)
+                        .then(() => flash())
+                        .catch(() => {});
                     }}
                     className="rounded-md bg-emerald-600 px-2.5 py-1 text-xs font-semibold text-white transition hover:bg-emerald-500"
                   >

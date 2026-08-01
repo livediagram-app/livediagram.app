@@ -21,7 +21,6 @@
 // there nor something you go looking for. It shows itself when a poll
 // starts and leaves when the poll ends, on every viewport.
 
-import { useState } from 'react';
 import {
   formatPollResults,
   tallyPoll,
@@ -29,6 +28,7 @@ import {
   type PollTallyRow,
 } from '@livediagram/api-schema';
 import { MovablePanel, type MovablePanelDockProps } from '@/components/primitives/MovablePanel';
+import { useCopiedFlash } from '@livediagram/ui';
 
 export function PollPanel({
   poll,
@@ -71,14 +71,13 @@ export function PollPanel({
   // the legacy (non-docking) layout the same way Collaborate / AI do.
   stackBelowY?: number;
 }) {
-  const [copied, setCopied] = useState(false);
+  const { copied, flash } = useCopiedFlash(1500);
   const { rows, textAnswers, answered, skipped } = tallyPoll(poll, answers);
 
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(formatPollResults(poll, answers));
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 1500);
+      flash();
     } catch {
       // Clipboard denied (permissions, insecure context). Nothing to
       // recover — the results stay on screen, which is the fallback.

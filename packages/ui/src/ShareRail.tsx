@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCopiedFlash } from './useCopiedFlash';
 
 // The canonical site origin we want people to pass along. Hardcoded here (it
 // mirrors apps/marketing/lib/site SITE_URL) so this rail is self-contained and
@@ -63,24 +63,16 @@ const TARGETS: ShareTarget[] = [
  * `backdrop-filter` doesn't trap its `fixed` positioning.
  */
 export function ShareRail() {
-  const [copied, setCopied] = useState(false);
-  // One live "copied" reset at a time: a rapid second copy must not have
-  // its confirmation cancelled by the first copy's stale timer, and the
-  // timer must not fire (setState) after unmount.
-  const copiedTimerRef = useRef<number | null>(null);
-  useEffect(
-    () => () => {
-      if (copiedTimerRef.current !== null) window.clearTimeout(copiedTimerRef.current);
-    },
-    [],
-  );
+  // One live "copied" reset at a time: a rapid second copy must not have its
+  // confirmation cancelled by the first copy's stale timer, and the timer must
+  // not fire (setState) after unmount. Both are useCopiedFlash's job now — this
+  // component's handling of them is what the hook was generalised from.
+  const { copied, flash } = useCopiedFlash(2000);
 
   async function copyLink() {
     try {
       await navigator.clipboard.writeText(SHARE_URL);
-      setCopied(true);
-      if (copiedTimerRef.current !== null) window.clearTimeout(copiedTimerRef.current);
-      copiedTimerRef.current = window.setTimeout(() => setCopied(false), 2000);
+      flash();
     } catch {
       // Clipboard blocked (insecure context / permissions), leave as-is.
     }

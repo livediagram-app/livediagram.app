@@ -7,6 +7,7 @@ import { apiGenerateTeamInviteLink, apiRevokeTeamInviteLink } from '@/lib/api-cl
 import { Dialog } from '@/components/dialogs/Dialog';
 import { LinkIcon } from '@/components/panels/team-pane-parts';
 import { track } from '@/lib/telemetry';
+import { useCopiedFlash } from '@livediagram/ui';
 
 // "Invite by link" (spec/32): the admin actively turns on a shareable
 // join link that expires after a week. Anyone signed in who opens the
@@ -44,13 +45,13 @@ export function TeamInviteLinkDialog({
   onInviteLinkChange: (link: TeamInviteLink | null) => void;
 }) {
   const [busy, setBusy] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const { copied, flash, reset: resetCopied } = useCopiedFlash(1800);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!open) return;
-    setCopied(false);
+    resetCopied();
     setError(null);
   }, [open]);
 
@@ -62,7 +63,7 @@ export function TeamInviteLinkDialog({
       const link = await apiGenerateTeamInviteLink(ownerId, teamId);
       track('Team', 'Shared', 'Link'); // spec/22: an invite link was turned on
       onInviteLinkChange(link);
-      setCopied(false);
+      resetCopied();
     } catch {
       setError('Could not create the link. Try again.');
     } finally {
@@ -94,8 +95,7 @@ export function TeamInviteLinkDialog({
       // "Copied" after the catch told the user a blocked clipboard
       // succeeded (mirrors ShareDialog.copy).
       track('UI', 'Copied', 'TeamInviteLink'); // spec/22: mirrors ShareLink/EmbedCode copies
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 1800);
+      flash();
     } catch {
       // Clipboard blocked (insecure context / permissions): fall back
       // to selecting the field so the user can copy by hand.

@@ -17,6 +17,7 @@ import type { ShareDialogProps } from './ShareDialog.types';
 import { SharePasswordSection } from './SharePasswordSection';
 import { ShareOfflineGate } from './ShareOfflineGate';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
+import { useCopiedFlash } from '@livediagram/ui';
 
 // Human labels for the expiry choices (spec/34), shared by the create
 // dropdown and the inactive rows' Extend button.
@@ -52,7 +53,7 @@ export function ShareDialog({
   const toast = useToast();
   const nameLocked = !!lockedName;
   const [busy, setBusy] = useState(false);
-  const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const { copied: copiedCode, flash } = useCopiedFlash<string>(1500);
   const [newRole, setNewRole] = useState<ShareRole>('edit');
   // Lifetime for the next link (spec/34). Never = the pre-expiry
   // default: the link works until revoked.
@@ -109,8 +110,7 @@ export function ShareDialog({
     const url = shareUrlFor(code);
     try {
       await navigator.clipboard.writeText(url);
-      setCopiedCode(code);
-      window.setTimeout(() => setCopiedCode(null), 1500);
+      flash(code);
       track('UI', 'Copied', 'ShareLink');
     } catch {
       // Browsers without clipboard permission can't write; tell the

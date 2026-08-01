@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Button } from '@livediagram/ui';
+import { useCopiedFlash } from '@livediagram/ui';
 
 // The view/edit/copy sub-view for a text export format (spec/27 + spec/73):
 // a textarea pre-filled with the tab serialised to text, editable for a
@@ -27,14 +28,13 @@ export function TextExportPanel({
   onBack: () => void;
 }) {
   const [text, setText] = useState(initialText);
-  const [copied, setCopied] = useState(false);
+  const { copied, flash } = useCopiedFlash(1500);
 
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(text);
-      setCopied(true);
+      flash();
       onCopied();
-      window.setTimeout(() => setCopied(false), 1500);
     } catch {
       // Clipboard blocked (permissions / insecure context) — the textarea
       // is right there to select manually, so fail quietly.
