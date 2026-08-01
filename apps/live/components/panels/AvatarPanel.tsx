@@ -28,12 +28,13 @@ import {
 } from '@/lib/avatar-config';
 import { AVATAR_REACTIONS, type AvatarReactionKind } from '@/lib/avatar-reactions';
 import { AvatarSprite } from '@/components/canvas/avatar-sprite';
-import { MovablePanel, type MovablePanelDockProps } from '@/components/primitives/MovablePanel';
+import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { Tooltip } from '@/components/primitives/Tooltip';
 // The same glyph the welcome flow's "shuffle a random name" button uses — same
 // meaning (give me another random one), so it stays the same icon.
 import { RefreshIcon } from '@/components/palette/template-picker-icons';
 import { ToolOptionRow } from '@/components/panels/ToolOptionRow';
+import type { MovablePanelPlacementProps } from '@/components/primitives/MovablePanel.types';
 
 type Row = 'gender' | 'clothing' | 'hair' | 'size';
 
@@ -63,16 +64,10 @@ export function AvatarPanel({
   // The local participant's colour, so the preview wears the same shirt the
   // character on the canvas does.
   shirt?: string;
-  position: { x: number; y: number } | null;
-  onMoveTo: (x: number, y: number) => void;
-  onReset?: () => void;
-  dock?: MovablePanelDockProps;
-  mobileOpenOverride?: boolean;
-  mobileDockAnchor?: { left: number; top: number; arrowOffset: number };
   forceDockMode?: boolean;
   onMobileClose?: () => void;
   stackBelowY?: number;
-}) {
+} & MovablePanelPlacementProps) {
   // Single-open, and closed to start: the panel opens as a four-line summary of
   // the character, and you expand only the row you came to change.
   const [openRow, setOpenRow] = useState<Row | null>(null);

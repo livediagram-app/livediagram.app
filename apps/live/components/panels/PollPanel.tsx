@@ -27,8 +27,9 @@ import {
   type LivePoll,
   type PollTallyRow,
 } from '@livediagram/api-schema';
-import { MovablePanel, type MovablePanelDockProps } from '@/components/primitives/MovablePanel';
+import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { useCopiedFlash } from '@livediagram/ui';
+import type { MovablePanelPlacementProps } from '@/components/primitives/MovablePanel.types';
 
 export function PollPanel({
   poll,
@@ -53,24 +54,10 @@ export function PollPanel({
   // surface that can't add elements, which leaves the plain End alone.
   onEndAndKeep?: () => void;
   onDismiss: () => void;
-  position: { x: number; y: number } | null;
-  onMoveTo: (x: number, y: number) => void;
-  onReset?: () => void;
-  dock?: MovablePanelDockProps;
-  // Dock selection on mobile: this panel is one of the dock's buttons
-  // while its session tool is running (spec/07), so it hides unless the
-  // dock has it open — like every other docked panel.
-  mobileOpenOverride?: boolean;
-  // Where the dock button that opened this panel sits, so the popover
-  // hangs under it with the pointer arrow. Without it MovablePanel falls
-  // back to a fixed top-right corner with no arrow, which is why these two
-  // looked flush against the dock while every other docked panel floated
-  // beneath its own button.
-  mobileDockAnchor?: { left: number; top: number; arrowOffset: number };
   // Measured bottom of the Palette, so the panel stacks beneath it in
   // the legacy (non-docking) layout the same way Collaborate / AI do.
   stackBelowY?: number;
-}) {
+} & MovablePanelPlacementProps) {
   const { copied, flash } = useCopiedFlash(1500);
   const { rows, textAnswers, answered, skipped } = tallyPoll(poll, answers);
 

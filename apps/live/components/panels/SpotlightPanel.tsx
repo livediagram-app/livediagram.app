@@ -23,8 +23,9 @@ import {
   SPOTLIGHT_SIZES,
   type SpotlightConfig,
 } from '@/lib/spotlight-config';
-import { MovablePanel, type MovablePanelDockProps } from '@/components/primitives/MovablePanel';
+import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { ToolOptionRow } from '@/components/panels/ToolOptionRow';
+import type { MovablePanelPlacementProps } from '@/components/primitives/MovablePanel.types';
 
 type Row = 'size' | 'dim' | 'edge' | 'shape';
 
@@ -79,16 +80,10 @@ export function SpotlightPanel({
   // "Custom" when the two have parted company.
   radius: number;
   onSetRadius: (radius: number) => void;
-  position: { x: number; y: number } | null;
-  onMoveTo: (x: number, y: number) => void;
-  onReset?: () => void;
-  dock?: MovablePanelDockProps;
-  mobileOpenOverride?: boolean;
-  mobileDockAnchor?: { left: number; top: number; arrowOffset: number };
   forceDockMode?: boolean;
   onMobileClose?: () => void;
   stackBelowY?: number;
-}) {
+} & MovablePanelPlacementProps) {
   const [openRow, setOpenRow] = useState<Row | null>(null);
   const toggle = (row: Row) => setOpenRow((r) => (r === row ? null : row));
   const currentSize = spotlightSizeOf(radius);

@@ -8,7 +8,6 @@ import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
 import { LayerRowMenu } from '@/components/panels/LayerRowMenu';
 import { LayersSettingsPopover } from '@/components/panels/LayersSettingsPopover';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
-import type { MovablePanelDockProps } from '@/components/primitives/MovablePanel.types';
 import { Tooltip } from '@/components/primitives/Tooltip';
 import { useLayerRowDrag } from '@/components/panels/useLayerRowDrag';
 import { onMouseHover, useRevertOnUnmount } from '@/components/primitives/hover-preview';
@@ -22,6 +21,7 @@ import {
   PlusIcon,
   TrashIcon,
 } from '@/components/panels/layers-panel-icons';
+import type { MovablePanelPlacementProps } from '@/components/primitives/MovablePanel.types';
 
 // The Layers panel (spec/74): one row per layer, TOP layer first (the
 // panel mirrors the paint stack like every design tool). Row = eye
@@ -74,13 +74,7 @@ export function LayersPanel({
   counts: Map<string, number>;
   // The tab's elements, for the per-row layer previews.
   elements: Element[];
-  position: { x: number; y: number } | null;
-  onMoveTo: (x: number, y: number) => void;
-  onReset?: () => void;
-  dock?: MovablePanelDockProps;
   onMinimize: () => void;
-  mobileOpenOverride?: boolean;
-  mobileDockAnchor?: { left: number; top: number; arrowOffset: number };
   forceDockMode?: boolean;
   onMobileClose?: () => void;
   onSelectLayer: (layerId: string) => void;
@@ -114,7 +108,7 @@ export function LayersPanel({
   onSetShowCount: (value: boolean) => void;
   // True when the panel has left its default corner (enables Reset).
   resettable: boolean;
-}) {
+} & MovablePanelPlacementProps) {
   // Inline rename: which layer id is being edited. The draft text lives
   // inside InlineRenameInput, so a re-render of this panel mid-rename
   // cannot reach in and reset what has been typed.

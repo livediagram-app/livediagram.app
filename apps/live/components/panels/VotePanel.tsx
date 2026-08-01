@@ -23,7 +23,8 @@
 
 import { votesSpentBy, type Element, type TabVote } from '@livediagram/diagram';
 import { describeOne } from '@/lib/element-names';
-import { MovablePanel, type MovablePanelDockProps } from '@/components/primitives/MovablePanel';
+import { MovablePanel } from '@/components/primitives/MovablePanel';
+import type { MovablePanelPlacementProps } from '@/components/primitives/MovablePanel.types';
 
 const primaryBtn =
   'flex-1 rounded-md bg-brand-500 px-2 py-1 text-[11px] font-semibold text-white transition hover:bg-brand-600';
@@ -69,24 +70,10 @@ export function VotePanel({
   // Only the participant who STARTED this vote drives it (spec/39): end,
   // reveal, clear, and moving the results focus. Everyone else follows.
   isHost: boolean;
-  position: { x: number; y: number } | null;
-  onMoveTo: (x: number, y: number) => void;
-  onReset?: () => void;
-  dock?: MovablePanelDockProps;
-  // Dock selection on mobile: this panel is one of the dock's buttons
-  // while its session tool is running (spec/07), so it hides unless the
-  // dock has it open — like every other docked panel.
-  mobileOpenOverride?: boolean;
-  // Where the dock button that opened this panel sits, so the popover
-  // hangs under it with the pointer arrow. Without it MovablePanel falls
-  // back to a fixed top-right corner with no arrow, which is why these two
-  // looked flush against the dock while every other docked panel floated
-  // beneath its own button.
-  mobileDockAnchor?: { left: number; top: number; arrowOffset: number };
   stackBelowY?: number;
   // View-role visitors watch the vote but never drive it (spec/39).
   readOnly: boolean;
-}) {
+} & MovablePanelPlacementProps) {
   const showResults = vote.revealed;
 
   return (

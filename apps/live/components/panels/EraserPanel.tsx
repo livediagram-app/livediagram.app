@@ -19,8 +19,9 @@ import {
   ERASER_TARGETS,
   type EraserConfig,
 } from '@/lib/eraser-config';
-import { MovablePanel, type MovablePanelDockProps } from '@/components/primitives/MovablePanel';
+import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { ToolOptionRow } from '@/components/panels/ToolOptionRow';
+import type { MovablePanelPlacementProps } from '@/components/primitives/MovablePanel.types';
 
 type Row = 'mode' | 'size' | 'target' | 'groups';
 
@@ -67,16 +68,10 @@ export function EraserPanel({
 }: {
   config: EraserConfig;
   onChange: <K extends keyof EraserConfig>(field: K, value: EraserConfig[K]) => void;
-  position: { x: number; y: number } | null;
-  onMoveTo: (x: number, y: number) => void;
-  onReset?: () => void;
-  dock?: MovablePanelDockProps;
-  mobileOpenOverride?: boolean;
-  mobileDockAnchor?: { left: number; top: number; arrowOffset: number };
   forceDockMode?: boolean;
   onMobileClose?: () => void;
   stackBelowY?: number;
-}) {
+} & MovablePanelPlacementProps) {
   const [openRow, setOpenRow] = useState<Row | null>(null);
   const toggle = (row: Row) => setOpenRow((r) => (r === row ? null : row));
 

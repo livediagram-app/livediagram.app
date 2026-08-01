@@ -14,6 +14,35 @@ export type MovablePanelDockProps = {
   onDockDragEnd?: (geom: PanelDragGeometry) => void;
 };
 
+// The placement props a panel forwards straight through to the MovablePanel
+// it renders. Every movable panel in the editor takes these and passes them
+// on unchanged; nine of them had re-declared the set by hand, including the
+// `mobileDockAnchor` object shape written out longhand nine times.
+//
+// Each prop's behaviour is documented on MovablePanelProps below. What is
+// worth recording here is why a panel must forward them rather than letting
+// MovablePanel default: `mobileDockAnchor` tells the popover where the dock
+// button that opened it sits, so it hangs under that button with a pointer
+// arrow. Without it MovablePanel falls back to a fixed top-right corner with
+// no arrow, which is exactly how the Poll and Vote panels once looked flush
+// against the dock while every other docked panel floated beneath its own
+// button.
+//
+// `onReset` is optional here; a panel that always offers reset narrows it by
+// intersecting with a required declaration of its own.
+export type MovablePanelPlacementProps = {
+  position: { x: number; y: number } | null;
+  onMoveTo: (x: number, y: number) => void;
+  onReset?: () => void;
+  // Corner-docking bundle (spec/63), forwarded to the inner MovablePanel.
+  dock?: MovablePanelDockProps;
+  // Mobile / minimal-layout dock plumbing (spec/07 "Mobile chrome"): a panel
+  // with its own dock button opens as a popover there, so it hides unless the
+  // dock has it open.
+  mobileOpenOverride?: boolean;
+  mobileDockAnchor?: { left: number; top: number; arrowOffset: number };
+};
+
 export type MovablePanelProps = {
   // Caps-styled label that sits at the top-left of the header (acts as
   // the panel's name + the drag handle).

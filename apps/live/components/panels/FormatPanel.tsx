@@ -20,8 +20,9 @@ import {
   type FormatMode,
 } from '@/lib/format-config';
 import { AccordionSection } from '@/components/primitives/AccordionSection';
-import { MovablePanel, type MovablePanelDockProps } from '@/components/primitives/MovablePanel';
+import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { Tooltip } from '@/components/primitives/Tooltip';
+import type { MovablePanelPlacementProps } from '@/components/primitives/MovablePanel.types';
 
 type Row = 'copies' | 'mode';
 
@@ -84,16 +85,10 @@ export function FormatPanel({
   onSetMode: (mode: FormatMode) => void;
   // The loaded element, described for the preview. Null until one is picked.
   source: { name: string; fill?: string; stroke?: string; textColor?: string } | null;
-  position: { x: number; y: number } | null;
-  onMoveTo: (x: number, y: number) => void;
-  onReset?: () => void;
-  dock?: MovablePanelDockProps;
-  mobileOpenOverride?: boolean;
-  mobileDockAnchor?: { left: number; top: number; arrowOffset: number };
   forceDockMode?: boolean;
   onMobileClose?: () => void;
   stackBelowY?: number;
-}) {
+} & MovablePanelPlacementProps) {
   const [openRow, setOpenRow] = useState<Row | null>(null);
   const toggle = (row: Row) => setOpenRow((r) => (r === row ? null : row));
   const paintsAnything = formatPaintsAnything(config);

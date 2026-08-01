@@ -3,13 +3,14 @@
 import { useState } from 'react';
 import type { BoxedElement } from '@livediagram/diagram';
 import { useRelativeTimeTick } from '@/lib/relative-time';
-import { MovablePanel, type MovablePanelDockProps } from '@/components/primitives/MovablePanel';
+import { MovablePanel } from '@/components/primitives/MovablePanel';
 import {
   ActionRowItem,
   CommentRowItem,
   FilterTab,
   KindFilterButton,
 } from '@/components/panels/collaborate-panel-parts';
+import type { MovablePanelPlacementProps } from '@/components/primitives/MovablePanel.types';
 
 // The floating COLLABORATE panel: the Comments and Actions panels
 // merged into one surface (they are the two ways work gets discussed /
@@ -69,29 +70,19 @@ type CollaborateRow =
   | { kind: 'action'; at: number; mine: boolean; action: ActionRow };
 
 type CollaboratePanelProps = {
-  position: { x: number; y: number } | null;
   // Every comment thread (unresolved AND resolved) + every action (open
   // AND done) on the tab — the panel splits Open / Resolved itself. The
   // caller doesn't mount the panel at all when both lists are empty.
   commentRows: CommentRow[];
   actionRows: ActionRow[];
   stackBelowY?: number;
-  onMoveTo: (x: number, y: number) => void;
-  onReset: () => void;
   // Row clicks: the editor selects the element + opens the matching
   // popover (comment thread / action).
   onCommentRowClick: (elementId: string) => void;
   onActionRowClick: (elementId: string) => void;
-  // Corner-docking bundle (spec/63), forwarded to the inner MovablePanel.
-  dock?: MovablePanelDockProps;
-  // Mobile / minimal-layout dock plumbing (spec/07 "Mobile chrome"): the
-  // panel has its own dock button, so it opens as a popover there like
-  // the Explorer / Palette / AI panels. All forwarded to MovablePanel.
-  mobileOpenOverride?: boolean;
-  mobileDockAnchor?: { left: number; top: number; arrowOffset: number };
   forceDockMode?: boolean;
   onMobileClose?: () => void;
-};
+} & MovablePanelPlacementProps & { onReset: () => void };
 
 export function CollaboratePanel({
   position,

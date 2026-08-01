@@ -24,9 +24,10 @@ import {
   LASER_WIDTHS,
   type LaserConfig,
 } from '@/lib/laser-config';
-import { MovablePanel, type MovablePanelDockProps } from '@/components/primitives/MovablePanel';
+import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { LaserOverlay } from '@/components/canvas/LaserOverlay';
 import { ToolOptionRow } from '@/components/panels/ToolOptionRow';
+import type { MovablePanelPlacementProps } from '@/components/primitives/MovablePanel.types';
 
 type Row = 'width' | 'colour' | 'trail' | 'effect';
 
@@ -89,16 +90,10 @@ export function LaserPanel({
   onChange: <K extends keyof LaserConfig>(field: K, value: LaserConfig[K]) => void;
   // The local participant's colour, so "Your colour" previews as itself.
   selfColour: string;
-  position: { x: number; y: number } | null;
-  onMoveTo: (x: number, y: number) => void;
-  onReset?: () => void;
-  dock?: MovablePanelDockProps;
-  mobileOpenOverride?: boolean;
-  mobileDockAnchor?: { left: number; top: number; arrowOffset: number };
   forceDockMode?: boolean;
   onMobileClose?: () => void;
   stackBelowY?: number;
-}) {
+} & MovablePanelPlacementProps) {
   const [openRow, setOpenRow] = useState<Row | null>(null);
   const toggle = (row: Row) => setOpenRow((r) => (r === row ? null : row));
   const swatchFor = (id: LaserConfig['colour']) =>
