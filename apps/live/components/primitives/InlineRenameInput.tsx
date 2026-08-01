@@ -32,11 +32,15 @@ export function InlineRenameInput({
   initial,
   onCommit,
   onCancel,
+  ariaLabel,
   className,
 }: {
   initial: string;
   onCommit: (name: string) => void;
   onCancel: () => void;
+  // For a row whose label is only the name being edited, so the field
+  // is still announced once the label it replaced has gone.
+  ariaLabel?: string;
   className?: string;
 }) {
   const ref = useRef<HTMLInputElement>(null);
@@ -79,7 +83,12 @@ export function InlineRenameInput({
       // commit, so the limit is visible as you type rather than silently
       // eating the end of what you wrote.
       maxLength={NAME_MAX_LENGTH}
+      aria-label={ariaLabel}
       onChange={(e) => setDraft(e.target.value)}
+      // A click in the field is for the field. Rows that stay clickable
+      // behind an open rename (the Layers panel keeps its select-on-click
+      // live) would otherwise treat placing the caret as a row click.
+      onClick={(e) => e.stopPropagation()}
       onKeyDown={(e) => {
         e.stopPropagation();
         if (e.key === 'Enter') {

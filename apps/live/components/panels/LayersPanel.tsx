@@ -4,6 +4,7 @@ import { useRef, useState } from 'react';
 import { isLayerLocked, isLayerVisible, type Element, type Layer } from '@livediagram/diagram';
 import { useLayerThumbnails } from '@/hooks/ui/useLayerThumbnails';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
+import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
 import { LayerRowMenu } from '@/components/panels/LayerRowMenu';
 import { LayersSettingsPopover } from '@/components/panels/LayersSettingsPopover';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
@@ -114,9 +115,10 @@ export function LayersPanel({
   // True when the panel has left its default corner (enables Reset).
   resettable: boolean;
 }) {
-  // Inline rename: which layer id is being edited + its draft text.
+  // Inline rename: which layer id is being edited. The draft text lives
+  // inside InlineRenameInput, so a re-render of this panel mid-rename
+  // cannot reach in and reset what has been typed.
   const [renamingId, setRenamingId] = useState<string | null>(null);
-  const [draftName, setDraftName] = useState('');
   // Footer-delete confirm popover (only for a non-empty layer): the
   // clicked Delete button is the anchor; null = closed.
   const [confirmAnchor, setConfirmAnchor] = useState<HTMLElement | null>(null);
@@ -187,8 +189,8 @@ export function LayersPanel({
   const canMergeUp = activeIndex >= 0 && activeIndex < layers.length - 1;
   const canMergeDown = activeIndex > 0;
 
-  const commitRename = () => {
-    if (renamingId) onRenameLayer(renamingId, draftName);
+  const commitRename = (name: string) => {
+    if (renamingId) onRenameLayer(renamingId, name);
     setRenamingId(null);
   };
 
@@ -269,10 +271,7 @@ export function LayersPanel({
                   (dragId === layer.id ? 'opacity-50 ' : '')
                 }
                 onClick={() => onSelectLayer(layer.id)}
-                onDoubleClick={() => {
-                  setRenamingId(layer.id);
-                  setDraftName(layer.name);
-                }}
+                onDoubleClick={() => setRenamingId(layer.id)}
               >
                 <Tooltip
                   title={visible ? 'Hide layer' : 'Show layer'}
@@ -314,18 +313,12 @@ export function LayersPanel({
                   </span>
                 ) : null}
                 {renamingId === layer.id ? (
-                  <input
-                    autoFocus
-                    value={draftName}
-                    onChange={(e) => setDraftName(e.target.value)}
-                    onBlur={commitRename}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') commitRename();
-                      if (e.key === 'Escape') setRenamingId(null);
-                    }}
-                    onClick={(e) => e.stopPropagation()}
-                    aria-label="Layer name"
-                    className="w-full min-w-0 flex-1 rounded border border-brand-300 bg-white px-1 py-0.5 text-xs text-slate-800 outline-none dark:border-brand-500/50 dark:bg-slate-900 dark:text-slate-100"
+                  <InlineRenameInput
+                    initial={layer.name}
+                    onCommit={commitRename}
+                    onCancel={() => setRenamingId(null)}
+                    ariaLabel="Layer name"
+                    className="w-full min-w-0 flex-1 rounded border border-brand-300 bg-white px-1 py-0.5 text-xs text-slate-800 dark:border-brand-500/50 dark:bg-slate-900 dark:text-slate-100"
                   />
                 ) : (
                   <span
@@ -470,10 +463,7 @@ export function LayersPanel({
                   isBottom={idx === 0}
                   anchor={{ panelLeft: rowMenu.panelLeft, rowBottom: rowMenu.rowBottom }}
                   onClose={() => setRowMenu(null)}
-                  onRename={() => {
-                    setRenamingId(menuLayer.id);
-                    setDraftName(menuLayer.name);
-                  }}
+                  onRename={() => setRenamingId(menuLayer.id)}
                   canDelete={layers.length > 1}
                   onDelete={() => onRemoveLayer(menuLayer.id)}
                   onSetOpacity={(v) => onSetLayerOpacity(menuLayer.id, v)}
