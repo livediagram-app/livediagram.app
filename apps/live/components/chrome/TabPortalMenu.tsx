@@ -48,6 +48,7 @@ import {
   AddTabToFolderDialog,
 } from '@/components/dialogs/TabOrganiseDialogs';
 import type { CanvasMenuActions, CanvasMenuTarget } from './TabBar';
+import { useEscape } from '@/hooks/ui/useEscape';
 
 // The unified tab / canvas portal menu (actions, copy-to-diagram, and
 // folder sub-views). Extracted from TabBar.tsx, where it had grown into a
@@ -265,16 +266,12 @@ export function PortalMenu({
         onClose();
       }
     };
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
     document.addEventListener('pointerdown', handler);
-    document.addEventListener('keydown', onKey);
-    return () => {
-      document.removeEventListener('pointerdown', handler);
-      document.removeEventListener('keydown', onKey);
-    };
+    return () => document.removeEventListener('pointerdown', handler);
   }, [onClose, anchor]);
+  // Escape closes it too — via the shared hook, which registers the same
+  // document-level bubble listener this effect used to open-code.
+  useEscape(onClose);
 
   // Modal pickers replace the anchored box entirely (see the `view` note
   // above); dismissing them dismisses the menu.

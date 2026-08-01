@@ -4,6 +4,7 @@ import { NameEditor } from '@/components/primitives/NameEditor';
 import type { Tab } from '@livediagram/diagram';
 import type { Participant } from '@/lib/identity';
 import { TabPresenceStack } from '@/components/chrome/TabPresenceStack';
+import { useEscape } from '@/hooks/ui/useEscape';
 
 // One folder group in the tab bar (spec/30). The folder renders as a
 // compact chip (glyph + name + count) plus, when the ACTIVE tab lives in
@@ -80,16 +81,12 @@ export function TabFolderChip({
       if (t?.closest('[data-tab-folder-fan]') || chipRef.current?.contains(t as Node)) return;
       setOpen(false);
     };
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(false);
-    };
     document.addEventListener('pointerdown', onDown);
-    document.addEventListener('keydown', onKey);
-    return () => {
-      document.removeEventListener('pointerdown', onDown);
-      document.removeEventListener('keydown', onKey);
-    };
+    return () => document.removeEventListener('pointerdown', onDown);
   }, [open]);
+  // Escape closes it too — via the shared hook, which registers the same
+  // document-level bubble listener this effect used to open-code.
+  useEscape(() => setOpen(false), { enabled: open });
   useEffect(() => {
     setOpen(false);
   }, [activeId]);

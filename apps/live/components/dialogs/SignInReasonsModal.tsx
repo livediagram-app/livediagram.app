@@ -14,7 +14,7 @@
 import Link from 'next/link';
 import { buttonClassName } from '@livediagram/ui';
 import { SignInIcon } from '@/components/chrome/AuthControls';
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import type { ReactNode } from 'react';
 import { Portal } from '@/components/primitives/Portal';
 import { CloseIcon } from '@/components/primitives/CloseIcon';
@@ -22,6 +22,7 @@ import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
 import { useFocusTrap } from '@/hooks/ui/useFocusTrap';
 import { useModalGuard } from '@/hooks/ui/useModalGuard';
+import { useEscape } from '@/hooks/ui/useEscape';
 
 type Reason = {
   icon: ReactNode;
@@ -81,17 +82,7 @@ export function SignInReasonsModal({
   // Return to the current page after sign-in (before the early return).
   const { signInHref } = useAuthHrefs();
 
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        onClose();
-      }
-    };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [open, onClose]);
+  useEscape(onClose, { enabled: open, preventDefault: true });
 
   if (!open) return null;
 
