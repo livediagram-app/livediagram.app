@@ -56,3 +56,13 @@ This ships **one** list, because the divider is the only thing that differs and
 a second bounded array doubles the model, the editor and the renderer for it.
 A method row is `render(): void` in the name column, which is what the
 stacked-tables template was spelling out by hand anyway.
+
+## The title bar follows the title
+
+The band's height is derived from the element's **text size**, not fixed. It
+was a flat 30px, which suits the default 16px label and nothing else: at `lg`
+the title is a 32px font, so it overflowed the band and the rule cut straight
+through the word. The height now comes from the same px table the label itself
+uses (`FIXED_FONT_PX`), times the `leading-tight` line height, plus the label's
+vertical padding, with a 30px floor so existing diagrams at the default size
+stay pixel-identical.

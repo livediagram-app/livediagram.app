@@ -2,6 +2,25 @@
 
 import type { EntityField, ShapeElement } from '@livediagram/diagram';
 
+import { FIXED_FONT_PX } from '@/components/canvas/label-style';
+
+/**
+ * Height of the title bar, which has to follow the TITLE's size.
+ *
+ * It was a flat 30px, which is right for the default 16px label and wrong for
+ * every other setting: at `lg` the title is a 32px font and simply overflowed
+ * the band, so the rule cut through the text instead of sitting under it.
+ *
+ * Same px table the label itself uses, so the two can't disagree, times the
+ * `leading-tight` line height, plus the label's own vertical padding. The 30px
+ * floor keeps existing diagrams at the default size pixel-identical.
+ */
+export function entityHeaderHeight(element: ShapeElement): number {
+  const size = element.textSize ?? 'scale';
+  const fontPx = size === 'scale' ? 16 : FIXED_FONT_PX[size];
+  return Math.max(30, Math.round(fontPx * 1.25) + 10);
+}
+
 // A record box (spec/120): a title bar over a list of `name: Type` rows — a
 // UML class, an ER entity, a struct.
 //
@@ -35,7 +54,10 @@ export function EntityView({
     >
       {/* The title bar's height is the label's business — this is just the
           rule under it, drawn where the label ends. */}
-      <div className="shrink-0" style={{ height: 30, borderBottom: `1px solid ${rule}` }} />
+      <div
+        className="shrink-0"
+        style={{ height: entityHeaderHeight(element), borderBottom: `1px solid ${rule}` }}
+      />
       <div className="flex min-h-0 flex-1 flex-col gap-[3px] overflow-hidden px-2 py-1.5">
         {fields.length === 0 ? (
           <span className="text-[10px] italic opacity-40" style={{ color: textColor }}>
