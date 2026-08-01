@@ -14,6 +14,11 @@ import {
   ADD_ROW_OPTION,
   OPTIONS,
 } from './quick-connect-options';
+import { useHoverCloseTimer } from '@/hooks/ui/useHoverCloseTimer';
+
+// Same grace period as the other hover-open surfaces: long enough to cross
+// the gap between the + and its menu.
+const RING_CLOSE_DELAY_MS = 160;
 
 // Quick add + connect (spec/09). One of these floats on each edge of the
 // selected element. The plus is a click *trigger*: clicking it unfolds a
@@ -180,28 +185,15 @@ export function QuickConnectRing({
   // or its menu, and close on a short delay after leaving both, so crossing
   // the gap between the + and the menu doesn't close it. No-op unless the
   // preference is on; click still toggles in either mode.
-  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  useEffect(
-    () => () => {
-      if (closeTimer.current) clearTimeout(closeTimer.current);
-    },
-    [],
-  );
+  const { cancel: cancelClose, scheduleClose } = useHoverCloseTimer(onClose, RING_CLOSE_DELAY_MS);
   const handleHoverEnter = () => {
     if (!openOnHover) return;
-    if (closeTimer.current) {
-      clearTimeout(closeTimer.current);
-      closeTimer.current = null;
-    }
+    cancelClose();
     if (!open) onOpen();
   };
   const handleHoverLeave = () => {
     if (!openOnHover) return;
-    if (closeTimer.current) clearTimeout(closeTimer.current);
-    closeTimer.current = setTimeout(() => {
-      closeTimer.current = null;
-      onClose();
-    }, 160);
+    scheduleClose();
   };
 
   // Drag-to-arrow from the plus itself: pointer-down arms a watcher; once

@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, useEffect, useRef, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { useRelativeTimeTick } from '@/lib/relative-time';
 import { MOBILE_BREAKPOINT_PX, isMobileViewportSync } from '@/lib/responsive';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
@@ -17,6 +17,11 @@ import { ExplorerSections } from '@/components/panels/ExplorerSections';
 import type { ExplorerProps } from './Explorer.types';
 import { useExplorerViewModel } from './useExplorerViewModel';
 import { useExplorerRowDelete } from './useExplorerRowDelete';
+import { useHoverCloseTimer } from '@/hooks/ui/useHoverCloseTimer';
+
+// How long the New menu stays open after the pointer leaves, so crossing the
+// gap between the button and the menu does not close it.
+const NEW_MENU_CLOSE_DELAY_MS = 260;
 
 // Floating "Explorer" panel pinned to the top-left of the canvas by
 // default. Symmetric to the Palette in shape and behaviour.
@@ -170,18 +175,10 @@ function ExplorerImpl({
   // stays as the touch / keyboard path (open-only for mouse, so a
   // habitual click right after the hover-open doesn't snap it shut).
   const [newOpenAnchor, setNewOpenAnchor] = useState<HTMLElement | null>(null);
-  const newOpenCloseTimer = useRef<number | null>(null);
-  const cancelNewOpenClose = () => {
-    if (newOpenCloseTimer.current !== null) {
-      window.clearTimeout(newOpenCloseTimer.current);
-      newOpenCloseTimer.current = null;
-    }
-  };
-  const scheduleNewOpenClose = () => {
-    cancelNewOpenClose();
-    newOpenCloseTimer.current = window.setTimeout(() => setNewOpenAnchor(null), 260);
-  };
-  useEffect(() => cancelNewOpenClose, []);
+  const { cancel: cancelNewOpenClose, scheduleClose: scheduleNewOpenClose } = useHoverCloseTimer(
+    () => setNewOpenAnchor(null),
+    NEW_MENU_CLOSE_DELAY_MS,
+  );
 
   // The anchor argument survives in the row-callback signature (the
   // delete flow's ConfirmPopover still anchors), but the move flow is

@@ -1,6 +1,7 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useState } from 'react';
+import { useHoverCloseTimer } from '@/hooks/ui/useHoverCloseTimer';
 
 // The zoom-percentage button in the middle of the ZoomControls dock
 // (desktop only — it's hidden below `sm`, like the readout it replaced).
@@ -26,21 +27,13 @@ type ZoomMenuProps = {
 export function ZoomMenu({ zoom, onSetZoom, onFitToScreen }: ZoomMenuProps) {
   const percent = Math.round(zoom * 100);
   const [open, setOpen] = useState(false);
-  const closeTimer = useRef<number | null>(null);
-
-  const cancelClose = () => {
-    if (closeTimer.current !== null) {
-      window.clearTimeout(closeTimer.current);
-      closeTimer.current = null;
-    }
-  };
+  const { cancel: cancelClose, scheduleClose } = useHoverCloseTimer(
+    () => setOpen(false),
+    CLOSE_DELAY_MS,
+  );
   const openNow = () => {
     cancelClose();
     setOpen(true);
-  };
-  const scheduleClose = () => {
-    cancelClose();
-    closeTimer.current = window.setTimeout(() => setOpen(false), CLOSE_DELAY_MS);
   };
 
   return (
