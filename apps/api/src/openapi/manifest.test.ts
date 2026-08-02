@@ -21,6 +21,45 @@ function dispatchedSegments(): Set<string> {
   return segments;
 }
 
+// Every HTTP verb each dispatched segment actually handles, read from the
+// route modules the same way dispatchedSegments() reads index.ts: from the
+// source, so there is no hand-list to drift.
+function handledMethodsBySegment(): Map<string, Set<string>> {
+  const index = readFileSync(new URL('../index.ts', import.meta.url), 'utf8');
+  const handlerFile = new Map<string, string>();
+  for (const m of index.matchAll(/import \{([^}]*)\} from '\.\/routes\/([\w-]+)'/g)) {
+    for (const name of m[1]!.split(',')) {
+      if (name.trim()) handlerFile.set(name.trim(), `${m[2]}.ts`);
+    }
+  }
+  const read = (file: string): string | null => {
+    try {
+      return readFileSync(new URL(`../routes/${file}`, import.meta.url), 'utf8');
+    } catch {
+      return null;
+    }
+  };
+  const out = new Map<string, Set<string>>();
+  for (const m of index.matchAll(/case '([^']+)':\s*\n\s*return await (\w+)\(/g)) {
+    const file = handlerFile.get(m[2]!);
+    const source = file ? read(file) : null;
+    if (!source) continue;
+    // A handler may delegate to sibling route modules (the diagram routes are
+    // split across several); follow those too or their verbs go unseen.
+    const sources = [source];
+    for (const rel of source.matchAll(/from '\.\/([\w-]+)'/g)) {
+      const sibling = read(`${rel[1]}.ts`);
+      if (sibling) sources.push(sibling);
+    }
+    const methods = new Set<string>();
+    for (const s of sources) {
+      for (const v of s.matchAll(/method (?:===|!==) '([A-Z]+)'/g)) methods.add(v[1]!);
+    }
+    out.set(m[1]!, methods);
+  }
+  return out;
+}
+
 describe('OpenAPI manifest ↔ dispatch parity', () => {
   it('documents exactly the segments the worker dispatches', () => {
     const dispatched = dispatchedSegments();
@@ -36,6 +75,41 @@ describe('OpenAPI manifest ↔ dispatch parity', () => {
     // Every documented segment is really dispatched (no stale entries).
     const phantom = [...documented].filter((s) => !dispatched.has(s));
     expect(phantom, `in the manifest but not dispatched: ${phantom.join(', ')}`).toEqual([]);
+  });
+
+  it('documents every HTTP method a dispatched segment handles', () => {
+    // The check above is per SEGMENT, so it stays green when an existing
+    // segment grows a verb: adding PATCH to /diagrams passes, because
+    // 'diagrams' is already documented. The published description is what
+    // external callers build against (spec/37, spec/61), and an endpoint
+    // missing from it is one nobody can discover.
+    //
+    // Route handlers spell the check two ways: `method === 'PUT'` to select a
+    // branch, and `method !== 'POST'` as a single-verb guard clause. Both are
+    // read, and the walk follows each handler's sibling route modules so the
+    // split diagram routes are not missed.
+    const handled = handledMethodsBySegment();
+    const documented = new Map<string, Set<string>>();
+    for (const route of ROUTE_MANIFEST) {
+      const set = documented.get(route.segment) ?? new Set<string>();
+      set.add(route.method.toUpperCase());
+      documented.set(route.segment, set);
+    }
+
+    // Vacuity guard: if the source walk stops finding verbs, every assertion
+    // below passes without checking anything.
+    expect(handled.size).toBeGreaterThan(15);
+    for (const [segment, methods] of handled) {
+      expect(methods.size, `${segment}: no HTTP method found in its handler`).toBeGreaterThan(0);
+    }
+
+    const missing: string[] = [];
+    for (const [segment, methods] of handled) {
+      for (const method of methods) {
+        if (!documented.get(segment)?.has(method)) missing.push(`${method} /${segment}`);
+      }
+    }
+    expect(missing, `handled but absent from the manifest: ${missing.join(', ')}`).toEqual([]);
   });
 
   it("each entry's path starts with its declared segment", () => {
