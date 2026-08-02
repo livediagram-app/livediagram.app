@@ -86,11 +86,15 @@ export type ToolGroupId = 'write' | 'draw' | 'behaviour';
 // groups. The description is what the category tile's tooltip says: a count
 // ("6 tools") tells you nothing you can act on, whereas naming the contents
 // answers the actual question — is the thing I want in this box?
-export const TOOL_GROUPS: { id: ToolGroupId; label: string; description: string }[] = [
+// Label + membership only. These groups render as PaletteSectionLabel
+// headings inside the Tools tab, and a heading shows a label, not a blurb —
+// the browsable category descriptions live in PALETTE_CATEGORIES. A
+// `description` field here went unread for long enough to drift out of step
+// with the live one for `behaviour`, which is why it is gone.
+export const TOOL_GROUPS: { id: ToolGroupId; label: string }[] = [
   {
     id: 'write',
     label: 'Write',
-    description: 'The wordy elements: pages, text, sticky notes, and annotations.',
   },
   {
     // Split back out from a combined "Write & Draw" (spec/110): once both were
@@ -98,7 +102,6 @@ export const TOOL_GROUPS: { id: ToolGroupId; label: string; description: string 
     // pairing bought nothing and the combined list ran to eight rows.
     id: 'draw',
     label: 'Draw',
-    description: 'The gesture tools: pencil, highlighter, polygon, and arrows.',
   },
   // Behaviour (spec/103): elements that DO something when someone interacts
   // with them, rather than elements that say something. Last, because a
@@ -106,8 +109,6 @@ export const TOOL_GROUPS: { id: ToolGroupId; label: string; description: string 
   {
     id: 'behaviour',
     label: 'Behaviour',
-    description:
-      'Elements that do something when pressed: switch a mode, portal across the canvas, start a timer or vote, cover something up, or pick at random.',
   },
 ];
 
