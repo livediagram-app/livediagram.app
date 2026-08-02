@@ -132,6 +132,13 @@ confirmation:
   as `data:` URIs BEFORE the server copy is deleted (the deletion would make
   them "unused" and the retention reaper would eventually take the bytes); an
   incomplete embed aborts the conversion and the diagram stays on the server.
+- **If that server delete fails, the local copy is rolled back** and the error
+  surfaces. Both copies registered under one id would shadow the live cloud
+  diagram behind a stale offline fork (and duplicate the Explorer row), so the
+  conversion is all-or-nothing in this direction too. Data-safe either way: the
+  server still holds everything, and the user can retry. The rollback is
+  best-effort, but a rollback that itself fails still reports the original
+  delete failure rather than a success.
 - Because it deletes the cloud copy, taking a _shared_ or _team_ diagram offline
   first revokes those (a share/team diagram can't be pulled private silently);
   the confirmation spells this out.
