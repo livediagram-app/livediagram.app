@@ -138,10 +138,11 @@ later, or reading a layout written by a newer client, never strands the UI.
 
 ## Implementation
 
-- **`apps/live/lib/panel-layout.ts`** — types, `DEFAULT_PANEL_LAYOUT`, and
-  `readPanelLayout()` / `writePanelLayout()` against `localStorage`. Pure, unit-tested
-  (placement normalisation: a panel can't be in two corners; reflow ordering; default
-  fallback).
+- **`apps/live/lib/panel-layout.ts`** — types, `DEFAULT_PANEL_CORNER` (which corner each
+  panel rests in out of the box) plus `defaultPanelLayout()` that builds a layout from it,
+  `normalizePanelLayout()`, and `readPanelLayout()` / `writePanelLayout()` against
+  `localStorage`. Pure, unit-tested (placement normalisation: a panel can't be in two
+  corners; reflow ordering; default fallback).
 - **`apps/live/hooks/ui/usePanelDock.ts`** — owns the layout state (hydrated synchronously
   from `localStorage` at mount, re-read on the change event), derives the per-corner
   ordered panel lists, tracks the active drag + nearest-corner snap candidate, and exposes
