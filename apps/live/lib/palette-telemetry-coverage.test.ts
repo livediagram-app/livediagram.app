@@ -5,7 +5,7 @@ import {
   PALETTE_TELEMETRY_TYPES,
   TELEMETRY_TYPE_PATTERN,
 } from '@livediagram/api-schema';
-import { titleCaseType } from './telemetry';
+import { elementTelemetryType } from './element-telemetry';
 
 // Completeness guard for the palette census (spec/22, issue #30).
 //
@@ -21,27 +21,22 @@ import { titleCaseType } from './telemetry';
 // without a home in the catalogue fails here rather than silently producing
 // an event nobody ever sees.
 
-// The tokens the editor derives from a shape kind, mirroring the one rule
-// the creation paths use: title-case the kind, except the special cases.
-const SHAPE_KIND_OVERRIDES: Record<string, string> = {
-  // titleCaseType only capitalises the first character, so this would be
-  // 'Code-block' — the Changed events already say 'CodeBlock'.
-  'code-block': 'CodeBlock',
-  // Same hyphen problem (spec/103).
-  'mode-button': 'ModeButton',
-  // And again for the session button (spec/105).
-  'session-button': 'SessionButton',
-  // And the mind node (spec/118).
-  'mind-node': 'MindNode',
-  // And the reaction pad (spec/135).
-  'reaction-pad': 'ReactionPad',
-  // And the comment pin (spec/136).
-  'comment-pin': 'CommentPin',
-  // And the done check (spec/137).
-  'done-check': 'DoneCheck',
-};
-
-const tokenForShapeKind = (kind: string) => SHAPE_KIND_OVERRIDES[kind] ?? titleCaseType(kind);
+// Ask the editor what it emits, rather than restating the rule here.
+//
+// This used to be a hand-written override map "mirroring the one rule the
+// creation paths use", and it drifted from that rule without a word: it listed
+// seven camel-case tokens where elementTelemetryType only spelled out three.
+// So the session button, reaction pad, comment pin and done check emitted
+// 'Session-button' and friends while this file asserted the catalogue held
+// 'SessionButton' — which it did. Every test below passed, and the Added count
+// for four features was zero.
+//
+// A copy of the rule can only ever prove the copy agrees with the catalogue.
+// Calling the real function is what makes these tests about the editor.
+const tokenForShapeKind = (kind: string) =>
+  elementTelemetryType({ type: 'shape', shape: kind } as unknown as Parameters<
+    typeof elementTelemetryType
+  >[0]);
 
 describe('palette telemetry coverage', () => {
   it('gives every shape kind a bucket in the dashboard catalogue', () => {

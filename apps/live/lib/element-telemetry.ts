@@ -44,6 +44,30 @@ export function trackDuplicated(created: Element[], gestureType?: string): void 
   for (const element of created) track('Element', 'Added', elementTelemetryType(element));
 }
 
+// Hyphenated shape kinds whose token is spelled out rather than left to
+// titleCaseType, which only upper-cases the first character: 'code-block'
+// would report as 'Code-block' while every other event for that feature says
+// 'CodeBlock', splitting one feature across two tokens on the dashboard.
+//
+// Four of these were missing and the events really were going nowhere: a
+// session button, reaction pad, comment pin or done check reported as
+// 'Session-button' and friends on Added, while its own Changed events and the
+// dashboard's PALETTE_TELEMETRY_TYPES both said 'SessionButton'. The Added
+// count for four features sat at zero.
+//
+// Not every hyphenated kind belongs here. 'roll-call' reports as 'Roll-call'
+// deliberately, and the catalogue agrees; this map is for kinds whose OTHER
+// events already chose the camel-case spelling.
+const SHAPE_TOKENS: Record<string, string> = {
+  'code-block': 'CodeBlock',
+  'mode-button': 'ModeButton',
+  'mind-node': 'MindNode',
+  'session-button': 'SessionButton',
+  'reaction-pad': 'ReactionPad',
+  'comment-pin': 'CommentPin',
+  'done-check': 'DoneCheck',
+};
+
 export function elementTelemetryType(element: Element): string {
   switch (element.type) {
     case 'arrow':
@@ -74,13 +98,7 @@ export function elementTelemetryType(element: Element): string {
       // A brand mark reports as TechIcon rather than by its shape, matching
       // both the click-to-add and drag-to-draw paths.
       if (element.iconId && isTechIconId(element.iconId)) return 'TechIcon';
-      // titleCaseType would yield 'Code-Block' (it capitalises at the
-      // hyphen), which would split the feature across two tokens.
-      if (element.shape === 'code-block') return 'CodeBlock';
-      // Same reason: 'Mode-Button' would be a second token for one feature.
-      if (element.shape === 'mode-button') return 'ModeButton';
-      if (element.shape === 'mind-node') return 'MindNode';
-      return titleCaseType(element.shape);
+      return SHAPE_TOKENS[element.shape] ?? titleCaseType(element.shape);
     }
   }
 }
