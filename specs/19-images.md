@@ -4,7 +4,7 @@ Users can drop an image element on the canvas, upload the bytes, and reuse anyth
 
 ## Element model
 
-A fourth element kind alongside `ShapeElement` / `TextElement` / `StickyElement` / `ArrowElement` (see [05](05-diagram-structure.md)). Canonical type in `packages/diagram/src/index.ts`:
+A fourth element kind alongside `ShapeElement` / `TextElement` / `StickyElement` / `ArrowElement` (see [05](05-diagram-structure.md)). Canonical type in `@livediagram/diagram` (declared in `src/element-types.ts` with the other boxed elements, re-exported through the package):
 
 ```ts
 type ImageElement = {

@@ -62,7 +62,7 @@ groups all three (they're all in `isSelfDrawingShape` too).
   dataset. `LINE_DEFAULT_CATEGORIES` / `LINE_DEFAULT_SERIES` seed a fresh chart.
 - All three share `pieAnim?` / `pieAnimSpeed?` / `pieAnimRepeat?` / `chartLegend?` / `chartLegendPosition?`.
   The types + constants + `isPieShape` / `isBarShape` / `isLineShape` /
-  `isChartShape` live in `packages/diagram/src/index.ts`.
+  `isChartShape` live in `@livediagram/diagram` (`src/data-shapes.ts`).
 - Rendered by `PieChartView` / `BarChartView` / `LineChartView`: SVG marks in the
   default palette or a per-mark colour, with a `ChartLegend`; the mark group
   carries the `lvd-pie-*` animation (CSS in `globals.css`, reduced-motion-safe),

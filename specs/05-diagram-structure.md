@@ -39,7 +39,16 @@ Activating a tab/element/diagram link is a navigation action; a `url` link opens
 
 ## Data model
 
-Canonical types live in **`packages/diagram/src/index.ts`** — that file is the source of truth for the cross-app shape (consumed by the live editor, the api worker, and any future code that handles diagrams). Treat the sketch below as a high-level outline; read the package for the full field list.
+Canonical types live in **`@livediagram/diagram`** — that package is the source of truth for the cross-app shape (consumed by the live editor, the api worker, and any future code that handles diagrams). Everything is re-exported through `src/index.ts`, so consumers import from the package and never from a file inside it; the split below is for readability only and can change without touching a caller.
+
+| File               | Holds                                                                   |
+| ------------------ | ----------------------------------------------------------------------- |
+| `index.ts`         | the public surface, plus the shared enums every element family draws on |
+| `element-types.ts` | the boxed elements (shape, text, table, sticky, image, freehand, …)     |
+| `arrow-types.ts`   | anchors, endpoints, arrowheads, `ArrowElement`                          |
+| `shape-kind.ts`    | `ShapeKind`, the closed vocabulary of shapes                            |
+
+Treat the sketch below as a high-level outline; read the package for the full field list.
 
 ```ts
 type Diagram = {
