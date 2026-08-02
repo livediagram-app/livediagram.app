@@ -80,3 +80,37 @@ export function resolveCatchup(
   if (!asked.epoch && asked.lastSeq === 0) return { ops: room.opLog.slice(), resync: false };
   return { ops: [], resync: true };
 }
+
+/** One session's sliding-window frame counter. Resets on hibernation. */
+export type RateWindow = { count: number; windowStart: number };
+
+// The per-session flood cap, as a pure decision: given the window a socket is
+// currently in and the time now, may this frame through, and what is the
+// window afterwards?
+//
+// Applied to EVERY parsed frame, not just ops. A legitimate client sends one
+// `hello` per connection, but each `hello` re-runs the O(N^2) presence fanout,
+// so an uncapped `hello` loop was a flood path straight through the door the
+// cap exists to close.
+//
+// The window is a simple reset-on-expiry rather than a rolling average: a
+// burst right after a boundary can briefly reach twice the cap, which is fine
+// for a flood defence and much cheaper than keeping timestamps per frame.
+//
+// The three branches are the whole behaviour, and the room's own test has to
+// build a second DiagramRoom to reach the third, so they are worth being able
+// to state directly.
+export function admitFrame(
+  rate: RateWindow | undefined,
+  now: number,
+  cap: number,
+): { admit: boolean; rate: RateWindow } {
+  // No window, or the last one has aged out: this frame opens a fresh one.
+  if (!rate || now - rate.windowStart >= 1000) {
+    return { admit: true, rate: { count: 1, windowStart: now } };
+  }
+  // At the cap: drop the frame and leave the window untouched, so a flooding
+  // socket cannot extend its own window by continuing to send.
+  if (rate.count >= cap) return { admit: false, rate };
+  return { admit: true, rate: { count: rate.count + 1, windowStart: rate.windowStart } };
+}

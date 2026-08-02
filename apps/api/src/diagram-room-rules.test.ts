@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { helloPresence, resolveCatchup, MAX_TAB_ID_LEN, type LoggedOp } from './diagram-room-rules';
+import {
+  admitFrame,
+  helloPresence,
+  resolveCatchup,
+  MAX_TAB_ID_LEN,
+  type LoggedOp,
+} from './diagram-room-rules';
 import { MAX_COLOR_LEN, MAX_PARTICIPANT_NAME_LEN } from './limits';
 
 const SESSION = { presenceId: 'p-server', verifiedRole: 'view' as const };
@@ -96,5 +102,50 @@ describe('resolveCatchup', () => {
     // the caller between resolving and sending.
     const { ops } = resolveCatchup({ epoch: null, lastSeq: 0 }, room);
     expect(ops).not.toBe(room.opLog);
+  });
+});
+
+describe('admitFrame', () => {
+  const CAP = 3;
+
+  it('opens a window for a socket that has not sent before', () => {
+    expect(admitFrame(undefined, 1000, CAP)).toEqual({
+      admit: true,
+      rate: { count: 1, windowStart: 1000 },
+    });
+  });
+
+  it('counts frames inside the window without moving its start', () => {
+    const first = admitFrame(undefined, 1000, CAP);
+    const second = admitFrame(first.rate, 1400, CAP);
+    expect(second).toEqual({ admit: true, rate: { count: 2, windowStart: 1000 } });
+  });
+
+  it('drops the frame once the window is at the cap', () => {
+    const full = { count: CAP, windowStart: 1000 };
+    expect(admitFrame(full, 1500, CAP)).toEqual({ admit: false, rate: full });
+  });
+
+  it('does not let a flooding socket extend its own window', () => {
+    // Every dropped frame must leave windowStart alone, or a socket that
+    // keeps sending would hold the window open forever and never reset.
+    const full = { count: CAP, windowStart: 1000 };
+    const after = admitFrame(admitFrame(full, 1500, CAP).rate, 1900, CAP);
+    expect(after.rate.windowStart).toBe(1000);
+    expect(after.admit).toBe(false);
+  });
+
+  it('starts a fresh window once a second has passed', () => {
+    // The branch the room's own test needs a second DiagramRoom to reach.
+    const full = { count: CAP, windowStart: 1000 };
+    expect(admitFrame(full, 2000, CAP)).toEqual({
+      admit: true,
+      rate: { count: 1, windowStart: 2000 },
+    });
+  });
+
+  it('treats the boundary as expiry, not as still inside the window', () => {
+    expect(admitFrame({ count: 1, windowStart: 1000 }, 1999, CAP).rate.windowStart).toBe(1000);
+    expect(admitFrame({ count: 1, windowStart: 1000 }, 2000, CAP).rate.windowStart).toBe(2000);
   });
 });

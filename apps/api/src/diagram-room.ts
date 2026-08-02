@@ -1,5 +1,11 @@
 import type { ClientMessage, ParticipantPresence, ServerMessage } from './types';
-import { helloPresence, resolveCatchup, MAX_TAB_ID_LEN, type LoggedOp } from './diagram-room-rules';
+import {
+  type LoggedOp,
+  MAX_TAB_ID_LEN,
+  admitFrame,
+  helloPresence,
+  resolveCatchup,
+} from './diagram-room-rules';
 
 // One Durable Object instance per diagram id. Holds the set of currently
 // connected WebSockets plus their participant identity, and broadcasts
@@ -329,20 +335,11 @@ export class DiagramRoom implements DurableObject {
     } catch {
       return;
     }
-    // Per-session frame-rate cap (sliding 1s window) — applied to EVERY
-    // parsed frame, not just ops: a legitimate client sends one `hello`
-    // per connection, but each `hello` re-runs the O(N²) presence
-    // fanout, so an uncapped `hello` loop was a flood path through the
-    // exact door the cap was built to close.
-    const now = Date.now();
-    const rate = this.opRates.get(ws);
-    if (!rate || now - rate.windowStart >= 1000) {
-      this.opRates.set(ws, { count: 1, windowStart: now });
-    } else if (rate.count >= OP_RATE_CAP) {
-      return;
-    } else {
-      rate.count++;
-    }
+    // Per-session frame-rate cap (sliding 1s window). The decision is
+    // admitFrame in diagram-room-rules; this is the socket plumbing.
+    const decision = admitFrame(this.opRates.get(ws), Date.now(), OP_RATE_CAP);
+    this.opRates.set(ws, decision.rate);
+    if (!decision.admit) return;
     const session = this.readSession(ws);
     if (!session) return;
     if (msg.kind === 'hello') {
