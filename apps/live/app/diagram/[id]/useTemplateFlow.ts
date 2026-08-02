@@ -1,8 +1,8 @@
 import { useEffect, useRef, type Dispatch, type SetStateAction } from 'react';
 import type { Tab } from '@livediagram/diagram';
 import { track, titleCaseType } from '@/lib/telemetry';
-import { getTheme, recolourElementsForTheme, switchThemeBackdrop, THEMES } from '@/lib/themes';
-import { isCustomThemeId } from '@/lib/custom-theme-registry';
+import { getTheme, recolourElementsForTheme, switchThemeBackdrop } from '@/lib/themes';
+import { themeTelemetryLabel } from '@/lib/custom-theme-registry';
 import { templateCanvasOverrides, type TemplateKind } from '@livediagram/templates';
 import type { Participant } from '@/lib/identity';
 import { patchTab } from './editor-page-helpers';
@@ -124,13 +124,7 @@ export function useTemplateFlow(opts: {
     // its symmetric "create with a chosen theme" event.
     track('Template', 'Used', titleCaseType(kind));
     if (themeId) {
-      // `type` stays a preset, never user content: a custom theme reports
-      // the fixed 'Custom' rather than its name (spec/22, /44).
-      const themeLabel = isCustomThemeId(themeId)
-        ? 'Custom'
-        : (THEMES.find((t) => t.id === themeId)?.label ??
-          themeId.charAt(0).toUpperCase() + themeId.slice(1));
-      track('Theme', 'Changed', themeLabel);
+      track('Theme', 'Changed', themeTelemetryLabel(themeId));
     }
     // Templates flow: applying a template / theme to an existing tab.
     // The diagram already exists in D1; no mint required.

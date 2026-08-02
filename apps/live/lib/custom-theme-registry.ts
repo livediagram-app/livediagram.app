@@ -8,6 +8,7 @@
 // correctly once the fetch lands and the provider re-renders.
 //
 // The ThemeDefinition import is type-only (erased at runtime), so the
+import { THEMES } from '@livediagram/diagram';
 // themes.ts -> registry runtime dependency stays one-way (no import
 // cycle): themes.ts calls lookupCustomTheme(); this file only borrows
 // the type.
@@ -76,4 +77,24 @@ export function clearCustomThemeRegistry(): void {
 // "is this a saved theme?" check for the UI without a registry lookup.
 export function isCustomThemeId(id: string | undefined): boolean {
   return typeof id === 'string' && id.startsWith('custom:');
+}
+
+// The telemetry `type` for a theme, and the one place that decides it.
+//
+// spec/22 is categorical: `type` is a preset token, never user content. A
+// custom theme's name is user content — someone's client, someone's project —
+// so a custom id reports the fixed 'Custom' and its name never leaves the
+// browser. Three call sites derived this independently (the template picker,
+// the /new flow, and the tab theme switcher) and two of them held a
+// byte-identical copy of the ternary. A rule that only holds while three
+// copies agree is a rule waiting to be broken by whoever edits one of them.
+//
+// The built-in fallback (title-casing the id) is for an id with no catalogue
+// entry — a theme removed from THEMES while a diagram still names it. Still a
+// preset token, since built-in ids are ours, not the user's.
+export function themeTelemetryLabel(themeId: string | undefined): string {
+  if (!themeId) return 'Unknown';
+  if (isCustomThemeId(themeId)) return 'Custom';
+  const known = THEMES.find((t) => t.id === themeId)?.label;
+  return known ?? themeId.charAt(0).toUpperCase() + themeId.slice(1);
 }

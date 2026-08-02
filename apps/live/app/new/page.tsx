@@ -28,8 +28,8 @@ import { trackDailyReturn } from '@/lib/daily-return';
 import { ensureGuestSelfId, markNameConfirmed } from '@/lib/local-identity';
 import { buildTemplatedTab } from '@/lib/template-builders';
 import { untitledNameForTemplate, type TemplateKind } from '@livediagram/templates';
-import { getTheme, THEMES } from '@/lib/themes';
-import { isCustomThemeId } from '@/lib/custom-theme-registry';
+import { getTheme } from '@/lib/themes';
+import { themeTelemetryLabel } from '@/lib/custom-theme-registry';
 
 // Folder shape the Settings step's placement browser consumes.
 type PickerFolder = { id: string; name: string; parentId: string | null };
@@ -339,13 +339,7 @@ export default function NewDiagramPage() {
     // sent — the `type` records only whether it's an Offline or Cloud diagram
     // (spec/76). The chosen theme is recorded separately below.
     track('Diagram', 'Created', offline ? 'Offline' : 'Cloud');
-    // Telemetry `type` must stay a preset, never user content, so a custom
-    // theme reports the fixed 'Custom' rather than its name (spec/22, /44).
-    const themeLabel = isCustomThemeId(themeId)
-      ? 'Custom'
-      : (THEMES.find((t) => t.id === themeId)?.label ??
-        themeId.charAt(0).toUpperCase() + themeId.slice(1));
-    track('Theme', 'Changed', themeLabel);
+    track('Theme', 'Changed', themeTelemetryLabel(themeId));
     if (templateKind) track('Template', 'Used', titleCaseType(templateKind));
     // Placement. The Settings step's picker (spec/76) is authoritative: the
     // URL context (/new?folder=<id>, /new?team=<id>&folder=<id>) pre-seeds it

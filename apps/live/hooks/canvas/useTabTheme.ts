@@ -14,7 +14,7 @@ import {
   switchThemeElements,
   THEMES,
 } from '@/lib/themes';
-import { isCustomThemeId } from '@/lib/custom-theme-registry';
+import { themeTelemetryLabel } from '@/lib/custom-theme-registry';
 import type { Tab } from '@livediagram/diagram';
 import { track } from '@/lib/telemetry';
 
@@ -52,7 +52,7 @@ export function useTabTheme(deps: {
     emitTabMeta(activeId, `Changed theme to ${theme.label}`);
     // Telemetry (spec/22): `type` must stay a preset, never user content,
     // so a custom theme reports the fixed 'Custom' rather than its name.
-    track('Theme', 'Changed', isCustomThemeId(id) ? 'Custom' : theme.label);
+    track('Theme', 'Changed', themeTelemetryLabel(id));
     commitTabs((ts) =>
       ts.map((t) => {
         if (t.id !== activeId) return t;
