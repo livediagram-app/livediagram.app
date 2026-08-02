@@ -134,4 +134,7 @@ Tests live alongside the code they cover, as `*.test.ts` / `*.test.tsx` files. T
 ## Two gotchas
 
 - **All four Next.js dev servers (`marketing`, `live`, `telemetry`, `help`) run through `scripts/next-dev.mjs`.** It frees the port, points dev at an isolated `.next-dev/` cache, and wipes that cache on every start, so a `next build` running in the same checkout can't corrupt the dev server (the recurring "unstyled help page" / `Cannot find module './NNNN.js'` failures) and a crashed restart never inherits a broken cache. `help` runs on webpack (passing `--webpack`) because its `remark-gfm` MDX tables need the JS plugin pipeline Turbopack skips; the other three use Turbopack. If a dev server ever does get stuck, stop it and restart — the wipe-on-start clears it.
+
+  The editor keeps a webpack escape hatch for the same reason `help` is on it permanently: `pnpm --filter @livediagram/live dev:webpack` boots that one app on webpack instead. It exists for the case where Turbopack genuinely doesn't support something the app needs, and it is a diagnostic rather than a default — Turbopack became the default precisely because webpack's HMR kept desynchronising here and serving `__webpack_modules__[moduleId] is not a function` until someone wiped `.next`. If you find yourself needing the hatch, that is worth a spec note rather than a habit.
+
 - **The api worker's local D1 file lives at `apps/api/.wrangler/state/v3/d1/`.** Delete the folder to start over with an empty database.
