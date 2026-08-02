@@ -21,13 +21,11 @@ export const HELP_ARTICLES = {
   sharePasswords: 'collaboration/sharing/share-passwords',
   // Palette behaviour
   autoAttachArrows: 'palette/auto-attach-arrows',
-  // The elements added in spec/114 and spec/118-121, linked from the surfaces
-  // where someone first meets them.
-  mindMaps: 'palette/mind-maps',
-  lanes: 'palette/lanes',
-  entities: 'palette/entities',
+  // Of the elements added in spec/114 and spec/118-121, only the embed has a
+  // surface that links its article (the link picker, when it is restricted to
+  // a URL). Mind maps, lanes and entities had keys here and no placement, so
+  // they were removed; their articles are still in the help centre.
   embedElements: 'palette/embed-elements',
-  behaviourElements: 'palette/behaviour',
   alignmentGuides: 'palette/alignment-guides',
   panelOpacity: 'palette/panel-opacity',
   quickAddOnHover: 'palette/quick-add-on-hover',
@@ -50,11 +48,9 @@ export const HELP_ARTICLES = {
   customThemes: 'canvas/themes/custom-themes',
   // Links / activity / comments
   links: 'canvas/links',
-  revertingChanges: 'activity-panel/reverting-changes',
   comments: 'collaboration/comments',
   assignedActions: 'collaboration/assigned-actions',
   // Explorer / data
-  explorerPanel: 'explorer/explorer-panel',
   imageGallery: 'explorer/image-gallery',
   recentDiagrams: 'explorer/recent',
   sharedWithYou: 'explorer/shared-with-you',
