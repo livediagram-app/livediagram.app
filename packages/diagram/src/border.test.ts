@@ -6,7 +6,12 @@
 // completeness of the lookup tables (every preset has a pixel
 // mapping, every style has a dasharray, every radius has a pixel
 // value) so a future preset addition to BorderStroke / BorderStyle /
-// BorderRadius is caught by the table being narrower than the union.
+// BorderRadius is caught.
+//
+// Two mechanisms, and they catch different halves. A table MISSING a key the
+// union gained fails to typecheck, because each is a Record over its union.
+// A key that exists but maps to a nonsense value typechecks fine, and only
+// these tests catch that.
 
 import { describe, expect, it } from 'vitest';
 import {
@@ -23,6 +28,17 @@ import {
 
 const shape = (kind: string) => ({ type: 'shape', shape: kind }) as unknown as Element;
 const ofType = (type: string) => ({ type }) as unknown as Element;
+
+// The "every preset" tests below iterate the TABLE'S OWN KEYS rather than a
+// list typed out here. Each table is a Record keyed by its union, so its keys
+// are the union, and a preset added tomorrow is covered the moment it exists.
+//
+// A hand-written list cannot make that promise, and this file's had already
+// stopped keeping it: the radius list read ['none', 'sm', 'md', 'lg'] while
+// BorderRadius also has 'full'. Nothing failed, because a list that omits a
+// case tests the cases it kept perfectly well. TypeScript catches a table
+// MISSING a key; only this catches a key mapped to a bad value.
+const keysOf = <K extends string>(table: Record<K, unknown>) => Object.keys(table) as K[];
 
 describe('supportsBorderControls', () => {
   it('includes shapes, freehand and tables', () => {
@@ -44,7 +60,8 @@ describe('supportsBorderControls', () => {
 
 describe('BORDER_STROKE_PX lookup', () => {
   it('maps every BorderStroke preset to a numeric pixel width', () => {
-    const presets: BorderStroke[] = ['none', 'thin', 'medium', 'thick', 'extra-thick'];
+    const presets = keysOf<BorderStroke>(BORDER_STROKE_PX);
+    expect(presets.length).toBeGreaterThan(4);
     for (const p of presets) {
       expect(typeof BORDER_STROKE_PX[p]).toBe('number');
       expect(Number.isFinite(BORDER_STROKE_PX[p])).toBe(true);
@@ -73,7 +90,8 @@ describe('BORDER_DASH_ARRAY lookup', () => {
   });
 
   it('maps every non-solid style to a valid SVG dasharray string', () => {
-    const dashed: BorderStyle[] = ['dashed', 'dotted', 'long-dash', 'dash-dot', 'dash-dot-dot'];
+    const dashed = keysOf<BorderStyle>(BORDER_DASH_ARRAY).filter((s) => s !== 'solid');
+    expect(dashed.length).toBeGreaterThan(4);
     for (const style of dashed) {
       expect(typeof BORDER_DASH_ARRAY[style]).toBe('string');
       expect(BORDER_DASH_ARRAY[style]).toMatch(/^\d+(\.\d+)?( \d+(\.\d+)?)+$/);
@@ -83,7 +101,9 @@ describe('BORDER_DASH_ARRAY lookup', () => {
 
 describe('BORDER_RADIUS_PX lookup', () => {
   it('maps every BorderRadius preset to a non-negative pixel value', () => {
-    const radii: BorderRadius[] = ['none', 'sm', 'md', 'lg'];
+    const radii = keysOf<BorderRadius>(BORDER_RADIUS_PX);
+    // 'full' is the one this list used to miss; pin that it is now reached.
+    expect(radii).toContain('full');
     for (const r of radii) {
       expect(typeof BORDER_RADIUS_PX[r]).toBe('number');
       expect(BORDER_RADIUS_PX[r]).toBeGreaterThanOrEqual(0);
@@ -92,6 +112,14 @@ describe('BORDER_RADIUS_PX lookup', () => {
 
   it('keeps "none" at exactly 0 so a square stays square', () => {
     expect(BORDER_RADIUS_PX.none).toBe(0);
+  });
+
+  it('keeps "full" far above the size steps, since it is a sentinel not a step', () => {
+    // CSS clamps border-radius to 50% of the box, so 'full' works by being
+    // larger than any element could be: that is what turns a square into a
+    // circle and a rectangle into a stadium (spec/09). A value merely one
+    // step above 'lg' would round the corners and stop there.
+    expect(BORDER_RADIUS_PX.full).toBeGreaterThan(BORDER_RADIUS_PX.lg * 100);
   });
 
   it('orders radii monotonically (none < sm < md < lg)', () => {
