@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { PALETTE_TILES, TOOL_GROUPS, tilesInSection, tilesInToolGroup } from './palette-tile-defs';
+import { PALETTE_CATEGORIES } from './palette-categories';
+import {
+  PALETTE_TILES,
+  TOOL_GROUPS,
+  tilesForCategory,
+  tilesInSection,
+  tilesInToolGroup,
+} from './palette-tile-defs';
 
 // The shared tile catalogue (spec/78) feeds the category tabs, Favourites
 // (which persists tile IDS across sessions), the search panel, and — since
@@ -60,6 +67,56 @@ describe('tool blurbs', () => {
       .filter((t) => t.blurb?.trim().toLowerCase() === (t.caption ?? '').trim().toLowerCase())
       .map((t) => t.id);
     expect(echoes).toEqual([]);
+  });
+});
+
+// Each browsable category carries a `description` that users read in the
+// category picker, and several of those blurbs list the elements the category
+// holds. Adding a tile does not update the blurb, and nothing failed when it
+// went stale: Behaviour named five of its eight elements for three releases,
+// and Collaborate dropped the comment pin (spec/136) the day it shipped.
+//
+// Text cannot be checked mechanically here — some blurbs enumerate ("estimate
+// cards, temperature checks, ...") while others are deliberately illustrative
+// ("Square, circle, diamond, and the flowchart shape vocabulary"), and no rule
+// separates them. So this pins the COUNT instead. Adding or removing a tile
+// fails this test, and the failure is the prompt to re-read that category's
+// description and decide whether it still describes what is in the tab.
+//
+// Categories filled from a catalogue rather than from tiles (Favourites,
+// Icons, Stickers, Technology) hold none, and are pinned at 0 so that stays
+// true by intent rather than by accident.
+const TILES_PER_CATEGORY: Record<string, number> = {
+  favourites: 0,
+  shapes: 13,
+  build: 5,
+  write: 4,
+  draw: 5,
+  devices: 6,
+  icons: 0,
+  stickers: 0,
+  technology: 0,
+  media: 8,
+  components: 10,
+  data: 6,
+  behaviour: 8,
+  collaborate: 7,
+};
+
+describe('PALETTE_CATEGORIES', () => {
+  it('covers every category, so a new one cannot skip the count below', () => {
+    expect(PALETTE_CATEGORIES.map((c) => c.id).sort()).toEqual(
+      Object.keys(TILES_PER_CATEGORY).sort(),
+    );
+  });
+
+  it('holds the pinned number of tiles (a change here means re-reading the blurb)', () => {
+    for (const category of PALETTE_CATEGORIES) {
+      expect(
+        tilesForCategory(category.id).length,
+        `${category.label}: tile count changed — does its description still list the right elements?`,
+      ).toBe(TILES_PER_CATEGORY[category.id]);
+    }
   });
 });
 

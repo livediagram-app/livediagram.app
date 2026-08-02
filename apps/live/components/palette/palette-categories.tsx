@@ -150,15 +150,15 @@ export const PALETTE_CATEGORIES: {
     icon: <BehaviourTabIcon />,
   },
   {
-    // Collaborate (spec/123 to spec/129): the elements that collect
-    // what the room thinks. Dynamic band, beside Behaviour — both
-    // hold elements whose content arrives at runtime rather than
-    // being drawn by the author.
+    // Collaborate (spec/123 to spec/129, plus the comment pin in
+    // spec/136): the elements that collect what the room thinks.
+    // Dynamic band, beside Behaviour — both hold elements whose
+    // content arrives at runtime rather than being drawn by the author.
     id: 'collaborate',
     label: 'Collaborate',
     group: 2,
     description:
-      'Elements that collect what the room thinks: estimate cards, temperature checks, idea boxes, agendas, decision records, and roll calls.',
+      'Elements that collect what the room thinks: comment pins, estimate cards, temperature checks, idea boxes, agendas, decision records, and roll calls.',
     icon: <CollaborateTabIcon />,
   },
 ];
