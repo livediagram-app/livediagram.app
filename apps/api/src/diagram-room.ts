@@ -80,7 +80,11 @@ const ORDER_STATE_KEY = 'order-state';
 // character, at cursor rates, mutating nothing. View-role senders included —
 // an audience member walking around a diagram they were shown a link to is
 // the same kind of harmless as their cursor.
-const PRESENCE_OP_KINDS = new Set([
+// Exported so the role-gate tests enumerate the real set rather than a copy:
+// a presence kind added here and not there would ship untested, and the more
+// dangerous direction — a MUTATION kind added here, handing view-role peers a
+// write path — needs the two lists compared, not restated.
+export const PRESENCE_OP_KINDS = new Set([
   'cursor',
   'select',
   'laser',

@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ParticipantPresence } from '@livediagram/api-schema';
-import { DiagramRoom } from './diagram-room';
+import { DiagramRoom, PRESENCE_OP_KINDS } from './diagram-room';
 
 // The DiagramRoom Durable Object is the realtime hub for one diagram.
 // Most of its surface is straightforward fan-out, but two pieces carry
@@ -462,7 +462,12 @@ describe('DiagramRoom op-role enforcement', () => {
   // avatar) and must relay from a view-role session too, otherwise a viewer is
   // invisible to peers — no cursor, no selection highlight, no "which tab
   // they're on", and no walking character (spec/101).
-  for (const kind of ['cursor', 'select', 'tab-focus', 'laser', 'avatar'] as const) {
+  // Driven off the real set, so a presence kind added to the gate joins this
+  // loop automatically instead of shipping untested. `avatar-push` is the one
+  // exclusion: it is ADDRESSED rather than broadcast (see its own tests just
+  // below), so "a peer received it" is not the right assertion for it.
+  const ADDRESSED_PRESENCE_KINDS = ['avatar-push'];
+  for (const kind of [...PRESENCE_OP_KINDS].filter((k) => !ADDRESSED_PRESENCE_KINDS.includes(k))) {
     it(`relays a '${kind}' presence op from a view-role session`, () => {
       const { room } = newRoom();
       const editor = connect(room, 'editor', 'edit');
@@ -515,6 +520,31 @@ describe('DiagramRoom op-role enforcement', () => {
 
   // A shove relays from a view-role session too: an audience member walking a
   // diagram someone linked them to can push back.
+  // Keeps the exclusion above honest: if an addressed kind is ever removed from
+  // the gate, or renamed, this fails rather than silently excluding nothing.
+  it('excludes only kinds that really are in the presence set', () => {
+    expect(ADDRESSED_PRESENCE_KINDS.filter((k) => !PRESENCE_OP_KINDS.has(k))).toEqual([]);
+  });
+
+  // The dangerous direction. Everything in PRESENCE_OP_KINDS is relayed from a
+  // view-role session without an edit check, so a MUTATION kind landing in that
+  // set silently hands every read-only visitor a write path into the document.
+  // The mutation kinds are RoomOp's members (packages/api-schema) — listed here
+  // rather than imported because RoomOp is a type union and cannot be
+  // enumerated at runtime; the point is to compare two lists, not to restate
+  // one.
+  it('lets no document-mutating op kind into the presence set', () => {
+    const mutating = ['el', 'tab', 'tab-meta', 'diagram-meta', 'log', 'log-remove'];
+    expect(mutating.filter((k) => PRESENCE_OP_KINDS.has(k))).toEqual([]);
+  });
+
+  // `tab-focus` is deliberately both: it rides the op channel like a mutation
+  // but changes nothing in the document, so a viewer may send it. Pinned so the
+  // exception stays a decision rather than an accident.
+  it('keeps tab-focus on the presence side of the gate', () => {
+    expect(PRESENCE_OP_KINDS.has('tab-focus')).toBe(true);
+  });
+
   it('relays an avatar-push from a view-role session', () => {
     const { room } = newRoom();
     const viewer = connect(room, 'viewer', 'view');
