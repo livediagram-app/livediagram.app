@@ -122,6 +122,23 @@ benign: the editor mounts, tries to load a diagram with id `typo`,
 the API 404s, the in-app `<NotFound>` card surfaces — branded with
 a "Create a new diagram" CTA.
 
+### A failed load is not a missing diagram
+
+NotFound means "this diagram doesn't exist, or isn't yours". A load
+that FAILS — network down, 5xx, share link unresolvable — means
+nothing of the sort, and showing NotFound for it tells someone their
+work is gone when the server is merely unreachable. So the two are
+kept apart: only a clean 404 reaches NotFound, and a thrown request
+raises `loadError`, which renders `components/chrome/ApiErrorPage.tsx`
+instead. That card leads with **Retry** (a reload), because unlike a
+missing diagram the condition is expected to clear on its own. The
+same card serves the failed-create path on `/new`.
+
+The distinction is made at every call site that can fail this way —
+the diagram load and the share-link resolve in `useIdentityBootstrap`,
+and the create in `/new` — rather than in one place, so it is worth
+knowing about when adding another.
+
 ## Navigation flows
 
 ### Owner creates a new diagram
