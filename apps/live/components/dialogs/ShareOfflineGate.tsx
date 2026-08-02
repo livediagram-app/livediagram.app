@@ -7,6 +7,7 @@ import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useToast } from '@/hooks/ui/useToast';
 import { syncFailureMessage } from '@/lib/offline/offline-convert';
+import { DialogHeader } from './DialogHeader';
 
 // The Share dialog's offline gate (spec/76). An offline diagram is stored only
 // in this browser, so there are no links to mint until it's synced to the
@@ -38,24 +39,17 @@ export function ShareOfflineGate({
 
   return (
     <Dialog open onClose={onClose} ariaLabel="Share this diagram" size="md">
-      <div className="flex items-start justify-between gap-3 border-b border-slate-100 px-6 pb-4 pt-5 dark:border-slate-800">
-        <div>
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-            Share this diagram
-          </h2>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-            This diagram is saved offline, in this browser only.
-          </p>
-        </div>
-        <div className="flex shrink-0 items-center gap-0.5">
-          <HelpArticleLink
-            article="offlineMode"
-            title="Offline Mode"
-            description="What offline diagrams are and how to sync them."
-          />
-          <DialogCloseButton onClick={onClose} />
-        </div>
-      </div>
+      <DialogHeader
+        title="Share this diagram"
+        subtitle="This diagram is saved offline, in this browser only."
+      >
+        <HelpArticleLink
+          article="offlineMode"
+          title="Offline Mode"
+          description="What offline diagrams are and how to sync them."
+        />
+        <DialogCloseButton onClick={onClose} />
+      </DialogHeader>
 
       <div className="flex flex-col items-center gap-4 px-6 py-7 text-center">
         <span className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-50 text-amber-600 ring-1 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/30">

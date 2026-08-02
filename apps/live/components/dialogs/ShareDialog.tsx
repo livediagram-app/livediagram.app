@@ -18,6 +18,7 @@ import { SharePasswordSection } from './SharePasswordSection';
 import { ShareOfflineGate } from './ShareOfflineGate';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useCopiedFlash } from '@livediagram/ui';
+import { DialogHeader } from './DialogHeader';
 
 // Human labels for the expiry choices (spec/34), shared by the create
 // dropdown and the inactive rows' Extend button.
@@ -140,25 +141,17 @@ export function ShareDialog({
       size="lg"
       className="max-h-[calc(100%-2rem)]"
     >
-      <div className="flex items-start justify-between gap-3 border-b border-slate-100 px-6 pb-4 pt-5 dark:border-slate-800">
-        <div>
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-            Share this diagram
-          </h2>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-            Anyone with an editor link joins in real time; a view-only link lets people watch
-            without changing anything.
-          </p>
-        </div>
-        <div className="flex shrink-0 items-center gap-0.5">
-          <HelpArticleLink
-            article="sharing"
-            title="Sharing"
-            description="Roles, real-time collaboration, and how share links work."
-          />
-          <DialogCloseButton onClick={onClose} />
-        </div>
-      </div>
+      <DialogHeader
+        title="Share this diagram"
+        subtitle="Anyone with an editor link joins in real time; a view-only link lets people watch without changing anything."
+      >
+        <HelpArticleLink
+          article="sharing"
+          title="Sharing"
+          description="Roles, real-time collaboration, and how share links work."
+        />
+        <DialogCloseButton onClick={onClose} />
+      </DialogHeader>
 
       <div className="flex flex-col gap-5 overflow-y-auto px-6 py-5">
         {/* Guests only, and first: the name peers will see on the

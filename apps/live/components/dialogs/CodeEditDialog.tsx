@@ -3,6 +3,7 @@ import { Button } from '@livediagram/ui';
 import { CODE_LANGUAGES, CODE_MAX_LENGTH, type CodeLanguage } from '@livediagram/diagram';
 import { CloseIcon } from '@/components/primitives/CloseIcon';
 import { Dialog } from '@/components/dialogs/Dialog';
+import { DialogHeader } from './DialogHeader';
 
 // The code block's edit modal (spec/82): a monospace textarea + a language
 // dropdown. Opened by double-clicking the card or from the context menu's
@@ -45,13 +46,10 @@ export function CodeEditDialog({
 
   return (
     <Dialog open onClose={onClose} ariaLabel="Edit code" size="lg" className="max-h-[90vh]">
-      <div className="flex items-start justify-between gap-3 border-b border-slate-100 px-6 pt-6 pb-4 dark:border-slate-800">
-        <div>
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Code</h2>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-            Paste or type the snippet; pick a language for highlighting.
-          </p>
-        </div>
+      <DialogHeader
+        title="Code"
+        subtitle="Paste or type the snippet; pick a language for highlighting."
+      >
         <button
           type="button"
           onClick={onClose}
@@ -60,7 +58,7 @@ export function CodeEditDialog({
         >
           <CloseIcon size={18} />
         </button>
-      </div>
+      </DialogHeader>
       <div className="flex flex-col gap-3 px-6 py-4">
         <textarea
           ref={textareaRef}

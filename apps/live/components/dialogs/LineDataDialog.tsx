@@ -5,6 +5,7 @@ import { CloseIcon } from '@/components/primitives/CloseIcon';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { parseCsvLineData } from '@/lib/csv';
+import { DialogHeader } from './DialogHeader';
 
 // Line-chart data editor in a modal (spec/53). The context menu's Data category
 // only summarises the series + offers "Edit data", which opens this — the 2-D
@@ -55,30 +56,24 @@ export function LineDataDialog({
 
   return (
     <Dialog open onClose={onClose} ariaLabel="Edit chart data" size="xl" className="max-h-[90vh]">
-      <div className="flex items-start justify-between gap-3 border-b border-slate-100 px-6 pt-6 pb-4 dark:border-slate-800">
-        <div>
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Chart data</h2>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-            A row per category, a column per series. Or import a CSV (header = series names, first
-            column = categories).
-          </p>
-        </div>
-        <div className="flex shrink-0 items-center gap-0.5">
-          <HelpArticleLink
-            article="dataElements"
-            title="Data elements"
-            description="Charts and data-driven elements, and how to edit their data."
-          />
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close"
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-          >
-            <CloseIcon size={18} />
-          </button>
-        </div>
-      </div>
+      <DialogHeader
+        title="Chart data"
+        subtitle="A row per category, a column per series. Or import a CSV (header = series names, first column = categories)."
+      >
+        <HelpArticleLink
+          article="dataElements"
+          title="Data elements"
+          description="Charts and data-driven elements, and how to edit their data."
+        />
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+        >
+          <CloseIcon size={18} />
+        </button>
+      </DialogHeader>
 
       <div className="flex items-center gap-2 px-6 pt-4">
         <label className={`${addBtn} cursor-pointer`}>

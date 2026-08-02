@@ -5,6 +5,7 @@ import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { normaliseUrl } from '@/lib/url-safety';
 import type { ElementLink } from '@livediagram/diagram';
+import { DialogHeader } from './DialogHeader';
 
 // Shared link picker, styled like the import / export dialogs (centred
 // modal, brand chrome). Used for BOTH element links and per-cell table
@@ -111,33 +112,30 @@ export function LinkPickerDialog({
 
   return (
     <Dialog open onClose={onClose} ariaLabel={title} size="lg" className="max-h-[90vh]">
-      <div className="flex items-start justify-between gap-3 border-b border-slate-100 px-6 pt-6 pb-4 dark:border-slate-800">
-        <div>
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{title}</h2>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-            {urlOnly
-              ? urlOnly.subtitle
-              : 'Jump to a tab, open another diagram, or go to a web address.'}
-          </p>
-        </div>
-        <div className="flex shrink-0 items-center gap-0.5">
-          {/* A URL-restricted picker is an embed's link dialog (spec/121), so
-              it points at the embed article rather than the generic links one:
-              "which links work here" is the question being asked. */}
-          <HelpArticleLink
-            article={urlOnly ? 'embedElements' : mode === 'tab' ? 'linkingTabs' : 'links'}
-            title={urlOnly ? 'Embeds' : mode === 'tab' ? 'Linking tabs' : 'Links'}
-            description={
-              urlOnly
-                ? 'Which services can be embedded, and how they load.'
-                : mode === 'tab'
-                  ? 'How linking to another tab works.'
-                  : 'Linking elements to tabs, diagrams, and web addresses.'
-            }
-          />
-          <DialogCloseButton onClick={onClose} />
-        </div>
-      </div>
+      <DialogHeader
+        title={title}
+        subtitle={
+          urlOnly
+            ? urlOnly.subtitle
+            : 'Jump to a tab, open another diagram, or go to a web address.'
+        }
+      >
+        {/* A URL-restricted picker is an embed's link dialog (spec/121), so
+            it points at the embed article rather than the generic links one:
+            "which links work here" is the question being asked. */}
+        <HelpArticleLink
+          article={urlOnly ? 'embedElements' : mode === 'tab' ? 'linkingTabs' : 'links'}
+          title={urlOnly ? 'Embeds' : mode === 'tab' ? 'Linking tabs' : 'Links'}
+          description={
+            urlOnly
+              ? 'Which services can be embedded, and how they load.'
+              : mode === 'tab'
+                ? 'How linking to another tab works.'
+                : 'Linking elements to tabs, diagrams, and web addresses.'
+          }
+        />
+        <DialogCloseButton onClick={onClose} />
+      </DialogHeader>
 
       {/* Mode switcher — hidden entirely when the caller restricts to a URL:
           a one-button switcher is a control that can't do anything. */}
