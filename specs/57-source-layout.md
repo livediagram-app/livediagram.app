@@ -12,7 +12,7 @@ been reorganised into the buckets below.
   (`Canvas.tsx`, `EditorContextMenu.tsx`, `BoxedElementView.tsx`).
 - `apps/live/hooks/` — ~66 files, canvas state machines
   (`useEditorDrag.ts`, `useElementStyle.ts`) sitting next to UI-only hooks
-  (`useConfirm.ts`, `useToast.ts`) and persistence hooks
+  (`useConfirm.tsx`, `useToast.tsx`) and persistence hooks
   (`useFolders.ts`, `useTeams.ts`).
 
 The blessed counter-example already in the tree is `apps/live/lib/api/*`,

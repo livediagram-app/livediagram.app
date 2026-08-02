@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
@@ -71,6 +71,47 @@ function resolves(quoted: string): boolean {
   return WORKSPACE_ROOTS.some((prefix) => existsSync(`${ROOT}/${prefix}${quoted}`));
 }
 
+// Bare filenames — `useToast.tsx`, no directory — are the blind spot of the
+// check above, which only looks at quotes containing a slash. There are ~240 of
+// them, and most that resolve to nothing are deliberate: a file a draft spec
+// plans to write, one a spec records as deleted, a `.d.ts` extension written as
+// if it were a name, the `useXxx.ts` placeholder in CLAUDE.md. Asserting they
+// all exist would mean an allowlist of judgement calls.
+//
+// So this asserts only the one case that needs no judgement: the name resolves
+// with the OTHER TypeScript extension. `.ts` and `.tsx` denote the same kind of
+// thing and differ only by whether the file holds JSX, which is exactly why the
+// wrong one gets typed — three specs had, one for months. A name that exists
+// under no extension at all stays silent; a `.json` beside a `.ts` is a
+// generator and its output, not a typo, so only the ts/tsx pair is flipped.
+const FLIP: Record<string, string> = { '.ts': '.tsx', '.tsx': '.ts' };
+
+function repoFilenames(): Set<string> {
+  const skip = new Set([
+    'node_modules',
+    '.next',
+    '.next-dev',
+    'out',
+    'dist',
+    '.turbo',
+    '.git',
+    'coverage',
+    '.wrangler',
+    '.claude',
+  ]);
+  const names = new Set<string>();
+  const walk = (dir: string) => {
+    for (const entry of readdirSync(dir)) {
+      if (skip.has(entry)) continue;
+      const full = `${dir}/${entry}`;
+      if (statSync(full).isDirectory()) walk(full);
+      else names.add(entry);
+    }
+  };
+  walk(ROOT);
+  return names;
+}
+
 describe('repo paths quoted in specs and docs', () => {
   const files = docFiles();
 
@@ -95,5 +136,27 @@ describe('repo paths quoted in specs and docs', () => {
       }
     }
     expect(broken).toEqual([]);
+  });
+
+  it('never name a bare file with the wrong TypeScript extension', () => {
+    const names = repoFilenames();
+    // Guard against the walk silently returning nothing, which would make the
+    // assertion below pass without checking anything.
+    expect(names.size).toBeGreaterThan(500);
+
+    const wrong: string[] = [];
+    for (const f of files) {
+      const src = readFileSync(`${ROOT}/${f}`, 'utf8');
+      for (const m of src.matchAll(QUOTED_PATH)) {
+        const quoted = m[1]!;
+        if (quoted.includes('/') || names.has(quoted)) continue;
+        const dot = quoted.lastIndexOf('.');
+        const other = FLIP[quoted.slice(dot)];
+        if (other && names.has(quoted.slice(0, dot) + other)) {
+          wrong.push(`${f}: ${quoted} is really ${quoted.slice(0, dot)}${other}`);
+        }
+      }
+    }
+    expect(wrong).toEqual([]);
   });
 });
