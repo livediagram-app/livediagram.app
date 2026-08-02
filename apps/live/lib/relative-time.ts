@@ -3,27 +3,47 @@
 // Kept here so all three panels read identically — previously each
 // surface had its own slightly different copy.
 //
-// Two flavours:
-//   formatRelativeTime         — verbose ("2 minutes ago"), used wherever
-//                                horizontal room is plentiful.
-//   formatRelativeTimeShort    — compact ("2 min ago"), used inside the
-//                                Activity panel rows where space is tight.
+// Four formatters, coarsening as the space they have to fit shrinks:
+//   formatRelativeTime         — verbose ("2 mins ago"), reached through
+//                                relativeSince by every list row.
+//   formatRelativeTimeShort    — compact ("2 min ago"), Activity panel rows.
+//   formatRelativeTimeCompact  — ultra-compact ("2m ago"), comment threads.
+//   formatTimeLeftCompact      — the forward-looking countdown ("6d left")
+//                                for expiring share links (spec/34).
+// The first two share their ladder; see relativeLadder below.
 
 import { useSyncExternalStore } from 'react';
 
-export function formatRelativeTime(deltaMs: number): string {
+// The ladder both the verbose and the compact formatter walk. They agreed on
+// every rung from one minute up — the same singular cases, the same
+// 'yesterday' — and differed only in how they word seconds and plural
+// minutes, so those two are arguments and everything else is shared. Written
+// out twice, a later change to (say) the day boundary lands in one copy.
+function relativeLadder(
+  deltaMs: number,
+  secs: (n: number) => string,
+  mins: (n: number) => string,
+): string {
   const seconds = Math.floor(deltaMs / 1000);
   if (seconds < 5) return 'just now';
-  if (seconds < 60) return `${seconds} secs ago`;
+  if (seconds < 60) return secs(seconds);
   const minutes = Math.floor(seconds / 60);
   if (minutes === 1) return '1 min ago';
-  if (minutes < 60) return `${minutes} mins ago`;
+  if (minutes < 60) return mins(minutes);
   const hours = Math.floor(minutes / 60);
   if (hours === 1) return '1 hour ago';
   if (hours < 24) return `${hours} hours ago`;
   const days = Math.floor(hours / 24);
   if (days === 1) return 'yesterday';
   return `${days} days ago`;
+}
+
+export function formatRelativeTime(deltaMs: number): string {
+  return relativeLadder(
+    deltaMs,
+    (n) => `${n} secs ago`,
+    (n) => `${n} mins ago`,
+  );
 }
 
 // Verbose relative time elapsed since a past timestamp — the
@@ -64,18 +84,11 @@ export function formatRelativeTimeCompact(deltaMs: number): string {
 }
 
 export function formatRelativeTimeShort(deltaMs: number): string {
-  const seconds = Math.floor(deltaMs / 1000);
-  if (seconds < 5) return 'just now';
-  if (seconds < 60) return `${seconds}s ago`;
-  const minutes = Math.floor(seconds / 60);
-  if (minutes === 1) return '1 min ago';
-  if (minutes < 60) return `${minutes} min ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours === 1) return '1 hour ago';
-  if (hours < 24) return `${hours} hours ago`;
-  const days = Math.floor(hours / 24);
-  if (days === 1) return 'yesterday';
-  return `${days} days ago`;
+  return relativeLadder(
+    deltaMs,
+    (n) => `${n}s ago`,
+    (n) => `${n} min ago`,
+  );
 }
 
 // Re-render every 30 seconds so any inline relative-time strings stay
