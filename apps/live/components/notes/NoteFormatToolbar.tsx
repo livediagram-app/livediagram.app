@@ -10,8 +10,13 @@
 
 import { useEffect, useRef, useState } from 'react';
 import type { ListStyle, RunBoolKey, RunHeading } from '@livediagram/diagram';
-import { BoldIcon, ItalicIcon, UnderlineIcon } from '@/components/palette/palette-icons';
 import { LinkMenuIcon } from '@/components/palette/context-menu-icons';
+import { noFocusSteal } from '@/components/rich-text/ToolbarDropdown';
+import {
+  runToggles,
+  TOOLBAR_DIVIDER,
+  toolbarButtonClass,
+} from '@/components/rich-text/toolbar-chrome';
 import { BlockTypePicker } from '@/components/rich-text/BlockTypePicker';
 import type { ActiveFormat } from '@/components/rich-text/rich-text-format';
 import { Tooltip } from '@/components/primitives/Tooltip';
@@ -20,21 +25,6 @@ import { normaliseUrl } from '@/lib/url-safety';
 // preventDefault on mousedown keeps focus + the live selection in the
 // contentEditable when a control is clicked (the classic rich-text-toolbar
 // bug). Shared by every button so the editor never blurs mid-format.
-const noFocusSteal = (e: React.MouseEvent) => e.preventDefault();
-
-// Same h-8 w-8 button as the label toolbar so the two read as one system.
-function btnClass(active: boolean): string {
-  return `flex h-8 w-8 shrink-0 items-center justify-center rounded-md transition ${
-    active
-      ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
-      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
-  }`;
-}
-
-const DIVIDER = (
-  <span className="mx-0.5 h-6 w-px shrink-0 bg-slate-200 dark:bg-slate-700" aria-hidden />
-);
-
 export function NoteFormatToolbar({
   active,
   listStyle,
@@ -55,22 +45,7 @@ export function NoteFormatToolbar({
 }) {
   const [linkOpen, setLinkOpen] = useState(false);
 
-  const toggles: { key: RunBoolKey; label: string; description: string; icon: React.ReactNode }[] =
-    [
-      { key: 'bold', label: 'Bold', description: 'Bold the selected text.', icon: <BoldIcon /> },
-      {
-        key: 'italic',
-        label: 'Italic',
-        description: 'Italicise the selected text.',
-        icon: <ItalicIcon />,
-      },
-      {
-        key: 'underline',
-        label: 'Underline',
-        description: 'Underline the selected text.',
-        icon: <UnderlineIcon />,
-      },
-    ];
+  const toggles = runToggles('bold', 'italic', 'underline');
 
   return (
     <div className="flex flex-col gap-1.5">
@@ -83,13 +58,13 @@ export function NoteFormatToolbar({
               aria-pressed={active[t.key]}
               onMouseDown={noFocusSteal}
               onClick={() => onToggle(t.key)}
-              className={btnClass(active[t.key])}
+              className={toolbarButtonClass(active[t.key], 'shrink-0')}
             >
               {t.icon}
             </button>
           </Tooltip>
         ))}
-        {DIVIDER}
+        {TOOLBAR_DIVIDER}
         {/* One block-type picker (spec/102) rather than three heading buttons
             beside bullet / numbered / remove-list: to a writer a line is a
             heading, or a paragraph, or a bullet, and five toggles made that
@@ -101,7 +76,7 @@ export function NoteFormatToolbar({
           onApplyHeading={onApplyHeading}
           onApplyList={onApplyList}
         />
-        {DIVIDER}
+        {TOOLBAR_DIVIDER}
         <Tooltip title="Link" description="Point the selected text at a web address.">
           <button
             type="button"
@@ -110,7 +85,7 @@ export function NoteFormatToolbar({
             aria-expanded={linkOpen}
             onMouseDown={noFocusSteal}
             onClick={() => setLinkOpen((o) => !o)}
-            className={btnClass(!!active.link || linkOpen)}
+            className={toolbarButtonClass(!!active.link || linkOpen, 'shrink-0')}
           >
             <LinkMenuIcon />
           </button>

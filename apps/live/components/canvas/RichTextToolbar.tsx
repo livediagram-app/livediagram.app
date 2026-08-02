@@ -10,14 +10,13 @@
 
 import { AlignmentGrid } from '@/components/palette/palette-controls';
 import { AlignIcon as AlignLinesIcon } from '@/components/canvas/table-icons';
-import {
-  BoldIcon,
-  ItalicIcon,
-  StrikethroughIcon,
-  UnderlineIcon,
-} from '@/components/palette/palette-icons';
 import { Tooltip } from '@/components/primitives/Tooltip';
 import { BlockTypePicker } from '@/components/rich-text/BlockTypePicker';
+import {
+  runToggles,
+  TOOLBAR_DIVIDER,
+  toolbarButtonClass,
+} from '@/components/rich-text/toolbar-chrome';
 import { noFocusSteal, ToolbarDropdown } from '@/components/rich-text/ToolbarDropdown';
 import type { ActiveFormat } from '@/components/rich-text/rich-text-format';
 import type {
@@ -30,14 +29,6 @@ import type {
 
 // Matches the element toolbar's PopoverButton (h-8 w-8 rounded-md, same
 // active + hover tones) so the two toolbars read as one system.
-function btnClass(active: boolean): string {
-  return `flex h-8 w-8 items-center justify-center rounded-md transition ${
-    active
-      ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
-      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
-  }`;
-}
-
 export function RichTextToolbar({
   active,
   alignX,
@@ -60,32 +51,7 @@ export function RichTextToolbar({
   onColor: (color: string) => void;
   onSetAlign: (x: TextAlignX, y: TextAlignY) => void;
 }) {
-  const toggles: { key: RunBoolKey; label: string; description: string; icon: React.ReactNode }[] =
-    [
-      { key: 'bold', label: 'Bold', description: 'Bold the selected text.', icon: <BoldIcon /> },
-      {
-        key: 'italic',
-        label: 'Italic',
-        description: 'Italicise the selected text.',
-        icon: <ItalicIcon />,
-      },
-      {
-        key: 'underline',
-        label: 'Underline',
-        description: 'Underline the selected text.',
-        icon: <UnderlineIcon />,
-      },
-      {
-        key: 'strikethrough',
-        label: 'Strikethrough',
-        description: 'Strike through the selected text.',
-        icon: <StrikethroughIcon />,
-      },
-    ];
-  // Same spacer the element toolbar's Divider uses, so both read alike.
-  const divider = (
-    <span className="mx-0.5 h-6 w-px shrink-0 bg-slate-200 dark:bg-slate-700" aria-hidden />
-  );
+  const toggles = runToggles('bold', 'italic', 'underline', 'strikethrough');
 
   return (
     <div className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/10 dark:border-slate-800 dark:bg-slate-900 dark:shadow-slate-950/40">
@@ -97,13 +63,13 @@ export function RichTextToolbar({
             aria-pressed={active[t.key]}
             onMouseDown={noFocusSteal}
             onClick={() => onToggle(t.key)}
-            className={btnClass(active[t.key])}
+            className={toolbarButtonClass(active[t.key])}
           >
             {t.icon}
           </button>
         </Tooltip>
       ))}
-      {divider}
+      {TOOLBAR_DIVIDER}
       {/* Block type (spec/102): heading level and list style are one choice
           to a writer, so they are one control. Applies to the selected lines,
           or to the whole label when nothing is selected (the session's
@@ -114,7 +80,7 @@ export function RichTextToolbar({
         onApplyHeading={onApplyHeading}
         onApplyList={onApplyList}
       />
-      {divider}
+      {TOOLBAR_DIVIDER}
       {/* Alignment — the shared 3×3 grid, reused. The trigger is the
           familiar word-processor glyph (stacked lines whose ends follow the
           horizontal alignment), not the positional box-dot the grid cells
@@ -127,7 +93,7 @@ export function RichTextToolbar({
       >
         <AlignmentGrid alignX={alignX} alignY={alignY} onChange={onSetAlign} />
       </ToolbarDropdown>
-      {divider}
+      {TOOLBAR_DIVIDER}
       <Tooltip title="Text colour" description="Colour the selected text.">
         <label
           className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
