@@ -19,12 +19,12 @@ import { fetchTeamLibraries, matchDiagrams } from './find-diagrams';
 import {
   deepLink,
   errorResult,
-  imageResult,
   requireToken,
   shareUrl,
   textResult,
   type Extra,
 } from './tool-helpers';
+import { imageResult } from './image-result';
 import {
   applyLayout,
   buildTab,
