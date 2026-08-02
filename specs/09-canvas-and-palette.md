@@ -613,7 +613,7 @@ Shift is the editor's "power modifier" — it chains quick-connect arrows, forks
 4. No drag, a **table selected** → "Click cells to select several".
 5. Otherwise (editable session with elements) → "Click elements to select several".
 
-The pill leads with a `⇧ Shift` key chip so the message reads as "while this key is down". It never shows while typing (a Shift press inside an input / contentEditable is just capitalisation), while another mode banner owns the top slot (format painter / group / draw), in read-only sessions, or on an empty canvas with nothing to act on. It renders from a shared `useShiftHeld` key-state subscription (one window listener, `useModKeyHeld`'s pattern) so holding Shift re-renders only the pill.
+The pill leads with a `⇧ Shift` key chip so the message reads as "while this key is down". It never shows while typing (a Shift press inside an input / contentEditable is just capitalisation), while another mode banner owns the top slot (format painter / group / draw), in read-only sessions, or on an empty canvas with nothing to act on. It renders from a shared `useShiftHeld` key-state subscription so holding Shift re-renders only the pill. That and `useModKeyHeld` are now the same store — `hooks/ui/held-key-store.ts` owns the one window listener, the subscriber set and the SSR-safe snapshot; each hook supplies only its key policy.
 
 ## Keyboard shortcuts
 
