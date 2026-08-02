@@ -33,6 +33,8 @@ const SHAPE_KIND_OVERRIDES: Record<string, string> = {
   'reaction-pad': 'ReactionPad',
   // And the comment pin (spec/136).
   'comment-pin': 'CommentPin',
+  // And the done check (spec/137).
+  'done-check': 'DoneCheck',
 };
 
 const tokenForShapeKind = (kind: string) => SHAPE_KIND_OVERRIDES[kind] ?? titleCaseType(kind);

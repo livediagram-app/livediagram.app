@@ -76,7 +76,15 @@ export function useCollabElements({
         ? clearResponse(el.responses, selfParticipant.id)
         : setResponse(el.responses, selfParticipant.id, value, Date.now()),
     }));
-    track('Element', 'Changed', element.shape === 'estimate' ? 'Estimate' : 'Temperature');
+    track(
+      'Element',
+      'Changed',
+      element.shape === 'estimate'
+        ? 'Estimate'
+        : element.shape === 'done-check'
+          ? 'DoneCheck'
+          : 'Temperature',
+    );
   };
 
   // --- Estimate card (spec/123) --------------------------------------------
@@ -87,9 +95,10 @@ export function useCollabElements({
 
   const clearResponses = (element: ShapeElement) => {
     // Clearing un-reveals as well: the next round starts closed, or the card
-    // would collect its first answer in the open.
+    // would collect its first answer in the open. (A done check has nothing to
+    // reveal, so the second field is a harmless no-op there.)
     patchElement(element.id, () => ({ responses: [], responsesRevealed: false }));
-    track('Element', 'Changed', 'Estimate');
+    track('Element', 'Changed', element.shape === 'done-check' ? 'DoneCheck' : 'Estimate');
   };
 
   // --- Idea box (spec/125) --------------------------------------------------

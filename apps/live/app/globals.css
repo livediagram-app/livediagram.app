@@ -1789,6 +1789,33 @@
    GPU a stable depth order. (Frames don't rotate, so overriding the
    wrapper transform is safe; their depth-extrusion column is skipped in
    IsometricDepthLayer for the same reason.) */
+/* Done check: the all-done flash (spec/137).
+   A pulse of the card's own ring rather than a colour wash, so it reads on a
+   card of any theme colour, and it RUNS OUT after a few cycles: a card that
+   flashed forever would be noise on a board somebody left open, and the state
+   is still legible from the roster and the count once it stops. */
+@keyframes lvd-done-flash {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(34 197 94 / 0);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgb(34 197 94 / 0.45);
+  }
+}
+.lvd-done-complete {
+  animation: lvd-done-flash 900ms ease-in-out 4;
+  border-radius: inherit;
+}
+@media (prefers-reduced-motion: reduce) {
+  /* The completion is information, so it stays visible — as a steady ring
+     rather than a pulsing one. */
+  .lvd-done-complete {
+    animation: none;
+    box-shadow: 0 0 0 3px rgb(34 197 94 / 0.45);
+  }
+}
+
 /* Reaction-pad burst particles (spec/135).
    Each particle flies from the pad's centre to its own landing offset while
    fading and spinning. The offsets are custom properties set per particle, so

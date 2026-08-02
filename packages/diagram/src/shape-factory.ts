@@ -62,6 +62,8 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // Comment pin: a marker, deliberately small. It is a place on the board,
   // not a card — the thread it holds opens in the existing popover.
   'comment-pin': { width: 40, height: 40 },
+  // Done check: a card, sized like the other room-response panels.
+  'done-check': { width: 280, height: 190 },
   // Record (spec/120): a class box — wide enough for "name: Type" rows,
   // tall enough for a title plus four of them before it needs resizing.
   entity: { width: 240, height: 170 },
@@ -376,6 +378,11 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
         { name: 'name', type: 'string' },
       ],
     };
+  }
+  if (kind === 'done-check') {
+    // The title states the QUESTION, because "Done" alone reads as a claim
+    // that something is done rather than a request to say whether you are.
+    return { ...base, label: 'Everyone done?' };
   }
   if (kind === 'comment-pin') {
     return {

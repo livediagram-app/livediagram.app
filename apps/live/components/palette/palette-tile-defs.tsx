@@ -825,6 +825,38 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     icon: <RevealIcon />,
   },
   {
+    // Done check (spec/137): who has finished, live.
+    id: 'tools:done-check',
+    blurb: 'Everyone marks themselves finished',
+    caption: 'Done',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add done check',
+    description:
+      'Everyone marks themselves done and the card shows who has and who has not, from whoever is actually in the room. It flashes when the last person finishes. Reset it for the next round from its own menu.',
+    filled: true,
+    action: { type: 'shape', kind: 'done-check' },
+    icon: (
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden
+      >
+        {/* Two ticked rows over one still waiting. */}
+        <path d="M3.2 7.2 4.6 8.6 7.4 5.8" />
+        <path d="M3.2 13 4.6 14.4 7.4 11.6" />
+        <circle cx="4.8" cy="19" r="1.5" />
+        <path d="M10.5 7.2h10.3M10.5 13h10.3M10.5 19h6.4" />
+      </svg>
+    ),
+  },
+  {
     // Reaction pad (spec/135): press it or walk onto it, and a burst plays.
     id: 'tools:reaction-pad',
     blurb: 'Sets off a burst everyone can see',

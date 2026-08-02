@@ -87,6 +87,8 @@ export function CollabPanel({
   titleLines = 1,
   children,
   footer,
+  className,
+  headerExtra,
 }: {
   // The element, for its box. A Collaborate card SCALES to the space it is
   // given rather than laying out into it: resizing one is how a facilitator
@@ -103,6 +105,14 @@ export function CollabPanel({
   aside?: React.ReactNode;
   children: React.ReactNode;
   footer?: React.ReactNode;
+  // Extra class on the card body. Used by the Done check (spec/137) for its
+  // all-done flash, which is a class rather than an inline style so the
+  // reduced-motion override in globals.css can reach it.
+  className?: string;
+  // A control pinned to the right of the title row, after `aside`. The Done
+  // check's ellipsis menu lives here; a card with no per-card controls passes
+  // nothing and the row is unchanged.
+  headerExtra?: React.ReactNode;
 }) {
   return (
     // Pinned with `absolute inset-0` rather than sized with `h-full w-full`,
@@ -114,7 +124,9 @@ export function CollabPanel({
     // the sizing model, and `overflow-hidden` makes it impossible for any
     // future child to escape the element it belongs to.
     <CollabScale element={element}>
-      <div className="flex h-full w-full flex-col gap-2.5 overflow-hidden rounded-[inherit] px-4 py-3.5">
+      <div
+        className={`flex h-full w-full flex-col gap-2.5 overflow-hidden rounded-[inherit] px-4 py-3.5 ${className ?? ''}`}
+      >
         <div className="flex min-w-0 shrink-0 items-baseline justify-between gap-3">
           <span
             className="min-w-0 text-[13px] font-semibold leading-snug"
@@ -132,14 +144,17 @@ export function CollabPanel({
           >
             {title.trim()}
           </span>
-          {aside ? (
-            <span
-              className="shrink-0 text-[10px] font-medium uppercase tracking-[0.06em] opacity-55"
-              style={{ color: textColor }}
-            >
-              {aside}
-            </span>
-          ) : null}
+          <span className="flex shrink-0 items-center gap-1.5">
+            {aside ? (
+              <span
+                className="text-[10px] font-medium uppercase tracking-[0.06em] opacity-55"
+                style={{ color: textColor }}
+              >
+                {aside}
+              </span>
+            ) : null}
+            {headerExtra}
+          </span>
         </div>
         {/* The body scrolls rather than overflowing the element box: a card with
           twelve agenda rows on it is a normal card, and clipping the last few

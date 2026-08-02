@@ -1071,6 +1071,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
+          "done-check": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
           "entity": {
             "additionalProperties": false,
             "properties": {
@@ -3315,6 +3330,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "picker",
       "reaction-pad",
       "comment-pin",
+      "done-check",
       "chair",
       "estimate",
       "temperature",

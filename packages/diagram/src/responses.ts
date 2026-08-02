@@ -107,3 +107,59 @@ export function responseTally(
 ): number[] {
   return values.map((v) => (responses ?? []).filter((r) => r.value === v).length);
 }
+
+// --- Done check (spec/137) -------------------------------------------------
+//
+// Built on the same per-participant `responses` field as the estimate card and
+// the temperature check, with one fixed value: being done is not a scale, it
+// is a flag. Pressing again withdraws it (`clearResponse`), so nobody is stuck
+// marked finished on a card they misread.
+
+/** The only value a done-check response ever holds. */
+export const DONE_VALUE = 'done';
+
+export function isDone(
+  responses: ParticipantResponse[] | undefined,
+  participantId: string,
+): boolean {
+  return responseOf(responses, participantId) === DONE_VALUE;
+}
+
+/**
+ * Split the CURRENT ROOM into who has marked themselves done and who has not.
+ *
+ * Live by design. The waiting-on list is derived from the people actually in
+ * the room, not from everyone who was ever in it, so somebody who closed the
+ * tab stops holding the card open — the alternative is a card that never
+ * completes because it is waiting on a person who went home.
+ *
+ * The flip side is that responses from people who have since left are ignored
+ * here rather than deleted: they come back if the person rejoins, which is
+ * what a reconnect should do.
+ */
+export function doneSplit(
+  responses: ParticipantResponse[] | undefined,
+  participantIds: readonly string[],
+): { done: string[]; waiting: string[] } {
+  const done: string[] = [];
+  const waiting: string[] = [];
+  for (const id of participantIds) {
+    if (isDone(responses, id)) done.push(id);
+    else waiting.push(id);
+  }
+  return { done, waiting };
+}
+
+/**
+ * Is the whole room done?
+ *
+ * An EMPTY room is not done: with nobody present there is nothing to have
+ * finished, and a card that flashed "everyone is done" at an empty board would
+ * be celebrating the absence of people.
+ */
+export function allDone(
+  responses: ParticipantResponse[] | undefined,
+  participantIds: readonly string[],
+): boolean {
+  return participantIds.length > 0 && participantIds.every((id) => isDone(responses, id));
+}

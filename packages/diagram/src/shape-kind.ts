@@ -55,6 +55,11 @@ export type ShapeKind =
   // to hold one, so a remark can be pinned to a spot on the board rather than
   // to whichever shape happens to be nearest.
   | 'comment-pin'
+  // Done check (spec/137): everyone marks themselves finished, and the card
+  // shows who has and who has not. Live: the not-yet list is read from who is
+  // actually in the room, so it shrinks as people leave rather than accusing
+  // somebody who went home.
+  | 'done-check'
   // Chair (spec/130): furniture an Avatar-mode character sits down in when it
   // walks into one. Which way the seat points lives in `chairFacing`.
   | 'chair'

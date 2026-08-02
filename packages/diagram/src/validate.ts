@@ -107,6 +107,8 @@ export const SHAPE_KINDS = new Set<string>([
   'reaction-pad',
   // Comment pin (spec/136).
   'comment-pin',
+  // Done check (spec/137).
+  'done-check',
   // Chair (spec/130): an Avatar-mode character sits down in one.
   'chair',
   // The collaboration family (spec/123 to spec/129).

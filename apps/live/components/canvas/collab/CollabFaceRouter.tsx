@@ -5,7 +5,12 @@
 // BoxedElementView: the faces share a viewer context (who am I, who else is
 // here, may I write) that would otherwise be passed five times.
 
-import { isCollabPanelShape, type ShapeElement, type TabTimer } from '@livediagram/diagram';
+import {
+  DONE_VALUE,
+  isCollabPanelShape,
+  type ShapeElement,
+  type TabTimer,
+} from '@livediagram/diagram';
 import type { Participant } from '@/lib/identity';
 import { EstimateFace } from './EstimateFace';
 import { TemperatureFace } from './TemperatureFace';
@@ -13,6 +18,7 @@ import { IdeaBoxFace } from './IdeaBoxFace';
 import { AgendaFace } from './AgendaFace';
 import { RollCallFace } from './RollCallFace';
 import { DecisionFace } from './DecisionFace';
+import { DoneCheckFace } from './DoneCheckFace';
 
 // What a collaboration face needs from the editor. Absent entirely on a
 // surface with no session behind it (the read-only embed, the export
@@ -53,6 +59,21 @@ export function CollabFaceRouter({
   // No session behind this surface: still render, still readable, inert.
   const api = collab;
 
+  if (element.shape === 'done-check') {
+    return (
+      <DoneCheckFace
+        element={element}
+        label={label}
+        textColor={textColor}
+        selfId={api?.selfId ?? ''}
+        participants={api?.participants ?? []}
+        // `respond` already withdraws when you send the value you already
+        // sent (spec/122), so marking and unmarking are the same call.
+        onToggleMine={api?.respond ? () => api.respond!(element, DONE_VALUE) : undefined}
+        onResetAll={api?.clearResponses ? () => api.clearResponses!(element) : undefined}
+      />
+    );
+  }
   if (element.shape === 'estimate') {
     return (
       <EstimateFace

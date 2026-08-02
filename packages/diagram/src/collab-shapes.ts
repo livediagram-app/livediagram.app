@@ -196,8 +196,15 @@ export function chairSeatPoint(box: { x: number; y: number; width: number; heigh
 //
 // The chair is NOT here — it renders furniture under an ordinary label, the
 // way the record box (spec/120) renders its rows under its title.
+// Done check (spec/137): a room-response card like the rest of this family,
+// so it takes the same panel chrome and the same viewer context.
+export function isDoneCheckShape(kind: ShapeKind): boolean {
+  return kind === 'done-check';
+}
+
 export function isCollabPanelShape(kind: ShapeKind): boolean {
   return (
+    isDoneCheckShape(kind) ||
     isEstimateShape(kind) ||
     isTemperatureShape(kind) ||
     isIdeaBoxShape(kind) ||

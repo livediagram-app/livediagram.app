@@ -268,6 +268,8 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Reveal',
     'Picker',
     'ReactionPad',
+    // Done check (spec/137): a Behaviour element by its palette home.
+    'DoneCheck',
     // Chair (spec/130): a Behaviour element, so it ranks with them.
     'Chair',
     'Pie-chart',

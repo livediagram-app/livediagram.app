@@ -43,7 +43,7 @@ describe('the shape vocabulary', () => {
   // spec/09-canvas-and-palette.md cites this number in its prose. Themes and
   // templates are pinned the same way, and the counts that stayed accurate
   // are exactly the ones a test held.
-  it('has 50 kinds (matches spec/09)', () => {
-    expect(unionMembers).toHaveLength(50);
+  it('has 51 kinds (matches spec/09)', () => {
+    expect(unionMembers).toHaveLength(51);
   });
 });

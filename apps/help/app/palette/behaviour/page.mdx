@@ -5,7 +5,7 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Behaviour Elements',
   description:
-    'The palette Behaviour category holds the elements that do something when somebody interacts with them: Selection Mode buttons, Portals, Session buttons, Reveal zones, Pickers, and Reaction pads.',
+    'The palette Behaviour category holds the elements that do something when somebody interacts with them: Selection Mode buttons, Portals, Session buttons, Reveal zones, Pickers, Reaction pads, and Done checks.',
   path: '/help/palette/behaviour/',
 });
 
@@ -26,6 +26,12 @@ Each is a row with its name and a one-line description of what it does, because 
 A **Selection Mode** button reads "Switch to Avatar" and switches whoever presses it into that mode; right-click it and open **Tools › Button** to point it at any other mode — Select, Hand, Laser, Spotlight, Avatar, Eraser, Format, or Isometric — or type your own label over the derived one. Pressing it changes the mode for **the person who pressed it** and nobody else, pressing it again while you are in that mode hands you back your previous one, and it keeps working while you are in a mode that makes the rest of the canvas read-only, so a row of them makes a usable little control bar. A **Portal** is a ring of energy you link to another portal: click it — or walk an Avatar-mode character into it — and you come out the far side, even on another tab. See [Portals](/help/palette/tools/portals/).
 
 A **Session** button starts a session tool for everyone in the room: a countdown **timer**, a **dot vote**, or a **poll** you write in advance. Once a timer is running, the same button **pauses** it, and pressing again **continues** it — it becomes the timer's control rather than restarting the countdown. Right-click it and open **Tools › Session** to pick which, and its one setting — the number of minutes, the dots per person, or the question and its answers. It is how a board carries its own running order: put "5 minutes" over the writing column and "Vote — 3 dots each" over the results, and anyone can run the session. Starting a tool needs edit access, so on a view-only link the button shows as unavailable, though you can still take part once somebody starts it.
+
+A **Done check** asks the room to say when they have finished. Everyone presses **I'm done** on the card, and it shows two lists: who has, and who it is still waiting on. When the last person marks themselves done the card flashes, so you do not have to sit watching it.
+
+The waiting list is built from whoever is actually **in the room** at that moment, not from everyone who has ever opened the diagram. That is deliberate: it means somebody who closed their tab stops holding the card open, and the check can actually finish. If they come back their mark is still there.
+
+Press **I'm not done** to take your mark off again. Its **…** menu has **Clear my mark** and **Reset everyone**, which clears the round so you can run the next one. Good over a silent-writing block, a review column, or any "tell me when you're ready" moment.
 
 A **Reaction pad** throws a burst of celebration over itself when somebody presses it — or walks an Avatar-mode character onto it, which is the same act. Right-click it and open **Tools › Reaction** to pick which of the five it throws: **Confetti** for a result worth celebrating, **Sparkles** for a good idea nicely done, **Hearts** for warmth towards a person rather than a result, **Applause** to thank somebody for the talk or the demo, and **Fireworks** for when it shipped. Everyone in the room sees the burst, and nothing is saved: a reaction is a moment, not a mark on the board, so there is nothing to undo and nothing for a latecomer to find. Drop one at the end of a retro column or under a demo and let the room use it.
 

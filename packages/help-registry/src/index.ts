@@ -930,7 +930,7 @@ export const articles: Article[] = [
     description:
       'Mode buttons, portals, session buttons, reveal zones, pickers, and reaction pads.',
     keywords:
-      'behaviour behavior interactive button portal session timer vote poll reveal hide cover picker random spinner control mode switch reaction pad confetti celebrate sparkles hearts applause fireworks emoji burst',
+      'behaviour behavior interactive button portal session timer vote poll reveal hide cover picker random spinner control mode switch reaction pad confetti celebrate sparkles hearts applause fireworks emoji burst done check finished ready waiting who progress everyone mark complete',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Elements',
