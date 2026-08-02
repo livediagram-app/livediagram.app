@@ -2,14 +2,6 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useReposition } from '@/hooks/canvas/useReposition';
 import { Portal } from '@/components/primitives/Portal';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
-import {
-  type Layer,
-  type TabTimer,
-  type TabVote,
-  type TimerMode,
-  type VoteSetup,
-} from '@livediagram/diagram';
-import type { LivePoll, PollStyle } from '@livediagram/api-schema';
 import { clampToViewport } from '@/lib/clamp-to-viewport';
 import { PencilIcon, TrashIcon } from '@/components/panels/explorer-icons';
 import { FileExportIcon, FileImportIcon } from '@/components/palette/palette-icons';
@@ -49,6 +41,7 @@ import {
 } from '@/components/dialogs/TabOrganiseDialogs';
 import type { CanvasMenuActions, CanvasMenuTarget } from './TabBar';
 import { useEscape } from '@/hooks/ui/useEscape';
+import type { SessionToolsProps } from '@/components/chrome/session-tools-props';
 
 // The unified tab / canvas portal menu (actions, copy-to-diagram, and
 // folder sub-views). Extracted from TabBar.tsx, where it had grown into a
@@ -119,27 +112,7 @@ export function PortalMenu({
   onDelete: () => void;
   canDelete: boolean;
   canClearContent: boolean;
-  timer: TabTimer | null;
-  vote: TabVote | null;
-  onStartTimer: (mode: TimerMode, durationMs?: number) => void;
-  onPauseTimer: () => void;
-  onResumeTimer: () => void;
-  onResetTimer: () => void;
-  onClearTimer: () => void;
-  onStartVote: (votesPerPerson: number, setup?: VoteSetup) => void;
-  onEndVote: () => void;
-  onRevealVote: () => void;
-  onClearVote: () => void;
-  // Live poll (spec/88). Ephemeral room state, not a Tab field like the
-  // timer / vote above — hence the separate props rather than a `poll`
-  // slot on the tab.
-  livePoll: LivePoll | null;
-  pollConnected: boolean;
-  onStartPoll: (draft: { question: string; style: PollStyle; options: string[] }) => void;
-  // The tab's layers + the active one, for the vote's layer scope (spec/96).
-  voteLayers: Layer[];
-  activeLayerId: string;
-}) {
+} & SessionToolsProps) {
   // The menu itself lists the verbs (Rename, Duplicate, Clear…); the two
   // organise pickers — "copyTo" (spec/17, link the tab into another
   // diagram) and "folder" (spec/30, file the tab into a tab-bar folder) —

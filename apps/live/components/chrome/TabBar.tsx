@@ -5,14 +5,8 @@ import {
   groupTabsIntoRuns,
   tabFolderName,
   type Tab,
-  type TabTimer,
-  type TabVote,
-  type Layer,
   type TextSize,
-  type TimerMode,
-  type VoteSetup,
 } from '@livediagram/diagram';
-import type { LivePoll, PollStyle } from '@livediagram/api-schema';
 import { useUiMode } from '@/hooks/ui/useUiMode';
 import type { AutoLayoutChoice } from '@/lib/auto-layout-choices';
 import type { Participant } from '@/lib/identity';
@@ -25,6 +19,7 @@ import { ChromeControls } from '@/components/chrome/ChromeControls';
 // eager block left in the editor chunk after the dialogs went dynamic.
 const PortalMenu = dynamic(() => import('./TabPortalMenu').then((m) => m.PortalMenu));
 import { TabPill, type TabPillCtx } from './TabPill';
+import type { SessionToolsProps } from '@/components/chrome/session-tools-props';
 
 // Canvas-scoped actions folded into the unified tab / canvas menu: change
 // theme / background, and tidy the layout. (Add-element actions used to live
@@ -99,27 +94,6 @@ type TabBarProps = {
   // all live in one place).
   onImportTab: () => void;
   onExportTab: () => void;
-  // Session tools (spec/39) for the active tab, surfaced in its ellipsis
-  // menu's Session category — the same advanced SessionToolsSection the
-  // canvas context menu uses.
-  timer: TabTimer | null;
-  vote: TabVote | null;
-  onStartTimer: (mode: TimerMode, durationMs?: number) => void;
-  onPauseTimer: () => void;
-  onResumeTimer: () => void;
-  onResetTimer: () => void;
-  onClearTimer: () => void;
-  onStartVote: (votesPerPerson: number, setup?: VoteSetup) => void;
-  onEndVote: () => void;
-  onRevealVote: () => void;
-  onClearVote: () => void;
-  // Live poll (spec/88): ephemeral room state, not a Tab field.
-  livePoll: LivePoll | null;
-  pollConnected: boolean;
-  onStartPoll: (draft: { question: string; style: PollStyle; options: string[] }) => void;
-  // The tab's layers + the active one, for the vote's layer scope (spec/96).
-  voteLayers: Layer[];
-  activeLayerId: string;
   // The user's other diagrams (excluding the current one). Drives the
   // "Add to Diagram" submenu in the tab ellipsis; savedAt versions the
   // destination-picker thumbnails (spec/67).
@@ -164,7 +138,7 @@ type TabBarProps = {
   followingId?: string | null;
   onFollow?: (participantId: string) => void;
   onStopFollowing?: () => void;
-};
+} & SessionToolsProps;
 
 export function TabBar({
   tabs,

@@ -1,9 +1,8 @@
 import { useRef } from 'react';
-import type { Layer, TabTimer, TabVote, TimerMode, VoteSetup } from '@livediagram/diagram';
-import type { LivePoll, PollStyle } from '@livediagram/api-schema';
 
 import { PortalMenu } from './TabPortalMenu';
 import type { CanvasMenuActions } from './TabBar';
+import type { SessionToolsProps } from '@/components/chrome/session-tools-props';
 
 // The tab-bar ⋯ button: toggles the unified tab / canvas PortalMenu anchored
 // to itself. Extracted from TabBar.tsx. Pure prop-based component.
@@ -71,25 +70,7 @@ export function EllipsisMenuButton({
   onCopyTo: (targetDiagramId: string) => void;
   onToggleLock: () => void;
   onDelete: () => void;
-  // Session tools (spec/39) for this (active) tab's Session category.
-  timer: TabTimer | null;
-  vote: TabVote | null;
-  onStartTimer: (mode: TimerMode, durationMs?: number) => void;
-  onPauseTimer: () => void;
-  onResumeTimer: () => void;
-  onResetTimer: () => void;
-  onClearTimer: () => void;
-  onStartVote: (votesPerPerson: number, setup?: VoteSetup) => void;
-  onEndVote: () => void;
-  onRevealVote: () => void;
-  onClearVote: () => void;
-  // Live poll (spec/88): ephemeral room state, not a Tab field.
-  livePoll: LivePoll | null;
-  pollConnected: boolean;
-  onStartPoll: (draft: { question: string; style: PollStyle; options: string[] }) => void;
-  voteLayers: Layer[];
-  activeLayerId: string;
-}) {
+} & SessionToolsProps) {
   const buttonRef = useRef<HTMLButtonElement>(null);
   return (
     <div>
