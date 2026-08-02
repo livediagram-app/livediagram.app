@@ -57,4 +57,4 @@ Applying any theme already emits `track('Theme', 'Changed', <label>)` ([spec/22]
 
 ## Counts
 
-The catalogue ships **26 themes** (12 default + 14 extra), the extras including a Dark category (Pine, Charcoal, Plum, Abyss, Espresso) and five multi-colour themes (Rainbow, Pastel, Tropical, Autumn, Jewel). The counts are pinned by `apps/live/lib/themes.test.ts` and cited in [spec/09](09-canvas-and-palette.md), [spec/16](16-marketing-site.md), and [spec/23](23-marketing-assets.md); all four move together.
+The catalogue ships **27 themes** (12 default + 15 extra), the extras including a Dark category (Pine, Charcoal, Plum, Abyss, Espresso) and five multi-colour themes (Rainbow, Pastel, Tropical, Autumn, Jewel). The counts are pinned by `apps/live/lib/themes.test.ts` and cited in [spec/09](09-canvas-and-palette.md), [spec/16](16-marketing-site.md), and [spec/23](23-marketing-assets.md); all four move together.
