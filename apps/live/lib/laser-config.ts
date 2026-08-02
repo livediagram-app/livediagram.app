@@ -9,7 +9,7 @@
 // It IS published alongside each laser sample, so peers draw your pen, not
 // theirs.
 
-import { readLocalStorageSafe, writeLocalStorageSafe } from './local-storage-safe';
+import { readLocalStorageSafe, safeJson, writeLocalStorageSafe } from './local-storage-safe';
 
 export type LaserWidth = 'fine' | 'medium' | 'bold';
 export type LaserTrail = 'quick' | 'normal' | 'long';
@@ -126,14 +126,6 @@ export function parseLaserConfig(raw: unknown): LaserConfig {
     trail: pick(o.trail, LASER_TRAILS, DEFAULT_LASER_CONFIG.trail),
     effect: pick(o.effect, LASER_EFFECTS, DEFAULT_LASER_CONFIG.effect),
   };
-}
-
-function safeJson(raw: string): unknown {
-  try {
-    return JSON.parse(raw);
-  } catch {
-    return null;
-  }
 }
 
 // --- Storage ----------------------------------------------------------------

@@ -11,7 +11,7 @@
 // Colour is deliberately NOT here: the shirt takes the participant's presence
 // colour so a character matches its owner's cursor and name chip.
 
-import { readLocalStorageSafe, writeLocalStorageSafe } from './local-storage-safe';
+import { readLocalStorageSafe, safeJson, writeLocalStorageSafe } from './local-storage-safe';
 import { randomPick } from './random';
 
 // The costume vocabulary itself lives in @livediagram/api-schema, because the
@@ -154,14 +154,6 @@ export function parseAvatarConfig(raw: unknown): AvatarConfig {
     hair: pick(o.hair, AVATAR_HAIR, DEFAULT_AVATAR_CONFIG.hair),
     size: pick(o.size, AVATAR_SIZES, DEFAULT_AVATAR_CONFIG.size),
   };
-}
-
-function safeJson(raw: string): unknown {
-  try {
-    return JSON.parse(raw);
-  } catch {
-    return null;
-  }
 }
 
 // True when this browser already has a character stored — i.e. this is not the

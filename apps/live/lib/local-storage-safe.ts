@@ -16,6 +16,13 @@
 // have meaningfully different read semantics (literal string match,
 // 'false' sentinel, JSON object with forward-compat key preservation)
 // so a generic JSON helper would just add layers.
+//
+// `safeJson` below is the one exception, and it earned the exception
+// by evidence rather than argument: five later config modules (avatar,
+// laser, spotlight, eraser, format) each grew a byte-identical copy of
+// it. It is deliberately only the PARSE step, not a `readJson(key)`
+// that folds the read in — the read semantics really do still differ
+// per caller, which is what the paragraph above is about.
 
 // Read a string from window.localStorage. Returns null when:
 //   1. We're rendering server-side (typeof window === 'undefined'),
@@ -58,5 +65,18 @@ export function removeLocalStorageSafe(key: string): void {
     window.localStorage.removeItem(key);
   } catch {
     // SSR / private browsing: nothing persisted to remove anyway.
+  }
+}
+
+// Parse a string read out of storage, treating malformed JSON as absent.
+// Anything in localStorage is untrusted input: it survives across releases,
+// a user can edit it by hand, and another tab may have written a shape from
+// a different version. A throw here would take down the caller's whole
+// hydration for a value it was going to default anyway.
+export function safeJson(raw: string): unknown {
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return null;
   }
 }

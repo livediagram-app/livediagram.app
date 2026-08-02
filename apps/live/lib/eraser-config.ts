@@ -6,7 +6,7 @@
 // the job in front of you, not stored on the diagram. Never sent to the api.
 
 import { selectionMembers, type Element } from '@livediagram/diagram';
-import { readLocalStorageSafe, writeLocalStorageSafe } from './local-storage-safe';
+import { readLocalStorageSafe, safeJson, writeLocalStorageSafe } from './local-storage-safe';
 
 export type EraserMode = 'sweep' | 'tap';
 export type EraserSize = 'point' | 'small' | 'medium' | 'large';
@@ -128,14 +128,6 @@ export function parseEraserConfig(raw: unknown): EraserConfig {
     target: pick(o.target, ERASER_TARGETS, DEFAULT_ERASER_CONFIG.target),
     groups: pick(o.groups, ERASER_GROUPS, DEFAULT_ERASER_CONFIG.groups),
   };
-}
-
-function safeJson(raw: string): unknown {
-  try {
-    return JSON.parse(raw);
-  } catch {
-    return null;
-  }
 }
 
 // --- Storage ----------------------------------------------------------------

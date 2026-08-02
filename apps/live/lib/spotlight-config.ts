@@ -6,7 +6,7 @@
 // not on the diagram. Unlike the pen it is NOT published — Spotlight is a view
 // aid for the person using it, so there is nothing on the wire (spec/09).
 
-import { readLocalStorageSafe, writeLocalStorageSafe } from './local-storage-safe';
+import { readLocalStorageSafe, safeJson, writeLocalStorageSafe } from './local-storage-safe';
 
 export type SpotlightSize = 'small' | 'medium' | 'large';
 export type SpotlightDim = 'soft' | 'normal' | 'dark' | 'blackout';
@@ -123,14 +123,6 @@ export function parseSpotlightConfig(raw: unknown): SpotlightConfig {
     edge: pick(o.edge, SPOTLIGHT_EDGES, DEFAULT_SPOTLIGHT_CONFIG.edge),
     shape: pick(o.shape, SPOTLIGHT_SHAPES, DEFAULT_SPOTLIGHT_CONFIG.shape),
   };
-}
-
-function safeJson(raw: string): unknown {
-  try {
-    return JSON.parse(raw);
-  } catch {
-    return null;
-  }
 }
 
 // --- Storage ----------------------------------------------------------------
