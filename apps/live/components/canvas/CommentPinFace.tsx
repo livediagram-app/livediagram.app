@@ -53,29 +53,33 @@ export function CommentPinFace({
 
   const face = (
     <span
-      className={`pointer-events-none absolute inset-0 flex items-center justify-center ${
-        resolved ? 'opacity-45' : ''
-      }`}
+      className={`pointer-events-none absolute inset-0 ${resolved ? 'opacity-45' : ''}`}
       style={{ containerType: 'size' }}
     >
+      {/* A plain filled circle with one small tail, drawn flat: no outline,
+          no gradient, no drop shadow on the shape itself. The earlier version
+          was a heavy outlined speech bubble and read as a piece of clip-art
+          sitting on the board rather than a marker attached to it.
+
+          The tail is a separate triangle rather than part of the blob path,
+          which is what lets the circle stay a circle at any size. */}
       <svg viewBox="0 0 40 40" className="absolute inset-0 h-full w-full" aria-hidden>
-        {/* A pin: a rounded speech bubble with the tail at the bottom-left, so
-            the point marks the SPOT rather than the middle of the bubble. */}
-        <path
-          d="M20 2.5c8.9 0 16 5.9 16 13.2 0 7.3-7.1 13.2-16 13.2-1.6 0-3.2-.2-4.6-.5l-8.7 8.1a1 1 0 0 1-1.7-.9l1.6-9.4C2.6 23.7 4 19.9 4 15.7 4 8.4 11.1 2.5 20 2.5z"
-          fill={fill}
-          stroke="rgba(15,23,42,0.18)"
-          strokeWidth="1.2"
-        />
+        <path d="M11.5 30.5 8 38l10-6z" fill={fill} />
+        <circle cx="20" cy="18" r="15" fill={fill} />
       </svg>
       <span
-        // Sized against the pin so a resized marker scales its number.
-        className="relative font-semibold leading-none text-white"
-        style={{ fontSize: 'min(38cqw, 38cqh)', marginBottom: '18%' }}
+        className="absolute inset-x-0 font-semibold leading-none text-white"
+        style={{
+          // Positioned against the CIRCLE (centred on 45% of the box, the
+          // circle's own centre), not the element box, so the count stays
+          // optically centred rather than pulled down by the tail.
+          top: '45%',
+          transform: 'translateY(-50%)',
+          textAlign: 'center',
+          fontSize: 'min(34cqw, 34cqh)',
+        }}
       >
-        {/* An empty pin shows a bubble-with-dots rather than a "0": zero
-            comments is not a count, it is an invitation. */}
-        {empty ? '…' : count > 0 ? count : '✓'}
+        {empty ? '' : count > 0 ? count : '✓'}
       </span>
     </span>
   );

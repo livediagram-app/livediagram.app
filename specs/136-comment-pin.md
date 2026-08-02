@@ -32,10 +32,17 @@ second way to store a comment, that is the bug.
 
 ## The face
 
-A speech bubble with its tail at the **bottom-left**, so the point marks the
-spot rather than the middle of the bubble marking it.
+A **flat filled circle with one small tail** at the bottom-left, so the point
+marks the spot rather than the middle of the marker marking it.
 
-- **Empty** pin shows `…` — zero comments is not a count, it is an invitation.
+Deliberately plain: no outline, no gradient, no shadow on the shape. The first
+version was a heavy outlined speech bubble and read as a piece of clip-art
+sitting on the board rather than a marker attached to it. The tail is a
+separate triangle rather than part of one blob path, which is what lets the
+circle stay a circle at any size.
+
+- An **empty** pin is a plain circle with no glyph in it. Zero comments is not
+  a count, and a marker with a character in it reads as saying something.
 - With comments, it shows the **active count**.
 - A **resolved** thread shows `✓` at 45% opacity. The pin stays on the board
   rather than disappearing: comments come back on unresolve, and a pin that

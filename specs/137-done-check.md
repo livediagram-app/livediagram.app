@@ -72,5 +72,11 @@ and a bubbling listener never hears the click that should dismiss it.
 - Title row: the question, the `done/total` count, the menu.
 - **Done** roster at full strength, **Waiting on** drawn back — a glance should
   land on who is finished, since that is what the facilitator is counting.
-- Avatar gaps clear the presence ring (spec/136's lesson): the ring is a
-  box-shadow outside each avatar's layout box and eats 4px of any gap beside it.
+- Avatar gaps clear the presence ring (the ring is a box-shadow outside each
+  avatar's layout box and eats 4px of any gap beside it).
+- The card's **default height is 220**, taller than the other room-response
+  panels, because it stacks two rosters rather than one readout. At 190 a
+  two-person room overflowed the body by about 7px and grew a scrollbar:
+  measured, each roster is 41px, and two of them plus the gap did not fit the
+  100px body. There is no decorative rule under the rosters for the same
+  reason — it cost 13px with the gap and drew nothing anybody could see.

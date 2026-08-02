@@ -62,8 +62,10 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // Comment pin: a marker, deliberately small. It is a place on the board,
   // not a card — the thread it holds opens in the existing popover.
   'comment-pin': { width: 40, height: 40 },
-  // Done check: a card, sized like the other room-response panels.
-  'done-check': { width: 280, height: 190 },
+  // Done check: taller than the other room-response panels because it stacks
+  // TWO rosters (done and waiting) plus the all-done line. At 190 a two-person
+  // room already overflowed by a few pixels and the body grew a scrollbar.
+  'done-check': { width: 280, height: 220 },
   // Record (spec/120): a class box — wide enough for "name: Type" rows,
   // tall enough for a title plus four of them before it needs resizing.
   entity: { width: 240, height: 170 },

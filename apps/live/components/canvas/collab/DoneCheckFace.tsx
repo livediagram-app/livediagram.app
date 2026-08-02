@@ -6,7 +6,7 @@ import { allDone, doneSplit, isDone, type ShapeElement } from '@livediagram/diag
 
 import type { Participant } from '@/lib/identity';
 import { ParticipantAvatar } from '@/components/primitives/ParticipantAvatar';
-import { CollabButton, CollabEmpty, CollabPanel, tint } from './collab-chrome';
+import { CollabButton, CollabEmpty, CollabPanel } from './collab-chrome';
 
 // The face of a Done check (spec/137): everyone marks themselves finished, and
 // the card shows who has and who has not.
@@ -211,7 +211,7 @@ export function DoneCheckFace({
           Nobody is in the room yet. Share the diagram and the card fills itself in.
         </CollabEmpty>
       ) : (
-        <div className="flex min-h-0 flex-1 flex-col justify-center gap-3">
+        <div className="flex min-h-0 flex-1 flex-col justify-center gap-2">
           {everyone ? (
             <p className="text-[13px] font-semibold" style={{ color: textColor }}>
               Everyone&apos;s done.
@@ -224,13 +224,6 @@ export function DoneCheckFace({
             participants={participants}
             textColor={textColor}
             muted
-          />
-          {/* A hairline under the rosters, tinted from the card's own text
-              colour so a recoloured card keeps it in the family. */}
-          <span
-            className="h-px w-full shrink-0"
-            style={{ backgroundColor: tint(textColor, 0.12) }}
-            aria-hidden
           />
         </div>
       )}
