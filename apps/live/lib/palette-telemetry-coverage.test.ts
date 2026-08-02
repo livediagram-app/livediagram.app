@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { SHAPE_KINDS } from '@livediagram/diagram';
-import { ALL_PALETTE_TELEMETRY_TYPES, PALETTE_TELEMETRY_TYPES } from '@livediagram/api-schema';
+import {
+  ALL_PALETTE_TELEMETRY_TYPES,
+  PALETTE_TELEMETRY_TYPES,
+  TELEMETRY_TYPE_PATTERN,
+} from '@livediagram/api-schema';
 import { titleCaseType } from './telemetry';
 
 // Completeness guard for the palette census (spec/22, issue #30).
@@ -65,6 +69,36 @@ describe('palette telemetry coverage', () => {
       (token) => !producible.has(token) && !nonShape.has(token),
     );
     expect(stale).toEqual([]);
+  });
+
+  it('produces tokens the api will actually accept', () => {
+    // The tests above prove the two ends agree on a token. They cannot prove
+    // the token ever arrives: `type` is the one part of an event that is a
+    // free string, checked at ingest against TELEMETRY_TYPE_PATTERN and
+    // DROPPED SILENTLY when it fails. Nothing fails locally, the editor keeps
+    // firing, and the metric simply reads zero.
+    //
+    // titleCaseType does not sanitise — it upper-cases the first character and
+    // passes the rest through. Today every kind is lowercase and hyphenated so
+    // the result is clean, but a kind with a slash, colon, or apostrophe would
+    // be emitted and thrown away. Only apiErrorType was guarded this way; the
+    // element census, which is what the dashboard's Palette ranking counts,
+    // was not.
+    const offenders = [...SHAPE_KINDS]
+      .map(tokenForShapeKind)
+      .filter((token) => !TELEMETRY_TYPE_PATTERN.test(token));
+    expect(offenders).toEqual([]);
+
+    // The dashboard catalogue is hand-written, so it can carry a token no
+    // shape kind produces and no ingest would accept.
+    const badCatalogue = ALL_PALETTE_TELEMETRY_TYPES.filter(
+      (token) => !TELEMETRY_TYPE_PATTERN.test(token),
+    );
+    expect(badCatalogue).toEqual([]);
+
+    // Guard against the check going vacuous if either source stops resolving.
+    expect([...SHAPE_KINDS].length).toBeGreaterThan(40);
+    expect(ALL_PALETTE_TELEMETRY_TYPES.length).toBeGreaterThan(40);
   });
 
   it('lists no token twice across the buckets', () => {

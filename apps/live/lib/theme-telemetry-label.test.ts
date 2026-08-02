@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { THEMES } from '@livediagram/diagram';
+import { TELEMETRY_TYPE_PATTERN } from '@livediagram/api-schema';
 import { themeTelemetryLabel } from './custom-theme-registry';
 
 // spec/22's rule is categorical: a telemetry `type` is a preset token, never
@@ -38,6 +39,23 @@ describe('themeTelemetryLabel', () => {
   it('has a token for no theme at all', () => {
     expect(themeTelemetryLabel(undefined)).toBe('Unknown');
     expect(themeTelemetryLabel('')).toBe('Unknown');
+  });
+
+  it('emits a token the api will accept, for every built-in', () => {
+    // Privacy is one failure mode; being dropped at the door is another. A
+    // `type` is checked at ingest against TELEMETRY_TYPE_PATTERN and discarded
+    // without a word when it fails, so a future theme labelled "Blue / Grey"
+    // or "Rosé" would stop the Theme·Changed metric dead with nothing here
+    // going red. The labels are user-facing copy, chosen for the picker rather
+    // than for this, which is exactly why it needs asserting.
+    for (const t of THEMES) {
+      expect(themeTelemetryLabel(t.id), t.label).toMatch(TELEMETRY_TYPE_PATTERN);
+    }
+    for (const token of ['Custom', 'Unknown']) expect(token).toMatch(TELEMETRY_TYPE_PATTERN);
+    // The retired-built-in fallback title-cases a raw id; it must clear the
+    // pattern too, and the 40-character cap is the part an id can breach.
+    expect(themeTelemetryLabel('retired-hue')).toMatch(TELEMETRY_TYPE_PATTERN);
+    expect(THEMES.length).toBeGreaterThan(10);
   });
 
   it('emits nothing that could be a name a user typed', () => {
