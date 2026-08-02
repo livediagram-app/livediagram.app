@@ -16,13 +16,6 @@ import {
   type ElementShadow,
   type ShapeElement,
 } from '@livediagram/diagram';
-import { onMouseHover } from '@/components/primitives/hover-preview';
-import { SizeButton } from '@/components/palette/palette-controls';
-import {
-  BorderRadiusIcon,
-  BorderStrokeIcon,
-  BorderStyleIcon,
-} from '@/components/palette/palette-icons';
 import {
   AnimationMenuGlyph,
   BorderGlyph,
@@ -36,11 +29,11 @@ import {
   IconAnimationTiles,
   IconSizeTiles,
 } from '@/components/palette/context-menu-tiles';
-import { BorderGrid, ColourRow, PieAnimTiles } from '@/components/palette/context-menu-rows';
+import { ColourRow, PieAnimTiles } from '@/components/palette/context-menu-rows';
 import { ShadowSection } from '@/components/palette/ShadowSection';
-import { BORDER_RADII, BORDER_STROKES, BORDER_STYLES } from './context-menu-constants';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import type { useContextMenuScaffold } from './useContextMenuScaffold';
+import { BorderControls } from '@/components/palette/BorderControls';
 
 // The multi-selection menu's style + motion sections (spec/09), each
 // applying selection-wide with display values read off the first
@@ -229,49 +222,18 @@ export function MultiStyleSections({
           icon={<BorderGlyph />}
           {...sectionProps('m-border-style')}
         >
-          <div className="px-2 py-1">
-            <BorderGrid label="Strength" cols={5}>
-              {BORDER_STROKES.map((v) => (
-                <SizeButton
-                  key={v}
-                  active={(borderSrc?.strokeWidth ?? 'medium') === v}
-                  onClick={() => props.onCommitBorderStroke(v)}
-                  onPointerEnter={onMouseHover(() => props.onPreviewBorderStroke(v))}
-                  onPointerLeave={onMouseHover(props.onPreviewStyleEnd)}
-                >
-                  <BorderStrokeIcon value={v} />
-                </SizeButton>
-              ))}
-            </BorderGrid>
-            <BorderGrid label="Pattern" cols={3}>
-              {BORDER_STYLES.map((v) => (
-                <SizeButton
-                  key={v}
-                  active={(borderSrc?.strokeStyle ?? 'solid') === v}
-                  onClick={() => props.onCommitBorderStyle(v)}
-                  onPointerEnter={onMouseHover(() => props.onPreviewBorderStyle(v))}
-                  onPointerLeave={onMouseHover(props.onPreviewStyleEnd)}
-                >
-                  <BorderStyleIcon value={v} />
-                </SizeButton>
-              ))}
-            </BorderGrid>
-            {radiusSrc ? (
-              <BorderGrid label="Radius" cols={5}>
-                {BORDER_RADII.map((v) => (
-                  <SizeButton
-                    key={v}
-                    active={(radiusSrc.borderRadius ?? 'sm') === v}
-                    onClick={() => props.onCommitBorderRadius(v)}
-                    onPointerEnter={onMouseHover(() => props.onPreviewBorderRadius(v))}
-                    onPointerLeave={onMouseHover(props.onPreviewStyleEnd)}
-                  >
-                    <BorderRadiusIcon value={v} />
-                  </SizeButton>
-                ))}
-              </BorderGrid>
-            ) : null}
-          </div>
+          <BorderControls
+            strokeWidth={borderSrc?.strokeWidth ?? 'medium'}
+            strokeStyle={borderSrc?.strokeStyle ?? 'solid'}
+            radius={radiusSrc ? (radiusSrc.borderRadius ?? 'sm') : null}
+            onCommitBorderStroke={props.onCommitBorderStroke}
+            onPreviewBorderStroke={props.onPreviewBorderStroke}
+            onCommitBorderStyle={props.onCommitBorderStyle}
+            onPreviewBorderStyle={props.onPreviewBorderStyle}
+            onCommitBorderRadius={props.onCommitBorderRadius}
+            onPreviewBorderRadius={props.onPreviewBorderRadius}
+            onPreviewStyleEnd={props.onPreviewStyleEnd}
+          />
         </MenuAccordionSection>
       ) : null}
       {/* Shadow (spec/86) — presets + sliders, selection-wide like Border.
