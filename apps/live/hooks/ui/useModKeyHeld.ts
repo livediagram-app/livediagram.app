@@ -1,73 +1,31 @@
 'use client';
 
-import { useSyncExternalStore } from 'react';
+import { createHeldKeyStore, useHeldKey } from './held-key-store';
 
 // Singleton subscription that exposes "is the user currently holding
-// Cmd or Ctrl". Subscribers get re-rendered only on the transitions
-// (down -> up, up -> down), not on every key the user types while
-// the modifier is held. One window listener serves the whole app,
-// the alternative (every IconButton attaching its own keydown / keyup
-// pair) would be N listeners for a feature that only flips at human
-// speed.
+// Cmd or Ctrl". The store machinery is shared (see held-key-store);
+// what follows is only this key's policy.
 //
 // Used by the CommandPalette's IconButton to surface the per-element
 // shortcut letter as a corner badge whenever the modifier is down,
 // turning the palette into a self-documenting cheat sheet without
 // adding any persistent chrome.
 //
+// The modifier is read off the EVENT rather than tracked as a key in its
+// own right: `metaKey` / `ctrlKey` ride every keyboard event, so one
+// handler serves both directions and a chord like Cmd-Shift-K still
+// reports the modifier as held.
+//
 // `blur` resets to false so a user who Cmd-tabs away mid-hold doesn't
 // come back to badges that never clear (the OS swallows the keyup
 // that fires in the other window).
-
-let modHeld = false;
-const listeners = new Set<() => void>();
-let attached = false;
-
-function fan(): void {
-  for (const fn of listeners) fn();
-}
-
-function ensureAttached(): void {
-  if (attached || typeof window === 'undefined') return;
-  attached = true;
-  window.addEventListener('keydown', (e) => {
-    const isMod = e.metaKey || e.ctrlKey;
-    if (isMod !== modHeld) {
-      modHeld = isMod;
-      fan();
-    }
-  });
-  window.addEventListener('keyup', (e) => {
-    const isMod = e.metaKey || e.ctrlKey;
-    if (isMod !== modHeld) {
-      modHeld = isMod;
-      fan();
-    }
-  });
-  window.addEventListener('blur', () => {
-    if (modHeld) {
-      modHeld = false;
-      fan();
-    }
-  });
-}
-
-function subscribe(cb: () => void): () => void {
-  ensureAttached();
-  listeners.add(cb);
-  return () => {
-    listeners.delete(cb);
-  };
-}
-
-function getSnapshot(): boolean {
-  return modHeld;
-}
-
-function getServerSnapshot(): boolean {
-  return false;
-}
+const MOD_KEY_STORE = createHeldKeyStore((set) => {
+  const sync = (e: KeyboardEvent) => set(e.metaKey || e.ctrlKey);
+  window.addEventListener('keydown', sync);
+  window.addEventListener('keyup', sync);
+  window.addEventListener('blur', () => set(false));
+});
 
 export function useModKeyHeld(): boolean {
-  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  return useHeldKey(MOD_KEY_STORE);
 }
