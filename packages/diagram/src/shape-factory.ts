@@ -59,6 +59,9 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   lane: { width: 900, height: 200 },
   // Reaction pad: a press-me square, sized like the other Behaviour buttons.
   'reaction-pad': { width: 150, height: 110 },
+  // Comment pin: a marker, deliberately small. It is a place on the board,
+  // not a card — the thread it holds opens in the existing popover.
+  'comment-pin': { width: 40, height: 40 },
   // Record (spec/120): a class box — wide enough for "name: Type" rows,
   // tall enough for a title plus four of them before it needs resizing.
   entity: { width: 240, height: 170 },
@@ -372,6 +375,17 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
         { name: 'id', type: 'string' },
         { name: 'name', type: 'string' },
       ],
+    };
+  }
+  if (kind === 'comment-pin') {
+    return {
+      ...base,
+      // No label: the pin shows its comment COUNT, and a caption under a 40px
+      // marker would be bigger than the marker.
+      label: '',
+      // Square by default and kept that way — a stretched pin reads as a
+      // shape somebody drew rather than a marker.
+      aspectLocked: true,
     };
   }
   if (kind === 'reaction-pad') {

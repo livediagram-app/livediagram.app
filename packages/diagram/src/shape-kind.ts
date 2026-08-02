@@ -50,6 +50,11 @@ export type ShapeKind =
   // it, and a burst of reaction plays over the pad. Which reaction lives in
   // the element's `reaction` field.
   | 'reaction-pad'
+  // Comment pin (spec/136): a standalone marker whose whole job is to carry a
+  // comment thread. Every element can already hold one; this one exists ONLY
+  // to hold one, so a remark can be pinned to a spot on the board rather than
+  // to whichever shape happens to be nearest.
+  | 'comment-pin'
   // Chair (spec/130): furniture an Avatar-mode character sits down in when it
   // walks into one. Which way the seat points lives in `chairFacing`.
   | 'chair'

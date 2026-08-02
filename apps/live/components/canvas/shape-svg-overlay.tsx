@@ -47,6 +47,9 @@ export function isSvgRenderedShape(kind: ShapeKind): boolean {
     kind !== 'picker' &&
     // A reaction pad (spec/135) is a filled rounded box with a glyph on top.
     kind !== 'reaction-pad' &&
+    // A comment pin (spec/136) draws its own bubble; the wrapper box behind it
+    // must not also paint a square.
+    kind !== 'comment-pin' &&
     // A mind node (spec/118) is a rounded filled box with a label, same as
     // the four above. This predicate is allow-BY-DEFAULT, so a new CSS-drawn
     // kind that isn't listed here renders as a transparent nothing.

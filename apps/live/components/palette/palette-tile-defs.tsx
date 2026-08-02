@@ -889,6 +889,34 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   // Behaviour: none of these glyphs can say what the element does, and
   // "everyone picks privately, then all at once" is the thing being chosen.
   {
+    // Comment pin (spec/136): a remark about a PLACE rather than a shape.
+    id: 'collab:comment-pin',
+    blurb: 'Pin a comment thread anywhere on the board',
+    caption: 'Comment',
+    section: 'collaborate',
+    label: 'Add comment pin',
+    description:
+      'A marker that carries a comment thread. Drop it on any spot and click it to talk about that spot, rather than attaching the remark to whichever shape happens to be nearest.',
+    filled: true,
+    action: { type: 'shape', kind: 'comment-pin' },
+    icon: (
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden
+      >
+        <path d="M20.5 12.2c0 3.9-3.8 7-8.5 7-.9 0-1.8-.1-2.6-.3l-5 3.1 1.1-4.5A6.6 6.6 0 0 1 3.5 12.2c0-3.9 3.8-7 8.5-7s8.5 3.1 8.5 7z" />
+        <path d="M8.6 11.9h.01M12 11.9h.01M15.4 11.9h.01" />
+      </svg>
+    ),
+  },
+  {
     id: 'collab:estimate',
     blurb: 'Planning poker: pick privately, reveal together',
     section: 'collaborate',

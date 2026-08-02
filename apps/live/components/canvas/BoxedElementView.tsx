@@ -38,6 +38,7 @@ import { RevealFace } from '@/components/canvas/RevealFace';
 import { PickerFace } from '@/components/canvas/PickerFace';
 import { PortalFace } from '@/components/canvas/PortalFace';
 import { ReactionPadFace } from '@/components/canvas/ReactionPadFace';
+import { CommentPinFace } from '@/components/canvas/CommentPinFace';
 import { ReactionBurst } from '@/components/canvas/ReactionBurst';
 import { CollabFaceRouter } from '@/components/canvas/collab/CollabFaceRouter';
 import { ChairView } from '@/components/canvas/collab/ChairView';
@@ -233,7 +234,11 @@ function BoxedElementViewImpl({
   const accent = remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element);
   const variant = describeVariant(element, isSelected, isMultiSelected, remoteBorderColor);
 
-  const commentCount = activeCommentCount(element.commentThread);
+  // A comment pin (spec/136) shows its own count on its face, so the generic
+  // badge is suppressed: the pin IS the badge, and two counts on one 40px
+  // marker is one too many.
+  const isCommentPin = element.type === 'shape' && element.shape === 'comment-pin';
+  const commentCount = isCommentPin ? 0 : activeCommentCount(element.commentThread);
   // Assigned action (spec/68): the badge shows only while the action is
   // open; a done action stays on the element but stops shouting.
   const hasOpenAction = isOpenAction(element.action);
@@ -492,6 +497,15 @@ function BoxedElementViewImpl({
            every other face above, mid-edit it falls through to the ordinary
            label editor below, so the title is retyped like any shape's. */
         <CollabFaceRouter element={element} label={label} textColor={textColor} collab={collab} />
+      ) : element.type === 'shape' && element.shape === 'comment-pin' && !isEditing ? (
+        /* Comment pin (spec/136): opens the SAME thread popover an ordinary
+           element's comment badge opens — the pin is just an element whose
+           only job is to carry a commentThread. */
+        <CommentPinFace
+          element={element}
+          fill={remoteBorderColor ?? element.fillColor ?? defaultStrokeColor(element)}
+          onOpenComments={onOpenComments ? () => onOpenComments(element.id) : undefined}
+        />
       ) : element.type === 'shape' && element.shape === 'reaction-pad' && !isEditing ? (
         /* Reaction pad (spec/135): a pressable glyph. The burst it throws is
            rendered OUTSIDE this label stack, below, so it can overflow the

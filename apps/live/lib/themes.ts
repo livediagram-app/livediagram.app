@@ -98,6 +98,8 @@ export function deriveNewBoxedColours(
     'reveal',
     'picker',
     'reaction-pad',
+    // A comment pin (spec/136) is board chrome, not a diagram node.
+    'comment-pin',
   ]);
   if (base.type === 'shape' && BEHAVIOUR_KINDS.has(base.shape)) return colours;
   if (base.type === 'shape' || base.type === 'annotation') {

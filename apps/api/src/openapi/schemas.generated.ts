@@ -996,6 +996,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
+          "comment-pin": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
           "cylinder": {
             "additionalProperties": false,
             "properties": {
@@ -3299,6 +3314,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "reveal",
       "picker",
       "reaction-pad",
+      "comment-pin",
       "chair",
       "estimate",
       "temperature",

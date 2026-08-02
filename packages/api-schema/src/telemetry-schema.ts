@@ -282,7 +282,16 @@ export const PALETTE_TELEMETRY_TYPES = {
   // category and the dashboard's cards are the palette's own tabs. The Chair
   // (spec/130) is NOT here: it ships in Behaviour, so it buckets with the
   // other behaviour elements under `tools` above.
-  collaborate: ['Estimate', 'Temperature', 'Idea-box', 'Agenda', 'Decision', 'Roll-call'],
+  collaborate: [
+    'Estimate',
+    'Temperature',
+    'Idea-box',
+    'Agenda',
+    'Decision',
+    'Roll-call',
+    // Comment pin (spec/136).
+    'CommentPin',
+  ],
   components: ['Banner', 'Hero', 'Header', 'Callout', 'StatRow', 'ProcessSteps'],
   devices: ['Browser', 'Monitor', 'Laptop', 'Phone', 'Tablet', 'Smartwatch'],
   icons: ['Icon', 'TechIcon', 'Sticker'],

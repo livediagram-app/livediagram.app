@@ -159,6 +159,8 @@ const NON_VOTABLE_SHAPES = new Set([
   'reveal',
   'picker',
   'reaction-pad',
+  // A comment pin (spec/136) IS a remark; a dot on one means nothing.
+  'comment-pin',
 ]);
 
 export function isVotable(element: Element): boolean {
