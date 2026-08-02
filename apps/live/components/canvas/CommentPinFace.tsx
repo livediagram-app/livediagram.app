@@ -2,7 +2,6 @@
 
 import { activeCommentCount, type ShapeElement } from '@livediagram/diagram';
 
-import { Tooltip } from '@/components/primitives/Tooltip';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 
 // The face of a Comment Pin (spec/136): a marker you drop on the board that
@@ -56,30 +55,38 @@ export function CommentPinFace({
       className={`pointer-events-none absolute inset-0 ${resolved ? 'opacity-45' : ''}`}
       style={{ containerType: 'size' }}
     >
-      {/* A plain filled circle with one small tail, drawn flat: no outline,
-          no gradient, no drop shadow on the shape itself. The earlier version
-          was a heavy outlined speech bubble and read as a piece of clip-art
-          sitting on the board rather than a marker attached to it.
+      {/* An anchor DOT with a thin leader LINE coming out of it, the way Miro
+          marks a comment.
 
-          The tail is a separate triangle rather than part of the blob path,
-          which is what lets the circle stay a circle at any size. */}
+          The dot is the whole point: it sits on the exact spot being remarked
+          on, and stays small enough not to cover it. Everything a bubble would
+          have carried — the count, the author, the text — belongs in the
+          thread that opens on click, not on the board. A marker big enough to
+          hold a number hides the thing it is pointing at, which is the one job
+          it must not do.
+
+          The line reads as "this remark belongs over there" and gives the
+          40px element a grab area wider than the 8px dot. */}
       <svg viewBox="0 0 40 40" className="absolute inset-0 h-full w-full" aria-hidden>
-        <path d="M11.5 30.5 8 38l10-6z" fill={fill} />
-        <circle cx="20" cy="18" r="15" fill={fill} />
+        <path d="M11 20h24" stroke={fill} strokeWidth="1.6" strokeLinecap="round" fill="none" />
+        <circle cx="6.5" cy="20" r="4.5" fill={fill} />
       </svg>
       <span
-        className="absolute inset-x-0 font-semibold leading-none text-white"
+        className="absolute font-semibold leading-none"
         style={{
-          // Positioned against the CIRCLE (centred on 45% of the box, the
-          // circle's own centre), not the element box, so the count stays
-          // optically centred rather than pulled down by the tail.
-          top: '45%',
-          transform: 'translateY(-50%)',
-          textAlign: 'center',
-          fontSize: 'min(34cqw, 34cqh)',
+          // Riding the END of the leader line rather than sitting inside the
+          // dot: the dot is 9 units across and a numeral in it would be
+          // illegible at any real zoom.
+          left: '88%',
+          top: '50%',
+          transform: 'translate(-50%, -50%)',
+          fontSize: 'min(22cqw, 22cqh)',
+          color: fill,
         }}
       >
-        {empty ? '' : count > 0 ? count : '✓'}
+        {/* Nothing on an empty pin: a bare dot is the invitation. A resolved
+            thread shows a tick instead of a stale count. */}
+        {empty ? '' : resolved ? '✓' : count > 1 ? count : ''}
       </span>
     </span>
   );
@@ -92,31 +99,25 @@ export function CommentPinFace({
     );
   }
 
+  // No tooltip. The marker's whole job is to be unobtrusive, and a hover card
+  // over a 40px pin covers more board than the pin does. What it would have
+  // said (how many comments, whether it is resolved) the pin already shows,
+  // and the rest is one click away. The accessible name still carries it for
+  // anyone not reading the glyph.
   return (
-    <Tooltip
-      block
-      className="h-full w-full"
-      title={
+    <button
+      type="button"
+      {...press}
+      aria-label={
         empty
-          ? 'Empty comment pin'
+          ? 'Open empty comment thread'
           : resolved
-            ? 'Resolved comment'
-            : `${count} comment${count === 1 ? '' : 's'}`
-      }
-      description="Click to open the thread. Drag it anywhere on the board."
-    >
-      <button
-        type="button"
-        {...press}
-        aria-label={
-          empty
-            ? 'Open empty comment thread'
+            ? `Open resolved comment thread, ${count} comment${count === 1 ? '' : 's'}`
             : `Open comment thread, ${count} comment${count === 1 ? '' : 's'}`
-        }
-        className="pointer-events-auto relative h-full w-full cursor-pointer"
-      >
-        {face}
-      </button>
-    </Tooltip>
+      }
+      className="pointer-events-auto relative h-full w-full cursor-pointer"
+    >
+      {face}
+    </button>
   );
 }

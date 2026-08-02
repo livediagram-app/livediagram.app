@@ -32,21 +32,37 @@ second way to store a comment, that is the bug.
 
 ## The face
 
-A **flat filled circle with one small tail** at the bottom-left, so the point
-marks the spot rather than the middle of the marker marking it.
+An **anchor dot with a thin leader line coming out of it**, the way Miro marks
+a comment. Flat: no outline, no gradient, no shadow.
 
-Deliberately plain: no outline, no gradient, no shadow on the shape. The first
-version was a heavy outlined speech bubble and read as a piece of clip-art
-sitting on the board rather than a marker attached to it. The tail is a
-separate triangle rather than part of one blob path, which is what lets the
-circle stay a circle at any size.
+The dot is the whole point. It sits on the exact spot being remarked on and
+stays small enough not to cover it — a marker big enough to hold a number hides
+the thing it is pointing at, which is the one job it must not do. Everything a
+bubble would have carried (the count, the author, the text) belongs in the
+thread that opens on click, not on the board.
 
-- An **empty** pin is a plain circle with no glyph in it. Zero comments is not
-  a count, and a marker with a character in it reads as saying something.
-- With comments, it shows the **active count**.
-- A **resolved** thread shows `✓` at 45% opacity. The pin stays on the board
-  rather than disappearing: comments come back on unresolve, and a pin that
-  vanished would take the reason for the conversation with it.
+Two earlier versions were wrong in the same direction and are worth recording:
+a heavy outlined speech bubble, which read as clip-art sitting on the board
+rather than a marker attached to it, and then a filled circle with a tail,
+which was still a lump over the spot.
+
+The line also earns its place mechanically: it gives a 40px element a grab area
+wider than its 9px dot.
+
+- An **empty** pin is a bare dot and line. Zero comments is not a count, and
+  the emptiness is the invitation.
+- A thread with **more than one** comment puts the number at the far end of the
+  leader line, never inside the dot, where a numeral would be illegible at any
+  real zoom. A single comment shows no number: the pin already says there is
+  one.
+- A **resolved** thread shows a tick in place of the count, at 45% opacity. The
+  pin stays on the board rather than disappearing: comments come back on
+  unresolve, and a pin that vanished would take the reason for the conversation
+  with it.
+
+**No tooltip.** A hover card over a 40px marker covers more board than the
+marker does, and what it would have said is either already on the pin or one
+click away. The accessible name still carries the count and the resolved state.
 
 The generic comment badge is **suppressed** on a pin (`commentCount` forced to
 0 in `BoxedElementView`): the pin is the badge, and two counts on one 40px
