@@ -3,7 +3,7 @@
 **Status: implemented** on branch `external-connections` (PR #20); awaiting
 merge + the operator rollout in [§6](#6-rollout). This spec sequences opening
 the REST API to external, programmatic callers. The input-validation hardening
-(see [§5](#5-input-validation-prerequisite-shipped)) shipped to `main` first;
+(see [§5](#5-input-validation-prerequisite--shipped)) shipped to `main` first;
 the token model + the §4 `X-Owner-Id` hardening are built on the branch and
 verified (api typecheck + lint + tests green).
 
