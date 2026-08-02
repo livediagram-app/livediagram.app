@@ -92,6 +92,16 @@ The system has three layers, all under `apps/help`:
   `CanvasOverview`, `ThemePicker`) built from the primitives. Branch hues beyond
   brand use the on-brand accent set (emerald / violet / amber / rose / teal /
   indigo) already used by `featureColours`.
+- **`components/illustrations/<area>-parts.tsx`** — an area's own building
+  blocks, when it grows enough of them to interleave with its scenes (the
+  Explorer's sidebar row and diagram card; the palette's per-mode glyphs and
+  shared mode-row). Distinct from `primitives.tsx`, which is the house style
+  every area shares: these are wanted by one area only. The split exists so an
+  `<area>.tsx` reads as a uniform list of complete scenes rather than
+  alternating between two kinds of thing — an area with one or two helpers
+  keeps them inline and needs no parts file. The marketing feature-art files
+  (`apps/marketing/components/feature-art/<name>-parts.tsx`) follow the same
+  convention.
 - **`components/Figure.tsx`** — frames any scene in an "editor viewport" card
   with an optional caption. Registered globally in `mdx-components.tsx` (like
   `Tip` / `Note`), so an article only imports the specific scene and writes
