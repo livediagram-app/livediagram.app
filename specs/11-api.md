@@ -207,7 +207,7 @@ Document-store hybrid: meta + folder + share state lives in real columns; elemen
 Before the first deploy:
 
 1. `pnpm --filter @livediagram/api exec wrangler d1 create livediagram`
-2. Copy the printed `database_id` into `apps/api/wrangler.toml` (replacing `TODO_RUN_WRANGLER_D1_CREATE`).
+2. Copy the printed `database_id` into the `[[d1_databases]]` block in `apps/api/wrangler.toml`. The block is already there with its binding name (`DB`) — only the id changes. What is committed is livediagram.app's own database id, so a self-hoster is replacing a real value rather than filling in a blank.
 3. `pnpm --filter @livediagram/api run db:migrate:remote` to apply migrations.
 
 After that, GitHub Actions handles deploys via `deploy.yml` (`deploy-api` step). The router's service binding to `livediagram-api` means the API must deploy before the router.
