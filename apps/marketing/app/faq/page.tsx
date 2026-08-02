@@ -4,8 +4,8 @@ import type { ReactNode } from 'react';
 import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
-import { JsonLd } from '@/components/JsonLd';
 import { subpageMetadata } from '@/lib/subpage-metadata';
+import { JsonLd } from '@livediagram/ui';
 
 const FAQ_TITLE = 'FAQ · livediagram';
 const FAQ_DESCRIPTION =

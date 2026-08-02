@@ -4,12 +4,12 @@ import { useState, useRef, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Breadcrumb } from './Breadcrumb';
-import { JsonLd } from './JsonLd';
 import { SectionedContent } from './SectionedContent';
 import { TableOfContents } from './TableOfContents';
 import { articleHref, articles, categoryHref, type Article } from '@/lib/articles';
 import { articleJsonLd } from '@/lib/structured-data';
 import { track } from '@/lib/telemetry';
+import { JsonLd } from '@livediagram/ui';
 
 /** Sidebar card: shows the TOC and/or a "Learn more" list of related
  *  guides. Renders nothing visible if both are empty (CSS hides it). */

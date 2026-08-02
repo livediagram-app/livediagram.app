@@ -6,8 +6,8 @@
 // things like trailing slashes or @id formats, which Google's structured-data
 // validator is strict about.
 
-import { JsonLd } from './JsonLd';
 import { SITE_URL } from '@/lib/site';
+import { JsonLd } from '@livediagram/ui';
 
 type Crumb = { name: string; path: string };
 

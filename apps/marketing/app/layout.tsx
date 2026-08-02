@@ -1,8 +1,8 @@
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 import './globals.css';
-import { JsonLd } from '@/components/JsonLd';
 import { SITE_NAME, SITE_URL } from '@/lib/site';
+import { JsonLd } from '@livediagram/ui';
 
 // SEO and social-card metadata. See spec/16-marketing-site.md
 // for the policy. metadataBase lets the per-page canonical and

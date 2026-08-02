@@ -4,10 +4,10 @@ import type { ReactNode } from 'react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { BackToTop } from '@/components/BackToTop';
-import { JsonLd } from '@/components/JsonLd';
 import { webSiteJsonLd } from '@/lib/structured-data';
 import { SITE_URL } from '@/lib/site';
 import './globals.css';
+import { JsonLd } from '@livediagram/ui';
 
 // The livediagram help centre (spec/55). Indexable static site served
 // under /help by the router. No third-party scripts, it stays

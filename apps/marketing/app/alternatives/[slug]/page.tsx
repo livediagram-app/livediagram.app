@@ -5,9 +5,9 @@ import { notFound } from 'next/navigation';
 import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
-import { JsonLd } from '@/components/JsonLd';
 import { ALTERNATIVE_SLUGS, ALTERNATIVES_LAST_UPDATED, getAlternative } from '@/lib/alternatives';
 import { subpageMetadata } from '@/lib/subpage-metadata';
+import { JsonLd } from '@livediagram/ui';
 
 // One page per competitor at /alternatives/<slug> (see
 // specs/21-comparison-pages.md). Static export: only the known slugs are
