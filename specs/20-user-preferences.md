@@ -269,7 +269,7 @@ Missing key === undefined === default behaviour. Concretely:
   this** — a failure the user would otherwise never see still surfaces,
   so turning notifications off quiets the chatter without hiding
   breakage. The gate is read fresh on each toast push (a synchronous
-  `readUserPreferences()` call in `hooks/useToast.tsx`), so a flip
+  `readUserPreferences()` call in `hooks/ui/useToast.tsx`), so a flip
   applies immediately with no subscription.
 
 Empty (or missing entirely) localStorage entry, AND no row in

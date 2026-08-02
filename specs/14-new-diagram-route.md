@@ -242,8 +242,8 @@ explored instead of always seeing the same curated first rows.
   the grid underfoot. Re-opening the picker reshuffles.
 
 Implementation: `lib/shuffle.ts` (`shufflePinned`, a pinned-first
-Fisher-Yates) feeds `components/TemplatePicker.tsx`, which drives the
-count-based mode of `hooks/useShowMoreList.ts`. The theme and pattern
+Fisher-Yates) feeds `components/palette/TemplatePicker.tsx`, which drives the
+count-based mode of `hooks/ui/useShowMoreList.ts`. The theme and pattern
 grids keep their stable, flag-gated order wherever they render (the
 theme browse of `components/palette/ThemeCategoryBrowser.tsx`, shared
 with the right-click Theme dialog per [42](42-canvas-and-theme-dialog.md),

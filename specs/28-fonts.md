@@ -81,12 +81,12 @@ applied to an element, so listing all eleven is cheap.
 
 Both pickers **preview each face**: the per-element font menu shows an
 `Aa` glyph in the font beside its name, and the per-tab picker
-(`components/FontSelect.tsx`) renders each option's **name in its own
+(`components/palette/FontSelect.tsx`) renders each option's **name in its own
 typeface** in a compact tile grid (a native `<select>` can't — browsers /
 macOS ignore `font-family` on `<option>`, so the names would all look alike).
 
 Implementation: `apps/live/lib/fonts.ts` (catalogue + resolver),
-`components/FontSelect.tsx` (the per-tab font grid; element fonts use the
+`components/palette/FontSelect.tsx` (the per-tab font grid; element fonts use the
 rich-text toolbar's own font grid in `RichTextToolbar.tsx`),
 the label renderers (`element-labels.tsx`), `TableView`, and `ArrowView`
 apply the resolved stack; `useElementStyle.setFontSelected` and
