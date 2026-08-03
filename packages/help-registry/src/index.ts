@@ -410,7 +410,8 @@ export const articles: Article[] = [
     slug: 'keyboard-shortcuts',
     title: 'Keyboard Shortcuts',
     description: 'The full shortcut reference and how to toggle shortcuts off.',
-    keywords: 'hotkey hotkeys keybinding cheat sheet reference keys bindings',
+    keywords:
+      'hotkey hotkeys keybinding cheat sheet reference keys bindings number numbers digit digits tool row excalidraw muscle memory single key letter',
     category: 'Tips and Tricks',
     categorySlug: 'tips-and-tricks',
   },
