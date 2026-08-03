@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { SHAPE_KINDS } from '@livediagram/diagram';
 
 import { PALETTE_TILES } from '@/components/palette/palette-tile-defs';
-import { buildPaletteSearchItems } from '@/lib/palette-search';
+import { buildPaletteSearchItems, SHAPE_KEYWORDS } from '@/lib/palette-search';
 
 // Drift guard. The "Add to canvas" catalogue used to be a hand-written list of
 // shapes, and it had fallen 22 kinds behind the palette without anything
@@ -52,5 +52,25 @@ describe('buildPaletteSearchItems', () => {
       if (!item.id.startsWith('shape:')) continue;
       expect(SHAPE_KINDS.has(item.id.slice('shape:'.length))).toBe(true);
     }
+  });
+  it('gives every searchable shape tile its own synonyms', () => {
+    // The help registry makes keywords mandatory for an article (CLAUDE.md)
+    // because a reader who does not know the title cannot find it otherwise.
+    // The palette search has the same problem and no such rule: SHAPE_KEYWORDS
+    // is Partial, so a new element joins the panel matching only its own name
+    // and description. `?? ''` then hides the omission — nothing renders
+    // wrong, the element is just harder to find than its neighbours.
+    //
+    // The comment pin, done check and reaction pad had all shipped that way.
+    // Someone typing "emoji", "tick" or "annotate" found nothing.
+    //
+    // Derived from the tiles, not from SHAPE_KINDS: `icon` and `sticker` are
+    // real kinds whose catalogues are enumerated separately, so they have no
+    // shape tile and correctly have no synonyms.
+    const missing = buildPaletteSearchItems()
+      .filter((i) => i.id.startsWith('shape:'))
+      .map((i) => i.id.slice('shape:'.length))
+      .filter((kind) => !(SHAPE_KEYWORDS as Record<string, string | undefined>)[kind]?.trim());
+    expect(missing).toEqual([]);
   });
 });

@@ -24,7 +24,7 @@ import { isLegacyEmojiIconId } from '@livediagram/icons';
 // This used to be a hand-written list of the shapes themselves, and it had
 // silently fallen 22 kinds behind the palette: every Devices, Data, Media and
 // Behaviour element was unfindable from the search panel.
-const SHAPE_KEYWORDS: Partial<Record<ShapeKind, string>> = {
+export const SHAPE_KEYWORDS: Partial<Record<ShapeKind, string>> = {
   square: 'square box rect node',
   circle: 'oval ellipse round node',
   diamond: 'decision rhombus flowchart',
@@ -55,6 +55,9 @@ const SHAPE_KEYWORDS: Partial<Record<ShapeKind, string>> = {
   agenda: 'plan schedule topics running order',
   decision: 'decided outcome record resolution',
   'roll-call': 'attendance present who register',
+  'comment-pin': 'annotate feedback discuss thread remark marker note',
+  'done-check': 'complete finished tick ready everyone signed off',
+  'reaction-pad': 'emoji react clap applause celebrate burst',
   actor: 'person stick figure user role uml',
   browser: 'web page window chrome site',
   monitor: 'screen desktop display computer',
