@@ -8,15 +8,10 @@ import {
   type ChangeLogEntry,
   type RoomHandlers,
 } from '@/lib/api-client';
-import { trimLaserBuffer, type LaserPoint } from '@/lib/laser-buffer';
-import { parseLaserConfig, type LaserConfig } from '@/lib/laser-config';
+import { parseLaserConfig } from '@/lib/laser-config';
+import { createPresenceCoalescer, type CursorPos, type LaserTrail } from './presence-coalescer';
 import type { RemoteSelection } from '@/lib/presence-rows';
 import { pruneMapToPresent } from './editor-page-helpers';
-
-type CursorPos = { tabId: string; x: number; y: number } | null;
-// The pen (spec/111) rides along with the samples so peers render the
-// sender's laser rather than their own default.
-type LaserTrail = { tabId: string; points: LaserPoint[]; config?: LaserConfig };
 
 // Realtime room: one WebSocket per diagram, opened only while the
 // diagram is shared. Lifted out of editor-page.tsx verbatim — the
@@ -122,70 +117,14 @@ export function useRoomConnection(opts: {
       setRemoteSelections(new Map());
       return;
     }
-    // Presence-packet coalescing: cursor / laser ops arrive at up to
-    // 30 Hz per peer, and committing state per packet re-rendered the
-    // whole editor tree per message (~90 renders/s with three peers,
-    // while the local user is idle). Buffer them in refs and commit ONE
-    // Map update per animation frame — the same rAF pattern the pan and
-    // snap-guide paths use. Buffers live per-effect-run so a reconnect
-    // starts clean.
-    const pendingCursors = new Map<string, { tabId: string; x: number; y: number } | null>();
-    const pendingLasers = new Map<string, LaserTrail>();
-    // Avatar mode (spec/101): the latest character snapshot per peer, or null
-    // for "they left the mode". Coalesced exactly like cursors — a walking
-    // avatar publishes at the same ~30 Hz.
-    const pendingAvatars = new Map<string, { tabId: string; avatar: AvatarPresence } | null>();
-    let presenceRafId: number | null = null;
-    const flushPresence = () => {
-      presenceRafId = null;
-      if (pendingCursors.size > 0) {
-        const moves = new Map(pendingCursors);
-        pendingCursors.clear();
-        setRemoteCursors((prev) => {
-          const next = new Map(prev);
-          for (const [id, pos] of moves) next.set(id, pos);
-          return next;
-        });
-      }
-      if (pendingAvatars.size > 0) {
-        const moves = new Map(pendingAvatars);
-        pendingAvatars.clear();
-        setRemoteAvatars((prev) => {
-          const next = new Map(prev);
-          for (const [id, entry] of moves) {
-            // Leaving the mode DELETES the entry rather than storing a null:
-            // nothing renders a character that isn't there, so the map stays
-            // exactly as big as the number of people walking around.
-            if (entry) next.set(id, entry);
-            else next.delete(id);
-          }
-          return next;
-        });
-      }
-      if (pendingLasers.size > 0) {
-        const trails = new Map(pendingLasers);
-        pendingLasers.clear();
-        setRemoteLaserTrails((prev) => {
-          const next = new Map(prev);
-          for (const [id, incoming] of trails) {
-            const existing = next.get(id);
-            // A tab switch resets the buffer for that participant —
-            // otherwise a peer who lasered on tab A then started
-            // lasering on tab B would briefly render an interpolated
-            // line across the gap.
-            const points =
-              existing && existing.tabId === incoming.tabId
-                ? trimLaserBuffer([...existing.points, ...incoming.points])
-                : incoming.points;
-            next.set(id, { tabId: incoming.tabId, points });
-          }
-          return next;
-        });
-      }
-    };
-    const schedulePresenceFlush = () => {
-      if (presenceRafId === null) presenceRafId = requestAnimationFrame(flushPresence);
-    };
+    // Batched cursor / laser / avatar presence, committed one Map update
+    // per animation frame instead of one per packet — see the coalescer.
+    // Created per effect run, so a reconnect starts with empty buffers.
+    const presence = createPresenceCoalescer({
+      setRemoteCursors,
+      setRemoteLaserTrails,
+      setRemoteAvatars,
+    });
 
     const handlers: RoomHandlers = {
       onPresence: (participants) => {
@@ -371,36 +310,28 @@ export function useRoomConnection(opts: {
             return next;
           });
         } else if (op.kind === 'cursor') {
-          // Coalesced: buffered into pendingCursors and committed once
-          // per animation frame (see flushPresence below). Cursor
+          // Coalesced: buffered and committed once per animation frame
+          // (see createPresenceCoalescer). Cursor
           // packets arrive at up to 30 Hz PER PEER, and a setState per
           // packet re-rendered the whole editor tree per message.
-          pendingCursors.set(
+          presence.cursor(
             from,
             op.x !== null && op.y !== null ? { tabId: op.tabId, x: op.x, y: op.y } : null,
           );
-          schedulePresenceFlush();
         } else if (op.kind === 'laser') {
           // Same coalescing as cursors; points accumulate in the buffer
           // and land in one Map commit per frame.
-          const buffered = pendingLasers.get(from);
-          pendingLasers.set(from, {
+          presence.laser(from, {
             tabId: op.tabId,
-            points: [
-              ...(buffered && buffered.tabId === op.tabId ? buffered.points : []),
-              { x: op.x, y: op.y, t: performance.now() },
-            ],
+            point: { x: op.x, y: op.y, t: performance.now() },
             // The sender's pen (spec/111), parsed field by field so a token
-            // from a newer client costs that field and not the trail. Latest
-            // wins: they may change it mid-sweep.
-            config: op.look ? parseLaserConfig(op.look) : buffered?.config,
+            // from a newer client costs that field and not the trail.
+            config: op.look ? parseLaserConfig(op.look) : undefined,
           });
-          schedulePresenceFlush();
         } else if (op.kind === 'avatar') {
           // Latest-wins per peer (no accumulation, unlike laser points): the
           // character has one position at a time.
-          pendingAvatars.set(from, op.avatar ? { tabId: op.tabId, avatar: op.avatar } : null);
-          schedulePresenceFlush();
+          presence.avatar(from, op.avatar ? { tabId: op.tabId, avatar: op.avatar } : null);
         } else if (op.kind === 'viewport') {
           // Latest-wins per peer, like the avatar: a camera has one position.
           // Applied straight through rather than batched with the presence
@@ -520,7 +451,7 @@ export function useRoomConnection(opts: {
     })();
     return () => {
       cancelled = true;
-      if (presenceRafId !== null) cancelAnimationFrame(presenceRafId);
+      presence.cancel();
       openedRoom?.close();
       roomRef.current = null;
     };
