@@ -23,6 +23,7 @@ import { Suspense, useEffect, useRef, useState } from 'react';
 import {
   AuthCard,
   AuthDisabledNotice,
+  AuthEmailField,
   EmailCodeStep,
   GoogleAuthButton,
   OrDivider,
@@ -277,22 +278,7 @@ function GetStartedContent() {
               />
             </div>
           </div>
-          <div>
-            <label
-              htmlFor="email"
-              className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300"
-            >
-              Email
-            </label>
-            <TextInput
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              autoComplete="email"
-            />
-          </div>
+          <AuthEmailField value={email} onChange={setEmail} />
           <Button type="submit" size="md" disabled={loading} className="w-full shadow-sm">
             {loading ? 'Creating account…' : 'Create account'}
           </Button>

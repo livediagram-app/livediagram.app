@@ -12,7 +12,7 @@
 // no other workspace consumes it yet. If marketing later grows its
 // own auth surface this can be promoted to `packages/ui`.
 
-import { Brand, Button, buttonClassName } from '@livediagram/ui';
+import { Brand, Button, buttonClassName, TextInput } from '@livediagram/ui';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState, type MutableRefObject, type ReactNode } from 'react';
 import { AnimatedLinesBackdrop } from '@/components/canvas/AnimatedLinesBackdrop';
@@ -291,6 +291,42 @@ function GoogleGlyph() {
 // read as a disabled button and the divider's bg-white chip floated as
 // a light box.
 // ---------------------------------------------------------------------
+
+// The email input both pages open with. Identical down to the placeholder and
+// the autocomplete hint, and the `id`/`htmlFor` pairing is the reason it is
+// worth a component rather than two copies: a label that stops matching its
+// input is invisible until somebody uses a screen reader.
+//
+// The last piece of these two pages that had not been lifted here. The 6-digit
+// code input, the Google glyph, the interstitial and the error parser all were;
+// this one stayed behind because it is short, which is exactly how a
+// divergence gets in.
+export function AuthEmailField({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <div>
+      <label
+        htmlFor="email"
+        className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300"
+      >
+        Email
+      </label>
+      <TextInput
+        id="email"
+        type="email"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="you@example.com"
+        autoComplete="email"
+      />
+    </div>
+  );
+}
 
 export function GoogleAuthButton({
   label,

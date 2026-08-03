@@ -26,6 +26,7 @@ import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import {
   AuthCard,
   AuthDisabledNotice,
+  AuthEmailField,
   EmailCodeStep,
   GoogleAuthButton,
   OrDivider,
@@ -36,7 +37,7 @@ import {
   resolveOAuthCompleteUrl,
   resolvePostAuthDestination,
 } from '@/components/chrome/auth-shared';
-import { Button, TextInput } from '@livediagram/ui';
+import { Button } from '@livediagram/ui';
 import { clerkEnabled, googleOAuthEnabled } from '@/lib/clerk-config';
 import { track } from '@/lib/telemetry';
 
@@ -254,22 +255,7 @@ function SignInContent() {
               <OrDivider />
             </>
           ) : null}
-          <div>
-            <label
-              htmlFor="email"
-              className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300"
-            >
-              Email
-            </label>
-            <TextInput
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              autoComplete="email"
-            />
-          </div>
+          <AuthEmailField value={email} onChange={setEmail} />
           <Button type="submit" size="md" disabled={loading} className="w-full shadow-sm">
             {loading ? 'Sending code…' : 'Continue with email'}
           </Button>
