@@ -92,7 +92,7 @@ describe('TEMPLATES catalogue', () => {
     expect(listed).toHaveLength(47);
   });
 
-  it('splits cleanly into 10 default + 37 extra (the picker uses `extra` to gate behind "Show more")', () => {
+  it('splits cleanly into 10 default + 37 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
     const defaults = listed.filter((t) => !t.extra);
     const extras = listed.filter((t) => t.extra);
     expect(defaults).toHaveLength(10);

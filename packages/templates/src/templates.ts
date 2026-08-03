@@ -33,14 +33,14 @@ export type TemplateKind =
   | 'fishbone'
   | 'pyramid'
   // UI wireframes (use the device-frame shapes added in spec/09's
-  // Devices accordion). Sit under "Show more" because they're
-  // situational starters for design / product work.
+  // Devices accordion). Situational starters for design / product work,
+  // which is why they are extras rather than defaults.
   | 'mobile-wireframe'
   | 'laptop-wireframe'
   | 'slide-deck'
   // A growth / momentum flywheel: hub + four sectors with a clockwise
-  // arrow loop. Sits under "Show more" alongside the other strategy /
-  // wireframing starters.
+  // arrow loop. An extra, alongside the other strategy / wireframing
+  // starters.
   | 'flywheel'
   // Logo-design lockup sheet: one canvas with all four common
   // wordmark compositions side by side (icon-left / icon-above,
@@ -49,18 +49,16 @@ export type TemplateKind =
   | 'logo-design'
   // Gantt chart: a month header row plus six cascading milestone rows
   // (label + full-width track + coloured duration bar). A project-
-  // planning starter; sits under "Show more".
+  // planning starter, and an extra.
   | 'gantt'
-  // Live card: a compact event / status card lockup. Sits under
-  // "Show more".
+  // Live card: a compact event / status card lockup. An extra.
   | 'live-card'
   // Comparison table: a plan-comparison grid (the table element).
   | 'comparison-table'
   // Technical / developer-diagram starters (spec/09 "Templates"). They
   // reuse the existing shape vocabulary — cylinders for datastores, the
   // table element for entities, dashed arrows for lifelines / returns —
-  // so a dev audience has a first-class starting point. All sit under
-  // "Show more".
+  // so a dev audience has a first-class starting point. All extras.
   | 'system-architecture'
   | 'er-diagram'
   | 'sequence-diagram'
@@ -124,9 +122,10 @@ export type TemplateDescriptor = {
   kind: TemplateKind;
   title: string;
   description: string;
-  // True for templates that sit behind the picker's "Show more"
-  // toggle. Default templates render in the first batch; extras
-  // unlock on click so the grid stays compact for first-time users.
+  // Catalogue metadata only: it marks the ten starters that shipped first,
+  // and nothing gates on it. The picker used to hide extras behind a "Show
+  // more" toggle; it browses by category now (spec/09), so every template is
+  // reachable and this flag decides nothing about what a user sees.
   extra?: boolean;
   // True for templates that never appear in listings (the picker's
   // browse grids + search, the MCP list_templates catalogue) but stay

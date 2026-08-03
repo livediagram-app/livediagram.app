@@ -410,8 +410,8 @@ export const THEMES: ThemeDefinition[] = [
       // Annotation / emphasis — yellow.
       star: { fill: '#fef9c3', stroke: '#ca8a04', text: '#713f12' },
     },
-    // Behind "Show more" in the flat grids; always visible in its own
-    // Formal category in the theme browser.
+    // Not one of the twelve that shipped first. Nothing gates on the flag;
+    // this theme is reached through its own Formal category like any other.
     extra: true,
   },
 ];

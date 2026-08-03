@@ -110,10 +110,11 @@ export type ThemeDefinition = {
   // code path. A theme can combine this with a palette, but in practice
   // per-shape themes (UML) and per-branch themes (rainbow) are distinct.
   shapeColors?: Partial<Record<ShapeKind, ShapeColourOverride>>;
-  // True for themes that sit behind the picker's "Show more" toggle —
-  // both in the welcome / template picker AND in the Current Tab theme
-  // grid. The default twelve render in the first batch; extras unlock
-  // on click so the grids stay compact for first-time users.
+  // Catalogue metadata only: it marks the twelve that shipped first, and
+  // nothing gates on it. All three theme surfaces (the palette accordion, the
+  // Tab Appearance modal, the New-diagram picker) render the same
+  // ThemeCategoryBrowser now (spec/09), so every theme is reachable by
+  // category and there is no "Show more" left to sit behind.
   extra?: boolean;
 };
 
