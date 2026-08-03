@@ -15,7 +15,7 @@
 import { useEffect, useRef } from 'react';
 import { SHAPE_DEFAULT_SIZE, type ShapeKind } from '@livediagram/diagram';
 import { PALETTE_DND_MIME } from '@/lib/icons';
-import { setPaletteDragPreview } from '@/lib/palette-drag-preview';
+import { setPaletteDragPreview, suppressNativeDragImage } from '@/lib/palette-drag-preview';
 import type { PendingDraw } from '@/lib/draw-mode';
 import type { PaletteTileDef } from './palette-tile-defs';
 import { tileCaption } from './tile-caption';
@@ -70,9 +70,16 @@ function PaletteToolRow({
               e.dataTransfer.effectAllowed = 'copy';
               const { width, height } = SHAPE_DEFAULT_SIZE[a.kind];
               setPaletteDragPreview({ kind: a.kind, width, height });
+              // The browser's own drag image is suppressed in favour of the
+              // canvas ghost, exactly as the grid tiles do it.
+              suppressNativeDragImage(e);
             }
           : undefined
       }
+      // Clearing the preview is NOT optional: it is what removes the canvas
+      // ghost. Without it every dragged row left its placemarker behind after
+      // the element landed, on the drop AND on a cancelled drag.
+      onDragEnd={() => setPaletteDragPreview(null)}
       aria-label={def.label}
       aria-pressed={armed}
       className={`flex w-full items-center gap-2.5 rounded-lg border px-2 py-1.5 text-left transition ${
