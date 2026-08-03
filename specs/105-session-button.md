@@ -23,13 +23,15 @@ Putting the tools ON the board makes the board self-facilitating. A retro templa
 
 - The press routes through the **same entry points the menus use** (`startTimer`, `startVote`, `startPoll`), so every rule those already enforce still applies: the edit-role gate, the "one vote at a time" rule, the change-log entry, the telemetry.
 - **It starts the tool for the room**, unlike the Selection Mode button, which only ever changes the presser's own mode. That asymmetry is the point: a timer nobody else can see is not a timer. The tooltip says so.
-- **A timer button is the timer's control, not a reset.** With a timer already on the tab, pressing PAUSES it; pressing again CONTINUES it from where it stopped. Only a tab with no timer starts a fresh countdown. Someone pressing it mid-session means "hold on", and silently restarting five minutes is the one behaviour nobody wants. The face follows the state — "Start 5 min timer" / "Pause the timer" / "Continue the timer" — so the board says what the next press will do. Clearing a timer stays with the timer's own controls ([spec/39](39-session-tools.md)), because that is the destructive one.
+- **A timer is not pressed at all any more**, so the rest of this section is about Vote and Poll. On any surface that can drive a timer, the element renders the countdown with its own pause / resume / reset / remove controls (see "The Timer element IS the timer" below); there is no whole-face press to interpret. The press-to-pause face it replaced — "Start 5 min timer" / "Pause the timer" / "Continue the timer", from `sessionButtonText` — is still what a surface WITHOUT timer controls draws, which today means a read-only one, so it reads as a live control and correctly refuses like every other read-only press.
 - **A read-only visitor's press does nothing**, and the face says why rather than looking live: starting a timer or a vote is an edit-role action ([spec/39](39-session-tools.md) "Roles"). Answering the poll it starts is not — an audience on a view link can still take part.
 - **Dragging it does not press it** (`usePressWithoutDrag`), same as every other Behaviour element.
 
 ## Configuring it
 
-Right-click → **Tools › Session**: pick the tool (Timer / Vote / Poll), then its one setting — minutes for a timer, dots for a vote, the question and options for a poll. The face's derived label follows the setting ("Start 5-minute timer", "Vote — 3 dots each", "Ask the room"), and an author's own label wins over it, like any shape.
+Right-click → **Tools › Session**: pick the tool (Timer / Vote / Poll), then its one setting — minutes for a timer, dots for a vote, the question and options for a poll.
+
+For **Vote and Poll**, the face's derived label follows that setting ("Vote — 3 dots each", "Ask the room"), and an author's own label wins over it, like any shape. A **Timer** has no label to win: `SessionTimerFace` draws the clock, showing the configured minutes until a timer is actually running and the live countdown after. The setting still drives what you see, just as the digits rather than as a sentence about them.
 
 ## Telemetry
 
