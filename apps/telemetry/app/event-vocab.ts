@@ -193,6 +193,8 @@ export function eventExplanation(category: string, action: string, type: string 
     if (action === 'Ungrouped') return 'A group was disbanded back into individual elements.';
     if (action === 'Locked') return "An element's lock was turned on (no edits allowed).";
     if (action === 'Unlocked') return "An element's lock was turned off (edits resume).";
+    if (action === 'Toggled')
+      return 'An on/off property was flipped on an element: a text style (Bold, Italic, Underline, Strikethrough), the aspect-ratio lock, or a table option (header row, header column, zebra striping).';
     if (action === 'Unlinked') return 'Someone cleared the link off an element.';
   }
   if (category === 'Tab') {
