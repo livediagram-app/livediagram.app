@@ -231,15 +231,3 @@ export function PaletteTileGrid({
     </div>
   );
 }
-
-// A sub-category heading inside a tab (the Tools tab's Tools / Data split,
-// the Favourites edit-mode groups). A lightweight divider, NOT an accordion.
-// The first heading drops its top padding so the section sits flush with
-// the panel.
-export function PaletteSectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="px-1 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-wide text-slate-400 first:pt-0.5 dark:text-slate-500">
-      {children}
-    </div>
-  );
-}

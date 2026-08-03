@@ -108,8 +108,9 @@ export type ToolGroupId = 'write' | 'draw' | 'behaviour';
 // groups. The description is what the category tile's tooltip says: a count
 // ("6 tools") tells you nothing you can act on, whereas naming the contents
 // answers the actual question — is the thing I want in this box?
-// Label + membership only. These groups render as PaletteSectionLabel
-// headings inside the Tools tab, and a heading shows a label, not a blurb —
+// Label + membership only. These groups render through PaletteToolRows /
+// PaletteTileGroup, each carrying its own title, and a title shows a label
+// rather than a blurb —
 // the browsable category descriptions live in PALETTE_CATEGORIES. A
 // `description` field here went unread for long enough to drift out of step
 // with the live one for `behaviour`, which is why it is gone.

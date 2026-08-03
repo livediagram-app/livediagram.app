@@ -101,40 +101,6 @@ export function PortalMenu({ anchor, placement = 'below', onClose, children }: P
   );
 }
 
-type MenuItemProps = {
-  icon: ReactNode;
-  label: string;
-  onClick: () => void;
-  danger?: boolean;
-  disabled?: boolean;
-};
-
-export function MenuItem({ icon, label, onClick, danger, disabled }: MenuItemProps) {
-  const base =
-    'flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs font-medium transition';
-  const tone = disabled
-    ? 'cursor-not-allowed text-slate-300 dark:text-slate-400'
-    : danger
-      ? 'cursor-pointer text-rose-700 hover:bg-rose-50 dark:text-rose-300 dark:hover:bg-rose-500/15'
-      : 'cursor-pointer text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800';
-  return (
-    <button type="button" onClick={onClick} disabled={disabled} className={`${base} ${tone}`}>
-      <span
-        className={
-          disabled
-            ? 'text-slate-300 dark:text-slate-400'
-            : danger
-              ? 'text-rose-600 dark:text-rose-300'
-              : 'text-slate-400 dark:text-slate-400'
-        }
-      >
-        {icon}
-      </span>
-      <span>{label}</span>
-    </button>
-  );
-}
-
 // A collapsible category inside a menu: an uppercase header (icon + chevron)
 // that toggles its content. Controlled by the parent so only one section is
 // open at a time. The border-t (with `first:border-t-0`) butts the header up

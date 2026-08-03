@@ -144,7 +144,7 @@ export function MarkerTiles({
 // Grid wrapper for MenuTiles. Literal column classes so Tailwind keeps them.
 
 // Opacity slider row inside the context menu. Doesn't close the menu on
-// interaction (it isn't a MenuItem): dragging fires pointer events inside
+// interaction (it isn't an action row): dragging fires pointer events inside
 // the menu, so the ContextMenu's outside-click guard keeps it open.
 export function OpacityRow({
   value,

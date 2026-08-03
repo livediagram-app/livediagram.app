@@ -5,10 +5,10 @@
 // vocabulary. No behaviour change.
 //
 // All icons share the same visual contract: 12x12, 16-unit viewBox,
-// stroke="currentColor", `aria-hidden`. The matching MenuItem in
-// PortalMenu sets the colour via Tailwind's text-* utilities so
-// each icon picks up the surrounding row's tone (default / danger
-// / disabled) without needing per-icon variants.
+// stroke="currentColor", `aria-hidden`. The row that mounts one sets the
+// colour via Tailwind's text-* utilities so each icon picks up the
+// surrounding tone (default / danger / disabled) without needing per-icon
+// variants.
 
 import type {
   ArrowFlow,

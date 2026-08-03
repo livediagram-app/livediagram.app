@@ -129,7 +129,7 @@ describe('PALETTE_CATEGORIES', () => {
 });
 
 describe('TOOL_GROUPS', () => {
-  it('has unique ids and non-empty labels (each renders as a PaletteSectionLabel heading)', () => {
+  it('has unique ids and non-empty labels (each renders as a group title)', () => {
     const ids = TOOL_GROUPS.map((g) => g.id);
     expect(new Set(ids).size).toBe(ids.length);
     for (const g of TOOL_GROUPS) expect(g.label.length, g.id).toBeGreaterThan(0);
