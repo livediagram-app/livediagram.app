@@ -114,9 +114,6 @@ export type TemplateKind =
   // geometry means something in the world, so its scale is captioned on
   // the canvas.
   | 'floor-plan';
-// "Show me around" onboarding sample (spec/69): a small scene whose
-// annotation markers teach the basics. Hidden from listings; reached
-// only via the welcome wizard's dedicated card.;
 
 export type TemplateDescriptor = {
   kind: TemplateKind;
@@ -127,10 +124,15 @@ export type TemplateDescriptor = {
   // more" toggle; it browses by category now (spec/09), so every template is
   // reachable and this flag decides nothing about what a user sees.
   extra?: boolean;
-  // True for templates that never appear in listings (the picker's
-  // browse grids + search, the MCP list_templates catalogue) but stay
-  // buildable via buildTemplate. Used by dedicated entry points like
-  // the welcome wizard's guided tour (spec/69).
+  // True for templates that never appear in listings (the picker's browse
+  // grids + search, the MCP list_templates catalogue) but stay buildable via
+  // buildTemplate, for a dedicated entry point that names the kind directly.
+  //
+  // NO template sets it today. Its one user was the spec/69 guided-tour
+  // sample, retired by spec/79's in-editor tour; the flag stays because the
+  // listing paths already filter on it, so the next such entry point is a
+  // one-word change rather than a new concept. `templates.test.ts` asserts
+  // the set is empty, so this stays honest.
   hidden?: boolean;
 };
 
@@ -484,9 +486,10 @@ const TEMPLATE_CATEGORY: Record<TemplateKind, TemplateCategory> = {
   mindmap: 'mindmaps',
   'mindmap-tree': 'mindmaps',
   'mindmap-bubble': 'mindmaps',
-  // Flowcharts: process + decision flows. Blank lives here too (it's shown as
-  // a separate quick-pick in the picker, never inside a category grid), as
-  // does the hidden guided tour (never listed, so the category is nominal).
+  // Flowcharts: process + decision flows. Blank lives here too: it is shown
+  // as a separate quick-pick in the picker, never inside a category grid, so
+  // its category is nominal. The map is a Record over TemplateKind, so every
+  // kind needs an entry whether or not a grid ever reads it.
   blank: 'flowcharts',
   flowchart: 'flowcharts',
   swimlane: 'flowcharts',

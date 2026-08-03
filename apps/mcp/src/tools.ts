@@ -126,8 +126,9 @@ export function registerTools(server: McpServer, env: Env): void {
       postTelemetry(env, 'Mcp', 'Used', 'ListTemplates');
       return textResult({
         categories: TEMPLATE_CATEGORIES,
-        // Hidden templates (spec/69's guided tour) are editor-onboarding
-        // artefacts, not scaffolds an AI caller should list or build from.
+        // A hidden template is an editor-onboarding artefact, not a scaffold
+        // an AI caller should list or build from. None ships today; spec/69's
+        // guided-tour sample was the last, retired by spec/79.
         templates: TEMPLATES.filter((t) => !t.hidden).map((t) => ({
           kind: t.kind,
           title: t.title,
