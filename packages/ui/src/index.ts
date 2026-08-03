@@ -13,6 +13,7 @@ export { TextInput, type TextInputProps } from './TextInput';
 export { Select, type SelectProps, type SelectVariant, type SelectSize } from './Select';
 export { Tooltip } from './Tooltip';
 export { EmptyState } from './EmptyState';
+export { BreadcrumbTrail, type BreadcrumbItem } from './Breadcrumb';
 export { JsonLd } from './JsonLd';
 export { POPOVER_VIEWPORT_MARGIN, clampIntoRange } from './popover';
 export { useMediaQuery, PREFERS_REDUCED_MOTION } from './useMediaQuery';
