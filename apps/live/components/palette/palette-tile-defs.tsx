@@ -1558,10 +1558,12 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     id: 'tools:annotation',
     blurb: 'A marker that holds a note',
     section: 'tools',
-    // Blocks, not Write: an annotation is a MARKER you drop on the diagram
-    // that happens to hold text, not a surface you write on like Text, a
-    // sticky or a Page. Grouping it with the writing surfaces implied you
-    // compose in it.
+    // Last in Write, and the odd one out in it: an annotation is a MARKER you
+    // drop on the diagram that happens to hold text, not a surface you write
+    // on like Text, a sticky or a Page. It briefly sat in its own Blocks group
+    // for exactly that reason, but spec/110 emptied Blocks out and deleted it,
+    // so Write is where it lives — ordered last, after the three surfaces,
+    // which is the distinction the row order now carries.
     toolGroup: 'write',
     label: 'Add annotation',
     description: 'Annotation. A note marker: hover to read it, click to edit.',

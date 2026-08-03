@@ -1,0 +1,60 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Write Elements',
+  description:
+    'The palette Write category holds the wordy elements: a Page for prose, a Text label, a Sticky note, and an Annotation marker. Which one to reach for depends on how much you have to say.',
+  path: '/help/palette/write/',
+});
+
+<ArticleLayout
+  title="Write Elements"
+  description="The four elements whose content is words rather than a picture."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  subArticles={getSubArticles('write')}
+>
+
+The **Write** category (under **Common** in the palette's category picker) holds the elements whose content is _words_. Everywhere else in the palette you place something with a shape and then maybe label it; here the text is the point and the shape is just what carries it.
+
+They differ mostly in **how much you have to say**. A Page holds paragraphs, a Sticky note holds a thought, a Text label holds a line, and an Annotation holds a remark you have to hover to read. The Page sits first because it is the largest writing surface on the canvas.
+
+## What the category contains
+
+- A **Page** is a paper-shaped surface for prose, and the largest writing surface on the canvas. Double-click to write. Reach for it when the diagram needs a paragraph rather than a caption: a brief beside the boxes, a summary at the top of the board. See [Pages](/help/palette/tools/pages/).
+- A **Text** element is a free-standing label with no box around it: just words on the canvas. `T` drops one. Use it for titles, column headings, and anything that labels a _region_ rather than an element, since a shape's own label is the better way to name a shape. See [Text and Fonts](/help/canvas/text-and-fonts/).
+- A **Sticky note** is a coloured note card, the one that reads as somebody's contribution rather than the author's structure. `N` drops one. It is what retros, brainstorms and dot votes are made of, and it is what an [idea box](/help/palette/collaborate/) scatters into. See [Sticky Notes](/help/palette/tools/sticky-notes/).
+- An **Annotation** is a small marker you drop on the diagram that holds a note. Hover it to read, click to edit. It is the one that keeps its text _out_ of the way: the remark lives inside the marker instead of taking up canvas. See [Annotations](/help/canvas/annotations/).
+
+## Picking between them
+
+Three of the four are surfaces you compose on; the annotation is not. That is the line worth knowing.
+
+A Page, a Text label and a Sticky note all put their words **on the board**, where everyone reads them without doing anything. An Annotation puts a **marker** on the board and hides its words until somebody hovers it. So the question is whether the text is part of what the diagram says, or a side remark about it.
+
+If the diagram is incomplete without the words, use one of the three surfaces. If the words are commentary — a caveat, a reminder, a "we should revisit this" — an annotation says exactly that by being small.
+
+<Note>
+  There is a fourth way to attach words, and it is not in this category: any element can carry a
+  [note](/help/canvas/notes/) or a [comment](/help/collaboration/comments/) of its own. Those belong
+  to the element they are on and move with it, which an annotation dropped nearby does not.
+</Note>
+
+## Why they are rows, not tiles
+
+Most catalogue categories show a grid of pictures, because the picture is the explanation. These four are all rectangles with text in them, so at tile size they look nearly alike. Write renders as rows with a one-line description each, because "a paper-shaped page for prose" against "a marker that holds a note" is what you are actually choosing between, and no icon says that.
+
+## Working with them
+
+Each behaves like any other element once placed: select, restyle, group, lock and move it freely, and each can carry a [link](/help/canvas/links/) like anything else on the canvas. The one exception is [rotation](/help/canvas/rotation/), which the three surfaces allow and the annotation marker deliberately does not — a tilted note marker reads as a mistake rather than a choice.
+
+Text styling is shared with the rest of the canvas rather than special to this category: font, size, weight and alignment all come from the same controls that style a shape's label. See [Text and Fonts](/help/canvas/text-and-fonts/).
+
+<Tip>
+  `T` and `N` drop a text label and a sticky note without opening the palette at all, which is the
+  fast way through a brainstorm: type, `N`, type, `N`.
+</Tip>
+
+</ArticleLayout>
