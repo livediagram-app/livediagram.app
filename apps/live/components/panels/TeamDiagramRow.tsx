@@ -11,7 +11,7 @@ import {
 import { DiagramThumbnail } from '@/components/panels/DiagramThumbnail';
 import { MenuTile, MenuTileGrid, PortalMenu } from '@/components/primitives/PortalMenu';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
-import { relativeSince } from '@/lib/relative-time';
+import { RelativeTimeChip } from '@/components/primitives/RelativeTimeChip';
 
 // One team-library diagram row (spec/35), lifted out of
 // TeamSharedDiagrams: thumbnail + name link (or the inline rename), the
@@ -63,9 +63,7 @@ export function TeamDiagramRow({
           </Link>
         )}
       </span>
-      <span className="text-[11px] uppercase tracking-wider text-slate-400 dark:text-slate-500">
-        {relativeSince(diagram.savedAt)}
-      </span>
+      <RelativeTimeChip at={diagram.savedAt} />
       {renaming ? (
         <span />
       ) : (

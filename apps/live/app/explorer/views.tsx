@@ -11,7 +11,7 @@ import Link from 'next/link';
 import type { ExplorerViewProps } from '@/app/explorer/explorer-view-props';
 import { type ReactNode } from 'react';
 import type { DiagramListItem, SharedWithItem } from '@/lib/api-client';
-import { relativeSince, useRelativeTimeTick } from '@/lib/relative-time';
+import { useRelativeTimeTick } from '@/lib/relative-time';
 import { EmptyPane } from './ExplorerEmptyState';
 import { DiagramRow } from './explorer-route-diagram-row';
 import { FolderRow } from './folder-row';
@@ -23,6 +23,7 @@ import {
   SparkleIcon,
   UnsortedIcon,
 } from './icons';
+import { RelativeTimeChip } from '@/components/primitives/RelativeTimeChip';
 
 // The pane header lives in its own file now; re-exported so callers keep
 // importing it from the views barrel.
@@ -293,9 +294,7 @@ export function SharedList({
             <span className="inline-flex w-fit items-center rounded-full bg-emerald-50 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/30">
               {s.role === 'edit' ? 'Edit' : 'View'}
             </span>
-            <span className="text-[11px] uppercase tracking-wider text-slate-400 dark:text-slate-500">
-              {relativeSince(s.savedAt)}
-            </span>
+            <RelativeTimeChip at={s.savedAt} />
             <button
               type="button"
               onClick={() => onDismiss(s.id)}

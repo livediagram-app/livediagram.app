@@ -1,10 +1,11 @@
 import { useRef, useState } from 'react';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
 import type { Folder } from '@/lib/api-client';
-import { relativeSince, useRelativeTimeTick } from '@/lib/relative-time';
+import { useRelativeTimeTick } from '@/lib/relative-time';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
 import { MenuTile, MenuTileGrid, PortalMenu } from '@/components/primitives/PortalMenu';
 import { FolderIcon, MenuFolderIcon, MenuPencilIcon, MenuTrashIcon, PlusIcon } from './icons';
+import { RelativeTimeChip } from '@/components/primitives/RelativeTimeChip';
 
 // The Explorer's folder row (spec/15) + its shared actions menu, lifted
 // out of views.tsx: the list row (icon, inline rename, child-count
@@ -91,9 +92,7 @@ export function FolderRow({
         </button>
       )}
       <span className="hidden sm:block" />
-      <span className="text-[11px] uppercase tracking-wider text-slate-400 dark:text-slate-500">
-        {relativeSince(folder.updatedAt)}
-      </span>
+      <RelativeTimeChip at={folder.updatedAt} />
       {renaming ? (
         <span />
       ) : (

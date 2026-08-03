@@ -10,7 +10,7 @@ import Link from 'next/link';
 import type { CardViewProps, DiagramEntryProps } from '@/app/explorer/explorer-view-props';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
 import { useRef, useState } from 'react';
-import { relativeSince, useRelativeTimeTick } from '@/lib/relative-time';
+import { useRelativeTimeTick } from '@/lib/relative-time';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
 import { DiagramThumbnail } from '@/components/panels/DiagramThumbnail';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
@@ -24,6 +24,7 @@ import {
 } from './diagram-row-shared';
 import { cardShell, FolderCard, previewArea, SyntheticFolderCard } from './explorer-folder-cards';
 import { FolderPreview } from './FolderPreview';
+import { RelativeTimeChip } from '@/components/primitives/RelativeTimeChip';
 
 export function CardView({
   folders,
@@ -248,9 +249,7 @@ function DiagramCard({
           {showVisibilityBadge ? <VisibilityBadge diagram={diagram} /> : null}
           {favourite ? <FavouriteMarker /> : null}
           {folderChip ? <FolderChip label={folderChip.label} onOpen={folderChip.onOpen} /> : null}
-          <span className="text-[11px] uppercase tracking-wider text-slate-400 dark:text-slate-500">
-            {relativeSince(diagram.savedAt)}
-          </span>
+          <RelativeTimeChip at={diagram.savedAt} />
         </div>
         {ownerLabel ? (
           <span className="truncate text-xs text-slate-500 dark:text-slate-400">{ownerLabel}</span>

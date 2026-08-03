@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
 import { useRef, useState } from 'react';
-import { relativeSince, useRelativeTimeTick } from '@/lib/relative-time';
+import { useRelativeTimeTick } from '@/lib/relative-time';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
 import { DiagramThumbnail } from '@/components/panels/DiagramThumbnail';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
@@ -15,6 +15,7 @@ import {
   hrefForDiagram,
   VisibilityBadge,
 } from './diagram-row-shared';
+import { RelativeTimeChip } from '@/components/primitives/RelativeTimeChip';
 
 // One diagram row in the full-page /explorer list (open / rename / move /
 // duplicate / delete + the drag source). Split out of views.tsx; rendered
@@ -108,9 +109,7 @@ export function DiagramRow({
       <span className="hidden sm:block">
         <VisibilityBadge diagram={diagram} />
       </span>
-      <span className="text-[11px] uppercase tracking-wider text-slate-400 dark:text-slate-500">
-        {relativeSince(diagram.savedAt)}
-      </span>
+      <RelativeTimeChip at={diagram.savedAt} />
       {renaming ? (
         <span />
       ) : (
