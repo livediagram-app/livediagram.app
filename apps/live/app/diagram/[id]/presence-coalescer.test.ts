@@ -151,6 +151,53 @@ describe('createPresenceCoalescer', () => {
     expect(trail?.points.map((p) => p.x)).toEqual([9]);
   });
 
+  it('carries the sender\u2019s pen through to the committed trail (spec/111)', () => {
+    // "Everyone sees your pen": the look travels with the samples. This is
+    // the whole feature — without it every peer renders DEFAULT_LASER_CONFIG
+    // and a presenter's bold amber comet is a thin default line elsewhere.
+    const config = { width: 'bold', colour: 'amber' } as unknown as LaserTrail['config'];
+    const h = setup();
+    h.presence.laser('peer', { tabId: 't1', point: point(1), config });
+    runFrame();
+    expect(h.lasers().get('peer')?.config).toBe(config);
+  });
+
+  it('keeps the last pen when a later packet carries none', () => {
+    // Receivers keep the LATEST look per participant, across frames, not just
+    // within one: the sender only re-sends a look when it changes.
+    const config = { width: 'bold' } as unknown as LaserTrail['config'];
+    const h = setup();
+    h.presence.laser('peer', { tabId: 't1', point: point(1), config });
+    runFrame();
+    h.presence.laser('peer', { tabId: 't1', point: point(2) });
+    runFrame();
+    expect(h.lasers().get('peer')?.config).toBe(config);
+  });
+
+  it('takes a newer pen over the one it was holding', () => {
+    const first = { width: 'fine' } as unknown as LaserTrail['config'];
+    const second = { width: 'bold' } as unknown as LaserTrail['config'];
+    const h = setup();
+    h.presence.laser('peer', { tabId: 't1', point: point(1), config: first });
+    runFrame();
+    h.presence.laser('peer', { tabId: 't1', point: point(2), config: second });
+    runFrame();
+    expect(h.lasers().get('peer')?.config).toBe(second);
+  });
+
+  it('keeps the pen across a tab switch, because it belongs to the person', () => {
+    const config = { width: 'bold' } as unknown as LaserTrail['config'];
+    const h = setup();
+    h.presence.laser('peer', { tabId: 't1', point: point(1), config });
+    runFrame();
+    h.presence.laser('peer', { tabId: 't2', point: point(9) });
+    runFrame();
+    const trail = h.lasers().get('peer');
+    // Points reset (no line across the gap), pen does not.
+    expect(trail?.points.map((p) => p.x)).toEqual([9]);
+    expect(trail?.config).toBe(config);
+  });
+
   it('cancels a pending frame so a flush cannot land after teardown', () => {
     const h = setup();
     h.presence.cursor('peer', { tabId: 't1', x: 1, y: 0 });

@@ -90,14 +90,21 @@ export function createPresenceCoalescer({
             existing && existing.tabId === incoming.tabId
               ? trimLaserBuffer([...existing.points, ...incoming.points])
               : incoming.points;
-          // NOTE: `config` is buffered above but deliberately not carried
-          // here, and this is what the code did before it moved: the
-          // committed trail is { tabId, points } only. LaserOverlay then
-          // falls back to DEFAULT_LASER_CONFIG for every peer, so the
-          // sender's pen (spec/111) never actually reaches them. Left as
-          // found — fixing it changes what people see, which is not this
-          // refactor's job.
-          next.set(id, { tabId: incoming.tabId, points });
+          // spec/111, "Everyone sees your pen": receivers keep the LATEST
+          // look per participant, so a presenter's bold amber comet looks
+          // the same on every screen. The pen follows the PERSON, not the
+          // tab, so a tab switch resets the points above and leaves it be;
+          // a packet that carries no look keeps whatever we already had.
+          //
+          // This commit used to drop `config` on the floor. The op carried
+          // it, the buffer parsed it, and then the trail that reached
+          // LaserOverlay had only { tabId, points } — so every peer fell
+          // back to DEFAULT_LASER_CONFIG and the feature was inert.
+          next.set(id, {
+            tabId: incoming.tabId,
+            points,
+            config: incoming.config ?? existing?.config,
+          });
         }
         return next;
       });
