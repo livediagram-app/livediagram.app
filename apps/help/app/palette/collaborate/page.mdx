@@ -5,7 +5,7 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Collaborate elements',
   description:
-    'Seven elements that collect what the whole room thinks: comment pins, estimate cards, temperature checks, idea boxes, agendas, decision records and roll calls.',
+    'Seven elements that collect what the whole room thinks: comment panels, estimate cards, temperature checks, idea boxes, agendas, decision records and roll calls.',
   path: '/help/palette/collaborate/',
 });
 
@@ -24,13 +24,27 @@ the top, since it is the one you reach for outside a facilitated session; the re
 collapsible rows, **Ask the room** (the three estimate scales, the temperature check and the
 idea box) and **Keep a record** (agenda, decision record, roll call).
 
-## Comment pin
+## Comment panel
 
-A **Comment pin** is a marker you drop anywhere on the board that opens a comment thread. Click it to read the thread or add a reply; drag it wherever the remark belongs.
+A comment panel is a card on the board that shows a whole comment thread: the count in its
+header, the comments themselves, a composer, and resolve or reopen. You read it where it sits,
+without opening anything.
 
-You can already comment on any element by selecting it and using its comment badge. A pin is for the times the remark is about a **place** rather than a shape — an empty patch of canvas, the gap between two clusters, the spot where something should go. Without one you would have to hang the note on whichever shape happened to be nearest, which quietly changes what it says.
+Add one from the palette to put a remark on a **place** — an empty patch of canvas, the gap between
+two clusters, the spot where something should go. Or select an element and choose **Collaborate ›
+Comment Panel**, which drops a panel to its right and joins the two with an ordinary arrow. Nothing
+bespoke: the panel is _about_ that element, and an arrow is what "about" already means on this
+canvas, so the pair moves, exports and behaves like anything else you have drawn.
 
-It draws as a small dot with a short line coming out of it: the dot sits on the exact spot so it never covers the thing you are talking about. A thread with several replies shows the number at the end of the line, and a resolved one goes faint with a tick rather than disappearing, so the reason for the conversation stays on the board. It is the same thread, composer and resolve button that element comments use, so anything you know about one works on the other.
+You can already comment on any element by selecting it and using its comment badge. That popover is
+**one reader's transient view**: it opens for you and closes again. A panel is the same thread,
+composer and resolve button, left out on the board — so it is in the export and in everyone else's
+session, which is what makes a remark part of the diagram rather than a note somebody left.
+
+It does not fold away. A collapse-to-summary was built and then dropped, because a panel you
+deliberately put on the board is there to be read, and folding it hides the whole point of it behind
+another click. If you do not want a thread on display, the element's own comment badge is still
+there.
 
 ## Estimate card
 

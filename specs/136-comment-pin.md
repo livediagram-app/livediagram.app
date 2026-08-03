@@ -1,7 +1,12 @@
-# 136 — The Comment Pin
+# 136 — The Comment Panel
 
-A **Collaborate** element: a marker you drop anywhere on the board that opens a
-comment thread.
+A **Collaborate** element: a card on the board carrying a whole comment thread —
+its count, the comments, a composer, and resolve / reopen — read where it sits
+rather than opened.
+
+(Filed as 136-comment-pin.md, and the shape kind is still `comment-pin`, from
+the marker this started as. "Why not the pin" below has the reason it changed;
+the id stays so saved diagrams keep loading.)
 
 ## Why an element at all
 
@@ -11,7 +16,7 @@ and persistence all run against that field.
 
 What was missing was somewhere to attach a remark that is about a **place**
 rather than about a shape: an empty patch of canvas, the gap between two
-clusters, the spot where something should go. Without a pin, that remark has to
+clusters, the spot where something should go. Without one, that remark has to
 be hung on whichever shape happens to be nearest, which changes what it means.
 
 ## It reuses the existing wiring, entirely

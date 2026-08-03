@@ -867,9 +867,9 @@ export const articles: Article[] = [
     slug: 'collaborate',
     title: 'Collaborate elements',
     description:
-      'Comment pins, estimate cards, temperature checks, idea boxes, agendas, decisions and roll calls.',
+      'Comment panels, estimate cards, temperature checks, idea boxes, agendas, decisions and roll calls.',
     keywords:
-      'collaborate collaboration comment pin pinned remark note thread reply discuss feedback annotate sticky question estimate estimation planning poker story points fibonacci tshirt t-shirt temperature check fist of five pulse mood vote idea box anonymous brainstorm brainwriting retro retrospective agenda run of show timebox segments decision record adr architecture decision roll call attendance register present room team workshop facilitate facilitation',
+      'collaborate collaboration comment panel card pin pinned remark note thread reply discuss feedback annotate sticky question estimate estimation planning poker story points fibonacci tshirt t-shirt temperature check fist of five pulse mood vote idea box anonymous brainstorm brainwriting retro retrospective agenda run of show timebox segments decision record adr architecture decision roll call attendance register present room team workshop facilitate facilitation',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Elements',

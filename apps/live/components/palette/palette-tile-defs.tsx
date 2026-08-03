@@ -1113,10 +1113,10 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     // Comment pin (spec/136): a remark about a PLACE rather than a shape.
     id: 'collab:comment-pin',
-    blurb: 'Pin a comment thread anywhere on the board',
+    blurb: 'A comment thread as a card on the board',
     caption: 'Comment',
     section: 'collaborate',
-    label: 'Add comment pin',
+    label: 'Add comment panel',
     description:
       'A marker that carries a comment thread. Drop it on any spot and click it to talk about that spot, rather than attaching the remark to whichever shape happens to be nearest.',
     filled: true,
