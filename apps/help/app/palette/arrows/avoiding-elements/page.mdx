@@ -1,0 +1,57 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Arrows That Curve Around Things',
+  description:
+    'A new arrow whose straight line would cut through another element bows around it instead. It happens once, when you finish drawing, and leaves an ordinary curved arrow you can reshape or straighten.',
+  path: '/help/palette/arrows/avoiding-elements/',
+});
+
+<ArticleLayout
+  title="Arrows That Curve Around Things"
+  description="Why a new arrow sometimes lands curved, and how to straighten it."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  parentArticle={{ title: 'Arrows', slug: 'arrows' }}
+  subArticles={getSubArticles('avoiding-elements')}
+>
+
+Draw an arrow between two boxes with a third box in the way, and the arrow does not land as a straight line through it. It arrives with a gentle bow around the obstacle instead.
+
+This is deliberate, and it is the answer to "why is my arrow curved when I drew a straight one?"
+
+## When it happens
+
+Only at the moment you **finish drawing a new arrow**. The editor looks at the straight line it is about to leave behind and asks whether that line would read badly:
+
+- **It would cut through something.** The line passes through another element's box, or close enough to graze it. The arrow bows around, on whichever side needs the smaller bend.
+- **It would run flush along its own boxes.** Two stacked elements joined along one edge give a line that hugs their sides and is hard to see. The arrow bows outward, away from them.
+
+If neither side can be cleared without an enormous bend, the arrow stays straight: a wild curve reads worse than the crossing it was avoiding.
+
+## When it does not
+
+It is deliberately a one-shot at draw time, not a rule the diagram lives under:
+
+- **Arrows are never re-routed later.** Move a box onto an existing arrow and the arrow stays exactly as it is. Nothing quietly reshapes work you have already arranged.
+- **Repositioning an endpoint never triggers it.** Only a brand-new arrow's head placement does.
+- **Anything you chose wins.** If the arrow already has a style, a curve, or bend points, that is left alone.
+- **Imported and generated diagrams keep their own geometry** — [Mermaid and Excalidraw imports](/help/tabs/import-tabs/), templates, AI authoring and auto layout all decide their own routing.
+
+## Changing it
+
+What you get is an ordinary **curved** arrow: the same thing you would have made by dragging the curve handle yourself. Nothing about it is special afterwards, so every normal control applies.
+
+- Drag its **curve handle** to bow it more, less, or the other way. See [Curve and Elbow Handles](/help/palette/arrows/curve-and-elbow-handles/).
+- Set it back to **Straight** from the arrow's style controls, and it stays straight. See [Arrow Styles](/help/palette/arrows/arrow-styles/).
+- **Undo** removes the whole arrow, not just the bow. The curve is part of drawing the arrow, so one `Ctrl`/`Cmd` + `Z` takes you back to before you drew it rather than leaving a straight arrow through the obstacle behind.
+
+<Tip>
+  If you want a straight line through an element on purpose — a cross-section, a route marker — draw
+  the arrow and then set its style to Straight. The avoidance only ever runs once, so it will not
+  come back and bend it again.
+</Tip>
+
+</ArticleLayout>

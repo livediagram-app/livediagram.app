@@ -1518,6 +1518,16 @@ export const articles: Article[] = [
     parentSlug: 'arrows',
   },
   {
+    slug: 'avoiding-elements',
+    title: 'Arrows That Curve Around Things',
+    description: 'Why a new arrow lands curved when a straight one would cut through something.',
+    keywords:
+      'avoid avoidance collision obstacle around through crossing cut bow bend curve automatic automatically why curved detour clearance route routing straighten reroute',
+    category: 'Palette',
+    categorySlug: 'palette/arrows',
+    parentSlug: 'arrows',
+  },
+  {
     slug: 'arrow-to-arrow',
     title: 'Connecting Arrows to Arrows',
     description: 'Snap an arrow endpoint onto another arrow for sequence diagrams.',
