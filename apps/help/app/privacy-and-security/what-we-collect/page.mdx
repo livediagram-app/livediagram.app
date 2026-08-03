@@ -21,7 +21,9 @@ When telemetry is enabled, the editor records small product events made of just 
 - **No content.** They never include a diagram name, tab name, participant name, element text, share code, or diagram id.
 - **Only a fixed vocabulary.** The type is always a preset value from a closed list, such as a shape kind or a share role, never anything you typed.
 
-Because the server only accepts values from that fixed vocabulary, the data can only ever describe known, safe actions.
+The server checks this as well. It throws away any event whose category or action is not on its list, and it will only store a type that is a short token — at most 40 characters of letters, digits, spaces and simple punctuation — so anything the length of a note, or carrying ordinary punctuation, is refused before it is stored.
+
+That second check is a backstop rather than the main protection. The protection is that the editor only ever sends a value from a fixed list in the first place: where a value could come from something you named, it is mapped to a fixed token before it is sent. A theme you built and named yourself is reported as simply "Custom", and your name for it never leaves your browser.
 
 The same rules apply to error tracking. When something breaks, the event records only a generic token: an HTTP status like "Http500" for a failed request, or a fixed kind like "Uncaught" for a browser-side exception. Never an error message, stack trace, URL, or anything about what you were working on. These show up on the dashboard's Exceptions view like everything else.
 

@@ -23,7 +23,13 @@ type TelemetryEvent = {
 
 Examples: `{category:'Diagram', action:'Created'}`, `{category:'Diagram', action:'Shared', type:'Edit'}`, `{category:'Diagram', action:'Joined', type:'Edit'}`, `{category:'Element', action:'Added', type:'Square'}`.
 
-`category` and `action` validate against closed enums. `type` is a bounded set of app-defined values (shape kinds, share roles `Edit`/`View`, export formats, template ids, theme names) — all presets, never UGC. The ingest endpoint rejects values outside the allowed sets, so the public dashboard can only ever show known, safe strings.
+`category` and `action` validate against closed enums: the ingest endpoint drops any event whose category or action is not in `TELEMETRY_CATEGORIES` / `TELEMETRY_ACTIONS`.
+
+`type` is **not** an enum, and the guarantee on it is a different, weaker one worth stating plainly. Every caller passes an app-defined preset (a shape kind, a share role `Edit`/`View`, an export format, a template id, a theme name) — that is the rule, and it is what keeps UGC out. The endpoint cannot check membership of a set, because there isn't one: a new shape, template or theme would otherwise mean editing `packages/api-schema` every time. What it enforces instead is a **shape bound**, `TELEMETRY_TYPE_PATTERN` (`/^[A-Za-z0-9 ._-]{1,40}$/`): a short token of safe characters, which rejects anything that reads as free text and caps what a misusing caller could get onto the public dashboard.
+
+So the safety property is: callers only ever send presets, and the pattern is defence-in-depth behind that, not a substitute for it. A short alphanumeric string that happens to be user content would pass the pattern, which is precisely why the calling rule is the thing that matters.
+
+In practice a `type` is either a literal or derived from a closed vocabulary — an element kind through `titleCaseType`, an export format through a lookup table, a boolean through a ternary of two fixed strings. The case that proves the rule is the theme name: a **custom** theme is named by the user, so `themeTelemetryLabel` maps every custom id to the literal `'Custom'` and only ever emits the built-in themes by name. That is the shape any new `type` source should take — map user-owned values onto a fixed token before they reach `track`, rather than relying on the pattern to catch them.
 
 ## Storage (existing D1)
 
