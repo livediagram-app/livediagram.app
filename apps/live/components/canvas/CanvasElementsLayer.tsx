@@ -110,6 +110,8 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     // read-only surface needs no separate gate here.
     tabTimer,
     onSetSessionConfig,
+    commentSelfId,
+    commentPanelActions,
     onPauseTimer,
     onResumeTimer,
     onResetTimer,
@@ -368,6 +370,25 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             timerState={timerState}
             tabTimer={tabTimer ?? null}
             onSetSessionConfig={onSetSessionConfig}
+            commentSelfId={commentSelfId}
+            commentActions={
+              commentPanelActions
+                ? {
+                    // `commentOpen` lives on ShapeElement; only a comment
+                    // panel reads it, and every other kind passes undefined
+                    // here harmlessly.
+                    toggleOpen: () =>
+                      commentPanelActions.toggleOpen(
+                        element.id,
+                        (element as { commentOpen?: boolean }).commentOpen === false,
+                      ),
+                    add: (text) => commentPanelActions.add(element.id, text),
+                    remove: (id) => commentPanelActions.remove(element.id, id),
+                    resolve: () => commentPanelActions.resolve(element.id),
+                    unresolve: () => commentPanelActions.unresolve(element.id),
+                  }
+                : undefined
+            }
             timerControls={{
               pause: onPauseTimer,
               resume: onResumeTimer,

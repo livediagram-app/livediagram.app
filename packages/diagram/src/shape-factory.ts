@@ -61,7 +61,9 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   'reaction-pad': { width: 150, height: 110 },
   // Comment pin: a marker, deliberately small. It is a place on the board,
   // not a card — the thread it holds opens in the existing popover.
-  'comment-pin': { width: 40, height: 40 },
+  // Comment panel: a card, sized for a couple of comments. Collapsed it
+  // shrinks to its summary bar (spec/136).
+  'comment-pin': { width: 260, height: 190 },
   // Done check: taller than the other room-response panels because it stacks
   // TWO rosters (done and waiting) plus the all-done line. At 190 a two-person
   // room already overflowed by a few pixels and the body grew a scrollbar.
@@ -389,12 +391,12 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
   if (kind === 'comment-pin') {
     return {
       ...base,
-      // No label: the pin shows its comment COUNT, and a caption under a 40px
-      // marker would be bigger than the marker.
+      // No label: the panel's content IS the thread, and a caption above it
+      // would be a title for a conversation nobody has had yet.
       label: '',
-      // Square by default and kept that way — a stretched pin reads as a
-      // shape somebody drew rather than a marker.
-      aspectLocked: true,
+      // Opens on creation: a panel you add is a remark you are about to make,
+      // so it lands ready to type into rather than folded away.
+      commentOpen: true,
     };
   }
   if (kind === 'reaction-pad') {

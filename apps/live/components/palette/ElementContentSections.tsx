@@ -249,6 +249,20 @@ export function ElementContentSections({
                 onClose();
               }}
             />
+            {/* Comment PANEL (spec/136): the same thread, but on the board and
+                joined to this element by an arrow, so the remark stays where
+                the reader can see it instead of in a popover only the person
+                who opened it has. */}
+            {props.onAttachCommentPanel ? (
+              <MenuTile
+                icon={<CommentMenuIcon />}
+                label="Comment Panel"
+                onClick={() => {
+                  props.onAttachCommentPanel!(target);
+                  onClose();
+                }}
+              />
+            ) : null}
           </MenuTileGrid>
         </MenuAccordionSection>
       ) : null}

@@ -261,6 +261,11 @@ export type ShapeElement = {
   // meaningful on the 'entity' kind; bounded in validate.ts. The element's
   // `label` is the record's TITLE, so a record needs no extra name field.
   entityFields?: EntityField[];
+  // Comment panel (spec/136): whether the thread is expanded. Collapsed shows
+  // a one-line summary; open shows the comments. Persisted, so a panel left
+  // open stays open for everyone rather than being one viewer's local state —
+  // a facilitator opening the thread they want discussed is the point.
+  commentOpen?: boolean;
   // Reaction pad (spec/135): which burst this pad throws. Absent falls back to
   // REACTION_DEFAULT at render, so a pad from an older file still works.
   reaction?: Reaction;

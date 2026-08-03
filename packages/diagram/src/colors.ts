@@ -256,9 +256,6 @@ export const SELF_PAINTING_SHAPES = new Set<string>([
   // Behaviour elements (spec/104, /106): the ring / cover IS the element.
   'portal',
   'reveal',
-  // A comment pin (spec/136) draws its own bubble; a wrapper box behind it
-  // would frame the marker in a square.
-  'comment-pin',
 ]);
 
 export function supportsBorderControls(element: Element): boolean {

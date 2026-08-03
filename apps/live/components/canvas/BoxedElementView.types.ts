@@ -85,6 +85,17 @@ export type BoxedElementViewProps = {
   // than a button that starts one elsewhere (spec/105). Null when none is
   // running; absent on a surface with no session behind it.
   tabTimer?: import('@livediagram/diagram').TabTimer | null;
+  // Comment panel (spec/136): who I am, and the thread mutators for THIS
+  // element. All keyed by element id already, so the panel drives the same
+  // comment machinery the anchored popover does.
+  commentSelfId?: string;
+  commentActions?: {
+    toggleOpen?: () => void;
+    add?: (text: string) => void;
+    remove?: (commentId: string) => void;
+    resolve?: () => void;
+    unresolve?: () => void;
+  };
   // Per-element session settings from the element's own `…` menu (spec/105).
   onSetSessionConfig?: (
     element: import('@livediagram/diagram').ShapeElement,

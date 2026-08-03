@@ -248,6 +248,11 @@ export function EditorCanvasHost() {
     revealedIds,
     toggleRevealForMe,
     setSessionConfigFor,
+    addComment,
+    deleteComment,
+    resolveThread,
+    unresolveThread,
+    setCommentPanelOpen,
     pickerFor,
     collabElements,
     followMe,
@@ -437,6 +442,20 @@ export function EditorCanvasHost() {
       revealedIds={revealedIds}
       onToggleReveal={toggleRevealForMe}
       onSetSessionConfig={isReadOnly ? undefined : setSessionConfigFor}
+      // Comment panels (spec/136) drive the SAME thread machinery the anchored
+      // popover does — it is all keyed by element id already.
+      commentSelfId={selfParticipant.id}
+      commentPanelActions={
+        isReadOnly
+          ? undefined
+          : {
+              toggleOpen: setCommentPanelOpen,
+              add: (id, text) => addComment(id, text),
+              remove: deleteComment,
+              resolve: resolveThread,
+              unresolve: unresolveThread,
+            }
+      }
       onRollPicker={pickerFor}
       // Follow-me (spec/131): resolved to a NAME here, where presence lives,
       // so the pill doesn't have to look one up.

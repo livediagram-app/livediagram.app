@@ -39,7 +39,7 @@ import { RevealFace } from '@/components/canvas/RevealFace';
 import { PickerFace } from '@/components/canvas/PickerFace';
 import { PortalFace } from '@/components/canvas/PortalFace';
 import { ReactionPadFace } from '@/components/canvas/ReactionPadFace';
-import { CommentPinFace } from '@/components/canvas/CommentPinFace';
+import { CommentPanelFace } from '@/components/canvas/CommentPanelFace';
 import { ReactionBurst } from '@/components/canvas/ReactionBurst';
 import { CollabFaceRouter } from '@/components/canvas/collab/CollabFaceRouter';
 import { ChairView } from '@/components/canvas/collab/ChairView';
@@ -110,6 +110,8 @@ function BoxedElementViewImpl({
   tabTimer,
   timerControls,
   onSetSessionConfig,
+  commentSelfId,
+  commentActions,
   revealedForMe,
   onToggleReveal,
   onRollPicker,
@@ -544,10 +546,15 @@ function BoxedElementViewImpl({
         /* Comment pin (spec/136): opens the SAME thread popover an ordinary
            element's comment badge opens — the pin is just an element whose
            only job is to carry a commentThread. */
-        <CommentPinFace
+        <CommentPanelFace
           element={element}
-          fill={remoteBorderColor ?? element.fillColor ?? defaultStrokeColor(element)}
-          onOpenComments={onOpenComments ? () => onOpenComments(element.id) : undefined}
+          textColor={textColor}
+          selfId={commentSelfId ?? ''}
+          onToggleOpen={commentActions?.toggleOpen}
+          onAddComment={commentActions?.add}
+          onDeleteComment={commentActions?.remove}
+          onResolve={commentActions?.resolve}
+          onUnresolve={commentActions?.unresolve}
         />
       ) : element.type === 'shape' && element.shape === 'reaction-pad' && !isEditing ? (
         /* Reaction pad (spec/135): a pressable glyph. The burst it throws is

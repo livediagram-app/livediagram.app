@@ -110,6 +110,17 @@ export type CanvasProps = {
   // Per-element session settings from the element's own `…` menu (spec/105):
   // the timer's length, the vote's dots, the poll's question and answers.
   // Absent on a read-only surface, which renders the menu's trigger not at all.
+  // Comment panel (spec/136): who I am, plus the thread mutators, so a panel
+  // shows and edits its thread in place. All keyed by element id, which is how
+  // the anchored popover already drives them.
+  commentSelfId?: string;
+  commentPanelActions?: {
+    toggleOpen: (elementId: string, open: boolean) => void;
+    add: (elementId: string, text: string) => void;
+    remove: (elementId: string, commentId: string) => void;
+    resolve: (elementId: string) => void;
+    unresolve: (elementId: string) => void;
+  };
   onSetSessionConfig?: (
     element: import('@livediagram/diagram').ShapeElement,
     config: import('@livediagram/diagram').SessionButtonConfig,

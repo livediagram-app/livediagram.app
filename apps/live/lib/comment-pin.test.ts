@@ -21,13 +21,13 @@ describe('comment pin', () => {
     expect(SHAPE_KINDS.has('comment-pin')).toBe(true);
   });
 
-  it('starts square, aspect-locked and unlabelled', () => {
+  it('starts open and unlabelled', () => {
     const p = pin();
-    expect(p.width).toBe(p.height);
-    // A stretched pin reads as a shape somebody drew, not a marker.
-    expect(p.aspectLocked).toBe(true);
-    // The pin shows its count; a caption under a 40px marker would be bigger
-    // than the marker.
+    // A panel you add is a remark you are about to make, so it lands ready to
+    // type into rather than folded away.
+    expect(p.commentOpen).toBe(true);
+    // The thread IS the content; a caption above it would be a title for a
+    // conversation nobody has had yet.
     expect(p.label).toBe('');
   });
 
@@ -53,8 +53,10 @@ describe('comment pin', () => {
     expect(thread.comments).toHaveLength(1);
   });
 
-  it('paints itself, so no wrapper box frames the bubble', () => {
-    expect(SELF_PAINTING_SHAPES.has('comment-pin')).toBe(true);
+  it('takes the ordinary element box, because a panel is a card', () => {
+    // It was self-painting when it was a 40px bubble; a panel wants the fill,
+    // the border and the rounded corners every other card gets.
+    expect(SELF_PAINTING_SHAPES.has('comment-pin')).toBe(false);
   });
 
   it('is a remark, not a vote candidate', () => {

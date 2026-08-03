@@ -30,43 +30,41 @@ only job is to hold a `commentThread`, so:
 `CommentPinFace` is therefore a glyph and a click handler. If it ever grows a
 second way to store a comment, that is the bug.
 
-## The face
+## A panel, joined by an arrow
 
-An **anchor dot with a thin leader line coming out of it**, the way Miro marks
-a comment. Flat: no outline, no gradient, no shadow.
+The element is a **card on the board**, not a marker.
 
-The dot is the whole point. It sits on the exact spot being remarked on and
-stays small enough not to cover it — a marker big enough to hold a number hides
-the thing it is pointing at, which is the one job it must not do. Everything a
-bubble would have carried (the count, the author, the text) belongs in the
-thread that opens on click, not on the board.
+- **Collapsed** it is a one-line summary: the comment count, and the latest
+  comment with its author and age. The latest rather than the first — a
+  thread's current state is what a collapsed row should answer, and the opening
+  remark is often the least interesting line in it by the time there are five.
+- **Open** it is the thread: the comments, a composer, and resolve / reopen.
+- The summary bar is present in both states. It is the header when open and the
+  whole body when collapsed, so opening one does not move the line you were
+  reading.
+- `commentOpen` is **persisted, not local**. A facilitator opening the thread
+  they want discussed opens it for the room, which is the point of putting it
+  on the board.
 
-Two earlier versions were wrong in the same direction and are worth recording:
-a heavy outlined speech bubble, which read as clip-art sitting on the board
-rather than a marker attached to it, and then a filled circle with a tail,
-which was still a lump over the spot.
+**Attached with an ordinary arrow.** `Collaborate › Comment Panel` on any
+element drops a panel clear to its right and pins a normal arrow from the
+element to it. Not a bespoke link: the panel is _about_ the element, and
+"about" is what an arrow already says on this canvas. A second kind of
+connection would be a second thing to lay out, export and explain. It also
+means the pair behaves like anything else — move the element and the arrow
+follows; delete the arrow and the panel is a note that floated free.
 
-The line also earns its place mechanically: it gives a 40px element a grab area
-wider than its 9px dot.
+### Why not the pin
 
-- An **empty** pin is a bare dot and line. Zero comments is not a count, and
-  the emptiness is the invitation.
-- A thread with **more than one** comment puts the number at the far end of the
-  leader line, never inside the dot, where a numeral would be illegible at any
-  real zoom. A single comment shows no number: the pin already says there is
-  one.
-- A **resolved** thread shows a tick in place of the count, at 45% opacity. The
-  pin stays on the board rather than disappearing: comments come back on
-  unresolve, and a pin that vanished would take the reason for the conversation
-  with it.
+The first version was a standalone marker: a dot with a leader line that opened
+the ordinary anchored popover. It was replaced because a popover is **one
+reader's transient view**. A panel connected to what it is about sits on the
+board, in the export, and in everyone's session, which is what makes a remark
+part of the diagram rather than a note somebody left.
 
-**No tooltip.** A hover card over a 40px marker covers more board than the
-marker does, and what it would have said is either already on the pin or one
-click away. The accessible name still carries the count and the resolved state.
-
-The generic comment badge is **suppressed** on a pin (`commentCount` forced to
-0 in `BoxedElementView`): the pin is the badge, and two counts on one 40px
-marker is one too many.
+It also means the shape is no longer self-painting: as a 40px bubble it drew
+itself, and as a card it wants the fill, border and rounded corners every other
+card gets.
 
 ## Registration notes
 
