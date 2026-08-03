@@ -130,6 +130,47 @@ describe('OpenAPI manifest ↔ dispatch parity', () => {
   });
 });
 
+describe('rate-limited operations declare 429', () => {
+  // index.ts throttles before dispatch, so no manifest entry declares 429 and
+  // document.ts derives it. That derivation mirrors a rule living in another
+  // file, which is exactly the kind of pair that drifts: these pin the shape
+  // of the answer rather than a count that would need editing per route.
+  const doc = buildOpenApiDocument() as {
+    paths: Record<string, Record<string, { responses?: Record<string, unknown> }>>;
+  };
+  const responsesFor = (route: (typeof ROUTE_MANIFEST)[number]) =>
+    // Paths are keyed unprefixed; `/api` lives on the servers entry.
+    doc.paths[route.path]?.[route.method.toLowerCase()]?.responses ?? {};
+
+  it('covers every write except the telemetry ingest', () => {
+    const writes = ROUTE_MANIFEST.filter((r) => r.method !== 'GET');
+    expect(writes.length).toBeGreaterThan(40);
+    for (const route of writes) {
+      const expected = route.path !== '/events';
+      expect(Boolean(responsesFor(route)['429']), `${route.method} ${route.path}`).toBe(expected);
+    }
+  });
+
+  it('covers a read only when a token or an IP budget can reach it', () => {
+    // A read no token can reach is never throttled, and documenting a 429
+    // there would send an integrator writing retry logic for a status that
+    // cannot occur. `/unfurl` declares its own (per-IP, SSRF guard).
+    for (const route of ROUTE_MANIFEST.filter((r) => r.method === 'GET')) {
+      const expected =
+        route.tokenUsable === true ||
+        route.path === '/share/{code}' ||
+        route.statuses.includes(429);
+      expect(Boolean(responsesFor(route)['429']), `GET ${route.path}`).toBe(expected);
+    }
+  });
+
+  it('describes the 429 as retryable rather than as a bare error', () => {
+    const write = ROUTE_MANIFEST.find((r) => r.method === 'PUT')!;
+    const res = responsesFor(write)['429'] as { description: string };
+    expect(res.description).toMatch(/retry/i);
+  });
+});
+
 describe('OpenAPI schema references', () => {
   const known = new Set([...Object.keys(COMPONENT_SCHEMAS), 'Error']);
 

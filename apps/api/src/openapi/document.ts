@@ -70,9 +70,44 @@ function operationId(route: RouteSpec): string {
   return `${route.method.toLowerCase()}-${slug}`;
 }
 
+// 429 is applied in index.ts BEFORE dispatch, so no manifest entry declares it
+// and none ever would. The help centre's errors-and-rate-limits article already
+// tells integrators to expect it and back off; the machine-readable document
+// they point a client generator at said nothing, on any of the 77 operations.
+//
+// Derived here rather than added to each entry because the rule is global.
+// Writing it out 60-odd times by hand is the kind of copy that goes stale one
+// route at a time.
+//
+// Mirrors index.ts exactly, which means NOT every operation:
+//   - writes share a per-owner (or per-token) budget, except POST /events
+//     (spec/22: telemetry must not be throttled into silence);
+//   - GETs are throttled only under a token, so only the token-usable ones;
+//   - GET /share/{code} is throttled per IP, to blunt share-code guessing.
+// A read that no token can reach cannot 429, and saying otherwise would send
+// an integrator writing retry logic for a status it will never see.
+//
+// One more exemption lives in index.ts: the room-ticket mint (a 429 there
+// costs a member their whole realtime session). It needs no entry here because
+// the mint has no manifest entry at all, the realtime handshake being
+// documented in spec/11 rather than in the OpenAPI surface.
+const RATE_LIMIT_EXEMPT_WRITES = new Set(['post /events']);
+
+function isRateLimited(route: RouteSpec): boolean {
+  const id = `${route.method.toLowerCase()} ${route.path}`;
+  if (route.method === 'GET') return route.tokenUsable === true || route.path === '/share/{code}';
+  return !RATE_LIMIT_EXEMPT_WRITES.has(id);
+}
+
 function responsesFor(route: RouteSpec): Record<string, unknown> {
   const responses: Record<string, unknown> = {};
   const success = route.statuses.find((s) => s >= 200 && s < 300);
+  if (isRateLimited(route) && !route.statuses.includes(429)) {
+    responses['429'] = {
+      description: 'Rate limited. Back off and retry.',
+      content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } },
+    };
+  }
   for (const status of route.statuses) {
     const key = String(status);
     if (status === success) {
