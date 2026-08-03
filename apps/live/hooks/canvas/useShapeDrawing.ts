@@ -30,7 +30,6 @@ import {
   isBoxed,
   recogniseShape,
   simplifyPolyline,
-  type ComponentKind,
   type Element,
   type ShapeElement,
   type Tab,
@@ -46,6 +45,7 @@ import {
   NEW_ARROW_THEME_STROKE_FALLBACK,
 } from '@/lib/draw-commit';
 import type { CanvasTool } from '@/components/palette/CommandPalette';
+import { componentTelemetryType } from '@/lib/element-telemetry';
 
 // Marker yellow (spec/81): the highlighter's default colour regardless
 // of theme; the banner's colour popover (and the Colours category on a
@@ -53,17 +53,6 @@ import type { CanvasTool } from '@/components/palette/CommandPalette';
 export const HIGHLIGHTER_DEFAULT_COLOR = '#fde047';
 // Default marker width in px; the banner's strength popover overrides.
 export const HIGHLIGHTER_DEFAULT_WIDTH = 14;
-
-// Telemetry `type` per component kind (closed vocabulary, no user content).
-const COMPONENT_TELEMETRY: Record<ComponentKind, string> = {
-  banner: 'Banner',
-  hero: 'Hero',
-  header: 'Header',
-  callout: 'Callout',
-  stat: 'StatRow',
-  process: 'ProcessSteps',
-  avatar: 'Avatar',
-};
 
 type ShapeDrawingDeps = {
   editsBlocked: boolean;
@@ -206,7 +195,7 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
       const primary = placed.find((el) => isBoxed(el) && el.groupId) ?? placed[0];
       if (primary) setSelectedId(primary.id);
       setPendingDraw(null);
-      track('Element', 'Added', COMPONENT_TELEMETRY[intent.kind]);
+      track('Element', 'Added', componentTelemetryType(intent.kind));
       return;
     }
     const sized = buildDrawnBoxed(

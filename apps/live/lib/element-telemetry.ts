@@ -12,7 +12,7 @@
 // title-cased `Code-Block`), `TechIcon` for a brand mark, `Highlighter`
 // for the highlighter pen.
 
-import type { Element } from '@livediagram/diagram';
+import type { ComponentKind, Element } from '@livediagram/diagram';
 import { isTechIconId } from '@/lib/tech-icons';
 import { titleCaseType, track } from '@/lib/telemetry';
 
@@ -101,4 +101,24 @@ export function elementTelemetryType(element: Element): string {
       return SHAPE_TOKENS[element.shape] ?? titleCaseType(element.shape);
     }
   }
+}
+
+// The composites (spec/09) drop as a GROUP, not as one element, so they never
+// reach elementTelemetryType — their add is reported straight from the draw
+// path. The token lives here anyway, beside the element one, because it
+// answers the same question and belongs to the same vocabulary: keeping it in
+// the drawing hook is how `Video` came to be missing from the dashboard
+// catalogue, unseen by the test that walks this file.
+export const COMPONENT_TELEMETRY: Record<ComponentKind, string> = {
+  banner: 'Banner',
+  hero: 'Hero',
+  header: 'Header',
+  callout: 'Callout',
+  stat: 'StatRow',
+  process: 'ProcessSteps',
+  avatar: 'Avatar',
+};
+
+export function componentTelemetryType(kind: ComponentKind): string {
+  return COMPONENT_TELEMETRY[kind];
 }

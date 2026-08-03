@@ -5,7 +5,7 @@ import {
   PALETTE_TELEMETRY_TYPES,
   TELEMETRY_TYPE_PATTERN,
 } from '@livediagram/api-schema';
-import { elementTelemetryType } from './element-telemetry';
+import { COMPONENT_TELEMETRY, elementTelemetryType } from './element-telemetry';
 
 // Completeness guard for the palette census (spec/22, issue #30).
 //
@@ -125,6 +125,20 @@ describe('palette telemetry coverage', () => {
       )
       .filter((token) => !ALL_PALETTE_TELEMETRY_TYPES.includes(token));
     expect(missing).toEqual([]);
+  });
+
+  it('gives every composite a bucket, though none is an element', () => {
+    // The composites drop as a GROUP, so they never pass through
+    // elementTelemetryType and both checks above miss them. Their tokens are
+    // typed `Record<ComponentKind, string>`, so TypeScript makes you name one
+    // for a new composite — and then says nothing about whether the dashboard
+    // has anywhere to put it. That is the same shape as the `Video` hole: the
+    // compiler enforcing the half that is easy to enforce.
+    const missing = Object.entries(COMPONENT_TELEMETRY)
+      .filter(([, token]) => !ALL_PALETTE_TELEMETRY_TYPES.includes(token))
+      .map(([kind, token]) => `${kind} -> ${token}`);
+    expect(missing).toEqual([]);
+    expect(Object.keys(COMPONENT_TELEMETRY).length).toBeGreaterThan(5);
   });
 
   it('lists no token twice across the buckets', () => {
