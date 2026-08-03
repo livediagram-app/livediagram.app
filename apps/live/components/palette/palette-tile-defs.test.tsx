@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { PALETTE_CATEGORIES } from './palette-categories';
 import {
@@ -147,4 +148,72 @@ describe('TOOL_GROUPS', () => {
       .sort();
     expect(grouped).toEqual(all);
   });
+});
+
+// Behaviour and Collaborate render their tiles by FILTERING on `tileGroup`
+// (palette-create-tabs.tsx), one hard-coded filter per row. A tile whose group
+// matches no filter is drawn by nothing: it stays in the catalogue, keeps
+// working in search and in Favourites, and is simply absent from the palette
+// tab it belongs to. No error, no empty row, nothing to notice.
+//
+// The Tools tab has had `TOOL_GROUPS` and a partition test since it grew
+// sub-sections; these two grew rows later (spec/110) and kept their groups in
+// the JSX, so there was nothing to assert against.
+//
+// The filters are read from the render's own source rather than restated here.
+// A list typed into this file would agree with itself and prove nothing, which
+// is the failure mode SHAPE_KEYWORDS and the palette census both hit.
+function renderedGroups(component: string): { groups: Set<string>; allowsLoose: boolean } {
+  const src = readFileSync(new URL('./palette-create-tabs.tsx', import.meta.url), 'utf8');
+  const start = src.indexOf(`export function ${component}`);
+  // Bound to THIS component: a fixed-length slice ran past the Collaborate tab
+  // into the next one and collected its filters as if they were Collaborate's.
+  const after = src.indexOf('\nexport function ', start + 1);
+  const body = src.slice(start, after === -1 ? undefined : after);
+  return {
+    groups: new Set([...body.matchAll(/tileGroup === '([a-z-]+)'/g)].map((m) => m[1]!)),
+    allowsLoose: /filter\(\(t\) => !t\.tileGroup\)/.test(body),
+  };
+}
+
+// Behaviour is a toolGroup INSIDE the tools section; Collaborate is a section
+// of its own. The render reaches for each accordingly, so the test must too —
+// asking for a 'behaviour' section returns nothing and makes every row look
+// empty.
+const TABS = [
+  {
+    name: 'behaviour',
+    component: 'PaletteBehaviourTab',
+    tiles: () => tilesInToolGroup('behaviour'),
+  },
+  {
+    name: 'collaborate',
+    component: 'PaletteCollaborateTab',
+    tiles: () => tilesInSection('collaborate'),
+  },
+] as const;
+
+describe('grouped palette tabs draw every tile they hold', () => {
+  for (const tab of TABS) {
+    it(`${tab.name}: every tile lands in a row that exists`, () => {
+      const { groups, allowsLoose } = renderedGroups(tab.component);
+      // Guard against the source read silently finding nothing.
+      expect(groups.size, `${tab.name}: no tileGroup filters found`).toBeGreaterThan(1);
+
+      const undrawn = tab
+        .tiles()
+        .filter((t) => (t.tileGroup ? !groups.has(t.tileGroup) : !allowsLoose))
+        .map((t) => `${t.id} (${t.tileGroup ?? 'no group'})`);
+      expect(undrawn).toEqual([]);
+    });
+
+    it(`${tab.name}: every row it draws has tiles in it`, () => {
+      // The mirror: a filter for a group nothing carries renders a heading
+      // over an empty list.
+      const { groups } = renderedGroups(tab.component);
+      const tiles = tab.tiles();
+      const empty = [...groups].filter((g) => !tiles.some((t) => t.tileGroup === g));
+      expect(empty).toEqual([]);
+    });
+  }
 });
