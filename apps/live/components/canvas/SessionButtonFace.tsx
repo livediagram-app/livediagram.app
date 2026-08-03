@@ -13,7 +13,6 @@ import {
   type SessionButtonConfig,
   type SessionPlan,
 } from '@livediagram/diagram';
-import { Tooltip } from '@/components/primitives/Tooltip';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { PollIcon, TimerIcon, VoteIcon } from '@/components/palette/palette-icons';
 
@@ -122,59 +121,46 @@ export function SessionButtonFace({
   const layout =
     'flex h-full w-full flex-col items-center justify-center gap-2 rounded-[inherit] py-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]';
 
+  // No tooltips on any of these branches. The button is small and usually
+  // sits near the top of a board, so the hover card landed over the element
+  // toolbar directly above it and blocked the controls the user was reaching
+  // for. What each one said is either already on the button's own face (it
+  // states the tool and the setting) or in the element menu; the accessible
+  // names below still carry it.
   if (!plan) {
     return (
-      <Tooltip
-        block
-        className="h-full w-full"
-        title="Poll not set up"
-        description="Right-click the button and open Tools › Session to write a question and at least two answers."
+      <div
+        aria-disabled
+        aria-label="Poll not set up. Open Tools › Session to write a question and at least two answers."
+        className={`pointer-events-auto cursor-default opacity-60 ${layout}`}
       >
-        <div aria-disabled className={`pointer-events-auto cursor-default opacity-60 ${layout}`}>
-          {inner}
-        </div>
-      </Tooltip>
+        {inner}
+      </div>
     );
   }
   if (!onPress || !canStart) {
     return (
-      <Tooltip
-        block
-        className="h-full w-full"
-        title={text || `${derived.kicker} ${derived.action}`}
-        description={
+      <div
+        aria-disabled
+        aria-label={
           canStart
-            ? TOOL_BLURB[plan.tool]
-            : 'Only people with edit access can start this. You can still take part once it starts.'
+            ? `${text || `${derived.kicker} ${derived.action}`}. ${TOOL_BLURB[plan.tool]}`
+            : `${text || `${derived.kicker} ${derived.action}`}. Only people with edit access can start this.`
         }
+        className={`pointer-events-auto cursor-default opacity-60 ${layout}`}
       >
-        <div aria-disabled className={`pointer-events-auto cursor-default opacity-60 ${layout}`}>
-          {inner}
-        </div>
-      </Tooltip>
+        {inner}
+      </div>
     );
   }
   return (
-    <Tooltip
-      block
-      className="h-full w-full"
-      title={text || `${derived.kicker} ${derived.action}`}
-      description={
-        plan.tool === 'timer' && timerState !== 'none'
-          ? timerState === 'running'
-            ? 'Holds the countdown for everyone. Press again to continue it.'
-            : 'Continues the countdown from where it was paused.'
-          : TOOL_BLURB[plan.tool]
-      }
+    <button
+      type="button"
+      aria-label={`${text || `${derived.kicker} ${derived.action}`} — starts this for everyone`}
+      {...press}
+      className={`pointer-events-auto cursor-pointer rounded-[inherit] transition duration-100 active:scale-[0.96] active:brightness-95 sm:hover:brightness-[1.07] ${layout}`}
     >
-      <button
-        type="button"
-        aria-label={`${text || `${derived.kicker} ${derived.action}`} — starts this for everyone`}
-        {...press}
-        className={`pointer-events-auto cursor-pointer rounded-[inherit] transition duration-100 active:scale-[0.96] active:brightness-95 sm:hover:brightness-[1.07] ${layout}`}
-      >
-        {inner}
-      </button>
-    </Tooltip>
+      {inner}
+    </button>
   );
 }

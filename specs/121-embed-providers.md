@@ -76,3 +76,21 @@ The video's restricted picker (spec/114) now validates with `embedTargetFor`
 and names the five providers in its hint and its error. Everything else about
 it is unchanged: URL mode only, validated as you type, validated again at
 commit.
+
+## One group open at a time
+
+The collapsible tile group is now shared state across the palette
+(`palette-group-state.tsx`): opening one closes any other.
+
+It became necessary when Behaviour grew two groups (spec/105's session tools
+and spec/135's reactions) holding eight tiles between them. With both open the
+category ran well past the panel, so the reader was scrolling a list they had
+opened precisely to avoid scrolling.
+
+Lifted into a context rather than held per group, for the same reason the
+element menu lifted its own accordion state: a group cannot close a sibling it
+has no reference to, and threading "which one is open" through every tab body
+would put palette state in four components with no other use for it. The state
+sits above the tabs, so switching category and coming back finds the group as
+you left it. `usePaletteGroup` falls back to local state with no provider, so a
+group used outside the palette still opens.

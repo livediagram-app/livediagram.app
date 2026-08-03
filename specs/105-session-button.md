@@ -63,3 +63,14 @@ commit through `defaultSessionConfig`, which fills in a working default per
 tool. That matters most for the poll: `sessionPlan` refuses a poll with fewer
 than two answers, so dropping one with an empty config would place a button
 that cannot be pressed.
+
+## No tooltip on the button
+
+Removed. The button is small and usually sits near the top of a board, so its
+hover card landed over the **element toolbar directly above it** and blocked
+the controls the user was reaching for.
+
+Nothing was lost that the button does not already say: its face states the tool
+and the setting ("Start · 5 min timer"), and the fuller explanation is in the
+element menu. The accessible names still carry the tool, the setting and, on a
+disabled button, why it is disabled.

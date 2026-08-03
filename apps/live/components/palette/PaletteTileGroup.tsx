@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { ChevronIcon } from '@/components/primitives/ChevronIcon';
 import { PaletteToolRows } from './PaletteToolRows';
 import type { PaletteTileDef } from './palette-tile-defs';
 import type { PaletteTileActions } from './PaletteTileGrid';
+import { usePaletteGroup } from './palette-group-state';
 
 // A collapsible group of tiles inside a palette category: one row that opens
 // in place to reveal its members.
@@ -36,13 +36,19 @@ export function PaletteTileGroup({
   actions: PaletteTileActions;
   pendingDraw: PendingDraw | null | undefined;
 }) {
-  // Closed by default: Media's own two elements should be what you see first.
-  const [open, setOpen] = useState(false);
+  // Closed by default: a category's own elements should be what you see first.
+  //
+  // Open state is SHARED (palette-group-state): at most one group is open
+  // across the palette, so opening Reactions closes Session rather than
+  // stacking two lists into a panel you then have to scroll. Keyed on the
+  // title, which is already unique within a category and is what the reader
+  // is choosing between.
+  const [open, setOpen] = usePaletteGroup(title);
   return (
     <div className="flex flex-col">
       <button
         type="button"
-        onClick={() => setOpen((o) => !o)}
+        onClick={setOpen}
         aria-expanded={open}
         className={`flex w-full items-center gap-2.5 rounded-lg border px-2 py-1.5 text-left transition ${
           open

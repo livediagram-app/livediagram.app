@@ -5,6 +5,7 @@ import { PaletteTintProvider } from '@/components/palette/palette-controls';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { PaletteSettingsPopover } from '@/components/palette/PaletteSettingsPopover';
 import { PaletteTabBar } from '@/components/palette/PaletteTabBar';
+import { PaletteGroupProvider } from '@/components/palette/palette-group-state';
 import { PaletteDropdown } from '@/components/palette/PaletteDropdown';
 import type { PaletteTileActions } from '@/components/palette/PaletteTileGrid';
 import { getLineArtIconCatalog } from '@/lib/icons';
@@ -344,62 +345,67 @@ export function CommandPalette({
           fixture; Select is the default and Space pans regardless of the
           active tool, mirroring Figma. Favourites is the default category
           (the user's own go-to tiles, spec/78). */}
-      <PaletteTintProvider tint={themeTint}>
-        <PaletteTabBar
-          // No storageKey: the palette always opens on Favourites when a
-          // diagram loads (the user's go-to tiles, spec/78) rather than
-          // restoring the last-used category across diagrams. See spec/09.
-          defaultOpenId="favourites"
-          leading={
-            <PaletteDropdown
-              ariaLabel="Canvas tool"
-              dataTourId="canvas-tool"
-              value={canvasTool}
-              variant="flush"
-              autoHeight
-              // Tile grid (spec/108): nine tools in one column was a lot of
-              // travel for a flat choice between equal-weight modes.
-              grid
-              // The three bands the tools fall into (spec/108): what you do TO
-              // the diagram, what you do in front of an audience, and the
-              // whole-canvas views.
-              groupLabels={{ 0: 'Edit', 1: 'Present', 2: 'Preview' }}
-              // 'zen' is an action entry, not a tool: fire the toggle and
-              // keep the current tool selected (see canvas-tool-options).
-              onChange={(id) => {
-                if (id === 'zen') onToggleZen?.();
-                else onSetCanvasTool(id as CanvasTool);
-              }}
-              options={buildCanvasToolOptions({
-                canvasEmpty,
-                isMobile,
-                includeZen: !!onToggleZen,
-              })}
-            />
-          }
-          // Ordered by BAND (spec/110): Common, then Decorate, then Dynamic
-          // (the headings PaletteTabBar's CATEGORY_BANDS actually renders).
-          // It renders the dropdown straight from this order, so the array IS
-          // the grid layout.
-          tabs={paletteCategoryTabs({
-            pendingDraw,
-            tileActions,
-            addIcon,
-            iconQuery,
-            setIconQuery,
-            iconResults,
-            loading: !iconCatalogsLoaded,
-            addSticker,
-            stickerQuery,
-            setStickerQuery,
-            stickerResults,
-            addTechIcon,
-            techQuery,
-            setTechQuery,
-            techResults,
-          })}
-        />
-      </PaletteTintProvider>
+      {/* At most one collapsible tile group open across the palette
+          (palette-group-state): Behaviour's two groups hold eight tiles
+          between them and both open ran the category past the panel. */}
+      <PaletteGroupProvider>
+        <PaletteTintProvider tint={themeTint}>
+          <PaletteTabBar
+            // No storageKey: the palette always opens on Favourites when a
+            // diagram loads (the user's go-to tiles, spec/78) rather than
+            // restoring the last-used category across diagrams. See spec/09.
+            defaultOpenId="favourites"
+            leading={
+              <PaletteDropdown
+                ariaLabel="Canvas tool"
+                dataTourId="canvas-tool"
+                value={canvasTool}
+                variant="flush"
+                autoHeight
+                // Tile grid (spec/108): nine tools in one column was a lot of
+                // travel for a flat choice between equal-weight modes.
+                grid
+                // The three bands the tools fall into (spec/108): what you do TO
+                // the diagram, what you do in front of an audience, and the
+                // whole-canvas views.
+                groupLabels={{ 0: 'Edit', 1: 'Present', 2: 'Preview' }}
+                // 'zen' is an action entry, not a tool: fire the toggle and
+                // keep the current tool selected (see canvas-tool-options).
+                onChange={(id) => {
+                  if (id === 'zen') onToggleZen?.();
+                  else onSetCanvasTool(id as CanvasTool);
+                }}
+                options={buildCanvasToolOptions({
+                  canvasEmpty,
+                  isMobile,
+                  includeZen: !!onToggleZen,
+                })}
+              />
+            }
+            // Ordered by BAND (spec/110): Common, then Decorate, then Dynamic
+            // (the headings PaletteTabBar's CATEGORY_BANDS actually renders).
+            // It renders the dropdown straight from this order, so the array IS
+            // the grid layout.
+            tabs={paletteCategoryTabs({
+              pendingDraw,
+              tileActions,
+              addIcon,
+              iconQuery,
+              setIconQuery,
+              iconResults,
+              loading: !iconCatalogsLoaded,
+              addSticker,
+              stickerQuery,
+              setStickerQuery,
+              stickerResults,
+              addTechIcon,
+              techQuery,
+              setTechQuery,
+              techResults,
+            })}
+          />
+        </PaletteTintProvider>
+      </PaletteGroupProvider>
     </MovablePanel>
   );
 }
