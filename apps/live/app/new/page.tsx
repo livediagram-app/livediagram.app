@@ -10,16 +10,8 @@ import { RecentDiagramsCard } from './RecentDiagramsCard';
 import { CustomThemeProvider } from '@/components/primitives/CustomThemeProvider';
 import { AnimatedLinesBackdrop } from '@/components/canvas/AnimatedLinesBackdrop';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
-import {
-  apiCreateDiagram,
-  apiCreateFolder,
-  apiGetTeamLibrary,
-  apiListFolders,
-  apiListTeams,
-  apiLoadSelf,
-  apiSaveSelf,
-  apiSetDiagramFolder,
-} from '@/lib/api-client';
+import { usePlacementOptions } from './usePlacementOptions';
+import { apiCreateDiagram, apiLoadSelf, apiSaveSelf, apiSetDiagramFolder } from '@/lib/api-client';
 import { offlineCreateDiagram } from '@/lib/offline/offline-store';
 import { markTourPending } from '@/lib/tour-pending';
 import { randomColor, randomName, type Participant } from '@/lib/identity';
@@ -32,8 +24,6 @@ import { getTheme } from '@/lib/themes';
 import { themeTelemetryLabel } from '@/lib/custom-theme-registry';
 
 // Folder shape the Settings step's placement browser consumes.
-type PickerFolder = { id: string; name: string; parentId: string | null };
-
 // Dedicated welcome / create-new flow, see specs/14-new-diagram-route.md.
 // Owns identity bootstrap, template + theme choice (a two-step wizard),
 // and the actual "commit a new diagram" handoff. Once the user picks (or
@@ -70,18 +60,16 @@ export default function NewDiagramPage() {
     settings: NewDiagramSettings;
   } | null>(null);
 
-  // Personal folders + teams offered by the Settings step's placement picker
-  // (spec/76). Folders work for guests; teams are Clerk-only, so we only fetch
-  // them once signed in. Empty until the fetch settles / for signed-out users.
-  const [folders, setFolders] = useState<PickerFolder[]>([]);
-  const [teams, setTeams] = useState<{ id: string; name: string }[]>([]);
-  // Per-team folder lists for the placement browser's second level, fetched
-  // alongside the team list (teams are few, so eager Promise.all is fine).
-  const [teamFolders, setTeamFolders] = useState<Record<string, PickerFolder[]>>({});
-
   // Clerk wiring (token provider + guest to authed migration), the same
   // hook as the editor route; see hooks/useClerkApiBootstrap.ts.
   const { authLoaded, clerkUserId } = useClerkApiBootstrap();
+
+  // Where this diagram can be filed, and the inline New Folder the Settings
+  // step offers — see usePlacementOptions.
+  const { folders, teams, teamFolders, createPickerFolder } = usePlacementOptions({
+    selfId: self.id,
+    clerkUserId,
+  });
 
   // Placement context from the URL: /new?folder=<id> (Explorer's "new diagram
   // in this folder") and /new?team=<id>(&folder=<id>) (team library, spec/35)
@@ -171,77 +159,6 @@ export default function NewDiagramPage() {
       }
     })();
   }, [authLoaded, clerkUserId]);
-
-  // Load the placement options for the Settings step once identity resolves.
-  // Personal folders only (a team's folders live under their own optgroup);
-  // teams are Clerk-only so they're skipped for guests.
-  useEffect(() => {
-    if (self.id === 'pending') return;
-    let cancelled = false;
-    void (async () => {
-      const list = await apiListFolders(self.id).catch(() => []);
-      if (!cancelled) {
-        setFolders(
-          list
-            .filter((f) => f.teamId == null)
-            .map((f) => ({ id: f.id, name: f.name, parentId: f.parentId })),
-        );
-      }
-    })();
-    if (clerkUserId) {
-      void (async () => {
-        const list = await apiListTeams(self.id).catch(() => []);
-        if (cancelled) return;
-        setTeams(list.map((t) => ({ id: t.id, name: t.name })));
-        // Second level of the placement browser: each team's folders.
-        const libs = await Promise.all(
-          list.map((t) =>
-            apiGetTeamLibrary(self.id, t.id)
-              .then(
-                (lib) =>
-                  [
-                    t.id,
-                    lib.folders.map((f) => ({ id: f.id, name: f.name, parentId: f.parentId })),
-                  ] as const,
-              )
-              .catch(() => [t.id, []] as const),
-          ),
-        );
-        if (!cancelled) setTeamFolders(Object.fromEntries(libs));
-      })();
-    }
-    return () => {
-      cancelled = true;
-    };
-  }, [self.id, clerkUserId]);
-
-  // Inline folder creation from the Settings step's placement browser
-  // (spec/76 follow-up): create in the right scope (personal, or a team's
-  // library) under the open parent, merge into the picker lists, and hand
-  // the new folder back so the browser can select it.
-  const createPickerFolder = async (
-    name: string,
-    parentId: string | null,
-    teamId: string | null,
-  ): Promise<PickerFolder | null> => {
-    try {
-      const folder = await apiCreateFolder(self.id, {
-        id: crypto.randomUUID(),
-        name,
-        parentId,
-        teamId,
-      });
-      const pf: PickerFolder = { id: folder.id, name: folder.name, parentId: folder.parentId };
-      if (teamId) {
-        setTeamFolders((m) => ({ ...m, [teamId]: [...(m[teamId] ?? []), pf] }));
-      } else {
-        setFolders((list) => [...list, pf]);
-      }
-      return pf;
-    } catch {
-      return null;
-    }
-  };
 
   // Identity for the commit path. Clerk's chunk loads deferred, so a fast
   // click-through (or an e2e robot) can reach Create while `self` is still
