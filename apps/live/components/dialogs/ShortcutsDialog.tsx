@@ -13,84 +13,7 @@ import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 // (per-browser) so a user with a tablet + external keyboard can
 // keep them on while a screen-reader user can flip them off.
 
-type ShortcutRow = {
-  keys: string[];
-  label: string;
-};
-
-type ShortcutSection = {
-  heading: string;
-  rows: ShortcutRow[];
-};
-
-const SECTIONS: ShortcutSection[] = [
-  {
-    heading: 'Edit',
-    rows: [
-      { keys: ['⌘', 'Z'], label: 'Undo' },
-      { keys: ['⌘', '⇧', 'Z'], label: 'Redo  (or Ctrl Y)' },
-      { keys: ['⌘', 'X'], label: 'Cut selection' },
-      { keys: ['⌘', 'C'], label: 'Copy selection' },
-      { keys: ['⌘', 'V'], label: 'Paste (offset copy)' },
-      { keys: ['⌘', 'D'], label: 'Duplicate selection' },
-      { keys: ['⌘', 'G'], label: 'Group selection  /  Ungroup' },
-      { keys: ['⌘', '⇧', 'L'], label: 'Lock  /  Unlock selection' },
-      { keys: ['⌘', 'A'], label: 'Select all' },
-      { keys: ['Del', '/  ⌫'], label: 'Delete selection' },
-      { keys: ['⌘', '⇧', ']'], label: 'Bring to front' },
-      { keys: ['⌘', '⇧', '['], label: 'Send to back' },
-    ],
-  },
-  {
-    heading: 'Tools',
-    rows: [
-      { keys: ['V'], label: 'Select tool  (or S)' },
-      { keys: ['H'], label: 'Hand tool' },
-      { keys: ['K'], label: 'Laser pointer' },
-      { keys: ['E'], label: 'Eraser (click / drag to delete)' },
-      { keys: ['P'], label: 'Pencil (freehand)' },
-      { keys: ['W'], label: 'Avatar mode (click / arrows to walk)' },
-      { keys: ['I'], label: 'Isometric view' },
-      { keys: ['⇧', 'drag'], label: 'Rotate isometric camera' },
-      { keys: ['Z'], label: 'Zen mode (focus)' },
-    ],
-  },
-  {
-    heading: 'Add elements',
-    rows: [
-      { keys: ['R'], label: 'Rectangle' },
-      { keys: ['O'], label: 'Oval' },
-      { keys: ['D'], label: 'Diamond' },
-      { keys: ['C'], label: 'Cylinder' },
-      { keys: ['G'], label: 'Parallelogram' },
-      { keys: ['T'], label: 'Text' },
-      { keys: ['N'], label: 'Note (sticky)' },
-      { keys: ['A'], label: 'Arrow' },
-      { keys: ['F'], label: 'Frame' },
-      { keys: ['9'], label: 'Image picker' },
-      { keys: ['1', '–', '0'], label: 'Number row also picks tools / shapes' },
-    ],
-  },
-  {
-    heading: 'Navigate & select',
-    rows: [
-      { keys: ['⌘', 'K'], label: 'Search & commands  (or ⌘ .)' },
-      { keys: ['⌘', '+'], label: 'Zoom in' },
-      { keys: ['⌘', '-'], label: 'Zoom out' },
-      { keys: ['⌘', '0'], label: 'Reset zoom to 100%' },
-      { keys: ['⇧', '1'], label: 'Zoom to fit' },
-      { keys: ['Tab'], label: 'Select next element  (Shift: previous)' },
-      { keys: ['Arrow'], label: 'Nudge selection 1 px  (Shift: 10 px)' },
-      { keys: ['Shift', 'Click'], label: 'Toggle element in multi-selection' },
-      { keys: ['Shift', 'drag'], label: 'Drop a duplicate (original stays put)' },
-      { keys: ['Space', 'drag'], label: 'Pan canvas (overrides current tool)' },
-      { keys: ['Space'], label: 'Edit label of selected element' },
-      { keys: ['Type'], label: 'Replace label of selected element' },
-      { keys: ['Escape'], label: 'Cancel current mode, or clear selection' },
-      { keys: ['⌘', 'hold'], label: 'Show shortcut badges on palette' },
-    ],
-  },
-];
+import { SHORTCUT_SECTIONS, type ShortcutSection } from './shortcut-sections';
 
 type ShortcutsDialogProps = {
   enabled: boolean;
@@ -107,7 +30,9 @@ export function ShortcutsDialog({ enabled, onToggleEnabled, onClose }: Shortcuts
   // Single-open accordion: the heading of the one expanded section (or
   // null when all are collapsed). Opening one collapses the rest. Starts
   // on the first section so the dialog lands with one group showing.
-  const [openHeading, setOpenHeading] = useState<string | null>(SECTIONS[0]?.heading ?? null);
+  const [openHeading, setOpenHeading] = useState<string | null>(
+    SHORTCUT_SECTIONS[0]?.heading ?? null,
+  );
 
   return (
     <Dialog
@@ -145,7 +70,7 @@ export function ShortcutsDialog({ enabled, onToggleEnabled, onClose }: Shortcuts
         </div>
       </div>
       <div className="min-h-0 flex-1 divide-y divide-slate-100 overflow-y-auto px-5 py-1 dark:divide-slate-800">
-        {SECTIONS.map((section) => (
+        {SHORTCUT_SECTIONS.map((section) => (
           // Each section is a collapsible accordion. One open at a time:
           // opening a group collapses whichever was open, so the (long)
           // list stays compact.
