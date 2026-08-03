@@ -10,8 +10,7 @@
 // self-host has no verified Clerk identity, so nothing can be minted.
 import { badRequest, forbidden, json, notFound } from '../responses';
 import { type RouteContext } from './context';
-import { countLiveApiTokens, createApiToken, MAX_API_TOKENS_PER_OWNER } from '../db';
-import { apiTokenExpiry, generateApiToken, hashApiToken } from '../auth/api-token';
+import { mintApiToken } from '../db';
 import { MAX_NAME_LEN } from '../limits';
 
 export async function handleOauthExchange(ctx: RouteContext): Promise<Response> {
@@ -31,26 +30,15 @@ export async function handleOauthExchange(ctx: RouteContext): Promise<Response> 
   // the client registered without a readable name.
   const name = raw || 'MCP client';
 
-  // Same per-account cap as user-minted tokens (spec/61 §3.6).
-  if ((await countLiveApiTokens(env, owner)) >= MAX_API_TOKENS_PER_OWNER) {
-    return json({ error: 'token_limit_reached' }, { status: 409 });
-  }
-
-  const secret = generateApiToken();
-  const now = Date.now();
-  const id = crypto.randomUUID();
-  const expiresAt = apiTokenExpiry(now);
   const readOnly = body.readOnly === true;
-  await createApiToken(env, {
-    id,
-    ownerId: owner,
-    name,
-    tokenHash: await hashApiToken(secret),
-    createdAt: now,
-    expiresAt,
-    readOnly,
-  });
+  // Same mint as the user-facing route, so the cap (spec/61 §3.6), the expiry
+  // and the hash-only storage cannot differ between the two ways in.
+  const minted = await mintApiToken(env, { ownerId: owner, name, readOnly });
+  if (!minted) return json({ error: 'token_limit_reached' }, { status: 409 });
   // The plaintext is returned ONCE; the MCP hands it to the client and never
   // stores it server-side (only the hash is persisted).
-  return json({ token: secret, id, name, expiresAt, readOnly }, { status: 201 });
+  return json(
+    { token: minted.secret, id: minted.id, name, expiresAt: minted.expiresAt, readOnly },
+    { status: 201 },
+  );
 }

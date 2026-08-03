@@ -2,7 +2,7 @@
 // (spec/61). We store only the SHA-256 hash; the auth hot path hashes the
 // presented token and looks the hash up here.
 
-import { hashApiToken } from '../auth/api-token';
+import { apiTokenExpiry, generateApiToken, hashApiToken } from '../auth/api-token';
 import { rowToApiToken, type ApiTokenRow } from '../api-token-row';
 import type { ApiTokenDTO, Env } from '../types';
 
@@ -52,6 +52,42 @@ export async function createApiToken(
   )
     .bind(t.id, t.ownerId, t.tokenHash, t.name, t.createdAt, t.expiresAt, t.readOnly ? 1 : 0)
     .run();
+}
+
+/**
+ * Mint a live API token: enforce the per-account cap, generate the secret,
+ * hash it, and insert the row (spec/61).
+ *
+ * Two routes mint tokens — `POST /api/tokens` for a user in the Explorer, and
+ * the OAuth exchange for an MCP client (spec/62) — and each used to carry its
+ * own copy of this sequence. The rules that matter are all in it: the cap, the
+ * six-month expiry, and the fact that only the HASH is ever stored. A second
+ * copy is a second place for one of those to quietly stop being true, and the
+ * OAuth path is the one no person watches as it happens.
+ *
+ * Returns null when the owner is already at the cap, so the caller answers
+ * with its own 409 envelope. The plaintext `secret` comes back once, here, and
+ * is never retrievable again.
+ */
+export async function mintApiToken(
+  env: Env,
+  t: { ownerId: string; name: string | null; readOnly?: boolean },
+): Promise<{ secret: string; id: string; expiresAt: number } | null> {
+  if ((await countLiveApiTokens(env, t.ownerId)) >= MAX_API_TOKENS_PER_OWNER) return null;
+  const secret = generateApiToken();
+  const now = Date.now();
+  const id = crypto.randomUUID();
+  const expiresAt = apiTokenExpiry(now);
+  await createApiToken(env, {
+    id,
+    ownerId: t.ownerId,
+    name: t.name,
+    tokenHash: await hashApiToken(secret),
+    createdAt: now,
+    expiresAt,
+    readOnly: t.readOnly,
+  });
+  return { secret, id, expiresAt };
 }
 
 // Resolve a presented token to its owner + token id — the auth hot path.

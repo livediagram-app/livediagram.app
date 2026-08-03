@@ -3,9 +3,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const { db } = vi.hoisted(() => ({
   db: {
-    createApiToken: vi.fn(),
-    countLiveApiTokens: vi.fn(),
-    MAX_API_TOKENS_PER_OWNER: 10,
+    // The mint itself is tested in db/api-tokens.test.ts. Here it is a seam:
+    // this route's job is the client name, the read-only flag, and the two
+    // answers the mint can give.
+    mintApiToken: vi.fn(),
   },
 }));
 vi.mock('../db', () => db);
@@ -25,7 +26,7 @@ const makeCtx = (
 
 beforeEach(() => {
   for (const fn of Object.values(db)) if (typeof fn === 'function') fn.mockReset();
-  db.countLiveApiTokens.mockResolvedValue(0);
+  db.mintApiToken.mockResolvedValue({ secret: 'lvd_abc', id: 'tok_1', expiresAt: 123 });
 });
 
 describe('handleOauthExchange — signed-in gate', () => {
@@ -34,7 +35,7 @@ describe('handleOauthExchange — signed-in gate', () => {
       makeCtx('POST', '/api/oauth/exchange', { clerkUserId: null, body: {} }),
     );
     expect(res.status).toBe(403);
-    expect(db.createApiToken).not.toHaveBeenCalled();
+    expect(db.mintApiToken).not.toHaveBeenCalled();
   });
 });
 
@@ -45,11 +46,13 @@ describe('handleOauthExchange — mint', () => {
     );
     expect(res.status).toBe(201);
     const out = (await res.json()) as { token: string; id: string; name: string };
-    expect(out.token.startsWith('lvd_')).toBe(true);
+    expect(out.token).toBe('lvd_abc');
     expect(out.name).toBe('Claude (MCP)');
-    const arg = db.createApiToken.mock.calls[0]![1] as { ownerId: string; tokenHash: string };
-    expect(arg.ownerId).toBe('user_1');
-    expect(arg.tokenHash).not.toContain(out.token); // hash stored, not plaintext
+    // Minted for the signed-in owner, under the client's name.
+    expect(db.mintApiToken).toHaveBeenCalledWith(
+      {},
+      { ownerId: 'user_1', name: 'Claude (MCP)', readOnly: false },
+    );
   });
 
   it('defaults the name when the client sent none', async () => {
@@ -58,11 +61,19 @@ describe('handleOauthExchange — mint', () => {
     expect(out.name).toBe('MCP client');
   });
 
-  it('409s at the per-account token cap', async () => {
-    db.countLiveApiTokens.mockResolvedValue(10);
+  it('409s when the mint refuses at the per-account cap', async () => {
+    db.mintApiToken.mockResolvedValue(null);
     const res = await handleOauthExchange(makeCtx('POST', '/api/oauth/exchange', { body: {} }));
     expect(res.status).toBe(409);
-    expect(db.createApiToken).not.toHaveBeenCalled();
+    expect((await res.json()) as { error: string }).toEqual({ error: 'token_limit_reached' });
+  });
+
+  it('passes the read-only flag through to the mint (spec/62)', async () => {
+    await handleOauthExchange(makeCtx('POST', '/api/oauth/exchange', { body: { readOnly: true } }));
+    expect(db.mintApiToken).toHaveBeenCalledWith(
+      {},
+      { ownerId: 'user_1', name: 'MCP client', readOnly: true },
+    );
   });
 
   it('404s a non-exchange path or non-POST', async () => {

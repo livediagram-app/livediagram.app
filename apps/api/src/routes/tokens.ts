@@ -9,14 +9,7 @@
 
 import { badRequest, forbidden, json, noContent, notFound } from '../responses';
 import { type RouteContext } from './context';
-import {
-  countLiveApiTokens,
-  createApiToken,
-  listApiTokensByOwner,
-  revokeApiToken,
-  MAX_API_TOKENS_PER_OWNER,
-} from '../db';
-import { apiTokenExpiry, generateApiToken, hashApiToken } from '../auth/api-token';
+import { listApiTokensByOwner, mintApiToken, revokeApiToken } from '../db';
 import { MAX_NAME_LEN } from '../limits';
 
 export async function handleTokens(ctx: RouteContext): Promise<Response> {
@@ -35,25 +28,15 @@ export async function handleTokens(ctx: RouteContext): Promise<Response> {
       const body = (await request.json().catch(() => ({}))) as { name?: string };
       const name = typeof body.name === 'string' ? body.name.trim() : '';
       if (name.length > MAX_NAME_LEN) return badRequest('name too long');
-      // Per-account cap (spec/61).
-      if ((await countLiveApiTokens(env, owner)) >= MAX_API_TOKENS_PER_OWNER) {
-        return json({ error: 'token_limit_reached' }, { status: 409 });
-      }
-      const secret = generateApiToken();
-      const now = Date.now();
-      const id = crypto.randomUUID();
-      const expiresAt = apiTokenExpiry(now);
-      await createApiToken(env, {
-        id,
-        ownerId: owner,
-        name: name || null,
-        tokenHash: await hashApiToken(secret),
-        createdAt: now,
-        expiresAt,
-      });
+      const minted = await mintApiToken(env, { ownerId: owner, name: name || null });
+      // Null means the per-account cap (spec/61) is already reached.
+      if (!minted) return json({ error: 'token_limit_reached' }, { status: 409 });
       // The plaintext is returned ONCE, here. It is never stored and never
       // retrievable again; the client shows it for copy then drops it.
-      return json({ token: secret, id, name: name || null, expiresAt }, { status: 201 });
+      return json(
+        { token: minted.secret, id: minted.id, name: name || null, expiresAt: minted.expiresAt },
+        { status: 201 },
+      );
     }
   }
 

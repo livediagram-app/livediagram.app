@@ -4,10 +4,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const { db } = vi.hoisted(() => ({
   db: {
     listApiTokensByOwner: vi.fn(),
-    createApiToken: vi.fn(),
-    countLiveApiTokens: vi.fn(),
+    // The mint itself is tested in db/api-tokens.test.ts, against a D1 stub.
+    // Here it is a seam: these tests are about what the ROUTE does with its
+    // two answers — a minted token, or null at the cap.
+    mintApiToken: vi.fn(),
     revokeApiToken: vi.fn(),
-    MAX_API_TOKENS_PER_OWNER: 10,
   },
 }));
 vi.mock('../db', () => db);
@@ -27,7 +28,7 @@ const makeCtx = (
 
 beforeEach(() => {
   for (const fn of Object.values(db)) if (typeof fn === 'function') fn.mockReset();
-  db.countLiveApiTokens.mockResolvedValue(0);
+  db.mintApiToken.mockResolvedValue({ secret: 'lvd_x', id: 'tok_x', expiresAt: 1 });
   db.listApiTokensByOwner.mockResolvedValue([]);
   db.revokeApiToken.mockResolvedValue(true);
 });
@@ -40,7 +41,7 @@ describe('handleTokens — signed-in gate', () => {
   it('403s a guest on POST (no token minted)', async () => {
     const res = await handleTokens(makeCtx('POST', '/api/tokens', { clerkUserId: null, body: {} }));
     expect(res.status).toBe(403);
-    expect(db.createApiToken).not.toHaveBeenCalled();
+    expect(db.mintApiToken).not.toHaveBeenCalled();
   });
 });
 
@@ -53,23 +54,21 @@ describe('handleTokens — list / create / revoke', () => {
   });
 
   it('mints a token and returns the secret once', async () => {
+    db.mintApiToken.mockResolvedValue({ secret: 'lvd_abc', id: 'tok_1', expiresAt: 123 });
     const res = await handleTokens(makeCtx('POST', '/api/tokens', { body: { name: 'CI' } }));
     expect(res.status).toBe(201);
     const out = (await res.json()) as { token: string; id: string };
-    expect(out.token.startsWith('lvd_')).toBe(true);
-    expect(out.id).toBeTruthy();
-    expect(db.createApiToken).toHaveBeenCalledTimes(1);
-    // The stored row carries a hash, never the plaintext.
-    const arg = db.createApiToken.mock.calls[0]![1] as { tokenHash: string; ownerId: string };
-    expect(arg.ownerId).toBe('user_1');
-    expect(arg.tokenHash).not.toContain(out.token);
+    expect(out.token).toBe('lvd_abc');
+    expect(out.id).toBe('tok_1');
+    // The route mints for the CALLER, under the name they gave.
+    expect(db.mintApiToken).toHaveBeenCalledWith({}, { ownerId: 'user_1', name: 'CI' });
   });
 
-  it('409s when the per-account cap is reached', async () => {
-    db.countLiveApiTokens.mockResolvedValue(10);
+  it('409s when the mint refuses at the per-account cap', async () => {
+    db.mintApiToken.mockResolvedValue(null);
     const res = await handleTokens(makeCtx('POST', '/api/tokens', { body: {} }));
     expect(res.status).toBe(409);
-    expect(db.createApiToken).not.toHaveBeenCalled();
+    expect((await res.json()) as { error: string }).toEqual({ error: 'token_limit_reached' });
   });
 
   it('revokes a token (204), 404 when nothing was flipped', async () => {
