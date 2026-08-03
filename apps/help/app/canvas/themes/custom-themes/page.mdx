@@ -26,19 +26,24 @@ The built-in catalogue covers a lot of ground, but sometimes you want your own p
 You build a theme from the **Custom** category in the Tab Appearance Theme tab. Choose **+ New theme** to open the theme builder. It is fast by default and deep on demand:
 
 <Step n={1}>
-  Start with three colours: a **Base** for the canvas background, a **Fill** for element fill, and a
-  **Stroke** for outlines, plus a name. From just these three, livediagram derives sensible defaults
-  for everything else, so a usable theme exists after three clicks.
+  Give the theme a name, then set the **Base colours**: **Background** for the canvas, **Fill** for
+  element fill, and **Stroke** for outlines. From just these three, livediagram derives sensible
+  defaults for everything else, so a usable theme exists after three clicks.
 </Step>
 
 <Step n={2}>
-  Expand **Customize details** for the granular controls: text colour, a background pattern picker,
-  and a pattern colour.
+  **Text** sits beside them in the same row. It follows the colours above until you set it, so touch
+  it only when the derived one is not what you want.
 </Step>
 
 <Step n={3}>
-  Expand the per-shape colours section, an advanced option, to give each shape kind its own fill,
-  border, and text, which is how you reproduce a notation like "diamonds are amber".
+  Expand **Pattern** to pick the backdrop pattern, choose an animated one, and set its opacity.
+  There is no pattern colour to pick: it tints itself from your background.
+</Step>
+
+<Step n={4}>
+  Expand **Per-shape colours**, an advanced option, to give each shape kind its own fill, border,
+  and text, which is how you reproduce a notation like "diamonds are amber".
 </Step>
 
 A live preview shows a few sample shapes in your in-progress theme, rendered the same way the canvas would, so you see the result before saving. **Save** stores the theme and applies it to the active tab.

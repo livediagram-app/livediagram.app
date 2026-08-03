@@ -1,9 +1,9 @@
 'use client';
 
 // The custom-theme builder (spec/44). Fast by default, deep on demand:
-// it opens on three base colours (Background / Fill / Stroke) from which
-// sane defaults for everything else are derived, then expands to the
-// granular controls (text colour, pattern, per-shape colours). A live
+// it opens on the base colours (Background / Fill / Stroke, plus the Text
+// they derive) from which sane defaults for everything else come, then
+// expands to the granular controls (pattern, per-shape colours). A live
 // preview at the top renders the in-progress theme as a real mini
 // diagram (the shared ThemeSwatch scene, with the actual pattern edge to
 // edge) so the user sees the result as they build. A built-in format
@@ -191,8 +191,11 @@ export function CustomThemeBuilder({
         />
       </label>
 
-      {/* Three base colours — the fast path. Larger tiles so the colour
-          (the whole point) reads at a glance. */}
+      {/* The fast path. Three colours drive everything (Background / Fill /
+          Stroke); Text rides along in the same row because it is derived from
+          them until touched, and burying a derived value behind an expander
+          hides the one place you would go to correct it. Larger tiles so the
+          colour (the whole point) reads at a glance. */}
       <div className="flex flex-col gap-1.5">
         <FieldLabel>Base colours</FieldLabel>
         <div className="grid grid-cols-4 gap-2">
