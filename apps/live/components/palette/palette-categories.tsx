@@ -40,7 +40,7 @@ import {
  *
  * Order IS layout: PaletteTabBar renders the dropdown straight from this
  * array, grouping by `group` under the CATEGORY_BANDS headings (0 Common,
- * 1 Decorate, 2 Dynamic).
+ * 1 Structure, 2 Decorate, 3 Dynamic).
  */
 export const PALETTE_CATEGORIES: {
   id: string;

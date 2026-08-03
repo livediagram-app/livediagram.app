@@ -10,7 +10,7 @@ type PaletteTab = {
   content: React.ReactNode;
   // Which band of the category dropdown this tab sits in — an index into
   // CATEGORY_BANDS below (spec/110). Nine equal-weight categories in one grid
-  // is a wall; three named bands say what kind of thing each category is.
+  // is a wall; four named bands say what kind of thing each category is.
   //
   // Left unset for Favourites, which is not a kind of thing at all — it is
   // every category at once, so it sits full width above the first band with
