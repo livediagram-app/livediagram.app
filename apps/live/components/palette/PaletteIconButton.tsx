@@ -71,6 +71,10 @@ type IconButtonProps = {
   // Override the caption text (default is derived from `label`). Used where
   // the derived name is too long for the tile, e.g. "Bubble".
   caption?: string;
+  // The tile's creation-time choice (which session tool, which reaction,
+  // which mode, which estimate scale), carried alongside the kind so a drag
+  // places what the tile says it places.
+  dragChoice?: string;
   // Makes the tile draggable to place this shape kind on the canvas (drag
   // alternative to click-to-add). Wires the palette DnD payload.
   dragKind?: ShapeKind;
@@ -95,6 +99,7 @@ export function IconButton({
   active,
   shortcut,
   draggable,
+  dragChoice,
   onDragStart,
   hideTooltip,
   hideCaption,
@@ -108,7 +113,14 @@ export function IconButton({
   const effectiveDraggable = dragKind ? true : draggable;
   const effectiveDragStart = dragKind
     ? (e: React.DragEvent) => {
-        e.dataTransfer.setData(PALETTE_DND_MIME, dragKind);
+        // `kind` alone, or `kind|choice` where the tile carries a
+        // creation-time one (spec/103, /105, /123, /135). Without it a
+        // dragged Poll tile dropped a timer, because every session tile is
+        // the same shape kind and the choice lived only on the click path.
+        e.dataTransfer.setData(
+          PALETTE_DND_MIME,
+          dragChoice ? `${dragKind}|${dragChoice}` : dragKind,
+        );
         e.dataTransfer.effectAllowed = 'copy';
         // Publish the footprint so the canvas ghost (spec/58) can preview
         // where this shape will land.

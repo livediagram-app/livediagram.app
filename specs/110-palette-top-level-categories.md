@@ -31,12 +31,13 @@ tools plus Frame). The **User / actor** tile was deleted outright — see below.
 **The category dropdown gets bands**, the way the canvas-tool dropdown got them
 (spec/108):
 
-| Band           | Categories                                     |
-| -------------- | ---------------------------------------------- |
-| _(no heading)_ | Favourites, full width                         |
-| **Common**     | Shapes, Build, Write, Draw, Devices            |
-| **Decorate**   | Icons, Stickers, Technology, Media, Components |
-| **Dynamic**    | Data, Behaviour, Collaborate                   |
+| Band           | Categories                         |
+| -------------- | ---------------------------------- |
+| _(no heading)_ | Favourites, full width             |
+| **Common**     | Shapes, Write, Draw                |
+| **Structure**  | Build, Components, Devices         |
+| **Decorate**   | Icons, Stickers, Technology, Media |
+| **Dynamic**    | Data, Behaviour, Collaborate       |
 
 ## Why flatten
 
@@ -184,3 +185,23 @@ scales. In every case the variant IS the decision — you know which mode, which
 tool, which scale before you reach for the palette — so placing a default and
 then reconfiguring it was two steps for something already settled. They remain
 one shape kind each with a mode field; the choice rides the draw intent.
+
+## The Structure band
+
+Build, Components and Devices sit in their own band above Decorate.
+
+All three are things you lay a board OUT with rather than draw on it: Build's
+containers, the ready-made page composites, the device frames a wireframe sits
+inside. Arranging a board comes before dressing it, which is the order the
+bands now read in — Common, Structure, Decorate, Dynamic.
+
+The category array must stay sorted by band: `PaletteTabBar` renders it
+straight through and groups under the headings without sorting, so a
+misplaced entry appears under the wrong one.
+
+## Group counts are a badge
+
+A collapsible group shows its tile count as a badge beside the title, not
+folded into the blurb. "5 ways to celebrate on the board" made the reader
+parse a sentence to learn a quantity, and left the blurb unable to simply say
+what the group is for ("React on the board").

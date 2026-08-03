@@ -183,6 +183,9 @@ function PaletteTile({
       description={def.description}
       onClick={tileHandler(def, actions)}
       dragKind={a.type === 'shape' ? a.kind : undefined}
+      dragChoice={
+        a.type === 'shape' ? (a.session ?? a.reaction ?? a.mode ?? a.estimateScale) : undefined
+      }
       draggable={iconDrag !== undefined || undefined}
       onDragStart={iconDrag}
       filled={def.filled}

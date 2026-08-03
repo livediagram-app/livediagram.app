@@ -28,9 +28,9 @@ export function PaletteTileGroup({
   pendingDraw,
 }: {
   title: string;
-  // One line under the title. Takes the tile count so a group says how much
-  // is behind it without the caller counting.
-  blurb: (count: number) => string;
+  // One line under the title, saying what the group is FOR. The count is
+  // rendered as a badge beside the title, so this never has to carry it.
+  blurb: string;
   icon: React.ReactNode;
   tiles: PaletteTileDef[];
   actions: PaletteTileActions;
@@ -62,11 +62,20 @@ export function PaletteTileGroup({
           {icon}
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-[11px] font-semibold text-slate-700 dark:text-slate-200">
-            {title}
+          {/* The count is a BADGE beside the name, not a number folded into
+              the sentence below it. "5 ways to celebrate on the board" made
+              the reader parse a sentence to learn a quantity, and left the
+              blurb unable to just say what the group is for. */}
+          <span className="flex min-w-0 items-center gap-1.5">
+            <span className="truncate text-[11px] font-semibold text-slate-700 dark:text-slate-200">
+              {title}
+            </span>
+            <span className="shrink-0 rounded-full bg-slate-100 px-1.5 text-[9px] font-semibold leading-[1.4] text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+              {tiles.length}
+            </span>
           </span>
           <span className="line-clamp-2 text-[10px] leading-snug text-slate-500 dark:text-slate-400">
-            {blurb(tiles.length)}
+            {blurb}
           </span>
         </span>
         <span className="shrink-0 text-slate-400">

@@ -95,7 +95,7 @@ export function PaletteBehaviourTab({ pendingDraw, actions }: TabProps) {
     <div className="flex flex-col gap-0.5">
       <PaletteTileGroup
         title="Selection Mode"
-        blurb={(n) => `${n} modes to hand somebody`}
+        blurb="Hand somebody a mode"
         icon={<ModeGroupIcon />}
         tiles={behaviour.filter((t) => t.tileGroup === 'mode')}
         actions={actions}
@@ -103,7 +103,7 @@ export function PaletteBehaviourTab({ pendingDraw, actions }: TabProps) {
       />
       <PaletteTileGroup
         title="Run the room"
-        blurb={(n) => `${n} things a facilitator drives`}
+        blurb="Things a facilitator drives"
         icon={<FacilitateGroupIcon />}
         tiles={behaviour.filter((t) => t.tileGroup === 'facilitate')}
         actions={actions}
@@ -111,7 +111,7 @@ export function PaletteBehaviourTab({ pendingDraw, actions }: TabProps) {
       />
       <PaletteTileGroup
         title="Get around"
-        blurb={(n) => `${n} ways to move yourself about`}
+        blurb="Move yourself about"
         icon={<MoveGroupIcon />}
         tiles={behaviour.filter((t) => t.tileGroup === 'move')}
         actions={actions}
@@ -119,7 +119,7 @@ export function PaletteBehaviourTab({ pendingDraw, actions }: TabProps) {
       />
       <PaletteTileGroup
         title="Session"
-        blurb={(n) => `${n} tools the room runs together`}
+        blurb="Tools the room runs together"
         icon={<SessionGroupIcon />}
         tiles={behaviour.filter((t) => t.tileGroup === 'session')}
         actions={actions}
@@ -127,7 +127,7 @@ export function PaletteBehaviourTab({ pendingDraw, actions }: TabProps) {
       />
       <PaletteTileGroup
         title="Reactions"
-        blurb={(n) => `${n} ways to celebrate on the board`}
+        blurb="React on the board"
         icon={<ReactionGroupIcon />}
         tiles={behaviour.filter((t) => t.tileGroup === 'reaction')}
         actions={actions}
@@ -157,7 +157,7 @@ export function PaletteCollaborateTab({ pendingDraw, actions }: TabProps) {
       />
       <PaletteTileGroup
         title="Ask the room"
-        blurb={(n) => `${n} ways to collect an answer from everybody`}
+        blurb="Gather your team’s input"
         icon={<AskGroupIcon />}
         tiles={collab.filter((t) => t.tileGroup === 'ask')}
         actions={actions}
@@ -165,7 +165,7 @@ export function PaletteCollaborateTab({ pendingDraw, actions }: TabProps) {
       />
       <PaletteTileGroup
         title="Keep a record"
-        blurb={(n) => `${n} ways to write down what happened`}
+        blurb="Write down what happened"
         icon={<RecordGroupIcon />}
         tiles={collab.filter((t) => t.tileGroup === 'record')}
         actions={actions}
@@ -191,7 +191,7 @@ export function PaletteMediaTab({ pendingDraw, actions }: TabProps) {
       />
       <PaletteTileGroup
         title="Embed"
-        blurb={(n) => `${n} ways to load a page on the canvas`}
+        blurb="Load a page on the canvas"
         icon={<EmbedGroupIcon />}
         tiles={media.filter((t) => t.tileGroup === 'embed')}
         actions={actions}
@@ -216,7 +216,7 @@ export function PaletteComponentsTab({ pendingDraw, actions }: TabProps) {
       />
       <PaletteTileGroup
         title="Web Elements"
-        blurb={(n) => `${n} themed page sections`}
+        blurb="Themed page sections"
         icon={<WebGroupIcon />}
         tiles={components.filter((t) => t.tileGroup === 'web')}
         actions={actions}

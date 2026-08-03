@@ -694,7 +694,10 @@ export type CanvasProps = {
     kind: ShapeKind,
     canvasX: number,
     canvasY: number,
-    art?: { iconId?: string; stickerId?: string },
+    // `choice` is the creation-time value a split tile carries (which session
+    // tool, reaction, mode or estimate scale), so a DRAG places what the tile
+    // says it places rather than the kind's default.
+    art?: { iconId?: string; stickerId?: string; choice?: string },
   ) => void;
   onStartArrow: (direction: QuickConnectDirection, e: ReactPointerEvent) => void;
   onStartPencil: () => void;

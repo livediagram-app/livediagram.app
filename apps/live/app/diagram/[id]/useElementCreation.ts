@@ -17,6 +17,8 @@ import {
   type ArrowElement,
   type BoxedElement,
   type Element,
+  defaultSessionConfig,
+  REACTION_PAD_LABEL,
   type EstimateScale,
   type Reaction,
   type SelectionMode,
@@ -325,7 +327,7 @@ export function useElementCreation(opts: {
     kind: ShapeKind,
     canvasX: number,
     canvasY: number,
-    art?: { iconId?: string; stickerId?: string },
+    art?: { iconId?: string; stickerId?: string; choice?: string },
   ) => {
     if (editsBlocked) return;
     const iconId = art?.iconId;
@@ -355,7 +357,25 @@ export function useElementCreation(opts: {
               ? { label: getTechIcon(iconId)?.label ?? '', aspectLocked: false }
               : {}),
           }
-        : createShape(kind, x, y),
+        : {
+            ...createShape(kind, x, y),
+            // The dragged tile's creation-time choice (spec/103, /105, /123,
+            // /135). Applied by the kind that owns the field, so one payload
+            // serves all four without the drop path knowing which is which.
+            ...(art?.choice && kind === 'session-button'
+              ? { session: defaultSessionConfig(art.choice as SessionTool) }
+              : {}),
+            ...(art?.choice && kind === 'reaction-pad'
+              ? {
+                  reaction: art.choice as Reaction,
+                  label: REACTION_PAD_LABEL[art.choice as Reaction],
+                }
+              : {}),
+            ...(art?.choice && kind === 'mode-button' ? { mode: art.choice as SelectionMode } : {}),
+            ...(art?.choice && kind === 'estimate'
+              ? { estimateScale: art.choice as EstimateScale }
+              : {}),
+          },
     );
     // A tech-icon id maps to its own telemetry type (see addTechIcon);
     // line-art icons + shapes use the kind.

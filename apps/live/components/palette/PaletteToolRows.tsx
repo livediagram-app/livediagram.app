@@ -13,6 +13,9 @@
 // here having chosen a group of three to eight tools, not facing all 28.
 
 import { useEffect, useRef } from 'react';
+import { SHAPE_DEFAULT_SIZE, type ShapeKind } from '@livediagram/diagram';
+import { PALETTE_DND_MIME } from '@/lib/icons';
+import { setPaletteDragPreview } from '@/lib/palette-drag-preview';
 import type { PendingDraw } from '@/lib/draw-mode';
 import type { PaletteTileDef } from './palette-tile-defs';
 import { tileCaption } from './tile-caption';
@@ -48,6 +51,28 @@ function PaletteToolRow({
       role="option"
       aria-selected={highlighted}
       onClick={tileHandler(def, actions)}
+      // Rows drag onto the canvas exactly like the grid tiles do. They did
+      // not, and since the categories moved to rows that was most of the
+      // palette: Behaviour, Collaborate, Build, Write, Draw, Data.
+      draggable={def.action.type === 'shape'}
+      onDragStart={
+        def.action.type === 'shape'
+          ? (e) => {
+              const a = def.action as {
+                kind: ShapeKind;
+                session?: string;
+                reaction?: string;
+                mode?: string;
+                estimateScale?: string;
+              };
+              const choice = a.session ?? a.reaction ?? a.mode ?? a.estimateScale;
+              e.dataTransfer.setData(PALETTE_DND_MIME, choice ? `${a.kind}|${choice}` : a.kind);
+              e.dataTransfer.effectAllowed = 'copy';
+              const { width, height } = SHAPE_DEFAULT_SIZE[a.kind];
+              setPaletteDragPreview({ kind: a.kind, width, height });
+            }
+          : undefined
+      }
       aria-label={def.label}
       aria-pressed={armed}
       className={`flex w-full items-center gap-2.5 rounded-lg border px-2 py-1.5 text-left transition ${

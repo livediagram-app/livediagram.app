@@ -18,7 +18,7 @@ type PaletteDropDeps = {
     kind: ShapeKind,
     canvasX: number,
     canvasY: number,
-    art?: { iconId?: string; stickerId?: string },
+    art?: { iconId?: string; stickerId?: string; choice?: string },
   ) => void;
   viewportZoom: number;
   // The TRANSFORMED canvas wrapper (scale + translate applied), same as the
@@ -53,7 +53,11 @@ export function usePaletteDrop({ onDropPalette, viewportZoom, wrapperRef }: Pale
     // bubbles up from the panel to this canvas handler, so without this guard a
     // drop over the Palette would still add an element behind it.
     if ((e.target as Element | null)?.closest?.('[data-floating-panel]')) return;
-    const shapeKind = e.dataTransfer.getData(PALETTE_DND_MIME);
+    // `kind` or `kind|choice` — the creation-time choice a split tile
+    // carries (spec/103, /105, /123, /135). Without parsing it back out, a
+    // dragged Poll tile dropped a timer.
+    const payload = e.dataTransfer.getData(PALETTE_DND_MIME);
+    const [shapeKind, dragChoice] = payload.split('|');
     // A line-art icon and a tech (brand) icon both drop as an 'icon' shape
     // carrying the id; dropPaletteItem picks the telemetry type.
     const iconId =
@@ -72,7 +76,13 @@ export function usePaletteDrop({ onDropPalette, viewportZoom, wrapperRef }: Pale
     const { x: cx, y: cy } = pointerToCanvas(e.clientX, e.clientY, rect, viewportZoom);
     if (stickerId) onDropPalette?.('sticker', cx, cy, { stickerId });
     else if (iconId) onDropPalette?.('icon', cx, cy, { iconId });
-    else onDropPalette?.(shapeKind as ShapeKind, cx, cy);
+    else
+      onDropPalette?.(
+        shapeKind as ShapeKind,
+        cx,
+        cy,
+        dragChoice ? { choice: dragChoice } : undefined,
+      );
   };
   return { onDragOver, onDrop };
 }

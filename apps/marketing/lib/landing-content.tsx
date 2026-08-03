@@ -206,6 +206,30 @@ export const LANDING_SECTIONS: LandingSection[] = [
           "Right-click an element, leave a thread. Replies, resolve, delete. Comments carry the author's name and colour so it's clear who said what.",
       },
       {
+        art: <CommentsArt />,
+        href: '/help/palette/collaborate/',
+        group: 'Work together live',
+        title: 'Comment panels on the board',
+        description:
+          'For a remark that belongs somewhere rather than to someone, drop a comment panel and join it to an element with an arrow. It is the same thread a comment badge opens, except it stays put: on the board, in the export, and in everyone else\u2019s session.',
+      },
+      {
+        art: <SessionToolsArt />,
+        href: '/help/palette/behaviour/',
+        group: 'Present & facilitate',
+        title: 'Ask the room if they are done',
+        description:
+          'Drop a Done check and everyone marks themselves finished. The card shows who has and who it is still waiting on, built from whoever is actually in the room, and flashes when the last person marks. Reset it for the next round from its own menu.',
+      },
+      {
+        art: <AvatarModeArt />,
+        href: '/help/palette/behaviour/',
+        group: 'Present & facilitate',
+        title: 'Celebrate on the canvas',
+        description:
+          'Reaction pads throw confetti, sparkles, hearts, applause or fireworks over the board for everyone in the room. Press one, or walk an Avatar-mode character onto it. Nothing is saved: a reaction is a moment, not a mark on the diagram.',
+      },
+      {
         art: <AssignedActionsArt />,
         href: '/help/collaboration/assigned-actions/',
         group: 'Work together live',
@@ -243,7 +267,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Present & facilitate',
         title: 'Run the session: timer + voting',
         description:
-          'Facilitate live from the canvas. Start a countdown or stopwatch the whole room sees, then open dot-voting to surface the group’s priorities. Everyone votes with a budget of dots; results tally in real time, and revealing them starts a guided walkthrough: each top pick lights up and centres on screen while you step through with Next and Previous. Perfect for retros, workshops, and timeboxed planning.',
+          'Facilitate live from the canvas. Drop a timer straight onto the board — the real one, with start, pause, restart and a bar that drains as the time goes — or start a countdown or stopwatch the whole room sees, then open dot-voting to surface the group’s priorities. Everyone votes with a budget of dots; results tally in real time, and revealing them starts a guided walkthrough: each top pick lights up and centres on screen while you step through with Next and Previous. Perfect for retros, workshops, and timeboxed planning.',
       },
       {
         art: <ExpiryArt />,
@@ -628,9 +652,9 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <EmbedArt />,
         href: '/help/palette/embed-elements/',
-        title: 'Videos, Figma, and Docs in place',
+        title: 'Videos, Figma, Docs, or any website',
         description:
-          'Paste a YouTube or Vimeo link, a Loom recording, a Figma file, or a Google Doc, and it sits on the canvas where the discussion is. Nothing loads until somebody presses play, and the player never steals the pointer, so the board stays draggable while it runs.',
+          'Paste a YouTube or Vimeo link, a Loom recording, a Figma file, a Google Doc, or any web address at all, and it sits on the canvas where the discussion is. Nothing loads until somebody presses play, and the player never steals the pointer, so the board stays draggable while it runs.',
       },
       {
         art: <ComponentsArt />,
@@ -684,6 +708,13 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Rotate to a preset angle',
         description:
           'Tilt a selected shape to a preset 45° angle from the right-click Rotation menu, or type "rotate" in the search palette for quick 90°/180°/270° turns. Fixed steps keep tilted elements consistent, and pinned arrows keep tracking the shape as it turns.',
+      },
+      {
+        art: <RotateArt />,
+        href: '/help/canvas/the-canvas/',
+        title: 'Size anything to the pixel',
+        description:
+          'Type a width and a height rather than nudging a handle until it looks right. Lock the aspect ratio and one dimension carries the other. It is what drawing a floorplan to scale needs, and what a drag handle can never give you.',
       },
       {
         art: <AlignmentGuidesArt />,

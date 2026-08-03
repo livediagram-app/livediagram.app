@@ -24,8 +24,12 @@ type PaletteTab = {
 // without a sort here.
 const CATEGORY_BANDS: Record<number, string> = {
   0: 'Common',
-  1: 'Decorate',
-  2: 'Dynamic',
+  // Structure (spec/110): the elements you lay a diagram OUT with — Build's
+  // containers, the ready-made Components, the device frames. They sit above
+  // Decorate because arranging a board comes before dressing it.
+  1: 'Structure',
+  2: 'Decorate',
+  3: 'Dynamic',
 };
 
 // Renders the palette's category switcher as a single right-hand dropdown

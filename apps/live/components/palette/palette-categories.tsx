@@ -68,13 +68,6 @@ export const PALETTE_CATEGORIES: {
     icon: <ShapesTabIcon />,
   },
   {
-    id: 'build',
-    label: 'Build',
-    group: 0,
-    description: 'The structural elements: mind nodes, lanes, frames, timelines, and tables.',
-    icon: <BuildTabIcon />,
-  },
-  {
     id: 'write',
     label: 'Write',
     group: 0,
@@ -89,41 +82,11 @@ export const PALETTE_CATEGORIES: {
     icon: <DrawTabIcon />,
   },
   {
-    id: 'devices',
-    label: 'Devices',
-    group: 0,
-    description: 'Wireframing device frames: browser, monitor, laptop, phone, tablet, smartwatch.',
-    icon: <DevicesTabIcon />,
-  },
-  {
-    id: 'icons',
-    label: 'Icons',
+    id: 'build',
+    label: 'Build',
     group: 1,
-    description: 'Searchable catalogue of single-colour glyphs.',
-    icon: <IconsTabIcon />,
-  },
-  {
-    id: 'stickers',
-    label: 'Stickers',
-    group: 1,
-    description:
-      'Colour emoji for reacting, showing how you feel, marking status, pointing at things, celebrating, and prettying the board up.',
-    icon: <StickersTabIcon />,
-  },
-  {
-    id: 'technology',
-    label: 'Tech',
-    group: 1,
-    description:
-      'Full-colour AWS, Azure, and generic-infrastructure icons for system-architecture diagrams.',
-    icon: <TechTabIcon />,
-  },
-  {
-    id: 'media',
-    label: 'Media',
-    group: 1,
-    description: 'Pictures and figures: an uploaded image, or a circular avatar.',
-    icon: <MediaTabIcon />,
+    description: 'The structural elements: mind nodes, lanes, frames, timelines, and tables.',
+    icon: <BuildTabIcon />,
   },
   {
     id: 'components',
@@ -134,9 +97,46 @@ export const PALETTE_CATEGORIES: {
     icon: <ComponentsTabIcon />,
   },
   {
+    id: 'devices',
+    label: 'Devices',
+    group: 1,
+    description: 'Wireframing device frames: browser, monitor, laptop, phone, tablet, smartwatch.',
+    icon: <DevicesTabIcon />,
+  },
+  {
+    id: 'icons',
+    label: 'Icons',
+    group: 2,
+    description: 'Searchable catalogue of single-colour glyphs.',
+    icon: <IconsTabIcon />,
+  },
+  {
+    id: 'stickers',
+    label: 'Stickers',
+    group: 2,
+    description:
+      'Colour emoji for reacting, showing how you feel, marking status, pointing at things, celebrating, and prettying the board up.',
+    icon: <StickersTabIcon />,
+  },
+  {
+    id: 'technology',
+    label: 'Tech',
+    group: 2,
+    description:
+      'Full-colour AWS, Azure, and generic-infrastructure icons for system-architecture diagrams.',
+    icon: <TechTabIcon />,
+  },
+  {
+    id: 'media',
+    label: 'Media',
+    group: 2,
+    description: 'Pictures and figures: an uploaded image, or a circular avatar.',
+    icon: <MediaTabIcon />,
+  },
+  {
     id: 'data',
     label: 'Data',
-    group: 2,
+    group: 3,
     description:
       'Charts and meters: pie, bar and line charts, progress bars and rings, and ratings.',
     icon: <DataTabIcon />,
@@ -144,7 +144,7 @@ export const PALETTE_CATEGORIES: {
   {
     id: 'behaviour',
     label: 'Behaviour',
-    group: 2,
+    group: 3,
     description:
       'Elements that do something when somebody interacts with them: switch a mode, jump through a portal, open a link, run a timer or vote, uncover something hidden, mark work done, throw a reaction, take a seat, or pick at random.',
     icon: <BehaviourTabIcon />,
@@ -156,7 +156,7 @@ export const PALETTE_CATEGORIES: {
     // content arrives at runtime rather than being drawn by the author.
     id: 'collaborate',
     label: 'Collaborate',
-    group: 2,
+    group: 3,
     description:
       'Elements that collect what the room thinks: comment pins, estimate cards, temperature checks, idea boxes, agendas, decision records, and roll calls.',
     icon: <CollaborateTabIcon />,
