@@ -244,16 +244,18 @@ The template and theme grids shuffle their order **once per open** of
 the picker, so returning users keep meeting options they have not
 explored instead of always seeing the same curated first rows.
 
-- **Pinned defaults stay first.** Blank diagram (templates) and Brand
-  (theme) are always pinned to index 0 — they are the sensible
-  starting points, so they never get shuffled away. Everything else is
-  randomised.
-- **The first batch stays compact.** The grids still open to the same
-  number of visible cards as the curated default set (8 templates, 12
-  themes), with the rest behind "Show more". Shuffling changes _which_
-  options fill those slots, not how many — so a template or theme that
-  used to live behind "Show more" can now greet the user up front, and
-  vice versa.
+- **Pinned defaults stay first.** Blank diagram (templates) and the
+  `brand` theme, labelled "Basic" (theme), are always pinned to index
+  0 — they are the sensible starting points, so they never get
+  shuffled away. Everything else is randomised.
+- **The shuffle sets the order, not what is visible.** Both grids
+  browse by category now ([spec/09](09-canvas-and-palette.md)), so the
+  whole catalogue is reachable and nothing hides behind a "Show more"
+  toggle. Shuffling decides which options lead a category and the
+  search results, and the pinned default still opens the list.
+  ("Show more" survives only in the Tab Appearance modal's
+  background-pattern picker, the one caller `useShowMoreList` still
+  has.)
 - **Stable within a session.** The shuffle is computed when the picker
   mounts and held for that open, so clicking around never reshuffles
   the grid underfoot. Re-opening the picker reshuffles.
