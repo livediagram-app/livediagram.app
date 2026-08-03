@@ -117,8 +117,20 @@ graph and the server lays it out on request. (`mergeAiElements` in `editor-page-
 retains a general clean/replace merge; the Clean path spreads the AI patch over each
 existing element, preserving AI-invisible properties and positions.)
 
-Error responses follow the standard worker envelope:
-`{ "error": "ai_not_configured" | "ai_error" | "ai_parse_error" | "off_topic" | ... }`
+Error responses follow the standard worker envelope, `{ "error": "<token>" }`. The route emits
+exactly four:
+
+| Token                | Status | When                                                       |
+| -------------------- | ------ | ---------------------------------------------------------- |
+| `sign_in_required`   | 401    | The assistant is signed-in only.                           |
+| `origin_not_allowed` | 403    | The request came from an origin the worker does not serve. |
+| `ai_error`           | 502    | The upstream model call failed.                            |
+| `ai_not_configured`  | 503    | No model key on this deployment (the self-host default).   |
+
+**`off_topic` is not one of them.** A prompt the model judges off-topic still returns **200**: the
+streamed body carries `"offTopic": true`, and the editor turns that into a local `off_topic` error
+for the AI panel to render (`apps/live/lib/api/ai.ts`). A client reading only the envelope will
+never see it, and must look at the body.
 
 ## Environment variables
 

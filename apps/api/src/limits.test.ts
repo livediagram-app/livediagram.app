@@ -31,3 +31,34 @@ describe('image cap', () => {
     expect(MAX_IMAGE_BYTES).toBeGreaterThan(MAX_BODY_BYTES);
   });
 });
+
+// spec/25 tabulates the AI route's error envelope. It had drifted badly: it
+// listed `ai_parse_error`, a token that exists in that sentence and nowhere
+// else in the repo, and `off_topic`, which is not an envelope at all — an
+// off-topic prompt returns 200 with `"offTopic": true` in the body and the
+// EDITOR raises the error. Both tokens the route really emits for auth
+// failures were missing. Someone building a client from the spec would have
+// handled two errors that never arrive and none of the two that do.
+describe('spec/25 lists the AI route error tokens the route emits', () => {
+  it('names each one, and invents none', () => {
+    const route = readFileSync(`${ROOT}/apps/api/src/routes/ai.ts`, 'utf8');
+    const spec = readFileSync(`${ROOT}/specs/25-ai-assistance.md`, 'utf8');
+    const emitted = [...route.matchAll(/error: '([a-z_]+)'/g)].map((m) => m[1]!);
+    expect(new Set(emitted).size).toBeGreaterThan(3);
+
+    for (const token of new Set(emitted)) {
+      expect(spec, `spec/25 omits ${token}`).toContain(`\`${token}\``);
+    }
+    // The spec may only claim tokens the route actually produces. Scoped to
+    // the envelope table so unrelated prose elsewhere in the spec is free.
+    const table = spec.slice(
+      spec.indexOf('Error responses follow'),
+      spec.indexOf('## Environment'),
+    );
+    for (const m of table.matchAll(/`([a-z]+_[a-z_]+)`/g)) {
+      const claimed = m[1]!;
+      if (claimed === 'off_topic') continue; // called out as NOT an envelope
+      expect(emitted, `spec/25 claims ${claimed}, which the route never emits`).toContain(claimed);
+    }
+  });
+});
