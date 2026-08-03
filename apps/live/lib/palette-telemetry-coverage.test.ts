@@ -96,6 +96,37 @@ describe('palette telemetry coverage', () => {
     expect(ALL_PALETTE_TELEMETRY_TYPES.length).toBeGreaterThan(40);
   });
 
+  it('gives every NON-shape element kind a bucket too', () => {
+    // The checks above walk SHAPE_KINDS, so they are blind to the element
+    // types that are not shapes at all. `Video` sat outside the catalogue from
+    // the day the element shipped for exactly that reason: six embed tiles
+    // (YouTube / Vimeo / Loom / Figma / Google Docs / website) all create a
+    // `video` element, all report `Video`, and the Palette ranking had no
+    // bucket to put them in.
+    //
+    // Driven off elementTelemetryType so the list cannot be a copy that
+    // agrees with itself. Freehand's variants (Highlighter / Polygon /
+    // Polyline) come from its flags rather than its type, and are covered by
+    // the tokens listed beside them.
+    const nonShapeElements = [
+      { type: 'arrow' },
+      { type: 'text' },
+      { type: 'sticky' },
+      { type: 'image' },
+      { type: 'table' },
+      { type: 'link-card' },
+      { type: 'video' },
+      { type: 'annotation' },
+      { type: 'freehand' },
+    ];
+    const missing = nonShapeElements
+      .map((el) =>
+        elementTelemetryType(el as unknown as Parameters<typeof elementTelemetryType>[0]),
+      )
+      .filter((token) => !ALL_PALETTE_TELEMETRY_TYPES.includes(token));
+    expect(missing).toEqual([]);
+  });
+
   it('lists no token twice across the buckets', () => {
     const seen = new Set<string>();
     const duplicated: string[] = [];

@@ -249,6 +249,11 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Frame',
     'Annotation',
     'LinkCard',
+    // Every embed tile (YouTube / Vimeo / Loom / Figma / Google Docs / the
+    // website embed, spec/133) creates a `video` element, and all six report
+    // as `Video`: the provider is not part of the token. Missing here since
+    // the element shipped, so six palette tiles were counted nowhere.
+    'Video',
     'Highlighter',
     'Polygon',
     'Polyline',
