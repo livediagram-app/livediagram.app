@@ -22,6 +22,7 @@ import {
   type ArrowheadSize,
   type ShapeKind,
 } from './index';
+import { tableKeys } from './table-keys';
 
 const channels = (hex: string): [number, number, number] => {
   const m = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex)!;
@@ -130,7 +131,8 @@ describe('arrow preset resolvers', () => {
 
 describe('ARROW_THICKNESS_PX lookup', () => {
   it('maps every ArrowThickness preset to a positive pixel width', () => {
-    const presets: ArrowThickness[] = ['thin', 'medium', 'thick', 'extra-thick'];
+    const presets = tableKeys<ArrowThickness>(ARROW_THICKNESS_PX);
+    expect(presets.length).toBeGreaterThan(3);
     for (const p of presets) {
       expect(typeof ARROW_THICKNESS_PX[p]).toBe('number');
       expect(ARROW_THICKNESS_PX[p]).toBeGreaterThan(0);
@@ -150,7 +152,8 @@ describe('ARROW_THICKNESS_PX lookup', () => {
 
 describe('ARROWHEAD_SIZE_PX lookup', () => {
   it('maps every ArrowheadSize preset to a positive marker size', () => {
-    const presets: ArrowheadSize[] = ['small', 'medium', 'large', 'extra-large'];
+    const presets = tableKeys<ArrowheadSize>(ARROWHEAD_SIZE_PX);
+    expect(presets.length).toBeGreaterThan(3);
     for (const p of presets) {
       expect(typeof ARROWHEAD_SIZE_PX[p]).toBe('number');
       expect(ARROWHEAD_SIZE_PX[p]).toBeGreaterThan(0);

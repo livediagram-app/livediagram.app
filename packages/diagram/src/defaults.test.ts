@@ -12,6 +12,7 @@ import {
   defaultTextColor,
   type Padding,
 } from './index';
+import { tableKeys } from './table-keys';
 
 // These default-resolution helpers drive the editor's rendering
 // fallbacks: every shape, sticky and text element that doesn't
@@ -38,7 +39,8 @@ describe('defaultPadding', () => {
 
 describe('PADDING_PX lookup', () => {
   it('maps every Padding preset to a non-negative pixel value', () => {
-    const presets: Padding[] = ['none', 'sm', 'md', 'lg'];
+    const presets = tableKeys<Padding>(PADDING_PX);
+    expect(presets.length).toBeGreaterThan(3);
     for (const p of presets) {
       expect(typeof PADDING_PX[p]).toBe('number');
       expect(PADDING_PX[p]).toBeGreaterThanOrEqual(0);

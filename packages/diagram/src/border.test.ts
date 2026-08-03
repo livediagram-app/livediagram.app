@@ -25,20 +25,14 @@ import {
   type BorderStyle,
   type Element,
 } from './index';
+import { tableKeys } from './table-keys';
 
 const shape = (kind: string) => ({ type: 'shape', shape: kind }) as unknown as Element;
 const ofType = (type: string) => ({ type }) as unknown as Element;
 
-// The "every preset" tests below iterate the TABLE'S OWN KEYS rather than a
-// list typed out here. Each table is a Record keyed by its union, so its keys
-// are the union, and a preset added tomorrow is covered the moment it exists.
-//
-// A hand-written list cannot make that promise, and this file's had already
-// stopped keeping it: the radius list read ['none', 'sm', 'md', 'lg'] while
-// BorderRadius also has 'full'. Nothing failed, because a list that omits a
-// case tests the cases it kept perfectly well. TypeScript catches a table
-// MISSING a key; only this catches a key mapped to a bad value.
-const keysOf = <K extends string>(table: Record<K, unknown>) => Object.keys(table) as K[];
+// The "every preset" tests below iterate each table's own keys (see
+// table-keys.ts). This file is why that helper exists: its radius list read
+// ['none', 'sm', 'md', 'lg'] long after BorderRadius gained 'full'.
 
 describe('supportsBorderControls', () => {
   it('includes shapes, freehand and tables', () => {
@@ -60,7 +54,7 @@ describe('supportsBorderControls', () => {
 
 describe('BORDER_STROKE_PX lookup', () => {
   it('maps every BorderStroke preset to a numeric pixel width', () => {
-    const presets = keysOf<BorderStroke>(BORDER_STROKE_PX);
+    const presets = tableKeys<BorderStroke>(BORDER_STROKE_PX);
     expect(presets.length).toBeGreaterThan(4);
     for (const p of presets) {
       expect(typeof BORDER_STROKE_PX[p]).toBe('number');
@@ -90,7 +84,7 @@ describe('BORDER_DASH_ARRAY lookup', () => {
   });
 
   it('maps every non-solid style to a valid SVG dasharray string', () => {
-    const dashed = keysOf<BorderStyle>(BORDER_DASH_ARRAY).filter((s) => s !== 'solid');
+    const dashed = tableKeys<BorderStyle>(BORDER_DASH_ARRAY).filter((s) => s !== 'solid');
     expect(dashed.length).toBeGreaterThan(4);
     for (const style of dashed) {
       expect(typeof BORDER_DASH_ARRAY[style]).toBe('string');
@@ -101,7 +95,7 @@ describe('BORDER_DASH_ARRAY lookup', () => {
 
 describe('BORDER_RADIUS_PX lookup', () => {
   it('maps every BorderRadius preset to a non-negative pixel value', () => {
-    const radii = keysOf<BorderRadius>(BORDER_RADIUS_PX);
+    const radii = tableKeys<BorderRadius>(BORDER_RADIUS_PX);
     // 'full' is the one this list used to miss; pin that it is now reached.
     expect(radii).toContain('full');
     for (const r of radii) {
