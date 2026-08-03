@@ -74,3 +74,37 @@ Nothing was lost that the button does not already say: its face states the tool
 and the setting ("Start · 5 min timer"), and the fuller explanation is in the
 element menu. The accessible names still carry the tool, the setting and, on a
 disabled button, why it is disabled.
+
+## The Timer element IS the timer
+
+A session element whose tool is `timer` no longer renders a button that starts
+a timer somewhere else. It renders the timer.
+
+It is the **same timer as the pill in the top chrome**, in every sense worth
+having: the same `TabTimer` on the same tab field, the same pure
+`timerDisplayMs`, and — since the look was extracted into
+`components/chrome/timer-pill.tsx` — literally the same clock, drain and
+controls. Pausing on the board pauses in the chrome. Every client computes the
+value locally off an absolute anchor, so there is no per-second network traffic
+and no drift between machines.
+
+Only the furniture differs: a floating banner in the chrome, the element's own
+box on the canvas.
+
+- **Controls**: pause / resume, reset, and remove, plus a start when no timer
+  is running. Reset returns the timer to its starting value; remove is what
+  actually gets it off the board, which is why both exist.
+- The controls **swallow pointer-down**. The canvas reads a press on an element
+  as select-and-maybe-drag, so without that the element moves whenever somebody
+  tries to pause it. The element's face is otherwise inert, so the control row
+  opts back into pointer events explicitly.
+- A tapped timer lands **224×64**, the pill's proportions. The session button's
+  square-ish default clipped the kicker off one end and the remove control off
+  the other. Only on a tap — a deliberate drag is the user saying what size
+  they want.
+- A **read-only** surface renders the clock and the drain and withholds the
+  controls, rather than hiding the timer.
+
+Vote and poll keep the ordinary button face: they start something that lives
+elsewhere (a dot vote over the whole canvas, a poll in a panel), so there is
+nothing for the element itself to become.

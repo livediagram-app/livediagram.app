@@ -81,6 +81,18 @@ export type BoxedElementViewProps = {
   // What the tab's timer is doing, so a timer button can say "Pause" /
   // "Continue" instead of always promising a fresh countdown.
   timerState?: import('@/components/canvas/SessionButtonFace').TimerState;
+  // The tab's live timer, so a Timer session element can BE the timer rather
+  // than a button that starts one elsewhere (spec/105). Null when none is
+  // running; absent on a surface with no session behind it.
+  tabTimer?: import('@livediagram/diagram').TabTimer | null;
+  // Pause / resume / restart / cancel for that timer. Absent on a read-only
+  // surface, which renders the timer readable but inert.
+  timerControls?: {
+    pause?: () => void;
+    resume?: () => void;
+    reset?: () => void;
+    clear?: () => void;
+  };
   // Reveal zone (spec/106): whether THIS viewer has lifted the cover (local,
   // ephemeral — the shared state lives on the element), and the toggle.
   revealedForMe?: boolean;

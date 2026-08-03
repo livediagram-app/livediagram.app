@@ -104,6 +104,15 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onPressSessionButton,
     sessionStartBlocked,
     timerState,
+    // The tab's live timer plus the handlers that drive it, so a Timer
+    // session element can BE the timer (spec/105) rather than a button that
+    // starts one elsewhere. The handlers no-op when edits are blocked, so a
+    // read-only surface needs no separate gate here.
+    tabTimer,
+    onPauseTimer,
+    onResumeTimer,
+    onResetTimer,
+    onClearTimer,
     revealedIds,
     onToggleReveal,
     onRollPicker,
@@ -356,6 +365,13 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             onPressSessionButton={h.onPressSessionButton}
             sessionStartBlocked={sessionStartBlocked}
             timerState={timerState}
+            tabTimer={tabTimer ?? null}
+            timerControls={{
+              pause: onPauseTimer,
+              resume: onResumeTimer,
+              reset: onResetTimer,
+              clear: onClearTimer,
+            }}
             revealedForMe={revealedIds?.has(element.id)}
             onToggleReveal={h.onToggleReveal}
             onRollPicker={h.onRollPicker}

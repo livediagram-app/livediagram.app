@@ -34,6 +34,7 @@ import { BoxBorderOverlay } from '@/components/canvas/BoxBorderOverlay';
 import { PageCornerFold } from '@/components/canvas/PageCornerFold';
 import { ModeButtonFace } from '@/components/canvas/ModeButtonFace';
 import { SessionButtonFace } from '@/components/canvas/SessionButtonFace';
+import { SessionTimerFace } from '@/components/canvas/SessionTimerFace';
 import { RevealFace } from '@/components/canvas/RevealFace';
 import { PickerFace } from '@/components/canvas/PickerFace';
 import { PortalFace } from '@/components/canvas/PortalFace';
@@ -106,6 +107,8 @@ function BoxedElementViewImpl({
   onPressSessionButton,
   sessionStartBlocked,
   timerState,
+  tabTimer,
+  timerControls,
   revealedForMe,
   onToggleReveal,
   onRollPicker,
@@ -466,8 +469,32 @@ function BoxedElementViewImpl({
           textColor={textColor}
           onPress={onPressModeButton ? () => onPressModeButton(element) : undefined}
         />
+      ) : element.type === 'shape' &&
+        element.shape === 'session-button' &&
+        element.session?.tool === 'timer' &&
+        !isEditing &&
+        timerControls ? (
+        /* A TIMER session element is the timer (spec/105), not a button that
+           starts one elsewhere: same TabTimer, same tab field, same pure
+           display maths as the top-of-page pill, so pausing here pauses
+           there. Falls through to the plain button face when the surface has
+           no timer controls (the read-only embed, the export renderer). */
+        <SessionTimerFace
+          timer={tabTimer ?? null}
+          durationMs={(element.session.minutes ?? 5) * 60_000}
+          readOnly={!timerControls.pause}
+          onStart={
+            onPressSessionButton && !sessionStartBlocked
+              ? () => onPressSessionButton(element)
+              : undefined
+          }
+          onPause={timerControls.pause}
+          onResume={timerControls.resume}
+          onReset={timerControls.reset}
+          onClear={timerControls.clear}
+        />
       ) : element.type === 'shape' && element.shape === 'session-button' && !isEditing ? (
-        /* Session button (spec/105): starts a timer / vote / poll for the room. */
+        /* Session button (spec/105): starts a vote / poll for the room. */
         <SessionButtonFace
           config={element.session}
           label={label}

@@ -177,7 +177,15 @@ export function buildDrawnBoxed(
     // spec/135), so the choice arrives with the intent and is applied here
     // rather than left on the factory default for the user to go and change.
     ...(intent.type === 'shape' && intent.kind === 'session-button' && intent.session
-      ? { session: { ...defaultSessionConfig(intent.session) } }
+      ? {
+          session: { ...defaultSessionConfig(intent.session) },
+          // A TIMER renders as the pill from the top chrome (spec/105), which
+          // is wide and short; the session button's square-ish default box
+          // clipped the kicker off one end and the remove control off the
+          // other. Only on a TAP — a deliberate drag is the user saying what
+          // size they want.
+          ...(intent.session === 'timer' && isTap ? { width: 224, height: 64 } : {}),
+        }
       : {}),
     ...(intent.type === 'shape' && intent.kind === 'reaction-pad' && intent.reaction
       ? { reaction: intent.reaction, label: REACTION_PAD_LABEL[intent.reaction] }
