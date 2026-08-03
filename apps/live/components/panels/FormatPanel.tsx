@@ -20,9 +20,8 @@ import {
   type FormatMode,
 } from '@/lib/format-config';
 import { AccordionSection } from '@/components/primitives/AccordionSection';
-import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { Tooltip } from '@/components/primitives/Tooltip';
-import type { MovablePanelPlacementProps } from '@/components/primitives/MovablePanel.types';
+import { ModePanel, type ModePanelProps } from '@/components/panels/ModePanel';
 
 type Row = 'copies' | 'mode';
 
@@ -70,46 +69,21 @@ export function FormatPanel({
   onToggleGroup,
   onSetMode,
   source,
-  position,
-  onMoveTo,
-  onReset,
-  dock,
-  mobileOpenOverride,
-  mobileDockAnchor,
-  forceDockMode,
-  onMobileClose,
-  stackBelowY,
+  ...placement
 }: {
   config: FormatConfig;
   onToggleGroup: (group: FormatGroup) => void;
   onSetMode: (mode: FormatMode) => void;
   // The loaded element, described for the preview. Null until one is picked.
   source: { name: string; fill?: string; stroke?: string; textColor?: string } | null;
-  forceDockMode?: boolean;
-  onMobileClose?: () => void;
-  stackBelowY?: number;
-} & MovablePanelPlacementProps) {
+} & ModePanelProps) {
   const [openRow, setOpenRow] = useState<Row | null>(null);
   const toggle = (row: Row) => setOpenRow((r) => (r === row ? null : row));
   const paintsAnything = formatPaintsAnything(config);
   const mode = FORMAT_MODES.find((m) => m.id === config.mode);
 
   return (
-    <MovablePanel
-      title="Format"
-      position={position}
-      defaultCorner="top-right-stacked"
-      width="w-auto sm:w-64"
-      onMoveTo={onMoveTo}
-      onReset={onReset}
-      stackBelowY={stackBelowY}
-      mobileOpenOverride={mobileOpenOverride}
-      mobileDockAnchor={mobileDockAnchor}
-      forceDockMode={forceDockMode}
-      onMobileClose={onMobileClose}
-      {...dock}
-      collapsible
-    >
+    <ModePanel title="Format" {...placement}>
       <div className="flex flex-col px-2 pb-2">
         <BrushPreview config={config} source={source} />
         <div className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -208,6 +182,6 @@ export function FormatPanel({
             : 'Nothing is turned on, so the brush has nothing to paint.'}
         </p>
       </div>
-    </MovablePanel>
+    </ModePanel>
   );
 }

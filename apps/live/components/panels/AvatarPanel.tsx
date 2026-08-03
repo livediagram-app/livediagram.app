@@ -28,13 +28,12 @@ import {
 } from '@/lib/avatar-config';
 import { AVATAR_REACTIONS, type AvatarReactionKind } from '@/lib/avatar-reactions';
 import { AvatarSprite } from '@/components/canvas/avatar-sprite';
-import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { Tooltip } from '@/components/primitives/Tooltip';
 // The same glyph the welcome flow's "shuffle a random name" button uses — same
 // meaning (give me another random one), so it stays the same icon.
 import { RefreshIcon } from '@/components/palette/template-picker-icons';
 import { ToolOptionRow } from '@/components/panels/ToolOptionRow';
-import type { MovablePanelPlacementProps } from '@/components/primitives/MovablePanel.types';
+import { ModePanel, type ModePanelProps } from '@/components/panels/ModePanel';
 
 type Row = 'gender' | 'clothing' | 'hair' | 'size';
 
@@ -44,15 +43,7 @@ export function AvatarPanel({
   onRandomise,
   onReaction,
   shirt,
-  position,
-  onMoveTo,
-  onReset,
-  dock,
-  mobileOpenOverride,
-  mobileDockAnchor,
-  forceDockMode,
-  onMobileClose,
-  stackBelowY,
+  ...placement
 }: {
   config: AvatarConfig;
   // One field at a time — the hook persists and reports each pick.
@@ -64,33 +55,14 @@ export function AvatarPanel({
   // The local participant's colour, so the preview wears the same shirt the
   // character on the canvas does.
   shirt?: string;
-  forceDockMode?: boolean;
-  onMobileClose?: () => void;
-  stackBelowY?: number;
-} & MovablePanelPlacementProps) {
+} & ModePanelProps) {
   // Single-open, and closed to start: the panel opens as a four-line summary of
   // the character, and you expand only the row you came to change.
   const [openRow, setOpenRow] = useState<Row | null>(null);
   const toggle = (row: Row) => setOpenRow((r) => (r === row ? null : row));
 
   return (
-    <MovablePanel
-      title="Avatar"
-      position={position}
-      defaultCorner="top-right-stacked"
-      // Matches the Palette this stacks under, so the top-right column reads as
-      // one edge rather than two.
-      width="w-auto sm:w-64"
-      onMoveTo={onMoveTo}
-      onReset={onReset}
-      stackBelowY={stackBelowY}
-      mobileOpenOverride={mobileOpenOverride}
-      mobileDockAnchor={mobileDockAnchor}
-      forceDockMode={forceDockMode}
-      onMobileClose={onMobileClose}
-      {...dock}
-      collapsible
-    >
+    <ModePanel title="Avatar" {...placement}>
       <div className="flex flex-col px-2 pb-2">
         {/* Cropped portrait: the canvas sprite standing front-on in a box that
             hugs it (see AvatarSprite's `portrait`), at a fixed scale so
@@ -175,6 +147,6 @@ export function AvatarPanel({
           </div>
         </div>
       </div>
-    </MovablePanel>
+    </ModePanel>
   );
 }

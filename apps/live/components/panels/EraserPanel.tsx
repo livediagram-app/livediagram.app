@@ -19,9 +19,8 @@ import {
   ERASER_TARGETS,
   type EraserConfig,
 } from '@/lib/eraser-config';
-import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { ToolOptionRow } from '@/components/panels/ToolOptionRow';
-import type { MovablePanelPlacementProps } from '@/components/primitives/MovablePanel.types';
+import { ModePanel, type ModePanelProps } from '@/components/panels/ModePanel';
 
 type Row = 'mode' | 'size' | 'target' | 'groups';
 
@@ -56,41 +55,16 @@ function BrushPreview({ config }: { config: EraserConfig }) {
 export function EraserPanel({
   config,
   onChange,
-  position,
-  onMoveTo,
-  onReset,
-  dock,
-  mobileOpenOverride,
-  mobileDockAnchor,
-  forceDockMode,
-  onMobileClose,
-  stackBelowY,
+  ...placement
 }: {
   config: EraserConfig;
   onChange: <K extends keyof EraserConfig>(field: K, value: EraserConfig[K]) => void;
-  forceDockMode?: boolean;
-  onMobileClose?: () => void;
-  stackBelowY?: number;
-} & MovablePanelPlacementProps) {
+} & ModePanelProps) {
   const [openRow, setOpenRow] = useState<Row | null>(null);
   const toggle = (row: Row) => setOpenRow((r) => (r === row ? null : row));
 
   return (
-    <MovablePanel
-      title="Eraser"
-      position={position}
-      defaultCorner="top-right-stacked"
-      width="w-auto sm:w-64"
-      onMoveTo={onMoveTo}
-      onReset={onReset}
-      stackBelowY={stackBelowY}
-      mobileOpenOverride={mobileOpenOverride}
-      mobileDockAnchor={mobileDockAnchor}
-      forceDockMode={forceDockMode}
-      onMobileClose={onMobileClose}
-      {...dock}
-      collapsible
-    >
+    <ModePanel title="Eraser" {...placement}>
       <div className="flex flex-col px-2 pb-2">
         <BrushPreview config={config} />
         <div className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -133,6 +107,6 @@ export function EraserPanel({
             : `Erasing ${config.target === 'drawings' ? 'drawings' : 'arrows'} only — everything else is safe from the brush.`}
         </p>
       </div>
-    </MovablePanel>
+    </ModePanel>
   );
 }

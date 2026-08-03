@@ -24,10 +24,9 @@ import {
   LASER_WIDTHS,
   type LaserConfig,
 } from '@/lib/laser-config';
-import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { LaserOverlay } from '@/components/canvas/LaserOverlay';
 import { ToolOptionRow } from '@/components/panels/ToolOptionRow';
-import type { MovablePanelPlacementProps } from '@/components/primitives/MovablePanel.types';
+import { ModePanel, type ModePanelProps } from '@/components/panels/ModePanel';
 
 type Row = 'width' | 'colour' | 'trail' | 'effect';
 
@@ -75,47 +74,21 @@ export function LaserPanel({
   config,
   onChange,
   selfColour,
-  position,
-  onMoveTo,
-  onReset,
-  dock,
-  mobileOpenOverride,
-  mobileDockAnchor,
-  forceDockMode,
-  onMobileClose,
-  stackBelowY,
+  ...placement
 }: {
   config: LaserConfig;
   // One field at a time — the hook persists and reports each pick.
   onChange: <K extends keyof LaserConfig>(field: K, value: LaserConfig[K]) => void;
   // The local participant's colour, so "Your colour" previews as itself.
   selfColour: string;
-  forceDockMode?: boolean;
-  onMobileClose?: () => void;
-  stackBelowY?: number;
-} & MovablePanelPlacementProps) {
+} & ModePanelProps) {
   const [openRow, setOpenRow] = useState<Row | null>(null);
   const toggle = (row: Row) => setOpenRow((r) => (r === row ? null : row));
   const swatchFor = (id: LaserConfig['colour']) =>
     laserColour({ ...config, colour: id }, selfColour);
 
   return (
-    <MovablePanel
-      title="Laser"
-      position={position}
-      defaultCorner="top-right-stacked"
-      // Matches the Palette this stacks under, like the Avatar panel.
-      width="w-auto sm:w-64"
-      onMoveTo={onMoveTo}
-      onReset={onReset}
-      stackBelowY={stackBelowY}
-      mobileOpenOverride={mobileOpenOverride}
-      mobileDockAnchor={mobileDockAnchor}
-      forceDockMode={forceDockMode}
-      onMobileClose={onMobileClose}
-      {...dock}
-      collapsible
-    >
+    <ModePanel title="Laser" {...placement}>
       <div className="flex flex-col px-2 pb-2">
         <PenPreview config={config} colour={selfColour} />
         <div className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -158,6 +131,6 @@ export function LaserPanel({
           {laserStrokeWidth(config)}px, fading over {(laserLifetimeMs(config) / 1000).toFixed(1)}s.
         </p>
       </div>
-    </MovablePanel>
+    </ModePanel>
   );
 }

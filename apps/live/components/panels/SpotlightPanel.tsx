@@ -23,9 +23,8 @@ import {
   SPOTLIGHT_SIZES,
   type SpotlightConfig,
 } from '@/lib/spotlight-config';
-import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { ToolOptionRow } from '@/components/panels/ToolOptionRow';
-import type { MovablePanelPlacementProps } from '@/components/primitives/MovablePanel.types';
+import { ModePanel, type ModePanelProps } from '@/components/panels/ModePanel';
 
 type Row = 'size' | 'dim' | 'edge' | 'shape';
 
@@ -63,15 +62,7 @@ export function SpotlightPanel({
   onChange,
   radius,
   onSetRadius,
-  position,
-  onMoveTo,
-  onReset,
-  dock,
-  mobileOpenOverride,
-  mobileDockAnchor,
-  forceDockMode,
-  onMobileClose,
-  stackBelowY,
+  ...placement
 }: {
   config: SpotlightConfig;
   onChange: <K extends keyof SpotlightConfig>(field: K, value: SpotlightConfig[K]) => void;
@@ -80,10 +71,7 @@ export function SpotlightPanel({
   // "Custom" when the two have parted company.
   radius: number;
   onSetRadius: (radius: number) => void;
-  forceDockMode?: boolean;
-  onMobileClose?: () => void;
-  stackBelowY?: number;
-} & MovablePanelPlacementProps) {
+} & ModePanelProps) {
   const [openRow, setOpenRow] = useState<Row | null>(null);
   const toggle = (row: Row) => setOpenRow((r) => (r === row ? null : row));
   const currentSize = spotlightSizeOf(radius);
@@ -91,21 +79,7 @@ export function SpotlightPanel({
     options.find((o) => o.id === id)?.label ?? '';
 
   return (
-    <MovablePanel
-      title="Spotlight"
-      position={position}
-      defaultCorner="top-right-stacked"
-      width="w-auto sm:w-64"
-      onMoveTo={onMoveTo}
-      onReset={onReset}
-      stackBelowY={stackBelowY}
-      mobileOpenOverride={mobileOpenOverride}
-      mobileDockAnchor={mobileDockAnchor}
-      forceDockMode={forceDockMode}
-      onMobileClose={onMobileClose}
-      {...dock}
-      collapsible
-    >
+    <ModePanel title="Spotlight" {...placement}>
       <div className="flex flex-col px-2 pb-2">
         <ShroudPreview config={config} radius={radius} />
         <div className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -156,6 +130,6 @@ export function SpotlightPanel({
           the light, right-click to shrink it.
         </p>
       </div>
-    </MovablePanel>
+    </ModePanel>
   );
 }
