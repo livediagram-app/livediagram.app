@@ -1816,44 +1816,6 @@
   }
 }
 
-/* Reaction-pad burst particles (spec/135).
-   Each particle flies from the pad's centre to its own landing offset while
-   fading and spinning. The offsets are custom properties set per particle, so
-   one keyframe serves every reaction and the SHAPE of the burst lives in the
-   numbers rather than in five near-identical animations.
-   `forwards` holds the end state for the tail of the burst, which stops a
-   particle snapping back to the centre before the component unmounts. */
-@keyframes lvd-reaction-fly {
-  0% {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(0.3) rotate(0deg);
-  }
-  12% {
-    opacity: 1;
-  }
-  70% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-    transform: translate(calc(-50% + var(--lvd-rx, 0%)), calc(-50% + var(--lvd-ry, 0%)))
-      scale(var(--lvd-rscale, 1)) rotate(var(--lvd-rot, 0deg));
-  }
-}
-.lvd-reaction-particle {
-  animation: lvd-reaction-fly 1.5s cubic-bezier(0.16, 0.8, 0.35, 1) forwards;
-}
-@media (prefers-reduced-motion: reduce) {
-  /* The burst is celebration, not information: somebody who has asked for less
-     motion loses nothing by getting a brief static puff instead of a dozen
-     things flying across their screen. */
-  .lvd-reaction-particle {
-    animation: none;
-    opacity: 0.9;
-    transform: translate(-50%, -50%) scale(0.9);
-  }
-}
-
 /* Dropdown tile glyphs lift on hover (spec/108).
    The whole tile is the target — pointing at a row should acknowledge the
    row, not just its 18px picture — but it is the GLYPH that moves, because

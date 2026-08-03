@@ -658,6 +658,8 @@ function BoxedElementViewImpl({
         <ReactionBurst
           reaction={reactionBurst.reaction}
           seed={reactionBurst.seed}
+          width={element.width}
+          height={element.height}
           onDone={() => onReactionBurstDone?.(element.id)}
         />
       ) : null}

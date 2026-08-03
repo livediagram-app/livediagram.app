@@ -66,30 +66,78 @@ on the button from putting two hundred spans on the canvas.
 
 ## Drawing it
 
-Plain absolutely-positioned spans on one CSS keyframe, not a canvas: a burst
-lasts 1.5s and has a dozen particles, so a second rendering surface — with its
-own resize, DPI and z-order problems, over a canvas that already carries an
-isometric 3D transform — would cost far more than it saves.
+A **canvas and a particle system**, in `lib/reaction-particles.ts` (pure
+physics) plus `ReactionBurst.tsx` (surface, clock, cleanup).
 
-The **shape of the motion** is most of what distinguishes the reactions at a
-glance, so it lives in the numbers rather than in five near-identical
-animations: confetti goes up and out then falls past the bottom; sparkles
-twinkle tight to the pad; hearts float straight up, narrow and slow; applause
-arcs wide to both sides; fireworks burst evenly in every direction.
+The first version was a dozen emoji spans on one CSS keyframe, and it could
+not be made good. Every particle interpolated between the same two transforms,
+so there was no velocity, no gravity, no drag, no tumble and no per-particle
+life: the burst read as clip-art sliding across the screen. Spectacle needs a
+hundred particles that **disagree with each other**, and a hundred DOM nodes
+with per-particle keyframes is both slower and harder to read than one canvas
+and a step function.
 
-Two things worth not re-deriving:
+Particles carry position, velocity, rotation, spin, size, colour, gravity,
+drag, a flutter phase and a life. Six drawn kinds — `ribbon`, `star`, `heart`,
+`dot`, `ring`, `spark` — none of them emoji.
 
-- Offsets are in **container units** (`cqw` / `cqh`), not percentages. A
-  percentage inside `translate()` resolves against the element being
-  transformed — the ~27px particle — so an offset of "3 pad-widths" moved it
-  81px and the whole burst stayed huddled on the pad.
-- The burst span therefore sets `container-type: size`, not Tailwind's
-  `@container` (which is `inline-size` only), because the offsets are in
-  element heights as well as widths.
+**Each reaction is a different physics**, which is what tells them apart at a
+glance far better than the glyph did:
 
-Under `prefers-reduced-motion` the burst is a brief static puff. It is
-celebration, not information, so somebody who has asked for less motion loses
-nothing.
+| Reaction      | Motion                                                               |
+| ------------- | -------------------------------------------------------------------- |
+| **Confetti**  | ~88 ribbons launched up in a fan, heavy gravity, tumbling            |
+| **Sparkles**  | ~54 four-point glints, slow, high drag, twinkling alpha, faint rise  |
+| **Hearts**    | 30 hearts, negative gravity, sway, staggered launch                  |
+| **Applause**  | 3 expanding rings plus dots sprayed to both sides                    |
+| **Fireworks** | 3 staggered shells of evenly-spaced sparks drawn as velocity streaks |
+
+Details that carry more than their weight:
+
+- **The ribbon tumble.** A confetti rectangle's width follows a cosine, so it
+  turns edge-on and back like paper. Without it, confetti is falling blocks.
+- **Sparks are streaks**, drawn along their own velocity vector. A round dot
+  looks static however fast it is actually moving.
+- **Additive blending** (`globalCompositeOperation = 'lighter'`), so
+  overlapping particles build light instead of the topmost flatly covering the
+  rest.
+- **The hearts stagger.** Released together they left the pad as one clump and
+  stayed one, because a slow rise gives them no time to separate. A launch
+  delay spread over the first third of a second is what makes them a stream.
+- **Even spacing in a firework shell**, with only slight jitter. Pure jitter
+  looks like a sneeze; the ring is what makes a shell a shell.
+
+### Frame-rate independence
+
+Position is integrated with the **closed form** for linear drag plus constant
+acceleration, not with `v += g·dt; x += v·dt`:
+
+```
+v(t) = vT + (v0 - vT)·e^(-k·t)        vT = g/k
+x(t) = x0 + vT·t + (v0 - vT)·(1 - e^(-k·t))/k
+```
+
+Euler's velocity is already frame-rate independent (the decay is exponential
+either way) but its **position is not**: the same 0.2s in one step and in
+twenty landed 3px apart, so a 120Hz screen and a 60Hz screen drew measurably
+different bursts. A test pins this, and it is the reason the integrator looks
+heavier than it needs to.
+
+### Cost
+
+The canvas is `OVERSCAN` = 2 pad-widths larger per side (5x the pad in each
+dimension), because the burst is supposed to leave the element — confetti that
+stopped at the pad's edge would be a rectangle of paper. The backing store is
+capped at 2x DPR: a 3x phone painting a hundred sparks gains nothing anybody
+can see and costs fill rate every frame. The whole surface unmounts when the
+last particle dies.
+
+`dt` is clamped to 50ms, so a backgrounded tab resuming with a huge delta does
+not teleport the burst to its end state in one step.
+
+Under `prefers-reduced-motion` the engine steps once to 0.45s, paints that
+single frame and stops. The reaction is celebration rather than information, so
+somebody who asked for less motion loses nothing by getting a picture of it.
 
 ## Not votable
 
