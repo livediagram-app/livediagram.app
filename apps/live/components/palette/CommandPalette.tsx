@@ -91,8 +91,18 @@ export function CommandPalette({
   // shape/tool so the user can draw immediately without dismissing manually.
   // Draw-to-place tools also signal onDrawArmed so the parent can reopen the
   // palette once the draw lands; immediate drops (icon/table/...) don't.
-  const addShape = (kind: import('@livediagram/diagram').ShapeKind) => {
-    onAddShape(kind);
+  // `opts` is the creation-time choice for the kinds that have one: which
+  // session tool, which reaction (spec/105, spec/135). It has to be forwarded
+  // rather than dropped — this adapter silently swallowing it is what made
+  // every session tile place a timer and every reaction tile place confetti.
+  const addShape = (
+    kind: import('@livediagram/diagram').ShapeKind,
+    opts?: {
+      session?: import('@livediagram/diagram').SessionTool;
+      reaction?: import('@livediagram/diagram').Reaction;
+    },
+  ) => {
+    onAddShape(kind, opts);
     onDrawArmed?.();
     onMobileClose?.();
   };

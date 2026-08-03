@@ -84,7 +84,15 @@ type ElementItem = {
 // this back so the editor routes it to the matching add handler (which arms
 // the same tap-to-drop / drag-to-size placement the palette uses).
 export type PaletteAdd =
-  | { type: 'shape'; shapeKind: ShapeKind }
+  // `session` / `reaction` are the creation-time choice for the two kinds
+  // that have one (spec/105, spec/135). The palette offers a tile per choice,
+  // so search has to as well: typing "poll" should place a poll, not a timer.
+  | {
+      type: 'shape';
+      shapeKind: ShapeKind;
+      session?: import('@livediagram/diagram').SessionTool;
+      reaction?: import('@livediagram/diagram').Reaction;
+    }
   | { type: 'icon'; iconId: string }
   | { type: 'tech'; iconId: string }
   // A sticker (spec/116) is its own element kind, so it adds through its own

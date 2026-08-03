@@ -95,15 +95,31 @@ const SHAPE_TILES = PALETTE_TILES.filter(
 export function buildPaletteSearchItems(): PaletteSearchItem[] {
   return [
     ...SHAPE_TILES.map((tile) => {
-      const kind = (tile.action as { type: 'shape'; kind: ShapeKind }).kind;
+      const action = tile.action as {
+        type: 'shape';
+        kind: ShapeKind;
+        session?: string;
+        reaction?: string;
+      };
+      const kind = action.kind;
+      // Keyed on the CHOICE where there is one, not just the kind: the five
+      // reaction tiles and the three session tiles all place the same shape,
+      // so keying on kind alone gave eight results three distinct ids and the
+      // panel silently dropped the duplicates.
+      const choice = action.session ?? action.reaction;
       return {
-        id: `shape:${kind}`,
+        id: choice ? `shape:${kind}:${choice}` : `shape:${kind}`,
         name: tileDisplayName(tile),
         // The tile's own description joins the keywords, so the sentence the
         // palette already writes about an element ("a titled band that carries
         // its contents") is searchable without being written twice.
         keywords: `shape ${SHAPE_KEYWORDS[kind] ?? ''} ${tile.description}`,
-        add: { type: 'shape' as const, shapeKind: kind },
+        add: {
+          type: 'shape' as const,
+          shapeKind: kind,
+          ...(action.session ? { session: action.session as never } : {}),
+          ...(action.reaction ? { reaction: action.reaction as never } : {}),
+        },
       };
     }),
     // Line art only. The catalogue still carries the legacy emoji entries so

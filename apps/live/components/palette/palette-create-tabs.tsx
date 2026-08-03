@@ -4,7 +4,12 @@ import type { PendingDraw } from '@/lib/draw-mode';
 import { PaletteTileGrid, type PaletteTileActions } from './PaletteTileGrid';
 import { PaletteToolRows } from './PaletteToolRows';
 import { PaletteTileGroup } from './PaletteTileGroup';
-import { EmbedGroupIcon, WebGroupIcon } from './palette-group-icons';
+import {
+  EmbedGroupIcon,
+  ReactionGroupIcon,
+  SessionGroupIcon,
+  WebGroupIcon,
+} from './palette-group-icons';
 import { tilesInSection, tilesInToolGroup } from './palette-tile-defs';
 
 // The palette's creation-category tab bodies. Since spec/78 every tile is
@@ -73,13 +78,38 @@ export function PaletteDataTab({ pendingDraw, actions }: TabProps) {
 // to spec/107): Selection Mode buttons, Portals, Session buttons, Reveal
 // zones, Pickers. Rows, not a tile grid: half of these are behaviours whose
 // glyph cannot say what they do, so each keeps its one-line blurb.
+// The session tools and the reactions each collapse behind one row, the way
+// Media's embed providers do (spec/121). Both are ONE element with a mode
+// field, so the palette offers a tile per mode: which tool or which reaction
+// you want IS the decision, and a button you place and then go and reconfigure
+// is two steps for something you already knew. Flattened out, the eight of
+// them would also have buried the four single-purpose Behaviour elements.
 export function PaletteBehaviourTab({ pendingDraw, actions }: TabProps) {
+  const behaviour = tilesInToolGroup('behaviour');
   return (
-    <PaletteToolRows
-      tiles={tilesInToolGroup('behaviour')}
-      actions={actions}
-      pendingDraw={pendingDraw}
-    />
+    <div className="flex flex-col gap-0.5">
+      <PaletteToolRows
+        tiles={behaviour.filter((t) => !t.tileGroup)}
+        actions={actions}
+        pendingDraw={pendingDraw}
+      />
+      <PaletteTileGroup
+        title="Session"
+        blurb={(n) => `${n} tools the room runs together`}
+        icon={<SessionGroupIcon />}
+        tiles={behaviour.filter((t) => t.tileGroup === 'session')}
+        actions={actions}
+        pendingDraw={pendingDraw}
+      />
+      <PaletteTileGroup
+        title="Reactions"
+        blurb={(n) => `${n} ways to celebrate on the board`}
+        icon={<ReactionGroupIcon />}
+        tiles={behaviour.filter((t) => t.tileGroup === 'reaction')}
+        actions={actions}
+        pendingDraw={pendingDraw}
+      />
+    </div>
   );
 }
 

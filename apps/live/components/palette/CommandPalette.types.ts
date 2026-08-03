@@ -46,7 +46,16 @@ export type CommandPaletteProps = {
   // True when the active tab has no elements. Disables the canvas tools that
   // need existing content (Eraser / Format / Laser / Spotlight / Isometric).
   canvasEmpty?: boolean;
-  onAddShape: (kind: ShapeKind) => void;
+  // `opts` carries the creation-time choice for the kinds that have one
+  // (spec/105 session tools, spec/135 reactions), so a tile per choice places
+  // that choice rather than the factory default.
+  onAddShape: (
+    kind: ShapeKind,
+    opts?: {
+      session?: import('@livediagram/diagram').SessionTool;
+      reaction?: import('@livediagram/diagram').Reaction;
+    },
+  ) => void;
   // Drops a curated icon glyph (shape kind 'icon') carrying the chosen
   // catalogue id at the viewport centre. Picked from the Icons
   // accordion's searchable grid.

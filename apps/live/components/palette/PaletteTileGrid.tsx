@@ -1,4 +1,4 @@
-import type { ComponentKind, ShapeKind } from '@livediagram/diagram';
+import type { ComponentKind, Reaction, SessionTool, ShapeKind } from '@livediagram/diagram';
 import type { EmbedProvider } from '@livediagram/diagram';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { IconButton } from '@/components/palette/palette-controls';
@@ -16,7 +16,7 @@ import { tilesInSection } from './palette-tile-defs';
 // (with the mobile-close / draw-armed wrapping already applied) and threaded
 // to every grid.
 export type PaletteTileActions = {
-  addShape: (kind: ShapeKind) => void;
+  addShape: (kind: ShapeKind, opts?: { session?: SessionTool; reaction?: Reaction }) => void;
   addText: () => void;
   beginFreehand: () => void;
   beginHighlighter: () => void;
@@ -45,7 +45,9 @@ export function tileHandler(def: PaletteTileDef, actions: PaletteTileActions): (
   const a = def.action;
   switch (a.type) {
     case 'shape':
-      return () => actions.addShape(a.kind);
+      // The creation-time choice rides along, so "Add poll" places a poll and
+      // a confetti tile places a confetti pad (spec/105, spec/135).
+      return () => actions.addShape(a.kind, { session: a.session, reaction: a.reaction });
     case 'text':
       return actions.addText;
     case 'freehand':
@@ -92,7 +94,14 @@ export function tileActive(
   const a = def.action;
   switch (a.type) {
     case 'shape':
-      return pendingDraw.type === 'shape' && pendingDraw.kind === a.kind;
+      // Matched on the CHOICE too, or all five reaction tiles would light up
+      // together while one of them was armed.
+      return (
+        pendingDraw.type === 'shape' &&
+        pendingDraw.kind === a.kind &&
+        pendingDraw.session === a.session &&
+        pendingDraw.reaction === a.reaction
+      );
     case 'component':
       return pendingDraw.type === 'component' && pendingDraw.kind === a.kind;
     // The three pens share the freehand intent, split by the variant

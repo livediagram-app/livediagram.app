@@ -19,7 +19,14 @@ describe('buildPaletteSearchItems', () => {
   it('offers every shape-placing palette tile', () => {
     const ids = new Set(buildPaletteSearchItems().map((i) => i.id));
     const missing = shapeTiles
-      .map((t) => `shape:${(t.action as { kind: string }).kind}`)
+      .map((t) => {
+        // Tiles that differ only by their creation-time choice (the five
+        // reactions, the three session tools) each get their own id, or the
+        // panel would show one of them and silently drop the rest.
+        const a = t.action as { kind: string; session?: string; reaction?: string };
+        const choice = a.session ?? a.reaction;
+        return choice ? `shape:${a.kind}:${choice}` : `shape:${a.kind}`;
+      })
       .filter((id) => !ids.has(id));
     expect(missing).toEqual([]);
   });
@@ -31,6 +38,16 @@ describe('buildPaletteSearchItems', () => {
     const ids = new Set(buildPaletteSearchItems().map((i) => i.id));
     for (const kind of ['lane', 'entity', 'mind-node', 'page', 'phone', 'bar-chart', 'portal']) {
       expect(ids.has(`shape:${kind}`)).toBe(true);
+    }
+    // And the split kinds, one entry per choice (spec/105, spec/135).
+    for (const id of [
+      'shape:session-button:timer',
+      'shape:session-button:vote',
+      'shape:session-button:poll',
+      'shape:reaction-pad:confetti',
+      'shape:reaction-pad:fireworks',
+    ]) {
+      expect(ids.has(id)).toBe(true);
     }
   });
 
@@ -50,7 +67,7 @@ describe('buildPaletteSearchItems', () => {
   it('keys its synonym map on real shape kinds only', () => {
     for (const item of buildPaletteSearchItems()) {
       if (!item.id.startsWith('shape:')) continue;
-      expect(SHAPE_KINDS.has(item.id.slice('shape:'.length))).toBe(true);
+      expect(SHAPE_KINDS.has(item.id.split(':')[1]!)).toBe(true);
     }
   });
   it('gives every searchable shape tile its own synonyms', () => {
@@ -69,7 +86,9 @@ describe('buildPaletteSearchItems', () => {
     // shape tile and correctly have no synonyms.
     const missing = buildPaletteSearchItems()
       .filter((i) => i.id.startsWith('shape:'))
-      .map((i) => i.id.slice('shape:'.length))
+      // Strip any creation-time choice suffix back to the kind, which is what
+      // the synonym map is keyed on.
+      .map((i) => i.id.split(':')[1]!)
       .filter((kind) => !(SHAPE_KEYWORDS as Record<string, string | undefined>)[kind]?.trim());
     expect(missing).toEqual([]);
   });

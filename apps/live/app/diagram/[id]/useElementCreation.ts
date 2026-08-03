@@ -17,6 +17,8 @@ import {
   type ArrowElement,
   type BoxedElement,
   type Element,
+  type Reaction,
+  type SessionTool,
   type ShapeKind,
   type Tab,
 } from '@livediagram/diagram';
@@ -70,9 +72,18 @@ export function useElementCreation(opts: {
   // Telemetry for these arming handlers fires on commit (see
   // useShapeDrawing.commitDraw), once the tap / drag actually lands the
   // element — not here, where the gesture is only queued.
-  const addShape = (kind: ShapeKind) => {
+  // `opts` carries a creation-time choice for the kinds that have one: which
+  // session tool (spec/105), which reaction (spec/135). The palette offers a
+  // tile per choice, so it has to survive the draw gesture and land on the
+  // element rather than leaving the factory default in place.
+  const addShape = (kind: ShapeKind, opts?: { session?: SessionTool; reaction?: Reaction }) => {
     if (editsBlocked) return;
-    beginDraw({ type: 'shape', kind });
+    beginDraw({
+      type: 'shape',
+      kind,
+      ...(opts?.session ? { session: opts.session } : {}),
+      ...(opts?.reaction ? { reaction: opts.reaction } : {}),
+    });
   };
 
   // Curated icon glyph. Unlike addShape it drops straight at the

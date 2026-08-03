@@ -233,6 +233,21 @@ export const REACTION_HINT: Record<Reaction, string> = {
   fireworks: 'It shipped',
 };
 
+/**
+ * The pad's own caption per reaction (spec/135).
+ *
+ * The palette offers a tile per reaction, so a placed pad should already say
+ * what pressing it does — "Celebrate" over a confetti pad, "Thanks" over an
+ * applause one. Naming the ACT rather than repeating the glyph.
+ */
+export const REACTION_PAD_LABEL: Record<Reaction, string> = {
+  confetti: 'Celebrate',
+  sparkles: 'Nice one',
+  hearts: 'Show some love',
+  applause: 'Thanks',
+  fireworks: 'It shipped',
+};
+
 export const REACTION_DEFAULT: Reaction = 'confetti';
 
 export function isReaction(value: unknown): value is Reaction {

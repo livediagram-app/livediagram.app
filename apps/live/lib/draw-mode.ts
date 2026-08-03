@@ -1,4 +1,4 @@
-import type { ComponentKind, ShapeKind } from '@livediagram/diagram';
+import type { ComponentKind, Reaction, SessionTool, ShapeKind } from '@livediagram/diagram';
 
 // Draw-to-size intent. When user-preferences.drawToAdd is on, picking
 // any element from the palette stashes the intent here; the canvas
@@ -14,7 +14,20 @@ export type PendingDraw =
   // drag to size) instead of dropping at a fixed size.
   // `stickerId` rides the same intent for the `sticker` kind (spec/116), the
   // way `iconId` does for `icon`.
-  | { type: 'shape'; kind: ShapeKind; iconId?: string; stickerId?: string; label?: string }
+  // `session` (spec/105) and `reaction` (spec/135) ride the same intent for
+  // the same reason: both kinds are ONE element with a mode field, and the
+  // palette offers a tile per mode rather than one tile you then reconfigure.
+  // Carrying the choice on the intent is what lets "Add poll" place a poll
+  // instead of placing a timer you have to go and change.
+  | {
+      type: 'shape';
+      kind: ShapeKind;
+      iconId?: string;
+      stickerId?: string;
+      label?: string;
+      session?: SessionTool;
+      reaction?: Reaction;
+    }
   | { type: 'text' }
   | { type: 'sticky' }
   | { type: 'image' }

@@ -103,6 +103,30 @@ export type SessionButtonConfig = {
   options?: string[];
 };
 
+/**
+ * A ready-to-use config for one session tool (spec/105).
+ *
+ * The palette offers a tile PER TOOL rather than one button you then
+ * reconfigure, so "Add poll" has to place a working poll. A poll in
+ * particular needs a question and two answers to be startable at all —
+ * `sessionPlan` returns null below that — so dropping one with an empty
+ * config would place a button that cannot be pressed.
+ */
+export function defaultSessionConfig(tool: SessionTool): SessionButtonConfig {
+  if (tool === 'vote') return { tool, dots: DEFAULT_VOTE_DOTS };
+  if (tool === 'poll') {
+    return { tool, question: 'Which option?', options: ['Option A', 'Option B'] };
+  }
+  return { tool, minutes: DEFAULT_TIMER_MINUTES };
+}
+
+/** The button's own caption per tool, so a placed tile names what it starts. */
+export const SESSION_TOOL_LABEL: Record<SessionTool, string> = {
+  timer: 'Start timer',
+  vote: 'Start dot vote',
+  poll: 'Start poll',
+};
+
 export function isSessionTool(value: unknown): value is SessionTool {
   return typeof value === 'string' && (SESSION_TOOLS as readonly string[]).includes(value);
 }

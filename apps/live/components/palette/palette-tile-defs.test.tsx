@@ -99,7 +99,9 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   media: 8,
   components: 10,
   data: 6,
-  behaviour: 8,
+  // 6 single-purpose elements + the Session group (3 tools) + the Reactions
+  // group (5), each group behind one accordion row (spec/105, spec/135).
+  behaviour: 14,
   collaborate: 7,
 };
 

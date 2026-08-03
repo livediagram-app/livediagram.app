@@ -96,7 +96,8 @@ export function EditorSearchPanel() {
         isReadOnly
           ? undefined
           : (add) => {
-              if (add.type === 'shape') addShape(add.shapeKind);
+              if (add.type === 'shape')
+                addShape(add.shapeKind, { session: add.session, reaction: add.reaction });
               else if (add.type === 'icon') addIcon(add.iconId);
               else if (add.type === 'sticker') addSticker(add.stickerId);
               else addTechIcon(add.iconId);

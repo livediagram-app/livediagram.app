@@ -1,5 +1,6 @@
 import type { EmbedProvider } from '@livediagram/diagram';
-import type { ComponentKind, ShapeKind } from '@livediagram/diagram';
+import { REACTION_EMOJI } from '@livediagram/diagram';
+import type { ComponentKind, Reaction, SessionTool, ShapeKind } from '@livediagram/diagram';
 import {
   AgendaIcon,
   ChairIcon,
@@ -7,6 +8,8 @@ import {
   EstimateIcon,
   IdeaBoxIcon,
   PickerIcon,
+  SessionPollIcon,
+  SessionVoteIcon,
   RevealIcon,
   RollCallIcon,
   TemperatureIcon,
@@ -53,7 +56,11 @@ export type PaletteTileSection =
 // drive the tile's drag-to-place payload + pending-draw highlight; the
 // singleton tools map one-to-one onto the editor's add-handlers.
 type PaletteTileAction =
-  | { type: 'shape'; kind: ShapeKind }
+  // `session` / `reaction` are creation-time choices, not separate kinds: both
+  // elements are ONE kind with a mode field, and the palette offers a tile per
+  // mode inside an accordion (spec/105, spec/135) the way Media does for embed
+  // providers. Placing "Poll" has to place a poll, not a timer to reconfigure.
+  | { type: 'shape'; kind: ShapeKind; session?: SessionTool; reaction?: Reaction }
   | { type: 'text' }
   | { type: 'freehand' }
   // Marker variant of the pencil (spec/81) and the click-to-place
@@ -122,8 +129,9 @@ export type PaletteTileDef = {
   toolGroup?: ToolGroupId;
   // Collapses this tile into a named group inside its category, rather than
   // showing it as a top-level row (spec/121). 'embed' = the Media tab's embed
-  // providers; 'web' = the Components tab's website composites.
-  tileGroup?: 'embed' | 'web';
+  // providers; 'web' = the Components tab's website composites; 'session' and
+  // 'reaction' = the Behaviour tab's session tools and reactions.
+  tileGroup?: 'embed' | 'web' | 'session' | 'reaction';
   label: string;
   // Overrides the caption derived from `label` where that runs too long
   // for the tile (see IconButton).
@@ -798,18 +806,51 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
-    // Session button (spec/105): starts a timer / vote / poll for the room.
-    id: 'tools:session-button',
-    blurb: 'Starts a timer, vote or poll',
+    // Session button (spec/105): starts a timer / vote / poll for the ro  {
+    // Session tools (spec/105): one tile per tool, grouped, rather than one
+    // button you place and then reconfigure. The tools have nothing in common
+    // at the moment of choosing — you know whether you want a countdown or a
+    // vote before you reach for the palette.
+    id: 'tools:session-timer',
+    tileGroup: 'session',
+    blurb: 'A countdown everyone can see',
+    caption: 'Timer',
     section: 'tools',
     toolGroup: 'behaviour',
-    label: 'Add session button',
-    caption: 'Session',
+    label: 'Add timer button',
     description:
-      'A button that starts a session tool for everyone: a countdown timer, a dot vote, or a poll you write in advance.',
+      'A button that starts a countdown for everyone in the room. Pressing it again pauses, and again continues. Set the minutes from its right-click menu.',
     filled: true,
-    action: { type: 'shape', kind: 'session-button' },
+    action: { type: 'shape', kind: 'session-button', session: 'timer' },
     icon: <TimerIcon />,
+  },
+  {
+    id: 'tools:session-vote',
+    tileGroup: 'session',
+    blurb: 'Dot voting, a few dots each',
+    caption: 'Dot vote',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add dot vote button',
+    description:
+      'A button that starts a dot vote for everyone in the room: each person gets a few dots to place on whatever they think matters. Set how many from its right-click menu.',
+    filled: true,
+    action: { type: 'shape', kind: 'session-button', session: 'vote' },
+    icon: <SessionVoteIcon />,
+  },
+  {
+    id: 'tools:session-poll',
+    tileGroup: 'session',
+    blurb: 'A question you write in advance',
+    caption: 'Poll',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add poll button',
+    description:
+      'A button that opens a poll you have written in advance, so the press asks the question rather than opening a composer. Write it from its right-click menu.',
+    filled: true,
+    action: { type: 'shape', kind: 'session-button', session: 'poll' },
+    icon: <SessionPollIcon />,
   },
   {
     // Reveal zone (spec/106): a cover you click to see what is underneath.
@@ -858,34 +899,77 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
-    // Reaction pad (spec/135): press it or walk onto it, and a burst plays.
-    id: 'tools:reaction-pad',
-    blurb: 'Sets off a burst everyone can see',
+    // Reaction pads (spec/135): one tile per reaction, grouped, rather than one
+    // pad you place and then switch. Which reaction you want is the whole
+    // decision — a pad is not useful until it is the right one.
+    id: 'tools:reaction-confetti',
+    tileGroup: 'reaction',
+    blurb: 'A result worth celebrating',
+    caption: 'Confetti',
     section: 'tools',
     toolGroup: 'behaviour',
-    label: 'Add reaction pad',
-    caption: 'Reaction pad',
+    label: 'Add confetti pad',
     description:
-      'Press it, or walk a character onto it in Avatar mode, and a reaction bursts over the pad for everyone in the room. Pick which one from its right-click menu.',
+      'Press it, or walk a character onto it in Avatar mode, and confetti bursts up and falls for everyone in the room. A result worth celebrating.',
     filled: true,
-    action: { type: 'shape', kind: 'reaction-pad' },
-    icon: (
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden
-      >
-        {/* A pad with a burst coming off it. */}
-        <rect x="4" y="13" width="16" height="7.5" rx="1.8" />
-        <path d="M12 10.5V7M8.7 11.4 6.9 8.6M15.3 11.4l1.8-2.8M5.6 13.2 3.4 12M18.4 13.2l2.2-1.2" />
-      </svg>
-    ),
+    action: { type: 'shape', kind: 'reaction-pad', reaction: 'confetti' },
+    icon: <span className="text-[15px] leading-none">{REACTION_EMOJI['confetti']}</span>,
+  },
+  {
+    id: 'tools:reaction-sparkles',
+    tileGroup: 'reaction',
+    blurb: 'A good idea, nicely done',
+    caption: 'Sparkles',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add sparkles pad',
+    description:
+      'Press it, or walk a character onto it in Avatar mode, and a slow twinkle around the pad for everyone in the room. A good idea, nicely done.',
+    filled: true,
+    action: { type: 'shape', kind: 'reaction-pad', reaction: 'sparkles' },
+    icon: <span className="text-[15px] leading-none">{REACTION_EMOJI['sparkles']}</span>,
+  },
+  {
+    id: 'tools:reaction-hearts',
+    tileGroup: 'reaction',
+    blurb: 'Warmth for a person, not a result',
+    caption: 'Hearts',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add hearts pad',
+    description:
+      'Press it, or walk a character onto it in Avatar mode, and hearts rise and drift for everyone in the room. Warmth for a person, not a result.',
+    filled: true,
+    action: { type: 'shape', kind: 'reaction-pad', reaction: 'hearts' },
+    icon: <span className="text-[15px] leading-none">{REACTION_EMOJI['hearts']}</span>,
+  },
+  {
+    id: 'tools:reaction-applause',
+    tileGroup: 'reaction',
+    blurb: 'Thanks for the talk or the demo',
+    caption: 'Applause',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add applause pad',
+    description:
+      'Press it, or walk a character onto it in Avatar mode, and rings of sound spread out for everyone in the room. Thanks for the talk or the demo.',
+    filled: true,
+    action: { type: 'shape', kind: 'reaction-pad', reaction: 'applause' },
+    icon: <span className="text-[15px] leading-none">{REACTION_EMOJI['applause']}</span>,
+  },
+  {
+    id: 'tools:reaction-fireworks',
+    tileGroup: 'reaction',
+    blurb: 'It shipped',
+    caption: 'Fireworks',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add fireworks pad',
+    description:
+      'Press it, or walk a character onto it in Avatar mode, and shells burst one after another for everyone in the room. It shipped.',
+    filled: true,
+    action: { type: 'shape', kind: 'reaction-pad', reaction: 'fireworks' },
+    icon: <span className="text-[15px] leading-none">{REACTION_EMOJI['fireworks']}</span>,
   },
   {
     // Picker (spec/107): rolls a person or a written option.

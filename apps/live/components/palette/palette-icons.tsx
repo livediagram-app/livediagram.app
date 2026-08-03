@@ -930,3 +930,43 @@ export function RollCallIcon() {
     </CollabGlyph>
   );
 }
+
+/** Session tools (spec/105): dot voting, drawn as dots landing on a card. */
+export function SessionVoteIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <rect x="3" y="5" width="18" height="14" rx="2.2" />
+      <circle cx="8.5" cy="11" r="1.9" fill="currentColor" stroke="none" />
+      <circle cx="14" cy="11" r="1.9" fill="currentColor" stroke="none" />
+      <circle cx="11.2" cy="15.4" r="1.9" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+/** Session tools (spec/105): a poll, drawn as answer bars of different lengths. */
+export function SessionPollIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      aria-hidden
+    >
+      <path d="M4 6.5h15M4 12h9.5M4 17.5h12.5" />
+    </svg>
+  );
+}

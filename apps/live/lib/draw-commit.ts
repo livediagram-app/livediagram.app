@@ -1,4 +1,4 @@
-import { isFixedSizeShape } from '@livediagram/diagram';
+import { defaultSessionConfig, isFixedSizeShape, REACTION_PAD_LABEL } from '@livediagram/diagram';
 import { ARROW_SNAP_THRESHOLD_PX, inheritedSizeFor } from '@/lib/canvas';
 import {
   COMPONENT_SIZE,
@@ -172,6 +172,15 @@ export function buildDrawnBoxed(
     // in would only fight resizing the caption room, so drop it.
     ...(intent.type === 'shape' && intent.iconId && isTechIconId(intent.iconId)
       ? { aspectLocked: false }
+      : {}),
+    // The palette offers a tile per session tool and per reaction (spec/105,
+    // spec/135), so the choice arrives with the intent and is applied here
+    // rather than left on the factory default for the user to go and change.
+    ...(intent.type === 'shape' && intent.kind === 'session-button' && intent.session
+      ? { session: { ...defaultSessionConfig(intent.session) } }
+      : {}),
+    ...(intent.type === 'shape' && intent.kind === 'reaction-pad' && intent.reaction
+      ? { reaction: intent.reaction, label: REACTION_PAD_LABEL[intent.reaction] }
       : {}),
     // Sticker draw intent (spec/116): carry the chosen art. Lands SQUARE to
     // the canvas — an automatic tilt was tried and dropped, see the spec.

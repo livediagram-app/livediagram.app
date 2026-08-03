@@ -17,8 +17,20 @@ Chosen to cover distinct **things people mean**, not five ways of saying
 | **Applause**  | 👏    | Thanks for the talk or the demo   |
 | **Fireworks** | 🎆    | It shipped                        |
 
-Switched from the element menu (**Tools › Reaction**), a tile grid rather than
-a dropdown: the five differ in _feeling_ rather than in name, so the glyph is
+**The palette offers a tile per reaction**, collapsed behind a **Reactions**
+accordion in Behaviour, the way Media does for embed providers (spec/121).
+Which reaction you want is the whole decision — a pad is not useful until it is
+the right one — so placing one and then going to change it is two steps for
+something you already knew. The choice rides the draw intent
+(`PendingDraw.reaction`) and lands on the element at commit, along with a
+matching label ("Celebrate", "Thanks", "It shipped").
+
+They are still ONE shape kind with a `reaction` field, not five kinds: the
+element, its face, its burst and its menu are identical, and five kinds would
+be five registrations to keep in step for a field that already exists.
+
+It can still be switched afterwards from the element menu (**Tools ›
+Reaction**), a tile grid rather than a dropdown: the five differ in _feeling_ rather than in name, so the glyph is
 the thing being chosen and a list of five words hides exactly the part the user
 is picking on. The hint line under the grid says what the current one is for,
 because "confetti or fireworks?" is a real question and both answers look like

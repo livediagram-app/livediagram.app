@@ -40,3 +40,26 @@ Per [spec/22](22-telemetry.md): adding one emits `Element·Added·SessionButton`
 - Buttons that STOP a tool (the timer and vote already have their own controls, owned by whoever started them).
 - Chaining several tools behind one press ("start the timer AND the vote"). One button, one action; put two buttons on the board.
 - Scheduling ("start this in 10 minutes"). A board is not a cron.
+
+## One tile per tool in the palette
+
+The palette offers **Timer**, **Dot vote** and **Poll** as separate tiles,
+collapsed behind a **Session** accordion in Behaviour, the way Media does for
+embed providers (spec/121).
+
+The three have nothing in common at the moment of choosing: you know whether
+you want a countdown or a vote before you reach for the palette, so a single
+button you place and then reconfigure is two steps for something already
+decided. Flattened out beside the reactions they would also have buried the
+six single-purpose Behaviour elements, which is why both groups collapse.
+
+They remain ONE shape kind with a `session` config, not three kinds. The
+element, its face and its menu are identical; only the config differs, and
+three kinds would be three registrations to keep in step for a field that
+already exists.
+
+The choice rides the draw intent (`PendingDraw.session`) and is applied at
+commit through `defaultSessionConfig`, which fills in a working default per
+tool. That matters most for the poll: `sessionPlan` refuses a poll with fewer
+than two answers, so dropping one with an empty config would place a button
+that cannot be pressed.
