@@ -444,6 +444,7 @@ export * from './groups';
 // Photoshop-style layers (spec/74): the Layer type used by the Tab field
 // above, band-aware render ordering, and the pure layer operations.
 export * from './layers';
+export * from './layer-operations';
 
 // Element-level realtime ops (spec/75): the ElementOp type + the pure
 // diff/apply functions the realtime room uses to merge concurrent edits.
