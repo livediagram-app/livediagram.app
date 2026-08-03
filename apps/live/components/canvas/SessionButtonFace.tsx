@@ -14,6 +14,7 @@ import {
   type SessionPlan,
 } from '@livediagram/diagram';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
+import { SessionSettingsMenu } from '@/components/canvas/SessionSettingsMenu';
 import { PollIcon, TimerIcon, VoteIcon } from '@/components/palette/palette-icons';
 
 const TOOL_ICON: Record<SessionPlan['tool'], React.ReactNode> = {
@@ -66,6 +67,7 @@ export function SessionButtonFace({
   canStart,
   timerState = 'none',
   onPress,
+  onSetConfig,
 }: {
   config: SessionButtonConfig | undefined;
   label: string;
@@ -73,6 +75,10 @@ export function SessionButtonFace({
   canStart: boolean;
   timerState?: TimerState;
   onPress?: () => void;
+  // Per-element settings from the button's own `…` menu (spec/105): the
+  // vote's dots, the poll's question and answers. Absent on a read-only
+  // surface, where the trigger is not rendered.
+  onSetConfig?: (next: SessionButtonConfig) => void;
 }) {
   const plan = sessionButtonPlan(config);
   const derived = sessionButtonText(plan, timerState);
@@ -153,14 +159,27 @@ export function SessionButtonFace({
       </div>
     );
   }
+  const menu =
+    onSetConfig && config && config.tool !== 'timer' ? (
+      // Absolutely positioned over the face rather than inside its column: the
+      // face is a centred stack, and a control in the flow would shove the
+      // label off centre.
+      <span className="absolute right-1 top-1 z-10">
+        <SessionSettingsMenu config={config} onChange={onSetConfig} />
+      </span>
+    ) : null;
+
   return (
-    <button
-      type="button"
-      aria-label={`${text || `${derived.kicker} ${derived.action}`} — starts this for everyone`}
-      {...press}
-      className={`pointer-events-auto cursor-pointer rounded-[inherit] transition duration-100 active:scale-[0.96] active:brightness-95 sm:hover:brightness-[1.07] ${layout}`}
-    >
-      {inner}
-    </button>
+    <>
+      {menu}
+      <button
+        type="button"
+        aria-label={`${text || `${derived.kicker} ${derived.action}`} — starts this for everyone`}
+        {...press}
+        className={`pointer-events-auto cursor-pointer rounded-[inherit] transition duration-100 active:scale-[0.96] active:brightness-95 sm:hover:brightness-[1.07] ${layout}`}
+      >
+        {inner}
+      </button>
+    </>
   );
 }

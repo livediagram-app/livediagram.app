@@ -109,6 +109,7 @@ function BoxedElementViewImpl({
   timerState,
   tabTimer,
   timerControls,
+  onSetSessionConfig,
   revealedForMe,
   onToggleReveal,
   onRollPicker,
@@ -492,6 +493,12 @@ function BoxedElementViewImpl({
           onResume={timerControls.resume}
           onReset={timerControls.reset}
           onClear={timerControls.clear}
+          minutes={element.session.minutes ?? 5}
+          onSetMinutes={
+            onSetSessionConfig
+              ? (m) => onSetSessionConfig(element, { ...element.session!, minutes: m })
+              : undefined
+          }
         />
       ) : element.type === 'shape' && element.shape === 'session-button' && !isEditing ? (
         /* Session button (spec/105): starts a vote / poll for the room. */
@@ -502,6 +509,11 @@ function BoxedElementViewImpl({
           canStart={!!onPressSessionButton && !sessionStartBlocked}
           timerState={timerState}
           onPress={onPressSessionButton ? () => onPressSessionButton(element) : undefined}
+          onSetConfig={
+            onSetSessionConfig && element.session
+              ? (next) => onSetSessionConfig(element, next)
+              : undefined
+          }
         />
       ) : element.type === 'shape' && element.shape === 'reveal' && !isEditing ? (
         /* Reveal zone (spec/106): a cover, off for me / off for everyone. */

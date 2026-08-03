@@ -1,12 +1,11 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-
 import { allDone, doneSplit, isDone, type ShapeElement } from '@livediagram/diagram';
 
 import type { Participant } from '@/lib/identity';
 import { ParticipantAvatar } from '@/components/primitives/ParticipantAvatar';
 import { CollabButton, CollabEmpty, CollabPanel } from './collab-chrome';
+import { ElementEllipsisMenu, ElementMenuItem } from '@/components/canvas/ElementEllipsisMenu';
 
 // The face of a Done check (spec/137): everyone marks themselves finished, and
 // the card shows who has and who has not.
@@ -57,93 +56,6 @@ function Roster({
   );
 }
 
-// The card's ellipsis menu. Inline rather than a portal: the card is already a
-// pointer-active surface, and a portalled menu would have to track a canvas
-// element through pan, zoom and the isometric transform to sit beside it.
-function DoneMenu({
-  textColor,
-  onResetAll,
-  onClearMine,
-  canClearMine,
-}: {
-  textColor: string;
-  onResetAll?: () => void;
-  onClearMine?: () => void;
-  canClearMine: boolean;
-}) {
-  const [open, setOpen] = useState(false);
-  const box = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    const close = (e: PointerEvent) => {
-      if (!box.current?.contains(e.target as Node)) setOpen(false);
-    };
-    // Capture phase: the canvas swallows pointerdown on its own surface, so a
-    // bubbling listener never hears the click that should dismiss this.
-    window.addEventListener('pointerdown', close, true);
-    return () => window.removeEventListener('pointerdown', close, true);
-  }, [open]);
-
-  if (!onResetAll && !onClearMine) return null;
-
-  return (
-    <div ref={box} className="pointer-events-auto relative">
-      <button
-        type="button"
-        aria-label="Done check options"
-        aria-expanded={open}
-        onPointerDown={(e) => e.stopPropagation()}
-        onClick={(e) => {
-          e.stopPropagation();
-          setOpen((v) => !v);
-        }}
-        className="flex h-5 w-5 cursor-pointer items-center justify-center rounded text-[13px] leading-none transition hover:bg-black/10 dark:hover:bg-white/10"
-        style={{ color: textColor }}
-      >
-        …
-      </button>
-      {open ? (
-        <div
-          className="absolute right-0 top-6 z-20 min-w-[9.5rem] overflow-hidden rounded-lg border border-slate-200 bg-white py-1 shadow-lg dark:border-slate-700 dark:bg-slate-900"
-          role="menu"
-        >
-          {canClearMine && onClearMine ? (
-            <button
-              type="button"
-              role="menuitem"
-              onPointerDown={(e) => e.stopPropagation()}
-              onClick={(e) => {
-                e.stopPropagation();
-                onClearMine();
-                setOpen(false);
-              }}
-              className="block w-full cursor-pointer px-3 py-1.5 text-left text-xs text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
-            >
-              Clear my mark
-            </button>
-          ) : null}
-          {onResetAll ? (
-            <button
-              type="button"
-              role="menuitem"
-              onPointerDown={(e) => e.stopPropagation()}
-              onClick={(e) => {
-                e.stopPropagation();
-                onResetAll();
-                setOpen(false);
-              }}
-              className="block w-full cursor-pointer px-3 py-1.5 text-left text-xs text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
-            >
-              Reset everyone
-            </button>
-          ) : null}
-        </div>
-      ) : null}
-    </div>
-  );
-}
-
 export function DoneCheckFace({
   element,
   label,
@@ -183,12 +95,34 @@ export function DoneCheckFace({
       // styles so the reduced-motion override in globals.css can reach it.
       className={everyone ? 'lvd-done-complete' : undefined}
       headerExtra={
-        <DoneMenu
-          textColor={textColor}
-          canClearMine={mine}
-          onClearMine={mine ? onToggleMine : undefined}
-          onResetAll={onResetAll}
-        />
+        // The shared element menu (spec/105), not a second one: it was written
+        // here first, and the Timer needed the same thing.
+        <ElementEllipsisMenu label="Done check options" color={textColor}>
+          {(close) => (
+            <>
+              {mine && onToggleMine ? (
+                <ElementMenuItem
+                  onPress={() => {
+                    onToggleMine();
+                    close();
+                  }}
+                >
+                  Clear my mark
+                </ElementMenuItem>
+              ) : null}
+              {onResetAll ? (
+                <ElementMenuItem
+                  onPress={() => {
+                    onResetAll();
+                    close();
+                  }}
+                >
+                  Reset everyone
+                </ElementMenuItem>
+              ) : null}
+            </>
+          )}
+        </ElementEllipsisMenu>
       }
       footer={
         <CollabButton

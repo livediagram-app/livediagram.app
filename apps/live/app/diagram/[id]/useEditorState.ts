@@ -1539,19 +1539,20 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // The interactive Behaviour elements that act on the SESSION rather than the
   // document (spec/105, /106, /107): the session button's press, the reveal
   // zone's local uncover, and the picker's roll.
-  const { pressSessionButton, revealedIds, toggleRevealForMe, pickerFor } = useBehaviourElements({
-    activeId,
-    commitTabs,
-    editsBlocked,
-    selfParticipant,
-    livePresence,
-    activeTimer: activeTab.timer,
-    startTimer,
-    pauseTimer,
-    resumeTimer,
-    startVote,
-    startPoll: livePoll.startPoll,
-  });
+  const { pressSessionButton, revealedIds, toggleRevealForMe, pickerFor, setSessionConfigFor } =
+    useBehaviourElements({
+      activeId,
+      commitTabs,
+      editsBlocked,
+      selfParticipant,
+      livePresence,
+      activeTimer: activeTab.timer,
+      startTimer,
+      pauseTimer,
+      resumeTimer,
+      startVote,
+      startPoll: livePoll.startPoll,
+    });
 
   // The collaboration elements (spec/122 to spec/129). Sibling of the
   // behaviour hook above: these write to the document, so they take
@@ -2559,6 +2560,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     pressSessionButton,
     revealedIds,
     toggleRevealForMe,
+    setSessionConfigFor,
     pickerFor,
     collabElements,
     setRatingSelected,

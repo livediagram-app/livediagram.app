@@ -247,6 +247,7 @@ export function EditorCanvasHost() {
     pressSessionButton,
     revealedIds,
     toggleRevealForMe,
+    setSessionConfigFor,
     pickerFor,
     collabElements,
     followMe,
@@ -435,6 +436,7 @@ export function EditorCanvasHost() {
       timerState={activeTab.timer ? (activeTab.timer.running ? 'running' : 'paused') : 'none'}
       revealedIds={revealedIds}
       onToggleReveal={toggleRevealForMe}
+      onSetSessionConfig={isReadOnly ? undefined : setSessionConfigFor}
       onRollPicker={pickerFor}
       // Follow-me (spec/131): resolved to a NAME here, where presence lives,
       // so the pill doesn't have to look one up.

@@ -11,6 +11,7 @@
 import { useState } from 'react';
 import {
   sessionButtonPlan,
+  type SessionButtonConfig,
   type ShapeElement,
   type Tab,
   type TimerMode,
@@ -128,5 +129,32 @@ export function useBehaviourElements({
     };
   };
 
-  return { pressSessionButton, revealedIds, toggleRevealForMe, pickerFor };
+  // Per-element session settings, edited from the element's own `…` menu
+  // (spec/105) rather than three levels into the right-click menu. Patches the
+  // one element; the selection-wide setter in usePortalSetters stays for the
+  // context menu, which acts on whatever is selected.
+  const setSessionConfigFor = (element: ShapeElement, config: SessionButtonConfig) => {
+    if (editsBlocked) return;
+    commitTabs((ts) =>
+      ts.map((tab) =>
+        tab.id !== activeId
+          ? tab
+          : {
+              ...tab,
+              elements: tab.elements.map((el) =>
+                el.id === element.id ? { ...el, session: config } : el,
+              ),
+            },
+      ),
+    );
+    track('Element', 'Changed', 'SessionButton');
+  };
+
+  return {
+    pressSessionButton,
+    revealedIds,
+    toggleRevealForMe,
+    pickerFor,
+    setSessionConfigFor,
+  };
 }

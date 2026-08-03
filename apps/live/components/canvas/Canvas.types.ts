@@ -107,6 +107,13 @@ export type CanvasProps = {
   // and local — the shared state is `revealed` on the element.
   revealedIds?: ReadonlySet<string>;
   onToggleReveal?: (elementId: string) => void;
+  // Per-element session settings from the element's own `…` menu (spec/105):
+  // the timer's length, the vote's dots, the poll's question and answers.
+  // Absent on a read-only surface, which renders the menu's trigger not at all.
+  onSetSessionConfig?: (
+    element: import('@livediagram/diagram').ShapeElement,
+    config: import('@livediagram/diagram').SessionButtonConfig,
+  ) => void;
   // Picker (spec/107): the candidates a roll can land on, and the roll itself.
   onRollPicker?: (element: import('@livediagram/diagram').ShapeElement) => {
     candidates: import('@/lib/picker').PickerCandidate[];

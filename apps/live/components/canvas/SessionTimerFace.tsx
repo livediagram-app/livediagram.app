@@ -2,7 +2,12 @@
 
 import { useEffect, useState } from 'react';
 
-import { formatTimerClock, timerDone, type TabTimer } from '@livediagram/diagram';
+import {
+  formatTimerClock,
+  TIMER_MINUTE_PRESETS,
+  timerDone,
+  type TabTimer,
+} from '@livediagram/diagram';
 
 import {
   TIMER_BUTTON_CLASS,
@@ -10,6 +15,11 @@ import {
   TimerPlayIcon,
   timerFillStyle,
 } from '@/components/chrome/timer-pill';
+import {
+  ElementEllipsisMenu,
+  ElementMenuItem,
+  ElementMenuLabel,
+} from '@/components/canvas/ElementEllipsisMenu';
 
 // The face of a Timer session element (spec/105) once it is a real timer
 // rather than a button that starts one somewhere else.
@@ -33,6 +43,8 @@ export function SessionTimerFace({
   onResume,
   onReset,
   onClear,
+  minutes,
+  onSetMinutes,
 }: {
   // Null when no timer is running for this tab: the element shows its
   // configured length and a Start.
@@ -45,6 +57,9 @@ export function SessionTimerFace({
   onResume?: () => void;
   onReset?: () => void;
   onClear?: () => void;
+  /** The element's configured length, which the `…` menu edits. */
+  minutes: number;
+  onSetMinutes?: (minutes: number) => void;
 }) {
   // Re-render 4x a second while running so the clock advances, exactly as the
   // chrome pill does. A paused or absent timer is static, so nothing spins.
@@ -70,6 +85,27 @@ export function SessionTimerFace({
       }`}
       style={timer ? timerFillStyle(timer, now) : undefined}
     >
+      {onSetMinutes ? (
+        <ElementEllipsisMenu label="Timer options">
+          {(close) => (
+            <>
+              <ElementMenuLabel>Length</ElementMenuLabel>
+              {TIMER_MINUTE_PRESETS.map((m) => (
+                <ElementMenuItem
+                  key={m}
+                  active={m === minutes}
+                  onPress={() => {
+                    onSetMinutes(m);
+                    close();
+                  }}
+                >
+                  {m === 1 ? '1 minute' : `${m} minutes`}
+                </ElementMenuItem>
+              ))}
+            </>
+          )}
+        </ElementEllipsisMenu>
+      ) : null}
       {timer ? (
         <TimerPillBody
           timer={timer}

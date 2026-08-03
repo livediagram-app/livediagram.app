@@ -85,6 +85,11 @@ export type BoxedElementViewProps = {
   // than a button that starts one elsewhere (spec/105). Null when none is
   // running; absent on a surface with no session behind it.
   tabTimer?: import('@livediagram/diagram').TabTimer | null;
+  // Per-element session settings from the element's own `…` menu (spec/105).
+  onSetSessionConfig?: (
+    element: import('@livediagram/diagram').ShapeElement,
+    config: import('@livediagram/diagram').SessionButtonConfig,
+  ) => void;
   // Pause / resume / restart / cancel for that timer. Absent on a read-only
   // surface, which renders the timer readable but inert.
   timerControls?: {

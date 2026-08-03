@@ -109,6 +109,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     // starts one elsewhere. The handlers no-op when edits are blocked, so a
     // read-only surface needs no separate gate here.
     tabTimer,
+    onSetSessionConfig,
     onPauseTimer,
     onResumeTimer,
     onResetTimer,
@@ -366,6 +367,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             sessionStartBlocked={sessionStartBlocked}
             timerState={timerState}
             tabTimer={tabTimer ?? null}
+            onSetSessionConfig={onSetSessionConfig}
             timerControls={{
               pause: onPauseTimer,
               resume: onResumeTimer,

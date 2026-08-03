@@ -110,3 +110,46 @@ box on the canvas.
 Vote and poll keep the ordinary button face: they start something that lives
 elsewhere (a dot vote over the whole canvas, a poll in a panel), so there is
 nothing for the element itself to become.
+
+## Settings on the element itself
+
+Each session element carries a `…` menu on its own face, so the setting you
+most want to change is one press away rather than three levels into the
+right-click menu (Tools › Session).
+
+| Tool      | Menu                                               |
+| --------- | -------------------------------------------------- |
+| **Timer** | Length presets (1 to 30 minutes)                   |
+| **Vote**  | Dots each (1, 2, 3, 5, 8)                          |
+| **Poll**  | The question, and the answers, with add and remove |
+
+A vote is a single number, so it is a list of presets: one tap and done. A poll
+is text, so it is a small form. The asymmetry is deliberate rather than an
+inconsistency — a menu of presets for a question nobody has written would be a
+menu of nothing. The poll form will not go below **two** answers, because
+`sessionPlan` refuses a poll with fewer and removing one would leave a button
+nobody can press.
+
+The full range stays in the right-click menu, which has room for a proper
+number input; these are the common values.
+
+### The menu is portalled
+
+`ElementEllipsisMenu` renders its popover through a portal, positioned from the
+trigger's rect at open time.
+
+It was inline first, reasoning that a portalled menu would have to track a
+canvas element through pan and zoom. It does not: any pan or zoom begins with a
+pointer-down, which dismisses the menu, so the position only has to hold while
+it is open. Inline was wrong for a more immediate reason anyway — every element
+that wants this menu **clips its own contents** (the collab panel, the timer's
+drain fill, the element box's rounded corners), so the popover was cut off at
+the element's edge and mostly invisible.
+
+The dismiss listener checks the trigger **and** the popover, since the portalled
+menu is not inside the trigger's subtree and a single containment test closed
+the menu on every click inside it.
+
+The trigger draws three dots rather than using the `…` character: an ellipsis
+sits on the baseline, so in a 20px button it rode the bottom edge however the
+box was aligned.
