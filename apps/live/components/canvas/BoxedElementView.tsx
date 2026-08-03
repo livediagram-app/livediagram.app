@@ -498,7 +498,13 @@ function BoxedElementViewImpl({
           minutes={element.session.minutes ?? 5}
           onSetMinutes={
             onSetSessionConfig
-              ? (m) => onSetSessionConfig(element, { ...element.session!, minutes: m })
+              ? (m) => {
+                  onSetSessionConfig(element, { ...element.session!, minutes: m });
+                  // A timer that is already running or paused restarts at the
+                  // new length: leaving it mid-run would show a number from
+                  // the old length against the new one.
+                  timerControls.setDuration?.(m * 60_000);
+                }
               : undefined
           }
         />

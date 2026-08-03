@@ -25,6 +25,7 @@ export type { MovablePanelDockProps };
 // the panels uniformly-sized makes the chrome easier to reason about.
 export function MovablePanel({
   title,
+  elevated,
   position,
   defaultCorner,
   width = 'w-56',
@@ -310,7 +311,7 @@ export function MovablePanel({
       // canvas surface); the header re-asserts cursor-grab since that's
       // the only part you can drag. When docked at rest the panel is a
       // static flex child of its corner stack (no absolute / corner class).
-      className={`pointer-events-auto ${positionClass} z-[var(--z-panel)] flex animate-pop-in cursor-default ${width} flex-col rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40 ${finalCornerClass}`}
+      className={`pointer-events-auto ${positionClass} ${elevated ? 'z-[calc(var(--z-panel)+1)]' : 'z-[var(--z-panel)]'} flex animate-pop-in cursor-default ${width} flex-col rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40 ${finalCornerClass}`}
     >
       <MovablePanelHeader
         headerRef={headerRef}

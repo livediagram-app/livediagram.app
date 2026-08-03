@@ -1331,3 +1331,17 @@ Items still genuinely out of scope today (most of the original list has shipped 
 - **Mid-edge resize handles** — only corner handles drive resize.
 - **Rotation** — elements always render axis-aligned.
 - **Clipboard copy / paste** — `Duplicate` (in-place clone) is available, but cut/copy/paste against the OS clipboard isn't wired up.
+
+## The palette stacks above the other panels
+
+Every floating panel shares `--z-panel`, so their order is whatever the DOM
+order happens to be — and a panel mounted later covered the palette the user
+was reaching for. `MovablePanel` takes an `elevated` flag, and only the palette
+sets it.
+
+Applied as a CLASS rather than the inline style: a docked-at-rest panel gets no
+inline style at all, and that is the state the palette is usually in, so a
+style-only elevation did nothing where it was needed most.
+
+A second claimant would mean the panels need a real focus-raise rather than a
+second bump.

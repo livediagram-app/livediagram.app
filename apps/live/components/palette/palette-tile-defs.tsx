@@ -974,7 +974,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     // Picker (spec/107): rolls a person or a written option.
     id: 'tools:picker',
-    blurb: 'Picks someone or something at random',
+    blurb: 'Pick someone at random',
     section: 'tools',
     toolGroup: 'behaviour',
     label: 'Add picker',
@@ -990,7 +990,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     // somebody interacts with it — here by walking an Avatar-mode character
     // into it rather than by pressing it.
     id: 'tools:chair',
-    blurb: 'An Avatar-mode character sits down in it',
+    blurb: 'A chair for Avatars to sit in',
     section: 'tools',
     toolGroup: 'behaviour',
     label: 'Add chair',

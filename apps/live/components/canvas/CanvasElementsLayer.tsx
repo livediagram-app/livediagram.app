@@ -116,6 +116,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onResumeTimer,
     onResetTimer,
     onClearTimer,
+    onSetTimerDuration,
     revealedIds,
     onToggleReveal,
     onRollPicker,
@@ -394,6 +395,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
               resume: onResumeTimer,
               reset: onResetTimer,
               clear: onClearTimer,
+              setDuration: onSetTimerDuration,
             }}
             revealedForMe={revealedIds?.has(element.id)}
             onToggleReveal={h.onToggleReveal}

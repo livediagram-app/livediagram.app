@@ -91,6 +91,31 @@ export function useTabSession(deps: TabSessionDeps) {
     track('Tab', 'Toggled', 'TimerResumed');
   };
 
+  // Change a countdown's LENGTH, restarting it at the new one (spec/105).
+  //
+  // Called from the Timer element's `…` menu. Changing the length of a timer
+  // that is mid-run and leaving it mid-run would be the one thing nobody
+  // wants: the remaining time would be a number from the old length shown
+  // against the new one. So it goes back to the top.
+  //
+  // The RUNNING state is preserved. A facilitator who extends a running timer
+  // is asking for more time, not for the session to stop; one who extends a
+  // paused timer is setting up the next round.
+  const setTimerDuration = (durationMs: number) => {
+    if (editsBlocked) return;
+    const existing = deps.activeTab.timer;
+    // Nothing running: the element's own config is the length, and it will be
+    // used at the next start. Nothing to do here.
+    if (!existing || existing.mode !== 'countdown') return;
+    const now = Date.now();
+    patchActive((t) => ({
+      ...t,
+      timer: existing.running
+        ? { mode: 'countdown', running: true, durationMs, anchorAt: now + durationMs }
+        : { mode: 'countdown', running: false, durationMs, frozenMs: durationMs },
+    }));
+  };
+
   const resetTimer = () => {
     if (editsBlocked) return;
     if (!deps.activeTab.timer) return;
@@ -261,6 +286,7 @@ export function useTabSession(deps: TabSessionDeps) {
     pauseTimer,
     resumeTimer,
     resetTimer,
+    setTimerDuration,
     clearTimer,
     startVote,
     endVote,

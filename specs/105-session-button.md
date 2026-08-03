@@ -133,6 +133,14 @@ nobody can press.
 The full range stays in the right-click menu, which has room for a proper
 number input; these are the common values.
 
+**Changing the length of a live timer restarts it at the new one.** Leaving it
+mid-run would be the one thing nobody wants: the remaining time would be a
+number measured against the old length and displayed against the new one. The
+running state is preserved either way — a facilitator extending a running timer
+is asking for more time, not for the session to stop, and one extending a
+paused timer is setting up the next round. With no timer running the element's
+config is simply the length used at the next start.
+
 ### The menu is portalled
 
 `ElementEllipsisMenu` renders its popover through a portal, positioned from the

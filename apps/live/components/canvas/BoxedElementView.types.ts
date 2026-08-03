@@ -108,6 +108,8 @@ export type BoxedElementViewProps = {
     resume?: () => void;
     reset?: () => void;
     clear?: () => void;
+    // Change a running or paused countdown's length, restarting it there.
+    setDuration?: (ms: number) => void;
   };
   // Reveal zone (spec/106): whether THIS viewer has lifted the cover (local,
   // ephemeral — the shared state lives on the element), and the toggle.

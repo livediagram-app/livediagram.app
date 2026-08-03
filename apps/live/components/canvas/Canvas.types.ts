@@ -649,6 +649,9 @@ export type CanvasProps = {
   onResumeTimer: () => void;
   onResetTimer: () => void;
   onClearTimer: () => void;
+  // Change a running / paused countdown's length, restarting it at the new
+  // one (spec/105). Driven by the Timer element's own `…` menu.
+  onSetTimerDuration?: (durationMs: number) => void;
   onStartVote: (votesPerPerson: number, privacy?: import('@livediagram/diagram').VoteSetup) => void;
   onEndVote: () => void;
   onRevealVote: () => void;

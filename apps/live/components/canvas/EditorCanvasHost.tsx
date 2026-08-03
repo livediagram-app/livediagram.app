@@ -248,6 +248,7 @@ export function EditorCanvasHost() {
     revealedIds,
     toggleRevealForMe,
     setSessionConfigFor,
+    setTimerDuration,
     addComment,
     deleteComment,
     resolveThread,
@@ -861,6 +862,7 @@ export function EditorCanvasHost() {
       onResumeTimer={resumeTimer}
       onResetTimer={resetTimer}
       onClearTimer={clearTimer}
+      onSetTimerDuration={setTimerDuration}
       onStartVote={startVote}
       onEndVote={endVote}
       onRevealVote={revealVote}

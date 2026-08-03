@@ -156,6 +156,12 @@ export type MovablePanelProps = {
   // … tab panels grow rather than showing a scrollbar (their content is
   // bounded; searchable tabs scroll their own inner grid).
   growBody?: boolean;
+  // Stack this panel above its siblings. Every panel shares --z-panel, so
+  // without it the order is whatever the DOM order happens to be — which is
+  // how a panel mounted later ended up covering the palette. Only the palette
+  // sets it today; a second claimant means the panels need a real focus-raise
+  // rather than a second bump.
+  elevated?: boolean;
   // --- Corner docking (spec/63, desktop only) ---
   // When true the panel renders as a static flex child of its corner
   // stack container (no absolute positioning / corner class), so the
