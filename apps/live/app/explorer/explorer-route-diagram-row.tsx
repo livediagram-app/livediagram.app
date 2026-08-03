@@ -5,9 +5,9 @@ import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerBu
 import { useRef, useState } from 'react';
 import { relativeSince, useRelativeTimeTick } from '@/lib/relative-time';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
-import type { PaneDiagram } from './views';
 import { DiagramThumbnail } from '@/components/panels/DiagramThumbnail';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
+import type { DiagramEntryProps } from '@/app/explorer/explorer-view-props';
 import {
   DiagramActionsMenu,
   FavouriteMarker,
@@ -37,32 +37,7 @@ export function DiagramRow({
   onToggleRecentExclusion,
   showOwner = false,
   folderChip,
-}: {
-  diagram: PaneDiagram;
-  // Viewer identity for the row's thumbnail fetch (spec/67). Null while a
-  // guest id is still resolving; the thumbnail holds its placeholder.
-  ownerId: string | null;
-  renaming: boolean;
-  onStartRename: () => void;
-  onCommitRename: (name: string) => void;
-  onCancelRename: () => void;
-  onDuplicate: () => void;
-  onDelete: () => void;
-  onMove: (anchor: HTMLElement | null) => void;
-  // Shared-row menu action (spec/35): drop it from "Shared with me".
-  onDismiss?: () => void;
-  // Per-user star (spec/95).
-  favourite?: boolean;
-  onToggleFavourite?: () => void;
-  // Hide / show in Recent (spec/93).
-  recentExcluded?: boolean;
-  onToggleRecentExclusion?: () => void;
-  // Adds the desktop Owner cell ("You", the team name, or the sharer).
-  showOwner?: boolean;
-  // Where the diagram lives (spec/94). Recent only — every other pane
-  // IS a folder, so the chip would just repeat its own title.
-  folderChip?: { label: string; onOpen: () => void } | null;
-}) {
+}: DiagramEntryProps) {
   useRelativeTimeTick();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLButtonElement>(null);

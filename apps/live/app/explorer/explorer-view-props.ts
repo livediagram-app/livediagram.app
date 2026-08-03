@@ -95,3 +95,44 @@ export type CardViewProps = ExplorerViewProps & {
   // Where the diagram lives (spec/94). Recent only.
   folderChip?: { label: string; onOpen: () => void } | null;
 };
+
+/**
+ * The per-diagram props both entry components take: `DiagramRow` in the list
+ * view and `DiagramCard` in the card view.
+ *
+ * The two render very differently and share nothing else, but they answer the
+ * same question — what can you do with this diagram — so their call sites in
+ * views.tsx and CardView.tsx were sixteen identical bindings each. Adding an
+ * action meant remembering both, and forgetting one loses it from a whole view
+ * with nothing to notice: the component simply never receives the handler.
+ *
+ * Sharing the TYPE rather than a mapper keeps each component's own JSX intact
+ * and still makes the compiler ask the question, because a new required prop
+ * fails at both call sites at once.
+ */
+export type DiagramEntryProps = {
+  diagram: PaneDiagram;
+  // Viewer identity for the thumbnail fetch (spec/67). Null while a guest id
+  // is still resolving; the thumbnail holds its placeholder.
+  ownerId: string | null;
+  renaming: boolean;
+  onStartRename: () => void;
+  onCommitRename: (name: string) => void;
+  onCancelRename: () => void;
+  onDuplicate: () => void;
+  onDelete: () => void;
+  onMove: (anchor: HTMLElement | null) => void;
+  // Shared-row menu action (spec/35): drop it from "Shared with me".
+  onDismiss?: () => void;
+  // Per-user star (spec/95).
+  favourite?: boolean;
+  onToggleFavourite?: () => void;
+  // Hide / show in Recent (spec/93).
+  recentExcluded?: boolean;
+  onToggleRecentExclusion?: () => void;
+  // Adds the desktop Owner cell ("You", the team name, or the sharer).
+  showOwner?: boolean;
+  // Where the diagram lives (spec/94). Recent only — every other pane IS a
+  // folder, so the chip would just repeat its own title.
+  folderChip?: { label: string; onOpen: () => void } | null;
+};

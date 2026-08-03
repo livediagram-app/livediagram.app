@@ -7,7 +7,7 @@
 // menu come from diagram-row-shared, so list and card can't drift.
 
 import Link from 'next/link';
-import type { CardViewProps } from '@/app/explorer/explorer-view-props';
+import type { CardViewProps, DiagramEntryProps } from '@/app/explorer/explorer-view-props';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
 import { useRef, useState } from 'react';
 import { relativeSince, useRelativeTimeTick } from '@/lib/relative-time';
@@ -24,7 +24,6 @@ import {
 } from './diagram-row-shared';
 import { cardShell, FolderCard, previewArea, SyntheticFolderCard } from './explorer-folder-cards';
 import { FolderPreview } from './FolderPreview';
-import type { PaneDiagram } from './views';
 
 export function CardView({
   folders,
@@ -164,25 +163,9 @@ function DiagramCard({
   onToggleFavourite,
   recentExcluded,
   onToggleRecentExclusion,
-}: {
-  diagram: PaneDiagram;
-  ownerId: string | null;
-  showOwner: boolean;
+}: DiagramEntryProps & {
+  // Card-only: the list view shows visibility in its own column.
   showVisibilityBadge: boolean;
-  // Where the diagram lives (spec/94). Recent only.
-  folderChip?: { label: string; onOpen: () => void } | null;
-  renaming: boolean;
-  onStartRename: () => void;
-  onCommitRename: (name: string) => void;
-  onCancelRename: () => void;
-  onDuplicate: () => void;
-  onDelete: () => void;
-  onMove: (anchor: HTMLElement | null) => void;
-  onDismiss?: () => void;
-  favourite?: boolean;
-  onToggleFavourite?: () => void;
-  recentExcluded?: boolean;
-  onToggleRecentExclusion?: () => void;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLButtonElement>(null);
