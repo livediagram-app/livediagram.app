@@ -90,7 +90,6 @@ export type BoxedElementViewProps = {
   // comment machinery the anchored popover does.
   commentSelfId?: string;
   commentActions?: {
-    toggleOpen?: () => void;
     add?: (text: string) => void;
     remove?: (commentId: string) => void;
     resolve?: () => void;

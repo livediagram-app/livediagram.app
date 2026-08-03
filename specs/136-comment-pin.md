@@ -34,17 +34,13 @@ second way to store a comment, that is the bug.
 
 The element is a **card on the board**, not a marker.
 
-- **Collapsed** it is a one-line summary: the comment count, and the latest
-  comment with its author and age. The latest rather than the first — a
-  thread's current state is what a collapsed row should answer, and the opening
-  remark is often the least interesting line in it by the time there are five.
-- **Open** it is the thread: the comments, a composer, and resolve / reopen.
-- The summary bar is present in both states. It is the header when open and the
-  whole body when collapsed, so opening one does not move the line you were
-  reading.
-- `commentOpen` is **persisted, not local**. A facilitator opening the thread
-  they want discussed opens it for the room, which is the point of putting it
-  on the board.
+- It shows the thread: a header with the count, the comments, a composer, and
+  resolve / reopen.
+- **It does not collapse.** A collapse-to-summary was built and then dropped: a
+  panel you have deliberately put on the board is there to be READ, and folding
+  it left an element whose whole purpose sat behind another click. "I don't
+  want to see this right now" is already answered by the anchored popover —
+  you simply don't add a panel.
 
 **Attached with an ordinary arrow.** `Collaborate › Comment Panel` on any
 element drops a panel clear to its right and pins a normal arrow from the

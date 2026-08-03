@@ -92,6 +92,8 @@ export type PaletteAdd =
       shapeKind: ShapeKind;
       session?: import('@livediagram/diagram').SessionTool;
       reaction?: import('@livediagram/diagram').Reaction;
+      mode?: import('@livediagram/diagram').SelectionMode;
+      estimateScale?: import('@livediagram/diagram').EstimateScale;
     }
   | { type: 'icon'; iconId: string }
   | { type: 'tech'; iconId: string }

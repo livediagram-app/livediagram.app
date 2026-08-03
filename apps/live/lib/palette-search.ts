@@ -100,13 +100,15 @@ export function buildPaletteSearchItems(): PaletteSearchItem[] {
         kind: ShapeKind;
         session?: string;
         reaction?: string;
+        mode?: string;
+        estimateScale?: string;
       };
       const kind = action.kind;
       // Keyed on the CHOICE where there is one, not just the kind: the five
       // reaction tiles and the three session tiles all place the same shape,
       // so keying on kind alone gave eight results three distinct ids and the
       // panel silently dropped the duplicates.
-      const choice = action.session ?? action.reaction;
+      const choice = action.session ?? action.reaction ?? action.mode ?? action.estimateScale;
       return {
         id: choice ? `shape:${kind}:${choice}` : `shape:${kind}`,
         name: tileDisplayName(tile),
@@ -119,6 +121,8 @@ export function buildPaletteSearchItems(): PaletteSearchItem[] {
           shapeKind: kind,
           ...(action.session ? { session: action.session as never } : {}),
           ...(action.reaction ? { reaction: action.reaction as never } : {}),
+          ...(action.mode ? { mode: action.mode as never } : {}),
+          ...(action.estimateScale ? { estimateScale: action.estimateScale as never } : {}),
         },
       };
     }),

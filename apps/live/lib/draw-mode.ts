@@ -1,4 +1,11 @@
-import type { ComponentKind, Reaction, SessionTool, ShapeKind } from '@livediagram/diagram';
+import type {
+  ComponentKind,
+  EstimateScale,
+  Reaction,
+  SelectionMode,
+  SessionTool,
+  ShapeKind,
+} from '@livediagram/diagram';
 
 // Draw-to-size intent. When user-preferences.drawToAdd is on, picking
 // any element from the palette stashes the intent here; the canvas
@@ -27,6 +34,8 @@ export type PendingDraw =
       label?: string;
       session?: SessionTool;
       reaction?: Reaction;
+      mode?: SelectionMode;
+      estimateScale?: EstimateScale;
     }
   | { type: 'text' }
   | { type: 'sticky' }

@@ -375,14 +375,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             commentActions={
               commentPanelActions
                 ? {
-                    // `commentOpen` lives on ShapeElement; only a comment
-                    // panel reads it, and every other kind passes undefined
-                    // here harmlessly.
-                    toggleOpen: () =>
-                      commentPanelActions.toggleOpen(
-                        element.id,
-                        (element as { commentOpen?: boolean }).commentOpen === false,
-                      ),
                     add: (text) => commentPanelActions.add(element.id, text),
                     remove: (id) => commentPanelActions.remove(element.id, id),
                     resolve: () => commentPanelActions.resolve(element.id),

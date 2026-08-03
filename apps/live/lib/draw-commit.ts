@@ -187,6 +187,12 @@ export function buildDrawnBoxed(
           ...(intent.session === 'timer' && isTap ? { width: 224, height: 64 } : {}),
         }
       : {}),
+    ...(intent.type === 'shape' && intent.kind === 'estimate' && intent.estimateScale
+      ? { estimateScale: intent.estimateScale }
+      : {}),
+    ...(intent.type === 'shape' && intent.kind === 'mode-button' && intent.mode
+      ? { mode: intent.mode }
+      : {}),
     ...(intent.type === 'shape' && intent.kind === 'reaction-pad' && intent.reaction
       ? { reaction: intent.reaction, label: REACTION_PAD_LABEL[intent.reaction] }
       : {}),

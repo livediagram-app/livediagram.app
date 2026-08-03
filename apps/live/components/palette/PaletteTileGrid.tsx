@@ -1,4 +1,11 @@
-import type { ComponentKind, Reaction, SessionTool, ShapeKind } from '@livediagram/diagram';
+import type {
+  ComponentKind,
+  EstimateScale,
+  Reaction,
+  SelectionMode,
+  SessionTool,
+  ShapeKind,
+} from '@livediagram/diagram';
 import type { EmbedProvider } from '@livediagram/diagram';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { IconButton } from '@/components/palette/palette-controls';
@@ -16,7 +23,15 @@ import { tilesInSection } from './palette-tile-defs';
 // (with the mobile-close / draw-armed wrapping already applied) and threaded
 // to every grid.
 export type PaletteTileActions = {
-  addShape: (kind: ShapeKind, opts?: { session?: SessionTool; reaction?: Reaction }) => void;
+  addShape: (
+    kind: ShapeKind,
+    opts?: {
+      session?: SessionTool;
+      reaction?: Reaction;
+      mode?: SelectionMode;
+      estimateScale?: EstimateScale;
+    },
+  ) => void;
   addText: () => void;
   beginFreehand: () => void;
   beginHighlighter: () => void;
@@ -47,7 +62,13 @@ export function tileHandler(def: PaletteTileDef, actions: PaletteTileActions): (
     case 'shape':
       // The creation-time choice rides along, so "Add poll" places a poll and
       // a confetti tile places a confetti pad (spec/105, spec/135).
-      return () => actions.addShape(a.kind, { session: a.session, reaction: a.reaction });
+      return () =>
+        actions.addShape(a.kind, {
+          session: a.session,
+          reaction: a.reaction,
+          mode: a.mode,
+          estimateScale: a.estimateScale,
+        });
     case 'text':
       return actions.addText;
     case 'freehand':
@@ -100,7 +121,9 @@ export function tileActive(
         pendingDraw.type === 'shape' &&
         pendingDraw.kind === a.kind &&
         pendingDraw.session === a.session &&
-        pendingDraw.reaction === a.reaction
+        pendingDraw.reaction === a.reaction &&
+        pendingDraw.mode === a.mode &&
+        pendingDraw.estimateScale === a.estimateScale
       );
     case 'component':
       return pendingDraw.type === 'component' && pendingDraw.kind === a.kind;

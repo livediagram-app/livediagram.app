@@ -556,7 +556,6 @@ function BoxedElementViewImpl({
           element={element}
           textColor={textColor}
           selfId={commentSelfId ?? ''}
-          onToggleOpen={commentActions?.toggleOpen}
           onAddComment={commentActions?.add}
           onDeleteComment={commentActions?.remove}
           onResolve={commentActions?.resolve}

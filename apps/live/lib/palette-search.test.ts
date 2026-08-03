@@ -23,8 +23,14 @@ describe('buildPaletteSearchItems', () => {
         // Tiles that differ only by their creation-time choice (the five
         // reactions, the three session tools) each get their own id, or the
         // panel would show one of them and silently drop the rest.
-        const a = t.action as { kind: string; session?: string; reaction?: string };
-        const choice = a.session ?? a.reaction;
+        const a = t.action as {
+          kind: string;
+          session?: string;
+          reaction?: string;
+          mode?: string;
+          estimateScale?: string;
+        };
+        const choice = a.session ?? a.reaction ?? a.mode ?? a.estimateScale;
         return choice ? `shape:${a.kind}:${choice}` : `shape:${a.kind}`;
       })
       .filter((id) => !ids.has(id));

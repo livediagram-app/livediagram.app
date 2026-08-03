@@ -148,3 +148,35 @@ The help centre's URLs. The data articles still live under
 the palette's, and moving them would break every existing link for a cosmetic
 match. The article **copy** was updated, since a reader sent to the Tools tab
 looking for a chart would not find one.
+
+## Behaviour and Collaborate are fully grouped
+
+Both categories now put every tile in a collapsible group, because both had
+grown past the point where a flat list read as a list.
+
+**Behaviour** (21 tiles, 5 groups):
+
+| Group              | Holds                   |
+| ------------------ | ----------------------- |
+| **Selection Mode** | one button per mode (8) |
+| **Run the room**   | Reveal, Done, Picker    |
+| **Get around**     | Portal, Chair           |
+| **Session**        | Timer, Dot vote, Poll   |
+| **Reactions**      | the five pads           |
+
+**Collaborate** (9 tiles, 1 loose + 2 groups): the **Comment panel** stays
+loose — it is the one people reach for outside a facilitated session — over
+**Ask the room** (the three estimate scales, temperature, idea box) and **Keep
+a record** (agenda, decision, roll call).
+
+The grouping is by **what the element does with the room**, not by what it
+looks like. That is the same rule that produced the Build category (spec/132),
+and it is why Portal sits with Chair (both move you or your character) rather
+than with Reveal (which the facilitator drives).
+
+Three kinds were split into a tile per variant at the same time, on the
+spec/121 pattern: selection modes, session tools, reactions, and estimate
+scales. In every case the variant IS the decision — you know which mode, which
+tool, which scale before you reach for the palette — so placing a default and
+then reconfiguring it was two steps for something already settled. They remain
+one shape kind each with a mode field; the choice rides the draw intent.

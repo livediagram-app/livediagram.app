@@ -5,8 +5,13 @@ import { PaletteTileGrid, type PaletteTileActions } from './PaletteTileGrid';
 import { PaletteToolRows } from './PaletteToolRows';
 import { PaletteTileGroup } from './PaletteTileGroup';
 import {
+  AskGroupIcon,
   EmbedGroupIcon,
+  FacilitateGroupIcon,
+  ModeGroupIcon,
+  MoveGroupIcon,
   ReactionGroupIcon,
+  RecordGroupIcon,
   SessionGroupIcon,
   WebGroupIcon,
 } from './palette-group-icons';
@@ -88,8 +93,27 @@ export function PaletteBehaviourTab({ pendingDraw, actions }: TabProps) {
   const behaviour = tilesInToolGroup('behaviour');
   return (
     <div className="flex flex-col gap-0.5">
-      <PaletteToolRows
-        tiles={behaviour.filter((t) => !t.tileGroup)}
+      <PaletteTileGroup
+        title="Selection Mode"
+        blurb={(n) => `${n} modes to hand somebody`}
+        icon={<ModeGroupIcon />}
+        tiles={behaviour.filter((t) => t.tileGroup === 'mode')}
+        actions={actions}
+        pendingDraw={pendingDraw}
+      />
+      <PaletteTileGroup
+        title="Run the room"
+        blurb={(n) => `${n} things a facilitator drives`}
+        icon={<FacilitateGroupIcon />}
+        tiles={behaviour.filter((t) => t.tileGroup === 'facilitate')}
+        actions={actions}
+        pendingDraw={pendingDraw}
+      />
+      <PaletteTileGroup
+        title="Get around"
+        blurb={(n) => `${n} ways to move yourself about`}
+        icon={<MoveGroupIcon />}
+        tiles={behaviour.filter((t) => t.tileGroup === 'move')}
         actions={actions}
         pendingDraw={pendingDraw}
       />
@@ -118,13 +142,36 @@ export function PaletteBehaviourTab({ pendingDraw, actions }: TabProps) {
 // and roll calls. Rows, not a tile grid, for the same reason Behaviour is: a
 // glyph cannot distinguish "everyone answers privately then all at once" from
 // "everyone answers and you watch it move", and that IS the choice.
+// Grouped by what the element DOES with the room rather than by what it looks
+// like: three that ask everybody a question and collect the answers, three that
+// write down what the room decided. The comment panel stays loose above them —
+// it is the one people reach for outside a facilitated session.
 export function PaletteCollaborateTab({ pendingDraw, actions }: TabProps) {
+  const collab = tilesInSection('collaborate');
   return (
-    <PaletteToolRows
-      tiles={tilesInSection('collaborate')}
-      actions={actions}
-      pendingDraw={pendingDraw}
-    />
+    <div className="flex flex-col gap-0.5">
+      <PaletteToolRows
+        tiles={collab.filter((t) => !t.tileGroup)}
+        actions={actions}
+        pendingDraw={pendingDraw}
+      />
+      <PaletteTileGroup
+        title="Ask the room"
+        blurb={(n) => `${n} ways to collect an answer from everybody`}
+        icon={<AskGroupIcon />}
+        tiles={collab.filter((t) => t.tileGroup === 'ask')}
+        actions={actions}
+        pendingDraw={pendingDraw}
+      />
+      <PaletteTileGroup
+        title="Keep a record"
+        blurb={(n) => `${n} ways to write down what happened`}
+        icon={<RecordGroupIcon />}
+        tiles={collab.filter((t) => t.tileGroup === 'record')}
+        actions={actions}
+        pendingDraw={pendingDraw}
+      />
+    </div>
   );
 }
 

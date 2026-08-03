@@ -99,10 +99,13 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   media: 8,
   components: 10,
   data: 6,
-  // 6 single-purpose elements + the Session group (3 tools) + the Reactions
-  // group (5), each group behind one accordion row (spec/105, spec/135).
-  behaviour: 14,
-  collaborate: 7,
+  // Every Behaviour tile now sits in a group (spec/103, /105, /135): Selection
+  // Mode (8 modes), Run the room (3), Get around (2), Session (3),
+  // Reactions (5).
+  behaviour: 21,
+  // The comment panel, loose, plus Ask the room (3 estimate scales +
+  // temperature + idea box) and Keep a record (3).
+  collaborate: 9,
 };
 
 describe('PALETTE_CATEGORIES', () => {

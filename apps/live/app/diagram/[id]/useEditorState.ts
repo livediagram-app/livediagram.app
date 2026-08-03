@@ -875,25 +875,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // Open or collapse a comment panel (spec/136). Persisted rather than local,
   // so a facilitator opening the thread they want discussed opens it for the
   // room instead of only for themselves.
-  const setCommentPanelOpen = useCallback(
-    (elementId: string, open: boolean) => {
-      commitTabs((ts) =>
-        ts.map((tab) =>
-          tab.id !== activeId
-            ? tab
-            : {
-                ...tab,
-                elements: tab.elements.map((el) =>
-                  el.id === elementId ? { ...el, commentOpen: open } : el,
-                ),
-              },
-        ),
-      );
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [activeId],
-  );
-
   // Set a reaction pad off (spec/135): play it here, then tell the room.
   //
   // Local-first rather than round-tripping through the server: the press has
@@ -2615,7 +2596,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     revealedIds,
     toggleRevealForMe,
     setSessionConfigFor,
-    setCommentPanelOpen,
     attachCommentPanel,
     pickerFor,
     collabElements,

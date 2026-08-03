@@ -17,7 +17,9 @@ import {
   type ArrowElement,
   type BoxedElement,
   type Element,
+  type EstimateScale,
   type Reaction,
+  type SelectionMode,
   type SessionTool,
   type ShapeKind,
   type Tab,
@@ -76,13 +78,23 @@ export function useElementCreation(opts: {
   // session tool (spec/105), which reaction (spec/135). The palette offers a
   // tile per choice, so it has to survive the draw gesture and land on the
   // element rather than leaving the factory default in place.
-  const addShape = (kind: ShapeKind, opts?: { session?: SessionTool; reaction?: Reaction }) => {
+  const addShape = (
+    kind: ShapeKind,
+    opts?: {
+      session?: SessionTool;
+      reaction?: Reaction;
+      mode?: SelectionMode;
+      estimateScale?: EstimateScale;
+    },
+  ) => {
     if (editsBlocked) return;
     beginDraw({
       type: 'shape',
       kind,
       ...(opts?.session ? { session: opts.session } : {}),
       ...(opts?.reaction ? { reaction: opts.reaction } : {}),
+      ...(opts?.mode ? { mode: opts.mode } : {}),
+      ...(opts?.estimateScale ? { estimateScale: opts.estimateScale } : {}),
     });
   };
 

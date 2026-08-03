@@ -101,6 +101,8 @@ export function CommandPalette({
     opts?: {
       session?: import('@livediagram/diagram').SessionTool;
       reaction?: import('@livediagram/diagram').Reaction;
+      mode?: import('@livediagram/diagram').SelectionMode;
+      estimateScale?: import('@livediagram/diagram').EstimateScale;
     },
   ) => {
     onAddShape(kind, opts);

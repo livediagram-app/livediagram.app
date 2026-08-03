@@ -253,7 +253,6 @@ export function EditorCanvasHost() {
     deleteComment,
     resolveThread,
     unresolveThread,
-    setCommentPanelOpen,
     pickerFor,
     collabElements,
     followMe,
@@ -450,7 +449,6 @@ export function EditorCanvasHost() {
         isReadOnly
           ? undefined
           : {
-              toggleOpen: setCommentPanelOpen,
               add: (id, text) => addComment(id, text),
               remove: deleteComment,
               resolve: resolveThread,

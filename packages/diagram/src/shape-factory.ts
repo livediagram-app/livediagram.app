@@ -394,9 +394,6 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       // No label: the panel's content IS the thread, and a caption above it
       // would be a title for a conversation nobody has had yet.
       label: '',
-      // Opens on creation: a panel you add is a remark you are about to make,
-      // so it lands ready to type into rather than folded away.
-      commentOpen: true,
     };
   }
   if (kind === 'reaction-pad') {

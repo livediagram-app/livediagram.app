@@ -1,6 +1,14 @@
 import type { EmbedProvider } from '@livediagram/diagram';
 import { REACTION_EMOJI } from '@livediagram/diagram';
-import type { ComponentKind, Reaction, SessionTool, ShapeKind } from '@livediagram/diagram';
+import { ModeGroupIcon } from './palette-group-icons';
+import type {
+  ComponentKind,
+  EstimateScale,
+  Reaction,
+  SelectionMode,
+  SessionTool,
+  ShapeKind,
+} from '@livediagram/diagram';
 import {
   AgendaIcon,
   ChairIcon,
@@ -60,7 +68,14 @@ type PaletteTileAction =
   // elements are ONE kind with a mode field, and the palette offers a tile per
   // mode inside an accordion (spec/105, spec/135) the way Media does for embed
   // providers. Placing "Poll" has to place a poll, not a timer to reconfigure.
-  | { type: 'shape'; kind: ShapeKind; session?: SessionTool; reaction?: Reaction }
+  | {
+      type: 'shape';
+      kind: ShapeKind;
+      session?: SessionTool;
+      reaction?: Reaction;
+      mode?: SelectionMode;
+      estimateScale?: EstimateScale;
+    }
   | { type: 'text' }
   | { type: 'freehand' }
   // Marker variant of the pencil (spec/81) and the click-to-place
@@ -130,8 +145,19 @@ export type PaletteTileDef = {
   // Collapses this tile into a named group inside its category, rather than
   // showing it as a top-level row (spec/121). 'embed' = the Media tab's embed
   // providers; 'web' = the Components tab's website composites; 'session' and
-  // 'reaction' = the Behaviour tab's session tools and reactions.
-  tileGroup?: 'embed' | 'web' | 'session' | 'reaction';
+  // 'reaction' = the Behaviour tab's session tools and reactions; 'mode' its
+  // selection-mode buttons; 'move' / 'facilitate' the rest of Behaviour; and
+  // 'ask' / 'record' the two halves of Collaborate.
+  tileGroup?:
+    | 'embed'
+    | 'web'
+    | 'session'
+    | 'reaction'
+    | 'mode'
+    | 'move'
+    | 'facilitate'
+    | 'ask'
+    | 'record';
   label: string;
   // Overrides the caption derived from `label` where that runs too long
   // for the tile (see IconButton).
@@ -732,45 +758,119 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
-    // Selection Mode button (spec/103): a control you press to change your own
-    // selection mode — Avatar by default, so a diagram can invite people to
-    // walk it. The tile id is NOT renamed with the label: it is persisted in
-    // saved favourites, and changing it would silently drop the tile from
-    // anyone who had favourited it.
-    id: 'tools:mode-button',
-    blurb: 'Switches your selection mode',
+    // Selection Mode buttons (spec/103): one tile per mode, grouped, so the
+    // button lands pointed at the mode you wanted rather than at the default
+    // you then have to change.
+    id: 'tools:mode-avatar',
+    tileGroup: 'mode',
+    blurb: 'Walk a character around the board',
+    caption: 'Avatar',
     section: 'tools',
     toolGroup: 'behaviour',
-    label: 'Add selection mode button',
-    caption: 'Selection Mode',
+    label: 'Add Avatar mode button',
     description:
-      'A button on the canvas that switches whoever presses it into a selection mode. Avatar by default; pick another from the element menu.',
+      'A button that switches whoever presses it into Avatar mode. It changes the mode for that person only, and pressing it again hands them back the mode they were in.',
     filled: true,
-    action: { type: 'shape', kind: 'mode-button' },
-    icon: (
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 18 18"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden
-      >
-        {/* A square button, sunk under a pointer that is pressing it: the two
-            halves of what the element is. The press lines sell the click. */}
-        <rect x="1.6" y="2.4" width="11" height="11" rx="2.6" />
-        <path d="M4.4 6.1h5.4M4.4 8.6h3.4" strokeWidth="1.2" />
-        <path d="M1.1 4.2 A2.6 2.6 0 0 1 3.4 2" strokeWidth="1" opacity="0.55" />
-        <path
-          d="M9.8 8.7 L16.9 12.1 L13.6 13 L15.4 16.2 L14 17 L12.2 13.8 L10 16 Z"
-          fill="currentColor"
-          stroke="none"
-        />
-      </svg>
-    ),
+    action: { type: 'shape', kind: 'mode-button', mode: 'avatar' },
+    icon: <ModeGroupIcon />,
+  },
+  {
+    id: 'tools:mode-select',
+    tileGroup: 'mode',
+    blurb: 'The ordinary pointer',
+    caption: 'Select',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Select mode button',
+    description:
+      'A button that switches whoever presses it into Select mode. It changes the mode for that person only, and pressing it again hands them back the mode they were in.',
+    filled: true,
+    action: { type: 'shape', kind: 'mode-button', mode: 'select' },
+    icon: <ModeGroupIcon />,
+  },
+  {
+    id: 'tools:mode-pan',
+    tileGroup: 'mode',
+    blurb: 'Drag the canvas around',
+    caption: 'Hand',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Hand mode button',
+    description:
+      'A button that switches whoever presses it into Hand mode. It changes the mode for that person only, and pressing it again hands them back the mode they were in.',
+    filled: true,
+    action: { type: 'shape', kind: 'mode-button', mode: 'pan' },
+    icon: <ModeGroupIcon />,
+  },
+  {
+    id: 'tools:mode-laser',
+    tileGroup: 'mode',
+    blurb: 'Point at things while you talk',
+    caption: 'Laser',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Laser mode button',
+    description:
+      'A button that switches whoever presses it into Laser mode. It changes the mode for that person only, and pressing it again hands them back the mode they were in.',
+    filled: true,
+    action: { type: 'shape', kind: 'mode-button', mode: 'laser' },
+    icon: <ModeGroupIcon />,
+  },
+  {
+    id: 'tools:mode-spotlight',
+    tileGroup: 'mode',
+    blurb: 'Dim everything but one patch',
+    caption: 'Spotlight',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Spotlight mode button',
+    description:
+      'A button that switches whoever presses it into Spotlight mode. It changes the mode for that person only, and pressing it again hands them back the mode they were in.',
+    filled: true,
+    action: { type: 'shape', kind: 'mode-button', mode: 'spotlight' },
+    icon: <ModeGroupIcon />,
+  },
+  {
+    id: 'tools:mode-eraser',
+    tileGroup: 'mode',
+    blurb: 'Rub things out by dragging',
+    caption: 'Eraser',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Eraser mode button',
+    description:
+      'A button that switches whoever presses it into Eraser mode. It changes the mode for that person only, and pressing it again hands them back the mode they were in.',
+    filled: true,
+    action: { type: 'shape', kind: 'mode-button', mode: 'eraser' },
+    icon: <ModeGroupIcon />,
+  },
+  {
+    id: 'tools:mode-format',
+    tileGroup: 'mode',
+    blurb: 'Copy one element\u2019s style onto others',
+    caption: 'Format',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Format mode button',
+    description:
+      'A button that switches whoever presses it into Format mode. It changes the mode for that person only, and pressing it again hands them back the mode they were in.',
+    filled: true,
+    action: { type: 'shape', kind: 'mode-button', mode: 'format' },
+    icon: <ModeGroupIcon />,
+  },
+  {
+    id: 'tools:mode-isometric',
+    tileGroup: 'mode',
+    blurb: 'Tilt the board into 3D',
+    caption: 'Isometric',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Isometric mode button',
+    description:
+      'A button that switches whoever presses it into Isometric mode. It changes the mode for that person only, and pressing it again hands them back the mode they were in.',
+    filled: true,
+    action: { type: 'shape', kind: 'mode-button', mode: 'isometric' },
+    icon: <ModeGroupIcon />,
   },
   {
     // Portal (spec/104): step in here, come out of the portal it is linked to.
@@ -778,6 +878,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     // saved favourites — renaming it would silently drop the tile for anyone
     // who had favourited it.
     id: 'tools:door',
+    tileGroup: 'move',
     blurb: 'Step through to its linked portal',
     section: 'tools',
     toolGroup: 'behaviour',
@@ -855,6 +956,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     // Reveal zone (spec/106): a cover you click to see what is underneath.
     id: 'tools:reveal',
+    tileGroup: 'facilitate',
     blurb: 'Double-click to look underneath',
     section: 'tools',
     toolGroup: 'behaviour',
@@ -869,6 +971,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     // Done check (spec/137): who has finished, live.
     id: 'tools:done-check',
+    tileGroup: 'facilitate',
     blurb: 'Everyone marks themselves finished',
     caption: 'Done',
     section: 'tools',
@@ -974,6 +1077,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     // Picker (spec/107): rolls a person or a written option.
     id: 'tools:picker',
+    tileGroup: 'facilitate',
     blurb: 'Pick someone at random',
     section: 'tools',
     toolGroup: 'behaviour',
@@ -990,6 +1094,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     // somebody interacts with it — here by walking an Avatar-mode character
     // into it rather than by pressing it.
     id: 'tools:chair',
+    tileGroup: 'move',
     blurb: 'A chair for Avatars to sit in',
     section: 'tools',
     toolGroup: 'behaviour',
@@ -1034,19 +1139,50 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
-    id: 'collab:estimate',
-    blurb: 'Planning poker: pick privately, reveal together',
+    // Estimate cards (spec/123): one tile per SCALE, grouped. Which scale a
+    // team estimates on is a standing decision, not something you change per
+    // card, so it belongs at the moment you reach for one.
+    id: 'collab:estimate-fibonacci',
+    tileGroup: 'ask',
+    blurb: '1, 2, 3, 5, 8, 13, 21',
+    caption: 'Fibonacci',
     section: 'collaborate',
-    label: 'Add estimate card',
-    caption: 'Estimate',
+    label: 'Add Fibonacci estimate card',
     description:
-      'Planning poker on the canvas. Everyone picks a number privately, then one Reveal shows every answer and the spread.',
+      'Planning poker on the canvas: everyone picks privately, then one Reveal shows every answer and the spread. Uses the classic story-point scale, where the gaps widen as the numbers grow so nobody argues over 6 versus 7.',
     filled: true,
-    action: { type: 'shape', kind: 'estimate' },
+    action: { type: 'shape', kind: 'estimate', estimateScale: 'fibonacci' },
+    icon: <EstimateIcon />,
+  },
+  {
+    id: 'collab:estimate-tshirt',
+    tileGroup: 'ask',
+    blurb: 'XS through XL',
+    caption: 'T-shirt',
+    section: 'collaborate',
+    label: 'Add T-shirt estimate card',
+    description:
+      'Planning poker on the canvas: everyone picks privately, then one Reveal shows every answer and the spread. Uses sizes rather than numbers, for a room that starts haggling the moment it sees a digit.',
+    filled: true,
+    action: { type: 'shape', kind: 'estimate', estimateScale: 'tshirt' },
+    icon: <EstimateIcon />,
+  },
+  {
+    id: 'collab:estimate-powers',
+    tileGroup: 'ask',
+    blurb: '1, 2, 4, 8, 16',
+    caption: 'Powers of two',
+    section: 'collaborate',
+    label: 'Add Powers of two estimate card',
+    description:
+      'Planning poker on the canvas: everyone picks privately, then one Reveal shows every answer and the spread. Uses doubling steps, for sizing where each step up is meant to feel twice the work.',
+    filled: true,
+    action: { type: 'shape', kind: 'estimate', estimateScale: 'powers' },
     icon: <EstimateIcon />,
   },
   {
     id: 'collab:temperature',
+    tileGroup: 'ask',
     blurb: 'Fist of five: how does the room feel?',
     section: 'collaborate',
     label: 'Add temperature check',
@@ -1059,6 +1195,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   {
     id: 'collab:idea-box',
+    tileGroup: 'ask',
     blurb: 'Anonymous ideas, held until you open it',
     section: 'collaborate',
     label: 'Add idea box',
@@ -1071,6 +1208,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   {
     id: 'collab:agenda',
+    tileGroup: 'record',
     blurb: 'Segments with minutes that start the timer',
     section: 'collaborate',
     label: 'Add agenda',
@@ -1083,6 +1221,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   {
     id: 'collab:decision',
+    tileGroup: 'record',
     blurb: 'What was decided, why, and whether it stands',
     section: 'collaborate',
     label: 'Add decision record',
@@ -1095,6 +1234,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   {
     id: 'collab:roll-call',
+    tileGroup: 'record',
     blurb: 'Freezes who was in the room, right now',
     section: 'collaborate',
     label: 'Add roll call',

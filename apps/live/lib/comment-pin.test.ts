@@ -21,14 +21,10 @@ describe('comment pin', () => {
     expect(SHAPE_KINDS.has('comment-pin')).toBe(true);
   });
 
-  it('starts open and unlabelled', () => {
-    const p = pin();
-    // A panel you add is a remark you are about to make, so it lands ready to
-    // type into rather than folded away.
-    expect(p.commentOpen).toBe(true);
+  it('starts unlabelled', () => {
     // The thread IS the content; a caption above it would be a title for a
     // conversation nobody has had yet.
-    expect(p.label).toBe('');
+    expect(pin().label).toBe('');
   });
 
   it('carries an ordinary comment thread, counted by the ordinary helper', () => {

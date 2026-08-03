@@ -115,7 +115,6 @@ export type CanvasProps = {
   // the anchored popover already drives them.
   commentSelfId?: string;
   commentPanelActions?: {
-    toggleOpen: (elementId: string, open: boolean) => void;
     add: (elementId: string, text: string) => void;
     remove: (elementId: string, commentId: string) => void;
     resolve: (elementId: string) => void;

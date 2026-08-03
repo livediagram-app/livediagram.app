@@ -97,7 +97,12 @@ export function EditorSearchPanel() {
           ? undefined
           : (add) => {
               if (add.type === 'shape')
-                addShape(add.shapeKind, { session: add.session, reaction: add.reaction });
+                addShape(add.shapeKind, {
+                  session: add.session,
+                  reaction: add.reaction,
+                  mode: add.mode,
+                  estimateScale: add.estimateScale,
+                });
               else if (add.type === 'icon') addIcon(add.iconId);
               else if (add.type === 'sticker') addSticker(add.stickerId);
               else addTechIcon(add.iconId);

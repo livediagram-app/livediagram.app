@@ -54,6 +54,8 @@ export type CommandPaletteProps = {
     opts?: {
       session?: import('@livediagram/diagram').SessionTool;
       reaction?: import('@livediagram/diagram').Reaction;
+      mode?: import('@livediagram/diagram').SelectionMode;
+      estimateScale?: import('@livediagram/diagram').EstimateScale;
     },
   ) => void;
   // Drops a curated icon glyph (shape kind 'icon') carrying the chosen
