@@ -493,6 +493,7 @@ export type UnfurlResult = {
   favicon?: string;
 };
 
+export * from './image-limits';
 export * from './poll';
 export * from './room-messages';
 export * from './telemetry-schema';

@@ -1,6 +1,7 @@
 import { sha256Hex, type ImageSummary } from '@livediagram/api-schema';
 import { ApiError, apiUploadImage } from './api-client';
 import { isOfflineIdSync } from './offline/offline-store';
+import { MAX_IMAGE_BYTES, MAX_IMAGE_MB } from '@livediagram/api-schema';
 
 // Map the api worker's upload error tokens (responses.ts / images.ts)
 // to messages safe to render inline in the picker. The client-side
@@ -23,10 +24,11 @@ const UPLOAD_ERROR_MESSAGES: Record<string, string> = {
 // message), not security.
 
 const ACCEPTED_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'] as const;
-const MAX_BYTES = 10 * 1024 * 1024;
-
+// The cap the api actually enforces (spec/19), so this gate can never accept
+// a file the upload will reject. Re-exported under the editor's own name
+// because callers here read it as "what the picker allows".
 export const UPLOAD_ACCEPT_ATTR = ACCEPTED_TYPES.join(',');
-export const UPLOAD_MAX_BYTES = MAX_BYTES;
+export const UPLOAD_MAX_BYTES = MAX_IMAGE_BYTES;
 
 type UploadResult = { image: ImageSummary; deduped: boolean };
 
@@ -50,8 +52,8 @@ function validateImageFile(file: File): void {
       'Unsupported file type. Use PNG, JPEG, WebP, or GIF (SVG is rejected for security).',
     );
   }
-  if (file.size > MAX_BYTES) {
-    throw new ImageUploadError(`Too large. Limit is ${MAX_BYTES / (1024 * 1024)} MB.`);
+  if (file.size > MAX_IMAGE_BYTES) {
+    throw new ImageUploadError(`Too large. Limit is ${MAX_IMAGE_MB} MB.`);
   }
   if (file.size === 0) {
     throw new ImageUploadError('Empty file.');
