@@ -53,13 +53,7 @@ import { chairSeatPoint } from '@livediagram/diagram';
 import { useAvatarConfig } from '@/hooks/canvas/useAvatarConfig';
 import { parseAvatarConfig } from '@/lib/avatar-config';
 import { reactionPose } from '@/lib/avatar-reactions';
-import {
-  portalExitPoint,
-  portalName,
-  resolvePortalSite,
-  resolvePortalTarget,
-  viewportOffsetCentredOn,
-} from '@/lib/portals';
+import { makePortalTravel } from '@/components/canvas/portal-travel';
 import { useOffscreenContent } from '@/hooks/canvas/useOffscreenContent';
 import { Portal } from '@/components/primitives/Portal';
 import { TabLoadOverlay } from '@/components/canvas/TabLoadOverlay';
@@ -351,60 +345,24 @@ export function Canvas(props: CanvasProps) {
     return el && isBoxed(el) ? { x: el.x, y: el.y, width: el.width, height: el.height } : null;
   }, [avatar.standingOnId, elements]);
 
-  // Portals (spec/104). Travelling means two things at once: the CAMERA centres on
-  // the paired portal, and — if the traveller is walking around in Avatar mode —
-  // their character steps out of it. One function behind both the portal face's
-  // click and the avatar's walk-in, so the two can't drift apart.
+  // Portals (spec/104): the camera centres on the paired portal and the walking
+  // character steps out of it — see makePortalTravel.
+  //
   // `enterPortal` needs the avatar hook (to place the character) and the hook
   // needs `enterPortal` (for the walk-in), so the callback goes through a ref:
   // declared here, repointed on every render, read at call time.
   const enterPortalRef = useRef<(from: ShapeElement) => void>(() => {});
-  // Where a portal leads, searched across every tab when the canvas was given
-  // them (spec/104) and within this tab otherwise.
-  const portalDestination = (from: ShapeElement) => {
-    const site = props.portalTabs ? resolvePortalSite(props.portalTabs, from) : null;
-    if (site) {
-      const tab = props.portalTabs?.find((t) => t.id === site.tabId);
-      return { portal: site.portal, tabId: site.tabId, elements: tab?.elements ?? elements };
-    }
-    const target = resolvePortalTarget(elements, from);
-    return target ? { portal: target, tabId: props.activeTabId, elements } : null;
-  };
-  const enterPortal = (from: ShapeElement) => {
-    const to = portalDestination(from);
-    if (!to) return;
-    // A link across tabs switches tab first, through the same follow-a-link
-    // path a tab link uses, so selection / edit state is cleaned up the same
-    // way. The camera + character then land on the far side.
-    if (props.activeTabId && to.tabId && to.tabId !== props.activeTabId) {
-      props.onFollowLink({ kind: 'tab', tabId: to.tabId });
-    }
-    const node = mainRef && 'current' in mainRef ? mainRef.current : null;
-    const rect = node?.getBoundingClientRect();
-    if (rect) {
-      setViewportOffset(
-        viewportOffsetCentredOn(
-          to.portal,
-          { width: rect.width, height: rect.height },
-          viewportZoom,
-        ),
-      );
-    }
-    // Step out of the far portal, and tell the walk hook to ignore that portal until
-    // the character leaves it, so it doesn't bounce straight back.
-    avatar.teleportTo(portalExitPoint(to.portal), to.portal.id);
-  };
+  const { enterPortal, resolvePortal } = makePortalTravel({
+    elements,
+    tabs: props.portalTabs,
+    activeTabId: props.activeTabId,
+    onFollowLink: props.onFollowLink,
+    mainRef,
+    viewportZoom,
+    setViewportOffset,
+    teleportTo: avatar.teleportTo,
+  });
   enterPortalRef.current = enterPortal;
-  // What the portal face needs: the far portal's name for the tooltip, and the
-  // travel action — absent when the portal is unlinked, which is what makes the
-  // face render inert and say so.
-  const resolvePortal = (element: ShapeElement) => {
-    const to = portalDestination(element);
-    return {
-      targetName: to ? portalName(to.elements, to.portal) : null,
-      travel: to ? () => enterPortal(element) : undefined,
-    };
-  };
 
   // Isometric view (spec/45): the orbit-able camera + the innermost
   // transform fragment, pivoted on the content centre — see

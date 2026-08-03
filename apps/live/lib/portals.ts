@@ -82,6 +82,38 @@ function isPortal(el: Element | undefined): ShapeElement | null {
   return el && el.type === 'shape' && el.shape === 'portal' ? el : null;
 }
 
+// Where a portal actually leads, resolved the way the canvas needs it: the far
+// portal, the tab it sits on, and THAT TAB'S elements.
+//
+// The elements matter as much as the portal. A cross-tab link lands you among a
+// different set, and the caller needs them to name the far portal and to place a
+// character beside it — reading the current tab's elements there would name the
+// wrong portal, or none.
+//
+// Cross-tab resolution is tried first when the caller has the tabs to search
+// (`tabs`), because a link that crosses tabs also resolves within one; falling
+// back the other way would find a same-tab partner and never look further. With
+// no tabs to search — an embed, an export, a surface handed one tab — it
+// resolves within `elements` alone and reports the caller's own tab id.
+export type PortalDestination = {
+  portal: ShapeElement;
+  tabId: string | undefined;
+  elements: Element[];
+};
+
+export function resolvePortalDestination(
+  from: ShapeElement,
+  { elements, tabs, activeTabId }: { elements: Element[]; tabs?: Tab[]; activeTabId?: string },
+): PortalDestination | null {
+  const site = tabs ? resolvePortalSite(tabs, from) : null;
+  if (site) {
+    const tab = tabs?.find((t) => t.id === site.tabId);
+    return { portal: site.portal, tabId: site.tabId, elements: tab?.elements ?? elements };
+  }
+  const target = resolvePortalTarget(elements, from);
+  return target ? { portal: target, tabId: activeTabId, elements } : null;
+}
+
 // Where a character stands when it comes OUT of a portal: centred on the ring,
 // at its base (the bottom edge), since the avatar's position is its feet.
 export function portalExitPoint(portal: PortalBox): { x: number; y: number } {
