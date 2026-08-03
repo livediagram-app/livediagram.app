@@ -427,7 +427,11 @@ function BoxedElementViewImpl({
       ) : null}
       {/* A Lane's title gutter (spec/119), behind the label. */}
       {element.type === 'shape' && element.shape === 'lane' ? (
-        <LaneGutter stroke={element.strokeColor ?? defaultStrokeColor(element)} alignX={alignX} />
+        <LaneGutter
+          stroke={element.strokeColor ?? defaultStrokeColor(element)}
+          alignX={alignX}
+          alignY={alignY}
+        />
       ) : null}
       {/* A Page's turned-back bottom-right corner (spec/100). */}
       {element.type === 'shape' && element.shape === 'page' ? (

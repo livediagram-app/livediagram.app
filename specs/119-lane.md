@@ -47,6 +47,30 @@ What differs from a frame is presentation only:
 - **Left-aligned, vertically centred label**, so the title reads along the
   band's leading edge rather than floating in the middle of the work.
 
+## Aligning the title re-orients the lane
+
+The gutter is the title's backdrop, so it runs along whichever **edge the
+title is pinned to** (`laneGutterEdge`, `LaneGutter.tsx`):
+
+| Title alignment           | Gutter                                          |
+| ------------------------- | ----------------------------------------------- |
+| Left / right (any height) | Strip down that side, 132 wide                  |
+| Centre, top or bottom     | Band across that edge, `LANE_BAND_PX` (64) tall |
+| Centre, middle            | Strip down the middle                           |
+
+A horizontal pin wins whenever there is one: a title reading down the leading
+edge is the swimlane idiom, and nudging it up or down that edge must not
+re-orient the band. Only a title with no horizontal edge to hug lets the
+vertical pin decide — and that is the point of the rule. **Centring the title
+at the top or bottom turns the lane into a vertical one**, a column with a
+header band, which is how you build a board of columns rather than a stack of
+rows. Before, the strip stayed vertical down the middle with the words perched
+at its top: the lane still read as horizontal while its title read as a header.
+
+The band is 64 rather than 132 because the job differs by axis. 132 buys room
+for words across; a band only has to hold one line down, which is the `lg`
+padding (24) above and below it.
+
 ## Stacking lanes
 
 Lanes are placed like any other element and are not auto-stacked. Snapping and
