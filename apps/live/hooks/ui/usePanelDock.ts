@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   DEFAULT_PANEL_CORNER,
+  PANEL_CORNERS,
   PANEL_IDS,
   PANEL_LAYOUT_CHANGED_EVENT,
   STORAGE_KEY,
@@ -117,6 +118,21 @@ export function usePanelDock(): PanelDock {
     ]);
     for (const id of PANEL_IDS) {
       if (!placed.has(id)) stacks[DEFAULT_PANEL_CORNER[id]].push(id);
+    }
+    // The palette always takes the top slot of whichever corner it is in.
+    //
+    // It is the panel you reach for while the others happen to be open, and
+    // the transient ones — avatar, laser, poll, vote — join their corner at
+    // whatever position the stored layout leaves them, so without this an
+    // Avatar session put its panel above the palette and pushed it down the
+    // screen. Dragging another panel above the palette deliberately will not
+    // stick, which is the intended reading of "always".
+    for (const corner of PANEL_CORNERS) {
+      const i = stacks[corner].indexOf('palette');
+      if (i > 0) {
+        stacks[corner].splice(i, 1);
+        stacks[corner].unshift('palette');
+      }
     }
     return stacks;
   }, [layout]);
