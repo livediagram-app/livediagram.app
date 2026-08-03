@@ -114,7 +114,9 @@ describe('PALETTE_CATEGORIES', () => {
     for (const category of PALETTE_CATEGORIES) {
       expect(
         tilesForCategory(category.id).length,
-        `${category.label}: tile count changed — does its description still list the right elements?`,
+        `${category.label}: tile count changed. Three places name this category's elements and all ` +
+          `three have gone stale before: PALETTE_CATEGORIES.description here, the help-registry ` +
+          `entry, and the article's own helpMetadata description in apps/help. Check all three.`,
       ).toBe(TILES_PER_CATEGORY[category.id]);
     }
   });
