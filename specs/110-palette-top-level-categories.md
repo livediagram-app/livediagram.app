@@ -16,13 +16,13 @@ Devices**, then **Icons / Stickers / Technology / Media / Components**, then
 
 Where things landed, for anything that moved:
 
-| Moved                                      | To              |
-| ------------------------------------------ | --------------- |
-| Code Block, Checklist, Link Card, Timeline | **Components**  |
-| Table                                      | **Data**        |
-| Annotation                                 | **Write**       |
-| Frame                                      | **Draw**        |
-| Image, Avatar                              | **Media** (new) |
+| Moved                           | To              |
+| ------------------------------- | --------------- |
+| Code Block, Checklist, Timeline | **Components**  |
+| Table                           | **Data**        |
+| Annotation                      | **Write**       |
+| Frame                           | **Draw**        |
+| Image, Avatar                   | **Media** (new) |
 
 The **Blocks** and **Structure** groups emptied out and were deleted; **Write &
 Draw** split into **Write** (the wordy elements) and **Draw** (the gesture
@@ -154,15 +154,15 @@ looking for a chart would not find one.
 Both categories now put every tile in a collapsible group, because both had
 grown past the point where a flat list read as a list.
 
-**Behaviour** (21 tiles, 5 groups):
+**Behaviour** (22 tiles, 5 groups):
 
-| Group              | Holds                   |
-| ------------------ | ----------------------- |
-| **Selection Mode** | one button per mode (8) |
-| **Run the room**   | Reveal, Done, Picker    |
-| **Get around**     | Portal, Chair           |
-| **Session**        | Timer, Dot vote, Poll   |
-| **Reactions**      | the five pads           |
+| Group              | Holds                    |
+| ------------------ | ------------------------ |
+| **Selection Mode** | one button per mode (8)  |
+| **Run the room**   | Reveal, Done, Picker     |
+| **Get around**     | Portal, Chair, Link card |
+| **Session**        | Timer, Dot vote, Poll    |
+| **Reactions**      | the five pads            |
 
 **Collaborate** (9 tiles, 1 loose + 2 groups): the **Comment panel** stays
 loose — it is the one people reach for outside a facilitated session — over
@@ -171,8 +171,12 @@ a record** (agenda, decision, roll call).
 
 The grouping is by **what the element does with the room**, not by what it
 looks like. That is the same rule that produced the Build category (spec/132),
-and it is why Portal sits with Chair (both move you or your character) rather
-than with Reveal (which the facilitator drives).
+and it is why Portal sits with Chair and the Link card (all three take you
+somewhere — another tab, a seat, the page itself) rather than with Reveal
+(which the facilitator drives). The Link card came here from Components, which
+groups by what a thing looks like: a ready-made composite you recolour and
+retitle. A link card is neither composite nor decoration, so it read as filler
+in that category and as an obvious member of this one.
 
 Three kinds were split into a tile per variant at the same time, on the
 spec/121 pattern: selection modes, session tools, reactions, and estimate

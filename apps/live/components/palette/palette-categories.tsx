@@ -146,7 +146,7 @@ export const PALETTE_CATEGORIES: {
     label: 'Behaviour',
     group: 2,
     description:
-      'Elements that do something when somebody interacts with them: switch a mode, jump through a portal, run a timer or vote, uncover something hidden, mark work done, throw a reaction, take a seat, or pick at random.',
+      'Elements that do something when somebody interacts with them: switch a mode, jump through a portal, open a link, run a timer or vote, uncover something hidden, mark work done, throw a reaction, take a seat, or pick at random.',
     icon: <BehaviourTabIcon />,
   },
   {

@@ -928,9 +928,9 @@ export const articles: Article[] = [
     slug: 'behaviour',
     title: 'Behaviour Elements',
     description:
-      'Mode buttons, portals, session buttons, reveal zones, pickers, and reaction pads.',
+      'Mode buttons, portals, chairs, link cards, session buttons, reveal zones, pickers, and reaction pads.',
     keywords:
-      'behaviour behavior interactive button portal session timer vote poll reveal hide cover picker random spinner control mode switch reaction pad confetti celebrate sparkles hearts applause fireworks emoji burst done check finished ready waiting who progress everyone mark complete',
+      'behaviour behavior interactive button portal session timer vote poll reveal hide cover picker random spinner control mode switch chair seat link card bookmark preview url reaction pad confetti celebrate sparkles hearts applause fireworks emoji burst done check finished ready waiting who progress everyone mark complete',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Elements',

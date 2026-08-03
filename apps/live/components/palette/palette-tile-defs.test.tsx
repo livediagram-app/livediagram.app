@@ -98,12 +98,12 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   stickers: 0,
   technology: 0,
   media: 8,
-  components: 10,
+  components: 9,
   data: 6,
   // Every Behaviour tile now sits in a group (spec/103, /105, /135): Selection
   // Mode (8 modes), Run the room (3), Get around (2), Session (3),
   // Reactions (5).
-  behaviour: 21,
+  behaviour: 22,
   // The comment panel, loose, plus Ask the room (3 estimate scales +
   // temperature + idea box) and Keep a record (3).
   collaborate: 9,

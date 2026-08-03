@@ -1587,7 +1587,15 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     id: 'tools:link-card',
     blurb: 'A clickable preview of a link',
-    section: 'components',
+    // Get around (spec/110), beside Portal and Chair: the group is what an
+    // element DOES, and all three take you somewhere. A portal moves you to
+    // another tab, a chair seats your character, a link card sends you out to
+    // the page. It sat under Components, which groups by what a thing looks
+    // like — a ready-made composite you recolour — and a link card is neither
+    // composite nor decoration.
+    section: 'tools',
+    toolGroup: 'behaviour',
+    tileGroup: 'move',
     label: 'Add link card',
     description: "Link card. A bookmark preview with the page's title, favicon, and image.",
     noTint: true,
