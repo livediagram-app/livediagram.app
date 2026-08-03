@@ -3021,6 +3021,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "colorPreset": {
         "type": "string"
       },
+      "commentOpen": {
+        "type": "boolean"
+      },
       "commentThread": {
         "$ref": "#/components/schemas/CommentThread"
       },
