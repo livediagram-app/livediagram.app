@@ -26,6 +26,7 @@ import {
   buildSystemArchitecture,
 } from './template-builders-technical';
 import { buildStateMachine, buildUmlClass } from './template-builders-uml';
+import { buildFloorPlan } from './template-builders-floorplan';
 import { buildBusinessModelCanvas, buildEmpathyMap } from './template-builders-canvases';
 import { buildAffinityMap, buildUserStoryMap } from './template-builders-workshops';
 import { buildOkrTree, buildSitemap } from './template-builders-hierarchies';
@@ -154,6 +155,8 @@ export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Eleme
       return buildUmlClass(cx, cy);
     case 'state-machine':
       return buildStateMachine(cx, cy);
+    case 'floor-plan':
+      return buildFloorPlan(cx, cy);
   }
 }
 

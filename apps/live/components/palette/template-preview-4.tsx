@@ -740,6 +740,139 @@ export function templatePreviewGroup4(kind: TemplateKind): ReactElement | null {
           <line x1="66" y1="20" x2="68.5" y2="20" stroke="rgb(100 116 139)" strokeWidth="1" />
         </svg>
       );
+    case 'floor-plan':
+      // A shell with a corridor through it: three rooms above, three
+      // below, furniture blocked in so the tile reads as a plan rather
+      // than as a grid of empty boxes.
+      return (
+        <svg width="76" height="46" viewBox="0 0 80 50" aria-hidden>
+          {/* Outer wall, drawn heavier than the partitions. */}
+          <rect
+            x="2"
+            y="3"
+            width="76"
+            height="44"
+            fill="white"
+            stroke="rgb(71 85 105)"
+            strokeWidth="1.8"
+          />
+          {/* Corridor walls + the partitions off them. */}
+          <line x1="2" y1="21" x2="78" y2="21" stroke="rgb(71 85 105)" strokeWidth="1" />
+          <line x1="2" y1="27" x2="78" y2="27" stroke="rgb(71 85 105)" strokeWidth="1" />
+          <line x1="36" y1="3" x2="36" y2="21" stroke="rgb(71 85 105)" strokeWidth="1" />
+          <line x1="58" y1="3" x2="58" y2="21" stroke="rgb(71 85 105)" strokeWidth="1" />
+          <line x1="34" y1="27" x2="34" y2="47" stroke="rgb(71 85 105)" strokeWidth="1" />
+          <line x1="52" y1="27" x2="52" y2="47" stroke="rgb(71 85 105)" strokeWidth="1" />
+          {/* Living room: sofa, coffee table, TV on the far wall. */}
+          <rect
+            x="6"
+            y="6"
+            width="14"
+            height="5"
+            rx="1"
+            fill="rgb(186 230 253)"
+            stroke="rgb(14 165 233)"
+            strokeWidth="0.8"
+          />
+          <rect
+            x="9"
+            y="13.5"
+            width="8"
+            height="3"
+            rx="0.8"
+            fill="white"
+            stroke="rgb(14 165 233)"
+            strokeWidth="0.8"
+          />
+          <rect
+            x="26"
+            y="16"
+            width="7"
+            height="2.5"
+            fill="rgb(14 165 233)"
+            stroke="rgb(14 165 233)"
+            strokeWidth="0.6"
+          />
+          {/* Two bedrooms: a double and a single. */}
+          <rect
+            x="39"
+            y="6"
+            width="11"
+            height="12"
+            rx="1"
+            fill="rgb(186 230 253)"
+            stroke="rgb(14 165 233)"
+            strokeWidth="0.8"
+          />
+          <line x1="39" y1="9" x2="50" y2="9" stroke="rgb(14 165 233)" strokeWidth="0.7" />
+          <rect
+            x="61"
+            y="6"
+            width="8"
+            height="11"
+            rx="1"
+            fill="rgb(186 230 253)"
+            stroke="rgb(14 165 233)"
+            strokeWidth="0.8"
+          />
+          <line x1="61" y1="9" x2="69" y2="9" stroke="rgb(14 165 233)" strokeWidth="0.7" />
+          {/* Kitchen: a counter run and a round table. */}
+          <rect
+            x="5"
+            y="30"
+            width="13"
+            height="3.5"
+            fill="white"
+            stroke="rgb(14 165 233)"
+            strokeWidth="0.8"
+          />
+          <circle
+            cx="23"
+            cy="39"
+            r="4"
+            fill="rgb(186 230 253)"
+            stroke="rgb(14 165 233)"
+            strokeWidth="0.8"
+          />
+          {/* Bathroom: tub + toilet. */}
+          <rect
+            x="37"
+            y="30"
+            width="12"
+            height="6"
+            rx="2"
+            fill="rgb(186 230 253)"
+            stroke="rgb(14 165 233)"
+            strokeWidth="0.8"
+          />
+          <circle
+            cx="39.5"
+            cy="42"
+            r="2.2"
+            fill="white"
+            stroke="rgb(14 165 233)"
+            strokeWidth="0.8"
+          />
+          {/* Study: desk + chair. */}
+          <rect
+            x="56"
+            y="31"
+            width="13"
+            height="4"
+            fill="white"
+            stroke="rgb(14 165 233)"
+            strokeWidth="0.8"
+          />
+          <circle
+            cx="62"
+            cy="39"
+            r="2.6"
+            fill="rgb(186 230 253)"
+            stroke="rgb(14 165 233)"
+            strokeWidth="0.8"
+          />
+        </svg>
+      );
     default:
       return null;
   }

@@ -110,7 +110,12 @@ export type TemplateKind =
   | 'uml-class'
   // UML state machine: initial / final markers and stadium states wired
   // by event-labelled transitions.
-  | 'state-machine';
+  | 'state-machine'
+  // Floor plan: rooms drawn to a real metric scale (80px = 1m) and
+  // furnished with the top-down Furniture icons. The only template whose
+  // geometry means something in the world, so its scale is captioned on
+  // the canvas.
+  | 'floor-plan';
 // "Show me around" onboarding sample (spec/69): a small scene whose
 // annotation markers teach the basics. Hidden from listings; reached
 // only via the welcome wizard's dedicated card.;
@@ -404,6 +409,12 @@ export const TEMPLATES: TemplateDescriptor[] = [
     description: 'States and labelled transitions tracing an order from draft to delivered.',
     extra: true,
   },
+  {
+    kind: 'floor-plan',
+    title: 'Floor plan',
+    description: 'A two-bed flat drawn to scale, furnished with top-down furniture symbols.',
+    extra: true,
+  },
 ];
 
 // Picker grouping. Templates are organised into a handful of
@@ -460,7 +471,7 @@ export const TEMPLATE_CATEGORIES: { id: TemplateCategory; label: string; descrip
   {
     id: 'design',
     label: 'Design',
-    description: 'Wireframes, slide decks and visual mock-ups.',
+    description: 'Wireframes, decks, mock-ups and floor plans.',
   },
   {
     id: 'technical',
@@ -520,6 +531,9 @@ const TEMPLATE_CATEGORY: Record<TemplateKind, TemplateCategory> = {
   storyboard: 'design',
   'logo-design': 'design',
   'live-card': 'design',
+  // A floor plan is a layout drawing, so it sits with the wireframes and
+  // mock-ups rather than with the developer diagrams in Technical.
+  'floor-plan': 'design',
   // Technical / developer diagrams.
   'system-architecture': 'technical',
   'cloud-architecture': 'technical',
@@ -609,6 +623,9 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   'cloud-architecture': 'graph',
   'uml-class': 'graph',
   'state-machine': 'graph',
+  // A floor plan IS a scale drawing, so graph paper is doing its literal
+  // job here: the squares read as the metre grid the rooms are drawn on.
+  'floor-plan': 'graph',
   'user-story-map': 'grid',
   'affinity-map': 'grid',
   'empathy-map': 'grid',

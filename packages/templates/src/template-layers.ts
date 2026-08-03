@@ -72,6 +72,10 @@ export function templateLayers(kind: TemplateKind): Layer[] | undefined {
       return layered('Spine', 'Milestones');
     case 'journey':
       return layered('Stages', 'Notes');
+    // The shell (walls, doorways, room captions) stays put while the
+    // furniture is dragged around it.
+    case 'floor-plan':
+      return layered('Rooms', 'Furniture');
     default:
       return undefined;
   }

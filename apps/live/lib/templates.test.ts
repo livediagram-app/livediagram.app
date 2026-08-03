@@ -22,7 +22,7 @@ import { getTheme } from './themes';
 
 // The catalogue's shape (count + default/extra split + no kind
 // drift) is load-bearing across both the picker and the marketing
-// site. spec/16 pins "46 templates (10 default + 36 extra)" and
+// site. spec/16 pins "47 templates (10 default + 37 extra)" and
 // spec/09 catalogues the picker UX. These tests pin the array so
 // either the spec or the catalogue can't silently drift away from
 // the other.
@@ -78,24 +78,25 @@ describe('TEMPLATES catalogue', () => {
     'cloud-architecture',
     'uml-class',
     'state-machine',
+    'floor-plan',
   ];
 
   // Hidden templates are buildable but never listed, so every user-facing
-  // count (spec/16's "46 templates", the picker grids, the MCP catalogue)
+  // count (spec/16's "47 templates", the picker grids, the MCP catalogue)
   // is over the listed subset. The mechanism is generic; nothing ships
   // hidden today (the spec/69 guided-tour sample used it until the
   // interactive tour, spec/79, superseded it).
   const listed = TEMPLATES.filter((t) => !t.hidden);
 
-  it('lists exactly 46 templates (10 default + 36 extra, matches spec/16 and spec/09)', () => {
-    expect(listed).toHaveLength(46);
+  it('lists exactly 47 templates (10 default + 37 extra, matches spec/16 and spec/09)', () => {
+    expect(listed).toHaveLength(47);
   });
 
-  it('splits cleanly into 10 default + 36 extra (the picker uses `extra` to gate behind "Show more")', () => {
+  it('splits cleanly into 10 default + 37 extra (the picker uses `extra` to gate behind "Show more")', () => {
     const defaults = listed.filter((t) => !t.extra);
     const extras = listed.filter((t) => t.extra);
     expect(defaults).toHaveLength(10);
-    expect(extras).toHaveLength(36);
+    expect(extras).toHaveLength(37);
   });
 
   it('ships no hidden templates (the flag is generic; spec/69 was retired by spec/79)', () => {
@@ -275,6 +276,9 @@ describe('layered templates (spec/74)', () => {
     'milestone-timeline': { names: ['Spine', 'Milestones'], scaffold: 2, content: 25 },
     'milestone-timeline-vertical': { names: ['Spine', 'Milestones'], scaffold: 2, content: 25 },
     journey: { names: ['Stages', 'Notes'], scaffold: 9, content: 5 },
+    // Shell: title + outer wall + 7 rooms + 7 room captions + 7 doorways
+    // + the scale caption. Furniture is the 22 movable pieces.
+    'floor-plan': { names: ['Rooms', 'Furniture'], scaffold: 24, content: 22 },
   };
 
   it('pins each layered template’s names and scaffold / content split', () => {

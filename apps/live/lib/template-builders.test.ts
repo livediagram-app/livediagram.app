@@ -72,6 +72,7 @@ const ALL_KINDS = [
   'cloud-architecture',
   'uml-class',
   'state-machine',
+  'floor-plan',
 ] as const satisfies readonly TemplateKind[];
 
 // Real exhaustiveness check: any TemplateKind missing from
@@ -291,5 +292,83 @@ describe('board templates seed per-range rich text', () => {
     }
     // One distinct hue per quadrant.
     expect(markerColours.size).toBe(4);
+  });
+});
+
+describe('floor plan geometry', () => {
+  // A floor plan is the one template whose numbers mean something in
+  // the world: it is authored in metres at a fixed 80px scale, so the
+  // proportions only hold if the furniture actually fits the rooms it
+  // is drawn in. These checks are what stop a later "nudge the sofa"
+  // edit from quietly parking a bathtub in the hallway.
+  const elements = buildTemplate('floor-plan', 0, 0);
+  const boxOf = (el: Element) => {
+    const b = el as { x: number; y: number; width: number; height: number };
+    return { x1: b.x, y1: b.y, x2: b.x + b.width, y2: b.y + b.height };
+  };
+  // Rooms are the square scaffold shapes; the frame is the outer wall.
+  const rooms = elements.filter((el) => el.type === 'shape' && el.shape === 'square').map(boxOf);
+  // Furniture is everything on the content layer (doors ride the
+  // scaffold with the walls, because they straddle one).
+  const furniture = elements.filter((el) => el.layerId === 'layer:template:content');
+
+  it('draws seven rooms inside one outer wall', () => {
+    expect(rooms).toHaveLength(7);
+    const wall = boxOf(elements.find((el) => el.type === 'shape' && el.shape === 'frame')!);
+    for (const room of rooms) {
+      expect(room.x1).toBeGreaterThanOrEqual(wall.x1);
+      expect(room.y1).toBeGreaterThanOrEqual(wall.y1);
+      expect(room.x2).toBeLessThanOrEqual(wall.x2);
+      expect(room.y2).toBeLessThanOrEqual(wall.y2);
+    }
+  });
+
+  it('keeps every piece of furniture inside a room', () => {
+    expect(furniture.length).toBeGreaterThan(0);
+    const strays: string[] = [];
+    for (const piece of furniture) {
+      const b = boxOf(piece);
+      const inside = rooms.some(
+        (r) =>
+          b.x1 >= r.x1 - 0.01 && b.y1 >= r.y1 - 0.01 && b.x2 <= r.x2 + 0.01 && b.y2 <= r.y2 + 0.01,
+      );
+      if (!inside) strays.push(`${(piece as { iconId?: string }).iconId} at ${b.x1},${b.y1}`);
+    }
+    expect(strays).toEqual([]);
+  });
+
+  it('never stacks two pieces of furniture on the same floor space', () => {
+    const clashes: string[] = [];
+    for (let i = 0; i < furniture.length; i++) {
+      for (let j = i + 1; j < furniture.length; j++) {
+        const a = boxOf(furniture[i]!);
+        const b = boxOf(furniture[j]!);
+        // Touching edges is fine (a table against a wall unit); real
+        // overlap is not.
+        const overlaps =
+          a.x1 < b.x2 - 0.01 && b.x1 < a.x2 - 0.01 && a.y1 < b.y2 - 0.01 && b.y1 < a.y2 - 0.01;
+        if (overlaps) {
+          clashes.push(
+            `${(furniture[i] as { iconId?: string }).iconId} / ${(furniture[j] as { iconId?: string }).iconId}`,
+          );
+        }
+      }
+    }
+    expect(clashes).toEqual([]);
+  });
+
+  it('sizes furniture by real footprints, not by whatever fitted', () => {
+    const size = (icon: string) => {
+      const el = furniture.find((p) => (p as { iconId?: string }).iconId === icon);
+      return (el as { width: number } | undefined)?.width;
+    };
+    // 80px = 1m, so a double bed is far bigger than a toilet and a
+    // bathtub sits between them. Pinned as ratios of the scale rather
+    // than raw pixels so the intent survives a scale change.
+    expect(size('bed')! / 80).toBeCloseTo(1.85);
+    expect(size('bathtub')! / 80).toBeCloseTo(1.7);
+    expect(size('toilet')! / 80).toBeCloseTo(0.8);
+    expect(size('bed')!).toBeGreaterThan(size('bathtub')!);
+    expect(size('bathtub')!).toBeGreaterThan(size('toilet')!);
   });
 });
