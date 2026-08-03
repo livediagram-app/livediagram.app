@@ -46,20 +46,29 @@ export function PickerCard({
       aria-label={ariaLabel}
       aria-pressed={active}
       className={
+        // min-w-0 on the button itself: grid items default to min-width:auto,
+        // which lets a long unbroken label push the card wider than its track.
         active
-          ? 'flex flex-col items-start gap-1.5 rounded-lg border-2 border-brand-400 bg-brand-50 p-2 text-left dark:border-brand-500 dark:bg-brand-500/15'
-          : 'flex flex-col items-start gap-1.5 rounded-lg border border-slate-200 bg-white p-2 text-left transition hover:border-brand-300 hover:bg-brand-50/40 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/10'
+          ? 'flex min-w-0 flex-col items-start gap-1.5 rounded-lg border-2 border-brand-400 bg-brand-50 p-2 text-left dark:border-brand-500 dark:bg-brand-500/15'
+          : 'flex min-w-0 flex-col items-start gap-1.5 rounded-lg border border-slate-200 bg-white p-2 text-left transition hover:border-brand-300 hover:bg-brand-50/40 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/10'
       }
     >
       {children}
-      <div className={count === undefined ? 'min-w-0' : 'w-full min-w-0'}>
+      {/* w-full is what bounds the caption: the button is a column flex with
+          items-start, so a block left to size itself takes its max-content
+          width and a long title ("Horizontal milestone timeline") ran straight
+          out of the card. Bounded, the label wraps to at most two lines rather
+          than truncating: the name is what the card is picked by, so clipping
+          it to "Horizontal milestone timeli…" costs more than the extra row of
+          text, and grid rows stretch to a shared height either way. */}
+      <div className="w-full min-w-0">
         {count === undefined ? (
-          <p className="truncate text-xs font-semibold text-slate-900 dark:text-slate-100">
+          <p className="line-clamp-2 break-words text-xs font-semibold text-slate-900 dark:text-slate-100">
             {label}
           </p>
         ) : (
           <div className="flex items-center justify-between gap-1">
-            <p className="truncate text-xs font-semibold text-slate-900 dark:text-slate-100">
+            <p className="line-clamp-2 min-w-0 break-words text-xs font-semibold text-slate-900 dark:text-slate-100">
               {label}
             </p>
             {/* Count badge, pinned far right (w-full row + justify-between) so it
