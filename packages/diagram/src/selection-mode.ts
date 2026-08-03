@@ -120,13 +120,6 @@ export function defaultSessionConfig(tool: SessionTool): SessionButtonConfig {
   return { tool, minutes: DEFAULT_TIMER_MINUTES };
 }
 
-/** The button's own caption per tool, so a placed tile names what it starts. */
-export const SESSION_TOOL_LABEL: Record<SessionTool, string> = {
-  timer: 'Start timer',
-  vote: 'Start dot vote',
-  poll: 'Start poll',
-};
-
 export function isSessionTool(value: unknown): value is SessionTool {
   return typeof value === 'string' && (SESSION_TOOLS as readonly string[]).includes(value);
 }
