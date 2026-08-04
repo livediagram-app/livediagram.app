@@ -20,7 +20,7 @@
     "@livediagram/templates": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.30.0",
     "@resvg/resvg-wasm": "^2.6.2",
-    "hono": "^4.12.32",
+    "hono": "^4.12.34",
     "zod": "^4.4.3"
   },
   "devDependencies": {
