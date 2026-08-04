@@ -25,6 +25,10 @@ export function EditorCanvasHost() {
     activeTab,
     activeTabLoadState,
     activeTabLocked,
+    presentingElements,
+    slideDeck,
+    slideDeckPanelPosition,
+    setSlideDeckPanelPosition,
     activityMinimized,
     activityPosition,
     layers,
@@ -390,7 +394,11 @@ export function EditorCanvasHost() {
       }}
       viewportOffset={viewportOffset}
       setViewportOffset={setViewportOffset}
-      elements={activeTab.elements}
+      // Presenting (spec/31) narrows the canvas to one slide's elements. The
+      // real canvas still draws them — a slide has to respond to clicks and
+      // carry live element state, and there is then exactly one thing that
+      // knows how an element looks.
+      elements={presentingElements ?? activeTab.elements}
       tabLayers={activeTab.layers}
       layerInertIds={layerInertIds}
       shiftDupGhostIds={shiftDupGhostIds}
@@ -631,6 +639,11 @@ export function EditorCanvasHost() {
       formatPanelPosition={formatPanelPosition}
       onMoveFormatPanel={(x, y) => setFormatPanelPosition({ x, y })}
       onResetFormatPanel={() => setFormatPanelPosition(null)}
+      // Slide Deck (spec/31): the deck itself plus its panel's placement.
+      slideDeck={slideDeck}
+      slideDeckPanelPosition={slideDeckPanelPosition}
+      onMoveSlideDeckPanel={(x, y) => setSlideDeckPanelPosition({ x, y })}
+      onResetSlideDeckPanel={() => setSlideDeckPanelPosition(null)}
       onMoveEraserPanel={(x, y) => setEraserPanelPosition({ x, y })}
       onResetEraserPanel={() => setEraserPanelPosition(null)}
       onMoveSpotlightPanel={(x, y) => setSpotlightPanelPosition({ x, y })}

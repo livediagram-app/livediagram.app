@@ -16,7 +16,13 @@ export type CanvasTool =
   | 'format'
   | 'isometric'
   // The marker (spec/81): a persistent drawing mode, not a one-shot arm.
-  | 'highlighter';
+  | 'highlighter'
+  // Slide Deck (spec/31): opens the panel where a deck is built and started.
+  // Picking the tool does NOT start presenting; Start is a deliberate second
+  // act. Deliberately absent from SELECTION_MODES: there is no Mode Button
+  // for it, because handing somebody else's screen into a full-screen deck is
+  // not something one person should do to another.
+  | 'slide-deck';
 
 export type CommandPaletteProps = {
   position: { x: number; y: number } | null;

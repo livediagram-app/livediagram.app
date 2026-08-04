@@ -1892,3 +1892,94 @@
 .dark [data-note-surface] {
   --note-link-color: var(--color-brand-200);
 }
+
+/* Presenting a slide deck (spec/31).
+
+   The SLIDE is the canvas itself, narrowed to one slide's elements and framed
+   to their bounds by useEditorState. These rules are only the motion and the
+   frame around it, driven by two attributes the PresentationHost sets on
+   <html>: `data-presenting` while a deck is running, and `data-slide-move`
+   for the length of one transition.
+
+   Everything animates ONE layer — the canvas's content wrapper — with a
+   transform and an opacity. Per-element animation was the alternative and is
+   the wrong shape: a hundred-element slide would cost a hundred times what a
+   one-element slide does, for a move the audience reads as a single card
+   sliding. */
+
+/* Chrome hiding is NOT done here: presenting reports zenMode, so the editor's
+   own zen treatment (spec/26) takes the header, tab bar, palette and panels
+   away through the same path a zen user gets. One way to hide the chrome, not
+   two that can disagree. The zoom cluster is the one survivor zen keeps, and
+   presenting hides it below since a deck has no zoom controls. */
+html[data-presenting] [data-zoom-cluster] {
+  display: none !important;
+}
+
+html[data-presenting] [data-canvas-content] {
+  transition:
+    transform 420ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 420ms ease;
+}
+
+/* Entering: the first slide arrives as a card, not a page swap. */
+html[data-presenting][data-slide-move='in'] [data-canvas-content] {
+  animation: lvd-slide-in 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+/* Advancing: out to the LEFT, in from the RIGHT. */
+html[data-presenting][data-slide-move='forward'] [data-canvas-content] {
+  animation: lvd-slide-forward 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+/* Going back mirrors it, so the direction always says which way you are
+   travelling through the deck. */
+html[data-presenting][data-slide-move='back'] [data-canvas-content] {
+  animation: lvd-slide-back 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes lvd-slide-in {
+  from {
+    transform: scale(0.92);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+@keyframes lvd-slide-forward {
+  0% {
+    transform: translateX(6%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+@keyframes lvd-slide-back {
+  0% {
+    transform: translateX(-6%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Reduced motion still gets a transition, because "the slide changed" has to
+   be legible — it just loses the travel. Same durations, so the deck feels
+   the same to drive. */
+@media (prefers-reduced-motion: reduce) {
+  html[data-presenting][data-slide-move] [data-canvas-content] {
+    animation: lvd-slide-fade 420ms ease;
+  }
+  @keyframes lvd-slide-fade {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+}

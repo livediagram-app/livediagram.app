@@ -28,14 +28,23 @@ export type Offset = { x: number; y: number };
 // transform `translate(offset) scale(zoom)` applied (scale centred
 // on the wrapper), centring on the viewport centre is `viewport-
 // centre minus bbox-centre`.
-export function computeFitToScreen(rect: Rect, bbox: BBox): { zoom: number; offset: Offset } {
+// `maxZoom` exists for presenting (spec/31). The editor's own fit caps at
+// 100% (FIT_TO_SCREEN_MAX_AT_FIT), which is right for "fit this diagram": a
+// four-box diagram blown up to 300% looks broken in a workspace. A SLIDE is
+// the opposite case — it is the only thing on a projector, and a slide holding
+// one box should fill the screen rather than sit tiny in the middle of it.
+export function computeFitToScreen(
+  rect: Rect,
+  bbox: BBox,
+  maxZoom: number = FIT_TO_SCREEN_MAX_AT_FIT,
+): { zoom: number; offset: Offset } {
   const zoom = Math.max(
     FIT_TO_SCREEN_MIN,
     Math.min(
       FIT_TO_SCREEN_MAX,
       (rect.width - 2 * FIT_TO_SCREEN_PADDING) / Math.max(1, bbox.width),
       (rect.height - 2 * FIT_TO_SCREEN_PADDING) / Math.max(1, bbox.height),
-      FIT_TO_SCREEN_MAX_AT_FIT,
+      maxZoom,
     ),
   );
   const offset = {

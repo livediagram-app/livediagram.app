@@ -36,7 +36,9 @@ export type MobilePanel =
   // 'format' (spec/117): the painter's settings, while the Format tool is on.
   | 'format'
   // 'highlighter' (spec/81): the marker's colour + strength, while it is held.
-  | 'highlighter';
+  | 'highlighter'
+  // 'slide-deck' (spec/31): the deck builder, while the tool is picked.
+  | 'slide-deck';
 
 export type DockAnchor = { left: number; top: number; arrowOffset: number };
 

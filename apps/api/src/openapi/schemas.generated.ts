@@ -1682,6 +1682,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "null"
         ]
       },
+      "presentation": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
       "savedAt": {
         "type": "number"
       },
@@ -1727,6 +1733,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "folderId",
       "teamId",
       "source",
+      "presentation",
       "savedAt",
       "createdAt",
       "ownerName",

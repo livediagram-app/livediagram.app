@@ -50,6 +50,10 @@ export function useCanvasTool({ defaultPan = false }: { defaultPan?: boolean } =
     if (tool === 'isometric' && canvasTool !== 'isometric') track('Canvas', 'Used', 'Isometric');
     if (tool === 'highlighter' && canvasTool !== 'highlighter')
       track('Canvas', 'Used', 'Highlighter');
+    // Slide Deck (spec/31) is 'UI'/'Opened' rather than 'Canvas'/'Used':
+    // picking it opens the deck workbench, it does not change the canvas.
+    // Starting the presentation is its own event, fired from the panel.
+    if (tool === 'slide-deck' && canvasTool !== 'slide-deck') track('UI', 'Opened', 'SlideDeck');
     setCanvasTool(tool);
   };
   // Leave Avatar mode for the tool that preceded it. Called when the user

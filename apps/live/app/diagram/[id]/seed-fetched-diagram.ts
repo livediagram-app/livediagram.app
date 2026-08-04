@@ -23,6 +23,8 @@ export function makeSeedFetchedDiagram(deps: {
   loadedTabIdsRef: MutableRefObject<Set<string>>;
   setActiveId: SetState<string>;
   setDiagramName: SetState<string>;
+  // The stored slide deck (spec/31), handed on for useSlideDeck to parse.
+  setDiagramPresentation: SetState<string | null>;
   setDiagramOwnerColor: SetState<string | null>;
   setDiagramOwnerId: SetState<string | null>;
   setDiagramOwnerName: SetState<string | null>;
@@ -40,6 +42,7 @@ export function makeSeedFetchedDiagram(deps: {
     loadedTabIdsRef,
     setActiveId,
     setDiagramName,
+    setDiagramPresentation,
     setDiagramOwnerColor,
     setDiagramOwnerId,
     setDiagramOwnerName,
@@ -89,6 +92,7 @@ export function makeSeedFetchedDiagram(deps: {
     lastSavedTabsRef.current = placeholderTabs;
     lastSavedNameRef.current = fetched.name;
     setDiagramName(fetched.name);
+    setDiagramPresentation(fetched.presentation ?? null);
     // Prefer the tab id pinned in the URL fragment (#t=<id>) when
     // it points at a real loaded tab — round-trips the user back
     // to whichever tab they last had open before a refresh.

@@ -55,6 +55,12 @@ export type Diagram = {
   // Provenance (spec/15). null = made by a person; non-null = generated
   // (see DiagramSource). Set on create, never rewritten by meta updates.
   source: DiagramSource | null;
+  // Slide deck (spec/31), serialised `StoredPresentation` JSON, or null when
+  // the diagram has no deck (every diagram until somebody builds one).
+  // Deliberately absent from DiagramSummary: the Explorer lists diagrams and
+  // has no use for their decks, and a deck is the one metadata field that can
+  // grow with the diagram.
+  presentation: string | null;
   savedAt: number;
   createdAt: number;
   // Owner's display name + avatar colour, joined server-side from the

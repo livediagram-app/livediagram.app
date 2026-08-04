@@ -1,0 +1,135 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Slide Deck',
+  description:
+    'Build a slide deck from your diagram in livediagram: pick the elements each slide shows, write presenter notes, reorder the deck, then present it full screen one slide at a time.',
+  path: '/help/selection-modes/slide-deck/',
+});
+
+<ArticleLayout
+  title="Slide Deck"
+  description="Turn a diagram into a deck: each slide shows the elements you picked, presented full screen one at a time."
+  categoryTitle="Selection Modes"
+  categorySlug="selection-modes"
+  subArticles={getSubArticles("slide-deck")}
+>
+
+A finished diagram shows everything at once, which is exactly what you want for reference and exactly what you don't want when you are narrating it. **Slide Deck** turns the diagram into a talk: a set of slides you build yourself, each showing the elements you chose, presented full screen one at a time.
+
+Choose it from the mode picker at the top of the floating palette, in the **Present** band beside **Laser**, **Spotlight** and **Avatar**. Like them it needs something to work with, so it is disabled on an empty canvas.
+
+Picking the tool does **not** start presenting. It opens the **Slide Deck** panel, where you build and check the deck; starting is a deliberate second act.
+
+## What a slide is
+
+**A slide is a set of elements you chose, from one tab.** It is not a region of the canvas, not a saved camera position, and not a layer.
+
+- **The deck spans tabs, a slide doesn't.** Slide 1 can come from one tab, slide 2 from another, and slide 3 from the first one again — but each slide draws from a single tab, which is what gives it a backdrop and a coordinate space to be framed in.
+- **An element can be on as many slides as you like.** Membership is a list, not a split, so a title that belongs on every slide simply goes on every slide.
+- **Slide order is the deck's own.** It has nothing to do with tab order or with which element sits in front of which, and reordering the deck never restacks anything on the canvas.
+- **Slides point at elements, they never copy them.** Restyle a shape and every slide it appears on shows the new one. Delete it and the slides quietly skip it; undo the delete and it is back on all of them.
+
+## Building a deck
+
+<Step n={1}>
+  Pick **Slide Deck** from the palette's mode picker. The panel opens empty — nothing is generated
+  for you, because a guessed deck is one you have to read and prune before you can trust it.
+</Step>
+<Step n={2}>On the canvas, select what you want on the first slide.</Step>
+<Step n={3}>
+  Press **New slide** in the panel. The slide takes the tab you are on, and the button counts your
+  selection back to you so you can see what is about to go on it.
+</Step>
+<Step n={4}>
+  Move to the next thing you want to talk about — another cluster, another tab — select it, and
+  press the button again.
+</Step>
+
+**Arrows come along on their own.** An arrow with both ends on the slide is included automatically, so you can build a slide by dragging a box round four shapes without hand-picking the connectors between them.
+
+Each row in the list shows the slide's position, its name, which tab it draws from, and how many elements are on it. **Click a row** and the editor switches to that slide's tab and selects its elements, which is how you check a slide without presenting it.
+
+## Changing what is on a slide
+
+A slide's membership is editable for the life of the deck, not just at the moment you made it. With a slide open in the panel:
+
+- **Add selection** puts the currently selected elements onto it.
+- **Remove selection** takes them off again. The elements stay on the canvas — only the slide changes.
+
+Both are offered only while you are on **that slide's own tab**. A slide holds one tab's elements, so adding from a different tab isn't something to refuse politely; it is something that cannot be expressed.
+
+## Naming, ordering and tidying
+
+- **Rename** a slide by double-clicking its row and typing over the name. Unnamed slides read as "Slide 1", "Slide 2", and so on.
+- **Reorder** by dragging rows up and down the list. This works on touch as well as with a mouse.
+- **Duplicate** copies a slide, with the same elements, straight after it — handy for a "same picture, different point" pair.
+- **Delete** removes the slide from the deck and leaves its elements exactly where they are.
+
+## Presenter notes
+
+Under the list, the open slide gets a **Presenter notes** box: what you mean to _say_ over this slide. They belong to the slide, not to anything on it, which matters because the same box on two slides usually wants two different sentences said about it.
+
+Notes are plain text — it is a script you read off, not something anybody needs to bold — and during the presentation they stay hidden until you ask for them.
+
+## Starting
+
+Press **Start** at the bottom of the panel and the deck opens full screen at slide 1, with every part of the editor hidden. Slides whose tab hasn't been opened yet are loaded first, so the deck never stalls halfway through.
+
+- **One slide at a time.** Only that slide's elements are drawn; advancing replaces the picture rather than adding to it.
+- **The backdrop is the slide's tab's** — its background colour, pattern and theme.
+- **The framing fits the slide's elements**, with a little padding. If a slide contains exactly one **frame**, the frame's bounds are used instead, which is how you author precise framing without learning anything new.
+- The first slide arrives as a card over the darkened editor, and slides travel left as you advance and right as you go back, so the motion always says which way through the deck you are going. If your device is set to reduce motion, you get a cross-fade instead.
+
+## Moving through the deck
+
+| Key                                   | Does                         |
+| ------------------------------------- | ---------------------------- |
+| `→`, `Space`, `Page Down`, or a click | Next slide                   |
+| `←` or `Page Up`                      | Previous slide               |
+| `Home` / `End`                        | Jump to the first or last    |
+| `N`                                   | Show or hide presenter notes |
+| `Esc`                                 | Leave the presentation       |
+
+Past the last slide you get an end card; one more advance closes the deck. Leaving puts you back on the tab, the view and the panels you started from.
+
+## Read anything, change nothing
+
+Nothing on a slide can be altered. There is no editing, moving or deleting, and none of the session verbs either: no voting, no starting or stopping a timer, no ticking a Done check, no firing a reaction pad. You are on a projector in front of a room, and a stray click that edits the diagram is not a feature.
+
+Live data still _reports_ itself: a timer somebody started before you began presenting goes on counting down on the slide, and a poll shows the results it has.
+
+**Click an element and a read-only popover opens** with what that element has to say — its [note](/help/canvas/notes/), its [comment thread](/help/collaboration/comments/), and any [assigned action](/help/collaboration/assigned-actions/) with its assignee and status. There is no composer: you can show the room the objection somebody left on a box, and you cannot answer it from here.
+
+Because click-to-advance and click-to-inspect are the same gesture, the target decides: **a click on empty space advances the slide, a click on an element opens its popover**, and a click outside an open popover just dismisses it rather than skipping ahead.
+
+## The HUD
+
+Top-right sits a small heads-up display carrying the position (`7 / 23`), the slide's name, a notes button and a close button. It **fades away when the pointer sits still and comes back the moment you move it**, so a still screen is clean for the room while every control stays one twitch of the mouse away.
+
+The notes button opens your presenter notes in a popover under it, sized so the slide stays readable behind. It carries a dot whenever the current slide has notes, so you can tell there is a script waiting without opening anything. Press it again, press `Esc`, or advance the slide to close it.
+
+<Note>
+  The notes popover is on the screen you are sharing, so the room sees it while it is open. That is
+  the trade for notes being one press away rather than living on a second display.
+</Note>
+
+## Presenting is yours alone
+
+**Starting a presentation broadcasts nothing.** Nobody else is pulled into your deck, nobody's view moves, and collaborators with the diagram open carry on seeing the diagram. The way you show a deck to people is the way you already show them everything else in the meeting: **share your screen**.
+
+Remote cursors and lasers are hidden from your own view while you present, so nothing punctures the slide on a projector. Edits arriving from other people apply underneath as usual, and a slide re-renders if one of its elements changed.
+
+**The deck itself is ordinary diagram data**, though: a teammate who opens the diagram sees your slides in their own Slide Deck panel, and can edit them. It saves and travels exactly like the diagram's name does.
+
+Presenting is available to **everyone**, including people on a view-only [share link](/help/collaboration/sharing/) — narrating a diagram somebody sent you is a perfectly ordinary thing to want to do.
+
+<Tip>
+  Build the deck as you would an agenda: one slide per point you intend to make, in the order you
+  intend to make them. Put the same title element on every slide and the room always knows which
+  diagram they are looking at.
+</Tip>
+
+</ArticleLayout>

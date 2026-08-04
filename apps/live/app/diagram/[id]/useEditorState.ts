@@ -5,6 +5,8 @@ import {
   createPinnedArrow,
   createShape,
   isBoxed,
+  resolveSlide,
+  slideBounds,
   stampNewElementLayers,
   voteHidesCursors,
   type BoxedElement,
@@ -67,11 +69,17 @@ import { useTabCanvas } from '@/hooks/canvas/useTabCanvas';
 import { useTabSession } from '@/hooks/persistence/useTabSession';
 import { useEditorKeyboardShortcuts } from '@/hooks/canvas/useEditorKeyboardShortcuts';
 import { useEditorViewport } from '@/hooks/canvas/useEditorViewport';
+import { useSlideDeck } from './useSlideDeck';
 import { useCanvasPinchZoom } from '@/hooks/canvas/useCanvasPinchZoom';
 import { useCapabilities } from '@/hooks/persistence/useCapabilities';
 import { type Participant } from '@/lib/identity';
 import { markNameConfirmed } from '@/lib/local-identity';
-import { apiNotifyActionAssigned, apiSaveSelf, type ChangeLogEntry } from '@/lib/api-client';
+import {
+  apiNotifyActionAssigned,
+  apiSaveDiagramMeta,
+  apiSaveSelf,
+  type ChangeLogEntry,
+} from '@/lib/api-client';
 import {
   emptyEntryHistory,
   entryHistoryCancel,
@@ -483,6 +491,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setSavedAt,
     diagramName,
     setDiagramName,
+    diagramPresentation,
+    setDiagramPresentation,
     diagramList,
     setDiagramList,
     sharedDiagrams,
@@ -656,6 +666,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
       setChangeLogLoading,
       setDiagramId,
       setDiagramName,
+      setDiagramPresentation,
       setDiagramNotFound,
       setLoadError,
       setDiagramOwnerColor,
@@ -917,8 +928,66 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     canvasMainRef,
     getViewportCenter,
     fitToScreen,
+    fitToBounds,
     scrollIntoView,
   } = useEditorViewport({ activeTab, selectedId });
+
+  // Slide deck (spec/31). Owns the deck, the panel's editing verbs, and the
+  // presentation Start runs. Placed after the viewport because presenting
+  // frames each slide through it.
+  const slideDeck = useSlideDeck({
+    tabs,
+    activeTabId: activeId,
+    setActiveId,
+    selectedId,
+    multiSelectedIds,
+    setSelectedId,
+    setMultiSelectedIds,
+    isReadOnly,
+    saveDeck: (serialised) => {
+      if (!hydrated || !diagramId) return;
+      setDiagramPresentation(serialised);
+      void apiSaveDiagramMeta(
+        selfParticipant.id,
+        { id: diagramId, presentation: serialised },
+        sessionShareCode,
+      ).catch(() => {
+        // Best-effort, like every other metadata write: the deck is in
+        // state either way and the next edit retries.
+      });
+    },
+    loadAllTabs,
+  });
+  // Seed the deck once the diagram's stored blob arrives.
+  useEffect(() => {
+    slideDeck.hydrateDeck(diagramPresentation);
+    // Only when the STORED value changes: hydrating on every deck edit would
+    // fight the editing verbs.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [diagramPresentation === null, diagramId]);
+
+  // What the presentation is showing right now, if anything.
+  const presentingStep =
+    slideDeck.presentingAt !== null ? slideDeck.runnable[slideDeck.presentingAt] : undefined;
+  // The slide's elements, resolved fresh every render so an edit landing
+  // underneath a presentation shows through (references, never copies).
+  const presentingElements = useMemo(
+    () => (presentingStep ? resolveSlide(presentingStep.slide, presentingStep.tab) : null),
+    [presentingStep],
+  );
+
+  // Presenting moves the editor to the slide's tab and frames the slide. Both
+  // are ordinary view state, so exiting restores whatever the user had.
+  useEffect(() => {
+    if (!presentingStep || !presentingElements) return;
+    if (presentingStep.tab.id !== activeId) setActiveId(presentingStep.tab.id);
+    const bounds = slideBounds(presentingElements);
+    // A slide fills the screen. The editor's fit caps at 100% because a small
+    // diagram blown up looks broken in a workspace; a slide is the only thing
+    // on a projector, so a one-box slide SHOULD be a big box.
+    if (bounds) fitToBounds(bounds, { maxZoom: 2.5 });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [presentingStep?.slide.id, presentingElements]);
 
   // Publish where WE are looking, on change (spec/131). Unsolicited by design
   // — see the RoomOp comment — and throttled to ~10 Hz inside the broadcaster,
@@ -2254,6 +2323,12 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
 
   return {
     ...panelLayout,
+    // Presenting wears the zen chrome treatment (spec/31 → spec/26): header,
+    // tab bar, panels and palette all gone, so a projector shows the diagram
+    // rather than the workbench. An OVERRIDE of the spread above rather than a
+    // write to zen state, so exiting a presentation restores whatever zen the
+    // user actually had.
+    zenMode: panelLayout.zenMode || slideDeck.presentingAt !== null,
     ...dialogs,
     ...uiState,
     ...persistence,
@@ -2440,6 +2515,13 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     openCellLinkPicker,
     applyCellLink,
     activeTabLoadState,
+    // Slide deck (spec/31): the whole surface in one object, like livePoll —
+    // nothing outside the panel and the overlay reads into it.
+    slideDeck,
+    // What the presentation is showing, or null. The canvas renders THESE
+    // instead of the tab's elements while it is non-null, which is what makes
+    // a slide a slide.
+    presentingElements,
     livePresence,
     // Live poll (spec/88) — the whole ephemeral surface in one object
     // rather than a dozen flattened keys, since nothing else reads into it.

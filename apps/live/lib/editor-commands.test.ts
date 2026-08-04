@@ -224,6 +224,7 @@ describe('buildEditorCommands — app-level commands (spec/70)', () => {
       'tool:laser',
       'tool:spotlight',
       'tool:avatar',
+      'tool:slide-deck',
       'tool:isometric',
     ]);
   });
@@ -279,6 +280,7 @@ describe('canvas tool commands', () => {
       'tool:laser',
       'tool:spotlight',
       'tool:avatar',
+      'tool:slide-deck',
       'tool:isometric',
     ]);
     // Select is the current tool, so it is not offered.

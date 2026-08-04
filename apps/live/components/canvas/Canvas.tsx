@@ -556,6 +556,10 @@ export function Canvas(props: CanvasProps) {
       ) : null}
       <div
         ref={wrapperRef}
+        // The layer a presentation animates (spec/31). One transform on one
+        // node, so a hundred-element slide transitions as fast as a
+        // one-element slide.
+        data-canvas-content=""
         onPointerDown={surface.onWrapperPointerDown}
         onDoubleClick={(e) => {
           // Polygon finish-line double-click (spec/84) wins over the

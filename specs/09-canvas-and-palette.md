@@ -1332,6 +1332,10 @@ Items still genuinely out of scope today (most of the original list has shipped 
 - **Mid-edge resize handles** — only corner handles drive resize.
 - **Free-angle rotation** — the 45-degree presets ship (see the rotation section above); an arbitrary angle, and rotation-aware resize, do not.
 
+## Slide Deck
+
+The tool dropdown's Present band also carries **Slide Deck** ([spec/31](31-presentation-mode.md)), which opens the panel where a slide deck is built and started. Picking it does not present: Start is a deliberate second act. It is a `CanvasTool` only and deliberately NOT a `SelectionMode`, so there is no Mode Button for it — handing somebody else's screen into a full-screen deck is not something one person should do to another. Disabled on an empty canvas, like the other Present-band tools, since there is nothing to put on a slide.
+
 ## Clipboard
 
 `⌘C` puts the selection on the **OS clipboard**, serialised

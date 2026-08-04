@@ -5,7 +5,13 @@
 
 import type { Tab } from '@livediagram/diagram';
 import { isValidTab } from '@livediagram/diagram';
-import { MAX_CHANGE_LOG_ENTRY_BYTES, MAX_NAME_LEN, MAX_TAB_BYTES, byteLength } from '../limits';
+import {
+  MAX_CHANGE_LOG_ENTRY_BYTES,
+  MAX_DECK_LEN,
+  MAX_NAME_LEN,
+  MAX_TAB_BYTES,
+  byteLength,
+} from '../limits';
 import { parseChangeLogEntryBody } from '../change-log-body';
 import {} from '../comments';
 import {
@@ -23,6 +29,7 @@ import {
   listSharedWith,
   reorderTabs,
   seedTabs,
+  setDiagramPresentation,
   upsertDiagramMeta,
 } from '../db';
 import { badRequest, forbidden, json, noContent, notFound, svgImage } from '../responses';
@@ -93,6 +100,8 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
         // Diagrams are always created personal; they move into a
         // team library via PUT /folder afterwards (spec/35).
         teamId: null,
+        // A new diagram has no deck; one is built later through PUT.
+        presentation: null,
         // Provenance (spec/15): only the closed set of generated sources
         // is accepted; anything else (or absent) is a user-made diagram.
         source: body.source === 'ai' || body.source === 'mcp' ? body.source : null,
@@ -143,6 +152,10 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
         name?: string;
         tabIds?: string[];
         tabs?: { id: string; folder?: string | null }[];
+        // Slide deck (spec/31): serialised StoredPresentation, or null to
+        // clear. Absent leaves the stored deck alone, so an ordinary rename
+        // can never wipe it.
+        presentation?: string | null;
       };
       const owner = requireOwner(ctx);
       if (owner instanceof Response) return owner;
@@ -174,9 +187,19 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
         // Preserve provenance (the upsert never rewrites it anyway, but
         // pass the existing value so the DTO is complete).
         source: existing.source ?? null,
+        // The deck has its own write below; the meta upsert never touches it.
+        presentation: existing.presentation ?? null,
         savedAt: now,
         createdAt: existing.createdAt,
       });
+      // Only when the caller actually sent the field: `undefined` means "not
+      // my business", which is what every existing client sends.
+      if (body.presentation !== undefined) {
+        if (typeof body.presentation === 'string' && body.presentation.length > MAX_DECK_LEN) {
+          return badRequest('presentation too large');
+        }
+        await setDiagramPresentation(env, id, body.presentation);
+      }
       // Prefer the folder-carrying `tabs` shape; fall back to the
       // legacy `tabIds` (treated as loose) so older clients keep working.
       if (Array.isArray(body.tabs)) {

@@ -160,6 +160,15 @@ const CANVAS_TOOLS: {
     needsContent: true,
   },
   {
+    // Slide Deck (spec/31). A presenter tool like the Laser and Spotlight,
+    // so it needs content for the same reason: there is nothing to put on a
+    // slide on an empty canvas. Picking it opens the panel; Start presents.
+    id: 'slide-deck',
+    name: 'Slide Deck',
+    keywords: 'slide deck present presentation slideshow slides talk demo walkthrough',
+    needsContent: true,
+  },
+  {
     id: 'isometric',
     name: 'Isometric view',
     keywords: 'isometric 3d tilt perspective depth angle i',

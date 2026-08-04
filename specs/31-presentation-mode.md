@@ -1,6 +1,11 @@
 # 31 — Presentation mode
 
-Status: **draft** (design agreed, open questions at the end are narrower than the ones this replaces).
+> **Status: implemented.** The deck model and its pure helpers live in
+> `packages/diagram/src/slide-deck.ts`, persistence in migration 0041
+> (`diagrams.presentation`), and the editor surface in `useSlideDeck.ts`,
+> `SlideDeckPanel.tsx`, `PresentationHost.tsx`, `PresentationOverlay.tsx`,
+> `PresentationHud.tsx` and `PresentationElementPopover.tsx`. The two open
+> questions at the end are follow-ups, not blockers.
 
 Present a diagram as a **slide deck**: full-screen, one slide at a time, each slide showing a set of elements you picked. Built for the "walk someone through this on a call or a projector" moment.
 
@@ -82,6 +87,7 @@ The **Slide Deck panel** is the seventh tool panel, on exactly the contract the 
 - **The slide list**, in deck order, each row with its name, a member count, and a preview thumbnail rendered by the shared headless SVG renderer (the same one the Layers panel rows use).
 - **New slide from selection** — the primary authoring path. Select elements on the canvas, press the button; the slide takes the active tab. Also **Add selection to slide** for growing one, which is offered only while you are on that slide's own tab (a slide holds one tab's elements, so adding from another tab is not a thing to disallow politely, it is a thing that cannot be expressed).
 - **An empty deck stays empty.** No seeded slides, no "one per tab" starter. A generated deck is a deck you have to read and prune before you can trust it, and pruning somebody else's guesses is slower than making the three slides you meant.
+- **Remove from slide** — the other half of adding. Select elements on the canvas and remove them from the open slide, or drop them from the slide's member list. Membership is edited for the life of the deck, not just at the moment a slide is created.
 - **Reorder** by dragging rows, the pointer-event drag the Layers panel already uses (native HTML5 dnd is dead on touch).
 - **Rename** inline, **delete**, and **duplicate** a slide.
 - **Presenter notes** for the selected slide, in a text area under the list. Written here, not on the canvas, because a note is about the slide rather than about anything on it.

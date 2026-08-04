@@ -39,7 +39,9 @@ export type PanelId =
   | 'format'
   // Highlighter Panel (spec/81): the marker's colour + strength, on the same
   // terms — the settings that used to hang off the top mode banner.
-  | 'highlighter';
+  | 'highlighter'
+  // Slide Deck panel (spec/31): where a deck is built and started.
+  | 'slide-deck';
 
 export const PANEL_CORNERS: readonly PanelCorner[] = [
   'top-left',
@@ -64,6 +66,7 @@ export const PANEL_IDS: readonly PanelId[] = [
   'eraser',
   'format',
   'highlighter',
+  'slide-deck',
 ];
 
 // Internal: a free panel's pixel position. Not exported — callers pass
@@ -109,6 +112,7 @@ export const DEFAULT_PANEL_CORNER: Record<PanelId, PanelCorner> = {
   eraser: 'top-right',
   format: 'top-right',
   highlighter: 'top-right',
+  'slide-deck': 'top-right',
 };
 
 export const STORAGE_KEY = 'livediagram:panel-layout:v1';

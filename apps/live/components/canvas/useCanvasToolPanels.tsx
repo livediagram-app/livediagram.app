@@ -8,10 +8,11 @@ import { SpotlightPanel } from '@/components/panels/SpotlightPanel';
 import { EraserPanel } from '@/components/panels/EraserPanel';
 import { FormatPanel } from '@/components/panels/FormatPanel';
 import { HighlighterPanel } from '@/components/panels/HighlighterPanel';
+import { SlideDeckPanel } from '@/components/panels/SlideDeckPanel';
 import type { CanvasChromeProps } from './CanvasChrome';
 
-// The six tool-config panels (spec/101, spec/111, spec/112, spec/113,
-// spec/117, spec/81), lifted out of useCanvasChromePanels. They are siblings in
+// The seven tool-config panels (spec/101, spec/111, spec/112, spec/113,
+// spec/117, spec/81, spec/31), lifted out of useCanvasChromePanels. They are siblings in
 // every respect that matters: each is mounted ONLY while its own canvas
 // tool is active, so unlike the standing panels (Explorer, Palette,
 // Activity, ...) they join and leave their corner stack as the tool is
@@ -41,6 +42,7 @@ export function useCanvasToolPanels({
   eraserEl: ReactNode;
   formatEl: ReactNode;
   highlighterEl: ReactNode;
+  slideDeckEl: ReactNode;
 } {
   const {
     activeDockAnchor,
@@ -87,6 +89,13 @@ export function useCanvasToolPanels({
     highlighterPanelPosition,
     onMoveHighlighterPanel,
     onResetHighlighterPanel,
+    slideDeck,
+    slideDeckPanelPosition,
+    onMoveSlideDeckPanel,
+    onResetSlideDeckPanel,
+    tabSummaries,
+    activeTabId,
+    readOnly,
   } = props;
 
   const avatarWiring = panelWiringFor('avatar', avatarPanelPosition ?? null, () =>
@@ -106,6 +115,9 @@ export function useCanvasToolPanels({
   );
   const highlighterWiring = panelWiringFor('highlighter', highlighterPanelPosition ?? null, () =>
     onResetHighlighterPanel?.(),
+  );
+  const slideDeckWiring = panelWiringFor('slide-deck', slideDeckPanelPosition ?? null, () =>
+    onResetSlideDeckPanel?.(),
   );
 
   // Avatar Panel (spec/101): the character sheet, mounted only while Avatar
@@ -238,5 +250,28 @@ export function useCanvasToolPanels({
       />
     ) : null;
 
-  return { avatarEl, laserEl, spotlightEl, eraserEl, formatEl, highlighterEl };
+  // Slide Deck panel (spec/31): where a deck is built, ordered, checked and
+  // started, mounted only while its tool is picked. The seventh, and the one
+  // whose tool does not itself change the canvas — picking it opens the
+  // workbench, and Start is a deliberate second act.
+  const slideDeckEl =
+    !chromeHidden && canvasTool === 'slide-deck' && slideDeck ? (
+      <SlideDeckPanel
+        state={slideDeck}
+        tabs={tabSummaries}
+        activeTabId={activeTabId ?? ''}
+        isReadOnly={readOnly}
+        position={slideDeckWiring.position}
+        stackBelowY={stackBelowY}
+        onMoveTo={(x, y) => onMoveSlideDeckPanel?.(x, y)}
+        onReset={slideDeckWiring.onReset}
+        dock={slideDeckWiring.dock}
+        mobileOpenOverride={activeMobilePanel === 'slide-deck'}
+        mobileDockAnchor={activeDockAnchor ?? undefined}
+        forceDockMode={!!minimalPanels}
+        onMobileClose={closeMobilePanel}
+      />
+    ) : null;
+
+  return { avatarEl, laserEl, spotlightEl, eraserEl, formatEl, highlighterEl, slideDeckEl };
 }

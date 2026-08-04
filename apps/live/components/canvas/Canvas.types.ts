@@ -204,6 +204,12 @@ export type CanvasProps = {
   highlighterPanelPosition?: { x: number; y: number } | null;
   onMoveHighlighterPanel?: (x: number, y: number) => void;
   onResetHighlighterPanel?: () => void;
+  // Slide Deck panel (spec/31): the deck builder, present only while its tool
+  // is picked. The deck itself rides `slideDeck`.
+  slideDeckPanelPosition?: { x: number; y: number } | null;
+  onMoveSlideDeckPanel?: (x: number, y: number) => void;
+  onResetSlideDeckPanel?: () => void;
+  slideDeck?: import('@/app/diagram/[id]/useSlideDeck').SlideDeckState;
   // Map of elementId -> remote participants currently focused on that
   // element. Drives a small badge ring on each element so participants
   // can see in real time what others are working on.

@@ -57,6 +57,7 @@ export function useIdentityBootstrap(opts: {
     setChangeLogLoading: SetState<boolean>;
     setDiagramId: SetState<string | null>;
     setDiagramName: SetState<string>;
+    setDiagramPresentation: SetState<string | null>;
     setDiagramNotFound: SetState<boolean>;
     setLoadError: SetState<boolean>;
     setDiagramOwnerColor: SetState<string | null>;
@@ -102,6 +103,7 @@ export function useIdentityBootstrap(opts: {
     setChangeLogLoading,
     setDiagramId,
     setDiagramName,
+    setDiagramPresentation,
     setDiagramNotFound,
     setLoadError,
     setDiagramOwnerColor,
@@ -136,6 +138,7 @@ export function useIdentityBootstrap(opts: {
     loadedTabIdsRef,
     setActiveId,
     setDiagramName,
+    setDiagramPresentation,
     setDiagramOwnerColor,
     setDiagramOwnerId,
     setDiagramOwnerName,

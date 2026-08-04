@@ -40,6 +40,9 @@ const { db, canReadDiagram, canEditDiagram } = vi.hoisted(() => ({
     generateShareCode: vi.fn(() => 'CODE2345'),
     getShareLinkIncludingExpired: vi.fn(),
     extendShareLink: vi.fn(),
+    // Slide deck write (spec/31).
+    setDiagramPresentation: vi.fn(),
+    reorderTabs: vi.fn(),
   },
   // gateRead / gateEdit (context.ts) forward to these; mocking the auth
   // module lets each case drive "allowed" / "denied" directly.
@@ -164,6 +167,41 @@ describe('handleDiagrams owner-only paths (DELETE /diagrams/:id)', () => {
 });
 
 describe('handleDiagrams metadata PUT (PUT /diagrams/:id)', () => {
+  // Slide deck (spec/31). The deck rides the metadata PUT but has its own
+  // write, so an ordinary rename can never rewrite it.
+  it('leaves the stored deck alone when the field is absent', async () => {
+    db.getDiagram.mockResolvedValue(fakeDiagram('owner-1'));
+    canEditDiagram.mockResolvedValue(true);
+    await handleDiagrams(makeCtx('PUT', '/api/diagrams/d1', { body: { name: 'Renamed' } }));
+    expect(db.setDiagramPresentation).not.toHaveBeenCalled();
+  });
+
+  it('writes the deck when one is sent', async () => {
+    db.getDiagram.mockResolvedValue(fakeDiagram('owner-1'));
+    canEditDiagram.mockResolvedValue(true);
+    const deck = JSON.stringify({ decks: [{ slides: [] }] });
+    await handleDiagrams(makeCtx('PUT', '/api/diagrams/d1', { body: { presentation: deck } }));
+    expect(db.setDiagramPresentation).toHaveBeenCalledWith({}, 'd1', deck);
+  });
+
+  it('clears the deck on an explicit null', async () => {
+    db.getDiagram.mockResolvedValue(fakeDiagram('owner-1'));
+    canEditDiagram.mockResolvedValue(true);
+    await handleDiagrams(makeCtx('PUT', '/api/diagrams/d1', { body: { presentation: null } }));
+    expect(db.setDiagramPresentation).toHaveBeenCalledWith({}, 'd1', null);
+  });
+
+  it('400s a deck past the size cap, without writing', async () => {
+    db.getDiagram.mockResolvedValue(fakeDiagram('owner-1'));
+    canEditDiagram.mockResolvedValue(true);
+    const huge = 'x'.repeat(256 * 1024 + 1);
+    const res = await handleDiagrams(
+      makeCtx('PUT', '/api/diagrams/d1', { body: { presentation: huge } }),
+    );
+    expect(res.status).toBe(400);
+    expect(db.setDiagramPresentation).not.toHaveBeenCalled();
+  });
+
   it('404s an unknown id instead of create-on-first-write (ghost-row guard)', async () => {
     // A stray meta write for an id the server has never seen (e.g. an
     // Offline Mode diagram id leaking past the client dispatch, spec/76)

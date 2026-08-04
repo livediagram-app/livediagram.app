@@ -6,6 +6,7 @@ import {
   EraserIcon,
   FormatPainterIcon,
   HighlighterIcon,
+  SlideDeckIcon,
   LaserIcon,
   SpotlightIcon,
 } from '@/components/palette/palette-icons';
@@ -30,6 +31,7 @@ export function CanvasMobileDock({
   hasEraser,
   hasFormat,
   hasHighlighter,
+  hasSlideDeck,
   activeMobilePanel,
   dockButtonRefs,
   onDockButtonClick,
@@ -59,6 +61,7 @@ export function CanvasMobileDock({
   // The Format painter (spec/116) is active, so its panel gets a dock button.
   hasFormat: boolean;
   hasHighlighter: boolean;
+  hasSlideDeck: boolean;
   activeMobilePanel: MobilePanel | null;
   dockButtonRefs: RefObject<Record<string, HTMLButtonElement | null>>;
   onDockButtonClick: (id: MobilePanel) => void;
@@ -228,6 +231,15 @@ export function CanvasMobileDock({
                   id: 'highlighter' as const,
                   label: 'Highlighter',
                   icon: <HighlighterIcon />,
+                },
+              ]
+            : []),
+          ...(hasSlideDeck
+            ? [
+                {
+                  id: 'slide-deck' as const,
+                  label: 'Slides',
+                  icon: <SlideDeckIcon />,
                 },
               ]
             : []),

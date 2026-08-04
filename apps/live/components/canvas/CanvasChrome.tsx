@@ -123,6 +123,11 @@ type ChromeExtras = {
   highlighterPanelPosition?: { x: number; y: number } | null;
   onMoveHighlighterPanel?: (x: number, y: number) => void;
   onResetHighlighterPanel?: () => void;
+  // Slide Deck panel (spec/31): the seventh tool panel.
+  slideDeckPanelPosition?: { x: number; y: number } | null;
+  onMoveSlideDeckPanel?: (x: number, y: number) => void;
+  onResetSlideDeckPanel?: () => void;
+  slideDeck?: import('@/app/diagram/[id]/useSlideDeck').SlideDeckState;
   // Format Panel (spec/117): what the painter copies, owned in editor state
   // (the paint lives there), plus a description of the loaded element.
   formatConfig?: import('@/lib/format-config').FormatConfig;
@@ -341,6 +346,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
         hasEraser={props.canvasTool === 'eraser'}
         hasFormat={props.canvasTool === 'format'}
         hasHighlighter={props.canvasTool === 'highlighter'}
+        hasSlideDeck={props.canvasTool === 'slide-deck'}
         activeMobilePanel={activeMobilePanel}
         dockButtonRefs={dockButtonRefs}
         onDockButtonClick={handleDockButtonClick}
@@ -378,6 +384,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
           {panelEls.eraser}
           {panelEls.format}
           {panelEls.highlighter}
+          {panelEls['slide-deck']}
         </>
       )}
 
@@ -388,7 +395,13 @@ export function CanvasChrome(props: CanvasChromeProps) {
           so it's not in the dock cluster; the Explorer is hidden
           on mobile entirely (spec/07) and uses banner-collapse on
           desktop, so it's also not in the dock cluster. */}
-      <div className="pointer-events-none absolute bottom-4 right-4 z-[var(--z-panel)] flex items-center gap-2">
+      <div
+        // Presenting hides this cluster (spec/31): zen keeps the zoom controls
+        // as its one way back out, and a deck has its own way out plus no
+        // zoom to offer.
+        data-zoom-cluster=""
+        className="pointer-events-none absolute bottom-4 right-4 z-[var(--z-panel)] flex items-center gap-2"
+      >
         {welcomeOpen ? null : (
           <>
             {offscreenContent ? <OffscreenContentHint onBringBack={onFitToScreen} /> : null}

@@ -69,6 +69,13 @@ type EditorViewportApi = {
   // viewport. Idempotent (the lastFittedTabRef gate in
   // editor-page.tsx still controls WHEN this runs).
   fitToScreen: () => void;
+  // Frame an ARBITRARY rectangle. Presenting a slide (spec/31) needs this:
+  // the deck decides what is on screen, so the box to fit is the slide's
+  // rather than the whole tab's.
+  fitToBounds: (
+    bbox: { x: number; y: number; w: number; h: number },
+    opts?: { maxZoom?: number },
+  ) => void;
   // Pan (and zoom out if needed) until the given canvas-coord bounds
   // are fully on screen. Used by the mobile add-element reveal and the
   // keyboard traversal's focus-follows-selection (spec/71). With
@@ -249,6 +256,25 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
     setViewportOffset(offset);
   }, []);
 
+  // Frame an ARBITRARY rectangle, which is what presenting a slide needs
+  // (spec/31): the deck decides what is on screen, so the box to fit is the
+  // slide's, not the tab's. Same maths as fitToScreen, which is now the
+  // special case "fit everything on this tab".
+  const fitToBounds = useCallback(
+    (bbox: { x: number; y: number; w: number; h: number }, opts?: { maxZoom?: number }) => {
+      const rect = canvasMainRef.current?.getBoundingClientRect();
+      if (!rect || bbox.w <= 0 || bbox.h <= 0) return;
+      const { zoom, offset } = computeFitToScreen(
+        rect,
+        { x: bbox.x, y: bbox.y, width: bbox.w, height: bbox.h },
+        opts?.maxZoom,
+      );
+      setViewportZoom(zoom);
+      setViewportOffset(offset);
+    },
+    [],
+  );
+
   return {
     viewportOffset,
     setViewportOffset,
@@ -258,6 +284,7 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
     canvasMainRef,
     getViewportCenter,
     fitToScreen,
+    fitToBounds,
     scrollIntoView,
   };
 }

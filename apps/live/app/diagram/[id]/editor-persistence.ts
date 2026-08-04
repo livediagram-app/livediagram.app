@@ -30,6 +30,11 @@ export function useEditorPersistence({ toast }: { toast: ReturnType<typeof useTo
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [diagramName, setDiagramName] = useState('Untitled diagram');
+  // The stored slide deck (spec/31) exactly as the api returned it, seeded on
+  // load and never read again after useSlideDeck parses it. Kept as raw text
+  // rather than a parsed Deck so hydration has one obvious moment, and a deck
+  // the parser cannot read costs the deck rather than the diagram.
+  const [diagramPresentation, setDiagramPresentation] = useState<string | null>(null);
   // Reflect the diagram name in the browser tab so users with many
   // tabs open can spot the right one. Falls back to the bare brand
   // until hydration lands the real name.
@@ -140,6 +145,8 @@ export function useEditorPersistence({ toast }: { toast: ReturnType<typeof useTo
     setSavedAt,
     diagramName,
     setDiagramName,
+    diagramPresentation,
+    setDiagramPresentation,
     diagramList,
     setDiagramList,
     diagramListLoading,

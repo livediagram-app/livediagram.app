@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useStableHandlers } from '@/hooks/ui/useStableHandlers';
 import {
+  isSelectionMode,
   buildElementIndex,
   isBoxed,
   isRailShape,
@@ -394,7 +395,12 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             onRollPicker={h.onRollPicker}
             collab={collab}
             chairSitters={chairSitters}
-            activeMode={canvasTool}
+            // Mode Buttons light up for the mode they hand out, and the
+            // canvas-tool union is WIDER than the mode vocabulary: Slide Deck
+            // (spec/31) has no Mode Button, so it is not a SelectionMode.
+            // Narrow rather than widen — a "Switch to Slide Deck" button is
+            // exactly what spec/31 rules out.
+            activeMode={isSelectionMode(canvasTool) ? canvasTool : undefined}
             onEnterPortal={onEnterPortal}
             onFireReaction={onFireReaction}
             reactionBurst={reactionBursts?.get(element.id)}

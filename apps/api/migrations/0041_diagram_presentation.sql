@@ -1,0 +1,18 @@
+-- Slide decks (spec/31): the presentation built over a diagram.
+--
+-- Diagram-level rather than per-tab, because a slide belongs to ONE tab but
+-- the DECK does not: its order interleaves tabs freely (A, C, A), so no single
+-- tab can own the list. Tab bodies (0005) could not carry it.
+--
+-- A JSON blob for the same reason `diagrams.data` originally was (0001): every
+-- read and write hits the whole thing anyway. A deck is tens of slides, each a
+-- name, a tab id and a list of element ids, and there is no query that wants
+-- rows — "which slides hold this element" is a filter over a small in-memory
+-- array, not a join.
+--
+-- Slides store element REFERENCES, never element copies, which is what keeps a
+-- deck in step with the diagram it presents. Nothing in here is content: if
+-- every diagram lost this column tomorrow, no diagram would lose any work.
+--
+-- NULL = no deck, which is every pre-existing row.
+ALTER TABLE diagrams ADD COLUMN presentation TEXT NULL;

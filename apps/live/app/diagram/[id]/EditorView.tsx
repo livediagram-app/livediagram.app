@@ -5,6 +5,7 @@ import { track } from '@/lib/telemetry';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { getTheme } from '@/lib/themes';
 import { EditorCanvasHost } from '@/components/canvas/EditorCanvasHost';
+import { PresentationHost } from '@/components/canvas/PresentationHost';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
 import { EmbedChrome } from '@/components/chrome/EmbedChrome';
 import { TabBar } from '@/components/chrome/TabBar';
@@ -228,6 +229,9 @@ export function EditorView() {
       )}
       <EditorTabDialogs />
       <EditorCanvasHost />
+      {/* Presenting (spec/31) renders over everything and takes the keyboard.
+          Nothing at all when no deck is running. */}
+      <PresentationHost />
       {embedMode ? (
         // Embed chrome (spec/33): the link-out badge + a minimal tab
         // switcher replace the full TabBar. Same selection clears as

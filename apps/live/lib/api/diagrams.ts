@@ -66,17 +66,31 @@ export async function apiSaveDiagramMeta(
     name?: string;
     tabs?: { id: string; folder?: string }[];
     tabIds?: string[];
+    // Slide deck (spec/31), serialised. Absent leaves the stored deck alone,
+    // which is what every save that isn't about the deck sends; null clears
+    // it. JSON.stringify drops an undefined field, so "absent" travels as
+    // absent rather than as null.
+    presentation?: string | null;
   },
   shareCode: string | null = null,
 ): Promise<void> {
   if (await isOfflineId(d.id)) {
-    await offlineSaveDiagramMeta(d.id, { name: d.name, tabs: d.tabs }, Date.now());
+    await offlineSaveDiagramMeta(
+      d.id,
+      { name: d.name, tabs: d.tabs, presentation: d.presentation },
+      Date.now(),
+    );
     return;
   }
   const res = await fetch(`${API_BASE}/diagrams/${d.id}`, {
     method: 'PUT',
     headers: await apiHeaders(ownerId, { share: shareCode, body: true }),
-    body: JSON.stringify({ name: d.name, tabs: d.tabs, tabIds: d.tabIds }),
+    body: JSON.stringify({
+      name: d.name,
+      tabs: d.tabs,
+      tabIds: d.tabIds,
+      presentation: d.presentation,
+    }),
   });
   await expectOkVoid(res, 'save diagram meta');
 }

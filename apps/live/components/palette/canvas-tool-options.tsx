@@ -7,6 +7,7 @@ import {
   LaserIcon,
   PanIcon,
   SelectIcon,
+  SlideDeckIcon,
   SpotlightIcon,
   ZenIcon,
 } from '@/components/palette/palette-icons';
@@ -92,6 +93,17 @@ export function buildCanvasToolOptions({
       label: 'Avatar',
       shortcut: 'W',
       icon: <AvatarModeIcon />,
+      group: 1,
+      disabled: canvasEmpty,
+    },
+    // Slide Deck (spec/31). In the Present band with the Laser and Spotlight:
+    // like them it is a tool for showing a diagram to somebody rather than
+    // for changing it. Needs content for the same reason they do — there is
+    // nothing to put on a slide on an empty canvas.
+    {
+      id: 'slide-deck',
+      label: 'Slide Deck',
+      icon: <SlideDeckIcon />,
       group: 1,
       disabled: canvasEmpty,
     },

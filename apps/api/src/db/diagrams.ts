@@ -15,6 +15,8 @@ type DiagramRow = {
   team_id: string | null;
   // Provenance (spec/15): null = user-made; 'ai' / 'mcp' = generated.
   source: string | null;
+  // Slide deck (spec/31): serialised StoredPresentation, or null for no deck.
+  presentation: string | null;
   saved_at: number;
   created_at: number;
   // Derived via subquery in the SELECT; first (oldest) share_links
@@ -69,6 +71,7 @@ async function rowToDiagram(env: Env, row: DiagramRow): Promise<DiagramDTO> {
     folderId: row.folder_id,
     teamId: row.team_id ?? null,
     source: (row.source as DiagramDTO['source']) ?? null,
+    presentation: row.presentation ?? null,
     savedAt: row.saved_at,
     createdAt: row.created_at,
     ownerName: ownerParticipant?.name ?? null,
@@ -82,8 +85,11 @@ async function rowToDiagram(env: Env, row: DiagramRow): Promise<DiagramDTO> {
 // minted for the diagram.
 const SHARE_CODE_EXPR =
   '(SELECT code FROM share_links WHERE share_links.diagram_id = diagrams.id ORDER BY created_at ASC LIMIT 1) AS share_code';
-const DIAGRAM_COLS = `id, owner_id, name, shareable, folder_id, team_id, source, saved_at, created_at, ${SHARE_CODE_EXPR}`;
-const DIAGRAM_SUMMARY_COLS = DIAGRAM_COLS;
+const DIAGRAM_COLS = `id, owner_id, name, shareable, folder_id, team_id, source, presentation, saved_at, created_at, ${SHARE_CODE_EXPR}`;
+// The list projection deliberately omits `presentation`: listing 100 diagrams
+// has no use for 100 decks, and a deck is the one metadata field whose size
+// grows with the diagram.
+const DIAGRAM_SUMMARY_COLS = `id, owner_id, name, shareable, folder_id, team_id, source, saved_at, created_at, ${SHARE_CODE_EXPR}`;
 
 // Gate-only projection: the columns access checks need (owner + team +
 // name for notifications) in ONE query — no participant join, no tab
@@ -182,6 +188,21 @@ export async function upsertDiagramMeta(
       d.savedAt,
       d.createdAt,
     )
+    .run();
+}
+
+// Slide deck write (spec/31). Its OWN statement rather than a field on
+// upsertDiagramMeta, for the same reason folder / team placement has one: the
+// meta upsert runs on every rename and autosave, and a deck must never be
+// rewritten by a caller that was not thinking about the deck. Passing null
+// clears it, which is what the client sends when the last slide is deleted.
+export async function setDiagramPresentation(
+  env: Env,
+  id: string,
+  presentation: string | null,
+): Promise<void> {
+  await env.DB.prepare(`UPDATE diagrams SET presentation = ?, saved_at = ? WHERE id = ?`)
+    .bind(presentation, Date.now(), id)
     .run();
 }
 

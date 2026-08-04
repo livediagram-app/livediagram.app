@@ -472,6 +472,28 @@ export function HighlighterIcon() {
   );
 }
 
+// Slide Deck (spec/31): a card with a smaller one behind it, which is what a
+// deck IS. Deliberately not a "play" triangle — the tool opens the workbench
+// where you build slides, and only the Start button inside it presents.
+export function SlideDeckIcon() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <rect x="1.5" y="4.5" width="10" height="7.5" rx="1.2" />
+      <path d="M4.5 2.5h8a1.2 1.2 0 0 1 1.2 1.2v6.3" />
+    </svg>
+  );
+}
+
 export function EraserIcon() {
   return (
     <svg

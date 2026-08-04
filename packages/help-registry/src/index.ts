@@ -168,8 +168,8 @@ export const categories: Category[] = [
     slug: 'selection-modes',
     title: 'Selection Modes',
     description:
-      'The pointer modes at the top of the palette: Select, Hand, Eraser, Format Painter, Highlighter, Laser, Spotlight, Avatar, and Isometric.',
-    articleCount: 10,
+      'The pointer modes at the top of the palette: Select, Hand, Eraser, Format Painter, Highlighter, Laser, Spotlight, Avatar, Slide Deck, and Isometric.',
+    articleCount: 11,
     kind: 'feature',
   },
   {
@@ -797,6 +797,15 @@ export const articles: Article[] = [
     category: 'Selection Modes',
     categorySlug: 'selection-modes',
     parentSlug: 'avatar-mode',
+  },
+  {
+    slug: 'slide-deck',
+    title: 'Slide Deck',
+    description: 'Build slides from your diagram and present them full screen, one at a time.',
+    keywords:
+      'presentation presenting present presentation mode slideshow slide show slides slide deck talk demo walkthrough narrate projector screen share screenshare speaker notes presenter notes full screen fullscreen next previous advance start deck reorder',
+    category: 'Selection Modes',
+    categorySlug: 'selection-modes',
   },
   {
     slug: 'isometric-mode',

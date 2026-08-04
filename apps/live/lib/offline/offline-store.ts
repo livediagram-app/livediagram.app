@@ -33,6 +33,11 @@ export type OfflineDiagramRecord = {
   // diagram record). Optional so records written before the field existed
   // stay valid. Managed by ./offline-change-log.ts.
   log?: ChangeLogEntry[];
+  // Slide deck (spec/31), serialised StoredPresentation. Offline diagrams get
+  // decks for the same reason they get everything else: Offline Mode is the
+  // whole product minus the server, not a reduced one. Optional so records
+  // written before the field existed stay valid.
+  presentation?: string | null;
 };
 
 // ---------------------------------------------------------------------------
@@ -65,6 +70,7 @@ export function recordToDiagram(rec: OfflineDiagramRecord): Diagram {
     ownerId: OFFLINE_OWNER_ID,
     name: rec.name,
     tabs: rec.tabs.map((t, i) => tabToSummary(t, rec.id, i, rec.savedAt)),
+    presentation: rec.presentation ?? null,
     shareable: false,
     shareCode: null,
     folderId: rec.folderId,
@@ -98,7 +104,13 @@ function recordToSummary(rec: OfflineDiagramRecord): DiagramSummary {
 // reorders the existing tab bodies by id and refreshes each tab's folder.
 export function applyMeta(
   rec: OfflineDiagramRecord,
-  patch: { name?: string; tabs?: { id: string; folder?: string }[] },
+  patch: {
+    name?: string;
+    tabs?: { id: string; folder?: string }[];
+    // Absent leaves the stored deck alone; null clears it. Same contract as
+    // the server's PUT, so an offline diagram behaves identically.
+    presentation?: string | null;
+  },
   at: number,
 ): OfflineDiagramRecord {
   let tabs = rec.tabs;
@@ -112,7 +124,13 @@ export function applyMeta(
       })
       .filter((t): t is Tab => t !== null);
   }
-  return { ...rec, name: patch.name ?? rec.name, tabs, savedAt: at };
+  return {
+    ...rec,
+    name: patch.name ?? rec.name,
+    tabs,
+    ...(patch.presentation !== undefined ? { presentation: patch.presentation } : {}),
+    savedAt: at,
+  };
 }
 
 // Upsert one tab body into a record (the autosave path). A new tab id is
@@ -303,7 +321,7 @@ export async function offlineCreateDiagram(
 
 export async function offlineSaveDiagramMeta(
   id: string,
-  patch: { name?: string; tabs?: { id: string; folder?: string }[] },
+  patch: { name?: string; tabs?: { id: string; folder?: string }[]; presentation?: string | null },
   now: number,
 ): Promise<void> {
   await serializeOfflineWrite(async () => {

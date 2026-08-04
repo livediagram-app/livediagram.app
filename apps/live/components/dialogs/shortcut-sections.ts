@@ -86,4 +86,19 @@ export const SHORTCUT_SECTIONS: ShortcutSection[] = [
       { keys: ['⌘', 'hold'], label: 'Show shortcut badges on palette' },
     ],
   },
+  {
+    // Only live while a deck is running (spec/31), which is why they are their
+    // own section rather than mixed into Navigate & select: none of them do
+    // anything in the editor.
+    heading: 'While presenting',
+    rows: [
+      { keys: ['→'], label: 'Next slide  (or Space / Page Down / click)' },
+      { keys: ['←'], label: 'Previous slide  (or Page Up)' },
+      { keys: ['Home'], label: 'First slide' },
+      { keys: ['End'], label: 'Last slide' },
+      { keys: ['N'], label: 'Presenter notes for this slide' },
+      { keys: ['Click'], label: 'On an element: its note, comments and actions' },
+      { keys: ['Escape'], label: 'Exit the presentation' },
+    ],
+  },
 ];

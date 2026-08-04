@@ -466,3 +466,8 @@ export * from './session';
 // from the package root the same way they do every other helper
 // here.
 export { recogniseShape, type RecognisedShape, type RecognisedShapeKind } from './recognise-shape';
+
+// Slide decks (spec/31): the Slide / Deck types plus the pure resolution
+// helpers a presentation is built from. Kept here rather than in apps/live
+// because the api and the MCP worker can answer the same questions.
+export * from './slide-deck';
