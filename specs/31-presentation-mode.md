@@ -10,9 +10,10 @@ A finished diagram shows everything at once, which is great for reference and ba
 
 ## What a slide is
 
-**A slide is an explicit, ordered set of elements you chose.** Not a region of canvas, not a camera position, not a layer.
+**A slide is an explicit, ordered set of elements you chose, from one tab.** Not a region of canvas, not a camera position, not a layer.
 
-- A slide's members are `(tabId, elementId)` pairs, so **one slide can draw elements from several tabs**. The presentation is a view over the whole diagram, not a per-tab feature.
+- **A slide belongs to a single tab**, and names elements on it. **The DECK is what spans tabs**: slide 1 can come from Tab A, slide 2 from Tab C, slide 3 from Tab A again. The presentation is a view over the whole diagram; each slide within it is not.
+- Keeping a slide inside one tab is what makes it well-defined. A slide mixing tabs has no answer to which backdrop it wears, and elements from two tabs share no coordinate space, so "fit this slide" would have no meaning.
 - **An element can be on any number of slides.** Membership is a list, not a partition, so a title that belongs on every slide simply appears in every slide's list.
 - **Slide order is the deck's own order**, independent of tab order, element array order, and z-order. Reordering slides never restacks anything on the canvas.
 
@@ -30,23 +31,24 @@ Slides are their own concept for the same reason layers were: overloading one st
 
 ## Data model
 
-Diagram-level, because a slide spans tabs and no single tab owns the deck.
+Diagram-level. A slide belongs to one tab, but the DECK does not: its order interleaves tabs freely (A, C, A), so no single tab can own the list.
 
 ```ts
-type SlideRef = { tabId: TabId; elementId: ElementId };
-
 type Slide = {
   id: string;
   // Shown in the panel and the presenter HUD. Absent = "Slide N".
   name?: string;
-  refs: SlideRef[];
+  // The one tab this slide draws from. Its backdrop, theme and coordinate
+  // space are the slide's.
+  tabId: TabId;
+  elementIds: ElementId[];
 };
 
 type Deck = { slides: Slide[] };
 ```
 
-- **Dangling refs resolve at read time.** An element deleted after being added to a slide is skipped, exactly as spec/74 resolves an unknown `layerId` rather than rewriting element data on delete. No cleanup pass, no delete-path coupling, and undo restores the element back onto its slides for free.
-- A slide whose refs all dangle renders empty rather than being auto-removed: silently deleting someone's slide because they deleted its contents is worse than an empty slide they can see and fix.
+- **Dangling ids resolve at read time.** An element deleted after being added to a slide is skipped, exactly as spec/74 resolves an unknown `layerId` rather than rewriting element data on delete. No cleanup pass, no delete-path coupling, and undo restores the element back onto its slides for free. A slide whose whole TAB is deleted is skipped the same way.
+- A slide whose ids all dangle renders empty rather than being auto-removed: silently deleting someone's slide because they deleted its contents is worse than an empty slide they can see and fix.
 - **Arrows come along.** An arrow whose endpoints are both on the slide is included automatically even when it was not added explicitly, so building a slide from a selection of boxes does not need the connectors hand-picked. An arrow added explicitly always shows.
 
 ### Persistence
@@ -57,31 +59,37 @@ This is the one part of the feature that is not free. `diagrams.data` was droppe
 - The api's diagram DTO in `@livediagram/api-schema` carries it through, and the read / save routes round-trip it.
 - Null / absent = no deck, which is every existing diagram.
 
-## Entry and the Presentation Panel
+## Entry and the Slide Deck panel
 
-**Presentation is a canvas tool**, alongside Select, Hand, Eraser, Format, Highlighter, Laser, Spotlight, Avatar and Isometric. Picking it from the tool dropdown does **not** start presenting: it opens the panel where you build and administer the deck. Starting is a deliberate second act.
+**Slide Deck is a canvas tool**, alongside Select, Hand, Eraser, Format, Highlighter, Laser, Spotlight, Avatar and Isometric. Picking it from the tool dropdown does **not** start presenting: it opens the **Slide Deck panel**, where you build and administer the deck. Starting is a deliberate second act.
 
-It joins `CanvasTool` only, **not** `SELECTION_MODES` — there is no Presentation Mode Button, because handing a collaborator's screen into a full-screen deck is not something one person should do to another.
+The tool and the panel are both called **Slide Deck** — the thing you are making — rather than "Presentation", which names the act of showing it. You spend far more time building a deck than running one, and the tool you pick is the workbench, not the performance. "Presentation mode" stays the name of what Start puts you into, and of this spec.
 
-The **Presentation Panel** is the seventh tool panel, on exactly the contract the other six share (`useCanvasToolPanels`): mounted only while its tool is active, joins the corner-docking stack, gets a mobile dock button. It carries:
+It joins `CanvasTool` only, **not** `SELECTION_MODES` — there is no Slide Deck Mode Button, because handing a collaborator's screen into a full-screen deck is not something one person should do to another.
+
+The **Slide Deck panel** is the seventh tool panel, on exactly the contract the other six share (`useCanvasToolPanels`): mounted only while its tool is active, joins the corner-docking stack, gets a mobile dock button. It is the **single home for everything about the deck** — build it, order it, check it, start it — so there is never a second place to look. It carries:
 
 - **The slide list**, in deck order, each row with its name, a member count, and a preview thumbnail rendered by the shared headless SVG renderer (the same one the Layers panel rows use).
-- **New slide from selection** — the primary authoring path. Select elements on the canvas, across as many tabs as you like, press the button. Also **Add selection to slide** for growing one.
+- **New slide from selection** — the primary authoring path. Select elements on the canvas, press the button; the slide takes the active tab. Also **Add selection to slide** for growing one, which is offered only while you are on that slide's own tab (a slide holds one tab's elements, so adding from another tab is not a thing to disallow politely, it is a thing that cannot be expressed).
+- **An empty deck stays empty.** No seeded slides, no "one per tab" starter. A generated deck is a deck you have to read and prune before you can trust it, and pruning somebody else's guesses is slower than making the three slides you meant.
 - **Reorder** by dragging rows, the pointer-event drag the Layers panel already uses (native HTML5 dnd is dead on touch).
 - **Rename** inline, **delete**, and **duplicate** a slide.
-- Selecting a row **highlights its members on the canvas** and, if they are on another tab, switches to it. This is how you check a slide without presenting.
+- Selecting a row **switches to that slide's tab and highlights its members on the canvas**. This is how you check a slide without presenting, and it is why a slide names its tab rather than inferring one.
 - **Start** — enters the full-screen deck at slide 1.
 
-### One consequence worth stating
+### What the panel does not do
 
-Reordering tabs from this panel was discussed and is **not** included. It made sense while a slide belonged to a tab and the deck was "tab order, then layer order". Now that slide order is its own array, tab order has no effect on the deck at all, so a tab reorder control here would change nothing about the presentation and would only be a confusing second place to do something the tab bar already does.
+Reorder tabs. It was asked for while a slide belonged to a tab and the deck was "tab order, then layer order", and the model moved on: slide order is its own array now, so reordering tabs changes nothing about the deck. Everything that DOES affect the presentation lives in this panel; a control that looks like deck management but only reshuffles the tab bar would undermine exactly that promise.
 
 ## Presenting
 
-- **Full screen.** Browser fullscreen where available, all chrome hidden (the zen treatment, spec/26), canvas non-interactive for editing regardless of role.
+- **Full screen.** Browser fullscreen where available, all chrome hidden (the zen treatment, spec/26).
 - **One slide at a time.** Only that slide's elements render. This is a deck, not a progressive reveal of a diagram: advancing does not accumulate.
+- **The backdrop is the slide's tab's** — its background colour, pattern and theme. Well-defined precisely because a slide belongs to one tab.
 - **Framing:** fit to the content bounds of the slide's elements (`contentBounds` + `computeFitToScreen`), with padding. **If a slide contains exactly one frame element, its bounds are used instead** — that gives precise, authored framing using an element the product already has, with nothing new to learn.
-- **Rendered by the real canvas**, not the static SVG renderer. A slide is not a picture: timers keep counting, polls and votes stay open, reaction pads still fire, done checks still tick (spec/105, spec/135, spec/137). A deck you can run a session from is the point of presenting inside the tool rather than exporting to one.
+- **A slide is inert.** No click reaches any element, for anybody, whatever their role. Not just no editing: no voting, no starting a timer, no ticking a Done check, no firing a reaction pad. You are on a projector in front of a room, and a stray click that changes the diagram is not a feature. The session tools stay where they are used, on the canvas.
+  - Live DATA still displays. A timer somebody started before the presentation goes on counting down on the slide, and a poll shows the results it has. That is the slide reporting the diagram, not the audience changing it, and freezing a running clock mid-sentence would read as a bug.
+- **Rendered by the real canvas**, inert, rather than by the static SVG renderer. Not for interactivity, which is now gone, but so there is exactly ONE thing that knows how an element looks. A second renderer for presenting is a second renderer to keep in step, and it would drift the first time an element gained a feature. It also keeps the live-data rule above free.
 - **Advance** with `→`, `Space`, `Page Down`, or click. **Back** with `←`, `Page Up`. `Home` / `End` jump to the ends. `Esc` exits and restores the previous tab, viewport and chrome.
 - A minimal HUD shows position (`7 / 23`) and the slide's name, fading when idle.
 - Advancing past the last slide shows an end state; one more advance or `Esc` exits.
@@ -89,7 +97,7 @@ Reordering tabs from this panel was discussed and is **not** included. It made s
 
 ### Cross-tab loading
 
-Tabs load lazily (spec/13), so a deck drawing on a tab nobody has visited would stall mid-presentation. `loadAllTabs()` already exists in `usePerTabLoad.ts` — a one-shot parallel fetch of every unloaded tab, built for cross-tab element search — and Start awaits it. Slides that still cannot resolve a tab render their resolvable members and the presentation continues.
+Tabs load lazily (spec/13), so a deck whose slides reach into a tab nobody has visited would stall mid-presentation. `loadAllTabs()` already exists in `usePerTabLoad.ts` — a one-shot parallel fetch of every unloaded tab, built for cross-tab element search — and Start awaits it. A slide whose tab still cannot be resolved is skipped rather than blocking the deck.
 
 ## Notes
 
@@ -103,11 +111,11 @@ Follow-the-presenter (a `presentation` room op so viewers' screens track the pre
 
 ## Implementation shape
 
-Per the no-god-files rule: `usePresentation.ts` (deck state, current index, keyboard, camera targets), `PresentationPanel.tsx` (the seventh tool panel, built like `EraserPanel` / `HighlighterPanel`), and `PresentationOverlay.tsx` (full-screen surface, HUD, captions, end state). Deck helpers stay pure and live in `packages/diagram` beside the element helpers: resolving refs to elements, pulling in implied arrows, and computing a slide's bounds are all `(Deck, Tab[]) -> ...` functions with no React in them, so they are testable and reusable by the api and MCP worker.
+Per the no-god-files rule: `useSlideDeck.ts` (deck state, current index, keyboard, camera targets), `SlideDeckPanel.tsx` (the seventh tool panel, built like `EraserPanel` / `HighlighterPanel`), and `PresentationOverlay.tsx` (the full-screen surface Start puts you into: HUD, captions, end state). Deck helpers stay pure and live in `packages/diagram` beside the element helpers: resolving a slide to its elements, pulling in implied arrows, and computing a slide's bounds are all `(Deck, Tab[]) -> ...` functions with no React in them, so they are testable and reusable by the api and MCP worker.
 
 ## Telemetry
 
-Per spec/22: `track('UI', 'Opened', 'Presentation')` when the tool is picked, `track('UI', 'Started', 'Presentation')` on Start, `track('UI', 'Closed', 'Presentation')` on exit, and `track('UI', 'Added', 'Slide')` when a slide is created. No per-step events: chatty, low signal.
+Per spec/22: `track('UI', 'Opened', 'SlideDeck')` when the tool is picked, `track('UI', 'Started', 'Presentation')` on Start, `track('UI', 'Closed', 'Presentation')` on exit, and `track('UI', 'Added', 'Slide')` when a slide is created. No per-slide events: chatty, low signal.
 
 ## Out of scope (v1)
 
@@ -115,10 +123,19 @@ Per spec/22: `track('UI', 'Opened', 'Presentation')` when the tool is picked, `t
 - Presenter-only notes view / dual-screen console.
 - Export the deck to PDF or PPT. (The framing rule above makes it tractable later: every slide already has bounds, and the export renderer already draws a bounded element set.)
 - Transitions and per-element build animation within a slide.
-- Auto-generating a deck from a diagram.
+- Auto-generating a deck from a diagram (see the empty-deck rule above: deliberate, not deferred).
+- A slide that mixes tabs. Ruled out by the model, not postponed.
+- Interaction during a presentation. Also ruled out, not postponed: a slide is inert.
+
+## Settled
+
+The three questions this draft opened with are answered, and the answers are in the body above rather than left hanging here:
+
+- **Empty deck** — it stays empty. No seeding.
+- **Interaction while presenting** — none. A slide is inert for everybody; live data still displays.
+- **Slide backdrop** — the slide's tab's, which is well-defined because a slide belongs to one tab.
 
 ## Open questions
 
-1. **Empty-deck affordance.** A diagram with no slides opens the panel to an empty list. Is "New slide from selection" enough of a start, or should the panel offer to seed a deck (one slide per tab, or one per frame element)?
-2. **Editing while presenting.** Presenting is specced non-interactive for editing, but the live session elements stay live. Is pressing a Done check or casting a vote from within a presentation clearly not "editing"? The current answer is yes, and the line is: element interactions work, canvas authoring does not.
-3. **Slide-level backdrop.** A slide inherits the backdrop of the tab its first member belongs to. For a slide mixing tabs, is that the right rule, or should the deck carry its own background?
+1. **Duplicating a slide across tabs.** Duplicate copies a slide within its tab. Should there be a "copy this slide's layout to another tab" that maps to the equivalent elements, or is that a fantasy given elements are not equivalent across tabs?
+2. **A deleted tab's slides.** They are skipped at read time (above), so a deck can carry invisible slides that come back if the tab is restored by undo. Is silent-skip right, or should the panel show them struck through so you know they are there?
