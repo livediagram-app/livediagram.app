@@ -15,28 +15,22 @@ import {
   type EstimateScale,
   type EntityField,
   clampPercent,
-  clampRating,
   CODE_MAX_LENGTH,
-  isChartShape,
   isProgressShape,
   RAIL_DEFAULT_POINTS,
   RAIL_MAX_POINTS,
   RAIL_MIN_POINTS,
   RAIL_POINT_STEP_PX,
   type AnimationSpeed,
-  type ChartLegendPosition,
   type ChecklistItem,
   type SelectionMode,
   type CodeLanguage,
   type Element,
-  type LineSeries,
-  type PieAnim,
-  type PieSlice,
   type ProgressAnim,
-  type RatingAnim,
   type ShapeElement,
 } from '@livediagram/diagram';
 import { track } from '@/lib/telemetry';
+import { useChartSetters } from '@/hooks/canvas/useChartSetters';
 
 type DataShapeSetterDeps = {
   currentSelectionIds: () => Set<string>;
@@ -310,62 +304,11 @@ export function useDataShapeSetters({ currentSelectionIds, commit }: DataShapeSe
     track('Element', 'Changed', 'ModeButton');
   };
 
-  // Rating (spec/52): the star score + its optional animation, gated to rating
-  // shapes. The setters share one body (differing only in the patched field +
-  // telemetry type), mirroring the progress setters.
-  const setRatingFieldSelected = (patch: Partial<ShapeElement>, telemetryType: string) => {
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    commit((els) =>
-      els.map((el) =>
-        ids.has(el.id) && el.type === 'shape' && el.shape === 'rating' ? { ...el, ...patch } : el,
-      ),
-    );
-    track('Element', 'Changed', telemetryType);
-  };
-  const setRatingSelected = (value: number) =>
-    setRatingFieldSelected({ rating: clampRating(value) }, 'Rating');
-  const setRatingAnimSelected = (value: RatingAnim | null) =>
-    setRatingFieldSelected({ ratingAnim: value ?? undefined }, 'RatingAnim');
-  const setRatingAnimSpeedSelected = (value: AnimationSpeed) =>
-    setRatingFieldSelected({ ratingAnimSpeed: value }, 'RatingAnim');
-  const setRatingAnimRepeatSelected = (value: boolean) =>
-    setRatingFieldSelected({ ratingAnimRepeat: value }, 'RatingAnim');
-
-  // Data charts (spec/53): the data + slice animation + legend toggle, gated to
-  // chart shapes (pie + bar).
-  const setPieFieldSelected = (patch: Partial<ShapeElement>, telemetryType: string) => {
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    commit((els) =>
-      els.map((el) =>
-        ids.has(el.id) && el.type === 'shape' && isChartShape(el.shape) ? { ...el, ...patch } : el,
-      ),
-    );
-    track('Element', 'Changed', telemetryType);
-  };
-  // Replace the whole data array (the Data editor builds the next array from
-  // the current one — add / remove / edit a row — and commits it).
-  const setPieDataSelected = (slices: PieSlice[]) =>
-    setPieFieldSelected({ pieSlices: slices }, 'ChartData');
-  const setPieAnimSelected = (value: PieAnim | null) =>
-    setPieFieldSelected({ pieAnim: value ?? undefined }, 'ChartAnim');
-  const setPieAnimSpeedSelected = (value: AnimationSpeed) =>
-    setPieFieldSelected({ pieAnimSpeed: value }, 'ChartAnim');
-  const setPieAnimRepeatSelected = (value: boolean) =>
-    setPieFieldSelected({ pieAnimRepeat: value }, 'ChartAnim');
-  const setChartLegendSelected = (value: boolean) =>
-    setPieFieldSelected({ chartLegend: value }, 'ChartLegend');
-  // Legend placement (spec/53): picking a side also turns the legend on, so the
-  // position tiles double as "on" while the Off tile uses setChartLegendSelected.
-  const setChartLegendPositionSelected = (position: ChartLegendPosition) =>
-    setPieFieldSelected({ chartLegend: true, chartLegendPosition: position }, 'ChartLegend');
-  // Line chart (spec/53): replace the whole 2-D dataset (the grid editor / CSV
-  // import builds the next categories + series and commits them together).
-  const setLineDataSelected = (categories: string[], series: LineSeries[]) =>
-    setPieFieldSelected({ lineCategories: categories, lineSeries: series }, 'LineData');
+  // Rating (spec/52) + the charts (spec/53) — see useChartSetters.
+  const chartSetters = useChartSetters({ currentSelectionIds, commit });
 
   return {
+    ...chartSetters,
     setProgressSelected,
     setProgressAnimSelected,
     setProgressAnimSpeedSelected,
@@ -387,16 +330,5 @@ export function useDataShapeSetters({ currentSelectionIds, commit }: DataShapeSe
     setDecisionDriversSelected,
     setChairFacingSelected,
     setButtonModeSelected,
-    setRatingSelected,
-    setRatingAnimSelected,
-    setRatingAnimSpeedSelected,
-    setRatingAnimRepeatSelected,
-    setPieDataSelected,
-    setPieAnimSelected,
-    setPieAnimSpeedSelected,
-    setPieAnimRepeatSelected,
-    setChartLegendSelected,
-    setChartLegendPositionSelected,
-    setLineDataSelected,
   };
 }
