@@ -17,7 +17,6 @@
 //     a sticky :hover after a tap reads as a stuck button.
 
 import type { SelectionMode } from '@livediagram/diagram';
-import { Tooltip } from '@/components/primitives/Tooltip';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import {
   AvatarModeIcon,
@@ -52,20 +51,6 @@ export const MODE_LABEL: Record<SelectionMode, string> = {
   eraser: 'Eraser',
   format: 'Format',
   isometric: 'Isometric',
-};
-
-// What each mode actually does, for the hover tooltip — the button's label is
-// the author's copy ("Walk with me"), which doesn't have to say which mode it
-// hands out, so the tooltip is where that gets spelled out.
-const MODE_BLURB: Record<SelectionMode, string> = {
-  select: 'The normal pointer: select, move, and edit elements.',
-  pan: 'Drag anywhere to scroll the canvas around.',
-  laser: 'Your pointer leaves a glowing trail everyone can see.',
-  spotlight: 'Dims the canvas except a circle around your cursor.',
-  avatar: 'Drops a little character you walk around the diagram.',
-  eraser: 'Click or drag across elements to delete them.',
-  format: "Copy one element's style and paint it onto others.",
-  isometric: 'Tilts the tab into a three-dimensional view.',
 };
 
 // The glyphs are 13px for the palette; on a button face they need to read from
@@ -149,14 +134,14 @@ export function ModeButtonFace({
   // returns you to the tool you came from — so it stays live and says "Leave"
   // rather than pretending it can switch you somewhere you already are.
   return (
-    <Tooltip
-      block
-      className="h-full w-full"
-      title={isCurrent ? `Leave ${MODE_LABEL[mode]}` : `Switch to ${MODE_LABEL[mode]}`}
-      description={
-        isCurrent ? 'Takes you back to the tool you were using before.' : MODE_BLURB[mode]
-      }
-    >
+    <>
+      {/* The CHIP is the button, not the whole card. A card-sized target meant
+          a click anywhere — on the label you were reading, or on padding while
+          positioning the element — switched everyone's mode. Everything around
+          the chip stays ordinary canvas you can click to select and drag. */}
+      <span className={`pointer-events-none absolute inset-0 ${layout}`} aria-hidden>
+        {inner}
+      </span>
       <button
         type="button"
         // The label is already the accessible name; naming the action as well
@@ -170,15 +155,15 @@ export function ModeButtonFace({
         // dragging it must move it without also switching everyone's mode.
         // See usePressWithoutDrag.
         {...press}
-        // `pointer-events-auto` survives the inert diagram layer of Avatar /
-        // Spotlight / Isometric mode; see the file header. The hover / active
-        // treatment is what sells "pressable": a brightening lift on hover
-        // (desktop only, via `sm:`, since a tap would leave it stuck on a
-        // phone), and a shrink + sink on press.
-        className={`pointer-events-auto cursor-pointer rounded-[inherit] transition duration-100 active:scale-[0.96] active:brightness-95 sm:hover:brightness-[1.07] ${layout}`}
-      >
-        {inner}
-      </button>
-    </Tooltip>
+        // Sits exactly over the chip `inner` draws. `pointer-events-auto`
+        // survives the inert diagram layer of Avatar / Spotlight / Isometric
+        // mode; see the file header. The hover / active treatment is what
+        // sells "pressable" — a ring and a lift on hover (desktop only, via
+        // `sm:`, since a tap would leave it stuck on a phone) and a shrink on
+        // press — and it is on the CHIP now, so the affordance is where the
+        // press actually is.
+        className="pointer-events-auto absolute left-1/2 top-[14%] h-9 w-9 -translate-x-1/2 cursor-pointer rounded-full transition duration-100 active:scale-[0.92] sm:hover:scale-105 sm:hover:bg-black/[0.06] sm:hover:ring-2 sm:hover:ring-inset sm:hover:ring-black/10 dark:sm:hover:bg-white/10 dark:sm:hover:ring-white/20"
+      />
+    </>
   );
 }

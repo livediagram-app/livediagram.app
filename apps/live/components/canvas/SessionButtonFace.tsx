@@ -186,7 +186,9 @@ export function SessionButtonFace({
         aria-label={`${text || `${derived.kicker} ${derived.action}`} — starts this for everyone`}
         {...press}
         // Positioned over the chip that `inner` draws: same size, same place.
-        className="pointer-events-auto absolute left-1/2 top-[14%] h-9 w-9 -translate-x-1/2 cursor-pointer rounded-full transition duration-100 active:scale-[0.92] sm:hover:brightness-[1.07]"
+        // The hover treatment lives on the CHIP, which is where the press
+        // is. On the card it told you the wrong thing was clickable.
+        className="pointer-events-auto absolute left-1/2 top-[14%] h-9 w-9 -translate-x-1/2 cursor-pointer rounded-full transition duration-100 active:scale-[0.92] sm:hover:scale-105 sm:hover:bg-black/[0.06] sm:hover:ring-2 sm:hover:ring-inset sm:hover:ring-black/10 dark:sm:hover:bg-white/10 dark:sm:hover:ring-white/20"
       />
     </>
   );
