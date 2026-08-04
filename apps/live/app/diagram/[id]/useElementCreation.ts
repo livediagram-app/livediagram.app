@@ -1,8 +1,6 @@
-import { useState, type Dispatch, type SetStateAction } from 'react';
+import { type Dispatch, type SetStateAction } from 'react';
 import {
   acceptsInlineIcon,
-  bestAnchorTowards,
-  rebindArrowAnchorsAfterMove,
   createAnnotation,
   createLinkCard,
   createVideo,
@@ -13,8 +11,6 @@ import {
   isMindNode,
   createTable,
   createText,
-  isBoxed,
-  type ArrowElement,
   type BoxedElement,
   type Element,
   defaultSessionConfig,
@@ -26,11 +22,11 @@ import {
   type ShapeKind,
   type Tab,
 } from '@livediagram/diagram';
-import { getTheme } from '@/lib/themes';
 import { getTechIcon, isTechIconId } from '@/lib/tech-icons';
 import { getSticker, stickerDropSize } from '@/lib/stickers';
 import { track, titleCaseType } from '@/lib/telemetry';
 import type { PendingDraw } from '@/lib/draw-mode';
+import { useArrowConnect } from '@/app/diagram/[id]/useArrowConnect';
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
 
@@ -245,80 +241,17 @@ export function useElementCreation(opts: {
     beginDraw({ type: 'sticky' });
   };
 
-  // Click-to-connect (spec/09): when the arrow tool is picked WITH a
-  // shape selected, the next element click connects the two with a
-  // pinned arrow. `connectSourceId` holds that armed source; null when
-  // not connecting. The canvas / Escape clear it (see EditorView).
-  const [connectSourceId, setConnectSourceId] = useState<string | null>(null);
-  const cancelConnect = () => setConnectSourceId(null);
-
-  // Arm connect-from-selection when a shape is selected; otherwise fall
-  // back to the draw-to-place connector (free endpoints, dragged onto
-  // shapes later). The palette + the A shortcut both route here.
-  const addArrow = () => {
-    if (editsBlocked) return;
-    const sel = selectedId ? activeTab.elements.find((e) => e.id === selectedId) : null;
-    if (sel && isBoxed(sel)) {
-      setConnectSourceId(sel.id);
-      return;
-    }
-    beginDraw({ type: 'arrow' });
-  };
-
-  // Complete the connect gesture: draw a pinned arrow from the armed
-  // source to `toId`, picking the anchor on each shape that faces the
-  // other (bestAnchorTowards) and inheriting the source's stroke so it
-  // matches the theme. No-ops if either end isn't a shape or it's the
-  // same element. Clears the armed state either way.
-  const connectArrowTo = (toId: string) => {
-    const fromId = connectSourceId;
-    setConnectSourceId(null);
-    if (editsBlocked || !fromId || fromId === toId) return;
-    const from = activeTab.elements.find((e) => e.id === fromId);
-    const to = activeTab.elements.find((e) => e.id === toId);
-    if (!from || !to || !isBoxed(from) || !isBoxed(to)) return;
-    const fromCenter = { x: from.x + from.width / 2, y: from.y + from.height / 2 };
-    const toCenter = { x: to.x + to.width / 2, y: to.y + to.height / 2 };
-    // Pick the geometrically-best face on each endpoint, facing the other
-    // element. We deliberately DON'T avoid faces other arrows already use:
-    // sharing a start/end point is allowed, and steering off the natural
-    // face just to dodge an occupied one produced visibly worse connectors.
-    const theme = getTheme(activeTab.theme);
-    const stroke = from.strokeColor ?? theme.elementStroke ?? undefined;
-    const arrow: ArrowElement = {
-      id: crypto.randomUUID(),
-      type: 'arrow',
-      from: {
-        kind: 'pinned',
-        elementId: fromId,
-        anchor: bestAnchorTowards(from, toCenter),
-      },
-      to: {
-        kind: 'pinned',
-        elementId: toId,
-        anchor: bestAnchorTowards(to, fromCenter),
-      },
-      ...(stroke ? { strokeColor: stroke } : {}),
-    };
-    commitTabs((ts) =>
-      ts.map((t) =>
-        t.id === activeId
-          ? {
-              ...t,
-              // Run the new arrow through the same distribution pass a move
-              // uses (spec/09), scoped to its target end: a fresh connector
-              // joins an established fan on the source (sibling vote over
-              // the settled arrows' faces) instead of keeping whichever
-              // face its own chord grazes first.
-              elements: rebindArrowAnchorsAfterMove([...t.elements, arrow], new Set([toId])),
-              templateChosen: true,
-            }
-          : t,
-      ),
-    );
-    setSelectedId(arrow.id);
-    track('Element', 'Added', 'Arrow');
-  };
+  // Click-to-connect (spec/09) — arm from the selection, complete on the next
+  // element click, or abandon. See useArrowConnect.
+  const { connectSourceId, cancelConnect, addArrow, connectArrowTo } = useArrowConnect({
+    editsBlocked,
+    activeId,
+    activeTab,
+    selectedId,
+    setSelectedId,
+    beginDraw,
+    commitTabs,
+  });
 
   // Drag-from-palette drop (spec/09): place the dragged kind centred on the
   // drop point. Shapes / devices use createShape; an icon carries `iconId`,
