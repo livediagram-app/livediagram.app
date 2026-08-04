@@ -58,3 +58,56 @@ describe('help centre internal links', () => {
     expect(total).toBeGreaterThan(200);
   });
 });
+
+// ---------------------------------------------------------------------
+// Links OUT of the help centre, into the editor app
+// ---------------------------------------------------------------------
+
+const LIVE_APP_DIR = fileURLToPath(new URL('../../live/app', import.meta.url));
+
+// Routes served by a different worker entirely, so there is no page.tsx to
+// find. The router stitches these under the same hostname (spec/08).
+const OTHER_WORKERS = new Set(['/telemetry']);
+
+// Markdown [label](/path) and JSX href="/path", excluding /help (covered
+// above) and anything absolute.
+function productLinksIn(source: string): string[] {
+  const out: string[] = [];
+  for (const m of source.matchAll(/(?:\]\(|href=")(\/[a-z][^)"\s]*)/g)) {
+    const raw = m[1]!.replace(/[#?].*$/, '').replace(/\/$/, '');
+    if (raw.startsWith('/help')) continue;
+    out.push(raw);
+  }
+  return out;
+}
+
+function liveRouteExists(path: string): boolean {
+  if (OTHER_WORKERS.has(path)) return true;
+  const rel = path.replace(/^\//, '');
+  if (rel === '') return existsSync(`${LIVE_APP_DIR}/page.tsx`);
+  return existsSync(`${LIVE_APP_DIR}/${rel}/page.tsx`);
+}
+
+describe('help centre links into the editor', () => {
+  it('sees the corpus at all (guard against a regex gone blind)', () => {
+    const total = pageFiles.reduce(
+      (n, f) => n + productLinksIn(readFileSync(`${APP_DIR}/${f}`, 'utf8')).length,
+      0,
+    );
+    // ~19 when this landed. A collapse to zero would make the next
+    // assertion pass without checking anything.
+    expect(total).toBeGreaterThan(10);
+    // And the route tree must actually be readable from here.
+    expect(existsSync(`${LIVE_APP_DIR}/new/page.tsx`)).toBe(true);
+  });
+
+  it('every product link resolves to a real editor route', () => {
+    const broken: string[] = [];
+    for (const file of pageFiles) {
+      for (const link of productLinksIn(readFileSync(`${APP_DIR}/${file}`, 'utf8'))) {
+        if (!liveRouteExists(link)) broken.push(`${file} -> ${link}`);
+      }
+    }
+    expect(broken).toEqual([]);
+  });
+});
