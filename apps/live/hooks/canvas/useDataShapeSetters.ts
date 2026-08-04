@@ -31,6 +31,7 @@ import {
 } from '@livediagram/diagram';
 import { track } from '@/lib/telemetry';
 import { useChartSetters } from '@/hooks/canvas/useChartSetters';
+import { makeShapePatcher } from '@/hooks/canvas/shape-patcher';
 
 type DataShapeSetterDeps = {
   currentSelectionIds: () => Set<string>;
@@ -46,18 +47,11 @@ export function useDataShapeSetters({ currentSelectionIds, commit }: DataShapeSe
   // Progress elements (spec/46): the percentage + how its fill animates, all
   // gated to progress shapes. The four setters differ only in the patched
   // field + telemetry type, so they share one body.
-  const setProgressFieldSelected = (patch: Partial<ShapeElement>, telemetryType: string) => {
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    commit((els) =>
-      els.map((el) =>
-        ids.has(el.id) && el.type === 'shape' && isProgressShape(el.shape)
-          ? { ...el, ...patch }
-          : el,
-      ),
-    );
-    track('Element', 'Changed', telemetryType);
-  };
+  const setProgressFieldSelected = makeShapePatcher({
+    currentSelectionIds,
+    commit,
+    matches: isProgressShape,
+  });
   const setProgressSelected = (value: number) =>
     setProgressFieldSelected({ progress: clampPercent(value) }, 'Progress');
   const setProgressAnimSelected = (value: ProgressAnim | null) =>

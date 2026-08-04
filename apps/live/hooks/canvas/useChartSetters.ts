@@ -8,9 +8,8 @@ import {
   type PieAnim,
   type PieSlice,
   type RatingAnim,
-  type ShapeElement,
 } from '@livediagram/diagram';
-import { track } from '@/lib/telemetry';
+import { makeShapePatcher } from '@/hooks/canvas/shape-patcher';
 
 // THE DATA CATEGORY'S SETTERS: the star rating (spec/52) and the charts
 // (spec/53) — pie slices, line series, the legend and their animations.
@@ -34,16 +33,11 @@ export function useChartSetters({
   // Rating (spec/52): the star score + its optional animation, gated to rating
   // shapes. The setters share one body (differing only in the patched field +
   // telemetry type), mirroring the progress setters.
-  const setRatingFieldSelected = (patch: Partial<ShapeElement>, telemetryType: string) => {
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    commit((els) =>
-      els.map((el) =>
-        ids.has(el.id) && el.type === 'shape' && el.shape === 'rating' ? { ...el, ...patch } : el,
-      ),
-    );
-    track('Element', 'Changed', telemetryType);
-  };
+  const setRatingFieldSelected = makeShapePatcher({
+    currentSelectionIds,
+    commit,
+    matches: (kind) => kind === 'rating',
+  });
   const setRatingSelected = (value: number) =>
     setRatingFieldSelected({ rating: clampRating(value) }, 'Rating');
   const setRatingAnimSelected = (value: RatingAnim | null) =>
@@ -55,16 +49,11 @@ export function useChartSetters({
 
   // Data charts (spec/53): the data + slice animation + legend toggle, gated to
   // chart shapes (pie + bar).
-  const setPieFieldSelected = (patch: Partial<ShapeElement>, telemetryType: string) => {
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    commit((els) =>
-      els.map((el) =>
-        ids.has(el.id) && el.type === 'shape' && isChartShape(el.shape) ? { ...el, ...patch } : el,
-      ),
-    );
-    track('Element', 'Changed', telemetryType);
-  };
+  const setPieFieldSelected = makeShapePatcher({
+    currentSelectionIds,
+    commit,
+    matches: isChartShape,
+  });
   // Replace the whole data array (the Data editor builds the next array from
   // the current one — add / remove / edit a row — and commits it).
   const setPieDataSelected = (slices: PieSlice[]) =>
