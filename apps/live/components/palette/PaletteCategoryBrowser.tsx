@@ -46,6 +46,13 @@ type Props<T> = {
   // empty grid reads as "nothing matches" when it means "not here yet".
   loading?: boolean;
   loadingMessage?: string;
+  // Content shown ABOVE the category grid, on the root screen only. For a
+  // catalogue with a tile or two that belong to no group and are reached for
+  // often enough that burying them in a category would cost more than the
+  // tidiness is worth (the Collaborate tab's comment panel). Hidden while
+  // drilled in or searching, where it would be answering a question nobody
+  // asked.
+  rootLeadIn?: ReactNode;
 };
 
 export function PaletteCategoryBrowser<T>({
@@ -60,6 +67,7 @@ export function PaletteCategoryBrowser<T>({
   emptyMessage,
   loading = false,
   loadingMessage = 'Loading…',
+  rootLeadIn,
 }: Props<T>) {
   // null = the category grid. Opening the tab starts there, so you see every
   // category at once rather than one arbitrary group's contents.
@@ -105,13 +113,16 @@ export function PaletteCategoryBrowser<T>({
           {renderItems(openCategory.items)}
         </>
       ) : (
-        <ToolsCategoryGrid
-          categories={categories}
-          onOpen={(id) => {
-            track('UI', 'Opened', telemetry.openedType);
-            setOpenId(id);
-          }}
-        />
+        <>
+          {rootLeadIn}
+          <ToolsCategoryGrid
+            categories={categories}
+            onOpen={(id) => {
+              track('UI', 'Opened', telemetry.openedType);
+              setOpenId(id);
+            }}
+          />
+        </>
       )}
     </div>
   );

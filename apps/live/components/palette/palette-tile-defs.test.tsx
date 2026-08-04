@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { PALETTE_CATEGORIES } from './palette-categories';
+import { BEHAVIOUR_GROUPS, COLLABORATE_GROUPS } from './palette-create-tabs';
 import {
   PALETTE_TILES,
   TOOL_GROUPS,
@@ -150,19 +151,29 @@ describe('TOOL_GROUPS', () => {
   });
 });
 
-// Behaviour and Collaborate render their tiles by FILTERING on `tileGroup`
-// (palette-create-tabs.tsx), one hard-coded filter per row. A tile whose group
-// matches no filter is drawn by nothing: it stays in the catalogue, keeps
-// working in search and in Favourites, and is simply absent from the palette
-// tab it belongs to. No error, no empty row, nothing to notice.
+// Behaviour and Collaborate draw their tiles by CATEGORY (spec/09
+// "Sub-categories"): each tab hands PaletteGroupBrowser a list of group
+// definitions, and a tile is drawn by the category whose id matches its
+// `tileGroup`. A tile whose group is in no definition is drawn by nothing: it
+// stays in the catalogue, keeps working in search and in Favourites, and is
+// simply absent from the palette tab it belongs to. No error, no empty
+// category, nothing to notice — the browser drops a category with no tiles, so
+// a typo'd group id fails silently at both ends.
 //
 // The Tools tab has had `TOOL_GROUPS` and a partition test since it grew
-// sub-sections; these two grew rows later (spec/110) and kept their groups in
-// the JSX, so there was nothing to assert against.
+// sub-sections; these two kept their groups inside the JSX until they became
+// category browsers, so there was nothing to assert against.
 //
-// The filters are read from the render's own source rather than restated here.
-// A list typed into this file would agree with itself and prove nothing, which
-// is the failure mode SHAPE_KEYWORDS and the palette census both hit.
+// The definitions are read through the SAME constant the render passes — the
+// source is scraped only for WHICH constant that is, so renaming or swapping
+// the array cannot leave this test checking a list nobody renders. A list
+// typed into this file would agree with itself and prove nothing, which is the
+// failure mode SHAPE_KEYWORDS and the palette census both hit.
+const GROUP_CONSTANTS: Record<string, { id: string }[]> = {
+  BEHAVIOUR_GROUPS,
+  COLLABORATE_GROUPS,
+};
+
 function renderedGroups(component: string): { groups: Set<string>; allowsLoose: boolean } {
   const src = readFileSync(new URL('./palette-create-tabs.tsx', import.meta.url), 'utf8');
   const start = src.indexOf(`export function ${component}`);
@@ -170,9 +181,12 @@ function renderedGroups(component: string): { groups: Set<string>; allowsLoose: 
   // into the next one and collected its filters as if they were Collaborate's.
   const after = src.indexOf('\nexport function ', start + 1);
   const body = src.slice(start, after === -1 ? undefined : after);
+  const constName = body.match(/groups=\{([A-Z_]+)\}/)?.[1] ?? '';
+  const defs = GROUP_CONSTANTS[constName] ?? [];
   return {
-    groups: new Set([...body.matchAll(/tileGroup === '([a-z-]+)'/g)].map((m) => m[1]!)),
-    allowsLoose: /filter\(\(t\) => !t\.tileGroup\)/.test(body),
+    groups: new Set(defs.map((g) => g.id)),
+    // The ungrouped tiles are drawn above the category grid, or not at all.
+    allowsLoose: /leadIn=\{/.test(body),
   };
 }
 

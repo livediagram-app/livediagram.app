@@ -269,8 +269,17 @@ export function PaletteFavouritesTab({
           Two jobs, split by a hairline: Reorder rearranges what you have,
           Edit changes what you have. In reorder mode the same band becomes
           Cancel / Save, so the mode is always one press from ending and the
-          panel never grows a third row of chrome. */}
-      <div className="-mx-2 -mb-2.5 mt-2.5 flex self-stretch border-t border-slate-200 dark:border-slate-700">
+          panel never grows a third row of chrome.
+
+          Gone entirely while searching. Search replaces the favourites grid
+          with cross-category results, so both verbs would act on a grid that
+          is not on screen — Reorder on a list you cannot see, Edit on a set
+          the results are not from. */}
+      <div
+        className={`-mx-2 -mb-2.5 mt-2.5 self-stretch border-t border-slate-200 dark:border-slate-700 ${
+          matches ? 'hidden' : 'flex'
+        }`}
+      >
         {reordering ? (
           <>
             <FooterButton onClick={() => setReorderDraft(null)}>Cancel</FooterButton>

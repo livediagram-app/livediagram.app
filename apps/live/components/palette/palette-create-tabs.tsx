@@ -4,6 +4,7 @@ import type { PendingDraw } from '@/lib/draw-mode';
 import { PaletteTileGrid, type PaletteTileActions } from './PaletteTileGrid';
 import { PaletteToolRows } from './PaletteToolRows';
 import { PaletteTileGroup } from './PaletteTileGroup';
+import { PaletteGroupBrowser, type TileGroupDef } from './PaletteGroupBrowser';
 import {
   AskGroupIcon,
   EmbedGroupIcon,
@@ -81,97 +82,101 @@ export function PaletteDataTab({ pendingDraw, actions }: TabProps) {
 
 // The elements that DO something when somebody interacts with them (spec/103
 // to spec/107): Selection Mode buttons, Portals, Session buttons, Reveal
-// zones, Pickers. Rows, not a tile grid: half of these are behaviours whose
-// glyph cannot say what they do, so each keeps its one-line blurb.
-// The session tools and the reactions each collapse behind one row, the way
-// Media's embed providers do (spec/121). Both are ONE element with a mode
-// field, so the palette offers a tile per mode: which tool or which reaction
-// you want IS the decision, and a button you place and then go and reconfigure
-// is two steps for something you already knew. Flattened out, the eight of
-// them would also have buried the four single-purpose Behaviour elements.
+// zones, Pickers, Reaction pads.
+//
+// Browsed by category rather than stacked as accordions (spec/09
+// "Sub-categories"): five collapsed headers meant you saw a table of contents
+// where the palette otherwise shows you pictures, and nothing in the tab was
+// visible until you opened one. Same navigation as Icons and Technology, from
+// the same component — see PaletteGroupBrowser.
+export const BEHAVIOUR_GROUPS: TileGroupDef[] = [
+  { id: 'mode', label: 'Selection Mode', icon: <ModeGroupIcon /> },
+  {
+    id: 'facilitate',
+    label: 'Run the room',
+    icon: <FacilitateGroupIcon />,
+  },
+  { id: 'move', label: 'Get around', icon: <MoveGroupIcon /> },
+  {
+    id: 'session',
+    label: 'Session',
+    icon: <SessionGroupIcon />,
+  },
+  {
+    id: 'reaction',
+    label: 'Reactions',
+    icon: <ReactionGroupIcon />,
+  },
+];
+
 export function PaletteBehaviourTab({ pendingDraw, actions }: TabProps) {
-  const behaviour = tilesInToolGroup('behaviour');
   return (
-    <div className="flex flex-col gap-0.5">
-      <PaletteTileGroup
-        title="Selection Mode"
-        blurb="Hand somebody a mode"
-        icon={<ModeGroupIcon />}
-        tiles={behaviour.filter((t) => t.tileGroup === 'mode')}
-        actions={actions}
-        pendingDraw={pendingDraw}
-      />
-      <PaletteTileGroup
-        title="Run the room"
-        blurb="Things a facilitator drives"
-        icon={<FacilitateGroupIcon />}
-        tiles={behaviour.filter((t) => t.tileGroup === 'facilitate')}
-        actions={actions}
-        pendingDraw={pendingDraw}
-      />
-      <PaletteTileGroup
-        title="Get around"
-        blurb="Move yourself about"
-        icon={<MoveGroupIcon />}
-        tiles={behaviour.filter((t) => t.tileGroup === 'move')}
-        actions={actions}
-        pendingDraw={pendingDraw}
-      />
-      <PaletteTileGroup
-        title="Session"
-        blurb="Tools the room runs together"
-        icon={<SessionGroupIcon />}
-        tiles={behaviour.filter((t) => t.tileGroup === 'session')}
-        actions={actions}
-        pendingDraw={pendingDraw}
-      />
-      <PaletteTileGroup
-        title="Reactions"
-        blurb="React on the board"
-        icon={<ReactionGroupIcon />}
-        tiles={behaviour.filter((t) => t.tileGroup === 'reaction')}
-        actions={actions}
-        pendingDraw={pendingDraw}
-      />
-    </div>
+    <PaletteGroupBrowser
+      root="Behaviour"
+      tiles={tilesInToolGroup('behaviour')}
+      groups={BEHAVIOUR_GROUPS}
+      actions={actions}
+      pendingDraw={pendingDraw}
+      searchInput={{
+        placeholder: 'Search behaviour',
+        ariaLabel: 'Search behaviour elements',
+        clearAriaLabel: 'Clear behaviour search',
+        clearDescription: 'Clear the behaviour element search query.',
+      }}
+      telemetry={{ openedType: 'BehaviourGroup', searchedType: 'BehaviourSearch' }}
+      emptyMessage={(q) => `No behaviour elements match \u201c${q}\u201d.`}
+    />
   );
 }
 
 // The elements that collect what the ROOM thinks (spec/123 to spec/129):
 // estimate cards, temperature checks, idea boxes, agendas, decision records
-// and roll calls. Rows, not a tile grid, for the same reason Behaviour is: a
-// glyph cannot distinguish "everyone answers privately then all at once" from
-// "everyone answers and you watch it move", and that IS the choice.
-// Grouped by what the element DOES with the room rather than by what it looks
-// like: three that ask everybody a question and collect the answers, three that
-// write down what the room decided. The comment panel stays loose above them —
-// it is the one people reach for outside a facilitated session.
+// and roll calls. Grouped by what the element DOES with the room rather than
+// by what it looks like: the ones that ask everybody a question and collect
+// the answers, and the ones that write down what the room decided.
+//
+// The comment panel stays ABOVE the categories rather than inside one. It is
+// the element people reach for outside a facilitated session entirely, and a
+// category of one would be a click in front of the tab's most-used tile.
+export const COLLABORATE_GROUPS: TileGroupDef[] = [
+  {
+    id: 'ask',
+    label: 'Ask the room',
+    icon: <AskGroupIcon />,
+  },
+  {
+    id: 'record',
+    label: 'Keep a record',
+    icon: <RecordGroupIcon />,
+  },
+];
+
 export function PaletteCollaborateTab({ pendingDraw, actions }: TabProps) {
   const collab = tilesInSection('collaborate');
+  const loose = collab.filter((t) => !t.tileGroup);
   return (
-    <div className="flex flex-col gap-0.5">
-      <PaletteToolRows
-        tiles={collab.filter((t) => !t.tileGroup)}
-        actions={actions}
-        pendingDraw={pendingDraw}
-      />
-      <PaletteTileGroup
-        title="Ask the room"
-        blurb="Gather your team’s input"
-        icon={<AskGroupIcon />}
-        tiles={collab.filter((t) => t.tileGroup === 'ask')}
-        actions={actions}
-        pendingDraw={pendingDraw}
-      />
-      <PaletteTileGroup
-        title="Keep a record"
-        blurb="Write down what happened"
-        icon={<RecordGroupIcon />}
-        tiles={collab.filter((t) => t.tileGroup === 'record')}
-        actions={actions}
-        pendingDraw={pendingDraw}
-      />
-    </div>
+    <PaletteGroupBrowser
+      root="Collaborate"
+      tiles={collab}
+      groups={COLLABORATE_GROUPS}
+      actions={actions}
+      pendingDraw={pendingDraw}
+      leadIn={
+        loose.length > 0 ? (
+          <div className="mb-2">
+            <PaletteToolRows tiles={loose} actions={actions} pendingDraw={pendingDraw} />
+          </div>
+        ) : undefined
+      }
+      searchInput={{
+        placeholder: 'Search collaborate',
+        ariaLabel: 'Search collaborate elements',
+        clearAriaLabel: 'Clear collaborate search',
+        clearDescription: 'Clear the collaborate element search query.',
+      }}
+      telemetry={{ openedType: 'CollabGroup', searchedType: 'CollabSearch' }}
+      emptyMessage={(q) => `No collaborate elements match \u201c${q}\u201d.`}
+    />
   );
 }
 
