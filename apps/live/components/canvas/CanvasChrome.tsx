@@ -117,6 +117,12 @@ type ChromeExtras = {
   eraserPanelPosition?: { x: number; y: number } | null;
   onMoveEraserPanel?: (x: number, y: number) => void;
   onResetEraserPanel?: () => void;
+  // Highlighter Panel (spec/81): the marker's colour + strength, owned by
+  // useShapeDrawing (highlighterColor / highlighterWidth below) — the settings
+  // that used to hang off the top mode banner.
+  highlighterPanelPosition?: { x: number; y: number } | null;
+  onMoveHighlighterPanel?: (x: number, y: number) => void;
+  onResetHighlighterPanel?: () => void;
   // Format Panel (spec/117): what the painter copies, owned in editor state
   // (the paint lives there), plus a description of the loaded element.
   formatConfig?: import('@/lib/format-config').FormatConfig;
@@ -334,6 +340,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
         hasSpotlight={props.canvasTool === 'spotlight'}
         hasEraser={props.canvasTool === 'eraser'}
         hasFormat={props.canvasTool === 'format'}
+        hasHighlighter={props.canvasTool === 'highlighter'}
         activeMobilePanel={activeMobilePanel}
         dockButtonRefs={dockButtonRefs}
         onDockButtonClick={handleDockButtonClick}
@@ -370,6 +377,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
           {panelEls.spotlight}
           {panelEls.eraser}
           {panelEls.format}
+          {panelEls.highlighter}
         </>
       )}
 

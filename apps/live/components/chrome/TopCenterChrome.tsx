@@ -1,11 +1,10 @@
-import { drawBannerMessage } from '@/lib/draw-mode';
+import { drawBannerMessage, isMarkerIntent } from '@/lib/draw-mode';
 import { isMobileViewportSync } from '@/lib/responsive';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { ModeBanner } from '@/components/chrome/ModeBanner';
 import { GroupIcon } from '@/components/canvas/selection-popover-icons';
 import { ParticipantAvatar } from '@/components/primitives/ParticipantAvatar';
 import { TimerWidget } from '@/components/chrome/TimerWidget';
-import { HighlighterBannerControls } from '@/components/chrome/HighlighterBannerControls';
 import { TopCenterRow, TopCenterStack } from '@/components/chrome/TopCenter';
 import { VoteBanner } from '@/components/chrome/VoteBanner';
 
@@ -24,10 +23,6 @@ type TopCenterChromeProps = Pick<
   | 'readOnly'
   | 'pendingDraw'
   | 'onCancelDraw'
-  | 'highlighterColor'
-  | 'highlighterWidth'
-  | 'onSetHighlighterColor'
-  | 'onSetHighlighterWidth'
   | 'onCancelFormatPainter'
   | 'onExitFormatTool'
   | 'canvasTool'
@@ -62,10 +57,6 @@ export function TopCenterChrome({
   readOnly,
   pendingDraw,
   onCancelDraw,
-  highlighterColor,
-  highlighterWidth,
-  onSetHighlighterColor,
-  onSetHighlighterWidth,
   onCancelFormatPainter,
   onExitFormatTool,
   canvasTool,
@@ -180,25 +171,17 @@ export function TopCenterChrome({
           />
         ) : null}
 
-        {pendingDraw ? (
+        {/* The banner belongs to a one-shot ARM: "you picked a square, now
+            drag one out", with a Cancel because the intent is transient. The
+            highlighter is a held tool now (spec/81), so it is excluded here —
+            a mode does not need telling you it is on every time you look up,
+            and its colour + strength moved off this bar into the Highlighter
+            Panel, where every other tool keeps its settings. */}
+        {pendingDraw && !isMarkerIntent(pendingDraw) ? (
           <ModeBanner
             icon={<DrawIcon />}
             message={drawBannerMessage(pendingDraw, isMobileViewportSync())}
             onAction={onCancelDraw}
-            // Pen-mode-only extras slot. The "recognise shapes" toggle that
-            // used to live here is gone (spec/115): recognition is now which
-            // pen you picked — Freehand or Shape Pen — rather than a hidden
-            // mode you had to check before every stroke.
-            extras={
-              pendingDraw.type === 'freehand' && pendingDraw.variant === 'highlighter' ? (
-                <HighlighterBannerControls
-                  color={highlighterColor}
-                  width={highlighterWidth}
-                  onSetColor={onSetHighlighterColor}
-                  onSetWidth={onSetHighlighterWidth}
-                />
-              ) : undefined
-            }
           />
         ) : null}
 

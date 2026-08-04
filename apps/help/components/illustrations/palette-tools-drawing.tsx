@@ -1,23 +1,42 @@
-// Drawing-gesture illustrations for the Tools tab (spec/81 + spec/84): the
-// Highlighter's wide translucent marker stroke and the Polygon tool's
-// click-to-place vertices. Split out from palette-tools.tsx (already at size)
-// per the no-god-files rule; composed only from the shared primitives.
+// Drawing-gesture illustrations (spec/81 + spec/84): the Highlighter's wide
+// translucent marker stroke and the Polygon tool's click-to-place vertices.
+// Split out from palette-tools.tsx (already at size) per the no-god-files
+// rule; composed only from the shared primitives.
 
 import { Scene, Shape, Cursor, Panel, Label } from './primitives';
 
-/** A wide translucent yellow highlighter stroke swiped across a shape, with
- *  the "Drag to highlight" mode banner. The content underneath stays legible. */
+// The marker cup, in the panel's own order (spec/81). Tailwind classes rather
+// than the editor's hexes: an illustration follows the help centre's house
+// palette, and these are the same five families.
+const SWATCHES = [
+  'fill-amber-300',
+  'fill-emerald-300',
+  'fill-pink-300',
+  'fill-sky-300',
+  'fill-orange-300',
+];
+
+/** A wide translucent yellow highlighter stroke swiped across a shape, beside
+ *  the Highlighter panel that sets the marker's colour and strength. The
+ *  content underneath stays legible. */
 export function HighlighterStroke() {
   return (
     <Scene w={420} h={220}>
-      {/* Mode banner */}
-      <Panel x={110} y={18} w={200} h={30}>
-        <circle cx={128} cy={33} r={6} className="fill-amber-400" />
-        <Label x={142} y={34} size={11} weight={600} tone="body">
-          Drag to highlight
+      {/* The Highlighter panel, present while the mode is held */}
+      <Panel x={244} y={14} w={158} h={72} title="HIGHLIGHTER">
+        <Label x={256} y={50} size={10} weight={600} tone="muted">
+          Colour
         </Label>
-        <Label x={272} y={34} size={11} weight={600} tone="muted">
-          Cancel
+        {SWATCHES.map((cls, i) => (
+          <circle key={cls} cx={306 + i * 19} cy={46} r={6.5} className={cls} />
+        ))}
+        {/* The picked swatch keeps a ring */}
+        <circle cx={306} cy={46} r={9} className="fill-none stroke-brand-500" strokeWidth={1.8} />
+        <Label x={256} y={72} size={10} weight={600} tone="muted">
+          Strength
+        </Label>
+        <Label x={390} y={72} size={10} weight={600} tone="body" anchor="end">
+          Medium
         </Label>
       </Panel>
       {/* Diagram content being reviewed */}

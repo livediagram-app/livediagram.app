@@ -48,6 +48,8 @@ export function useCanvasTool({ defaultPan = false }: { defaultPan?: boolean } =
     if (tool === 'avatar' && canvasTool !== 'avatar') track('Canvas', 'Used', 'AvatarMode');
     if (tool === 'format' && canvasTool !== 'format') track('Canvas', 'Used', 'FormatPainter');
     if (tool === 'isometric' && canvasTool !== 'isometric') track('Canvas', 'Used', 'Isometric');
+    if (tool === 'highlighter' && canvasTool !== 'highlighter')
+      track('Canvas', 'Used', 'Highlighter');
     setCanvasTool(tool);
   };
   // Leave Avatar mode for the tool that preceded it. Called when the user

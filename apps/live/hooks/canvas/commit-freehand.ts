@@ -39,6 +39,7 @@ export function makeCommitFreehand({
   commit,
   pendingDraw,
   setPendingDraw,
+  holdingMarker,
   setSelectedId,
   highlighterColor,
   highlighterWidth,
@@ -49,6 +50,10 @@ export function makeCommitFreehand({
   commit: (fn: (els: Element[]) => Element[]) => void;
   pendingDraw: PendingDraw | null;
   setPendingDraw: (p: PendingDraw | null) => void;
+  // True while the Highlighter TOOL is held (spec/81). A held marker re-arms
+  // after every stroke: a highlighter you have to re-pick between passages is
+  // a one-shot arm wearing a mode's clothes.
+  holdingMarker?: boolean;
   setSelectedId: (id: string | null) => void;
   highlighterColor: string;
   highlighterWidth: number;
@@ -69,15 +74,20 @@ export function makeCommitFreehand({
   //      commit an open stroke.
   //   3. createFreehand to mint the element + commit.
   return (rawPoints: { x: number; y: number }[], recogniseShapesMode: boolean) => {
+    // Disarm on a gesture too short to be a stroke — unless the marker is
+    // HELD, where a stray tap must not silently put the tool down.
+    const disarm = () => {
+      if (!holdingMarker) setPendingDraw(null);
+    };
     if (editsBlocked || rawPoints.length < 2) {
-      setPendingDraw(null);
+      disarm();
       return;
     }
     const zoom = zoomRef.current ?? 1;
     const tolerance = 1.2 / zoom;
     const simplified = simplifyPolyline(rawPoints, tolerance);
     if (simplified.length < 2) {
-      setPendingDraw(null);
+      disarm();
       return;
     }
     const theme = getTheme(activeTab.theme);
@@ -95,8 +105,12 @@ export function makeCommitFreehand({
         ...(highlighterWidth !== HIGHLIGHTER_DEFAULT_WIDTH ? { penWidth: highlighterWidth } : {}),
       };
       commit((els) => [...els, stroke]);
-      setSelectedId(stroke.id);
-      setPendingDraw(null);
+      // Held marker: keep the stroke unselected and the tool armed, so the
+      // next drag highlights instead of dragging the stroke just drawn.
+      if (!holdingMarker) {
+        setSelectedId(stroke.id);
+        setPendingDraw(null);
+      }
       track('Element', 'Added', 'Highlighter');
       return;
     }

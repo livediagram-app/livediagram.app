@@ -7,10 +7,11 @@ import { LaserPanel } from '@/components/panels/LaserPanel';
 import { SpotlightPanel } from '@/components/panels/SpotlightPanel';
 import { EraserPanel } from '@/components/panels/EraserPanel';
 import { FormatPanel } from '@/components/panels/FormatPanel';
+import { HighlighterPanel } from '@/components/panels/HighlighterPanel';
 import type { CanvasChromeProps } from './CanvasChrome';
 
-// The five tool-config panels (spec/101, spec/111, spec/112, spec/113,
-// spec/117), lifted out of useCanvasChromePanels. They are siblings in
+// The six tool-config panels (spec/101, spec/111, spec/112, spec/113,
+// spec/117, spec/81), lifted out of useCanvasChromePanels. They are siblings in
 // every respect that matters: each is mounted ONLY while its own canvas
 // tool is active, so unlike the standing panels (Explorer, Palette,
 // Activity, ...) they join and leave their corner stack as the tool is
@@ -39,6 +40,7 @@ export function useCanvasToolPanels({
   spotlightEl: ReactNode;
   eraserEl: ReactNode;
   formatEl: ReactNode;
+  highlighterEl: ReactNode;
 } {
   const {
     activeDockAnchor,
@@ -78,6 +80,13 @@ export function useCanvasToolPanels({
     formatPanelPosition,
     onMoveFormatPanel,
     onResetFormatPanel,
+    highlighterColor,
+    highlighterWidth,
+    onSetHighlighterColor,
+    onSetHighlighterWidth,
+    highlighterPanelPosition,
+    onMoveHighlighterPanel,
+    onResetHighlighterPanel,
   } = props;
 
   const avatarWiring = panelWiringFor('avatar', avatarPanelPosition ?? null, () =>
@@ -94,6 +103,9 @@ export function useCanvasToolPanels({
   );
   const formatWiring = panelWiringFor('format', formatPanelPosition ?? null, () =>
     onResetFormatPanel?.(),
+  );
+  const highlighterWiring = panelWiringFor('highlighter', highlighterPanelPosition ?? null, () =>
+    onResetHighlighterPanel?.(),
   );
 
   // Avatar Panel (spec/101): the character sheet, mounted only while Avatar
@@ -203,5 +215,28 @@ export function useCanvasToolPanels({
       />
     ) : null;
 
-  return { avatarEl, laserEl, spotlightEl, eraserEl, formatEl };
+  // Highlighter Panel (spec/81): the marker's colour + strength, mounted only
+  // while the Highlighter tool is held. The one tool panel that replaced an
+  // existing surface rather than adding one — its two settings used to be
+  // popovers on the top mode banner, which covered the toolbar.
+  const highlighterEl =
+    !chromeHidden && canvasTool === 'highlighter' ? (
+      <HighlighterPanel
+        color={highlighterColor}
+        width={highlighterWidth}
+        onSetColor={onSetHighlighterColor}
+        onSetWidth={onSetHighlighterWidth}
+        position={highlighterWiring.position}
+        stackBelowY={stackBelowY}
+        onMoveTo={(x, y) => onMoveHighlighterPanel?.(x, y)}
+        onReset={highlighterWiring.onReset}
+        dock={highlighterWiring.dock}
+        mobileOpenOverride={activeMobilePanel === 'highlighter'}
+        mobileDockAnchor={activeDockAnchor ?? undefined}
+        forceDockMode={!!minimalPanels}
+        onMobileClose={closeMobilePanel}
+      />
+    ) : null;
+
+  return { avatarEl, laserEl, spotlightEl, eraserEl, formatEl, highlighterEl };
 }

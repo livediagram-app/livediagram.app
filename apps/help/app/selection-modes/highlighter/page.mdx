@@ -1,0 +1,68 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { HighlighterStroke } from '@/components/illustrations/palette-tools-drawing';
+
+export const metadata = helpMetadata({
+  title: 'Highlighter',
+  description:
+    'Use the Highlighter mode in livediagram to mark up a board with a wide translucent marker, setting its colour and strength from the Highlighter panel.',
+  path: '/help/selection-modes/highlighter/',
+});
+
+<ArticleLayout
+  title="Highlighter"
+  description="Mark up the board with a wide translucent marker that leaves everything underneath legible."
+  categoryTitle="Selection Modes"
+  categorySlug="selection-modes"
+  subArticles={getSubArticles("highlighter")}
+>
+
+The Highlighter is a wide, semi-transparent marker for calling attention to things: circling a region during a review, underlining a label while you talk, marking the three boxes a workshop has to come back to. Strokes are translucent and blend like a real pen, so text and shapes underneath stay legible and overlapping passes darken.
+
+Choose it from the mode picker at the top of the floating palette, under **Edit** beside Select, Hand, Eraser and Format. It has no keyboard shortcut, but you can also reach it by typing "highlighter" into search.
+
+## Marking things up
+
+<Step n={1}>Pick **Highlighter** from the palette's mode picker.</Step>
+<Step n={2}>Drag across the canvas. A live preview in your chosen colour follows the pointer.</Step>
+<Step n={3}>Release to lay the stroke down, then drag again for the next one.</Step>
+
+**The marker stays in your hand** until you pick another mode. Nobody highlights just one thing, so there is nothing to re-pick between passes and a stray tap never puts the pen down. Each pass is **its own undo**, so one `⌘Z` takes back the last stroke rather than the whole session.
+
+The Highlighter is the one mode that works on an **empty canvas** — it makes marks rather than acting on things that are already there.
+
+## Setting up the marker
+
+While the mode is active a **Highlighter** panel sits under the palette, over a live preview of the stroke:
+
+- **Colour** — five marker colours: **Yellow** (the default), **Green**, **Pink**, **Blue**, and **Orange**.
+- **Strength** — how wide the stroke is: **Thin**, **Medium** (the default), or **Bold**. Bold covers a whole line of text.
+
+Both apply to the strokes you draw next, and both are per-session: the marker starts on yellow and medium again next time you open the editor, like a real pen cup.
+
+<Figure caption="A highlighter swipe over a shape: the wide translucent stroke leaves the label underneath legible, with the Highlighter panel setting colour and strength.">
+  <HighlighterStroke />
+</Figure>
+
+## Strokes are ordinary elements
+
+A committed highlight is a regular element, not a separate annotation layer. Once the pass is down you can switch back to **Select** and:
+
+- Move it, resize it (the marker keeps its width, so a scaled highlight still looks like the same pen), rotate it, and lock it.
+- Recolour it from its Colours controls, put it on a [layer](/help/canvas/layers/), or group it with other elements.
+- Take it off again with the [Eraser](/help/selection-modes/eraser/) — set the eraser to **Drawings only** to sweep away the mark-up while leaving the diagram itself untouched.
+
+Highlights are never converted into shapes: a stroke commits exactly as you drew it, and ending back where you started never closes or fills it. Turning a rough sketch into a real shape is the [Shape Pen's](/help/palette/tools/drawing/) job.
+
+## Handing the marker to a room
+
+To invite other people to mark up a board, drop a **Highlighter** [Selection Mode button](/help/palette/behaviour/) from the palette's **Behaviour** category. Whoever presses it is handed the marker, without ever having opened the mode picker — useful on a review board where you want everyone's comments as marks on the diagram. It switches the mode for that person only, and pressing it again gives them back the mode they were in.
+
+<Tip>
+  Highlighting is quick and disposable by design. If a mark needs to say something, a [sticky
+  note](/help/palette/tools/sticky-notes/) or a [comment](/help/collaboration/comments/) carries the
+  words; the marker just says "look here".
+</Tip>
+
+</ArticleLayout>

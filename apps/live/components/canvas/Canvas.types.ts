@@ -198,6 +198,12 @@ export type CanvasProps = {
   eraserPanelPosition?: { x: number; y: number } | null;
   onMoveEraserPanel?: (x: number, y: number) => void;
   onResetEraserPanel?: () => void;
+  // Highlighter Panel (spec/81): where it sits. Its two settings ride
+  // highlighterColor / highlighterWidth below, which already crossed this
+  // boundary for the mode banner the panel replaced.
+  highlighterPanelPosition?: { x: number; y: number } | null;
+  onMoveHighlighterPanel?: (x: number, y: number) => void;
+  onResetHighlighterPanel?: () => void;
   // Map of elementId -> remote participants currently focused on that
   // element. Drives a small badge ring on each element so participants
   // can see in real time what others are working on.
@@ -281,7 +287,6 @@ export type CanvasProps = {
   onBeginFreehand: () => void;
   // Highlighter variant of the pencil (spec/81) + the polygon
   // click-to-place tool (spec/84), armed from the palette tiles.
-  onBeginHighlighter: () => void;
   onBeginShapePen: () => void;
   onBeginPolygon: () => void;
   // Highlighter banner settings (spec/81): the colour + stroke width the

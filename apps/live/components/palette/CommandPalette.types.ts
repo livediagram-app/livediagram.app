@@ -14,7 +14,9 @@ export type CanvasTool =
   | 'avatar'
   | 'eraser'
   | 'format'
-  | 'isometric';
+  | 'isometric'
+  // The marker (spec/81): a persistent drawing mode, not a one-shot arm.
+  | 'highlighter';
 
 export type CommandPaletteProps = {
   position: { x: number; y: number } | null;
@@ -105,7 +107,6 @@ export type CommandPaletteProps = {
   onBeginFreehand: () => void;
   // Highlighter (spec/81): the pencil gesture with the marker
   // variant. Same one-shot arm semantics as onBeginFreehand.
-  onBeginHighlighter: () => void;
   onBeginShapePen: () => void;
   // Polygon tool (spec/84): arms the click-to-place-vertices mode.
   onBeginPolygon: () => void;

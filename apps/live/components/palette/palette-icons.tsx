@@ -447,6 +447,31 @@ export function IsometricIcon() {
 
 // Eraser tool (spec/09): a tilted block eraser sitting on the canvas
 // baseline. The diagonal band reads as the eraser's two-tone body.
+// The Highlighter tool (spec/81), which is a canvas mode rather than a one-shot
+// draw intent. A chisel-tip marker over the band it lays down: the band is what
+// separates it from the pencil at 13px, where the two nibs are the same three
+// strokes. Monochrome (unlike the old palette tile's fixed yellow) because this
+// glyph rides the tool dropdown and a Mode Button face, both of which tint it.
+export function HighlighterIcon() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M3.5 10.5 L9 5 L11.5 7.5 L6 13 Z" />
+      <path d="M9 5 L11 2.5 L14 5.5 L11.5 7.5" />
+      <path d="M2 14.5 H9" strokeWidth="2.4" opacity="0.45" />
+    </svg>
+  );
+}
+
 export function EraserIcon() {
   return (
     <svg

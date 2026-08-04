@@ -34,7 +34,6 @@ export type PaletteTileActions = {
   ) => void;
   addText: () => void;
   beginFreehand: () => void;
-  beginHighlighter: () => void;
   beginShapePen: () => void;
   beginPolygon: () => void;
   addArrow: () => void;
@@ -73,8 +72,6 @@ export function tileHandler(def: PaletteTileDef, actions: PaletteTileActions): (
       return actions.addText;
     case 'freehand':
       return actions.beginFreehand;
-    case 'highlighter':
-      return actions.beginHighlighter;
     case 'shape-pen':
       return actions.beginShapePen;
     case 'polygon':
@@ -131,8 +128,6 @@ export function tileActive(
     // payload — each tile lights only for its own arm (spec/115).
     case 'freehand':
       return pendingDraw.type === 'freehand' && pendingDraw.variant === undefined;
-    case 'highlighter':
-      return pendingDraw.type === 'freehand' && pendingDraw.variant === 'highlighter';
     case 'shape-pen':
       return pendingDraw.type === 'freehand' && pendingDraw.variant === 'shape-pen';
     // Icon tiles drop immediately too (matching the Icons / Technology

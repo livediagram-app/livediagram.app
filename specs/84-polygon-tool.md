@@ -16,7 +16,7 @@ Set by this tool at commit; absent on pencil/highlighter strokes. The headless r
 
 ## Gesture
 
-- New tile `tools:polygon` in the shared catalogue (Tools section, after the Pencil/Highlighter cluster). New `PendingDraw` intent `{ type: 'polygon' }`. No single-letter shortcut.
+- New tile `tools:polygon` in the shared catalogue (Tools section, after the two pens). New `PendingDraw` intent `{ type: 'polygon' }`. No single-letter shortcut.
 - **Click** places a vertex. After the first vertex, a preview polyline follows the cursor (rubber-band segment from the last vertex, plus the placed segments).
 - **Click near the first vertex** (≤ 12px screen-space, with a visual snap ring on the start vertex when in range) closes the loop: commits a `closed: true` freehand, which takes the theme fill like any closed freehand.
 - **Double-click / Enter** commits the open polyline (`closed: false`, stroke only) ending at the last placed vertex.

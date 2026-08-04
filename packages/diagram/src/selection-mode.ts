@@ -16,6 +16,10 @@ export const SELECTION_MODES = [
   'eraser',
   'format',
   'isometric',
+  // The marker (spec/81). A mode rather than a one-shot draw intent: you
+  // highlight a passage, not a single stroke, so it stays until you put it
+  // down like the Eraser does.
+  'highlighter',
 ] as const;
 
 export type SelectionMode = (typeof SELECTION_MODES)[number];

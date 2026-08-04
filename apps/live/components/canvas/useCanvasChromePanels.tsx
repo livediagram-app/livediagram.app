@@ -142,7 +142,6 @@ export function useCanvasChromePanels({
     onAddTechIcon,
     onAddText,
     onBeginFreehand,
-    onBeginHighlighter,
     onBeginShapePen,
     onBeginPolygon,
     onChangeSettings,
@@ -291,16 +290,18 @@ export function useCanvasChromePanels({
       ? undefined
       : paletteBottomY;
 
-  // The five tool-config panels (avatar / laser / spotlight / eraser /
-  // format), see useCanvasToolPanels. They share one contract: on screen
+  // The six tool-config panels (avatar / laser / spotlight / eraser / format /
+  // highlighter), see useCanvasToolPanels. They share one contract: on screen
   // only while their own tool is active.
-  const { avatarEl, laserEl, spotlightEl, eraserEl, formatEl } = useCanvasToolPanels({
-    props,
-    chromeHidden,
-    stackBelowY,
-    panelWiringFor,
-    closeMobilePanel,
-  });
+  const { avatarEl, laserEl, spotlightEl, eraserEl, formatEl, highlighterEl } = useCanvasToolPanels(
+    {
+      props,
+      chromeHidden,
+      stackBelowY,
+      panelWiringFor,
+      closeMobilePanel,
+    },
+  );
 
   const explorerEl = zenMode ? null : (
     <Explorer
@@ -496,7 +497,6 @@ export function useCanvasChromePanels({
         onAddImage={onAddImage}
         onAddArrow={onAddArrow}
         onBeginFreehand={onBeginFreehand}
-        onBeginHighlighter={onBeginHighlighter}
         onBeginShapePen={onBeginShapePen}
         onBeginPolygon={onBeginPolygon}
         pendingDraw={pendingDraw}
@@ -622,6 +622,7 @@ export function useCanvasChromePanels({
     laser: laserEl,
     spotlight: spotlightEl,
     eraser: eraserEl,
+    highlighter: highlighterEl,
     format: formatEl,
   };
   return { panelEls };

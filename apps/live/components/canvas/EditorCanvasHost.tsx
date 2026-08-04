@@ -115,7 +115,6 @@ export function EditorCanvasHost() {
     beginErase,
     beginFormatPainter,
     beginFreehand,
-    beginHighlighter,
     beginShapePen,
     beginPolygon,
     beginGroup,
@@ -523,7 +522,6 @@ export function EditorCanvasHost() {
       onAddImage={addImage}
       onAddArrow={addArrow}
       onBeginFreehand={beginFreehand}
-      onBeginHighlighter={beginHighlighter}
       onBeginShapePen={beginShapePen}
       onBeginPolygon={beginPolygon}
       highlighterColor={highlighterColor}

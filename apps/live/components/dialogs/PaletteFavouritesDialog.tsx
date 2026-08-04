@@ -1,16 +1,16 @@
 'use client';
 
 // Edit-favourites modal (spec/78). Opened from the Favourites tab's footer
-// Edit button: a search box + category pills (Shapes first — there is
-// deliberately no "All") over the fixed creation tiles of the picked
-// category, laid out as a compact 5-per-row tile grid. Each tile carries a
+// Edit button: a category picker + a search box over the fixed creation tiles
+// of the picked category (Shapes first — there is deliberately no "All"), laid
+// out as a compact 5-per-row tile grid. Each tile carries a
 // corner badge — red minus on current favourites, green plus on the rest —
 // and clicking the tile toggles membership. Edits apply (and persist)
 // immediately; Done just closes. On desktop the backdrop stays light so
 // the palette's Favourites grid visibly updates behind the modal.
 
 import { useState } from 'react';
-import { Button } from '@livediagram/ui';
+import { Button, Select } from '@livediagram/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { DialogCloseButton } from '@/components/dialogs/DialogCloseButton';
 import { matches } from '@/lib/search';
@@ -41,7 +41,8 @@ type PaletteFavouritesDialogProps = {
   onClose: () => void;
 };
 
-// The category pills, DERIVED from the palette's own category catalogue
+// The categories to pick from, DERIVED from the palette's own category
+// catalogue
 // rather than restated (spec/78).
 //
 // This used to be its own hand-written list and it drifted the moment the
@@ -53,16 +54,14 @@ type PaletteFavouritesDialogProps = {
 // Two adjustments to the palette's list:
 //   - Favourites is dropped. It is what this dialog EDITS, so offering it as
 //     a source to pick from is circular.
-//   - Categories with no favouritable tiles are dropped, so a pill can never
+//   - Categories with no favouritable tiles are dropped, so a choice can never
 //     lead to an empty grid. Icons / Stickers / Technology are kept
 //     regardless: their catalogues are open-ended and load async, so they are
 //     empty at this moment rather than empty as such.
 const OPEN_ENDED: string[] = ['icons', 'stickers', 'technology'];
-const CATEGORY_PILLS: { id: string; label: string; icon: React.ReactNode }[] =
-  PALETTE_CATEGORIES.filter(
-    (c) =>
-      c.id !== 'favourites' && (OPEN_ENDED.includes(c.id) || tilesForCategory(c.id).length > 0),
-  ).map((c) => ({ id: c.id, label: c.label, icon: c.icon }));
+const CATEGORY_CHOICES: { id: string; label: string }[] = PALETTE_CATEGORIES.filter(
+  (c) => c.id !== 'favourites' && (OPEN_ENDED.includes(c.id) || tilesForCategory(c.id).length > 0),
+).map((c) => ({ id: c.id, label: c.label }));
 
 // One toggleable tile: glyph + caption with the add / remove corner badge.
 function ToggleTile({
@@ -171,35 +170,34 @@ export function PaletteFavouritesDialog({
       </div>
 
       <div className="flex flex-col gap-2 border-b border-slate-100 px-5 py-2.5 dark:border-slate-800">
-        <div className="flex flex-wrap gap-1" role="group" aria-label="Filter by category">
-          {CATEGORY_PILLS.map((s) => {
-            const active = category === s.id;
-            return (
-              <button
-                key={s.id}
-                type="button"
-                aria-pressed={active}
-                onClick={() => setCategory(s.id)}
-                className={`flex items-center gap-1.5 rounded-md border px-2 py-1 text-[11px] font-medium transition [&>svg]:h-3.5 [&>svg]:w-3.5 ${
-                  active
-                    ? 'border-brand-300 bg-brand-50 text-brand-700 dark:border-brand-500/50 dark:bg-brand-500/15 dark:text-brand-200'
-                    : 'border-slate-200 text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800'
-                }`}
-              >
-                {s.icon}
-                {s.label}
-              </button>
-            );
-          })}
+        {/* Category picker, then search. This was a wrapping row of one pill
+            per category, which had grown to thirteen and took two lines above
+            the search box — a filter that cost more vertical room than the
+            grid it filtered, and whose second line moved as categories were
+            added. A picker states the current category in one line and keeps
+            it beside the query it narrows. */}
+        <div className="flex items-center gap-2">
+          <Select
+            aria-label="Filter by category"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className="w-40 shrink-0"
+          >
+            {CATEGORY_CHOICES.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.label}
+              </option>
+            ))}
+          </Select>
+          <input
+            autoFocus
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search controls…"
+            aria-label="Search controls"
+            className="min-w-0 flex-1 rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-sm text-slate-800 outline-none placeholder:text-slate-400 focus:border-brand-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
+          />
         </div>
-        <input
-          autoFocus
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search controls…"
-          aria-label="Search controls"
-          className="w-full rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-sm text-slate-800 outline-none placeholder:text-slate-400 focus:border-brand-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
-        />
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3">

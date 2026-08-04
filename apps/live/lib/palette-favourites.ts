@@ -11,8 +11,12 @@ const PALETTE_FAVOURITES_KEY = 'livediagram:v2:palette-favourites';
 // Twelve, which is four rows of three — the grid's natural shape, so the
 // starting state has no ragged last row. The order is deliberate rather than
 // alphabetical: the three shapes anyone reaches for first, then the things you
-// put ON a diagram (text, arrow, frame, note, image), then the two drawing
-// tools, then the two session elements a facilitated board wants to hand.
+// put ON a diagram (text, arrow, frame, note, image), then the Shape Pen and a
+// table, then the two session elements a facilitated board wants to hand.
+//
+// The Highlighter used to hold the tenth slot. It moved to the tool dropdown
+// when it became a held mode (spec/81), so there is no tile to favourite any
+// more, and Table took the slot rather than leaving eleven and a ragged row.
 //
 // Every id here must exist in PALETTE_TILES; a stale one renders nothing and
 // silently costs the user a slot.
@@ -26,7 +30,7 @@ export const DEFAULT_PALETTE_FAVOURITES: readonly string[] = [
   'tools:sticky',
   'tools:image',
   'tools:shape-pen',
-  'tools:highlighter',
+  'tools:table',
   'tools:session-timer',
   'collab:comment-pin',
 ];

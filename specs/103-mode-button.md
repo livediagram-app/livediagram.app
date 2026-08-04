@@ -34,9 +34,9 @@ It also gives a presenter somewhere to put a control bar — a row of buttons th
 
 In the palette it is **Selection Mode**, in the Tools tab's **Behaviour** group — the group for elements that DO something when someone interacts with them, rather than elements that say something. (The tile's internal id is unchanged: ids are persisted in saved favourites, so renaming one would silently drop it for anyone who had favourited it.)
 
-Right-click the button → **Tools › Button**: a "Switches the presser to" tile grid of all eight modes (Select, Hand, Laser, Spotlight, Avatar, Eraser, Format, Isometric), the current one marked active. Tiles rather than a list so the icons match the palette's own mode picker.
+Right-click the button → **Tools › Button**: a "Switches the presser to" tile grid of all nine modes (Select, Hand, Laser, Spotlight, Avatar, Eraser, Format, Highlighter, Isometric), the current one marked active. Tiles rather than a list so the icons match the palette's own mode picker.
 
-The full set is deliberate. A button that hands someone the Eraser is an odd thing to build, but the author picks from a menu that names each one, and forbidding it would be us second-guessing a diagram we can't see.
+The full set is deliberate. A button that hands someone the Eraser is an odd thing to build, but the author picks from a menu that names each one, and forbidding it would be us second-guessing a diagram we can't see. **Highlighter** ([spec/81](81-highlighter.md)) joined the set when the marker became a held mode rather than a draw tile: "here, mark up the board" is one of the most natural things to hand a room, so the button is one of the better reasons the element exists.
 
 ## Model + validation
 

@@ -168,8 +168,8 @@ export const categories: Category[] = [
     slug: 'selection-modes',
     title: 'Selection Modes',
     description:
-      'The pointer modes at the top of the palette: Select, Hand, Eraser, Format Painter, Laser, Spotlight, Avatar, and Isometric.',
-    articleCount: 9,
+      'The pointer modes at the top of the palette: Select, Hand, Eraser, Format Painter, Highlighter, Laser, Spotlight, Avatar, and Isometric.',
+    articleCount: 10,
     kind: 'feature',
   },
   {
@@ -743,6 +743,15 @@ export const articles: Article[] = [
     title: 'Eraser',
     description: 'Click or drag across elements to delete them quickly.',
     keywords: 'delete remove rub out erase clear wipe',
+    category: 'Selection Modes',
+    categorySlug: 'selection-modes',
+  },
+  {
+    slug: 'highlighter',
+    title: 'Highlighter',
+    description: 'Mark up the board with a wide translucent marker in five colours.',
+    keywords:
+      'highlighter highlight marker mark up markup annotate emphasise emphasize pen draw attention translucent transparent yellow green pink blue orange colour color strength thin medium bold review workshop',
     category: 'Selection Modes',
     categorySlug: 'selection-modes',
   },
@@ -1543,10 +1552,9 @@ export const articles: Article[] = [
   {
     slug: 'drawing',
     title: 'Drawing and Sketch',
-    description:
-      'The Freehand and Shape Pen, Highlighter, and Polygon tools, plus shape recognition.',
+    description: 'The Freehand and Shape Pen and the Polygon tool, plus shape recognition.',
     keywords:
-      'pencil freehand sketch draw doodle pen scribble ink highlighter marker highlight translucent polygon polyline vertex points outline zone region',
+      'pencil freehand sketch draw doodle pen scribble ink polygon polyline vertex points outline zone region shape recognition',
     category: 'Palette',
     categorySlug: 'palette/tools',
     parentSlug: 'tools',

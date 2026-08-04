@@ -133,6 +133,14 @@ const CANVAS_TOOLS: {
     mutates: true,
   },
   {
+    // The marker (spec/81). The one tool here that MAKES content, so unlike
+    // its neighbours it stays offered on an empty canvas.
+    id: 'highlighter',
+    name: 'Highlighter',
+    keywords: 'highlighter highlight marker pen mark up annotate emphasise emphasize yellow',
+    mutates: true,
+  },
+  {
     id: 'laser',
     name: 'Laser pointer',
     keywords: 'laser pointer present point highlight temporary trail k',

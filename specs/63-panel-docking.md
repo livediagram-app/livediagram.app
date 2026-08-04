@@ -93,13 +93,14 @@ Shape:
 ```ts
 type PanelCorner = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 // 'collaborate' is the merged Comments + Actions panel; 'layers' is
-// spec/74. Seven panels are NOT always available — they exist only while
+// spec/74. Eight panels are NOT always available — they exist only while
 // their session tool / mode is running, so they join and leave their
 // corner stack rather than sitting in it: 'poll' (spec/88), 'vote'
 // (spec/39), 'avatar' (spec/101, the Avatar-mode character sheet),
 // 'laser' (spec/111, the laser pen's settings), 'spotlight'
-// (spec/112, the light's look), 'eraser' (spec/113, the brush), and
-// 'format' (spec/117, what the painter copies).
+// (spec/112, the light's look), 'eraser' (spec/113, the brush),
+// 'format' (spec/117, what the painter copies), and 'highlighter'
+// (spec/81, the marker's colour + strength).
 type PanelId =
   | 'palette'
   | 'explorer'
@@ -114,7 +115,8 @@ type PanelId =
   | 'laser'
   | 'spotlight'
   | 'eraser'
-  | 'format';
+  | 'format'
+  | 'highlighter';
 
 type PanelLayout = {
   // Ordered stack per corner. Order is top→bottom (top corners) /

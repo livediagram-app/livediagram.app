@@ -349,9 +349,9 @@ modal.
 - **Per-tool surfaces**: none today. The pencil's ModeBanner used to
   carry a `recogniseShapes` toggle; spec/115 replaced it with two
   palette tiles, so no preference is set from a tool's own chrome any
-  more. The highlighter's banner popovers (spec/81) are the closest
-  thing, and those set element style for the next stroke rather than a
-  persisted preference.
+  more. The Highlighter Panel's Colour + Strength (spec/81) are the
+  closest thing, and those are session-local editor state setting the
+  next stroke's style rather than a persisted preference.
 
 ## Read / write helpers
 

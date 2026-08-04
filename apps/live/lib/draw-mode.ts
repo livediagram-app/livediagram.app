@@ -108,6 +108,14 @@ const COMPONENT_LABELS: Record<ComponentKind, string> = {
 // phone-width viewport, so mobile gets the bare "Drag to draw"
 // (the gesture still auto-closes, the user just doesn't see the
 // hint until they try it).
+// Is this the held Highlighter's own intent (spec/81)? The marker rides the
+// freehand gesture, so it is a `pendingDraw` like any other, but it is a TOOL
+// rather than a one-shot arm — the surfaces that speak to an arm (the mode
+// banner and its Cancel) ask this so they can leave it alone.
+export function isMarkerIntent(intent: PendingDraw | null | undefined): boolean {
+  return intent?.type === 'freehand' && intent.variant === 'highlighter';
+}
+
 export function drawBannerMessage(intent: PendingDraw, isMobile: boolean): string {
   switch (intent.type) {
     case 'shape':

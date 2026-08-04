@@ -2928,7 +2928,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "avatar",
       "eraser",
       "format",
-      "isometric"
+      "isometric",
+      "highlighter"
     ],
     "type": "string"
   },

@@ -267,7 +267,7 @@ export function PaletteDropdown({
             className={`fixed z-[var(--z-overlay)] w-max border border-slate-200 bg-white py-1 shadow-lg dark:border-slate-700 dark:bg-slate-900 ${
               // The grid needs its own columns + a floor width; the list keeps
               // hugging its content as before.
-              grid ? 'grid min-w-[15rem] grid-cols-3 gap-1.5 px-2 pb-1.5 pt-2' : ''
+              grid ? 'grid min-w-[13rem] grid-cols-3 gap-1 px-1.5 pb-1.5 pt-1.5' : ''
             } ${
               // The menu grows out of the CORNER its trigger sits at, so
               // opening the canvas-tool picker (top-left of the palette)
@@ -365,8 +365,8 @@ export function PaletteDropdown({
                           // one-column card stretched sideways, so it lays its
                           // glyph BESIDE the label rather than above it.
                           opt.fullWidth
-                            ? 'col-span-full justify-center gap-2 px-2 py-2 text-left'
-                            : 'flex-col justify-start gap-2 px-2 py-3 text-center'
+                            ? 'col-span-full justify-center gap-2 px-2 py-1.5 text-left'
+                            : 'flex-col justify-start gap-1.5 px-1.5 py-2 text-center'
                         } ${
                           // The band tint is DROPPED on the selected tile.
                           // Both set a background, and which one wins is

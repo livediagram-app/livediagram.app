@@ -22,6 +22,7 @@ import {
   AvatarModeIcon,
   EraserIcon,
   FormatPainterIcon,
+  HighlighterIcon,
   IsometricIcon,
   LaserIcon,
   PanIcon,
@@ -40,6 +41,7 @@ const MODE_ICON: Record<SelectionMode, React.ReactNode> = {
   eraser: <EraserIcon />,
   format: <FormatPainterIcon />,
   isometric: <IsometricIcon />,
+  highlighter: <HighlighterIcon />,
 };
 
 export const MODE_LABEL: Record<SelectionMode, string> = {
@@ -51,6 +53,7 @@ export const MODE_LABEL: Record<SelectionMode, string> = {
   eraser: 'Eraser',
   format: 'Format',
   isometric: 'Isometric',
+  highlighter: 'Highlighter',
 };
 
 // The glyphs are 13px for the palette; on a button face they need to read from

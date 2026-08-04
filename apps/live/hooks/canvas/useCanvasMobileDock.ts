@@ -34,7 +34,9 @@ export type MobilePanel =
   // 'eraser' (spec/113): the brush's settings, while the Eraser is active.
   | 'eraser'
   // 'format' (spec/117): the painter's settings, while the Format tool is on.
-  | 'format';
+  | 'format'
+  // 'highlighter' (spec/81): the marker's colour + strength, while it is held.
+  | 'highlighter';
 
 export type DockAnchor = { left: number; top: number; arrowOffset: number };
 

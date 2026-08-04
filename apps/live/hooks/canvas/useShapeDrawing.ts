@@ -19,7 +19,7 @@
 // beginFreehand, commitFreehand) is consumed by the Canvas + keyboard
 // hook. Verbatim relocation — no behaviour change.
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createFreehand, isBoxed, type Element, type Tab } from '@livediagram/diagram';
 import { getTheme } from '@/lib/themes';
 import { track, titleCaseType } from '@/lib/telemetry';
@@ -29,6 +29,10 @@ import { buildDrawnArrow, buildDrawnBoxed, buildDrawnComponent } from '@/lib/dra
 import type { CanvasTool } from '@/components/palette/CommandPalette';
 import { componentTelemetryType } from '@/lib/element-telemetry';
 import { makeCommitFreehand } from '@/hooks/canvas/commit-freehand';
+
+// The armed marker gesture. One frozen object so the effect below can compare
+// and re-set it without minting a new intent (and a new render) per pass.
+const MARKER_INTENT = { type: 'freehand', variant: 'highlighter' } as const satisfies PendingDraw;
 
 // Marker yellow (spec/81): the highlighter's default colour regardless
 // of theme; the banner's colour popover (and the Colours category on a
@@ -242,11 +246,11 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
   // intent so the canvas's pen-gesture effect picks up the next
   // drag. Clears selection like beginDrawIfEnabled does so the
   // selection popover doesn't hover over the about-to-be-drawn
-  // stroke. The highlighter (spec/81) is the same gesture with the
-  // marker variant riding the intent. Both stay zero-arg (rather than
-  // one variant parameter) because they're passed straight into
-  // onClick slots, where a parameter would swallow the event object.
-  const armFreehand = (variant?: 'highlighter' | 'shape-pen') => {
+  // stroke. Both pens stay zero-arg (rather than taking the variant as a
+  // parameter) because they're passed straight into onClick slots, where a
+  // parameter would swallow the event object. The highlighter used to arm
+  // through here too; it is a held tool now (see holdingMarker below).
+  const armFreehand = (variant?: 'shape-pen') => {
     if (editsBlocked) return;
     setSelectedId(null);
     setMultiSelectedIds(new Set());
@@ -255,7 +259,30 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     setPendingDraw(variant ? { type: 'freehand', variant } : { type: 'freehand' });
   };
   const beginFreehand = () => armFreehand();
-  const beginHighlighter = () => armFreehand('highlighter');
+
+  // The highlighter is a MODE now (spec/81), not a one-shot arm: it lives in
+  // the tool dropdown beside the Eraser, so picking it holds the marker until
+  // you put it down. The gesture underneath is unchanged, so the mode is
+  // expressed by keeping the freehand-marker intent armed for as long as the
+  // tool is selected — entering re-arms it here, each committed stroke re-arms
+  // it in commitFreehand, and leaving drops it.
+  const holdingMarker = canvasTool === 'highlighter';
+  useEffect(() => {
+    if (holdingMarker) {
+      setSelectedId(null);
+      setMultiSelectedIds(new Set());
+      setEditingId(null);
+      setPendingDraw(MARKER_INTENT);
+      return;
+    }
+    // Only the marker's own intent: leaving the tool must not cancel a draw
+    // the user armed from the palette while holding it.
+    setPendingDraw((p) => (p?.type === 'freehand' && p.variant === 'highlighter' ? null : p));
+    // The setters are stable state setters; re-running on them would fight the
+    // commit path's re-arm.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [holdingMarker]);
+
   // The shape pen (spec/115): the same gesture, but the stroke is run through
   // shape recognition on release. Which pen you picked IS the setting.
   const beginShapePen = () => armFreehand('shape-pen');
@@ -275,6 +302,7 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
   // Canvas-driven commit for the pen gesture — see makeCommitFreehand.
   const commitFreehand = makeCommitFreehand({
     editsBlocked,
+    holdingMarker,
     activeTab,
     commit,
     pendingDraw,
@@ -313,7 +341,6 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     commitDraw,
     cancelDrawShape,
     beginFreehand,
-    beginHighlighter,
     beginShapePen,
     beginPolygon,
     commitFreehand,

@@ -36,7 +36,10 @@ export type PanelId =
   // Eraser Panel (spec/113): the brush's settings, on the same terms.
   | 'eraser'
   // Format Panel (spec/117): what the painter copies, on the same terms.
-  | 'format';
+  | 'format'
+  // Highlighter Panel (spec/81): the marker's colour + strength, on the same
+  // terms — the settings that used to hang off the top mode banner.
+  | 'highlighter';
 
 export const PANEL_CORNERS: readonly PanelCorner[] = [
   'top-left',
@@ -60,6 +63,7 @@ export const PANEL_IDS: readonly PanelId[] = [
   'spotlight',
   'eraser',
   'format',
+  'highlighter',
 ];
 
 // Internal: a free panel's pixel position. Not exported — callers pass
@@ -104,6 +108,7 @@ export const DEFAULT_PANEL_CORNER: Record<PanelId, PanelCorner> = {
   spotlight: 'top-right',
   eraser: 'top-right',
   format: 'top-right',
+  highlighter: 'top-right',
 };
 
 export const STORAGE_KEY = 'livediagram:panel-layout:v1';

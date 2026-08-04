@@ -275,6 +275,7 @@ describe('canvas tool commands', () => {
       'tool:pan',
       'tool:eraser',
       'tool:format',
+      'tool:highlighter',
       'tool:laser',
       'tool:spotlight',
       'tool:avatar',
@@ -296,9 +297,10 @@ describe('canvas tool commands', () => {
 
   it('drops the content-dependent tools on an empty canvas', () => {
     const got = ids({ ...base, canvasEmpty: true }).filter((id) => id.startsWith('tool:'));
-    // Only Hand survives: Select is current, and everything else needs
-    // something drawn — the same gating the tool dropdown applies.
-    expect(got).toEqual(['tool:pan']);
+    // Hand and the Highlighter survive: Select is current, and everything
+    // else acts on existing content — the same gating the tool dropdown
+    // applies. The marker is the exception because it MAKES content.
+    expect(got).toEqual(['tool:pan', 'tool:highlighter']);
   });
 
   it('withholds Spotlight on mobile', () => {

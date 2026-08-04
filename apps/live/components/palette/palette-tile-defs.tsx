@@ -17,6 +17,7 @@ import {
   EraserIcon,
   EstimateIcon,
   FormatPainterIcon,
+  HighlighterIcon,
   IsometricIcon,
   LaserIcon,
   PanIcon,
@@ -89,7 +90,6 @@ type PaletteTileAction =
   // Marker variant of the pencil (spec/81) and the click-to-place
   // vertex tool (spec/84) — separate action types so each tile maps
   // to its own arm-handler and pressed state.
-  | { type: 'highlighter' }
   | { type: 'shape-pen' }
   | { type: 'video'; provider?: EmbedProvider }
   | { type: 'sticker'; stickerId: string }
@@ -612,34 +612,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
-    id: 'tools:highlighter',
-    blurb: 'A wide translucent marker stroke',
-    section: 'tools',
-    toolGroup: 'draw',
-    label: 'Highlighter',
-    description: 'Wide translucent marker. Drag to call attention to a region.',
-    action: { type: 'highlighter' },
-    noTint: true,
-    icon: (
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 18 18"
-        fill="none"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden
-      >
-        {/* Chisel-tip marker over a translucent yellow band, so the tile
-            reads "highlighter" beside the pencil. Fixed colours (noTint):
-            the yellow band is the tool's identity, like the sticky's amber. */}
-        <path d="M4 12 L10 6 L13 9 L7 15 Z" stroke="currentColor" strokeWidth="1.5" fill="none" />
-        <path d="M10 6 L12 3 L15 6 L13 9" stroke="currentColor" strokeWidth="1.5" fill="none" />
-        <path d="M2 16.5 H12" stroke="rgb(253 224 71)" strokeWidth="3" opacity="0.8" />
-      </svg>
-    ),
-  },
-  {
     id: 'tools:polygon',
     blurb: 'Straight edges, point by point',
     section: 'tools',
@@ -887,6 +859,23 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     // (buildCanvasToolOptions): eight identical pointers told the reader
     // nothing about which mode a row would hand out.
     icon: <FormatPainterIcon />,
+  },
+  {
+    id: 'tools:mode-highlighter',
+    tileGroup: 'mode',
+    blurb: 'Hand out the marker',
+    caption: 'Highlighter',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Highlighter mode button',
+    description:
+      'A button that switches whoever presses it into Highlighter mode. It changes the mode for that person only, and pressing it again hands them back the mode they were in.',
+    filled: true,
+    action: { type: 'shape', kind: 'mode-button', mode: 'highlighter' },
+    // The mode's OWN glyph, the one the canvas-tool popover shows for it
+    // (buildCanvasToolOptions): eight identical pointers told the reader
+    // nothing about which mode a row would hand out.
+    icon: <HighlighterIcon />,
   },
   {
     id: 'tools:mode-isometric',

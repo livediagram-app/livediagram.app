@@ -2,25 +2,27 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import { PencilStroke, ShapeRecognition } from '@/components/illustrations/palette-tools';
-import { HighlighterStroke, PolygonDraw } from '@/components/illustrations/palette-tools-drawing';
+import { PolygonDraw } from '@/components/illustrations/palette-tools-drawing';
 
 export const metadata = helpMetadata({
   title: 'Drawing and Sketch',
   description:
-    'Sketch with the Freehand pen, snap rough sketches to real shapes with the Shape Pen, call attention to things with the Highlighter, and place clean point-by-point outlines with the Polygon tool.',
+    'Sketch with the Freehand pen, snap rough sketches to real shapes with the Shape Pen, and place clean point-by-point outlines with the Polygon tool.',
   path: '/help/palette/tools/drawing/',
 });
 
 <ArticleLayout
   title="Drawing and Sketch"
-  description="Sketch with the Freehand pen, snap rough sketches into real shapes with the Shape Pen, highlight with the marker, and place point-by-point polygons."
+  description="Sketch with the Freehand pen, snap rough sketches into real shapes with the Shape Pen, and place point-by-point polygons."
   categoryTitle="Palette"
   categorySlug="palette"
   parentArticle={{ title: "Tools", slug: "tools" }}
   subArticles={getSubArticles("drawing")}
 >
 
-Sometimes the fastest way to capture an idea is to draw it. The palette's **Draw** category holds four drawing tools: **Freehand** for smooth strokes kept exactly as drawn, the **Shape Pen** for rough sketches that snap to real shapes, the **Highlighter** for calling attention to things with a wide translucent marker, and the **Polygon** tool for clean point-by-point outlines. Everything they draw is a regular element you can move, resize, and style.
+Sometimes the fastest way to capture an idea is to draw it. The palette's **Draw** category holds the drawing tools: **Freehand** for smooth strokes kept exactly as drawn, the **Shape Pen** for rough sketches that snap to real shapes, and the **Polygon** tool for clean point-by-point outlines (plus **Arrow**, covered in its own guide). Everything they draw is a regular element you can move, resize, and style.
+
+Looking for the marker? The **Highlighter** is a canvas mode now, not a draw tool: see [Highlighter](/help/selection-modes/highlighter/).
 
 ## Freehand and the Shape Pen
 
@@ -47,22 +49,6 @@ A committed sketch is a regular boxed element. Its stroke colour follows the tab
 - Move it, resize it (the path scales proportionally), and lock or group it.
 - Recolour its stroke and fill from the element's Colours controls.
 - Apply the format painter, themes, and comments, exactly as with any shape.
-
-## The Highlighter
-
-The Highlighter sits directly beside the two pens in the Draw category and works the same way: pick it, then drag. Instead of a pen line it lays down a **wide, semi-transparent marker stroke**, so text and shapes underneath stay legible and overlapping strokes darken like a real marker. It is made for reviews and workshops, circling a region or underlining a label, rather than for sketching shapes.
-
-<Figure caption="A highlighter swipe over a shape: the wide translucent stroke leaves the label underneath legible.">
-  <HighlighterStroke />
-</Figure>
-
-A few deliberate differences from the two pens:
-
-- **Always yellow on creation**, whatever the theme, so highlights read as annotations rather than diagram content. You can recolour a committed stroke afterwards from its Colours controls, like any element.
-- **No shape recognition.** Highlighter strokes always commit exactly as drawn. Recognition is the Shape Pen's job.
-- **No close-to-fill.** Ending a stroke back at its start never closes or fills it; a highlight is always an open stroke.
-
-The marker keeps its width when you resize the stroke, so a scaled-up highlight still looks like the same pen.
 
 ## The Polygon tool
 
