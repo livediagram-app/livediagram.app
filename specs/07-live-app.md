@@ -146,11 +146,9 @@ The root layout (`apps/live/app/layout.tsx`) exports a `viewport` config that pi
 
 ## Out of scope (next iterations)
 
-- **Operational transform / CRDT edits** — realtime is LWW broadcast; concurrent edits to the same element clobber.
-- **Comments inbox / mentions** — comment threads exist per-element but there's no aggregated view yet.
-- **Transactional email** (Resend) for share notifications and account flows. The api worker has no outbound email path today.
-- **Multi-user team permissions beyond share links**: today a diagram is either private or shared via a per-link role. No teams, no per-user grants.
+- **Comments inbox / mentions** — comment threads exist per-element but there's no aggregated view yet. A cross-diagram inbox is sketched for assigned actions in [spec/68](68-assigned-actions.md) and not built either.
+- **Per-user grants** — a diagram is private, shared via a per-link role, or in a team's shared library. Teams shipped ([spec/32](32-teams.md) + [spec/35](35-team-shared-diagrams.md)), but every member can edit every team diagram; there are no per-diagram per-user grants.
 
-(The previous "Auth UI" and "Export" bullets are now shipped: Clerk auth landed per [spec/04](04-auth-and-guest-access.md), and the active tab can be exported as JSON / Markdown / PNG / SVG / PDF via the `ExportTabDialog`.)
+(Four earlier bullets here have shipped. Auth UI landed per [spec/04](04-auth-and-guest-access.md); the active tab exports as JSON / Markdown / PNG / SVG / PDF via `ExportTabDialog`; transactional + lifecycle email ships through the api worker per [spec/64](64-transactional-email.md); and realtime is no longer whole-element LWW — [spec/75](75-realtime-conflict-resolution.md) merges concurrent edits per element. A field-level CRDT for two people editing the SAME element was scoped and deliberately dropped, because the selection lock already prevents that case.)
 
 The image exports (PNG / SVG / PDF) honour the tab's theme: per-element colours, or the same `defaultFillColor` / `defaultStrokeColor` / `defaultTextColor` the canvas uses for elements that defer to the theme, plus the tab's background colour. Two iOS-style toggles in the dialog tune the image output: **Isometric view** (off by default; tilts the scene into the isometric projection, see [spec/45](45-isometric-view.md)) and **Background pattern** (on by default; paints the tab's backdrop pattern — grid / dots / … — via `backgroundPatternTile` in `canvas-backgrounds.ts`, shared by the SVG and the PNG/PDF rasteriser).
