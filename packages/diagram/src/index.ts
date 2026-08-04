@@ -437,6 +437,7 @@ export * from './arrow-behind';
 // Tab + diagram name length cap (spec/91).
 export * from './names';
 export * from './geometry-snapping';
+export * from './arrow-snapping';
 export * from './geometry-guides';
 
 export * from './groups';
