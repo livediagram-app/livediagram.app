@@ -21,7 +21,11 @@ import {
   tilesForCategory,
   type PaletteTileDef,
 } from '@/components/palette/palette-tile-defs';
-import { searchIconTiles, searchTechTiles } from '@/components/palette/palette-dynamic-tiles';
+import {
+  searchIconTiles,
+  searchStickerTiles,
+  searchTechTiles,
+} from '@/components/palette/palette-dynamic-tiles';
 
 type PaletteFavouritesDialogProps = {
   favourites: string[];
@@ -119,15 +123,21 @@ export function PaletteFavouritesDialog({
   const tiles =
     category === 'icons'
       ? searchIconTiles(query)
-      : category === 'technology'
-        ? searchTechTiles(query)
-        : tilesForCategory(category).filter(
-            (t) =>
-              (!t.needsImage || hasImage) &&
-              (matches(query, tileDisplayName(t)) || matches(query, t.label)),
-          );
+      : // Stickers were listed as an open-ended catalogue (so the pill showed)
+        // but never resolved here, so the tab fell through to the empty
+        // tilesForCategory('stickers') and read "No controls match".
+        category === 'stickers'
+        ? searchStickerTiles(query)
+        : category === 'technology'
+          ? searchTechTiles(query)
+          : tilesForCategory(category).filter(
+              (t) =>
+                (!t.needsImage || hasImage) &&
+                (matches(query, tileDisplayName(t)) || matches(query, t.label)),
+            );
   const loadingCategory =
-    (category === 'icons' || category === 'technology') && !iconCatalogsLoaded;
+    (category === 'icons' || category === 'technology' || category === 'stickers') &&
+    !iconCatalogsLoaded;
 
   return (
     <Dialog
