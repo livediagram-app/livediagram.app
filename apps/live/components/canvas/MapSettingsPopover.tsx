@@ -1,8 +1,8 @@
 'use client';
 
-import { ToggleSwitch } from '@/components/palette/palette-controls';
 import type { MapSize } from '@/lib/user-preferences';
 import { SettingsPopover, SettingsPopoverResetRow } from '@/components/primitives/SettingsPopover';
+import { SettingsToggleRow } from '@/components/panels/SettingsToggleRow';
 
 // Settings popover for the Map panel (spec/59): a gear in the panel header
 // opens a small popover, mirroring the Palette's settings popover. It holds the
@@ -45,40 +45,18 @@ export function MapSettingsPopover({
     >
       {(close) => (
         <>
-          <button
-            type="button"
-            role="switch"
-            aria-checked={enabled}
-            onClick={() => onSetEnabled(!enabled)}
-            className="flex w-full items-center justify-between gap-3 rounded-md px-2 py-1.5 text-left transition hover:bg-slate-50 dark:hover:bg-slate-800"
-          >
-            <span className="flex min-w-0 flex-col">
-              <span className="text-xs font-medium text-slate-700 dark:text-slate-200">
-                Enable Map
-              </span>
-              <span className="text-[10px] leading-snug text-slate-400 dark:text-slate-500">
-                Turn off to hide the map; switch it back on in Settings.
-              </span>
-            </span>
-            <ToggleSwitch checked={enabled} label="Enable Map" presentational />
-          </button>
-          <button
-            type="button"
-            role="switch"
-            aria-checked={dimOutside}
-            onClick={() => onSetDimOutside(!dimOutside)}
-            className="flex w-full items-center justify-between gap-3 rounded-md px-2 py-1.5 text-left transition hover:bg-slate-50 dark:hover:bg-slate-800"
-          >
-            <span className="flex min-w-0 flex-col">
-              <span className="text-xs font-medium text-slate-700 dark:text-slate-200">
-                Dim outside the view
-              </span>
-              <span className="text-[10px] leading-snug text-slate-400 dark:text-slate-500">
-                Shades the rest of the board so your window stands out.
-              </span>
-            </span>
-            <ToggleSwitch checked={dimOutside} label="Dim outside the view" presentational />
-          </button>
+          <SettingsToggleRow
+            checked={enabled}
+            onToggle={() => onSetEnabled(!enabled)}
+            label="Enable Map"
+            hint="Turn off to hide the map; switch it back on in Settings."
+          />
+          <SettingsToggleRow
+            checked={dimOutside}
+            onToggle={() => onSetDimOutside(!dimOutside)}
+            label="Dim outside the view"
+            hint="Shades the rest of the board so your window stands out."
+          />
           <div className="px-2 py-1.5">
             <span className="mb-1 block text-xs font-medium text-slate-700 dark:text-slate-200">
               Map size
