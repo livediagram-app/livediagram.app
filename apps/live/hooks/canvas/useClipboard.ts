@@ -1,19 +1,28 @@
 // Copy / paste for the editor, lifted out of editor-page.tsx.
-// Two clipboards cooperate here:
 //
-// - The in-app element clipboard (`clipboard` state): Cmd-C snapshots
-//   the current selection; Cmd-V (when the OS clipboard has no image)
-//   re-mints the snapshot onto the active tab via duplicateGrouped
-//   Elements so ids are remapped and pinned arrows re-wired.
-// - The OS clipboard: a global `paste` listener intercepts Cmd-V. If
-//   the system clipboard carries an image (screenshot, copy-image),
-//   it routes the bytes through the image-upload pipeline instead;
-//   otherwise it falls through to the in-app element clipboard.
+// Cmd+C puts the selection on the OS CLIPBOARD, serialised (spec/09
+// "Clipboard", lib/clipboard-payload.ts). Cmd+V reads it back, re-mints it
+// through duplicateGroupedElements so ids are remapped and pinned arrows
+// re-wired, and drops the copies on the active tab.
 //
-// Session-only on purpose: `clipboard` lives in React state so a
-// refresh clears it (matching every browser's "clipboard gone on
-// reload"), but it survives tab switches + selection changes so the
-// user can copy in one tab and paste in another.
+// It used to be in-app only: the snapshot lived in React state and the OS
+// clipboard got a sentinel string, written purely to displace a lingering
+// image. That works within one editor instance and nowhere else — component
+// state cannot cross a browser tab, a second window, or a reload, which is
+// where "copy this and put it in that diagram" actually happens. The real
+// elements go on the clipboard now.
+//
+// The in-app buffer is KEPT as a fallback rather than deleted. Clipboard
+// writes are best-effort (writeText rejects when the document isn't focused,
+// and permission can be denied outright), and a copy that silently did
+// nothing would be much worse than one that still pastes in the tab you are
+// in. So copy writes both, and paste prefers what is actually on the
+// clipboard — which is the newer of the two whenever they disagree, because
+// it is the one another window could have written since.
+//
+// Three sources compete on paste, in this order: an image file (a screenshot
+// on the system clipboard), our own serialised elements, then the in-app
+// buffer. Ordinary text is left to the browser.
 //
 // Only `copySelection` is returned — it's wired into the keyboard
 // shortcut hook. Paste is driven entirely by the native `paste` event
@@ -23,17 +32,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { duplicateGroupedElements, type Element, type Tab } from '@livediagram/diagram';
 import { anyModalOpen } from '@/lib/modal-guard';
+import { parseElementsPayload, serialiseElements } from '@/lib/clipboard-payload';
 import { addImageFileForDiagram } from '@/lib/upload-image';
 import { track } from '@/lib/telemetry';
 import { trackDuplicated } from '@/lib/element-telemetry';
 import type { useToast } from '@/hooks/ui/useToast';
-
-// Written to the OS clipboard on an in-app element copy purely to displace
-// any lingering image (see copySelection). The paste handler only inspects
-// clipboard files/items, never text, so this string is never read back — it
-// just guarantees the OS clipboard no longer carries an image that would
-// shadow the in-app element clipboard.
-const OS_CLIPBOARD_SENTINEL = 'livediagram:elements-copied';
 
 type ImageDescriptor = {
   id: string;
@@ -87,6 +90,13 @@ export function useClipboard(deps: ClipboardDeps) {
   } = deps;
 
   const [clipboard, setClipboard] = useState<Element[] | null>(null);
+  // Did the last copy actually reach the OS clipboard? It decides who wins
+  // when the clipboard holds text that ISN'T ours (see the paste handler):
+  // if our write landed, foreign text means the user copied something else
+  // afterwards, so the in-app buffer is stale and must not paste. If the
+  // write was refused, that buffer is the only record of the copy and has to
+  // keep working.
+  const osWriteOk = useRef(false);
 
   const copySelection = () => {
     if (isReadOnly) return;
@@ -104,24 +114,36 @@ export function useClipboard(deps: ClipboardDeps) {
       .map((el) => JSON.parse(JSON.stringify(el)) as Element);
     if (snapshot.length === 0) return;
     setClipboard(snapshot);
-    // Clear the OS clipboard so a previously-copied image stops shadowing
-    // this copy. The paste handler prefers an image on the OS clipboard over
-    // the in-app element clipboard, but the in-app Cmd+C never touched the OS
-    // clipboard — so once a user had pasted an image, that image lingered and
-    // every later element paste re-dropped the stale image instead of the new
-    // copy. Overwriting with a sentinel (Cmd+C is a user gesture, so writeText
-    // is permitted) makes the next paste see no image and fall through to the
-    // in-app clipboard. Best-effort: writeText can reject if the document
-    // isn't focused or permission is denied; the in-app copy still works.
-    void navigator.clipboard?.writeText?.(OS_CLIPBOARD_SENTINEL).catch(() => {});
+    // The elements themselves onto the OS clipboard, so another window can
+    // paste them. This ALSO does what the old sentinel string was there for:
+    // it displaces any image left on the clipboard by an earlier copy, which
+    // would otherwise shadow every later element paste (the paste handler
+    // prefers an image, and the in-app copy never used to touch the system
+    // clipboard, so a stale screenshot re-dropped itself forever).
+    //
+    // Best-effort by necessity: writeText rejects when the document isn't
+    // focused or permission is denied, and there is nothing useful to say to
+    // the user about it — the in-app buffer above still pastes in this
+    // window, which is what they were about to do anyway.
+    osWriteOk.current = false;
+    void navigator.clipboard
+      ?.writeText?.(serialiseElements(snapshot))
+      .then(() => {
+        osWriteOk.current = true;
+      })
+      .catch(() => {});
     track('Element', 'Copied');
   };
 
-  const pasteFromClipboard = () => {
+  // `source` is what the OS clipboard carried, when it carried ours. Absent
+  // for a paste that found nothing on the system clipboard, which falls back
+  // to the in-app buffer.
+  const pasteFromClipboard = (source?: Element[]) => {
     if (isReadOnly) return;
-    if (!clipboard || clipboard.length === 0) return;
+    const pasting = source && source.length > 0 ? source : clipboard;
+    if (!pasting || pasting.length === 0) return;
     const offset = 24;
-    const clipIds = new Set(clipboard.map((el) => el.id));
+    const clipIds = new Set(pasting.map((el) => el.id));
     // Clipboard ids may not exist in the current tab (the source
     // was deleted, the user pasted into a different tab, etc.).
     // Temporarily merge them in so duplicateGroupedElements can do
@@ -130,7 +152,7 @@ export function useClipboard(deps: ClipboardDeps) {
     // wins over a live element with the same id — pasting must
     // reproduce what was copied, not the element as it has since
     // been edited (that's what the copy-time deep clone is for).
-    const merged = [...activeTab.elements.filter((el) => !clipIds.has(el.id)), ...clipboard];
+    const merged = [...activeTab.elements.filter((el) => !clipIds.has(el.id)), ...pasting];
     const { newElements } = duplicateGroupedElements(merged, clipIds, offset, offset);
     if (newElements.length === 0) return;
     commit((els) => [...els, ...newElements]);
@@ -266,8 +288,33 @@ export function useClipboard(deps: ClipboardDeps) {
           }
         }
       }
-      // No image / file on the system clipboard: fall through to the
-      // editor's own element clipboard (the Cmd+C copy buffer).
+      // No image on the system clipboard. Our own serialised elements next
+      // (written by Cmd+C, here or in another window), then the in-app buffer.
+      //
+      // Read from the EVENT rather than navigator.clipboard.readText(): the
+      // event's data needs no permission prompt and arrives synchronously, so
+      // the paste cannot land a frame later than the preventDefault that
+      // claimed it.
+      const text = e.clipboardData?.getData('text/plain') ?? '';
+      const fromOs = parseElementsPayload(text);
+      if (fromOs) {
+        e.preventDefault();
+        pasteRef.current.pasteFromClipboard(fromOs);
+        return;
+      }
+      // Text on the clipboard that isn't ours, and our own copy DID reach the
+      // clipboard: the user has copied something else since, so the in-app
+      // buffer is stale. Pasting it would drop elements the user copied ten
+      // minutes ago in response to them copying a sentence just now, which is
+      // the kind of surprise that makes people stop trusting Cmd+V.
+      //
+      // Left to the browser, which does nothing with text outside an input.
+      // Turning that text into a text element is the obvious next step and is
+      // deliberately not done here — it needs the viewport centre in canvas
+      // coordinates, which lives in Canvas rather than in this hook.
+      if (text.trim().length > 0 && osWriteOk.current) return;
+      // Nothing readable on the system clipboard (or our write was refused,
+      // making the in-app buffer the only record of the copy).
       e.preventDefault();
       pasteRef.current.pasteFromClipboard();
     };

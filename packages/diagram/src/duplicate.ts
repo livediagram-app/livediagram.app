@@ -179,5 +179,47 @@ export function duplicateGroupedElements(
     newArrows.push({ ...el, id: idMap.get(el.id)!, from, to });
   }
 
-  return { newElements: [...finalBoxed, ...newArrows], idMap };
+  // Element-to-element references on the BOXED copies, rewired last because
+  // they need the finished idMap (a mind child and its parent are both in it,
+  // and a portal's partner may be an arrow's id).
+  //
+  // These were missed for a long time, and the failure was quiet in the way
+  // duplicate bugs usually are: the copy looked right and behaved wrong.
+  // Duplicating a mind-map subtree gave you nodes whose `mindParentId` still
+  // named the ORIGINAL parent, so the copy re-parented itself onto the tree it
+  // came from; duplicating a linked pair of portals gave you two portals that
+  // both stepped through to the originals. Paste made it worse, because a
+  // cross-tab paste points those ids at elements that are not in the tab at
+  // all.
+  //
+  // A reference to something OUTSIDE the copied set is left alone: copying one
+  // child of a mind map and pasting it back should still hang off that parent.
+  // Only references whose target was itself copied follow the copy.
+  const rewired = finalBoxed.map((el) => {
+    let next = { ...el };
+    // mindParentId (spec/118) and portalTarget (spec/104) live on the shape
+    // element only, so narrow before reaching for them.
+    if (next.type === 'shape') {
+      const shape = { ...next };
+      if (shape.mindParentId !== undefined) {
+        const mapped = idMap.get(shape.mindParentId);
+        if (mapped !== undefined) shape.mindParentId = mapped;
+      }
+      if (shape.portalTarget !== undefined) {
+        const mapped = idMap.get(shape.portalTarget);
+        if (mapped !== undefined) shape.portalTarget = mapped;
+      }
+      next = shape;
+    }
+    // An element link pointing AT a copied element follows the copy too. The
+    // tab id is deliberately untouched: a link is to an element on a named
+    // tab, and duplicating within that tab does not change which tab it is.
+    if (next.link?.kind === 'element') {
+      const mapped = idMap.get(next.link.elementId);
+      if (mapped !== undefined) next = { ...next, link: { ...next.link, elementId: mapped } };
+    }
+    return next;
+  });
+
+  return { newElements: [...rewired, ...newArrows], idMap };
 }

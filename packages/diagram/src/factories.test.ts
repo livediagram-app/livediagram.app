@@ -295,6 +295,58 @@ describe('duplicateGroupedElements', () => {
     ...overrides,
   });
 
+  // Element-to-element references on the copies. These were unmapped for a
+  // long time and the bug was quiet: the copy looked right and pointed at the
+  // original. A copied mind-map subtree re-parented itself onto the tree it
+  // came from; a copied portal pair stepped through to the originals.
+  it('re-parents a copied mind child onto its copied parent', () => {
+    const parent = shape('p');
+    const child = shape('c', { mindParentId: 'p' });
+    const { newElements, idMap } = duplicateGroupedElements(
+      [parent, child],
+      new Set(['p', 'c']),
+      10,
+      10,
+    );
+    const dupChild = newElements.find((el) => el.id === idMap.get('c')) as ShapeElement;
+    expect(dupChild.mindParentId).toBe(idMap.get('p'));
+    expect(dupChild.mindParentId).not.toBe('p');
+  });
+
+  it('leaves a mind parent OUTSIDE the copied set alone', () => {
+    // Copying one child and pasting it back should still hang off that parent
+    // — only a reference whose target was itself copied follows the copy.
+    const parent = shape('p');
+    const child = shape('c', { mindParentId: 'p' });
+    const { newElements } = duplicateGroupedElements([parent, child], new Set(['c']), 10, 10);
+    expect((newElements[0] as ShapeElement).mindParentId).toBe('p');
+  });
+
+  it('links a copied portal to its copied partner', () => {
+    const a = shape('a', { shape: 'portal', portalTarget: 'b' });
+    const b = shape('b', { shape: 'portal', portalTarget: 'a' });
+    const { newElements, idMap } = duplicateGroupedElements([a, b], new Set(['a', 'b']), 0, 0);
+    const dupA = newElements.find((el) => el.id === idMap.get('a')) as ShapeElement;
+    const dupB = newElements.find((el) => el.id === idMap.get('b')) as ShapeElement;
+    expect(dupA.portalTarget).toBe(idMap.get('b'));
+    expect(dupB.portalTarget).toBe(idMap.get('a'));
+  });
+
+  it('points an element link at the copy when its target was copied', () => {
+    const target = shape('t');
+    const linker = shape('l', {
+      link: { kind: 'element', tabId: 'tab-1', elementId: 't' },
+    });
+    const { newElements, idMap } = duplicateGroupedElements(
+      [target, linker],
+      new Set(['t', 'l']),
+      0,
+      0,
+    );
+    const dup = newElements.find((el) => el.id === idMap.get('l')) as ShapeElement;
+    expect(dup.link).toEqual({ kind: 'element', tabId: 'tab-1', elementId: idMap.get('t') });
+  });
+
   it('offsets duplicated boxed elements and maps old ids to new', () => {
     const a = shape('a', { x: 0, y: 0 });
     const { newElements, idMap } = duplicateGroupedElements([a], new Set(['a']), 10, 20);

@@ -660,7 +660,7 @@ The remaining shape kinds (hexagon, stadium, document, cloud, devices, …) have
 | `⌘⇧Z` / `Ctrl Y` | Redo                                                                                                         |
 | `⌘X`             | Cut                                                                                                          |
 | `⌘C`             | Copy                                                                                                         |
-| `⌘V`             | Paste (offset copy; native paste event also routes pasted images / files to upload)                          |
+| `⌘V`             | Paste (offset copy, from the OS clipboard; also routes pasted images / files to upload)                      |
 | `⌘D`             | Duplicate                                                                                                    |
 | `⌘G`             | Group / Ungroup selection                                                                                    |
 | `⌘⇧L`            | Lock / Unlock selection (on `⌘⇧L`, not `⌘L`, so it never fights the browser's focus-the-address-bar binding) |
@@ -1330,8 +1330,55 @@ This used to be a **toggle** in the pencil's mode banner, backed by a persisted 
 Items still genuinely out of scope today (most of the original list has shipped — see the Editor section above):
 
 - **Mid-edge resize handles** — only corner handles drive resize.
-- **Rotation** — elements always render axis-aligned.
-- **Clipboard copy / paste** — `Duplicate` (in-place clone) is available, but cut/copy/paste against the OS clipboard isn't wired up.
+- **Free-angle rotation** — the 45-degree presets ship (see the rotation section above); an arbitrary angle, and rotation-aware resize, do not.
+
+## Clipboard
+
+`⌘C` puts the selection on the **OS clipboard**, serialised
+(`apps/live/lib/clipboard-payload.ts`); `⌘V` reads it back, re-mints it through
+`duplicateGroupedElements` so ids are remapped and pinned arrows re-wired, and
+drops the copies 24px offset on the active tab. `⌘X` is the same copy followed
+by a delete. So a selection crosses a browser tab, a second window, and a
+reload — copy from one diagram, paste into another.
+
+It was in-app only before: the snapshot lived in React state and the system
+clipboard got a sentinel string, written purely to displace a lingering image
+that would otherwise shadow every later element paste. That works inside one
+editor instance and nowhere else, which is not where "copy this and put it in
+that diagram" happens.
+
+**The payload** is a JSON envelope mirroring the tab export's — a
+`livediagram.elements` `kind` discriminator so we never try to paste another
+app's JSON, and a numeric `schemaVersion` so a future break is refused rather
+than pasted as nonsense. Text, not a custom MIME type: `writeText` is the one
+clipboard write that works from a keydown handler in every browser we support.
+
+**Reading is defensive**, because this is the only place the editor parses a
+string it did not write, on every `⌘V`. `parseElementsPayload` never throws and
+returns null for anything that isn't ours; it caps bytes before parsing and
+element count after, runs every element through `isValidElement` (dropping
+failures individually rather than refusing the whole paste), and de-duplicates
+ids.
+
+**Identity does not travel.** `commentThread` and `responses` (spec/122) are
+stripped on the way out: a thread is a conversation about the original element
+and a vote is cast in a session, so re-attaching either to a copy in another
+diagram misrepresents it — and a copy can cross accounts.
+
+**Three sources compete on paste, in order:** an image file on the system
+clipboard (a screenshot, routed to the image-upload pipeline), our own
+serialised elements, then the in-app buffer. The buffer is kept as a fallback
+rather than deleted because clipboard writes are best-effort — `writeText`
+rejects when the document isn't focused or permission is denied — and a copy
+that silently did nothing is worse than one that still pastes in this window.
+Whether that write **landed** is remembered, and it settles the ambiguous case:
+foreign text on the clipboard after a successful write means the user copied
+something else afterwards, so the stale buffer must NOT paste; after a refused
+write, the buffer is the only record of the copy and still does.
+
+Pasting foreign text as a text element is the obvious next step and is
+deliberately not built: it needs the viewport centre in canvas coordinates,
+which lives in `Canvas` rather than in the clipboard hook.
 
 ## The palette stacks above the other panels
 
