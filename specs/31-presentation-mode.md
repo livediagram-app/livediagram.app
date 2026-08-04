@@ -114,12 +114,22 @@ A deck should feel like a deck, and the transitions are what sell it.
 - Motion honours `prefers-reduced-motion`: those users get a cross-fade at the same durations, so the deck still reads as changing slides without the travel.
 - Transitions are **CSS transforms on the slide surface** (translate + scale + opacity), not per-element animation. One moving layer is cheap at any slide size, and it means a hundred-element slide transitions exactly as fast as a one-element slide.
 
+### The HUD
+
+Top-right, carrying four things: the position (`7 / 23`), the slide's name, a **notes button**, and a **close button**. It **fades out when the pointer is idle and returns on any pointer movement**, so a still screen is clean for the room and every control is one twitch of the mouse away.
+
+The HUD does not fade while the notes popover is open, or the popover would be left orphaned over the slide.
+
+**Notes open in a popover** from the notes button (or `N`), anchored under it, sized so the slide stays readable behind. Click again, `Esc`, or advancing the slide closes it. The button carries a **dot when the current slide has notes**, so you can see there is a script waiting without opening anything, and pressing it on a slide with none is not a dead click.
+
+On demand is the whole point: nothing about your script is on screen until you ask for it. It is worth being clear-eyed that the room sees the popover while it is open, because there is one screen and you are sharing it. That is the deliberate trade for not building a second-window presenter console, which stays out of scope.
+
 ### Leaving
 
 Two ways out, because a presenter mid-sentence should not have to remember one:
 
 - **`Esc`**, any time.
-- **A close button**, top-right, part of the HUD. The HUD (position `7 / 23`, the slide's name, the close button) **fades out when the pointer is idle and comes back on any pointer movement**, so a still screen is clean for the room and the way out is always one twitch of the mouse away.
+- **The close button** in the HUD.
 
 Exiting restores the previous tab, viewport and chrome.
 
@@ -136,7 +146,7 @@ Tabs load lazily (spec/13), so a deck whose slides reach into a tab nobody has v
 They are deliberately NOT the elements' existing `note?` field (spec/05, rich text per spec/92), which the previous draft reused. That field is a note about a _thing_ — "this queue is the one that backs up" — and it belongs to the element wherever it appears. What a presenter needs is a note about a _moment_ in a talk, and the same element on two slides usually wants two different things said about it. Deriving slide notes by gathering up element notes gives you neither: a caption assembled from three elements' annotations, in element order, saying nothing you chose to say.
 
 - Plain text in v1, not rich text. It is a script you read off, and the rich-text editor is a surface to maintain for something nobody will bold.
-- Where they appear during a presentation is question 1 below, and it is the one thing here still open.
+- During a presentation they live behind the HUD's notes button, opened on demand. See The HUD above.
 
 ## Realtime: presenting is local, and that is the design
 
@@ -177,9 +187,9 @@ The three questions this draft opened with are answered, and the answers are in 
 - **Empty deck** — it stays empty. No seeding.
 - **Interaction while presenting** — none. A slide is inert for everybody; live data still displays.
 - **Slide backdrop** — the slide's tab's, which is well-defined because a slide belongs to one tab.
+- **Presenter notes on screen** — behind a notes button in the HUD, opened in a popover on demand.
 
 ## Open questions
 
-1. **Where presenter notes appear while presenting.** They are the presenter's script, but presenting is one screen that a whole room is looking at over a share. Three options, none obviously right: a caption panel the room also sees (simple, but then they are not private); hidden by default and toggled with a key (private until you want them, invisible if you forget the key); or always visible only in a narrow strip you can crop out of a share (fiddly). Not blocking: the notes are authored and stored either way.
-2. **Duplicating a slide across tabs.** Duplicate copies a slide within its tab. Should there be a "copy this slide to another tab" that maps to equivalent elements, or is that a fantasy given elements are not equivalent across tabs?
-3. **A deleted tab's slides.** They are skipped at read time (above), so a deck can carry invisible slides that come back if the tab is restored by undo. Is silent-skip right, or should the panel show them struck through so you know they are there?
+1. **Duplicating a slide across tabs.** Duplicate copies a slide within its tab. Should there be a "copy this slide to another tab" that maps to equivalent elements, or is that a fantasy given elements are not equivalent across tabs?
+2. **A deleted tab's slides.** They are skipped at read time (above), so a deck can carry invisible slides that come back if the tab is restored by undo. Is silent-skip right, or should the panel show them struck through so you know they are there?
