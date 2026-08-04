@@ -6,17 +6,29 @@ import { readLocalStorageSafe, writeLocalStorageSafe } from './local-storage-saf
 
 const PALETTE_FAVOURITES_KEY = 'livediagram:v2:palette-favourites';
 
-// The nine highest-value creation actions (see spec/78).
+// The default Favourites grid (spec/78), in order.
+//
+// Twelve, which is four rows of three — the grid's natural shape, so the
+// starting state has no ragged last row. The order is deliberate rather than
+// alphabetical: the three shapes anyone reaches for first, then the things you
+// put ON a diagram (text, arrow, frame, note, image), then the two drawing
+// tools, then the two session elements a facilitated board wants to hand.
+//
+// Every id here must exist in PALETTE_TILES; a stale one renders nothing and
+// silently costs the user a slot.
 export const DEFAULT_PALETTE_FAVOURITES: readonly string[] = [
   'shapes:square',
   'shapes:circle',
   'shapes:diamond',
   'tools:text',
-  'tools:pencil',
   'tools:arrow',
-  'tools:sticky',
   'tools:frame',
+  'tools:sticky',
   'tools:image',
+  'tools:shape-pen',
+  'tools:highlighter',
+  'tools:session-timer',
+  'collab:comment-pin',
 ];
 
 // Dynamic icon favourites (`icon:<iconId>` / `tech:<iconId>`, spec/78) are

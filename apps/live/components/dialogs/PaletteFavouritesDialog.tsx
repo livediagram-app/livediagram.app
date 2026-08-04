@@ -34,6 +34,10 @@ type PaletteFavouritesDialogProps = {
   hasImage: boolean;
   onAdd: (id: string) => void;
   onRemove: (id: string) => void;
+  // Put the grid back to DEFAULT_PALETTE_FAVOURITES. Applies immediately like
+  // every other edit here; there is no confirm, because the whole dialog is
+  // one click from restoring anything by hand.
+  onReset?: () => void;
   onClose: () => void;
 };
 
@@ -112,6 +116,7 @@ export function PaletteFavouritesDialog({
   hasImage,
   onAdd,
   onRemove,
+  onReset,
   onClose,
 }: PaletteFavouritesDialogProps) {
   const [query, setQuery] = useState('');
@@ -221,7 +226,15 @@ export function PaletteFavouritesDialog({
         )}
       </div>
 
-      <div className="flex justify-end border-t border-slate-100 px-5 py-3 dark:border-slate-800">
+      <div className="flex items-center justify-end gap-2 border-t border-slate-100 px-5 py-3 dark:border-slate-800">
+        {/* Reset sits to the LEFT of Done and reads as the quieter action: it
+            throws away the user's arrangement, so it should never be the
+            thing a hurried hand lands on. */}
+        {onReset ? (
+          <Button onClick={onReset} size="sm" variant="secondary">
+            Reset to default
+          </Button>
+        ) : null}
         <Button onClick={onClose} size="sm">
           <svg
             width="12"

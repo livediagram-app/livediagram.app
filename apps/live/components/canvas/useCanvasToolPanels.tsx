@@ -50,6 +50,7 @@ export function useCanvasToolPanels({
     onChangeAvatarField,
     onRandomiseAvatar,
     onAvatarReaction,
+    onAvatarBurst,
     avatarPanelPosition,
     onMoveAvatarPanel,
     onResetAvatarPanel,
@@ -106,6 +107,7 @@ export function useCanvasToolPanels({
         onChange={(field, value) => onChangeAvatarField?.(field, value)}
         onRandomise={onRandomiseAvatar}
         onReaction={onAvatarReaction}
+        onBurst={onAvatarBurst}
         shirt={selfParticipant?.color}
         position={avatarWiring.position}
         stackBelowY={stackBelowY}

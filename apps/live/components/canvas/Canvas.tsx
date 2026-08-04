@@ -47,12 +47,19 @@ import { DEFAULT_ERASER_CONFIG, eraserRadius } from '@/lib/eraser-config';
 import { useSpotlight } from '@/hooks/canvas/useSpotlight';
 import { useSpotlightConfig } from '@/hooks/canvas/useSpotlightConfig';
 import { AvatarWalker } from '@/components/canvas/AvatarWalker';
+import { ReactionBurst } from '@/components/canvas/ReactionBurst';
+
+// The footprint a burst is scaled against when it comes from the avatar panel
+// rather than a pad: roughly a character, so the particles read as thrown by a
+// person rather than by whatever size of pad last set one off.
+const AVATAR_BURST_PX = 120;
 import { useAvatarWalk } from '@/hooks/canvas/useAvatarWalk';
 import { AVATAR_SPAWN_GAP, type AvatarPoint } from '@/lib/avatar-walk';
 import { chairSeatPoint } from '@livediagram/diagram';
 import { useAvatarConfig } from '@/hooks/canvas/useAvatarConfig';
 import { parseAvatarConfig } from '@/lib/avatar-config';
 import { reactionPose } from '@/lib/avatar-reactions';
+import type { Reaction } from '@livediagram/diagram';
 import { makePortalTravel } from '@/components/canvas/portal-travel';
 import { useOffscreenContent } from '@/hooks/canvas/useOffscreenContent';
 import { Portal } from '@/components/primitives/Portal';
@@ -279,6 +286,10 @@ export function Canvas(props: CanvasProps) {
   // Declared before the hook that fills it: the walk hook's chair callback
   // needs `sitOn`, which the same hook returns (see enterPortalRef below for
   // the identical knot).
+  // The burst the avatar panel has asked for, if any. Ephemeral exactly like
+  // a pad's (spec/135): nothing is stored and nothing is replayed.
+  const [avatarBurst, setAvatarBurst] = useState<{ reaction: Reaction; seed: number } | null>(null);
+  const avatarBurstSeq = useRef(0);
   const avatarRef = useRef<ReturnType<typeof useAvatarWalk> | null>(null);
   const avatar = useAvatarWalk({
     active: canvasTool === 'avatar',
@@ -666,6 +677,27 @@ export function Canvas(props: CanvasProps) {
             standingOn={null}
           />
         ))}
+        {/* A Reaction Pad burst (spec/135) thrown around the CHARACTER rather
+            than around a pad. Same engine, same particles: the pad and the
+            avatar panel are two ways to set off one effect, not two effects.
+            Positioned at the character's canvas point, inside the transformed
+            wrapper, so it pans and zooms with the board it is celebrating. */}
+        {avatar.pos && avatarBurst ? (
+          <div
+            className="pointer-events-none absolute"
+            style={{ left: avatar.pos.x, top: avatar.pos.y, width: 0, height: 0 }}
+          >
+            <ReactionBurst
+              reaction={avatarBurst.reaction}
+              seed={avatarBurst.seed}
+              // The character's own footprint, so the burst is scaled to a
+              // person rather than to whatever pad happened to throw it.
+              width={AVATAR_BURST_PX}
+              height={AVATAR_BURST_PX}
+              onDone={() => setAvatarBurst(null)}
+            />
+          </div>
+        ) : null}
         {avatar.pos ? (
           <AvatarWalker
             pos={avatar.pos}
@@ -745,6 +777,12 @@ export function Canvas(props: CanvasProps) {
         onResetLaserPanel={props.onResetLaserPanel}
         onRandomiseAvatar={avatarLook.randomise}
         onAvatarReaction={avatar.playReaction}
+        onAvatarBurst={(reaction: Reaction) => {
+          // A fresh seed each  press, so pressing the same reaction twice replays
+          // rather than continuing.
+          avatarBurstSeq.current += 1;
+          setAvatarBurst({ reaction, seed: avatarBurstSeq.current });
+        }}
         offscreenContent={offscreenContent}
         marquee={marquee}
         drawDrag={drawDrag}

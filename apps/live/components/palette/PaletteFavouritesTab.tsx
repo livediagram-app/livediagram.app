@@ -1,7 +1,11 @@
 import { useMemo, useRef, useState } from 'react';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { track } from '@/lib/telemetry';
-import { loadPaletteFavourites, savePaletteFavourites } from '@/lib/palette-favourites';
+import {
+  DEFAULT_PALETTE_FAVOURITES,
+  loadPaletteFavourites,
+  savePaletteFavourites,
+} from '@/lib/palette-favourites';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 import { PALETTE_TILES, type PaletteTileDef } from './palette-tile-defs';
 import {
@@ -82,6 +86,15 @@ export function PaletteFavouritesTab({
   const add = (id: string) => {
     update([...favourites, id]);
     track('UI', 'Added', 'PaletteFavourite');
+  };
+  // Back to the shipped set. Written through the same `update` as every other
+  // edit, so it persists immediately and needs no confirm: restoring a
+  // removed tile by hand is one click in this same dialog.
+  const reset = () => {
+    update([...DEFAULT_PALETTE_FAVOURITES]);
+    // 'Changed' rather than a new enum member: the closed telemetry
+    // vocabulary already covers "this setting is not what it was".
+    track('UI', 'Changed', 'PaletteFavourite');
   };
 
   // Matches on caption, label and description, so "chart" finds the pie chart
@@ -222,6 +235,7 @@ export function PaletteFavouritesTab({
           hasImage={actions.hasImage}
           onAdd={add}
           onRemove={remove}
+          onReset={reset}
           onClose={() => setEditing(false)}
         />
       ) : null}

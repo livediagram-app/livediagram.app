@@ -83,6 +83,8 @@ type ChromeExtras = {
   // Roll a whole new character, and play one of the panel's reactions.
   onRandomiseAvatar: () => void;
   onAvatarReaction: (kind: import('@/lib/avatar-reactions').AvatarReactionKind) => void;
+  // Throw one of the Reaction Pad's bursts (spec/135) around the character.
+  onAvatarBurst?: (reaction: import('@livediagram/diagram').Reaction) => void;
   // Laser Panel (spec/111): the pen, owned by useLaserConfig in Canvas (it
   // persists per browser, like the avatar's costume) and edited down here.
   laserConfig?: import('@/lib/laser-config').LaserConfig;
