@@ -1,6 +1,6 @@
 import type { EmbedProvider } from '@livediagram/diagram';
 import { REACTION_EMOJI } from '@livediagram/diagram';
-import { ModeGroupIcon } from './palette-group-icons';
+
 import type {
   ComponentKind,
   EstimateScale,
@@ -11,11 +11,19 @@ import type {
 } from '@livediagram/diagram';
 import {
   AgendaIcon,
+  AvatarModeIcon,
   ChairIcon,
   DecisionIcon,
+  EraserIcon,
   EstimateIcon,
+  FormatPainterIcon,
+  IsometricIcon,
+  LaserIcon,
+  PanIcon,
   IdeaBoxIcon,
   PickerIcon,
+  SelectIcon,
+  SpotlightIcon,
   SessionPollIcon,
   SessionVoteIcon,
   RevealIcon,
@@ -773,7 +781,10 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       'A button that switches whoever presses it into Avatar mode. It changes the mode for that person only, and pressing it again hands them back the mode they were in.',
     filled: true,
     action: { type: 'shape', kind: 'mode-button', mode: 'avatar' },
-    icon: <ModeGroupIcon />,
+    // The mode's OWN glyph, the one the canvas-tool popover shows for it
+    // (buildCanvasToolOptions): eight identical pointers told the reader
+    // nothing about which mode a row would hand out.
+    icon: <AvatarModeIcon />,
   },
   {
     id: 'tools:mode-select',
@@ -787,7 +798,10 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       'A button that switches whoever presses it into Select mode. It changes the mode for that person only, and pressing it again hands them back the mode they were in.',
     filled: true,
     action: { type: 'shape', kind: 'mode-button', mode: 'select' },
-    icon: <ModeGroupIcon />,
+    // The mode's OWN glyph, the one the canvas-tool popover shows for it
+    // (buildCanvasToolOptions): eight identical pointers told the reader
+    // nothing about which mode a row would hand out.
+    icon: <SelectIcon />,
   },
   {
     id: 'tools:mode-pan',
@@ -801,7 +815,10 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       'A button that switches whoever presses it into Hand mode. It changes the mode for that person only, and pressing it again hands them back the mode they were in.',
     filled: true,
     action: { type: 'shape', kind: 'mode-button', mode: 'pan' },
-    icon: <ModeGroupIcon />,
+    // The mode's OWN glyph, the one the canvas-tool popover shows for it
+    // (buildCanvasToolOptions): eight identical pointers told the reader
+    // nothing about which mode a row would hand out.
+    icon: <PanIcon />,
   },
   {
     id: 'tools:mode-laser',
@@ -815,7 +832,10 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       'A button that switches whoever presses it into Laser mode. It changes the mode for that person only, and pressing it again hands them back the mode they were in.',
     filled: true,
     action: { type: 'shape', kind: 'mode-button', mode: 'laser' },
-    icon: <ModeGroupIcon />,
+    // The mode's OWN glyph, the one the canvas-tool popover shows for it
+    // (buildCanvasToolOptions): eight identical pointers told the reader
+    // nothing about which mode a row would hand out.
+    icon: <LaserIcon />,
   },
   {
     id: 'tools:mode-spotlight',
@@ -829,7 +849,10 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       'A button that switches whoever presses it into Spotlight mode. It changes the mode for that person only, and pressing it again hands them back the mode they were in.',
     filled: true,
     action: { type: 'shape', kind: 'mode-button', mode: 'spotlight' },
-    icon: <ModeGroupIcon />,
+    // The mode's OWN glyph, the one the canvas-tool popover shows for it
+    // (buildCanvasToolOptions): eight identical pointers told the reader
+    // nothing about which mode a row would hand out.
+    icon: <SpotlightIcon />,
   },
   {
     id: 'tools:mode-eraser',
@@ -843,7 +866,10 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       'A button that switches whoever presses it into Eraser mode. It changes the mode for that person only, and pressing it again hands them back the mode they were in.',
     filled: true,
     action: { type: 'shape', kind: 'mode-button', mode: 'eraser' },
-    icon: <ModeGroupIcon />,
+    // The mode's OWN glyph, the one the canvas-tool popover shows for it
+    // (buildCanvasToolOptions): eight identical pointers told the reader
+    // nothing about which mode a row would hand out.
+    icon: <EraserIcon />,
   },
   {
     id: 'tools:mode-format',
@@ -857,7 +883,10 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       'A button that switches whoever presses it into Format mode. It changes the mode for that person only, and pressing it again hands them back the mode they were in.',
     filled: true,
     action: { type: 'shape', kind: 'mode-button', mode: 'format' },
-    icon: <ModeGroupIcon />,
+    // The mode's OWN glyph, the one the canvas-tool popover shows for it
+    // (buildCanvasToolOptions): eight identical pointers told the reader
+    // nothing about which mode a row would hand out.
+    icon: <FormatPainterIcon />,
   },
   {
     id: 'tools:mode-isometric',
@@ -871,7 +900,10 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       'A button that switches whoever presses it into Isometric mode. It changes the mode for that person only, and pressing it again hands them back the mode they were in.',
     filled: true,
     action: { type: 'shape', kind: 'mode-button', mode: 'isometric' },
-    icon: <ModeGroupIcon />,
+    // The mode's OWN glyph, the one the canvas-tool popover shows for it
+    // (buildCanvasToolOptions): eight identical pointers told the reader
+    // nothing about which mode a row would hand out.
+    icon: <IsometricIcon />,
   },
   {
     // Portal (spec/104): step in here, come out of the portal it is linked to.
