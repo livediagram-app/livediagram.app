@@ -1,81 +1,124 @@
 # 31 — Presentation mode
 
-Status: **draft** (open questions below need answers before implementation).
+Status: **draft** (design agreed, open questions at the end are narrower than the ones this replaces).
 
-Turn the current diagram into a slideshow. The presenter steps through the diagram one "step" at a time; elements appear as the presentation advances, and an element's note (the existing `note?: string` field, see [spec/05](05-diagram-structure.md)) is shown when its element comes up. Built for the "walk someone through this diagram on a call or a projector" moment.
+Present a diagram as a **slide deck**: full-screen, one slide at a time, each slide showing a set of elements you picked. Built for the "walk someone through this on a call or a projector" moment.
 
 ## Why
 
-A finished diagram shows everything at once, which is great for reference but bad for narration. Presenters today zoom around manually with the laser pointer. Presentation mode gives the build-up story for free: reveal nodes in order, with the author's notes as the narration track.
+A finished diagram shows everything at once, which is great for reference and bad for narration. Presenters today zoom around manually with the laser pointer, and the audience watches the mouse hunt for the next box.
 
-## Reveal model
+## What a slide is
 
-Presentation mode is a **progressive reveal**, not a camera tour:
+**A slide is an explicit, ordered set of elements you chose.** Not a region of canvas, not a camera position, not a layer.
 
-- The presentation starts with an empty canvas (tab background, pattern, and theme intact).
-- Each **step** reveals one more unit of the diagram. Already-revealed elements stay visible.
-- The camera animates to fit the revealed-so-far bounding box (reusing `computeFitToScreen` in `apps/live/lib/viewport.ts`), biased toward the newly revealed element so the audience's eye lands on it. The newly revealed element gets a brief entrance emphasis (fade/scale in).
-- Stepping **backward** hides the most recent step again and re-fits.
+- A slide's members are `(tabId, elementId)` pairs, so **one slide can draw elements from several tabs**. The presentation is a view over the whole diagram, not a per-tab feature.
+- **An element can be on any number of slides.** Membership is a list, not a partition, so a title that belongs on every slide simply appears in every slide's list.
+- **Slide order is the deck's own order**, independent of tab order, element array order, and z-order. Reordering slides never restacks anything on the canvas.
 
-## What counts as a step
+### Why not layers
 
-Derived automatically from the diagram; nothing is authored per-slide in v1.
+Layers (spec/74) were the obvious candidate and were considered in detail: they are already an ordered list of element groups with a management panel, drag-reorder, per-band preview thumbnails, and a local render override (hover-solo) that is exactly the "show these bands only, without touching persisted state" mechanism a presentation needs. Reusing them would have been cheap.
 
-- One **boxed element** (shape, text, sticky, image, table, freehand) = one step, in `tab.elements` array order (creation order, which is also z-order).
-- Elements sharing a `groupId` reveal together as **one step**, at the position of the group's earliest member.
-- **Arrows are not their own step.** An arrow reveals automatically as soon as both of its endpoints are revealed (a floating arrow with no boxed endpoints reveals with the step it follows in array order).
-- Resolved-or-not **comment threads never render** in presentation mode; they are collaboration metadata, not content.
-- Locked elements present like any other element.
+They were rejected because a layer means something else, and the collisions were not superficial:
+
+- **Layers are z-order bands**, so slide order would have been stacking order: reordering the deck would restack the drawing.
+- **Bring to Front / Send to Back create and prune layers** (spec/74). Casually clicking "bring to front" would mint a slide, and emptying a layer would silently delete one.
+- **An element belongs to exactly one layer.** A title on every slide would have been unexpressible, and so would any element appearing on more than one.
+
+Slides are their own concept for the same reason layers were: overloading one structure with two meanings costs more in surprise than it saves in code. **Layers stay purely diagram structure.** Nothing in spec/74 changes.
+
+## Data model
+
+Diagram-level, because a slide spans tabs and no single tab owns the deck.
+
+```ts
+type SlideRef = { tabId: TabId; elementId: ElementId };
+
+type Slide = {
+  id: string;
+  // Shown in the panel and the presenter HUD. Absent = "Slide N".
+  name?: string;
+  refs: SlideRef[];
+};
+
+type Deck = { slides: Slide[] };
+```
+
+- **Dangling refs resolve at read time.** An element deleted after being added to a slide is skipped, exactly as spec/74 resolves an unknown `layerId` rather than rewriting element data on delete. No cleanup pass, no delete-path coupling, and undo restores the element back onto its slides for free.
+- A slide whose refs all dangle renders empty rather than being auto-removed: silently deleting someone's slide because they deleted its contents is worse than an empty slide they can see and fix.
+- **Arrows come along.** An arrow whose endpoints are both on the slide is included automatically even when it was not added explicitly, so building a slide from a selection of boxes does not need the connectors hand-picked. An arrow added explicitly always shows.
+
+### Persistence
+
+This is the one part of the feature that is not free. `diagrams.data` was dropped in migration 0006 and tab bodies live in their own table, so there is **no diagram-level JSON blob to extend** — unlike layers, which ride the opaque tab body and needed no api change at all.
+
+- A new `presentation TEXT NULL` column on `diagrams` (the ninth such column; `source`, `share_password` and `team_id` are the pattern), holding the serialised `Deck`.
+- The api's diagram DTO in `@livediagram/api-schema` carries it through, and the read / save routes round-trip it.
+- Null / absent = no deck, which is every existing diagram.
+
+## Entry and the Presentation Panel
+
+**Presentation is a canvas tool**, alongside Select, Hand, Eraser, Format, Highlighter, Laser, Spotlight, Avatar and Isometric. Picking it from the tool dropdown does **not** start presenting: it opens the panel where you build and administer the deck. Starting is a deliberate second act.
+
+It joins `CanvasTool` only, **not** `SELECTION_MODES` — there is no Presentation Mode Button, because handing a collaborator's screen into a full-screen deck is not something one person should do to another.
+
+The **Presentation Panel** is the seventh tool panel, on exactly the contract the other six share (`useCanvasToolPanels`): mounted only while its tool is active, joins the corner-docking stack, gets a mobile dock button. It carries:
+
+- **The slide list**, in deck order, each row with its name, a member count, and a preview thumbnail rendered by the shared headless SVG renderer (the same one the Layers panel rows use).
+- **New slide from selection** — the primary authoring path. Select elements on the canvas, across as many tabs as you like, press the button. Also **Add selection to slide** for growing one.
+- **Reorder** by dragging rows, the pointer-event drag the Layers panel already uses (native HTML5 dnd is dead on touch).
+- **Rename** inline, **delete**, and **duplicate** a slide.
+- Selecting a row **highlights its members on the canvas** and, if they are on another tab, switches to it. This is how you check a slide without presenting.
+- **Start** — enters the full-screen deck at slide 1.
+
+### One consequence worth stating
+
+Reordering tabs from this panel was discussed and is **not** included. It made sense while a slide belonged to a tab and the deck was "tab order, then layer order". Now that slide order is its own array, tab order has no effect on the deck at all, so a tab reorder control here would change nothing about the presentation and would only be a confusing second place to do something the tab bar already does.
+
+## Presenting
+
+- **Full screen.** Browser fullscreen where available, all chrome hidden (the zen treatment, spec/26), canvas non-interactive for editing regardless of role.
+- **One slide at a time.** Only that slide's elements render. This is a deck, not a progressive reveal of a diagram: advancing does not accumulate.
+- **Framing:** fit to the content bounds of the slide's elements (`contentBounds` + `computeFitToScreen`), with padding. **If a slide contains exactly one frame element, its bounds are used instead** — that gives precise, authored framing using an element the product already has, with nothing new to learn.
+- **Rendered by the real canvas**, not the static SVG renderer. A slide is not a picture: timers keep counting, polls and votes stay open, reaction pads still fire, done checks still tick (spec/105, spec/135, spec/137). A deck you can run a session from is the point of presenting inside the tool rather than exporting to one.
+- **Advance** with `→`, `Space`, `Page Down`, or click. **Back** with `←`, `Page Up`. `Home` / `End` jump to the ends. `Esc` exits and restores the previous tab, viewport and chrome.
+- A minimal HUD shows position (`7 / 23`) and the slide's name, fading when idle.
+- Advancing past the last slide shows an end state; one more advance or `Esc` exits.
+- Available to **every role including share-link viewers**: presenting is read-only by nature, and a viewer narrating a shared diagram is a core case.
+
+### Cross-tab loading
+
+Tabs load lazily (spec/13), so a deck drawing on a tab nobody has visited would stall mid-presentation. `loadAllTabs()` already exists in `usePerTabLoad.ts` — a one-shot parallel fetch of every unloaded tab, built for cross-tab element search — and Start awaits it. Slides that still cannot resolve a tab render their resolvable members and the presentation continues.
 
 ## Notes
 
-- When a step's element has a `note`, the note text renders in a **caption panel** (bottom of the screen, theme-styled, scrollable if long). No note, no panel.
-- Notes are shown to whoever is looking at the screen. There is no separate presenter-only notes view in v1 (see open questions).
-
-## Entry, controls, exit
-
-- Enter via a **Present** action: zoom-dock button next to the zen-mode toggle, palette entry, and a keyboard shortcut (proposed `Shift+P`; plain `P` is risky next to existing single-key tool shortcuts).
-- Presentation mode implies the **zen-mode chrome treatment** ([spec/26](26-zen-mode.md)): all panels, header, tab bar, and palette hidden. Additionally the canvas becomes non-interactive for editing (no selection, no drag, no palette), regardless of the user's role.
-- Advance: `→`, `Space`, `Page Down`, or click. Back: `←`, `Page Up`. `Home`/`End` jump to first/last step. `Esc` exits and restores the prior viewport and chrome.
-- A minimal HUD shows step position (`7 / 23`) and exit hint, fading out when idle.
-- Request browser fullscreen on entry where available; exiting fullscreen exits the mode.
-- Available to every role, including share-link `view` sessions: presenting is read-only by nature, and a viewer narrating a shared diagram is a core use case.
-
-## Scope of a presentation
-
-- v1 presents the **current tab only**. Advancing past the last step shows an "end of presentation" state; one more advance (or `Esc`) exits. Multi-tab traversal is an open question.
-
-## Persistence and schema
-
-- **No schema changes in v1.** Step order is derived (array order + groups), so nothing new is stored on elements, tabs, or diagrams, and self-hosted data is untouched.
-- Presentation mode is transient client state, like zen mode. It is never persisted and never written to the change log.
+An element's existing `note?` (spec/05, rich text per spec/92) renders in a caption panel at the bottom when the slide's elements carry one. Several notes on one slide stack in slide-member order.
 
 ## Realtime
 
-- v1 is **local-only**: entering presentation mode broadcasts nothing, and remote collaborators' cursors/lasers are hidden from the presenter's view while presenting (they would puncture the illusion of a clean slideshow).
-- Remote edits arriving mid-presentation are applied to the underlying tab but elements beyond the current step stay hidden; a newly added element simply becomes a future step.
-- "Follow the presenter" (a `presentation` room op so viewers' screens sync to the presenter's step) is a natural v2 and would slot into the presence-op family (`cursor`, `select`, `laser`, `tab-focus`) in `@livediagram/api-schema`. Out of scope for v1.
+v1 is **local-only**: entering presentation broadcasts nothing, and remote cursors / lasers are hidden from the presenter's view. Edits arriving mid-presentation are applied underneath; a slide re-renders if one of its members changed.
+
+Follow-the-presenter (a `presentation` room op so viewers' screens track the presenter's slide) is the natural v2 and slots into the presence-op family (`cursor`, `select`, `laser`, `tab-focus`) in `@livediagram/api-schema`.
 
 ## Implementation shape
 
-Per the no-god-files rule: a `usePresentation.ts` hook (step list derivation, current index, keyboard handling, camera targets) plus a `PresentationOverlay.tsx` component (HUD, caption panel, end state), composed into the editor with minimal edits to `useEditorState.ts` / `EditorView.tsx`. Step-derivation logic (pure: `Element[]` in, ordered steps out) lives beside the element helpers in `packages/diagram` so it is testable and reusable.
+Per the no-god-files rule: `usePresentation.ts` (deck state, current index, keyboard, camera targets), `PresentationPanel.tsx` (the seventh tool panel, built like `EraserPanel` / `HighlighterPanel`), and `PresentationOverlay.tsx` (full-screen surface, HUD, captions, end state). Deck helpers stay pure and live in `packages/diagram` beside the element helpers: resolving refs to elements, pulling in implied arrows, and computing a slide's bounds are all `(Deck, Tab[]) -> ...` functions with no React in them, so they are testable and reusable by the api and MCP worker.
 
 ## Telemetry
 
-Per [spec/22](22-telemetry.md): `track('UI', 'Opened', 'Presentation')` on entry and `track('UI', 'Closed', 'Presentation')` on exit. `Presentation` is a new telemetry type value; categories and actions already cover `UI` / `Opened` / `Closed`. No per-step events (too chatty, low signal).
+Per spec/22: `track('UI', 'Opened', 'Presentation')` when the tool is picked, `track('UI', 'Started', 'Presentation')` on Start, `track('UI', 'Closed', 'Presentation')` on exit, and `track('UI', 'Added', 'Slide')` when a slide is created. No per-step events: chatty, low signal.
 
 ## Out of scope (v1)
 
-- Authored slide order or named slides.
-- Presenter-only notes view / dual-screen presenter console.
-- Multi-tab presentations.
 - Follow-the-presenter sync.
-- Export to PDF/PPT.
+- Presenter-only notes view / dual-screen console.
+- Export the deck to PDF or PPT. (The framing rule above makes it tractable later: every slide already has bounds, and the export renderer already draws a bounded element set.)
+- Transitions and per-element build animation within a slide.
+- Auto-generating a deck from a diagram.
 
 ## Open questions
 
-1. **Step order**: is creation order (array order) good enough for v1, or do real diagrams get built out of narration order often enough that we need an explicit per-element order (e.g. an optional `presentIndex?: number`, with a reorder UI) before this is useful?
-2. **Reveal vs tour**: progressive reveal is specced as the default. Should a "camera tour" variant (everything visible, camera flies node to node) exist as a toggle, or is one model enough?
-3. **Notes on screen**: notes render as an audience-visible caption. Is that right, or are notes the presenter's private script (which implies a presenter console and makes v1 much bigger)?
-4. **Multi-tab**: should advancing past a tab's last step continue into the next tab (respecting tab folders, [spec/30](30-tab-folders.md)), or stay single-tab?
-5. **Arrows**: reveal-with-endpoints is specced. Alternative: arrows as their own steps so the presenter can narrate the relationship, not just the nodes. Which matches how you present?
+1. **Empty-deck affordance.** A diagram with no slides opens the panel to an empty list. Is "New slide from selection" enough of a start, or should the panel offer to seed a deck (one slide per tab, or one per frame element)?
+2. **Editing while presenting.** Presenting is specced non-interactive for editing, but the live session elements stay live. Is pressing a Done check or casting a vote from within a presentation clearly not "editing"? The current answer is yes, and the line is: element interactions work, canvas authoring does not.
+3. **Slide-level backdrop.** A slide inherits the backdrop of the tab its first member belongs to. For a slide mixing tabs, is that the right rule, or should the deck carry its own background?
