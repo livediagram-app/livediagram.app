@@ -61,6 +61,23 @@ export function HandMode() {
   );
 }
 
+/** Highlighter mode: the picker with the marker lit and two translucent
+ *  passes laid over a shape and its label, the label still legible through
+ *  them — which is the whole point of the tool. */
+export function HighlighterMode() {
+  return (
+    <Scene w={420} h={230}>
+      <ModeRow active="highlighter" />
+      {/* The bands go down FIRST so the shapes and labels draw over them:
+          a highlight sits under what it marks, not on top of it. */}
+      <rect x={64} y={122} width={168} height={16} rx={2} className="fill-amber-300/60" />
+      <rect x={92} y={168} width={196} height={16} rx={2} className="fill-amber-300/60" />
+      <Shape x={80} y={112} w={120} h={38} label="Step one" />
+      <Shape x={140} y={158} w={120} h={38} accent label="Step two" />
+    </Scene>
+  );
+}
+
 /** Eraser mode: the picker with Eraser lit and a drag across shapes, the ones
  *  already swept fading away. */
 export function EraserMode() {

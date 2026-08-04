@@ -1,6 +1,7 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
+import { HighlighterMode } from '@/components/illustrations/palette-modes';
 import { HighlighterStroke } from '@/components/illustrations/palette-tools-drawing';
 
 export const metadata = helpMetadata({
@@ -21,6 +22,10 @@ export const metadata = helpMetadata({
 The Highlighter is a wide, semi-transparent marker for calling attention to things: circling a region during a review, underlining a label while you talk, marking the three boxes a workshop has to come back to. Strokes are translucent and blend like a real pen, so text and shapes underneath stay legible and overlapping passes darken.
 
 Choose it from the mode picker at the top of the floating palette, under **Edit** beside Select, Hand, Eraser and Format. It has no keyboard shortcut, but you can also reach it by typing "highlighter" into search.
+
+<Figure caption="Highlighter is lit in the mode picker, and two translucent passes mark a pair of steps without hiding their labels.">
+  <HighlighterMode />
+</Figure>
 
 ## Marking things up
 
