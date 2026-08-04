@@ -84,24 +84,17 @@ export function deriveNewBoxedColours(
   // reading as a page at all, so it keeps the fill / stroke createShape gave
   // it. The user can still recolour it from the menu like anything else.
   if (base.type === 'shape' && base.shape === 'page') return colours;
-  // The Behaviour elements are CONTROLS and scenery, not nodes in the diagram's
-  // colour scheme: buttons you press (spec/103, spec/105), a portal you walk
-  // through (spec/104), a cover you lift (spec/106), a card that rolls
-  // (spec/107), a pad you set off (spec/135). They ship with their own
-  // colours, and tinting them from the
-  // backdrop is what made the first button look like a box with words in it.
-  // All stay recolourable from the menu like anything else.
-  const BEHAVIOUR_KINDS = new Set([
-    'mode-button',
-    'portal',
-    'session-button',
-    'reveal',
-    'picker',
-    'reaction-pad',
-    // A comment pin (spec/136) is board chrome, not a diagram node.
-    'comment-pin',
-  ]);
-  if (base.type === 'shape' && BEHAVIOUR_KINDS.has(base.shape)) return colours;
+  // The Behaviour and Collaborate elements used to opt OUT of theme tinting on
+  // the reasoning that they are controls and scenery rather than nodes in the
+  // diagram's colour scheme. Dropped: it left a board where a mode button, a
+  // reveal cover and a comment panel each sat in their own palette while
+  // everything around them followed the tab, which reads as an oversight
+  // rather than as emphasis — the theme is the whole point of picking one.
+  //
+  // A portal is the exception that stays, because its ring IS the element and
+  // is drawn from its own stroke colour; tinting it from the backdrop would
+  // recolour the energy rather than a box around it.
+  if (base.type === 'shape' && base.shape === 'portal') return colours;
   if (base.type === 'shape' || base.type === 'annotation') {
     // Annotation markers derive fill + stroke from the backdrop like a shape
     // does (text isn't used — the note is plain). See spec/38.

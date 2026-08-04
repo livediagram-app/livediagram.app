@@ -172,14 +172,22 @@ export function SessionButtonFace({
   return (
     <>
       {menu}
+      {/* The CHIP is the button, not the whole card.
+          A card-sized target meant a click anywhere — including on the
+          question you were reading, or on empty padding while positioning the
+          element — started a session for the whole room. The chip is an
+          unmistakable press target, and everything around it stays ordinary
+          canvas you can click to select and drag from. */}
+      <span className={`pointer-events-none absolute inset-0 ${layout}`} aria-hidden>
+        {inner}
+      </span>
       <button
         type="button"
         aria-label={`${text || `${derived.kicker} ${derived.action}`} — starts this for everyone`}
         {...press}
-        className={`pointer-events-auto cursor-pointer rounded-[inherit] transition duration-100 active:scale-[0.96] active:brightness-95 sm:hover:brightness-[1.07] ${layout}`}
-      >
-        {inner}
-      </button>
+        // Positioned over the chip that `inner` draws: same size, same place.
+        className="pointer-events-auto absolute left-1/2 top-[14%] h-9 w-9 -translate-x-1/2 cursor-pointer rounded-full transition duration-100 active:scale-[0.92] sm:hover:brightness-[1.07]"
+      />
     </>
   );
 }

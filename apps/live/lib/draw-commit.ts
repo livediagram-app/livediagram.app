@@ -185,6 +185,11 @@ export function buildDrawnBoxed(
           // other. Only on a TAP — a deliberate drag is the user saying what
           // size they want.
           ...(intent.session === 'timer' && isTap ? { width: 224, height: 64 } : {}),
+          // A POLL carries the question on its face, and the default box is
+          // sized for "Start vote" — anything of a realistic length was
+          // clipped before it finished. Wider and a little taller so a
+          // sentence fits on two lines.
+          ...(intent.session === 'poll' && isTap ? { width: 240, height: 116 } : {}),
         }
       : {}),
     ...(intent.type === 'shape' && intent.kind === 'estimate' && intent.estimateScale

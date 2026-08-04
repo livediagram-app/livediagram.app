@@ -296,7 +296,13 @@ export function useElementCreation(opts: {
             // /135). Applied by the kind that owns the field, so one payload
             // serves all four without the drop path knowing which is which.
             ...(art?.choice && kind === 'session-button'
-              ? { session: defaultSessionConfig(art.choice as SessionTool) }
+              ? {
+                  session: defaultSessionConfig(art.choice as SessionTool),
+                  // Same sizing the tap path applies (draw-commit): a timer is
+                  // a wide pill, a poll has to fit its question.
+                  ...(art.choice === 'timer' ? { width: 224, height: 64 } : {}),
+                  ...(art.choice === 'poll' ? { width: 240, height: 116 } : {}),
+                }
               : {}),
             ...(art?.choice && kind === 'reaction-pad'
               ? {
