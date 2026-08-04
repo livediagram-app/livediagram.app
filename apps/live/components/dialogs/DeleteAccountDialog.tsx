@@ -28,6 +28,7 @@ import { useEscape } from '@/hooks/ui/useEscape';
 import { useFocusTrap } from '@/hooks/ui/useFocusTrap';
 import { useModalGuard } from '@/hooks/ui/useModalGuard';
 import { messageOf } from '@/components/chrome/auth-shared';
+import { DialogFooter } from '@/components/dialogs/DialogFooter';
 
 type Phase = 'idle' | 'submitting' | 'error';
 
@@ -174,7 +175,7 @@ export function DeleteAccountDialog({
             ) : null}
           </div>
 
-          <div className="flex items-center justify-end gap-2 border-t border-slate-100 px-6 py-4 dark:border-slate-800">
+          <DialogFooter>
             <Button variant="secondary" onClick={onClose} disabled={phase === 'submitting'}>
               Cancel
             </Button>
@@ -186,7 +187,7 @@ export function DeleteAccountDialog({
             >
               {phase === 'submitting' ? 'Deleting…' : 'Delete account'}
             </Button>
-          </div>
+          </DialogFooter>
         </div>
       </div>
     </Portal>

@@ -1,5 +1,6 @@
 import { Button } from '@livediagram/ui';
 import { ArrowRightIcon, FolderOpenIcon, SparkleIcon, Spinner } from './template-picker-icons';
+import { DialogFooter } from '@/components/dialogs/DialogFooter';
 
 // The TemplatePicker's footer row (spec/14), lifted out of the picker:
 // identity mode keeps a flat Cancel + Join pair; both wizard modes
@@ -36,7 +37,7 @@ export function TemplatePickerFooter({
         footer hides entirely while the theme step's builder is open
         (the builder carries its own Save / Cancel). */}
       {isIdentity ? (
-        <div className="flex items-center justify-end gap-2 border-t border-slate-100 px-6 py-4 dark:border-slate-800">
+        <DialogFooter>
           <p className="mr-auto text-[11px] text-slate-500 dark:text-slate-400">
             Other participants will see this name on your cursor and comments.
           </p>
@@ -47,7 +48,7 @@ export function TemplatePickerFooter({
             <SparkleIcon />
             Join
           </Button>
-        </div>
+        </DialogFooter>
       ) : (
         <div className="flex items-center gap-2 border-t border-slate-100 px-6 py-4 dark:border-slate-800">
           {/* Far-left escape hatch: the welcome flow jumps to the Explorer

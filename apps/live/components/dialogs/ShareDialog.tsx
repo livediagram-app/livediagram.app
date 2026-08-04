@@ -19,6 +19,7 @@ import { ShareOfflineGate } from './ShareOfflineGate';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useCopiedFlash } from '@livediagram/ui';
 import { DialogHeader } from './DialogHeader';
+import { DialogFooter } from '@/components/dialogs/DialogFooter';
 
 // Human labels for the expiry choices (spec/34), shared by the create
 // dropdown and the inactive rows' Extend button.
@@ -354,11 +355,11 @@ export function ShareDialog({
         />
       </div>
 
-      <div className="flex items-center justify-end gap-2 border-t border-slate-100 px-6 py-4 dark:border-slate-800">
+      <DialogFooter>
         <Button variant="secondary" size="xs" onClick={onClose}>
           Done
         </Button>
-      </div>
+      </DialogFooter>
     </Dialog>
   );
 }

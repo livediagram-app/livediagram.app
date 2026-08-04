@@ -17,6 +17,7 @@ import {
 import { ToggleSwitch } from '@/components/palette/palette-controls';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { track } from '@/lib/telemetry';
+import { DialogFooter } from '@/components/dialogs/DialogFooter';
 
 // Assign Action dialog (spec/68 §2). The picker always offers a pinned
 // **Myself** row (the feature is not sign-in gated: a signed-out user can
@@ -317,14 +318,14 @@ export function AssignActionDialog({
           ) : null}
         </div>
 
-        <div className="flex justify-end gap-2 border-t border-slate-100 px-6 py-4 dark:border-slate-800">
+        <DialogFooter>
           <Button type="button" variant="secondary" onClick={onClose}>
             Cancel
           </Button>
           <Button type="submit" disabled={!canSubmit}>
             {editing ? 'Save action' : 'Assign action'}
           </Button>
-        </div>
+        </DialogFooter>
       </form>
     </Dialog>
   );

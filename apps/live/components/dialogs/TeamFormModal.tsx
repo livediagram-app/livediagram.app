@@ -5,6 +5,7 @@ import { Button, TextInput } from '@livediagram/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { CloseIcon } from '@/components/primitives/CloseIcon';
+import { DialogFooter } from '@/components/dialogs/DialogFooter';
 
 // Create / edit form for a team (spec/32): name + organisation.
 // Visual sibling of ConfirmDialog (same backdrop, fly-up animation,
@@ -118,14 +119,14 @@ export function TeamFormModal({
             />
           </label>
         </div>
-        <div className="flex items-center justify-end gap-2 border-t border-slate-100 px-6 py-4 dark:border-slate-800">
+        <DialogFooter>
           <Button variant="secondary" onClick={onCancel}>
             Cancel
           </Button>
           <Button type="submit" disabled={!name.trim()}>
             {submitLabel}
           </Button>
-        </div>
+        </DialogFooter>
       </form>
     </Dialog>
   );

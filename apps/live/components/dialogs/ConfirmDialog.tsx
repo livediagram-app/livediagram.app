@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { Button } from '@livediagram/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
+import { DialogFooter } from '@/components/dialogs/DialogFooter';
 
 // Branded confirmation modal. Visual sibling of DeleteAccountDialog
 // (same fly-up animation, same border/shadow stack, same button
@@ -65,7 +66,7 @@ export function ConfirmDialog({
           {message}
         </p>
       </div>
-      <div className="flex items-center justify-end gap-2 border-t border-slate-100 px-6 py-4 dark:border-slate-800">
+      <DialogFooter>
         <Button variant="secondary" onClick={onCancel}>
           {cancelLabel}
         </Button>
@@ -76,7 +77,7 @@ export function ConfirmDialog({
         >
           {confirmLabel}
         </Button>
-      </div>
+      </DialogFooter>
     </Dialog>
   );
 }

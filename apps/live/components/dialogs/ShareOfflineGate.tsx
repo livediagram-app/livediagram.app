@@ -8,6 +8,7 @@ import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useToast } from '@/hooks/ui/useToast';
 import { syncFailureMessage } from '@/lib/offline/offline-convert';
 import { DialogHeader } from './DialogHeader';
+import { DialogFooter } from '@/components/dialogs/DialogFooter';
 
 // The Share dialog's offline gate (spec/76). An offline diagram is stored only
 // in this browser, so there are no links to mint until it's synced to the
@@ -83,11 +84,11 @@ export function ShareOfflineGate({
         </Button>
       </div>
 
-      <div className="flex items-center justify-end gap-2 border-t border-slate-100 px-6 py-4 dark:border-slate-800">
+      <DialogFooter>
         <Button variant="secondary" size="xs" onClick={onClose} disabled={busy}>
           Cancel
         </Button>
-      </div>
+      </DialogFooter>
     </Dialog>
   );
 }

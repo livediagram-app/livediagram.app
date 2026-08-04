@@ -6,6 +6,7 @@ import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { normaliseUrl } from '@/lib/url-safety';
 import type { ElementLink } from '@livediagram/diagram';
 import { DialogHeader } from './DialogHeader';
+import { DialogFooter } from '@/components/dialogs/DialogFooter';
 
 // Shared link picker, styled like the import / export dialogs (centred
 // modal, brand chrome). Used for BOTH element links and per-cell table
@@ -248,7 +249,7 @@ export function LinkPickerDialog({
       </div>
 
       {currentLink ? (
-        <div className="flex justify-end border-t border-slate-100 px-6 py-4 dark:border-slate-800">
+        <DialogFooter>
           <button
             type="button"
             onClick={() => commit(null)}
@@ -256,7 +257,7 @@ export function LinkPickerDialog({
           >
             Remove link
           </button>
-        </div>
+        </DialogFooter>
       ) : null}
     </Dialog>
   );
