@@ -9,7 +9,6 @@ import {
   voteHidesCursors,
   voteHidesTallies,
   voteTotals,
-  voteWinners,
   votesSpentBy,
   type TabTimer,
   type TabVote,
@@ -119,15 +118,6 @@ describe('vote tallies', () => {
 
   it('voteTotals collapses to per-element counts, dropping zero-dot elements', () => {
     expect(voteTotals(vote)).toEqual({ e1: 3, e2: 1 });
-  });
-
-  it('voteWinners returns the max-count element(s); empty when no dots', () => {
-    expect(voteWinners(vote)).toEqual(['e1']);
-    expect(voteWinners({ ...vote, votes: {} })).toEqual([]);
-    // Ties return all joint winners.
-    expect(
-      voteWinners({ ...vote, votes: { a: ['x', 'y'], b: ['p', 'q'], c: ['z'] } }).sort(),
-    ).toEqual(['a', 'b']);
   });
 });
 

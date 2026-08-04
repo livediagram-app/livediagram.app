@@ -8,7 +8,6 @@ import {
   normalizeRuns,
   runsFromPlainText,
   runsPlainText,
-  setRunsPlainText,
   stripListPrefixes,
   toggleFormatInRange,
   type TextRun,
@@ -120,34 +119,6 @@ describe('toggleFormatInRange', () => {
     const runs = runsFromPlainText('abcd');
     const out = toggleFormatInRange(runs, 1, 3, 'italic', false);
     expect(out).toEqual([{ text: 'a' }, { text: 'bc', italic: true }, { text: 'd' }]);
-  });
-});
-
-describe('setRunsPlainText', () => {
-  it('appends inheriting the last run attrs', () => {
-    const runs: TextRun[] = [{ text: 'bold', bold: true }];
-    const out = setRunsPlainText(runs, 'boldXY');
-    expect(out).toEqual([{ text: 'boldXY', bold: true }]);
-  });
-
-  it('inserts in the middle inheriting the surrounding run', () => {
-    const runs: TextRun[] = [{ text: 'abc', italic: true }];
-    const out = setRunsPlainText(runs, 'abXYZc');
-    expect(out).toEqual([{ text: 'abXYZc', italic: true }]);
-  });
-
-  it('preserves attrs of the unedited prefix and suffix', () => {
-    const runs: TextRun[] = [{ text: 'AAA', bold: true }, { text: 'BBB' }];
-    // delete the middle 'AB' -> 'AA' + 'BB'
-    const out = setRunsPlainText(runs, 'AABB');
-    expect(runsPlainText(out)).toBe('AABB');
-    expect(out).toEqual([{ text: 'AA', bold: true }, { text: 'BB' }]);
-  });
-
-  it('returns [] on full clear and no-ops an unchanged string', () => {
-    const runs: TextRun[] = [{ text: 'abc', bold: true }];
-    expect(setRunsPlainText(runs, '')).toEqual([]);
-    expect(setRunsPlainText(runs, 'abc')).toEqual([{ text: 'abc', bold: true }]);
   });
 });
 

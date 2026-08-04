@@ -100,10 +100,6 @@ export function youtubeEmbedUrl(videoId: string): string {
 }
 
 /** The canonical watch page, for the "open on YouTube" affordance. */
-export function youtubeWatchUrl(videoId: string): string {
-  return `https://www.youtube.com/watch?v=${videoId}`;
-}
-
 // --- Other providers (spec/121) --------------------------------------------
 //
 // The video element was built YouTube-only (spec/114), and its own spec noted

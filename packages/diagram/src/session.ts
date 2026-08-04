@@ -203,13 +203,3 @@ export function voteTotals(vote: TabVote): Record<string, number> {
   }
   return totals;
 }
-
-// The element id(s) with the highest dot count (empty when no votes cast).
-// Ties return every joint-winner so the UI can highlight them all.
-export function voteWinners(vote: TabVote): string[] {
-  const totals = voteTotals(vote);
-  let max = 0;
-  for (const n of Object.values(totals)) if (n > max) max = n;
-  if (max === 0) return [];
-  return Object.keys(totals).filter((id) => totals[id] === max);
-}

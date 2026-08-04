@@ -1,11 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  embedTargetFor,
-  youtubeEmbedUrl,
-  youtubePosterUrl,
-  youtubeVideoId,
-  youtubeWatchUrl,
-} from './youtube';
+import { embedTargetFor, youtubeEmbedUrl, youtubePosterUrl, youtubeVideoId } from './youtube';
 
 // A real-shaped id: 11 chars of the URL-safe base64 alphabet, including both
 // of the non-alphanumeric ones so the character class is actually exercised.
@@ -109,10 +103,6 @@ describe('url builders', () => {
     const embed = youtubeEmbedUrl(ID);
     expect(embed.startsWith('https://www.youtube-nocookie.com/embed/')).toBe(true);
     expect(embed).toContain('autoplay=1');
-  });
-
-  it('builds the canonical watch url', () => {
-    expect(youtubeWatchUrl(ID)).toBe(`https://www.youtube.com/watch?v=${ID}`);
   });
 });
 

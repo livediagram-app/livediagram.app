@@ -73,19 +73,6 @@ function applyLiveField<K extends keyof LiveFieldBag>(
   else target[field] = value;
 }
 
-// Carry the LIVE comment threads from one tab list onto another. Comment
-// mutations bypass undo history (spec/09: typing a comment then Ctrl+Z
-// mustn't wipe it), so every history snapshot's threads are stale the
-// moment a comment lands — restoring a snapshot verbatim on undo/redo
-// would silently drop comments added since it was taken. This grafts the
-// current threads (from `from`) onto the restored elements (in `onto`),
-// per element id; elements that only exist in the snapshot (an undone
-// delete) keep the snapshot's thread. Assigned actions (spec/68) graft
-// the same way, for the same reason.
-export function graftCommentThreads(from: Tab[], onto: Tab[]): Tab[] {
-  return graftLiveTabState(from, onto, { sessionFields: false });
-}
-
 // Full live-state graft for undo/redo: comment threads + assigned actions
 // (above) PLUS the per-tab session tools (spec/39 `timer` / `vote`), which
 // also mutate outside undo history — a timer start or a vote dot isn't

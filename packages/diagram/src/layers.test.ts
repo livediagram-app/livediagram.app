@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
+  layerBands,
   addLayerAbove,
   isDefaultLayerName,
   clearLayerElements,
   hideOtherLayers,
-  layerBands,
   layerOpacityOf,
   mergeLayerInto,
   setLayerOpacity,
@@ -19,7 +19,6 @@ import {
   moveElementsToLayer,
   moveLayer,
   nextLayerName,
-  orderByLayer,
   renameLayer,
   resolveActiveLayerId,
   resolveLayerId,
@@ -79,31 +78,6 @@ describe('tabLayers / resolveLayerId', () => {
     expect(resolveLayerId('ghost', ls)).toBe(DEFAULT_LAYER_ID);
     const noDefault = [L('x'), L('y')];
     expect(resolveLayerId(undefined, noDefault)).toBe('x');
-  });
-});
-
-describe('orderByLayer', () => {
-  it('keeps array order (frames first) for a layerless tab', () => {
-    const els = [box('a'), box('f', { shape: 'frame' }), box('b')];
-    expect(ids(orderByLayer(els, undefined))).toEqual(['f', 'a', 'b']);
-  });
-
-  it('paints bands bottom -> top with frames first within each band', () => {
-    const ls = [L(DEFAULT_LAYER_ID), L('top')];
-    const els = [
-      box('t1', { layerId: 'top' }),
-      box('base1'),
-      box('tf', { shape: 'frame', layerId: 'top' }),
-      box('base2'),
-    ];
-    expect(ids(orderByLayer(els, ls))).toEqual(['base1', 'base2', 'tf', 't1']);
-  });
-
-  it('drops hidden bands unless includeHidden', () => {
-    const ls = [L(DEFAULT_LAYER_ID), L('top', { visible: false })];
-    const els = [box('a', { layerId: 'top' }), box('b')];
-    expect(ids(orderByLayer(els, ls))).toEqual(['b']);
-    expect(ids(orderByLayer(els, ls, { includeHidden: true }))).toEqual(['b', 'a']);
   });
 });
 
@@ -240,7 +214,10 @@ describe('bring to front / send to back as layer moves', () => {
     expect(ids(out.elements)).toEqual(['b', 'a']);
     // Legacy elements (no layerId) still resolve to the default layer,
     // which is no longer the bottom of the stack.
-    expect(ids(orderByLayer(out.elements, out.layers))).toEqual(['b', 'a']);
+    expect(ids(layerBands(out.elements, out.layers).flatMap((band) => band.elements))).toEqual([
+      'b',
+      'a',
+    ]);
   });
 
   it('prunes a layer the move emptied, but not one that was already empty', () => {

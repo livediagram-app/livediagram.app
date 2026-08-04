@@ -239,34 +239,6 @@ export function toggleFormatInRange(
  * word stays bold). Used by the textarea fallback + tests; the
  * contentEditable editor reads runs from the DOM directly instead.
  */
-export function setRunsPlainText(runs: TextRun[], newText: string): TextRun[] {
-  const oldText = runsPlainText(runs);
-  if (oldText === newText) return normalizeRuns(runs);
-  if (newText === '') return [];
-
-  // Common prefix length.
-  let p = 0;
-  const max = Math.min(oldText.length, newText.length);
-  while (p < max && oldText[p] === newText[p]) p++;
-  // Common suffix length (not overlapping the prefix).
-  let sfx = 0;
-  while (sfx < max - p && oldText[oldText.length - 1 - sfx] === newText[newText.length - 1 - sfx]) {
-    sfx++;
-  }
-
-  const middle = newText.slice(p, newText.length - sfx);
-  // Attributes the inserted middle inherits: the run covering offset `p`
-  // (the character just before the edit point), falling back to the run
-  // at `p` itself for a pure insertion at a boundary.
-  const inheritFrom = runAtOffset(runs, p > 0 ? p - 1 : 0);
-
-  // Keep the prefix [0, p), insert the middle, keep the old suffix.
-  const head = sliceRuns(runs, 0, p);
-  const tail = sliceRuns(runs, oldText.length - sfx, oldText.length);
-  const mid: TextRun[] = middle === '' ? [] : [{ text: middle, ...attrsOf(inheritFrom) }];
-  return normalizeRuns([...head, ...mid, ...tail]);
-}
-
 // --- Lists (line-prefix markers) -------------------------------------------
 //
 // A list is rendered as literal line-prefix TEXT ("• " for bullets, "1. " for
@@ -425,18 +397,6 @@ export function applyHeadingToLines(
   const target = expandRangeToLines(text, range ?? { start: 0, end: text.length });
   if (target.start >= target.end) return normalizeRuns(runs);
   return applyFormatToRange(runs, target.start, target.end, { heading: level ?? undefined });
-}
-
-// The run that contains character `offset` (clamped). Empty runs → a
-// blank run so callers always get attrs to inherit.
-function runAtOffset(runs: TextRun[], offset: number): TextRun {
-  let pos = 0;
-  for (const run of runs) {
-    const end = pos + run.text.length;
-    if (offset < end) return run;
-    pos = end;
-  }
-  return runs[runs.length - 1] ?? { text: '' };
 }
 
 // The runs (split at boundaries) covering [start, end), with attrs kept.

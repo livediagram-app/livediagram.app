@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { CommentThread, ShapeElement, Tab } from './index';
-import { activeCommentCount, graftCommentThreads, graftLiveTabState } from './index';
+import { activeCommentCount, graftLiveTabState } from './index';
 
 const shape = (id: string, thread?: CommentThread): ShapeElement => ({
   id,
@@ -38,44 +38,6 @@ describe('activeCommentCount', () => {
   });
 });
 
-describe('graftCommentThreads', () => {
-  it('carries a live thread onto a snapshot that predates it (undo keeps the comment)', () => {
-    const live = [tab('t1', [shape('a', thread('hello'))])];
-    const snapshot = [tab('t1', [shape('a')])];
-    const restored = graftCommentThreads(live, snapshot);
-    expect((restored[0]!.elements[0] as ShapeElement).commentThread).toEqual(thread('hello'));
-  });
-
-  it('drops a snapshot thread the live state no longer has (deleted comment stays deleted)', () => {
-    const live = [tab('t1', [shape('a')])];
-    const snapshot = [tab('t1', [shape('a', thread('stale'))])];
-    const restored = graftCommentThreads(live, snapshot);
-    expect('commentThread' in restored[0]!.elements[0]!).toBe(false);
-  });
-
-  it('keeps the snapshot thread for an element the live state lacks (undone delete restores comments)', () => {
-    const live = [tab('t1', [shape('other')])];
-    const snapshot = [tab('t1', [shape('other'), shape('deleted', thread('kept'))])];
-    const restored = graftCommentThreads(live, snapshot);
-    expect((restored[0]!.elements[1] as ShapeElement).commentThread).toEqual(thread('kept'));
-  });
-
-  it('returns the same tab object when nothing changes', () => {
-    const shared = shape('a', thread('same'));
-    const live = [tab('t1', [shared])];
-    const snapshot = [tab('t1', [shared])];
-    const restored = graftCommentThreads(live, snapshot);
-    expect(restored[0]).toBe(snapshot[0]);
-  });
-
-  it('leaves tabs missing from the live list untouched', () => {
-    const live = [tab('t1', [shape('a')])];
-    const snapshot = [tab('t2', [shape('b', thread('kept'))])];
-    const restored = graftCommentThreads(live, snapshot);
-    expect(restored[0]).toBe(snapshot[0]);
-  });
-});
-
 describe('graftLiveTabState session fields (spec/39)', () => {
   const timer = { mode: 'stopwatch', running: true, anchorAt: 123 } as const;
   const vote = { active: true, revealed: false, votesPerPerson: 3, votes: {} } as const;
@@ -103,10 +65,10 @@ describe('graftLiveTabState session fields (spec/39)', () => {
     expect(restored[0]!.vote).toEqual(vote);
   });
 
-  it('graftCommentThreads alone leaves session fields to the snapshot', () => {
+  it('grafting with sessionFields off leaves session fields to the snapshot', () => {
     const live = [{ ...tab('t1', [shape('a')]), timer }];
     const snapshot = [tab('t1', [shape('a')])];
-    const restored = graftCommentThreads(live, snapshot);
+    const restored = graftLiveTabState(live, snapshot, { sessionFields: false });
     expect('timer' in restored[0]!).toBe(false);
   });
 });

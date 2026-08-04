@@ -68,21 +68,6 @@ const framesFirstIn = (elements: Element[]): Element[] =>
     ? [...elements.filter(isFrameEl), ...elements.filter((el) => !isFrameEl(el))]
     : elements;
 
-// Paint order for a tab's elements (spec/74): a stable partition into
-// layer bands (bottom layer first), keeping `Tab.elements[]` order within
-// each band with frames hoisted to the front OF THEIR BAND. Hidden
-// layers' bands are dropped unless `includeHidden` (the export dialog's
-// "include hidden layers" option). The canvas, the exporters, and the
-// shared svg renderer all route through this so stacking is one rule in
-// one place. Cheap no-op-ish fast path when the tab has no layer array.
-export function orderByLayer(
-  elements: Element[],
-  layers: Layer[] | undefined,
-  opts?: { includeHidden?: boolean },
-): Element[] {
-  return layerBands(elements, layers, opts).flatMap((band) => band.elements);
-}
-
 // The same paint order, kept grouped per layer — for renderers that wrap
 // each band (e.g. in a <g opacity> for per-layer opacity). Bands are
 // bottom -> top, each band's elements in paint order (frames first).
