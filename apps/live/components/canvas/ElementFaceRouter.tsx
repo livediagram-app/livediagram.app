@@ -1,6 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
+import { BORDER_STROKE_PX, DEFAULT_BORDER_STROKE } from '@livediagram/diagram';
 import {
   DEFAULT_BUTTON_MODE,
   PADDING_PX,
@@ -163,6 +164,7 @@ export function ElementFaceRouter({
           timer={tabTimer ?? null}
           durationMs={(element.session.minutes ?? 5) * 60_000}
           readOnly={!timerControls.pause}
+          borderPx={BORDER_STROKE_PX[element.strokeWidth ?? DEFAULT_BORDER_STROKE]}
           onStart={
             onPressSessionButton && !sessionStartBlocked
               ? () => onPressSessionButton(element)

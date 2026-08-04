@@ -38,6 +38,7 @@ export function SessionTimerFace({
   timer,
   durationMs,
   readOnly,
+  borderPx,
   onStart,
   onPause,
   onResume,
@@ -52,6 +53,8 @@ export function SessionTimerFace({
   /** The button's own configured length, shown before a timer exists. */
   durationMs: number;
   readOnly: boolean;
+  /** The element's own border width, so the drain can cover it. */
+  borderPx: number;
   onStart?: () => void;
   onPause?: () => void;
   onResume?: () => void;
@@ -80,10 +83,17 @@ export function SessionTimerFace({
 
   return (
     <div
-      className={`pointer-events-none absolute inset-0 flex items-center justify-center gap-2 overflow-hidden rounded-[inherit] px-3 ${
+      className={`pointer-events-none absolute flex items-center justify-center gap-2 overflow-hidden rounded-[inherit] px-3 ${
         done ? 'animate-pulse' : ''
       }`}
-      style={timer ? timerFillStyle(timer, now) : undefined}
+      style={{
+        // Out to the BORDER box, not the padding box. An absolutely
+        // positioned child is placed against the padding box, so at inset-0
+        // the drain stopped short and left the element's border as an
+        // unpainted ring around a nearly-full timer.
+        inset: -borderPx,
+        ...(timer ? timerFillStyle(timer, now) : {}),
+      }}
     >
       {onSetMinutes ? (
         <ElementEllipsisMenu label="Timer options">
