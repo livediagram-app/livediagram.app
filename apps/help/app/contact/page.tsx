@@ -60,7 +60,7 @@ export default function ContactPage() {
               or follow along with development.
             </p>
             <a
-              href="https://github.com/livediagram-app/monorepo/issues"
+              href="https://github.com/livediagram-app/livediagram.app/issues"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition-all duration-200 hover:border-slate-400 hover:bg-slate-50"

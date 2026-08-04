@@ -108,7 +108,7 @@ const FAQS: { q: string; a: ReactNode; aText?: string }[] = [
       <>
         Yes. It is MIT-licensed and the source is{' '}
         <a
-          href="https://github.com/livediagram-app/monorepo"
+          href="https://github.com/livediagram-app/livediagram.app"
           target="_blank"
           rel="noopener noreferrer"
         >

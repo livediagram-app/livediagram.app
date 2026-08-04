@@ -92,7 +92,7 @@ A few hard rules from [`CLAUDE.md`](../CLAUDE.md) that constrain PRs:
 
 ## Reporting issues
 
-Open a [GitHub issue](https://github.com/livediagram-app/monorepo/issues). For bugs include:
+Open a [GitHub issue](https://github.com/livediagram-app/livediagram.app/issues). For bugs include:
 
 - What you expected vs what happened.
 - The browser / OS if visible UI is involved.

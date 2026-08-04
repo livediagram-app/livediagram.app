@@ -1,6 +1,6 @@
 # 33 — Read-only embeds (`/embed`)
 
-Tracked as [issue #8](https://github.com/livediagram-app/monorepo/issues/8). Spec/00 says "diagrams may be embedded elsewhere"; this spec makes a shared diagram iframe-able in Notion, wikis, and docs. Every embedded diagram is a distribution channel for a free product whose growth model is distribution (spec/03).
+Tracked as [issue #8](https://github.com/livediagram-app/livediagram.app/issues/8). Spec/00 says "diagrams may be embedded elsewhere"; this spec makes a shared diagram iframe-able in Notion, wikis, and docs. Every embedded diagram is a distribution channel for a free product whose growth model is distribution (spec/03).
 
 ## URL shape
 

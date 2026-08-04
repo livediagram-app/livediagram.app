@@ -120,7 +120,7 @@ See [spec/04](../specs/04-auth-and-guest-access.md) for the hybrid auth model.
 After the one-time Cloudflare setup:
 
 ```sh
-git clone https://github.com/livediagram-app/monorepo livediagram
+git clone https://github.com/livediagram-app/livediagram.app livediagram
 cd livediagram
 pnpm install
 pnpm build           # static export for marketing + live + telemetry + help

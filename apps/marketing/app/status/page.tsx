@@ -128,7 +128,7 @@ export default function StatusPage() {
           </a>{' '}
           or file an issue on{' '}
           <a
-            href="https://github.com/livediagram-app/monorepo/issues"
+            href="https://github.com/livediagram-app/livediagram.app/issues"
             target="_blank"
             rel="noopener noreferrer"
             className="underline hover:text-slate-800"

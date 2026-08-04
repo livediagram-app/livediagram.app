@@ -12,7 +12,7 @@ Cloudflare is not required for local development. The api worker runs locally vi
 ## Clone and install
 
 ```sh
-git clone https://github.com/livediagram-app/monorepo livediagram
+git clone https://github.com/livediagram-app/livediagram.app livediagram
 cd livediagram
 pnpm install
 ```

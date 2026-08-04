@@ -77,7 +77,7 @@ export const viewport: Viewport = {
 // preview when the WebSite / SoftwareApplication entities surface
 // in search.
 const OG_IMAGE = `${SITE_URL}/opengraph-image`;
-const REPO_URL = 'https://github.com/livediagram-app/monorepo';
+const REPO_URL = 'https://github.com/livediagram-app/livediagram.app';
 // The brand mark, served from public/ at the origin root. Used as the
 // Organization logo so a brand SERP / Knowledge Graph can show it.
 const LOGO_URL = `${SITE_URL}/livediagram-icon-512.png`;

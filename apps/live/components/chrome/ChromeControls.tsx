@@ -66,7 +66,7 @@ export function ChromeControls({
         className="hidden sm:inline-flex"
       >
         <a
-          href="https://github.com/livediagram-app/monorepo"
+          href="https://github.com/livediagram-app/livediagram.app"
           target="_blank"
           rel="noreferrer noopener"
           aria-label="Source on GitHub"
