@@ -42,9 +42,19 @@ type Slide = {
   // space are the slide's.
   tabId: TabId;
   elementIds: ElementId[];
+  // What you mean to SAY over this slide. The slide's own, not any
+  // element's. See Presenter notes below.
+  notes?: string;
 };
 
 type Deck = { slides: Slide[] };
+
+// The stored envelope. An array from day one even though v1 ships exactly
+// one deck: "the deck for the exec review" and "the deck for the team
+// walkthrough" are an obvious want over the same diagram, and shipping
+// `{ slides }` now would mean a data migration to add the second. An array
+// with one member costs nothing today and keeps that door open.
+type StoredPresentation = { decks: Deck[] };
 ```
 
 - **Dangling ids resolve at read time.** An element deleted after being added to a slide is skipped, exactly as spec/74 resolves an unknown `layerId` rather than rewriting element data on delete. No cleanup pass, no delete-path coupling, and undo restores the element back onto its slides for free. A slide whose whole TAB is deleted is skipped the same way.
@@ -74,6 +84,7 @@ The **Slide Deck panel** is the seventh tool panel, on exactly the contract the 
 - **An empty deck stays empty.** No seeded slides, no "one per tab" starter. A generated deck is a deck you have to read and prune before you can trust it, and pruning somebody else's guesses is slower than making the three slides you meant.
 - **Reorder** by dragging rows, the pointer-event drag the Layers panel already uses (native HTML5 dnd is dead on touch).
 - **Rename** inline, **delete**, and **duplicate** a slide.
+- **Presenter notes** for the selected slide, in a text area under the list. Written here, not on the canvas, because a note is about the slide rather than about anything on it.
 - Selecting a row **switches to that slide's tab and highlights its members on the canvas**. This is how you check a slide without presenting, and it is why a slide names its tab rather than inferring one.
 - **Start** — enters the full-screen deck at slide 1.
 
@@ -90,28 +101,60 @@ Reorder tabs. It was asked for while a slide belonged to a tab and the deck was 
 - **A slide is inert.** No click reaches any element, for anybody, whatever their role. Not just no editing: no voting, no starting a timer, no ticking a Done check, no firing a reaction pad. You are on a projector in front of a room, and a stray click that changes the diagram is not a feature. The session tools stay where they are used, on the canvas.
   - Live DATA still displays. A timer somebody started before the presentation goes on counting down on the slide, and a poll shows the results it has. That is the slide reporting the diagram, not the audience changing it, and freezing a running clock mid-sentence would read as a bug.
 - **Rendered by the real canvas**, inert, rather than by the static SVG renderer. Not for interactivity, which is now gone, but so there is exactly ONE thing that knows how an element looks. A second renderer for presenting is a second renderer to keep in step, and it would drift the first time an element gained a feature. It also keeps the live-data rule above free.
-- **Advance** with `→`, `Space`, `Page Down`, or click. **Back** with `←`, `Page Up`. `Home` / `End` jump to the ends. `Esc` exits and restores the previous tab, viewport and chrome.
-- A minimal HUD shows position (`7 / 23`) and the slide's name, fading when idle.
-- Advancing past the last slide shows an end state; one more advance or `Esc` exits.
+- **Advance** with `→`, `Space`, `Page Down`, or click. **Back** with `←`, `Page Up`. `Home` / `End` jump to the ends.
+- Advancing past the last slide shows an end state; one more advance exits.
+
+### Motion
+
+A deck should feel like a deck, and the transitions are what sell it.
+
+- **Entering**: the first slide animates in as a card arriving on screen (scale up from slightly small, fading in) over the darkened editor behind it. Starting a presentation should look like something opened, not like the page swapped.
+- **Between slides**: the outgoing slide slides out to the LEFT while the incoming one slides in from the RIGHT, moving together. Going **back** mirrors it: out to the right, in from the left, so the direction always says which way you are travelling through the deck.
+- **Exiting**: the reverse of entry, back to the editor.
+- Motion honours `prefers-reduced-motion`: those users get a cross-fade at the same durations, so the deck still reads as changing slides without the travel.
+- Transitions are **CSS transforms on the slide surface** (translate + scale + opacity), not per-element animation. One moving layer is cheap at any slide size, and it means a hundred-element slide transitions exactly as fast as a one-element slide.
+
+### Leaving
+
+Two ways out, because a presenter mid-sentence should not have to remember one:
+
+- **`Esc`**, any time.
+- **A close button**, top-right, part of the HUD. The HUD (position `7 / 23`, the slide's name, the close button) **fades out when the pointer is idle and comes back on any pointer movement**, so a still screen is clean for the room and the way out is always one twitch of the mouse away.
+
+Exiting restores the previous tab, viewport and chrome.
+
 - Available to **every role including share-link viewers**: presenting is read-only by nature, and a viewer narrating a shared diagram is a core case.
 
 ### Cross-tab loading
 
 Tabs load lazily (spec/13), so a deck whose slides reach into a tab nobody has visited would stall mid-presentation. `loadAllTabs()` already exists in `usePerTabLoad.ts` — a one-shot parallel fetch of every unloaded tab, built for cross-tab element search — and Start awaits it. A slide whose tab still cannot be resolved is skipped rather than blocking the deck.
 
-## Notes
+## Presenter notes
 
-An element's existing `note?` (spec/05, rich text per spec/92) renders in a caption panel at the bottom when the slide's elements carry one. Several notes on one slide stack in slide-member order.
+**Each slide carries its own notes**, written and edited in the Slide Deck panel: pick a slide, type what you mean to say over it. They are the slide's, stored on the slide.
 
-## Realtime
+They are deliberately NOT the elements' existing `note?` field (spec/05, rich text per spec/92), which the previous draft reused. That field is a note about a _thing_ — "this queue is the one that backs up" — and it belongs to the element wherever it appears. What a presenter needs is a note about a _moment_ in a talk, and the same element on two slides usually wants two different things said about it. Deriving slide notes by gathering up element notes gives you neither: a caption assembled from three elements' annotations, in element order, saying nothing you chose to say.
 
-v1 is **local-only**: entering presentation broadcasts nothing, and remote cursors / lasers are hidden from the presenter's view. Edits arriving mid-presentation are applied underneath; a slide re-renders if one of its members changed.
+- Plain text in v1, not rich text. It is a script you read off, and the rich-text editor is a surface to maintain for something nobody will bold.
+- Where they appear during a presentation is question 1 below, and it is the one thing here still open.
 
-Follow-the-presenter (a `presentation` room op so viewers' screens track the presenter's slide) is the natural v2 and slots into the presence-op family (`cursor`, `select`, `laser`, `tab-focus`) in `@livediagram/api-schema`.
+## Realtime: presenting is local, and that is the design
+
+**Presenting broadcasts nothing.** The delivery mechanism is you sharing your screen in the meeting you are already in. Collaborators with the diagram open see the diagram, not your deck; nobody is pulled into your slide, nobody's viewport moves, nobody has to be told a presentation started.
+
+This is a stance, not a v1 shortcut. "Follow the presenter" was the obvious v2 and is **not planned**: it makes presenting something that happens TO other people, which is the opposite of the point. You are showing a room what you want them to see, on your screen. Somebody else reading the same diagram in another window is doing their own work and should be left alone.
+
+What it saves is real. Presenting needs **no room op, no api-schema change, and nothing in the Durable Object**. Remote cursors and lasers are hidden from the presenter's own view (they would puncture the illusion on a projector), and edits arriving mid-presentation apply underneath as normal, so a slide re-renders if one of its members changed.
+
+### Deck edits are ordinary diagram data
+
+The deck itself IS shared: a teammate opening the diagram sees your slides and can edit them. Deck changes ride the normal diagram save and arrive for other people on their next load, like the diagram's name does.
+
+**No live `deck` room op in v1.** It was specced and dropped once presenting went local: a deck is small, rarely touched, and in practice authored by one person for one meeting, so the realtime path would be carrying a message almost nobody sends. The cost is last-write-wins at whole-deck granularity if two people edit slides in the same session without reloading, which is the same exposure the diagram name already has and is proportionate to how often it will happen. If it turns out to bite, a `deck` op carrying the whole (small) deck is a small addition, deliberately unlike the granular per-element merge in spec/75.
 
 ## Implementation shape
 
-Per the no-god-files rule: `useSlideDeck.ts` (deck state, current index, keyboard, camera targets), `SlideDeckPanel.tsx` (the seventh tool panel, built like `EraserPanel` / `HighlighterPanel`), and `PresentationOverlay.tsx` (the full-screen surface Start puts you into: HUD, captions, end state). Deck helpers stay pure and live in `packages/diagram` beside the element helpers: resolving a slide to its elements, pulling in implied arrows, and computing a slide's bounds are all `(Deck, Tab[]) -> ...` functions with no React in them, so they are testable and reusable by the api and MCP worker.
+Per the no-god-files rule: `useSlideDeck.ts` (deck state, current index, keyboard, camera targets), `SlideDeckPanel.tsx` (the seventh tool panel, built like `EraserPanel` / `HighlighterPanel`), and `PresentationOverlay.tsx` (the full-screen surface Start puts you into: the slide surface and its transitions, the auto-hiding HUD, the notes, the end state). Deck helpers stay pure and live in `packages/diagram` beside the element helpers: resolving a slide to its elements, pulling in implied arrows, and computing a slide's bounds are all `(Deck, Tab[]) -> ...` functions with no React in them, so they are testable and reusable by the api and MCP worker.
 
 ## Telemetry
 
@@ -119,10 +162,10 @@ Per spec/22: `track('UI', 'Opened', 'SlideDeck')` when the tool is picked, `trac
 
 ## Out of scope (v1)
 
-- Follow-the-presenter sync.
-- Presenter-only notes view / dual-screen console.
+- Follow-the-presenter sync. **Not planned**, see Realtime above: it inverts what presenting is for.
+- Dual-screen presenter console (notes on your laptop, slide on the projector). Per-slide notes ship; a second-window console does not.
 - Export the deck to PDF or PPT. (The framing rule above makes it tractable later: every slide already has bounds, and the export renderer already draws a bounded element set.)
-- Transitions and per-element build animation within a slide.
+- Per-element build animation WITHIN a slide (clicking to reveal one box at a time). Slide-to-slide transitions ship, see Motion; building up a single slide does not.
 - Auto-generating a deck from a diagram (see the empty-deck rule above: deliberate, not deferred).
 - A slide that mixes tabs. Ruled out by the model, not postponed.
 - Interaction during a presentation. Also ruled out, not postponed: a slide is inert.
@@ -137,5 +180,6 @@ The three questions this draft opened with are answered, and the answers are in 
 
 ## Open questions
 
-1. **Duplicating a slide across tabs.** Duplicate copies a slide within its tab. Should there be a "copy this slide's layout to another tab" that maps to the equivalent elements, or is that a fantasy given elements are not equivalent across tabs?
-2. **A deleted tab's slides.** They are skipped at read time (above), so a deck can carry invisible slides that come back if the tab is restored by undo. Is silent-skip right, or should the panel show them struck through so you know they are there?
+1. **Where presenter notes appear while presenting.** They are the presenter's script, but presenting is one screen that a whole room is looking at over a share. Three options, none obviously right: a caption panel the room also sees (simple, but then they are not private); hidden by default and toggled with a key (private until you want them, invisible if you forget the key); or always visible only in a narrow strip you can crop out of a share (fiddly). Not blocking: the notes are authored and stored either way.
+2. **Duplicating a slide across tabs.** Duplicate copies a slide within its tab. Should there be a "copy this slide to another tab" that maps to equivalent elements, or is that a fantasy given elements are not equivalent across tabs?
+3. **A deleted tab's slides.** They are skipped at read time (above), so a deck can carry invisible slides that come back if the tab is restored by undo. Is silent-skip right, or should the panel show them struck through so you know they are there?
