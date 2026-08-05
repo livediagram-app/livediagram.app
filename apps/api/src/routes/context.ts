@@ -49,7 +49,13 @@ export type RouteContext = {
 
 // Visitor share code carried on edit/view-link requests so a non-owner
 // can authorise against a diagram they don't own.
-function shareCodeOf(request: Request): string | null {
+//
+// Exported because its PRESENCE is the only honest signal that a caller
+// arrived through a share link. "Isn't the owner" is not that signal: a
+// joined team member reads every diagram in their team's library without a
+// code (spec/35), so the visitor-facing timeline events keyed on
+// `owner !== ownerId` were reporting teammates as strangers with a link.
+export function shareCodeOf(request: Request): string | null {
   return request.headers.get('X-Share-Code');
 }
 

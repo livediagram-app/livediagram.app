@@ -28,7 +28,7 @@ import {
 import { badRequest, conflict, forbidden, json, noContent, notFound } from '../responses';
 import { recordCommentAdded, recordTabSave, recordVisitorOpened } from '../timeline';
 import { handleDiagramShareRoutes } from './diagram-share-routes';
-import { gateEdit, gateRead, requireOwner, type RouteContext } from './context';
+import { gateEdit, gateRead, requireOwner, shareCodeOf, type RouteContext } from './context';
 
 // Tab-content sub-resource routes for /api/diagrams/<id>/...,
 // split out of diagrams.ts. Returns a Response when it handles the path, or
@@ -68,13 +68,21 @@ export async function handleDiagramSubresources(ctx: RouteContext): Promise<Resp
         owner === existing.ownerId
           ? tab
           : { ...tab, elements: redactCommentAuthorIds(tab.elements, owner) };
-      // spec/138 §4.3: somebody who isn't the owner just opened this.
-      // The tab read is the honest signal — the diagram GET is hit by
-      // link previews and polls, whereas fetching tab content means a
-      // person is looking at the canvas. Coalesced per visitor per day
-      // inside the emit, so a stranger with a link can't flood the
-      // owner's feed by refreshing.
-      if (owner !== existing.ownerId) {
+      // spec/138 §4.3: somebody arrived through a SHARE LINK and opened this.
+      // The tab read is the honest signal for "opened" — the diagram GET is hit
+      // by link previews and polls, whereas fetching tab content means a person
+      // is looking at the canvas. Coalesced per visitor per day inside the
+      // emit, so a stranger with a link can't flood the owner's feed by
+      // refreshing.
+      //
+      // Gated on a share code being PRESENT, not merely on the caller not being
+      // the owner. The read gate also admits any joined member of the diagram's
+      // team (spec/35), who presents no code — so the looser test reported
+      // teammates browsing their own library as visitors. The bubble reads
+      // "opened by a visitor · Someone with the share link" and files under the
+      // sharing filter, so an owner saw that for a diagram they had never
+      // shared a link for, once per teammate per day.
+      if (owner !== existing.ownerId && shareCodeOf(request) !== null) {
         ctx.waitUntil?.(
           getParticipant(env, owner).then((p) =>
             recordVisitorOpened(env, existing, owner, p?.name ?? null),

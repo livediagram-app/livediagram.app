@@ -838,6 +838,20 @@ one event a stranger can trigger at will, so it coalesces per visitor
 per day — otherwise anyone holding a link could flood an owner's feed by
 refreshing.
 
+**A "visitor" is somebody who presented a SHARE CODE**, not merely somebody
+who isn't the owner. That distinction is the whole meaning of both
+visitor-facing events, and keying them on `owner !== ownerId` got it wrong:
+the read gate also admits every joined member of the diagram's team
+(spec/35), and a teammate presents no code. So browsing your own team's
+library told the diagram's owner _"opened by a visitor · Someone with the
+share link"_, under the **sharing** filter, for a diagram they had never
+shared a link for — once per teammate per day, so a twelve-person library
+could put eleven false bubbles a day on one diagram. Duplicating a
+team-library diagram reported _"copied by a visitor"_, which is simply
+untrue. Both now require a share code to have been presented. The
+teammate's own `diagram_duplicated` event is unaffected: they really did
+copy it.
+
 **Invite-link toggles go to admins only.** Whether a join credential is
 live is an administrative fact, and telling every member one exists is a
 nudge to go and find it.

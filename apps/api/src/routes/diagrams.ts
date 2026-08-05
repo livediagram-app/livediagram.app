@@ -60,6 +60,7 @@ import {
   requireDiagramAccess,
   requireOwnedDiagram,
   requireOwner,
+  shareCodeOf,
   type RouteContext,
 } from './context';
 
@@ -340,9 +341,14 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       const copy = await copyDiagram(env, id, newId, owner, newName);
       if (!copy) return notFound();
       ctx.waitUntil?.(recordDiagramDuplicated(env, copy, source.name, owner));
-      // A copy taken by someone who isn't the owner is news the owner
-      // wants: their shared diagram was worth forking.
-      if (owner !== source.ownerId) {
+      // A copy taken by someone who came in through a share link is news the
+      // owner wants: their shared diagram was worth forking.
+      //
+      // Same gate as the visitor-open event, for the same reason: the copy
+      // route's read check admits joined team members, who present no share
+      // code, and telling an owner that a teammate duplicating a team-library
+      // diagram was "copied by a visitor" is simply untrue.
+      if (owner !== source.ownerId && shareCodeOf(request) !== null) {
         ctx.waitUntil?.(
           getParticipant(env, owner).then((p) =>
             recordVisitorCopied(env, source, owner, p?.name ?? null),
