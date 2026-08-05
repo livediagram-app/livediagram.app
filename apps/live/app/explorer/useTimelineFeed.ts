@@ -99,6 +99,11 @@ export function useTimelineFeed(
   // the owner id changes (a guest signing in mid-session re-runs this
   // with a different id, and the two fetches race).
   const requestId = useRef(0);
+  // Which on-demand periods this feed has already fetched (see the period
+  // effect below). Declared up here because the first-page effect clears it:
+  // that effect's dependencies are the feed's identity, so its re-run is
+  // exactly the moment the cache stops applying.
+  const fetchedRanges = useRef(new Set<string>());
   // A stable dependency for the effects: `scope` is an object literal at
   // most call sites, so depending on it directly would refetch on every
   // parent render.
@@ -108,6 +113,15 @@ export function useTimelineFeed(
     if (!enabled || !ownerId) return;
     const id = (requestId.current += 1);
     setLoading(true);
+    // This effect's deps ARE the feed's identity, so its re-run is exactly
+    // when the period cache below stops applying: it remembers which periods
+    // have been fetched, keyed on the period alone, and `setEvents` here
+    // replaces the list wholesale. Left uncleared, switching team A -> B and
+    // paging to a month already visited on A found the period marked fetched,
+    // returned early, and rendered an empty grid — telling the reader nothing
+    // happened in team B that month. Same trap when ownerId changes as a
+    // guest signs in.
+    fetchedRanges.current.clear();
     void apiListTimeline(ownerId, { limit: TIMELINE_PAGE_SIZE, scope }).then((page) => {
       if (id !== requestId.current) return;
       setEvents(page.events);
@@ -139,8 +153,9 @@ export function useTimelineFeed(
   // different data.
   //
   // Ranges already fetched are remembered, so paging back and forth over
-  // the same months doesn't re-request them.
-  const fetchedRanges = useRef(new Set<string>());
+  // the same months doesn't re-request them. Scoped to one feed's lifetime:
+  // the first-page effect clears the set whenever the scope or owner
+  // changes.
   useEffect(() => {
     if (!enabled || !ownerId) return;
     const mode = controls.mode;

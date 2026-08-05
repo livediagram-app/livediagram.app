@@ -350,8 +350,14 @@ export function TeamPane({
       {/* The team's own history (spec/138 §3.4). Distinct from each
           member's personal feed: the per-member scopes are written when
           an event happens, so somebody who joined in March has nothing
-          from February — this scope carries the whole thing. */}
-      <TeamTimeline ownerId={ownerId} teamId={teamId} />
+          from February — this scope carries the whole thing.
+
+          Keyed on teamId for the same reason the library above is:
+          switching teams is a query-string navigation on this route, so
+          without it the feed stays mounted and carries team A's view
+          settings into team B — the category chips, the Everyone/Other
+          people filter, and the calendar month it was parked on. */}
+      <TeamTimeline key={teamId} ownerId={ownerId} teamId={teamId} />
 
       <TeamInviteLinkDialog
         open={linkOpen}

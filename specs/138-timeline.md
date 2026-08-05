@@ -576,6 +576,19 @@ two of the three have since shipped:
   what makes a personal feed one indexed scan rather than a union across
   every team you belong to.
 
+**A scoped feed must not outlive its scope.** Switching teams is a
+query-string navigation on one route, so the pane's children stay mounted
+unless keyed — and a `ScopedTimeline` that survives carries the previous
+team's category chips, actor filter and parked calendar month into the
+next team's feed. Worse, `useTimelineFeed` remembers which periods it has
+already fetched on demand (§2.2), keyed on the period alone: with the feed
+still mounted, paging to a month visited under team A found it marked
+fetched, skipped the request, and rendered an empty grid — reporting that
+nothing happened in team B that month. So the team feed is keyed on
+`teamId` at its call site (as the team library beside it already was), and
+the period cache is cleared whenever the scope or owner changes, which is
+exactly when the first-page effect re-runs.
+
 Read authorisation is explicit per scope type with an unrecognised type
 **refused**, so a scope added later is inert until somebody writes its
 rule. A missing diagram is a 403 rather than a 404, so the endpoint
