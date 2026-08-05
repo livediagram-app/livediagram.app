@@ -19,10 +19,10 @@
     "@livediagram/eslint-config": "workspace:*",
     "@livediagram/prettier-config": "workspace:*",
     "eslint": "^10.8.0",
-    "prettier": "^3.4.2",
-    "turbo": "^2.3.3",
+    "prettier": "^3.9.6",
+    "turbo": "^2.10.8",
     "typescript": "^5.7.2",
-    "wrangler": "^4.40.0"
+    "wrangler": "^4.118.0"
   },
   "engines": {
     "node": ">=22",
