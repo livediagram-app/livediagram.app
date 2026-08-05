@@ -16,7 +16,6 @@ import {
   formatMonth,
   formatWeek,
   monthKeyOf,
-  nearestPopulatedMonth,
   shiftMonth,
   shiftWeek,
 } from './monthCells';
@@ -94,13 +93,23 @@ export function TimelineCalendarView({
     return map;
   }, [events]);
 
-  const populatedMonths = useMemo(
-    () => new Set([...tonesByDay.keys()].map((key) => key.slice(0, 7))),
-    [tonesByDay],
-  );
-
-  const previousMonth = nearestPopulatedMonth(populatedMonths, monthKey, -1);
-  const nextMonth = nearestPopulatedMonth(populatedMonths, monthKey, 1);
+  // Both directions page one step at a time, months as well as weeks.
+  //
+  // Months used to jump to the nearest month that had events and disable the
+  // chevron when there wasn't one, which was right while the client held the
+  // whole history. It stopped being right when the feed became paginated with
+  // fetch-on-demand: "has events" could only be answered from the LOADED
+  // events, i.e. the 50 on page one. So an active user with a busy month saw
+  // both chevrons greyed out and titled "No earlier events" while the server
+  // held years of them — and since paging is what triggers the period fetch,
+  // the one control that could have loaded those months was the one being
+  // disabled for not having loaded them.
+  //
+  // The cost is the honest one the original comment worried about: a quiet
+  // quarter now takes a click per month. That is the same trade the week
+  // arrows already made deliberately, and it beats a control that lies.
+  const previousMonth = shiftMonth(monthKey, -1);
+  const nextMonth = shiftMonth(monthKey, 1);
   const cells = useMemo(
     () => (isWeek && weekKey ? buildWeekCells(weekKey) : buildMonthCells(monthKey)),
     [isWeek, weekKey, monthKey],
@@ -131,15 +140,14 @@ export function TimelineCalendarView({
   return (
     <div ref={gridRef}>
       <div className="mb-3 flex items-center justify-between">
-        {/* Week paging is unconditional — a week is a small enough step
-            that skipping empty ones would hide the shape of a quiet
-            stretch, which is often the thing you're looking at. Month
-            paging still jumps to the next populated month. */}
+        {/* Paging is unconditional in both modes — a step is small enough
+            that skipping empty periods would hide the shape of a quiet
+            stretch, which is often the thing you're looking at, and the
+            visible period is fetched on demand either way. */}
         <MonthArrow
           direction={-1}
           target={isWeek && weekKey ? shiftWeek(weekKey, -1) : previousMonth}
           onPick={isWeek && onWeekChange ? onWeekChange : onMonthChange}
-          label="No earlier events"
         />
         <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
           {isWeek && weekKey ? formatWeek(weekKey) : formatMonth(monthKey)}
@@ -148,7 +156,6 @@ export function TimelineCalendarView({
           direction={1}
           target={isWeek && weekKey ? shiftWeek(weekKey, 1) : nextMonth}
           onPick={isWeek && onWeekChange ? onWeekChange : onMonthChange}
-          label="No later events"
         />
       </div>
 
@@ -247,29 +254,25 @@ export function TimelineCalendarView({
   );
 }
 
+// Always enabled: `target` is the adjacent period, which always exists.
+// It used to be nullable, for a disabled "No earlier events" state that
+// could only ever be derived from the loaded page — see the note at the
+// call site.
 function MonthArrow({
   direction,
   target,
   onPick,
-  label,
 }: {
   direction: 1 | -1;
-  target: string | null;
+  target: string;
   onPick: (monthKey: string) => void;
-  label: string;
 }) {
-  const disabled = target === null;
   return (
     <button
       type="button"
-      disabled={disabled}
-      // The title lands on the button either way. A disabled button
-      // swallows pointer events, so the hint has to be the native
-      // attribute rather than anything hover-driven.
-      title={disabled ? label : undefined}
       aria-label={direction === 1 ? 'Later events' : 'Earlier events'}
-      onClick={() => target && onPick(target)}
-      className="rounded p-1 text-slate-500 transition enabled:hover:bg-slate-100 disabled:opacity-30 dark:text-slate-400 dark:enabled:hover:bg-slate-800"
+      onClick={() => onPick(target)}
+      className="rounded p-1 text-slate-500 transition hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
     >
       <svg
         className="h-4 w-4"

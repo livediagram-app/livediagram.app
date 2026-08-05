@@ -58,27 +58,6 @@ export function formatMonth(monthKey: string): string {
   });
 }
 
-// The nearest month in `direction` that actually has events, or null
-// when there is none.
-//
-// Chevrons that step one empty month at a time are what makes a
-// calendar feel broken during a quiet quarter: the reader clicks four
-// times to find out there was nothing to find. Jumping straight to the
-// next populated month — and disabling the chevron when there isn't
-// one — turns four dead clicks into one honest answer.
-export function nearestPopulatedMonth(
-  monthKeys: Iterable<string>,
-  from: string,
-  direction: 1 | -1,
-): string | null {
-  let best: string | null = null;
-  for (const key of monthKeys) {
-    if (direction === 1 ? key <= from : key >= from) continue;
-    if (best === null || (direction === 1 ? key < best : key > best)) best = key;
-  }
-  return best;
-}
-
 // The Monday of the week containing this civil date.
 export function weekStartOf(dateKey: string): string {
   const [y, m, d] = dateKey.split('-').map(Number);

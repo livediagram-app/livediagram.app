@@ -40,7 +40,6 @@ export {
   formatMonth,
   formatWeek,
   monthKeyOf,
-  nearestPopulatedMonth,
   shiftMonth,
   shiftWeek,
   weekStartOf,

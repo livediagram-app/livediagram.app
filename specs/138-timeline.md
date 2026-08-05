@@ -239,10 +239,9 @@ A segmented control in the header switches **List** / **Week** /
 parsing three labels (and collapsing to icons below `sm:`, where three
 labels plus Filter and Help would wrap the header row).
 
-**Week** is the same grid over seven days, with taller cells. Its
-chevrons page unconditionally, unlike the month's: a week is a small
-enough step that skipping empty ones would hide the shape of a quiet
-stretch, which is often the thing being looked at. Calendar renders a month grid. Each day cell carries one
+**Week** is the same grid over seven days, with taller cells.
+
+**Calendar** renders a month grid. Each day cell carries one
 coloured dot **per tone** present that day, with a count above one —
 so a month view answers "when did something get deleted?" at a glance,
 which "diagram vs team" would not. Dots sit in a fixed severity order
@@ -251,12 +250,23 @@ one opens a popover listing that day's events of that tone as full
 timeline bubbles — the same renderers, so there is one bubble
 implementation, not two.
 
-- Month navigation chevrons **skip empty months**: prev/next jump to
-  the nearest month that actually has events, and are disabled with a
-  tooltip ("No earlier events") when there is none in that direction.
-  Paging one empty month at a time through a quiet quarter is the thing
-  that makes calendar views feel broken.
-- Mode is **not persisted** across navigation. Each mount opens on List.
+- Navigation chevrons **page one period at a time**, in both week and
+  month mode, and are never disabled. A step is small enough that
+  skipping empty periods would hide the shape of a quiet stretch, which
+  is often the thing being looked at, and whichever period you land on is
+  fetched on demand.
+
+  Month paging used to jump to the nearest month that had events and
+  disable itself when there was none, tooltipped "No earlier events" —
+  correct while the client held the whole history, wrong the moment the
+  feed became paginated. "Has events" could then only be answered from
+  the LOADED events, i.e. page one, so an active user with a busy month
+  saw both chevrons greyed out while the server held years more. Worse,
+  paging is what triggers the period fetch, so the control that would
+  have loaded those months was disabled for not having loaded them. The
+  cost of the honest version is a click per empty month, which is the
+  trade week mode had already made.
+
 - Mode is not persisted across navigation. Each mount opens on List:
   someone who looked at the calendar once should not find the feed in
   calendar mode a week later wondering where their list went.

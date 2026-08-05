@@ -4,7 +4,6 @@ import {
   buildWeekCells,
   formatMonth,
   formatWeek,
-  nearestPopulatedMonth,
   shiftMonth,
   shiftWeek,
   weekStartOf,
@@ -47,27 +46,6 @@ describe('shiftMonth', () => {
 describe('formatMonth', () => {
   it('reads as a month and year', () => {
     expect(formatMonth('2026-08')).toBe('August 2026');
-  });
-});
-
-describe('nearestPopulatedMonth', () => {
-  const months = new Set(['2026-01', '2026-05', '2026-08']);
-
-  // Stepping one empty month at a time is what makes a calendar feel
-  // broken over a quiet quarter: four dead clicks to learn there was
-  // nothing there.
-  it('jumps over empty months rather than stepping one at a time', () => {
-    expect(nearestPopulatedMonth(months, '2026-05', -1)).toBe('2026-01');
-    expect(nearestPopulatedMonth(months, '2026-05', 1)).toBe('2026-08');
-  });
-
-  it('returns null at the ends so the chevron can disable', () => {
-    expect(nearestPopulatedMonth(months, '2026-01', -1)).toBeNull();
-    expect(nearestPopulatedMonth(months, '2026-08', 1)).toBeNull();
-  });
-
-  it('never returns the month it started from', () => {
-    expect(nearestPopulatedMonth(months, '2026-08', -1)).toBe('2026-05');
   });
 });
 
