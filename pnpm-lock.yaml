@@ -128,6 +128,9 @@ importers:
       '@livediagram/tailwind-config':
         specifier: workspace:*
         version: link:../../packages/tailwind-config
+      '@livediagram/templates':
+        specifier: workspace:*
+        version: link:../../packages/templates
       '@livediagram/vitest-config':
         specifier: workspace:*
         version: link:../../packages/vitest-config
