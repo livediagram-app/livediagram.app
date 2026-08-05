@@ -253,8 +253,6 @@ export type CanvasProps = {
   onFilterMultiSelected: (ids: Set<string>) => void;
   // Opens the Export dialog scoped to just the multi-selection.
   onExportMultiSelected: () => void;
-  /** Opens the Export dialog scoped to the slide deck (spec/31). */
-  onExportDeck: () => void;
   editingId: string | null;
   // True when the active label edit began via type-to-edit (spec/09):
   // the editor places the caret at the end instead of select-all so the

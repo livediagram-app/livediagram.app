@@ -90,7 +90,6 @@ export function useCanvasToolPanels({
     onMoveHighlighterPanel,
     onResetHighlighterPanel,
     slideDeck,
-    onExportDeck,
     slideDeckPanelPosition,
     onMoveSlideDeckPanel,
     onResetSlideDeckPanel,
@@ -258,7 +257,6 @@ export function useCanvasToolPanels({
   const slideDeckEl =
     !chromeHidden && canvasTool === 'slide-deck' && slideDeck ? (
       <SlideDeckPanel
-        onExportDeck={onExportDeck}
         state={slideDeck}
         tabs={tabSummaries}
         activeTabId={activeTabId ?? ''}

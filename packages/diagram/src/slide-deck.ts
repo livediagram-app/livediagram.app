@@ -158,26 +158,6 @@ export function presentableSlides(
   return out;
 }
 
-/**
- * The deck as a list of tabs, one per slide in the run — what an export walks
- * (spec/31).
- *
- * Each carries the slide's own elements and its TAB's backdrop, theme and
- * pattern, so a page looks like the slide did: a slide belongs to one tab, so
- * that is well-defined per page rather than per document.
- *
- * The name is the slide's, because it is what a page is OF. Hidden slides are
- * absent for the same reason they are absent from the run — presentableSlides
- * is the one place that is decided.
- */
-export function deckExportTabs(deck: Deck, tabs: Tab[]): Tab[] {
-  return presentableSlides(deck, tabs).map(({ slide, tab, index }) => ({
-    ...tab,
-    name: slideName(slide, index),
-    elements: resolveSlide(slide, tab),
-  }));
-}
-
 /** Every tab a deck reaches into — what Start must have loaded before it runs. */
 export function deckTabIds(deck: Deck): Set<TabId> {
   return new Set(deck.slides.map((s) => s.tabId));

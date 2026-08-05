@@ -15,7 +15,7 @@ import {
   tabToJsonText,
   tabToMarkdownText,
 } from '@/lib/export-tab';
-import { exportTabAsPdf, exportTabsAsPdf } from '@/lib/export-tab-pdf';
+import { exportTabAsPdf } from '@/lib/export-tab-pdf';
 import { tabToExcalidrawText } from '@/lib/excalidraw-export';
 import { ensureIconCatalogs } from '@/lib/icon-registry';
 import { track } from '@/lib/telemetry';
@@ -43,12 +43,7 @@ type ExportTabDialogProps = {
   // does the element filtering and hands us the already-scoped `tab`; this
   // flag only drives the copy, filename suffix, and telemetry so the dialog
   // stays a dumb renderer over whatever Tab it's given.
-  scope?: 'tab' | 'selection' | 'deck';
-  /**
-   * One pre-scoped tab per slide, in deck order. Only read for scope 'deck',
-   * where the whole point is that there are several.
-   */
-  deckTabs?: Tab[];
+  scope?: 'tab' | 'selection';
   // Owner / diagram / share context for fetching image bytes so PNG / SVG /
   // PDF embed image + avatar elements (the bitmaps live behind an
   // authenticated endpoint). Absent (e.g. no diagram id) → images export as
@@ -156,7 +151,6 @@ export function ExportTabDialog({
   diagramName,
   onClose,
   scope = 'tab',
-  deckTabs,
   imageContext,
 }: ExportTabDialogProps) {
   // null = the format grid; otherwise the picked format's sub-panel.
@@ -173,8 +167,6 @@ export function ExportTabDialog({
   const [previewReady, setPreviewReady] = useState(false);
 
   const isSelection = scope === 'selection';
-  const isDeck = scope === 'deck';
-  const deckPages = deckTabs?.length ?? 0;
   const suffix = isSelection ? ' - selection' : '';
   const baseName = sanitizeFilename(`${diagramName || 'diagram'} - ${tab.name || 'tab'}${suffix}`);
 
@@ -227,11 +219,6 @@ export function ExportTabDialog({
         downloadBlob(await exportTabAsPng(tab, renderOpts), `${baseName}.png`);
       } else if (format === 'svg') {
         downloadBlob(exportTabAsSvg(tab, renderOpts), `${baseName}.svg`);
-      } else if (isDeck && deckTabs && deckTabs.length > 0) {
-        // One document, a page per slide — not N downloads, which a browser
-        // blocks after the first few and which is not the artefact anyone
-        // asked for anyway.
-        downloadBlob(await exportTabsAsPdf(deckTabs, renderOpts), `${baseName}.pdf`);
       } else {
         downloadBlob(await exportTabAsPdf(tab, renderOpts), `${baseName}.pdf`);
       }
@@ -248,24 +235,19 @@ export function ExportTabDialog({
     ? isTextFormat(active!)
       ? `Copy this tab as ${activeCard.title}, or download a file.`
       : `Set the image options for ${activeCard.title}, then download.`
-    : isDeck
-      ? `Export the deck as a PDF, one page per slide (${deckPages}).`
-      : isSelection
-        ? 'Pick a format to export the selected elements.'
-        : 'Pick a format to export the current tab.';
+    : isSelection
+      ? 'Pick a format to export the selected elements.'
+      : 'Pick a format to export the current tab.';
 
   return (
     <Dialog
       open
       onClose={onClose}
-      ariaLabel={isDeck ? 'Export deck' : isSelection ? 'Export selection' : 'Export tab'}
+      ariaLabel={isSelection ? 'Export selection' : 'Export tab'}
       size="xl"
       className="max-h-[90vh]"
     >
-      <DialogHeader
-        title={isDeck ? 'Export deck' : isSelection ? 'Export selection' : 'Export tab'}
-        subtitle={subtitle}
-      >
+      <DialogHeader title={isSelection ? 'Export selection' : 'Export tab'} subtitle={subtitle}>
         <HelpArticleLink
           article="exportingDiagrams"
           title="Exporting diagrams"

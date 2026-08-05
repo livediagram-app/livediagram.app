@@ -3,7 +3,6 @@
 import dynamic from 'next/dynamic';
 
 import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
-import { deckExportTabs } from '@livediagram/diagram';
 import { useIsOfflineDiagram } from '@/hooks/persistence/useIsOfflineDiagram';
 import { saveOfflineToCloud } from '@/lib/offline/offline-convert';
 
@@ -28,7 +27,6 @@ export function EditorTabDialogs() {
     exportScope,
     activeTab,
     tabs,
-    slideDeck,
     multiSelectedIds,
     diagramName,
     imageContext,
@@ -77,7 +75,6 @@ export function EditorTabDialogs() {
               : activeTab
           }
           scope={exportScope}
-          deckTabs={exportScope === 'deck' ? deckExportTabs(slideDeck.deck, tabs) : undefined}
           diagramName={diagramName}
           imageContext={imageContext}
           onClose={() => setExportOpen(false)}

@@ -229,43 +229,6 @@ They are deliberately NOT the elements' existing `note?` field (spec/05, rich te
 - Plain text in v1, not rich text. It is a script you read off, and the rich-text editor is a surface to maintain for something nobody will bold.
 - During a presentation they live behind the HUD's notes button, opened on demand. See The HUD above.
 
-## Exporting the deck
-
-The Export dialog already scopes to a derived element set: `exportScope` is
-`'tab' | 'selection'` today, and "Export selection" builds a tab whose elements
-are the multi-selection and renders every format from it (spec/09). **A slide is
-that same shape** — a bounded set of one tab's elements — so the deck becomes a
-third scope rather than a new surface.
-
-- **Export deck** is offered in the tab's Export dialog whenever the diagram has
-  a deck with at least one visible slide. The heading reads "Export deck", the
-  way "Export selection" already reads.
-- **One page per slide, in deck order**, each framed by the rule Presenting
-  uses: the slide's content bounds, or its single frame element's bounds when it
-  has one. That is what makes this tractable — the framing question was answered
-  when presenting was specced, so the export inherits it rather than inventing a
-  second idea of what a slide's edges are.
-- **PDF, as one document of N pages.** The hand-rolled writer generalises from
-  one page to many — three objects per page after the catalogue and the page
-  tree — so nothing new renders; the existing per-tab renderer runs N times and
-  the pages are assembled into a single file.
-- **PNG and SVG stay tab-scoped.** A deck of twenty as twenty downloads is
-  something a browser blocks after the first few, and it is not the artefact
-  anybody asked for: "send me the deck" means one file. If a zipped set is ever
-  wanted it is a separate decision, not a format checkbox.
-- **Hidden slides are left out**, matching what Present does. A slide kept back
-  for a question is not part of the document you hand over.
-- **The slide's tab supplies the backdrop**, theme and pattern, for the same
-  reason it does when presenting: a slide belongs to one tab, so this is
-  well-defined per page rather than per document.
-- Markdown and File stay **tab-scoped**. A deck is a sequence of framed
-  pictures; the JSON round-trip and the Markdown outline are about a tab's
-  content and mean nothing sliced by slide.
-
-This is deliberately the cheap half of what "export the deck" usually means.
-It produces the artefact people actually ask for — something to put in a doc, a
-ticket or a message — without a PPT writer or a bespoke deck renderer.
-
 ## Realtime: presenting is local, and that is the design
 
 **Presenting broadcasts nothing.** The delivery mechanism is you sharing your screen in the meeting you are already in. Collaborators with the diagram open see the diagram, not your deck; nobody is pulled into your slide, nobody's viewport moves, nobody has to be told a presentation started.
@@ -315,7 +278,7 @@ events per run to tell us something the start / close pair already implies.
 
 - Follow-the-presenter sync. **Not planned**, see Realtime above: it inverts what presenting is for.
 - Dual-screen presenter console (notes on your laptop, slide on the projector). Per-slide notes ship; a second-window console does not.
-- Export the deck to **PPT**, or any editable deck format. PDF / PNG / SVG ship as a third export scope (see Exporting the deck above); a PowerPoint writer, with its own shape vocabulary to map onto, does not.
+- Export the deck to PDF or PPT. (The framing rule above makes it tractable later: every slide already has bounds, and the export renderer already draws a bounded element set.)
 - Per-element build animation WITHIN a slide (clicking to reveal one box at a time). Slide-to-slide transitions ship, see Motion; building up a single slide does not.
 - Auto-generating a deck from a diagram (see the empty-deck rule above: deliberate, not deferred).
 - A slide that mixes tabs. Ruled out by the model, not postponed.

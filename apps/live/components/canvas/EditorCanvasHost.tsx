@@ -500,10 +500,6 @@ export function EditorCanvasHost() {
         setExportScope('selection');
         setExportOpen(true);
       }}
-      onExportDeck={() => {
-        setExportScope('deck');
-        setExportOpen(true);
-      }}
       editingId={editingId}
       editCursorAtEnd={editCursorAtEnd}
       formatSourceId={formatSourceId}

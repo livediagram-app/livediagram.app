@@ -203,15 +203,12 @@ function SlideRow({
 }
 
 export function SlideDeckPanel({
-  onExportDeck,
   state,
   tabs,
   activeTabId,
   isReadOnly,
   ...placement
 }: {
-  /** Opens the tab Export dialog scoped to the deck. */
-  onExportDeck: () => void;
   state: SlideDeckState;
   /** id + name only: the panel names a slide's tab, it never reads its
    *  elements. The deck hook holds the real tabs. */
@@ -505,20 +502,6 @@ export function SlideDeckPanel({
             </span>
           ) : null}
         </button>
-
-        {/* The deck leaves as one PDF, a page per slide (spec/31). Here rather
-            than only in the tab menu because this panel is the single home for
-            everything about the deck — and the export dialog it opens is the
-            same one a tab uses, just scoped to the slides. */}
-        {runnable.length > 0 ? (
-          <button
-            type="button"
-            onClick={onExportDeck}
-            className="flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-[11px] font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
-          >
-            Export deck as PDF
-          </button>
-        ) : null}
       </div>
       {confirmDelete && deleting ? (
         <ConfirmPopover
