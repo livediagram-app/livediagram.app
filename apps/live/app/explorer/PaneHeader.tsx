@@ -11,6 +11,7 @@ import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import { MenuTile, PortalMenu } from '@/components/primitives/PortalMenu';
 import { DiagramIcon, MenuFolderIcon, PlusIcon } from './icons';
+import { paneCreateMode } from './pane-create-action';
 import { ViewToggle } from './ViewToggle';
 import type { ExplorerViewMode } from './useExplorerViewMode';
 
@@ -104,13 +105,24 @@ export function PaneHeader({
   // place: visually noisy and provides no navigation. Show only
   // when there are actual parents to click back to.
   const showCrumbs = crumbs.length >= 2;
-  const hasCreate = Boolean(onCreateDiagram || onCreateFolder);
   const showViewToggle = Boolean(viewMode && onSetViewMode);
-  const hasActions = hasCreate || Boolean(helpArticle) || Boolean(headerActions) || showViewToggle;
   // A single "+ Create" dropdown (both desktop and mobile) replaces the
-  // standalone New-diagram / New-folder buttons: two shrink-0 buttons
-  // squeezed the folder-name title to nothing on a narrow phone, and
-  // one compact button keeps the title roomy on every screen.
+  // standalone New-diagram / New-folder buttons where BOTH apply: two
+  // shrink-0 buttons squeezed the folder-name title to nothing on a narrow
+  // phone, and one compact button keeps the title roomy on every screen.
+  // Where only one applies it renders as itself — see pane-create-action.ts.
+  const createMode = paneCreateMode({
+    hasCreateDiagram: Boolean(onCreateDiagram),
+    hasCreateFolder: Boolean(onCreateFolder),
+  });
+  const hasCreate = createMode.kind !== 'none';
+  const hasActions = hasCreate || Boolean(helpArticle) || Boolean(headerActions) || showViewToggle;
+  const singleCreate =
+    createMode.kind === 'single'
+      ? createMode.action === 'diagram'
+        ? { label: 'New diagram', onClick: onCreateDiagram! }
+        : { label: folderLabel ?? 'New folder', onClick: onCreateFolder! }
+      : null;
   const [createOpen, setCreateOpen] = useState(false);
   const createRef = useRef<HTMLButtonElement>(null);
   return (
@@ -148,7 +160,21 @@ export function PaneHeader({
                 description={helpDescription}
               />
             ) : null}
-            {hasCreate ? (
+            {singleCreate ? (
+              <Button
+                size="xs"
+                onClick={singleCreate.onClick}
+                aria-label={singleCreate.label}
+                className="shadow-sm"
+              >
+                <PlusIcon />
+                {/* Label collapses to the icon below `sm:`, the same way the
+                    timeline's own mode buttons do — it would otherwise wrap
+                    the header row on a phone. aria-label carries the name. */}
+                <span className="hidden sm:inline">{singleCreate.label}</span>
+              </Button>
+            ) : null}
+            {createMode.kind === 'menu' ? (
               <Button
                 ref={createRef}
                 size="xs"

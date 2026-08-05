@@ -107,7 +107,7 @@ existing `ExplorerPane` dispatch.
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│  Timeline              [? Help] [≡ List|▦ Calendar] [⧩ Filter]│
+│ Timeline  [≡ List|▦ Calendar] [⧩ Filter] [? Help] [+ New diagram]│
 ├──────────────────────────────────────────────────────────────┤
 │  ●  ┃  [Today]  Tue, 5 Aug   2026                            │
 │  │  ┃  ┌────┬─────────────────────────────────┬─────┐        │
@@ -271,6 +271,26 @@ under a header that already has one reads as two unrelated toolbars.
 The two halves share one `useTimelineControls()` state, so a filter
 chip and the list it filters can never disagree.
 
+**The header also carries New diagram**, at the row's right edge where
+every other Explorer section puts its create action. A feed is a record
+of what happened rather than a container you add to, so this page
+originally left creation to the empty state's CTA (§2.4). That was
+wrong once Timeline became the landing page (§8.1): the empty state is
+precisely what a returning user never sees, so the first screen of the
+app offered no way to start a diagram. Timeline is still not a
+container — the button is a page-level action that navigates to `/new`,
+not an "add to this feed" verb, and it takes no folder or team
+argument the way the browse sections' create action does.
+
+Because Timeline offers no **New folder**, this is the one create verb
+on the page, and `PaneHeader` renders a lone verb as itself rather than
+behind the `+ Create` dropdown (see `pane-create-action.ts`). A
+dropdown holding a single tile costs a click and hides the word
+"diagram" behind the word "Create". Recent, the other one-verb section,
+gets the same treatment. Below `sm` the label collapses to its icon and
+`aria-label` carries the name — the same idiom, and the same reason, as
+the mode buttons in §2.2.
+
 - **Activity by: Everyone / Other people.** The sharpest filter on the
   feed, so it leads the popover. On an active account your own edits
   drown everyone else's, and "what did I miss" is the question the whole
@@ -337,7 +357,9 @@ popover is clipped no matter its z-index.
 - **Empty (new user)**: the shared `EmptyState` from `@livediagram/ui`,
   copy "Nothing has happened yet — create a diagram and it'll show up
   here", with a New Diagram action. In practice a signed-up user is
-  rarely empty because of the backfill (§5).
+  rarely empty because of the backfill (§5) — which is exactly why this
+  CTA can't be the page's only route to a new diagram, and why the
+  header carries one too (§2.3).
 - **Empty (all filtered out)**: "No events match these filters", with a
   Clear filters action. Distinct copy from the new-user case, so the
   user isn't told they have no history when they do.

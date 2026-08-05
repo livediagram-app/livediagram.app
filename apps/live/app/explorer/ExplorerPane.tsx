@@ -240,9 +240,12 @@ export function ExplorerPane() {
         viewMode={isBrowse ? viewMode : undefined}
         onSetViewMode={isBrowse ? setViewMode : undefined}
         onCreateDiagram={
-          // A feed is a record of what happened, not a container you
-          // add to — the empty state carries its own New diagram CTA.
-          selected.kind === 'timeline' ||
+          // Timeline gets one too. A feed is a record of what happened rather
+          // than a container you add to, so this started out omitted and left
+          // to the empty state's CTA — but the empty state is exactly what a
+          // returning user never sees, and Timeline is now the Explorer
+          // landing page (spec/138 §8.1). That made "start a new diagram" a
+          // dead end on the first screen of the app.
           selected.kind === 'shared' ||
           selected.kind === 'gallery' ||
           selected.kind === 'themes' ||
