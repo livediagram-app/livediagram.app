@@ -2584,6 +2584,49 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "KnownTimelineEventType": {
+    "enum": [
+      "diagram_created",
+      "diagram_renamed",
+      "diagram_duplicated",
+      "diagram_deleted",
+      "diagram_moved",
+      "diagram_edited",
+      "diagram_offline",
+      "diagram_synced",
+      "diagram_opened_by_visitor",
+      "diagram_copied_by_visitor",
+      "folder_created",
+      "folder_deleted",
+      "comment_added",
+      "comment_resolved",
+      "action_assigned",
+      "action_completed",
+      "share_link_created",
+      "share_link_expiring",
+      "team_created",
+      "team_invite_received",
+      "team_invite_accepted",
+      "team_invite_declined",
+      "team_member_joined",
+      "team_member_left",
+      "team_member_removed",
+      "team_role_changed",
+      "team_diagram_added",
+      "team_diagram_removed",
+      "team_renamed",
+      "team_deleted",
+      "team_invite_link_enabled",
+      "team_invite_link_disabled",
+      "token_created",
+      "token_revoked",
+      "token_expiring",
+      "theme_saved",
+      "theme_deleted",
+      "image_uploaded"
+    ],
+    "type": "string"
+  },
   "Layer": {
     "additionalProperties": false,
     "properties": {
@@ -4658,49 +4701,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "TimelineEventType": {
     "anyOf": [
       {
-        "type": "string"
+        "$ref": "#/components/schemas/KnownTimelineEventType"
       },
       {
-        "enum": [
-          "diagram_created",
-          "diagram_renamed",
-          "diagram_duplicated",
-          "diagram_deleted",
-          "diagram_moved",
-          "diagram_edited",
-          "diagram_offline",
-          "diagram_synced",
-          "diagram_opened_by_visitor",
-          "diagram_copied_by_visitor",
-          "folder_created",
-          "folder_deleted",
-          "comment_added",
-          "comment_resolved",
-          "action_assigned",
-          "action_completed",
-          "share_link_created",
-          "share_link_expiring",
-          "team_created",
-          "team_invite_received",
-          "team_invite_accepted",
-          "team_invite_declined",
-          "team_member_joined",
-          "team_member_left",
-          "team_member_removed",
-          "team_role_changed",
-          "team_diagram_added",
-          "team_diagram_removed",
-          "team_renamed",
-          "team_deleted",
-          "team_invite_link_enabled",
-          "team_invite_link_disabled",
-          "token_created",
-          "token_revoked",
-          "token_expiring",
-          "theme_saved",
-          "theme_deleted",
-          "image_uploaded"
-        ],
         "type": "string"
       }
     ]

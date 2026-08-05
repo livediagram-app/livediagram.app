@@ -174,6 +174,24 @@ opposite of what the colour is doing. The rules live in
 `packages/ui/src/timeline/eventTone.ts`; the palette is a product
 decision and lives in the live app's `globals.css`, light and dark.
 
+**Classification is enforced by the compiler, not by a list.** That
+neutral fallback is right for an event type this build has never heard
+of and wrong for one it ships: an unclassified event renders in a colour
+that says the wrong thing about what happened. So
+`TIMELINE_EVENT_TYPES` in `@livediagram/api-schema` is a runtime array,
+`KnownTimelineEventType` derives from it, and both the tone map and the
+filter-category map are `Record<KnownTimelineEventType, …>` — adding an
+event type fails the build until it has a tone and a chip.
+`TimelineEventType` stays open (`| (string & {})`) for the wire, which
+is precisely why the closed array has to exist alongside it. Before
+this, both maps were keyed on loose strings and the only net was a
+hand-copied list of all 38 types inside `eventTone.test.ts` — a copy of
+the union, in another package, which can only prove that the copy agrees
+with itself. spec/22 records the same lesson from the palette telemetry
+tokens, where the copy had silently drifted. The tests kept the half a
+compiler can't check: that no known type was classified `neutral` or
+`other` by hand, which is the other way to leave an event unclassified.
+
 **A bubble that can't be clicked is dimmed.** A row that looks
 identical to a clickable one but ignores the click reads as broken;
 60% opacity answers the question before the pointer gets there. The

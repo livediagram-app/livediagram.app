@@ -39,56 +39,76 @@ export function parseScope(raw: string): TimelineScopeRef | null {
 export type TimelineSourceType = 'diagram' | 'team' | 'account' | (string & {});
 
 // What HAPPENED. Distinct from the source type: one diagram produces
-// many of these over its life. Open for the same reason as the scope
-// type — a new event type is a renderer entry, not a migration.
-export type TimelineEventType =
+// many of these over its life.
+//
+// A runtime array, not a bare union, so the renderers' classification maps can
+// be `Record<KnownTimelineEventType, …>` and the COMPILER insists every event
+// type has a tone and a filter category. They used to be `Record<string, …>`
+// keyed on loose strings, with the only net a hand-copied list of all 38 types
+// in eventTone.test.ts — a copy of the union, in another package, which can
+// only ever prove the copy agrees with itself. (The same lesson spec/22 records
+// about the palette telemetry tokens, where the copy had silently drifted.)
+// Adding a type here now fails the build until it has been classified, which is
+// the whole point: an unclassified event renders in a colour that says the
+// wrong thing about what happened.
+export const TIMELINE_EVENT_TYPES = [
   // Diagram lifecycle + the coalesced editing event (spec/138 §4.2)
-  | 'diagram_created'
-  | 'diagram_renamed'
-  | 'diagram_duplicated'
-  | 'diagram_deleted'
-  | 'diagram_moved'
-  | 'diagram_edited'
-  | 'diagram_offline'
-  | 'diagram_synced'
-  | 'diagram_opened_by_visitor'
-  | 'diagram_copied_by_visitor'
-  | 'folder_created'
-  | 'folder_deleted'
+  'diagram_created',
+  'diagram_renamed',
+  'diagram_duplicated',
+  'diagram_deleted',
+  'diagram_moved',
+  'diagram_edited',
+  'diagram_offline',
+  'diagram_synced',
+  'diagram_opened_by_visitor',
+  'diagram_copied_by_visitor',
+  'folder_created',
+  'folder_deleted',
   // Collaboration (§4.3)
-  | 'comment_added'
-  | 'comment_resolved'
-  | 'action_assigned'
-  | 'action_completed'
-  | 'share_link_created'
-  | 'share_link_expiring'
+  'comment_added',
+  'comment_resolved',
+  'action_assigned',
+  'action_completed',
+  'share_link_created',
+  'share_link_expiring',
   // Teams + invites (§4.4)
-  | 'team_created'
-  | 'team_invite_received'
-  | 'team_invite_accepted'
-  | 'team_invite_declined'
-  | 'team_member_joined'
-  | 'team_member_left'
-  | 'team_member_removed'
-  | 'team_role_changed'
-  | 'team_diagram_added'
+  'team_created',
+  'team_invite_received',
+  'team_invite_accepted',
+  'team_invite_declined',
+  'team_member_joined',
+  'team_member_left',
+  'team_member_removed',
+  'team_role_changed',
+  'team_diagram_added',
   // Pulled back OUT of a team library into somebody's personal files, which
   // also transfers ownership to the mover (spec/35). Distinct from
   // `diagram_moved`: the team loses the diagram, and if the mover was not the
   // owner the owner loses it too.
-  | 'team_diagram_removed'
-  | 'team_renamed'
-  | 'team_deleted'
-  | 'team_invite_link_enabled'
-  | 'team_invite_link_disabled'
+  'team_diagram_removed',
+  'team_renamed',
+  'team_deleted',
+  'team_invite_link_enabled',
+  'team_invite_link_disabled',
   // Account + housekeeping (§4.5)
-  | 'token_created'
-  | 'token_revoked'
-  | 'token_expiring'
-  | 'theme_saved'
-  | 'theme_deleted'
-  | 'image_uploaded'
-  | (string & {});
+  'token_created',
+  'token_revoked',
+  'token_expiring',
+  'theme_saved',
+  'theme_deleted',
+  'image_uploaded',
+] as const;
+
+// The types this build knows about.
+export type KnownTimelineEventType = (typeof TIMELINE_EVENT_TYPES)[number];
+
+// Still open at the edges, for the same reason as the scope type: a wire row
+// written by a NEWER worker carries an event type this build has never heard
+// of, and it must render (as neutral / Other) rather than fail to type-check
+// or be dropped. That openness is exactly why the closed array above has to
+// exist separately — `Record<TimelineEventType, …>` would be unsatisfiable.
+export type TimelineEventType = KnownTimelineEventType | (string & {});
 
 // One event on the feed.
 //

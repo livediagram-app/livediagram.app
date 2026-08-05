@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { TIMELINE_EVENT_TYPES } from '@livediagram/api-schema';
 import { eventTone, toneColor, toneSoftColor } from './eventTone';
 
 // Colour is the fastest thing a reader takes from this feed, so the
@@ -6,54 +7,21 @@ import { eventTone, toneColor, toneSoftColor } from './eventTone';
 // quiet: a new event type ships, nobody classifies it, and it renders
 // in a tone that says the wrong thing about what happened.
 
-// Every event type the worker emits (spec/138 §4). Keep in step with
-// TimelineEventType — an unclassified one falling to neutral is fine,
-// but it should be a decision, not a surprise.
-const EMITTED = [
-  'diagram_created',
-  'diagram_renamed',
-  'diagram_duplicated',
-  'diagram_deleted',
-  'diagram_moved',
-  'diagram_edited',
-  'diagram_offline',
-  'diagram_synced',
-  'comment_added',
-  'comment_resolved',
-  'action_assigned',
-  'action_completed',
-  'share_link_created',
-  'share_link_expiring',
-  'diagram_opened_by_visitor',
-  'diagram_copied_by_visitor',
-  'folder_created',
-  'folder_deleted',
-  'team_created',
-  'team_invite_received',
-  'team_invite_accepted',
-  'team_invite_declined',
-  'team_member_joined',
-  'team_member_left',
-  'team_member_removed',
-  'team_role_changed',
-  'team_diagram_added',
-  'team_diagram_removed',
-  'team_renamed',
-  'team_deleted',
-  'team_invite_link_enabled',
-  'team_invite_link_disabled',
-  'token_created',
-  'token_revoked',
-  'token_expiring',
-  'theme_saved',
-  'theme_deleted',
-  'image_uploaded',
-];
-
 describe('eventTone', () => {
-  it('classifies every event type the worker emits', () => {
-    const unclassified = EMITTED.filter((type) => eventTone(type) === 'neutral');
+  // The map is Record<KnownTimelineEventType, …>, so a missing entry is a build
+  // failure now, not a test failure. This still earns its place: it catches the
+  // OTHER way to leave an event unclassified, which is to write `'neutral'`
+  // beside it and move on. Neutral is the right answer for an event type from a
+  // newer worker; it is never the right answer for one this build knows about.
+  it('classifies every event type it knows, deliberately — none left neutral', () => {
+    const unclassified = TIMELINE_EVENT_TYPES.filter((type) => eventTone(type) === 'neutral');
     expect(unclassified).toEqual([]);
+  });
+
+  it('reads the list from the schema, not a copy of it', () => {
+    // Guards the guard: this file used to hold its own hand-typed list of all
+    // 38 types, which could only prove it agreed with itself.
+    expect(TIMELINE_EVENT_TYPES.length).toBeGreaterThan(30);
   });
 
   it('reserves danger for destruction and lost access', () => {

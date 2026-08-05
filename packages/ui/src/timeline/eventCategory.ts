@@ -14,6 +14,8 @@
 // Anything unmapped falls to `other`, so an event type from a newer
 // worker gets a chip rather than becoming unfilterable.
 
+import type { KnownTimelineEventType } from '@livediagram/api-schema';
+
 export type TimelineCategory =
   | 'comments'
   | 'new'
@@ -27,7 +29,9 @@ export type TimelineCategory =
   | 'account'
   | 'other';
 
-const BY_EVENT: Record<string, TimelineCategory> = {
+// Exhaustive by type, not keyed on loose strings: the compiler refuses a new
+// event type until it has a chip, so nothing silently becomes unfilterable.
+const BY_EVENT: Record<KnownTimelineEventType, TimelineCategory> = {
   comment_added: 'comments',
   comment_resolved: 'comments',
 
@@ -85,7 +89,7 @@ const BY_EVENT: Record<string, TimelineCategory> = {
 };
 
 export function eventCategory(eventType: string): TimelineCategory {
-  return BY_EVENT[eventType] ?? 'other';
+  return BY_EVENT[eventType as KnownTimelineEventType] ?? 'other';
 }
 
 export const CATEGORY_LABELS: Record<TimelineCategory, string> = {
