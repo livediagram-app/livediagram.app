@@ -19,6 +19,7 @@ export type {
   TeamInvite,
   TeamListItem,
   TeamMember,
+  TeamMemberStatus,
   TeamRole,
 } from '@livediagram/api-schema';
 

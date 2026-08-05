@@ -4195,6 +4195,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "Removed",
       "Shared",
       "Joined",
+      "Declined",
       "Used",
       "Changed",
       "Exported",

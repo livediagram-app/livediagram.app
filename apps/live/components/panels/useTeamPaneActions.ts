@@ -14,6 +14,7 @@ import type { TeamDetailResponse } from '@/lib/api/teams';
 import { useConfirm } from '@/hooks/ui/useConfirm';
 import { track } from '@/lib/telemetry';
 import { memberName } from './team-pane-parts';
+import { teamRemovalCopy, teamRemovalKind, teamRemovalTelemetryType } from './team-removal';
 
 // The TeamPane's mutation handlers (spec/32), lifted out of the pane:
 // edit / delete team, email invite, role change, and remove / leave —
@@ -123,13 +124,18 @@ export function useTeamPaneActions({
   };
 
   const removeMember = async (member: TeamMember, isSelf: boolean) => {
-    const label = isSelf ? null : memberName(member, false, null);
+    // One control, three acts: leaving, withdrawing an invitation nobody
+    // accepted, and removing someone who did join. team-removal.ts decides
+    // which, so the wording and the telemetry can't drift apart.
+    const kind = teamRemovalKind(isSelf, member.status);
+    const copy = teamRemovalCopy(kind, {
+      memberLabel: isSelf ? null : memberName(member, false, null),
+      teamName: detail?.team.name,
+    });
     const ok = await confirm({
-      title: isSelf ? 'Leave team?' : 'Remove member?',
-      message: isSelf
-        ? `You will no longer be a member of "${detail?.team.name}".`
-        : `${label} will be removed from "${detail?.team.name}".`,
-      confirmLabel: isSelf ? 'Leave' : 'Remove',
+      title: copy.title,
+      message: copy.message,
+      confirmLabel: copy.confirmLabel,
     });
     if (!ok) return;
     const result = await apiRemoveTeamMember(ownerId, teamId, member.id).catch(() => null);
@@ -138,16 +144,14 @@ export function useTeamPaneActions({
     // bounced the user to Recent while they were still a member
     // (mirrors deleteTeam's guard directly above).
     if (!result) {
-      setNotice(
-        isSelf ? 'Could not leave the team. Try again.' : 'Could not remove the member. Try again.',
-      );
+      setNotice(copy.failureNotice);
       return;
     }
     if (!result.ok) {
       setNotice('A team needs at least one Admin. Promote someone else first.');
       return;
     }
-    track('Team', 'Removed', isSelf ? 'Self' : 'Member');
+    track('Team', 'Removed', teamRemovalTelemetryType(kind));
     onTeamsChanged();
     if (isSelf) {
       onLeftTeam();

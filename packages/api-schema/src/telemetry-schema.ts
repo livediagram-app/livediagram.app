@@ -92,6 +92,12 @@ export const TELEMETRY_ACTIONS = [
   'Removed',
   'Shared',
   'Joined',
+  // Team invites (spec/32): the recipient turned one down. The counterpart to
+  // 'Joined' rather than a flavour of 'Removed', because the two answer
+  // different questions — an admin withdrawing an invitation is a change of
+  // mind about the invite, a recipient declining is an answer to it, and only
+  // the accepted-vs-declined pair says whether invitations are landing.
+  'Declined',
   'Used',
   'Changed',
   'Exported',

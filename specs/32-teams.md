@@ -108,6 +108,7 @@ The right-pane team view is **one calm card**, not a stack of panels:
 - A header line with the organisation and member count, plus an overflow (⋯) menu holding the rare actions: Edit team and Delete team (admins), Leave team (any member who isn't the last Admin).
 - The member list: a deterministic-colour avatar per row, the person's **name** as the primary line — the caller's own row shows their account display name with a small "you" chip (never a bare "You"), other rows show their resolved display name or the invite email's local part prettified ("anna.smith" → "Anna Smith") — and the member's **email address** on a muted secondary line beneath the name (truncated for long addresses so the row stays tidy on mobile). Pending rows carry an amber **"Invited"** pill next to the name and render their avatar dimmed.
 - Roles: admins get a quiet inline role select per row; non-admins see a read-only role pill. Remove actions appear on row hover only.
+- The Remove action reads the row's `status`: an `invited` row has never been a member, so its confirm asks to **Withdraw invite?** and says the person has not joined yet, rather than offering to remove them "from" a team they were never in. `components/panels/team-removal.ts` owns that wording alongside the telemetry type, so the two can't disagree.
 - **The last-admin rule shapes the affordances, not just the server**: the only Admin sees no Leave item, no remove control on their row, and a pinned "Admin" pill (with an explanatory tooltip) instead of a role select. The server's `409 last_admin` remains as the backstop for stale UIs.
 - Admins also get a slim invite-by-email footer row. Placeholder copy: "Add your team by email address, they will receive an invite." (The invite lands in their in-app Invites section; no transactional email until Resend ships.)
 
@@ -115,7 +116,9 @@ The pane title row reads "Recent Diagrams" for the recent section (renamed from 
 
 ## Telemetry
 
-New category `Team` (spec/22). Events: `Team/Created`, `Team/Deleted`, `Team/Changed` (edit name/organisation), `Team/Changed/Role` (role change), `Team/Added/Member` (invite), `Team/Joined` (invite accepted), `Team/Removed/Invite` (invite declined), `Team/Removed/Member` (admin removes someone), `Team/Removed/Self` (leave). No `type` value carries user content.
+New category `Team` (spec/22). Events: `Team/Created`, `Team/Deleted`, `Team/Changed` (edit name/organisation), `Team/Changed/Role` (role change), `Team/Added/Member` (invite sent), `Team/Joined` (invite accepted), `Team/Declined/Invite` (the recipient turned it down), `Team/Removed/Invite` (an Admin withdrew an invitation nobody accepted), `Team/Removed/Member` (admin removes someone who had joined), `Team/Removed/Self` (leave). No `type` value carries user content.
+
+Declining and withdrawing are separate events because they are separate acts by separate people, and pooling them cost the accept rate: the earlier spelling gave `Removed/Invite` to the decline, which left an Admin's withdrawal falling into `Removed/Member` and put invitations nobody accepted into the count of people who left a team. See spec/22 for the funnel this forms.
 
 ## Out of scope (v1)
 

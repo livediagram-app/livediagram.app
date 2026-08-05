@@ -122,7 +122,12 @@ export function useTeams(ownerId: string | null, opts: { enabled: boolean }): Us
       if (!ownerId || !enabled) return;
       try {
         await apiRemoveTeamMember(ownerId, invite.team.id, invite.memberId);
-        track('Team', 'Removed', 'Invite');
+        // The RECIPIENT saying no, which is not the same fact as an admin
+        // withdrawing the invitation (that one keeps `Team·Removed·Invite`,
+        // spec/22). This used to emit that event, so the two were pooled and
+        // the accept-vs-decline ratio on an invite — the only number that says
+        // whether invitations are landing — could not be read at all.
+        track('Team', 'Declined', 'Invite');
         setInvites((prev) => prev.filter((i) => i.memberId !== invite.memberId));
       } catch {
         // Leave the card in place; the next refresh reconciles.

@@ -66,12 +66,31 @@ const GROUPS: MetricGroup[] = [
         title: 'Teams Created',
         blurb: 'A new team workspace was created.',
       },
+      // The invite funnel, in order: sent, accepted, turned down. Read as a
+      // trio — an invite count on its own says nothing about whether anyone
+      // acts on them, and the accept rate is the whole question for a feature
+      // that only works once a second person shows up.
       {
         category: 'Team',
         action: 'Added',
         type: 'Member',
-        title: 'Members Added',
-        blurb: 'Someone was added to a team (by invite or accepted invitation).',
+        title: 'Invites Sent',
+        blurb:
+          'An admin invited someone to a team by email. The invitation, not the acceptance — that is the next card.',
+      },
+      {
+        category: 'Team',
+        action: 'Joined',
+        type: null,
+        title: 'Invites Accepted',
+        blurb: 'Someone joined a team, by accepting an email invite or opening an invite link.',
+      },
+      {
+        category: 'Team',
+        action: 'Declined',
+        type: 'Invite',
+        title: 'Invites Declined',
+        blurb: 'The recipient turned an invitation down. Read against accepted, not against sent.',
       },
       {
         category: 'Team',

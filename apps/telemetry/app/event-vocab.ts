@@ -255,6 +255,26 @@ export function eventExplanation(category: string, action: string, type: string 
     if (action === 'Opened') return 'The global search panel was opened.';
     if (action === 'Searched') return 'A query was typed into search (one emit per session).';
   }
+  if (category === 'Team') {
+    // The three ways a row leaves a team's member list are deliberately
+    // separate: pooling them made "people who left a team" include invitations
+    // nobody ever accepted (spec/32).
+    if (action === 'Joined') return 'Someone accepted a team invite, by email or by invite link.';
+    if (action === 'Declined')
+      return 'Someone turned down a team invite. Read against Joined: the two are the accept rate on an invitation.';
+    if (action === 'Added')
+      return type === 'Member'
+        ? 'An admin sent a team invite by email. This counts the invitation, NOT the acceptance — that is Joined.'
+        : "A diagram was added to a team's shared library.";
+    if (action === 'Removed')
+      return type === 'Invite'
+        ? 'An admin withdrew an invitation the recipient had not accepted. Distinct from Declined, where the recipient is the one who said no.'
+        : type === 'Self'
+          ? 'Someone left a team they had joined.'
+          : type === 'Link'
+            ? "A team's shareable invite link was turned off."
+            : 'An admin removed a member who had joined the team.';
+  }
   if (category === 'Folder') {
     // The `Tab` type is a TAB folder (spec/30) — the collapsible grouping of tab
     // pills inside one diagram — not a folder of diagrams in the explorer. Two
