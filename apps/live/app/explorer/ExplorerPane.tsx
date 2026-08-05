@@ -12,6 +12,8 @@ import { useExplorerViewMode } from './useExplorerViewMode';
 import { EmptyPane } from './ExplorerEmptyState';
 import { DynamicFolderInfo } from './DynamicFolderInfo';
 import { TimelineControls } from '@livediagram/ui';
+import { DiagramHistoryDialog } from '@/components/panels/DiagramHistoryDialog';
+import { isOfflineIdSync } from '@/lib/offline/offline-store';
 import { useTimelineFeed } from './useTimelineFeed';
 
 // The browse sections that render a folders + diagrams grid the List/Card
@@ -216,6 +218,8 @@ export function ExplorerPane() {
   // its feed renders in the body. Gated like the other section hooks so
   // visiting Recent doesn't fetch a feed nobody is looking at.
   const timeline = useTimelineFeed(ownerId, selected.kind === 'timeline');
+  // Which diagram's history dialog is open, if any (spec/138 §3.4).
+  const [historyFor, setHistoryFor] = useState<{ id: string; name: string } | null>(null);
 
   return (
     <>
@@ -398,6 +402,12 @@ export function ExplorerPane() {
               onDismissShared={dismissShared}
               recentExcludedIds={prefs.recentExcludedIds ?? []}
               onToggleRecentExclusion={toggleRecentExclusion}
+              onShowHistory={(id) => {
+                const row = paneContent.diagrams.find((d) => d.id === id);
+                // Offline diagrams never reach the worker, so they have
+                // no server history to show (spec/76).
+                if (row && !isOfflineIdSync(id)) setHistoryFor({ id, name: row.name });
+              }}
               favouriteIds={favouriteIds}
               onToggleFavourite={toggleFavourite}
               folderChipFor={folderChipFor}
@@ -416,6 +426,19 @@ export function ExplorerPane() {
           );
         })()
       )}
+
+      {/* One diagram's own history (spec/138 §3.4), opened from a row's
+          menu. Lives at the pane level rather than per row so only one
+          is ever mounted. */}
+      {ownerId ? (
+        <DiagramHistoryDialog
+          open={historyFor !== null}
+          onClose={() => setHistoryFor(null)}
+          ownerId={ownerId}
+          diagramId={historyFor?.id ?? null}
+          diagramName={historyFor?.name ?? null}
+        />
+      ) : null}
     </>
   );
 }

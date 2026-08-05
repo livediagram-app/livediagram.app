@@ -36,6 +36,7 @@ export function DiagramRow({
   onToggleFavourite,
   recentExcluded,
   onToggleRecentExclusion,
+  onShowHistory,
   showOwner = false,
   folderChip,
 }: DiagramEntryProps) {
@@ -137,6 +138,7 @@ export function DiagramRow({
           onToggleFavourite={onToggleFavourite}
           recentExcluded={recentExcluded}
           onToggleRecentExclusion={onToggleRecentExclusion}
+          onShowHistory={onShowHistory}
         />
       ) : null}
     </li>

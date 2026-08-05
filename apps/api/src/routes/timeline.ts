@@ -20,9 +20,10 @@ import {
   type TimelineScopeRef,
 } from '@livediagram/api-schema';
 import { countUnseen, getScopeState, markScopeSeen, readTimeline } from '../db/timeline';
+import { getDiagram, getMembership } from '../db';
 import { backfillUserScope } from '../timeline';
 import { badRequest, forbidden, json, missingAuth, notFound } from '../responses';
-import type { RouteContext } from './context';
+import { gateRead, type RouteContext } from './context';
 
 // The seed endpoint costs a scope-state write and, on a first call, a
 // walk of the caller's library. Throttled so a scripted caller can't
@@ -51,12 +52,9 @@ export async function handleTimeline(ctx: RouteContext): Promise<Response> {
 
   if (segments.length === 2 && request.method === 'GET') {
     const scope = resolveScope(url, ownerId);
-    // The scope parameter exists so the wire shape is fixed before a
-    // second scope type ships (spec/138 §3.4). Until one does, the only
-    // scope anyone may read is their own — worth stating in code
-    // because the parameter looks like it invites more than it does.
     if (scope === null) return badRequest('invalid scope');
-    if (scope.scopeType !== 'user' || scope.scopeId !== ownerId) return forbidden();
+    const allowed = await canReadScope(ctx, scope, ownerId);
+    if (!allowed) return forbidden();
 
     const limit = clampLimit(url.searchParams.get('limit'));
     const page = await readTimeline(env, {
@@ -73,7 +71,10 @@ export async function handleTimeline(ctx: RouteContext): Promise<Response> {
     // empty (or partial) first page and a populated one the moment they
     // reopen — better than holding the response while we walk their
     // whole library.
-    if (!state?.backfilledAt) {
+    // Seeding walks the caller's own library, so it only applies to
+    // their personal scope; a team's history is whatever its members
+    // have actually done since the team existed.
+    if (scope.scopeType === 'user' && !state?.backfilledAt) {
       ctx.waitUntil?.(backfillUserScope(env, ownerId).catch(() => {}));
     }
 
@@ -85,9 +86,12 @@ export async function handleTimeline(ctx: RouteContext): Promise<Response> {
     // through history would mark the whole feed seen halfway down it —
     // and only once per visit window, so the markers survive long
     // enough to be read.
+    // Only the personal scope carries an unread marker: "since I was
+    // last here" is a question about one reader, and a shared team feed
+    // has no single "here" to be last at.
     const isFirstPage = !url.searchParams.get('cursor');
     const staleEnough = !state?.lastSeenAt || Date.now() - state.lastSeenAt > SEEN_WINDOW_MS;
-    if (isFirstPage && staleEnough) {
+    if (scope.scopeType === 'user' && isFirstPage && staleEnough) {
       ctx.waitUntil?.(markScopeSeen(env, scope).catch(() => {}));
     }
 
@@ -139,6 +143,39 @@ function resolveScope(url: URL, ownerId: string): TimelineScopeRef | null {
   const raw = url.searchParams.get('scope');
   if (!raw) return { scopeType: 'user', scopeId: ownerId };
   return parseScope(raw);
+}
+
+// Who may read which feed.
+//
+// This is the security boundary of the whole surface: a feed carries
+// diagram names and comment text, so getting it wrong hands one owner
+// another's work. Each scope type is allowed explicitly and anything
+// unrecognised is refused, so a scope type added later is inert until
+// somebody writes its rule here.
+async function canReadScope(
+  ctx: RouteContext,
+  scope: TimelineScopeRef,
+  ownerId: string,
+): Promise<boolean> {
+  if (scope.scopeType === 'user') return scope.scopeId === ownerId;
+  if (scope.scopeType === 'diagram') {
+    // Exactly the diagram's own read gate: its owner, a joined member of
+    // its team, or a valid share-code visitor. A missing diagram is a
+    // refusal rather than a 404, so a guessed id can't be probed for
+    // existence through this endpoint either.
+    const diagram = await getDiagram(ctx.env, scope.scopeId);
+    if (!diagram) return false;
+    return gateRead(ctx, scope.scopeId, diagram.ownerId, diagram.teamId);
+  }
+  if (scope.scopeType === 'team') {
+    // Joined members only — an `invited` row grants no access to the
+    // team's content (spec/32), and its feed is content. Teams are
+    // Clerk-only, so a guest never passes this.
+    if (!ctx.verifiedUserId) return false;
+    const membership = await getMembership(ctx.env, scope.scopeId, ctx.verifiedUserId);
+    return membership?.status === 'joined';
+  }
+  return false;
 }
 
 function clampLimit(raw: string | null): number {

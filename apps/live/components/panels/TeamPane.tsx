@@ -13,6 +13,7 @@ import { useTeamPaneActions } from './useTeamPaneActions';
 import { TeamFormModal } from '@/components/dialogs/TeamFormModal';
 import { TeamInviteLinkDialog } from '@/components/dialogs/TeamInviteLinkDialog';
 import { TeamSharedDiagrams } from '@/components/panels/TeamSharedDiagrams';
+import { TeamTimeline } from './ScopedTimeline';
 
 // Right-pane team view for the Explorer (spec/32): one calm card —
 // header (organisation + member count + an overflow menu for the
@@ -345,6 +346,12 @@ export function TeamPane({
         }}
         onCancel={() => setEditOpen(false)}
       />
+
+      {/* The team's own history (spec/138 §3.4). Distinct from each
+          member's personal feed: the per-member scopes are written when
+          an event happens, so somebody who joined in March has nothing
+          from February — this scope carries the whole thing. */}
+      <TeamTimeline ownerId={ownerId} teamId={teamId} />
 
       <TeamInviteLinkDialog
         open={linkOpen}

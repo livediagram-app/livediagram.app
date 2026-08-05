@@ -106,6 +106,7 @@ export function ListView({
   onToggleFavourite,
   folderChipFor,
   onToggleRecentExclusion,
+  onShowHistory,
   childrenCount,
   diagramsCount,
   showOwner = false,
@@ -172,6 +173,7 @@ export function ListView({
             favourite={favouriteIds?.has(d.id) === true}
             onToggleFavourite={onToggleFavourite ? () => onToggleFavourite(d.id) : undefined}
             recentExcluded={recentExcludedIds?.includes(d.id) === true}
+            onShowHistory={onShowHistory ? () => onShowHistory(d.id) : undefined}
             onToggleRecentExclusion={
               onToggleRecentExclusion ? () => onToggleRecentExclusion(d.id) : undefined
             }

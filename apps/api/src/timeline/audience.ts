@@ -16,6 +16,14 @@ export function userScope(ownerId: string): TimelineScopeRef {
   return { scopeType: 'user', scopeId: ownerId };
 }
 
+export function teamScope(teamId: string): TimelineScopeRef {
+  return { scopeType: 'team', scopeId: teamId };
+}
+
+export function diagramScope(diagramId: string): TimelineScopeRef {
+  return { scopeType: 'diagram', scopeId: diagramId };
+}
+
 // Everyone who should see an event about this diagram: its owner, plus
 // every JOINED member of its team when it lives in a team library
 // (spec/35). `invited` rows are excluded — an invite grants no
@@ -28,7 +36,7 @@ export function userScope(ownerId: string): TimelineScopeRef {
 // whole audience.
 export async function audienceForDiagram(
   env: Env,
-  diagram: Pick<DiagramDTO, 'ownerId' | 'teamId'>,
+  diagram: Pick<DiagramDTO, 'id' | 'ownerId' | 'teamId'>,
 ): Promise<TimelineScopeRef[]> {
   // The owner is added before the team lookup, so a failed lookup
   // degrades to "the owner still sees it" rather than to silence.
@@ -36,13 +44,22 @@ export async function audienceForDiagram(
   if (diagram.teamId) {
     for (const id of await joinedMemberIds(env, diagram.teamId)) owners.add(id);
   }
-  return [...owners].map(userScope);
+  // Plus the diagram's own history, which anyone who can read the
+  // diagram can read — including a share-link visitor who is in nobody's
+  // user scope.
+  const scopes = [...[...owners].map(userScope), diagramScope(diagram.id)];
+  // …and the team's own feed, so somebody who joins next month can read
+  // back what happened before they arrived. The per-member scopes above
+  // are still written: they are what makes a personal feed a single
+  // indexed scan instead of a union across every team you belong to.
+  return diagram.teamId ? [...scopes, teamScope(diagram.teamId)] : scopes;
 }
 
 // Everyone in a team, for team-level events (a member joined, a role
-// changed). Same joined-only rule.
+// changed). Same joined-only rule, plus the team's own scope.
 export async function audienceForTeam(env: Env, teamId: string): Promise<TimelineScopeRef[]> {
-  return (await joinedMemberIds(env, teamId)).map(userScope);
+  const members = (await joinedMemberIds(env, teamId)).map(userScope);
+  return [...members, teamScope(teamId)];
 }
 
 // Never throws.

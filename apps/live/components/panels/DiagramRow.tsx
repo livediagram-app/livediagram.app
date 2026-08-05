@@ -98,6 +98,7 @@ export function DiagramRow({
   onMoveRequest,
   recentExcluded,
   onToggleRecentExclusion,
+  onShowHistory,
   favourite,
   onToggleFavourite,
   onOpenShare,
@@ -129,6 +130,9 @@ export function DiagramRow({
   // viewer's state; absent where the surface can't offer it.
   recentExcluded?: boolean;
   onToggleRecentExclusion?: () => void;
+  // Opens this diagram's own Timeline (spec/138 §3.4) — who changed
+  // what, and when. Absent on surfaces that can't host the dialog.
+  onShowHistory?: () => void;
   // Per-user star (spec/95).
   favourite?: boolean;
   onToggleFavourite?: () => void;
@@ -381,6 +385,16 @@ export function DiagramRow({
                       }}
                     />
                   ) : null}
+                  {onShowHistory ? (
+                    <MenuTile
+                      icon={<HistoryIcon />}
+                      label="History"
+                      onClick={() => {
+                        onShowHistory();
+                        setMenuOpen(false);
+                      }}
+                    />
+                  ) : null}
                   {onToggleRecentExclusion ? (
                     <MenuTile
                       icon={<ClockIcon />}
@@ -444,3 +458,25 @@ export function DiagramRow({
 }
 
 // --- Teams accordion nodes (spec/35) ---------------------------------
+
+// A clock with an arrow curling back — distinct from the plain ClockIcon
+// that Recent uses, since the two now sit in the same menu.
+function HistoryIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M3 3v5h5" />
+      <path d="M3.05 13A9 9 0 1 0 6 5.3L3 8" />
+      <path d="M12 7v5l3 2" />
+    </svg>
+  );
+}

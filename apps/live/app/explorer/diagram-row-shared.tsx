@@ -201,6 +201,7 @@ export function DiagramActionsMenu({
   onDismiss,
   recentExcluded,
   onToggleRecentExclusion,
+  onShowHistory,
   favourite,
   onToggleFavourite,
 }: {
@@ -218,6 +219,7 @@ export function DiagramActionsMenu({
   // viewer's state; omitted where the surface can't offer it.
   recentExcluded?: boolean;
   onToggleRecentExclusion?: () => void;
+  onShowHistory?: () => void;
   // Per-user star (spec/95). Personal + team diagrams only; a
   // shared-with-you row isn't in your library to star.
   favourite?: boolean;

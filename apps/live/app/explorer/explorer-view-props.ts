@@ -74,6 +74,8 @@ export type ExplorerViewProps = {
   // which is every pane except Recent.
   folderChipFor?: (d: PaneDiagram) => { label: string; onOpen: () => void } | null;
   onToggleRecentExclusion?: (id: string) => void;
+  // Opens the diagram's own Timeline (spec/138 §3.4).
+  onShowHistory?: (id: string) => void;
   childrenCount: (id: string) => number;
   diagramsCount: (id: string) => number;
   // What a folder directly contains, for its card's content preview
@@ -130,6 +132,7 @@ export type DiagramEntryProps = {
   // Hide / show in Recent (spec/93).
   recentExcluded?: boolean;
   onToggleRecentExclusion?: () => void;
+  onShowHistory?: () => void;
   // Adds the desktop Owner cell ("You", the team name, or the sharer).
   showOwner?: boolean;
   // Where the diagram lives (spec/94). Recent only — every other pane IS a

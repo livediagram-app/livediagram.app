@@ -60,6 +60,7 @@ export function CardView({
   onToggleFavourite,
   folderChipFor,
   onToggleRecentExclusion,
+  onShowHistory,
   childrenCount,
   diagramsCount,
   folderContents,
@@ -137,6 +138,7 @@ export function CardView({
           favourite={favouriteIds?.has(d.id) === true}
           onToggleFavourite={onToggleFavourite ? () => onToggleFavourite(d.id) : undefined}
           recentExcluded={recentExcludedIds?.includes(d.id) === true}
+          onShowHistory={onShowHistory ? () => onShowHistory(d.id) : undefined}
           onToggleRecentExclusion={
             onToggleRecentExclusion ? () => onToggleRecentExclusion(d.id) : undefined
           }
@@ -164,6 +166,7 @@ function DiagramCard({
   onToggleFavourite,
   recentExcluded,
   onToggleRecentExclusion,
+  onShowHistory,
 }: DiagramEntryProps & {
   // Card-only: the list view shows visibility in its own column.
   showVisibilityBadge: boolean;
@@ -269,6 +272,7 @@ function DiagramCard({
           favourite={favourite}
           onToggleFavourite={onToggleFavourite}
           recentExcluded={recentExcluded}
+          onShowHistory={onShowHistory}
           onToggleRecentExclusion={onToggleRecentExclusion}
         />
       ) : null}

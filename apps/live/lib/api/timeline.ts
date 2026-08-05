@@ -15,8 +15,8 @@
 // events to show. An offline-only user sees an empty feed, which is
 // the truth.
 
-import type { TimelineEvent, TimelineReadResult } from '@livediagram/api-schema';
-import { TIMELINE_PAGE_SIZE } from '@livediagram/api-schema';
+import type { TimelineEvent, TimelineReadResult, TimelineScopeRef } from '@livediagram/api-schema';
+import { TIMELINE_PAGE_SIZE, formatScope } from '@livediagram/api-schema';
 import { API_BASE, apiHeaders } from './core';
 
 export type TimelinePage = {
@@ -30,11 +30,13 @@ const EMPTY: TimelinePage = { events: [] };
 
 export async function apiListTimeline(
   ownerId: string,
-  opts: { cursor?: string; limit?: number } = {},
+  opts: { cursor?: string; limit?: number; scope?: TimelineScopeRef } = {},
 ): Promise<TimelinePage> {
   const params = new URLSearchParams();
   params.set('limit', String(opts.limit ?? TIMELINE_PAGE_SIZE));
   if (opts.cursor) params.set('cursor', opts.cursor);
+  // Omitted for the personal feed, which is what the worker defaults to.
+  if (opts.scope) params.set('scope', formatScope(opts.scope));
   try {
     const res = await fetch(`${API_BASE}/timeline?${params.toString()}`, {
       headers: await apiHeaders(ownerId),

@@ -22,21 +22,39 @@ vi.mock('../db/timeline', () => store);
 const { emit } = vi.hoisted(() => ({ emit: { backfillUserScope: vi.fn() } }));
 vi.mock('../timeline', () => emit);
 
+const { db } = vi.hoisted(() => ({ db: { getMembership: vi.fn(), getDiagram: vi.fn() } }));
+vi.mock('../db', () => db);
+
+const { gate } = vi.hoisted(() => ({ gate: { gateRead: vi.fn() } }));
+vi.mock('./context', async (importOriginal) => {
+  const actual = await importOriginal<Record<string, unknown>>();
+  return { ...actual, gateRead: gate.gateRead };
+});
+
 import type { RouteContext } from './context';
 import { handleTimeline } from './timeline';
 
 const makeCtx = (
   method: string,
   path: string,
-  opts: { owner?: string | null } = {},
-): RouteContext =>
-  makeTestRouteContext(method, path, {
+  opts: { owner?: string | null; verifiedUserId?: string | null } = {},
+): RouteContext => {
+  const ctx = makeTestRouteContext(method, path, {
     owner: opts.owner === undefined ? 'owner-1' : opts.owner,
   });
+  if (opts.verifiedUserId !== undefined) ctx.verifiedUserId = opts.verifiedUserId;
+  return ctx;
+};
 
 beforeEach(() => {
   for (const fn of Object.values(store)) fn.mockReset();
   emit.backfillUserScope.mockReset();
+  db.getMembership.mockReset();
+  db.getMembership.mockResolvedValue(null);
+  db.getDiagram.mockReset();
+  db.getDiagram.mockResolvedValue({ id: 'd-1', ownerId: 'owner-1', teamId: null });
+  gate.gateRead.mockReset();
+  gate.gateRead.mockResolvedValue(false);
   store.readTimeline.mockResolvedValue({ items: [] });
   store.getScopeState.mockResolvedValue({ backfilledAt: 1, lastSeenAt: 2 });
   store.markScopeSeen.mockResolvedValue(undefined);
@@ -68,10 +86,91 @@ describe('handleTimeline read', () => {
     expect(store.readTimeline).not.toHaveBeenCalled();
   });
 
-  it('403s a scope type that has not shipped yet', async () => {
-    const res = await handleTimeline(makeCtx('GET', '/api/timeline?scope=diagram:abc'));
+  it('403s a scope type that has no rule yet', async () => {
+    const res = await handleTimeline(makeCtx('GET', '/api/timeline?scope=nonsense:abc'));
     expect(res.status).toBe(403);
     expect(store.readTimeline).not.toHaveBeenCalled();
+  });
+
+  // A diagram's history is readable by exactly whoever can read the
+  // diagram — which includes a share-link visitor who is in nobody's
+  // user scope, so it defers to the diagram's own gate rather than
+  // re-deriving one.
+  it('serves a diagram scope to anyone the diagram gate allows', async () => {
+    gate.gateRead.mockResolvedValue(true);
+    const res = await handleTimeline(makeCtx('GET', '/api/timeline?scope=diagram:d-1'));
+    expect(res.status).toBe(200);
+    // Called with the whole RouteContext (it needs the share-code
+    // headers), so assert the diagram identity rather than the ctx.
+    expect(gate.gateRead).toHaveBeenCalledWith(expect.anything(), 'd-1', 'owner-1', null);
+  });
+
+  it('403s a diagram scope the gate refuses', async () => {
+    const res = await handleTimeline(makeCtx('GET', '/api/timeline?scope=diagram:d-1'));
+    expect(res.status).toBe(403);
+    expect(store.readTimeline).not.toHaveBeenCalled();
+  });
+
+  // A refusal, not a 404: a guessed id must not be probeable for
+  // existence through this endpoint any more than through the diagram's.
+  it('403s a diagram scope for an id that does not exist', async () => {
+    db.getDiagram.mockResolvedValue(null);
+    const res = await handleTimeline(makeCtx('GET', '/api/timeline?scope=diagram:missing'));
+    expect(res.status).toBe(403);
+    expect(gate.gateRead).not.toHaveBeenCalled();
+  });
+
+  // A team feed carries the team's diagram names and comment text, so
+  // membership is the whole gate.
+  it('serves a team scope to a joined member', async () => {
+    db.getMembership.mockResolvedValue({ status: 'joined', role: 'member' });
+    const res = await handleTimeline(
+      makeCtx('GET', '/api/timeline?scope=team:t-1', { verifiedUserId: 'owner-1' }),
+    );
+    expect(res.status).toBe(200);
+    expect(store.readTimeline).toHaveBeenCalledWith(
+      {},
+      expect.objectContaining({ scope: { scopeType: 'team', scopeId: 't-1' } }),
+    );
+  });
+
+  it('403s a team scope for a non-member', async () => {
+    const res = await handleTimeline(
+      makeCtx('GET', '/api/timeline?scope=team:t-1', { verifiedUserId: 'stranger' }),
+    );
+    expect(res.status).toBe(403);
+    expect(store.readTimeline).not.toHaveBeenCalled();
+  });
+
+  // An invite grants no access to the team's content (spec/32), and its
+  // feed is content.
+  it('403s a team scope for an invited-but-not-joined member', async () => {
+    db.getMembership.mockResolvedValue({ status: 'invited', role: 'member' });
+    const res = await handleTimeline(
+      makeCtx('GET', '/api/timeline?scope=team:t-1', { verifiedUserId: 'owner-1' }),
+    );
+    expect(res.status).toBe(403);
+  });
+
+  it('403s a team scope for a guest — teams are Clerk-only', async () => {
+    const res = await handleTimeline(
+      makeCtx('GET', '/api/timeline?scope=team:t-1', { verifiedUserId: null }),
+    );
+    expect(res.status).toBe(403);
+    expect(db.getMembership).not.toHaveBeenCalled();
+  });
+
+  // The seed walks the CALLER's library, which is meaningless for a team.
+  it('does not seed a team scope', async () => {
+    db.getMembership.mockResolvedValue({ status: 'joined', role: 'member' });
+    store.getScopeState.mockResolvedValue(null);
+    const ctx = makeCtx('GET', '/api/timeline?scope=team:t-1', { verifiedUserId: 'owner-1' });
+    const scheduled: Promise<unknown>[] = [];
+    ctx.waitUntil = (p) => scheduled.push(p);
+    await handleTimeline(ctx);
+    await Promise.all(scheduled);
+    expect(emit.backfillUserScope).not.toHaveBeenCalled();
+    expect(store.markScopeSeen).not.toHaveBeenCalled();
   });
 
   // A 400 rather than a silent fall back to the caller's own scope: a

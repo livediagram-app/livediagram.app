@@ -18,7 +18,7 @@ import {
   type TimelineEvent,
   type TimelineMode,
 } from '@livediagram/ui';
-import { TIMELINE_PAGE_SIZE } from '@livediagram/api-schema';
+import { TIMELINE_PAGE_SIZE, type TimelineScopeRef } from '@livediagram/api-schema';
 import { apiListTimeline } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
 
@@ -44,7 +44,14 @@ export type TimelineFeed = {
   lastSeenAt?: number;
 };
 
-export function useTimelineFeed(ownerId: string | null, enabled: boolean): TimelineFeed {
+export function useTimelineFeed(
+  ownerId: string | null,
+  enabled: boolean,
+  // Omitted for the reader's own feed. A team scope reads that team's
+  // whole history, including what happened before the reader joined —
+  // the per-member scopes only carry events from after they arrived.
+  scope?: TimelineScopeRef,
+): TimelineFeed {
   const [events, setEvents] = useState<TimelineEvent[]>([]);
   const [cursor, setCursor] = useState<string | undefined>();
   const [loading, setLoading] = useState(true);
@@ -79,12 +86,16 @@ export function useTimelineFeed(ownerId: string | null, enabled: boolean): Timel
   // the owner id changes (a guest signing in mid-session re-runs this
   // with a different id, and the two fetches race).
   const requestId = useRef(0);
+  // A stable dependency for the effects: `scope` is an object literal at
+  // most call sites, so depending on it directly would refetch on every
+  // parent render.
+  const scopeKey = scope ? `${scope.scopeType}:${scope.scopeId}` : '';
 
   useEffect(() => {
     if (!enabled || !ownerId) return;
     const id = (requestId.current += 1);
     setLoading(true);
-    void apiListTimeline(ownerId, { limit: TIMELINE_PAGE_SIZE }).then((page) => {
+    void apiListTimeline(ownerId, { limit: TIMELINE_PAGE_SIZE, scope }).then((page) => {
       if (id !== requestId.current) return;
       setEvents(page.events);
       setCursor(page.nextCursor);
@@ -95,7 +106,7 @@ export function useTimelineFeed(ownerId: string | null, enabled: boolean): Timel
       setLastSeenAt((prev) => prev ?? page.lastSeenAt);
       setLoading(false);
     });
-  }, [enabled, ownerId]);
+  }, [enabled, ownerId, scopeKey]);
 
   // Once per arrival, not once per fetch: the effect above also re-runs
   // when the owner id changes, and a guest signing in should not read
@@ -110,7 +121,7 @@ export function useTimelineFeed(ownerId: string | null, enabled: boolean): Timel
   const loadMore = useCallback(() => {
     if (!cursor || loadingMore || !ownerId) return;
     setLoadingMore(true);
-    void apiListTimeline(ownerId, { cursor, limit: TIMELINE_PAGE_SIZE }).then((page) => {
+    void apiListTimeline(ownerId, { cursor, limit: TIMELINE_PAGE_SIZE, scope }).then((page) => {
       setEvents((prev) => {
         // Dedupe on append. The feed grows at the head while a reader
         // pages down it, and although the keyset cursor makes a repeat
@@ -123,7 +134,7 @@ export function useTimelineFeed(ownerId: string | null, enabled: boolean): Timel
       setLoadingMore(false);
       track('Timeline', 'Loaded', 'More');
     });
-  }, [cursor, loadingMore, ownerId]);
+  }, [cursor, loadingMore, ownerId, scopeKey]);
 
   return { events, controls, loading, loadingMore, hasMore: Boolean(cursor), loadMore, lastSeenAt };
 }
