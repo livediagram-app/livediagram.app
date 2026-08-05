@@ -41,7 +41,7 @@ importers:
         version: 5.9.3
       wrangler:
         specifier: ^4.118.0
-        version: 4.118.0(@cloudflare/workers-types@5.20260729.1)(@types/node@22.19.19)
+        version: 4.118.0(@cloudflare/workers-types@5.20260801.1)(@types/node@22.19.19)
 
   apps/api:
     dependencies:
@@ -59,8 +59,8 @@ importers:
         version: 6.2.4
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: ^5.20260729.1
-        version: 5.20260729.1
+        specifier: ^5.20260801.1
+        version: 5.20260801.1
       '@livediagram/eslint-config':
         specifier: workspace:*
         version: link:../../packages/eslint-config
@@ -87,7 +87,7 @@ importers:
         version: 4.1.10(@types/node@22.19.19)(@vitest/coverage-v8@4.1.10)(vite@7.3.5(@types/node@22.19.19)(jiti@2.7.0)(lightningcss@1.32.0))
       wrangler:
         specifier: ^4.118.0
-        version: 4.118.0(@cloudflare/workers-types@5.20260729.1)(@types/node@22.19.19)
+        version: 4.118.0(@cloudflare/workers-types@5.20260801.1)(@types/node@22.19.19)
 
   apps/help:
     dependencies:
@@ -105,10 +105,10 @@ importers:
         version: 3.1.1
       '@mdx-js/react':
         specifier: ^3.1.0
-        version: 3.1.1(@types/react@19.2.17)(react@19.2.8)
+        version: 3.1.1(@types/react@19.2.18)(react@19.2.8)
       '@next/mdx':
         specifier: ^16.3.0
-        version: 16.3.0(@mdx-js/loader@3.1.1)(@mdx-js/react@3.1.1(@types/react@19.2.17)(react@19.2.8))
+        version: 16.3.0(@mdx-js/loader@3.1.1)(@mdx-js/react@3.1.1(@types/react@19.2.18)(react@19.2.8))
       next:
         specifier: ^16.3.0
         version: 16.3.0(@playwright/test@1.62.1)(@types/node@22.19.19)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -144,11 +144,11 @@ importers:
         specifier: ^22.10.2
         version: 22.19.19
       '@types/react':
-        specifier: ^19.2.17
-        version: 19.2.17
+        specifier: ^19.2.18
+        version: 19.2.18
       '@types/react-dom':
-        specifier: ^19.0.2
-        version: 19.2.3(@types/react@19.2.17)
+        specifier: ^19.2.4
+        version: 19.2.4(@types/react@19.2.18)
       '@vitest/coverage-v8':
         specifier: ^4.1.10
         version: 4.1.10(vitest@4.1.10)
@@ -220,11 +220,11 @@ importers:
         specifier: ^22.10.2
         version: 22.19.19
       '@types/react':
-        specifier: ^19.2.17
-        version: 19.2.17
+        specifier: ^19.2.18
+        version: 19.2.18
       '@types/react-dom':
-        specifier: ^19.0.2
-        version: 19.2.3(@types/react@19.2.17)
+        specifier: ^19.2.4
+        version: 19.2.4(@types/react@19.2.18)
       '@vitest/coverage-v8':
         specifier: ^4.1.10
         version: 4.1.10(vitest@4.1.10)
@@ -272,11 +272,11 @@ importers:
         specifier: ^22.10.2
         version: 22.19.19
       '@types/react':
-        specifier: ^19.2.17
-        version: 19.2.17
+        specifier: ^19.2.18
+        version: 19.2.18
       '@types/react-dom':
-        specifier: ^19.0.2
-        version: 19.2.3(@types/react@19.2.17)
+        specifier: ^19.2.4
+        version: 19.2.4(@types/react@19.2.18)
       '@vitest/coverage-v8':
         specifier: ^4.1.10
         version: 4.1.10(vitest@4.1.10)
@@ -321,8 +321,8 @@ importers:
         version: 4.4.3
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: ^5.20260729.1
-        version: 5.20260729.1
+        specifier: ^5.20260801.1
+        version: 5.20260801.1
       '@livediagram/eslint-config':
         specifier: workspace:*
         version: link:../../packages/eslint-config
@@ -343,13 +343,13 @@ importers:
         version: 4.1.10(@types/node@22.19.19)(@vitest/coverage-v8@4.1.10)(vite@7.3.5(@types/node@22.19.19)(jiti@2.7.0)(lightningcss@1.32.0))
       wrangler:
         specifier: ^4.118.0
-        version: 4.118.0(@cloudflare/workers-types@5.20260729.1)(@types/node@22.19.19)
+        version: 4.118.0(@cloudflare/workers-types@5.20260801.1)(@types/node@22.19.19)
 
   apps/router:
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: ^5.20260729.1
-        version: 5.20260729.1
+        specifier: ^5.20260801.1
+        version: 5.20260801.1
       '@livediagram/eslint-config':
         specifier: workspace:*
         version: link:../../packages/eslint-config
@@ -373,7 +373,7 @@ importers:
         version: 4.1.10(@types/node@22.19.19)(@vitest/coverage-v8@4.1.10)(vite@7.3.5(@types/node@22.19.19)(jiti@2.7.0)(lightningcss@1.32.0))
       wrangler:
         specifier: ^4.118.0
-        version: 4.118.0(@cloudflare/workers-types@5.20260729.1)(@types/node@22.19.19)
+        version: 4.118.0(@cloudflare/workers-types@5.20260801.1)(@types/node@22.19.19)
 
   apps/telemetry:
     dependencies:
@@ -409,11 +409,11 @@ importers:
         specifier: ^22.10.2
         version: 22.19.19
       '@types/react':
-        specifier: ^19.2.17
-        version: 19.2.17
+        specifier: ^19.2.18
+        version: 19.2.18
       '@types/react-dom':
-        specifier: ^19.0.2
-        version: 19.2.3(@types/react@19.2.17)
+        specifier: ^19.2.4
+        version: 19.2.4(@types/react@19.2.18)
       eslint:
         specifier: ^10.8.0
         version: 10.8.0(jiti@2.7.0)
@@ -598,11 +598,11 @@ importers:
         specifier: workspace:*
         version: link:../vitest-config
       '@types/react':
-        specifier: ^19.2.17
-        version: 19.2.17
+        specifier: ^19.2.18
+        version: 19.2.18
       '@types/react-dom':
-        specifier: ^19.0.2
-        version: 19.2.3(@types/react@19.2.17)
+        specifier: ^19.2.4
+        version: 19.2.4(@types/react@19.2.18)
       eslint:
         specifier: ^10.8.0
         version: 10.8.0(jiti@2.7.0)
@@ -758,8 +758,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@cloudflare/workers-types@5.20260729.1':
-    resolution: {integrity: sha512-X5r/4y0gKMq/B72qkz/tEwNK4c3v2regT3to6Ia8qqC66E0+YIN/fU7x0JG6ej2rLxtU3TV3aVhfK9y8+jMMAw==}
+  '@cloudflare/workers-types@5.20260801.1':
+    resolution: {integrity: sha512-XCv5xWi47WQOK0LpLa6997Mrpz8Ct+nZmp/M5Xp8Z4BFsarf7nYjkznGOcOoYK5m1GfbMFEEuQ2OIZnbIWoe9A==}
 
   '@cspotcode/source-map-support@0.8.1':
     resolution: {integrity: sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==}
@@ -1562,13 +1562,13 @@ packages:
   '@types/node@22.19.19':
     resolution: {integrity: sha512-dyh/xO2Fh5bYrfWaaqGrRQQGkNdmYw6AmaAUvYeUMNTWQtvb796ikLdmTchRmOlOiIJ1TDXfWgVx1QkUlQ6Hew==}
 
-  '@types/react-dom@19.2.3':
-    resolution: {integrity: sha512-jp2L/eY6fn+KgVVQAOqYItbF0VY/YApe5Mz2F0aykSO8gx31bYCZyvSeYxCHKvzHG5eZjc+zyaS5BrBWya2+kQ==}
+  '@types/react-dom@19.2.4':
+    resolution: {integrity: sha512-Bsc+QHgp+P/F02XDzNCY9jnZNCUuLki36KT7VKrTXXLdHf+vHMNZnW1rVu5DNW/rCK+fya3DATySbLM4yhtKUw==}
     peerDependencies:
       '@types/react': ^19.2.0
 
-  '@types/react@19.2.17':
-    resolution: {integrity: sha512-MXfmqaVPEVgkBT/aY0aGCkRWWtByiYQXo3xdQ8r5RzuFrPiRn8Gar2tQdXSUQ2GKV3bkXckek89V8wQBY2Q/Aw==}
+  '@types/react@19.2.18':
+    resolution: {integrity: sha512-AnzbBERsrLKtk2XSfTbYRLjQPdy116Sty4q+T+Bp3IC4l6jNBvreVPAHmpq9qhXQM7CXZPjLVmGMw9sy+hxQ3w==}
 
   '@types/unist@2.0.11':
     resolution: {integrity: sha512-CmBKiL6NNo/OqgmMn95Fk9Whlp2mtvIv+KNpQKN2F4SjvrEesubTRWGYSg+BnWZOnlCaSTU1sMpsBOzgbYhnsA==}
@@ -3346,7 +3346,7 @@ snapshots:
   '@cloudflare/workerd-windows-64@1.20260730.1':
     optional: true
 
-  '@cloudflare/workers-types@5.20260729.1': {}
+  '@cloudflare/workers-types@5.20260801.1': {}
 
   '@cspotcode/source-map-support@0.8.1':
     dependencies:
@@ -3656,10 +3656,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@mdx-js/react@3.1.1(@types/react@19.2.17)(react@19.2.8)':
+  '@mdx-js/react@3.1.1(@types/react@19.2.18)(react@19.2.8)':
     dependencies:
       '@types/mdx': 2.0.14
-      '@types/react': 19.2.17
+      '@types/react': 19.2.18
       react: 19.2.8
 
   '@modelcontextprotocol/sdk@1.30.0(zod@4.4.3)':
@@ -3689,12 +3689,12 @@ snapshots:
 
   '@next/env@16.3.0': {}
 
-  '@next/mdx@16.3.0(@mdx-js/loader@3.1.1)(@mdx-js/react@3.1.1(@types/react@19.2.17)(react@19.2.8))':
+  '@next/mdx@16.3.0(@mdx-js/loader@3.1.1)(@mdx-js/react@3.1.1(@types/react@19.2.18)(react@19.2.8))':
     dependencies:
       source-map: 0.7.6
     optionalDependencies:
       '@mdx-js/loader': 3.1.1
-      '@mdx-js/react': 3.1.1(@types/react@19.2.17)(react@19.2.8)
+      '@mdx-js/react': 3.1.1(@types/react@19.2.18)(react@19.2.8)
 
   '@next/swc-darwin-arm64@16.3.0':
     optional: true
@@ -3949,11 +3949,11 @@ snapshots:
     dependencies:
       undici-types: 6.21.0
 
-  '@types/react-dom@19.2.3(@types/react@19.2.17)':
+  '@types/react-dom@19.2.4(@types/react@19.2.18)':
     dependencies:
-      '@types/react': 19.2.17
+      '@types/react': 19.2.18
 
-  '@types/react@19.2.17':
+  '@types/react@19.2.18':
     dependencies:
       csstype: 3.2.3
 
@@ -5929,7 +5929,7 @@ snapshots:
       '@cloudflare/workerd-linux-arm64': 1.20260730.1
       '@cloudflare/workerd-windows-64': 1.20260730.1
 
-  wrangler@4.118.0(@cloudflare/workers-types@5.20260729.1)(@types/node@22.19.19):
+  wrangler@4.118.0(@cloudflare/workers-types@5.20260801.1)(@types/node@22.19.19):
     dependencies:
       '@cloudflare/kv-asset-handler': 0.5.0
       '@cloudflare/unenv-preset': 2.16.1(unenv@2.0.0-rc.24)(workerd@1.20260730.1)
@@ -5940,7 +5940,7 @@ snapshots:
       unenv: 2.0.0-rc.24
       workerd: 1.20260730.1
     optionalDependencies:
-      '@cloudflare/workers-types': 5.20260729.1
+      '@cloudflare/workers-types': 5.20260801.1
       fsevents: 2.3.3
     transitivePeerDependencies:
       - '@types/node'
