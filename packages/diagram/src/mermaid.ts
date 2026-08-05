@@ -108,21 +108,60 @@ const HEADER_RE = /^\s*(?:flowchart|graph)\b\s*([A-Za-z]{2})?\s*$/i;
 // vs parallelogram) — the earlier closer in the string wins, so a
 // parallelogram on a line that also contains a trapezoid doesn't swallow it.
 function readNodeDef(s: string): { label: string; shape: GraphNode['shape']; rest: string } | null {
-  let best: { label: string; shape: GraphNode['shape']; rest: string; at: number } | null = null;
+  // Quoted matches are kept apart from unquoted ones and always win. A quoted
+  // label delimits itself, so any candidate that read one is right; the
+  // earliest-closer tie-break below is a positional guess that only makes
+  // sense between unquoted readings. Mixing them let the guess win: on
+  // `([\"Retry (3)\"])` the stadium `([` correctly read the quoted label
+  // ending at 13, while the plain `(` candidate stopped at the `)` INSIDE the
+  // label at 11 — and 11 < 13, so a stadium came back as a rounded box
+  // labelled `["Retry (3`.
+  let quoted: { label: string; shape: GraphNode['shape']; rest: string; at: number } | null = null;
+  let plain: { label: string; shape: GraphNode['shape']; rest: string; at: number } | null = null;
   for (const b of BRACKETS) {
     if (!s.startsWith(b.open)) continue;
-    const end = s.indexOf(b.close, b.open.length);
-    if (end === -1) continue;
-    if (best === null || end < best.at) {
-      best = {
-        label: decodeLabel(s.slice(b.open.length, end)),
-        shape: b.shape,
-        rest: s.slice(end + b.close.length),
-        at: end,
-      };
+    const inner = b.open.length;
+    let end: number;
+    const isQuoted = s[inner] === '"';
+    if (isQuoted) {
+      // QUOTED label — the whole reason a bracket inside a label survives.
+      // Quoting is Mermaid's own answer to a label containing bracket
+      // characters, and our exporter always quotes (mermaid-serialise's
+      // SHAPE_TO_BRACKET emits `["` … `"]`), escaping only &, " and newlines.
+      // Scanning for the close bracket with a bare indexOf therefore stopped
+      // at the FIRST `]` — which for a label like `Array[0]` is the one inside
+      // it. That yielded the label `"Array[0` (quotes unbalanced, so
+      // decodeLabel couldn't strip them) and left `"]` as the remainder, which
+      // then failed to parse as an edge and was dropped. Our own export did
+      // not survive its own import, and neither did valid third-party
+      // Mermaid.
+      //
+      // A raw `"` can't appear inside a quoted label — ours becomes `&quot;`,
+      // and Mermaid's own escape is an entity too — so the next one closes it.
+      const closeQuote = s.indexOf('"', inner + 1);
+      if (closeQuote === -1) continue;
+      // The bracket must follow immediately, which is also what disambiguates
+      // the two `[/` shapes: only one of trapezoid / parallelogram has its
+      // closer there.
+      if (!s.startsWith(b.close, closeQuote + 1)) continue;
+      end = closeQuote + 1;
+    } else {
+      end = s.indexOf(b.close, inner);
+      if (end === -1) continue;
+    }
+    const found = {
+      label: decodeLabel(s.slice(inner, end)),
+      shape: b.shape,
+      rest: s.slice(end + b.close.length),
+      at: end,
+    };
+    if (isQuoted) {
+      if (quoted === null || end < quoted.at) quoted = found;
+    } else if (plain === null || end < plain.at) {
+      plain = found;
     }
   }
-  return best;
+  return quoted ?? plain;
 }
 
 // The v11.3 attribute form: `@{ shape: cyl, label: "Store" }`. Only the

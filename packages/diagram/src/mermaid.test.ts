@@ -357,6 +357,59 @@ describe('mermaidFromTab', () => {
     expect(back.graph.nodes.find((n) => n.label === 'Docs')!.link).toBe('https://example.com/docs');
   });
 
+  it('round-trips a label containing the shape’s own closing bracket', () => {
+    // The reader used to find the close bracket with a bare indexOf, so on
+    // `n1["Array[0]"]` — which is valid Mermaid and exactly what we export —
+    // it stopped at the `]` INSIDE the label. That gave the label `"Array[0`
+    // (unbalanced, so the quotes couldn't be stripped) and left `"]` behind to
+    // be discarded. Our own export didn't survive our own import.
+    const out = mermaidFromTab({
+      elements: graphToElements({ nodes: [{ id: 'a', label: 'Array[0]' }], edges: [] }),
+    });
+    expect(out).toContain('n1["Array[0]"]');
+    const back = parseMermaid(out);
+    expect(back.ok).toBe(true);
+    if (!back.ok) return;
+    expect(back.graph.nodes[0]!.label).toBe('Array[0]');
+  });
+
+  it('keeps the shape when a bracket in the label sits inside a multi-char pair', () => {
+    // The follow-on trap. A stadium is `(["…"])`, so the plain `(`/`)` pair
+    // also matches its opening — and on `(["Retry (3)"])` that pair's closer
+    // is the `)` inside the label, at a LOWER index than the stadium's real
+    // one. The earliest-closer tie-break therefore preferred it, and a
+    // stadium came back as a rounded box labelled `["Retry (3`. A quoted
+    // label delimits itself, so it now outranks any positional guess.
+    for (const [label, shape] of [
+      ['Retry (3)', 'stadium'],
+      ['circ (c)', 'circle'],
+      ['hex {h}', 'hexagon'],
+      ['tr [z]', 'trapezoid'],
+      ['par [/x/]', 'parallelogram'],
+    ] as const) {
+      const out = mermaidFromTab({
+        elements: graphToElements({ nodes: [{ id: 'a', label, shape }], edges: [] }),
+      });
+      const back = parseMermaid(out);
+      expect(back.ok, `${shape} did not parse: ${out}`).toBe(true);
+      if (!back.ok) return;
+      expect([back.graph.nodes[0]!.label, back.graph.nodes[0]!.shape]).toEqual([label, shape]);
+    }
+  });
+
+  it('still reads unquoted labels, which third-party Mermaid usually has', () => {
+    // The quoted path must not become the only path: hand-written Mermaid
+    // rarely quotes, and those labels can't contain a bracket anyway.
+    const back = parseMermaid('flowchart TD\n  a[Start] --> b{Ok?}\n  b -->|yes| c([Done])');
+    expect(back.ok).toBe(true);
+    if (!back.ok) return;
+    expect(back.graph.nodes.map((n) => [n.label, n.shape])).toEqual([
+      ['Start', 'square'],
+      ['Ok?', 'diamond'],
+      ['Done', 'stadium'],
+    ]);
+  });
+
   it('escapes newlines and quotes so labels round-trip', () => {
     const els = graphToElements({
       nodes: [{ id: 'a', label: 'Line 1\nSay "hi"' }],
