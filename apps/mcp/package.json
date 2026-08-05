@@ -20,7 +20,7 @@
     "@livediagram/templates": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.30.0",
     "@resvg/resvg-wasm": "^2.6.2",
-    "hono": "^4.12.32",
+    "hono": "^4.13.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
@@ -31,6 +31,6 @@
     "eslint": "^10.8.0",
     "typescript": "^5.7.2",
     "vitest": "^4.1.10",
-    "wrangler": "^4.40.0"
+    "wrangler": "^4.118.0"
   }
 }
