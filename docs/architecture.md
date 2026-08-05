@@ -60,7 +60,7 @@ Each app pulls these in via `workspace:*`:
 
 What's running:
 
-- **Frontend**: Next.js 15 with `output: 'export'`, React 19, TypeScript, Tailwind CSS 4.
+- **Frontend**: Next.js 16 (Turbopack) with `output: 'export'`, React 19, TypeScript, Tailwind CSS 4.
 - **API**: Cloudflare Workers (vanilla `fetch` handlers, not Hono).
 - **Database**: Cloudflare D1 (SQLite-on-the-edge), accessed only via the api worker.
 - **Local persistence** (optional per diagram, spec/76): Offline Mode stores a diagram only in the browser's IndexedDB, never the api. It is opt-in at create time (or by taking a cloud diagram offline) and dispatched behind the single `apps/live/lib/api-client.ts` persistence boundary on `isOfflineId(id)`, so the rest of the editor takes the same code path either way. Convertible both directions: Sync Diagram uploads it to D1, Take Offline downloads it and deletes the server copy. See [spec/76](../specs/76-offline-mode.md).

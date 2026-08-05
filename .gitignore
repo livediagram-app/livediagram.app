@@ -20,6 +20,25 @@ dist/
 out/
 *.tsbuildinfo
 
+# `next-env.d.ts` is generated, and since Next 16 it names the active
+# distDir inside itself, so `next dev` (NEXT_DISTDIR=.next-dev) and
+# `next build` (.next) rewrite it over each other and leave the tree dirty
+# after whichever ran last. Nothing depends on it being tracked: each app's
+# tsconfig already picks up the Next types through its own `include`, and
+# typecheck is green from a clean checkout without the file. This is also
+# what create-next-app's default ignore file does.
+next-env.d.ts
+
+# `next dev` (Next 16) drops an `AGENTS.md` + a `CLAUDE.md` pointing at it
+# into whichever app it's run from, and re-creates them if deleted. The
+# guidance in them is fine to read locally, but this repo keeps its agent
+# instructions in one curated root `CLAUDE.md`, and tracking four generated
+# copies (one per Next app) would scatter that and hand the background
+# auto-committer more churn. Ignored, so they exist locally and never show
+# up in `git status`.
+apps/*/AGENTS.md
+apps/*/CLAUDE.md
+
 # Playwright e2e artifacts (spec/72)
 apps/live/test-results/
 apps/live/playwright-report/

@@ -1,6 +1,5 @@
 import type { NextConfig } from 'next';
 import createMDX from '@next/mdx';
-import remarkGfm from 'remark-gfm';
 
 // Static export fronted by Cloudflare Static Assets, served under
 // `/help` by the router worker (which strips the prefix before
@@ -35,7 +34,14 @@ const nextConfig: NextConfig = {
 // remark-gfm enables GitHub-flavoured markdown in MDX bodies — most importantly
 // pipe tables (e.g. the link-expiry table), which plain MDX renders as literal
 // text. Also covers strikethrough, autolinks, and task lists.
-const withMDX = createMDX({ options: { remarkPlugins: [remarkGfm] } });
+// Named as a string, not imported: Turbopack (the default builder since Next
+// 16) serialises loader options to pass them to its Rust side, so an imported
+// plugin function fails the build with "does not have serializable options".
+// It resolves the package itself. The cast is needed because unified's
+// `PluggableList` only admits functions, never the string form Turbopack wants.
+const withMDX = createMDX({
+  options: { remarkPlugins: [['remark-gfm', {}]] as never },
+});
 
 // Annotated so the inferred type doesn't reference a non-portable
 // node_modules path (TS2742) once dev deps shift the next package's hoist.

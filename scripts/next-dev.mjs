@@ -47,12 +47,13 @@ if (!Number.isInteger(port)) {
   process.exit(1);
 }
 
-// Webpack-vs-Turbopack: Turbopack is the better default, its HMR doesn't
-// desync the way webpack's does after live edits. But apps that pass JS
-// remark/rehype plugins through `@next/mdx` (the help centre uses
-// remark-gfm for its pipe tables) must stay on webpack: Turbopack compiles
-// MDX with the Rust pipeline, which silently ignores JS plugins, so the
-// tables would render as literal text. Those apps pass `--webpack`.
+// Webpack-vs-Turbopack: Turbopack is the default everywhere (and since
+// Next 16 it's what `next build` uses too, so dev matching it is what
+// ships). The help centre used to be pinned to `--webpack` because
+// Turbopack's Rust MDX pipeline ignores remark/rehype plugins passed as
+// imported JS functions; it now names remark-gfm as a string in its
+// `next.config.ts` instead, which Turbopack resolves itself. The flag
+// stays as a diagnostic escape hatch, nothing passes it by default.
 const useWebpack = args.includes('--webpack');
 
 function freePort(p) {
