@@ -11,7 +11,7 @@ import { badRequest, forbidden, json, noContent, notFound } from '../responses';
 import { type RouteContext } from './context';
 import { listApiTokensByOwner, mintApiToken, revokeApiToken } from '../db';
 import { MAX_NAME_LEN } from '../limits';
-import { recordTokenCreated } from '../timeline';
+import { recordTokenCreated, recordTokenRevoked } from '../timeline';
 
 export async function handleTokens(ctx: RouteContext): Promise<Response> {
   const { request, env, segments, clerkUserId } = ctx;
@@ -43,7 +43,16 @@ export async function handleTokens(ctx: RouteContext): Promise<Response> {
   }
 
   if (segments.length === 3 && request.method === 'DELETE') {
-    const revoked = await revokeApiToken(env, owner, segments[2]!);
+    const tokenId = segments[2]!;
+    // Named before the revoke, so the feed can say WHICH token stopped
+    // working rather than just that one did.
+    const doomed = (await listApiTokensByOwner(env, owner)).find((t) => t.id === tokenId);
+    const revoked = await revokeApiToken(env, owner, tokenId);
+    if (revoked) {
+      ctx.waitUntil?.(
+        recordTokenRevoked(env, { id: tokenId, name: doomed?.name || 'API token' }, owner),
+      );
+    }
     return revoked ? noContent() : notFound();
   }
 

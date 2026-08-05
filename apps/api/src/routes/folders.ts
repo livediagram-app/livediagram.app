@@ -18,6 +18,7 @@ import type { FolderDTO } from '../types';
 import { badRequest, conflict, forbidden, json, noContent, notFound } from '../responses';
 import { requireOwner, type RouteContext } from './context';
 import { MAX_NAME_LEN } from '../limits';
+import { recordFolderCreated, recordFolderDeleted } from '../timeline';
 
 // Joined-member check for team-scoped folder verbs. Membership is
 // keyed by Clerk user id — carried by a session JWT or an API token
@@ -78,6 +79,7 @@ export async function handleFolders(ctx: RouteContext): Promise<Response> {
         name: body.name,
         teamId,
       });
+      ctx.waitUntil?.(recordFolderCreated(env, { id: folder.id, name: folder.name }, owner));
       return json({ folder }, { status: 201 });
     }
   }
@@ -117,7 +119,13 @@ export async function handleFolders(ctx: RouteContext): Promise<Response> {
       return json({ folder: updated });
     }
     if (request.method === 'DELETE') {
+      // Read the name before the row goes; afterwards there is nothing
+      // left to name it by.
+      const doomed = await getFolder(env, id);
       await deleteFolder(env, id);
+      if (doomed) {
+        ctx.waitUntil?.(recordFolderDeleted(env, { id, name: doomed.name }, owner));
+      }
       return noContent();
     }
   }

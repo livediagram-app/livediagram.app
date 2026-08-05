@@ -24,6 +24,10 @@ const EMITTED = [
   'action_completed',
   'share_link_created',
   'share_link_expiring',
+  'diagram_opened_by_visitor',
+  'diagram_copied_by_visitor',
+  'folder_created',
+  'folder_deleted',
   'team_created',
   'team_invite_received',
   'team_invite_accepted',
@@ -33,9 +37,15 @@ const EMITTED = [
   'team_member_removed',
   'team_role_changed',
   'team_diagram_added',
+  'team_renamed',
+  'team_deleted',
+  'team_invite_link_enabled',
+  'team_invite_link_disabled',
   'token_created',
+  'token_revoked',
   'token_expiring',
   'theme_saved',
+  'theme_deleted',
   'image_uploaded',
 ];
 
@@ -48,6 +58,10 @@ describe('eventTone', () => {
   it('reserves danger for destruction and lost access', () => {
     expect(eventTone('diagram_deleted')).toBe('danger');
     expect(eventTone('team_member_removed')).toBe('danger');
+    expect(eventTone('team_deleted')).toBe('danger');
+    // Revoking a token breaks whatever was using it — the same shape of
+    // surprise as a deletion, even though nothing was destroyed.
+    expect(eventTone('token_revoked')).toBe('danger');
   });
 
   // If everything worrying is red, nothing is. These are the near

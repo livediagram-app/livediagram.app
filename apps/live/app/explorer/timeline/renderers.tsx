@@ -170,6 +170,22 @@ const diagramRenderer: TimelineRenderer = (event, ctx) => {
       return { ...base, label: headline(name, 'share link created') };
     case 'share_link_expiring':
       return { ...base, label: headline(name, 'share link expires') };
+    case 'diagram_offline':
+      return { ...base, label: headline(name, 'taken offline'), meta: 'Kept only in this browser' };
+    case 'diagram_synced':
+      return { ...base, label: headline(name, 'synced to the cloud') };
+    case 'diagram_opened_by_visitor':
+      return {
+        ...base,
+        label: headline(name, 'opened by a visitor'),
+        meta: str(event.snapshot, 'visitorName') ?? 'Someone with the share link',
+      };
+    case 'diagram_copied_by_visitor':
+      return {
+        ...base,
+        label: headline(name, 'copied by a visitor'),
+        meta: str(event.snapshot, 'visitorName') ?? 'Someone with the share link',
+      };
     default:
       return { ...base, label: headline(name, event.title.toLowerCase()) };
   }
@@ -207,6 +223,20 @@ const teamRenderer: TimelineRenderer = (event, ctx) => {
       return { ...base, label: headline(who, `left ${team}`) };
     case 'team_member_removed':
       return { ...base, label: headline(who, `removed from ${team}`) };
+    case 'team_renamed': {
+      const previous = str(event.snapshot, 'previousName');
+      return {
+        ...base,
+        label: headline(previous ?? team, 'renamed'),
+        meta: previous ? `Now ${team}` : undefined,
+      };
+    }
+    case 'team_deleted':
+      return { ...base, label: headline(team, 'deleted') };
+    case 'team_invite_link_enabled':
+      return { ...base, label: headline(team, 'invite link turned on') };
+    case 'team_invite_link_disabled':
+      return { ...base, label: headline(team, 'invite link turned off') };
     case 'team_role_changed':
       return {
         ...base,
@@ -236,6 +266,24 @@ const accountRenderer: TimelineRenderer = (event) => {
         label: headline(str(event.snapshot, 'tokenName') ?? 'API token', 'expires'),
         meta: 'Rotate it before it lapses to keep connected tools working',
         onClick: () => window.location.assign('/explorer/tokens'),
+      };
+    case 'token_revoked':
+      return {
+        ...base,
+        label: headline(str(event.snapshot, 'tokenName') ?? 'API token', 'revoked'),
+        onClick: () => window.location.assign('/explorer/tokens'),
+      };
+    case 'theme_deleted':
+      return { ...base, label: headline(str(event.snapshot, 'themeName') ?? 'A theme', 'deleted') };
+    case 'folder_created':
+      return {
+        ...base,
+        label: headline(str(event.snapshot, 'folderName') ?? 'A folder', 'created'),
+      };
+    case 'folder_deleted':
+      return {
+        ...base,
+        label: headline(str(event.snapshot, 'folderName') ?? 'A folder', 'deleted'),
       };
     case 'theme_saved':
       return {

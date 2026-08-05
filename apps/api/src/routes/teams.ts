@@ -62,7 +62,10 @@ import {
   recordMemberLeft,
   recordMemberRemoved,
   recordRoleChanged,
+  recordInviteLinkToggled,
   recordTeamCreated,
+  recordTeamDeleted,
+  recordTeamRenamed,
 } from '../timeline';
 import { handleTeamActionRoutes } from './team-action-routes';
 import type { RouteContext } from './context';
@@ -239,13 +242,23 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
         }
         patch.organisation = organisation;
       }
+      const previousName = team.name;
       await updateTeam(env, teamId, patch);
+      if (typeof patch.name === 'string' && patch.name !== previousName) {
+        ctx.waitUntil?.(
+          recordTeamRenamed(env, { id: teamId, name: patch.name }, previousName, userId),
+        );
+      }
       const updated = await getTeam(env, teamId);
       return json({ team: updated });
     }
     if (request.method === 'DELETE') {
       if (!isAdmin) return adminRequired();
+      // The audience has to be read BEFORE the delete: member rows go
+      // with the team, so afterwards there is nobody left to tell.
+      const audience = await audienceForTeam(env, teamId);
       await deleteTeam(env, teamId);
+      ctx.waitUntil?.(recordTeamDeleted(env, team, userId, audience));
       return noContent();
     }
     return notFound();
@@ -260,10 +273,12 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
       const token = crypto.randomUUID();
       const expiresAt = Date.now() + TEAM_INVITE_LINK_TTL_MS;
       await setTeamInviteLink(env, teamId, token, expiresAt);
+      ctx.waitUntil?.(recordInviteLinkToggled(env, team, true, userId));
       return json({ inviteLink: { token, expiresAt } }, { status: 201 });
     }
     if (request.method === 'DELETE') {
       await setTeamInviteLink(env, teamId, null, null);
+      ctx.waitUntil?.(recordInviteLinkToggled(env, team, false, userId));
       return noContent();
     }
     return notFound();

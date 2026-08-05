@@ -14,7 +14,7 @@ import type { CustomThemeDefinition } from '../types';
 import { badRequest, forbidden, json, noContent, notFound } from '../responses';
 import { requireOwner, type RouteContext } from './context';
 import { MAX_NAME_LEN, MAX_THEME_DEF_BYTES, byteLength } from '../limits';
-import { recordThemeSaved } from '../timeline';
+import { recordThemeDeleted, recordThemeSaved } from '../timeline';
 
 // Reject an over-long name or an oversized definition JSON. Returns the
 // rejection Response, or null when both are within bounds.
@@ -81,7 +81,11 @@ export async function handleCustomThemes(ctx: RouteContext): Promise<Response> {
       return json({ theme: updated });
     }
     if (request.method === 'DELETE') {
+      const doomed = await getCustomTheme(env, id);
       await deleteCustomTheme(env, id);
+      if (doomed) {
+        ctx.waitUntil?.(recordThemeDeleted(env, { id, name: doomed.name }, owner));
+      }
       return noContent();
     }
   }

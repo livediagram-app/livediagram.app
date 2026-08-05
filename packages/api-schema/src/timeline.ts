@@ -51,6 +51,10 @@ export type TimelineEventType =
   | 'diagram_edited'
   | 'diagram_offline'
   | 'diagram_synced'
+  | 'diagram_opened_by_visitor'
+  | 'diagram_copied_by_visitor'
+  | 'folder_created'
+  | 'folder_deleted'
   // Collaboration (§4.3)
   | 'comment_added'
   | 'comment_resolved'
@@ -68,10 +72,16 @@ export type TimelineEventType =
   | 'team_member_removed'
   | 'team_role_changed'
   | 'team_diagram_added'
+  | 'team_renamed'
+  | 'team_deleted'
+  | 'team_invite_link_enabled'
+  | 'team_invite_link_disabled'
   // Account + housekeeping (§4.5)
   | 'token_created'
+  | 'token_revoked'
   | 'token_expiring'
   | 'theme_saved'
+  | 'theme_deleted'
   | 'image_uploaded'
   | (string & {});
 

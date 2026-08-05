@@ -114,3 +114,83 @@ export async function recordImageUploaded(env: Env, ownerId: string): Promise<vo
     [userScope(ownerId)],
   );
 }
+
+export async function recordTokenRevoked(
+  env: Env,
+  token: { id: string; name: string },
+  ownerId: string,
+): Promise<void> {
+  await record(
+    env,
+    {
+      actorId: ownerId,
+      sourceType: 'account',
+      sourceId: `${token.id}:revoked`,
+      eventType: 'token_revoked',
+      title: 'API Token Revoked',
+      description: token.name,
+      snapshot: { tokenName: token.name },
+    },
+    [userScope(ownerId)],
+  );
+}
+
+export async function recordThemeDeleted(
+  env: Env,
+  theme: { id: string; name: string },
+  ownerId: string,
+): Promise<void> {
+  await record(
+    env,
+    {
+      actorId: ownerId,
+      sourceType: 'account',
+      sourceId: `${theme.id}:deleted`,
+      eventType: 'theme_deleted',
+      title: 'Theme Deleted',
+      description: theme.name,
+      snapshot: { themeName: theme.name },
+    },
+    [userScope(ownerId)],
+  );
+}
+
+export async function recordFolderCreated(
+  env: Env,
+  folder: { id: string; name: string },
+  ownerId: string,
+): Promise<void> {
+  await record(
+    env,
+    {
+      actorId: ownerId,
+      sourceType: 'account',
+      sourceId: folder.id,
+      eventType: 'folder_created',
+      title: 'Folder Created',
+      description: folder.name,
+      snapshot: { folderId: folder.id, folderName: folder.name },
+    },
+    [userScope(ownerId)],
+  );
+}
+
+export async function recordFolderDeleted(
+  env: Env,
+  folder: { id: string; name: string },
+  ownerId: string,
+): Promise<void> {
+  await record(
+    env,
+    {
+      actorId: ownerId,
+      sourceType: 'account',
+      sourceId: `${folder.id}:deleted`,
+      eventType: 'folder_deleted',
+      title: 'Folder Deleted',
+      description: folder.name,
+      snapshot: { folderName: folder.name },
+    },
+    [userScope(ownerId)],
+  );
+}

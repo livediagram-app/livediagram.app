@@ -26,7 +26,7 @@ import {
   upsertTab,
 } from '../db';
 import { badRequest, conflict, forbidden, json, noContent, notFound } from '../responses';
-import { recordCommentAdded, recordTabSave } from '../timeline';
+import { recordCommentAdded, recordTabSave, recordVisitorOpened } from '../timeline';
 import { handleDiagramShareRoutes } from './diagram-share-routes';
 import { gateEdit, gateRead, requireOwner, type RouteContext } from './context';
 
@@ -68,6 +68,19 @@ export async function handleDiagramSubresources(ctx: RouteContext): Promise<Resp
         owner === existing.ownerId
           ? tab
           : { ...tab, elements: redactCommentAuthorIds(tab.elements, owner) };
+      // spec/138 §4.3: somebody who isn't the owner just opened this.
+      // The tab read is the honest signal — the diagram GET is hit by
+      // link previews and polls, whereas fetching tab content means a
+      // person is looking at the canvas. Coalesced per visitor per day
+      // inside the emit, so a stranger with a link can't flood the
+      // owner's feed by refreshing.
+      if (owner !== existing.ownerId) {
+        ctx.waitUntil?.(
+          getParticipant(env, owner).then((p) =>
+            recordVisitorOpened(env, existing, owner, p?.name ?? null),
+          ),
+        );
+      }
       return json({ tab: safe });
     }
 

@@ -25,6 +25,12 @@ export type TimelineTone = 'danger' | 'structural' | 'create' | 'neutral';
 const DANGER = new Set<string>([
   'diagram_deleted',
   'team_member_removed',
+  'team_deleted',
+  'folder_deleted',
+  // Revoking a token breaks whatever was using it, which is the same
+  // shape of surprise as a deletion.
+  'token_revoked',
+  'theme_deleted',
   // Not `team_member_left`: leaving is a departure the person chose,
   // and colouring it the same as being removed misreads the room.
 ]);
@@ -51,6 +57,9 @@ const STRUCTURAL = new Set<string>([
   // reader expects for "this needs attention before it bites".
   'share_link_expiring',
   'token_expiring',
+  'team_renamed',
+  'team_invite_link_enabled',
+  'team_invite_link_disabled',
 ]);
 
 // Things made, edited, said, or finished: the ordinary business of
@@ -66,6 +75,11 @@ const CREATE = new Set<string>([
   'token_created',
   'theme_saved',
   'image_uploaded',
+  'folder_created',
+  // Somebody reaching your work is the good kind of news, and the whole
+  // reason to share a link in the first place.
+  'diagram_opened_by_visitor',
+  'diagram_copied_by_visitor',
 ]);
 
 export function eventTone(eventType: string): TimelineTone {

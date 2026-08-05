@@ -42,6 +42,7 @@ import {
   recordDiagramDeleted,
   recordDiagramDuplicated,
   recordDiagramRenamed,
+  recordVisitorCopied,
 } from '../timeline';
 import { markTimelineEventsDeletedBySource } from '../db/timeline';
 import { handleDiagramPlacement } from './diagram-placement-route';
@@ -299,6 +300,15 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       const copy = await copyDiagram(env, id, newId, owner, newName);
       if (!copy) return notFound();
       ctx.waitUntil?.(recordDiagramDuplicated(env, copy, source.name, owner));
+      // A copy taken by someone who isn't the owner is news the owner
+      // wants: their shared diagram was worth forking.
+      if (owner !== source.ownerId) {
+        ctx.waitUntil?.(
+          getParticipant(env, owner).then((p) =>
+            recordVisitorCopied(env, source, owner, p?.name ?? null),
+          ),
+        );
+      }
       return json({ diagram: copy }, { status: 201 });
     }
   }

@@ -55,6 +55,16 @@ const PALETTE =
 const PHOTO =
   'M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z';
 
+const EYE =
+  'M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z M15 12a3 3 0 11-6 0 3 3 0 016 0z';
+const CLOUD_OFF =
+  'M3 3l18 18M2.25 15a4.5 4.5 0 004.5 4.5H18a3.75 3.75 0 001.332-7.257 3 3 0 00-3.758-3.848 5.25 5.25 0 00-9.198-1.02';
+const CLOUD =
+  'M2.25 15a4.5 4.5 0 004.5 4.5H18a3.75 3.75 0 001.332-7.257 3 3 0 00-3.758-3.848 5.25 5.25 0 00-10.233 2.33A4.502 4.502 0 002.25 15z';
+const FOLDER_MINUS =
+  'M9 13.5h6m5.25 5.25V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44l-2.122-2.12a1.5 1.5 0 00-1.06-.44H4.5A2.25 2.25 0 002.25 6v12.75A2.25 2.25 0 004.5 21h15a2.25 2.25 0 002.25-2.25z';
+const KEY_OFF = 'M3 3l18 18M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912M9.75 14.25L2.909 21.09';
+
 export const EVENT_ICONS: Record<string, ReactNode> = {
   diagram_created: <Glyph d={PLUS} />,
   diagram_edited: <Glyph d={PENCIL} />,
@@ -81,4 +91,16 @@ export const EVENT_ICONS: Record<string, ReactNode> = {
   token_expiring: <Glyph d={CLOCK} />,
   theme_saved: <Glyph d={PALETTE} />,
   image_uploaded: <Glyph d={PHOTO} />,
+  diagram_offline: <Glyph d={CLOUD_OFF} />,
+  diagram_synced: <Glyph d={CLOUD} />,
+  diagram_opened_by_visitor: <Glyph d={EYE} />,
+  diagram_copied_by_visitor: <Glyph d={COPY} />,
+  folder_created: <Glyph d={FOLDER} />,
+  folder_deleted: <Glyph d={FOLDER_MINUS} />,
+  team_renamed: <Glyph d={PENCIL} />,
+  team_deleted: <Glyph d={TRASH} />,
+  team_invite_link_enabled: <Glyph d={LINK} />,
+  team_invite_link_disabled: <Glyph d={LINK} />,
+  token_revoked: <Glyph d={KEY_OFF} />,
+  theme_deleted: <Glyph d={TRASH} />,
 };

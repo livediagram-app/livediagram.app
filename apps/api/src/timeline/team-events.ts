@@ -5,6 +5,7 @@
 // actor: "who is in this with me" is the question these answer, and it
 // is a question every member has.
 
+import type { TimelineScopeRef } from '@livediagram/api-schema';
 import type { Env } from '../types';
 import { adminsForTeam, audienceForTeam, mergeScopes, userScope } from './audience';
 import { record } from './record';
@@ -231,4 +232,74 @@ export async function attachClaimedInviteEvents(env: Env, userId: string): Promi
   } catch (err) {
     console.error('timeline invite claim failed', err);
   }
+}
+
+export async function recordTeamRenamed(
+  env: Env,
+  team: TeamRef,
+  previousName: string,
+  actorId: string,
+): Promise<void> {
+  await record(
+    env,
+    {
+      actorId,
+      sourceType: 'team',
+      sourceId: team.id,
+      eventType: 'team_renamed',
+      title: 'Team Renamed',
+      description: `${previousName} → ${team.name}`,
+      snapshot: { teamId: team.id, teamName: team.name, previousName },
+    },
+    await audienceForTeam(env, team.id),
+  );
+}
+
+// The audience has to be resolved BEFORE the team goes: its member rows
+// are deleted with it, so afterwards there is nobody left to tell.
+export async function recordTeamDeleted(
+  env: Env,
+  team: TeamRef,
+  actorId: string,
+  audience: TimelineScopeRef[],
+): Promise<void> {
+  await record(
+    env,
+    {
+      actorId,
+      sourceType: 'team',
+      sourceId: team.id,
+      eventType: 'team_deleted',
+      title: 'Team Deleted',
+      description: team.name,
+      // No teamId, so the row can't link at a team that no longer
+      // exists — the same structural guard the diagram tombstone uses.
+      snapshot: { teamName: team.name },
+    },
+    audience,
+  );
+}
+
+// Admins only. A shareable join link is a credential: whether one is
+// live is an administrative fact, not team news, and telling every
+// member it exists is a nudge to go and find it.
+export async function recordInviteLinkToggled(
+  env: Env,
+  team: TeamRef,
+  enabled: boolean,
+  actorId: string,
+): Promise<void> {
+  await record(
+    env,
+    {
+      actorId,
+      sourceType: 'team',
+      sourceId: `${team.id}:invite-link`,
+      eventType: enabled ? 'team_invite_link_enabled' : 'team_invite_link_disabled',
+      title: enabled ? 'Invite Link Turned On' : 'Invite Link Turned Off',
+      description: team.name,
+      snapshot: { teamId: team.id, teamName: team.name },
+    },
+    await adminsForTeam(env, team.id),
+  );
 }

@@ -340,3 +340,101 @@ export async function recordShareLinkExpiring(
     [userScope(diagram.ownerId)],
   );
 }
+
+// Offline Mode conversions (spec/76). Owner-only: an offline diagram
+// exists in exactly one browser, so nobody else has a stake in it.
+export async function recordDiagramOffline(
+  env: Env,
+  diagram: DiagramRef,
+  actorId: string,
+): Promise<void> {
+  await record(
+    env,
+    {
+      actorId,
+      sourceType: 'diagram',
+      sourceId: diagram.id,
+      eventType: 'diagram_offline',
+      title: 'Taken Offline',
+      description: diagram.name,
+      // No diagramId: the server copy is gone, so the row must not link
+      // anywhere. Same structural trick as the delete tombstone.
+      snapshot: { diagramName: diagram.name },
+    },
+    [userScope(actorId)],
+  );
+}
+
+export async function recordDiagramSynced(
+  env: Env,
+  diagram: DiagramRef,
+  actorId: string,
+): Promise<void> {
+  await record(
+    env,
+    {
+      actorId,
+      sourceType: 'diagram',
+      sourceId: diagram.id,
+      eventType: 'diagram_synced',
+      title: 'Synced to the Cloud',
+      description: diagram.name,
+      snapshot: diagramSnapshot(diagram),
+    },
+    await audienceForDiagram(env, diagram),
+  );
+}
+
+// Somebody followed a share link and opened the diagram.
+//
+// Owner-only, and coalesced per visitor per day: this is the one event a
+// stranger can trigger at will, so an uncoalesced emit would let anyone
+// with a link flood an owner's feed by refreshing. The dedupe key makes
+// a hundred opens one row.
+export async function recordVisitorOpened(
+  env: Env,
+  diagram: DiagramRef,
+  visitorId: string,
+  visitorName: string | null,
+): Promise<void> {
+  const now = Date.now();
+  await record(
+    env,
+    {
+      // The visitor is the actor, but the row is scoped to the owner —
+      // so it survives the "Other people" filter, which is exactly the
+      // audience for "somebody opened your diagram".
+      actorId: visitorId,
+      sourceType: 'diagram',
+      sourceId: diagram.id,
+      eventType: 'diagram_opened_by_visitor',
+      dedupeKey: dedupeKeyForDay(visitorId, now),
+      title: 'Opened by a Visitor',
+      description: diagram.name,
+      occurredAt: now,
+      snapshot: { ...diagramSnapshot(diagram), visitorName },
+    },
+    [userScope(diagram.ownerId)],
+  );
+}
+
+export async function recordVisitorCopied(
+  env: Env,
+  diagram: DiagramRef,
+  visitorId: string,
+  visitorName: string | null,
+): Promise<void> {
+  await record(
+    env,
+    {
+      actorId: visitorId,
+      sourceType: 'diagram',
+      sourceId: `${diagram.id}:${visitorId}:copied`,
+      eventType: 'diagram_copied_by_visitor',
+      title: 'Copied by a Visitor',
+      description: diagram.name,
+      snapshot: { ...diagramSnapshot(diagram), visitorName },
+    },
+    [userScope(diagram.ownerId)],
+  );
+}
