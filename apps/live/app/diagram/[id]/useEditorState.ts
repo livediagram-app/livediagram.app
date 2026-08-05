@@ -228,7 +228,17 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // (spec/09): keyed on a signature so it only changes when a tab is
   // added / removed / renamed, NOT on every element edit, keeping the
   // memoised element views from re-rendering as the user types.
-  const tabSig = tabs.map((t) => `${t.id} ${t.name}`).join('');
+  //
+  // NUL and SOH separate the fields because neither can occur in an id or a
+  // name, so no rename can forge a signature by containing the delimiter.
+  // Written as ESCAPES, not literal bytes: as raw bytes they made this the
+  // only non-text file in the repo, `file` reported it as `data`, and
+  // ripgrep answered every search of it with "binary file matches" and moved
+  // on. On the 2,800-line module that composes every editor hook and builds
+  // EditorContext, that silently broke "find all usages": a dead-code sweep
+  // saw a hook's definition and no callers, because every call site is in
+  // here. Same runtime string, searchable source.
+  const tabSig = tabs.map((t) => `${t.id}\u0000${t.name}`).join('\u0001');
   const tabSummaries = useMemo(
     () => tabs.map((t) => ({ id: t.id, name: t.name })),
     // eslint-disable-next-line react-hooks/exhaustive-deps
