@@ -30,6 +30,16 @@ export const HELP_ARTICLES = {
   panelOpacity: 'palette/panel-opacity',
   quickAddOnHover: 'palette/quick-add-on-hover',
   isometricMode: 'selection-modes/isometric-mode',
+  // One key per tool panel, so every mode's panel can point at the article
+  // that explains it (spec/56). Each of these resolves to a real page — a key
+  // pointing at nothing is a bug, the same way an unregistered article is.
+  avatarMode: 'selection-modes/avatar-mode',
+  laser: 'selection-modes/laser',
+  spotlight: 'selection-modes/spotlight',
+  eraser: 'selection-modes/eraser',
+  formatPainter: 'selection-modes/format-painter',
+  highlighter: 'selection-modes/highlighter',
+  slideDeck: 'selection-modes/slide-deck',
   // AI
   aiTools: 'tools/ai/ai-tools',
   connectAiTool: 'account-and-data/connect-ai-mcp',
@@ -51,6 +61,13 @@ export const HELP_ARTICLES = {
   comments: 'collaboration/comments',
   assignedActions: 'collaboration/assigned-actions',
   // Explorer / data
+  // Standing panels.
+  explorerPanel: 'explorer/explorer-panel',
+  activityPanel: 'activity-panel/what-it-is',
+  layers: 'canvas/layers',
+  minimap: 'user-interface/minimap',
+  sessionPolls: 'collaboration/session-tools/polls',
+  sessionVoting: 'collaboration/session-tools/voting',
   imageGallery: 'explorer/image-gallery',
   recentDiagrams: 'explorer/recent',
   sharedWithYou: 'explorer/shared-with-you',

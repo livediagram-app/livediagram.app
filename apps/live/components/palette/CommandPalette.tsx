@@ -294,6 +294,7 @@ export function CommandPalette({
   const techResults = searchTechIcons(techQuery, 'all');
   return (
     <MovablePanel
+      helpArticle="palette"
       // Above the other panels by default (spec/09): the palette is the one
       // you reach for while another panel happens to be open.
       elevated

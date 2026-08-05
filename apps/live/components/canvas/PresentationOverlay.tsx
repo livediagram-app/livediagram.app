@@ -25,6 +25,7 @@ import {
   hasReadableDetail,
 } from '@/components/canvas/PresentationElementPopover';
 import { PresentationHud, usePointerIdle } from '@/components/canvas/PresentationHud';
+import { track } from '@/lib/telemetry';
 import { PresentationSettings } from '@/components/canvas/PresentationSettings';
 import type { PresentationConfig } from '@/lib/presentation-config';
 
@@ -186,6 +187,9 @@ export function PresentationOverlay({
       const element = step.tab.elements.find((el) => el.id === id);
       if (element && hasReadableDetail(element)) {
         setDetail({ element, x: e.clientX, y: e.clientY });
+        // Does anybody use "read anything, change nothing"? This is the whole
+        // question the rule was written to answer.
+        track('UI', 'Opened', 'SlideElementDetail');
         return;
       }
     }
@@ -231,12 +235,18 @@ export function PresentationOverlay({
           notesOpen={notesOpen}
           onToggleNotes={() => {
             setSettingsOpen(false);
-            setNotesOpen((v) => !v);
+            setNotesOpen((v) => {
+              if (!v) track('UI', 'Opened', 'PresenterNotes');
+              return !v;
+            });
           }}
           settingsOpen={settingsOpen}
           onToggleSettings={() => {
             setNotesOpen(false);
-            setSettingsOpen((v) => !v);
+            setSettingsOpen((v) => {
+              if (!v) track('UI', 'Opened', 'PresentationSettings');
+              return !v;
+            });
           }}
           showPosition={config.showPosition}
           onBack={at > 0 ? () => go(at - 1) : undefined}

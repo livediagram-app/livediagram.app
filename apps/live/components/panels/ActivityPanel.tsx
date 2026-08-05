@@ -107,6 +107,7 @@ function ActivityPanelImpl({
   if (minimized) return null;
   return (
     <MovablePanel
+      helpArticle="activityPanel"
       title="Tab Activity"
       position={position}
       defaultCorner="bottom-left"

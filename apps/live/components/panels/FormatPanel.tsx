@@ -83,7 +83,7 @@ export function FormatPanel({
   const mode = FORMAT_MODES.find((m) => m.id === config.mode);
 
   return (
-    <ModePanel title="Format" {...placement}>
+    <ModePanel helpArticle="formatPainter" title="Format" {...placement}>
       <div className="flex flex-col px-2 pb-2">
         <BrushPreview config={config} source={source} />
         <div className="divide-y divide-slate-100 dark:divide-slate-800">

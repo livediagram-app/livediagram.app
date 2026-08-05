@@ -130,6 +130,7 @@ export function CollaboratePanel({
   const shown = filter === 'open' ? open : resolved;
   return (
     <MovablePanel
+      helpArticle="comments"
       title="Collaborate"
       headerExtra={
         open.length > 0 ? (

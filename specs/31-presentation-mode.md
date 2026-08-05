@@ -89,7 +89,7 @@ The tool and the panel are both called **Slide Deck** — the thing you are maki
 
 It joins `CanvasTool` only, **not** `SELECTION_MODES` — there is no Slide Deck Mode Button, because handing a collaborator's screen into a full-screen deck is not something one person should do to another.
 
-The **Slide Deck panel** is the seventh tool panel, on exactly the contract the other six share (`useCanvasToolPanels`): mounted only while its tool is active, joins the corner-docking stack, gets a mobile dock button. It is the **single home for everything about the deck** — build it, order it, check it, start it — so there is never a second place to look. It carries:
+The **Slide Deck panel** is the seventh tool panel, on exactly the contract the other six share (`useCanvasToolPanels`): mounted only while its tool is active, joins the corner-docking stack, gets a mobile dock button. It is the **single home for everything about the deck** — build it, order it, check it, start it — so there is never a second place to look. Its header carries a **`?`** to the help article and a **settings gear** holding the same presenter settings the HUD's cog does, because discovering "Actual size" or "Auto-advance" mid-talk means changing it while a room watches: one state, one localStorage key, two doors. It carries:
 
 - **The slide list**, in deck order, each row with its position, name, tab, member count, and a **preview thumbnail** from the shared headless SVG renderer (`useSlideThumbnails`, the same renderer the Layers panel rows, the Map and the exports use). One difference from the layer previews and the reason it is its own hook: every layer preview shares ONE viewBox, the tab's content bounds, so each band shows where its elements sit. Slides cannot, because a deck spans tabs and two tabs share no coordinate space, so each slide is framed to its own bounds — which is also what the presentation does when it runs.
 - **New slide from selection** — the primary authoring path. Select elements on the canvas, press the button; the slide takes the active tab. Also **Add selection to slide** for growing one, which is offered only while you are on that slide's own tab (a slide holds one tab's elements, so adding from another tab is not a thing to disallow politely, it is a thing that cannot be expressed).
@@ -279,7 +279,28 @@ The additions above land on that same shape rather than growing the overlay. The
 
 ## Telemetry
 
-Per spec/22: `track('UI', 'Opened', 'SlideDeck')` when the tool is picked, `track('UI', 'Started', 'Presentation')` on Start, `track('UI', 'Closed', 'Presentation')` on exit, and `track('UI', 'Added', 'Slide')` when a slide is created. Exporting the deck rides the export dialog's existing event with the deck scope as its `type`. No per-slide events: chatty, low signal. Nothing for jumping, pointing, or the pacing toggles — a presenter driving a deck is one session, not a stream of interactions worth counting.
+Per spec/22, enough to answer "is this used, and which parts" without a flood.
+
+**Building a deck** — `UI·Opened·SlideDeck` (the tool picked), `UI·Added·Slide`
+(created or duplicated), `UI·Removed·Slide`, `UI·Moved·Slide` (one per
+completed drag, since the reorder only commits on release),
+`UI·Toggled·SlideHidden` / `UI·Toggled·SlideShown` (which way it went matters:
+"people hide slides" and "people unhide them" are different findings), and
+`UI·Changed·SlideNotes` once per editing session, fired on the first keystroke
+— per-keystroke would be a flood and per-open would count looking without
+typing.
+
+**Running one** — `UI·Started·Presentation`, `UI·Closed·Presentation`,
+`UI·Opened·PresenterNotes`, `UI·Opened·PresentationSettings`, and
+`UI·Opened·SlideElementDetail`, which is the whole question "read anything,
+change nothing" was written to answer.
+
+**Settings** — `UI·Changed·Presentation-<field>`. The FIELD, not the value:
+what is worth learning is which settings people reach for at all, and values
+would multiply the vocabulary for no extra signal.
+
+**Still no per-slide-advance event.** A fifty-slide deck would emit fifty
+events per run to tell us something the start / close pair already implies.
 
 ## Out of scope (v1)
 

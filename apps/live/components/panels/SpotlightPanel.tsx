@@ -79,7 +79,7 @@ export function SpotlightPanel({
     options.find((o) => o.id === id)?.label ?? '';
 
   return (
-    <ModePanel title="Spotlight" {...placement}>
+    <ModePanel helpArticle="spotlight" title="Spotlight" {...placement}>
       <div className="flex flex-col px-2 pb-2">
         <ShroudPreview config={config} radius={radius} />
         <div className="divide-y divide-slate-100 dark:divide-slate-800">

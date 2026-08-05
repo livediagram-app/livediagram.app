@@ -75,6 +75,15 @@ export type MovablePanelProps = {
   // Palette's settings popover trigger). Only rendered in the desktop
   // floating-panel header; the mobile dock popover has no header.
   headerActions?: ReactNode;
+  // The help article this panel is explained by (spec/56). Rendered as the
+  // `?` chrome button beside reset / minimise, in BOTH the desktop header and
+  // the mobile/minimal band, so the help we already wrote is reachable from
+  // the feature it documents rather than only by searching for it.
+  //
+  // Declared here rather than left to each panel's own headerActions so every
+  // panel gets the same affordance in the same place — a help button that
+  // moves around between panels teaches people not to look for it.
+  helpArticle?: import('@/lib/help-articles').HelpArticleKey;
   // When provided, a "restore default" button appears to the left of
   // the minimise button. Wired by the caller to clear position state
   // so the panel snaps back to its default corner.

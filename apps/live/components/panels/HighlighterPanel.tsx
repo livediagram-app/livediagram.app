@@ -82,7 +82,7 @@ export function HighlighterPanel({
   const colourLabel = HIGHLIGHTER_COLORS.find((c) => c.id === color)?.label;
 
   return (
-    <ModePanel title="Highlighter" {...placement}>
+    <ModePanel helpArticle="highlighter" title="Highlighter" {...placement}>
       <div className="flex flex-col px-2 pb-2">
         <MarkerPreview color={color} width={width} />
         <div className="divide-y divide-slate-100 dark:divide-slate-800">

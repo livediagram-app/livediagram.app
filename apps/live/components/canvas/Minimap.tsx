@@ -222,6 +222,7 @@ export function Minimap({
 
   return (
     <MovablePanel
+      helpArticle="minimap"
       title="Map"
       position={position}
       defaultCorner="bottom-left"

@@ -2,6 +2,8 @@
 
 import type { PointerEvent as ReactPointerEvent, ReactNode, RefObject } from 'react';
 import { Tooltip } from '@/components/primitives/Tooltip';
+import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
+import type { HelpArticleKey } from '@/lib/help-articles';
 import { ResetPositionGlyph } from '@/components/primitives/ResetPositionGlyph';
 
 // The floating panel's header row, lifted out of MovablePanel: the
@@ -16,6 +18,7 @@ export function MovablePanelHeader({
   title,
   headerExtra,
   headerActions,
+  helpArticle,
   onReset,
   collapsible,
   effectiveCollapsed,
@@ -30,6 +33,7 @@ export function MovablePanelHeader({
   title: string;
   headerExtra?: ReactNode;
   headerActions?: ReactNode;
+  helpArticle?: HelpArticleKey;
   onReset?: () => void;
   collapsible: boolean;
   effectiveCollapsed: boolean;
@@ -56,6 +60,15 @@ export function MovablePanelHeader({
         {headerActions ? (
           <div onPointerDown={(e) => e.stopPropagation()} className="flex items-center gap-1">
             {headerActions}
+          </div>
+        ) : null}
+        {/* The panel's help article (spec/56), first in the chrome cluster so
+            it sits in the same spot on every panel. stopPropagation because
+            the header is the drag handle: pressing `?` must open the article,
+            not start moving the panel. */}
+        {helpArticle ? (
+          <div onPointerDown={(e) => e.stopPropagation()} className="flex items-center">
+            <HelpArticleLink article={helpArticle} variant="chrome" />
           </div>
         ) : null}
         {onReset ? (

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useClickOutside } from '@/hooks/ui/useClickOutside';
+import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { MOBILE_BREAKPOINT_PX, isMobileViewportSync } from '@/lib/responsive';
 
 // The corner-docking props bundle (spec/63). CanvasChrome builds one of
@@ -31,6 +32,7 @@ export function MovablePanel({
   width = 'w-56',
   headerExtra,
   headerActions,
+  helpArticle,
   onReset,
   onMoveTo,
   onMinimize,
@@ -261,10 +263,11 @@ export function MovablePanel({
           <span className="select-none text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-200">
             {title}
           </span>
-          {headerExtra || headerActions ? (
+          {headerExtra || headerActions || helpArticle ? (
             <div className="flex items-center gap-1">
               {headerExtra}
               {headerActions}
+              {helpArticle ? <HelpArticleLink article={helpArticle} variant="chrome" /> : null}
             </div>
           ) : null}
         </div>
@@ -320,6 +323,7 @@ export function MovablePanel({
         title={title}
         headerExtra={headerExtra}
         headerActions={headerActions}
+        helpArticle={helpArticle}
         onReset={atDefaultSpot ? undefined : onReset}
         collapsible={collapsible}
         effectiveCollapsed={effectiveCollapsed}

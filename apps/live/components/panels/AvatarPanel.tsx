@@ -117,7 +117,7 @@ export function AvatarPanel({
   const toggle = (row: Row) => setOpenRow((r) => (r === row ? null : row));
 
   return (
-    <ModePanel title="Avatar" {...placement}>
+    <ModePanel helpArticle="avatarMode" title="Avatar" {...placement}>
       <div className="flex flex-col px-2 pb-2">
         {/* Cropped portrait: the canvas sprite standing front-on in a box that
             hugs it (see AvatarSprite's `portrait`), at a fixed scale so

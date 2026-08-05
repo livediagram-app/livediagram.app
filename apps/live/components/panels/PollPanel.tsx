@@ -73,6 +73,7 @@ export function PollPanel({
 
   return (
     <MovablePanel
+      helpArticle="sessionPolls"
       mobileOpenOverride={mobileOpenOverride}
       mobileDockAnchor={mobileDockAnchor}
       title="Poll"

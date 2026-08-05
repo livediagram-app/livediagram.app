@@ -25,10 +25,12 @@ import { slideName, type Slide } from '@livediagram/diagram';
 
 import { ModePanel, type ModePanelProps } from '@/components/panels/ModePanel';
 import { SlideRowMenu } from '@/components/panels/SlideRowMenu';
+import { SlideDeckSettingsPopover } from '@/components/panels/SlideDeckSettingsPopover';
 import { EyeOffIcon } from '@/components/panels/layers-panel-icons';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { Tooltip } from '@/components/primitives/Tooltip';
 import type { SlideDeckState } from '@/app/diagram/[id]/useSlideDeck';
+import { track } from '@/lib/telemetry';
 
 const ROW_DRAG_SLOP_PX = 4;
 
@@ -241,6 +243,10 @@ export function SlideDeckPanel({
   // than shown for whatever slide happens to be open, so the panel never grows
   // a text area you did not ask for.
   const [notesForId, setNotesForId] = useState<string | null>(null);
+  // One 'notes were written' event per editing session, fired on the first
+  // keystroke. Per-keystroke would be a flood, and per-open would count the
+  // times somebody looked without typing.
+  const notesTracked = useRef<string | null>(null);
   // Deleting a slide asks first, anchored to the row's own menu button. A deck
   // is authored work — the elements survive, but the arrangement does not, and
   // it is the arrangement you spent the time on.
@@ -332,7 +338,26 @@ export function SlideDeckPanel({
     (dropAt.side === 'before' ? dropAt.index === i : dropAt.index === i - 1);
 
   return (
-    <ModePanel title="Slide Deck" {...placement}>
+    <ModePanel
+      title="Slide Deck"
+      helpArticle="slideDeck"
+      // The SAME presenter settings the HUD's cog carries, reachable BEFORE
+      // you start. Discovering "Actual size" or "Auto-advance" mid-talk means
+      // changing it while a room watches; the point of a rehearsal is
+      // arriving with it already set. One state, one localStorage key, two
+      // doors — so whichever you find, the other agrees.
+      headerActions={
+        isReadOnly ? undefined : (
+          <SlideDeckSettingsPopover
+            config={state.config}
+            onChange={state.updateConfig}
+            onResetPosition={placement.onReset ?? (() => {})}
+            resettable={placement.position !== null}
+          />
+        )
+      }
+      {...placement}
+    >
       <div className="flex max-h-[26rem] flex-col gap-2 px-2 pb-2">
         {deck.slides.length === 0 ? (
           <p className="px-1 py-3 text-center text-[11px] leading-snug text-slate-400 dark:text-slate-500">
@@ -397,7 +422,10 @@ export function SlideDeckPanel({
               </span>
               <button
                 type="button"
-                onClick={() => setNotesForId(null)}
+                onClick={() => {
+                  setNotesForId(null);
+                  notesTracked.current = null;
+                }}
                 className="cursor-pointer text-[10px] font-medium text-slate-400 transition hover:text-slate-700 dark:hover:text-slate-200"
               >
                 Done
@@ -409,7 +437,13 @@ export function SlideDeckPanel({
             <textarea
               value={notesSlide.notes ?? ''}
               autoFocus
-              onChange={(e) => setSlideNotes(notesSlide.id, e.target.value)}
+              onChange={(e) => {
+                if (notesTracked.current !== notesSlide.id) {
+                  notesTracked.current = notesSlide.id;
+                  track('UI', 'Changed', 'SlideNotes');
+                }
+                setSlideNotes(notesSlide.id, e.target.value);
+              }}
               onKeyDown={(e) => e.stopPropagation()}
               onPointerDown={(e) => e.stopPropagation()}
               rows={3}

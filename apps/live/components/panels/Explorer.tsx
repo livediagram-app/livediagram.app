@@ -190,6 +190,7 @@ function ExplorerImpl({
 
   return (
     <MovablePanel
+      helpArticle="explorerPanel"
       title="Explorer"
       dataTourId="explorer"
       position={position}

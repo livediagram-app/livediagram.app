@@ -109,3 +109,25 @@ key and never introduce a second linking pattern.
 - No in-app article rendering: links open the standalone help centre.
 - No change to the help app, its registry, or its sitemap.
 - No new telemetry category/action: reuse `UI` / `Opened`.
+
+## Panel headers carry their article
+
+Every floating panel that a help article explains renders a `?` in its header
+chrome, beside reset / minimise, from a `helpArticle` prop on `MovablePanel`
+(forwarded by `ModePanel`, so a tool panel opts in with one word).
+
+Declared on the shared component rather than left to each panel's own
+`headerActions`, so the affordance sits in the SAME place on every panel — a
+help button that moves around teaches people not to look for it. It renders in
+both the desktop header and the mobile / minimal band, and stops the pointer so
+pressing it opens the article rather than starting a panel drag.
+
+Wired: Palette, Explorer, Activity, Layers, Map, Collaborate, Poll, Vote, and
+the seven tool panels (Avatar, Laser, Spotlight, Eraser, Format, Highlighter,
+Slide Deck). This closed the gap the feature was written for and had never
+reached: 21 surfaces linked an article, and every one of them was a dialog, so
+a panel you were looking at could not tell you there was a page about it.
+
+`help-articles.test.ts` already refuses a key that resolves to no page, or one
+no surface references, so a panel pointing at a dead article fails the build
+rather than shipping a 404.

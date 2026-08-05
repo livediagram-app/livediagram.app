@@ -72,6 +72,8 @@ export function useSlideDeck({
   // Which slide the PANEL has open. Separate from the presentation's own
   // index: checking slide 4 in the panel should not mean starting there.
   const [openSlideId, setOpenSlideId] = useState<string | null>(null);
+  // Read by verbs that need the CURRENT deck without taking it as a dep.
+  const deckRef = useRef<Deck>(EMPTY_DECK);
   // Non-null only while presenting: the index into the presentable list.
   const [presentingAt, setPresentingAt] = useState<number | null>(null);
   const [startingDeck, setStartingDeck] = useState(false);
@@ -81,6 +83,10 @@ export function useSlideDeck({
   const [config, setConfig] = useState<PresentationConfig>(DEFAULT_PRESENTATION_CONFIG);
   useEffect(() => setConfig(loadPresentationConfig()), []);
   const updateConfig = useCallback((patch: Partial<PresentationConfig>) => {
+    // The FIELD, not the value: what we want to learn is which settings people
+    // reach for at all. Values would multiply the vocabulary for no extra
+    // signal, and the enum is deliberately closed.
+    for (const field of Object.keys(patch)) track('UI', 'Changed', `Presentation-${field}`);
     setConfig((prev) => {
       const next = { ...prev, ...patch };
       savePresentationConfig(next);
@@ -131,6 +137,7 @@ export function useSlideDeck({
     return selectedId ? new Set([selectedId]) : new Set<string>();
   }, [multiSelectedIds, selectedId]);
 
+  deckRef.current = deck;
   const openSlide = deck.slides.find((s) => s.id === openSlideId) ?? null;
 
   // Slides whose tab still exists and are not hidden, in deck order — what
@@ -223,6 +230,10 @@ export function useSlideDeck({
   const toggleSlideHidden = useCallback(
     (slideId: string) => {
       if (isReadOnly) return;
+      // Which way it went matters: "people hide slides" and "people unhide
+      // them" are different findings, and one event for both would hide that.
+      const wasHidden = deckRef.current.slides.find((s) => s.id === slideId)?.hidden === true;
+      track('UI', 'Toggled', wasHidden ? 'SlideShown' : 'SlideHidden');
       commitDeck((prev) => ({
         slides: prev.slides.map((s) => {
           if (s.id !== slideId) return s;
@@ -243,6 +254,7 @@ export function useSlideDeck({
       if (isReadOnly) return;
       commitDeck((prev) => ({ slides: prev.slides.filter((s) => s.id !== slideId) }));
       setOpenSlideId((cur) => (cur === slideId ? null : cur));
+      track('UI', 'Removed', 'Slide');
     },
     [commitDeck, isReadOnly],
   );
@@ -278,6 +290,9 @@ export function useSlideDeck({
         if (moved) slides.splice(toIndex, 0, moved);
         return { slides };
       });
+      // One event per completed drag, not per position crossed: the reorder
+      // only commits on release, so this is already once per gesture.
+      track('UI', 'Moved', 'Slide');
     },
     [commitDeck, isReadOnly],
   );

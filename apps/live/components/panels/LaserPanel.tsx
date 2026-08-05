@@ -88,7 +88,7 @@ export function LaserPanel({
     laserColour({ ...config, colour: id }, selfColour);
 
   return (
-    <ModePanel title="Laser" {...placement}>
+    <ModePanel helpArticle="laser" title="Laser" {...placement}>
       <div className="flex flex-col px-2 pb-2">
         <PenPreview config={config} colour={selfColour} />
         <div className="divide-y divide-slate-100 dark:divide-slate-800">

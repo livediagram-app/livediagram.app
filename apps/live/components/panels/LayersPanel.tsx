@@ -206,6 +206,7 @@ export function LayersPanel({
 
   return (
     <MovablePanel
+      helpArticle="layers"
       title="Layers"
       position={position}
       defaultCorner="bottom-right"

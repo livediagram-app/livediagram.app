@@ -78,6 +78,7 @@ export function VotePanel({
 
   return (
     <MovablePanel
+      helpArticle="sessionVoting"
       mobileOpenOverride={mobileOpenOverride}
       mobileDockAnchor={mobileDockAnchor}
       title="Vote"

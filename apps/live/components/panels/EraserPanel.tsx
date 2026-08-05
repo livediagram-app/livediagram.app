@@ -64,7 +64,7 @@ export function EraserPanel({
   const toggle = (row: Row) => setOpenRow((r) => (r === row ? null : row));
 
   return (
-    <ModePanel title="Eraser" {...placement}>
+    <ModePanel helpArticle="eraser" title="Eraser" {...placement}>
       <div className="flex flex-col px-2 pb-2">
         <BrushPreview config={config} />
         <div className="divide-y divide-slate-100 dark:divide-slate-800">

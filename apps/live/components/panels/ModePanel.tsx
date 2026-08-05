@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import type { MovablePanelPlacementProps } from '@/components/primitives/MovablePanel.types';
+import type { HelpArticleKey } from '@/lib/help-articles';
 
 // The chrome every MODE panel wears: Avatar, Eraser, Format, Laser, Spotlight.
 //
@@ -28,6 +29,13 @@ export type ModePanelProps = MovablePanelPlacementProps & {
   onMobileClose?: () => void;
 };
 
+/** Extras a mode panel may put in its header: a settings gear, a help link. */
+type ModePanelExtras = {
+  headerActions?: ReactNode;
+  /** The article explaining this mode (spec/56), shown as `?` in the header. */
+  helpArticle?: HelpArticleKey;
+};
+
 export function ModePanel({
   title,
   children,
@@ -40,7 +48,9 @@ export function ModePanel({
   mobileDockAnchor,
   forceDockMode,
   onMobileClose,
-}: ModePanelProps & { title: string; children: ReactNode }) {
+  headerActions,
+  helpArticle,
+}: ModePanelProps & ModePanelExtras & { title: string; children: ReactNode }) {
   return (
     <MovablePanel
       title={title}
@@ -51,6 +61,8 @@ export function ModePanel({
       width="w-auto sm:w-64"
       onMoveTo={onMoveTo}
       onReset={onReset}
+      headerActions={headerActions}
+      helpArticle={helpArticle}
       stackBelowY={stackBelowY}
       mobileOpenOverride={mobileOpenOverride}
       mobileDockAnchor={mobileDockAnchor}
