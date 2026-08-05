@@ -34,7 +34,7 @@ export function useEditorDialogs() {
   // the current multi-selection. A plain enum flag (no element data) so
   // this slice stays diagram-data-free; EditorView derives the scoped
   // tab live from `multiSelectedIds` when scope is 'selection'.
-  const [exportScope, setExportScope] = useState<'tab' | 'selection'>('tab');
+  const [exportScope, setExportScope] = useState<'tab' | 'selection' | 'deck'>('tab');
   const [importOpen, setImportOpen] = useState(false);
 
   // Rename-request nonces. The command palette (useEditorCommands) can't reach

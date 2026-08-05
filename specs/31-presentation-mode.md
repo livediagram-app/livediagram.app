@@ -245,9 +245,14 @@ third scope rather than a new surface.
   has one. That is what makes this tractable — the framing question was answered
   when presenting was specced, so the export inherits it rather than inventing a
   second idea of what a slide's edges are.
-- **Every visual format the dialog already draws**: PDF as one document of N
-  pages, PNG and SVG as N files. Nothing new to render — the export renderer
-  already draws a bounded element set, N times instead of once.
+- **PDF, as one document of N pages.** The hand-rolled writer generalises from
+  one page to many — three objects per page after the catalogue and the page
+  tree — so nothing new renders; the existing per-tab renderer runs N times and
+  the pages are assembled into a single file.
+- **PNG and SVG stay tab-scoped.** A deck of twenty as twenty downloads is
+  something a browser blocks after the first few, and it is not the artefact
+  anybody asked for: "send me the deck" means one file. If a zipped set is ever
+  wanted it is a separate decision, not a format checkbox.
 - **Hidden slides are left out**, matching what Present does. A slide kept back
   for a question is not part of the document you hand over.
 - **The slide's tab supplies the backdrop**, theme and pattern, for the same
