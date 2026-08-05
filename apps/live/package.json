@@ -33,11 +33,13 @@
     "@livediagram/vitest-config": "workspace:*",
     "@playwright/test": "^1.62.1",
     "@tailwindcss/postcss": "^4.3.3",
+    "@testing-library/react": "^16.3.2",
     "@types/node": "^22.10.2",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
     "@vitest/coverage-v8": "^4.1.10",
     "eslint": "^10.8.0",
+    "jsdom": "^30.0.1",
     "tailwindcss": "^4.3.3",
     "typescript": "^5.7.2",
     "vitest": "^4.1.10"

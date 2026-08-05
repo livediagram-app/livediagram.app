@@ -144,13 +144,34 @@ pick it up.
     `/help/...` cross-link in an article resolves to a real page), and the
     schema.org JSON-LD builders.
 
+- **Hook bodies** in `apps/live` are testable, and the environment is opted
+  into **per file** rather than per workspace. A test that needs a document
+  opens with a docblock:
+
+  ```ts
+  // @vitest-environment jsdom
+  ```
+
+  and renders through `@testing-library/react` (`renderHook`, `act`,
+  `waitFor`). The ~1,645 existing tests are pure logic and stay on `node`,
+  which is both faster and honest about what they exercise — flipping the
+  whole workspace to `jsdom` to serve a handful of files would tax every
+  other suite for nothing.
+
+  This exists because a real bug could not be caught without it: a scoped
+  Timeline feed carried one team's fetched-period cache into another's
+  (spec/138 §3.4), which is pure effect + ref lifecycle, invisible to any
+  pure helper. `useTimelineFeed.test.tsx` is the worked example, and it
+  fails if that fix is reverted.
+
+  One resolver note, in `apps/live/vitest.config.ts`: `resolve.dedupe` lists
+  `react` and `react-dom`. `packages/ui` peers React but carries its own copy
+  for its own tests, so a hook test that renders a `@livediagram/ui` hook
+  otherwise loads TWO Reacts and every `useState` throws "Cannot read
+  properties of null". Next's bundler dedupes for real builds; the test
+  resolver has to be told.
+
 - **Ahead:**
-  - React component + hook bodies in `apps/live`: current hook tests target
-    the pure helpers next to a hook (e.g. `historyCommit` from
-    `useDiagramHistory.ts`); the hook bodies themselves (with `useState` /
-    `useEffect`) need `jsdom` + `@testing-library/react`, which would mean
-    flipping the live workspace's environment to `jsdom` and pulling in the
-    deps. None of that is in place today.
   - Worker-runtime tests for `apps/api`: the current suites run under plain
     vitest in the `node` environment with fakes for `WebSocket` / Durable
     Object state; a future move to `@cloudflare/vitest-pool-workers` would
