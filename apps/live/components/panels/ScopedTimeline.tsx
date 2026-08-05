@@ -12,7 +12,7 @@
 // nothing from February; the team's own scope carries the whole history
 // and is readable by any joined member.
 
-import { Timeline, TimelineControls, useTimelineControls } from '@livediagram/ui';
+import { Timeline, TimelineControls } from '@livediagram/ui';
 import type { TimelineScopeRef } from '@livediagram/api-schema';
 import { track } from '@/lib/telemetry';
 import { TIMELINE_RENDERERS } from '@/app/explorer/timeline/renderers';

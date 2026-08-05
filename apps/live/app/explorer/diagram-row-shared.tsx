@@ -311,6 +311,20 @@ export function DiagramActionsMenu({
             }}
           />
         ) : null}
+        {onShowHistory ? (
+          <MenuTile
+            icon={
+              <span className="[&_svg]:h-5 [&_svg]:w-5">
+                <HistoryIcon />
+              </span>
+            }
+            label="History"
+            onClick={() => {
+              onShowHistory();
+              onClose();
+            }}
+          />
+        ) : null}
         {onToggleRecentExclusion ? (
           <MenuTile
             icon={
@@ -422,6 +436,28 @@ function TakeOfflineMenuIcon() {
     >
       <path d="M8 2.5v6m0 0L5.6 6.1M8 8.5l2.4-2.4" />
       <path d="M3 10.5v2a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-2" />
+    </svg>
+  );
+}
+
+// A clock with an arrow curling back. Distinct from ClockIcon, which
+// this menu already uses for Hide-from-Recent two tiles away.
+function HistoryIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M3 3v5h5" />
+      <path d="M3.05 13A9 9 0 1 0 6 5.3L3 8" />
+      <path d="M12 7v5l3 2" />
     </svg>
   );
 }
