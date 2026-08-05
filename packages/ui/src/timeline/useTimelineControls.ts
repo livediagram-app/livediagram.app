@@ -154,15 +154,37 @@ export function useTimelineControls(
     [onActorFilterChange],
   );
 
-  const pickDate = useCallback((key: string) => {
-    // The group may be far down a long feed, so scroll to it rather
-    // than assuming it's on screen, then pulse it — otherwise the
-    // reader lands somewhere new with no signal about why.
-    document
-      .querySelector(`[data-timeline-day="${key}"]`)
-      ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    setPulseDay(key);
-  }, []);
+  // "Take me to this day", from the filter popover's mini-calendar. What that
+  // means depends on which view is open, and it used to mean only one of them:
+  // the scroll target and the pulse are both rendered by the day groups, which
+  // exist in LIST mode only — calendar and week return their grid before the
+  // groups are reached. So in two of the three modes the control the popover
+  // offers in all three did nothing at all, silently.
+  //
+  // Now each mode answers it the way it can: the grids move to the period
+  // holding that day, the list scrolls to the group and pulses it.
+  const pickDate = useCallback(
+    (key: string) => {
+      if (mode === 'calendar') {
+        // A dateKey is `YYYY-MM-DD`, so its month key is the first seven
+        // characters — no need to round-trip through a Date.
+        setMonthKey(key.slice(0, 7));
+        return;
+      }
+      if (mode === 'week') {
+        setWeekKey(weekStartOf(key));
+        return;
+      }
+      // The group may be far down a long feed, so scroll to it rather
+      // than assuming it's on screen, then pulse it — otherwise the
+      // reader lands somewhere new with no signal about why.
+      document
+        .querySelector(`[data-timeline-day="${key}"]`)
+        ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setPulseDay(key);
+    },
+    [mode],
+  );
 
   const clearPulse = useCallback(() => setPulseDay(null), []);
 

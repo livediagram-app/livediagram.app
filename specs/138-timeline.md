@@ -335,11 +335,19 @@ the mode buttons in §2.2.
   reader learn both. Anything unmapped falls to **Other**, so an event
   type from a newer worker is still filterable.
 
-- **Mini calendar** inside the popover: clicking a date scrolls that
-  day-group into view and pulses it with a fading box-shadow. Box-shadow
-  only, never a transform — transforming the group promotes it to its
-  own compositing layer, and tearing that layer down at animation end
-  makes the bubbles visibly blink.
+- **Mini calendar** inside the popover: clicking a date takes the reader to
+  that day, and what that means follows the open mode. **List** scrolls the
+  day-group into view and pulses it with a fading box-shadow — box-shadow
+  only, never a transform, because transforming the group promotes it to its
+  own compositing layer and tearing that layer down at animation end makes
+  the bubbles visibly blink. **Calendar** moves the grid to that day's month;
+  **week** moves it to the week containing it.
+
+  The mode split is not a nicety: the scroll target and the pulse are both
+  rendered by the day groups, and only list mode renders those, so a
+  scroll-and-pulse-only implementation left this control — offered in the
+  header in all three modes — doing nothing at all in two of them.
+
 - **Show more** appends the next page when the read returns a cursor.
   Page size 50, capped server-side at 200.
 
