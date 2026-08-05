@@ -5,7 +5,7 @@
 
 import type { Tab } from '@livediagram/diagram';
 import { isValidTab } from '@livediagram/diagram';
-import { MAX_TAB_BYTES, byteLength } from '../limits';
+import { MAX_TAB_BYTES, bodyExceedsCap } from '../limits';
 import {
   findComment,
   hasNewComments,
@@ -95,27 +95,12 @@ export async function handleDiagramSubresources(ctx: RouteContext): Promise<Resp
         return badRequest('invalid tab');
       }
       // Byte cap on the single tab (the body cap bounds the whole request;
-      // this bounds one tab's element + comment tree specifically). The
-      // request body IS the tab JSON, so a declared Content-Length is the
-      // exact byte count — using it skips a full re-stringify + encode of
-      // up to 4 MB on the hottest write path (one PUT per 600ms per
-      // editor). Chunked bodies (no header) keep the stringify fallback.
-      //
-      // The `> 0` is what makes that fallback reachable, and it is the whole
-      // gate: `headers.get` returns null when the header is absent, and
-      // `Number(null)` is 0, which IS finite — so an isFinite-only check
-      // measured every chunked upload as zero bytes and waved it through.
-      // Nothing else bounds this route (the outer gate in index.ts is a
-      // Content-Length check too, and defers to "the per-tab caps in the
-      // routes" for the rest), so that made an unbounded tab writable by
-      // anyone with edit access. Empty and malformed headers take the
-      // fallback for the same reason; a 0-byte body is not a valid tab.
-      const declaredLen = Number(request.headers.get('content-length'));
-      const tabBytes =
-        Number.isFinite(declaredLen) && declaredLen > 0
-          ? declaredLen
-          : byteLength(JSON.stringify(body));
-      if (tabBytes > MAX_TAB_BYTES) {
+      // this bounds one tab's element + comment tree specifically). Nothing
+      // else bounds this route: the outer gate in index.ts is a
+      // Content-Length check too and defers to "the per-tab caps in the
+      // routes" for the rest. See bodyExceedsCap for why the header alone
+      // isn't enough.
+      if (bodyExceedsCap(request, body, MAX_TAB_BYTES)) {
         return json({ error: 'payload_too_large' }, { status: 413 });
       }
       // Find the existing order index; append if new.

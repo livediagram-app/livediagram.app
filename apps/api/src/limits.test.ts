@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { MAX_IMAGE_MB } from '@livediagram/api-schema';
-import { MAX_BODY_BYTES, MAX_IMAGE_BYTES } from './limits';
+import { MAX_BODY_BYTES, MAX_IMAGE_BYTES, bodyExceedsCap, declaredBodyBytes } from './limits';
 
 // The image cap is one number written in four places a reader will believe:
 // this worker's enforcement, the editor's pre-upload gate, spec/19, and the
@@ -60,5 +60,51 @@ describe('spec/25 lists the AI route error tokens the route emits', () => {
       if (claimed === 'off_topic') continue; // called out as NOT an envelope
       expect(emitted, `spec/25 claims ${claimed}, which the route never emits`).toContain(claimed);
     }
+  });
+});
+
+// The bug these exist for, twice over: the tab cap and the change-log entry
+// cap were both written as `Number.isFinite(Number(headers.get(...)))`, which
+// is TRUE for an absent header (Number(null) === 0), so both measured a
+// chunked body as zero bytes and never fired. The rule now lives in one place.
+function req(headers: Record<string, string> = {}): Request {
+  return new Request('https://api.test/x', { method: 'POST', headers });
+}
+
+describe('declaredBodyBytes', () => {
+  it('returns null for the header shapes that used to read as zero bytes', () => {
+    expect(declaredBodyBytes(req())).toBeNull(); // absent -> Number(null) === 0
+    expect(declaredBodyBytes(req({ 'Content-Length': '' }))).toBeNull(); // '' -> 0
+    expect(declaredBodyBytes(req({ 'Content-Length': '0' }))).toBeNull();
+    expect(declaredBodyBytes(req({ 'Content-Length': 'abc' }))).toBeNull(); // NaN
+    expect(declaredBodyBytes(req({ 'Content-Length': '-5' }))).toBeNull();
+  });
+
+  it('returns the declared count when the client gave a usable one', () => {
+    expect(declaredBodyBytes(req({ 'Content-Length': '1' }))).toBe(1);
+    expect(declaredBodyBytes(req({ 'Content-Length': '4194304' }))).toBe(4194304);
+  });
+});
+
+describe('bodyExceedsCap', () => {
+  it('falls back to measuring the parsed body when no header is usable', () => {
+    // The regression: with no Content-Length the cap must still bite.
+    const big = { s: 'a'.repeat(2000) };
+    expect(bodyExceedsCap(req(), big, 1000)).toBe(true);
+    expect(bodyExceedsCap(req(), big, 100_000)).toBe(false);
+  });
+
+  it('trusts a usable declared length without measuring', () => {
+    // A tiny body that declares itself huge is rejected on the declaration —
+    // that is the fast path the hot autosave PUT relies on.
+    expect(bodyExceedsCap(req({ 'Content-Length': '9999' }), { s: 'x' }, 1000)).toBe(true);
+    expect(bodyExceedsCap(req({ 'Content-Length': '10' }), { s: 'x' }, 1000)).toBe(false);
+  });
+
+  it('measures UTF-8 bytes, not characters, in the fallback', () => {
+    // A char count would under-count multi-byte content and let a payload
+    // through at up to a third of its real size.
+    const emoji = { s: '🙂'.repeat(300) }; // 4 bytes each
+    expect(bodyExceedsCap(req(), emoji, 500)).toBe(true);
   });
 });

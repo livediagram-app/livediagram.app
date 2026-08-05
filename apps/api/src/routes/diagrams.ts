@@ -11,6 +11,8 @@ import {
   MAX_NAME_LEN,
   MAX_TAB_BYTES,
   byteLength,
+  bodyExceedsCap,
+  declaredBodyBytes,
 } from '../limits';
 import { parseChangeLogEntryBody } from '../change-log-body';
 import {} from '../comments';
@@ -370,28 +372,23 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       return json({ entries: safe });
     }
     if (request.method === 'POST') {
-      // Per-entry byte cap: only the 8MB outer body cap applied before,
-      // so 30 huge entries could balloon the capped list response.
+      // Per-entry byte cap: only the 8MB outer body cap applied before, so 30
+      // huge entries could balloon the capped list response. Nothing
+      // downstream measures anything — parseChangeLogEntryBody copies summary
+      // and the before/after payloads straight through — so this cap is the
+      // only bound on what an edit-access caller can write, and every
+      // collaborator refetches up to 30 of them per GET.
       //
-      // Two checks for one cap, because a declared Content-Length lets us
-      // reject before parsing, and its ABSENCE used to mean no cap at all:
-      // `headers.get` returns null when the header isn't sent, `Number(null)`
-      // is 0, and 0 is finite, so `0 > cap` was false and a chunked body went
-      // straight through. index.ts's outer gate is the same Content-Length
-      // shape and defers here for the rest, and parseChangeLogEntryBody
-      // measures nothing — so this was the only thing standing between an
-      // edit-access caller and an unbounded row in D1, which every
-      // collaborator then refetches 30-at-a-time on GET.
-      const lenHeader = Number(request.headers.get('content-length'));
-      const declaredOk = Number.isFinite(lenHeader) && lenHeader > 0;
-      if (declaredOk && lenHeader > MAX_CHANGE_LOG_ENTRY_BYTES) {
+      // Checked twice on purpose: a declared length lets us reject a hostile
+      // entry BEFORE parsing it, and bodyExceedsCap then re-checks the parsed
+      // body for the request shapes no header can size. The second call costs
+      // nothing when a header was present.
+      const declared = declaredBodyBytes(request);
+      if (declared !== null && declared > MAX_CHANGE_LOG_ENTRY_BYTES) {
         return json({ error: 'payload_too_large' }, { status: 413 });
       }
       const body = (await request.json()) as Partial<ChangeLogEntryDTO>;
-      // No usable header: measure the parsed body instead. Costs a
-      // re-stringify, but only on the request shape the fast path can't size,
-      // and the editor always sends a Content-Length.
-      if (!declaredOk && byteLength(JSON.stringify(body)) > MAX_CHANGE_LOG_ENTRY_BYTES) {
+      if (bodyExceedsCap(request, body, MAX_CHANGE_LOG_ENTRY_BYTES)) {
         return json({ error: 'payload_too_large' }, { status: 413 });
       }
       const entry = parseChangeLogEntryBody(body);

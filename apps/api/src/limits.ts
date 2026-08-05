@@ -6,7 +6,11 @@
 // valid payload must also respect.
 
 // Outer bound on any request body, gated on Content-Length before dispatch so
-// a hostile payload never reaches a route's req.json().
+// a hostile payload that DECLARES its size never reaches a route's req.json().
+// It can only ever be that: the gate runs before the body is read, so there is
+// nothing to measure when the header is absent, and it deliberately fails open
+// there. The per-route caps are what actually bound an undeclared body — see
+// bodyExceedsCap at the bottom of this file.
 export const MAX_BODY_BYTES = 8 * 1024 * 1024; // 8 MB
 
 // A single uploaded image's raw bytes (spec/19). Larger than MAX_BODY_BYTES,
@@ -53,4 +57,44 @@ export const MAX_PASSWORD_LEN = 256;
 // would under-count multi-byte content).
 export function byteLength(s: string): number {
   return new TextEncoder().encode(s).length;
+}
+
+/**
+ * The request's declared body size, or `null` when the client didn't give a
+ * usable one.
+ *
+ * This exists because the obvious spelling is wrong in a way that silently
+ * disables whatever cap it feeds, and it did so on two routes:
+ *
+ *     const len = Number(request.headers.get('content-length'));
+ *     if (Number.isFinite(len) && len > CAP) reject();
+ *
+ * `headers.get` returns `null` for an absent header, `Number(null)` is `0`,
+ * and `0` IS finite — so a chunked or streamed body measured as zero bytes
+ * and sailed through. Empty and malformed headers coerce to `0` / `NaN` and
+ * belong on the same side of the fence, so the check is "finite and > 0", and
+ * everything else reads as "the client didn't tell us".
+ */
+export function declaredBodyBytes(request: Request): number | null {
+  const declared = Number(request.headers.get('content-length'));
+  return Number.isFinite(declared) && declared > 0 ? declared : null;
+}
+
+/**
+ * Whether an already-parsed JSON body exceeds `cap` bytes.
+ *
+ * Prefers the declared length, which is the exact byte count when the body IS
+ * the JSON and costs nothing to read — worth having on the hot autosave path,
+ * one PUT per ~600ms per editor. Falls back to measuring the parsed body when
+ * there's no usable header, so the cap holds for every request shape rather
+ * than only the well-behaved ones.
+ *
+ * Trusting a present header is sound here: a client that under-declares gets
+ * its body truncated by the runtime (and then fails structural validation),
+ * and one that over-declares only trips its own 413. Callers handling raw
+ * bytes rather than JSON should re-check after buffering instead — see the
+ * image route, which does exactly that.
+ */
+export function bodyExceedsCap(request: Request, body: unknown, cap: number): boolean {
+  return (declaredBodyBytes(request) ?? byteLength(JSON.stringify(body))) > cap;
 }
