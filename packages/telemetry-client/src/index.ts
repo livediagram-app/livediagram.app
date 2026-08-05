@@ -15,12 +15,61 @@
 // gate (NEXT_PUBLIC_TELEMETRY_ENABLED) and its own `isOptedIn` read of
 // the shared spec/20 preference — the editor caches it behind its
 // preference-change events, the help centre reads localStorage
-// directly — so the policy stays app-owned and the plumbing shared.
+// directly — so the HOW stays app-owned and the plumbing shared. What
+// they must not each decide for themselves is WHERE the opt-out is
+// stored and which way it defaults; those are below.
 
 import type { TelemetryAction, TelemetryCategory, TelemetryEvent } from '@livediagram/api-schema';
 
 const FLUSH_DELAY_MS = 10_000;
 const MAX_BUFFER = 25;
+
+// Where the editor keeps its per-user preferences (spec/20). The help
+// centre shares the livediagram.app origin, so an opt-out made in the
+// editor has to be visible here — which means both apps read this exact
+// string, and a copy in each is a silent privacy bug waiting to happen:
+// version the key in the editor (`:v2`, an ordinary schema migration) and
+// the help centre goes on reading the dead `:v1`, finds nothing, and falls
+// back to its default of ON for a user who explicitly opted out.
+//
+// It sits in this package for want of a better shared home — the blob it
+// names is broader than telemetry, but api-schema (where the /api/preferences
+// DTO would belong) isn't a dependency of apps/help, and telemetry is the
+// only field of it the help centre reads. If preferences ever need sharing
+// beyond the opt-out, this constant should move with them.
+export const USER_PREFERENCES_STORAGE_KEY = 'livediagram:user-preferences:v1';
+
+/**
+ * The spec/20 opt-out rule applied to the raw stored preferences JSON:
+ * telemetry is ON unless `telemetryEnabled` is explicitly `false`. Missing
+ * key, unparseable JSON and an absent field all mean on, so a corrupted blob
+ * can't silently disable collection — and, more importantly, the one shape
+ * that means "off" is spelled the same way in every app.
+ */
+export function telemetryOptInFromRaw(raw: string | null): boolean {
+  if (!raw) return true;
+  try {
+    return (JSON.parse(raw) as { telemetryEnabled?: boolean }).telemetryEnabled !== false;
+  } catch {
+    return true;
+  }
+}
+
+/**
+ * The uncached read: pull the preferences blob straight out of localStorage
+ * and apply the rule above. For a host with no preference-change plumbing of
+ * its own (the help centre). Callers that read this on a hot path should
+ * cache it and invalidate on `storage` events, the way the editor does.
+ */
+export function readTelemetryOptIn(): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    return telemetryOptInFromRaw(window.localStorage.getItem(USER_PREFERENCES_STORAGE_KEY));
+  } catch {
+    // Private-window / storage-disabled: no stored opt-out to honour.
+    return true;
+  }
+}
 
 export type TelemetryEmitter = {
   track: (category: TelemetryCategory, action: TelemetryAction, type?: string) => void;

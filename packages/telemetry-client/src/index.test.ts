@@ -294,3 +294,46 @@ describe('installClientErrorTracking', () => {
     expect(() => windowTarget.fire('error')).not.toThrow();
   });
 });
+
+describe('telemetry opt-out contract', () => {
+  it('keeps the storage key both apps read byte-identical', async () => {
+    // The whole point of the shared constant. If this string changes, it must
+    // change for the editor AND the help centre in the same commit, or an
+    // opt-out made in one stops being visible to the other.
+    const { USER_PREFERENCES_STORAGE_KEY } = await import('./index');
+    expect(USER_PREFERENCES_STORAGE_KEY).toBe('livediagram:user-preferences:v1');
+  });
+
+  it('is on by default and off only on an explicit false', async () => {
+    const { telemetryOptInFromRaw } = await import('./index');
+    // Off: the one shape that means opted out.
+    expect(telemetryOptInFromRaw('{"telemetryEnabled":false}')).toBe(false);
+    // On: nothing stored, field absent, explicitly true.
+    expect(telemetryOptInFromRaw(null)).toBe(true);
+    expect(telemetryOptInFromRaw('')).toBe(true);
+    expect(telemetryOptInFromRaw('{}')).toBe(true);
+    expect(telemetryOptInFromRaw('{"otherFlag":true}')).toBe(true);
+    expect(telemetryOptInFromRaw('{"telemetryEnabled":true}')).toBe(true);
+  });
+
+  it('treats a corrupted blob as on rather than silently disabling collection', async () => {
+    const { telemetryOptInFromRaw } = await import('./index');
+    expect(telemetryOptInFromRaw('not json')).toBe(true);
+    expect(telemetryOptInFromRaw('null')).toBe(true);
+  });
+
+  it('reads the opt-out through the shared key', async () => {
+    const { readTelemetryOptIn, USER_PREFERENCES_STORAGE_KEY } = await import('./index');
+    const store: Record<string, string> = {
+      [USER_PREFERENCES_STORAGE_KEY]: '{"telemetryEnabled":false}',
+    };
+    vi.stubGlobal('window', {
+      localStorage: { getItem: (k: string) => store[k] ?? null },
+    });
+    expect(readTelemetryOptIn()).toBe(false);
+    // A different key must not be mistaken for the preferences blob.
+    delete store[USER_PREFERENCES_STORAGE_KEY];
+    store['livediagram:user-preferences:v2'] = '{"telemetryEnabled":false}';
+    expect(readTelemetryOptIn()).toBe(true);
+  });
+});

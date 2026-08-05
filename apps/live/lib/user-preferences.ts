@@ -17,6 +17,7 @@ export type MapSize = 'short' | 'medium' | 'tall';
 // their own `localStorage.setItem` (like `lib/telemetry.ts`'s
 // in-memory gate cache) still refresh promptly.
 
+import { USER_PREFERENCES_STORAGE_KEY } from '@livediagram/telemetry-client';
 import { apiGetPreferences, apiPutPreferences } from './api-client';
 import { readLocalStorageSafe, writeLocalStorageSafe } from './local-storage-safe';
 
@@ -184,7 +185,11 @@ export function toggleRecentExcluded(prefs: UserPreferences, diagramId: string):
   return [diagramId, ...current].slice(0, RECENT_EXCLUDED_LIMIT);
 }
 
-export const STORAGE_KEY = 'livediagram:user-preferences:v1';
+// Re-exported under this module's own name because everything here reads it
+// as "the preferences key". It's DEFINED in telemetry-client because the help
+// centre reads the telemetry field out of this same blob and must never get
+// the string wrong — see the note there.
+export const STORAGE_KEY = USER_PREFERENCES_STORAGE_KEY;
 export const PREFERENCES_CHANGED_EVENT = 'livediagram:preferences-changed';
 
 // The effective "Auto-attach arrows" state (spec/20): opt-in, so only
