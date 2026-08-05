@@ -1,0 +1,40 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { DecisionRecordCard } from '@/components/illustrations/palette-collaborate';
+
+export const metadata = helpMetadata({
+  title: 'Decision Records',
+  description:
+    'What was decided, why, when, and whether it still stands, on a card beside the thing it decided.',
+  path: '/help/palette/collaborate/decision-records/',
+});
+
+<ArticleLayout
+  title="Decision Records"
+  description="What was decided, why, when, and whether it still stands."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  parentArticle={{ title: 'Collaborate elements', slug: 'collaborate' }}
+  subArticles={getSubArticles('collaborate').filter((a) => a.slug !== 'decision-records')}
+>
+
+A decision record keeps what was decided, why, when, and whether it still stands, beside the thing it decided. It sits in the **Keep a record** group of the [Collaborate](/help/palette/collaborate/) category.
+
+## What is on the card
+
+- The element's **label** is the decision itself ("Use D1 for durable storage").
+- A **status** chip: Proposed, Accepted, Rejected or Superseded.
+- A **date**, and the **drivers** that led to it.
+
+<Figure caption="The statement is the label, with the status chip, the drivers and the date around it.">
+  <DecisionRecordCard />
+</Figure>
+
+All three are set from the element's menu, under Decision.
+
+## Superseding one
+
+To show that one decision replaced another, draw an [arrow](/help/palette/arrows/) between the two cards.
+
+</ArticleLayout>

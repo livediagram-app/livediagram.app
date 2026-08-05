@@ -1,0 +1,40 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { VoteLayerPicker } from '@/components/illustrations/voting';
+
+export const metadata = helpMetadata({
+  title: 'Voting on One Layer',
+  description:
+    'Restrict a vote to a single layer so only its elements take dots, with everything else dimmed but still on the canvas.',
+  path: '/help/collaboration/session-tools/voting/vote-layers/',
+});
+
+<ArticleLayout
+  title="Voting on One Layer"
+  description="Keep a vote on the ideas rather than the scaffolding around them."
+  categoryTitle="Session Tools"
+  categorySlug="collaboration/session-tools"
+  parentArticle={{ title: 'Dot Voting', slug: 'voting' }}
+  subArticles={getSubArticles('voting').filter((a) => a.slug !== 'vote-layers')}
+>
+
+If the tab uses [layers](/help/canvas/layers/), the **Votable layer** picker sits above **Start vote**. Pick one and only its elements take dots, which keeps a [vote](/help/collaboration/session-tools/voting/) on the ideas rather than the scaffolding around them: a background frame, an annotation layer, last round's output.
+
+## What the room sees
+
+Everything on other layers stays on the canvas, dimmed, so you can still see what you are voting against, and the elements that _can_ take a dot are ringed so there is no guessing where to click.
+
+<Figure caption="Votable elements are ringed; the other layers stay visible but dimmed.">
+  <VoteLayerPicker />
+</Figure>
+
+Both cues clear the moment you end the vote, so the results walkthrough reads against the full board.
+
+## Choosing the layer
+
+It starts on whichever layer you are working in, and **All layers** is there for an ordinary whole-board vote. On a tab with a single layer the picker doesn't appear at all, since there would be nothing to choose.
+
+Like the [privacy switches](/help/collaboration/session-tools/voting/vote-privacy/), the layer is fixed once the vote starts: end it and start another to vote on something else.
+
+</ArticleLayout>

@@ -1,0 +1,51 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { ModeButtonBar } from '@/components/illustrations/palette-behaviour';
+
+export const metadata = helpMetadata({
+  title: 'Selection Mode Buttons',
+  description:
+    'Drop a button on the canvas that hands whoever presses it a selection mode: Avatar, Select, Hand, Laser, Spotlight, Eraser, Format, Isometric or Highlighter.',
+  path: '/help/palette/behaviour/mode-buttons/',
+});
+
+<ArticleLayout
+  title="Selection Mode Buttons"
+  description="A button on the board that switches whoever presses it into a selection mode."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  parentArticle={{ title: 'Behaviour Elements', slug: 'behaviour' }}
+  subArticles={getSubArticles('behaviour').filter((a) => a.slug !== 'mode-buttons')}
+>
+
+A Selection Mode button is an element that hands out a [selection mode](/help/selection-modes/). Put one on the board and anybody can press it, without ever having opened the mode picker.
+
+## Adding one
+
+The **Selection Mode** row of the [Behaviour](/help/palette/behaviour/) category opens into nine buttons, one per mode: **Avatar**, **Select**, **Hand**, **Laser**, **Spotlight**, **Eraser**, **Format**, **Isometric** and **Highlighter**.
+
+Pick the mode you want and it drops ready to press, reading "Switch to Avatar" and switching whoever presses it into that mode. You can still repoint an existing button from **Tools › Button**, or type your own label over the derived one.
+
+<Figure caption="A row of Selection Mode buttons: two offering a mode, one offering the way back out.">
+  <ModeButtonBar />
+</Figure>
+
+## What pressing it does
+
+Pressing it changes the mode for **the person who pressed it** and nobody else. Everyone else carries on in whatever tool they were already using.
+
+Pressing it again while you are in that mode hands you back your previous one, so a button is never a one-way door: a button for the mode you are already in reads "Leave Avatar" rather than offering it again.
+
+A click presses the button; a drag still moves it, so you can arrange a bar of them without setting one off.
+
+## Why a bar of them works
+
+A Selection Mode button keeps working while you are in a mode that makes the rest of the canvas read-only, so a row of them makes a usable little control bar. That is what makes it useful on a walkthrough board: the viewer has the controls they need in front of them, on the canvas, rather than in a panel they were never told about.
+
+<Tip>
+  Pair a **Highlighter** button with a **Select** button so a reviewer can pick up the marker, mark
+  the board up, and put it down again without leaving the canvas.
+</Tip>
+
+</ArticleLayout>

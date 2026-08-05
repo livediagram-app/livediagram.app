@@ -1,0 +1,42 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { VotePanelProgress } from '@/components/illustrations/voting';
+
+export const metadata = helpMetadata({
+  title: 'The Vote Panel',
+  description:
+    'The panel that tracks how far through a vote the room has got: dots cast, people finished, and a row per voter with their dots left.',
+  path: '/help/collaboration/session-tools/voting/vote-panel/',
+});
+
+<ArticleLayout
+  title="The Vote Panel"
+  description="Knowing whether anyone is still deciding, which is what decides when to end a vote."
+  categoryTitle="Session Tools"
+  categorySlug="collaboration/session-tools"
+  parentArticle={{ title: 'Dot Voting', slug: 'voting' }}
+  subArticles={getSubArticles('voting').filter((a) => a.slug !== 'vote-panel')}
+>
+
+A **Vote** panel appears at the top right, under the Palette, for as long as a [vote](/help/collaboration/session-tools/voting/) is running.
+
+## While voting is open
+
+It shows how far the room has got: dots cast against dots available, how many people have finished, and a row per voter with their remaining dots as hollow pips.
+
+<Figure caption="Filled pips are dots spent; a part-filled row is somebody still deciding.">
+  <VotePanelProgress />
+</Figure>
+
+The tally pills on the canvas tell you what is winning; this tells you whether anyone is still deciding, which is the thing that decides when to press **End vote**.
+
+## Why the rows have no names
+
+Voter rows aren't labelled with names. Dots aren't recorded against people in a way the app can turn back into a name, so the panel shows the shape of the room rather than a register: all-filled rows are done, part-filled rows are who you are waiting on.
+
+## After the reveal
+
+The panel switches to the [ranked list](/help/collaboration/session-tools/voting/vote-results/) the moment you choose **Show results**.
+
+</ArticleLayout>

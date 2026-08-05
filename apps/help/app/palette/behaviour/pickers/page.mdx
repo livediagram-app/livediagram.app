@@ -1,0 +1,38 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { PickerCard } from '@/components/illustrations/palette-behaviour';
+
+export const metadata = helpMetadata({
+  title: 'Pickers',
+  description:
+    'An element that chooses at random when you press it: one of the people in the room, or one of the options you write, with everyone seeing the same answer.',
+  path: '/help/palette/behaviour/pickers/',
+});
+
+<ArticleLayout
+  title="Pickers"
+  description="Choose at random, in front of everyone, so nobody has to volunteer."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  parentArticle={{ title: 'Behaviour Elements', slug: 'behaviour' }}
+  subArticles={getSubArticles('behaviour').filter((a) => a.slug !== 'pickers')}
+>
+
+A **Picker** chooses at random when you press it. It lives in the **Run the room** group of the [Behaviour](/help/palette/behaviour/) category.
+
+## What it picks from
+
+Either one of the people currently in the room, or one of the options you write. Both are set in **Tools › Picker**: choose **People here** or **A list**, and a list gets an **Options** box, one entry per line.
+
+## Rolling it
+
+It spins the candidates past and slows to a stop on the answer. People appear with their own avatar as they go by, and everyone sees the same result.
+
+<Figure caption="The reel slows into the answer, and the whole room lands on the same one.">
+  <PickerCard />
+</Figure>
+
+Handy for "who demos next" without anyone having to volunteer.
+
+</ArticleLayout>

@@ -1,6 +1,7 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
+import { BehaviourGroups } from '@/components/illustrations/palette-behaviour';
 
 export const metadata = helpMetadata({
   title: 'Behaviour Elements',
@@ -19,27 +20,27 @@ export const metadata = helpMetadata({
 
 The **Behaviour** category (under **Dynamic** in the palette's category picker) holds the elements that _do_ something when somebody interacts with them. Everywhere else in the palette you are placing a picture; here you are placing a control.
 
-Each is a row with its name and a one-line description of what it does, because a glyph cannot say what a Picker picks or where a Portal goes.
+This page is the map. Each element has its own short article, so you can link somebody straight to the one they need.
 
 ## What the category contains
 
-The category grew past the point where a flat list reads as a list, so it browses by group the way Icons and Technology do: a grid of five category tiles — **Selection Mode**, **Run the room** (Reveal, Done check, Picker), **Get around** (Portal, Chair, Link card), **Session** and **Reactions** — that you click to open, with a breadcrumb back to the grid and a search box above that cuts across all five at once. They are grouped by what the element does with the room rather than by what it looks like, which is why the Portal sits beside the Chair and the Link card — all three take you somewhere, whether that is another tab, a seat, or the page the card points at.
+The category grew past the point where a flat list reads as a list, so it browses by group the way Icons and Technology do: a grid of five category tiles that you click to open, with a breadcrumb back to the grid and a search box above that cuts across all five at once.
 
-The **Selection Mode** row opens into nine buttons, one per mode: **Avatar**, **Select**, **Hand**, **Laser**, **Spotlight**, **Eraser**, **Format**, **Isometric** and **Highlighter**. Pick the mode you want and it drops ready to press, reading "Switch to Avatar" and switching whoever presses it into that mode. You can still repoint an existing button from **Tools › Button**, or type your own label over the derived one. Pressing it changes the mode for **the person who pressed it** and nobody else, pressing it again while you are in that mode hands you back your previous one, and it keeps working while you are in a mode that makes the rest of the canvas read-only, so a row of them makes a usable little control bar. A **Portal** is a ring of energy you link to another portal: click it — or walk an Avatar-mode character into it — and you come out the far side, even on another tab. See [Portals](/help/palette/tools/portals/).
+<Figure caption="The Behaviour category browses as five group tiles, with one search box across all of them.">
+  <BehaviourGroups />
+</Figure>
 
-The **Session** row opens into three buttons, one per tool: **Timer**, **Dot vote** and **Poll**. Pick the one you want and it drops ready to press, rather than dropping a generic button you then have to point at a tool. A session button starts that tool for everyone in the room: a countdown **timer**, a **dot vote**, or a **poll** you write in advance. A **Timer** goes further and becomes the clock: it counts down on the board itself, with its own **pause**, **resume**, **reset** and **remove** controls, and it is the same timer as the pill in the top bar — pause it on the board and it pauses there too. Each one carries a **…** menu on its own face for the setting you change most: length presets on a Timer, dots each on a Dot vote, and the question and answers on a Poll. Changing a Timer's length **while it is counting restarts it** at the new one, keeping it running (or paused) as it was — so extend a timer between rounds rather than mid-round. For the full range, right-click and open **Tools › Session**, which has room for a proper number input and is also where you change which tool the element is. It is how a board carries its own running order: put "5 minutes" over the writing column and "Vote — 3 dots each" over the results, and anyone can run the session. Starting a tool needs edit access, so on a view-only link the button shows as unavailable, though you can still take part once somebody starts it.
+Inside a group, each element is a row with its name and a one-line description of what it does, because a glyph cannot say what a Picker picks or where a Portal goes.
 
-A **Done check** asks the room to say when they have finished. Everyone presses **I'm done** on the card, and it shows two lists: who has, and who it is still waiting on. When the last person marks themselves done the card flashes, so you do not have to sit watching it.
+The five groups are:
 
-The waiting list is built from whoever is actually **in the room** at that moment, not from everyone who has ever opened the diagram. That is deliberate: it means somebody who closed their tab stops holding the card open, and the check can actually finish. If they come back their mark is still there.
+- **Selection Mode** — [Selection Mode buttons](/help/palette/behaviour/mode-buttons/), one per mode, that hand whoever presses them a different tool.
+- **Run the room** — the [Reveal zone](/help/palette/behaviour/reveal-zones/), the [Done check](/help/palette/behaviour/done-checks/) and the [Picker](/help/palette/behaviour/pickers/).
+- **Get around** — the [Portal](/help/palette/tools/portals/), the [Chair](/help/palette/chairs/) and the [Link card](/help/canvas/links/link-cards/).
+- **Session** — [Session buttons](/help/palette/behaviour/session-buttons/) for the timer, the dot vote and the poll.
+- **Reactions** — the five [Reaction pads](/help/palette/behaviour/reaction-pads/).
 
-Press **I'm not done** to take your mark off again. Its **…** menu has **Clear my mark** and **Reset everyone**, which clears the round so you can run the next one. Good over a silent-writing block, a review column, or any "tell me when you're ready" moment.
-
-The **Reactions** row opens into five pads, one per reaction, so you pick the one you want and it drops ready. A **Reaction pad** throws a burst over itself when somebody presses it — or walks an Avatar-mode character onto it, which is the same act. You can still change an existing pad from **Tools › Reaction**. The five are: **Confetti** for a result worth celebrating, **Sparkles** for a good idea nicely done, **Hearts** for warmth towards a person rather than a result, **Applause** to thank somebody for the talk or the demo, and **Fireworks** for when it shipped. Everyone in the room sees the burst, and nothing is saved: a reaction is a moment, not a mark on the board, so there is nothing to undo and nothing for a latecomer to find. Drop one at the end of a retro column or under a demo and let the room use it.
-
-A **Reveal** zone is a cover you put over part of the canvas — answers, estimates, a retro column nobody should read early. **Double-click** (or double-tap) uncovers it **on your screen only**, with a small Hide pill to put it back — two presses, so a stray click on a busy board doesn't give the game away; **Tools › Reveal › Reveal for all** takes it off for everyone at once. It hides content from a reader's eye, not from a determined reader: everything underneath is still in the diagram, so don't put anything genuinely private under one.
-
-A **Picker** chooses at random when you press it — one of the people currently in the room, or one of the options you write in **Tools › Picker**. It spins the candidates past and slows to a stop on the answer — people appear with their own avatar as they go by — and everyone sees the same result: handy for "who demos next" without anyone having to volunteer.
+They are grouped by what the element does with the room rather than by what it looks like, which is why the Portal sits beside the Chair and the Link card: all three take you somewhere, whether that is another tab, a seat, or the page the card points at.
 
 ## Working with them
 

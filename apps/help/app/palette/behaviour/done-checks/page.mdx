@@ -1,0 +1,46 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { DoneCheckCard } from '@/components/illustrations/palette-behaviour';
+
+export const metadata = helpMetadata({
+  title: 'Done Checks',
+  description:
+    'A card that asks the room to say when they have finished, showing who has marked themselves done and who it is still waiting on.',
+  path: '/help/palette/behaviour/done-checks/',
+});
+
+<ArticleLayout
+  title="Done Checks"
+  description="Ask the room to say when they have finished, and watch the waiting list empty."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  parentArticle={{ title: 'Behaviour Elements', slug: 'behaviour' }}
+  subArticles={getSubArticles('behaviour').filter((a) => a.slug !== 'done-checks')}
+>
+
+A **Done check** asks the room to say when they have finished. It lives in the **Run the room** group of the [Behaviour](/help/palette/behaviour/) category.
+
+## Marking yourself done
+
+Everyone presses **I'm done** on the card, and it shows two lists: who has, and who it is still waiting on. When the last person marks themselves done the card flashes, so you do not have to sit watching it.
+
+<Figure caption="The card keeps two lists: who has finished, and who it is still waiting on.">
+  <DoneCheckCard />
+</Figure>
+
+Press **I'm not done** to take your mark off again.
+
+## The waiting list is who is here now
+
+The waiting list is built from whoever is actually **in the room** at that moment, not from everyone who has ever opened the diagram. That is deliberate: it means somebody who closed their tab stops holding the card open, and the check can actually finish. If they come back their mark is still there.
+
+## Running the next round
+
+The card's **…** menu has **Clear my mark** and **Reset everyone**, which clears the round so you can run the next one.
+
+<Tip>
+  Good over a silent-writing block, a review column, or any "tell me when you're ready" moment.
+</Tip>
+
+</ArticleLayout>

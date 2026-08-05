@@ -1,0 +1,42 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { AgendaCard } from '@/components/illustrations/palette-collaborate';
+
+export const metadata = helpMetadata({
+  title: 'Agendas',
+  description:
+    'The run of the session on the canvas, with minutes against each segment and a press that starts the tab timer for that long.',
+  path: '/help/palette/collaborate/agendas/',
+});
+
+<ArticleLayout
+  title="Agendas"
+  description="The run of the session, with minutes against each segment."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  parentArticle={{ title: 'Collaborate elements', slug: 'collaborate' }}
+  subArticles={getSubArticles('collaborate').filter((a) => a.slug !== 'agendas')}
+>
+
+An agenda is the run of the session, with minutes against each segment. It sits in the **Keep a record** group of the [Collaborate](/help/palette/collaborate/) category.
+
+## Running it
+
+Press a segment and it starts the [tab timer](/help/collaboration/session-tools/timer/) for that long and marks itself as where the room is. Done segments strike through; the current one shows the time remaining.
+
+<Figure caption="Done segments strike through, the current one counts down, and the header holds the total.">
+  <AgendaCard />
+</Figure>
+
+The header shows the **total**, which is the number that tells you the plan doesn't fit before you start.
+
+## Editing the segments
+
+Add, rename, re-time and reorder segments from the element's menu, under **Segments**.
+
+## Nothing advances by itself
+
+Nothing advances when a timer ends. A segment running out is a prompt for a person, not an instruction.
+
+</ArticleLayout>

@@ -1655,6 +1655,140 @@ export const articles: Article[] = [
     parentSlug: 'drawing',
   },
 
+  // ---- Sub-articles: Behaviour ----
+  {
+    slug: 'mode-buttons',
+    title: 'Selection Mode Buttons',
+    description: 'A button that hands whoever presses it a selection mode.',
+    keywords:
+      'mode button selection mode switch tool avatar select hand pan laser spotlight eraser format painter isometric highlighter control bar press leave walkthrough read-only',
+    category: 'Palette',
+    categorySlug: 'palette/behaviour',
+    parentSlug: 'behaviour',
+  },
+  {
+    slug: 'session-buttons',
+    title: 'Session Buttons',
+    description: 'Start a timer, a dot vote or a poll for the room from the board.',
+    keywords:
+      'session button timer countdown minutes dot vote dots poll question answers start room facilitation running order agenda clock pause resume reset remove edit access view only',
+    category: 'Palette',
+    categorySlug: 'palette/behaviour',
+    parentSlug: 'behaviour',
+  },
+  {
+    slug: 'done-checks',
+    title: 'Done Checks',
+    description: 'Ask the room to say when they have finished, and see who you are waiting on.',
+    keywords:
+      'done check finished ready waiting who progress everyone mark complete im done not done clear my mark reset everyone silent writing roster room presence flash',
+    category: 'Palette',
+    categorySlug: 'palette/behaviour',
+    parentSlug: 'behaviour',
+  },
+  {
+    slug: 'reaction-pads',
+    title: 'Reaction Pads',
+    description: 'A pad the room can press to throw a burst over the board.',
+    keywords:
+      'reaction pad confetti celebrate sparkles hearts applause clap fireworks emoji burst cheer thanks avatar walk onto ephemeral moment nothing saved',
+    category: 'Palette',
+    categorySlug: 'palette/behaviour',
+    parentSlug: 'behaviour',
+  },
+  {
+    slug: 'reveal-zones',
+    title: 'Reveal Zones',
+    description: 'Cover part of the canvas until the room is ready to see it.',
+    keywords:
+      'reveal zone hide cover conceal spoiler answers estimates blackout double click double tap hide pill reveal for all hide for all not private not secure',
+    category: 'Palette',
+    categorySlug: 'palette/behaviour',
+    parentSlug: 'behaviour',
+  },
+  {
+    slug: 'pickers',
+    title: 'Pickers',
+    description: 'Choose at random from the room, or from a list you write.',
+    keywords:
+      'picker random pick choose spinner wheel raffle draw lottery who demos next volunteer people here a list options shuffle',
+    category: 'Palette',
+    categorySlug: 'palette/behaviour',
+    parentSlug: 'behaviour',
+  },
+
+  // ---- Sub-articles: Collaborate ----
+  {
+    slug: 'comment-panels',
+    title: 'Comment Panels',
+    description: 'A whole comment thread, left out on the board.',
+    keywords:
+      'comment panel thread remark note reply discuss feedback annotate composer resolve reopen badge popover pinned about an element arrow export',
+    category: 'Palette',
+    categorySlug: 'palette/collaborate',
+    parentSlug: 'collaborate',
+  },
+  {
+    slug: 'estimate-cards',
+    title: 'Estimate Cards',
+    description: 'Planning poker: everyone picks privately, one Reveal shows the lot.',
+    keywords:
+      'estimate estimation planning poker story points sizing fibonacci tshirt t-shirt shirt powers of two scale reveal spread unanimous clear anchor private pick withdraw',
+    category: 'Palette',
+    categorySlug: 'palette/collaborate',
+    parentSlug: 'collaborate',
+  },
+  {
+    slug: 'temperature-checks',
+    title: 'Temperature Checks',
+    description: 'A fist-of-five gauge that shows the shape of the room.',
+    keywords:
+      'temperature check fist of five pulse mood confidence gauge sentiment 1 to 5 blocked enthusiastic average bars shape of the room never hidden',
+    category: 'Palette',
+    categorySlug: 'palette/collaborate',
+    parentSlug: 'collaborate',
+  },
+  {
+    slug: 'idea-boxes',
+    title: 'Idea Boxes',
+    description: 'Anonymous submissions, held until you open the box.',
+    keywords:
+      'idea box anonymous anonymity brainstorm brainwriting suggestion submissions count hidden open the box scatter to stickies sticky notes retro pre-mortem safety',
+    category: 'Palette',
+    categorySlug: 'palette/collaborate',
+    parentSlug: 'collaborate',
+  },
+  {
+    slug: 'agendas',
+    title: 'Agendas',
+    description: 'The run of the session, with minutes against each segment.',
+    keywords:
+      'agenda run of show running order segments timebox minutes total schedule plan meeting workshop timer remaining struck through reorder',
+    category: 'Palette',
+    categorySlug: 'palette/collaborate',
+    parentSlug: 'collaborate',
+  },
+  {
+    slug: 'decision-records',
+    title: 'Decision Records',
+    description: 'What was decided, why, when, and whether it still stands.',
+    keywords:
+      'decision record adr architecture decision record status proposed accepted rejected superseded drivers rationale date why chose choice log',
+    category: 'Palette',
+    categorySlug: 'palette/collaborate',
+    parentSlug: 'collaborate',
+  },
+  {
+    slug: 'roll-calls',
+    title: 'Roll Calls',
+    description: 'Who was in the room, frozen into the diagram.',
+    keywords:
+      'roll call attendance register present participants who was here minutes snapshot take roll take again latecomers record',
+    category: 'Palette',
+    categorySlug: 'palette/collaborate',
+    parentSlug: 'collaborate',
+  },
+
   // ---- Sub-articles: Selecting and Grouping ----
   {
     slug: 'multi-select',
@@ -1866,6 +2000,58 @@ export const articles: Article[] = [
     category: 'Collaboration',
     categorySlug: 'collaboration/session-tools',
     parentSlug: 'session-tools',
+  },
+
+  // ---- Sub-articles: Dot Voting ----
+  {
+    slug: 'casting-dots',
+    title: 'Casting Dots',
+    description: 'Spending and taking back your dots, and what counts as votable.',
+    keywords:
+      'cast dot dots vote counter tally pill plus minus retract withdraw budget spend stack votable shapes sticky notes images frames arrows not votable',
+    category: 'Collaboration',
+    categorySlug: 'collaboration/session-tools/voting',
+    parentSlug: 'voting',
+  },
+  {
+    slug: 'vote-layers',
+    title: 'Voting on One Layer',
+    description: 'Restrict a vote to one layer so only its elements take dots.',
+    keywords:
+      'vote layer layers votable layer all layers dimmed ringed restrict scope background frame annotation ideas scaffolding',
+    category: 'Collaboration',
+    categorySlug: 'collaboration/session-tools/voting',
+    parentSlug: 'voting',
+  },
+  {
+    slug: 'vote-privacy',
+    title: 'Private Voting',
+    description: 'Hide cursors and hide the running counts for a blind vote.',
+    keywords:
+      'private privacy secret blind anonymous hide cursors pointers laser hide running counts totals tallies pile on bandwagon switches fixed',
+    category: 'Collaboration',
+    categorySlug: 'collaboration/session-tools/voting',
+    parentSlug: 'voting',
+  },
+  {
+    slug: 'vote-panel',
+    title: 'The Vote Panel',
+    description: 'Track how far through a vote the room has got.',
+    keywords:
+      'vote panel turnout progress dots cast finished waiting pips remaining left rows unnamed anonymous when to end vote',
+    category: 'Collaboration',
+    categorySlug: 'collaboration/session-tools/voting',
+    parentSlug: 'voting',
+  },
+  {
+    slug: 'vote-results',
+    title: 'Vote Results',
+    description: 'The shared walkthrough of what won, with the ranked list beside it.',
+    keywords:
+      'results reveal show results winners ranked list top result walkthrough previous next done highlight amber follow shared focus clear vote',
+    category: 'Collaboration',
+    categorySlug: 'collaboration/session-tools/voting',
+    parentSlug: 'voting',
   },
 
   // ---- Sub-articles: Data Elements ----

@@ -1,0 +1,32 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { TemperatureCheckCard } from '@/components/illustrations/palette-collaborate';
+
+export const metadata = helpMetadata({
+  title: 'Temperature Checks',
+  description:
+    'A fist-of-five gauge on the canvas: everyone registers 1 to 5, and the bars and the average move as the answers land.',
+  path: '/help/palette/collaborate/temperature-checks/',
+});
+
+<ArticleLayout
+  title="Temperature Checks"
+  description="A fist-of-five gauge that shows the shape of the room, not just its average."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  parentArticle={{ title: 'Collaborate elements', slug: 'collaborate' }}
+  subArticles={getSubArticles('collaborate').filter((a) => a.slug !== 'temperature-checks')}
+>
+
+A fist-of-five gauge. Everyone registers 1 (blocked) to 5 (enthusiastic), and the bars and the average move as the answers land. It sits in the **Ask the room** group of the [Collaborate](/help/palette/collaborate/) category.
+
+<Figure caption="Five readings, the bars they fill, and the average underneath.">
+  <TemperatureCheckCard />
+</Figure>
+
+## It is never hidden
+
+This one is **never hidden**, deliberately. Watching the shape of the room appear is the reading: a flat 3 across the board and a split between 1s and 5s have the same average and mean opposite things.
+
+</ArticleLayout>

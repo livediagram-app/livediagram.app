@@ -1,0 +1,45 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { IdeaBoxCard } from '@/components/illustrations/palette-collaborate';
+
+export const metadata = helpMetadata({
+  title: 'Idea Boxes',
+  description:
+    'Anonymous submissions held until you open the box, then scattered to sticky notes you can group, move and dot-vote.',
+  path: '/help/palette/collaborate/idea-boxes/',
+});
+
+<ArticleLayout
+  title="Idea Boxes"
+  description="Anonymous submissions, held until you open the box."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  parentArticle={{ title: 'Collaborate elements', slug: 'collaborate' }}
+  subArticles={getSubArticles('collaborate').filter((a) => a.slug !== 'idea-boxes')}
+>
+
+An idea box collects anonymous submissions and holds them until you open it. It sits in the **Ask the room** group of the [Collaborate](/help/palette/collaborate/) category.
+
+## While it is closed
+
+Anyone types into **Add an idea**. No name is recorded against it: the element has nowhere to store one.
+
+While it is closed the box shows a **count only**, not the text, and not even to the person who wrote it.
+
+<Figure caption="Closed, the box shows how many ideas are in it and nothing else.">
+  <IdeaBoxCard />
+</Figure>
+
+## Opening it
+
+**Open the box** shows everything to the room. There is no closing it again: the flag protects the writing round, it isn't a toggle.
+
+**Scatter to stickies** turns the ideas into ordinary [sticky notes](/help/palette/tools/sticky-notes/) beside the box, so you can group, move and [dot-vote](/help/collaboration/session-tools/voting/) them.
+
+<Tip>
+  Use it for retro round one, pre-mortems, and anything where the honest answer needs the safety of
+  not being attributed.
+</Tip>
+
+</ArticleLayout>

@@ -1,0 +1,46 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { ReactionPads } from '@/components/illustrations/palette-behaviour';
+
+export const metadata = helpMetadata({
+  title: 'Reaction Pads',
+  description:
+    'A pad that throws confetti, sparkles, hearts, applause or fireworks over itself when somebody presses it or walks a character onto it.',
+  path: '/help/palette/behaviour/reaction-pads/',
+});
+
+<ArticleLayout
+  title="Reaction Pads"
+  description="A pad the room can press to throw a burst over the board."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  parentArticle={{ title: 'Behaviour Elements', slug: 'behaviour' }}
+  subArticles={getSubArticles('behaviour').filter((a) => a.slug !== 'reaction-pads')}
+>
+
+A **Reaction pad** throws a burst over itself when somebody presses it, or walks an [Avatar-mode](/help/selection-modes/avatar-mode/) character onto it, which is the same act.
+
+## Adding one
+
+The **Reactions** row of the [Behaviour](/help/palette/behaviour/) category opens into five pads, one per reaction, so you pick the one you want and it drops ready. You can still change an existing pad from **Tools › Reaction**.
+
+<Figure caption="The five pads, and the burst one of them has just thrown over the board.">
+  <ReactionPads />
+</Figure>
+
+## The five reactions
+
+- **Confetti** for a result worth celebrating.
+- **Sparkles** for a good idea nicely done.
+- **Hearts** for warmth towards a person rather than a result.
+- **Applause** to thank somebody for the talk or the demo.
+- **Fireworks** for when it shipped.
+
+## Nothing is saved
+
+Everyone in the room sees the burst, and nothing is saved: a reaction is a moment, not a mark on the board, so there is nothing to undo and nothing for a latecomer to find.
+
+<Tip>Drop one at the end of a retro column or under a demo and let the room use it.</Tip>
+
+</ArticleLayout>

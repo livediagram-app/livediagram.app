@@ -1,0 +1,34 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { RollCallCard } from '@/components/illustrations/palette-collaborate';
+
+export const metadata = helpMetadata({
+  title: 'Roll Calls',
+  description:
+    'Freeze who was in the room into the diagram: minutes rather than a live list, so it still means something tomorrow.',
+  path: '/help/palette/collaborate/roll-calls/',
+});
+
+<ArticleLayout
+  title="Roll Calls"
+  description="Who was in the room, frozen into the diagram."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  parentArticle={{ title: 'Collaborate elements', slug: 'collaborate' }}
+  subArticles={getSubArticles('collaborate').filter((a) => a.slug !== 'roll-calls')}
+>
+
+A roll call records who was in the room, frozen into the diagram. It sits in the **Keep a record** group of the [Collaborate](/help/palette/collaborate/) category.
+
+## Taking the roll
+
+Press **Take roll** and it records everyone present at that moment, and keeps them after they leave.
+
+<Figure caption="The roll is a snapshot with its own timestamp, not a live list of who is here.">
+  <RollCallCard />
+</Figure>
+
+It is minutes, not a live list, which is why it still means something tomorrow. Taking the roll again (the button then reads **Take again**) replaces the list, which is what you want when latecomers arrive.
+
+</ArticleLayout>

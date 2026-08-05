@@ -1,0 +1,44 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { EstimateCard } from '@/components/illustrations/palette-collaborate';
+
+export const metadata = helpMetadata({
+  title: 'Estimate Cards',
+  description:
+    'Planning poker on the canvas: everyone picks a number privately, one Reveal shows every answer at once, and the card calls out the spread.',
+  path: '/help/palette/collaborate/estimate-cards/',
+});
+
+<ArticleLayout
+  title="Estimate Cards"
+  description="Planning poker: everyone picks privately, one Reveal shows the lot."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  parentArticle={{ title: 'Collaborate elements', slug: 'collaborate' }}
+  subArticles={getSubArticles('collaborate').filter((a) => a.slug !== 'estimate-cards')}
+>
+
+Planning poker. Everyone picks a number privately; one **Reveal** shows every answer at once.
+
+## Choosing a scale
+
+The **Ask the room** row of the [Collaborate](/help/palette/collaborate/) category opens into one tile per scale: **Fibonacci** (1 2 3 5 8 13 21 ?), **T-shirt** (XS to XL) and **Powers of two**. Pick the scale you want and the card drops on it; you can still change an existing card from its menu, under Scale.
+
+Every scale ends in **?**, which is a real answer: "I can't size this."
+
+## Before the reveal
+
+The card shows **who** has answered, not what they said. That is the point: seeing a number first is what anchors a room.
+
+<Figure caption="Before the reveal the card names who has answered, never what they picked.">
+  <EstimateCard />
+</Figure>
+
+Press your own pick again to withdraw it. Picking a different one replaces it.
+
+## After the reveal
+
+Every answer appears under its author with the **spread** called out, or "Unanimous" when everyone agreed. **Clear** empties the card for the next story.
+
+</ArticleLayout>

@@ -1,0 +1,44 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { VoteResultsWalkthrough } from '@/components/illustrations/voting';
+
+export const metadata = helpMetadata({
+  title: 'Vote Results',
+  description:
+    'Show results starts a shared walkthrough of everything that got a dot, most votes first, with the ranked list beside it.',
+  path: '/help/collaboration/session-tools/voting/vote-results/',
+});
+
+<ArticleLayout
+  title="Vote Results"
+  description="A shared walkthrough of what won, in order, with everyone's canvas following."
+  categoryTitle="Session Tools"
+  categorySlug="collaboration/session-tools"
+  parentArticle={{ title: 'Dot Voting', slug: 'voting' }}
+  subArticles={getSubArticles('voting').filter((a) => a.slug !== 'vote-results')}
+>
+
+**Show results** starts a guided walkthrough of everything that received dots in a [vote](/help/collaboration/session-tools/voting/), most votes first.
+
+## Stepping through the picks
+
+The current pick pulses an amber highlight and the canvas centres on it, while the vote banner shows where you are ("Top result 1 of 4") with **Previous** and **Next** buttons to step through in order.
+
+<Figure caption="The banner drives the walkthrough while the panel lists every element that got a dot.">
+  <VoteResultsWalkthrough />
+</Figure>
+
+The walkthrough is shared: the person who started the vote drives it, and everyone else's canvas follows to the same element. That is the point of reviewing together, and it means "everyone look at this one" actually works.
+
+## The ranked list
+
+The [Vote panel](/help/collaboration/session-tools/voting/vote-panel/) switches to the **ranked list** at the same moment: every element that got a dot, most votes first, with the winners flagged.
+
+If you started the vote, click any row to move the room straight to that element instead of stepping through in order. Everyone else sees the same list and follows along.
+
+## Finishing
+
+On the last pick, Next becomes **Done**. Pressing it ends the walkthrough and clears the whole vote session: the banner, the tally pills, and the highlights all go together, leaving the board clean for whatever comes next.
+
+</ArticleLayout>

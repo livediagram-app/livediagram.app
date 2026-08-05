@@ -1,0 +1,38 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { RevealZone } from '@/components/illustrations/palette-behaviour';
+
+export const metadata = helpMetadata({
+  title: 'Reveal Zones',
+  description:
+    'A cover you put over part of the canvas, uncovered on your own screen with a double-click or for the whole room from the element menu.',
+  path: '/help/palette/behaviour/reveal-zones/',
+});
+
+<ArticleLayout
+  title="Reveal Zones"
+  description="Cover part of the canvas until the room is ready to see it."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  parentArticle={{ title: 'Behaviour Elements', slug: 'behaviour' }}
+  subArticles={getSubArticles('behaviour').filter((a) => a.slug !== 'reveal-zones')}
+>
+
+A **Reveal** zone is a cover you put over part of the canvas: answers, estimates, a retro column nobody should read early. It lives in the **Run the room** group of the [Behaviour](/help/palette/behaviour/) category.
+
+## Uncovering it
+
+**Double-click** (or double-tap) uncovers it **on your screen only**, with a small Hide pill to put it back. Two presses, so a stray click on a busy board doesn't give the game away.
+
+<Figure caption="Covered, and uncovered for one person: the Hide pill puts the cover straight back.">
+  <RevealZone />
+</Figure>
+
+**Tools › Reveal › Reveal for all** takes it off for everyone at once, and **Hide for all** in the same place puts it back over the room's screens.
+
+## It hides, it does not protect
+
+A Reveal zone hides content from a reader's eye, not from a determined reader: everything underneath is still in the diagram, so don't put anything genuinely private under one.
+
+</ArticleLayout>

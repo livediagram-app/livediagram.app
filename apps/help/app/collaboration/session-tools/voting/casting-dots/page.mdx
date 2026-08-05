@@ -1,0 +1,42 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { DotVoting } from '@/components/illustrations/collaboration';
+
+export const metadata = helpMetadata({
+  title: 'Casting Dots',
+  description:
+    'How to spend and take back your dots during a vote, and which elements can take one.',
+  path: '/help/collaboration/session-tools/voting/casting-dots/',
+});
+
+<ArticleLayout
+  title="Casting Dots"
+  description="Spending your budget, taking a dot back, and what counts as votable."
+  categoryTitle="Session Tools"
+  categorySlug="collaboration/session-tools"
+  parentArticle={{ title: 'Dot Voting', slug: 'voting' }}
+  subArticles={getSubArticles('voting').filter((a) => a.slug !== 'casting-dots')}
+>
+
+While a [vote](/help/collaboration/session-tools/voting/) is open, every votable element carries a small **− 0 +** counter in its bottom-right corner.
+
+## Spending and taking back
+
+Press **+** to add one of your dots and **−** to take one back. Clicking the element itself also adds a dot, which is quicker when you are working through a wall of stickies. Stacking several dots on one element is allowed, each counts separately.
+
+<Figure caption="Each votable element carries a tally pill, with a banner tracking how many dots you have left.">
+  <DotVoting />
+</Figure>
+
+The counter starts at zero, so you can always see which elements are in play and how many dots each has. **−** greys out at zero and **+** greys out once your budget is spent, rather than disappearing, so the buttons stay where your pointer expects them.
+
+Once the vote ends the buttons go and the counter becomes a plain tally, since at that point it is a result to read rather than something to change.
+
+## What can take a dot
+
+**Votable** elements are shapes, sticky notes, and images. Section backdrops (frames), text, freehand drawings, tables, arrows, and annotations are not votable, so you vote on the ideas, not the scaffolding around them.
+
+Non-votable elements show no counter and behave normally, so the board stays fully editable during a vote.
+
+</ArticleLayout>

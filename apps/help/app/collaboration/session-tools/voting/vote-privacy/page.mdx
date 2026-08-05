@@ -1,0 +1,44 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { VoteBlindTally } from '@/components/illustrations/voting';
+
+export const metadata = helpMetadata({
+  title: 'Private Voting',
+  description:
+    'Two switches above Start vote: hide everyone’s cursors while the vote runs, and hide the running counts for a blind vote.',
+  path: '/help/collaboration/session-tools/voting/vote-privacy/',
+});
+
+<ArticleLayout
+  title="Private Voting"
+  description="Hide cursors, hide the running counts, and stop the room reading itself."
+  categoryTitle="Session Tools"
+  categorySlug="collaboration/session-tools"
+  parentArticle={{ title: 'Dot Voting', slug: 'voting' }}
+  subArticles={getSubArticles('voting').filter((a) => a.slug !== 'vote-privacy')}
+>
+
+A [vote](/help/collaboration/session-tools/voting/) is only honest if nobody can read the room before it closes. Two switches sit above **Start vote**, and both apply to everyone on the diagram, not just to you.
+
+## Hide cursors
+
+**Hide cursors** is **on by default**. While the vote is open, nobody sees anyone else's pointer or laser trail, so the group cannot watch each other drift toward a favourite.
+
+You can still see **who** is in the room: the avatars on the tab stay put throughout, and an element someone else has selected still shows their name, so you know why it is locked. Cursors come back the moment you choose **End vote**.
+
+## Hide running counts
+
+**Hide running counts** is **off by default**. Turn it on for a blind vote: while it runs, each tally pill shows only **your own** dots, so you can still see and retract what you spent, but nobody can watch a total climb and pile on.
+
+<Figure caption="In a blind vote the pill shows your own dots, never the room's total.">
+  <VoteBlindTally />
+</Figure>
+
+**Show results** reveals the real tallies and the winners together.
+
+## Both are fixed for the life of the vote
+
+There is no way to turn them off halfway through, which is the point: end the vote and start another if you want different rules.
+
+</ArticleLayout>
