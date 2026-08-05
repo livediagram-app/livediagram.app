@@ -132,3 +132,47 @@ export function EmbedArt() {
     </Frame>
   );
 }
+
+// The Explorer's Timeline (spec/138): a day of events on a spine, one bubble
+// per thing that happened, colour saying WHAT happened rather than where. The
+// New pill is the point of the feature — what landed since you were last here.
+export function TimelineFeedArt() {
+  const rows: [string, string, string][] = [
+    ['#16a34a', 'Ana commented', '09:24'],
+    ['#f59e0b', 'Roadmap renamed', '11:02'],
+    ['#dc2626', 'Old draft deleted', '16:40'],
+  ];
+  return (
+    <Frame>
+      <div className="flex h-full flex-col justify-center gap-1.5 px-3">
+        <div className="flex items-center gap-1 text-[7px] font-semibold text-slate-500">
+          <span className="rounded-full bg-slate-200 px-1.5 py-[1px] text-[6px] text-slate-600">
+            Today
+          </span>
+        </div>
+        {rows.map(([colour, label, time], i) => (
+          <div
+            key={label}
+            className="fa-reveal flex items-center gap-1.5"
+            style={{ animationDelay: `${i * 0.15}s` }}
+          >
+            <span
+              className="h-1.5 w-1.5 shrink-0 rounded-full"
+              style={{ backgroundColor: colour }}
+            />
+            <span className="flex-1 rounded-[3px] border border-slate-200 bg-white px-1.5 py-[3px] text-[7px] text-slate-600">
+              {label}
+            </span>
+            {i === 0 ? (
+              <span className="rounded-full bg-brand-100 px-1 text-[6px] font-semibold text-brand-700">
+                New
+              </span>
+            ) : (
+              <span className="text-[6px] text-slate-400">{time}</span>
+            )}
+          </div>
+        ))}
+      </div>
+    </Frame>
+  );
+}

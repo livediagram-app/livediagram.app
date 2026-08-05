@@ -16,7 +16,7 @@ export const metadata = helpMetadata({
   categorySlug="explorer"
 >
 
-**Timeline** is the view the [Explorer](/explorer/timeline) opens on. Where [Recent](/help/explorer/recent/) answers "what did I touch last", the Timeline answers a different question: **what has happened since I was last here**, including the things you did not do yourself.
+**Timeline** is the view the [Explorer](/explorer) opens on. Where [Recent](/help/explorer/recent/) answers "what did I touch last", the Timeline answers a different question: **what has happened since I was last here**, including the things you did not do yourself.
 
 <Figure caption="One group per day, one bubble per event, colour-coded by the kind of thing that happened.">
   <TimelineFeed />
@@ -33,9 +33,19 @@ Every event on the feed comes from something that actually happened in your acco
 
 If a diagram lives in a team's shared library, everyone in that team sees its events. A personal diagram's events are yours alone.
 
+## What is new since you were last here
+
+That is the question the Timeline exists to answer, so it keeps a watermark of when you last read it.
+
+- **Anything that arrived since then is marked `New`.** The mark is per reader: your teammate's Timeline has its own.
+- **The sidebar's Timeline row carries a count** of what you haven't seen, so you can tell from any other Explorer section that something happened. It counts **other people's** events only, because a number that goes up because _you_ renamed a diagram is not news.
+- The watermark moves forward when you read the feed, and only from the top of it, so paging back through last month never marks the month as read.
+
 ## Reading a day
 
-Events are grouped by the day they happened, newest day first, with a dot and a line running down the left. Today's group is marked with a **Today** pill.
+Events are grouped by the day they happened, newest day first, with a dot and a line running down the left. Today's group is marked with a **Today** pill, and each row carries the time it happened.
+
+Days and times are **your local ones**, so an evening's work in Sydney sits under that evening rather than under yesterday.
 
 Each row names **what it happened to first** — "Payments architecture deleted", not "Diagram deleted" with the name underneath — so you can scan the left edge and stop where something matters. Diagrams show a small preview of themselves on the right.
 
@@ -83,7 +93,9 @@ The arrows skip straight to the next month that actually has something in it, so
 
 ## Filtering
 
-The **Filter** button opens a chip per area — Diagrams, Teams, Account — along with a small calendar for jumping to a particular day. Turn a chip off and that area drops out of the feed; a dot on the button tells you a filter is on.
+The **Filter** button opens two things. **Activity by** switches the whole feed between **Everyone** and **Other people**, which is the one to reach for on a busy account where your own edits bury everyone else's. Events nobody performed, a token about to expire, survive that filter: no person did them, and they are exactly what "what did I miss" is asking about.
+
+Below it sits a chip per area — Diagrams, Teams, Account — and a small calendar for jumping to a particular day. Turn a chip off and that area drops out of the feed; a dot on the button tells you a filter is on.
 
 The Timeline is not live. It loads when you open it, so it never shifts under you while you are reading; reopening the page brings anything new.
 

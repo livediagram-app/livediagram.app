@@ -796,9 +796,16 @@ where a diagram happens to sit, so it belongs beside Recent rather than
 buried a level down among Unsorted / Generated / Offline. The Dynamic
 parent's badge stops adding `favouriteCount` when it does.
 
-Timeline carries no badge in v1. An unread count needs a per-user
-last-seen marker, which is a preference write on every visit; deferred
-with the rest of §3.4.
+Timeline **does** carry an unread badge. This section deferred it ("an
+unread count needs a per-user last-seen marker, which is a preference
+write on every visit"), and the objection turned out not to hold: the
+marker is `timeline_scope_state.last_seen_at`, a row the read already
+touches, so it costs no extra write — and without it the feed could not
+answer the question it exists for, since new and old looked identical.
+The badge counts only OTHER people's events (a number that rises because
+you renamed something is noise) and reads from its own cheap endpoint
+rather than a field on the feed, because it renders on every Explorer
+section and must not drag a feed nobody is looking at.
 
 ### 8.3 The section checklist
 

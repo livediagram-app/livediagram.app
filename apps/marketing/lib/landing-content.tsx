@@ -68,6 +68,7 @@ import {
   SpotlightArt,
   TabCopyArt,
   TabFoldersArt,
+  TimelineFeedArt,
   TabLockArt,
   TabReorderArt,
   TablesArt,
@@ -201,6 +202,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'See what others are working on',
         description:
           'Click an element and your collaborators see your colour glow on its border, plus your initials in the corner, in real time.',
+      },
+      {
+        art: <TimelineFeedArt />,
+        href: '/help/explorer/timeline/',
+        group: 'Work together live',
+        title: 'See what happened while you were away',
+        description:
+          'The Explorer opens on a Timeline: a day-by-day feed of comments left on your diagrams, actions assigned to you, teammates joining, invites, and what is about to expire. Anything new since your last visit is marked, and the sidebar carries a count so you can tell without looking.',
       },
       {
         art: <CommentsArt />,
