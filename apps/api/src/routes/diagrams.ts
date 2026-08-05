@@ -372,11 +372,28 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
     if (request.method === 'POST') {
       // Per-entry byte cap: only the 8MB outer body cap applied before,
       // so 30 huge entries could balloon the capped list response.
+      //
+      // Two checks for one cap, because a declared Content-Length lets us
+      // reject before parsing, and its ABSENCE used to mean no cap at all:
+      // `headers.get` returns null when the header isn't sent, `Number(null)`
+      // is 0, and 0 is finite, so `0 > cap` was false and a chunked body went
+      // straight through. index.ts's outer gate is the same Content-Length
+      // shape and defers here for the rest, and parseChangeLogEntryBody
+      // measures nothing — so this was the only thing standing between an
+      // edit-access caller and an unbounded row in D1, which every
+      // collaborator then refetches 30-at-a-time on GET.
       const lenHeader = Number(request.headers.get('content-length'));
-      if (Number.isFinite(lenHeader) && lenHeader > MAX_CHANGE_LOG_ENTRY_BYTES) {
+      const declaredOk = Number.isFinite(lenHeader) && lenHeader > 0;
+      if (declaredOk && lenHeader > MAX_CHANGE_LOG_ENTRY_BYTES) {
         return json({ error: 'payload_too_large' }, { status: 413 });
       }
       const body = (await request.json()) as Partial<ChangeLogEntryDTO>;
+      // No usable header: measure the parsed body instead. Costs a
+      // re-stringify, but only on the request shape the fast path can't size,
+      // and the editor always sends a Content-Length.
+      if (!declaredOk && byteLength(JSON.stringify(body)) > MAX_CHANGE_LOG_ENTRY_BYTES) {
+        return json({ error: 'payload_too_large' }, { status: 413 });
+      }
       const entry = parseChangeLogEntryBody(body);
       if (!entry) return badRequest('missing change_log fields');
       // Stamp the author from the resolved caller's participant record

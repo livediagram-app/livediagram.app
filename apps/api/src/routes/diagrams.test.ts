@@ -504,4 +504,65 @@ describe('handleDiagrams gated change-log (GET/POST /diagrams/:id/log)', () => {
     const res = await handleDiagrams(makeCtx('GET', '/api/diagrams/d1/log'));
     expect(res.status).toBe(200);
   });
+
+  // A valid entry per parseChangeLogEntryBody; `summary` is where the bulk
+  // goes in these tests because nothing downstream bounds its length.
+  const logEntry = (summary: string) => ({
+    id: 'l1',
+    participantId: 'p1',
+    participantName: 'Ann',
+    participantColor: '#000000',
+    kind: 'edit',
+    summary,
+    elementIds: ['e1'],
+    beforeState: {},
+    afterState: {},
+  });
+
+  describe('per-entry byte cap', () => {
+    beforeEach(() => {
+      db.getDiagram.mockResolvedValue(fakeDiagram('owner-1'));
+      canEditDiagram.mockResolvedValue(true);
+      db.getParticipant.mockResolvedValue(null);
+      db.insertChangeLogEntry.mockResolvedValue(undefined);
+    });
+
+    it('413s an oversized entry that arrives without a Content-Length header', async () => {
+      // The regression. `Number(headers.get(absent))` is 0, which is finite,
+      // so `0 > cap` was false and a chunked POST bypassed the only cap on
+      // this route — there was no body-measured fallback at all. A Request
+      // built with a body carries no Content-Length, so this is the real shape.
+      const res = await handleDiagrams(
+        makeCtx('POST', '/api/diagrams/d1/log', {
+          body: logEntry('x'.repeat(300 * 1024)),
+        }),
+      );
+      expect(res.status).toBe(413);
+      expect(await res.json()).toEqual({ error: 'payload_too_large' });
+      expect(db.insertChangeLogEntry).not.toHaveBeenCalled();
+    });
+
+    it('413s before parsing when the caller declares an oversized length', async () => {
+      // The cheap pre-parse path, kept: a declared length over the cap is
+      // rejected without stringifying anything.
+      const res = await handleDiagrams(
+        makeCtx('POST', '/api/diagrams/d1/log', {
+          body: logEntry('small'),
+          headers: { 'Content-Length': String(300 * 1024) },
+        }),
+      );
+      expect(res.status).toBe(413);
+      expect(db.insertChangeLogEntry).not.toHaveBeenCalled();
+    });
+
+    it('still writes an ordinary entry that declares no Content-Length', async () => {
+      // Making the fallback reachable must not start rejecting the normal
+      // case, which is every entry the editor writes.
+      const res = await handleDiagrams(
+        makeCtx('POST', '/api/diagrams/d1/log', { body: logEntry('Moved 1 element') }),
+      );
+      expect(res.status).toBe(201);
+      expect(db.insertChangeLogEntry).toHaveBeenCalled();
+    });
+  });
 });
