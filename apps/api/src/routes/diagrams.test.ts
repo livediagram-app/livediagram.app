@@ -43,6 +43,10 @@ const { db, canReadDiagram, canEditDiagram } = vi.hoisted(() => ({
     generateShareCode: vi.fn(() => 'CODE2345'),
     getShareLinkIncludingExpired: vi.fn(),
     extendShareLink: vi.fn(),
+    // Every share-link change withdraws the diagram's standing
+    // `share_link_expiring` warning (spec/138 §4.5); the retraction itself is
+    // covered in expiry-retraction.test.ts.
+    retractTimelineWarning: vi.fn(),
     // Slide deck write (spec/31).
     setDiagramPresentation: vi.fn(),
     reorderTabs: vi.fn(),

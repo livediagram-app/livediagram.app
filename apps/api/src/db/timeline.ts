@@ -379,6 +379,39 @@ export async function markScopeBackfilled(env: Env, scope: TimelineScopeRef): Pr
 // with this source_type. Acceptable: entity deletion is rare and the
 // table is bounded by a 365-day retention window. If it ever isn't,
 // the fix is a real `about_id` column, not a cleverer query.
+// Withdraw a pending forward-dated warning whose subject changed.
+//
+// The expiry sweep writes `token_expiring` / `share_link_expiring` FUTURE-dated
+// so they sit in the band above Today — the band that exists so a user finds out
+// before something breaks rather than after (spec/138 §4.5). Nothing ever took
+// them back, so revoking the token or extending the link left the warning
+// sitting there advertising a deadline that no longer existed, above the
+// past-tense "API Token Revoked" row saying it had been dealt with. The emit's
+// conflict clause is `occurred_at = MAX(old, new)`, so a corrected date could
+// only ever move later — never nearer, never away.
+//
+// Narrower than markTimelineEventsDeletedBySource on purpose: that matches on
+// source alone, and a token's `token_created` row shares its source id. Erasing
+// real history to withdraw a warning would be a worse lie than the warning.
+//
+// Self-healing by design rather than exhaustive: the daily sweep re-emits
+// whatever is still inside its window, so retracting slightly too much (one of
+// two expiring links on a diagram — the warning is per diagram, not per link)
+// costs at most a day of silence and never leaves a false deadline standing.
+export async function retractTimelineWarning(
+  env: Env,
+  sourceType: string,
+  sourceId: string,
+  eventType: string,
+): Promise<void> {
+  await env.DB.prepare(
+    `DELETE FROM timeline_events
+      WHERE source_type = ?1 AND source_id = ?2 AND event_type = ?3`,
+  )
+    .bind(sourceType, sourceId, eventType)
+    .run();
+}
+
 export async function markTimelineEventsDeletedBySource(
   env: Env,
   sourceType: string,

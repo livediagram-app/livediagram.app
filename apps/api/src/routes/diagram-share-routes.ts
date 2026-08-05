@@ -15,6 +15,7 @@ import {
   getDiagramSharePassword,
   getShareLinkIncludingExpired,
   listShareLinks,
+  retractTimelineWarning,
   setDiagramShare,
   setDiagramSharePassword,
 } from '../db';
@@ -82,6 +83,11 @@ export async function handleDiagramShareRoutes(ctx: RouteContext): Promise<Respo
       const links = await listShareLinks(env, id);
       for (const link of links) await deleteShareLink(env, link.code);
       await setDiagramShare(env, id, false);
+      // Every link is gone, so the pending "expires soon" warning has
+      // nothing left to warn about. It's keyed on the DIAGRAM (one warning
+      // per diagram, not per link), so retracting it here is exact.
+      await retractTimelineWarning(env, 'diagram', id, 'share_link_expiring');
+
       return json({ shareable: false, shareCode: null });
     }
   }
@@ -116,6 +122,12 @@ export async function handleDiagramShareRoutes(ctx: RouteContext): Promise<Respo
 
     if (request.method === 'DELETE') {
       await deleteShareLink(env, code);
+      // Same retraction as the bulk revoke above. Deliberately not conditional
+      // on this being the diagram's LAST expiring link: the warning is per
+      // diagram, and the daily expiry sweep re-emits whatever is still inside
+      // its window, so the worst case is a day of silence rather than a
+      // deadline the owner has already dealt with.
+      await retractTimelineWarning(env, 'diagram', id, 'share_link_expiring');
       // Tell every connected peer in this diagram's room that
       // the code just got revoked so any viewer / editor who
       // hydrated with `X-Share-Code: <code>` can hard-redirect
@@ -150,6 +162,12 @@ export async function handleDiagramShareRoutes(ctx: RouteContext): Promise<Respo
       if (!existing || existing.diagramId !== id) return notFound();
       const link = await extendShareLink(env, code);
       if (!link) return badRequest('link never expires');
+      // The deadline moved out, so the standing warning quotes a date that is
+      // no longer true. Retract rather than re-date it: emitTimelineEvent
+      // resolves a conflict with occurred_at = MAX(old, new), which can only
+      // push a warning later, and the new deadline may be outside the sweep's
+      // window entirely (in which case there should be no warning at all).
+      await retractTimelineWarning(env, 'diagram', id, 'share_link_expiring');
       return json({ link });
     }
   }

@@ -9,7 +9,7 @@
 
 import { badRequest, forbidden, json, noContent, notFound } from '../responses';
 import { type RouteContext } from './context';
-import { listApiTokensByOwner, mintApiToken, revokeApiToken } from '../db';
+import { listApiTokensByOwner, mintApiToken, retractTimelineWarning, revokeApiToken } from '../db';
 import { MAX_NAME_LEN } from '../limits';
 import { recordTokenCreated, recordTokenRevoked } from '../timeline';
 
@@ -50,7 +50,14 @@ export async function handleTokens(ctx: RouteContext): Promise<Response> {
     const revoked = await revokeApiToken(env, owner, tokenId);
     if (revoked) {
       ctx.waitUntil?.(
-        recordTokenRevoked(env, { id: tokenId, name: doomed?.name || 'API token' }, owner),
+        // Withdraw the pending "expires soon" warning first: the token is gone,
+        // so its deadline can't arrive, and leaving the future-dated row would
+        // have the feed still counting down to a token the same feed says the
+        // owner already revoked. token_revoked carries a DIFFERENT source id
+        // ('<id>:revoked'), so emitting it never displaced the warning.
+        retractTimelineWarning(env, 'account', tokenId, 'token_expiring').then(() =>
+          recordTokenRevoked(env, { id: tokenId, name: doomed?.name || 'API token' }, owner),
+        ),
       );
     }
     return revoked ? noContent() : notFound();

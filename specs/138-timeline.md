@@ -832,6 +832,35 @@ Teams are Clerk-only, so none of these events ever reach a guest scope.
 | `theme_saved`         | custom theme created (spec/44)         |                                                        |
 | `image_uploaded`      | image upload (spec/19)                 | Coalesced per day like editing                         |
 
+**A warning that stops being true is withdrawn, not corrected.** The two
+future-dated rows above are the only events the feed states before they
+happen, which makes them the only ones the owner can act on to stop them
+happening. Revoking a token, revoking a share link, or extending a link's
+deadline all leave a standing warning quoting a date that will never
+arrive: the feed counted down to a token expiry sitting directly above its
+own past-tense "API Token Revoked" row, which reads as the product not
+knowing what the owner just did. So each of those four routes retracts the
+matching warning — `retractTimelineWarning(sourceType, sourceId, eventType)`.
+
+Three constraints shaped it:
+
+- **Retract, don't re-date.** `emitTimelineEvent` resolves a conflict with
+  `occurred_at = MAX(old, new)`, so a corrected deadline could only ever
+  move a warning later, never nearer and never away. And an extended link
+  may fall outside the sweep's window entirely, where the right answer is
+  no warning rather than a different one.
+- **Keyed on `eventType`, not just the source.** `token_expiring` and
+  `token_created` share a source id, and the existing
+  `markTimelineEventsDeletedBySource` cascade matches on source alone.
+  Erasing the record that a token was ever created, in order to withdraw a
+  warning about it, would be a worse lie than the warning.
+- **Self-healing rather than exhaustive.** `share_link_expiring` is keyed
+  on the diagram, one warning however many links are expiring, so revoking
+  one of two retracts a warning the other still justifies. The daily sweep
+  re-emits whatever is still inside its window, so the cost is at most a
+  day of silence — strictly better than a deadline the owner has already
+  dealt with standing indefinitely.
+
 **"Opened by a visitor" hangs off the TAB read, not the diagram GET.**
 The diagram endpoint is hit by link previews and polling; fetching tab
 content means a person is actually looking at the canvas. It is also the
