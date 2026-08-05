@@ -72,6 +72,17 @@ const diagram = {
   tabs: [],
 } as unknown as DiagramDTO;
 
+// Owned by someone ELSE, filed in a team library. The DELETE is reachable here
+// by any joined member (spec/35), and the Explorer offers Take Offline on a
+// team-library row without checking who owns it.
+const teamDiagram = {
+  id: 'd1',
+  ownerId: 'alice',
+  teamId: 'team-1',
+  name: 'Doc',
+  tabs: [],
+} as unknown as DiagramDTO;
+
 // `ctx.waitUntil?.()` skips its argument when absent, so the background emit
 // only happens if we hand one over — and we await the promises it collects.
 function ctxWith(method: string, path: string, opts: Record<string, unknown> = {}) {
@@ -134,6 +145,65 @@ describe('DELETE /diagrams/:id — take offline vs real delete', () => {
     // Taking a diagram offline really does remove the server copy — only the
     // event that describes it changes.
     expect(db.deleteDiagram).toHaveBeenCalled();
+  });
+});
+
+describe("a non-owner cannot convert someone else's diagram", () => {
+  // The hole this pass exists to close, and it was in the fix that introduced
+  // the conversion. Narrowing the audience to the actor is right when the OWNER
+  // takes their own diagram offline. When a teammate does it the diagram lands
+  // in THEIR browser and leaves the owner's account for good — and since the
+  // offline event is owner-scoped, the only row written went to the teammate.
+  // The owner and the team were told nothing while the diagram and its entire
+  // history vanished from the library. Before the conversion existed they at
+  // least got `diagram_deleted`, so this was a regression, not a gap.
+  beforeEach(() => {
+    db.getDiagram.mockResolvedValue(teamDiagram);
+    db.getMembership.mockResolvedValue({ status: 'joined' });
+  });
+
+  it('records a real delete when a joined teammate declares a conversion', async () => {
+    const { ctx, settle } = ctxWith('DELETE', '/api/diagrams/d1', {
+      owner: 'bob',
+      clerkUserId: 'bob',
+      ...conversion('offline'),
+    });
+    expect((await handleDiagrams(ctx)).status).toBe(204);
+    await settle();
+    expect(timeline.recordDiagramDeleted).toHaveBeenCalledTimes(1);
+    expect(timeline.recordDiagramOffline).not.toHaveBeenCalled();
+  });
+
+  it('still reaches the team audience in that case', async () => {
+    // The point of recording it as a delete: the owner and every joined member
+    // learn the diagram left the library.
+    timeline.audienceForDiagram.mockResolvedValueOnce(['alice', 'carol'] as never);
+    const { ctx, settle } = ctxWith('DELETE', '/api/diagrams/d1', {
+      owner: 'bob',
+      clerkUserId: 'bob',
+      ...conversion('offline'),
+    });
+    await handleDiagrams(ctx);
+    await settle();
+    expect(timeline.recordDiagramDeleted).toHaveBeenCalledWith(
+      expect.anything(),
+      teamDiagram,
+      'bob',
+      ['alice', 'carol'],
+    );
+  });
+
+  it('still honours the conversion when the owner does it on a team diagram', async () => {
+    // Ownership is what gates it, not the absence of a team.
+    const { ctx, settle } = ctxWith('DELETE', '/api/diagrams/d1', {
+      owner: 'alice',
+      clerkUserId: 'alice',
+      ...conversion('offline'),
+    });
+    await handleDiagrams(ctx);
+    await settle();
+    expect(timeline.recordDiagramOffline).toHaveBeenCalledTimes(1);
+    expect(timeline.recordDiagramDeleted).not.toHaveBeenCalled();
   });
 });
 

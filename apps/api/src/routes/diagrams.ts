@@ -274,7 +274,21 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       // told the owner in danger red that a diagram they still had was deleted.
       // The cascade above still applies either way: whatever the server held is
       // gone, so its prior events would point at a 404.
-      const conversion = readDiagramConversion(request.headers.get(DIAGRAM_CONVERSION_HEADER));
+      //
+      // Honoured for the OWNER only, and that is the load-bearing half. This
+      // DELETE is also reachable by any joined member of the diagram's team
+      // (see the gate above, spec/35), and the Explorer offers Take Offline on
+      // a team-library row without checking who owns it. When a teammate does
+      // it the diagram moves into THEIR browser and leaves the owner's account
+      // for good — from the owner's and the team's side that is a deletion,
+      // not a diagram they can still reach. Recording `diagram_offline` there
+      // would also scope the only event to the actor (the emitter is
+      // deliberately owner-scoped), so the owner and the team would be told
+      // nothing at all while the row and its whole history disappeared.
+      const conversion =
+        owner === existing.ownerId
+          ? readDiagramConversion(request.headers.get(DIAGRAM_CONVERSION_HEADER))
+          : null;
       await deleteDiagram(env, id);
       ctx.waitUntil?.(
         markTimelineEventsDeletedBySource(env, 'diagram', id)

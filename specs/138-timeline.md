@@ -716,9 +716,20 @@ and the route picks the honest event. Header name, values and the reader live in
 `packages/api-schema` beside the event types they select, since it is a
 two-sided contract and two copies of a string is how these drift. An
 unrecognised value falls back to the truthful default: the header is
-client-supplied. `diagram_offline` is owner-only — an offline diagram exists in
-exactly one browser, so no teammate has a stake in it — while a real delete
-still fans out to the team audience. The source cascade (§3.5) runs either way:
+client-supplied.
+
+**Only the owner's conversion is honoured**, and that clause is load-bearing
+rather than defensive. `diagram_offline` is owner-scoped — an offline diagram
+exists in exactly one browser, so no teammate has a stake in it — but the DELETE
+is also reachable by any joined member of the diagram's team (spec/35), and the
+Explorer offers Take Offline on a team-library row without checking who owns it.
+When a teammate does it the diagram lands in **their** browser and leaves the
+owner's account for good; from the owner's and the team's side that is a
+deletion, not something they can still reach. Honouring it as a conversion there
+would write the one and only event to the actor, so the owner and the whole team
+would be told _nothing_ while the row and its entire history disappeared from
+the library. So a non-owner's DELETE records `diagram_deleted` and fans out to
+the team audience, exactly as it did before conversions existed. The source cascade (§3.5) runs either way:
 whatever the server held is gone, so its prior events would point at a 404.
 
 **The coalesced editing event** is the one that needs care, because it
