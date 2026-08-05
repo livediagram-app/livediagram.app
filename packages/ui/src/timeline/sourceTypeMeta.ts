@@ -4,12 +4,10 @@
 // and which glyph it wears, so the bubble, the filter chip, and the
 // calendar dot can never disagree about a kind.
 //
-// Colour comes from CSS variables the consuming app defines, with a
-// hard-coded fallback baked in here. Two reasons for the indirection:
-// the app themes light and dark differently (this product has a
-// class-based dark mode, so every tint needs two values), and an
-// unmapped source type still has to render as SOMETHING rather than
-// disappear into a transparent bubble.
+// Colour is NOT here: it keys on what happened, not on where it
+// happened, and lives in eventTone.ts. This module is what remains —
+// the label a filter chip shows, and the fallback glyph for an event
+// type the host app hasn't given one.
 
 export const SOURCE_TYPE_LABELS: Record<string, string> = {
   diagram: 'Diagrams',
@@ -17,35 +15,12 @@ export const SOURCE_TYPE_LABELS: Record<string, string> = {
   account: 'Account',
 };
 
-// Fallback pairs, used when the app hasn't defined the CSS variable.
-// `bold` paints the icon and the calendar dot; `soft` paints the
-// bubble background. The soft values are deliberately low-alpha rather
-// than opaque tints so one set works over both a white and a slate
-// surface.
-const FALLBACK: Record<string, { bold: string; soft: string }> = {
-  diagram: { bold: '#0ea5e9', soft: 'rgba(14, 165, 233, 0.10)' },
-  team: { bold: '#8b5cf6', soft: 'rgba(139, 92, 246, 0.10)' },
-  account: { bold: '#f59e0b', soft: 'rgba(245, 158, 11, 0.10)' },
-};
-
-const NEUTRAL = { bold: '#64748b', soft: 'rgba(100, 116, 139, 0.10)' };
-
 export function sourceTypeLabel(sourceType: string): string {
   const mapped = SOURCE_TYPE_LABELS[sourceType];
   if (mapped) return mapped;
   // Title-case the raw value so a source type shipped by a newer
   // worker reads as a proper noun rather than looking broken.
   return sourceType.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
-}
-
-export function sourceTypeColor(sourceType: string): string {
-  const fallback = FALLBACK[sourceType] ?? NEUTRAL;
-  return `var(--ld-timeline-${sourceType}, ${fallback.bold})`;
-}
-
-export function sourceTypeSoftColor(sourceType: string): string {
-  const fallback = FALLBACK[sourceType] ?? NEUTRAL;
-  return `var(--ld-timeline-${sourceType}-soft, ${fallback.soft})`;
 }
 
 // Heroicons-style 24px outline paths, one per source type. Kept as raw

@@ -32,6 +32,11 @@ export type TimelineBubbleRender = {
   description?: ReactNode;
   // Quiet third line (a count, a timestamp, a role).
   meta?: ReactNode;
+  // Optional visual on the right of the row — a diagram snapshot, say.
+  // Must be fixed-height and self-contained: the bubble centres it
+  // inside the height the content already sets, so a preview that grows
+  // the row would make one kind of event taller than every other.
+  preview?: ReactNode;
   // Makes the whole bubble clickable. Preferred over an action button
   // for "open the thing this is about" — a bubble that navigates
   // somewhere should be one big target, not a small one.

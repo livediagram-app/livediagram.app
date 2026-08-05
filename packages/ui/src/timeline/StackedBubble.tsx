@@ -53,6 +53,10 @@ export function StackedBubble({
             label: stackLabel(stack),
             description: `${count} events · click to expand`,
             meta: undefined,
+            // The anchor's preview would speak for the whole run, and a
+            // stack of five renames across five diagrams showing one of
+            // their thumbnails is a claim the bubble can't support.
+            preview: undefined,
             actions: [],
             onClick: onExpand,
           }}

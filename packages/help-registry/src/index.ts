@@ -1290,7 +1290,7 @@ export const articles: Article[] = [
     title: 'Timeline',
     description: 'The Explorer\u2019s landing view: a day-by-day feed of everything that happened.',
     keywords:
-      'feed activity history what happened whats new latest events log stream notifications updates recent changes calendar month view upcoming expiring stacked grouped day',
+      'feed activity history what happened whats new latest events log stream notifications updates recent changes calendar month view upcoming expiring stacked grouped collapse day colour color red amber green deleted preview thumbnail',
     category: 'Explorer',
     categorySlug: 'explorer',
   },

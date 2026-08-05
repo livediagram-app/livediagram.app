@@ -111,10 +111,10 @@ export type TimelineReadResult = {
   lastRefreshedAt?: number;
 };
 
-// Initial page size, and the ceiling a refresh may ask for. A refresh
-// requests max(PAGE_SIZE, currentLength) capped at PAGE_MAX so a user
-// who has clicked "Show more" three times isn't snapped back to one
-// page when the feed reloads.
+// The page a read serves by default, and the ceiling the endpoint will
+// honour however large a `limit` a caller asks for. The cap is a server
+// guard, not a client convenience: this endpoint is part of the public
+// API (spec/61), so `?limit=100000` has to be bounded here.
 export const TIMELINE_PAGE_SIZE = 50;
 export const TIMELINE_PAGE_MAX = 200;
 

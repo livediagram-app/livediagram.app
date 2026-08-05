@@ -2018,36 +2018,45 @@ html[data-presenting][data-slide-transition='slide'][data-slide-move='back']
   }
 }
 
-/* Timeline event colours (spec/138 §7).
+/* Timeline event colours (spec/138 §2).
  *
- * The shared <Timeline> reads these through `var(--ld-timeline-<source>)`
- * with a fallback baked into the package, so it renders standalone. They
- * live here because the palette is a product decision, and because this
- * app has a class-based dark mode: each colour needs a pair, and the
+ * Keyed on WHAT HAPPENED, not on which part of the product it happened
+ * in: red for destruction and lost access, amber for the shape of
+ * things changing (names, teams, sharing), green for the ordinary
+ * business of making and editing. Three meanings, because a palette
+ * with six is a legend the reader has to learn.
+ *
+ * The shared <Timeline> reads these through `var(--ld-timeline-<tone>)`
+ * with a fallback baked into the package, so it renders standalone.
+ * They live here because the palette is a product decision, and because
+ * this app has a class-based dark mode: each tone needs a pair, and the
  * package can't know which one is showing.
  *
- * `bold` paints the icon and the calendar dot; the `-soft` variant is
- * the bubble's whole background, so it has to sit quietly under body
- * text at 4.5:1 in both themes rather than compete with it. Hence the
- * low alphas — a saturated tint reads as a status banner, and every
- * bubble would look urgent. */
+ * The `-soft` variant is a whole bubble background, so it has to sit
+ * quietly under body text at 4.5:1 in both themes rather than compete
+ * with it. Hence the low alphas — a saturated tint reads as a status
+ * banner, and every row would look urgent. */
 :root {
-  --ld-timeline-diagram: var(--color-brand-600);
-  --ld-timeline-diagram-soft: rgb(14 165 233 / 0.09);
-  --ld-timeline-team: #7c3aed;
-  --ld-timeline-team-soft: rgb(124 58 237 / 0.09);
-  --ld-timeline-account: #b45309;
-  --ld-timeline-account-soft: rgb(180 83 9 / 0.09);
+  --ld-timeline-danger: #dc2626;
+  --ld-timeline-danger-soft: rgb(220 38 38 / 0.09);
+  --ld-timeline-structural: #d97706;
+  --ld-timeline-structural-soft: rgb(217 119 6 / 0.1);
+  --ld-timeline-create: #059669;
+  --ld-timeline-create-soft: rgb(5 150 105 / 0.09);
+  --ld-timeline-neutral: #64748b;
+  --ld-timeline-neutral-soft: rgb(100 116 139 / 0.07);
 }
 
 /* Dark mode lifts the bold values (a 600-weight hue goes muddy on
  * slate-900) and drops the soft ones, because an alpha tint over a dark
  * surface reads far stronger than the same alpha over white. */
 .dark {
-  --ld-timeline-diagram: var(--color-brand-400);
-  --ld-timeline-diagram-soft: rgb(56 189 248 / 0.07);
-  --ld-timeline-team: #a78bfa;
-  --ld-timeline-team-soft: rgb(167 139 250 / 0.07);
-  --ld-timeline-account: #fbbf24;
-  --ld-timeline-account-soft: rgb(251 191 36 / 0.07);
+  --ld-timeline-danger: #f87171;
+  --ld-timeline-danger-soft: rgb(248 113 113 / 0.08);
+  --ld-timeline-structural: #fbbf24;
+  --ld-timeline-structural-soft: rgb(251 191 36 / 0.07);
+  --ld-timeline-create: #34d399;
+  --ld-timeline-create-soft: rgb(52 211 153 / 0.07);
+  --ld-timeline-neutral: #94a3b8;
+  --ld-timeline-neutral-soft: rgb(148 163 184 / 0.06);
 }

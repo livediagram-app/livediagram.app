@@ -12,7 +12,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { POPOVER_VIEWPORT_MARGIN, clampIntoRange } from '../popover';
 import { buildMonthCells, formatMonth, shiftMonth } from './monthCells';
-import { sourceTypeColor, sourceTypeLabel } from './sourceTypeMeta';
+import { sourceTypeLabel } from './sourceTypeMeta';
 
 const WIDTH = 272;
 const GAP = 8;
@@ -117,12 +117,15 @@ export function TimelineFilterPopover({
               type="button"
               aria-pressed={on}
               onClick={() => onToggle(sourceType)}
+              // Brand, not the event tones: these chips slice the feed
+              // by AREA (diagrams / teams / account), and colour on this
+              // surface already means severity. Two colour systems in
+              // one popover would make the reader learn both.
               className={`rounded-full border px-2.5 py-1 text-[11px] transition ${
                 on
-                  ? 'border-transparent text-white'
-                  : 'border-slate-200 text-slate-500 dark:border-slate-700 dark:text-slate-400'
+                  ? 'border-transparent bg-brand-600 text-white'
+                  : 'border-slate-200 text-slate-500 hover:text-slate-700 dark:border-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
               }`}
-              style={on ? { backgroundColor: sourceTypeColor(sourceType) } : undefined}
             >
               {sourceTypeLabel(sourceType)}
             </button>

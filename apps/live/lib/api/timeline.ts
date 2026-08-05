@@ -1,7 +1,12 @@
 // The Explorer's landing feed (spec/138).
 //
 // Read-only: nothing user-authored lives on this feed in v1, so there
-// is no create / update / delete to wrap.
+// is no create / update / delete to wrap. There is no refresh wrapper
+// either — the feed loads on mount and the worker seeds a first-time
+// scope off that same GET, so a manual refresh button had nothing to
+// do that reopening the page doesn't. (The `POST /api/timeline/refresh`
+// endpoint stays part of the documented public API for external
+// callers who want to force a seed; the app just doesn't need it.)
 //
 // Offline Mode (spec/76) is a deliberate no-op here rather than a
 // dispatch. `isOfflineId` keys on a DIAGRAM id, and this endpoint is
@@ -17,7 +22,6 @@ import { API_BASE, apiHeaders } from './core';
 export type TimelinePage = {
   events: TimelineEvent[];
   nextCursor?: string;
-  lastRefreshedAt?: number;
 };
 
 const EMPTY: TimelinePage = { events: [] };
@@ -38,7 +42,6 @@ export async function apiListTimeline(
     return {
       events: Array.isArray(body.items) ? body.items : [],
       nextCursor: typeof body.nextCursor === 'string' ? body.nextCursor : undefined,
-      lastRefreshedAt: typeof body.lastRefreshedAt === 'number' ? body.lastRefreshedAt : undefined,
     };
   } catch {
     // Offline, or a self-host with no /api configured. An empty feed
@@ -47,19 +50,5 @@ export async function apiListTimeline(
     // it matters more here because this is now the first thing a
     // visitor sees.
     return EMPTY;
-  }
-}
-
-export async function apiRefreshTimeline(ownerId: string): Promise<number | undefined> {
-  try {
-    const res = await fetch(`${API_BASE}/timeline/refresh`, {
-      method: 'POST',
-      headers: await apiHeaders(ownerId),
-    });
-    if (!res.ok) return undefined;
-    const body = (await res.json()) as { lastRefreshedAt?: unknown };
-    return typeof body.lastRefreshedAt === 'number' ? body.lastRefreshedAt : undefined;
-  } catch {
-    return undefined;
   }
 }

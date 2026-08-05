@@ -37,7 +37,19 @@ If a diagram lives in a team's shared library, everyone in that team sees its ev
 
 Events are grouped by the day they happened, newest day first, with a dot and a line running down the left. Today's group is marked with a **Today** pill.
 
-Each bubble is tinted by the kind of thing it is, so you can tell diagram activity from team activity before reading a word. Click a bubble to go to whatever it is about: the diagram, the team, your invites.
+Each row names **what it happened to first** — "Payments architecture deleted", not "Diagram deleted" with the name underneath — so you can scan the left edge and stop where something matters. Diagrams show a small preview of themselves on the right.
+
+Click a row to go to whatever it is about: the diagram, the team, your invites. Rows you cannot open are dimmed, so you can tell at a glance. A deleted diagram is the usual case: there is nothing left to open.
+
+### Colour tells you what kind of thing happened
+
+The colour of a row is about **what happened**, not which part of the product it happened in:
+
+- **Red** — something was destroyed or someone lost access: a diagram deleted, a member removed from a team.
+- **Amber** — the shape of things changed: renames, moves, team membership, roles, sharing, and anything about to expire.
+- **Green** — the ordinary business of building: created, edited, commented, completed.
+
+Three colours rather than one per feature, because the question you are asking as you scan is "is any of this alarming?", and only that question has a useful colour answer.
 
 ### Busy days collapse
 
@@ -46,6 +58,8 @@ A day where you renamed six diagrams should not be six lines. When several event
 <Figure caption="Several events of one kind become one bubble; clicking expands the run in place.">
   <TimelineStacking />
 </Figure>
+
+Click it to open the run, and **Collapse** at the bottom of it to fold it back up.
 
 Two kinds never collapse, because collapsing them would hide the thing you came to read:
 
@@ -63,15 +77,15 @@ Not everything on the feed is in the past. Anything with an expiry — an [API t
 
 ## Calendar view
 
-Switch **List** to **Calendar** in the header to see the same events as a month grid. Each day carries one coloured dot per kind of activity, with a number when there was more than one. Click a dot to read that day's events of that kind.
+Switch **List** to **Calendar** in the header to see the same events as a month grid. Each day carries one dot per colour present, with a number when there was more than one — so a red dot tells you something was deleted that day without opening anything. Click a dot to read that day's events of that kind.
 
 The arrows skip straight to the next month that actually has something in it, so a quiet stretch does not cost you four clicks to page through.
 
-## Filtering and refreshing
+## Filtering
 
-The **Filter** button opens the chips for each kind of activity — turn one off and it drops out of the feed — along with a small calendar for jumping to a particular day. A dot on the button tells you a filter is on.
+The **Filter** button opens a chip per area — Diagrams, Teams, Account — along with a small calendar for jumping to a particular day. Turn a chip off and that area drops out of the feed; a dot on the button tells you a filter is on.
 
-**Refresh** re-reads the feed. The Timeline is not live: it loads when you open it and updates when you ask it to, so it never shifts under you while you are reading.
+The Timeline is not live. It loads when you open it, so it never shifts under you while you are reading; reopening the page brings anything new.
 
 Filters and the calendar view are per visit. Come back tomorrow and the Timeline opens as a plain list again.
 

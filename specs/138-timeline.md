@@ -107,23 +107,23 @@ existing `ExplorerPane` dispatch.
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│  Timeline                    142   [ List | Calendar ]  ⚙ ⟳  │
+│  Timeline              [? Help] [≡ List|▦ Calendar] [⧩ Filter]│
 ├──────────────────────────────────────────────────────────────┤
 │  ●  ┃  [Today]  Tue, 5 Aug   2026                            │
-│  │  ┃  ┌────┬───────────────────────────────────────┐        │
-│  │  ┃  │ 💬 │ Comment added                         │        │
-│  │  ┃  │    │ Priya on Payments architecture        │        │
-│  │  ┃  │    │ "Should the retry budget be per-shard │        │
-│  │  ┃  │    │  or global?"                          │        │
-│  │  ┃  └────┴───────────────────────────────────────┘        │
+│  │  ┃  ┌────┬─────────────────────────────────┬─────┐        │
+│  │  ┃  │ 🗑 │ Payments architecture deleted   │     │  (red) │
+│  │  ┃  └────┴─────────────────────────────────┴─────┘        │
+│  │  ┃  ┌────┬─────────────────────────────────┬─────┐        │
+│  │  ┃  │ 💬 │ Priya commented on Payments…    │ ▤   │ (green)│
+│  │  ┃  │    │ "Per-shard or global?"          │     │        │
+│  │  ┃  └────┴─────────────────────────────────┴─────┘        │
 │  │  ┃  ┌────┬───────────────────────────────────────┐──┐─┐   │
-│  │  ┃  │ ✎  │ Diagram Updates                       │  │ │   │
-│  │  ┃  │    │ 4 events - click to expand            │  │ │   │
+│  │  ┃  │ ✎  │ Diagrams Renamed                      │  │ │   │
+│  │  ┃  │    │ 3 events · click to expand            │  │ │(amber)
 │  │  ┃  └────┴───────────────────────────────────────┘──┘─┘   │
 │  ●  ┃  Mon, 4 Aug                                            │
 │  │  ┃  ┌────┬───────────────────────────────────────┐        │
-│  │  ┃  │ 👥 │ Joined a team                         │        │
-│  │  ┃  │    │ You joined Platform Guild             │        │
+│  │  ┃  │ 👥 │ You joined Platform Guild             │(amber) │
 │  │  ┃  └────┴───────────────────────────────────────┘        │
 └──────────────────────────────────────────────────────────────┘
 ```
@@ -134,33 +134,69 @@ ring and its label carries a **Today** pill. Days in the future (a share
 link expiring, a token expiring) sit above Today with a violet-tinted
 dot and rail.
 
-**Bubble.** Three regions, and the layout is strict:
+**Bubble.** Four regions, and the layout is strict:
 
-1. **Icon strip**, 44px, right-bordered, holding the source-type glyph.
-   The whole bubble background is a soft tint of that source's colour,
-   so a day's events are readable as kinds at a glance without reading
-   a word. Every bubble of the same source type gets the _same_ tint —
-   no alternating stripe, which reads as "different kinds" and is the
-   opposite of the intent.
-2. **Content** — title (bold up to a `: ` prefix), description, optional
-   meta line.
-3. **Right strip** — contextual actions, hover-revealed. In v1 the only
-   action is **Open**, and most bubbles make the whole bubble clickable
-   instead, so the strip is usually empty. It exists so that a later
-   star / dismiss has exactly one place to land, rather than a button
-   floating in the content row.
+1. **Icon strip**, 44px, right-bordered, holding the event's glyph.
+2. **Content** — headline, optional description, optional meta line.
+3. **Preview** — for events that have one (a diagram's cached SVG
+   snapshot, spec/67). Fixed height and vertically centred, so it sits
+   _inside_ the height the content already sets: a preview that grew
+   the row would make every diagram bubble taller than every other
+   kind. Reuses the Explorer's `DiagramThumbnail`, inheriting its lazy
+   intersection-observer fetch, so a feed of fifty rows doesn't trigger
+   fifty server renders for diagrams nobody scrolls to. Suppressed on a
+   collapsed stack — one diagram's thumbnail can't speak for a run
+   spanning five.
+4. **Action strip** — contextual actions, hover-revealed. Usually
+   empty, because most bubbles make the whole row clickable instead. It
+   exists so a later star / dismiss has exactly one place to land,
+   rather than a button floating in the content row.
 
-**Copy rules**, inherited from Manager Toolkit because they are what
-keeps a feed skimmable:
+### Colour means what happened, not where
 
-- The **title** is a Title Case category — "Comment Added", "Diagram
-  Created", "Invited to a Team". It never contains user content.
-- User content — diagram names, team names, comment text, people's
-  names — lives in the **description**. This is what makes a stack of
-  four bubbles collapsible into one honest headline (§2.1): the titles
-  are already generic.
-- Transitions read as "Member → Admin" in the description; the title
-  stays "Role Changed".
+The bubble's tint keys on the **event type**, not the source type.
+A reader scanning a busy day asks "is any of this alarming?" long
+before they ask "was that a diagram or a team", and only the first
+question has a useful colour answer. Three tones, deliberately few —
+a palette with six meanings is a legend the reader has to learn:
+
+| Tone         | Colour | Covers                                                                                                                                                                                                                                                           |
+| ------------ | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `danger`     | red    | Destruction and lost access: a diagram deleted, a member removed. Kept tight — if everything worrying is red, nothing is. Note `team_member_left` is _not_ here: leaving is a departure the person chose, and colouring it like being removed misreads the room. |
+| `structural` | amber  | The shape of things changed. Nothing was lost, but something a reader might rely on moved: renames, folder and team placement, membership, roles, sharing, and the forward-dated expiry warnings.                                                                |
+| `create`     | green  | Things made, edited, said or finished — the ordinary business of using the product, and the bulk of any active day.                                                                                                                                              |
+
+Anything unmapped falls to a neutral slate rather than guessing, so an
+event type from a newer worker reads as plain rather than as a
+deletion. Every bubble of the same tone gets the _same_ tint — no
+alternating stripe, which reads as "different kinds" and is the
+opposite of what the colour is doing. The rules live in
+`packages/ui/src/timeline/eventTone.ts`; the palette is a product
+decision and lives in the live app's `globals.css`, light and dark.
+
+**A bubble that can't be clicked is dimmed.** A row that looks
+identical to a clickable one but ignores the click reads as broken;
+60% opacity answers the question before the pointer gets there. The
+common case is a tombstone — the emit deliberately omits the deleted
+diagram's id, so the renderer has nothing to link and the dimming is
+structural rather than a rule someone has to remember.
+
+**Copy rules.** The headline names the **subject first**, then what
+happened to it:
+
+- "Payments architecture deleted", not "Diagram Deleted" with the name
+  on a second line. A feed is read by scanning the left edge, and the
+  subject is what the reader scans for; the category is already carried
+  by the icon and the colour. The subject is bolded so that edge stays
+  legible at a glance.
+- Where a person is the subject, they lead: "Priya commented on
+  Payments architecture", "Sam joined Platform Guild".
+- The **stored** `title` stays a generic Title Case category
+  ("Comment Added"). That is what a collapsed stack wears and what a
+  future search would index, so the two readings coexist: individual
+  rows are specific, collapsed runs stay honest (§2.1).
+- Supporting detail goes in the description or the quiet meta line —
+  a rename's new name, an edit's author, a comment's text.
 
 ### 2.1 Stacking
 
@@ -184,18 +220,30 @@ reads as depth. Clicking expands the run inline.
   individually. A collapsed comment hides the thing you wanted to read.
 - A stack of one is just a bubble; the faux layers only render at 2+,
   and the second layer only at 3+.
+- **Expanding and collapsing are the same control.** The collapsed
+  bubble is its own click target, so opening a run is obvious; closing
+  it is not, because once the run is open nothing is left saying it was
+  ever a stack. So an expanded run carries a **"Collapse N events"**
+  footer, indented to the bubbles' content column and worded to mirror
+  the "N events · click to expand" the reader just clicked. Without it,
+  a reader who opened a day of twelve renames to check one of them has
+  no way back short of navigating away.
 
 The rules live in `packages/ui/src/timeline/stacking.ts` as pure
 functions over the entry list, tested directly.
 
 ### 2.2 Calendar mode
 
-A segmented control in the header switches **List** ↔ **Calendar**.
-Calendar renders a month grid. Each day cell carries one coloured dot
-per source type present that day (the source's colour + glyph, with a
-count badge above 1). Clicking a dot opens a popover listing that day's
-events of that type as full timeline bubbles — the same renderers, so
-there is one bubble implementation, not two.
+A segmented control in the header switches **List** ↔ **Calendar**,
+each wearing its own glyph so the pair reads without parsing both
+labels. Calendar renders a month grid. Each day cell carries one
+coloured dot **per tone** present that day, with a count above one —
+so a month view answers "when did something get deleted?" at a glance,
+which "diagram vs team" would not. Dots sit in a fixed severity order
+(danger, structural, create) so the eye can rely on position. Clicking
+one opens a popover listing that day's events of that tone as full
+timeline bubbles — the same renderers, so there is one bubble
+implementation, not two.
 
 - Month navigation chevrons **skip empty months**: prev/next jump to
   the nearest month that actually has events, and are disabled with a
@@ -203,29 +251,43 @@ there is one bubble implementation, not two.
   Paging one empty month at a time through a quiet quarter is the thing
   that makes calendar views feel broken.
 - Mode is **not persisted** across navigation. Each mount opens on List.
-- In calendar mode, stacking buckets by `sourceType` alone (not
-  `sourceType` + `eventType`), because a cell has room for one dot per
-  kind, not one per event type.
+- Mode is not persisted across navigation. Each mount opens on List:
+  someone who looked at the calendar once should not find the feed in
+  calendar mode a week later wondering where their list went.
 
 ### 2.3 Filters, refresh, paging
 
-The header holds a filter popover and a refresh button in one rounded
-segmented cluster, labels shown at `md:` and up, icons only below.
+**The controls are not part of the feed.** `<Timeline>` renders no
+header of its own; `<TimelineControls>` is a separate export that the
+host places in its own page-header row, beside that page's other
+actions and styled to match them. A second row of buttons directly
+under a header that already has one reads as two unrelated toolbars.
+The two halves share one `useTimelineControls()` state, so a filter
+chip and the list it filters can never disagree.
 
-- **Source-type chips** — Diagrams, Comments, Actions, Teams, Invites,
-  Account. Toggling excludes that type from the feed. The trigger shows
-  a brand dot when any filter is active.
+- **Source-type chips** — Diagrams, Teams, Account, derived from the
+  source types actually present so a new one gets a chip for free.
+  Toggling excludes that type from the feed. The chips are brand-
+  coloured, not tone-coloured: they slice by _area_, and colour on this
+  surface already means severity — two colour systems in one popover
+  would make the reader learn both. The trigger shows a brand dot when
+  any filter is active, rather than a count: how many types are hidden
+  isn't something anyone acts on, but "a filter is on, that's why this
+  looks short" is.
 - **Mini calendar** inside the popover: clicking a date scrolls that
   day-group into view and pulses it with a fading box-shadow. Box-shadow
   only, never a transform — transforming the group promotes it to its
   own compositing layer, and tearing that layer down at animation end
   makes the bubbles visibly blink.
-- **Refresh** re-reads the feed and shows the last-refreshed time
-  inline.
 - **Show more** appends the next page when the read returns a cursor.
-  Page size 50. A refresh requests `max(50, currentLength)` capped at
-  200, so a user who has paged three times doesn't get snapped back to
-  one page.
+  Page size 50, capped server-side at 200.
+
+**There is no Refresh button.** The feed loads on mount, and the worker
+seeds a first-time scope off that same read (§5), so a manual refresh
+had nothing to do that reopening the page doesn't already do. The
+`POST /api/timeline/refresh` endpoint stays part of the documented
+public API for an external caller that wants to force a seed; the app
+simply doesn't need it.
 
 The popover renders into a `document.body` portal at fixed coordinates
 anchored to its trigger, re-anchored on scroll and resize. The Explorer
@@ -647,16 +709,21 @@ Per the reuse principle, the generic pieces go in
 domain:
 
 ```
-Timeline.tsx            top level: grouping, rail, stacks, mode switch
-TimelineGroup.tsx       one day: dot, line, date label, Today pill
-TimelineBubble.tsx      icon strip / content / action strip
-StackedBubble.tsx       the collapsed run with its faux-card layers
-TimelineCalendarView.tsx month grid, per-day dots, day popover
-TimelineHeaderPopover.tsx filter chips + mini calendar, portalled
-useTimelineGrouping.ts  group-by-day (pure, exported for reuse)
-stacking.ts             bucket + alias rules (pure)
-sourceTypeMeta.ts       label / colour-var / icon-path per source type
-types.ts                TimelineEntry, renderer contracts
+Timeline.tsx             the feed: grouping, rail, stacks. No header.
+TimelineControls.tsx     mode switch + filter trigger, for the host's header
+useTimelineControls.ts   the state both halves share, + derived filtering
+TimelineGroup.tsx        one day: dot, line, date label, Today pill
+TimelineBubble.tsx       icon / content / preview / action strip
+StackedBubble.tsx        the collapsed run with its faux-card layers
+ExpandedStack.tsx        the open run plus its "Collapse N events" footer
+TimelineCalendarView.tsx month grid, per-tone dots, day popover
+TimelineFilterPopover.tsx chips + mini calendar, portalled
+useTimelineGrouping.ts   group-by-day (pure, exported for reuse)
+stacking.ts              bucket + alias rules (pure)
+eventTone.ts             event type -> tone, and the tone colour vars
+monthCells.ts            month-grid arithmetic (pure)
+sourceTypeMeta.ts        chip label + fallback glyph per source type
+types.ts                 TimelineEvent, renderer contracts
 ```
 
 The **renderers** — the functions that turn a `TimelineEvent` into a
@@ -670,14 +737,16 @@ This split is what lets a per-diagram timeline (§3.4) or the editor's
 Activity Panel adopt the same components later without either one
 inheriting Explorer-specific copy.
 
-**Colour.** Each source type gets a CSS variable pair
-(`--ld-timeline-<source>` and `--ld-timeline-<source>-soft`) defined in
-the live app's `globals.css` with **both light and dark values** —
+**Colour.** Each tone gets a CSS variable pair
+(`--ld-timeline-<tone>` and `--ld-timeline-<tone>-soft`) defined in the
+live app's `globals.css` with **both light and dark values** —
 livediagram has a class-based dark mode (spec/07), unlike Manager
-Toolkit which is dark-only, so every tint needs two. The bold value
-paints the icon; the soft value paints the bubble background.
-`sourceTypeMeta` reads the var with a neutral fallback so an unmapped
-source type renders as a plain grey bubble rather than nothing.
+Toolkit which is dark-only, so every tint needs two, and dark mode
+lifts the bold value (a 600-weight hue goes muddy on slate-900) while
+dropping the soft one (an alpha tint over a dark surface reads far
+stronger than the same alpha over white). `eventTone` reads the var
+with a fallback baked into the package, so the components render
+standalone.
 
 **Animation.** A bubble fades in on the first mount of its event id
 only — the component keeps a `Set` of seen ids. Without that, every
@@ -792,8 +861,10 @@ Per spec/18:
 
 - **Pure units, tested directly**: `stacking.ts` (bucketing, aliasing,
   never-stack rules, position-of-most-recent), `useTimelineGrouping`
-  (day grouping, out-of-order tolerance, empty-month skipping),
-  and the cursor encode/decode.
+  (day grouping, out-of-order tolerance), `monthCells` (Monday-first
+  padding, leap years, empty-month skipping), and `eventTone` (every
+  emitted event type maps to a tone, and an unknown one falls to
+  neutral rather than to danger).
 - **Worker route tests** alongside `teams.test.ts`: scope
   authorisation (a caller cannot read another owner's scope),
   pagination and cursor stability, filter params, and the

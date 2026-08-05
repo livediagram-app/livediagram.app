@@ -11,6 +11,8 @@ import { CardView } from './CardView';
 import { useExplorerViewMode } from './useExplorerViewMode';
 import { EmptyPane } from './ExplorerEmptyState';
 import { DynamicFolderInfo } from './DynamicFolderInfo';
+import { TimelineControls } from '@livediagram/ui';
+import { useTimelineFeed } from './useTimelineFeed';
 
 // The browse sections that render a folders + diagrams grid the List/Card
 // toggle (spec/67) can swap. Other sections (gallery, themes, tokens,
@@ -209,6 +211,11 @@ export function ExplorerPane() {
   // The toggle only appears on the browse sections (the ones the
   // List/Card swap below applies to).
   const isBrowse = BROWSE_KINDS.has(selected.kind);
+  // The Timeline's data + control state lives here rather than inside
+  // its pane, because its controls render in the header row below while
+  // its feed renders in the body. Gated like the other section hooks so
+  // visiting Recent doesn't fetch a feed nobody is looking at.
+  const timeline = useTimelineFeed(ownerId, selected.kind === 'timeline');
 
   return (
     <>
@@ -220,7 +227,11 @@ export function ExplorerPane() {
         helpTitle={sectionHelp?.title}
         helpDescription={sectionHelp?.description}
         headerActions={
-          selected.kind === 'tokens' && clerkUserId ? <NewTokenButton tokens={tokens} /> : undefined
+          selected.kind === 'timeline' ? (
+            <TimelineControls controls={timeline.controls} />
+          ) : selected.kind === 'tokens' && clerkUserId ? (
+            <NewTokenButton tokens={tokens} />
+          ) : undefined
         }
         viewMode={isBrowse ? viewMode : undefined}
         onSetViewMode={isBrowse ? setViewMode : undefined}
@@ -275,7 +286,7 @@ export function ExplorerPane() {
           page before the feed's own skeleton. */}
       {selected.kind === 'timeline' ? (
         ownerId ? (
-          <TimelinePane ownerId={ownerId} />
+          <TimelinePane feed={timeline} ownerId={ownerId} />
         ) : null
       ) : loading ? (
         <SkeletonRows />

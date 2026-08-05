@@ -17,8 +17,8 @@ import {
   nearestPopulatedMonth,
   shiftMonth,
 } from './monthCells';
-import { sourceTypeColor, sourceTypeLabel } from './sourceTypeMeta';
-import { SourceTypeIcon, pickRenderer } from './renderers';
+import { TONE_LABELS, eventTone, toneColor, type TimelineTone } from './eventTone';
+import { pickRenderer } from './renderers';
 import { TimelineBubble } from './TimelineBubble';
 import type { TimelineEvent, TimelineRendererContext, TimelineRendererRegistry } from './types';
 
@@ -47,11 +47,15 @@ export function TimelineCalendarView({
   // is looking at the grid. The `now` prop overrides it for tests.
   const [mountedAt] = useState(() => Date.now());
 
-  // "2026-08-05::diagram" -> the events of that type on that day.
-  const byDayAndType = useMemo(() => {
+  // "2026-08-05::danger" -> that day's events of that tone.
+  //
+  // Grouped by TONE rather than by source type, matching the bubbles:
+  // three dots that mean created / changed / removed answer "what kind
+  // of day was that" at a glance, where "diagram vs team" does not.
+  const byDayAndTone = useMemo(() => {
     const map = new Map<string, TimelineEvent[]>();
     for (const event of events) {
-      const key = `${dateKey(event.occurredAt)}::${event.sourceType}`;
+      const key = `${dateKey(event.occurredAt)}::${eventTone(event.eventType)}`;
       const list = map.get(key);
       if (list) list.push(event);
       else map.set(key, [event]);
@@ -59,22 +63,30 @@ export function TimelineCalendarView({
     return map;
   }, [events]);
 
-  // Source types present on each day, in a stable order so the dots
-  // don't reshuffle between renders of the same data.
-  const typesByDay = useMemo(() => {
-    const map = new Map<string, string[]>();
+  // Tones present on each day, in a fixed severity order so the dots
+  // never reshuffle between renders and the eye can rely on position.
+  const tonesByDay = useMemo(() => {
+    const order: TimelineTone[] = ['danger', 'structural', 'create', 'neutral'];
+    const map = new Map<string, TimelineTone[]>();
     for (const event of events) {
       const key = dateKey(event.occurredAt);
+      const tone = eventTone(event.eventType);
       const list = map.get(key) ?? [];
-      if (!list.includes(event.sourceType)) list.push(event.sourceType);
-      map.set(key, list.sort());
+      if (!list.includes(tone)) list.push(tone);
+      map.set(key, list);
+    }
+    for (const [key, list] of map) {
+      map.set(
+        key,
+        [...list].sort((a, b) => order.indexOf(a) - order.indexOf(b)),
+      );
     }
     return map;
   }, [events]);
 
   const populatedMonths = useMemo(
-    () => new Set([...typesByDay.keys()].map((key) => key.slice(0, 7))),
-    [typesByDay],
+    () => new Set([...tonesByDay.keys()].map((key) => key.slice(0, 7))),
+    [tonesByDay],
   );
 
   const previousMonth = nearestPopulatedMonth(populatedMonths, monthKey, -1);
@@ -101,7 +113,7 @@ export function TimelineCalendarView({
     };
   }, [openCell]);
 
-  const openEvents = openCell ? (byDayAndType.get(openCell) ?? []) : [];
+  const openEvents = openCell ? (byDayAndTone.get(openCell) ?? []) : [];
 
   return (
     <div ref={gridRef}>
@@ -138,7 +150,7 @@ export function TimelineCalendarView({
             // stable because the grid is rebuilt whole per month.
             return <div key={`pad-${index}`} className="min-h-[68px]" />;
           }
-          const types = typesByDay.get(cell.key) ?? [];
+          const tones = tonesByDay.get(cell.key) ?? [];
           const isToday = cell.key === todayKey;
           return (
             <div
@@ -159,20 +171,23 @@ export function TimelineCalendarView({
                 {cell.day}
               </span>
               <div className="mt-1 flex flex-wrap gap-1">
-                {types.map((sourceType) => {
-                  const key = `${cell.key}::${sourceType}`;
-                  const count = byDayAndType.get(key)?.length ?? 0;
+                {tones.map((tone) => {
+                  const key = `${cell.key}::${tone}`;
+                  const count = byDayAndTone.get(key)?.length ?? 0;
                   return (
                     <button
-                      key={sourceType}
+                      key={tone}
                       type="button"
-                      title={`${count} ${sourceTypeLabel(sourceType).toLowerCase()} event${count === 1 ? '' : 's'}`}
+                      title={`${count} ${TONE_LABELS[tone].toLowerCase()} event${count === 1 ? '' : 's'}`}
                       onMouseDown={(e) => e.stopPropagation()}
                       onClick={() => setOpenCell((open) => (open === key ? null : key))}
-                      className="flex items-center gap-0.5 rounded px-1 py-0.5 text-[10px] transition hover:bg-slate-900/5 dark:hover:bg-white/10"
-                      style={{ color: sourceTypeColor(sourceType) }}
+                      className="flex items-center gap-1 rounded px-1 py-0.5 text-[10px] transition hover:bg-slate-900/5 dark:hover:bg-white/10"
+                      style={{ color: toneColor(tone) }}
                     >
-                      <SourceTypeIcon sourceType={sourceType} />
+                      <span
+                        className="h-2 w-2 rounded-full"
+                        style={{ backgroundColor: toneColor(tone) }}
+                      />
                       {count > 1 && <span className="font-semibold">{count}</span>}
                     </button>
                   );
@@ -187,7 +202,8 @@ export function TimelineCalendarView({
         <div className="mt-3 rounded-lg border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-slate-900">
           <div className="mb-2 flex items-center justify-between">
             <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">
-              {openCell.slice(0, 10)} · {sourceTypeLabel(openCell.split('::')[1] ?? '')}
+              {openCell.slice(0, 10)} ·{' '}
+              {TONE_LABELS[(openCell.split('::')[1] ?? 'neutral') as TimelineTone]}
             </p>
             <button
               type="button"

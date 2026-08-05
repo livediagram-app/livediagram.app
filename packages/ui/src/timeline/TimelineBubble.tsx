@@ -1,7 +1,7 @@
 'use client';
 
-// One event (spec/138 §2). Three regions, in a fixed order: the icon
-// strip, the content, the action strip.
+// One event (spec/138 §2). Four regions, in a fixed order: the icon
+// strip, the content, an optional preview, and the action strip.
 //
 // The action strip exists even when it's empty. Every per-event control
 // belongs there — a star, a dismiss, an Open — so that "things you can
@@ -9,7 +9,7 @@
 // floating somewhere in the content row.
 
 import type { ReactNode } from 'react';
-import { sourceTypeColor, sourceTypeSoftColor } from './sourceTypeMeta';
+import { eventTone, toneColor, toneSoftColor } from './eventTone';
 import type { TimelineBubbleRender, TimelineEvent } from './types';
 
 // Renders "Prefix: rest" with the prefix in semibold. A cheap way to
@@ -34,9 +34,17 @@ export function TimelineBubble({
   rendered: TimelineBubbleRender;
 }) {
   const label = rendered.label ?? event.title;
-  const description = rendered.description ?? event.description;
+  // `undefined` means "renderer didn't say", so fall back to the stored
+  // description; `null` means "renderer handled it", so show nothing. A
+  // `??` here would collapse the two and re-print the subject under a
+  // headline that already names it.
+  const description = rendered.description !== undefined ? rendered.description : event.description;
   const interactive = Boolean(rendered.onClick);
   const actions = rendered.actions ?? [];
+  // Colour by WHAT HAPPENED, not by which part of the product it
+  // happened in: a reader scanning a busy day asks "is any of this
+  // alarming?" before they ask "was that a diagram or a team".
+  const tone = eventTone(event.eventType);
 
   return (
     <div
@@ -53,20 +61,24 @@ export function TimelineBubble({
             }
           : undefined
       }
-      className={`group relative flex w-full items-stretch overflow-hidden rounded-lg ${
+      className={`group relative flex w-full items-stretch overflow-hidden rounded-lg transition ${
         interactive
-          ? 'cursor-pointer transition hover:brightness-[0.97] dark:hover:brightness-125'
-          : ''
+          ? 'cursor-pointer hover:brightness-[0.97] dark:hover:brightness-125'
+          : // Faded when there's nowhere to go. A row that looks
+            // identical to a clickable one but ignores the click reads
+            // as broken; dimming it answers the question before the
+            // pointer gets there. A tombstone is the common case —
+            // there is no diagram left to open.
+            'opacity-60'
       }`}
-      // Every bubble of the same source type gets the SAME tint. An
-      // alternating stripe would make two events of one kind look like
-      // two different kinds, which is the opposite of what the colour
-      // is doing here.
-      style={{ backgroundColor: sourceTypeSoftColor(event.sourceType) }}
+      // Every bubble of the same tone gets the SAME tint. An alternating
+      // stripe would make two events of one kind look like two
+      // different kinds, which is the opposite of what colour is doing.
+      style={{ backgroundColor: toneSoftColor(tone) }}
     >
       <div
         className="flex w-11 flex-shrink-0 items-center justify-center border-r border-slate-900/5 dark:border-white/5"
-        style={{ color: sourceTypeColor(event.sourceType) }}
+        style={{ color: toneColor(tone) }}
       >
         {rendered.icon}
       </div>
@@ -84,6 +96,14 @@ export function TimelineBubble({
           <p className="mt-0.5 text-[10px] text-slate-400 dark:text-slate-500">{rendered.meta}</p>
         )}
       </div>
+
+      {/* Preview, for events that have something to show. `self-center`
+          plus a fixed height keeps it inside the row the content
+          already defines — a preview that sets the row height would
+          make every diagram bubble taller than every other kind. */}
+      {rendered.preview && (
+        <div className="flex flex-shrink-0 items-center pr-2">{rendered.preview}</div>
+      )}
 
       {actions.length > 0 && (
         <div className="flex flex-shrink-0 items-center gap-0.5 pr-1.5">
