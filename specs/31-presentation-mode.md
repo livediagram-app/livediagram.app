@@ -125,18 +125,38 @@ A deck should feel like a deck, and the transitions are what sell it.
 - Motion honours `prefers-reduced-motion`: those users get a cross-fade at the same durations, so the deck still reads as changing slides without the travel.
 - The travel is **the full width of the screen**, and the animated node is the canvas SURFACE, so the backdrop goes with it: the whole screen moves rather than the diagram sliding around inside a stationary frame. A gentle nudge was tried first and read as a wobble.
 - The curve is a plain **decelerate** with no overshoot. Easing with a long slow tail reads as rubber-banding — the slide appears to arrive, then keeps creeping.
+- The transition attribute is cleared on the animation's **own `animationend`**, never on a timer. A timer has to guess the duration, and guessing even slightly short yanks the attribute mid-animation: the element snaps from wherever it had got to straight to its resting place, which is the little bounce at the end that reads as rubber-banding even once the curve is right. A long failsafe timeout still runs, so a missing surface or an animation that never fires cannot leave the attribute stuck and block the next transition.
 - Transitions are **CSS transforms on the slide surface**, not per-element animation. One moving layer is cheap at any slide size, so a hundred-element slide transitions exactly as fast as a one-element slide.
 - The animation must NEVER target the canvas's content wrapper, which carries the pan/zoom transform: a CSS animation on `transform` replaces the inline one for its whole duration, which drops the slide to unzoomed top-left for the length of the transition. For the same reason the fit measures `offsetWidth/offsetHeight` (layout size) rather than `getBoundingClientRect` (the transformed box), or it fits each slide to a viewport the entry animation was mid-way through shrinking.
 
 ### The HUD
 
-Top-right, carrying: the position (`7 / 23`), the slide's name, **previous** and **next** buttons, a **notes button**, and a **close button**. The two nav buttons exist because a presenter on a projector often has a mouse and no keyboard within reach, and "click anywhere to advance" is neither discoverable nor able to go back. It **fades out when the pointer is idle and returns on any pointer movement**, so a still screen is clean for the room and every control is one twitch of the mouse away.
+Top-right, carrying: the position (`7 / 23`), the slide's name, **previous** and **next** buttons, a **notes button**, a **settings cog**, and a **close button**. The two nav buttons exist because a presenter on a projector often has a mouse and no keyboard within reach, and "click anywhere to advance" is neither discoverable nor able to go back. It **fades out when the pointer is idle and returns on any pointer movement**, so a still screen is clean for the room and every control is one twitch of the mouse away.
 
 The HUD does not fade while the notes popover is open, or the popover would be left orphaned over the slide.
 
 **Notes open in a popover** from the notes button (or `N`), anchored under it, sized so the slide stays readable behind. Click again, `Esc`, or advancing the slide closes it. The button carries a **dot when the current slide has notes**, so you can see there is a script waiting without opening anything, and pressing it on a slide with none is not a dead click.
 
 On demand is the whole point: nothing about your script is on screen until you ask for it. It is worth being clear-eyed that the room sees the popover while it is open, because there is one screen and you are sharing it. That is the deliberate trade for not building a second-window presenter console, which stays out of scope.
+
+### Presenter settings
+
+The cog opens four things and no more. This popover opens ON a projector, in
+front of a room, usually because something is not behaving the way the
+presenter wants right now, so every entry has to be a decision they can make in
+one glance and undo in one more. Anything needing thought belongs in the panel,
+before you start.
+
+- **Transition** — Slide, Fade, or None.
+- **Click to advance** — off for a presenter who gestures at the screen with
+  the mouse and would rather drive from the keys alone.
+- **Loop the deck** — the last slide returns to the first instead of the end
+  state, for a deck left running in a room.
+- **Show position** — the counter and slide name, off for a clean screen.
+
+Device-local (`lib/presentation-config.ts`), like the eraser's brush and the
+laser's pen: how YOU drive a deck on THIS machine, not a property of the
+diagram. Never sent to the api.
 
 ### Leaving
 

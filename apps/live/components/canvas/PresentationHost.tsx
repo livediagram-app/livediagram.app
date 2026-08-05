@@ -13,16 +13,37 @@ import { useEffect, useRef, useState } from 'react';
 
 import { PresentationOverlay } from '@/components/canvas/PresentationOverlay';
 import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
+import {
+  DEFAULT_PRESENTATION_CONFIG,
+  loadPresentationConfig,
+  savePresentationConfig,
+  type PresentationConfig,
+} from '@/lib/presentation-config';
+
+// The node the transition animates: the canvas surface. Kept here so the
+// cleanup can listen for ITS animationend rather than guessing a duration.
+const SURFACE_SELECTOR = '[data-canvas-a11y-root]';
 
 // Matches the CSS in globals.css (.lvd-slide-*), so the class is removed the
 // moment the animation ends rather than being left on the node.
-const SLIDE_MS = 380;
-
 export function PresentationHost() {
   const { slideDeck } = useEditorContext();
   const at = slideDeck?.presentingAt ?? null;
   const [direction, setDirection] = useState<'forward' | 'back'>('forward');
   const prevAt = useRef<number | null>(null);
+  // Device-local presenter settings (spec/31), read once on mount and written
+  // through on every change.
+  const [config, setConfig] = useState<PresentationConfig>(DEFAULT_PRESENTATION_CONFIG);
+  useEffect(() => setConfig(loadPresentationConfig()), []);
+  const updateConfig = (patch: Partial<PresentationConfig>) => {
+    setConfig((prev) => {
+      const next = { ...prev, ...patch };
+      savePresentationConfig(next);
+      return next;
+    });
+  };
+  const configRef = useRef(config);
+  configRef.current = config;
 
   // Drive the canvas's transition class. The canvas underneath is the thing
   // that actually moves — one transform on one layer, so a hundred-element
@@ -38,6 +59,7 @@ export function PresentationHost() {
     const before = prevAt.current;
     prevAt.current = at;
     root.setAttribute('data-presenting', '');
+    root.setAttribute('data-slide-transition', configRef.current.transition);
     if (before === null) {
       // Entering: the first slide arrives as a card rather than a page swap.
       root.setAttribute('data-slide-move', 'in');
@@ -48,8 +70,24 @@ export function PresentationHost() {
       setDirection(dir);
       root.setAttribute('data-slide-move', dir);
     }
-    const timer = window.setTimeout(() => root.removeAttribute('data-slide-move'), SLIDE_MS);
-    return () => window.clearTimeout(timer);
+    // Cleared on the animation's OWN end event, not on a timer. A timer has to
+    // guess the duration, and guessing even slightly short yanked the
+    // attribute mid-animation — the element snapped from wherever it had got
+    // to straight to its resting place, which is the little bounce at the end
+    // of a transition that reads as rubber-banding.
+    const surface = document.querySelector(SURFACE_SELECTOR);
+    const done = () => root.removeAttribute('data-slide-move');
+    surface?.addEventListener('animationend', done);
+    surface?.addEventListener('animationcancel', done);
+    // Belt and braces: if the surface is missing or the animation never runs
+    // (reduced motion with animations disabled outright, a hidden tab), the
+    // attribute must not stick and block the next transition.
+    const failsafe = window.setTimeout(done, 1200);
+    return () => {
+      surface?.removeEventListener('animationend', done);
+      surface?.removeEventListener('animationcancel', done);
+      window.clearTimeout(failsafe);
+    };
   }, [at]);
 
   // Leaving the mode must always clean up, including on unmount (a navigation
@@ -58,6 +96,7 @@ export function PresentationHost() {
     () => () => {
       document.documentElement.removeAttribute('data-presenting');
       document.documentElement.removeAttribute('data-slide-move');
+      document.documentElement.removeAttribute('data-slide-transition');
     },
     [],
   );
@@ -70,6 +109,8 @@ export function PresentationHost() {
       onGo={(next) => slideDeck.setPresentingAt(next)}
       onExit={slideDeck.exitPresentation}
       direction={direction}
+      config={config}
+      onChangeConfig={updateConfig}
     />
   );
 }

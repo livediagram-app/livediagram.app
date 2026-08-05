@@ -2,57 +2,82 @@
 
 // One slide's `…` menu in the Slide Deck panel (spec/31).
 //
-// Everything a slide can have done to it lives here: rename it, write what you
-// mean to say over it, change which elements are on it, copy it, remove it.
-// The row itself keeps exactly one job — pressing it opens the slide — so the
-// list reads as a deck rather than as five columns of controls, and it stays
-// legible in a panel the width of the palette.
+// Everything a slide can have done to it lives here, so the row itself keeps
+// exactly one job — pressing it opens the slide — and the list reads as a deck
+// rather than as five columns of controls in a panel the width of the palette.
 //
-// The same PortalMenu the Explorer's rows use, for the same reason: a menu
-// hung off a row inside a scrolling panel has to escape its overflow, and the
-// Explorer already solved that.
+// Built from the shared menu furniture the Explorer's rows and the tab context
+// menu use, in the same shape: a compact icon TOOLBAR of the verbs reached for
+// most often (rename, notes, duplicate, with delete pinned to the right edge),
+// a separator, then the verbose actions in a labelled accordion section of
+// tiles. A menu that looked like this one used to and nothing else in the app
+// is a menu people have to learn twice.
 
 import { useRef, useState } from 'react';
 
 import { slideName, type Slide } from '@livediagram/diagram';
 
-import { PortalMenu } from '@/components/primitives/PortalMenu';
+import {
+  MenuAccordionSection,
+  MenuGroupSeparator,
+  MenuTile,
+  MenuTileGrid,
+  MenuToolbar,
+  MenuToolButton,
+  PortalMenu,
+} from '@/components/primitives/PortalMenu';
+import { DuplicateIcon, PencilIcon, TrashIcon } from '@/components/panels/explorer-icons';
+import { NoteMenuIcon } from '@/components/palette/context-menu-icons';
 
-function Row({
-  label,
-  hint,
-  onPress,
-  disabled,
-  danger,
-}: {
-  label: string;
-  /** Why it is unavailable, or what it will do. */
-  hint?: string;
-  onPress: () => void;
-  disabled?: boolean;
-  danger?: boolean;
-}) {
+function ElementsIcon() {
   return (
-    <button
-      type="button"
-      disabled={disabled}
-      onClick={(e) => {
-        e.stopPropagation();
-        onPress();
-      }}
-      className={`flex w-full flex-col items-start gap-0.5 px-3 py-1.5 text-left transition disabled:cursor-default ${
-        disabled
-          ? 'cursor-default opacity-40'
-          : danger
-            ? 'cursor-pointer text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/15'
-            : 'cursor-pointer text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800'
-      }`}
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinejoin="round"
+      aria-hidden
     >
-      <span className="text-xs font-medium">{label}</span>
-      {hint ? (
-        <span className="text-[10px] leading-tight text-slate-400 dark:text-slate-500">{hint}</span>
-      ) : null}
-    </button>
+      <rect x="1.8" y="1.8" width="5.5" height="5.5" rx="1" />
+      <rect x="8.7" y="8.7" width="5.5" height="5.5" rx="1" />
+    </svg>
+  );
+}
+
+function PlusIcon() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      aria-hidden
+    >
+      <path d="M8 3.5v9M3.5 8h9" />
+    </svg>
+  );
+}
+
+function MinusIcon() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      aria-hidden
+    >
+      <path d="M3.5 8h9" />
+    </svg>
   );
 }
 
@@ -81,16 +106,19 @@ export function SlideRowMenu({
   onDelete: () => void;
 }) {
   const [open, setOpen] = useState(false);
+  const [section, setSection] = useState<string | null>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const close = () => {
+    setOpen(false);
+    setSection(null);
+  };
 
   // A slide holds ONE tab's elements, so adding from another tab is not
   // something to refuse politely, it is something that cannot be expressed.
-  const membershipHint = !onSameTab
-    ? `Switch to ${'this slide’s tab'} first`
-    : selectionCount === 0
-      ? 'Select elements on the canvas first'
-      : undefined;
   const canEditMembership = onSameTab && selectionCount > 0;
+  const membershipWhy = !onSameTab
+    ? 'Switch to this slide’s tab first.'
+    : 'Select elements on the canvas first.';
 
   return (
     <>
@@ -115,69 +143,99 @@ export function SlideRowMenu({
         </svg>
       </button>
       {open ? (
-        <PortalMenu anchor={buttonRef.current} placement="below" onClose={() => setOpen(false)}>
-          <div className="flex w-56 flex-col py-1">
-            <Row
+        <PortalMenu anchor={buttonRef.current} placement="below" onClose={close}>
+          {/* Quick-action toolbar, matching the Explorer's rows and the tab
+              context menu: the verbs reached for most often as a compact icon
+              row, Delete pinned to the right edge. */}
+          <MenuToolbar>
+            <MenuToolButton
+              icon={<PencilIcon />}
               label="Rename"
-              onPress={() => {
-                setOpen(false);
+              description="Rename this slide."
+              onClick={() => {
+                close();
                 onRename();
               }}
             />
-            <Row
-              label={slide.notes ? 'Edit presenter notes' : 'Add presenter notes'}
-              hint="What you'll say over this slide"
-              onPress={() => {
-                setOpen(false);
+            <MenuToolButton
+              icon={<NoteMenuIcon />}
+              label={slide.notes ? 'Edit notes' : 'Add notes'}
+              description="What you'll say over this slide."
+              active={!!slide.notes}
+              onClick={() => {
+                close();
                 onEditNotes();
               }}
             />
-            <div className="my-1 border-t border-slate-100 dark:border-slate-800" />
-            <Row
-              label={
-                selectionCount > 0 && onSameTab
-                  ? `Add ${selectionCount === 1 ? '1 element' : `${selectionCount} elements`}`
-                  : 'Add selection'
-              }
-              hint={membershipHint}
-              disabled={!canEditMembership}
-              onPress={() => {
-                setOpen(false);
-                onAddSelection();
-              }}
-            />
-            <Row
-              label="Remove selection"
-              hint={membershipHint}
-              disabled={!canEditMembership}
-              onPress={() => {
-                setOpen(false);
-                onRemoveSelection();
-              }}
-            />
-            <div className="my-1 border-t border-slate-100 dark:border-slate-800" />
-            <Row
+            <MenuToolButton
+              icon={<DuplicateIcon />}
               label="Duplicate"
-              hint="A copy of this slide, straight after it"
-              onPress={() => {
-                setOpen(false);
+              description="A copy of this slide, straight after it."
+              onClick={() => {
+                close();
                 onDuplicate();
               }}
             />
-            <Row
-              label="Delete slide"
-              hint={
-                slide.elementIds.length === 1
-                  ? 'The element stays on the canvas'
-                  : 'The elements stay on the canvas'
-              }
-              danger
-              onPress={() => {
-                setOpen(false);
-                onDelete();
-              }}
-            />
-          </div>
+            <div className="ml-auto">
+              <MenuToolButton
+                icon={<TrashIcon />}
+                label="Delete"
+                description={
+                  slide.elementIds.length === 1
+                    ? 'Remove this slide from the deck. The element stays on the canvas.'
+                    : 'Remove this slide from the deck. The elements stay on the canvas.'
+                }
+                danger
+                onClick={() => {
+                  close();
+                  onDelete();
+                }}
+              />
+            </div>
+          </MenuToolbar>
+          <MenuGroupSeparator />
+          <MenuAccordionSection
+            title="Elements"
+            icon={<ElementsIcon />}
+            open={section === 'elements'}
+            onToggle={() => setSection((s) => (s === 'elements' ? null : 'elements'))}
+          >
+            <div className="px-2 py-1.5">
+              <MenuTileGrid cols={2}>
+                <MenuTile
+                  icon={<PlusIcon />}
+                  label={
+                    canEditMembership && selectionCount > 1
+                      ? `Add ${selectionCount}`
+                      : 'Add selection'
+                  }
+                  disabled={!canEditMembership}
+                  onClick={() => {
+                    close();
+                    onAddSelection();
+                  }}
+                />
+                <MenuTile
+                  icon={<MinusIcon />}
+                  label="Remove selection"
+                  disabled={!canEditMembership}
+                  onClick={() => {
+                    close();
+                    onRemoveSelection();
+                  }}
+                />
+              </MenuTileGrid>
+              <p className="px-1 pt-1.5 text-[10px] leading-snug text-slate-400 dark:text-slate-500">
+                {canEditMembership
+                  ? `This slide holds ${
+                      slide.elementIds.length === 1
+                        ? '1 element'
+                        : `${slide.elementIds.length} elements`
+                    }.`
+                  : membershipWhy}
+              </p>
+            </div>
+          </MenuAccordionSection>
         </PortalMenu>
       ) : null}
     </>

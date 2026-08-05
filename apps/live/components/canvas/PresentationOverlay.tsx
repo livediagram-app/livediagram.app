@@ -25,6 +25,8 @@ import {
   hasReadableDetail,
 } from '@/components/canvas/PresentationElementPopover';
 import { PresentationHud, usePointerIdle } from '@/components/canvas/PresentationHud';
+import { PresentationSettings } from '@/components/canvas/PresentationSettings';
+import type { PresentationConfig } from '@/lib/presentation-config';
 
 export type PresentationStep = { slide: Slide; tab: Tab; index: number };
 
@@ -35,6 +37,8 @@ export function PresentationOverlay({
   onExit,
   /** The direction the last move travelled, for the slide transition. */
   direction,
+  config,
+  onChangeConfig,
 }: {
   steps: PresentationStep[];
   /** Index into `steps`, or steps.length for the end state. */
@@ -42,8 +46,11 @@ export function PresentationOverlay({
   onGo: (next: number) => void;
   onExit: () => void;
   direction: 'forward' | 'back';
+  config: PresentationConfig;
+  onChangeConfig: (patch: Partial<PresentationConfig>) => void;
 }) {
   const [notesOpen, setNotesOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [detail, setDetail] = useState<{ element: BoxedElement; x: number; y: number } | null>(
     null,
   );
@@ -51,21 +58,28 @@ export function PresentationOverlay({
   const step = atEnd ? undefined : steps[at];
 
   // The HUD stays put while a popover is open, or it would be left orphaned.
-  const idle = usePointerIdle(true, notesOpen || detail !== null);
+  const idle = usePointerIdle(true, notesOpen || settingsOpen || detail !== null);
 
   const go = useCallback(
     (next: number) => {
       // Advancing closes what is open, so the next slide starts clean.
       setNotesOpen(false);
+      setSettingsOpen(false);
       setDetail(null);
       if (next < 0) return;
+      // Looping (a cog setting) turns the end of the deck back into the start
+      // instead of the end state, for a deck left running in a room.
+      if (config.loop && next >= steps.length) {
+        onGo(0);
+        return;
+      }
       if (next > steps.length) {
         onExit();
         return;
       }
       onGo(next);
     },
-    [onExit, onGo, steps.length],
+    [config.loop, onExit, onGo, steps.length],
   );
 
   // Browser fullscreen where available. Best-effort: it needs a user gesture
@@ -91,6 +105,7 @@ export function PresentationOverlay({
       if (key === 'Escape') {
         handled();
         if (detail) setDetail(null);
+        else if (settingsOpen) setSettingsOpen(false);
         else if (notesOpen) setNotesOpen(false);
         else onExit();
         return;
@@ -122,7 +137,7 @@ export function PresentationOverlay({
     };
     window.addEventListener('keydown', onKey, true);
     return () => window.removeEventListener('keydown', onKey, true);
-  }, [at, detail, go, notesOpen, onExit, steps.length]);
+  }, [at, detail, go, notesOpen, onExit, settingsOpen, steps.length]);
 
   const onSurfaceClick = (e: React.MouseEvent) => {
     // Something open? Dismiss it. Reading must never cost a slide.
@@ -132,6 +147,10 @@ export function PresentationOverlay({
     }
     if (notesOpen) {
       setNotesOpen(false);
+      return;
+    }
+    if (settingsOpen) {
+      setSettingsOpen(false);
       return;
     }
     if (atEnd) {
@@ -151,7 +170,9 @@ export function PresentationOverlay({
         return;
       }
     }
-    go(at + 1);
+    // Click-to-advance is a cog setting: a presenter who gestures at the
+    // screen with the mouse can turn it off and drive from the keys alone.
+    if (config.advanceOnClick) go(at + 1);
   };
 
   return (
@@ -189,13 +210,24 @@ export function PresentationOverlay({
           name={slideName(step.slide, step.index)}
           notes={step.slide.notes}
           notesOpen={notesOpen}
-          onToggleNotes={() => setNotesOpen((v) => !v)}
+          onToggleNotes={() => {
+            setSettingsOpen(false);
+            setNotesOpen((v) => !v);
+          }}
+          settingsOpen={settingsOpen}
+          onToggleSettings={() => {
+            setNotesOpen(false);
+            setSettingsOpen((v) => !v);
+          }}
+          showPosition={config.showPosition}
           onBack={at > 0 ? () => go(at - 1) : undefined}
           onNext={() => go(at + 1)}
           onClose={onExit}
           hidden={idle}
         />
       ) : null}
+
+      {settingsOpen ? <PresentationSettings config={config} onChange={onChangeConfig} /> : null}
 
       {detail ? (
         <PresentationElementPopover

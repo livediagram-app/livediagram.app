@@ -81,6 +81,9 @@ export function PresentationHud({
   notes,
   notesOpen,
   onToggleNotes,
+  settingsOpen,
+  onToggleSettings,
+  showPosition,
   onBack,
   onNext,
   onClose,
@@ -93,6 +96,10 @@ export function PresentationHud({
   notes: string | undefined;
   notesOpen: boolean;
   onToggleNotes: () => void;
+  settingsOpen: boolean;
+  onToggleSettings: () => void;
+  /** The presenter can turn the counter off from the cog. */
+  showPosition: boolean;
   /** Absent on the first slide, so the control disables rather than lying. */
   onBack?: () => void;
   onNext: () => void;
@@ -110,10 +117,16 @@ export function PresentationHud({
         // the slide underneath it.
         style={{ pointerEvents: hidden ? 'none' : 'auto' }}
       >
-        <span className="select-none text-[11px] font-semibold tabular-nums text-white/90">
-          {position} / {total}
-        </span>
-        <span className="max-w-[14rem] select-none truncate text-[11px] text-white/60">{name}</span>
+        {showPosition ? (
+          <>
+            <span className="select-none text-[11px] font-semibold tabular-nums text-white/90">
+              {position} / {total}
+            </span>
+            <span className="max-w-[14rem] select-none truncate text-[11px] text-white/60">
+              {name}
+            </span>
+          </>
+        ) : null}
         {/* Step through the deck by pointer as well as by key. A presenter on
             a projector often has a mouse and no keyboard within reach, and
             "click anywhere to advance" is not discoverable and cannot go
@@ -171,6 +184,22 @@ export function PresentationHud({
               className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-brand-300"
             />
           ) : null}
+        </HudButton>
+        <HudButton label="Presentation settings" onPress={onToggleSettings} active={settingsOpen}>
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.4"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden
+          >
+            <circle cx="8" cy="8" r="2.1" />
+            <path d="M8 1.6v1.8M8 12.6v1.8M14.4 8h-1.8M3.4 8H1.6M12.5 3.5l-1.3 1.3M4.8 11.2l-1.3 1.3M12.5 12.5l-1.3-1.3M4.8 4.8 3.5 3.5" />
+          </svg>
         </HudButton>
         <HudButton label="Exit presentation" onPress={onClose}>
           <svg

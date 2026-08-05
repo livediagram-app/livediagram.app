@@ -1929,7 +1929,16 @@ html[data-presenting] [data-canvas-a11y-root] {
 }
 
 /* Entering: the deck arrives as a card over the editor. */
-html[data-presenting][data-slide-move='in'] [data-canvas-a11y-root] {
+html[data-presenting][data-slide-transition='none'][data-slide-move] [data-canvas-a11y-root] {
+  /* Cut straight to it. No animation at all, so nothing to wait on. */
+  animation: none;
+}
+html[data-presenting][data-slide-transition='fade'][data-slide-move] [data-canvas-a11y-root] {
+  animation: lvd-slide-fade 300ms ease;
+}
+
+html[data-presenting][data-slide-transition='slide'][data-slide-move='in'] [data-canvas-a11y-root],
+html[data-presenting]:not([data-slide-transition]) [data-slide-move='in'] [data-canvas-a11y-root] {
   animation: lvd-slide-in 380ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 /* Advancing: the new slide travels in from the RIGHT edge, all the way across
@@ -1943,15 +1952,25 @@ html[data-presenting][data-slide-move='in'] [data-canvas-a11y-root] {
    long slow tail (0.22, 1, 0.36, 1 and friends), which reads as rubber-banding
    — the slide appears to arrive, then keeps creeping. A deck slide should land
    and stop. */
-html[data-presenting][data-slide-move='forward'] [data-canvas-a11y-root] {
+html[data-presenting][data-slide-transition='slide'][data-slide-move='forward']
+  [data-canvas-a11y-root] {
   animation: lvd-slide-forward 380ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 /* Going back mirrors it, so the direction always says which way you are
    travelling through the deck. */
-html[data-presenting][data-slide-move='back'] [data-canvas-a11y-root] {
+html[data-presenting][data-slide-transition='slide'][data-slide-move='back']
+  [data-canvas-a11y-root] {
   animation: lvd-slide-back 380ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+@keyframes lvd-slide-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
 @keyframes lvd-slide-in {
   from {
     transform: scale(0.92);
@@ -1983,15 +2002,9 @@ html[data-presenting][data-slide-move='back'] [data-canvas-a11y-root] {
    be legible — it just loses the travel. Same durations, so the deck feels
    the same to drive. */
 @media (prefers-reduced-motion: reduce) {
+  /* Whatever the transition setting says, reduced motion gets the fade: the
+     deck still reads as changing slides, without the travel. */
   html[data-presenting][data-slide-move] [data-canvas-a11y-root] {
     animation: lvd-slide-fade 380ms ease;
-  }
-  @keyframes lvd-slide-fade {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
   }
 }
