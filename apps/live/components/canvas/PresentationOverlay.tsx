@@ -53,6 +53,7 @@ export function PresentationOverlay({
 }) {
   const [notesOpen, setNotesOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [jumpOpen, setJumpOpen] = useState(false);
   const [detail, setDetail] = useState<{ element: BoxedElement; x: number; y: number } | null>(
     null,
   );
@@ -66,7 +67,8 @@ export function PresentationOverlay({
   const notesVisible = notesOpen && slideHasNotes;
 
   const idle =
-    usePointerIdle(true, notesVisible || settingsOpen || detail !== null) && !config.keepControls;
+    usePointerIdle(true, notesVisible || settingsOpen || jumpOpen || detail !== null) &&
+    !config.keepControls;
 
   // Publish idleness so the CSS can hide the cursor with the same signal that
   // fades the HUD — the two must come back together, or a hidden pointer would
@@ -205,9 +207,15 @@ export function PresentationOverlay({
       if (key === 'Escape') {
         handled();
         if (detail) setDetail(null);
+        else if (jumpOpen) setJumpOpen(false);
         else if (settingsOpen) setSettingsOpen(false);
         else if (notesOpen) setNotesOpen(false);
         else onExit();
+        return;
+      }
+      if (key === 'g' || key === 'G') {
+        handled();
+        setJumpOpen((v) => !v);
         return;
       }
       if (key === 'ArrowRight' || key === ' ' || key === 'PageDown' || key === 'Enter') {
@@ -335,6 +343,16 @@ export function PresentationOverlay({
             });
           }}
           showPosition={config.showPosition}
+          slides={steps.map((st, i) => ({
+            id: st.slide.id,
+            label: (st.slide.name ?? '').trim() || `Slide ${i + 1}`,
+          }))}
+          jumpOpen={jumpOpen}
+          onToggleJump={() => setJumpOpen((v) => !v)}
+          onJump={(i) => {
+            setJumpOpen(false);
+            go(i);
+          }}
           elapsedMs={config.showElapsed ? now - startedAt : null}
           budget={
             config.showBudget && slideMinutes

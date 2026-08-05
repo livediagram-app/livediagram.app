@@ -151,7 +151,7 @@ The HUD does not fade while a popover is open, or the popover would be left orph
 
 **Jumping to a slide.** `→` and `←` walk the deck and `Home` / `End` reach its ends, which is everything you need while the talk goes to plan. It goes to plan until somebody asks about the diagram you showed nine slides ago, and arrowing back through nine slides in front of a room is the moment a deck feels like a toy.
 
-The jump button (or `G`) opens a popover listing every slide by position and name, with the current one marked; picking one goes straight there. It reuses the panel's thumbnails — the shared headless SVG renderer that already draws the Layers rows — so the list is scannable by picture rather than by remembering what you called slide 12. Hidden slides appear, greyed and marked, because a backup detail kept out of the run is exactly the slide a question sends you looking for. Click again, `Esc`, or picking a slide closes it.
+The jump button (or `G`) opens a popover listing every slide by position and name, with the current one marked; picking one goes straight there. The list is the RUN, in deck order — hidden slides are not in it, because a slide left out of the presentation has no position to jump to. Click again, `Esc`, or picking a slide closes it, and `Esc` closes it before it leaves the deck (the popover precedence below).
 
 `Esc` closes an open popover before it leaves the deck. Both popovers can be open over a slide and both take `Esc`, so without an order the key that dismisses a list would end the presentation.
 

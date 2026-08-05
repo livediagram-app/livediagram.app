@@ -96,6 +96,10 @@ export function PresentationHud({
   settingsOpen,
   onToggleSettings,
   showPosition,
+  slides,
+  jumpOpen,
+  onToggleJump,
+  onJump,
   elapsedMs,
   budget,
   onBack,
@@ -114,6 +118,15 @@ export function PresentationHud({
   onToggleSettings: () => void;
   /** The presenter can turn the counter off from the cog. */
   showPosition: boolean;
+  /**
+   * The slides you can jump to, in deck order — which is the RUN, not the
+   * whole deck: a hidden slide is not in the presentation, so there is no
+   * position to send the presenter to.
+   */
+  slides: readonly { id: string; label: string }[];
+  jumpOpen: boolean;
+  onToggleJump: () => void;
+  onJump: (index: number) => void;
   /** Milliseconds since Start, or null when the clock is switched off. */
   elapsedMs: number | null;
   /** This slide's budget in minutes, and the time spent on it. Null = no readout. */
@@ -208,6 +221,27 @@ export function PresentationHud({
             read; its absence says "nothing to say here" faster than any dot
             could. The dot it used to carry is gone with it — the button's
             presence IS the signal now. */}
+        {/* Jumping (spec/31). Arrow keys walk the deck, which is everything
+            you need until somebody asks about the slide from nine slides ago
+            and you arrow back through nine of them in front of a room. */}
+        <HudButton label="Jump to a slide" onPress={onToggleJump} active={jumpOpen}>
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden
+          >
+            <rect x="2" y="2.5" width="5" height="5" rx="1" />
+            <rect x="9" y="2.5" width="5" height="5" rx="1" />
+            <rect x="2" y="8.5" width="5" height="5" rx="1" />
+            <rect x="9" y="8.5" width="5" height="5" rx="1" />
+          </svg>
+        </HudButton>
         {hasNotes ? (
           <HudButton label="Presenter notes" onPress={onToggleNotes} active={notesOpen}>
             <svg
@@ -248,6 +282,33 @@ export function PresentationHud({
         </HudButton>
       </div>
 
+      {jumpOpen ? (
+        <div
+          role="dialog"
+          aria-label="Jump to a slide"
+          onClick={(e) => e.stopPropagation()}
+          onPointerDown={(e) => e.stopPropagation()}
+          className="pointer-events-auto fixed right-4 top-16 z-[66] max-h-[60vh] w-72 overflow-y-auto rounded-xl bg-slate-900/90 p-1.5 shadow-2xl backdrop-blur"
+        >
+          {slides.map((s, i) => {
+            const current = i + 1 === position;
+            return (
+              <button
+                key={s.id}
+                type="button"
+                onClick={() => onJump(i)}
+                aria-current={current ? 'true' : undefined}
+                className={`flex w-full cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-left text-[12px] transition ${
+                  current ? 'bg-white/15 text-white' : 'text-white/75 hover:bg-white/10'
+                }`}
+              >
+                <span className="w-6 shrink-0 tabular-nums text-[11px] text-white/45">{i + 1}</span>
+                <span className="min-w-0 flex-1 truncate">{s.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      ) : null}
       {notesOpen ? (
         <div
           role="dialog"
