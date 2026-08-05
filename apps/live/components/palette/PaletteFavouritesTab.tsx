@@ -114,6 +114,7 @@ export function PaletteFavouritesTab({
       .filter((t): t is PaletteTileDef => t !== undefined),
     actions.hasImage,
   );
+  const favouriteSet = useMemo(() => new Set(favourites), [favourites]);
   const showEmptyHint =
     favouriteTiles.length === 0 && (iconCatalogsLoaded || favourites.length === 0);
 
@@ -248,6 +249,12 @@ export function PaletteFavouritesTab({
             pendingDraw={pendingDraw}
             activeIndex={active}
             optionIdPrefix="palette-search"
+            // Search is where you MEET a tool you did not know about, so it is
+            // the one list where "and keep it" is worth a control of its own —
+            // otherwise favouriting means finding the same thing a second time
+            // through the Edit dialog.
+            favouriteIds={favouriteSet}
+            onToggleFavourite={(id) => (favouriteSet.has(id) ? remove(id) : add(id))}
           />
         ) : (
           <p className="px-1 py-2 text-center text-[11px] text-slate-400">
