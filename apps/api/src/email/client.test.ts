@@ -27,7 +27,12 @@ describe('sendEmail', () => {
   it('no-ops without a key and never calls fetch', async () => {
     const f = vi.fn();
     vi.stubGlobal('fetch', f);
-    const res = await sendEmail(noKey, { to: 'a@b.com', subject: 's', html: '<p>h</p>' });
+    const res = await sendEmail(noKey, {
+      kind: 'Welcome',
+      to: 'a@b.com',
+      subject: 's',
+      html: '<p>h</p>',
+    });
     expect(res).toEqual({ sent: false });
     expect(f).not.toHaveBeenCalled();
   });
@@ -35,7 +40,12 @@ describe('sendEmail', () => {
   it('POSTs to Resend with auth + payload when keyed', async () => {
     const f = vi.fn().mockResolvedValue(new Response('{"id":"x"}', { status: 200 }));
     vi.stubGlobal('fetch', f);
-    const res = await sendEmail(withKey, { to: 'a@b.com', subject: 'Hi', html: '<p>h</p>' });
+    const res = await sendEmail(withKey, {
+      kind: 'Welcome',
+      to: 'a@b.com',
+      subject: 'Hi',
+      html: '<p>h</p>',
+    });
     expect(res).toEqual({ sent: true });
     const [url, init] = f.mock.calls[0] as [
       string,
@@ -54,6 +64,7 @@ describe('sendEmail', () => {
     const f = vi.fn().mockResolvedValue(new Response('{}', { status: 200 }));
     vi.stubGlobal('fetch', f);
     await sendEmail({ RESEND_API_KEY: 're', RESEND_FROM: 'X <x@y.com>' } as unknown as Env, {
+      kind: 'Welcome',
       to: 'a@b.com',
       subject: 's',
       html: 'h',
@@ -65,14 +76,18 @@ describe('sendEmail', () => {
 
   it('returns sent:false on a non-2xx response', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('nope', { status: 422 })));
-    expect(await sendEmail(withKey, { to: 'a@b.com', subject: 's', html: 'h' })).toEqual({
+    expect(
+      await sendEmail(withKey, { kind: 'Welcome', to: 'a@b.com', subject: 's', html: 'h' }),
+    ).toEqual({
       sent: false,
     });
   });
 
   it('never throws — returns sent:false when fetch rejects', async () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('network')));
-    expect(await sendEmail(withKey, { to: 'a@b.com', subject: 's', html: 'h' })).toEqual({
+    expect(
+      await sendEmail(withKey, { kind: 'Welcome', to: 'a@b.com', subject: 's', html: 'h' }),
+    ).toEqual({
       sent: false,
     });
   });
