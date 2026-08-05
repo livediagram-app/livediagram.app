@@ -48,7 +48,7 @@ not needed on this path.
 | `arrow`                           | `arrow`; `startBinding`/`endBinding` → `pinned` endpoints at the nearest of the 8 anchors; 3+ points → `arrowStyle: 'curved'` with `curvePoints` |
 | `line`, 2 points                  | `arrow` with `arrowEnds: 'none'`                                                                                                                 |
 | `line`, 3+ points                 | `freehand` with `straightEdges: true`; first ≈ last point → `closed: true` + fill                                                                |
-| `freedraw`                        | `freehand` (points normalised into the bounding box)                                                                                             |
+| `freedraw`                        | `freehand` (points normalised into the bounding box); first ≈ last point → `closed: true` + fill, same geometric rule as `line`                  |
 | `image`                           | `image` placeholder (`imageId: null`) — bytes are NOT migrated in v1 (they'd need an R2 upload per file)                                         |
 | `embeddable` / `iframe` / unknown | skipped; the count is returned in the result (`skipped`) so tests can assert it                                                                  |
 
@@ -101,7 +101,7 @@ layers — the list flattens) does not. Kind by kind:
 | `table`                                                                                                    | `rectangle` placeholder (cells don't survive; the label does if set)                                                                                 |
 | `image`                                                                                                    | `rectangle` placeholder labelled with the alt text (bytes live in R2, not the export)                                                                |
 | `link-card`                                                                                                | `rectangle` with the card title/URL as label + the `link`                                                                                            |
-| `freehand`                                                                                                 | `freedraw`; `straightEdges` → `line` (closed polygons re-append the first point + fill)                                                              |
+| `freehand`                                                                                                 | `freedraw`; `straightEdges` → `line`. Any `closed` stroke re-appends the first point + fill, pencil sketches included                                |
 | `arrow`                                                                                                    | `arrow` with `startBinding`/`endBinding` for pinned ends, curve points flattened into the point list, label as bound text, arrowheads reverse-mapped |
 
 Labels export as **bound text elements** (`containerId` + a `boundElements`

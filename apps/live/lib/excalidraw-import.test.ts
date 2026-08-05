@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildElementsFromExcalidraw } from './excalidraw-import';
+import { tabToExcalidrawText } from './excalidraw-export';
 import type {
   ArrowElement,
   FreehandElement,
@@ -334,6 +335,73 @@ describe('arrow + line mapping', () => {
     expect(fh).toMatchObject({ x: 10, y: 10, width: 80, height: 20 });
     expect(fh.points[0]).toEqual({ nx: 0, ny: 0 });
     expect(fh.points[1]).toEqual({ nx: 0.5, ny: 1 });
+  });
+
+  it('closes a freedraw stroke whose ends coincide', () => {
+    // A pencil stroke released near where it started is closed and fills
+    // (spec/09), and our exporter writes that the same way it writes a closed
+    // polygon: the first point repeated at the end. Closure was gated on
+    // `straightEdges`, which only a `line` sets, so this came back open — the
+    // sketch rendered hollow and kept the duplicate point as an extra sample.
+    const r = buildElementsFromExcalidraw(
+      scene([
+        {
+          id: 'blob',
+          type: 'freedraw',
+          x: 0,
+          y: 0,
+          strokeColor: '#1971c2',
+          backgroundColor: '#ffd43b',
+          points: [
+            [0, 0],
+            [40, 30],
+            [80, 0],
+            [0, 0],
+          ],
+        },
+      ]),
+    );
+    if (!r.ok) throw new Error(r.error);
+    const fh = r.elements[0] as FreehandElement;
+    expect(fh.closed).toBe(true);
+    // Still a pencil stroke, not a polygon: corners stay smoothed.
+    expect(fh.straightEdges).toBeUndefined();
+    // The repeated closing point is dropped rather than kept as a sample.
+    expect(fh.points).toHaveLength(3);
+  });
+
+  it('round-trips a closed pencil sketch through export and back', () => {
+    // The user-facing shape of the bug: export a filled sketch, re-import it,
+    // and it came back a hollow outline. Exercised end to end rather than only
+    // against a hand-written scene, because the two halves disagreeing about
+    // what `closed` means is exactly the defect.
+    const sketch: FreehandElement = {
+      id: 'sketch',
+      type: 'freehand',
+      x: 0,
+      y: 0,
+      width: 100,
+      height: 80,
+      closed: true,
+      fillColor: '#ffd43b',
+      points: [
+        { nx: 0, ny: 0 },
+        { nx: 1, ny: 0.5 },
+        { nx: 0.4, ny: 1 },
+      ],
+    } as FreehandElement;
+
+    const r = buildElementsFromExcalidraw(
+      tabToExcalidrawText({ id: 't', name: 'T', elements: [sketch] }),
+    );
+    if (!r.ok) throw new Error(r.error);
+    const back = r.elements[0] as FreehandElement;
+    expect(back.closed).toBe(true);
+    // A pencil sketch, not a polygon — the round trip must not promote it.
+    expect(back.straightEdges).toBeUndefined();
+    // Sample count preserved: the closing point the exporter appends is
+    // dropped again on the way in, not kept as a fourth sample.
+    expect(back.points).toHaveLength(3);
   });
 
   it('attaches a bound label to an arrow', () => {

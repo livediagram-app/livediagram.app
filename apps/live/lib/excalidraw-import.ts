@@ -382,8 +382,17 @@ export function buildElementsFromExcalidraw(text: string): ExcalidrawImportResul
 
 // A freedraw stroke or a multi-point line as a freehand element: bounds from
 // the samples, points normalised into [0..1] across the box (our storage
-// shape). `straightEdges` marks polygon-style lines so corners stay corners;
-// a line whose ends coincide closes + fills like the polygon tool (spec/84).
+// shape). `straightEdges` marks polygon-style lines so corners stay corners.
+//
+// Closure is decided GEOMETRICALLY — ends that coincide — and deliberately not
+// from `straightEdges`. It was gated on it originally because closing was
+// thought about as a polygon-tool property (spec/84), but a pencil stroke
+// released near where it started closes and fills too (spec/09), and our own
+// exporter treats both kinds identically: it appends the repeated first point
+// and writes the fill whenever `closed` is set, for `freedraw` as much as
+// `line`. Gated, the import read that back as an open stroke, so a filled
+// sketch returned hollow with the duplicated closing point left in as an extra
+// sample — the fill colour still on the element, just unusable.
 function freehandFrom(
   e: ExcalidrawElement,
   id: string,
@@ -399,7 +408,7 @@ function freehandFrom(
   const height = Math.max(1, Math.max(...ys) - minY);
   let samples = abs;
   let closed = false;
-  if (straightEdges && abs.length >= 3) {
+  if (abs.length >= 3) {
     const a = abs[0]!;
     const b = abs[abs.length - 1]!;
     if (Math.hypot(a.x - b.x, a.y - b.y) <= 1) {
