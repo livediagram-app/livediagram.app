@@ -1,7 +1,14 @@
 import { sha256Hex, type ImageSummary } from '@livediagram/api-schema';
 import { ApiError, apiUploadImage } from './api-client';
 import { isOfflineIdSync } from './offline/offline-store';
-import { MAX_IMAGE_BYTES, MAX_IMAGE_MB } from '@livediagram/api-schema';
+import {
+  ACCEPTED_IMAGE_TYPES,
+  IMAGE_ACCEPT_ATTR,
+  IMAGE_TYPES_LABEL,
+  MAX_IMAGE_BYTES,
+  MAX_IMAGE_MB,
+  type AcceptedImageType,
+} from '@livediagram/api-schema';
 
 // Map the api worker's upload error tokens (responses.ts / images.ts)
 // to messages safe to render inline in the picker. The client-side
@@ -10,7 +17,7 @@ import { MAX_IMAGE_BYTES, MAX_IMAGE_MB } from '@livediagram/api-schema';
 // the per-owner cap that only the server knows about (spec/19).
 const UPLOAD_ERROR_MESSAGES: Record<string, string> = {
   gallery_full: 'Your image gallery is full. Delete some images and try again.',
-  unsupported_type: 'Unsupported file type. Use PNG, JPEG, WebP, or GIF.',
+  unsupported_type: `Unsupported file type. Use ${IMAGE_TYPES_LABEL}.`,
   file_too_large: `Too large. Limit is ${MAX_IMAGE_MB} MB.`,
   images_unavailable: 'Image uploads are not available on this server.',
 };
@@ -23,11 +30,10 @@ const UPLOAD_ERROR_MESSAGES: Record<string, string> = {
 // UX-shaped (fast feedback before a big upload + a sensible error
 // message), not security.
 
-const ACCEPTED_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'] as const;
-// The cap the api actually enforces (spec/19), so this gate can never accept
-// a file the upload will reject. Re-exported under the editor's own name
-// because callers here read it as "what the picker allows".
-export const UPLOAD_ACCEPT_ATTR = ACCEPTED_TYPES.join(',');
+// The formats and cap the api actually enforces (spec/19), so this gate can
+// never accept a file the upload will reject. Re-exported under the editor's
+// own names because callers here read them as "what the picker allows".
+export const UPLOAD_ACCEPT_ATTR = IMAGE_ACCEPT_ATTR;
 export const UPLOAD_MAX_BYTES = MAX_IMAGE_BYTES;
 
 type UploadResult = { image: ImageSummary; deduped: boolean };
@@ -47,9 +53,9 @@ export class ImageUploadError extends Error {
 // The shared client-side gate (type / size / non-empty), used by both
 // the upload and the offline-embed paths so they reject identically.
 function validateImageFile(file: File): void {
-  if (!ACCEPTED_TYPES.includes(file.type as (typeof ACCEPTED_TYPES)[number])) {
+  if (!ACCEPTED_IMAGE_TYPES.includes(file.type as AcceptedImageType)) {
     throw new ImageUploadError(
-      'Unsupported file type. Use PNG, JPEG, WebP, or GIF (SVG is rejected for security).',
+      `Unsupported file type. Use ${IMAGE_TYPES_LABEL} (SVG is rejected for security).`,
     );
   }
   if (file.size > MAX_IMAGE_BYTES) {

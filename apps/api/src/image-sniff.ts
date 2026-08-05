@@ -10,8 +10,12 @@
 // importing it via index.ts would pull the whole worker handler
 // into the test runtime.
 
-export const ACCEPTED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'] as const;
-export type AcceptedImageType = (typeof ACCEPTED_IMAGE_TYPES)[number];
+// The accepted list itself lives in api-schema: the api serialises it in its
+// 415 body, so it's wire contract the editor reads too. Re-exported here
+// because every caller of `sniffImageType` wants the pair together, and the
+// sniffer's whole job is deciding which member of this list the bytes are.
+export { ACCEPTED_IMAGE_TYPES, type AcceptedImageType } from '@livediagram/api-schema';
+import type { AcceptedImageType } from '@livediagram/api-schema';
 
 export function sniffImageType(buf: Uint8Array): AcceptedImageType | null {
   if (buf.length < 12) return null;

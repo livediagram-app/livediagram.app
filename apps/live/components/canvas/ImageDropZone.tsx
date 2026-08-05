@@ -1,7 +1,8 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { UPLOAD_ACCEPT_ATTR, UPLOAD_MAX_BYTES } from '@/lib/upload-image';
+import { IMAGE_TYPES_LABEL, MAX_IMAGE_MB } from '@livediagram/api-schema';
+import { UPLOAD_ACCEPT_ATTR } from '@/lib/upload-image';
 
 // Drop / click target for image uploads. The same dashed-border
 // tile appeared inline in both ImagePicker (editor modal, 192px
@@ -69,7 +70,7 @@ export function ImageDropZone({
           {uploading ? 'Uploading...' : prompt}
         </p>
         <p className="text-[11px] text-slate-500 dark:text-slate-400">
-          PNG, JPEG, WebP, or GIF up to {UPLOAD_MAX_BYTES / (1024 * 1024)} MB
+          {IMAGE_TYPES_LABEL} up to {MAX_IMAGE_MB} MB
         </p>
         <input
           ref={fileInputRef}
