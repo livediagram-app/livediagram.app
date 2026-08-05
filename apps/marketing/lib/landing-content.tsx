@@ -27,6 +27,7 @@ import {
   ExpiryArt,
   FlowingArrowsArt,
   FoldersArt,
+  FullScreenSlideArt,
   FontsArt,
   FormatPainterArt,
   GroupArt,
@@ -37,6 +38,8 @@ import {
   LinkCardArt,
   LivingBackgroundArt,
   NotesArt,
+  PresentLocallyArt,
+  PresenterNotesArt,
   LockArt,
   MarkdownImportArt,
   MermaidArt,
@@ -58,6 +61,7 @@ import {
   SelectionGlowArt,
   SessionToolsArt,
   ShapesArt,
+  SlideDeckArt,
   ShareLinksArt,
   ShortcutsArt,
   SpotlightArt,
@@ -284,6 +288,47 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Stop sharing on demand',
         description:
           'Sharing is a toggle, not a state of being. Revoke a link and the URL stops working. The diagram is yours again.',
+      },
+    ],
+  },
+  {
+    id: 'present',
+    cta: 'Explore presenting',
+    title: 'Present it without leaving the diagram',
+    description:
+      'The diagram you already drew is the deck. Pick the elements for each slide, put them in the order you want to say them in, and run it full screen — no export, no second tool, and nothing to keep in step afterwards.',
+    items: [
+      {
+        art: <SlideDeckArt />,
+        href: '/help/selection-modes/slide-deck/',
+        group: 'Build the deck',
+        title: 'Slides made from what you drew',
+        description:
+          'A slide is simply the elements you picked, from one tab. Select a cluster on the canvas and make it a slide; the arrows between them come along on their own. Slides reference your elements rather than copying them, so editing a shape updates every slide it appears on and the deck can never drift from the diagram.',
+      },
+      {
+        art: <FullScreenSlideArt />,
+        href: '/help/selection-modes/slide-deck/',
+        group: 'Build the deck',
+        title: 'One deck across every tab',
+        description:
+          'Slide one can come from your architecture tab and slide two from the roadmap. Order them however you like in the Slide Deck panel: drag to rearrange, rename, duplicate, or hide a slide you might want next week without deleting it. The deck is saved with the diagram, so a teammate opens it and sees the same talk.',
+      },
+      {
+        art: <PresenterNotesArt />,
+        href: '/help/selection-modes/slide-deck/',
+        group: 'Run the room',
+        title: 'Notes only you open',
+        description:
+          'Write what you mean to say over each slide. During the presentation they sit behind a button in the corner, so nothing about your script is on screen until you ask for it. Clicking any element shows its note, comments and assigned action too, for the question you did not plan for.',
+      },
+      {
+        art: <PresentLocallyArt />,
+        href: '/help/selection-modes/slide-deck/',
+        group: 'Run the room',
+        title: 'Your screen, not everyone else’s',
+        description:
+          'Presenting shows the deck on your screen and nowhere else. Nobody is dragged into your slide, nobody’s view moves, and collaborators with the diagram open carry on working. You share your screen the way you already do. Nothing on a slide can be changed by a stray click, so a projector is safe.',
       },
     ],
   },

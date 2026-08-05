@@ -17,3 +17,6 @@ export * from './feature-art/motion';
 export * from './feature-art/versatility';
 export * from './feature-art/content';
 export * from './feature-art/structure';
+// Presentation mode (spec/31): decks, the full-screen slide, notes, and the
+// fact that presenting is yours alone.
+export * from './feature-art/present';
