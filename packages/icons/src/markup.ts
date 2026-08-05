@@ -51,7 +51,13 @@ export function iconPrimMarkup(p: IconPrim): string {
       // carrying a string into markup.
       return (
         `<text x="${num(p.x)}" y="${num(p.y)}" font-size="${num(p.size)}"` +
-        ` font-family="system-ui, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, sans-serif"` +
+        // Same stack as the canvas renderer (icon-glyph.tsx) and the sticker
+        // export (sticker-markup.ts). Noto Color Emoji matters: it's the
+        // primary emoji font on Linux and Android, so dropping it here made
+        // exported SVGs fall back to text glyphs on the platforms where the
+        // canvas had shown colour ones, against spec/86's "exports match the
+        // canvas".
+        ` font-family="system-ui, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Noto Color Emoji&#39;, sans-serif"` +
         ` text-anchor="middle" dominant-baseline="central" fill="currentColor"` +
         ` stroke="none">${xmlEscape(p.text)}</text>`
       );

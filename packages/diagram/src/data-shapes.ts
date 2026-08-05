@@ -139,8 +139,12 @@ export const ENTITY_MAX_TEXT = 80;
 // column reads better than a placeholder.
 export type EntityField = { name: string; type?: string };
 export const CHECKLIST_MAX_TEXT = 200;
+// All three seed rows are unchecked, per spec/83. A seeded `done: true` made
+// a freshly-dropped checklist render its first row ticked and struck through,
+// and tripped the "at least one row is done" rule into showing a "1/3" footer
+// on an element nobody had touched yet.
 export const CHECKLIST_DEFAULT_ITEMS: readonly ChecklistItem[] = [
-  { text: 'First task', done: true },
+  { text: 'First task', done: false },
   { text: 'Second task', done: false },
   { text: 'Third task', done: false },
 ];

@@ -11,7 +11,7 @@ import { MAX_IMAGE_BYTES, MAX_IMAGE_MB } from '@livediagram/api-schema';
 const UPLOAD_ERROR_MESSAGES: Record<string, string> = {
   gallery_full: 'Your image gallery is full. Delete some images and try again.',
   unsupported_type: 'Unsupported file type. Use PNG, JPEG, WebP, or GIF.',
-  file_too_large: `Too large. Limit is ${(10 * 1024 * 1024) / (1024 * 1024)} MB.`,
+  file_too_large: `Too large. Limit is ${MAX_IMAGE_MB} MB.`,
   images_unavailable: 'Image uploads are not available on this server.',
 };
 

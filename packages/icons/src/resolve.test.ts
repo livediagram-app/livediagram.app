@@ -69,7 +69,7 @@ describe('iconPrimMarkup', () => {
     const text = iconPrimMarkup({ t: 'text', text: '👍', x: 12, y: 12, size: 20 });
     expect(text).toBe(
       '<text x="12" y="12" font-size="20"' +
-        ' font-family="system-ui, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, sans-serif"' +
+        ' font-family="system-ui, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Noto Color Emoji&#39;, sans-serif"' +
         ' text-anchor="middle" dominant-baseline="central" fill="currentColor"' +
         ' stroke="none">👍</text>',
     );
