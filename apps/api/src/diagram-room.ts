@@ -98,6 +98,26 @@ export const PRESENCE_OP_KINDS = new Set([
   // nothing in the document, and nothing worth replaying to somebody who
   // arrives after it finished.
   'reaction',
+  // Where the sender is looking, for anyone following them (spec/131). Its
+  // own wire contract calls it "ephemeral presence exactly like cursor /
+  // laser / avatar: throttled, never logged, never ordered (no `seq`), never
+  // replayed to a reconnecting client" — and while it was missing from this
+  // set it was all four of those things, because the mutation branch is the
+  // fall-through.
+  //
+  // The client publishes it on every pan or zoom, throttled to 10 Hz, so ~26
+  // seconds of one editor navigating filled all 256 slots of the catch-up log
+  // with camera positions and pushed `floor` past every real mutation. The
+  // next peer whose socket blipped then failed the `lastSeq + 1 >= floor`
+  // check and was sent `resync`, re-hydrating every loaded tab from D1 —
+  // exactly the storm the comment below this block says was hunted down once
+  // already, reopened by somebody merely scrolling. It also cost a
+  // `storage.put` per frame, 10 a second per navigating editor.
+  //
+  // And because the role gate drops any non-presence op from a view-role
+  // sender, a view-only visitor could not be FOLLOWED at all, contradicting
+  // spec/131's "the audience on a view link is exactly who most needs it".
+  'viewport',
 ]);
 
 // One entry in the reconnect catch-up log: a mutation op plus the sequence

@@ -545,6 +545,82 @@ describe('DiagramRoom op-role enforcement', () => {
     expect(PRESENCE_OP_KINDS.has('tab-focus')).toBe(true);
   });
 
+  // The OTHER direction, which is how `viewport` slipped through: only the
+  // dangerous side was guarded, so a kind whose own wire contract calls it
+  // ephemeral presence could sit outside this set indefinitely and be treated
+  // as an ordered mutation by the fall-through.
+  it('holds every kind the wire contract calls ephemeral presence', () => {
+    const ephemeral = [
+      'cursor',
+      'select',
+      'laser',
+      'tab-focus',
+      'poll-answer',
+      'avatar',
+      'avatar-push',
+      'reaction',
+      'viewport',
+    ];
+    expect(ephemeral.filter((k) => !PRESENCE_OP_KINDS.has(k))).toEqual([]);
+  });
+
+  // Follow-me (spec/131). Two properties, and both were broken while
+  // `viewport` sat outside the presence set.
+  it('relays a viewport from a view-role session, unordered and unlogged', () => {
+    const { room } = newRoom();
+    const editor = connect(room, 'editor', 'edit');
+    const viewer = connect(room, 'viewer', 'view');
+    editor.ws.sent.length = 0;
+
+    sendFrame(room, viewer.ws, {
+      kind: 'op',
+      op: { kind: 'viewport', tabId: 't', pan: { x: 10, y: 20 }, zoom: 1.5 },
+    });
+
+    // Followable at view role: the role gate drops any non-presence op from a
+    // viewer, so this arrived nowhere — on a link whose whole audience is the
+    // people most likely to want following.
+    const received = opsReceived(editor.ws);
+    expect(received).toHaveLength(1);
+    // Unordered: a `seq` would put it in the ordered stream, and at 10 Hz it
+    // would push every real mutation out of the 256-slot catch-up log within
+    // half a minute of somebody scrolling, forcing the next reconnecting peer
+    // into a full D1 re-hydrate.
+    expect(received[0]).not.toHaveProperty('seq');
+  });
+
+  it('keeps viewports out of the catch-up log entirely', () => {
+    // The expensive half. Every ordered op costs a `seq` and a slot in the
+    // 256-entry log, and at 10 Hz a scrolling editor filled the whole thing
+    // with camera positions in ~26s, pushing `floor` past every real mutation
+    // so the next reconnecting peer got `resync` and re-hydrated from D1.
+    const { room } = newRoom();
+    const editor = connect(room, 'editor', 'edit');
+    sendFrame(room, editor.ws, {
+      kind: 'op',
+      op: { kind: 'el', tabId: 't', op: { kind: 'remove', id: 'a' } },
+    });
+    for (let i = 0; i < 5; i++) {
+      sendFrame(room, editor.ws, {
+        kind: 'op',
+        op: { kind: 'viewport', tabId: 't', pan: { x: i, y: i }, zoom: 1 },
+      });
+    }
+
+    // A peer that has seen nothing asks for the delta. It should be the one
+    // real mutation, with the viewports consuming neither a seq nor a slot.
+    const back = connect(room, 'back', 'edit');
+    sendFrame(room, back.ws, { kind: 'sync', epoch: room.epoch, lastSeq: 0 });
+    type Catchup = { kind: string; resync: boolean; seq: number; ops: { op: { kind: string } }[] };
+    const catchup = back.ws.sent
+      .map((s) => JSON.parse(s) as Catchup)
+      .filter((m) => m.kind === 'catchup')
+      .at(-1)!;
+    expect(catchup.resync).toBe(false);
+    expect(catchup.seq).toBe(1);
+    expect(catchup.ops.map((o) => o.op.kind)).toEqual(['el']);
+  });
+
   it('relays an avatar-push from a view-role session', () => {
     const { room } = newRoom();
     const viewer = connect(room, 'viewer', 'view');
