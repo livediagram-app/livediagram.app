@@ -10,6 +10,7 @@ const ALL_INTENTS: PendingDraw[] = [
   { type: 'freehand' },
   { type: 'freehand', variant: 'highlighter' },
   { type: 'polygon' },
+  { type: 'component', kind: 'banner' },
 ];
 
 describe('drawBannerMessage', () => {
@@ -86,6 +87,20 @@ describe('drawBannerMessage', () => {
     expect(drawBannerMessage({ type: 'polygon' }, true)).toBe('Tap to place points');
   });
 
+  it('uses the friendly component name, not the raw kind', () => {
+    // Components have their own label table rather than the shape
+    // capitalise-fallback, so 'stat' reads "Stat row" and not "Stat".
+    expect(drawBannerMessage({ type: 'component', kind: 'banner' }, false)).toBe(
+      'Tap to drop or drag to draw Banner',
+    );
+    expect(drawBannerMessage({ type: 'component', kind: 'stat' }, false)).toBe(
+      'Tap to drop or drag to draw Stat row',
+    );
+    expect(drawBannerMessage({ type: 'component', kind: 'process' }, false)).toBe(
+      'Tap to drop or drag to draw Process steps',
+    );
+  });
+
   it('returns a non-empty string for every intent on both viewports', () => {
     for (const intent of ALL_INTENTS) {
       expect(drawBannerMessage(intent, false).length).toBeGreaterThan(0);
@@ -123,6 +138,14 @@ describe('drawIntentCursor', () => {
     // a bespoke cursor and use the system crosshair.
     expect(drawIntentCursor({ type: 'shape', kind: 'cylinder' })).toBe('crosshair');
     expect(drawIntentCursor({ type: 'shape', kind: 'cloud' })).toBe('crosshair');
+  });
+
+  it('gives every component kind the stacked-blocks glyph cursor', () => {
+    // One cursor for the whole category (matching the Components palette
+    // tile), so the kind doesn't change it.
+    for (const kind of ['banner', 'hero', 'avatar'] as const) {
+      expect(isInlineSvgCursor(drawIntentCursor({ type: 'component', kind }))).toBe(true);
+    }
   });
 
   it('never returns an empty or inherited ("auto") cursor', () => {
