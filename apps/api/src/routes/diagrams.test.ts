@@ -398,6 +398,54 @@ describe('handleDiagrams tab-content data-loss backstop (PUT /diagrams/:id/tabs/
     db.upsertTab.mockResolvedValue(undefined);
   });
 
+  it('413s an oversized tab that arrives without a Content-Length header', async () => {
+    // The regression this exists for. `headers.get` returns null when the
+    // header is absent and `Number(null)` is 0 — which IS finite, so an
+    // isFinite-only check measured a chunked upload as zero bytes and let it
+    // straight through. Nothing else bounds this route: index.ts's outer gate
+    // is a Content-Length check too and defers here for the rest. A Request
+    // built with a body carries no Content-Length, so this is the real shape.
+    db.getTab.mockResolvedValue(null);
+    // One structurally valid element carrying a 5 MB label: isValidTab caps
+    // element COUNT and specific typed fields, not a generic label, so this
+    // clears the schema gate and only the byte cap stands between it and D1.
+    const base = tabBody([{ id: 'e1' }]);
+    const huge = {
+      ...base,
+      elements: [{ ...base.elements[0], label: 'a'.repeat(5 * 1024 * 1024) }],
+    };
+    const res = await handleDiagrams(makeCtx('PUT', '/api/diagrams/d1/tabs/t1', { body: huge }));
+    expect(res.status).toBe(413);
+    expect(await res.json()).toEqual({ error: 'payload_too_large' });
+    expect(db.upsertTab).not.toHaveBeenCalled();
+  });
+
+  it('413s using the declared Content-Length without re-stringifying', async () => {
+    // The fast path the cap is written around: one PUT per ~600ms per editor,
+    // so a trusted header skips a 4 MB stringify + encode. A small body with a
+    // large declared length still trips it.
+    db.getTab.mockResolvedValue(null);
+    const res = await handleDiagrams(
+      makeCtx('PUT', '/api/diagrams/d1/tabs/t1', {
+        body: tabBody([{ id: 'e1' }]),
+        headers: { 'Content-Length': String(5 * 1024 * 1024) },
+      }),
+    );
+    expect(res.status).toBe(413);
+    expect(db.upsertTab).not.toHaveBeenCalled();
+  });
+
+  it('writes an ordinary tab that declares no Content-Length', async () => {
+    // The other side of the fallback: making it reachable must not start
+    // rejecting the normal case, which is every request the editor sends.
+    db.getTab.mockResolvedValue(null);
+    const res = await handleDiagrams(
+      makeCtx('PUT', '/api/diagrams/d1/tabs/t1', { body: tabBody([{ id: 'e1' }]) }),
+    );
+    expect(res.status).toBe(200);
+    expect(db.upsertTab).toHaveBeenCalled();
+  });
+
   it('409s and does NOT write when an empty body would blank a tab that has content', async () => {
     // The wipe shape: a never-loaded placeholder PUTs `{ elements: [] }`
     // over a real row, with no X-Allow-Empty header.
