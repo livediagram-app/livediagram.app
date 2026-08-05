@@ -148,6 +148,9 @@ export function EditorContextMenuHost() {
     openAssignAction,
   } = useEditorContext();
 
+  // A view-only session never gets an element context menu at all, so
+  // nothing below needs a second `isReadOnly` guard — everything past
+  // this line is running for an editor by construction.
   if (!contextMenu || contextMenu.mode === 'canvas' || isReadOnly) return null;
 
   // Selection-context-menu member resolution (right-click a multi-selection
@@ -307,7 +310,7 @@ export function EditorContextMenuHost() {
       onToggleTableZebra={setTableZebraSelected}
       onOpenNote={openNote}
       onOpenComments={openComments}
-      onAttachCommentPanel={isReadOnly ? undefined : attachCommentPanel}
+      onAttachCommentPanel={attachCommentPanel}
       onAssignAction={openAssignAction}
       selectionElements={ctxMemberIds
         .map((id) => activeTab.elements.find((e) => e.id === id))

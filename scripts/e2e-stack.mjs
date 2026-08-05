@@ -22,7 +22,6 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const API_DIR = path.join(ROOT, 'apps', 'api');
 const OUT_DIR = path.join(ROOT, 'apps', 'live', 'out');
 
 const LIVE_PORT = Number(process.env.E2E_LIVE_PORT ?? 3002);

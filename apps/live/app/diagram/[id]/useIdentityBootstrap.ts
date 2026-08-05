@@ -433,49 +433,48 @@ export function useIdentityBootstrap(opts: {
           setNameConfirmed(hasConfirmedName());
           return;
         }
-        if (fetched) {
-          // Tab seeding + name + owner fields (shared with the visitor
-          // branch above) — see seed-fetched-diagram.ts. The owner's
-          // eager first-tab fetch presents no share code.
-          await seedFetchedDiagram(self.id, fetched, null);
-          // An offline diagram (spec/76) is yours by construction — its
-          // ownerId is the local sentinel, never a participant id, so
-          // without this it would wrongly get visitor chrome (Make a
-          // copy, the owner badge row).
-          const offline = fetched.ownerId === OFFLINE_OWNER_ID;
-          setIsOwner(offline || fetched.ownerId === self.id);
-          setSessionRole('edit');
-          if (offline || fetched.ownerId === self.id) {
-            // Prefetch the share-link list so the dialog opens
-            // populated — cloud only; an offline diagram has nothing
-            // on the server to share.
-            if (!offline) {
-              apiListShareLinks(self.id, fetched.id)
-                .then(({ links, password }) => {
-                  setShareLinks(links);
-                  setSharePassword(password);
-                })
-                .catch(() => {});
-            }
-            // For an offline diagram this dispatches to the log kept in
-            // its IndexedDB record rather than the server.
-            apiListChangeLog(self.id, fetched.id, null)
-              .then((entries) => {
-                setChangeLog(entries);
-                setChangeLogLoading(false);
+        // Past the `!fetched` return above, so the diagram is loaded.
+        // Tab seeding + name + owner fields (shared with the visitor
+        // branch above) — see seed-fetched-diagram.ts. The owner's
+        // eager first-tab fetch presents no share code.
+        await seedFetchedDiagram(self.id, fetched, null);
+        // An offline diagram (spec/76) is yours by construction — its
+        // ownerId is the local sentinel, never a participant id, so
+        // without this it would wrongly get visitor chrome (Make a
+        // copy, the owner badge row).
+        const offline = fetched.ownerId === OFFLINE_OWNER_ID;
+        setIsOwner(offline || fetched.ownerId === self.id);
+        setSessionRole('edit');
+        if (offline || fetched.ownerId === self.id) {
+          // Prefetch the share-link list so the dialog opens
+          // populated — cloud only; an offline diagram has nothing
+          // on the server to share.
+          if (!offline) {
+            apiListShareLinks(self.id, fetched.id)
+              .then(({ links, password }) => {
+                setShareLinks(links);
+                setSharePassword(password);
               })
-              .catch(() => setChangeLogLoading(false));
-          } else {
-            setChangeLogLoading(false);
+              .catch(() => {});
           }
-          // Owner branch (`?d=<id>` / `/diagram/<id>`): a signed-in
-          // user is by definition the owner here and their identity is
-          // settled — skip the identity prompt entirely. Guests fall
-          // back to the legacy localStorage gate so they still get the
-          // one-time naming nudge.
-          if (!clerkUserId && !hasConfirmedName()) {
-            setTemplatePickerMode('identity');
-          }
+          // For an offline diagram this dispatches to the log kept in
+          // its IndexedDB record rather than the server.
+          apiListChangeLog(self.id, fetched.id, null)
+            .then((entries) => {
+              setChangeLog(entries);
+              setChangeLogLoading(false);
+            })
+            .catch(() => setChangeLogLoading(false));
+        } else {
+          setChangeLogLoading(false);
+        }
+        // Owner branch (`?d=<id>` / `/diagram/<id>`): a signed-in
+        // user is by definition the owner here and their identity is
+        // settled — skip the identity prompt entirely. Guests fall
+        // back to the legacy localStorage gate so they still get the
+        // one-time naming nudge.
+        if (!clerkUserId && !hasConfirmedName()) {
+          setTemplatePickerMode('identity');
         }
         setDiagramId(id);
       }
