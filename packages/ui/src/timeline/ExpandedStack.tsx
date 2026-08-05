@@ -17,6 +17,11 @@ import type { TimelineStack } from './stacking';
 import { pickRenderer } from './renderers';
 import type { TimelineRendererContext, TimelineRendererRegistry } from './types';
 
+// Slower than the first-load cascade: an expansion is a deliberate act
+// on a handful of rows, so the fan is worth seeing. A whole page at this
+// rate would drag.
+const EXPAND_STAGGER_MS = 60;
+
 export function ExpandedStack({
   stack,
   registry,
@@ -32,13 +37,22 @@ export function ExpandedStack({
 }) {
   return (
     <div className="space-y-1.5">
-      {stack.events.map((event) => (
-        <TimelineBubble
+      {stack.events.map((event, index) => (
+        // The delay restarts at zero for the run rather than continuing
+        // the page's cascade: what just arrived is these bubbles, and
+        // carrying a global offset would make a stack halfway down the
+        // feed sit still for a second before unfolding.
+        <div
           key={event.id}
-          event={event}
-          isNew={isNew?.(event.occurredAt)}
-          rendered={pickRenderer(event, registry)(event, ctx)}
-        />
+          className="tl-fan-out"
+          style={{ animationDelay: `${index * EXPAND_STAGGER_MS}ms` }}
+        >
+          <TimelineBubble
+            event={event}
+            isNew={isNew?.(event.occurredAt)}
+            rendered={pickRenderer(event, registry)(event, ctx)}
+          />
+        </div>
       ))}
       <button
         type="button"

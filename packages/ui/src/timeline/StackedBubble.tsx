@@ -17,11 +17,14 @@ export function StackedBubble({
   ctx,
   onExpand,
   isNew,
+  stagger = 0,
 }: {
   stack: TimelineStack;
   registry: TimelineRendererRegistry;
   ctx: TimelineRendererContext;
   onExpand: () => void;
+  /** ms of animation delay, so the feed cascades rather than popping. */
+  stagger?: number;
   /** True when ANY member of the run is unseen — a collapsed stack
    *  hiding the one new thing in it would defeat the marker. */
   isNew?: boolean;
@@ -35,7 +38,9 @@ export function StackedBubble({
   const deep = count >= 3;
 
   return (
-    <div className="relative mr-3">
+    // `mr-3` reserves room for the faux-card layers, which sit off the
+    // right edge; without it they'd be clipped by the column.
+    <div className="tl-fan-out-up relative mr-3" style={{ animationDelay: `${stagger}ms` }}>
       {deep && (
         <div
           aria-hidden

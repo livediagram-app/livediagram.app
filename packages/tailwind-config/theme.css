@@ -47,9 +47,100 @@
   }
 }
 
+/* Timeline motion (spec/138 §2.6).
+ *
+ * Lives in the shared theme beside the empty-state keyframes rather than
+ * in one app's globals, for the same reason those do: the components
+ * that use them ship from @livediagram/ui, so any app that renders a
+ * Timeline gets the motion by importing this file — no per-app paste.
+ *
+ * The cascade relies on CSS animations firing on MOUNT only. An element
+ * that merely re-renders keeps its end state and doesn't replay, so
+ * nothing needs to track "have I animated this already": React mounts a
+ * fresh node exactly when a bubble is genuinely new (first load, a stack
+ * expanding, an event arriving) and reuses it otherwise. */
+
+/* Individual bubbles. Starts pulled to the RIGHT with a small tilt and
+ * scale-down, then springs into place — reading as cards fanned out from
+ * the collapsed stack, whose faux-card layers sit off to the right. */
+@keyframes tl-fan-out {
+  0% {
+    opacity: 0;
+    transform: translate3d(20px, -2px, 0) rotate(3deg) scale(0.96);
+  }
+  55% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotate(0) scale(1);
+  }
+}
+
+.tl-fan-out {
+  animation: tl-fan-out 0.42s cubic-bezier(0.2, 0.85, 0.25, 1) both;
+  transform-origin: right center;
+}
+
+/* The same motion originating from BELOW, used on the collapsed stack so
+ * closing one reads as folding back down rather than as another card
+ * being dealt. */
+@keyframes tl-fan-out-up {
+  0% {
+    opacity: 0;
+    transform: translate3d(20px, 12px, 0) rotate(-3deg) scale(0.96);
+  }
+  55% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotate(0) scale(1);
+  }
+}
+
+.tl-fan-out-up {
+  animation: tl-fan-out-up 0.42s cubic-bezier(0.2, 0.85, 0.25, 1) both;
+  transform-origin: right center;
+}
+
+/* Date-pick highlight: pulses the day LABEL, not the group.
+ *
+ * Deliberately text-shadow on one line of text. A glow or border around
+ * the whole day-group reads as a heavy "selected" frame, and a transform
+ * is worse still — it promotes the group to its own compositing layer,
+ * and tearing that layer down when the animation ends makes every bubble
+ * inside briefly vanish. */
+@keyframes tl-date-pulse {
+  0%,
+  100% {
+    text-shadow: 0 0 0 rgb(14 165 233 / 0);
+  }
+  50% {
+    text-shadow: 0 0 12px rgb(14 165 233 / 0.9);
+  }
+}
+
+.tl-date-pulse {
+  animation: tl-date-pulse 0.7s ease-in-out 2;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-empty-float,
   .animate-empty-ring {
+    animation: none;
+  }
+
+  /* The cascade is decoration; the feed reads identically without it.
+   * `opacity: 1` matters — tl-fan-out uses fill-mode `both`, so simply
+   * cancelling the animation would strand the bubble at its 0% opacity. */
+  .tl-fan-out,
+  .tl-fan-out-up {
+    animation: none;
+    opacity: 1;
+  }
+
+  .tl-date-pulse {
     animation: none;
   }
 }

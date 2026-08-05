@@ -63,23 +63,13 @@ export function TimelineGroup({
           <p
             className={`whitespace-nowrap text-sm font-semibold ${
               isToday ? 'text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-300'
-            } ${pulse ? 'animate-pulse' : ''}`}
+            } ${pulse ? 'tl-date-pulse' : ''}`}
           >
             {label}
           </p>
           <p className="text-[10px] text-slate-400 dark:text-slate-500">{year}</p>
         </div>
-        <div
-          className={`space-y-1.5 rounded-lg transition-shadow duration-700 ${
-            // Box-shadow only, never a transform. Transforming the group
-            // promotes it to its own compositing layer, and tearing that
-            // layer down when the animation ends makes every bubble
-            // inside briefly vanish — which reads as a rendering bug.
-            pulse ? 'shadow-[0_0_0_3px_var(--color-brand-300)]' : ''
-          }`}
-        >
-          {children}
-        </div>
+        <div className="space-y-1.5">{children}</div>
       </div>
     </div>
   );

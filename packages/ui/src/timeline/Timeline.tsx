@@ -13,7 +13,7 @@
 // events and paging belong to the consumer, because only it knows how
 // to fetch.
 
-import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { TimelineGroup } from './TimelineGroup';
 import { TimelineBubble } from './TimelineBubble';
 import { StackedBubble } from './StackedBubble';
@@ -24,6 +24,17 @@ import { pickRenderer } from './renderers';
 import { useTimelineGrouping } from './useTimelineGrouping';
 import type { TimelineControls } from './useTimelineControls';
 import type { TimelineRendererRegistry } from './types';
+
+// Per-bubble delay in the arrival cascade — large enough that bubbles
+// read as arriving in sequence rather than all at once.
+const STAGGER_MS = 35;
+
+// …and a ceiling on the total, because the cascade is only worth
+// watching for the rows a reader can actually see. Ungapped, a 50-event
+// page would start its last bubble 1.7s in, so the bottom of the feed
+// sits blank long after the top has settled. Past the cap the remaining
+// bubbles arrive together, which is invisible: they're below the fold.
+const MAX_STAGGER_MS = 700;
 
 export type TimelineProps = {
   /** Shared with <TimelineControls>; see useTimelineControls. */
@@ -43,6 +54,10 @@ export type TimelineProps = {
   /** Events after this timestamp are marked New (spec/138 §2.5). */
   lastSeenAt?: number;
 };
+
+function staggerFor(index: number | undefined): number {
+  return Math.min((index ?? 0) * STAGGER_MS, MAX_STAGGER_MS);
+}
 
 export function Timeline({
   controls,
@@ -68,6 +83,22 @@ export function Timeline({
   const ctx = { viewerId };
   const { visibleEvents, pulseDay, clearPulse } = controls;
   const groups = useTimelineGrouping(visibleEvents);
+
+  // Every visible event's position in the whole feed, so the first-load
+  // cascade staggers by global order rather than restarting per day.
+  //
+  // Pre-computed into a map rather than incremented inside the JSX: the
+  // index has to be the same however many times React calls the render
+  // function (its development mode double-invokes), and it must not
+  // depend on the order JSX children happen to be evaluated in.
+  const fanIndex = useMemo(() => {
+    const map = new Map<string, number>();
+    let i = 0;
+    for (const group of groups) {
+      for (const event of group.events) map.set(event.id, i++);
+    }
+    return map;
+  }, [groups]);
 
   // Expanding and collapsing are the same control, so they're one
   // handler. An expand-only set meant a run you opened to check a
@@ -140,12 +171,17 @@ export function Timeline({
             if (stack.events.length === 1) {
               const event = stack.events[0]!;
               return (
-                <TimelineBubble
+                <div
                   key={event.id}
-                  event={event}
-                  isNew={isNew(event.occurredAt)}
-                  rendered={pickRenderer(event, renderers)(event, ctx)}
-                />
+                  className="tl-fan-out"
+                  style={{ animationDelay: `${staggerFor(fanIndex.get(event.id))}ms` }}
+                >
+                  <TimelineBubble
+                    event={event}
+                    isNew={isNew(event.occurredAt)}
+                    rendered={pickRenderer(event, renderers)(event, ctx)}
+                  />
+                </div>
               );
             }
             if (expanded.has(stack.key)) {
@@ -167,6 +203,7 @@ export function Timeline({
                 registry={renderers}
                 ctx={ctx}
                 isNew={stack.events.some((e) => isNew(e.occurredAt))}
+                stagger={staggerFor(fanIndex.get(stack.events[0]!.id))}
                 onExpand={() => {
                   toggleStack(stack.key);
                   onStackExpand?.();
