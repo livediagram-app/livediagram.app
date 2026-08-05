@@ -1,17 +1,43 @@
 import { describe, expect, it } from 'vitest';
 import { drawBannerMessage, drawIntentCursor, type PendingDraw } from './draw-mode';
 
-const ALL_INTENTS: PendingDraw[] = [
-  { type: 'shape', kind: 'square' },
-  { type: 'text' },
-  { type: 'sticky' },
-  { type: 'image' },
-  { type: 'arrow' },
-  { type: 'freehand' },
-  { type: 'freehand', variant: 'highlighter' },
-  { type: 'polygon' },
-  { type: 'component', kind: 'banner' },
-];
+// Every pen variant, keyed so the compiler owns the list: `variant` is an
+// optional union on the freehand intent, and adding a member to it fails
+// this Record until a sample is added below. That check is here because the
+// hand-written array underneath it drifted twice — 'shape-pen' (spec/115)
+// and 'component' both shipped with dedicated branches in BOTH exported
+// functions while the sweeps below walked straight past them.
+type FreehandVariant = NonNullable<Extract<PendingDraw, { type: 'freehand' }>['variant']>;
+const FREEHAND_VARIANTS: Record<FreehandVariant, true> = {
+  highlighter: true,
+  'shape-pen': true,
+};
+
+// One sample per discriminant. Typing it as a Record over PendingDraw['type']
+// means a NEW intent type also fails to compile until it's represented, so
+// neither axis of the union can drift out of the sweeps again.
+const INTENT_SAMPLES: Record<PendingDraw['type'], PendingDraw[]> = {
+  shape: [{ type: 'shape', kind: 'square' }],
+  text: [{ type: 'text' }],
+  sticky: [{ type: 'sticky' }],
+  image: [{ type: 'image' }],
+  arrow: [{ type: 'arrow' }],
+  polygon: [{ type: 'polygon' }],
+  // Component kinds share one branch and one label table that is already a
+  // Record<ComponentKind, string>, so the compiler covers that axis; one
+  // sample is enough here.
+  component: [{ type: 'component', kind: 'banner' }],
+  // Plain pen plus every variant.
+  freehand: [
+    { type: 'freehand' },
+    ...(Object.keys(FREEHAND_VARIANTS) as FreehandVariant[]).map((variant): PendingDraw => ({
+      type: 'freehand',
+      variant,
+    })),
+  ],
+};
+
+const ALL_INTENTS: PendingDraw[] = Object.values(INTENT_SAMPLES).flat();
 
 describe('drawBannerMessage', () => {
   it('renders the combined tap/drag copy per box intent', () => {
@@ -67,6 +93,21 @@ describe('drawBannerMessage', () => {
       'Drag to draw (release near the start to close)',
     );
     expect(drawBannerMessage({ type: 'freehand' }, true)).toBe('Drag to draw');
+  });
+
+  it('has the shape pen announce that it converts, shortened on mobile', () => {
+    // Recognition used to be a hidden toggle; it is now which pen you picked
+    // (spec/115), so the banner is where that gets said. Distinct from plain
+    // freehand on both viewports, or the two pens would read identically.
+    expect(drawBannerMessage({ type: 'freehand', variant: 'shape-pen' }, false)).toBe(
+      'Draw a rough shape — it snaps to the real one',
+    );
+    expect(drawBannerMessage({ type: 'freehand', variant: 'shape-pen' }, true)).toBe(
+      'Draw a shape',
+    );
+    expect(drawBannerMessage({ type: 'freehand', variant: 'shape-pen' }, false)).not.toBe(
+      drawBannerMessage({ type: 'freehand' }, false),
+    );
   });
 
   it('gives the highlighter variant its own copy with no close hint', () => {
@@ -146,6 +187,20 @@ describe('drawIntentCursor', () => {
     for (const kind of ['banner', 'hero', 'avatar'] as const) {
       expect(isInlineSvgCursor(drawIntentCursor({ type: 'component', kind }))).toBe(true);
     }
+  });
+
+  it('gives each pen variant its own cursor', () => {
+    // Three pens share the freehand intent and each has its own glyph — the
+    // highlighter's marker, the shape pen's nib-plus-dashed-square, and the
+    // plain nib. If any two collided, the cursor would stop telling you
+    // which pen is armed, which is the one thing it is there to do.
+    const cursors = [
+      drawIntentCursor({ type: 'freehand' }),
+      drawIntentCursor({ type: 'freehand', variant: 'highlighter' }),
+      drawIntentCursor({ type: 'freehand', variant: 'shape-pen' }),
+    ];
+    for (const c of cursors) expect(isInlineSvgCursor(c)).toBe(true);
+    expect(new Set(cursors).size).toBe(3);
   });
 
   it('never returns an empty or inherited ("auto") cursor', () => {
