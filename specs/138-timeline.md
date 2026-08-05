@@ -385,6 +385,22 @@ to track _last here_. `timeline_scope_state.last_seen_at` does:
 - A reader with **no** watermark has never opened the feed, so nothing
   is marked: greeting a long-time user with "99+" on a feature they have
   never seen would be a lie about what they missed.
+- Unread is bounded at **both** ends: past the watermark **and not in the
+  future**. The forward-dated expiry warnings from §4 are recorded at the
+  instant they come due, so they sit in the Upcoming band, and the
+  watermark is only ever written as _now_ — which made
+  `occurred_at > last_seen_at` permanently true for them. One API token
+  lapsing next week pinned the sidebar badge to "1" for seven days, two
+  pinned it to "2", and no amount of reading the feed cleared it; every
+  Upcoming bubble wore a New pill on every visit for the same reason.
+  Something scheduled is not news until it happens, so it starts counting
+  on the day it does. This is bounded by time rather than by switching to
+  the row's arrival timestamp because a coalesced event (§3.2) advances
+  its `occurred_at` on every update while its `created_at` stays at first
+  insert, and comparing arrival would stop genuinely-new activity on an
+  existing row from ever marking the scope unread again. The rule lives in
+  `countUnseen` (server) and `isNewEvent` (client), which are deliberately
+  two implementations of one sentence and are tested as such.
 
 The sidebar badge is its own endpoint (`GET /api/timeline/unread`)
 rather than a field on the feed read, because it renders on every

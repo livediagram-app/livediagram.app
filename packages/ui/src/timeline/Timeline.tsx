@@ -18,6 +18,7 @@ import { TimelineGroup } from './TimelineGroup';
 import { TimelineBubble } from './TimelineBubble';
 import { StackedBubble } from './StackedBubble';
 import { ExpandedStack } from './ExpandedStack';
+import { isNewEvent } from './newness';
 import { TimelineCalendarView } from './TimelineCalendarView';
 import { buildStacks } from './stacking';
 import { pickRenderer } from './renderers';
@@ -76,11 +77,9 @@ export function Timeline({
   focusEventId,
 }: TimelineProps) {
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
-  // A reader with no watermark has never opened the feed; marking their
-  // whole history New would be noise, so nothing is new until they've
-  // been here once.
+  // Both bounds, and why the upper one exists, live in newness.ts.
   const isNew = useCallback(
-    (occurredAt: number) => lastSeenAt !== undefined && occurredAt > lastSeenAt,
+    (occurredAt: number) => isNewEvent(occurredAt, lastSeenAt),
     [lastSeenAt],
   );
   const ctx = { viewerId };

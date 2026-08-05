@@ -303,11 +303,28 @@ export async function markScopeSeen(env: Env, scope: TimelineScopeRef): Promise<
 // a fraction of the scan. Excludes the reader's own events — a count
 // that goes up because YOU renamed something is noise, and the whole
 // point of the badge is other people's activity.
+// The `occurred_at <= now` clamp is what makes the badge clearable. Expiry
+// warnings are written FUTURE-dated on purpose — an API token expiring on the
+// 12th gets `occurred_at = <the 12th>` so it renders in the Upcoming band
+// above Today (see timeline/account-events.ts) — and they carry no actor, so
+// the `actor_id IS NULL` clause above deliberately counts them. Without the
+// clamp, `occurred_at > last_seen_at` stays true no matter how many times the
+// reader opens the feed, because marking it seen only ever writes `now`. One
+// lapsing credential pinned the badge to "1" for a week; two pinned it to "2".
+// Nothing the user could do would clear it.
+//
+// Clamping rather than switching to `created_at`: coalesced events (the "worked
+// on" row, whose `occurred_at` advances on every ON CONFLICT update while
+// `created_at` stays at first insert) must go on re-marking a scope unread when
+// there's genuinely new activity, and comparing arrival time would silence
+// exactly that. So the rule is "things that have happened, since you last
+// looked", and an Upcoming warning starts counting on the day it comes due.
 export async function countUnseen(
   env: Env,
   scope: TimelineScopeRef,
   since: number,
   cap = 99,
+  now: number = Date.now(),
 ): Promise<number> {
   const row = await env.DB.prepare(
     `SELECT COUNT(*) AS n FROM (
@@ -316,11 +333,12 @@ export async function countUnseen(
          JOIN timeline_events e ON e.id = s.event_id
         WHERE s.scope_type = ?1 AND s.scope_id = ?2
           AND e.occurred_at > ?3
+          AND e.occurred_at <= ?5
           AND (e.actor_id IS NULL OR e.actor_id <> ?2)
         LIMIT ?4
      )`,
   )
-    .bind(scope.scopeType, scope.scopeId, since, cap + 1)
+    .bind(scope.scopeType, scope.scopeId, since, cap + 1, now)
     .first<{ n: number }>();
   return row?.n ?? 0;
 }

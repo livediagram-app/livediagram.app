@@ -19,6 +19,7 @@ export { ExpandedStack } from './ExpandedStack';
 export { TimelineCalendarView } from './TimelineCalendarView';
 export { SourceTypeIcon, fallbackRenderer, pickRenderer } from './renderers';
 export { TONE_LABELS, eventTone, toneColor, toneSoftColor, type TimelineTone } from './eventTone';
+export { isNewEvent } from './newness';
 export {
   CATEGORY_LABELS,
   eventCategory,
