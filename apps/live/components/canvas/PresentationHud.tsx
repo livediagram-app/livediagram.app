@@ -163,30 +163,28 @@ export function PresentationHud({
             <path d="M6 3.5 10.5 8 6 12.5" />
           </svg>
         </HudButton>
-        <HudButton label="Presenter notes" onPress={onToggleNotes} active={notesOpen}>
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 16 16"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            aria-hidden
-          >
-            <rect x="2.5" y="2" width="11" height="12" rx="1.6" />
-            <path d="M5 5.5h6M5 8h6M5 10.5h3.5" />
-          </svg>
-          {/* A dot when there IS a script waiting, so you can see it without
-              opening anything and pressing it on a bare slide is never a dead
-              click. */}
-          {hasNotes ? (
-            <span
+        {/* Only when this slide HAS a script. A permanent button that opens an
+            empty card is a control that lies about there being something to
+            read; its absence says "nothing to say here" faster than any dot
+            could. The dot it used to carry is gone with it — the button's
+            presence IS the signal now. */}
+        {hasNotes ? (
+          <HudButton label="Presenter notes" onPress={onToggleNotes} active={notesOpen}>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
               aria-hidden
-              className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-brand-300"
-            />
-          ) : null}
-        </HudButton>
+            >
+              <rect x="2.5" y="2" width="11" height="12" rx="1.6" />
+              <path d="M5 5.5h6M5 8h6M5 10.5h3.5" />
+            </svg>
+          </HudButton>
+        ) : null}
         {/* The app's own settings glyph, not a cog. A cog's spokes around a
             central circle read as a SUN at this size — which is exactly why it
             was replaced everywhere else (see GearIcon), and doubly wrong on a

@@ -17,6 +17,7 @@
 // advancing, so reading a note never costs you a slide.
 
 import { useCallback, useEffect, useState } from 'react';
+import { announce } from '@/lib/announcer';
 
 import { slideName, type BoxedElement, type Slide, type Tab } from '@livediagram/diagram';
 
@@ -59,8 +60,13 @@ export function PresentationOverlay({
   const step = atEnd ? undefined : steps[at];
 
   // The HUD stays put while a popover is open, or it would be left orphaned.
+  // A slide with no script cannot have its notes open: advancing onto one
+  // would otherwise leave an empty card sitting over the slide.
+  const slideHasNotes = (step?.slide.notes ?? '').trim().length > 0;
+  const notesVisible = notesOpen && slideHasNotes;
+
   const idle =
-    usePointerIdle(true, notesOpen || settingsOpen || detail !== null) && !config.keepControls;
+    usePointerIdle(true, notesVisible || settingsOpen || detail !== null) && !config.keepControls;
 
   // Publish idleness so the CSS can hide the cursor with the same signal that
   // fades the HUD — the two must come back together, or a hidden pointer would
@@ -113,6 +119,61 @@ export function PresentationOverlay({
     };
   }, []);
 
+  // Say the slide out loud for a screen reader (spec/71's announcer). The deck
+  // is otherwise an entirely visual surface: driven by the arrow keys, nothing
+  // reports that anything changed.
+  //
+  // Through the shared announcer rather than a live region of our own. The
+  // canvas underneath already mounts one (CanvasLiveRegion) and it stays
+  // mounted while presenting, so a second would be two regions competing to
+  // speak over each other.
+  useEffect(() => {
+    if (atEnd) {
+      announce('End of deck');
+      return;
+    }
+    const slide = steps[at]?.slide;
+    if (!slide) return;
+    const name = (slide.name ?? '').trim();
+    announce(`Slide ${at + 1} of ${steps.length}${name ? `, ${name}` : ''}`);
+  }, [at, atEnd, steps]);
+
+  // Keep the screen awake for the run (spec/31). A slide you talk over for five
+  // minutes is a slide the laptop dims, and a presenter waking their own screen
+  // mid-sentence is a small indignity a deck should not cause.
+  //
+  // Best-effort like fullscreen above: the API is absent on some browsers and
+  // the request can be refused, and the deck runs exactly the same either way.
+  // The lock is re-taken on visibilitychange because the browser drops it
+  // whenever the tab is hidden — switching away and back would otherwise leave
+  // the rest of the talk unprotected.
+  useEffect(() => {
+    type WakeLockSentinel = { release: () => Promise<void> };
+    const nav = navigator as Navigator & {
+      wakeLock?: { request: (type: 'screen') => Promise<WakeLockSentinel> };
+    };
+    if (!nav.wakeLock) return;
+    let sentinel: WakeLockSentinel | null = null;
+    let cancelled = false;
+    const acquire = () => {
+      if (document.visibilityState !== 'visible') return;
+      void nav.wakeLock
+        ?.request('screen')
+        .then((s) => {
+          if (cancelled) void s.release().catch(() => {});
+          else sentinel = s;
+        })
+        .catch(() => {});
+    };
+    acquire();
+    document.addEventListener('visibilitychange', acquire);
+    return () => {
+      cancelled = true;
+      document.removeEventListener('visibilitychange', acquire);
+      void sentinel?.release().catch(() => {});
+    };
+  }, []);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       // Capture phase and always consumed: the editor's own shortcuts must not
@@ -152,12 +213,18 @@ export function PresentationOverlay({
       }
       if (key === 'n' || key === 'N') {
         handled();
-        setNotesOpen((v) => !v);
+        // Same rule as the button: a slide with no script has nothing to open,
+        // so the key is inert rather than raising an empty card.
+        if (!step?.slide.notes?.trim()) return;
+        setNotesOpen((v) => {
+          if (!v) track('UI', 'Opened', 'PresenterNotes');
+          return !v;
+        });
       }
     };
     window.addEventListener('keydown', onKey, true);
     return () => window.removeEventListener('keydown', onKey, true);
-  }, [at, detail, go, notesOpen, onExit, settingsOpen, steps.length]);
+  }, [at, detail, go, notesOpen, onExit, settingsOpen, step, steps.length]);
 
   const onSurfaceClick = (e: React.MouseEvent) => {
     // Something open? Dismiss it. Reading must never cost a slide.
@@ -165,7 +232,7 @@ export function PresentationOverlay({
       setDetail(null);
       return;
     }
-    if (notesOpen) {
+    if (notesVisible) {
       setNotesOpen(false);
       return;
     }
@@ -232,7 +299,7 @@ export function PresentationOverlay({
           total={steps.length}
           name={slideName(step.slide, step.index)}
           notes={step.slide.notes}
-          notesOpen={notesOpen}
+          notesOpen={notesVisible}
           onToggleNotes={() => {
             setSettingsOpen(false);
             setNotesOpen((v) => {

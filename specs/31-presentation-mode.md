@@ -126,6 +126,7 @@ Reorder tabs. It was asked for while a slide belonged to a tab and the deck was 
   - The presenter still does not see anyone ELSE's cursor or laser, as above. It is your screen on a projector.
 - **The screen is kept awake** for the duration (`navigator.wakeLock`, released on exit). A slide you talk over for five minutes is a slide the laptop dims, and a presenter waking their own screen mid-sentence is a small indignity a deck should not cause. Where the API is absent or the request is refused, the deck runs exactly as before.
 - **Advance** with `→`, `Space`, `Page Down`, or click. **Back** with `←`, `Page Up`. `Home` / `End` jump to the ends.
+- **The editor's own shortcuts are off** for as long as a deck is running. The overlay consumes the keys it uses, but everything else propagated straight through, so pressing `G` in front of a room armed a parallelogram on a canvas you cannot draw on and the next click dropped it. One derived flag (`keyboardEnabled = shortcutsEnabled && !presenting`) feeds every keyboard surface — the shortcut hook and the canvas a11y traversal — rather than the overlay swallowing keys it does not understand, so a surface added later is covered by the flag it already takes.
 - Advancing past the last slide shows an end state; one more advance exits.
 
 ### Motion
@@ -156,7 +157,9 @@ The jump button (or `G`) opens a popover listing every slide by position and nam
 
 **Announcing the slide.** The HUD carries an `aria-live="polite"` region reading the position and name on every change ("Slide 7 of 23, Architecture"). The deck is otherwise an entirely visual surface, and a presenter driving it with a screen reader gets nothing back from a slide changing silently.
 
-**Notes open in a popover** from the notes button (or `N`), anchored under it, sized so the slide stays readable behind. Click again, `Esc`, or advancing the slide closes it. The button carries a **dot when the current slide has notes**, so you can see there is a script waiting without opening anything, and pressing it on a slide with none is not a dead click.
+**Notes open in a popover** from the notes button (or `N`), anchored under it, sized so the slide stays readable behind. Click again, `Esc`, or advancing the slide closes it.
+
+**The button is only there when the slide HAS notes**, and `N` is inert without them. It began as a permanent button carrying a dot when a script was waiting; a control that opens an empty card lies about there being something to read, and its ABSENCE says "nothing to say here" faster than any dot could. The presence of the button is the signal now. Advancing onto a slide with no script also closes the popover, so an empty card can never be left sitting over a slide.
 
 On demand is the whole point: nothing about your script is on screen until you ask for it. It is worth being clear-eyed that the room sees the popover while it is open, because there is one screen and you are sharing it. That is the deliberate trade for not building a second-window presenter console, which stays out of scope.
 

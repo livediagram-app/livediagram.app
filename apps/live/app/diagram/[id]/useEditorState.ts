@@ -991,6 +991,14 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     offset: { x: number; y: number };
   } | null>(null);
   const presenting = slideDeck.presentingAt !== null;
+  // Every editor keyboard surface is off while a deck is running (spec/31).
+  // The overlay owns the keyboard then — it consumes the keys it uses, but
+  // everything else fell straight through to the editor, so pressing G in
+  // front of a room armed a parallelogram on a canvas you cannot draw on.
+  // Gated here rather than by swallowing keys in the overlay: this is the
+  // switch the shortcut hooks already have, and it covers a surface added
+  // later without anybody remembering to.
+  const keyboardEnabled = shortcutsEnabled && !presenting;
   useEffect(() => {
     if (presenting) {
       // Capture once, on the way in. Re-capturing per slide would remember the
@@ -2164,7 +2172,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // traversal while the canvas surface is focused, plus SR live-region
   // announcements on selection changes. See useCanvasA11y.
   useCanvasA11y({
-    enabled: shortcutsEnabled,
+    enabled: keyboardEnabled,
     elements: activeTab.elements,
     selectedId,
     multiSelectedIds,
@@ -2385,7 +2393,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     zenMode: panelLayout.zenMode,
     onToggleZen: toggleZenMode,
     onOpenSearch: () => dialogs.setSearchOpen(true),
-    enabled: shortcutsEnabled,
+    enabled: keyboardEnabled,
   });
 
   return {
