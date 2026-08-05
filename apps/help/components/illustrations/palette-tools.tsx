@@ -1,9 +1,8 @@
-// Palette "Tools"-tab illustrations (spec/55): the Tools tab tiles, freehand
-// drawing with the Pencil, shape recognition, images and the image picker,
-// sticky notes, and tables. Composed only from the shared primitives so the
-// house style holds. (Data / chart tiles are handled in a sibling file.)
+// Palette illustrations (spec/55): the category picker, freehand drawing with
+// the Pencil, shape recognition, images and the image picker, sticky notes,
+// and tables. Composed only from the shared primitives so the house style
+// holds. (Data / chart tiles are handled in a sibling file.)
 
-import type { ReactElement } from 'react';
 import {
   Scene,
   Shape,
@@ -13,124 +12,102 @@ import {
   Panel,
   Dialog,
   Tabs,
-  Tile,
   Label,
   TextBar,
 } from './primitives';
 
-// --- Tile glyphs -------------------------------------------------------------
-// Small line icons drawn at a tile's centre (the tile translates to its middle).
-
-function TextGlyph() {
-  return (
-    <g className="stroke-brand-500" strokeWidth={2} fill="none" strokeLinecap="round">
-      <path d="M-7 -6 h14 M0 -6 v12" />
-    </g>
-  );
-}
-
-function StickyGlyph() {
-  return (
-    <g>
-      <path
-        d="M-7 -7 h14 v9 l-5 5 h-9 Z"
-        className="fill-amber-200 stroke-amber-400"
-        strokeWidth={1.6}
-        strokeLinejoin="round"
-      />
-      <path
-        d="M7 2 l-5 5 v-5 Z"
-        className="fill-amber-100 stroke-amber-400"
-        strokeWidth={1.6}
-        strokeLinejoin="round"
-      />
-    </g>
-  );
-}
-
-// A small note-marker circle for the Write group's Annotation tile.
-function AnnotationGlyph() {
-  return (
-    <g>
-      <circle r={6} fill="none" stroke="currentColor" strokeWidth={1.6} className="text-current" />
-      <circle r={1.4} className="fill-current" />
-    </g>
-  );
-}
-
-// The Write group's tiles — the group the accordion shows open by default.
-const WRITE_TILES: [string, () => ReactElement][] = [
-  ['Text', TextGlyph],
-  ['Note', StickyGlyph],
-  ['Annotation', AnnotationGlyph],
+// The category picker's four bands and the categories in each, in the order
+// PALETTE_CATEGORIES declares them. The picker replaced the two-tab palette
+// this file used to draw: there is no Tools tab any more, and a figure showing
+// one under an article that opens "There is no longer a Tools tab" was the
+// single most misleading picture in the help centre.
+const CATEGORY_BANDS: [string, string[]][] = [
+  ['COMMON', ['Shapes', 'Write', 'Draw']],
+  ['STRUCTURE', ['Build', 'Components', 'Devices']],
+  ['DECORATE', ['Icons', 'Stickers', 'Tech', 'Media']],
+  ['DYNAMIC', ['Data', 'Behaviour', 'Collaborate']],
 ];
 
-// The collapsed accordion headers below the open Write group.
-const CLOSED_GROUPS = ['Draw', 'Structure', 'Blocks', 'People & media', 'Data'];
-
-/** One accordion header row: uppercase group label + a chevron (down when
- *  open, right when collapsed), matching the editor's Tools-tab groups. */
-function AccordionHeader({
+/** One category chip: the picker's tile, reduced to its label. The real tile
+ *  carries an icon above the label, but thirteen invented glyphs would say
+ *  less about the picker than its shape does. */
+function CategoryChip({
   x,
   y,
-  w,
   label,
-  open,
+  active = false,
 }: {
   x: number;
   y: number;
-  w: number;
   label: string;
-  open?: boolean;
+  active?: boolean;
 }) {
-  const cx = x + w - 8;
-  const cy = y + 1;
   return (
     <g>
-      <Label x={x} y={y + 4} size={8} tone="muted">
-        {label.toUpperCase()}
-      </Label>
-      <path
-        d={open ? `M${cx - 3} ${cy - 1.5} l3 3 l3 -3` : `M${cx - 1.5} ${cy - 3} l3 3 l-3 3`}
-        fill="none"
-        strokeWidth={1.5}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="stroke-slate-400"
+      <rect
+        x={x}
+        y={y}
+        width={64}
+        height={22}
+        rx={6}
+        className={active ? 'fill-brand-500 stroke-brand-600' : 'fill-slate-50 stroke-slate-200'}
+        strokeWidth={1.4}
       />
+      <Label
+        x={x + 32}
+        y={y + 12}
+        anchor="middle"
+        size={9}
+        weight={600}
+        tone={active ? 'onAccent' : 'body'}
+      >
+        {label}
+      </Label>
     </g>
   );
 }
 
-/** The palette open on the Tools tab: grouped accordions with Write open
- *  (Text / Note / Annotation tiles) and the other groups collapsed to
- *  chevroned headers, exactly what you see when you switch tabs. */
-export function ToolsTab() {
+/** The palette's category picker: Favourites across the top, then the four
+ *  bands the thirteen categories fall into. */
+export function CategoryPicker() {
   const px = 48;
-  const pw = 204;
-  const gridY = 106;
-  const closedY = 172;
-  const rowStep = 20;
+  let y = 78;
+  const rows: React.ReactNode[] = [];
+  for (const [band, categories] of CATEGORY_BANDS) {
+    rows.push(
+      <Label key={band} x={px} y={y} size={8} weight={700} tone="muted">
+        {band}
+      </Label>,
+    );
+    categories.forEach((label, i) => {
+      rows.push(
+        <CategoryChip
+          key={label}
+          x={px + (i % 3) * 70}
+          y={y + 10 + Math.floor(i / 3) * 28}
+          label={label}
+          active={label === 'Build'}
+        />,
+      );
+    });
+    y += 10 + Math.ceil(categories.length / 3) * 28 + 12;
+  }
   return (
-    <Scene w={300} h={310} bg="plain">
-      <Panel x={36} y={20} w={228} h={274} title="PALETTE">
-        <Tabs x={48} y={54} items={['Shapes', 'Tools']} active={1} tabW={88} h={22} />
-        <AccordionHeader x={px} y={90} w={pw} label="Write" open />
-        {WRITE_TILES.map(([label, Glyph], i) => (
-          <Tile
-            key={label}
-            x={px + 6 + i * 66}
-            y={gridY}
-            size={36}
-            active={label === 'Text'}
-            label={label}
-          >
-            <Glyph />
-          </Tile>
-        ))}
-        {CLOSED_GROUPS.map((label, i) => (
-          <AccordionHeader key={label} x={px} y={closedY + i * rowStep} w={pw} label={label} />
-        ))}
+    <Scene w={300} h={330} bg="plain">
+      <Panel x={36} y={20} w={228} h={294} title="PALETTE">
+        <rect
+          x={px}
+          y={50}
+          width={204}
+          height={20}
+          rx={6}
+          className="fill-brand-50 stroke-brand-200"
+          strokeWidth={1.4}
+        />
+        <Label x={px + 102} y={61} anchor="middle" size={9} weight={600} tone="accent">
+          ★ Favourites
+        </Label>
+        {rows}
       </Panel>
     </Scene>
   );

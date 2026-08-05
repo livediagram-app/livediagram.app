@@ -61,6 +61,25 @@ function articles(): { path: string; source: string }[] {
   return out;
 }
 
+// Every string the editor could print, as one lowercase haystack. Deliberately
+// cruder than uiLabels(): the check below asks only "does this name exist at
+// all", so a control named in a tooltip, a JSX text node or a catalogue entry
+// counts as evidence. A narrower corpus would flag correct articles.
+function editorSource(): string {
+  const skip = new Set(['node_modules', '.next', '.next-dev', 'out', 'dist', '.turbo']);
+  let all = '';
+  const walk = (dir: string) => {
+    for (const entry of readdirSync(dir)) {
+      if (skip.has(entry)) continue;
+      const full = `${dir}/${entry}`;
+      if (statSync(full).isDirectory()) walk(full);
+      else if (/\.tsx?$/.test(entry)) all += readFileSync(full, 'utf8');
+    }
+  };
+  for (const root of ['apps/live', 'apps/mcp', 'packages']) walk(`${ROOT}/${root}`);
+  return all.toLowerCase();
+}
+
 describe('bold control names in articles match the editor', () => {
   const labels = uiLabels();
   const pages = articles();
@@ -91,5 +110,63 @@ describe('bold control names in articles match the editor', () => {
       }
     }
     expect([...new Set(wrong)]).toEqual([]);
+  });
+});
+
+// The sibling failure the case check cannot see: a bold name that is not a
+// control at all. "Pick up the comment tool", "**Arrowhead type** chooses
+// which ends carry a head", "**Hide participant cursors**" — three articles
+// sent readers hunting for something the editor has never printed, which is
+// worse than a misspelling because there is nothing to find.
+//
+// Scoped to sentences that make a CLAIM about a named control (an imperative
+// in front of it, or a control noun behind it), because that is where a name
+// is load-bearing. Ordinary bold emphasis is left alone: "**Cut is copy plus
+// delete**" is a sentence, not a button, and a check that flagged it would be
+// a check people delete.
+const CONTROL_CLAIMS = [
+  // "press **Present**", "open **Tools › Session**"
+  /(?:press|choose|pick|tap|click|open|select|toggle|flip|switch to|use)\s+\*\*([A-Z][^*]{2,28})\*\*/g,
+  // "**Auto-advance** setting", "**Reactions** row"
+  /\*\*([A-Z][^*]{2,28})\*\*\s+(?:button|switch|toggle|setting|checkbox|menu|dialog|panel|tab|category|slider|field|row|section|option|control|pill|chip|badge|preset|mode)/g,
+  // "with **Hide cursors** on"
+  /(?:with|the)\s+\*\*([A-Z][^*]{2,28})\*\*\s+(?:on|off|ticked|checked|enabled|disabled)/g,
+  // "**Arrowhead size** offers Small, Medium, Large"
+  /\*\*([A-Z][^*]{2,28})\*\*\s+(?:chooses|controls|sets|picks|offers|turns|opens|toggles|shows|hides)\b/g,
+];
+
+describe('bold control names in articles exist in the editor', () => {
+  const source = editorSource();
+  const pages = articles();
+
+  it('reads both sides (guard against this test going blind)', () => {
+    expect(source.length).toBeGreaterThan(1_000_000);
+    expect(pages.length).toBeGreaterThan(100);
+  });
+
+  it('names no control the editor never prints', () => {
+    const phantom: string[] = [];
+    for (const { path, source: page } of pages) {
+      for (const re of CONTROL_CLAIMS) {
+        for (const m of page.matchAll(re)) {
+          // Whitespace normalised first: prose wraps, so a two-line
+          // **Open in a new tab** is one name with a newline in the middle.
+          const claim = m[1]!
+            .replace(/\s+/g, ' ')
+            .trim()
+            .replace(/[.,:]$/, '');
+          // A menu PATH is checked a segment at a time: "Tools › Session" is
+          // two real names and never one string in the source.
+          const parts = claim.split(/\s*[›>→]\s*/);
+          const missing = parts.filter((part) => !source.includes(part.toLowerCase()));
+          if (missing.length > 0) {
+            phantom.push(
+              `${path.replace(`${ROOT}/apps/help/app/`, '')}: **${claim}** (no "${missing[0]}" in the editor)`,
+            );
+          }
+        }
+      }
+    }
+    expect([...new Set(phantom)]).toEqual([]);
   });
 });

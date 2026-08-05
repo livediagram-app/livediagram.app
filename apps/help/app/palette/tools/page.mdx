@@ -1,7 +1,7 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { ToolsTab } from '@/components/illustrations/palette-tools';
+import { CategoryPicker } from '@/components/illustrations/palette-tools';
 
 export const metadata = helpMetadata({
   title: 'Tools',
@@ -12,7 +12,7 @@ export const metadata = helpMetadata({
 
 <ArticleLayout
   title="Where each tool lives"
-  description="A map of the palette's categories, now that the Tools tab has been split into Write, Draw, Components, Data, Behaviour, and Media."
+  description="A map of the palette's categories, now that the Tools tab has been split into Build, Write, Draw, Components, Data, Behaviour, Collaborate, and Media."
   categoryTitle="Palette"
   categorySlug="palette"
   subArticles={getSubArticles("tools")}
@@ -20,10 +20,10 @@ export const metadata = helpMetadata({
 
 There is no longer a **Tools** tab. Every group it held is now a palette **category** of its own, one click away in the category picker rather than two, so this page is a map of where each tool went.
 
-The categories are grouped into four bands: **Common** (Shapes, Write, Draw), **Structure** (Build, Components, Devices), **Decorate** (Icons, Stickers, Technology, Media), and **Dynamic** (Data, Behaviour, Collaborate), with your **Favourites** across the top.
+The categories are grouped into four bands: **Common** (Shapes, Write, Draw), **Structure** (Build, Components, Devices), **Decorate** (Icons, Stickers, Tech, Media), and **Dynamic** (Data, Behaviour, Collaborate), with your **Favourites** across the top.
 
-<Figure caption="The palette's category picker, grouped into Common, Decorate, and Dynamic bands.">
-  <ToolsTab />
+<Figure caption="The category picker: Favourites across the top, then the four bands the categories fall into.">
+  <CategoryPicker />
 </Figure>
 
 ## Where each tool lives
@@ -34,13 +34,15 @@ The categories are grouped into four bands: **Common** (Shapes, Write, Draw), **
 
 **Draw** holds the gesture tools: **Freehand** sketches a stroke and keeps it exactly as drawn, the **Shape Pen** turns a rough sketch into a real shape, **Polygon** places straight-edged outlines point by point, and **Arrow** drops a plain connector you position by hand. See [Drawing and Sketch](/help/palette/tools/drawing/). (**Frame** moved to Build, and the **Highlighter** became a canvas mode — see [Highlighter](/help/selection-modes/highlighter/).)
 
-**Components** holds the ready-made pieces: **Code Block**, **Checklist**, **Entity**, **Link Card**, and the themed composites (Banner, Callout, Stat row, Process, Hero, Header). (**Timeline** moved to Build.)
+**Components** holds the ready-made pieces: **Code Block**, **Checklist**, **Entity**, and the themed composites (Banner, Callout, Stat row, Process, Hero, Header). (**Timeline** moved to Build.)
 
 **Data** holds the charts and meters. See [Data and Chart Elements](/help/palette/tools/data-elements/). (**Table** moved to Build.)
 
-**Behaviour** holds the elements that _do_ something when somebody interacts with them: Selection Mode buttons, Portals, Session buttons, Reveal zones, and Pickers. See [Behaviour Elements](/help/palette/behaviour/).
+**Behaviour** holds the elements that _do_ something when somebody interacts with them, browsed in five groups: **Selection Mode** buttons, **Run the room** (Reveal zone, Done check, Picker), **Get around** (Portal, Chair, Link card), **Session** buttons for the timer, vote and poll, and **Reactions** (the five reaction pads). See [Behaviour Elements](/help/palette/behaviour/).
 
-**Media** covers pictures and figures: **Image** places an uploaded picture and **Avatar** places a circular one.
+**Collaborate** holds the elements that ask the room something: the Comment panel, estimate cards, a temperature check, an idea box, an agenda, a decision record and a roll call. See [Collaborate Elements](/help/palette/collaborate/).
+
+**Media** covers pictures, figures and other people's pages: **Image**, **Avatar**, and the [embeds](/help/palette/embed-elements/) for YouTube, Vimeo, Loom, Figma, Google Docs and any website.
 
 Each behaves like any other element once placed: select, restyle, group, and move it freely.
 
@@ -56,7 +58,7 @@ Several tools have their own walkthroughs, listed below and linked here:
 - [Checklists](/help/palette/tools/checklists/) covers the card of checkable to-do rows you tick on the canvas.
 - [Portals](/help/palette/tools/portals/) covers linking two portals and travelling between them, including across tabs.
 - [Data and Chart Elements](/help/palette/tools/data-elements/) covers the **Data** category: Pie Chart, Bar Chart, Line Chart, Progress Bar, Progress Ring (a donut meter), and Rating (stars).
-- [Behaviour Elements](/help/palette/behaviour/) covers the **Behaviour** category: Selection Mode buttons, Portals, Session buttons, Reveal zones, and Pickers.
+- [Behaviour Elements](/help/palette/behaviour/) covers the **Behaviour** category: Selection Mode buttons, Reveal zones, Done checks, Pickers, Portals, Chairs, Link cards, Session buttons, and Reaction pads.
 
 Arrows are deep enough to deserve their own guide: see [Arrows](/help/palette/arrows/).
 

@@ -20,17 +20,25 @@ export const metadata = helpMetadata({
 
 **Favourites** is the palette's first — and default — category: one grid holding the tiles you actually use, so your everyday vocabulary isn't spread over Shapes, Tools, Data, Components, and Devices. Each favourite behaves exactly like the same tile in its home category — tap to add, drag to place, and it previews the tab theme the same way.
 
-Out of the box it starts with the nine most useful controls: Square, Circle, Diamond, Text, Pencil, Arrow, Sticky note, Frame, and Image.
+Out of the box it starts with twelve: Square, Circle, Diamond, Text, Arrow, Frame, Sticky note, Image, Shape Pen, Table, Timer, and Comment panel.
+
+The Favourites panel also carries the palette's **search box**, and it searches across every category at once, the icon, sticker and technology catalogues included. That is where you tend to meet a tool you didn't know existed.
 
 <Figure caption="The Edit Favourites dialog: search or pick a category, then tap tiles to toggle them — red removes, green adds.">
   <FavouritesCatalogue />
 </Figure>
 
+## Starring what you just found
+
+**Every row in the palette carries a star at its right edge**, and pressing it favourites that tile there and then. It is the same star the Explorer uses for a favourite diagram, and it toggles the same list the dialog below edits.
+
+It matters most on a search result, which is where you meet something new: before, keeping a tool you had just discovered meant finding it a second time through a dialog. The star is always visible rather than appearing on hover, since a control you have to already know about is one nobody finds (and on a touchscreen there is no hover at all). Pressing it never also drops the element on the canvas.
+
 ## Editing your favourites
 
 Tap **Edit** — the footer band at the bottom of the Favourites panel — to open the **Edit Favourites** dialog:
 
-- **Search** filters the controls by name as you type, and the **category pills** (Shapes, Tools, Data, Components, Devices, Icons, Technology) switch which catalogue you're browsing — so individual icons and technology marks can be favourites too.
+- **Search** filters the controls by name as you type, and the **category pills** switch which catalogue you're browsing. They are the palette's own categories: Shapes, Write, Draw, Build, Components, Devices, Icons, Stickers, Tech, Media, Data, Behaviour and Collaborate, so individual icons, stickers and technology marks can be favourites too.
 - Every control shows as a tile with a corner badge: a **red minus** on your current favourites, a **green plus** on everything else. **Tap the tile to toggle it.**
 - Changes apply immediately — on a desktop screen you can watch the Favourites grid update behind the dialog — and **Done** simply closes it.
 
@@ -38,6 +46,8 @@ If it feels familiar, that's deliberate — it works like customising Control Ce
 
 ## Where it's saved
 
-Your selection is remembered **in this browser** (it isn't synced to your account yet), and there's no limit on how many controls you keep. The searchable catalogues — Icons and Technology — aren't in the pool; use their own categories' search instead.
+Your selection is remembered **in this browser** (it isn't synced to your account yet), and there's no limit on how many controls you keep.
+
+The open-ended catalogues (Icons, Stickers and Tech) load as you browse, so their pills can look empty for a moment before the grid fills. They are still fully favouritable: a single icon or technology mark is remembered by its own id, and it renders in your grid like any other tile.
 
 </ArticleLayout>
