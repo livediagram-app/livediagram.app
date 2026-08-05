@@ -40,8 +40,7 @@ import { iconDropSide, type DragState } from '@/lib/canvas';
 import { elementHostsAtPoint } from '@/lib/dom-hit-test';
 import type { EditorDragDeps, EditorDragApi } from './useEditorDrag.types';
 import { applyCollisionAvoidance } from './arrow-avoidance-apply';
-import { resolveArrowEndpointDrag } from './arrow-endpoint-resolve';
-import { resolveArrowControlFrame, resolveArrowLabelFrame } from './arrow-control-resolve';
+import { applyArrowDragMove } from './arrow-drag-apply';
 import {
   resolveBoxedMove,
   resolveBoxedResize,
@@ -437,124 +436,27 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
         return;
       }
 
-      if (drag.kind === 'arrow-curve') {
-        // Snap + offset math live in resolveArrowControlFrame; the base
-        // is the chord midpoint captured at gesture start.
-        const pointIndex = drag.pointIndex;
-        const { offsetDx, offsetDy, guides } = resolveArrowControlFrame({
-          els: activeTab.elements,
-          arrowId: drag.arrowId,
-          baseX: drag.startMidX,
-          baseY: drag.startMidY,
-          grabDx: drag.grabDx,
-          grabDy: drag.grabDy,
-          dx,
-          dy,
-          pointIndex,
-        });
-        scheduleGuides((depsRef.current.alignmentGuidesRef.current ?? true) ? guides : []);
-        tick((els) =>
-          els.map((el) => {
-            if (el.id !== drag.arrowId || el.type !== 'arrow') return el;
-            // Multi-bend: write the dragged control point's slot; otherwise
-            // the legacy single bow.
-            if (pointIndex != null && el.curvePoints) {
-              const next = el.curvePoints.slice();
-              if (!next[pointIndex]) return el;
-              next[pointIndex] = { dx: offsetDx, dy: offsetDy };
-              return { ...el, curvePoints: next };
-            }
-            return { ...el, curveOffset: { dx: offsetDx, dy: offsetDy } };
-          }),
-        );
-        return;
-      }
-
-      if (drag.kind === 'arrow-elbow') {
-        // Same shape as arrow-curve, but based at the auto-elbow
-        // position captured at gesture start.
-        const { offsetDx, offsetDy, guides } = resolveArrowControlFrame({
-          els: activeTab.elements,
-          arrowId: drag.arrowId,
-          baseX: drag.startBaseX,
-          baseY: drag.startBaseY,
-          grabDx: drag.grabDx,
-          grabDy: drag.grabDy,
-          dx,
-          dy,
-          pointIndex: null,
-        });
-        scheduleGuides((depsRef.current.alignmentGuidesRef.current ?? true) ? guides : []);
-        tick((els) =>
-          els.map((el) =>
-            el.id === drag.arrowId && el.type === 'arrow'
-              ? { ...el, elbowOffset: { dx: offsetDx, dy: offsetDy } }
-              : el,
-          ),
-        );
-        return;
-      }
-
-      if (drag.kind === 'arrow-label') {
-        // Projection lives in resolveArrowLabelFrame; null = arrow gone.
-        const labelOffset = resolveArrowLabelFrame({
-          els: activeTab.elements,
-          arrowId: drag.arrowId,
-          startAnchorX: drag.startAnchorX,
-          startAnchorY: drag.startAnchorY,
-          dx,
-          dy,
-        });
-        if (!labelOffset) return;
-        tick((els) =>
-          els.map((el) =>
-            el.id === drag.arrowId && el.type === 'arrow' ? { ...el, labelOffset } : el,
-          ),
-        );
-        return;
-      }
-
-      if (drag.kind === 'arrow-translate') {
-        // Shift both free endpoints by the same canvas delta from
-        // their captured start positions. No anchor / angle snap:
-        // the user explicitly chose a fully-floating arrow.
-        tick((els) =>
-          els.map((el) => {
-            if (el.id !== drag.arrowId || el.type !== 'arrow') return el;
-            return {
-              ...el,
-              from: { kind: 'free', x: drag.startFromX + dx, y: drag.startFromY + dy },
-              to: { kind: 'free', x: drag.startToX + dx, y: drag.startToY + dy },
-            };
-          }),
-        );
-        return;
-      }
-
-      // arrow-endpoint: the snap ladder (element anchor > arrow line >
-      // angle lock + alignment) lives in resolveArrowEndpointDrag; this
-      // handler just feeds it the frame and applies the result.
-      const cursor = { x: drag.startCanvasX + dx, y: drag.startCanvasY + dy };
-      const { endpoint, guides, snapTargets, arrowConnected } = resolveArrowEndpointDrag({
-        cursor,
-        elements: depsRef.current.activeTab.elements,
-        arrowId: drag.arrowId,
-        end: drag.end,
-        reposition: drag.reposition === true,
+      // Every remaining kind is an arrow-handle drag (curve / elbow /
+      // label / translate, and arrow-endpoint as the fall-through), all
+      // of which apply the same way: delta in, resolved geometry out
+      // through `tick`. See arrow-drag-apply.ts.
+      applyArrowDragMove({
+        drag,
+        dx,
+        dy,
         noSnap,
+        elements: activeTab.elements,
         guidesOn: depsRef.current.alignmentGuidesRef.current ?? true,
+        tick,
+        scheduleGuides,
+        scheduleSnapTargets,
+        onArrowConnected: () => {
+          // Once per endpoint drag, not once per move tick.
+          if (arrowConnectTrackedRef.current) return;
+          arrowConnectTrackedRef.current = true;
+          track('Element', 'Linked', 'ArrowPoint');
+        },
       });
-      scheduleSnapTargets(snapTargets);
-      scheduleGuides(guides);
-      if (arrowConnected && !arrowConnectTrackedRef.current) {
-        arrowConnectTrackedRef.current = true;
-        track('Element', 'Linked', 'ArrowPoint');
-      }
-      tick((els) =>
-        els.map((el) =>
-          el.id === drag.arrowId && el.type === 'arrow' ? { ...el, [drag.end]: endpoint } : el,
-        ),
-      );
     };
     // Shift-chaining (spec/09 quick-connect): landing a NEW arrow's endpoint
     // with Shift held immediately starts ANOTHER arrow from the same source
