@@ -246,6 +246,16 @@ export const SELF_PAINTING_SHAPES = new Set<string>([
   'icon',
   // A sticker paints its own plate, shadow and content (spec/116).
   'sticker',
+  // Progress bar / ring: ProgressView draws the track and the fill itself with
+  // its own hardcoded arc stroke, and never reads the element's strokeWidth or
+  // strokeStyle. They were the drift this list was created to stop, recurring:
+  // added to isSelfDrawingShape and not here, so the Border accordion kept
+  // offering Strength and Pattern on them. Not merely inert — the pick was
+  // committed, so it wrote to the element, autosaved, appended a change-log
+  // entry and broadcast an op to every peer in the room, for no visual change
+  // at any zoom.
+  'progress-bar',
+  'progress-ring',
   'timeline-rail',
   'rating',
   'pie-chart',

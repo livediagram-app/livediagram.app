@@ -19,12 +19,16 @@ import {
   BORDER_RADIUS_PX,
   BORDER_STROKE_PX,
   DEFAULT_BORDER_STROKE,
+  SELF_PAINTING_SHAPES,
+  isSelfDrawingShape,
   supportsBorderControls,
   type BorderRadius,
   type BorderStroke,
   type BorderStyle,
   type Element,
+  type ShapeKind,
 } from './index';
+import { SHAPE_KINDS } from './validate';
 import { tableKeys } from './table-keys';
 
 const shape = (kind: string) => ({ type: 'shape', shape: kind }) as unknown as Element;
@@ -39,6 +43,29 @@ describe('supportsBorderControls', () => {
     expect(supportsBorderControls(shape('square'))).toBe(true);
     expect(supportsBorderControls(ofType('freehand'))).toBe(true);
     expect(supportsBorderControls(ofType('table'))).toBe(true);
+  });
+
+  // THE cross-list invariant, and the reason a whole class of this bug exists.
+  //
+  // Two lists describe "this shape draws its own body": isSelfDrawingShape
+  // (which suppresses markers, label editing and morphing) and
+  // SELF_PAINTING_SHAPES (which suppresses the border CONTROLS). They must
+  // agree, and they silently didn't — progress-bar / progress-ring were added
+  // to the first and not the second, so the Border accordion went on offering
+  // Strength and Pattern on a shape whose renderer has a hardcoded arc stroke
+  // and never reads either field. The picks were committed, autosaved,
+  // change-logged and broadcast to every peer, for no visual change.
+  //
+  // Asserted over the real ShapeKind vocabulary rather than a hand-written
+  // list, so the next self-drawing kind cannot land half-registered: the
+  // border.test suite previously covered only square / actor / text / arrow /
+  // image / freehand / table, no member of the self-drawing family at all.
+  it('offers no border controls for any shape that draws its own body', () => {
+    const selfDrawing = ([...SHAPE_KINDS] as ShapeKind[]).filter(isSelfDrawingShape);
+    // Guard against the predicate itself going empty and making this vacuous.
+    expect(selfDrawing.length).toBeGreaterThan(5);
+    expect(selfDrawing.filter((k) => !SELF_PAINTING_SHAPES.has(k))).toEqual([]);
+    expect(selfDrawing.filter((k) => supportsBorderControls(shape(k)))).toEqual([]);
   });
 
   it('excludes the actor (a stick figure with no enclosing outline)', () => {
