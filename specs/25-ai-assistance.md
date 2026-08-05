@@ -117,6 +117,24 @@ graph and the server lays it out on request. (`mergeAiElements` in `editor-page-
 retains a general clean/replace merge; the Clean path spreads the AI patch over each
 existing element, preserving AI-invisible properties and positions.)
 
+**Clean never changes what an element IS.** `type`, and `shape` for a shape, are pinned
+from the existing element and cannot be overwritten by the patch — they are not on the list
+of things Clean tidies. This is load-bearing, not tidiness: the client coerces any shape
+outside its accept-set to `square` so a node the model _invented_ off-vocabulary still
+renders rather than being dropped, and Clean asks the model to return every element with
+its real `shape` forwarded. Unpinned, one Clean flattened every composite in the tab —
+checklists, code blocks, charts, lanes, entities, progress rings, 30 of the 51 ShapeKinds —
+and autosaved, change-logged and broadcast the result. The coercion is right for an
+invented element and has no business touching one the user already had.
+
+Correspondingly, everything the worker's prompt asks the model to produce must survive
+that accept-set. The two lists are one vocabulary in two workspaces, and the client is
+deliberately the wider of the two (models emit unprompted kinds and synonyms), so only
+prompt-minus-client is a defect. A test reads the prompt's own source and feeds each kind
+through ingestion rather than restating the list, since the second hand-written copy is
+what drifted: `checklist` was requested by name, with its `checklistItems` schema, and
+squared on arrival.
+
 Error responses follow the standard worker envelope, `{ "error": "<token>" }`. The route emits
 exactly four:
 

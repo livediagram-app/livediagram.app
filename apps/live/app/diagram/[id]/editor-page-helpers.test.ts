@@ -387,6 +387,37 @@ describe('mergeAiElements (spec/25 AI apply)', () => {
     expect(byId(out, 'a')?.label).toBe('New');
   });
 
+  it('clean: never changes what an element IS, only how it looks', () => {
+    // The destructive path. Clean asks the model to return ALL elements with
+    // the same ids, and the client coerces any shape outside AI_SHAPE_KINDS to
+    // 'square' so a NEW off-vocabulary node still renders. Spread over the
+    // original that rewrote the stored kind, so one Clean flattened every
+    // composite in the tab — checklists, code blocks, charts, lanes, entities,
+    // progress rings, 30 of the 51 ShapeKinds — then autosaved, change-logged
+    // and broadcast the result.
+    const existing = [sq('a', { shape: 'checklist', label: 'Retro' })];
+    const squashed = sq('a', { shape: 'square', label: 'Retro' });
+    const out = mergeAiElements(existing, [squashed], 'clean');
+    const a = byId(out, 'a') as ShapeElement;
+    expect(a.shape).toBe('checklist');
+  });
+
+  it('clean: keeps the element type when the model returns a different one', () => {
+    // Same rule, other half of identity: `type` is not on Clean's list either.
+    const existing = [sq('a', { label: 'Box' })];
+    const retyped = { id: 'a', type: 'text', label: 'Box' } as unknown as Element;
+    const out = mergeAiElements(existing, [retyped], 'clean');
+    expect(byId(out, 'a')?.type).toBe('shape');
+  });
+
+  it('generate: still replaces in place, identity included', () => {
+    // The rule is Clean-specific. Generate owns the elements it produced, so
+    // pinning identity there would stop it correcting its own output.
+    const existing = [sq('a', { shape: 'square' })];
+    const out = mergeAiElements(existing, [sq('a', { shape: 'diamond' })], 'generate');
+    expect((byId(out, 'a') as ShapeElement).shape).toBe('diamond');
+  });
+
   it('clean: preserves AI-invisible props (e.g. fillColor) by spreading the patch', () => {
     const existing = [sq('a', { label: 'Box', fillColor: '#abcdef' })];
     // The AI returns the element WITHOUT fillColor (it never sees colours).

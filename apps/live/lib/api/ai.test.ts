@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { describe, it, expect } from 'vitest';
 import { extractElementsFromBuffer } from './ai';
 
@@ -66,5 +68,49 @@ describe('extractElementsFromBuffer shape coercion', () => {
     );
     expect(out).toHaveLength(2);
     expect(out[1]!.id).toBe('b');
+  });
+});
+
+// The prompt (apps/api) and the client's accept-set are two halves of one
+// vocabulary: the worker tells the model which ShapeKinds to use, and the
+// client coerces anything outside AI_SHAPE_KINDS to a plain square so an
+// invented node still renders. They must agree in one direction — everything
+// the prompt asks for has to survive ingestion — and they silently didn't:
+// "checklist" was requested by name, with its checklistItems schema, and
+// squared on arrival, so the rows rode along on an element whose renderer is
+// gated on the kind and never appeared.
+//
+// Read from the worker's source rather than restated here, because a second
+// hand-written copy is the thing that drifted. The set-difference direction
+// matters: the client is deliberately a superset (models emit unprompted kinds
+// and synonyms), so only prompt-minus-client is a defect.
+describe('AI shape vocabulary agrees with the server prompt', () => {
+  const promptSource = readFileSync(
+    fileURLToPath(new URL('../../../api/src/ai-prompt.ts', import.meta.url)),
+    'utf8',
+  );
+
+  // The `ShapeKind — pick semantically` block lists one quoted kind per line.
+  const promptKinds = (() => {
+    const start = promptSource.indexOf('ShapeKind — pick semantically');
+    expect(start).toBeGreaterThan(-1);
+    const block = promptSource.slice(start, promptSource.indexOf('\n\n', start));
+    return [...block.matchAll(/^\s+"([a-z0-9-]+)"/gm)].map((m) => m[1]!);
+  })();
+
+  it('found the prompt block', () => {
+    // Guards the extraction itself: if the prompt is reformatted this test
+    // must fail loudly rather than pass over an empty list.
+    expect(promptKinds.length).toBeGreaterThan(10);
+    expect(promptKinds).toContain('square');
+  });
+
+  it('keeps every kind the prompt asks for, rather than squaring it', () => {
+    const squared = promptKinds.filter((kind) => {
+      const buf = `{"elements":[{"id":"x","type":"shape","shape":"${kind}","x":0,"y":0,"width":140,"height":60}]}`;
+      const [el] = extractElementsFromBuffer(buf);
+      return (el as { shape?: string } | undefined)?.shape !== kind;
+    });
+    expect(squared).toEqual([]);
   });
 });

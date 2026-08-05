@@ -31,6 +31,10 @@ export async function apiGetCapabilities(): Promise<CapabilitiesResponse> {
 // deliberately excluded: without their extra fields they'd render empty, so
 // they collapse to a plain square. Keep in sync with packages/diagram
 // ShapeKind (the simple, self-contained subset).
+//
+// That exclusion is about elements the model INVENTS. It must never reach an
+// element the user already had — see mergeAiElements, which pins `type` and
+// `shape` on the clean path for exactly that reason.
 const AI_SHAPE_KINDS = new Set([
   'square',
   'circle',
@@ -53,6 +57,13 @@ const AI_SHAPE_KINDS = new Set([
   'phone',
   'tablet',
   'smartwatch',
+  // The prompt asks the model for this one by name, with its checklistItems
+  // schema, so coercing it to a square threw away the exact composite it had
+  // been told to produce — and ChecklistView is gated on the kind, so the rows
+  // rode along on the element and rendered nowhere. The "SUPERSET of what the
+  // server prompt lists" claim above was false for precisely this entry; a test
+  // now holds it.
+  'checklist',
 ]);
 
 // Fallback size for an AI shape that omitted / mis-typed width or height, so

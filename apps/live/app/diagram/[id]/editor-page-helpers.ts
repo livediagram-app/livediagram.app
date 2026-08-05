@@ -263,11 +263,30 @@ export function mergeAiElements(
   const modById = new Map(modifications.map((e) => [e.id, e]));
   // 'clean' preserves AI-invisible props by spreading the patch over the
   // existing element; 'generate' replaces the element in place.
+  //
+  // Clean must never change what an element IS, only how it looks. Its own
+  // prompt and spec/25 scope it to label spelling, sizes, positions, styles,
+  // borderRadius and textSize — `type` and `shape` are not on that list, and
+  // letting the patch carry them was destructive rather than merely wrong.
+  //
+  // The path: the client coerces any shape outside AI_SHAPE_KINDS to 'square'
+  // so a NEW off-vocabulary node still renders instead of being dropped. But
+  // clean asks the model to "Return ALL elements ... (same IDs)", and the
+  // server forwards each existing element's real shape, so the model echoes
+  // kinds the set doesn't hold — 30 of the 51 ShapeKinds, every composite from
+  // checklist and code-block to the charts, lanes, entities and progress
+  // rings. Spread over the original, `shape: 'square'` overwrote the stored
+  // kind: one "Clean up" flattened those elements, autosaved, change-logged
+  // and broadcast the result to every peer. The coercion is right for an
+  // element the model invented and has no business touching one the user
+  // already had.
+  const identityOf = (el: Element) =>
+    el.type === 'shape' ? { type: el.type, shape: el.shape } : { type: el.type };
   const merge = (el: Element): Element =>
     !modById.has(el.id)
       ? el
       : mode === 'clean'
-        ? ({ ...el, ...(modById.get(el.id) as Element) } as Element)
+        ? ({ ...el, ...(modById.get(el.id) as Element), ...identityOf(el) } as Element)
         : (modById.get(el.id) as Element);
 
   // When Generate produced a whole new connected diagram (≥3 linked nodes),
