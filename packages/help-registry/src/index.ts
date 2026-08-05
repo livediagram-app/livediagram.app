@@ -801,9 +801,10 @@ export const articles: Article[] = [
   {
     slug: 'slide-deck',
     title: 'Slide Deck',
-    description: 'Build slides from your diagram and present them full screen, one at a time.',
+    description:
+      'Build slides from your diagram and present them full screen, with notes, transitions and auto-advance.',
     keywords:
-      'presentation presenting present presentation mode slideshow slide show slides slide deck talk demo walkthrough narrate projector screen share screenshare speaker notes presenter notes full screen fullscreen next previous advance start deck reorder',
+      'presentation presenting present presentation mode slideshow slide show slides slide deck talk demo walkthrough narrate projector screen share screenshare speaker notes presenter notes script full screen fullscreen next previous advance start deck reorder hide slide hidden skip duplicate slide rename slide transition fade slide transition speed auto advance autoadvance timer loop looping kiosk unattended click to advance hide pointer cursor keep controls visible show position counter fill screen actual size zoom presenter settings hud controls',
     category: 'Selection Modes',
     categorySlug: 'selection-modes',
   },

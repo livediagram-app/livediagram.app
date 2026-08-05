@@ -28,6 +28,7 @@ import {
 } from '@livediagram/diagram';
 
 import { track } from '@/lib/telemetry';
+import { useSlideThumbnails } from '@/hooks/ui/useSlideThumbnails';
 import {
   DEFAULT_PRESENTATION_CONFIG,
   loadPresentationConfig,
@@ -132,8 +133,11 @@ export function useSlideDeck({
 
   const openSlide = deck.slides.find((s) => s.id === openSlideId) ?? null;
 
-  // Slides whose tab still exists, in deck order — what Start will run.
+  // Slides whose tab still exists and are not hidden, in deck order — what
+  // Present will run.
   const runnable = useMemo(() => presentableSlides(deck, tabs), [deck, tabs]);
+  // Row previews, from the same headless renderer the Layers panel uses.
+  const thumbs = useSlideThumbnails(deck, tabs);
 
   // --- Editing verbs --------------------------------------------------------
 
@@ -339,6 +343,7 @@ export function useSlideDeck({
     // to be handed the selection a second time when the hook already has it.
     currentSelectionIds: useMemo(() => [...selectionIds], [selectionIds]),
     runnable,
+    thumbs,
     newSlideFromSelection,
     addSelectionToSlide,
     removeFromSlide,

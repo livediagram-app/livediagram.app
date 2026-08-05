@@ -5,7 +5,7 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Slide Deck',
   description:
-    'Build a slide deck from your diagram in livediagram: pick the elements each slide shows, write presenter notes, reorder the deck, then present it full screen one slide at a time.',
+    'Build a slide deck from your diagram in livediagram: pick the elements each slide shows, write presenter notes, hide slides from the run, reorder the deck, then present it full screen with transitions, auto-advance and looping.',
   path: '/help/selection-modes/slide-deck/',
 });
 
@@ -40,8 +40,9 @@ Picking the tool does **not** start presenting. It opens the **Slide Deck** pane
 </Step>
 <Step n={2}>On the canvas, select what you want on the first slide.</Step>
 <Step n={3}>
-  Press **New slide** in the panel. The slide takes the tab you are on, and the button counts your
-  selection back to you so you can see what is about to go on it.
+  Press the **New slide** button at the bottom of the panel. It counts your selection back to you —
+  "New slide from 3 elements" — so you can see what is about to go on it, and the slide takes the
+  tab you are on.
 </Step>
 <Step n={4}>
   Move to the next thing you want to talk about — another cluster, another tab — select it, and
@@ -50,50 +51,65 @@ Picking the tool does **not** start presenting. It opens the **Slide Deck** pane
 
 **Arrows come along on their own.** An arrow with both ends on the slide is included automatically, so you can build a slide by dragging a box round four shapes without hand-picking the connectors between them.
 
-Each row in the list shows the slide's position, its name, which tab it draws from, and how many elements are on it. **Click a row** and the editor switches to that slide's tab and selects its elements, which is how you check a slide without presenting it.
+Each row shows the slide's position, its name, which tab it draws from, and how many elements are on it, plus a marker when it has notes or is hidden. **A row does one thing: press it to open that slide.** The editor switches to that slide's tab and selects its elements, which is how you check a slide without presenting it. Everything you can _do_ to a slide lives in its `…` menu instead, so a panel the width of the palette never has to carry five controls per row.
 
-## Changing what is on a slide
+## The slide menu
 
-A slide's membership is editable for the life of the deck, not just at the moment you made it. With a slide open in the panel:
+Press the `…` at the right of a row and you get the same shape of menu the Explorer's rows and the tab context menu use: a row of quick actions across the top, then two labelled categories you can open.
 
-- **Add selection** puts the currently selected elements onto it.
-- **Remove selection** takes them off again. The elements stay on the canvas — only the slide changes.
+The quick actions are **Rename**, notes (**Add notes**, or **Edit notes** once there are some, lit when the slide has a script waiting), **Duplicate** — a copy with the same elements, straight after it, for a "same picture, different point" pair — and **Delete**, pinned to the right on its own.
 
-Both are offered only while you are on **that slide's own tab**. A slide holds one tab's elements, so adding from a different tab isn't something to refuse politely; it is something that cannot be expressed.
+**Deleting asks first.** A confirmation opens beside the menu button, because the elements survive a deletion but the arrangement does not, and the arrangement is what you spent the time on. Either way the elements stay exactly where they are on the canvas.
 
-## Naming, ordering and tidying
+### Selection: what is on the slide
 
-- **Rename** a slide by double-clicking its row and typing over the name. Unnamed slides read as "Slide 1", "Slide 2", and so on.
-- **Reorder** by dragging rows up and down the list. This works on touch as well as with a mouse.
-- **Duplicate** copies a slide, with the same elements, straight after it — handy for a "same picture, different point" pair.
-- **Delete** removes the slide from the deck and leaves its elements exactly where they are.
+A slide's membership is editable for the life of the deck, not just at the moment you made it. Open the menu's **Selection** category and it tells you what the two buttons will act on and how many elements the slide holds now:
+
+- **Add** puts the elements you have selected onto the slide.
+- **Remove** takes them off again. Only the slide changes; nothing leaves the canvas.
+
+Both are offered only while you are on **that slide's own tab**, and the category says so when you are not. A slide holds one tab's elements, so adding from a different tab isn't something to refuse politely; it is something that cannot be expressed.
+
+### Visibility: hiding a slide from the run
+
+The menu's **Visibility** category carries a single switch: **Hide** the slide, or **Show** it again.
+
+Hiding is a different idea from deleting. It is for the slide you might want next week, the backup detail for a question you may not get, the section you cut for time — the slide stays in the deck, it just doesn't run. A hidden slide shows in the panel with its name struck through and an eye marker beside it, so you can always see it is there.
+
+Hidden slides are skipped everywhere at once: the count on the **Present** button, the `7 / 23` in the presenter's display, and what advancing lands on all leave them out, so nothing can disagree about how long the deck is.
+
+## Ordering the deck
+
+**Drag a row** up or down the list to move it. The list does not reshuffle while you drag: a caret shows where the row will land, and the move happens when you let go — a list that reorders live moves the very row you were aiming at. It works on touch as well as with a mouse.
 
 ## Presenter notes
 
-Under the list, the open slide gets a **Presenter notes** box: what you mean to _say_ over this slide. They belong to the slide, not to anything on it, which matters because the same box on two slides usually wants two different sentences said about it.
+Open a slide's `…` menu and press **Add notes**, and a notes box opens under the list: what you mean to _say_ over this slide. Press **Done** to put it away again — it is behind the menu rather than always on screen so the panel never grows a text area you did not ask for.
 
-Notes are plain text — it is a script you read off, not something anybody needs to bold — and during the presentation they stay hidden until you ask for them.
+Notes belong to the slide, not to anything on it, which matters because the same box on two slides usually wants two different sentences said about it. They are plain text — it is a script you read off, not something anybody needs to bold — and during the presentation they stay hidden until you ask for them.
 
-## Starting
+## Presenting
 
-Press **Start** at the bottom of the panel and the deck opens full screen at slide 1, with every part of the editor hidden. Slides whose tab hasn't been opened yet are loaded first, so the deck never stalls halfway through.
+Press **Present** at the bottom of the panel and the deck opens full screen at slide 1, with every part of the editor hidden. The button carries a **badge with the number of slides that will run**, so you know the length of the deck before you start it — hidden slides are not counted. Slides whose tab hasn't been opened yet are loaded first, so the deck never stalls halfway through.
 
 - **One slide at a time.** Only that slide's elements are drawn; advancing replaces the picture rather than adding to it.
 - **The backdrop is the slide's tab's** — its background colour, pattern and theme.
 - **The framing fits the slide's elements**, with a little padding. If a slide contains exactly one **frame**, the frame's bounds are used instead, which is how you author precise framing without learning anything new.
-- The first slide arrives as a card over the darkened editor, and slides travel left as you advance and right as you go back, so the motion always says which way through the deck you are going. If your device is set to reduce motion, you get a cross-fade instead.
+- The first slide arrives as a card over the darkened editor. Then **the whole screen travels**, backdrop and all: the slide you are leaving goes out to the left while the next one comes in from the right, mirrored when you go back, so the motion always says which way through the deck you are going. If your device is set to reduce motion, you get a cross-fade instead.
 
 ## Moving through the deck
 
-| Key                                   | Does                         |
-| ------------------------------------- | ---------------------------- |
-| `→`, `Space`, `Page Down`, or a click | Next slide                   |
-| `←` or `Page Up`                      | Previous slide               |
-| `Home` / `End`                        | Jump to the first or last    |
-| `N`                                   | Show or hide presenter notes |
-| `Esc`                                 | Leave the presentation       |
+| Key                                            | Does                         |
+| ---------------------------------------------- | ---------------------------- |
+| `→`, `Space`, `Enter`, `Page Down`, or a click | Next slide                   |
+| `←` or `Page Up`                               | Previous slide               |
+| `Home` / `End`                                 | Jump to the first or last    |
+| `N`                                            | Show or hide presenter notes |
+| `Esc`                                          | Leave the presentation       |
 
-Past the last slide you get an end card; one more advance closes the deck. Leaving puts you back on the tab, the view and the panels you started from.
+There are **previous** and **next** buttons in the display at the top right too, because a presenter at a projector often has a mouse and no keyboard within reach, and "click anywhere to advance" neither announces itself nor goes backwards.
+
+Past the last slide you get an end card; one more advance closes the deck. Leaving puts you back on the tab, the view and the panels you started from — worth having, since the last slide usually left the camera zoomed right in on one box.
 
 ## Read anything, change nothing
 
@@ -105,15 +121,51 @@ Live data still _reports_ itself: a timer somebody started before you began pres
 
 Because click-to-advance and click-to-inspect are the same gesture, the target decides: **a click on empty space advances the slide, a click on an element opens its popover**, and a click outside an open popover just dismisses it rather than skipping ahead.
 
-## The HUD
+## The presenter's controls
 
-Top-right sits a small heads-up display carrying the position (`7 / 23`), the slide's name, a notes button and a close button. It **fades away when the pointer sits still and comes back the moment you move it**, so a still screen is clean for the room while every control stays one twitch of the mouse away.
+Top-right sits a small strip of controls carrying, in order:
+
+- the position (`7 / 23`) and the slide's name,
+- **previous** and **next** buttons,
+- a notes button,
+- a settings cog,
+- and a close button.
+
+It **fades away when the pointer sits still and comes back the moment you move it**, so a still screen is clean for the room while every control stays one twitch of the mouse away. It stays put while a popover is open, so nothing is ever left stranded over the slide.
 
 The notes button opens your presenter notes in a popover under it, sized so the slide stays readable behind. It carries a dot whenever the current slide has notes, so you can tell there is a script waiting without opening anything. Press it again, press `Esc`, or advance the slide to close it.
 
 <Note>
   The notes popover is on the screen you are sharing, so the room sees it while it is open. That is
   the trade for notes being one press away rather than living on a second display.
+</Note>
+
+## Presenter settings
+
+The cog opens nine settings in three groups. They are meant to be decisions you can make in one glance and undo in one more, because this popover opens on a projector in front of a room.
+
+**Transition**
+
+- **Slide** (the default, the whole screen travelling), **Fade** (one slide dissolving into the next), or **None** (a straight cut).
+- A **speed** — **Quick**, **Normal** or **Slow** — which disappears when the transition is **None** rather than sitting there greyed out.
+
+**Playback**
+
+- **Auto-advance** — **Off**, or every 5, 10, 30 or 60 seconds. It pauses while a popover is open, so something you are reading is never swept away by a timer you had forgotten about.
+- **Click to advance** — turn it off if you gesture at the screen with the mouse and would rather drive from the keys and buttons alone.
+- **Loop the deck** — after the last slide, start again instead of ending. With auto-advance, that is the whole "leave it running on the wall" setup.
+
+**Display**
+
+- **Fill screen** (a small slide is blown up) or **Actual size** (never past 100%), for authors whose slides are already the size they meant.
+- **Show position** — turn the counter and slide name off for a clean screen.
+- **Keep controls visible** — stop the strip fading when the pointer rests.
+- **Hide the pointer** — a still cursor left on a projector is a distraction. It goes and comes back with the controls, so a hidden pointer is never a trap.
+
+<Note>
+  These settings are **yours and this device's**, like the eraser's brush or the laser's pen. They
+  are how you drive a deck on this machine, not part of the diagram, so a colleague presenting the
+  same deck gets their own.
 </Note>
 
 ## Presenting is yours alone

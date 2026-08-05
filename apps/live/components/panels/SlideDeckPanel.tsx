@@ -53,6 +53,7 @@ function SlideRow({
   isOpen,
   isDragging,
   renaming,
+  thumb,
   onOpen,
   onRename,
   onRenameDone,
@@ -68,6 +69,8 @@ function SlideRow({
   isOpen: boolean;
   isDragging: boolean;
   renaming: boolean;
+  /** Preview markup + viewBox, absent for an empty slide or a missing tab. */
+  thumb: { markup: string; viewBox: string } | undefined;
   onOpen: () => void;
   onRename: (name: string) => void;
   onRenameDone: () => void;
@@ -130,6 +133,24 @@ function SlideRow({
           </span>
         </Tooltip>
       ) : null}
+      {/* The picture of the slide. A deck row without one is a list of names,
+          and seeing the shape of the talk is the whole point of a sorter. It
+          dims with the row when the slide is hidden. */}
+      <span
+        className={`flex h-8 w-11 shrink-0 items-center justify-center overflow-hidden rounded border border-slate-200 bg-white transition dark:border-slate-700 dark:bg-slate-950 ${
+          slide.hidden ? 'opacity-40' : ''
+        }`}
+      >
+        {thumb ? (
+          <svg
+            viewBox={thumb.viewBox}
+            preserveAspectRatio="xMidYMid meet"
+            className="h-full w-full"
+            aria-hidden
+            dangerouslySetInnerHTML={{ __html: thumb.markup }}
+          />
+        ) : null}
+      </span>
       {renaming ? (
         <input
           ref={inputRef}
@@ -200,6 +221,7 @@ export function SlideDeckPanel({
     selectionCount,
     currentSelectionIds,
     runnable,
+    thumbs,
     newSlideFromSelection,
     addSelectionToSlide,
     removeFromSlide,
@@ -329,6 +351,7 @@ export function SlideDeckPanel({
                   isOpen={slide.id === openSlideId}
                   isDragging={draggingId === slide.id && moving}
                   renaming={renamingId === slide.id}
+                  thumb={thumbs.get(slide.id)}
                   onOpen={() => openSlideInEditor(slide.id)}
                   onRename={(name) => renameSlide(slide.id, name)}
                   onRenameDone={() => setRenamingId(null)}
