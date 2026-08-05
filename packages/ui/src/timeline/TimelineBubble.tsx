@@ -16,11 +16,14 @@ export function TimelineBubble({
   event,
   rendered,
   isNew,
+  focused,
 }: {
   event: TimelineEvent;
   rendered: TimelineBubbleRender;
   /** Landed since the reader last opened the feed (spec/138 §2.5). */
   isNew?: boolean;
+  /** The deep-link target: ringed so the reader can see where they landed. */
+  focused?: boolean;
 }) {
   const label = rendered.label ?? event.title;
   // `undefined` means "renderer didn't say", so fall back to the stored
@@ -50,7 +53,13 @@ export function TimelineBubble({
             }
           : undefined
       }
+      // The scroll target for a deep link. An attribute rather than a
+      // ref because the row a link points at usually isn't mounted when
+      // the link is followed.
+      data-timeline-event={event.id}
       className={`group relative flex w-full items-stretch overflow-hidden rounded-lg transition ${
+        focused ? 'ring-2 ring-brand-500 ring-offset-1 dark:ring-offset-slate-900 ' : ''
+      }${
         interactive
           ? 'cursor-pointer hover:brightness-[0.97] dark:hover:brightness-125'
           : // Faded when there's nowhere to go. A row that looks

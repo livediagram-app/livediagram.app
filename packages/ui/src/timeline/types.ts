@@ -58,6 +58,6 @@ export type TimelineRenderer = (
 
 export type TimelineRendererRegistry = Record<string, TimelineRenderer>;
 
-// List, or the month grid. There is no 'favourites' mode: starring is
-// out of scope for v1 (spec/138 non-goals).
-export type TimelineMode = 'list' | 'calendar';
+// List, month grid, or a single week. There is no 'favourites' mode:
+// starring is out of scope for v1 (spec/138 non-goals).
+export type TimelineMode = 'list' | 'calendar' | 'week';

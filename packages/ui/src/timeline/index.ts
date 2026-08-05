@@ -23,15 +23,20 @@ export { buildStacks, bucketFor, stackLabel, type TimelineStack } from './stacki
 export {
   dateKey,
   groupByDay,
+  timeLabel,
   useTimelineGrouping,
   type TimelineDayGroup,
 } from './useTimelineGrouping';
 export {
   buildMonthCells,
+  buildWeekCells,
   formatMonth,
+  formatWeek,
   monthKeyOf,
   nearestPopulatedMonth,
   shiftMonth,
+  shiftWeek,
+  weekStartOf,
   type MonthCell,
 } from './monthCells';
 export { SOURCE_TYPE_LABELS, sourceTypeIconPath, sourceTypeLabel } from './sourceTypeMeta';

@@ -234,9 +234,15 @@ functions over the entry list, tested directly.
 
 ### 2.2 Calendar mode
 
-A segmented control in the header switches **List** ↔ **Calendar**,
-each wearing its own glyph so the pair reads without parsing both
-labels. Calendar renders a month grid. Each day cell carries one
+A segmented control in the header switches **List** / **Week** /
+**Calendar**, each wearing its own glyph so the trio reads without
+parsing three labels (and collapsing to icons below `sm:`, where three
+labels plus Filter and Help would wrap the header row).
+
+**Week** is the same grid over seven days, with taller cells. Its
+chevrons page unconditionally, unlike the month's: a week is a small
+enough step that skipping empty ones would hide the shape of a quiet
+stretch, which is often the thing being looked at. Calendar renders a month grid. Each day cell carries one
 coloured dot **per tone** present that day, with a count above one —
 so a month view answers "when did something get deleted?" at a glance,
 which "diagram vs team" would not. Dots sit in a fixed severity order
@@ -265,6 +271,13 @@ under a header that already has one reads as two unrelated toolbars.
 The two halves share one `useTimelineControls()` state, so a filter
 chip and the list it filters can never disagree.
 
+- **Activity by: Everyone / Other people.** The sharpest filter on the
+  feed, so it leads the popover. On an active account your own edits
+  drown everyone else's, and "what did I miss" is the question the whole
+  surface exists to answer. System events (an expiring token) survive
+  it: nobody did those, and they're exactly what the filter is looking
+  for. It began as an "Others" button in the header — the wrong place,
+  and a word that doesn't say others-what.
 - **Source-type chips** — Diagrams, Teams, Account, derived from the
   source types actually present so a new one gets a chip for free.
   Toggling excludes that type from the feed. The chips are brand-
@@ -281,6 +294,10 @@ chip and the list it filters can never disagree.
   makes the bubbles visibly blink.
 - **Show more** appends the next page when the read returns a cursor.
   Page size 50, capped server-side at 200.
+
+**The Filter dot means "this feed is narrowed", whichever control did
+it** — a reader wondering why the page looks short needs one signal, not
+one per filter.
 
 **There is no Refresh button.** The feed loads on mount, and the worker
 seeds a first-time scope off that same read (§5), so a manual refresh
@@ -306,6 +323,79 @@ popover is clipped no matter its z-index.
 - **Empty (all filtered out)**: "No events match these filters", with a
   Clear filters action. Distinct copy from the new-user case, so the
   user isn't told they have no history when they do.
+
+### 2.5 Unread
+
+The premise is "what happened since I was last here", so something has
+to track _last here_. `timeline_scope_state.last_seen_at` does:
+
+- The read returns the watermark as it stood **before** it, so the
+  response can mark what is new to this reader, and then moves it
+  forward. The client renders from the value it was handed rather than
+  re-deriving one, because a second read would report nothing new.
+- It moves on the **first page only**. Stamping while someone pages
+  backwards through history would mark the whole feed seen halfway down
+  it.
+- And only **once per 60-second visit window**. Without that, a client
+  that fetches twice on mount — React's development double-effect does
+  exactly this — wipes the markers before anyone has read them.
+- Events past the watermark wear a **New** pill. A collapsed stack wears
+  one if _any_ member is unseen, or the marker would hide inside the
+  thing that collapsed it.
+- A reader with **no** watermark has never opened the feed, so nothing
+  is marked: greeting a long-time user with "99+" on a feature they have
+  never seen would be a lie about what they missed.
+
+The sidebar badge is its own endpoint (`GET /api/timeline/unread`)
+rather than a field on the feed read, because it renders on every
+Explorer section and must not require loading a feed nobody is looking
+at. It counts **only other people's events** — a number that goes up
+because _you_ renamed something is noise — and caps at 99.
+
+Only the `user` scope carries a watermark. A shared team feed has no
+single "here" to have been last at.
+
+### 2.6 Motion
+
+Bubbles fan in rather than appearing at once: each starts pulled to the
+right with a small tilt and scale-down, then springs into place,
+staggered 35ms by position. The motion originates from the right
+because that is where a collapsed stack's faux-card layers sit, so it
+reads as cards dealt from the deck. The collapsed stack uses the mirror
+motion, arriving from below, so folding a run reads as closing.
+
+Three details:
+
+- **No "have I animated this?" bookkeeping.** CSS keyframes fire on
+  mount only, so a bubble that re-renders keeps its end state. React
+  mounts a fresh node exactly when one is genuinely new.
+- **The stagger index is precomputed** into a map rather than
+  incremented inside the JSX, so it is identical however many times
+  React calls the render function and doesn't depend on child
+  evaluation order. It is **capped at 700ms** total: ungapped, a
+  50-event page starts its last bubble 1.7s in and the bottom sits
+  blank long after the top has settled.
+- **Expansion staggers at 60ms and restarts from zero** for the run.
+  What just arrived is those bubbles; carrying the page's global offset
+  would make a stack halfway down sit still before unfolding.
+
+Keyframes live in the shared Tailwind theme beside the empty-state ones,
+so any app rendering a Timeline gets the motion without a per-app paste.
+`prefers-reduced-motion` cancels all of it, pinning opacity to 1 —
+fill-mode `both` would otherwise strand bubbles invisible.
+
+### 2.7 Deep links
+
+`/explorer/timeline#event=<id>` scrolls to that event and rings it. The
+target may sit inside a collapsed stack, so those stacks are forced
+open — otherwise the link lands the reader on a generic "4 events"
+bubble with no idea which one they came for. That is **derived** from
+the data rather than pushed into the expanded set from an effect, so it
+costs no extra render; the reader can still collapse it afterwards.
+
+The hash is read once at module scope, like the landing-vs-nav
+telemetry: it describes how the page was _opened_, and a later in-app
+navigation should not resurrect an old target.
 
 ## 3. Data model
 
@@ -391,18 +481,36 @@ One row per scope. `backfilled_at` gates the one-shot seeding in §5;
 `last_refreshed_at` backs the "Last refreshed …" line and the
 stale-read threshold.
 
-### 3.4 What the schema leaves open
+### 3.4 What the scope model bought
 
-The join table and the free-text `scope_type` are the whole forward
-plan, and they cost one extra table today:
+The join table and the free-text `scope_type` were the forward plan, and
+two of the three have since shipped:
 
-- **A per-diagram timeline** is `scope_type = 'diagram'`. The Activity
-  Panel's element diffs would stay where they are; the diagram scope
-  would carry the _diagram-level_ events spec/12 explicitly lists as
-  out of scope for its V1 (rename, share toggle, theme change).
-- **A team activity feed** is `scope_type = 'team'`, and every emit
-  that already resolves a team audience (§4.1) would attach it
-  alongside the per-member `user` scopes.
+- **A per-diagram timeline** (`scope_type = 'diagram'`) — every diagram
+  keeps its own history, surfaced from the row menu as **History**. The
+  Activity Panel's element diffs stay where they are; this carries the
+  _diagram-level_ events spec/12 explicitly lists as out of scope for
+  its V1 (rename, share toggle, theme change). Its read gate defers to
+  the diagram's OWN gate rather than re-deriving one, which is what lets
+  a share-link visitor read the history of a diagram they can open but
+  which sits in nobody's `user` scope.
+- **A team activity feed** (`scope_type = 'team'`), rendered on the team
+  pane. This wasn't only a feature: per-member scopes are written when
+  an event happens, so a member who joined in March had nothing from
+  February. The team scope carries the whole history and any joined
+  member may read it. Per-member scopes are still written — they are
+  what makes a personal feed one indexed scan rather than a union across
+  every team you belong to.
+
+Read authorisation is explicit per scope type with an unrecognised type
+**refused**, so a scope added later is inert until somebody writes its
+rule. A missing diagram is a 403 rather than a 404, so the endpoint
+can't be used to probe ids for existence. A team scope needs a _joined_
+membership: an invite grants no access to team content, and a feed is
+content.
+
+Still open:
+
 - **Favourites** would be a fourth table keyed by
   `(scope_type, scope_id, event_id)` — per viewing scope, not on the
   membership row, so a future composite read can't bleed one scope's
@@ -589,6 +697,22 @@ Teams are Clerk-only, so none of these events ever reach a guest scope.
 | `share_link_expiring` | the share-expiry cron (spec/34)        | Future-dated                                           |
 | `theme_saved`         | custom theme created (spec/44)         |                                                        |
 | `image_uploaded`      | image upload (spec/19)                 | Coalesced per day like editing                         |
+
+**"Opened by a visitor" hangs off the TAB read, not the diagram GET.**
+The diagram endpoint is hit by link previews and polling; fetching tab
+content means a person is actually looking at the canvas. It is also the
+one event a stranger can trigger at will, so it coalesces per visitor
+per day — otherwise anyone holding a link could flood an owner's feed by
+refreshing.
+
+**Invite-link toggles go to admins only.** Whether a join credential is
+live is an administrative fact, and telling every member one exists is a
+nudge to go and find it.
+
+**Anything whose row is about to vanish reads its name first** and omits
+the id from the snapshot, so a folder / theme / team tombstone can't
+link at something that no longer exists — the same structural guard the
+diagram tombstone uses.
 
 Future-dated events are why the day rail renders future groups above
 Today with a distinct tint. They are the feed's only forward-looking

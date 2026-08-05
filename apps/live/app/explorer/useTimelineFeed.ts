@@ -18,7 +18,11 @@ import {
   type TimelineEvent,
   type TimelineMode,
 } from '@livediagram/ui';
-import { TIMELINE_PAGE_SIZE, type TimelineScopeRef } from '@livediagram/api-schema';
+import {
+  TIMELINE_PAGE_MAX,
+  TIMELINE_PAGE_SIZE,
+  type TimelineScopeRef,
+} from '@livediagram/api-schema';
 import { apiListTimeline } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
 
@@ -33,6 +37,12 @@ import { track } from '@/lib/telemetry';
 const ENTRY_PATH = typeof window === 'undefined' ? '' : window.location.pathname;
 const ARRIVED_ON_TIMELINE = /^\/explorer(\/timeline)?\/?$/.test(ENTRY_PATH);
 
+// `#event=<id>` on the Timeline URL. Read once at module scope for the
+// same reason ENTRY_PATH is: the hash is what the page was OPENED with,
+// and a later in-app navigation shouldn't resurrect an old target.
+const ENTRY_HASH = typeof window === 'undefined' ? '' : window.location.hash;
+const FOCUS_EVENT_ID = /^#event=(.+)$/.exec(ENTRY_HASH)?.[1];
+
 export type TimelineFeed = {
   events: TimelineEvent[];
   controls: TimelineControlsState;
@@ -42,6 +52,8 @@ export type TimelineFeed = {
   loadMore: () => void;
   /** Watermark from the first read; events past it render as New. */
   lastSeenAt?: number;
+  /** Deep-link target from the URL hash, if the page was opened with one. */
+  focusEventId?: string;
 };
 
 export function useTimelineFeed(
@@ -118,6 +130,38 @@ export function useTimelineFeed(
     track('Timeline', 'Opened', ARRIVED_ON_TIMELINE ? 'Landing' : 'Nav');
   }, [enabled]);
 
+  // Calendar and week views can be paged to a period the loaded pages
+  // don't reach — a reader clicking back four months would otherwise see
+  // an empty grid and conclude nothing happened. So the visible period
+  // is fetched on demand and MERGED into the same list, which means the
+  // list view picks the events up too rather than the two views holding
+  // different data.
+  //
+  // Ranges already fetched are remembered, so paging back and forth over
+  // the same months doesn't re-request them.
+  const fetchedRanges = useRef(new Set<string>());
+  useEffect(() => {
+    if (!enabled || !ownerId) return;
+    const mode = controls.mode;
+    if (mode !== 'calendar' && mode !== 'week') return;
+    const period = mode === 'week' ? controls.weekKey : controls.monthKey;
+    if (fetchedRanges.current.has(period)) return;
+    fetchedRanges.current.add(period);
+    const { from, to } = periodBounds(mode, period);
+    void apiListTimeline(ownerId, { from, to, limit: TIMELINE_PAGE_MAX, scope }).then((page) => {
+      if (page.events.length === 0) return;
+      setEvents((prev) => {
+        const seen = new Set(prev.map((e) => e.id));
+        const fresh = page.events.filter((e) => !seen.has(e.id));
+        if (fresh.length === 0) return prev;
+        // Re-sorted because a fetched range can predate what's loaded,
+        // and the grouping relies on newest-first input to place a
+        // collapsed stack at its most recent member.
+        return [...prev, ...fresh].sort((a, b) => b.occurredAt - a.occurredAt);
+      });
+    });
+  }, [enabled, ownerId, controls.mode, controls.monthKey, controls.weekKey, scope, scopeKey]);
+
   const loadMore = useCallback(() => {
     if (!cursor || loadingMore || !ownerId) return;
     setLoadingMore(true);
@@ -136,5 +180,28 @@ export function useTimelineFeed(
     });
   }, [cursor, loadingMore, ownerId, scopeKey]);
 
-  return { events, controls, loading, loadingMore, hasMore: Boolean(cursor), loadMore, lastSeenAt };
+  return {
+    events,
+    controls,
+    loading,
+    loadingMore,
+    hasMore: Boolean(cursor),
+    loadMore,
+    lastSeenAt,
+    focusEventId: FOCUS_EVENT_ID,
+  };
+}
+
+// Epoch-ms bounds of the visible calendar period, in LOCAL time to match
+// how the grid groups days — a UTC bound would clip an event at either
+// edge into the neighbouring period for readers west of Greenwich.
+function periodBounds(mode: 'calendar' | 'week', period: string): { from: number; to: number } {
+  if (mode === 'week') {
+    const [y, m, d] = period.split('-').map(Number);
+    const start = new Date(y!, m! - 1, d!);
+    const end = new Date(y!, m! - 1, d! + 7);
+    return { from: start.getTime(), to: end.getTime() - 1 };
+  }
+  const [y, m] = period.split('-').map(Number);
+  return { from: new Date(y!, m! - 1, 1).getTime(), to: new Date(y!, m!, 1).getTime() - 1 };
 }

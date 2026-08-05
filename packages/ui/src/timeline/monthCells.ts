@@ -78,3 +78,46 @@ export function nearestPopulatedMonth(
   }
   return best;
 }
+
+// The Monday of the week containing this civil date.
+export function weekStartOf(dateKey: string): string {
+  const [y, m, d] = dateKey.split('-').map(Number);
+  const date = new Date(y!, m! - 1, d!);
+  // getDay is Sunday-0; this grid is Monday-first, so Sunday steps back
+  // six days rather than staying put.
+  date.setDate(date.getDate() - ((date.getDay() + 6) % 7));
+  return civil(date);
+}
+
+export function shiftWeek(weekKey: string, delta: number): string {
+  const [y, m, d] = weekKey.split('-').map(Number);
+  const date = new Date(y!, m! - 1, d! + delta * 7);
+  return civil(date);
+}
+
+// The seven cells of a week, Monday-first. Same shape as a month grid
+// so the calendar renders both through one code path.
+export function buildWeekCells(weekKey: string): MonthCell[] {
+  const [y, m, d] = weekKey.split('-').map(Number);
+  if (!y || !m || !d) return [];
+  return Array.from({ length: 7 }, (_, i) => {
+    const date = new Date(y, m - 1, d + i);
+    return { key: civil(date), day: date.getDate() };
+  });
+}
+
+export function formatWeek(weekKey: string): string {
+  const cells = buildWeekCells(weekKey);
+  const first = cells[0]?.key;
+  const last = cells[6]?.key;
+  if (!first || !last) return weekKey;
+  const fmt = (key: string) => {
+    const [y, m, d] = key.split('-').map(Number);
+    return new Date(y!, m! - 1, d!).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+  };
+  return `${fmt(first)} – ${fmt(last)}`;
+}
+
+function civil(date: Date): string {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}

@@ -30,13 +30,22 @@ const EMPTY: TimelinePage = { events: [] };
 
 export async function apiListTimeline(
   ownerId: string,
-  opts: { cursor?: string; limit?: number; scope?: TimelineScopeRef } = {},
+  opts: {
+    cursor?: string;
+    limit?: number;
+    scope?: TimelineScopeRef;
+    // Epoch-ms bounds, for the calendar's on-demand period fetch.
+    from?: number;
+    to?: number;
+  } = {},
 ): Promise<TimelinePage> {
   const params = new URLSearchParams();
   params.set('limit', String(opts.limit ?? TIMELINE_PAGE_SIZE));
   if (opts.cursor) params.set('cursor', opts.cursor);
   // Omitted for the personal feed, which is what the worker defaults to.
   if (opts.scope) params.set('scope', formatScope(opts.scope));
+  if (opts.from !== undefined) params.set('from', String(opts.from));
+  if (opts.to !== undefined) params.set('to', String(opts.to));
   try {
     const res = await fetch(`${API_BASE}/timeline?${params.toString()}`, {
       headers: await apiHeaders(ownerId),

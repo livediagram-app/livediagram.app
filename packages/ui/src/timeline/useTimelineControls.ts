@@ -14,7 +14,7 @@
 // halves read one source.
 
 import { useCallback, useMemo, useState } from 'react';
-import { monthKeyOf } from './monthCells';
+import { monthKeyOf, weekStartOf } from './monthCells';
 import { dateKey } from './useTimelineGrouping';
 import type { TimelineEvent, TimelineMode } from './types';
 
@@ -37,6 +37,8 @@ export type TimelineControls = {
   eventDates: Set<string>;
   monthKey: string;
   setMonthKey: (monthKey: string) => void;
+  weekKey: string;
+  setWeekKey: (weekKey: string) => void;
   /** Anchor rect for the filter popover; null when it's closed. */
   filterAnchor: DOMRect | null;
   setFilterAnchor: (anchor: DOMRect | null) => void;
@@ -63,6 +65,7 @@ export function useTimelineControls(
   const [mode, setModeState] = useState<TimelineMode>('list');
   const [excluded, setExcluded] = useState<Set<string>>(() => new Set());
   const [monthKey, setMonthKey] = useState(() => monthKeyOf(Date.now()));
+  const [weekKey, setWeekKey] = useState(() => weekStartOf(dateKey(Date.now())));
   const [filterAnchor, setFilterAnchor] = useState<DOMRect | null>(null);
   const [pulseDay, setPulseDay] = useState<string | null>(null);
   // Defaults to everything. "What did I miss" is the sharper question,
@@ -155,6 +158,8 @@ export function useTimelineControls(
     eventDates,
     monthKey,
     setMonthKey,
+    weekKey,
+    setWeekKey,
     filterAnchor,
     setFilterAnchor,
     pulseDay,

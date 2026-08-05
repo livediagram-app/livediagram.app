@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { buildMonthCells, formatMonth, nearestPopulatedMonth, shiftMonth } from './monthCells';
+import {
+  buildMonthCells,
+  buildWeekCells,
+  formatMonth,
+  formatWeek,
+  nearestPopulatedMonth,
+  shiftMonth,
+  shiftWeek,
+  weekStartOf,
+} from './monthCells';
 
 describe('buildMonthCells', () => {
   it('pads to Monday-first and fills whole weeks', () => {
@@ -59,5 +68,58 @@ describe('nearestPopulatedMonth', () => {
 
   it('never returns the month it started from', () => {
     expect(nearestPopulatedMonth(months, '2026-08', -1)).toBe('2026-05');
+  });
+});
+
+describe('weekStartOf', () => {
+  // Monday-first, matching the grid. The case a naive getDay() gets
+  // wrong is Sunday: it reads as 0 and would sit at the START of its
+  // week rather than the end of the previous one.
+  it('finds the Monday of the containing week', () => {
+    expect(weekStartOf('2026-08-05')).toBe('2026-08-03'); // Wed -> Mon
+    expect(weekStartOf('2026-08-03')).toBe('2026-08-03'); // Mon -> itself
+    expect(weekStartOf('2026-08-09')).toBe('2026-08-03'); // Sun -> the Mon before
+  });
+
+  it('steps back across a month boundary', () => {
+    expect(weekStartOf('2026-09-01')).toBe('2026-08-31');
+  });
+});
+
+describe('shiftWeek', () => {
+  it('moves seven days and crosses months and years', () => {
+    expect(shiftWeek('2026-08-03', 1)).toBe('2026-08-10');
+    expect(shiftWeek('2026-08-31', 1)).toBe('2026-09-07');
+    expect(shiftWeek('2026-01-04', -1)).toBe('2025-12-28');
+  });
+});
+
+describe('buildWeekCells', () => {
+  it('is seven consecutive days from the Monday', () => {
+    const cells = buildWeekCells('2026-08-03');
+    expect(cells).toHaveLength(7);
+    expect(cells[0]!.key).toBe('2026-08-03');
+    expect(cells[6]!.key).toBe('2026-08-09');
+    // Unlike a month grid, every cell is a real day — no padding.
+    expect(cells.every((c) => c.key !== null)).toBe(true);
+  });
+
+  it('runs across a month boundary without a gap', () => {
+    const cells = buildWeekCells('2026-08-31');
+    expect(cells.map((c) => c.key)).toEqual([
+      '2026-08-31',
+      '2026-09-01',
+      '2026-09-02',
+      '2026-09-03',
+      '2026-09-04',
+      '2026-09-05',
+      '2026-09-06',
+    ]);
+  });
+});
+
+describe('formatWeek', () => {
+  it('reads as a range', () => {
+    expect(formatWeek('2026-08-03')).toBe('3 Aug – 9 Aug');
   });
 });

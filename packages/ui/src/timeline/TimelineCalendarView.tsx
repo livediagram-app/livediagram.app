@@ -12,10 +12,13 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { dateKey } from './useTimelineGrouping';
 import {
   buildMonthCells,
+  buildWeekCells,
   formatMonth,
+  formatWeek,
   monthKeyOf,
   nearestPopulatedMonth,
   shiftMonth,
+  shiftWeek,
 } from './monthCells';
 import { TONE_LABELS, eventTone, toneColor, type TimelineTone } from './eventTone';
 import { pickRenderer } from './renderers';
@@ -28,6 +31,8 @@ export function TimelineCalendarView({
   events,
   monthKey,
   onMonthChange,
+  weekKey,
+  onWeekChange,
   registry,
   ctx,
   now,
@@ -35,10 +40,15 @@ export function TimelineCalendarView({
   events: TimelineEvent[];
   monthKey: string;
   onMonthChange: (monthKey: string) => void;
+  // Present in week mode. A week is a denser read of the same data —
+  // useful when a month grid is too coarse to see a busy stretch.
+  weekKey?: string;
+  onWeekChange?: (weekKey: string) => void;
   registry: TimelineRendererRegistry;
   ctx: TimelineRendererContext;
   now?: number;
 }) {
+  const isWeek = Boolean(weekKey && onWeekChange);
   const [openCell, setOpenCell] = useState<string | null>(null);
   const gridRef = useRef<HTMLDivElement>(null);
   // Read once at mount rather than on every render: `Date.now()` in the
@@ -91,7 +101,10 @@ export function TimelineCalendarView({
 
   const previousMonth = nearestPopulatedMonth(populatedMonths, monthKey, -1);
   const nextMonth = nearestPopulatedMonth(populatedMonths, monthKey, 1);
-  const cells = useMemo(() => buildMonthCells(monthKey), [monthKey]);
+  const cells = useMemo(
+    () => (isWeek && weekKey ? buildWeekCells(weekKey) : buildMonthCells(monthKey)),
+    [isWeek, weekKey, monthKey],
+  );
   const todayKey = dateKey(now ?? mountedAt);
 
   // Close the popover on any click outside it and on Escape. Listeners
@@ -118,19 +131,23 @@ export function TimelineCalendarView({
   return (
     <div ref={gridRef}>
       <div className="mb-3 flex items-center justify-between">
+        {/* Week paging is unconditional — a week is a small enough step
+            that skipping empty ones would hide the shape of a quiet
+            stretch, which is often the thing you're looking at. Month
+            paging still jumps to the next populated month. */}
         <MonthArrow
           direction={-1}
-          target={previousMonth}
-          onPick={onMonthChange}
+          target={isWeek && weekKey ? shiftWeek(weekKey, -1) : previousMonth}
+          onPick={isWeek && onWeekChange ? onWeekChange : onMonthChange}
           label="No earlier events"
         />
         <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
-          {formatMonth(monthKey)}
+          {isWeek && weekKey ? formatWeek(weekKey) : formatMonth(monthKey)}
         </p>
         <MonthArrow
           direction={1}
-          target={nextMonth}
-          onPick={onMonthChange}
+          target={isWeek && weekKey ? shiftWeek(weekKey, 1) : nextMonth}
+          onPick={isWeek && onWeekChange ? onWeekChange : onMonthChange}
           label="No later events"
         />
       </div>
@@ -148,14 +165,16 @@ export function TimelineCalendarView({
           if (!cell.key) {
             // Pad squares carry no key of their own; the index is
             // stable because the grid is rebuilt whole per month.
-            return <div key={`pad-${index}`} className="min-h-[68px]" />;
+            return (
+              <div key={`pad-${index}`} className={isWeek ? 'min-h-[160px]' : 'min-h-[68px]'} />
+            );
           }
           const tones = tonesByDay.get(cell.key) ?? [];
           const isToday = cell.key === todayKey;
           return (
             <div
               key={cell.key}
-              className={`min-h-[68px] rounded-md border p-1 text-left ${
+              className={`${isWeek ? 'min-h-[160px]' : 'min-h-[68px]'} rounded-md border p-1 text-left ${
                 isToday
                   ? 'border-brand-400 bg-brand-50/60 dark:border-brand-500/60 dark:bg-brand-500/10'
                   : 'border-slate-200 dark:border-slate-700'

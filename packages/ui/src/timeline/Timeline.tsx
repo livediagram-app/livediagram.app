@@ -53,6 +53,8 @@ export type TimelineProps = {
   onStackExpand?: () => void;
   /** Events after this timestamp are marked New (spec/138 §2.5). */
   lastSeenAt?: number;
+  /** Event id to scroll to and highlight — the deep-link target. */
+  focusEventId?: string;
 };
 
 function staggerFor(index: number | undefined): number {
@@ -71,6 +73,7 @@ export function Timeline({
   onLoadMore,
   onStackExpand,
   lastSeenAt,
+  focusEventId,
 }: TimelineProps) {
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
   // A reader with no watermark has never opened the feed; marking their
@@ -112,6 +115,39 @@ export function Timeline({
     });
   }, []);
 
+  // Deep link (spec/138 §2.7). A linked event may be inside a collapsed
+  // stack, so those stacks are forced open — otherwise the reader
+  // follows a link to a row that isn't rendered and lands on a generic
+  // "4 events" bubble with no idea which one they came for.
+  //
+  // DERIVED rather than pushed into `expanded` from an effect: which
+  // stack holds the target is a function of the data, so computing it
+  // avoids a setState-in-effect and the extra render that costs. The
+  // reader can still collapse it — `expanded` stays a separate toggle.
+  const forcedOpen = useMemo(() => {
+    const keys = new Set<string>();
+    if (!focusEventId) return keys;
+    for (const group of groups) {
+      for (const stack of buildStacks(group.events)) {
+        if (stack.events.length > 1 && stack.events.some((e) => e.id === focusEventId)) {
+          keys.add(stack.key);
+        }
+      }
+    }
+    return keys;
+  }, [focusEventId, groups]);
+
+  // Scroll after paint, so the row exists by the time we look for it.
+  useEffect(() => {
+    if (!focusEventId) return;
+    const raf = requestAnimationFrame(() => {
+      document
+        .querySelector(`[data-timeline-event="${focusEventId}"]`)
+        ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [focusEventId, groups]);
+
   // Clear the mini-calendar pulse once it has played. Guarded on
   // pulseDay so the timer only exists while one is running.
   useEffect(() => {
@@ -141,12 +177,14 @@ export function Timeline({
     );
   }
 
-  if (controls.mode === 'calendar') {
+  if (controls.mode === 'calendar' || controls.mode === 'week') {
     return (
       <TimelineCalendarView
         events={visibleEvents}
         monthKey={controls.monthKey}
         onMonthChange={controls.setMonthKey}
+        weekKey={controls.mode === 'week' ? controls.weekKey : undefined}
+        onWeekChange={controls.mode === 'week' ? controls.setWeekKey : undefined}
         registry={renderers}
         ctx={ctx}
       />
@@ -179,12 +217,13 @@ export function Timeline({
                   <TimelineBubble
                     event={event}
                     isNew={isNew(event.occurredAt)}
+                    focused={event.id === focusEventId}
                     rendered={pickRenderer(event, renderers)(event, ctx)}
                   />
                 </div>
               );
             }
-            if (expanded.has(stack.key)) {
+            if (expanded.has(stack.key) || forcedOpen.has(stack.key)) {
               return (
                 <ExpandedStack
                   key={stack.key}
@@ -192,6 +231,7 @@ export function Timeline({
                   registry={renderers}
                   ctx={ctx}
                   isNew={isNew}
+                  focusEventId={focusEventId}
                   onCollapse={() => toggleStack(stack.key)}
                 />
               );
