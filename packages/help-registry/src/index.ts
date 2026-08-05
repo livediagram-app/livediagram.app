@@ -57,6 +57,18 @@ export function categoryHref(slug: string): string {
   return `/${slug}/`;
 }
 
+/**
+ * The top-level category a (possibly nested) `categorySlug` belongs to:
+ * `palette/tools/data-elements` → `palette`, `canvas` → `canvas`. Lives here
+ * because the nested-path shape is this registry's convention, so anything
+ * grouping articles by their top-level category (the help centre's per-category
+ * icon and accent fallbacks) reads it from one place rather than re-splitting
+ * the string and drifting on what a segment means.
+ */
+export function topCategorySlug(categorySlug: string): string {
+  return categorySlug.split('/')[0] ?? '';
+}
+
 export interface Category {
   slug: string;
   title: string;

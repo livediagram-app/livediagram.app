@@ -1,3 +1,4 @@
+import { topCategorySlug } from '@livediagram/help-registry';
 import type { ReactNode } from 'react';
 
 /** Feature slug → icon (full <svg>). Used by the home grid, the features
@@ -467,3 +468,116 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
     </Glyph>
   ),
 };
+
+/** Top-level feature category → glyph.
+ *
+ *  The fallback for a landing page with no bespoke icon of its own, and there
+ *  are a lot of those: 107 of the 172 cards under the ten feature categories
+ *  had no entry in FEATURE_ICONS, so nearly two thirds of the catalogue drew
+ *  the SAME sky-blue `the-canvas` frame — and, because featureColours.ts fell
+ *  back the same way, in the same grey. A grid where most tiles are identical
+ *  stops being a catalogue and becomes decoration: the icon is there to tell
+ *  you at a glance whether a card is about the palette or about sharing.
+ *
+ *  Keyed on the FIRST segment of `categorySlug`, so a nested landing
+ *  (`palette/tools/data-elements`) inherits its top-level category's glyph
+ *  rather than needing its own. Adding a bespoke entry to FEATURE_ICONS still
+ *  wins — this is the floor, not a replacement for drawing the specific thing.
+ */
+export const FEATURE_CATEGORY_ICONS: Record<string, ReactNode> = {
+  // A window with a title bar: the chrome around everything else.
+  'user-interface': (
+    <Glyph>
+      <rect x="3" y="4" width="18" height="16" rx="2" {...s} />
+      <path d="M3 9h18M6.5 6.5h.01M9 6.5h.01" {...s} />
+    </Glyph>
+  ),
+  // A frame with shapes drawn inside it.
+  canvas: (
+    <Glyph>
+      <rect x="3" y="4" width="18" height="16" rx="2" {...s} />
+      <rect x="6.5" y="8" width="5" height="4" rx="1" {...s} />
+      <circle cx="16" cy="14.5" r="2.5" {...s} />
+    </Glyph>
+  ),
+  // Stacked swatches: the palette is a catalogue you pick from.
+  palette: (
+    <Glyph>
+      <rect x="3.5" y="4" width="8" height="6" rx="1.5" {...s} />
+      <rect x="12.5" y="4" width="8" height="6" rx="1.5" {...s} />
+      <rect x="3.5" y="14" width="8" height="6" rx="1.5" {...s} />
+      <rect x="12.5" y="14" width="8" height="6" rx="1.5" {...s} />
+    </Glyph>
+  ),
+  // Two sheets behind a front one.
+  tabs: (
+    <Glyph>
+      <path d="M3 8h5l1.5-2H14v3" {...s} />
+      <rect x="3" y="8" width="18" height="12" rx="2" {...s} />
+      <path d="M14 6h4a2 2 0 0 1 2 2" {...s} />
+    </Glyph>
+  ),
+  // A folder tree.
+  explorer: (
+    <Glyph>
+      <path d="M3 7a2 2 0 0 1 2-2h3l2 2h4a2 2 0 0 1 2 2v1" {...s} />
+      <path d="M3 7v11a2 2 0 0 0 2 2h11" {...s} />
+      <path d="M12 20h4M16 12h5M16 16h5" {...s} />
+    </Glyph>
+  ),
+  // Two people.
+  collaboration: (
+    <Glyph>
+      <circle cx="9" cy="8" r="3" {...s} />
+      <path d="M3.5 20a5.5 5.5 0 0 1 11 0" {...s} />
+      <path d="M16 6.5a3 3 0 0 1 0 6M17 15.5a5.5 5.5 0 0 1 3.5 4.5" {...s} />
+    </Glyph>
+  ),
+  // A wrench, matching the per-feature `tools` glyph above.
+  tools: (
+    <Glyph>
+      <path
+        d="M14.5 5.5a3.5 3.5 0 00-4.8 4.6l-6 6a1.5 1.5 0 002.1 2.1l6-6a3.5 3.5 0 004.6-4.8l-2.3 2.3-2-2 2.4-2.2z"
+        {...s}
+      />
+    </Glyph>
+  ),
+  // A side panel with a magnifier in it.
+  'search-panel': (
+    <Glyph>
+      <rect x="3" y="4" width="18" height="16" rx="2" {...s} />
+      <path d="M14 4v16" {...s} />
+      <circle cx="8" cy="10.5" r="2.5" {...s} />
+      <path d="M9.9 12.4L12 14.5" {...s} />
+    </Glyph>
+  ),
+  // A marquee with a pointer: choosing things is the whole category.
+  'selection-modes': (
+    <Glyph>
+      <path
+        d="M4 7V5.5A1.5 1.5 0 015.5 4H8M16 4h2.5A1.5 1.5 0 0120 5.5V7M20 15v3.5a1.5 1.5 0 01-1.5 1.5H16"
+        {...s}
+      />
+      <path d="M4 12v3" {...s} />
+      <path d="M9 11l6.5 3-2.7 1 1.6 3-1.6.8-1.6-3-1.9 1.9z" {...s} />
+    </Glyph>
+  ),
+  // A panel with a pulse: what just happened.
+  'activity-panel': (
+    <Glyph>
+      <rect x="3" y="4" width="18" height="16" rx="2" {...s} />
+      <path d="M6 13h3l1.5-3 2 6 1.5-3h3" {...s} />
+    </Glyph>
+  ),
+};
+
+/** The glyph for a feature card: the feature's own icon, else its top-level
+ *  category's, else the canvas frame. One resolver so the card, the category
+ *  index, and the MDX `<Feature>` tile can't disagree about the order. */
+export function featureIcon(slug: string, categorySlug?: string): ReactNode {
+  return (
+    FEATURE_ICONS[slug] ??
+    FEATURE_CATEGORY_ICONS[topCategorySlug(categorySlug ?? '')] ??
+    FEATURE_ICONS['the-canvas']
+  );
+}

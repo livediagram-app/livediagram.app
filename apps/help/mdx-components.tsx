@@ -2,8 +2,8 @@ import type { MDXComponents } from 'mdx/types';
 import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { articles, categories, articleHref, categoryHref } from '@/lib/articles';
-import { FEATURE_ENTITY_HEX, FEATURE_FALLBACK_HEX } from '@/lib/featureColours';
-import { FEATURE_ICONS } from '@/lib/featureIcons';
+import { FEATURE_FALLBACK_HEX, featureColour } from '@/lib/featureColours';
+import { featureIcon } from '@/lib/featureIcons';
 import { Figure } from './components/Figure';
 
 /** Numbered step indicator for walkthroughs. Shows section.step numbering
@@ -70,13 +70,18 @@ function Note({ children }: { children: ReactNode }) {
  *  feature `slug` (e.g. "canvas"); the icon + colour come from the shared
  *  feature maps. */
 function Feature({ slug, title, children }: { slug?: string; title: string; children: ReactNode }) {
-  const colour = slug ? (FEATURE_ENTITY_HEX[slug] ?? FEATURE_FALLBACK_HEX) : FEATURE_FALLBACK_HEX;
-  const icon = slug ? FEATURE_ICONS[slug] : null;
   // Resolve the slug to a real page: an article landing first, then a feature
   // category index, otherwise render a non-linking card (so a slug with no
   // destination never becomes a dead link). `Link` prepends the /help basePath,
   // so these hrefs omit it.
   const article = slug ? articles.find((a) => a.slug === slug) : undefined;
+  // Resolved through the shared helpers so an MDX tile matches the card the
+  // same feature gets on its category index. Both fall back to the feature's
+  // top-level category, which is why the registered article is looked up first:
+  // without its categorySlug there is nothing to fall back TO, and a landing
+  // with no bespoke glyph rendered a hue-less card with no icon tile at all.
+  const colour = slug ? featureColour(slug, article?.categorySlug) : FEATURE_FALLBACK_HEX;
+  const icon = slug ? featureIcon(slug, article?.categorySlug) : null;
   const href = article
     ? articleHref(article)
     : slug && categories.some((c) => c.slug === slug)

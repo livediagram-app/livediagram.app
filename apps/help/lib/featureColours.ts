@@ -1,3 +1,5 @@
+import { topCategorySlug } from '@livediagram/help-registry';
+
 /** Feature slug → accent colour (hex). The home + features grid and the
  *  MDX <Feature> cards tint each feature with a distinct hue so the index
  *  reads as a colourful catalogue, the same way the Manager Toolkit help
@@ -78,5 +80,41 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'dark-mode': '#475569',
 };
 
+/** Top-level feature category → accent hue, the fallback for a landing with no
+ *  hue of its own.
+ *
+ *  Same reason as FEATURE_CATEGORY_ICONS: two thirds of the feature cards had
+ *  no entry above, so they all took FEATURE_FALLBACK_HEX and the index read as
+ *  a wall of identical grey tiles. One distinct hue per category at least
+ *  groups them, so scanning a mixed grid tells you what family a card is in.
+ *  Each is drawn from a hue the category's own features already use (User
+ *  Interface was uniformly indigo; Palette mostly pink; Collaboration amber),
+ *  so this continues the existing scheme rather than introducing a second one.
+ */
+export const FEATURE_CATEGORY_HEX: Record<string, string> = {
+  'user-interface': '#6366f1',
+  canvas: '#0ea5e9',
+  palette: '#ec4899',
+  tabs: '#3b82f6',
+  explorer: '#64748b',
+  collaboration: '#f59e0b',
+  tools: '#475569',
+  'search-panel': '#0891b2',
+  'selection-modes': '#8b5cf6',
+  'activity-panel': '#14b8a6',
+};
+
 /** Default colour used when no slug match is found. */
 export const FEATURE_FALLBACK_HEX = '#64748b';
+
+/** The accent for a feature card: the feature's own hue, else its top-level
+ *  category's, else the neutral fallback. Mirrors `featureIcon` so a card's
+ *  colour and glyph always resolve at the same level of specificity — a
+ *  bespoke glyph with a category hue (or the reverse) looked like a mistake. */
+export function featureColour(slug: string, categorySlug?: string): string {
+  return (
+    FEATURE_ENTITY_HEX[slug] ??
+    FEATURE_CATEGORY_HEX[topCategorySlug(categorySlug ?? '')] ??
+    FEATURE_FALLBACK_HEX
+  );
+}

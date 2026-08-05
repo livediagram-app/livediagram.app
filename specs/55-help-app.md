@@ -80,6 +80,31 @@ SVG, not screenshots, so they stay crisp, theme with the brand ramp, add zero
 binary assets to the static export, and never drift from a UI rebrand the way a
 captured screenshot would.
 
+### Card icons and accents
+
+Separate from the illustrations above: every card in the catalogue carries a
+small outline glyph in a tinted tile. `lib/featureIcons.tsx` maps a feature slug
+to the glyph, `lib/featureColours.ts` to the hue, and the two maps are kept
+**key-for-key identical** (enforced by test) — a bespoke glyph beside a
+fallback hue reads as an oversight.
+
+Both fall back **to the article's top-level feature category**, not to a single
+default. That matters more than it sounds: 107 of the 172 landing cards under
+the ten feature categories have no bespoke entry, so with one default nearly two
+thirds of the catalogue drew the same sky-blue canvas frame in the same grey
+tile. A grid where most tiles are identical is decoration, not a catalogue — the
+glyph exists so a card reads as "palette" or "sharing" before you read its
+title. One distinct hue and glyph per category restores that much at least.
+
+Resolution order is `featureIcon(slug, categorySlug)` / `featureColour(...)`:
+the feature's own entry, then its category's, then the neutral default. The
+category lookup reads only the FIRST segment (`topCategorySlug` in
+`@livediagram/help-registry`, which owns the nested-slug convention), so
+`palette/tools/data-elements` inherits Palette's. Both resolvers are shared by
+the category index cards and the MDX `<Feature>` tile, so a feature looks the
+same wherever it appears. Adding a bespoke glyph is still the better answer for
+any individual card — the category fallback is the floor, not the goal.
+
 The system has three layers, all under `apps/help`:
 
 - **`components/illustrations/primitives.tsx`** — the shared SVG kit (`Scene`,

@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { articleHref, articles, type Article } from '@/lib/articles';
-import { FEATURE_ENTITY_HEX, FEATURE_FALLBACK_HEX } from '@/lib/featureColours';
-import { FEATURE_ICONS } from '@/lib/featureIcons';
+import { featureColour } from '@/lib/featureColours';
+import { featureIcon } from '@/lib/featureIcons';
 import { CountPill } from '@/components/CountPill';
 
 // A feature-guide card: the feature's icon tile + title + description, with a
@@ -9,7 +9,7 @@ import { CountPill } from '@/components/CountPill';
 // Guides grid and the /help/features index (identical markup in both before).
 export function FeatureArticleCard({ article }: { article: Article }) {
   const subCount = articles.filter((a) => a.parentSlug === article.slug).length;
-  const colour = FEATURE_ENTITY_HEX[article.slug] ?? FEATURE_FALLBACK_HEX;
+  const colour = featureColour(article.slug, article.categorySlug);
   return (
     <Link
       href={articleHref(article)}
@@ -20,7 +20,7 @@ export function FeatureArticleCard({ article }: { article: Article }) {
           className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
           style={{ backgroundColor: `${colour}1f`, color: colour }}
         >
-          {FEATURE_ICONS[article.slug] ?? FEATURE_ICONS['the-canvas']}
+          {featureIcon(article.slug, article.categorySlug)}
         </div>
         <div className="min-w-0 flex-1">
           <h3 className="mb-1 text-lg font-semibold text-slate-900">{article.title}</h3>
