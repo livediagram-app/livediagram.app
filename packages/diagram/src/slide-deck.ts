@@ -36,6 +36,16 @@ export type Slide = {
    * the slide to get it out of the run is the wrong trade.
    */
   hidden?: boolean;
+  /**
+   * How long you MEAN to spend here, in minutes. Optional, and only ever a
+   * target: nothing advances on it.
+   *
+   * The deck deliberately does not enforce a budget — a slide that moved on
+   * because its four minutes were up would cut off the answer you were giving.
+   * The agenda element (spec/127) models minutes-per-segment the same way and
+   * does not drive the clock either.
+   */
+  minutes?: number;
 };
 
 export type Deck = { slides: Slide[] };

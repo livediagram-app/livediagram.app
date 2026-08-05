@@ -32,6 +32,10 @@ export type PresentationConfig = {
   keepControls: boolean;
   /** Hide the mouse pointer while it is still. */
   hidePointer: boolean;
+  /** Show a clock counting from Start. */
+  showElapsed: boolean;
+  /** Show time-on-this-slide against its `minutes`, for slides that set one. */
+  showBudget: boolean;
 };
 
 export const DEFAULT_PRESENTATION_CONFIG: PresentationConfig = {
@@ -44,6 +48,10 @@ export const DEFAULT_PRESENTATION_CONFIG: PresentationConfig = {
   showPosition: true,
   keepControls: false,
   hidePointer: true,
+  // Both off by default: a timer nobody asked for is a timer reminding the
+  // room you are behind.
+  showElapsed: false,
+  showBudget: false,
 };
 
 export const SLIDE_TRANSITIONS: readonly { id: SlideTransition; label: string; hint: string }[] = [
@@ -109,6 +117,8 @@ export function loadPresentationConfig(): PresentationConfig {
       showPosition: bool(parsed.showPosition, DEFAULT_PRESENTATION_CONFIG.showPosition),
       keepControls: bool(parsed.keepControls, DEFAULT_PRESENTATION_CONFIG.keepControls),
       hidePointer: bool(parsed.hidePointer, DEFAULT_PRESENTATION_CONFIG.hidePointer),
+      showElapsed: bool(parsed.showElapsed, DEFAULT_PRESENTATION_CONFIG.showElapsed),
+      showBudget: bool(parsed.showBudget, DEFAULT_PRESENTATION_CONFIG.showBudget),
     };
   } catch {
     // A corrupt blob costs the settings, never the presentation.

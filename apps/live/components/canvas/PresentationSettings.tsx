@@ -194,6 +194,18 @@ export function PresentationSettings({
           on={config.hidePointer}
           onChange={(next) => onChange({ hidePointer: next })}
         />
+        <Toggle
+          label="Show elapsed time"
+          hint="A clock counting from the moment you started"
+          on={config.showElapsed}
+          onChange={(next) => onChange({ showElapsed: next })}
+        />
+        <Toggle
+          label="Show slide budget"
+          hint="Time on this slide against the minutes it was given"
+          on={config.showBudget}
+          onChange={(next) => onChange({ showBudget: next })}
+        />
       </Group>
     </div>
   );

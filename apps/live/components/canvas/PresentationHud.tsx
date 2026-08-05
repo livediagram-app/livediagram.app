@@ -76,6 +76,16 @@ function HudButton({
   );
 }
 
+/**
+ * `m:ss`, counting up. Minutes are not padded (a talk is "7:04", not "07:04")
+ * and hours are left to roll past 60 — a deck running that long has bigger
+ * problems than its clock's format.
+ */
+export function formatElapsed(ms: number): string {
+  const total = Math.max(0, Math.floor(ms / 1000));
+  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`;
+}
+
 export function PresentationHud({
   position,
   total,
@@ -86,6 +96,8 @@ export function PresentationHud({
   settingsOpen,
   onToggleSettings,
   showPosition,
+  elapsedMs,
+  budget,
   onBack,
   onNext,
   onClose,
@@ -102,6 +114,10 @@ export function PresentationHud({
   onToggleSettings: () => void;
   /** The presenter can turn the counter off from the cog. */
   showPosition: boolean;
+  /** Milliseconds since Start, or null when the clock is switched off. */
+  elapsedMs: number | null;
+  /** This slide's budget in minutes, and the time spent on it. Null = no readout. */
+  budget: { minutes: number; onSlideMs: number } | null;
   /** Absent on the first slide, so the control disables rather than lying. */
   onBack?: () => void;
   onNext: () => void;
@@ -128,6 +144,30 @@ export function PresentationHud({
               {name}
             </span>
           </>
+        ) : null}
+        {/* Pacing (spec/31). Both off by default and both the presenter's, not
+            the diagram's. The budget is a TARGET: going over is marked, never
+            enforced, because a deck that advanced itself mid-answer would be
+            worse than no budget at all. */}
+        {elapsedMs !== null ? (
+          <span
+            className="select-none text-[11px] font-semibold tabular-nums text-white/70"
+            title="Time since the presentation started"
+          >
+            {formatElapsed(elapsedMs)}
+          </span>
+        ) : null}
+        {budget ? (
+          <span
+            className={`select-none rounded px-1.5 py-0.5 text-[11px] font-semibold tabular-nums ${
+              budget.onSlideMs > budget.minutes * 60_000
+                ? 'bg-amber-400/20 text-amber-200'
+                : 'text-white/70'
+            }`}
+            title={`This slide is budgeted ${budget.minutes} min`}
+          >
+            {formatElapsed(budget.onSlideMs)} / {budget.minutes}:00
+          </span>
         ) : null}
         {/* Step through the deck by pointer as well as by key. A presenter on
             a projector often has a mouse and no keyboard within reach, and

@@ -210,6 +210,32 @@ export function useSlideDeck({
     [commitDeck, isReadOnly],
   );
 
+  /**
+   * The slide's time budget in minutes, or 0 / NaN to clear it.
+   *
+   * Stored like notes: absent rather than zero when unset, so a deck written
+   * before budgets existed reads as "no targets" instead of "every slide is
+   * budgeted nothing". Clamped to whole minutes and to something a talk could
+   * plausibly want, because the field is a number input and a stray keypress
+   * should not produce a 9,000-minute slide.
+   */
+  const setSlideMinutes = useCallback(
+    (slideId: string, minutes: number) => {
+      if (isReadOnly) return;
+      const clean = Number.isFinite(minutes) ? Math.min(240, Math.max(0, Math.round(minutes))) : 0;
+      commitDeck((prev) => ({
+        slides: prev.slides.map((s) => {
+          if (s.id !== slideId) return s;
+          const next = { ...s };
+          if (clean > 0) next.minutes = clean;
+          else delete next.minutes;
+          return next;
+        }),
+      }));
+    },
+    [commitDeck, isReadOnly],
+  );
+
   const setSlideNotes = useCallback(
     (slideId: string, notes: string) => {
       if (isReadOnly) return;
@@ -364,6 +390,7 @@ export function useSlideDeck({
     removeFromSlide,
     renameSlide,
     setSlideNotes,
+    setSlideMinutes,
     deleteSlide,
     toggleSlideHidden,
     duplicateSlide,

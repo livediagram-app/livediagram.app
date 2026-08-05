@@ -229,6 +229,7 @@ export function SlideDeckPanel({
     removeFromSlide,
     renameSlide,
     setSlideNotes,
+    setSlideMinutes,
     deleteSlide,
     toggleSlideHidden,
     duplicateSlide,
@@ -450,6 +451,27 @@ export function SlideDeckPanel({
               placeholder="What you'll say over this slide…"
               className="w-full resize-none rounded-md border border-slate-200 bg-white px-2 py-1.5 text-[11px] leading-snug text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-brand-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
             />
+            {/* The slide's time budget, beside its notes because both are
+                decided while WRITING the talk rather than while giving it.
+                Blank means no target, which is most slides. */}
+            <span className="flex items-center gap-2 px-0.5 pt-0.5">
+              <span className="text-[10px] text-slate-400 dark:text-slate-500">Budget</span>
+              <input
+                type="number"
+                min={0}
+                max={240}
+                value={notesSlide.minutes ?? ''}
+                onChange={(e) => setSlideMinutes(notesSlide.id, Number(e.target.value))}
+                onKeyDown={(e) => e.stopPropagation()}
+                onPointerDown={(e) => e.stopPropagation()}
+                placeholder="—"
+                aria-label={`Minutes budgeted for ${slideName(notesSlide, deck.slides.indexOf(notesSlide))}`}
+                className="w-14 rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-[11px] tabular-nums text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-brand-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+              />
+              <span className="text-[10px] text-slate-400 dark:text-slate-500">
+                min · shown in the HUD if you turn the budget on
+              </span>
+            </span>
           </label>
         ) : null}
 

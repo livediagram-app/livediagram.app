@@ -119,6 +119,25 @@ export function PresentationOverlay({
     };
   }, []);
 
+  // Pacing (spec/31). One ticking value drives both readouts, and it only
+  // ticks when something is actually being shown: a deck with the clock and
+  // the budget both off must not re-render once a second for nothing.
+  //
+  // Wall-clock marks rather than accumulated counters, so a tab that was
+  // backgrounded (and had its timers throttled) still reports the real time
+  // spent rather than the number of ticks that happened to fire.
+  const [startedAt] = useState(() => Date.now());
+  const [slideEnteredAt, setSlideEnteredAt] = useState(() => Date.now());
+  const [now, setNow] = useState(() => Date.now());
+  const slideMinutes = step?.slide.minutes;
+  const wantsClock = config.showElapsed || (config.showBudget && !!slideMinutes);
+  useEffect(() => setSlideEnteredAt(Date.now()), [at]);
+  useEffect(() => {
+    if (!wantsClock) return;
+    const id = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, [wantsClock]);
+
   // Say the slide out loud for a screen reader (spec/71's announcer). The deck
   // is otherwise an entirely visual surface: driven by the arrow keys, nothing
   // reports that anything changed.
@@ -316,6 +335,12 @@ export function PresentationOverlay({
             });
           }}
           showPosition={config.showPosition}
+          elapsedMs={config.showElapsed ? now - startedAt : null}
+          budget={
+            config.showBudget && slideMinutes
+              ? { minutes: slideMinutes, onSlideMs: now - slideEnteredAt }
+              : null
+          }
           onBack={at > 0 ? () => go(at - 1) : undefined}
           onNext={() => go(at + 1)}
           onClose={onExit}
