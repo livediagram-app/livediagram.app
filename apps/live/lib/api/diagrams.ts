@@ -1,5 +1,6 @@
 // Diagram-level calls: load / create / save-meta / delete / list, the
 // copy-into-my-files flow, and the "Shared with you" list.
+import { DIAGRAM_CONVERSION_HEADER, type DiagramConversion } from '@livediagram/api-schema';
 import type { Diagram, DiagramSummary, SharedWithItem } from '@livediagram/api-schema';
 import type { Tab } from '@livediagram/diagram';
 import { dedupeInFlight } from '../dedupe';
@@ -102,10 +103,16 @@ export async function apiSaveDiagramMeta(
 export async function apiCreateDiagram(
   ownerId: string,
   d: { id: string; name: string; tabs?: Tab[] },
+  // Set by the Offline Mode sync path (spec/76). A sync is a plain POST, so
+  // without this the worker records it as a brand-new diagram being created.
+  opts: { conversion?: DiagramConversion } = {},
 ): Promise<Diagram> {
   const res = await fetch(`${API_BASE}/diagrams`, {
     method: 'POST',
-    headers: await apiHeaders(ownerId, { body: true }),
+    headers: await apiHeaders(ownerId, {
+      body: true,
+      ...(opts.conversion ? { extra: { [DIAGRAM_CONVERSION_HEADER]: opts.conversion } } : {}),
+    }),
     body: JSON.stringify({
       id: d.id,
       name: d.name,

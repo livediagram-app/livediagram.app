@@ -14,6 +14,7 @@ import {
   bodyExceedsCap,
   declaredBodyBytes,
 } from '../limits';
+import { DIAGRAM_CONVERSION_HEADER, readDiagramConversion } from '@livediagram/api-schema';
 import { parseChangeLogEntryBody } from '../change-log-body';
 import {} from '../comments';
 import {
@@ -43,7 +44,9 @@ import {
   recordDiagramCreated,
   recordDiagramDeleted,
   recordDiagramDuplicated,
+  recordDiagramOffline,
   recordDiagramRenamed,
+  recordDiagramSynced,
   recordVisitorCopied,
 } from '../timeline';
 import { markTimelineEventsDeletedBySource } from '../db/timeline';
@@ -132,7 +135,15 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       // an id it already owns, and "Diagram Created" twice for one
       // diagram is a lie the feed can't walk back.
       if (diagram && !clash) {
-        ctx.waitUntil?.(recordDiagramCreated(env, diagram, owner));
+        // A sync (spec/76) is a POST like any other, so the editor declares it:
+        // undeclared, moving a diagram from this browser INTO the account was
+        // reported as a diagram being created for the first time.
+        const conversion = readDiagramConversion(request.headers.get(DIAGRAM_CONVERSION_HEADER));
+        ctx.waitUntil?.(
+          conversion === 'sync'
+            ? recordDiagramSynced(env, diagram, owner)
+            : recordDiagramCreated(env, diagram, owner),
+        );
       }
       // spec/64 (#6): on a genuine create (no prior row), check for a diagram
       // milestone. Count + send run in the background, off the response path.
@@ -257,10 +268,23 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       // exactly one bubble saying it was deleted rather than a run of
       // events pointing at a 404.
       const audience = await audienceForDiagram(env, existing);
+      // "Take offline" (spec/76) reaches this same DELETE — the server copy
+      // really does go — but the diagram is not gone, it moved into the
+      // caller's browser. Undeclared it recorded `diagram_deleted`, so the feed
+      // told the owner in danger red that a diagram they still had was deleted.
+      // The cascade above still applies either way: whatever the server held is
+      // gone, so its prior events would point at a 404.
+      const conversion = readDiagramConversion(request.headers.get(DIAGRAM_CONVERSION_HEADER));
       await deleteDiagram(env, id);
       ctx.waitUntil?.(
         markTimelineEventsDeletedBySource(env, 'diagram', id)
-          .then(() => recordDiagramDeleted(env, existing, owner, audience))
+          .then(() =>
+            conversion === 'offline'
+              ? // Owner-only: an offline diagram exists in exactly one browser,
+                // so no teammate has a stake in it.
+                recordDiagramOffline(env, existing, owner)
+              : recordDiagramDeleted(env, existing, owner, audience),
+          )
           .catch((err) => console.error('timeline diagram delete failed', err)),
       );
       return noContent();

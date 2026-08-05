@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { DIAGRAM_CONVERSION_HEADER } from '@livediagram/api-schema';
 
 // Offline Mode conversions (spec/76). "Take offline" DELETES the server copy,
 // so the ordering here is the difference between a failed conversion and a lost
@@ -157,6 +158,27 @@ describe('takeCloudOffline (cloud -> offline)', () => {
     vi.mocked(apiClient.apiLoadTab).mockResolvedValueOnce(null as never);
     await expect(takeCloudOffline('d1', 'owner')).rejects.toThrow(/tab load incomplete/i);
     expect(core.apiDelete).not.toHaveBeenCalled();
+  });
+});
+
+describe('conversions declare themselves to the worker', () => {
+  // Both conversions reuse ordinary endpoints, so the worker cannot tell them
+  // from a real delete / a real create unless the request says so — and
+  // undeclared it recorded exactly that, telling the owner in danger red that a
+  // diagram they had just moved into this browser was deleted (spec/76 +
+  // spec/138 §4.2).
+  it('marks the take-offline DELETE as an offline conversion', async () => {
+    await takeCloudOffline('d1', 'owner');
+    const [, , opts] = vi.mocked(core.apiDelete).mock.calls[0]!;
+    expect((opts as { extra?: Record<string, string> }).extra).toEqual({
+      [DIAGRAM_CONVERSION_HEADER]: 'offline',
+    });
+  });
+
+  it('marks the sync POST as a sync conversion', async () => {
+    await saveOfflineToCloud('off-1', 'owner');
+    const call = vi.mocked(apiClient.apiCreateDiagram).mock.calls[0]!;
+    expect(call[2]).toEqual({ conversion: 'sync' });
   });
 });
 

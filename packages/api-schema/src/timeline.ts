@@ -145,3 +145,28 @@ export const TIMELINE_RETENTION_MS = 365 * 24 * 60 * 60 * 1000;
 // includes comment text): an email leaves the product's auth boundary,
 // the Timeline sits behind the same gate as the diagram itself.
 export const TIMELINE_COMMENT_MAX = 240;
+
+// An Offline Mode conversion (spec/76), declared by the editor on the request
+// that performs it, so the feed can say what actually happened.
+//
+// It has to be declared because the two conversions reuse ordinary endpoints
+// and are indistinguishable from them at the boundary: "Take offline" is a
+// plain DELETE /diagrams/:id, and "Sync diagram" is a plain POST /diagrams. So
+// the worker recorded them as `diagram_deleted` and `diagram_created` — a
+// Timeline that told the owner, in danger red, that a diagram they had just
+// moved into this browser was *deleted*, and that one they had just uploaded
+// was newly *created*. Both `diagram_offline` and `diagram_synced` already
+// existed above, with tones, icons, renderers and a spec/138 table entry;
+// nothing had ever emitted them.
+//
+// Header name + values live here, next to the event types they select, because
+// this is a two-sided contract and the alternative is the client and the worker
+// each holding a copy of the string.
+export const DIAGRAM_CONVERSION_HEADER = 'X-Diagram-Conversion';
+
+export type DiagramConversion = 'offline' | 'sync';
+
+/** Reads the conversion a request declares, or null when it declares none. */
+export function readDiagramConversion(value: string | null): DiagramConversion | null {
+  return value === 'offline' || value === 'sync' ? value : null;
+}

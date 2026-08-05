@@ -200,7 +200,9 @@ export function writeCachedSharePassword(shareCode: string, password: string | n
 // the export is additive.
 export async function apiHeaders(
   ownerId: string,
-  opts: { share?: string | null; body?: boolean } = {},
+  // `extra` is merged last, for the handful of routes that carry a declarative
+  // header of their own (X-Allow-Empty, the Offline Mode conversion marker).
+  opts: { share?: string | null; body?: boolean; extra?: Record<string, string> } = {},
 ): Promise<HeadersInit> {
   const h: Record<string, string> = {};
   const token = currentTokenProvider ? await currentTokenProvider() : null;
@@ -226,7 +228,7 @@ export async function apiHeaders(
   // has passed the gate; the api ignores it unless the diagram is
   // protected + accessed via a share code. Owners never set it.
   if (sessionSharePassword) h['X-Share-Password'] = sessionSharePassword;
-  return h;
+  return { ...h, ...opts.extra };
 }
 
 // Error telemetry hook (spec/22 'Error' category). This module can't
@@ -355,11 +357,18 @@ export async function apiDelete(
     // Pass `false` to require a successful 2xx and surface 404 as a
     // real error.
     allow404?: boolean;
+    // Declarative markers this DELETE carries, e.g. the Offline Mode
+    // conversion header — without one the worker cannot tell "take offline"
+    // from a real delete and records the wrong timeline event.
+    extra?: Record<string, string>;
   },
 ): Promise<void> {
   const res = await fetch(url, {
     method: 'DELETE',
-    headers: await apiHeaders(ownerId, opts.share === undefined ? {} : { share: opts.share }),
+    headers: await apiHeaders(ownerId, {
+      ...(opts.share === undefined ? {} : { share: opts.share }),
+      ...(opts.extra ? { extra: opts.extra } : {}),
+    }),
   });
   if (opts.allow404 ?? true) {
     await expectOkOr404Void(res, opts.action);

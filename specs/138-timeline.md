@@ -704,6 +704,23 @@ Team events use the analogous `audienceForTeam(env, teamId)`.
 | `diagram_snapshot`                   | snapshot taken (spec/67)              | "Snapshot Taken" / "Payments architecture"                   |
 | `diagram_offline` / `diagram_synced` | Take Offline / Sync Diagram (spec/76) | "Taken Offline" / "Synced to the Cloud"                      |
 
+**The two Offline Mode conversions declare themselves**, because they reuse
+ordinary endpoints and are otherwise indistinguishable from them: "Take
+offline" is a plain `DELETE /diagrams/:id` (the server copy really does go)
+and "Sync diagram" a plain `POST /diagrams`. Undeclared, the worker recorded
+`diagram_deleted` and `diagram_created` — so the feed told an owner, in danger
+red, that a diagram they had just moved into this browser had been **deleted**,
+and that one they had just uploaded was brand **new**. The editor therefore
+sends `X-Diagram-Conversion: offline | sync` on the request that performs it,
+and the route picks the honest event. Header name, values and the reader live in
+`packages/api-schema` beside the event types they select, since it is a
+two-sided contract and two copies of a string is how these drift. An
+unrecognised value falls back to the truthful default: the header is
+client-supplied. `diagram_offline` is owner-only — an offline diagram exists in
+exactly one browser, so no teammate has a stake in it — while a real delete
+still fans out to the team audience. The source cascade (§3.5) runs either way:
+whatever the server held is gone, so its prior events would point at a 404.
+
 **The coalesced editing event** is the one that needs care, because it
 is the highest-volume write in the product and a naive emit would bury
 everything else even with stacking.
