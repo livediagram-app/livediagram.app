@@ -75,9 +75,11 @@ export function useExplorerMoves({
     // update commits, or the GET can be served first and re-render the
     // folder under its old parent with nothing left to reconcile it.
     void apiUpdateFolder(ownerId, id, { parentId })
-      .then(() => refreshFolders())
+      .then(() => {
+        refreshFolders();
+        track('Folder', 'Moved');
+      })
       .catch(() => {});
-    track('Folder', 'Moved');
   };
 
   // Send one of the caller's own diagrams into a team's shared
@@ -94,13 +96,15 @@ export function useExplorerMoves({
     // silent path left the diagram in neither list, looking deleted
     // (mirrors moveDiagramToFolder's rollback).
     void apiSetDiagramFolder(ownerId, id, folderId, teamId)
-      .then(() => refreshTeamLibraries())
+      .then(() => {
+        refreshTeamLibraries();
+        track('Team', 'Added', 'Diagram');
+      })
       .catch(() => {
         if (row) setDiagrams((prev) => (prev.some((d) => d.id === id) ? prev : [row, ...prev]));
         toast.error('Could not move the diagram to the team. Please try again.');
       });
     setDiagrams((prev) => prev.filter((d) => d.id !== id));
-    track('Team', 'Added', 'Diagram');
   };
 
   // Re-folder a team-library diagram WITHIN its team (folderId null =
@@ -108,10 +112,15 @@ export function useExplorerMoves({
   // Same call the team page's own move uses (spec/35).
   const moveTeamDiagramToFolder = (id: string, teamId: string, folderId: string | null) => {
     if (!ownerId) return;
+    // .then BEFORE .catch, deliberately: chained the other way round the
+    // success handler also runs after a swallowed rejection, which is harmless
+    // for a refresh but would keep counting moves that never happened.
     void apiSetDiagramFolder(ownerId, id, folderId, teamId)
-      .catch(() => {})
-      .then(() => refreshTeamLibraries());
-    track('Team', 'Moved', 'Diagram');
+      .then(() => {
+        refreshTeamLibraries();
+        track('Team', 'Moved', 'Diagram');
+      })
+      .catch(() => {});
   };
 
   // Move a team-library diagram OUT of its team — either to the
@@ -122,12 +131,12 @@ export function useExplorerMoves({
   const moveTeamDiagramOut = (id: string, toTeamId: string | null, folderId: string | null) => {
     if (!ownerId) return;
     void apiSetDiagramFolder(ownerId, id, folderId, toTeamId)
-      .catch(() => {})
       .then(() => {
         refreshTeamLibraries();
         void refreshPersonal(ownerId);
-      });
-    track('Team', toTeamId === null ? 'Removed' : 'Moved', 'Diagram');
+        track('Team', toTeamId === null ? 'Removed' : 'Moved', 'Diagram');
+      })
+      .catch(() => {});
   };
 
   // One entry point for the unified move picker (spec/35): route a

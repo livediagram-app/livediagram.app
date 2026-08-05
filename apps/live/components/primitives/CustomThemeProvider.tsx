@@ -147,8 +147,10 @@ export function CustomThemeProvider({
       onThemeDeleted?.(id);
       setThemes((prev) => prev.filter((t) => t.id !== id));
       unregisterCustomTheme(id);
-      void apiDeleteCustomTheme(ownerId, id).catch(() => {});
-      track('Theme', 'Deleted', 'Custom');
+      // The local unregister above is optimistic; the count follows the server.
+      void apiDeleteCustomTheme(ownerId, id)
+        .then(() => track('Theme', 'Deleted', 'Custom'))
+        .catch(() => {});
     },
     [ownerId, onThemeDeleted],
   );

@@ -13,6 +13,7 @@ import {
   apiUpdateFolder,
 } from '@/lib/api-client';
 import { duplicateDiagram as duplicateDiagramApi } from '@/lib/duplicate-diagram';
+import { accepted } from '@/lib/accepted';
 import { track } from '@/lib/telemetry';
 import { indexFolders, folderBreadcrumb } from '@/lib/folder-tree';
 
@@ -98,8 +99,8 @@ export function useTeamLibrary(ownerId: string | null, teamId: string) {
   const renameFolder = useCallback(
     async (id: string, name: string) => {
       if (!ownerId || !name.trim()) return;
-      await apiUpdateFolder(ownerId, id, { name: name.trim() }).catch(() => {});
-      track('Folder', 'Renamed', 'Team');
+      if (await accepted(apiUpdateFolder(ownerId, id, { name: name.trim() })))
+        track('Folder', 'Renamed', 'Team');
       await refresh();
     },
     [ownerId, refresh],
@@ -108,8 +109,8 @@ export function useTeamLibrary(ownerId: string | null, teamId: string) {
   const moveFolder = useCallback(
     async (id: string, parentId: string | null) => {
       if (!ownerId) return;
-      await apiUpdateFolder(ownerId, id, { parentId }).catch(() => {});
-      track('Folder', 'Moved', 'Team');
+      if (await accepted(apiUpdateFolder(ownerId, id, { parentId })))
+        track('Folder', 'Moved', 'Team');
       await refresh();
     },
     [ownerId, refresh],
@@ -118,8 +119,7 @@ export function useTeamLibrary(ownerId: string | null, teamId: string) {
   const deleteFolder = useCallback(
     async (id: string) => {
       if (!ownerId) return;
-      await apiDeleteFolder(ownerId, id).catch(() => {});
-      track('Folder', 'Deleted', 'Team');
+      if (await accepted(apiDeleteFolder(ownerId, id))) track('Folder', 'Deleted', 'Team');
       await refresh();
     },
     [ownerId, refresh],
@@ -130,8 +130,8 @@ export function useTeamLibrary(ownerId: string | null, teamId: string) {
   const moveDiagram = useCallback(
     async (diagramId: string, folderId: string | null) => {
       if (!ownerId) return;
-      await apiSetDiagramFolder(ownerId, diagramId, folderId, teamId).catch(() => {});
-      track('Team', 'Moved', 'Diagram');
+      if (await accepted(apiSetDiagramFolder(ownerId, diagramId, folderId, teamId)))
+        track('Team', 'Moved', 'Diagram');
       await refresh();
     },
     [ownerId, teamId, refresh],
@@ -142,8 +142,7 @@ export function useTeamLibrary(ownerId: string | null, teamId: string) {
   const deleteDiagram = useCallback(
     async (diagramId: string) => {
       if (!ownerId) return;
-      await apiDeleteDiagram(ownerId, diagramId).catch(() => {});
-      track('Diagram', 'Deleted');
+      if (await accepted(apiDeleteDiagram(ownerId, diagramId))) track('Diagram', 'Deleted');
       await refresh();
     },
     [ownerId, refresh],
@@ -157,8 +156,8 @@ export function useTeamLibrary(ownerId: string | null, teamId: string) {
       // spec/91.
       const trimmed = truncateName(name);
       if (!trimmed) return;
-      await apiSaveDiagramMeta(ownerId, { id: diagramId, name: trimmed }).catch(() => {});
-      track('Diagram', 'Renamed');
+      if (await accepted(apiSaveDiagramMeta(ownerId, { id: diagramId, name: trimmed })))
+        track('Diagram', 'Renamed');
       await refresh();
     },
     [ownerId, refresh],

@@ -112,11 +112,11 @@ export function useDiagramActions(deps: DiagramActionsDeps) {
         void refreshDiagramList();
         onDiagramScopeChanged?.(id, dest.teamId);
         toast.success(dest.teamId ? 'Moved to the team library' : 'Moved to My Work');
+        track('Team', 'Moved', 'Diagram');
       })
       .catch(() => {
         toast.error('Could not move the diagram. Please try again.');
       });
-    track('Team', 'Moved', 'Diagram');
   };
 
   // "New Diagram" from the Explorer. Welcome / create-new lives at

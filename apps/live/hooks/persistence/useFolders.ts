@@ -120,13 +120,17 @@ export function useFolders(
       const prev = folders.find((f) => f.id === id);
       const prevName = prev?.name.trim() ?? '';
       setFolders((fs) => fs.map((f) => (f.id === id ? { ...f, name: trimmed } : f)));
-      void apiUpdateFolder(ownerId, id, { name: trimmed }).catch(() => {
-        // Roll the optimistic rename back to the stored name so the tree
-        // doesn't drift from the server on a failed write (this hook has no
-        // toast in scope; rollback keeps the UI truthful).
-        if (prev) setFolders((fs) => fs.map((f) => (f.id === id ? { ...f, name: prev.name } : f)));
-      });
-      if (prevName !== trimmed) track('Folder', 'Renamed');
+      void apiUpdateFolder(ownerId, id, { name: trimmed })
+        .then(() => {
+          if (prevName !== trimmed) track('Folder', 'Renamed');
+        })
+        .catch(() => {
+          // Roll the optimistic rename back to the stored name so the tree
+          // doesn't drift from the server on a failed write (this hook has no
+          // toast in scope; rollback keeps the UI truthful).
+          if (prev)
+            setFolders((fs) => fs.map((f) => (f.id === id ? { ...f, name: prev.name } : f)));
+        });
     },
     [folders, ownerId],
   );
@@ -139,8 +143,9 @@ export function useFolders(
           .filter((f) => f.id !== id)
           .map((f) => (f.parentId === id ? { ...f, parentId: null } : f)),
       );
-      void apiDeleteFolder(ownerId, id).catch(() => {});
-      track('Folder', 'Deleted');
+      void apiDeleteFolder(ownerId, id)
+        .then(() => track('Folder', 'Deleted'))
+        .catch(() => {});
     },
     [ownerId],
   );

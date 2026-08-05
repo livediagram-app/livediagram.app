@@ -100,14 +100,20 @@ export function useDiagramListActions(deps: DiagramListActionsDeps) {
     const prev = diagramList.find((d) => d.id === id);
     const prevName = prev?.name?.trim() ?? '';
     setDiagramList((p) => p.map((d) => (d.id === id ? { ...d, name: trimmed } : d)));
-    void apiSaveDiagramMeta(ownerId, { id, name: trimmed }).catch(() => {
-      // Roll the optimistic rename back and surface the failure, matching
-      // the other consequential list actions (delete / move / duplicate)
-      // — a silent swallow left the row showing a name the server rejected.
-      if (prev) setDiagramList((p) => p.map((d) => (d.id === id ? { ...d, name: prev.name } : d)));
-      toast.error('Could not rename the diagram. Please try again.');
-    });
-    if (trimmed !== prevName) track('Diagram', 'Renamed');
+    void apiSaveDiagramMeta(ownerId, { id, name: trimmed })
+      // Only once the server accepted it. Emitting beside the request counted
+      // renames the very next line rolls back and toasts as failures.
+      .then(() => {
+        if (trimmed !== prevName) track('Diagram', 'Renamed');
+      })
+      .catch(() => {
+        // Roll the optimistic rename back and surface the failure, matching
+        // the other consequential list actions (delete / move / duplicate)
+        // — a silent swallow left the row showing a name the server rejected.
+        if (prev)
+          setDiagramList((p) => p.map((d) => (d.id === id ? { ...d, name: prev.name } : d)));
+        toast.error('Could not rename the diagram. Please try again.');
+      });
   };
 
   // Delete a diagram by id. When the target is the currently-open one
@@ -142,7 +148,6 @@ export function useDiagramListActions(deps: DiagramListActionsDeps) {
       });
       if (!ok) return;
     }
-    track('Diagram', 'Deleted');
     // Tombstone first, ALWAYS: the open editor's autosave (debounce + the
     // beforeunload keepalive beacon) must not write this diagram back. For
     // the open diagram that's the bug fix; for others it's harmless (their
@@ -154,13 +159,21 @@ export function useDiagramListActions(deps: DiagramListActionsDeps) {
       // in-flight request and the diagram would survive (the "didn't delete
       // first time" report). Awaiting sends it to completion first; the
       // tombstone then stops the beforeunload flush from re-creating it.
-      await apiDeleteDiagram(ownerId, id).catch(() => {});
+      // Telemetry rides the resolved delete, not the click: this used to fire
+      // before the request was even sent. Emitting here is still delivered
+      // despite the navigation below, because the client flushes its buffer
+      // through sendBeacon on pagehide (@livediagram/telemetry-client).
+      await apiDeleteDiagram(ownerId, id)
+        .then(() => track('Diagram', 'Deleted'))
+        .catch(() => {});
       window.location.assign(`${window.location.origin}/explorer`);
       return;
     }
     await beforeRemove?.();
     setDiagramList((prev) => prev.filter((d) => d.id !== id));
-    void apiDeleteDiagram(ownerId, id).catch(() => {});
+    void apiDeleteDiagram(ownerId, id)
+      .then(() => track('Diagram', 'Deleted'))
+      .catch(() => {});
     // The row is gone but on a long / scrolled list its disappearance
     // can be easy to miss, and the action is destructive — confirm it.
     toast.success('Diagram deleted');
@@ -195,6 +208,7 @@ export function useDiagramListActions(deps: DiagramListActionsDeps) {
         // folder / Unsorted), so confirm where it went — only once the
         // server actually accepted the move.
         toast.success(folderId ? 'Moved to folder' : 'Moved to Unsorted');
+        track('Diagram', 'Moved');
       })
       .catch(() => {
         // Roll the row back to its old folder and tell the user, instead
@@ -204,7 +218,6 @@ export function useDiagramListActions(deps: DiagramListActionsDeps) {
         );
         toast.error('Could not move the diagram. Please try again.');
       });
-    track('Diagram', 'Moved');
   };
 
   // Duplicate a diagram into a brand-new one (new tab ids, preserved
