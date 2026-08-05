@@ -1,0 +1,833 @@
+# 138 — Timeline
+
+The Explorer's landing page becomes a chronological feed of everything
+that has happened across the user's diagrams, teams, and account —
+grouped by day, stacked when a day gets busy, and switchable into a
+calendar month grid.
+
+Modelled on the Timeline subsystem in the Manager Toolkit monorepo
+(`specs/dashboard/timeline/spec.md` + `packages/ui/src/timeline/*` there),
+adapted to livediagram's data model and its light/dark UI.
+
+## Why
+
+Today the Explorer opens on **Recent**, a list of diagram rows ordered
+by `updated_at`. It answers exactly one question — "what did I touch
+last?" — and it is the only answer the Explorer gives. Everything else
+that happens to a user is invisible until they go looking for it:
+
+- Someone commented on a diagram you own. You find out by email (spec/64
+  #1), or you don't.
+- Someone assigned you an action (spec/68). Same.
+- A team invite arrived. It sits behind a badge in a sidebar section
+  most users never expand.
+- A teammate joined, left, or was promoted. Nothing tells you.
+- An API token is about to expire (spec/61). One email, seven days out.
+
+Each of those already exists as a write somewhere in the api worker, and
+each is currently a dead end. The Timeline is one surface that collects
+them, so the first thing a user sees on opening the Explorer is **what
+has happened since they were last here**, not just a list of files.
+
+## Non-goals
+
+- **Not a replacement for the Activity Panel** (spec/12). That panel is
+  element-level, tab-scoped, and revertable — a precision instrument for
+  one diagram. The Timeline never renders an element diff and never
+  offers Revert. Diagram editing appears here as one coalesced "worked
+  on" event per person per diagram per day (§4.2).
+- **Not realtime.** No Durable Object fan-out, no per-user socket. The
+  feed is read on load, with a Refresh button and a stale-read refresh
+  (§6.3). livediagram's realtime rooms are per-diagram; a per-user
+  channel is a whole new object type for a screen the user looks at
+  once a session.
+- **No favourites / starring, and no per-entry delete** in v1. The
+  Manager Toolkit timeline has both (they matter when a timeline is
+  evidence for a performance review). Here the feed is ambient — you
+  read it and move on — so the tables and the eight endpoints they
+  need aren't earned yet. The schema doesn't preclude them (§3.4).
+- **No AI day summary.** Manager Toolkit gates one behind Pro;
+  livediagram has no paid tier (spec/03), so it would be free for
+  everyone and gated only on `OPENAI_API_KEY`. Deferred as its own
+  decision rather than smuggled in with this one.
+- **No manual entries.** Every event is emitted by the system from a
+  real write. There is no "add a note to your timeline".
+
+## 1. Concepts
+
+Three nouns, lifted from Manager Toolkit because the shape has already
+been proven there.
+
+### Event
+
+One thing that happened. Carries:
+
+- `sourceType` + `sourceId` — the domain object it is about
+  (`diagram` + the diagram id, `team` + the team id). Synthesised for
+  events with no single object (`account` + the owner id).
+- `eventType` — what happened (`diagram_created`, `comment_added`,
+  `team_member_joined`). Distinct from `sourceType`: one diagram
+  produces many event types over its life.
+- `title` / `description` — first-class columns, not snapshot fields.
+  Every event has a title; they are the universal backbone and the
+  thing a future search would index.
+- `occurredAt` — the sort key.
+- `snapshot` — JSON extras the renderer needs (the diagram's thumbnail
+  key, the commenter's colour, the team's member count) captured at
+  emit time so rendering the feed never fans out into other tables.
+- `actorId` — who did it, as an owner id (Clerk `sub` or guest
+  participant id). `NULL` for system events like a token expiry
+  warning.
+
+### Scope
+
+**Who should see this event.** A scope is a `(scopeType, scopeId)` pair.
+
+v1 ships exactly one scope type: `user`, where `scopeId` is an owner id.
+The Timeline page reads `user:<caller>`.
+
+`scopeType` is a free-text column with no CHECK constraint, so a later
+per-diagram timeline (`diagram:<id>`, a natural second home for the
+Activity Panel's data) or a team activity feed (`team:<id>`) is a new
+scope value plus a renderer — no migration, no change to the read path.
+That is the whole reason for the join table below; see §3.4.
+
+### Membership
+
+One event, many scopes. A comment on a diagram that lives in a team
+library reaches the diagram's owner **and** every joined member of that
+team — one event row, N membership rows. Without the join table the
+event would have to be duplicated per recipient, and a team of twelve
+would multiply every comment by twelve.
+
+## 2. What the user sees
+
+`/explorer/timeline`, rendered in the Explorer's right pane using the
+existing `ExplorerPane` dispatch.
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│  Timeline                    142   [ List | Calendar ]  ⚙ ⟳  │
+├──────────────────────────────────────────────────────────────┤
+│  ●  ┃  [Today]  Tue, 5 Aug   2026                            │
+│  │  ┃  ┌────┬───────────────────────────────────────┐        │
+│  │  ┃  │ 💬 │ Comment added                         │        │
+│  │  ┃  │    │ Priya on Payments architecture        │        │
+│  │  ┃  │    │ "Should the retry budget be per-shard │        │
+│  │  ┃  │    │  or global?"                          │        │
+│  │  ┃  └────┴───────────────────────────────────────┘        │
+│  │  ┃  ┌────┬───────────────────────────────────────┐──┐─┐   │
+│  │  ┃  │ ✎  │ Diagram Updates                       │  │ │   │
+│  │  ┃  │    │ 4 events - click to expand            │  │ │   │
+│  │  ┃  └────┴───────────────────────────────────────┘──┘─┘   │
+│  ●  ┃  Mon, 4 Aug                                            │
+│  │  ┃  ┌────┬───────────────────────────────────────┐        │
+│  │  ┃  │ 👥 │ Joined a team                         │        │
+│  │  ┃  │    │ You joined Platform Guild             │        │
+│  │  ┃  └────┴───────────────────────────────────────┘        │
+└──────────────────────────────────────────────────────────────┘
+```
+
+**Day rail.** A dot and a connecting line down the left, one group per
+calendar day (UTC), newest first. Today's dot is brand-500 with a soft
+ring and its label carries a **Today** pill. Days in the future (a share
+link expiring, a token expiring) sit above Today with a violet-tinted
+dot and rail.
+
+**Bubble.** Three regions, and the layout is strict:
+
+1. **Icon strip**, 44px, right-bordered, holding the source-type glyph.
+   The whole bubble background is a soft tint of that source's colour,
+   so a day's events are readable as kinds at a glance without reading
+   a word. Every bubble of the same source type gets the _same_ tint —
+   no alternating stripe, which reads as "different kinds" and is the
+   opposite of the intent.
+2. **Content** — title (bold up to a `: ` prefix), description, optional
+   meta line.
+3. **Right strip** — contextual actions, hover-revealed. In v1 the only
+   action is **Open**, and most bubbles make the whole bubble clickable
+   instead, so the strip is usually empty. It exists so that a later
+   star / dismiss has exactly one place to land, rather than a button
+   floating in the content row.
+
+**Copy rules**, inherited from Manager Toolkit because they are what
+keeps a feed skimmable:
+
+- The **title** is a Title Case category — "Comment Added", "Diagram
+  Created", "Invited to a Team". It never contains user content.
+- User content — diagram names, team names, comment text, people's
+  names — lives in the **description**. This is what makes a stack of
+  four bubbles collapsible into one honest headline (§2.1): the titles
+  are already generic.
+- Transitions read as "Member → Admin" in the description; the title
+  stays "Role Changed".
+
+### 2.1 Stacking
+
+When a day picks up volume the feed must not become a wall. Within one
+day-group, events sharing a `(sourceType, eventType)` bucket collapse
+into a single bubble reading **"N events - click to expand"**, rendered
+with one or two faux-card layers stepping out to the right so the pile
+reads as depth. Clicking expands the run inline.
+
+- Grouping is **by bucket, not by adjacency**: four team-member events
+  split by an unrelated bubble still collapse into one stack of four.
+  The user reads a day by _kind of activity_, not by chronological run.
+- The stack lands at the position of its **most recent** member, since
+  entries arrive newest-first.
+- Related event types alias onto one bucket so an add and a remove on
+  the same day read as one moment: `team_member_joined` +
+  `team_member_left` → "Members Changed"; `share_link_created` +
+  `share_link_expired` → "Sharing Changed".
+- **Never stacked**: `comment_added` on a thread you are in, and any
+  event whose description carries content that only makes sense
+  individually. A collapsed comment hides the thing you wanted to read.
+- A stack of one is just a bubble; the faux layers only render at 2+,
+  and the second layer only at 3+.
+
+The rules live in `packages/ui/src/timeline/stacking.ts` as pure
+functions over the entry list, tested directly.
+
+### 2.2 Calendar mode
+
+A segmented control in the header switches **List** ↔ **Calendar**.
+Calendar renders a month grid. Each day cell carries one coloured dot
+per source type present that day (the source's colour + glyph, with a
+count badge above 1). Clicking a dot opens a popover listing that day's
+events of that type as full timeline bubbles — the same renderers, so
+there is one bubble implementation, not two.
+
+- Month navigation chevrons **skip empty months**: prev/next jump to
+  the nearest month that actually has events, and are disabled with a
+  tooltip ("No earlier events") when there is none in that direction.
+  Paging one empty month at a time through a quiet quarter is the thing
+  that makes calendar views feel broken.
+- Mode is **not persisted** across navigation. Each mount opens on List.
+- In calendar mode, stacking buckets by `sourceType` alone (not
+  `sourceType` + `eventType`), because a cell has room for one dot per
+  kind, not one per event type.
+
+### 2.3 Filters, refresh, paging
+
+The header holds a filter popover and a refresh button in one rounded
+segmented cluster, labels shown at `md:` and up, icons only below.
+
+- **Source-type chips** — Diagrams, Comments, Actions, Teams, Invites,
+  Account. Toggling excludes that type from the feed. The trigger shows
+  a brand dot when any filter is active.
+- **Mini calendar** inside the popover: clicking a date scrolls that
+  day-group into view and pulses it with a fading box-shadow. Box-shadow
+  only, never a transform — transforming the group promotes it to its
+  own compositing layer, and tearing that layer down at animation end
+  makes the bubbles visibly blink.
+- **Refresh** re-reads the feed and shows the last-refreshed time
+  inline.
+- **Show more** appends the next page when the read returns a cursor.
+  Page size 50. A refresh requests `max(50, currentLength)` capped at
+  200, so a user who has paged three times doesn't get snapped back to
+  one page.
+
+The popover renders into a `document.body` portal at fixed coordinates
+anchored to its trigger, re-anchored on scroll and resize. The Explorer
+pane is a rounded, `overflow: hidden` card, so an in-tree absolute
+popover is clipped no matter its z-index.
+
+### 2.4 Empty and loading states
+
+- **Loading**: a skeleton of three day-groups, not a spinner and not
+  the empty state. The feed popping in after a fetch reads as a layout
+  jump.
+- **Empty (new user)**: the shared `EmptyState` from `@livediagram/ui`,
+  copy "Nothing has happened yet — create a diagram and it'll show up
+  here", with a New Diagram action. In practice a signed-up user is
+  rarely empty because of the backfill (§5).
+- **Empty (all filtered out)**: "No events match these filters", with a
+  Clear filters action. Distinct copy from the new-user case, so the
+  user isn't told they have no history when they do.
+
+## 3. Data model
+
+Migration `0042_timeline.sql`. Three tables, owned by the api worker.
+
+### 3.1 `timeline_events`
+
+```sql
+CREATE TABLE timeline_events (
+  id           TEXT PRIMARY KEY,          -- UUID
+  actor_id     TEXT,                      -- owner id of who did it; NULL for system events
+  source_type  TEXT NOT NULL,             -- 'diagram' | 'team' | 'account' | ...
+  source_id    TEXT NOT NULL,
+  event_type   TEXT NOT NULL,             -- 'diagram_created' | 'comment_added' | ...
+  dedupe_key   TEXT NOT NULL DEFAULT '',  -- '' for one-shot events; see §4.2
+  title        TEXT NOT NULL,
+  description  TEXT,
+  occurred_at  INTEGER NOT NULL,          -- epoch ms, matching change_log
+  snapshot     TEXT NOT NULL,             -- JSON extras for the renderer
+  created_at   INTEGER NOT NULL,
+  UNIQUE (source_type, source_id, event_type, dedupe_key)
+);
+
+CREATE INDEX timeline_events_occurred_idx ON timeline_events(occurred_at);
+```
+
+The `UNIQUE` constraint is what makes emission idempotent. Emitting the
+same event twice — because a client retried, or because the backfill
+covers ground a live emit already covered — updates the existing row
+rather than duplicating it.
+
+`dedupe_key` is empty for one-shot events (a diagram is created once).
+It carries `<actorId>:<YYYY-MM-DD>` for the coalesced editing event
+(§4.2), which is the one event type that deliberately extends itself
+through the day.
+
+`occurred_at` is epoch ms, matching `change_log` rather than the ISO
+strings Manager Toolkit uses. Manager Toolkit has a whole normalisation
+helper because SQLite defaults, `toISOString()`, and date-only columns
+produce three lexically-incomparable formats in one column. An integer
+column has no such failure mode; use it.
+
+### 3.2 `timeline_event_scopes`
+
+```sql
+CREATE TABLE timeline_event_scopes (
+  event_id   TEXT NOT NULL REFERENCES timeline_events(id) ON DELETE CASCADE,
+  scope_type TEXT NOT NULL,               -- v1: 'user'. Reserved: 'diagram', 'team'.
+  scope_id   TEXT NOT NULL,               -- an owner id when scope_type = 'user'
+  added_at   INTEGER NOT NULL,
+  PRIMARY KEY (scope_type, scope_id, event_id)
+);
+
+CREATE INDEX timeline_event_scopes_event_idx ON timeline_event_scopes(event_id);
+```
+
+The primary key doubles as the read index: `WHERE scope_type = 'user'
+AND scope_id = ?` is a prefix scan. The join into `timeline_events` then
+sorts by `occurred_at DESC`.
+
+**On not denormalising `occurred_at` onto this row.** A covering index
+`(scope_type, scope_id, occurred_at DESC)` would let a page come back
+without a sort, and it is the obvious optimisation. It is deliberately
+not in v1: it duplicates the sort key across two tables, and the
+coalesced editing event mutates `occurred_at` through the day, so every
+extension would have to write both rows in step. A personal feed inside
+the retention window is hundreds of rows, not millions. Revisit with a
+measurement, not a hunch.
+
+### 3.3 `timeline_scope_state`
+
+```sql
+CREATE TABLE timeline_scope_state (
+  scope_type       TEXT NOT NULL,
+  scope_id         TEXT NOT NULL,
+  backfilled_at    INTEGER,               -- NULL until the one-shot backfill has run
+  last_refreshed_at INTEGER,
+  PRIMARY KEY (scope_type, scope_id)
+);
+```
+
+One row per scope. `backfilled_at` gates the one-shot seeding in §5;
+`last_refreshed_at` backs the "Last refreshed …" line and the
+stale-read threshold.
+
+### 3.4 What the schema leaves open
+
+The join table and the free-text `scope_type` are the whole forward
+plan, and they cost one extra table today:
+
+- **A per-diagram timeline** is `scope_type = 'diagram'`. The Activity
+  Panel's element diffs would stay where they are; the diagram scope
+  would carry the _diagram-level_ events spec/12 explicitly lists as
+  out of scope for its V1 (rename, share toggle, theme change).
+- **A team activity feed** is `scope_type = 'team'`, and every emit
+  that already resolves a team audience (§4.1) would attach it
+  alongside the per-member `user` scopes.
+- **Favourites** would be a fourth table keyed by
+  `(scope_type, scope_id, event_id)` — per viewing scope, not on the
+  membership row, so a future composite read can't bleed one scope's
+  stars into another's.
+- **Per-entry dismissal** would be a `deleted_at` on the membership
+  row, soft so a re-emit doesn't resurrect what the user dismissed.
+
+None of those are built. All of them are additive.
+
+### 3.5 Deletion and retention
+
+- **Deleting a diagram cascades**, matching Manager Toolkit. The delete
+  hard-removes every `timeline_events` row with
+  `source_type = 'diagram' AND source_id = <id>`; the
+  `ON DELETE CASCADE` on `timeline_event_scopes.event_id` takes the
+  membership rows with them. A feed that keeps narrating a diagram
+  nobody can open any more is noise, and every one of those bubbles
+  links to a 404.
+  **The tombstone survives**, because the cascade runs _before_ the
+  `diagram_deleted` emit, not after. So a deleted diagram collapses
+  from a run of bubbles to exactly one — "Diagram Deleted / Payments
+  architecture" — which is the row that actually answers "what
+  happened to it?". `markTimelineEventsDeletedBySource(env,
+sourceType, sourceId)` is the shared helper; any future entity's
+  delete path calls it rather than writing the DELETE inline.
+- **Deleting an account does.** The existing account-deletion path
+  hard-deletes `timeline_event_scopes WHERE scope_id = ?`, then
+  `timeline_events WHERE actor_id = ?`, then the scope-state row. The
+  `ON DELETE CASCADE` makes the order safe regardless; run them
+  explicitly for clarity.
+- **Retention is 365 days.** A daily sweep deletes events older than
+  that. It joins the existing 03:00 UTC cron that already prunes
+  `change_log` at 90 days (spec/12), running immediately after it.
+  365 rather than 90 because a timeline's value is partly "when did I
+  last touch this" and a year is the natural unit for that question,
+  where an element-level audit trail's value decays in weeks.
+
+## 4. Event catalogue
+
+Every event is emitted **inline on the write path** in the api worker.
+There are no scanners and no cron-driven scanning: unlike Manager
+Toolkit, livediagram has no entities whose state drifts silently, so a
+"rescan for what I missed" pass would find nothing. The two exceptions
+are the future-dated expiry events (§4.5), which the existing daily
+crons already compute.
+
+All emission goes through one module, `apps/api/src/db/timeline.ts`:
+
+```ts
+emitTimelineEvent(env, draft: TimelineEventDraft, scopes: TimelineScopeRef[]): Promise<void>
+```
+
+Fire-and-forget from the caller's perspective — wrapped in
+`ctx.waitUntil` so a timeline write can never slow down or fail a
+diagram save. A thrown error is swallowed and counted as an
+`Error`/`Api` telemetry event; a missing timeline row is a cosmetic
+loss, a failed save is not.
+
+### 4.1 Resolving the audience
+
+One helper decides who sees a diagram event:
+
+```ts
+audienceForDiagram(env, diagram): Promise<string[]>   // owner ids
+```
+
+- Always the diagram's `owner_id`.
+- Plus, when `diagrams.team_id` is set (spec/35), every `team_members`
+  row for that team with `status = 'joined'` and a non-null `user_id`.
+- The **actor is not excluded**. "You commented on X" is a legitimate
+  entry in your own history; the renderer says "You" rather than your
+  name, which is what makes it read correctly.
+
+Team events use the analogous `audienceForTeam(env, teamId)`.
+
+### 4.2 Diagram lifecycle and editing
+
+| `eventType`                          | Fires when                            | Title / description                                          |
+| ------------------------------------ | ------------------------------------- | ------------------------------------------------------------ |
+| `diagram_created`                    | `POST /api/diagrams`                  | "Diagram Created" / "Payments architecture"                  |
+| `diagram_renamed`                    | `PUT` where the name changes          | "Diagram Renamed" / "Payments v1 → Payments architecture"    |
+| `diagram_duplicated`                 | duplicate route                       | "Diagram Duplicated" / "Copy of Payments architecture"       |
+| `diagram_deleted`                    | `DELETE`                              | "Diagram Deleted" / "Payments architecture"                  |
+| `diagram_moved`                      | folder change                         | "Moved to a Folder" / "Payments architecture → Architecture" |
+| `diagram_edited`                     | tab save (coalesced)                  | "Diagram Updated" / "You worked on Payments architecture"    |
+| `diagram_snapshot`                   | snapshot taken (spec/67)              | "Snapshot Taken" / "Payments architecture"                   |
+| `diagram_offline` / `diagram_synced` | Take Offline / Sync Diagram (spec/76) | "Taken Offline" / "Synced to the Cloud"                      |
+
+**The coalesced editing event** is the one that needs care, because it
+is the highest-volume write in the product and a naive emit would bury
+everything else even with stacking.
+
+- Emitted from the tab-save path (`upsertTab`), not from
+  `change_log` — the log is tab-scoped and 90-day, and reading it back
+  to derive a daily rollup would be a join per save.
+- `dedupe_key = "<actorId>:<YYYY-MM-DD>"` in UTC. The first save of the
+  day inserts; every later save that day hits the `UNIQUE` constraint
+  and **updates** `occurred_at` to now and bumps a `saves` counter in
+  the snapshot. One row per person per diagram per day.
+- Description is actor-relative at render time: "You worked on X" for
+  your own, "Priya edited your diagram X" for someone else's. The row
+  stores the actor id; the renderer resolves the pronoun.
+- This is a deliberate departure from Manager Toolkit's
+  **additive-only** refresh rule (existing rows are never mutated
+  there). It is safe here precisely because there are no favourites and
+  no user edits to preserve — nothing is attached to the row that a
+  mutation could invalidate. If favourites ever land (§3.4), this
+  event's mutation needs revisiting.
+
+Offline diagrams (spec/76) live only in IndexedDB and never reach the
+worker, so they emit nothing. Their absence from the Timeline is
+correct and matches the rest of the product's server-side surfaces.
+
+### 4.3 Collaboration
+
+| `eventType`          | Fires when                                                  | Notes                                              |
+| -------------------- | ----------------------------------------------------------- | -------------------------------------------------- |
+| `comment_added`      | both comment paths                                          | See below                                          |
+| `comment_resolved`   | thread flips to `resolved` on tab save                      | Diffed the same way                                |
+| `action_assigned`    | an `ElementAction` appears on save, or via `/notify-action` | Audience is the assignee plus the diagram audience |
+| `action_completed`   | an action's `status` flips to `done`                        |                                                    |
+| `share_link_created` | share link minted                                           | Audience is the owner only                         |
+
+**Comments have two write paths and both must emit.** Comments live
+inside element JSON on the tab (`packages/diagram/src/comments.ts`),
+not in a table — there is no comments table to hang a trigger off. The
+worker already has to reason about which comments are _new_ on every
+save, in `apps/api/src/comments.ts`:
+
+- `POST /api/diagrams/:id/tabs/:tabId/comments` — the explicit path a
+  view-role visitor uses. Emit directly; the comment object is right
+  there.
+- The ordinary tab `PUT`, where `rewriteCommentAuthors` already
+  compares incoming comments against the previous tab's by id in order
+  to stamp server-trusted authorship. The same diff yields the new
+  comments. `hasNewComments` is already exported from that module.
+
+The comment **text** goes in the description, truncated to 240
+characters with an ellipsis. A comment feed you can't read the comment
+in is a notification list, not a timeline. This is the same trust
+boundary as the diagram's own content: everyone in the audience already
+has read access to that thread. (Note that this is _narrower_ than the
+email notification in spec/64 #1, which deliberately never includes
+comment text — an email leaves the product's authorisation boundary
+and can sit in an inbox forever; the Timeline is behind the same auth
+as the diagram itself.)
+
+Assigned actions (spec/68) are likewise element-JSON, diffed on save
+the same way. `apps/api/src/routes/team-action-routes.ts`'s
+`notify-action` endpoint is the cleaner hook where the client already
+calls it.
+
+### 4.4 Teams and invites
+
+| `eventType`            | Fires when                                    | Audience                            |
+| ---------------------- | --------------------------------------------- | ----------------------------------- |
+| `team_created`         | `POST /api/teams`                             | Creator                             |
+| `team_invite_received` | admin invites an address                      | The invitee, once their id is known |
+| `team_invite_accepted` | `.../accept`                                  | The team                            |
+| `team_invite_declined` | invite row deleted by invitee                 | Team admins                         |
+| `team_member_joined`   | accept, or invite-link join                   | The team                            |
+| `team_member_left`     | member deletes own row                        | The team                            |
+| `team_member_removed`  | admin removes someone                         | The team, and the removed person    |
+| `team_role_changed`    | `PUT .../members/:id`                         | The team                            |
+| `team_diagram_added`   | diagram published to a team library (spec/35) | The team                            |
+
+**`team_invite_received` has an ordering problem worth naming.** An
+invite is created against an _email address_; the invitee's owner id is
+unknown until they sign in and the lazy email-claim step connects the
+row (spec/32). So there is nobody to scope the event to at emit time.
+Resolution: emit the event with **no `user` scope**, and attach the
+scope in the same lazy-claim step that fills in `user_id`, using the
+invite's original `created_at` as `occurred_at`. The invite then
+appears on the new member's Timeline dated when it was actually sent.
+
+Teams are Clerk-only, so none of these events ever reach a guest scope.
+
+### 4.5 Account and housekeeping
+
+| `eventType`           | Fires when                             | Notes                                                  |
+| --------------------- | -------------------------------------- | ------------------------------------------------------ |
+| `token_created`       | `POST /api/tokens` (spec/61)           |                                                        |
+| `token_expiring`      | the existing daily expiry-warning cron | **Future-dated**: `occurred_at` is the expiry, not now |
+| `share_link_expiring` | the share-expiry cron (spec/34)        | Future-dated                                           |
+| `theme_saved`         | custom theme created (spec/44)         |                                                        |
+| `image_uploaded`      | image upload (spec/19)                 | Coalesced per day like editing                         |
+
+Future-dated events are why the day rail renders future groups above
+Today with a distinct tint. They are the feed's only forward-looking
+content and they are the reason a user opens it before something
+breaks rather than after.
+
+## 5. Backfill
+
+A brand-new Timeline that is empty for an existing user with 60
+diagrams is a broken-looking feature. On the first read of a scope
+(`timeline_scope_state.backfilled_at IS NULL`), the worker seeds it:
+
+- For the caller's 200 most recently updated diagrams: a
+  `diagram_created` event at `diagrams.created_at`, and a
+  `diagram_edited` event at `updated_at` with the matching
+  `<actorId>:<date>` dedupe key.
+- For each team the caller has joined: a `team_member_joined` event at
+  their `team_members.created_at`.
+- Nothing else. Comments and actions are inside tab JSON and
+  backfilling them would mean parsing every tab of every diagram in a
+  request — a cost with no ceiling. The feed's older reaches are
+  thinner than its recent ones; that is the honest trade and it is
+  invisible within a week of use.
+
+The backfill is idempotent by construction (every insert hits the
+`UNIQUE` key), runs inside `ctx.waitUntil` after the response is
+served, and stamps `backfilled_at` so it never runs twice. The 200 cap
+is logged rather than silent — a user with 400 diagrams should not be
+told their history starts in March when it doesn't.
+
+## 6. API
+
+One route module, `apps/api/src/routes/timeline.ts`, dispatched from
+`src/index.ts`.
+
+### 6.1 `GET /api/timeline`
+
+Query params:
+
+- `scope` — `<scopeType>:<scopeId>`. Optional; defaults to
+  `user:<caller>`. Present in v1 only so the forward-compatible shape
+  is fixed from the start.
+- `from`, `to` — epoch ms bounds on `occurred_at`. The calendar view
+  passes the visible month.
+- `sourceType` — repeatable; narrows to those source types.
+- `limit` — default 50, max 200.
+- `cursor` — `<occurredAt>:<eventId>`, so the tiebreak is stable when
+  several events share a millisecond.
+
+Response:
+
+```json
+{
+  "items": [
+    {
+      "id": "...",
+      "sourceType": "diagram",
+      "sourceId": "...",
+      "eventType": "comment_added",
+      "title": "Comment Added",
+      "description": "Priya on Payments architecture",
+      "occurredAt": 1754380800000,
+      "actorId": "user_...",
+      "snapshot": { "diagramName": "Payments architecture", "text": "Should the retry budget…" }
+    }
+  ],
+  "nextCursor": "1754380800000:abc",
+  "lastRefreshedAt": 1754384400000
+}
+```
+
+**Authorisation.** A caller may only read a `user` scope whose
+`scopeId` is their own resolved owner id — the Clerk `sub` for a signed
+-in caller, the signed guest participant id otherwise. Any other scope
+is `403`. This is the only gate the endpoint needs in v1, and it is
+worth stating plainly because the scope parameter looks like it invites
+more.
+
+### 6.2 `POST /api/timeline/refresh`
+
+Stamps `last_refreshed_at`, runs the backfill if it hasn't run, and
+returns `{ lastRefreshedAt }`. Throttled to one call per scope per 5
+seconds server-side to absorb spam-clicks on the Refresh button.
+
+There is no `POST`/`PATCH`/`DELETE` for events. Nothing user-authored
+lives on this feed.
+
+### 6.3 Stale-read refresh
+
+`GET /api/timeline` triggers the backfill (and only the backfill) when
+`backfilled_at` is null. It does **not** rescan anything else — there
+is nothing to rescan, since all emission is inline. The 30-second
+stale threshold Manager Toolkit uses exists to amortise scanner cost;
+here it has nothing to amortise. The Refresh button re-reads, and that
+is the whole story.
+
+### 6.4 Wire types
+
+`TimelineEvent`, `TimelineScopeRef`, `TimelineReadResult`, and
+`TIMELINE_PAGE_SIZE` / `TIMELINE_PAGE_MAX` go in
+`@livediagram/api-schema` alongside `ChangeLogEntry`, per the existing
+convention that every DTO the worker emits and the editor consumes
+lives there.
+
+Client wrappers go in `apps/live/lib/api/timeline.ts` and are
+re-exported from the `lib/api-client.ts` barrel, matching every other
+domain. **Offline mode is a no-op here**: `isOfflineId` doesn't apply
+(the scope is an owner, not a diagram), and an offline-only browser has
+no server events. `apiListTimeline` returns an empty page when the
+fetch fails rather than throwing, so a worker outage degrades the
+landing page to an empty feed instead of an error screen — the same
+posture the Explorer's diagram list already takes.
+
+## 7. UI packaging
+
+Per the reuse principle, the generic pieces go in
+**`packages/ui/src/timeline/`** and know nothing about livediagram's
+domain:
+
+```
+Timeline.tsx            top level: grouping, rail, stacks, mode switch
+TimelineGroup.tsx       one day: dot, line, date label, Today pill
+TimelineBubble.tsx      icon strip / content / action strip
+StackedBubble.tsx       the collapsed run with its faux-card layers
+TimelineCalendarView.tsx month grid, per-day dots, day popover
+TimelineHeaderPopover.tsx filter chips + mini calendar, portalled
+useTimelineGrouping.ts  group-by-day (pure, exported for reuse)
+stacking.ts             bucket + alias rules (pure)
+sourceTypeMeta.ts       label / colour-var / icon-path per source type
+types.ts                TimelineEntry, renderer contracts
+```
+
+The **renderers** — the functions that turn a `TimelineEvent` into a
+bubble, and that know a diagram event links to `/diagram/<id>` and a
+team event to `/explorer/team?id=<id>` — live in
+**`apps/live/app/explorer/timeline/renderers.tsx`**, keyed by
+`sourceType`. The package takes a registry prop; it never imports a
+route.
+
+This split is what lets a per-diagram timeline (§3.4) or the editor's
+Activity Panel adopt the same components later without either one
+inheriting Explorer-specific copy.
+
+**Colour.** Each source type gets a CSS variable pair
+(`--ld-timeline-<source>` and `--ld-timeline-<source>-soft`) defined in
+the live app's `globals.css` with **both light and dark values** —
+livediagram has a class-based dark mode (spec/07), unlike Manager
+Toolkit which is dark-only, so every tint needs two. The bold value
+paints the icon; the soft value paints the bubble background.
+`sourceTypeMeta` reads the var with a neutral fallback so an unmapped
+source type renders as a plain grey bubble rather than nothing.
+
+**Animation.** A bubble fades in on the first mount of its event id
+only — the component keeps a `Set` of seen ids. Without that, every
+existing bubble re-animates on each refresh, which reads as the whole
+feed vanishing and coming back.
+
+## 8. Explorer integration
+
+### 8.1 Timeline becomes the landing view
+
+The default lands in three places, all of which must change together
+(they exist because a static export has no single entry point):
+
+1. `apps/live/src/worker.ts` — the `/explorer` → `/explorer/recent`
+   302 becomes `/explorer/timeline`.
+2. `apps/live/app/explorer/page.tsx` — the client `router.replace`
+   fallback for the dev server and direct asset hits.
+3. `apps/live/app/explorer/routes.ts` — `selectedFromRoute`'s
+   `default:` case, which catches mangled URLs and id-less
+   `folder`/`team` links, returns `{ kind: 'timeline' }`.
+
+**Recent is not removed.** It keeps its route, its sidebar row, and its
+badge. It answers a different question ("what did I touch last") and
+answers it better than a feed does.
+
+### 8.2 Sidebar
+
+Quick find gains Timeline at the top and **Favourites moves into it**:
+
+```
+Quick find
+  ⏱  Timeline          ← new, and the landing view
+  🕐  Recent
+  ★  Favourites        ← moved up from My Work › Dynamic
+  ↗  Shared with you
+
+My Work
+  ⊞  Dynamic
+     ▫ Unsorted
+     ✨ Generated
+     ⬒  Offline
+  … root folders
+```
+
+Favourites is a user's own curated shortlist, not a synthetic view of
+where a diagram happens to sit, so it belongs beside Recent rather than
+buried a level down among Unsorted / Generated / Offline. The Dynamic
+parent's badge stops adding `favouriteCount` when it does.
+
+Timeline carries no badge in v1. An unread count needs a per-user
+last-seen marker, which is a preference write on every visit; deferred
+with the rest of §3.4.
+
+### 8.3 The section checklist
+
+Adding the section touches the same files every Explorer section does:
+`views.tsx` (the `SelectedNode` union), `routes.ts` (both directions),
+`apps/live/app/explorer/timeline/page.tsx` (the route stub),
+`ExplorerSidebar.tsx`,
+`icons.tsx`, `useExplorerPane.ts` (pane content, title, crumbs),
+`ExplorerPane.tsx` (dispatch — Timeline is not a `BROWSE_KIND`),
+`ExplorerEmptyState.tsx`, and `routes.test.ts`'s `STATIC_NODES`.
+
+The pane is lazy-loaded like `ProfilePane` / `TeamPane`, so the
+calendar grid and mini-calendar chunk stays off the critical path for
+users who never switch modes.
+
+## 9. Guests
+
+Guests get the Timeline, keyed to their signed participant id
+(spec/04). They see diagram lifecycle, editing, comments on their own
+diagrams, and share-link events. Team, invite, and token events never
+reach them because those features are Clerk-only — the feed is simply
+thinner, with no sign-in wall and no empty-section prompt.
+
+**On sign-up, timeline history migrates.** `POST /api/migrate` already
+moves diagrams from the guest participant id to the Clerk user id; it
+gains two statements in the same transaction:
+
+```sql
+UPDATE timeline_event_scopes SET scope_id = ?1 WHERE scope_type = 'user' AND scope_id = ?2;
+UPDATE timeline_events       SET actor_id = ?1 WHERE actor_id = ?2;
+```
+
+Plus a move of the `timeline_scope_state` row, so the backfill doesn't
+re-run against the new id and duplicate what already migrated. A user
+who drew for a week as a guest keeps that week when they sign up —
+which is the point of the guest path existing at all.
+
+## 10. Telemetry
+
+New category `Timeline` in the closed enum in
+`@livediagram/api-schema` (spec/22). Existing actions cover it:
+
+- `Timeline`/`Opened` — the section is viewed. `type` is `Landing` when
+  it was the default landing view, `Nav` when reached from the sidebar,
+  so the landing-page change is measurable.
+- `Timeline`/`Changed` with `type` `List` | `Calendar` — mode switch.
+- `Timeline`/`Selected` with `type` the source type — a filter chip
+  toggled.
+- `Timeline`/`Opened` with `type` `Stack` — a stacked run expanded.
+  Tells us whether stacking thresholds are right.
+- `Timeline`/`Loaded` with `type` `More` — Show more.
+
+No event ever carries a diagram name, team name, or comment text; the
+`type` slot is a fixed token, bounded by the existing
+`TELEMETRY_TYPE_PATTERN`.
+
+## 11. Testing
+
+Per spec/18:
+
+- **Pure units, tested directly**: `stacking.ts` (bucketing, aliasing,
+  never-stack rules, position-of-most-recent), `useTimelineGrouping`
+  (day grouping, out-of-order tolerance, empty-month skipping),
+  and the cursor encode/decode.
+- **Worker route tests** alongside `teams.test.ts`: scope
+  authorisation (a caller cannot read another owner's scope),
+  pagination and cursor stability, filter params, and the
+  `UNIQUE`-constraint idempotence of `emitTimelineEvent` — emit the
+  same draft twice, assert one row.
+- **Audience resolution**: a comment on a team diagram fans out to
+  every joined member and to nobody who is merely `invited`.
+- **Coalescing**: three saves in one UTC day produce one row whose
+  `occurred_at` advances; a save the next day produces a second row.
+- **Migration**: guest → Clerk id moves scopes, events, and scope
+  state, and the backfill does not re-run afterwards.
+- **Round-trip**: `/explorer/timeline` added to `STATIC_NODES` in
+  `routes.test.ts`.
+
+## 12. Docs
+
+- A help-centre article under the Explorer / organising category
+  (spec/55), with its registry entry in
+  `packages/help-registry/src/index.ts` — slug, title, short
+  description, and keywords including "feed", "activity", "history",
+  "what's new", "calendar", "notifications" — plus a bump to that
+  category's `articleCount`. Per the repo rule, an unregistered article
+  is invisible to both the help search and the editor's search panel,
+  so it ships in the same change as the page.
+- `README.md` and `docs/architecture.md` gain the new tables and the
+  `/api/timeline` route in their existing lists.
+
+## 13. Out of scope for v1
+
+- Favourites / starring, per-entry dismissal, manual entries.
+- An unread badge on the sidebar row.
+- Per-diagram and per-team timeline scopes (the schema is ready; the
+  renderers, routes, and UI are not).
+- AI day summaries.
+- Realtime push. A Refresh button and a fresh read on mount.
+- Cross-user search over the feed.
+- Backfilling comments and actions out of historical tab JSON.

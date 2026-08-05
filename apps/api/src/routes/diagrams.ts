@@ -36,6 +36,14 @@ import { badRequest, forbidden, json, noContent, notFound, svgImage } from '../r
 import { getDiagramThumbnailSvg } from '../thumbnail';
 import { emailEnabled } from '../email/client';
 import { notifyMilestone } from '../email/notifications';
+import {
+  audienceForDiagram,
+  recordDiagramCreated,
+  recordDiagramDeleted,
+  recordDiagramDuplicated,
+  recordDiagramRenamed,
+} from '../timeline';
+import { markTimelineEventsDeletedBySource } from '../db/timeline';
 import { handleDiagramPlacement } from './diagram-placement-route';
 import { handleDiagramRoomRoutes } from './diagram-room-routes';
 import { handleDiagramSubresources } from './diagram-subresource-routes';
@@ -116,6 +124,13 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
         await seedTabs(env, body.id, body.tabs);
       }
       const diagram = await getDiagram(env, body.id);
+      // spec/138 §4.2: only a GENUINE create earns a timeline event. A
+      // POST that resolved to an existing row is the editor re-committing
+      // an id it already owns, and "Diagram Created" twice for one
+      // diagram is a lie the feed can't walk back.
+      if (diagram && !clash) {
+        ctx.waitUntil?.(recordDiagramCreated(env, diagram, owner));
+      }
       // spec/64 (#6): on a genuine create (no prior row), check for a diagram
       // milestone. Count + send run in the background, off the response path.
       if (emailEnabled(env) && !clash) {
@@ -208,6 +223,12 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
         await reorderTabs(env, id, body.tabIds);
       }
       const diagram = await getDiagram(env, id);
+      // spec/138 §4.2: a rename only. The same PUT also carries tab
+      // reorders and deck writes, and neither is a timeline moment —
+      // the feed would fill with "Renamed X → X" on every save.
+      if (diagram && typeof body.name === 'string' && body.name !== existing.name) {
+        ctx.waitUntil?.(recordDiagramRenamed(env, diagram, existing.name, owner));
+      }
       return json({ diagram });
     }
     if (request.method === 'DELETE') {
@@ -227,7 +248,18 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
         allowed = membership?.status === 'joined';
       }
       if (!allowed) return forbidden();
+      // spec/138 §3.5: resolve the audience BEFORE the row goes, since
+      // the team link disappears with it; cascade this diagram's
+      // history; THEN write the tombstone, so the diagram collapses to
+      // exactly one bubble saying it was deleted rather than a run of
+      // events pointing at a 404.
+      const audience = await audienceForDiagram(env, existing);
       await deleteDiagram(env, id);
+      ctx.waitUntil?.(
+        markTimelineEventsDeletedBySource(env, 'diagram', id)
+          .then(() => recordDiagramDeleted(env, existing, owner, audience))
+          .catch((err) => console.error('timeline diagram delete failed', err)),
+      );
       return noContent();
     }
   }
@@ -266,6 +298,7 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
       const newName = (body.name?.trim() || `Copy of ${source.name}`).slice(0, 200);
       const copy = await copyDiagram(env, id, newId, owner, newName);
       if (!copy) return notFound();
+      ctx.waitUntil?.(recordDiagramDuplicated(env, copy, source.name, owner));
       return json({ diagram: copy }, { status: 201 });
     }
   }

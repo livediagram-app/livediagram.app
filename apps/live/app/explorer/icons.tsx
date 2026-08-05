@@ -139,6 +139,31 @@ export function DiagramIcon() {
   );
 }
 
+// The Timeline section (spec/138): a vertical rail with event dots
+// hanging off it — the shape of the feed itself, and deliberately not
+// another clock (Recent already owns that glyph, and the two sections
+// now sit next to each other in Quick find).
+export function TimelineIcon() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M4 2v12" />
+      <circle cx="4" cy="4.5" r="1.3" fill="currentColor" stroke="none" />
+      <circle cx="4" cy="9" r="1.3" fill="currentColor" stroke="none" />
+      <path d="M7 4.5h6M7 9h4" />
+    </svg>
+  );
+}
+
 export function ClockIcon() {
   return (
     <svg

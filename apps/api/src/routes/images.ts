@@ -24,6 +24,7 @@ import {
   notFound,
 } from '../responses';
 import { MAX_IMAGE_BYTES } from '../limits';
+import { recordImageUploaded } from '../timeline';
 import { gateRead, requireOwner, type RouteContext } from './context';
 
 // Parse a positive-integer cap from a wrangler.toml [vars] entry.
@@ -206,6 +207,10 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
       sha256: sha,
       originalName,
     });
+    // spec/138 §4.5: only a genuinely NEW upload. The dedupe branches
+    // above return early, so pasting the same screenshot twice is one
+    // event, and the day's uploads coalesce into one counted bubble.
+    ctx.waitUntil?.(recordImageUploaded(env, owner));
     return json({ image, deduped: false });
   }
 

@@ -50,6 +50,9 @@ export type PaneDiagram = DiagramListItem & {
 // with no folder row behind them; `folder` is a real owned folder and
 // `team` a team the signed-in user belongs to (spec/32).
 export type SelectedNode =
+  // The landing view (spec/138): a day-grouped feed of everything that
+  // happened, rather than a list of files.
+  | { kind: 'timeline' }
   | { kind: 'recent' }
   | { kind: 'all' }
   | { kind: 'unsorted' }

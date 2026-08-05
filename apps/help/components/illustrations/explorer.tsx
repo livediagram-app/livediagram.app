@@ -484,3 +484,111 @@ export function UnsortedFolder() {
     </Scene>
   );
 }
+
+/** The Timeline feed (spec/138): the day rail on the left, a date header, and
+ *  one tinted bubble per event — the colour telling you the kind of thing that
+ *  happened before you read a word of it. */
+export function TimelineFeed() {
+  return (
+    <Scene w={420} h={250} bg="plain">
+      <rect
+        x={24}
+        y={14}
+        width={372}
+        height={222}
+        rx={10}
+        className="fill-white stroke-slate-200"
+        strokeWidth={1.5}
+      />
+      <Label x={40} y={30} size={11} weight={700} tone="strong">
+        Timeline
+      </Label>
+      <line x1={24} y1={44} x2={396} y2={44} className="stroke-slate-200" strokeWidth={1.5} />
+
+      {/* Day rail: the dot marks a day, the line runs between them. */}
+      <line x1={46} y1={62} x2={46} y2={222} className="stroke-slate-200" strokeWidth={1.5} />
+      <circle cx={46} cy={60} r={4} className="fill-brand-500" />
+      <rect x={58} y={53} width={38} height={14} rx={4} className="fill-brand-500" />
+      <Label x={77} y={60} anchor="middle" size={8} weight={700} tone="onAccent">
+        TODAY
+      </Label>
+      <Label x={104} y={60} size={10} weight={700} tone="strong">
+        Tue, 5 Aug
+      </Label>
+
+      <TimelineEventBubble y={74} tint="sky" title="Comment Added" meta="Priya · Payments" />
+      <TimelineEventBubble y={112} tint="sky" title="Diagram Updated" meta="You worked on Auth" />
+
+      <circle cx={46} cy={158} r={4} className="fill-slate-300" />
+      <Label x={58} y={158} size={10} weight={700} tone="muted">
+        Mon, 4 Aug
+      </Label>
+      <TimelineEventBubble y={172} tint="violet" title="Member Joined" meta="Sam · Platform" />
+    </Scene>
+  );
+}
+
+/** Same-day stacking: several events of one kind collapse into a single bubble
+ *  with the deck showing behind it, so a busy day stays one line until you ask
+ *  for the detail. */
+export function TimelineStacking() {
+  return (
+    <Scene w={420} h={168} bg="plain">
+      <rect
+        x={24}
+        y={14}
+        width={372}
+        height={140}
+        rx={10}
+        className="fill-white stroke-slate-200"
+        strokeWidth={1.5}
+      />
+      <Label x={40} y={32} size={10} weight={700} tone="muted">
+        Wed, 6 Aug
+      </Label>
+      {/* The two layers stepping out to the right are the rest of the run. */}
+      <rect x={54} y={54} width={310} height={40} rx={7} className="fill-slate-100" />
+      <rect x={48} y={50} width={310} height={44} rx={7} className="fill-slate-200/70" />
+      <TimelineEventBubble
+        y={46}
+        tint="sky"
+        title="Diagrams Updated"
+        meta="5 events · click to expand"
+      />
+      <Label x={40} y={132} size={9.5} tone="muted">
+        Click it and the five separate events unfold in place.
+      </Label>
+    </Scene>
+  );
+}
+
+/** One event bubble: the tinted icon strip on the left, title and meta beside
+ *  it. Shared by the two Timeline scenes above so they stay identical. */
+function TimelineEventBubble({
+  y,
+  tint,
+  title,
+  meta,
+}: {
+  y: number;
+  tint: 'sky' | 'violet';
+  title: string;
+  meta: string;
+}) {
+  const fill = tint === 'sky' ? 'fill-sky-500/10' : 'fill-violet-500/10';
+  const strip = tint === 'sky' ? 'fill-sky-500/20' : 'fill-violet-500/20';
+  const dot = tint === 'sky' ? 'fill-sky-500' : 'fill-violet-500';
+  return (
+    <g>
+      <rect x={58} y={y} width={318} height={32} rx={7} className={fill} />
+      <rect x={58} y={y} width={26} height={32} rx={7} className={strip} />
+      <circle cx={71} cy={y + 16} r={4} className={dot} />
+      <Label x={94} y={y + 12} size={9.5} weight={700} tone="strong">
+        {title}
+      </Label>
+      <Label x={94} y={y + 24} size={9} tone="muted">
+        {meta}
+      </Label>
+    </g>
+  );
+}

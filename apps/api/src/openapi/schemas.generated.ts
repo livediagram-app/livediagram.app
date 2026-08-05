@@ -4264,7 +4264,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "Token",
       "Mcp",
       "Email",
-      "Error"
+      "Error",
+      "Timeline"
     ],
     "type": "string"
   },
@@ -4601,6 +4602,111 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "lg"
     ],
     "type": "string"
+  },
+  "TimelineEvent": {
+    "additionalProperties": false,
+    "properties": {
+      "actorId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "description": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "eventType": {
+        "$ref": "#/components/schemas/TimelineEventType"
+      },
+      "id": {
+        "type": "string"
+      },
+      "occurredAt": {
+        "type": "number"
+      },
+      "snapshot": {
+        "additionalProperties": {},
+        "type": "object"
+      },
+      "sourceId": {
+        "type": "string"
+      },
+      "sourceType": {
+        "$ref": "#/components/schemas/TimelineSourceType"
+      },
+      "title": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "sourceType",
+      "sourceId",
+      "eventType",
+      "title",
+      "description",
+      "occurredAt",
+      "actorId",
+      "snapshot"
+    ],
+    "type": "object"
+  },
+  "TimelineEventType": {
+    "anyOf": [
+      {
+        "type": "string"
+      },
+      {
+        "enum": [
+          "diagram_created",
+          "diagram_renamed",
+          "diagram_duplicated",
+          "diagram_deleted",
+          "diagram_moved",
+          "diagram_edited",
+          "diagram_offline",
+          "diagram_synced",
+          "comment_added",
+          "comment_resolved",
+          "action_assigned",
+          "action_completed",
+          "share_link_created",
+          "share_link_expiring",
+          "team_created",
+          "team_invite_received",
+          "team_invite_accepted",
+          "team_invite_declined",
+          "team_member_joined",
+          "team_member_left",
+          "team_member_removed",
+          "team_role_changed",
+          "team_diagram_added",
+          "token_created",
+          "token_expiring",
+          "theme_saved",
+          "image_uploaded"
+        ],
+        "type": "string"
+      }
+    ]
+  },
+  "TimelineSourceType": {
+    "anyOf": [
+      {
+        "type": "string"
+      },
+      {
+        "enum": [
+          "diagram",
+          "team",
+          "account"
+        ],
+        "type": "string"
+      }
+    ]
   },
   "TimerMode": {
     "enum": [

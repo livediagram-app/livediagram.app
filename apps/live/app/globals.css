@@ -2017,3 +2017,37 @@ html[data-presenting][data-slide-transition='slide'][data-slide-move='back']
     animation: lvd-slide-fade 380ms ease;
   }
 }
+
+/* Timeline event colours (spec/138 §7).
+ *
+ * The shared <Timeline> reads these through `var(--ld-timeline-<source>)`
+ * with a fallback baked into the package, so it renders standalone. They
+ * live here because the palette is a product decision, and because this
+ * app has a class-based dark mode: each colour needs a pair, and the
+ * package can't know which one is showing.
+ *
+ * `bold` paints the icon and the calendar dot; the `-soft` variant is
+ * the bubble's whole background, so it has to sit quietly under body
+ * text at 4.5:1 in both themes rather than compete with it. Hence the
+ * low alphas — a saturated tint reads as a status banner, and every
+ * bubble would look urgent. */
+:root {
+  --ld-timeline-diagram: var(--color-brand-600);
+  --ld-timeline-diagram-soft: rgb(14 165 233 / 0.09);
+  --ld-timeline-team: #7c3aed;
+  --ld-timeline-team-soft: rgb(124 58 237 / 0.09);
+  --ld-timeline-account: #b45309;
+  --ld-timeline-account-soft: rgb(180 83 9 / 0.09);
+}
+
+/* Dark mode lifts the bold values (a 600-weight hue goes muddy on
+ * slate-900) and drops the soft ones, because an alpha tint over a dark
+ * surface reads far stronger than the same alpha over white. */
+.dark {
+  --ld-timeline-diagram: var(--color-brand-400);
+  --ld-timeline-diagram-soft: rgb(56 189 248 / 0.07);
+  --ld-timeline-team: #a78bfa;
+  --ld-timeline-team-soft: rgb(167 139 250 / 0.07);
+  --ld-timeline-account: #fbbf24;
+  --ld-timeline-account-soft: rgb(251 191 36 / 0.07);
+}

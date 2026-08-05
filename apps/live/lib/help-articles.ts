@@ -69,6 +69,7 @@ export const HELP_ARTICLES = {
   sessionPolls: 'collaboration/session-tools/polls',
   sessionVoting: 'collaboration/session-tools/voting',
   imageGallery: 'explorer/image-gallery',
+  timeline: 'explorer/timeline',
   recentDiagrams: 'explorer/recent',
   sharedWithYou: 'explorer/shared-with-you',
   folders: 'explorer/folders',

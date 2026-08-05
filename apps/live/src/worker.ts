@@ -65,14 +65,14 @@ export default {
     const url = new URL(request.url);
     const frameable = url.pathname === '/embed' || url.pathname.startsWith('/embed/');
     // /explorer is an index with no content of its own (spec/15):
-    // every section lives at /explorer/<section>, default Recent
-    // diagrams. 302 here so the address bar lands on the real
+    // every section lives at /explorer/<section>, default Timeline
+    // (spec/138 §8.1). 302 here so the address bar lands on the real
     // section before any HTML is served; the page's client-side
     // replace covers dev where this worker isn't in front. The
     // Location is a clean (`/live`-free) path — the router selects the
     // live app for /explorer routes directly (spec/08).
     if (url.pathname === '/explorer' || url.pathname === '/explorer/') {
-      return Response.redirect(`${url.origin}/explorer/recent`, 302);
+      return Response.redirect(`${url.origin}/explorer/timeline`, 302);
     }
     // `/diagram` and everything under it shares one HTML file. We
     // rewrite the request rather than redirect so the browser URL

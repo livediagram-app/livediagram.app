@@ -52,6 +52,18 @@ import {
 import { emailEnabled, sendEmail } from '../email/client';
 import { notifyInviteResponse } from '../email/notifications';
 import { teamInviteEmail } from '../email/templates';
+import {
+  attachClaimedInviteEvents,
+  audienceForTeam,
+  recordInviteAccepted,
+  recordInviteDeclined,
+  recordInviteReceived,
+  recordMemberJoined,
+  recordMemberLeft,
+  recordMemberRemoved,
+  recordRoleChanged,
+  recordTeamCreated,
+} from '../timeline';
 import { handleTeamActionRoutes } from './team-action-routes';
 import type { RouteContext } from './context';
 
@@ -101,6 +113,16 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
     if (request.method !== 'POST') return notFound();
     const result = await joinTeamByInviteToken(env, segments[3]!, userId, clerkEmail);
     if (!result) return notFound();
+    // spec/138 §4.4: only a genuine arrival. `alreadyMember` means the
+    // caller re-opened their own join link, which is not news to anyone.
+    if (!result.alreadyMember) {
+      const joined = await getTeam(env, result.teamId);
+      if (joined) {
+        ctx.waitUntil?.(
+          recordMemberJoined(env, joined, { userId, name: clerkEmail?.split('@')[0] ?? null }),
+        );
+      }
+    }
     return json(result);
   }
 
@@ -111,6 +133,10 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
       // caller's verified address becomes a membership in the same
       // round-trip that would render it.
       if (clerkEmail) await connectInvitesByEmail(env, userId, clerkEmail);
+      // spec/138 §4.4: the claim above just told us who a pending
+      // invite belongs to. Hand them the invite events that were
+      // emitted scope-less because nobody could be scoped at the time.
+      ctx.waitUntil?.(attachClaimedInviteEvents(env, userId));
       const teams = await listTeamsByUser(env, userId);
       return json({ teams });
     }
@@ -132,6 +158,7 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
         { id: body.id, name, organisation },
         { userId, email: clerkEmail },
       );
+      ctx.waitUntil?.(recordTeamCreated(env, team, userId));
       return json({ team }, { status: 201 });
     }
     return notFound();
@@ -144,6 +171,7 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
   if (segments.length === 3 && segments[2] === 'invites') {
     if (request.method === 'GET') {
       if (clerkEmail) await connectInvitesByEmail(env, userId, clerkEmail);
+      ctx.waitUntil?.(attachClaimedInviteEvents(env, userId));
       const invites = await listInvitesByUser(env, userId);
       return json({ invites });
     }
@@ -255,6 +283,13 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
       if (!email || !EMAIL_PATTERN.test(email)) return badRequest('invalid email');
       if (await teamHasEmail(env, teamId, email)) return conflict('already_member');
       const member = await addTeamMember(env, { teamId, email });
+      // spec/138 §4.4: emitted with NO scope — the invitee is an email
+      // address until they sign in, so there is nobody to scope it to.
+      // attachClaimedInviteEvents hands it to them once the lazy claim
+      // resolves who they are, keeping this sent-at date.
+      ctx.waitUntil?.(
+        recordInviteReceived(env, team, { id: member.id, userId: null }, userId, member.createdAt),
+      );
       // spec/64: tell the invitee they've been invited, with a link to their
       // invites page. Best-effort, in the background; no-op when email is off.
       if (emailEnabled(env)) {
@@ -276,6 +311,9 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
     }
     if (member.status === 'invited') {
       await acceptTeamMember(env, member.id);
+      // After the flip, so audienceForTeam already counts the new
+      // member and they see their own arrival.
+      ctx.waitUntil?.(recordInviteAccepted(env, team, userId, member.email ?? null));
       // spec/65: tell the team's admins someone said yes. Best-effort,
       // off the response path; no-op when email is off / admins opted out.
       const responder = member.email ?? clerkEmail;
@@ -305,7 +343,19 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
       if (member.role === 'admin' && member.status === 'joined' && role === 'member') {
         if ((await countTeamAdmins(env, teamId)) <= 1) return conflict('last_admin');
       }
-      if (role !== member.role) await updateTeamMemberRole(env, member.id, role as TeamRole);
+      if (role !== member.role) {
+        await updateTeamMemberRole(env, member.id, role as TeamRole);
+        ctx.waitUntil?.(
+          recordRoleChanged(
+            env,
+            team,
+            { userId: member.userId, name: memberDisplayName(member) },
+            member.role,
+            role,
+            userId,
+          ),
+        );
+      }
       const updated = await getTeamMember(env, member.id);
       return json({ member: updated });
     }
@@ -322,7 +372,23 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
       ) {
         return conflict('last_admin');
       }
+      // spec/138 §4.4: resolve the audience BEFORE the row goes, or the
+      // person leaving never sees their own departure.
+      const audience = await audienceForTeam(env, teamId);
       await removeTeamMember(env, member.id);
+      const who = { userId: member.userId, name: memberDisplayName(member) };
+      if (member.status === 'invited' && isSelf) {
+        ctx.waitUntil?.(recordInviteDeclined(env, team, userId, who.name));
+      } else if (member.status === 'joined') {
+        // Leaving and being removed read very differently to everyone
+        // else in the team, so they are separate events rather than one
+        // "membership ended".
+        ctx.waitUntil?.(
+          isSelf
+            ? recordMemberLeft(env, team, who, audience)
+            : recordMemberRemoved(env, team, who, userId, audience),
+        );
+      }
       // spec/65: a self-removal of a still-INVITED row is a DECLINE — tell
       // the team's admins. An admin revoking a pending invite, or a joined
       // member leaving, is not an invite response and notifies no one.
@@ -347,4 +413,19 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
 // this" greps to one symbol).
 function adminRequired(): Response {
   return forbidden('admin_required');
+}
+
+// The name a timeline bubble shows for a member. Mirrors what the
+// Explorer's team pane renders: the display name where the invite
+// email gives us one, else nothing (the renderer falls back to "A
+// member"). Never the full address — a timeline event travels to
+// everyone in the team, and an invite address is not theirs to read.
+function memberDisplayName(member: { email: string | null; name?: string | null }): string | null {
+  if (member.name) return member.name;
+  const local = member.email?.split('@')[0];
+  if (!local) return null;
+  return local
+    .replace(/[._-]+/g, ' ')
+    .replace(/\b\w/g, (c) => c.toUpperCase())
+    .trim();
 }

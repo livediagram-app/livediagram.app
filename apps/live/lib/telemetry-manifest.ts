@@ -130,6 +130,15 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Theme·Changed',
   'Theme·Created',
   'Theme·Deleted',
+  // Timeline (spec/138): 'Opened' with type 'Landing' | 'Nav' | 'Stack'
+  // — the first two measure the landing-page change, the third tells us
+  // whether the stacking thresholds are right. 'Changed' carries the
+  // view mode, 'Selected' a filter chip's source type, 'Loaded'/'More'
+  // a Show-more click.
+  'Timeline·Changed',
+  'Timeline·Loaded',
+  'Timeline·Opened',
+  'Timeline·Selected',
   'Token·Created',
   'Token·Removed',
   'UI·Added',

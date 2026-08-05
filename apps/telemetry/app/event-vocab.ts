@@ -37,6 +37,8 @@ export const CATEGORY_DESCRIPTIONS: Record<TelemetryCategory, string> = {
   Participant:
     'Visitor arrivals: a new browser identity minted (once per fresh visitor), and a returning browser reopening the app (once per day, split guest vs signed-in).',
   Help: 'Help-centre articles: views and per-article helpful / not-really feedback.',
+  Timeline:
+    "The Explorer's activity feed: opening it (split by whether it was the landing view or a deliberate visit), switching between the list and calendar views, toggling a filter chip, expanding a collapsed run of same-day events, and paging further back.",
   Token: 'API tokens: minted by hand or via an AI tool connecting through MCP, and revoked.',
   Mcp: 'MCP server tool calls made by connected AI assistants.',
   Email:
@@ -70,6 +72,9 @@ const CATEGORY_COLORS: Record<TelemetryCategory, string> = {
   Team: '#2563eb',
   Participant: '#dc2626',
   Help: '#14b8a6',
+  // Distinct from Diagram's sky (#0ea5e9) and Session's slate: the
+  // Timeline sits next to both in the stacked bar.
+  Timeline: '#0369a1',
   Token: '#d946ef',
   Mcp: '#f43f5e',
   Email: '#0d9488',

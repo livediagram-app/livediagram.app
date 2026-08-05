@@ -19,6 +19,7 @@ import {
   ShareIcon,
   SparkleIcon,
   TeamIcon,
+  TimelineIcon,
   UnsortedIcon,
   StarIcon,
 } from './icons';
@@ -35,8 +36,8 @@ import {
 // sidebar and the mobile drawer in ExplorerShell. Every navigation
 // goes through `go` (a route push) so picking a section on a phone
 // also closes the drawer; search closes it too. Layout: the "Quick
-// find" section (Recent diagrams, Shared with me) at the top, then
-// the My Work tree, Teams (spec/32), and the Library.
+// find" section (Timeline, Recent, Favourites, Shared with you) at the
+// top, then the My Work tree, Teams (spec/32), and the Library.
 export function ExplorerSidebar() {
   const {
     clerkDisplayName,
@@ -130,6 +131,16 @@ export function ExplorerSidebar() {
       </button>
       <div className="my-4 h-px bg-slate-100 dark:bg-slate-800" aria-hidden />
       <SidebarSectionLabel>Quick find</SidebarSectionLabel>
+      {/* The landing view (spec/138 §8.1), so it leads the tree. No
+          badge: an unread count needs a per-user last-seen marker,
+          which is a preference write on every visit — deferred. */}
+      <SidebarRow
+        icon={<TimelineIcon />}
+        label="Timeline"
+        selected={selected.kind === 'timeline'}
+        onClick={() => go({ kind: 'timeline' })}
+        depth={0}
+      />
       <SidebarRow
         icon={<ClockIcon />}
         label="Recent"
@@ -137,6 +148,19 @@ export function ExplorerSidebar() {
         onClick={() => go({ kind: 'recent' })}
         depth={0}
         badge={recentCount > 0 ? recentCount : undefined}
+      />
+      {/* Favourites lives in Quick find rather than under My Work >
+          Dynamic (spec/138 §8.2): it's the user's own curated shortlist,
+          not a synthetic view of where a diagram happens to sit, so it
+          belongs beside Recent rather than a level down among Unsorted /
+          Generated / Offline. */}
+      <SidebarRow
+        icon={<StarIcon />}
+        label="Favourites"
+        selected={selected.kind === 'favourites'}
+        onClick={() => go({ kind: 'favourites' })}
+        depth={0}
+        badge={favouriteCount || undefined}
       />
       <SidebarRow
         icon={<ShareIcon />}
@@ -172,7 +196,9 @@ export function ExplorerSidebar() {
           Unsorted (folder_id IS NULL), Generated (AI-made, spec/15), and
           Offline (browser-only, spec/76). All are live views, always
           present even when empty; badges hide at zero. Clicking the
-          parent opens the /explorer/dynamic overview. */}
+          parent opens the /explorer/dynamic overview. Favourites used to
+          sit here too and has moved up to Quick find (spec/138 §8.2), so
+          the parent's badge no longer counts it. */}
       <SidebarRow
         icon={<DynamicFolderIcon />}
         label="Dynamic"
@@ -180,10 +206,7 @@ export function ExplorerSidebar() {
         onClick={() => go({ kind: 'dynamic' })}
         depth={0}
         badge={
-          unsortedDiagrams.length +
-            generatedDiagrams.length +
-            offlineDiagrams.length +
-            favouriteCount || undefined
+          unsortedDiagrams.length + generatedDiagrams.length + offlineDiagrams.length || undefined
         }
         hasChildren
         expanded={dynamicOpen}
@@ -198,14 +221,6 @@ export function ExplorerSidebar() {
             onClick={() => go({ kind: 'unsorted' })}
             depth={1}
             badge={unsortedDiagrams.length || undefined}
-          />
-          <SidebarRow
-            icon={<StarIcon />}
-            label="Favourites"
-            selected={selected.kind === 'favourites'}
-            onClick={() => go({ kind: 'favourites' })}
-            depth={1}
-            badge={favouriteCount || undefined}
           />
           <SidebarRow
             icon={<SparkleIcon />}

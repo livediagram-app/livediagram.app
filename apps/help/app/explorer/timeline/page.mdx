@@ -1,0 +1,90 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { TimelineFeed, TimelineStacking } from '@/components/illustrations/explorer';
+
+export const metadata = helpMetadata({
+  title: 'Timeline',
+  description:
+    'The Explorer opens on your Timeline: a day-by-day feed of everything that happened across your diagrams, teams, and account.',
+  path: '/help/explorer/timeline/',
+});
+
+<ArticleLayout
+  title="Timeline"
+  description="A day-by-day feed of everything that has happened: comments, edits, team changes, invites, and what is about to expire."
+  categoryTitle="Explorer"
+  categorySlug="explorer"
+>
+
+**Timeline** is the view the [Explorer](/explorer/timeline) opens on. Where [Recent](/help/explorer/recent/) answers "what did I touch last", the Timeline answers a different question: **what has happened since I was last here**, including the things you did not do yourself.
+
+<Figure caption="One group per day, one bubble per event, colour-coded by the kind of thing that happened.">
+  <TimelineFeed />
+</Figure>
+
+## What lands here
+
+Every event on the feed comes from something that actually happened in your account. Nothing is guessed, and nothing is written by hand.
+
+- **Your diagrams** — created, renamed, duplicated, filed into a folder, published to a team, deleted, and a daily summary of the days you worked on one.
+- **Collaboration** — comments added to diagrams you own or share, threads resolved, [actions](/help/collaboration/assigned-actions/) assigned to you or completed by someone else, and share links created.
+- **Teams** — invites you receive, members joining or leaving, people being removed, and role changes, for every [team](/help/explorer/team-spaces/) you belong to.
+- **Your account** — [API tokens](/help/account-and-data/api-tokens/) created, custom themes saved, and images uploaded.
+
+If a diagram lives in a team's shared library, everyone in that team sees its events. A personal diagram's events are yours alone.
+
+## Reading a day
+
+Events are grouped by the day they happened, newest day first, with a dot and a line running down the left. Today's group is marked with a **Today** pill.
+
+Each bubble is tinted by the kind of thing it is, so you can tell diagram activity from team activity before reading a word. Click a bubble to go to whatever it is about: the diagram, the team, your invites.
+
+### Busy days collapse
+
+A day where you renamed six diagrams should not be six lines. When several events of the same kind land on one day, they fold into a single bubble that says how many there were.
+
+<Figure caption="Several events of one kind become one bubble; clicking expands the run in place.">
+  <TimelineStacking />
+</Figure>
+
+Two kinds never collapse, because collapsing them would hide the thing you came to read:
+
+- **Comments** stay separate, so you can always read what was actually said.
+- **Deleted diagrams** stay separate, so a deletion can never hide inside a stack.
+
+## What is coming up
+
+Not everything on the feed is in the past. Anything with an expiry — an [API token](/help/account-and-data/api-tokens/) approaching its six-month limit, a [share link](/help/collaboration/sharing/share-link-expiry/) about to lapse — appears **above** today in an Upcoming band.
+
+<Tip>
+  This is the reason to open the Timeline before something breaks rather than after: a script that
+  stops working next Tuesday says so this week.
+</Tip>
+
+## Calendar view
+
+Switch **List** to **Calendar** in the header to see the same events as a month grid. Each day carries one coloured dot per kind of activity, with a number when there was more than one. Click a dot to read that day's events of that kind.
+
+The arrows skip straight to the next month that actually has something in it, so a quiet stretch does not cost you four clicks to page through.
+
+## Filtering and refreshing
+
+The **Filter** button opens the chips for each kind of activity — turn one off and it drops out of the feed — along with a small calendar for jumping to a particular day. A dot on the button tells you a filter is on.
+
+**Refresh** re-reads the feed. The Timeline is not live: it loads when you open it and updates when you ask it to, so it never shifts under you while you are reading.
+
+Filters and the calendar view are per visit. Come back tomorrow and the Timeline opens as a plain list again.
+
+## Guests and signing in
+
+The Timeline works without an account, like the rest of the canvas. A guest sees their own diagram activity and comments on their diagrams; team, invite, and token events need an account, so they simply do not appear.
+
+**Your history follows you.** Signing up moves your Timeline to your new account alongside your diagrams, so a week of work as a guest is still there afterwards.
+
+<Tip>
+  The Timeline keeps a year of history. The per-diagram [Activity
+  panel](/help/activity-panel/) is the other half of this: it records every individual
+  element change on one diagram, and lets you undo them.
+</Tip>
+
+</ArticleLayout>

@@ -26,6 +26,7 @@ import {
   upsertTab,
 } from '../db';
 import { badRequest, conflict, forbidden, json, noContent, notFound } from '../responses';
+import { recordCommentAdded, recordTabSave } from '../timeline';
 import { handleDiagramShareRoutes } from './diagram-share-routes';
 import { gateEdit, gateRead, requireOwner, type RouteContext } from './context';
 
@@ -147,6 +148,16 @@ export async function handleDiagramSubresources(ctx: RouteContext): Promise<Resp
           }
         : body;
       await upsertTab(env, id, { ...sanitised, id: tabId }, orderIndex);
+      // spec/138: the coalesced "worked on" event plus anything the
+      // save added that the feed cares about (comments, thread
+      // resolutions, assigned + completed actions). Diffed against the
+      // stored tab because comments and actions live inside element
+      // JSON, so the save that wrote them is the only place that can
+      // tell they're new. Off the response path — this fires on every
+      // ~600ms autosave.
+      ctx.waitUntil?.(
+        recordTabSave(env, existing, owner, sanitised.elements, existingTab?.elements ?? []),
+      );
       // spec/64 (#1): an edit-role visitor (not the owner) adding a comment
       // notifies the owner immediately. Best-effort, off the request path.
       if (
@@ -251,6 +262,13 @@ export async function handleDiagramSubresources(ctx: RouteContext): Promise<Resp
       };
     });
     await upsertTab(env, id, { ...tab, elements: updatedElements }, tab.orderIndex);
+    // spec/138 §4.3: the OTHER comment write path. A view-role visitor
+    // can't autosave, so this endpoint is their only way to persist a
+    // comment — and without an emit here their comments would be the
+    // one kind missing from the feed.
+    ctx.waitUntil?.(
+      recordCommentAdded(env, existing, { id: comment.id, text, authorName, authorColor }, owner),
+    );
     // spec/64 (#1): a view-role visitor's comment notifies the owner immediately.
     if (emailEnabled(env) && owner !== existing.ownerId) {
       ctx.waitUntil?.(

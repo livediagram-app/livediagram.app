@@ -1,0 +1,112 @@
+'use client';
+
+// One event (spec/138 §2). Three regions, in a fixed order: the icon
+// strip, the content, the action strip.
+//
+// The action strip exists even when it's empty. Every per-event control
+// belongs there — a star, a dismiss, an Open — so that "things you can
+// do to this event" has one predictable home instead of a button
+// floating somewhere in the content row.
+
+import type { ReactNode } from 'react';
+import { sourceTypeColor, sourceTypeSoftColor } from './sourceTypeMeta';
+import type { TimelineBubbleRender, TimelineEvent } from './types';
+
+// Renders "Prefix: rest" with the prefix in semibold. A cheap way to
+// let a renderer emphasise the leading noun without returning JSX.
+function BoldPrefix({ text }: { text: ReactNode }) {
+  if (typeof text !== 'string') return <>{text}</>;
+  const at = text.indexOf(': ');
+  if (at === -1) return <>{text}</>;
+  return (
+    <>
+      <strong className="font-semibold">{text.slice(0, at + 1)}</strong>
+      {text.slice(at + 1)}
+    </>
+  );
+}
+
+export function TimelineBubble({
+  event,
+  rendered,
+}: {
+  event: TimelineEvent;
+  rendered: TimelineBubbleRender;
+}) {
+  const label = rendered.label ?? event.title;
+  const description = rendered.description ?? event.description;
+  const interactive = Boolean(rendered.onClick);
+  const actions = rendered.actions ?? [];
+
+  return (
+    <div
+      role={interactive ? 'button' : undefined}
+      tabIndex={interactive ? 0 : undefined}
+      onClick={rendered.onClick}
+      onKeyDown={
+        interactive
+          ? (e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                rendered.onClick?.();
+              }
+            }
+          : undefined
+      }
+      className={`group relative flex w-full items-stretch overflow-hidden rounded-lg ${
+        interactive
+          ? 'cursor-pointer transition hover:brightness-[0.97] dark:hover:brightness-125'
+          : ''
+      }`}
+      // Every bubble of the same source type gets the SAME tint. An
+      // alternating stripe would make two events of one kind look like
+      // two different kinds, which is the opposite of what the colour
+      // is doing here.
+      style={{ backgroundColor: sourceTypeSoftColor(event.sourceType) }}
+    >
+      <div
+        className="flex w-11 flex-shrink-0 items-center justify-center border-r border-slate-900/5 dark:border-white/5"
+        style={{ color: sourceTypeColor(event.sourceType) }}
+      >
+        {rendered.icon}
+      </div>
+
+      <div className="min-w-0 flex-1 px-3 py-3">
+        <p className="break-words text-sm text-slate-800 dark:text-slate-100">
+          <BoldPrefix text={label} />
+        </p>
+        {description && (
+          <p className="mt-1 whitespace-pre-wrap break-words text-xs text-slate-600 dark:text-slate-400">
+            {description}
+          </p>
+        )}
+        {rendered.meta && (
+          <p className="mt-0.5 text-[10px] text-slate-400 dark:text-slate-500">{rendered.meta}</p>
+        )}
+      </div>
+
+      {actions.length > 0 && (
+        <div className="flex flex-shrink-0 items-center gap-0.5 pr-1.5">
+          {actions.map((action) => (
+            <button
+              key={action.key}
+              type="button"
+              aria-label={action.label}
+              onClick={(e) => {
+                // The whole bubble is usually clickable; an action
+                // button inside it must not also trigger that.
+                e.stopPropagation();
+                action.onClick();
+              }}
+              // Hover-revealed, but focus-visible brings it back for
+              // keyboard users, who have no hover to give.
+              className="rounded p-1.5 text-slate-500 opacity-0 transition hover:bg-slate-900/5 focus-visible:opacity-100 group-hover:opacity-100 dark:text-slate-400 dark:hover:bg-white/10"
+            >
+              {action.icon}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}

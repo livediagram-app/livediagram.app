@@ -733,6 +733,35 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [204, 401],
   },
 
+  // ---- Timeline (spec/138) ----
+  {
+    method: 'GET',
+    path: '/timeline',
+    segment: 'timeline',
+    tag: 'Account',
+    summary: "The caller's activity feed, newest first. Keyset-paginated via nextCursor.",
+    auth: 'guest-or-clerk',
+    responseSchema: {
+      type: 'object',
+      properties: {
+        items: { type: 'array', items: { $ref: '#/components/schemas/TimelineEvent' } },
+        nextCursor: { type: 'string' },
+        lastRefreshedAt: { type: 'number' },
+      },
+    },
+    statuses: [200, 400, 401, 403],
+  },
+  {
+    method: 'POST',
+    path: '/timeline/refresh',
+    segment: 'timeline',
+    tag: 'Account',
+    summary: 'Re-stamp the feed and seed it on first use. Throttled to once every 5s.',
+    auth: 'guest-or-clerk',
+    responseSchema: { type: 'object', properties: { lastRefreshedAt: { type: 'number' } } },
+    statuses: [200, 400, 401],
+  },
+
   // ---- Account ----
   {
     method: 'DELETE',

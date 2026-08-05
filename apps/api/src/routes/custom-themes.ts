@@ -14,6 +14,7 @@ import type { CustomThemeDefinition } from '../types';
 import { badRequest, forbidden, json, noContent, notFound } from '../responses';
 import { requireOwner, type RouteContext } from './context';
 import { MAX_NAME_LEN, MAX_THEME_DEF_BYTES, byteLength } from '../limits';
+import { recordThemeSaved } from '../timeline';
 
 // Reject an over-long name or an oversized definition JSON. Returns the
 // rejection Response, or null when both are within bounds.
@@ -57,6 +58,7 @@ export async function handleCustomThemes(ctx: RouteContext): Promise<Response> {
         name: body.name,
         definition: body.definition,
       });
+      ctx.waitUntil?.(recordThemeSaved(env, { id: theme.id, name: theme.name }, owner));
       return json({ theme }, { status: 201 });
     }
   }

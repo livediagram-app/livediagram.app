@@ -74,6 +74,14 @@ export const TELEMETRY_CATEGORIES = [
   // 'Internal', 'Uncaught', 'UnhandledRejection') — never a message,
   // stack, or URL.
   'Error',
+  // Timeline (spec/138): the Explorer's landing feed. 'Opened' with
+  // `type` 'Landing' | 'Nav' separates the new default landing view
+  // from a deliberate visit, so the landing-page change is measurable;
+  // 'Opened'/'Stack' counts stacked-run expansions, which is how we
+  // learn whether the stacking thresholds are right. 'Changed' carries
+  // the view mode, 'Selected' a filter chip's source type. Never a
+  // diagram name, team name, or comment text.
+  'Timeline',
 ] as const;
 export type TelemetryCategory = (typeof TELEMETRY_CATEGORIES)[number];
 

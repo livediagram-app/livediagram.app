@@ -22,6 +22,7 @@ import { emailEnabled } from '../email/client';
 import { notifyFirstShare } from '../email/notifications';
 import { badRequest, json, noContent, notFound } from '../responses';
 import type { ShareRole } from '../types';
+import { recordShareLinkCreated } from '../timeline';
 import { requireOwnedDiagram, type RouteContext } from './context';
 
 // Returns null when the request isn't a share route.
@@ -64,6 +65,10 @@ export async function handleDiagramShareRoutes(ctx: RouteContext): Promise<Respo
           : 'never';
       const code = generateShareCode();
       const link = await createShareLink(env, id, code, role, expiry);
+      // spec/138 §4.3: owner-only. Who a diagram is shared with is the
+      // owner's business — a team member seeing "a link was created"
+      // learns nothing they can act on.
+      ctx.waitUntil?.(recordShareLinkCreated(env, access, role, access.ownerId));
       // spec/64 (#6): a first-ever share link is a milestone. Best-effort,
       // off the response path; claimFirstShare dedups so it fires only once.
       if (emailEnabled(env)) {

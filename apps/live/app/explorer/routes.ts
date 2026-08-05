@@ -2,7 +2,7 @@
 // its own route under /explorer so sections are linkable, the browser
 // back button works, and new sections keep landing as new pages:
 //
-//   recent   → /explorer/recent          all     → /explorer/all
+//   timeline → /explorer/timeline        recent  → /explorer/recent
 //   unsorted → /explorer/unsorted        shared  → /explorer/shared
 //   favourites → /explorer/favourites
 //   gallery  → /explorer/images          invites → /explorer/invites
@@ -21,6 +21,8 @@ import type { SelectedNode } from './views';
 
 export function explorerPathFor(node: SelectedNode): string {
   switch (node.kind) {
+    case 'timeline':
+      return '/explorer/timeline';
     case 'recent':
       return '/explorer/recent';
     case 'all':
@@ -57,11 +59,21 @@ export function explorerPathFor(node: SelectedNode): string {
 // Inverse: which section a URL shows. `pathname` arrives without the
 // /live basePath (usePathname strips it); trailing slashes from the
 // static export are tolerated. Unknown paths and id-less folder/team
-// URLs fall back to `recent` — the section /explorer itself redirects
-// to — so a mangled link degrades to the default view, never a crash.
+// URLs fall back to `timeline` — the section /explorer itself redirects
+// to (spec/138 §8.1) — so a mangled link degrades to the default view,
+// never a crash.
 export function selectedFromRoute(pathname: string, search: URLSearchParams): SelectedNode {
   const path = pathname.replace(/\/+$/, '');
   switch (path) {
+    case '/explorer/timeline':
+      return { kind: 'timeline' };
+    // Explicit, not left to the default. Recent used to BE the default,
+    // so it round-tripped for free; now that the default is the
+    // Timeline (spec/138 §8.1), /explorer/recent without its own case
+    // would resolve to the Timeline and the sidebar would highlight
+    // the wrong row.
+    case '/explorer/recent':
+      return { kind: 'recent' };
     case '/explorer/all':
       return { kind: 'all' };
     case '/explorer/unsorted':
@@ -88,13 +100,13 @@ export function selectedFromRoute(pathname: string, search: URLSearchParams): Se
       return { kind: 'invites' };
     case '/explorer/folder': {
       const id = search.get('id');
-      return id ? { kind: 'folder', id } : { kind: 'recent' };
+      return id ? { kind: 'folder', id } : { kind: 'timeline' };
     }
     case '/explorer/team': {
       const id = search.get('id');
-      return id ? { kind: 'team', id } : { kind: 'recent' };
+      return id ? { kind: 'team', id } : { kind: 'timeline' };
     }
     default:
-      return { kind: 'recent' };
+      return { kind: 'timeline' };
   }
 }

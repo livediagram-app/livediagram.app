@@ -24,4 +24,5 @@ export * from './notification-prefs';
 export * from './account';
 export * from './images';
 export * from './telemetry';
+export * from './timeline';
 export * from './ws-tickets';

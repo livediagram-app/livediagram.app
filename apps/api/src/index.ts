@@ -2,12 +2,15 @@ import { getClerkIdentity } from './auth/clerk';
 import { emailEnabled } from './email/client';
 import { runLifecycleSweep, welcomeOnSighting } from './email/lifecycle';
 import { runTokenExpirySweep } from './email/token-expiry';
+import { runTimelineExpirySweep } from './timeline';
 import {
   deleteOldChangeLogEntries,
   deleteOldEvents,
+  deleteOldTimelineEvents,
   deleteOldUnusedImages,
   resolveApiToken,
 } from './db';
+import { TIMELINE_RETENTION_MS } from '@livediagram/api-schema';
 import { isApiTokenFormat } from './auth/api-token';
 import { verifyOwnerId } from './auth/owner-signature';
 import { guestSignatureEnforced, OWNER_SCOPED_SEGMENTS } from './auth/guest-rest';
@@ -33,6 +36,7 @@ import { handleMigrate } from './routes/migrate';
 import { handleGuestId } from './routes/guest-id';
 import { handleParticipants } from './routes/participants';
 import { handleFavourites } from './routes/favourites';
+import { handleTimeline } from './routes/timeline';
 import { handlePreferences } from './routes/preferences';
 import { handleShare } from './routes/share';
 import { handleTeams } from './routes/teams';
@@ -261,6 +265,8 @@ export default {
           return await handleAccount(ctx);
         case 'favourites':
           return await handleFavourites(ctx);
+        case 'timeline':
+          return await handleTimeline(ctx);
         case 'preferences':
           return await handlePreferences(ctx);
         case 'migrate':
@@ -317,11 +323,30 @@ export default {
         deleteOldChangeLogEntries,
       );
       scheduleSweep(ctx, env, 'events', 'rows', now - EVENTS_RETENTION_MS, deleteOldEvents);
+      // spec/138 §3.5: the Timeline feed keeps a year, where the
+      // element-level change_log above keeps 90 days.
+      scheduleSweep(
+        ctx,
+        env,
+        'timeline',
+        'events',
+        now - TIMELINE_RETENTION_MS,
+        deleteOldTimelineEvents,
+      );
       // spec/64: send any due onboarding emails (welcome catch-up + week 1 / 2).
       // No-op when RESEND_API_KEY is unset.
       ctx.waitUntil(runLifecycleSweep(env));
       // spec/64 (#3): warn owners whose API token is within a week of expiry.
       ctx.waitUntil(runTokenExpirySweep(env));
+      // spec/138 §4.5: the same window, on the Timeline. Separate from
+      // the email sweep above because that one no-ops without a Resend
+      // key, and a self-host with no email provider still needs to know
+      // its integration is about to break.
+      ctx.waitUntil(
+        runTimelineExpirySweep(env)
+          .then((count) => console.log(`timeline expiry sweep: emitted ${count} events`))
+          .catch((err) => console.error('timeline expiry sweep failed', err)),
+      );
       scheduleSweep(
         ctx,
         env,

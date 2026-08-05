@@ -3,8 +3,9 @@
 // block under the diagram resource, so it owns its own module the way
 // the tab / share sub-paths own diagram-subresource-routes.ts.
 
-import { getDiagram, getFolder, getMembership, setDiagramFolder } from '../db';
+import { getDiagram, getFolder, getMembership, getTeam, setDiagramFolder } from '../db';
 import { forbidden, noContent, notFound } from '../responses';
+import { recordDiagramMoved, recordTeamDiagramAdded } from '../timeline';
 import { requireOwner, type RouteContext } from './context';
 
 // Returns null when the request isn't the placement route.
@@ -89,6 +90,25 @@ export async function handleDiagramPlacement(ctx: RouteContext): Promise<Respons
         if (teamId !== null && folder.teamId !== teamId) return notFound();
       }
       await setDiagramFolder(env, id, folderId, teamId, newOwnerId);
+      // spec/138: publishing into a team library is a different event
+      // from filing something in a folder — the first tells a whole
+      // team a diagram is theirs to work on, the second is personal
+      // tidying. Re-read the diagram so the audience resolves against
+      // its NEW team, not the one it just left.
+      const moved = await getDiagram(env, id);
+      if (moved) {
+        if (teamId !== null && teamId !== existing.teamId) {
+          const destination = await getTeam(env, teamId);
+          if (destination) {
+            ctx.waitUntil?.(recordTeamDiagramAdded(env, moved, destination.name, owner));
+          }
+        } else if (folderId !== existing.folderId) {
+          const folderName = folderId
+            ? ((await getFolder(env, folderId))?.name ?? 'a folder')
+            : 'Unsorted';
+          ctx.waitUntil?.(recordDiagramMoved(env, moved, folderName, owner));
+        }
+      }
       return noContent();
     }
   }

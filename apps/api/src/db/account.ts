@@ -2,6 +2,7 @@
 // These touch every table keyed (directly or via diagram_id) on an
 // owner, so they live together rather than under any one resource.
 
+import { deleteTimelineForOwner, migrateTimelineOwner } from './timeline';
 import { thumbnailKey } from './diagrams';
 import { detachUserFromTeams } from './teams';
 import type { Env } from '../types';
@@ -94,6 +95,10 @@ export async function deleteAccount(
   // visiting OTHER people's diagrams are keyed on their owner_id and
   // need their own DELETE — same table migrateOwnerId already handles.
   await env.DB.prepare('DELETE FROM shared_with WHERE owner_id = ?').bind(ownerId).run();
+  // timeline (spec/138 §3.5): the feed, the events this owner authored,
+  // and the scope-state row. Hard, not soft — soft delete is a
+  // user-facing affordance in this product, never a retention strategy.
+  await deleteTimelineForOwner(env, ownerId);
   return {
     diagrams: diagramsRes.meta.changes ?? 0,
     folders: foldersRes.meta.changes ?? 0,
@@ -173,6 +178,13 @@ export async function migrateOwnerId(
     .bind(toOwnerId, fromOwnerId)
     .run();
   await env.DB.prepare('DELETE FROM user_preferences WHERE owner_id = ?').bind(fromOwnerId).run();
+  // timeline (spec/138 §9): a week of drawing as a guest is history
+  // worth keeping, so the feed, the authored events, and the
+  // scope-state row all follow the user to their new account. The
+  // scope-state row matters as much as the events: without it the
+  // backfill would run again against the Clerk id and re-seed what
+  // just migrated.
+  await migrateTimelineOwner(env, fromOwnerId, toOwnerId);
   // images (spec/19). UPDATE OR IGNORE walks the unique (owner_id,
   // sha256) collision case (same bytes on both identities) and
   // leaves those guest rows in place so the image id stays

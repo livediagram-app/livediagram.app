@@ -132,6 +132,7 @@ export function useExplorerPane({
       return { showUnsortedRow: false, folders: [], diagrams: sorted.slice(0, RECENT_LIMIT) };
     }
     if (
+      selected.kind === 'timeline' ||
       selected.kind === 'shared' ||
       selected.kind === 'gallery' ||
       selected.kind === 'themes' ||
@@ -211,6 +212,7 @@ export function useExplorerPane({
   }, [diagrams, teamDiagrams, shared, excluded]);
 
   const paneTitle = useMemo(() => {
+    if (selected.kind === 'timeline') return 'Timeline';
     if (selected.kind === 'recent') return 'Recent';
     if (selected.kind === 'shared') return 'Shared with you';
     if (selected.kind === 'gallery') return 'Image gallery';
@@ -236,6 +238,7 @@ export function useExplorerPane({
   type Crumb = { name: string; onClick?: () => void };
   const paneCrumbs = useMemo<Crumb[]>(() => {
     const all: Crumb = { name: 'My Work', onClick: () => go({ kind: 'all' }) };
+    if (selected.kind === 'timeline') return [{ name: 'Timeline' }];
     if (selected.kind === 'recent') return [{ name: 'Recent' }];
     if (selected.kind === 'shared') return [{ name: 'Shared with you' }];
     if (selected.kind === 'gallery') return [{ name: 'Image gallery' }];
@@ -248,7 +251,10 @@ export function useExplorerPane({
     const dynamic: Crumb = { name: 'Dynamic', onClick: () => go({ kind: 'dynamic' }) };
     if (selected.kind === 'dynamic') return [all, { name: 'Dynamic' }];
     if (selected.kind === 'unsorted') return [all, dynamic, { name: 'Unsorted' }];
-    if (selected.kind === 'favourites') return [all, dynamic, { name: 'Favourites' }];
+    // Favourites sits in Quick find now, not under My Work > Dynamic
+    // (spec/138 §8.2), so its trail is a single leaf like Recent's —
+    // a crumb that walks up to a parent it no longer has would be a lie.
+    if (selected.kind === 'favourites') return [{ name: 'Favourites' }];
     if (selected.kind === 'generated') return [all, dynamic, { name: 'Generated' }];
     if (selected.kind === 'offline') return [all, dynamic, { name: 'Offline' }];
     const chain = breadcrumb(selected.id);

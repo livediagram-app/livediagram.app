@@ -11,6 +11,7 @@ import { badRequest, forbidden, json, noContent, notFound } from '../responses';
 import { type RouteContext } from './context';
 import { listApiTokensByOwner, mintApiToken, revokeApiToken } from '../db';
 import { MAX_NAME_LEN } from '../limits';
+import { recordTokenCreated } from '../timeline';
 
 export async function handleTokens(ctx: RouteContext): Promise<Response> {
   const { request, env, segments, clerkUserId } = ctx;
@@ -31,6 +32,7 @@ export async function handleTokens(ctx: RouteContext): Promise<Response> {
       const minted = await mintApiToken(env, { ownerId: owner, name: name || null });
       // Null means the per-account cap (spec/61) is already reached.
       if (!minted) return json({ error: 'token_limit_reached' }, { status: 409 });
+      ctx.waitUntil?.(recordTokenCreated(env, { id: minted.id, name: name || 'API token' }, owner));
       // The plaintext is returned ONCE, here. It is never stored and never
       // retrievable again; the client shows it for copy then drops it.
       return json(

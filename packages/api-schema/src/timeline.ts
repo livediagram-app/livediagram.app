@@ -1,0 +1,132 @@
+// Timeline wire format (spec/138) — the Explorer's landing feed.
+//
+// The api worker emits these; the live app's Timeline pane consumes
+// them. Kept in its own module rather than piled into index.ts: the
+// timeline has a scope model + an event vocabulary of its own, and
+// both want room to grow without the barrel becoming a catalogue.
+
+// Who a run of events is FOR. v1 emits only 'user', where the id is an
+// owner id (a Clerk `sub`, or a guest participant id per spec/04).
+//
+// Widened with `(string & {})` rather than closed, because the whole
+// point of the scope model is that a later per-diagram or per-team feed
+// is a new value plus a renderer — no schema change, no migration
+// (spec/138 §3.4). The union members still autocomplete.
+export type TimelineScopeType = 'user' | 'diagram' | 'team' | (string & {});
+
+export type TimelineScopeRef = {
+  scopeType: TimelineScopeType;
+  scopeId: string;
+};
+
+// Serialised form used on the wire and in query params: "user:abc123".
+export function formatScope(scope: TimelineScopeRef): string {
+  return `${scope.scopeType}:${scope.scopeId}`;
+}
+
+// Inverse of formatScope. Splits on the FIRST colon only — a scope id
+// is an opaque owner id and a Clerk `sub` may itself contain one.
+// Returns null for anything without both halves, so a malformed query
+// param is a 400 rather than a scope read of `""`.
+export function parseScope(raw: string): TimelineScopeRef | null {
+  const at = raw.indexOf(':');
+  if (at <= 0 || at === raw.length - 1) return null;
+  return { scopeType: raw.slice(0, at), scopeId: raw.slice(at + 1) };
+}
+
+// What kind of thing an event is ABOUT. Drives the bubble's icon,
+// colour, and which filter chip hides it.
+export type TimelineSourceType = 'diagram' | 'team' | 'account' | (string & {});
+
+// What HAPPENED. Distinct from the source type: one diagram produces
+// many of these over its life. Open for the same reason as the scope
+// type — a new event type is a renderer entry, not a migration.
+export type TimelineEventType =
+  // Diagram lifecycle + the coalesced editing event (spec/138 §4.2)
+  | 'diagram_created'
+  | 'diagram_renamed'
+  | 'diagram_duplicated'
+  | 'diagram_deleted'
+  | 'diagram_moved'
+  | 'diagram_edited'
+  | 'diagram_offline'
+  | 'diagram_synced'
+  // Collaboration (§4.3)
+  | 'comment_added'
+  | 'comment_resolved'
+  | 'action_assigned'
+  | 'action_completed'
+  | 'share_link_created'
+  | 'share_link_expiring'
+  // Teams + invites (§4.4)
+  | 'team_created'
+  | 'team_invite_received'
+  | 'team_invite_accepted'
+  | 'team_invite_declined'
+  | 'team_member_joined'
+  | 'team_member_left'
+  | 'team_member_removed'
+  | 'team_role_changed'
+  | 'team_diagram_added'
+  // Account + housekeeping (§4.5)
+  | 'token_created'
+  | 'token_expiring'
+  | 'theme_saved'
+  | 'image_uploaded'
+  | (string & {});
+
+// One event on the feed.
+//
+// `title` and `description` are first-class rather than snapshot keys
+// because every event has them — they're the universal backbone, and
+// the thing a future search would index. The split is load-bearing for
+// stacking: the title is a Title Case category that never carries user
+// content, which is what lets four bubbles collapse into one honest
+// headline (spec/138 §2.1).
+export type TimelineEvent = {
+  id: string;
+  sourceType: TimelineSourceType;
+  sourceId: string;
+  eventType: TimelineEventType;
+  title: string;
+  description: string | null;
+  // Epoch ms. May be in the FUTURE for expiry warnings, which is why
+  // the feed renders a future band above Today (spec/138 §4.5).
+  occurredAt: number;
+  // Owner id of whoever did it, or null for a system event. The
+  // renderer compares it against the viewer to choose "You" vs a name,
+  // so the row itself stays viewer-agnostic and one row serves everyone
+  // in the audience.
+  actorId: string | null;
+  // Type-specific extras. Every renderer must read these defensively —
+  // rows written by an older worker won't have the newest keys.
+  snapshot: Record<string, unknown>;
+};
+
+export type TimelineReadResult = {
+  items: TimelineEvent[];
+  // Opaque "<occurredAt>:<eventId>". Absent when the last page has
+  // been served.
+  nextCursor?: string;
+  lastRefreshedAt?: number;
+};
+
+// Initial page size, and the ceiling a refresh may ask for. A refresh
+// requests max(PAGE_SIZE, currentLength) capped at PAGE_MAX so a user
+// who has clicked "Show more" three times isn't snapped back to one
+// page when the feed reloads.
+export const TIMELINE_PAGE_SIZE = 50;
+export const TIMELINE_PAGE_MAX = 200;
+
+// How far back the feed goes before the daily sweep prunes it. A year,
+// where `change_log` keeps 90 days (spec/12): an element-level audit
+// trail decays in weeks, but "when did I last touch this" is a question
+// people ask across a year.
+export const TIMELINE_RETENTION_MS = 365 * 24 * 60 * 60 * 1000;
+
+// Comment text rides along in the description so the feed is readable
+// without opening the diagram, truncated so one essay can't dominate a
+// day. Deliberately wider than spec/64's email policy (which never
+// includes comment text): an email leaves the product's auth boundary,
+// the Timeline sits behind the same gate as the diagram itself.
+export const TIMELINE_COMMENT_MAX = 240;

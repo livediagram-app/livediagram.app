@@ -32,6 +32,11 @@ const BROWSE_KINDS = new Set([
 const SECTION_HELP: Partial<
   Record<string, { article: HelpArticleKey; title: string; description: string }>
 > = {
+  timeline: {
+    article: 'timeline',
+    title: 'Timeline',
+    description: 'Everything that has happened across your diagrams, teams and account.',
+  },
   recent: {
     article: 'recentDiagrams',
     title: 'Recent',
@@ -96,6 +101,14 @@ const TeamInvitesPane = dynamic(() =>
 );
 const ProfilePane = dynamic(() =>
   import('@/components/panels/ProfilePane').then((m) => m.ProfilePane),
+);
+// The Timeline is the landing route, so it's the one lazy pane most
+// visitors DO load. Split anyway: the calendar grid + filter popover
+// are only reached by someone who switches modes, and holding them out
+// of the shared explorer chunk keeps the other sections' first paint
+// unaffected by a feature they don't use.
+const TimelinePane = dynamic(() =>
+  import('@/components/panels/TimelinePane').then((m) => m.TimelinePane),
 );
 
 // The right pane for whichever /explorer/<section> route is active:
@@ -212,6 +225,9 @@ export function ExplorerPane() {
         viewMode={isBrowse ? viewMode : undefined}
         onSetViewMode={isBrowse ? setViewMode : undefined}
         onCreateDiagram={
+          // A feed is a record of what happened, not a container you
+          // add to — the empty state carries its own New diagram CTA.
+          selected.kind === 'timeline' ||
           selected.kind === 'shared' ||
           selected.kind === 'gallery' ||
           selected.kind === 'themes' ||
@@ -232,6 +248,7 @@ export function ExplorerPane() {
                 )
         }
         onCreateFolder={
+          selected.kind === 'timeline' ||
           selected.kind === 'shared' ||
           selected.kind === 'gallery' ||
           selected.kind === 'themes' ||
@@ -252,7 +269,15 @@ export function ExplorerPane() {
       {/* Dynamic (synthetic) folders explain themselves under the breadcrumb. */}
       <DynamicFolderInfo selected={selected} />
 
-      {loading ? (
+      {/* Timeline runs ahead of the `loading` gate on purpose: that flag
+          tracks the DIAGRAM lists, which this section doesn't read, and
+          waiting on them would show diagram skeletons on the landing
+          page before the feed's own skeleton. */}
+      {selected.kind === 'timeline' ? (
+        ownerId ? (
+          <TimelinePane ownerId={ownerId} />
+        ) : null
+      ) : loading ? (
         <SkeletonRows />
       ) : selected.kind === 'profile' ? (
         <ProfilePane />
@@ -274,7 +299,7 @@ export function ExplorerPane() {
             clerkUserId={clerkUserId ?? null}
             clerkDisplayName={clerkDisplayName}
             onTeamsChanged={() => void refreshTeams()}
-            onLeftTeam={() => go({ kind: 'recent' })}
+            onLeftTeam={() => go({ kind: 'timeline' })}
             onLoadResult={(found) => setTeamNotFound(!found)}
             // The shared-diagrams move picker offers every space (spec/35):
             // the personal tree + each team, with `moveDiagramTo` routing a

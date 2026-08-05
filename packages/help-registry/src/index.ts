@@ -161,7 +161,7 @@ export const categories: Category[] = [
     title: 'Explorer',
     description:
       'Organise everything you build: how the Explorer keeps your diagrams, folders, teams, and assets easy to find and manage.',
-    articleCount: 12,
+    articleCount: 13,
     kind: 'feature',
   },
   {
@@ -1282,6 +1282,15 @@ export const articles: Article[] = [
     title: 'List and Card Views',
     description: 'Toggle browse views between compact rows and preview cards with live snapshots.',
     keywords: 'card grid view toggle thumbnail preview snapshot layout rows tiles gallery',
+    category: 'Explorer',
+    categorySlug: 'explorer',
+  },
+  {
+    slug: 'timeline',
+    title: 'Timeline',
+    description: 'The Explorer\u2019s landing view: a day-by-day feed of everything that happened.',
+    keywords:
+      'feed activity history what happened whats new latest events log stream notifications updates recent changes calendar month view upcoming expiring stacked grouped day',
     category: 'Explorer',
     categorySlug: 'explorer',
   },
