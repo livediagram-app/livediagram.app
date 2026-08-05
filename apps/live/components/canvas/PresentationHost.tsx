@@ -13,12 +13,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import { PresentationOverlay } from '@/components/canvas/PresentationOverlay';
 import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
-import {
-  DEFAULT_PRESENTATION_CONFIG,
-  loadPresentationConfig,
-  savePresentationConfig,
-  type PresentationConfig,
-} from '@/lib/presentation-config';
+import { slideDurationMs } from '@/lib/presentation-config';
 
 // The node the transition animates: the canvas surface. Kept here so the
 // cleanup can listen for ITS animationend rather than guessing a duration.
@@ -31,17 +26,9 @@ export function PresentationHost() {
   const at = slideDeck?.presentingAt ?? null;
   const [direction, setDirection] = useState<'forward' | 'back'>('forward');
   const prevAt = useRef<number | null>(null);
-  // Device-local presenter settings (spec/31), read once on mount and written
-  // through on every change.
-  const [config, setConfig] = useState<PresentationConfig>(DEFAULT_PRESENTATION_CONFIG);
-  useEffect(() => setConfig(loadPresentationConfig()), []);
-  const updateConfig = (patch: Partial<PresentationConfig>) => {
-    setConfig((prev) => {
-      const next = { ...prev, ...patch };
-      savePresentationConfig(next);
-      return next;
-    });
-  };
+  // Device-local presenter settings (spec/31). Owned by the deck hook, because
+  // the camera reads them too.
+  const config = slideDeck?.config;
   const configRef = useRef(config);
   configRef.current = config;
 
@@ -59,7 +46,14 @@ export function PresentationHost() {
     const before = prevAt.current;
     prevAt.current = at;
     root.setAttribute('data-presenting', '');
-    root.setAttribute('data-slide-transition', configRef.current.transition);
+    const cfg = configRef.current;
+    if (cfg) {
+      root.setAttribute('data-slide-transition', cfg.transition);
+      // The chosen speed drives the animation's duration through a variable,
+      // so the keyframes stay one definition rather than three.
+      root.style.setProperty('--lvd-slide-ms', `${slideDurationMs(cfg)}ms`);
+      root.toggleAttribute('data-hide-pointer', cfg.hidePointer);
+    }
     if (before === null) {
       // Entering: the first slide arrives as a card rather than a page swap.
       root.setAttribute('data-slide-move', 'in');
@@ -97,11 +91,13 @@ export function PresentationHost() {
       document.documentElement.removeAttribute('data-presenting');
       document.documentElement.removeAttribute('data-slide-move');
       document.documentElement.removeAttribute('data-slide-transition');
+      document.documentElement.removeAttribute('data-hide-pointer');
+      document.documentElement.style.removeProperty('--lvd-slide-ms');
     },
     [],
   );
 
-  if (!slideDeck || at === null) return null;
+  if (!slideDeck || at === null || !config) return null;
   return (
     <PresentationOverlay
       steps={slideDeck.runnable}
@@ -110,7 +106,7 @@ export function PresentationHost() {
       onExit={slideDeck.exitPresentation}
       direction={direction}
       config={config}
-      onChangeConfig={updateConfig}
+      onChangeConfig={slideDeck.updateConfig}
     />
   );
 }

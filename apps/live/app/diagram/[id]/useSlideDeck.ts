@@ -28,6 +28,12 @@ import {
 } from '@livediagram/diagram';
 
 import { track } from '@/lib/telemetry';
+import {
+  DEFAULT_PRESENTATION_CONFIG,
+  loadPresentationConfig,
+  savePresentationConfig,
+  type PresentationConfig,
+} from '@/lib/presentation-config';
 
 // How long after the last deck edit the save fires. Deck edits arrive in
 // bursts (drag a row through four positions, type a sentence of notes), and
@@ -68,6 +74,18 @@ export function useSlideDeck({
   // Non-null only while presenting: the index into the presentable list.
   const [presentingAt, setPresentingAt] = useState<number | null>(null);
   const [startingDeck, setStartingDeck] = useState(false);
+  // Device-local presenter settings (spec/31). Owned here rather than in the
+  // overlay because the FIT reads them too — "Actual size" is a setting about
+  // the camera, and the camera lives outside the overlay.
+  const [config, setConfig] = useState<PresentationConfig>(DEFAULT_PRESENTATION_CONFIG);
+  useEffect(() => setConfig(loadPresentationConfig()), []);
+  const updateConfig = useCallback((patch: Partial<PresentationConfig>) => {
+    setConfig((prev) => {
+      const next = { ...prev, ...patch };
+      savePresentationConfig(next);
+      return next;
+    });
+  }, []);
 
   // Hydration guard. Seeding the deck from the server must not look like an
   // edit, or opening a diagram would immediately PUT the deck straight back.
@@ -197,6 +215,25 @@ export function useSlideDeck({
     [commitDeck, isReadOnly],
   );
 
+  /** Leave a slide out of the run without losing it. */
+  const toggleSlideHidden = useCallback(
+    (slideId: string) => {
+      if (isReadOnly) return;
+      commitDeck((prev) => ({
+        slides: prev.slides.map((s) => {
+          if (s.id !== slideId) return s;
+          const next = { ...s };
+          // Absent rather than `false`, so a shown slide stays byte-light in
+          // the stored deck the way every other optional field does.
+          if (s.hidden) delete next.hidden;
+          else next.hidden = true;
+          return next;
+        }),
+      }));
+    },
+    [commitDeck, isReadOnly],
+  );
+
   const deleteSlide = useCallback(
     (slideId: string) => {
       if (isReadOnly) return;
@@ -308,10 +345,13 @@ export function useSlideDeck({
     renameSlide,
     setSlideNotes,
     deleteSlide,
+    toggleSlideHidden,
     duplicateSlide,
     reorderSlides,
     presentingAt,
     setPresentingAt,
+    config,
+    updateConfig,
     startingDeck,
     start,
     exitPresentation,

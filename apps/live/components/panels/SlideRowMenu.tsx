@@ -19,7 +19,6 @@ import { slideName, type Slide } from '@livediagram/diagram';
 
 import {
   MenuAccordionSection,
-  MenuGroupSeparator,
   MenuTile,
   MenuTileGrid,
   MenuToolbar,
@@ -27,9 +26,10 @@ import {
   PortalMenu,
 } from '@/components/primitives/PortalMenu';
 import { DuplicateIcon, PencilIcon, TrashIcon } from '@/components/panels/explorer-icons';
+import { EyeIcon, EyeOffIcon } from '@/components/panels/layers-panel-icons';
 import { NoteMenuIcon } from '@/components/palette/context-menu-icons';
 
-function ElementsIcon() {
+function SelectionIcon() {
   return (
     <svg
       width="14"
@@ -90,6 +90,7 @@ export function SlideRowMenu({
   onEditNotes,
   onAddSelection,
   onRemoveSelection,
+  onToggleHidden,
   onDuplicate,
   onDelete,
 }: {
@@ -102,8 +103,9 @@ export function SlideRowMenu({
   onEditNotes: () => void;
   onAddSelection: () => void;
   onRemoveSelection: () => void;
+  onToggleHidden: () => void;
   onDuplicate: () => void;
-  onDelete: () => void;
+  onDelete: (anchor: HTMLElement | null) => void;
 }) {
   const [open, setOpen] = useState(false);
   const [section, setSection] = useState<string | null>(null);
@@ -117,8 +119,8 @@ export function SlideRowMenu({
   // something to refuse politely, it is something that cannot be expressed.
   const canEditMembership = onSameTab && selectionCount > 0;
   const membershipWhy = !onSameTab
-    ? 'Switch to this slide’s tab first.'
-    : 'Select elements on the canvas first.';
+    ? 'Switch to this slide’s own tab to change what is on it.'
+    : 'Select elements on the canvas to add them to this slide.';
 
   return (
     <>
@@ -187,28 +189,41 @@ export function SlideRowMenu({
                 }
                 danger
                 onClick={() => {
+                  // Hand the menu button up as the anchor so the panel can
+                  // open the confirm beside it — the same pattern the
+                  // Explorer's row menu uses for its own Delete.
+                  onDelete(buttonRef.current);
                   close();
-                  onDelete();
                 }}
               />
             </div>
           </MenuToolbar>
-          <MenuGroupSeparator />
+          {/* No MenuGroupSeparator here: MenuAccordionSection draws its own
+              top hairline, and the two together read as a double rule. */}
           <MenuAccordionSection
-            title="Elements"
-            icon={<ElementsIcon />}
-            open={section === 'elements'}
-            onToggle={() => setSection((s) => (s === 'elements' ? null : 'elements'))}
+            title="Selection"
+            icon={<SelectionIcon />}
+            open={section === 'selection'}
+            onToggle={() => setSection((s) => (s === 'selection' ? null : 'selection'))}
           >
             <div className="px-2 py-1.5">
+              {/* What the two buttons DO, above them rather than under: a pair
+                  of bare verbs called Add and Remove says nothing about what
+                  they act on, and by the time you have read the caption
+                  underneath you have already had to guess. */}
+              <p className="px-1 pb-1.5 text-[10px] leading-snug text-slate-500 dark:text-slate-400">
+                {canEditMembership
+                  ? `Put what you have selected on this slide, or take it off. It holds ${
+                      slide.elementIds.length === 1
+                        ? '1 element'
+                        : `${slide.elementIds.length} elements`
+                    } now.`
+                  : membershipWhy}
+              </p>
               <MenuTileGrid cols={2}>
                 <MenuTile
                   icon={<PlusIcon />}
-                  label={
-                    canEditMembership && selectionCount > 1
-                      ? `Add ${selectionCount}`
-                      : 'Add selection'
-                  }
+                  label={canEditMembership && selectionCount > 1 ? `Add ${selectionCount}` : 'Add'}
                   disabled={!canEditMembership}
                   onClick={() => {
                     close();
@@ -217,7 +232,7 @@ export function SlideRowMenu({
                 />
                 <MenuTile
                   icon={<MinusIcon />}
-                  label="Remove selection"
+                  label="Remove"
                   disabled={!canEditMembership}
                   onClick={() => {
                     close();
@@ -225,15 +240,34 @@ export function SlideRowMenu({
                   }}
                 />
               </MenuTileGrid>
-              <p className="px-1 pt-1.5 text-[10px] leading-snug text-slate-400 dark:text-slate-500">
-                {canEditMembership
-                  ? `This slide holds ${
-                      slide.elementIds.length === 1
-                        ? '1 element'
-                        : `${slide.elementIds.length} elements`
-                    }.`
-                  : membershipWhy}
+            </div>
+          </MenuAccordionSection>
+          <MenuAccordionSection
+            title="Visibility"
+            icon={slide.hidden ? <EyeOffIcon /> : <EyeIcon />}
+            open={section === 'visibility'}
+            onToggle={() => setSection((s) => (s === 'visibility' ? null : 'visibility'))}
+          >
+            <div className="px-2 py-1.5">
+              {/* Hiding is a different idea from deleting, and the panel should
+                  say so: a slide you might want next week, a backup detail for
+                  a question you may not get, a section you cut for time. */}
+              <p className="px-1 pb-1.5 text-[10px] leading-snug text-slate-500 dark:text-slate-400">
+                {slide.hidden
+                  ? 'This slide is skipped when you present. It still lives in the deck.'
+                  : 'Keep the slide, leave it out of the run. Nothing is deleted.'}
               </p>
+              <MenuTileGrid cols={2}>
+                <MenuTile
+                  icon={slide.hidden ? <EyeIcon /> : <EyeOffIcon />}
+                  label={slide.hidden ? 'Show' : 'Hide'}
+                  active={slide.hidden}
+                  onClick={() => {
+                    close();
+                    onToggleHidden();
+                  }}
+                />
+              </MenuTileGrid>
             </div>
           </MenuAccordionSection>
         </PortalMenu>

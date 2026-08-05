@@ -58,7 +58,16 @@ export function PresentationOverlay({
   const step = atEnd ? undefined : steps[at];
 
   // The HUD stays put while a popover is open, or it would be left orphaned.
-  const idle = usePointerIdle(true, notesOpen || settingsOpen || detail !== null);
+  const idle =
+    usePointerIdle(true, notesOpen || settingsOpen || detail !== null) && !config.keepControls;
+
+  // Publish idleness so the CSS can hide the cursor with the same signal that
+  // fades the HUD — the two must come back together, or a hidden pointer would
+  // be a trap.
+  useEffect(() => {
+    document.documentElement.toggleAttribute('data-pointer-idle', idle);
+    return () => document.documentElement.removeAttribute('data-pointer-idle');
+  }, [idle]);
 
   const go = useCallback(
     (next: number) => {
@@ -81,6 +90,16 @@ export function PresentationOverlay({
     },
     [config.loop, onExit, onGo, steps.length],
   );
+
+  // Auto-advance, for a deck left running in a room. Paused while anything is
+  // open, because a popover the presenter is reading must not be swept away by
+  // a timer they had forgotten about.
+  useEffect(() => {
+    const seconds = config.autoAdvanceSeconds;
+    if (seconds <= 0 || atEnd || notesOpen || settingsOpen || detail) return;
+    const id = window.setTimeout(() => go(at + 1), seconds * 1000);
+    return () => window.clearTimeout(id);
+  }, [at, atEnd, config.autoAdvanceSeconds, detail, go, notesOpen, settingsOpen]);
 
   // Browser fullscreen where available. Best-effort: it needs a user gesture
   // and can be refused, and the overlay is already full-viewport either way,

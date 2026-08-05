@@ -2,20 +2,69 @@
 
 // The presenter's settings, opened from the cog in the HUD (spec/31).
 //
-// Deliberately four things and no more. This popover opens ON a projector, in
-// front of a room, usually because something is not behaving the way the
-// presenter wants right now — so every entry has to be a decision they can
-// make in one glance and undo in one more. Anything that needs thinking about
-// belongs in the panel, before you start.
+// Grouped into Transition, Playback and Display, because the list grew past
+// the point where a flat one reads as a list. Each entry still has to be a
+// decision the presenter can make in one glance and undo in one more — this
+// popover opens ON a projector, in front of a room — so everything here is a
+// segmented control or a switch, and nothing needs typing or dragging.
 //
 // Device-local (lib/presentation-config): how YOU drive a deck on THIS
 // machine, not a property of the diagram.
 
 import {
+  AUTO_ADVANCE_CHOICES,
+  SLIDE_SPEEDS,
   SLIDE_TRANSITIONS,
+  SLIDE_ZOOMS,
   type PresentationConfig,
-  type SlideTransition,
 } from '@/lib/presentation-config';
+
+/** A labelled band of settings. */
+function Group({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <>
+      <span className="px-2 pb-0.5 pt-1.5 text-[10px] font-semibold uppercase tracking-wide text-white/40">
+        {title}
+      </span>
+      {children}
+    </>
+  );
+}
+
+/** A row of mutually-exclusive choices. */
+function Segmented<T extends string | number>({
+  options,
+  value,
+  onPick,
+}: {
+  options: readonly { id: T; label: string; hint?: string }[];
+  value: T;
+  onPick: (id: T) => void;
+}) {
+  return (
+    <div className="flex gap-1 px-1">
+      {options.map((o) => (
+        <button
+          key={String(o.id)}
+          type="button"
+          title={o.hint}
+          aria-pressed={value === o.id}
+          onClick={(e) => {
+            e.stopPropagation();
+            onPick(o.id);
+          }}
+          className={`flex-1 cursor-pointer rounded-md px-1.5 py-1 text-[11px] font-medium transition ${
+            value === o.id
+              ? 'bg-white/25 text-white'
+              : 'text-white/60 hover:bg-white/10 hover:text-white/90'
+          }`}
+        >
+          {o.label}
+        </button>
+      ))}
+    </div>
+  );
+}
 
 function Toggle({
   label,
@@ -72,53 +121,80 @@ export function PresentationSettings({
       aria-label="Presentation settings"
       onClick={(e) => e.stopPropagation()}
       onPointerDown={(e) => e.stopPropagation()}
-      className="pointer-events-auto fixed right-4 top-16 z-[66] flex w-64 flex-col gap-1 rounded-xl bg-slate-900/90 p-2 shadow-2xl backdrop-blur"
+      className="pointer-events-auto fixed right-4 top-16 z-[66] flex max-h-[75vh] w-64 flex-col gap-1 overflow-y-auto rounded-xl bg-slate-900/90 p-2 shadow-2xl backdrop-blur"
     >
-      <span className="px-2 pb-0.5 pt-1 text-[10px] font-semibold uppercase tracking-wide text-white/40">
-        Transition
-      </span>
-      <div className="flex gap-1 px-1">
-        {SLIDE_TRANSITIONS.map((t) => (
-          <button
-            key={t.id}
-            type="button"
-            title={t.hint}
-            aria-pressed={config.transition === t.id}
-            onClick={(e) => {
-              e.stopPropagation();
-              onChange({ transition: t.id as SlideTransition });
-            }}
-            className={`flex-1 cursor-pointer rounded-md px-2 py-1 text-[11px] font-medium transition ${
-              config.transition === t.id
-                ? 'bg-white/25 text-white'
-                : 'text-white/60 hover:bg-white/10 hover:text-white/90'
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
+      <Group title="Transition">
+        <Segmented
+          options={SLIDE_TRANSITIONS}
+          value={config.transition}
+          onPick={(id) => onChange({ transition: id })}
+        />
+        {/* Speed is meaningless without a transition, so it goes away with it
+            rather than sitting there greyed out. */}
+        {config.transition !== 'none' ? (
+          <Segmented
+            options={SLIDE_SPEEDS}
+            value={config.speed}
+            onPick={(id) => onChange({ speed: id })}
+          />
+        ) : null}
+      </Group>
 
       <div className="my-1 border-t border-white/10" />
 
-      <Toggle
-        label="Click to advance"
-        hint="Off if you'd rather only the keys and arrows move the deck"
-        on={config.advanceOnClick}
-        onChange={(next) => onChange({ advanceOnClick: next })}
-      />
-      <Toggle
-        label="Loop the deck"
-        hint="After the last slide, start again rather than ending"
-        on={config.loop}
-        onChange={(next) => onChange({ loop: next })}
-      />
-      <Toggle
-        label="Show position"
-        hint="The 7 / 23 counter and the slide's name"
-        on={config.showPosition}
-        onChange={(next) => onChange({ showPosition: next })}
-      />
+      <Group title="Playback">
+        {/* Auto-advance pairs with Loop: together they are the whole
+            "leave it running on the wall" setup. */}
+        <Segmented
+          options={AUTO_ADVANCE_CHOICES.map((c) => ({
+            id: c.seconds,
+            label: c.label,
+            hint: c.seconds === 0 ? 'Only move when you say so' : `Advance every ${c.seconds}s`,
+          }))}
+          value={config.autoAdvanceSeconds}
+          onPick={(seconds) => onChange({ autoAdvanceSeconds: seconds })}
+        />
+        <Toggle
+          label="Click to advance"
+          hint="Off if you'd rather only the keys and buttons move the deck"
+          on={config.advanceOnClick}
+          onChange={(next) => onChange({ advanceOnClick: next })}
+        />
+        <Toggle
+          label="Loop the deck"
+          hint="After the last slide, start again rather than ending"
+          on={config.loop}
+          onChange={(next) => onChange({ loop: next })}
+        />
+      </Group>
+
+      <div className="my-1 border-t border-white/10" />
+
+      <Group title="Display">
+        <Segmented
+          options={SLIDE_ZOOMS}
+          value={config.zoom}
+          onPick={(id) => onChange({ zoom: id })}
+        />
+        <Toggle
+          label="Show position"
+          hint="The 7 / 23 counter and the slide's name"
+          on={config.showPosition}
+          onChange={(next) => onChange({ showPosition: next })}
+        />
+        <Toggle
+          label="Keep controls visible"
+          hint="Stop them fading out when the pointer rests"
+          on={config.keepControls}
+          onChange={(next) => onChange({ keepControls: next })}
+        />
+        <Toggle
+          label="Hide the pointer"
+          hint="A still cursor left on a projector is a distraction"
+          on={config.hidePointer}
+          onChange={(next) => onChange({ hidePointer: next })}
+        />
+      </Group>
     </div>
   );
 }

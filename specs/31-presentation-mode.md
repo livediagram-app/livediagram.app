@@ -50,6 +50,10 @@ type Slide = {
   // What you mean to SAY over this slide. The slide's own, not any
   // element's. See Presenter notes below.
   notes?: string;
+  // Left out of the run without being deleted. Absent = shown. A separate
+  // idea from deleting: a slide you might want next week, a backup detail
+  // for a question you may not get, a section you cut for time.
+  hidden?: boolean;
 };
 
 type Deck = { slides: Slide[] };
@@ -88,7 +92,9 @@ The **Slide Deck panel** is the seventh tool panel, on exactly the contract the 
 - **New slide from selection** — the primary authoring path. Select elements on the canvas, press the button; the slide takes the active tab. Also **Add selection to slide** for growing one, which is offered only while you are on that slide's own tab (a slide holds one tab's elements, so adding from another tab is not a thing to disallow politely, it is a thing that cannot be expressed).
 - **An empty deck stays empty.** No seeded slides, no "one per tab" starter. A generated deck is a deck you have to read and prune before you can trust it, and pruning somebody else's guesses is slower than making the three slides you meant.
 - **Remove from slide** — the other half of adding. Membership is edited for the life of the deck, not just when a slide is created.
-- **Every verb lives in the row's `…` menu** (the Explorer's PortalMenu): rename, presenter notes, add / remove selection, duplicate, delete. A row itself does ONE thing — press it to open that slide — because a panel the width of the palette cannot carry five controls per row and stay legible.
+- **Every verb lives in the row's `…` menu**, built from the shared menu furniture the Explorer's rows and the tab context menu use, in the same shape: a quick-action icon **toolbar** (rename, notes, duplicate, with delete pinned right), then labelled accordion categories — **Selection** (add / remove what you have selected, with a line above the buttons saying what they act on) and **Visibility** (hide this slide from the run, or show it again). A menu that looks like this one and like nothing else in the app is a menu people have to learn twice.
+- **Deleting a slide asks first**, in a ConfirmPopover anchored to the row's own menu button. The elements survive, but the arrangement does not, and the arrangement is what you spent the time on.
+- **Hidden slides** are skipped by `presentableSlides`, which is the ONE place the run is decided — so the count on the Present button, the `7 / 23` in the HUD, and what advancing lands on can never disagree about the deck's length. The row shows a struck-through name and an eye marker, so a hidden slide is visible in the panel and invisible in the show. A row itself does ONE thing — press it to open that slide — because a panel the width of the palette cannot carry five controls per row and stay legible.
 - **Reorder** by dragging rows. The order does NOT change while you drag: a caret shows where the row will land and the move commits on release, the way the tab bar reorders (spec/30). Reordering live reshuffled the list under the pointer, which moved the very row you were aiming at. Pointer events rather than HTML5 dnd, so it works on touch.
 - **Rename** inline, **delete**, and **duplicate** a slide.
 - **Presenter notes** opened from the row's `…` menu, written in a text area under the list. Here rather than on the canvas, because a note is about the slide rather than about anything on it, and behind the menu rather than always-on so the panel never grows a text area you did not ask for.
@@ -147,12 +153,18 @@ presenter wants right now, so every entry has to be a decision they can make in
 one glance and undo in one more. Anything needing thought belongs in the panel,
 before you start.
 
-- **Transition** — Slide, Fade, or None.
+- **Transition** — Slide, Fade or None, plus a **speed** (Quick / Normal / Slow) which disappears when the transition is None, rather than sitting there greyed out. The speed drives the animation through a `--lvd-slide-ms` custom property, so the keyframes stay one definition.
+- **Auto-advance** — Off, 5s, 10s, 30s or 60s. With Loop, this is the whole "leave it running on the wall" setup. Paused while a popover is open, because something the presenter is reading must not be swept away by a timer they had forgotten about.
+- **Zoom** — Fill screen (a small slide is blown up) or Actual size (never past 100%), for authors whose slides are already the size they meant.
+- **Keep controls visible** — stop the HUD fading when the pointer rests.
+- **Hide the pointer** — a still cursor left on a projector is a distraction. Driven by the same idle signal that fades the HUD, so the two come back together; a hidden cursor you could not bring back would be a trap.
 - **Click to advance** — off for a presenter who gestures at the screen with
   the mouse and would rather drive from the keys alone.
 - **Loop the deck** — the last slide returns to the first instead of the end
   state, for a deck left running in a room.
 - **Show position** — the counter and slide name, off for a clean screen.
+
+They are grouped Transition / Playback / Display, because the list grew past the point where a flat one reads as a list.
 
 Device-local (`lib/presentation-config.ts`), like the eraser's brush and the
 laser's pen: how YOU drive a deck on THIS machine, not a property of the

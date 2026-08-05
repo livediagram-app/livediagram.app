@@ -10,6 +10,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 
+import { GearIcon } from '@/components/chrome/tab-bar-icons';
+
 // How long the pointer must be still before the HUD gets out of the way.
 const IDLE_MS = 2600;
 
@@ -185,21 +187,12 @@ export function PresentationHud({
             />
           ) : null}
         </HudButton>
+        {/* The app's own settings glyph, not a cog. A cog's spokes around a
+            central circle read as a SUN at this size — which is exactly why it
+            was replaced everywhere else (see GearIcon), and doubly wrong on a
+            dark HUD where the stroke is light. */}
         <HudButton label="Presentation settings" onPress={onToggleSettings} active={settingsOpen}>
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 16 16"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.4"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden
-          >
-            <circle cx="8" cy="8" r="2.1" />
-            <path d="M8 1.6v1.8M8 12.6v1.8M14.4 8h-1.8M3.4 8H1.6M12.5 3.5l-1.3 1.3M4.8 11.2l-1.3 1.3M12.5 12.5l-1.3-1.3M4.8 4.8 3.5 3.5" />
-          </svg>
+          <GearIcon />
         </HudButton>
         <HudButton label="Exit presentation" onPress={onClose}>
           <svg

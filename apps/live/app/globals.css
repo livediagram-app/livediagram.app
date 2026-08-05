@@ -1916,6 +1916,15 @@ html[data-presenting] [data-zoom-cluster] {
   display: none !important;
 }
 
+/* A still cursor left sitting on a projector is a distraction, so it goes
+   away with the HUD. Driven by the same idle state, so the pointer and the
+   controls come back together on the first twitch of the mouse — a hidden
+   cursor you cannot bring back would be a trap. */
+html[data-presenting][data-hide-pointer][data-pointer-idle] [data-canvas-a11y-root],
+html[data-presenting][data-hide-pointer][data-pointer-idle] [data-presentation-surface] {
+  cursor: none;
+}
+
 /* The animation targets the canvas SURFACE, never the content wrapper inside
    it. That wrapper carries the pan/zoom transform
    (`scale(z) translate(x, y)`), and a CSS animation on `transform` REPLACES
@@ -1934,12 +1943,12 @@ html[data-presenting][data-slide-transition='none'][data-slide-move] [data-canva
   animation: none;
 }
 html[data-presenting][data-slide-transition='fade'][data-slide-move] [data-canvas-a11y-root] {
-  animation: lvd-slide-fade 300ms ease;
+  animation: lvd-slide-fade var(--lvd-slide-ms, 380ms) ease;
 }
 
 html[data-presenting][data-slide-transition='slide'][data-slide-move='in'] [data-canvas-a11y-root],
 html[data-presenting]:not([data-slide-transition]) [data-slide-move='in'] [data-canvas-a11y-root] {
-  animation: lvd-slide-in 380ms cubic-bezier(0.4, 0, 0.2, 1);
+  animation: lvd-slide-in var(--lvd-slide-ms, 380ms) cubic-bezier(0.4, 0, 0.2, 1);
 }
 /* Advancing: the new slide travels in from the RIGHT edge, all the way across
    the screen. A gentle 6% nudge was the first attempt and read as a wobble
@@ -1954,13 +1963,13 @@ html[data-presenting]:not([data-slide-transition]) [data-slide-move='in'] [data-
    and stop. */
 html[data-presenting][data-slide-transition='slide'][data-slide-move='forward']
   [data-canvas-a11y-root] {
-  animation: lvd-slide-forward 380ms cubic-bezier(0.4, 0, 0.2, 1);
+  animation: lvd-slide-forward var(--lvd-slide-ms, 380ms) cubic-bezier(0.4, 0, 0.2, 1);
 }
 /* Going back mirrors it, so the direction always says which way you are
    travelling through the deck. */
 html[data-presenting][data-slide-transition='slide'][data-slide-move='back']
   [data-canvas-a11y-root] {
-  animation: lvd-slide-back 380ms cubic-bezier(0.4, 0, 0.2, 1);
+  animation: lvd-slide-back var(--lvd-slide-ms, 380ms) cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @keyframes lvd-slide-fade {

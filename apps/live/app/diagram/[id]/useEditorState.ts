@@ -70,6 +70,7 @@ import { useTabSession } from '@/hooks/persistence/useTabSession';
 import { useEditorKeyboardShortcuts } from '@/hooks/canvas/useEditorKeyboardShortcuts';
 import { useEditorViewport } from '@/hooks/canvas/useEditorViewport';
 import { useSlideDeck } from './useSlideDeck';
+import { slideMaxZoom } from '@/lib/presentation-config';
 import { useCanvasPinchZoom } from '@/hooks/canvas/useCanvasPinchZoom';
 import { useCapabilities } from '@/hooks/persistence/useCapabilities';
 import { type Participant } from '@/lib/identity';
@@ -978,6 +979,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // Read by the resize observer below, which must not re-subscribe per slide.
   const presentingStepRef = useRef(presentingStep);
   presentingStepRef.current = presentingStep;
+  const configRef = useRef(slideDeck.config);
+  configRef.current = slideDeck.config;
 
   // Where the editor was looking before the deck took over, so exiting puts it
   // back. Without this you left a presentation zoomed to whatever the last
@@ -1018,12 +1021,13 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     if (presentingStep.tab.id !== activeId) setActiveId(presentingStep.tab.id);
     const bounds = slideBounds(presentingElements);
     if (!bounds) return;
-    // A slide fills the screen. The editor's fit caps at 100% because a small
-    // diagram blown up looks broken in a workspace; a slide is the only thing
-    // on a projector, so a one-box slide SHOULD be a big box.
-    fitToBounds(bounds, { maxZoom: 2.5 });
+    // A slide fills the screen by default. The editor's own fit caps at 100%
+    // because a small diagram blown up looks broken in a workspace; a slide is
+    // the only thing on a projector, so a one-box slide SHOULD be a big box —
+    // unless the presenter has picked "Actual size" from the cog.
+    fitToBounds(bounds, { maxZoom: slideMaxZoom(slideDeck.config) });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [presentingStep?.slide.id, presentingElements]);
+  }, [presentingStep?.slide.id, presentingElements, slideDeck.config.zoom]);
 
   // ...and fit again whenever the canvas CHANGES SIZE while presenting.
   //
@@ -1045,7 +1049,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
       const step = presentingStepRef.current;
       if (!step) return;
       const bounds = slideBounds(resolveSlide(step.slide, step.tab));
-      if (bounds) fitToBounds(bounds, { maxZoom: 2.5 });
+      if (bounds) fitToBounds(bounds, { maxZoom: slideMaxZoom(configRef.current) });
     });
     observer.observe(node);
     return () => observer.disconnect();

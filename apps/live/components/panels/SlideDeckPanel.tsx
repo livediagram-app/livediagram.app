@@ -25,6 +25,9 @@ import { slideName, type Slide } from '@livediagram/diagram';
 
 import { ModePanel, type ModePanelProps } from '@/components/panels/ModePanel';
 import { SlideRowMenu } from '@/components/panels/SlideRowMenu';
+import { EyeOffIcon } from '@/components/panels/layers-panel-icons';
+import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
+import { Tooltip } from '@/components/primitives/Tooltip';
 import type { SlideDeckState } from '@/app/diagram/[id]/useSlideDeck';
 
 const ROW_DRAG_SLOP_PX = 4;
@@ -105,9 +108,28 @@ function SlideRow({
             : 'cursor-grab border-slate-200 bg-white hover:border-brand-300 dark:border-slate-700 dark:bg-slate-800/60'
       }`}
     >
-      <span className="w-4 shrink-0 text-center text-[10px] font-semibold tabular-nums text-slate-400">
+      <span
+        className={`w-4 shrink-0 text-center text-[10px] font-semibold tabular-nums ${
+          slide.hidden ? 'text-slate-300 dark:text-slate-600' : 'text-slate-400'
+        }`}
+      >
         {index + 1}
       </span>
+      {/* A passive marker, not a control: the toggle lives in the row's menu
+          under Visibility, so the row stays one press = open this slide. */}
+      {slide.hidden ? (
+        <Tooltip
+          title="Hidden from the presentation"
+          description="This slide is skipped when you present. Show it again from its menu."
+        >
+          <span
+            aria-label="Hidden from the presentation"
+            className="flex h-5 w-5 shrink-0 items-center justify-center text-slate-300 dark:text-slate-600"
+          >
+            <EyeOffIcon />
+          </span>
+        </Tooltip>
+      ) : null}
       {renaming ? (
         <input
           ref={inputRef}
@@ -132,7 +154,13 @@ function SlideRow({
           onClick={onOpen}
           className="flex min-w-0 flex-1 cursor-pointer flex-col text-left"
         >
-          <span className="truncate text-[11px] font-medium text-slate-700 dark:text-slate-200">
+          <span
+            className={`truncate text-[11px] font-medium ${
+              slide.hidden
+                ? 'text-slate-400 line-through dark:text-slate-500'
+                : 'text-slate-700 dark:text-slate-200'
+            }`}
+          >
             {slideName(slide, index)}
           </span>
           <span className="truncate text-[9px] text-slate-400 dark:text-slate-500">
@@ -142,6 +170,7 @@ function SlideRow({
             {tabName ?? 'Tab deleted'} ·{' '}
             {slide.elementIds.length === 1 ? '1 element' : `${slide.elementIds.length} elements`}
             {slide.notes ? ' · notes' : ''}
+            {slide.hidden ? ' · hidden' : ''}
           </span>
         </button>
       )}
@@ -177,6 +206,7 @@ export function SlideDeckPanel({
     renameSlide,
     setSlideNotes,
     deleteSlide,
+    toggleSlideHidden,
     duplicateSlide,
     reorderSlides,
     start,
@@ -189,6 +219,13 @@ export function SlideDeckPanel({
   // than shown for whatever slide happens to be open, so the panel never grows
   // a text area you did not ask for.
   const [notesForId, setNotesForId] = useState<string | null>(null);
+  // Deleting a slide asks first, anchored to the row's own menu button. A deck
+  // is authored work — the elements survive, but the arrangement does not, and
+  // it is the arrangement you spent the time on.
+  const [confirmDelete, setConfirmDelete] = useState<{ id: string; anchor: HTMLElement } | null>(
+    null,
+  );
+  const deleting = deck.slides.find((s) => s.id === confirmDelete?.id) ?? null;
   const notesSlide = deck.slides.find((s) => s.id === notesForId) ?? null;
 
   // Row drag. The order does NOT change while you drag: a caret shows where the
@@ -309,8 +346,13 @@ export function SlideDeckPanel({
                         onEditNotes={() => setNotesForId(slide.id)}
                         onAddSelection={() => addSelectionToSlide(slide.id)}
                         onRemoveSelection={() => removeFromSlide(slide.id, currentSelectionIds)}
+                        onToggleHidden={() => toggleSlideHidden(slide.id)}
                         onDuplicate={() => duplicateSlide(slide.id)}
-                        onDelete={() => deleteSlide(slide.id)}
+                        onDelete={(anchor) =>
+                          anchor
+                            ? setConfirmDelete({ id: slide.id, anchor })
+                            : deleteSlide(slide.id)
+                        }
                       />
                     )
                   }
@@ -382,6 +424,20 @@ export function SlideDeckPanel({
           ) : null}
         </button>
       </div>
+      {confirmDelete && deleting ? (
+        <ConfirmPopover
+          anchor={confirmDelete.anchor}
+          message={`Delete “${slideName(deleting, deck.slides.indexOf(deleting))}”? The ${
+            deleting.elementIds.length === 1 ? 'element stays' : 'elements stay'
+          } on the canvas.`}
+          confirmLabel="Delete slide"
+          onConfirm={() => {
+            deleteSlide(confirmDelete.id);
+            setConfirmDelete(null);
+          }}
+          onCancel={() => setConfirmDelete(null)}
+        />
+      ) : null}
     </ModePanel>
   );
 }

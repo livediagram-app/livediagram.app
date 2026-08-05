@@ -27,6 +27,15 @@ export type Slide = {
   elementIds: ElementId[];
   /** What you mean to SAY over this slide. The slide's own, not any element's. */
   notes?: string;
+  /**
+   * Left out of the presentation without being deleted. Absent = shown, so a
+   * deck written before this existed reads as all-visible.
+   *
+   * A separate idea from deleting: a slide you might want next week, a backup
+   * detail for a question you may not get, a section you cut for time. Losing
+   * the slide to get it out of the run is the wrong trade.
+   */
+  hidden?: boolean;
 };
 
 export type Deck = { slides: Slide[] };
@@ -116,9 +125,9 @@ export function slideBounds(
 /**
  * The slides that can actually be shown, paired with their tab.
  *
- * A slide whose tab is gone is dropped rather than blocking the deck: the tab
- * may come back via undo, and a presentation that refuses to start because one
- * slide points at a deleted tab helps nobody. A slide whose ELEMENTS have all
+ * Slides the author has HIDDEN are left out, as is a slide whose tab is gone:
+ * the tab may come back via undo, and a presentation that refuses to start
+ * because one slide points at a deleted tab helps nobody. A slide whose ELEMENTS have all
  * gone is kept, because an empty slide you can see and fix beats a slide that
  * silently deleted itself when you cleared its contents.
  */
@@ -129,6 +138,10 @@ export function presentableSlides(
   const byId = new Map(tabs.map((t) => [t.id, t]));
   const out: { slide: Slide; tab: Tab; index: number }[] = [];
   deck.slides.forEach((slide, index) => {
+    // Hidden slides are skipped here, which is the ONE place the run is
+    // decided — so the count on the Present button, the `7 / 23` in the HUD
+    // and what advancing lands on can never disagree about the deck's length.
+    if (slide.hidden) return;
     const tab = byId.get(slide.tabId);
     if (tab) out.push({ slide, tab, index });
   });
@@ -159,6 +172,7 @@ function isSlide(value: unknown): value is Slide {
   if (!s.elementIds.every((id) => typeof id === 'string')) return false;
   if (s.name !== undefined && typeof s.name !== 'string') return false;
   if (s.notes !== undefined && typeof s.notes !== 'string') return false;
+  if (s.hidden !== undefined && typeof s.hidden !== 'boolean') return false;
   return true;
 }
 
