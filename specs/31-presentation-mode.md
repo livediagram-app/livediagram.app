@@ -87,12 +87,13 @@ The **Slide Deck panel** is the seventh tool panel, on exactly the contract the 
 - **The slide list**, in deck order, each row with its name, a member count, and a preview thumbnail rendered by the shared headless SVG renderer (the same one the Layers panel rows use).
 - **New slide from selection** — the primary authoring path. Select elements on the canvas, press the button; the slide takes the active tab. Also **Add selection to slide** for growing one, which is offered only while you are on that slide's own tab (a slide holds one tab's elements, so adding from another tab is not a thing to disallow politely, it is a thing that cannot be expressed).
 - **An empty deck stays empty.** No seeded slides, no "one per tab" starter. A generated deck is a deck you have to read and prune before you can trust it, and pruning somebody else's guesses is slower than making the three slides you meant.
-- **Remove from slide** — the other half of adding. Select elements on the canvas and remove them from the open slide, or drop them from the slide's member list. Membership is edited for the life of the deck, not just at the moment a slide is created.
-- **Reorder** by dragging rows, the pointer-event drag the Layers panel already uses (native HTML5 dnd is dead on touch).
+- **Remove from slide** — the other half of adding. Membership is edited for the life of the deck, not just when a slide is created.
+- **Every verb lives in the row's `…` menu** (the Explorer's PortalMenu): rename, presenter notes, add / remove selection, duplicate, delete. A row itself does ONE thing — press it to open that slide — because a panel the width of the palette cannot carry five controls per row and stay legible.
+- **Reorder** by dragging rows. The order does NOT change while you drag: a caret shows where the row will land and the move commits on release, the way the tab bar reorders (spec/30). Reordering live reshuffled the list under the pointer, which moved the very row you were aiming at. Pointer events rather than HTML5 dnd, so it works on touch.
 - **Rename** inline, **delete**, and **duplicate** a slide.
-- **Presenter notes** for the selected slide, in a text area under the list. Written here, not on the canvas, because a note is about the slide rather than about anything on it.
+- **Presenter notes** opened from the row's `…` menu, written in a text area under the list. Here rather than on the canvas, because a note is about the slide rather than about anything on it, and behind the menu rather than always-on so the panel never grows a text area you did not ask for.
 - Selecting a row **switches to that slide's tab and highlights its members on the canvas**. This is how you check a slide without presenting, and it is why a slide names its tab rather than inferring one.
-- **Start** — enters the full-screen deck at slide 1.
+- **Present** — enters the full-screen deck at slide 1, with a badge carrying the slide count.
 
 ### What the panel does not do
 
@@ -122,11 +123,14 @@ A deck should feel like a deck, and the transitions are what sell it.
 - **Between slides**: the outgoing slide slides out to the LEFT while the incoming one slides in from the RIGHT, moving together. Going **back** mirrors it: out to the right, in from the left, so the direction always says which way you are travelling through the deck.
 - **Exiting**: the reverse of entry, back to the editor.
 - Motion honours `prefers-reduced-motion`: those users get a cross-fade at the same durations, so the deck still reads as changing slides without the travel.
-- Transitions are **CSS transforms on the slide surface** (translate + scale + opacity), not per-element animation. One moving layer is cheap at any slide size, and it means a hundred-element slide transitions exactly as fast as a one-element slide.
+- The travel is **the full width of the screen**, and the animated node is the canvas SURFACE, so the backdrop goes with it: the whole screen moves rather than the diagram sliding around inside a stationary frame. A gentle nudge was tried first and read as a wobble.
+- The curve is a plain **decelerate** with no overshoot. Easing with a long slow tail reads as rubber-banding — the slide appears to arrive, then keeps creeping.
+- Transitions are **CSS transforms on the slide surface**, not per-element animation. One moving layer is cheap at any slide size, so a hundred-element slide transitions exactly as fast as a one-element slide.
+- The animation must NEVER target the canvas's content wrapper, which carries the pan/zoom transform: a CSS animation on `transform` replaces the inline one for its whole duration, which drops the slide to unzoomed top-left for the length of the transition. For the same reason the fit measures `offsetWidth/offsetHeight` (layout size) rather than `getBoundingClientRect` (the transformed box), or it fits each slide to a viewport the entry animation was mid-way through shrinking.
 
 ### The HUD
 
-Top-right, carrying four things: the position (`7 / 23`), the slide's name, a **notes button**, and a **close button**. It **fades out when the pointer is idle and returns on any pointer movement**, so a still screen is clean for the room and every control is one twitch of the mouse away.
+Top-right, carrying: the position (`7 / 23`), the slide's name, **previous** and **next** buttons, a **notes button**, and a **close button**. The two nav buttons exist because a presenter on a projector often has a mouse and no keyboard within reach, and "click anywhere to advance" is neither discoverable nor able to go back. It **fades out when the pointer is idle and returns on any pointer movement**, so a still screen is clean for the room and every control is one twitch of the mouse away.
 
 The HUD does not fade while the notes popover is open, or the popover would be left orphaned over the slide.
 
@@ -141,7 +145,7 @@ Two ways out, because a presenter mid-sentence should not have to remember one:
 - **`Esc`**, any time.
 - **The close button** in the HUD.
 
-Exiting restores the previous tab, viewport and chrome.
+Exiting restores the previous tab, viewport and chrome. The viewport matters more than it sounds: a deck leaves the camera wherever the last slide needed it, often 250% on one box, so without the restore you came back to a diagram you had to go and find.
 
 - Available to **every role including share-link viewers**: presenting is read-only by nature, and a viewer narrating a shared diagram is a core case.
 

@@ -11,6 +11,11 @@
 // control that looked like deck management but only reshuffled the tab bar
 // would undermine exactly that promise.
 //
+// A row does ONE thing: press it to open that slide. Every verb — rename,
+// notes, membership, duplicate, delete — lives in its `…` menu, because a
+// panel the width of the palette cannot carry five controls per row and stay
+// legible.
+//
 // An empty deck stays empty. No seeded slides, no "one per tab" starter: a
 // generated deck is one you have to read and prune before you can trust it.
 
@@ -19,7 +24,7 @@ import { useEffect, useRef, useState } from 'react';
 import { slideName, type Slide } from '@livediagram/diagram';
 
 import { ModePanel, type ModePanelProps } from '@/components/panels/ModePanel';
-import { Tooltip } from '@/components/primitives/Tooltip';
+import { SlideRowMenu } from '@/components/panels/SlideRowMenu';
 import type { SlideDeckState } from '@/app/diagram/[id]/useSlideDeck';
 
 const ROW_DRAG_SLOP_PX = 4;
@@ -32,82 +37,55 @@ function PlayIcon() {
   );
 }
 
-function SmallIconButton({
-  label,
-  description,
-  onPress,
-  danger,
-  children,
-}: {
-  label: string;
-  description: string;
-  onPress: () => void;
-  danger?: boolean;
-  children: React.ReactNode;
-}) {
-  return (
-    <Tooltip title={label} description={description}>
-      <button
-        type="button"
-        aria-label={label}
-        onPointerDown={(e) => e.stopPropagation()}
-        onClick={(e) => {
-          e.stopPropagation();
-          onPress();
-        }}
-        className={`flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded transition ${
-          danger
-            ? 'text-slate-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-500/15'
-            : 'text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200'
-        }`}
-      >
-        {children}
-      </button>
-    </Tooltip>
-  );
+/** Where a dropped row will land, drawn between rows like the tab bar's caret. */
+function DropCaret() {
+  return <div aria-hidden className="pointer-events-none -my-0.5 h-0.5 rounded bg-brand-500" />;
 }
 
-/** One slide row: position, name, member count, and its verbs. */
+/** One slide row: position, name, and where it came from. */
 function SlideRow({
   slide,
   index,
-  total,
   tabName,
   isOpen,
   isDragging,
+  renaming,
   onOpen,
   onRename,
-  onDuplicate,
-  onDelete,
+  onRenameDone,
+  menu,
   onPointerDown,
   onPointerMove,
   onPointerUp,
 }: {
   slide: Slide;
   index: number;
-  total: number;
   /** Absent when the slide's tab has been deleted. */
   tabName: string | undefined;
   isOpen: boolean;
   isDragging: boolean;
+  renaming: boolean;
   onOpen: () => void;
   onRename: (name: string) => void;
-  onDuplicate: () => void;
-  onDelete: () => void;
+  onRenameDone: () => void;
+  menu: React.ReactNode;
   onPointerDown: (e: React.PointerEvent) => void;
   onPointerMove: (e: React.PointerEvent) => void;
   onPointerUp: (e: React.PointerEvent) => void;
 }) {
-  const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState('');
   const inputRef = useRef<HTMLInputElement | null>(null);
   useEffect(() => {
-    if (editing) inputRef.current?.select();
-  }, [editing]);
+    if (renaming) {
+      setDraft(slide.name ?? '');
+      // Select rather than just focus: renaming usually replaces the name.
+      window.setTimeout(() => inputRef.current?.select(), 0);
+    }
+  }, [renaming, slide.name]);
 
   const commit = () => {
-    setEditing(false);
     onRename(draft);
+    onRenameDone();
   };
 
   return (
@@ -119,96 +97,55 @@ function SlideRow({
       onPointerCancel={onPointerUp}
       // Without this a touch-drag scrolls the panel instead of moving the row.
       style={{ touchAction: 'none' }}
-      className={`flex w-full cursor-grab items-center gap-2 rounded-md border px-2 py-1.5 text-left transition ${
+      className={`flex w-full items-center gap-2 rounded-md border px-2 py-1.5 text-left transition ${
         isDragging
-          ? 'border-brand-400 bg-brand-50 opacity-60 dark:border-brand-500/60 dark:bg-brand-500/15'
+          ? 'cursor-grabbing border-brand-400 bg-brand-50 opacity-50 dark:border-brand-500/60 dark:bg-brand-500/15'
           : isOpen
-            ? 'border-brand-300 bg-brand-50/70 dark:border-brand-500/50 dark:bg-brand-500/10'
-            : 'border-slate-200 bg-white hover:border-brand-300 dark:border-slate-700 dark:bg-slate-800/60'
+            ? 'cursor-grab border-brand-300 bg-brand-50/70 dark:border-brand-500/50 dark:bg-brand-500/10'
+            : 'cursor-grab border-slate-200 bg-white hover:border-brand-300 dark:border-slate-700 dark:bg-slate-800/60'
       }`}
     >
       <span className="w-4 shrink-0 text-center text-[10px] font-semibold tabular-nums text-slate-400">
         {index + 1}
       </span>
-      <button
-        type="button"
-        onClick={onOpen}
-        onDoubleClick={() => {
-          setDraft(slide.name ?? '');
-          setEditing(true);
-        }}
-        className="flex min-w-0 flex-1 cursor-pointer flex-col text-left"
-      >
-        {editing ? (
-          <input
-            ref={inputRef}
-            value={draft}
-            autoFocus
-            onChange={(e) => setDraft(e.target.value)}
-            onBlur={commit}
-            // The canvas listens for keys; a text field has to keep its own or
-            // typing a slide name would fire tool shortcuts.
-            onKeyDown={(e) => {
-              e.stopPropagation();
-              if (e.key === 'Enter') commit();
-              if (e.key === 'Escape') setEditing(false);
-            }}
-            onPointerDown={(e) => e.stopPropagation()}
-            className="w-full rounded border border-brand-300 bg-white px-1 py-0.5 text-[11px] text-slate-800 outline-none dark:bg-slate-900 dark:text-slate-100"
-          />
-        ) : (
+      {renaming ? (
+        <input
+          ref={inputRef}
+          value={draft}
+          autoFocus
+          onChange={(e) => setDraft(e.target.value)}
+          onBlur={commit}
+          // The canvas listens for keys; a text field has to keep its own or
+          // typing a slide name would fire tool shortcuts.
+          onKeyDown={(e) => {
+            e.stopPropagation();
+            if (e.key === 'Enter') commit();
+            if (e.key === 'Escape') onRenameDone();
+          }}
+          onPointerDown={(e) => e.stopPropagation()}
+          placeholder={`Slide ${index + 1}`}
+          className="min-w-0 flex-1 rounded border border-brand-300 bg-white px-1 py-0.5 text-[11px] text-slate-800 outline-none dark:bg-slate-900 dark:text-slate-100"
+        />
+      ) : (
+        <button
+          type="button"
+          onClick={onOpen}
+          className="flex min-w-0 flex-1 cursor-pointer flex-col text-left"
+        >
           <span className="truncate text-[11px] font-medium text-slate-700 dark:text-slate-200">
             {slideName(slide, index)}
           </span>
-        )}
-        <span className="truncate text-[9px] text-slate-400 dark:text-slate-500">
-          {/* The tab is named because a deck spans tabs: "3 elements" on its
-              own does not tell you which board they are on. A slide whose tab
-              has been deleted says so rather than showing a blank. */}
-          {tabName ?? 'Tab deleted'} ·{' '}
-          {slide.elementIds.length === 1 ? '1 element' : `${slide.elementIds.length} elements`}
-          {slide.notes ? ' · notes' : ''}
-        </span>
-      </button>
-      <SmallIconButton
-        label={`Duplicate ${slideName(slide, index)}`}
-        description="Copy this slide, with the same elements, straight after it."
-        onPress={onDuplicate}
-      >
-        <svg
-          width="11"
-          height="11"
-          viewBox="0 0 14 14"
-          fill="none"
-          stroke="currentColor"
-          aria-hidden
-        >
-          <rect x="1.8" y="1.8" width="7.4" height="7.4" rx="1.2" strokeWidth="1.4" />
-          <path d="M4.8 12.2h6a1.4 1.4 0 0 0 1.4-1.4v-6" strokeWidth="1.4" strokeLinecap="round" />
-        </svg>
-      </SmallIconButton>
-      <SmallIconButton
-        label={`Delete ${slideName(slide, index)}`}
-        description={`Remove this slide from the deck. The ${
-          slide.elementIds.length === 1 ? 'element stays' : 'elements stay'
-        } on the canvas.`}
-        onPress={onDelete}
-        danger
-      >
-        <svg
-          width="11"
-          height="11"
-          viewBox="0 0 14 14"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.4"
-          strokeLinecap="round"
-          aria-hidden
-        >
-          <path d="M2.5 3.8h9M5.6 3.8V2.5h2.8v1.3M3.8 3.8l.6 7.7h5.2l.6-7.7" />
-        </svg>
-      </SmallIconButton>
-      <span className="sr-only">{`Slide ${index + 1} of ${total}`}</span>
+          <span className="truncate text-[9px] text-slate-400 dark:text-slate-500">
+            {/* The tab is named because a deck spans tabs: "3 elements" on its
+                own does not say which board they are on. A slide whose tab has
+                been deleted says so rather than showing a blank. */}
+            {tabName ?? 'Tab deleted'} ·{' '}
+            {slide.elementIds.length === 1 ? '1 element' : `${slide.elementIds.length} elements`}
+            {slide.notes ? ' · notes' : ''}
+          </span>
+        </button>
+      )}
+      {menu}
     </div>
   );
 }
@@ -230,7 +167,6 @@ export function SlideDeckPanel({
   const {
     deck,
     openSlideId,
-    openSlide,
     openSlideInEditor,
     selectionCount,
     currentSelectionIds,
@@ -248,18 +184,38 @@ export function SlideDeckPanel({
   } = state;
 
   const tabNames = new Map(tabs.map((t) => [t.id, t.name]));
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  // Which slide's notes are being written. Opened from the row's menu rather
+  // than shown for whatever slide happens to be open, so the panel never grows
+  // a text area you did not ask for.
+  const [notesForId, setNotesForId] = useState<string | null>(null);
+  const notesSlide = deck.slides.find((s) => s.id === notesForId) ?? null;
 
-  // Row drag, the pointer-event kind the Layers panel uses: HTML5 dnd is
-  // unreliable in a panel and dead on touch.
+  // Row drag. The order does NOT change while you drag: a caret shows where the
+  // row will land and the move commits on release. Reordering live meant the
+  // list reshuffled under the pointer, which moved the very row you were aiming
+  // at — the tab bar settled this question already (spec/30) and this follows
+  // it, with pointer events instead of HTML5 dnd so it works on touch.
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [moving, setMoving] = useState(false);
+  const [dropAt, setDropAt] = useState<{ index: number; side: 'before' | 'after' } | null>(null);
   const origin = useRef<{ x: number; y: number } | null>(null);
   const dragging = useRef(false);
+  const dropRef = useRef<{ index: number; side: 'before' | 'after' } | null>(null);
+  dropRef.current = dropAt;
 
-  const slotUnder = (x: number, y: number): number => {
+  const slotUnder = (x: number, y: number) => {
     const el = document.elementFromPoint(x, y)?.closest('[data-slide-slot]');
-    const raw = el?.getAttribute('data-slide-slot');
-    return raw === null || raw === undefined ? -1 : Number(raw);
+    if (!el) return null;
+    const raw = el.getAttribute('data-slide-slot');
+    if (raw === null) return null;
+    const rect = el.getBoundingClientRect();
+    return {
+      index: Number(raw),
+      // Which half the pointer is in decides the side, so the caret sits
+      // exactly where the row will land.
+      side: (y < rect.top + rect.height / 2 ? 'before' : 'after') as 'before' | 'after',
+    };
   };
 
   const beginDrag = (e: React.PointerEvent, id: string) => {
@@ -268,12 +224,11 @@ export function SlideDeckPanel({
     dragging.current = false;
     setMoving(false);
     setDraggingId(id);
-    // NOT captured here. A row carries its own buttons — open, rename on
-    // double-click, duplicate, delete — and capturing on pointer-down
-    // redirects every later event to the row, so the click those buttons
-    // needed never arrived. The row looked draggable and was otherwise dead.
-    // Capture happens below, the moment a press becomes a drag.
+    // NOT captured here. A row carries a press target and a `…` button, and
+    // capturing on pointer-down redirects every later event to the row, so the
+    // click those needed never arrives. Capture happens once it IS a drag.
   };
+
   const moveDrag = (e: React.PointerEvent) => {
     if (!draggingId || !origin.current) return;
     if (!dragging.current) {
@@ -282,29 +237,40 @@ export function SlideDeckPanel({
       if (Math.hypot(dx, dy) < ROW_DRAG_SLOP_PX) return;
       dragging.current = true;
       setMoving(true);
-      // Now it IS a drag, so take the pointer: the row has to keep receiving
-      // moves even when the cursor travels over its neighbours.
       e.currentTarget.setPointerCapture(e.pointerId);
     }
     // elementFromPoint, not the event target: pointer capture keeps every move
     // on the row the drag started from.
-    const to = slotUnder(e.clientX, e.clientY);
-    if (to < 0) return;
-    const from = deck.slides.findIndex((s) => s.id === draggingId);
-    if (from < 0 || from === to) return;
-    reorderSlides(draggingId, to);
+    setDropAt(slotUnder(e.clientX, e.clientY));
   };
+
   const endDrag = (e: React.PointerEvent) => {
     if (dragging.current && e.currentTarget.hasPointerCapture?.(e.pointerId)) {
       e.currentTarget.releasePointerCapture(e.pointerId);
     }
+    const target = dropRef.current;
+    const id = draggingId;
+    if (dragging.current && id && target) {
+      const from = deck.slides.findIndex((s) => s.id === id);
+      // The caret sits BETWEEN rows, so 'after' means the slot below. Pulling
+      // the dragged row out first shifts everything below it up by one, which
+      // is why a downward move loses a step.
+      let to = target.side === 'before' ? target.index : target.index + 1;
+      if (from >= 0 && from < to) to -= 1;
+      const clamped = Math.max(0, Math.min(deck.slides.length - 1, to));
+      if (from >= 0 && clamped !== from) reorderSlides(id, clamped);
+    }
     setDraggingId(null);
     setMoving(false);
+    setDropAt(null);
     dragging.current = false;
     origin.current = null;
   };
 
-  const canAddToOpen = openSlide !== null && openSlide.tabId === activeTabId && selectionCount > 0;
+  const caretBefore = (i: number) =>
+    moving &&
+    dropAt !== null &&
+    (dropAt.side === 'before' ? dropAt.index === i : dropAt.index === i - 1);
 
   return (
     <ModePanel title="Slide Deck" {...placement}>
@@ -317,80 +283,68 @@ export function SlideDeckPanel({
         ) : (
           <div className="flex max-h-52 flex-col gap-1 overflow-y-auto overflow-x-hidden py-px">
             {deck.slides.map((slide, i) => (
-              <SlideRow
-                key={slide.id}
-                slide={slide}
-                index={i}
-                total={deck.slides.length}
-                tabName={tabNames.get(slide.tabId)}
-                isOpen={slide.id === openSlideId}
-                isDragging={draggingId === slide.id && moving}
-                onOpen={() => openSlideInEditor(slide.id)}
-                onRename={(name) => renameSlide(slide.id, name)}
-                onDuplicate={() => duplicateSlide(slide.id)}
-                onDelete={() => deleteSlide(slide.id)}
-                onPointerDown={(e) => beginDrag(e, slide.id)}
-                onPointerMove={moveDrag}
-                onPointerUp={endDrag}
-              />
+              <div key={slide.id} className="flex flex-col gap-1">
+                {caretBefore(i) ? <DropCaret /> : null}
+                <SlideRow
+                  slide={slide}
+                  index={i}
+                  tabName={tabNames.get(slide.tabId)}
+                  isOpen={slide.id === openSlideId}
+                  isDragging={draggingId === slide.id && moving}
+                  renaming={renamingId === slide.id}
+                  onOpen={() => openSlideInEditor(slide.id)}
+                  onRename={(name) => renameSlide(slide.id, name)}
+                  onRenameDone={() => setRenamingId(null)}
+                  onPointerDown={(e) => beginDrag(e, slide.id)}
+                  onPointerMove={moveDrag}
+                  onPointerUp={endDrag}
+                  menu={
+                    isReadOnly ? null : (
+                      <SlideRowMenu
+                        slide={slide}
+                        index={i}
+                        onSameTab={slide.tabId === activeTabId}
+                        selectionCount={selectionCount}
+                        onRename={() => setRenamingId(slide.id)}
+                        onEditNotes={() => setNotesForId(slide.id)}
+                        onAddSelection={() => addSelectionToSlide(slide.id)}
+                        onRemoveSelection={() => removeFromSlide(slide.id, currentSelectionIds)}
+                        onDuplicate={() => duplicateSlide(slide.id)}
+                        onDelete={() => deleteSlide(slide.id)}
+                      />
+                    )
+                  }
+                />
+              </div>
             ))}
+            {/* The caret past the last row, for a drop below everything. */}
+            {moving && dropAt?.side === 'after' && dropAt.index === deck.slides.length - 1 ? (
+              <DropCaret />
+            ) : null}
           </div>
         )}
 
-        {!isReadOnly ? (
-          <div className="flex flex-col gap-1">
-            <button
-              type="button"
-              onClick={newSlideFromSelection}
-              disabled={selectionCount === 0}
-              className="w-full cursor-pointer rounded-md border border-slate-200 bg-white px-2 py-1.5 text-[11px] font-medium text-slate-600 transition hover:border-brand-300 hover:text-brand-700 disabled:cursor-default disabled:opacity-40 disabled:hover:border-slate-200 disabled:hover:text-slate-600 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-300"
-            >
-              {selectionCount === 0
-                ? 'Select elements to make a slide'
-                : `New slide from ${selectionCount === 1 ? '1 element' : `${selectionCount} elements`}`}
-            </button>
-            {openSlide ? (
-              <div className="flex gap-1">
-                <button
-                  type="button"
-                  onClick={() => addSelectionToSlide(openSlide.id)}
-                  disabled={!canAddToOpen}
-                  // Offered only on the slide's OWN tab: a slide holds one
-                  // tab's elements, so adding from another is not something to
-                  // refuse politely, it cannot be expressed.
-                  title={
-                    openSlide.tabId === activeTabId
-                      ? undefined
-                      : 'Switch to this slide’s tab to add elements to it'
-                  }
-                  className="flex-1 cursor-pointer rounded-md border border-slate-200 px-2 py-1 text-[10px] font-medium text-slate-600 transition hover:border-brand-300 hover:text-brand-700 disabled:cursor-default disabled:opacity-40 dark:border-slate-700 dark:text-slate-300"
-                >
-                  Add selection
-                </button>
-                <button
-                  type="button"
-                  onClick={() => removeFromSlide(openSlide.id, currentSelectionIds)}
-                  disabled={!canAddToOpen}
-                  className="flex-1 cursor-pointer rounded-md border border-slate-200 px-2 py-1 text-[10px] font-medium text-slate-600 transition hover:border-red-300 hover:text-red-600 disabled:cursor-default disabled:opacity-40 dark:border-slate-700 dark:text-slate-300"
-                >
-                  Remove selection
-                </button>
-              </div>
-            ) : null}
-          </div>
-        ) : null}
-
-        {openSlide && !isReadOnly ? (
+        {notesSlide && !isReadOnly ? (
           <label className="flex flex-col gap-1">
-            <span className="px-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
-              Presenter notes
+            <span className="flex items-center justify-between px-0.5">
+              <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
+                Notes · {slideName(notesSlide, deck.slides.indexOf(notesSlide))}
+              </span>
+              <button
+                type="button"
+                onClick={() => setNotesForId(null)}
+                className="cursor-pointer text-[10px] font-medium text-slate-400 transition hover:text-slate-700 dark:hover:text-slate-200"
+              >
+                Done
+              </button>
             </span>
             {/* The SLIDE's notes: what you mean to say over it. Not the
                 elements' own note field, which is about a thing rather than
                 about a moment in a talk. */}
             <textarea
-              value={openSlide.notes ?? ''}
-              onChange={(e) => setSlideNotes(openSlide.id, e.target.value)}
+              value={notesSlide.notes ?? ''}
+              autoFocus
+              onChange={(e) => setSlideNotes(notesSlide.id, e.target.value)}
               onKeyDown={(e) => e.stopPropagation()}
               onPointerDown={(e) => e.stopPropagation()}
               rows={3}
@@ -400,6 +354,19 @@ export function SlideDeckPanel({
           </label>
         ) : null}
 
+        {!isReadOnly ? (
+          <button
+            type="button"
+            onClick={newSlideFromSelection}
+            disabled={selectionCount === 0}
+            className="w-full cursor-pointer rounded-md border border-slate-200 bg-white px-2 py-1.5 text-[11px] font-medium text-slate-600 transition hover:border-brand-300 hover:text-brand-700 disabled:cursor-default disabled:opacity-40 disabled:hover:border-slate-200 disabled:hover:text-slate-600 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-300"
+          >
+            {selectionCount === 0
+              ? 'Select elements to make a slide'
+              : `New slide from ${selectionCount === 1 ? '1 element' : `${selectionCount} elements`}`}
+          </button>
+        ) : null}
+
         <button
           type="button"
           onClick={() => void start()}
@@ -407,7 +374,12 @@ export function SlideDeckPanel({
           className="flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-md bg-brand-600 px-2 py-2 text-[11px] font-semibold text-white transition hover:bg-brand-700 disabled:cursor-default disabled:opacity-40"
         >
           <PlayIcon />
-          {startingDeck ? 'Loading…' : `Start${runnable.length > 0 ? ` (${runnable.length})` : ''}`}
+          {startingDeck ? 'Loading…' : 'Present'}
+          {runnable.length > 0 && !startingDeck ? (
+            <span className="rounded-full bg-white/25 px-1.5 py-px text-[10px] font-semibold tabular-nums">
+              {runnable.length}
+            </span>
+          ) : null}
         </button>
       </div>
     </ModePanel>

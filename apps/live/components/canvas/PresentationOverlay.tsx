@@ -190,6 +190,8 @@ export function PresentationOverlay({
           notes={step.slide.notes}
           notesOpen={notesOpen}
           onToggleNotes={() => setNotesOpen((v) => !v)}
+          onBack={at > 0 ? () => go(at - 1) : undefined}
+          onNext={() => go(at + 1)}
           onClose={onExit}
           hidden={idle}
         />

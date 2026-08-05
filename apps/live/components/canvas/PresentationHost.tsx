@@ -16,7 +16,7 @@ import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
 
 // Matches the CSS in globals.css (.lvd-slide-*), so the class is removed the
 // moment the animation ends rather than being left on the node.
-const SLIDE_MS = 420;
+const SLIDE_MS = 380;
 
 export function PresentationHost() {
   const { slideDeck } = useEditorContext();

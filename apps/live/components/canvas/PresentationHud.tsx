@@ -40,24 +40,33 @@ function HudButton({
   label,
   onPress,
   active,
+  disabled,
   children,
 }: {
   label: string;
   onPress: () => void;
   active?: boolean;
+  disabled?: boolean;
   children: React.ReactNode;
 }) {
   return (
     <button
       type="button"
       aria-label={label}
+      disabled={disabled}
       onClick={(e) => {
+        // Every HUD control stops the click: the surface underneath reads a
+        // click as "advance", so pressing Back would go forward instead.
         e.stopPropagation();
         onPress();
       }}
       onPointerDown={(e) => e.stopPropagation()}
-      className={`relative flex h-7 w-7 cursor-pointer items-center justify-center rounded-md transition ${
-        active ? 'bg-white/25 text-white' : 'text-white/75 hover:bg-white/15 hover:text-white'
+      className={`relative flex h-7 w-7 items-center justify-center rounded-md transition ${
+        disabled
+          ? 'cursor-default text-white/25'
+          : active
+            ? 'cursor-pointer bg-white/25 text-white'
+            : 'cursor-pointer text-white/75 hover:bg-white/15 hover:text-white'
       }`}
     >
       {children}
@@ -72,6 +81,8 @@ export function PresentationHud({
   notes,
   notesOpen,
   onToggleNotes,
+  onBack,
+  onNext,
   onClose,
   hidden,
 }: {
@@ -82,6 +93,9 @@ export function PresentationHud({
   notes: string | undefined;
   notesOpen: boolean;
   onToggleNotes: () => void;
+  /** Absent on the first slide, so the control disables rather than lying. */
+  onBack?: () => void;
+  onNext: () => void;
   onClose: () => void;
   hidden: boolean;
 }) {
@@ -100,6 +114,40 @@ export function PresentationHud({
           {position} / {total}
         </span>
         <span className="max-w-[14rem] select-none truncate text-[11px] text-white/60">{name}</span>
+        {/* Step through the deck by pointer as well as by key. A presenter on
+            a projector often has a mouse and no keyboard within reach, and
+            "click anywhere to advance" is not discoverable and cannot go
+            BACK at all. */}
+        <HudButton label="Previous slide" onPress={() => onBack?.()} disabled={!onBack}>
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.7"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden
+          >
+            <path d="M10 3.5 5.5 8l4.5 4.5" />
+          </svg>
+        </HudButton>
+        <HudButton label="Next slide" onPress={onNext}>
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.7"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden
+          >
+            <path d="M6 3.5 10.5 8 6 12.5" />
+          </svg>
+        </HudButton>
         <HudButton label="Presenter notes" onPress={onToggleNotes} active={notesOpen}>
           <svg
             width="14"

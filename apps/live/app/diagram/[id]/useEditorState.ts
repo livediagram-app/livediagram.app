@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
   createPinnedArrow,
   createShape,
@@ -975,19 +975,82 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     () => (presentingStep ? resolveSlide(presentingStep.slide, presentingStep.tab) : null),
     [presentingStep],
   );
+  // Read by the resize observer below, which must not re-subscribe per slide.
+  const presentingStepRef = useRef(presentingStep);
+  presentingStepRef.current = presentingStep;
+
+  // Where the editor was looking before the deck took over, so exiting puts it
+  // back. Without this you left a presentation zoomed to whatever the last
+  // slide needed — often 250% on one box — and had to hunt for your diagram.
+  const preShowViewRef = useRef<{
+    tabId: string;
+    zoom: number;
+    offset: { x: number; y: number };
+  } | null>(null);
+  const presenting = slideDeck.presentingAt !== null;
+  useEffect(() => {
+    if (presenting) {
+      // Capture once, on the way in. Re-capturing per slide would remember the
+      // presentation's own camera rather than the user's.
+      preShowViewRef.current ??= { tabId: activeId, zoom: viewportZoom, offset: viewportOffset };
+      return;
+    }
+    const before = preShowViewRef.current;
+    preShowViewRef.current = null;
+    if (!before) return;
+    setActiveId(before.tabId);
+    setViewportZoom(before.zoom);
+    setViewportOffset(before.offset);
+    // Only on the transition in or out of presenting. The captured values are
+    // read through the ref, so this must not re-run as they change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [presenting]);
 
   // Presenting moves the editor to the slide's tab and frames the slide. Both
-  // are ordinary view state, so exiting restores whatever the user had.
-  useEffect(() => {
+  // are ordinary view state, and the effect above puts them back on exit.
+  //
+  // A LAYOUT effect, not an ordinary one: the canvas has already been handed
+  // the new slide's elements by the time this runs, so fitting after paint
+  // showed one frame of the new content under the OLD slide's camera. That is
+  // the flash of "small in the corner" a deferred fit produces.
+  useLayoutEffect(() => {
     if (!presentingStep || !presentingElements) return;
     if (presentingStep.tab.id !== activeId) setActiveId(presentingStep.tab.id);
     const bounds = slideBounds(presentingElements);
+    if (!bounds) return;
     // A slide fills the screen. The editor's fit caps at 100% because a small
     // diagram blown up looks broken in a workspace; a slide is the only thing
     // on a projector, so a one-box slide SHOULD be a big box.
-    if (bounds) fitToBounds(bounds, { maxZoom: 2.5 });
+    fitToBounds(bounds, { maxZoom: 2.5 });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [presentingStep?.slide.id, presentingElements]);
+
+  // ...and fit again whenever the canvas CHANGES SIZE while presenting.
+  //
+  // Entering a presentation changes the size of the very box the fit measures,
+  // and all of it lands after the effect above: the browser goes fullscreen,
+  // and the header and tab bar leave with the zen treatment. Fitting against
+  // the pre-presentation rect centred slide one on a viewport that no longer
+  // existed by the time it painted, so it arrived shoved into a corner with
+  // its top clipped.
+  //
+  // A ResizeObserver rather than a window `resize` listener, because hiding
+  // the chrome changes the canvas's height without the WINDOW changing size at
+  // all. This covers that, fullscreen arriving late, fullscreen being refused,
+  // an ordinary resize, and a phone rotating.
+  useEffect(() => {
+    const node = canvasMainRef.current;
+    if (!presenting || !node || typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(() => {
+      const step = presentingStepRef.current;
+      if (!step) return;
+      const bounds = slideBounds(resolveSlide(step.slide, step.tab));
+      if (bounds) fitToBounds(bounds, { maxZoom: 2.5 });
+    });
+    observer.observe(node);
+    return () => observer.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [presenting]);
 
   // Publish where WE are looking, on change (spec/131). Unsolicited by design
   // — see the RoomOp comment — and throttled to ~10 Hz inside the broadcaster,

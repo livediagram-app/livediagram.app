@@ -262,8 +262,15 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
   // special case "fit everything on this tab".
   const fitToBounds = useCallback(
     (bbox: { x: number; y: number; w: number; h: number }, opts?: { maxZoom?: number }) => {
-      const rect = canvasMainRef.current?.getBoundingClientRect();
-      if (!rect || bbox.w <= 0 || bbox.h <= 0) return;
+      const node = canvasMainRef.current;
+      if (!node || bbox.w <= 0 || bbox.h <= 0) return;
+      // offsetWidth/Height, NOT getBoundingClientRect: the latter reports the
+      // TRANSFORMED box, and presenting (spec/31) animates the canvas surface
+      // with a scale on entry. Measuring mid-animation therefore fitted the
+      // slide to a shrunken viewport, and it painted off-centre by exactly the
+      // difference once the animation finished. The layout size is what the
+      // slide will actually occupy.
+      const rect = { width: node.offsetWidth, height: node.offsetHeight };
       const { zoom, offset } = computeFitToScreen(
         rect,
         { x: bbox.x, y: bbox.y, width: bbox.w, height: bbox.h },
