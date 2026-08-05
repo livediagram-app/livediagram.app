@@ -16,7 +16,7 @@
 // advances. A click while a popover is open dismisses it rather than
 // advancing, so reading a note never costs you a slide.
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { announce } from '@/lib/announcer';
 
 import { slideName, type BoxedElement, type Slide, type Tab } from '@livediagram/diagram';
@@ -34,6 +34,8 @@ export type PresentationStep = { slide: Slide; tab: Tab; index: number };
 
 export function PresentationOverlay({
   steps,
+  canvasTool,
+  onSetCanvasTool,
   at,
   onGo,
   onExit,
@@ -43,6 +45,12 @@ export function PresentationOverlay({
   onChangeConfig,
 }: {
   steps: PresentationStep[];
+  /**
+   * The live canvas tool, so the pointing tools can be armed from the deck.
+   * Laser and Spotlight are the only two reachable here — see the catcher.
+   */
+  canvasTool: string;
+  onSetCanvasTool: (tool: 'laser' | 'spotlight' | 'select') => void;
   /** Index into `steps`, or steps.length for the end state. */
   at: number;
   onGo: (next: number) => void;
@@ -57,6 +65,9 @@ export function PresentationOverlay({
   const [detail, setDetail] = useState<{ element: BoxedElement; x: number; y: number } | null>(
     null,
   );
+  // Armed pointing tool: the catcher stands down for these two and only these
+  // two, so nothing else can reach the canvas.
+  const pointing = canvasTool === 'laser' || canvasTool === 'spotlight';
   const atEnd = at >= steps.length;
   const step = atEnd ? undefined : steps[at];
 
@@ -159,6 +170,23 @@ export function PresentationOverlay({
     announce(`Slide ${at + 1} of ${steps.length}${name ? `, ${name}` : ''}`);
   }, [at, atEnd, steps]);
 
+  // Give the tool back on the way out. Exiting already restores the tab, the
+  // viewport and the chrome (spec/31); a presenter who armed the laser for one
+  // slide should not land back in the editor still holding it.
+  //
+  // The ref is read at cleanup only, so remembering the tool at Start costs
+  // nothing while the deck runs.
+  const toolAtStart = useRef(canvasTool);
+  useEffect(() => {
+    const before = toolAtStart.current;
+    return () => {
+      if (before === 'laser' || before === 'spotlight') return;
+      onSetCanvasTool('select');
+    };
+    // Deliberately once: this is Start and Exit, not every tool change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Keep the screen awake for the run (spec/31). A slide you talk over for five
   // minutes is a slide the laptop dims, and a presenter waking their own screen
   // mid-sentence is a small indignity a deck should not cause.
@@ -211,6 +239,20 @@ export function PresentationOverlay({
         else if (settingsOpen) setSettingsOpen(false);
         else if (notesOpen) setNotesOpen(false);
         else onExit();
+        return;
+      }
+      // The pointing tools (spec/31). Neither touches the diagram, and the
+      // laser was built for exactly this room — spec/111 opens by calling it
+      // "the presenting tool". Pressing the same key again puts the pointer
+      // back, so arming one is never a trap.
+      if (key === 'l' || key === 'L') {
+        handled();
+        onSetCanvasTool(canvasTool === 'laser' ? 'select' : 'laser');
+        return;
+      }
+      if (key === 's' || key === 'S') {
+        handled();
+        onSetCanvasTool(canvasTool === 'spotlight' ? 'select' : 'spotlight');
         return;
       }
       if (key === 'g' || key === 'G') {
@@ -299,9 +341,17 @@ export function PresentationOverlay({
       data-presentation-surface=""
     >
       {/* Click catcher. Covers the canvas so no element can be dragged,
-          selected or pressed: read anything, change nothing. */}
+          selected or pressed: read anything, change nothing.
+          
+          It steps aside entirely while a POINTING tool is armed. The laser and
+          the spotlight need the pointer on the canvas to work at all, and
+          neither can change the diagram — they are the two tools whose whole
+          job is to point at it. The cost is that click-to-advance goes with the
+          catcher, which is the right trade: while you are drawing a laser
+          stroke a click means "point", not "next slide". The keys and the HUD
+          buttons still advance. */}
       <div
-        className="absolute inset-0 cursor-default"
+        className={`absolute inset-0 cursor-default ${pointing ? 'pointer-events-none' : ''}`}
         onClick={onSurfaceClick}
         // Swallowed so nothing underneath ever begins a gesture.
         onPointerDown={(e) => e.preventDefault()}

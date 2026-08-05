@@ -22,7 +22,7 @@ const SURFACE_SELECTOR = '[data-canvas-a11y-root]';
 // Matches the CSS in globals.css (.lvd-slide-*), so the class is removed the
 // moment the animation ends rather than being left on the node.
 export function PresentationHost() {
-  const { slideDeck } = useEditorContext();
+  const { slideDeck, canvasTool, setCanvasTool } = useEditorContext();
   const at = slideDeck?.presentingAt ?? null;
   const [direction, setDirection] = useState<'forward' | 'back'>('forward');
   const prevAt = useRef<number | null>(null);
@@ -100,6 +100,8 @@ export function PresentationHost() {
   if (!slideDeck || at === null || !config) return null;
   return (
     <PresentationOverlay
+      canvasTool={canvasTool}
+      onSetCanvasTool={setCanvasTool}
       steps={slideDeck.runnable}
       at={at}
       onGo={(next) => slideDeck.setPresentingAt(next)}
