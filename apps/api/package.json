@@ -23,7 +23,7 @@
     "jose": "^6.2.4"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^5.20260729.1",
+    "@cloudflare/workers-types": "^5.20260804.1",
     "@livediagram/eslint-config": "workspace:*",
     "@livediagram/vitest-config": "workspace:*",
     "@types/node": "^22.10.2",
