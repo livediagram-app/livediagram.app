@@ -80,6 +80,16 @@ clearing any free position or non-default corner.
 Dragging is still pointer-driven and uses no DnD library, consistent with the rest of the
 editor (element drag, palette-to-canvas drag).
 
+A drag only **starts** once the pointer has travelled past a shared tolerance
+(`isDragTravel` in `lib/press-gestures.ts`), so a click on a panel header that jitters by a
+pixel stays a click. That tolerance is one definition for every draggable chrome control —
+panel headers, slide-deck rows, favourites tiles, the quick-connect plus, the isometric
+orbit button, avatars — because six of them had their own and the copies had drifted: one
+said 5px where the rest said 4, and one measured each axis separately, which is a square
+rather than a circle and let a diagonal slip of (4, 4) — 5.66px of real travel — still
+count as a click. The shared thing is the **predicate**, not just the number, since
+publishing only the constant would have left that split in place.
+
 ## Persistence — device-local
 
 The layout is stored in **`localStorage` only**, under `livediagram:panel-layout:v1`, on

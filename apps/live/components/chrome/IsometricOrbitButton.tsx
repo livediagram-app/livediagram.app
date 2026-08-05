@@ -1,6 +1,7 @@
 'use client';
 
 import { Tooltip } from '@/components/primitives/Tooltip';
+import { isDragTravel } from '@/lib/press-gestures';
 
 // Orbit control for the isometric view (spec/45). Drag it to orbit the
 // camera the same way Shift-drag does on the canvas — horizontal motion
@@ -9,10 +10,6 @@ import { Tooltip } from '@/components/primitives/Tooltip';
 // to the default isometric angle. Lives inside the zoom bar (between Fit and
 // Zen) and only renders while the isometric tool is active; it reuses
 // `useIsometricCamera.startOrbit` wholesale (no duplicate orbit math).
-
-// A press that never travels more than this (px) counts as a click, not a
-// drag, so a tap resets instead of nudging the camera by a stray pixel.
-const CLICK_SLOP_PX = 4;
 
 // Orbit glyph: a body at the centre with a satellite riding a tilted
 // elliptical orbit around it — reads as "orbit the camera" rather than the
@@ -64,12 +61,11 @@ export function IsometricOrbitButton({
           const startY = e.clientY;
           let moved = false;
           const onMove = (ev: PointerEvent) => {
-            if (
-              Math.abs(ev.clientX - startX) > CLICK_SLOP_PX ||
-              Math.abs(ev.clientY - startY) > CLICK_SLOP_PX
-            ) {
-              moved = true;
-            }
+            // A press that never travels far enough counts as a click, not a
+            // drag, so a tap resets instead of nudging the camera by a stray
+            // pixel. Shared tolerance: this was the one control testing each
+            // axis separately, which let a diagonal slip past.
+            if (isDragTravel(ev.clientX - startX, ev.clientY - startY)) moved = true;
           };
           const onUp = () => {
             window.removeEventListener('pointermove', onMove);

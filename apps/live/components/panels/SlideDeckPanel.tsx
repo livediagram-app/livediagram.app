@@ -31,8 +31,7 @@ import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { Tooltip } from '@/components/primitives/Tooltip';
 import type { SlideDeckState } from '@/app/diagram/[id]/useSlideDeck';
 import { track } from '@/lib/telemetry';
-
-const ROW_DRAG_SLOP_PX = 4;
+import { isDragTravel } from '@/lib/press-gestures';
 
 function PlayIcon() {
   return (
@@ -300,7 +299,7 @@ export function SlideDeckPanel({
     if (!dragging.current) {
       const dx = e.clientX - origin.current.x;
       const dy = e.clientY - origin.current.y;
-      if (Math.hypot(dx, dy) < ROW_DRAG_SLOP_PX) return;
+      if (!isDragTravel(dx, dy)) return;
       dragging.current = true;
       setMoving(true);
       e.currentTarget.setPointerCapture(e.pointerId);

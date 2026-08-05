@@ -17,10 +17,7 @@
 // double-tap-to-zoom) and this way a tap and a click behave identically.
 
 import { useRef, type PointerEvent as ReactPointerEvent, type MouseEvent } from 'react';
-
-// Screen px of pointer travel still counted as a tap. Roughly a shaky hand or a
-// trackpad micro-slip; anything beyond it was a deliberate move.
-const DRAG_SLOP_PX = 5;
+import { isDragTravel } from '@/lib/press-gestures';
 
 // Milliseconds between two presses that still count as one double-press. The
 // platform default sits around 500ms; a touch below that keeps a deliberate
@@ -54,7 +51,8 @@ export function usePressWithoutDrag(
       e.stopPropagation();
       const start = startRef.current;
       startRef.current = null;
-      if (start && Math.hypot(e.clientX - start.x, e.clientY - start.y) > DRAG_SLOP_PX) return;
+      // Was 5px here and 4 everywhere else; unified on the shared tolerance.
+      if (start && isDragTravel(e.clientX - start.x, e.clientY - start.y)) return;
       if (requireDouble) {
         const now = e.timeStamp || performance.now();
         if (!isDoublePress(lastPressRef.current, now)) {

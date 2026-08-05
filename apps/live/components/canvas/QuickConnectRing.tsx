@@ -15,6 +15,7 @@ import {
   OPTIONS,
 } from './quick-connect-options';
 import { useHoverCloseTimer } from '@/hooks/ui/useHoverCloseTimer';
+import { isDragTravel } from '@/lib/press-gestures';
 
 // Same grace period as the other hover-open surfaces: long enough to cross
 // the gap between the + and its menu.
@@ -201,7 +202,6 @@ export function QuickConnectRing({
   // Arrow starter (same handler as the menu's Arrow option) and the
   // follow-up click is swallowed. Under the threshold it stays a plain
   // click, which toggles the menu as before.
-  const DRAG_THRESHOLD_PX = 4;
   const pressRef = useRef<{ x: number; y: number; id: number; type: string } | null>(null);
   const draggedRef = useRef(false);
   const detachRef = useRef<(() => void) | null>(null);
@@ -222,7 +222,7 @@ export function QuickConnectRing({
     const onMove = (ev: PointerEvent) => {
       const press = pressRef.current;
       if (!press || ev.pointerId !== press.id) return;
-      if (Math.hypot(ev.clientX - press.x, ev.clientY - press.y) < DRAG_THRESHOLD_PX) return;
+      if (!isDragTravel(ev.clientX - press.x, ev.clientY - press.y)) return;
       detach();
       draggedRef.current = true;
       onClose();

@@ -8,12 +8,12 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from 'react';
 import type { PanelDragGeometry } from '@/lib/panel-layout';
+import { isDragTravel } from '@/lib/press-gestures';
 import type { MovablePanelProps } from './MovablePanel.types';
 
 // Pointer travel (px) before a header press on the docking path counts
 // as a drag rather than a click. Keeps a plain click from pulling the
 // panel out of its corner stack (which would reflow + re-dock it).
-const DOCK_DRAG_THRESHOLD_PX = 4;
 
 // The MovablePanel header-drag machinery, lifted out of the component:
 // the legacy free-move path (offsetParent coords through onMoveTo) and
@@ -103,7 +103,7 @@ export function useMovablePanelDrag({
         // drag started) until the pointer clears the threshold — a bare
         // click must leave the layout untouched and never re-dock.
         if (!dockLiftedRef.current) {
-          if (Math.hypot(dx, dy) < DOCK_DRAG_THRESHOLD_PX) return;
+          if (!isDragTravel(dx, dy)) return;
           dockLiftedRef.current = true;
           setDockLifted(true);
           onDockDragStart?.();

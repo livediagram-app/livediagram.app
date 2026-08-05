@@ -4,6 +4,7 @@ import { useRef, useState } from 'react';
 
 import type { PaletteTileDef } from './palette-tile-defs';
 import { tileDisplayName } from './palette-tile-defs';
+import { isDragTravel } from '@/lib/press-gestures';
 
 // Reorder mode for the Favourites grid (spec/78): drag the saved tiles into
 // the order you want, then Save.
@@ -20,10 +21,6 @@ import { tileDisplayName } from './palette-tile-defs';
 // but this one never leaves the panel, and HTML5 dnd does not fire for touch
 // at all — the palette is on phones too, and a reorder you cannot perform
 // with a finger is half a feature.
-
-// How far the pointer must travel before a press becomes a drag, so a tap that
-// jitters by a pixel doesn't shuffle the grid.
-const DRAG_SLOP_PX = 4;
 
 /** Move `from` to `to`, returning a new array. Out-of-range indices no-op. */
 export function moveItem<T>(items: readonly T[], from: number, to: number): T[] {
@@ -79,7 +76,8 @@ export function PaletteFavouritesReorder({
     if (!dragging.current) {
       const dx = e.clientX - origin.current.x;
       const dy = e.clientY - origin.current.y;
-      if (Math.hypot(dx, dy) < DRAG_SLOP_PX) return;
+      // Under the shared slop the press was a tap, not a reorder.
+      if (!isDragTravel(dx, dy)) return;
       dragging.current = true;
       setMoving(true);
     }
