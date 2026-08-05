@@ -24,7 +24,6 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   acceptsInlineIcon,
-  duplicateGroupedElements,
   isBoxed,
   nearestElementTowards,
   opposingAnchor,
@@ -41,6 +40,7 @@ import { elementHostsAtPoint } from '@/lib/dom-hit-test';
 import type { EditorDragDeps, EditorDragApi } from './useEditorDrag.types';
 import { applyCollisionAvoidance } from './arrow-avoidance-apply';
 import { applyArrowDragMove } from './arrow-drag-apply';
+import { applyShiftDuplicateSwap, type ShiftDupSwap } from './shift-duplicate-swap';
 import {
   resolveBoxedMove,
   resolveBoxedResize,
@@ -116,12 +116,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
   // is released (a ref, so mid-drag toggles don't churn the
   // pointer-listener effect); `shiftDupGhostIds` is the render-facing set
   // of CLONE ids to draw translucent.
-  const dupSwapRef = useRef<{
-    cloneIds: Set<string>;
-    orig: Extract<DragState, { kind: 'boxed' }>;
-    origSelectedId: string | null;
-    origMultiIds: Set<string>;
-  } | null>(null);
+  const dupSwapRef = useRef<ShiftDupSwap | null>(null);
   const [shiftDupGhostIds, setShiftDupGhostIds] = useState<ReadonlySet<string> | null>(null);
 
   // Stash deps on every render so the move-effect always reads
@@ -281,129 +276,34 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
             const autoRebind = depsRef.current.autoRebindArrowsRef.current ?? false;
             return autoRebind ? rebindArrowAnchorsAfterMove(moved, drag.startBounds) : moved;
           });
-          // Shift-duplicate identity swap (spec/80): the first move with
-          // Shift held parks the ORIGINALS back at their start position
-          // (keeping their ids, so arrows pinned to them stay attached to
-          // the stationary set) and hands the cursor to a fresh CLONE set,
-          // rendered as a translucent ghost. Arrows connecting the dragged
-          // set to the rest of the diagram are duplicated onto the clones,
-          // so the copy keeps its connections. Releasing Shift mid-drag
-          // swings everything back to a plain move; the final decision is
-          // made at pointer-up.
-          if (e.shiftKey && !dupSwapRef.current && !depsRef.current.isReadOnly) {
-            const dupIds = new Set<string>([
-              ...drag.startBounds.keys(),
-              ...drag.startArrowEnds.keys(),
-            ]);
-            // Build the clones ONCE, outside the state updater: React may
-            // re-run an updater (StrictMode, batched replays), and a mapper
-            // that mints fresh ids per run appends a new clone set each
-            // time. With the elements fixed up front the mapper below is
-            // idempotent — it only appends when the clones aren't there.
-            // Zero offset: the clones spawn exactly where the dragged set
-            // currently sits and keep following the cursor from there.
-            const source = depsRef.current.activeTab.elements;
-            const { newElements, idMap } = duplicateGroupedElements(source, dupIds, 0, 0);
-            // Boundary arrows: an arrow OUTSIDE the set with exactly one
-            // end pinned to a dragged element gets a copy re-pinned to the
-            // clone (the other end keeps its original pin), so e.g. an
-            // incoming connector is drawn to the duplicate too. Both-ends-
-            // inside arrows were already carried by the duplicate helper.
-            const boundaryArrows: ArrowElement[] = [];
-            for (const el of source) {
-              if (el.type !== 'arrow' || idMap.has(el.id)) continue;
-              const remapEnd = (end: ArrowElement['from']): ArrowElement['from'] | null =>
-                end.kind === 'pinned' && idMap.has(end.elementId)
-                  ? { ...end, elementId: idMap.get(end.elementId)! }
-                  : null;
-              const from = remapEnd(el.from);
-              const to = remapEnd(el.to);
-              if (!from && !to) continue;
-              boundaryArrows.push({
-                ...el,
-                id: crypto.randomUUID(),
-                from: from ?? el.from,
-                to: to ?? el.to,
-              });
-            }
-            if (newElements.length > 0) {
-              const cloneIds = new Set([...newElements, ...boundaryArrows].map((el) => el.id));
-              const d = depsRef.current;
-              dupSwapRef.current = {
-                cloneIds,
-                orig: drag,
-                origSelectedId: d.selectedId,
-                origMultiIds: new Set(d.multiSelectedIds),
-              };
-              setShiftDupGhostIds(cloneIds);
-              // Park the originals by RESTORING them — plus every arrow
-              // connected to them — from the grab-time snapshot, not by a
-              // plain position translate: the frames before this swap were
-              // a normal move, whose auto-rebind pass may have re-picked
-              // anchor faces on arrows spanning to shapes that never moved.
-              // The snapshot puts those anchors back exactly as they were.
-              const snapById = new Map(drag.startElements.map((el) => [el.id, el] as const));
-              const restoreIds = new Set<string>(dupIds);
-              for (const el of drag.startElements) {
-                if (el.type !== 'arrow' || restoreIds.has(el.id)) continue;
-                const touches = (end: ArrowElement['from']) =>
-                  (end.kind === 'pinned' && dupIds.has(end.elementId)) ||
-                  (end.kind === 'on-arrow' && dupIds.has(end.arrowId));
-                if (touches(el.from) || touches(el.to)) restoreIds.add(el.id);
-              }
-              tick((els) => {
-                if (els.some((el) => cloneIds.has(el.id))) return els;
-                const parked = els.map((el) =>
-                  restoreIds.has(el.id) ? (snapById.get(el.id) ?? el) : el,
-                );
-                return [...parked, ...newElements, ...boundaryArrows];
-              });
-              // Re-key the live drag to the clone ids (same start bounds,
-              // so the dx/dy math continues seamlessly) and move the
-              // selection onto the cursor-following set.
-              const mapId = (id: string) => idMap.get(id) ?? id;
-              setDrag({
-                ...drag,
-                primaryId: mapId(drag.primaryId),
-                startBounds: new Map(
-                  [...drag.startBounds].map(([id, b]) => [mapId(id), b] as const),
-                ),
-                startArrowEnds: new Map(
-                  [...drag.startArrowEnds].map(([id, ends]) => [mapId(id), ends] as const),
-                ),
-              });
-              if (d.selectedId && idMap.has(d.selectedId)) d.setSelectedId(mapId(d.selectedId));
-              if (d.multiSelectedIds.size > 0) {
-                d.setMultiSelectedIds(new Set([...d.multiSelectedIds].map(mapId)));
-              }
-              return;
-            }
-          } else if (!e.shiftKey && dupSwapRef.current) {
-            // Shift released mid-drag: drop the clones, hand the cursor
-            // back to the originals (translated to where the ghost was),
-            // and restore the selection.
-            const swap = dupSwapRef.current;
-            dupSwapRef.current = null;
-            setShiftDupGhostIds(null);
-            const d = depsRef.current;
-            tick((els) => {
-              const withoutClones = els.filter((el) => !swap.cloneIds.has(el.id));
-              return translateBoxedSelection(
-                withoutClones,
-                swap.orig.startBounds,
-                swap.orig.startArrowEnds,
-                dx,
-                dy,
-              );
-            });
-            setDrag({
-              ...drag,
-              primaryId: swap.orig.primaryId,
-              startBounds: swap.orig.startBounds,
-              startArrowEnds: swap.orig.startArrowEnds,
-            });
-            d.setSelectedId(swap.origSelectedId);
-            d.setMultiSelectedIds(swap.origMultiIds);
+          // Shift-duplicate identity swap (spec/80): holding Shift turns
+          // this move into a copy by parking the originals and handing the
+          // cursor to a fresh clone set, and releasing it swings back. All
+          // of that lives in shift-duplicate-swap.ts; a true return means
+          // it took the tick over and the plain translate above no longer
+          // applies.
+          const d = depsRef.current;
+          if (
+            applyShiftDuplicateSwap({
+              drag,
+              shiftKey: e.shiftKey,
+              isReadOnly: d.isReadOnly,
+              dx,
+              dy,
+              elements: activeTab.elements,
+              swap: dupSwapRef.current,
+              setSwap: (next) => {
+                dupSwapRef.current = next;
+              },
+              setGhostIds: setShiftDupGhostIds,
+              setDrag,
+              selectedId: d.selectedId,
+              setSelectedId: d.setSelectedId,
+              multiSelectedIds: d.multiSelectedIds,
+              setMultiSelectedIds: d.setMultiSelectedIds,
+              tick,
+            })
+          ) {
             return;
           }
         } else {
