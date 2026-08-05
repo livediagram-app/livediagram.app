@@ -110,8 +110,7 @@ export function computeDrawGuides({
     const hit = snapToArrowPoint(cursor, elements, ARROW_SNAP_REVEAL_PX, '');
     if (!hit) return [];
     const target = elements.find((e) => e.id === hit.arrowId && e.type === 'arrow') as
-      | ArrowElement
-      | undefined;
+      ArrowElement | undefined;
     if (!target) return [];
     const snapped = hit.dist <= ARROW_SNAP_THRESHOLD_PX;
     return arrowSnapPoints(target, elements).map((sp) => ({

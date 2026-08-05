@@ -11,8 +11,7 @@ import type { PaneDiagram } from './views';
 export const FOLDER_PREVIEW_TILES = 4;
 
 export type FolderPreviewTile =
-  | { kind: 'diagram'; diagram: PaneDiagram }
-  | { kind: 'folder'; folder: Folder };
+  { kind: 'diagram'; diagram: PaneDiagram } | { kind: 'folder'; folder: Folder };
 
 export type FolderPreviewContents = { folders: Folder[]; diagrams: PaneDiagram[] };
 

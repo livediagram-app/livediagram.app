@@ -30,7 +30,7 @@ Input is treated as a hierarchical outline:
 - **Prose lines** become leaf nodes under the current heading (so content
   isn't silently dropped), and end the current list.
 - **Skipped:** fenced code blocks (``` / ~~~) and their contents,
-horizontal rules, and blockquote markers (`>` is stripped).
+  horizontal rules, and blockquote markers (`>` is stripped).
 - **Inline formatting** in labels is flattened to plain text: bold,
   italic, strikethrough, inline code, links (→ link text), images
   (→ alt text), and raw HTML tags are removed. Long labels are capped.

@@ -24,14 +24,7 @@ import {
 import type { SelectedNode } from './views';
 
 type EmptyKind =
-  | 'recent'
-  | 'shared'
-  | 'unsorted'
-  | 'favourites'
-  | 'generated'
-  | 'offline'
-  | 'folder'
-  | 'default';
+  'recent' | 'shared' | 'unsorted' | 'favourites' | 'generated' | 'offline' | 'folder' | 'default';
 
 const CONTENT: Record<
   EmptyKind,

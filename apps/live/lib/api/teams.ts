@@ -122,8 +122,7 @@ export async function apiDeleteTeam(ownerId: string, id: string): Promise<void> 
 }
 
 type InviteTeamMemberResult =
-  | { ok: true; member: TeamMember }
-  | { ok: false; reason: 'already_member' | 'invalid_email' };
+  { ok: true; member: TeamMember } | { ok: false; reason: 'already_member' | 'invalid_email' };
 
 export async function apiInviteTeamMember(
   ownerId: string,

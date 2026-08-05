@@ -83,8 +83,7 @@ export function resolveArrowEndpointDrag({
   );
   if (arrowHit) {
     const targetArrow = elements.find((e) => e.id === arrowHit.arrowId && e.type === 'arrow') as
-      | ArrowElement
-      | undefined;
+      ArrowElement | undefined;
     if (targetArrow) {
       for (const sp of arrowSnapPoints(targetArrow, elements)) {
         snapTargets.push({
@@ -127,8 +126,7 @@ export function resolveArrowEndpointDrag({
   // Keeps right-angle connectors easy to draw without fighting the
   // cursor at oblique angles.
   const arrow = elements.find((e) => e.id === arrowId && e.type === 'arrow') as
-    | ArrowElement
-    | undefined;
+    ArrowElement | undefined;
   let resolved = cursor;
   let angleLocked = false;
   let other: { x: number; y: number } | null = null;

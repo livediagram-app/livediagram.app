@@ -4,11 +4,7 @@
 // The kind is stored on ShapeElement.marker; its size on ShapeElement.markerSize
 // (a TextSize, where 'scale' tracks the element's text size).
 export type ShapeMarker =
-  | 'green-circle'
-  | 'orange-circle'
-  | 'red-circle'
-  | 'checkbox-unchecked'
-  | 'checkbox-checked';
+  'green-circle' | 'orange-circle' | 'red-circle' | 'checkbox-unchecked' | 'checkbox-checked';
 
 // Offer order for the Markers context-menu category (after the None option).
 export const SHAPE_MARKERS: readonly ShapeMarker[] = [

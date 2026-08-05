@@ -170,15 +170,7 @@ export type RoomOp =
       look?: {
         width: 'fine' | 'medium' | 'bold';
         colour:
-          | 'presence'
-          | 'red'
-          | 'orange'
-          | 'yellow'
-          | 'green'
-          | 'cyan'
-          | 'blue'
-          | 'violet'
-          | 'white';
+          'presence' | 'red' | 'orange' | 'yellow' | 'green' | 'cyan' | 'blue' | 'violet' | 'white';
         trail: 'quick' | 'normal' | 'long';
         effect: 'beam' | 'glow' | 'comet' | 'spark';
       };

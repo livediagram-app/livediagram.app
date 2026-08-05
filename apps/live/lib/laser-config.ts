@@ -17,15 +17,7 @@ export type LaserEffect = 'beam' | 'glow' | 'comet' | 'spark';
 // 'presence' means "whatever colour I am in this room" — the identity colour
 // that already ties a cursor, a name chip, and an avatar's shirt together.
 export type LaserColour =
-  | 'presence'
-  | 'red'
-  | 'orange'
-  | 'yellow'
-  | 'green'
-  | 'cyan'
-  | 'blue'
-  | 'violet'
-  | 'white';
+  'presence' | 'red' | 'orange' | 'yellow' | 'green' | 'cyan' | 'blue' | 'violet' | 'white';
 
 export type LaserConfig = {
   width: LaserWidth;

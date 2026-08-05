@@ -9,9 +9,7 @@
 // 'done' (replaced the tab — close), 'cancelled' (file dialog dismissed
 // — stay open, no error), or 'error' (parse / build failed — show it).
 export type ImportOutcome =
-  | { status: 'done' }
-  | { status: 'cancelled' }
-  | { status: 'error'; error: string };
+  { status: 'done' } | { status: 'cancelled' } | { status: 'error'; error: string };
 
 // JSON forward-compat: the envelope carries a numeric `schemaVersion`.
 // Files at or below `TAB_SCHEMA_VERSION` are accepted; newer files are

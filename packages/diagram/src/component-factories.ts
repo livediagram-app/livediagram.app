@@ -417,13 +417,7 @@ export function createProcessSteps(cx: number, cy: number, c: ComponentColors): 
 // Hero / Header take just the accent; the rest take the full colour triple;
 // Avatar is a lone circular image (its colours are irrelevant).
 export type ComponentKind =
-  | 'banner'
-  | 'hero'
-  | 'header'
-  | 'callout'
-  | 'stat'
-  | 'process'
-  | 'avatar';
+  'banner' | 'hero' | 'header' | 'callout' | 'stat' | 'process' | 'avatar';
 
 export const COMPONENT_SIZE: Record<ComponentKind, { width: number; height: number }> = {
   banner: { width: BANNER_WIDTH, height: BANNER_HEIGHT },

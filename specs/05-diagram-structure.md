@@ -81,12 +81,7 @@ type Tab = {
 //
 // Most elements may carry `link?: ElementLink` for cross-tab navigation.
 type Element =
-  | ShapeElement
-  | TextElement
-  | StickyElement
-  | ImageElement
-  | ArrowElement
-  | FreehandElement;
+  ShapeElement | TextElement | StickyElement | ImageElement | ArrowElement | FreehandElement;
 
 type ElementLink =
   | { kind: 'tab'; tabId: TabId }

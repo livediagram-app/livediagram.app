@@ -99,19 +99,17 @@ export function useAssigneeOptions({
               // assigner themselves, whom the pinned Myself row covers.
               (m: TeamMember) => m.userId !== ownerId,
             )
-            .map(
-              (m: TeamMember): PickableMember => ({
-                // Null for an invited member the lazy claim hasn't
-                // identified yet; memberId is their key then.
-                userId: m.userId,
-                memberId: m.id,
-                pending: m.status === 'invited',
-                name: memberName(m, false, null),
-                email: m.email,
-                teamId: team.id,
-                teamName: team.name,
-              }),
-            );
+            .map((m: TeamMember): PickableMember => ({
+              // Null for an invited member the lazy claim hasn't
+              // identified yet; memberId is their key then.
+              userId: m.userId,
+              memberId: m.id,
+              pending: m.status === 'invited',
+              name: memberName(m, false, null),
+              email: m.email,
+              teamId: team.id,
+              teamName: team.name,
+            }));
         } catch {
           return [];
         }

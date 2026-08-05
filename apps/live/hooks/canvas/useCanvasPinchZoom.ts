@@ -154,7 +154,7 @@ export function useCanvasPinchZoom(deps: Deps): Api {
       // Belt-and-braces: also bail if the cursor is over ANY element that
       // can scroll on its own (a panel's icon list, a dropdown, a menu),
       // so the wheel scrolls THAT rather than panning the canvas behind it.
-      for (let node = e.target as Element | null; node && node !== canvasEl; ) {
+      for (let node = e.target as Element | null; node && node !== canvasEl;) {
         if (node.scrollHeight > node.clientHeight) {
           const oy = getComputedStyle(node).overflowY;
           if (oy === 'auto' || oy === 'scroll') return;

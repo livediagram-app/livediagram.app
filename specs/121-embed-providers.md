@@ -23,13 +23,13 @@ doesn't eat the canvas) was already solved.
 
 One function, `(url) => { provider, embedUrl, posterUrl?, label } | null`.
 
-| Provider | Recognised                                               | Embed as                               |
+| Provider | Recognised | Embed as |
 | -------- | -------------------------------------------------------- | -------------------------------------- | --------------------- |
-| YouTube  | the five shapes spec/114 lists                           | `youtube-nocookie.com`, with a poster  |
-| Vimeo    | `vimeo.com/<digits>`                                     | `player.vimeo.com/video/<id>`          |
-| Loom     | `loom.com/share                                          | embed/<id>`                            | `loom.com/embed/<id>` |
-| Figma    | any `figma.com` URL                                      | `figma.com/embed?url=<original>`       |
-| Google   | `docs.google.com/{document,spreadsheets,presentation}/…` | the same URL with `/edit` → `/preview` |
+| YouTube | the five shapes spec/114 lists | `youtube-nocookie.com`, with a poster |
+| Vimeo | `vimeo.com/<digits>` | `player.vimeo.com/video/<id>` |
+| Loom | `loom.com/share                                          | embed/<id>` | `loom.com/embed/<id>` |
+| Figma | any `figma.com` URL | `figma.com/embed?url=<original>` |
+| Google | `docs.google.com/{document,spreadsheets,presentation}/…` | the same URL with `/edit` → `/preview` |
 
 Figma takes the **original URL as a query parameter** rather than a rewritten
 path, so anything Figma accepts keeps working without this having to know

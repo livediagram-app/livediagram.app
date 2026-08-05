@@ -117,17 +117,14 @@ export function MultiSelectionContextMenu({
         const strokeSrc = colourSrcs.find((el) => defaultStrokeColor(el) !== 'transparent');
         const borderableSel = sel.some((el) => supportsBorderControls(el));
         const borderSrc = sel.find((el) => supportsBorderControls(el)) as
-          | { strokeWidth?: BorderStroke; strokeStyle?: BorderStyle; type: string }
-          | undefined;
+          { strokeWidth?: BorderStroke; strokeStyle?: BorderStyle; type: string } | undefined;
         const radiusSrc = sel.find((el) => supportsBorderRadius(el)) as
-          | { borderRadius?: BorderRadius }
-          | undefined;
+          { borderRadius?: BorderRadius } | undefined;
         // Shadow (spec/86): the section shows when any member supports it;
         // the sliders/active-tile read off the first such member, and the
         // setters apply selection-wide (unsupported members no-op).
         const shadowSrc = sel.find((el) => supportsShadow(el)) as
-          | { shadow?: ElementShadow }
-          | undefined;
+          { shadow?: ElementShadow } | undefined;
         const arrowSrc = arrowSel[0];
         // Arrow-with-label / table members get the content Text section
         // (B / I / U / S + size + colour), same as their single menus.

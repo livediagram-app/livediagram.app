@@ -118,14 +118,7 @@ export function TextBar({
 // --- Canvas elements ---------------------------------------------------------
 
 type ShapeKind =
-  | 'rect'
-  | 'circle'
-  | 'diamond'
-  | 'cylinder'
-  | 'hexagon'
-  | 'stadium'
-  | 'parallelogram'
-  | 'triangle';
+  'rect' | 'circle' | 'diamond' | 'cylinder' | 'hexagon' | 'stadium' | 'parallelogram' | 'triangle';
 
 /** A canvas node. `accent` fills it brand; otherwise white with a brand
  *  border, matching how a placed shape looks on the real canvas. */

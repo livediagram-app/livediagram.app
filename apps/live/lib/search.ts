@@ -257,13 +257,11 @@ export function buildSearchResults(input: SearchInput): SearchGroup[] {
     groups.push({
       key: 'folders',
       label: 'My Work',
-      items: folderMatches.map(
-        (f): FolderItem => ({
-          kind: 'folder',
-          id: f.id,
-          name: f.name,
-        }),
-      ),
+      items: folderMatches.map((f): FolderItem => ({
+        kind: 'folder',
+        id: f.id,
+        name: f.name,
+      })),
     });
   }
 
@@ -283,22 +281,18 @@ export function buildSearchResults(input: SearchInput): SearchGroup[] {
       label: 'Teams',
       items: [
         ...teamMatches.map((t): TeamItem => ({ kind: 'team', id: t.id, name: t.name })),
-        ...teamFolderMatches.map(
-          (f): FolderItem => ({
-            kind: 'folder',
-            id: f.id,
-            name: f.path,
-            team: { id: f.teamId, name: f.teamName },
-          }),
-        ),
-        ...teamDiagramMatches.map(
-          (d): DiagramItem => ({
-            kind: 'diagram',
-            id: d.id,
-            name: d.name || 'Untitled diagram',
-            team: { id: d.teamId, name: d.teamName },
-          }),
-        ),
+        ...teamFolderMatches.map((f): FolderItem => ({
+          kind: 'folder',
+          id: f.id,
+          name: f.path,
+          team: { id: f.teamId, name: f.teamName },
+        })),
+        ...teamDiagramMatches.map((d): DiagramItem => ({
+          kind: 'diagram',
+          id: d.id,
+          name: d.name || 'Untitled diagram',
+          team: { id: d.teamId, name: d.teamName },
+        })),
       ],
     });
   }
@@ -400,9 +394,13 @@ export function buildSearchResults(input: SearchInput): SearchGroup[] {
       groups.push({
         key: 'help',
         label: 'Help',
-        items: helpMatches.map(
-          (h): HelpItem => ({ kind: 'help', id: h.id, name: h.title, href: h.href, leaf: h.leaf }),
-        ),
+        items: helpMatches.map((h): HelpItem => ({
+          kind: 'help',
+          id: h.id,
+          name: h.title,
+          href: h.href,
+          leaf: h.leaf,
+        })),
       });
     }
   }

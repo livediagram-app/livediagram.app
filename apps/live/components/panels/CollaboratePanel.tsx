@@ -109,12 +109,18 @@ export function CollaboratePanel({
   const filteredActions = kindFilter === 'comments' ? [] : actionRows;
   const merge = (comments: CommentRow[], actions: ActionRow[]): CollaborateRow[] =>
     [
-      ...comments.map(
-        (c): CollaborateRow => ({ kind: 'comment', at: c.latestAt, mine: false, comment: c }),
-      ),
-      ...actions.map(
-        (a): CollaborateRow => ({ kind: 'action', at: a.createdAt, mine: a.mine, action: a }),
-      ),
+      ...comments.map((c): CollaborateRow => ({
+        kind: 'comment',
+        at: c.latestAt,
+        mine: false,
+        comment: c,
+      })),
+      ...actions.map((a): CollaborateRow => ({
+        kind: 'action',
+        at: a.createdAt,
+        mine: a.mine,
+        action: a,
+      })),
     ].sort((a, b) => (a.mine === b.mine ? b.at - a.at : a.mine ? -1 : 1));
   const open = merge(
     filteredComments.filter((c) => !c.resolved),

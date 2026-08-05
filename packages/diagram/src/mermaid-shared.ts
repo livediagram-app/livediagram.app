@@ -9,8 +9,7 @@ import type { DiagramGraph } from './graph-authoring';
 export type MermaidDirection = 'TB' | 'LR';
 
 export type ParseMermaidResult =
-  | { ok: true; graph: DiagramGraph; direction: MermaidDirection }
-  | { ok: false; error: string };
+  { ok: true; graph: DiagramGraph; direction: MermaidDirection } | { ok: false; error: string };
 
 // TD/TB (and BT, folded) → TB; LR/RL → LR. Anything else → TB.
 export function directionOf(token: string | undefined): MermaidDirection {

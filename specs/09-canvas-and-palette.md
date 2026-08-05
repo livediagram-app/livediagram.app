@@ -390,8 +390,7 @@ Lives in `packages/diagram`:
 type Anchor = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
 
 type Endpoint =
-  | { kind: 'free'; x: number; y: number }
-  | { kind: 'pinned'; elementId: ElementId; anchor: Anchor };
+  { kind: 'free'; x: number; y: number } | { kind: 'pinned'; elementId: ElementId; anchor: Anchor };
 
 type ArrowElement = {
   id: ElementId;
@@ -1189,8 +1188,7 @@ Arrows can also carry a link but don't show a visible badge yet (no obvious plac
 
 ```ts
 type ElementLink =
-  | { kind: 'tab'; tabId: TabId }
-  | { kind: 'element'; tabId: TabId; elementId: ElementId };
+  { kind: 'tab'; tabId: TabId } | { kind: 'element'; tabId: TabId; elementId: ElementId };
 ```
 
 The UI exposes the `'tab'`, `'diagram'`, and `'url'` kinds (via the LinkPickerDialog's Tab / Diagram / External URL modes). The `'element'` kind is in the model so future iterations can "jump and focus a specific element" without a schema change.

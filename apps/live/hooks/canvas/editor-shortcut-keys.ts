@@ -12,13 +12,7 @@ import type { CanvasTool } from '@/components/palette/CommandPalette';
 // cloud, devices, etc.) has no memorable free letter and stays a click
 // away in the palette.
 type ShortcutShape =
-  | 'square'
-  | 'circle'
-  | 'diamond'
-  | 'cylinder'
-  | 'hexagon'
-  | 'parallelogram'
-  | 'frame';
+  'square' | 'circle' | 'diamond' | 'cylinder' | 'hexagon' | 'parallelogram' | 'frame';
 
 export type EditorKeyboardShortcutsDeps = {
   // Modal-interaction state. Escape clears whichever is active.

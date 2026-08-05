@@ -158,15 +158,7 @@ export type PaletteTileDef = {
   // selection-mode buttons; 'move' / 'facilitate' the rest of Behaviour; and
   // 'ask' / 'record' the two halves of Collaborate.
   tileGroup?:
-    | 'embed'
-    | 'web'
-    | 'session'
-    | 'reaction'
-    | 'mode'
-    | 'move'
-    | 'facilitate'
-    | 'ask'
-    | 'record';
+    'embed' | 'web' | 'session' | 'reaction' | 'mode' | 'move' | 'facilitate' | 'ask' | 'record';
   label: string;
   // Overrides the caption derived from `label` where that runs too long
   // for the tile (see IconButton).

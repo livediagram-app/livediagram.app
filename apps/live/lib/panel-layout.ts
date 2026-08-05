@@ -247,8 +247,7 @@ export function resetPanelPlacement(layout: PanelLayout, panel: PanelId): PanelL
 // Resolve where a panel currently sits, falling back to its default
 // corner when it isn't mentioned in the layout at all.
 export type ResolvedPlacement =
-  | { mode: 'corner'; corner: PanelCorner }
-  | { mode: 'free'; pos: FreePosition };
+  { mode: 'corner'; corner: PanelCorner } | { mode: 'free'; pos: FreePosition };
 
 export function resolvePlacement(layout: PanelLayout, panel: PanelId): ResolvedPlacement {
   for (const corner of PANEL_CORNERS) {
