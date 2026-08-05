@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { articleHref, searchArticles } from '@/lib/articles';
+import { reportHelpSearch, SEARCH_SETTLE_MS } from '@/lib/search-telemetry';
 
 // Below this many characters a query is treated as too short to search.
 const MIN_QUERY = 2;
@@ -21,6 +22,15 @@ export function SearchInput({ large = false }: { large?: boolean }) {
   const hasQuery = trimmed.length >= MIN_QUERY;
   const results = useMemo(() => (hasQuery ? searchArticles(query) : []), [hasQuery, query]);
   const isOpen = hasQuery && !dismissed;
+
+  // Report the SETTLED query's outcome, not every keystroke (spec/22). The
+  // timer restarts on each change, so only the query the reader stopped on is
+  // counted, and the emitter dedupes repeats of it.
+  useEffect(() => {
+    if (!hasQuery) return;
+    const timer = setTimeout(() => reportHelpSearch(trimmed, results.length), SEARCH_SETTLE_MS);
+    return () => clearTimeout(timer);
+  }, [hasQuery, trimmed, results.length]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {

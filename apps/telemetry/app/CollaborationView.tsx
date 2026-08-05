@@ -13,6 +13,32 @@ import { windowLabel } from './windows';
 // diagram that gets shared and joined is worth far more than one that
 // never leaves a single browser.
 const GROUPS: MetricGroup[] = [
+  // Everything else in this view counts an INVITATION — a link made, a member
+  // added, a poll opened. This group is the only one that counts two people
+  // being on the same canvas at the same moment, which is the thing all of
+  // that is FOR. Read the rest against it: lots of links shared and few
+  // multiplayer sessions means the links aren't being walked through.
+  {
+    title: 'Live together',
+    metrics: [
+      {
+        category: 'Diagram',
+        action: 'Used',
+        type: 'Multiplayer',
+        title: 'Multiplayer Sessions',
+        blurb:
+          'A diagram was open with at least one other person live in the room. Counted once per diagram per visit, however many people turn up.',
+      },
+      {
+        category: 'Canvas',
+        action: 'Used',
+        type: 'FollowMe',
+        title: 'Viewports Followed',
+        blurb:
+          "Someone pinned their canvas to a peer's (spec/131) — the strongest signal that a session is being presented rather than just co-edited.",
+      },
+    ],
+  },
   {
     title: 'Sharing & joining',
     metrics: [

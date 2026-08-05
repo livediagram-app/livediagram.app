@@ -39,6 +39,8 @@ export const CATEGORY_DESCRIPTIONS: Record<TelemetryCategory, string> = {
   Help: 'Help-centre articles: views and per-article helpful / not-really feedback.',
   Token: 'API tokens: minted by hand or via an AI tool connecting through MCP, and revoked.',
   Mcp: 'MCP server tool calls made by connected AI assistants.',
+  Email:
+    'Transactional and lifecycle email leaving the api worker (welcome, onboarding, team invites, notifications). The template kind only, never a recipient.',
   Error:
     'Failures, counted generically: API responses that errored (by HTTP status, plus worker-reported internal crashes) and client-side uncaught exceptions. Never a message, stack, or URL.',
 };
@@ -70,6 +72,7 @@ const CATEGORY_COLORS: Record<TelemetryCategory, string> = {
   Help: '#14b8a6',
   Token: '#d946ef',
   Mcp: '#f43f5e',
+  Email: '#0d9488',
   Error: '#dc2626',
 };
 export const categoryColor = (c: string) => CATEGORY_COLORS[c as TelemetryCategory] ?? '#94a3b8';
@@ -143,6 +146,9 @@ export function eventExplanation(category: string, action: string, type: string 
   if (category === 'Canvas' && action === 'Changed' && type) {
     return `Someone switched a tab's background pattern to ${type}.`;
   }
+  if (category === 'Canvas' && action === 'Used' && type === 'FollowMe') {
+    return "Someone pinned their canvas to a peer's viewport (spec/131), following their pan, zoom and tab until they take it back.";
+  }
   if (category === 'Canvas' && action === 'Zoomed' && type) {
     if (type === 'In') return 'Someone tapped the zoom-in button.';
     if (type === 'Out') return 'Someone tapped the zoom-out button.';
@@ -185,6 +191,12 @@ export function eventExplanation(category: string, action: string, type: string 
     if (action === 'Redone') return 'Someone hit Redo on a diagram edit.';
     if (action === 'Reverted')
       return 'Someone reverted a single change from the diagram activity log.';
+    if (action === 'Used' && type === 'Multiplayer')
+      return 'A diagram was open with at least one other person live in the room, counted once per diagram per visit. The one event that counts collaboration happening rather than being offered.';
+  }
+  if (category === 'Email') {
+    if (action === 'Sent')
+      return 'A transactional or lifecycle email left the api worker for the provider. The template kind only, never a recipient or a name.';
   }
   if (category === 'Element') {
     if (action === 'Deleted') return 'An element was removed from the canvas.';
@@ -223,6 +235,12 @@ export function eventExplanation(category: string, action: string, type: string 
     if (action === 'Changed') return "An existing note's text was edited.";
     if (action === 'Deleted') return 'A note was cleared from an element.';
     if (action === 'Opened') return 'Someone opened the note popover on an element.';
+  }
+  if (category === 'Help') {
+    if (action === 'Searched')
+      return type === 'NoResults'
+        ? 'A help-centre search that matched no article — the direct backlog of articles worth writing. The query itself is never sent.'
+        : 'A help-centre search that matched at least one article. One emit per settled query, never the query text.';
   }
   if (category === 'Search') {
     if (action === 'Opened') return 'The global search panel was opened.';

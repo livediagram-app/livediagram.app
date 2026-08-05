@@ -61,6 +61,13 @@ export const TELEMETRY_CATEGORIES = [
   // third app that reports telemetry, so usage shows up distinctly from the
   // in-editor AI panel.
   'Mcp',
+  // Transactional + lifecycle email (apps/api, spec/64): 'Sent' with `type`
+  // the template kind ('Welcome', 'TeamInvite', ...). Written server-side by
+  // the api worker, which is the only place that knows a send happened —
+  // nothing reaches a browser, so without this the whole onboarding series
+  // was unmeasurable and a broken RESEND_API_KEY was invisible. Never an
+  // address, a name, or a count of recipients: the kind and nothing else.
+  'Email',
   // Error tracking (spec/22): generic failure counts. The action slot
   // carries the SOURCE ('Api' | 'Client' — deliberate nouns in the verb
   // slot); `type` is a fixed kind or status token ('Http500',
@@ -127,6 +134,9 @@ export const TELEMETRY_ACTIONS = [
   // later UTC day. Paired with 'Participant'/'Created', gated once per
   // UTC day client-side; type is 'Anonymous' | 'Authenticated'.
   'Returned',
+  // Email (spec/64): a transactional / lifecycle email left the worker for
+  // the provider. Only ever paired with the 'Email' category.
+  'Sent',
   // Error source (spec/22): the two nouns the 'Error' category uses in
   // the action slot — API failures vs client-side exceptions.
   'Api',

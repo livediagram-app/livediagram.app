@@ -20,6 +20,7 @@ import { describe, expect, it } from 'vitest';
 import type { Env } from '../types';
 import { sendEmail } from './client';
 import {
+  type RenderedEmail,
   accountDeletedEmail,
   activationEmail,
   commentNotificationEmail,
@@ -62,7 +63,7 @@ const env = {
 } as unknown as Env;
 
 describe.skipIf(!ENABLED)('live email send (manual harness)', () => {
-  const cases: Record<string, { subject: string; html: string }> = {
+  const cases: Record<string, RenderedEmail> = {
     // Onboarding series
     welcome: welcomeEmail(env),
     'week1-explorer': week1Email(env),

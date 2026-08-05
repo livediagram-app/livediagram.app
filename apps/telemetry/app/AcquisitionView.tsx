@@ -61,6 +61,48 @@ const GROUPS: MetricGroup[] = [
       },
     ],
   },
+  // Lifecycle + transactional email (spec/64), written server-side by the api
+  // worker — nothing about a send reaches a browser, so this is the only place
+  // it can be counted. It sits under Acquisition because the onboarding series
+  // exists to bring people back: read these against Returning Visitors above.
+  // A deploy without RESEND_API_KEY sends nothing and shows zeroes; a deploy
+  // WITH one that shows zeroes is a broken key, which used to be visible only
+  // in `wrangler tail`. Failures aren't here — they land on Exceptions as
+  // Error·Api·Http*.SendEmail, with the other API faults.
+  {
+    title: 'Email sent',
+    metrics: [
+      {
+        category: 'Email',
+        action: 'Sent',
+        allTypes: true,
+        title: 'Emails Sent',
+        blurb:
+          'Every transactional and lifecycle email that left the worker, across all templates. The kind only — never a recipient.',
+      },
+      {
+        category: 'Email',
+        action: 'Sent',
+        type: 'Welcome',
+        title: 'Welcome Emails',
+        blurb: 'Sent on sign-up, the first of the onboarding series.',
+      },
+      {
+        category: 'Email',
+        action: 'Sent',
+        type: 'TeamInvite',
+        title: 'Team Invites',
+        blurb: 'Read against Teams / Members Added on the Collaboration tab for invite conversion.',
+      },
+      {
+        category: 'Email',
+        action: 'Sent',
+        type: 'ActionAssigned',
+        title: 'Action Notifications',
+        blurb: 'A teammate was emailed about work assigned to them (spec/68).',
+      },
+    ],
+  },
 ];
 
 export function AcquisitionView({

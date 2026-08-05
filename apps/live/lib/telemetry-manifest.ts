@@ -45,6 +45,9 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Diagram·Reverted',
   'Diagram·Shared',
   'Diagram·Undone',
+  // A live peer was present in the room with us (spec/22). The only event
+  // that counts collaboration HAPPENING rather than being offered.
+  'Diagram·Used',
   'Element·Added',
   'Element·Changed',
   'Element·Copied',

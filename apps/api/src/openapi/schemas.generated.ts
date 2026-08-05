@@ -4235,6 +4235,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "Helpful",
       "Unhelpful",
       "Returned",
+      "Sent",
       "Api",
       "Client"
     ],
@@ -4262,6 +4263,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "Help",
       "Token",
       "Mcp",
+      "Email",
       "Error"
     ],
     "type": "string"

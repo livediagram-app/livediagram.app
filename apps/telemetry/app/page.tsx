@@ -10,6 +10,7 @@ import {
   DiagramGlyph,
   FileGlyph,
   LinkGlyph,
+  LayersGlyph,
   ListGlyph,
   PaletteGlyph,
   PersonAddGlyph,
@@ -29,6 +30,7 @@ import { PaletteView } from './PaletteView';
 import { HelpView } from './HelpView';
 import { ExternalConnectionsView } from './ExternalConnectionsView';
 import { CollaborationView } from './CollaborationView';
+import { EditingView } from './EditingView';
 import { ExceptionsView } from './ExceptionsView';
 import { MetricSearch } from './MetricSearch';
 
@@ -41,7 +43,8 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
 // window is global (the WindowPanel above the tabs), so it lives here
 // alongside the active tab and is passed into whichever view renders.
 // Tab order follows the product funnel: who arrives (Acquisition), what they
-// open + make (Content), what they build (Palette / Look & Feel), how they work
+// open + make (Content), what they build (Palette / Look & Feel), how they
+// organise it (Editing), how they work
 // together (Collaboration), how they get unstuck (Help), how machines connect
 // (External Connections), then the power-user lenses (Search / Raw).
 type ViewKey =
@@ -50,6 +53,7 @@ type ViewKey =
   | 'content'
   | 'palette'
   | 'lookfeel'
+  | 'editing'
   | 'help'
   | 'external'
   | 'collaboration'
@@ -62,6 +66,7 @@ const VIEWS: { key: ViewKey; label: string; icon: ReactNode }[] = [
   { key: 'content', label: 'Content', icon: <DiagramGlyph /> },
   { key: 'palette', label: 'Palette', icon: <PaletteGlyph /> },
   { key: 'lookfeel', label: 'Look & Feel', icon: <BrushGlyph /> },
+  { key: 'editing', label: 'Editing', icon: <LayersGlyph /> },
   { key: 'help', label: 'Help', icon: <FileGlyph /> },
   { key: 'external', label: 'External Connections', icon: <LinkGlyph /> },
   { key: 'collaboration', label: 'Collaboration', icon: <ShareGlyph /> },
@@ -171,6 +176,8 @@ export default function TelemetryDashboard() {
               <PaletteView summary={summary} active={active} />
             ) : view === 'lookfeel' ? (
               <LookAndFeelView summary={summary} active={active} />
+            ) : view === 'editing' ? (
+              <EditingView summary={summary} active={active} />
             ) : view === 'help' ? (
               <HelpView summary={summary} active={active} />
             ) : view === 'external' ? (

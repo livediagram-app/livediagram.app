@@ -133,8 +133,11 @@ enough for onboarding; no per-user timers.
   (POST `https://api.resend.com/emails`, `Bearer RESEND_API_KEY`). Never throws:
   returns `{ sent }` and logs on failure, so email is always best-effort and
   never blocks or fails the caller.
-- `apps/api/src/email/templates.ts` — the five `{ subject, html }` builders
-  (on-brand, inline-styled HTML; links use `APP_BASE_URL`).
+- `apps/api/src/email/templates.ts` — the `{ kind, subject, html }` builders
+  (on-brand, inline-styled HTML; links use `APP_BASE_URL`). `kind` is the
+  template's telemetry token (see below): it rides on the builder's return so
+  it reaches `sendEmail` through the spread every caller already writes,
+  instead of being re-stated (and forgotten) at each call site.
 - `apps/api/src/db/email-lifecycle.ts` — sighting upsert (returns "is new"), the
   two due-queries + mark-sent, and row deletion (called from `deleteAccount`).
 - Hooks: welcome in the request path (`index.ts`), week1/week2 in `scheduled()`,
@@ -142,6 +145,19 @@ enough for onboarding; no per-user timers.
 
 All sends use `ctx.waitUntil` (or are already in the cron) — email is never on
 the request's critical path.
+
+**Counting sends ([spec/22](22-telemetry.md)).** `sendEmail` writes one
+anonymous `Email·Sent·<kind>` row straight to the events table, and a failure
+writes `Error·Api·Http<status>.SendEmail` (or `Network.SendEmail` when the
+request never completed). Server-side rather than through `POST /api/events`
+because nothing about an email reaches a browser: the send happens in a cron or
+a `waitUntil` after the response has gone, so this is the only place that can
+count it. Before this, the whole lifecycle series was unmeasurable and a dead
+`RESEND_API_KEY` was invisible — every failure went to `console.error` and
+nowhere else. Gated on `TELEMETRY_ENABLED` like every other emit, and its own
+failure is swallowed: telemetry must never turn a delivered email into a thrown
+send. The template kind and nothing else goes on the wire — never an address, a
+name, or a recipient count.
 
 ## 7. Privacy / security
 

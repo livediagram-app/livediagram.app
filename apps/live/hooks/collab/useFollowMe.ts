@@ -8,6 +8,7 @@
 // of moving the pointer to the audience, move the audience to the pointer.
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { track } from '@/lib/telemetry';
 
 export type RemoteViewport = { tabId: string; pan: { x: number; y: number }; zoom: number };
 
@@ -55,6 +56,12 @@ export function useFollowMe({
     // Seeded so the first frame we apply isn't mistaken for a user gesture.
     appliedRef.current = null;
     setFollowingId(participantId);
+    // spec/22: the other "look at this" tools (laser, spotlight, avatar mode)
+    // all report as Canvas·Used, so following ranks beside them on the
+    // dashboard's Selection-modes list instead of being the one pointing tool
+    // nobody can see the usage of. Entering the mode only, never per frame —
+    // the applied viewports are a continuous gesture.
+    track('Canvas', 'Used', 'FollowMe');
   }, []);
 
   // Apply the followed peer's viewport.

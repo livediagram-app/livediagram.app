@@ -6,6 +6,8 @@
 // run sends inside ctx.waitUntil or the daily cron).
 
 import type { Env } from '../types';
+import { insertTelemetryEvents } from '../db/telemetry';
+import type { EmailKind } from './templates';
 
 const RESEND_ENDPOINT = 'https://api.resend.com/emails';
 const DEFAULT_FROM = 'livediagram <hello@livediagram.app>';
@@ -31,6 +33,9 @@ export function appBaseUrl(env: Env): string {
 const SLASH = '/'.charCodeAt(0);
 
 type EmailMessage = {
+  // Which template this is, for the spec/22 'Email' telemetry below. Comes
+  // from the builder's own return, so callers never spell it out.
+  kind: EmailKind;
   to: string;
   subject: string;
   html: string;
@@ -65,13 +70,30 @@ export async function sendEmail(env: Env, msg: EmailMessage): Promise<{ sent: bo
       console.error(
         `[email] send failed (${res.status}) subject="${msg.subject}" to=${redact(msg.to)}`,
       );
+      await report(env, 'Error', 'Api', `Http${res.status}.SendEmail`);
       return { sent: false };
     }
+    await report(env, 'Email', 'Sent', msg.kind);
     return { sent: true };
   } catch (err) {
     console.error(`[email] send threw subject="${msg.subject}" to=${redact(msg.to)}`, err);
+    await report(env, 'Error', 'Api', 'Network.SendEmail');
     return { sent: false };
   }
+}
+
+// One anonymous telemetry row, written straight to the events table (spec/22).
+// Server-side rather than through POST /api/events because nothing about an
+// email reaches a browser: the send happens in a cron or a waitUntil after the
+// response has gone, so this is the only place that can count it. Without it
+// the lifecycle series (spec/64) was unmeasurable and a dead RESEND_API_KEY
+// was invisible — every failure went to console.error and nowhere else.
+//
+// Gated on TELEMETRY_ENABLED like every other emit, and its own failure is
+// swallowed: telemetry must never turn a delivered email into a thrown send.
+async function report(env: Env, category: string, action: string, type: string): Promise<void> {
+  if (env.TELEMETRY_ENABLED !== 'true') return;
+  await insertTelemetryEvents(env, [{ category, action, type }], Date.now()).catch(() => {});
 }
 
 // Log addresses partially so `wrangler tail` stays useful without dumping full

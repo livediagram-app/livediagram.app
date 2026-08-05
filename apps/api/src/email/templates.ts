@@ -24,7 +24,33 @@ function manageNotificationsFooter(env: Env, reason: string): string {
   return `${reason} <a href="${href}" style="color:${BRAND};text-decoration:underline">Manage your notifications</a> to turn these off.`;
 }
 
-export type RenderedEmail = { subject: string; html: string; unsubscribeUrl?: string };
+// `kind` is the template's telemetry token (spec/22 'Email' category): it rides
+// along on the builder's return so it reaches `sendEmail` through the same
+// spread every caller already writes, rather than being re-stated (and
+// forgotten) at each of the fourteen call sites. A fixed literal, never a
+// subject line or anything the recipient wrote.
+export type EmailKind =
+  | 'Welcome'
+  | 'Week1'
+  | 'Week2'
+  | 'Activation'
+  | 'WinBack'
+  | 'Milestone'
+  | 'FirstShare'
+  | 'TeamInvite'
+  | 'InviteResponse'
+  | 'DiagramJoined'
+  | 'CommentNotification'
+  | 'ActionAssigned'
+  | 'TokenExpiring'
+  | 'AccountDeleted';
+
+export type RenderedEmail = {
+  kind: EmailKind;
+  subject: string;
+  html: string;
+  unsubscribeUrl?: string;
+};
 
 // Profile page where every opt-out category can be turned off. Used by both the
 // footer link and the List-Unsubscribe header (spec/64). Module-private: only
@@ -93,6 +119,7 @@ function shell(section: Section): string {
 export function welcomeEmail(env: Env): RenderedEmail {
   const base = appBaseUrl(env);
   return {
+    kind: 'Welcome',
     subject: 'Welcome to livediagram',
     html: shell({
       heading: 'Welcome, let’s draw something',
@@ -113,6 +140,7 @@ export function welcomeEmail(env: Env): RenderedEmail {
 export function week1Email(env: Env): RenderedEmail {
   const base = appBaseUrl(env);
   return {
+    kind: 'Week1',
     subject: 'Find your way around the Explorer',
     html: shell({
       heading: 'Your diagrams, organised',
@@ -131,6 +159,7 @@ export function week1Email(env: Env): RenderedEmail {
 export function week2Email(env: Env): RenderedEmail {
   const base = appBaseUrl(env);
   return {
+    kind: 'Week2',
     subject: 'Bring your team onto the canvas',
     html: shell({
       heading: 'Diagrams are better together',
@@ -153,6 +182,7 @@ export function teamInviteEmail(env: Env, teamName: string | null): RenderedEmai
   const named = !!(teamName && teamName.trim());
   const name = named ? escapeHtml(teamName!.trim()) : 'a team';
   return {
+    kind: 'TeamInvite',
     subject: `You’ve been invited to ${named ? escapeText(teamName!.trim()) : 'a team'} on livediagram`,
     html: shell({
       heading: `You’re invited to ${name}`,
@@ -170,6 +200,7 @@ export function teamInviteEmail(env: Env, teamName: string | null): RenderedEmai
 export function accountDeletedEmail(env: Env): RenderedEmail {
   const base = appBaseUrl(env);
   return {
+    kind: 'AccountDeleted',
     subject: 'Your livediagram account has been deleted',
     html: shell({
       heading: 'Your account has been deleted',
@@ -200,6 +231,7 @@ export function diagramJoinedEmail(
   const named = diagramName && diagramName.trim() ? escapeHtml(diagramName.trim()) : 'your diagram';
   const whoText = joinerName && joinerName.trim() ? escapeText(joinerName.trim()) : 'Someone';
   return {
+    kind: 'DiagramJoined',
     subject: `${whoText} opened one of your diagrams`,
     html: shell({
       heading: 'Someone joined your diagram',
@@ -233,6 +265,7 @@ export function inviteResponseEmail(
   const who = escapeHtml(responderEmail);
   const verb = accepted ? 'accepted' : 'declined';
   return {
+    kind: 'InviteResponse',
     subject: `${escapeText(responderEmail)} ${verb} your invitation to ${teamText}`,
     html: shell({
       heading: accepted ? 'Invitation accepted' : 'Invitation declined',
@@ -281,6 +314,7 @@ export function actionAssignedEmail(
       )
     : null;
   return {
+    kind: 'ActionAssigned',
     subject: `${whoText} assigned you an action`,
     html: shell({
       heading: 'You have a new action',
@@ -339,6 +373,7 @@ export function tokenExpiringEmail(
   const d = new Date(expiresAt);
   const when = `${EXPIRY_MONTHS[d.getUTCMonth()]!} ${d.getUTCDate()}, ${d.getUTCFullYear()}`;
   return {
+    kind: 'TokenExpiring',
     subject: 'Your livediagram API token expires soon',
     html: shell({
       heading: 'An API token is about to expire',
@@ -362,6 +397,7 @@ export function tokenExpiringEmail(
 export function activationEmail(env: Env): RenderedEmail {
   const base = appBaseUrl(env);
   return {
+    kind: 'Activation',
     subject: 'Your canvas is waiting',
     html: shell({
       heading: 'Ready when you are',
@@ -396,6 +432,7 @@ export function commentNotificationEmail(
   const who = commenterName && commenterName.trim() ? escapeHtml(commenterName.trim()) : 'Someone';
   const name = diagramName && diagramName.trim() ? escapeHtml(diagramName.trim()) : 'your diagram';
   return {
+    kind: 'CommentNotification',
     subject: `${whoText} commented on ${nameText}`,
     html: shell({
       heading: 'New comment on your diagram',
@@ -416,6 +453,7 @@ export function commentNotificationEmail(
 export function winBackEmail(env: Env): RenderedEmail {
   const base = appBaseUrl(env);
   return {
+    kind: 'WinBack',
     subject: 'Your diagrams are waiting',
     html: shell({
       heading: 'It’s been a while',
@@ -443,6 +481,7 @@ export function winBackEmail(env: Env): RenderedEmail {
 export function milestoneEmail(env: Env, count: number): RenderedEmail {
   const base = appBaseUrl(env);
   return {
+    kind: 'Milestone',
     subject: `You’ve made ${count} diagrams on livediagram`,
     html: shell({
       heading: `That’s ${count} diagrams`,
@@ -464,6 +503,7 @@ export function milestoneEmail(env: Env, count: number): RenderedEmail {
 export function firstShareEmail(env: Env): RenderedEmail {
   const base = appBaseUrl(env);
   return {
+    kind: 'FirstShare',
     subject: 'You shared your first diagram',
     html: shell({
       heading: 'Your first shared diagram',
