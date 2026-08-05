@@ -14,6 +14,7 @@
 // halves read one source.
 
 import { useCallback, useMemo, useState } from 'react';
+import { eventCategory, sortCategories, type TimelineCategory } from './eventCategory';
 import { monthKeyOf, weekStartOf } from './monthCells';
 import { dateKey } from './useTimelineGrouping';
 import type { TimelineEvent, TimelineMode } from './types';
@@ -26,11 +27,12 @@ export type TimelineControls = {
   setMode: (mode: TimelineMode) => void;
   actorFilter: TimelineActorFilter;
   setActorFilter: (filter: TimelineActorFilter) => void;
-  excluded: Set<string>;
-  toggleType: (sourceType: string) => void;
-  resetTypes: () => void;
-  /** All source types present in the feed, so the chips are self-describing. */
-  allSourceTypes: string[];
+  /** Categories the reader has switched off. */
+  excluded: Set<TimelineCategory>;
+  toggleCategory: (category: TimelineCategory) => void;
+  resetCategories: () => void;
+  /** Categories present in the feed, so the chips describe THIS feed. */
+  allCategories: TimelineCategory[];
   /** The events left after the chips are applied — what the feed renders. */
   visibleEvents: TimelineEvent[];
   /** YYYY-MM-DD keys with at least one event, for the mini calendar. */
@@ -54,7 +56,7 @@ export function useTimelineControls(
     /** The reader, so "others" can mean anything but them. */
     viewerId?: string | null;
     onModeChange?: (mode: TimelineMode) => void;
-    onFilterChange?: (excluded: string[]) => void;
+    onFilterChange?: (excluded: TimelineCategory[]) => void;
     onActorFilterChange?: (filter: TimelineActorFilter) => void;
   } = {},
 ): TimelineControls {
@@ -63,7 +65,7 @@ export function useTimelineControls(
   // the calendar once should not find the feed in calendar mode a week
   // later wondering where their list went.
   const [mode, setModeState] = useState<TimelineMode>('list');
-  const [excluded, setExcluded] = useState<Set<string>>(() => new Set());
+  const [excluded, setExcluded] = useState<Set<TimelineCategory>>(() => new Set());
   const [monthKey, setMonthKey] = useState(() => monthKeyOf(Date.now()));
   const [weekKey, setWeekKey] = useState(() => weekStartOf(dateKey(Date.now())));
   const [filterAnchor, setFilterAnchor] = useState<DOMRect | null>(null);
@@ -73,17 +75,19 @@ export function useTimelineControls(
   // their own afternoon's work is absent.
   const [actorFilter, setActorFilterState] = useState<TimelineActorFilter>('all');
 
-  // Derived from the events actually present, not a hard-coded list, so
-  // a source type a newer worker starts emitting gets a chip for free.
-  const allSourceTypes = useMemo(() => {
-    const seen = new Set<string>();
-    for (const event of events) seen.add(event.sourceType);
-    return [...seen].sort();
+  // Derived from the events actually present rather than the full
+  // catalogue: a reader with no teams shouldn't be offered a Teams chip
+  // that filters nothing, and a new event type from a newer worker gets
+  // a chip for free.
+  const allCategories = useMemo(() => {
+    const seen = new Set<TimelineCategory>();
+    for (const event of events) seen.add(eventCategory(event.eventType));
+    return sortCategories(seen);
   }, [events]);
 
   const visibleEvents = useMemo(() => {
     let out = events;
-    if (excluded.size > 0) out = out.filter((e) => !excluded.has(e.sourceType));
+    if (excluded.size > 0) out = out.filter((e) => !excluded.has(eventCategory(e.eventType)));
     if (actorFilter === 'others' && viewerId) {
       // Keeps system events (actorId null): an expiring token is
       // nobody's doing and is exactly the kind of thing "what did I
@@ -107,12 +111,12 @@ export function useTimelineControls(
     [onModeChange],
   );
 
-  const toggleType = useCallback(
-    (sourceType: string) => {
+  const toggleCategory = useCallback(
+    (category: TimelineCategory) => {
       setExcluded((prev) => {
         const next = new Set(prev);
-        if (next.has(sourceType)) next.delete(sourceType);
-        else next.add(sourceType);
+        if (next.has(category)) next.delete(category);
+        else next.add(category);
         onFilterChange?.([...next]);
         return next;
       });
@@ -120,7 +124,7 @@ export function useTimelineControls(
     [onFilterChange],
   );
 
-  const resetTypes = useCallback(() => {
+  const resetCategories = useCallback(() => {
     setExcluded(new Set());
     onFilterChange?.([]);
   }, [onFilterChange]);
@@ -151,9 +155,9 @@ export function useTimelineControls(
     actorFilter,
     setActorFilter,
     excluded,
-    toggleType,
-    resetTypes,
-    allSourceTypes,
+    toggleCategory,
+    resetCategories,
+    allCategories,
     visibleEvents,
     eventDates,
     monthKey,

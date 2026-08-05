@@ -127,7 +127,7 @@ export function ListView({
         <span>Updated</span>
         <span aria-hidden></span>
       </div>
-      <ul className="divide-y divide-slate-100 dark:divide-slate-700/60">
+      <ul className="lvd-cascade divide-y divide-slate-100 dark:divide-slate-700/60">
         {showUnsortedRow ? <UnsortedRow count={unsortedCount} onOpen={onOpenUnsorted} /> : null}
         {showGeneratedRow && onOpenGenerated ? (
           <GeneratedRow count={generatedCount} onOpen={onOpenGenerated} />

@@ -12,7 +12,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { POPOVER_VIEWPORT_MARGIN, clampIntoRange } from '../popover';
 import { buildMonthCells, formatMonth, shiftMonth } from './monthCells';
-import { sourceTypeLabel } from './sourceTypeMeta';
+import { CATEGORY_LABELS, type TimelineCategory } from './eventCategory';
 import type { TimelineActorFilter } from './useTimelineControls';
 
 const WIDTH = 272;
@@ -20,7 +20,7 @@ const GAP = 8;
 
 export function TimelineFilterPopover({
   anchor,
-  allSourceTypes,
+  allCategories,
   excluded,
   onToggle,
   onReset,
@@ -33,9 +33,9 @@ export function TimelineFilterPopover({
   onClose,
 }: {
   anchor: DOMRect;
-  allSourceTypes: string[];
-  excluded: Set<string>;
-  onToggle: (sourceType: string) => void;
+  allCategories: TimelineCategory[];
+  excluded: Set<TimelineCategory>;
+  onToggle: (category: TimelineCategory) => void;
   onReset: () => void;
   actorFilter: TimelineActorFilter;
   onActorFilterChange: (filter: TimelineActorFilter) => void;
@@ -144,25 +144,24 @@ export function TimelineFilterPopover({
         )}
       </div>
       <div className="flex flex-wrap gap-1.5">
-        {allSourceTypes.map((sourceType) => {
-          const on = !excluded.has(sourceType);
+        {allCategories.map((category) => {
+          const on = !excluded.has(category);
           return (
             <button
-              key={sourceType}
+              key={category}
               type="button"
               aria-pressed={on}
-              onClick={() => onToggle(sourceType)}
-              // Brand, not the event tones: these chips slice the feed
-              // by AREA (diagrams / teams / account), and colour on this
-              // surface already means severity. Two colour systems in
-              // one popover would make the reader learn both.
+              onClick={() => onToggle(category)}
+              // Brand, not the event tones. Colour on this surface
+              // already means severity; a second colour system in the
+              // same popover would make the reader learn both.
               className={`rounded-full border px-2.5 py-1 text-[11px] transition ${
                 on
                   ? 'border-transparent bg-brand-600 text-white'
                   : 'border-slate-200 text-slate-500 hover:text-slate-700 dark:border-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
               }`}
             >
-              {sourceTypeLabel(sourceType)}
+              {CATEGORY_LABELS[category]}
             </button>
           );
         })}

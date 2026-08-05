@@ -278,15 +278,33 @@ chip and the list it filters can never disagree.
   it: nobody did those, and they're exactly what the filter is looking
   for. It began as an "Others" button in the header — the wrong place,
   and a word that doesn't say others-what.
-- **Source-type chips** — Diagrams, Teams, Account, derived from the
-  source types actually present so a new one gets a chip for free.
-  Toggling excludes that type from the feed. The chips are brand-
-  coloured, not tone-coloured: they slice by _area_, and colour on this
-  surface already means severity — two colour systems in one popover
-  would make the reader learn both. The trigger shows a brand dot when
-  any filter is active, rather than a count: how many types are hidden
-  isn't something anyone acts on, but "a filter is on, that's why this
-  looks short" is.
+- **Category chips** — Comments, Actions, New diagrams, Edits, Renames,
+  Deletions, Sharing, Teams, Filing, Account.
+
+  These key on **what happened**, not on the source type. Chips keyed on
+  source type were the first attempt and were nearly useless: comments,
+  edits, renames, actions, sharing and deletions all carry
+  `sourceType: 'diagram'`, so one chip covered most of a personal feed
+  and turning it off left almost nothing. "Hide the diagram stuff" is
+  not a thing anyone wants.
+
+  The categories are coarser than the event type — nobody wants
+  `comment_resolved` separately from `comment_added` — and finer than
+  the tone, which answers a different question: tone is _how alarming_,
+  category is _what happened_. Grouped by consequence rather than by
+  table: losing a diagram, a folder, a team or a working token are all
+  **Deletions**, because someone scanning for "did anything disappear?"
+  wants them in one place.
+
+  Only categories present in the feed get a chip, so a reader with no
+  teams isn't offered a Teams chip that filters nothing. Chip order is
+  fixed rather than alphabetical or by frequency — a control that moves
+  between visits is one you have to re-read every time. The chips are
+  brand-coloured, not tone-coloured: colour on this surface already
+  means severity, and two colour systems in one popover would make the
+  reader learn both. Anything unmapped falls to **Other**, so an event
+  type from a newer worker is still filterable.
+
 - **Mini calendar** inside the popover: clicking a date scrolls that
   day-group into view and pulses it with a fading box-shadow. Box-shadow
   only, never a transform — transforming the group promotes it to its
@@ -383,6 +401,24 @@ Keyframes live in the shared Tailwind theme beside the empty-state ones,
 so any app rendering a Timeline gets the motion without a per-app paste.
 `prefers-reduced-motion` cancels all of it, pinning opacity to 1 —
 fill-mode `both` would otherwise strand bubbles invisible.
+
+**The Explorer's own lists cascade too**, via a `lvd-cascade` class on
+the container rather than the Timeline's fan. Two differences, both
+deliberate:
+
+- **A calmer motion.** The fan comes from the right because that is
+  where a collapsed stack's card layers sit. A file list has no deck, so
+  reusing it there would be a flourish with nothing behind it; the rows
+  get a small rise and a fade instead.
+- **Staggered by `nth-child` on the container**, not by threading an
+  index prop through four row/card components. That also makes folders
+  and diagrams in one view cascade in document order for free, instead
+  of each list restarting its own count.
+
+The search panel uses the same class but only for a window after it
+**opens**. Its results re-mount on every keystroke, so leaving it on
+would slide the whole list on each character — motion fighting the thing
+it decorates, and fast typing would feel laggy.
 
 ### 2.7 Deep links
 

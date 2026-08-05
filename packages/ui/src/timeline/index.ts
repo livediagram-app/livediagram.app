@@ -19,6 +19,12 @@ export { ExpandedStack } from './ExpandedStack';
 export { TimelineCalendarView } from './TimelineCalendarView';
 export { SourceTypeIcon, fallbackRenderer, pickRenderer } from './renderers';
 export { TONE_LABELS, eventTone, toneColor, toneSoftColor, type TimelineTone } from './eventTone';
+export {
+  CATEGORY_LABELS,
+  eventCategory,
+  sortCategories,
+  type TimelineCategory,
+} from './eventCategory';
 export { buildStacks, bucketFor, stackLabel, type TimelineStack } from './stacking';
 export {
   dateKey,

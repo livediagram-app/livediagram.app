@@ -133,6 +133,18 @@ export function SearchPanel({
   // the key even when the editor's global shortcuts are listening.
   useEscape(onClose, { capture: true, stopPropagation: true });
 
+  // The arrival cascade is for the panel OPENING, not for typing.
+  // Results re-mount on every keystroke, so leaving the class on would
+  // slide the whole list on each character — motion fighting the thing
+  // it decorates, and it would make fast typing feel laggy. The panel
+  // mounts when it opens, so this window starts there and closes once
+  // the cascade has played out.
+  const [cascade, setCascade] = useState(true);
+  useEffect(() => {
+    const timer = setTimeout(() => setCascade(false), 900);
+    return () => clearTimeout(timer);
+  }, []);
+
   const groups = useMemo<SearchGroup[]>(
     () =>
       buildSearchResults({
@@ -268,7 +280,7 @@ export function SearchPanel({
             groups.map((group) => {
               const baseIndex = flatItems.findIndex((f) => f === group.items[0]);
               return (
-                <div key={group.key}>
+                <div key={group.key} className={cascade ? 'lvd-cascade' : undefined}>
                   <p className="px-3 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                     {group.label}
                   </p>

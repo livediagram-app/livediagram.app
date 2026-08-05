@@ -14,6 +14,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   useTimelineControls,
+  type TimelineCategory,
   type TimelineControlsState,
   type TimelineEvent,
   type TimelineMode,
@@ -80,10 +81,10 @@ export function useTimelineFeed(
         track('Timeline', 'Changed', mode === 'calendar' ? 'Calendar' : 'List'),
       [],
     ),
-    // The source type is a fixed token from a closed set, never user
+    // The category id is a fixed token from a closed set, never user
     // content — the telemetry `type` slot has to stay renderable on the
     // public dashboard (spec/22).
-    onFilterChange: useCallback((excluded: string[]) => {
+    onFilterChange: useCallback((excluded: TimelineCategory[]) => {
       const last = excluded[excluded.length - 1];
       if (last) track('Timeline', 'Selected', last);
     }, []),

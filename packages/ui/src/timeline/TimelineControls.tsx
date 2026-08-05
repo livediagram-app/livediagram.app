@@ -76,10 +76,10 @@ export function TimelineControls({ controls }: { controls: Controls }) {
       {filterAnchor && (
         <TimelineFilterPopover
           anchor={filterAnchor}
-          allSourceTypes={controls.allSourceTypes}
+          allCategories={controls.allCategories}
           excluded={excluded}
-          onToggle={controls.toggleType}
-          onReset={controls.resetTypes}
+          onToggle={controls.toggleCategory}
+          onReset={controls.resetCategories}
           eventDates={controls.eventDates}
           monthKey={controls.monthKey}
           onMonthChange={controls.setMonthKey}

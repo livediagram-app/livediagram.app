@@ -125,10 +125,116 @@
   animation: tl-date-pulse 0.7s ease-in-out 2;
 }
 
+/* Explorer list / card arrival (spec/138 §2.6 borrows the idea).
+ *
+ * The Timeline's fan-out comes from the RIGHT because that's where a
+ * collapsed stack's card layers sit — it reads as dealing from a deck.
+ * A file list has no deck, so reusing that motion here would be a
+ * flourish with nothing behind it. This is the calmer version: a small
+ * rise and a fade, no rotation.
+ *
+ * Staggered by `nth-child` on the container rather than by threading an
+ * index prop through four row/card components. That also means the
+ * folders and diagrams in one view cascade in document order for free,
+ * instead of each list restarting its own count.
+ *
+ * Like the Timeline's, this relies on CSS animations firing on mount:
+ * a row that re-renders (rename, star, menu open) keeps its end state,
+ * and React only mounts a fresh node when a row is genuinely new. */
+@keyframes lvd-row-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.lvd-cascade > * {
+  animation: lvd-row-in 0.32s ease-out both;
+}
+
+.lvd-cascade > *:nth-child(1) {
+  animation-delay: 0ms;
+}
+.lvd-cascade > *:nth-child(2) {
+  animation-delay: 35ms;
+}
+.lvd-cascade > *:nth-child(3) {
+  animation-delay: 70ms;
+}
+.lvd-cascade > *:nth-child(4) {
+  animation-delay: 105ms;
+}
+.lvd-cascade > *:nth-child(5) {
+  animation-delay: 140ms;
+}
+.lvd-cascade > *:nth-child(6) {
+  animation-delay: 175ms;
+}
+.lvd-cascade > *:nth-child(7) {
+  animation-delay: 210ms;
+}
+.lvd-cascade > *:nth-child(8) {
+  animation-delay: 245ms;
+}
+.lvd-cascade > *:nth-child(9) {
+  animation-delay: 280ms;
+}
+.lvd-cascade > *:nth-child(10) {
+  animation-delay: 315ms;
+}
+.lvd-cascade > *:nth-child(11) {
+  animation-delay: 350ms;
+}
+.lvd-cascade > *:nth-child(12) {
+  animation-delay: 385ms;
+}
+.lvd-cascade > *:nth-child(13) {
+  animation-delay: 420ms;
+}
+.lvd-cascade > *:nth-child(14) {
+  animation-delay: 455ms;
+}
+.lvd-cascade > *:nth-child(15) {
+  animation-delay: 490ms;
+}
+.lvd-cascade > *:nth-child(16) {
+  animation-delay: 525ms;
+}
+.lvd-cascade > *:nth-child(17) {
+  animation-delay: 560ms;
+}
+.lvd-cascade > *:nth-child(18) {
+  animation-delay: 595ms;
+}
+.lvd-cascade > *:nth-child(19) {
+  animation-delay: 630ms;
+}
+.lvd-cascade > *:nth-child(20) {
+  animation-delay: 665ms;
+}
+
+/* Past the twentieth row the delay stops growing. Those rows are below
+ * the fold on any realistic viewport, so a longer ramp would only make
+ * the bottom of a long library sit blank after the top had settled. */
+.lvd-cascade > *:nth-child(n + 21) {
+  animation-delay: 700ms;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-empty-float,
   .animate-empty-ring {
     animation: none;
+  }
+
+  /* `opacity: 1` matters — fill-mode `both` would otherwise strand
+   * every row at its 0% state. */
+  .lvd-cascade > * {
+    animation: none;
+    opacity: 1;
   }
 
   /* The cascade is decoration; the feed reads identically without it.
