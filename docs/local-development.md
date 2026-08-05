@@ -47,9 +47,18 @@ Turbo spins up all seven dev servers in parallel:
 | `apps/api`       | `http://localhost:8787/api`                                                    |
 | `apps/mcp`       | `http://localhost:8788` (MCP server, spec/62; signed-in only)                  |
 
-The `router` dev server (`wrangler dev --env local`, port 3000) gives you the production URL shape locally: `/` is marketing, `/new` and `/diagram/*` are the editor, plus `/telemetry`, `/help`, and `/api` — no per-app port to remember. It has no service bindings in dev; the `[env.local]` environment in `apps/router/wrangler.toml` points it at the localhost origins above and it proxies plain HTTP (see [spec/08](../specs/08-router-app.md)). Each app's own port keeps working, so use whichever you prefer.
+The `router` dev server (`wrangler dev --env local`, port 3000) gives you the production URL shape locally: `/` is marketing, `/new` and `/diagram/*` are the editor, plus `/telemetry`, `/help`, and `/api` — no per-app port to remember. It has no service bindings in dev; the `[env.local]` environment in `apps/router/wrangler.toml` points it at the localhost origins above and it proxies plain HTTP (see [spec/08](../specs/08-router-app.md)).
 
-The editor works in pure-guest mode without any auth setup: `pnpm dev` and open `http://localhost:3000/new` (or `http://localhost:3002/new` to hit the editor's dev server directly). Diagrams persist to the local D1 file the api worker creates on first start.
+**Use port 3000 unless you have a reason not to.** Each app's own port still serves its pages, but only the router puts the API on the same origin. The frontends call `NEXT_PUBLIC_API_BASE`, defaulting to the relative `/api` — correct in production and behind the router, and a dead end on an app's own port, where nothing serves `/api` (these are static exports; there are no Next API routes, see [Architecture](architecture.md)). So the editor on `http://localhost:3002` cannot reach the api worker until you tell it where the worker is:
+
+```sh
+# apps/live/.env.local  (gitignored; see apps/live/.env.example)
+NEXT_PUBLIC_API_BASE=http://localhost:8787/api
+```
+
+Without it the editor loads, the canvas works, and the first save fails with **“Couldn’t create the diagram”** — which reads like a broken api worker rather than a missing variable, so it is worth setting up front. `apps/telemetry` and `apps/help` read the same variable: the dashboard needs it to show anything on `:3003`, and the help centre only loses its telemetry posts without it.
+
+The editor works in pure-guest mode without any auth setup: `pnpm dev` and open `http://localhost:3000/new`. Diagrams persist to the local D1 file the api worker creates on first start. (On `http://localhost:3002/new` instead, set `NEXT_PUBLIC_API_BASE` first — see the note above.)
 
 ## Scoping commands to one workspace
 
