@@ -1,0 +1,58 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Settings',
+  description:
+    'The livediagram Settings dialog: minimal panels, the minimap, the welcome tour, notifications, reduce motion, the AI assistant and anonymous usage events, and how preferences follow you between devices.',
+  path: '/help/user-interface/settings/',
+});
+
+<ArticleLayout
+  title="Settings"
+  description="The preference toggles, what each one does, and which device they follow you to."
+  categoryTitle="User Interface"
+  categorySlug="user-interface"
+>
+
+**Settings** opens from the gear in the [quick controls](/help/user-interface/quick-controls/) at the end of the bottom bar, in the editor and in the Explorer. It holds the preferences that are about _you_ rather than about any particular diagram, which is why there is one set of them and not one per diagram.
+
+They are grouped, and **one group is open at a time**, so the dialog is a short list you read rather than a wall of switches.
+
+## Editor
+
+- **Minimal panel layout** — replaces the floating Explorer, Palette, Editor and AI panels with a compact button bar that opens each as a popover. Good when you want the canvas back. It is always on for phones whatever this says. See [Minimal Panels](/help/palette/minimal-panels/).
+- **Show minimap** — the small overview of the whole tab in the bottom-left corner, once a tab has a few elements and the Activity panel is minimised. Desktop only. See [The Minimap](/help/user-interface/minimap/).
+- **Welcome Tour Completed** — ticked once you have taken or dismissed the tour, which is how it only offers itself once. **Untick it and close Settings to run the tour again.** See [The Welcome Tour](/help/getting-started/welcome-tour/).
+
+## Notifications
+
+- **Show notifications** — the brief confirmation shown when you do something whose result isn't on screen, like moving a diagram to a folder or linking a tab. **Errors are always shown**, whatever this is set to, so a failure is never silently swallowed.
+
+## Accessibility
+
+- **Reduce motion** — turns off the decorative animations and transitions (panels, popovers, the snap guides) so the interface appears instantly instead of sliding. Your device's own reduce-motion setting is always respected; this lets you force it on even where the device doesn't ask for it. See [Accessibility](/help/getting-started/accessibility/).
+
+## AI
+
+- **AI Assistant** — shows the AI panel, with its **Ask** and **Clean** modes. Off by default, and the group is absent entirely on a deployment with no AI configured. See [AI Tools](/help/tools/ai/ai-tools/).
+
+## Privacy
+
+- **Send anonymous usage events** — the small first-party events listed on the public [telemetry dashboard](/telemetry): no user content, no third-party trackers. Turn it off to keep everything you do on your device. See [What We Collect](/help/privacy-and-security/what-we-collect/).
+
+## Settings follow you, most of them
+
+Everything in this dialog is **stored against your identity, not your browser**, and applies to every diagram you open on every device you sign in from. For a guest, "your identity" is the per-browser id, so the preferences last as long as that browser does and [migrate with your diagrams](/help/getting-started/guest-vs-account/) if you later sign up.
+
+Two deliberate exceptions live outside the dialog:
+
+- **The canvas-behaviour toggles** sit in the palette's own settings popover, next to the canvas they affect: [auto-attach arrows](/help/palette/auto-attach-arrows/), [alignment guides](/help/palette/alignment-guides/), [quick-add on hover](/help/palette/quick-add-on-hover/) and [panel opacity](/help/palette/panel-opacity/). Flipping a setting where you can see its effect beats flipping it in a modal.
+- **Tool settings are per device**, not per account: the eraser's brush, the laser's pen, the presenter's settings, and the switch that [turns single-key shortcuts off](/help/tips-and-tricks/keyboard-shortcuts/). These are about the machine you are sitting at, so they deliberately do not follow you to another one.
+
+<Note>
+  Turning **Minimal panel layout** on docks the panels, which hides the palette header the
+  canvas-behaviour popover opens from. The Settings dialog is the way back out.
+</Note>
+
+</ArticleLayout>

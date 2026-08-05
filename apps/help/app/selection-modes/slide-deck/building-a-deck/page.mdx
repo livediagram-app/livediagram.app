@@ -1,0 +1,77 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { SlideMenu } from '@/components/illustrations/presentation';
+
+export const metadata = helpMetadata({
+  title: 'Building a Deck',
+  description:
+    'Edit what is on each slide, rename and duplicate slides, hide one from the run, reorder the deck by dragging, and write presenter notes with a time budget.',
+  path: '/help/selection-modes/slide-deck/building-a-deck/',
+});
+
+<ArticleLayout
+  title="Building a Deck"
+  description="Everything you do to a deck before you present it: membership, order, hiding, notes and timings."
+  categoryTitle="Selection Modes"
+  categorySlug="selection-modes"
+  parentArticle={{ title: 'Slide Deck', slug: 'slide-deck' }}
+  subArticles={getSubArticles('slide-deck').filter((a) => a.slug !== 'building-a-deck')}
+>
+
+A deck is built from the **Slide Deck** panel, one slide per point you mean to make. Each row shows the slide's position, its name, which tab it draws from, and how many elements are on it, plus a marker when it has notes or is hidden.
+
+**A row does one thing: press it to open that slide.** The editor switches to that slide's tab and selects its elements, which is how you check a slide without presenting it. Everything you can _do_ to a slide lives in its `…` menu instead, so a panel the width of the palette never has to carry five controls per row.
+
+## The slide menu
+
+Press the `…` at the right of a row and you get the same shape of menu the Explorer's rows and the tab context menu use: a row of quick actions across the top, then two labelled categories you can open.
+
+<Figure caption="The slide menu: quick actions across the top, then the Selection and Visibility categories.">
+  <SlideMenu />
+</Figure>
+
+The quick actions are **Rename**, notes (**Add notes**, or **Edit notes** once there are some, lit when the slide has a script waiting), **Duplicate** (a copy with the same elements, straight after it, for a "same picture, different point" pair) and **Delete**, pinned to the right on its own.
+
+**Deleting asks first.** A confirmation opens beside the menu button, because the elements survive a deletion but the arrangement does not, and the arrangement is what you spent the time on. Either way the elements stay exactly where they are on the canvas.
+
+### Selection: what is on the slide
+
+A slide's membership is editable for the life of the deck, not just at the moment you made it. Open the menu's **Selection** category and it tells you what the two buttons will act on and how many elements the slide holds now:
+
+- **Add** puts the elements you have selected onto the slide.
+- **Remove** takes them off again. Only the slide changes; nothing leaves the canvas.
+
+Both are offered only while you are on **that slide's own tab**, and the category says so when you are not. A slide holds one tab's elements, so adding from a different tab isn't something to refuse politely; it is something that cannot be expressed.
+
+### Visibility: hiding a slide from the run
+
+The menu's **Visibility** category carries a single switch: **Hide** the slide, or **Show** it again.
+
+Hiding is a different idea from deleting. It is for the slide you might want next week, the backup detail for a question you may not get, the section you cut for time: the slide stays in the deck, it just doesn't run. A hidden slide shows in the panel with its name struck through and an eye marker beside it, so you can always see it is there.
+
+Hidden slides are skipped everywhere at once: the count on the **Present** button, the `7 / 23` in the presenter's display, the jump list, and what advancing lands on all leave them out, so nothing can disagree about how long the deck is.
+
+## Ordering the deck
+
+**Drag a row** up or down the list to move it. The list does not reshuffle while you drag: a caret shows where the row will land, and the move happens when you let go, because a list that reorders live moves the very row you were aiming at. It works on touch as well as with a mouse.
+
+## Presenter notes
+
+Open a slide's `…` menu and press **Add notes**, and a notes box opens under the list: what you mean to _say_ over this slide. Press **Done** to put it away again. It is behind the menu rather than always on screen so the panel never grows a text area you did not ask for.
+
+Notes belong to the slide, not to anything on it, which matters because the same box on two slides usually wants two different sentences said about it. They are plain text, since it is a script you read off rather than something anybody needs to bold, and during the presentation they stay hidden until you ask for them.
+
+## A time budget per slide
+
+Beside the notes box sits **Budget**, a number of minutes for this slide. It is blank for most slides and that is the normal case; fill it in for the ones you know you tend to overrun.
+
+It sits with the notes deliberately: both are decided while you are _writing_ the talk, not while you are giving it. While you present, a slide with a budget can show time-on-this-slide against it in the presenter's display, and going over is marked rather than enforced. See [the pacing display](/help/selection-modes/slide-deck/presenter-controls/).
+
+<Tip>
+  Build the deck in the order you will speak, then walk it once by pressing each row in turn. You are
+  checking that every slide's elements make sense on their own, which is the one thing the panel
+  cannot tell you.
+</Tip>
+
+</ArticleLayout>

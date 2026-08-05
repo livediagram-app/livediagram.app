@@ -1,0 +1,77 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { SlideTransition } from '@/components/illustrations/presentation';
+
+export const metadata = helpMetadata({
+  title: 'Presenting',
+  description:
+    'Start a full-screen slide deck, move through it by key or click, point at it with the laser and spotlight, and read an element without being able to change it.',
+  path: '/help/selection-modes/slide-deck/presenting/',
+});
+
+<ArticleLayout
+  title="Presenting"
+  description="What happens when the deck goes full screen: framing, moving through it, and what a click does."
+  categoryTitle="Selection Modes"
+  categorySlug="selection-modes"
+  parentArticle={{ title: 'Slide Deck', slug: 'slide-deck' }}
+  subArticles={getSubArticles('slide-deck').filter((a) => a.slug !== 'presenting')}
+>
+
+Press **Present** at the bottom of the Slide Deck panel and the deck opens full screen at slide 1, with every part of the editor hidden. The button carries a **badge with the number of slides that will run**, so you know the length of the deck before you start it; hidden slides are not counted. Slides whose tab hasn't been opened yet are loaded first, so the deck never stalls halfway through.
+
+- **One slide at a time.** Only that slide's elements are drawn; advancing replaces the picture rather than adding to it.
+- **The backdrop is the slide's tab's**: its background colour, pattern and theme.
+- **The framing fits the slide's elements**, with a little padding. If a slide contains exactly one **frame**, the frame's bounds are used instead, which is how you author precise framing without learning anything new.
+- The first slide arrives as a card over the darkened editor. Then **the whole screen travels**, backdrop and all: the slide you are leaving goes out to the left while the next one comes in from the right, mirrored when you go back, so the motion always says which way through the deck you are going. If your device is set to reduce motion, you get a cross-fade instead.
+
+<Figure caption="The whole screen travels: the slide you are leaving goes left as the next comes in from the right.">
+  <SlideTransition />
+</Figure>
+
+**The screen stays awake** for the run, where the browser allows it, so a slide you talk over for five minutes is not one your laptop dims behind you.
+
+## Moving through the deck
+
+| Key                                            | Does                          |
+| ---------------------------------------------- | ----------------------------- |
+| `→`, `Space`, `Enter`, `Page Down`, or a click | Next slide                    |
+| `←` or `Page Up`                               | Previous slide                |
+| `Home` / `End`                                 | Jump to the first or last     |
+| `G`                                            | Open the jump-to-slide list   |
+| `N`                                            | Show or hide presenter notes  |
+| `L` / `S`                                      | Arm the laser / the spotlight |
+| `Esc`                                          | Leave the presentation        |
+
+**The editor's own shortcuts are dead** while a deck runs, all of them, so a stray `R` cannot drop a rectangle onto the diagram behind the slide.
+
+There are **previous** and **next** buttons in the display at the top right too, because a presenter at a projector often has a mouse and no keyboard within reach, and "click anywhere to advance" neither announces itself nor goes backwards.
+
+Past the last slide you get an end card; one more advance closes the deck. Leaving puts you back on the tab, the view and the panels you started from, worth having since the last slide usually left the camera zoomed right in on one box.
+
+Each slide is announced to a screen reader as it arrives ("Slide 4 of 12, Rollout plan"), so the deck is followable without seeing the counter.
+
+## Pointing at the slide
+
+Two tools reach into a running presentation: press **`L`** for the [laser](/help/selection-modes/laser/) and **`S`** for the [spotlight](/help/selection-modes/spotlight/), and the same key again to put it away. They are the two whose entire job is to point at the diagram, and neither can change it, which is why they are the exception to the rule below.
+
+While one is armed, **clicking draws or sizes the beam instead of advancing**, since mid-stroke a click means "point", not "next slide". The keys and the buttons in the presenter's controls still move the deck. Leaving the presentation hands your tool back the way you found it.
+
+## Read anything, change nothing
+
+Nothing on a slide can be altered. There is no editing, moving or deleting, and none of the session verbs either: no voting, no starting or stopping a timer, no ticking a Done check, no firing a reaction pad. You are on a projector in front of a room, and a stray click that edits the diagram is not a feature.
+
+Live data still _reports_ itself: a timer somebody started before you began presenting goes on counting down on the slide, and a poll shows the results it has.
+
+**Click an element and a read-only popover opens** with what that element has to say: its [note](/help/canvas/notes/), its [comment thread](/help/collaboration/comments/), and any [assigned action](/help/collaboration/assigned-actions/) with its assignee and status. There is no composer: you can show the room the objection somebody left on a box, and you cannot answer it from here.
+
+Because click-to-advance and click-to-inspect are the same gesture, the target decides: **a click on empty space advances the slide, a click on an element opens its popover**, and a click outside an open popover just dismisses it rather than skipping ahead.
+
+## Presenting is yours alone
+
+**Starting a presentation broadcasts nothing.** Nobody else is pulled into your deck, nobody's view moves, and collaborators with the diagram open carry on seeing the diagram. You show it the way you show everything else in the meeting: share your screen.
+
+Remote cursors and lasers are hidden from your own view while you present, so nothing punctures the slide on a projector. Edits arriving from other people apply underneath as usual, and a slide re-renders if one of its elements changed.
+
+</ArticleLayout>

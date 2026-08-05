@@ -43,10 +43,17 @@ If a specific change was undone, reverted, or overwritten, the [Activity Panel](
 3. **Revert** an entry to roll that specific change back, surgically, without disturbing other people's unrelated edits.
 4. **Use Undo and Redo** in the panel for the most recent steps.
 
+## What collaboration does and doesn't protect
+
+**Two people editing different elements on the same tab is safe.** Edits travel as changes to individual elements and merge by element, so your move of one box cannot overwrite somebody's edit to another. That was not always true, and it is the single most common shape of "my change vanished".
+
+**Two people editing the _same_ element is the case to know about.** There the last edit to arrive wins. In practice the editor heads this off by showing an element as locked while somebody else has it selected, so you can see that it is spoken for before you start.
+
+If a connection drops, the editor **catches up on reconnect** rather than reloading: it asks for what it missed and applies it. Your viewport, your selection and your undo history survive, so a wobbly connection no longer costs you your place. If it has been away too long to catch up, it re-fetches the diagram, still without a page reload.
+
 <Note>
-  In a busy collaboration, two people editing the same tab at once can have the slower save
-  overwrite the faster one. The Activity Panel records who changed what, so you can see what
-  happened and revert it.
+  Whatever happened, the Activity Panel records who changed what, so you can see it and revert the
+  entry rather than reconstructing the work.
 </Note>
 
 If you have checked the right tab, diagram, and identity, reloaded, and cannot find the change in the Activity Panel, [contact us](/help/contact/) with the diagram URL and roughly when you made the edit.

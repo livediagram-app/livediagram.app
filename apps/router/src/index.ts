@@ -46,6 +46,38 @@ const LIVE_ROUTE_SEGMENTS = new Set([
 // metadata icon). Routed to the live worker by exact path.
 const LIVE_ROOT_ASSETS = new Set(['/icon.svg']);
 
+// Help-centre category slugs, which are the first segment of every help
+// article path (`/canvas/shadows/`, `/palette/build/frames/`). The help app
+// serves them all under `/help`, so a bare one is an article URL that lost
+// its prefix — a hand-typed link, an old bookmark, a copy-paste that dropped
+// the first segment. Those 404'd into marketing; they redirect now.
+//
+// The list is pinned to the registry's own categories by index.test.ts, so a
+// new category cannot quietly stop redirecting. `explorer` is deliberately
+// absent: the live app owns that segment (it is matched first either way).
+const HELP_CATEGORY_SEGMENTS = new Set([
+  'about',
+  'account-and-data',
+  'activity-panel',
+  'canvas',
+  'collaboration',
+  'contact',
+  'developers',
+  'getting-started',
+  'palette',
+  'policies',
+  'privacy-and-security',
+  'search-panel',
+  'selection-modes',
+  'self-hosting',
+  'supported-devices',
+  'tabs',
+  'tips-and-tricks',
+  'tools',
+  'troubleshooting',
+  'user-interface',
+]);
+
 function isLivePageRoute(pathname: string): boolean {
   if (LIVE_ROOT_ASSETS.has(pathname)) return true;
   const first = pathname.split('/')[1] ?? '';
@@ -122,6 +154,13 @@ export default {
     // files are already `/live`-free).
     if (isLivePageRoute(url.pathname)) {
       return forward(request, url, env.LIVE, env.LIVE_ORIGIN);
+    }
+    // A help article URL that lost its `/help` prefix. Sent on with a
+    // permanent redirect rather than dropped into marketing's 404: the path
+    // is unambiguous, and these are links people have already shared.
+    if (HELP_CATEGORY_SEGMENTS.has(url.pathname.split('/')[1] ?? '')) {
+      url.pathname = `${HELP_PATH}${url.pathname}`;
+      return Response.redirect(url.toString(), 308);
     }
     return forward(request, url, env.MARKETING, env.MARKETING_ORIGIN);
   },

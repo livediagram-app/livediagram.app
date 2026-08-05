@@ -5,7 +5,7 @@ import { QuickControls } from '@/components/illustrations/user-interface';
 export const metadata = helpMetadata({
   title: 'Quick Controls',
   description:
-    'The quick controls in the corner of the editor gather the always-available actions: search, settings, and more.',
+    'The quick controls at the end of the bottom bar gather the always-available actions: search, keyboard shortcuts, the source on GitHub, settings, and the dark-mode toggle.',
   path: '/help/user-interface/quick-controls/',
 });
 
@@ -16,7 +16,7 @@ export const metadata = helpMetadata({
   categorySlug="user-interface"
 >
 
-The **quick controls** sit in the bottom corner of the editor and gather the actions you want reachable at any moment, whatever you are doing on the canvas. They stay put while the rest of the interface comes and goes with your selection.
+The **quick controls** sit at the right-hand end of the bottom bar and gather the actions you want reachable at any moment, whatever you are doing on the canvas. They stay put while the rest of the interface comes and goes with your selection, and the same cluster appears at the bottom of the [Explorer](/help/explorer/explorer-page/), so the two screens don't hide their controls in different places.
 
 <Figure caption="The fixed corner cluster gathers search, settings, and help, always in the same place.">
   <QuickControls />
@@ -24,9 +24,15 @@ The **quick controls** sit in the bottom corner of the editor and gather the act
 
 ## What lives here
 
+Five controls, left to right:
+
 - **Search** — open the [search panel](/help/search-panel/) to jump to any diagram, tab, or element, or to drop something onto the canvas.
-- **Settings** — open the editor settings: appearance, behaviour toggles, and your preferences.
-- **Other shortcuts** — quick access to help and the handful of editor-wide toggles, so the things you reach for repeatedly are never more than a corner click away.
+- **Keyboard shortcuts** — the full [shortcut reference](/help/tips-and-tricks/keyboard-shortcuts/), with the switch at the bottom that turns single-key shortcuts off.
+- **Source on GitHub** — the codebase is public and MIT-licensed, so the source is a click away from the app itself.
+- **Settings** — the [Settings dialog](/help/user-interface/settings/): the preference toggles that follow you between devices.
+- **Dark mode** — flip the [interface between light and dark](/help/tools/dark-mode/). This is the app's own appearance, not the diagram's theme.
+
+On a phone the bar is tight, so the shortcuts button (there is no keyboard to reference) and the GitHub link (the one control that leaves the app) are dropped; search, settings and dark mode stay.
 
 Because they are fixed in the corner rather than tied to a selection, the quick controls are the dependable starting point when you are not sure where an action lives.
 

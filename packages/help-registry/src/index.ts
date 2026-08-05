@@ -87,7 +87,7 @@ export const categories: Category[] = [
     title: 'Tips and Tricks',
     description:
       'Work faster with the shortcuts, hidden features, and small habits experienced users rely on.',
-    articleCount: 6,
+    articleCount: 7,
   },
   {
     slug: 'account-and-data',
@@ -153,7 +153,7 @@ export const categories: Category[] = [
     title: 'User Interface',
     description:
       'Get your bearings in the editor: the panels, toolbar, context menus, minimap, zoom and tab bars, and quick controls.',
-    articleCount: 7,
+    articleCount: 8,
     kind: 'feature',
   },
   {
@@ -295,7 +295,16 @@ export const articles: Article[] = [
     slug: 'quick-controls',
     title: 'Quick Controls',
     description: 'The always-available actions tucked into the corner of the editor.',
-    keywords: 'corner buttons actions settings shortcuts share help github',
+    keywords: 'corner buttons actions settings shortcuts share help github bottom bar cluster',
+    category: 'User Interface',
+    categorySlug: 'user-interface',
+  },
+  {
+    slug: 'settings',
+    title: 'Settings',
+    description: 'Every preference toggle, what it does, and which device it follows you to.',
+    keywords:
+      'settings preferences options config configure gear cog toggles minimal panels minimap welcome tour notifications toasts reduce motion animation accessibility ai assistant telemetry anonymous usage events privacy sync account device per device defaults turn off',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -436,6 +445,15 @@ export const articles: Article[] = [
     title: 'Duplicating Elements',
     description: 'Duplicate in place, copy and paste across tabs, or Shift-drag a copy into place.',
     keywords: 'duplicate copy paste clone repeat shift drag cmd d ctrl d multiply ghost',
+    category: 'Tips and Tricks',
+    categorySlug: 'tips-and-tricks',
+  },
+  {
+    slug: 'copy-and-paste',
+    title: 'Copy and Paste',
+    description: 'Move elements between tabs, diagrams and windows through the system clipboard.',
+    keywords:
+      'copy paste cut clipboard cmd c cmd v cmd x ctrl c ctrl v ctrl x between diagrams another tab second window screenshot paste image offset reconnect arrows system clipboard',
     category: 'Tips and Tricks',
     categorySlug: 'tips-and-tricks',
   },
@@ -804,9 +822,41 @@ export const articles: Article[] = [
     description:
       'Build slides from your diagram and present them full screen, with notes, transitions and auto-advance.',
     keywords:
-      'presentation presenting present presentation mode slideshow slide show slides slide deck talk demo walkthrough narrate projector screen share screenshare speaker notes presenter notes script full screen fullscreen next previous advance start deck reorder hide slide hidden skip duplicate slide rename slide transition fade slide transition speed auto advance autoadvance timer loop looping kiosk unattended click to advance hide pointer cursor keep controls visible show position counter fill screen actual size zoom presenter settings hud controls',
+      'presentation presenting present presentation mode slideshow slide show slides slide deck talk demo walkthrough narrate projector screen share screenshare speaker notes presenter notes script full screen fullscreen next previous advance start deck build slides element set spans tabs',
     category: 'Selection Modes',
     categorySlug: 'selection-modes',
+  },
+  {
+    slug: 'building-a-deck',
+    title: 'Building a Deck',
+    description: 'Edit, hide, reorder and annotate the slides before you present them.',
+    keywords:
+      'build deck new slide add remove elements selection membership rename duplicate copy slide delete confirm hide hidden slide skip struck through eye reorder drag order presenter notes script speaker notes budget minutes timing per slide pace slide menu ellipsis',
+    category: 'Selection Modes',
+    categorySlug: 'selection-modes/slide-deck',
+    parentSlug: 'slide-deck',
+  },
+  {
+    slug: 'presenting',
+    title: 'Presenting',
+    description:
+      'What a running deck does: framing, transitions, moving through it, and what a click does.',
+    keywords:
+      'present full screen fullscreen start presenting framing frame fit padding backdrop transition travel slide fade reduce motion advance next previous arrow keys space page down home end escape exit laser spotlight point read only popover note comment action wake lock screen awake announce screen reader shortcuts dead',
+    category: 'Selection Modes',
+    categorySlug: 'selection-modes/slide-deck',
+    parentSlug: 'slide-deck',
+  },
+  {
+    slug: 'presenter-controls',
+    title: "The Presenter's Controls",
+    description:
+      'The strip in the corner of a running deck, and the eleven settings behind its cog.',
+    keywords:
+      'hud controls strip corner position counter slide name jump to slide list grid notes button popover elapsed time clock budget minutes over amber pacing settings cog transition speed auto advance autoadvance loop click to advance fill screen actual size show position keep controls visible hide pointer cursor kiosk unattended',
+    category: 'Selection Modes',
+    categorySlug: 'selection-modes/slide-deck',
+    parentSlug: 'slide-deck',
   },
   {
     slug: 'isometric-mode',
@@ -875,6 +925,16 @@ export const articles: Article[] = [
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Elements',
+  },
+  {
+    slug: 'frames',
+    title: 'Frames',
+    description: 'A labelled section that draws behind its contents and moves them as one.',
+    keywords:
+      'frame section container backdrop labelled box region area cluster move together carries contents behind resize outline f key figjam section export slide framing',
+    category: 'Palette',
+    categorySlug: 'palette/build',
+    parentSlug: 'build',
   },
   {
     slug: 'components',

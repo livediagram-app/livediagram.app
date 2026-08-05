@@ -48,6 +48,12 @@ detail.
 
 <Step n={3}>Press play, or **Load embed**, when you want it running.</Step>
 
+**The tile you picked is only a hint.** It names the empty card ("Add a Figma link") and the dialog, and the link is what actually decides: paste a Vimeo URL into a card you made from the Figma tile and you get Vimeo, because refusing a link that plainly works would be pedantry. There is no separate URL field to keep in step either, since an embed stores its address in the same place a [link card](/help/canvas/links/link-cards/) stores its own, which is why double-clicking is how you change it.
+
+The dialog is deliberately narrower than a link card's: an embed can only point at a **web address**, never at a tab or another diagram, because a video pointed at a tab has nothing to play. It checks the address as you type and again when you save.
+
+**Video cards are locked to 16:9** as you resize them, for the same reason an icon is locked square: a letterboxed or stretched video frame is never what anyone wanted. And like images and stickies, an embed **keeps its own look across [themes](/help/canvas/themes/)** — somebody else's page is not yours to recolour.
+
 ## Nothing loads until you ask
 
 An embed does not start on its own. A YouTube card shows the video's poster frame and waits for you to press play; every other service shows a named card with a **Load embed** button.

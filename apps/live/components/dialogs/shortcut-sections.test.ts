@@ -22,10 +22,18 @@ const handledKeys = new Set([
   ...HANDLED_OUTSIDE_THE_MAPS,
 ]);
 
+// The presentation binds its own keys on the overlay (PresentationOverlay),
+// deliberately outside the editor's maps — while a deck runs, the editor's
+// shortcuts are dead. So its rows describe real bindings that `handledKeys`
+// will never contain, and checking them against it would fail on the truth.
+const EDITOR_SECTIONS = SHORTCUT_SECTIONS.filter(
+  (section) => section.heading !== 'While presenting',
+);
+
 // Rows whose `keys` are a single printable character: the ones that name one
 // binding. Chords (⌘ Z) and the "1 – 0" number-row summary are not claims
 // about a single key, so they are not checked here.
-const singleKeyRows = SHORTCUT_SECTIONS.flatMap((section) =>
+const singleKeyRows = EDITOR_SECTIONS.flatMap((section) =>
   section.rows
     .filter((row) => row.keys.length === 1 && /^[A-Za-z0-9]$/.test(row.keys[0]!))
     .map((row) => ({
@@ -52,12 +60,12 @@ describe('the Shortcuts dialog matches the keys the editor binds', () => {
   it('leaves no bound key undocumented', () => {
     // The number row is documented as a range ("1 – 0") rather than ten rows,
     // so a digit counts as covered when that summary row is present.
-    const numberRowSummarised = SHORTCUT_SECTIONS.some((section) =>
+    const numberRowSummarised = EDITOR_SECTIONS.some((section) =>
       section.rows.some((row) => row.keys.includes('–') && row.keys.includes('0')),
     );
     const documented = new Set(singleKeyRows.map((row) => row.key));
     // Some keys are documented only inside a label, e.g. "Select tool (or S)".
-    for (const section of SHORTCUT_SECTIONS) {
+    for (const section of EDITOR_SECTIONS) {
       for (const row of section.rows) {
         for (const m of row.label.matchAll(/\bor\s+(?:Ctrl\s+)?([A-Za-z0-9])\b/g)) {
           documented.add(m[1]!.toLowerCase());

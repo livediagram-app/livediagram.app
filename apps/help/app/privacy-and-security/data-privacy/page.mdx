@@ -21,6 +21,8 @@ Diagrams are saved through a single Cloudflare Worker API that holds the databas
 - **Real-time state** (who is in the room, live cursors, in-flight edits) lives in a Cloudflare Durable Object, one room per diagram, while people are actively collaborating.
 - **Images** you add are stored in Cloudflare object storage and served back through the same API.
 
+**Or nowhere but your own machine.** A diagram created in [Offline Mode](/help/privacy-and-security/offline-mode/) lives only in this browser's IndexedDB. It is never sent to the API, so none of the storage above holds a copy of it, and it stays that way until you choose **Sync Diagram** to move it to the cloud.
+
 Nothing about your diagram content is handed to an outside vendor. The hosted version runs entirely on Cloudflare, and a self-hoster runs the same stack on their own account.
 
 <Figure caption="Your edits travel through one API to Cloudflare storage, never straight from the browser to the database.">
@@ -29,7 +31,7 @@ Nothing about your diagram content is handed to an outside vendor. The hosted ve
 
 ## What is stored, and who can read it
 
-A diagram is owned by an identity. That identity is either a signed-in account or, for guests, a per-browser id kept in your browser's local storage. Only the owner, people holding a valid [share link](/help/collaboration/sharing/), and (in future) team members can read a diagram. Requests for a diagram you cannot access return a plain "not found", so the API never even confirms a private diagram exists.
+A diagram is owned by an identity. That identity is either a signed-in account or, for guests, a per-browser id kept in your browser's local storage. Only the owner, people holding a valid [share link](/help/collaboration/sharing/), and the members of a [team](/help/collaboration/teams/) the diagram has been shared into can read a diagram. Requests for a diagram you cannot access return a plain "not found", so the API never even confirms a private diagram exists.
 
 <Figure caption="A diagram is tied to its owner, so a request from anyone else comes back as a plain not found.">
   <AccessControl />

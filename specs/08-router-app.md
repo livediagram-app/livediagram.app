@@ -15,6 +15,7 @@ A small Cloudflare Worker that fronts the apex domain (`livediagram.app`) and ro
 | `/help`, `/help/*`                                                                                                                             | help app (`apps/help`), stripped |
 | `/live/*` (the live app's `_next` assets only)                                                                                                 | live app (`apps/live`), stripped |
 | live page routes: `/diagram/*`, `/explorer/*`, `/new`, `/join`, `/sign-in`, `/get-started`, `/embed`, `/oauth/*`, `/sso-callback`, `/icon.svg` | live app (`apps/live`), as-is    |
+| a help category segment with no `/help` prefix (`/canvas/*`, `/policies/*`, ...)                                                               | 308 redirect to `/help/<path>`   |
 | everything else                                                                                                                                | marketing app (`apps/marketing`) |
 
 The live app serves at **clean URLs** — there's no `/live` prefix in the address bar. Marketing owns every other first segment (`/`, `/alternatives`, `/faq`, the legal pages), and the live app's route segments don't overlap any of them, so the router selects the live app by matching its known first segments (`LIVE_ROUTE_SEGMENTS` in the source) and forwards those **as-is** (no strip — the live worker's `out/` files are already prefix-free).
@@ -22,6 +23,10 @@ The live app serves at **clean URLs** — there's no `/live` prefix in the addre
 The one thing that keeps a `/live` prefix is the live app's bundled **`_next` assets** (its prod `assetPrefix: '/live'`). Both Next static exports want `/_next`, so the live app's assets ride `/live/_next/*` to avoid colliding with marketing's `/_next`. The router **strips** `/live` from those before forwarding (shared `forwardStripped()` helper, same as `/telemetry/*`) so the worker serves them from `out/_next`. (Next's `basePath` used to add the prefix to pages too; that's gone — only `assetPrefix` remains, on assets only.)
 
 `/api/*` is forwarded **as-is** — no prefix stripping. The api worker expects the full `/api/...` path. Marketing sees `/`, `/faq`, etc. as-is.
+
+**Bare help-article paths redirect rather than 404.** A help URL that has lost its `/help` prefix (`/privacy-and-security/data-privacy/`) used to fall through to marketing and 404, which is the wrong answer to an unambiguous address: every help article lives under one of the registry's category slugs, and none of those segments belongs to marketing. So the router matches the first segment against `HELP_CATEGORY_SEGMENTS` and answers **308** to `/help/<path>`. Still routing, not logic: a table of segments and a destination.
+
+Two properties keep it safe. It sits **after** the live-route check, so `/explorer/*` (a segment the help centre and the live app both use) still reaches the editor — which is why `explorer` is absent from the set. And `index.test.ts` walks the registry's own categories and asserts each one redirects, so a new help category cannot silently stop working.
 
 ## Implementation
 

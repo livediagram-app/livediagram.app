@@ -15,6 +15,7 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20260729.1",
     "@livediagram/eslint-config": "workspace:*",
+    "@livediagram/help-registry": "workspace:*",
     "@livediagram/vitest-config": "workspace:*",
     "@types/node": "^22.10.2",
     "eslint": "^10.8.0",

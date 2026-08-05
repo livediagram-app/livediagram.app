@@ -31,6 +31,42 @@ Two more switch mode rather than tool, and have articles of their own: `I` for [
 
 The shortcuts dialog stays available in every role, so view-only visitors can see the same reference.
 
+## Editing shortcuts
+
+These are the chords, and unlike the single-key tools they keep working whether or not single-key shortcuts are turned on. `⌘` is the Command key on a Mac; on Windows and Linux use Ctrl.
+
+| Keys                | Does                             |
+| ------------------- | -------------------------------- |
+| `⌘Z`                | Undo                             |
+| `⌘⇧Z`               | Redo (Ctrl Y works too)          |
+| `⌘X`                | Cut the selection                |
+| `⌘C`                | Copy the selection               |
+| `⌘V`                | Paste, offset from the original  |
+| `⌘D`                | Duplicate the selection in place |
+| `⌘G`                | Group the selection, or ungroup  |
+| `⌘⇧L`               | Lock or unlock the selection     |
+| `⌘A`                | Select everything on the tab     |
+| `Delete` / `⌫`      | Delete the selection             |
+| `⌘⇧]` / `⌘⇧[`       | Bring to front / send to back    |
+
+**Cut, copy and paste use your operating system's clipboard**, not a private one, so a selection copied on one tab pastes onto another, into a different diagram, or into a second browser window. A paste lands offset from the original rather than exactly on top of it, so you can see what arrived, and arrows between copied elements come along and reconnect to the copies.
+
+## Moving around and selecting
+
+| Keys              | Does                                                    |
+| ----------------- | ------------------------------------------------------- |
+| `⌘K`              | Open search and commands (`⌘.` does the same)           |
+| `⌘+` / `⌘-`       | Zoom in / out                                           |
+| `⌘0`              | Reset the zoom to 100%                                  |
+| `⇧1`              | Zoom to fit everything on the tab                       |
+| `Tab`             | Select the next element (Shift for the previous one)    |
+| Arrow keys        | Nudge the selection 1px, or 10px with Shift             |
+| `Space` + drag    | Pan the canvas whatever tool you are holding            |
+| `Space`           | Edit the selected element's label                       |
+| Just type         | Replace the selected element's label                    |
+| `Escape`          | Cancel the current mode, or clear the selection         |
+| Hold `⌘`          | Show each palette tile's shortcut badge                 |
+
 ## Keys that place an element
 
 The rest of the letters drop something on the canvas at your pointer, so a diagram can be built without visiting the palette at all:
@@ -69,6 +105,20 @@ Shift is the editor's power modifier. While you hold it, a small hint bar at the
 - **Shift while placing a quick-connect arrow** chains the next arrow from the same source, so a hub fans out in one flow.
 - **Shift-drag a selected arrow's head** splits a branch off its line, one trunk pointing at several targets. See [Arrows](/help/palette/arrows/).
 - **Shift + arrow keys** nudge the selection in big (10px) steps.
+
+## While presenting
+
+A running [slide deck](/help/selection-modes/slide-deck/) has its own set, and only its own set: the editor's shortcuts are switched off for the duration, so a stray `R` cannot drop a rectangle onto the diagram behind the slide.
+
+| Keys                                           | Does                            |
+| ---------------------------------------------- | ------------------------------- |
+| `→`, `Space`, `Enter`, `Page Down`, or a click | Next slide                      |
+| `←` or `Page Up`                               | Previous slide                  |
+| `Home` / `End`                                 | Jump to the first or last slide |
+| `G`                                            | Open the jump-to-slide list     |
+| `N`                                            | Show or hide presenter notes    |
+| `L` / `S`                                      | Arm the laser / the spotlight   |
+| `Esc`                                          | Leave the presentation          |
 
 ## Turning shortcuts off
 

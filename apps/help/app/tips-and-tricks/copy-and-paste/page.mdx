@@ -1,0 +1,57 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Copy and Paste',
+  description:
+    'Copy, cut and paste elements through your operating system clipboard: between tabs, between diagrams, into a second window, and paste a screenshot straight onto the canvas.',
+  path: '/help/tips-and-tricks/copy-and-paste/',
+});
+
+<ArticleLayout
+  title="Copy and Paste"
+  description="Move elements between tabs, diagrams and windows through the ordinary system clipboard."
+  categoryTitle="Tips and Tricks"
+  categorySlug="tips-and-tricks"
+>
+
+Select something and `⌘C` copies it, `⌘X` cuts it, `⌘V` pastes it. (On Windows and Linux, Ctrl.) It is the clipboard you already know, and it behaves the way you would expect it to.
+
+## It is the real clipboard
+
+The elements go on your **operating system's clipboard**, not a private one inside the page. That is what makes the useful cases work:
+
+- paste into **another tab** of the same diagram,
+- paste into a **different diagram** entirely,
+- paste into a **second browser window** you have the editor open in,
+- copy, reload the page, and paste what you copied before the reload.
+
+A copy carries the elements' styling, their labels, their links and notes, and the arrows between them. Ids are re-minted on arrival and pinned arrows are re-wired to the copies, so pasting into a diagram that already holds the originals gives you a genuinely separate set rather than two names for one thing.
+
+## What paste does
+
+The pasted elements land **offset from the original**, not exactly on top of it, so you can see what arrived and drag it where it belongs. They come in selected, ready to be moved as one.
+
+**Cut is copy plus delete**, in a single undo step, so an undo after a cut puts the originals back where they were.
+
+A paste onto a tab you cannot edit does nothing: a view-only [share link](/help/collaboration/sharing/) has no writing in it, and that includes writing by clipboard.
+
+## Pasting a screenshot
+
+If what you have on the clipboard is an **image** (a screenshot, or an image copied from a web page) rather than elements, `⌘V` drops it on the canvas as an [image element](/help/palette/tools/images/) and uploads it to your gallery. In an [offline diagram](/help/privacy-and-security/offline-mode/) it is embedded locally instead, so no copy leaves your machine.
+
+Anything else on the clipboard is left alone: pasting ordinary text into a label being edited types the text, as it should.
+
+## When you just want another one
+
+For a copy of what you already have, on the same tab, two things are quicker than the clipboard:
+
+- **`⌘D`** duplicates the selection in place.
+- **Shift and drag** a selection drops a copy where you release it and leaves the originals put. See [Duplicating Elements](/help/tips-and-tricks/duplicating-elements/).
+
+<Tip>
+  Building the same cluster on several tabs? Build it once, copy it, and paste it into each. It is
+  the fastest route to a set of tabs that genuinely match, and every copy is independent afterwards.
+</Tip>
+
+</ArticleLayout>

@@ -350,6 +350,9 @@ importers:
       '@livediagram/eslint-config':
         specifier: workspace:*
         version: link:../../packages/eslint-config
+      '@livediagram/help-registry':
+        specifier: workspace:*
+        version: link:../../packages/help-registry
       '@livediagram/vitest-config':
         specifier: workspace:*
         version: link:../../packages/vitest-config

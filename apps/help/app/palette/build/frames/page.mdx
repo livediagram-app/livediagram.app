@@ -1,0 +1,59 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { FrameSection } from '@/components/illustrations/palette-build';
+
+export const metadata = helpMetadata({
+  title: 'Frames',
+  description:
+    'A frame is a labelled section of the canvas: it draws behind its contents, carries them when you move it, and is what an export and a slide use to decide what a section is.',
+  path: '/help/palette/build/frames/',
+});
+
+<ArticleLayout
+  title="Frames"
+  description="A labelled box that turns a cluster of elements into a named section you can move as one."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  parentArticle={{ title: 'Build Elements', slug: 'build' }}
+  subArticles={getSubArticles('build').filter((a) => a.slug !== 'frames')}
+>
+
+A **frame** is a labelled, transparent box you draw around a cluster of elements to say "this part is a thing". It lives in the [Build](/help/palette/build/) category, and `F` draws one wherever your pointer is.
+
+Its body has no fill, so everything inside shows through, and its label sits in the top-left corner. Rename it the way you rename anything else, by double-clicking the label.
+
+## It is a section, not a rectangle
+
+That distinction is the whole element. Four behaviours follow from it:
+
+- **It always draws behind its contents**, whatever order things were added in. You never have to send a frame to the back, and one can't accidentally cover the work it is framing.
+- **Clicking inside picks the element, not the frame.** Click an element in a frame and you get the element. Click empty space inside it, or its border or title, and you get the frame. So a frame never gets in the way of the thing it holds.
+- **Moving the frame carries what is inside it.** The section travels as one, arrows between members included. Membership is worked out at the moment you grab it, so an element is "in" a frame simply by sitting inside it; there is nothing to add it to. Containment has to be **full**: an element straddling the edge stays put, because a frame that grabbed its half-out neighbours would read as grabbing things at random.
+- **Resizing the frame leaves its contents alone.** Only the outline grows, so you size the section around the work rather than scaling the work.
+
+<Figure caption="A frame draws behind its cluster and carries the whole section when you drag it.">
+  <FrameSection />
+</Figure>
+
+Being a backdrop rather than a node, a frame has no quick-connect **+** buttons and is not something you can morph another shape into.
+
+## What else reads a frame
+
+A frame is the one element other features treat as "a section", which is what makes it worth reaching for beyond tidiness:
+
+- **A slide with exactly one frame on it is framed by that frame** when you present it, rather than by a box drawn round its elements. That is how you author precise framing for a [slide deck](/help/selection-modes/slide-deck/presenting/) without learning a second concept.
+- **Exports keep the layering**, so a frame is behind its contents in a PNG or SVG exactly as on the canvas. See [Exporting](/help/account-and-data/exporting-diagrams/).
+
+## Frames and groups
+
+A frame and a [group](/help/canvas/selecting-and-grouping/groups/) both make several elements move together, and they are not the same tool.
+
+A group is a fixed membership you declare: those elements, wherever they end up. A frame is a region, so its membership is whatever is sitting inside it right now, and dragging something in or out changes what moves with it. Reach for a group when the set is the point, and a frame when the _area_ is.
+
+<Tip>
+  Lay the frames down first and fill them in. A board that starts as four named empty sections is
+  easier to write into than one you tidy into sections afterwards.
+</Tip>
+
+</ArticleLayout>

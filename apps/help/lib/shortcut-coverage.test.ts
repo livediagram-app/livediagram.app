@@ -25,6 +25,7 @@ import { describe, expect, it } from 'vitest';
 const ROOT = fileURLToPath(new URL('../../..', import.meta.url));
 const KEYS_SRC = `${ROOT}/apps/live/hooks/canvas/editor-shortcut-keys.ts`;
 const LISTENER_SRC = `${ROOT}/apps/live/hooks/canvas/useEditorKeyboardShortcuts.ts`;
+const SECTIONS_SRC = `${ROOT}/apps/live/components/dialogs/shortcut-sections.ts`;
 const ARTICLE = `${ROOT}/apps/help/app/tips-and-tricks/keyboard-shortcuts/page.mdx`;
 
 // The two lookup tables are the editor's own catalogue of plain-key shortcuts:
@@ -52,6 +53,26 @@ function documentedKeys(): Set<string> {
   return new Set([...src.matchAll(/`([A-Z0-9])`/g)].map((m) => m[1]!));
 }
 
+// The modifier chords, which the two lookup tables above do NOT hold: they are
+// an if-ladder in the same file, with no catalogue to parse. The Shortcuts
+// dialog's rows are that catalogue, and shortcut-sections.test.ts pins them to
+// the editor, so checking the article against the dialog reaches the bindings
+// transitively. Rows whose every key is a modifier or a single character, so
+// the chord has one obvious spelling: ⌘Z, ⌘⇧L, ⇧1.
+function chords(): string[] {
+  const src = readFileSync(SECTIONS_SRC, 'utf8');
+  const found: string[] = [];
+  // Terminated on `], label:` rather than the first `]`, because two of the
+  // rows this must see are the bracket keys themselves (⌘⇧] / ⌘⇧[).
+  for (const m of src.matchAll(/keys: \[(.*?)\], label:/g)) {
+    const keys = [...m[1]!.matchAll(/'([^']*)'/g)].map((k) => k[1]!);
+    if (!keys.some((k) => k === '⌘' || k === '⇧')) continue;
+    if (!keys.every((k) => k === '⌘' || k === '⇧' || k.length === 1)) continue;
+    found.push(keys.join(''));
+  }
+  return found;
+}
+
 describe('the Keyboard Shortcuts article covers what the editor binds', () => {
   it('parses real tables (guard against this test going blind)', () => {
     // Twenty-eight bindings when this landed. A collapse toward zero means the
@@ -63,6 +84,16 @@ describe('the Keyboard Shortcuts article covers what the editor binds', () => {
   it('documents every plain key in the lookup tables', () => {
     const documented = documentedKeys();
     const missing = [...boundKeys()].filter((k) => !documented.has(k)).sort();
+    expect(missing).toEqual([]);
+  });
+
+  it('documents every modifier chord the shortcuts dialog lists', () => {
+    // The article claimed to be "the full shortcut reference" while naming no
+    // chord at all: undo, copy, paste, group and zoom were in the product and
+    // in the dialog, and nowhere in the help centre.
+    const src = readFileSync(ARTICLE, 'utf8');
+    expect(chords().length).toBeGreaterThan(10);
+    const missing = chords().filter((c) => !src.includes(`\`${c}\``));
     expect(missing).toEqual([]);
   });
 

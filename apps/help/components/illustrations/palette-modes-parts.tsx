@@ -143,6 +143,31 @@ export function AvatarGlyph({ on = false }: { on?: boolean }) {
   );
 }
 
+/** A slide-deck glyph: a framed slide with a second one queued behind it. */
+export function SlideDeckGlyph({ on = false }: { on?: boolean }) {
+  const cls = on ? 'stroke-white' : 'stroke-slate-500';
+  return (
+    <g className={cls} strokeWidth={1.4} fill="none" strokeLinejoin="round">
+      <rect x={-7.5} y={-6} width={12} height={9} rx={1.5} />
+      <path d="M-4.5 -8 h9 a1.5 1.5 0 0 1 1.5 1.5 v7" />
+      <path d="M-4.5 0 h5" strokeLinecap="round" />
+      <path d="M-1 5.5 h3.5" strokeLinecap="round" />
+    </g>
+  );
+}
+
+/** A zen glyph: the canvas with the chrome gone, just a horizon and a dot. */
+export function ZenGlyph({ on = false }: { on?: boolean }) {
+  const cls = on ? 'stroke-white' : 'stroke-slate-500';
+  return (
+    <g className={cls} strokeWidth={1.4} fill="none" strokeLinecap="round">
+      <circle r={6.5} />
+      <path d="M-6.2 1.5 h12.4" />
+      <circle r={1.4} cy={-2.4} className={on ? 'fill-white stroke-white' : 'fill-slate-500'} />
+    </g>
+  );
+}
+
 /** An isometric cube glyph. */
 export function IsometricGlyph({ on = false }: { on?: boolean }) {
   const cls = on ? 'stroke-white' : 'stroke-slate-500';
@@ -154,16 +179,21 @@ export function IsometricGlyph({ on = false }: { on?: boolean }) {
   );
 }
 
+// In the picker's own order (canvas-tool-options.tsx): the Edit band, then
+// Present, then Preview. Every tile the editor shows is here, so a mode
+// article's picker is the picker the reader has in front of them.
 export const MODES = [
   { key: 'select', label: 'Select', Glyph: SelectGlyph },
   { key: 'hand', label: 'Hand', Glyph: HandGlyph },
   { key: 'eraser', label: 'Eraser', Glyph: EraserGlyph },
   { key: 'painter', label: 'Painter', Glyph: PainterGlyph },
+  { key: 'highlighter', label: 'Mark', Glyph: HighlighterGlyph },
   { key: 'laser', label: 'Laser', Glyph: LaserGlyph },
   { key: 'spotlight', label: 'Spot', Glyph: SpotlightGlyph },
   { key: 'avatar', label: 'Walk', Glyph: AvatarGlyph },
+  { key: 'slide-deck', label: 'Deck', Glyph: SlideDeckGlyph },
   { key: 'isometric', label: 'Iso', Glyph: IsometricGlyph },
-  { key: 'highlighter', label: 'Mark', Glyph: HighlighterGlyph },
+  { key: 'zen', label: 'Zen', Glyph: ZenGlyph },
 ] as const;
 
 export type ModeKey = (typeof MODES)[number]['key'];

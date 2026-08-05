@@ -133,3 +133,44 @@ describe('live route drift guard', () => {
     expect(missed).toEqual([]);
   });
 });
+
+describe('bare help-article paths', () => {
+  it('redirects a help path that lost its /help prefix', async () => {
+    const { env, marketing } = makeEnv();
+    const res = await dispatch('/privacy-and-security/data-privacy/', env);
+    expect(res.status).toBe(308);
+    expect(res.headers.get('location')).toBe(
+      'https://livediagram.app/help/privacy-and-security/data-privacy/',
+    );
+    // Never reached marketing's 404, which is what it used to do.
+    expect(marketing.urls).toEqual([]);
+  });
+
+  it('leaves marketing and live routes alone', async () => {
+    for (const path of ['/', '/faq', '/alternatives', '/privacy', '/terms', '/features']) {
+      const { env, marketing } = makeEnv();
+      const res = await dispatch(path, env);
+      expect(res.status, path).toBe(200);
+      expect(marketing.urls.length, path).toBe(1);
+    }
+    const { env, live } = makeEnv();
+    await dispatch('/explorer/recent', env);
+    expect(live.urls.length).toBe(1);
+  });
+
+  it('covers every help category the registry declares', async () => {
+    // The list in index.ts is hand-kept; this is what stops it drifting when
+    // the help centre grows a category. `explorer` is the one exclusion: the
+    // live app owns that segment.
+    const { categories } = await import('@livediagram/help-registry');
+    expect(categories.length).toBeGreaterThan(15);
+    const missed: string[] = [];
+    for (const category of categories) {
+      if (category.slug === 'explorer') continue;
+      const { env } = makeEnv();
+      const res = await dispatch(`/${category.slug}/an-article/`, env);
+      if (res.status !== 308) missed.push(category.slug);
+    }
+    expect(missed).toEqual([]);
+  });
+});

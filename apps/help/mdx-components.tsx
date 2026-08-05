@@ -179,6 +179,25 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
         {children}
       </pre>
     ),
+    // Tables had no overrides at all, so a markdown table rendered as
+    // unpadded browser default: columns touching, no rules, a key and its
+    // description reading as one run-on line. The shortcut references are
+    // mostly tables, which is where it hurt.
+    table: ({ children }) => (
+      <div className="mb-5 overflow-x-auto">
+        <table className="w-full border-collapse text-left text-[15px]">{children}</table>
+      </div>
+    ),
+    th: ({ children }) => (
+      <th className="border-b border-slate-200 px-3 py-2 text-sm font-semibold text-slate-800">
+        {children}
+      </th>
+    ),
+    td: ({ children }) => (
+      <td className="border-b border-slate-100 px-3 py-2 align-top leading-relaxed text-slate-600">
+        {children}
+      </td>
+    ),
     blockquote: ({ children }) => (
       <blockquote className="my-5 rounded-r-lg border-l-4 border-brand-500 bg-slate-50 py-3 pl-4 pr-4 italic text-slate-500">
         {children}
