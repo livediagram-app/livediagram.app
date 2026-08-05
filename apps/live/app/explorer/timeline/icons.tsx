@@ -73,6 +73,7 @@ export const EVENT_ICONS: Record<string, ReactNode> = {
   diagram_duplicated: <Glyph d={COPY} />,
   diagram_moved: <Glyph d={FOLDER} />,
   team_diagram_added: <Glyph d={FOLDER} />,
+  team_diagram_removed: <Glyph d={FOLDER} />,
   comment_added: <Glyph d={CHAT} />,
   comment_resolved: <Glyph d={CHECK} />,
   action_assigned: <Glyph d={USER_PLUS} />,

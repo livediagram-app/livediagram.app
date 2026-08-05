@@ -44,6 +44,7 @@ const STRUCTURAL = new Set<string>([
   'diagram_offline',
   'diagram_synced',
   'team_diagram_added',
+  'team_diagram_removed',
   'team_created',
   'team_invite_received',
   'team_invite_accepted',

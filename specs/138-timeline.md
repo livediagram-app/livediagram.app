@@ -798,17 +798,18 @@ calls it.
 
 ### 4.4 Teams and invites
 
-| `eventType`            | Fires when                                    | Audience                            |
-| ---------------------- | --------------------------------------------- | ----------------------------------- |
-| `team_created`         | `POST /api/teams`                             | Creator                             |
-| `team_invite_received` | admin invites an address                      | The invitee, once their id is known |
-| `team_invite_accepted` | `.../accept`                                  | The team                            |
-| `team_invite_declined` | invite row deleted by invitee                 | Team admins                         |
-| `team_member_joined`   | accept, or invite-link join                   | The team                            |
-| `team_member_left`     | member deletes own row                        | The team                            |
-| `team_member_removed`  | admin removes someone                         | The team, and the removed person    |
-| `team_role_changed`    | `PUT .../members/:id`                         | The team                            |
-| `team_diagram_added`   | diagram published to a team library (spec/35) | The team                            |
+| `eventType`            | Fires when                                    | Audience                                   |
+| ---------------------- | --------------------------------------------- | ------------------------------------------ |
+| `team_created`         | `POST /api/teams`                             | Creator                                    |
+| `team_invite_received` | admin invites an address                      | The invitee, once their id is known        |
+| `team_invite_accepted` | `.../accept`                                  | The team                                   |
+| `team_invite_declined` | invite row deleted by invitee                 | Team admins                                |
+| `team_member_joined`   | accept, or invite-link join                   | The team                                   |
+| `team_member_left`     | member deletes own row                        | The team                                   |
+| `team_member_removed`  | admin removes someone                         | The team, and the removed person           |
+| `team_role_changed`    | `PUT .../members/:id`                         | The team                                   |
+| `team_diagram_added`   | diagram published to a team library (spec/35) | The team                                   |
+| `team_diagram_removed` | diagram pulled back out of a team library     | The team it left, resolved BEFORE the move |
 
 **`team_invite_received` has an ordering problem worth naming.** An
 invite is created against an _email address_; the invitee's owner id is
@@ -851,6 +852,22 @@ team-library diagram reported _"copied by a visitor"_, which is simply
 untrue. Both now require a share code to have been presented. The
 teammate's own `diagram_duplicated` event is unaffected: they really did
 copy it.
+
+**Leaving a team library is its own event, and its audience is resolved
+before the move.** Publishing into a team and pulling back out of one are not
+one event with a direction: the out case takes the diagram away from everybody
+else, and when the mover isn't the owner spec/35 hands them ownership, so the
+previous owner loses it too. It used to fall through to `diagram_moved` and
+read "Moved to a Folder → Unsorted" — in the **mover's** feed only, because
+`recordDiagramMoved` resolves its audience from the diagram and by then the
+diagram is personal. A diagram could leave a shared library and change hands
+with nothing in the team's feed or the old owner's. And since a diagram at the
+library root already has `folderId === null`, moving it to personal Unsorted
+changed no folder, so that arm didn't fire either and **no event was written at
+all**. `team_diagram_removed` now covers it, carrying the new owner's name for
+the readers who no longer have the diagram, and the audience is read from the
+outgoing team before `setDiagramFolder` — the same ordering, for the same
+reason, as the delete tombstone.
 
 **Invite-link toggles go to admins only.** Whether a join credential is
 live is an administrative fact, and telling every member one exists is a

@@ -56,6 +56,7 @@ const BY_EVENT: Record<string, TimelineCategory> = {
   diagram_opened_by_visitor: 'sharing',
   diagram_copied_by_visitor: 'sharing',
   team_diagram_added: 'sharing',
+  team_diagram_removed: 'sharing',
 
   action_assigned: 'actions',
   action_completed: 'actions',

@@ -134,7 +134,9 @@ export async function recordDiagramMoved(
   );
 }
 
-// A diagram was published into (or pulled out of) a team library.
+// A diagram was published INTO a team library. The out direction is
+// recordTeamDiagramRemoved below — it needs a different title, a different
+// audience and an owner change, so it could not share this one.
 export async function recordTeamDiagramAdded(
   env: Env,
   diagram: DiagramRef,
@@ -153,6 +155,43 @@ export async function recordTeamDiagramAdded(
       snapshot: { ...diagramSnapshot(diagram), teamName },
     },
     await audienceForDiagram(env, diagram),
+  );
+}
+
+// A diagram was pulled back OUT of a team library into personal files
+// (spec/35 + spec/138). Not the same event as `diagram_moved`, which is
+// personal tidying: the team loses the diagram outright, and when the mover
+// isn't the owner they take ownership of it too — so the previous owner loses
+// it as well.
+//
+// The audience is passed IN rather than resolved here, because by the time this
+// fires the diagram is already personal and `audienceForDiagram` would return
+// only its new owner. The caller resolves the OLD team's audience before the
+// move, exactly as the delete path does for the same reason.
+export async function recordTeamDiagramRemoved(
+  env: Env,
+  diagram: DiagramRef,
+  teamName: string,
+  actorId: string,
+  audience: TimelineScopeRef[],
+  newOwnerName: string | null,
+): Promise<void> {
+  await record(
+    env,
+    {
+      actorId,
+      sourceType: 'diagram',
+      sourceId: diagram.id,
+      eventType: 'team_diagram_removed',
+      title: 'Removed from a Team',
+      description: `${diagram.name} → ${teamName}`,
+      snapshot: {
+        ...diagramSnapshot(diagram),
+        teamName,
+        ...(newOwnerName ? { newOwnerName } : {}),
+      },
+    },
+    audience,
   );
 }
 

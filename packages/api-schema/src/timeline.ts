@@ -72,6 +72,11 @@ export type TimelineEventType =
   | 'team_member_removed'
   | 'team_role_changed'
   | 'team_diagram_added'
+  // Pulled back OUT of a team library into somebody's personal files, which
+  // also transfers ownership to the mover (spec/35). Distinct from
+  // `diagram_moved`: the team loses the diagram, and if the mover was not the
+  // owner the owner loses it too.
+  | 'team_diagram_removed'
   | 'team_renamed'
   | 'team_deleted'
   | 'team_invite_link_enabled'

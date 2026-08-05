@@ -139,6 +139,15 @@ const diagramRenderer: TimelineRenderer = (event, ctx) => {
         ...base,
         label: headline(name, `shared with ${str(event.snapshot, 'teamName') ?? 'a team'}`),
       };
+    case 'team_diagram_removed':
+      return {
+        ...base,
+        label: headline(name, `removed from ${str(event.snapshot, 'teamName') ?? 'a team'}`),
+        // Who has it now. A non-owner pulling a team diagram out takes
+        // ownership of it (spec/35), so this is the part a reader of the
+        // TEAM's copy of this event actually needs.
+        meta: str(event.snapshot, 'newOwnerName') ?? undefined,
+      };
     case 'comment_added':
       return {
         ...base,

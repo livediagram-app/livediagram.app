@@ -4688,6 +4688,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "team_member_removed",
           "team_role_changed",
           "team_diagram_added",
+          "team_diagram_removed",
           "team_renamed",
           "team_deleted",
           "team_invite_link_enabled",

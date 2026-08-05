@@ -3,9 +3,21 @@
 // block under the diagram resource, so it owns its own module the way
 // the tab / share sub-paths own diagram-subresource-routes.ts.
 
-import { getDiagram, getFolder, getMembership, getTeam, setDiagramFolder } from '../db';
+import {
+  getDiagram,
+  getFolder,
+  getMembership,
+  getParticipant,
+  getTeam,
+  setDiagramFolder,
+} from '../db';
 import { forbidden, noContent, notFound } from '../responses';
-import { recordDiagramMoved, recordTeamDiagramAdded } from '../timeline';
+import {
+  audienceForDiagram,
+  recordDiagramMoved,
+  recordTeamDiagramAdded,
+  recordTeamDiagramRemoved,
+} from '../timeline';
 import { requireOwner, type RouteContext } from './context';
 
 // Returns null when the request isn't the placement route.
@@ -89,6 +101,12 @@ export async function handleDiagramPlacement(ctx: RouteContext): Promise<Respons
         }
         if (teamId !== null && folder.teamId !== teamId) return notFound();
       }
+      // Resolve the OUTGOING team's audience before the row changes hands: once
+      // the diagram is personal, audienceForDiagram returns only its new owner,
+      // so the team (and a displaced previous owner) would hear nothing. Same
+      // reason the delete path resolves its audience first.
+      const leavingAudience = movingOutToPersonal ? await audienceForDiagram(env, existing) : null;
+      const leftTeam = movingOutToPersonal ? await getTeam(env, existing.teamId!) : null;
       await setDiagramFolder(env, id, folderId, teamId, newOwnerId);
       // spec/138: publishing into a team library is a different event
       // from filing something in a folder — the first tells a whole
@@ -102,6 +120,27 @@ export async function handleDiagramPlacement(ctx: RouteContext): Promise<Respons
           if (destination) {
             ctx.waitUntil?.(recordTeamDiagramAdded(env, moved, destination.name, owner));
           }
+        } else if (movingOutToPersonal && leavingAudience) {
+          // Leaving a team is its own event. It used to fall through to the
+          // `diagram_moved` arm below and read "Moved to a Folder →
+          // Unsorted" — in the MOVER's feed only, because the audience
+          // resolved against the now-personal diagram. So a diagram could
+          // leave a shared library and change hands with the team and the
+          // previous owner told nothing. Worse, a diagram sitting at the
+          // team-library root already has folderId === null, so
+          // `folderId !== existing.folderId` was false and NO event was
+          // written at all.
+          const newOwner = newOwnerId ? await getParticipant(env, newOwnerId) : null;
+          ctx.waitUntil?.(
+            recordTeamDiagramRemoved(
+              env,
+              moved,
+              leftTeam?.name ?? 'a team',
+              owner,
+              leavingAudience,
+              newOwner?.name ?? null,
+            ),
+          );
         } else if (folderId !== existing.folderId) {
           const folderName = folderId
             ? ((await getFolder(env, folderId))?.name ?? 'a folder')

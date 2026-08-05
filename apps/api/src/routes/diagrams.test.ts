@@ -30,6 +30,9 @@ const { db, canReadDiagram, canEditDiagram } = vi.hoisted(() => ({
     getFolder: vi.fn(),
     setDiagramFolder: vi.fn(),
     getMembership: vi.fn(),
+    // Needed by the placement route since leaving a team library became its own
+    // event: it reads the outgoing team's name for the bubble.
+    getTeam: vi.fn(async () => ({ id: 'team-1', name: 'Design' })),
     getTab: vi.fn(),
     upsertTab: vi.fn(),
     getParticipant: vi.fn(),
