@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import type { BackgroundPattern } from '@livediagram/diagram';
+import {
+  ANIMATED_BACKGROUND_PATTERNS,
+  type AnimatedBackgroundPattern,
+  type BackgroundPattern,
+} from '@livediagram/diagram';
 import { tabBackgroundStyle } from './canvas-backgrounds';
 
 // `tabBackgroundStyle` is the single entry point Canvas stamps onto
@@ -13,21 +17,34 @@ import { tabBackgroundStyle } from './canvas-backgrounds';
 // colour in lockstep with the backdrop (the bug the inline comment
 // in the source calls out).
 
+// The static half, as a Record so the compiler owns it: a new pattern in the
+// `BackgroundPattern` union fails to compile here until it's listed, naming
+// the missing key. The comment above asked a future author to remember, and
+// the five animated patterns then landed without it — the sweep below has
+// been claiming "every BackgroundPattern in the union" while walking
+// fourteen of nineteen ever since. Remembering is not a mechanism.
+const STATIC_PATTERNS: Record<Exclude<BackgroundPattern, AnimatedBackgroundPattern>, true> = {
+  grid: true,
+  blank: true,
+  lines: true,
+  crosshatch: true,
+  graph: true,
+  confetti: true,
+  stripes: true,
+  diagonal: true,
+  waves: true,
+  bricks: true,
+  isometric: true,
+  hexagonal: true,
+  engineering: true,
+  checkerboard: true,
+};
+
+// The animated half comes straight from the tuple the source already exports
+// and switches on, so it cannot disagree with it by construction.
 const ALL_PATTERNS: BackgroundPattern[] = [
-  'grid',
-  'blank',
-  'lines',
-  'crosshatch',
-  'graph',
-  'confetti',
-  'stripes',
-  'diagonal',
-  'waves',
-  'bricks',
-  'isometric',
-  'hexagonal',
-  'engineering',
-  'checkerboard',
+  ...(Object.keys(STATIC_PATTERNS) as BackgroundPattern[]),
+  ...ANIMATED_BACKGROUND_PATTERNS,
 ];
 
 const NO_OFFSET = { x: 0, y: 0 };
@@ -49,6 +66,19 @@ describe('tabBackgroundStyle', () => {
     const style = tabBackgroundStyle('blank', NO_OFFSET, '#ffffff', '#000000');
     expect(style.backgroundColor).toBe('#ffffff');
     expect(style.backgroundImage).toBeUndefined();
+  });
+
+  it('animated patterns paint no static image — the overlay owns their motion', () => {
+    // Their whole distinction from the static catalogue (spec/09): motion is
+    // drawn by AnimatedCanvasBackground, so `tabBackgroundStyle` contributes
+    // only the backdrop colour, exactly like Blank. A static branch added
+    // here by mistake would double-paint underneath the overlay — and the
+    // sweep above wouldn't notice, since it only checks the colour.
+    for (const pattern of ANIMATED_BACKGROUND_PATTERNS) {
+      const style = tabBackgroundStyle(pattern, NO_OFFSET, '#ffffff', '#000000');
+      expect(style.backgroundColor).toBe('#ffffff');
+      expect(style.backgroundImage).toBeUndefined();
+    }
   });
 
   it('grid pattern emits a radial-gradient backgroundImage', () => {
