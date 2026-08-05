@@ -144,9 +144,9 @@ pick it up.
     `/help/...` cross-link in an article resolves to a real page), and the
     schema.org JSON-LD builders.
 
-- **Hook bodies** in `apps/live` are testable, and the environment is opted
-  into **per file** rather than per workspace. A test that needs a document
-  opens with a docblock:
+- **Hook bodies** in `apps/live` and `packages/ui` are testable, and the
+  environment is opted into **per file** rather than per workspace. A test
+  that needs a document opens with a docblock:
 
   ```ts
   // @vitest-environment jsdom
@@ -158,11 +158,12 @@ pick it up.
   whole workspace to `jsdom` to serve a handful of files would tax every
   other suite for nothing.
 
-  This exists because a real bug could not be caught without it: a scoped
-  Timeline feed carried one team's fetched-period cache into another's
-  (spec/138 §3.4), which is pure effect + ref lifecycle, invisible to any
-  pure helper. `useTimelineFeed.test.tsx` is the worked example, and it
-  fails if that fix is reverted.
+  This exists because real bugs could not be caught without it, both in the
+  Timeline, whose state lives in hooks rather than in pure helpers:
+  `useTimelineFeed.test.tsx` covers one scope's fetched-period cache leaking
+  into another's (spec/138 §3.4), and `useTimelineControls.test.tsx` covers a
+  Clear filters button that cleared only half the filters. Each fails if its
+  fix is reverted.
 
   One resolver note, in `apps/live/vitest.config.ts`: `resolve.dedupe` lists
   `react` and `react-dom`. `packages/ui` peers React but carries its own copy

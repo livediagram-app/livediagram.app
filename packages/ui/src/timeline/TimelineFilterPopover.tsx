@@ -133,7 +133,10 @@ export function TimelineFilterPopover({
         <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
           Show
         </p>
-        {excluded.size > 0 && (
+        {/* Shown whenever ANY control is narrowing the feed. Gating on
+            `excluded.size` alone hid the only way out of an actor filter
+            that had emptied the list. */}
+        {(excluded.size > 0 || actorFilter !== 'all') && (
           <button
             type="button"
             onClick={onReset}

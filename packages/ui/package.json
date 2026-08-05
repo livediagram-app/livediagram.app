@@ -22,9 +22,11 @@
   "devDependencies": {
     "@livediagram/eslint-config": "workspace:*",
     "@livediagram/vitest-config": "workspace:*",
+    "@testing-library/react": "^16.3.2",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
     "eslint": "^10.8.0",
+    "jsdom": "^30.0.1",
     "typescript": "^5.7.2",
     "vitest": "^4.1.10"
   },

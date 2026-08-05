@@ -167,7 +167,7 @@ export function Timeline({
         <p className="text-sm text-slate-500 dark:text-slate-400">No events match these filters.</p>
         <button
           type="button"
-          onClick={controls.resetCategories}
+          onClick={controls.resetFilters}
           className="mt-2 text-xs text-brand-600 hover:underline dark:text-brand-400"
         >
           Clear filters

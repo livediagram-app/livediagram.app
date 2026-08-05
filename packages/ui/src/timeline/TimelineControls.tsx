@@ -79,7 +79,7 @@ export function TimelineControls({ controls }: { controls: Controls }) {
           allCategories={controls.allCategories}
           excluded={excluded}
           onToggle={controls.toggleCategory}
-          onReset={controls.resetCategories}
+          onReset={controls.resetFilters}
           eventDates={controls.eventDates}
           monthKey={controls.monthKey}
           onMonthChange={controls.setMonthKey}

@@ -30,7 +30,8 @@ export type TimelineControls = {
   /** Categories the reader has switched off. */
   excluded: Set<TimelineCategory>;
   toggleCategory: (category: TimelineCategory) => void;
-  resetCategories: () => void;
+  /** Clears the category chips AND the actor filter. */
+  resetFilters: () => void;
   /** Categories present in the feed, so the chips describe THIS feed. */
   allCategories: TimelineCategory[];
   /** The events left after the chips are applied — what the feed renders. */
@@ -124,10 +125,26 @@ export function useTimelineControls(
     [onFilterChange],
   );
 
-  const resetCategories = useCallback(() => {
+  // Clears EVERY narrowing control, not just the category chips.
+  //
+  // It used to clear only `excluded`, which made both of its buttons inert
+  // in the one case they exist for. A solo user picking "Other people" has
+  // no events by anyone else, so the feed empties, "No events match these
+  // filters" appears with its Clear filters button — and clicking it did
+  // nothing, because the thing narrowing the feed wasn't a category. The
+  // popover's own Reset was hidden in that state too (it gated on
+  // `excluded.size`), so neither control could undo it.
+  //
+  // TimelineControls already draws its "you are filtered" dot from
+  // `excluded.size > 0 || actorFilter !== 'all'`, on the stated grounds that
+  // a reader needs one signal whichever control narrowed the feed. Undoing
+  // it is the same argument: one button, whichever control did it.
+  const resetFilters = useCallback(() => {
     setExcluded(new Set());
+    setActorFilterState('all');
     onFilterChange?.([]);
-  }, [onFilterChange]);
+    onActorFilterChange?.('all');
+  }, [onFilterChange, onActorFilterChange]);
 
   const setActorFilter = useCallback(
     (next: TimelineActorFilter) => {
@@ -156,7 +173,7 @@ export function useTimelineControls(
     setActorFilter,
     excluded,
     toggleCategory,
-    resetCategories,
+    resetFilters,
     allCategories,
     visibleEvents,
     eventDates,
