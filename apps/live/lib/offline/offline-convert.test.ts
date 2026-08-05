@@ -137,10 +137,26 @@ describe('takeCloudOffline (cloud -> offline)', () => {
     expect(store.offlinePutRecord).not.toHaveBeenCalled();
   });
 
-  it('keeps going when one tab fails to load rather than losing the rest', async () => {
+  it('aborts when a tab fails to load, leaving the server copy intact', async () => {
+    // This used to assert the opposite — that the conversion carried on and
+    // deleted the server diagram — under the name "keeps going … rather than
+    // losing the rest". Carrying on is what loses: the offline record is
+    // written from the tabs that survived, the server copy is deleted, and the
+    // failed tab's elements exist nowhere. Nothing is recoverable and the user
+    // is told it worked.
     vi.mocked(apiClient.apiLoadTab).mockRejectedValueOnce(new Error('flaky'));
-    await expect(takeCloudOffline('d1', 'owner')).resolves.toBeUndefined();
-    expect(core.apiDelete).toHaveBeenCalled();
+    await expect(takeCloudOffline('d1', 'owner')).rejects.toThrow(/tab load incomplete/i);
+    expect(store.offlinePutRecord).not.toHaveBeenCalled();
+    expect(core.apiDelete).not.toHaveBeenCalled();
+  });
+
+  it('aborts on a tab that 404s without throwing', async () => {
+    // The second null path, and the easier one to hit: `expectOkOrNull` maps a
+    // 404 to null rather than an error, so a tab that momentarily isn't there
+    // never reaches the `.catch` at all.
+    vi.mocked(apiClient.apiLoadTab).mockResolvedValueOnce(null as never);
+    await expect(takeCloudOffline('d1', 'owner')).rejects.toThrow(/tab load incomplete/i);
+    expect(core.apiDelete).not.toHaveBeenCalled();
   });
 });
 

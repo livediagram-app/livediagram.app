@@ -51,6 +51,21 @@ export async function takeCloudOffline(
       diagram.tabs.map((s) => apiLoadTab(ownerId, diagramId, s.id, shareCode).catch(() => null)),
     )
   ).filter((t): t is NonNullable<typeof t> => t !== null);
+  // EVERY tab, or nothing. A tab can come back null from two directions — a
+  // thrown request caught above, or a 404 that `expectOkOrNull` turns into a
+  // null without throwing — and either way filtering the gap away and carrying
+  // on would write an offline record missing that tab, then DELETE the server
+  // copy below. That is the one failure in this file that isn't recoverable:
+  // the tab's elements would exist nowhere, and the user would be told the
+  // conversion worked.
+  //
+  // The best-effort filter is borrowed from duplicate-diagram.ts, where it's
+  // correct because duplication leaves the source intact. Here the source is
+  // destroyed, which inverts the trade. Abort exactly as the image-embed guard
+  // below does, and for a stronger reason: that one protects bytes a reaper
+  // might collect in 30 days, this one protects content that would be gone
+  // immediately.
+  if (fetchedTabs.length !== diagram.tabs.length) throw new Error('tab load incomplete');
   // Embed referenced R2 images as data URIs BEFORE the server delete below:
   // once the diagram row is gone, its images count as unused and the api's
   // 30-day retention reaper would delete the bytes the offline diagram still

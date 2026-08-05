@@ -132,6 +132,15 @@ confirmation:
   as `data:` URIs BEFORE the server copy is deleted (the deletion would make
   them "unused" and the retention reaper would eventually take the bytes); an
   incomplete embed aborts the conversion and the diagram stays on the server.
+- **Every tab, or nothing.** If any tab fails to download the conversion aborts
+  before anything is written locally and before the server delete, so the cloud
+  copy stays authoritative. This is the one failure in this direction that
+  nothing could undo: a partial download followed by the server delete leaves
+  the missing tab's elements nowhere at all, while reporting success. A tab read
+  can come back empty from two directions — a failed request, or a 404 that the
+  api client maps to `null` rather than an error — and both count as failure
+  here. (The best-effort "keep what loaded" shape is right for _duplicating_ a
+  diagram, where the source survives; it inverts once the source is destroyed.)
 - **If that server delete fails, the local copy is rolled back** and the error
   surfaces. Both copies registered under one id would shadow the live cloud
   diagram behind a stale offline fork (and duplicate the Explorer row), so the
