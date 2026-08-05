@@ -40,6 +40,8 @@ export type TimelineFeed = {
   loadingMore: boolean;
   hasMore: boolean;
   loadMore: () => void;
+  /** Watermark from the first read; events past it render as New. */
+  lastSeenAt?: number;
 };
 
 export function useTimelineFeed(ownerId: string | null, enabled: boolean): TimelineFeed {
@@ -47,10 +49,14 @@ export function useTimelineFeed(ownerId: string | null, enabled: boolean): Timel
   const [cursor, setCursor] = useState<string | undefined>();
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  // Captured from the FIRST read only. The server moves the watermark
+  // forward on that read, so re-reading would report nothing new and
+  // the New pills would vanish mid-visit.
+  const [lastSeenAt, setLastSeenAt] = useState<number | undefined>();
 
-  const controls = useTimelineControls(
-    events,
-    useCallback(
+  const controls = useTimelineControls(events, {
+    viewerId: ownerId,
+    onModeChange: useCallback(
       (mode: TimelineMode) =>
         track('Timeline', 'Changed', mode === 'calendar' ? 'Calendar' : 'List'),
       [],
@@ -58,11 +64,16 @@ export function useTimelineFeed(ownerId: string | null, enabled: boolean): Timel
     // The source type is a fixed token from a closed set, never user
     // content — the telemetry `type` slot has to stay renderable on the
     // public dashboard (spec/22).
-    useCallback((excluded: string[]) => {
+    onFilterChange: useCallback((excluded: string[]) => {
       const last = excluded[excluded.length - 1];
       if (last) track('Timeline', 'Selected', last);
     }, []),
-  );
+    onActorFilterChange: useCallback(
+      (filter: 'all' | 'others') =>
+        track('Timeline', 'Selected', filter === 'others' ? 'Others' : 'Everyone'),
+      [],
+    ),
+  });
 
   // Guards a late first-page response from overwriting a newer one when
   // the owner id changes (a guest signing in mid-session re-runs this
@@ -77,6 +88,11 @@ export function useTimelineFeed(ownerId: string | null, enabled: boolean): Timel
       if (id !== requestId.current) return;
       setEvents(page.events);
       setCursor(page.nextCursor);
+      // First value wins. The server holds the watermark still for a
+      // visit window, but a re-read triggered by the owner id changing
+      // would otherwise replace it with a newer one and drop the New
+      // markers the reader hasn't looked at yet.
+      setLastSeenAt((prev) => prev ?? page.lastSeenAt);
       setLoading(false);
     });
   }, [enabled, ownerId]);
@@ -109,5 +125,5 @@ export function useTimelineFeed(ownerId: string | null, enabled: boolean): Timel
     });
   }, [cursor, loadingMore, ownerId]);
 
-  return { events, controls, loading, loadingMore, hasMore: Boolean(cursor), loadMore };
+  return { events, controls, loading, loadingMore, hasMore: Boolean(cursor), loadMore, lastSeenAt };
 }

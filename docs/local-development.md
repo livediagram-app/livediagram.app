@@ -41,7 +41,7 @@ Turbo spins up all seven dev servers in parallel:
 | ---------------- | ------------------------------------------------------------------------------ |
 | `apps/router`    | `http://localhost:3000` — **everything on one port**, stitched like production |
 | `apps/marketing` | `http://localhost:3001`                                                        |
-| `apps/live`      | `http://localhost:3002` (clean routes: /new, /explorer/recent, ...)            |
+| `apps/live`      | `http://localhost:3002` (clean routes: /new, /explorer, ...)                   |
 | `apps/telemetry` | `http://localhost:3003/telemetry`                                              |
 | `apps/help`      | `http://localhost:3004/help`                                                   |
 | `apps/api`       | `http://localhost:8787/api`                                                    |

@@ -40,6 +40,8 @@ export type TimelineProps = {
   loadingMore?: boolean;
   onLoadMore?: () => void;
   onStackExpand?: () => void;
+  /** Events after this timestamp are marked New (spec/138 §2.5). */
+  lastSeenAt?: number;
 };
 
 export function Timeline({
@@ -53,8 +55,16 @@ export function Timeline({
   loadingMore,
   onLoadMore,
   onStackExpand,
+  lastSeenAt,
 }: TimelineProps) {
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
+  // A reader with no watermark has never opened the feed; marking their
+  // whole history New would be noise, so nothing is new until they've
+  // been here once.
+  const isNew = useCallback(
+    (occurredAt: number) => lastSeenAt !== undefined && occurredAt > lastSeenAt,
+    [lastSeenAt],
+  );
   const ctx = { viewerId };
   const { visibleEvents, pulseDay, clearPulse } = controls;
   const groups = useTimelineGrouping(visibleEvents);
@@ -133,6 +143,7 @@ export function Timeline({
                 <TimelineBubble
                   key={event.id}
                   event={event}
+                  isNew={isNew(event.occurredAt)}
                   rendered={pickRenderer(event, renderers)(event, ctx)}
                 />
               );
@@ -144,6 +155,7 @@ export function Timeline({
                   stack={stack}
                   registry={renderers}
                   ctx={ctx}
+                  isNew={isNew}
                   onCollapse={() => toggleStack(stack.key)}
                 />
               );
@@ -154,6 +166,7 @@ export function Timeline({
                 stack={stack}
                 registry={renderers}
                 ctx={ctx}
+                isNew={stack.events.some((e) => isNew(e.occurredAt))}
                 onExpand={() => {
                   toggleStack(stack.key);
                   onStackExpand?.();

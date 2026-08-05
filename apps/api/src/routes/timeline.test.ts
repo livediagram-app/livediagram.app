@@ -13,7 +13,8 @@ const { store } = vi.hoisted(() => ({
   store: {
     readTimeline: vi.fn(),
     getScopeState: vi.fn(),
-    markScopeRefreshed: vi.fn(),
+    markScopeSeen: vi.fn(),
+    countUnseen: vi.fn(),
   },
 }));
 vi.mock('../db/timeline', () => store);
@@ -37,7 +38,9 @@ beforeEach(() => {
   for (const fn of Object.values(store)) fn.mockReset();
   emit.backfillUserScope.mockReset();
   store.readTimeline.mockResolvedValue({ items: [] });
-  store.getScopeState.mockResolvedValue({ backfilledAt: 1, lastRefreshedAt: 2 });
+  store.getScopeState.mockResolvedValue({ backfilledAt: 1, lastSeenAt: 2 });
+  store.markScopeSeen.mockResolvedValue(undefined);
+  store.countUnseen.mockResolvedValue(0);
   emit.backfillUserScope.mockResolvedValue(undefined);
 });
 
@@ -113,8 +116,43 @@ describe('handleTimeline read', () => {
     expect(await res.json()).toEqual({
       items: [{ id: 'e1' }],
       nextCursor: '9:e1',
-      lastRefreshedAt: 2,
+      lastSeenAt: 2,
     });
+  });
+
+  // The watermark has to be the value from BEFORE this read, or the
+  // reader is told nothing is new on the very visit that would show it.
+  it('reports the watermark as it stood before the read, then moves it', async () => {
+    const ctx = makeCtx('GET', '/api/timeline');
+    const scheduled: Promise<unknown>[] = [];
+    ctx.waitUntil = (p) => scheduled.push(p);
+    const res = await handleTimeline(ctx);
+    expect(((await res.json()) as { lastSeenAt: number }).lastSeenAt).toBe(2);
+    await Promise.all(scheduled);
+    expect(store.markScopeSeen).toHaveBeenCalled();
+  });
+
+  // Paging backwards through history must not mark the whole feed seen
+  // halfway down it.
+  // Inside the visit window the watermark holds still, so the New
+  // markers survive a client that fetches twice on mount.
+  it('does not move the watermark twice inside one visit', async () => {
+    store.getScopeState.mockResolvedValue({ backfilledAt: 1, lastSeenAt: Date.now() - 1000 });
+    const ctx = makeCtx('GET', '/api/timeline');
+    const scheduled: Promise<unknown>[] = [];
+    ctx.waitUntil = (p) => scheduled.push(p);
+    await handleTimeline(ctx);
+    await Promise.all(scheduled);
+    expect(store.markScopeSeen).not.toHaveBeenCalled();
+  });
+
+  it('does not move the watermark when paging', async () => {
+    const ctx = makeCtx('GET', '/api/timeline?cursor=100:abc');
+    const scheduled: Promise<unknown>[] = [];
+    ctx.waitUntil = (p) => scheduled.push(p);
+    await handleTimeline(ctx);
+    await Promise.all(scheduled);
+    expect(store.markScopeSeen).not.toHaveBeenCalled();
   });
 
   // Seeding walks the caller's whole library, so it runs after the
@@ -147,33 +185,48 @@ describe('handleTimeline read', () => {
   });
 });
 
+describe('handleTimeline unread', () => {
+  it('counts events since the watermark', async () => {
+    store.countUnseen.mockResolvedValue(7);
+    const res = await handleTimeline(makeCtx('GET', '/api/timeline/unread'));
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ count: 7 });
+    expect(store.countUnseen).toHaveBeenCalledWith({}, expect.anything(), 2);
+  });
+
+  // Greeting a long-time user with "99+" on a feature they have never
+  // opened would be a lie about what they missed.
+  it('reports nothing when the reader has never opened the feed', async () => {
+    store.getScopeState.mockResolvedValue({ backfilledAt: 1, lastSeenAt: null });
+    const res = await handleTimeline(makeCtx('GET', '/api/timeline/unread'));
+    expect(await res.json()).toEqual({ count: 0 });
+    expect(store.countUnseen).not.toHaveBeenCalled();
+  });
+
+  it('400s with no owner', async () => {
+    const res = await handleTimeline(makeCtx('GET', '/api/timeline/unread', { owner: null }));
+    expect(res.status).toBe(400);
+  });
+});
+
 describe('handleTimeline refresh', () => {
-  it('stamps the scope and returns the new time', async () => {
-    store.getScopeState.mockResolvedValue({ backfilledAt: 1, lastRefreshedAt: 0 });
-    store.markScopeRefreshed.mockResolvedValue(4242);
-    const res = await handleTimeline(makeCtx('POST', '/api/timeline/refresh'));
-    expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ lastRefreshedAt: 4242 });
-  });
-
-  // A held-down Refresh button must not turn into a write storm. The
-  // existing stamp comes back rather than an error: the caller asked for
-  // the freshest feed and already has one.
-  it('throttles a repeat refresh inside the window', async () => {
-    store.getScopeState.mockResolvedValue({ backfilledAt: 1, lastRefreshedAt: Date.now() });
-    const res = await handleTimeline(makeCtx('POST', '/api/timeline/refresh'));
-    expect(res.status).toBe(200);
-    expect(store.markScopeRefreshed).not.toHaveBeenCalled();
-  });
-
-  it('seeds inline on a first-ever refresh', async () => {
+  it('seeds and marks seen on a first-ever call', async () => {
     store.getScopeState.mockResolvedValue(null);
-    store.markScopeRefreshed.mockResolvedValue(1);
-    await handleTimeline(makeCtx('POST', '/api/timeline/refresh'));
+    const res = await handleTimeline(makeCtx('POST', '/api/timeline/refresh'));
+    expect(res.status).toBe(200);
     expect(emit.backfillUserScope).toHaveBeenCalledWith({}, 'owner-1');
+    expect(store.markScopeSeen).toHaveBeenCalled();
   });
 
-  it('400s a refresh with no owner', async () => {
+  // A scripted caller must not be able to turn this into a write storm.
+  it('throttles a repeat call inside the window', async () => {
+    store.getScopeState.mockResolvedValue({ backfilledAt: 1, lastSeenAt: Date.now() });
+    const res = await handleTimeline(makeCtx('POST', '/api/timeline/refresh'));
+    expect(res.status).toBe(200);
+    expect(store.markScopeSeen).not.toHaveBeenCalled();
+  });
+
+  it('400s with no owner', async () => {
     const res = await handleTimeline(makeCtx('POST', '/api/timeline/refresh', { owner: null }));
     expect(res.status).toBe(400);
   });

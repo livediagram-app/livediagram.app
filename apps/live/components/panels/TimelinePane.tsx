@@ -30,6 +30,7 @@ export function TimelinePane({ feed, ownerId }: { feed: TimelineFeed; ownerId: s
       hasMore={feed.hasMore}
       loadingMore={feed.loadingMore}
       onLoadMore={feed.loadMore}
+      lastSeenAt={feed.lastSeenAt}
       onStackExpand={() => track('Timeline', 'Opened', 'Stack')}
     />
   );

@@ -21,7 +21,11 @@ const BUTTON =
   'inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm transition hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 dark:hover:text-white';
 
 export function TimelineControls({ controls }: { controls: Controls }) {
-  const { mode, setMode, excluded, filterAnchor, setFilterAnchor } = controls;
+  const { mode, setMode, excluded, filterAnchor, setFilterAnchor, actorFilter } = controls;
+  // The dot means "the feed you're looking at is narrowed", whichever
+  // control did the narrowing — a reader wondering why it looks short
+  // needs one signal, not one per filter.
+  const filtered = excluded.size > 0 || actorFilter !== 'all';
 
   return (
     <>
@@ -58,8 +62,8 @@ export function TimelineControls({ controls }: { controls: Controls }) {
       >
         <FilterIcon />
         Filter
-        {excluded.size > 0 && (
-          // A dot rather than a count: the number of HIDDEN types isn't
+        {filtered && (
+          // A dot rather than a count: the number of hidden things isn't
           // information anyone acts on, but "a filter is on, that's why
           // this looks short" very much is.
           <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-brand-500" />
@@ -76,6 +80,8 @@ export function TimelineControls({ controls }: { controls: Controls }) {
           eventDates={controls.eventDates}
           monthKey={controls.monthKey}
           onMonthChange={controls.setMonthKey}
+          actorFilter={actorFilter}
+          onActorFilterChange={controls.setActorFilter}
           onPickDate={controls.pickDate}
           onClose={() => setFilterAnchor(null)}
         />

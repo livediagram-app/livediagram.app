@@ -18,9 +18,14 @@ import { monthKeyOf } from './monthCells';
 import { dateKey } from './useTimelineGrouping';
 import type { TimelineEvent, TimelineMode } from './types';
 
+/** Whose activity to show. */
+export type TimelineActorFilter = 'all' | 'others';
+
 export type TimelineControls = {
   mode: TimelineMode;
   setMode: (mode: TimelineMode) => void;
+  actorFilter: TimelineActorFilter;
+  setActorFilter: (filter: TimelineActorFilter) => void;
   excluded: Set<string>;
   toggleType: (sourceType: string) => void;
   resetTypes: () => void;
@@ -43,9 +48,15 @@ export type TimelineControls = {
 
 export function useTimelineControls(
   events: TimelineEvent[],
-  onModeChange?: (mode: TimelineMode) => void,
-  onFilterChange?: (excluded: string[]) => void,
+  opts: {
+    /** The reader, so "others" can mean anything but them. */
+    viewerId?: string | null;
+    onModeChange?: (mode: TimelineMode) => void;
+    onFilterChange?: (excluded: string[]) => void;
+    onActorFilterChange?: (filter: TimelineActorFilter) => void;
+  } = {},
 ): TimelineControls {
+  const { viewerId, onModeChange, onFilterChange, onActorFilterChange } = opts;
   // Not persisted across navigation, on purpose: someone who looked at
   // the calendar once should not find the feed in calendar mode a week
   // later wondering where their list went.
@@ -54,6 +65,10 @@ export function useTimelineControls(
   const [monthKey, setMonthKey] = useState(() => monthKeyOf(Date.now()));
   const [filterAnchor, setFilterAnchor] = useState<DOMRect | null>(null);
   const [pulseDay, setPulseDay] = useState<string | null>(null);
+  // Defaults to everything. "What did I miss" is the sharper question,
+  // but opening on a filtered view would leave a reader wondering why
+  // their own afternoon's work is absent.
+  const [actorFilter, setActorFilterState] = useState<TimelineActorFilter>('all');
 
   // Derived from the events actually present, not a hard-coded list, so
   // a source type a newer worker starts emitting gets a chip for free.
@@ -63,10 +78,17 @@ export function useTimelineControls(
     return [...seen].sort();
   }, [events]);
 
-  const visibleEvents = useMemo(
-    () => (excluded.size === 0 ? events : events.filter((e) => !excluded.has(e.sourceType))),
-    [events, excluded],
-  );
+  const visibleEvents = useMemo(() => {
+    let out = events;
+    if (excluded.size > 0) out = out.filter((e) => !excluded.has(e.sourceType));
+    if (actorFilter === 'others' && viewerId) {
+      // Keeps system events (actorId null): an expiring token is
+      // nobody's doing and is exactly the kind of thing "what did I
+      // miss" is asking about.
+      out = out.filter((e) => e.actorId !== viewerId);
+    }
+    return out;
+  }, [events, excluded, actorFilter, viewerId]);
 
   const eventDates = useMemo(() => {
     const set = new Set<string>();
@@ -100,6 +122,14 @@ export function useTimelineControls(
     onFilterChange?.([]);
   }, [onFilterChange]);
 
+  const setActorFilter = useCallback(
+    (next: TimelineActorFilter) => {
+      setActorFilterState(next);
+      onActorFilterChange?.(next);
+    },
+    [onActorFilterChange],
+  );
+
   const pickDate = useCallback((key: string) => {
     // The group may be far down a long feed, so scroll to it rather
     // than assuming it's on screen, then pulse it — otherwise the
@@ -115,6 +145,8 @@ export function useTimelineControls(
   return {
     mode,
     setMode,
+    actorFilter,
+    setActorFilter,
     excluded,
     toggleType,
     resetTypes,

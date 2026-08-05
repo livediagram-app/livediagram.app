@@ -16,11 +16,15 @@ export function StackedBubble({
   registry,
   ctx,
   onExpand,
+  isNew,
 }: {
   stack: TimelineStack;
   registry: TimelineRendererRegistry;
   ctx: TimelineRendererContext;
   onExpand: () => void;
+  /** True when ANY member of the run is unseen — a collapsed stack
+   *  hiding the one new thing in it would defeat the marker. */
+  isNew?: boolean;
 }) {
   const anchor = stack.events[0]!;
   const rendered = pickRenderer(anchor, registry)(anchor, ctx);
@@ -45,6 +49,7 @@ export function StackedBubble({
       <div className="relative">
         <TimelineBubble
           event={anchor}
+          isNew={isNew}
           rendered={{
             ...rendered,
             // The generic headline, not the anchor's own: "Renamed

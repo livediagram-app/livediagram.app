@@ -281,7 +281,7 @@ function ExplorerImpl({
                       label="Open Explorer"
                       onClick={() => {
                         setNewOpenAnchor(null);
-                        window.location.href = '/explorer/recent';
+                        window.location.href = '/explorer';
                       }}
                     />
                   </MenuTileGrid>
@@ -293,7 +293,7 @@ function ExplorerImpl({
           // No new-diagram handler (types allow it) → a single action
           // doesn't need a menu; keep the plain Open link.
           <a
-            href="/explorer/recent"
+            href="/explorer"
             className="mr-1 inline-flex h-5 items-center gap-1 rounded border border-slate-200 px-1.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-slate-100"
           >
             <OpenIcon />

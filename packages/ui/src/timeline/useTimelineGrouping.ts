@@ -21,11 +21,27 @@ export type TimelineDayGroup = {
   events: TimelineEvent[];
 };
 
-// UTC everywhere, not local. The day boundary has to match the one the
-// worker used when it built a coalesced event's dedupe key, or a save
-// at 23:30 in Sydney would land in a bubble labelled the day before.
+// The reader's LOCAL day, not UTC.
+//
+// The worker's coalescing key is UTC and has to be — one row is shared
+// by an audience spread across timezones, so the day boundary that
+// decides whether two saves merge cannot depend on who is looking. But
+// DISPLAY is the opposite: a reader in Sydney opening this at 09:00
+// should see their morning's work under today, not under yesterday,
+// which is what a UTC label gives them for a third of the day.
+//
+// So the two boundaries are deliberately different, and that's fine:
+// the key decides what merges, this decides what a person is told.
 export function dateKey(at: number): string {
-  return new Date(at).toISOString().slice(0, 10);
+  const d = new Date(at);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+// Time of day, in the reader's locale. A day with twenty events is
+// ordered but undated without this — you can see that Priya commented
+// and that you renamed something, but not which came first.
+export function timeLabel(at: number): string {
+  return new Date(at).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
 }
 
 export function groupByDay(events: TimelineEvent[], now = Date.now()): TimelineDayGroup[] {
@@ -63,7 +79,11 @@ export function useTimelineGrouping(events: TimelineEvent[], now?: number): Time
 }
 
 function formatDay(key: string): { label: string; year: string } {
-  const date = new Date(`${key}T00:00:00Z`);
+  // Parsed as local midnight (no trailing Z), matching how dateKey
+  // built it. `new Date('2026-08-05')` would be parsed as UTC and could
+  // render the previous day west of Greenwich.
+  const [y, m, d] = key.split('-').map(Number);
+  const date = new Date(y!, m! - 1, d!);
   if (Number.isNaN(date.getTime())) return { label: key, year: '' };
   // Assembled from parts rather than taken from a single format call:
   // ICU 72 and below emit "Tue 5 Aug" while 73+ emit "Tue, 5 Aug", and
@@ -73,10 +93,9 @@ function formatDay(key: string): { label: string; year: string } {
     weekday: 'short',
     day: 'numeric',
     month: 'short',
-    timeZone: 'UTC',
   }).formatToParts(date);
   const weekday = parts.find((p) => p.type === 'weekday')?.value ?? '';
   const day = parts.find((p) => p.type === 'day')?.value ?? '';
   const month = parts.find((p) => p.type === 'month')?.value ?? '';
-  return { label: `${weekday}, ${day} ${month}`, year: String(date.getUTCFullYear()) };
+  return { label: `${weekday}, ${day} ${month}`, year: String(date.getFullYear()) };
 }

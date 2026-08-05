@@ -135,6 +135,11 @@ export function PaneHeader({
         </div>
         {hasActions ? (
           <div className="flex shrink-0 items-center gap-2">
+            {/* Section actions first, then Help. Help is the least-used
+                control in the row and belongs at its quiet end; leading
+                with it pushed the controls a reader actually reaches for
+                out to the right. */}
+            {headerActions}
             {helpArticle ? (
               <HelpArticleLink
                 article={helpArticle}
@@ -143,7 +148,6 @@ export function PaneHeader({
                 description={helpDescription}
               />
             ) : null}
-            {headerActions}
             {hasCreate ? (
               <Button
                 ref={createRef}

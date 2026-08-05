@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { dateKey, groupByDay } from './useTimelineGrouping';
+import { dateKey, groupByDay, timeLabel } from './useTimelineGrouping';
 import type { TimelineEvent } from './types';
 
-const AUG_5 = Date.UTC(2026, 7, 5, 12, 0, 0);
-const AUG_4 = Date.UTC(2026, 7, 4, 12, 0, 0);
-const AUG_9 = Date.UTC(2026, 7, 9, 12, 0, 0);
+// Local midday, so these land on the intended calendar day in any
+// timezone the suite happens to run in.
+const AUG_5 = new Date(2026, 7, 5, 12).getTime();
+const AUG_4 = new Date(2026, 7, 4, 12).getTime();
+const AUG_9 = new Date(2026, 7, 9, 12).getTime();
 
 let seq = 0;
 function event(occurredAt: number): TimelineEvent {
@@ -23,12 +25,31 @@ function event(occurredAt: number): TimelineEvent {
 }
 
 describe('dateKey', () => {
-  // UTC, not local: the worker builds a coalesced event's dedupe key in
-  // UTC, so a client grouping in local time would put a late-evening
-  // save in a bubble labelled the wrong day.
-  it('is UTC', () => {
-    expect(dateKey(Date.UTC(2026, 7, 5, 23, 59, 59))).toBe('2026-08-05');
-    expect(dateKey(Date.UTC(2026, 7, 6, 0, 0, 0))).toBe('2026-08-06');
+  // LOCAL, deliberately unlike the worker's UTC coalescing key. That key
+  // decides what merges and must be the same for a whole audience; this
+  // decides what one person is told, and a reader in Sydney should see
+  // their morning under today rather than yesterday.
+  it('uses the local calendar day', () => {
+    const noon = new Date(2026, 7, 5, 12, 0, 0);
+    expect(dateKey(noon.getTime())).toBe('2026-08-05');
+  });
+
+  it('rolls over at local midnight, not UTC midnight', () => {
+    const lastMoment = new Date(2026, 7, 5, 23, 59, 59);
+    const firstMoment = new Date(2026, 7, 6, 0, 0, 0);
+    expect(dateKey(lastMoment.getTime())).toBe('2026-08-05');
+    expect(dateKey(firstMoment.getTime())).toBe('2026-08-06');
+  });
+
+  it('zero-pads so keys sort lexically', () => {
+    expect(dateKey(new Date(2026, 0, 9, 12).getTime())).toBe('2026-01-09');
+  });
+});
+
+describe('timeLabel', () => {
+  // A day of twenty events is ordered but undated without this.
+  it('renders an hour and minute', () => {
+    expect(timeLabel(new Date(2026, 7, 5, 9, 42).getTime())).toMatch(/9[:.]42|09[:.]42/);
   });
 });
 

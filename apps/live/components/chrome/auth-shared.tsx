@@ -417,7 +417,7 @@ export const POST_AUTH_DEFAULT = '/new';
 // Sign-in default: a returning user with no `?redirect_url` lands on
 // their Explorer ("here's all your stuff") rather than the new-diagram
 // welcome flow that suits a fresh sign-up. See spec/04.
-export const POST_AUTH_SIGNIN_DEFAULT = '/explorer/recent';
+export const POST_AUTH_SIGNIN_DEFAULT = '/explorer';
 
 // A redirect_url is safe iff it's a same-origin absolute path that
 // isn't an auth page. The `//` / `/\` rejection is the open-redirect

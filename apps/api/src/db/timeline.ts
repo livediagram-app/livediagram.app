@@ -266,7 +266,8 @@ function parseCursor(raw: string): { occurredAt: number; id: string } | null {
 
 export type TimelineScopeState = {
   backfilledAt: number | null;
-  lastRefreshedAt: number | null;
+  /** When this scope was last READ by its owner — the unread watermark. */
+  lastSeenAt: number | null;
 };
 
 export async function getScopeState(
@@ -274,24 +275,54 @@ export async function getScopeState(
   scope: TimelineScopeRef,
 ): Promise<TimelineScopeState | null> {
   const row = await env.DB.prepare(
-    'SELECT backfilled_at, last_refreshed_at FROM timeline_scope_state WHERE scope_type = ?1 AND scope_id = ?2',
+    'SELECT backfilled_at, last_seen_at FROM timeline_scope_state WHERE scope_type = ?1 AND scope_id = ?2',
   )
     .bind(scope.scopeType, scope.scopeId)
-    .first<{ backfilled_at: number | null; last_refreshed_at: number | null }>();
+    .first<{ backfilled_at: number | null; last_seen_at: number | null }>();
   if (!row) return null;
-  return { backfilledAt: row.backfilled_at, lastRefreshedAt: row.last_refreshed_at };
+  return { backfilledAt: row.backfilled_at, lastSeenAt: row.last_seen_at };
 }
 
-export async function markScopeRefreshed(env: Env, scope: TimelineScopeRef): Promise<number> {
-  const now = Date.now();
+// Move the unread watermark to now. Called AFTER the read has captured
+// the previous value, so the response can still tell the reader what
+// was new to them on this visit.
+export async function markScopeSeen(env: Env, scope: TimelineScopeRef): Promise<void> {
   await env.DB.prepare(
-    `INSERT INTO timeline_scope_state (scope_type, scope_id, last_refreshed_at)
+    `INSERT INTO timeline_scope_state (scope_type, scope_id, last_seen_at)
      VALUES (?1, ?2, ?3)
-     ON CONFLICT (scope_type, scope_id) DO UPDATE SET last_refreshed_at = excluded.last_refreshed_at`,
+     ON CONFLICT (scope_type, scope_id) DO UPDATE SET last_seen_at = excluded.last_seen_at`,
   )
-    .bind(scope.scopeType, scope.scopeId, now)
+    .bind(scope.scopeType, scope.scopeId, Date.now())
     .run();
-  return now;
+}
+
+// How many events landed in this scope since the owner last looked.
+//
+// Bounded rather than exact: past the cap the answer is "lots", and a
+// badge reading 99+ is as actionable as one reading 4,312 while costing
+// a fraction of the scan. Excludes the reader's own events — a count
+// that goes up because YOU renamed something is noise, and the whole
+// point of the badge is other people's activity.
+export async function countUnseen(
+  env: Env,
+  scope: TimelineScopeRef,
+  since: number,
+  cap = 99,
+): Promise<number> {
+  const row = await env.DB.prepare(
+    `SELECT COUNT(*) AS n FROM (
+       SELECT e.id
+         FROM timeline_event_scopes s
+         JOIN timeline_events e ON e.id = s.event_id
+        WHERE s.scope_type = ?1 AND s.scope_id = ?2
+          AND e.occurred_at > ?3
+          AND (e.actor_id IS NULL OR e.actor_id <> ?2)
+        LIMIT ?4
+     )`,
+  )
+    .bind(scope.scopeType, scope.scopeId, since, cap + 1)
+    .first<{ n: number }>();
+  return row?.n ?? 0;
 }
 
 export async function markScopeBackfilled(env: Env, scope: TimelineScopeRef): Promise<void> {

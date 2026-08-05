@@ -22,11 +22,13 @@ export function ExpandedStack({
   registry,
   ctx,
   onCollapse,
+  isNew,
 }: {
   stack: TimelineStack;
   registry: TimelineRendererRegistry;
   ctx: TimelineRendererContext;
   onCollapse: () => void;
+  isNew?: (occurredAt: number) => boolean;
 }) {
   return (
     <div className="space-y-1.5">
@@ -34,6 +36,7 @@ export function ExpandedStack({
         <TimelineBubble
           key={event.id}
           event={event}
+          isNew={isNew?.(event.occurredAt)}
           rendered={pickRenderer(event, registry)(event, ctx)}
         />
       ))}

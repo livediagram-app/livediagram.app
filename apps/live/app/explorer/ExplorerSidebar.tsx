@@ -67,6 +67,7 @@ export function ExplorerSidebar() {
     teamsEnabled,
     tokens,
     recentCount,
+    timelineUnread,
     createFolder,
     setTeamModalOpen,
   } = useExplorer();
@@ -131,15 +132,21 @@ export function ExplorerSidebar() {
       </button>
       <div className="my-4 h-px bg-slate-100 dark:bg-slate-800" aria-hidden />
       <SidebarSectionLabel>Quick find</SidebarSectionLabel>
-      {/* The landing view (spec/138 §8.1), so it leads the tree. No
-          badge: an unread count needs a per-user last-seen marker,
-          which is a preference write on every visit — deferred. */}
+      {/* The landing view (spec/138 §8.1), so it leads the tree. The
+          badge counts OTHER people's events since the reader last
+          opened it — their own work going up a counter would be noise.
+          Cleared on navigation rather than after the fetch, so the
+          number doesn't linger while the feed loads. */}
       <SidebarRow
         icon={<TimelineIcon />}
         label="Timeline"
         selected={selected.kind === 'timeline'}
-        onClick={() => go({ kind: 'timeline' })}
+        onClick={() => {
+          timelineUnread.clear();
+          go({ kind: 'timeline' });
+        }}
         depth={0}
+        badge={timelineUnread.count > 0 ? timelineUnread.count : undefined}
       />
       <SidebarRow
         icon={<ClockIcon />}

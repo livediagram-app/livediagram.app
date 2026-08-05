@@ -8,30 +8,19 @@
 // do to this event" has one predictable home instead of a button
 // floating somewhere in the content row.
 
-import type { ReactNode } from 'react';
 import { eventTone, toneColor, toneSoftColor } from './eventTone';
+import { timeLabel } from './useTimelineGrouping';
 import type { TimelineBubbleRender, TimelineEvent } from './types';
-
-// Renders "Prefix: rest" with the prefix in semibold. A cheap way to
-// let a renderer emphasise the leading noun without returning JSX.
-function BoldPrefix({ text }: { text: ReactNode }) {
-  if (typeof text !== 'string') return <>{text}</>;
-  const at = text.indexOf(': ');
-  if (at === -1) return <>{text}</>;
-  return (
-    <>
-      <strong className="font-semibold">{text.slice(0, at + 1)}</strong>
-      {text.slice(at + 1)}
-    </>
-  );
-}
 
 export function TimelineBubble({
   event,
   rendered,
+  isNew,
 }: {
   event: TimelineEvent;
   rendered: TimelineBubbleRender;
+  /** Landed since the reader last opened the feed (spec/138 §2.5). */
+  isNew?: boolean;
 }) {
   const label = rendered.label ?? event.title;
   // `undefined` means "renderer didn't say", so fall back to the stored
@@ -85,16 +74,33 @@ export function TimelineBubble({
 
       <div className="min-w-0 flex-1 px-3 py-3">
         <p className="break-words text-sm text-slate-800 dark:text-slate-100">
-          <BoldPrefix text={label} />
+          {isNew && (
+            <span className="mr-1.5 inline-flex -translate-y-px items-center rounded bg-brand-600 px-1 py-px align-middle text-[9px] font-semibold uppercase tracking-wider text-white">
+              New
+            </span>
+          )}
+          {label}
         </p>
         {description && (
           <p className="mt-1 whitespace-pre-wrap break-words text-xs text-slate-600 dark:text-slate-400">
             {description}
           </p>
         )}
-        {rendered.meta && (
-          <p className="mt-0.5 text-[10px] text-slate-400 dark:text-slate-500">{rendered.meta}</p>
-        )}
+        {/* The time is always rendered, and always first: a day with
+            twenty events is ordered but undated without it, so you can
+            see THAT Priya commented but not whether it was before or
+            after your rename. The renderer's own meta trails it. */}
+        <p className="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-[10px] text-slate-400 dark:text-slate-500">
+          <time dateTime={new Date(event.occurredAt).toISOString()}>
+            {timeLabel(event.occurredAt)}
+          </time>
+          {rendered.meta ? (
+            <>
+              <span aria-hidden>·</span>
+              <span>{rendered.meta}</span>
+            </>
+          ) : null}
+        </p>
       </div>
 
       {/* Preview, for events that have something to show. `self-center`

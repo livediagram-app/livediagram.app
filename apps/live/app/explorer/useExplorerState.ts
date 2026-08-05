@@ -28,6 +28,7 @@ import { useConfirm } from '@/hooks/ui/useConfirm';
 import { useDiagramListActions } from '@/hooks/persistence/useDiagramListActions';
 import { useToast } from '@/hooks/ui/useToast';
 import { explorerPathFor, selectedFromRoute } from './routes';
+import { useTimelineUnread } from './useTimelineUnread';
 import { useExplorerMoves } from './useExplorerMoves';
 import { useExplorerPane } from './useExplorerPane';
 import type { SelectedNode } from './views';
@@ -51,7 +52,7 @@ export function useExplorerState() {
   // What the tree highlights + the right pane shows, derived from the
   // address bar (routes.ts). /explorer itself redirects to /recent.
   const selected = useMemo<SelectedNode>(
-    () => selectedFromRoute(pathname ?? '/explorer/recent', searchParams),
+    () => selectedFromRoute(pathname ?? '/explorer', searchParams),
     [pathname, searchParams],
   );
 
@@ -346,6 +347,8 @@ export function useExplorerState() {
   // preferences blob, which is 4 KB-capped; favourites are unlimited.
   const { favouriteIds, toggleFavourite } = useFavourites(ownerId);
 
+  const timelineUnread = useTimelineUnread(ownerId);
+
   const {
     diagramsByFolder,
     unsortedDiagrams,
@@ -454,6 +457,8 @@ export function useExplorerState() {
     offlineDiagrams,
     paneContent,
     recentCount,
+    // Unread Timeline events (spec/138 §2.5), for the sidebar badge.
+    timelineUnread,
     // Per-user diagram stars (spec/95).
     favouriteIds,
     toggleFavourite,

@@ -100,7 +100,7 @@ export function TeamInviteJoin() {
       <Card>
         <Heading>This invite link isn&apos;t valid</Heading>
         <Body>It may have been turned off or expired. Ask a team admin for a fresh link.</Body>
-        <PrimaryLink href="/explorer/recent">Back to your diagrams</PrimaryLink>
+        <PrimaryLink href="/explorer">Back to your diagrams</PrimaryLink>
       </Card>
     );
   }
@@ -157,10 +157,7 @@ export function TeamInviteJoin() {
         <Button size="md" onClick={() => void join()} disabled={joining}>
           {joining ? 'Joining…' : 'Join'}
         </Button>
-        <a
-          href="/explorer/recent"
-          className={buttonClassName({ variant: 'secondary', size: 'md' })}
-        >
+        <a href="/explorer" className={buttonClassName({ variant: 'secondary', size: 'md' })}>
           Decline
         </a>
       </div>

@@ -48,6 +48,8 @@ Branch on the status code and the `error` token, not on `message`.
 
 The API is rate limited to keep one client from starving others. Writes (`POST` / `PUT` / `DELETE`) and reads under a token each have their own budget, keyed on the **token**, so a runaway integration is throttled independently of your interactive use of the editor. Over the budget, a request returns `429`; back off and retry.
 
+On the hosted service the budgets are **300 writes a minute** and **120 token reads a minute**, per token. A few endpoints carry their own tighter limit: 30 share-code attempts a minute (which is also the brute-force guard on a share password), 60 link unfurls, and 20 AI requests. A self-hosted deployment sets its own, or none at all: with the limiter binding absent, every request is allowed.
+
 <Tip>
   Treat `429` as routine for bulk work: pause and retry rather than hammering. Spread large imports
   or backups out instead of firing every request at once.

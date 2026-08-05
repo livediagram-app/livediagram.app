@@ -1,9 +1,11 @@
 // Month-grid arithmetic, shared by the calendar view and the mini
 // calendar (spec/138 §2.2).
 //
-// Pure and UTC, matching the grouping helper — the day a cell
-// represents has to be the same day the feed grouped events into, or a
-// dot appears on the wrong square.
+// Pure, and CIVIL rather than UTC: a cell is a calendar square, not an
+// instant. The one function that converts a timestamp (`monthKeyOf`)
+// reads local fields, matching `dateKey` in the grouping helper — the
+// day a cell represents has to be the same day the feed grouped events
+// into, or a dot appears on the wrong square.
 
 export type MonthCell = {
   // YYYY-MM-DD, or null for a leading/trailing pad square.
@@ -37,7 +39,8 @@ export function buildMonthCells(monthKey: string): MonthCell[] {
 }
 
 export function monthKeyOf(at: number): string {
-  return new Date(at).toISOString().slice(0, 7);
+  const d = new Date(at);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 }
 
 export function shiftMonth(monthKey: string, delta: number): string {

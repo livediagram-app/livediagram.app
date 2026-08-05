@@ -13,6 +13,7 @@ import { createPortal } from 'react-dom';
 import { POPOVER_VIEWPORT_MARGIN, clampIntoRange } from '../popover';
 import { buildMonthCells, formatMonth, shiftMonth } from './monthCells';
 import { sourceTypeLabel } from './sourceTypeMeta';
+import type { TimelineActorFilter } from './useTimelineControls';
 
 const WIDTH = 272;
 const GAP = 8;
@@ -23,6 +24,8 @@ export function TimelineFilterPopover({
   excluded,
   onToggle,
   onReset,
+  actorFilter,
+  onActorFilterChange,
   eventDates,
   monthKey,
   onMonthChange,
@@ -34,6 +37,8 @@ export function TimelineFilterPopover({
   excluded: Set<string>;
   onToggle: (sourceType: string) => void;
   onReset: () => void;
+  actorFilter: TimelineActorFilter;
+  onActorFilterChange: (filter: TimelineActorFilter) => void;
   // YYYY-MM-DD keys that have at least one event.
   eventDates: Set<string>;
   monthKey: string;
@@ -94,6 +99,36 @@ export function TimelineFilterPopover({
       style={{ position: 'fixed', left: position.left, top: position.top, width: WIDTH }}
       className="z-[var(--z-popover)] rounded-xl border border-slate-200 bg-white p-3 shadow-lg dark:border-slate-700 dark:bg-slate-900"
     >
+      {/* The sharpest filter on the feed, so it leads. Spelled out
+          rather than labelled "Others": on its own that word doesn't say
+          others-what, and the option only means anything next to the
+          alternative it replaces. */}
+      <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+        Activity by
+      </p>
+      <div className="mb-4 flex rounded-lg border border-slate-200 p-0.5 dark:border-slate-700">
+        {(
+          [
+            ['all', 'Everyone'],
+            ['others', 'Other people'],
+          ] as const
+        ).map(([value, label]) => (
+          <button
+            key={value}
+            type="button"
+            aria-pressed={actorFilter === value}
+            onClick={() => onActorFilterChange(value)}
+            className={`flex-1 rounded-md px-2 py-1 text-[11px] font-medium transition ${
+              actorFilter === value
+                ? 'bg-brand-600 text-white'
+                : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white'
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
       <div className="mb-2 flex items-center justify-between">
         <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
           Show

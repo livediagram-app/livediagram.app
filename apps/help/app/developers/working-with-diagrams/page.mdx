@@ -134,6 +134,12 @@ curl -X POST https://livediagram.app/api/diagrams/svc-map/share \
 
 The response includes the share code to build a link from. See [Sharing and Embeds](/help/collaboration/sharing/) for what the different roles allow.
 
+<Note>
+  **Send the `role` explicitly.** Omitting it does not mean "view": a body with no role mints an
+  **edit** link, which is the app's own default. An unrecognised role is rejected outright rather
+  than quietly falling back, so a typo fails loudly, but an absent one does not.
+</Note>
+
 <Tip>
   When a call fails, the status code and a small `{ "error": "..." }` body tell you why. See
   [Errors and Rate Limits](/help/developers/errors-and-rate-limits/).

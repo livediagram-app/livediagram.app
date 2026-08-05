@@ -20,7 +20,6 @@
 // is what a collapsed stack wears (stackLabel), so the two readings
 // coexist: individual rows are specific, collapsed runs are honest.
 
-import type { ReactNode } from 'react';
 import type {
   TimelineEvent,
   TimelineRenderer,
@@ -40,15 +39,15 @@ function icon(event: TimelineEvent) {
   return EVENT_ICONS[event.eventType] ?? <SourceTypeIcon sourceType={event.sourceType} />;
 }
 
-// The headline shape: bold subject, then the verb phrase. One helper so
-// every renderer produces the same rhythm and none of them re-types the
-// emphasis classes.
-function headline(subject: string, rest: string): ReactNode {
-  return (
-    <>
-      <strong className="font-semibold">{subject}</strong> {rest}
-    </>
-  );
+// The headline shape: subject, then the verb phrase. One helper so every
+// renderer produces the same rhythm.
+//
+// Deliberately unemphasised. An earlier pass bolded the subject to make
+// the left edge scannable, but a feed where every row carries bold text
+// has no emphasis at all — just noise. Word ORDER is what makes it
+// scannable; the weight was redundant on top of it.
+function headline(subject: string, rest: string): string {
+  return `${subject} ${rest}`;
 }
 
 // "You" vs a name. The stored row is viewer-agnostic — one row serves a
@@ -70,7 +69,7 @@ function actorName(event: TimelineEvent, ctx: TimelineRendererContext): string {
 // for diagrams the reader never scrolls to.
 //
 // Fixed height, so it sits inside the row rather than setting it.
-function preview(event: TimelineEvent, ctx: TimelineRendererContext): ReactNode {
+function preview(event: TimelineEvent, ctx: TimelineRendererContext) {
   const diagramId = str(event.snapshot, 'diagramId');
   if (!diagramId) return undefined;
   return (

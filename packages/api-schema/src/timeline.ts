@@ -108,7 +108,12 @@ export type TimelineReadResult = {
   // Opaque "<occurredAt>:<eventId>". Absent when the last page has
   // been served.
   nextCursor?: string;
-  lastRefreshedAt?: number;
+  // The unread watermark as it stood BEFORE this read: anything newer
+  // is new to this reader on this visit. The read then moves it
+  // forward, so a second load of the same page reports nothing new —
+  // which is the correct answer, and why the client must render from
+  // the value it was given rather than re-deriving one.
+  lastSeenAt?: number;
 };
 
 // The page a read serves by default, and the ceiling the endpoint will

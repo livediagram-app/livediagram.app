@@ -1,7 +1,8 @@
 // /api/timeline — the Explorer's landing feed (spec/138).
 //
-// GET  /api/timeline          -> { items, nextCursor?, lastRefreshedAt? }
-// POST /api/timeline/refresh  -> { lastRefreshedAt }
+// GET  /api/timeline          -> { items, nextCursor?, lastSeenAt? }
+// GET  /api/timeline/unread   -> { count }
+// POST /api/timeline/refresh  -> { lastSeenAt }
 //
 // Read-only by design. Nothing user-authored lives on this feed: there
 // are no manual entries, no stars, and no per-entry dismissal in v1
@@ -18,16 +19,29 @@ import {
   parseScope,
   type TimelineScopeRef,
 } from '@livediagram/api-schema';
-import { getScopeState, markScopeRefreshed, readTimeline } from '../db/timeline';
+import { countUnseen, getScopeState, markScopeSeen, readTimeline } from '../db/timeline';
 import { backfillUserScope } from '../timeline';
 import { badRequest, forbidden, json, missingAuth, notFound } from '../responses';
 import type { RouteContext } from './context';
 
-// A deliberate Refresh click costs a scope-state write and, on a first
-// visit, a backfill. Throttled so a held-down button doesn't turn into
-// a write storm. Reads are unthrottled — they're the common path and
-// they only touch two indexes.
+// The seed endpoint costs a scope-state write and, on a first call, a
+// walk of the caller's library. Throttled so a scripted caller can't
+// turn it into a write storm. Reads are unthrottled — they're the
+// common path and they only touch two indexes.
 const REFRESH_THROTTLE_MS = 5_000;
+
+// How long one "visit" lasts for the unread watermark.
+//
+// Without this the watermark moves on EVERY read, so a second request
+// inside the same visit reports nothing new and the New markers vanish
+// before the reader has looked at them. That isn't a hypothetical: a
+// client can easily fetch twice on mount (React's development
+// double-effect does exactly that), and tabbing away and straight back
+// would wipe the markers too.
+//
+// A window makes the semantics what a person would expect — "since I
+// was last here", not "since my last HTTP request".
+const SEEN_WINDOW_MS = 60_000;
 
 export async function handleTimeline(ctx: RouteContext): Promise<Response> {
   const { request, env, url, segments, resolveOwner } = ctx;
@@ -57,33 +71,61 @@ export async function handleTimeline(ctx: RouteContext): Promise<Response> {
     const state = await getScopeState(env, scope);
     // Seed on first sight, off the response path. The reader gets an
     // empty (or partial) first page and a populated one the moment they
-    // refresh — better than holding the response while we walk their
+    // reopen — better than holding the response while we walk their
     // whole library.
     if (!state?.backfilledAt) {
       ctx.waitUntil?.(backfillUserScope(env, ownerId).catch(() => {}));
     }
 
+    // The unread watermark (spec/138 §2.5). The response carries the
+    // value from BEFORE this read, so the client can mark what was new
+    // to the reader on this visit; then it moves forward.
+    //
+    // Only on the first page — stamping while someone pages backwards
+    // through history would mark the whole feed seen halfway down it —
+    // and only once per visit window, so the markers survive long
+    // enough to be read.
+    const isFirstPage = !url.searchParams.get('cursor');
+    const staleEnough = !state?.lastSeenAt || Date.now() - state.lastSeenAt > SEEN_WINDOW_MS;
+    if (isFirstPage && staleEnough) {
+      ctx.waitUntil?.(markScopeSeen(env, scope).catch(() => {}));
+    }
+
     return json({
       items: page.items,
       nextCursor: page.nextCursor,
-      lastRefreshedAt: state?.lastRefreshedAt ?? undefined,
+      lastSeenAt: state?.lastSeenAt ?? undefined,
     });
+  }
+
+  // The sidebar badge. Its own endpoint rather than a field on the
+  // list response, because the badge renders on every Explorer section
+  // and must not require loading a feed nobody is looking at.
+  if (segments.length === 3 && segments[2] === 'unread' && request.method === 'GET') {
+    const scope: TimelineScopeRef = { scopeType: 'user', scopeId: ownerId };
+    const state = await getScopeState(env, scope);
+    // No watermark yet means the reader has never opened the Timeline.
+    // Counting their whole history as unread would greet a long-time
+    // user with "99+" on a feature they've never seen, so a scope with
+    // no watermark reports nothing and starts counting from first view.
+    if (!state?.lastSeenAt) return json({ count: 0 });
+    return json({ count: await countUnseen(env, scope, state.lastSeenAt) });
   }
 
   if (segments.length === 3 && segments[2] === 'refresh' && request.method === 'POST') {
     const scope: TimelineScopeRef = { scopeType: 'user', scopeId: ownerId };
     const state = await getScopeState(env, scope);
     const now = Date.now();
-    if (state?.lastRefreshedAt && now - state.lastRefreshedAt < REFRESH_THROTTLE_MS) {
-      // Not an error: the client asked for the freshest feed and it
-      // already has one. Returning the existing stamp keeps the
-      // "Last refreshed …" line truthful rather than lying forward.
-      return json({ lastRefreshedAt: state.lastRefreshedAt });
+    if (state?.lastSeenAt && now - state.lastSeenAt < REFRESH_THROTTLE_MS) {
+      // Not an error: the caller asked for a seed and the scope was
+      // touched moments ago, so there is nothing to do.
+      return json({ lastSeenAt: state.lastSeenAt });
     }
     if (!state?.backfilledAt) {
       await backfillUserScope(env, ownerId).catch(() => {});
     }
-    return json({ lastRefreshedAt: await markScopeRefreshed(env, scope) });
+    await markScopeSeen(env, scope);
+    return json({ lastSeenAt: now });
   }
 
   return notFound();

@@ -28,7 +28,7 @@ function SSOCallbackPageInner() {
     <AuthCard subtitle="Completing sign in…" error="">
       <DiagramBuildAnimation />
       <AuthenticateWithRedirectCallback
-        signInFallbackRedirectUrl="/explorer/recent"
+        signInFallbackRedirectUrl="/explorer"
         signUpFallbackRedirectUrl="/new"
       />
     </AuthCard>

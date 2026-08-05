@@ -22,6 +22,8 @@ import { API_BASE, apiHeaders } from './core';
 export type TimelinePage = {
   events: TimelineEvent[];
   nextCursor?: string;
+  /** The unread watermark as it stood before this read. */
+  lastSeenAt?: number;
 };
 
 const EMPTY: TimelinePage = { events: [] };
@@ -42,6 +44,7 @@ export async function apiListTimeline(
     return {
       events: Array.isArray(body.items) ? body.items : [],
       nextCursor: typeof body.nextCursor === 'string' ? body.nextCursor : undefined,
+      lastSeenAt: typeof body.lastSeenAt === 'number' ? body.lastSeenAt : undefined,
     };
   } catch {
     // Offline, or a self-host with no /api configured. An empty feed
@@ -50,5 +53,22 @@ export async function apiListTimeline(
     // it matters more here because this is now the first thing a
     // visitor sees.
     return EMPTY;
+  }
+}
+
+// The sidebar's unread badge. Its own call rather than a field on the
+// list read, because the badge renders on every Explorer section and
+// must not require loading a feed nobody is looking at. Zero on any
+// failure — a wrong badge is worse than no badge.
+export async function apiTimelineUnread(ownerId: string): Promise<number> {
+  try {
+    const res = await fetch(`${API_BASE}/timeline/unread`, {
+      headers: await apiHeaders(ownerId),
+    });
+    if (!res.ok) return 0;
+    const body = (await res.json()) as { count?: unknown };
+    return typeof body.count === 'number' ? body.count : 0;
+  } catch {
+    return 0;
   }
 }

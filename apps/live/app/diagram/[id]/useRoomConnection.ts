@@ -405,7 +405,7 @@ export function useRoomConnection(opts: {
             sessionShareCodeRef.current &&
             sessionShareCodeRef.current === op.code
           ) {
-            window.location.assign('/explorer/recent');
+            window.location.assign('/explorer');
           }
         }
       },
