@@ -47,6 +47,114 @@ export type AvatarPresence = {
   seatedOn?: string | null;
 };
 
+// Room op kinds that are ephemeral signals: they mutate no diagram state,
+// so they relay unordered (no seq) and from any role.
+//
+// `poll-answer` (spec/88) is here for the ROLE half rather than the
+// presence half: answering a poll changes nothing on the diagram, and a
+// presenter pulse-checking an audience on a view link is the main thing
+// polls are for, so a view-role participant must be able to send one.
+// `poll-start` / `poll-end` are deliberately NOT here — they stay behind
+// the edit-role gate below, so an audience member can answer a poll but
+// can't start one or end someone else's.
+// `avatar` (spec/101) is presence in the plainest sense: someone's walking
+// character, at cursor rates, mutating nothing. View-role senders included —
+// an audience member walking around a diagram they were shown a link to is
+// the same kind of harmless as their cursor.
+// This classification used to live inside the room worker while the editor kept
+// its own list of the kinds it sends and handles, in another app, with nothing
+// comparing them. That is how `viewport` shipped absent from here (see its note
+// below): the mutation branch is the fall-through, so a presence kind nobody
+// classified silently becomes a logged, ordered, replayed mutation. The
+// dangerous direction is worse — a MUTATION kind added to this list hands
+// view-role visitors a write path, because the role gate only stops non-presence
+// ops. So the whole vocabulary lives here now, in the package both ends already
+// import, split into exactly three kinds with no room for a fourth.
+export const PRESENCE_OP_KINDS = [
+  'cursor',
+  'select',
+  'laser',
+  'tab-focus',
+  'poll-answer',
+  'avatar',
+  // A shove (spec/101) moves nothing on the server and nothing in the
+  // document — it asks one peer to step aside. Same trust level as `avatar`.
+  'avatar-push',
+  // A reaction burst (spec/135) is pure theatre: nothing on the server,
+  // nothing in the document, and nothing worth replaying to somebody who
+  // arrives after it finished.
+  'reaction',
+  // Where the sender is looking, for anyone following them (spec/131). Its
+  // own wire contract calls it "ephemeral presence exactly like cursor /
+  // laser / avatar: throttled, never logged, never ordered (no `seq`), never
+  // replayed to a reconnecting client" — and while it was missing from this
+  // set it was all four of those things, because the mutation branch is the
+  // fall-through.
+  //
+  // The client publishes it on every pan or zoom, throttled to 10 Hz, so ~26
+  // seconds of one editor navigating filled all 256 slots of the catch-up log
+  // with camera positions and pushed `floor` past every real mutation. The
+  // next peer whose socket blipped then failed the `lastSeq + 1 >= floor`
+  // check and was sent `resync`, re-hydrating every loaded tab from D1 —
+  // exactly the storm the comment below this block says was hunted down once
+  // already, reopened by somebody merely scrolling. It also cost a
+  // `storage.put` per frame, 10 a second per navigating editor.
+  //
+  // And because the role gate drops any non-presence op from a view-role
+  // sender, a view-only visitor could not be FOLLOWED at all, contradicting
+  // spec/131's "the audience on a view link is exactly who most needs it".
+  'viewport',
+] as const;
+
+// Room op kinds that DO change the diagram: they get a monotonic `seq` within
+// the room's epoch, land in the bounded catch-up log so a reconnecting peer can
+// replay them (spec/75), and are refused from a view-role sender.
+//
+// `poll-start` / `poll-end` sit here rather than with `poll-answer` above on
+// purpose: an audience member on a view link may answer a poll but must not be
+// able to start one or end someone else's (spec/88).
+export const MUTATION_OP_KINDS = [
+  'tab',
+  'tab-meta',
+  'el',
+  'diagram-meta',
+  'log',
+  'log-remove',
+  'poll-start',
+  'poll-end',
+] as const;
+
+// Op kinds only the WORKER may originate, stamped `from: 'system'` and pushed
+// through the room's /broadcast endpoint. The room drops them outright when they
+// arrive on a client socket: without that, any edit-role peer could forge
+// `share-revoked` carrying the code from their own URL and force-redirect every
+// collaborator out of the session (spec/24).
+export const SYSTEM_OP_KINDS = ['share-revoked'] as const;
+
+// The whole vocabulary. Every op the editor sends or handles is one of these
+// three kinds of thing, and which one it is decides its ordering, its role gate,
+// and whether it may come from a client at all.
+export const ROOM_OP_KINDS = [
+  ...PRESENCE_OP_KINDS,
+  ...MUTATION_OP_KINDS,
+  ...SYSTEM_OP_KINDS,
+] as const;
+
+export type PresenceOpKind = (typeof PRESENCE_OP_KINDS)[number];
+export type MutationOpKind = (typeof MUTATION_OP_KINDS)[number];
+export type RoomOpKind = (typeof ROOM_OP_KINDS)[number];
+
+// Membership test for the room's ordering + role gate. Takes a loose string
+// because it reads `op.kind` off an `unknown` wire payload (see ServerMessage
+// below on why the op itself stays untyped).
+export function isPresenceOpKind(kind: unknown): kind is PresenceOpKind {
+  return typeof kind === 'string' && (PRESENCE_OP_KINDS as readonly string[]).includes(kind);
+}
+
+export function isSystemOpKind(kind: unknown): kind is (typeof SYSTEM_OP_KINDS)[number] {
+  return typeof kind === 'string' && (SYSTEM_OP_KINDS as readonly string[]).includes(kind);
+}
+
 // Outgoing WebSocket frames the room sends to clients.
 // `presence` is the full participant list refreshed on join / leave;
 // `op` is an arbitrary diagram change rebroadcast from another client.

@@ -52,6 +52,29 @@ The room stamps every **mutation** op with a monotonic `seq` inside an `epoch`
 DO that assigns a total order, all peers converge. Ephemeral presence ops
 (cursor / select / laser / tab-focus) stay unordered.
 
+**Which an op is has one definition.** `PRESENCE_OP_KINDS`,
+`MUTATION_OP_KINDS` and `SYSTEM_OP_KINDS` live in `@livediagram/api-schema`
+beside the room message types, because the classification decides three things
+at once — an op's ordering, its role gate (spec/11 drops non-presence ops from a
+view-role sender), and whether a client may originate it at all. The wire payload
+itself stays `unknown`, so this shares the vocabulary without coupling the room
+to the editor's op shapes.
+
+It used to live in the room worker while the editor kept its own list of the
+kinds it sends and handles, in another app, with nothing comparing them — and
+the mutation branch is the FALL-THROUGH, so a presence kind nobody classified
+became a logged, ordered, replayed mutation. That is how `viewport` (spec/131)
+shipped: published on every pan at 10 Hz, roughly 26 seconds of one person
+scrolling filled all 256 log slots with camera positions and pushed the replay
+floor past every real mutation, so the next peer whose socket blipped was told to
+`resync` and re-hydrate every tab. A view-only visitor also could not be
+followed, since the role gate drops non-presence ops. Two tests now bracket it:
+the room's suite compares the presence and mutation lists directly (a mutation
+kind in the presence set hands read-only visitors a write path), and
+`room-op-vocabulary.test.ts` in the editor checks the third list — every kind the
+editor actually sends or handles — against the schema, which is the direction
+that let `viewport` through.
+
 - The DO keeps a bounded in-memory op log. On reconnect a client sends
   `{ epoch, lastSeq }`; the DO replays the delta or answers `resync: true` when
   it can't bridge the gap (behind the trimmed log floor, or a stale epoch), and

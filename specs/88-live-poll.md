@@ -58,7 +58,7 @@ across that line:
 - **`poll-answer` is allowed from any role.** A presenter pulse-checking an
   audience is the main use for this, and audiences are usually on view links.
   `'poll-answer'` therefore joins the room's any-role op allowlist
-  (`PRESENCE_OP_KINDS` in `diagram-room.ts`).
+  (`PRESENCE_OP_KINDS` in `@livediagram/api-schema`).
 - **`poll-start` / `poll-end` stay edit-role only**, via the existing gate. An
   audience member on a view link can answer, but cannot start a poll or end
   someone else's.

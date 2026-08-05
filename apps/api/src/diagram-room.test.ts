@@ -1,6 +1,17 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ParticipantPresence } from '@livediagram/api-schema';
-import { DiagramRoom, PRESENCE_OP_KINDS } from './diagram-room';
+import {
+  MUTATION_OP_KINDS,
+  PRESENCE_OP_KINDS,
+  ROOM_OP_KINDS,
+  SYSTEM_OP_KINDS,
+} from '@livediagram/api-schema';
+import { DiagramRoom } from './diagram-room';
+
+// PRESENCE_OP_KINDS is a readonly array (it has to be, to derive the type), so
+// membership reads through this rather than `.has`.
+const isPresenceKind = (kind: string): boolean =>
+  (PRESENCE_OP_KINDS as readonly string[]).includes(kind);
 
 // The DiagramRoom Durable Object is the realtime hub for one diagram.
 // Most of its surface is straightforward fan-out, but two pieces carry
@@ -523,45 +534,50 @@ describe('DiagramRoom op-role enforcement', () => {
   // Keeps the exclusion above honest: if an addressed kind is ever removed from
   // the gate, or renamed, this fails rather than silently excluding nothing.
   it('excludes only kinds that really are in the presence set', () => {
-    expect(ADDRESSED_PRESENCE_KINDS.filter((k) => !PRESENCE_OP_KINDS.has(k))).toEqual([]);
+    expect(ADDRESSED_PRESENCE_KINDS.filter((k) => !isPresenceKind(k))).toEqual([]);
   });
 
   // The dangerous direction. Everything in PRESENCE_OP_KINDS is relayed from a
   // view-role session without an edit check, so a MUTATION kind landing in that
   // set silently hands every read-only visitor a write path into the document.
-  // The mutation kinds are RoomOp's members (packages/api-schema) — listed here
-  // rather than imported because RoomOp is a type union and cannot be
-  // enumerated at runtime; the point is to compare two lists, not to restate
-  // one.
+  // Both lists are imported from the schema package now, so this compares two
+  // lists instead of restating one — it used to hand-list the mutation kinds
+  // because the only definition was a type union that could not be enumerated
+  // at runtime.
   it('lets no document-mutating op kind into the presence set', () => {
-    const mutating = ['el', 'tab', 'tab-meta', 'diagram-meta', 'log', 'log-remove'];
-    expect(mutating.filter((k) => PRESENCE_OP_KINDS.has(k))).toEqual([]);
+    expect(MUTATION_OP_KINDS.filter(isPresenceKind)).toEqual([]);
+  });
+
+  it('lets no system-only op kind into the presence set either', () => {
+    // A system op reaching the relay from a client socket is a forgery; being
+    // ALSO classified as presence would mean no role check stood in its way.
+    expect(SYSTEM_OP_KINDS.filter(isPresenceKind)).toEqual([]);
   });
 
   // `tab-focus` is deliberately both: it rides the op channel like a mutation
   // but changes nothing in the document, so a viewer may send it. Pinned so the
   // exception stays a decision rather than an accident.
   it('keeps tab-focus on the presence side of the gate', () => {
-    expect(PRESENCE_OP_KINDS.has('tab-focus')).toBe(true);
+    expect(isPresenceKind('tab-focus')).toBe(true);
   });
 
   // The OTHER direction, which is how `viewport` slipped through: only the
   // dangerous side was guarded, so a kind whose own wire contract calls it
   // ephemeral presence could sit outside this set indefinitely and be treated
   // as an ordered mutation by the fall-through.
-  it('holds every kind the wire contract calls ephemeral presence', () => {
-    const ephemeral = [
-      'cursor',
-      'select',
-      'laser',
-      'tab-focus',
-      'poll-answer',
-      'avatar',
-      'avatar-push',
-      'reaction',
-      'viewport',
-    ];
-    expect(ephemeral.filter((k) => !PRESENCE_OP_KINDS.has(k))).toEqual([]);
+  //
+  // That direction cannot be checked from a list kept here — restating the nine
+  // presence kinds would only prove the restatement agrees. What catches it is
+  // the editor's own vocabulary: every op kind it sends or handles must appear
+  // in one of the three schema lists, checked in
+  // apps/live/app/diagram/[id]/room-op-vocabulary.test.ts. What this file can
+  // still pin is that the gate reads the schema's list at all.
+  it('classifies every op kind in the shared vocabulary, and only those', () => {
+    const classified = [...PRESENCE_OP_KINDS, ...MUTATION_OP_KINDS, ...SYSTEM_OP_KINDS];
+    expect([...classified].sort()).toEqual([...ROOM_OP_KINDS].sort());
+    // No kind may be two things at once — which of the three it is decides its
+    // ordering, its role gate, and whether a client may send it at all.
+    expect(new Set(classified).size).toBe(classified.length);
   });
 
   // Follow-me (spec/131). Two properties, and both were broken while

@@ -1,3 +1,4 @@
+import { isPresenceOpKind, isSystemOpKind } from '@livediagram/api-schema';
 import type { ClientMessage, ParticipantPresence, ServerMessage } from './types';
 import {
   type LoggedOp,
@@ -65,60 +66,6 @@ const OP_LOG_LIMIT = 256;
 // DO storage key holding `{ epoch, seq }` so the room keeps its ordering
 // identity across a hibernation wake (spec/97).
 const ORDER_STATE_KEY = 'order-state';
-
-// Room op kinds that are ephemeral signals: they mutate no diagram state,
-// so they relay unordered (no seq) and from any role.
-//
-// `poll-answer` (spec/88) is here for the ROLE half rather than the
-// presence half: answering a poll changes nothing on the diagram, and a
-// presenter pulse-checking an audience on a view link is the main thing
-// polls are for, so a view-role participant must be able to send one.
-// `poll-start` / `poll-end` are deliberately NOT here — they stay behind
-// the edit-role gate below, so an audience member can answer a poll but
-// can't start one or end someone else's.
-// `avatar` (spec/101) is presence in the plainest sense: someone's walking
-// character, at cursor rates, mutating nothing. View-role senders included —
-// an audience member walking around a diagram they were shown a link to is
-// the same kind of harmless as their cursor.
-// Exported so the role-gate tests enumerate the real set rather than a copy:
-// a presence kind added here and not there would ship untested, and the more
-// dangerous direction — a MUTATION kind added here, handing view-role peers a
-// write path — needs the two lists compared, not restated.
-export const PRESENCE_OP_KINDS = new Set([
-  'cursor',
-  'select',
-  'laser',
-  'tab-focus',
-  'poll-answer',
-  'avatar',
-  // A shove (spec/101) moves nothing on the server and nothing in the
-  // document — it asks one peer to step aside. Same trust level as `avatar`.
-  'avatar-push',
-  // A reaction burst (spec/135) is pure theatre: nothing on the server,
-  // nothing in the document, and nothing worth replaying to somebody who
-  // arrives after it finished.
-  'reaction',
-  // Where the sender is looking, for anyone following them (spec/131). Its
-  // own wire contract calls it "ephemeral presence exactly like cursor /
-  // laser / avatar: throttled, never logged, never ordered (no `seq`), never
-  // replayed to a reconnecting client" — and while it was missing from this
-  // set it was all four of those things, because the mutation branch is the
-  // fall-through.
-  //
-  // The client publishes it on every pan or zoom, throttled to 10 Hz, so ~26
-  // seconds of one editor navigating filled all 256 slots of the catch-up log
-  // with camera positions and pushed `floor` past every real mutation. The
-  // next peer whose socket blipped then failed the `lastSeq + 1 >= floor`
-  // check and was sent `resync`, re-hydrating every loaded tab from D1 —
-  // exactly the storm the comment below this block says was hunted down once
-  // already, reopened by somebody merely scrolling. It also cost a
-  // `storage.put` per frame, 10 a second per navigating editor.
-  //
-  // And because the role gate drops any non-presence op from a view-role
-  // sender, a view-only visitor could not be FOLLOWED at all, contradicting
-  // spec/131's "the audience on a view link is exactly who most needs it".
-  'viewport',
-]);
 
 // One entry in the reconnect catch-up log: a mutation op plus the sequence
 // number the room assigned it within the current epoch.
@@ -406,8 +353,8 @@ export class DiagramRoom implements DurableObject {
       // `from: 'system'`). Without this drop, any edit-role peer
       // could forge `share-revoked` with the code from their own URL
       // and force-redirect every collaborator out of the session.
-      if (opKind === 'share-revoked') return;
-      const isPresenceOp = typeof opKind === 'string' && PRESENCE_OP_KINDS.has(opKind);
+      if (isSystemOpKind(opKind)) return;
+      const isPresenceOp = isPresenceOpKind(opKind);
       if (sender.role !== 'edit' && !isPresenceOp) return;
       // Remember the sender's current tab so a future joiner learns it
       // from the presence list (tab-focus ops only fire on a switch, so
