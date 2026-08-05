@@ -18,6 +18,7 @@ import {
   type Tab,
 } from '@livediagram/diagram';
 import { track } from '@/lib/telemetry';
+import { tabFolderTransitionSummary, trackTabFolderTransition } from './tab-folder-reporting';
 
 type TabFoldersDeps = {
   tabs: Tab[];
@@ -45,8 +46,14 @@ export function useTabFolders(deps: TabFoldersDeps) {
     commitTabs((ts) =>
       normalizeFolderOrder(ts.map((t) => (t.id === tabId ? { ...t, folder: name } : t))),
     );
-    emitTabMeta(tabId, `Moved tab to folder '${name}'`);
-    track('Tab', isNewFolder ? 'Created' : 'Moved');
+    emitTabMeta(tabId, tabFolderTransitionSummary(tabFolderName(target), name));
+    // Two facts when the name is new, so two events (the deliberate double-emit
+    // pattern spec/22 uses for Tab·Started·Vote + PrivateVote): the folder came
+    // into existence, AND this tab is now filed in it. The old either/or made
+    // "tabs filed into folders" undercount by exactly the number of folders
+    // anyone had ever created.
+    if (isNewFolder) track('Folder', 'Created', 'Tab');
+    trackTabFolderTransition(tabFolderName(target), name);
   };
 
   // Make a tab loose again. No-op if it isn't in a folder.
@@ -57,8 +64,8 @@ export function useTabFolders(deps: TabFoldersDeps) {
     commitTabs((ts) =>
       normalizeFolderOrder(ts.map((t) => (t.id === tabId ? { ...t, folder: undefined } : t))),
     );
-    emitTabMeta(tabId, `Removed tab from folder '${previous}'`);
-    track('Tab', 'Removed');
+    emitTabMeta(tabId, tabFolderTransitionSummary(previous, null));
+    trackTabFolderTransition(previous, null);
   };
 
   // Rename a folder by rewriting the name on every member of its run.
@@ -77,7 +84,9 @@ export function useTabFolders(deps: TabFoldersDeps) {
     // otherwise to the first member, so the activity log has a subject.
     const subjectId = members.some((t) => t.id === activeId) ? activeId : members[0]!.id;
     emitTabMeta(subjectId, `Renamed folder '${oldName}' to '${newName}'`);
-    track('Tab', 'Renamed');
+    // The folder is the subject here, not a tab: this used to emit
+    // `Tab·Renamed`, which the dashboard counts as tabs renamed.
+    track('Folder', 'Renamed', 'Tab');
   };
 
   return { moveTabToFolder, removeTabFromFolder, renameFolder };

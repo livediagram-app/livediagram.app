@@ -68,7 +68,23 @@ Folder rides the **same wire path as `orderIndex`**, never the per-tab content `
 
 ## Telemetry
 
-Reuses the closed `Tab` category and existing actions ([spec/22](22-telemetry.md)): `track('Tab', 'Moved')` (into a folder), `'Removed'` (out), `'Created'` (new folder), `'Renamed'` (folder rename). The folder **name is user content** and is never sent as the `type` argument.
+Reuses the closed vocabulary ([spec/22](22-telemetry.md)) with **the subject deciding the category**, and every event carries a `type` so none of it collides with tab lifecycle:
+
+| What happened                   | Event                |
+| ------------------------------- | -------------------- |
+| A tab was filed into a folder   | `Tab·Moved·Folder`   |
+| A tab was taken out of a folder | `Tab·Removed·Folder` |
+| A folder came into existence    | `Folder·Created·Tab` |
+| A folder was renamed            | `Folder·Renamed·Tab` |
+
+The folder **name is user content** and is never sent as the `type` argument — the `Tab` type on the `Folder` events distinguishes a tab folder from an explorer folder of diagrams, nothing more.
+
+The `type` is not decoration. A dashboard metric card selects rows by an exact `type` match and `null` is a value, so the original untyped spelling of this table (`Tab·Created` for a new folder, `Tab·Renamed` for a folder rename) landed folder operations in the headline "Tabs Created" and "Tabs Renamed" cards, inflating a count of tabs with a count of folders.
+
+Two further rules, both learned from the untyped version:
+
+- **A new folder emits two events**, `Folder·Created·Tab` then `Tab·Moved·Folder`, because typing a name the diagram hasn't used is genuinely two facts (the folder exists; this tab is in it). Emitting only the creation made "tabs filed into folders" undercount by exactly the number of folders anyone created. Listed with the other deliberate double-emits in spec/22.
+- **The menu and the drag report identically.** Membership can change either from the ellipsis menu or from a drag that adopts the drop target's folder, and the two had drifted: leaving a folder by menu counted as `Tab·Removed`, leaving it by drag counted as `Tab·Reordered`. Which control someone reached for is not the fact being measured, so both paths go through one module (`hooks/persistence/tab-folder-reporting.ts`), which owns the activity-log line too. A drag that crosses a folder boundary reports the membership change and **not** the reorder it came with; `Tab·Reordered` now means a reorder that changed nothing else.
 
 ## Edge cases
 

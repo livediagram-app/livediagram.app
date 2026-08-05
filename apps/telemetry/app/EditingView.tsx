@@ -151,6 +151,25 @@ const GROUPS: MetricGroup[] = [
         title: 'Folders Re-parented',
         blurb: 'A folder nested under another, or promoted back to the root.',
       },
+      // Tab folders (spec/30) are the same instinct one level down, so they read
+      // beside diagram filing. Both are typed rather than bare because the bare
+      // Tab/Folder events belong to different subjects: see the type note in
+      // spec/22's Folder entry.
+      {
+        category: 'Folder',
+        action: 'Created',
+        type: 'Tab',
+        title: 'Tab Folders Created',
+        blurb: 'A collapsible folder of tab pills created inside one diagram.',
+      },
+      {
+        category: 'Tab',
+        action: 'Moved',
+        type: 'Folder',
+        title: 'Tabs Filed',
+        blurb:
+          'A tab filed into a tab folder, by the ellipsis menu or by a drag — both report identically.',
+      },
       {
         category: 'Diagram',
         action: 'Moved',

@@ -28,7 +28,8 @@ export const CATEGORY_DESCRIPTIONS: Record<TelemetryCategory, string> = {
     'Per-element assigned actions: assigning (with or without the email nudge), completing, reopening, editing / reassigning, deleting, opening the popover.',
   Search: 'Global search panel: open, query, picked-result kind.',
   UI: 'Editor chrome: light/dark toggle, dialogs (Settings, Shortcuts, Share, Activity), share-link copy, welcome dismiss.',
-  Folder: 'Diagram folders: create, rename, delete, re-parent.',
+  Folder:
+    'Folders: create, rename, delete, re-parent. Explorer folders of diagrams, or (type Tab) tab folders inside one diagram.',
   Layer:
     'Tab layers (Photoshop-style stacking bands): add, rename, delete, restack, show / hide, lock, move elements between layers, open the panel.',
   Session: 'Account-level events when Clerk auth is configured: sign-in, sign-up, sign-out.',
@@ -218,6 +219,9 @@ export function eventExplanation(category: string, action: string, type: string 
     if (action === 'Loaded')
       return "A tab's content was fetched for viewing (the first tab when a diagram opens, then each tab switched to).";
     if (action === 'Created') return 'A new tab was added to a diagram.';
+    if (action === 'Moved') return 'A tab was filed into a tab folder (spec/30).';
+    if (action === 'Removed')
+      return 'A tab was taken out of a tab folder and made loose again. Emitted the same way whether the ellipsis menu or a drag did it.';
     if (action === 'Deleted') return 'A tab was removed from a diagram.';
     if (action === 'Duplicated') return 'A tab was duplicated.';
     if (action === 'Renamed') return 'A tab was renamed.';
@@ -252,8 +256,15 @@ export function eventExplanation(category: string, action: string, type: string 
     if (action === 'Searched') return 'A query was typed into search (one emit per session).';
   }
   if (category === 'Folder') {
-    if (action === 'Created') return 'A new folder was created in the diagram explorer.';
-    if (action === 'Renamed') return 'A folder was renamed.';
+    // The `Tab` type is a TAB folder (spec/30) — the collapsible grouping of tab
+    // pills inside one diagram — not a folder of diagrams in the explorer. Two
+    // different features that happen to share the word.
+    if (action === 'Created')
+      return type === 'Tab'
+        ? 'A new tab folder was created inside a diagram, by typing a name the diagram had not used before.'
+        : 'A new folder was created in the diagram explorer.';
+    if (action === 'Renamed')
+      return type === 'Tab' ? 'A tab folder was renamed.' : 'A folder was renamed.';
     if (action === 'Deleted') return 'A folder was deleted (contained diagrams move to Unsorted).';
     if (action === 'Moved') return 'A folder was re-parented under another folder (or the root).';
   }

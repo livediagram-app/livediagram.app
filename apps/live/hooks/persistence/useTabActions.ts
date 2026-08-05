@@ -25,6 +25,7 @@ import {
 import { apiLinkTab, type ChangeLogEntry } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
 import { remintElementIds, useTabImport } from './useTabImport';
+import { tabFolderTransitionSummary, trackTabFolderTransition } from './tab-folder-reporting';
 import type { useConfirm } from '@/hooks/ui/useConfirm';
 import type { useToast } from '@/hooks/ui/useToast';
 
@@ -325,12 +326,15 @@ export function useTabActions(deps: TabActionsDeps) {
       // Re-normalize so every folder stays one contiguous run (spec/30).
       return normalizeFolderOrder(next);
     });
-    if (srcFolder !== targetFolder && targetFolder) {
-      emitTabMeta(sourceId, `Moved tab to folder '${targetFolder}'`);
-      track('Tab', 'Moved');
-    } else if (srcFolder !== targetFolder) {
-      emitTabMeta(sourceId, `Removed tab from folder '${srcFolder}'`);
-      track('Tab', 'Reordered');
+    // A drag that crosses a folder boundary reports the membership change, not
+    // the reorder that came with it — and reports it through the same module the
+    // ellipsis menu uses, so the two controls can't drift again. (Leaving a
+    // folder by drag used to count as `Tab·Reordered` while the menu counted it
+    // as `Tab·Removed`, which made "how do people manage tab folders?"
+    // unanswerable from the numbers.)
+    if (srcFolder !== targetFolder) {
+      emitTabMeta(sourceId, tabFolderTransitionSummary(srcFolder, targetFolder));
+      trackTabFolderTransition(srcFolder, targetFolder);
     } else {
       track('Tab', 'Reordered');
     }
