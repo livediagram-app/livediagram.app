@@ -28,6 +28,7 @@ import {
   FlowingArrowsArt,
   FoldersArt,
   FullScreenSlideArt,
+  IsometricArt,
   FontsArt,
   FormatPainterArt,
   GroupArt,
@@ -242,30 +243,6 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Turn any element into a piece of work: name the action, describe it, and hand it to a teammate from any of your teams, with an optional email nudge. An Actions panel tracks everything still open, with your own assignments on top.',
       },
       {
-        art: <LaserArt />,
-        href: '/help/selection-modes/laser/',
-        group: 'Present & facilitate',
-        title: 'Laser pointer for presenting',
-        description:
-          'Switch to the laser tool and your cursor leaves a glowing trail everyone can see. Point at the thing you mean while you talk it through. Trails fade on their own.',
-      },
-      {
-        art: <AvatarModeArt />,
-        href: '/help/selection-modes/avatar-mode/',
-        group: 'Present & facilitate',
-        title: 'Walk a character through your diagram',
-        description:
-          'Avatar mode drops a little pixel character onto the canvas. Click to walk it to whatever you are talking about, steer with the arrow keys, and press Space to hop and wave a flag. Dress it how you like — gender, clothing, hair and size, remembered in your browser — and the box it stands on gets a ring. The canvas is read-only while you walk, and on a shared diagram everyone sees everyone else walking about in their own colour.',
-      },
-      {
-        art: <SpotlightArt />,
-        href: '/help/selection-modes/spotlight/',
-        group: 'Present & facilitate',
-        title: 'Spotlight the room on one thing',
-        description:
-          'Switch on Spotlight and the canvas dims under a soft shroud, with only a circle of light around your cursor. Walk the room through a busy diagram one piece at a time. Left-click grows the light, right-click shrinks it, and it is a local view aid, so it never gets in a viewer’s way.',
-      },
-      {
         art: <SessionToolsArt />,
         href: '/help/collaboration/session-tools/',
         group: 'Present & facilitate',
@@ -293,15 +270,15 @@ export const LANDING_SECTIONS: LandingSection[] = [
   },
   {
     id: 'present',
-    cta: 'Explore presenting',
-    title: 'Present it without leaving the diagram',
+    cta: 'Explore the presentation tools',
+    title: 'Presentation tools built right in',
     description:
-      'The diagram you already drew is the deck. Pick the elements for each slide, put them in the order you want to say them in, and run it full screen — no export, no second tool, and nothing to keep in step afterwards.',
+      'Everything you need to talk a room through a diagram, in the diagram itself. Run it as a slide deck, point with a laser, dim everything but the piece you mean, walk a character through it, tilt it into 3D, or clear the screen entirely — no export, no second tool, and nothing to keep in step afterwards.',
     items: [
       {
         art: <SlideDeckArt />,
         href: '/help/selection-modes/slide-deck/',
-        group: 'Build the deck',
+        group: 'Slide deck',
         title: 'Slides made from what you drew',
         description:
           'A slide is simply the elements you picked, from one tab. Select a cluster on the canvas and make it a slide; the arrows between them come along on their own. Slides reference your elements rather than copying them, so editing a shape updates every slide it appears on and the deck can never drift from the diagram.',
@@ -309,7 +286,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <FullScreenSlideArt />,
         href: '/help/selection-modes/slide-deck/',
-        group: 'Build the deck',
+        group: 'Slide deck',
         title: 'One deck across every tab',
         description:
           'Slide one can come from your architecture tab and slide two from the roadmap. Order them however you like in the Slide Deck panel: drag to rearrange, rename, duplicate, or hide a slide you might want next week without deleting it. The deck is saved with the diagram, so a teammate opens it and sees the same talk.',
@@ -317,7 +294,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <PresenterNotesArt />,
         href: '/help/selection-modes/slide-deck/',
-        group: 'Run the room',
+        group: 'Slide deck',
         title: 'Notes only you open',
         description:
           'Write what you mean to say over each slide. During the presentation they sit behind a button in the corner, so nothing about your script is on screen until you ask for it. Clicking any element shows its note, comments and assigned action too, for the question you did not plan for.',
@@ -325,10 +302,50 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <PresentLocallyArt />,
         href: '/help/selection-modes/slide-deck/',
-        group: 'Run the room',
+        group: 'Slide deck',
         title: 'Your screen, not everyone else’s',
         description:
           'Presenting shows the deck on your screen and nowhere else. Nobody is dragged into your slide, nobody’s view moves, and collaborators with the diagram open carry on working. You share your screen the way you already do. Nothing on a slide can be changed by a stray click, so a projector is safe.',
+      },
+      {
+        art: <SpotlightArt />,
+        href: '/help/selection-modes/spotlight/',
+        group: 'Spotlight',
+        title: 'Spotlight the room on one thing',
+        description:
+          'Switch on Spotlight and the canvas dims under a soft shroud, with only a circle of light around your cursor. Walk the room through a busy diagram one piece at a time. Left-click grows the light, right-click shrinks it, and it is a local view aid, so it never gets in a viewer’s way.',
+      },
+      {
+        art: <LaserArt />,
+        href: '/help/selection-modes/laser/',
+        group: 'Laser pointer',
+        title: 'Laser pointer for presenting',
+        description:
+          'Switch to the laser tool and your cursor leaves a glowing trail everyone can see. Point at the thing you mean while you talk it through. Trails fade on their own.',
+      },
+      {
+        art: <AvatarModeArt />,
+        href: '/help/selection-modes/avatar-mode/',
+        group: 'Avatar mode',
+        title: 'Walk a character through your diagram',
+        description:
+          'Avatar mode drops a little pixel character onto the canvas. Click to walk it to whatever you are talking about, steer with the arrow keys, and press Space to hop and wave a flag. Dress it how you like — gender, clothing, hair and size, remembered in your browser — and the box it stands on gets a ring. The canvas is read-only while you walk, and on a shared diagram everyone sees everyone else walking about in their own colour.',
+      },
+      {
+        art: <IsometricArt />,
+        href: '/help/selection-modes/isometric-mode/',
+        group: 'Isometric',
+        title: 'Tilt the board into 3D',
+        description:
+          'Isometric view tips the whole canvas onto an angle and lifts each layer off the one below, so a stack that reads as flat boxes becomes a scene you can see the depth of. Orbit it from the zoom cluster. It is a way of LOOKING at a diagram, not a change to it: nothing moves, and everyone else still sees it flat.',
+      },
+      {
+        art: <ZenModeArt />,
+        href: '/help/tools/zen-mode/',
+        group: 'Zen',
+        title: 'Zen mode for focus',
+        description:
+          'Hit Z, or the zen button by the laser pointer, and every toolbar, panel, and tab bar drops away, leaving just your canvas. Only the zoom controls stay, with an exit button right beside them. Press Z or Esc to bring it all back.',
       },
     ],
   },
@@ -520,14 +537,6 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Panels your way',
         description:
           'Prefer floating side panels or a clean canvas? Switch on the minimal layout and the palette and tools collapse into a compact dock with pop-out panels, the same tidy chrome you get on mobile. The choice sticks per device.',
-      },
-      {
-        art: <ZenModeArt />,
-        href: '/help/tools/zen-mode/',
-        group: 'Your workspace',
-        title: 'Zen mode for focus',
-        description:
-          'Hit Z, or the zen button by the laser pointer, and every toolbar, panel, and tab bar drops away, leaving just your canvas. Only the zoom controls stay, with an exit button right beside them. Press Z or Esc to bring it all back.',
       },
     ],
   },

@@ -1,10 +1,10 @@
-// Feature art for the landing page's "Present it without leaving" section
-// (spec/16, spec/31). Four small stills, drawn from the same primitives as
+// Feature art for the landing page's "Presentation tools built right in"
+// section (spec/16, spec/31). Small stills, drawn from the same primitives as
 // every other art block so the page reads as one hand.
 //
 // Each one shows the IDEA rather than a screenshot: a deck of slides built
 // from a diagram, one slide filling a screen, notes only the presenter opens,
-// and the fact that nobody else is dragged along.
+// the fact that nobody else is dragged along, and the board tilted into 3D.
 
 import { BLUE_FILL, BLUE_STROKE, Frame, SKY } from './shared';
 
@@ -259,6 +259,44 @@ export function PresentLocallyArt() {
             strokeWidth="1.2"
             strokeLinecap="round"
           />
+        </g>
+      </svg>
+    </Frame>
+  );
+}
+
+/** The canvas tipped onto an angle, its layers lifted apart. */
+export function IsometricArt() {
+  return (
+    <Frame>
+      <svg viewBox="0 0 220 96" className="absolute inset-0 h-full w-full">
+        {/* Three layers as isometric planes, each lifted above the last, so
+            the depth is the point rather than the boxes. */}
+        <g strokeLinejoin="round" strokeWidth="1.5">
+          <path
+            d="M40 74 110 92 180 74 110 56Z"
+            fill={SLATE_FILL}
+            stroke={SLATE_STROKE}
+            opacity="0.85"
+          />
+          <path
+            d="M40 58 110 76 180 58 110 40Z"
+            fill="#e0f2fe"
+            stroke={BLUE_STROKE}
+            opacity="0.9"
+          />
+          <path d="M40 42 110 60 180 42 110 24Z" fill={BLUE_FILL} stroke={BLUE_STROKE} />
+        </g>
+        {/* Two elements standing on the top plane, to say the content is
+            unchanged — only the way you are looking at it. */}
+        <g strokeWidth="1.4" strokeLinejoin="round">
+          <path d="M86 38 104 43 104 33 86 28Z" fill="#fff" stroke={BLUE_STROKE} />
+          <path d="M120 44 138 39 138 29 120 34Z" fill="#fff" stroke={BLUE_STROKE} />
+        </g>
+        {/* The orbit handle. */}
+        <g stroke={SKY} strokeWidth="1.6" fill="none" strokeLinecap="round">
+          <path d="M188 20a10 10 0 1 0 6 4" />
+          <path d="M188 14v6h6" />
         </g>
       </svg>
     </Frame>
