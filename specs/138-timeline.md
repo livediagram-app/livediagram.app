@@ -1261,12 +1261,17 @@ Per spec/18:
   actually said the feed is empty. This is the regression that
   motivated the failed state, so it's pinned at the wrapper, which is
   where the two answers were conflated.
+  It's pinned in the hook body too, under the jsdom docblock
+  `useTimelineFeed.test.tsx` already uses: a failed first read reports
+  an error with no events, Try again clears it, and a read for a new
+  owner that fails doesn't leave the previous owner's events on screen.
 - **Merging a re-read** (§2.4a): `mergeEvents` is a pure module for
   this reason — new events land at the head, an older fetched range
   sorts into place, ids dedupe, and an unchanged read returns the SAME
-  array so the feed doesn't re-render. The listener wiring around it
-  (`useReturnToTab`'s throttle) needs a DOM, so it waits for the jsdom
-  switch spec/18 already anticipates rather than being faked here.
+  array so the feed doesn't re-render. The wiring around it is tested
+  in the hook: a visibility change past the throttle merges what
+  happened since without dropping loaded events, a failed re-read keeps
+  the feed it had, and two changes inside the window read nothing.
 
 ## 12. Docs
 

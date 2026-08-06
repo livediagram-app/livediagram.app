@@ -10,8 +10,9 @@
 // opted into by the handful of files that need a document.
 
 import { act, renderHook, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { TimelineScopeRef } from '@livediagram/api-schema';
+import type { TimelineEvent } from '@livediagram/ui';
 
 const apiListTimeline = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/api-client', () => ({ apiListTimeline }));
@@ -33,6 +34,17 @@ function callsFor(scopeId: string) {
 // the first-page read.
 function periodCallsFor(scopeId: string) {
   return callsFor(scopeId).filter(([, opts]) => (opts as { from?: number }).from !== undefined);
+}
+
+function event(id: string, occurredAt: number): TimelineEvent {
+  return {
+    id,
+    sourceType: 'diagram',
+    sourceId: `d-${id}`,
+    eventType: 'diagram_updated',
+    title: id,
+    occurredAt,
+  } as TimelineEvent;
 }
 
 beforeEach(() => {
@@ -95,5 +107,107 @@ describe('useTimelineFeed', () => {
     act(() => result.current.controls.setMonthKey('2026-06'));
     await new Promise((r) => setTimeout(r, 50));
     expect(periodCallsFor('team-a')).toHaveLength(3);
+  });
+});
+
+// The bug this whole surface was reported for (spec/138 §2.4): a read
+// that failed came back as an empty page, so the pane said "Nothing has
+// happened yet" to somebody whose history was intact on the server, and
+// only a browser refresh proved otherwise.
+describe('useTimelineFeed failure handling', () => {
+  it('reports a failed read as an error rather than an empty feed', async () => {
+    apiListTimeline.mockResolvedValue(null);
+    const { result } = renderHook(() => useTimelineFeed('me', true));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.error).toBe(true);
+    expect(result.current.events).toEqual([]);
+  });
+
+  it('does not leave the previous owner’s events up when their read fails', async () => {
+    // A guest signing in mid-session re-reads under the Clerk id. If
+    // that read fails there is nothing legitimate to show: the events
+    // on screen belong to the feed we just left.
+    apiListTimeline.mockResolvedValue({ events: [event('guest-era', 10)] });
+    const { result, rerender } = renderHook(
+      ({ owner }: { owner: string }) => useTimelineFeed(owner, true),
+      { initialProps: { owner: 'guest-1' } },
+    );
+    await waitFor(() => expect(result.current.events).toHaveLength(1));
+
+    apiListTimeline.mockResolvedValue(null);
+    rerender({ owner: 'user_clerk' });
+    await waitFor(() => expect(result.current.error).toBe(true));
+    expect(result.current.events).toEqual([]);
+  });
+
+  it('recovers on Try again', async () => {
+    apiListTimeline.mockResolvedValueOnce(null);
+    const { result } = renderHook(() => useTimelineFeed('me', true));
+    await waitFor(() => expect(result.current.error).toBe(true));
+
+    apiListTimeline.mockResolvedValue({ events: [event('a', 10)], nextCursor: '10:a' });
+    act(() => result.current.retry());
+    await waitFor(() => expect(result.current.error).toBe(false));
+    expect(result.current.events.map((e) => e.id)).toEqual(['a']);
+    expect(result.current.hasMore).toBe(true);
+  });
+});
+
+// Returning to a tab that has been open since yesterday (spec/138 §2.4a).
+describe('useTimelineFeed on return to the tab', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  function comeBack() {
+    act(() => {
+      document.dispatchEvent(new Event('visibilitychange'));
+    });
+  }
+
+  it('merges what happened since, without dropping loaded events', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    apiListTimeline.mockResolvedValue({ events: [event('old', 10)] });
+    const { result } = renderHook(() => useTimelineFeed('me', true));
+    await waitFor(() => expect(result.current.events).toHaveLength(1));
+
+    apiListTimeline.mockResolvedValue({ events: [event('new', 20), event('old', 10)] });
+    await act(async () => {
+      vi.advanceTimersByTime(31_000);
+    });
+    comeBack();
+
+    await waitFor(() => expect(result.current.events.map((e) => e.id)).toEqual(['new', 'old']));
+  });
+
+  it('keeps the loaded feed when the re-read fails', async () => {
+    // A stale feed beats an alarm: the reader is looking at real
+    // events, and the next return re-reads anyway.
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    apiListTimeline.mockResolvedValue({ events: [event('old', 10)] });
+    const { result } = renderHook(() => useTimelineFeed('me', true));
+    await waitFor(() => expect(result.current.events).toHaveLength(1));
+
+    apiListTimeline.mockResolvedValue(null);
+    await act(async () => {
+      vi.advanceTimersByTime(31_000);
+    });
+    comeBack();
+
+    await waitFor(() => expect(result.current.error).toBe(true));
+    expect(result.current.events.map((e) => e.id)).toEqual(['old']);
+  });
+
+  it('ignores a glance at another window', async () => {
+    apiListTimeline.mockResolvedValue({ events: [event('old', 10)] });
+    const { result } = renderHook(() => useTimelineFeed('me', true));
+    await waitFor(() => expect(result.current.events).toHaveLength(1));
+    const reads = apiListTimeline.mock.calls.length;
+
+    // Inside the throttle window: alt-tabbing is not a request for
+    // fresh data, and unthrottled this fires on every focus change.
+    comeBack();
+    comeBack();
+    expect(apiListTimeline.mock.calls).toHaveLength(reads);
   });
 });
