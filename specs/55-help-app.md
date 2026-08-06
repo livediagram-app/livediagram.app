@@ -106,7 +106,13 @@ map to keep in step — and it falls back to a generic document glyph rather tha
 per-category one. That fallback had 13 of the 40 icon-showing support cards on it,
 a third of them identical, so those are drawn too. (Getting Started is the
 exception by design: its cards lead with a numbered step badge instead of an
-icon.) Both halves of the catalogue are now fully illustrated. A grid where most tiles are identical is decoration, not a
+icon.) Both halves of the catalogue are now fully illustrated, and a test per half keeps
+them that way: `feature-icons.test.ts` and `article-icons.test.ts` each fail on a
+card with no glyph of its own, naming the slug. The support one also reads WHICH
+browse pages number their cards straight off the pages, rather than hardcoding
+that Getting Started is the numbered one — so if the numbering ever moves, its
+eight cards start needing glyphs and the test says so instead of quietly exempting
+the wrong category. A grid where most tiles are identical is decoration, not a
 catalogue — the
 glyph exists so a card reads as "palette" or "sharing" before you read its
 title. One distinct hue and glyph per category restores that much at least.
