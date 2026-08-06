@@ -479,6 +479,111 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <rect x="14" y="4" width="6" height="6" rx="1" {...s} />
     </Glyph>
   ),
+  // Canvas guides. The four layer entries are deliberately NOT four variations
+  // on a stack of sheets: three of them would be indistinguishable at 24px, so
+  // each draws the thing its article is about instead — the stack itself, then
+  // an eye, a merge, and a reorder.
+  'follow-along': (
+    <Glyph>
+      <path d="M8 4l6.5 15 1.4-6 6-1.6z" {...s} />
+      <path d="M4.5 6.5v-2h2M4.5 12.5v-2h2M4.5 18.5v-2h2" {...s} />
+    </Glyph>
+  ),
+  notes: (
+    <Glyph>
+      <rect x="3" y="4" width="11" height="11" rx="1.5" {...s} />
+      <path d="M6 8h5M6 11h3" {...s} />
+      <rect x="11" y="12" width="10" height="8" rx="1.5" {...s} />
+      <path d="M14 15.5h4M14 18h2.5" {...s} />
+    </Glyph>
+  ),
+  layers: (
+    <Glyph>
+      <path d="M12 3l8 4.5-8 4.5-8-4.5z" {...s} />
+      <path d="M4 12.5l8 4.5 8-4.5" {...s} />
+      <path d="M4 17l8 4.5 8-4.5" {...s} />
+    </Glyph>
+  ),
+  'layers-visibility-and-locking': (
+    <Glyph>
+      <path d="M2.5 11.5S5.5 6 11 6s8.5 5.5 8.5 5.5S16.5 17 11 17s-8.5-5.5-8.5-5.5z" {...s} />
+      <circle cx="11" cy="11.5" r="2.5" {...s} />
+      <rect x="16" y="16.5" width="6" height="5" rx="1" {...s} />
+      <path d="M17.5 16.5v-1.2a1.5 1.5 0 013 0v1.2" {...s} />
+    </Glyph>
+  ),
+  'layers-organising': (
+    <Glyph>
+      <rect x="4" y="3.5" width="11" height="6" rx="1.5" {...s} />
+      <rect x="9" y="14.5" width="11" height="6" rx="1.5" {...s} />
+      <path d="M12 10.5v3M10.5 12l1.5 1.5L13.5 12" {...s} />
+    </Glyph>
+  ),
+  'layer-order': (
+    <Glyph>
+      <rect x="4" y="4" width="12" height="6" rx="1.5" {...s} />
+      <rect x="4" y="14" width="12" height="6" rx="1.5" {...s} />
+      <path d="M20 8V3.5M18 5.5l2-2 2 2" {...s} />
+      <path d="M20 16v4.5M18 18.5l2 2 2-2" {...s} />
+    </Glyph>
+  ),
+  size: (
+    <Glyph>
+      <rect x="4" y="4" width="16" height="16" rx="2" {...s} />
+      <path d="M8 8h5M8 8v5M8 8l5 5" {...s} />
+      <path d="M16 16h-5M16 16v-5" {...s} />
+    </Glyph>
+  ),
+  rotation: (
+    <Glyph>
+      <rect x="6.5" y="9" width="11" height="11" rx="1.5" {...s} />
+      <path d="M6 6.5A7 7 0 0119 5" {...s} />
+      <path d="M19 1.5V5h-3.5" {...s} />
+    </Glyph>
+  ),
+  animations: (
+    <Glyph>
+      <rect x="10" y="8" width="10" height="8" rx="1.5" {...s} />
+      <path d="M3 9h4M2 12h5M3 15h4" {...s} />
+    </Glyph>
+  ),
+  // The element plus a real drop shadow: a FILLED offset copy behind an
+  // outlined one. The only glyph here that fills and fades, because it is the
+  // only one whose subject is a fill and a fade — the stroke-only alternatives
+  // both landed on another glyph's meaning (two outlined rects read as
+  // "duplicate", diagonal hatching read as the motion lines on `animations`).
+  shadows: (
+    <Glyph>
+      <rect
+        x="8"
+        y="8"
+        width="12"
+        height="12"
+        rx="2"
+        fill="currentColor"
+        stroke="none"
+        opacity="0.3"
+      />
+      <rect x="4" y="4" width="12" height="12" rx="2" {...s} />
+    </Glyph>
+  ),
+  locking: (
+    <Glyph>
+      <rect x="4.5" y="10.5" width="15" height="10" rx="2" {...s} />
+      <path d="M8 10.5V7.5a4 4 0 018 0v3" {...s} />
+      <path d="M12 14.5v2.5" {...s} />
+    </Glyph>
+  ),
+  // A magnet, not another set of guide lines: `alignment-guides` in the Palette
+  // settings already draws those, and two cards showing the same thing is the
+  // problem these glyphs exist to solve.
+  snapping: (
+    <Glyph>
+      <path d="M4.5 4.5v7a7.5 7.5 0 0015 0v-7" {...s} />
+      <path d="M10 4.5v7a2 2 0 004 0v-7" {...s} />
+      <path d="M4.5 4.5h5.5M14 4.5h5.5" {...s} />
+    </Glyph>
+  ),
   // Explorer section guides.
   recent: (
     <Glyph>

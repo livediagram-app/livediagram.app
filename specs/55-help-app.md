@@ -92,9 +92,9 @@ Both fall back **to the article's top-level feature category**, not to a single
 default. That matters more than it sounds: when the fallback landed, 107 of the
 172 landing cards under the ten feature categories had no bespoke entry, so with
 one default nearly two thirds of the catalogue drew the same sky-blue canvas
-frame in the same grey tile. (94 still take the category fallback; the Palette's
-own thirteen — its element families and its panel settings — have their own
-glyphs.) A grid where most tiles are identical is decoration, not a catalogue — the
+frame in the same grey tile. (82 still take the category fallback; the Palette's
+own thirteen — its element families and its panel settings — and the Canvas's
+twelve have their own glyphs.) A grid where most tiles are identical is decoration, not a catalogue — the
 glyph exists so a card reads as "palette" or "sharing" before you read its
 title. One distinct hue and glyph per category restores that much at least.
 
@@ -110,7 +110,12 @@ a category at a time: a batch that shares a family reads as a set. And **look at
 them rendered before shipping** — valid path geometry is not the same as a
 legible 24px glyph. Three of the Palette thirteen had to be redrawn only after
 seeing them: a chair that read as a table, a button whose pointer swallowed it,
-and a sticker using the folded corner that already means a document here.
+and a sticker using the folded corner that already means a document here. The
+Canvas batch cost two more, both from colliding with a glyph already in the set —
+a magnet drawn as a shield, and a drop shadow that read first as "duplicate" and
+then, hatched, as the motion lines on `animations`. `shadows` is the one glyph
+that fills and fades, because it is the only one whose subject IS a fill and a
+fade; every stroke-only version of it meant something else.
 
 The system has three layers, all under `apps/help`:
 
