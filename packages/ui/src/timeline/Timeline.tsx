@@ -20,6 +20,7 @@ import { StackedBubble } from './StackedBubble';
 import { ExpandedStack } from './ExpandedStack';
 import { isNewEvent } from './newness';
 import { TimelineCalendarView } from './TimelineCalendarView';
+import { TimelineErrorState } from './TimelineErrorState';
 import { buildStacks } from './stacking';
 import { pickRenderer } from './renderers';
 import { useTimelineGrouping } from './useTimelineGrouping';
@@ -48,6 +49,12 @@ export type TimelineProps = {
   /** True when the feed is genuinely empty, as opposed to filtered empty. */
   isEmpty?: boolean;
   emptyState?: ReactNode;
+  /**
+   * The last read failed. Outranks `isEmpty`, because a feed we
+   * couldn't read is not a feed with nothing in it (spec/138 §2.4).
+   */
+  error?: boolean;
+  onRetry?: () => void;
   hasMore?: boolean;
   loadingMore?: boolean;
   onLoadMore?: () => void;
@@ -69,6 +76,8 @@ export function Timeline({
   loading,
   isEmpty,
   emptyState,
+  error,
+  onRetry,
   hasMore,
   loadingMore,
   onLoadMore,
@@ -156,6 +165,11 @@ export function Timeline({
   }, [pulseDay, clearPulse]);
 
   if (loading) return <SkeletonFeed />;
+  // Order matters: a failed read with nothing loaded must not fall
+  // through to "nothing has happened yet". With events already on
+  // screen the failure is silent — a stale feed is better than an
+  // alarm, and the next return to the tab re-reads it.
+  if (error && isEmpty) return <TimelineErrorState onRetry={onRetry} />;
   if (isEmpty) return <>{emptyState ?? null}</>;
 
   // Distinct from the empty state above. Telling someone with three

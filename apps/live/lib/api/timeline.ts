@@ -2,8 +2,9 @@
 //
 // Read-only: nothing user-authored lives on this feed in v1, so there
 // is no create / update / delete to wrap. There is no refresh wrapper
-// either — the feed loads on mount and the worker seeds a first-time
-// scope off that same GET, so a manual refresh button had nothing to
+// either — the feed loads on mount, re-reads this same GET when the
+// reader returns to the tab (spec/138 §2.4a), and the worker seeds a
+// first-time scope off it, so a manual refresh button had nothing to
 // do that reopening the page doesn't. (The `POST /api/timeline/refresh`
 // endpoint stays part of the documented public API for external
 // callers who want to force a seed; the app just doesn't need it.)
@@ -26,8 +27,12 @@ export type TimelinePage = {
   lastSeenAt?: number;
 };
 
-const EMPTY: TimelinePage = { events: [] };
-
+// Null means the read FAILED — offline, a lapsed session token, a
+// worker 500 — as opposed to an empty page, which means the feed really
+// is empty (spec/138 §6.4). The two used to be the same value, and the
+// result was a reader coming back to a sleeping laptop being told
+// nothing had ever happened to them. The caller keeps what it had and
+// offers a retry (§2.4).
 export async function apiListTimeline(
   ownerId: string,
   opts: {
@@ -38,7 +43,7 @@ export async function apiListTimeline(
     from?: number;
     to?: number;
   } = {},
-): Promise<TimelinePage> {
+): Promise<TimelinePage | null> {
   const params = new URLSearchParams();
   params.set('limit', String(opts.limit ?? TIMELINE_PAGE_SIZE));
   if (opts.cursor) params.set('cursor', opts.cursor);
@@ -50,7 +55,7 @@ export async function apiListTimeline(
     const res = await fetch(`${API_BASE}/timeline?${params.toString()}`, {
       headers: await apiHeaders(ownerId),
     });
-    if (!res.ok) return EMPTY;
+    if (!res.ok) return null;
     const body = (await res.json()) as Partial<TimelineReadResult>;
     return {
       events: Array.isArray(body.items) ? body.items : [],
@@ -58,12 +63,11 @@ export async function apiListTimeline(
       lastSeenAt: typeof body.lastSeenAt === 'number' ? body.lastSeenAt : undefined,
     };
   } catch {
-    // Offline, or a self-host with no /api configured. An empty feed
-    // degrades the landing page to "nothing yet" rather than an error
-    // screen — the same posture the Explorer's diagram list takes, and
-    // it matters more here because this is now the first thing a
-    // visitor sees.
-    return EMPTY;
+    // Offline, or a self-host with no /api configured. Still not an
+    // empty feed: "we couldn't ask" and "there is nothing" are
+    // different answers, and this surface is the first thing a visitor
+    // sees, so getting them confused is expensive.
+    return null;
   }
 }
 

@@ -25,6 +25,8 @@ import {
   type TimelineScopeRef,
 } from '@livediagram/api-schema';
 import { apiListTimeline } from '@/lib/api-client';
+import { mergeEvents } from '@/app/explorer/timeline/merge-events';
+import { useReturnToTab } from '@/hooks/ui/useReturnToTab';
 import { track } from '@/lib/telemetry';
 
 // Was the Timeline where this page load STARTED, or somewhere the user
@@ -51,6 +53,10 @@ export type TimelineFeed = {
   loadingMore: boolean;
   hasMore: boolean;
   loadMore: () => void;
+  /** The last read FAILED (spec/138 §2.4) — not the same as no events. */
+  error: boolean;
+  /** Re-read the first page; what the failed state's Try again calls. */
+  retry: () => void;
   /** Watermark from the first read; events past it render as New. */
   lastSeenAt?: number;
   /** Deep-link target from the URL hash, if the page was opened with one. */
@@ -69,6 +75,10 @@ export function useTimelineFeed(
   const [cursor, setCursor] = useState<string | undefined>();
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  // The read failed, which is NOT the same as the feed being empty
+  // (spec/138 §2.4). Conflating the two is what told people with years
+  // of history that nothing had ever happened to them.
+  const [error, setError] = useState(false);
   // Captured from the FIRST read only. The server moves the watermark
   // forward on that read, so re-reading would report nothing new and
   // the New pills would vanish mid-visit.
@@ -109,31 +119,85 @@ export function useTimelineFeed(
   // parent render.
   const scopeKey = scope ? `${scope.scopeType}:${scope.scopeId}` : '';
 
-  useEffect(() => {
-    if (!enabled || !ownerId) return;
-    const id = (requestId.current += 1);
-    setLoading(true);
-    // This effect's deps ARE the feed's identity, so its re-run is exactly
-    // when the period cache below stops applying: it remembers which periods
-    // have been fetched, keyed on the period alone, and `setEvents` here
-    // replaces the list wholesale. Left uncleared, switching team A -> B and
-    // paging to a month already visited on A found the period marked fetched,
-    // returned early, and rendered an empty grid — telling the reader nothing
-    // happened in team B that month. Same trap when ownerId changes as a
-    // guest signs in.
-    fetchedRanges.current.clear();
-    void apiListTimeline(ownerId, { limit: TIMELINE_PAGE_SIZE, scope }).then((page) => {
+  // The first page, read three ways: on arrival, on Try again, and on
+  // returning to the tab. They differ only in what happens to the list
+  // that's already there.
+  //
+  //   'replace' — this is a different feed (or the reader asked for it
+  //               fresh): show the skeleton and take the new page whole.
+  //   'merge'   — same feed, later: keep every loaded page and slot the
+  //               new events in at the head, so someone who had
+  //               scrolled a long way down keeps their place.
+  const load = useCallback(
+    async (mode: 'replace' | 'merge') => {
+      if (!ownerId) return;
+      const id = (requestId.current += 1);
+      if (mode === 'replace') {
+        setLoading(true);
+        // A replace is a new feed (or a deliberate re-read), which is
+        // exactly when the period cache below stops applying: it
+        // remembers which periods have been fetched keyed on the period
+        // alone, and the list is about to be replaced wholesale. Left
+        // uncleared, switching team A -> B and paging to a month
+        // already visited on A found the period marked fetched,
+        // returned early, and rendered an empty grid — telling the
+        // reader nothing happened in team B that month. Same trap when
+        // ownerId changes as a guest signs in. A 'merge' keeps it:
+        // nothing was thrown away, so nothing needs re-fetching.
+        fetchedRanges.current.clear();
+      }
+      const page = await apiListTimeline(ownerId, { limit: TIMELINE_PAGE_SIZE, scope });
       if (id !== requestId.current) return;
-      setEvents(page.events);
-      setCursor(page.nextCursor);
+      if (!page) {
+        setError(true);
+        setLoading(false);
+        // A 'merge' keeps everything it had — a stale feed beats an
+        // alarm, and the next return to the tab re-reads it. A
+        // 'replace' has nothing legitimate to keep: the list on screen
+        // either belongs to the feed we just navigated away from, or is
+        // the empty one the reader pressed Try again about. Either way
+        // the pane now shows the failed state rather than claiming the
+        // feed is empty (spec/138 §2.4).
+        if (mode === 'replace') {
+          setEvents([]);
+          setCursor(undefined);
+        }
+        return;
+      }
+      setError(false);
+      if (mode === 'replace') {
+        setEvents(page.events);
+        setCursor(page.nextCursor);
+      } else {
+        setEvents((prev) => mergeEvents(prev, page.events));
+        // The cursor is a keyset position at the TAIL of what's loaded,
+        // so events arriving at the head don't invalidate it. Replacing
+        // it here would re-page ground the reader already has. The one
+        // case that DOES need it is recovering from a first read that
+        // never landed: there is no tail yet, so take this page's.
+        setCursor((prev) => prev ?? page.nextCursor);
+      }
       // First value wins. The server holds the watermark still for a
-      // visit window, but a re-read triggered by the owner id changing
-      // would otherwise replace it with a newer one and drop the New
-      // markers the reader hasn't looked at yet.
+      // visit window, but a re-read — triggered by the owner id
+      // changing, or by coming back to the tab — would otherwise
+      // replace it with a newer one and drop the New markers the reader
+      // hasn't looked at yet.
       setLastSeenAt((prev) => prev ?? page.lastSeenAt);
       setLoading(false);
-    });
-  }, [enabled, ownerId, scopeKey]);
+    },
+    [ownerId, scopeKey],
+  );
+
+  useEffect(() => {
+    if (!enabled || !ownerId) return;
+    void load('replace');
+  }, [enabled, ownerId, scopeKey, load]);
+
+  // Coming back to a tab that has been open since yesterday (spec/138
+  // §2.4a). Also how a feed that failed to load heals itself without
+  // the reader pressing anything — which is the case they used to
+  // "fix" with a browser refresh.
+  useReturnToTab(() => void load('merge'), { enabled: enabled && !!ownerId });
 
   // Once per arrival, not once per fetch: the effect above also re-runs
   // when the owner id changes, and a guest signing in should not read
@@ -165,16 +229,18 @@ export function useTimelineFeed(
     fetchedRanges.current.add(period);
     const { from, to } = periodBounds(mode, period);
     void apiListTimeline(ownerId, { from, to, limit: TIMELINE_PAGE_MAX, scope }).then((page) => {
+      if (!page) {
+        // Forget the range so paging away and back retries it. Leaving
+        // it in the set would make one failed request look like a month
+        // in which nothing happened, permanently.
+        fetchedRanges.current.delete(period);
+        return;
+      }
       if (page.events.length === 0) return;
-      setEvents((prev) => {
-        const seen = new Set(prev.map((e) => e.id));
-        const fresh = page.events.filter((e) => !seen.has(e.id));
-        if (fresh.length === 0) return prev;
-        // Re-sorted because a fetched range can predate what's loaded,
-        // and the grouping relies on newest-first input to place a
-        // collapsed stack at its most recent member.
-        return [...prev, ...fresh].sort((a, b) => b.occurredAt - a.occurredAt);
-      });
+      // Same merge as the return-to-tab re-read: a fetched range can
+      // predate what's loaded, and the grouping relies on newest-first
+      // input to place a collapsed stack at its most recent member.
+      setEvents((prev) => mergeEvents(prev, page.events));
     });
   }, [enabled, ownerId, controls.mode, controls.monthKey, controls.weekKey, scope, scopeKey]);
 
@@ -182,6 +248,14 @@ export function useTimelineFeed(
     if (!cursor || loadingMore || !ownerId) return;
     setLoadingMore(true);
     void apiListTimeline(ownerId, { cursor, limit: TIMELINE_PAGE_SIZE, scope }).then((page) => {
+      if (!page) {
+        // The cursor is kept, so Show more simply comes back and the
+        // reader can press it again. No error state for this one: the
+        // feed above it is intact, and a failed page is not a claim
+        // that the history ended here.
+        setLoadingMore(false);
+        return;
+      }
       setEvents((prev) => {
         // Dedupe on append. The feed grows at the head while a reader
         // pages down it, and although the keyset cursor makes a repeat
@@ -196,6 +270,11 @@ export function useTimelineFeed(
     });
   }, [cursor, loadingMore, ownerId, scopeKey]);
 
+  const retry = useCallback(() => {
+    track('Timeline', 'Loaded', 'Retry');
+    void load('replace');
+  }, [load]);
+
   return {
     events,
     controls,
@@ -203,6 +282,8 @@ export function useTimelineFeed(
     loadingMore,
     hasMore: Boolean(cursor),
     loadMore,
+    error,
+    retry,
     lastSeenAt,
     focusEventId: FOCUS_EVENT_ID,
   };

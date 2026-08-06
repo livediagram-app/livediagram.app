@@ -79,8 +79,11 @@ export const TELEMETRY_CATEGORIES = [
   // from a deliberate visit, so the landing-page change is measurable;
   // 'Opened'/'Stack' counts stacked-run expansions, which is how we
   // learn whether the stacking thresholds are right. 'Changed' carries
-  // the view mode, 'Selected' a filter chip's source type. Never a
-  // diagram name, team name, or comment text.
+  // the view mode, 'Selected' a filter chip's source type, and 'Loaded'
+  // 'More' | 'Retry' — the second being a read that failed hard enough
+  // that the reader pressed Try again (spec/138 §2.4), which is the
+  // only signal we get for a feed nobody could load. Never a diagram
+  // name, team name, or comment text.
   'Timeline',
 ] as const;
 export type TelemetryCategory = (typeof TELEMETRY_CATEGORIES)[number];

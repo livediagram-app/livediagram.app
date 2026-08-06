@@ -399,6 +399,34 @@ popover is clipped no matter its z-index.
 - **Empty (all filtered out)**: "No events match these filters", with a
   Clear filters action. Distinct copy from the new-user case, so the
   user isn't told they have no history when they do.
+- **Failed**: "Couldn't load your timeline", with a Try again action.
+  **A read that failed must never render as an empty feed.** The first
+  version of this surface mapped every failure — offline, an expired
+  session token, a worker 500 — onto an empty page, so a reader who
+  came back to a sleeping laptop was told nothing had ever happened to
+  them, and only a manual browser refresh proved otherwise. That is the
+  same lie §2.4 already forbids for the filtered case, and the Explorer
+  already refuses to tell it about diagrams: a failed list there keeps
+  its prior value and says so. The feed follows suit — on a failure it
+  keeps whatever it had, and shows this state only when it has nothing.
+
+### 2.4a Coming back to a tab
+
+The feed is fetched on mount and there is no realtime push (§13), so a
+tab left open overnight shows last night's feed. On **return** — the
+document becoming visible again, or the browser reporting the network
+back — the first page is re-read and merged in at the head, so coming
+back to the tab and coming back to the app agree with each other. This
+is also what recovers the failed state above without the user having to
+press anything.
+
+Rate-limited to one re-read per 30 seconds, because alt-tabbing is not
+a request for fresh data. The merge dedupes on event id and keeps any
+pages the reader had already loaded, so returning to a feed someone had
+scrolled a long way down doesn't throw their place away. The unread
+watermark is captured from the FIRST read of a visit and never moved by
+a re-read (§2.5), so a re-read can't clear the New pills the reader
+came back to look at.
 
 ### 2.5 Unread
 
@@ -1032,10 +1060,17 @@ Client wrappers go in `apps/live/lib/api/timeline.ts` and are
 re-exported from the `lib/api-client.ts` barrel, matching every other
 domain. **Offline mode is a no-op here**: `isOfflineId` doesn't apply
 (the scope is an owner, not a diagram), and an offline-only browser has
-no server events. `apiListTimeline` returns an empty page when the
-fetch fails rather than throwing, so a worker outage degrades the
-landing page to an empty feed instead of an error screen — the same
-posture the Explorer's diagram list already takes.
+no server events.
+
+`apiListTimeline` returns `null` when the read fails rather than
+throwing OR returning an empty page. Both alternatives were tried and
+both are wrong: throwing pushes an error screen in front of the landing
+page, and an empty page is indistinguishable from a genuinely empty
+feed, which is exactly how "nothing has happened yet" came to be shown
+to people with years of history (§2.4). `null` is the third answer —
+"we don't know" — and the caller keeps what it had. This matches the
+Explorer's diagram list, which already keeps its prior value on a
+failed read and toasts rather than flashing its empty state.
 
 ## 7. UI packaging
 
@@ -1220,6 +1255,18 @@ Per spec/18:
   state, and the backfill does not re-run afterwards.
 - **Round-trip**: `/explorer/timeline` added to `STATIC_NODES` in
   `routes.test.ts`.
+- **Failed reads never read as empty** (§2.4): `apiListTimeline`
+  returns null on a refusal (401), on a worker error, on a thrown fetch
+  and on an unparseable body — and an empty page only when the worker
+  actually said the feed is empty. This is the regression that
+  motivated the failed state, so it's pinned at the wrapper, which is
+  where the two answers were conflated.
+- **Merging a re-read** (§2.4a): `mergeEvents` is a pure module for
+  this reason — new events land at the head, an older fetched range
+  sorts into place, ids dedupe, and an unchanged read returns the SAME
+  array so the feed doesn't re-render. The listener wiring around it
+  (`useReturnToTab`'s throttle) needs a DOM, so it waits for the jsdom
+  switch spec/18 already anticipates rather than being faked here.
 
 ## 12. Docs
 
@@ -1241,6 +1288,7 @@ Per spec/18:
 - Per-diagram and per-team timeline scopes (the schema is ready; the
   renderers, routes, and UI are not).
 - AI day summaries.
-- Realtime push. A Refresh button and a fresh read on mount.
+- Realtime push. A fresh read on mount, plus the re-read on return to
+  the tab (§2.4a), is the whole freshness story.
 - Cross-user search over the feed.
 - Backfilling comments and actions out of historical tab JSON.

@@ -27,6 +27,8 @@ export function TimelinePane({ feed, ownerId }: { feed: TimelineFeed; ownerId: s
       loading={feed.loading}
       isEmpty={feed.events.length === 0}
       emptyState={<TimelineEmptyState />}
+      error={feed.error}
+      onRetry={feed.retry}
       hasMore={feed.hasMore}
       loadingMore={feed.loadingMore}
       onLoadMore={feed.loadMore}

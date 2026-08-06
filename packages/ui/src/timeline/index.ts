@@ -17,6 +17,7 @@ export { TimelineGroup } from './TimelineGroup';
 export { StackedBubble } from './StackedBubble';
 export { ExpandedStack } from './ExpandedStack';
 export { TimelineCalendarView } from './TimelineCalendarView';
+export { TimelineErrorState } from './TimelineErrorState';
 export { SourceTypeIcon, fallbackRenderer, pickRenderer } from './renderers';
 export { TONE_LABELS, eventTone, toneColor, toneSoftColor, type TimelineTone } from './eventTone';
 export { isNewEvent } from './newness';

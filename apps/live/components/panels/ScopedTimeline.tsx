@@ -50,6 +50,11 @@ export function ScopedTimeline({
             {emptyMessage}
           </p>
         }
+        // A team's activity or a diagram's history can fail to read for
+        // exactly the reasons the landing feed can, and "nothing has
+        // happened to this diagram yet" is just as wrong an answer.
+        error={feed.error}
+        onRetry={feed.retry}
         hasMore={feed.hasMore}
         loadingMore={feed.loadingMore}
         onLoadMore={feed.loadMore}
