@@ -358,6 +358,76 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M3 4v4h4M12 8v4l3 2" {...s} />
     </Glyph>
   ),
+  // Palette → Collaborate elements. Each draws what its own article describes
+  // rather than a generic "group activity" mark: five of these are boxes with
+  // rows in them, so the distinguishing detail (a gauge, a slot, a clock, a
+  // seal, a row of faces) has to carry the meaning.
+  'comment-panels': (
+    <Glyph>
+      <rect x="3" y="4" width="18" height="16" rx="2" {...s} />
+      <path
+        d="M6 8.5h8a1 1 0 011 1v1.5a1 1 0 01-1 1H8l-2 2v-2a1 1 0 01-1-1V9.5a1 1 0 011-1z"
+        {...s}
+      />
+      <path d="M12 16.5h6" {...s} />
+    </Glyph>
+  ),
+  // Planning poker: a fanned hand with the face card still turned down.
+  'estimate-cards': (
+    <Glyph>
+      <rect x="3.5" y="6" width="9" height="13" rx="1.5" transform="rotate(-12 8 12.5)" {...s} />
+      <rect x="11" y="5" width="10" height="14" rx="1.5" {...s} />
+      <path d="M14.5 9.5a1.5 1.5 0 113 0c0 1.2-1.5 1.3-1.5 2.5" {...s} />
+      <path d="M16 15h.01" {...s} />
+    </Glyph>
+  ),
+  // A fist-of-five gauge: the dial and where the room is pointing.
+  'temperature-checks': (
+    <Glyph>
+      <path d="M3.5 17a8.5 8.5 0 1117 0" {...s} />
+      <path d="M12 17l4.5-5" {...s} />
+      <path d="M12 17h.01M5.5 12.5h.01M8 9h.01M16 9h.01" {...s} />
+    </Glyph>
+  ),
+  // A ballot box: the slot, and a submission going into it unseen.
+  'idea-boxes': (
+    <Glyph>
+      <rect x="3.5" y="10" width="17" height="10.5" rx="2" {...s} />
+      <path d="M9 13.5h6" {...s} />
+      <rect x="8.5" y="3" width="7" height="5.5" rx="1" {...s} />
+      <path d="M12 8.5v1.5" {...s} />
+    </Glyph>
+  ),
+  // The run of a session: its segments, and the time against them.
+  agendas: (
+    <Glyph>
+      <rect x="3" y="4" width="12" height="16" rx="2" {...s} />
+      <path d="M6 8h6M6 11.5h6M6 15h3.5" {...s} />
+      <circle cx="17.5" cy="16" r="4" {...s} />
+      <path d="M17.5 14.2V16l1.3 1" {...s} />
+    </Glyph>
+  ),
+  // A record with the decision ticked beside it. The tick is free-standing: put
+  // inside a circle it read as a prohibition sign — the opposite of "decided".
+  'decision-records': (
+    <Glyph>
+      <rect x="3" y="3.5" width="12" height="17" rx="2" {...s} />
+      <path d="M6 8h6M6 11.5h6M6 15h3.5" {...s} />
+      <path d="M13.5 16.5l2.6 2.6 5-5.6" {...s} />
+    </Glyph>
+  ),
+  // Who was in the room: heads and shoulders against the names. Bare circles
+  // beside lines read as a bulleted list, which is not what a roll call is.
+  'roll-calls': (
+    <Glyph>
+      <rect x="3" y="4" width="18" height="16" rx="2" {...s} />
+      <circle cx="7" cy="7.8" r="1.5" {...s} />
+      <path d="M4.9 11.6a2.3 2.3 0 014.2 0" {...s} />
+      <circle cx="7" cy="14.8" r="1.5" {...s} />
+      <path d="M4.9 18.6a2.3 2.3 0 014.2 0" {...s} />
+      <path d="M12 9h6M12 16h6" {...s} />
+    </Glyph>
+  ),
   // Activity Panel category.
   'what-it-is': (
     <Glyph>

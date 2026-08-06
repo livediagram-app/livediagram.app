@@ -69,6 +69,14 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   devices: '#0284c7',
   icons: '#ec4899',
   technology: '#0ea5e9',
+  // Palette → Collaborate elements
+  'comment-panels': '#f59e0b',
+  'estimate-cards': '#8b5cf6',
+  'temperature-checks': '#ef4444',
+  'idea-boxes': '#eab308',
+  agendas: '#0891b2',
+  'decision-records': '#14b8a6',
+  'roll-calls': '#a855f7',
   // Canvas guides
   'follow-along': '#06b6d4',
   notes: '#eab308',
