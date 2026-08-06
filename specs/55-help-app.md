@@ -92,10 +92,10 @@ Both fall back **to the article's top-level feature category**, not to a single
 default. That matters more than it sounds: when the fallback landed, 107 of the
 172 landing cards under the ten feature categories had no bespoke entry, so with
 one default nearly two thirds of the catalogue drew the same sky-blue canvas
-frame in the same grey tile. (69 still take the category fallback; the Palette's
+frame in the same grey tile. (63 still take the category fallback; the Palette's
 own thirteen — its element families and its panel settings — its seven
-Collaborate and six Tools elements, and the Canvas's twelve have their own
-glyphs.) A grid where most tiles are identical is decoration, not a catalogue — the
+Collaborate, six Tools and six Behaviour elements, and the Canvas's twelve have
+their own glyphs.) A grid where most tiles are identical is decoration, not a catalogue — the
 glyph exists so a card reads as "palette" or "sharing" before you read its
 title. One distinct hue and glyph per category restores that much at least.
 
@@ -128,6 +128,12 @@ took three attempts for exactly that reason — two rings joined by a line is th
 chain that `links` means, and joined by an arc it is a pair of headphones — and
 settled on the single ring with an arrow entering it, accepting that the pairing
 lives in the label rather than the picture.
+
+One rule fell out of the Behaviour batch and is worth keeping: **draw what the
+element DOES, never the control itself.** Every Behaviour element is physically a
+button, and the family glyph already draws a button, so six glyphs of buttons
+would have been six copies of one picture. What separates them is the play
+triangle, the tick, the burst, the mosaic and the die.
 
 The system has three layers, all under `apps/help`:
 

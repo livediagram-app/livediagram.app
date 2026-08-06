@@ -358,6 +358,66 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M3 4v4h4M12 8v4l3 2" {...s} />
     </Glyph>
   ),
+  // Palette → Behaviour elements. Every one of these is, physically, a button
+  // someone presses, and the `behaviour` family glyph above already draws that.
+  // So none of them draws a button being pressed: each draws what pressing it
+  // DOES, which is the only thing that tells them apart.
+  'mode-buttons': (
+    <Glyph>
+      <rect x="3" y="14" width="18" height="7" rx="3.5" {...s} />
+      <path d="M12 11.5V6.5" {...s} />
+      <path d="M9.5 9l2.5-2.5L14.5 9" {...s} />
+      <path d="M17 3l4.5 2.5-1.9.7-.6 1.9z" {...s} />
+    </Glyph>
+  ),
+  // A play triangle: this is the button that starts something for the room.
+  'session-buttons': (
+    <Glyph>
+      <rect x="2.5" y="7" width="19" height="10" rx="5" {...s} />
+      <path d="M10 9.8l4.5 2.2-4.5 2.2z" {...s} />
+    </Glyph>
+  ),
+  // The tick, and the two you are still waiting on.
+  'done-checks': (
+    <Glyph>
+      <circle cx="8" cy="8" r="5" {...s} />
+      <path d="M5.8 8l1.6 1.6L10.3 6" {...s} />
+      <circle cx="6.5" cy="16.5" r="1.5" {...s} />
+      <path d="M4.4 20.3a2.3 2.3 0 014.2 0" {...s} />
+      <circle cx="13.5" cy="16.5" r="1.5" {...s} />
+      <path d="M11.4 20.3a2.3 2.3 0 014.2 0" {...s} />
+      <path d="M18.5 16.5h.01M21 16.5h.01" {...s} />
+    </Glyph>
+  ),
+  // A pad, and the burst it throws over the board.
+  'reaction-pads': (
+    <Glyph>
+      <rect x="4" y="12" width="12" height="8" rx="2" {...s} />
+      <path d="M8 16h4" {...s} />
+      <path d="M17.5 8.5l3-3M15 6V3M19.5 11.5h3M13.5 8.5l-1.5-1.5" {...s} />
+    </Glyph>
+  ),
+  // Content on the left, still under a mosaic on the right. Two bars for the
+  // cover read as a pause button and a left arrow made it a sidebar toggle; a
+  // censor mosaic is the one cover idiom nothing else here uses.
+  'reveal-zones': (
+    <Glyph>
+      <rect x="2.5" y="5" width="19" height="14" rx="2" {...s} />
+      <path d="M11.5 5v14" {...s} />
+      <path d="M5 9.5h4M5 13h3" {...s} />
+      <rect x="13.5" y="8" width="3" height="3" rx="0.5" {...s} />
+      <rect x="17" y="8" width="3" height="3" rx="0.5" {...s} />
+      <rect x="13.5" y="12.5" width="3" height="3" rx="0.5" {...s} />
+      <rect x="17" y="12.5" width="3" height="3" rx="0.5" {...s} />
+    </Glyph>
+  ),
+  // A die: the only thing in the set that says "at random" on its own.
+  pickers: (
+    <Glyph>
+      <rect x="4" y="4" width="16" height="16" rx="3" {...s} />
+      <path d="M8.5 8.5h.01M12 12h.01M15.5 15.5h.01" {...s} />
+    </Glyph>
+  ),
   // Palette → Tools elements. Concrete objects, so each draws the object — the
   // trap here is the neighbours rather than the subjects: a sheet of prose, a
   // note card and a ticked list are all "a rectangle with lines in it" until the

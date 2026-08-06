@@ -69,6 +69,13 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   devices: '#0284c7',
   icons: '#ec4899',
   technology: '#0ea5e9',
+  // Palette → Behaviour elements
+  'mode-buttons': '#7c3aed',
+  'session-buttons': '#f43f5e',
+  'done-checks': '#22c55e',
+  'reaction-pads': '#ec4899',
+  'reveal-zones': '#0891b2',
+  pickers: '#f59e0b',
   // Palette → Tools elements
   tables: '#0ea5e9',
   pages: '#64748b',
