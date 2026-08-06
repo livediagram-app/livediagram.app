@@ -358,6 +358,65 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M3 4v4h4M12 8v4l3 2" {...s} />
     </Glyph>
   ),
+  // Palette → Data elements. Charts are the easiest subjects in the whole set —
+  // each has one unmistakable idiom — with one exception: Rating is stars, and
+  // `favourites` in the Palette settings is already a star. So Rating draws the
+  // SCALE (a row, part filled) rather than the symbol.
+  // Just the bar, filled part-way. Drawing the ring above the bar — to cover both
+  // halves of "Bars and Rings" — made a circle sitting on a stem, which reads as
+  // a lightbulb and nothing else. One honest half beats two unreadable ones.
+  'progress-elements': (
+    <Glyph>
+      <rect x="2.5" y="8.5" width="19" height="7" rx="3.5" {...s} />
+      <rect x="5" y="10.75" width="8" height="2.5" rx="1.25" fill="currentColor" stroke="none" />
+    </Glyph>
+  ),
+  rating: (
+    <Glyph>
+      <path
+        d="M5.5 5.5l1.1 2.3 2.5.4-1.8 1.7.4 2.5-2.2-1.2-2.2 1.2.4-2.5L1.9 8.2l2.5-.4z"
+        fill="currentColor"
+        {...s}
+      />
+      <path
+        d="M12 5.5l1.1 2.3 2.5.4-1.8 1.7.4 2.5-2.2-1.2-2.2 1.2.4-2.5-1.8-1.7 2.5-.4z"
+        fill="currentColor"
+        {...s}
+      />
+      <path
+        d="M18.5 5.5l1.1 2.3 2.5.4-1.8 1.7.4 2.5-2.2-1.2-2.2 1.2.4-2.5-1.8-1.7 2.5-.4z"
+        {...s}
+      />
+      <path d="M4 17.5h16" {...s} />
+    </Glyph>
+  ),
+  'pie-chart': (
+    <Glyph>
+      <circle cx="12" cy="12" r="8.5" {...s} />
+      <path d="M12 3.5v8.5l7.4 4.2" {...s} />
+    </Glyph>
+  ),
+  'bar-and-line-charts': (
+    <Glyph>
+      <path d="M3.5 20.5V4" {...s} />
+      <path d="M3.5 20.5H21" {...s} />
+      <rect x="6.5" y="13" width="3" height="5" rx="0.5" {...s} />
+      <rect x="12" y="10" width="3" height="8" rx="0.5" {...s} />
+      <rect x="17.5" y="6.5" width="3" height="11.5" rx="0.5" {...s} />
+      <path d="M6 10.5l4-3 4.5 2.5 5-4" {...s} />
+    </Glyph>
+  ),
+  // Horizontal, and posted: the rail is a run of evenly spaced points. The
+  // Explorer's `timeline` is a vertical feed, which is why this one lies flat.
+  'timeline-rail': (
+    <Glyph>
+      <path d="M2.5 12h19" {...s} />
+      <circle cx="6" cy="12" r="1.8" {...s} />
+      <circle cx="12" cy="12" r="1.8" {...s} />
+      <circle cx="18" cy="12" r="1.8" {...s} />
+      <path d="M6 14.5v3M12 6.5v3M18 14.5v3" {...s} />
+    </Glyph>
+  ),
   // Palette → Behaviour elements. Every one of these is, physically, a button
   // someone presses, and the `behaviour` family glyph above already draws that.
   // So none of them draws a button being pressed: each draws what pressing it
