@@ -856,6 +856,67 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M14 6l4 4" {...s} />
     </Glyph>
   ),
+  // Search Panel guides. Six articles about one control, so by the rule the
+  // Behaviour batch settled on, none of these draws a magnifier — `the-search-
+  // panel` below already does. Each draws WHAT you find: diagrams, a team, a tab
+  // and an element, a shape landing on the canvas, a new tab.
+  'command-palette': (
+    <Glyph>
+      <rect x="2.5" y="7" width="19" height="10" rx="2.5" {...s} />
+      <path d="M6 10.5l2 1.5-2 1.5" {...s} />
+      <path d="M11 13.5h7" {...s} />
+    </Glyph>
+  ),
+  'search-diagrams': (
+    <Glyph>
+      <path
+        d="M3 7a1.5 1.5 0 011.5-1.5h4L10 7.5h8A1.5 1.5 0 0119.5 9v8.5A1.5 1.5 0 0118 19H4.5A1.5 1.5 0 013 17.5z"
+        {...s}
+      />
+      <rect x="5.5" y="11" width="4.5" height="3.5" rx="0.5" {...s} />
+      <circle cx="15.5" cy="12.75" r="2" {...s} />
+      <path d="M10 12.75h3.5" {...s} />
+    </Glyph>
+  ),
+  'search-teams': (
+    <Glyph>
+      <path
+        d="M3 7a1.5 1.5 0 011.5-1.5h4L10 7.5h8A1.5 1.5 0 0119.5 9v8.5A1.5 1.5 0 0118 19H4.5A1.5 1.5 0 013 17.5z"
+        {...s}
+      />
+      <circle cx="9.5" cy="12" r="1.5" {...s} />
+      <path d="M7.2 16.2a2.5 2.5 0 014.6 0" {...s} />
+      <circle cx="14.5" cy="12" r="1.5" {...s} />
+      <path d="M12.2 16.2a2.5 2.5 0 014.6 0" {...s} />
+    </Glyph>
+  ),
+  // A tab above, and the element inside it that the search jumped to.
+  'search-tabs-and-elements': (
+    <Glyph>
+      <rect x="2.5" y="4" width="8" height="3.5" rx="1" {...s} />
+      <rect x="12" y="4" width="8" height="3.5" rx="1" {...s} />
+      <rect x="6" y="11" width="9" height="6.5" rx="1.5" {...s} />
+      <path d="M15.5 15l5 2.2-2.1.7-.6 2.1z" {...s} />
+    </Glyph>
+  ),
+  // A shape arriving on the canvas from above.
+  'search-add-to-canvas': (
+    <Glyph>
+      <path d="M3 9.5V8a2 2 0 012-2h4M15 6h4a2 2 0 012 2v1.5" {...s} />
+      <path d="M3 15v3a2 2 0 002 2h14a2 2 0 002-2v-3" {...s} />
+      <rect x="8.5" y="12.5" width="7" height="5" rx="1" {...s} />
+      <path d="M12 3v6M9.8 7l2.2 2 2.2-2" {...s} />
+    </Glyph>
+  ),
+  // A new tab, opened from the panel.
+  'search-create-tab': (
+    <Glyph>
+      <path d="M3 9h5l1.5-2H14v2" {...s} />
+      <rect x="3" y="9" width="18" height="11" rx="2" {...s} />
+      <path d="M14 7h4a2 2 0 012 2" {...s} />
+      <path d="M12 11.5v6M9 14.5h6" {...s} />
+    </Glyph>
+  ),
   // Search Panel guide.
   'the-search-panel': (
     <Glyph>

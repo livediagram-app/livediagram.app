@@ -124,6 +124,13 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'import-tabs': '#0891b2',
   'export-tabs': '#0284c7',
   'tab-cleanup': '#2563eb',
+  // Search Panel guides
+  'command-palette': '#6366f1',
+  'search-diagrams': '#0ea5e9',
+  'search-teams': '#a855f7',
+  'search-tabs-and-elements': '#3b82f6',
+  'search-add-to-canvas': '#22c55e',
+  'search-create-tab': '#14b8a6',
   'the-search-panel': '#6366f1',
   'dark-mode': '#475569',
 };
