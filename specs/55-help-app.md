@@ -89,10 +89,12 @@ to the glyph, `lib/featureColours.ts` to the hue, and the two maps are kept
 fallback hue reads as an oversight.
 
 Both fall back **to the article's top-level feature category**, not to a single
-default. That matters more than it sounds: 107 of the 172 landing cards under
-the ten feature categories have no bespoke entry, so with one default nearly two
-thirds of the catalogue drew the same sky-blue canvas frame in the same grey
-tile. A grid where most tiles are identical is decoration, not a catalogue — the
+default. That matters more than it sounds: when the fallback landed, 107 of the
+172 landing cards under the ten feature categories had no bespoke entry, so with
+one default nearly two thirds of the catalogue drew the same sky-blue canvas
+frame in the same grey tile. (94 still take the category fallback; the Palette's
+own thirteen — its element families and its panel settings — have their own
+glyphs.) A grid where most tiles are identical is decoration, not a catalogue — the
 glyph exists so a card reads as "palette" or "sharing" before you read its
 title. One distinct hue and glyph per category restores that much at least.
 
@@ -103,7 +105,12 @@ category lookup reads only the FIRST segment (`topCategorySlug` in
 `palette/tools/data-elements` inherits Palette's. Both resolvers are shared by
 the category index cards and the MDX `<Feature>` tile, so a feature looks the
 same wherever it appears. Adding a bespoke glyph is still the better answer for
-any individual card — the category fallback is the floor, not the goal.
+any individual card — the category fallback is the floor, not the goal. Draw them
+a category at a time: a batch that shares a family reads as a set. And **look at
+them rendered before shipping** — valid path geometry is not the same as a
+legible 24px glyph. Three of the Palette thirteen had to be redrawn only after
+seeing them: a chair that read as a table, a button whose pointer swallowed it,
+and a sticker using the folded corner that already means a document here.
 
 The system has three layers, all under `apps/help`:
 

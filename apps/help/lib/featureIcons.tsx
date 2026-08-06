@@ -114,6 +114,93 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
     </Glyph>
   ),
   // Palette → Elements.
+  // The element families the Build / Write / Collaborate / Behaviour tabs
+  // hold. Each one draws the thing it makes, so the tab reads before the label
+  // does — the whole reason these tiles exist.
+  write: (
+    <Glyph>
+      <path d="M4 20l1-4 9.5-9.5a2 2 0 012.8 2.8L8 18.8z" {...s} />
+      <path d="M13 7.5l3.5 3.5" {...s} />
+    </Glyph>
+  ),
+  build: (
+    <Glyph>
+      <rect x="3" y="13" width="8" height="7" rx="1" {...s} />
+      <rect x="13" y="13" width="8" height="7" rx="1" {...s} />
+      <rect x="8" y="4" width="8" height="7" rx="1" {...s} />
+    </Glyph>
+  ),
+  'mind-maps': (
+    <Glyph>
+      <circle cx="5.5" cy="12" r="2.5" {...s} />
+      <circle cx="18.5" cy="6" r="2.5" {...s} />
+      <circle cx="18.5" cy="12" r="2.5" {...s} />
+      <circle cx="18.5" cy="18" r="2.5" {...s} />
+      <path d="M8 11l8-4M8 12h8M8 13l8 4" {...s} />
+    </Glyph>
+  ),
+  // Two bubbles rather than two people: the Collaborate tiles are the things
+  // a group leaves on the canvas, not the people leaving them (the
+  // Collaboration category owns that glyph).
+  collaborate: (
+    <Glyph>
+      <path
+        d="M3 6.5A1.5 1.5 0 014.5 5h9A1.5 1.5 0 0115 6.5v4A1.5 1.5 0 0113.5 12H8l-3 3v-3H4.5A1.5 1.5 0 013 10.5z"
+        {...s}
+      />
+      <path d="M18 9h1.5A1.5 1.5 0 0121 10.5v4A1.5 1.5 0 0119.5 16H19v3l-3-3h-3" {...s} />
+    </Glyph>
+  ),
+  // A chair in profile: back, seat, two legs. Drawn side-on because a front-on
+  // chair is a rectangle on sticks, which reads as a table.
+  chairs: (
+    <Glyph>
+      <rect x="7" y="3.5" width="10" height="9" rx="2" {...s} />
+      <path d="M5 15h14" {...s} />
+      <path d="M8 15v5.5M16 15v5.5" {...s} />
+    </Glyph>
+  ),
+  lanes: (
+    <Glyph>
+      <rect x="3" y="4" width="18" height="16" rx="2" {...s} />
+      <path d="M3 9.5h18M3 15h18" {...s} />
+      <path d="M6.5 4v16" {...s} />
+    </Glyph>
+  ),
+  entities: (
+    <Glyph>
+      <rect x="4" y="4" width="16" height="16" rx="2" {...s} />
+      <path d="M4 8.5h16" {...s} />
+      <path d="M7.5 12h9M7.5 16h9" {...s} />
+    </Glyph>
+  ),
+  'embed-elements': (
+    <Glyph>
+      <rect x="3" y="5" width="18" height="14" rx="2" {...s} />
+      <path d="M10.5 9.5l4.5 2.5-4.5 2.5z" {...s} />
+    </Glyph>
+  ),
+  // A pressable pill with the pointer arriving from outside it: every Behaviour
+  // element is something a participant activates rather than reads. The pointer
+  // sits clear of the pill — overlapping the two made one shape nobody could
+  // read as either.
+  behaviour: (
+    <Glyph>
+      <rect x="3" y="5" width="14" height="7" rx="3.5" {...s} />
+      <path d="M6.5 8.5h7" {...s} />
+      <path d="M13 15l6.5 2.5-2.8.9-.9 2.8z" {...s} />
+    </Glyph>
+  ),
+  // A die-cut plate: the outer cut line, the white margin inside it, and a motif
+  // on the plate. Deliberately NOT a folded corner — that idiom already means a
+  // document here (`document`, `page`), and a sticker is the opposite of a page.
+  stickers: (
+    <Glyph>
+      <rect x="3" y="3" width="18" height="18" rx="5" {...s} />
+      <rect x="5.5" y="5.5" width="13" height="13" rx="3.5" {...s} />
+      <path d="M12 9l1.3 2.7 2.9.4-2.1 2 .5 2.9-2.6-1.4-2.6 1.4.5-2.9-2.1-2 2.9-.4z" {...s} />
+    </Glyph>
+  ),
   shapes: (
     <Glyph>
       <rect x="3" y="4" width="8" height="8" rx="1" {...s} />
@@ -342,6 +429,29 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
     </Glyph>
   ),
   // Palette → Palette Settings.
+  // A filled star, because Favourites is the one tile that marks a choice
+  // rather than describing a feature.
+  favourites: (
+    <Glyph>
+      <path d="M12 4l2.4 5 5.6.8-4 3.9 1 5.5-5-2.7-5 2.7 1-5.5-4-3.9 5.6-.8z" {...s} />
+    </Glyph>
+  ),
+  // Two overlapping panels with the back one showing through.
+  'panel-opacity': (
+    <Glyph>
+      <rect x="3" y="3.5" width="12" height="12" rx="2" {...s} />
+      <rect x="9" y="8.5" width="12" height="12" rx="2" {...s} />
+      <path d="M9 12.5h6M9 15.5h6" {...s} />
+    </Glyph>
+  ),
+  // A plus appearing beside an element, which is the gesture itself.
+  'quick-add-on-hover': (
+    <Glyph>
+      <rect x="3" y="7" width="10" height="10" rx="1.5" {...s} />
+      <circle cx="18" cy="6" r="3.5" {...s} />
+      <path d="M18 4.5v3M16.5 6h3" {...s} />
+    </Glyph>
+  ),
   'auto-attach-arrows': (
     <Glyph>
       <rect x="3" y="9" width="6" height="6" rx="1" {...s} />
