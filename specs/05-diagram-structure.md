@@ -48,6 +48,29 @@ Canonical types live in **`@livediagram/diagram`** — that package is the sourc
 | `arrow-types.ts`   | anchors, endpoints, arrowheads, `ArrowElement`                          |
 | `shape-kind.ts`    | `ShapeKind`, the closed vocabulary of shapes                            |
 
+**The vocabularies exist twice, and tests hold them together.** `Element`'s
+`type` discriminants and `ShapeKind`'s members are compile-time unions, while
+`validate.ts` keeps each as a runtime set (`ELEMENT_TYPES`, `SHAPE_KINDS`) so it
+can gate input crossing a trust boundary — the api worker, the MCP server, the AI
+panel. Nothing in the compiler makes a union and a set agree, and both drift
+silently:
+
+- A shape kind missing from `SHAPE_KINDS` is coerced to a square by
+  `coerceShapeKind`. Wrong, visible, recoverable.
+- An element type missing from `ELEMENT_TYPES` fails `isValidElement`, and
+  `isValidTab` fails a tab if **any** element does — so the api answers
+  `400 invalid tab` and the tab stops persisting at all. Add an element type,
+  wire it through the editor, forget the set, and the feature works until the
+  first save. `ELEMENT_TYPES` is also the list of types the MCP hands the calling
+  model, so the gap is invisible to AI callers too.
+
+`shape-kind.test.ts` and `element-type-vocabulary.test.ts` read the union members
+out of the source (the members cannot be enumerated at runtime) and compare them
+against the sets in both directions, each with a check that the extraction itself
+still matches so the comparison can't pass vacuously. The element guard also
+builds a minimal element of every type and runs it through the real validator,
+because two agreeing lists still would not prove the validator handles each type.
+
 Treat the sketch below as a high-level outline; read the package for the full field list.
 
 ```ts
