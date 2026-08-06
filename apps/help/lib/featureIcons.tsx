@@ -771,6 +771,57 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M4.5 4.5h5.5M14 4.5h5.5" {...s} />
     </Glyph>
   ),
+  // Explorer section guides — the five landing cards. `folders` and `unsorted`
+  // are the awkward pair: the Explorer's own CATEGORY glyph is a folder tree, so
+  // these two have to be folders that are unmistakably about something else —
+  // nesting for one, and being outside a folder for the other.
+  'list-and-card-views': (
+    <Glyph>
+      <path d="M3 7h6M3 12h6M3 17h6" {...s} />
+      <rect x="12.5" y="5" width="8.5" height="6" rx="1.5" {...s} />
+      <rect x="12.5" y="13" width="8.5" height="6" rx="1.5" {...s} />
+    </Glyph>
+  ),
+  // A day-by-day feed: the spine, and what landed against it.
+  timeline: (
+    <Glyph>
+      <path d="M6 3.5v17" {...s} />
+      <circle cx="6" cy="7.5" r="1.6" {...s} />
+      <circle cx="6" cy="16.5" r="1.6" {...s} />
+      <path d="M9.5 7.5h9M9.5 16.5h6" {...s} />
+      <path d="M9.5 12h4" {...s} />
+    </Glyph>
+  ),
+  // One folder inside another, which is the whole point of a nestable tree.
+  folders: (
+    <Glyph>
+      <path d="M2.5 6.5A1.5 1.5 0 014 5h3.5L9 6.5h4A1.5 1.5 0 0114.5 8v2" {...s} />
+      <path d="M2.5 6.5v10A1.5 1.5 0 004 18h4" {...s} />
+      <path
+        d="M9 12.5A1.5 1.5 0 0110.5 11h2l1.5 1.5h4a1.5 1.5 0 011.5 1.5v4a1.5 1.5 0 01-1.5 1.5h-8A1.5 1.5 0 019 19z"
+        {...s}
+      />
+    </Glyph>
+  ),
+  // Loose diagrams sitting OUTSIDE the folder, which is what Unsorted holds.
+  unsorted: (
+    <Glyph>
+      <path
+        d="M3 13.5A1.5 1.5 0 014.5 12h3L9 13.5h9a1.5 1.5 0 011.5 1.5v4A1.5 1.5 0 0118 20.5H4.5A1.5 1.5 0 013 19z"
+        {...s}
+      />
+      <rect x="6.5" y="3.5" width="6" height="4.5" rx="1" {...s} />
+      <rect x="14" y="5.5" width="6" height="4.5" rx="1" {...s} />
+    </Glyph>
+  ),
+  // An account, not a person in a list: the head sits in its avatar ring.
+  profile: (
+    <Glyph>
+      <circle cx="12" cy="12" r="9" {...s} />
+      <circle cx="12" cy="10" r="2.8" {...s} />
+      <path d="M6.5 19a6 6 0 0111 0" {...s} />
+    </Glyph>
+  ),
   // Explorer section guides.
   recent: (
     <Glyph>

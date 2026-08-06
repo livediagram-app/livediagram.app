@@ -92,10 +92,10 @@ Both fall back **to the article's top-level feature category**, not to a single
 default. That matters more than it sounds: when the fallback landed, 107 of the
 172 landing cards under the ten feature categories had no bespoke entry, so with
 one default nearly two thirds of the catalogue drew the same sky-blue canvas
-frame in the same grey tile. (57 still take the category fallback; the Palette's
+frame in the same grey tile. (52 still take the category fallback; the Palette's
 own thirteen — its element families and its panel settings — its seven
-Collaborate, six Tools and six Behaviour elements, the Canvas's twelve and the
-Search Panel's six have their own glyphs.) A grid where most tiles are identical is decoration, not a catalogue — the
+Collaborate, six Tools and six Behaviour elements, the Canvas's twelve, the
+Search Panel's six and the Explorer's five have their own glyphs.) A grid where most tiles are identical is decoration, not a catalogue — the
 glyph exists so a card reads as "palette" or "sharing" before you read its
 title. One distinct hue and glyph per category restores that much at least.
 
@@ -139,6 +139,13 @@ Applied up front, that rule is also what made the Search Panel's six the first
 batch to need no redraw at all: six articles about one control, and not one of
 them draws a magnifier. They draw what you find — diagrams in a folder, a team,
 a tab and the element inside it, a shape landing on the canvas, a new tab.
+
+The Explorer's five raised the mirror-image problem and it is worth naming: a
+bespoke glyph has to differ from its own CATEGORY's fallback too, since the two
+sit side by side in the same grid until every card in the category is drawn. The
+Explorer's fallback is a folder tree, so Folders is two folders nested and
+Unsorted is loose cards sitting outside one — folders that are unmistakably about
+something other than being a folder.
 
 The system has three layers, all under `apps/help`:
 
