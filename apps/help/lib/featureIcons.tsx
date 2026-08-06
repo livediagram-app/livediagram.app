@@ -589,6 +589,46 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M7.5 9.8l2.2 2.2-2.2 2.2" {...s} />
     </Glyph>
   ),
+  // Palette → Arrow guides. Four articles about arrows, and the `arrows` family
+  // glyph above is already a plain arrow, so none of these is one. Each draws the
+  // single thing its article is about: the three shapes, the handle you drag, the
+  // obstacle, and the other arrow.
+  'arrow-styles': (
+    <Glyph>
+      <path d="M3 5h15M15.5 3l2.5 2-2.5 2" {...s} />
+      <path d="M3 12c4-4 11 4 15 0" {...s} />
+      <path d="M15.5 10l2.5 2-2.5 2" {...s} />
+      <path d="M3 19h7.5v-4H18" {...s} />
+      <path d="M15.5 13l2.5 2-2.5 2" {...s} />
+    </Glyph>
+  ),
+  // The handle itself, sitting on the control point — that is the whole article.
+  'curve-and-elbow-handles': (
+    <Glyph>
+      <path d="M3 18C3 8 21 16 21 6" {...s} />
+      <rect x="9.5" y="10.5" width="5" height="5" rx="1" fill="currentColor" stroke="none" />
+      <path d="M12 6.5v-3M10.3 5l1.7-1.7L13.7 5" {...s} />
+    </Glyph>
+  ),
+  // The obstacle, with the arrow routed AROUND it. An arc over the top read as an
+  // umbrella sheltering the box rather than a path avoiding it, so the route now
+  // turns: up the near side, across above, down the far side.
+  'avoiding-elements': (
+    <Glyph>
+      <rect x="9" y="9" width="6" height="6" rx="1.5" {...s} />
+      <path d="M2.5 17.5h3.5V7h12.5v8" {...s} />
+      <path d="M16 13l2.5 2.5L21 13" {...s} />
+    </Glyph>
+  ),
+  // One arrow ending ON another, with the snap point marked.
+  'arrow-to-arrow': (
+    <Glyph>
+      <path d="M3 19.5h18" {...s} />
+      <path d="M12 3v13" {...s} />
+      <path d="M9.5 13.5L12 16l2.5-2.5" {...s} />
+      <circle cx="12" cy="19.5" r="1.8" fill="currentColor" stroke="none" />
+    </Glyph>
+  ),
   // Palette → Collaborate elements. Each draws what its own article describes
   // rather than a generic "group activity" mark: five of these are boxes with
   // rows in them, so the distinguishing detail (a gauge, a slot, a clock, a

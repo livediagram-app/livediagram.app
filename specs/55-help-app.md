@@ -95,8 +95,8 @@ one default nearly two thirds of the catalogue drew the same sky-blue canvas
 frame in the same grey tile. (42 still take the category fallback; the Palette's
 own thirteen — its element families and its panel settings — its seven
 Collaborate, six Tools, six Behaviour and five Data elements, the Canvas's
-twelve, the Search Panel's six, the Explorer's five and Voting's five have their
-own glyphs.) A grid where most tiles are identical is decoration, not a catalogue — the
+twelve, the Search Panel's six, the Explorer's five, Voting's five and the four
+Arrow guides have their own glyphs.) A grid where most tiles are identical is decoration, not a catalogue — the
 glyph exists so a card reads as "palette" or "sharing" before you read its
 title. One distinct hue and glyph per category restores that much at least.
 
@@ -160,7 +160,10 @@ because the rule was applied first: five articles about ONE feature, where every
 single one could have been drawn as "some dots". They draw spending a dot,
 restricting to a layer, hiding the count, tracking the room, and what won.
 `casting-dots` has no box around its dots for the same reason Rating has no star:
-dots in a box is the die that `pickers` already draws.
+dots in a box is the die that `pickers` already draws. The four Arrow guides are
+the same shape of problem — four articles about arrows, next to an `arrows` family
+glyph that is already an arrow — so they draw the three shapes, the handle you
+drag, the obstacle, and the other arrow.
 
 The system has three layers, all under `apps/help`:
 
