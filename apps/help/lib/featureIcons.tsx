@@ -358,6 +358,61 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M3 4v4h4M12 8v4l3 2" {...s} />
     </Glyph>
   ),
+  // Collaboration → Voting. Five articles about one feature, so the collisions
+  // here are internal: every one of them could have been "some dots". Each draws
+  // its own subject instead — spending a dot, restricting to a layer, hiding the
+  // count, tracking the room, and what won.
+  //
+  // `casting-dots` deliberately has no enclosing square: dots inside a box is the
+  // die that `pickers` already draws.
+  'casting-dots': (
+    <Glyph>
+      <circle cx="6" cy="16.5" r="2" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="16.5" r="2" fill="currentColor" stroke="none" />
+      <circle cx="18" cy="16.5" r="2" {...s} />
+      <circle cx="18" cy="5.5" r="2" fill="currentColor" stroke="none" />
+      <path d="M18 8.5v4M16.3 11l1.7 1.8 1.7-1.8" {...s} />
+    </Glyph>
+  ),
+  // The stack, with the dots landing on one sheet of it.
+  'vote-layers': (
+    <Glyph>
+      <path d="M12 3l7.5 4.2-7.5 4.2-7.5-4.2z" {...s} />
+      <path d="M4.5 12l7.5 4.2 7.5-4.2" {...s} />
+      <path d="M4.5 16.5L12 20.7l7.5-4.2" {...s} />
+      <circle cx="9.5" cy="7.2" r="1.1" fill="currentColor" stroke="none" />
+      <circle cx="13" cy="7.2" r="1.1" fill="currentColor" stroke="none" />
+    </Glyph>
+  ),
+  // A struck-through eye: the counts and the cursors are what stay hidden. The
+  // open eye belongs to layer visibility, which is a different question.
+  'vote-privacy': (
+    <Glyph>
+      <path d="M3 12s3.5-5.5 9-5.5 9 5.5 9 5.5-3.5 5.5-9 5.5S3 12 3 12z" {...s} />
+      <circle cx="12" cy="12" r="2.5" {...s} />
+      <path d="M4 20L20 4" {...s} />
+    </Glyph>
+  ),
+  // A panel tracking the room: who has voted, and how far along it is.
+  'vote-panel': (
+    <Glyph>
+      <rect x="3" y="3.5" width="18" height="17" rx="2" {...s} />
+      <path d="M3 8h18" {...s} />
+      <path d="M6 11.5h7M6 15h5" {...s} />
+      <rect x="6" y="17.5" width="12" height="1.5" rx="0.75" {...s} />
+      <path d="M6 18.25h5" {...s} />
+    </Glyph>
+  ),
+  // A podium: the tallest in the middle, which is what a ranked result looks
+  // like. No axes, so it cannot be read as the bar chart.
+  'vote-results': (
+    <Glyph>
+      <rect x="9" y="5.5" width="6" height="15" rx="1" {...s} />
+      <rect x="2.5" y="11" width="6" height="9.5" rx="1" {...s} />
+      <rect x="15.5" y="14" width="6" height="6.5" rx="1" {...s} />
+      <path d="M11.5 9h1v4" {...s} />
+    </Glyph>
+  ),
   // Palette → Data elements. Charts are the easiest subjects in the whole set —
   // each has one unmistakable idiom — with one exception: Rating is stars, and
   // `favourites` in the Palette settings is already a star. So Rating draws the

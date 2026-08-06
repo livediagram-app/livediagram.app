@@ -92,10 +92,11 @@ Both fall back **to the article's top-level feature category**, not to a single
 default. That matters more than it sounds: when the fallback landed, 107 of the
 172 landing cards under the ten feature categories had no bespoke entry, so with
 one default nearly two thirds of the catalogue drew the same sky-blue canvas
-frame in the same grey tile. (47 still take the category fallback; the Palette's
+frame in the same grey tile. (42 still take the category fallback; the Palette's
 own thirteen — its element families and its panel settings — its seven
 Collaborate, six Tools, six Behaviour and five Data elements, the Canvas's
-twelve, the Search Panel's six and the Explorer's five have their own glyphs.) A grid where most tiles are identical is decoration, not a catalogue — the
+twelve, the Search Panel's six, the Explorer's five and Voting's five have their
+own glyphs.) A grid where most tiles are identical is decoration, not a catalogue — the
 glyph exists so a card reads as "palette" or "sharing" before you read its
 title. One distinct hue and glyph per category restores that much at least.
 
@@ -153,6 +154,13 @@ a bar is a circle on a stem, which reads as a lightbulb and nothing else. It dra
 the bar only. Rating hit the same collision rule from the other side — stars, when
 `favourites` is already a star — so it draws the SCALE, a row part-filled, rather
 than the symbol.
+
+Voting's five are the clearest case of the whole exercise, and needed no redraw
+because the rule was applied first: five articles about ONE feature, where every
+single one could have been drawn as "some dots". They draw spending a dot,
+restricting to a layer, hiding the count, tracking the room, and what won.
+`casting-dots` has no box around its dots for the same reason Rating has no star:
+dots in a box is the die that `pickers` already draws.
 
 The system has three layers, all under `apps/help`:
 

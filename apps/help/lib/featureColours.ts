@@ -69,6 +69,12 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   devices: '#0284c7',
   icons: '#ec4899',
   technology: '#0ea5e9',
+  // Collaboration → Voting
+  'casting-dots': '#ef4444',
+  'vote-layers': '#6366f1',
+  'vote-privacy': '#64748b',
+  'vote-panel': '#0891b2',
+  'vote-results': '#f59e0b',
   // Palette → Data elements
   'progress-elements': '#0ea5e9',
   rating: '#f59e0b',
