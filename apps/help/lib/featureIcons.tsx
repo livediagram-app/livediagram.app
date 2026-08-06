@@ -358,6 +358,63 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M3 4v4h4M12 8v4l3 2" {...s} />
     </Glyph>
   ),
+  // Palette → Tools elements. Concrete objects, so each draws the object — the
+  // trap here is the neighbours rather than the subjects: a sheet of prose, a
+  // note card and a ticked list are all "a rectangle with lines in it" until the
+  // detail that separates them is the loudest thing in the glyph.
+  tables: (
+    <Glyph>
+      <rect x="3" y="4.5" width="18" height="15" rx="2" {...s} />
+      <path d="M3 9.5h18M3 14.5h18" {...s} />
+      <path d="M9 4.5v15M15 4.5v15" {...s} />
+    </Glyph>
+  ),
+  // A portrait sheet, filled to the edges: the point of a Page is that it holds
+  // more prose than a label can.
+  pages: (
+    <Glyph>
+      <rect x="5" y="2.5" width="14" height="19" rx="2" {...s} />
+      <path d="M8 7h8M8 10.5h8M8 14h8M8 17.5h5" {...s} />
+    </Glyph>
+  ),
+  // Tilted, because a sticky note on a board never is not.
+  'sticky-notes': (
+    <Glyph>
+      <rect x="4" y="5" width="15" height="15" rx="1.5" transform="rotate(-7 11.5 12.5)" {...s} />
+      <path d="M8 10.5h7M8 14h4.5" {...s} />
+    </Glyph>
+  ),
+  'code-blocks': (
+    <Glyph>
+      <rect x="2.5" y="4.5" width="19" height="15" rx="2" {...s} />
+      <path d="M9 9.5L6.5 12 9 14.5" {...s} />
+      <path d="M15 9.5L17.5 12 15 14.5" {...s} />
+      <path d="M12.5 9l-1.5 6" {...s} />
+    </Glyph>
+  ),
+  // Ticked rows, with one still to do — a checklist is only interesting part
+  // done.
+  checklists: (
+    <Glyph>
+      <rect x="3" y="4" width="18" height="16" rx="2" {...s} />
+      <path d="M6 8.5l1.4 1.4 2.6-2.8" {...s} />
+      <path d="M6 14.5l1.4 1.4 2.6-2.8" {...s} />
+      <path d="M13 9h5M13 15h5" {...s} />
+    </Glyph>
+  ),
+  // One ring, with the jump going through it. Two rings is the truer picture of
+  // the feature (they come in pairs) but neither two-ring version read: joined by
+  // a straight line it was the chain that `links` already means, and joined by an
+  // arc over the top it was a pair of headphones. An arrow entering a ring is the
+  // idiom people know, and the pairing is what the label is for.
+  portals: (
+    <Glyph>
+      <ellipse cx="14" cy="12" rx="5" ry="8.5" {...s} />
+      <ellipse cx="14" cy="12" rx="2" ry="4" {...s} />
+      <path d="M2 12h7.5" {...s} />
+      <path d="M7.5 9.8l2.2 2.2-2.2 2.2" {...s} />
+    </Glyph>
+  ),
   // Palette → Collaborate elements. Each draws what its own article describes
   // rather than a generic "group activity" mark: five of these are boxes with
   // rows in them, so the distinguishing detail (a gauge, a slot, a clock, a

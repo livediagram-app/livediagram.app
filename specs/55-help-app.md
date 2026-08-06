@@ -92,9 +92,10 @@ Both fall back **to the article's top-level feature category**, not to a single
 default. That matters more than it sounds: when the fallback landed, 107 of the
 172 landing cards under the ten feature categories had no bespoke entry, so with
 one default nearly two thirds of the catalogue drew the same sky-blue canvas
-frame in the same grey tile. (75 still take the category fallback; the Palette's
+frame in the same grey tile. (69 still take the category fallback; the Palette's
 own thirteen — its element families and its panel settings — its seven
-Collaborate elements, and the Canvas's twelve have their own glyphs.) A grid where most tiles are identical is decoration, not a catalogue — the
+Collaborate and six Tools elements, and the Canvas's twelve have their own
+glyphs.) A grid where most tiles are identical is decoration, not a catalogue — the
 glyph exists so a card reads as "palette" or "sharing" before you read its
 title. One distinct hue and glyph per category restores that much at least.
 
@@ -120,9 +121,13 @@ batch cost two: a tick drawn inside a circle rendered as a prohibition sign,
 which is the opposite of "decided", and a roll call drawn as circles beside
 lines read as a bulleted list until the circles became heads and shoulders.
 
-The pattern in all five redraws is worth stating, since it is not what you would
-guess: none of them was wrong on its own terms. Each one had either landed on a
-glyph already in the set, or landed on a completely different idiom's meaning.
+The pattern in every redraw so far is worth stating, since it is not what you
+would guess: none was wrong on its own terms. Each had either landed on a glyph
+already in the set, or landed on a completely different idiom's meaning. Portals
+took three attempts for exactly that reason — two rings joined by a line is the
+chain that `links` means, and joined by an arc it is a pair of headphones — and
+settled on the single ring with an arrow entering it, accepting that the pairing
+lives in the label rather than the picture.
 
 The system has three layers, all under `apps/help`:
 

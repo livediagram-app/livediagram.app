@@ -69,6 +69,13 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   devices: '#0284c7',
   icons: '#ec4899',
   technology: '#0ea5e9',
+  // Palette → Tools elements
+  tables: '#0ea5e9',
+  pages: '#64748b',
+  'sticky-notes': '#eab308',
+  'code-blocks': '#475569',
+  checklists: '#22c55e',
+  portals: '#8b5cf6',
   // Palette → Collaborate elements
   'comment-panels': '#f59e0b',
   'estimate-cards': '#8b5cf6',
