@@ -97,7 +97,16 @@ the ten feature categories now have a glyph and a hue of their own, so the
 category fallback has become what it should be: the safety net a NEW card lands
 on before someone draws it, rather than something a reader sees. Keep it that
 way — a new landing page should arrive with its own entry in both maps, the way
-it arrives with its own registry entry. A grid where most tiles are identical is decoration, not a
+it arrives with its own registry entry.
+
+The **support** categories work the same way one level simpler. Their cards render
+through `ArticleCard`, which takes its glyph from `SUPPORT_ARTICLE_ICONS`
+(`lib/articleIcons.tsx`) and its tone from the brand, so there is no paired hue
+map to keep in step — and it falls back to a generic document glyph rather than a
+per-category one. That fallback had 13 of the 40 icon-showing support cards on it,
+a third of them identical, so those are drawn too. (Getting Started is the
+exception by design: its cards lead with a numbered step badge instead of an
+icon.) Both halves of the catalogue are now fully illustrated. A grid where most tiles are identical is decoration, not a
 catalogue — the
 glyph exists so a card reads as "palette" or "sharing" before you read its
 title. One distinct hue and glyph per category restores that much at least.

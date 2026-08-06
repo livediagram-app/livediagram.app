@@ -13,6 +13,120 @@ import { Glyph, iconStroke as s } from './featureIcons';
  * at the call site, so a support card is never icon-less.
  */
 export const SUPPORT_ARTICLE_ICONS: Record<string, ReactNode> = {
+  // ---- Developers ----
+  // Braces, not angle brackets: `code-blocks` in featureIcons is already `</>`.
+  'api-overview': (
+    <Glyph>
+      <path d="M9 4.5C6.5 4.5 6.5 10 4 10c2.5 0 2.5 5.5 5 5.5" {...s} />
+      <path d="M15 4.5c2.5 0 2.5 5.5 5 5.5-2.5 0-2.5 5.5-5 5.5" {...s} />
+      <path d="M6.5 20h11" {...s} />
+    </Glyph>
+  ),
+  // A key. Nothing else in either icon set is one, and it is the plainest
+  // drawing of a bearer token that is not the token article's own ticket.
+  authentication: (
+    <Glyph>
+      <circle cx="7.5" cy="9.5" r="4" {...s} />
+      <path d="M10.3 12.3L20 22" {...s} />
+      <path d="M15.5 17.5l2-2M18 20l2-2" {...s} />
+    </Glyph>
+  ),
+  // Requests going out and data coming back.
+  'working-with-diagrams': (
+    <Glyph>
+      <rect x="2.5" y="4" width="7" height="6" rx="1.5" {...s} />
+      <rect x="14.5" y="14" width="7" height="6" rx="1.5" {...s} />
+      <path d="M11 6.5h7.5M16.5 4.5l2 2-2 2" {...s} />
+      <path d="M13 17.5H5.5M7.5 15.5l-2 2 2 2" {...s} />
+    </Glyph>
+  ),
+  'errors-and-rate-limits': (
+    <Glyph>
+      <path d="M12 3.5L22 20.5H2z" {...s} />
+      <path d="M12 10v4.5" {...s} />
+      <path d="M12 17.5h.01" {...s} />
+    </Glyph>
+  ),
+  // ---- Account and data ----
+  // A ticket with the secret punched into it. The key belongs to
+  // `authentication`, which is the article about using one.
+  'api-tokens': (
+    <Glyph>
+      <path
+        d="M3 7.5A1.5 1.5 0 014.5 6h15A1.5 1.5 0 0121 7.5v2a2.5 2.5 0 000 5v2a1.5 1.5 0 01-1.5 1.5h-15A1.5 1.5 0 013 16.5z"
+        {...s}
+      />
+      <path d="M7 12h.01M10 12h.01M13 12h.01" {...s} />
+    </Glyph>
+  ),
+  // A plug: the article is about connecting an outside tool.
+  'connect-ai-mcp': (
+    <Glyph>
+      <path d="M9 3.5v5M15 3.5v5" {...s} />
+      <path d="M6.5 8.5h11v3a5.5 5.5 0 01-11 0z" {...s} />
+      <path d="M12 17v3.5" {...s} />
+    </Glyph>
+  ),
+  // An envelope with the bell that decides whether it is sent.
+  // `roles-and-invites` is an envelope with a person on it.
+  'email-notifications': (
+    <Glyph>
+      <path
+        d="M2.5 7A1.5 1.5 0 014 5.5h11A1.5 1.5 0 0116.5 7v8A1.5 1.5 0 0115 16.5H4A1.5 1.5 0 012.5 15z"
+        {...s}
+      />
+      <path d="M2.5 7l7 4.5L16.5 7" {...s} />
+      <path d="M17 12.5a2.5 2.5 0 015 0v2.5h-5z" {...s} />
+      <path d="M18.7 17a1 1 0 001.6 0" {...s} />
+    </Glyph>
+  ),
+  // ---- Supported devices ----
+  // Three siblings, told apart by proportion: that IS the subject.
+  desktop: (
+    <Glyph>
+      <rect x="2.5" y="4" width="19" height="12" rx="2" {...s} />
+      <path d="M9 20h6M12 16v4" {...s} />
+    </Glyph>
+  ),
+  tablet: (
+    <Glyph>
+      <rect x="5" y="2.5" width="14" height="19" rx="2" {...s} />
+      <path d="M12 18.5h.01" {...s} />
+    </Glyph>
+  ),
+  mobile: (
+    <Glyph>
+      <rect x="7.5" y="2.5" width="9" height="19" rx="2" {...s} />
+      <path d="M10.5 5.5h3" {...s} />
+      <path d="M12 18.5h.01" {...s} />
+    </Glyph>
+  ),
+  // ---- Tips ----
+  // Two of the same thing plus a plus: another one of these. `shadows` is an
+  // offset FILLED copy and `panel-opacity` is two panels showing through.
+  'duplicating-elements': (
+    <Glyph>
+      <rect x="3" y="3.5" width="11" height="9" rx="1.5" {...s} />
+      <rect x="10" y="11.5" width="11" height="9" rx="1.5" {...s} />
+      <path d="M15.5 14.5v3M14 16h3" {...s} />
+    </Glyph>
+  ),
+  // A clipboard, which is literally what the article is about.
+  'copy-and-paste': (
+    <Glyph>
+      <rect x="4.5" y="4.5" width="15" height="17" rx="2" {...s} />
+      <path d="M9 4.5V3.5a1.5 1.5 0 011.5-1.5h3A1.5 1.5 0 0115 3.5v1" {...s} />
+      <path d="M8 11h8M8 15h5" {...s} />
+    </Glyph>
+  ),
+  // ---- Privacy ----
+  // A cloud with a line through it: the diagram never leaves the browser.
+  'offline-mode': (
+    <Glyph>
+      <path d="M6.5 17.5a4 4 0 01.3-8 5.5 5.5 0 0110.4 1.4A3.5 3.5 0 0117 17.5z" {...s} />
+      <path d="M4 20.5L20 4" {...s} />
+    </Glyph>
+  ),
   // ---- About ----
   'what-is-livediagram': (
     <Glyph>
