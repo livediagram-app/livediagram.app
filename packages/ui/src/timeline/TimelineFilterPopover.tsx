@@ -13,13 +13,17 @@ import { createPortal } from 'react-dom';
 import { POPOVER_VIEWPORT_MARGIN, clampIntoRange } from '../popover';
 import { buildMonthCells, formatMonth, shiftMonth } from './monthCells';
 import { CATEGORY_LABELS, type TimelineCategory } from './eventCategory';
+import { ModeIcon, TIMELINE_MODES } from './ModeIcon';
 import type { TimelineActorFilter } from './useTimelineControls';
+import type { TimelineMode } from './types';
 
 const WIDTH = 272;
 const GAP = 8;
 
 export function TimelineFilterPopover({
   anchor,
+  mode,
+  onModeChange,
   allCategories,
   excluded,
   onToggle,
@@ -33,6 +37,10 @@ export function TimelineFilterPopover({
   onClose,
 }: {
   anchor: DOMRect;
+  // The view mode renders here only below `sm:`, where the header row
+  // has no space for its own switch (spec/138 §2.3).
+  mode: TimelineMode;
+  onModeChange: (mode: TimelineMode) => void;
   allCategories: TimelineCategory[];
   excluded: Set<TimelineCategory>;
   onToggle: (category: TimelineCategory) => void;
@@ -99,7 +107,42 @@ export function TimelineFilterPopover({
       style={{ position: 'fixed', left: position.left, top: position.top, width: WIDTH }}
       className="z-[var(--z-popover)] rounded-xl border border-slate-200 bg-white p-3 shadow-lg dark:border-slate-700 dark:bg-slate-900"
     >
-      {/* The sharpest filter on the feed, so it leads. Spelled out
+      {/* View mode, on a phone only — the header row's own switch is
+          hidden below `sm:` and this is where it goes (spec/138 §2.3).
+          It leads the panel because it changes what the feed IS, not
+          merely how much of it you're shown; the filters below narrow
+          whichever view this picks.
+
+          Rendered rather than hoisted into a shared component: it is
+          three buttons, and the two placements want different metrics
+          (full-width segments in a 272px panel vs a compact switch in a
+          toolbar). The icons are shared, which is the part that would
+          actually drift. */}
+      <div className="sm:hidden">
+        <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+          View
+        </p>
+        <div className="mb-4 flex rounded-lg border border-slate-200 p-0.5 dark:border-slate-700">
+          {TIMELINE_MODES.map((value) => (
+            <button
+              key={value}
+              type="button"
+              aria-pressed={mode === value}
+              onClick={() => onModeChange(value)}
+              className={`flex flex-1 items-center justify-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium capitalize transition ${
+                mode === value
+                  ? 'bg-brand-600 text-white'
+                  : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white'
+              }`}
+            >
+              <ModeIcon mode={value} />
+              {value}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* The sharpest filter on the feed, so it leads the filters. Spelled out
           rather than labelled "Others": on its own that word doesn't say
           others-what, and the option only means anything next to the
           alternative it replaces. */}

@@ -299,6 +299,17 @@ under a header that already has one reads as two unrelated toolbars.
 The two halves share one `useTimelineControls()` state, so a filter
 chip and the list it filters can never disagree.
 
+**On a phone the row is one button.** Below `sm:` the List / Week /
+Calendar switch leaves the header and moves to the top of the filter
+popover, under a **View** heading, above the filters it applies to.
+Collapsing its labels to icons bought room for a while, but three of
+them beside Filter, Help and New diagram still crowded a phone header
+into a scrum of glyphs — and the mode is a thing you set occasionally,
+not a thing you need permanently on screen. One button that opens
+everything beats five that technically fit. The trigger keeps its
+Filter label and dot; its accessible name says "View and filter
+timeline", because on that width it is both.
+
 **The header also carries New diagram**, at the row's right edge where
 every other Explorer section puts its create action. A feed is a record
 of what happened rather than a container you add to, so this page
