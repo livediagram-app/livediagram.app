@@ -783,6 +783,50 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <circle cx="12" cy="19.5" r="1.8" fill="currentColor" stroke="none" />
     </Glyph>
   ),
+  // The four that finish the Palette — the largest category in the help centre.
+  //
+  // A labelled container that sits BEHIND its contents. `groups` is brackets with
+  // no container of its own, `lanes` is banded; the label tab is what makes this
+  // one a Frame.
+  frames: (
+    <Glyph>
+      <path d="M3.5 7.5V6a1.5 1.5 0 011.5-1.5h4.5V7.5" {...s} />
+      <rect x="3.5" y="7.5" width="17" height="12.5" rx="1.5" {...s} />
+      <rect x="6.5" y="10.5" width="5" height="4" rx="1" {...s} />
+      <circle cx="16" cy="15.5" r="2" {...s} />
+    </Glyph>
+  ),
+  // A globe in the window, not a diagram: `embeds` is a diagram inside somebody
+  // else's page, and this is somebody else's page inside a diagram.
+  website: (
+    <Glyph>
+      <rect x="2.5" y="4" width="19" height="16" rx="2" {...s} />
+      <path d="M2.5 8h19" {...s} />
+      <circle cx="12" cy="14" r="4" {...s} />
+      <path d="M8 14h8" {...s} />
+      <path d="M12 10c-1.8 2.4-1.8 5.6 0 8M12 10c1.8 2.4 1.8 5.6 0 8" {...s} />
+    </Glyph>
+  ),
+  // The marks themselves: the traffic light, and the checkbox under it.
+  'shape-markers': (
+    <Glyph>
+      <rect x="3" y="4.5" width="18" height="15" rx="2" {...s} />
+      <circle cx="8" cy="9" r="1.6" fill="currentColor" stroke="none" />
+      <circle cx="12.5" cy="9" r="1.6" {...s} />
+      <circle cx="17" cy="9" r="1.6" {...s} />
+      <rect x="6.5" y="13" width="5" height="4" rx="1" {...s} />
+      <path d="M7.8 15l1.1 1.1 1.8-2" {...s} />
+      <path d="M13.5 15h4" {...s} />
+    </Glyph>
+  ),
+  // The rough sketch, with the snap that cleans it up. One sparkle, not two: the
+  // second sat low enough that its stroke clipped the viewBox edge.
+  'shape-recognition': (
+    <Glyph>
+      <path d="M4.5 6.5l13 .8-1 10.4-11.4-.6z" {...s} />
+      <path d="M19 3.5l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z" {...s} />
+    </Glyph>
+  ),
   // Palette → Collaborate elements. Each draws what its own article describes
   // rather than a generic "group activity" mark: five of these are boxes with
   // rows in them, so the distinguishing detail (a gauge, a slot, a clock, a

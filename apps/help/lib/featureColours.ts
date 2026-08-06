@@ -127,6 +127,10 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'curve-and-elbow-handles': '#8b5cf6',
   'avoiding-elements': '#0891b2',
   'arrow-to-arrow': '#14b8a6',
+  frames: '#14b8a6',
+  website: '#0284c7',
+  'shape-markers': '#f59e0b',
+  'shape-recognition': '#8b5cf6',
   // Palette → Collaborate elements
   'comment-panels': '#f59e0b',
   'estimate-cards': '#8b5cf6',
