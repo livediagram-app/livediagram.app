@@ -90,6 +90,26 @@ describe('the catalogue as rendered', () => {
     }
   });
 
+  // The guard that keeps the catalogue drawn.
+  //
+  // Every one of the 172 cards has its own glyph now, which is what makes this
+  // assertable at all — and asserting it is the only thing that keeps it true. A
+  // new landing page with no entry here does not break: it silently resolves to
+  // its category's fallback and looks like every other undrawn card in that
+  // category, which is exactly the state 16 batches of work were spent leaving.
+  // Nothing at runtime can notice that, so the check has to.
+  //
+  // If this fails, the fix is an entry in FEATURE_ICONS and FEATURE_ENTITY_HEX
+  // (the test below insists on both), not an exemption here. spec/55 records the
+  // house style and the one rule worth knowing: draw what the card is ABOUT, and
+  // check it does not land on a glyph the set already uses.
+  it('gives every feature card a glyph of its own, not just a fallback', () => {
+    const undrawn = inFeatureCategories
+      .filter((a) => !FEATURE_ICONS[a.slug])
+      .map((a) => `${a.categorySlug}/${a.slug}`);
+    expect(undrawn).toEqual([]);
+  });
+
   // A bespoke glyph paired with a category hue (or the reverse) reads as an
   // oversight, so the two per-feature maps are kept key-for-key identical.
   it('keeps the per-feature icon and hue maps in step', () => {
