@@ -358,6 +358,52 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M3 4v4h4M12 8v4l3 2" {...s} />
     </Glyph>
   ),
+  // Collaboration → Sharing guides. Most of the obvious drawings were already
+  // taken: a padlock is `locking`, a chain is `links`, a picture is `images`. So
+  // each of these draws the thing that makes it a SHARING article — the password
+  // field, the deadline, the page it sits inside, the refresh.
+  //
+  // The obscured field, not a padlock: `locking` owns the padlock, and what this
+  // article is actually about is the password you set.
+  'share-passwords': (
+    <Glyph>
+      <rect x="2.5" y="8" width="19" height="8" rx="2.5" {...s} />
+      <circle cx="7.5" cy="12" r="1.3" fill="currentColor" stroke="none" />
+      <circle cx="11.5" cy="12" r="1.3" fill="currentColor" stroke="none" />
+      <circle cx="15.5" cy="12" r="1.3" fill="currentColor" stroke="none" />
+      <path d="M19 12h.01" {...s} />
+      <path d="M12 5.5V4a2.5 2.5 0 015 0v1.5" {...s} />
+    </Glyph>
+  ),
+  // A chain whose far ring is a clock: the link, and the deadline on it.
+  'share-link-expiry': (
+    <Glyph>
+      <path d="M8.5 12H4.5a3 3 0 010-6h5" {...s} />
+      <path d="M6 9h6" {...s} />
+      <circle cx="15.5" cy="14.5" r="6" {...s} />
+      <path d="M15.5 11.5v3l2.2 1.4" {...s} />
+    </Glyph>
+  ),
+  // A diagram inside somebody else's page — the outer frame is the point.
+  embeds: (
+    <Glyph>
+      <rect x="2" y="3.5" width="20" height="17" rx="2" {...s} />
+      <path d="M2 7.5h20" {...s} />
+      <rect x="5.5" y="10.5" width="6" height="4" rx="1" {...s} />
+      <circle cx="17" cy="15.5" r="2.2" {...s} />
+      <path d="M11.5 12.5h3.5" {...s} />
+    </Glyph>
+  ),
+  // A picture that keeps refreshing itself.
+  'live-image': (
+    <Glyph>
+      <path d="M20.5 11V6a2 2 0 00-2-2H5.5a2 2 0 00-2 2v12a2 2 0 002 2h6" {...s} />
+      <path d="M3.5 16l4-4 3 2.5" {...s} />
+      <circle cx="15" cy="8.5" r="1.5" {...s} />
+      <path d="M15 15.5a4 4 0 016.5-1.5" {...s} />
+      <path d="M21.5 11.5V14h-2.5" {...s} />
+    </Glyph>
+  ),
   // Collaboration → Voting. Five articles about one feature, so the collisions
   // here are internal: every one of them could have been "some dots". Each draws
   // its own subject instead — spending a dot, restricting to a layer, hiding the

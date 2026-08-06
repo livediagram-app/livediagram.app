@@ -95,8 +95,8 @@ one default nearly two thirds of the catalogue drew the same sky-blue canvas
 frame in the same grey tile. (42 still take the category fallback; the Palette's
 own thirteen — its element families and its panel settings — its seven
 Collaborate, six Tools, six Behaviour and five Data elements, the Canvas's
-twelve, the Search Panel's six, the Explorer's five, Voting's five and the four
-Arrow guides have their own glyphs.) A grid where most tiles are identical is decoration, not a catalogue — the
+twelve, the Search Panel's six, the Explorer's five, Voting's five, the four Arrow
+guides and the four Sharing guides have their own glyphs.) A grid where most tiles are identical is decoration, not a catalogue — the
 glyph exists so a card reads as "palette" or "sharing" before you read its
 title. One distinct hue and glyph per category restores that much at least.
 
@@ -163,7 +163,11 @@ restricting to a layer, hiding the count, tracking the room, and what won.
 dots in a box is the die that `pickers` already draws. The four Arrow guides are
 the same shape of problem — four articles about arrows, next to an `arrows` family
 glyph that is already an arrow — so they draw the three shapes, the handle you
-drag, the obstacle, and the other arrow.
+drag, the obstacle, and the other arrow. The Sharing guides ran into it a third
+way: the obvious drawing for each was already spoken for somewhere else in the
+set — a padlock is `locking`, a chain is `links`, a picture is `images` — so they
+draw the password field, the deadline, the page the diagram sits inside, and the
+refresh.
 
 The system has three layers, all under `apps/help`:
 

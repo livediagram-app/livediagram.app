@@ -69,6 +69,11 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   devices: '#0284c7',
   icons: '#ec4899',
   technology: '#0ea5e9',
+  // Collaboration → Sharing guides
+  'share-passwords': '#475569',
+  'share-link-expiry': '#f59e0b',
+  embeds: '#6366f1',
+  'live-image': '#0ea5e9',
   // Collaboration → Voting
   'casting-dots': '#ef4444',
   'vote-layers': '#6366f1',
