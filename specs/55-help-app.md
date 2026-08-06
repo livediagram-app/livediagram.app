@@ -92,11 +92,12 @@ Both fall back **to the article's top-level feature category**, not to a single
 default. That matters more than it sounds: when the fallback landed, 107 of the
 172 landing cards under the ten feature categories had no bespoke entry, so with
 one default nearly two thirds of the catalogue drew the same sky-blue canvas
-frame in the same grey tile. (42 still take the category fallback; the Palette's
-own thirteen — its element families and its panel settings — its seven
-Collaborate, six Tools, six Behaviour and five Data elements, the Canvas's
-twelve, the Search Panel's six, the Explorer's five, Voting's five, and the four
-Arrow, four Sharing and four selection-mode guides have their own glyphs.) A grid where most tiles are identical is decoration, not a catalogue — the
+frame in the same grey tile. **20 still take it.** Four of the ten feature
+categories are now fully drawn — Canvas, Explorer, Search Panel and Activity
+Panel — and inside a finished category the fallback never renders at all, which
+is the reason to work category by category rather than picking off whichever
+card looks worst. A grid where most tiles are identical is decoration, not a
+catalogue — the
 glyph exists so a card reads as "palette" or "sharing" before you read its
 title. One distinct hue and glyph per category restores that much at least.
 
@@ -170,6 +171,10 @@ draw the password field, the deadline, the page the diagram sits inside, and the
 refresh. Avatar Mode and Walking Together met it a fourth way: the set already
 had five person glyphs and every one was a head-and-shoulders bust, so these two
 are whole figures mid-stride — which happens to be exactly what the feature is.
+And Changing the Theme is the plainest collision of the lot: a wheel of hues
+rendered as the `pie-chart` glyph exactly, while `themes` already owned the paint
+palette and `custom-themes` owned swatches-with-a-plus, so what was left to draw
+was the browsing itself.
 
 The system has three layers, all under `apps/help`:
 

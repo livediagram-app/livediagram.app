@@ -785,6 +785,102 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M12 9h6M12 16h6" {...s} />
     </Glyph>
   ),
+  // Canvas sub-article guides — the ten that finish the Canvas category. Once a
+  // category is fully drawn its fallback glyph never renders inside it, which is
+  // the point of working category by category.
+  'adding-elements': (
+    <Glyph>
+      <rect x="2.5" y="4" width="19" height="16" rx="2" {...s} />
+      <rect x="6" y="8.5" width="6" height="4.5" rx="1" {...s} />
+      <path d="M14.5 11l5 2.2-2.1.7-.6 2.1z" {...s} />
+      <path d="M17.5 6.5h3M19 5v3" {...s} />
+    </Glyph>
+  ),
+  'pan-and-zoom': (
+    <Glyph>
+      <path d="M12 2.5v19M2.5 12h19" {...s} />
+      <path d="M9.5 5.5L12 3l2.5 2.5M9.5 18.5L12 21l2.5-2.5" {...s} />
+      <path d="M5.5 9.5L3 12l2.5 2.5M18.5 9.5L21 12l-2.5 2.5" {...s} />
+    </Glyph>
+  ),
+  // The pattern itself, which is what the dialog changes.
+  'changing-the-background': (
+    <Glyph>
+      <rect x="2.5" y="4" width="19" height="16" rx="2" {...s} />
+      <path
+        d="M7 9h.01M12 9h.01M17 9h.01M7 12h.01M12 12h.01M17 12h.01M7 15h.01M12 15h.01M17 15h.01"
+        {...s}
+      />
+    </Glyph>
+  ),
+  // The dialog's list, with one theme picked. A wheel of hues was the obvious
+  // drawing and it rendered as the `pie-chart` glyph exactly; `themes` already
+  // owns the paint palette, and `custom-themes` owns swatches-with-a-plus, so
+  // what is left to draw is the browsing itself.
+  'changing-theme': (
+    <Glyph>
+      <rect x="3" y="4" width="18" height="16" rx="2" {...s} />
+      <circle cx="7.5" cy="8.5" r="1.5" {...s} />
+      <path d="M11 8.5h6.5" {...s} />
+      <circle cx="7.5" cy="12" r="1.5" fill="currentColor" stroke="none" />
+      <path d="M11 12h6.5" {...s} />
+      <circle cx="7.5" cy="15.5" r="1.5" {...s} />
+      <path d="M11 15.5h4.5" {...s} />
+    </Glyph>
+  ),
+  // A hierarchy whose branches are tinted differently — the whole feature.
+  'multicolour-themes': (
+    <Glyph>
+      <circle cx="12" cy="5" r="2.2" {...s} />
+      <path d="M12 7.2v3.3M6 13.5v-1.5h12v1.5" {...s} />
+      <circle cx="6" cy="17" r="2.5" fill="currentColor" stroke="none" />
+      <circle cx="18" cy="17" r="2.5" {...s} />
+    </Glyph>
+  ),
+  // Swatches with a plus: building one rather than picking one.
+  'custom-themes': (
+    <Glyph>
+      <rect x="3" y="5" width="6" height="6" rx="1.5" {...s} />
+      <rect x="11" y="5" width="6" height="6" rx="1.5" fill="currentColor" stroke="none" />
+      <rect x="3" y="14" width="6" height="6" rx="1.5" fill="currentColor" stroke="none" />
+      <path d="M14 14v6M11 17h6" {...s} />
+    </Glyph>
+  ),
+  // Two elements, both with handles on them: many things selected at once.
+  'multi-select': (
+    <Glyph>
+      <rect x="3.5" y="4" width="8" height="6" rx="1" {...s} />
+      <rect x="12.5" y="12" width="8" height="6" rx="1" {...s} />
+      <path d="M3.5 4h.01M11.5 4h.01M3.5 10h.01M11.5 10h.01" {...s} />
+      <path d="M12.5 12h.01M20.5 12h.01M12.5 18h.01M20.5 18h.01" {...s} />
+    </Glyph>
+  ),
+  // Brackets embracing two elements: bound together, and no container of its own
+  // (a titled container is what a Frame is).
+  groups: (
+    <Glyph>
+      <rect x="7" y="4.5" width="10" height="6" rx="1" {...s} />
+      <rect x="7" y="13.5" width="10" height="6" rx="1" {...s} />
+      <path d="M4.5 3.5h-2v17h2M19.5 3.5h2v17h-2" {...s} />
+    </Glyph>
+  ),
+  // A bookmarked URL as a card: its preview, and the title under it.
+  'link-cards': (
+    <Glyph>
+      <rect x="3" y="4.5" width="18" height="15" rx="2" {...s} />
+      <rect x="6" y="7.5" width="5" height="5" rx="1" {...s} />
+      <path d="M13.5 9h4.5M13.5 12h3" {...s} />
+      <path d="M6 16h12" {...s} />
+    </Glyph>
+  ),
+  'choosing-fonts': (
+    <Glyph>
+      <path d="M3 17.5L8 6.5l5 11" {...s} />
+      <path d="M5 13.5h6" {...s} />
+      <path d="M15.5 17.5l3.5-7 3.5 7" {...s} />
+      <path d="M16.8 14.8h4.4" {...s} />
+    </Glyph>
+  ),
   // Activity Panel category.
   'what-it-is': (
     <Glyph>

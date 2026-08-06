@@ -33,6 +33,17 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'markdown-import': '#0d9488',
   history: '#94a3b8',
   'session-tools': '#f43f5e',
+  // Canvas sub-article guides
+  'adding-elements': '#22c55e',
+  'pan-and-zoom': '#0891b2',
+  'changing-the-background': '#64748b',
+  'changing-theme': '#d946ef',
+  'multicolour-themes': '#ec4899',
+  'custom-themes': '#a855f7',
+  'multi-select': '#8b5cf6',
+  groups: '#6366f1',
+  'link-cards': '#10b981',
+  'choosing-fonts': '#0284c7',
   // Activity Panel category
   'what-it-is': '#94a3b8',
   'how-it-works': '#64748b',
