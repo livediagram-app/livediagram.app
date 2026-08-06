@@ -44,6 +44,10 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'layout-cleanup': '#2563eb',
   annotations: '#eab308',
   // Palette → Selection Modes
+  highlighter: '#eab308',
+  'avatar-mode': '#ec4899',
+  'walking-together': '#a855f7',
+  'slide-deck': '#0ea5e9',
   select: '#0ea5e9',
   hand: '#0891b2',
   eraser: '#f43f5e',

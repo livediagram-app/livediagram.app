@@ -68,6 +68,46 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
     </Glyph>
   ),
   // Palette → Selection Modes.
+  // Selection-mode guides. Two of these are people, and the set already has five
+  // person glyphs (`chairs`, `roll-calls`, `search-teams`, `profile`,
+  // `done-checks`) — every one of them a head-and-shoulders bust. So these two are
+  // whole figures mid-stride, which is also what the feature is: walking.
+  //
+  // A chisel tip and a broad swipe. `write` is a pen nib and `drawing` is a
+  // pencil, so the tip shape is what separates all three.
+  highlighter: (
+    <Glyph>
+      <path d="M8 13.5l6.5-8.5a2 2 0 013 2.6L11 16z" {...s} />
+      <path d="M8 13.5L6 17l5-1" {...s} />
+      <path d="M3.5 20.5h17" {...s} />
+    </Glyph>
+  ),
+  'avatar-mode': (
+    <Glyph>
+      <circle cx="12" cy="4.5" r="2.5" {...s} />
+      <path d="M12 7.5v6" {...s} />
+      <path d="M8 10h8" {...s} />
+      <path d="M12 13.5L9 20.5M12 13.5l3 7" {...s} />
+    </Glyph>
+  ),
+  // Two figures, same construction as one. A trail between them read as stray
+  // debris under their feet at this size, so the pairing is left to the label.
+  'walking-together': (
+    <Glyph>
+      <circle cx="7.5" cy="5.5" r="2" {...s} />
+      <path d="M7.5 8v5M5 10h5M7.5 13l-2 6M7.5 13l2 6" {...s} />
+      <circle cx="16.5" cy="5.5" r="2" {...s} />
+      <path d="M16.5 8v5M14 10h5M16.5 13l-2 6M16.5 13l2 6" {...s} />
+    </Glyph>
+  ),
+  // The deck: the slide you are on, and the ones behind it.
+  'slide-deck': (
+    <Glyph>
+      <rect x="6" y="7.5" width="15" height="10" rx="1.5" {...s} />
+      <path d="M4 9.5v9.5a1.5 1.5 0 001.5 1.5H17" {...s} />
+      <path d="M11.5 10.5l4.5 2.5-4.5 2.5z" {...s} />
+    </Glyph>
+  ),
   select: (
     <Glyph>
       <path d="M5 3l6 16 2.5-6.5L20 10 5 3z" {...s} />
