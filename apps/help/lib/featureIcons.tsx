@@ -897,6 +897,106 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M12 9h6M12 16h6" {...s} />
     </Glyph>
   ),
+  // The last ten cards: the slide-deck trio, Locking a Tab, the two Tools
+  // cleanups, Ask and Clean, and the three User Interface guides. With these the
+  // catalogue is fully drawn, and the category fallback becomes a safety net for
+  // cards not yet written rather than something a reader actually sees.
+  'building-a-deck': (
+    <Glyph>
+      <path d="M3.5 6.5h.01M3.5 12h.01M3.5 17.5h.01" {...s} />
+      <rect x="7" y="4.5" width="14" height="4" rx="1" {...s} />
+      <rect x="7" y="10" width="14" height="4" rx="1" {...s} />
+      <rect x="7" y="15.5" width="14" height="4" rx="1" {...s} />
+    </Glyph>
+  ),
+  // Corner brackets: the deck taken full screen.
+  presenting: (
+    <Glyph>
+      <rect x="4.5" y="6.5" width="15" height="11" rx="1.5" {...s} />
+      <path d="M2.5 5.5v-3h3M21.5 5.5v-3h-3M2.5 18.5v3h3M21.5 18.5v3h-3" {...s} />
+    </Glyph>
+  ),
+  // Back, forward, and where you are in the run.
+  'presenter-controls': (
+    <Glyph>
+      <rect x="2.5" y="8" width="19" height="8" rx="4" {...s} />
+      <path d="M9 10.5L6.5 12 9 13.5z" {...s} />
+      <path d="M15 10.5L17.5 12 15 13.5z" {...s} />
+      <path d="M11.3 12h.01M13.2 12h.01" {...s} />
+    </Glyph>
+  ),
+  // A tab with the padlock on it. `locking` is the bare padlock, for an element.
+  'locking-tabs': (
+    <Glyph>
+      <path d="M3 8h5l1.5-2H14v2" {...s} />
+      <path d="M3 8v10a2 2 0 002 2h5" {...s} />
+      <path d="M14 6h4a2 2 0 012 2v2" {...s} />
+      <rect x="13" y="14" width="8" height="6" rx="1.5" {...s} />
+      <path d="M15 14v-1.5a2 2 0 014 0V14" {...s} />
+    </Glyph>
+  ),
+  // Two helpers, not one: a question asked, and a sweep that tidies.
+  'ai-tools': (
+    <Glyph>
+      <path
+        d="M2.5 6.5A2 2 0 014.5 4.5h7a2 2 0 012 2v4a2 2 0 01-2 2H7l-3 2.5v-2.5A2 2 0 012.5 10.5z"
+        {...s}
+      />
+      <path d="M6.3 7.6a1.6 1.6 0 013.2 0c0 1.1-1.6 1.3-1.6 2.4" {...s} />
+      <path d="M18 13.5l1 2.4 2.4 1-2.4 1-1 2.4-1-2.4-2.4-1 2.4-1z" {...s} />
+      <path d="M17 5.5l.6 1.4 1.4.6-1.4.6-.6 1.4-.6-1.4-1.4-.6 1.4-.6z" {...s} />
+    </Glyph>
+  ),
+  // An element snapped onto the grid, with the nudge that put it there. Drawn as
+  // bars on a baseline it was a bar chart — which is `vote-results` and
+  // `bar-and-line-charts` — and drawn as a guide line with two boxes it was
+  // `alignment-guides`. The grid of dots is what is left, and it is the right
+  // subject anyway: this is the action that snaps to it.
+  'auto-align': (
+    <Glyph>
+      <path d="M4 4h.01M9 4h.01M14.5 4h.01M20 4h.01" {...s} />
+      <path d="M4 9.5h.01M20 9.5h.01" {...s} />
+      <path d="M4 14.5h.01M20 14.5h.01" {...s} />
+      <path d="M4 20h.01M9 20h.01M14.5 20h.01M20 20h.01" {...s} />
+      <rect x="8.5" y="8.5" width="7" height="7" rx="1" {...s} />
+      <path d="M6.2 6.2l1.6 1.6M17.8 17.8l-1.6-1.6" {...s} />
+    </Glyph>
+  ),
+  // A tidied flowchart: boxes and arrows, which is what the graph becomes.
+  // `mind-maps` and `multicolour-themes` both use circles for their nodes.
+  'auto-layout': (
+    <Glyph>
+      <rect x="8.5" y="3" width="7" height="4.5" rx="1" {...s} />
+      <rect x="2.5" y="16.5" width="7" height="4.5" rx="1" {...s} />
+      <rect x="14.5" y="16.5" width="7" height="4.5" rx="1" {...s} />
+      <path d="M12 7.5v3.5M6 16.5V11h12v5.5" {...s} />
+    </Glyph>
+  ),
+  about: (
+    <Glyph>
+      <circle cx="12" cy="12" r="9" {...s} />
+      <path d="M12 11v5.5" {...s} />
+      <path d="M12 7.8h.01" {...s} />
+    </Glyph>
+  ),
+  // The board, with its small map and the viewport box inside it.
+  minimap: (
+    <Glyph>
+      <rect x="2.5" y="3.5" width="19" height="17" rx="2" {...s} />
+      <rect x="13" y="12" width="7" height="6.5" rx="1" {...s} />
+      <rect x="15" y="13.5" width="3" height="2.5" rx="0.5" {...s} />
+      <path d="M5.5 7h6M5.5 10h4" {...s} />
+    </Glyph>
+  ),
+  // Toggles, because that is what the dialog is: a column of them.
+  settings: (
+    <Glyph>
+      <rect x="3" y="5" width="18" height="6" rx="3" {...s} />
+      <circle cx="7.5" cy="8" r="1.6" fill="currentColor" stroke="none" />
+      <rect x="3" y="14" width="18" height="6" rx="3" {...s} />
+      <circle cx="16.5" cy="17" r="1.6" fill="currentColor" stroke="none" />
+    </Glyph>
+  ),
   // Canvas sub-article guides — the ten that finish the Canvas category. Once a
   // category is fully drawn its fallback glyph never renders inside it, which is
   // the point of working category by category.

@@ -92,11 +92,12 @@ Both fall back **to the article's top-level feature category**, not to a single
 default. That matters more than it sounds: when the fallback landed, 107 of the
 172 landing cards under the ten feature categories had no bespoke entry, so with
 one default nearly two thirds of the catalogue drew the same sky-blue canvas
-frame in the same grey tile. **10 still take it.** Six of the ten feature
-categories are now fully drawn, including the Palette, which is the largest —
-Activity Panel, Canvas, Collaboration, Explorer, Palette and Search Panel. Inside
-a finished category the fallback never renders at all, which is the reason to work
-category by category rather than picking off whichever card looks worst. A grid where most tiles are identical is decoration, not a
+frame in the same grey tile. **None still take it.** All 172 cards under
+the ten feature categories now have a glyph and a hue of their own, so the
+category fallback has become what it should be: the safety net a NEW card lands
+on before someone draws it, rather than something a reader sees. Keep it that
+way — a new landing page should arrive with its own entry in both maps, the way
+it arrives with its own registry entry. A grid where most tiles are identical is decoration, not a
 catalogue — the
 glyph exists so a card reads as "palette" or "sharing" before you read its
 title. One distinct hue and glyph per category restores that much at least.
