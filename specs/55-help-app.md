@@ -92,11 +92,11 @@ Both fall back **to the article's top-level feature category**, not to a single
 default. That matters more than it sounds: when the fallback landed, 107 of the
 172 landing cards under the ten feature categories had no bespoke entry, so with
 one default nearly two thirds of the catalogue drew the same sky-blue canvas
-frame in the same grey tile. **20 still take it.** Four of the ten feature
-categories are now fully drawn — Canvas, Explorer, Search Panel and Activity
-Panel — and inside a finished category the fallback never renders at all, which
-is the reason to work category by category rather than picking off whichever
-card looks worst. A grid where most tiles are identical is decoration, not a
+frame in the same grey tile. **14 still take it.** Five of the ten feature
+categories are now fully drawn — Activity Panel, Canvas, Collaboration, Explorer
+and Search Panel — and inside a finished category the fallback never renders at
+all, which is the reason to work category by category rather than picking off
+whichever card looks worst. A grid where most tiles are identical is decoration, not a
 catalogue — the
 glyph exists so a card reads as "palette" or "sharing" before you read its
 title. One distinct hue and glyph per category restores that much at least.
@@ -174,7 +174,11 @@ are whole figures mid-stride — which happens to be exactly what the feature is
 And Changing the Theme is the plainest collision of the lot: a wheel of hues
 rendered as the `pie-chart` glyph exactly, while `themes` already owned the paint
 palette and `custom-themes` owned swatches-with-a-plus, so what was left to draw
-was the browsing itself.
+was the browsing itself. By the Collaboration batch every one of the six had its
+obvious drawing already spoken for, so each took the next detail down: a stopwatch
+rather than a clock, a question in a bubble rather than cards, dots landing on
+something rather than dots, an envelope rather than people, a folder handed
+outward rather than a folder holding people.
 
 The system has three layers, all under `apps/help`:
 

@@ -398,6 +398,74 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M3 4v4h4M12 8v4l3 2" {...s} />
     </Glyph>
   ),
+  // Collaboration guides — the six that finish the Collaboration category. Every
+  // one of them had an obvious drawing already spoken for: a clock is on `agendas`
+  // and `share-link-expiry`, dots are `casting-dots`, people-in-a-folder is
+  // `search-teams`, a tick with people is `done-checks`. So each takes the next
+  // detail down.
+  //
+  // A stopwatch, not a clock: the crown and lugs are what separate it from the
+  // two clock badges already in the set.
+  timer: (
+    <Glyph>
+      <circle cx="12" cy="13.5" r="7.5" {...s} />
+      <path d="M12 10v3.5l2.5 1.5" {...s} />
+      <path d="M10 3h4M12 3v3" {...s} />
+      <path d="M18.5 6.5l1.5-1.5" {...s} />
+    </Glyph>
+  ),
+  // A question put to the room.
+  polls: (
+    <Glyph>
+      <path
+        d="M3 6.5A2.5 2.5 0 015.5 4h13A2.5 2.5 0 0121 6.5v7a2.5 2.5 0 01-2.5 2.5H10l-4.5 4v-4H5.5A2.5 2.5 0 013 13.5z"
+        {...s}
+      />
+      <path d="M10 8.2a2 2 0 114 0c0 1.4-2 1.6-2 3" {...s} />
+      <path d="M12 13.5h.01" {...s} />
+    </Glyph>
+  ),
+  // Dots landing ON something — the sub-article `casting-dots` draws the dots
+  // themselves, so the parent draws what they are spent on.
+  voting: (
+    <Glyph>
+      <rect x="3" y="14" width="18" height="6.5" rx="1.5" {...s} />
+      <circle cx="7.5" cy="8" r="2.5" fill="currentColor" stroke="none" />
+      <circle cx="14" cy="8" r="2.5" fill="currentColor" stroke="none" />
+      <circle cx="19" cy="5.5" r="2" {...s} />
+    </Glyph>
+  ),
+  // An envelope with the invitee on it, which is how a role reaches someone.
+  'roles-and-invites': (
+    <Glyph>
+      <rect x="2.5" y="5" width="19" height="14" rx="2" {...s} />
+      <path d="M2.5 7l9.5 6 9.5-6" {...s} />
+      <circle cx="12" cy="15" r="1.6" {...s} />
+      <path d="M9.6 18.8a2.6 2.6 0 014.8 0" {...s} />
+    </Glyph>
+  ),
+  // A folder handed outward: the team library is a folder every member can reach.
+  // `search-teams` is a folder with people INSIDE it, which is a different claim.
+  'team-shared-diagrams': (
+    <Glyph>
+      <path
+        d="M2.5 8A1.5 1.5 0 014 6.5h4L9.5 8.5h5A1.5 1.5 0 0116 10v7.5A1.5 1.5 0 0114.5 19H4A1.5 1.5 0 012.5 17.5z"
+        {...s}
+      />
+      <path d="M17.5 8.5H22" {...s} />
+      <path d="M19.5 6l2.5 2.5-2.5 2.5" {...s} />
+    </Glyph>
+  ),
+  // Work on an element, with a name against it.
+  'assigned-actions': (
+    <Glyph>
+      <rect x="3" y="5" width="13" height="14" rx="2" {...s} />
+      <path d="M6 10l1.6 1.6 3.4-3.6" {...s} />
+      <path d="M6 15h6" {...s} />
+      <circle cx="18.5" cy="15.5" r="2" {...s} />
+      <path d="M15.7 20a3 3 0 015.6 0" {...s} />
+    </Glyph>
+  ),
   // Collaboration → Sharing guides. Most of the obvious drawings were already
   // taken: a padlock is `locking`, a chain is `links`, a picture is `images`. So
   // each of these draws the thing that makes it a SHARING article — the password
