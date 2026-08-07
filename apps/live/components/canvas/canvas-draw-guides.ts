@@ -8,6 +8,7 @@ import {
 } from '@livediagram/diagram';
 import { ARROW_SNAP_REVEAL_PX, ARROW_SNAP_THRESHOLD_PX } from '@/lib/canvas';
 import type { PendingDraw } from '@/lib/draw-mode';
+import { drawnDragBox } from '@/lib/draw-commit';
 import type { SnapTarget } from '@/components/canvas/Canvas.types';
 
 type Point = { x: number; y: number };
@@ -70,12 +71,17 @@ export function computeDrawGuides({
   const drawBoxGuides =
     drawDrag && pendingDraw && pendingDraw.type !== 'arrow' && pendingDraw.type !== 'freehand'
       ? alignmentGuides(
-          {
-            x: Math.min(drawDrag.startX, drawDrag.currentX),
-            y: Math.min(drawDrag.startY, drawDrag.currentY),
-            width: Math.abs(drawDrag.currentX - drawDrag.startX),
-            height: Math.abs(drawDrag.currentY - drawDrag.startY),
-          },
+          // The box that will COMMIT, not the raw drag — an embed is fitted
+          // to 16:9 inside it (spec/114), and guiding off the un-fitted
+          // rectangle would promise the user an alignment the element then
+          // doesn't have. Same helper the preview + commit use.
+          drawnDragBox(
+            pendingDraw,
+            drawDrag.startX,
+            drawDrag.startY,
+            drawDrag.currentX,
+            drawDrag.currentY,
+          ),
           elements,
           NO_GUIDE_EXCLUDE,
         )

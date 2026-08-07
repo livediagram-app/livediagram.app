@@ -4,9 +4,12 @@ import {
   COMPONENT_SIZE,
   createComponent,
   createImage,
+  createLinkCard,
   createShape,
   createSticky,
+  createTable,
   createText,
+  createVideo,
   scaleElements,
   snapToArrowPoint,
   type ArrowElement,
@@ -42,6 +45,47 @@ const TAP_TRAVEL_PX = 16;
 
 const isDrawTap = (startX: number, startY: number, endX: number, endY: number): boolean =>
   Math.abs(endX - startX) < TAP_TRAVEL_PX && Math.abs(endY - startY) < TAP_TRAVEL_PX;
+
+// Largest box of the given aspect (width / height) that fits inside w x h.
+// Used by the embed draw (spec/114): its 16:9 lock means the drag chooses the
+// scale, not the ratio, so the frame is fitted into the drawn box rather than
+// stretched to fill it.
+function fitToAspect(w: number, h: number, aspect: number): { width: number; height: number } {
+  return w / h > aspect ? { width: h * aspect, height: h } : { width: w, height: w / aspect };
+}
+
+// The embed's locked ratio (spec/114), read off the factory rather than
+// written twice — createVideo's 480x270 IS the definition of 16:9 here.
+const EMBED_ASPECT = 16 / 9;
+
+// The box a DRAG lands, in canvas coords: the drawn rectangle as-is for every
+// intent except an aspect-locked embed, which is fitted inside it and centred
+// on it (spec/114). Exported so CanvasDrawPreview outlines exactly the box
+// that will commit — previewing the raw drag while the commit fitted it would
+// show the user one rectangle and hand them another.
+export function drawnDragBox(
+  intent: PendingDraw,
+  startX: number,
+  startY: number,
+  endX: number,
+  endY: number,
+): { x: number; y: number; width: number; height: number } {
+  const drawnWidth = Math.max(TAP_TRAVEL_PX, Math.abs(endX - startX));
+  const drawnHeight = Math.max(TAP_TRAVEL_PX, Math.abs(endY - startY));
+  const left = Math.min(startX, endX);
+  const top = Math.min(startY, endY);
+  if (intent.type !== 'video') {
+    return { x: left, y: top, width: drawnWidth, height: drawnHeight };
+  }
+  const fitted = fitToAspect(drawnWidth, drawnHeight, EMBED_ASPECT);
+  return {
+    // Centre the slack, so the frame sits where the user aimed rather than
+    // hugging one corner of the box they drew.
+    x: left + (drawnWidth - fitted.width) / 2,
+    y: top + (drawnHeight - fitted.height) / 2,
+    ...fitted,
+  };
+}
 
 // Arrow branch. A stray click lays the default 160px horizontal arrow
 // across the click point (so the user isn't left wondering why nothing
@@ -106,13 +150,16 @@ export function buildDrawnComponent(
   return scaleElements(made, centreX, centreY, s);
 }
 
-// Boxed branch (shape / text / sticky / image). A tap drops the element
-// centred on the tap at its inherited size (the armed-time selection's
-// size, else the factory default; circle/diamond stay square); a real
-// drag sizes it to the dragged box (16px floor). Mirrors the arrow
-// branch's stray-click handling.
+// Boxed branch (shape / text / sticky / image / table / link card / embed).
+// A tap drops the element centred on the tap at its inherited size (the
+// armed-time selection's size, else the factory default; circle/diamond stay
+// square); a real drag sizes it to the dragged box (16px floor). Mirrors the
+// arrow branch's stray-click handling.
 export function buildDrawnBoxed(
-  intent: Extract<PendingDraw, { type: 'shape' | 'text' | 'sticky' | 'image' }>,
+  intent: Extract<
+    PendingDraw,
+    { type: 'shape' | 'text' | 'sticky' | 'image' | 'table' | 'link-card' | 'video' }
+  >,
   startX: number,
   startY: number,
   endX: number,
@@ -128,15 +175,25 @@ export function buildDrawnBoxed(
         ? createText(startX, startY)
         : intent.type === 'sticky'
           ? createSticky(startX, startY)
-          : createImage(startX, startY);
+          : intent.type === 'table'
+            ? createTable(startX, startY)
+            : intent.type === 'link-card'
+              ? createLinkCard(startX, startY)
+              : intent.type === 'video'
+                ? // The Media tab has a tile per service (spec/121), so the
+                  // choice arrives on the intent and lands on the element
+                  // here rather than leaving a bare embed to re-point.
+                  createVideo(startX, startY, intent.provider)
+                : createImage(startX, startY);
   const tapSize = inheritedSizeFor(base, inheritFrom);
   // A fixed-size kind (spec/103) ignores the drag entirely: dragging one out
   // still places it, at the one size it is meant to be.
   const fixedSize = base.type === 'shape' && isFixedSizeShape(base.shape);
-  const drawnWidth =
-    fixedSize || isTap ? tapSize.width : Math.max(TAP_TRAVEL_PX, Math.abs(endX - startX));
-  const height =
-    fixedSize || isTap ? tapSize.height : Math.max(TAP_TRAVEL_PX, Math.abs(endY - startY));
+  // Shared with the live preview so the outline the user sizes against is the
+  // box that lands — including the embed's 16:9 fit (spec/114).
+  const dragBox = drawnDragBox(intent, startX, startY, endX, endY);
+  const drawnWidth = fixedSize || isTap ? tapSize.width : dragBox.width;
+  const height = fixedSize || isTap ? tapSize.height : dragBox.height;
   // A tapped sticker (spec/116) takes its flavour's aspect rather than the
   // per-kind default: emoji stickers are square, badge pills are wide, and
   // both are the one `sticker` kind, so the default-size table can't say it.
@@ -145,8 +202,8 @@ export function buildDrawnBoxed(
     isTap && intent.type === 'shape' && intent.kind === 'sticker' && intent.stickerId
       ? stickerDropSize(getSticker(intent.stickerId), { width: drawnWidth, height }).width
       : drawnWidth;
-  const x = isTap ? startX - width / 2 : Math.min(startX, endX);
-  const y = isTap ? startY - height / 2 : Math.min(startY, endY);
+  const x = isTap ? startX - width / 2 : dragBox.x;
+  const y = isTap ? startY - height / 2 : dragBox.y;
   const colours = deriveNewBoxedColours(base, {
     backgroundColor: activeTab.backgroundColor,
     patternColor: activeTab.patternColor,

@@ -302,10 +302,9 @@ export type CanvasProps = {
   highlighterWidth: number;
   onSetHighlighterColor: (color: string) => void;
   onSetHighlighterWidth: (width: number) => void;
-  // Draw-to-size mode. When user-preferences.drawToAdd is on,
-  // picking any palette element (shape, text, sticky, image, arrow)
-  // stashes the intent here; the canvas then enters a drag-to-define
-  // gesture. pointer-up calls onCommitDraw with the start + end
+  // Draw-to-size mode. Picking any palette element except the annotation
+  // (spec/09 "Placement on add") stashes the intent here; the canvas then
+  // enters a drag-to-define gesture. pointer-up calls onCommitDraw with the start + end
   // canvas-coord points (raw, no axis swap) so the editor can decide
   // how to interpret them per intent: box intents floor to a 16px
   // minimum and convert to top-left + width/height; the arrow intent

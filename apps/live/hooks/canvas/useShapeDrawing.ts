@@ -1,13 +1,11 @@
 // Draw-to-size + freehand pen tooling, lifted out of editor-page.tsx.
 // Two related gestures share the `pendingDraw` state machine:
 //
-// - Draw-to-size: when user-preferences.drawToAdd is on, picking a
-//   shape / text / sticky / image / arrow from the palette stashes the
-//   intent in `pendingDraw` instead of dropping at the viewport
-//   centre. The canvas intercepts the next pointer-down and calls
-//   `commitDraw` with the drag's start + end points, which mint the
-//   element sized to the dragged box (or the dragged endpoints, for
-//   arrows).
+// - Draw-to-size: picking anything from the palette except the annotation
+//   (spec/09 "Placement on add") stashes the intent in `pendingDraw`. The
+//   canvas intercepts the next pointer-down and calls `commitDraw` with the
+//   drag's start + end points, which mint the element sized to the dragged
+//   box (or the dragged endpoints, for arrows).
 // - Freehand pen: `beginFreehand` queues a 'freehand' intent; the
 //   canvas streams the pointer polyline to `commitFreehand`, which
 //   simplifies it (RDP), optionally runs shape recognition, and
@@ -79,12 +77,9 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     zoomRef,
   } = deps;
 
-  // Pending draw-to-size shape. When user-preferences.drawToAdd is
-  // on, picking a shape from the palette stashes the kind here
-  // instead of dropping it at the viewport centre; the canvas
-  // intercepts the next pointer-down on its surface and uses the
-  // drag's bounding box for the shape's size. Escape clears the
-  // pending state. See user-preferences.drawToAdd.
+  // Pending draw-to-size intent. Picking a palette element stashes it here;
+  // the canvas intercepts the next pointer-down on its surface and uses the
+  // drag's bounding box for the element's size. Escape clears it.
   const [pendingDraw, setPendingDraw] = useState<PendingDraw | null>(null);
   // Highlighter banner settings (spec/81): the colour + stroke width the
   // NEXT marker strokes commit with, adjusted from the mode banner's two
@@ -226,7 +221,19 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
           ? 'Text'
           : intent.type === 'sticky'
             ? 'Sticky'
-            : 'Image';
+            : intent.type === 'table'
+              ? titleCaseType('table')
+              : intent.type === 'link-card'
+                ? // titleCase would emit 'Link-Card' (it capitalises at the
+                  // hyphen); the click path always reported 'LinkCard', so
+                  // moving the event here must not split the dashboard token.
+                  'LinkCard'
+                : intent.type === 'video'
+                  ? // One token for all six providers, matching the old click
+                    // path: spec/22's vocabulary is by element kind, and the
+                    // provider is a user choice, not a new kind.
+                    'Video'
+                  : 'Image';
     track('Element', 'Added', label);
     // Image element specifically: opening the picker after the draw
     // mirrors how the click-to-drop path drops a placeholder + lets

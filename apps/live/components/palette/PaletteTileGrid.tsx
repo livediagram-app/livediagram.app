@@ -102,8 +102,8 @@ export function tileHandler(def: PaletteTileDef, actions: PaletteTileActions): (
 }
 
 // Whether this tile is the armed draw-to-size intent (the pressed
-// highlight). Table / annotation / link-card drop immediately and never
-// arm, so they have no active state.
+// highlight). Only the annotation drops immediately and never arms, so it is
+// the only kind with no active state (spec/09 "Placement on add").
 export function tileActive(
   def: PaletteTileDef,
   pendingDraw: PendingDraw | null | undefined,
@@ -130,12 +130,16 @@ export function tileActive(
       return pendingDraw.type === 'freehand' && pendingDraw.variant === undefined;
     case 'shape-pen':
       return pendingDraw.type === 'freehand' && pendingDraw.variant === 'shape-pen';
-    // Icon tiles drop immediately too (matching the Icons / Technology
-    // tabs, which carry no pressed state).
-    case 'table':
-    case 'annotation':
-    case 'link-card':
+    // The Media tab has a tile per service and they all arm one `video`
+    // intent, so match on the provider too or picking Loom would light up
+    // Vimeo alongside it (the same trap the shape branch above avoids).
     case 'video':
+      return pendingDraw.type === 'video' && pendingDraw.provider === a.provider;
+    // Icon / sticker tiles DO arm (they ride the shape intent carrying their
+    // glyph id), but their catalogues are open-ended and the picker tabs
+    // render thousands of tiles, so pressed-state matching per glyph buys
+    // nothing the mode banner and cursor don't already say.
+    case 'annotation':
     case 'sticker':
     case 'icon':
     case 'tech-icon':

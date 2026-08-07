@@ -128,4 +128,56 @@ describe('buildDrawnBoxed', () => {
     const out = buildDrawnBoxed(intent, 0, 0, 100, 100, null, tab());
     expect(out).toMatchObject({ iconId: 'aws-s3', label: 'S3', aspectLocked: false });
   });
+
+  // The kinds that used to drop at the viewport centre with no draw gesture
+  // at all (spec/09 "Placement on add"). A tap keeps the factory default, a
+  // drag sizes them like any other box.
+  it('taps a table out at its factory default, and drags it to the drawn box', () => {
+    const tapped = buildDrawnBoxed({ type: 'table' }, 500, 300, 503, 302, null, tab());
+    expect(tapped).toMatchObject({ type: 'table', width: 360, height: 150 });
+    expect(tapped.x).toBe(500 - 180);
+    // The 3x3 grid divides whatever box it is given, so a drag is meaningful.
+    const drawn = buildDrawnBoxed({ type: 'table' }, 0, 0, 600, 400, null, tab());
+    expect({ width: drawn.width, height: drawn.height }).toEqual({ width: 600, height: 400 });
+    expect(drawn.type === 'table' && drawn.cells).toHaveLength(3);
+  });
+
+  it('draws a link card to the dragged box (spec/40)', () => {
+    const out = buildDrawnBoxed({ type: 'link-card' }, 10, 10, 210, 110, null, tab());
+    expect(out).toMatchObject({ type: 'link-card', x: 10, y: 10, width: 200, height: 100 });
+  });
+
+  it('carries the embed provider through the gesture, so the tile you pressed is what lands', () => {
+    const out = buildDrawnBoxed({ type: 'video', provider: 'figma' }, 0, 0, 3, 3, null, tab());
+    expect(out).toMatchObject({ type: 'video', embedProvider: 'figma' });
+  });
+
+  it('fits an embed to 16:9 inside the drawn box rather than stretching it (spec/114)', () => {
+    // A tall, narrow drag: width is the binding constraint.
+    const tall = buildDrawnBoxed({ type: 'video' }, 0, 0, 320, 400, null, tab());
+    expect(tall.width).toBeCloseTo(320, 5);
+    expect(tall.height).toBeCloseTo(180, 5);
+    // A wide, short drag: height binds instead.
+    const wide = buildDrawnBoxed({ type: 'video' }, 0, 0, 800, 180, null, tab());
+    expect(wide.width).toBeCloseTo(320, 5);
+    expect(wide.height).toBeCloseTo(180, 5);
+    expect(wide.width / wide.height).toBeCloseTo(16 / 9, 5);
+  });
+
+  it('centres the fitted embed in the box the user drew, not in one corner', () => {
+    const out = buildDrawnBoxed({ type: 'video' }, 0, 0, 320, 400, null, tab());
+    // 180 tall inside a 400 tall drag = 110 of slack on each side.
+    expect(out.y).toBeCloseTo(110, 5);
+    expect(out.x).toBeCloseTo(0, 5);
+  });
+
+  it('leaves every other kind anchored at the drawn top-left, uncentred', () => {
+    const out = buildDrawnBoxed({ type: 'image' }, 40, 60, 240, 160, null, tab());
+    expect({ x: out.x, y: out.y, width: out.width, height: out.height }).toEqual({
+      x: 40,
+      y: 60,
+      width: 200,
+      height: 100,
+    });
+  });
 });

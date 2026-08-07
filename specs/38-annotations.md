@@ -29,8 +29,11 @@ and `note` stays the plain-text mirror, so everything below is unchanged.
 ## Adding one
 
 - **Tools tab** of the palette has an **Annotation** button. Clicking
-  it drops a new annotation at the viewport centre (instant-drop, no
-  draw-to-size — like Table / Icon), selects it, and is one undoable commit.
+  it drops a new annotation at the viewport centre, selects it, and is one
+  undoable commit. This is the **only** palette tile that still places
+  instantly: every other one arms the tap-or-drag draw gesture (spec/09
+  "Placement on add"). A marker is a fixed 44×44 glyph, so a drag would ask
+  for a size the element then ignores — there is nothing to draw.
 - New annotations inherit the active theme's colours via the same
   `deriveNewBoxedColours` path every palette add uses, so they match the
   diagram out of the box.

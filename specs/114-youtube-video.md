@@ -40,6 +40,14 @@ copy of the truth that can drift from the link.
 **Aspect-locked to 16:9** on resize, like an icon (spec/41) and for the same
 reason: a letterboxed or stretched video frame is never what anyone wants.
 
+**The lock also governs placement.** The Media tiles arm the tap-or-drag draw
+gesture like every other palette element (spec/09 "Placement on add"), and the
+drag **fits 16:9 inside the drawn box** instead of taking the box verbatim.
+Honouring the drag literally would have handed the user the one thing the lock
+exists to prevent, on the very gesture that creates the element; fitting keeps
+the drag meaningful (it picks the position and the scale) without ever minting
+a stretched frame.
+
 `THEME_COLOUR_FIELDS` gives video an **empty** list — like image and sticky, a
 video keeps its own look across themes.
 

@@ -1,14 +1,16 @@
 import type {
   ComponentKind,
+  EmbedProvider,
   EstimateScale,
   Reaction,
   SelectionMode,
   SessionTool,
   ShapeKind,
 } from '@livediagram/diagram';
+import { EMBED_PROVIDER_LABEL } from '@livediagram/diagram';
 
-// Draw-to-size intent. When user-preferences.drawToAdd is on, picking
-// any element from the palette stashes the intent here; the canvas
+// Draw-to-size intent. Picking any element from the palette except the
+// annotation (spec/09 "Placement on add") stashes the intent here; the canvas
 // then enters a "drag to define" gesture and forwards the resolved
 // start + end points to the editor on pointer-up. Discriminated so
 // the canvas can render the right preview per intent (oval for a
@@ -40,14 +42,28 @@ export type PendingDraw =
   | { type: 'text' }
   | { type: 'sticky' }
   | { type: 'image' }
+  // Table (spec/09), link card (spec/40), and the embeds (spec/114, spec/121)
+  // are their own element types rather than ShapeKinds, so each needs its own
+  // intent to ride the same gesture. They used to drop at the viewport centre
+  // for want of one, which made "draws or drops?" a property of how the
+  // element was modelled instead of whether it has a size worth choosing.
+  // Annotation is deliberately absent: a fixed 44x44 marker has no box to
+  // size, so it stays the one instant-drop tile (spec/38).
+  | { type: 'table' }
+  | { type: 'link-card' }
+  // `provider` rides the intent the way `session` / `reaction` do above: the
+  // Media tab offers a tile per service and they are all one `video` kind, so
+  // the choice has to survive the gesture or "Add Loom" would place a bare
+  // embed the user then has to go and re-point.
+  | { type: 'video'; provider?: EmbedProvider }
   | { type: 'arrow' }
   // A composite Component (spec/09): banner / hero / header / callout / stat /
   // process / avatar. Draws to size exactly like a shape — a tap drops it at
   // its natural size, a drag scales the whole group to the dragged box.
   | { type: 'component'; kind: ComponentKind }
   // Pencil intent: the user picked the freehand tool. Unlike the
-  // box intents, this one ignores the drawToAdd preference (the
-  // pencil is gestural by definition) and the gesture collects a
+  // box intents, this one has no tap-to-drop branch (the pencil is
+  // gestural by definition) and the gesture collects a
   // stream of pointer samples during the drag, simplified +
   // smoothed on release into a FreehandElement (see spec/09 Pencil
   // (freehand) subsection, spec/05 FreehandElement). The
@@ -126,6 +142,18 @@ export function drawBannerMessage(intent: PendingDraw, isMobile: boolean): strin
       return 'Tap to drop or drag to draw a sticky note';
     case 'image':
       return 'Tap to drop or drag to draw image bounds';
+    case 'table':
+      return 'Tap to drop or drag to draw a table';
+    case 'link-card':
+      return 'Tap to drop or drag to draw a link card';
+    case 'video':
+      // Names the service the tile promised (spec/121) rather than saying
+      // "video" for all six, so the banner confirms which one is queued. The
+      // 16:9 note is the one surprising thing about this drag, so it earns
+      // its place on desktop; a phone-width banner can't hold it.
+      return isMobile
+        ? `Tap to drop or drag to draw ${EMBED_PROVIDER_LABEL[intent.provider ?? 'website']}`
+        : `Tap to drop or drag to draw ${EMBED_PROVIDER_LABEL[intent.provider ?? 'website']} (stays 16:9)`;
     case 'arrow':
       return 'Tap to drop or drag to draw an arrow';
     case 'component':
@@ -203,6 +231,28 @@ export function drawIntentCursor(intent: PendingDraw): string {
   if (intent.type === 'image') {
     return drawCursorFromGlyph(
       `<rect x="13" y="14" width="11" height="9" rx="1" fill="none" stroke="black" stroke-width="1.4" /><circle cx="15.5" cy="16.5" r="0.9" fill="black" /><path d="M13 21 L16 18.5 L18.5 20.5 L21 18 L24 20" stroke="black" stroke-width="1.2" stroke-linejoin="round" fill="none" />`,
+    );
+  }
+  if (intent.type === 'table') {
+    // A 3x3 grid: a box with one vertical and one horizontal rule, and a
+    // filled top band for the header row the factory turns on.
+    return drawCursorFromGlyph(
+      `<rect x="13" y="13" width="12" height="10" rx="1" fill="none" stroke="black" stroke-width="1.3" /><path d="M13 16.5 H25" stroke="black" stroke-width="1.3" /><path d="M17 16.5 V23 M21 16.5 V23 M13 20 H25" stroke="black" stroke-width="1" />`,
+    );
+  }
+  if (intent.type === 'link-card') {
+    // A card with a chain link on it — matches the palette tile's bookmark
+    // reading rather than repeating the plain image rectangle.
+    return drawCursorFromGlyph(
+      `<rect x="12" y="14" width="13" height="9" rx="1.5" fill="none" stroke="black" stroke-width="1.3" /><path d="M16 18.5 a1.8 1.8 0 0 1 1.8 -1.8 h1.4 M21 18.5 a1.8 1.8 0 0 1 -1.8 1.8 h-1.4" stroke="black" stroke-width="1.2" stroke-linecap="round" fill="none" /><path d="M17 20.5 H20.5" stroke="black" stroke-width="1.2" stroke-linecap="round" />`,
+    );
+  }
+  if (intent.type === 'video') {
+    // A 16:9 frame with a play triangle — one glyph for all six providers.
+    // Painting a per-provider mark here would mean six more inline SVGs to
+    // read at 12px, and the banner already names the service.
+    return drawCursorFromGlyph(
+      `<rect x="12" y="14.5" width="14" height="8" rx="1.5" fill="none" stroke="black" stroke-width="1.3" /><path d="M17.5 16.8 L21.5 18.5 L17.5 20.2 Z" fill="black" />`,
     );
   }
   if (intent.type === 'freehand') {

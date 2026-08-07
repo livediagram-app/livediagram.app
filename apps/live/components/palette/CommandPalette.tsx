@@ -108,8 +108,12 @@ export function CommandPalette({
     onDrawArmed?.();
     onMobileClose?.();
   };
+  // Icons arm the draw gesture too (they ride the shape intent carrying the
+  // glyph id), so they signal onDrawArmed like the sticker below — without it
+  // the mobile palette never reopened after an icon landed.
   const addIcon = (iconId: string) => {
     onAddIcon(iconId);
+    onDrawArmed?.();
     onMobileClose?.();
   };
   const addSticker = (stickerId: string) => {
@@ -121,6 +125,7 @@ export function CommandPalette({
   };
   const addTechIcon = (iconId: string) => {
     onAddTechIcon(iconId);
+    onDrawArmed?.();
     onMobileClose?.();
   };
   const addText = () => {
@@ -135,18 +140,24 @@ export function CommandPalette({
   };
   const addTable = () => {
     onAddTable();
+    onDrawArmed?.();
     onMobileClose?.();
   };
+  // The annotation is the ONE tile that still places instantly (spec/38): a
+  // fixed 44x44 marker has no box to draw, so there is no armed gesture for
+  // the mobile dock to wait on.
   const addAnnotation = () => {
     onAddAnnotation();
     onMobileClose?.();
   };
   const addLinkCard = () => {
     onAddLinkCard();
+    onDrawArmed?.();
     onMobileClose?.();
   };
   const addVideo = (provider?: EmbedProvider) => {
     onAddVideo(provider);
+    onDrawArmed?.();
     onMobileClose?.();
   };
   // Components arm the draw gesture (tap-or-drag), so they signal onDrawArmed
@@ -209,6 +220,7 @@ export function CommandPalette({
   };
   const addImage = () => {
     onAddImage?.();
+    onDrawArmed?.();
     onMobileClose?.();
   };
   // One handler per composite-component kind, so the tile catalogue can

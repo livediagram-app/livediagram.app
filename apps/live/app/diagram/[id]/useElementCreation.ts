@@ -2,14 +2,11 @@ import { type Dispatch, type SetStateAction } from 'react';
 import {
   acceptsInlineIcon,
   createAnnotation,
-  createLinkCard,
-  createVideo,
   type EmbedProvider,
   createShape,
   growMindChild,
   growMindSibling,
   isMindNode,
-  createTable,
   createText,
   type BoxedElement,
   type Element,
@@ -30,14 +27,17 @@ import { useArrowConnect } from '@/app/diagram/[id]/useArrowConnect';
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
 
-// Palette element-creation handlers, lifted out of editor-page.tsx. The
-// draw-capable elements (shape / text / sticky / arrow) arm the combined
-// add gesture (beginDraw, from useShapeDrawing) — the canvas then drops
-// them at default size on a tap or sizes them on a drag. Icons + tables
-// have no draw-to-size, so they drop straight at the viewport centre via
-// addBoxed (from useElementHelpers).
+// Palette element-creation handlers, lifted out of editor-page.tsx. Nearly
+// every element arms the combined add gesture (beginDraw, from
+// useShapeDrawing) — the canvas then drops it at default size on a tap or
+// sizes it on a drag. The ANNOTATION alone drops at the viewport centre via
+// addBoxed (from useElementHelpers): a fixed 44x44 marker has no box to size,
+// so there is nothing for the drag to decide (spec/09 "Placement on add").
 export function useElementCreation(opts: {
   editsBlocked: boolean;
+  // Whether image placement is unavailable (embed chrome — see
+  // useEditorImages for why uploads stay off there). Gates addImage only.
+  imagesBlocked: boolean;
   activeId: string;
   activeTab: Tab;
   // The single-selected element id, so "add an icon" can drop it INSIDE
@@ -57,6 +57,7 @@ export function useElementCreation(opts: {
 }) {
   const {
     editsBlocked,
+    imagesBlocked,
     activeId,
     activeTab,
     selectedId,
@@ -161,12 +162,14 @@ export function useElementCreation(opts: {
     beginDraw({ type: 'shape', kind: 'icon', iconId, label });
   };
 
-  // A 3x3 table dropped at the viewport centre (no draw-to-size:
-  // the grid sizes itself; the user resizes the whole box after).
+  // A 3x3 table, drawn to size like a shape. It used to drop at the viewport
+  // centre on the reasoning that "the grid sizes itself" — but the grid
+  // divides whatever box it is given, so the box was always the user's to
+  // choose and they were made to resize it afterwards instead.
+  // Telemetry fires on commit (see useShapeDrawing.commitDraw).
   const addTable = () => {
     if (editsBlocked) return;
-    addBoxed((x, y) => createTable(x, y));
-    track('Element', 'Added', titleCaseType('table'));
+    beginDraw({ type: 'table' });
   };
 
   // A note marker (spec/38) dropped at the viewport centre (no
@@ -178,22 +181,34 @@ export function useElementCreation(opts: {
     track('Element', 'Added', titleCaseType('annotation'));
   };
 
-  // A link-card / bookmark (spec/40) dropped at the viewport centre. The card
-  // starts empty ("double-click to add a link"); double-clicking opens the
-  // link picker, and setting a URL unfurls a preview.
+  // A link-card / bookmark (spec/40), drawn to size. The card starts empty
+  // ("double-click to add a link"); double-clicking opens the link picker,
+  // and setting a URL unfurls a preview.
   const addLinkCard = () => {
     if (editsBlocked) return;
-    addBoxed((x, y) => createLinkCard(x, y));
-    track('Element', 'Added', 'LinkCard');
+    beginDraw({ type: 'link-card' });
   };
 
-  // A YouTube video (spec/114) dropped at the viewport centre, empty. Same
-  // shape as the link card above, and deliberately so: both keep their URL in
-  // `link`, and double-clicking either opens the one link picker.
+  // An embed (spec/114, spec/121), drawn to size and empty. Same shape as the
+  // link card above, and deliberately so: both keep their URL in `link`, and
+  // double-clicking either opens the one link picker. The provider rides the
+  // intent so the tile the user pressed is the service they get; the 16:9
+  // lock means the drag picks the scale, not the ratio (see draw-commit).
   const addVideo = (provider?: EmbedProvider) => {
     if (editsBlocked) return;
-    addBoxed((x, y) => createVideo(x, y, provider));
-    track('Element', 'Added', 'Video');
+    beginDraw({ type: 'video', ...(provider ? { provider } : {}) });
+  };
+
+  // An empty image placeholder (spec/19), drawn to size. Lives here rather
+  // than in useEditorImages (which owns the picker, the gallery, and the
+  // fill/clear mutators) because arming a draw needs `beginDraw`, and that
+  // hook runs before useShapeDrawing. The picker opens on commit, once the
+  // user has already said where the image goes and how big it is.
+  // `imagesBlocked` covers the embed case: uploads authorise by owner, and a
+  // partitioned third-party iframe is a throwaway guest (see useEditorImages).
+  const addImage = () => {
+    if (editsBlocked || imagesBlocked) return;
+    beginDraw({ type: 'image' });
   };
 
   // Components (spec/09) arm the combined tap-or-drag draw gesture, exactly
@@ -385,6 +400,7 @@ export function useElementCreation(opts: {
     addAnnotation,
     addLinkCard,
     addVideo,
+    addImage,
     addBanner,
     addHero,
     addHeader,

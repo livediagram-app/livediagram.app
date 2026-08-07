@@ -101,18 +101,15 @@ export function useEditorImages(deps: EditorImagesDeps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [diagramId, isReadOnly, embedMode]);
 
-  // Drop an empty image placeholder at the viewport centre. The
-  // picker only opens via double-click on the placeholder (or
-  // "Change image" in the context menu), so the user can position
-  // and resize the empty box without the modal popping up first.
-  const addImage = () => {
-    if (editsBlocked || embedMode) return;
-    const centre = getViewportCenter();
-    const placeholder = createImage(centre.x - 100, centre.y - 75);
-    commit((els) => [...els, placeholder]);
-    setSelectedId(placeholder.id);
-    track('Element', 'Added', 'Image');
-  };
+  // Placing a NEW image lives in useElementCreation.addImage: it arms the
+  // tap-or-drag draw gesture (spec/09, spec/19) rather than dropping a
+  // placeholder at the viewport centre, and arming needs `beginDraw` from
+  // useShapeDrawing, which runs after this hook. The old centre-drop
+  // deliberately kept the picker shut so the user could position and resize
+  // the empty box first; the draw gesture does that up front, so the commit
+  // path opens the picker straight away (see useShapeDrawing.commitDraw).
+  // Everything else about images — the picker, the gallery, fill / clear —
+  // stays here.
 
   // Open the picker for an existing image element (the user clicked
   // its empty placeholder or "Change image" in the context menu).
@@ -236,7 +233,6 @@ export function useEditorImages(deps: EditorImagesDeps) {
     imagePickerOpenFor,
     recentImages,
     imageContext,
-    addImage,
     addImageFromGallery,
     openImagePickerFor,
     applyImageToElement,

@@ -1774,7 +1774,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   const {
     imagePickerOpenFor,
     imageContext,
-    addImage,
     addImageFromGallery,
     openImagePickerFor,
     applyImageToElement,
@@ -1844,6 +1843,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     addAnnotation,
     addLinkCard,
     addVideo,
+    addImage,
     addBanner,
     addHero,
     addHeader,
@@ -1861,6 +1861,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     cancelConnect,
   } = useElementCreation({
     editsBlocked: createBlocked,
+    imagesBlocked: embedMode,
     activeId,
     activeTab,
     selectedId,

@@ -3,6 +3,7 @@ import { isSelfDrawingShape } from '@livediagram/diagram';
 import { isSvgRenderedShape, ShapeSvgOverlay } from '@/components/canvas/shape-svg-overlay';
 import { POLYGON_CLOSE_PX } from '@/components/canvas/useCanvasPolygonGesture';
 import type { PendingDraw } from '@/lib/draw-mode';
+import { drawnDragBox } from '@/lib/draw-commit';
 
 type CanvasDrawPreviewProps = {
   drawDrag: { startX: number; startY: number; currentX: number; currentY: number } | null;
@@ -175,12 +176,19 @@ export function CanvasDrawPreview({
                 </svg>
               );
             }
-            const canvasMinX = Math.min(drawDrag.startX, drawDrag.currentX);
-            const canvasMinY = Math.min(drawDrag.startY, drawDrag.currentY);
-            const canvasW = Math.abs(drawDrag.currentX - drawDrag.startX);
-            const canvasH = Math.abs(drawDrag.currentY - drawDrag.startY);
-            const widthPx = Math.max(canvasW * viewportZoom, 1);
-            const heightPx = Math.max(canvasH * viewportZoom, 1);
+            // The box the commit will actually mint, not the raw drag: an
+            // embed is fitted to 16:9 inside it (spec/114), so the outline
+            // has to be the fitted one or the user sizes against a rectangle
+            // they never get. Shared with buildDrawnBoxed so they can't drift.
+            const box = drawnDragBox(
+              pendingDraw,
+              drawDrag.startX,
+              drawDrag.startY,
+              drawDrag.currentX,
+              drawDrag.currentY,
+            );
+            const widthPx = Math.max(box.width * viewportZoom, 1);
+            const heightPx = Math.max(box.height * viewportZoom, 1);
             // The self-drawing shapes (progress / rail / rating / charts) render
             // via their own views, not ShapeSvgOverlay (which would draw nothing
             // for them), so they fall back to the dashed-rect preview. Icons
@@ -213,8 +221,8 @@ export function CanvasDrawPreview({
                 aria-hidden
                 className="pointer-events-none fixed z-[var(--z-chrome)]"
                 style={{
-                  left: rect.left + canvasMinX * viewportZoom,
-                  top: rect.top + canvasMinY * viewportZoom,
+                  left: rect.left + box.x * viewportZoom,
+                  top: rect.top + box.y * viewportZoom,
                   width: widthPx,
                   height: heightPx,
                 }}

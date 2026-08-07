@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { EMBED_PROVIDERS } from '@livediagram/diagram';
 import { drawBannerMessage, drawIntentCursor, type PendingDraw } from './draw-mode';
 
 // Every pen variant, keyed so the compiler owns the list: `variant` is an
@@ -21,6 +22,15 @@ const INTENT_SAMPLES: Record<PendingDraw['type'], PendingDraw[]> = {
   text: [{ type: 'text' }],
   sticky: [{ type: 'sticky' }],
   image: [{ type: 'image' }],
+  table: [{ type: 'table' }],
+  'link-card': [{ type: 'link-card' }],
+  // Every provider, plus the no-provider case the empty state falls back on.
+  // The banner names the service, so a new EMBED_PROVIDERS member without a
+  // label would otherwise reach the user as "undefined".
+  video: [
+    { type: 'video' },
+    ...EMBED_PROVIDERS.map((provider): PendingDraw => ({ type: 'video', provider })),
+  ],
   arrow: [{ type: 'arrow' }],
   polygon: [{ type: 'polygon' }],
   // Component kinds share one branch and one label table that is already a
@@ -50,6 +60,29 @@ describe('drawBannerMessage', () => {
     );
     expect(drawBannerMessage({ type: 'arrow' }, false)).toBe(
       'Tap to drop or drag to draw an arrow',
+    );
+    expect(drawBannerMessage({ type: 'table' }, false)).toBe('Tap to drop or drag to draw a table');
+    expect(drawBannerMessage({ type: 'link-card' }, false)).toBe(
+      'Tap to drop or drag to draw a link card',
+    );
+  });
+
+  it('names the embed service rather than saying "video" for all six', () => {
+    expect(drawBannerMessage({ type: 'video', provider: 'loom' }, false)).toBe(
+      'Tap to drop or drag to draw Loom (stays 16:9)',
+    );
+    expect(drawBannerMessage({ type: 'video', provider: 'gdocs' }, false)).toBe(
+      'Tap to drop or drag to draw Google Docs (stays 16:9)',
+    );
+    // No provider = the generic website embed, not a blank.
+    expect(drawBannerMessage({ type: 'video' }, false)).toBe(
+      'Tap to drop or drag to draw Website (stays 16:9)',
+    );
+  });
+
+  it('drops the 16:9 note on mobile, where it overflows the banner', () => {
+    expect(drawBannerMessage({ type: 'video', provider: 'vimeo' }, true)).toBe(
+      'Tap to drop or drag to draw Vimeo',
     );
   });
 
