@@ -30,7 +30,7 @@
     "@vitest/coverage-v8": "^4.1.10",
     "eslint": "^10.8.0",
     "ts-json-schema-generator": "^2.9.0",
-    "typescript": "^5.7.2",
+    "typescript": "^6.0.3",
     "vitest": "^4.1.10",
     "wrangler": "^4.118.0"
   }
