@@ -21,7 +21,7 @@
     "eslint": "^10.8.0",
     "prettier": "^3.9.6",
     "turbo": "^2.10.8",
-    "typescript": "^5.7.2",
+    "typescript": "^6.0.3",
     "wrangler": "^4.118.0"
   },
   "engines": {
