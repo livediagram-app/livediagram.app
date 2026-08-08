@@ -26,7 +26,7 @@
     "@cloudflare/workers-types": "^5.20260804.1",
     "@livediagram/eslint-config": "workspace:*",
     "@livediagram/vitest-config": "workspace:*",
-    "@types/node": "^22.10.2",
+    "@types/node": "^26.1.2",
     "@vitest/coverage-v8": "^4.1.10",
     "eslint": "^10.8.0",
     "ts-json-schema-generator": "^2.9.0",
