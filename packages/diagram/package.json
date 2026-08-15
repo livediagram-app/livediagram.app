@@ -24,7 +24,7 @@
     "@livediagram/vitest-config": "workspace:*",
     "@types/node": "^22.10.2",
     "@vitest/coverage-v8": "^4.1.10",
-    "eslint": "^10.8.0",
+    "eslint": "^10.8.1",
     "typescript": "^5.7.2",
     "vitest": "^4.1.10"
   }
