@@ -29,8 +29,7 @@ They are still ONE shape kind with a `reaction` field, not five kinds: the
 element, its face, its burst and its menu are identical, and five kinds would
 be five registrations to keep in step for a field that already exists.
 
-It can still be switched afterwards from the element menu (**Tools ›
-Reaction**), a tile grid rather than a dropdown: the five differ in _feeling_ rather than in name, so the glyph is
+It can still be switched afterwards from the element menu (**Reaction**), a tile grid rather than a dropdown: the five differ in _feeling_ rather than in name, so the glyph is
 the thing being chosen and a list of five words hides exactly the part the user
 is picking on. The hint line under the grid says what the current one is for,
 because "confetti or fireworks?" is a real question and both answers look like

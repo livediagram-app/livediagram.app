@@ -2,13 +2,11 @@
 
 import {
   Children,
-  cloneElement,
   isValidElement,
   useCallback,
   useEffect,
   useRef,
   useState,
-  type ReactElement,
   type ReactNode,
 } from 'react';
 import { Portal } from '@/components/primitives/Portal';
@@ -33,32 +31,64 @@ import { VIEWPORT_EDGE_MARGIN } from '@/lib/clamp-to-viewport';
 // Consecutive frames agreeing on the position before the tracker stops.
 const SETTLE_FRAMES = 3;
 
-// A flyout that renders exactly ONE section forces it open (spec/109).
+// A flyout that would hold exactly ONE section is not a flyout at all: the
+// section takes the flyout's place in the host menu (spec/09).
 //
 // The children are conditional — a Tools flyout shows Progress, Rail, Rating,
-// Chart, Picker … depending on the element — so on a picker the panel is one
-// collapsed row you must click to reach the thing you already asked for. Two
-// taps for a menu with no choice in it.
+// Chart, Picker … depending on the element — so on a picker the whole "Tools"
+// row is a category with one thing in it. Opening a side panel to choose
+// between one option is two taps and a second surface for a menu with no
+// choice in it; the row that says TOOLS says nothing the row inside it doesn't
+// say better.
+//
+// It went in stages, and the middle one is worth recording: the lone section
+// used to be cloned FORCED OPEN inside the flyout, which fixed the second tap
+// but not the first, and not the panel. Promoting it removes both.
+//
+// Inline it is an ordinary accordion row — collapsed until you click it, like
+// every other row in the menu — rather than the forced-open thing it was in
+// the panel, where there was nothing else to collapse it in favour of.
 //
 // `Children.toArray` drops the `false` / `null` a conditional branch leaves
-// behind, so its length is the number of sections ACTUALLY rendered. The lone
-// child is cloned open, with a no-op toggle: there is nothing else in the
-// panel to collapse it in favour of.
-function soleChild(children: ReactNode): ReactNode {
+// behind, so its length is the number of sections ACTUALLY rendered.
+//
+// ANY lone element is promoted, not just a bare `MenuAccordionSection`. The
+// first cut inspected the child's props for a controlled `open` / `onToggle`
+// pair, which quietly promoted only half the menu: an entity's Fields is a
+// `MenuAccordionSection` written inline, but a session button's Session is a
+// `SessionMenuSection` that RENDERS one and takes its scaffold state as
+// `sectionProps` — a different prop shape for the same thing, so the record
+// lost its TOOLS row and the poll button kept one. Every child of a flyout is
+// a section by construction (that is what the callers put there), so the
+// element being there is the whole test.
+function loneSection(children: ReactNode): ReactNode | null {
   const rendered = Children.toArray(children);
-  if (rendered.length !== 1) return children;
+  if (rendered.length !== 1) return null;
   const only = rendered[0];
-  if (!isValidElement(only)) return children;
-  const props = only.props as { open?: unknown; onToggle?: unknown };
-  // Only meaningful for a controlled accordion; anything else passes through.
-  if (typeof props.open !== 'boolean' || typeof props.onToggle !== 'function') return children;
-  return cloneElement(only as ReactElement<{ open: boolean; onToggle: () => void }>, {
-    open: true,
-    onToggle: () => {},
-  });
+  // A bare string or number is the one thing with no row to become.
+  return isValidElement(only) ? only : null;
 }
 
-export function MenuFlyoutSection({
+export function MenuFlyoutSection(props: MenuFlyoutSectionProps) {
+  const lone = loneSection(props.children);
+  // Rendered instead of the flyout, not inside it — so the hooks below (the
+  // portal, the position tracker, the outside-click) never run for a row that
+  // has no panel to position.
+  if (lone) return <>{lone}</>;
+  return <Flyout {...props} />;
+}
+
+type MenuFlyoutSectionProps = {
+  title: string;
+  icon: ReactNode;
+  children: ReactNode;
+  flush?: boolean;
+  onOpen?: () => void;
+  open?: boolean;
+  onToggle?: () => void;
+};
+
+function Flyout({
   title,
   icon,
   children,
@@ -74,15 +104,7 @@ export function MenuFlyoutSection({
   // state (open + onToggle travel together).
   open: controlledOpen,
   onToggle,
-}: {
-  title: string;
-  icon: ReactNode;
-  children: ReactNode;
-  flush?: boolean;
-  onOpen?: () => void;
-  open?: boolean;
-  onToggle?: () => void;
-}) {
+}: MenuFlyoutSectionProps) {
   const triggerRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const [localOpen, setLocalOpen] = useState(false);
@@ -360,7 +382,7 @@ export function MenuFlyoutSection({
                 </button>
               </div>
             ) : null}
-            {soleChild(children)}
+            {children}
           </div>
         </Portal>
       ) : null}

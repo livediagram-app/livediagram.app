@@ -39,15 +39,15 @@ import {
 import { MenuAccordionSection, MenuTile, MenuTileGrid } from '@/components/primitives/PortalMenu';
 import { ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
 
-// Each collaboration kind puts exactly ONE section inside the Tools flyout —
+// Each collaboration kind contributes exactly ONE section to the Tools group —
 // an agenda has Segments and nothing else, a chair has Chair and nothing else.
-// An accordion there is a second click that reveals the only thing behind it,
-// so these open on arrival and their header reads as a label rather than a
-// disclosure. The scaffold's shared `sectionProps` is still accepted (and
-// still drives the flush styling); only the open/toggle pair is overridden.
-function soleSection(props: { open: boolean; onToggle: () => void }) {
-  return { ...props, open: true, onToggle: () => {} };
-}
+// These used to be forced open, because inside a flyout panel holding only
+// them an accordion was a second click revealing the one thing behind it.
+// `MenuFlyoutSection` now promotes a lone section into the host menu instead
+// (spec/09), where it is an ordinary collapsible row like every other one — so
+// the override is gone and the scaffold's `sectionProps` is passed straight
+// through. Forcing it open here now would leave a row in the main menu that
+// can never be closed.
 
 const fieldClass =
   'w-full rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] text-slate-700 outline-none placeholder:text-slate-400 focus:border-brand-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200';
@@ -72,11 +72,7 @@ export function EstimateMenuSection({
 }) {
   const current = target?.estimateScale ?? DEFAULT_ESTIMATE_SCALE;
   return (
-    <MenuAccordionSection
-      title="Scale"
-      icon={<ToolsMenuGlyph />}
-      {...soleSection(sectionProps('estimate'))}
-    >
+    <MenuAccordionSection title="Scale" icon={<ToolsMenuGlyph />} {...sectionProps('estimate')}>
       <div className="flex flex-col gap-1 px-2 py-1.5">
         {ESTIMATE_SCALES.map((scale) => (
           <button
@@ -135,11 +131,7 @@ export function AgendaMenuSection({
   };
 
   return (
-    <MenuAccordionSection
-      title="Segments"
-      icon={<ToolsMenuGlyph />}
-      {...soleSection(sectionProps('agenda'))}
-    >
+    <MenuAccordionSection title="Segments" icon={<ToolsMenuGlyph />} {...sectionProps('agenda')}>
       <div className="px-2 py-1.5">
         <div className="flex flex-col gap-1">
           {rows.map((item, i) => (
@@ -228,11 +220,7 @@ export function DecisionMenuSection({
   useEffect(() => setRows(drivers), [drivers]);
 
   return (
-    <MenuAccordionSection
-      title="Decision"
-      icon={<ToolsMenuGlyph />}
-      {...soleSection(sectionProps('decision'))}
-    >
+    <MenuAccordionSection title="Decision" icon={<ToolsMenuGlyph />} {...sectionProps('decision')}>
       <div className="flex flex-col gap-2 px-2 py-1.5">
         <div>
           <span className={labelClass}>Status</span>
@@ -332,11 +320,7 @@ export function ChairMenuSection({
 }) {
   const facing = target?.chairFacing ?? DEFAULT_CHAIR_FACING;
   return (
-    <MenuAccordionSection
-      title="Chair"
-      icon={<ToolsMenuGlyph />}
-      {...soleSection(sectionProps('chair'))}
-    >
+    <MenuAccordionSection title="Chair" icon={<ToolsMenuGlyph />} {...sectionProps('chair')}>
       {/* Tiles rather than a list: the arrow IS the answer here, which is the
           same test the palette applies to its own categories (spec/110). */}
       <MenuTileGrid cols={4}>

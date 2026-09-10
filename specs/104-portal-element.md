@@ -17,13 +17,13 @@ A big diagram is a place, and places have shortcuts. Two portals turn "scroll ac
 
 ## The name is menu-only
 
-A portal has no caption on the canvas: a label across the energy read as a sticker on a window, and the ring is recognisable without one. The name lives in the element menu (**Tools › Portal → Name**), and shows in the travel tooltip and in the picker.
+A portal has no caption on the canvas: a label across the energy read as a sticker on a window, and the ring is recognisable without one. The name lives in the element menu (**Portal → Name**), and shows in the travel tooltip and in the picker.
 
 New portals arrive **unlabelled** and are named **positionally** — "Portal 1", "Portal 2", in tab order — so a diagram full of them is navigable without anyone typing a thing. A typed name wins over the number.
 
 ## Linking
 
-Right-click a portal → **Tools › Portal**:
+Right-click a portal → **Portal**:
 
 - **Name** — a text field, committed on blur / Enter.
 - **Leads to** — a grid of every OTHER portal in the diagram, this tab's first; a portal on another tab is labelled `Name · Tab`. The current target is marked active, and picking it again unlinks.
@@ -48,7 +48,7 @@ Pressing a linked portal does up to three things:
 
 ## Unlinked portals are inert and say so
 
-A portal with no target is a dead ring — dimmed, no bloom, no clicks — and its tooltip reads _"Portal (not linked) — Right-click the portal and open Tools › Portal to pick the one it leads to."_ A portal that silently swallows clicks is worse than one that admits it isn't wired up. The same forgiveness runs through resolution: a target that was deleted, re-pointed at a non-portal, or points at itself resolves to unlinked rather than erroring, because a diagram is edited in any order and a half-wired portal is a normal intermediate state.
+A portal with no target is a dead ring — dimmed, no bloom, no clicks — and its tooltip reads _"Portal (not linked) — Right-click the portal and open Portal to pick the one it leads to."_ A portal that silently swallows clicks is worse than one that admits it isn't wired up. The same forgiveness runs through resolution: a target that was deleted, re-pointed at a non-portal, or points at itself resolves to unlinked rather than erroring, because a diagram is edited in any order and a half-wired portal is a normal intermediate state.
 
 ## Model + validation
 

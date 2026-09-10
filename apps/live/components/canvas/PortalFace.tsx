@@ -133,7 +133,7 @@ export function PortalFace({
         block
         className="h-full w-full"
         title="Portal (not linked)"
-        description="Right-click the portal and open Tools › Portal to pick the one it leads to."
+        description="Right-click the portal and open Portal to pick the one it leads to."
       >
         <div className="pointer-events-auto relative h-full w-full cursor-default">{face}</div>
       </Tooltip>
