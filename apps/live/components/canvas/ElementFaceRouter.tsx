@@ -219,6 +219,7 @@ export function ElementFaceRouter({
           result={element.pickerResult}
           candidates={onRollPicker?.(element).candidates ?? []}
           textColor={textColor}
+          shared={onRollPicker?.(element).shared ?? false}
           onRoll={onRollPicker ? () => onRollPicker(element).roll() : undefined}
         />
       ) : element.type === 'shape' && isCollabPanelShape(element.shape) && !isEditing ? (

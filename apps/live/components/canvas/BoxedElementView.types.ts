@@ -115,9 +115,12 @@ export type BoxedElementViewProps = {
   revealedForMe?: boolean;
   onToggleReveal?: (elementId: string) => void;
   // Picker (spec/107): resolves what a roll can land on right now and performs
-  // one, returning the result to animate towards.
+  // one, returning the result to animate towards. `shared` says whether this
+  // viewer's roll is written back, so the face can tell its own landing apart
+  // from one that arrived from a peer.
   onRollPicker?: (element: import('@livediagram/diagram').ShapeElement) => {
     candidates: import('@/lib/picker').PickerCandidate[];
+    shared: boolean;
     roll: () => import('@/lib/picker').PickerCandidate | null;
   };
   // The collaboration elements (spec/123 to spec/129): who the viewer is, who

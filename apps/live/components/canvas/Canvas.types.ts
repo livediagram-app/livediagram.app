@@ -125,8 +125,11 @@ export type CanvasProps = {
     config: import('@livediagram/diagram').SessionButtonConfig,
   ) => void;
   // Picker (spec/107): the candidates a roll can land on, and the roll itself.
+  // `shared` says whether this viewer's roll is written back (and so reaches
+  // the room), which is how the face tells its own landing apart from a peer's.
   onRollPicker?: (element: import('@livediagram/diagram').ShapeElement) => {
     candidates: import('@/lib/picker').PickerCandidate[];
+    shared: boolean;
     roll: () => import('@/lib/picker').PickerCandidate | null;
   };
   // The collaboration elements (spec/123 to spec/129): the viewer's identity,
