@@ -384,6 +384,25 @@ export type ParticipantPresence = {
   // default existing peers to the first tab until they happened to move.
   // Undefined until the participant's first tab-focus op lands.
   tabId?: string;
+  // The id this participant WRITES INTO THE DOCUMENT for anything recorded
+  // per person — today the `responses` on a done check / estimate card /
+  // temperature check (spec/122).
+  //
+  // It exists because `id` above cannot do that job. `id` is minted fresh by
+  // the room for every socket (spec/61 §6), so it is unforgeable but also
+  // unrecognisable: it changes on reconnect and matches nothing that was ever
+  // saved. Joining a saved answer back to the person in the roster needs an
+  // id that is STABLE across connections, and the owner id can't be it —
+  // publishing that is exactly what §6 forbids.
+  //
+  // So this is a separate, per-browser random the client mints and keeps
+  // (`livediagram:v2:collab-key`), relayed VERBATIM: unlike `id` and `role`
+  // it is claimed, not verified. That is deliberate and costs nothing — it is
+  // not a credential and grants nothing, and any edit-role peer could already
+  // write any participant id straight into the document. Optional, so an
+  // older client's hello still parses (the roster falls back to `id`, which
+  // simply matches nothing — the behaviour before this field existed).
+  key?: string;
 };
 
 // ---------------------------------------------------------------------

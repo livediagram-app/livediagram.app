@@ -24,9 +24,21 @@ So there is no new storage, no new merge rule, no new realtime path:
   code path, not two that have to agree.
 - **Reset** is the existing `clearResponses`.
 
+## The join runs on the collab key
+
+Everything below joins a saved mark to a person in the roster, and that join is
+the card. It runs on `participantKey` ([spec/122](122-participant-responses.md)),
+never on `Participant.id`.
+
+It shipped keyed on `id` and the card did nothing: `id` is our own owner id for
+ourselves and the room's per-socket presence id for everybody else (spec/61
+§6), so a peer's mark could never match a peer's roster entry. Every viewer saw
+their own mark and no one else's, in both directions — a card whose entire
+purpose is showing you the room's state, showing you only yourself.
+
 ## The waiting list is live
 
-`doneSplit(responses, participantIds)` derives who is waiting from **who is in
+`doneSplit(responses, participantKeys)` derives who is waiting from **who is in
 the room now**, not from everyone who was ever in it.
 
 This is the decision that makes the card work. A card that waited on somebody

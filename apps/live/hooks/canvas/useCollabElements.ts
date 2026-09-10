@@ -19,7 +19,7 @@ import {
   type Tab,
   type TimerMode,
 } from '@livediagram/diagram';
-import type { Participant } from '@/lib/identity';
+import { participantKey, type Participant } from '@/lib/identity';
 import { track } from '@/lib/telemetry';
 
 // How far apart scattered ideas land, in canvas px (spec/125).
@@ -69,12 +69,20 @@ export function useCollabElements({
   // --- Responses (spec/122) -------------------------------------------------
   // Cast, or withdraw by pressing your own answer again — one press, so there
   // is no second control to find.
+  //
+  // Keyed on `participantKey`, NOT on `selfParticipant.id`. The id is our
+  // OWNER id: writing it into a shared diagram publishes an `X-Owner-Id`
+  // credential to every co-viewer, and it is also unjoinable — peers see us
+  // under the room's per-socket presence id (spec/61 §6), never under this.
+  // That mismatch is what made a done check invisible to everyone but the
+  // person pressing it.
   const respond = (element: ShapeElement, value: string) => {
-    const already = responseOf(element.responses, selfParticipant.id) === value;
+    const self = participantKey(selfParticipant);
+    const already = responseOf(element.responses, self) === value;
     patchElement(element.id, (el) => ({
       responses: already
-        ? clearResponse(el.responses, selfParticipant.id)
-        : setResponse(el.responses, selfParticipant.id, value, Date.now()),
+        ? clearResponse(el.responses, self)
+        : setResponse(el.responses, self, value, Date.now()),
     }));
     track(
       'Element',

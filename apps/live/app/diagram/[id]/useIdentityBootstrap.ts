@@ -18,7 +18,7 @@ import {
 } from '@/lib/api-client';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { randomColor, randomName, type Participant } from '@/lib/identity';
-import { hasConfirmedName } from '@/lib/local-identity';
+import { ensureCollabKey, hasConfirmedName } from '@/lib/local-identity';
 import { ensureSignedGuestIdentity } from '@/lib/guest-identity';
 import { trackDailyReturn } from '@/lib/daily-return';
 import { track } from '@/lib/telemetry';
@@ -229,7 +229,13 @@ export function useIdentityBootstrap(opts: {
           clerkUserId && clerkDisplayName
             ? { ...baseSelf, name: clerkDisplayName, status: 'online' }
             : { ...baseSelf, status: 'online' };
-        setSelfParticipant({ ...self, status: 'online' });
+        // The document-write key (spec/122) is stamped onto the LOCAL
+        // participant only, never onto `self` as it goes to `apiSaveSelf`
+        // below: it belongs to this browser, not to the account. A second
+        // device signed in as the same person is a second person as far as
+        // a done check is concerned — and it is a second presence entry too,
+        // so that stays consistent.
+        setSelfParticipant({ ...self, key: ensureCollabKey(), status: 'online' });
         // Persist on first load, or when a signed-in user's Clerk display
         // name has drifted from what we have on the server.
         const nameDrifted = !!(

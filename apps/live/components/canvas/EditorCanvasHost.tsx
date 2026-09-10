@@ -4,6 +4,7 @@ import { describeOne } from '@/lib/element-names';
 import { DEFAULT_BUTTON_MODE } from '@livediagram/diagram';
 import { useMemo } from 'react';
 import { DEFAULT_BACKGROUND_COLOR, DEFAULT_PATTERN_COLOR, isVoteHost } from '@livediagram/diagram';
+import { participantKey } from '@/lib/identity';
 import { resolveOwnerBadge } from '@/lib/presence-rows';
 import { usePreferenceHandlers } from '@/hooks/ui/usePreferenceHandlers';
 import { useQuickConnectStart } from '@/hooks/canvas/useQuickConnectStart';
@@ -476,7 +477,8 @@ export function EditorCanvasHost() {
       // visitor, so the faces render readable but inert rather than offering
       // presses the room would discard.
       collab={{
-        selfId: selfParticipant.id,
+        // The document-write key, not the owner id — see CollabApi.selfKey.
+        selfKey: participantKey(selfParticipant),
         // Ourselves first: livePresence is the REMOTE roster, and an estimate
         // card that can't show your own avatar is showing the wrong room.
         participants: [selfParticipant, ...livePresence],

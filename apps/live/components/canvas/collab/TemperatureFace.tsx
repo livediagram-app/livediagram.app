@@ -24,17 +24,17 @@ export function TemperatureFace({
   element,
   label,
   textColor,
-  selfId,
+  selfKey,
   onRespond,
 }: {
   element: ShapeElement;
   label: string;
   textColor: string;
-  selfId: string;
+  selfKey: string;
   onRespond?: (value: string) => void;
 }) {
   const responses = element.responses ?? [];
-  const mine = responseOf(responses, selfId);
+  const mine = responseOf(responses, selfKey);
   const stats = responseStats(responses);
   const tally = responseTally(responses, TEMPERATURE_VALUES);
   const peak = Math.max(1, ...tally);

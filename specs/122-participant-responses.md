@@ -24,8 +24,8 @@ is one field, so it is built once here rather than three times.
 ## The field
 
 `ShapeElement.responses?: ParticipantResponse[]`, where a response is
-`{ participantId, value, at }` — the participant id the room already identifies
-people by (spec/04), the answer as a **string**, and when it was cast.
+`{ participantId, value, at }` — the answer as a **string**, when it was cast,
+and the id of who cast it (see below — it is NOT the owner id).
 
 - **At most one response per participant**, enforced by `setResponse`: casting
   again REPLACES your earlier answer rather than stacking a second one. This is
@@ -39,6 +39,50 @@ people by (spec/04), the answer as a **string**, and when it was cast.
 
 Helpers live in `packages/diagram/src/responses.ts` — a leaf module (types
 only), for the same module-cycle reason `data-shapes.ts` is one.
+
+## `participantId` is the COLLAB KEY, not the owner id
+
+This is the field's one real subtlety, and getting it wrong broke the done
+check ([spec/137](137-done-check.md)) outright: everyone saw their own mark and
+nobody else's, in both directions.
+
+There are three ids for a person in the editor, and only one of them can go
+here:
+
+| Id                           | Stable across reconnects? | Safe to publish? |
+| ---------------------------- | ------------------------- | ---------------- |
+| **Owner id** (`X-Owner-Id`)  | yes                       | **no**           |
+| **Presence id** (spec/61 §6) | **no** — per socket       | yes              |
+| **Collab key**               | yes                       | yes              |
+
+The owner id is a credential: for a guest it is exactly what authenticates
+their API calls, so writing it into a shared diagram hands it to every
+co-viewer. The presence id is deliberately a fresh server-minted random per
+socket, so peers never read an owner id off a roster — which also means it
+matches nothing that was ever saved, and changes on every reconnect.
+
+So the document gets a third id: **`livediagram:v2:collab-key`**, a per-browser
+random the client mints and keeps (`ensureCollabKey`). Stable like the owner
+id, worthless like the presence id. It rides the roster as
+`ParticipantPresence.key`, the **one claimed field** on it — relayed verbatim
+rather than server-stamped, because it has to survive a reconnect to do its
+job, and because it grants nothing (any edit-role peer can already write any id
+straight into the document, so leaving it claimable adds no reach).
+
+Both sides of the join go through **`participantKey(participant)`**, which
+falls back to `id` for a peer on a client too old to publish a key: they render
+in the roster and match no saved answer, which is what happened before the key
+existed rather than a crash.
+
+Two consequences worth stating:
+
+- **Per browser, not per account.** The same person signed in on a laptop and a
+  phone is two answers — and two presence entries, so the card stays
+  self-consistent.
+- **Answers written before this shipped don't match anybody.** They were keyed
+  on owner ids. A done check is a round you reset anyway; an estimate card
+  shows its old answers with no avatar beside them, the same as an answer from
+  somebody who has left.
 
 `ShapeElement.responsesRevealed?: boolean` is the shared "values are out" flag.
 The estimate card uses it; the temperature check deliberately does not.
@@ -58,7 +102,9 @@ The estimate card uses it; the temperature check deliberately does not.
 ## Limit, stated plainly
 
 `participantId` is in the element, so an answer is **not anonymous** — the
-element knows who said 8. That is right for these two consumers (a team that
+element knows who said 8. (Not anonymous to the ROOM, that is; the key is not
+an owner id, so it identifies a browser in this session rather than an account
+— see above.) That is right for these two consumers (a team that
 cannot see who estimated what cannot discuss the outlier) and wrong for a
 brainstorm, which is why the idea box ([spec/125](125-idea-box.md)) does not use
 this field and has nowhere to put an author at all.

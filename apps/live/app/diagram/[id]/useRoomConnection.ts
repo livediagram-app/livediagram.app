@@ -136,6 +136,12 @@ export function useRoomConnection(opts: {
         setLivePresence(
           participants.map((p) => ({
             id: p.id,
+            // The peer's document-write id (spec/122), claimed in their
+            // hello and relayed unchanged — it is what joins their saved
+            // answer on a done check / estimate card back to their avatar.
+            // `p.id` cannot: the room mints that per socket (spec/61 §6),
+            // so it matches nothing that was ever written down.
+            ...(p.key ? { key: p.key } : {}),
             name: p.name,
             color: p.color,
             // Status + lastActiveAt are derived locally rather than
@@ -435,7 +441,12 @@ export function useRoomConnection(opts: {
       if (cancelled) return;
       openedRoom = connectRoom(
         diagramId,
-        { id: selfParticipant.id, name: selfParticipant.name, color: selfParticipant.color },
+        {
+          id: selfParticipant.id,
+          key: selfParticipant.key,
+          name: selfParticipant.name,
+          color: selfParticipant.color,
+        },
         handlers,
         {
           // The api worker resolves role from these on WS upgrade and

@@ -6,7 +6,7 @@ import {
   MAX_TAB_ID_LEN,
   type LoggedOp,
 } from './diagram-room-rules';
-import { MAX_COLOR_LEN, MAX_PARTICIPANT_NAME_LEN } from './limits';
+import { MAX_COLOR_LEN, MAX_PARTICIPANT_KEY_LEN, MAX_PARTICIPANT_NAME_LEN } from './limits';
 
 const SESSION = { presenceId: 'p-server', verifiedRole: 'view' as const };
 
@@ -27,14 +27,37 @@ describe('helloPresence', () => {
     expect(p).toMatchObject({ name: 'Ada', color: '#f00', tabId: 't1' });
   });
 
+  it('relays the document-write key instead of overriding it', () => {
+    // The one claimed field on the roster (spec/122). It has to survive a
+    // reconnect to join a saved answer back to the person who gave it, so the
+    // server cannot mint it the way it mints `id` — and it grants nothing, so
+    // it does not need to.
+    const p = helloPresence({ name: 'Ada', color: '#f00', key: 'k-ada' }, SESSION);
+    expect(p.key).toBe('k-ada');
+    expect(p.id).toBe('p-server');
+  });
+
+  it('omits an empty or missing key rather than storing a blank one', () => {
+    // A blank key would MATCH other blank keys, quietly merging two people's
+    // answers into one. Absent is the honest value.
+    expect('key' in helloPresence({ name: 'Ada', color: '#f00' }, SESSION)).toBe(false);
+    expect('key' in helloPresence({ name: 'Ada', color: '#f00', key: '' }, SESSION)).toBe(false);
+  });
+
   it('clamps every string it accepts', () => {
     const p = helloPresence(
-      { name: 'n'.repeat(999), color: 'c'.repeat(999), tabId: 't'.repeat(999) },
+      {
+        name: 'n'.repeat(999),
+        color: 'c'.repeat(999),
+        tabId: 't'.repeat(999),
+        key: 'k'.repeat(999),
+      },
       SESSION,
     );
     expect(p.name).toHaveLength(MAX_PARTICIPANT_NAME_LEN);
     expect(p.color).toHaveLength(MAX_COLOR_LEN);
     expect(p.tabId).toHaveLength(MAX_TAB_ID_LEN);
+    expect(p.key).toHaveLength(MAX_PARTICIPANT_KEY_LEN);
   });
 
   it('drops non-string and absent fields rather than trusting them', () => {

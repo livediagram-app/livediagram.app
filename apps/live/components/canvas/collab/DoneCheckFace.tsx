@@ -2,7 +2,7 @@
 
 import { allDone, doneSplit, isDone, type ShapeElement } from '@livediagram/diagram';
 
-import type { Participant } from '@/lib/identity';
+import { participantKey, type Participant } from '@/lib/identity';
 import { ParticipantAvatar } from '@/components/primitives/ParticipantAvatar';
 import { CollabButton, CollabEmpty, CollabPanel } from './collab-chrome';
 import { ElementEllipsisMenu, ElementMenuItem } from '@/components/canvas/ElementEllipsisMenu';
@@ -18,37 +18,43 @@ import { ElementEllipsisMenu, ElementMenuItem } from '@/components/canvas/Elemen
 // The waiting-on list is LIVE: it comes from who is in the room now, not from
 // everyone who was ever in it. A card that waited on somebody who closed their
 // tab would never complete, and completing is the entire point.
+//
+// Both sides of that join run on `participantKey`, never on `Participant.id`.
+// The id is our owner id for ourselves and the room's per-socket presence id
+// for everyone else (spec/61 §6), so it cannot match what was saved: keyed on
+// it, this card showed every viewer their own mark and nobody else's.
 
 function Roster({
   title,
-  ids,
+  keys,
   participants,
   textColor,
   muted,
 }: {
   title: string;
-  ids: string[];
+  // Document-write keys (see participantKey), matched back to the room below.
+  keys: string[];
   participants: Participant[];
   textColor: string;
   // The waiting side is drawn back, so a glance lands on who is DONE.
   muted?: boolean;
 }) {
-  if (ids.length === 0) return null;
+  if (keys.length === 0) return null;
   return (
     <div className="flex min-w-0 flex-col gap-1">
       <span
         className="text-[10px] font-semibold uppercase tracking-[0.06em] opacity-55"
         style={{ color: textColor }}
       >
-        {title} · {ids.length}
+        {title} · {keys.length}
       </span>
       {/* gap-3 clears the presence RING, which is a box-shadow outside each
           avatar's layout box and eats 4px of any gap beside it. */}
       <div className={`flex flex-wrap items-center gap-3 ${muted ? 'opacity-45' : ''}`}>
-        {ids.map((id) => {
-          const who = participants.find((p) => p.id === id);
+        {keys.map((key) => {
+          const who = participants.find((p) => participantKey(p) === key);
           return who ? (
-            <ParticipantAvatar key={id} participant={who} size={22} withTooltip />
+            <ParticipantAvatar key={key} participant={who} size={22} withTooltip />
           ) : null;
         })}
       </div>
@@ -60,7 +66,7 @@ export function DoneCheckFace({
   element,
   label,
   textColor,
-  selfId,
+  selfKey,
   participants,
   onToggleMine,
   onResetAll,
@@ -68,7 +74,8 @@ export function DoneCheckFace({
   element: ShapeElement;
   label: string;
   textColor: string;
-  selfId: string;
+  // How WE are recorded on this card — see CollabApi.selfKey.
+  selfKey: string;
   // The room. Includes ourselves, and is what the waiting list is derived from.
   participants: Participant[];
   // Mark or unmark MYSELF. One handler for both: `respond` already withdraws
@@ -79,17 +86,17 @@ export function DoneCheckFace({
   // which renders the card readable but inert.
   onResetAll?: () => void;
 }) {
-  const ids = participants.map((p) => p.id);
-  const { done, waiting } = doneSplit(element.responses, ids);
-  const mine = isDone(element.responses, selfId);
-  const everyone = allDone(element.responses, ids);
+  const keys = participants.map(participantKey);
+  const { done, waiting } = doneSplit(element.responses, keys);
+  const mine = isDone(element.responses, selfKey);
+  const everyone = allDone(element.responses, keys);
 
   return (
     <CollabPanel
       element={element}
       title={label.trim() || 'Everyone done?'}
       textColor={textColor}
-      aside={ids.length ? `${done.length}/${ids.length}` : undefined}
+      aside={keys.length ? `${done.length}/${keys.length}` : undefined}
       // The flash is the card's whole payoff: the facilitator does not have to
       // watch it, the board tells them. Driven by a class rather than inline
       // styles so the reduced-motion override in globals.css can reach it.
@@ -140,7 +147,7 @@ export function DoneCheckFace({
         </CollabButton>
       }
     >
-      {ids.length === 0 ? (
+      {keys.length === 0 ? (
         <CollabEmpty textColor={textColor}>
           Nobody is in the room yet. Share the diagram and the card fills itself in.
         </CollabEmpty>
@@ -151,10 +158,10 @@ export function DoneCheckFace({
               Everyone&apos;s done.
             </p>
           ) : null}
-          <Roster title="Done" ids={done} participants={participants} textColor={textColor} />
+          <Roster title="Done" keys={done} participants={participants} textColor={textColor} />
           <Roster
             title="Waiting on"
-            ids={waiting}
+            keys={waiting}
             participants={participants}
             textColor={textColor}
             muted

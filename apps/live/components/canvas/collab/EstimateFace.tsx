@@ -3,7 +3,7 @@
 // shows every value at once with the spread called out.
 
 import { estimateValues, responseOf, responseStats, type ShapeElement } from '@livediagram/diagram';
-import type { Participant } from '@/lib/identity';
+import { participantKey, type Participant } from '@/lib/identity';
 import { ParticipantAvatar } from '@/components/primitives/ParticipantAvatar';
 import { CollabButton, CollabChip, CollabEmpty, CollabPanel } from './collab-chrome';
 
@@ -24,7 +24,7 @@ export function EstimateFace({
   element,
   label,
   textColor,
-  selfId,
+  selfKey,
   participants,
   onRespond,
   onSetRevealed,
@@ -33,7 +33,8 @@ export function EstimateFace({
   element: ShapeElement;
   label: string;
   textColor: string;
-  selfId: string;
+  // How WE are recorded on this card — see CollabApi.selfKey.
+  selfKey: string;
   // The room, so an answer can be shown under the person who gave it.
   participants: Participant[];
   // Cast or withdraw my own pick. Absent on a surface that can't write
@@ -44,13 +45,16 @@ export function EstimateFace({
 }) {
   const values = estimateValues(element.estimateScale);
   const responses = element.responses ?? [];
-  const mine = responseOf(responses, selfId);
+  const mine = responseOf(responses, selfKey);
   const revealed = element.responsesRevealed === true;
   // Presence is the denominator: "4 of 6 in" only means something against the
   // people who could still answer.
   const inRoom = Math.max(participants.length, responses.length);
-  const named = (participantId: string): Participant | undefined =>
-    participants.find((p) => p.id === participantId);
+  // Answers are recorded under the document-write key, not the presence id
+  // (see participantKey) — matching on `p.id` here found nobody but ourselves,
+  // so every peer's estimate showed up as an unnamed chip.
+  const named = (key: string): Participant | undefined =>
+    participants.find((p) => participantKey(p) === key);
 
   return (
     <CollabPanel

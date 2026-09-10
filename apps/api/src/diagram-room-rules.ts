@@ -12,7 +12,7 @@
 // or storage. The room stays the owner of everything stateful: minting the
 // seq, trimming the log, serialising the attachment, broadcasting.
 
-import { MAX_COLOR_LEN, MAX_PARTICIPANT_NAME_LEN } from './limits';
+import { MAX_COLOR_LEN, MAX_PARTICIPANT_KEY_LEN, MAX_PARTICIPANT_NAME_LEN } from './limits';
 import type { ParticipantPresence } from '@livediagram/api-schema';
 
 // A tabId is clamped like the name and colour so a hostile hello can't push an
@@ -49,6 +49,15 @@ export function helloPresence(
     role: session.verifiedRole,
   };
   if (typeof c.tabId === 'string') presence.tabId = c.tabId.slice(0, MAX_TAB_ID_LEN);
+  // The document-write key (spec/122) is RELAYED, not overridden — the one
+  // claimed field on the roster. It has to survive a reconnect to be any use
+  // (it is what joins a saved answer to the person who gave it), so the server
+  // cannot mint it the way it mints `id`. Nothing is granted by holding it and
+  // any edit-role peer can already write any id into the document, so leaving
+  // it claimable adds no reach; it is clamped like every other string here.
+  if (typeof c.key === 'string' && c.key.length > 0) {
+    presence.key = c.key.slice(0, MAX_PARTICIPANT_KEY_LEN);
+  }
   return presence;
 }
 

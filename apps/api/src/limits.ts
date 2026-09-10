@@ -49,6 +49,10 @@ export const MAX_CHANGE_LOG_ENTRY_BYTES = 256 * 1024;
 // Realtime presence identity, broadcast to every connected peer.
 export const MAX_PARTICIPANT_NAME_LEN = 120;
 export const MAX_COLOR_LEN = 64;
+// The client-claimed document-write key relayed on presence (spec/122). Real
+// ones are UUIDs; the clamp only stops a hostile hello pushing an oversize
+// string into the socket attachment, which has a small hard budget.
+export const MAX_PARTICIPANT_KEY_LEN = 64;
 
 // Share-link password.
 export const MAX_PASSWORD_LEN = 256;

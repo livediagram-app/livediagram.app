@@ -25,8 +25,11 @@ import { DoneCheckFace } from './DoneCheckFace';
 // renderer), which renders every face inert but still readable — a shared
 // estimate card in a PNG should still show what the room said.
 export type CollabApi = {
-  // Whose answer is "mine".
-  selfId: string;
+  // Whose answer is "mine" — our `participantKey`, the id these faces are
+  // recorded under in the document (spec/122), not our owner id. See the
+  // note on Participant.key: the owner id is unpublishable and the room's
+  // presence id is per-socket, so neither can join a saved answer to a face.
+  selfKey: string;
   // The room, for the estimate card's avatars. Includes ourselves.
   participants: Participant[];
   // The tab's timer, so an agenda can show the live remaining time on the
@@ -65,7 +68,7 @@ export function CollabFaceRouter({
         element={element}
         label={label}
         textColor={textColor}
-        selfId={api?.selfId ?? ''}
+        selfKey={api?.selfKey ?? ''}
         participants={api?.participants ?? []}
         // `respond` already withdraws when you send the value you already
         // sent (spec/122), so marking and unmarking are the same call.
@@ -80,7 +83,7 @@ export function CollabFaceRouter({
         element={element}
         label={label}
         textColor={textColor}
-        selfId={api?.selfId ?? ''}
+        selfKey={api?.selfKey ?? ''}
         participants={api?.participants ?? []}
         onRespond={api?.respond ? (value) => api.respond!(element, value) : undefined}
         onSetRevealed={
@@ -98,7 +101,7 @@ export function CollabFaceRouter({
         element={element}
         label={label}
         textColor={textColor}
-        selfId={api?.selfId ?? ''}
+        selfKey={api?.selfKey ?? ''}
         onRespond={api?.respond ? (value) => api.respond!(element, value) : undefined}
       />
     );

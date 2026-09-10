@@ -67,7 +67,11 @@ const RECONNECT_MAX_MS = 15_000;
 
 export function connectRoom(
   diagramId: string,
-  participant: { id: string; name: string; color: string },
+  // `key` is the document-write id (spec/122), relayed to peers verbatim so
+  // an answer saved on the diagram can be joined back to the person in the
+  // roster. The room OVERRIDES `id` with its own per-socket presence id
+  // (spec/61 §6), which is why the two are separate fields.
+  participant: { id: string; key?: string; name: string; color: string },
   handlers: RoomHandlers,
   options: RoomAuthOptions = {},
 ): {

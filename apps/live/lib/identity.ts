@@ -18,6 +18,19 @@ export const OFFLINE_AFTER_MS = 60 * 60 * 1000;
 
 export type Participant = {
   id: string;
+  // The id this person writes into the DOCUMENT for anything recorded
+  // per participant — a done check's mark, an estimate, a temperature
+  // (spec/122). Separate from `id` because `id` cannot do that job: for
+  // ourselves it is the owner id, which must never be published, and for
+  // a peer it is the room's per-socket presence id, which changes on
+  // every reconnect and matches nothing that was saved.
+  //
+  // Optional so a peer on an older client (whose hello carried no key)
+  // still renders in the roster — they simply match no saved answer,
+  // which is the behaviour before this existed. Read through
+  // `participantKey` rather than directly, so the fallback lives in one
+  // place.
+  key?: string;
   name: string;
   color: string; // hex
   // Derived presence — never stored on the server. Computed locally
@@ -36,6 +49,14 @@ export type Participant = {
   // their name.
   role?: 'edit' | 'view';
 };
+
+// How this participant is recorded in the document (spec/122). Falls back
+// to `id` for a peer whose client is too old to publish a key: they then
+// match no saved answer, which is no worse than before the key existed and
+// is a great deal better than crashing the join on an undefined.
+export function participantKey(participant: Participant): string {
+  return participant.key ?? participant.id;
+}
 
 // Status from idle duration. Used at render time so the ring + label
 // stay in sync with the actual time elapsed without having to PUT
