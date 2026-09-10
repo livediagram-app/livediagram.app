@@ -76,6 +76,15 @@ tally path serves them all:
 | `rating`       | 1–5                         |
 | `text`         | free text                   |
 
+The union lives in **`@livediagram/diagram`** (`poll-style.ts`), not beside
+`LivePoll` here, because a Session button ([spec/105](105-session-button.md))
+STORES a style on the element and so needs it in a `Tab` field — and
+api-schema depends on diagram, never the reverse. `PollStyle` is re-exported
+from api-schema so existing imports keep resolving. The fixed answer sets
+(`Yes / No`, `1-5`) moved down with it, which is what lets the authoring menus
+preview a style's answers before any poll exists: `pollOptionTokens(poll)` is
+now `pollStyleTokens(style, options)` applied to a running poll.
+
 Caps (the issue's other open question), enforced at the input and re-checked
 when an op arrives so a hand-crafted frame can't blow up a peer's panel:
 

@@ -11,6 +11,7 @@
 import { useState } from 'react';
 import {
   sessionButtonPlan,
+  type PollStyle,
   type SessionButtonConfig,
   type ShapeElement,
   type Tab,
@@ -49,7 +50,7 @@ export function useBehaviourElements({
   pauseTimer: () => void;
   resumeTimer: () => void;
   startVote: (votesPerPerson: number) => void;
-  startPoll: (draft: { question: string; style: 'text'; options: string[] }) => void;
+  startPoll: (draft: { question: string; style: PollStyle; options: string[] }) => void;
 }) {
   // --- Session button (spec/105) --------------------------------------------
   // Pressing one starts the tool FOR THE ROOM, through the same entry points
@@ -73,7 +74,10 @@ export function useBehaviourElements({
       startVote(plan.dots);
       return;
     }
-    startPoll({ question: plan.question, style: 'text', options: plan.options });
+    // The button's OWN style and answers (spec/105). This used to hard-code
+    // `style: 'text'`, which threw away every answer the author had written
+    // and asked the room a free-text question instead.
+    startPoll({ question: plan.question, style: plan.style, options: plan.options });
   };
 
   // --- Reveal zone (spec/106) -----------------------------------------------
@@ -103,6 +107,10 @@ export function useBehaviourElements({
     });
     return {
       candidates,
+      // Whether OUR roll reaches the element (and so the room). The face needs
+      // it to tell its own landing apart from one arriving from a peer, which
+      // is what lets everyone watch the same spin (spec/107).
+      shared: !editsBlocked,
       roll: () => {
         const picked = rollPicker(candidates);
         if (picked === null) return null;

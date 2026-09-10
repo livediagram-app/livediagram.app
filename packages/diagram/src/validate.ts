@@ -225,6 +225,10 @@ export function isValidElement(el: unknown): el is Element {
       if (!isSessionTool((el.session as { tool?: unknown }).tool)) return false;
       const options = (el.session as { options?: unknown }).options;
       if (options !== undefined && !boundedArray(options, MAX_DATA_ARRAY)) return false;
+      // The poll's answer shape (spec/88) is deliberately NOT checked here,
+      // unlike the tool above: sessionButtonPlan falls back to the default
+      // style for anything it doesn't recognise, so a tab written by a newer
+      // client still loads and its button still presses to something.
     }
     // Reveal zone (spec/106): shared-uncovered is a plain flag.
     if (el.revealed !== undefined && typeof el.revealed !== 'boolean') return false;

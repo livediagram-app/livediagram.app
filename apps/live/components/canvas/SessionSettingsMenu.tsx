@@ -3,6 +3,9 @@
 import { useState } from 'react';
 
 import {
+  DEFAULT_SESSION_POLL_STYLE,
+  isPollStyle,
+  pollStyleNeedsOptions,
   SESSION_POLL_MAX_OPTIONS,
   VOTE_DOTS_RANGE,
   type SessionButtonConfig,
@@ -13,6 +16,7 @@ import {
   ElementMenuItem,
   ElementMenuLabel,
 } from '@/components/canvas/ElementEllipsisMenu';
+import { PollAnswerStyleRow } from '@/components/palette/PollAnswerStyleRow';
 
 // The `…` menu on a Vote or Poll session element (spec/105): its settings,
 // on the element rather than three levels into the right-click menu.
@@ -39,6 +43,7 @@ function PollForm({
   // entry for every letter of the question.
   const [question, setQuestion] = useState(config.question ?? '');
   const options = config.options ?? [];
+  const style = isPollStyle(config.style) ? config.style : DEFAULT_SESSION_POLL_STYLE;
 
   const setOption = (i: number, value: string) => {
     const next = [...options];
@@ -62,37 +67,45 @@ function PollForm({
         placeholder="Which option?"
         className={field}
       />
-      <ElementMenuLabel>Answers</ElementMenuLabel>
-      {options.map((opt, i) => (
-        <span key={i} className="flex items-center gap-1">
-          <input
-            value={opt}
-            onChange={(e) => setOption(i, e.target.value)}
-            onKeyDown={(e) => e.stopPropagation()}
-            className={field}
-          />
-          <button
-            type="button"
-            aria-label={`Remove answer ${i + 1}`}
-            // Two is the floor: sessionPlan refuses a poll with fewer, so
-            // removing below it would leave a button nobody can press.
-            disabled={options.length <= 2}
-            onClick={() => onChange({ ...config, options: options.filter((_, j) => j !== i) })}
-            className="shrink-0 cursor-pointer rounded px-1 text-xs text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 disabled:cursor-default disabled:opacity-30 dark:hover:bg-slate-800"
-          >
-            ✕
-          </button>
-        </span>
-      ))}
-      {options.length < SESSION_POLL_MAX_OPTIONS ? (
-        <button
-          type="button"
-          onClick={() => onChange({ ...config, options: [...options, ''] })}
-          className="cursor-pointer rounded-md px-1 py-1 text-left text-xs font-medium text-brand-600 transition hover:bg-slate-100 dark:text-brand-300 dark:hover:bg-slate-800"
-        >
-          Add answer
-        </button>
-      ) : null}
+      <PollAnswerStyleRow style={style} onChange={(next) => onChange({ ...config, style: next })} />
+      {/* The written list belongs to the Choices style alone; the others
+          answer with a fixed set (see PollAnswerStyleRow). */}
+      {!pollStyleNeedsOptions(style) ? null : (
+        <>
+          <ElementMenuLabel>Choices</ElementMenuLabel>
+          {options.map((opt, i) => (
+            <span key={i} className="flex items-center gap-1">
+              <input
+                value={opt}
+                onChange={(e) => setOption(i, e.target.value)}
+                onKeyDown={(e) => e.stopPropagation()}
+                className={field}
+              />
+              <button
+                type="button"
+                aria-label={`Remove answer ${i + 1}`}
+                // Two is the floor: sessionPlan refuses a Choices poll with
+                // fewer, so removing below it would leave a button nobody can
+                // press.
+                disabled={options.length <= 2}
+                onClick={() => onChange({ ...config, options: options.filter((_, j) => j !== i) })}
+                className="shrink-0 cursor-pointer rounded px-1 text-xs text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 disabled:cursor-default disabled:opacity-30 dark:hover:bg-slate-800"
+              >
+                ✕
+              </button>
+            </span>
+          ))}
+          {options.length < SESSION_POLL_MAX_OPTIONS ? (
+            <button
+              type="button"
+              onClick={() => onChange({ ...config, options: [...options, ''] })}
+              className="cursor-pointer rounded-md px-1 py-1 text-left text-xs font-medium text-brand-600 transition hover:bg-slate-100 dark:text-brand-300 dark:hover:bg-slate-800"
+            >
+              Add answer
+            </button>
+          ) : null}
+        </>
+      )}
     </div>
   );
 }

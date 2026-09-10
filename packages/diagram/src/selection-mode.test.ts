@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
+  DEFAULT_SESSION_POLL_STYLE,
   DEFAULT_SESSION_TOOL,
   DEFAULT_TIMER_MINUTES,
   DEFAULT_VOTE_DOTS,
+  defaultSessionConfig,
   isPickerSource,
   isSessionTool,
   sessionButtonPlan,
@@ -62,12 +64,69 @@ describe('sessionButtonPlan', () => {
   it('builds a poll from the written question and answers', () => {
     expect(
       sessionButtonPlan({ tool: 'poll', question: '  Ship it?  ', options: [' Yes', 'No '] }),
-    ).toEqual({ tool: 'poll', question: 'Ship it?', options: ['Yes', 'No'] });
+    ).toEqual({
+      tool: 'poll',
+      style: DEFAULT_SESSION_POLL_STYLE,
+      question: 'Ship it?',
+      options: ['Yes', 'No'],
+    });
+  });
+
+  it('carries the configured answer style through to the plan', () => {
+    // The bug this pins: the press used to hard-code a free-text poll, so a
+    // button with two written answers asked the room to type instead.
+    expect(
+      sessionButtonPlan({
+        tool: 'poll',
+        style: 'choice',
+        question: 'Tea or coffee?',
+        options: ['Tea', 'Coffee'],
+      }),
+    ).toEqual({
+      tool: 'poll',
+      style: 'choice',
+      question: 'Tea or coffee?',
+      options: ['Tea', 'Coffee'],
+    });
+  });
+
+  it('drops a written list for a style that does not read one', () => {
+    // The fixed-set styles answer with Yes / No or 1-5. Shipping a stale
+    // list beside them would give the poll two disagreeing answer sets.
+    for (const style of ['yesNo', 'yesNoAbstain', 'rating', 'text'] as const) {
+      expect(
+        sessionButtonPlan({ tool: 'poll', style, question: 'Ready?', options: ['Left', 'Right'] }),
+      ).toEqual({ tool: 'poll', style, question: 'Ready?', options: [] });
+    }
+  });
+
+  it('needs no written answers for a fixed-answer poll', () => {
+    // Only Choices can be half-written. A Yes / No button is startable the
+    // moment it has a question.
+    expect(sessionButtonPlan({ tool: 'poll', style: 'yesNo', question: 'Ready?' })).toEqual({
+      tool: 'poll',
+      style: 'yesNo',
+      question: 'Ready?',
+      options: [],
+    });
+  });
+
+  it('falls back to the default style rather than going inert', () => {
+    // A style from a newer client (or a hand-written API payload) still
+    // presses to something the author can then fix from the menu.
+    const plan = sessionButtonPlan({
+      tool: 'poll',
+      style: 'ranked-ballot' as never,
+      question: 'Which?',
+      options: ['A', 'B'],
+    });
+    expect(plan && 'style' in plan && plan.style).toBe(DEFAULT_SESSION_POLL_STYLE);
   });
 
   it('refuses a poll that cannot be answered', () => {
-    // Fewer than two real answers is a half-written button: the face goes
-    // inert and says why, rather than opening a poll nobody can respond to.
+    // Fewer than two real answers is a half-written CHOICES button: the face
+    // goes inert and says why, rather than opening a poll nobody can respond
+    // to.
     expect(sessionButtonPlan({ tool: 'poll', options: ['Only one'] })).toBeNull();
     expect(sessionButtonPlan({ tool: 'poll', options: ['  ', ''] })).toBeNull();
     expect(sessionButtonPlan({ tool: 'poll' })).toBeNull();
@@ -81,5 +140,16 @@ describe('sessionButtonPlan', () => {
     expect(plan?.tool).toBe('poll');
     expect(plan && 'options' in plan && plan.options).toHaveLength(SESSION_POLL_MAX_OPTIONS);
     expect(plan && 'question' in plan && plan.question).toBe('Quick question');
+  });
+});
+
+describe('defaultSessionConfig', () => {
+  it('drops a poll button that reads the answers it ships with', () => {
+    // The palette places a working poll (spec/105). It carries two answers,
+    // so its style has to be the one that reads them.
+    const config = defaultSessionConfig('poll');
+    expect(config.style).toBe('choice');
+    expect(config.options).toHaveLength(2);
+    expect(sessionButtonPlan(config)).toMatchObject({ style: 'choice', options: config.options });
   });
 });

@@ -7,7 +7,15 @@
 
 // How participants answer. Every style reduces to a single string `value`
 // on the wire, so one tally path serves all of them.
-export type PollStyle = 'yesNo' | 'yesNoAbstain' | 'choice' | 'rating' | 'text';
+//
+// The union itself lives in @livediagram/diagram (`poll-style.ts`), one
+// package down, because a Session button (spec/105) STORES a style on the
+// element and `SessionButtonConfig` is a `Tab` field. Re-exported here so
+// every existing `import { PollStyle } from '@livediagram/api-schema'`
+// keeps resolving and there is still only one list.
+import { pollStyleTokens, type PollStyle } from '@livediagram/diagram';
+
+export type { PollStyle };
 
 export type LivePoll = {
   id: string;
@@ -28,29 +36,13 @@ export const POLL_OPTIONS_MIN = 2;
 export const POLL_OPTIONS_MAX = 6;
 export const POLL_TEXT_ANSWER_MAX = 280;
 
-// The fixed answer sets. `choice` is the only style that reads the poll's
-// own options; `text` has no tokens at all (answers are free-form, listed
-// rather than counted).
-const YES_NO = ['Yes', 'No'];
-const YES_NO_ABSTAIN = ['Yes', 'No', 'Abstain'];
-const RATINGS = ['1', '2', '3', '4', '5'];
-
 // Every answer token a poll can receive, in display order. Empty for a
 // free-text poll, which is the signal to render the answer list instead of
-// a bar chart.
+// a bar chart. The fixed sets live with the style union in
+// @livediagram/diagram, so the authoring menus can preview a style's answers
+// before any poll exists without a second copy of "Yes / No".
 export function pollOptionTokens(poll: LivePoll): string[] {
-  switch (poll.style) {
-    case 'yesNo':
-      return YES_NO;
-    case 'yesNoAbstain':
-      return YES_NO_ABSTAIN;
-    case 'rating':
-      return RATINGS;
-    case 'choice':
-      return poll.options;
-    case 'text':
-      return [];
-  }
+  return pollStyleTokens(poll.style, poll.options);
 }
 
 // Trim a poll to the caps and drop anything unusable. Returns null when

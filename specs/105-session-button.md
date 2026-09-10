@@ -16,7 +16,7 @@ Putting the tools ON the board makes the board self-facilitating. A retro templa
 - What it starts lives in **`ShapeElement.session`**, one small object rather than a scatter of fields:
   - `{ tool: 'timer', minutes }` — a countdown of that many minutes (default 5).
   - `{ tool: 'vote', dots }` — a dot vote with that many dots each (default 3).
-  - `{ tool: 'poll', question, options }` — a live poll, pre-written.
+  - `{ tool: 'poll', style, question, options }` — a live poll, pre-written.
 - Absent `session` means a timer, so a button authored by an older client (or hand-written through the API) still does something sensible.
 
 ## Pressing it
@@ -29,7 +29,41 @@ Putting the tools ON the board makes the board self-facilitating. A retro templa
 
 ## Configuring it
 
-Right-click → **Tools › Session**: pick the tool (Timer / Vote / Poll), then its one setting — minutes for a timer, dots for a vote, the question and options for a poll.
+Right-click → **Session**: pick the tool (Timer / Vote / Poll), then its one setting — minutes for a timer, dots for a vote, the question and answers for a poll.
+
+### A poll button carries its ANSWER STYLE, not just its answers
+
+`session.style` is a [spec/88](88-live-poll.md) `PollStyle` — the same five the
+tab menu's poll composer offers, from the same list — so a button can ask
+Yes / No, + Abstain, your own **Choices**, a 1-5 **Rating**, or **Free text**.
+
+It has to be stored, because the press has to say which one. It originally
+wasn't: `pressSessionButton` hard-coded `style: 'text'`, so every poll button
+in the product threw away the answers its author had written and asked the room
+to type instead. The answers were configurable and simply unused.
+
+Two rules fall out of the style, both in `sessionButtonPlan` so the menu, the
+face and the press cannot disagree:
+
+- **Only `choice` reads `options`.** Every other style has a fixed answer set,
+  so a list left behind from an earlier style is dropped rather than shipped
+  alongside them — a poll with two disagreeing answer sets is not a poll. The
+  list stays on the config through the round trip, so trying Yes / No and
+  coming back doesn't cost you what you typed.
+- **Only `choice` can be half-written.** The two-answer floor (below) applies
+  to it alone; a Yes / No or Rating button is startable the moment it has a
+  question.
+
+**Absent `style` means `choice`**, not the wire default. A button authored
+before the field existed was placed by `defaultSessionConfig` with two answers
+already in it and plainly meant them to be the answers — so the fallback is the
+style that reads them, and every existing poll button starts behaving the way
+its author configured it.
+
+The union itself lives in `@livediagram/diagram` (`poll-style.ts`) rather than
+beside `LivePoll` in `@livediagram/api-schema`: the style is now a `Tab` field,
+api-schema depends on diagram and not the reverse, and re-exporting `PollStyle`
+from api-schema keeps every existing import resolving against one list.
 
 For **Vote and Poll**, the face's derived label follows that setting ("Vote — 3 dots each", "Ask the room"), and an author's own label wins over it, like any shape. A **Timer** has no label to win: `SessionTimerFace` draws the clock, showing the configured minutes until a timer is actually running and the live countdown after. The setting still drives what you see, just as the digits rather than as a sentence about them.
 
@@ -62,9 +96,11 @@ already exists.
 
 The choice rides the draw intent (`PendingDraw.session`) and is applied at
 commit through `defaultSessionConfig`, which fills in a working default per
-tool. That matters most for the poll: `sessionPlan` refuses a poll with fewer
-than two answers, so dropping one with an empty config would place a button
-that cannot be pressed.
+tool. That matters most for the poll: `sessionPlan` refuses a Choices poll with
+fewer than two answers, so dropping one with an empty config would place a
+button that cannot be pressed. The dropped poll is a Choices poll for exactly
+that reason — it arrives with two answers, so it has to be the style that reads
+them.
 
 ## No tooltip on the button
 
@@ -115,20 +151,26 @@ nothing for the element itself to become.
 
 Each session element carries a `…` menu on its own face, so the setting you
 most want to change is one press away rather than three levels into the
-right-click menu (Tools › Session).
+right-click menu (Session).
 
-| Tool      | Menu                                               |
-| --------- | -------------------------------------------------- |
-| **Timer** | Length presets (1 to 30 minutes)                   |
-| **Vote**  | Dots each (1, 2, 3, 5, 8)                          |
-| **Poll**  | The question, and the answers, with add and remove |
+| Tool      | Menu                                                                |
+| --------- | ------------------------------------------------------------------- |
+| **Timer** | Length presets (1 to 30 minutes)                                    |
+| **Vote**  | Dots each (1, 2, 3, 5, 8)                                           |
+| **Poll**  | The question, the answer style, and — for Choices — the list itself |
+
+The answer-style picker is `PollAnswerStyleRow`, shared by this menu and the
+right-click Session section: both configure the same button, so a style named
+differently in one of them would describe two products. Each row previews the
+answers the style produces ("Yes No Abstain"), following the estimate card's
+scale picker — the name of a shape is not the thing being chosen between.
 
 A vote is a single number, so it is a list of presets: one tap and done. A poll
 is text, so it is a small form. The asymmetry is deliberate rather than an
 inconsistency — a menu of presets for a question nobody has written would be a
-menu of nothing. The poll form will not go below **two** answers, because
-`sessionPlan` refuses a poll with fewer and removing one would leave a button
-nobody can press.
+menu of nothing. The Choices list will not go below **two** answers, because
+`sessionPlan` refuses a Choices poll with fewer and removing one would leave a
+button nobody can press.
 
 The full range stays in the right-click menu, which has room for a proper
 number input; these are the common values.

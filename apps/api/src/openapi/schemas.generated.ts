@@ -2906,6 +2906,16 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "PollStyle": {
+    "enum": [
+      "yesNo",
+      "yesNoAbstain",
+      "choice",
+      "rating",
+      "text"
+    ],
+    "type": "string"
+  },
   "ProgressAnim": {
     "enum": [
       "fill",
@@ -3000,6 +3010,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "question": {
         "type": "string"
+      },
+      "style": {
+        "$ref": "#/components/schemas/PollStyle"
       },
       "tool": {
         "$ref": "#/components/schemas/SessionTool"

@@ -377,6 +377,9 @@ export * from './shadow';
 export * from './shape-marker';
 // Selection modes a Mode Button can switch to (spec/103).
 export * from './selection-mode';
+// How a poll's answers are shaped (spec/88), shared by the Session button's
+// stored config below and by @livediagram/api-schema's wire `LivePoll`.
+export * from './poll-style';
 export * from './comments';
 // Per-element assigned actions (spec/68).
 export * from './element-action';

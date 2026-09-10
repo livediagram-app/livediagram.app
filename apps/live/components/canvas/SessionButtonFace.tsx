@@ -137,7 +137,9 @@ export function SessionButtonFace({
     return (
       <div
         aria-disabled
-        aria-label="Poll not set up. Open Tools › Session to write a question and at least two answers."
+        // Only a Choices poll can land here: every other answer style is
+        // startable the moment it has a question (see sessionButtonPlan).
+        aria-label="Poll not set up. Open Session to write at least two choices, or switch its answers to Yes / No."
         className={`pointer-events-auto cursor-default opacity-60 ${layout}`}
       >
         {inner}

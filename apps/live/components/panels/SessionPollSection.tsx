@@ -18,14 +18,7 @@ import {
   type LivePoll,
   type PollStyle,
 } from '@livediagram/api-schema';
-
-const STYLE_LABELS: { id: PollStyle; label: string }[] = [
-  { id: 'yesNo', label: 'Yes / No' },
-  { id: 'yesNoAbstain', label: '+ Abstain' },
-  { id: 'choice', label: 'Choices' },
-  { id: 'rating', label: 'Rating 1-5' },
-  { id: 'text', label: 'Free text' },
-];
+import { POLL_STYLES, POLL_STYLE_LABEL } from '@livediagram/diagram';
 
 const chip = (on: boolean) =>
   on
@@ -83,14 +76,9 @@ export function SessionPollSection({
         className={field}
       />
       <div className="flex flex-wrap gap-1">
-        {STYLE_LABELS.map((s) => (
-          <button
-            key={s.id}
-            type="button"
-            onClick={() => setStyle(s.id)}
-            className={chip(style === s.id)}
-          >
-            {s.label}
+        {POLL_STYLES.map((s) => (
+          <button key={s} type="button" onClick={() => setStyle(s)} className={chip(style === s)}>
+            {POLL_STYLE_LABEL[s]}
           </button>
         ))}
       </div>

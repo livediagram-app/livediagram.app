@@ -1752,7 +1752,7 @@ export const articles: Article[] = [
     title: 'Session Buttons',
     description: 'Start a timer, a dot vote or a poll for the room from the board.',
     keywords:
-      'session button timer countdown minutes dot vote dots poll question answers start room facilitation running order agenda clock pause resume reset remove edit access view only',
+      'session button timer countdown minutes dot vote dots poll question answers answer style choices options yes no abstain rating free text start room facilitation running order agenda clock pause resume reset remove edit access view only',
     category: 'Palette',
     categorySlug: 'palette/behaviour',
     parentSlug: 'behaviour',

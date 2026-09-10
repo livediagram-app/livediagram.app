@@ -19,10 +19,13 @@ import {
   REACTIONS,
   type Reaction,
   DEFAULT_PICKER_SOURCE,
+  DEFAULT_SESSION_POLL_STYLE,
   DEFAULT_SESSION_TOOL,
   DEFAULT_TIMER_MINUTES,
   DEFAULT_VOTE_DOTS,
+  isPollStyle,
   PICKER_MAX_OPTIONS,
+  pollStyleNeedsOptions,
   SESSION_POLL_MAX_OPTIONS,
   SESSION_TOOLS,
   TIMER_MINUTES_RANGE,
@@ -34,6 +37,7 @@ import {
 } from '@livediagram/diagram';
 import { MenuAccordionSection, MenuTile, MenuTileGrid } from '@/components/primitives/PortalMenu';
 import { ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
+import { PollAnswerStyleRow } from '@/components/palette/PollAnswerStyleRow';
 import {
   PickerIcon,
   PollIcon,
@@ -162,6 +166,7 @@ export function SessionMenuSection({
 }) {
   const config = element.session;
   const tool = config?.tool ?? DEFAULT_SESSION_TOOL;
+  const pollStyle = isPollStyle(config?.style) ? config.style : DEFAULT_SESSION_POLL_STYLE;
   // Each tool's setting is kept when you switch away and back, so trying Poll
   // and returning to Timer doesn't cost you the question you typed.
   const patch = (next: Partial<SessionButtonConfig>) => onSetSession({ ...config, tool, ...next });
@@ -214,13 +219,21 @@ export function SessionMenuSection({
               />
             </label>
           </div>
-          <LinesRow
-            label="Answers"
-            hint={'Yes\nNo'}
-            lines={config?.options ?? []}
-            max={SESSION_POLL_MAX_OPTIONS}
-            onCommit={(options) => patch({ options })}
-          />
+          <PollAnswerStyleRow style={pollStyle} onChange={(style) => patch({ style })} />
+          {/* Only the Choices style reads a written list — the rest answer
+              with a fixed set, so a box of answers they ignore would be a
+              box that lies. The list SURVIVES a trip through another style
+              (it is still on the config), so trying Yes / No and coming back
+              doesn't cost you what you typed. */}
+          {pollStyleNeedsOptions(pollStyle) ? (
+            <LinesRow
+              label="Choices"
+              hint={'Option A\nOption B'}
+              lines={config?.options ?? []}
+              max={SESSION_POLL_MAX_OPTIONS}
+              onCommit={(options) => patch({ options })}
+            />
+          ) : null}
         </>
       ) : null}
     </MenuAccordionSection>
