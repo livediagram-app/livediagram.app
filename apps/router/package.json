@@ -13,14 +13,14 @@
     "clean": "rm -rf dist .wrangler node_modules .turbo"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^5.20260804.1",
+    "@cloudflare/workers-types": "^5.20260902.1",
     "@livediagram/eslint-config": "workspace:*",
     "@livediagram/help-registry": "workspace:*",
     "@livediagram/vitest-config": "workspace:*",
     "@types/node": "^22.10.2",
-    "eslint": "^10.8.0",
+    "eslint": "^10.9.1",
     "typescript": "^5.7.2",
-    "vitest": "^4.1.10",
-    "wrangler": "^4.118.0"
+    "vitest": "^4.1.11",
+    "wrangler": "^4.128.0"
   }
 }
