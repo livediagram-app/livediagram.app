@@ -20,6 +20,7 @@ import {
   type ShapeElement,
 } from '@livediagram/diagram';
 import { CollabEmpty, CollabPanel } from './collab-chrome';
+import { FoldedCorner, Halftone } from '@/components/canvas/paper-kit';
 
 export function DecisionFace({
   element,
@@ -39,6 +40,12 @@ export function DecisionFace({
       element={element}
       title={label.trim() || 'We will …'}
       textColor={textColor}
+      // A FILED RECORD (spec/122): screened like a photocopy, with the corner
+      // turned up the way the top sheet of a stack sits. A decision is the one
+      // element here that outlives the session, so it is drawn as the thing
+      // you file rather than as the thing you run.
+      backdrop={<Halftone textColor={textColor} />}
+      overlay={<FoldedCorner textColor={textColor} />}
       // Three lines: enough for a real decision statement, bounded so a long
       // one can never squeeze the drivers off the card.
       titleLines={3}

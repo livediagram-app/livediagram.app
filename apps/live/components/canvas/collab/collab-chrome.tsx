@@ -6,40 +6,12 @@
 // class strings and they drift the first time one is tweaked.
 
 import { SHAPE_DEFAULT_SIZE, type ShapeElement } from '@livediagram/diagram';
+import { tint } from '@/lib/element-tint';
+// Re-exported: every collab face already reaches for it through this module,
+// and the kit it now also feeds lives one level up (see lib/element-tint.ts).
+export { tint };
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { Tooltip } from '@/components/primitives/Tooltip';
-
-// A translucent wash of the card's OWN text colour.
-//
-// Every chip, track and row background here is derived from `textColor`
-// rather than written as `bg-black/6 dark:bg-white/10`. Those Tailwind pairs
-// follow the APP's dark mode, and an element's colours come from the TAB
-// theme (spec/29) — so a dark card on a light-mode editor got black-on-dark
-// chips that vanished, and a light card in dark mode got the opposite. Tying
-// them to the text colour makes every part of the card agree with the card,
-// whichever way either setting is pointed.
-export function tint(textColor: string, alpha: number): string {
-  const hex = textColor.trim();
-  const match = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(hex);
-  if (!match) {
-    // A named / rgb() / oklch() colour we can't parse. `color-mix` handles any
-    // of them, and a browser without it falls back to the declaration being
-    // dropped — which leaves the surface untinted rather than wrong.
-    return `color-mix(in srgb, ${hex} ${Math.round(alpha * 100)}%, transparent)`;
-  }
-  const body = match[1]!;
-  const full =
-    body.length === 3
-      ? body
-          .split('')
-          .map((c) => c + c)
-          .join('')
-      : body;
-  const r = parseInt(full.slice(0, 2), 16);
-  const g = parseInt(full.slice(2, 4), 16);
-  const b = parseInt(full.slice(4, 6), 16);
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-}
 
 // Scales a Collaborate card's contents to the element's box (spec/122).
 //
@@ -89,6 +61,9 @@ export function CollabPanel({
   footer,
   className,
   headerExtra,
+  backdrop,
+  overlay,
+  inset,
 }: {
   // The element, for its box. A Collaborate card SCALES to the space it is
   // given rather than laying out into it: resizing one is how a facilitator
@@ -113,6 +88,21 @@ export function CollabPanel({
   // check's ellipsis menu lives here; a card with no per-card controls passes
   // nothing and the row is unchanged.
   headerExtra?: React.ReactNode;
+  // The paper kit (spec/122): the textures that make this card a particular
+  // OBJECT rather than a generic rounded rectangle. `backdrop` prints UNDER
+  // the content — rules, a halftone screen, a punched margin — and `overlay`
+  // over it, for the pieces that have to sit on top of everything: a folded
+  // corner, a strip of tape, a torn edge.
+  //
+  // Two slots rather than one because the layering is the effect. Rules under
+  // the words read as a page they are written on; the same rules over them
+  // read as a cage.
+  backdrop?: React.ReactNode;
+  overlay?: React.ReactNode;
+  // Extra room reserved at the edges for whatever the two slots draw, so a
+  // punched margin does not print through the title and a torn edge does not
+  // eat the footer.
+  inset?: { left?: number; bottom?: number; top?: number };
 }) {
   return (
     // Pinned with `absolute inset-0` rather than sized with `h-full w-full`,
@@ -124,39 +114,46 @@ export function CollabPanel({
     // the sizing model, and `overflow-hidden` makes it impossible for any
     // future child to escape the element it belongs to.
     <CollabScale element={element}>
-      <div
-        className={`flex h-full w-full flex-col gap-2.5 overflow-hidden rounded-[inherit] px-4 py-3.5 ${className ?? ''}`}
-      >
-        <div className="flex min-w-0 shrink-0 items-baseline justify-between gap-3">
-          <span
-            className="min-w-0 text-[13px] font-semibold leading-snug"
-            style={{
-              color: textColor,
-              // A clamp rather than a truncate: the overflow has to be bounded
-              // (the header is shrink-0, so an unbounded title would push the
-              // body out of the card) but a one-line decision statement is
-              // useless.
-              display: '-webkit-box',
-              WebkitBoxOrient: 'vertical',
-              WebkitLineClamp: titleLines,
-              overflow: 'hidden',
-            }}
-          >
-            {title.trim()}
-          </span>
-          <span className="flex shrink-0 items-center gap-1.5">
-            {aside ? (
-              <span
-                className="text-[10px] font-medium uppercase tracking-[0.06em] opacity-55"
-                style={{ color: textColor }}
-              >
-                {aside}
-              </span>
-            ) : null}
-            {headerExtra}
-          </span>
-        </div>
-        {/* The body scrolls rather than overflowing the element box: a card with
+      <div className="relative h-full w-full overflow-hidden rounded-[inherit]">
+        {backdrop}
+        <div
+          className={`relative flex h-full w-full flex-col gap-2.5 overflow-hidden rounded-[inherit] px-4 py-3.5 ${className ?? ''}`}
+          style={{
+            paddingLeft: inset?.left !== undefined ? 16 + inset.left : undefined,
+            paddingBottom: inset?.bottom !== undefined ? 14 + inset.bottom : undefined,
+            paddingTop: inset?.top !== undefined ? 14 + inset.top : undefined,
+          }}
+        >
+          <div className="flex min-w-0 shrink-0 items-baseline justify-between gap-3">
+            <span
+              className="min-w-0 text-[13px] font-semibold leading-snug"
+              style={{
+                color: textColor,
+                // A clamp rather than a truncate: the overflow has to be bounded
+                // (the header is shrink-0, so an unbounded title would push the
+                // body out of the card) but a one-line decision statement is
+                // useless.
+                display: '-webkit-box',
+                WebkitBoxOrient: 'vertical',
+                WebkitLineClamp: titleLines,
+                overflow: 'hidden',
+              }}
+            >
+              {title.trim()}
+            </span>
+            <span className="flex shrink-0 items-center gap-1.5">
+              {aside ? (
+                <span
+                  className="text-[10px] font-medium uppercase tracking-[0.06em] opacity-55"
+                  style={{ color: textColor }}
+                >
+                  {aside}
+                </span>
+              ) : null}
+              {headerExtra}
+            </span>
+          </div>
+          {/* The body scrolls rather than overflowing the element box: a card with
           twelve agenda rows on it is a normal card, and clipping the last few
           with no way to reach them is the bug that would report.
 
@@ -164,10 +161,12 @@ export function CollabPanel({
           before the scroller clips, without moving anything: a participant
           avatar draws its presence ring as a box-shadow OUTSIDE its own box,
           and `overflow` clipped a slice off every ring. */}
-        <div className="-mx-1 -my-1 flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto px-1 py-1">
-          {children}
+          <div className="-mx-1 -my-1 flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto px-1 py-1">
+            {children}
+          </div>
+          {footer ? <div className="flex shrink-0 flex-wrap gap-2 pt-0.5">{footer}</div> : null}
         </div>
-        {footer ? <div className="flex shrink-0 flex-wrap gap-2 pt-0.5">{footer}</div> : null}
+        {overlay}
       </div>
     </CollabScale>
   );

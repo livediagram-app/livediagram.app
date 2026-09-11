@@ -8,6 +8,7 @@
 import { useState } from 'react';
 import type { ShapeElement } from '@livediagram/diagram';
 import { CollabButton, CollabEmpty, CollabPanel, tint } from './collab-chrome';
+import { Halftone, PostingSlot, TapeStrip } from '@/components/canvas/paper-kit';
 
 export function IdeaBoxFace({
   element,
@@ -43,6 +44,18 @@ export function IdeaBoxFace({
       title={label.trim() || 'Ideas'}
       textColor={textColor}
       aside={cards.length ? `${cards.length} ${cards.length === 1 ? 'idea' : 'ideas'}` : undefined}
+      // A POSTING BOX (spec/122). The slot across the lid is the whole idea of
+      // the element in one shape: things go in, nothing comes back out until
+      // somebody opens it. Taped shut at the corner, and screened like cheap
+      // cardboard print so it reads as a box rather than a pane of glass.
+      inset={{ top: 12 }}
+      backdrop={<Halftone textColor={textColor} />}
+      overlay={
+        <>
+          <PostingSlot textColor={textColor} />
+          <TapeStrip textColor={textColor} corner="top-right" />
+        </>
+      }
       footer={
         <>
           {!open ? (

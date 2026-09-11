@@ -7,6 +7,7 @@
 
 import {
   DONE_VALUE,
+  defaultFillColor,
   isCollabPanelShape,
   type ShapeElement,
   type TabTimer,
@@ -67,6 +68,9 @@ export function CollabFaceRouter({
   if (!isCollabPanelShape(element.shape)) return null;
   // No session behind this surface: still render, still readable, inert.
   const api = collab;
+  // The colour showing THROUGH a card's holes and tears (spec/122's paper
+  // kit): its own fill, so a punch reads as an opening rather than a dot.
+  const surface = element.fillColor ?? defaultFillColor(element);
 
   if (element.shape === 'done-check') {
     return (
@@ -75,6 +79,7 @@ export function CollabFaceRouter({
         label={label}
         textColor={textColor}
         selfKey={api?.selfKey ?? ''}
+        surface={surface}
         participants={api?.participants ?? []}
         // `respond` already withdraws when you send the value you already
         // sent (spec/122), so marking and unmarking are the same call.
@@ -148,6 +153,7 @@ export function CollabFaceRouter({
       element={element}
       label={label}
       textColor={textColor}
+      surface={surface}
       onTakeRoll={api?.takeRoll ? () => api.takeRoll!(element) : undefined}
     />
   );

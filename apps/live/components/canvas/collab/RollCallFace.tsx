@@ -6,6 +6,7 @@
 import type { RollCallEntry, ShapeElement } from '@livediagram/diagram';
 import { initialsOf } from '@/lib/identity';
 import { CollabButton, CollabEmpty, CollabPanel } from './collab-chrome';
+import { Perforation, TornEdge } from '@/components/canvas/paper-kit';
 
 // The stored name + colour, drawn as the presence avatar it was copied from.
 // NOT ParticipantAvatar: that takes a live Participant with a presence status,
@@ -28,11 +29,14 @@ export function RollCallFace({
   element,
   label,
   textColor,
+  surface,
   onTakeRoll,
 }: {
   element: ShapeElement;
   label: string;
   textColor: string;
+  /** The card's own fill, for the tear to show through. */
+  surface: string;
   onTakeRoll?: () => void;
 }) {
   const entries = element.rollCall ?? [];
@@ -45,6 +49,13 @@ export function RollCallFace({
       title={label.trim() || 'Roll call'}
       textColor={textColor}
       aside={entries.length ? `${entries.length} present` : undefined}
+      // A TICKET STUB (spec/122). A roll call freezes who was here at one
+      // moment and then stops changing — the same thing a stub is: torn off,
+      // kept, and never updated again. The perforation under the title is
+      // where it came away; the bottom edge is the tear itself.
+      inset={{ bottom: 6 }}
+      backdrop={<Perforation textColor={textColor} at={34} />}
+      overlay={<TornEdge textColor={textColor} surface={surface} />}
       footer={
         <CollabButton
           tone={entries.length ? 'quiet' : 'loud'}
