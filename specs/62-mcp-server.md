@@ -129,9 +129,14 @@ the MCP simply don't deploy `apps/mcp`; nothing else references it.
 
 ## 4. Tools
 
-Six tools. The search/view capability is two tools (find, then read); create,
+Nine tools. The search/view capability is two tools (find, then read); create,
 add_tab, and update are separate because their inputs and intent differ;
-list_templates exposes the template catalogue ([§4.5](#45-list_templates)).
+list_templates exposes the template catalogue ([§4.5](#45-list_templates));
+share, rename, and delete complete the CRUD verbs
+([§4.8](#48-share_diagram), [§4.9](#49-rename_diagram-and-delete_diagram)).
+Every one of them declares its behaviour as **annotations**
+([§4.14](#414-tool-annotations-behaviour-hints)) and describes itself in facts
+rather than instructions ([§4.15](#415-descriptions-state-facts-not-instructions)).
 
 ### 4.1 `find_diagrams`
 
@@ -376,6 +381,75 @@ make a growing integration read as flat in the very dashboard meant to show
 it growing. The value **must match** the api worker's, and a mismatch is
 silent — the deploy workflow drives both from one GitHub secret for exactly
 that reason. See [spec/06](06-secrets-policy.md) for the secrets table.
+
+### 4.14 Tool annotations (behaviour hints)
+
+Every registered tool carries an MCP **`annotations`** block alongside its
+title and description. These are the standard behaviour hints
+(`readOnlyHint`, `destructiveHint`, `openWorldHint`), and they are not
+decoration: a client reads them to decide whether a call needs a per-use
+permission prompt, so a read-only tool runs without interrupting the user
+while a destructive one always asks. Directory listings (the Claude connectors
+portal among them) also require them, and a missing block is a listing blocker,
+which is how the gap was found.
+
+Three behaviours cover the nine tools, and each is a preset in
+`apps/mcp/src/tool-annotations.ts`:
+
+| Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                          |
+| --------------- | -------------- | ----------------- | -------------------------------------------------------------- |
+| **read**        | `true`         | (not applicable)  | `find_diagrams`, `read_diagram`, `list_templates`              |
+| **write**       | `false`        | `false`           | `create_diagram`, `add_tab`, `share_diagram`, `rename_diagram` |
+| **destructive** | `false`        | `true`            | `update_diagram`, `delete_diagram`                             |
+
+The split mirrors §4.11's read-only-token boundary exactly (what a
+`read_only = 1` token can still reach is what `read` annotates), so the hint a
+client sees and the rule the api enforces can't drift apart.
+
+`update_diagram` is **destructive** rather than a plain write: its `replace`
+mode swaps a tab's whole element set, so an edit can overwrite work the user
+already had. (Its `ops` mode is surgical, but a hint describes the tool, not
+the argument, and the cautious reading is the right one.) `share_diagram`
+stays a plain write: it mints a new link and changes nothing that existed,
+and the link is revocable. `destructiveHint` is deliberately omitted where
+`readOnlyHint` is `true`: MCP ignores it there, and stating it would imply the
+tool writes.
+
+**A new tool inherits this, it doesn't re-decide it.** Tools are registered
+through the local `registerTool` wrapper in `tool-annotations.ts`, whose
+config type makes `behaviour` a **required** field, so a tool added without
+one is a type error, not a silently unannotated tool on the wire. Any
+still-hand-rolled registration is caught by `tools.test.ts`, which drives the
+real `registerTools` and fails on a tool whose annotations are missing or
+whose hints don't match one of the three presets. Same reasoning as
+§4.12's telemetry guard: nothing at runtime notices a missing hint, so the
+test has to.
+
+### 4.15 Descriptions state facts, not instructions
+
+A tool description (and the server-level instructions block) says **what the
+tool is and does**. It does not tell the calling model how to behave, and it
+never steers it away from another tool or capability. Two reasons, and they
+point the same way: a connector-directory review rejects behavioural
+directives in a description, and a server that tries to govern a model it does
+not own is overstepping, since the client owns that.
+
+The rule bites where it's tempting to be helpful. Because the element format
+is carried inline on every element argument (§4.5), the honest thing to say is
+that the format is complete right there; earlier wording went one step
+further and instructed the model not to web-search, open the repo, or read
+another diagram to find it. Same information, but phrased as a rule for the
+caller, so it was rewritten as a plain statement:
+
+> The full element format is documented inline on each tool's element
+> argument, so the tool definitions are the complete reference for it.
+
+Where a genuine safety confirmation belongs, as in `delete_diagram` asking the
+user before an irreversible delete, it stays, and is now also carried
+structurally by `destructiveHint` (§4.14), which is the mechanism a client
+actually acts on.
+Pointing at a tool is fine too ("check list_templates first"): the flag is
+discouraging tool use, not encouraging it.
 
 ## 5. Visualise — inline image render
 

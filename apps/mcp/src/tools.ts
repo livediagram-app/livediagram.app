@@ -33,6 +33,7 @@ import {
   resolveTemplate,
   validTemplateKinds,
 } from './tab-builders';
+import { registerTool } from './tool-annotations';
 import {
   addTabShape,
   createDiagramShape,
@@ -45,9 +46,11 @@ import {
 } from './schema';
 
 export function registerTools(server: McpServer, env: Env): void {
-  server.registerTool(
+  registerTool(
+    server,
     'find_diagrams',
     {
+      behaviour: 'read',
       title: 'Find diagrams',
       description:
         'Search the user’s diagrams by name — their personal library AND the shared ' +
@@ -72,9 +75,11 @@ export function registerTools(server: McpServer, env: Env): void {
     },
   );
 
-  server.registerTool(
+  registerTool(
+    server,
     'read_diagram',
     {
+      behaviour: 'read',
       title: 'Read + visualise a diagram',
       description:
         'Fetch one diagram tab’s elements as structured JSON AND an inline PNG of the ' +
@@ -109,9 +114,11 @@ export function registerTools(server: McpServer, env: Env): void {
     },
   );
 
-  server.registerTool(
+  registerTool(
+    server,
     'list_templates',
     {
+      behaviour: 'read',
       title: 'List templates',
       description:
         'Browse the template library — the same hand-tuned scaffolds the editor\u2019s Quick ' +
@@ -139,14 +146,16 @@ export function registerTools(server: McpServer, env: Env): void {
     },
   );
 
-  server.registerTool(
+  registerTool(
+    server,
     'create_diagram',
     {
+      behaviour: 'write',
       title: 'Create a diagram',
       description:
-        'Create a new diagram from elements you produce. The element format is described ' +
-        'on the "tabs" argument below, so you have everything you need here (no need to ' +
-        'look it up). Pass one tab, or several to build a multi-tab diagram in one call (an ' +
+        'Create a new diagram from elements you produce. The full element format is ' +
+        'documented inline on the "tabs" argument below. ' +
+        'Pass one tab, or several to build a multi-tab diagram in one call (an ' +
         'overview plus detail tabs). A tab may pass "template" (a kind from list_templates) ' +
         'instead of elements to start from a hand-tuned scaffold. The server validates, lays ' +
         'out each tab per the layout arg, tags it as AI-generated so it shows in your ' +
@@ -217,9 +226,11 @@ export function registerTools(server: McpServer, env: Env): void {
     },
   );
 
-  server.registerTool(
+  registerTool(
+    server,
     'add_tab',
     {
+      behaviour: 'write',
       title: 'Add a tab to a diagram',
       description:
         'Add a NEW tab (its own canvas) to an existing diagram — e.g. a detail view zooming ' +
@@ -291,9 +302,11 @@ export function registerTools(server: McpServer, env: Env): void {
     },
   );
 
-  server.registerTool(
+  registerTool(
+    server,
     'update_diagram',
     {
+      behaviour: 'destructive',
       title: 'Update a diagram',
       description:
         'Edit an existing tab. mode "replace" swaps the whole tab’s elements (validated + ' +
@@ -371,9 +384,11 @@ export function registerTools(server: McpServer, env: Env): void {
     },
   );
 
-  server.registerTool(
+  registerTool(
+    server,
     'share_diagram',
     {
+      behaviour: 'write',
       title: 'Share a diagram',
       description:
         'Create a shareable link to a diagram so anyone with the URL can open it — no ' +
@@ -403,9 +418,11 @@ export function registerTools(server: McpServer, env: Env): void {
     },
   );
 
-  server.registerTool(
+  registerTool(
+    server,
     'rename_diagram',
     {
+      behaviour: 'write',
       title: 'Rename a diagram or tab',
       description:
         'Rename a diagram, or (with tabId) one of its tabs. Non-destructive; returns the ' +
@@ -444,9 +461,11 @@ export function registerTools(server: McpServer, env: Env): void {
     },
   );
 
-  server.registerTool(
+  registerTool(
+    server,
     'delete_diagram',
     {
+      behaviour: 'destructive',
       title: 'Delete a diagram or tab',
       description:
         'PERMANENTLY delete a diagram — or, with tabId, just one of its tabs. This cannot ' +

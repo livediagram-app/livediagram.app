@@ -10,6 +10,8 @@ vi.mock('./image-result', () => ({
 }));
 
 import { registerTools } from './tools';
+import { TOOL_ANNOTATIONS, type ToolBehaviour } from './tool-annotations';
+import type { ToolAnnotations } from '@modelcontextprotocol/sdk/types.js';
 
 // Every registered MCP tool must report itself (spec/62 §4, spec/22).
 //
@@ -35,7 +37,7 @@ import { registerTools } from './tools';
 
 type Registered = {
   name: string;
-  config: { title?: string; description?: string };
+  config: { title?: string; description?: string; annotations?: ToolAnnotations };
   handler: (args: unknown, extra: unknown) => Promise<unknown>;
 };
 
@@ -164,5 +166,87 @@ describe('registerTools', () => {
     // A caller with no bearer token never reached the tool, so counting it as a
     // use would inflate the numbers with rejected connection attempts.
     expect(emitted).toEqual([]);
+  });
+});
+
+// Every registered tool must declare its behaviour as MCP annotations
+// (spec/62 §4.14).
+//
+// Same shape of promise as the telemetry suite above, and the same absence of a
+// runtime signal: a tool with no annotations still works, it just asks the user
+// for permission it shouldn't need (or, worse, doesn't ask before overwriting
+// their diagram), and connector directories reject the whole server over it.
+// That is invisible from inside the worker, which is exactly how all nine
+// shipped unannotated until a listing review caught it.
+//
+// `registerTool`'s config type already makes `behaviour` required, so the
+// common mistake (adding a tool and forgetting) is a type error. This covers
+// the other route in: calling `server.registerTool` directly and hand-rolling
+// an annotations block, which types can't catch.
+describe('tool annotations', () => {
+  const BEHAVIOURS: Record<string, ToolBehaviour> = {
+    find_diagrams: 'read',
+    read_diagram: 'read',
+    list_templates: 'read',
+    create_diagram: 'write',
+    add_tab: 'write',
+    share_diagram: 'write',
+    rename_diagram: 'write',
+    update_diagram: 'destructive',
+    delete_diagram: 'destructive',
+  };
+
+  it('gives every tool one of the three documented presets', () => {
+    const { registered } = harness();
+    const unannotated = registered.filter((r) => !r.config.annotations).map((r) => r.name);
+    expect(unannotated).toEqual([]);
+    // Matching a preset by value (not just "has some annotations") is what
+    // stops a hand-rolled block drifting from the table in spec/62 §4.14.
+    const presets = Object.values(TOOL_ANNOTATIONS);
+    for (const r of registered) {
+      expect(presets, `${r.name} uses an off-catalogue annotations block`).toContainEqual(
+        r.config.annotations,
+      );
+    }
+  });
+
+  it('annotates each tool with the behaviour spec/62 §4.14 assigns it', () => {
+    const { registered } = harness();
+    for (const r of registered) {
+      const behaviour = BEHAVIOURS[r.name];
+      // A tool missing from the table is a new tool whose behaviour nobody has
+      // decided yet. Decide it here and in the spec; don't delete this line.
+      expect(behaviour, `${r.name} has no documented behaviour`).toBeDefined();
+      expect(r.config.annotations).toEqual(TOOL_ANNOTATIONS[behaviour!]);
+    }
+  });
+
+  it('marks the read tools read-only and the writers not', () => {
+    // The read/write split has to match spec/62 §4.11's read-only-token
+    // boundary: a `read_only = 1` token can reach exactly the read tools, so a
+    // tool annotated read-only that the api would reject as a write (or the
+    // reverse) is a lie to the client either way.
+    const { registered } = harness();
+    const readOnly = registered
+      .filter((r) => r.config.annotations?.readOnlyHint === true)
+      .map((r) => r.name)
+      .sort();
+    expect(readOnly).toEqual(['find_diagrams', 'list_templates', 'read_diagram']);
+
+    // Destructive is only meaningful on a writer, and MCP defaults it to TRUE
+    // when unset, so every writer has to state it, including the additive ones.
+    for (const r of registered) {
+      if (r.config.annotations?.readOnlyHint) {
+        expect(r.config.annotations.destructiveHint).toBeUndefined();
+      } else {
+        expect(typeof r.config.annotations?.destructiveHint).toBe('boolean');
+      }
+    }
+
+    const destructive = registered
+      .filter((r) => r.config.annotations?.destructiveHint === true)
+      .map((r) => r.name)
+      .sort();
+    expect(destructive).toEqual(['delete_diagram', 'update_diagram']);
   });
 });

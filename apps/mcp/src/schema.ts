@@ -1,10 +1,12 @@
 // The element-schema MCP resource (spec/62 §4.5) + the tools' zod input shapes.
 // Element types + anchors come from packages/diagram (single source of truth);
 // the design rules are curated guidance. The element STRUCTURE is carried inline
-// on every tool argument that takes elements (ELEMENT_SCHEMA_HINT) so a calling
-// model has the whole format from the tool definition itself and never needs to
-// fetch the resource, web-search the open-source repo, or read another diagram
-// to discover it. isValidTab in the diagram package stays the runtime guard, so
+// on every tool argument that takes elements (ELEMENT_SCHEMA_HINT) so the whole
+// format is available from the tool definition itself, with no second lookup to
+// make. It states that completeness as a fact about the tools rather than as a
+// rule for the caller: a description that tells a model how to behave, or steers
+// it away from other tools, is a connector-listing flag (spec/62 §4.15).
+// isValidTab in the diagram package stays the runtime guard, so
 // the structure still lives in one authoritative place (this string is guidance,
 // not a second validator).
 import { z } from 'zod';
@@ -20,9 +22,9 @@ const themeIds = THEMES.map((t) => t.id).join(', ');
 // Self-contained element schema, attached to each tool's element argument so the
 // model reads it straight from the tool definition (see the comment above).
 const ELEMENT_SCHEMA_HINT =
-  'An array of element objects. This is the COMPLETE format; you already have ' +
-  'everything you need, so do NOT web-search, open the source repo, or read ' +
-  'another diagram to discover it. Each element: { "id": a unique string, "type", ' +
+  'An array of element objects. This is the COMPLETE format, documented inline ' +
+  'here: the tool definition is the full reference for it. ' +
+  'Each element: { "id": a unique string, "type", ' +
   '"x", "y", "width", "height", and optional "label" }. ' +
   'type "shape" is a NODE (a labelled box) and also needs "shape", one of ' +
   `${shapeKinds}. The default box is "square" (there is NO "rectangle"); use ` +
@@ -110,15 +112,15 @@ subject; one theme applies to all tabs in a create_diagram call.
 }
 
 // Server-level instructions echo the essentials for clients that don't read
-// resources (spec/62 §4.5). The element format is carried inline on the tool
-// arguments, so these instructions tell the model NOT to look it up elsewhere.
+// resources (spec/62 §4.5). Phrased as facts about the server (what it does
+// with what you send, and where the format is written down), not as rules for
+// the calling model (spec/62 §4.15).
 export const SERVER_INSTRUCTIONS = `Tools to find, view, create, add tabs to, edit, share, rename, and delete the user's livediagram diagrams.
 The calling model produces the diagram elements AND decides their layout; this
 server validates, persists, and renders them, and only auto-arranges the graph
 when you ask it to (or leave nodes unplaced). The full element format is
-described inline on each tool's element argument, so you already have everything
-you need from the tool definitions: do NOT web-search, open the open-source repo,
-or read another diagram to learn the schema. The EASIEST way to author a node/edge diagram (flowchart, org chart,
+documented inline on each tool's element argument, so the tool definitions are
+the complete reference for it. The EASIEST way to author a node/edge diagram (flowchart, org chart,
 architecture, dependency graph) is the "graph" argument: give just nodes + edges
 by id and the server builds the boxes + arrows and lays them out — no
 coordinates, no anchors. Reach for raw "elements" only for a deliberate
