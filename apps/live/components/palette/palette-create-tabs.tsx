@@ -127,25 +127,20 @@ export const BEHAVIOUR_GROUPS: TileGroupDef[] = [
 ];
 
 export function PaletteBehaviourTab({ pendingDraw, actions }: TabProps) {
-  const tiles = tilesInToolGroup('behaviour');
-  // The comment pin sits ABOVE the groups rather than inside one. It is the
-  // element people reach for outside a facilitated session entirely, and a
-  // group of one would be a click in front of the tab's most-used tile.
-  const loose = tiles.filter((t) => !t.tileGroup);
+  // Every tile is in a group. The comment pin used to sit loose above them,
+  // on the reasoning that it is the one you reach for outside a facilitated
+  // session and a group of one would be a click in front of the tab's
+  // most-used tile. It is in **Keep a record** now: a comment thread is a
+  // thing you leave behind on the board for somebody to find later, which is
+  // what the agenda, the decision record and the roll call all are, and a
+  // single row floating above six category tiles read as an oversight.
   return (
     <PaletteGroupBrowser
       root="Behaviours"
-      tiles={tiles}
+      tiles={tilesInToolGroup('behaviour')}
       groups={BEHAVIOUR_GROUPS}
       actions={actions}
       pendingDraw={pendingDraw}
-      leadIn={
-        loose.length > 0 ? (
-          <div className="mb-2">
-            <PaletteToolRows tiles={loose} actions={actions} pendingDraw={pendingDraw} />
-          </div>
-        ) : undefined
-      }
       searchInput={{
         placeholder: 'Search behaviours',
         ariaLabel: 'Search behaviour elements',

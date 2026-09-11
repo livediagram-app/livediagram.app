@@ -160,7 +160,7 @@ which two groups they are. A rename that broke seven live links to say
 ## Behaviours: one category, fully grouped
 
 **Collaborate was merged into Behaviour**, and the survivor is named
-**Behaviours** (32 tiles, 1 loose + 6 groups). The two were split on a real
+**Behaviours** (32 tiles in 6 groups). The two were split on a real
 distinction — Behaviour is "pressing this does something to your session",
 Collaborate is "the board is collecting an answer from everybody" — and it
 turned out to be a line to memorise rather than one to navigate by. You reach
@@ -176,7 +176,7 @@ arrive at runtime rather than being drawn by the author?**
 | ------------------ | ---------------------------------------------------------------- |
 | **Ask the room**   | the three estimate scales, Temperature, Idea box, Dot vote, Poll |
 | **Run the room**   | Reveal, Done, Picker, Timer                                      |
-| **Keep a record**  | Agenda, Decision record, Roll call                               |
+| **Keep a record**  | Comment panel, Agenda, Decision record, Roll call                |
 | **Reactions**      | the five pads                                                    |
 | **Selection Mode** | one button per mode (8)                                          |
 | **Get around**     | Portal, Chair, Link card                                         |
@@ -192,9 +192,13 @@ group had nothing left in it, and an empty group is not a group.
 They remain one shape kind with a `session` config ([spec/105](105-session-button.md)) —
 this is a palette grouping, not a model change.
 
-The **Comment panel** stays loose above the groups — it is the one people reach
-for outside a facilitated session entirely, and a group of one would be a click
-in front of the category's most-used tile.
+The **Comment panel** is in **Keep a record**. It sat loose above the groups at
+first, on the reasoning that it is the one you reach for outside a facilitated
+session and a group of one would be a click in front of the category's
+most-used tile. But a comment thread is a thing you leave behind on the board
+for somebody to find later, which is exactly what the agenda, the decision
+record and the roll call are — and one row floating above six category tiles
+read as an oversight rather than as a shortcut. Every tile is in a group now.
 
 Order is **room-first**: the three groups a facilitator opens mid-session come
 before the three you set up once and forget.

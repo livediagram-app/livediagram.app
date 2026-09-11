@@ -64,55 +64,6 @@ export function FoldedCorner({
   );
 }
 
-/**
- * A strip of tape across a corner, rotated off-axis.
- *
- * Deliberately crooked and translucent: tape applied by a person is never
- * square to the sheet, and tape you cannot see through reads as a coloured bar
- * somebody drew on purpose.
- *
- * Positioned to sit ACROSS the corner with its ends running off the edges. The
- * first version hung the whole strip outside the box, where the card's own
- * `overflow-hidden` clipped every pixel of it and the seal simply never
- * appeared. Its ends are still clipped, which is the point — tape goes over an
- * edge and round the back.
- */
-export function TapeStrip({
-  textColor,
-  // Top-LEFT by default. Every Behaviours element now carries its settings
-  // `…` in the top-right corner (spec/09), so tape there lands under the one
-  // control on the card.
-  corner = 'top-left',
-  width = 66,
-}: {
-  textColor: string;
-  corner?: 'top-left' | 'top-right';
-  width?: number;
-}) {
-  const left = corner === 'top-left';
-  return (
-    <span
-      aria-hidden
-      className="pointer-events-none absolute"
-      style={{
-        // Far enough in that the middle of the strip lands on the corner, so
-        // what survives the clip is a band lying over it.
-        top: 4,
-        ...(left ? { left: -width / 3 } : { right: -width / 3 }),
-        width,
-        height: 17,
-        transform: `rotate(${left ? -45 : 45}deg)`,
-        background: tint(textColor, 0.2),
-        // The torn ends: a straight-cut edge reads as a sticker, not as tape.
-        clipPath:
-          'polygon(0% 0%, 8% 22%, 0% 48%, 6% 76%, 0% 100%, 100% 100%, 94% 74%, 100% 50%, 93% 24%, 100% 0%)',
-        // Two hairlines along the length: the edges of a strip lifting off.
-        boxShadow: `inset 0 1px 0 ${tint(textColor, 0.1)}, inset 0 -1px 0 ${tint(textColor, 0.1)}`,
-      }}
-    />
-  );
-}
-
 /** How many teeth a torn edge shows across a card of the default width. */
 const TEAR_TEETH = 26;
 

@@ -1132,6 +1132,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     caption: 'Comment',
     section: 'tools',
     toolGroup: 'behaviour',
+    tileGroup: 'record',
     label: 'Add comment panel',
     description:
       'A marker that carries a comment thread. Drop it on any spot and click it to talk about that spot, rather than attaching the remark to whichever shape happens to be nearest.',

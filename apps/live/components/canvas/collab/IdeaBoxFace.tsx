@@ -8,7 +8,7 @@
 import { useState } from 'react';
 import type { ShapeElement } from '@livediagram/diagram';
 import { CollabButton, CollabEmpty, CollabPanel, tint } from './collab-chrome';
-import { BoxLid, Corrugation, TapeStrip } from '@/components/canvas/paper-kit';
+import { BoxLid, Corrugation } from '@/components/canvas/paper-kit';
 import {
   ElementEllipsisMenu,
   ElementMenuItem,
@@ -100,14 +100,7 @@ export function IdeaBoxFace({
       // which says "not empty" from across the room in a way a count cannot.
       inset={{ top: 24 }}
       backdrop={<Corrugation textColor={textColor} from={30} />}
-      overlay={
-        <>
-          <BoxLid textColor={textColor} surface={surface} posted={cards.length > 0} />
-          {/* Taped shut while it is still closed. Opening the box is the act
-              the element exists for, so the seal going is worth seeing. */}
-          {open ? null : <TapeStrip textColor={textColor} />}
-        </>
-      }
+      overlay={<BoxLid textColor={textColor} surface={surface} posted={cards.length > 0} />}
       footer={
         <>
           {!open ? (

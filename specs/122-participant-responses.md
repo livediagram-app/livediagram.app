@@ -172,9 +172,16 @@ Three lessons are worth keeping:
   the same way: it is the smallest element in the family and there is no room
   on it for a texture that is not the label.
 
+  The Idea box's tape seal went the same way, and it is the clearest case of
+  all: rotated across the corner it was mostly outside the card, so the torn
+  ends that made it read as TAPE were exactly the parts `overflow-hidden` ate,
+  and what survived was a plain grey wedge. Asked what it was, the honest
+  answer was "a bug you are looking at on purpose".
+
   The rule that falls out: a texture has to work at the element's DEFAULT size,
-  not at the size you designed it. Big, soft shapes (a lid, a torn edge, a
-  hatch, a screen) survive; fine mechanical detail does not.
+  not at the size you designed it, and it has to survive the card's own
+  clipping. Big, soft shapes (a lid, a torn edge, a hatch, a screen) survive;
+  fine mechanical detail and anything that depends on its own edges does not.
 
 ## The card scales to its box
 
