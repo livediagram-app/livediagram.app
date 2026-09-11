@@ -52,11 +52,17 @@ export function CollabFaceRouter({
   label,
   textColor,
   collab,
+  onOpenSettings,
 }: {
   element: ShapeElement;
   label: string;
   textColor: string;
   collab: CollabApi | undefined;
+  // The Done check draws its own `…` (its round controls), so the shared
+  // settings button is suppressed for it and this is how its menu still
+  // reaches the element's full settings (spec/09). Every other card here
+  // takes the shared button and never sees this.
+  onOpenSettings?: () => void;
 }) {
   if (!isCollabPanelShape(element.shape)) return null;
   // No session behind this surface: still render, still readable, inert.
@@ -74,6 +80,7 @@ export function CollabFaceRouter({
         // sent (spec/122), so marking and unmarking are the same call.
         onToggleMine={api?.respond ? () => api.respond!(element, DONE_VALUE) : undefined}
         onResetAll={api?.clearResponses ? () => api.clearResponses!(element) : undefined}
+        onOpenSettings={onOpenSettings}
       />
     );
   }

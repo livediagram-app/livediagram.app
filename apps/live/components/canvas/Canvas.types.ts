@@ -124,6 +124,10 @@ export type CanvasProps = {
     element: import('@livediagram/diagram').ShapeElement,
     config: import('@livediagram/diagram').SessionButtonConfig,
   ) => void;
+  // Open an element's own context menu from the `…` on its face, anchored at
+  // the trigger's screen position (spec/09). Absent on a read-only surface,
+  // where there is nothing to configure.
+  onOpenElementSettings?: (elementId: string) => void;
   // Picker (spec/107): the candidates a roll can land on, and the roll itself.
   // `shared` says whether this viewer's roll is written back (and so reaches
   // the room), which is how the face tells its own landing apart from a peer's.

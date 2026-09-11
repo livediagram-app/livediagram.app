@@ -15,6 +15,7 @@ import {
   ElementEllipsisMenu,
   ElementMenuItem,
   ElementMenuLabel,
+  ElementMenuSettingsRow,
 } from '@/components/canvas/ElementEllipsisMenu';
 import { PollAnswerStyleRow } from '@/components/palette/PollAnswerStyleRow';
 
@@ -113,37 +114,50 @@ function PollForm({
 export function SessionSettingsMenu({
   config,
   onChange,
+  onOpenSettings,
 }: {
   config: SessionButtonConfig;
   // Absent on a read-only surface, where the trigger is not rendered at all.
   onChange: (next: SessionButtonConfig) => void;
+  /** The way out of the quick settings to the element's full menu (spec/09). */
+  onOpenSettings?: () => void;
 }) {
   if (config.tool === 'timer') return null;
   return (
     <ElementEllipsisMenu label={config.tool === 'vote' ? 'Dot vote options' : 'Poll options'}>
-      {(close) =>
-        config.tool === 'vote' ? (
-          <>
-            <ElementMenuLabel>Dots each</ElementMenuLabel>
-            {DOT_PRESETS.filter((d) => d >= VOTE_DOTS_RANGE.min && d <= VOTE_DOTS_RANGE.max).map(
-              (d) => (
-                <ElementMenuItem
-                  key={d}
-                  active={d === (config.dots ?? 3)}
-                  onPress={() => {
-                    onChange({ ...config, dots: d });
-                    close();
-                  }}
-                >
-                  {d === 1 ? '1 dot' : `${d} dots`}
-                </ElementMenuItem>
-              ),
-            )}
-          </>
-        ) : (
-          <PollForm config={config} onChange={onChange} />
-        )
-      }
+      {(close) => (
+        <>
+          {config.tool === 'vote' ? (
+            <>
+              <ElementMenuLabel>Dots each</ElementMenuLabel>
+              {DOT_PRESETS.filter((d) => d >= VOTE_DOTS_RANGE.min && d <= VOTE_DOTS_RANGE.max).map(
+                (d) => (
+                  <ElementMenuItem
+                    key={d}
+                    active={d === (config.dots ?? 3)}
+                    onPress={() => {
+                      onChange({ ...config, dots: d });
+                      close();
+                    }}
+                  >
+                    {d === 1 ? '1 dot' : `${d} dots`}
+                  </ElementMenuItem>
+                ),
+              )}
+            </>
+          ) : (
+            <PollForm config={config} onChange={onChange} />
+          )}
+          {onOpenSettings ? (
+            <ElementMenuSettingsRow
+              onOpen={() => {
+                onOpenSettings();
+                close();
+              }}
+            />
+          ) : null}
+        </>
+      )}
     </ElementEllipsisMenu>
   );
 }

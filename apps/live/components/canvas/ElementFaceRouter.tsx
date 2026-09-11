@@ -9,6 +9,9 @@ import {
   defaultFillColor,
   defaultPadding,
   defaultStrokeColor,
+  drawsOwnElementMenu,
+  elementKindLabel,
+  isBehaviourShape,
   isCollabPanelShape,
   isSelfDrawingShape,
   type ShapeMarker,
@@ -17,6 +20,7 @@ import {
   type TextSize,
 } from '@livediagram/diagram';
 import { AnnotationGlyph } from '@/components/canvas/AnnotationMarker';
+import { ElementSettingsButton } from '@/components/canvas/ElementEllipsisMenu';
 import { CollabFaceRouter } from '@/components/canvas/collab/CollabFaceRouter';
 import { CommentPanelFace } from '@/components/canvas/CommentPanelFace';
 import { FreehandSvg } from '@/components/canvas/boxed-element-overlays';
@@ -78,6 +82,7 @@ type ElementFaceRouterProps = Pick<
   | 'onRollPicker'
   | 'onSetPageHeading'
   | 'onSetSessionConfig'
+  | 'onOpenElementSettings'
   | 'onToggleReveal'
 > & {
   // Derived once by the host and shared with the branches here, rather than
@@ -123,6 +128,7 @@ export function ElementFaceRouter({
   onRollPicker,
   onSetPageHeading,
   onSetSessionConfig,
+  onOpenElementSettings,
   onToggleReveal,
   label,
   labelNode,
@@ -136,8 +142,29 @@ export function ElementFaceRouter({
   marker,
   iconCaptionBand,
 }: ElementFaceRouterProps) {
+  // The shared settings `…` (spec/09). Every Behaviours element carries one,
+  // in the same corner, opening that element's own context menu — except the
+  // three that draw a richer `…` of their own, which would otherwise render a
+  // second ellipsis beside the first.
+  const settingsMenu =
+    element.type === 'shape' &&
+    !isEditing &&
+    !readOnly &&
+    onOpenElementSettings &&
+    isBehaviourShape(element.shape) &&
+    !drawsOwnElementMenu(element.shape) ? (
+      <span className="absolute right-1 top-1 z-10">
+        <ElementSettingsButton
+          label={`${elementKindLabel(element)} settings`}
+          color={textColor}
+          onOpen={() => onOpenElementSettings(element.id)}
+        />
+      </span>
+    ) : null;
+
   return (
     <>
+      {settingsMenu}
       {/* Mode button (spec/103): a pressable face instead of a plain label —
           the mode's glyph plus the author's call to action. Mid-edit it falls
           through to the normal label editor below, so the text is retyped like
@@ -186,6 +213,9 @@ export function ElementFaceRouter({
                 }
               : undefined
           }
+          onOpenSettings={
+            onOpenElementSettings ? () => onOpenElementSettings(element.id) : undefined
+          }
         />
       ) : element.type === 'shape' && element.shape === 'session-button' && !isEditing ? (
         /* Session button (spec/105): starts a vote / poll for the room. */
@@ -200,6 +230,9 @@ export function ElementFaceRouter({
             onSetSessionConfig && element.session
               ? (next) => onSetSessionConfig(element, next)
               : undefined
+          }
+          onOpenSettings={
+            onOpenElementSettings ? () => onOpenElementSettings(element.id) : undefined
           }
         />
       ) : element.type === 'shape' && element.shape === 'reveal' && !isEditing ? (
@@ -227,7 +260,15 @@ export function ElementFaceRouter({
            a temperature check, an idea box, an agenda, or a roll call. Like
            every other face above, mid-edit it falls through to the ordinary
            label editor below, so the title is retyped like any shape's. */
-        <CollabFaceRouter element={element} label={label} textColor={textColor} collab={collab} />
+        <CollabFaceRouter
+          element={element}
+          label={label}
+          textColor={textColor}
+          collab={collab}
+          onOpenSettings={
+            onOpenElementSettings ? () => onOpenElementSettings(element.id) : undefined
+          }
+        />
       ) : element.type === 'shape' && element.shape === 'comment-pin' && !isEditing ? (
         /* Comment pin (spec/136): opens the SAME thread popover an ordinary
            element's comment badge opens — the pin is just an element whose

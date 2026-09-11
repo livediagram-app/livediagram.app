@@ -5,7 +5,11 @@ import { allDone, doneSplit, isDone, type ShapeElement } from '@livediagram/diag
 import { participantKey, type Participant } from '@/lib/identity';
 import { ParticipantAvatar } from '@/components/primitives/ParticipantAvatar';
 import { CollabButton, CollabEmpty, CollabPanel } from './collab-chrome';
-import { ElementEllipsisMenu, ElementMenuItem } from '@/components/canvas/ElementEllipsisMenu';
+import {
+  ElementEllipsisMenu,
+  ElementMenuItem,
+  ElementMenuSettingsRow,
+} from '@/components/canvas/ElementEllipsisMenu';
 
 // The face of a Done check (spec/137): everyone marks themselves finished, and
 // the card shows who has and who has not.
@@ -70,6 +74,7 @@ export function DoneCheckFace({
   participants,
   onToggleMine,
   onResetAll,
+  onOpenSettings,
 }: {
   element: ShapeElement;
   label: string;
@@ -85,6 +90,8 @@ export function DoneCheckFace({
   // Clear everyone, for the next round. Absent on a surface that can't write,
   // which renders the card readable but inert.
   onResetAll?: () => void;
+  /** The way out of the round controls to the element's full menu (spec/09). */
+  onOpenSettings?: () => void;
 }) {
   const keys = participants.map(participantKey);
   const { done, waiting } = doneSplit(element.responses, keys);
@@ -126,6 +133,14 @@ export function DoneCheckFace({
                 >
                   Reset everyone
                 </ElementMenuItem>
+              ) : null}
+              {onOpenSettings ? (
+                <ElementMenuSettingsRow
+                  onOpen={() => {
+                    onOpenSettings();
+                    close();
+                  }}
+                />
               ) : null}
             </>
           )}

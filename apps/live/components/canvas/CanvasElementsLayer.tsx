@@ -111,6 +111,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     // read-only surface needs no separate gate here.
     tabTimer,
     onSetSessionConfig,
+    onOpenElementSettings,
     commentSelfId,
     commentPanelActions,
     onPauseTimer,
@@ -372,6 +373,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             timerState={timerState}
             tabTimer={tabTimer ?? null}
             onSetSessionConfig={onSetSessionConfig}
+            onOpenElementSettings={onOpenElementSettings}
             commentSelfId={commentSelfId}
             commentActions={
               commentPanelActions

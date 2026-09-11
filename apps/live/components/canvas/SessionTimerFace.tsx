@@ -19,6 +19,7 @@ import {
   ElementEllipsisMenu,
   ElementMenuItem,
   ElementMenuLabel,
+  ElementMenuSettingsRow,
 } from '@/components/canvas/ElementEllipsisMenu';
 
 // The face of a Timer session element (spec/105) once it is a real timer
@@ -46,6 +47,7 @@ export function SessionTimerFace({
   onClear,
   minutes,
   onSetMinutes,
+  onOpenSettings,
 }: {
   // Null when no timer is running for this tab: the element shows its
   // configured length and a Start.
@@ -63,6 +65,8 @@ export function SessionTimerFace({
   /** The element's configured length, which the `…` menu edits. */
   minutes: number;
   onSetMinutes?: (minutes: number) => void;
+  /** The way out of the presets to the element's full menu (spec/09). */
+  onOpenSettings?: () => void;
 }) {
   // Re-render 4x a second while running so the clock advances, exactly as the
   // chrome pill does. A paused or absent timer is static, so nothing spins.
@@ -112,6 +116,14 @@ export function SessionTimerFace({
                   {m === 1 ? '1 minute' : `${m} minutes`}
                 </ElementMenuItem>
               ))}
+              {onOpenSettings ? (
+                <ElementMenuSettingsRow
+                  onOpen={() => {
+                    onOpenSettings();
+                    close();
+                  }}
+                />
+              ) : null}
             </>
           )}
         </ElementEllipsisMenu>

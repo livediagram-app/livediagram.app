@@ -68,6 +68,7 @@ export function SessionButtonFace({
   timerState = 'none',
   onPress,
   onSetConfig,
+  onOpenSettings,
 }: {
   config: SessionButtonConfig | undefined;
   label: string;
@@ -79,6 +80,8 @@ export function SessionButtonFace({
   // vote's dots, the poll's question and answers. Absent on a read-only
   // surface, where the trigger is not rendered.
   onSetConfig?: (next: SessionButtonConfig) => void;
+  /** The way out of the quick settings to the element's full menu (spec/09). */
+  onOpenSettings?: () => void;
 }) {
   const plan = sessionButtonPlan(config);
   const derived = sessionButtonText(plan, timerState);
@@ -167,7 +170,11 @@ export function SessionButtonFace({
       // face is a centred stack, and a control in the flow would shove the
       // label off centre.
       <span className="absolute right-1 top-1 z-10">
-        <SessionSettingsMenu config={config} onChange={onSetConfig} />
+        <SessionSettingsMenu
+          config={config}
+          onChange={onSetConfig}
+          onOpenSettings={onOpenSettings}
+        />
       </span>
     ) : null;
 

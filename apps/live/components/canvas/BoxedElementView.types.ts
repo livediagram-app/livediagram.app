@@ -100,6 +100,9 @@ export type BoxedElementViewProps = {
     element: import('@livediagram/diagram').ShapeElement,
     config: import('@livediagram/diagram').SessionButtonConfig,
   ) => void;
+  // The `…` on a Behaviours element's face opens that element's own context
+  // menu beside it (spec/09), rather than a second copy of its settings form.
+  onOpenElementSettings?: (elementId: string) => void;
   // Pause / resume / restart / cancel for that timer. Absent on a read-only
   // surface, which renders the timer readable but inert.
   timerControls?: {

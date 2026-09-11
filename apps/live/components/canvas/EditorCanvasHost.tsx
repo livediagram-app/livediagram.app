@@ -4,6 +4,7 @@ import { describeOne } from '@/lib/element-names';
 import { DEFAULT_BUTTON_MODE } from '@livediagram/diagram';
 import { useMemo } from 'react';
 import { DEFAULT_BACKGROUND_COLOR, DEFAULT_PATTERN_COLOR, isVoteHost } from '@livediagram/diagram';
+import { elementMenuAnchor } from '@/lib/context-menu-anchor';
 import { participantKey } from '@/lib/identity';
 import { resolveOwnerBadge } from '@/lib/presence-rows';
 import { usePreferenceHandlers } from '@/hooks/ui/usePreferenceHandlers';
@@ -450,6 +451,20 @@ export function EditorCanvasHost() {
       revealedIds={revealedIds}
       onToggleReveal={toggleRevealForMe}
       onSetSessionConfig={isReadOnly ? undefined : setSessionConfigFor}
+      // The `…` on a Behaviours element's face (spec/09). Anchored from the
+      // ELEMENT's rect, not the trigger's, so it lands exactly where a
+      // right-click on the same element would — one menu, one position,
+      // whichever way you asked for it.
+      onOpenElementSettings={
+        isReadOnly
+          ? undefined
+          : (elementId) => {
+              const node = document.querySelector(`[data-element-id="${elementId}"]`);
+              if (!(node instanceof HTMLElement)) return;
+              const { x, y } = elementMenuAnchor(node.getBoundingClientRect());
+              setContextMenu({ mode: 'element', elementId, x, y });
+            }
+      }
       // Comment panels (spec/136) drive the SAME thread machinery the anchored
       // popover does — it is all keyed by element id already.
       commentSelfId={selfParticipant.id}

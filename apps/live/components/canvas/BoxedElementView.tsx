@@ -93,6 +93,7 @@ function BoxedElementViewImpl({
   tabTimer,
   timerControls,
   onSetSessionConfig,
+  onOpenElementSettings,
   commentSelfId,
   commentActions,
   revealedForMe,
@@ -473,6 +474,7 @@ function BoxedElementViewImpl({
         onRollPicker={onRollPicker}
         onSetPageHeading={onSetPageHeading}
         onSetSessionConfig={onSetSessionConfig}
+        onOpenElementSettings={onOpenElementSettings}
         onToggleReveal={onToggleReveal}
         label={label}
         labelNode={labelNode}

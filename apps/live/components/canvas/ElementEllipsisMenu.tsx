@@ -142,6 +142,80 @@ export function ElementMenuItem({
   );
 }
 
+/**
+ * The `…` for an element whose settings are the CONTEXT MENU'S — no popover of
+ * its own, just the same affordance in the same corner, opening the element's
+ * own menu beside it (spec/09).
+ *
+ * Every Behaviours element carries one. They are the elements you configure
+ * most and the ones whose settings are least guessable — "what does this
+ * Picker pick from", "which mode does this button hand out" — and until this
+ * existed the only way in was a right-click that nothing on the face advertised.
+ *
+ * It opens the REAL menu rather than a second copy of each form. A per-kind
+ * popover would be a dozen settings surfaces to keep in step with the dozen
+ * that already exist, and they would drift; this is one component and one
+ * source of truth. It reads well now that a category holding one section is
+ * promoted into the menu proper (spec/09), so pressing `…` on a Picker lands
+ * you on a menu with PICKER in it rather than on TOOLS.
+ */
+export function ElementSettingsButton({
+  label,
+  color,
+  onOpen,
+}: {
+  /** Accessible name, e.g. "Picker settings". */
+  label: string;
+  color?: string;
+  /** Opens the element's menu, anchored from the trigger's own screen rect. */
+  onOpen: (at: { x: number; y: number }) => void;
+}) {
+  const trigger = useRef<HTMLButtonElement | null>(null);
+  return (
+    <div className="pointer-events-auto relative">
+      <button
+        ref={trigger}
+        type="button"
+        aria-label={label}
+        aria-haspopup="menu"
+        // Same reason as the menu trigger above: the canvas reads a press on an
+        // element as select-and-maybe-drag, so this has to stop the gesture or
+        // opening the settings drags the element out from under it.
+        onPointerDown={(e) => e.stopPropagation()}
+        onClick={(e) => {
+          e.stopPropagation();
+          const r = trigger.current?.getBoundingClientRect();
+          if (r) onOpen({ x: r.right, y: r.bottom + 4 });
+        }}
+        className="flex h-5 w-5 cursor-pointer items-center justify-center rounded transition hover:bg-black/10 dark:hover:bg-white/10"
+        style={color ? { color } : undefined}
+      >
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden>
+          <circle cx="3.2" cy="8" r="1.35" />
+          <circle cx="8" cy="8" r="1.35" />
+          <circle cx="12.8" cy="8" r="1.35" />
+        </svg>
+      </button>
+    </div>
+  );
+}
+
+/**
+ * The last row of a quick `…` menu: the way through to everything else.
+ *
+ * An element with its own popover (the Timer's lengths, the poll's question)
+ * keeps it — those are the settings worth one press — and this row stops that
+ * popover from being a dead end when the setting you want is not one of them.
+ */
+export function ElementMenuSettingsRow({ onOpen }: { onOpen: () => void }) {
+  return (
+    <>
+      <span className="my-1 block border-t border-slate-100 dark:border-slate-800" />
+      <ElementMenuItem onPress={onOpen}>All settings…</ElementMenuItem>
+    </>
+  );
+}
+
 /** A heading between groups of rows. */
 export function ElementMenuLabel({ children }: { children: React.ReactNode }) {
   return (
