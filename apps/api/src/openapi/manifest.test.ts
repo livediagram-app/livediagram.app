@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { COMPONENT_SCHEMAS } from './schemas.generated';
 import { ROUTE_MANIFEST } from './manifest';
@@ -15,7 +16,7 @@ import type { JsonSchema } from './types';
 // straight from index.ts's `case '<segment>':` labels. Reading the source
 // keeps this honest without a parallel hand-list that could itself drift.
 function dispatchedSegments(): Set<string> {
-  const source = readFileSync(new URL('../index.ts', import.meta.url), 'utf8');
+  const source = readFileSync(fileURLToPath(new URL('../index.ts', import.meta.url).href), 'utf8');
   const segments = new Set<string>();
   for (const m of source.matchAll(/case '([^']+)':/g)) if (m[1]) segments.add(m[1]);
   return segments;
@@ -25,7 +26,7 @@ function dispatchedSegments(): Set<string> {
 // route modules the same way dispatchedSegments() reads index.ts: from the
 // source, so there is no hand-list to drift.
 function handledMethodsBySegment(): Map<string, Set<string>> {
-  const index = readFileSync(new URL('../index.ts', import.meta.url), 'utf8');
+  const index = readFileSync(fileURLToPath(new URL('../index.ts', import.meta.url).href), 'utf8');
   const handlerFile = new Map<string, string>();
   for (const m of index.matchAll(/import \{([^}]*)\} from '\.\/routes\/([\w-]+)'/g)) {
     for (const name of m[1]!.split(',')) {
@@ -34,7 +35,10 @@ function handledMethodsBySegment(): Map<string, Set<string>> {
   }
   const read = (file: string): string | null => {
     try {
-      return readFileSync(new URL(`../routes/${file}`, import.meta.url), 'utf8');
+      return readFileSync(
+        fileURLToPath(new URL(`../routes/${file}`, import.meta.url).href),
+        'utf8',
+      );
     } catch {
       return null;
     }

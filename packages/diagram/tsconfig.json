@@ -2,6 +2,11 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "lib": ["ES2022", "DOM"],
+    // Explicit, because TypeScript 6 no longer auto-includes @types/node here:
+    // two test files read the source tree with `node:fs` / `node:url`, and
+    // without this they fail to resolve. Naming it is also the honest record
+    // that this package's TESTS touch the filesystem while its source does not.
+    "types": ["node"],
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "noEmit": true

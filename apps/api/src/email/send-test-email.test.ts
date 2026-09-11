@@ -16,6 +16,7 @@
 //                                    # (the sender that works without a verified domain)
 
 import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import type { Env } from '../types';
 import { sendEmail } from './client';
@@ -38,7 +39,10 @@ import {
 
 function devVars(): Record<string, string> {
   try {
-    const txt = readFileSync(new URL('../../.dev.vars', import.meta.url), 'utf8');
+    const txt = readFileSync(
+      fileURLToPath(new URL('../../.dev.vars', import.meta.url).href),
+      'utf8',
+    );
     const out: Record<string, string> = {};
     for (const line of txt.split('\n')) {
       if (line.trim().startsWith('#')) continue;

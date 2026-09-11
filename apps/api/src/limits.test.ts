@@ -10,7 +10,7 @@ import { MAX_BODY_BYTES, MAX_IMAGE_BYTES, bodyExceedsCap, declaredBodyBytes } fr
 // @livediagram/api-schema, so they cannot disagree. Prose cannot import, so it
 // is checked here — this is the app that enforces the cap, so it is the one
 // that should fail when the documentation stops describing what it enforces.
-const ROOT = fileURLToPath(new URL('../../..', import.meta.url));
+const ROOT = fileURLToPath(new URL('../../..', import.meta.url).href);
 
 describe('image cap', () => {
   it('is quoted as the same number of MB by spec/19 and the help article', () => {

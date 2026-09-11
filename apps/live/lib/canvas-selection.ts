@@ -87,8 +87,9 @@ export function deriveCanvasSelection(input: {
       ? (elements.find((el) => multiSelectedIds.has(el.id))?.id ?? null)
       : null;
   const selected =
-    (selectedId ? (elements.find((el) => el.id === selectedId) ?? null) : null) ??
-    (multiPrimaryId ? (elements.find((el) => el.id === multiPrimaryId) ?? null) : null);
+    (selectedId ? elements.find((el) => el.id === selectedId) : undefined) ??
+    (multiPrimaryId ? elements.find((el) => el.id === multiPrimaryId) : undefined) ??
+    null;
   const selectionScope: 'single' | 'multi' | 'group' =
     multiSelectedIds.size > 0 ? 'multi' : selectedId && memberIds.size > 1 ? 'group' : 'single';
   const selectedIsBoxed = selected ? isBoxed(selected) : false;

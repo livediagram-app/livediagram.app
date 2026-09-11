@@ -117,7 +117,12 @@ describe('local-dev dispatch (origin proxy)', () => {
 
 describe('live route drift guard', () => {
   it('routes every top-level apps/live/app segment to the live worker', async () => {
-    const liveApp = fileURLToPath(new URL('../../live/app', import.meta.url));
+    // `.href` rather than the URL object: this worker's tsconfig loads BOTH
+    // @cloudflare/workers-types and node, and each declares a global `URL`.
+    // `fileURLToPath` wants Node's, `new URL(...)` resolves to the Workers
+    // one, and from @types/node 26 the two are different enough that the call
+    // no longer typechecks. A string is the one argument both agree on.
+    const liveApp = fileURLToPath(new URL('../../live/app', import.meta.url).href);
     const segments = readdirSync(liveApp).filter((entry) =>
       statSync(`${liveApp}/${entry}`).isDirectory(),
     );
