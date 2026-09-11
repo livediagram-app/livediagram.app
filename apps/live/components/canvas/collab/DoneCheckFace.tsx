@@ -3,7 +3,7 @@
 import { allDone, doneSplit, isDone, type ShapeElement } from '@livediagram/diagram';
 
 import { participantKey, type Participant } from '@/lib/identity';
-import { BinderRings, RuledLines } from '@/components/canvas/paper-kit';
+import { RuledLines } from '@/components/canvas/paper-kit';
 import { ParticipantAvatar } from '@/components/primitives/ParticipantAvatar';
 import { CollabButton, CollabEmpty, CollabPanel } from './collab-chrome';
 import {
@@ -72,7 +72,6 @@ export function DoneCheckFace({
   label,
   textColor,
   selfKey,
-  surface,
   participants,
   onToggleMine,
   onResetAll,
@@ -83,8 +82,6 @@ export function DoneCheckFace({
   textColor: string;
   // How WE are recorded on this card — see CollabApi.selfKey.
   selfKey: string;
-  /** The card's own fill, for the punched holes to show through. */
-  surface: string;
   // The room. Includes ourselves, and is what the waiting list is derived from.
   participants: Participant[];
   // Mark or unmark MYSELF. One handler for both: `respond` already withdraws
@@ -108,17 +105,16 @@ export function DoneCheckFace({
       title={label.trim() || 'Everyone done?'}
       textColor={textColor}
       aside={keys.length ? `${done.length}/${keys.length}` : undefined}
-      // A PAGE OUT OF A RING BINDER (spec/122): feint-ruled behind the
-      // rosters, punched down the left, with the wire loops threaded through
-      // the holes. A done check is the running sheet somebody carries around a
-      // session, and this is what that sheet is kept in.
+      // A RULED SHEET (spec/122): the running list somebody keeps during a
+      // session, feint-ruled behind the rosters.
       //
-      // It had a clipboard's jaw across the top first. That was two different
-      // ways of holding the same paper on one card — the sheet was already
-      // punched — and the jaw read as a stray pill rather than as hardware.
-      inset={{ left: 16 }}
+      // NO hardware holding it on. Two attempts went in and both came out —
+      // a clipboard's jaw across the top, then wire binder rings down the
+      // side. At the size a Done check actually sits on a board, a 5px loop
+      // and a 7px hole are not a mechanism, they are specks, and both read as
+      // debris beside the card rather than as something gripping it. The
+      // ruling alone says "sheet" at every size, which is the whole job.
       backdrop={<RuledLines textColor={textColor} gap={17} from={42} />}
-      overlay={<BinderRings textColor={textColor} surface={surface} />}
       // The flash is the card's whole payoff: the facilitator does not have to
       // watch it, the board tells them. Driven by a class rather than inline
       // styles so the reduced-motion override in globals.css can reach it.

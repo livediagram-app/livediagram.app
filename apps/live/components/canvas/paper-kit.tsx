@@ -30,11 +30,6 @@
 
 import { tint } from '@/lib/element-tint';
 
-/** A soft lift under the whole card, so it reads as an object on a surface. */
-export function paperShadow(textColor: string): string {
-  return `0 1px 0 ${tint(textColor, 0.06)}, 0 6px 14px -8px ${tint(textColor, 0.5)}`;
-}
-
 /**
  * A turned-up corner: the triangle of backing showing through, plus the flap
  * of paper curling off it.
@@ -169,67 +164,6 @@ export function TornEdge({
         }}
       />
     </>
-  );
-}
-
-/**
- * A ring binder down the left edge: holes punched through the sheet with the
- * wire loops threaded through them.
- *
- * This replaced a punched margin plus a separate clip across the top. The clip
- * was the wrong object — the sheet was already punched and ruled like a page
- * out of a binder, and a clipboard's jaw on top of that is two different ways
- * of holding the same paper. Rings agree with the holes that were already
- * there.
- *
- * Each ring is drawn in three parts because that is what sells it: the hole,
- * the BACK of the loop (behind the sheet, so it is dimmed and clipped by the
- * page edge) and the FRONT of the loop crossing over the margin. A single
- * stroked circle reads as a drawn O.
- */
-export function BinderRings({
-  textColor,
-  surface,
-  count = 4,
-}: {
-  textColor: string;
-  surface: string;
-  count?: number;
-}) {
-  return (
-    <span aria-hidden className="pointer-events-none absolute inset-y-0 left-0 w-[22px]">
-      {Array.from({ length: count }, (_, i) => (
-        <span
-          key={i}
-          className="absolute left-0 right-0"
-          style={{ top: `${((i + 1) / (count + 1)) * 100}%`, height: 0 }}
-        >
-          {/* The punched hole. Surface-coloured so it is an opening. */}
-          <span
-            className="absolute left-[11px] h-[8px] w-[8px] -translate-x-1/2 rounded-full"
-            style={{
-              top: -4,
-              background: surface,
-              boxShadow: `inset 0 1px 1px ${tint(textColor, 0.3)}`,
-            }}
-          />
-          {/* The loop, crossing the margin and passing behind the sheet on the
-              right. Open at the right so it reads as wire rather than a ring
-              printed on the page. */}
-          <span
-            className="absolute rounded-full"
-            style={{
-              left: 2,
-              top: -7,
-              width: 19,
-              height: 14,
-              border: `2px solid ${tint(textColor, 0.34)}`,
-              borderRightColor: 'transparent',
-            }}
-          />
-        </span>
-      ))}
-    </span>
   );
 }
 
@@ -603,45 +537,6 @@ export function PadTread({ textColor }: { textColor: string }) {
         )} 0 1px, transparent 1px 11px)`,
       }}
     />
-  );
-}
-
-/**
- * Five-bar gate tally marks — four uprights and the diagonal through them.
- *
- * The mark a person makes when counting a room by hand, which is exactly what
- * a dot vote and a poll automate.
- */
-export function TallyMarks({ textColor, groups = 2 }: { textColor: string; groups?: number }) {
-  return (
-    <span
-      aria-hidden
-      className="pointer-events-none absolute inset-x-0 flex justify-center gap-3"
-      style={{ bottom: 6, height: 14 }}
-    >
-      {Array.from({ length: groups }, (_, g) => (
-        <span key={g} className="relative" style={{ width: 22, height: 14 }}>
-          {[0, 1, 2, 3].map((i) => (
-            <span
-              key={i}
-              className="absolute top-0 w-px"
-              style={{ left: i * 5 + 1, height: 14, background: tint(textColor, 0.24) }}
-            />
-          ))}
-          <span
-            className="absolute"
-            style={{
-              left: -1,
-              top: 6,
-              width: 24,
-              height: 1.5,
-              background: tint(textColor, 0.24),
-              transform: 'rotate(-18deg)',
-            }}
-          />
-        </span>
-      ))}
-    </span>
   );
 }
 

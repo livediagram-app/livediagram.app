@@ -80,7 +80,6 @@ export function CollabFaceRouter({
         label={label}
         textColor={textColor}
         selfKey={api?.selfKey ?? ''}
-        surface={surface}
         participants={api?.participants ?? []}
         // `respond` already withdraws when you send the value you already
         // sent (spec/122), so marking and unmarking are the same call.

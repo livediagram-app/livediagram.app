@@ -14,7 +14,6 @@ import {
   type SessionPlan,
 } from '@livediagram/diagram';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
-import { TallyMarks } from '@/components/canvas/paper-kit';
 import { SessionSettingsMenu } from '@/components/canvas/SessionSettingsMenu';
 import { PollIcon, TimerIcon, VoteIcon } from '@/components/palette/palette-icons';
 
@@ -191,11 +190,6 @@ export function SessionButtonFace({
       <span className={`pointer-events-none absolute inset-0 ${layout}`} aria-hidden>
         {inner}
       </span>
-      {/* TALLY MARKS (spec/122). A dot vote and a poll automate the thing a
-          person does by hand when counting a room, so the button is printed
-          with the mark they would have made. Not on a timer: a countdown
-          counts down, it does not count up. */}
-      {plan.tool === 'timer' ? null : <TallyMarks textColor={textColor} />}
       <button
         type="button"
         aria-label={`${text || `${derived.kicker} ${derived.action}`} — starts this for everyone`}

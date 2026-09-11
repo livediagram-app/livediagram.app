@@ -163,6 +163,18 @@ Three lessons are worth keeping:
 - **A texture drawn outside the card is not drawn at all.** `overflow-hidden`
   clipped every pixel of the first `TapeStrip`, so the seal never once
   appeared. Anything at an edge has to lie ACROSS it.
+- **Small hardware does not survive the size these elements are used at.** The
+  Done check went through a clipboard's jaw and then wire binder rings, and
+  both came out. At the size a card actually sits on a board a 5px loop and a
+  7px hole are not a mechanism, they are specks, and they read as debris beside
+  the card rather than as something gripping it. The ruling alone says "sheet"
+  at every size, which was the whole job. The Session button's tally marks went
+  the same way: it is the smallest element in the family and there is no room
+  on it for a texture that is not the label.
+
+  The rule that falls out: a texture has to work at the element's DEFAULT size,
+  not at the size you designed it. Big, soft shapes (a lid, a torn edge, a
+  hatch, a screen) survive; fine mechanical detail does not.
 
 ## The card scales to its box
 

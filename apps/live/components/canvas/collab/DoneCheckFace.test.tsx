@@ -66,7 +66,6 @@ describe('DoneCheckFace', () => {
         element={card(['k-ada'])}
         label=""
         textColor="#000"
-        surface="#fff"
         selfKey="k-me"
         participants={[SELF, PEER]}
       />,
@@ -85,7 +84,6 @@ describe('DoneCheckFace', () => {
         element={card(['k-me', 'k-ada'])}
         label=""
         textColor="#000"
-        surface="#fff"
         selfKey="k-me"
         participants={[SELF, PEER]}
       />,
@@ -103,7 +101,6 @@ describe('DoneCheckFace', () => {
         element={card(['k-me'])}
         label=""
         textColor="#000"
-        surface="#fff"
         selfKey="k-me"
         participants={[SELF, PEER]}
       />,
@@ -119,7 +116,6 @@ describe('DoneCheckFace', () => {
         element={card(['k-ada'])}
         label=""
         textColor="#000"
-        surface="#fff"
         selfKey="k-me"
         participants={[SELF]}
       />,
@@ -141,7 +137,6 @@ describe('DoneCheckFace', () => {
         element={card(['k-me'])}
         label=""
         textColor="#000"
-        surface="#fff"
         selfKey="k-me"
         participants={[SELF, legacy]}
       />,
