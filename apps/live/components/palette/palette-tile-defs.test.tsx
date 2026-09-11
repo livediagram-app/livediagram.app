@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { PALETTE_CATEGORIES } from './palette-categories';
-import { BEHAVIOUR_GROUPS, COLLABORATE_GROUPS } from './palette-create-tabs';
+import { BEHAVIOUR_GROUPS } from './palette-create-tabs';
 import {
   PALETTE_TILES,
   TOOL_GROUPS,
@@ -101,13 +101,11 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   media: 8,
   components: 9,
   data: 6,
-  // Every Behaviour tile now sits in a group (spec/103, /105, /135): Selection
-  // Mode (8 modes), Run the room (3), Get around (2), Session (3),
-  // Reactions (5).
-  behaviour: 23,
-  // The comment panel, loose, plus Ask the room (3 estimate scales +
-  // temperature + idea box) and Keep a record (3).
-  collaborate: 9,
+  // Behaviours absorbed Collaborate (spec/110), so this is both families:
+  // Ask the room (3 estimate scales + temperature + idea box), Run the
+  // room (3), Session (3), Keep a record (3), Reactions (5), Selection
+  // Mode (8 modes), Get around (2), plus the comment pin loose on top.
+  behaviour: 32,
 };
 
 describe('PALETTE_CATEGORIES', () => {
@@ -171,7 +169,6 @@ describe('TOOL_GROUPS', () => {
 // failure mode SHAPE_KEYWORDS and the palette census both hit.
 const GROUP_CONSTANTS: Record<string, { id: string }[]> = {
   BEHAVIOUR_GROUPS,
-  COLLABORATE_GROUPS,
 };
 
 function renderedGroups(component: string): { groups: Set<string>; allowsLoose: boolean } {
@@ -190,20 +187,16 @@ function renderedGroups(component: string): { groups: Set<string>; allowsLoose: 
   };
 }
 
-// Behaviour is a toolGroup INSIDE the tools section; Collaborate is a section
-// of its own. The render reaches for each accordingly, so the test must too —
-// asking for a 'behaviour' section returns nothing and makes every row look
-// empty.
+// Behaviours is a toolGroup INSIDE the tools section, not a section of its
+// own: asking for a 'behaviour' section returns nothing and would make every
+// row look empty. It is the only grouped tab left — Collaborate was merged
+// into it (spec/110) — and the list stays an array so a second one costs a
+// line rather than a rewrite.
 const TABS = [
   {
     name: 'behaviour',
     component: 'PaletteBehaviourTab',
     tiles: () => tilesInToolGroup('behaviour'),
-  },
-  {
-    name: 'collaborate',
-    component: 'PaletteCollaborateTab',
-    tiles: () => tilesInSection('collaborate'),
   },
 ] as const;
 

@@ -11,8 +11,9 @@ category of its own, and a tab with no categories left is not a tab.
 
 The full set, in band order: **Favourites**, then **Shapes / Write / Draw /
 Devices**, then **Icons / Stickers / Technology / Media / Components**, then
-**Data / Behaviour**. (Stickers joined the Decorate band later, in
-[spec/116](116-stickers.md).)
+**Data / Behaviours**. (Stickers joined the Decorate band later, in
+[spec/116](116-stickers.md); Collaborate was merged into Behaviours later
+still — see below.)
 
 Where things landed, for anything that moved:
 
@@ -37,7 +38,7 @@ tools plus Frame). The **User / actor** tile was deleted outright — see below.
 | **Common**     | Shapes, Write, Draw                |
 | **Structure**  | Build, Components, Devices         |
 | **Decorate**   | Icons, Stickers, Technology, Media |
-| **Dynamic**    | Data, Behaviour, Collaborate       |
+| **Dynamic**    | Data, Behaviours                   |
 
 ## Why flatten
 
@@ -68,7 +69,7 @@ mistake.
 
 ## Rows, not tiles, for most categories
 
-Write, Draw, Behaviour, Data, Components, Media and Devices render as **rows
+Write, Draw, Behaviours, Data, Components, Media and Devices render as **rows
 with a one-line blurb**, not as the icon-over-caption grid.
 
 The rule is whether the picture explains the thing, and only four categories
@@ -150,25 +151,49 @@ the palette's, and moving them would break every existing link for a cosmetic
 match. The article **copy** was updated, since a reader sent to the Tools tab
 looking for a chart would not find one.
 
-## Behaviour and Collaborate are fully grouped
+The same call was made when **Collaborate merged into Behaviours**: its seven
+articles keep their `/help/palette/collaborate/` URLs and their parent page,
+and only the copy changed — it now says where the elements actually live and
+which two groups they are. A rename that broke seven live links to say
+"Behaviours" in a path would be a cosmetic match bought with real breakage.
 
-Both categories now put every tile in a collapsible group, because both had
-grown past the point where a flat list read as a list.
+## Behaviours: one category, fully grouped
 
-**Behaviour** (22 tiles, 5 groups):
+**Collaborate was merged into Behaviour**, and the survivor is named
+**Behaviours** (32 tiles, 1 loose + 7 groups). The two were split on a real
+distinction — Behaviour is "pressing this does something to your session",
+Collaborate is "the board is collecting an answer from everybody" — and it
+turned out to be a line to memorise rather than one to navigate by. You reach
+for both while running a session, and nothing told a user hunting for the Done
+check why it sat apart from the estimate card. [spec/137](137-done-check.md)
+saw this coming: it filed the Done check under Behaviour, noted it was
+arguably a Collaborate element by this spec's own rule, and said so.
 
-| Group              | Holds                    |
-| ------------------ | ------------------------ |
-| **Selection Mode** | one button per mode (8)  |
-| **Run the room**   | Reveal, Done, Picker     |
-| **Get around**     | Portal, Chair, Link card |
-| **Session**        | Timer, Dot vote, Poll    |
-| **Reactions**      | the five pads            |
+What is left is one honest test for the category: **does this element's content
+arrive at runtime rather than being drawn by the author?**
 
-**Collaborate** (9 tiles, 1 loose + 2 groups): the **Comment panel** stays
-loose — it is the one people reach for outside a facilitated session — over
-**Ask the room** (the three estimate scales, temperature, idea box) and **Keep
-a record** (agenda, decision, roll call).
+| Group              | Holds                                            |
+| ------------------ | ------------------------------------------------ |
+| **Ask the room**   | the three estimate scales, Temperature, Idea box |
+| **Run the room**   | Reveal, Done, Picker                             |
+| **Session**        | Timer, Dot vote, Poll                            |
+| **Keep a record**  | Agenda, Decision record, Roll call               |
+| **Reactions**      | the five pads                                    |
+| **Selection Mode** | one button per mode (8)                          |
+| **Get around**     | Portal, Chair, Link card                         |
+
+The **Comment panel** stays loose above the groups — it is the one people reach
+for outside a facilitated session entirely, and a group of one would be a click
+in front of the category's most-used tile.
+
+Order is **room-first**: the four groups a facilitator opens mid-session come
+before the three you set up once and forget. Seven groups is more than the five
+Behaviour had, and still a grid you read at a glance rather than a list you
+scroll.
+
+Data-side, the merge is a `section` change: the Collaborate tiles moved to
+`section: 'tools'` with `toolGroup: 'behaviour'`, so `tilesForCategory` and the
+tab body needed no special case and the `'collaborate'` section is gone.
 
 The grouping is by **what the element does with the room**, not by what it
 looks like. That is the same rule that produced the Build category (spec/132),

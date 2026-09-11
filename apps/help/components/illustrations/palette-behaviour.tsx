@@ -112,22 +112,24 @@ function AvatarGlyph() {
 
 // --- Scenes ----------------------------------------------------------------
 
-/** The Behaviour tab of the palette: a search box over the five group tiles
- *  you click into. */
+/** The Behaviours tab of the palette: a search box over the seven group tiles
+ *  you click into. Ordered room-first, matching BEHAVIOUR_GROUPS. */
 export function BehaviourGroups() {
   const px = 52;
   const py = 12;
   const groups: { label: string; icon: ReactNode }[] = [
-    { label: 'Selection Mode', icon: <SelectGlyph /> },
-    { label: 'Run the room', icon: <PollGlyph /> },
-    { label: 'Get around', icon: <AvatarGlyph /> },
+    { label: 'Ask the room', icon: <PollGlyph /> },
+    { label: 'Run the room', icon: <SelectGlyph /> },
     { label: 'Session', icon: <ClockGlyph /> },
+    { label: 'Keep a record', icon: <DotsGlyph /> },
     { label: 'Reactions', icon: <DotsGlyph /> },
+    { label: 'Selection Mode', icon: <SelectGlyph /> },
+    { label: 'Get around', icon: <AvatarGlyph /> },
   ];
   return (
-    <Scene w={420} h={228} bg="plain">
-      <Panel x={px} y={py} w={316} h={200} title="BEHAVIOUR">
-        {/* Search across all five groups at once */}
+    <Scene w={420} h={294} bg="plain">
+      <Panel x={px} y={py} w={316} h={266} title="BEHAVIOURS">
+        {/* Search across all seven groups at once */}
         <rect
           x={px + 12}
           y={py + 30}
@@ -151,7 +153,7 @@ export function BehaviourGroups() {
           strokeWidth={1.5}
         />
         <Label x={px + 38} y={py + 42} size={10} tone="muted">
-          Search behaviour
+          Search behaviours
         </Label>
         {groups.map((g, i) => {
           const gx = px + 12 + (i % 3) * 102;

@@ -22,7 +22,6 @@ import { TechPickerTab } from '@/components/palette/TechPickerTab';
 import {
   DevicePickerTab,
   PaletteBehaviourTab,
-  PaletteCollaborateTab,
   PaletteDataTab,
   PaletteMediaTab,
   PaletteDrawTab,
@@ -122,7 +121,6 @@ export function paletteCategoryTabs(
     components: <PaletteComponentsTab pendingDraw={pendingDraw} actions={tileActions} />,
     data: <PaletteDataTab pendingDraw={pendingDraw} actions={tileActions} />,
     behaviour: <PaletteBehaviourTab pendingDraw={pendingDraw} actions={tileActions} />,
-    collaborate: <PaletteCollaborateTab pendingDraw={pendingDraw} actions={tileActions} />,
   };
   return PALETTE_CATEGORIES.map((c) => ({ ...c, content: content[c.id] }));
 }

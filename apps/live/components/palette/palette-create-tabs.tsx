@@ -89,76 +89,52 @@ export function PaletteDataTab({ pendingDraw, actions }: TabProps) {
 // where the palette otherwise shows you pictures, and nothing in the tab was
 // visible until you opened one. Same navigation as Icons and Technology, from
 // the same component — see PaletteGroupBrowser.
+// Ordered room-first: the four groups a facilitator opens mid-session come
+// before the two you set up once and forget. Collaborate used to be a separate
+// category (Ask the room / Keep a record); merging it in is spec/110's
+// reconciliation, which spec/137 called ahead of time when it filed the Done
+// check under Behaviour and said so.
 export const BEHAVIOUR_GROUPS: TileGroupDef[] = [
-  { id: 'mode', label: 'Selection Mode', icon: <ModeGroupIcon /> },
-  {
-    id: 'facilitate',
-    label: 'Run the room',
-    icon: <FacilitateGroupIcon />,
-  },
-  { id: 'move', label: 'Get around', icon: <MoveGroupIcon /> },
-  {
-    id: 'session',
-    label: 'Session',
-    icon: <SessionGroupIcon />,
-  },
-  {
-    id: 'reaction',
-    label: 'Reactions',
-    icon: <ReactionGroupIcon />,
-  },
-];
-
-export function PaletteBehaviourTab({ pendingDraw, actions }: TabProps) {
-  return (
-    <PaletteGroupBrowser
-      root="Behaviour"
-      tiles={tilesInToolGroup('behaviour')}
-      groups={BEHAVIOUR_GROUPS}
-      actions={actions}
-      pendingDraw={pendingDraw}
-      searchInput={{
-        placeholder: 'Search behaviour',
-        ariaLabel: 'Search behaviour elements',
-        clearAriaLabel: 'Clear behaviour search',
-        clearDescription: 'Clear the behaviour element search query.',
-      }}
-      telemetry={{ openedType: 'BehaviourGroup', searchedType: 'BehaviourSearch' }}
-      emptyMessage={(q) => `No behaviour elements match \u201c${q}\u201d.`}
-    />
-  );
-}
-
-// The elements that collect what the ROOM thinks (spec/123 to spec/129):
-// estimate cards, temperature checks, idea boxes, agendas, decision records
-// and roll calls. Grouped by what the element DOES with the room rather than
-// by what it looks like: the ones that ask everybody a question and collect
-// the answers, and the ones that write down what the room decided.
-//
-// The comment panel stays ABOVE the categories rather than inside one. It is
-// the element people reach for outside a facilitated session entirely, and a
-// category of one would be a click in front of the tab's most-used tile.
-export const COLLABORATE_GROUPS: TileGroupDef[] = [
   {
     id: 'ask',
     label: 'Ask the room',
     icon: <AskGroupIcon />,
   },
   {
+    id: 'facilitate',
+    label: 'Run the room',
+    icon: <FacilitateGroupIcon />,
+  },
+  {
+    id: 'session',
+    label: 'Session',
+    icon: <SessionGroupIcon />,
+  },
+  {
     id: 'record',
     label: 'Keep a record',
     icon: <RecordGroupIcon />,
   },
+  {
+    id: 'reaction',
+    label: 'Reactions',
+    icon: <ReactionGroupIcon />,
+  },
+  { id: 'mode', label: 'Selection Mode', icon: <ModeGroupIcon /> },
+  { id: 'move', label: 'Get around', icon: <MoveGroupIcon /> },
 ];
 
-export function PaletteCollaborateTab({ pendingDraw, actions }: TabProps) {
-  const collab = tilesInSection('collaborate');
-  const loose = collab.filter((t) => !t.tileGroup);
+export function PaletteBehaviourTab({ pendingDraw, actions }: TabProps) {
+  const tiles = tilesInToolGroup('behaviour');
+  // The comment pin sits ABOVE the groups rather than inside one. It is the
+  // element people reach for outside a facilitated session entirely, and a
+  // group of one would be a click in front of the tab's most-used tile.
+  const loose = tiles.filter((t) => !t.tileGroup);
   return (
     <PaletteGroupBrowser
-      root="Collaborate"
-      tiles={collab}
-      groups={COLLABORATE_GROUPS}
+      root="Behaviours"
+      tiles={tiles}
+      groups={BEHAVIOUR_GROUPS}
       actions={actions}
       pendingDraw={pendingDraw}
       leadIn={
@@ -169,13 +145,13 @@ export function PaletteCollaborateTab({ pendingDraw, actions }: TabProps) {
         ) : undefined
       }
       searchInput={{
-        placeholder: 'Search collaborate',
-        ariaLabel: 'Search collaborate elements',
-        clearAriaLabel: 'Clear collaborate search',
-        clearDescription: 'Clear the collaborate element search query.',
+        placeholder: 'Search behaviours',
+        ariaLabel: 'Search behaviour elements',
+        clearAriaLabel: 'Clear behaviour search',
+        clearDescription: 'Clear the behaviour element search query.',
       }}
-      telemetry={{ openedType: 'CollabGroup', searchedType: 'CollabSearch' }}
-      emptyMessage={(q) => `No collaborate elements match \u201c${q}\u201d.`}
+      telemetry={{ openedType: 'BehaviourGroup', searchedType: 'BehaviourSearch' }}
+      emptyMessage={(q) => `No behaviours match \u201c${q}\u201d.`}
     />
   );
 }

@@ -971,7 +971,7 @@ export const articles: Article[] = [
     slug: 'collaborate',
     title: 'Collaborate elements',
     description:
-      'Comment panels, estimate cards, temperature checks, idea boxes, agendas, decisions and roll calls.',
+      'The Behaviours groups that collect what the room thinks: comment panels, estimates, temperature checks, idea boxes, agendas, decisions and roll calls.',
     keywords:
       'collaborate collaboration comment panel card pin pinned remark note thread reply discuss feedback annotate sticky question estimate estimation planning poker story points fibonacci tshirt t-shirt temperature check fist of five pulse mood vote idea box anonymous brainstorm brainwriting retro retrospective agenda run of show timebox segments decision record adr architecture decision roll call attendance register present room team workshop facilitate facilitation powers of two',
     category: 'Palette',
@@ -1030,11 +1030,11 @@ export const articles: Article[] = [
   },
   {
     slug: 'behaviour',
-    title: 'Behaviour Elements',
+    title: 'Behaviours',
     description:
-      'Mode buttons, portals, chairs, link cards, session buttons, reveal zones, pickers, and reaction pads.',
+      'Every element that comes alive with the room: estimates, temperature checks, idea boxes, Done checks, pickers, session buttons, agendas, decisions, roll calls, reactions, mode buttons and portals.',
     keywords:
-      'behaviour behavior interactive button portal session timer vote poll reveal hide cover picker random spinner control mode switch chair seat link card bookmark preview url reaction pad confetti celebrate sparkles hearts applause fireworks emoji burst done check finished ready waiting who progress everyone mark complete',
+      'behaviour behavior behaviours behaviors interactive button portal session timer vote poll reveal hide cover picker random spinner control mode switch chair seat link card bookmark preview url reaction pad confetti celebrate sparkles hearts applause fireworks emoji burst done check finished ready waiting who progress everyone mark complete collaborate collaboration estimate temperature idea box agenda decision roll call ask the room keep a record run the room facilitate facilitation runtime live',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Elements',

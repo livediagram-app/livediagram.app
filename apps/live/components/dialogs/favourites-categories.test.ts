@@ -27,10 +27,16 @@ describe('Edit Favourites category pills', () => {
 
   it('includes the categories the stale list was missing', () => {
     // Named explicitly so a regression that dropped them fails here rather
-    // than agreeing with a derivation that also broke.
-    for (const id of ['build', 'write', 'draw', 'media', 'stickers', 'collaborate']) {
+    // than agreeing with a derivation that also broke. 'collaborate' used to
+    // be on this list and is now part of 'behaviour' (spec/110).
+    for (const id of ['build', 'write', 'draw', 'media', 'stickers', 'behaviour']) {
       expect(pillIds).toContain(id);
     }
+  });
+
+  it('no longer offers the merged-away Collaborate category', () => {
+    // Its elements are Behaviours sub-groups now; a pill for it led nowhere.
+    expect(pillIds).not.toContain('collaborate');
   });
 
   it('no longer offers the deleted Tools category', () => {

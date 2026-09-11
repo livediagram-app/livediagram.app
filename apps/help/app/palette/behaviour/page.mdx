@@ -4,43 +4,47 @@ import { helpMetadata } from '@/lib/seo';
 import { BehaviourGroups } from '@/components/illustrations/palette-behaviour';
 
 export const metadata = helpMetadata({
-  title: 'Behaviour Elements',
+  title: 'Behaviours',
   description:
-    'The palette Behaviour category holds the elements that do something when somebody interacts with them: Selection Mode buttons, Portals, Chairs, Link cards, Session buttons, Reveal zones, Pickers, Reaction pads, and Done checks.',
+    'The palette Behaviours category holds every element that comes alive with the room: estimate cards, temperature checks, idea boxes, Done checks, Pickers, Session buttons, agendas, decision records, roll calls, Reaction pads, Selection Mode buttons, Portals and Chairs.',
   path: '/help/palette/behaviour/',
 });
 
 <ArticleLayout
-  title="Behaviour Elements"
-  description="Elements that do something when somebody interacts with them, so a board can carry its own controls."
+  title="Behaviours"
+  description="Elements that come alive with the room, so a board can run itself instead of waiting on whoever built it."
   categoryTitle="Palette"
   categorySlug="palette"
   subArticles={getSubArticles("behaviour")}
 >
 
-The **Behaviour** category (under **Dynamic** in the palette's category picker) holds the elements that _do_ something when somebody interacts with them. Everywhere else in the palette you are placing a picture; here you are placing a control.
+The **Behaviours** category (under **Dynamic** in the palette's category picker) holds every element whose content arrives at _runtime_. Everywhere else in the palette you are placing a picture; here you are placing something that does a job when somebody presses it, or collects an answer from everybody in the room.
 
 This page is the map. Each element has its own short article, so you can link somebody straight to the one they need.
 
 ## What the category contains
 
-The category grew past the point where a flat list reads as a list, so it browses by group the way Icons and Technology do: a grid of five category tiles that you click to open, with a breadcrumb back to the grid and a search box above that cuts across all five at once.
+The category browses by group the way Icons and Technology do: a grid of category tiles that you click to open, with a breadcrumb back to the grid and a search box above that cuts across all of them at once.
 
-<Figure caption="The Behaviour category browses as five group tiles, with one search box across all of them.">
+<Figure caption="Behaviours browses as group tiles, with one search box across all of them.">
   <BehaviourGroups />
 </Figure>
 
-Inside a group, each element is a row with its name and a one-line description of what it does, because a glyph cannot say what a Picker picks or where a Portal goes.
+Inside a group, each element is a row with its name and a one-line description of what it does, because a glyph cannot say what a Picker picks or where a Portal goes. The [comment panel](/help/palette/collaborate/comment-panels/) sits loose above the groups, since it is the one you reach for outside a facilitated session entirely.
 
-The five groups are:
+The groups, room-first:
 
-- **Selection Mode** — [Selection Mode buttons](/help/palette/behaviour/mode-buttons/), one per mode, that hand whoever presses them a different tool.
+- **Ask the room** — [estimate cards](/help/palette/collaborate/estimate-cards/), the [temperature check](/help/palette/collaborate/temperature-checks/) and the [idea box](/help/palette/collaborate/idea-boxes/).
 - **Run the room** — the [Reveal zone](/help/palette/behaviour/reveal-zones/), the [Done check](/help/palette/behaviour/done-checks/) and the [Picker](/help/palette/behaviour/pickers/).
-- **Get around** — the [Portal](/help/palette/tools/portals/), the [Chair](/help/palette/chairs/) and the [Link card](/help/canvas/links/link-cards/).
 - **Session** — [Session buttons](/help/palette/behaviour/session-buttons/) for the timer, the dot vote and the poll.
+- **Keep a record** — the [agenda](/help/palette/collaborate/agendas/), the [decision record](/help/palette/collaborate/decision-records/) and the [roll call](/help/palette/collaborate/roll-calls/).
 - **Reactions** — the five [Reaction pads](/help/palette/behaviour/reaction-pads/).
+- **Selection Mode** — [Selection Mode buttons](/help/palette/behaviour/mode-buttons/), one per mode, that hand whoever presses them a different tool.
+- **Get around** — the [Portal](/help/palette/tools/portals/), the [Chair](/help/palette/chairs/) and the [Link card](/help/canvas/links/link-cards/).
 
 They are grouped by what the element does with the room rather than by what it looks like, which is why the Portal sits beside the Chair and the Link card: all three take you somewhere, whether that is another tab, a seat, or the page the card points at.
+
+**Collaborate used to be a separate category**, holding the Ask the room and Keep a record sets. It is now these two groups. The split was real — "pressing this does something" against "the board is collecting an answer" — but it was no help to navigate by: you reach for both while running a session, and nothing told you why the Done check lived apart from the estimate card.
 
 ## Working with them
 

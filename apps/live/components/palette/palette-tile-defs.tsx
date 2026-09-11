@@ -55,13 +55,14 @@ export type PaletteTileSection =
   | 'build'
   | 'tools'
   | 'data'
-  // The collaboration family (spec/123 to spec/129): elements that record what
-  // the ROOM thinks rather than what one author drew. Its own category rather
-  // than a Behaviour sub-group, on spec/110's reasoning — Behaviour is
-  // "pressing this does something to your session", these are "the board is
-  // collecting an answer from everybody", and six rows under one heading is
-  // where a category earns its place in the picker.
-  | 'collaborate'
+  // 'collaborate' is GONE (spec/110). The collaboration family (spec/123 to
+  // spec/129) had its own category on the reasoning that Behaviour is
+  // "pressing this does something to your session" while these are "the board
+  // is collecting an answer from everybody". In the picker that line never
+  // held: both are elements whose content arrives at runtime, both are reached
+  // for while facilitating, and a user looking for the Done check found it in
+  // one and the Estimate card in the other with nothing to tell them which.
+  // They are now sub-groups of Behaviours — see BEHAVIOUR_GROUPS.
   | 'media'
   | 'components'
   | 'devices'
@@ -1129,7 +1130,8 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     id: 'collab:comment-pin',
     blurb: 'A comment thread as a card on the board',
     caption: 'Comment',
-    section: 'collaborate',
+    section: 'tools',
+    toolGroup: 'behaviour',
     label: 'Add comment panel',
     description:
       'A marker that carries a comment thread. Drop it on any spot and click it to talk about that spot, rather than attaching the remark to whichever shape happens to be nearest.',
@@ -1160,7 +1162,8 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     tileGroup: 'ask',
     blurb: '1, 2, 3, 5, 8, 13, 21',
     caption: 'Fibonacci',
-    section: 'collaborate',
+    section: 'tools',
+    toolGroup: 'behaviour',
     label: 'Add Fibonacci estimate card',
     description:
       'Planning poker on the canvas: everyone picks privately, then one Reveal shows every answer and the spread. Uses the classic story-point scale, where the gaps widen as the numbers grow so nobody argues over 6 versus 7.',
@@ -1173,7 +1176,8 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     tileGroup: 'ask',
     blurb: 'XS through XL',
     caption: 'T-shirt',
-    section: 'collaborate',
+    section: 'tools',
+    toolGroup: 'behaviour',
     label: 'Add T-shirt estimate card',
     description:
       'Planning poker on the canvas: everyone picks privately, then one Reveal shows every answer and the spread. Uses sizes rather than numbers, for a room that starts haggling the moment it sees a digit.',
@@ -1186,7 +1190,8 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     tileGroup: 'ask',
     blurb: '1, 2, 4, 8, 16',
     caption: 'Powers of two',
-    section: 'collaborate',
+    section: 'tools',
+    toolGroup: 'behaviour',
     label: 'Add Powers of two estimate card',
     description:
       'Planning poker on the canvas: everyone picks privately, then one Reveal shows every answer and the spread. Uses doubling steps, for sizing where each step up is meant to feel twice the work.',
@@ -1198,7 +1203,8 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     id: 'collab:temperature',
     tileGroup: 'ask',
     blurb: 'Fist of five: how does the room feel?',
-    section: 'collaborate',
+    section: 'tools',
+    toolGroup: 'behaviour',
     label: 'Add temperature check',
     caption: 'Temperature',
     description:
@@ -1211,7 +1217,8 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     id: 'collab:idea-box',
     tileGroup: 'ask',
     blurb: 'Anonymous ideas, held until you open it',
-    section: 'collaborate',
+    section: 'tools',
+    toolGroup: 'behaviour',
     label: 'Add idea box',
     caption: 'Idea box',
     description:
@@ -1224,7 +1231,8 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     id: 'collab:agenda',
     tileGroup: 'record',
     blurb: 'Segments with minutes that start the timer',
-    section: 'collaborate',
+    section: 'tools',
+    toolGroup: 'behaviour',
     label: 'Add agenda',
     caption: 'Agenda',
     description:
@@ -1237,7 +1245,8 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     id: 'collab:decision',
     tileGroup: 'record',
     blurb: 'What was decided, why, and whether it stands',
-    section: 'collaborate',
+    section: 'tools',
+    toolGroup: 'behaviour',
     label: 'Add decision record',
     caption: 'Decision record',
     description:
@@ -1250,7 +1259,8 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     id: 'collab:roll-call',
     tileGroup: 'record',
     blurb: 'Freezes who was in the room, right now',
-    section: 'collaborate',
+    section: 'tools',
+    toolGroup: 'behaviour',
     label: 'Add roll call',
     caption: 'Roll call',
     description:

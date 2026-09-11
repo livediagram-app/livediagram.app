@@ -13,7 +13,6 @@
 import {
   BehaviourTabIcon,
   BuildTabIcon,
-  CollaborateTabIcon,
   ComponentsTabIcon,
   DataTabIcon,
   DevicesTabIcon,
@@ -142,23 +141,21 @@ export const PALETTE_CATEGORIES: {
     icon: <DataTabIcon />,
   },
   {
+    // Behaviours (spec/110): everything whose content arrives at RUNTIME
+    // rather than being drawn by the author — the elements that do something
+    // when pressed (spec/103 to spec/107, spec/135) and the ones that collect
+    // what the room thinks (spec/123 to spec/129, spec/136).
+    //
+    // ONE category, not two. They were split on "pressing this does something
+    // to your session" versus "the board is collecting an answer from
+    // everybody" — a real distinction, and a useless one to navigate by. You
+    // reach for both while facilitating, and nothing told a user hunting for
+    // the Done check why it lived apart from the Estimate card.
     id: 'behaviour',
-    label: 'Behaviour',
+    label: 'Behaviours',
     group: 3,
     description:
-      'Elements that do something when somebody interacts with them: switch a mode, jump through a portal, open a link, run a timer or vote, uncover something hidden, mark work done, throw a reaction, take a seat, or pick at random.',
+      'Elements that come alive with the room: ask for an estimate or a temperature, collect ideas, check who is done, run a timer, vote or poll, keep an agenda or a decision, throw a reaction, switch a mode, or jump through a portal.',
     icon: <BehaviourTabIcon />,
-  },
-  {
-    // Collaborate (spec/123 to spec/129, plus the comment pin in
-    // spec/136): the elements that collect what the room thinks.
-    // Dynamic band, beside Behaviour — both hold elements whose
-    // content arrives at runtime rather than being drawn by the author.
-    id: 'collaborate',
-    label: 'Collaborate',
-    group: 3,
-    description:
-      'Elements that collect what the room thinks: comment pins, estimate cards, temperature checks, idea boxes, agendas, decision records, and roll calls.',
-    icon: <CollaborateTabIcon />,
   },
 ];
