@@ -38,15 +38,16 @@ export function isBehaviourShape(kind: ShapeKind): boolean {
 /**
  * Does this kind draw its OWN `…` menu, with quick settings in it?
  *
- * Three do, and they earned it: a Timer's length, a Vote's dots and a Poll's
+ * The ones that do earned it: a Timer's length, a Vote's dots and a Poll's
  * question are the settings you change mid-session, and a Done check's round
- * is reset from the same place. Everything else in the family gets the shared
- * settings `…` instead, which opens the element's context menu.
+ * and an Idea box's contents are reset from the same place. Everything else in
+ * the family gets the shared settings `…` instead, which opens the element's
+ * context menu.
  *
  * The distinction matters because the two must never both render — they sit in
  * the same corner of the same card, and two ellipses side by side is a bug you
  * can see from across the room.
  */
 export function drawsOwnElementMenu(kind: ShapeKind): boolean {
-  return kind === 'session-button' || kind === 'done-check';
+  return kind === 'session-button' || kind === 'done-check' || kind === 'idea-box';
 }

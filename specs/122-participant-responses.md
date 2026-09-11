@@ -109,6 +109,61 @@ cannot see who estimated what cannot discuss the outlier) and wrong for a
 brainstorm, which is why the idea box ([spec/125](125-idea-box.md)) does not use
 this field and has nowhere to put an author at all.
 
+## Each one looks like what it is
+
+Every Behaviours element rendered as the same rounded rectangle with a title
+and some controls, so a board of them read as one repeated component in
+thirteen sizes. The thing each of them IS — a clipboard, a ballot box, a ticket
+stub, a filed record — was carried entirely by the words on it.
+
+The **paper kit** (`components/canvas/paper-kit.tsx`) is the shared set of
+textures that fixes that. Its one rule: everything is built from
+`tint(textColor, alpha)`, so a card is drawn in ITS OWN colour and the tab
+theme still owns the palette (spec/29). A pink board stays a pink board. All
+the distinction comes from **form** — a folded corner, a punched margin, a torn
+edge, a rotated stamp — which survives any hue, any theme, and light or dark
+mode, none of which a per-kind colour would.
+
+| Element         | Object             | What draws it                                                  |
+| --------------- | ------------------ | -------------------------------------------------------------- |
+| Done check      | a ring-binder page | ruled, punched, wire loops through the holes                   |
+| Idea box        | a posting box      | lid with a lip, slot sunk into it, corrugated body, taped shut |
+| Estimate        | a hand of cards    | crosshatched backs face-down, a Shown stamp after the reveal   |
+| Temperature     | an instrument      | the graduated plate a needle is read against                   |
+| Agenda          | a folded programme | ruled, creased down the middle                                 |
+| Decision record | a filed record     | photocopy screen, turned-up corner                             |
+| Roll call       | a ticket stub      | perforated fold, torn bottom edge                              |
+| Comment panel   | a quoted remark    | the rail down the left edge                                    |
+| Picker          | a reel in a window | shaded at the lip, clear in the middle                         |
+| Timer           | a dial             | minute ticks along the edge you read                           |
+| Session button  | a tally sheet      | five-bar gate marks (not on a timer)                           |
+| Reveal zone     | a scratch panel    | close diagonal hatching                                        |
+| Reaction pad    | a floor pad        | concentric tread out from the middle                           |
+| Mode button     | a keycap           | lit top, shaded skirt, a drop below it                         |
+
+House rules for anything added to the kit: decorative, so `aria-hidden` and
+`pointer-events-none` without exception (these sit over cards whose controls
+must stay clickable); absolutely positioned, so a texture can never change the
+layout it decorates; built from `tint`, never a Tailwind colour class; and no
+animation — a board of thirteen moving textures is a board nobody can read.
+
+`CollabPanel` takes the textures as **two** slots, `backdrop` and `overlay`,
+because the layering is the effect: rules under the words read as a page they
+are written on, the same rules over them read as a cage. `inset` reserves the
+room a texture needs so a punched margin does not print through the title.
+
+Three lessons are worth keeping:
+
+- **A slot is only a slot if it is cut into something.** The idea box's mouth
+  began as a dark bar near the top edge and read as a mislaid progress track.
+  It needed the lid around it.
+- **Do not put two ways of holding the same paper on one card.** The Done check
+  had a clipboard's jaw across the top AND a punched margin down the side. The
+  jaw read as a stray pill; the rings agree with the holes.
+- **A texture drawn outside the card is not drawn at all.** `overflow-hidden`
+  clipped every pixel of the first `TapeStrip`, so the seal never once
+  appeared. Anything at an edge has to lie ACROSS it.
+
 ## The card scales to its box
 
 A Collaborate card lays out ONCE at its kind's default size and is then scaled

@@ -503,6 +503,7 @@ export function EditorCanvasHost() {
         clearResponses: isReadOnly ? undefined : collabElements.clearResponses,
         addIdea: isReadOnly ? undefined : collabElements.addIdea,
         revealIdeas: isReadOnly ? undefined : collabElements.revealIdeas,
+        clearIdeas: isReadOnly ? undefined : collabElements.clearIdeas,
         scatterIdeas: isReadOnly ? undefined : collabElements.scatterIdeas,
         pressAgendaItem: isReadOnly ? undefined : collabElements.pressAgendaItem,
         takeRoll: isReadOnly ? undefined : collabElements.takeRoll,

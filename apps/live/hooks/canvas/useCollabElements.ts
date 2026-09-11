@@ -133,6 +133,15 @@ export function useCollabElements({
     track('Element', 'Changed', 'Idea-box');
   };
 
+  // Empty the box for the next round. Un-reveals as well, exactly as
+  // clearResponses does: a box that kept its lid off would collect the first
+  // card of the next round in the open, and the whole point of the element is
+  // that nothing is visible until somebody decides it is.
+  const clearIdeas = (element: ShapeElement) => {
+    patchElement(element.id, () => ({ ideaCards: [], ideasRevealed: false }));
+    track('Element', 'Changed', 'Idea-box');
+  };
+
   // Turn an open box's cards into ordinary sticky notes beside it, which is
   // what a retro does next — they group, move, theme and dot-vote like
   // anything else. Created WITHOUT authorship, so the scatter doesn't undo the
@@ -201,6 +210,7 @@ export function useCollabElements({
     clearResponses,
     addIdea,
     revealIdeas,
+    clearIdeas,
     scatterIdeas,
     pressAgendaItem,
     takeRoll,

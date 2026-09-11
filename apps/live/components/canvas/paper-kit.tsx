@@ -543,3 +543,154 @@ export function FoldCrease({ textColor, at = '50%' }: { textColor: string; at?: 
     />
   );
 }
+
+/**
+ * Close diagonal hatching — the scratch panel over something not yet revealed.
+ *
+ * The Reveal zone's cover was a flat wash, which reads as "this element is
+ * disabled". Hatching reads as a surface deliberately laid OVER something, and
+ * that is the difference between a cover and a blank.
+ */
+export function Hatching({ textColor, pitch = 7 }: { textColor: string; pitch?: number }) {
+  return (
+    <span
+      aria-hidden
+      className="pointer-events-none absolute inset-0 rounded-[inherit]"
+      style={{
+        backgroundImage: `repeating-linear-gradient(-45deg, ${tint(
+          textColor,
+          0.14,
+        )} 0 1.5px, transparent 1.5px ${pitch}px)`,
+      }}
+    />
+  );
+}
+
+/**
+ * The moulded edge of a keycap: a lit top, a shaded skirt, and the drop that
+ * makes it stand off the board.
+ *
+ * Applied to a Selection Mode button, which is the one element here that IS a
+ * key — you press it and a tool comes out.
+ */
+export function keycapEdge(textColor: string): React.CSSProperties {
+  return {
+    boxShadow: [
+      `inset 0 1px 0 ${tint(textColor, 0.28)}`,
+      `inset 0 -2px 0 ${tint(textColor, 0.14)}`,
+      `inset 0 0 0 1px ${tint(textColor, 0.1)}`,
+      `0 2px 0 ${tint(textColor, 0.16)}`,
+    ].join(', '),
+  };
+}
+
+/**
+ * The tread of a floor pad: concentric rings out from the middle.
+ *
+ * A Reaction pad has two triggers — a click, and an Avatar-mode character
+ * walking onto it — so it has to look like a thing you can stand on. Rings
+ * from the centre are what a pressure pad looks like from above.
+ */
+export function PadTread({ textColor }: { textColor: string }) {
+  return (
+    <span
+      aria-hidden
+      className="pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit]"
+      style={{
+        backgroundImage: `repeating-radial-gradient(circle at 50% 42%, ${tint(
+          textColor,
+          0.07,
+        )} 0 1px, transparent 1px 11px)`,
+      }}
+    />
+  );
+}
+
+/**
+ * Five-bar gate tally marks — four uprights and the diagonal through them.
+ *
+ * The mark a person makes when counting a room by hand, which is exactly what
+ * a dot vote and a poll automate.
+ */
+export function TallyMarks({ textColor, groups = 2 }: { textColor: string; groups?: number }) {
+  return (
+    <span
+      aria-hidden
+      className="pointer-events-none absolute inset-x-0 flex justify-center gap-3"
+      style={{ bottom: 6, height: 14 }}
+    >
+      {Array.from({ length: groups }, (_, g) => (
+        <span key={g} className="relative" style={{ width: 22, height: 14 }}>
+          {[0, 1, 2, 3].map((i) => (
+            <span
+              key={i}
+              className="absolute top-0 w-px"
+              style={{ left: i * 5 + 1, height: 14, background: tint(textColor, 0.24) }}
+            />
+          ))}
+          <span
+            className="absolute"
+            style={{
+              left: -1,
+              top: 6,
+              width: 24,
+              height: 1.5,
+              background: tint(textColor, 0.24),
+              transform: 'rotate(-18deg)',
+            }}
+          />
+        </span>
+      ))}
+    </span>
+  );
+}
+
+/**
+ * A quote rail: the thick rounded bar down the left edge that has meant "this
+ * is somebody else talking" since email clients invented it.
+ *
+ * The Comment panel's alternative was a speech-bubble tail, which has to be
+ * drawn OUTSIDE the element and is clipped by the canvas element's own box. A
+ * rail says the same thing from inside the border.
+ */
+export function QuoteRail({ textColor }: { textColor: string }) {
+  return (
+    <span
+      aria-hidden
+      className="pointer-events-none absolute bottom-2 top-2 rounded-full"
+      style={{ left: 6, width: 3, background: tint(textColor, 0.22) }}
+    />
+  );
+}
+
+/**
+ * A ring of minute ticks around a dial, with the quarters called out.
+ *
+ * Only the top arc is drawn, because the element is a wide pill rather than a
+ * circle: ticks along the edge you read the digits against say "instrument",
+ * ticks all the way round a rectangle say "border".
+ */
+export function DialTicks({ textColor, ticks = 24 }: { textColor: string; ticks?: number }) {
+  return (
+    <span
+      aria-hidden
+      className="pointer-events-none absolute inset-x-0 top-0"
+      style={{ height: 8 }}
+    >
+      {Array.from({ length: ticks }, (_, i) => {
+        const quarter = i % 6 === 0;
+        return (
+          <span
+            key={i}
+            className="absolute top-0 w-px"
+            style={{
+              left: `${(i / (ticks - 1)) * 100}%`,
+              height: quarter ? 7 : 4,
+              background: tint(textColor, quarter ? 0.3 : 0.16),
+            }}
+          />
+        );
+      })}
+    </span>
+  );
+}

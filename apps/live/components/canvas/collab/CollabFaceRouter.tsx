@@ -43,6 +43,7 @@ export type CollabApi = {
   clearResponses?: (element: ShapeElement) => void;
   addIdea?: (element: ShapeElement, text: string) => void;
   revealIdeas?: (element: ShapeElement) => void;
+  clearIdeas?: (element: ShapeElement) => void;
   scatterIdeas?: (element: ShapeElement) => void;
   pressAgendaItem?: (element: ShapeElement, index: number) => void;
   takeRoll?: (element: ShapeElement) => void;
@@ -59,10 +60,10 @@ export function CollabFaceRouter({
   label: string;
   textColor: string;
   collab: CollabApi | undefined;
-  // The Done check draws its own `…` (its round controls), so the shared
-  // settings button is suppressed for it and this is how its menu still
-  // reaches the element's full settings (spec/09). Every other card here
-  // takes the shared button and never sees this.
+  // The Done check and the Idea box draw their own `…` (their round
+  // controls), so the shared settings button is suppressed for them and this
+  // is how their menus still reach the element's full settings (spec/09).
+  // Every other card here takes the shared button and never sees this.
   onOpenSettings?: () => void;
 }) {
   if (!isCollabPanelShape(element.shape)) return null;
@@ -127,7 +128,9 @@ export function CollabFaceRouter({
         surface={surface}
         onAddIdea={api?.addIdea ? (text) => api.addIdea!(element, text) : undefined}
         onReveal={api?.revealIdeas ? () => api.revealIdeas!(element) : undefined}
+        onClear={api?.clearIdeas ? () => api.clearIdeas!(element) : undefined}
         onScatter={api?.scatterIdeas ? () => api.scatterIdeas!(element) : undefined}
+        onOpenSettings={onOpenSettings}
       />
     );
   }

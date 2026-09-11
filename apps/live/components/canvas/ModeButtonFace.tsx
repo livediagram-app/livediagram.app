@@ -17,6 +17,7 @@
 //     a sticky :hover after a tap reads as a stuck button.
 
 import type { SelectionMode } from '@livediagram/diagram';
+import { keycapEdge } from '@/components/canvas/paper-kit';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import {
   AvatarModeIcon,
@@ -128,10 +129,19 @@ export function ModeButtonFace({
   // fill (a plain surface by default) is the button, and a gradient wash over
   // it only muddied whatever colour the author picked. What sells "raised" is
   // the hairline highlight along the top edge, which works on any fill.
+  // A KEYCAP (spec/122). This is the one element on the board that IS a key —
+  // you press it and a tool comes out — so it is moulded like one: a lit top
+  // face, a shaded skirt, and a drop that stands it off the board. The old
+  // flat white inset highlight said "button" in the abstract; this says which
+  // button.
   const layout =
-    'flex h-full w-full flex-col items-center justify-center gap-2 rounded-[inherit] py-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]';
+    'flex h-full w-full flex-col items-center justify-center gap-2 rounded-[inherit] py-1';
   if (!onPress) {
-    return <div className={`pointer-events-none ${layout}`}>{inner}</div>;
+    return (
+      <div className={`pointer-events-none ${layout}`} style={keycapEdge(textColor)}>
+        {inner}
+      </div>
+    );
   }
   // Already in this mode: the button becomes the way back out — pressing it
   // returns you to the tool you came from — so it stays live and says "Leave"
@@ -142,7 +152,11 @@ export function ModeButtonFace({
           a click anywhere — on the label you were reading, or on padding while
           positioning the element — switched everyone's mode. Everything around
           the chip stays ordinary canvas you can click to select and drag. */}
-      <span className={`pointer-events-none absolute inset-0 ${layout}`} aria-hidden>
+      <span
+        className={`pointer-events-none absolute inset-0 ${layout}`}
+        style={keycapEdge(textColor)}
+        aria-hidden
+      >
         {inner}
       </span>
       <button

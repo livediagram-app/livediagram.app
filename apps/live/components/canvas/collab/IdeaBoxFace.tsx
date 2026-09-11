@@ -9,6 +9,11 @@ import { useState } from 'react';
 import type { ShapeElement } from '@livediagram/diagram';
 import { CollabButton, CollabEmpty, CollabPanel, tint } from './collab-chrome';
 import { BoxLid, Corrugation, TapeStrip } from '@/components/canvas/paper-kit';
+import {
+  ElementEllipsisMenu,
+  ElementMenuItem,
+  ElementMenuSettingsRow,
+} from '@/components/canvas/ElementEllipsisMenu';
 
 export function IdeaBoxFace({
   element,
@@ -17,6 +22,8 @@ export function IdeaBoxFace({
   surface,
   onAddIdea,
   onReveal,
+  onClear,
+  onOpenSettings,
   onScatter,
 }: {
   element: ShapeElement;
@@ -26,6 +33,12 @@ export function IdeaBoxFace({
   surface: string;
   onAddIdea?: (text: string) => void;
   onReveal?: () => void;
+  // Empty the box for the next round. It lives in the `…` rather than beside
+  // Open the box: opening is the act the element exists for, and a Clear
+  // sitting next to it is a mis-tap that throws away everything the room wrote.
+  onClear?: () => void;
+  /** The way out of the round controls to the element's full menu (spec/09). */
+  onOpenSettings?: () => void;
   // Turns the open box's cards into ordinary sticky notes (spec/125) so they
   // can be grouped, moved and dot-voted like anything else on the board.
   onScatter?: () => void;
@@ -47,6 +60,34 @@ export function IdeaBoxFace({
       title={label.trim() || 'Ideas'}
       textColor={textColor}
       aside={cards.length ? `${cards.length} ${cards.length === 1 ? 'idea' : 'ideas'}` : undefined}
+      headerExtra={
+        onClear || onOpenSettings ? (
+          <ElementEllipsisMenu label="Idea box options" color={textColor}>
+            {(close) => (
+              <>
+                {onClear ? (
+                  <ElementMenuItem
+                    onPress={() => {
+                      onClear();
+                      close();
+                    }}
+                  >
+                    {cards.length ? `Empty the box (${cards.length})` : 'Empty the box'}
+                  </ElementMenuItem>
+                ) : null}
+                {onOpenSettings ? (
+                  <ElementMenuSettingsRow
+                    onOpen={() => {
+                      onOpenSettings();
+                      close();
+                    }}
+                  />
+                ) : null}
+              </>
+            )}
+          </ElementEllipsisMenu>
+        ) : undefined
+      }
       // A POSTING BOX (spec/122). The slot is the whole element in one shape:
       // things go in, nothing comes back out until somebody opens it.
       //

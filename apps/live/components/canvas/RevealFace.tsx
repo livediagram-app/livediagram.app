@@ -20,6 +20,7 @@
 import { Tooltip } from '@/components/primitives/Tooltip';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { useCoarsePointer } from '@/hooks/ui/useCoarsePointer';
+import { Hatching } from '@/components/canvas/paper-kit';
 
 function EyeIcon({ off = false }: { off?: boolean }) {
   return (
@@ -110,17 +111,24 @@ export function RevealFace({
         // being hidden show straight through — which defeats the entire
         // element: a cover you can read through is not a cover. (The hover
         // state was already opaque, so the two disagreed.)
-        className="pointer-events-auto flex h-full w-full cursor-pointer flex-col items-center justify-center gap-1 rounded-[inherit] border-2 border-dashed bg-slate-100 transition hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700"
+        className="pointer-events-auto relative flex h-full w-full cursor-pointer flex-col items-center justify-center gap-1 rounded-[inherit] border-2 border-dashed bg-slate-100 transition hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700"
         style={{ borderColor: strokeColor }}
       >
-        <span style={{ color: textColor }} className="opacity-70">
+        {/* A SCRATCH PANEL (spec/122). A flat wash read as "this element is
+            disabled"; hatching reads as a surface laid deliberately OVER
+            something, which is the difference between a cover and a blank. */}
+        <Hatching textColor={textColor} />
+        <span style={{ color: textColor }} className="relative opacity-70">
           <EyeIcon />
         </span>
-        <span className="px-3 text-center text-[13px] font-semibold" style={{ color: textColor }}>
+        <span
+          className="relative px-3 text-center text-[13px] font-semibold"
+          style={{ color: textColor }}
+        >
           {label.trim() || 'Hidden'}
         </span>
         <span
-          className="text-[10px] font-medium uppercase tracking-[0.08em] opacity-60"
+          className="relative text-[10px] font-medium uppercase tracking-[0.08em] opacity-60"
           style={{ color: textColor }}
         >
           {gesture} to reveal

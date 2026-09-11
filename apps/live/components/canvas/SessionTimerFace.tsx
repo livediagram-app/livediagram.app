@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { DialTicks } from '@/components/canvas/paper-kit';
 
 import {
   formatTimerClock,
@@ -128,6 +129,9 @@ export function SessionTimerFace({
           )}
         </ElementEllipsisMenu>
       ) : null}
+      {/* A DIAL (spec/122). Ticks along the edge you read the digits against
+          say "instrument"; the drain behind them is the hand. */}
+      <DialTicks textColor="currentColor" />
       {timer ? (
         <TimerPillBody
           timer={timer}

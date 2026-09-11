@@ -4,6 +4,7 @@ import { REACTION_EMOJI, REACTION_HINT, REACTION_LABEL, type Reaction } from '@l
 
 import { Tooltip } from '@/components/primitives/Tooltip';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
+import { PadTread } from '@/components/canvas/paper-kit';
 
 // The face of a Reaction Pad (spec/135): a big pressable glyph over the
 // element's label.
@@ -85,6 +86,11 @@ export function ReactionPadFace({
         aria-label={`Set off ${REACTION_LABEL[reaction]}`}
         className="pointer-events-auto relative h-full w-full cursor-pointer rounded-[inherit] transition active:scale-[0.97] @container"
       >
+        {/* A FLOOR PAD (spec/122). It has two triggers — a click, and a
+            character walking onto it in Avatar mode — so it has to look like
+            a thing you can stand on. Rings out from the middle are what a
+            pressure pad looks like from above. */}
+        <PadTread textColor={textColor} />
         {face}
       </button>
     </Tooltip>
