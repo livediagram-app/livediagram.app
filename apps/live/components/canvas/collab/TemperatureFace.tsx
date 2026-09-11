@@ -13,6 +13,7 @@ import {
   type ShapeElement,
 } from '@livediagram/diagram';
 import { CollabChip, CollabEmpty, CollabPanel, tint } from './collab-chrome';
+import { GaugePlate } from '@/components/canvas/paper-kit';
 
 // Cool to warm across the five bars. Fixed hues rather than the theme's
 // palette: a temperature check that recoloured with the tab theme would read
@@ -45,6 +46,11 @@ export function TemperatureFace({
       title={label.trim() || 'How are we feeling?'}
       textColor={textColor}
       aside={stats.count ? `${stats.count} answered` : undefined}
+      // AN INSTRUMENT (spec/122). A fist-of-five is a READING, not a tally —
+      // "how does the room feel" has a needle answer — so the card is printed
+      // with the graduated plate you read a needle against, under the bars.
+      inset={{ bottom: 14 }}
+      backdrop={<GaugePlate textColor={textColor} />}
     >
       <div className="flex gap-1.5">
         {TEMPERATURE_VALUES.map((value) => (

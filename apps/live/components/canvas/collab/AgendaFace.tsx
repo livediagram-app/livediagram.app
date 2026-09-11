@@ -12,6 +12,7 @@ import {
 } from '@livediagram/diagram';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { CollabEmpty, CollabPanel, tint } from './collab-chrome';
+import { FoldCrease, RuledLines } from '@/components/canvas/paper-kit';
 
 // "1h 5m" / "45m". The number in the header is what tells you the plan doesn't
 // fit before you start.
@@ -121,6 +122,15 @@ export function AgendaFace({
       title={label.trim() || 'Agenda'}
       textColor={textColor}
       aside={items.length ? formatMinutes(agendaTotalMinutes(items)) : undefined}
+      // A FOLDED PROGRAMME (spec/122): the running order handed out at the
+      // door. Ruled behind the segments, with the crease down the middle where
+      // it was folded in half to fit in a pocket.
+      backdrop={
+        <>
+          <RuledLines textColor={textColor} gap={20} from={44} />
+          <FoldCrease textColor={textColor} />
+        </>
+      }
     >
       {items.length === 0 ? (
         <CollabEmpty textColor={textColor}>

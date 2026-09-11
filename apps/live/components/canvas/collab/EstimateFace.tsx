@@ -6,6 +6,7 @@ import { estimateValues, responseOf, responseStats, type ShapeElement } from '@l
 import { participantKey, type Participant } from '@/lib/identity';
 import { ParticipantAvatar } from '@/components/primitives/ParticipantAvatar';
 import { CollabButton, CollabChip, CollabEmpty, CollabPanel } from './collab-chrome';
+import { CardBack, Stamp } from '@/components/canvas/paper-kit';
 
 // The spread is the reason the ritual exists, so the card computes the one
 // derived line rather than leaving the room to scan for it (spec/123).
@@ -62,6 +63,20 @@ export function EstimateFace({
       title={label.trim() || 'Estimate'}
       textColor={textColor}
       aside={responses.length ? `${responses.length}/${inRoom} answered` : undefined}
+      // A HAND OF CARDS (spec/122). Planning poker is played face-down and
+      // turned over at once, so the card is printed with a crosshatched BACK
+      // while the answers are hidden and loses it the moment they are shown —
+      // the texture is the state, not decoration on top of it.
+      backdrop={revealed ? null : <CardBack textColor={textColor} from={56} />}
+      overlay={
+        revealed ? (
+          <span className="pointer-events-none absolute bottom-3 right-3">
+            <Stamp textColor={textColor} rotate={-9}>
+              Shown
+            </Stamp>
+          </span>
+        ) : null
+      }
       footer={
         <>
           <CollabButton

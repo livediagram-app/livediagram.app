@@ -8,12 +8,13 @@
 import { useState } from 'react';
 import type { ShapeElement } from '@livediagram/diagram';
 import { CollabButton, CollabEmpty, CollabPanel, tint } from './collab-chrome';
-import { Halftone, PostingSlot, TapeStrip } from '@/components/canvas/paper-kit';
+import { BoxLid, Corrugation, TapeStrip } from '@/components/canvas/paper-kit';
 
 export function IdeaBoxFace({
   element,
   label,
   textColor,
+  surface,
   onAddIdea,
   onReveal,
   onScatter,
@@ -21,6 +22,8 @@ export function IdeaBoxFace({
   element: ShapeElement;
   label: string;
   textColor: string;
+  /** The card's own fill, for the posted card and the slot's depth. */
+  surface: string;
   onAddIdea?: (text: string) => void;
   onReveal?: () => void;
   // Turns the open box's cards into ordinary sticky notes (spec/125) so they
@@ -44,16 +47,24 @@ export function IdeaBoxFace({
       title={label.trim() || 'Ideas'}
       textColor={textColor}
       aside={cards.length ? `${cards.length} ${cards.length === 1 ? 'idea' : 'ideas'}` : undefined}
-      // A POSTING BOX (spec/122). The slot across the lid is the whole idea of
-      // the element in one shape: things go in, nothing comes back out until
-      // somebody opens it. Taped shut at the corner, and screened like cheap
-      // cardboard print so it reads as a box rather than a pane of glass.
-      inset={{ top: 12 }}
-      backdrop={<Halftone textColor={textColor} />}
+      // A POSTING BOX (spec/122). The slot is the whole element in one shape:
+      // things go in, nothing comes back out until somebody opens it.
+      //
+      // It began as a dark bar near the top edge, which read as a progress
+      // track somebody had misplaced — a slot is only a slot if it is cut into
+      // something. So the lid is its own band with a lip where it overhangs
+      // the body, the mouth is sunk into it with the shadow on the inside, and
+      // the body below is corrugated like the carton it is cut from. With
+      // anything in the box a card sits caught half-way through the slot,
+      // which says "not empty" from across the room in a way a count cannot.
+      inset={{ top: 24 }}
+      backdrop={<Corrugation textColor={textColor} from={30} />}
       overlay={
         <>
-          <PostingSlot textColor={textColor} />
-          <TapeStrip textColor={textColor} corner="top-right" />
+          <BoxLid textColor={textColor} surface={surface} posted={cards.length > 0} />
+          {/* Taped shut while it is still closed. Opening the box is the act
+              the element exists for, so the seal going is worth seeing. */}
+          {open ? null : <TapeStrip textColor={textColor} />}
         </>
       }
       footer={

@@ -124,6 +124,7 @@ export function CollabFaceRouter({
         element={element}
         label={label}
         textColor={textColor}
+        surface={surface}
         onAddIdea={api?.addIdea ? (text) => api.addIdea!(element, text) : undefined}
         onReveal={api?.revealIdeas ? () => api.revealIdeas!(element) : undefined}
         onScatter={api?.scatterIdeas ? () => api.scatterIdeas!(element) : undefined}

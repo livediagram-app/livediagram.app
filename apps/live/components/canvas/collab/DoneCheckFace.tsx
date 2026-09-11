@@ -3,7 +3,7 @@
 import { allDone, doneSplit, isDone, type ShapeElement } from '@livediagram/diagram';
 
 import { participantKey, type Participant } from '@/lib/identity';
-import { BoardClip, PunchedMargin, RuledLines } from '@/components/canvas/paper-kit';
+import { BinderRings, RuledLines } from '@/components/canvas/paper-kit';
 import { ParticipantAvatar } from '@/components/primitives/ParticipantAvatar';
 import { CollabButton, CollabEmpty, CollabPanel } from './collab-chrome';
 import {
@@ -108,18 +108,17 @@ export function DoneCheckFace({
       title={label.trim() || 'Everyone done?'}
       textColor={textColor}
       aside={keys.length ? `${done.length}/${keys.length}` : undefined}
-      // A CLIPBOARD (spec/122). The card is the sheet: punched down the left,
-      // feint-ruled behind the rosters, and held on by the clip overhanging
-      // the top edge. A done check is the one thing on the board somebody
-      // walks around with, and a clipboard is what they walk around with it on.
-      inset={{ left: 12, top: 4 }}
-      backdrop={
-        <>
-          <RuledLines textColor={textColor} gap={17} from={42} />
-          <PunchedMargin textColor={textColor} surface={surface} />
-        </>
-      }
-      overlay={<BoardClip textColor={textColor} />}
+      // A PAGE OUT OF A RING BINDER (spec/122): feint-ruled behind the
+      // rosters, punched down the left, with the wire loops threaded through
+      // the holes. A done check is the running sheet somebody carries around a
+      // session, and this is what that sheet is kept in.
+      //
+      // It had a clipboard's jaw across the top first. That was two different
+      // ways of holding the same paper on one card — the sheet was already
+      // punched — and the jaw read as a stray pill rather than as hardware.
+      inset={{ left: 16 }}
+      backdrop={<RuledLines textColor={textColor} gap={17} from={42} />}
+      overlay={<BinderRings textColor={textColor} surface={surface} />}
       // The flash is the card's whole payoff: the facilitator does not have to
       // watch it, the board tells them. Driven by a class rather than inline
       // styles so the reduced-motion override in globals.css can reach it.

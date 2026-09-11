@@ -23,6 +23,7 @@ import { Tooltip } from '@/components/primitives/Tooltip';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { spinFrameDelays, spinReel, type PickerCandidate } from '@/lib/picker';
 import { ParticipantAvatar } from '@/components/primitives/ParticipantAvatar';
+import { ReelWindow } from '@/components/canvas/paper-kit';
 
 export function PickerFace({
   label,
@@ -125,7 +126,12 @@ export function PickerFace({
   const shownText = shown?.label ?? (empty ? 'Nothing to pick from' : '—');
 
   return (
-    <div className="flex h-full w-full flex-col items-center justify-center gap-1 px-3 py-2">
+    <div className="relative flex h-full w-full flex-col items-center justify-center gap-1 px-3 py-2">
+      {/* A REEL BEHIND A WINDOW (spec/122). The names do not sit on a card,
+          they pass through an opening: shaded at the lip, clear in the middle,
+          so a spin reads as something turning behind the element rather than
+          text being swapped out. */}
+      <ReelWindow textColor={textColor} />
       {label.trim() ? (
         <span
           className="max-w-full truncate text-[10px] font-medium uppercase tracking-[0.08em] opacity-60"
