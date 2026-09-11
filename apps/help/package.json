@@ -18,8 +18,8 @@
     "@livediagram/ui": "workspace:*",
     "@mdx-js/loader": "^3.1.0",
     "@mdx-js/react": "^3.1.0",
-    "@next/mdx": "^16.3.0",
-    "next": "^16.3.0",
+    "@next/mdx": "^16.3.4",
+    "next": "^16.3.4",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "remark-gfm": "^4.0.1"
@@ -31,13 +31,13 @@
     "@livediagram/vitest-config": "workspace:*",
     "@tailwindcss/postcss": "^4.3.3",
     "@types/mdx": "^2.0.13",
-    "@types/node": "^22.10.2",
+    "@types/node": "^22.19.19",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.5",
     "@vitest/coverage-v8": "^4.1.11",
     "eslint": "^10.9.1",
     "tailwindcss": "^4.3.3",
-    "typescript": "^5.7.2",
+    "typescript": "^5.9.3",
     "vitest": "^4.1.11"
   }
 }

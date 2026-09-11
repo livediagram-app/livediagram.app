@@ -20,8 +20,8 @@
     "@livediagram/templates": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.30.0",
     "@resvg/resvg-wasm": "^2.6.2",
-    "hono": "^4.13.0",
-    "zod": "^4.4.3"
+    "hono": "^4.13.7",
+    "zod": "^4.5.4"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20260902.1",
@@ -29,7 +29,7 @@
     "@livediagram/vitest-config": "workspace:*",
     "@vitest/coverage-v8": "^4.1.11",
     "eslint": "^10.9.1",
-    "typescript": "^5.7.2",
+    "typescript": "^5.9.3",
     "vitest": "^4.1.11",
     "wrangler": "^4.128.0"
   }

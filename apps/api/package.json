@@ -20,17 +20,17 @@
     "@livediagram/api-schema": "workspace:*",
     "@livediagram/diagram": "workspace:*",
     "@livediagram/icons": "workspace:*",
-    "jose": "^6.2.4"
+    "jose": "^6.2.12"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20260902.1",
     "@livediagram/eslint-config": "workspace:*",
     "@livediagram/vitest-config": "workspace:*",
-    "@types/node": "^22.10.2",
+    "@types/node": "^22.19.19",
     "@vitest/coverage-v8": "^4.1.11",
     "eslint": "^10.9.1",
     "ts-json-schema-generator": "^2.9.0",
-    "typescript": "^5.7.2",
+    "typescript": "^5.9.3",
     "vitest": "^4.1.11",
     "wrangler": "^4.128.0"
   }
