@@ -29,7 +29,9 @@ Putting the tools ON the board makes the board self-facilitating. A retro templa
 
 ## Configuring it
 
-Right-click → **Session**: pick the tool (Timer / Vote / Poll), then its one setting — minutes for a timer, dots for a vote, the question and answers for a poll.
+Right-click → **Session**: the button's one setting — minutes for a timer, dots for a vote, the question and answers for a poll.
+
+**It does not choose the tool.** The section used to lead with a Timer / Vote / Poll tile grid, which asked a second time a question the palette already asks once: it offers a tile per tool (see "One tile per tool in the palette" below), so the button lands as the thing you picked. Wanting a different one is wanting a different element — drag it out — and the grid cost every session button three tiles of menu height to re-open a settled decision. `session.tool` is still a field, still validated, still what everything reads; there is simply no control that rewrites it.
 
 ### A poll button carries its ANSWER STYLE, not just its answers
 
@@ -88,6 +90,12 @@ you want a countdown or a vote before you reach for the palette, so a single
 button you place and then reconfigure is two steps for something already
 decided. Flattened out beside the reactions they would also have buried the
 six single-purpose Behaviour elements, which is why both groups collapse.
+
+**This is the only place the tool is chosen**, which is the other half of the
+same argument: if the palette asks once and the answer is a whole element,
+then the element's own menu asking again is the two-step version returning by
+the back door. A session button you want to be a different tool is a different
+element; drag the one you want.
 
 They remain ONE shape kind with a `session` config, not three kinds. The
 element, its face and its menu are identical; only the config differs, and
@@ -150,8 +158,8 @@ nothing for the element itself to become.
 ## Settings on the element itself
 
 Each session element carries a `…` menu on its own face, so the setting you
-most want to change is one press away rather than three levels into the
-right-click menu (Session).
+most want to change is one press away rather than a right-click into the
+Session category.
 
 | Tool      | Menu                                                                |
 | --------- | ------------------------------------------------------------------- |

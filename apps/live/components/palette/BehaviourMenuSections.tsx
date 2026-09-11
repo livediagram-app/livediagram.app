@@ -27,31 +27,16 @@ import {
   PICKER_MAX_OPTIONS,
   pollStyleNeedsOptions,
   SESSION_POLL_MAX_OPTIONS,
-  SESSION_TOOLS,
   TIMER_MINUTES_RANGE,
   VOTE_DOTS_RANGE,
   type PickerSource,
   type SessionButtonConfig,
-  type SessionTool,
   type ShapeElement,
 } from '@livediagram/diagram';
 import { MenuAccordionSection, MenuTile, MenuTileGrid } from '@/components/primitives/PortalMenu';
 import { ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
 import { PollAnswerStyleRow } from '@/components/palette/PollAnswerStyleRow';
-import {
-  PickerIcon,
-  PollIcon,
-  RevealIcon,
-  TimerIcon,
-  VoteIcon,
-} from '@/components/palette/palette-icons';
-
-const TOOL_ICON: Record<SessionTool, React.ReactNode> = {
-  timer: <TimerIcon />,
-  vote: <VoteIcon />,
-  poll: <PollIcon />,
-};
-const TOOL_LABEL: Record<SessionTool, string> = { timer: 'Timer', vote: 'Vote', poll: 'Poll' };
+import { PickerIcon, RevealIcon } from '@/components/palette/palette-icons';
 
 const fieldClass =
   'mt-1 w-full rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] text-slate-700 outline-none placeholder:text-slate-400 focus:border-brand-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200';
@@ -167,26 +152,17 @@ export function SessionMenuSection({
   const config = element.session;
   const tool = config?.tool ?? DEFAULT_SESSION_TOOL;
   const pollStyle = isPollStyle(config?.style) ? config.style : DEFAULT_SESSION_POLL_STYLE;
-  // Each tool's setting is kept when you switch away and back, so trying Poll
-  // and returning to Timer doesn't cost you the question you typed.
   const patch = (next: Partial<SessionButtonConfig>) => onSetSession({ ...config, tool, ...next });
 
+  // This section is the button's SETTINGS, not a tool picker. It used to lead
+  // with a Timer / Vote / Poll tile grid, which was a second way to choose
+  // something the palette already asks you once: it offers a tile per tool
+  // (spec/105), so the button lands as the thing you picked. Wanting a
+  // different one is wanting a different element — drag it out — and the grid
+  // cost every session button three tiles of height to re-ask a settled
+  // question.
   return (
     <MenuAccordionSection title="Session" icon={<ToolsMenuGlyph />} {...sectionProps}>
-      <p className="px-3 pt-1 text-[10px] font-medium text-slate-500 dark:text-slate-400">
-        Starts for everyone
-      </p>
-      <MenuTileGrid cols={3}>
-        {SESSION_TOOLS.map((option) => (
-          <MenuTile
-            key={option}
-            icon={TOOL_ICON[option]}
-            label={TOOL_LABEL[option]}
-            active={tool === option}
-            onClick={() => patch({ tool: option })}
-          />
-        ))}
-      </MenuTileGrid>
       {tool === 'timer' ? (
         <NumberRow
           label="Length"
