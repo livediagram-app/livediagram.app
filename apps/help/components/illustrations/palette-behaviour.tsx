@@ -112,24 +112,23 @@ function AvatarGlyph() {
 
 // --- Scenes ----------------------------------------------------------------
 
-/** The Behaviours tab of the palette: a search box over the seven group tiles
+/** The Behaviours tab of the palette: a search box over the six group tiles
  *  you click into. Ordered room-first, matching BEHAVIOUR_GROUPS. */
 export function BehaviourGroups() {
   const px = 52;
   const py = 12;
   const groups: { label: string; icon: ReactNode }[] = [
     { label: 'Ask the room', icon: <PollGlyph /> },
-    { label: 'Run the room', icon: <SelectGlyph /> },
-    { label: 'Session', icon: <ClockGlyph /> },
+    { label: 'Run the room', icon: <ClockGlyph /> },
     { label: 'Keep a record', icon: <DotsGlyph /> },
     { label: 'Reactions', icon: <DotsGlyph /> },
     { label: 'Selection Mode', icon: <SelectGlyph /> },
     { label: 'Get around', icon: <AvatarGlyph /> },
   ];
   return (
-    <Scene w={420} h={294} bg="plain">
-      <Panel x={px} y={py} w={316} h={266} title="BEHAVIOURS">
-        {/* Search across all seven groups at once */}
+    <Scene w={420} h={228} bg="plain">
+      <Panel x={px} y={py} w={316} h={200} title="BEHAVIOURS">
+        {/* Search across all six groups at once */}
         <rect
           x={px + 12}
           y={py + 30}

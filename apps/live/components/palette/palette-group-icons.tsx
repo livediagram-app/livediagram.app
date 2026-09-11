@@ -45,26 +45,6 @@ export function WebGroupIcon() {
   );
 }
 
-/** Behaviour → Session: a clock face, the shared thread through timer / vote / poll. */
-export function SessionGroupIcon() {
-  return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <circle cx="12" cy="13" r="8" />
-      <path d="M12 9v4l2.6 1.6M9.4 3.2h5.2" />
-    </svg>
-  );
-}
-
 /** Behaviour → Reactions: a burst, which is what every one of them throws. */
 export function ReactionGroupIcon() {
   return (

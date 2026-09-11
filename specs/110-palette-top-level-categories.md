@@ -160,7 +160,7 @@ which two groups they are. A rename that broke seven live links to say
 ## Behaviours: one category, fully grouped
 
 **Collaborate was merged into Behaviour**, and the survivor is named
-**Behaviours** (32 tiles, 1 loose + 7 groups). The two were split on a real
+**Behaviours** (32 tiles, 1 loose + 6 groups). The two were split on a real
 distinction — Behaviour is "pressing this does something to your session",
 Collaborate is "the board is collecting an answer from everybody" — and it
 turned out to be a line to memorise rather than one to navigate by. You reach
@@ -172,24 +172,32 @@ arguably a Collaborate element by this spec's own rule, and said so.
 What is left is one honest test for the category: **does this element's content
 arrive at runtime rather than being drawn by the author?**
 
-| Group              | Holds                                            |
-| ------------------ | ------------------------------------------------ |
-| **Ask the room**   | the three estimate scales, Temperature, Idea box |
-| **Run the room**   | Reveal, Done, Picker                             |
-| **Session**        | Timer, Dot vote, Poll                            |
-| **Keep a record**  | Agenda, Decision record, Roll call               |
-| **Reactions**      | the five pads                                    |
-| **Selection Mode** | one button per mode (8)                          |
-| **Get around**     | Portal, Chair, Link card                         |
+| Group              | Holds                                                            |
+| ------------------ | ---------------------------------------------------------------- |
+| **Ask the room**   | the three estimate scales, Temperature, Idea box, Dot vote, Poll |
+| **Run the room**   | Reveal, Done, Picker, Timer                                      |
+| **Keep a record**  | Agenda, Decision record, Roll call                               |
+| **Reactions**      | the five pads                                                    |
+| **Selection Mode** | one button per mode (8)                                          |
+| **Get around**     | Portal, Chair, Link card                                         |
+
+**There is no Session group.** It held the Timer, the Dot vote and the Poll —
+a group named after the machinery that runs them rather than the job they do.
+A poll and a dot vote ARE asking the room, so they belong with the estimate
+card and the temperature check, which is where somebody wanting to put a
+question to everybody actually looks; a timer is facilitation, so it belongs
+with the Reveal, the Done check and the Picker. With all three rehoused the
+group had nothing left in it, and an empty group is not a group.
+
+They remain one shape kind with a `session` config ([spec/105](105-session-button.md)) —
+this is a palette grouping, not a model change.
 
 The **Comment panel** stays loose above the groups — it is the one people reach
 for outside a facilitated session entirely, and a group of one would be a click
 in front of the category's most-used tile.
 
-Order is **room-first**: the four groups a facilitator opens mid-session come
-before the three you set up once and forget. Seven groups is more than the five
-Behaviour had, and still a grid you read at a glance rather than a list you
-scroll.
+Order is **room-first**: the three groups a facilitator opens mid-session come
+before the three you set up once and forget.
 
 Data-side, the merge is a `section` change: the Collaborate tiles moved to
 `section: 'tools'` with `toolGroup: 'behaviour'`, so `tilesForCategory` and the

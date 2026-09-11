@@ -928,7 +928,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     // at the moment of choosing — you know whether you want a countdown or a
     // vote before you reach for the palette.
     id: 'tools:session-timer',
-    tileGroup: 'session',
+    tileGroup: 'facilitate',
     blurb: 'A countdown everyone can see',
     caption: 'Timer',
     section: 'tools',
@@ -942,7 +942,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   {
     id: 'tools:session-vote',
-    tileGroup: 'session',
+    tileGroup: 'ask',
     blurb: 'Dot voting, a few dots each',
     caption: 'Dot vote',
     section: 'tools',
@@ -956,7 +956,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   {
     id: 'tools:session-poll',
-    tileGroup: 'session',
+    tileGroup: 'ask',
     blurb: 'A question you write in advance',
     caption: 'Poll',
     section: 'tools',

@@ -13,7 +13,6 @@ import {
   MoveGroupIcon,
   ReactionGroupIcon,
   RecordGroupIcon,
-  SessionGroupIcon,
   WebGroupIcon,
 } from './palette-group-icons';
 import { tilesInSection, tilesInToolGroup } from './palette-tile-defs';
@@ -80,20 +79,28 @@ export function PaletteDataTab({ pendingDraw, actions }: TabProps) {
   );
 }
 
-// The elements that DO something when somebody interacts with them (spec/103
-// to spec/107): Selection Mode buttons, Portals, Session buttons, Reveal
-// zones, Pickers, Reaction pads.
+// Every element whose content arrives at RUNTIME (spec/110): the ones that do
+// something when pressed and the ones that collect what the room thinks.
 //
 // Browsed by category rather than stacked as accordions (spec/09
-// "Sub-categories"): five collapsed headers meant you saw a table of contents
-// where the palette otherwise shows you pictures, and nothing in the tab was
-// visible until you opened one. Same navigation as Icons and Technology, from
-// the same component — see PaletteGroupBrowser.
-// Ordered room-first: the four groups a facilitator opens mid-session come
-// before the two you set up once and forget. Collaborate used to be a separate
+// "Sub-categories"): a column of collapsed headers meant you saw a table of
+// contents where the palette otherwise shows you pictures, and nothing in the
+// tab was visible until you opened one. Same navigation as Icons and
+// Technology, from the same component — see PaletteGroupBrowser.
+//
+// Ordered room-first: the groups a facilitator opens mid-session come before
+// the ones you set up once and forget. Collaborate used to be a separate
 // category (Ask the room / Keep a record); merging it in is spec/110's
 // reconciliation, which spec/137 called ahead of time when it filed the Done
 // check under Behaviour and said so.
+//
+// There is no **Session** group. It held the Timer, the Dot vote and the Poll
+// — a group named after the machinery rather than the job. A poll and a dot
+// vote ARE asking the room, so they sit with the estimate card and the
+// temperature check, which is where somebody looking to put a question to
+// everybody actually looks. A timer is facilitation, so it sits with the
+// Reveal, the Done check and the Picker. With all three rehoused the group had
+// nothing left in it.
 export const BEHAVIOUR_GROUPS: TileGroupDef[] = [
   {
     id: 'ask',
@@ -104,11 +111,6 @@ export const BEHAVIOUR_GROUPS: TileGroupDef[] = [
     id: 'facilitate',
     label: 'Run the room',
     icon: <FacilitateGroupIcon />,
-  },
-  {
-    id: 'session',
-    label: 'Session',
-    icon: <SessionGroupIcon />,
   },
   {
     id: 'record',
