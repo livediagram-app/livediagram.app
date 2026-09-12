@@ -16,6 +16,7 @@ import { useCanvasPanAndMarquee } from '@/hooks/canvas/useCanvasPanAndMarquee';
 import { useQuickRing } from '@/hooks/canvas/useQuickRing';
 import { useZoomControls } from '@/hooks/canvas/useZoomControls';
 import { usePaletteDrop } from '@/hooks/canvas/usePaletteDrop';
+import { isDarkCanvas } from '@/lib/dark-canvas';
 import { useLongPress } from '@/hooks/ui/useLongPress';
 import { getTheme } from '@/lib/themes';
 import { CanvasSelectionToolbars } from '@/components/canvas/CanvasSelectionToolbars';
@@ -512,6 +513,10 @@ export function Canvas(props: CanvasProps) {
       onDragOver={paletteDrop.onDragOver}
       onDrop={paletteDrop.onDrop}
       onPointerDownCapture={surface.onPointerDownCapture}
+      // A dark backdrop deepens the sticky paper-peel (spec/09): the shadow
+      // ink is tuned for light paper and vanishes on a dark wall. Flagged
+      // here so the peel's CSS can respond without knowing about themes.
+      data-dark-canvas={isDarkCanvas(tabBackgroundColor) ? '' : undefined}
       onContextMenuCapture={surface.onContextMenuCapture}
       onContextMenu={surface.onContextMenu}
       onPointerDown={surface.onPointerDown}

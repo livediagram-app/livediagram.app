@@ -211,6 +211,10 @@ type, kept current every session. Each should stay true on its own.
   dropdowns are hidden, because a chooser you never need is a distraction.
 - Removing chrome is safe only when another path survives: hidden tool
   pickers still leave keyboard shortcuts and the command palette.
+- Paper shadows are backdrop-relative: ink tuned on light paper vanishes
+  on a dark wall, so a dark canvas needs its own deeper peel.
+- Display label and inline editor must share ONE typography rule, or
+  double-clicking to type shifts the text.
 - On a lifted dark canvas the dot grid must go DARKER than the backdrop:
   a lighter dot washes out, a recessed one reads.
 - Alignment help belongs BEFORE the drop: guide lines during the palette

@@ -1828,6 +1828,16 @@
   filter: blur(2px);
   background: linear-gradient(#0f172a00 10%, #0f172a52 77% 100%);
 }
+/* On a DARK canvas the peel's ink has to go deeper: the slate above is
+   tuned against light paper, and on a dark wall it all but disappears —
+   the note stops lifting. Same construction (gradient in the paint, one
+   blur, no mask), stronger ink and a slightly longer throw. The canvas
+   surface flags itself (see isDarkCanvas). */
+[data-dark-canvas] .lvd-sticky-peel::before {
+  inset: 0 -4px -7px;
+  background: linear-gradient(#00000000 10%, #000000a8 77% 100%);
+}
+
 .lvd-sticky-peel::after {
   content: '';
   position: absolute;
