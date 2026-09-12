@@ -1911,6 +1911,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     deleteMultiSelected,
     narrowMultiSelection,
     duplicateSelected,
+    stackSelectedFront,
+    stackSelectedBack,
     spawnConnectSelected,
     ungroupSelected,
   } = useElementSelectionActions({
@@ -2584,6 +2586,9 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     duplicateDiagram,
     duplicateMultiSelected,
     duplicateSelected,
+    // Intra-layer z-order for the selection popover (spec/74).
+    stackSelectedFront,
+    stackSelectedBack,
     duplicateTab,
     effectiveTemplatePickerMode,
     templateGridOpen,

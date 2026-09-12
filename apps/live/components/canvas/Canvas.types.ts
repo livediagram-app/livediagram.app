@@ -727,6 +727,10 @@ export type CanvasProps = {
   // Duplicate the selected element. Surfaced as a one-click button in
   // the selection toolbar (SelectionPopover); previously context-menu only.
   onDuplicateSelected: () => void;
+  // Intra-LAYER z-order from the selection popover (spec/74): stack the
+  // selection within its own band, never between layers.
+  onBringSelectedToFront: () => void;
+  onSendSelectedToBack: () => void;
   onCanvasDoubleClick: (x: number, y: number) => void;
   // Lazy per-tab load (spec/13). While the active tab's content is being
   // fetched ('loading') or after that fetch failed ('error'), Canvas

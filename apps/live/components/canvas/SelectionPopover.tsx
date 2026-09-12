@@ -3,11 +3,13 @@ import { Tooltip } from '@/components/primitives/Tooltip';
 import { useEdgeAwarePlacement } from '@/hooks/canvas/useEdgeAwarePlacement';
 import { FloatingTitle } from '@/components/chrome/FloatingTitle';
 import {
+  BringToFrontIcon,
   CommentIcon,
   DuplicateIcon,
   EllipsisIcon,
   GroupIcon,
   LockIcon,
+  SendToBackIcon,
   TextIcon,
   TrashIcon,
   UngroupIcon,
@@ -37,6 +39,11 @@ type SelectionPopoverProps = {
   // live only in the right-click context menu). Omitted in read-only /
   // view-role mode.
   onDuplicate?: () => void;
+  // Intra-LAYER z-order (spec/74 gained no z-nudge until now): stack this
+  // element in front of / behind its band-mates WITHOUT moving it between
+  // layers, which is what the element menu's Bring to Front does.
+  onBringToFront?: () => void;
+  onSendToBack?: () => void;
   onGroup?: () => void;
   onUngroup?: () => void;
   // Open the comment thread. The toolbar shows the Comment button
@@ -77,6 +84,8 @@ export function SelectionPopover({
   onEditText,
   hasText = true,
   onDuplicate,
+  onBringToFront,
+  onSendToBack,
   onGroup,
   onUngroup,
   onOpenComments,
@@ -149,6 +158,26 @@ export function SelectionPopover({
             onClick={onDuplicate}
           >
             <DuplicateIcon />
+          </PopoverButton>
+          <Divider />
+        </>
+      ) : null}
+
+      {onBringToFront && onSendToBack ? (
+        <>
+          <PopoverButton
+            label="Bring to front"
+            description="Stack this in front of everything else on its layer."
+            onClick={onBringToFront}
+          >
+            <BringToFrontIcon />
+          </PopoverButton>
+          <PopoverButton
+            label="Send to back"
+            description="Stack this behind everything else on its layer."
+            onClick={onSendToBack}
+          >
+            <SendToBackIcon />
           </PopoverButton>
           <Divider />
         </>

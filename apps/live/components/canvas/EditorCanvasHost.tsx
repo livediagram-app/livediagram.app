@@ -181,6 +181,8 @@ export function EditorCanvasHost() {
     duplicateDiagram,
     duplicateMultiSelected,
     duplicateSelected,
+    stackSelectedFront,
+    stackSelectedBack,
     editCursorAtEnd,
     editingId,
     effectiveTemplatePickerMode,
@@ -910,6 +912,8 @@ export function EditorCanvasHost() {
       onToggleLockSelected={toggleLockSelected}
       onDeleteSelected={deleteSelected}
       onDuplicateSelected={duplicateSelected}
+      onBringSelectedToFront={stackSelectedFront}
+      onSendSelectedToBack={stackSelectedBack}
       onCanvasDoubleClick={handleCanvasDoubleClick}
       tabLoadState={tabLoadState}
       onRetryTabLoad={retryActiveTabLoad}

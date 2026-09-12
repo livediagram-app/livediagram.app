@@ -152,3 +152,46 @@ export function TrashIcon() {
     </svg>
   );
 }
+
+// Intra-layer z-order: a filled card lifted clear of a stacked one behind /
+// in front of it, so the pair reads as "this one goes on top" and "this one
+// goes underneath" without needing the label.
+export function BringToFrontIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      {/* The other card first (so it paints underneath), then the filled
+          selection ON TOP and raised — front reads as both over and up. */}
+      <rect x="9" y="9" width="11" height="11" rx="1.5" strokeDasharray="2.5 2.5" />
+      <rect x="4" y="4" width="11" height="11" rx="1.5" fill="currentColor" fillOpacity="0.2" />
+    </svg>
+  );
+}
+
+export function SendToBackIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      {/* The filled selection first (so it paints underneath) and dropped
+          low — back reads as both behind and down. */}
+      <rect x="9" y="9" width="11" height="11" rx="1.5" fill="currentColor" fillOpacity="0.2" />
+      <rect x="4" y="4" width="11" height="11" rx="1.5" strokeDasharray="2.5 2.5" />
+    </svg>
+  );
+}

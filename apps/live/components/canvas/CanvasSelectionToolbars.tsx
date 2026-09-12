@@ -106,6 +106,11 @@ export function CanvasSelectionToolbars({
             }
             hasText={selected ? elementHasText(selected) : false}
             onDuplicate={readOnly ? undefined : selected ? onDuplicateSelected : undefined}
+            // Intra-layer z-order (spec/74): stack within the element's own
+            // band. The element menu's Bring to Front moves LAYERS; these
+            // are the missing nudge for two things on the same one.
+            onBringToFront={readOnly || !selected ? undefined : props.onBringSelectedToFront}
+            onSendToBack={readOnly || !selected ? undefined : props.onSendSelectedToBack}
             // "Group with another" is intentionally absent from the
             // single-element toolbar: grouping needs a multi-selection,
             // so the action lives only on the marquee MultiSelectionToolbar.
