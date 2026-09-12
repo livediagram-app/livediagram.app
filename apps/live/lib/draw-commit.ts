@@ -1,6 +1,7 @@
 import {
   defaultSessionConfig,
   eventStormingNoteSize,
+  eventStormingTilt,
   eventStormingStageLayerId,
   isEventStormingTab,
   isFixedSizeShape,
@@ -59,7 +60,7 @@ function eventStormingBoardStickyExtras(): Partial<StickyElement> {
     textSize: 'scale',
     textAlignX: 'center',
     textAlignY: 'middle',
-    rotation: Math.round((Math.random() * 2 - 1) * 11) / 10,
+    rotation: eventStormingTilt(),
   };
 }
 

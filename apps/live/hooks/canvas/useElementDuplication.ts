@@ -7,6 +7,7 @@
 
 import {
   duplicateGroupedElements,
+  freshCopyFields,
   isBoxed,
   type ArrowElement,
   type BoxedElement,
@@ -62,6 +63,8 @@ export function useElementDuplication(deps: {
         y: s.y + offset,
         // Drop group membership — duplicates are independent.
         groupId: undefined,
+        // Whatever a copy regenerates rather than inherits (spec/139 tilt).
+        ...freshCopyFields(s),
       };
     });
     const remapEndpoint = (e: ArrowElement['from']): ArrowElement['from'] => {
@@ -125,6 +128,8 @@ export function useElementDuplication(deps: {
         y: source.y + offset,
         // Drop group membership: the duplicate is independent.
         groupId: undefined,
+        // Whatever a copy regenerates rather than inherits (spec/139 tilt).
+        ...freshCopyFields(source),
       };
       commit((els) => [...els, copy]);
       trackDuplicated([copy]);

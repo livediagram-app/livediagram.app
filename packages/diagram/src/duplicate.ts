@@ -6,12 +6,27 @@
 // unchanged.
 
 import {
+  eventStormingTilt,
   isBoxed,
   type ArrowElement,
   type BoxedElement,
   type Element,
   type ElementId,
 } from './index';
+
+// What a COPY regenerates rather than inherits. Today: an event-storming
+// note's hand-placement (spec/139) — a duplicate is a new piece of paper, so
+// carrying the source's exact angle made it read as a photocopy, the one
+// thing a real wall never shows. Scoped to the fixed-size sticky (the ES
+// stamp) so a deliberately-rotated element anywhere else keeps its angle.
+//
+// EVERY copy path must spread this: the grouped duplication below, and the
+// editor's hand-rolled single / multi duplicate paths. It exists precisely
+// because "the one place copies happen" turned out to be three places.
+export function freshCopyFields(el: Element): { rotation?: number } {
+  if (el.type === 'sticky' && el.fixedSize) return { rotation: eventStormingTilt() };
+  return {};
+}
 
 // Duplicate every element whose id is in `ids`:
 // - Boxed elements get fresh ids and a position offset of (dx, dy).
@@ -40,7 +55,13 @@ export function duplicateGroupedElements(
     if (!ids.has(el.id) || !isBoxed(el)) continue;
     const newId = crypto.randomUUID();
     idMap.set(el.id, newId);
-    newBoxed.push({ ...el, id: newId, x: el.x + dx, y: el.y + dy });
+    newBoxed.push({
+      ...el,
+      id: newId,
+      x: el.x + dx,
+      y: el.y + dy,
+      ...freshCopyFields(el),
+    });
   }
 
   // Remap each distinct source groupId to a fresh one so copied groups

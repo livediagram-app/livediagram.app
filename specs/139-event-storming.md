@@ -212,6 +212,10 @@ type, kept current every session. Each should stay true on its own.
   dropdowns are hidden, because a chooser you never need is a distraction.
 - Removing chrome is safe only when another path survives: hidden tool
   pickers still leave keyboard shortcuts and the command palette.
+- A copy is a new piece of paper: fresh id AND fresh tilt, or duplicates
+  read as photocopies.
+- "The one place copies happen" was three places: per-copy rules belong
+  in a shared helper every path spreads.
 - Board identity must not hinge on data the user can edit: ANY stage
   layer means event storming, because deleting one silently stripped the
   palette, the view bar and note routing.

@@ -724,3 +724,44 @@ describe('createShape (mode button, spec/103)', () => {
     expect(portal.aspectLocked).toBe(true);
   });
 });
+
+// A copied workshop note (spec/139) is a new piece of paper: fresh id AND a
+// fresh hand-placement. Every duplication path in the editor — Ctrl+D,
+// shift-drag duplicate, copy/paste — funnels through this one function, so
+// the rule lives here and can't be missed by one of them.
+describe('duplicateGroupedElements — event-storming notes', () => {
+  const esNote = {
+    id: 'n1',
+    type: 'sticky',
+    x: 0,
+    y: 0,
+    width: 200,
+    height: 200,
+    fixedSize: true,
+    rotation: 0.7,
+  } as unknown as Element;
+
+  it('re-rolls the tilt for a workshop note rather than photocopying it', () => {
+    const angles = new Set<number>();
+    for (let i = 0; i < 30; i++) {
+      const { newElements } = duplicateGroupedElements([esNote], new Set(['n1']), 20, 20);
+      const copy = newElements[0] as { rotation?: number; id: string };
+      expect(copy.id).not.toBe('n1');
+      expect(Math.abs(copy.rotation!)).toBeLessThanOrEqual(1.1);
+      angles.add(copy.rotation!);
+    }
+    // Not a constant, and not simply the source's angle every time.
+    expect(angles.size).toBeGreaterThan(1);
+  });
+
+  it('leaves a deliberately-rotated ordinary element exactly as it was', () => {
+    const tilted = {
+      ...esNote,
+      id: 'p1',
+      fixedSize: undefined,
+      rotation: 12,
+    } as unknown as Element;
+    const { newElements } = duplicateGroupedElements([tilted], new Set(['p1']), 5, 5);
+    expect((newElements[0] as { rotation?: number }).rotation).toBe(12);
+  });
+});

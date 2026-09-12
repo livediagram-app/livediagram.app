@@ -184,6 +184,18 @@ export function eventStormingNoteSize(kind: EventStormingNoteKind): {
   return ES_NOTE_SIZE_PX[eventStormingNote(kind).size];
 }
 
+// A workshop note's hand-placement (spec/139). Calibrated by eye: ±1.1°
+// reads hand-placed, ±2.5° reads messy. One decimal keeps the stored JSON
+// tidy. Lives here rather than in the editor because every surface that
+// mints a note needs the same feel — dropping one, and COPYING one: a
+// duplicate is a new piece of paper, so it gets its own angle rather than
+// photocopying the source's.
+export const ES_MAX_TILT_DEG = 1.1;
+
+export function eventStormingTilt(): number {
+  return Math.round((Math.random() * 2 - 1) * ES_MAX_TILT_DEG * 10) / 10;
+}
+
 export function eventStormingStageLayerId(kind: EventStormingNoteKind): string {
   const stage = eventStormingNote(kind).stage;
   return EVENT_STORMING_STAGES.find((s) => s.stage === stage)!.layerId;

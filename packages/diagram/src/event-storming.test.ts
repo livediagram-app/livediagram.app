@@ -4,6 +4,8 @@ import { isLayerVisible, type Layer } from './layers';
 import {
   applyEventStormingStage,
   eventStormingNoteSize,
+  eventStormingTilt,
+  ES_MAX_TILT_DEG,
   ES_BIG_PICTURE_LAYER_ID,
   ES_DESIGN_LAYER_ID,
   ES_PROCESS_LAYER_ID,
@@ -180,5 +182,25 @@ describe('event-storming views', () => {
       ES_DESIGN_LAYER_ID,
     ]);
     for (const s of EVENT_STORMING_STAGES) expect(s.label.length).toBeGreaterThan(0);
+  });
+});
+
+// A copied workshop note is a NEW piece of paper: it gets its own id and its
+// own hand-placement (spec/139). Keeping the source's exact tilt made a
+// duplicate read as a photocopy — two notes at identical angles, which is
+// the one thing a real wall never shows.
+describe('event-storming tilt', () => {
+  it('stays inside the calibrated band', () => {
+    for (let i = 0; i < 50; i++) {
+      const t = eventStormingTilt();
+      expect(Math.abs(t)).toBeLessThanOrEqual(ES_MAX_TILT_DEG);
+      // One decimal — a tidy number in the stored JSON.
+      expect(Math.round(t * 10) / 10).toBe(t);
+    }
+  });
+
+  it('varies (it is a fresh placement, not a constant)', () => {
+    const seen = new Set(Array.from({ length: 40 }, () => eventStormingTilt()));
+    expect(seen.size).toBeGreaterThan(1);
   });
 });
