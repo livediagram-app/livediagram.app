@@ -726,6 +726,9 @@ export type CanvasProps = {
   onDeleteSelected: () => void;
   // Duplicate the selected element. Surfaced as a one-click button in
   // the selection toolbar (SelectionPopover); previously context-menu only.
+  // True while an element context menu is open, so the selection popover
+  // can stand down (one gesture, one answer).
+  elementMenuOpen?: boolean;
   onDuplicateSelected: () => void;
   // Intra-LAYER z-order from the selection popover (spec/74): stack the
   // selection within its own band, never between layers.

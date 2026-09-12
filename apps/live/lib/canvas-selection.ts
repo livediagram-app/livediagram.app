@@ -68,6 +68,12 @@ export function deriveCanvasSelection(input: {
   // every control that doesn't serve "add a note, type, drag" is a
   // distraction — the quick-connect pluses stand down.
   esBoard?: boolean;
+  // An element context menu is open. One question, one answer: a left click
+  // asks "what is this" (popover), a right click "what can I do with it"
+  // (menu). Both at once rings the element with two toolbars repeating each
+  // other's verbs, so the menu — the deliberate, more specific gesture —
+  // owns the moment and the popover (with its pluses) stands down.
+  elementMenuOpen?: boolean;
 }): CanvasSelection {
   const {
     elements,
@@ -80,6 +86,7 @@ export function deriveCanvasSelection(input: {
     tabLocked,
     readOnly,
     esBoard,
+    elementMenuOpen,
   } = input;
 
   const memberIds = selectedId
@@ -112,6 +119,7 @@ export function deriveCanvasSelection(input: {
   const selectedLocked = selected ? selected.locked === true : false;
   const showPopover = !!(
     selected &&
+    !elementMenuOpen &&
     editingId !== selected.id &&
     !isPaintMode &&
     !isGroupMode &&
@@ -120,6 +128,7 @@ export function deriveCanvasSelection(input: {
   );
   const showPlus = !!(
     selected &&
+    !elementMenuOpen &&
     selectedIsBoxed &&
     // Never on an event-storming board (spec/139).
     !esBoard &&

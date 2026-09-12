@@ -228,6 +228,8 @@ type, kept current every session. Each should stay true on its own.
   dropdowns are hidden, because a chooser you never need is a distraction.
 - Removing chrome is safe only when another path survives: hidden tool
   pickers still leave keyboard shortcuts and the command palette.
+- One gesture, one answer: the selection popover and the context menu
+  never share an element — the right-click menu wins while open.
 - Where the grammar is fixed, the menu should offer VERBS not styles: a
   control that can only break the notation is worse than no control.
 - Notation kinds belong ON the element, not inferred from colour: a hex

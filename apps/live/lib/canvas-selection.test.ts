@@ -279,3 +279,32 @@ describe('deriveCanvasSelection — quick-connect on an event-storming board', (
     expect(s.showPlus).toBe(true);
   });
 });
+
+// One question, one answer: a left click asks "what is this?" (the selection
+// popover) and a right click asks "what can I do with it?" (the context
+// menu). Showing both at once puts two toolbars around one element and
+// duplicates half the verbs, so the menu — the deliberate, more specific
+// gesture — wins while it is open.
+describe('deriveCanvasSelection — popover yields to an open context menu', () => {
+  const box = {
+    id: 'a',
+    type: 'shape',
+    shape: 'square',
+    x: 0,
+    y: 0,
+    width: 100,
+    height: 60,
+  } as unknown as Element;
+
+  it('hides the popover (and its pluses) while an element menu is open', () => {
+    const s = derive({ elements: [box], selectedId: 'a', elementMenuOpen: true });
+    expect(s.showPopover).toBe(false);
+    expect(s.showPlus).toBe(false);
+  });
+
+  it('brings them back once the menu closes', () => {
+    const s = derive({ elements: [box], selectedId: 'a', elementMenuOpen: false });
+    expect(s.showPopover).toBe(true);
+    expect(s.showPlus).toBe(true);
+  });
+});

@@ -180,6 +180,7 @@ export function EditorCanvasHost() {
     dropPaletteItem,
     duplicateDiagram,
     duplicateMultiSelected,
+    contextMenu,
     duplicateSelected,
     stackSelectedFront,
     stackSelectedBack,
@@ -911,6 +912,9 @@ export function EditorCanvasHost() {
       onStartPencil={beginFreehand}
       onToggleLockSelected={toggleLockSelected}
       onDeleteSelected={deleteSelected}
+      // One gesture, one answer: while the element menu is open the
+      // selection popover stands down (see deriveCanvasSelection).
+      elementMenuOpen={contextMenu?.mode === 'element'}
       onDuplicateSelected={duplicateSelected}
       onBringSelectedToFront={stackSelectedFront}
       onSendSelectedToBack={stackSelectedBack}

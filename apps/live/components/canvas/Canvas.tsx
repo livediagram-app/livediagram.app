@@ -218,6 +218,7 @@ export function Canvas(props: CanvasProps) {
         tabLocked,
         readOnly,
         esBoard: isEventStormingTab(tabLayers),
+        elementMenuOpen: props.elementMenuOpen === true,
       }),
     [
       elements,
@@ -230,6 +231,7 @@ export function Canvas(props: CanvasProps) {
       tabLocked,
       readOnly,
       tabLayers,
+      props.elementMenuOpen,
     ],
   );
   const {
