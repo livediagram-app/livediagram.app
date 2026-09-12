@@ -47,7 +47,6 @@ export type ThemeId =
   | 'plum'
   | 'abyss'
   | 'espresso'
-  | 'dusk'
   // Multi-colour ("rainbow") themes — see spec/29. Each carries a
   // `palette` so branches of the hierarchy get distinct hues.
   | 'rainbow'

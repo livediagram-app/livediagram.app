@@ -377,7 +377,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         art: <ThemesArt />,
         href: '/help/canvas/themes/changing-theme/',
         group: 'Templates & themes',
-        title: 'Twenty-eight preset themes',
+        title: 'Twenty-seven preset themes',
         description:
           'Basic, Forest, Ocean, Sunset, Rose, Midnight, Mono and a dozen more — plus multi-colour Rainbow, Pastel, Tropical, Autumn, and Jewel themes that tint each branch a different hue. One click recolours the canvas, every shape, and every arrow.',
       },

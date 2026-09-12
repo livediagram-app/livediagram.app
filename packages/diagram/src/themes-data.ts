@@ -204,20 +204,6 @@ export const THEMES: ThemeDefinition[] = [
     extra: true,
   },
   {
-    id: 'dusk',
-    label: 'Dusk',
-    // Blue-violet dark theme: a softer, warmer near-black than Charcoal's
-    // neutral grey and lighter than Midnight's navy — the twilight tone
-    // between them.
-    backgroundColor: '#272738',
-    backgroundPattern: 'grid',
-    patternColor: '#36364d',
-    elementFill: '#36364d',
-    elementStroke: '#a5b4fc',
-    elementText: '#e8e8f4',
-    extra: true,
-  },
-  {
     id: 'plum',
     label: 'Plum',
     // Deep violet dark theme — the purple counterpart to Midnight's
