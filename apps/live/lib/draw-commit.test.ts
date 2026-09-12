@@ -162,6 +162,23 @@ describe('buildDrawnBoxed', () => {
     });
   });
 
+  it('stamps the notation kind on the element (it is domain data, not a colour)', () => {
+    const esTab = tab({ layers: eventStormingLayers() });
+    const cmd = buildDrawnBoxed(
+      { type: 'sticky', fill: '#93c5fd', esKind: 'command' },
+      0,
+      0,
+      3,
+      3,
+      null,
+      esTab,
+    );
+    expect((cmd as { esKind?: string }).esKind).toBe('command');
+    // A plain sticky claims no kind.
+    const plain = buildDrawnBoxed({ type: 'sticky' }, 0, 0, 3, 3, null, esTab);
+    expect((plain as { esKind?: string }).esKind).toBeUndefined();
+  });
+
   it('sizes event-storming notes like the stationery set (wide policy, small actor)', () => {
     const esTab = tab({ layers: eventStormingLayers() });
     const policy = buildDrawnBoxed(

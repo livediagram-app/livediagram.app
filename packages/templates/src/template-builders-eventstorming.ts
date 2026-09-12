@@ -45,6 +45,7 @@ export function buildEventStorming(cx: number, cy: number): Element[] {
       ...createSticky(x0 + i * (stickyW + gap), y0),
       label,
       fillColor: DOMAIN_EVENT_FILL,
+      esKind: 'domain-event',
       // Alternate a gentle tilt so the notes read as hand-placed.
       rotation: i % 2 === 0 ? -1.1 : 1.1,
       // Workshop stationery is one size for life, and its text auto-fits

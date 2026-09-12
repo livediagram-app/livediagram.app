@@ -280,7 +280,15 @@ export function buildDrawnBoxed(
     // small actor), on any board — while the fixed-size + tilt applies
     // only ON an ES board.
     ...(esBoardSticky ? eventStormingBoardStickyExtras() : {}),
-    ...(intent.type === 'sticky' && intent.esKind ? eventStormingNoteSize(intent.esKind) : {}),
+    ...(intent.type === 'sticky' && intent.esKind
+      ? {
+          // The notation kind is DOMAIN DATA, not a colour coincidence
+          // (spec/139): it names the selection and is what any later
+          // notation-aware feature reads.
+          esKind: intent.esKind,
+          ...eventStormingNoteSize(intent.esKind),
+        }
+      : {}),
     // Stage routing (spec/139): on an event-storming board the note files
     // onto its workshop stage's layer — a Command dropped while browsing Big
     // picture still lands under Process. Only when the target layer exists,

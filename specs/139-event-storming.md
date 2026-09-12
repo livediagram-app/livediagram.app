@@ -71,6 +71,11 @@ semantic colour:
   the board-ness of the active tab); everywhere else Favourites stays
   the landing view. Help article: `palette/event-storming` (registered,
   with card art).
+- **The kind is stored.** Every note carries `esKind` on the element: the
+  colour says it visually, but the kind is domain data — it names the
+  selection ("Selected Domain Event" rather than "Selected Sticky") and is
+  what any later notation-aware feature reads instead of matching hexes.
+  Notes authored before the stamp resolve through their canonical fill.
 - **Stage routing:** each note kind carries its workshop `stage` in the
   catalogue (events / actors / hotspots → Big picture; commands /
   policies / read models / external systems → Process; aggregates →
@@ -212,6 +217,8 @@ type, kept current every session. Each should stay true on its own.
   dropdowns are hidden, because a chooser you never need is a distraction.
 - Removing chrome is safe only when another path survives: hidden tool
   pickers still leave keyboard shortcuts and the command palette.
+- Notation kinds belong ON the element, not inferred from colour: a hex
+  match is a coincidence waiting to happen.
 - A copy is a new piece of paper: fresh id AND fresh tilt, or duplicates
   read as photocopies.
 - "The one place copies happen" was three places: per-copy rules belong

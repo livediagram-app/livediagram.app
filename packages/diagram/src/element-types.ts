@@ -3,6 +3,7 @@
 // the ~1000-line budget. Pure types; re-exported through index.ts so the
 // public `@livediagram/diagram` surface is unchanged. ElementLink + the enums
 // stay in index.ts and are imported here (type-only, so no runtime cycle).
+import type { EventStormingNoteKind } from './event-storming';
 import type { TextRun } from './rich-text';
 import type { CommentThread } from './comments';
 import type { ElementAction } from './element-action';
@@ -534,6 +535,12 @@ export type StickyElement = {
   // One size for life (spec/139 event-storming notes) — see
   // ShapeElement.fixedSize / isFixedSizeElement.
   fixedSize?: boolean;
+  // Which event-storming note this IS (spec/139). The colour carries the
+  // same meaning visually, but the kind is real domain data: it names the
+  // selection ("Selected Domain Event"), and anything later that reasons
+  // about the notation (filters, legends, exports) reads it rather than
+  // matching hexes. Absent on an ordinary sticky.
+  esKind?: EventStormingNoteKind;
   groupId?: ElementId;
   textSize?: TextSize;
   textAlignX?: TextAlignX;

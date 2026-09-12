@@ -184,6 +184,23 @@ export function eventStormingNoteSize(kind: EventStormingNoteKind): {
   return ES_NOTE_SIZE_PX[eventStormingNote(kind).size];
 }
 
+// The notation kind of an element, or null if it isn't a workshop note.
+// Prefers the stored `esKind`; falls back to the canonical fill for notes
+// authored before the kind was persisted (the fill IS the notation, and a
+// fixed-size sticky only exists on an event-storming board). An ordinary
+// sticky that merely happens to be blue is not a Command.
+export function eventStormingKindOf(el: {
+  type: string;
+  esKind?: EventStormingNoteKind;
+  fillColor?: string;
+  fixedSize?: boolean;
+}): EventStormingNoteKind | null {
+  if (el.type !== 'sticky') return null;
+  if (el.esKind) return el.esKind;
+  if (!el.fixedSize || !el.fillColor) return null;
+  return EVENT_STORMING_NOTES.find((n) => n.fill === el.fillColor)?.kind ?? null;
+}
+
 // A workshop note's hand-placement (spec/139). Calibrated by eye: ±1.1°
 // reads hand-placed, ±2.5° reads messy. One decimal keeps the stored JSON
 // tidy. Lives here rather than in the editor because every surface that
