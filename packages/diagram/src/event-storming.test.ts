@@ -1,7 +1,20 @@
 import { describe, expect, it } from 'vitest';
+import type { Tab } from './index';
+import { isLayerVisible, type Layer } from './layers';
 import {
+  applyEventStormingStage,
+  ES_BIG_PICTURE_LAYER_ID,
+  ES_DESIGN_LAYER_ID,
+  ES_PROCESS_LAYER_ID,
+  ES_RAIL_LAYER_ID,
   EVENT_STORMING_NOTES,
+  EVENT_STORMING_STAGES,
+  eventStormingLayers,
   eventStormingNote,
+  eventStormingRailVisible,
+  eventStormingStageOf,
+  isEventStormingTab,
+  toggleEventStormingRail,
   type EventStormingNoteKind,
 } from './event-storming';
 
@@ -50,5 +63,85 @@ describe('EVENT_STORMING_NOTES', () => {
     for (const kind of ALL_KINDS) {
       expect(eventStormingNote(kind).kind).toBe(kind);
     }
+  });
+});
+
+// The workshop-stage views (spec/139): shared layer-visibility presets over
+// the spec/74 layers the template ships. Switching stage = one tab commit
+// that sets each stage layer's visibility; the rail is an independent
+// see-it-against-a-timeline toggle. Everything here is pure Tab -> Tab.
+describe('event-storming views', () => {
+  const esTab = (): Tab =>
+    ({ id: 't', name: 'T', elements: [], layers: eventStormingLayers() }) as unknown as Tab;
+
+  const visibleIds = (tab: Tab) =>
+    (tab.layers ?? []).filter((l: Layer) => isLayerVisible(l)).map((l: Layer) => l.id);
+
+  it('ships four layers, rail hidden at the bottom, Big picture seeded visible', () => {
+    const layers = eventStormingLayers();
+    expect(layers.map((l) => l.id)).toEqual([
+      ES_RAIL_LAYER_ID,
+      ES_BIG_PICTURE_LAYER_ID,
+      ES_PROCESS_LAYER_ID,
+      ES_DESIGN_LAYER_ID,
+    ]);
+    // The rail ships hidden (Q4: no timeline in the seed — it is a view);
+    // the three stage layers ship visible so a fresh board shows everything
+    // an editor drops, whatever stage chip they later press.
+    expect(isLayerVisible(layers[0]!)).toBe(false);
+    expect(layers.slice(1).every((l) => isLayerVisible(l))).toBe(true);
+  });
+
+  it('recognises an event-storming tab by its stage layers', () => {
+    expect(isEventStormingTab(esTab().layers)).toBe(true);
+    expect(isEventStormingTab(undefined)).toBe(false);
+    expect(isEventStormingTab([{ id: 'layer:default', name: 'Layer 1' }])).toBe(false);
+  });
+
+  it('stages reveal cumulatively: big-picture ⊆ process ⊆ design', () => {
+    const tab = esTab();
+    const big = applyEventStormingStage(tab, 'big-picture');
+    expect(visibleIds(big)).toEqual([ES_BIG_PICTURE_LAYER_ID]);
+    const process = applyEventStormingStage(tab, 'process');
+    expect(visibleIds(process)).toEqual([ES_BIG_PICTURE_LAYER_ID, ES_PROCESS_LAYER_ID]);
+    const design = applyEventStormingStage(tab, 'design');
+    expect(visibleIds(design)).toEqual([
+      ES_BIG_PICTURE_LAYER_ID,
+      ES_PROCESS_LAYER_ID,
+      ES_DESIGN_LAYER_ID,
+    ]);
+  });
+
+  it('derives the current stage from visibility (deepest visible stage wins)', () => {
+    const tab = esTab();
+    expect(eventStormingStageOf(applyEventStormingStage(tab, 'big-picture').layers)).toBe(
+      'big-picture',
+    );
+    expect(eventStormingStageOf(applyEventStormingStage(tab, 'process').layers)).toBe('process');
+    expect(eventStormingStageOf(applyEventStormingStage(tab, 'design').layers)).toBe('design');
+    // A fresh board (everything visible) reads as design — the all-in view.
+    expect(eventStormingStageOf(esTab().layers)).toBe('design');
+  });
+
+  it('the rail toggles independently of the stage', () => {
+    const tab = applyEventStormingStage(esTab(), 'big-picture');
+    expect(eventStormingRailVisible(tab.layers)).toBe(false);
+    const withRail = toggleEventStormingRail(tab);
+    expect(eventStormingRailVisible(withRail.layers)).toBe(true);
+    // Stage unchanged by the rail, rail unchanged by a stage switch.
+    expect(eventStormingStageOf(withRail.layers)).toBe('big-picture');
+    const deeper = applyEventStormingStage(withRail, 'process');
+    expect(eventStormingRailVisible(deeper.layers)).toBe(true);
+    expect(eventStormingRailVisible(toggleEventStormingRail(withRail).layers)).toBe(false);
+  });
+
+  it('EVENT_STORMING_STAGES orders the chips shallow to deep with labels + active layer', () => {
+    expect(EVENT_STORMING_STAGES.map((s) => s.stage)).toEqual(['big-picture', 'process', 'design']);
+    expect(EVENT_STORMING_STAGES.map((s) => s.layerId)).toEqual([
+      ES_BIG_PICTURE_LAYER_ID,
+      ES_PROCESS_LAYER_ID,
+      ES_DESIGN_LAYER_ID,
+    ]);
+    for (const s of EVENT_STORMING_STAGES) expect(s.label.length).toBeGreaterThan(0);
   });
 });

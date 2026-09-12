@@ -11,6 +11,11 @@ import {
   untitledNameForTemplate,
   type TemplateKind,
 } from '@livediagram/templates';
+import {
+  ES_BIG_PICTURE_LAYER_ID,
+  ES_RAIL_LAYER_ID,
+  eventStormingLayers,
+} from '@livediagram/diagram';
 import { getTheme } from './themes';
 
 // `buildTemplatedTab` is the seam between /live/new (the welcome
@@ -284,8 +289,12 @@ describe('layered templates (spec/74)', () => {
 
   it('pins each layered template’s names and scaffold / content split', () => {
     // Every layered kind has a table entry and vice versa, so adding a
-    // layered template forces a deliberate row here.
-    const layeredKinds = TEMPLATES.map((t) => t.kind).filter((k) => templateLayers(k));
+    // layered template forces a deliberate row here. Event storming is the
+    // one deliberate exception to the two-band shape — it ships FOUR stage
+    // layers for the workshop views (spec/139) and gets its own pin below.
+    const layeredKinds = TEMPLATES.map((t) => t.kind).filter(
+      (k) => k !== 'event-storming' && templateLayers(k),
+    );
     expect(layeredKinds.sort()).toEqual(Object.keys(LAYERED_BANDS).sort());
 
     for (const [kind, expected] of Object.entries(LAYERED_BANDS) as [
@@ -315,6 +324,24 @@ describe('layered templates (spec/74)', () => {
       expect(content.length, `${kind} content`).toBe(expected.content);
       expect(scaffold.length + content.length, kind).toBe(elements.length);
     }
+  });
+
+  // Event storming (spec/139): four stage layers for the shared workshop
+  // views — rail (hidden scaffold) at the bottom, then Big picture /
+  // Process / Design. The seed lives on Big picture (the workshop's first
+  // stage); the rail element is the only thing on the rail layer, ready
+  // for the rail view toggle.
+  it('event storming ships the four stage layers, seed on Big picture, rail hidden below', () => {
+    const layers = templateLayers('event-storming')!;
+    expect(layers).toEqual(eventStormingLayers());
+    const elements = buildTemplate('event-storming', 0, 0);
+    const rail = elements.filter((el) => el.layerId === ES_RAIL_LAYER_ID);
+    const big = elements.filter((el) => el.layerId === ES_BIG_PICTURE_LAYER_ID);
+    expect(rail).toHaveLength(1);
+    expect(rail[0]).toMatchObject({ type: 'shape', shape: 'timeline-rail' });
+    // Three orange events + the method caption, all on the first stage.
+    expect(big).toHaveLength(4);
+    expect(rail.length + big.length).toBe(elements.length);
   });
 
   it('buildTemplatedTab lands the layers on the tab and theming keeps the stamps', () => {

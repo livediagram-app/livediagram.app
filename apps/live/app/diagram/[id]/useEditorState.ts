@@ -110,6 +110,7 @@ import { useEditorDialogs } from './useEditorDialogs';
 import { useElementHelpers } from './useElementHelpers';
 import { useElementCreation } from './useElementCreation';
 import { useLayersState } from './useLayersState';
+import { useEventStormingViews } from './useEventStormingViews';
 import { useInlineIconMutators } from './useInlineIconMutators';
 import { usePresenceBroadcast } from './usePresenceBroadcast';
 import { useSelectionEditing } from './useSelectionEditing';
@@ -1383,6 +1384,15 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   } = layersState;
   // Refresh the commit choke point's stamp (see commitTabs above).
   activeLayerStampRef.current = { tabId: activeId, layerId: activeLayerId };
+
+  // Event-storming workshop views (spec/139): stage chips + rail toggle
+  // over the layers slice. Inert (esBoard=false) on every other tab.
+  const esViews = useEventStormingViews({
+    activeTab,
+    editsBlocked,
+    commitActiveTab,
+    setActiveLayer: layersState.setActiveLayer,
+  });
   // Element creation lands on the active layer, so it's additionally
   // blocked while that layer is hidden or locked (spec/74).
   const createBlocked = editsBlocked || activeLayerBlocked;
@@ -2444,6 +2454,12 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     hideOtherLayersOp: layersState.hideOthers,
     layerPreviewId: layersState.previewLayerId,
     setLayerPreviewId: layersState.setPreviewLayerId,
+    // Event-storming workshop views (spec/139).
+    esBoard: esViews.esBoard,
+    esStage: esViews.esStage,
+    esRailVisible: esViews.esRailVisible,
+    setEsStage: esViews.setEsStage,
+    toggleEsRail: esViews.toggleEsRail,
     // Menu-facing wrapper: moves the CURRENT selection (group-expanded)
     // onto the picked layer.
     moveSelectedToLayer: (layerId: string) =>

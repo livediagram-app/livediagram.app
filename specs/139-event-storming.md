@@ -77,22 +77,51 @@ semantic colour:
   colour is a user choice riding the intent, not a new kind (the same
   reasoning as Video's provider, spec/22).
 
-## Decided direction (not yet built)
+## Phase 3 (shipped): workshop-stage views
 
-- **One template kind**, not big-picture / process-level / design-level
-  variants — instead the SAME diagram supports switching between those
-  three as **views**, plus a fourth "timeline rail" view that shows the
-  board against a spec/51 rail. The seed stays minimal (the three-events
-  starter) regardless.
-- Mechanism for those views is an open design fork (layer-visibility
-  presets over spec/74 layers vs a per-user lens) — tracked in the plan.
+One board, three depths plus a timeline lens — **shared** layer-visibility
+presets over spec/74 layers, so the whole room walks the stages together,
+facilitator-style (a deliberate choice over a per-user lens).
+
+- **The template ships four layers** (bottom → top): `layer:es:rail`
+  ("Timeline rail", **hidden**, holding a spec/51 `timeline-rail` element
+  sized to the seed's span), then `layer:es:big-picture` /
+  `layer:es:process` / `layer:es:design`, all visible. Fixed sentinel ids
+  (the `layer:default` pattern) so re-applying converges and peers
+  materialise identically. The seed lives on Big picture. Defined by
+  `eventStormingLayers()` in `@livediagram/diagram` beside the note
+  catalogue; `templateLayers('event-storming')` returns it, making ES the
+  one deliberate exception to the two-band scaffold/content shape (its own
+  pin in `templates.test.ts`).
+- **Stages reveal cumulatively** (big-picture ⊆ process ⊆ design):
+  `applyEventStormingStage` is one ordinary tab commit setting the three
+  stage layers' visibility — undoable, autosaved, synced, nothing new on
+  the wire. The current stage is DERIVED as the deepest visible stage
+  (`eventStormingStageOf`), so a fresh board reads as Design (all-in) and
+  hand-toggled panel state still resolves sanely. The **rail is an
+  independent toggle** (`toggleEventStormingRail`), never a fourth
+  exclusive stage — "see it against a timeline" is additive.
+- **The switcher** (`EventStormingViewBar`) is a slim bottom-centre pill —
+  Big picture / Process / Design chips + a divider + Timeline rail — shown
+  only when the active tab carries the ES stage layers
+  (`isEventStormingTab`, tab data, so it travels with the board). Editors
+  only: a stage switch commits shared visibility, which a view-role
+  visitor can't do (they see whatever view the room is in). Hidden in
+  zen / embed; yields the slot to the sign-in / empty-canvas banners, and
+  ThemeModeBanner yields to IT on ES boards.
+- **Switching a stage also activates that stage's layer**
+  (`useEventStormingViews`), so notes added while in a stage land on the
+  band the stage owns — and the active layer never strands on a band the
+  switch just hid (which would pause element creation per spec/74).
+- **Telemetry:** `UI / Used / EventStorming{BigPicture,Process,Design}` +
+  `EventStormingRail{On,Off}`.
 
 ## Still ahead (phased, see the plan)
 
-The workshop-stage views above, board structure (swimlanes, pivotal
-events), and the help-centre article for the diagram type itself. Each
-phase lands with its own spec update here — this file stays the source
-of truth for what the type IS at any moment.
+Board structure (swimlanes, pivotal events) and the help-centre article
+for the diagram type itself. Each phase lands with its own spec update
+here — this file stays the source of truth for what the type IS at any
+moment.
 
 ## Counts
 

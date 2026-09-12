@@ -54,26 +54,25 @@ surfaces, and every count-pinned copy surface moved together.
 - [x] Spec/139 phase-2 section
 - [x] Verified in the dev server (Write tab → Event Storming → drop notes)
 
-## Phase 3 — workshop-stage views (Q3/Q4)
+## Phase 3 — workshop-stage views (Q3/Q4) (SHIPPED)
 
-One diagram, four ways to look at it: **Big Picture** (events + hotspots +
-actors), **Process Modelling** (adds commands / policies / read models /
-external systems), **Software Design** (adds aggregates), **Timeline rail**
-(the board against a spec/51 rail).
+One diagram, three cumulative stages + an additive rail lens.
 
-- [ ] DECIDE: mechanism — layer-visibility presets over spec/74 layers
-      (shared, synced, facilitator-led; template ships stage layers and the
-      mode switch sets visible + active layer) vs a per-user view lens
-      (spec/45 isometric precedent; new filter machinery) — surfaced as a
-      question, layers recommended
-- [ ] DECIDE: where the switcher lives (context-menu category vs a small
-      on-canvas mode bar vs the Layers panel alone)
-- [ ] Template ships the stage layers via `templateLayers` once the
-      mechanism is decided
-- [ ] The rail view: a scaffold layer holding a spec/51 timeline-rail
-      element (visible only in that view) vs a rendered overlay
-- [ ] Telemetry on the switcher
-- [ ] Spec/139 update describing views as shipped
+- [x] DECIDED (Q5): layer-visibility presets over spec/74 layers — shared,
+      synced, facilitator-led; the switch sets visible + active layer
+- [x] DECIDED (Q6): slim on-canvas segment control, ES boards + editors only
+- [x] Pure helpers in `@livediagram/diagram/event-storming` (layer ids,
+      `eventStormingLayers`, `isEventStormingTab`, stage apply/derive, rail
+      toggle), pinned by tests
+- [x] Template ships the four stage layers (`templateLayers`), seed stamped
+      onto Big picture, spec/51 rail element on the hidden rail layer — the
+      one deliberate exception to the two-band pin, with its own pin
+- [x] `EventStormingViewBar` (tested) + `useEventStormingViews` hook wired
+      through EditorView; banners yield order settled (ThemeModeBanner
+      yields to the bar)
+- [x] Telemetry: UI/Used EventStorming{BigPicture,Process,Design,RailOn,RailOff}
+- [x] Spec/139 phase-3 section + spec/09 template entry updated
+- [x] Verified in the dev server (bar renders, rail toggles, stages switch)
 
 ## Phase 4 — board structure
 

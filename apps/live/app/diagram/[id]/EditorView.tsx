@@ -11,6 +11,7 @@ import { EmbedChrome } from '@/components/chrome/EmbedChrome';
 import { TabBar } from '@/components/chrome/TabBar';
 import { SignInBanner, SIGNIN_BANNER_DISMISS_KEY } from '@/components/chrome/SignInBanner';
 import { EmptyCanvasBanner } from '@/components/canvas/EmptyCanvasBanner';
+import { EventStormingViewBar } from '@/components/canvas/EventStormingViewBar';
 import { EditorModals } from '@/components/dialogs/EditorModals';
 import { PollPromptDialog } from '@/components/dialogs/PollPromptDialog';
 import { EditorTabDialogs } from '@/components/dialogs/EditorTabDialogs';
@@ -155,6 +156,19 @@ export function EditorView() {
     !templateGridOpen &&
     !pendingDraw &&
     activeTab.elements.length === 0;
+  // Event-storming view switcher (spec/139): persistent bottom-centre chrome
+  // on event-storming boards, editors only (a stage switch commits shared
+  // layer visibility, which a view-role visitor can't do — they see whatever
+  // view the room is in). Yields the slot to the transient banners;
+  // ThemeModeBanner below yields to IT.
+  const showEsViewBar =
+    hydrated &&
+    !zenMode &&
+    !embedMode &&
+    !isReadOnly &&
+    ctx.esBoard &&
+    !showSignInBanner &&
+    !showEmptyCanvasBanner;
   // The primary selection's flavour for the shift hint's no-drag messages.
   const shiftSelected = selectedId ? activeTab.elements.find((el) => el.id === selectedId) : null;
   const shiftSelectedKind = !shiftSelected
@@ -398,11 +412,24 @@ export function EditorView() {
           onQuickStart={openTemplatePicker}
         />
       ) : null}
+      {/* Event-storming workshop views (spec/139): Big picture / Process /
+          Design chips + the Timeline-rail toggle, driving shared layer
+          visibility so the room walks the stages together. */}
+      {showEsViewBar ? (
+        <EventStormingViewBar
+          stage={ctx.esStage}
+          railVisible={ctx.esRailVisible}
+          onStage={ctx.setEsStage}
+          onToggleRail={ctx.toggleEsRail}
+        />
+      ) : null}
       {/* Offer to match the editor chrome to the active tab's theme
           (dark theme -> dark mode, light theme -> light mode). Hidden in
           zen / embed like the other floating prompts, and yields the
-          bottom-centre slot to the sign-in / empty-canvas banners. */}
-      {zenMode || embedMode || showSignInBanner || showEmptyCanvasBanner ? null : (
+          bottom-centre slot to the sign-in / empty-canvas banners — and to
+          the event-storming view bar, which owns the slot on ES boards
+          (the mode toggle stays one click away in the corner chrome). */}
+      {zenMode || embedMode || showSignInBanner || showEmptyCanvasBanner || showEsViewBar ? null : (
         <ThemeModeBanner themeId={activeTab.theme} />
       )}
       {/* Shift hint (spec/09): names what holding Shift does right now.
