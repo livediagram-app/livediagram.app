@@ -158,6 +158,54 @@ The notes behave like the physical kit:
   drop goes through the same builder as a tap, so fill, silhouette,
   tilt, fixed size and stage routing all apply identically.
 
+## Domain learnings (session log)
+
+One-liners captured as they were learned — product truths for this diagram
+type, kept current every session. Each should stay true on its own.
+
+- The board is a super-low-threshold capture surface: add, type, drag —
+  anything between a thought and a sticky is friction to remove.
+- Distraction-free by default; options are progressively disclosed —
+  chrome must earn its place on this board.
+- Double-click means "type": menus never open on the capture path, only
+  on explicit right-click / long-press.
+- Colour IS the notation: semantic fills are pinned in one catalogue and
+  theme-exempt, so restyling can never erase meaning.
+- Shape is notation too: wide = the prose kinds (policy, external
+  system, aggregate), small = actor, square = the rest — mirroring the
+  physical 76×76 / 127×76mm stationery.
+- Fixed silhouettes, no resizing: uniform sizes are what let size carry
+  meaning; one resized note breaks the whole wall's grammar.
+- Authenticity is a feature: the paper peel, glue strip, and hand-placed
+  tilt make the board read as a workshop, not a diagram.
+- Tilt is calibrated, not decorative: ±1.5° reads hand-placed, ±2.5°
+  reads messy — seed and dropped notes share the same range.
+- Sticky shadows tolerate no hard edges: continuous ramps (gradient in
+  the paint, then blur) beat masked or clipped fades, which band — the
+  winning recipe was measured against Miro's renderer and hand-tuned on
+  a live board (a 25-variant side-by-side beat isolated mockups).
+- The palette opens ON the notation for this board type: the notation is
+  what the board is for, Favourites is for everywhere else.
+- The palette rows say shape + meaning, not just colour: silhouette
+  glyphs and one-line blurbs do the explaining, in workshop order.
+- Notes know their workshop stage and file themselves onto its layer —
+  but never onto a hidden or locked one (fall back to the active layer
+  rather than vanish).
+- Workshop stages are SHARED state (layer visibility): the facilitator
+  walks the whole room through Big picture → Process → Design.
+- Any feature that hides layers must self-heal the active layer, or
+  boards parked in a shallow stage silently pause all creation.
+- Palette drag and palette tap must go through one builder: fill,
+  silhouette, tilt, fixed size and routing may never drift between the
+  two entry points.
+- Tile ids are forever: Favourites persist them, so promotion between
+  palette homes keeps the historical prefix.
+- Chrome must earn its keep or be removed: the timeline rail (layer,
+  element, view chip) was built, judged, and retired in one session.
+- Alignment help belongs BEFORE the drop: guide lines during the palette
+  drag serve the capture loop; a misplaced note that needs fixing after
+  is friction.
+
 ## Still ahead (phased, see the plan)
 
 Board structure (swimlanes, pivotal events) and the help-centre article
