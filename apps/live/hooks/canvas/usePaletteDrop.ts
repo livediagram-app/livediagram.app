@@ -11,6 +11,7 @@ import type { ShapeKind } from '@livediagram/diagram';
 import { pointerToCanvas } from '@/lib/canvas';
 import { ICON_DND_MIME, PALETTE_DND_MIME } from '@/lib/icons';
 import { STICKER_DND_MIME } from '@/lib/stickers';
+import { getPaletteDragSnap, setPaletteDragSnap } from '@/lib/palette-drag-preview';
 import { TECH_ICON_DND_MIME } from '@/lib/tech-icons';
 
 type PaletteDropDeps = {
@@ -75,7 +76,14 @@ export function usePaletteDrop({ onDropPalette, viewportZoom, wrapperRef }: Pale
     // pivot term, landing drops off-cursor at any zoom other than 100%.
     const rect = wrapperRef.current?.getBoundingClientRect();
     if (!rect) return;
-    const { x: cx, y: cy } = pointerToCanvas(e.clientX, e.clientY, rect, viewportZoom);
+    const raw = pointerToCanvas(e.clientX, e.clientY, rect, viewportZoom);
+    // Land where the ghost + guides promised (spec/139): the alignment snap
+    // the drag latched onto, not the raw cursor. Cleared immediately so a
+    // later drag can't inherit a stale offset.
+    const snap = getPaletteDragSnap();
+    setPaletteDragSnap(null);
+    const cx = raw.x + (snap?.dx ?? 0);
+    const cy = raw.y + (snap?.dy ?? 0);
     if (stickerId) onDropPalette?.('sticker', cx, cy, { stickerId });
     else if (iconId) onDropPalette?.('icon', cx, cy, { iconId });
     else

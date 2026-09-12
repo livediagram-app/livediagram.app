@@ -215,7 +215,8 @@ type, kept current every session. Each should stay true on its own.
   a lighter dot washes out, a recessed one reads.
 - Alignment help belongs BEFORE the drop: guide lines during the palette
   drag serve the capture loop; a misplaced note that needs fixing after
-  is friction.
+  is friction. Ghost, guides and landed element must share ONE snap
+  computation, or the preview lies.
 
 ## Still ahead (phased, see the plan)
 

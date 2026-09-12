@@ -58,3 +58,37 @@ export function suppressNativeDragImage(e: { dataTransfer: DataTransfer | null }
     // Non-DnD contexts / older engines: harmless to skip.
   }
 }
+
+// The live snap offset for the in-flight palette drag (spec/139): canvas-unit
+// dx/dy the dragged footprint has latched onto its neighbours. Published by
+// the one owner that computes it (usePaletteDragGuides, which also produces
+// the guide lines), read by the ghost (so it DRAWS snapped) and by the drop
+// (so it LANDS snapped). Module-level for the same reason as the preview
+// above: a drag is global, single-at-a-time and transient.
+let snap: { dx: number; dy: number } | null = null;
+const snapListeners = new Set<() => void>();
+
+export function setPaletteDragSnap(next: { dx: number; dy: number } | null): void {
+  if (snap?.dx === next?.dx && snap?.dy === next?.dy) return;
+  snap = next;
+  for (const l of snapListeners) l();
+}
+
+export function getPaletteDragSnap(): { dx: number; dy: number } | null {
+  return snap;
+}
+
+function subscribeSnap(l: () => void): () => void {
+  snapListeners.add(l);
+  return () => {
+    snapListeners.delete(l);
+  };
+}
+
+export function usePaletteDragSnap(): { dx: number; dy: number } | null {
+  return useSyncExternalStore(
+    subscribeSnap,
+    () => snap,
+    () => null,
+  );
+}
