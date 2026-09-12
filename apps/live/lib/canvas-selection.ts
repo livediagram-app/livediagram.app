@@ -64,6 +64,10 @@ export function deriveCanvasSelection(input: {
   isGroupMode: boolean;
   tabLocked: boolean;
   readOnly: boolean;
+  // Event-storming board (spec/139): a low-threshold capture surface where
+  // every control that doesn't serve "add a note, type, drag" is a
+  // distraction — the quick-connect pluses stand down.
+  esBoard?: boolean;
 }): CanvasSelection {
   const {
     elements,
@@ -75,6 +79,7 @@ export function deriveCanvasSelection(input: {
     isGroupMode,
     tabLocked,
     readOnly,
+    esBoard,
   } = input;
 
   const memberIds = selectedId
@@ -116,6 +121,8 @@ export function deriveCanvasSelection(input: {
   const showPlus = !!(
     selected &&
     selectedIsBoxed &&
+    // Never on an event-storming board (spec/139).
+    !esBoard &&
     // Quick-connect works on a single element OR a multi-member group (the
     // pluses then ring the group's union bounds — spawn is already
     // group-aware and an arrow pins to the member nearest the picked side).

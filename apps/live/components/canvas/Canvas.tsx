@@ -17,6 +17,7 @@ import { useQuickRing } from '@/hooks/canvas/useQuickRing';
 import { useZoomControls } from '@/hooks/canvas/useZoomControls';
 import { usePaletteDrop } from '@/hooks/canvas/usePaletteDrop';
 import { isDarkCanvas } from '@/lib/dark-canvas';
+import { isEventStormingTab } from '@livediagram/diagram';
 import { useLongPress } from '@/hooks/ui/useLongPress';
 import { getTheme } from '@/lib/themes';
 import { CanvasSelectionToolbars } from '@/components/canvas/CanvasSelectionToolbars';
@@ -78,6 +79,7 @@ export function Canvas(props: CanvasProps) {
     readOnly,
     tabBackgroundPattern,
     tabBackgroundColor,
+    tabLayers,
     tabBackgroundOpacity,
     tabBackgroundPatternScale,
     tabBackgroundAnimationSpeed,
@@ -215,6 +217,7 @@ export function Canvas(props: CanvasProps) {
         isGroupMode,
         tabLocked,
         readOnly,
+        esBoard: isEventStormingTab(tabLayers),
       }),
     [
       elements,
@@ -226,6 +229,7 @@ export function Canvas(props: CanvasProps) {
       isGroupMode,
       tabLocked,
       readOnly,
+      tabLayers,
     ],
   );
   const {

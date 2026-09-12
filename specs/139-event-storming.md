@@ -212,6 +212,11 @@ type, kept current every session. Each should stay true on its own.
   dropdowns are hidden, because a chooser you never need is a distraction.
 - Removing chrome is safe only when another path survives: hidden tool
   pickers still leave keyboard shortcuts and the command palette.
+- Board identity must not hinge on data the user can edit: ANY stage
+  layer means event storming, because deleting one silently stripped the
+  palette, the view bar and note routing.
+- Quick-connect pluses stand down on an ES board: four affordances
+  ringing every note is chrome the capture loop never asks for.
 - A widget can outlive its concept: the edge "anchor" grips resize, so
   they must follow the resize rule — naming lagged behaviour and let a
   fixed-size note be dragged wider.

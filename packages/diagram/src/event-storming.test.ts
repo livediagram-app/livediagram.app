@@ -130,6 +130,23 @@ describe('event-storming views', () => {
     expect(isEventStormingTab([{ id: 'layer:default', name: 'Layer 1' }])).toBe(false);
   });
 
+  it('survives a user editing the layer stack — ANY stage layer still means ES', () => {
+    // Board-ness is an identity, not a checklist: layers are ordinary
+    // spec/74 data a facilitator can rename, delete or add to mid-workshop.
+    // Requiring all three meant deleting one silently stripped the board of
+    // its palette, its view bar and its note routing.
+    const deletedDesign = eventStormingLayers().filter((l) => l.id !== ES_DESIGN_LAYER_ID);
+    expect(isEventStormingTab(deletedDesign)).toBe(true);
+    // Plus a layer of their own alongside — still an ES board.
+    expect(isEventStormingTab([{ id: 'own-layer', name: 'Cart Emptied' }, ...deletedDesign])).toBe(
+      true,
+    );
+    // Only the Big picture band left is still the workshop.
+    expect(isEventStormingTab([{ id: ES_BIG_PICTURE_LAYER_ID, name: 'Big picture' }])).toBe(true);
+    // A board with none of them is not.
+    expect(isEventStormingTab([{ id: 'own-layer', name: 'Sketches' }])).toBe(false);
+  });
+
   it('stages reveal cumulatively: big-picture ⊆ process ⊆ design', () => {
     const tab = esTab();
     const big = applyEventStormingStage(tab, 'big-picture');

@@ -251,3 +251,31 @@ describe('deriveCanvasSelection — fixed-size elements', () => {
     expect(s.showAnchorsFor('p')).toBe(true);
   });
 });
+
+// Event-storming boards are a low-threshold CAPTURE surface (spec/139):
+// every control that doesn't serve "add a note, type, drag" is a
+// distraction. The quick-connect pluses ring every selected note with four
+// affordances nobody reaches for mid-workshop, so they stand down there —
+// and stay exactly as they are on every other board.
+describe('deriveCanvasSelection — quick-connect on an event-storming board', () => {
+  const sticky = {
+    id: 's',
+    type: 'sticky',
+    x: 0,
+    y: 0,
+    width: 200,
+    height: 200,
+  } as unknown as Element;
+
+  it('hides the pluses when the board is event storming', () => {
+    const s = derive({ elements: [sticky], selectedId: 's', esBoard: true });
+    expect(s.showPlus).toBe(false);
+    // The rest of the single-selection chrome is untouched.
+    expect(s.showPopover).toBe(true);
+  });
+
+  it('keeps them everywhere else', () => {
+    const s = derive({ elements: [sticky], selectedId: 's' });
+    expect(s.showPlus).toBe(true);
+  });
+});

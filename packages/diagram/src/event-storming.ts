@@ -192,11 +192,20 @@ export function eventStormingStageLayerId(kind: EventStormingNoteKind): string {
 // An event-storming board is recognised by its stage layers — tab data, so
 // the switcher appears wherever the board travels (share links, imports,
 // re-opened diagrams) and never for anything else.
+//
+// ANY stage layer is enough. Layers are ordinary spec/74 data: a facilitator
+// renames them, adds their own, and deletes ones they don't use — all
+// legitimate. Requiring the full set meant deleting a single band silently
+// stripped the board of its palette, its view bar and its note routing,
+// with nothing on screen to explain why. Board identity must not hinge on
+// a checklist the user is free to edit.
 export function isEventStormingTab(layers: Layer[] | undefined): boolean {
   if (!layers) return false;
-  const ids = new Set(layers.map((l) => l.id));
-  return (
-    ids.has(ES_BIG_PICTURE_LAYER_ID) && ids.has(ES_PROCESS_LAYER_ID) && ids.has(ES_DESIGN_LAYER_ID)
+  return layers.some(
+    (l) =>
+      l.id === ES_BIG_PICTURE_LAYER_ID ||
+      l.id === ES_PROCESS_LAYER_ID ||
+      l.id === ES_DESIGN_LAYER_ID,
   );
 }
 
