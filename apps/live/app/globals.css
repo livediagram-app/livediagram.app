@@ -1802,48 +1802,31 @@
   50% {
     box-shadow: 0 0 0 6px rgb(34 197 94 / 0.45);
   }
-}
-/* Sticky-note paper peel (spec/09), the Miro look: the note is glued along
-   its top strip and the rest of the sheet lifts EVER SO SLIGHTLY off the
-   board. Nothing about the note changes — same flat rectangle, same fill,
-   same border. The lift lives entirely in the shadow, and the shadow's
-   silhouette is the note's own rectangle (no tilt, no inset, which would
-   read as the note itself warping).
+}/* Sticky-note paper peel (spec/09): the note is glued along its top strip
+   and the rest of the sheet lifts ever so slightly off the board. The note
+   itself never changes — same flat rectangle, same fill — and no mask or
+   clip is involved anywhere, so no hard edge can exist: the lift lives in
+   ::before, a caster whose FILL is a long vertical gradient (nothing above
+   ~10%, full slate-32% ink by 77%) softened by one small blur. The caster
+   runs 3px proud of the sides and 5px below, so a whisper of shadow hugs
+   the sides — deepening continuously toward the bottom, which is why no
+   band or stripe ever appears — and throws under the bottom edge.
 
-   Mechanics: ::before is a blurred solid copy of the note's rectangle,
-   nudged down a few px, with a vertical mask that fades it to NOTHING over
-   the glued strip — so a faint halo appears partway down the sides,
-   strengthens continuously toward the bottom (the increasing lift), and
-   peaks under the bottom edge. Negative-z pseudos paint ABOVE their own
-   element's background, so ::after repaints the sheet (background-color:
-   inherit) over the caster's interior — only the blur that escapes the
-   note's edges survives, exactly like a real shadow. ::after also carries
-   a whisper of top-edge shading, the pressed-down glue strip. Element
-   rotation on the wrapper rotates sheet and shadow together. */
-/* The caster runs 2px PROUD of the sheet's sides: flush, the blur mostly
-   dies under the ::after repaint and no side halo survives. Proud + a wide
-   blur + a lower alpha = the soft Miro halo — visible beside the sheet from
-   the glue line down, growing toward the bottom, never hard-edged. */
+   Negative-z pseudos paint above their own element's background, so
+   ::after repaints the sheet over the caster's interior (only the shadow
+   that escapes the note's edges survives) and carries a whisper of
+   pressed-glue shading at the top strip. Element rotation on the wrapper
+   rotates sheet and shadow together. A user-set element shadow (spec/86)
+   replaces the whole treatment — element-variant.ts drops this class when
+   one is set. Recipe hand-tuned on a live board against Miro's renderer
+   (the numbers are the winner of a 25-variant bake-off; see spec/09). */
 .lvd-sticky-peel::before {
   content: '';
   position: absolute;
   z-index: -2;
-  inset: 0 -3px 0 -3px;
-  background: rgb(15 23 42 / 0.42);
-  filter: blur(9px);
-  transform: translateY(5px);
-  -webkit-mask-image: linear-gradient(
-    to bottom,
-    transparent 8%,
-    rgb(0 0 0 / 0.5) 40%,
-    rgb(0 0 0 / 1) 100%
-  );
-  mask-image: linear-gradient(
-    to bottom,
-    transparent 8%,
-    rgb(0 0 0 / 0.5) 40%,
-    rgb(0 0 0 / 1) 100%
-  );
+  inset: 0 -3px -5px;
+  filter: blur(2px);
+  background: linear-gradient(#0f172a00 10%, #0f172a52 77% 100%);
 }
 .lvd-sticky-peel::after {
   content: '';
@@ -1851,8 +1834,7 @@
   z-index: -1;
   inset: 0;
   background-color: inherit;
-  /* The glued strip reads pressed-down: a whisper of shading at the top. */
-  background-image: linear-gradient(to bottom, rgb(15 23 42 / 0.045), transparent 22%);
+  background-image: linear-gradient(to bottom, rgb(15 23 42 / 0.03), transparent 18%);
 }
 
 .lvd-done-complete {

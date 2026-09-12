@@ -166,10 +166,10 @@ export function describeVariant(
           ? { borderColor: element.strokeColor, borderWidth: 1, borderStyle: 'solid' }
           : {};
       return {
-        // Square corners (a real sticky is die-cut paper) and the Miro-style
-        // paper-peel instead of the uniform shadow-md halo: .lvd-sticky-peel
-        // (globals.css) draws a blurred copy of the note's own rectangle
-        // behind it, masked to fade out over the glued top strip — the note
+        // Square corners (a real sticky is die-cut paper) and the paper-peel
+        // instead of the uniform shadow-md halo: .lvd-sticky-peel
+        // (globals.css) hangs a gradient-fill caster behind the note — no
+        // mask, no clip, so no hard shadow edge exists — while the note
         // itself never changes shape. A user-set shadow (spec/86) replaces
         // the peel outright — an explicit choice wins, so the class is
         // dropped with it.
