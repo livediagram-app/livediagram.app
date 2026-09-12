@@ -36,8 +36,10 @@ export function useRightClickRelease(open: (e: ReactPointerEvent) => void) {
   const onPointerUp = (e: ReactPointerEvent) => {
     if (e.button !== 2 || !armedRef.current) return;
     armedRef.current = false;
-    e.preventDefault();
-    e.stopPropagation();
+    // Deliberately NOT stopPropagation: gestures end on a WINDOW pointerup,
+    // and React dispatches from the root container — stopping here means the
+    // window never hears the release, so a drag armed by the press stays
+    // live and the element follows the cursor after the button is up.
     const { x, y } = originRef.current;
     if (Math.hypot(e.clientX - x, e.clientY - y) > DRAG_SLOP_PX) return;
     open(e);

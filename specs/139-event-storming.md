@@ -228,6 +228,10 @@ type, kept current every session. Each should stay true on its own.
   dropdowns are hidden, because a chooser you never need is a distraction.
 - Removing chrome is safe only when another path survives: hidden tool
   pickers still leave keyboard shortcuts and the command palette.
+- One button, one job: the secondary button only opens the menu — no
+  select, no drag, no dismiss.
+- React stopPropagation is dispatched from the root container, so it
+  also hides the event from window-level listeners (drag-end lives there).
 - A menu that opens on press fights the hand that opened it: open on
   release, dismiss on capture-phase pointerdown.
 - One gesture, one answer: the selection popover and the context menu

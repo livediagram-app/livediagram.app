@@ -89,3 +89,23 @@ describe('useRightClickRelease', () => {
     expect(open).not.toHaveBeenCalled();
   });
 });
+
+describe('useRightClickRelease — propagation', () => {
+  it('suppresses the native menu on the press but lets the press through', () => {
+    const { result } = renderHook(() => useRightClickRelease(vi.fn()));
+    const e = ctxEvent();
+    result.current.onContextMenu(e);
+    expect(e.preventDefault).toHaveBeenCalled();
+  });
+
+  it('never stops the release from propagating', () => {
+    // Gestures end on a WINDOW pointerup and React dispatches from the root
+    // container: stopping the release here strands a drag armed by the press,
+    // and the element follows the cursor with no button down.
+    const { result } = renderHook(() => useRightClickRelease(vi.fn()));
+    result.current.onContextMenu(ctxEvent());
+    const up = upEvent(2);
+    result.current.onPointerUp(up);
+    expect(up.stopPropagation).not.toHaveBeenCalled();
+  });
+});

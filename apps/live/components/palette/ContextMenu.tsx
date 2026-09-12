@@ -90,6 +90,12 @@ export function ContextMenu({
     // keep the window.
     const onPointer = (e: PointerEvent) => {
       if (!ref.current) return;
+      // The secondary button never dismisses: a right press is the START of
+      // a menu gesture whose release re-opens (or retargets) this same menu.
+      // Closing on the press would tear the menu down and build it again a
+      // few frames later — a visible flicker, and the selection popover
+      // flashing in the gap.
+      if (e.button === 2) return;
       if (e.pointerType === 'touch' && performance.now() - openedAt < GRACE_MS) return;
       if (!(e.target instanceof Node) || ref.current.contains(e.target)) return;
       if (
