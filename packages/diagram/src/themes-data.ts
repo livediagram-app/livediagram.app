@@ -200,7 +200,7 @@ export const THEMES: ThemeDefinition[] = [
     // zinc-800, dots + element strokes both at zinc-600 so the grid and
     // the outlines read as one material, element fill a step above the
     // backdrop, and zinc-200 text.
-    backgroundColor: '#212126',
+    backgroundColor: '#2b2b33',
     backgroundPattern: 'grid',
     patternColor: '#4c4c59',
     elementFill: '#2c2c33',
