@@ -156,22 +156,28 @@ export function describeVariant(
     }
     case 'sticky': {
       const ring = `${singleRing('ring-2 ring-brand-200')} ${multiRing}`.trim();
+      // Borderless paper by default — the sheet's edge against its peel
+      // shadow IS the border. Two explicit choices still draw one: a peer's
+      // remote-selection highlight, and a user-set strokeColor (the Border
+      // swatch stays functional, spec/09 Colours).
+      const stickyBorder: CSSProperties = remoteBorderColor
+        ? { borderColor: remoteBorderColor, borderWidth: remoteBorderWidth, borderStyle: 'solid' }
+        : element.strokeColor
+          ? { borderColor: element.strokeColor, borderWidth: 1, borderStyle: 'solid' }
+          : {};
       return {
-        // Square corners (a real sticky is die-cut paper) and the paper-peel
-        // treatment instead of the uniform shadow-md halo: .lvd-sticky-peel
-        // (globals.css) casts the shadow from a pseudo-element inset below
-        // the glued top strip, so the shadow starts partway DOWN THE SIDES
-        // and offsets increasingly toward the bottom — top stuck flat,
-        // bottom ever-so-slightly loose. A wrapper box-shadow can't start
-        // partway down a side, hence the caster. The note's own shape never
-        // changes. A user-set shadow (spec/86) replaces the peel outright —
-        // an explicit choice wins, so the class is dropped with it.
-        className: `border text-amber-950 ${shadow ? '' : 'lvd-sticky-peel'} ${ring}`.trim(),
+        // Square corners (a real sticky is die-cut paper) and the Miro-style
+        // paper-peel instead of the uniform shadow-md halo: .lvd-sticky-peel
+        // (globals.css) draws a blurred copy of the note's own rectangle
+        // behind it, masked to fade out over the glued top strip — the note
+        // itself never changes shape. A user-set shadow (spec/86) replaces
+        // the peel outright — an explicit choice wins, so the class is
+        // dropped with it.
+        className: `text-amber-950 ${shadow ? '' : 'lvd-sticky-peel'} ${ring}`.trim(),
         style: {
           ...boxShadow,
           backgroundColor: element.fillColor ?? defaultFillColor(element),
-          borderColor: remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element),
-          borderWidth: remoteBorderColor ? remoteBorderWidth : undefined,
+          ...stickyBorder,
         },
       };
     }

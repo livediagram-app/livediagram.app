@@ -121,7 +121,9 @@ export function describeBoxedExport(
     return { opacity, shape: { kind: 'sticker', art: stickerArt }, label: null };
   }
   const fill = el.fillColor ?? defaultFillColor(el);
-  const stroke = el.strokeColor ?? defaultStrokeColor(el);
+  // A sticky is borderless paper unless the user deliberately set a border
+  // colour (matching the canvas, spec/09 "Sticky notes read as paper").
+  const stroke = el.strokeColor ?? (el.type === 'sticky' ? 'none' : defaultStrokeColor(el));
   // Icon elements (spec/09 "Icons" line art + spec/41 Technology marks): when
   // a caller supplies the glyph resolver AND the id resolves, export the real
   // art with the caption in the bottom band (mirroring IconGlyph /

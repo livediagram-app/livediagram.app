@@ -179,8 +179,8 @@ describe('renderElementsToSvg', () => {
   });
 
   describe('sticky notes', () => {
-    it('exports square corners (a sticky is die-cut paper, never rounded)', () => {
-      const el = {
+    const sticky = (o: Record<string, unknown> = {}) =>
+      ({
         id: 'st',
         type: 'sticky',
         x: 0,
@@ -188,10 +188,22 @@ describe('renderElementsToSvg', () => {
         width: 200,
         height: 200,
         label: 'Order placed',
-      } as Tab['elements'][number];
-      const svg = renderElementsToSvg(tab([el]));
+        ...o,
+      }) as Tab['elements'][number];
+
+    it('exports square corners (a sticky is die-cut paper, never rounded)', () => {
+      const svg = renderElementsToSvg(tab([sticky()]));
       expect(svg).toContain('rx="0"');
       expect(svg).not.toContain('rx="6"');
+    });
+
+    it('exports borderless by default; an explicit strokeColor still draws', () => {
+      // Matches the canvas: a sticky is borderless paper unless the user
+      // deliberately set a border colour.
+      expect(renderElementsToSvg(tab([sticky()]))).toContain('stroke="none"');
+      expect(renderElementsToSvg(tab([sticky({ strokeColor: '#b45309' })]))).toContain(
+        'stroke="#b45309"',
+      );
     });
   });
 

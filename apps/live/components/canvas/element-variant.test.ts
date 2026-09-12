@@ -76,15 +76,19 @@ describe('describeVariant — per-type body styling', () => {
     expect(style.borderWidth).toBe(3);
   });
 
-  it('a sticky has a real border + fill', () => {
-    const { className, style } = describeVariant(
-      make('sticky', { fillColor: '#ffd' }),
-      false,
-      false,
-      null,
-    );
-    expect(className).toContain('border');
-    expect(style.backgroundColor).toBe('#ffd');
+  it('a sticky is borderless paper by default; an explicit stroke draws one', () => {
+    // Real stickies have no outline — the sheet's edge against its shadow is
+    // the border. Setting strokeColor is an explicit user choice, so it
+    // still draws (the swatch stays functional, spec/09 Colours).
+    const plain = describeVariant(make('sticky', { fillColor: '#ffd' }), false, false, null);
+    expect(plain.className).not.toContain('border');
+    expect(plain.style.backgroundColor).toBe('#ffd');
+    expect(plain.style.borderColor).toBeUndefined();
+    expect(plain.style.borderWidth).toBeUndefined();
+    const stroked = describeVariant(make('sticky', { strokeColor: '#b45309' }), false, false, null);
+    expect(stroked.style.borderColor).toBe('#b45309');
+    expect(stroked.style.borderWidth).toBe(1);
+    expect(stroked.style.borderStyle).toBe('solid');
   });
 
   it('a sticky is square-cornered and wears the paper-peel class, not a halo', () => {
