@@ -155,6 +155,11 @@ type MultilineLabelProps = {
   alignX: TextAlignX;
   alignY: TextAlignY;
   className?: string;
+  // Auto-fit size (spec/139): when the element's size is 'scale', the
+  // caller measures the text against the box and passes the px it fits at,
+  // so 'scale' means fill-the-note rather than a fixed small size. The
+  // editor is handed the SAME number, or the text jumps on double-click.
+  fitPx?: number;
 };
 
 export function MultilineLabel({
@@ -166,8 +171,9 @@ export function MultilineLabel({
   padding,
   className = '',
   style,
+  fitPx,
 }: MultilineLabelProps & { padding: number; style?: LabelTextStyle }) {
-  const fontSize = `${MULTI_FONT_PX[textSize]}px`;
+  const fontSize = `${fitPx ?? MULTI_FONT_PX[textSize]}px`;
   const outerStyle = {
     fontSize,
     alignItems: ALIGN_ITEMS[alignY],

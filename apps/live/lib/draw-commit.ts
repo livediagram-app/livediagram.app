@@ -51,6 +51,14 @@ function eventStormingBoardStickyExtras(): Partial<StickyElement> {
     width: 200,
     height: 200,
     fixedSize: true,
+    // Auto-fit, centred both ways (spec/139): a workshop note is one short
+    // phrase that should FILL its paper and sit in the middle of it, like a
+    // marker-written sticky — never a small line clinging to the top-left.
+    // The note can't be resized, so the text adapting is what makes a long
+    // phrase legible.
+    textSize: 'scale',
+    textAlignX: 'center',
+    textAlignY: 'middle',
     rotation: Math.round((Math.random() * 2 - 1) * 11) / 10,
   };
 }

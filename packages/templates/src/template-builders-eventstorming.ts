@@ -47,8 +47,12 @@ export function buildEventStorming(cx: number, cy: number): Element[] {
       fillColor: DOMAIN_EVENT_FILL,
       // Alternate a gentle tilt so the notes read as hand-placed.
       rotation: i % 2 === 0 ? -1.1 : 1.1,
-      // Workshop stationery is one size for life (spec/139).
+      // Workshop stationery is one size for life, and its text auto-fits
+      // centred on the paper (spec/139).
       fixedSize: true,
+      textSize: 'scale',
+      textAlignX: 'center',
+      textAlignY: 'middle',
       // The seed IS the workshop's first stage (spec/139 views).
       layerId: ES_BIG_PICTURE_LAYER_ID,
     });

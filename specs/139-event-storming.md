@@ -157,6 +157,7 @@ The notes behave like the physical kit:
   only category that matters here, and every control that doesn't serve
   "add a note, type, drag" is a distraction. Canvas tools stay reachable
   by keyboard shortcut and the command palette (spec/70).
+- **Auto-fit, centred text.** Every ES note is created with `textSize: 'scale'` and centred both ways: a workshop note is one short phrase that should fill its paper and sit in the middle, like a marker-written sticky. It also closes the loop with fixed silhouettes — the note cannot be resized, so the TEXT adapting is what keeps a long phrase legible.
 - **Drag to the board.** Sticky tiles (the plain note and the whole ES
   category, rows and Favourites grid alike) drag onto the canvas like
   shape tiles (spec/58 ghost included, sized to the silhouette). The
@@ -211,6 +212,8 @@ type, kept current every session. Each should stay true on its own.
   dropdowns are hidden, because a chooser you never need is a distraction.
 - Removing chrome is safe only when another path survives: hidden tool
   pickers still leave keyboard shortcuts and the command palette.
+- Text fills the paper, the paper never resizes: on a fixed-silhouette
+  note, auto-fit is what makes a long phrase legible.
 - Paper shadows are backdrop-relative: ink tuned on light paper vanishes
   on a dark wall, so a dark canvas needs its own deeper peel.
 - Display label and inline editor must share ONE typography rule, or

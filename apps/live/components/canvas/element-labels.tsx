@@ -22,6 +22,7 @@ import {
   type TextSize,
 } from '@livediagram/diagram';
 import { RichTextEditor } from '@/components/canvas/RichTextEditor';
+import { fitMultilineFontPx } from '@/lib/fit-multiline-text';
 import { FixedSizeLabel, MultilineLabel, RichLabel, ScalingLabel } from './element-label-views';
 
 export function renderLabel(
@@ -74,6 +75,25 @@ export function renderLabel(
 
   const richText = (element as { richText?: TextRun[] }).richText;
 
+  // Auto-fit (spec/139): on a multi-line label (sticky) 'scale' means FILL
+  // THE NOTE — measured here once, then handed to whichever of the two
+  // surfaces renders (label or editor), so they can never disagree and
+  // double-clicking never shifts the text.
+  const fitBox =
+    isSticky && textSize === 'scale'
+      ? { width: element.width, height: element.height, padding }
+      : undefined;
+  const fitPx = fitBox
+    ? fitMultilineFontPx({
+        text: label,
+        width: fitBox.width,
+        height: fitBox.height,
+        padding,
+        bold: !!element.textBold,
+        italic: !!element.textItalic,
+      })
+    : undefined;
+
   if (isEditing) {
     // Per-element placeholder colour: typed text inherits the element's
     // resolved textColor via currentColor (set on the parent view), so the
@@ -90,6 +110,7 @@ export function renderLabel(
         initialRuns={richText}
         placeholder={placeholder}
         textSize={textSize}
+        fitBox={fitBox}
         alignX={alignX}
         alignY={alignY}
         padding={padding}
@@ -133,6 +154,7 @@ export function renderLabel(
         text={label}
         placeholder={placeholder}
         textSize={textSize}
+        fitPx={fitPx}
         alignX={alignX}
         alignY={alignY}
         padding={padding}

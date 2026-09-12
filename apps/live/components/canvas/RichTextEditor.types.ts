@@ -9,6 +9,9 @@ export type RichTextEditorProps = {
   initialRuns?: TextRun[];
   placeholder: string;
   textSize: TextSize;
+  // The box an auto-fitting ('scale') multi-line label measures against
+  // (spec/139). Absent = no auto-fit; the static size bucket applies.
+  fitBox?: { width: number; height: number; padding: number };
   alignX: TextAlignX;
   alignY: TextAlignY;
   padding: number;
