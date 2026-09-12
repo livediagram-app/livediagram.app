@@ -44,14 +44,14 @@ import type { PendingDraw } from '@/lib/draw-mode';
 
 // The board-wide sticky treatment on an event-storming board (spec/139):
 // one size for life (the plain square silhouette — tap-inheritance and
-// drag-sizing both stand down), plus a random hand-placed tilt (±1.5°,
+// drag-sizing both stand down), plus a random hand-placed tilt (±1.1°,
 // one decimal) so a wall of notes reads as a workshop rather than a grid.
 function eventStormingBoardStickyExtras(): Partial<StickyElement> {
   return {
     width: 200,
     height: 200,
     fixedSize: true,
-    rotation: Math.round((Math.random() * 2 - 1) * 15) / 10,
+    rotation: Math.round((Math.random() * 2 - 1) * 11) / 10,
   };
 }
 

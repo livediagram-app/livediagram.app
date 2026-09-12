@@ -132,3 +132,13 @@ export function effectiveRunStyle(
   }
   return css;
 }
+
+// The typography a label wears, display and editor alike. They MUST agree:
+// the display label and the inline editor occupy the same box, so any
+// difference in leading or weight moves the glyphs (and can re-wrap a
+// multi-line label) the moment editing starts — a layout shift on the most
+// common interaction there is. Single-line labels run tight + medium; a
+// multi-line label (sticky, page) keeps the element's own line-height.
+export function labelTypographyClass(multiline: boolean): string {
+  return multiline ? '' : 'font-medium leading-tight';
+}

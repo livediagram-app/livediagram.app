@@ -22,7 +22,7 @@
 import type { RunBoolKey } from '@livediagram/diagram';
 import { isMindNode } from '@livediagram/diagram';
 import { useMindGrow } from '@/components/canvas/MindGrowContext';
-import { ALIGN_ITEMS, TEXT_ALIGN } from '@/components/canvas/label-style';
+import { ALIGN_ITEMS, labelTypographyClass, TEXT_ALIGN } from '@/components/canvas/label-style';
 import { insertTextAtCaret } from '@/components/rich-text/rich-text-dom';
 import { RichTextToolbar } from '@/components/canvas/RichTextToolbar';
 import { listStyleOfText } from '@/components/rich-text/block-type';
@@ -222,9 +222,11 @@ export function RichTextEditor({
           textAlign: TEXT_ALIGN[alignX],
           fontFamily,
         }}
-        className={`pointer-events-auto w-full resize-none overflow-hidden whitespace-pre-wrap break-words bg-transparent leading-tight outline-none ${
-          multiline ? '' : 'font-medium'
-        } ${textClassName}`}
+        // Same typography rule as the display label (label-style): a
+        // mismatch here shifts the text the instant editing starts.
+        className={`pointer-events-auto w-full resize-none overflow-hidden whitespace-pre-wrap break-words bg-transparent outline-none ${labelTypographyClass(
+          multiline,
+        )} ${textClassName}`}
       />
       {/* Counter-scale by 1/zoom so the toolbar stays constant on-screen
           size despite the canvas world transform; flip below near the top. */}

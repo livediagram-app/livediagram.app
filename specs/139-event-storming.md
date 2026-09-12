@@ -149,9 +149,9 @@ The notes behave like the physical kit:
   scaling moves it without scaling it, the menu's Size category stays
   away, drag-to-size gestures and tap-size-inheritance both stand down.
 - **Hand-placed tilt.** Every sticky dropped on an ES board gets a
-  random rotation (±1.5°, one decimal) so a wall of notes reads as a
+  random rotation (±1.1°, one decimal) so a wall of notes reads as a
   workshop rather than a grid. The template's seed events ship tilted
-  (±1.5°) and `fixedSize` too.
+  (±1.1°) and `fixedSize` too.
 - **No palette chrome.** An ES board hides the palette's whole header
   band — BOTH dropdowns (canvas tool + category). The notation is the
   only category that matters here, and every control that doesn't serve
@@ -183,8 +183,8 @@ type, kept current every session. Each should stay true on its own.
   meaning; one resized note breaks the whole wall's grammar.
 - Authenticity is a feature: the paper peel, glue strip, and hand-placed
   tilt make the board read as a workshop, not a diagram.
-- Tilt is calibrated, not decorative: ±1.5° reads hand-placed, ±2.5°
-  reads messy — seed and dropped notes share the same range.
+- Tilt is calibrated by eye, not by rule: ±1.1° reads hand-placed,
+  ±2.5° reads messy — seed and dropped notes share the same range.
 - Sticky shadows tolerate no hard edges: continuous ramps (gradient in
   the paint, then blur) beat masked or clipped fades, which band — the
   winning recipe was measured against Miro's renderer and hand-tuned on

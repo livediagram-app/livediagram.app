@@ -16,6 +16,7 @@ import {
   ALIGN_ITEMS,
   effectiveRunStyle,
   FIXED_FONT_PX,
+  labelTypographyClass,
   labelTextStyleCss,
   MULTI_FONT_PX,
   MULTI_RUN_PX,
@@ -237,9 +238,9 @@ export function RichLabel({
   const runSizePx = multiline ? MULTI_RUN_PX : FIXED_FONT_PX;
   return (
     <div
-      className={`pointer-events-none absolute inset-0 flex overflow-hidden ${
-        multiline ? '' : 'font-medium leading-tight'
-      } ${className}`}
+      className={`pointer-events-none absolute inset-0 flex overflow-hidden ${labelTypographyClass(
+        multiline,
+      )} ${className}`}
       style={{ fontSize: `${basePx}px`, alignItems: ALIGN_ITEMS[alignY], padding }}
     >
       <div

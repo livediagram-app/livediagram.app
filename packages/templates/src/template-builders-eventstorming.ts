@@ -46,7 +46,7 @@ export function buildEventStorming(cx: number, cy: number): Element[] {
       label,
       fillColor: DOMAIN_EVENT_FILL,
       // Alternate a gentle tilt so the notes read as hand-placed.
-      rotation: i % 2 === 0 ? -1.5 : 1.5,
+      rotation: i % 2 === 0 ? -1.1 : 1.1,
       // Workshop stationery is one size for life (spec/139).
       fixedSize: true,
       // The seed IS the workshop's first stage (spec/139 views).
