@@ -1803,6 +1803,34 @@
     box-shadow: 0 0 0 6px rgb(34 197 94 / 0.45);
   }
 }
+/* Sticky-note paper peel (spec/09). The shadow is cast by a pseudo-element,
+   not the note's own box: a wrapper box-shadow always hugs the whole
+   rectangle, but a real sticky is glued along its TOP STRIP and only the
+   rest of the sheet comes loose — so the caster starts below that strip,
+   letting the shadow appear partway down the sides and nowhere above. The
+   slight perspective tilt (origin at the glue line) projects the caster's
+   bottom edge wider and lower, so the shadow's offset INCREASES toward the
+   bottom — while the note itself stays a flat, untransformed rectangle.
+   Layered soft shadows deepen the throw at the bottom edge. The pseudo
+   paints above the note's background (negative z-index child of its own
+   stacking context), so the inner blur doubles as subtle edge shading on
+   the lower sides — which reads as the sheet curving away, and is why the
+   alphas stay low. Element rotation on the wrapper carries the whole
+   illusion with it. */
+.lvd-sticky-peel::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  /* The glued strip: nothing escapes above this line. */
+  inset: 15% 1px 2px 1px;
+  transform: perspective(400px) rotateX(-2.5deg);
+  transform-origin: top center;
+  box-shadow:
+    0 2px 3px rgb(15 23 42 / 0.1),
+    0 8px 7px -2px rgb(15 23 42 / 0.13),
+    0 17px 12px -5px rgb(15 23 42 / 0.14);
+}
+
 .lvd-done-complete {
   animation: lvd-done-flash 900ms ease-in-out 4;
   border-radius: inherit;

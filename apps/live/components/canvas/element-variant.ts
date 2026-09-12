@@ -157,18 +157,18 @@ export function describeVariant(
     case 'sticky': {
       const ring = `${singleRing('ring-2 ring-brand-200')} ${multiRing}`.trim();
       return {
-        // Square corners (a real sticky is die-cut paper) and a paper-peel
-        // shadow instead of the uniform shadow-md halo: a hairline of
-        // contact under the note plus a soft throw that falls only BELOW
-        // it (negative spread tucks it under the bottom edge), so the top
-        // reads as glued to the board while the bottom ever-so-slightly
-        // comes loose. A user-set shadow (spec/86) replaces the peel —
-        // both drive the same property, and an explicit choice wins.
-        className: `border text-amber-950 ${ring}`,
+        // Square corners (a real sticky is die-cut paper) and the paper-peel
+        // treatment instead of the uniform shadow-md halo: .lvd-sticky-peel
+        // (globals.css) casts the shadow from a pseudo-element inset below
+        // the glued top strip, so the shadow starts partway DOWN THE SIDES
+        // and offsets increasingly toward the bottom — top stuck flat,
+        // bottom ever-so-slightly loose. A wrapper box-shadow can't start
+        // partway down a side, hence the caster. The note's own shape never
+        // changes. A user-set shadow (spec/86) replaces the peel outright —
+        // an explicit choice wins, so the class is dropped with it.
+        className: `border text-amber-950 ${shadow ? '' : 'lvd-sticky-peel'} ${ring}`.trim(),
         style: {
-          boxShadow: shadow
-            ? shadowBoxCss(shadow)
-            : '0 1px 1px rgba(15, 23, 42, 0.06), 0 14px 12px -10px rgba(15, 23, 42, 0.32)',
+          ...boxShadow,
           backgroundColor: element.fillColor ?? defaultFillColor(element),
           borderColor: remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element),
           borderWidth: remoteBorderColor ? remoteBorderWidth : undefined,

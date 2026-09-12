@@ -91,7 +91,7 @@ Boxed elements carry three optional colour fields:
 
 All stored as CSS-compatible colour strings (typically `#rrggbb`).
 
-**Sticky notes read as paper**: square corners (die-cut, never rounded — the canvas and the SVG export agree on `rx=0`), and the default shadow falls only BELOW the note — a hairline of contact plus a soft bottom throw — so the top edge reads as glued to the board while the bottom ever-so-slightly comes loose. A user-set element shadow (spec/86) replaces the peel outright: both drive the same property and an explicit choice wins.
+**Sticky notes read as paper**: square corners (die-cut, never rounded — the canvas and the SVG export agree on `rx=0`), and the default shadow says the note is glued along its TOP STRIP with the rest of the sheet ever-so-slightly loose. That can't be a wrapper box-shadow (one always hugs the whole rectangle), so `.lvd-sticky-peel` (globals.css) casts it from a pseudo-element inset below the glued strip (~top 15%) with a slight perspective tilt about the glue line: the shadow starts partway DOWN THE SIDES, nowhere above, and its offset increases toward the bottom — while the note itself stays a flat, untransformed rectangle. A user-set element shadow (spec/86) replaces the peel outright (the class is dropped with it): an explicit choice wins.
 
 Defaults follow the design system per type:
 
