@@ -152,6 +152,11 @@ The notes behave like the physical kit:
   random rotation (±1.5°, one decimal) so a wall of notes reads as a
   workshop rather than a grid. The template's seed events ship tilted
   (±1.5°) and `fixedSize` too.
+- **No palette chrome.** An ES board hides the palette's whole header
+  band — BOTH dropdowns (canvas tool + category). The notation is the
+  only category that matters here, and every control that doesn't serve
+  "add a note, type, drag" is a distraction. Canvas tools stay reachable
+  by keyboard shortcut and the command palette (spec/70).
 - **Drag to the board.** Sticky tiles (the plain note and the whole ES
   category, rows and Favourites grid alike) drag onto the canvas like
   shape tiles (spec/58 ghost included, sized to the silhouette). The
@@ -202,6 +207,10 @@ type, kept current every session. Each should stay true on its own.
   palette homes keeps the historical prefix.
 - Chrome must earn its keep or be removed: the timeline rail (layer,
   element, view chip) was built, judged, and retired in one session.
+- On this board the palette IS the notation: its category and tool
+  dropdowns are hidden, because a chooser you never need is a distraction.
+- Removing chrome is safe only when another path survives: hidden tool
+  pickers still leave keyboard shortcuts and the command palette.
 - Alignment help belongs BEFORE the drop: guide lines during the palette
   drag serve the capture loop; a misplaced note that needs fixing after
   is friction.

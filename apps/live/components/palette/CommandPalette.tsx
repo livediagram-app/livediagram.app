@@ -372,6 +372,9 @@ export function CommandPalette({
             // default rather than whatever was open on the other tab.
             key={esBoard ? 'es-board' : 'standard'}
             defaultOpenId={esBoard ? 'event-storming' : 'favourites'}
+            // Distraction-free capture surface (spec/139): an ES board hides
+            // both dropdowns — the notation IS the palette there.
+            hideHeader={esBoard}
             leading={
               <PaletteDropdown
                 ariaLabel="Canvas tool"
