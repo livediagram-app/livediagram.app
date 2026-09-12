@@ -156,13 +156,10 @@ export function deriveCanvasSelection(input: {
   // connector to a grid is an unlikely flow and the external dots
   // clash with the table's own in-cell controls. Resize handles
   // (resizeVisible) still show.
-  const anchorVisible = (id: string) =>
-    handleVisible(id) && elements.find((el) => el.id === id)?.type !== 'table';
-
-  // Resize handles additionally skip the FIXED-SIZE kinds (spec/103): a
-  // Selection Mode button is a control at one size, so offering the handles
-  // would advertise a resize that the drag paths deliberately ignore. Anchors
-  // stay — an arrow can still point at a button.
+  // Resize handles skip the FIXED-SIZE kinds (spec/103 buttons) and any
+  // element stamped fixed at creation (spec/139 event-storming notes): both
+  // are one size for life, so offering a handle would advertise a resize the
+  // drag paths deliberately ignore.
   const resizeVisible = (id: string) => {
     if (!handleVisible(id)) return false;
     const el = elements.find((e) => e.id === id);
@@ -170,6 +167,15 @@ export function deriveCanvasSelection(input: {
     // notes by their creation stamp — spec/139) advertise no resize.
     return !(el && isFixedSizeElement(el));
   };
+
+  // The edge "anchors" are RESIZE grips today (arrows are drawn from the
+  // quick-connect menu now, see SelectionChromeLayer), so they follow the
+  // same fixed-size rule as the corner handles. They used to be exempt on
+  // the reasoning that "an arrow can still point at a button" — true of a
+  // connector anchor, untrue of the widget that actually renders, which is
+  // why a fixed-size sticky could still be dragged wider by its edges.
+  const anchorVisible = (id: string) =>
+    resizeVisible(id) && elements.find((el) => el.id === id)?.type !== 'table';
 
   const unionResizeIds: Set<string> | null =
     multiSelectedIds.size > 1 ? multiSelectedIds : memberIds.size > 1 ? memberIds : null;

@@ -221,3 +221,33 @@ describe('deriveCanvasSelection', () => {
     expect(s.showPlus).toBe(false);
   });
 });
+
+// A fixed-size element (spec/103 buttons, spec/139 event-storming notes)
+// advertises NO resize affordance — and the edge "anchor" grips are resize
+// grips today (arrows are drawn from the quick-connect menu now), so they
+// have to disappear with the corner handles. Leaving them behind is exactly
+// the bug that let an event-storming sticky be dragged wider.
+describe('deriveCanvasSelection — fixed-size elements', () => {
+  const fixedSticky = {
+    id: 'f',
+    type: 'sticky',
+    x: 0,
+    y: 0,
+    width: 200,
+    height: 200,
+    fixedSize: true,
+  } as unknown as Element;
+
+  it('hides both the corner handles and the edge grips', () => {
+    const s = derive({ elements: [fixedSticky], selectedId: 'f' });
+    expect(s.showHandlesFor('f')).toBe(false);
+    expect(s.showAnchorsFor('f')).toBe(false);
+  });
+
+  it('still shows both for an ordinary sticky', () => {
+    const plain = { ...fixedSticky, id: 'p', fixedSize: undefined } as unknown as Element;
+    const s = derive({ elements: [plain], selectedId: 'p' });
+    expect(s.showHandlesFor('p')).toBe(true);
+    expect(s.showAnchorsFor('p')).toBe(true);
+  });
+});

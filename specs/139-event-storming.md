@@ -212,6 +212,9 @@ type, kept current every session. Each should stay true on its own.
   dropdowns are hidden, because a chooser you never need is a distraction.
 - Removing chrome is safe only when another path survives: hidden tool
   pickers still leave keyboard shortcuts and the command palette.
+- A widget can outlive its concept: the edge "anchor" grips resize, so
+  they must follow the resize rule — naming lagged behaviour and let a
+  fixed-size note be dragged wider.
 - Text fills the paper, the paper never resizes: on a fixed-silhouette
   note, auto-fit is what makes a long phrase legible.
 - Paper shadows are backdrop-relative: ink tuned on light paper vanishes
