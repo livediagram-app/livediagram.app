@@ -2421,6 +2421,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   });
 
   return {
+    // Clipboard copy, also exposed to the event-storming note menu (spec/139).
+    copySelection,
     ...panelLayout,
     // Presenting wears the zen chrome treatment (spec/31 → spec/26): header,
     // tab bar, panels and palette all gone, so a projector shows the diagram

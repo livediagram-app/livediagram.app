@@ -76,6 +76,13 @@ semantic colour:
   selection ("Selected Domain Event" rather than "Selected Sticky") and is
   what any later notation-aware feature reads instead of matching hexes.
   Notes authored before the stamp resolve through their canonical fill.
+- **A verb menu, not a styling menu.** Right-clicking a note offers Cut /
+  Copy / Duplicate / Bring to Front / Send to Back / Remove, and nothing
+  else: Colours, Shadow, Animation, Text, Rotation and Layer are hidden,
+  because a note’s colour, silhouette, text treatment and tilt ARE the
+  notation — those controls could only break the grammar. Front/back are
+  the IN-LAYER stack (the notes share one band), and Cut is copy+delete.
+  Collaborate + Resources stay: comments, assigned actions, links.
 - **Stage routing:** each note kind carries its workshop `stage` in the
   catalogue (events / actors / hotspots → Big picture; commands /
   policies / read models / external systems → Process; aggregates →
@@ -217,6 +224,8 @@ type, kept current every session. Each should stay true on its own.
   dropdowns are hidden, because a chooser you never need is a distraction.
 - Removing chrome is safe only when another path survives: hidden tool
   pickers still leave keyboard shortcuts and the command palette.
+- Where the grammar is fixed, the menu should offer VERBS not styles: a
+  control that can only break the notation is worse than no control.
 - Notation kinds belong ON the element, not inferred from colour: a hex
   match is a coincidence waiting to happen.
 - A copy is a new piece of paper: fresh id AND fresh tilt, or duplicates

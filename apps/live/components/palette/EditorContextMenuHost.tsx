@@ -37,6 +37,11 @@ export function EditorContextMenuHost() {
     commitTextAlign,
     previewTextAlign,
     bringSelectedToFront,
+    copySelection,
+    deleteSelected,
+    duplicateSelected,
+    stackSelectedFront,
+    stackSelectedBack,
     sendSelectedToBack,
     layers,
     moveSelectedToLayer,
@@ -196,6 +201,19 @@ export function EditorContextMenuHost() {
       onPreviewTextAlign={previewTextAlign}
       onBringToFront={bringSelectedToFront}
       onSendToBack={sendSelectedToBack}
+      // Event-storming note verbs (spec/139). Front/back here are the
+      // IN-LAYER stack (same as the selection popover), not the layer
+      // moves above: on a workshop board the notes share one band and
+      // "bring to front" means "over the note it overlaps".
+      onCutElement={() => {
+        copySelection();
+        deleteSelected();
+      }}
+      onCopyElement={copySelection}
+      onDuplicateElement={duplicateSelected}
+      onDeleteElement={deleteSelected}
+      onStackFront={stackSelectedFront}
+      onStackBack={stackSelectedBack}
       layers={layers}
       selectionLayerId={selectionLayerId}
       onMoveSelectionToLayer={moveSelectedToLayer}

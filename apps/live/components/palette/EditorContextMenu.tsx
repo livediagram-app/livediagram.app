@@ -15,6 +15,7 @@
 
 import { onMouseHover, useRevertOnUnmount } from '@/components/primitives/hover-preview';
 import {
+  eventStormingKindOf,
   isFixedSizeElement,
   arrowheadShapeOf,
   arrowheadSizeOf,
@@ -36,6 +37,10 @@ import {
   RotationGlyph,
   SizeMenuIcon,
   SquareMenuIcon,
+  CopyIcon,
+  CutIcon,
+  DuplicateMenuIcon,
+  RemoveIcon,
 } from '@/components/palette/context-menu-icons';
 import {
   MenuAccordionSection,
@@ -128,39 +133,66 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
       target.type === 'link-card' ||
       target.type === 'video';
     const showCollaborateGroup = boxed;
+    // An event-storming note (spec/139) gets a VERB menu, not a styling one:
+    // its colour, silhouette, text treatment and tilt are the notation, so
+    // Colours / Shadow / Animation / Text / Rotation / Layer have nothing
+    // meaningful to offer — they would only invite someone to break the
+    // grammar. What a facilitator actually reaches for mid-workshop is
+    // cut / copy / duplicate / remove and the stacking pair.
+    const esNote = eventStormingKindOf(target) !== null;
     return (
       <ContextMenu position={position} onClose={onClose} flush anchorBottom={anchorBottom}>
         {/* Layer — pinned FIRST in the menu (before the type-specific
             categories, which render conditionally and so would otherwise
             shuffle Layer's position around). Groups front/back + opacity +
             (for boxed elements) the aspect-ratio lock. */}
-        <MenuAccordionSection title="Layer" icon={<LayersGlyph />} {...sectionProps('layer')}>
-          {/* Layer order tweaks keep the menu open so you can nudge
-              front/back a few times in a row. */}
-          <MenuTileGrid cols={2}>
+        {esNote ? (
+          <MenuTileGrid cols={3}>
+            <MenuTile icon={<CutIcon />} label="Cut" onClick={props.onCutElement} />
+            <MenuTile icon={<CopyIcon />} label="Copy" onClick={props.onCopyElement} />
             <MenuTile
-              icon={<LayerUpIcon />}
-              label="Bring to Front"
-              onClick={props.onBringToFront}
+              icon={<DuplicateMenuIcon />}
+              label="Duplicate"
+              onClick={props.onDuplicateElement}
             />
-            <MenuTile icon={<LayerDownIcon />} label="Send to Back" onClick={props.onSendToBack} />
+            <MenuTile icon={<LayerUpIcon />} label="Bring to Front" onClick={props.onStackFront} />
+            <MenuTile icon={<LayerDownIcon />} label="Send to Back" onClick={props.onStackBack} />
+            <MenuTile icon={<RemoveIcon />} label="Remove" onClick={props.onDeleteElement} />
           </MenuTileGrid>
-          {/* Move to a named layer (spec/74) — only once the tab has
+        ) : null}
+        {esNote ? null : (
+          <MenuAccordionSection title="Layer" icon={<LayersGlyph />} {...sectionProps('layer')}>
+            {/* Layer order tweaks keep the menu open so you can nudge
+              front/back a few times in a row. */}
+            <MenuTileGrid cols={2}>
+              <MenuTile
+                icon={<LayerUpIcon />}
+                label="Bring to Front"
+                onClick={props.onBringToFront}
+              />
+              <MenuTile
+                icon={<LayerDownIcon />}
+                label="Send to Back"
+                onClick={props.onSendToBack}
+              />
+            </MenuTileGrid>
+            {/* Move to a named layer (spec/74) — only once the tab has
               more than one layer (the row renders nothing otherwise). */}
-          <MoveToLayerRow
-            layers={props.layers}
-            elements={props.elements}
-            currentLayerId={props.selectionLayerId}
-            onMove={props.onMoveSelectionToLayer}
-          />
-          <ContextMenuDivider />
-          {/* Opacity slider — a non-closing row (dragging stays inside the
+            <MoveToLayerRow
+              layers={props.layers}
+              elements={props.elements}
+              currentLayerId={props.selectionLayerId}
+              onMove={props.onMoveSelectionToLayer}
+            />
+            <ContextMenuDivider />
+            {/* Opacity slider — a non-closing row (dragging stays inside the
               menu, so the outside-click guard leaves it open). */}
-          <OpacityRow
-            value={(target as { opacity?: number }).opacity ?? 1}
-            onChange={props.onSetOpacity}
-          />
-        </MenuAccordionSection>
+            <OpacityRow
+              value={(target as { opacity?: number }).opacity ?? 1}
+              onChange={props.onSetOpacity}
+            />
+          </MenuAccordionSection>
+        )}
         {/* Size — the exact box (spec/134). Gathers the three controls that
             all answer "how big is this": the width / height boxes, the aspect
             lock (which lived in Layer) and the reset (which lived in Shape,
@@ -205,7 +237,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
         {/* Rotation — fixed snap angles. Each tile previews the orientation
             (an upright marker rotated by the angle) so the effect is legible
             before clicking; 0° resets to upright. */}
-        {boxed ? (
+        {boxed && !esNote ? (
           <MenuAccordionSection
             title="Rotation"
             icon={<RotationGlyph deg={45} />}
@@ -229,18 +261,23 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
             </div>
           </MenuAccordionSection>
         ) : null}
-        {/* ── Appearance group: Presets / Progress / Animation / Colours / Border ── */}
-        <ElementAppearanceSections
-          props={props}
-          target={target}
-          onClose={onClose}
-          sectionProps={sectionProps}
-          flyoutProps={flyoutProps}
-          colorProps={colorProps}
-          textColorHandlers={textColorHandlers}
-          fillColorHandlers={fillColorHandlers}
-          strokeColorHandlers={strokeColorHandlers}
-        />
+        {/* ── Appearance group: Presets / Progress / Animation / Colours / Border ──
+            Skipped entirely for an event-storming note: its colour, text
+            treatment and shadow are the notation (spec/139), so every
+            control in here would only invite breaking the grammar. */}
+        {esNote ? null : (
+          <ElementAppearanceSections
+            props={props}
+            target={target}
+            onClose={onClose}
+            sectionProps={sectionProps}
+            flyoutProps={flyoutProps}
+            colorProps={colorProps}
+            textColorHandlers={textColorHandlers}
+            fillColorHandlers={fillColorHandlers}
+            strokeColorHandlers={strokeColorHandlers}
+          />
+        )}
         {showContentGroup ? <MenuGroupSeparator /> : null}
         {/* Line + Pointer — arrow stroke + arrowhead controls (shared
             ArrowLine/PointerControls). */}
