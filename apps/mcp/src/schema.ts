@@ -90,7 +90,7 @@ paints the whole diagram + canvas with it (you still omit per-element colours):
   ${themeIds}
 Defaults to "brand" (clean, light). Rough guide: cool blues = ocean / sky;
 greens = forest / pine / olive; warm = sunset / sand / rose / mocha; neutral =
-mono / steel / cream; dark backdrops = midnight / charcoal / plum / abyss;
+mono / steel / cream; dark backdrops = midnight / charcoal / dusk / plum / abyss;
 multi-colour (each branch a different hue) = rainbow / pastel / tropical /
 autumn / jewel; uml = standard UML notation colours. Pick one that fits the
 subject; one theme applies to all tabs in a create_diagram call.

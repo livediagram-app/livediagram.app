@@ -56,15 +56,15 @@ describe('THEMES catalogue', () => {
   // copy. If the catalogue drifts from this the spec stops being
   // accurate. The extras include the multi-colour themes from spec/29.
   // Mirrors the equivalent assertions in templates.test.ts.
-  it('lists exactly 27 themes (matches spec/16)', () => {
-    expect(THEMES).toHaveLength(27);
+  it('lists exactly 28 themes (matches spec/16)', () => {
+    expect(THEMES).toHaveLength(28);
   });
 
-  it('splits cleanly into 12 default + 15 extra (retained as catalogue metadata)', () => {
+  it('splits cleanly into 12 default + 16 extra (retained as catalogue metadata)', () => {
     const defaults = THEMES.filter((t) => !t.extra);
     const extras = THEMES.filter((t) => t.extra);
     expect(defaults).toHaveLength(12);
-    expect(extras).toHaveLength(15);
+    expect(extras).toHaveLength(16);
   });
 
   it('leads with the brand theme (the un-themed default is the most common pick)', () => {

@@ -29,6 +29,7 @@ const THEME_DESCRIPTIONS: Record<ThemeId, string> = {
   steel: 'Cool greys with a slate edge.',
   mocha: 'Coffee browns on warm cream.',
   charcoal: 'Neutral greys on near-black.',
+  dusk: 'Blue-violet twilight on deep indigo.',
   plum: 'Soft violets on deep plum.',
   abyss: 'Aqua tones on deep teal.',
   espresso: 'Warm tan on dark-roast brown.',
@@ -74,6 +75,7 @@ const THEME_CATEGORY: Record<ThemeId, ThemeCategory> = {
   // Dark: dark-backdrop themes.
   midnight: 'dark',
   charcoal: 'dark',
+  dusk: 'dark',
   pine: 'dark',
   plum: 'dark',
   abyss: 'dark',
