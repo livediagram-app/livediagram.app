@@ -146,7 +146,7 @@ describe('buildDrawnBoxed', () => {
     expect(dragged.height).toBe(200);
     expect((dragged as { fixedSize?: boolean }).fixedSize).toBe(true);
     expect(typeof dragged.rotation).toBe('number');
-    expect(Math.abs(dragged.rotation!)).toBeLessThanOrEqual(2.5);
+    expect(Math.abs(dragged.rotation!)).toBeLessThanOrEqual(1.5);
     // Off-board: everything stays classic — drag sizes, no tilt, no flag.
     const off = buildDrawnBoxed({ type: 'sticky' }, 0, 0, 500, 400, null, tab());
     expect(off.width).toBe(500);

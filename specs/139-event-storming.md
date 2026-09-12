@@ -149,7 +149,7 @@ The notes behave like the physical kit:
   scaling moves it without scaling it, the menu's Size category stays
   away, drag-to-size gestures and tap-size-inheritance both stand down.
 - **Hand-placed tilt.** Every sticky dropped on an ES board gets a
-  random rotation (±2.5°, one decimal) so a wall of notes reads as a
+  random rotation (±1.5°, one decimal) so a wall of notes reads as a
   workshop rather than a grid. The template's seed events ship tilted
   (±1.5°) and `fixedSize` too.
 - **Drag to the board.** Sticky tiles (the plain note and the whole ES
