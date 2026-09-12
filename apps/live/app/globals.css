@@ -1820,25 +1820,29 @@
    note's edges survives, exactly like a real shadow. ::after also carries
    a whisper of top-edge shading, the pressed-down glue strip. Element
    rotation on the wrapper rotates sheet and shadow together. */
+/* The caster runs 2px PROUD of the sheet's sides: flush, the blur mostly
+   dies under the ::after repaint and no side halo survives. Proud + a wide
+   blur + a lower alpha = the soft Miro halo — visible beside the sheet from
+   the glue line down, growing toward the bottom, never hard-edged. */
 .lvd-sticky-peel::before {
   content: '';
   position: absolute;
   z-index: -2;
-  inset: 0;
-  background: rgb(15 23 42 / 0.5);
-  filter: blur(4px);
-  transform: translateY(3px);
+  inset: 0 -3px 0 -3px;
+  background: rgb(15 23 42 / 0.42);
+  filter: blur(9px);
+  transform: translateY(5px);
   -webkit-mask-image: linear-gradient(
     to bottom,
-    transparent 12%,
-    rgb(0 0 0 / 0.3) 45%,
-    rgb(0 0 0 / 0.75) 100%
+    transparent 8%,
+    rgb(0 0 0 / 0.5) 40%,
+    rgb(0 0 0 / 1) 100%
   );
   mask-image: linear-gradient(
     to bottom,
-    transparent 12%,
-    rgb(0 0 0 / 0.3) 45%,
-    rgb(0 0 0 / 0.75) 100%
+    transparent 8%,
+    rgb(0 0 0 / 0.5) 40%,
+    rgb(0 0 0 / 1) 100%
   );
 }
 .lvd-sticky-peel::after {
