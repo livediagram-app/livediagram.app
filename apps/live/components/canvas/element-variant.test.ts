@@ -87,6 +87,20 @@ describe('describeVariant — per-type body styling', () => {
     expect(style.backgroundColor).toBe('#ffd');
   });
 
+  it('a sticky is square-cornered and lifts at the bottom, top stuck flat', () => {
+    // Paper look: sharp corners (a real sticky is die-cut square), and the
+    // default shadow falls only BELOW the note — the top edge reads as glued
+    // to the board while the bottom ever-so-slightly peels away. No uniform
+    // Tailwind halo (shadow-md) which would float the whole note.
+    const { className, style } = describeVariant(make('sticky'), false, false, null);
+    expect(style.borderRadius).toBeUndefined();
+    expect(className).not.toContain('rounded');
+    expect(className).not.toContain('shadow-md');
+    // Bottom-weighted: every shadow layer offsets downward, none spread up.
+    expect(style.boxShadow).toBeTruthy();
+    expect(style.boxShadow).toContain('14px');
+  });
+
   it('text / freehand / table carry no body border or fill', () => {
     for (const type of ['text', 'freehand', 'table']) {
       const { style } = describeVariant(make(type), false, false, null);

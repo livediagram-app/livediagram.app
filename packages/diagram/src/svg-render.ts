@@ -241,7 +241,12 @@ export function svgBoxed(
         ? svgShapeSilhouette(el, shape.fill, shape.stroke)
         : null;
     const rx =
-      el.type === 'shape' && el.shape === 'stadium' ? Math.min(el.width, el.height) / 2 : 6;
+      el.type === 'shape' && el.shape === 'stadium'
+        ? Math.min(el.width, el.height) / 2
+        : // A sticky is die-cut paper: square corners, matching the canvas.
+          el.type === 'sticky'
+          ? 0
+          : 6;
     shapeStr =
       silhouette ??
       `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="${r2(rx)}" fill="${xmlEscape(shape.fill)}" stroke="${xmlEscape(shape.stroke)}" stroke-width="1.5"/>`;

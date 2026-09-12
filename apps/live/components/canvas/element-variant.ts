@@ -157,10 +157,18 @@ export function describeVariant(
     case 'sticky': {
       const ring = `${singleRing('ring-2 ring-brand-200')} ${multiRing}`.trim();
       return {
-        className: `border text-amber-950 shadow-md ${ring}`,
+        // Square corners (a real sticky is die-cut paper) and a paper-peel
+        // shadow instead of the uniform shadow-md halo: a hairline of
+        // contact under the note plus a soft throw that falls only BELOW
+        // it (negative spread tucks it under the bottom edge), so the top
+        // reads as glued to the board while the bottom ever-so-slightly
+        // comes loose. A user-set shadow (spec/86) replaces the peel —
+        // both drive the same property, and an explicit choice wins.
+        className: `border text-amber-950 ${ring}`,
         style: {
-          ...boxShadow,
-          borderRadius: '4px',
+          boxShadow: shadow
+            ? shadowBoxCss(shadow)
+            : '0 1px 1px rgba(15, 23, 42, 0.06), 0 14px 12px -10px rgba(15, 23, 42, 0.32)',
           backgroundColor: element.fillColor ?? defaultFillColor(element),
           borderColor: remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element),
           borderWidth: remoteBorderColor ? remoteBorderWidth : undefined,

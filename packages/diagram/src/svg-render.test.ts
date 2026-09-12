@@ -178,6 +178,23 @@ describe('renderElementsToSvg', () => {
     });
   });
 
+  describe('sticky notes', () => {
+    it('exports square corners (a sticky is die-cut paper, never rounded)', () => {
+      const el = {
+        id: 'st',
+        type: 'sticky',
+        x: 0,
+        y: 0,
+        width: 200,
+        height: 200,
+        label: 'Order placed',
+      } as Tab['elements'][number];
+      const svg = renderElementsToSvg(tab([el]));
+      expect(svg).toContain('rx="0"');
+      expect(svg).not.toContain('rx="6"');
+    });
+  });
+
   describe('tables (spec/09)', () => {
     const table = (o: Record<string, unknown> = {}) =>
       ({
