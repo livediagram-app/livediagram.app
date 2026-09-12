@@ -1,4 +1,13 @@
-import { defaultSessionConfig, isFixedSizeShape, REACTION_PAD_LABEL } from '@livediagram/diagram';
+import {
+  defaultSessionConfig,
+  eventStormingStageLayerId,
+  isEventStormingTab,
+  isFixedSizeShape,
+  isLayerLocked,
+  isLayerVisible,
+  REACTION_PAD_LABEL,
+  type EventStormingNoteKind,
+} from '@livediagram/diagram';
 import { ARROW_SNAP_THRESHOLD_PX, inheritedSizeFor } from '@/lib/canvas';
 import {
   COMPONENT_SIZE,
@@ -30,6 +39,16 @@ import type { PendingDraw } from '@/lib/draw-mode';
 // composite) and returns the minted element(s). The hook stays the
 // owner of everything stateful — the functional commit, selection,
 // telemetry, and the image-picker follow-up.
+
+// The stage-layer stamp for an event-storming note, or nothing when the
+// board / target layer can't take it (see the call site above).
+function esStageStamp(kind: EventStormingNoteKind, activeTab: Tab): { layerId?: string } {
+  if (!isEventStormingTab(activeTab.layers)) return {};
+  const layerId = eventStormingStageLayerId(kind);
+  const layer = activeTab.layers?.find((l) => l.id === layerId);
+  if (!layer || !isLayerVisible(layer) || isLayerLocked(layer)) return {};
+  return { layerId };
+}
 
 // Stroke for a new arrow when the active theme has no explicit
 // `elementStroke` (the Brand theme). brand-500 — matches the shape
@@ -228,6 +247,14 @@ export function buildDrawnBoxed(
     // the element fill. Stickies are exempt from theme recolouring, so the
     // notation survives every theme without themeLockFill.
     ...(intent.type === 'sticky' && intent.fill ? { fillColor: intent.fill } : {}),
+    // Stage routing (spec/139): on an event-storming board the note files
+    // onto its workshop stage's layer — a Command dropped while browsing Big
+    // picture still lands under Process. Only when the target layer exists,
+    // is visible AND unlocked: stamping onto a hidden layer creates an
+    // element the user can't see, a locked one an element they can't touch —
+    // in both cases the note falls through to the ordinary active-layer
+    // stamping at the commit choke point instead.
+    ...(intent.type === 'sticky' && intent.esKind ? esStageStamp(intent.esKind, activeTab) : {}),
     // Technology marks render at a fixed size (spec/41), so warping the
     // box can't warp the mark — the aspect lock createShape('icon') bakes
     // in would only fight resizing the caption room, so drop it.

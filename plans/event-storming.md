@@ -74,7 +74,33 @@ One diagram, three cumulative stages + an additive rail lens.
 - [x] Spec/139 phase-3 section + spec/09 template entry updated
 - [x] Verified in the dev server (bar renders, rail toggles, stages switch)
 
-## Phase 4 — board structure
+## Phase 4a — palette promotion + stage routing + rail retirement (SHIPPED)
+
+Decisions (2026-09-12, round two): the notation becomes a **top-level
+palette category** (Structure band); tiles **auto-route notes onto their
+stage's layer**; the **timeline rail is retired** (layer, element, view-bar
+toggle — it added chrome without earning it; old boards keep the layer as
+ordinary spec/74 data).
+
+- [x] `stage` on the note catalogue + `eventStormingStageLayerId` (tested)
+- [x] Rail removed: diagram helpers, template layer + element, view-bar
+      chip, hook plumbing, telemetry strings; specs updated
+- [x] Tiles moved to `section: 'event-storming'` (ids unchanged for
+      Favourites); Write reverted to its four elements + census 4
+- [x] Top-level category: PALETTE_CATEGORIES (Structure band), tab icon,
+      dispatch entry, census 8
+- [x] Stage routing in the commit path (visible + unlocked target only;
+      falls through to active-layer stamping otherwise) — tested
+- [x] Palette OPENS on the Event Storming category on ES boards (keyed
+      default; Favourites everywhere else)
+- [x] Help: `palette/event-storming` article + registry entry (+ Palette
+      count 25) + card art (icon + hue); Write article/registry reverted
+- [x] Specs: 139 rewritten sections, 110 band table, 09 template entry
+- [x] Verified in the dev server (palette opens on the notation; Command
+      files under Process from Design view, falls back gracefully in Big
+      picture; stranded-active-layer self-heal fixed and verified)
+
+## Phase 4b — board structure
 
 - [ ] DECIDE: swimlanes / pivotal-event dividers as part of the seed?
 

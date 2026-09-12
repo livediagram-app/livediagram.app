@@ -60,11 +60,26 @@ semantic colour:
   fill. The palette tiles derive from it (a `map`, not hand-copies) and
   the template builder reads its orange from it, so the surfaces cannot
   drift (pinned by `event-storming.test.ts` + `palette-tile-defs.test.tsx`).
-- **Palette home:** a collapsible **Event Storming** `PaletteTileGroup`
-  row in the **Write** tab (the Media-Embed pattern, spec/121) — the
-  sticky's home category, below Write's own four elements. Tiles carry
-  `tileGroup: 'event-storming'`, ids `tools:es-<kind>`; Write's census
-  is now 12 (4 loose + 8 grouped).
+- **Palette home:** a **top-level Event Storming category** in the
+  Structure band (spec/110) — promoted out of the Write accordion once
+  the notation earned first-class status. Rows with a blurb (the
+  Behaviour / Data treatment): eight identical squares in different
+  colours don't explain themselves. Tile ids keep their historical
+  `tools:es-<kind>` prefix — Favourites persist ids, so a rename would
+  silently drop saved favourites (spec/78). **On an event-storming board
+  the palette OPENS on this category** instead of Favourites (keyed on
+  the board-ness of the active tab); everywhere else Favourites stays
+  the landing view. Help article: `palette/event-storming` (registered,
+  with card art).
+- **Stage routing:** each note kind carries its workshop `stage` in the
+  catalogue (events / actors / hotspots → Big picture; commands /
+  policies / read models / external systems → Process; aggregates →
+  Design). On an event-storming board the commit path files a dropped
+  note onto its stage's layer (`eventStormingStageLayerId`), so a
+  Command dropped while browsing Big picture is already where the
+  Process stage expects it. Only when the target layer exists, is
+  visible AND unlocked — otherwise (and on non-ES boards) the note
+  falls through to ordinary active-layer stamping.
 - **Mechanics:** each tile arms the ordinary sticky draw gesture with
   the kind's fill riding the intent (`PendingDraw` sticky variant gains
   `fill?: string`, the session/provider precedent), and `buildDrawnBoxed`
@@ -83,24 +98,25 @@ One board, three depths plus a timeline lens — **shared** layer-visibility
 presets over spec/74 layers, so the whole room walks the stages together,
 facilitator-style (a deliberate choice over a per-user lens).
 
-- **The template ships four layers** (bottom → top): `layer:es:rail`
-  ("Timeline rail", **hidden**, holding a spec/51 `timeline-rail` element
-  sized to the seed's span), then `layer:es:big-picture` /
-  `layer:es:process` / `layer:es:design`, all visible. Fixed sentinel ids
-  (the `layer:default` pattern) so re-applying converges and peers
-  materialise identically. The seed lives on Big picture. Defined by
-  `eventStormingLayers()` in `@livediagram/diagram` beside the note
-  catalogue; `templateLayers('event-storming')` returns it, making ES the
-  one deliberate exception to the two-band scaffold/content shape (its own
-  pin in `templates.test.ts`).
+- **The template ships three layers** (bottom → top):
+  `layer:es:big-picture` / `layer:es:process` / `layer:es:design`, all
+  visible. Fixed sentinel ids (the `layer:default` pattern) so
+  re-applying converges and peers materialise identically. The seed
+  lives on Big picture. Defined by `eventStormingLayers()` in
+  `@livediagram/diagram` beside the note catalogue;
+  `templateLayers('event-storming')` returns it, making ES the one
+  deliberate exception to the two-band scaffold/content shape (its own
+  pin in `templates.test.ts`). _The timeline-rail layer + element and
+  its view-bar toggle were built and then retired before release — the
+  rail added chrome without earning it. Boards created while it existed
+  keep their `layer:es:rail` as ordinary spec/74 data, manageable from
+  the Layers panel; nothing drives it any more._
 - **Stages reveal cumulatively** (big-picture ⊆ process ⊆ design):
   `applyEventStormingStage` is one ordinary tab commit setting the three
   stage layers' visibility — undoable, autosaved, synced, nothing new on
   the wire. The current stage is DERIVED as the deepest visible stage
   (`eventStormingStageOf`), so a fresh board reads as Design (all-in) and
-  hand-toggled panel state still resolves sanely. The **rail is an
-  independent toggle** (`toggleEventStormingRail`), never a fourth
-  exclusive stage — "see it against a timeline" is additive.
+  hand-toggled panel state still resolves sanely.
 - **The switcher** (`EventStormingViewBar`) is a slim bottom-centre pill —
   Big picture / Process / Design chips + a divider + Timeline rail — shown
   only when the active tab carries the ES stage layers
@@ -108,13 +124,13 @@ facilitator-style (a deliberate choice over a per-user lens).
   only: a stage switch commits shared visibility, which a view-role
   visitor can't do (they see whatever view the room is in). Hidden in
   zen / embed; yields the slot to the sign-in / empty-canvas banners, and
-  ThemeModeBanner yields to IT on ES boards.
+  ThemeModeBanner yields to IT on ES boards. Three stage chips only —
+  the Timeline-rail toggle was retired with the rail.
 - **Switching a stage also activates that stage's layer**
   (`useEventStormingViews`), so notes added while in a stage land on the
   band the stage owns — and the active layer never strands on a band the
   switch just hid (which would pause element creation per spec/74).
-- **Telemetry:** `UI / Used / EventStorming{BigPicture,Process,Design}` +
-  `EventStormingRail{On,Off}`.
+- **Telemetry:** `UI / Used / EventStorming{BigPicture,Process,Design}`.
 
 ## Still ahead (phased, see the plan)
 

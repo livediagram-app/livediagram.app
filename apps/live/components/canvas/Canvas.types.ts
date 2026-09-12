@@ -1,4 +1,4 @@
-import type { EmbedProvider } from '@livediagram/diagram';
+import type { EmbedProvider, EventStormingNoteKind } from '@livediagram/diagram';
 // Prop contract for the Canvas component, split out of Canvas.tsx
 // (it was a 320-line inline type). Most field types are referenced
 // via inline import('...') so this file only needs the bare-named
@@ -291,8 +291,11 @@ export type CanvasProps = {
   onAddProcess: () => void;
   onAddAvatar: () => void;
   onAddText: () => void;
-  // Optional fill: an Event Storming note colour (spec/139).
-  onAddSticky: (fill?: string) => void;
+  // Optional fill + kind: an Event Storming note (spec/139).
+  onAddSticky: (fill?: string, esKind?: EventStormingNoteKind) => void;
+  // True when the active tab is an event-storming board (spec/139) — the
+  // palette opens on the Event Storming category instead of Favourites.
+  esBoard?: boolean;
   // Spawn an empty image placeholder + open the picker. Optional so
   // view-role visitors / no-R2 deployments can simply omit it; the
   // Palette's Image entry hides when missing (spec/19).

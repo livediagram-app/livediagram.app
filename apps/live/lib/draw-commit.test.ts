@@ -1,6 +1,7 @@
 import type { ArrowElement, Element, Tab, ThemeDefinition } from '@livediagram/diagram';
 import { COMPONENT_SIZE, isBoxed } from '@livediagram/diagram';
 import { describe, expect, it } from 'vitest';
+import { ES_PROCESS_LAYER_ID, eventStormingLayers } from '@livediagram/diagram';
 import {
   buildDrawnArrow,
   buildDrawnBoxed,
@@ -132,6 +133,72 @@ describe('buildDrawnBoxed', () => {
     // A plain sticky stays exactly as it was: no fillColor sneaks in.
     const plain = buildDrawnBoxed({ type: 'sticky' }, 0, 0, 3, 3, null, tab());
     expect('fillColor' in plain && plain.fillColor != null).toBe(false);
+  });
+
+  // Stage routing (spec/139): a note knows which workshop stage it belongs
+  // to, so on an event-storming board it lands on that stage's layer — a
+  // Command dropped while browsing Big picture still files under Process.
+  it('routes an event-storming note onto its stage layer on an ES board', () => {
+    const esTab = tab({ layers: eventStormingLayers() });
+    const cmd = buildDrawnBoxed(
+      { type: 'sticky', fill: '#93c5fd', esKind: 'command' },
+      0,
+      0,
+      3,
+      3,
+      null,
+      esTab,
+    );
+    expect(cmd.layerId).toBe(ES_PROCESS_LAYER_ID);
+  });
+
+  it('leaves routing alone off-board, and when the stage layer is hidden or locked', () => {
+    // Not an event-storming board: no stamp — the ordinary active-layer
+    // stamping at the commit choke point applies.
+    const off = buildDrawnBoxed(
+      { type: 'sticky', fill: '#93c5fd', esKind: 'command' },
+      0,
+      0,
+      3,
+      3,
+      null,
+      tab(),
+    );
+    expect(off.layerId).toBeUndefined();
+    // Hidden target: stamping would create an element the user can't see.
+    const hidden = tab({
+      layers: eventStormingLayers().map((l) =>
+        l.id === ES_PROCESS_LAYER_ID ? { ...l, visible: false } : l,
+      ),
+    });
+    expect(
+      buildDrawnBoxed(
+        { type: 'sticky', fill: '#93c5fd', esKind: 'command' },
+        0,
+        0,
+        3,
+        3,
+        null,
+        hidden,
+      ).layerId,
+    ).toBeUndefined();
+    // Locked target: stamping would create an element the user can't touch.
+    const locked = tab({
+      layers: eventStormingLayers().map((l) =>
+        l.id === ES_PROCESS_LAYER_ID ? { ...l, locked: true } : l,
+      ),
+    });
+    expect(
+      buildDrawnBoxed(
+        { type: 'sticky', fill: '#93c5fd', esKind: 'command' },
+        0,
+        0,
+        3,
+        3,
+        null,
+        locked,
+      ).layerId,
+    ).toBeUndefined();
   });
 
   it('carries the icon glyph + label, unlocking aspect for a tech mark (spec/41)', () => {

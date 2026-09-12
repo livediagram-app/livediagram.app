@@ -6,15 +6,13 @@ import {
   ES_BIG_PICTURE_LAYER_ID,
   ES_DESIGN_LAYER_ID,
   ES_PROCESS_LAYER_ID,
-  ES_RAIL_LAYER_ID,
   EVENT_STORMING_NOTES,
   EVENT_STORMING_STAGES,
   eventStormingLayers,
   eventStormingNote,
-  eventStormingRailVisible,
+  eventStormingStageLayerId,
   eventStormingStageOf,
   isEventStormingTab,
-  toggleEventStormingRail,
   type EventStormingNoteKind,
 } from './event-storming';
 
@@ -59,6 +57,28 @@ describe('EVENT_STORMING_NOTES', () => {
     expect(fills.size).toBe(EVENT_STORMING_NOTES.length);
   });
 
+  it('every note belongs to a workshop stage (the palette routes notes by it)', () => {
+    // The stage decides which layer a palette-dropped note lands on
+    // (spec/139): events, actors and hotspots surface in Big picture;
+    // the flow kinds arrive at Process; the aggregate is design-level.
+    const byStage = (stage: string) =>
+      EVENT_STORMING_NOTES.filter((n) => n.stage === stage).map((n) => n.kind);
+    expect(byStage('big-picture').sort()).toEqual(['actor', 'domain-event', 'hotspot']);
+    expect(byStage('process').sort()).toEqual([
+      'command',
+      'external-system',
+      'policy',
+      'read-model',
+    ]);
+    expect(byStage('design')).toEqual(['aggregate']);
+  });
+
+  it('eventStormingStageLayerId maps a kind to its stage layer', () => {
+    expect(eventStormingStageLayerId('domain-event')).toBe(ES_BIG_PICTURE_LAYER_ID);
+    expect(eventStormingStageLayerId('command')).toBe(ES_PROCESS_LAYER_ID);
+    expect(eventStormingStageLayerId('aggregate')).toBe(ES_DESIGN_LAYER_ID);
+  });
+
   it('eventStormingNote resolves every kind', () => {
     for (const kind of ALL_KINDS) {
       expect(eventStormingNote(kind).kind).toBe(kind);
@@ -77,19 +97,16 @@ describe('event-storming views', () => {
   const visibleIds = (tab: Tab) =>
     (tab.layers ?? []).filter((l: Layer) => isLayerVisible(l)).map((l: Layer) => l.id);
 
-  it('ships four layers, rail hidden at the bottom, Big picture seeded visible', () => {
+  it('ships the three stage layers, all visible', () => {
     const layers = eventStormingLayers();
     expect(layers.map((l) => l.id)).toEqual([
-      ES_RAIL_LAYER_ID,
       ES_BIG_PICTURE_LAYER_ID,
       ES_PROCESS_LAYER_ID,
       ES_DESIGN_LAYER_ID,
     ]);
-    // The rail ships hidden (Q4: no timeline in the seed — it is a view);
-    // the three stage layers ship visible so a fresh board shows everything
-    // an editor drops, whatever stage chip they later press.
-    expect(isLayerVisible(layers[0]!)).toBe(false);
-    expect(layers.slice(1).every((l) => isLayerVisible(l))).toBe(true);
+    // All visible: a fresh board shows everything an editor drops,
+    // whatever stage chip they later press.
+    expect(layers.every((l) => isLayerVisible(l))).toBe(true);
   });
 
   it('recognises an event-storming tab by its stage layers', () => {
@@ -121,18 +138,6 @@ describe('event-storming views', () => {
     expect(eventStormingStageOf(applyEventStormingStage(tab, 'design').layers)).toBe('design');
     // A fresh board (everything visible) reads as design — the all-in view.
     expect(eventStormingStageOf(esTab().layers)).toBe('design');
-  });
-
-  it('the rail toggles independently of the stage', () => {
-    const tab = applyEventStormingStage(esTab(), 'big-picture');
-    expect(eventStormingRailVisible(tab.layers)).toBe(false);
-    const withRail = toggleEventStormingRail(tab);
-    expect(eventStormingRailVisible(withRail.layers)).toBe(true);
-    // Stage unchanged by the rail, rail unchanged by a stage switch.
-    expect(eventStormingStageOf(withRail.layers)).toBe('big-picture');
-    const deeper = applyEventStormingStage(withRail, 'process');
-    expect(eventStormingRailVisible(deeper.layers)).toBe(true);
-    expect(eventStormingRailVisible(toggleEventStormingRail(withRail).layers)).toBe(false);
   });
 
   it('EVENT_STORMING_STAGES orders the chips shallow to deep with labels + active layer', () => {

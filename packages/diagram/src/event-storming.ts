@@ -20,12 +20,19 @@ export type EventStormingNoteKind =
   | 'aggregate'
   | 'hotspot';
 
+export type EventStormingStage = 'big-picture' | 'process' | 'design';
+
 export type EventStormingNote = {
   kind: EventStormingNoteKind;
   label: string;
   // A palette-row clause: what the note IS, not how to use it.
   blurb: string;
   fill: string;
+  // The workshop stage the kind belongs to — the palette routes a dropped
+  // note onto this stage's layer (spec/139): events, actors and hotspots
+  // surface in Big picture, the flow kinds arrive at Process, and the
+  // aggregate is design-level.
+  stage: EventStormingStage;
 };
 
 // Workshop order: events first (the big-picture stage), then the
@@ -37,48 +44,56 @@ export const EVENT_STORMING_NOTES: EventStormingNote[] = [
     label: 'Domain event',
     blurb: 'Something that happened, past tense',
     fill: '#fdba74',
+    stage: 'big-picture',
   },
   {
     kind: 'command',
     label: 'Command',
     blurb: 'An intent that triggers an event',
     fill: '#93c5fd',
+    stage: 'process',
   },
   {
     kind: 'actor',
     label: 'Actor',
     blurb: 'Who issues the command',
     fill: '#fef08a',
+    stage: 'big-picture',
   },
   {
     kind: 'policy',
     label: 'Policy',
     blurb: 'Whenever X happens, then Y',
     fill: '#d8b4fe',
+    stage: 'process',
   },
   {
     kind: 'read-model',
     label: 'Read model',
     blurb: 'Information the actor decides on',
     fill: '#86efac',
+    stage: 'process',
   },
   {
     kind: 'external-system',
     label: 'External system',
     blurb: 'A third party the flow touches',
     fill: '#f9a8d4',
+    stage: 'process',
   },
   {
     kind: 'aggregate',
     label: 'Aggregate',
     blurb: 'The thing commands act on',
     fill: '#fef9c3',
+    stage: 'design',
   },
   {
     kind: 'hotspot',
     label: 'Hotspot',
     blurb: 'A conflict, question, or risk',
     fill: '#fca5a5',
+    stage: 'big-picture',
   },
 ];
 
@@ -102,15 +117,15 @@ export function eventStormingNote(kind: EventStormingNoteKind): EventStormingNot
 // ordinary tab commit that sets layer visibility. Shared and synced by
 // design: the facilitator walks the whole room through the stages.
 
-// Bottom -> top, matching Tab.layers order: the rail is scaffold UNDER the
-// stickies; deeper stages stack above shallower ones so design-level notes
-// paint over the big-picture band they annotate.
-export const ES_RAIL_LAYER_ID = 'layer:es:rail';
+// Bottom -> top, matching Tab.layers order: deeper stages stack above
+// shallower ones so design-level notes paint over the big-picture band
+// they annotate. (Boards created before the timeline rail was retired may
+// still carry a `layer:es:rail` layer + its rail element; they keep
+// working — the layer is ordinary spec/74 data, manageable from the
+// panel — it is simply no longer shipped or driven by any chrome.)
 export const ES_BIG_PICTURE_LAYER_ID = 'layer:es:big-picture';
 export const ES_PROCESS_LAYER_ID = 'layer:es:process';
 export const ES_DESIGN_LAYER_ID = 'layer:es:design';
-
-export type EventStormingStage = 'big-picture' | 'process' | 'design';
 
 // Chip order (shallow -> deep) + the layer each stage reveals last. The
 // switcher also ACTIVATES that layer, so notes added while in a stage land
@@ -125,17 +140,24 @@ export const EVENT_STORMING_STAGES: {
   { stage: 'design', label: 'Design', layerId: ES_DESIGN_LAYER_ID },
 ];
 
-// The layers an event-storming template ships. Rail hidden (Q4: the seed
-// has no timeline — the rail is a view); all three stage layers visible so
-// a fresh board hides nothing whatever chip is pressed later. Built fresh
-// per call so a caller mutating its tab can't corrupt the constant.
+// The layers an event-storming template ships — all visible, so a fresh
+// board hides nothing whatever chip is pressed later. Built fresh per
+// call so a caller mutating its tab can't corrupt the constant.
 export function eventStormingLayers(): Layer[] {
   return [
-    { id: ES_RAIL_LAYER_ID, name: 'Timeline rail', visible: false },
     { id: ES_BIG_PICTURE_LAYER_ID, name: 'Big picture' },
     { id: ES_PROCESS_LAYER_ID, name: 'Process' },
     { id: ES_DESIGN_LAYER_ID, name: 'Design' },
   ];
+}
+
+// The layer a palette-dropped note of this kind belongs on (its stage's
+// layer). The commit path stamps it only when the target tab actually
+// carries that layer, visible and unlocked — otherwise the note falls
+// through to the ordinary active-layer stamping.
+export function eventStormingStageLayerId(kind: EventStormingNoteKind): string {
+  const stage = eventStormingNote(kind).stage;
+  return EVENT_STORMING_STAGES.find((s) => s.stage === stage)!.layerId;
 }
 
 // An event-storming board is recognised by its stage layers — tab data, so
@@ -157,8 +179,8 @@ const withVisibility = (layer: Layer, visible: boolean): Layer => {
 };
 
 // Stages reveal cumulatively (big-picture ⊆ process ⊆ design): switching
-// sets each stage layer's visibility in one pass. The rail layer is left
-// alone — it is an independent toggle, not a stage.
+// sets each stage layer's visibility in one pass. Non-stage layers (user-
+// added, or a legacy rail layer) are left alone.
 export function applyEventStormingStage(tab: Tab, stage: EventStormingStage): Tab {
   const depth = EVENT_STORMING_STAGES.findIndex((s) => s.stage === stage);
   const layers = (tab.layers ?? []).map((l) => {
@@ -178,17 +200,4 @@ export function eventStormingStageOf(layers: Layer[] | undefined): EventStorming
     if (layer && isLayerVisible(layer)) return s.stage;
   }
   return 'big-picture';
-}
-
-export function eventStormingRailVisible(layers: Layer[] | undefined): boolean {
-  const rail = layers?.find((l) => l.id === ES_RAIL_LAYER_ID);
-  return rail != null && isLayerVisible(rail);
-}
-
-export function toggleEventStormingRail(tab: Tab): Tab {
-  const show = !eventStormingRailVisible(tab.layers);
-  const layers = (tab.layers ?? []).map((l) =>
-    l.id === ES_RAIL_LAYER_ID ? withVisibility(l, show) : l,
-  );
-  return { ...tab, layers };
 }

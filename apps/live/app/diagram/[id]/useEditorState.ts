@@ -1389,6 +1389,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // over the layers slice. Inert (esBoard=false) on every other tab.
   const esViews = useEventStormingViews({
     activeTab,
+    activeLayerId: layersState.activeLayerId,
     editsBlocked,
     commitActiveTab,
     setActiveLayer: layersState.setActiveLayer,
@@ -2457,9 +2458,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     // Event-storming workshop views (spec/139).
     esBoard: esViews.esBoard,
     esStage: esViews.esStage,
-    esRailVisible: esViews.esRailVisible,
     setEsStage: esViews.setEsStage,
-    toggleEsRail: esViews.toggleEsRail,
     // Menu-facing wrapper: moves the CURRENT selection (group-expanded)
     // onto the picked layer.
     moveSelectedToLayer: (layerId: string) =>

@@ -189,7 +189,7 @@ export const categories: Category[] = [
     title: 'Palette',
     description:
       'Your launchpad for everything on the canvas: every element and palette setting explained.',
-    articleCount: 24,
+    articleCount: 25,
     kind: 'feature',
   },
   {
@@ -923,6 +923,16 @@ export const articles: Article[] = [
     description: 'Page, Text, Sticky note and Annotation — plus the Event Storming note grammar.',
     keywords:
       'write writing text words wordy prose page document label caption title heading sticky note post-it annotation marker remark comment copy typing type compose event storming domain event command actor policy read model aggregate hotspot brandolini ddd workshop notation',
+    category: 'Palette',
+    categorySlug: 'palette',
+    group: 'Elements',
+  },
+  {
+    slug: 'event-storming',
+    title: 'Event Storming Elements',
+    description: 'The workshop note grammar: eight sticky kinds, each colour a meaning.',
+    keywords:
+      'event storming eventstorming domain event command actor policy read model external system aggregate hotspot brandolini ddd workshop notation sticky colours colors orange blue purple big picture process design stage',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Elements',

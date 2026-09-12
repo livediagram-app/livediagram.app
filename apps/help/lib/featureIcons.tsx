@@ -163,6 +163,13 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M13 7.5l3.5 3.5" {...s} />
     </Glyph>
   ),
+  'event-storming': (
+    <Glyph>
+      <rect x="3" y="6" width="7" height="7" rx="1" {...s} transform="rotate(-5 6.5 9.5)" />
+      <rect x="13.5" y="5" width="7" height="7" rx="1" {...s} transform="rotate(4 17 8.5)" />
+      <path d="M4 19h14.5m0 0-2.2-1.7M18.5 19l-2.2 1.7" {...s} />
+    </Glyph>
+  ),
   build: (
     <Glyph>
       <rect x="3" y="13" width="8" height="7" rx="1" {...s} />

@@ -413,16 +413,9 @@ export function EditorView() {
         />
       ) : null}
       {/* Event-storming workshop views (spec/139): Big picture / Process /
-          Design chips + the Timeline-rail toggle, driving shared layer
-          visibility so the room walks the stages together. */}
-      {showEsViewBar ? (
-        <EventStormingViewBar
-          stage={ctx.esStage}
-          railVisible={ctx.esRailVisible}
-          onStage={ctx.setEsStage}
-          onToggleRail={ctx.toggleEsRail}
-        />
-      ) : null}
+          Design chips driving shared layer visibility so the room walks
+          the stages together. */}
+      {showEsViewBar ? <EventStormingViewBar stage={ctx.esStage} onStage={ctx.setEsStage} /> : null}
       {/* Offer to match the editor chrome to the active tab's theme
           (dark theme -> dark mode, light theme -> light mode). Hidden in
           zen / embed like the other floating prompts, and yields the

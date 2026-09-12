@@ -80,6 +80,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   // Palette → Elements
   write: '#0891b2',
   build: '#22c55e',
+  'event-storming': '#ea580c',
   'mind-maps': '#8b5cf6',
   collaborate: '#f59e0b',
   chairs: '#a855f7',

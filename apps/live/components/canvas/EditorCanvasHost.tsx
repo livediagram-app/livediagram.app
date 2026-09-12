@@ -99,6 +99,7 @@ export function EditorCanvasHost() {
     addShape,
     addStatRow,
     addSticky,
+    esBoard,
     addTable,
     addTechIcon,
     addText,
@@ -545,6 +546,7 @@ export function EditorCanvasHost() {
       onAddAvatar={addAvatar}
       onAddText={addText}
       onAddSticky={addSticky}
+      esBoard={esBoard}
       onAddImage={addImage}
       onAddArrow={addArrow}
       onBeginFreehand={beginFreehand}

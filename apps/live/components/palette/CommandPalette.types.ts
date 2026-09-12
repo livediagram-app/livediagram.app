@@ -1,4 +1,4 @@
-import type { EmbedProvider } from '@livediagram/diagram';
+import type { EmbedProvider, EventStormingNoteKind } from '@livediagram/diagram';
 import type { ShapeKind } from '@livediagram/diagram';
 import type { PendingDraw } from '@/lib/draw-mode';
 import type { UserPreferences } from '@/lib/user-preferences';
@@ -78,8 +78,12 @@ export type CommandPaletteProps = {
   // Technology tab's searchable grid; never dropped inside a shape.
   onAddTechIcon: (iconId: string) => void;
   onAddText: () => void;
-  // Optional fill: an Event Storming note colour (spec/139).
-  onAddSticky: (fill?: string) => void;
+  // Optional fill + kind: an Event Storming note (spec/139).
+  onAddSticky: (fill?: string, esKind?: EventStormingNoteKind) => void;
+  // True when the active tab is an event-storming board (spec/139): the
+  // palette then opens on the Event Storming category instead of
+  // Favourites — the notation is what the board is for.
+  esBoard?: boolean;
   // Drop a 3x3 editable table at the viewport centre.
   onAddTable: () => void;
   // Drop a note marker (annotation) at the viewport centre. See spec/38.

@@ -6,8 +6,7 @@ import { EVENT_STORMING_STAGES, type EventStormingStage } from '@livediagram/dia
 // pill in the bottom-centre slot, shown only on event-storming boards
 // (tabs shipping the ES stage layers) for editors. Three EXCLUSIVE stage
 // chips — Big picture / Process / Design — reveal the workshop's layers
-// cumulatively, plus an independent Timeline-rail toggle that shows the
-// board against the hidden spec/51 rail scaffold.
+// cumulatively.
 //
 // The chips drive SHARED layer visibility (one ordinary tab commit), so
 // the whole room moves through the stages together, facilitator-style —
@@ -18,14 +17,10 @@ import { EVENT_STORMING_STAGES, type EventStormingStage } from '@livediagram/dia
 
 export function EventStormingViewBar({
   stage,
-  railVisible,
   onStage,
-  onToggleRail,
 }: {
   stage: EventStormingStage;
-  railVisible: boolean;
   onStage: (stage: EventStormingStage) => void;
-  onToggleRail: () => void;
 }) {
   const chip = (pressed: boolean) =>
     `rounded-lg px-3 py-1.5 text-xs font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 ${
@@ -53,17 +48,6 @@ export function EventStormingViewBar({
             {s.label}
           </button>
         ))}
-        <span aria-hidden className="mx-0.5 h-5 w-px bg-slate-200 dark:bg-slate-700" />
-        {/* The rail is additive — "see it against a timeline" — so it is a
-            toggle beside the stages, never a fourth exclusive stage. */}
-        <button
-          type="button"
-          aria-pressed={railVisible}
-          className={chip(railVisible)}
-          onClick={onToggleRail}
-        >
-          Timeline rail
-        </button>
       </div>
     </div>
   );

@@ -6,7 +6,7 @@ import type {
   SessionTool,
   ShapeKind,
 } from '@livediagram/diagram';
-import type { EmbedProvider } from '@livediagram/diagram';
+import type { EmbedProvider, EventStormingNoteKind } from '@livediagram/diagram';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { IconButton } from '@/components/palette/palette-controls';
 import { ICON_DND_MIME } from '@/lib/icons';
@@ -37,9 +37,10 @@ export type PaletteTileActions = {
   beginShapePen: () => void;
   beginPolygon: () => void;
   addArrow: () => void;
-  // Optional fill: the Event Storming tiles pass their note kind's canonical
-  // colour (spec/139); plain "Add sticky note" passes nothing.
-  addSticky: (fill?: string) => void;
+  // Optional fill + kind: the Event Storming tiles pass their note kind's
+  // canonical colour and the kind itself (which routes the note onto its
+  // stage's layer, spec/139); plain "Add sticky note" passes nothing.
+  addSticky: (fill?: string, esKind?: EventStormingNoteKind) => void;
   addTable: () => void;
   addImage: () => void;
   addAnnotation: () => void;
@@ -82,8 +83,8 @@ export function tileHandler(def: PaletteTileDef, actions: PaletteTileActions): (
       return actions.addArrow;
     case 'sticky':
       // Wrapped so the button's MouseEvent can't land in the optional fill
-      // parameter; the tile's own fill (if any) rides instead.
-      return () => actions.addSticky(a.fill);
+      // parameter; the tile's own fill + kind (if any) ride instead.
+      return () => actions.addSticky(a.fill, a.esKind);
     case 'table':
       return actions.addTable;
     case 'image':
@@ -140,10 +141,14 @@ export function tileActive(
     case 'video':
       return pendingDraw.type === 'video' && pendingDraw.provider === a.provider;
     // The Event Storming tiles all arm the one sticky intent, split by the
-    // fill payload — match on it or arming Command would light up all eight
-    // notes plus the plain sticky tile (the same trap as video / shape).
+    // fill + kind payload — match on both or arming Command would light up
+    // all eight notes plus the plain sticky tile (the video / shape trap).
     case 'sticky':
-      return pendingDraw.type === 'sticky' && pendingDraw.fill === a.fill;
+      return (
+        pendingDraw.type === 'sticky' &&
+        pendingDraw.fill === a.fill &&
+        pendingDraw.esKind === a.esKind
+      );
     // Icon / sticker tiles DO arm (they ride the shape intent carrying their
     // glyph id), but their catalogues are open-ended and the picker tabs
     // render thousands of tiles, so pressed-state matching per glyph buys

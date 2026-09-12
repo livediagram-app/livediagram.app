@@ -15,11 +15,9 @@
 // self-describing.
 
 import {
-  createShape,
   createSticky,
   createText,
   ES_BIG_PICTURE_LAYER_ID,
-  ES_RAIL_LAYER_ID,
   eventStormingNote,
   type Element,
 } from '@livediagram/diagram';
@@ -64,16 +62,6 @@ export function buildEventStorming(cx: number, cy: number): Element[] {
     textAlignX: 'center',
     textColor: '#64748b',
     layerId: ES_BIG_PICTURE_LAYER_ID,
-  });
-
-  // The spec/51 timeline rail, parked on its own HIDDEN layer under the
-  // stickies: the seed shows no timeline (the events' order carries it),
-  // but the editor's rail view reveals this layer to show the board
-  // against a real rail. Sized to the seed's span, one point per event.
-  elements.push({
-    ...createShape('timeline-rail', x0, y0 + stickyH + 110),
-    width: totalW,
-    layerId: ES_RAIL_LAYER_ID,
   });
 
   return elements;

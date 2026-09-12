@@ -11,11 +11,7 @@ import {
   untitledNameForTemplate,
   type TemplateKind,
 } from '@livediagram/templates';
-import {
-  ES_BIG_PICTURE_LAYER_ID,
-  ES_RAIL_LAYER_ID,
-  eventStormingLayers,
-} from '@livediagram/diagram';
+import { ES_BIG_PICTURE_LAYER_ID, eventStormingLayers } from '@livediagram/diagram';
 import { getTheme } from './themes';
 
 // `buildTemplatedTab` is the seam between /live/new (the welcome
@@ -326,22 +322,17 @@ describe('layered templates (spec/74)', () => {
     }
   });
 
-  // Event storming (spec/139): four stage layers for the shared workshop
-  // views — rail (hidden scaffold) at the bottom, then Big picture /
-  // Process / Design. The seed lives on Big picture (the workshop's first
-  // stage); the rail element is the only thing on the rail layer, ready
-  // for the rail view toggle.
-  it('event storming ships the four stage layers, seed on Big picture, rail hidden below', () => {
+  // Event storming (spec/139): three stage layers for the shared workshop
+  // views — Big picture / Process / Design. The seed lives on Big picture
+  // (the workshop's first stage).
+  it('event storming ships the three stage layers, seed on Big picture', () => {
     const layers = templateLayers('event-storming')!;
     expect(layers).toEqual(eventStormingLayers());
     const elements = buildTemplate('event-storming', 0, 0);
-    const rail = elements.filter((el) => el.layerId === ES_RAIL_LAYER_ID);
     const big = elements.filter((el) => el.layerId === ES_BIG_PICTURE_LAYER_ID);
-    expect(rail).toHaveLength(1);
-    expect(rail[0]).toMatchObject({ type: 'shape', shape: 'timeline-rail' });
     // Three orange events + the method caption, all on the first stage.
     expect(big).toHaveLength(4);
-    expect(rail.length + big.length).toBe(elements.length);
+    expect(big.length).toBe(elements.length);
   });
 
   it('buildTemplatedTab lands the layers on the tab and theming keeps the stamps', () => {

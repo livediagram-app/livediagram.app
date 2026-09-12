@@ -1,4 +1,4 @@
-import type { EmbedProvider } from '@livediagram/diagram';
+import type { EmbedProvider, EventStormingNoteKind } from '@livediagram/diagram';
 import { EVENT_STORMING_NOTES, REACTION_EMOJI } from '@livediagram/diagram';
 
 import type {
@@ -53,6 +53,10 @@ export type PaletteTileSection =
   // scattered across Write, Draw, Data and Components, filed by what they look
   // like; what they have in common is that they hold other work.
   | 'build'
+  // The Event Storming notation (spec/139): a top-level category of the
+  // eight workshop note kinds, each an ordinary sticky in its semantic
+  // colour.
+  | 'event-storming'
   | 'tools'
   | 'data'
   // 'collaborate' is GONE (spec/110). The collaboration family (spec/123 to
@@ -98,7 +102,11 @@ type PaletteTileAction =
   | { type: 'arrow' }
   // `fill` rides the sticky action for the Event Storming tiles (spec/139):
   // eight semantic colours over the one sticky type, one tile per note kind.
-  | { type: 'sticky'; fill?: string }
+  // `fill` + `esKind` ride the sticky action for the Event Storming tiles
+  // (spec/139): eight semantic colours over the one sticky type, one tile
+  // per note kind. The kind lets the commit path route the note onto its
+  // workshop stage's layer on event-storming boards.
+  | { type: 'sticky'; fill?: string; esKind?: EventStormingNoteKind }
   | { type: 'table' }
   | { type: 'image' }
   | { type: 'annotation' }
@@ -162,16 +170,7 @@ export type PaletteTileDef = {
   // 'ask' / 'record' the two halves of Collaborate.
   // 'event-storming' = the Write tab's sticky-notation group (spec/139).
   tileGroup?:
-    | 'embed'
-    | 'web'
-    | 'session'
-    | 'reaction'
-    | 'mode'
-    | 'move'
-    | 'facilitate'
-    | 'ask'
-    | 'record'
-    | 'event-storming';
+    'embed' | 'web' | 'session' | 'reaction' | 'mode' | 'move' | 'facilitate' | 'ask' | 'record';
   label: string;
   // Overrides the caption derived from `label` where that runs too long
   // for the tile (see IconButton).
@@ -2131,20 +2130,20 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   // from the EVENT_STORMING_NOTES catalogue in @livediagram/diagram so the
   // palette can never drift from the colours the template builder (and any
   // future consumer) uses. Each tile arms the ordinary sticky gesture with
-  // the kind's canonical fill riding the intent. They collapse behind a
-  // PaletteTileGroup row in the Write tab (the Media-Embed pattern) so the
-  // notation doesn't crowd out Write's own four elements.
+  // the kind's canonical fill + kind riding the intent (the kind routes the
+  // note onto its stage's layer on event-storming boards). Its own top-level
+  // category in the Structure band — promoted out of the Write accordion.
+  // Tile ids keep their historical 'tools:' prefix: Favourites persist ids,
+  // so a rename would silently drop saved favourites (spec/78).
   ...EVENT_STORMING_NOTES.map((note): PaletteTileDef => ({
     id: `tools:es-${note.kind}`,
-    section: 'tools',
-    toolGroup: 'write',
-    tileGroup: 'event-storming',
+    section: 'event-storming',
     label: `Add ${note.label} note`,
     caption: note.label,
     blurb: note.blurb,
     description: `Event storming: ${note.blurb.charAt(0).toLowerCase()}${note.blurb.slice(1)}.`,
     noTint: true,
-    action: { type: 'sticky', fill: note.fill },
+    action: { type: 'sticky', fill: note.fill, esKind: note.kind },
     icon: (
       <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
         <path

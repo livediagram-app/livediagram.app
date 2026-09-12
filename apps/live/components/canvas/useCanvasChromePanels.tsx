@@ -138,6 +138,7 @@ export function useCanvasChromePanels({
     onAddShape,
     onAddStatRow,
     onAddSticky,
+    esBoard,
     onAddTable,
     onAddTechIcon,
     onAddText,
@@ -493,6 +494,7 @@ export function useCanvasChromePanels({
         onAddAvatar={onAddAvatar}
         onAddText={onAddText}
         onAddSticky={onAddSticky}
+        esBoard={esBoard}
         onAddImage={onAddImage}
         onAddArrow={onAddArrow}
         onBeginFreehand={onBeginFreehand}

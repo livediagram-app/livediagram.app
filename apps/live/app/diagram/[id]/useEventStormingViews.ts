@@ -1,10 +1,10 @@
+import { useEffect } from 'react';
 import {
   applyEventStormingStage,
   EVENT_STORMING_STAGES,
-  eventStormingRailVisible,
   eventStormingStageOf,
   isEventStormingTab,
-  toggleEventStormingRail,
+  isLayerVisible,
   type EventStormingStage,
   type Tab,
 } from '@livediagram/diagram';
@@ -25,17 +25,37 @@ const STAGE_TELEMETRY: Record<EventStormingStage, string> = {
 
 export function useEventStormingViews(opts: {
   activeTab: Tab;
+  activeLayerId: string;
   editsBlocked: boolean;
   commitActiveTab: (mapTab: (t: Tab) => Tab) => void;
   setActiveLayer: (layerId: string) => void;
 }) {
-  const { activeTab, editsBlocked, commitActiveTab, setActiveLayer } = opts;
+  const { activeTab, activeLayerId, editsBlocked, commitActiveTab, setActiveLayer } = opts;
 
   // Derived from tab data, so the bar appears wherever the board travels
   // (share links, imports) and reflects a peer's switch instantly.
   const esBoard = isEventStormingTab(activeTab.layers);
   const esStage = eventStormingStageOf(activeTab.layers);
-  const esRailVisible = eventStormingRailVisible(activeTab.layers);
+
+  // Self-heal a stranded active layer: opening (or being walked into) a
+  // shallower stage leaves the remembered/default active layer pointing at
+  // a now-HIDDEN stage layer — the top layer is Design, so anyone loading a
+  // board parked in Big picture would land with creation paused (spec/74
+  // blocks adding to a hidden layer). Whenever the active layer is a stage
+  // layer the current view hides, activate the current stage's layer
+  // instead. Deliberately scoped to the three stage layers: a user who
+  // activated their own custom layer keeps it.
+  useEffect(() => {
+    if (!esBoard) return;
+    const active = EVENT_STORMING_STAGES.find((s) => s.layerId === activeLayerId);
+    if (!active) return;
+    const layer = activeTab.layers?.find((l) => l.id === activeLayerId);
+    if (layer && !isLayerVisible(layer)) {
+      setActiveLayer(EVENT_STORMING_STAGES.find((s) => s.stage === esStage)!.layerId);
+    }
+    // Reacts to view switches (local or a peer's) + tab changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [esBoard, esStage, activeLayerId, activeTab.layers]);
 
   const setEsStage = (stage: EventStormingStage) => {
     if (editsBlocked || stage === esStage) return;
@@ -45,11 +65,5 @@ export function useEventStormingViews(opts: {
     track('UI', 'Used', STAGE_TELEMETRY[stage]);
   };
 
-  const toggleEsRail = () => {
-    if (editsBlocked) return;
-    track('UI', 'Used', esRailVisible ? 'EventStormingRailOff' : 'EventStormingRailOn');
-    commitActiveTab(toggleEventStormingRail);
-  };
-
-  return { esBoard, esStage, esRailVisible, setEsStage, toggleEsRail };
+  return { esBoard, esStage, setEsStage };
 }

@@ -1,5 +1,6 @@
 import { type Dispatch, type SetStateAction } from 'react';
 import {
+  type EventStormingNoteKind,
   acceptsInlineIcon,
   createAnnotation,
   type EmbedProvider,
@@ -251,11 +252,11 @@ export function useElementCreation(opts: {
     if (editsBlocked) return;
     beginDraw({ type: 'text' });
   };
-  // `fill` = an Event Storming note colour riding the intent (spec/139);
-  // absent for the plain sticky tile / the N shortcut.
-  const addSticky = (fill?: string) => {
+  // `fill` + `esKind` = an Event Storming note riding the intent
+  // (spec/139); absent for the plain sticky tile / the N shortcut.
+  const addSticky = (fill?: string, esKind?: EventStormingNoteKind) => {
     if (editsBlocked) return;
-    beginDraw({ type: 'sticky', ...(fill ? { fill } : {}) });
+    beginDraw({ type: 'sticky', ...(fill ? { fill } : {}), ...(esKind ? { esKind } : {}) });
   };
 
   // Click-to-connect (spec/09) — arm from the selection, complete on the next

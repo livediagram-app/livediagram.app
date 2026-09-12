@@ -1,4 +1,4 @@
-import type { EmbedProvider } from '@livediagram/diagram';
+import type { EmbedProvider, EventStormingNoteKind } from '@livediagram/diagram';
 import { useEffect, useState } from 'react';
 import { MOBILE_BREAKPOINT_PX, isMobileViewportSync } from '@/lib/responsive';
 import { PaletteTintProvider } from '@/components/palette/palette-controls';
@@ -39,6 +39,7 @@ export function CommandPalette({
   onAddTechIcon,
   onAddText,
   onAddSticky,
+  esBoard,
   onAddTable,
   onAddAnnotation,
   onAddLinkCard,
@@ -133,8 +134,8 @@ export function CommandPalette({
     onDrawArmed?.();
     onMobileClose?.();
   };
-  const addSticky = (fill?: string) => {
-    onAddSticky(fill);
+  const addSticky = (fill?: string, esKind?: EventStormingNoteKind) => {
+    onAddSticky(fill, esKind);
     onDrawArmed?.();
     onMobileClose?.();
   };
@@ -364,8 +365,13 @@ export function CommandPalette({
           <PaletteTabBar
             // No storageKey: the palette always opens on Favourites when a
             // diagram loads (the user's go-to tiles, spec/78) rather than
-            // restoring the last-used category across diagrams. See spec/09.
-            defaultOpenId="favourites"
+            // restoring the last-used category across diagrams — EXCEPT on
+            // an event-storming board (spec/139), where the notation is the
+            // whole point: it opens on the Event Storming category. Keyed so
+            // crossing an ES / non-ES tab boundary re-lands on the right
+            // default rather than whatever was open on the other tab.
+            key={esBoard ? 'es-board' : 'standard'}
+            defaultOpenId={esBoard ? 'event-storming' : 'favourites'}
             leading={
               <PaletteDropdown
                 ariaLabel="Canvas tool"
