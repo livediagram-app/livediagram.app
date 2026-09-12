@@ -113,7 +113,12 @@ export type TemplateKind =
   // furnished with the top-down Furniture icons. The only template whose
   // geometry means something in the world, so its scale is captioned on
   // the canvas.
-  | 'floor-plan';
+  | 'floor-plan'
+  // Event storming (spec/139): the sticky-note workshop grammar for
+  // exploring a business domain — orange domain events first, the rest
+  // of the notation arrives incrementally. Colours ARE the semantics,
+  // so its stickies pin their fills with `themeLockFill`.
+  | 'event-storming';
 
 export type TemplateDescriptor = {
   kind: TemplateKind;
@@ -416,6 +421,13 @@ export const TEMPLATES: TemplateDescriptor[] = [
     description: 'A two-bed flat drawn to scale, furnished with top-down furniture symbols.',
     extra: true,
   },
+  {
+    kind: 'event-storming',
+    title: 'Event storming',
+    description:
+      'Explore a business domain with the sticky-note workshop notation: orange domain events on a left-to-right timeline.',
+    extra: true,
+  },
 ];
 
 // Picker grouping. Templates are organised into a handful of
@@ -543,6 +555,7 @@ const TEMPLATE_CATEGORY: Record<TemplateKind, TemplateCategory> = {
   'sequence-diagram': 'technical',
   'uml-class': 'technical',
   'state-machine': 'technical',
+  'event-storming': 'technical',
 };
 
 export function templateCategory(kind: TemplateKind): TemplateCategory {
@@ -630,6 +643,10 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   'floor-plan': 'graph',
   'user-story-map': 'grid',
   'affinity-map': 'grid',
+  // Event storming is a sticky-note workshop like the story / affinity
+  // maps, so it pins the dot grid rather than riding the other technical
+  // templates' graph paper.
+  'event-storming': 'grid',
   'empathy-map': 'grid',
   funnel: 'blank',
   storyboard: 'crosshatch',
