@@ -202,7 +202,7 @@ export const THEMES: ThemeDefinition[] = [
     // backdrop, and zinc-200 text.
     backgroundColor: '#2b2b33',
     backgroundPattern: 'grid',
-    patternColor: '#4c4c59',
+    patternColor: '#1f1f26',
     elementFill: '#2c2c33',
     elementStroke: '#a1a1aa',
     elementText: '#e4e4e7',
