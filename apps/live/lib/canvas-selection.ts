@@ -4,7 +4,7 @@
 // selection bounds, and every "should this chrome show?" predicate the
 // Canvas render reads. Lifted out of Canvas.tsx so this decision logic
 // is unit-testable in isolation (the component itself has no tests).
-import { isFixedSizeShape } from '@livediagram/diagram';
+import { isFixedSizeElement } from '@livediagram/diagram';
 import {
   elementBounds,
   isBoxed,
@@ -166,7 +166,9 @@ export function deriveCanvasSelection(input: {
   const resizeVisible = (id: string) => {
     if (!handleVisible(id)) return false;
     const el = elements.find((e) => e.id === id);
-    return !(el?.type === 'shape' && isFixedSizeShape(el.shape));
+    // Fixed-size elements (mode / session buttons by kind, event-storming
+    // notes by their creation stamp — spec/139) advertise no resize.
+    return !(el && isFixedSizeElement(el));
   };
 
   const unionResizeIds: Set<string> | null =

@@ -22,6 +22,18 @@ export type EventStormingNoteKind =
 
 export type EventStormingStage = 'big-picture' | 'process' | 'design';
 
+// The physical stationery set's silhouettes: standard squares for events /
+// commands / read models / hotspots, WIDE stickies for the prose kinds
+// (policy, external system, aggregate — they need a sentence, not a noun),
+// and a small square for the actor (just a role name, deliberately tiny).
+export type EventStormingNoteSize = 'square' | 'wide' | 'small';
+
+export const ES_NOTE_SIZE_PX: Record<EventStormingNoteSize, { width: number; height: number }> = {
+  square: { width: 200, height: 200 },
+  wide: { width: 300, height: 180 },
+  small: { width: 140, height: 140 },
+};
+
 export type EventStormingNote = {
   kind: EventStormingNoteKind;
   label: string;
@@ -33,6 +45,7 @@ export type EventStormingNote = {
   // surface in Big picture, the flow kinds arrive at Process, and the
   // aggregate is design-level.
   stage: EventStormingStage;
+  size: EventStormingNoteSize;
 };
 
 // Workshop order: events first (the big-picture stage), then the
@@ -45,6 +58,7 @@ export const EVENT_STORMING_NOTES: EventStormingNote[] = [
     blurb: 'Something that happened, past tense',
     fill: '#fdba74',
     stage: 'big-picture',
+    size: 'square',
   },
   {
     kind: 'command',
@@ -52,6 +66,7 @@ export const EVENT_STORMING_NOTES: EventStormingNote[] = [
     blurb: 'An intent that triggers an event',
     fill: '#93c5fd',
     stage: 'process',
+    size: 'square',
   },
   {
     kind: 'actor',
@@ -59,6 +74,7 @@ export const EVENT_STORMING_NOTES: EventStormingNote[] = [
     blurb: 'Who issues the command',
     fill: '#fef08a',
     stage: 'big-picture',
+    size: 'small',
   },
   {
     kind: 'policy',
@@ -66,6 +82,7 @@ export const EVENT_STORMING_NOTES: EventStormingNote[] = [
     blurb: 'Whenever X happens, then Y',
     fill: '#d8b4fe',
     stage: 'process',
+    size: 'wide',
   },
   {
     kind: 'read-model',
@@ -73,6 +90,7 @@ export const EVENT_STORMING_NOTES: EventStormingNote[] = [
     blurb: 'Information the actor decides on',
     fill: '#86efac',
     stage: 'process',
+    size: 'square',
   },
   {
     kind: 'external-system',
@@ -80,6 +98,7 @@ export const EVENT_STORMING_NOTES: EventStormingNote[] = [
     blurb: 'A third party the flow touches',
     fill: '#f9a8d4',
     stage: 'process',
+    size: 'wide',
   },
   {
     kind: 'aggregate',
@@ -87,6 +106,7 @@ export const EVENT_STORMING_NOTES: EventStormingNote[] = [
     blurb: 'The thing commands act on',
     fill: '#fef9c3',
     stage: 'design',
+    size: 'wide',
   },
   {
     kind: 'hotspot',
@@ -94,6 +114,7 @@ export const EVENT_STORMING_NOTES: EventStormingNote[] = [
     blurb: 'A conflict, question, or risk',
     fill: '#fca5a5',
     stage: 'big-picture',
+    size: 'square',
   },
 ];
 
@@ -155,6 +176,14 @@ export function eventStormingLayers(): Layer[] {
 // layer). The commit path stamps it only when the target tab actually
 // carries that layer, visible and unlocked — otherwise the note falls
 // through to the ordinary active-layer stamping.
+// The pixel footprint of a note kind (its stationery silhouette).
+export function eventStormingNoteSize(kind: EventStormingNoteKind): {
+  width: number;
+  height: number;
+} {
+  return ES_NOTE_SIZE_PX[eventStormingNote(kind).size];
+}
+
 export function eventStormingStageLayerId(kind: EventStormingNoteKind): string {
   const stage = eventStormingNote(kind).stage;
   return EVENT_STORMING_STAGES.find((s) => s.stage === stage)!.layerId;

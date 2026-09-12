@@ -100,6 +100,23 @@ ordinary spec/74 data).
       files under Process from Design view, falls back gracefully in Big
       picture; stranded-active-layer self-heal fixed and verified)
 
+## Phase 4c — workshop stationery (SHIPPED)
+
+- [x] `size` class on the note catalogue (square / wide / small) +
+      `eventStormingNoteSize`; wide = policy, external system, aggregate;
+      small = actor — pinned by tests
+- [x] `fixedSize` element flag + `isFixedSizeElement`; gates: resize
+      handles, union scale, Size menu, drag-to-size, tap inheritance
+- [x] Random ±2.5° tilt for every sticky dropped on an ES board; seed
+      events stamped fixed + tilted
+- [x] Palette tile glyphs mirror the silhouettes
+- [x] Drag-to-board for sticky tiles (rows + Favourites grid), same
+      builder as tap: fill / silhouette / tilt / fixed / routing verified
+      via api (300×180 policy landed on layer:es:process)
+- [x] Sticky chrome: 1px definition halo + retuned glue wash (3% → 14%,
+      out by 33%)
+- [x] Spec/139 phase 4 + spec/09 paper-look prose
+
 ## Phase 4b — board structure
 
 - [ ] DECIDE: swimlanes / pivotal-event dividers as part of the seed?

@@ -45,6 +45,20 @@ export function isFixedSizeShape(kind: string): boolean {
   return FIXED_SIZE_SHAPES.has(kind);
 }
 
+// The element-level answer to "can this be resized?" — true for the
+// fixed-size shape KINDS above, and for any element stamped `fixedSize` at
+// creation (event-storming notes, spec/139: the workshop stationery has
+// fixed silhouettes). Structural param so leaf callers don't need the full
+// Element union.
+export function isFixedSizeElement(el: {
+  type: string;
+  shape?: string;
+  fixedSize?: boolean;
+}): boolean {
+  if (el.fixedSize === true) return true;
+  return el.type === 'shape' && el.shape != null && isFixedSizeShape(el.shape);
+}
+
 // The Selection Mode button's original default skin (spec/103): a solid brand
 // fill with white text. It was replaced by a light button surface, but the
 // colours are stored ON the element, so every button authored before the

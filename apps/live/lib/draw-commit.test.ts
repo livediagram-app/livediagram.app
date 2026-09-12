@@ -135,6 +135,73 @@ describe('buildDrawnBoxed', () => {
     expect('fillColor' in plain && plain.fillColor != null).toBe(false);
   });
 
+  // The workshop stationery (spec/139): on an event-storming board every
+  // sticky drops with a random hand-placed tilt and a FIXED silhouette —
+  // no resizing, and a drag gesture sizes nothing.
+  it('gives any sticky on an ES board a tilt and a fixed size; drag sizes nothing', () => {
+    const esTab = tab({ layers: eventStormingLayers() });
+    // A big drag: on an ES board it must be ignored (fixed silhouette).
+    const dragged = buildDrawnBoxed({ type: 'sticky' }, 0, 0, 500, 400, null, esTab);
+    expect(dragged.width).toBe(200);
+    expect(dragged.height).toBe(200);
+    expect((dragged as { fixedSize?: boolean }).fixedSize).toBe(true);
+    expect(typeof dragged.rotation).toBe('number');
+    expect(Math.abs(dragged.rotation!)).toBeLessThanOrEqual(2.5);
+    // Off-board: everything stays classic — drag sizes, no tilt, no flag.
+    const off = buildDrawnBoxed({ type: 'sticky' }, 0, 0, 500, 400, null, tab());
+    expect(off.width).toBe(500);
+    expect((off as { fixedSize?: boolean }).fixedSize).toBeUndefined();
+    expect(off.rotation).toBeUndefined();
+    // Tap-inheritance must not leak either: a selected 320×100 element
+    // cannot bend the stationery silhouette.
+    const wide = { id: 'w', type: 'sticky', x: 0, y: 0, width: 320, height: 100 } as Element;
+    const inherited = buildDrawnBoxed({ type: 'sticky' }, 0, 0, 3, 3, wide, esTab);
+    expect({ width: inherited.width, height: inherited.height }).toEqual({
+      width: 200,
+      height: 200,
+    });
+  });
+
+  it('sizes event-storming notes like the stationery set (wide policy, small actor)', () => {
+    const esTab = tab({ layers: eventStormingLayers() });
+    const policy = buildDrawnBoxed(
+      { type: 'sticky', fill: '#d8b4fe', esKind: 'policy' },
+      0,
+      0,
+      3,
+      3,
+      null,
+      esTab,
+    );
+    expect({ width: policy.width, height: policy.height }).toEqual({ width: 300, height: 180 });
+    const actor = buildDrawnBoxed(
+      { type: 'sticky', fill: '#fef08a', esKind: 'actor' },
+      0,
+      0,
+      3,
+      3,
+      null,
+      esTab,
+    );
+    expect({ width: actor.width, height: actor.height }).toEqual({ width: 140, height: 140 });
+    // A kinded note keeps its silhouette even OFF an ES board (the kind is
+    // the notation), but stays freely resizable there: no fixedSize stamp.
+    const offPolicy = buildDrawnBoxed(
+      { type: 'sticky', fill: '#d8b4fe', esKind: 'policy' },
+      0,
+      0,
+      3,
+      3,
+      null,
+      tab(),
+    );
+    expect({ width: offPolicy.width, height: offPolicy.height }).toEqual({
+      width: 300,
+      height: 180,
+    });
+    expect((offPolicy as { fixedSize?: boolean }).fixedSize).toBeUndefined();
+  });
+
   // Stage routing (spec/139): a note knows which workshop stage it belongs
   // to, so on an event-storming board it lands on that stage's layer — a
   // Command dropped while browsing Big picture still files under Process.

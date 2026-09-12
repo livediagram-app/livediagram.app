@@ -2144,24 +2144,50 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     description: `Event storming: ${note.blurb.charAt(0).toLowerCase()}${note.blurb.slice(1)}.`,
     noTint: true,
     action: { type: 'sticky', fill: note.fill, esKind: note.kind },
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
-        <path
-          d="M3 3h9l3 3v9H3z"
-          fill={note.fill}
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M12 3v3h3"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinejoin="round"
-        />
-      </svg>
-    ),
+    // The glyph mirrors the note's stationery silhouette (spec/139): a
+    // standard square, a WIDE rect for the prose kinds, a small square for
+    // the actor — so the row's picture says the shape before the blurb does.
+    icon:
+      note.size === 'wide' ? (
+        <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
+          <rect
+            x="1.5"
+            y="5"
+            width="15"
+            height="9"
+            fill={note.fill}
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinejoin="round"
+          />
+        </svg>
+      ) : note.size === 'small' ? (
+        <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
+          <rect
+            x="5"
+            y="5"
+            width="8"
+            height="8"
+            fill={note.fill}
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinejoin="round"
+          />
+        </svg>
+      ) : (
+        <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
+          <rect
+            x="3"
+            y="3"
+            width="12"
+            height="12"
+            fill={note.fill}
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinejoin="round"
+          />
+        </svg>
+      ),
   })),
 ];
 

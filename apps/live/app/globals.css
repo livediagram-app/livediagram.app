@@ -1836,7 +1836,11 @@
   background-color: inherit;
   /* Pressed-glue strip: a flat 4% wash over the glued band, releasing by a
      third of the way down — hand-tuned with the peel below it. */
-  background-image: linear-gradient(#0f172a0a, #0f172a0a 14%, #0000 33%);
+  background-image: linear-gradient(#0f172a08, #0f172a08 14%, #00000000 33%);
+  /* A 1px definition halo so the sheet's edge reads against any backdrop.
+     Lives here rather than on the wrapper: an inline wrapper box-shadow
+     would override the Tailwind selection ring (rings are box-shadows). */
+  box-shadow: 0 0 1px #0f172a4a;
 }
 
 .lvd-done-complete {

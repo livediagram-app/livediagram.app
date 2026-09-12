@@ -15,6 +15,7 @@
 
 import { onMouseHover, useRevertOnUnmount } from '@/components/primitives/hover-preview';
 import {
+  isFixedSizeElement,
   arrowheadShapeOf,
   arrowheadSizeOf,
   arrowRoutesBehind,
@@ -164,7 +165,10 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
             all answer "how big is this": the width / height boxes, the aspect
             lock (which lived in Layer) and the reset (which lived in Shape,
             so it only appeared for morphable kinds). */}
-        {boxed ? (
+        {/* Fixed-size elements (spec/103 buttons, spec/139 event-storming
+            notes) have no size to edit — offering the boxes would advertise
+            a resize the drag paths deliberately ignore. */}
+        {boxed && !isFixedSizeElement(target) ? (
           <MenuAccordionSection title="Size" icon={<SizeMenuIcon />} {...sectionProps('size')}>
             <SizeSection
               width={(target as { width: number }).width}

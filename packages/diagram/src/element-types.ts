@@ -148,6 +148,13 @@ export type ShapeElement = {
   // which must stay distinct so the timeline reads as separate tasks.
   // Stroke + text still theme normally.
   themeLockFill?: boolean;
+  // The element is one size for life: no resize handles, union-scales move
+  // it without scaling it, and the menu's Size category stays away. Set at
+  // creation on event-storming notes (spec/139 — the workshop stationery
+  // has fixed silhouettes); the fixed-size SHAPE kinds (mode-button /
+  // session-button, spec/103) get the same treatment from their kind
+  // instead. See isFixedSizeElement.
+  fixedSize?: boolean;
   // Border styling (shapes + stickies). Each is a preset bucket so
   // saved diagrams round-trip without carrying arbitrary numeric
   // values; the renderer maps to pixel widths / SVG dasharrays /
@@ -524,6 +531,9 @@ export type StickyElement = {
   height: number;
   label?: string;
   locked?: boolean;
+  // One size for life (spec/139 event-storming notes) — see
+  // ShapeElement.fixedSize / isFixedSizeElement.
+  fixedSize?: boolean;
   groupId?: ElementId;
   textSize?: TextSize;
   textAlignX?: TextAlignX;

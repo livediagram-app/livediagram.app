@@ -7,10 +7,12 @@ import type {
   ShapeKind,
 } from '@livediagram/diagram';
 import type { EmbedProvider, EventStormingNoteKind } from '@livediagram/diagram';
+import { eventStormingNoteSize } from '@livediagram/diagram';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { IconButton } from '@/components/palette/palette-controls';
-import { ICON_DND_MIME } from '@/lib/icons';
+import { ICON_DND_MIME, PALETTE_DND_MIME } from '@/lib/icons';
 import { TECH_ICON_DND_MIME } from '@/lib/tech-icons';
+import { setPaletteDragPreview, suppressNativeDragImage } from '@/lib/palette-drag-preview';
 import type { PaletteTileDef, PaletteTileSection } from './palette-tile-defs';
 import { tilesInSection } from './palette-tile-defs';
 
@@ -189,6 +191,20 @@ function PaletteTile({
           e.dataTransfer.effectAllowed = 'copy';
         }
       : undefined;
+  // Sticky tiles drag too (the plain note + the Event Storming notation,
+  // spec/139), carrying their kind so the drop routes + sizes like a tap.
+  // The IconButton clears the ghost on dragEnd for every tile, so setting
+  // it here is safe.
+  const stickyDrag =
+    a.type === 'sticky'
+      ? (e: React.DragEvent) => {
+          e.dataTransfer.setData(PALETTE_DND_MIME, a.esKind ? `sticky|${a.esKind}` : 'sticky');
+          e.dataTransfer.effectAllowed = 'copy';
+          const size = a.esKind ? eventStormingNoteSize(a.esKind) : { width: 200, height: 200 };
+          setPaletteDragPreview({ kind: 'square', ...size });
+          suppressNativeDragImage(e);
+        }
+      : undefined;
   return (
     <IconButton
       label={def.label}
@@ -199,8 +215,8 @@ function PaletteTile({
       dragChoice={
         a.type === 'shape' ? (a.session ?? a.reaction ?? a.mode ?? a.estimateScale) : undefined
       }
-      draggable={iconDrag !== undefined || undefined}
-      onDragStart={iconDrag}
+      draggable={iconDrag !== undefined || stickyDrag !== undefined || undefined}
+      onDragStart={iconDrag ?? stickyDrag}
       filled={def.filled}
       noTint={def.noTint}
       active={tileActive(def, pendingDraw)}

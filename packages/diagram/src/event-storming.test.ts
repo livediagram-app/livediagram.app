@@ -3,6 +3,7 @@ import type { Tab } from './index';
 import { isLayerVisible, type Layer } from './layers';
 import {
   applyEventStormingStage,
+  eventStormingNoteSize,
   ES_BIG_PICTURE_LAYER_ID,
   ES_DESIGN_LAYER_ID,
   ES_PROCESS_LAYER_ID,
@@ -71,6 +72,20 @@ describe('EVENT_STORMING_NOTES', () => {
       'read-model',
     ]);
     expect(byStage('design')).toEqual(['aggregate']);
+  });
+
+  it('sizes the notes like the physical stationery set', () => {
+    // Brandolini's kit: standard squares for events / commands / read
+    // models / hotspots, WIDE stickies for the prose kinds (policy,
+    // external system, aggregate), and a small square for the actor.
+    expect(eventStormingNoteSize('domain-event')).toEqual({ width: 200, height: 200 });
+    expect(eventStormingNoteSize('command')).toEqual({ width: 200, height: 200 });
+    expect(eventStormingNoteSize('read-model')).toEqual({ width: 200, height: 200 });
+    expect(eventStormingNoteSize('hotspot')).toEqual({ width: 200, height: 200 });
+    expect(eventStormingNoteSize('policy')).toEqual({ width: 300, height: 180 });
+    expect(eventStormingNoteSize('external-system')).toEqual({ width: 300, height: 180 });
+    expect(eventStormingNoteSize('aggregate')).toEqual({ width: 300, height: 180 });
+    expect(eventStormingNoteSize('actor')).toEqual({ width: 140, height: 140 });
   });
 
   it('eventStormingStageLayerId maps a kind to its stage layer', () => {

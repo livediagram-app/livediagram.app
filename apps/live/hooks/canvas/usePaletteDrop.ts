@@ -14,8 +14,10 @@ import { STICKER_DND_MIME } from '@/lib/stickers';
 import { TECH_ICON_DND_MIME } from '@/lib/tech-icons';
 
 type PaletteDropDeps = {
+  // 'sticky' rides beside the shape kinds (spec/139): a sticky is its own
+  // element type, and the drop needs to build one rather than a shape.
   onDropPalette?: (
-    kind: ShapeKind,
+    kind: ShapeKind | 'sticky',
     canvasX: number,
     canvasY: number,
     art?: { iconId?: string; stickerId?: string; choice?: string },

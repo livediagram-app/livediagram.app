@@ -1,5 +1,6 @@
 import {
   defaultSessionConfig,
+  eventStormingNoteSize,
   eventStormingStageLayerId,
   isEventStormingTab,
   isFixedSizeShape,
@@ -7,6 +8,7 @@ import {
   isLayerVisible,
   REACTION_PAD_LABEL,
   type EventStormingNoteKind,
+  type StickyElement,
 } from '@livediagram/diagram';
 import { ARROW_SNAP_THRESHOLD_PX, inheritedSizeFor } from '@/lib/canvas';
 import {
@@ -39,6 +41,19 @@ import type { PendingDraw } from '@/lib/draw-mode';
 // composite) and returns the minted element(s). The hook stays the
 // owner of everything stateful — the functional commit, selection,
 // telemetry, and the image-picker follow-up.
+
+// The board-wide sticky treatment on an event-storming board (spec/139):
+// one size for life (the plain square silhouette — tap-inheritance and
+// drag-sizing both stand down), plus a random hand-placed tilt (±2.5°,
+// one decimal) so a wall of notes reads as a workshop rather than a grid.
+function eventStormingBoardStickyExtras(): Partial<StickyElement> {
+  return {
+    width: 200,
+    height: 200,
+    fixedSize: true,
+    rotation: Math.round((Math.random() * 2 - 1) * 25) / 10,
+  };
+}
 
 // The stage-layer stamp for an event-storming note, or nothing when the
 // board / target layer can't take it (see the call site above).
@@ -187,6 +202,10 @@ export function buildDrawnBoxed(
   activeTab: Tab,
 ) {
   const isTap = isDrawTap(startX, startY, endX, endY);
+  // Event-storming stationery (spec/139): on an ES board every sticky has a
+  // FIXED silhouette (the drag gesture sizes nothing) and a hand-placed
+  // tilt; a kinded note additionally carries its own footprint everywhere.
+  const esBoardSticky = intent.type === 'sticky' && isEventStormingTab(activeTab.layers);
   const base =
     intent.type === 'shape'
       ? createShape(intent.kind, startX, startY)
@@ -207,7 +226,7 @@ export function buildDrawnBoxed(
   const tapSize = inheritedSizeFor(base, inheritFrom);
   // A fixed-size kind (spec/103) ignores the drag entirely: dragging one out
   // still places it, at the one size it is meant to be.
-  const fixedSize = base.type === 'shape' && isFixedSizeShape(base.shape);
+  const fixedSize = (base.type === 'shape' && isFixedSizeShape(base.shape)) || esBoardSticky;
   // Shared with the live preview so the outline the user sizes against is the
   // box that lands — including the embed's 16:9 fit (spec/114).
   const dragBox = drawnDragBox(intent, startX, startY, endX, endY);
@@ -247,6 +266,12 @@ export function buildDrawnBoxed(
     // the element fill. Stickies are exempt from theme recolouring, so the
     // notation survives every theme without themeLockFill.
     ...(intent.type === 'sticky' && intent.fill ? { fillColor: intent.fill } : {}),
+    // Board-wide treatment first (fixed square + tilt), then a kinded
+    // note's own silhouette on top: the kind IS the notation (wide policy,
+    // small actor), on any board — while the fixed-size + tilt applies
+    // only ON an ES board.
+    ...(esBoardSticky ? eventStormingBoardStickyExtras() : {}),
+    ...(intent.type === 'sticky' && intent.esKind ? eventStormingNoteSize(intent.esKind) : {}),
     // Stage routing (spec/139): on an event-storming board the note files
     // onto its workshop stage's layer — a Command dropped while browsing Big
     // picture still lands under Process. Only when the target layer exists,

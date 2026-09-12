@@ -712,7 +712,7 @@ export type CanvasProps = {
   // for the two catalogue-driven kinds — `iconId` for an icon or brand mark,
   // `stickerId` for a sticker (spec/116).
   onDropPalette?: (
-    kind: ShapeKind,
+    kind: ShapeKind | 'sticky',
     canvasX: number,
     canvasY: number,
     // `choice` is the creation-time value a split tile carries (which session

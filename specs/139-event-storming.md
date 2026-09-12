@@ -132,6 +132,32 @@ facilitator-style (a deliberate choice over a per-user lens).
   switch just hid (which would pause element creation per spec/74).
 - **Telemetry:** `UI / Used / EventStorming{BigPicture,Process,Design}`.
 
+## Phase 4 (shipped): workshop stationery
+
+The notes behave like the physical kit:
+
+- **Silhouettes.** Each kind carries a `size` class in the catalogue —
+  standard `square` (200×200) for events / commands / read models /
+  hotspots, `wide` (300×180) for the prose kinds (policy, external
+  system, aggregate), `small` (140×140) for the actor. A kinded note
+  keeps its silhouette on ANY board (the kind is the notation); the
+  palette tile glyphs mirror the silhouette so the row's picture says
+  the shape before the blurb does.
+- **One size for life.** On an event-storming board every sticky drops
+  `fixedSize: true` (element-level flag; `isFixedSizeElement` unifies it
+  with the spec/103 fixed-size shape kinds): no resize handles, union
+  scaling moves it without scaling it, the menu's Size category stays
+  away, drag-to-size gestures and tap-size-inheritance both stand down.
+- **Hand-placed tilt.** Every sticky dropped on an ES board gets a
+  random rotation (±2.5°, one decimal) so a wall of notes reads as a
+  workshop rather than a grid. The template's seed events ship tilted
+  (±1.5°) and `fixedSize` too.
+- **Drag to the board.** Sticky tiles (the plain note and the whole ES
+  category, rows and Favourites grid alike) drag onto the canvas like
+  shape tiles (spec/58 ghost included, sized to the silhouette). The
+  drop goes through the same builder as a tap, so fill, silhouette,
+  tilt, fixed size and stage routing all apply identically.
+
 ## Still ahead (phased, see the plan)
 
 Board structure (swimlanes, pivotal events) and the help-centre article

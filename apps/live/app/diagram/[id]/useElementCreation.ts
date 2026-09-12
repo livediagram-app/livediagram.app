@@ -1,6 +1,7 @@
 import { type Dispatch, type SetStateAction } from 'react';
 import {
   type EventStormingNoteKind,
+  eventStormingNote,
   acceptsInlineIcon,
   createAnnotation,
   type EmbedProvider,
@@ -21,6 +22,7 @@ import {
   type Tab,
 } from '@livediagram/diagram';
 import { getTechIcon, isTechIconId } from '@/lib/tech-icons';
+import { buildDrawnBoxed } from '@/lib/draw-commit';
 import { getSticker, stickerDropSize } from '@/lib/stickers';
 import { track, titleCaseType } from '@/lib/telemetry';
 import type { PendingDraw } from '@/lib/draw-mode';
@@ -275,7 +277,7 @@ export function useElementCreation(opts: {
   // drop point. Shapes / devices use createShape; an icon carries `iconId`,
   // a sticker `stickerId` (spec/116).
   const dropPaletteItem = (
-    kind: ShapeKind,
+    kind: ShapeKind | 'sticky',
     canvasX: number,
     canvasY: number,
     art?: { iconId?: string; stickerId?: string; choice?: string },
@@ -283,6 +285,28 @@ export function useElementCreation(opts: {
     if (editsBlocked) return;
     const iconId = art?.iconId;
     const stickerId = art?.stickerId;
+    if (kind === 'sticky') {
+      // A dragged sticky lands exactly like a tapped one — the drop point is
+      // the only difference — so it goes through the same builder: fill +
+      // stationery silhouette from the note kind, and on an event-storming
+      // board the tilt, the fixed size, and the stage-layer routing
+      // (spec/139). placeBoxed re-centres and leaves sticky colours alone.
+      const esKind = art?.choice as EventStormingNoteKind | undefined;
+      const fill = esKind ? eventStormingNote(esKind).fill : undefined;
+      addBoxedAt(canvasX, canvasY, (x, y) =>
+        buildDrawnBoxed(
+          { type: 'sticky', ...(fill ? { fill } : {}), ...(esKind ? { esKind } : {}) },
+          x,
+          y,
+          x,
+          y,
+          null,
+          activeTab,
+        ),
+      );
+      track('Element', 'Added', 'Sticky');
+      return;
+    }
     if (stickerId) {
       // A dragged sticker lands at its flavour's natural size, square to the
       // canvas, exactly like a tapped one — the drop point is the only

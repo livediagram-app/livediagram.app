@@ -13,7 +13,12 @@
 // here having chosen a group of three to eight tools, not facing all 28.
 
 import { useEffect, useRef } from 'react';
-import { SHAPE_DEFAULT_SIZE, type ShapeKind } from '@livediagram/diagram';
+import {
+  eventStormingNoteSize,
+  SHAPE_DEFAULT_SIZE,
+  type EventStormingNoteKind,
+  type ShapeKind,
+} from '@livediagram/diagram';
 import { PALETTE_DND_MIME } from '@/lib/icons';
 import { setPaletteDragPreview, suppressNativeDragImage } from '@/lib/palette-drag-preview';
 import type { PendingDraw } from '@/lib/draw-mode';
@@ -63,8 +68,10 @@ function PaletteToolRow({
       onClick={tileHandler(def, actions)}
       // Rows drag onto the canvas exactly like the grid tiles do. They did
       // not, and since the categories moved to rows that was most of the
-      // palette: Behaviour, Collaborate, Build, Write, Draw, Data.
-      draggable={def.action.type === 'shape'}
+      // palette: Behaviour, Collaborate, Build, Write, Draw, Data. Sticky
+      // rows (the plain note + the Event Storming notation, spec/139) drag
+      // too, carrying their kind so the drop routes + sizes like a tap.
+      draggable={def.action.type === 'shape' || def.action.type === 'sticky'}
       onDragStart={
         def.action.type === 'shape'
           ? (e) => {
@@ -84,7 +91,23 @@ function PaletteToolRow({
               // canvas ghost, exactly as the grid tiles do it.
               suppressNativeDragImage(e);
             }
-          : undefined
+          : def.action.type === 'sticky'
+            ? (e) => {
+                const a = def.action as { esKind?: string };
+                e.dataTransfer.setData(
+                  PALETTE_DND_MIME,
+                  a.esKind ? `sticky|${a.esKind}` : 'sticky',
+                );
+                e.dataTransfer.effectAllowed = 'copy';
+                const size = a.esKind
+                  ? eventStormingNoteSize(a.esKind as EventStormingNoteKind)
+                  : { width: 200, height: 200 };
+                // The ghost draws by shape kind; a square footprint at the
+                // note's real size reads as the sticky it will become.
+                setPaletteDragPreview({ kind: 'square', ...size });
+                suppressNativeDragImage(e);
+              }
+            : undefined
       }
       // Clearing the preview is NOT optional: it is what removes the canvas
       // ghost. Without it every dragged row left its placemarker behind after
