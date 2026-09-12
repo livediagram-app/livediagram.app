@@ -1803,32 +1803,52 @@
     box-shadow: 0 0 0 6px rgb(34 197 94 / 0.45);
   }
 }
-/* Sticky-note paper peel (spec/09). The shadow is cast by a pseudo-element,
-   not the note's own box: a wrapper box-shadow always hugs the whole
-   rectangle, but a real sticky is glued along its TOP STRIP and only the
-   rest of the sheet comes loose — so the caster starts below that strip,
-   letting the shadow appear partway down the sides and nowhere above. The
-   slight perspective tilt (origin at the glue line) projects the caster's
-   bottom edge wider and lower, so the shadow's offset INCREASES toward the
-   bottom — while the note itself stays a flat, untransformed rectangle.
-   Layered soft shadows deepen the throw at the bottom edge. The pseudo
-   paints above the note's background (negative z-index child of its own
-   stacking context), so the inner blur doubles as subtle edge shading on
-   the lower sides — which reads as the sheet curving away, and is why the
-   alphas stay low. Element rotation on the wrapper carries the whole
-   illusion with it. */
+/* Sticky-note paper peel (spec/09), the Miro look: the note is glued along
+   its top strip and the rest of the sheet lifts EVER SO SLIGHTLY off the
+   board. Nothing about the note changes — same flat rectangle, same fill,
+   same border. The lift lives entirely in the shadow, and the shadow's
+   silhouette is the note's own rectangle (no tilt, no inset, which would
+   read as the note itself warping).
+
+   Mechanics: ::before is a blurred solid copy of the note's rectangle,
+   nudged down a few px, with a vertical mask that fades it to NOTHING over
+   the glued strip — so a faint halo appears partway down the sides,
+   strengthens continuously toward the bottom (the increasing lift), and
+   peaks under the bottom edge. Negative-z pseudos paint ABOVE their own
+   element's background, so ::after repaints the sheet (background-color:
+   inherit) over the caster's interior — only the blur that escapes the
+   note's edges survives, exactly like a real shadow. ::after also carries
+   a whisper of top-edge shading, the pressed-down glue strip. Element
+   rotation on the wrapper rotates sheet and shadow together. */
 .lvd-sticky-peel::before {
   content: '';
   position: absolute;
+  z-index: -2;
+  inset: 0;
+  background: rgb(15 23 42 / 0.5);
+  filter: blur(4px);
+  transform: translateY(3px);
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 12%,
+    rgb(0 0 0 / 0.3) 45%,
+    rgb(0 0 0 / 0.75) 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 12%,
+    rgb(0 0 0 / 0.3) 45%,
+    rgb(0 0 0 / 0.75) 100%
+  );
+}
+.lvd-sticky-peel::after {
+  content: '';
+  position: absolute;
   z-index: -1;
-  /* The glued strip: nothing escapes above this line. */
-  inset: 15% 1px 2px 1px;
-  transform: perspective(400px) rotateX(-2.5deg);
-  transform-origin: top center;
-  box-shadow:
-    0 2px 3px rgb(15 23 42 / 0.1),
-    0 8px 7px -2px rgb(15 23 42 / 0.13),
-    0 17px 12px -5px rgb(15 23 42 / 0.14);
+  inset: 0;
+  background-color: inherit;
+  /* The glued strip reads pressed-down: a whisper of shading at the top. */
+  background-image: linear-gradient(to bottom, rgb(15 23 42 / 0.045), transparent 22%);
 }
 
 .lvd-done-complete {
