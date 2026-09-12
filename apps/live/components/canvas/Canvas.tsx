@@ -469,6 +469,7 @@ export function Canvas(props: CanvasProps) {
   // below mounts its handlers verbatim.
   const surface = useCanvasSurfaceGestures({
     canvasTool,
+    middleMousePan: props.settings?.middleMousePan !== false,
     pendingDraw,
     viewportOffset,
     viewportZoom,

@@ -2,7 +2,8 @@
 
 Per-user editor preference flags that toggle behaviour without
 changing diagram content. Most are exposed through a small
-Settings dialog launched from the footer (gear button to the left
+Settings dialog launched from the footer (the **Application settings**
+gear button to the left
 of the dark-mode toggle); a small number are per-tool toggles
 that live next to the tool they affect (see the UI placement
 section below) rather than in Settings. Either way the
@@ -334,7 +335,7 @@ modal.
   flip their own telemetry preference and (harmlessly) their own
   auto-rebind preference, even though they can't edit elements.
   Toggles are organised into collapsible groups (Editor,
-  Notifications, Accessibility, AI, Privacy) so the growing list stays scannable; only
+  Controls, Notifications, Accessibility, AI, Privacy) so the growing list stays scannable; only
   the first group (Editor) is open by default and the rest start
   collapsed, so the dialog opens compact and the user expands what they
   need. (`autoRebindArrows` and `alignmentGuides` have moved out to the
@@ -342,6 +343,10 @@ modal.
   always-on tap-or-drag gesture with no setting — see
   [spec/09](09-canvas-and-palette.md).) The Editor group holds `minimalPanels`, whose
   description notes the dock layout is always on for mobile. The
+  **Controls** group holds `middleMousePan` (default on): holding the
+  middle mouse button drags the canvas in both axes from anywhere, over
+  empty space or elements, whatever tool is active — off leaves the middle
+  button to the browser. The
   Notifications group holds `notificationsEnabled`, whose description
   notes that errors are always shown regardless. The
   Accessibility group holds `reduceMotion`, noting the OS setting is

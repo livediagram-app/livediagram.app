@@ -98,6 +98,17 @@ export function SettingsDialog({ settings, onChange, onClose, aiCapable }: Setti
             }
           />
         </SettingsGroup>
+        <SettingsGroup {...groupProps('Controls')}>
+          <ToggleRow
+            label="Middle-mouse pan"
+            description="Hold the middle mouse button and drag to pan the canvas in any direction, from anywhere — over empty space or over elements — whatever tool is active. Turn off to leave the middle button to your browser."
+            checked={settings.middleMousePan !== false}
+            onChange={(v) => {
+              track('UI', 'Toggled', v ? 'MiddleMousePanOn' : 'MiddleMousePanOff');
+              onChange({ ...settings, middleMousePan: v });
+            }}
+          />
+        </SettingsGroup>
         <SettingsGroup {...groupProps('Notifications')}>
           <ToggleRow
             label="Show notifications"

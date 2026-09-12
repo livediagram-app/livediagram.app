@@ -365,8 +365,8 @@ export function TabBar({
           onOpenSearch={onOpenSearch}
           onOpenShortcuts={onOpenShortcuts}
           onOpenSettings={onOpenSettings}
-          settingsLabel="Diagram settings"
-          settingsDescription="Configure per-diagram editor behaviour."
+          settingsLabel="Application settings"
+          settingsDescription="Your editor preferences — they follow your account, not this diagram."
         />
       </div>
       {canvasMenu && !readOnly && activeTab && onCloseCanvasMenu && canvasActions ? (
