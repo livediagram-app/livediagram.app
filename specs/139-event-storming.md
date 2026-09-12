@@ -39,14 +39,60 @@ for free. Nothing in the editor branches on the kind after creation.
 - Preview tile: three orange stickies marching along a faint dashed
   timeline arrow (`template-preview-4.tsx`).
 
+## Phase 2 (shipped): the sticky grammar in the palette
+
+The notation's note kinds, each an ordinary sticky with a pinned
+semantic colour:
+
+| Kind              | Fill      | Meaning                             |
+| ----------------- | --------- | ----------------------------------- |
+| `domain-event`    | `#fdba74` | something that happened, past tense |
+| `command`         | `#93c5fd` | an intent that triggers the event   |
+| `actor`           | `#fef08a` | who issues the command              |
+| `policy`          | `#d8b4fe` | "whenever X then Y" reaction rule   |
+| `read-model`      | `#86efac` | information the actor decides on    |
+| `external-system` | `#f9a8d4` | a third party the flow touches      |
+| `aggregate`       | `#fef9c3` | the thing commands act on           |
+| `hotspot`         | `#fca5a5` | a conflict, question, or risk       |
+
+- **Single source of truth:** `EVENT_STORMING_NOTES` in
+  `@livediagram/diagram` (`src/event-storming.ts`) — kind, label, blurb,
+  fill. The palette tiles derive from it (a `map`, not hand-copies) and
+  the template builder reads its orange from it, so the surfaces cannot
+  drift (pinned by `event-storming.test.ts` + `palette-tile-defs.test.tsx`).
+- **Palette home:** a collapsible **Event Storming** `PaletteTileGroup`
+  row in the **Write** tab (the Media-Embed pattern, spec/121) — the
+  sticky's home category, below Write's own four elements. Tiles carry
+  `tileGroup: 'event-storming'`, ids `tools:es-<kind>`; Write's census
+  is now 12 (4 loose + 8 grouped).
+- **Mechanics:** each tile arms the ordinary sticky draw gesture with
+  the kind's fill riding the intent (`PendingDraw` sticky variant gains
+  `fill?: string`, the session/provider precedent), and `buildDrawnBoxed`
+  lands it as `fillColor`. No new element type, no schema change — the
+  notes are plain stickies, so votes, comments, exports and realtime all
+  just work, and the fill survives theming because stickies are
+  theme-exempt. Pressed-state matches on the fill so arming Command
+  doesn't light all nine sticky tiles.
+- **Telemetry:** adds report `Element / Added / Sticky`, unchanged — the
+  colour is a user choice riding the intent, not a new kind (the same
+  reasoning as Video's provider, spec/22).
+
+## Decided direction (not yet built)
+
+- **One template kind**, not big-picture / process-level / design-level
+  variants — instead the SAME diagram supports switching between those
+  three as **views**, plus a fourth "timeline rail" view that shows the
+  board against a spec/51 rail. The seed stays minimal (the three-events
+  starter) regardless.
+- Mechanism for those views is an open design fork (layer-visibility
+  presets over spec/74 layers vs a per-user lens) — tracked in the plan.
+
 ## Still ahead (phased, see the plan)
 
-The colour grammar beyond orange (commands, actors, policies, read
-models, external systems, hotspots), a palette home for those sticky
-kinds, richer template variants (big-picture vs process-level), and
-whatever else the plan surfaces. Each phase lands with its own spec
-update here — this file stays the source of truth for what the type
-IS at any moment.
+The workshop-stage views above, board structure (swimlanes, pivotal
+events), and the help-centre article for the diagram type itself. Each
+phase lands with its own spec update here — this file stays the source
+of truth for what the type IS at any moment.
 
 ## Counts
 

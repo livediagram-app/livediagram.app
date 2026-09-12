@@ -8,6 +8,7 @@ import { PaletteGroupBrowser, type TileGroupDef } from './PaletteGroupBrowser';
 import {
   AskGroupIcon,
   EmbedGroupIcon,
+  EventStormingGroupIcon,
   FacilitateGroupIcon,
   ModeGroupIcon,
   MoveGroupIcon,
@@ -48,14 +49,28 @@ export function PaletteBuildTab({ pendingDraw, actions }: TabProps) {
   );
 }
 
-// The wordy elements (spec/110): Page, Text, Sticky Note, Annotation.
+// The wordy elements (spec/110): Page, Text, Sticky Note, Annotation — plus
+// the Event Storming notation collapsed behind one group row (spec/139), the
+// way Media folds its embed providers: eight coloured-sticky tiles would
+// otherwise triple the tab and crowd out its own four elements.
 export function PaletteWriteTab({ pendingDraw, actions }: TabProps) {
+  const write = tilesInToolGroup('write');
   return (
-    <PaletteToolRows
-      tiles={tilesInToolGroup('write')}
-      actions={actions}
-      pendingDraw={pendingDraw}
-    />
+    <div className="flex flex-col gap-0.5">
+      <PaletteToolRows
+        tiles={write.filter((t) => !t.tileGroup)}
+        actions={actions}
+        pendingDraw={pendingDraw}
+      />
+      <PaletteTileGroup
+        title="Event Storming"
+        blurb="The sticky-note workshop notation"
+        icon={<EventStormingGroupIcon />}
+        tiles={write.filter((t) => t.tileGroup === 'event-storming')}
+        actions={actions}
+        pendingDraw={pendingDraw}
+      />
+    </div>
   );
 }
 

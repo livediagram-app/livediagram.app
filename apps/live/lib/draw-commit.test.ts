@@ -123,6 +123,17 @@ describe('buildDrawnBoxed', () => {
     expect(unseeded.textSize).toBe('md'); // the shape factory's own default
   });
 
+  it('carries an event-storming fill onto a drawn sticky (spec/139)', () => {
+    // The Event Storming palette tiles arm a sticky intent with the note
+    // kind's canonical fill; the commit must land it as the element's
+    // fillColor (stickies are theme-exempt, so it then survives themes).
+    const out = buildDrawnBoxed({ type: 'sticky', fill: '#fdba74' }, 0, 0, 3, 3, null, tab());
+    expect(out).toMatchObject({ type: 'sticky', fillColor: '#fdba74' });
+    // A plain sticky stays exactly as it was: no fillColor sneaks in.
+    const plain = buildDrawnBoxed({ type: 'sticky' }, 0, 0, 3, 3, null, tab());
+    expect('fillColor' in plain && plain.fillColor != null).toBe(false);
+  });
+
   it('carries the icon glyph + label, unlocking aspect for a tech mark (spec/41)', () => {
     const intent = { type: 'shape', kind: 'square', iconId: 'aws-s3', label: 'S3' } as const;
     const out = buildDrawnBoxed(intent, 0, 0, 100, 100, null, tab());

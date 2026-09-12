@@ -224,6 +224,10 @@ export function buildDrawnBoxed(
     ...(intent.type === 'shape' && intent.iconId
       ? { iconId: intent.iconId, ...(intent.label ? { label: intent.label } : {}) }
       : {}),
+    // Event-storming sticky (spec/139): the tile's semantic colour lands as
+    // the element fill. Stickies are exempt from theme recolouring, so the
+    // notation survives every theme without themeLockFill.
+    ...(intent.type === 'sticky' && intent.fill ? { fillColor: intent.fill } : {}),
     // Technology marks render at a fixed size (spec/41), so warping the
     // box can't warp the mark — the aspect lock createShape('icon') bakes
     // in would only fight resizing the caption room, so drop it.

@@ -14,10 +14,12 @@
 // Element[]. Sizing constants live inline so the template is
 // self-describing.
 
-import { createSticky, createText, type Element } from '@livediagram/diagram';
+import { createSticky, createText, eventStormingNote, type Element } from '@livediagram/diagram';
 
-// The canonical event-storming orange (big-picture domain events).
-const DOMAIN_EVENT_FILL = '#fdba74';
+// The canonical event-storming orange (big-picture domain events), from the
+// shared note-kind catalogue so the template and the palette tiles can't
+// drift apart.
+const DOMAIN_EVENT_FILL = eventStormingNote('domain-event').fill;
 
 export function buildEventStorming(cx: number, cy: number): Element[] {
   const stickyW = 200;

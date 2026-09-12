@@ -251,9 +251,11 @@ export function useElementCreation(opts: {
     if (editsBlocked) return;
     beginDraw({ type: 'text' });
   };
-  const addSticky = () => {
+  // `fill` = an Event Storming note colour riding the intent (spec/139);
+  // absent for the plain sticky tile / the N shortcut.
+  const addSticky = (fill?: string) => {
     if (editsBlocked) return;
-    beginDraw({ type: 'sticky' });
+    beginDraw({ type: 'sticky', ...(fill ? { fill } : {}) });
   };
 
   // Click-to-connect (spec/09) — arm from the selection, complete on the next

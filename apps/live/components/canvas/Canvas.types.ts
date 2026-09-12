@@ -291,7 +291,8 @@ export type CanvasProps = {
   onAddProcess: () => void;
   onAddAvatar: () => void;
   onAddText: () => void;
-  onAddSticky: () => void;
+  // Optional fill: an Event Storming note colour (spec/139).
+  onAddSticky: (fill?: string) => void;
   // Spawn an empty image placeholder + open the picker. Optional so
   // view-role visitors / no-R2 deployments can simply omit it; the
   // Palette's Image entry hides when missing (spec/19).

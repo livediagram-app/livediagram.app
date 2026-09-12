@@ -162,3 +162,25 @@ export function RecordGroupIcon() {
     </svg>
   );
 }
+
+/** Write → Event Storming: three tilted sticky notes marching left to right
+ *  (the workshop's opening move, matching the template's preview tile). */
+export function EventStormingGroupIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <rect x="2.5" y="6" width="7" height="7" rx="0.8" transform="rotate(-4 6 9.5)" />
+      <rect x="12" y="4.5" width="7" height="7" rx="0.8" transform="rotate(3 15.5 8)" />
+      <path d="M4 19h14.5M18.5 19l-2.2-1.6M18.5 19l-2.2 1.6" />
+    </svg>
+  );
+}

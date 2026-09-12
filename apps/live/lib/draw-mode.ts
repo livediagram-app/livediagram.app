@@ -40,7 +40,12 @@ export type PendingDraw =
       estimateScale?: EstimateScale;
     }
   | { type: 'text' }
-  | { type: 'sticky' }
+  // `fill` rides the sticky intent for the Event Storming tiles (spec/139):
+  // the notation is one `sticky` type in eight semantic colours, and the
+  // palette offers a tile per note kind, so the colour has to survive the
+  // gesture the same way `session` / `provider` do above. Absent = the
+  // iconic amber default.
+  | { type: 'sticky'; fill?: string }
   | { type: 'image' }
   // Table (spec/09), link card (spec/40), and the embeds (spec/114, spec/121)
   // are their own element types rather than ShapeKinds, so each needs its own

@@ -133,8 +133,8 @@ export function CommandPalette({
     onDrawArmed?.();
     onMobileClose?.();
   };
-  const addSticky = () => {
-    onAddSticky();
+  const addSticky = (fill?: string) => {
+    onAddSticky(fill);
     onDrawArmed?.();
     onMobileClose?.();
   };

@@ -1,5 +1,5 @@
 import type { EmbedProvider } from '@livediagram/diagram';
-import { REACTION_EMOJI } from '@livediagram/diagram';
+import { EVENT_STORMING_NOTES, REACTION_EMOJI } from '@livediagram/diagram';
 
 import type {
   ComponentKind,
@@ -96,7 +96,9 @@ type PaletteTileAction =
   | { type: 'sticker'; stickerId: string }
   | { type: 'polygon' }
   | { type: 'arrow' }
-  | { type: 'sticky' }
+  // `fill` rides the sticky action for the Event Storming tiles (spec/139):
+  // eight semantic colours over the one sticky type, one tile per note kind.
+  | { type: 'sticky'; fill?: string }
   | { type: 'table' }
   | { type: 'image' }
   | { type: 'annotation' }
@@ -158,8 +160,18 @@ export type PaletteTileDef = {
   // 'reaction' = the Behaviour tab's session tools and reactions; 'mode' its
   // selection-mode buttons; 'move' / 'facilitate' the rest of Behaviour; and
   // 'ask' / 'record' the two halves of Collaborate.
+  // 'event-storming' = the Write tab's sticky-notation group (spec/139).
   tileGroup?:
-    'embed' | 'web' | 'session' | 'reaction' | 'mode' | 'move' | 'facilitate' | 'ask' | 'record';
+    | 'embed'
+    | 'web'
+    | 'session'
+    | 'reaction'
+    | 'mode'
+    | 'move'
+    | 'facilitate'
+    | 'ask'
+    | 'record'
+    | 'event-storming';
   label: string;
   // Overrides the caption derived from `label` where that runs too long
   // for the tile (see IconButton).
@@ -2115,6 +2127,43 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       </svg>
     ),
   },
+  // The Event Storming notation (spec/139): one tile per note kind, derived
+  // from the EVENT_STORMING_NOTES catalogue in @livediagram/diagram so the
+  // palette can never drift from the colours the template builder (and any
+  // future consumer) uses. Each tile arms the ordinary sticky gesture with
+  // the kind's canonical fill riding the intent. They collapse behind a
+  // PaletteTileGroup row in the Write tab (the Media-Embed pattern) so the
+  // notation doesn't crowd out Write's own four elements.
+  ...EVENT_STORMING_NOTES.map((note): PaletteTileDef => ({
+    id: `tools:es-${note.kind}`,
+    section: 'tools',
+    toolGroup: 'write',
+    tileGroup: 'event-storming',
+    label: `Add ${note.label} note`,
+    caption: note.label,
+    blurb: note.blurb,
+    description: `Event storming: ${note.blurb.charAt(0).toLowerCase()}${note.blurb.slice(1)}.`,
+    noTint: true,
+    action: { type: 'sticky', fill: note.fill },
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
+        <path
+          d="M3 3h9l3 3v9H3z"
+          fill={note.fill}
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M12 3v3h3"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinejoin="round"
+        />
+      </svg>
+    ),
+  })),
 ];
 
 export function tilesInSection(section: PaletteTileSection): PaletteTileDef[] {

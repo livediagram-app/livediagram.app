@@ -399,6 +399,7 @@ export * from './icon-size';
 export * from './rich-text';
 
 export * from './factories';
+export * from './event-storming';
 export * from './graph-authoring';
 export * from './mermaid';
 export * from './duplicate';

@@ -24,42 +24,62 @@ surfaces, and every count-pinned copy surface moved together.
 - [x] Spec 139 + specs/README row
 - [x] Verified in the dev server (open `/new` → Technical → Event storming)
 
-## Phase 2 — the shapes (the sticky colour grammar)
+## Decisions taken (2026-09-12)
 
-The notation's element kinds, each a sticky with a pinned semantic colour:
+- **Q1 — grammar home:** palette accordion — a dedicated Event Storming
+  `PaletteTileGroup` inside the Write tab (the sticky's home category).
+- **Q2 — seed:** stays minimal (three events + caption); grammar lives in
+  the palette only.
+- **Q3 — one kind, switchable views:** a single `event-storming` template
+  kind; the SAME diagram switches between Big Picture / Process Modelling /
+  Software Design as views, not separate templates.
+- **Q4 — timeline:** none in the seed, plus a fourth view showing the board
+  against a spec/51 timeline rail.
 
-| Note            | Colour            | Meaning                                  |
-| --------------- | ----------------- | ---------------------------------------- |
-| Domain event    | orange            | something that happened, past tense      |
-| Command         | blue              | an intent that triggers the event        |
-| Actor / user    | small yellow      | who issues the command                   |
-| Policy          | lilac / purple    | "whenever X then Y" reaction rule        |
-| Read model      | green             | information the actor decides on         |
-| External system | pink              | third party the flow touches             |
-| Aggregate       | large pale yellow | the thing commands act on (design level) |
-| Hotspot         | red / magenta     | conflict, question, risk                 |
-| Opportunity     | green (diamond)   | improvement idea                         |
+## Phase 2 — the shapes (the sticky colour grammar) (SHIPPED)
 
-- [ ] DECIDE: where the grammar lives (see decisions below) — palette
-      surface vs builder-only vs both
-- [ ] Shared note-kind constants (labels + colours) in `@livediagram/templates`
-      or `@livediagram/diagram`, so builder + palette + MCP can't drift
-- [ ] The chosen palette surface, with telemetry on the new tiles
-      (`track('Element', 'Added', <Type>)` — reuse existing enums where they fit)
-- [ ] Extend the template seed to introduce the grammar (per the seed decision)
-- [ ] Tests: colour constants pinned, builder lockstep, palette tile tests
-      matching the existing tile-def suites
-- [ ] Spec/139 update describing the grammar as shipped
+- [x] Shared note-kind catalogue `EVENT_STORMING_NOTES` in
+      `@livediagram/diagram` (kind / label / blurb / fill), pinned by tests
+- [x] Template builder reads its orange from the catalogue (no drift)
+- [x] `PendingDraw` sticky intent carries `fill?`; `buildDrawnBoxed` lands it
+      as `fillColor` (theme-exempt on stickies)
+- [x] Eight tiles derived from the catalogue (`tools:es-<kind>`), collapsed
+      behind a Write-tab **Event Storming** `PaletteTileGroup` row
+- [x] Pressed-state matches on the fill (arming Command lights one tile)
+- [x] Census 4 → 12 + the three prose surfaces it names: Write category
+      description, help-registry entry (+ keywords), Write help article
+      (+ tools article's Write line)
+- [x] Telemetry unchanged: `Element / Added / Sticky` (fill = user choice,
+      the Video-provider precedent)
+- [x] Spec/139 phase-2 section
+- [x] Verified in the dev server (Write tab → Event Storming → drop notes)
 
-## Phase 3 — board structure
+## Phase 3 — workshop-stage views (Q3/Q4)
 
-- [ ] DECIDE: timeline treatment (plain arrow vs timeline element vs none)
+One diagram, four ways to look at it: **Big Picture** (events + hotspots +
+actors), **Process Modelling** (adds commands / policies / read models /
+external systems), **Software Design** (adds aggregates), **Timeline rail**
+(the board against a spec/51 rail).
+
+- [ ] DECIDE: mechanism — layer-visibility presets over spec/74 layers
+      (shared, synced, facilitator-led; template ships stage layers and the
+      mode switch sets visible + active layer) vs a per-user view lens
+      (spec/45 isometric precedent; new filter machinery) — surfaced as a
+      question, layers recommended
+- [ ] DECIDE: where the switcher lives (context-menu category vs a small
+      on-canvas mode bar vs the Layers panel alone)
+- [ ] Template ships the stage layers via `templateLayers` once the
+      mechanism is decided
+- [ ] The rail view: a scaffold layer holding a spec/51 timeline-rail
+      element (visible only in that view) vs a rendered overlay
+- [ ] Telemetry on the switcher
+- [ ] Spec/139 update describing views as shipped
+
+## Phase 4 — board structure
+
 - [ ] DECIDE: swimlanes / pivotal-event dividers as part of the seed?
-- [ ] Consider `templateLayers` (scaffold vs content split, spec/74) once the
-      board has scaffold worth locking
-- [ ] Big-picture vs process-level variants — one kind or two (see decisions)
 
-## Phase 4 — the on-par tail
+## Phase 5 — the on-par tail
 
 - [ ] Help article `apps/help/app/.../event-storming/page.mdx` + registry
       entry (`packages/help-registry`) with keywords, category, articleCount

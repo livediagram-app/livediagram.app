@@ -78,7 +78,8 @@ export type CommandPaletteProps = {
   // Technology tab's searchable grid; never dropped inside a shape.
   onAddTechIcon: (iconId: string) => void;
   onAddText: () => void;
-  onAddSticky: () => void;
+  // Optional fill: an Event Storming note colour (spec/139).
+  onAddSticky: (fill?: string) => void;
   // Drop a 3x3 editable table at the viewport centre.
   onAddTable: () => void;
   // Drop a note marker (annotation) at the viewport centre. See spec/38.

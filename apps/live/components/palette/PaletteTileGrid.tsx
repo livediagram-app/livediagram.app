@@ -37,7 +37,9 @@ export type PaletteTileActions = {
   beginShapePen: () => void;
   beginPolygon: () => void;
   addArrow: () => void;
-  addSticky: () => void;
+  // Optional fill: the Event Storming tiles pass their note kind's canonical
+  // colour (spec/139); plain "Add sticky note" passes nothing.
+  addSticky: (fill?: string) => void;
   addTable: () => void;
   addImage: () => void;
   addAnnotation: () => void;
@@ -79,7 +81,9 @@ export function tileHandler(def: PaletteTileDef, actions: PaletteTileActions): (
     case 'arrow':
       return actions.addArrow;
     case 'sticky':
-      return actions.addSticky;
+      // Wrapped so the button's MouseEvent can't land in the optional fill
+      // parameter; the tile's own fill (if any) rides instead.
+      return () => actions.addSticky(a.fill);
     case 'table':
       return actions.addTable;
     case 'image':
@@ -135,6 +139,11 @@ export function tileActive(
     // Vimeo alongside it (the same trap the shape branch above avoids).
     case 'video':
       return pendingDraw.type === 'video' && pendingDraw.provider === a.provider;
+    // The Event Storming tiles all arm the one sticky intent, split by the
+    // fill payload — match on it or arming Command would light up all eight
+    // notes plus the plain sticky tile (the same trap as video / shape).
+    case 'sticky':
+      return pendingDraw.type === 'sticky' && pendingDraw.fill === a.fill;
     // Icon / sticker tiles DO arm (they ride the shape intent carrying their
     // glyph id), but their catalogues are open-ended and the picker tabs
     // render thousands of tiles, so pressed-state matching per glyph buys
