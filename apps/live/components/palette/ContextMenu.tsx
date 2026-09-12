@@ -56,6 +56,9 @@ export function ContextMenu({
     return () => ro.disconnect();
   }, [position.x, position.y]);
 
+  // Fixed at mount; see the grace window below.
+  const openedAtRef = useRef(performance.now());
+
   useEffect(() => {
     // Grace window after the menu opens during which outside mouse /
     // contextmenu events are ignored. A mobile long-press opens this menu
@@ -66,7 +69,13 @@ export function ContextMenu({
     // it appears. Desktop right-click is unaffected: its mousedown fires
     // before the contextmenu that opens the menu, so nothing arrives during
     // the window. Escape (below) is never graced.
-    const openedAt = performance.now();
+    // Measured from MOUNT, not from each effect run: `onClose` is an inline
+    // callback in most hosts, so it changes identity on every render and the
+    // effect re-subscribes. Recomputing the window here meant any re-render
+    // (selecting an element, for one) handed the menu a fresh 400ms of
+    // immunity — so a left click on an element never dismissed it, and the
+    // popover could never come back.
+    const openedAt = openedAtRef.current;
     const GRACE_MS = 400;
     const onMouse = (e: MouseEvent) => {
       if (!ref.current) return;
