@@ -1,3 +1,4 @@
+import { useRightClickRelease } from '@/hooks/canvas/useRightClickRelease';
 import type { PointerEvent as ReactPointerEvent, RefObject } from 'react';
 import { isSelfDrawingShape } from '@livediagram/diagram';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
@@ -178,6 +179,14 @@ export function useBoxedElementGestures({
     onContextSelect(element.id, x, y);
   };
 
+  // Right-click opens on release (see useRightClickRelease).
+  const rightClick = useRightClickRelease(() => {
+    if (isEditing || remotelyLocked) return;
+    openContextMenuBesideElement();
+  });
+
+  const handlePointerUp = rightClick.onPointerUp;
+
   const handleContextMenu = (e: React.MouseEvent) => {
     // While editing the label, right-click surfaces the browser's native
     // TEXT context menu (cut / copy / paste / select all) so it acts on the
@@ -189,9 +198,7 @@ export function useBoxedElementGestures({
       e.stopPropagation();
       return;
     }
-    e.preventDefault();
-    e.stopPropagation();
-    openContextMenuBesideElement();
+    rightClick.onContextMenu(e);
   };
 
   // Touch long-press is the phone / tablet equivalent of right-click: it
@@ -202,5 +209,5 @@ export function useBoxedElementGestures({
     openContextMenuBesideElement();
   });
 
-  return { handleShapeDown, handleDoubleClick, handleContextMenu, longPress };
+  return { handleShapeDown, handleDoubleClick, handleContextMenu, handlePointerUp, longPress };
 }

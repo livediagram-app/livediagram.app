@@ -56,8 +56,12 @@ export function ContextMenu({
     return () => ro.disconnect();
   }, [position.x, position.y]);
 
-  // Fixed at mount; see the grace window below.
-  const openedAtRef = useRef(performance.now());
+  // Stamped on mount, not during render (performance.now() is impure, and a
+  // re-render must not restamp it); see the grace window below.
+  const openedAtRef = useRef(0);
+  useEffect(() => {
+    openedAtRef.current = performance.now();
+  }, []);
 
   useEffect(() => {
     // Grace window after the menu opens during which outside mouse /
@@ -77,6 +81,26 @@ export function ContextMenu({
     // popover could never come back.
     const openedAt = openedAtRef.current;
     const GRACE_MS = 400;
+    // The grace exists for ONE gesture: a mobile long-press, which opens the
+    // menu while the finger is still down and then emits its own trailing
+    // events on lift. A mouse click is never that, so it dismisses
+    // immediately — waiting out an animation before the menu will listen
+    // feels broken. Pointer events carry the pointerType that tells them
+    // apart; the mouse/contextmenu listeners below have no such luxury and
+    // keep the window.
+    const onPointer = (e: PointerEvent) => {
+      if (!ref.current) return;
+      if (e.pointerType === 'touch' && performance.now() - openedAt < GRACE_MS) return;
+      if (!(e.target instanceof Node) || ref.current.contains(e.target)) return;
+      if (
+        e.target instanceof Element &&
+        e.target.closest(
+          '[data-context-menu-trigger],[data-menu-flyout],[data-rich-text-session],[data-tour-popover]',
+        )
+      )
+        return;
+      onClose();
+    };
     const onMouse = (e: MouseEvent) => {
       if (!ref.current) return;
       if (performance.now() - openedAt < GRACE_MS) return;
@@ -110,11 +134,17 @@ export function ContextMenu({
     // other (browsers fire both contextmenu and mousedown for right
     // clicks, and the second contextmenu otherwise leaves the first
     // menu open while the new one opens).
-    document.addEventListener('mousedown', onMouse);
+    // pointerdown carries pointerType, so a mouse click can dismiss the
+    // menu the instant it opens while a touch long-press keeps its grace.
+    // CAPTURE phase: an element's own pointerdown handler calls
+    // stopPropagation, and React's root listener would swallow the event
+    // before it ever reached document — capture runs first, so the click
+    // that selects is also the click that dismisses.
+    document.addEventListener('pointerdown', onPointer, true);
     document.addEventListener('contextmenu', onMouse);
     document.addEventListener('keydown', onKey);
     return () => {
-      document.removeEventListener('mousedown', onMouse);
+      document.removeEventListener('pointerdown', onPointer, true);
       document.removeEventListener('contextmenu', onMouse);
       document.removeEventListener('keydown', onKey);
     };

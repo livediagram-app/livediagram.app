@@ -526,6 +526,7 @@ export function Canvas(props: CanvasProps) {
       data-dark-canvas={isDarkCanvas(tabBackgroundColor) ? '' : undefined}
       onContextMenuCapture={surface.onContextMenuCapture}
       onContextMenu={surface.onContextMenu}
+      onPointerUp={surface.onContextMenuPointerUp}
       onPointerDown={surface.onPointerDown}
       // focus-visible ring only: pointer focus stays outline-free, but a
       // keyboard user Tabbing to the canvas sees where they landed.

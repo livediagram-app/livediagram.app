@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import type { PointerEvent as ReactPointerEvent, MouseEvent as ReactMouseEvent } from 'react';
 import { pointerToCanvas } from '@/lib/canvas';
 import { peerPushTarget } from '@/lib/avatar-walk';
@@ -259,6 +260,9 @@ export function useCanvasSurfaceGestures({
     spotlight.shrink();
   };
 
+  // Set by onContextMenu, consumed by the pointerup that opens the tab menu.
+  const rmbArmedRef = useRef(false);
+
   const onContextMenu = (e: ReactMouseEvent) => {
     // BoxedElementView's onContextMenu calls e.stopPropagation()
     // for right-clicks on elements, so we only reach here for
@@ -272,6 +276,15 @@ export function useCanvasSurfaceGestures({
     // the orbit gesture. Avatar mode (spec/101) is read-only and mid-
     // narration: a menu popping open would interrupt the tour.
     if (canvasTool === 'spotlight' || canvasTool === 'isometric' || canvasTool === 'avatar') return;
+    // Arm only — the tab menu opens on RELEASE, like an element's
+    // (useRightClickRelease). X11 fires `contextmenu` on press, so opening
+    // here put the menu under a held button.
+    rmbArmedRef.current = true;
+  };
+
+  const onContextMenuPointerUp = (e: ReactPointerEvent) => {
+    if (e.button !== 2 || !rmbArmedRef.current) return;
+    rmbArmedRef.current = false;
     onCanvasContextMenu?.(e.clientX, e.clientY);
   };
 
@@ -372,6 +385,7 @@ export function useCanvasSurfaceGestures({
     onPointerDownCapture,
     onContextMenuCapture,
     onContextMenu,
+    onContextMenuPointerUp,
     onPointerDown,
     onWrapperPointerDown,
     onWrapperDoubleClick,

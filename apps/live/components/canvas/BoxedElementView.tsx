@@ -179,7 +179,7 @@ function BoxedElementViewImpl({
   // Gesture routing (press / double-click / context menu / long-press)
   // lives in useBoxedElementGestures; the wrapper JSX mounts its
   // handlers below.
-  const { handleShapeDown, handleDoubleClick, handleContextMenu, longPress } =
+  const { handleShapeDown, handleDoubleClick, handleContextMenu, handlePointerUp, longPress } =
     useBoxedElementGestures({
       element,
       wrapperRef,
@@ -319,6 +319,7 @@ function BoxedElementViewImpl({
       }}
       onDoubleClick={handleDoubleClick}
       onContextMenu={handleContextMenu}
+      onPointerUp={handlePointerUp}
       onPointerEnter={isAnnotation ? () => setHovering(true) : undefined}
       onPointerLeave={isAnnotation ? () => setHovering(false) : undefined}
       onDragOver={acceptsIconDrop ? handleIconDragOver : undefined}
