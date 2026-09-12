@@ -175,6 +175,41 @@ export function MenuAccordionSection({
   );
 }
 
+// A plain ACTION row: the same shape and rhythm as an accordion header
+// (fixed icon slot, uppercase label, full width) but it performs a verb
+// instead of expanding. For menus whose entries are things to DO rather than
+// settings to open — e.g. the event-storming note menu (spec/139), which is
+// six verbs and no styling at all. Horizontal bars rather than a tile grid:
+// a verb list reads down the menu like every other row here.
+export function MenuActionRow({
+  label,
+  icon,
+  onClick,
+  danger = false,
+}: {
+  label: string;
+  icon: ReactNode;
+  onClick: () => void;
+  // Destructive verbs (Remove) tint on hover so the row reads before it is
+  // clicked, matching the trash affordances elsewhere.
+  danger?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex w-full cursor-pointer items-center gap-2 px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider transition ${
+        danger
+          ? 'text-slate-400 hover:bg-rose-50 hover:text-rose-600 dark:text-slate-400 dark:hover:bg-rose-950/40 dark:hover:text-rose-300'
+          : 'text-slate-400 hover:bg-slate-50 hover:text-slate-600 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-300'
+      }`}
+    >
+      <span className="flex w-4 shrink-0 items-center justify-center">{icon}</span>
+      {label}
+    </button>
+  );
+}
+
 // Band separator between groups of accordion categories (e.g. the editor
 // context menu's placement / appearance / content / collaboration bands, or
 // the tab menu's organise / look-and-feel / session bands). Stronger than a

@@ -82,7 +82,11 @@ semantic colour:
   because a note’s colour, silhouette, text treatment and tilt ARE the
   notation — those controls could only break the grammar. Front/back are
   the IN-LAYER stack (the notes share one band), and Cut is copy+delete.
-  Collaborate + Resources stay: comments, assigned actions, links.
+  Collaborate + Resources stay: comments, assigned actions, links. The
+  verbs render as full-width rows (`MenuActionRow`, the accordion-header
+  shape without the expand), banded clipboard / stacking / remove, with
+  Remove tinting destructive on hover — not a tile grid, because a verb
+  list reads down the menu like every other row.
 - **Stage routing:** each note kind carries its workshop `stage` in the
   catalogue (events / actors / hotspots → Big picture; commands /
   policies / read models / external systems → Process; aggregates →

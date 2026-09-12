@@ -44,6 +44,7 @@ import {
 } from '@/components/palette/context-menu-icons';
 import {
   MenuAccordionSection,
+  MenuActionRow,
   MenuGroupSeparator,
   MenuTile,
   MenuTileGrid,
@@ -147,18 +148,33 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
             shuffle Layer's position around). Groups front/back + opacity +
             (for boxed elements) the aspect-ratio lock. */}
         {esNote ? (
-          <MenuTileGrid cols={3}>
-            <MenuTile icon={<CutIcon />} label="Cut" onClick={props.onCutElement} />
-            <MenuTile icon={<CopyIcon />} label="Copy" onClick={props.onCopyElement} />
-            <MenuTile
+          <>
+            <MenuActionRow icon={<CutIcon />} label="Cut" onClick={props.onCutElement} />
+            <MenuActionRow icon={<CopyIcon />} label="Copy" onClick={props.onCopyElement} />
+            <MenuActionRow
               icon={<DuplicateMenuIcon />}
               label="Duplicate"
               onClick={props.onDuplicateElement}
             />
-            <MenuTile icon={<LayerUpIcon />} label="Bring to Front" onClick={props.onStackFront} />
-            <MenuTile icon={<LayerDownIcon />} label="Send to Back" onClick={props.onStackBack} />
-            <MenuTile icon={<RemoveIcon />} label="Remove" onClick={props.onDeleteElement} />
-          </MenuTileGrid>
+            <MenuGroupSeparator />
+            <MenuActionRow
+              icon={<LayerUpIcon />}
+              label="Bring to Front"
+              onClick={props.onStackFront}
+            />
+            <MenuActionRow
+              icon={<LayerDownIcon />}
+              label="Send to Back"
+              onClick={props.onStackBack}
+            />
+            <MenuGroupSeparator />
+            <MenuActionRow
+              icon={<RemoveIcon />}
+              label="Remove"
+              danger
+              onClick={props.onDeleteElement}
+            />
+          </>
         ) : null}
         {esNote ? null : (
           <MenuAccordionSection title="Layer" icon={<LayersGlyph />} {...sectionProps('layer')}>
