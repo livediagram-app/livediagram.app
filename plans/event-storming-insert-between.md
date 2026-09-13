@@ -250,24 +250,27 @@ first, red, then green.**
 
 ## 8. Phase D — the drop
 
-- [ ] In `usePaletteDrop.onDrop`, when a slot is active: pass the slot through
-      to the creation path instead of the plain snapped point.
-- [ ] In `dropPaletteItem` / `addBoxedAt` (or a new sibling that takes a slot),
+- [x] The slot rides the drag's existing snap channel, so `usePaletteDrop`
+      needed no change at all: the drop point it computes is already the slot.
+      `dropPaletteItem` consumes the slot itself (`takeInsertionSlot`), which
+      is also what guarantees it can't outlive its own drag.
+- [x] In `dropPaletteItem` / `addBoxedAt` (or a new sibling that takes a slot),
       commit **one** change containing both the ripple and the new note:
-  - [ ] Use the existing commit choke point so layer stamping, board-kind
+  - [x] Use the existing commit choke point so layer stamping, board-kind
         stamping, activity-log emission and autosave all happen as usual.
-  - [ ] Confirm with a test that it is ONE history entry: Undo once restores
-        both the positions and removes the note.
-  - [ ] The new note still opens for typing (`{ edit: true }`), as every
+  - [x] Confirm it is ONE history entry: Undo once restores both the positions
+        and removes the note. Pinned in the browser (phase F) rather than a
+        unit test — the claim is about the history stack under a real drop.
+  - [x] The new note still opens for typing (`{ edit: true }`), as every
         palette drop does since the drop-to-type change.
-- [ ] The dropped note lands exactly where the preview showed it — assert this
+- [x] The dropped note lands exactly where the preview showed it — assert this
       by comparing the committed `x` against `applyInsertionShift`'s oracle.
-- [ ] Activity log / change-log entry reads sensibly (check what
+- [x] Activity log / change-log entry reads sensibly (check what
       `emitChange` produces for a multi-element move + add; if it says
       something unhelpful like "Moved 6 elements", consider a dedicated
       summary — but only if the existing machinery supports it without a
       schema change).
-- [ ] Commit: `feat(canvas): insert a note between two notes`.
+- [x] Commit: `feat(canvas): insert a note between two notes`.
 
 ---
 

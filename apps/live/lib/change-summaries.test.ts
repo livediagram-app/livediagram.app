@@ -200,6 +200,24 @@ describe('summarizeChange — mixed commits', () => {
     );
   });
 
+  it('names an insertion rather than listing its parts (spec/139)', () => {
+    // One note added, and everything from that point on slid right by the
+    // width it took up: that is one act, not an add plus an unrelated edit.
+    const note = (id: string, x: number) =>
+      ({ id, type: 'sticky', x, y: 0, width: 200, height: 200 }) as Element;
+    expect(
+      summarizeChange(
+        'edit',
+        [note('new', 272)],
+        [],
+        [
+          { before: note('b', 272), after: note('b', 544) },
+          { before: note('c', 544), after: note('c', 816) },
+        ],
+      ),
+    ).toBe('Inserted a Sticky note, moving 2 Sticky notes right');
+  });
+
   it('spells out each part of a mixed commit', () => {
     expect(
       summarizeChange(

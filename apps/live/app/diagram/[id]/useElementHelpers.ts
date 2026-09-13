@@ -8,6 +8,7 @@ import {
   type Element,
   type Tab,
 } from '@livediagram/diagram';
+import { insertElementAt, type InsertionSlot } from '@/lib/insert-between';
 import { deriveNewBoxedColours } from '@/lib/themes';
 import { inheritedSizeFor } from '@/lib/canvas';
 import { paintableArrowFields, paintableBoxedFields } from '@/lib/format-painter';
@@ -83,9 +84,17 @@ export function useElementHelpers(opts: {
     canvasX: number,
     canvasY: number,
     make: (x: number, y: number) => T,
-    opts?: { edit?: boolean },
+    // `insertion` is the slot an event-storming drag was offering (spec/139):
+    // the drop then ripples the board open and adds the note as ONE change.
+    opts?: { edit?: boolean; insertion?: InsertionSlot | null },
   ) => {
-    placeBoxed(make, { x: canvasX, y: canvasY }, /* inheritSize */ false, opts?.edit === true);
+    placeBoxed(
+      make,
+      { x: canvasX, y: canvasY },
+      /* inheritSize */ false,
+      opts?.edit === true,
+      opts?.insertion ?? null,
+    );
   };
 
   const placeBoxed = <T extends BoxedElement>(
@@ -93,6 +102,7 @@ export function useElementHelpers(opts: {
     centre: { x: number; y: number },
     inheritSize = true,
     edit = false,
+    insertion: InsertionSlot | null = null,
   ) => {
     if (editsBlocked) return;
     const base = make(0, 0);
@@ -133,8 +143,20 @@ export function useElementHelpers(opts: {
     // and immediately work with it matches every other editor; the
     // Layer accordion's "Send to back" covers the rarer reverse case.
     const before = activeTab.elements;
-    const after = [...before, el];
-    commitTabs((ts) => patchTab(ts, activeId, { elements: after, templateChosen: true }));
+    const after = insertion ? insertElementAt(before, insertion, el) : [...before, el];
+    // Insert between (spec/139): the ripple runs against whatever the tab
+    // holds NOW, not the snapshot the drag started with, so a peer's mid-drag
+    // move isn't reverted by the drop that follows it. One commitTabs = one
+    // history entry, so a single Undo takes the ripple AND the note back.
+    commitTabs((ts) =>
+      insertion
+        ? ts.map((t) =>
+            t.id === activeId
+              ? { ...t, elements: insertElementAt(t.elements, insertion, el), templateChosen: true }
+              : t,
+          )
+        : patchTab(ts, activeId, { elements: after, templateChosen: true }),
+    );
     // Activity-log the add. commit() (the element-only setter) does
     // this on every change; addBoxed bypasses commit because it also
     // touches templateChosen on the tab, so the emitChange call has

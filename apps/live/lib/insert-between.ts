@@ -222,6 +222,17 @@ export function insertionGhostCentre(
   return { x: slot.atX + incomingWidth / 2, y: slot.atY };
 }
 
+// The board the DROP commits: the ripple, then the new note in the slot the
+// ripple opened. One value, so the whole insertion lands in one history entry
+// — a single Undo puts the board back exactly as it was.
+export function insertElementAt<T extends Element>(
+  elements: Element[],
+  slot: InsertionSlot,
+  element: T,
+): Element[] {
+  return [...applyInsertionShift(elements, slot), element];
+}
+
 // The board with the slot opened for real. The oracle for the preview, and
 // the thing the drop actually commits.
 export function applyInsertionShift(elements: Element[], slot: InsertionSlot): Element[] {

@@ -21,6 +21,8 @@ import {
   type ShapeKind,
   type Tab,
 } from '@livediagram/diagram';
+import { takeInsertionSlot } from '@/lib/palette-drag-preview';
+import type { InsertionSlot } from '@/lib/insert-between';
 import { getTechIcon, isTechIconId } from '@/lib/tech-icons';
 import { buildDrawnBoxed } from '@/lib/draw-commit';
 import { getSticker, stickerDropSize } from '@/lib/stickers';
@@ -55,7 +57,7 @@ export function useElementCreation(opts: {
     canvasX: number,
     canvasY: number,
     make: (x: number, y: number) => T,
-    opts?: { edit?: boolean },
+    opts?: { edit?: boolean; insertion?: InsertionSlot | null },
   ) => void;
   beginDraw: (intent: PendingDraw) => void;
 }) {
@@ -283,7 +285,14 @@ export function useElementCreation(opts: {
     canvasY: number,
     art?: { iconId?: string; stickerId?: string; choice?: string },
   ) => {
+    // The insertion slot the drag was offering on an event-storming board
+    // (spec/139), consumed here so it can never outlive its own drag. Only
+    // ever set while the preview was live, so every other board reads null.
+    // The drop point already sits in the slot: the preview publishes its
+    // offset through the same snap channel the ghost and the drop follow.
+    const insertion = takeInsertionSlot();
     if (editsBlocked) return;
+    if (insertion) track('Canvas', 'Used', 'InsertBetween');
     const iconId = art?.iconId;
     const stickerId = art?.stickerId;
     if (kind === 'sticky') {
@@ -307,7 +316,7 @@ export function useElementCreation(opts: {
             null,
             activeTab,
           ),
-        { edit: true },
+        { edit: true, insertion },
       );
       track('Element', 'Added', 'Sticky');
       return;
@@ -316,11 +325,16 @@ export function useElementCreation(opts: {
       // A dragged sticker lands at its flavour's natural size, square to the
       // canvas, exactly like a tapped one — the drop point is the only
       // difference.
-      addBoxedAt(canvasX, canvasY, (x, y) => {
-        const el = createShape('sticker', x, y);
-        const size = stickerDropSize(getSticker(stickerId), el);
-        return { ...el, ...size, stickerId };
-      });
+      addBoxedAt(
+        canvasX,
+        canvasY,
+        (x, y) => {
+          const el = createShape('sticker', x, y);
+          const size = stickerDropSize(getSticker(stickerId), el);
+          return { ...el, ...size, stickerId };
+        },
+        { insertion },
+      );
       track('Element', 'Added', 'Sticker');
       return;
     }
@@ -369,7 +383,7 @@ export function useElementCreation(opts: {
             },
       // Shapes and icons open for typing too; takesTypedLabel filters out the
       // kinds whose face isn't text (stickers, session buttons, ...).
-      { edit: true },
+      { edit: true, insertion },
     );
     // A tech-icon id maps to its own telemetry type (see addTechIcon);
     // line-art icons + shapes use the kind.

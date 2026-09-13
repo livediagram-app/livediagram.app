@@ -4,6 +4,7 @@ import {
   DEFAULT_INSERTION_GAP,
   applyInsertionShift,
   findInsertionSlot,
+  insertElementAt,
   insertionGhostCentre,
 } from './insert-between';
 
@@ -347,6 +348,27 @@ describe('applyInsertionShift', () => {
     })!;
     const after = applyInsertionShift(els, slot);
     expect((after.find((el) => el.id === 'c') as StickyElement).x).toBe(544);
+  });
+});
+
+describe('insertElementAt', () => {
+  it('lands the note exactly where the preview promised, in one value', () => {
+    const slot = slotAt(236)!;
+    const incoming = note('new', slot.atX);
+    const after = insertElementAt(ROW, slot, incoming);
+    // The ripple and the addition are one board, so one Undo restores both.
+    expect(after.map((el) => el.id)).toEqual(['a', 'b', 'c', 'new']);
+    expect(after.map((el) => (el as StickyElement).x)).toEqual([
+      0,
+      272 + slot.shiftDx,
+      544 + slot.shiftDx,
+      272,
+    ]);
+    // The gap the author already had between a and b survives untouched, and
+    // the new note gets the row's prevailing gap on its right.
+    const xs = after.map((el) => (el as StickyElement).x);
+    expect(xs[3]! - (xs[0]! + 200)).toBe(72);
+    expect(xs[1]! - (xs[3]! + 200)).toBe(72);
   });
 });
 
