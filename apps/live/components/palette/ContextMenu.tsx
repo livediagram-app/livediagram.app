@@ -107,39 +107,16 @@ export function ContextMenu({
         return;
       onClose();
     };
-    const onMouse = (e: MouseEvent) => {
-      if (!ref.current) return;
-      if (performance.now() - openedAt < GRACE_MS) return;
-      if (!(e.target instanceof Node) || ref.current.contains(e.target)) return;
-      // A mousedown on the button that OPENED this menu must not trip the
-      // outside-close, or the button's own click would just reopen it. The
-      // trigger marks itself with data-context-menu-trigger and toggles the
-      // menu in its onClick instead. A MenuFlyoutSection's panel is portalled
-      // outside this menu but marks itself data-menu-flyout, so interacting
-      // with it counts as inside the menu. Clicks anywhere else close as usual.
-      // While a label is being edited the menu rides alongside the editor
-      // (spec/09): clicks inside the editing session (the contentEditable
-      // or its floating toolbar) must not dismiss it — the user is moving
-      // the caret / formatting text, not clicking away.
-      // [data-tour-popover] (spec/79): the tour anchors its card to this
-      // menu while explaining it, so its buttons don't count as outside.
-      if (
-        e.target instanceof Element &&
-        e.target.closest(
-          '[data-context-menu-trigger],[data-menu-flyout],[data-rich-text-session],[data-tour-popover]',
-        )
-      )
-        return;
-      onClose();
-    };
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
     };
-    // mousedown for outside-clicks; contextmenu so a SECOND right-click
-    // closes the current menu rather than stacking two on top of each
-    // other (browsers fire both contextmenu and mousedown for right
-    // clicks, and the second contextmenu otherwise leaves the first
-    // menu open while the new one opens).
+    // Only the primary button dismisses. A right-click elsewhere doesn't
+    // need to close this menu: there is ONE menu state, so whatever the
+    // release opens replaces it — nothing can stack. Listening for
+    // `contextmenu` here used to close it on the PRESS (X11 fires that event
+    // on mouse-down), and an element's stopPropagation can't prevent it:
+    // Next's App Router hydrates on `document`, so React's listeners are
+    // document-level siblings of this one and both run regardless.
     // pointerdown carries pointerType, so a mouse click can dismiss the
     // menu the instant it opens while a touch long-press keeps its grace.
     // CAPTURE phase: an element's own pointerdown handler calls
@@ -147,11 +124,9 @@ export function ContextMenu({
     // before it ever reached document — capture runs first, so the click
     // that selects is also the click that dismisses.
     document.addEventListener('pointerdown', onPointer, true);
-    document.addEventListener('contextmenu', onMouse);
     document.addEventListener('keydown', onKey);
     return () => {
       document.removeEventListener('pointerdown', onPointer, true);
-      document.removeEventListener('contextmenu', onMouse);
       document.removeEventListener('keydown', onKey);
     };
   }, [onClose]);

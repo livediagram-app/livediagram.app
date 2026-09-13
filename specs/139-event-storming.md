@@ -228,6 +228,8 @@ type, kept current every session. Each should stay true on its own.
   dropdowns are hidden, because a chooser you never need is a distraction.
 - Removing chrome is safe only when another path survives: hidden tool
   pickers still leave keyboard shortcuts and the command palette.
+- Next App Router hydrates React on `document`, so React handlers are
+  siblings of document listeners: stopPropagation cannot hide from them.
 - One button, one job: the secondary button only opens the menu — no
   select, no drag, no dismiss.
 - React stopPropagation is dispatched from the root container, so it
