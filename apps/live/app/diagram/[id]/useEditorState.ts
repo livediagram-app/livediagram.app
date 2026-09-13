@@ -2446,6 +2446,11 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     layers,
     activeLayerId,
     activeLayerBlocked,
+    // The whole creation gate: a locked tab, a view-only session, or a
+    // hidden / locked active layer. The canvas reads it so the
+    // insert-between preview (spec/139) never offers a slot the drop
+    // would refuse.
+    createBlocked,
     layerHiddenIds,
     layerLockedIds,
     layerInertIds,

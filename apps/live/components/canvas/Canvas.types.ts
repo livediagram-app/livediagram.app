@@ -298,8 +298,13 @@ export type CanvasProps = {
   // Optional fill + kind: an Event Storming note (spec/139).
   onAddSticky: (fill?: string, esKind?: EventStormingNoteKind) => void;
   // True when the active tab is an event-storming board (spec/139) — the
-  // palette opens on the Event Storming category instead of Favourites.
+  // palette opens on the Event Storming category instead of Favourites, and
+  // a palette drag can offer to insert BETWEEN two notes.
   esBoard?: boolean;
+  // True when a new element cannot land at all: a locked tab, a view-only
+  // session, or a hidden / locked active layer (spec/74). The insert-between
+  // preview reads it so it never offers a slot the drop would refuse.
+  createBlocked?: boolean;
   // Spawn an empty image placeholder + open the picker. Optional so
   // view-role visitors / no-R2 deployments can simply omit it; the
   // Palette's Image entry hides when missing (spec/19).

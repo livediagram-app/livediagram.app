@@ -219,12 +219,12 @@ first, red, then green.**
         them that is NOT part of the element's own DOM node (selection popover,
         comment pins, action badges) — or confirm those are not visible during
         a palette drag and say so in a comment.
-- [ ] **Insertion marker**: draw a vertical line (or a slot outline) at the
+- [x] **Insertion marker**: draw a vertical line (or a slot outline) at the
       insertion point while a slot is active, in the same visual language as
       the existing alignment guides. Reuse the guide overlay's styling; do not
       invent a second visual vocabulary. _(Produced by the drag owner — lands
       with phase C.)_
-- [ ] The **ghost** (`PaletteDragGhost`) must sit in the slot while one is
+- [x] The **ghost** (`PaletteDragGhost`) must sit in the slot while one is
       active, not under the raw cursor — the ghost, the marker and the eventual
       drop must agree, exactly as the existing snap keeps them agreeing.
       _(Falls out of the snap channel — lands with phase C.)_
@@ -234,17 +234,17 @@ first, red, then green.**
 
 ## 7. Phase C — wiring the drag
 
-- [ ] In `usePaletteDragGuides` (the existing single owner of the in-flight
+- [x] In `usePaletteDragGuides` (the existing single owner of the in-flight
       snap), resolve the insertion slot on each `dragover` **for ES boards
       only**, and publish it.
-  - [ ] When a slot is active, the **alignment snap yields**: do not also
+  - [x] When a slot is active, the **alignment snap yields**: do not also
         snap-align the ghost, or two placement rules fight. Pin this in a test.
-  - [ ] When no slot is active, behaviour is exactly today's.
-- [ ] Escape during a drag clears the preview (and, if the browser allows,
+  - [x] When no slot is active, behaviour is exactly today's.
+- [x] Escape during a drag clears the preview (and, if the browser allows,
       cancels the drag). Test that the board is unchanged afterwards.
-- [ ] Dragging over a floating panel clears the preview (mirror the existing
+- [x] Dragging over a floating panel clears the preview (mirror the existing
       over-panel guards in the ghost / guides / drop).
-- [ ] Commit: `feat(canvas): resolve insertion slots during a palette drag`.
+- [x] Commit: `feat(canvas): resolve insertion slots during a palette drag`.
 
 ---
 

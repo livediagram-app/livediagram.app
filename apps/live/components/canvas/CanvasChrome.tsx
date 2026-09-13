@@ -231,7 +231,20 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // Alignment guides while a palette tile is being dragged in (spec/139):
   // the same faint lines a move shows, BEFORE the element exists. The hook
   // also publishes the snap the ghost + drop read, so all three agree.
-  const paletteDrag = usePaletteDragGuides({ elements, viewportZoom, wrapperRef });
+  //
+  // On an event-storming board it additionally offers to INSERT the note
+  // between two others (spec/139): the board is a left-to-right timeline, so
+  // making room in the middle is the board's most common edit. Never offered
+  // where the drop would be refused anyway (read-only, locked tab, blocked
+  // active layer), so the preview can't promise something it can't keep.
+  const paletteDrag = usePaletteDragGuides({
+    elements,
+    viewportZoom,
+    wrapperRef,
+    canInsertBetween:
+      props.esBoard === true && !readOnly && !props.tabLocked && !props.createBlocked,
+    inertIds: props.layerInertIds,
+  });
   const { alignGuides, allSnapTargets } = computeDrawGuides({
     drawDrag,
     pendingDraw,

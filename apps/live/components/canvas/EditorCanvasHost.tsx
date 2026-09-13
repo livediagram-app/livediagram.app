@@ -100,6 +100,7 @@ export function EditorCanvasHost() {
     addStatRow,
     addSticky,
     esBoard,
+    createBlocked,
     addTable,
     addTechIcon,
     addText,
@@ -551,6 +552,7 @@ export function EditorCanvasHost() {
       onAddText={addText}
       onAddSticky={addSticky}
       esBoard={esBoard}
+      createBlocked={createBlocked}
       onAddImage={addImage}
       onAddArrow={addArrow}
       onBeginFreehand={beginFreehand}
