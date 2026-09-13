@@ -20,7 +20,7 @@ import { TourHost } from '@/components/tour/TourHost';
 import { EditorAnchoredPopovers } from '@/components/panels/EditorAnchoredPopovers';
 import { EditorSearchPanel } from '@/components/panels/EditorSearchPanel';
 import { ThemeModeBanner } from '@/components/chrome/ThemeModeBanner';
-import { ShiftHintBanner } from '@/components/chrome/ShiftHintBanner';
+import { ModifierHintBanner } from '@/components/chrome/ModifierHintBanner';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { useDismissibleBanner } from '@/hooks/ui/useDismissibleBanner';
 import { useIsOfflineDiagram } from '@/hooks/persistence/useIsOfflineDiagram';
@@ -69,6 +69,7 @@ export function EditorView() {
     activeLayerId,
     canvasTool,
     drag,
+    esBoard,
     clearTabContent,
     clerkUserId,
     closeContextMenu,
@@ -410,10 +411,12 @@ export function EditorView() {
       {zenMode || embedMode || showSignInBanner || showEmptyCanvasBanner ? null : (
         <ThemeModeBanner themeId={activeTab.theme} />
       )}
-      {/* Shift hint (spec/09): names what holding Shift does right now.
-          Suppressed while a mode banner owns the top slot. */}
-      <ShiftHintBanner
+      {/* Modifier hint (spec/09, spec/139): names what holding Shift does
+          right now, and offers the Alt insert-between gesture while a note is
+          on the move. Suppressed while a mode banner owns the top slot. */}
+      <ModifierHintBanner
         drag={drag}
+        esBoard={esBoard}
         selectedKind={shiftSelectedKind}
         hasElements={activeTab.elements.length > 0}
         suppressed={

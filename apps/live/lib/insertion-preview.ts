@@ -68,19 +68,27 @@ export function useInsertionSlot(): InsertionSlot | null {
   );
 }
 
-// Is a gesture that COULD open a slot in flight? Published for the whole
-// gesture, whether or not Alt is down, so the board's easing is already
-// mounted when the slot opens — and, more importantly, still mounted when it
-// closes. Were the transition unmounted in the same commit that removes the
-// offset, the board would snap shut instead of easing.
+// Is a drag that COULD open a slot in hand? True for the whole gesture,
+// whether or not Alt is down — which is what makes it two useful things at
+// once:
 //
-// A palette drag doesn't publish here: its own preview already says "a drag is
-// in hand" and deriving it there is one fewer thing that can leak. This flag
-// exists for the drag of an existing note, which has no such signal.
+//  - the board's easing is mounted before the slot opens and still mounted
+//    when it closes (unmount the transition in the same commit that removes
+//    the offset and the board snaps shut instead of easing);
+//  - the editor can OFFER the gesture ("Press Alt to insert between two
+//    notes"), which is the only way anyone discovers a held modifier.
+//
+// So it means precisely what it says: a single sticky, on an event-storming
+// board, being moved. Not "Alt is down", and not "a slot is open".
+//
+// A palette drag doesn't publish here: its own preview already says what is
+// being dragged, and deriving it there is one fewer thing that can leak. This
+// flag exists for the drag of a note already on the board, which has no such
+// signal.
 let noteDragActive = false;
 const noteDragListeners = new Set<() => void>();
 
-export function setInsertionNoteDragActive(next: boolean): void {
+export function setInsertionDragInHand(next: boolean): void {
   if (noteDragActive === next) return;
   noteDragActive = next;
   for (const l of noteDragListeners) l();
@@ -93,7 +101,7 @@ function subscribeNoteDrag(l: () => void): () => void {
   };
 }
 
-export function useInsertionNoteDragActive(): boolean {
+export function useInsertionDragInHand(): boolean {
   return useSyncExternalStore(
     subscribeNoteDrag,
     () => noteDragActive,

@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { usePaletteDragPreview } from '@/lib/palette-drag-preview';
-import { useInsertionNoteDragActive, useInsertionSlot } from '@/lib/insertion-preview';
+import { useInsertionDragInHand, useInsertionSlot } from '@/lib/insertion-preview';
 
 // How far each element is standing aside, right now, to show the insertion a
 // drag is offering (spec/139 insert between). Read from the drag's
@@ -29,7 +29,7 @@ export function useInsertShift(): InsertShift {
   // way in, or a note already on the board being moved. Both subscriptions are
   // read unconditionally — `||` between two hook calls would skip one of them.
   const draggingIn = usePaletteDragPreview() !== null;
-  const movingNote = useInsertionNoteDragActive();
+  const movingNote = useInsertionDragInHand();
   const dragging = draggingIn || movingNote;
   const shiftedIds = useMemo(() => (slot ? new Set(slot.shiftedIds) : null), [slot]);
   return {

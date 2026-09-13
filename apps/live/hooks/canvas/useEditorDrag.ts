@@ -38,7 +38,7 @@ import { isTechIconId } from '@/lib/tech-icons';
 import { iconDropSide, type DragState } from '@/lib/canvas';
 import { elementHostsAtPoint } from '@/lib/dom-hit-test';
 import { applyInsertionShift, type InsertionSlot } from '@/lib/insert-between';
-import { setInsertionNoteDragActive, setInsertionSlot } from '@/lib/insertion-preview';
+import { setInsertionDragInHand, setInsertionSlot } from '@/lib/insertion-preview';
 import { landNoteInSlot, resolveNoteInsertion } from './note-insertion-drag';
 import type { EditorDragDeps, EditorDragApi } from './useEditorDrag.types';
 import { applyCollisionAvoidance } from './arrow-avoidance-apply';
@@ -178,11 +178,18 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
     // Each new gesture starts un-engaged: a body move must cross
     // DRAG_ENGAGE_PX before it nudges anything (see the move branch).
     dragEngagedRef.current = false;
-    // Tell the canvas a gesture that could open a slot is in hand, for the
-    // whole gesture rather than just while Alt is down: the board's easing
-    // has to still be mounted when the slot CLOSES, or it snaps shut.
-    const movingNote = drag.kind === 'boxed' && drag.mode === 'move';
-    setInsertionNoteDragActive(movingNote && depsRef.current.insertGate.esBoard);
+    // Tell the canvas a drag that could open a slot is in hand — for the whole
+    // gesture rather than just while Alt is down, because the board's easing
+    // must still be mounted when the slot CLOSES (or it snaps shut) and
+    // because this is what offers the gesture to someone who has never heard
+    // of it. Deliberately independent of the modifier: only the board, the
+    // kind of thing being dragged, and how many of them.
+    const movingOneNote =
+      drag.kind === 'boxed' &&
+      drag.mode === 'move' &&
+      drag.startBounds.size === 1 &&
+      depsRef.current.activeTab.elements.find((el) => el.id === drag.primaryId)?.type === 'sticky';
+    setInsertionDragInHand(movingOneNote && depsRef.current.insertGate.esBoard);
     // The last pointer position of this drag, so pressing or releasing Alt
     // without moving the mouse still opens / unwinds the slot (see onAltChange).
     let lastMove: MovePointer | null = null;
@@ -763,7 +770,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       // No gesture in flight: nothing may be left standing aside.
       insertSlotRef.current = null;
       setInsertionSlot(null);
-      setInsertionNoteDragActive(false);
+      setInsertionDragInHand(false);
     };
   }, [drag, scheduleGuides, scheduleSnapTargets]);
 

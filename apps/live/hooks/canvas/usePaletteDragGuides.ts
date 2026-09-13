@@ -111,17 +111,20 @@ export function usePaletteDragGuides({
       const { x, y } = pointerToCanvas(e.clientX, e.clientY, rect, viewportZoom);
       const { elements: live, inertIds: inert, insertGate: gate } = board.current;
       // Alt, live: press it mid-drag and the slot opens on the next move,
-      // release it and the ordinary alignment snap takes back over.
-      slot = canInsertBetweenOn(gate, e.altKey)
-        ? findInsertionSlot({
-            cursorX: x,
-            cursorY: y,
-            incomingWidth: preview.width,
-            elements: live,
-            inertIds: inert,
-            active: slot,
-          })
-        : null;
+      // release it and the ordinary alignment snap takes back over. Only for
+      // something that will land as a NOTE — the gesture is about the note
+      // grammar, the same rule the existing-element path follows.
+      slot =
+        preview.note === true && canInsertBetweenOn(gate, e.altKey)
+          ? findInsertionSlot({
+              cursorX: x,
+              cursorY: y,
+              incomingWidth: preview.width,
+              elements: live,
+              inertIds: inert,
+              active: slot,
+            })
+          : null;
       if (slot) {
         // The slot IS the placement while it is open, so the alignment snap
         // yields: two placement rules fighting would put the ghost, the

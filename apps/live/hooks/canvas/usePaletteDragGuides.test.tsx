@@ -47,9 +47,14 @@ function altDragOver(target: HTMLElement, clientX: number, clientY: number) {
   dragOver(target, clientX, clientY, true);
 }
 
-function render(opts: { esBoard: boolean; elements?: Element[]; zoom?: number }) {
+function render(opts: { esBoard: boolean; elements?: Element[]; zoom?: number; note?: boolean }) {
   const wrapperRef = wrapper();
-  setPaletteDragPreview({ kind: 'square', width: 200, height: 200 });
+  setPaletteDragPreview({
+    kind: 'square',
+    width: 200,
+    height: 200,
+    note: opts.note !== false,
+  });
   const view = renderHook(() =>
     usePaletteDragGuides({
       elements: opts.elements ?? ROW,
@@ -133,6 +138,16 @@ describe('usePaletteDragGuides — insert between (spec/139)', () => {
     dragOver(wrapperRef.current, 236, 100);
     expect(getInsertionSlot()).toBeNull();
     // The ordinary alignment snap is live again for the rest of the drag.
+    expect(result.current.guides.length).toBeGreaterThan(0);
+  });
+
+  // Q2: the gesture is about the note grammar. A shape dragged in from the
+  // palette lands where it is dropped, exactly as on any other board — the
+  // same rule the existing-element path follows.
+  it('never offers a slot for something that will not be a note', () => {
+    const { wrapperRef, result } = render({ esBoard: true, note: false });
+    altDragOver(wrapperRef.current, 236, 100);
+    expect(getInsertionSlot()).toBeNull();
     expect(result.current.guides.length).toBeGreaterThan(0);
   });
 

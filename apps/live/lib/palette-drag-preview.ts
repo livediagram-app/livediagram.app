@@ -16,6 +16,12 @@ type PaletteDragPreview = {
   // The shape's default footprint (canvas units); the ghost scales it by zoom.
   width: number;
   height: number;
+  // This will land as a sticky NOTE, whatever the ghost draws. A note has no
+  // shape kind of its own, so a note drag publishes a square footprint at the
+  // note's real size; this says what it will actually become. Insert between
+  // (spec/139) is a gesture about the note grammar, so it reads this rather
+  // than the drawing kind.
+  note?: boolean;
 };
 
 let current: PaletteDragPreview | null = null;
