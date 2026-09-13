@@ -4,7 +4,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import type { Element, StickyElement, Tab } from '@livediagram/diagram';
 import { getInsertionSlot, setInsertionSlot } from '@/lib/insertion-preview';
+import { track } from '@/lib/telemetry';
 import { useEditorDrag } from './useEditorDrag';
+
+vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 import type { EditorDragDeps } from './useEditorDrag.types';
 
 // Dragging a note ALREADY on the board into a gap (spec/139), driven through
@@ -162,7 +165,7 @@ afterEach(() => {
   // answered by the previous test's gesture. Unmount first, then clear.
   cleanup();
   setInsertionSlot(null);
-  vi.restoreAllMocks();
+  vi.mocked(track).mockClear();
 });
 
 describe('useEditorDrag — inserting a note already on the board (spec/139)', () => {
@@ -211,6 +214,24 @@ describe('useEditorDrag — inserting a note already on the board (spec/139)', (
     expect(h.checkpoints).toBe(1);
     // Nothing is left standing aside once the drop has landed.
     expect(getInsertionSlot()).toBeNull();
+  });
+
+  // spec/22: one event per committed insertion, from either entry point.
+  it('reports the insertion once, and only when one happened', () => {
+    const h = harness();
+    press(h, 'drag');
+    move(h, INTO_GAP.dx, INTO_GAP.dy, { alt: true });
+    expect(track).not.toHaveBeenCalledWith('Canvas', 'Used', 'InsertBetween');
+    release(h, INTO_GAP.dx, INTO_GAP.dy, { alt: true });
+    expect(track).toHaveBeenCalledExactlyOnceWith('Canvas', 'Used', 'InsertBetween');
+  });
+
+  it('reports nothing for an ordinary move', () => {
+    const h = harness();
+    press(h, 'drag');
+    move(h, INTO_GAP.dx, INTO_GAP.dy);
+    release(h, INTO_GAP.dx, INTO_GAP.dy);
+    expect(track).not.toHaveBeenCalledWith('Canvas', 'Used', 'InsertBetween');
   });
 
   it('leaves a hole where the note came from', () => {
