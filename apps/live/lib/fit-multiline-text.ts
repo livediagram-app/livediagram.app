@@ -12,11 +12,16 @@ import { labelMeasure, wrapLabel } from '@livediagram/diagram';
 // future renderer must land on the same number, or the text jumps the moment
 // you double-click.
 
-// The band a fitted label lives in. The ceiling keeps a two-word note from
-// becoming a billboard; the floor stops an essay shrinking into illegibility
-// (past it the box simply clips, as it always did).
+// The band a fitted label lives in.
+//
+// The ceiling is the pen: on a real wall everyone writes at roughly one size,
+// so a two-word event and a two-line policy sit at the same weight and the
+// board reads as one surface. Let a short label fill its paper and it becomes
+// a poster that shouts down every note beside it — which is what 44px did.
+// The floor stops an essay shrinking into illegibility (past it the box
+// simply clips, as it always did).
 export const FIT_MIN_PX = 10;
-export const FIT_MAX_PX = 44;
+export const FIT_MAX_PX = 25;
 
 // Line box as a multiple of the font size — matching the display label's own
 // leading, so the fit measures the layout that actually renders.

@@ -110,6 +110,13 @@ semantic colour:
   palette drop, gated by `takesTypedLabel`: a sticker, session button,
   reaction pad, mode button or estimate renders its face from a SETTING,
   so a caret there would offer to edit something that isn’t text.
+- **The pen has one width.** Auto-fit is capped at **25px**
+  (`FIT_MAX_PX`, floor 10px). On a real wall everyone writes at roughly one
+  size, so a two-word event and a two-line policy sit at the same weight
+  and the board reads as one surface. Letting a short label fill its paper
+  made it a poster that shouted down every note beside it — which is what
+  the original 44px ceiling did. Only the top end is pinned; a long note
+  still shrinks.
 - **Two words keep each other company.** The auto-fit has a second
   constraint beyond “does it fit”: a multi-word label must keep at least
   one PAIR of words on a line. At a large enough size every word lands on
@@ -450,7 +457,8 @@ type, kept current every session. Each should stay true on its own.
   they must follow the resize rule — naming lagged behaviour and let a
   fixed-size note be dragged wider.
 - Text fills the paper, the paper never resizes: on a fixed-silhouette
-  note, auto-fit is what makes a long phrase legible.
+  note, auto-fit is what makes a long phrase legible — but fill it to the
+  brim and a two-word note becomes a poster; the ceiling IS the pen.
 - Paper shadows are backdrop-relative: ink tuned on light paper vanishes
   on a dark wall, so a dark canvas needs its own deeper peel.
 - Display label and inline editor must share ONE typography rule, or

@@ -96,3 +96,28 @@ describe('fitMultilineFontPx — two words must share a line', () => {
     expect(one).toBeGreaterThan(20);
   });
 });
+
+// The ceiling is 25px. A short label on a big note used to balloon to 44px,
+// which reads as a poster rather than a sticky: on a real wall the pen width
+// is fixed, so "Cart Emptied" and a two-line policy are written at roughly
+// the same size and the board stays legible as one surface. The floor still
+// lets a long note shrink; only the top end is pinned.
+describe('fitMultilineFontPx — the 25px ceiling', () => {
+  it('never exceeds it, however much room there is', () => {
+    expect(FIT_MAX_PX).toBe(25);
+    const roomy = { width: 600, height: 600, padding: 12 };
+    expect(fitMultilineFontPx({ text: 'Hi', ...roomy })).toBe(25);
+    expect(fitMultilineFontPx({ text: '', ...roomy })).toBe(25);
+  });
+
+  it('caps a short label on an ordinary note too', () => {
+    const note = { width: 200, height: 200, padding: 12 };
+    expect(fitMultilineFontPx({ text: 'Paid', ...note })).toBeLessThanOrEqual(25);
+  });
+
+  it('still shrinks what does not fit', () => {
+    const note = { width: 200, height: 200, padding: 12 };
+    const long = 'Payment authorisation requested from the external provider and acknowledged';
+    expect(fitMultilineFontPx({ text: long, ...note })).toBeLessThan(25);
+  });
+});
