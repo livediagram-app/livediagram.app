@@ -278,29 +278,44 @@ first, red, then green.**
 
 Each of these is a test, not a thought experiment.
 
-- [ ] **Read-only / view-role session**: no preview, no insertion.
-- [ ] **Locked tab**: no preview, no insertion.
-- [ ] **Hidden or locked active layer**: creation is blocked; the preview must
-      not offer a slot that cannot be committed.
-- [ ] **Concurrent edit**: a peer moves one of the shifted notes mid-drag. The
-      drop must not resurrect a stale position — commit from the LIVE elements
-      (the `tabsRef` pattern in `commit`), not the snapshot the drag started
-      with.
-- [ ] **Offline mode** board: identical behaviour (the persistence dispatch
-      makes this free, but prove it once).
-- [ ] **Zoom**: slots resolve correctly at 25% and 400% (the cursor→canvas
-      inversion through the transformed wrapper is the trap; reuse
-      `pointerToCanvas`, never hand-roll).
-- [ ] **Pan mid-drag** (middle-mouse pan while dragging, if possible) does not
-      strand a preview.
-- [ ] **Drag out of the window and back** does not leave a stale offset.
-- [ ] **A group straddling the insertion point** behaves per phase A's rule.
-- [ ] **An arrow spanning the insertion point** stretches, and its endpoints
-      stay attached (pinned) — screenshot this one during manual verification.
-- [ ] **Undo/redo** round trip: insert, undo, redo — positions are identical
-      each time (pin with a test comparing serialised elements).
-- [ ] **Rapid re-drags**: dragging, dropping, and immediately dragging again
-      does not inherit the previous slot.
+- [x] **Read-only / view-role session**: no preview, no insertion
+      (`canInsertBetweenOn`, `insert-between.test.ts`).
+- [x] **Locked tab**: no preview, no insertion (same gate; also confirmed in
+      the browser — a locked tab leaves every element's transform untouched
+      through a full drag over a gap).
+- [x] **Hidden or locked active layer**: creation is blocked; the gate reads
+      the editor's own `createBlocked`, so the preview can never offer a slot
+      the drop would refuse.
+- [x] **Concurrent edit**: the commit ripples the tabs the updater is HANDED,
+      not the render-time snapshot, so a peer's mid-drag move survives
+      (`useElementHelpers.test.tsx` — "ripples the LIVE board").
+- [x] **Offline mode** board: proved once in the browser. An offline
+      event-storming board (unknown to the api — `GET /api/diagrams/:id`
+      404s) inserts, ripples and survives a reload identically.
+- [x] **Zoom**: slots resolve at 0.25x and 4x through `pointerToCanvas`
+      (`usePaletteDragGuides.test.tsx`), and an insert at a non-100% zoom
+      lands correctly in the browser.
+- [x] **Pan mid-drag**: not reachable — the canvas pans on POINTER events,
+      which the browser suppresses for the duration of a native drag. Should
+      the viewport move anyway (keyboard, a peer's follow-me), the next
+      `dragover` re-measures the wrapper rect and re-resolves, so nothing is
+      stranded.
+- [x] **Drag out of the window and back** does not leave a stale offset: a
+      `dragleave` with no `relatedTarget` closes the slot
+      (`usePaletteDragGuides.test.tsx`).
+- [x] **A group straddling the insertion point** travels whole, by its centre
+      (`insert-between.test.ts`).
+- [x] **An arrow spanning the insertion point** stretches and keeps both
+      endpoints attached — pinned ends need no help, a free end at or after
+      the point moves alone. Screenshotted mid-drag and after the drop
+      (`/tmp/lvd-insert/30-arrow-preview.png`, `31-arrow-dropped.png`); the
+      committed arrow is still pinned to the same two notes.
+- [x] **Undo/redo** round trip: insert → undo → redo returns the tab's
+      elements to byte-identical positions (verified against the api's stored
+      tab, and pinned in the e2e smoke).
+- [x] **Rapid re-drags**: a fresh drag starts with no slot
+      (`usePaletteDragGuides.test.tsx`), because the drop consumes it and the
+      effect scopes it to one drag.
 
 ---
 

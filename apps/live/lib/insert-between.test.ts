@@ -3,6 +3,7 @@ import type { ArrowElement, Element, StickyElement } from '@livediagram/diagram'
 import {
   DEFAULT_INSERTION_GAP,
   applyInsertionShift,
+  canInsertBetweenOn,
   findInsertionSlot,
   insertElementAt,
   insertionGhostCentre,
@@ -348,6 +349,26 @@ describe('applyInsertionShift', () => {
     })!;
     const after = applyInsertionShift(els, slot);
     expect((after.find((el) => el.id === 'c') as StickyElement).x).toBe(544);
+  });
+});
+
+describe('canInsertBetweenOn', () => {
+  const editable = { esBoard: true, readOnly: false, tabLocked: false, createBlocked: false };
+
+  it('offers insertion on an editable event-storming board', () => {
+    expect(canInsertBetweenOn(editable)).toBe(true);
+  });
+
+  it('never offers it on an ordinary board', () => {
+    expect(canInsertBetweenOn({ ...editable, esBoard: false })).toBe(false);
+  });
+
+  it('never offers a slot the drop would refuse', () => {
+    // A view-role session, a locked tab, and a hidden / locked active layer
+    // each block creation — so none of them may see the board make room.
+    expect(canInsertBetweenOn({ ...editable, readOnly: true })).toBe(false);
+    expect(canInsertBetweenOn({ ...editable, tabLocked: true })).toBe(false);
+    expect(canInsertBetweenOn({ ...editable, createBlocked: true })).toBe(false);
   });
 });
 

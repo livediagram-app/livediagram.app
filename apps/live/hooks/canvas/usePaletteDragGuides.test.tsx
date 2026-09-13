@@ -40,13 +40,13 @@ function dragOver(target: HTMLElement, clientX: number, clientY: number) {
   });
 }
 
-function render(opts: { canInsertBetween: boolean; elements?: Element[] }) {
+function render(opts: { canInsertBetween: boolean; elements?: Element[]; zoom?: number }) {
   const wrapperRef = wrapper();
   setPaletteDragPreview({ kind: 'square', width: 200, height: 200 });
   const view = renderHook(() =>
     usePaletteDragGuides({
       elements: opts.elements ?? ROW,
-      viewportZoom: 1,
+      viewportZoom: opts.zoom ?? 1,
       wrapperRef,
       canInsertBetween: opts.canInsertBetween,
       inertIds: new Set<string>(),
@@ -145,6 +145,20 @@ describe('usePaletteDragGuides — insert between (spec/139)', () => {
     dragOver(wrapperRef.current, 236, 100);
     unmount();
     expect(getInsertionSlot()).toBeNull();
+  });
+
+  // The cursor→canvas inversion through the transformed wrapper is the trap:
+  // resolve the gap in SCREEN pixels and the slot lands somewhere else at any
+  // zoom but 100%.
+  it.each([0.25, 4])('resolves the same gap at %sx zoom', (zoom) => {
+    const { wrapperRef } = render({ canInsertBetween: true, zoom });
+    // Canvas x 236 in the gap, expressed in client pixels at this zoom.
+    dragOver(wrapperRef.current, 236 * zoom, 100 * zoom);
+    const slot = getInsertionSlot();
+    expect(slot?.atX).toBe(272);
+    expect(slot?.rightId).toBe('b');
+    // The snap is canvas units — the ghost multiplies it by the zoom itself.
+    expect(getPaletteDragSnap()).toEqual({ dx: 136, dy: 0 });
   });
 
   it('does not inherit the previous drag\u2019s slot', () => {

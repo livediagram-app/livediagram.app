@@ -31,6 +31,7 @@ import { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import { PanelSnapSlot } from '@/components/canvas/PanelSnapSlot';
 import { useCanvasChromePanels } from './useCanvasChromePanels';
 import { usePaletteDragGuides } from '@/hooks/canvas/usePaletteDragGuides';
+import { canInsertBetweenOn } from '@/lib/insert-between';
 import { PANEL_CORNERS, PANEL_IDS, cornerBottomInset, type PanelCorner } from '@/lib/panel-layout';
 
 // Values the Canvas computes (selection projection + layout/dock/zoom
@@ -241,8 +242,12 @@ export function CanvasChrome(props: CanvasChromeProps) {
     elements,
     viewportZoom,
     wrapperRef,
-    canInsertBetween:
-      props.esBoard === true && !readOnly && !props.tabLocked && !props.createBlocked,
+    canInsertBetween: canInsertBetweenOn({
+      esBoard: props.esBoard === true,
+      readOnly,
+      tabLocked: props.tabLocked,
+      createBlocked: props.createBlocked === true,
+    }),
     inertIds: props.layerInertIds,
   });
   const { alignGuides, allSnapTargets } = computeDrawGuides({

@@ -39,6 +39,21 @@ export type InsertionSlot = {
   spanBottom: number;
 };
 
+// May this session be offered an insertion at all? Only on an event-storming
+// board, and only where the drop would actually be allowed to land: a preview
+// that opens a slot a read-only viewer, a locked tab or a blocked active layer
+// would then refuse is a promise the editor can't keep.
+export function canInsertBetweenOn(state: {
+  esBoard: boolean;
+  readOnly: boolean;
+  tabLocked: boolean;
+  // The whole creation gate (spec/74): includes a hidden or locked active
+  // layer, which blocks creation without locking anything else.
+  createBlocked: boolean;
+}): boolean {
+  return state.esBoard && !state.readOnly && !state.tabLocked && !state.createBlocked;
+}
+
 type FindArgs = {
   // Cursor in canvas coords.
   cursorX: number;
