@@ -68,27 +68,28 @@ These are settled. Implement them as stated.
 
 Each has a **recommended default**. Implement the default unless the operator
 says otherwise; escalate only if implementation reveals the default is wrong.
+**All five shipped as their default** — the answers are recorded inline below.
 
-- [ ] **Q1 — Does it also apply to moving an EXISTING note?** Dragging a note
+- [x] **Q1 — Does it also apply to moving an EXISTING note?** Dragging a note
       already on the board into a gap could insert it the same way.
       _Default: **not in v1.** Palette-drag only. The engine must be built so
       the existing-note case can reuse it (phase 9 records what that would
       take)._
-- [ ] **Q2 — Vertical insertion too?** Some boards run top-to-bottom.
+- [x] **Q2 — Vertical insertion too?** Some boards run top-to-bottom.
       _Default: **horizontal only** in v1; keep the geometry axis-parameterised
       so vertical is a later flag, not a rewrite._
-- [ ] **Q3 — Slot width.** How far does everything move?
+- [x] **Q3 — Slot width.** How far does everything move?
       _Default: **incoming note width + the row's prevailing gap**, where the
       prevailing gap is the median horizontal gap between adjacent notes in the
       affected row; fall back to the template's 72px when there is no measurable
       gap (fewer than two neighbours)._
-- [ ] **Q4 — Does the ripple include arrows, frames, text?** A free arrow's
+- [x] **Q4 — Does the ripple include arrows, frames, text?** A free arrow's
       absolute points do not move when its neighbours do.
       _Default: **yes, everything moves** — boxed elements by `x`, free arrows
       by translating every point whose x is at/after the insertion point,
       pinned arrows follow their endpoints for free. An arrow that straddles
       the insertion point stretches (both endpoints keep their notes)._
-- [ ] **Q5 — Animation.** Should the slot open with a transition?
+- [x] **Q5 — Animation.** Should the slot open with a transition?
       _Default: **yes, a short CSS transform transition (~120ms, ease-out)**,
       disabled entirely under `prefers-reduced-motion`. Never animate the
       committed positions — the drop must land instantly where the preview
@@ -98,37 +99,37 @@ says otherwise; escalate only if implementation reveals the default is wrong.
 
 ## 4. Discovery (do this first, tick as you learn)
 
-- [ ] Read `specs/139-event-storming.md` end to end, including the **Domain
+- [x] Read `specs/139-event-storming.md` end to end, including the **Domain
       learnings (session log)** section at the bottom — it records why the
       board works the way it does.
-- [ ] Read `specs/58-palette-drag-ghost.md` and
+- [x] Read `specs/58-palette-drag-ghost.md` and
       `specs/09-canvas-and-palette.md`'s palette + guides prose.
-- [ ] Read the existing palette-drag machinery, which this feature extends
+- [x] Read the existing palette-drag machinery, which this feature extends
       rather than replaces:
-  - [ ] `apps/live/lib/palette-drag-preview.ts` — the module-level store that
+  - [x] `apps/live/lib/palette-drag-preview.ts` — the module-level store that
         publishes what is being dragged (`usePaletteDragPreview`) and the live
         snap offset (`usePaletteDragSnap` / `setPaletteDragSnap`). Note the
         `useSyncExternalStore` pattern and WHY it is module-level.
-  - [ ] `apps/live/lib/palette-drag-snap.ts` — pure snap geometry shared by the
+  - [x] `apps/live/lib/palette-drag-snap.ts` — pure snap geometry shared by the
         ghost, the guides and the drop.
-  - [ ] `apps/live/hooks/canvas/usePaletteDragGuides.ts` — the single owner of
+  - [x] `apps/live/hooks/canvas/usePaletteDragGuides.ts` — the single owner of
         the in-flight snap; listens to `document` `dragover`.
-  - [ ] `apps/live/components/canvas/PaletteDragGhost.tsx` — the footprint that
+  - [x] `apps/live/components/canvas/PaletteDragGhost.tsx` — the footprint that
         follows the cursor.
-  - [ ] `apps/live/hooks/canvas/usePaletteDrop.ts` — `onDragOver` / `onDrop`,
+  - [x] `apps/live/hooks/canvas/usePaletteDrop.ts` — `onDragOver` / `onDrop`,
         including how the snap offset is consumed and cleared.
-  - [ ] `apps/live/app/diagram/[id]/useElementCreation.ts` →
+  - [x] `apps/live/app/diagram/[id]/useElementCreation.ts` →
         `dropPaletteItem`, and `useElementHelpers.ts` → `addBoxedAt` /
         `placeBoxed` (note the `{ edit: true }` option that opens the label
         editor on drop).
-- [ ] Read how elements render, to find where a render-time offset can be
+- [x] Read how elements render, to find where a render-time offset can be
       applied without touching state: `apps/live/components/canvas/Canvas.tsx`,
       `BoxedElementView.tsx`, `ArrowView.tsx`.
-- [ ] Confirm the commit choke point and history semantics:
+- [x] Confirm the commit choke point and history semantics:
       `apps/live/app/diagram/[id]/useEditorState.ts` (`commitTabs`, `commit`,
       `tickTabs`, `markCheckpoint`) — and confirm which of these creates an
       undo entry.
-- [ ] Write down (in `AMBIGUITIES.md`) anything the above contradicts in this
+- [x] Write down (in `AMBIGUITIES.md`) anything the above contradicts in this
       plan, before writing code.
 
 ---
@@ -138,59 +139,59 @@ says otherwise; escalate only if implementation reveals the default is wrong.
 Everything here is pure, fully unit-tested, and has no React in it. **TDD: test
 first, red, then green.**
 
-- [ ] Create `apps/live/lib/insert-between.ts` (new module; keep it under ~200
+- [x] Create `apps/live/lib/insert-between.ts` (new module; keep it under ~200
       lines — if it grows past that, split the detection from the ripple).
-- [ ] Create `apps/live/lib/insert-between.test.ts` alongside it.
-- [ ] **Type: `InsertionSlot`** — the resolved insertion the UI is offering:
+- [x] Create `apps/live/lib/insert-between.test.ts` alongside it.
+- [x] **Type: `InsertionSlot`** — the resolved insertion the UI is offering:
       `{ atX: number; shiftDx: number; shiftedIds: string[]; leftId: string | null; rightId: string | null }`.
       `leftId`/`rightId` are the notes either side (either may be null at the
       ends of the timeline), used for the marker and for tests to assert
       intent.
-- [ ] **`findInsertionSlot({ cursorX, cursorY, incomingWidth, elements, ... })`**
+- [x] **`findInsertionSlot({ cursorX, cursorY, incomingWidth, elements, ... })`**
       returning `InsertionSlot | null`:
-  - [ ] Returns `null` when the cursor is not in a gap (over a note, or far
+  - [x] Returns `null` when the cursor is not in a gap (over a note, or far
         from any row) — the ordinary drop path then applies unchanged.
-  - [ ] Considers only elements that are **candidates**: visible, unlocked,
+  - [x] Considers only elements that are **candidates**: visible, unlocked,
         not the element being dragged (there isn't one yet for palette drags).
-  - [ ] Identifies the **row** the cursor is in: notes whose vertical span
+  - [x] Identifies the **row** the cursor is in: notes whose vertical span
         overlaps the cursor's y (plus a tolerance — decide and pin a constant,
         e.g. half a note height).
-  - [ ] Finds the adjacent pair in that row whose horizontal gap contains the
+  - [x] Finds the adjacent pair in that row whose horizontal gap contains the
         cursor; the insertion point is the gap's midpoint (or the left edge of
         the right-hand note — pick one, document why, pin it in a test).
-  - [ ] Computes `shiftDx` per **Q3**.
-  - [ ] Computes `shiftedIds` per **decision 2**: every element on the board
+  - [x] Computes `shiftDx` per **Q3**.
+  - [x] Computes `shiftedIds` per **decision 2**: every element on the board
         (not just the row) at or right of the insertion point.
-- [ ] **Hysteresis**: once a slot is active, it stays active until the cursor
+- [x] **Hysteresis**: once a slot is active, it stays active until the cursor
       leaves the gap by a margin (pin the constant). Without this the preview
       flickers on and off at the boundary as the hand shakes. Test it
       explicitly: a cursor moving 1px back and forth across the threshold must
       not toggle.
-- [ ] **`applyInsertionShift(elements, slot)`** — pure: returns the elements
+- [x] **`applyInsertionShift(elements, slot)`** — pure: returns the elements
       with the ripple applied. Used by the DROP path, and by tests as the
       oracle for what the preview promised.
-  - [ ] Boxed elements: `x + shiftDx`.
-  - [ ] Free arrows: translate points at/after the insertion point (Q4).
-  - [ ] Pinned arrows: left alone (they follow their endpoints).
-  - [ ] Grouped elements: the whole group moves if any member does — a group
+  - [x] Boxed elements: `x + shiftDx`.
+  - [x] Free arrows: translate points at/after the insertion point (Q4).
+  - [x] Pinned arrows: left alone (they follow their endpoints).
+  - [x] Grouped elements: the whole group moves if any member does — a group
         that straddles the insertion point must not be torn in half. Decide and
         test: recommend moving the whole group when its **centre** is at/after
         the point.
-- [ ] Tests for the empty / degenerate cases:
-  - [ ] No elements at all → `null`.
-  - [ ] One element → `null` (no gap between two things), unless you decide
+- [x] Tests for the empty / degenerate cases:
+  - [x] No elements at all → `null`.
+  - [x] One element → `null` (no gap between two things), unless you decide
         leading/trailing insertion is in scope (recommend: not in v1).
-  - [ ] Cursor over a note, not a gap → `null`.
-  - [ ] Cursor in a gap that is narrower than the incoming note → still a valid
+  - [x] Cursor over a note, not a gap → `null`.
+  - [x] Cursor in a gap that is narrower than the incoming note → still a valid
         slot (that is the whole point: it makes room).
-  - [ ] Two rows at different heights → only the hovered row decides the
+  - [x] Two rows at different heights → only the hovered row decides the
         insertion point, but the ripple still takes the whole board.
-  - [ ] Locked / hidden elements are not candidates for the ROW, but confirm
+  - [x] Locked / hidden elements are not candidates for the ROW, but confirm
         and pin whether they still SHIFT (recommend: hidden ones shift so the
         board stays consistent when unhidden; locked ones do NOT shift and the
         slot still opens around them — flag this to the operator if it looks
         wrong in practice).
-- [ ] Commit: `feat(canvas): insertion-slot geometry` (tests + module).
+- [x] Commit: `feat(canvas): insertion-slot geometry` (tests + module).
 
 ---
 
