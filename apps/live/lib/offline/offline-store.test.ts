@@ -1,4 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
+import type { Tab } from '@livediagram/diagram';
+import type { OfflineDiagramRecord } from './offline-store';
 import {
   __setOfflineBackend,
   applyMeta,
@@ -116,5 +118,34 @@ describe('offline store ops (in-memory backend)', () => {
     await offlineCreateDiagram({ id: 'd1', name: 'Doc', tabs: [tab('t1')] }, 100);
     await offlineSaveDiagramMeta('d1', { name: 'Renamed' }, 200);
     expect((await offlineLoadDiagram('d1'))?.name).toBe('Renamed');
+  });
+});
+
+// Both stores must agree on what a tab IS. An offline board that lost its
+// kind would come back from a Sync Diagram as an ordinary diagram — the
+// cloud copy would then be wrong too, and nothing could tell.
+describe('upsertTab — board kind', () => {
+  const rec = (): OfflineDiagramRecord =>
+    ({
+      id: 'off:1',
+      name: 'D',
+      folderId: null,
+      createdAt: 1,
+      savedAt: 1,
+      tabs: [],
+    }) satisfies OfflineDiagramRecord;
+  const tab = (over: Partial<Tab> = {}): Tab =>
+    ({ id: 't', name: 'T', elements: [], ...over }) as Tab;
+
+  it('stamps the ordinary kind on the way in', () => {
+    expect(upsertTab(rec(), tab(), 2).tabs[0]!.kind).toBe('diagram');
+  });
+
+  it('keeps a workshop board a workshop board', () => {
+    expect(upsertTab(rec(), tab({ kind: 'event-storming' }), 2).tabs[0]!.kind).toBe(
+      'event-storming',
+    );
+    const legacy = tab({ layers: [{ id: 'layer:es:board', name: 'Event Storming' }] });
+    expect(upsertTab(rec(), legacy, 2).tabs[0]!.kind).toBe('event-storming');
   });
 });

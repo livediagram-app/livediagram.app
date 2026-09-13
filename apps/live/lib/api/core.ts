@@ -14,7 +14,7 @@ import type {
   ShareRole,
   TabRecord,
 } from '@livediagram/api-schema';
-import type { Tab } from '@livediagram/diagram';
+import { stampTabKind, type Tab } from '@livediagram/diagram';
 import { readLocalStorageSafe, writeLocalStorageSafe } from '../local-storage-safe';
 import { getGuestSelfSig } from '../local-identity';
 
@@ -386,6 +386,19 @@ export async function apiDelete(
 //     into the shared body would make a folder follow the tab into
 //     every diagram it's shared into, breaking per-diagram scope.
 // Shared by apiCreateDiagram + apiSaveTab.
+// The single normalisation every tab passes through on its way to the wire:
+// strip the UI-only fields, and stamp the board kind (spec/139).
+//
+// The kind is stamped HERE rather than only at the editor's commit choke
+// point because several mutation paths reach persistence — the history
+// commit, the non-undoable session tick, a remote apply — and a field whose
+// presence depends on which one ran is a field no reader can trust.
+// `stampTabKind` resolves a legacy board by its layer, so a pre-`kind`
+// workshop board is never branded an ordinary diagram on its next save.
+export function tabForWire(tab: Tab): Tab {
+  return stampTabKind(stripUiTabFields(tab));
+}
+
 export function stripUiTabFields(tab: Tab): Tab {
   if (tab.templateChosen === undefined && tab.folder === undefined) return tab;
   const { templateChosen: _tc, folder: _f, ...rest } = tab;

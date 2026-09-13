@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
   isEventStormingTab,
+  stampTabKind,
   createPinnedArrow,
   createShape,
   isBoxed,
@@ -188,7 +189,12 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     // that never materialised `layers`, and on undo/remote applies (which
     // bypass commitTabs entirely).
     rawCommitTabs((ts) => {
-      const next = mapTabs(ts);
+      // Board kind (spec/139): a committed tab says what KIND of board it
+      // is, rather than leaving a reader to know that absence means
+      // 'diagram'. Same choke point as the layer stamp below, and
+      // `stampTabKind` returns the tab unchanged when it already has one,
+      // so an untouched tab keeps its identity for the memoised views.
+      const next = mapTabs(ts).map(stampTabKind);
       const stamp = activeLayerStampRef.current;
       if (!stamp) return next;
       return next.map((t) => {

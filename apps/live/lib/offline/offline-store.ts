@@ -11,6 +11,7 @@
 // dispatch can answer "is this id offline?" cheaply.
 
 import type { ChangeLogEntry, Diagram, DiagramSummary, TabSummary } from '@livediagram/api-schema';
+import { stampTabKind } from '@livediagram/diagram';
 import type { Tab } from '@livediagram/diagram';
 
 // Sentinel owner id stamped on offline diagrams. They have no server owner;
@@ -136,8 +137,13 @@ export function applyMeta(
 // Upsert one tab body into a record (the autosave path). A new tab id is
 // appended; an existing one is replaced in place, preserving order.
 export function upsertTab(rec: OfflineDiagramRecord, tab: Tab, at: number): OfflineDiagramRecord {
-  const i = rec.tabs.findIndex((t) => t.id === tab.id);
-  const tabs = i === -1 ? [...rec.tabs, tab] : rec.tabs.map((t) => (t.id === tab.id ? tab : t));
+  // Stamp the board kind here for the same reason the cloud path stamps it
+  // in tabForWire (spec/139): both stores must agree on what a tab IS, or a
+  // Sync Diagram would hand the cloud a board that has forgotten itself.
+  const stamped = stampTabKind(tab);
+  const i = rec.tabs.findIndex((t) => t.id === stamped.id);
+  const tabs =
+    i === -1 ? [...rec.tabs, stamped] : rec.tabs.map((t) => (t.id === stamped.id ? stamped : t));
   return { ...rec, tabs, savedAt: at };
 }
 

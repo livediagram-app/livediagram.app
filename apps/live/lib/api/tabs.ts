@@ -20,7 +20,7 @@ import {
   expectOkVoid,
   getLastKnownToken,
   getSessionSharePassword,
-  stripUiTabFields,
+  tabForWire,
   type TabResponse,
 } from './core';
 
@@ -84,7 +84,7 @@ export async function apiSaveTab(
   const res = await fetch(`${API_BASE}/diagrams/${diagramId}/tabs/${tab.id}`, {
     method: 'PUT',
     headers,
-    body: JSON.stringify(stripUiTabFields(tab)),
+    body: JSON.stringify(tabForWire(tab)),
   });
   await expectOkVoid(res, 'save tab');
 }
@@ -161,7 +161,7 @@ export function flushDiagramSavesBeacon(args: {
     void fetch(`${API_BASE}/diagrams/${args.diagramId}/tabs/${t.id}`, {
       method: 'PUT',
       headers,
-      body: JSON.stringify(stripUiTabFields(t)),
+      body: JSON.stringify(tabForWire(t)),
       keepalive: true,
     }).catch(() => {});
   }

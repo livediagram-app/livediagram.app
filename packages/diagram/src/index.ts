@@ -11,6 +11,7 @@
 // here, so no cycle at runtime) — elementSupportsText excludes the
 // self-drawing data shapes the same way the inline editor does.
 import { isSelfDrawingShape } from './data-shapes';
+import type { TabKind } from './tab-kind';
 import type { TabTimer, TabVote } from './session';
 
 // Layer type used by the `Tab.layers` field below (spec/74). Type-only
@@ -250,7 +251,10 @@ export type Element = BoxedElement | ArrowElement;
 // each time stripping a board of its own tooling with nothing on screen to
 // explain why. The editor stays one editor — a kind tunes presentation, it
 // does not fork persistence, realtime, comments or export.
-export type TabKind = 'event-storming';
+//
+// 'diagram' is an ordinary board and is written explicitly onto tabs the
+// editor commits; tabs stored before the field carry nothing, which reads
+// as 'diagram' via `tabKindOf` (see ./tab-kind).
 
 export type Tab = {
   id: TabId;
@@ -333,6 +337,7 @@ export type Diagram = {
 // --- Type guards -----------------------------------------------------------
 
 export { takesTypedLabel } from './element-types';
+export { DEFAULT_TAB_KIND, stampTabKind, tabKindOf, type TabKind } from './tab-kind';
 
 export function isBoxed(element: Element): element is BoxedElement {
   return (

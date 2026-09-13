@@ -149,6 +149,21 @@ layer**, `layer:es:board` (`eventStormingLayers()`), and no view bar.
   `isEventStormingTab(tab)` reads the kind first and falls back to the
   board layer or any legacy stage-layer id, so boards authored before the
   field keep working; their bands remain ordinary spec/74 layers.
+- **The kind set is TOTAL**: `TabKind = 'diagram' | 'event-storming'`.
+  “Ordinary board” is a thing the model can SAY, so code switches over a
+  complete union and a third kind can’t be silently forgotten in a branch.
+  `tabKindOf(tab)` resolves the absence that every pre-field tab will carry
+  forever (no migration reaches an exported file or someone else’s offline
+  copy).
+- **Stamped at the PERSISTENCE boundary**, not only at the editor’s commit
+  choke point: several mutation paths reach the wire (history commit, the
+  non-undoable session tick, a remote apply), and a field whose presence
+  depends on which one ran is a field no reader can trust. `tabForWire`
+  (cloud) and `upsertTab` (offline IndexedDB) both stamp, so the two
+  stores can never disagree about what a tab is. The stamp is a ONE-WAY
+  write, so it resolves legacy signals first — branding a pre-`kind`
+  workshop board `diagram` would take its palette, stationery and note
+  menu away permanently, with no later load able to tell.
 - **What went with it:** `EventStormingViewBar`,
   `useEventStormingViews`, `applyEventStormingStage`,
   `eventStormingStageOf`, `eventStormingStageLayerId`,

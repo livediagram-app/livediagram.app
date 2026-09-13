@@ -3759,7 +3759,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "type": "string"
   },
   "TabKind": {
-    "const": "event-storming",
+    "enum": [
+      "diagram",
+      "event-storming"
+    ],
     "type": "string"
   },
   "TabSummary": {
