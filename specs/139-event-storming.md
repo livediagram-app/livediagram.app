@@ -226,11 +226,54 @@ The notes behave like the physical kit:
 
 ## Phase 5 (shipped): insert a note between two notes
 
-Dragging a note from the palette over the **gap between two notes**
-offers to INSERT it there: while the cursor hovers the gap, every
-element at or right of that point slides further right to open a slot,
-live; dropping commits the insertion as ONE undoable step; leaving the
-gap closes it again.
+**Hold Alt** and drag a note over the **gap between two notes** and the
+board offers to INSERT it there: every element at or right of that point
+slides further right to open a slot, live; dropping commits the
+insertion as ONE undoable step; letting go of Alt, or leaving the gap,
+closes it again.
+
+It works for **a note dragged in from the palette AND a note already on
+the board** — the drag people do most is moving a note they have already
+placed, and that is where making room in the middle earns its keep.
+
+- **Armed on a held Alt, never automatically.** Without the modifier the
+  drag behaves exactly as it does on every other board: no slot, no
+  ripple, no surprise. Automatic arming was tried first and was wrong
+  twice over — an author dropping a note NEAR a row got the whole board
+  rearranging under them, and the gesture was unavailable in the one
+  place it mattered most.
+- **Why Alt and not Ctrl or Shift.** Both are taken during a canvas
+  drag: Cmd/Ctrl means free placement (spec/60) and Shift means
+  drag-duplicate (spec/80). Alt was unclaimed, so insertion displaces
+  nothing and means the same thing on every board. Do not "simplify"
+  this back to another key.
+- **"Press Alt while dragging", not "hold Alt and drag".** On desktops
+  whose window manager claims Alt+button (Cinnamon's default, and
+  others'), a drag STARTED with Alt already down is taken by the WM to
+  move the window and the page never sees it. Pressing Alt after the
+  drag is under way always works, because the WM's grab is established
+  at button-press. All the copy says "press", for that reason.
+- **A moved note leaves its hole behind.** When a note already on the
+  board is inserted elsewhere, nothing closes up behind its ORIGINAL
+  position — the board makes room at the destination, and the source gap
+  is the author's to tidy. Predictable beats clever.
+- **A single sticky only.** A multi-selection drag, and a drag of a
+  shape / icon / arrow, behave exactly as they do today whatever is
+  held: the gesture is about the note grammar. This is true of the
+  palette path too — a shape dragged in from the palette no longer
+  inserts, which it did while arming was automatic.
+- **Precedence.** An open slot IS the placement, so it wins over
+  Cmd/Ctrl free placement (snapping is irrelevant while a slot is open).
+  Shift wins the other way: drag-duplicate already owns that gesture, so
+  no slot is offered while Shift is down.
+- **Live in both directions, at any point in the drag.** Press Alt
+  mid-drag and the slot opens; release it and the board unwinds and
+  hands placement back to the ordinary snap. The drop does whatever the
+  state is at the instant the button is released.
+- **Discoverability.** While a note is on the move on one of these
+  boards, the modifier hint banner offers the gesture: "Alt — Press to
+  insert it between two notes". A held modifier nobody has heard of is a
+  feature nobody finds, and the offer only makes sense during the drag.
 
 **Why here and nowhere else.** An event-storming wall is a
 left-to-right timeline of domain events, so "this happened before that"
@@ -244,8 +287,10 @@ board's behaviour changes at all.
 
 - **The preview NEVER touches the document.** No commit, no tick, no
   realtime broadcast, no autosave, no dirty flag. The slot is published
-  on a module-level store beside the drag ghost's snap channel
-  (`lib/palette-drag-preview.ts`), and the canvas renders it as a CSS
+  on a module-level store of its own (`lib/insertion-preview.ts` — it
+  has two publishers, the palette drag and the note drag, which is why
+  it does not live beside the palette's own drag state), and the canvas
+  renders it as a CSS
   `translateX` on the elements that move. A preview that wrote would
   sync half-finished states to peers and pollute the undo stack; a
   transform cannot desync from a model it never touched, and it unwinds
@@ -293,12 +338,32 @@ board's behaviour changes at all.
   edits.
 - **Never offered where the drop would be refused**: a view-only
   session, a locked tab, or a hidden / locked active layer sees no
-  preview at all.
-- **Not in v1:** dragging a note ALREADY on the board into a gap (the
-  geometry is written to be reusable for it), and vertical insertion
-  (the module is axis-parameterised in shape, horizontal in fact).
+  preview at all. `canInsertBetweenOn(gate, altHeld)` is ONE predicate
+  for both entry points and all three surfaces within each (preview,
+  ghost, drop), so they cannot disagree about whether the gesture is
+  armed.
+- **Moving a note already on the board** differs from the palette path
+  in exactly one way: the dragged note is excluded from the reckoning
+  (`findInsertionSlot`'s `excludeId`), so it neither defines the row it
+  is hovering nor gets pushed aside to make room for its own arrival.
+  The note itself moves live, as any dragged note does, and sits IN the
+  open slot; every OTHER note's ripple stays a render-time preview until
+  the drop. The drop applies the ripple through the gesture's existing
+  checkpoint, so the live ticks and the ripple collapse into one undo
+  step covering the note's original position too.
+- **Alt with the hand held still** works on a pointer drag (keydown /
+  keyup replay the last pointer position) but NOT on a palette drag:
+  during a native HTML5 drag Chromium delivers no key events to the
+  document at all, so `dragover.altKey` is the only channel and the slot
+  opens on the next movement, however small.
+- **Not in v1:** vertical insertion (the module is axis-parameterised in
+  shape, horizontal in fact), and leading / trailing insertion (there is
+  no "between" at the ends of a row — you can just drop there).
 - **Telemetry:** `Canvas / Used / InsertBetween`, once per committed
-  insertion, alongside the ordinary `Element / Added / Sticky`.
+  insertion from EITHER entry point, alongside the ordinary
+  `Element / Added / Sticky` when the note is a new one. The two entry
+  points are deliberately not told apart: the question the dashboard
+  answers is "does anyone use this gesture".
 
 ## Domain learnings (session log)
 
@@ -410,14 +475,36 @@ type, kept current every session. Each should stay true on its own.
 - Chrome anchored to element BOUNDS (the selection popover) has to stand
   down during a render-time shift — bounds know nothing about a
   transform, so it would float over empty canvas.
+- A gesture that arms ITSELF is a gesture that fires when you did not
+  mean it. Automatic insertion read as the board coming apart under an
+  author who only wanted to drop a note nearby.
+- Pick a modifier by what is FREE, not by what feels natural: Ctrl and
+  Shift were already free placement and drag-duplicate, so Alt was the
+  only one that could mean the same thing on every board.
+- The desktop can eat a modifier before the page ever sees it. Alt+press
+  is a window-move on Cinnamon's default, so the gesture had to be
+  taught as "press Alt WHILE dragging" — the WM grabs at button-press,
+  so pressing it mid-drag is always safe.
+- A native HTML5 drag gets no key events in Chromium at all. `dragover`
+  carries the modifier state and nothing else does, so "live" means
+  "next movement" on that path and genuinely instant on a pointer drag.
+- The thing being inserted must be excluded from its own ripple, or it
+  is its own neighbour: the row resolves against the note sitting under
+  the cursor and the geometry answers nonsense.
+- A DOM event's fields live on its prototype, so spreading one to replay
+  it with a different modifier yields `{}` and a NaN delta. Snapshot the
+  fields you need.
+- A modal that lands a beat AFTER the canvas will silently swallow a
+  test's drag: checking whether it is showing yet races it, waiting for
+  it does not.
 
 ## Still ahead (phased, see the plan)
 
-Board structure (swimlanes, pivotal events). Inserting between two notes
-covers the palette drag only; dragging a note ALREADY on the board into
-a gap is the obvious next step and the geometry is built for it. Each
-phase lands with its own spec update here — this file stays the source
-of truth for what the type IS at any moment.
+Board structure (swimlanes, pivotal events). Vertical insertion, for
+boards that run top to bottom: the geometry is axis-parameterised in
+shape and horizontal in fact. Each phase lands with its own spec update
+here — this file stays the source of truth for what the type IS at any
+moment.
 
 ## Counts
 

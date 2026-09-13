@@ -54,3 +54,8 @@ it, and only ever one at a time:
   between two notes"), which places the ghost IN the gap it is offering to
   open. While a slot is active the alignment snap yields entirely — two
   placement rules bidding for one drop point is how a preview starts lying.
+  A slot is only ever resolved **while Alt is held** and only for a tile
+  that will land as a **note**; without both, the alignment snap is the
+  whole story, exactly as on any other board. Since a note has no shape kind
+  of its own — the ghost draws it as a square at the note's real size — the
+  preview carries a `note` flag saying what it will actually become.
