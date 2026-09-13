@@ -5,7 +5,7 @@ import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { FloatingToolbar } from '@/components/chrome/FloatingToolbar';
 import { MultiSelectionToolbar } from '@/components/canvas/MultiSelectionToolbar';
 import { SelectionPopover } from '@/components/canvas/SelectionPopover';
-import { useInsertionSlot } from '@/lib/palette-drag-preview';
+import { useInsertionSlot } from '@/lib/insertion-preview';
 
 // The floating selection toolbars (spec/09): the single-selection popover
 // and the marquee multi-selection toolbar, each riding a sibling wrapper

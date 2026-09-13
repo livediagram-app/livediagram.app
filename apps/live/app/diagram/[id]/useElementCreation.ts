@@ -21,7 +21,7 @@ import {
   type ShapeKind,
   type Tab,
 } from '@livediagram/diagram';
-import { takeInsertionSlot } from '@/lib/palette-drag-preview';
+import { takeInsertionSlot } from '@/lib/insertion-preview';
 import type { InsertionSlot } from '@/lib/insert-between';
 import { getTechIcon, isTechIconId } from '@/lib/tech-icons';
 import { buildDrawnBoxed } from '@/lib/draw-commit';

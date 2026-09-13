@@ -1,10 +1,11 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useInsertionSlot, usePaletteDragPreview } from '@/lib/palette-drag-preview';
+import { usePaletteDragPreview } from '@/lib/palette-drag-preview';
+import { useInsertionNoteDragActive, useInsertionSlot } from '@/lib/insertion-preview';
 
 // How far each element is standing aside, right now, to show the insertion a
-// palette drag is offering (spec/139 insert between). Read from the drag's
+// drag is offering (spec/139 insert between). Read from the drag's
 // module store rather than threaded through props — a drag is global,
 // single-at-a-time and transient, the same reason the ghost reads it there.
 //
@@ -24,7 +25,12 @@ export type InsertShift = {
 
 export function useInsertShift(): InsertShift {
   const slot = useInsertionSlot();
-  const dragging = usePaletteDragPreview() !== null;
+  // Either entry point counts as "a drag is in hand": a palette note on its
+  // way in, or a note already on the board being moved. Both subscriptions are
+  // read unconditionally — `||` between two hook calls would skip one of them.
+  const draggingIn = usePaletteDragPreview() !== null;
+  const movingNote = useInsertionNoteDragActive();
+  const dragging = draggingIn || movingNote;
   const shiftedIds = useMemo(() => (slot ? new Set(slot.shiftedIds) : null), [slot]);
   return {
     xFor: (id: string) => (shiftedIds?.has(id) ? slot?.shiftDx : undefined),

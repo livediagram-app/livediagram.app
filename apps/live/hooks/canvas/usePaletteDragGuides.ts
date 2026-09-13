@@ -11,11 +11,8 @@ import {
   type InsertionGate,
   type InsertionSlot,
 } from '@/lib/insert-between';
-import {
-  setInsertionSlot,
-  setPaletteDragSnap,
-  usePaletteDragPreview,
-} from '@/lib/palette-drag-preview';
+import { setPaletteDragSnap, usePaletteDragPreview } from '@/lib/palette-drag-preview';
+import { setInsertionSlot } from '@/lib/insertion-preview';
 
 // Alignment guides DURING a palette drag (spec/139) — the single owner of the
 // in-flight snap. It tracks the dragover cursor, converts it to canvas coords

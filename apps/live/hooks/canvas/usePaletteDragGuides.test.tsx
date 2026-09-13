@@ -3,12 +3,11 @@ import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import type { Element } from '@livediagram/diagram';
 import {
-  getInsertionSlot,
   getPaletteDragSnap,
-  setInsertionSlot,
   setPaletteDragPreview,
   setPaletteDragSnap,
 } from '@/lib/palette-drag-preview';
+import { getInsertionSlot, setInsertionSlot } from '@/lib/insertion-preview';
 import { usePaletteDragGuides } from './usePaletteDragGuides';
 
 // A row of three 200x200 notes with 72 gaps: 0..200, 272..472, 544..744.

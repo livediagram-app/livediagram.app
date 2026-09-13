@@ -2,7 +2,8 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import type { InsertionSlot } from '@/lib/insert-between';
-import { setInsertionSlot, setPaletteDragPreview } from '@/lib/palette-drag-preview';
+import { setPaletteDragPreview } from '@/lib/palette-drag-preview';
+import { setInsertionNoteDragActive, setInsertionSlot } from '@/lib/insertion-preview';
 import { useInsertShift } from './useInsertShift';
 
 const SLOT: InsertionSlot = {
@@ -19,6 +20,7 @@ const SLOT: InsertionSlot = {
 afterEach(() => {
   act(() => {
     setInsertionSlot(null);
+    setInsertionNoteDragActive(false);
     setPaletteDragPreview(null);
   });
 });
@@ -47,5 +49,20 @@ describe('useInsertShift', () => {
     act(() => setInsertionSlot(null));
     expect(result.current.animates).toBe(true);
     expect(result.current.xFor('b')).toBeUndefined();
+  });
+
+  // The second entry point: a note already on the board. It has no palette
+  // preview to derive "a drag is in hand" from, so it says so itself — else
+  // the board would snap shut rather than ease when the slot closes.
+  it('keeps the easing mounted for a drag of a note already on the board', () => {
+    const { result } = renderHook(() => useInsertShift());
+    act(() => setInsertionNoteDragActive(true));
+    expect(result.current.animates).toBe(true);
+    act(() => setInsertionSlot(SLOT));
+    expect(result.current.xFor('c')).toBe(272);
+    act(() => setInsertionSlot(null));
+    expect(result.current.animates).toBe(true);
+    act(() => setInsertionNoteDragActive(false));
+    expect(result.current.animates).toBe(false);
   });
 });
