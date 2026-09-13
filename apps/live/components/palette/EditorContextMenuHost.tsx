@@ -184,6 +184,13 @@ export function EditorContextMenuHost() {
 
   return (
     <EditorContextMenu
+      // Remount when the menu changes target: a right-click on a DIFFERENT
+      // element should read as a new menu — it closes and animates in at the
+      // new sticky, rather than sliding across fully-formed. Re-targeting the
+      // same element keeps the key (and the state object), so that case stays
+      // a true no-op with no animation restart. The id only changes on the
+      // right-button RELEASE, so the entrance never fires under a held button.
+      key={contextMenu.mode === 'element' ? contextMenu.elementId : contextMenu.mode}
       menu={contextMenu}
       editingId={editingId}
       elements={activeTab.elements}
