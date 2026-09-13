@@ -32,14 +32,26 @@ The board knows what it is, and the editor adapts around it:
 
 The left-to-right order of the wall is the story: this happened, then that. So when a step turns out to be missing, you should not have to shuffle everything after it by hand.
 
-Drag a note from the palette and hold it over the **gap between two notes**. The board makes room: everything from that gap onwards slides right to open a slot, and the note you are dragging sits in it. Drop, and the note lands exactly there, ready to type into.
+Start dragging a note, hold it over the **gap between two notes**, and **press Alt** (Option on a Mac). The board makes room: everything from that gap onwards slides right to open a slot, and the note you are dragging sits in it. Drop, and the note lands exactly there.
 
-- **Nothing moves until you drop.** The opening slot is a preview. Nobody else sees it, nothing is saved, and drag away from the gap and the board closes up again as if you had never been there.
-- **One undo puts it all back.** The new note and the notes that moved aside are a single step in the history.
+It works two ways round, which is the point:
+
+- **A new note from the palette** — it lands in the slot, ready to type into.
+- **A note already on the wall** — drag it to where it should have been all along. This is the one you will reach for most.
+
+<Tip>
+  Press Alt **after** you have started dragging, not before. Some desktops treat Alt-and-click as
+  "move the window", so a drag that begins with Alt already down never reaches the page.
+</Tip>
+
+- **Nothing happens unless you press Alt.** An ordinary drag is an ordinary drag — drop a note next to a row and nothing else on the board stirs. Let go of Alt mid-drag and the board closes up again, there and then.
+- **Nothing moves until you drop.** The opening slot is a preview. Nobody else sees it and nothing is saved until you let go.
+- **One undo puts it all back.** The note and everything that moved aside are a single step in the history — including where a moved note started out.
 - **The whole board makes room, not just the row.** A command sitting above its event, or a policy below it, moves with the event it belongs to, so the columns stay lined up.
+- **A moved note leaves its gap behind.** The wall opens up where the note is going; where it came from is left as it is, for you to tidy or fill as you like.
 - **A note you have locked stays put** and the board opens around it. Arrows between notes stay attached: one that spans the new note simply stretches.
 
-This only happens on an event storming board, where left-to-right means time. On an ordinary diagram, a note dropped in a gap is just a note dropped in a gap.
+This only happens on an event storming board, where left-to-right means time, and only for notes — a shape or an icon is dropped where you drop it. On an ordinary diagram, a note dropped in a gap is just a note dropped in a gap.
 
 ## One wall of paper
 
