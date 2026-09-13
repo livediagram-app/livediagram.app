@@ -625,7 +625,7 @@ All template elements are inserted via the history hook (commit), so they're und
 
 Below the templates, the theme picker (see the two-level browse described under [Theme](#current-tab-section)) lets the user pick a preset theme — exactly the same `THEMES` catalogue the palette's Theme accordion uses. Defaults to **Basic** (the `brand` id). Confirming with **Create diagram** applies the chosen theme to the new tab (background colour + pattern + pattern colour + theme id), which then affects the default colours of every element added afterwards.
 
-## Shift hint banner
+## Modifier hint banner
 
 Shift is the editor's "power modifier" — it chains quick-connect arrows, forks a branch off an arrowhead, locks proportions while resizing or drawing-to-size, and grows multi-selections (elements and table cells). Those behaviours are invisible until tried, so while **Shift is held** a floating **hint pill** appears at the top of the canvas (the same `TopCenterBanner` chrome as the format-painter / group mode banners, but passive — no Cancel button) naming what Shift is doing right now. One concise message, picked by context, most specific first:
 
@@ -636,6 +636,8 @@ Shift is the editor's "power modifier" — it chains quick-connect arrows, forks
 5. Otherwise (editable session with elements) → "Click elements to select several".
 
 The pill leads with a `⇧ Shift` key chip so the message reads as "while this key is down". It never shows while typing (a Shift press inside an input / contentEditable is just capitalisation), while another mode banner owns the top slot (format painter / group / draw), in read-only sessions, or on an empty canvas with nothing to act on. It renders from a shared `useShiftHeld` key-state subscription so holding Shift re-renders only the pill. That and `useModKeyHeld` are now the same store — `hooks/ui/held-key-store.ts` owns the one window listener, the subscriber set and the SSR-safe snapshot; each hook supplies only its key policy.
+
+The same pill also **offers** a modifier the user may not know about, which is the only way a held modifier is ever discovered. While a sticky note is on the move on an [event-storming board](139-event-storming.md) — dragged in from the palette or already on the board — it reads **`Alt` · "Press to insert it between two notes"**, whether or not Alt is down; that is the moment the offer is useful and the only moment it is shown. It stands down while Shift is held, since drag-duplicate ([spec/80](80-shift-drag-duplicate.md)) already owns that gesture. The component is `ModifierHintBanner`: its job was always "name what a modifier does right now", and the old `ShiftHintBanner` name described its trigger rather than its work.
 
 ## Keyboard shortcuts
 

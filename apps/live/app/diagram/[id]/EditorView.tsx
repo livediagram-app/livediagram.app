@@ -158,7 +158,7 @@ export function EditorView() {
     !templateGridOpen &&
     !pendingDraw &&
     activeTab.elements.length === 0;
-  // The primary selection's flavour for the shift hint's no-drag messages.
+  // The primary selection's flavour for the modifier hint's no-drag messages.
   const shiftSelected = selectedId ? activeTab.elements.find((el) => el.id === selectedId) : null;
   const shiftSelectedKind = !shiftSelected
     ? null

@@ -4,7 +4,7 @@ import { createHeldKeyStore, useHeldKey } from './held-key-store';
 
 // Singleton subscription that exposes "is the user currently holding
 // Shift". The store machinery is shared (see held-key-store); what
-// follows is only this key's policy. Drives the shift hint banner
+// follows is only this key's policy. Drives the modifier hint banner
 // (spec/09): while Shift is down the editor names what the modifier is
 // doing right now.
 //
