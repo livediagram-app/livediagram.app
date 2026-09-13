@@ -15,6 +15,7 @@
 
 import {
   hasRichFormatting,
+  isEventStormingNote,
   type BoxedElement,
   type TextAlignX,
   type TextAlignY,
@@ -65,12 +66,19 @@ export function renderLabel(
   // pre-edit affordance is just an empty rectangle / nothing.
   const placeholder = element.type === 'text' ? 'Text' : isSticky ? 'Note' : '';
 
+  // Workshop notes are written in capitals (spec/139) — a presentation rule,
+  // so it rides the label STYLE (and the fit below) rather than touching the
+  // stored text. Display label, rich runs and the live editor all take the
+  // same flag, or the note would change case on double-click.
+  const caps = isEventStormingNote(element);
+
   const textStyle = {
     bold: element.textBold,
     italic: element.textItalic,
     underline: element.textUnderline,
     strikethrough: element.textStrikethrough,
     fontFamily,
+    uppercase: caps,
   };
 
   const richText = (element as { richText?: TextRun[] }).richText;
@@ -91,6 +99,7 @@ export function renderLabel(
         padding,
         bold: !!element.textBold,
         italic: !!element.textItalic,
+        uppercase: caps,
       })
     : undefined;
 
@@ -116,6 +125,7 @@ export function renderLabel(
         padding={padding}
         fontFamily={fontFamily}
         multiline={isSticky}
+        uppercase={caps}
         cursorAtEnd={editCursorAtEnd}
         zoom={zoom}
         textClassName={textClass}
@@ -142,6 +152,7 @@ export function renderLabel(
         padding={padding}
         fontFamily={fontFamily}
         multiline={isSticky}
+        uppercase={caps}
         className={isSticky ? 'text-amber-950' : ''}
         animClass={labelAnimClass}
       />

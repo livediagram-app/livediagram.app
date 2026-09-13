@@ -74,7 +74,18 @@ test('an event-storming board stays a board across a reload', async ({ page, pag
   await expect(notation.first()).toBeVisible();
   // The seeded timeline of orange events (spec/139).
   const canvas = page.locator('[data-canvas-a11y-root]');
-  await expect(canvas.getByRole('img', { name: /sticky/i }).first()).toBeVisible();
+  const note = canvas.getByRole('img', { name: /sticky/i }).first();
+  await expect(note).toBeVisible();
+  // Workshop notes are written in capitals (spec/139). Only a browser can
+  // answer this one: the stored label keeps its typed casing, so the caps
+  // exist purely as the rendered treatment.
+  const painted = await note.evaluate((node) => {
+    const line = Array.from(node.querySelectorAll('div')).find(
+      (d) => d.children.length === 0 && !!d.textContent?.trim(),
+    );
+    return line ? getComputedStyle(line).textTransform : null;
+  });
+  expect(painted).toBe('uppercase');
 
   await page.waitForTimeout(1500); // let the debounced autosave flush
   await page.reload();

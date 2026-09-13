@@ -51,6 +51,33 @@ describe('fitMultilineFontPx', () => {
   });
 });
 
+// Workshop notes render in capitals (spec/139), and capitals are WIDER. The
+// fitter therefore has to measure the caps, not the typed mixed case — a
+// size fitted against "Order placed" overflows the moment it paints as
+// "ORDER PLACED".
+describe('fitMultilineFontPx — uppercase', () => {
+  const note = { width: 200, height: 200, padding: 12 };
+
+  it('measures the capitals it will actually paint', () => {
+    const asTyped = fitMultilineFontPx({ text: 'Order placed by customer', ...note });
+    const asCaps = fitMultilineFontPx({
+      text: 'Order placed by customer',
+      ...note,
+      uppercase: true,
+    });
+    const preShouted = fitMultilineFontPx({ text: 'ORDER PLACED BY CUSTOMER', ...note });
+    expect(asCaps).toBe(preShouted);
+    expect(asCaps).toBeLessThanOrEqual(asTyped);
+  });
+
+  it('leaves the fit alone when the flag is off', () => {
+    const text = 'Order placed by customer';
+    expect(fitMultilineFontPx({ text, ...note, uppercase: false })).toBe(
+      fitMultilineFontPx({ text, ...note }),
+    );
+  });
+});
+
 // A sticky is paper, and nobody writes one word per line on paper. The fit
 // therefore has a second constraint beyond "does it fit": at a size where
 // every word lands on its own line, the note reads as a column of fragments

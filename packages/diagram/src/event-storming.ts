@@ -188,6 +188,31 @@ export function eventStormingKindOf(el: {
   return EVENT_STORMING_NOTES.find((n) => n.fill === el.fillColor)?.kind ?? null;
 }
 
+// Is this element a workshop note at all? The notation-aware treatments —
+// the caps rule below, the kind in the selection caption — ask this rather
+// than matching hexes, so they all agree on what counts as a note.
+export function isEventStormingNote(el: {
+  type: string;
+  esKind?: EventStormingNoteKind;
+  fillColor?: string;
+  fixedSize?: boolean;
+}): boolean {
+  return eventStormingKindOf(el) !== null;
+}
+
+// Workshop notes are WRITTEN IN CAPITALS (spec/139). On a real wall that is
+// what a marker on paper produces: caps stay legible from across the room,
+// hold an even colour block, and stop a board reading as a mix of
+// sentence-case handwriting styles. It is a PRESENTATION rule — the typed
+// label is stored exactly as written, so search, exports of the data, and
+// the day a note stops being a note all keep the author's own casing.
+export function eventStormingLabelText(
+  el: { type: string; esKind?: EventStormingNoteKind; fillColor?: string; fixedSize?: boolean },
+  label: string,
+): string {
+  return isEventStormingNote(el) ? label.toUpperCase() : label;
+}
+
 // A workshop note's hand-placement (spec/139). Calibrated by eye: ±1.1°
 // reads hand-placed, ±2.5° reads messy. One decimal keeps the stored JSON
 // tidy. Lives here rather than in the editor because every surface that

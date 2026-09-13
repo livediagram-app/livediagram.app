@@ -13,6 +13,7 @@ import {
   eventStormingBoardLayerId,
   eventStormingLayers,
   eventStormingNote,
+  isEventStormingNote,
   isEventStormingTab,
   type EventStormingNoteKind,
 } from './event-storming';
@@ -159,6 +160,31 @@ describe('event-storming tilt', () => {
   it('varies (it is a fresh placement, not a constant)', () => {
     const seen = new Set(Array.from({ length: 40 }, () => eventStormingTilt()));
     expect(seen.size).toBeGreaterThan(1);
+  });
+});
+
+// A workshop note IS a note, whatever it says. The caps rule (spec/139)
+// and any future notation-aware treatment key off this, so it must agree
+// with eventStormingKindOf on every signal — including the legacy fill.
+describe('isEventStormingNote', () => {
+  const el = (o: Record<string, unknown> = {}) =>
+    ({ id: 'n', type: 'sticky', x: 0, y: 0, width: 200, height: 200, ...o }) as never;
+
+  it('is a note when the kind is stamped', () => {
+    expect(isEventStormingNote(el({ esKind: 'domain-event' }))).toBe(true);
+  });
+
+  it('is a note when only the canonical fill + fixed stationery says so', () => {
+    expect(isEventStormingNote(el({ fixedSize: true, fillColor: '#fdba74' }))).toBe(true);
+  });
+
+  it('is not a note for an ordinary sticky that merely happens to be orange', () => {
+    expect(isEventStormingNote(el({ fillColor: '#fdba74' }))).toBe(false);
+    expect(isEventStormingNote(el())).toBe(false);
+  });
+
+  it('is not a note for anything that is not a sticky', () => {
+    expect(isEventStormingNote(el({ type: 'shape', esKind: 'command' }))).toBe(false);
   });
 });
 

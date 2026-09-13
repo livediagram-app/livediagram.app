@@ -34,6 +34,7 @@ export function fitMultilineFontPx({
   padding,
   bold = false,
   italic = false,
+  uppercase = false,
 }: {
   text: string;
   width: number;
@@ -41,16 +42,21 @@ export function fitMultilineFontPx({
   padding: number;
   bold?: boolean;
   italic?: boolean;
+  // The label paints in capitals (an event-storming note, spec/139). Caps
+  // are wider, so the fit must measure THEM — measuring the typed mixed
+  // case would hand back a size that overflows the moment it renders.
+  uppercase?: boolean;
 }): number {
   const availableW = Math.max(1, width - padding * 2);
   const availableH = Math.max(1, height - padding * 2);
   if (!text.trim()) return FIT_MAX_PX;
+  const measured = uppercase ? text.toUpperCase() : text;
 
   // How many words the label has. One word has no pair to make, so the
   // companionship rule below simply doesn't apply to it.
-  const wordCount = text.trim().split(/\s+/).length;
+  const wordCount = measured.trim().split(/\s+/).length;
 
-  const linesAt = (px: number) => wrapLabel(text, availableW, labelMeasure(px, bold, italic));
+  const linesAt = (px: number) => wrapLabel(measured, availableW, labelMeasure(px, bold, italic));
 
   const fits = (px: number): boolean => {
     const lines = linesAt(px);

@@ -20,6 +20,11 @@ describe('labelTextStyleCss', () => {
     expect(labelTextStyleCss({ strikethrough: true }).textDecoration).toBe('line-through');
   });
 
+  it('renders capitals only when asked (spec/139 workshop notes)', () => {
+    expect(labelTextStyleCss({ uppercase: true }).textTransform).toBe('uppercase');
+    expect(labelTextStyleCss({}).textTransform).toBeUndefined();
+  });
+
   it('passes fontFamily through and leaves unset props undefined', () => {
     const css = labelTextStyleCss({ fontFamily: 'Inter' });
     expect(css.fontFamily).toBe('Inter');

@@ -42,6 +42,7 @@ export function RichTextEditor({
   padding,
   fontFamily,
   multiline,
+  uppercase,
   cursorAtEnd,
   zoom,
   textClassName = '',
@@ -77,6 +78,7 @@ export function RichTextEditor({
     textSize,
     fitBox,
     multiline,
+    uppercase,
     cursorAtEnd,
     onCommit,
     onCancel,
@@ -223,6 +225,9 @@ export function RichTextEditor({
           fontSize: `${basePx}px`,
           textAlign: TEXT_ALIGN[alignX],
           fontFamily,
+          // Same capitals the committed label wears (spec/139): the typed
+          // text is stored as written, it just reads as the note will.
+          textTransform: uppercase ? 'uppercase' : undefined,
         }}
         // Same typography rule as the display label (label-style): a
         // mismatch here shifts the text the instant editing starts.

@@ -12,6 +12,7 @@ import {
   defaultTextAlign,
   defaultTextColor,
 } from './colors';
+import { eventStormingLabelText } from './event-storming';
 import { hasRichFormatting } from './rich-text';
 import { iconCaptionBand } from './icon-size';
 import { fontSizeFor, labelMaxWidth } from './svg-render-primitives';
@@ -192,7 +193,7 @@ export function describeBoxedExport(
   const richText = (el as { richText?: TextRun[] }).richText;
   const runs: ExportRun[] | undefined = hasRichFormatting(richText)
     ? richText!.map((run) => ({
-        text: run.text,
+        text: eventStormingLabelText(el, run.text),
         color: run.color ?? baseColor,
         size: run.size ? fontSizeFor(run.size) : baseSize,
         bold: run.bold ?? !!el.textBold,
@@ -207,9 +208,12 @@ export function describeBoxedExport(
   const alignX = el.textAlignX ?? defaults.x;
   const alignY = el.textAlignY ?? defaults.y;
   const pad = PADDING_PX[el.padding ?? defaultPadding(el)];
+  // A workshop note exports in capitals, exactly as the board paints it
+  // (spec/139) — a shared PNG that quietly restored sentence case would
+  // stop being the board people were looking at.
   const label: ExportLabel | null = el.label
     ? {
-        text: el.label,
+        text: eventStormingLabelText(el, el.label),
         x:
           alignX === 'right'
             ? el.x + el.width - pad

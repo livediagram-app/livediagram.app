@@ -17,6 +17,10 @@ export type RichTextEditorProps = {
   padding: number;
   fontFamily?: string;
   multiline: boolean;
+  // Paint the live text in capitals (an event-storming note, spec/139). A
+  // CSS transform only: the committed label keeps the author's casing, and
+  // the auto-fit measures the caps so the size can't jump on commit.
+  uppercase?: boolean;
   cursorAtEnd: boolean;
   zoom: number;
   textClassName?: string;

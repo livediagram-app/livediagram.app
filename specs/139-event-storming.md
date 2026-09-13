@@ -117,6 +117,19 @@ semantic colour:
   made it a poster that shouted down every note beside it — which is what
   the original 44px ceiling did. Only the top end is pinned; a long note
   still shrinks.
+- **Notes are WRITTEN IN CAPITALS.** A marker on paper produces caps, and a
+  wall of them reads as one hand: capitals stay legible from across the
+  room, hold an even block of colour on the paper, and stop a board looking
+  like eight people's sentence-case handwriting. The rule is
+  PRESENTATION-only (`eventStormingLabelText` in `@livediagram/diagram`, a
+  CSS `text-transform` on the canvas): the typed label is stored exactly as
+  written, so search, the JSON export and the day a note stops being a note
+  all keep the author's casing. It applies wherever a note PAINTS — display
+  label, rich runs, the live editor (so typing shows the note as it will
+  read), and the SVG / PNG export, which would otherwise hand out a picture
+  that isn't the board. Capitals are WIDER, so the auto-fit measures the
+  caps (`fitMultilineFontPx({ uppercase })`); measuring the typed mixed case
+  would overflow the paper the moment it rendered.
 - **Two words keep each other company.** The auto-fit has a second
   constraint beyond “does it fit”: a multi-word label must keep at least
   one PAIR of words on a line. At a large enough size every word lands on

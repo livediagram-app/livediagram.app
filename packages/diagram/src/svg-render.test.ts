@@ -205,6 +205,18 @@ describe('renderElementsToSvg', () => {
         'stroke="#b45309"',
       );
     });
+
+    // Workshop notes are written in capitals (spec/139) — the export paints
+    // what the board shows, or a shared PNG stops being the board.
+    it('exports an event-storming note in capitals', () => {
+      const svg = renderElementsToSvg(tab([sticky({ esKind: 'domain-event' })]));
+      expect(svg).toContain('ORDER PLACED');
+      expect(svg).not.toContain('Order placed');
+    });
+
+    it('leaves an ordinary sticky as written', () => {
+      expect(renderElementsToSvg(tab([sticky()]))).toContain('Order placed');
+    });
   });
 
   describe('tables (spec/09)', () => {

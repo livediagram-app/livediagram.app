@@ -221,6 +221,7 @@ export function RichLabel({
   padding,
   fontFamily,
   multiline,
+  uppercase,
   className = '',
   animClass,
 }: {
@@ -232,6 +233,9 @@ export function RichLabel({
   padding: number;
   fontFamily?: string;
   multiline: boolean;
+  // Paint in capitals (an event-storming note, spec/139) — whole-label, so
+  // it sits on the wrapper rather than on each run's style.
+  uppercase?: boolean;
   className?: string;
   // Text-native animation class for the glyphs (spec/09); see renderLabel.
   animClass?: string;
@@ -251,7 +255,11 @@ export function RichLabel({
     >
       <div
         className={`w-full whitespace-pre-wrap break-words ${animClass ?? ''}`}
-        style={{ textAlign: TEXT_ALIGN[alignX], fontFamily }}
+        style={{
+          textAlign: TEXT_ALIGN[alignX],
+          fontFamily,
+          textTransform: uppercase ? 'uppercase' : undefined,
+        }}
       >
         {runs.map((run, i) => (
           <span key={i} style={effectiveRunStyle(run, element, runSizePx)}>

@@ -1188,7 +1188,7 @@ export const articles: Article[] = [
     title: 'Event Storming Boards',
     description: 'A board built for the workshop: the notation, paper-like notes, one wall.',
     keywords:
-      'event storming eventstorming board workshop brandolini ddd domain driven design session facilitator wall sticky notes paper big picture process modelling modeling software design pass timeline domain event command aggregate hotspot insert between gap make room slot squeeze in add in the middle reorder shuffle push right alt option modifier hold key move a note rearrange resequence',
+      'event storming eventstorming board workshop brandolini ddd domain driven design session facilitator wall sticky notes paper big picture process modelling modeling software design pass timeline domain event command aggregate hotspot insert between gap make room slot squeeze in add in the middle reorder shuffle push right alt option modifier hold key move a note rearrange resequence capitals caps uppercase upper case all caps shouting letter case',
     category: 'Canvas',
     categorySlug: 'canvas',
     parentSlug: 'templates',
