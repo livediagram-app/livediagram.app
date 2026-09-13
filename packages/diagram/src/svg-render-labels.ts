@@ -15,6 +15,16 @@ export type ExportRun = {
   italic: boolean;
 };
 
+// The default face an export paints in when nothing else is asked for — the
+// editor's own default (spec/28's "editor default" rung).
+export const EXPORT_DEFAULT_FONT = 'system-ui, sans-serif';
+
+// `font-family` for a <text>, quoted for XML. Every emitter goes through
+// this so a new one can't quietly hardcode the UI sans again.
+export function svgFontFamilyAttr(fontFamily?: string): string {
+  return ` font-family="${xmlEscape(fontFamily ?? EXPORT_DEFAULT_FONT)}"`;
+}
+
 export type ExportLabel = {
   text: string;
   x: number;
@@ -30,6 +40,9 @@ export type ExportLabel = {
   size: number;
   bold: boolean;
   italic: boolean;
+  // The resolved CSS stack the label paints in (spec/28) — element font,
+  // else the notation's, else the tab default. Undefined = the UI sans.
+  fontFamily?: string;
   runs?: ExportRun[];
 };
 
@@ -42,9 +55,10 @@ export function svgLabel(
   fontSize: number,
   bold: boolean,
   italic: boolean,
+  fontFamily?: string,
 ): string {
   return (
-    `<text x="${r2(x)}" y="${r2(y)}" font-family="system-ui, sans-serif" font-size="${fontSize}"` +
+    `<text x="${r2(x)}" y="${r2(y)}"${svgFontFamilyAttr(fontFamily)} font-size="${fontSize}"` +
     ` font-weight="${bold ? 600 : 400}"${italic ? ' font-style="italic"' : ''}` +
     ` fill="${xmlEscape(color)}" text-anchor="${anchor}" dominant-baseline="central">${xmlEscape(text)}</text>`
   );
@@ -75,6 +89,7 @@ export function svgWrappedLabel(
   bold: boolean,
   italic: boolean,
   valign: 'top' | 'middle' | 'bottom' = 'middle',
+  fontFamily?: string,
 ): string {
   const lineH = fontSize * LABEL_LINE_HEIGHT;
   const firstY = blockFirstY(y, lines.length, lineH, valign);
@@ -84,7 +99,7 @@ export function svgWrappedLabel(
     )
     .join('');
   return (
-    `<text x="${r2(x)}" y="${r2(firstY)}" font-family="system-ui, sans-serif" font-size="${fontSize}"` +
+    `<text x="${r2(x)}" y="${r2(firstY)}"${svgFontFamilyAttr(fontFamily)} font-size="${fontSize}"` +
     ` font-weight="${bold ? 600 : 400}"${italic ? ' font-style="italic"' : ''}` +
     ` fill="${xmlEscape(color)}" text-anchor="${anchor}" dominant-baseline="central">${tspans}</text>`
   );
@@ -96,7 +111,11 @@ export function svgWrappedLabel(
 // editor's DOM layout does instead of running out of the element on one
 // line. Adjacent same-style fragments on a line merge back together.
 // Shared by the SVG emitter below and the PNG canvas drawer.
-export function wrapExportRuns(runs: ExportRun[], maxWidth: number): ExportRun[][] {
+export function wrapExportRuns(
+  runs: ExportRun[],
+  maxWidth: number,
+  fontFamily?: string,
+): ExportRun[][] {
   const lines: ExportRun[][] = [];
   let cur: ExportRun[] = [];
   let curW = 0;
@@ -106,7 +125,7 @@ export function wrapExportRuns(runs: ExportRun[], maxWidth: number): ExportRun[]
     curW = 0;
   };
   for (const run of runs) {
-    const measure = labelMeasure(run.size, run.bold, run.italic);
+    const measure = labelMeasure(run.size, run.bold, run.italic, fontFamily);
     const spaceW = Math.max(measure(' '), run.size * 0.25);
     run.text.split('\n').forEach((para, pi) => {
       if (pi > 0) pushLine();
@@ -144,8 +163,9 @@ export function svgRichWrappedLabel(
   anchor: 'start' | 'middle' | 'end',
   maxWidth: number,
   valign: 'top' | 'middle' | 'bottom' = 'middle',
+  fontFamily?: string,
 ): string {
-  const lines = wrapExportRuns(runs, maxWidth);
+  const lines = wrapExportRuns(runs, maxWidth, fontFamily);
   const lineH = LABEL_LINE_HEIGHT * Math.max(...runs.map((r) => r.size));
   const firstY = blockFirstY(y, lines.length, lineH, valign);
   const body = lines
@@ -162,7 +182,7 @@ export function svgRichWrappedLabel(
     })
     .join('');
   return (
-    `<text x="${r2(x)}" y="${r2(firstY)}" font-family="system-ui, sans-serif"` +
+    `<text x="${r2(x)}" y="${r2(firstY)}"${svgFontFamilyAttr(fontFamily)}` +
     ` text-anchor="${anchor}" dominant-baseline="central">${body}</text>`
   );
 }
@@ -173,6 +193,7 @@ export function svgRichLabel(
   x: number,
   y: number,
   anchor: 'start' | 'middle' | 'end',
+  fontFamily?: string,
 ): string {
   const spans = runs
     .map(
@@ -183,7 +204,7 @@ export function svgRichLabel(
     )
     .join('');
   return (
-    `<text x="${r2(x)}" y="${r2(y)}" font-family="system-ui, sans-serif"` +
+    `<text x="${r2(x)}" y="${r2(y)}"${svgFontFamilyAttr(fontFamily)}` +
     ` text-anchor="${anchor}" dominant-baseline="central">${spans}</text>`
   );
 }

@@ -30,6 +30,7 @@ import {
 import {
   arrowHeadRefs,
   describeBoxedExport,
+  EXPORT_DEFAULT_FONT,
   EXPORT_IMAGE_FILL,
   EXPORT_IMAGE_STROKE,
   LABEL_LINE_HEIGHT,
@@ -143,8 +144,12 @@ export function drawBoxed(
   el: BoxedElement,
   resolveImage?: (imageId: string) => HTMLImageElement | undefined,
   alpha = 1,
+  // The tab default face (spec/28). The PNG rasterises in the browser, where
+  // the webfonts are already loaded, so it can paint the real typeface —
+  // element font, else the notation's, else this.
+  tabFont?: string,
 ): void {
-  const { opacity, shape, label } = describeBoxedExport(el);
+  const { opacity, shape, label } = describeBoxedExport(el, { tabFont });
   ctx.save();
   ctx.globalAlpha = opacity * alpha;
   ctx.lineWidth = 1.5;
@@ -180,6 +185,9 @@ export function drawBoxed(
   }
   if (label && !drewImage) {
     ctx.textBaseline = 'middle';
+    // The face this label paints in, resolved by describeBoxedExport; the
+    // UI sans when the element and its tab both left it unset.
+    const labelFont = label.fontFamily ?? EXPORT_DEFAULT_FONT;
     // A wrapped block hangs off label.y per the element's vertical
     // alignment (label.valign) — a bottom caption's lines stack upward
     // INTO the box, mirroring the SVG emitter's blockFirstY.
@@ -194,8 +202,8 @@ export function drawBoxed(
       // styles (shared wrapExportRuns, so PNG breaks lines exactly where the
       // SVG does), then lay each line's spans from its anchor-derived start.
       const fontFor = (r: ExportRun) =>
-        `${r.bold ? '600' : '400'} ${r.italic ? 'italic ' : ''}${r.size}px system-ui, sans-serif`;
-      const lines = wrapExportRuns(label.runs, label.maxWidth);
+        `${r.bold ? '600' : '400'} ${r.italic ? 'italic ' : ''}${r.size}px ${labelFont}`;
+      const lines = wrapExportRuns(label.runs, label.maxWidth, label.fontFamily);
       const lineH = LABEL_LINE_HEIGHT * Math.max(...label.runs.map((r) => r.size));
       let ly = firstY(lines.length, lineH);
       ctx.textAlign = 'left';
@@ -221,7 +229,7 @@ export function drawBoxed(
       }
     } else {
       ctx.fillStyle = label.color;
-      ctx.font = `${label.bold ? '600' : '400'} ${label.italic ? 'italic ' : ''}${label.size}px system-ui, sans-serif`;
+      ctx.font = `${label.bold ? '600' : '400'} ${label.italic ? 'italic ' : ''}${label.size}px ${labelFont}`;
       ctx.textAlign =
         label.anchor === 'end' ? 'right' : label.anchor === 'start' ? 'left' : 'center';
       // Wrap to the element width so long labels stay inside the box, then

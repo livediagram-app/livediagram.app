@@ -57,7 +57,7 @@ const tab = (overrides: Partial<Tab> = {}): Tab => ({
   ...overrides,
 });
 
-const text = (blob: Blob) => blob.text();
+const text = async (blob: Blob | Promise<Blob>) => (await blob).text();
 
 // The tab -> JSON / Markdown serialisers are strings (tabToJsonText /
 // tabToMarkdownText); these tests exercise them through a Blob (mime type +
@@ -89,7 +89,7 @@ describe('exportTabAsMarkdown', () => {
   it('uses the tab name as the H1 heading', async () => {
     const md = await text(exportTabAsMarkdown(tab({ name: 'Architecture' })));
     expect(md.startsWith('# Architecture\n')).toBe(true);
-    expect(blobType(exportTabAsMarkdown(tab()))).toBe('text/markdown');
+    expect(await blobType(exportTabAsMarkdown(tab()))).toBe('text/markdown');
   });
 
   it('falls back to "Untitled tab" when the name is empty', async () => {
@@ -214,14 +214,14 @@ describe('exportTabAsMarkdown', () => {
   });
 });
 
-function blobType(blob: Blob): string {
-  return blob.type;
+async function blobType(blob: Blob | Promise<Blob>): Promise<string> {
+  return (await blob).type;
 }
 
 describe('exportTabAsSvg', () => {
   it('produces an image/svg+xml blob with a viewBox + background', async () => {
     const blob = exportTabAsSvg(tab({ elements: [shape('a')], backgroundColor: '#fff7ed' }));
-    expect(blobType(blob)).toBe('image/svg+xml');
+    expect(await blobType(blob)).toBe('image/svg+xml');
     const svg = await text(blob);
     expect(svg).toContain('<svg');
     expect(svg).toContain('viewBox=');
@@ -256,6 +256,26 @@ describe('exportTabAsSvg', () => {
     // Label is XML-escaped, never raw.
     expect(svg).toContain('A &amp; B &lt;ok&gt;');
     expect(svg).not.toContain('A & B <ok>');
+  });
+
+  // An exported file leaves this browser: the reader hasn't got Permanent
+  // Marker installed, so the download carries the face with it (spec/28).
+  it('embeds the webfont bytes a downloaded file needs', async () => {
+    const svg = await text(
+      exportTabAsSvg(tab({ elements: [shape('s', { label: 'Hi', font: 'caveat' })] }), {
+        fontCss: "@font-face{font-family:'Caveat';src:url(data:font/woff2;base64,AAAA)}",
+      }),
+    );
+    expect(svg).toContain('<style type="text/css">@font-face');
+    expect(svg).toContain('data:font/woff2;base64');
+    // The declaration-only fallback isn't ALSO emitted — one source of truth
+    // for the face, and no pointless network hop for an offline reader.
+    expect(svg).not.toContain('@import');
+  });
+
+  it('says nothing about fonts when the tab uses none', async () => {
+    const svg = await text(exportTabAsSvg(tab({ elements: [shape('s', { label: 'Hi' })] })));
+    expect(svg).not.toContain('<style');
   });
 
   it('paints the backdrop pattern by default and omits it when turned off', async () => {

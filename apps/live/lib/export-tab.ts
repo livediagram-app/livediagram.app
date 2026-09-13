@@ -14,6 +14,7 @@ import {
   layerBands,
   layerOpacityOf,
   shade,
+  exportFontIds,
   visibleLayerElements,
   type BoxedElement,
   type Tab,
@@ -32,6 +33,7 @@ import {
   supportsShadow,
   svgArrow,
   svgBoxed,
+  svgFontDefs,
   svgShadowDefs,
   xmlEscape,
   type ExportShape,
@@ -63,11 +65,19 @@ export type ImageExportOpts = {
   pattern?: boolean;
   hiddenLayers?: boolean;
   images?: ExportImageMap;
+  // Embedded @font-face rules for the faces this tab uses (spec/28), from
+  // embeddedFontFaceCss. Absent = the SVG falls back to declaring the
+  // Google stylesheet by @import, which only a browser opening the file
+  // directly will honour.
+  fontCss?: string;
 };
 
 // Re-export so callers (the export dialog) get the loader from the same
 // `@/lib/export-tab` barrel they already import the exporters from.
 export { loadTabImages } from './export-tab-images';
+
+// Webfont embedding for downloads (spec/28) — the bytes travel with the file.
+import { embeddedFontFaceCss } from './export-fonts';
 
 // Default backdrop pattern colour when a tab leaves it unset (matches the
 // editor's fallback).
@@ -196,6 +206,17 @@ export async function renderTabToCanvas(
   // when the element carries a rotation, since svgBoxed bakes the rotation
   // into the markup and it sweeps outside the unrotated box. A failed
   // rasterise falls back to drawBoxed's plain box.
+  // The tab default face (spec/28) every element without its own inherits.
+  const tabFont = tab.font;
+  // Webfont bytes for the faces in play. A rasterised fragment is loaded as
+  // an <img>, which blocks external resources outright — so a marker note
+  // would come back in the fallback face unless the font travels INSIDE the
+  // markup. Fetched once here and inlined into every fragment below.
+  const fontCss = opts.fontCss ?? (await embeddedFontFaceCss(exportFontIds(els, tab.font)));
+  // The canvas drawers paint through the DOM's own font set, so wait for it
+  // to settle — rasterising mid-swap bakes the fallback face into the PNG.
+  await document.fonts?.ready;
+  const fontDefs = fontCss ? `<defs><style type="text/css">${fontCss}</style></defs>` : '';
   const rasterImages = new Map<string, { image: HTMLImageElement; pad: number }>();
   for (const el of els) {
     if (el.type === 'arrow' || !isBoxed(el)) continue;
@@ -214,7 +235,11 @@ export async function renderTabToCanvas(
     const svg =
       `<svg xmlns="http://www.w3.org/2000/svg" width="${r2(w * scale)}" height="${r2(h * scale)}"` +
       ` viewBox="${r2(el.x - pad)} ${r2(el.y - pad)} ${r2(w)} ${r2(h)}">` +
-      `${svgShadowDefs([el])}${svgBoxed(el, undefined, resolveIconArtLoaded, resolveStickerArtLoaded)}</svg>`;
+      `${fontDefs}${svgShadowDefs([el])}${svgBoxed(el, {
+        resolveIconArt: resolveIconArtLoaded,
+        resolveStickerArt: resolveStickerArtLoaded,
+        tabFont,
+      })}</svg>`;
     try {
       rasterImages.set(el.id, { image: await svgToImage(svg), pad });
     } catch {
@@ -238,7 +263,7 @@ export async function renderTabToCanvas(
       ctx.globalAlpha = 1;
       continue;
     }
-    drawBoxed(ctx, el, resolveImage, alpha);
+    drawBoxed(ctx, el, resolveImage, alpha, tabFont);
   }
   for (const { el, alpha } of ordered) {
     if (el.type !== 'arrow') continue;
@@ -338,6 +363,13 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
   parts.push(
     `<rect x="${r2(vbX)}" y="${r2(vbY)}" width="${r2(vbW)}" height="${r2(vbH)}" fill="${xmlEscape(tab.backgroundColor ?? EXPORT_BG)}"/>`,
   );
+  // Typefaces (spec/28): the real bytes when the caller pre-fetched them
+  // (a download, which must stand alone), else a declaration of the Google
+  // stylesheet (the live preview, where the page has the faces already).
+  const fontDefs = opts.fontCss
+    ? `<defs><style type="text/css">${opts.fontCss}</style></defs>`
+    : svgFontDefs(exportFontIds(els, tab.font));
+  if (fontDefs) parts.push(fontDefs);
   // Element-shadow filter defs (spec/86); empty string when none.
   const shadowDefs = svgShadowDefs(els);
   if (shadowDefs) parts.push(shadowDefs);
@@ -370,7 +402,14 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
     const inner: string[] = [];
     for (const el of band.elements) {
       if (el.type !== 'arrow')
-        inner.push(svgBoxed(el, resolveImageHref, resolveIconArtLoaded, resolveStickerArtLoaded));
+        inner.push(
+          svgBoxed(el, {
+            resolveImageHref,
+            resolveIconArt: resolveIconArtLoaded,
+            resolveStickerArt: resolveStickerArtLoaded,
+            tabFont: tab.font,
+          }),
+        );
     }
     for (const el of band.elements) {
       if (el.type === 'arrow') inner.push(svgArrow(el, tab.elements));
@@ -382,8 +421,12 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
   return parts.join('\n');
 }
 
-export function exportTabAsSvg(tab: Tab, opts: ImageExportOpts = {}): Blob {
-  return new Blob([renderTabToSvg(tab, opts)], { type: 'image/svg+xml' });
+// A downloaded SVG carries its own typefaces: the reader hasn't got
+// Permanent Marker installed, and an @import is dead in an offline viewer.
+export async function exportTabAsSvg(tab: Tab, opts: ImageExportOpts = {}): Promise<Blob> {
+  const els = opts.hiddenLayers ? tab.elements : visibleLayerElements(tab.elements, tab.layers);
+  const fontCss = opts.fontCss ?? (await embeddedFontFaceCss(exportFontIds(els, tab.font)));
+  return new Blob([renderTabToSvg(tab, { ...opts, fontCss })], { type: 'image/svg+xml' });
 }
 
 // ---------------------------------------------------------------------

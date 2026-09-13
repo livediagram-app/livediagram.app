@@ -63,6 +63,7 @@ export function MultiPlacementSections({
         <MoveToLayerRow
           layers={props.layers}
           elements={props.elements}
+          tabFont={props.tabFont}
           currentLayerId={props.selectionLayerId}
           onMove={props.onMoveSelectionToLayer}
         />

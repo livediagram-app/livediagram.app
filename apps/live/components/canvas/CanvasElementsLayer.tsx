@@ -3,6 +3,7 @@ import { useStableHandlers } from '@/hooks/ui/useStableHandlers';
 import { useFontsReady } from './useFontsReady';
 import {
   eventStormingNoteFont,
+  resolveFontStack,
   isSelectionMode,
   buildElementIndex,
   isBoxed,
@@ -13,7 +14,6 @@ import {
 } from '@livediagram/diagram';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { type QuickConnectDirection } from '@/lib/canvas';
-import { resolveFontStack } from '@/lib/fonts';
 import { ArrowDefs } from '@/components/canvas/arrow-defs';
 import { ArrowView } from '@/components/canvas/ArrowView';
 import { BoxedElementView } from '@/components/canvas/BoxedElementView';

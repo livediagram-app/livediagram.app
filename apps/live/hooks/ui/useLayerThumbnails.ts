@@ -26,6 +26,8 @@ import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 export function useLayerThumbnails(
   elements: Element[],
   layers: Layer[],
+  // The tab default face (spec/28), so a row preview matches the canvas.
+  tabFont?: string,
 ): { thumbMarkup: Map<string, string>; thumbViewBox: string | null } {
   // Re-render once the async icon catalogues land so icon glyphs pop in.
   const iconsLoaded = useIconCatalogs();
@@ -38,7 +40,13 @@ export function useLayerThumbnails(
       const parts: string[] = [];
       for (const el of band.elements) {
         if (el.type !== 'arrow' && isBoxed(el)) {
-          parts.push(svgBoxed(el, undefined, resolveIconArtLoaded, resolveStickerArtLoaded));
+          parts.push(
+            svgBoxed(el, {
+              resolveIconArt: resolveIconArtLoaded,
+              resolveStickerArt: resolveStickerArtLoaded,
+              tabFont,
+            }),
+          );
         }
       }
       for (const el of band.elements) {
@@ -58,5 +66,5 @@ export function useLayerThumbnails(
     };
     // iconsLoaded re-runs the build when the catalogue chunk lands.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [elements, layers, iconsLoaded]);
+  }, [elements, layers, tabFont, iconsLoaded]);
 }

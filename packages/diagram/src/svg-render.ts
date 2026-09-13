@@ -32,6 +32,8 @@ export {
 import { svgRichWrappedLabel, svgWrappedLabel } from './svg-render-labels';
 
 export {
+  EXPORT_DEFAULT_FONT,
+  svgFontFamilyAttr,
   svgLabel,
   svgRichLabel,
   svgRichWrappedLabel,
@@ -58,7 +60,10 @@ export {
   EXPORT_IMAGE_LABEL,
   EXPORT_IMAGE_STROKE,
   EXPORT_PADDING,
+  exportFontFamily,
+  exportFontIds,
   type BoxedExport,
+  type BoxedExportOptions,
   type ExportIconArt,
   type ExportShape,
   type ExportStickerArt,
@@ -72,11 +77,16 @@ import {
   EXPORT_IMAGE_FILL,
   EXPORT_IMAGE_STROKE,
   EXPORT_PADDING,
+  exportFontIds,
+  type BoxedExportOptions,
   type ExportIconArt,
   type ResolveIconArt,
   type ResolveImageHref,
   type ResolveStickerArt,
 } from './svg-render-describe';
+// Typefaces (spec/28): an export paints the face the canvas painted, and
+// declares the ones it used so the file stands on its own.
+import { googleFontsHref } from './fonts';
 
 // Bounding box of the visible content. Arrows count via free endpoints; boxed
 // elements via their rectangle. Empty / degenerate tabs default to a page.
@@ -172,18 +182,8 @@ export function svgIconShape(el: BoxedElement, art: ExportIconArt, stroke: strin
   );
 }
 
-export function svgBoxed(
-  el: BoxedElement,
-  resolveImageHref?: ResolveImageHref,
-  resolveIconArt?: ResolveIconArt,
-  resolveStickerArt?: ResolveStickerArt,
-): string {
-  const { opacity, shape, label } = describeBoxedExport(
-    el,
-    resolveImageHref,
-    resolveIconArt,
-    resolveStickerArt,
-  );
+export function svgBoxed(el: BoxedElement, opts: BoxedExportOptions = {}): string {
+  const { opacity, shape, label } = describeBoxedExport(el, opts);
   const opAttr = opacity !== 1 ? ` opacity="${r2(opacity)}"` : '';
   // Rotation applies to the whole element (body + label) about its centre,
   // exactly like the canvas wrapper's CSS rotate.
@@ -271,9 +271,16 @@ export function svgBoxed(
           label.anchor,
           label.maxWidth,
           label.valign,
+          label.fontFamily,
         )
       : svgWrappedLabel(
-          wrapLabel(label.text, label.maxWidth, labelMeasure(label.size, label.bold, label.italic)),
+          // Wrapped in the face it paints in, or a wide face breaks at the
+          // wrong words and runs out of its element.
+          wrapLabel(
+            label.text,
+            label.maxWidth,
+            labelMeasure(label.size, label.bold, label.italic, label.fontFamily),
+          ),
           label.x,
           label.y,
           label.anchor,
@@ -282,8 +289,27 @@ export function svgBoxed(
           label.bold,
           label.italic,
           label.valign,
+          label.fontFamily,
         );
   return `<g${opAttr}${rotAttr}${shadowAttr}>${shapeStr}${labelStr}</g>`;
+}
+
+// The <style> block declaring the webfonts an export actually used
+// (spec/28), so the file carries its own typography instead of relying on
+// the reader having Permanent Marker installed. Empty when nothing on the
+// tab picked a face, keeping a plain export byte-identical to before.
+//
+// An `@import` of the Google stylesheet, not embedded font bytes: it keeps
+// the file small and the renderer free of IO (it also runs in a Worker with
+// no fetch budget for font binaries). The trade-off is honest — opened as a
+// standalone file in a browser the faces load; in an offline vector editor,
+// or when the SVG is used as an <img> src (which blocks external
+// resources), the stack's system fallback paints instead, which is the same
+// progressive-enhancement deal the canvas makes.
+export function svgFontDefs(fontIds: readonly string[]): string {
+  if (fontIds.length === 0) return '';
+  const href = googleFontsHref(fontIds);
+  return `<defs><style type="text/css">@import url("${xmlEscape(href)}");</style></defs>`;
 }
 
 // The <defs> block for every distinct element shadow in the list (spec/86):
@@ -357,6 +383,10 @@ export function renderElementsToSvg(
     `<svg xmlns="http://www.w3.org/2000/svg" width="${r2(vbW)}" height="${r2(vbH)}" viewBox="${r2(vbX)} ${r2(vbY)} ${r2(vbW)} ${r2(vbH)}">`,
     `<rect x="${r2(vbX)}" y="${r2(vbY)}" width="${r2(vbW)}" height="${r2(vbH)}" fill="${xmlEscape(bg)}"/>`,
   ];
+  // Webfont declarations for the faces this tab uses (spec/28), including
+  // the one the event-storming notation asks for on its notes.
+  const fontDefs = svgFontDefs(exportFontIds(visible, tab.font));
+  if (fontDefs) parts.push(fontDefs);
   // Element-shadow filter defs (spec/86); empty string when none.
   const shadowDefs = svgShadowDefs(visible);
   if (shadowDefs) parts.push(shadowDefs);
@@ -367,7 +397,12 @@ export function renderElementsToSvg(
     for (const el of band.elements) {
       if (el.type !== 'arrow')
         inner.push(
-          svgBoxed(el, opts.resolveImageHref, opts.resolveIconArt, opts.resolveStickerArt),
+          svgBoxed(el, {
+            resolveImageHref: opts.resolveImageHref,
+            resolveIconArt: opts.resolveIconArt,
+            resolveStickerArt: opts.resolveStickerArt,
+            tabFont: tab.font,
+          }),
         );
     }
     for (const el of band.elements) {

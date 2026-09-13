@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ES_NOTE_FONT } from '@livediagram/diagram';
+import { ES_NOTE_FONT } from './event-storming';
 import { FONTS, googleFontsHref, resolveFontStack } from './fonts';
 
 // The generic CSS families a stack is allowed to terminate in. spec/28:

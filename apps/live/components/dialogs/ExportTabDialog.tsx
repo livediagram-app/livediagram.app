@@ -218,7 +218,7 @@ export function ExportTabDialog({
       if (format === 'png') {
         downloadBlob(await exportTabAsPng(tab, renderOpts), `${baseName}.png`);
       } else if (format === 'svg') {
-        downloadBlob(exportTabAsSvg(tab, renderOpts), `${baseName}.svg`);
+        downloadBlob(await exportTabAsSvg(tab, renderOpts), `${baseName}.svg`);
       } else {
         downloadBlob(await exportTabAsPdf(tab, renderOpts), `${baseName}.pdf`);
       }

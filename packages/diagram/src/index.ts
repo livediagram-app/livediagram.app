@@ -284,7 +284,7 @@ export type Tab = {
   // elements inherit the same theme colours by default. Unset = brand
   // defaults.
   theme?: string;
-  // Default font-family id for this tab (see apps/live/lib/fonts.ts).
+  // Default font-family id for this tab (see packages/diagram/src/fonts.ts).
   // Every text-bearing element without its own `font` renders in this
   // one; unset = the editor default. Lets a whole tab adopt a font in
   // one move while individual elements can still override.
@@ -495,6 +495,13 @@ export * from './session';
 // from the package root the same way they do every other helper
 // here.
 export { recogniseShape, type RecognisedShape, type RecognisedShapeKind } from './recognise-shape';
+
+// The curated typefaces (spec/28): the catalogue, the id -> CSS stack
+// resolver, and the Google Fonts stylesheet href. Lives here rather than in
+// apps/live because the EXPORTS need it too — the SVG / PNG renderers have
+// to paint a label in the face the canvas painted it in, and they run in the
+// mcp worker as well as the browser.
+export * from './fonts';
 
 // Slide decks (spec/31): the Slide / Deck types plus the pure resolution
 // helpers a presentation is built from. Kept here rather than in apps/live

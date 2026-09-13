@@ -51,6 +51,9 @@ export type EditorContextMenuProps = {
   // The active tab's elements — used to resolve the clicked element
   // (for the element menu) and read its link / note state.
   elements: Element[];
+  // The tab default face (spec/28), so the layer previews in here paint
+  // what the canvas paints.
+  tabFont?: string;
   onClose: () => void;
   // The element currently in text-edit mode, if any. While the menu rides
   // alongside the editor (spec/09) the target's label is still uncommitted

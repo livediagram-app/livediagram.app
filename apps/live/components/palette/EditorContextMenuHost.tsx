@@ -194,6 +194,7 @@ export function EditorContextMenuHost() {
       menu={contextMenu}
       editingId={editingId}
       elements={activeTab.elements}
+      tabFont={activeTab.font}
       onClose={closeContextMenu}
       onLinkElement={openLinkPicker}
       onRemoveIcon={removeIconFromElement}

@@ -6,7 +6,7 @@ a per-tab default — from a curated set of eleven Google Fonts.
 ## The eleven fonts
 
 A wide spread of voices so a diagram can read as crisp, friendly, formal,
-hand-drawn, or bold. Defined once in `apps/live/lib/fonts.ts` (id + label
+hand-drawn, or bold. Defined once in `packages/diagram/src/fonts.ts` (id + label
 
 - CSS stack + Google family spec):
 
@@ -97,7 +97,35 @@ Both pickers **preview each face**: the per-element font menu shows an
 typeface** in a compact tile grid (a native `<select>` can't — browsers /
 macOS ignore `font-family` on `<option>`, so the names would all look alike).
 
-Implementation: `apps/live/lib/fonts.ts` (catalogue + resolver),
+## Exports carry the face
+
+An exported image is the diagram as far as its reader is concerned, so PNG /
+SVG / PDF paint the same typeface the canvas did (they used to hardcode the UI
+sans, which quietly rewrote every board — loudest on an event-storming wall,
+whose marker face IS its notation).
+
+- `describeBoxedExport` resolves the face per element (`exportFontFamily`) and
+  hands it to the emitters on `ExportLabel.fontFamily`; the wrap measurement
+  uses it too, or a wide face breaks at the wrong words.
+- **A downloaded file carries the bytes.** `embeddedFontFaceCss`
+  (`apps/live/lib/export-fonts.ts`) fetches the Latin subsets of the faces the
+  tab actually used and inlines them as base64 `@font-face` rules. This is not
+  belt-and-braces: the PNG path rasterises element fragments through an
+  `<img>`, which blocks external resources outright, so a referenced font
+  would silently come back as the fallback. Non-Latin text keeps the fallback
+  face — embedding every script would multiply an export's weight for coverage
+  a diagram almost never uses.
+- **A headless render declares instead.** `renderElementsToSvg` (the api / mcp
+  workers, which have no font-fetch budget) emits `svgFontDefs`: an `@import`
+  of the Google stylesheet for the used families only. A browser opening that
+  file gets the real faces; an offline vector editor gets the stack's system
+  fallback.
+- Both paths emit nothing at all when no element or tab picked a font, so an
+  ordinary export is byte-identical to what it was before fonts existed.
+- The PNG drawer awaits `document.fonts.ready` before painting: rasterising
+  mid-swap would bake the fallback into the file.
+
+Implementation: `packages/diagram/src/fonts.ts` (catalogue + resolver),
 `components/palette/FontSelect.tsx` (the per-tab font grid; element fonts use the
 rich-text toolbar's own font grid in `RichTextToolbar.tsx`),
 the label renderers (`element-labels.tsx`), `TableView`, and `ArrowView`
