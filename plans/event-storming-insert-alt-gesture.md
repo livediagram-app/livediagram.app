@@ -1,6 +1,6 @@
 # Insert-between becomes an Alt-held gesture, for any sticky
 
-**Status:** planned, not started.
+**Status:** shipped.
 **Supersedes the interaction half of** [`plans/event-storming-insert-between.md`](event-storming-insert-between.md)
 (shipped). The geometry, the preview channel and the commit path from that
 plan stay; **how the gesture is armed changes, and it grows a second entry
@@ -205,54 +205,103 @@ This is the new capability, and the riskier half: element drags run through
 
 ## 7. Phase D — proof
 
-- [ ] Verify by hand in the browser with Playwright, both paths, with
-      screenshots you actually look at: slot open mid-drag (palette), slot open
-      mid-drag (existing note), and the committed result for each.
-- [ ] **Do not test on the operator's board**
-      (`da3af5be-b501-4ca8-92f3-2ec2a03aec75`). Create your own scratch
-      diagrams and **delete them via the API when done**.
-- [ ] Update the E2E smoke case: the current one drags a palette note into a
-      gap with no modifier and expects insertion — it must become an Alt-held
-      drag. Add the "no Alt, no insertion" assertion alongside it; that is the
-      regression this whole change is about.
-- [ ] Full gate green: `pnpm test`, `pnpm typecheck`, `pnpm lint`,
-      `pnpm format:check`, `pnpm build`, plus the Playwright suite.
+- [x] Verified by hand in the browser (headless), both paths, with screenshots
+      read by eye: `/tmp/lvd-alt/shots/11-drag-no-alt.png` (dragging a note
+      with no modifier — the board is untouched and the hint offers the
+      gesture), `12-alt-slot-open.png` (Alt pressed with the hand HELD STILL:
+      slot open, marker drawn, note in the slot), `14-dropped.png` (committed;
+      the minimap, which reads the model, finally shows the new order) and
+      `15-undone.png` (one undo restores everything and greys out Undo).
+      Measured positions at each step: `266.1 / 538.1 / 810.1` before and
+      during a plain drag, `266.1 / 538.1 / 810.1` → ripple `810.1 / 1082.1`
+      with Alt, and back again on release.
+- [x] Scratch diagrams only, never the operator's board; the seven created
+      under the operator's owner id were deleted through
+      `DELETE /api/diagrams/:id` (all 204) and their board confirmed present
+      afterwards.
+- [x] E2E smoke updated: the palette case now asserts the no-modifier
+      regression FIRST (the gap hovered, nothing moves) and then presses Alt
+      mid-drag. A second case covers the existing-note path end to end,
+      including Alt with the hand held still, the mid-drag unwind on release,
+      the single-undo round trip and a reload.
+  - [x] Found and fixed a latent harness bug while doing it: the quick-tour
+        modal lands a beat after the canvas and silently swallows drags, and
+        `if (await x.count())` raced it. Now a shared `dismissQuickTour`
+        fixture that waits for it.
+- [x] Full gate green: `pnpm test` (3,820), `pnpm typecheck`, `pnpm lint`
+      (0 errors), `pnpm format:check`, `pnpm build`, plus all 7 Playwright
+      smoke tests (run three times for the new ones; stable).
 
 ---
 
 ## 8. Phase E — docs, telemetry, fold-back
 
-- [ ] **spec/139**: rewrite the insertion section — it currently describes
-      automatic arming. State the Alt gesture, both entry points, the
-      leave-the-hole rule, and WHY Alt (Ctrl and Shift are taken; record the
-      reasoning so nobody "simplifies" it back later).
-- [ ] **spec/58** and **spec/09**: correct anything that says a palette drag
-      inserts on its own.
-- [ ] **spec/60** (snap override): note the Alt/Ctrl precedence decided in
-      phase C.
-- [ ] **Help**: update `apps/help/app/canvas/event-storming-boards/page.mdx` —
-      the gesture is now a named power feature, so it deserves a clear
-      "Hold Alt to insert between two notes" passage covering both paths.
-      Follow the help rules in `CLAUDE.md` if this grows into its own article.
-- [ ] **Telemetry**: keep one event at the insertion commit; if the two entry
-      points are worth telling apart, use the existing enums' `type` field
-      rather than inventing a second action.
-- [ ] Append one-liners to spec/139's **Domain learnings (session log)**.
-- [ ] Fold-back: names match reality (nothing called `autoInsert`), module
-      headers state what they ARE, no plan coordinates in comments, scratch
-      files deleted, `LESSONS_LEARNED.md` updated if anything cost real time.
+- [x] **spec/139**: the insertion section rewritten — the Alt gesture, both
+      entry points, the leave-the-hole rule, the single-sticky rule, the
+      precedence table, and WHY Alt (Ctrl and Shift are taken), plus why the
+      copy says "press" rather than "hold". "Still ahead" no longer promises
+      the existing-note path; it names vertical insertion instead.
+- [x] **spec/58** and **spec/09**: both said a palette drag resolves a slot on
+      its own. Corrected, including the new note-vs-shape rule and the `note`
+      flag the ghost's preview now carries.
+- [x] **spec/60**: records the Alt/Ctrl precedence — insertion wins, and why.
+- [x] **spec/09** also renamed its "Shift hint banner" section to "Modifier
+      hint banner" and describes the offer.
+- [x] **Help**: `canvas/event-storming-boards` rewritten for the gesture —
+      both entry points, the press-not-hold tip with its reason, the no-Alt
+      guarantee, and the leave-the-hole rule. Registry keywords extended
+      (`alt`, `option`, `modifier`, `move a note`, `resequence`, ...). Still a
+      section rather than an article, so no registry count and no card art.
+- [x] **Telemetry**: one `Canvas / Used / InsertBetween` at the commit, from
+      either entry point, now pinned by a test (fires once, and only when an
+      insertion actually happened). The entry points are deliberately not told
+      apart — reasoning in `DECISIONS.md`. The dashboard's plain-English
+      explanation mentions Alt.
+- [x] Nine one-liners appended to spec/139's **Domain learnings** log.
+- [x] Fold-back: nothing is named for automatic arming;
+      `canInsertBetweenOn(gate, altHeld)` reads as the question it answers;
+      the preview channel moved to `lib/insertion-preview.ts` now it has two
+      publishers (its old home was named for the palette); `ShiftHintBanner`
+      became `ModifierHintBanner`; `setInsertionDragInHand` says what it
+      means. No plan coordinates in comments. Scratch scripts live in `/tmp`,
+      outside the workspace. `LESSONS_LEARNED.md` gained the WM grab, the
+      XTEST-vs-CDP point, the no-key-events-during-native-drag finding, the
+      DOM-event-spread trap, the racing modal and the RTL cleanup rule.
 
 ---
 
 ## 9. Definition of done
 
-- [ ] Without Alt, both drag paths behave exactly as they did before the
-      insertion feature existed — no slot, no ripple, no surprise.
-- [ ] With Alt held on an ES board, dragging a palette note OR an existing
-      sticky over a gap opens the slot live, and dropping commits in one
-      undoable step.
-- [ ] Releasing Alt mid-drag unwinds the preview immediately.
-- [ ] A moved note leaves its original position empty.
-- [ ] Nothing changes on non-ES boards, for any modifier.
-- [ ] Specs, help and the E2E smoke reflect the new gesture; all gates green;
+- [x] Without Alt, both drag paths behave exactly as they did before the
+      insertion feature existed — no slot, no ripple, no surprise. Asserted
+      on both paths in unit tests AND in both E2E cases; measured in the
+      browser as byte-identical note positions through a full hover.
+- [x] With Alt on an ES board, dragging a palette note OR a note already on
+      the board over a gap opens the slot live, and dropping commits in one
+      undoable step (exactly one checkpoint per gesture; one Undo verified in
+      the browser to restore the moved note's original position).
+- [x] Releasing Alt mid-drag unwinds the preview immediately, and hands
+      placement back to the ordinary snap.
+- [x] A moved note leaves its original position empty — nothing closes up
+      behind it.
+- [x] Nothing changes on non-ES boards, for any modifier.
+- [x] Specs, help and the E2E smoke reflect the new gesture; all gates green;
       verified by hand with screenshots.
+
+## 10. Deviations from the plan (all deliberate, all recorded)
+
+- **Alt with no mouse movement is not deliverable on the palette path.**
+  Chromium sends no key events to the document during a native HTML5 drag, so
+  the planned keydown/keyup listeners would have been dead code there. Measured
+  in the spike; the pointer path has them and is fully live.
+- **"Press Alt while dragging", not "hold Alt and drag"**, because the
+  operator's window manager claims Alt+button-press. Reported before
+  implementing; the operator chose to keep Alt and change the wording.
+- **Q2 was extended to the palette path.** The plan scoped "non-stickies don't
+  insert" to the existing-element path, but leaving the palette path able to
+  insert a SHAPE would have made the two entry points answer the same question
+  differently. Both now require a note.
+- **Q4 reused the hint banner by generalising it** (`ShiftHintBanner` →
+  `ModifierHintBanner`) rather than adding a surface, and the offer shows
+  BEFORE Alt is pressed — a hint that only appears once you are already
+  holding the key teaches nobody.
