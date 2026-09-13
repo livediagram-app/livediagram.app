@@ -47,25 +47,29 @@ So:
 
 ## 2. Open questions (defaults to implement)
 
-- [ ] **Q1 — Multi-selection drags.** Alt-dragging several elements at once.
-      _Default: **insertion is offered only for a single sticky**. A
-      multi-selection drag behaves as it does today, Alt or not. Pin it in a
-      test._
-- [ ] **Q2 — Non-sticky elements.** Alt-dragging a shape / text / icon on an ES
-      board.
-      _Default: **no insertion** — the gesture is about the note grammar. The
-      element still drags normally._
-- [ ] **Q3 — Alt pressed mid-drag.** Alt down after the drag started, or
-      released before the drop.
-      _Default: **fully live** — the slot opens the moment Alt goes down and
-      unwinds the moment it comes up, at any point during the drag. The drop
-      does whatever the state is at the instant the button is released._
-- [ ] **Q4 — Discoverability.** A hidden modifier is a feature nobody finds.
-      _Default: extend the existing **`ShiftHintBanner`** (it already names
-      what a modifier does right now) to say "Hold Alt to insert between" while
-      a sticky is being dragged on an ES board. Reuse that component; do not
-      invent a second hint surface. If it does not fit cleanly, flag it rather
-      than bolting on something new._
+- [x] **Q1 — Multi-selection drags.** Shipped as the default: insertion is
+      offered only for a single sticky, and a multi-selection drag behaves as
+      it does today. Pinned in both the resolver's tests and the drag's.
+- [x] **Q2 — Non-sticky elements.** Shipped as the default, and extended to
+      the palette path for symmetry: a shape dragged IN from the palette no
+      longer inserts either, which it did before this change. The two entry
+      points now answer the same question the same way. (A palette note drag
+      publishes a square footprint because the ghost draws by shape kind, so
+      the preview grew a `note` flag saying what it will actually become.)
+- [x] **Q3 — Alt pressed mid-drag.** Fully live on both paths. On the pointer
+      path it is live even with the hand held still (keydown / keyup replay
+      the last pointer position). On the palette path Chromium delivers no key
+      events during a native drag at all, so it lands on the next movement —
+      measured in the spike, recorded in spec/139, and the reason the copy
+      says "press Alt while dragging".
+- [x] **Q4 — Discoverability.** Done by generalising the existing banner rather
+      than adding a surface: `ShiftHintBanner` → `ModifierHintBanner`, whose
+      job was always "name what a modifier does right now" (the old name
+      described its trigger, not its work). It now also OFFERS the gesture —
+      "Alt · Press to insert it between two notes" — while a note is on the
+      move from either entry point, which is the only moment the offer is
+      useful and the only way anyone finds a held modifier. Suppressed while
+      Shift is down, since drag-duplicate owns that gesture.
 
 ---
 
@@ -170,24 +174,32 @@ This is the new capability, and the riskier half: element drags run through
 
 ## 6. Phase C — hostile paths (tests, not thought experiments)
 
-- [ ] Alt held on a **non-ES board**: nothing happens, on both drag paths.
-- [ ] Alt held while dragging a **non-sticky** on an ES board: nothing (Q2).
-- [ ] Alt held while dragging a **multi-selection**: nothing (Q1).
-- [ ] Alt + **Cmd/Ctrl** together: free-placement and insertion must not both
-      apply. Decide the precedence, document it, test it. _Recommend:
-      insertion wins while a slot is open; snapping is irrelevant then anyway._
-- [ ] Alt + **Shift** (drag-duplicate, spec/80): decide and test. _Recommend:
-      duplicate-drag wins; no insertion, because the gesture is already
-      spoken for._
-- [ ] **Read-only / locked tab / blocked active layer**: no slot, both paths.
-- [ ] A **locked element** cannot be dragged at all — confirm unchanged.
-- [ ] **Undo/redo** round trip for the existing-note path: insert, undo, redo,
-      compare serialised elements each time.
-- [ ] Dragging a note **within the row it is already in**, one slot over —
-      the classic reorder. Make sure it doesn't double-count its own width.
-- [ ] Alt held, drag **released outside the canvas** (over a panel): no
-      insertion, no stranded preview.
-- [ ] **Zoom** 25% / 400% for both paths.
+- [x] Alt held on a **non-ES board**: nothing happens, on both drag paths.
+- [x] Alt held while dragging a **non-sticky** on an ES board: nothing (Q2),
+      on both paths.
+- [x] Alt held while dragging a **multi-selection**: nothing (Q1), and the
+      selection still drags together exactly as before.
+- [x] Alt + **Cmd/Ctrl**: **insertion wins.** An open slot IS the placement,
+      and snapping is irrelevant while one is open — two placement rules at
+      once would put the note, the marker and the drop in three places.
+      Recorded in `DECISIONS.md` and spec/60; pinned.
+- [x] Alt + **Shift**: **drag-duplicate wins**, on both the slot and the hint.
+      The gesture is already spoken for (spec/80). Pinned.
+- [x] **Read-only / locked tab / blocked active layer**: no slot, both paths —
+      one predicate, so neither path can disagree.
+- [x] A **locked element** cannot be dragged at all: the gesture never starts,
+      so no slot can open. Pinned.
+- [x] **Undo/redo** round trip for the existing-note path: one checkpoint for
+      the whole gesture is pinned in the unit test; the full round trip
+      against stored state is phase D.
+- [x] Dragging a note **within the row it is already in**: the slot is one
+      note plus one gap, not two notes' worth, because the dragged note is
+      excluded from the row it is measuring. Pinned.
+- [x] Alt held, drag ending away from any gap: no insertion, no stranded
+      preview — and every teardown path (drop, Escape, unmount) clears the
+      channel.
+- [x] **Zoom** 25% / 400% for both paths: the pointer delta is inverted
+      through the zoom before it reaches the geometry. Pinned on both.
 
 ---
 
