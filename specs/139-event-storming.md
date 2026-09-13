@@ -87,6 +87,20 @@ semantic colour:
   shape without the expand), banded clipboard / stacking / remove, with
   Remove tinting destructive on hover — not a tile grid, because a verb
   list reads down the menu like every other row.
+- **Drop, then type.** Dragging a tile onto the board opens the new
+  element’s label editor, focused — the drag already said WHERE and WHAT,
+  and the only thing left is the words, so making the author double-click
+  their own fresh note is a step that answers nothing. Applies to every
+  palette drop, gated by `takesTypedLabel`: a sticker, session button,
+  reaction pad, mode button or estimate renders its face from a SETTING,
+  so a caret there would offer to edit something that isn’t text.
+- **Two words keep each other company.** The auto-fit has a second
+  constraint beyond “does it fit”: a multi-word label must keep at least
+  one PAIR of words on a line. At a large enough size every word lands on
+  its own line and the note stops reading as a phrase and starts reading
+  as a column of fragments — technically fitted, visually wrong. The rule
+  only ever shrinks, and falls back to the plain fit when two long words
+  can never share a line (they must not drag the note down to 10px).
 - **Stage routing:** each note kind carries its workshop `stage` in the
   catalogue (events / actors / hotspots → Big picture; commands /
   policies / read models / external systems → Process; aggregates →
@@ -230,6 +244,9 @@ type, kept current every session. Each should stay true on its own.
   pickers still leave keyboard shortcuts and the command palette.
 - Next App Router hydrates React on `document`, so React handlers are
   siblings of document listeners: stopPropagation cannot hide from them.
+- Creation should end where the user's attention already is: a dropped
+  element that needs words opens for typing.
+- “It fits” is not the same as “it reads” — one word per line fits.
 - An action ANSWERS the right-click: every verb closes the menu, which
   otherwise covers the element whose change the user wants to see.
 - One button, one job: the secondary button only opens the menu — no

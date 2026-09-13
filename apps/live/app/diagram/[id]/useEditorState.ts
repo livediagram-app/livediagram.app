@@ -1512,6 +1512,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     commitTabs,
     emitChange,
     setSelectedId,
+    setEditingId,
     setFormatSourceId,
     setGroupSourceId,
   });

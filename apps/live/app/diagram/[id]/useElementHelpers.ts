@@ -1,5 +1,6 @@
 import type { Dispatch, SetStateAction } from 'react';
 import {
+  takesTypedLabel,
   isBoxed,
   joinGroups,
   selectionMembers,
@@ -43,6 +44,7 @@ export function useElementHelpers(opts: {
   commitTabs: (updater: (tabs: Tab[]) => Tab[]) => void;
   emitChange: (tabId: string, before: Element[], after: Element[]) => void;
   setSelectedId: SetState<string | null>;
+  setEditingId: SetState<string | null>;
   setFormatSourceId: SetState<string | null>;
   setGroupSourceId: SetState<string | null>;
 }) {
@@ -61,6 +63,7 @@ export function useElementHelpers(opts: {
     commitTabs,
     emitChange,
     setSelectedId,
+    setEditingId,
     setFormatSourceId,
     setGroupSourceId,
   } = opts;
@@ -72,18 +75,24 @@ export function useElementHelpers(opts: {
   // Drag-from-palette drop: same as addBoxed but centred on an explicit
   // canvas point (the drop position) instead of the viewport centre. Size
   // inheritance is skipped — a dropped element uses its own default size.
+  // `edit` puts the new element straight into label editing. Dropping a
+  // sticky is the start of writing on it, not an end in itself — the drag
+  // said WHERE and WHAT, and the only thing left is the words, so making the
+  // user double-click their own fresh note is a step that answers nothing.
   const addBoxedAt = <T extends BoxedElement>(
     canvasX: number,
     canvasY: number,
     make: (x: number, y: number) => T,
+    opts?: { edit?: boolean },
   ) => {
-    placeBoxed(make, { x: canvasX, y: canvasY }, /* inheritSize */ false);
+    placeBoxed(make, { x: canvasX, y: canvasY }, /* inheritSize */ false, opts?.edit === true);
   };
 
   const placeBoxed = <T extends BoxedElement>(
     make: (x: number, y: number) => T,
     centre: { x: number; y: number },
     inheritSize = true,
+    edit = false,
   ) => {
     if (editsBlocked) return;
     const base = make(0, 0);
@@ -133,6 +142,9 @@ export function useElementHelpers(opts: {
     // the Activity panel.
     emitChange(activeId, before, after);
     setSelectedId(el.id);
+    // Only kinds that take typed text: a sticker or a session button renders
+    // its own face from its setting, so a caret there edits nothing.
+    if (edit && takesTypedLabel(el)) setEditingId(el.id);
   };
 
   // Place ALREADY-BUILT elements, keeping every side effect a normal add has:

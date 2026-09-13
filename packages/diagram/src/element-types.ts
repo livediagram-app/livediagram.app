@@ -1016,3 +1016,24 @@ export type VideoElement = {
   textStrikethrough?: boolean;
   font?: string;
 };
+
+// Does this element take a TYPED label — i.e. is dropping one an invitation
+// to start writing? True for the paper-and-text kinds (sticky, shape, text,
+// icon), false for the ones whose face is a picture or a control the user
+// configures instead of writes: a sticker is artwork, a session button /
+// reaction pad / mode button / estimate all render their own caption from
+// their setting, so opening a text caret on them would offer to edit
+// something that isn't theirs to edit.
+const UNTYPED_SHAPES = new Set<string>([
+  'sticker',
+  'session-button',
+  'reaction-pad',
+  'mode-button',
+  'estimate',
+]);
+
+export function takesTypedLabel(el: { type: string; shape?: string }): boolean {
+  if (el.type === 'arrow') return false;
+  if (el.type !== 'shape') return true;
+  return !UNTYPED_SHAPES.has(el.shape ?? '');
+}

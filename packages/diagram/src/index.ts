@@ -317,6 +317,8 @@ export type Diagram = {
 
 // --- Type guards -----------------------------------------------------------
 
+export { takesTypedLabel } from './element-types';
+
 export function isBoxed(element: Element): element is BoxedElement {
   return (
     element.type === 'shape' ||

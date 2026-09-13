@@ -41,8 +41,14 @@ export function fitMultilineFontPx({
   const availableH = Math.max(1, height - padding * 2);
   if (!text.trim()) return FIT_MAX_PX;
 
+  // How many words the label has. One word has no pair to make, so the
+  // companionship rule below simply doesn't apply to it.
+  const wordCount = text.trim().split(/\s+/).length;
+
+  const linesAt = (px: number) => wrapLabel(text, availableW, labelMeasure(px, bold, italic));
+
   const fits = (px: number): boolean => {
-    const lines = wrapLabel(text, availableW, labelMeasure(px, bold, italic));
+    const lines = linesAt(px);
     // Height is the binding constraint once wrapping has done its job; a
     // single unbreakable word can still overflow the width, so check both.
     if (lines.length * px * LINE_HEIGHT_RATIO > availableH) return false;
@@ -50,15 +56,34 @@ export function fitMultilineFontPx({
     return lines.every((line) => measure(line) <= availableW);
   };
 
+  // "Fits" isn't enough on a sticky. At a big enough size every word lands on
+  // its own line, and the note stops reading as a phrase and starts reading
+  // as a column of fragments — technically fitted, visually wrong. So a
+  // multi-word label must also keep at least one PAIR of words together.
+  const pairsUp = (px: number): boolean => wordCount < 2 || linesAt(px).length < wordCount;
+
+  const fitsAndPairs = (px: number): boolean => fits(px) && pairsUp(px);
+
   // Binary search on integers: ~6 iterations over the band, deterministic,
   // and cheap enough to run per render without memoisation games.
-  let lo = FIT_MIN_PX;
-  let hi = FIT_MAX_PX;
-  if (fits(hi)) return hi;
-  while (lo < hi) {
-    const mid = Math.ceil((lo + hi) / 2);
-    if (fits(mid)) lo = mid;
-    else hi = mid - 1;
-  }
-  return Math.max(FIT_MIN_PX, lo);
+  //
+  // Two searches, not one: the pair rule is not monotonic the way "fits" is
+  // (a size can fit while stacking words, and shrinking fixes it), so we
+  // search for the largest size satisfying BOTH, and fall back to the plain
+  // fit when no size can pair the words up — two long words that can never
+  // share a line must not drag the whole note down to 10px.
+  const search = (predicate: (px: number) => boolean): number | null => {
+    if (predicate(FIT_MAX_PX)) return FIT_MAX_PX;
+    let lo = FIT_MIN_PX;
+    let hi = FIT_MAX_PX;
+    if (!predicate(lo)) return null;
+    while (lo < hi) {
+      const mid = Math.ceil((lo + hi) / 2);
+      if (predicate(mid)) lo = mid;
+      else hi = mid - 1;
+    }
+    return Math.max(FIT_MIN_PX, lo);
+  };
+
+  return search(fitsAndPairs) ?? search(fits) ?? FIT_MIN_PX;
 }

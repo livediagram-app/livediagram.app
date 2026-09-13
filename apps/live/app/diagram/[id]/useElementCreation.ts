@@ -55,6 +55,7 @@ export function useElementCreation(opts: {
     canvasX: number,
     canvasY: number,
     make: (x: number, y: number) => T,
+    opts?: { edit?: boolean },
   ) => void;
   beginDraw: (intent: PendingDraw) => void;
 }) {
@@ -293,16 +294,20 @@ export function useElementCreation(opts: {
       // (spec/139). placeBoxed re-centres and leaves sticky colours alone.
       const esKind = art?.choice as EventStormingNoteKind | undefined;
       const fill = esKind ? eventStormingNote(esKind).fill : undefined;
-      addBoxedAt(canvasX, canvasY, (x, y) =>
-        buildDrawnBoxed(
-          { type: 'sticky', ...(fill ? { fill } : {}), ...(esKind ? { esKind } : {}) },
-          x,
-          y,
-          x,
-          y,
-          null,
-          activeTab,
-        ),
+      addBoxedAt(
+        canvasX,
+        canvasY,
+        (x, y) =>
+          buildDrawnBoxed(
+            { type: 'sticky', ...(fill ? { fill } : {}), ...(esKind ? { esKind } : {}) },
+            x,
+            y,
+            x,
+            y,
+            null,
+            activeTab,
+          ),
+        { edit: true },
       );
       track('Element', 'Added', 'Sticky');
       return;
@@ -319,44 +324,52 @@ export function useElementCreation(opts: {
       track('Element', 'Added', 'Sticker');
       return;
     }
-    addBoxedAt(canvasX, canvasY, (x, y) =>
-      iconId
-        ? {
-            ...createShape('icon', x, y),
-            iconId,
-            // Tech icons land self-describing (S3, EKS, ...) on drag too,
-            // matching the click-to-add addTechIcon path — and unlocked:
-            // the mark renders at a fixed size (spec/41), so the aspect
-            // lock would only fight resizing the caption room.
-            ...(isTechIconId(iconId)
-              ? { label: getTechIcon(iconId)?.label ?? '', aspectLocked: false }
-              : {}),
-          }
-        : {
-            ...createShape(kind, x, y),
-            // The dragged tile's creation-time choice (spec/103, /105, /123,
-            // /135). Applied by the kind that owns the field, so one payload
-            // serves all four without the drop path knowing which is which.
-            ...(art?.choice && kind === 'session-button'
-              ? {
-                  session: defaultSessionConfig(art.choice as SessionTool),
-                  // Same sizing the tap path applies (draw-commit): a timer is
-                  // a wide pill, a poll has to fit its question.
-                  ...(art.choice === 'timer' ? { width: 224, height: 64 } : {}),
-                  ...(art.choice === 'poll' ? { width: 240, height: 116 } : {}),
-                }
-              : {}),
-            ...(art?.choice && kind === 'reaction-pad'
-              ? {
-                  reaction: art.choice as Reaction,
-                  label: REACTION_PAD_LABEL[art.choice as Reaction],
-                }
-              : {}),
-            ...(art?.choice && kind === 'mode-button' ? { mode: art.choice as SelectionMode } : {}),
-            ...(art?.choice && kind === 'estimate'
-              ? { estimateScale: art.choice as EstimateScale }
-              : {}),
-          },
+    addBoxedAt(
+      canvasX,
+      canvasY,
+      (x, y) =>
+        iconId
+          ? {
+              ...createShape('icon', x, y),
+              iconId,
+              // Tech icons land self-describing (S3, EKS, ...) on drag too,
+              // matching the click-to-add addTechIcon path — and unlocked:
+              // the mark renders at a fixed size (spec/41), so the aspect
+              // lock would only fight resizing the caption room.
+              ...(isTechIconId(iconId)
+                ? { label: getTechIcon(iconId)?.label ?? '', aspectLocked: false }
+                : {}),
+            }
+          : {
+              ...createShape(kind, x, y),
+              // The dragged tile's creation-time choice (spec/103, /105, /123,
+              // /135). Applied by the kind that owns the field, so one payload
+              // serves all four without the drop path knowing which is which.
+              ...(art?.choice && kind === 'session-button'
+                ? {
+                    session: defaultSessionConfig(art.choice as SessionTool),
+                    // Same sizing the tap path applies (draw-commit): a timer is
+                    // a wide pill, a poll has to fit its question.
+                    ...(art.choice === 'timer' ? { width: 224, height: 64 } : {}),
+                    ...(art.choice === 'poll' ? { width: 240, height: 116 } : {}),
+                  }
+                : {}),
+              ...(art?.choice && kind === 'reaction-pad'
+                ? {
+                    reaction: art.choice as Reaction,
+                    label: REACTION_PAD_LABEL[art.choice as Reaction],
+                  }
+                : {}),
+              ...(art?.choice && kind === 'mode-button'
+                ? { mode: art.choice as SelectionMode }
+                : {}),
+              ...(art?.choice && kind === 'estimate'
+                ? { estimateScale: art.choice as EstimateScale }
+                : {}),
+            },
+      // Shapes and icons open for typing too; takesTypedLabel filters out the
+      // kinds whose face isn't text (stickers, session buttons, ...).
+      { edit: true },
     );
     // A tech-icon id maps to its own telemetry type (see addTechIcon);
     // line-art icons + shapes use the kind.
