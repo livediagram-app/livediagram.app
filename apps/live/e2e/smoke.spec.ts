@@ -85,6 +85,68 @@ test('an event-storming board stays a board across a reload', async ({ page, pag
   expectNoPageErrors(pageErrors);
 });
 
+// Inserting a note BETWEEN two notes (spec/139). The unit tests own the
+// geometry; what only a browser can answer is whether a real HTML5 palette
+// drag over a real gap opens a slot, and whether the note the drop lands
+// there is still in the middle of the timeline after a round trip through the
+// api. That order IS the board's information content, so losing it in
+// persistence would be the whole feature failing quietly.
+test('a note dropped between two notes stays between them', async ({ page, pageErrors }) => {
+  await startTemplateDiagram(page, /Browse Technical templates/, /^Event storming/i);
+  const canvas = page.locator('[data-canvas-a11y-root]');
+  const declineTour = page.getByRole('button', { name: /^no thanks$/i });
+  if (await declineTour.count()) await declineTour.first().click();
+
+  // The seeded timeline: three orange domain events, left to right.
+  const notes = canvas.getByRole('img', { name: /^Sticky note/ });
+  await expect(notes).toHaveCount(3);
+  const first = (await notes.nth(0).boundingBox())!;
+  const second = (await notes.nth(1).boundingBox())!;
+
+  // Drag a Domain event tile from the notation palette into the gap between
+  // the first two notes. Manual mouse steps: the browser only starts a native
+  // drag once the pointer actually travels.
+  const gapX = (first.x + first.width + second.x) / 2;
+  const gapY = first.y + first.height / 2;
+  const tile = page.getByRole('option', { name: /domain event/i }).first();
+  const tileBox = (await tile.boundingBox())!;
+  await page.mouse.move(tileBox.x + tileBox.width / 2, tileBox.y + tileBox.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(gapX - 250, gapY - 120, { steps: 8 });
+  await page.mouse.move(gapX, gapY, { steps: 8 });
+  // The slot is open: everything from the second note on has slid right to
+  // make room, without a single change to the document.
+  await expect
+    .poll(async () => (await notes.nth(1).boundingBox())!.x)
+    .toBeGreaterThan(second.x + 100);
+  await page.mouse.up();
+
+  // The new note lands in the slot, unlabelled and ready to type into.
+  const fresh = canvas.getByRole('img', { name: 'Sticky note', exact: true });
+  await expect(fresh).toHaveCount(1);
+
+  await page.waitForTimeout(1500); // let the debounced autosave flush
+  await page.reload();
+  await canvas.waitFor();
+  await expect(notes).toHaveCount(4);
+
+  // Second in the row, still — the order is the board's whole point.
+  const order = await notes.evaluateAll((els) =>
+    els
+      .map((el) => ({ x: el.getBoundingClientRect().x, name: el.getAttribute('aria-label') ?? '' }))
+      .sort((a, b) => a.x - b.x)
+      .map((n) => n.name),
+  );
+  expect(order).toEqual([
+    'Sticky note "Order placed"',
+    'Sticky note',
+    'Sticky note "Payment received"',
+    'Sticky note "Order shipped"',
+  ]);
+
+  expectNoPageErrors(pageErrors);
+});
+
 // The one mobile test (spec/72). Not a general phone suite: it guards a
 // specific class of bug that a desktop-only run is structurally blind to —
 // a popover that only OVERLAPS its host when the viewport is too narrow to

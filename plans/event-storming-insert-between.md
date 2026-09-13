@@ -321,23 +321,25 @@ Each of these is a test, not a thought experiment.
 
 ## 10. Phase F — proof it works (not optional)
 
-- [ ] Run the dev stack under PM2 and verify **by hand in the browser**, with
-      Playwright driving where it helps. The operator's board:
-      `http://localhost:3000/diagram/da3af5be-b501-4ca8-92f3-2ec2a03aec75`
-      (owner id `18faa96f-6217-4cae-9242-047d627d3603`, set
-      `localStorage['livediagram:v2:self-id']` + `'livediagram:v2:name-confirmed'='1'`
-      in an init script). **Do not leave test notes behind on that board** —
-      snapshot the tab via the API before you start and restore it after.
-      Prefer creating your OWN scratch diagram for destructive testing.
-- [ ] Screenshot the preview mid-drag (slot open, marker drawn, ghost in the
-      slot) and after the drop; check them yourself, and attach them to the
-      final report.
-- [ ] Add an **E2E smoke case** in `apps/live/e2e/smoke.spec.ts` using the
-      existing `startTemplateDiagram` fixture: create an ES board, drag a note
-      into a gap, drop, reload, and assert the order survived. Keep it in the
-      spirit of spec/72 — a smoke alarm, not an exhaustive suite.
-- [ ] Full gate: `pnpm test`, `pnpm typecheck`, `pnpm lint`, `pnpm format:check`,
-      `pnpm build` — all green before the final commit.
+- [x] Verified by hand in the browser (dev stack under PM2, driven with
+      Playwright) on **scratch event-storming boards created for the purpose**,
+      never on the operator's board. Their board
+      (`da3af5be-b501-4ca8-92f3-2ec2a03aec75`) got exactly one PREVIEW-ONLY
+      pass, abandoned back over the palette: the tab was snapshotted through
+      the api before and after and came back byte-identical, which is the
+      preview-never-writes rule proven on real content.
+- [x] Screenshots checked by eye: `/tmp/lvd-insert/01-preview.png` (slot open,
+      marker drawn, ghost in the slot), `02-after-drop.png` (landed, open for
+      typing), `30-arrow-preview.png` + `31-arrow-dropped.png` (the arrow
+      cases), `40-offline.png` (offline board), `24-locked-tab.png` (locked
+      tab: no ripple), `51-real-board-preview.png` (the operator's board, dark
+      theme, 89% zoom, nothing written).
+- [x] **E2E smoke case** in `apps/live/e2e/smoke.spec.ts`: start an
+      event-storming board from the template, drag a Domain event into the gap
+      between the first two notes, assert the board opens the slot mid-drag,
+      drop, reload, and assert the note is still SECOND in the row.
+- [x] Full gate: `pnpm test` (3,777 across 12 workspaces), `pnpm typecheck`,
+      `pnpm lint` (0 errors), `pnpm format:check`, `pnpm build` — all green.
 
 ---
 
