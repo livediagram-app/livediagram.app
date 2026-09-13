@@ -2297,6 +2297,15 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     autoRebindArrowsRef,
     alignmentGuidesRef,
     isPinchingRef,
+    // Insert between (spec/139): dragging a note already on the board into a
+    // gap, while Alt is held. Same gate the palette drag uses, so both entry
+    // points agree about when the gesture is available.
+    insertGate: {
+      esBoard,
+      readOnly: isReadOnly,
+      tabLocked: activeTabLocked,
+      createBlocked,
+    },
   });
 
   // Copy / paste (in-app element clipboard + OS-clipboard image
