@@ -129,7 +129,6 @@ ordinary spec/74 data).
 - [ ] Marketing: decide whether event storming earns a use-case mention
       beyond the counts (carousel / FAQ list already name-checks it)
 - [x] MCP: `list_templates` picks it up automatically — verified: entry present, overrides carry kind + the single layer, 4 seed elements, 48 templates
-- [ ] E2E: confirm the generic smoke (spec/72) covers template creation, add
-      a case only if it doesn't
+- [x] E2E: the smoke did NOT cover template creation — added + a case that walks template → board → reload
 - [ ] Fold-back: names match post-plan reality, spec/139 states what the type
       IS, no plan-coordinate comments left in code

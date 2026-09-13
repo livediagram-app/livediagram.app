@@ -1,4 +1,10 @@
-import { test, expect, expectNoPageErrors, startBlankDiagram } from './fixtures';
+import {
+  test,
+  expect,
+  expectNoPageErrors,
+  startBlankDiagram,
+  startTemplateDiagram,
+} from './fixtures';
 
 // End-to-end smoke suite (spec/72). Small by design: it answers "does
 // the app boot and take input without crashing", the layer the unit
@@ -48,6 +54,33 @@ test('create a blank diagram, add a shape, and it survives a reload', async ({
   await page.reload();
   await canvas.waitFor();
   await expect(square).toHaveCount(1);
+
+  expectNoPageErrors(pageErrors);
+});
+
+// A board KIND is the one thing a unit test can't prove end to end: the
+// template has to build, the tab has to persist its kind, and the editor has
+// to read it back and present differently because of it (spec/139). This
+// walks that whole path in a browser, then reloads to prove the board is
+// still a board after a round trip through the api.
+test('an event-storming board stays a board across a reload', async ({ page, pageErrors }) => {
+  await startTemplateDiagram(page, /Browse Technical templates/, /^Event storming/i);
+  await expect(page).toHaveURL(/\/diagram\/[0-9a-f-]{36}/);
+
+  // The notation palette is the board presenting itself: on any other tab
+  // these tiles are behind a category dropdown.
+  const notation = page.getByRole('option', { name: /domain event/i });
+  await expect(notation.first()).toBeVisible();
+  // The seeded timeline of orange events (spec/139).
+  const canvas = page.locator('[data-canvas-a11y-root]');
+  await expect(canvas.getByRole('img', { name: /sticky/i }).first()).toBeVisible();
+
+  await page.waitForTimeout(1500); // let the debounced autosave flush
+  await page.reload();
+  await canvas.waitFor();
+  // Board-ness survived persistence: had the kind failed to save, the
+  // palette would come back on its ordinary category.
+  await expect(notation.first()).toBeVisible();
 
   expectNoPageErrors(pageErrors);
 });

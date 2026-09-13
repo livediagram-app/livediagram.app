@@ -6,6 +6,8 @@ exercise pure helpers; no hook body or component ever renders). Every
 recent regression we chased by hand — the "maximum update depth"
 pan-loop report, panel-gating bugs, dialog behaviour — lived here.
 
+One case covers a **board kind** (spec/139): a template-created event-storming board must still present as a board after a reload. It is the one thing a unit test cannot prove end to end — the template has to build, the tab has to persist its `kind`, and the editor has to read it back and present differently because of it. `startTemplateDiagram` exists for it, because the blank-diagram helper skips the category step and so never exercises template creation at all.
+
 ## Why it's separate from CI's unit gate
 
 Browser E2E costs real CI minutes (a browser download + a running

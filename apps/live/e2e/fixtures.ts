@@ -58,6 +58,30 @@ export function expectNoPageErrors(pageErrors: string[]): void {
 // Complete the /new template wizard into a blank diagram and land on
 // the editor canvas. Shared by the create-flow tests; resilient to the
 // wizard's step count by clicking whatever advances it.
+// Start a diagram from a named TEMPLATE in a named category. The blank
+// helper below skips the category step entirely (Blank is on the first
+// screen), so template creation — builders, layers, per-template canvas
+// overrides, the board kind — is a genuinely different path through the
+// wizard and needs its own way in.
+export async function startTemplateDiagram(
+  page: Page,
+  category: RegExp,
+  template: RegExp,
+): Promise<void> {
+  await page.goto('/new');
+  await page.getByText('New Diagram', { exact: false }).waitFor();
+  // Category tiles are aria-labelled "Browse <name> templates"; the
+  // template tiles carry their title + description as the accessible name.
+  await page.getByRole('button', { name: category }).first().click();
+  await page.getByRole('button', { name: template }).first().click();
+  await page.getByRole('button', { name: /^next$/i }).click();
+  await page
+    .getByRole('button', { name: /^(create|start|use this|done|finish)$/i })
+    .first()
+    .click();
+  await page.locator('[data-canvas-a11y-root]').waitFor();
+}
+
 export async function startBlankDiagram(page: Page): Promise<void> {
   await page.goto('/new');
   await page.getByText('New Diagram', { exact: false }).waitFor();
