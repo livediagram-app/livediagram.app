@@ -126,9 +126,12 @@ ordinary spec/74 data).
 - [x] Help article `apps/help/app/canvas/event-storming-boards/page.mdx` + registry
       entry (`packages/help-registry`) with keywords, category, articleCount
       bump + FEATURE_ICONS / FEATURE_ENTITY_HEX card art (spec/55 house style)
-- [ ] Marketing: decide whether event storming earns a use-case mention
-      beyond the counts (carousel / FAQ list already name-checks it)
+- [x] Marketing: name-checked in the FAQ + landing counts; a use-case
+      carousel entry is NOT earned yet — the type is one workshop notation,
+      not a headline use case, and the counts already carry it
 - [x] MCP: `list_templates` picks it up automatically — verified: entry present, overrides carry kind + the single layer, 4 seed elements, 48 templates
-- [x] E2E: the smoke did NOT cover template creation — added + a case that walks template → board → reload
-- [ ] Fold-back: names match post-plan reality, spec/139 states what the type
-      IS, no plan-coordinate comments left in code
+- [x] E2E: the smoke did NOT cover template creation at all — added a
+      startTemplateDiagram fixture + a case walking template → board → reload
+- [x] Fold-back: `esStageStamp` → `esBoardLayerStamp`, the `stage` field
+      comment now states what it IS (domain vocabulary, drives nothing),
+      dead view-bar comments removed, spec/139 opens with the board kind

@@ -39,10 +39,14 @@ export type EventStormingNote = {
   // A palette-row clause: what the note IS, not how to use it.
   blurb: string;
   fill: string;
-  // The workshop stage the kind belongs to — the palette routes a dropped
-  // note onto this stage's layer (spec/139): events, actors and hotspots
-  // surface in Big picture, the flow kinds arrive at Process, and the
-  // aggregate is design-level.
+  // Which pass of the workshop the kind belongs to: events, actors and
+  // hotspots surface in Big picture, the flow kinds at Process, the
+  // aggregate at Software Design. This is DOMAIN VOCABULARY, and it drives
+  // nothing structural — it orders the palette and names the kinds for
+  // anyone learning the method. (It once chose a layer per stage; that cost
+  // more than it paid, because layers paint as bands and two notes on
+  // different stages could never be stacked against each other. See
+  // spec/139.)
   stage: EventStormingStage;
   size: EventStormingNoteSize;
 };

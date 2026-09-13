@@ -1,12 +1,22 @@
 # Event storming
 
-A new diagram type under the picker's **Technical** category: the
-sticky-note workshop notation for exploring a business domain
-(Brandolini's event storming). It is deliberately being built
-**incrementally** — the template shipped first as a near-blank starter
-so the type exists end-to-end (picker card, preview tile, builder,
-catalogue counts), and the notation grows on top of it in phases. The
-working plan lives in [`plans/event-storming.md`](../plans/event-storming.md).
+A **board kind**: the sticky-note workshop notation for exploring a
+business domain (Brandolini's event storming), started from a template
+under the picker's **Technical** category.
+
+An event-storming board is an ordinary tab — plain stickies, one layer,
+the same persistence, realtime, comments and export as everything else —
+carrying `kind: 'event-storming'` (`TabKind`), which the editor reads to
+present it differently: the notation fills the palette, notes take fixed
+paper silhouettes with auto-fitting text and a slight tilt, resize is
+blocked, a dropped note opens for typing, and the element menu offers
+verbs instead of styling. The kind tunes PRESENTATION; it does not fork
+the document model.
+
+It was built incrementally, and two early mechanisms have since been
+withdrawn — a layer per workshop stage with a chip bar to switch them,
+and a timeline rail — each recorded below with why. The working plan
+lives in [`plans/event-storming.md`](../plans/event-storming.md).
 
 ## Why a template, not a new surface
 
@@ -16,7 +26,13 @@ entry, a pure element builder, a preview tile, and per-kind canvas
 overrides. Event storming fits that mould exactly — it is ordinary
 elements (stickies, text, arrows, frames) arranged by a convention, so
 it inherits every editor feature (realtime, layers, comments, export)
-for free. Nothing in the editor branches on the kind after creation.
+for free.
+
+What it grew beyond the mould is `Tab.kind`: the editor DOES branch on
+this one after creation, because the notation only reads as a notation
+when the surface respects it (fixed stationery, no resize, verbs not
+styling). That branch is presentation only — every other template kind
+is still invisible to the editor once its elements are on the canvas.
 
 ## Phase 1 (shipped): the starter
 

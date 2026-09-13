@@ -403,15 +403,10 @@ export function EditorView() {
           onQuickStart={openTemplatePicker}
         />
       ) : null}
-      {/* Event-storming workshop views (spec/139): Big picture / Process /
-          Design chips driving shared layer visibility so the room walks
-          the stages together. */}
       {/* Offer to match the editor chrome to the active tab's theme
           (dark theme -> dark mode, light theme -> light mode). Hidden in
           zen / embed like the other floating prompts, and yields the
-          bottom-centre slot to the sign-in / empty-canvas banners — and to
-          the event-storming view bar, which owns the slot on ES boards
-          (the mode toggle stays one click away in the corner chrome). */}
+          bottom-centre slot to the sign-in / empty-canvas banners. */}
       {zenMode || embedMode || showSignInBanner || showEmptyCanvasBanner ? null : (
         <ThemeModeBanner themeId={activeTab.theme} />
       )}
