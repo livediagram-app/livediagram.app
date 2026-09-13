@@ -82,6 +82,23 @@ export async function startTemplateDiagram(
   await page.locator('[data-canvas-a11y-root]').waitFor();
 }
 
+// Dismiss the quick-tour dialog (spec/47) if this profile is offered one.
+// It lands a BEAT AFTER the canvas does, and its modal overlay swallows
+// pointer events — so a test that merely checks whether it is showing YET
+// races it and then finds its drags going nowhere, silently. Wait for it,
+// but tolerate its absence: whether it is offered depends on what this
+// browser profile has already seen.
+export async function dismissQuickTour(page: Page): Promise<void> {
+  const decline = page.getByRole('button', { name: /^no thanks$/i }).first();
+  try {
+    await decline.waitFor({ state: 'visible', timeout: 5_000 });
+  } catch {
+    return;
+  }
+  await decline.click();
+  await decline.waitFor({ state: 'detached' });
+}
+
 export async function startBlankDiagram(page: Page): Promise<void> {
   await page.goto('/new');
   await page.getByText('New Diagram', { exact: false }).waitFor();

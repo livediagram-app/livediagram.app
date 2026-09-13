@@ -1,6 +1,7 @@
 import {
   test,
   expect,
+  dismissQuickTour,
   expectNoPageErrors,
   startBlankDiagram,
   startTemplateDiagram,
@@ -87,19 +88,26 @@ test('an event-storming board stays a board across a reload', async ({ page, pag
 
 // Inserting a note BETWEEN two notes (spec/139). The unit tests own the
 // geometry; what only a browser can answer is whether a real HTML5 palette
-// drag over a real gap opens a slot, and whether the note the drop lands
-// there is still in the middle of the timeline after a round trip through the
-// api. That order IS the board's information content, so losing it in
-// persistence would be the whole feature failing quietly.
+// drag over a real gap, WITH ALT HELD, opens a slot, and whether the note the
+// drop lands there is still in the middle of the timeline after a round trip
+// through the api. That order IS the board's information content, so losing it
+// in persistence would be the whole feature failing quietly.
+//
+// The no-modifier half is asserted first and matters just as much: without
+// Alt the board must not stir, which is the regression the Alt gesture exists
+// to prevent.
 test('a note dropped between two notes stays between them', async ({ page, pageErrors }) => {
   await startTemplateDiagram(page, /Browse Technical templates/, /^Event storming/i);
   const canvas = page.locator('[data-canvas-a11y-root]');
-  const declineTour = page.getByRole('button', { name: /^no thanks$/i });
-  if (await declineTour.count()) await declineTour.first().click();
+  await dismissQuickTour(page);
 
   // The seeded timeline: three orange domain events, left to right.
   const notes = canvas.getByRole('img', { name: /^Sticky note/ });
   await expect(notes).toHaveCount(3);
+  // The template's opening zoom-to-fit settles a few pixels AFTER the notes
+  // first render. Measure before that and the baseline is a moving target,
+  // which reads as a board that shifted when nothing did.
+  await page.waitForTimeout(500);
   const first = (await notes.nth(0).boundingBox())!;
   const second = (await notes.nth(1).boundingBox())!;
 
@@ -119,12 +127,26 @@ test('a note dropped between two notes stays between them', async ({ page, pageE
   // the drop lands. A real pointer streams them; the harness needs telling.
   await page.mouse.move(gapX + 1, gapY);
   await page.mouse.move(gapX, gapY);
+
+  // NO MODIFIER, hovering the gap: nothing moves. This is the regression
+  // guard — before the Alt gesture, this same drag rearranged the board under
+  // an author who only wanted to drop a note nearby.
+  await page.waitForTimeout(150);
+  expect((await notes.nth(1).boundingBox())!.x).toBeCloseTo(second.x, 0);
+
+  // Now press Alt, mid-drag. (Mid-drag, not before it: a window manager that
+  // claims Alt+press never lets the page see a drag that started with Alt
+  // down — Cinnamon's default. Pressing it during the drag works everywhere.)
+  await page.keyboard.down('Alt');
+  await page.mouse.move(gapX + 1, gapY);
+  await page.mouse.move(gapX, gapY);
   // The slot is open: everything from the second note on has slid right to
   // make room, without a single change to the document.
   await expect
     .poll(async () => (await notes.nth(1).boundingBox())!.x)
     .toBeGreaterThan(second.x + 100);
   await page.mouse.up();
+  await page.keyboard.up('Alt');
 
   // The new note lands in the slot, unlabelled and ready to type into.
   const fresh = canvas.getByRole('img', { name: 'Sticky note', exact: true });
@@ -148,6 +170,93 @@ test('a note dropped between two notes stays between them', async ({ page, pageE
     'Sticky note "Payment received"',
     'Sticky note "Order shipped"',
   ]);
+
+  expectNoPageErrors(pageErrors);
+});
+
+// The same gesture for a note ALREADY on the board (spec/139) — the drag
+// people do most. What only a browser can answer here: a POINTER drag (not a
+// native HTML5 one) carries the live Alt state, the dragged note and the other
+// notes' render-only ripple are visible at once, and the whole gesture is a
+// single undo step including the note's original position.
+test('a note already on the board inserts between two others', async ({ page, pageErrors }) => {
+  await startTemplateDiagram(page, /Browse Technical templates/, /^Event storming/i);
+  const canvas = page.locator('[data-canvas-a11y-root]');
+  await dismissQuickTour(page);
+
+  const notes = canvas.getByRole('img', { name: /^Sticky note/ });
+  await expect(notes).toHaveCount(3);
+  await page.waitForTimeout(500); // the opening zoom-to-fit settles
+  const order = async () =>
+    notes.evaluateAll((els) =>
+      els
+        .map((el) => ({
+          x: el.getBoundingClientRect().x,
+          name: el.getAttribute('aria-label') ?? '',
+        }))
+        .sort((a, b) => a.x - b.x)
+        .map((n) => n.name),
+    );
+  expect(await order()).toEqual([
+    'Sticky note "Order placed"',
+    'Sticky note "Payment received"',
+    'Sticky note "Order shipped"',
+  ]);
+
+  // Drag the LAST note back into the gap between the first two.
+  const first = (await notes.nth(0).boundingBox())!;
+  const second = (await notes.nth(1).boundingBox())!;
+  const last = (await notes.nth(2).boundingBox())!;
+  const gapX = (first.x + first.width + second.x) / 2;
+  const gapY = first.y + first.height / 2;
+  await page.mouse.move(last.x + last.width / 2, last.y + last.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(gapX + 60, gapY, { steps: 10 });
+  await page.mouse.move(gapX, gapY, { steps: 4 });
+
+  // No modifier: the note follows the hand and NOTHING else moves. This is
+  // the regression guard — an ordinary move must stay an ordinary move.
+  await expect(page.getByText(/press to insert it between two notes/i)).toBeVisible();
+  expect((await notes.nth(1).boundingBox())!.x).toBeCloseTo(second.x, 0);
+
+  // Alt alone, with the hand held still: a pointer drag DOES receive key
+  // events, so the slot opens without waiting for the next twitch.
+  await page.keyboard.down('Alt');
+  await expect.poll(async () => (await notes.nth(1).boundingBox())!.x).toBeGreaterThan(second.x);
+  // Releasing it unwinds the ripple again, mid-drag.
+  await page.keyboard.up('Alt');
+  await expect.poll(async () => (await notes.nth(1).boundingBox())!.x).toBeCloseTo(second.x, 0);
+
+  await page.keyboard.down('Alt');
+  await expect.poll(async () => (await notes.nth(1).boundingBox())!.x).toBeGreaterThan(second.x);
+  await page.mouse.up();
+  await page.keyboard.up('Alt');
+
+  const inserted = [
+    'Sticky note "Order placed"',
+    'Sticky note "Order shipped"',
+    'Sticky note "Payment received"',
+  ];
+  await expect.poll(order).toEqual(inserted);
+
+  // ONE undo restores the whole board, the dragged note's original position
+  // included — the live ticks during the drag collapse into a single step.
+  await page.keyboard.press('ControlOrMeta+z');
+  await expect
+    .poll(order)
+    .toEqual([
+      'Sticky note "Order placed"',
+      'Sticky note "Payment received"',
+      'Sticky note "Order shipped"',
+    ]);
+
+  await page.keyboard.press('ControlOrMeta+y');
+  await expect.poll(order).toEqual(inserted);
+
+  await page.waitForTimeout(1500); // let the debounced autosave flush
+  await page.reload();
+  await canvas.waitFor();
+  await expect.poll(order).toEqual(inserted);
 
   expectNoPageErrors(pageErrors);
 });
