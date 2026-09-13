@@ -8,7 +8,6 @@ import {
   isLayerLocked,
   isLayerVisible,
   REACTION_PAD_LABEL,
-  type EventStormingNoteKind,
   type StickyElement,
 } from '@livediagram/diagram';
 import { ARROW_SNAP_THRESHOLD_PX, inheritedSizeFor } from '@/lib/canvas';
@@ -66,8 +65,8 @@ function eventStormingBoardStickyExtras(): Partial<StickyElement> {
 
 // The layer stamp for an event-storming note, or nothing when the board /
 // target layer can't take it (see the call site above). One board, one
-// layer: the note's kind no longer picks a band.
-function esStageStamp(_kind: EventStormingNoteKind, activeTab: Tab): { layerId?: string } {
+// layer, so the note's kind doesn't enter into it.
+function esBoardLayerStamp(activeTab: Tab): { layerId?: string } {
   if (!isEventStormingTab(activeTab)) return {};
   const layerId = eventStormingBoardLayerId();
   const layer = activeTab.layers?.find((l) => l.id === layerId);
@@ -297,7 +296,7 @@ export function buildDrawnBoxed(
     // element the user can't see, a locked one an element they can't touch —
     // in both cases the note falls through to the ordinary active-layer
     // stamping at the commit choke point instead.
-    ...(intent.type === 'sticky' && intent.esKind ? esStageStamp(intent.esKind, activeTab) : {}),
+    ...(intent.type === 'sticky' && intent.esKind ? esBoardLayerStamp(activeTab) : {}),
     // Technology marks render at a fixed size (spec/41), so warping the
     // box can't warp the mark — the aspect lock createShape('icon') bakes
     // in would only fight resizing the caption room, so drop it.

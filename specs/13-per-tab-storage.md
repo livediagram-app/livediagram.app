@@ -234,3 +234,11 @@ The `change_log` table is tab-scoped — its row carries a `tab_id` (every entry
 - Realtime presence (still room-level).
 - Sharing (per-diagram share codes; no per-tab sharing yet). Tab-level reuse across diagrams is a server-side relationship under spec/17, not user-visible sharing.
 - The frontend `Tab` type shape (just where it's persisted).
+
+## Import carries identity, not just content
+
+When an exported tab lands in a receiving tab (`mergeImportedTab`), the **board kind** and the **layers** travel with the elements and styling.
+
+Without the kind, an exported event-storming board came back as an ordinary diagram: every note present, but the palette, the stationery and the note menu gone, with nothing on screen to explain why (spec/139). Without the layers, every imported element’s `layerId` dangles and the bands the author organised the tab into are lost (spec/74).
+
+The merge rule lives in its own module so it is testable as a rule: what the import brings, what the receiving tab keeps (its id and name), and what must travel or the round trip loses meaning.

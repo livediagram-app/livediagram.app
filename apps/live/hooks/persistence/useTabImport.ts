@@ -5,6 +5,7 @@
 // Excalidraw, spec/87).
 
 import type { Element, Tab } from '@livediagram/diagram';
+import { mergeImportedTab } from '@/lib/import-merge';
 import type { ImportOutcome } from '@/lib/import-tab';
 import { track } from '@/lib/telemetry';
 
@@ -68,28 +69,7 @@ export function useTabImport({
   // edit state is cleared so nothing dangles over the new content.
   const replaceActiveTabContent = (imported: Tab) => {
     setImportError(null);
-    commitTabs((ts) =>
-      ts.map((t) =>
-        t.id === activeId
-          ? {
-              ...t,
-              elements: imported.elements,
-              theme: imported.theme ?? t.theme,
-              backgroundColor: imported.backgroundColor ?? t.backgroundColor,
-              backgroundPattern: imported.backgroundPattern ?? t.backgroundPattern,
-              backgroundOpacity: imported.backgroundOpacity ?? t.backgroundOpacity,
-              patternColor: imported.patternColor ?? t.patternColor,
-              backgroundPatternScale: imported.backgroundPatternScale ?? t.backgroundPatternScale,
-              // Tab-level typography rides the export too (spec/13):
-              // without these an exported tab using a tab font came
-              // back rendering in the default face.
-              font: imported.font ?? t.font,
-              defaultTextSize: imported.defaultTextSize ?? t.defaultTextSize,
-              templateChosen: true,
-            }
-          : t,
-      ),
-    );
+    commitTabs((ts) => ts.map((t) => (t.id === activeId ? mergeImportedTab(t, imported) : t)));
     setSelectedId(null);
     setEditingId(null);
     setFormatSourceId(null);
