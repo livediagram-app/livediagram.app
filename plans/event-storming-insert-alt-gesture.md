@@ -1,0 +1,231 @@
+# Insert-between becomes an Alt-held gesture, for any sticky
+
+**Status:** planned, not started.
+**Supersedes the interaction half of** [`plans/event-storming-insert-between.md`](event-storming-insert-between.md)
+(shipped). The geometry, the preview channel and the commit path from that
+plan stay; **how the gesture is armed changes, and it grows a second entry
+point.**
+
+---
+
+## 1. What changes, and why
+
+Insertion currently arms **automatically** whenever a palette note is dragged
+over a gap on an event-storming board. That is wrong for two reasons the
+operator named:
+
+1. It is **surprising for ordinary use** — someone dragging a note near a row
+   gets the whole board rearranging under them when they only wanted to drop a
+   note nearby.
+2. It is **unavailable where it is most useful** — the drag people do most is
+   moving a note they already placed, and today that can't insert at all.
+
+So:
+
+- **Arm on a held Alt / Option key**, never automatically. No Alt, no slot, no
+  ripple — today's plain behaviour, on every board.
+- **Any sticky**, not just a new one: a palette drag AND a drag of an existing
+  sticky already on the board both offer insertion while Alt is held.
+- Still **event-storming boards only**. Alt on any other board keeps whatever
+  meaning it has there (today: none).
+
+### Settled decisions (operator-chosen; do not re-litigate)
+
+- **Alt / Option is the modifier.** Chosen over Ctrl deliberately: Ctrl/Cmd
+  already means **free placement** during a drag (snap override, spec/60) and
+  Shift already means **drag-duplicate** (spec/80). Alt is unclaimed in canvas
+  gestures, so insertion displaces nothing and works the same on every board.
+- **A moved note leaves its hole behind.** When an existing note is inserted
+  elsewhere, the notes after its ORIGINAL position do **not** close up. The
+  board makes room at the destination; the source gap is the author's to tidy.
+  Predictable beats clever.
+- Everything the shipped plan settled still holds: the preview never touches
+  the document, the drop is one undoable step, "everything on the right" means
+  the whole board, and no schema changes.
+
+---
+
+## 2. Open questions (defaults to implement)
+
+- [ ] **Q1 — Multi-selection drags.** Alt-dragging several elements at once.
+      _Default: **insertion is offered only for a single sticky**. A
+      multi-selection drag behaves as it does today, Alt or not. Pin it in a
+      test._
+- [ ] **Q2 — Non-sticky elements.** Alt-dragging a shape / text / icon on an ES
+      board.
+      _Default: **no insertion** — the gesture is about the note grammar. The
+      element still drags normally._
+- [ ] **Q3 — Alt pressed mid-drag.** Alt down after the drag started, or
+      released before the drop.
+      _Default: **fully live** — the slot opens the moment Alt goes down and
+      unwinds the moment it comes up, at any point during the drag. The drop
+      does whatever the state is at the instant the button is released._
+- [ ] **Q4 — Discoverability.** A hidden modifier is a feature nobody finds.
+      _Default: extend the existing **`ShiftHintBanner`** (it already names
+      what a modifier does right now) to say "Hold Alt to insert between" while
+      a sticky is being dragged on an ES board. Reuse that component; do not
+      invent a second hint surface. If it does not fit cleanly, flag it rather
+      than bolting on something new._
+
+---
+
+## 3. Platform risk — read this before estimating
+
+**Alt+drag is grabbed by the window manager on many Linux desktops** (it moves
+the window), and on some it is Super rather than Alt. The operator develops on
+Linux Mint, so **verify early, in a real browser, that the page receives
+`altKey` during a drag**:
+
+- [ ] Spike it first: a five-line listener that logs `altKey` on `pointermove`
+      and `dragover` while Alt is held. Confirm both paths see it.
+- [ ] If the WM swallows it, **stop and report** with what you observed —
+      do not silently substitute a different key. Offer the operator the
+      options (AltGr / Ctrl+Alt / a sticky toggle) and wait.
+- [ ] Also confirm Alt does not steal focus to the browser menu bar on keyup
+      (Firefox/Chrome on Linux); `preventDefault` on the keydown if needed, but
+      only while a drag is in flight — never globally.
+
+---
+
+## 4. Phase A — arm on Alt (palette drag)
+
+- [ ] Read the shipped implementation first: `apps/live/lib/insert-between.ts`
+      (`canInsertBetweenOn`, `findInsertionSlot`, `applyInsertionShift`),
+      `apps/live/lib/palette-drag-preview.ts` (the preview channel),
+      `apps/live/hooks/canvas/usePaletteDragGuides.ts` (the resolver),
+      `apps/live/hooks/canvas/usePaletteDrop.ts` (the commit).
+- [ ] Extend `canInsertBetweenOn` (or its call sites — judge which reads
+      better) with the **modifier** as a first-class input: the gate is now
+      "ES board AND droppable AND Alt held". Keep it ONE predicate so the
+      preview, the ghost and the drop cannot disagree about whether the
+      gesture is armed.
+- [ ] Track Alt live during a palette drag:
+  - [ ] `DragEvent.altKey` on `dragover` gives it for free on every move.
+  - [ ] Alt pressed or released **without** moving the mouse must still
+        update the preview (Q3). Add `keydown` / `keyup` listeners for the
+        duration of the drag, and re-resolve from the last known cursor
+        position. Test both orders: move-then-Alt and Alt-then-move.
+- [ ] Releasing Alt closes the slot and restores the ordinary alignment snap
+      for the rest of the drag. Pin with a test.
+- [ ] Update the existing tests that assumed automatic arming — several will
+      now be asserting the OLD behaviour. Read each one and decide whether it
+      becomes an Alt-held test or a "plain drag does nothing special" test;
+      both are worth keeping.
+- [ ] Commit: `feat(canvas): arm insertion on a held Alt`.
+
+---
+
+## 5. Phase B — the same gesture for an existing sticky
+
+This is the new capability, and the riskier half: element drags run through
+`useEditorDrag`, which commits **live** on every pointer tick.
+
+- [ ] Read `apps/live/hooks/canvas/useEditorDrag.ts` end to end, especially:
+      the `boxed` / `move` branch, the drag-engage threshold, how `noSnap`
+      (Cmd/Ctrl, spec/60) already reads a modifier off the pointer event, and
+      the checkpoint machinery (`markCheckpoint`, `cancelToCheckpoint`) that
+      makes a whole drag one undo step.
+- [ ] Resolve a slot on each pointer move while Alt is held and the dragged
+      element is a single sticky on an ES board:
+  - [ ] **Exclude the dragged element itself** from the row candidates and
+        from the ripple — it is the thing being inserted, not something being
+        pushed. This is the difference from the palette path, where no such
+        element exists yet.
+  - [ ] The dragged note follows the pointer as it does today; the OTHER notes
+        show the render-only ripple preview. Both must be visible at once.
+  - [ ] Alt is read from the pointer event (like `noSnap`), plus the same
+        keydown/keyup listeners as phase A for the no-movement case.
+- [ ] While a slot is open, the dragged note should sit IN the slot rather than
+      under the raw cursor — mirroring how the palette ghost behaves — so what
+      you see is what you will get. Decide whether that reads well when the
+      pointer is far from the slot; if it fights the hand, prefer leaving the
+      note on the pointer and relying on the marker, and record why.
+- [ ] On release with a slot open, commit **one** history entry containing the
+      ripple AND the dragged note's final position. The live-tick commits
+      during the drag must collapse into that single step (this is what the
+      checkpoint machinery is for — use it rather than inventing a second
+      mechanism).
+- [ ] The vacated position leaves a hole (settled decision). Add a test that
+      proves the notes left of the source do NOT move.
+- [ ] Cancel paths: Escape mid-drag restores the pre-drag state exactly,
+      including unwinding the preview. Test it.
+- [ ] Commit: `feat(canvas): insert an existing note between two others`.
+
+---
+
+## 6. Phase C — hostile paths (tests, not thought experiments)
+
+- [ ] Alt held on a **non-ES board**: nothing happens, on both drag paths.
+- [ ] Alt held while dragging a **non-sticky** on an ES board: nothing (Q2).
+- [ ] Alt held while dragging a **multi-selection**: nothing (Q1).
+- [ ] Alt + **Cmd/Ctrl** together: free-placement and insertion must not both
+      apply. Decide the precedence, document it, test it. _Recommend:
+      insertion wins while a slot is open; snapping is irrelevant then anyway._
+- [ ] Alt + **Shift** (drag-duplicate, spec/80): decide and test. _Recommend:
+      duplicate-drag wins; no insertion, because the gesture is already
+      spoken for._
+- [ ] **Read-only / locked tab / blocked active layer**: no slot, both paths.
+- [ ] A **locked element** cannot be dragged at all — confirm unchanged.
+- [ ] **Undo/redo** round trip for the existing-note path: insert, undo, redo,
+      compare serialised elements each time.
+- [ ] Dragging a note **within the row it is already in**, one slot over —
+      the classic reorder. Make sure it doesn't double-count its own width.
+- [ ] Alt held, drag **released outside the canvas** (over a panel): no
+      insertion, no stranded preview.
+- [ ] **Zoom** 25% / 400% for both paths.
+
+---
+
+## 7. Phase D — proof
+
+- [ ] Verify by hand in the browser with Playwright, both paths, with
+      screenshots you actually look at: slot open mid-drag (palette), slot open
+      mid-drag (existing note), and the committed result for each.
+- [ ] **Do not test on the operator's board**
+      (`da3af5be-b501-4ca8-92f3-2ec2a03aec75`). Create your own scratch
+      diagrams and **delete them via the API when done**.
+- [ ] Update the E2E smoke case: the current one drags a palette note into a
+      gap with no modifier and expects insertion — it must become an Alt-held
+      drag. Add the "no Alt, no insertion" assertion alongside it; that is the
+      regression this whole change is about.
+- [ ] Full gate green: `pnpm test`, `pnpm typecheck`, `pnpm lint`,
+      `pnpm format:check`, `pnpm build`, plus the Playwright suite.
+
+---
+
+## 8. Phase E — docs, telemetry, fold-back
+
+- [ ] **spec/139**: rewrite the insertion section — it currently describes
+      automatic arming. State the Alt gesture, both entry points, the
+      leave-the-hole rule, and WHY Alt (Ctrl and Shift are taken; record the
+      reasoning so nobody "simplifies" it back later).
+- [ ] **spec/58** and **spec/09**: correct anything that says a palette drag
+      inserts on its own.
+- [ ] **spec/60** (snap override): note the Alt/Ctrl precedence decided in
+      phase C.
+- [ ] **Help**: update `apps/help/app/canvas/event-storming-boards/page.mdx` —
+      the gesture is now a named power feature, so it deserves a clear
+      "Hold Alt to insert between two notes" passage covering both paths.
+      Follow the help rules in `CLAUDE.md` if this grows into its own article.
+- [ ] **Telemetry**: keep one event at the insertion commit; if the two entry
+      points are worth telling apart, use the existing enums' `type` field
+      rather than inventing a second action.
+- [ ] Append one-liners to spec/139's **Domain learnings (session log)**.
+- [ ] Fold-back: names match reality (nothing called `autoInsert`), module
+      headers state what they ARE, no plan coordinates in comments, scratch
+      files deleted, `LESSONS_LEARNED.md` updated if anything cost real time.
+
+---
+
+## 9. Definition of done
+
+- [ ] Without Alt, both drag paths behave exactly as they did before the
+      insertion feature existed — no slot, no ripple, no surprise.
+- [ ] With Alt held on an ES board, dragging a palette note OR an existing
+      sticky over a gap opens the slot live, and dropping commits in one
+      undoable step.
+- [ ] Releasing Alt mid-drag unwinds the preview immediately.
+- [ ] A moved note leaves its original position empty.
+- [ ] Nothing changes on non-ES boards, for any modifier.
+- [ ] Specs, help and the E2E smoke reflect the new gesture; all gates green;
+      verified by hand with screenshots.
