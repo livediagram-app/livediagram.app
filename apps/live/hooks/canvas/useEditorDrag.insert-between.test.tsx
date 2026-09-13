@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, renderHook } from '@testing-library/react';
+import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import type { Element, StickyElement, Tab } from '@livediagram/diagram';
@@ -24,7 +24,15 @@ const INTO_GAP = { dx: 236 - 1300, dy: 0 };
 
 type Harness = ReturnType<typeof harness>;
 
-function harness(opts: { elements?: Element[]; esBoard?: boolean; readOnly?: boolean } = {}) {
+function harness(
+  opts: {
+    elements?: Element[];
+    esBoard?: boolean;
+    readOnly?: boolean;
+    zoom?: number;
+    multiSelected?: string[];
+  } = {},
+) {
   let elements = opts.elements ?? BOARD();
   // The editor's real semantics, minimally: `tick` writes without a history
   // entry, `markCheckpoint` snapshots, `cancelToCheckpoint` restores the last
@@ -34,12 +42,12 @@ function harness(opts: { elements?: Element[]; esBoard?: boolean; readOnly?: boo
     get activeTab() {
       return { id: 't', name: 'Tab', elements } as Tab;
     },
-    zoomRef: { current: 1 },
+    zoomRef: { current: opts.zoom ?? 1 },
     selectedId: 'drag',
     setSelectedId: vi.fn(),
     soloSelectedId: null,
     setSoloSelectedId: vi.fn(),
-    multiSelectedIds: new Set<string>(),
+    multiSelectedIds: new Set<string>(opts.multiSelected ?? []),
     setMultiSelectedIds: vi.fn(),
     editingId: null,
     isReadOnly: opts.readOnly === true,
@@ -107,14 +115,21 @@ function press(h: Harness, id: string, clientX = 1300, clientY = 100) {
   });
 }
 
-function move(h: Harness, dx: number, dy: number, mods: { alt?: boolean; shift?: boolean } = {}) {
+function move(
+  h: Harness,
+  dx: number,
+  dy: number,
+  mods: { alt?: boolean; shift?: boolean; meta?: boolean; zoom?: number } = {},
+) {
+  const zoom = mods.zoom ?? 1;
   act(() => {
     window.dispatchEvent(
       new MouseEvent('pointermove', {
-        clientX: 1300 + dx,
-        clientY: 100 + dy,
+        clientX: 1300 + dx * zoom,
+        clientY: 100 + dy * zoom,
         altKey: mods.alt === true,
         shiftKey: mods.shift === true,
+        metaKey: mods.meta === true,
       }),
     );
   });
@@ -142,6 +157,10 @@ beforeEach(() => {
   setInsertionSlot(null);
 });
 afterEach(() => {
+  // A test that ends mid-drag leaves the hook mounted, and a mounted drag
+  // keeps its window listeners — so the next test's pointer events would be
+  // answered by the previous test's gesture. Unmount first, then clear.
+  cleanup();
   setInsertionSlot(null);
   vi.restoreAllMocks();
 });
@@ -291,6 +310,51 @@ describe('useEditorDrag — inserting a note already on the board (spec/139)', (
       press(h, 'drag');
       move(h, INTO_GAP.dx, INTO_GAP.dy, { alt: true });
       expect(getInsertionSlot()).toBeNull();
+    });
+
+    it('does nothing when a multi-selection is dragged', () => {
+      const h = harness({ multiSelected: ['drag', 'c'] });
+      press(h, 'drag');
+      move(h, INTO_GAP.dx, INTO_GAP.dy, { alt: true });
+      expect(getInsertionSlot()).toBeNull();
+      // ...and the selection still drags together, exactly as it does today.
+      expect(h.xOf('drag')).toBe(1200 + INTO_GAP.dx);
+      expect(h.xOf('c')).toBe(544 + INTO_GAP.dx);
+    });
+
+    // Cmd/Ctrl means free placement (spec/60). An open slot IS the placement,
+    // so insertion wins; snapping is irrelevant while a slot is open anyway.
+    it('wins over Cmd/Ctrl free placement', () => {
+      const h = harness();
+      press(h, 'drag');
+      move(h, INTO_GAP.dx, INTO_GAP.dy, { alt: true, meta: true });
+      const slot = getInsertionSlot();
+      expect(slot?.rightId).toBe('b');
+      expect(h.xOf('drag')).toBe(slot!.atX);
+    });
+
+    it('never starts at all for a locked note', () => {
+      const locked = { ...note('drag', 1200), locked: true } as Element;
+      const h = harness({
+        elements: [note('a', 0), note('b', 272), note('c', 544), locked],
+      });
+      press(h, 'drag');
+      move(h, INTO_GAP.dx, INTO_GAP.dy, { alt: true });
+      expect(getInsertionSlot()).toBeNull();
+      expect(h.xOf('drag')).toBe(1200);
+    });
+
+    // The pointer delta is inverted through the zoom before it ever reaches
+    // the geometry; resolve in screen pixels and the slot lands elsewhere at
+    // any zoom but 100%.
+    it.each([0.25, 4])('resolves the same gap at %sx zoom', (zoom) => {
+      const h = harness({ zoom });
+      press(h, 'drag');
+      move(h, INTO_GAP.dx, INTO_GAP.dy, { alt: true, zoom });
+      expect(getInsertionSlot()?.rightId).toBe('b');
+      release(h, INTO_GAP.dx, INTO_GAP.dy, { alt: true });
+      expect(h.xOf('drag')).toBe(272);
+      expect(h.xOf('b')).toBe(272 + 272);
     });
 
     it('reorders within its own row without double-counting its own width', () => {
