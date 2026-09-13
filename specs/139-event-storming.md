@@ -101,15 +101,14 @@ semantic colour:
   as a column of fragments — technically fitted, visually wrong. The rule
   only ever shrinks, and falls back to the plain fit when two long words
   can never share a line (they must not drag the note down to 10px).
-- **Stage routing:** each note kind carries its workshop `stage` in the
-  catalogue (events / actors / hotspots → Big picture; commands /
-  policies / read models / external systems → Process; aggregates →
-  Design). On an event-storming board the commit path files a dropped
-  note onto its stage's layer (`eventStormingStageLayerId`), so a
-  Command dropped while browsing Big picture is already where the
-  Process stage expects it. Only when the target layer exists, is
-  visible AND unlocked — otherwise (and on non-ES boards) the note
-  falls through to ordinary active-layer stamping.
+- **Layer routing:** on an event-storming board the commit path files a
+  dropped note onto the board's single layer
+  (`eventStormingBoardLayerId`), whatever its kind. Only when that layer
+  exists, is visible AND unlocked — otherwise (and on non-ES boards) the
+  note falls through to ordinary active-layer stamping. Each kind still
+  carries a `stage` in the catalogue: it is real domain vocabulary
+  (which pass of the workshop the note belongs to) and reads in the
+  palette, but it no longer decides structure.
 - **Mechanics:** each tile arms the ordinary sticky draw gesture with
   the kind's fill riding the intent (`PendingDraw` sticky variant gains
   `fill?: string`, the session/provider precedent), and `buildDrawnBoxed`
@@ -122,45 +121,37 @@ semantic colour:
   colour is a user choice riding the intent, not a new kind (the same
   reasoning as Video's provider, spec/22).
 
-## Phase 3 (shipped): workshop-stage views
+## Phase 3 (superseded): ONE board, ONE layer
 
-One board, three depths plus a timeline lens — **shared** layer-visibility
-presets over spec/74 layers, so the whole room walks the stages together,
-facilitator-style (a deliberate choice over a per-user lens).
+The board shipped with a layer per workshop stage (Big Picture / Process /
+Software Design) and a bottom-centre chip bar toggling their visibility.
+**That has been withdrawn: an event-storming board now has exactly one
+layer**, `layer:es:board` (`eventStormingLayers()`), and no view bar.
 
-- **The template ships three layers** (bottom → top):
-  `layer:es:big-picture` / `layer:es:process` / `layer:es:design`, all
-  visible. Fixed sentinel ids (the `layer:default` pattern) so
-  re-applying converges and peers materialise identically. The seed
-  lives on Big picture. Defined by `eventStormingLayers()` in
-  `@livediagram/diagram` beside the note catalogue;
-  `templateLayers('event-storming')` returns it, making ES the one
-  deliberate exception to the two-band scaffold/content shape (its own
-  pin in `templates.test.ts`). _The timeline-rail layer + element and
-  its view-bar toggle were built and then retired before release — the
-  rail added chrome without earning it. Boards created while it existed
-  keep their `layer:es:rail` as ordinary spec/74 data, manageable from
-  the Layers panel; nothing drives it any more._
-- **Stages reveal cumulatively** (big-picture ⊆ process ⊆ design):
-  `applyEventStormingStage` is one ordinary tab commit setting the three
-  stage layers' visibility — undoable, autosaved, synced, nothing new on
-  the wire. The current stage is DERIVED as the deepest visible stage
-  (`eventStormingStageOf`), so a fresh board reads as Design (all-in) and
-  hand-toggled panel state still resolves sanely.
-- **The switcher** (`EventStormingViewBar`) is a slim bottom-centre pill —
-  Big picture / Process / Design chips + a divider + Timeline rail — shown
-  only when the active tab carries the ES stage layers
-  (`isEventStormingTab`, tab data, so it travels with the board). Editors
-  only: a stage switch commits shared visibility, which a view-role
-  visitor can't do (they see whatever view the room is in). Hidden in
-  zen / embed; yields the slot to the sign-in / empty-canvas banners, and
-  ThemeModeBanner yields to IT on ES boards. Three stage chips only —
-  the Timeline-rail toggle was retired with the rail.
-- **Switching a stage also activates that stage's layer**
-  (`useEventStormingViews`), so notes added while in a stage land on the
-  band the stage owns — and the active layer never strands on a band the
-  switch just hid (which would pause element creation per spec/74).
-- **Telemetry:** `UI / Used / EventStorming{BigPicture,Process,Design}`.
+- **Why.** Layers paint as separate BANDS, so two notes on different
+  stages could never be stacked against each other — "bring to front" did
+  nothing across a band, with nothing on screen to explain why. A
+  workshop surface is one wall of paper: the notation already says what
+  each note IS, so the stage it belongs to doesn't need its own plane.
+  The chip bar was also permanent chrome on a board whose whole premise
+  is distraction-free capture, and it earned its place only by driving
+  the layers it has now lost.
+- **Identity** is still tab data (`isEventStormingTab`), now satisfied by
+  the board layer OR any of the three legacy stage-layer ids, so boards
+  authored before the collapse keep their palette, stationery and note
+  menu. Their bands remain ordinary spec/74 layers, mergeable or
+  deletable from the Layers panel.
+- **What went with it:** `EventStormingViewBar`,
+  `useEventStormingViews`, `applyEventStormingStage`,
+  `eventStormingStageOf`, `eventStormingStageLayerId`,
+  `EVENT_STORMING_STAGES` and the `UI / Used / EventStorming*`
+  telemetry. _(The timeline-rail layer + element and its toggle were
+  built and retired earlier, for the same reason: chrome that didn't earn
+  its place. Boards created while it existed keep `layer:es:rail` as
+  ordinary data.)_
+- **Stages are not gone as an idea** — every note kind still carries its
+  `stage`, and a future revisit can surface it as a FILTER (dimming,
+  not a plane) without reintroducing bands.
 
 ## Phase 4 (shipped): workshop stationery
 
@@ -249,6 +240,9 @@ type, kept current every session. Each should stay true on its own.
 - “It fits” is not the same as “it reads” — one word per line fits.
 - An action ANSWERS the right-click: every verb closes the menu, which
   otherwise covers the element whose change the user wants to see.
+- Bands are planes, and a plane you cannot see is a rule you cannot
+  learn: stacking that silently no-ops across a layer is worse than no
+  stacking. One wall of paper beats three planes of it.
 - One button, one job: the secondary button only opens the menu — no
   select, no drag, no dismiss.
 - React stopPropagation is dispatched from the root container, so it
@@ -267,7 +261,7 @@ type, kept current every session. Each should stay true on its own.
   in a shared helper every path spreads.
 - Board identity must not hinge on data the user can edit: ANY stage
   layer means event storming, because deleting one silently stripped the
-  palette, the view bar and note routing.
+  palette and note routing.
 - Quick-connect pluses stand down on an ES board: four affordances
   ringing every note is chrome the capture loop never asks for.
 - A widget can outlive its concept: the edge "anchor" grips resize, so

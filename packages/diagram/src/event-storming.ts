@@ -7,8 +7,7 @@
 // rather than carrying its own hexes. Stickies are exempt from theme
 // recolouring, so a fill set from here survives every theme.
 
-import type { Tab } from './index';
-import { isLayerVisible, type Layer } from './layers';
+import { type Layer } from './layers';
 
 export type EventStormingNoteKind =
   | 'domain-event'
@@ -128,54 +127,38 @@ export function eventStormingNote(kind: EventStormingNoteKind): EventStormingNot
 // Workshop-stage views (spec/139)
 // ---------------------------------------------------------------------
 //
-// One event-storming board, viewed at three depths — Big Picture (events
-// on a timeline), Process Modelling (adds commands / policies / read
-// models / external systems), Software Design (adds aggregates) — plus an
-// independent Timeline-rail toggle that shows the board against a spec/51
-// rail. The mechanism is spec/74 layers: the template ships one layer per
-// stage (fixed sentinel ids, the `layer:default` pattern, so re-applying
-// converges and peers materialise identically), and a view switch is one
-// ordinary tab commit that sets layer visibility. Shared and synced by
-// design: the facilitator walks the whole room through the stages.
+// ONE board, ONE layer. The board used to ship a layer per workshop stage
+// (Big Picture / Process / Software Design) with a chip bar toggling their
+// visibility, but stages-as-layers cost more than they paid: layers paint as
+// separate BANDS, so two notes on different stages could never be stacked
+// against each other — "bring to front" simply did nothing across a band,
+// with nothing on screen to explain why. A workshop surface is one wall of
+// paper; the notation already says what each note IS, so the stage it
+// belongs to doesn't need its own plane. The stage field on each note stays
+// (it is real domain vocabulary, and drives nothing structural for now).
+export const ES_BOARD_LAYER_ID = 'layer:es:board';
 
-// Bottom -> top, matching Tab.layers order: deeper stages stack above
-// shallower ones so design-level notes paint over the big-picture band
-// they annotate. (Boards created before the timeline rail was retired may
-// still carry a `layer:es:rail` layer + its rail element; they keep
-// working — the layer is ordinary spec/74 data, manageable from the
-// panel — it is simply no longer shipped or driven by any chrome.)
+// Legacy stage-layer ids. Boards authored before the collapse still carry
+// them, and they keep working: identity accepts them, and they are ordinary
+// spec/74 layers the facilitator can merge or delete from the panel.
 export const ES_BIG_PICTURE_LAYER_ID = 'layer:es:big-picture';
 export const ES_PROCESS_LAYER_ID = 'layer:es:process';
 export const ES_DESIGN_LAYER_ID = 'layer:es:design';
 
-// Chip order (shallow -> deep) + the layer each stage reveals last. The
-// switcher also ACTIVATES that layer, so notes added while in a stage land
-// on the band that stage owns.
-export const EVENT_STORMING_STAGES: {
-  stage: EventStormingStage;
-  label: string;
-  layerId: string;
-}[] = [
-  { stage: 'big-picture', label: 'Big picture', layerId: ES_BIG_PICTURE_LAYER_ID },
-  { stage: 'process', label: 'Process', layerId: ES_PROCESS_LAYER_ID },
-  { stage: 'design', label: 'Design', layerId: ES_DESIGN_LAYER_ID },
-];
-
-// The layers an event-storming template ships — all visible, so a fresh
-// board hides nothing whatever chip is pressed later. Built fresh per
-// call so a caller mutating its tab can't corrupt the constant.
+// The layer an event-storming template ships: one, named for the board.
+// Built fresh per call so a caller mutating its tab can't corrupt it.
 export function eventStormingLayers(): Layer[] {
-  return [
-    { id: ES_BIG_PICTURE_LAYER_ID, name: 'Big picture' },
-    { id: ES_PROCESS_LAYER_ID, name: 'Process' },
-    { id: ES_DESIGN_LAYER_ID, name: 'Design' },
-  ];
+  return [{ id: ES_BOARD_LAYER_ID, name: 'Event Storming' }];
 }
 
-// The layer a palette-dropped note of this kind belongs on (its stage's
-// layer). The commit path stamps it only when the target tab actually
-// carries that layer, visible and unlocked — otherwise the note falls
-// through to the ordinary active-layer stamping.
+// The layer a palette-dropped note belongs on: the board's single layer,
+// whatever the note's kind. The commit path stamps it only when the target
+// tab actually carries that layer, visible and unlocked — otherwise the note
+// falls through to the ordinary active-layer stamping.
+export function eventStormingBoardLayerId(): string {
+  return ES_BOARD_LAYER_ID;
+}
+
 // The pixel footprint of a note kind (its stationery silhouette).
 export function eventStormingNoteSize(kind: EventStormingNoteKind): {
   width: number;
@@ -213,58 +196,24 @@ export function eventStormingTilt(): number {
   return Math.round((Math.random() * 2 - 1) * ES_MAX_TILT_DEG * 10) / 10;
 }
 
-export function eventStormingStageLayerId(kind: EventStormingNoteKind): string {
-  const stage = eventStormingNote(kind).stage;
-  return EVENT_STORMING_STAGES.find((s) => s.stage === stage)!.layerId;
-}
-
-// An event-storming board is recognised by its stage layers — tab data, so
+// An event-storming board is recognised by its layer — tab data, so
 // the switcher appears wherever the board travels (share links, imports,
 // re-opened diagrams) and never for anything else.
 //
-// ANY stage layer is enough. Layers are ordinary spec/74 data: a facilitator
-// renames them, adds their own, and deletes ones they don't use — all
-// legitimate. Requiring the full set meant deleting a single band silently
-// stripped the board of its palette, its view bar and its note routing,
-// with nothing on screen to explain why. Board identity must not hinge on
-// a checklist the user is free to edit.
+// ANY of them is enough — the board's own layer, or one of the legacy stage
+// layers a pre-collapse board still carries. Layers are ordinary spec/74
+// data: a facilitator renames them, adds their own, and deletes ones they
+// don't use, all legitimate. Requiring a particular set meant deleting one
+// silently stripped the board of its palette and its note routing, with
+// nothing on screen to explain why. Board identity must not hinge on a
+// checklist the user is free to edit.
 export function isEventStormingTab(layers: Layer[] | undefined): boolean {
   if (!layers) return false;
   return layers.some(
     (l) =>
+      l.id === ES_BOARD_LAYER_ID ||
       l.id === ES_BIG_PICTURE_LAYER_ID ||
       l.id === ES_PROCESS_LAYER_ID ||
       l.id === ES_DESIGN_LAYER_ID,
   );
-}
-
-// Store only the non-default state (visible layers carry no flag), the
-// setLayerVisibility storage rule, kept local so this module stays a leaf.
-const withVisibility = (layer: Layer, visible: boolean): Layer => {
-  const { visible: _drop, ...rest } = layer;
-  return visible ? rest : { ...rest, visible: false };
-};
-
-// Stages reveal cumulatively (big-picture ⊆ process ⊆ design): switching
-// sets each stage layer's visibility in one pass. Non-stage layers (user-
-// added, or a legacy rail layer) are left alone.
-export function applyEventStormingStage(tab: Tab, stage: EventStormingStage): Tab {
-  const depth = EVENT_STORMING_STAGES.findIndex((s) => s.stage === stage);
-  const layers = (tab.layers ?? []).map((l) => {
-    const at = EVENT_STORMING_STAGES.findIndex((s) => s.layerId === l.id);
-    return at === -1 ? l : withVisibility(l, at <= depth);
-  });
-  return { ...tab, layers };
-}
-
-// The deepest visible stage decides where the board currently is — so a
-// fresh board (everything visible) reads as design, and boards whose
-// layers were toggled by hand in the panel still resolve somewhere sane.
-export function eventStormingStageOf(layers: Layer[] | undefined): EventStormingStage {
-  for (let i = EVENT_STORMING_STAGES.length - 1; i >= 0; i--) {
-    const s = EVENT_STORMING_STAGES[i]!;
-    const layer = layers?.find((l) => l.id === s.layerId);
-    if (layer && isLayerVisible(layer)) return s.stage;
-  }
-  return 'big-picture';
 }

@@ -170,8 +170,17 @@ export function resolveActiveLayerId(
   requested: string | null | undefined,
 ): string {
   const ls = tabLayers(layers);
+  // An explicit choice is honoured even when hidden or locked: hiding the
+  // layer you are ON is a deliberate act, and the editor toasts why creation
+  // is paused rather than moving you somewhere you didn't ask to be.
   if (requested != null && ls.some((l) => l.id === requested)) return requested;
-  return ls[ls.length - 1]!.id;
+  // The FALLBACK is different — nobody chose it, so it must land somewhere
+  // you can actually work. Taking the top layer blindly stranded any board
+  // whose top layer was hidden or locked: every create path silently
+  // no-opped, and no toast could explain it because the user had done
+  // nothing for a toast to describe.
+  const usable = ls.filter((l) => isLayerVisible(l) && !isLayerLocked(l));
+  return (usable[usable.length - 1] ?? ls[ls.length - 1]!).id;
 }
 
 // replaces names matching this.

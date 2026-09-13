@@ -67,7 +67,7 @@ One diagram, three cumulative stages + an additive rail lens.
 - [x] Template ships the four stage layers (`templateLayers`), seed stamped
       onto Big picture, spec/51 rail element on the hidden rail layer — the
       one deliberate exception to the two-band pin, with its own pin
-- [x] `EventStormingViewBar` (tested) + `useEventStormingViews` hook wired
+- [x] ~~`EventStormingViewBar` + `useEventStormingViews`~~ — withdrawn with the stage layers (spec/139 Phase 3); the board is one layer
       through EditorView; banners yield order settled (ThemeModeBanner
       yields to the bar)
 - [x] Telemetry: UI/Used EventStorming{BigPicture,Process,Design,RailOn,RailOff}

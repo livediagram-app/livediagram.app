@@ -17,7 +17,7 @@
 import {
   createSticky,
   createText,
-  ES_BIG_PICTURE_LAYER_ID,
+  ES_BOARD_LAYER_ID,
   eventStormingNote,
   type Element,
 } from '@livediagram/diagram';
@@ -54,8 +54,8 @@ export function buildEventStorming(cx: number, cy: number): Element[] {
       textSize: 'scale',
       textAlignX: 'center',
       textAlignY: 'middle',
-      // The seed IS the workshop's first stage (spec/139 views).
-      layerId: ES_BIG_PICTURE_LAYER_ID,
+      // One board, one layer (spec/139).
+      layerId: ES_BOARD_LAYER_ID,
     });
   });
 
@@ -68,7 +68,7 @@ export function buildEventStorming(cx: number, cy: number): Element[] {
     textSize: 'sm',
     textAlignX: 'center',
     textColor: '#64748b',
-    layerId: ES_BIG_PICTURE_LAYER_ID,
+    layerId: ES_BOARD_LAYER_ID,
   });
 
   return elements;

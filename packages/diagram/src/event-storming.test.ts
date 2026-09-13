@@ -1,20 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import type { Tab } from './index';
-import { isLayerVisible, type Layer } from './layers';
+import { isLayerVisible } from './layers';
 import {
-  applyEventStormingStage,
   eventStormingNoteSize,
   eventStormingTilt,
   ES_MAX_TILT_DEG,
+  ES_BOARD_LAYER_ID,
   ES_BIG_PICTURE_LAYER_ID,
   ES_DESIGN_LAYER_ID,
   ES_PROCESS_LAYER_ID,
   EVENT_STORMING_NOTES,
-  EVENT_STORMING_STAGES,
+  eventStormingBoardLayerId,
   eventStormingLayers,
   eventStormingNote,
-  eventStormingStageLayerId,
-  eventStormingStageOf,
   isEventStormingTab,
   type EventStormingNoteKind,
 } from './event-storming';
@@ -90,10 +88,11 @@ describe('EVENT_STORMING_NOTES', () => {
     expect(eventStormingNoteSize('actor')).toEqual({ width: 140, height: 140 });
   });
 
-  it('eventStormingStageLayerId maps a kind to its stage layer', () => {
-    expect(eventStormingStageLayerId('domain-event')).toBe(ES_BIG_PICTURE_LAYER_ID);
-    expect(eventStormingStageLayerId('command')).toBe(ES_PROCESS_LAYER_ID);
-    expect(eventStormingStageLayerId('aggregate')).toBe(ES_DESIGN_LAYER_ID);
+  it('files every note kind on the one board layer', () => {
+    // One wall of paper: a note's kind says what it IS, not which plane it
+    // lives on. Stage bands meant two notes could never stack against each
+    // other, because layers paint as separate bands.
+    expect(eventStormingBoardLayerId()).toBe(ES_BOARD_LAYER_ID);
   });
 
   it('eventStormingNote resolves every kind', () => {
@@ -111,77 +110,33 @@ describe('event-storming views', () => {
   const esTab = (): Tab =>
     ({ id: 't', name: 'T', elements: [], layers: eventStormingLayers() }) as unknown as Tab;
 
-  const visibleIds = (tab: Tab) =>
-    (tab.layers ?? []).filter((l: Layer) => isLayerVisible(l)).map((l: Layer) => l.id);
-
-  it('ships the three stage layers, all visible', () => {
+  it('ships exactly one layer, visible', () => {
     const layers = eventStormingLayers();
-    expect(layers.map((l) => l.id)).toEqual([
-      ES_BIG_PICTURE_LAYER_ID,
-      ES_PROCESS_LAYER_ID,
-      ES_DESIGN_LAYER_ID,
-    ]);
-    // All visible: a fresh board shows everything an editor drops,
-    // whatever stage chip they later press.
+    expect(layers.map((l) => l.id)).toEqual([ES_BOARD_LAYER_ID]);
     expect(layers.every((l) => isLayerVisible(l))).toBe(true);
   });
 
-  it('recognises an event-storming tab by its stage layers', () => {
+  it('recognises an event-storming tab by its layer', () => {
     expect(isEventStormingTab(esTab().layers)).toBe(true);
     expect(isEventStormingTab(undefined)).toBe(false);
     expect(isEventStormingTab([{ id: 'layer:default', name: 'Layer 1' }])).toBe(false);
   });
 
-  it('survives a user editing the layer stack — ANY stage layer still means ES', () => {
+  it('still recognises a board built before the stage layers collapsed', () => {
+    // Those boards are out there with three bands; they must keep their
+    // palette, stationery and note menu.
+    for (const id of [ES_BIG_PICTURE_LAYER_ID, ES_PROCESS_LAYER_ID, ES_DESIGN_LAYER_ID]) {
+      expect(isEventStormingTab([{ id, name: 'legacy' }])).toBe(true);
+    }
+  });
+
+  it('survives a user editing the layer stack', () => {
     // Board-ness is an identity, not a checklist: layers are ordinary
     // spec/74 data a facilitator can rename, delete or add to mid-workshop.
-    // Requiring all three meant deleting one silently stripped the board of
-    // its palette, its view bar and its note routing.
-    const deletedDesign = eventStormingLayers().filter((l) => l.id !== ES_DESIGN_LAYER_ID);
-    expect(isEventStormingTab(deletedDesign)).toBe(true);
-    // Plus a layer of their own alongside — still an ES board.
-    expect(isEventStormingTab([{ id: 'own-layer', name: 'Cart Emptied' }, ...deletedDesign])).toBe(
-      true,
-    );
-    // Only the Big picture band left is still the workshop.
-    expect(isEventStormingTab([{ id: ES_BIG_PICTURE_LAYER_ID, name: 'Big picture' }])).toBe(true);
-    // A board with none of them is not.
+    expect(
+      isEventStormingTab([{ id: 'own-layer', name: 'Sketches' }, ...eventStormingLayers()]),
+    ).toBe(true);
     expect(isEventStormingTab([{ id: 'own-layer', name: 'Sketches' }])).toBe(false);
-  });
-
-  it('stages reveal cumulatively: big-picture ⊆ process ⊆ design', () => {
-    const tab = esTab();
-    const big = applyEventStormingStage(tab, 'big-picture');
-    expect(visibleIds(big)).toEqual([ES_BIG_PICTURE_LAYER_ID]);
-    const process = applyEventStormingStage(tab, 'process');
-    expect(visibleIds(process)).toEqual([ES_BIG_PICTURE_LAYER_ID, ES_PROCESS_LAYER_ID]);
-    const design = applyEventStormingStage(tab, 'design');
-    expect(visibleIds(design)).toEqual([
-      ES_BIG_PICTURE_LAYER_ID,
-      ES_PROCESS_LAYER_ID,
-      ES_DESIGN_LAYER_ID,
-    ]);
-  });
-
-  it('derives the current stage from visibility (deepest visible stage wins)', () => {
-    const tab = esTab();
-    expect(eventStormingStageOf(applyEventStormingStage(tab, 'big-picture').layers)).toBe(
-      'big-picture',
-    );
-    expect(eventStormingStageOf(applyEventStormingStage(tab, 'process').layers)).toBe('process');
-    expect(eventStormingStageOf(applyEventStormingStage(tab, 'design').layers)).toBe('design');
-    // A fresh board (everything visible) reads as design — the all-in view.
-    expect(eventStormingStageOf(esTab().layers)).toBe('design');
-  });
-
-  it('EVENT_STORMING_STAGES orders the chips shallow to deep with labels + active layer', () => {
-    expect(EVENT_STORMING_STAGES.map((s) => s.stage)).toEqual(['big-picture', 'process', 'design']);
-    expect(EVENT_STORMING_STAGES.map((s) => s.layerId)).toEqual([
-      ES_BIG_PICTURE_LAYER_ID,
-      ES_PROCESS_LAYER_ID,
-      ES_DESIGN_LAYER_ID,
-    ]);
-    for (const s of EVENT_STORMING_STAGES) expect(s.label.length).toBeGreaterThan(0);
   });
 });
 

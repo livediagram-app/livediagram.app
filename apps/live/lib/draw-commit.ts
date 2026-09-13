@@ -2,7 +2,7 @@ import {
   defaultSessionConfig,
   eventStormingNoteSize,
   eventStormingTilt,
-  eventStormingStageLayerId,
+  eventStormingBoardLayerId,
   isEventStormingTab,
   isFixedSizeShape,
   isLayerLocked,
@@ -64,11 +64,12 @@ function eventStormingBoardStickyExtras(): Partial<StickyElement> {
   };
 }
 
-// The stage-layer stamp for an event-storming note, or nothing when the
-// board / target layer can't take it (see the call site above).
-function esStageStamp(kind: EventStormingNoteKind, activeTab: Tab): { layerId?: string } {
+// The layer stamp for an event-storming note, or nothing when the board /
+// target layer can't take it (see the call site above). One board, one
+// layer: the note's kind no longer picks a band.
+function esStageStamp(_kind: EventStormingNoteKind, activeTab: Tab): { layerId?: string } {
   if (!isEventStormingTab(activeTab.layers)) return {};
-  const layerId = eventStormingStageLayerId(kind);
+  const layerId = eventStormingBoardLayerId();
   const layer = activeTab.layers?.find((l) => l.id === layerId);
   if (!layer || !isLayerVisible(layer) || isLayerLocked(layer)) return {};
   return { layerId };

@@ -11,7 +11,7 @@ import {
   untitledNameForTemplate,
   type TemplateKind,
 } from '@livediagram/templates';
-import { ES_BIG_PICTURE_LAYER_ID, eventStormingLayers } from '@livediagram/diagram';
+import { ES_BOARD_LAYER_ID, eventStormingLayers } from '@livediagram/diagram';
 import { getTheme } from './themes';
 
 // `buildTemplatedTab` is the seam between /live/new (the welcome
@@ -325,14 +325,14 @@ describe('layered templates (spec/74)', () => {
   // Event storming (spec/139): three stage layers for the shared workshop
   // views — Big picture / Process / Design. The seed lives on Big picture
   // (the workshop's first stage).
-  it('event storming ships the three stage layers, seed on Big picture', () => {
+  it('event storming ships ONE layer, with the whole seed on it', () => {
     const layers = templateLayers('event-storming')!;
     expect(layers).toEqual(eventStormingLayers());
     const elements = buildTemplate('event-storming', 0, 0);
-    const big = elements.filter((el) => el.layerId === ES_BIG_PICTURE_LAYER_ID);
-    // Three orange events + the method caption, all on the first stage.
-    expect(big).toHaveLength(4);
-    expect(big.length).toBe(elements.length);
+    const onBoard = elements.filter((el) => el.layerId === ES_BOARD_LAYER_ID);
+    // Three orange events + the method caption, all on the one board layer.
+    expect(onBoard).toHaveLength(4);
+    expect(onBoard.length).toBe(elements.length);
   });
 
   it('buildTemplatedTab lands the layers on the tab and theming keeps the stamps', () => {

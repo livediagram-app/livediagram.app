@@ -1,7 +1,7 @@
 import type { ArrowElement, Element, Tab, ThemeDefinition } from '@livediagram/diagram';
 import { COMPONENT_SIZE, isBoxed } from '@livediagram/diagram';
 import { describe, expect, it } from 'vitest';
-import { ES_PROCESS_LAYER_ID, eventStormingLayers } from '@livediagram/diagram';
+import { ES_BOARD_LAYER_ID, eventStormingLayers } from '@livediagram/diagram';
 import {
   buildDrawnArrow,
   buildDrawnBoxed,
@@ -219,10 +219,10 @@ describe('buildDrawnBoxed', () => {
     expect((offPolicy as { fixedSize?: boolean }).fixedSize).toBeUndefined();
   });
 
-  // Stage routing (spec/139): a note knows which workshop stage it belongs
-  // to, so on an event-storming board it lands on that stage's layer — a
-  // Command dropped while browsing Big picture still files under Process.
-  it('routes an event-storming note onto its stage layer on an ES board', () => {
+  // Layer routing (spec/139): an event-storming board has ONE layer, and
+  // every note files onto it whatever its kind — stage bands meant two notes
+  // could never be stacked against each other.
+  it('routes every event-storming note onto the board layer', () => {
     const esTab = tab({ layers: eventStormingLayers() });
     const cmd = buildDrawnBoxed(
       { type: 'sticky', fill: '#93c5fd', esKind: 'command' },
@@ -233,10 +233,20 @@ describe('buildDrawnBoxed', () => {
       null,
       esTab,
     );
-    expect(cmd.layerId).toBe(ES_PROCESS_LAYER_ID);
+    expect(cmd.layerId).toBe(ES_BOARD_LAYER_ID);
+    const evt = buildDrawnBoxed(
+      { type: 'sticky', fill: '#fdba74', esKind: 'domain-event' },
+      0,
+      0,
+      3,
+      3,
+      null,
+      esTab,
+    );
+    expect(evt.layerId).toBe(ES_BOARD_LAYER_ID);
   });
 
-  it('leaves routing alone off-board, and when the stage layer is hidden or locked', () => {
+  it('leaves routing alone off-board, and when the board layer is hidden or locked', () => {
     // Not an event-storming board: no stamp — the ordinary active-layer
     // stamping at the commit choke point applies.
     const off = buildDrawnBoxed(
@@ -252,7 +262,7 @@ describe('buildDrawnBoxed', () => {
     // Hidden target: stamping would create an element the user can't see.
     const hidden = tab({
       layers: eventStormingLayers().map((l) =>
-        l.id === ES_PROCESS_LAYER_ID ? { ...l, visible: false } : l,
+        l.id === ES_BOARD_LAYER_ID ? { ...l, visible: false } : l,
       ),
     });
     expect(
@@ -269,7 +279,7 @@ describe('buildDrawnBoxed', () => {
     // Locked target: stamping would create an element the user can't touch.
     const locked = tab({
       layers: eventStormingLayers().map((l) =>
-        l.id === ES_PROCESS_LAYER_ID ? { ...l, locked: true } : l,
+        l.id === ES_BOARD_LAYER_ID ? { ...l, locked: true } : l,
       ),
     });
     expect(

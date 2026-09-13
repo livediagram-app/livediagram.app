@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
+  isEventStormingTab,
   createPinnedArrow,
   createShape,
   isBoxed,
@@ -110,7 +111,6 @@ import { useEditorDialogs } from './useEditorDialogs';
 import { useElementHelpers } from './useElementHelpers';
 import { useElementCreation } from './useElementCreation';
 import { useLayersState } from './useLayersState';
-import { useEventStormingViews } from './useEventStormingViews';
 import { useInlineIconMutators } from './useInlineIconMutators';
 import { usePresenceBroadcast } from './usePresenceBroadcast';
 import { useSelectionEditing } from './useSelectionEditing';
@@ -1385,15 +1385,9 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // Refresh the commit choke point's stamp (see commitTabs above).
   activeLayerStampRef.current = { tabId: activeId, layerId: activeLayerId };
 
-  // Event-storming workshop views (spec/139): stage chips + rail toggle
-  // over the layers slice. Inert (esBoard=false) on every other tab.
-  const esViews = useEventStormingViews({
-    activeTab,
-    activeLayerId: layersState.activeLayerId,
-    editsBlocked,
-    commitActiveTab,
-    setActiveLayer: layersState.setActiveLayer,
-  });
+  // Is this an event-storming board (spec/139)? One layer, so this is just
+  // tab data — it drives the palette, the stationery and the note menu.
+  const esBoard = isEventStormingTab(activeTab.layers);
   // Element creation lands on the active layer, so it's additionally
   // blocked while that layer is hidden or locked (spec/74).
   const createBlocked = editsBlocked || activeLayerBlocked;
@@ -2464,9 +2458,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     layerPreviewId: layersState.previewLayerId,
     setLayerPreviewId: layersState.setPreviewLayerId,
     // Event-storming workshop views (spec/139).
-    esBoard: esViews.esBoard,
-    esStage: esViews.esStage,
-    setEsStage: esViews.setEsStage,
+    esBoard,
     // Menu-facing wrapper: moves the CURRENT selection (group-expanded)
     // onto the picked layer.
     moveSelectedToLayer: (layerId: string) =>
