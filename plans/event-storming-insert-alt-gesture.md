@@ -76,42 +76,51 @@ the window), and on some it is Super rather than Alt. The operator develops on
 Linux Mint, so **verify early, in a real browser, that the page receives
 `altKey` during a drag**:
 
-- [ ] Spike it first: a five-line listener that logs `altKey` on `pointermove`
-      and `dragover` while Alt is held. Confirm both paths see it.
-- [ ] If the WM swallows it, **stop and report** with what you observed —
-      do not silently substitute a different key. Offer the operator the
-      options (AltGr / Ctrl+Alt / a sticky toggle) and wait.
-- [ ] Also confirm Alt does not steal focus to the browser menu bar on keyup
-      (Firefox/Chrome on Linux); `preventDefault` on the keydown if needed, but
-      only while a drag is in flight — never globally.
+- [x] Spiked with REAL X11 input (a compiled XTEST injector — CDP-synthesised
+      input bypasses the WM and would have told a comforting lie). Results on
+      the operator's Cinnamon desktop (`mouse-button-modifier = '<Alt>'`):
+  - [x] Alt held BEFORE the press: **Muffin steals it** — the window moved,
+        the page saw no `pointerdown` at all.
+  - [x] Press first, THEN Alt: works on both paths. `pointermove` carries
+        `altKey=true`; a native drag's `dragover` / `drop` carry it too.
+  - [x] Ctrl+Alt is **also** swallowed (press eaten, `buttons=0`); right Alt
+        is `ISO_Level3_Shift` on a us-intl layout so it sets `AltGraph`, never
+        `altKey`. Neither is a usable fallback.
+- [x] Reported and the operator chose: **ship Alt unchanged**, taught as
+      "press Alt while dragging" rather than "hold Alt and drag".
+- [x] Alt does NOT steal focus to a menu bar: a bare Alt tap produced no
+      `blur` and no menu in Chrome on Linux, so no `preventDefault` is needed.
+- [x] Measured, and it changes the design: **during a native HTML5 drag
+      Chromium delivers no key events to the document at all** — only
+      `dragover.altKey`. So on the palette path Alt registers on the next
+      pointer movement, and keydown/keyup listeners would be dead code. On the
+      pointer path (phase B) key events DO fire, so Q3 is fully live there.
 
 ---
 
 ## 4. Phase A — arm on Alt (palette drag)
 
-- [ ] Read the shipped implementation first: `apps/live/lib/insert-between.ts`
+- [x] Read the shipped implementation first: `apps/live/lib/insert-between.ts`
       (`canInsertBetweenOn`, `findInsertionSlot`, `applyInsertionShift`),
       `apps/live/lib/palette-drag-preview.ts` (the preview channel),
       `apps/live/hooks/canvas/usePaletteDragGuides.ts` (the resolver),
       `apps/live/hooks/canvas/usePaletteDrop.ts` (the commit).
-- [ ] Extend `canInsertBetweenOn` (or its call sites — judge which reads
-      better) with the **modifier** as a first-class input: the gate is now
-      "ES board AND droppable AND Alt held". Keep it ONE predicate so the
-      preview, the ghost and the drop cannot disagree about whether the
-      gesture is armed.
-- [ ] Track Alt live during a palette drag:
-  - [ ] `DragEvent.altKey` on `dragover` gives it for free on every move.
-  - [ ] Alt pressed or released **without** moving the mouse must still
-        update the preview (Q3). Add `keydown` / `keyup` listeners for the
-        duration of the drag, and re-resolve from the last known cursor
-        position. Test both orders: move-then-Alt and Alt-then-move.
-- [ ] Releasing Alt closes the slot and restores the ordinary alignment snap
-      for the rest of the drag. Pin with a test.
-- [ ] Update the existing tests that assumed automatic arming — several will
-      now be asserting the OLD behaviour. Read each one and decide whether it
-      becomes an Alt-held test or a "plain drag does nothing special" test;
-      both are worth keeping.
-- [ ] Commit: `feat(canvas): arm insertion on a held Alt`.
+- [x] `canInsertBetweenOn(gate, altHeld)` is still ONE predicate; it now takes
+      the modifier as its second argument. The board/session half is a named
+      `InsertionGate` the caller settles once per render, so the drag can ask
+      about the hand on every move without re-deriving the rest.
+- [x] Track Alt live during a palette drag:
+  - [x] `DragEvent.altKey` on `dragover` gives it for free on every move.
+  - [x] Alt with no mouse movement: **not deliverable on this path** — see the
+        spike above. Chromium sends no key events during a native drag, so a
+        keydown listener could never fire and is not added. The next movement
+        (even a pixel) picks it up. Recorded in spec/139 and the help copy.
+- [x] Releasing Alt closes the slot and restores the ordinary alignment snap
+      for the rest of the drag. Pinned: "unwinds the moment Alt comes up".
+- [x] Existing tests re-read one by one: the slot-opening ones now hold Alt
+      (`altDragOver`), and the old "automatic" case became the regression
+      guard "offers nothing without Alt, however inviting the gap".
+- [x] Commit: `feat(canvas): arm insertion on a held Alt`.
 
 ---
 
