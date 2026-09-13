@@ -90,6 +90,24 @@ export const THEMES: ThemeDefinition[] = [
     elementText: '#0c4a6e',
   },
   {
+    id: 'charcoal',
+    label: 'Charcoal',
+    // Neutral-grey dark theme — distinct from Midnight (which is
+    // blue-shifted slate) and from Mono (which is pure white). Sits on
+    // the zinc ramp (Tailwind's neutral-with-a-hint-of-blue family, the
+    // one the app's own dark chrome uses): backdrop between zinc-900 and
+    // zinc-800, dots + element strokes both at zinc-600 so the grid and
+    // the outlines read as one material, element fill a step above the
+    // backdrop, and zinc-200 text.
+    backgroundColor: '#2b2b33',
+    backgroundPattern: 'grid',
+    patternColor: '#636373',
+    elementFill: '#2c2c33',
+    elementStroke: '#a1a1aa',
+    elementText: '#e4e4e7',
+    extra: true,
+  },
+  {
     id: 'midnight',
     label: 'Midnight',
     backgroundColor: '#0f172a',
@@ -149,24 +167,6 @@ export const THEMES: ThemeDefinition[] = [
     elementFill: '#e0e7ff',
     elementStroke: '#4338ca',
     elementText: '#312e81',
-    extra: true,
-  },
-  {
-    id: 'charcoal',
-    label: 'Charcoal',
-    // Neutral-grey dark theme — distinct from Midnight (which is
-    // blue-shifted slate) and from Mono (which is pure white). Sits on
-    // the zinc ramp (Tailwind's neutral-with-a-hint-of-blue family, the
-    // one the app's own dark chrome uses): backdrop between zinc-900 and
-    // zinc-800, dots + element strokes both at zinc-600 so the grid and
-    // the outlines read as one material, element fill a step above the
-    // backdrop, and zinc-200 text.
-    backgroundColor: '#2b2b33',
-    backgroundPattern: 'grid',
-    patternColor: '#636373',
-    elementFill: '#2c2c33',
-    elementStroke: '#a1a1aa',
-    elementText: '#e4e4e7',
     extra: true,
   },
   {

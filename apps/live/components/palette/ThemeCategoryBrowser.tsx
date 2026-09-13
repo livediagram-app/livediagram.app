@@ -20,7 +20,7 @@
 import { useState } from 'react';
 import type { CustomTheme } from '@livediagram/api-schema';
 import { isCustomThemeId, materialiseCustomTheme } from '@/lib/custom-theme-registry';
-import { shufflePinned } from '@/lib/shuffle';
+import { shuffledThemes } from '@/lib/theme-order';
 import { THEMES, type ThemeCategory, type ThemeDefinition, type ThemeId } from '@/lib/themes';
 import { THEME_CATEGORIES, themeCategory } from '@/lib/themes-taxonomy';
 import { useUiMode } from '@/hooks/ui/useUiMode';
@@ -82,10 +82,11 @@ export function ThemeCategoryBrowser({
     if (themeIsCustom) return customEnabled ? 'custom' : null;
     return themeId !== 'brand' ? themeCategory(themeId as ThemeId) : null;
   });
-  // Rotate which themes greet the user on each open (Basic always pinned
-  // first). Shuffled once per mount via lazy useState so clicking around
-  // never reshuffles it underfoot.
-  const [themes] = useState(() => shufflePinned(THEMES, (t) => t.id === 'brand'));
+  // Rotate which themes greet the user on each open, with the LEADS pinned
+  // through it (Basic for the catalogue, Charcoal for the Dark category —
+  // see theme-order.ts). Shuffled once per mount via lazy useState so
+  // clicking around never reshuffles it underfoot.
+  const [themes] = useState(() => shuffledThemes(THEMES));
   const commit = onCommit ?? onSelect;
   const brandTheme = THEMES.find((t) => t.id === 'brand');
   const themeCategoryThemes = (category: ThemeCategory) =>
