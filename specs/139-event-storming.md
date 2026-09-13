@@ -224,6 +224,82 @@ The notes behave like the physical kit:
   drop goes through the same builder as a tap, so fill, silhouette,
   tilt, fixed size and stage routing all apply identically.
 
+## Phase 5 (shipped): insert a note between two notes
+
+Dragging a note from the palette over the **gap between two notes**
+offers to INSERT it there: while the cursor hovers the gap, every
+element at or right of that point slides further right to open a slot,
+live; dropping commits the insertion as ONE undoable step; leaving the
+gap closes it again.
+
+**Why here and nowhere else.** An event-storming wall is a
+left-to-right timeline of domain events, so "this happened before that"
+is the entire information content of the x axis. Adding a step in the
+middle is the commonest edit in a session, and it used to cost a manual
+re-shuffle of everything downstream — the one operation a
+low-threshold-capture board cannot afford to be slow. On an ordinary
+board x means nothing in particular, so the same gesture would be a
+surprise: everything is gated on `isEventStormingTab`, and no other
+board's behaviour changes at all.
+
+- **The preview NEVER touches the document.** No commit, no tick, no
+  realtime broadcast, no autosave, no dirty flag. The slot is published
+  on a module-level store beside the drag ghost's snap channel
+  (`lib/palette-drag-preview.ts`), and the canvas renders it as a CSS
+  `translateX` on the elements that move. A preview that wrote would
+  sync half-finished states to peers and pollute the undo stack; a
+  transform cannot desync from a model it never touched, and it unwinds
+  by dropping a style. The minimap, which reads the model, correctly
+  shows nothing moving.
+- **The insertion point is the RIGHT-hand note's left edge.** The
+  incoming note takes that note's place and everything from there slides
+  by `note width + the row's prevailing gap` (the median gap between
+  adjacent notes in the hovered row; the template's 72px when the row
+  has no gap to measure). So every gap the author already arranged
+  survives untouched, and the new note gets the row's own rhythm on its
+  right.
+- **Everything to the right moves, not just the row.** A command above
+  its event and a policy below it stay lined up with the event they
+  annotate. Boxed elements move by `x`; a group moves whole when its
+  CENTRE is at or after the point (a group is never torn in half); a
+  free arrow entirely at or after the point travels, one that straddles
+  it stretches (each endpoint keeps the note it was drawn between);
+  pinned arrows need no help at all. **Locked elements do not move** —
+  the board opens around them, because a locked element is one the
+  author pinned on purpose. Elements on a hidden or locked LAYER cannot
+  define the row (you can't aim at a note you can't see) but do travel,
+  so the order still makes sense when the layer comes back.
+- **One placement rule at a time.** While a slot is open the alignment
+  snap yields: the slot publishes its own offset through the same snap
+  channel, so the ghost, the insertion marker and the drop cannot
+  disagree — the same discipline spec/58's ghost already follows. The
+  marker is a vertical line at the insertion point drawn in the
+  alignment guides' own visual language, spanning the board because the
+  whole board is what splits.
+- **Hysteresis, so a shaking hand doesn't strobe the board.** An open
+  slot stays open until the cursor leaves the gap by a margin; a cursor
+  crossing the boundary back and forth cannot toggle it. The slot eases
+  open and shut over 120ms (collapsed to instant under reduced motion);
+  the COMMITTED positions never animate — the drop lands exactly where
+  the preview promised.
+- **One undoable step.** The ripple and the new note are one commit
+  through the ordinary choke point, so layer stamping, board-kind
+  stamping, the activity-log entry and autosave all happen as usual, and
+  a single Undo restores the board exactly. The ripple runs against the
+  tab as it is at drop time, not the snapshot the drag started from, so
+  a peer's mid-drag edit is not reverted by the drop that follows it.
+  The activity log names the act ("Inserted a Sticky note, moving 2
+  Sticky notes right") rather than listing an add and some unrelated
+  edits.
+- **Never offered where the drop would be refused**: a view-only
+  session, a locked tab, or a hidden / locked active layer sees no
+  preview at all.
+- **Not in v1:** dragging a note ALREADY on the board into a gap (the
+  geometry is written to be reusable for it), and vertical insertion
+  (the module is axis-parameterised in shape, horizontal in fact).
+- **Telemetry:** `Canvas / Used / InsertBetween`, once per committed
+  insertion, alongside the ordinary `Element / Added / Sticky`.
+
 ## Domain learnings (session log)
 
 One-liners captured as they were learned — product truths for this diagram
@@ -320,13 +396,28 @@ type, kept current every session. Each should stay true on its own.
   drag serve the capture loop; a misplaced note that needs fixing after
   is friction. Ghost, guides and landed element must share ONE snap
   computation, or the preview lies.
+- The x axis IS the domain content here: on a timeline of events,
+  "between" is a first-class place to drop something, and making room
+  by hand is the friction the board can least afford.
+- A preview is a promise, so it must never write: render it as a
+  transform over an untouched model and it cannot leak to a peer, the
+  undo stack, or autosave — and it unwinds by deleting a style.
+- Insert where the displaced note WAS, not in the middle of the gap:
+  taking its place preserves every spacing the author already chose.
+- One drag, one placement rule: a slot and an alignment snap fighting
+  over the same drop point is how a ghost starts lying.
+- A live preview needs hysteresis or a shaking hand strobes the board.
+- Chrome anchored to element BOUNDS (the selection popover) has to stand
+  down during a render-time shift — bounds know nothing about a
+  transform, so it would float over empty canvas.
 
 ## Still ahead (phased, see the plan)
 
-Board structure (swimlanes, pivotal events) and the help-centre article
-for the diagram type itself. Each phase lands with its own spec update
-here — this file stays the source of truth for what the type IS at any
-moment.
+Board structure (swimlanes, pivotal events). Inserting between two notes
+covers the palette drag only; dragging a note ALREADY on the board into
+a gap is the obvious next step and the geometry is built for it. Each
+phase lands with its own spec update here — this file stays the source
+of truth for what the type IS at any moment.
 
 ## Counts
 

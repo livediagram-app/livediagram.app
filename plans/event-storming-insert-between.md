@@ -345,26 +345,29 @@ Each of these is a test, not a thought experiment.
 
 ## 11. Phase G — telemetry, docs, specs
 
-- [ ] **Telemetry** (spec/22): one `track(...)` at the insertion commit. Reuse
-      the closed `TELEMETRY_CATEGORIES` / `TELEMETRY_ACTIONS` enums in
-      `@livediagram/api-schema`; extend only if no existing pair fits, and say
-      so in the commit message if you do. The `type` is a preset enum value,
-      never user content.
-- [ ] **spec/139**: a new phase section describing the feature, the
-      board-only gating, the preview-never-writes rule, and the decisions in
-      §2 above with their reasons. Append one-liners to the **Domain learnings
-      (session log)** section for anything genuinely learned.
-- [ ] **spec/09** and **spec/58**: note that palette drags on an ES
-      board can resolve an insertion slot, and that the alignment snap yields
-      to it.
-- [ ] **Help**: update `apps/help/app/canvas/event-storming-boards/page.mdx`
-      (the board-type article) with a short section on inserting between notes.
-      If it deserves its own article instead, follow the help rules in
-      `CLAUDE.md` exactly: registry entry with keywords, `articleCount` bump,
-      and card art in BOTH `FEATURE_ICONS` and `FEATURE_ENTITY_HEX`.
-      `registry-counts.test.ts` will catch a missed count.
-- [ ] Check whether `README.md` / `docs/` need a line (probably not — this is a
-      behaviour inside an existing feature — but check rather than assume).
+- [x] **Telemetry** (spec/22): `track('Canvas', 'Used', 'InsertBetween')` fires
+      once at the insertion commit, beside the ordinary
+      `Element / Added / Sticky`. No enum extension needed — `Canvas` / `Used`
+      is the existing pair for "someone used this canvas capability"
+      (FollowMe, Laser, Isometric), and the type is a preset token. The public
+      dashboard gets a plain-English explanation for it in `event-vocab.ts`,
+      so it doesn't land in the generic fallback.
+- [x] **spec/139**: a new "Phase 5 (shipped)" section — the gesture, the
+      board-only gating, the preview-never-writes rule, the insertion-point
+      choice, what moves and what doesn't, hysteresis, the one-commit rule, and
+      what is deliberately not in v1. Seven one-liners appended to the **Domain
+      learnings** log.
+- [x] **spec/09**: the Alignment guides section now says a palette drag on an
+      event-storming board can resolve an insertion slot, and that the
+      alignment snap yields to it. **spec/58**: a "Where the ghost draws"
+      section naming the one snap channel and its two publishers.
+- [x] **Help**: a new "Adding a step in the middle" section in
+      `canvas/event-storming-boards`, plus the search keywords a reader would
+      actually type ("insert between", "make room", "squeeze in", "reorder").
+      No new article, so no registry count to bump and no card art needed.
+- [x] `README.md` / `docs/` checked: neither mentions the board type or the
+      palette drag at all (they cover apps, packages, commands and deploys), so
+      a behaviour inside an existing feature leaves them correct.
 
 ---
 
