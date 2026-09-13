@@ -373,27 +373,44 @@ Each of these is a test, not a thought experiment.
 
 ## 12. Phase H — fold-back
 
-- [ ] Names match post-plan reality: no `TODO`, no `phase N` references, no
-      "new" in a symbol name that will not age well.
-- [ ] Module headers state what each module IS today, not what it was added
-      for.
-- [ ] Every file touched is still under the ~400-line soft target, or is a
-      documented exception (pure data / a fully decomposed orchestration root).
-- [ ] Delete any scratch scripts (`*.tmp.mjs`, `/tmp/*.mjs`) before the final
-      lint — a stray file in the workspace fails ESLint.
-- [ ] Record in `LESSONS_LEARNED.md` anything that cost real debugging time.
-- [ ] Re-read this plan top to bottom and confirm every box is ticked or
-      explicitly deferred with a reason.
+- [x] Names match post-plan reality: every symbol is a domain word
+      (`InsertionSlot`, `findInsertionSlot`, `applyInsertionShift`,
+      `insertElementAt`, `canInsertBetweenOn`, `useInsertShift`,
+      `takeInsertionSlot`, `data-insert-shift`). No `TODO`, no phase
+      coordinates, no "new" in a name that would age.
+- [x] Module headers state what each module IS: `insert-between.ts` opens with
+      what the feature is and why the board has it, not with what was added
+      when.
+- [x] Line budget: the three new modules are 278 / 155 / 171 lines, and the
+      render-time slice came OUT of the elements layer into
+      `hooks/canvas/useInsertShift.ts` so the concept has a name and a test.
+      `insert-between.ts` keeps detection and ripple together (one concept, the
+      ripple is 25 lines) rather than splitting at the plan's ~200-line hint;
+      recorded in `DECISIONS.md`. Three files this change touched were ALREADY
+      over the 400-line target before it (`BoxedElementView.tsx` 632,
+      `CanvasElementsLayer.tsx` 527, `useElementCreation.ts` 474); the edits
+      here are 4-17 lines each and wiring them elsewhere would have been worse,
+      so they are left as they were found.
+- [x] Scratch scripts (`/tmp/lvd-insert/*.mjs`) live outside the workspace and
+      are deleted; only the screenshots are kept for the report.
+- [x] `LESSONS_LEARNED.md` records the render-loop, the `act()` requirement for
+      DOM-event-driven hook tests, the `react-hooks/refs` rule, and the
+      gzip-`curl` trap.
+- [x] Plan re-read top to bottom; every box is ticked or answered in place.
 
 ---
 
 ## 13. Definition of done
 
-- [ ] Dragging a palette note over a gap on an ES board opens a slot live; the
+- [x] Dragging a palette note over a gap on an ES board opens a slot live; the
       board unwinds when the cursor leaves; dropping commits in one undoable
       step and the new note is ready to type into.
-- [ ] Nothing changes on any non-ES board.
-- [ ] No preview state ever reaches the document, the wire, or a peer.
-- [ ] All gates green, E2E smoke passes, and the feature is verified by hand
+- [x] Nothing changes on any non-ES board: every path is behind
+      `canInsertBetweenOn`, and with no slot the drag resolves exactly the
+      alignment snap it always did.
+- [x] No preview state ever reaches the document, the wire, or a peer —
+      proven on the operator's own board, whose stored tab was byte-identical
+      before and after a full preview pass.
+- [x] All gates green, E2E smoke passes, and the feature is verified by hand
       with screenshots.
-- [ ] Specs, help and telemetry updated in the same branch.
+- [x] Specs, help and telemetry updated in the same branch.

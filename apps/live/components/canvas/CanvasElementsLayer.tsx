@@ -19,7 +19,7 @@ import { LaserOverlay } from '@/components/canvas/LaserOverlay';
 import { UnionResizeHandles } from '@/components/canvas/element-parts';
 import { QuickConnectRing } from '@/components/canvas/QuickConnectRing';
 import { RemoteCursor } from '@/components/canvas/RemoteCursor';
-import { useInsertionSlot, usePaletteDragPreview } from '@/lib/palette-drag-preview';
+import { useInsertShift } from '@/hooks/canvas/useInsertShift';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 
 type Bounds = { x: number; y: number; width: number; height: number };
@@ -226,18 +226,8 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
   );
   // Insert-between preview (spec/139): while a palette drag hovers a gap on an
   // event-storming board, the elements at and after the insertion point RENDER
-  // shifted right to show the slot opening. Read from the drag's module store
-  // rather than threaded as a prop, like the ghost and the snap — a drag is
-  // global, transient, and must not enter the document. `paletteDragging` keeps
-  // the easing mounted for the whole drag so the slot animates shut too.
-  const insertionSlot = useInsertionSlot();
-  const paletteDragging = usePaletteDragPreview() !== null;
-  const insertShiftIds = useMemo(
-    () => (insertionSlot ? new Set(insertionSlot.shiftedIds) : null),
-    [insertionSlot],
-  );
-  const insertShiftX = (id: string): number | undefined =>
-    insertShiftIds?.has(id) ? insertionSlot?.shiftDx : undefined;
+  // shifted right to show the slot opening — see useInsertShift.
+  const insertShift = useInsertShift();
   // Paint order (spec/74 + spec/09): layer bands bottom -> top, keeping
   // array order within each band with frames hoisted to the front of
   // THEIR band (a frame is a section backdrop that must sit behind its
@@ -306,13 +296,13 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
               // insert-between.ts): one that straddles the insertion point
               // stretches, which a transform cannot express, so it waits for
               // the drop.
-              data-insert-shift={paletteDragging ? '' : undefined}
+              data-insert-shift={insertShift.animates ? '' : undefined}
               style={{
                 pointerEvents: 'none',
                 overflow: 'visible',
                 ...(effOpacity < 1 ? { opacity: effOpacity } : {}),
-                ...(insertShiftX(element.id)
-                  ? { transform: `translateX(${insertShiftX(element.id)}px)` }
+                ...(insertShift.xFor(element.id)
+                  ? { transform: `translateX(${insertShift.xFor(element.id)}px)` }
                   : {}),
               }}
             >
@@ -352,8 +342,8 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             // onto its own z-plane (globals.css --iso-z): coplanar layers
             // z-fight under preserve-3d, which is the flicker.
             isoDepth={isoDepth}
-            insertShiftX={insertShiftX(element.id)}
-            insertShiftAnimates={paletteDragging}
+            insertShiftX={insertShift.xFor(element.id)}
+            insertShiftAnimates={insertShift.animates}
             // Resolved once here, where both the vote and the tab's layers
             // are in scope, rather than threading `layers` down to the
             // gesture hook and the overlay separately (spec/96).
