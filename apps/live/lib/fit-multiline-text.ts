@@ -35,6 +35,7 @@ export function fitMultilineFontPx({
   bold = false,
   italic = false,
   uppercase = false,
+  fontFamily,
 }: {
   text: string;
   width: number;
@@ -46,6 +47,10 @@ export function fitMultilineFontPx({
   // are wider, so the fit must measure THEM — measuring the typed mixed
   // case would hand back a size that overflows the moment it renders.
   uppercase?: boolean;
+  // The CSS stack the label paints in (spec/28) — a workshop note wears the
+  // marker face, which is much wider than the UI sans at the same px. Same
+  // rule as the capitals: measure the text as it will look.
+  fontFamily?: string;
 }): number {
   const availableW = Math.max(1, width - padding * 2);
   const availableH = Math.max(1, height - padding * 2);
@@ -56,14 +61,15 @@ export function fitMultilineFontPx({
   // companionship rule below simply doesn't apply to it.
   const wordCount = measured.trim().split(/\s+/).length;
 
-  const linesAt = (px: number) => wrapLabel(measured, availableW, labelMeasure(px, bold, italic));
+  const linesAt = (px: number) =>
+    wrapLabel(measured, availableW, labelMeasure(px, bold, italic, fontFamily));
 
   const fits = (px: number): boolean => {
     const lines = linesAt(px);
     // Height is the binding constraint once wrapping has done its job; a
     // single unbreakable word can still overflow the width, so check both.
     if (lines.length * px * LINE_HEIGHT_RATIO > availableH) return false;
-    const measure = labelMeasure(px, bold, italic);
+    const measure = labelMeasure(px, bold, italic, fontFamily);
     return lines.every((line) => measure(line) <= availableW);
   };
 

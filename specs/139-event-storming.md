@@ -117,6 +117,18 @@ semantic colour:
   made it a poster that shouted down every note beside it — which is what
   the original 44px ceiling did. Only the top end is pinned; a long note
   still shrinks.
+- **Notes are written in MARKER.** `ES_NOTE_FONT` is `permanent-marker`
+  (spec/28's catalogue), resolved from the note rather than stamped on the
+  element — same reasoning as the caps: the face is grammar, so every board
+  gets it, including the ones authored before this, and nobody has to keep
+  it. It sits between the author's own `element.font` (which still wins) and
+  the tab default (which it beats). Chosen by looking at all twelve options
+  on real stationery: marker is the only one that reads as a wall rather
+  than a diagram, and capitals are its home register. The auto-fit measures
+  IN that face (`labelMeasure`'s `fontFamily`), because a marker is far
+  wider than the UI sans at the same px — and the canvas re-renders once the
+  webfont lands (`useFontsReady`), or a board nobody has touched keeps a size
+  measured against the swap fallback.
 - **Notes are WRITTEN IN CAPITALS.** A marker on paper produces caps, and a
   wall of them reads as one hand: capitals stay legible from across the
   room, hold an even block of colour on the paper, and stop a board looking

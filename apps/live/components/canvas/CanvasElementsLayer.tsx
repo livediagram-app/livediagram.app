@@ -1,6 +1,8 @@
 import { useMemo } from 'react';
 import { useStableHandlers } from '@/hooks/ui/useStableHandlers';
+import { useFontsReady } from './useFontsReady';
 import {
+  eventStormingNoteFont,
   isSelectionMode,
   buildElementIndex,
   isBoxed,
@@ -206,6 +208,10 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onDropIcon,
     onLinkCell,
   });
+  // Auto-fit measures the face it paints, and webfonts land after first
+  // paint — re-render this layer once they are in so every fitted label
+  // re-measures in its real face (see useFontsReady).
+  useFontsReady();
   // Resolved tab default font once; per-element falls back to it (spec/28).
   const tabFontStack = resolveFontStack(tabFont);
   // Highest dot count on the tab (spec/39), computed once so each element's
@@ -431,7 +437,12 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             onLinkCell={h.onLinkCell}
             imageContext={imageContext}
             onContextSelect={h.handleElementContextSelect}
-            fontFamily={resolveFontStack(element.font) ?? tabFontStack}
+            // A workshop note writes in marker (spec/139): the notation names
+            // the face, so it outranks the tab default — but not an explicit
+            // per-element font, which is a deliberate author choice.
+            fontFamily={
+              resolveFontStack(element.font ?? eventStormingNoteFont(element)) ?? tabFontStack
+            }
           />
         );
       })}

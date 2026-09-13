@@ -52,9 +52,21 @@ falling back to small when the active tab has no explicit size — so tabs in
 one diagram stay consistent and a brand-new tab still defaults to small
 rather than the `md` factory baseline.
 
-Resolution order for any text: `element.font → tab.font → editor default`
-(the system sans stack). `resolveFontStack` maps a stored id to its CSS
-stack; an unknown / unset id falls through to the next level.
+Resolution order for any text: `element.font → notation font → tab.font →
+editor default` (the system sans stack). `resolveFontStack` maps a stored id
+to its CSS stack; an unknown / unset id falls through to the next level.
+
+The **notation font** is the one rung the author doesn't set: an
+event-storming note is written in marker (`ES_NOTE_FONT`, spec/139), because
+there the face is grammar rather than styling. It outranks the tab default
+and yields to an explicit `element.font`, which is a deliberate choice.
+
+Auto-fitting labels (`textSize: 'scale'` on a sticky) **measure in the face
+they paint** — `labelMeasure(size, bold, italic, fontFamily)` — since faces
+differ in width at the same px. Webfonts arrive after first paint
+(`display=swap`), so the canvas re-renders once `document.fonts.ready`
+settles (`useFontsReady`) and the fit re-measures in the real face instead of
+keeping a size taken from the swap fallback.
 
 Applies to every text surface: shape / text / sticky labels (committed +
 live editor), table cells, and arrow labels (arrows have no per-element

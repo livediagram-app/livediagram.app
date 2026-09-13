@@ -59,7 +59,17 @@ export function wrapLabel(
 // character-width estimate so wrapping degrades gracefully.
 type MeasureCtx = { measureText: (s: string) => { width: number }; font: string };
 let _labelMeasureCtx: MeasureCtx | null | undefined;
-export function labelMeasure(size: number, bold: boolean, italic: boolean): (s: string) => number {
+// `fontFamily` is the CSS stack the text will actually be painted in
+// (spec/28). Faces differ in width at the same px — a marker face is far
+// wider than the UI sans — so a caller that knows the family passes it and
+// gets a measurement of the text as it will look, not as system-ui would.
+// Omitted, the historical system-ui measurement applies.
+export function labelMeasure(
+  size: number,
+  bold: boolean,
+  italic: boolean,
+  fontFamily?: string,
+): (s: string) => number {
   if (_labelMeasureCtx === undefined) {
     // Reach `document` via globalThis so this module typechecks under a no-DOM
     // lib (the api / mcp Workers) and still uses the real canvas measure in the
@@ -75,6 +85,8 @@ export function labelMeasure(size: number, bold: boolean, italic: boolean): (s: 
   }
   const ctx = _labelMeasureCtx;
   if (!ctx) return (s) => s.length * size * 0.55;
-  ctx.font = `${bold ? '600' : '400'} ${italic ? 'italic ' : ''}${size}px system-ui, sans-serif`;
+  ctx.font = `${bold ? '600' : '400'} ${italic ? 'italic ' : ''}${size}px ${
+    fontFamily ?? 'system-ui, sans-serif'
+  }`;
   return (s) => ctx.measureText(s).width;
 }

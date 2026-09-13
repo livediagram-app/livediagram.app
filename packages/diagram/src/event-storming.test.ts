@@ -13,6 +13,8 @@ import {
   eventStormingBoardLayerId,
   eventStormingLayers,
   eventStormingNote,
+  eventStormingNoteFont,
+  ES_NOTE_FONT,
   isEventStormingNote,
   isEventStormingTab,
   type EventStormingNoteKind,
@@ -185,6 +187,24 @@ describe('isEventStormingNote', () => {
 
   it('is not a note for anything that is not a sticky', () => {
     expect(isEventStormingNote(el({ type: 'shape', esKind: 'command' }))).toBe(false);
+  });
+});
+
+// The notation writes in marker (spec/139): the face is part of the
+// grammar, like the colour, so it is resolved from the note rather than
+// left to whatever font the tab happens to carry.
+describe('eventStormingNoteFont', () => {
+  const el = (o: Record<string, unknown> = {}) =>
+    ({ id: 'n', type: 'sticky', x: 0, y: 0, width: 200, height: 200, ...o }) as never;
+
+  it('gives a workshop note the marker face', () => {
+    expect(eventStormingNoteFont(el({ esKind: 'domain-event' }))).toBe(ES_NOTE_FONT);
+    expect(ES_NOTE_FONT).toBe('permanent-marker');
+  });
+
+  it('gives an ordinary element nothing (the tab default still applies)', () => {
+    expect(eventStormingNoteFont(el())).toBeNull();
+    expect(eventStormingNoteFont(el({ type: 'shape' }))).toBeNull();
   });
 });
 

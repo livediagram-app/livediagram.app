@@ -79,6 +79,7 @@ export function RichTextEditor({
     fitBox,
     multiline,
     uppercase,
+    fontFamily,
     cursorAtEnd,
     onCommit,
     onCancel,

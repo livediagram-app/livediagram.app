@@ -213,6 +213,24 @@ export function eventStormingLabelText(
   return isEventStormingNote(el) ? label.toUpperCase() : label;
 }
 
+// The notation's face (spec/28 font id). A workshop note is written with a
+// marker, and Permanent Marker is the catalogue's marker: chunky, slightly
+// irregular, and at home in the capitals the notes already wear. Like the
+// fill and the caps it is GRAMMAR, not styling — so it is resolved from the
+// note here rather than stamped on the element, which keeps every board
+// consistent (including the ones authored before this) and leaves the tab's
+// own font for everything that isn't a note.
+export const ES_NOTE_FONT = 'permanent-marker';
+
+export function eventStormingNoteFont(el: {
+  type: string;
+  esKind?: EventStormingNoteKind;
+  fillColor?: string;
+  fixedSize?: boolean;
+}): string | null {
+  return isEventStormingNote(el) ? ES_NOTE_FONT : null;
+}
+
 // A workshop note's hand-placement (spec/139). Calibrated by eye: ±1.1°
 // reads hand-placed, ±2.5° reads messy. One decimal keeps the stored JSON
 // tidy. Lives here rather than in the editor because every surface that

@@ -32,6 +32,7 @@ export function useRichTextSession({
   fitBox,
   multiline,
   uppercase,
+  fontFamily,
   cursorAtEnd,
   onCommit,
   onCancel,
@@ -44,6 +45,7 @@ export function useRichTextSession({
   | 'fitBox'
   | 'multiline'
   | 'uppercase'
+  | 'fontFamily'
   | 'cursorAtEnd'
   | 'onCommit'
   | 'onCancel'
@@ -111,6 +113,9 @@ export function useRichTextSession({
           // Capitals are wider: measure what the CSS transform will paint
           // (spec/139), or the note overflows as you type.
           uppercase: !!uppercase,
+          // Same reason for the face: the display label measured the marker,
+          // so the editor must too or the text resizes on double-click.
+          fontFamily,
         })
       : null;
   const basePx = fitted ?? staticBasePx;

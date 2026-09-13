@@ -100,6 +100,7 @@ export function renderLabel(
         bold: !!element.textBold,
         italic: !!element.textItalic,
         uppercase: caps,
+        fontFamily,
       })
     : undefined;
 

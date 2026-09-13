@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { labelMeasure, wrapLabel } from '@livediagram/diagram';
 import { fitMultilineFontPx, FIT_MAX_PX, FIT_MIN_PX } from './fit-multiline-text';
 
@@ -75,6 +75,47 @@ describe('fitMultilineFontPx — uppercase', () => {
     expect(fitMultilineFontPx({ text, ...note, uppercase: false })).toBe(
       fitMultilineFontPx({ text, ...note }),
     );
+  });
+});
+
+// The note is painted in a face of its own (a workshop note wears the marker,
+// spec/139), and faces have different widths at the same px. The fitter
+// therefore measures IN THAT FACE — measuring system-ui and painting a marker
+// is how a note ends up with its last word over the edge.
+describe('fitMultilineFontPx — font family', () => {
+  const note = { width: 200, height: 200, padding: 12 };
+
+  // A stand-in browser whose measurer is font-aware: the marker face is
+  // half again as wide as the default at the same px, which is the whole
+  // reason the family has to reach the measurement.
+  function stubFontAwareCanvas() {
+    const ctx = {
+      font: '',
+      measureText(s: string) {
+        const px = Number(/(\d+(?:\.\d+)?)px/.exec(ctx.font)?.[1] ?? 16);
+        const wide = /Marker/.test(ctx.font);
+        return { width: s.length * px * (wide ? 0.8 : 0.55) };
+      },
+    };
+    vi.stubGlobal('document', { createElement: () => ({ getContext: () => ctx }) });
+  }
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.resetModules();
+  });
+
+  it('shrinks a note whose face is wider than the default', async () => {
+    stubFontAwareCanvas();
+    vi.resetModules();
+    const { fitMultilineFontPx: fit } = await import('./fit-multiline-text');
+    const plain = fit({ text: 'Payment received', ...note });
+    const marker = fit({
+      text: 'Payment received',
+      ...note,
+      fontFamily: "'Permanent Marker', cursive",
+    });
+    expect(marker).toBeLessThan(plain);
   });
 });
 
