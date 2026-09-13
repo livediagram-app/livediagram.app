@@ -114,6 +114,11 @@ test('a note dropped between two notes stays between them', async ({ page, pageE
   await page.mouse.down();
   await page.mouse.move(gapX - 250, gapY - 120, { steps: 8 });
   await page.mouse.move(gapX, gapY, { steps: 8 });
+  // Chromium delivers the `dragover` for a synthetic move one move behind, so
+  // without a nudge the board can still be reading the previous position when
+  // the drop lands. A real pointer streams them; the harness needs telling.
+  await page.mouse.move(gapX + 1, gapY);
+  await page.mouse.move(gapX, gapY);
   // The slot is open: everything from the second note on has slid right to
   // make room, without a single change to the document.
   await expect
