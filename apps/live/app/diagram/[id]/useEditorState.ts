@@ -2302,7 +2302,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // paste). `copySelection` feeds the keyboard hook below; paste is
   // driven by a native `paste` listener the hook owns. See
   // useClipboard.
-  const { copySelection } = useClipboard({
+  const { copySelection, pasteFromClipboard, hasClipboard } = useClipboard({
     isReadOnly,
     embedMode,
     selectedId,
@@ -2421,8 +2421,11 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   });
 
   return {
-    // Clipboard copy, also exposed to the event-storming note menu (spec/139).
+    // Clipboard copy, also exposed to the event-storming note menu (spec/139),
+    // plus paste + its enabled flag for the canvas menu's Paste row.
     copySelection,
+    pasteFromClipboard,
+    hasClipboard,
     ...panelLayout,
     // Presenting wears the zen chrome treatment (spec/31 → spec/26): header,
     // tab bar, panels and palette all gone, so a projector shows the diagram

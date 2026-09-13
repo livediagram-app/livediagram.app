@@ -141,6 +141,11 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
     // grammar. What a facilitator actually reaches for mid-workshop is
     // cut / copy / duplicate / remove and the stacking pair.
     const esNote = eventStormingKindOf(target) !== null;
+    // A verb runs, then the menu gets out of the way (see the rows below).
+    const runAndClose = (action: () => void) => () => {
+      action();
+      onClose();
+    };
     return (
       <ContextMenu position={position} onClose={onClose} flush anchorBottom={anchorBottom}>
         {/* Layer — pinned FIRST in the menu (before the type-specific
@@ -149,30 +154,42 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
             (for boxed elements) the aspect-ratio lock. */}
         {esNote ? (
           <>
-            <MenuActionRow icon={<CutIcon />} label="Cut" onClick={props.onCutElement} />
-            <MenuActionRow icon={<CopyIcon />} label="Copy" onClick={props.onCopyElement} />
+            {/* Every verb closes the menu: an action ANSWERS the question the
+                right-click asked, so leaving the menu up means the user has to
+                dismiss a menu that has already done its job — and it covers
+                the very element they just acted on, hiding the result. */}
+            <MenuActionRow
+              icon={<CutIcon />}
+              label="Cut"
+              onClick={runAndClose(props.onCutElement)}
+            />
+            <MenuActionRow
+              icon={<CopyIcon />}
+              label="Copy"
+              onClick={runAndClose(props.onCopyElement)}
+            />
             <MenuActionRow
               icon={<DuplicateMenuIcon />}
               label="Duplicate"
-              onClick={props.onDuplicateElement}
+              onClick={runAndClose(props.onDuplicateElement)}
             />
             <MenuGroupSeparator />
             <MenuActionRow
               icon={<LayerUpIcon />}
               label="Bring to Front"
-              onClick={props.onStackFront}
+              onClick={runAndClose(props.onStackFront)}
             />
             <MenuActionRow
               icon={<LayerDownIcon />}
               label="Send to Back"
-              onClick={props.onStackBack}
+              onClick={runAndClose(props.onStackBack)}
             />
             <MenuGroupSeparator />
             <MenuActionRow
               icon={<RemoveIcon />}
               label="Remove"
               danger
-              onClick={props.onDeleteElement}
+              onClick={runAndClose(props.onDeleteElement)}
             />
           </>
         ) : null}

@@ -230,6 +230,8 @@ type, kept current every session. Each should stay true on its own.
   pickers still leave keyboard shortcuts and the command palette.
 - Next App Router hydrates React on `document`, so React handlers are
   siblings of document listeners: stopPropagation cannot hide from them.
+- An action ANSWERS the right-click: every verb closes the menu, which
+  otherwise covers the element whose change the user wants to see.
 - One button, one job: the secondary button only opens the menu — no
   select, no drag, no dismiss.
 - React stopPropagation is dispatched from the root container, so it

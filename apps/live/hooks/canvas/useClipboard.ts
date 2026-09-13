@@ -322,5 +322,11 @@ export function useClipboard(deps: ClipboardDeps) {
     return () => document.removeEventListener('paste', onPaste);
   }, [isReadOnly, editingId]);
 
-  return { copySelection };
+  // `hasClipboard` backs the canvas menu's Paste row (spec/09): the row is
+  // always THERE — a menu that changes shape with invisible state is a menu
+  // you can't learn — and greys out when the buffer is empty. It reports the
+  // in-app buffer only; a copy made in another window lives on the OS
+  // clipboard, which can't be read synchronously while rendering a menu, and
+  // Cmd+V still pastes it.
+  return { copySelection, pasteFromClipboard, hasClipboard: (clipboard?.length ?? 0) > 0 };
 }

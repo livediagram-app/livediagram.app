@@ -186,6 +186,7 @@ export function MenuActionRow({
   icon,
   onClick,
   danger = false,
+  disabled = false,
 }: {
   label: string;
   icon: ReactNode;
@@ -193,7 +194,23 @@ export function MenuActionRow({
   // Destructive verbs (Remove) tint on hover so the row reads before it is
   // clicked, matching the trash affordances elsewhere.
   danger?: boolean;
+  // A verb that exists but can't run right now (Paste with an empty
+  // clipboard). It STAYS in the menu, greyed: hiding it would change the
+  // menu's shape based on state the user can't see, and they'd learn the
+  // menu differently each time.
+  disabled?: boolean;
 }) {
+  if (disabled) {
+    return (
+      <span
+        aria-disabled
+        className="flex w-full cursor-not-allowed items-center gap-2 px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-slate-300 dark:text-slate-600"
+      >
+        <span className="flex w-4 shrink-0 items-center justify-center">{icon}</span>
+        {label}
+      </span>
+    );
+  }
   return (
     <button
       type="button"

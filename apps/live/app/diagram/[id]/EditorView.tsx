@@ -45,6 +45,8 @@ export function EditorView() {
   // "Offline" header badge and hides server-only actions (Share).
   const isOffline = useIsOfflineDiagram(ctx.diagramId);
   const {
+    pasteFromClipboard,
+    hasClipboard,
     activeId,
     activeTab,
     addTab,
@@ -368,6 +370,9 @@ export function EditorView() {
             onAutoLayout: autoLayoutTab,
             font: activeTab.font ?? null,
             onApplyFontToAll: applyTabFontToAll,
+            // Paste straight from the empty-canvas right-click (spec/09).
+            onPaste: pasteFromClipboard,
+            canPaste: hasClipboard,
             onSetFont: setTabFont,
             defaultTextSize: activeTab.defaultTextSize,
             onSetDefaultTextSize: setTabDefaultTextSize,

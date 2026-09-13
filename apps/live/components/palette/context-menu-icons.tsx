@@ -1523,3 +1523,28 @@ export function RemoveIcon() {
     </svg>
   );
 }
+
+// Paste: a clipboard with a sheet lifting off it. Deliberately NOT the
+// same clipboard glyph as Copy's two sheets — the canvas menu shows Paste
+// where the element menu shows Copy, and two near-identical clipboards
+// would read as the same verb in two places.
+export function PasteMenuIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M9 4h6v3H9z" />
+      <path d="M9 5.5H6.5A1.5 1.5 0 0 0 5 7v12a1.5 1.5 0 0 0 1.5 1.5H11" />
+      <path d="M15 5.5h2.5A1.5 1.5 0 0 1 19 7v4" />
+      <rect x="13" y="13" width="7" height="8" rx="1.2" />
+    </svg>
+  );
+}
