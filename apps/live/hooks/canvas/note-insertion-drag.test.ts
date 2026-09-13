@@ -77,7 +77,7 @@ describe('resolveNoteInsertion', () => {
       {
         id: 'drag',
         type: 'shape',
-        shape: 'rect',
+        shape: 'square',
         x: 1200,
         y: 0,
         width: 200,
