@@ -326,6 +326,13 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M3 9h18M9 21V9" {...s} />
     </Glyph>
   ),
+  'event-storming-boards': (
+    <Glyph>
+      <rect x="2.5" y="4" width="8" height="8" rx="1" {...s} transform="rotate(-4 6.5 8)" />
+      <rect x="13.5" y="3.5" width="8" height="8" rx="1" {...s} transform="rotate(5 17.5 7.5)" />
+      <rect x="8" y="13.5" width="8" height="8" rx="1" {...s} transform="rotate(-3 12 17.5)" />
+    </Glyph>
+  ),
   'using-tabs': (
     <Glyph>
       <path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" {...s} />

@@ -123,13 +123,12 @@ ordinary spec/74 data).
 
 ## Phase 5 — the on-par tail
 
-- [ ] Help article `apps/help/app/.../event-storming/page.mdx` + registry
+- [x] Help article `apps/help/app/canvas/event-storming-boards/page.mdx` + registry
       entry (`packages/help-registry`) with keywords, category, articleCount
       bump + FEATURE_ICONS / FEATURE_ENTITY_HEX card art (spec/55 house style)
 - [ ] Marketing: decide whether event storming earns a use-case mention
       beyond the counts (carousel / FAQ list already name-checks it)
-- [ ] MCP: `list_templates` picks it up automatically — verify output once,
-      no code expected
+- [x] MCP: `list_templates` picks it up automatically — verified: entry present, overrides carry kind + the single layer, 4 seed elements, 48 templates
 - [ ] E2E: confirm the generic smoke (spec/72) covers template creation, add
       a case only if it doesn't
 - [ ] Fold-back: names match post-plan reality, spec/139 states what the type

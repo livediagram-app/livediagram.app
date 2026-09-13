@@ -197,7 +197,7 @@ export const categories: Category[] = [
     title: 'Canvas',
     description:
       'Master the infinite canvas where diagrams come together: placing, selecting, grouping, linking, annotating, noting, layering, rotating, animating, shadowing, locking, theming, and templating.',
-    articleCount: 19,
+    articleCount: 20,
     kind: 'feature',
   },
   {
@@ -1182,6 +1182,16 @@ export const articles: Article[] = [
     keywords: 'starter kanban flowchart swot gantt wireframe prebuilt scaffold quick start',
     category: 'Canvas',
     categorySlug: 'canvas',
+  },
+  {
+    slug: 'event-storming-boards',
+    title: 'Event Storming Boards',
+    description: 'A board built for the workshop: the notation, paper-like notes, one wall.',
+    keywords:
+      'event storming eventstorming board workshop brandolini ddd domain driven design session facilitator wall sticky notes paper big picture process modelling modeling software design pass timeline domain event command aggregate hotspot',
+    category: 'Canvas',
+    categorySlug: 'canvas',
+    parentSlug: 'templates',
   },
   {
     slug: 'using-tabs',
