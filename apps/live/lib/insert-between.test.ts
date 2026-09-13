@@ -355,20 +355,26 @@ describe('applyInsertionShift', () => {
 describe('canInsertBetweenOn', () => {
   const editable = { esBoard: true, readOnly: false, tabLocked: false, createBlocked: false };
 
-  it('offers insertion on an editable event-storming board', () => {
-    expect(canInsertBetweenOn(editable)).toBe(true);
+  it('offers insertion on an editable event-storming board while Alt is held', () => {
+    expect(canInsertBetweenOn(editable, true)).toBe(true);
+  });
+
+  it('offers nothing without the modifier, however willing the board', () => {
+    // The whole point of the gesture: an ordinary drag on an event-storming
+    // board behaves exactly as it does on every other board.
+    expect(canInsertBetweenOn(editable, false)).toBe(false);
   });
 
   it('never offers it on an ordinary board', () => {
-    expect(canInsertBetweenOn({ ...editable, esBoard: false })).toBe(false);
+    expect(canInsertBetweenOn({ ...editable, esBoard: false }, true)).toBe(false);
   });
 
   it('never offers a slot the drop would refuse', () => {
     // A view-role session, a locked tab, and a hidden / locked active layer
     // each block creation — so none of them may see the board make room.
-    expect(canInsertBetweenOn({ ...editable, readOnly: true })).toBe(false);
-    expect(canInsertBetweenOn({ ...editable, tabLocked: true })).toBe(false);
-    expect(canInsertBetweenOn({ ...editable, createBlocked: true })).toBe(false);
+    expect(canInsertBetweenOn({ ...editable, readOnly: true }, true)).toBe(false);
+    expect(canInsertBetweenOn({ ...editable, tabLocked: true }, true)).toBe(false);
+    expect(canInsertBetweenOn({ ...editable, createBlocked: true }, true)).toBe(false);
   });
 });
 

@@ -4,7 +4,13 @@ import { useEffect, useRef, useState, type RefObject } from 'react';
 import type { AlignmentGuide, DistributionGuide, Element } from '@livediagram/diagram';
 import { pointerToCanvas } from '@/lib/canvas';
 import { paletteDragSnapAt } from '@/lib/palette-drag-snap';
-import { findInsertionSlot, insertionGhostCentre, type InsertionSlot } from '@/lib/insert-between';
+import {
+  canInsertBetweenOn,
+  findInsertionSlot,
+  insertionGhostCentre,
+  type InsertionGate,
+  type InsertionSlot,
+} from '@/lib/insert-between';
 import {
   setInsertionSlot,
   setPaletteDragSnap,
@@ -17,11 +23,17 @@ import {
 // ghost, the guides and the landed element can't disagree), runs the shared
 // snap geometry, and publishes the offset for the ghost + drop to consume.
 //
-// On an event-storming board it also resolves the INSERTION SLOT the drag is
-// offering (spec/139 insert between): the gap it would open, and which
-// elements slide right to open it. That resolution is pure (lib/insert-between)
-// and its result is published, never committed — the board only really moves
-// on drop.
+// On an event-storming board, WHILE ALT IS HELD, it also resolves the
+// INSERTION SLOT the drag is offering (spec/139 insert between): the gap it
+// would open, and which elements slide right to open it. That resolution is
+// pure (lib/insert-between) and its result is published, never committed — the
+// board only really moves on drop.
+//
+// Alt is read off each `dragover`, which is the ONLY channel available: during
+// a native HTML5 drag Chromium delivers no key events to the document at all
+// (the drag controller swallows them), so pressing or releasing Alt shows up
+// on the next pointer movement rather than instantly. A stationary hand sees
+// nothing change until it twitches — measured, not assumed.
 //
 // Why here rather than inside the ghost: the guides need the tab's elements
 // and render in the canvas overlay, the ghost is a fixed-position DOM node,
@@ -38,17 +50,17 @@ export function usePaletteDragGuides({
   elements,
   viewportZoom,
   wrapperRef,
-  canInsertBetween,
+  insertGate,
   inertIds,
 }: {
   elements: Element[];
   viewportZoom: number;
   wrapperRef: RefObject<HTMLElement | null>;
-  // Insert between (spec/139): an event-storming board where this session can
-  // actually land the note. False everywhere else, so every other board keeps
-  // today's behaviour exactly, and a preview is never offered for a drop that
-  // would be refused.
-  canInsertBetween: boolean;
+  // Insert between (spec/139): what the board and session allow. The other
+  // half of the gate — the held Alt — is read off each dragover, so an
+  // ordinary drag never offers a slot and a preview is never offered for a
+  // drop that would be refused.
+  insertGate: InsertionGate;
   // Elements on a hidden or locked layer: they cannot define the row, but
   // they still travel with the ripple.
   inertIds: ReadonlySet<string>;
@@ -62,9 +74,9 @@ export function usePaletteDragGuides({
   // per render would otherwise resubscribe on every state change, wiping the
   // in-flight slot's hysteresis with it) — and a peer's mid-drag edit is still
   // seen, because the handler reads the ref.
-  const board = useRef({ elements, inertIds });
+  const board = useRef({ elements, inertIds, insertGate });
   useEffect(() => {
-    board.current = { elements, inertIds };
+    board.current = { elements, inertIds, insertGate };
   });
 
   useEffect(() => {
@@ -100,8 +112,10 @@ export function usePaletteDragGuides({
         return;
       }
       const { x, y } = pointerToCanvas(e.clientX, e.clientY, rect, viewportZoom);
-      const { elements: live, inertIds: inert } = board.current;
-      slot = canInsertBetween
+      const { elements: live, inertIds: inert, insertGate: gate } = board.current;
+      // Alt, live: press it mid-drag and the slot opens on the next move,
+      // release it and the ordinary alignment snap takes back over.
+      slot = canInsertBetweenOn(gate, e.altKey)
         ? findInsertionSlot({
             cursorX: x,
             cursorY: y,
@@ -161,7 +175,7 @@ export function usePaletteDragGuides({
       setPaletteDragSnap(null);
       setInsertionSlot(null);
     };
-  }, [preview, viewportZoom, wrapperRef, canInsertBetween]);
+  }, [preview, viewportZoom, wrapperRef]);
 
   return { guides, distGuides };
 }

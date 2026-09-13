@@ -39,19 +39,31 @@ export type InsertionSlot = {
   spanBottom: number;
 };
 
-// May this session be offered an insertion at all? Only on an event-storming
-// board, and only where the drop would actually be allowed to land: a preview
-// that opens a slot a read-only viewer, a locked tab or a blocked active layer
-// would then refuse is a promise the editor can't keep.
-export function canInsertBetweenOn(state: {
+// What the BOARD and the session allow, independent of the hand: these change
+// only between renders, so a drag can settle them once and then ask about the
+// modifier on every move.
+export type InsertionGate = {
   esBoard: boolean;
   readOnly: boolean;
   tabLocked: boolean;
   // The whole creation gate (spec/74): includes a hidden or locked active
   // layer, which blocks creation without locking anything else.
   createBlocked: boolean;
-}): boolean {
-  return state.esBoard && !state.readOnly && !state.tabLocked && !state.createBlocked;
+};
+
+// May this drag be offered an insertion right now? Only while ALT IS HELD —
+// the gesture is deliberate, never automatic, so an ordinary drag over a gap
+// behaves exactly as it does on every other board. Only on an event-storming
+// board. And only where the drop would actually be allowed to land: a preview
+// that opens a slot a read-only viewer, a locked tab or a blocked active layer
+// would then refuse is a promise the editor can't keep.
+//
+// ONE predicate for both entry points (a palette drag and a drag of a note
+// already on the board) and for all three surfaces within each (the preview,
+// the ghost, the drop), so they cannot disagree about whether the gesture is
+// armed.
+export function canInsertBetweenOn(gate: InsertionGate, altHeld: boolean): boolean {
+  return altHeld && gate.esBoard && !gate.readOnly && !gate.tabLocked && !gate.createBlocked;
 }
 
 type FindArgs = {
