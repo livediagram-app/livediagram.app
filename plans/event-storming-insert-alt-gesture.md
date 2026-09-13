@@ -129,36 +129,42 @@ Linux Mint, so **verify early, in a real browser, that the page receives
 This is the new capability, and the riskier half: element drags run through
 `useEditorDrag`, which commits **live** on every pointer tick.
 
-- [ ] Read `apps/live/hooks/canvas/useEditorDrag.ts` end to end, especially:
+- [x] Read `apps/live/hooks/canvas/useEditorDrag.ts` end to end, especially:
       the `boxed` / `move` branch, the drag-engage threshold, how `noSnap`
       (Cmd/Ctrl, spec/60) already reads a modifier off the pointer event, and
       the checkpoint machinery (`markCheckpoint`, `cancelToCheckpoint`) that
       makes a whole drag one undo step.
-- [ ] Resolve a slot on each pointer move while Alt is held and the dragged
-      element is a single sticky on an ES board:
-  - [ ] **Exclude the dragged element itself** from the row candidates and
-        from the ripple — it is the thing being inserted, not something being
-        pushed. This is the difference from the palette path, where no such
-        element exists yet.
-  - [ ] The dragged note follows the pointer as it does today; the OTHER notes
-        show the render-only ripple preview. Both must be visible at once.
-  - [ ] Alt is read from the pointer event (like `noSnap`), plus the same
-        keydown/keyup listeners as phase A for the no-movement case.
-- [ ] While a slot is open, the dragged note should sit IN the slot rather than
-      under the raw cursor — mirroring how the palette ghost behaves — so what
-      you see is what you will get. Decide whether that reads well when the
-      pointer is far from the slot; if it fights the hand, prefer leaving the
-      note on the pointer and relying on the marker, and record why.
-- [ ] On release with a slot open, commit **one** history entry containing the
-      ripple AND the dragged note's final position. The live-tick commits
-      during the drag must collapse into that single step (this is what the
-      checkpoint machinery is for — use it rather than inventing a second
-      mechanism).
-- [ ] The vacated position leaves a hole (settled decision). Add a test that
-      proves the notes left of the source do NOT move.
-- [ ] Cancel paths: Escape mid-drag restores the pre-drag state exactly,
-      including unwinding the preview. Test it.
-- [ ] Commit: `feat(canvas): insert an existing note between two others`.
+- [x] Resolve a slot on each pointer move while Alt is held and the dragged
+      element is a single sticky on an ES board. The whole question is ONE
+      pure answer in `hooks/canvas/note-insertion-drag.ts`
+      (`resolveNoteInsertion`), so the pointer-move handler grew a dozen lines
+      rather than a pile of conditions — `useEditorDrag.ts` was already past
+      the line target.
+  - [x] The dragged element is excluded via `findInsertionSlot`'s new
+        `excludeId`: it defines no row and joins no ripple, because it is the
+        thing being inserted rather than something being pushed.
+  - [x] The dragged note follows the pointer (a real, live tick, as any move
+        does); the OTHER notes only stand aside at render time. Pinned in
+        `useEditorDrag.insert-between.test.tsx` — the dragged note's x moves
+        while `b` and `c` are still at 272 / 544.
+  - [x] Alt is read from the pointer event (like `noSnap`), plus keydown /
+        keyup listeners that REPLAY the last pointer position so the
+        no-movement case works. Unlike the palette path, a pointer drag does
+        receive key events — measured in the spike.
+- [x] The dragged note sits IN the slot (`landNoteInSlot`). It cannot fight
+      the hand: the slot only stays open while the note's centre is inside
+      the gap plus the 32px hysteresis, so the note is never far from where
+      it snaps. Recorded in `DECISIONS.md`.
+- [x] On release with a slot open, the ripple is applied through the SAME
+      gesture checkpoint the live ticks opened, so the drop is one history
+      entry covering the ripple and the note's final position. Pinned by
+      asserting exactly one checkpoint across the whole gesture.
+- [x] The vacated position leaves a hole: nothing moves LEFT, anywhere — a
+      note behind the source travels right with the rest of the board's
+      right-hand side rather than closing up. Pinned.
+- [x] Cancel paths: Escape mid-drag restores the pre-drag state exactly and
+      unwinds the preview. Pinned.
+- [x] Commit: `feat(canvas): insert an existing note between two others`.
 
 ---
 
