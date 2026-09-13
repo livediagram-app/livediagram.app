@@ -77,6 +77,12 @@ type FindArgs = {
   // row — you can't aim at a note you can't see — but they still SHIFT, so
   // the board stays consistent the moment their layer comes back.
   inertIds?: ReadonlySet<ElementId>;
+  // The note being dragged, when it is one already on the board rather than a
+  // new one from the palette. It is the thing being INSERTED, so it is out of
+  // the reckoning entirely: it neither defines the row (it is sitting under
+  // the cursor, where it would otherwise be its own neighbour) nor gets
+  // pushed aside to make room for its own arrival.
+  excludeId?: ElementId;
   // The slot currently on offer, if any. Passed back in so the offer sticks
   // through a shaky hand (see SLOT_HYSTERESIS).
   active?: InsertionSlot | null;
@@ -176,10 +182,14 @@ export function findInsertionSlot({
   cursorX,
   cursorY,
   incomingWidth,
-  elements,
+  elements: all,
   inertIds,
+  excludeId,
   active,
 }: FindArgs): InsertionSlot | null {
+  // The board as the insertion sees it: everything except the note being
+  // inserted. One filter up front, so no rule below has to remember.
+  const elements = excludeId === undefined ? all : all.filter((el) => el.id !== excludeId);
   if (active && stillInside(active, cursorX, cursorY, elements)) return active;
 
   // Row candidates: what the author can actually see and aim at.

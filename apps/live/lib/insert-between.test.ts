@@ -72,6 +72,86 @@ describe('findInsertionSlot', () => {
     expect(new Set(slot?.shiftedIds)).toEqual(new Set(['b', 'c']));
   });
 
+  // The second entry point (spec/139): a note ALREADY on the board is dragged
+  // into a gap. It is the thing being inserted, so it must neither define the
+  // row nor be pushed aside by its own arrival.
+  describe('when the incoming note is already on the board', () => {
+    // a, b, c as above plus d far to the right — d is the one being moved.
+    const WITH_D: Element[] = [...ROW, note('d', 816)];
+    const dragging = (cursorX: number, cursorY = 100) =>
+      findInsertionSlot({
+        cursorX,
+        cursorY,
+        incomingWidth: 200,
+        elements: WITH_D,
+        excludeId: 'd',
+      });
+
+    it('never pushes the dragged note aside to make room for itself', () => {
+      const slot = dragging(236);
+      expect(slot?.leftId).toBe('a');
+      expect(slot?.rightId).toBe('b');
+      expect(new Set(slot?.shiftedIds)).toEqual(new Set(['b', 'c']));
+      expect(slot?.shiftedIds).not.toContain('d');
+    });
+
+    it('ignores the dragged note when reading the row it is hovering', () => {
+      // The dragged note is sitting right where the cursor is; without the
+      // exclusion it would be its own left-hand neighbour and the gap would
+      // resolve against itself.
+      const overlapping: Element[] = [note('a', 0), note('b', 272), note('drag', 210)];
+      const slot = findInsertionSlot({
+        cursorX: 236,
+        cursorY: 100,
+        incomingWidth: 200,
+        elements: overlapping,
+        excludeId: 'drag',
+      });
+      expect(slot?.leftId).toBe('a');
+      expect(slot?.rightId).toBe('b');
+    });
+
+    it('leaves a hole where the note came from — nothing closes up behind it', () => {
+      const slot = dragging(236)!;
+      const after = applyInsertionShift(WITH_D, slot);
+      const xOf = (id: string) => (after.find((el) => el.id === id) as StickyElement).x;
+      // Everything from the insertion point rightwards opens up...
+      expect(xOf('a')).toBe(0);
+      expect(xOf('b')).toBe(272 + slot.shiftDx);
+      expect(xOf('c')).toBe(544 + slot.shiftDx);
+      // ...and the dragged note's ORIGINAL position is simply vacated. The
+      // source gap is the author's to tidy; predictable beats clever.
+      expect(xOf('d')).toBe(816);
+    });
+
+    it('reorders within the row it is already in, without counting its own width', () => {
+      // Drag c back between a and b: the slot is still one note + one gap
+      // wide, because c is no longer part of the row it is measuring.
+      const slot = findInsertionSlot({
+        cursorX: 236,
+        cursorY: 100,
+        incomingWidth: 200,
+        elements: ROW,
+        excludeId: 'c',
+      });
+      expect(slot?.rightId).toBe('b');
+      expect(slot?.shiftDx).toBe(272);
+      expect(new Set(slot?.shiftedIds)).toEqual(new Set(['b']));
+    });
+
+    it('offers no slot when excluding it leaves fewer than two notes in the row', () => {
+      expect(
+        findInsertionSlot({
+          cursorX: 236,
+          cursorY: 100,
+          incomingWidth: 200,
+          elements: [note('a', 0), note('b', 272)],
+          excludeId: 'b',
+        }),
+      ).toBeNull();
+    });
+  });
+
   it('opens a slot in a gap narrower than the incoming note', () => {
     const tight: Element[] = [note('a', 0), note('b', 210)];
     const slot = findInsertionSlot({
