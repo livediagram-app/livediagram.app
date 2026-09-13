@@ -136,11 +136,19 @@ layer**, `layer:es:board` (`eventStormingLayers()`), and no view bar.
   The chip bar was also permanent chrome on a board whose whole premise
   is distraction-free capture, and it earned its place only by driving
   the layers it has now lost.
-- **Identity** is still tab data (`isEventStormingTab`), now satisfied by
-  the board layer OR any of the three legacy stage-layer ids, so boards
-  authored before the collapse keep their palette, stationery and note
-  menu. Their bands remain ordinary spec/74 layers, mergeable or
-  deletable from the Layers panel.
+- **Identity is a FIRST-CLASS field**: `Tab.kind = 'event-storming'`
+  (`TabKind` in `@livediagram/diagram`). It used to be inferred from layer
+  ids, and that broke twice — first as a checklist (all three stage
+  layers, so deleting one stripped the board), then as a single layer a
+  facilitator can delete from the Layers panel — each time taking the
+  palette, the stationery and the note menu with it, with nothing on
+  screen to explain why. A kind TUNES presentation; it does not fork
+  persistence, realtime, comments or export, so the editor stays one
+  editor. The template declares it through `templateCanvasOverrides`, so
+  the picker, /new and the MCP worker all land it in one commit.
+  `isEventStormingTab(tab)` reads the kind first and falls back to the
+  board layer or any legacy stage-layer id, so boards authored before the
+  field keep working; their bands remain ordinary spec/74 layers.
 - **What went with it:** `EventStormingViewBar`,
   `useEventStormingViews`, `applyEventStormingStage`,
   `eventStormingStageOf`, `eventStormingStageLayerId`,
@@ -240,6 +248,8 @@ type, kept current every session. Each should stay true on its own.
 - “It fits” is not the same as “it reads” — one word per line fits.
 - An action ANSWERS the right-click: every verb closes the menu, which
   otherwise covers the element whose change the user wants to see.
+- A proxy identity (a layer id, a colour, a shape) always drifts from
+  the thing it stands for: name the fact on the model instead.
 - Bands are planes, and a plane you cannot see is a rule you cannot
   learn: stacking that silently no-ops across a layer is worse than no
   stacking. One wall of paper beats three planes of it.

@@ -1,13 +1,14 @@
-import type { EmbedProvider, EventStormingNoteKind } from '@livediagram/diagram';
 // Prop contract for the Canvas component, split out of Canvas.tsx
 // (it was a 320-line inline type). Most field types are referenced
 // via inline import('...') so this file only needs the bare-named
 // types as top-level imports.
 import type { PointerEvent as ReactPointerEvent, Ref } from 'react';
+import type { EmbedProvider, EventStormingNoteKind } from '@livediagram/diagram';
 import type {
   AlignmentGuide,
   BackgroundPattern,
   DistributionGuide,
+  TabKind,
   Element,
   Layer,
   IconPosition,
@@ -66,6 +67,9 @@ export type CanvasProps = {
   // materialises one. Drives the band-aware paint order + hidden-layer
   // filtering in CanvasElementsLayer and the Minimap.
   tabLayers?: Layer[];
+  // The tab’s board kind (spec/139), which decides whether this canvas
+  // presents as an event-storming board.
+  tabKind?: TabKind;
   // Element ids on a hidden or locked layer (spec/74) — inert to every
   // selection surface, including the right-click context menu.
   layerInertIds: Set<string>;

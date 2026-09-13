@@ -406,6 +406,7 @@ export function EditorCanvasHost() {
       // knows how an element looks.
       elements={presentingElements ?? activeTab.elements}
       tabLayers={activeTab.layers}
+      tabKind={activeTab.kind}
       layerInertIds={layerInertIds}
       shiftDupGhostIds={shiftDupGhostIds}
       snapGuides={snapGuides}

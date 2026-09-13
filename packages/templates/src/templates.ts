@@ -673,5 +673,10 @@ export function templateCanvasOverrides(kind: TemplateKind): Partial<Tab> {
     overrides.backgroundOpacity = 0.8;
   const layers = templateLayers(kind);
   if (layers) overrides.layers = layers;
+  // A template can also declare what KIND of board it makes (spec/139).
+  // The kind, not a layer id, is what the editor reads to decide it is a
+  // workshop board, so it must land on every application path: the picker,
+  // /new, and the MCP worker all go through here.
+  if (kind === 'event-storming') overrides.kind = 'event-storming';
   return overrides;
 }

@@ -1387,7 +1387,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
 
   // Is this an event-storming board (spec/139)? One layer, so this is just
   // tab data — it drives the palette, the stationery and the note menu.
-  const esBoard = isEventStormingTab(activeTab.layers);
+  const esBoard = isEventStormingTab(activeTab);
   // Element creation lands on the active layer, so it's additionally
   // blocked while that layer is hidden or locked (spec/74).
   const createBlocked = editsBlocked || activeLayerBlocked;

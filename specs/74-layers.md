@@ -2,6 +2,10 @@
 
 Photoshop-style layers per tab: named stacking bands that elements belong to, managed from a floating Layers panel. Layers give big diagrams structure (background / content / annotations), let you hide or freeze whole slices of a tab, and make z-order deliberate instead of an accident of insertion order.
 
+## Active layer: the fallback must be usable
+
+An explicit choice of active layer is honoured even when that layer is hidden or locked — hiding the layer you are ON is deliberate, and the editor toasts why creation is paused rather than moving you somewhere you did not ask to be. The FALLBACK (no stored preference) is different: it skips hidden and locked layers and lands on the topmost usable one. Taking the top layer blindly stranded any board whose top layer was hidden — every create path silently no-opped, and no toast could explain it, because the user had done nothing for a toast to describe.
+
 ## Data model (`@livediagram/diagram`)
 
 - `Layer = { id: string; name: string; visible?: boolean; locked?: boolean; opacity?: number }`. `visible` defaults to `true`, `locked` to `false`, `opacity` to `1` (absent = default, so untouched layers stay byte-light in the JSON blob). **Layer opacity** multiplies over each member element's own opacity in every renderer — canvas, image exports, server snapshots, panel previews.

@@ -80,6 +80,7 @@ export function Canvas(props: CanvasProps) {
     tabBackgroundPattern,
     tabBackgroundColor,
     tabLayers,
+    tabKind,
     tabBackgroundOpacity,
     tabBackgroundPatternScale,
     tabBackgroundAnimationSpeed,
@@ -217,7 +218,7 @@ export function Canvas(props: CanvasProps) {
         isGroupMode,
         tabLocked,
         readOnly,
-        esBoard: isEventStormingTab(tabLayers),
+        esBoard: isEventStormingTab({ kind: tabKind, layers: tabLayers }),
         elementMenuOpen: props.elementMenuOpen === true,
       }),
     [
@@ -231,6 +232,7 @@ export function Canvas(props: CanvasProps) {
       tabLocked,
       readOnly,
       tabLayers,
+      tabKind,
       props.elementMenuOpen,
     ],
   );

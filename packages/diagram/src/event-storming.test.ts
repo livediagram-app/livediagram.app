@@ -117,16 +117,16 @@ describe('event-storming views', () => {
   });
 
   it('recognises an event-storming tab by its layer', () => {
-    expect(isEventStormingTab(esTab().layers)).toBe(true);
+    expect(isEventStormingTab(esTab())).toBe(true);
     expect(isEventStormingTab(undefined)).toBe(false);
-    expect(isEventStormingTab([{ id: 'layer:default', name: 'Layer 1' }])).toBe(false);
+    expect(isEventStormingTab({ layers: [{ id: 'layer:default', name: 'Layer 1' }] })).toBe(false);
   });
 
   it('still recognises a board built before the stage layers collapsed', () => {
     // Those boards are out there with three bands; they must keep their
     // palette, stationery and note menu.
     for (const id of [ES_BIG_PICTURE_LAYER_ID, ES_PROCESS_LAYER_ID, ES_DESIGN_LAYER_ID]) {
-      expect(isEventStormingTab([{ id, name: 'legacy' }])).toBe(true);
+      expect(isEventStormingTab({ layers: [{ id, name: 'legacy' }] })).toBe(true);
     }
   });
 
@@ -134,9 +134,11 @@ describe('event-storming views', () => {
     // Board-ness is an identity, not a checklist: layers are ordinary
     // spec/74 data a facilitator can rename, delete or add to mid-workshop.
     expect(
-      isEventStormingTab([{ id: 'own-layer', name: 'Sketches' }, ...eventStormingLayers()]),
+      isEventStormingTab({
+        layers: [{ id: 'own-layer', name: 'Sketches' }, ...eventStormingLayers()],
+      }),
     ).toBe(true);
-    expect(isEventStormingTab([{ id: 'own-layer', name: 'Sketches' }])).toBe(false);
+    expect(isEventStormingTab({ layers: [{ id: 'own-layer', name: 'Sketches' }] })).toBe(false);
   });
 });
 
@@ -157,5 +159,36 @@ describe('event-storming tilt', () => {
   it('varies (it is a fresh placement, not a constant)', () => {
     const seen = new Set(Array.from({ length: 40 }, () => eventStormingTilt()));
     expect(seen.size).toBeGreaterThan(1);
+  });
+});
+
+// Board identity as a first-class fact. It used to be inferred from a layer
+// id — a proxy that meant something else, and it broke twice: first as a
+// checklist (all three stage layers, so deleting one stripped the board),
+// then as a single layer a facilitator can delete from the Layers panel.
+// `kind` says what the tab IS.
+describe('board kind', () => {
+  const tabWith = (t: Partial<Tab>): Tab => ({ id: 't', name: 'T', elements: [], ...t }) as Tab;
+
+  it('recognises a board by its kind, with no layers at all', () => {
+    expect(isEventStormingTab(tabWith({ kind: 'event-storming' }))).toBe(true);
+  });
+
+  it('keeps the board even when every layer is gone', () => {
+    // Deleting the layer must not silently strip the palette, the
+    // stationery and the note menu.
+    expect(isEventStormingTab(tabWith({ kind: 'event-storming', layers: [] }))).toBe(true);
+  });
+
+  it('still recognises boards authored before the kind existed', () => {
+    for (const id of [ES_BOARD_LAYER_ID, ES_BIG_PICTURE_LAYER_ID, ES_PROCESS_LAYER_ID]) {
+      expect(isEventStormingTab(tabWith({ layers: [{ id, name: 'legacy' }] }))).toBe(true);
+    }
+  });
+
+  it('is not a board without either signal', () => {
+    expect(isEventStormingTab(tabWith({}))).toBe(false);
+    expect(isEventStormingTab(tabWith({ layers: [{ id: 'own', name: 'Sketches' }] }))).toBe(false);
+    expect(isEventStormingTab(undefined)).toBe(false);
   });
 });

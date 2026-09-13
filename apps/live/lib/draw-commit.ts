@@ -68,7 +68,7 @@ function eventStormingBoardStickyExtras(): Partial<StickyElement> {
 // target layer can't take it (see the call site above). One board, one
 // layer: the note's kind no longer picks a band.
 function esStageStamp(_kind: EventStormingNoteKind, activeTab: Tab): { layerId?: string } {
-  if (!isEventStormingTab(activeTab.layers)) return {};
+  if (!isEventStormingTab(activeTab)) return {};
   const layerId = eventStormingBoardLayerId();
   const layer = activeTab.layers?.find((l) => l.id === layerId);
   if (!layer || !isLayerVisible(layer) || isLayerLocked(layer)) return {};
@@ -215,7 +215,7 @@ export function buildDrawnBoxed(
   // Event-storming stationery (spec/139): on an ES board every sticky has a
   // FIXED silhouette (the drag gesture sizes nothing) and a hand-placed
   // tilt; a kinded note additionally carries its own footprint everywhere.
-  const esBoardSticky = intent.type === 'sticky' && isEventStormingTab(activeTab.layers);
+  const esBoardSticky = intent.type === 'sticky' && isEventStormingTab(activeTab);
   const base =
     intent.type === 'shape'
       ? createShape(intent.kind, startX, startY)

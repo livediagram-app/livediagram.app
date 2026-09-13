@@ -196,7 +196,7 @@ export function eventStormingTilt(): number {
   return Math.round((Math.random() * 2 - 1) * ES_MAX_TILT_DEG * 10) / 10;
 }
 
-// An event-storming board is recognised by its layer — tab data, so
+// An event-storming board is recognised by its KIND — tab data, so
 // the switcher appears wherever the board travels (share links, imports,
 // re-opened diagrams) and never for anything else.
 //
@@ -207,7 +207,15 @@ export function eventStormingTilt(): number {
 // silently stripped the board of its palette and its note routing, with
 // nothing on screen to explain why. Board identity must not hinge on a
 // checklist the user is free to edit.
-export function isEventStormingTab(layers: Layer[] | undefined): boolean {
+export function isEventStormingTab(tab: { kind?: string; layers?: Layer[] } | undefined): boolean {
+  if (!tab) return false;
+  // The tab says so: the whole point of the field.
+  if (tab.kind === 'event-storming') return true;
+  // Boards authored before `kind` existed are identified by the layer the
+  // template shipped — the board layer, or one of the three stage layers
+  // from before they collapsed into one. Legacy only; new boards carry the
+  // kind, and a layer the user deletes no longer costs them the board.
+  const layers = tab.layers;
   if (!layers) return false;
   return layers.some(
     (l) =>

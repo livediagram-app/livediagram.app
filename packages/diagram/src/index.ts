@@ -238,9 +238,24 @@ export type BoxedElement =
   | VideoElement;
 export type Element = BoxedElement | ArrowElement;
 
+// What KIND of board this tab is, when it is a specialised one. A board
+// kind changes how the editor presents the same underlying tab: an
+// 'event-storming' board opens the palette on its notation, fixes the note
+// silhouettes, blocks resize and swaps the element menu for verbs
+// (spec/139). Absent = an ordinary tab, which is every tab by default.
+//
+// This is deliberately a FIRST-CLASS field rather than something inferred
+// from the tab's contents or its layer ids: identity by proxy broke twice
+// (a three-layer checklist, then a single layer a facilitator can delete),
+// each time stripping a board of its own tooling with nothing on screen to
+// explain why. The editor stays one editor — a kind tunes presentation, it
+// does not fork persistence, realtime, comments or export.
+export type TabKind = 'event-storming';
+
 export type Tab = {
   id: TabId;
   name: string;
+  kind?: TabKind;
   elements: Element[];
   backgroundPattern?: BackgroundPattern;
   backgroundColor?: string;
