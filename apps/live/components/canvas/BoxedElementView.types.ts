@@ -181,6 +181,17 @@ export type BoxedElementViewProps = {
   // Paint index within the elements layer. Isometric mode only: it stops
   // overlapping elements sharing a z-plane (spec/45).
   isoDepth: number;
+  // Insert-between preview (spec/139): canvas-unit offset this element is
+  // sliding by while a palette drag hovers a gap on an event-storming board.
+  // A RENDER-TIME transform, never a change to `element.x` — the preview must
+  // not reach the document, the undo stack, or a peer. Undefined when no slot
+  // is open (kept undefined rather than 0 so the memo's props stay stable).
+  insertShiftX?: number;
+  // True while a palette drag could open a slot on this board, so the wrapper
+  // carries the transition that animates the slot BOTH ways. It has to
+  // outlive the offset itself: were the transition removed in the same commit
+  // as the transform, the board would snap shut instead of easing.
+  insertShiftAnimates?: boolean;
   // The Page masthead (spec/100).
   onSetPageHeading: (elementId: string, field: 'pageTitle' | 'pageSubtitle', value: string) => void;
   // Live dot-vote (spec/39). `vote` is the active tab's vote session

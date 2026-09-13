@@ -197,33 +197,38 @@ first, red, then green.**
 
 ## 6. Phase B — the preview channel (render-time only)
 
-- [ ] Extend `apps/live/lib/palette-drag-preview.ts` (or add a sibling module
+- [x] Extend `apps/live/lib/palette-drag-preview.ts` (or add a sibling module
       if that file would exceed its cohesion — judge it) with an **insertion
       preview** channel: the active `InsertionSlot | null`, published with the
       same `useSyncExternalStore` pattern.
-  - [ ] `setInsertionPreview(slot)` / `useInsertionPreview()`.
-  - [ ] Cleared on drag end, drop, Escape, and drag-leave — every exit path.
+  - [x] `setInsertionSlot(slot)` / `useInsertionSlot()` / `takeInsertionSlot()`
+        (named for the thing they carry, beside the existing snap channel).
+  - [x] Cleared on drag end, drop, Escape, and drag-leave — every exit path.
         Write the test that proves no exit path leaks a stale slot.
-- [ ] Apply the offset at render time in the canvas:
-  - [ ] Decide the mechanism and record why in a comment: a CSS
+- [x] Apply the offset at render time in the canvas:
+  - [x] Decide the mechanism and record why in a comment: a CSS
         `transform: translateX()` on the element wrapper is preferred over
         recomputing `x`, because it is GPU-composited, cannot desync from the
         model, and unwinds by removing a style.
-  - [ ] Thread the slot into `Canvas` (new optional prop, defaulted off), and
-        into the element views. Keep the prop surface minimal: one `Set<string>` + one number, not a per-element map.
-  - [ ] Under `prefers-reduced-motion: reduce`, no transition (Q5).
-  - [ ] Make sure the offset applies to element views AND anything anchored to
+  - [x] Read the slot where it is needed rather than threading it: the
+        elements layer subscribes to the drag store exactly as the ghost does
+        (a drag is global + transient), and passes each view one number
+        (`insertShiftX`) plus one boolean (`insertShiftAnimates`).
+  - [x] Under `prefers-reduced-motion: reduce`, no transition (Q5).
+  - [x] Make sure the offset applies to element views AND anything anchored to
         them that is NOT part of the element's own DOM node (selection popover,
         comment pins, action badges) — or confirm those are not visible during
         a palette drag and say so in a comment.
 - [ ] **Insertion marker**: draw a vertical line (or a slot outline) at the
       insertion point while a slot is active, in the same visual language as
       the existing alignment guides. Reuse the guide overlay's styling; do not
-      invent a second visual vocabulary.
+      invent a second visual vocabulary. _(Produced by the drag owner — lands
+      with phase C.)_
 - [ ] The **ghost** (`PaletteDragGhost`) must sit in the slot while one is
       active, not under the raw cursor — the ghost, the marker and the eventual
       drop must agree, exactly as the existing snap keeps them agreeing.
-- [ ] Commit: `feat(canvas): live insertion preview`.
+      _(Falls out of the snap channel — lands with phase C.)_
+- [x] Commit: `feat(canvas): live insertion preview`.
 
 ---
 
