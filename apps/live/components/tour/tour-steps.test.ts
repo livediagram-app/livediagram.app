@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { TELEMETRY_TYPE_PATTERN } from '@livediagram/api-schema';
-import { TOUR_STEPS, tourStepTelemetryType } from './tour-steps';
+import { TOUR_STEPS, tourStepsFor, tourStepTelemetryType } from './tour-steps';
 
 // The tour's stage-view telemetry (spec/79 + spec/22): every step id must
 // derive a valid preset `type` token, and the funnel only reads cleanly if
@@ -21,5 +21,47 @@ describe('tour steps', () => {
       expect(type.startsWith('TourStep')).toBe(true);
     }
     expect(tourStepTelemetryType('selection-modes')).toBe('TourStepSelectionModes');
+  });
+});
+
+// The effective step list per surface (spec/79): a step whose chrome the
+// current surface doesn't render must be dropped up front, so the count
+// reads right and the tour never anchors to hidden chrome.
+describe('tourStepsFor', () => {
+  const ids = (opts: { mobile: boolean; esBoard: boolean }) => tourStepsFor(opts).map((s) => s.id);
+
+  it('keeps every step on a desktop diagram', () => {
+    expect(ids({ mobile: false, esBoard: false })).toEqual(TOUR_STEPS.map((s) => s.id));
+  });
+
+  it('drops the desktop-only steps on mobile', () => {
+    const mobile = ids({ mobile: true, esBoard: false });
+    expect(mobile).not.toContain('search');
+    expect(mobile).not.toContain('theme-canvas');
+    expect(mobile).toContain('palette');
+  });
+
+  it('drops the palette-header steps on an event-storming board', () => {
+    const board = ids({ mobile: false, esBoard: true });
+    expect(board).not.toContain('selection-modes');
+    expect(board).not.toContain('categories');
+    // The rest of the tour still applies: the board has a palette, an
+    // explorer, elements, tabs, a paintbrush, and search.
+    expect(board).toContain('palette');
+    expect(board).toContain('explorer');
+    expect(board).toContain('search');
+  });
+
+  it('keeps the bookend cards on every surface', () => {
+    for (const opts of [
+      { mobile: false, esBoard: false },
+      { mobile: true, esBoard: false },
+      { mobile: false, esBoard: true },
+      { mobile: true, esBoard: true },
+    ]) {
+      const steps = tourStepsFor(opts);
+      expect(steps[0]!.card).toBe('welcome');
+      expect(steps[steps.length - 1]!.card).toBe('outro');
+    }
   });
 });

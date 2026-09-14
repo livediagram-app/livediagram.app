@@ -445,6 +445,9 @@ type, kept current every session. Each should stay true on its own.
   dropdowns are hidden, because a chooser you never need is a distraction.
 - Removing chrome is safe only when another path survives: hidden tool
   pickers still leave keyboard shortcuts and the command palette.
+- Hiding chrome has a second audience: the editor tour ([spec/79](79-editor-tour.md))
+  pointed at the hidden header until it learned to drop those steps on a
+  board — anything that teaches the UI has to be told when the UI shrinks.
 - Next App Router hydrates React on `document`, so React handlers are
   siblings of document listeners: stopPropagation cannot hide from them.
 - Creation should end where the user's attention already is: a dropped

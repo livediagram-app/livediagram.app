@@ -43,6 +43,11 @@ export type TourStep = {
   // Skip this step entirely on mobile viewports (the search panel is a
   // desktop surface).
   mobileSkip?: boolean;
+  // Skip this step on an event-storming board (spec/139): the board hides
+  // the palette's header band, so its two dropdowns aren't there to point
+  // at. Without this the step anchors to a display:none trigger — a ring
+  // measuring 0x0 in the top-left corner and a menu opened off-screen.
+  boardSkip?: boolean;
   // Lift the highlight ring above the modal layer for targets that carry
   // their own full-screen backdrop (the search panel sits at --z-modal,
   // which would otherwise bury the ring's --z-overlay dim).
@@ -50,6 +55,19 @@ export type TourStep = {
   prepare?: (api: TourApi) => void | Promise<void>;
   cleanup?: (api: TourApi) => void;
 };
+
+// The steps this surface actually has chrome for. Filtering up front (not
+// letting a missing target time out mid-tour) keeps the "N of M" count
+// honest and the tour moving.
+export function tourStepsFor({
+  mobile,
+  esBoard,
+}: {
+  mobile: boolean;
+  esBoard: boolean;
+}): TourStep[] {
+  return TOUR_STEPS.filter((step) => !(step.mobileSkip && mobile) && !(step.boardSkip && esBoard));
+}
 
 // Telemetry `type` token for a step-viewed event (spec/22: preset tokens
 // only, never content — step ids are a fixed catalogue, so deriving is
@@ -97,6 +115,7 @@ export const TOUR_STEPS: TourStep[] = [
     body: 'This dropdown changes what your pointer does: Select to move and edit, Hand to pan, Eraser to remove, and more.',
     target: 'canvas-tool-menu',
     alsoHighlight: 'canvas-tool',
+    boardSkip: true,
     prepare: async (api) => {
       await ensurePaletteOpen(api);
       if (!findTour('canvas-tool-menu')) clickTour('canvas-tool');
@@ -109,6 +128,7 @@ export const TOUR_STEPS: TourStep[] = [
     body: 'The palette is organised into categories: Favourites keeps your go-to tiles, then the other categories provide unique opportunities to personalise your diagram.',
     target: 'palette-category-menu',
     alsoHighlight: 'palette-category',
+    boardSkip: true,
     prepare: async (api) => {
       await ensurePaletteOpen(api);
       closeDropdown('canvas-tool-menu', 'canvas-tool');

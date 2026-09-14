@@ -7,8 +7,19 @@ function tourSelector(tourId: string): string {
   return `[data-tour-id="${tourId}"]`;
 }
 
+// An anchor only counts once it RENDERS: a surface that hides chrome keeps
+// the node in the DOM (the event-storming board's palette header band is
+// `display:none`, spec/139), and anchoring to it parked the highlight ring
+// at 0x0 in the top-left corner and opened its menu off-screen. A node with
+// no client rects has no box, so it is treated as absent — the step is
+// skipped rather than pointing at nothing.
+function isRendered(el: Element): boolean {
+  return el.getClientRects().length > 0;
+}
+
 export function findTour(tourId: string): HTMLElement | null {
-  return document.querySelector<HTMLElement>(tourSelector(tourId));
+  const el = document.querySelector<HTMLElement>(tourSelector(tourId));
+  return el && isRendered(el) ? el : null;
 }
 
 // Click a tour anchor via a synthetic .click(). Deliberately NOT a full
@@ -29,7 +40,7 @@ export function waitForSelector(selector: string, timeoutMs = 3000): Promise<HTM
     const started = performance.now();
     const tick = () => {
       const el = document.querySelector<HTMLElement>(selector);
-      if (el) return resolve(el);
+      if (el && isRendered(el)) return resolve(el);
       if (performance.now() - started > timeoutMs) return resolve(null);
       requestAnimationFrame(tick);
     };
