@@ -4,10 +4,14 @@ import type { Env } from '../types';
 // jose does the cryptography; what needs covering here is what this worker
 // does with its verdict. Stubbed so the verified branch is reachable without
 // a live JWKS host — the early-exit cases below never reach it either way.
-const jwtVerifyMock = vi.fn();
-const createRemoteJWKSetMock = vi.fn(() => 'jwks-handle');
+type VerifyOptions = { issuer?: string; audience?: string };
+type VerifyResult = Promise<{ payload: Record<string, unknown> }>;
+const jwtVerifyMock =
+  vi.fn<(token: string, jwks: unknown, options: VerifyOptions) => VerifyResult>();
+const createRemoteJWKSetMock = vi.fn<(url: URL) => string>(() => 'jwks-handle');
 vi.mock('jose', () => ({
-  jwtVerify: (...args: unknown[]) => jwtVerifyMock(...args),
+  jwtVerify: (token: string, jwks: unknown, options: VerifyOptions) =>
+    jwtVerifyMock(token, jwks, options),
   createRemoteJWKSet: (url: URL) => createRemoteJWKSetMock(url),
 }));
 
@@ -168,8 +172,7 @@ describe('getClerkIdentity (verified session, spec/04 + spec/32)', () => {
     await getClerkIdentity(env, verifiedWith({ sub: 'u' }));
     await getClerkIdentity(env, verifiedWith({ sub: 'u' }));
     const forThisUrl = createRemoteJWKSetMock.mock.calls.filter(
-      ([url]) =>
-        (url as unknown as URL).href === 'https://cache-probe.example/.well-known/jwks.json',
+      ([url]) => url.href === 'https://cache-probe.example/.well-known/jwks.json',
     );
     expect(forThisUrl).toHaveLength(1);
   });
