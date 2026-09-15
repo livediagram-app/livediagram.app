@@ -62,9 +62,9 @@ toward per-viewer colour schemes.
 
 - [x] 4.1 Editor UI strings (tab / canvas menus, the Canvas & Theme dialog, the pickers, the search
       commands, tooltips).
-- [ ] 4.2 Help centre: the dark-mode article becomes the Appearance article (slug kept — it is a public
+- [x] 4.2 Help centre: the dark-mode article becomes the Appearance article (slug kept — it is a public
       URL), plus every article that names the control. Registry entries + keywords move with them.
-- [ ] 4.3 Marketing copy that names the control.
+- [x] 4.3 Marketing copy that names the control.
 
 ## 5. Docs and specs
 
