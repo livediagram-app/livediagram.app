@@ -78,7 +78,7 @@ toward per-viewer colour schemes.
 
 ## 6. Proof
 
-- [ ] 6.1 `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build` all green.
+- [x] 6.1 `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build` all green.
 - [ ] 6.2 Drive the real editor: cycle all three appearances, confirm the Default canvas and its unpainted
       elements follow, confirm a Pink tab and a legacy Charcoal tab do **not**, confirm no write lands on
       the diagram when only the appearance changes.
