@@ -199,10 +199,10 @@ function BackButton({ current, onClick }: { current?: string; onClick: () => voi
 // (and never for the colour-agnostic Custom bucket), so it reads as a
 // helpful one-tap nudge rather than a persistent control.
 function ModeSwitchRow({ category }: { category: ThemeCategory | 'custom' }) {
-  const { mode, toggle } = useAppearance();
+  const { appearance, set } = useAppearance();
   const target: 'light' | 'dark' | null =
     category === 'custom' ? null : category === 'dark' ? 'dark' : 'light';
-  if (!target || mode === target) return null;
+  if (!target || appearance === target) return null;
   const label = target === 'dark' ? 'Turn on Dark mode' : 'Turn on Light mode';
   const hint =
     target === 'dark'
@@ -211,7 +211,7 @@ function ModeSwitchRow({ category }: { category: ThemeCategory | 'custom' }) {
   return (
     <button
       type="button"
-      onClick={toggle}
+      onClick={() => set(target)}
       className="mt-3 flex w-full items-center gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-left transition hover:border-brand-300 hover:bg-brand-50/40 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-500/60 dark:hover:bg-slate-800/80"
     >
       <span className="min-w-0 flex-1">

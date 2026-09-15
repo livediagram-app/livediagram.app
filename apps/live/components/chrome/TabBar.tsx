@@ -208,8 +208,8 @@ export function TabBar({
   // Drives the per-tab accent's legibility guard: the bar is white in
   // light mode, slate-900 in dark, so a stroke that reads on one can
   // vanish on the other.
-  const { mode } = useAppearance();
-  const isDark = mode === 'dark';
+  const { appearance } = useAppearance();
+  const isDark = appearance === 'dark';
 
   // Distinct folder names in this diagram, for the "Add to Folder"
   // menu's pick list (spec/30).

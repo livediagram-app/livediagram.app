@@ -28,14 +28,14 @@ toward per-viewer colour schemes.
 
 ## 2. Appearance: the third option
 
-- [ ] 2.1 (test first) `appearance-store`: the stored value widens to `'light' | 'dark' | 'system'`, with a
+- [x] 2.1 (test first) `appearance-store`: the stored value widens to `'light' | 'dark' | 'system'`, with a
       separate **resolved** `'light' | 'dark'` that consults `matchMedia('(prefers-color-scheme: dark)')`.
       Unknown / missing / legacy values still read as the documented default.
-- [ ] 2.2 (test first) While the stored value is `system`, an OS-level change re-applies the `.dark` class
+- [x] 2.2 (test first) While the stored value is `system`, an OS-level change re-applies the `.dark` class
       and notifies subscribers; while it is explicit, the OS is ignored.
-- [ ] 2.3 The pre-hydration script in `app/layout.tsx` resolves `system` too, or dark-mode users get a
+- [x] 2.3 The pre-hydration script in `app/layout.tsx` resolves `system` too, or dark-mode users get a
       light flash on every load.
-- [ ] 2.4 The tab-bar control becomes a **cycle button**: Light → Dark → System → Light, one glyph
+- [x] 2.4 The tab-bar control becomes a **cycle button**: Light → Dark → System → Light, one glyph
       (sun / moon / monitor), tooltip and `aria-label` naming the next state, telemetry gains `System`.
 
 ## 3. The Default colour scheme

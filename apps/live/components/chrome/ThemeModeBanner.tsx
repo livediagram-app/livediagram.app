@@ -19,7 +19,7 @@ import { getTheme } from '@/lib/themes';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 
 export function ThemeModeBanner({ themeId }: { themeId: string | undefined }) {
-  const { mode, toggle } = useAppearance();
+  const { appearance, set } = useAppearance();
   // The mismatch this banner was dismissed for. Keyed by theme + target
   // so dismissing it for one tab doesn't suppress it forever: switch to a
   // differently-themed tab (a new mismatch) and it offers again.
@@ -29,7 +29,7 @@ export function ThemeModeBanner({ themeId }: { themeId: string | undefined }) {
     ? 'light'
     : 'dark';
   const key = `${themeId ?? ''}:${target}`;
-  if (mode === target || dismissedKey === key) return null;
+  if (appearance === target || dismissedKey === key) return null;
 
   const toDark = target === 'dark';
   const title = toDark ? 'This tab uses a dark theme' : 'This tab uses a light theme';
@@ -46,7 +46,7 @@ export function ThemeModeBanner({ themeId }: { themeId: string | undefined }) {
         </div>
         <button
           type="button"
-          onClick={toggle}
+          onClick={() => set(target)}
           aria-label={toDark ? 'Switch to dark mode' : 'Switch to light mode'}
           className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-500 text-white shadow-sm transition hover:bg-brand-600"
         >
