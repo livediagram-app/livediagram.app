@@ -14,6 +14,13 @@ vi.mock('./user-preferences', () => ({
 }));
 
 import { readUserPreferences } from './user-preferences';
+// Pure, env-independent, and imported ONCE: the block below used to re-import
+// the module per case through the resetModules dance, which re-transformed the
+// whole telemetry -> telemetry-client -> api-schema chain four more times. Under
+// coverage instrumentation on a two-core CI runner that first re-import took
+// 5.2s and tripped the 5s default timeout — a failure that only ever appeared
+// where nobody could reproduce it.
+import { titleCaseType } from './telemetry';
 const mockedReadPrefs = vi.mocked(readUserPreferences);
 
 // Capture fetch + sendBeacon so we can assert (or not assert) that
@@ -94,26 +101,22 @@ async function importWithEnv(enabled: boolean) {
 }
 
 describe('titleCaseType', () => {
-  // No env / module-state dependence, so import once outside the
-  // resetModules dance. Keeps these cases fast + obvious.
-  it('uppercases the first character', async () => {
-    const { titleCaseType } = await importWithEnv(false);
+  // No env / module-state dependence, so it uses the top-level import rather
+  // than the resetModules dance. Keeps these cases fast + obvious.
+  it('uppercases the first character', () => {
     expect(titleCaseType('square')).toBe('Square');
     expect(titleCaseType('arrow')).toBe('Arrow');
   });
 
-  it('leaves already-capitalised input alone', async () => {
-    const { titleCaseType } = await importWithEnv(false);
+  it('leaves already-capitalised input alone', () => {
     expect(titleCaseType('Square')).toBe('Square');
   });
 
-  it('returns empty string unchanged (no out-of-bounds access)', async () => {
-    const { titleCaseType } = await importWithEnv(false);
+  it('returns empty string unchanged (no out-of-bounds access)', () => {
     expect(titleCaseType('')).toBe('');
   });
 
-  it('does not touch characters past the first', async () => {
-    const { titleCaseType } = await importWithEnv(false);
+  it('does not touch characters past the first', () => {
     expect(titleCaseType('iPhone')).toBe('IPhone'); // i -> I, P stays P
   });
 });
