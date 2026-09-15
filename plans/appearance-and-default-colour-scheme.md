@@ -68,12 +68,12 @@ toward per-viewer colour schemes.
 
 ## 5. Docs and specs
 
-- [ ] 5.1 `specs/07-live-app.md` — the UI-mode section becomes Appearance, three values, cycle button.
-- [ ] 5.2 `specs/09-canvas-and-palette.md` + `specs/14-new-diagram-route.md` — Default replaces Basic /
+- [x] 5.1 `specs/07-live-app.md` — the UI-mode section becomes Appearance, three values, cycle button.
+- [x] 5.2 `specs/09-canvas-and-palette.md` + `specs/14-new-diagram-route.md` — Default replaces Basic /
       Charcoal, counts move with it.
-- [ ] 5.3 `specs/42-canvas-and-theme-dialog.md` + `specs/29-multicolour-themes.md` — vocabulary + counts.
-- [ ] 5.4 `apps/mcp/src/schema.ts` — the theme blurb names `charcoal` as a dark preset.
-- [ ] 5.5 `DECISIONS.md` (wire names stay), `AMBIGUITIES.md` (the default stays Light, not System),
+- [x] 5.3 `specs/42-canvas-and-theme-dialog.md` + `specs/29-multicolour-themes.md` — vocabulary + counts.
+- [x] 5.4 `apps/mcp/src/schema.ts` — the theme blurb names `charcoal` as a dark preset.
+- [x] 5.5 `DECISIONS.md` (wire names stay), `AMBIGUITIES.md` (the default stays Light, not System),
       `LESSONS_LEARNED.md` if anything bites.
 
 ## 6. Proof
