@@ -84,7 +84,7 @@
  * fill so each tile previews the real themed element. `fill` is an inherited
  * SVG property, so paths whose fill lives on the parent <svg> inherit it too.
  * A presentation attribute (`fill="none"`) has lower specificity than any
- * author selector, so this wins; tiles without the class (and the Basic
+ * author selector, so this wins; tiles without the class (and the Default colour scheme
  * theme, which sets no `--tile-fill`) keep their hollow line-art look.
  */
 .palette-tile-filled [fill='none'] {
@@ -2119,4 +2119,26 @@ html[data-presenting][data-slide-transition='slide'][data-slide-move='back']
   --ld-timeline-create-soft: rgb(52 211 153 / 0.07);
   --ld-timeline-neutral: #94a3b8;
   --ld-timeline-neutral-soft: rgb(148 163 184 / 0.06);
+}
+
+/* Tiles holding light-canvas illustration art (spec/14, spec/48).
+   ---------------------------------------------------------------
+   The ~48 template previews and the export-format glyphs are hand-drawn
+   LIGHT-CANVAS art: white element fills, slate rules, dark ink. They used to
+   keep a light plate in dark chrome so they stayed legible, which left the New
+   Diagram screen as a grid of bright white cards on a near-black dialog - the
+   one place the editor still looked half-converted.
+
+   Re-light the whole tile rather than redraw forty-eight illustrations:
+   inverting lightness and spinning the hue back puts the art on dark paper
+   with its hues intact (a blue node stays blue, an amber sticky stays amber),
+   and it keeps working for previews nobody has drawn yet. The invert stops
+   short of 1 so white lands on a soft near-black rather than pure #000,
+   matching the canvas's own dark paper instead of punching holes in the
+   dialog.
+
+   Deliberately NOT applied to colour-scheme swatches: those are showing you a
+   scheme's actual colours, so re-lighting them would be a lie. */
+.dark .preview-art-tile {
+  filter: invert(0.9) hue-rotate(180deg);
 }

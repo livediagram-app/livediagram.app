@@ -4,45 +4,51 @@ import { helpMetadata } from '@/lib/seo';
 import { ThemePicker } from '@/components/illustrations/canvas';
 
 export const metadata = helpMetadata({
-  title: 'Themes',
+  title: 'Colour Schemes',
   description:
-    'Restyle a whole diagram in one click with a theme, browse them by category, and build your own custom themes to reuse.',
+    'Restyle a whole diagram in one click with a colour scheme, browse them by category, and build your own custom colour schemes to reuse.',
   path: '/help/canvas/themes/',
 });
 
 <ArticleLayout
-  title="Themes"
-  description="Recolour an entire tab in a single click, browse a catalogue of themes by category, and save your own to reuse across diagrams."
+  title="Colour Schemes"
+  description="Recolour an entire tab in a single click, browse a catalogue of colour schemes by category, and save your own to reuse across diagrams."
   categoryTitle="Canvas"
   categorySlug="canvas"
-  subArticles={getSubArticles("themes")}
+  subArticles={getSubArticles("colour schemes")}
 >
 
-A theme is the fastest way to make a diagram look intentional. Instead of colouring each shape, border, and background by hand, pick a theme and livediagram recolours the whole tab at once, from the canvas backdrop to every element on it. The catalogue ships a generous spread of looks, and you can save your own themes too.
+A colour scheme is the fastest way to make a diagram look intentional. Instead of colouring each shape, border, and background by hand, pick a colour scheme and livediagram recolours the whole tab at once, from the canvas backdrop to every element on it. The catalogue ships a generous spread of looks, and you can save your own colour schemes too.
 
-## What a theme covers
+## What a colour scheme covers
 
-A theme sets the canvas background and pattern together with the fill, border, and text colours of your elements, so the diagram reads as one coherent style. Most themes paint every element the same colours; some are cleverer, tinting each branch of a hierarchy a different hue, or colouring each shape kind by its meaning. Switching themes recolours your shapes but leaves your [fonts](/help/canvas/text-and-fonts/) untouched.
+A colour scheme sets the canvas background and pattern together with the fill, border, and text colours of your elements, so the diagram reads as one coherent style. Most colour schemes paint every element the same colours; some are cleverer, tinting each branch of a hierarchy a different hue, or colouring each shape kind by its meaning. Switching colour schemes recolours your shapes but leaves your [fonts](/help/canvas/text-and-fonts/) untouched.
+
+## Default, the one that follows you
+
+Every new tab starts on **Default**, which leads the catalogue and also leads the Dark category — one scheme listed twice, because it has two halves. Which half you see is your own [appearance](/help/tools/dark-mode/): light chrome shows the white canvas with the familiar blue elements, dark chrome shows the charcoal canvas with grey ones.
+
+That makes it the only colour scheme that differs per reader, and nothing is saved when it changes: a colleague in light chrome sees the light half of the very same tab while you work in the dark one. Every other scheme is a decision stored in the diagram, so it looks the same for everybody.
 
 ## Browsing and applying
 
-You change a tab's theme from the Tab Appearance dialog, reached from the canvas right-click menu, where themes are organised into categories you can browse and drill into. Applying a theme updates the canvas live as you click. See [Changing the theme](/help/canvas/themes/changing-theme/) for the full walkthrough.
+You change a tab's colour scheme from the Tab Look & Feel dialog, reached from the canvas right-click menu, where colour schemes are organised into categories you can browse and drill into. Applying a colour scheme updates the canvas live as you click. See [Changing the colour scheme](/help/canvas/themes/changing-theme/) for the full walkthrough.
 
-<Figure caption="The theme picker shows a grid of swatch cards; clicking one recolours the whole tab live.">
+<Figure caption="The colour scheme picker shows a grid of swatch cards; clicking one recolours the whole tab live.">
   <ThemePicker />
 </Figure>
 
 ## Beyond a single colour
 
-Two kinds of theme go past the one-colour look. [Multi-colour themes](/help/canvas/themes/multicolour-themes/) give each branch of a mind map or hierarchy its own hue, the way a rainbow mind map does. And when no built-in theme fits, [custom themes](/help/canvas/themes/custom-themes/) let you author your own palette, save it to your account, and reuse it across diagrams.
+Two kinds of colour scheme go past the one-colour look. [Multi-colour schemes](/help/canvas/themes/multicolour-themes/) give each branch of a mind map or hierarchy its own hue, the way a rainbow mind map does. And when no built-in colour scheme fits, [custom colour schemes](/help/canvas/themes/custom-themes/) let you author your own palette, save it to your account, and reuse it across diagrams.
 
 ## Quick emphasis
 
-For tweaks to a single element rather than the whole diagram, the [style presets](/help/palette/shapes/style-presets/) in the right-click menu offer one-click colour and border variations derived from the active theme, so a key shape can stand out while still matching the overall look.
+For tweaks to a single element rather than the whole diagram, the [style presets](/help/palette/shapes/style-presets/) in the right-click menu offer one-click colour and border variations derived from the active colour scheme, so a key shape can stand out while still matching the overall look.
 
 <Tip>
-  Every control in the Tab Appearance dialog applies live with no Apply or Cancel, so you can click
-  through themes and watch the canvas change behind the dialog until one feels right.
+  Every control in the Tab Look & Feel dialog applies live with no Apply or Cancel, so you can click
+  through colour schemes and watch the canvas change behind the dialog until one feels right.
 </Tip>
 
 </ArticleLayout>

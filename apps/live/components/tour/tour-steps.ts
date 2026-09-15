@@ -173,7 +173,7 @@ export const TOUR_STEPS: TourStep[] = [
   },
   {
     id: 'theme-canvas',
-    title: 'Theme & Canvas',
+    title: 'Colour scheme & canvas',
     body: "The paintbrush restyles the whole tab in one place: pick a theme for your elements and set the canvas background's colour, pattern, or animation.",
     target: 'canvas-theme',
     // The paintbrush dock button is desktop chrome (mobile reaches the

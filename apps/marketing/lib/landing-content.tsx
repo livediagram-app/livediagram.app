@@ -363,12 +363,12 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore customisation',
     title: 'Customise it your way',
     description:
-      'Make every diagram yours: start from a template, recolour with a theme, set the type and the backdrop, and shape every border, arrow, and block the way you want it.',
+      'Make every diagram yours: start from a template, recolour with a colour scheme, set the type and the backdrop, and shape every border, arrow, and block the way you want it.',
     items: [
       {
         art: <TemplatesArt />,
         href: '/help/canvas/templates/',
-        group: 'Templates & themes',
+        group: 'Templates & colour schemes',
         title: 'Forty-eight starter templates',
         description:
           'Mind maps (radial, tree, and bubble), org charts, retrospectives, flowcharts — plus swimlane, decision-tree, approval, and data-flow variants — Kanban, roadmaps, user story maps, affinity maps, RACI matrices, SWOT, empathy maps, Business Model Canvases, funnels, timelines (plain, plus horizontal and vertical milestone), Gantt, Venn, user journeys, fishbone, pyramids, OKR trees, sitemaps, flywheels, prioritization matrices, comparison tables, storyboards, ER / sequence / class / state-machine / system- and cloud-architecture diagrams, event storming, logo design, a live card, a to-scale floor plan, and mobile / laptop / web-page / slide-deck wireframes. Pick one, edit it, or start blank.',
@@ -376,18 +376,18 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <ThemesArt />,
         href: '/help/canvas/themes/changing-theme/',
-        group: 'Templates & themes',
-        title: 'Twenty-seven preset themes',
+        group: 'Templates & colour schemes',
+        title: 'Twenty-six preset colour schemes',
         description:
-          'Basic, Forest, Ocean, Sunset, Rose, Midnight, Mono and a dozen more — plus multi-colour Rainbow, Pastel, Tropical, Autumn, and Jewel themes that tint each branch a different hue. One click recolours the canvas, every shape, and every arrow.',
+          'Default, Forest, Ocean, Sunset, Rose, Midnight, Mono and a dozen more — plus multi-colour Rainbow, Pastel, Tropical, Autumn, and Jewel schemes that tint each branch a different hue. One click recolours the canvas, every shape, and every arrow. Default has a light and a dark half, and follows your own appearance.',
       },
       {
         art: <CustomThemesArt />,
         href: '/help/canvas/themes/custom-themes/',
-        group: 'Templates & themes',
-        title: 'Build your own theme',
+        group: 'Templates & colour schemes',
+        title: 'Build your own colour scheme',
         description:
-          'Need your brand palette, a house style, or a notation that is not in the list? Build a custom theme, save it to your account, and reuse it across diagrams just like a built-in one. Edit it any time, and guests get them too.',
+          'Need your brand palette, a house style, or a notation that is not in the list? Build a custom colour scheme, save it to your account, and reuse it across diagrams just like a built-in one. Edit it any time, and guests get them too.',
       },
       {
         art: <CanvasBackdropArt />,
@@ -395,7 +395,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Canvas & type',
         title: 'Set the canvas backdrop',
         description:
-          'Switch the canvas background between fourteen backdrops, from plain, grid, and lines to crosshatch, waves, isometric, and engineering. Each theme and template picks a fitting default.',
+          'Switch the canvas background between fourteen backdrops, from plain, grid, and lines to crosshatch, waves, isometric, and engineering. Each colour scheme and template picks a fitting default.',
       },
       {
         art: <FontsArt />,
@@ -465,7 +465,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/canvas/the-canvas/changing-the-background/',
         title: 'A backdrop with motion',
         description:
-          'Swap the static grid for a living pattern: Flow streams diagonal lines, Drift floats rising motes, Aurora drifts colour glows, Ripple expands gentle rings, and Ribbons sweeps curved lines. Each matches the theme, scales with the size slider, runs as fast or as slow as you set the speed slider, and settles when reduced-motion is on.',
+          'Swap the static grid for a living pattern: Flow streams diagonal lines, Drift floats rising motes, Aurora drifts colour glows, Ripple expands gentle rings, and Ribbons sweeps curved lines. Each matches the colour scheme, scales with the size slider, runs as fast or as slow as you set the speed slider, and settles when reduced-motion is on.',
       },
       {
         art: <AnimatedIconsArt />,
@@ -537,7 +537,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Your workspace',
         title: 'Light or dark, your call',
         description:
-          'Flip the whole editor to a dark theme with one toggle. Toolbars, panels, dialogs, and menus all come along, and the choice sticks per device. The canvas stays crisp either way.',
+          'Set the editor to light, dark, or your device setting with one toggle. It starts on your device setting, so a dark machine opens a dark editor. Toolbars, panels, dialogs, and menus all come along, the choice sticks per device, and tabs on the Default colour scheme follow it. The canvas stays crisp either way.',
       },
       {
         art: <MinimalPanelArt />,
@@ -561,7 +561,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/tabs/using-tabs/',
         title: 'Unlimited tabs per diagram',
         description:
-          'Add as many tabs as a diagram needs. Each is its own canvas with its own theme, and nothing slows down as the stack grows.',
+          'Add as many tabs as a diagram needs. Each is its own canvas with its own colour scheme, and nothing slows down as the stack grows.',
       },
       {
         art: <TabsArt />,
@@ -575,7 +575,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/tabs/using-tabs/',
         title: 'Reorder and tell them apart',
         description:
-          'Drag tabs into any order. Each one is colour-coded by its theme, so the right canvas is easy to spot.',
+          'Drag tabs into any order. Each one is colour-coded by its colour scheme, so the right canvas is easy to spot.',
       },
       {
         art: <TabFoldersArt />,
@@ -596,7 +596,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/tabs/locking-tabs/',
         title: 'Lock a tab',
         description:
-          'Lock a tab and everything on it becomes read-only. Adds, edits, and theme changes are blocked until you unlock it.',
+          'Lock a tab and everything on it becomes read-only. Adds, edits, and colour-scheme changes are blocked until you unlock it.',
       },
     ],
   },
@@ -675,14 +675,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/palette/tools/tables/',
         title: 'Tables, fully editable',
         description:
-          'Drop a table and double-click any cell to type. Insert or delete rows and columns from the cell menu, toggle a header row and a header column, recolour the headers (or reset them to the theme), drag the dividers to set column widths, and pick the cell padding. It lays out and recolours with the rest of the canvas.',
+          'Drop a table and double-click any cell to type. Insert or delete rows and columns from the cell menu, toggle a header row and a header column, recolour the headers (or reset them to the colour scheme), drag the dividers to set column widths, and pick the cell padding. It lays out and recolours with the rest of the canvas.',
       },
       {
         art: <IconsArt />,
         href: '/help/palette/icons/',
         title: 'A library of icons',
         description:
-          'Reach past boxes and arrows: drop a clean single-colour icon, servers, databases, clouds, users, and more, from the icon picker. Each one recolours with the theme and styles like any other shape, so an architecture diagram reads at a glance.',
+          'Reach past boxes and arrows: drop a clean single-colour icon, servers, databases, clouds, users, and more, from the icon picker. Each one recolours with the colour scheme and styles like any other shape, so an architecture diagram reads at a glance.',
       },
       {
         art: <TechIconsArt />,
@@ -724,7 +724,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/palette/components/',
         title: 'Ready-made components',
         description:
-          'Drop in a polished composite and skip the busywork: a banner, a hero, a website-style header, an annotated callout, a row of KPI stats, or numbered process steps. Tap to place it or drag to size it; each one follows the tab theme, then ungroups into plain shapes you can edit like anything else.',
+          'Drop in a polished composite and skip the busywork: a banner, a hero, a website-style header, an annotated callout, a row of KPI stats, or numbered process steps. Tap to place it or drag to size it; each one follows the tab colour scheme, then ungroups into plain shapes you can edit like anything else.',
       },
     ],
   },

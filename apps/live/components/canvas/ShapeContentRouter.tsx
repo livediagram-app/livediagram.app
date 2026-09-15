@@ -28,6 +28,7 @@ import { ChecklistView } from '@/components/canvas/ChecklistView';
 import { BarChartView } from '@/components/canvas/BarChartView';
 import { LineChartView } from '@/components/canvas/LineChartView';
 import type { BoxedElementViewProps } from '@/components/canvas/BoxedElementView.types';
+import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 
 type ShapeContentRouterProps = Pick<
   BoxedElementViewProps,
@@ -68,6 +69,8 @@ export function ShapeContentRouter({
   svgAnim,
   labelAnimClass,
 }: ShapeContentRouterProps) {
+  // The paper under this shape, for colours it doesn't carry (spec/07).
+  const surface = useCanvasSurface();
   return element.type === 'shape' && element.shape === 'sticker' ? (
     // Sticker (spec/116): its own die-cut art, drawn edge to edge. Takes no
     // element colours and gets no caption band — a sticker says what it says
@@ -98,7 +101,7 @@ export function ShapeContentRouter({
     // data-driven by `iconId`.
     <IconGlyph
       iconId={element.iconId}
-      stroke={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element)}
+      stroke={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)}
       strokeWidth={remoteBorderColor ? 3 : 2}
       hasLabel={(element.label ?? '').trim().length > 0}
       labelAlignX={element.textAlignX ?? 'center'}
@@ -158,7 +161,7 @@ export function ShapeContentRouter({
     <ChecklistView
       element={element}
       accent={accent}
-      fill={element.fillColor ?? defaultFillColor(element)}
+      fill={element.fillColor ?? defaultFillColor(element, surface)}
       textColor={textColor}
       fontFamily={fontFamily}
       editable={!readOnly && !isLocked}
@@ -175,8 +178,8 @@ export function ShapeContentRouter({
   ) : element.type === 'shape' && isSvgRenderedShape(element.shape) ? (
     <ShapeSvgOverlay
       shape={element.shape}
-      fill={element.fillColor ?? defaultFillColor(element)}
-      stroke={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element)}
+      fill={element.fillColor ?? defaultFillColor(element, surface)}
+      stroke={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)}
       strokeWidth={
         remoteBorderColor ? 3 : BORDER_STROKE_PX[element.strokeWidth ?? DEFAULT_BORDER_STROKE]
       }

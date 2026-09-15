@@ -27,6 +27,7 @@ import {
   type ThemeDefinition,
 } from './themes';
 import { THEME_CATEGORIES, themeCategory } from './themes-taxonomy';
+import { darkCategorySchemes } from './theme-order';
 import {
   clearCustomThemeRegistry,
   registerCustomTheme,
@@ -39,8 +40,9 @@ describe('THEMES catalogue', () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it('leads with the brand theme (the un-themed default)', () => {
+  it('leads with the Default colour scheme', () => {
     expect(THEMES[0]?.id).toBe('brand');
+    expect(THEMES[0]?.label).toBe('Default');
   });
 
   it('gives every theme a label and a backdrop', () => {
@@ -52,19 +54,20 @@ describe('THEMES catalogue', () => {
     }
   });
 
-  // spec/16-marketing-site.md cites the theme count directly in its
+  // spec/16-marketing-site.md cites the scheme count directly in its
   // copy. If the catalogue drifts from this the spec stops being
-  // accurate. The extras include the multi-colour themes from spec/29.
+  // accurate. The extras include the multi-colour schemes from spec/29.
   // Mirrors the equivalent assertions in templates.test.ts.
-  it('lists exactly 27 themes (matches spec/16)', () => {
-    expect(THEMES).toHaveLength(27);
+  // 26, not 27: Charcoal merged into Default and left the catalogue.
+  it('lists exactly 26 colour schemes (matches spec/16)', () => {
+    expect(THEMES).toHaveLength(26);
   });
 
-  it('splits cleanly into 12 default + 15 extra (retained as catalogue metadata)', () => {
+  it('splits cleanly into 12 default + 14 extra (retained as catalogue metadata)', () => {
     const defaults = THEMES.filter((t) => !t.extra);
     const extras = THEMES.filter((t) => t.extra);
     expect(defaults).toHaveLength(12);
-    expect(extras).toHaveLength(15);
+    expect(extras).toHaveLength(14);
   });
 
   it('leads with the brand theme (the un-themed default is the most common pick)', () => {
@@ -680,7 +683,7 @@ describe('resetThemeElement', () => {
   });
 
   it('keeps a themeLockFill fill even on a hard reset, but still resets stroke + text', () => {
-    // "Reset elements to theme" is the most aggressive transform (it
+    // "Reset elements to colour scheme" is the most aggressive transform (it
     // overwrites user customisations), yet a pinned fill must still
     // survive or the Gantt bars would merge under a reset.
     const bar: ShapeElement = {
@@ -1041,24 +1044,31 @@ describe('multi-colour (rainbow) themes', () => {
   });
 });
 
-// The Dark category leads with Charcoal (spec/09). It is the NEUTRAL dark
-// theme — greys on near-black, no hue — so it is the one a reader compares
+// The Dark category leads with Default (spec/09). It is the NEUTRAL dark
+// canvas — greys on near-black, no hue — so it is the one a reader compares
 // the tinted darks (Midnight's blue, Pine's green, Plum's purple) against,
-// and the one most people actually want when they ask for "dark".
+// and the one most people actually want when they ask for "dark". It leads
+// as Charcoal before the two merged, and it is the SAME entry that leads the
+// catalogue: one scheme, listed in both places under one name.
 //
 // Pinned because this drifted once already, silently: a commit claimed to
 // move Charcoal to the front and only moved it ahead of Pine, because the
 // picker orders by the THEMES array and Midnight sits earlier in it. Order
 // that matters to a user is behaviour, and behaviour gets a test.
-describe('dark theme order', () => {
-  const darkIds = () =>
-    THEMES.filter((t) => t.id !== 'brand' && themeCategory(t.id) === 'dark').map((t) => t.id);
+describe('dark colour-scheme order', () => {
+  const darkIds = () => darkCategorySchemes(THEMES).map((t) => t.id);
 
-  it('leads with Charcoal', () => {
-    expect(darkIds()[0]).toBe('charcoal');
+  it('leads with Default', () => {
+    expect(darkIds()[0]).toBe('brand');
+  });
+
+  it('previews its DARK half there, whatever chrome the reader is in', () => {
+    // The card sits among dark canvases, so it has to look like one; the
+    // reader is being shown what the scheme looks like in that company.
+    expect(darkCategorySchemes(THEMES)[0]?.backgroundColor).toBe('#2b2b33');
   });
 
   it('keeps the rest of the dark family intact behind it', () => {
-    expect(darkIds()).toEqual(['charcoal', 'midnight', 'pine', 'plum', 'abyss', 'espresso']);
+    expect(darkIds()).toEqual(['brand', 'midnight', 'pine', 'plum', 'abyss', 'espresso']);
   });
 });

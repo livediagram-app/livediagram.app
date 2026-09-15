@@ -3,8 +3,10 @@ import {
   defaultStrokeColor,
   isBoxed,
   type BoxedElement,
+  type CanvasSurface,
   type Element,
 } from '@livediagram/diagram';
+import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import {
   isoDepthLayers,
   isoExtrudes,
@@ -28,15 +30,18 @@ const DEPTH_LAYERS = isoDepthLayers();
 // stroke), so each block's side matches the element rather than a flat black
 // slab. Falls back to the fill, then a neutral slate, skipping `transparent`
 // fills/strokes (image / table) which would give an invisible wall.
-function wallColor(el: BoxedElement): string {
-  const stroke = el.strokeColor ?? defaultStrokeColor(el);
+function wallColor(el: BoxedElement, surface: CanvasSurface): string {
+  const stroke = el.strokeColor ?? defaultStrokeColor(el, surface);
   if (stroke && stroke !== 'transparent') return stroke;
-  const fill = el.fillColor ?? defaultFillColor(el);
+  const fill = el.fillColor ?? defaultFillColor(el, surface);
   if (fill && fill !== 'transparent') return fill;
   return '#64748b'; // slate-500
 }
 
 export function IsometricDepthLayer({ elements }: { elements: Element[] }) {
+  // The walls take the element's own colours, and those fall back to the
+  // canvas's ink when the element carries none (spec/07).
+  const surface = useCanvasSurface();
   return (
     <div
       className="pointer-events-none absolute inset-0"
@@ -50,7 +55,7 @@ export function IsometricDepthLayer({ elements }: { elements: Element[] }) {
         // shared with both exporters so screen + export can't drift.
         .filter(isoExtrudes)
         .map((el) => {
-          const color = wallColor(el);
+          const color = wallColor(el, surface);
           // Clip each extruded layer to the shape's own silhouette (circle,
           // diamond, cylinder, …) so the column follows the outline instead of
           // the bounding rectangle. Non-shape boxed elements (sticky /

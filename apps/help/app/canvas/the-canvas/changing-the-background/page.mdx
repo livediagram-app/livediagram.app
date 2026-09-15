@@ -6,7 +6,7 @@ import { CanvasBackground } from '@/components/illustrations/canvas';
 export const metadata = helpMetadata({
   title: 'Changing the Canvas Background',
   description:
-    "Restyle a tab's backdrop with patterns, colours and opacity from the Tab Appearance dialog.",
+    "Restyle a tab's backdrop with patterns, colours and opacity from the Tab Look & Feel dialog.",
   path: '/help/canvas/the-canvas/changing-the-background/',
 });
 
@@ -19,11 +19,11 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles("the-canvas").filter((a) => a.slug !== "changing-the-background")}
 >
 
-Each tab has its own canvas backdrop: a pattern, a canvas colour, a pattern colour, and an opacity, all stored per tab. You change them from the **Tab Appearance** dialog, a focused modal that gives these controls plenty of room.
+Each tab has its own canvas backdrop: a pattern, a canvas colour, a pattern colour, and an opacity, all stored per tab. You change them from the **Tab Look & Feel** dialog, a focused modal that gives these controls plenty of room.
 
 ## Opening the dialog
 
-Right-click the empty canvas to open the canvas menu, then choose **Change Canvas**. The Tab Appearance dialog opens on its **Canvas** tab. (Choosing **Change Theme** from the same menu opens the very same dialog on its **Theme** tab.) On any screen size, phones included, you can also tap the **paintbrush button** in the bottom-right corner of the editor, beside the zoom controls, which opens the same dialog. The dialog has a tab strip below its header, so once it is open you can switch between Canvas and Theme freely.
+Right-click the empty canvas to open the canvas menu, then choose **Change Canvas**. The Tab Look & Feel dialog opens on its **Canvas** tab. (Choosing **Change colour scheme** from the same menu opens the very same dialog on its **Colour scheme** tab.) On any screen size, phones included, you can also tap the **paintbrush button** in the bottom-right corner of the editor, beside the zoom controls, which opens the same dialog. The dialog has a tab strip below its header, so once it is open you can switch between Canvas and Colour scheme freely.
 
 Every control applies live to the active tab as you click, so the canvas updates behind the dialog. There is no Apply or Cancel step: the dialog is an editor, not a wizard, and closing it with the X, Escape, or a backdrop click simply dismisses it.
 
@@ -37,15 +37,15 @@ The Canvas tab gathers the backdrop controls:
 - **Size** is a slider (50% to 200%) that scales each pattern tile, so you can make a grid finer or coarser.
 - **Speed** appears only while an animated pattern is selected: a slider from 25% to 300% that sets how briskly the motion runs, from a barely-there drift to a lively stream.
 
-The animated patterns are theme-matched and reduced-motion safe: if you prefer reduced motion, each one simply freezes on a pleasant still frame.
+The animated patterns are colour scheme-matched and reduced-motion safe: if you prefer reduced motion, each one simply freezes on a pleasant still frame.
 
-<Figure caption="The Tab Appearance dialog with the canvas-colour swatches, one selected and applied live.">
+<Figure caption="The Tab Look & Feel dialog with the canvas-colour swatches, one selected and applied live.">
   <CanvasBackground />
 </Figure>
 
-## The Theme tab
+## The Colour scheme tab
 
-The same dialog also hosts the **Theme** tab, where a two-level category browse (Cool, Warm, Dark, Multi-colour, Formal, plus a Basic quick-pick) lets you recolour the whole tab. Picking a theme also updates the tab's backdrop to match. Learn more in [Themes](/help/canvas/themes/).
+The same dialog also hosts the **Colour scheme** tab, where a two-level category browse (Cool, Warm, Dark, Multi-colour, Formal, plus a Default quick-pick) lets you recolour the whole tab. Picking a colour scheme also updates the tab's backdrop to match. Learn more in [Colour Schemes](/help/canvas/themes/).
 
 <Tip>
   Background style is per tab, so different tabs in one diagram can carry different patterns and

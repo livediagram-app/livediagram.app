@@ -13,6 +13,7 @@ import {
   shadowFilterCss,
   supportsShadow,
   type BoxedElement,
+  type CanvasSurface,
 } from '@livediagram/diagram';
 import { isCssNativeBorderStyle } from '@/components/canvas/border-css';
 import { isSvgRenderedShape } from '@/components/canvas/shape-svg-overlay';
@@ -29,6 +30,10 @@ export function describeVariant(
   isSelected: boolean,
   isMultiSelected: boolean,
   remoteBorderColor: string | null,
+  // The paper the element sits on, for the colours it doesn't carry itself
+  // (spec/07). A parameter rather than a context read because this is a pure
+  // function the view calls — the view is where the context lives.
+  surface: CanvasSurface = 'light',
 ): { className: string; style: CSSProperties } {
   // Multi-selection uses a much louder ring (solid brand-500, offset)
   // so a busy canvas with many selected elements reads unambiguously.
@@ -114,7 +119,7 @@ export function describeVariant(
       const legacyButton = isLegacyModeButtonSkin(element);
       const fill = legacyButton
         ? MODE_BUTTON_SKIN.fill
-        : (element.fillColor ?? defaultFillColor(element));
+        : (element.fillColor ?? defaultFillColor(element, surface));
       return {
         // Drop the border-2 class so we can drive border width from
         // the user's strokeWidth pick instead of a fixed 2px.
@@ -125,7 +130,7 @@ export function describeVariant(
           backgroundColor: fill,
           borderColor: legacyButton
             ? MODE_BUTTON_SKIN.stroke
-            : (remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element)),
+            : (remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)),
           borderWidth: useSvgBorder ? 0 : remoteBorderColor ? remoteBorderWidth : strokePx,
           borderStyle: useSvgBorder
             ? 'none'
@@ -176,7 +181,7 @@ export function describeVariant(
         className: `text-amber-950 ${shadow ? '' : 'lvd-sticky-peel'} ${ring}`.trim(),
         style: {
           ...boxShadow,
-          backgroundColor: element.fillColor ?? defaultFillColor(element),
+          backgroundColor: element.fillColor ?? defaultFillColor(element, surface),
           ...stickyBorder,
         },
       };
@@ -242,8 +247,9 @@ export function describeVariant(
         className: `shadow-sm ${ring}`,
         style: {
           borderRadius: '50%',
-          backgroundColor: element.fillColor ?? defaultFillColor(element),
-          borderColor: remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element),
+          backgroundColor: element.fillColor ?? defaultFillColor(element, surface),
+          borderColor:
+            remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface),
           borderWidth: remoteBorderColor ? remoteBorderWidth : 2,
           borderStyle: 'solid',
         },
@@ -259,8 +265,9 @@ export function describeVariant(
         style: {
           ...boxShadow,
           borderRadius: '10px',
-          backgroundColor: element.fillColor ?? defaultFillColor(element),
-          borderColor: remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element),
+          backgroundColor: element.fillColor ?? defaultFillColor(element, surface),
+          borderColor:
+            remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface),
           borderWidth: remoteBorderColor ? remoteBorderWidth : 1,
           borderStyle: 'solid',
         },
@@ -276,8 +283,9 @@ export function describeVariant(
         style: {
           ...boxShadow,
           borderRadius: '10px',
-          backgroundColor: element.fillColor ?? defaultFillColor(element),
-          borderColor: remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element),
+          backgroundColor: element.fillColor ?? defaultFillColor(element, surface),
+          borderColor:
+            remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface),
           borderWidth: remoteBorderColor ? remoteBorderWidth : 1,
           borderStyle: 'solid',
         },

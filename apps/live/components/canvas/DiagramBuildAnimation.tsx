@@ -79,7 +79,11 @@ ${EDGES.map((e) => headFrames(e.id, e.head)).join('\n')}
 
 export function DiagramBuildAnimation() {
   return (
-    <div className="mx-auto w-full max-w-[240px] text-brand-500">
+    // brand-500 carries the whole drawing (every fill and stroke is
+    // currentColor). It sits on white on the light screens and on slate-950 in
+    // dark chrome, where the deeper 500 muddies — one step lighter keeps the
+    // same accent legible on both.
+    <div className="mx-auto w-full max-w-[240px] text-brand-500 dark:text-brand-400">
       <svg viewBox="0 0 260 150" className="w-full" role="img" aria-label="Building a diagram">
         {EDGES.map((e) => {
           const angle = (Math.atan2(e.y2 - e.y1, e.x2 - e.x1) * 180) / Math.PI;

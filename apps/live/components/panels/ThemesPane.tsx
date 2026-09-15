@@ -4,7 +4,7 @@
 // custom themes. Lists each as a swatch preview + name with icon actions
 // (edit / duplicate / delete), and a New-theme card. Editing / creating
 // opens the shared CustomThemeBuilder in a modal (the same builder the
-// Tab Appearance dialog hosts, so the two can't drift). Reads the
+// Tab Look & Feel dialog hosts, so the two can't drift). Reads the
 // reactive list + CRUD from CustomThemeProvider, which the Explorer shell
 // mounts.
 
@@ -45,7 +45,7 @@ export function ThemesPane() {
     if (
       await confirm({
         title: `Delete "${name}"?`,
-        message: 'Diagrams using it fall back to the default theme. This cannot be undone.',
+        message: 'Diagrams using it fall back to the Default colour scheme. This cannot be undone.',
         confirmLabel: 'Delete',
         variant: 'danger',
       })
@@ -63,8 +63,8 @@ export function ThemesPane() {
       {themes.length === 0 ? (
         <EmptyState
           icon={<PaletteIcon />}
-          title="No custom themes yet"
-          description="Build your own colour palette and reuse it across every diagram, just like a built-in theme."
+          title="No custom colour schemes yet"
+          description="Build your own colour palette and reuse it across every diagram, just like a built-in one."
         >
           <button
             type="button"
@@ -86,22 +86,22 @@ export function ThemesPane() {
                 {t.name}
               </span>
               <div className="flex items-center gap-1">
-                <Tooltip title="Edit" description="Open this theme in the builder.">
+                <Tooltip title="Edit" description="Open this colour scheme in the builder.">
                   <IconBtn label="Edit theme" onClick={() => setBuilding(t.id)}>
                     <EditIcon />
                   </IconBtn>
                 </Tooltip>
-                <Tooltip title="Duplicate" description="Create a copy of this theme.">
+                <Tooltip title="Duplicate" description="Create a copy of this colour scheme.">
                   <IconBtn
-                    label="Duplicate theme"
+                    label="Duplicate colour scheme"
                     onClick={() => void createTheme(`${t.name} copy`, t.definition)}
                   >
                     <DuplicateIcon />
                   </IconBtn>
                 </Tooltip>
-                <Tooltip title="Delete" description="Remove this theme.">
+                <Tooltip title="Delete" description="Remove this colour scheme.">
                   <IconBtn
-                    label="Delete theme"
+                    label="Delete colour scheme"
                     danger
                     onClick={() => void confirmDelete(t.id, t.name)}
                   >
@@ -134,7 +134,7 @@ export function ThemesPane() {
 
       {building !== null ? (
         <BuilderModal
-          title={editing ? 'Edit theme' : 'New theme'}
+          title={editing ? 'Edit colour scheme' : 'New colour scheme'}
           initial={editing ? { name: editing.name, definition: editing.definition } : undefined}
           saving={saving}
           onSave={handleSave}

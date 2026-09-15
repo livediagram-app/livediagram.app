@@ -521,14 +521,14 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 className="pointer-events-auto flex animate-pop-in items-stretch overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
               >
                 <Tooltip
-                  title="Theme & Canvas"
-                  description="Change this tab's theme and canvas background."
+                  title="Colour scheme & canvas"
+                  description="Change this tab's colour scheme and canvas background."
                 >
                   <button
                     type="button"
                     onPointerDown={(e) => e.stopPropagation()}
                     onClick={onOpenCanvasTheme}
-                    aria-label="Theme and canvas"
+                    aria-label="Colour scheme and canvas"
                     className="flex h-11 w-11 items-center justify-center text-slate-600 transition hover:bg-slate-50 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
                   >
                     <ThemeBrushIcon />

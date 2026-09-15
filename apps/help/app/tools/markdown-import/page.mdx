@@ -29,7 +29,7 @@ Code blocks, horizontal rules, and blockquote markers are skipped, and inline fo
 
 The result is a **tidy left-to-right tree**: the root on the left, each level in its own column, children stacked and centred on their parent so nothing overlaps. Boxes are sized to their labels, deeper levels use smaller text, and parents connect to children with curved arrows. Any tables are placed in a column below the tree.
 
-Everything is recoloured to a theme (the active tab's theme, or Brand as a fallback) and the new tab takes on that theme's background, so the import looks native rather than pasted in. It is ordinary elements afterwards, not a locked block, so you can rearrange and restyle it freely.
+Everything is recoloured to a colour scheme (the active tab's colour scheme, or Brand as a fallback) and the new tab takes on that colour scheme's background, so the import looks native rather than pasted in. It is ordinary elements afterwards, not a locked block, so you can rearrange and restyle it freely.
 
 <Figure caption="A Markdown outline becomes a tidy left-to-right tree, themed and connected with curved arrows.">
   <MarkdownToTree />
@@ -49,7 +49,7 @@ Everything is recoloured to a theme (the active tab's theme, or Brand as a fallb
 
 <Step n={3}>Pick your `.md` file. The outline is built into the themed tree on that tab.</Step>
 
-Import **replaces the current tab's contents**, including its elements, theme, and background, while keeping the tab's id and name. The dialog warns you before you commit. Because the replace is a single step, **Undo (⌘Z) restores** the previous contents if you change your mind.
+Import **replaces the current tab's contents**, including its elements, colour scheme, and background, while keeping the tab's id and name. The dialog warns you before you commit. Because the replace is a single step, **Undo (⌘Z) restores** the previous contents if you change your mind.
 
 <Tip>
   Importing a `.json` tab export is also offered in the same dialog, restored exactly as it was

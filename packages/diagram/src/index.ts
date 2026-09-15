@@ -207,8 +207,12 @@ export function isAnimatedPattern(
   return (ANIMATED_BACKGROUND_PATTERNS as readonly string[]).includes(pattern);
 }
 
-export const DEFAULT_BACKGROUND_COLOR = '#ffffff';
-export const DEFAULT_PATTERN_COLOR = '#cbd5e1'; // slate-300
+export {
+  DARK_CANVAS_BACKGROUND_COLOR,
+  DARK_CANVAS_PATTERN_COLOR,
+  DEFAULT_BACKGROUND_COLOR,
+  DEFAULT_PATTERN_COLOR,
+} from './canvas-colors';
 
 // Cross-tab link on any element. `tab` jumps to another tab on the same
 // diagram; `diagram` navigates to a different diagram entirely (with

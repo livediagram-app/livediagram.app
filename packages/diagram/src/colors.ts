@@ -110,7 +110,51 @@ export function deriveTextColorForBg(backgroundColor: string): string {
   return isLightColor(backgroundColor) ? '#1e293b' : '#f1f5f9'; // slate-800 / slate-100
 }
 
-export function defaultTextColor(element: BoxedElement): string {
+// Which paper an element is being drawn on. NOT the same thing as the
+// viewer's Appearance (spec/07): a Midnight-schemed tab is dark paper in
+// light chrome, and the Default scheme is whichever paper the viewer's
+// appearance resolves to. The element defaults below take it because an
+// element with no colour of its own has nothing else to read — and a Default
+// tab deliberately stores no element colours, so this IS the colour.
+export type CanvasSurface = 'light' | 'dark';
+
+/** The paper a canvas colour amounts to. Unset / unparseable is the white default. */
+export function canvasSurface(backgroundColor: string | undefined | null): CanvasSurface {
+  if (!backgroundColor || !backgroundColor.startsWith('#')) return 'light';
+  return isLightColor(backgroundColor) ? 'light' : 'dark';
+}
+
+// The ink for dark paper: the neutral zinc set the Default scheme's dark half
+// (formerly the Charcoal scheme) was built around — fill a step above the
+// backdrop, stroke and text well clear of it. Sticky notes, images, link cards
+// and videos are absent on purpose: their colours are their identity, and they
+// look the same on any paper.
+const DARK_INK = {
+  fill: '#2c2c33',
+  stroke: '#a1a1aa',
+  text: '#e4e4e7',
+  // A shade above the shape fill, so a marker still reads as a chip ON a
+  // shape rather than a hole in it (the light set does the same, brand-100
+  // over brand-50).
+  annotationFill: '#3a3a44',
+} as const;
+
+export function defaultTextColor(element: BoxedElement, surface: CanvasSurface = 'light'): string {
+  if (surface === 'dark') {
+    switch (element.type) {
+      case 'shape':
+      case 'text':
+      case 'image':
+      case 'freehand':
+      case 'table':
+      case 'annotation':
+        return DARK_INK.text;
+      case 'sticky':
+      case 'link-card':
+      case 'video':
+        break; // keeps its own ink on any paper
+    }
+  }
   switch (element.type) {
     case 'shape':
       return '#075985'; // brand-800
@@ -141,7 +185,23 @@ export function defaultTextAlign(element: BoxedElement): { x: TextAlignX; y: Tex
 // Default fill / stroke colours per boxed element type. Used when the element
 // doesn't override them with explicit `fillColor` / `strokeColor` fields.
 // Hex strings so they can also seed the colour picker UI.
-export function defaultFillColor(element: BoxedElement): string {
+export function defaultFillColor(element: BoxedElement, surface: CanvasSurface = 'light'): string {
+  if (surface === 'dark') {
+    switch (element.type) {
+      case 'shape':
+      case 'freehand':
+        return DARK_INK.fill;
+      case 'annotation':
+        return DARK_INK.annotationFill;
+      case 'text':
+      case 'image':
+      case 'table':
+      case 'sticky':
+      case 'link-card':
+      case 'video':
+        break; // transparent, or a fill that is the element's identity
+    }
+  }
   switch (element.type) {
     case 'shape':
       return '#f0f9ff'; // brand-50
@@ -167,7 +227,25 @@ export function defaultFillColor(element: BoxedElement): string {
   }
 }
 
-export function defaultStrokeColor(element: BoxedElement): string {
+export function defaultStrokeColor(
+  element: BoxedElement,
+  surface: CanvasSurface = 'light',
+): string {
+  if (surface === 'dark') {
+    switch (element.type) {
+      case 'shape':
+      case 'freehand':
+      case 'table':
+      case 'annotation':
+        return DARK_INK.stroke;
+      case 'text':
+      case 'image':
+      case 'sticky':
+      case 'link-card':
+      case 'video':
+        break; // transparent, or a border that is the element's identity
+    }
+  }
   switch (element.type) {
     case 'shape':
       return '#0ea5e9'; // brand-500
@@ -306,6 +384,7 @@ export function supportsBorderRadius(element: Element): element is ShapeElement 
 // Default arrow stroke colour when the element has no explicit one set.
 // Picked out as a helper so the Selected Element controls can show the
 // effective colour in the swatch when no override exists.
-export function defaultArrowStrokeColor(): string {
+export function defaultArrowStrokeColor(surface: CanvasSurface = 'light'): string {
+  if (surface === 'dark') return DARK_INK.stroke; // matches the shapes it connects
   return 'rgb(51 65 85)'; // slate-700, same as ArrowView's fallback
 }

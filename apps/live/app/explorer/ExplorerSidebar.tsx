@@ -354,7 +354,7 @@ export function ExplorerSidebar() {
       />
       <SidebarRow
         icon={<PaletteIcon />}
-        label="Themes"
+        label="Colour schemes"
         selected={selected.kind === 'themes'}
         onClick={() => go({ kind: 'themes' })}
         depth={0}
