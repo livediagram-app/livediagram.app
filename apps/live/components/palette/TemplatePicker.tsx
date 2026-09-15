@@ -81,7 +81,7 @@ type TemplatePickerProps = {
   // gets a fresh blank canvas (no seeded rectangle, no theme override)
   // and the empty-state card prompts the next step. Triggered by the X in
   // the header (all modes) or the Cancel button (non-welcome modes only:
-  // the welcome wizard offers Skip instead, which commits Blank + Basic).
+  // the welcome wizard offers Skip instead, which commits Blank + the Default colour scheme).
   onSkip: () => void;
   // True while the host is committing the pick (the new-diagram POST can
   // take a moment). Drives the primary button's spinner + disabled state
@@ -173,7 +173,7 @@ export function TemplatePicker({
   // A non-empty search query overrides this and shows flat results.
   const [openCategory, setOpenCategory] = useState<TemplateCategory | null>(null);
   // Initial theme is whatever the caller hands us: the /new flow passes
-  // 'brand' (so Basic is pre-selected for a fresh diagram), while a new
+  // 'brand' (so Default is pre-selected for a fresh diagram), while a new
   // tab copying an existing one passes that tab's theme.
   const [themeId, setThemeId] = useState<string>(currentThemeId);
   // Offline Mode (spec/76): "Save offline — this browser only". Welcome wizard
@@ -262,7 +262,7 @@ export function TemplatePicker({
   const showTemplateSection = showTemplates && (!isWizard || step === 'template');
   const showThemeSection = showThemes && (!isWizard || step === 'theme');
   // Skip the wizard entirely: the documented shortcut is Blank template +
-  // Basic theme (spec/14), committed straight away. Placement still honours
+  // Default colour scheme (spec/14), committed straight away. Placement still honours
   // the URL context (/new?folder=…, ?team=…) the picker was pre-seeded with,
   // so skipping doesn't silently drop the diagram into personal Unsorted.
   const skipToDefaults = () =>
@@ -423,7 +423,7 @@ export function TemplatePicker({
               />
             ) : null}
 
-            {/* Theme picker: a two-level browse (Basic quick-pick, a card per
+            {/* Colour-scheme picker: a two-level browse (Default quick-pick, a card per
               colour-temperament category, plus a Custom category for the
               owner's saved themes). Reuses the exact picker the right-click
               Tab Look & Feel dialog renders (spec/42, /44) so the two can't

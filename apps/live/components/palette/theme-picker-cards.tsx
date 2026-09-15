@@ -91,7 +91,7 @@ function CopyGlyph() {
   );
 }
 
-// The Basic quick-pick on the theme overview, sized + laid out exactly
+// The Default quick-pick on the colour-scheme overview, sized + laid out exactly
 // like a ThemeCategoryCard (hero swatch + label + description) so it
 // doesn't read as an odd small tile next to the category cards. Unlike a
 // category card it's directly selectable (click selects; double-click
@@ -121,7 +121,7 @@ export function ThemeQuickPickCard({
     >
       <div className="w-full">
         {/* Match the category cards' 2×2 sampler height (two h-9 rows +
-            gap) so Basic doesn't tower over the other tiles on the row. */}
+            gap) so Default doesn't tower over the other tiles on the row. */}
         <ThemeSwatch theme={theme} heightClass="h-[4.75rem]" />
       </div>
     </PickerCard>

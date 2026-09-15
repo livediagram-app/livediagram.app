@@ -88,7 +88,7 @@ export default function NewDiagramPage() {
   });
 
   // "Just Draw" (spec/14): /new?blank=1 skips the wizard entirely — the page
-  // commits a blank diagram (Blank template, Basic theme, default name) the
+  // commits a blank diagram (Blank template, Default colour scheme, default name) the
   // moment it mounts and lands on the editor. The ?folder / ?team placement
   // context above still applies to it.
   //

@@ -148,7 +148,7 @@ export type CommandPaletteProps = {
   // Active tab theme's element colours, so the palette tiles preview the
   // theme: shape / device / annotation tiles render filled in the theme's
   // fill + stroke, line-art tools + icons tint to the stroke. Undefined (the
-  // Basic theme) leaves the palette in its default slate look. See spec/09.
+  // Default colour scheme) leaves the palette in its default slate look. See spec/09.
   themeTint?: PaletteTint;
   // Corner-docking bundle (spec/63), forwarded to the inner MovablePanel.
   dock?: MovablePanelDockProps;

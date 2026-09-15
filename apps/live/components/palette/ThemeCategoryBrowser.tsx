@@ -89,7 +89,7 @@ export function ThemeCategoryBrowser({
     return themeId !== 'brand' ? themeCategory(themeId as ThemeId) : null;
   });
   // Rotate which themes greet the user on each open, with the LEADS pinned
-  // through it (Basic for the catalogue, Charcoal for the Dark category —
+  // through it (Default leads both the catalogue and the Dark category —
   // see theme-order.ts). Shuffled once per mount via lazy useState so
   // clicking around never reshuffles it underfoot.
   const [themes] = useState(() => shuffledThemes(THEMES));

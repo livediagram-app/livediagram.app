@@ -84,7 +84,7 @@
  * fill so each tile previews the real themed element. `fill` is an inherited
  * SVG property, so paths whose fill lives on the parent <svg> inherit it too.
  * A presentation attribute (`fill="none"`) has lower specificity than any
- * author selector, so this wins; tiles without the class (and the Basic
+ * author selector, so this wins; tiles without the class (and the Default colour scheme
  * theme, which sets no `--tile-fill`) keep their hollow line-art look.
  */
 .palette-tile-filled [fill='none'] {

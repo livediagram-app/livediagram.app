@@ -85,5 +85,5 @@ toward per-viewer colour schemes.
 
 ## 7. Fold-back
 
-- [ ] 7.1 Re-read every comment touched for plan coordinates ("task 3.6", "the merge") and rewrite them as
+- [x] 7.1 Re-read every comment touched for plan coordinates ("task 3.6", "the merge") and rewrite them as
       domain statements. Confirm module headers describe what the module IS.

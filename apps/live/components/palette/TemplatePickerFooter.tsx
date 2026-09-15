@@ -83,7 +83,7 @@ export function TemplatePickerFooter({
             Back button here read ambiguously against the category
             "All templates / All colour schemes" bar, so it's gone. */}
           {isWelcome && step === 'template' ? (
-            /* Skip the wizard: Blank template, Basic theme (spec/14).
+            /* Skip the wizard: Blank template, Default colour scheme (spec/14).
              Only on the first (template) step — once the user has
              reached the theme step, Back / Create are the actions. */
             <Button

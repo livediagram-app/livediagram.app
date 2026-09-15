@@ -62,7 +62,7 @@ export function ThemeSwatch({
   theme: ThemeDefinition;
   // 'sm' compact palette grid, 'md' welcome picker, 'lg' the Explorer
   // hero cards. `heightClass` overrides the height outright (used to make
-  // the Basic quick-pick match the category sampler exactly).
+  // the Default quick-pick match the category sampler exactly).
   size?: 'sm' | 'md' | 'lg';
   heightClass?: string;
   // Render the theme's ACTUAL background pattern (grid / graph / dots /
