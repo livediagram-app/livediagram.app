@@ -41,15 +41,21 @@ function toBase64Url(bytes: ArrayBuffer): string {
   return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
+// The signature itself, for a secret the caller has already established.
+// Split out so `verifyOwnerId` doesn't have to re-handle a null it cannot
+// receive: with the "no secret" case answered once, both callers below work
+// in terms of a string.
+async function hmacSign(secret: string, ownerId: string): Promise<string> {
+  const key = await hmacKey(secret);
+  return toBase64Url(await crypto.subtle.sign('HMAC', key, enc.encode(ownerId)));
+}
+
 // Sign `ownerId`; returns null when no secret is configured (signing off).
 export async function signOwnerId(
   secret: string | undefined,
   ownerId: string,
 ): Promise<string | null> {
-  if (!secret) return null;
-  const key = await hmacKey(secret);
-  const sig = await crypto.subtle.sign('HMAC', key, enc.encode(ownerId));
-  return toBase64Url(sig);
+  return secret ? hmacSign(secret, ownerId) : null;
 }
 
 // Constant-time verify of `sig` against `ownerId`. With a secret set, a
@@ -63,7 +69,5 @@ export async function verifyOwnerId(
 ): Promise<boolean> {
   if (!secret) return true;
   if (!sig) return false;
-  const expected = await signOwnerId(secret, ownerId);
-  if (!expected) return false;
-  return timingSafeEqual(expected, sig);
+  return timingSafeEqual(await hmacSign(secret, ownerId), sig);
 }
