@@ -127,10 +127,18 @@ describe('the appearance boot script', () => {
     expect(runAppearanceBoot({ stored: 'light', osPrefersDark: true }).classes).toEqual([]);
   });
 
-  it('leaves an unset preference alone, even on a dark-themed OS', () => {
-    // Light is the default and the OS is opt-in (spec/07). A first-time
-    // visitor on a dark machine still lands in the light editor.
-    expect(runAppearanceBoot({ stored: null, osPrefersDark: true }).classes).toEqual([]);
+  it('follows the device when nothing is stored, which is the default', () => {
+    // System is the default (spec/07), so a first-time visitor on a dark
+    // machine must land dark BEFORE first paint — the one case where getting
+    // this script wrong is most visible, because it is everybody's first load.
+    expect(runAppearanceBoot({ stored: null, osPrefersDark: true }).classes).toEqual(['dark']);
+    expect(runAppearanceBoot({ stored: null, osPrefersDark: false }).classes).toEqual([]);
+  });
+
+  it('falls back to the device for a value it does not recognise', () => {
+    // A half-written or older-build value reads as the default, and the
+    // default consults the device.
+    expect(runAppearanceBoot({ stored: 'Dark', osPrefersDark: true }).classes).toEqual(['dark']);
   });
 
   it('follows the OS for a stored System', () => {

@@ -21,14 +21,21 @@ export type Appearance = 'light' | 'dark';
 /** What the user picked. */
 export type AppearanceSetting = Appearance | 'system';
 
-// Anything that is not one of the three literals reads as light. That covers a
-// missing key, a value written by an older build, and a hand-edited or
+// The default, for a visitor who has never touched the control: follow the
+// device. Somebody whose machine is dark has already said what they want, and
+// System is the setting that hears it.
+export const DEFAULT_APPEARANCE_SETTING: AppearanceSetting = 'system';
+
+// Anything that is not one of the three literals reads as the default. That
+// covers a missing key, a value written by an older build, and a hand-edited or
 // corrupted one — none of which should leave the editor in a mode the user
-// cannot explain. Light is also the documented default: the OS is consulted
-// only once the user asks for System (spec/07).
+// cannot explain. An explicit Light or Dark still wins over the device: System
+// is where the choice STARTS, not a rule (spec/07).
 export function readAppearanceSetting(): AppearanceSetting {
   const stored = readLocalStorageSafe(APPEARANCE_STORAGE_KEY);
-  return stored === 'dark' || stored === 'system' ? stored : 'light';
+  return stored === 'dark' || stored === 'light' || stored === 'system'
+    ? stored
+    : DEFAULT_APPEARANCE_SETTING;
 }
 
 // The live MediaQueryList, created once. Undefined on the server and in any

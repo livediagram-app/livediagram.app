@@ -537,7 +537,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Your workspace',
         title: 'Light or dark, your call',
         description:
-          'Set the editor to light, dark, or your device setting with one toggle. Toolbars, panels, dialogs, and menus all come along, the choice sticks per device, and tabs on the Default colour scheme follow it. The canvas stays crisp either way.',
+          'Set the editor to light, dark, or your device setting with one toggle. It starts on your device setting, so a dark machine opens a dark editor. Toolbars, panels, dialogs, and menus all come along, the choice sticks per device, and tabs on the Default colour scheme follow it. The canvas stays crisp either way.',
       },
       {
         art: <MinimalPanelArt />,

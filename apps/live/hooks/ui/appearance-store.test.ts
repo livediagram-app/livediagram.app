@@ -87,8 +87,10 @@ beforeEach(() => {
 });
 
 describe('readAppearanceSetting', () => {
-  it('is light when nothing has been stored', () => {
-    expect(readAppearanceSetting()).toBe('light');
+  it('is System when nothing has been stored', () => {
+    // The default defers to the device rather than assuming light: somebody
+    // whose machine is dark has already said what they want.
+    expect(readAppearanceSetting()).toBe('system');
   });
 
   it('reads back each of the three settings', () => {
@@ -98,21 +100,27 @@ describe('readAppearanceSetting', () => {
     }
   });
 
-  it('falls back to light for anything else at all', () => {
+  it('falls back to the System default for anything else at all', () => {
     // A value from an older build, a hand-edited key, a half-written string.
     // None of these should strand the editor in a mode the user cannot
     // explain, and none should throw on the way in.
     for (const junk of ['Dark', 'DARK', ' dark', 'dark ', 'System', 'true', '1', '{}', '']) {
       store[APPEARANCE_STORAGE_KEY] = junk;
-      expect(readAppearanceSetting()).toBe('light');
+      expect(readAppearanceSetting()).toBe('system');
     }
   });
 
-  it('is light on a dark-themed OS until the user asks for System', () => {
-    // spec/07: light is the default and the OS is opt-in, so a dark-themed OS
-    // must not flip the editor for someone who has never touched the control.
+  it('opens dark on a dark-themed device, and light on a light one', () => {
     osPrefersDark = true;
-    expect(readAppearanceSetting()).toBe('light');
+    expect(resolveAppearance(readAppearanceSetting())).toBe('dark');
+    osPrefersDark = false;
+    expect(resolveAppearance(readAppearanceSetting())).toBe('light');
+  });
+
+  it('still lets an explicit Light override a dark device', () => {
+    // Following the device is the DEFAULT, not the rule: a stored pick wins.
+    osPrefersDark = true;
+    store[APPEARANCE_STORAGE_KEY] = 'light';
     expect(resolveAppearance(readAppearanceSetting())).toBe('light');
   });
 });
@@ -136,8 +144,9 @@ describe('resolveAppearance', () => {
   });
 
   it('reads System as light where matchMedia does not exist', () => {
-    // Older browsers, jsdom-less test envs, and the server. A missing
-    // matchMedia must degrade, not throw.
+    // Older browsers, jsdom-less test envs, and the server. Since System is
+    // now the default, this is also what EVERY first-time visitor on such a
+    // browser gets, so it must degrade quietly rather than throw.
     delete (globalThis as Record<string, unknown>).window;
     expect(resolveAppearance('system')).toBe('light');
   });
@@ -215,8 +224,8 @@ describe('the OS changing under a System setting', () => {
 
 describe('getAppearanceSetting', () => {
   it('seeds itself from storage on first read', () => {
-    store[APPEARANCE_STORAGE_KEY] = 'system';
-    expect(getAppearanceSetting()).toBe('system');
+    store[APPEARANCE_STORAGE_KEY] = 'dark';
+    expect(getAppearanceSetting()).toBe('dark');
   });
 
   it('does not write anything while reading', () => {

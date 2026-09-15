@@ -55,15 +55,17 @@ async function canvasColour(page: import('@playwright/test').Page): Promise<stri
 }
 
 test.describe('Appearance', () => {
-  test('cycles Light → Dark → System and repaints a Default tab', async ({ page, pageErrors }) => {
+  test('opens on the device setting, then cycles', async ({ page, pageErrors }) => {
     await page.emulateMedia({ colorScheme: 'dark' });
     await justDraw(page);
 
-    // A fresh diagram is on the Default colour scheme in light chrome: white
-    // canvas, and the OS being dark must not have decided that for us.
-    expect(await setting(page)).toBe('Light');
-    await expect(page.locator('html')).not.toHaveClass(/dark/);
-    await expect(page.locator(`${CANVAS} >> nth=0`)).toBeVisible();
+    // A first-time visitor on a dark machine lands dark: System is the default
+    // (spec/07), and the pre-hydration script resolves it before first paint.
+    expect(await setting(page)).toBe('System');
+    await expect(page.locator('html')).toHaveClass(/dark/);
+    // The CANVAS comes with it, not just the chrome — a Default tab has no
+    // stored colours to contradict the viewer.
+    await expect.poll(() => canvasColour(page)).toBe(rgb(DARK_CANVAS));
 
     // Drop a shape. On the Default scheme it carries NO colours of its own, so
     // what it is drawn in is entirely the canvas's ink — the thing the merge
@@ -72,36 +74,34 @@ test.describe('Appearance', () => {
     await page.getByRole('button', { name: 'Add square', exact: true }).click();
     await page.locator(CANVAS).click({ position: { x: 420, y: 300 } });
     await expect(square).toHaveCount(1);
-    const lightInk = await squareInk(page);
-    expect(lightInk.border).toBe(rgb('#0ea5e9')); // brand-500, the light default
-
-    // Light → Dark.
-    await appearanceButton(page).click();
-    expect(await setting(page)).toBe('Dark');
-    await expect(page.locator('html')).toHaveClass(/dark/);
-    await expect
-      .poll(() => canvasColour(page), { message: 'canvas follows the appearance' })
-      .toBe(rgb(DARK_CANVAS));
-    // ... and so does the shape sitting on it.
     await expect
       .poll(async () => (await squareInk(page)).border, { message: 'element ink follows too' })
       .toBe(rgb('#a1a1aa'));
 
-    // Dark → System, which this browser reports as dark, so the canvas stays.
+    // System → Light. An explicit pick outranks the device, which is still dark.
     await appearanceButton(page).click();
-    expect(await setting(page)).toBe('System');
+    expect(await setting(page)).toBe('Light');
+    await expect(page.locator('html')).not.toHaveClass(/dark/);
+    await expect
+      .poll(() => canvasColour(page), { message: 'canvas follows the appearance' })
+      .toBe(rgb(LIGHT_CANVAS));
+    await expect.poll(async () => (await squareInk(page)).border).toBe(rgb('#0ea5e9')); // brand-500, the light canvas's ink
+
+    // Light → Dark, explicitly.
+    await appearanceButton(page).click();
+    expect(await setting(page)).toBe('Dark');
     await expect(page.locator('html')).toHaveClass(/dark/);
     await expect.poll(() => canvasColour(page)).toBe(rgb(DARK_CANVAS));
 
-    // The OS flipping under System takes the editor with it, live.
+    // Dark → System, back to the start of the cycle.
+    await appearanceButton(page).click();
+    expect(await setting(page)).toBe('System');
+    await expect(page.locator('html')).toHaveClass(/dark/);
+
+    // The device flipping under System takes the editor with it, live.
     await page.emulateMedia({ colorScheme: 'light' });
     await expect(page.locator('html')).not.toHaveClass(/dark/);
     await expect.poll(() => canvasColour(page)).toBe(rgb(LIGHT_CANVAS));
-
-    // System → Light, back to the start of the cycle, ink included.
-    await appearanceButton(page).click();
-    expect(await setting(page)).toBe('Light');
-    await expect.poll(async () => (await squareInk(page)).border).toBe(lightInk.border);
 
     expectNoPageErrors(pageErrors);
   });
@@ -110,6 +110,7 @@ test.describe('Appearance', () => {
     // The whole reason Default resolves per viewer instead of baking a half at
     // pick time: switching chrome is not an edit. If it were, one reader's
     // appearance would travel to everyone else on the tab.
+    await page.emulateMedia({ colorScheme: 'light' });
     await justDraw(page);
     await page.waitForTimeout(1500); // let the create-time autosave settle
 
@@ -119,6 +120,7 @@ test.describe('Appearance', () => {
         writes.push(`${req.method()} ${new URL(req.url()).pathname}`);
     });
 
+    await appearanceButton(page).click(); // System -> Light
     await appearanceButton(page).click(); // Light -> Dark
     await expect(page.locator('html')).toHaveClass(/dark/);
     await page.waitForTimeout(2000); // well past the autosave debounce
@@ -130,7 +132,9 @@ test.describe('Appearance', () => {
   });
 
   test('remembers the setting across a reload, before first paint', async ({ page }) => {
+    await page.emulateMedia({ colorScheme: 'light' });
     await justDraw(page);
+    await appearanceButton(page).click(); // System -> Light
     await appearanceButton(page).click(); // Light -> Dark
     await expect(page.locator('html')).toHaveClass(/dark/);
 

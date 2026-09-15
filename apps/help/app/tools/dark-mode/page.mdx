@@ -5,7 +5,7 @@ import { LightDarkToggle } from '@/components/illustrations/tools';
 export const metadata = helpMetadata({
   title: 'Appearance: Light, Dark, System',
   description:
-    'Set the editor to Light, Dark, or System with the toggle on the tab bar. It recolours the editor around your work, your choice is remembered, and the Default colour scheme follows it.',
+    'Set the editor to Light, Dark, or System with the toggle on the tab bar. New visitors start on System, so it matches their device. It recolours the editor around your work, your choice is remembered, and the Default colour scheme follows it.',
   path: '/help/tools/dark-mode/',
 });
 
@@ -28,7 +28,7 @@ export const metadata = helpMetadata({
 - **Dark.** The editor's chrome stays dark, whatever your device is set to.
 - **System.** The editor follows your operating system, so a machine that turns dark at sunset takes the editor with it, live, without a reload.
 
-Light is the starting point for a new visitor: livediagram does not assume your device's setting until you ask it to by picking System.
+**System is where everyone starts.** Open livediagram on a machine set to dark and the editor is dark from the first paint, canvas included. Pick Light or Dark yourself and that choice outranks your device from then on, in both directions — a light editor on a dark machine is perfectly allowed.
 
 ## Appearance is yours; a colour scheme is the diagram's
 
@@ -57,7 +57,7 @@ Tabs on the Default scheme never trigger it. They already match — that is the 
 ## Your choice sticks
 
 - **Remembered.** Your pick is saved in your browser, so a refresh, or your next visit, keeps the appearance you chose.
-- **No flash.** It is applied before the page first paints, on every screen including the welcome and new-diagram flows, so you never see a flash of the wrong one.
+- **No flash.** It is worked out before the page first paints — your saved pick, or your device setting if you have not made one — on every screen including the welcome and new-diagram flows, so you never see a flash of the wrong one.
 
 <Tip>
   Prefer a dark workspace? Set it once and forget it. Leave your tabs on the Default colour scheme
