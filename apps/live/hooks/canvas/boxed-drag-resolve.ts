@@ -1,4 +1,4 @@
-import { isFixedSizeShape } from '@livediagram/diagram';
+import { isFixedSizeElement } from '@livediagram/diagram';
 import {
   alignmentGuides,
   distributionSnap,
@@ -284,7 +284,7 @@ export function resolveBoxedResize({
     // Fixed-size kinds (spec/103) ride along with the union's MOVE but keep
     // their own width / height, so scaling a selection can't quietly resize a
     // control that has no resize handles of its own.
-    if (el.type === 'shape' && isFixedSizeShape(el.shape)) {
+    if (isFixedSizeElement(el)) {
       const moved = unionResizeMember(start, unionStart, unionNext, corner);
       boundsById.set(el.id, { ...moved, width: start.width, height: start.height });
       continue;

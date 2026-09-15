@@ -1,4 +1,5 @@
 import type { Element, ShapeKind } from './index';
+import { eventStormingKindOf } from './event-storming';
 
 // Human-readable name for a shape kind, e.g. 'square' -> 'Square',
 // 'speech-bubble' -> 'Speech Bubble'. Used in selection labels and any
@@ -36,8 +37,12 @@ export function elementKindLabel(el: Element): string {
       return 'Text';
     case 'table':
       return 'Table';
-    case 'sticky':
-      return 'Sticky';
+    case 'sticky': {
+      // An event-storming note IS its kind (spec/139) — "Selected Domain
+      // Event" says what you picked up; "Selected Sticky" says nothing.
+      const kind = eventStormingKindOf(el);
+      return kind ? titleCase(kind) : 'Sticky';
+    }
     case 'image':
       return 'Image';
     case 'freehand':

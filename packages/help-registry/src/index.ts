@@ -189,7 +189,7 @@ export const categories: Category[] = [
     title: 'Palette',
     description:
       'Your launchpad for everything on the canvas: every element and palette setting explained.',
-    articleCount: 24,
+    articleCount: 25,
     kind: 'feature',
   },
   {
@@ -197,7 +197,7 @@ export const categories: Category[] = [
     title: 'Canvas',
     description:
       'Master the infinite canvas where diagrams come together: placing, selecting, grouping, linking, annotating, noting, layering, rotating, animating, shadowing, locking, theming, and templating.',
-    articleCount: 19,
+    articleCount: 20,
     kind: 'feature',
   },
   {
@@ -920,10 +920,19 @@ export const articles: Article[] = [
   {
     slug: 'write',
     title: 'Write Elements',
-    description:
-      'Page, Text, Sticky note and Annotation: the four elements whose content is words.',
+    description: 'Page, Text, Sticky note and Annotation — plus the Event Storming note grammar.',
     keywords:
-      'write writing text words wordy prose page document label caption title heading sticky note post-it annotation marker remark comment copy typing type compose',
+      'write writing text words wordy prose page document label caption title heading sticky note post-it annotation marker remark comment copy typing type compose event storming domain event command actor policy read model aggregate hotspot brandolini ddd workshop notation',
+    category: 'Palette',
+    categorySlug: 'palette',
+    group: 'Elements',
+  },
+  {
+    slug: 'event-storming',
+    title: 'Event Storming Elements',
+    description: 'The workshop note grammar: eight sticky kinds, each colour a meaning.',
+    keywords:
+      'event storming eventstorming domain event command actor policy read model external system aggregate hotspot brandolini ddd workshop notation sticky colours colors orange blue purple big picture process design stage',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Elements',
@@ -1173,6 +1182,16 @@ export const articles: Article[] = [
     keywords: 'starter kanban flowchart swot gantt wireframe prebuilt scaffold quick start',
     category: 'Canvas',
     categorySlug: 'canvas',
+  },
+  {
+    slug: 'event-storming-boards',
+    title: 'Event Storming Boards',
+    description: 'A board built for the workshop: the notation, paper-like notes, one wall.',
+    keywords:
+      'event storming eventstorming board workshop brandolini ddd domain driven design session facilitator wall sticky notes paper big picture process modelling modeling software design pass timeline domain event command aggregate hotspot insert between gap make room slot squeeze in add in the middle reorder shuffle push right alt option modifier hold key move a note rearrange resequence capitals caps uppercase upper case all caps shouting letter case marker font typeface handwriting permanent marker sharpie',
+    category: 'Canvas',
+    categorySlug: 'canvas',
+    parentSlug: 'templates',
   },
   {
     slug: 'using-tabs',

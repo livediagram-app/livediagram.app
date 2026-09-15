@@ -6,11 +6,13 @@ import type {
   SessionTool,
   ShapeKind,
 } from '@livediagram/diagram';
-import type { EmbedProvider } from '@livediagram/diagram';
+import type { EmbedProvider, EventStormingNoteKind } from '@livediagram/diagram';
+import { eventStormingNoteSize } from '@livediagram/diagram';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { IconButton } from '@/components/palette/palette-controls';
-import { ICON_DND_MIME } from '@/lib/icons';
+import { ICON_DND_MIME, PALETTE_DND_MIME } from '@/lib/icons';
 import { TECH_ICON_DND_MIME } from '@/lib/tech-icons';
+import { setPaletteDragPreview, suppressNativeDragImage } from '@/lib/palette-drag-preview';
 import type { PaletteTileDef, PaletteTileSection } from './palette-tile-defs';
 import { tilesInSection } from './palette-tile-defs';
 
@@ -37,7 +39,10 @@ export type PaletteTileActions = {
   beginShapePen: () => void;
   beginPolygon: () => void;
   addArrow: () => void;
-  addSticky: () => void;
+  // Optional fill + kind: the Event Storming tiles pass their note kind's
+  // canonical colour and the kind itself (which routes the note onto its
+  // stage's layer, spec/139); plain "Add sticky note" passes nothing.
+  addSticky: (fill?: string, esKind?: EventStormingNoteKind) => void;
   addTable: () => void;
   addImage: () => void;
   addAnnotation: () => void;
@@ -79,7 +84,9 @@ export function tileHandler(def: PaletteTileDef, actions: PaletteTileActions): (
     case 'arrow':
       return actions.addArrow;
     case 'sticky':
-      return actions.addSticky;
+      // Wrapped so the button's MouseEvent can't land in the optional fill
+      // parameter; the tile's own fill + kind (if any) ride instead.
+      return () => actions.addSticky(a.fill, a.esKind);
     case 'table':
       return actions.addTable;
     case 'image':
@@ -135,6 +142,15 @@ export function tileActive(
     // Vimeo alongside it (the same trap the shape branch above avoids).
     case 'video':
       return pendingDraw.type === 'video' && pendingDraw.provider === a.provider;
+    // The Event Storming tiles all arm the one sticky intent, split by the
+    // fill + kind payload — match on both or arming Command would light up
+    // all eight notes plus the plain sticky tile (the video / shape trap).
+    case 'sticky':
+      return (
+        pendingDraw.type === 'sticky' &&
+        pendingDraw.fill === a.fill &&
+        pendingDraw.esKind === a.esKind
+      );
     // Icon / sticker tiles DO arm (they ride the shape intent carrying their
     // glyph id), but their catalogues are open-ended and the picker tabs
     // render thousands of tiles, so pressed-state matching per glyph buys
@@ -175,6 +191,20 @@ function PaletteTile({
           e.dataTransfer.effectAllowed = 'copy';
         }
       : undefined;
+  // Sticky tiles drag too (the plain note + the Event Storming notation,
+  // spec/139), carrying their kind so the drop routes + sizes like a tap.
+  // The IconButton clears the ghost on dragEnd for every tile, so setting
+  // it here is safe.
+  const stickyDrag =
+    a.type === 'sticky'
+      ? (e: React.DragEvent) => {
+          e.dataTransfer.setData(PALETTE_DND_MIME, a.esKind ? `sticky|${a.esKind}` : 'sticky');
+          e.dataTransfer.effectAllowed = 'copy';
+          const size = a.esKind ? eventStormingNoteSize(a.esKind) : { width: 200, height: 200 };
+          setPaletteDragPreview({ kind: 'square', ...size, note: true });
+          suppressNativeDragImage(e);
+        }
+      : undefined;
   return (
     <IconButton
       label={def.label}
@@ -185,8 +215,8 @@ function PaletteTile({
       dragChoice={
         a.type === 'shape' ? (a.session ?? a.reaction ?? a.mode ?? a.estimateScale) : undefined
       }
-      draggable={iconDrag !== undefined || undefined}
-      onDragStart={iconDrag}
+      draggable={iconDrag !== undefined || stickyDrag !== undefined || undefined}
+      onDragStart={iconDrag ?? stickyDrag}
       filled={def.filled}
       noTint={def.noTint}
       active={tileActive(def, pendingDraw)}

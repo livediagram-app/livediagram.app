@@ -6,7 +6,7 @@ a per-tab default — from a curated set of eleven Google Fonts.
 ## The eleven fonts
 
 A wide spread of voices so a diagram can read as crisp, friendly, formal,
-hand-drawn, or bold. Defined once in `apps/live/lib/fonts.ts` (id + label
+hand-drawn, or bold. Defined once in `packages/diagram/src/fonts.ts` (id + label
 
 - CSS stack + Google family spec):
 
@@ -52,9 +52,21 @@ falling back to small when the active tab has no explicit size — so tabs in
 one diagram stay consistent and a brand-new tab still defaults to small
 rather than the `md` factory baseline.
 
-Resolution order for any text: `element.font → tab.font → editor default`
-(the system sans stack). `resolveFontStack` maps a stored id to its CSS
-stack; an unknown / unset id falls through to the next level.
+Resolution order for any text: `element.font → notation font → tab.font →
+editor default` (the system sans stack). `resolveFontStack` maps a stored id
+to its CSS stack; an unknown / unset id falls through to the next level.
+
+The **notation font** is the one rung the author doesn't set: an
+event-storming note is written in marker (`ES_NOTE_FONT`, spec/139), because
+there the face is grammar rather than styling. It outranks the tab default
+and yields to an explicit `element.font`, which is a deliberate choice.
+
+Auto-fitting labels (`textSize: 'scale'` on a sticky) **measure in the face
+they paint** — `labelMeasure(size, bold, italic, fontFamily)` — since faces
+differ in width at the same px. Webfonts arrive after first paint
+(`display=swap`), so the canvas re-renders once `document.fonts.ready`
+settles (`useFontsReady`) and the fit re-measures in the real face instead of
+keeping a size taken from the swap fallback.
 
 Applies to every text surface: shape / text / sticky labels (committed +
 live editor), table cells, and arrow labels (arrows have no per-element
@@ -85,7 +97,35 @@ Both pickers **preview each face**: the per-element font menu shows an
 typeface** in a compact tile grid (a native `<select>` can't — browsers /
 macOS ignore `font-family` on `<option>`, so the names would all look alike).
 
-Implementation: `apps/live/lib/fonts.ts` (catalogue + resolver),
+## Exports carry the face
+
+An exported image is the diagram as far as its reader is concerned, so PNG /
+SVG / PDF paint the same typeface the canvas did (they used to hardcode the UI
+sans, which quietly rewrote every board — loudest on an event-storming wall,
+whose marker face IS its notation).
+
+- `describeBoxedExport` resolves the face per element (`exportFontFamily`) and
+  hands it to the emitters on `ExportLabel.fontFamily`; the wrap measurement
+  uses it too, or a wide face breaks at the wrong words.
+- **A downloaded file carries the bytes.** `embeddedFontFaceCss`
+  (`apps/live/lib/export-fonts.ts`) fetches the Latin subsets of the faces the
+  tab actually used and inlines them as base64 `@font-face` rules. This is not
+  belt-and-braces: the PNG path rasterises element fragments through an
+  `<img>`, which blocks external resources outright, so a referenced font
+  would silently come back as the fallback. Non-Latin text keeps the fallback
+  face — embedding every script would multiply an export's weight for coverage
+  a diagram almost never uses.
+- **A headless render declares instead.** `renderElementsToSvg` (the api / mcp
+  workers, which have no font-fetch budget) emits `svgFontDefs`: an `@import`
+  of the Google stylesheet for the used families only. A browser opening that
+  file gets the real faces; an offline vector editor gets the stack's system
+  fallback.
+- Both paths emit nothing at all when no element or tab picked a font, so an
+  ordinary export is byte-identical to what it was before fonts existed.
+- The PNG drawer awaits `document.fonts.ready` before painting: rasterising
+  mid-swap would bake the fallback into the file.
+
+Implementation: `packages/diagram/src/fonts.ts` (catalogue + resolver),
 `components/palette/FontSelect.tsx` (the per-tab font grid; element fonts use the
 rich-text toolbar's own font grid in `RichTextToolbar.tsx`),
 the label renderers (`element-labels.tsx`), `TableView`, and `ArrowView`

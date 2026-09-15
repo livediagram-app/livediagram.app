@@ -46,7 +46,9 @@ flag, so a mid-rerun reload re-offers the same way.
 
 A welcome offer card, then eight steps in palette → explorer → canvas →
 tabs → theme → search order (six on mobile, where the theme-canvas and
-search steps are skipped), and a closing "you're ready" card. The bookend
+search steps are skipped; six on an **event-storming board**, which hides
+the palette header and so drops the two dropdown steps — four when it is
+both), and a closing "you're ready" card. The bookend
 cards sit outside the step count. Copy is one or two
 short sentences per step ("concise" is the spec constraint; the exact strings
 live in `apps/live/components/tour/tour-steps.ts`):
@@ -104,6 +106,13 @@ alone.
   lazy-loaded chunks. A step whose target never appears is skipped rather
   than wedging the tour; if an open menu is dismissed mid-step (outside
   click), the step re-prepares itself.
+- **A target has to render to count.** Chrome a surface hides stays in the
+  DOM (the event-storming board's palette header band is `display:none`,
+  [spec/139](139-event-storming.md)), so an anchor with no client rects is
+  treated as absent — it is never clicked and never measured. That is the
+  safety net; the step list itself is filtered up front (`tourStepsFor`,
+  by viewport and board kind) so the "N of M" count stays honest instead
+  of a hidden step burning its timeout mid-tour.
 - **Mobile + minimal panel layout**: panels there live behind the dock
   button row (spec/07 / spec/09), so palette/explorer steps first tap the
   matching dock button (`data-tour-id="dock-*"`), and the popover clamps to

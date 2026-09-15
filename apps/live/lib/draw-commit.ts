@@ -1,4 +1,15 @@
-import { defaultSessionConfig, isFixedSizeShape, REACTION_PAD_LABEL } from '@livediagram/diagram';
+import {
+  defaultSessionConfig,
+  eventStormingNoteSize,
+  eventStormingTilt,
+  eventStormingBoardLayerId,
+  isEventStormingTab,
+  isFixedSizeShape,
+  isLayerLocked,
+  isLayerVisible,
+  REACTION_PAD_LABEL,
+  type StickyElement,
+} from '@livediagram/diagram';
 import { ARROW_SNAP_THRESHOLD_PX, inheritedSizeFor } from '@/lib/canvas';
 import {
   COMPONENT_SIZE,
@@ -30,6 +41,38 @@ import type { PendingDraw } from '@/lib/draw-mode';
 // composite) and returns the minted element(s). The hook stays the
 // owner of everything stateful — the functional commit, selection,
 // telemetry, and the image-picker follow-up.
+
+// The board-wide sticky treatment on an event-storming board (spec/139):
+// one size for life (the plain square silhouette — tap-inheritance and
+// drag-sizing both stand down), plus a random hand-placed tilt (±1.1°,
+// one decimal) so a wall of notes reads as a workshop rather than a grid.
+function eventStormingBoardStickyExtras(): Partial<StickyElement> {
+  return {
+    width: 200,
+    height: 200,
+    fixedSize: true,
+    // Auto-fit, centred both ways (spec/139): a workshop note is one short
+    // phrase that should FILL its paper and sit in the middle of it, like a
+    // marker-written sticky — never a small line clinging to the top-left.
+    // The note can't be resized, so the text adapting is what makes a long
+    // phrase legible.
+    textSize: 'scale',
+    textAlignX: 'center',
+    textAlignY: 'middle',
+    rotation: eventStormingTilt(),
+  };
+}
+
+// The layer stamp for an event-storming note, or nothing when the board /
+// target layer can't take it (see the call site above). One board, one
+// layer, so the note's kind doesn't enter into it.
+function esBoardLayerStamp(activeTab: Tab): { layerId?: string } {
+  if (!isEventStormingTab(activeTab)) return {};
+  const layerId = eventStormingBoardLayerId();
+  const layer = activeTab.layers?.find((l) => l.id === layerId);
+  if (!layer || !isLayerVisible(layer) || isLayerLocked(layer)) return {};
+  return { layerId };
+}
 
 // Stroke for a new arrow when the active theme has no explicit
 // `elementStroke` (the Brand theme). brand-500 — matches the shape
@@ -168,6 +211,10 @@ export function buildDrawnBoxed(
   activeTab: Tab,
 ) {
   const isTap = isDrawTap(startX, startY, endX, endY);
+  // Event-storming stationery (spec/139): on an ES board every sticky has a
+  // FIXED silhouette (the drag gesture sizes nothing) and a hand-placed
+  // tilt; a kinded note additionally carries its own footprint everywhere.
+  const esBoardSticky = intent.type === 'sticky' && isEventStormingTab(activeTab);
   const base =
     intent.type === 'shape'
       ? createShape(intent.kind, startX, startY)
@@ -188,7 +235,7 @@ export function buildDrawnBoxed(
   const tapSize = inheritedSizeFor(base, inheritFrom);
   // A fixed-size kind (spec/103) ignores the drag entirely: dragging one out
   // still places it, at the one size it is meant to be.
-  const fixedSize = base.type === 'shape' && isFixedSizeShape(base.shape);
+  const fixedSize = (base.type === 'shape' && isFixedSizeShape(base.shape)) || esBoardSticky;
   // Shared with the live preview so the outline the user sizes against is the
   // box that lands — including the embed's 16:9 fit (spec/114).
   const dragBox = drawnDragBox(intent, startX, startY, endX, endY);
@@ -224,6 +271,32 @@ export function buildDrawnBoxed(
     ...(intent.type === 'shape' && intent.iconId
       ? { iconId: intent.iconId, ...(intent.label ? { label: intent.label } : {}) }
       : {}),
+    // Event-storming sticky (spec/139): the tile's semantic colour lands as
+    // the element fill. Stickies are exempt from theme recolouring, so the
+    // notation survives every theme without themeLockFill.
+    ...(intent.type === 'sticky' && intent.fill ? { fillColor: intent.fill } : {}),
+    // Board-wide treatment first (fixed square + tilt), then a kinded
+    // note's own silhouette on top: the kind IS the notation (wide policy,
+    // small actor), on any board — while the fixed-size + tilt applies
+    // only ON an ES board.
+    ...(esBoardSticky ? eventStormingBoardStickyExtras() : {}),
+    ...(intent.type === 'sticky' && intent.esKind
+      ? {
+          // The notation kind is DOMAIN DATA, not a colour coincidence
+          // (spec/139): it names the selection and is what any later
+          // notation-aware feature reads.
+          esKind: intent.esKind,
+          ...eventStormingNoteSize(intent.esKind),
+        }
+      : {}),
+    // Stage routing (spec/139): on an event-storming board the note files
+    // onto its workshop stage's layer — a Command dropped while browsing Big
+    // picture still lands under Process. Only when the target layer exists,
+    // is visible AND unlocked: stamping onto a hidden layer creates an
+    // element the user can't see, a locked one an element they can't touch —
+    // in both cases the note falls through to the ordinary active-layer
+    // stamping at the commit choke point instead.
+    ...(intent.type === 'sticky' && intent.esKind ? esBoardLayerStamp(activeTab) : {}),
     // Technology marks render at a fixed size (spec/41), so warping the
     // box can't warp the mark — the aspect lock createShape('icon') bakes
     // in would only fight resizing the caption room, so drop it.

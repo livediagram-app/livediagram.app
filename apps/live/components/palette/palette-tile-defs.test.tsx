@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { EVENT_STORMING_NOTES } from '@livediagram/diagram';
 import { PALETTE_CATEGORIES } from './palette-categories';
 import { BEHAVIOUR_GROUPS } from './palette-create-tabs';
 import {
@@ -34,6 +35,40 @@ describe('PALETTE_TILES catalogue', () => {
   it('no tile outside the tools section carries a toolGroup (the field is Tools-tab metadata)', () => {
     for (const tile of PALETTE_TILES.filter((t) => t.section !== 'tools')) {
       expect(tile.toolGroup, tile.id).toBeUndefined();
+    }
+  });
+});
+
+// The Event Storming category (spec/139): one tile per note kind in the
+// EVENT_STORMING_NOTES catalogue, a top-level palette category of its own.
+// The tiles derive from the catalogue, so this pins the derivation both
+// ways: every note kind has a tile, every tile arms a sticky intent
+// carrying that kind's canonical fill AND its kind (the commit path routes
+// the note onto its stage's layer on event-storming boards).
+describe('event-storming tiles', () => {
+  const tiles = tilesForCategory('event-storming');
+
+  it('offers one tile per note kind, in catalogue (workshop) order', () => {
+    expect(tiles.map((t) => t.id)).toEqual(EVENT_STORMING_NOTES.map((n) => `tools:es-${n.kind}`));
+  });
+
+  it('every tile arms a sticky intent with its kind + canonical fill', () => {
+    for (const note of EVENT_STORMING_NOTES) {
+      const tile = tiles.find((t) => t.id === `tools:es-${note.kind}`)!;
+      expect(tile.action, note.kind).toEqual({
+        type: 'sticky',
+        fill: note.fill,
+        esKind: note.kind,
+      });
+      expect(tile.label, note.kind).toContain(note.label);
+    }
+  });
+
+  it('is its own section — no toolGroup, no tileGroup (a top-level category)', () => {
+    for (const tile of tiles) {
+      expect(tile.section, tile.id).toBe('event-storming');
+      expect(tile.toolGroup, tile.id).toBeUndefined();
+      expect(tile.tileGroup, tile.id).toBeUndefined();
     }
   });
 });
@@ -106,6 +141,8 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   // room (3), Session (3), Keep a record (3), Reactions (5), Selection
   // Mode (8 modes), Get around (2), plus the comment pin loose on top.
   behaviour: 32,
+  // The Event Storming notation (spec/139): one tile per note kind.
+  'event-storming': 8,
 };
 
 describe('PALETTE_CATEGORIES', () => {

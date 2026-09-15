@@ -11,6 +11,7 @@ import {
   untitledNameForTemplate,
   type TemplateKind,
 } from '@livediagram/templates';
+import { ES_BOARD_LAYER_ID, eventStormingLayers } from '@livediagram/diagram';
 import { getTheme } from './themes';
 
 // `buildTemplatedTab` is the seam between /live/new (the welcome
@@ -22,7 +23,7 @@ import { getTheme } from './themes';
 
 // The catalogue's shape (count + default/extra split + no kind
 // drift) is load-bearing across both the picker and the marketing
-// site. spec/16 pins "47 templates (10 default + 37 extra)" and
+// site. spec/16 pins "48 templates (10 default + 38 extra)" and
 // spec/09 catalogues the picker UX. These tests pin the array so
 // either the spec or the catalogue can't silently drift away from
 // the other.
@@ -78,25 +79,26 @@ describe('TEMPLATES catalogue', () => {
     'cloud-architecture',
     'uml-class',
     'state-machine',
+    'event-storming',
     'floor-plan',
   ];
 
   // Hidden templates are buildable but never listed, so every user-facing
-  // count (spec/16's "47 templates", the picker grids, the MCP catalogue)
+  // count (spec/16's "48 templates", the picker grids, the MCP catalogue)
   // is over the listed subset. The mechanism is generic; nothing ships
   // hidden today (the spec/69 guided-tour sample used it until the
   // interactive tour, spec/79, superseded it).
   const listed = TEMPLATES.filter((t) => !t.hidden);
 
-  it('lists exactly 47 templates (10 default + 37 extra, matches spec/16 and spec/09)', () => {
-    expect(listed).toHaveLength(47);
+  it('lists exactly 48 templates (10 default + 38 extra, matches spec/16 and spec/09)', () => {
+    expect(listed).toHaveLength(48);
   });
 
-  it('splits cleanly into 10 default + 37 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
+  it('splits cleanly into 10 default + 38 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
     const defaults = listed.filter((t) => !t.extra);
     const extras = listed.filter((t) => t.extra);
     expect(defaults).toHaveLength(10);
-    expect(extras).toHaveLength(37);
+    expect(extras).toHaveLength(38);
   });
 
   it('ships no hidden templates (the flag is generic; spec/69 was retired by spec/79)', () => {
@@ -283,8 +285,12 @@ describe('layered templates (spec/74)', () => {
 
   it('pins each layered template’s names and scaffold / content split', () => {
     // Every layered kind has a table entry and vice versa, so adding a
-    // layered template forces a deliberate row here.
-    const layeredKinds = TEMPLATES.map((t) => t.kind).filter((k) => templateLayers(k));
+    // layered template forces a deliberate row here. Event storming is the
+    // one deliberate exception to the two-band shape — it ships FOUR stage
+    // layers for the workshop views (spec/139) and gets its own pin below.
+    const layeredKinds = TEMPLATES.map((t) => t.kind).filter(
+      (k) => k !== 'event-storming' && templateLayers(k),
+    );
     expect(layeredKinds.sort()).toEqual(Object.keys(LAYERED_BANDS).sort());
 
     for (const [kind, expected] of Object.entries(LAYERED_BANDS) as [
@@ -314,6 +320,19 @@ describe('layered templates (spec/74)', () => {
       expect(content.length, `${kind} content`).toBe(expected.content);
       expect(scaffold.length + content.length, kind).toBe(elements.length);
     }
+  });
+
+  // Event storming (spec/139): three stage layers for the shared workshop
+  // views — Big picture / Process / Design. The seed lives on Big picture
+  // (the workshop's first stage).
+  it('event storming ships ONE layer, with the whole seed on it', () => {
+    const layers = templateLayers('event-storming')!;
+    expect(layers).toEqual(eventStormingLayers());
+    const elements = buildTemplate('event-storming', 0, 0);
+    const onBoard = elements.filter((el) => el.layerId === ES_BOARD_LAYER_ID);
+    // Three orange events + the method caption, all on the one board layer.
+    expect(onBoard).toHaveLength(4);
+    expect(onBoard.length).toBe(elements.length);
   });
 
   it('buildTemplatedTab lands the layers on the tab and theming keeps the stamps', () => {

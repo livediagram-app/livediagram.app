@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import {
   MenuAccordionSection,
+  MenuActionRow,
   MenuActionButton,
   MenuGroupSeparator,
   MenuTile,
@@ -16,6 +17,7 @@ import {
   FontMenuIcon,
   MindmapMenuIcon,
   PaletteMenuIcon,
+  PasteMenuIcon,
   TreeMenuIcon,
 } from '@/components/palette/context-menu-icons';
 import {
@@ -56,6 +58,20 @@ export function TabCanvasMenuSections({
 }) {
   return (
     <>
+      <MenuGroupSeparator />
+      {/* Paste sits at the top, above the accordions: right-clicking empty
+          canvas is overwhelmingly "put the thing I copied HERE", so it should
+          be the first thing under the cursor, not folded inside a category.
+          Greyed rather than hidden when the buffer is empty. */}
+      <MenuActionRow
+        icon={<PasteMenuIcon />}
+        label="Paste"
+        disabled={!canvas.canPaste}
+        onClick={() => {
+          canvas.onPaste();
+          onClose();
+        }}
+      />
       <MenuGroupSeparator />
       <MenuAccordionSection
         title="Look & Feel"

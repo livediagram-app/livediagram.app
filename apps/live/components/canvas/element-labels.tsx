@@ -15,6 +15,7 @@
 
 import {
   hasRichFormatting,
+  isEventStormingNote,
   type BoxedElement,
   type TextAlignX,
   type TextAlignY,
@@ -22,6 +23,7 @@ import {
   type TextSize,
 } from '@livediagram/diagram';
 import { RichTextEditor } from '@/components/canvas/RichTextEditor';
+import { fitMultilineFontPx } from '@/lib/fit-multiline-text';
 import { FixedSizeLabel, MultilineLabel, RichLabel, ScalingLabel } from './element-label-views';
 
 export function renderLabel(
@@ -64,15 +66,43 @@ export function renderLabel(
   // pre-edit affordance is just an empty rectangle / nothing.
   const placeholder = element.type === 'text' ? 'Text' : isSticky ? 'Note' : '';
 
+  // Workshop notes are written in capitals (spec/139) — a presentation rule,
+  // so it rides the label STYLE (and the fit below) rather than touching the
+  // stored text. Display label, rich runs and the live editor all take the
+  // same flag, or the note would change case on double-click.
+  const caps = isEventStormingNote(element);
+
   const textStyle = {
     bold: element.textBold,
     italic: element.textItalic,
     underline: element.textUnderline,
     strikethrough: element.textStrikethrough,
     fontFamily,
+    uppercase: caps,
   };
 
   const richText = (element as { richText?: TextRun[] }).richText;
+
+  // Auto-fit (spec/139): on a multi-line label (sticky) 'scale' means FILL
+  // THE NOTE — measured here once, then handed to whichever of the two
+  // surfaces renders (label or editor), so they can never disagree and
+  // double-clicking never shifts the text.
+  const fitBox =
+    isSticky && textSize === 'scale'
+      ? { width: element.width, height: element.height, padding }
+      : undefined;
+  const fitPx = fitBox
+    ? fitMultilineFontPx({
+        text: label,
+        width: fitBox.width,
+        height: fitBox.height,
+        padding,
+        bold: !!element.textBold,
+        italic: !!element.textItalic,
+        uppercase: caps,
+        fontFamily,
+      })
+    : undefined;
 
   if (isEditing) {
     // Per-element placeholder colour: typed text inherits the element's
@@ -90,11 +120,13 @@ export function renderLabel(
         initialRuns={richText}
         placeholder={placeholder}
         textSize={textSize}
+        fitBox={fitBox}
         alignX={alignX}
         alignY={alignY}
         padding={padding}
         fontFamily={fontFamily}
         multiline={isSticky}
+        uppercase={caps}
         cursorAtEnd={editCursorAtEnd}
         zoom={zoom}
         textClassName={textClass}
@@ -121,6 +153,7 @@ export function renderLabel(
         padding={padding}
         fontFamily={fontFamily}
         multiline={isSticky}
+        uppercase={caps}
         className={isSticky ? 'text-amber-950' : ''}
         animClass={labelAnimClass}
       />
@@ -133,6 +166,7 @@ export function renderLabel(
         text={label}
         placeholder={placeholder}
         textSize={textSize}
+        fitPx={fitPx}
         alignX={alignX}
         alignY={alignY}
         padding={padding}

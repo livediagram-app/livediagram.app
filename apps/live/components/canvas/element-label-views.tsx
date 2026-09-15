@@ -16,6 +16,7 @@ import {
   ALIGN_ITEMS,
   effectiveRunStyle,
   FIXED_FONT_PX,
+  labelTypographyClass,
   labelTextStyleCss,
   MULTI_FONT_PX,
   MULTI_RUN_PX,
@@ -154,6 +155,11 @@ type MultilineLabelProps = {
   alignX: TextAlignX;
   alignY: TextAlignY;
   className?: string;
+  // Auto-fit size (spec/139): when the element's size is 'scale', the
+  // caller measures the text against the box and passes the px it fits at,
+  // so 'scale' means fill-the-note rather than a fixed small size. The
+  // editor is handed the SAME number, or the text jumps on double-click.
+  fitPx?: number;
 };
 
 export function MultilineLabel({
@@ -165,8 +171,9 @@ export function MultilineLabel({
   padding,
   className = '',
   style,
+  fitPx,
 }: MultilineLabelProps & { padding: number; style?: LabelTextStyle }) {
-  const fontSize = `${MULTI_FONT_PX[textSize]}px`;
+  const fontSize = `${fitPx ?? MULTI_FONT_PX[textSize]}px`;
   const outerStyle = {
     fontSize,
     alignItems: ALIGN_ITEMS[alignY],
@@ -214,6 +221,7 @@ export function RichLabel({
   padding,
   fontFamily,
   multiline,
+  uppercase,
   className = '',
   animClass,
 }: {
@@ -225,6 +233,9 @@ export function RichLabel({
   padding: number;
   fontFamily?: string;
   multiline: boolean;
+  // Paint in capitals (an event-storming note, spec/139) — whole-label, so
+  // it sits on the wrapper rather than on each run's style.
+  uppercase?: boolean;
   className?: string;
   // Text-native animation class for the glyphs (spec/09); see renderLabel.
   animClass?: string;
@@ -237,14 +248,18 @@ export function RichLabel({
   const runSizePx = multiline ? MULTI_RUN_PX : FIXED_FONT_PX;
   return (
     <div
-      className={`pointer-events-none absolute inset-0 flex overflow-hidden ${
-        multiline ? '' : 'font-medium leading-tight'
-      } ${className}`}
+      className={`pointer-events-none absolute inset-0 flex overflow-hidden ${labelTypographyClass(
+        multiline,
+      )} ${className}`}
       style={{ fontSize: `${basePx}px`, alignItems: ALIGN_ITEMS[alignY], padding }}
     >
       <div
         className={`w-full whitespace-pre-wrap break-words ${animClass ?? ''}`}
-        style={{ textAlign: TEXT_ALIGN[alignX], fontFamily }}
+        style={{
+          textAlign: TEXT_ALIGN[alignX],
+          fontFamily,
+          textTransform: uppercase ? 'uppercase' : undefined,
+        }}
       >
         {runs.map((run, i) => (
           <span key={i} style={effectiveRunStyle(run, element, runSizePx)}>

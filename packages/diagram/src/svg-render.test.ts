@@ -178,6 +178,99 @@ describe('renderElementsToSvg', () => {
     });
   });
 
+  // Fonts (spec/28) used to stop at the canvas: every export painted
+  // system-ui, so a downloaded board looked like a different diagram — most
+  // obviously an event-storming wall, whose marker face IS the notation.
+  describe('fonts', () => {
+    // The renderer XML-escapes every attribute, quotes included; read the
+    // markup back the way a browser does so the assertions stay legible.
+    const plain = (svg: string) => svg.replace(/&#39;/g, "'").replace(/&amp;/g, '&');
+
+    it('paints an element in its own face', () => {
+      const svg = plain(renderElementsToSvg(tab([shape('a', { label: 'Hi', font: 'lora' })])));
+      expect(svg).toContain('font-family="\'Lora\', ui-serif, Georgia, serif"');
+    });
+
+    it("falls back to the tab's face, then to the plain UI sans", () => {
+      const withTab = plain(
+        renderElementsToSvg(tab([shape('a', { label: 'Hi' })], { font: 'oswald' })),
+      );
+      expect(withTab).toContain("font-family=\"'Oswald'");
+      const bare = renderElementsToSvg(tab([shape('a', { label: 'Hi' })]));
+      expect(bare).toContain('font-family="system-ui, sans-serif"');
+    });
+
+    it('lets an element override the tab default', () => {
+      const svg = plain(
+        renderElementsToSvg(tab([shape('a', { label: 'Hi', font: 'lora' })], { font: 'oswald' })),
+      );
+      expect(svg).toContain("font-family=\"'Lora'");
+      expect(svg).not.toContain("font-family=\"'Oswald'");
+    });
+
+    it('declares the faces it used, so the file stands alone', () => {
+      const svg = renderElementsToSvg(tab([shape('a', { label: 'Hi', font: 'lora' })]));
+      expect(svg).toContain('<style');
+      expect(svg).toContain('fonts.googleapis.com');
+      expect(svg).toContain('Lora');
+      // Only what it used — an export shouldn't pull eleven families.
+      expect(svg).not.toContain('Permanent+Marker');
+    });
+
+    it('says nothing about fonts when nothing asked for one', () => {
+      expect(renderElementsToSvg(tab([shape('a', { label: 'Hi' })]))).not.toContain('<style');
+    });
+  });
+
+  describe('sticky notes', () => {
+    const sticky = (o: Record<string, unknown> = {}) =>
+      ({
+        id: 'st',
+        type: 'sticky',
+        x: 0,
+        y: 0,
+        width: 200,
+        height: 200,
+        label: 'Order placed',
+        ...o,
+      }) as Tab['elements'][number];
+
+    it('exports square corners (a sticky is die-cut paper, never rounded)', () => {
+      const svg = renderElementsToSvg(tab([sticky()]));
+      expect(svg).toContain('rx="0"');
+      expect(svg).not.toContain('rx="6"');
+    });
+
+    it('exports borderless by default; an explicit strokeColor still draws', () => {
+      // Matches the canvas: a sticky is borderless paper unless the user
+      // deliberately set a border colour.
+      expect(renderElementsToSvg(tab([sticky()]))).toContain('stroke="none"');
+      expect(renderElementsToSvg(tab([sticky({ strokeColor: '#b45309' })]))).toContain(
+        'stroke="#b45309"',
+      );
+    });
+
+    // Workshop notes are written in capitals (spec/139) — the export paints
+    // what the board shows, or a shared PNG stops being the board.
+    it('exports an event-storming note in capitals', () => {
+      const svg = renderElementsToSvg(tab([sticky({ esKind: 'domain-event' })]));
+      expect(svg).toContain('ORDER PLACED');
+      expect(svg).not.toContain('Order placed');
+    });
+
+    it('leaves an ordinary sticky as written', () => {
+      expect(renderElementsToSvg(tab([sticky()]))).toContain('Order placed');
+    });
+
+    // The marker face is the notation (spec/139), so it has to survive the
+    // export the same way the colour and the capitals do.
+    it('exports an event-storming note in marker', () => {
+      const svg = renderElementsToSvg(tab([sticky({ esKind: 'domain-event' })]));
+      expect(svg.replace(/&#39;/g, "'")).toContain("font-family=\"'Permanent Marker'");
+      expect(svg).toContain('Permanent+Marker');
+    });
+  });
+
   describe('tables (spec/09)', () => {
     const table = (o: Record<string, unknown> = {}) =>
       ({

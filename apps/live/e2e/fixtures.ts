@@ -58,6 +58,47 @@ export function expectNoPageErrors(pageErrors: string[]): void {
 // Complete the /new template wizard into a blank diagram and land on
 // the editor canvas. Shared by the create-flow tests; resilient to the
 // wizard's step count by clicking whatever advances it.
+// Start a diagram from a named TEMPLATE in a named category. The blank
+// helper below skips the category step entirely (Blank is on the first
+// screen), so template creation — builders, layers, per-template canvas
+// overrides, the board kind — is a genuinely different path through the
+// wizard and needs its own way in.
+export async function startTemplateDiagram(
+  page: Page,
+  category: RegExp,
+  template: RegExp,
+): Promise<void> {
+  await page.goto('/new');
+  await page.getByText('New Diagram', { exact: false }).waitFor();
+  // Category tiles are aria-labelled "Browse <name> templates"; the
+  // template tiles carry their title + description as the accessible name.
+  await page.getByRole('button', { name: category }).first().click();
+  await page.getByRole('button', { name: template }).first().click();
+  await page.getByRole('button', { name: /^next$/i }).click();
+  await page
+    .getByRole('button', { name: /^(create|start|use this|done|finish)$/i })
+    .first()
+    .click();
+  await page.locator('[data-canvas-a11y-root]').waitFor();
+}
+
+// Dismiss the quick-tour dialog (spec/47) if this profile is offered one.
+// It lands a BEAT AFTER the canvas does, and its modal overlay swallows
+// pointer events — so a test that merely checks whether it is showing YET
+// races it and then finds its drags going nowhere, silently. Wait for it,
+// but tolerate its absence: whether it is offered depends on what this
+// browser profile has already seen.
+export async function dismissQuickTour(page: Page): Promise<void> {
+  const decline = page.getByRole('button', { name: /^no thanks$/i }).first();
+  try {
+    await decline.waitFor({ state: 'visible', timeout: 5_000 });
+  } catch {
+    return;
+  }
+  await decline.click();
+  await decline.waitFor({ state: 'detached' });
+}
+
 export async function startBlankDiagram(page: Page): Promise<void> {
   await page.goto('/new');
   await page.getByText('New Diagram', { exact: false }).waitFor();

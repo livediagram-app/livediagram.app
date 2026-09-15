@@ -11,6 +11,8 @@ This is a **deliberate, permanent choice for a diagram**, not a temporary
 network state. (Handling a transient dropped connection on a _cloud_ diagram is
 a separate concern — see spec/75 — and out of scope here.)
 
+Tab bodies are stamped with their **board kind** on the way into IndexedDB (`upsertTab`), exactly as the cloud path stamps them in `tabForWire` — the two stores must agree about what a tab IS, or a Sync Diagram would hand the cloud a board that has forgotten itself (spec/139).
+
 ## Turning it on
 
 Offline Mode is **off by default**. You choose it when creating a diagram:

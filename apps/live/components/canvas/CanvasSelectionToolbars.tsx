@@ -5,6 +5,7 @@ import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { FloatingToolbar } from '@/components/chrome/FloatingToolbar';
 import { MultiSelectionToolbar } from '@/components/canvas/MultiSelectionToolbar';
 import { SelectionPopover } from '@/components/canvas/SelectionPopover';
+import { useInsertionSlot } from '@/lib/insertion-preview';
 
 // The floating selection toolbars (spec/09): the single-selection popover
 // and the marquee multi-selection toolbar, each riding a sibling wrapper
@@ -32,6 +33,13 @@ export function CanvasSelectionToolbars({
     multiToolbarBounds,
     showMultiToolbar,
   } = selection;
+  // Insert-between preview (spec/139): the toolbars anchor to element BOUNDS,
+  // and the preview slides elements by a render-time transform their bounds
+  // know nothing about — so while a slot is open they would float over empty
+  // canvas. They fade out the same way they do for a quick-connect ring, and
+  // come back the moment the drag ends.
+  const insertionOpen = useInsertionSlot() !== null;
+  const toolbarsStale = quickRingOpen || insertionOpen;
   const {
     elements,
     readOnly,
@@ -71,10 +79,10 @@ export function CanvasSelectionToolbars({
           className="pointer-events-none absolute inset-0 z-[var(--z-overlay)] origin-center"
           style={{
             transform: `scale(${viewportZoom}) translate(${viewportOffset.x}px, ${viewportOffset.y}px)`,
-            opacity: quickRingOpen ? 0 : 1,
+            opacity: toolbarsStale ? 0 : 1,
             // Transition visibility too so it stays interactive through the
             // fade-out then goes non-interactive (hidden) at the end.
-            visibility: quickRingOpen ? 'hidden' : 'visible',
+            visibility: toolbarsStale ? 'hidden' : 'visible',
             transition: 'opacity 150ms ease, visibility 150ms ease',
           }}
         >
@@ -106,6 +114,11 @@ export function CanvasSelectionToolbars({
             }
             hasText={selected ? elementHasText(selected) : false}
             onDuplicate={readOnly ? undefined : selected ? onDuplicateSelected : undefined}
+            // Intra-layer z-order (spec/74): stack within the element's own
+            // band. The element menu's Bring to Front moves LAYERS; these
+            // are the missing nudge for two things on the same one.
+            onBringToFront={readOnly || !selected ? undefined : props.onBringSelectedToFront}
+            onSendToBack={readOnly || !selected ? undefined : props.onSendSelectedToBack}
             // "Group with another" is intentionally absent from the
             // single-element toolbar: grouping needs a multi-selection,
             // so the action lives only on the marquee MultiSelectionToolbar.
@@ -155,6 +168,9 @@ export function CanvasSelectionToolbars({
           className="pointer-events-none absolute inset-0 z-[var(--z-overlay)] origin-center"
           style={{
             transform: `scale(${viewportZoom}) translate(${viewportOffset.x}px, ${viewportOffset.y}px)`,
+            opacity: insertionOpen ? 0 : 1,
+            visibility: insertionOpen ? 'hidden' : 'visible',
+            transition: 'opacity 150ms ease, visibility 150ms ease',
           }}
         >
           <FloatingToolbar

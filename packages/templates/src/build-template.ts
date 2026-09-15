@@ -27,6 +27,7 @@ import {
 } from './template-builders-technical';
 import { buildStateMachine, buildUmlClass } from './template-builders-uml';
 import { buildFloorPlan } from './template-builders-floorplan';
+import { buildEventStorming } from './template-builders-eventstorming';
 import { buildBusinessModelCanvas, buildEmpathyMap } from './template-builders-canvases';
 import { buildAffinityMap, buildUserStoryMap } from './template-builders-workshops';
 import { buildOkrTree, buildSitemap } from './template-builders-hierarchies';
@@ -157,6 +158,8 @@ export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Eleme
       return buildStateMachine(cx, cy);
     case 'floor-plan':
       return buildFloorPlan(cx, cy);
+    case 'event-storming':
+      return buildEventStorming(cx, cy);
   }
 }
 

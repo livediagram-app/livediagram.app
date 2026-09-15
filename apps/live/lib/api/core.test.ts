@@ -17,6 +17,7 @@ import {
   setSessionSharePassword,
   setTokenProvider,
   stripUiTabFields,
+  tabForWire,
 } from './core';
 
 const H = (h: HeadersInit) => h as Record<string, string>;
@@ -117,5 +118,34 @@ describe('stripUiTabFields', () => {
   it('returns the same object when there is nothing to strip', () => {
     const t = tab();
     expect(stripUiTabFields(t)).toBe(t);
+  });
+});
+
+// The kind is stamped at the PERSISTENCE boundary, not only at the editor's
+// commit choke point: several mutation paths reach the wire (history commit,
+// the non-undoable session tick, remote applies), and a field that depends on
+// which one ran is a field you cannot trust. Every tab that goes out says
+// what it is.
+describe('tabForWire — board kind', () => {
+  const tab = (over: Partial<Tab> = {}): Tab =>
+    ({ id: 't', name: 'T', elements: [], ...over }) as Tab;
+
+  it('stamps the ordinary kind onto a tab that has none', () => {
+    expect(tabForWire(tab()).kind).toBe('diagram');
+  });
+
+  it('keeps a specialised kind', () => {
+    expect(tabForWire(tab({ kind: 'event-storming' })).kind).toBe('event-storming');
+  });
+
+  it('resolves a legacy board by its layer instead of branding it a diagram', () => {
+    const legacy = tab({ layers: [{ id: 'layer:es:big-picture', name: 'Big picture' }] });
+    expect(tabForWire(legacy).kind).toBe('event-storming');
+  });
+
+  it('still strips the UI-only fields', () => {
+    const out = tabForWire(tab({ templateChosen: true, folder: 'f1' } as Partial<Tab>));
+    expect('templateChosen' in out).toBe(false);
+    expect('folder' in out).toBe(false);
   });
 });

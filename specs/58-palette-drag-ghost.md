@@ -40,3 +40,22 @@ drag image (a snapshot of the tile) and no on-canvas feedback.
 
 No change to the drop itself (`usePaletteDrop` / `dropPaletteItem`); this is
 purely an additive preview layer.
+
+## Where the ghost draws
+
+The ghost follows the cursor, offset by whatever the drag's **snap channel**
+(`setPaletteDragSnap`) currently holds — the one number the guides, the ghost
+and the drop all read, so the three can't disagree. Two things publish into
+it, and only ever one at a time:
+
+- the **alignment / distribution snap** (spec/139), which latches the
+  footprint onto its neighbours' edges and even spacing; and
+- an **insertion slot** on an event-storming board (spec/139 "insert a note
+  between two notes"), which places the ghost IN the gap it is offering to
+  open. While a slot is active the alignment snap yields entirely — two
+  placement rules bidding for one drop point is how a preview starts lying.
+  A slot is only ever resolved **while Alt is held** and only for a tile
+  that will land as a **note**; without both, the alignment snap is the
+  whole story, exactly as on any other board. Since a note has no shape kind
+  of its own — the ghost draws it as a square at the note's real size — the
+  preview carries a `note` flag saying what it will actually become.

@@ -123,7 +123,29 @@ export function resolveFontStack(id: string | undefined | null): string | undefi
 // The single Google Fonts stylesheet href covering every option. One
 // request defines every @font-face; the browser only downloads the
 // families actually applied to elements.
-export function googleFontsHref(): string {
-  const families = FONTS.map((f) => `family=${f.google}`).join('&');
+export function googleFontsHref(ids?: readonly string[]): string {
+  // A subset (an export declaring only the faces it used) or, by default,
+  // the whole catalogue (the editor, which can't know what you'll pick).
+  const wanted = ids ? FONTS.filter((f) => ids.includes(f.id)) : FONTS;
+  const families = wanted.map((f) => `family=${f.google}`).join('&');
   return `https://fonts.googleapis.com/css2?${families}&display=swap`;
+}
+
+// The font ids a set of elements + their tab actually use (spec/28), in
+// catalogue order. An export declares exactly these and no more: a
+// downloaded SVG shouldn't pull eleven families to draw a board that used
+// one, and the empty case must stay byte-identical to a font-less export.
+export function fontIdsUsed(
+  elements: readonly { font?: string }[],
+  tabFont?: string,
+  extra?: readonly (string | null | undefined)[],
+): string[] {
+  const used = new Set<string>();
+  const add = (id: string | null | undefined) => {
+    if (id && BY_ID.has(id)) used.add(id);
+  };
+  add(tabFont);
+  for (const el of elements) add(el.font);
+  for (const id of extra ?? []) add(id);
+  return FONTS.filter((f) => used.has(f.id)).map((f) => f.id);
 }

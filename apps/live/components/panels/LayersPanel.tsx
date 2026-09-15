@@ -32,6 +32,7 @@ import type { MovablePanelPlacementProps } from '@/components/primitives/Movable
 
 export function LayersPanel({
   layers,
+  tabFont,
   activeLayerId,
   counts,
   elements,
@@ -70,6 +71,8 @@ export function LayersPanel({
   counts: Map<string, number>;
   // The tab's elements, for the per-row layer previews.
   elements: Element[];
+  // The tab default face (spec/28), so a preview matches the canvas.
+  tabFont?: string;
   onMinimize: () => void;
   forceDockMode?: boolean;
   onMobileClose?: () => void;
@@ -120,7 +123,7 @@ export function LayersPanel({
 
   // Per-row layer previews — shared with the context menu's Move-to-layer
   // tiles via useLayerThumbnails.
-  const { thumbMarkup, thumbViewBox } = useLayerThumbnails(elements, layers);
+  const { thumbMarkup, thumbViewBox } = useLayerThumbnails(elements, layers, tabFont);
 
   // Row context menu (spec/74): which layer it targets + where to hang
   // it (the panel's left edge at the clicked row).

@@ -24,6 +24,7 @@ import {
   StickersTabIcon,
   TechTabIcon,
   WriteTabIcon,
+  EventStormingTabIcon,
 } from './palette-tab-icons';
 
 /**
@@ -101,6 +102,17 @@ export const PALETTE_CATEGORIES: {
     group: 1,
     description: 'Wireframing device frames: browser, monitor, laptop, phone, tablet, smartwatch.',
     icon: <DevicesTabIcon />,
+  },
+  {
+    // Event Storming (spec/139): the workshop notation as a first-class
+    // kit. Structure band — like Build, it's a set you reach for when
+    // deciding how a board is arranged, not a decoration or a behaviour.
+    id: 'event-storming',
+    label: 'Event Storming',
+    group: 1,
+    description:
+      'The sticky-note workshop notation: events, commands, actors, policies, read models, and more.',
+    icon: <EventStormingTabIcon />,
   },
   {
     id: 'icons',

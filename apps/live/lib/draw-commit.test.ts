@@ -1,6 +1,7 @@
 import type { ArrowElement, Element, Tab, ThemeDefinition } from '@livediagram/diagram';
 import { COMPONENT_SIZE, isBoxed } from '@livediagram/diagram';
 import { describe, expect, it } from 'vitest';
+import { ES_BOARD_LAYER_ID, eventStormingLayers } from '@livediagram/diagram';
 import {
   buildDrawnArrow,
   buildDrawnBoxed,
@@ -121,6 +122,177 @@ describe('buildDrawnBoxed', () => {
     expect(seeded.textSize).toBe('lg');
     const unseeded = buildDrawnBoxed(shapeIntent, 0, 0, 3, 3, null, tab());
     expect(unseeded.textSize).toBe('md'); // the shape factory's own default
+  });
+
+  it('carries an event-storming fill onto a drawn sticky (spec/139)', () => {
+    // The Event Storming palette tiles arm a sticky intent with the note
+    // kind's canonical fill; the commit must land it as the element's
+    // fillColor (stickies are theme-exempt, so it then survives themes).
+    const out = buildDrawnBoxed({ type: 'sticky', fill: '#fdba74' }, 0, 0, 3, 3, null, tab());
+    expect(out).toMatchObject({ type: 'sticky', fillColor: '#fdba74' });
+    // A plain sticky stays exactly as it was: no fillColor sneaks in.
+    const plain = buildDrawnBoxed({ type: 'sticky' }, 0, 0, 3, 3, null, tab());
+    expect('fillColor' in plain && plain.fillColor != null).toBe(false);
+  });
+
+  // The workshop stationery (spec/139): on an event-storming board every
+  // sticky drops with a random hand-placed tilt and a FIXED silhouette —
+  // no resizing, and a drag gesture sizes nothing.
+  it('gives any sticky on an ES board a tilt and a fixed size; drag sizes nothing', () => {
+    const esTab = tab({ layers: eventStormingLayers() });
+    // A big drag: on an ES board it must be ignored (fixed silhouette).
+    const dragged = buildDrawnBoxed({ type: 'sticky' }, 0, 0, 500, 400, null, esTab);
+    expect(dragged.width).toBe(200);
+    expect(dragged.height).toBe(200);
+    expect((dragged as { fixedSize?: boolean }).fixedSize).toBe(true);
+    expect(typeof dragged.rotation).toBe('number');
+    expect(Math.abs(dragged.rotation!)).toBeLessThanOrEqual(1.1);
+    // Off-board: everything stays classic — drag sizes, no tilt, no flag.
+    const off = buildDrawnBoxed({ type: 'sticky' }, 0, 0, 500, 400, null, tab());
+    expect(off.width).toBe(500);
+    expect((off as { fixedSize?: boolean }).fixedSize).toBeUndefined();
+    expect(off.rotation).toBeUndefined();
+    // Tap-inheritance must not leak either: a selected 320×100 element
+    // cannot bend the stationery silhouette.
+    const wide = { id: 'w', type: 'sticky', x: 0, y: 0, width: 320, height: 100 } as Element;
+    const inherited = buildDrawnBoxed({ type: 'sticky' }, 0, 0, 3, 3, wide, esTab);
+    expect({ width: inherited.width, height: inherited.height }).toEqual({
+      width: 200,
+      height: 200,
+    });
+  });
+
+  it('stamps the notation kind on the element (it is domain data, not a colour)', () => {
+    const esTab = tab({ layers: eventStormingLayers() });
+    const cmd = buildDrawnBoxed(
+      { type: 'sticky', fill: '#93c5fd', esKind: 'command' },
+      0,
+      0,
+      3,
+      3,
+      null,
+      esTab,
+    );
+    expect((cmd as { esKind?: string }).esKind).toBe('command');
+    // A plain sticky claims no kind.
+    const plain = buildDrawnBoxed({ type: 'sticky' }, 0, 0, 3, 3, null, esTab);
+    expect((plain as { esKind?: string }).esKind).toBeUndefined();
+  });
+
+  it('sizes event-storming notes like the stationery set (wide policy, small actor)', () => {
+    const esTab = tab({ layers: eventStormingLayers() });
+    const policy = buildDrawnBoxed(
+      { type: 'sticky', fill: '#d8b4fe', esKind: 'policy' },
+      0,
+      0,
+      3,
+      3,
+      null,
+      esTab,
+    );
+    expect({ width: policy.width, height: policy.height }).toEqual({ width: 300, height: 180 });
+    const actor = buildDrawnBoxed(
+      { type: 'sticky', fill: '#fef08a', esKind: 'actor' },
+      0,
+      0,
+      3,
+      3,
+      null,
+      esTab,
+    );
+    expect({ width: actor.width, height: actor.height }).toEqual({ width: 140, height: 140 });
+    // A kinded note keeps its silhouette even OFF an ES board (the kind is
+    // the notation), but stays freely resizable there: no fixedSize stamp.
+    const offPolicy = buildDrawnBoxed(
+      { type: 'sticky', fill: '#d8b4fe', esKind: 'policy' },
+      0,
+      0,
+      3,
+      3,
+      null,
+      tab(),
+    );
+    expect({ width: offPolicy.width, height: offPolicy.height }).toEqual({
+      width: 300,
+      height: 180,
+    });
+    expect((offPolicy as { fixedSize?: boolean }).fixedSize).toBeUndefined();
+  });
+
+  // Layer routing (spec/139): an event-storming board has ONE layer, and
+  // every note files onto it whatever its kind — stage bands meant two notes
+  // could never be stacked against each other.
+  it('routes every event-storming note onto the board layer', () => {
+    const esTab = tab({ layers: eventStormingLayers() });
+    const cmd = buildDrawnBoxed(
+      { type: 'sticky', fill: '#93c5fd', esKind: 'command' },
+      0,
+      0,
+      3,
+      3,
+      null,
+      esTab,
+    );
+    expect(cmd.layerId).toBe(ES_BOARD_LAYER_ID);
+    const evt = buildDrawnBoxed(
+      { type: 'sticky', fill: '#fdba74', esKind: 'domain-event' },
+      0,
+      0,
+      3,
+      3,
+      null,
+      esTab,
+    );
+    expect(evt.layerId).toBe(ES_BOARD_LAYER_ID);
+  });
+
+  it('leaves routing alone off-board, and when the board layer is hidden or locked', () => {
+    // Not an event-storming board: no stamp — the ordinary active-layer
+    // stamping at the commit choke point applies.
+    const off = buildDrawnBoxed(
+      { type: 'sticky', fill: '#93c5fd', esKind: 'command' },
+      0,
+      0,
+      3,
+      3,
+      null,
+      tab(),
+    );
+    expect(off.layerId).toBeUndefined();
+    // Hidden target: stamping would create an element the user can't see.
+    const hidden = tab({
+      layers: eventStormingLayers().map((l) =>
+        l.id === ES_BOARD_LAYER_ID ? { ...l, visible: false } : l,
+      ),
+    });
+    expect(
+      buildDrawnBoxed(
+        { type: 'sticky', fill: '#93c5fd', esKind: 'command' },
+        0,
+        0,
+        3,
+        3,
+        null,
+        hidden,
+      ).layerId,
+    ).toBeUndefined();
+    // Locked target: stamping would create an element the user can't touch.
+    const locked = tab({
+      layers: eventStormingLayers().map((l) =>
+        l.id === ES_BOARD_LAYER_ID ? { ...l, locked: true } : l,
+      ),
+    });
+    expect(
+      buildDrawnBoxed(
+        { type: 'sticky', fill: '#93c5fd', esKind: 'command' },
+        0,
+        0,
+        3,
+        3,
+        null,
+        locked,
+      ).layerId,
+    ).toBeUndefined();
   });
 
   it('carries the icon glyph + label, unlocking aspect for a tech mark (spec/41)', () => {

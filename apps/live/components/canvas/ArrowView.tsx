@@ -12,6 +12,7 @@ import {
 } from '@livediagram/diagram';
 import type { ArrowEnd } from '@/lib/canvas';
 import { deriveArrowViewFrame } from './arrow-view-frame';
+import { useRightClickRelease } from '@/hooks/canvas/useRightClickRelease';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
 import { elementAriaLabel } from '@/lib/element-names';
 import { arrowheadMarkerId } from './arrow-defs';
@@ -136,6 +137,8 @@ function ArrowViewImpl({
     const anchor = rect ? elementMenuAnchor(rect) : { x, y };
     onContextSelect(arrow.id, anchor.x, anchor.y);
   };
+  // Right-click opens on release, like every other element (spec/09).
+  const arrowRightClick = useRightClickRelease((e) => contextSelectBeside(e.clientX, e.clientY));
   // Touch long-press opens the arrow's context menu (touch has no
   // right-click); a press that moves becomes a select / drag instead.
   const longPress = useLongPress(contextSelectBeside);
@@ -308,11 +311,8 @@ function ArrowViewImpl({
         fill="none"
         stroke="transparent"
         strokeWidth={24}
-        onContextMenu={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          contextSelectBeside(e.clientX, e.clientY);
-        }}
+        onContextMenu={arrowRightClick.onContextMenu}
+        onPointerUp={arrowRightClick.onPointerUp}
         onPointerDown={(e) => {
           longPress.onPointerDown(e);
           // Secondary / middle button: don't select-or-drag here. Right-click

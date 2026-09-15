@@ -16,6 +16,12 @@ type PaletteDragPreview = {
   // The shape's default footprint (canvas units); the ghost scales it by zoom.
   width: number;
   height: number;
+  // This will land as a sticky NOTE, whatever the ghost draws. A note has no
+  // shape kind of its own, so a note drag publishes a square footprint at the
+  // note's real size; this says what it will actually become. Insert between
+  // (spec/139) is a gesture about the note grammar, so it reads this rather
+  // than the drawing kind.
+  note?: boolean;
 };
 
 let current: PaletteDragPreview | null = null;
@@ -57,4 +63,38 @@ export function suppressNativeDragImage(e: { dataTransfer: DataTransfer | null }
   } catch {
     // Non-DnD contexts / older engines: harmless to skip.
   }
+}
+
+// The live snap offset for the in-flight palette drag (spec/139): canvas-unit
+// dx/dy the dragged footprint has latched onto its neighbours. Published by
+// the one owner that computes it (usePaletteDragGuides, which also produces
+// the guide lines), read by the ghost (so it DRAWS snapped) and by the drop
+// (so it LANDS snapped). Module-level for the same reason as the preview
+// above: a drag is global, single-at-a-time and transient.
+let snap: { dx: number; dy: number } | null = null;
+const snapListeners = new Set<() => void>();
+
+export function setPaletteDragSnap(next: { dx: number; dy: number } | null): void {
+  if (snap?.dx === next?.dx && snap?.dy === next?.dy) return;
+  snap = next;
+  for (const l of snapListeners) l();
+}
+
+export function getPaletteDragSnap(): { dx: number; dy: number } | null {
+  return snap;
+}
+
+function subscribeSnap(l: () => void): () => void {
+  snapListeners.add(l);
+  return () => {
+    snapListeners.delete(l);
+  };
+}
+
+export function usePaletteDragSnap(): { dx: number; dy: number } | null {
+  return useSyncExternalStore(
+    subscribeSnap,
+    () => snap,
+    () => null,
+  );
 }

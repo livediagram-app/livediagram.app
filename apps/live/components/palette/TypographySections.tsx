@@ -5,7 +5,7 @@ import { MenuAccordionSection, MenuTile, MenuTileGrid } from '@/components/primi
 import { onMouseHover } from '@/components/primitives/hover-preview';
 import { FontGlyph } from '@/components/rich-text/rich-text-toolbar-icons';
 import { DotsIcon, NonePaddingIcon, PaddingIcon, ScaleIcon } from './palette-icons';
-import { FONTS, resolveFontStack } from '@/lib/fonts';
+import { FONTS, resolveFontStack } from '@livediagram/diagram';
 import type { Padding, TextSize } from '@livediagram/diagram';
 
 // The typography controls — Font / Size / Padding — as three collapsible

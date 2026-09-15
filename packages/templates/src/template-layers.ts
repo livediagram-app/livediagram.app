@@ -16,6 +16,7 @@
 // click in the panel.
 
 import type { Layer } from '@livediagram/diagram';
+import { eventStormingLayers } from '@livediagram/diagram';
 import type { TemplateKind } from './templates';
 
 export const TEMPLATE_SCAFFOLD_LAYER_ID = 'layer:template:scaffold';
@@ -76,6 +77,13 @@ export function templateLayers(kind: TemplateKind): Layer[] | undefined {
     // furniture is dragged around it.
     case 'floor-plan':
       return layered('Rooms', 'Furniture');
+    // Event storming (spec/139) is the one four-layer template: a hidden
+    // Timeline-rail scaffold under three workshop-stage bands (Big picture /
+    // Process / Design) that the editor's view switcher toggles. The layer
+    // set lives in @livediagram/diagram beside the note catalogue so the
+    // switcher and the template read one definition.
+    case 'event-storming':
+      return eventStormingLayers();
     default:
       return undefined;
   }

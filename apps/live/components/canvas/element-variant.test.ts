@@ -76,15 +76,47 @@ describe('describeVariant — per-type body styling', () => {
     expect(style.borderWidth).toBe(3);
   });
 
-  it('a sticky has a real border + fill', () => {
+  it('a sticky is borderless paper by default; an explicit stroke draws one', () => {
+    // Real stickies have no outline — the sheet's edge against its shadow is
+    // the border. Setting strokeColor is an explicit user choice, so it
+    // still draws (the swatch stays functional, spec/09 Colours).
+    const plain = describeVariant(make('sticky', { fillColor: '#ffd' }), false, false, null);
+    expect(plain.className).not.toContain('border');
+    expect(plain.style.backgroundColor).toBe('#ffd');
+    expect(plain.style.borderColor).toBeUndefined();
+    expect(plain.style.borderWidth).toBeUndefined();
+    const stroked = describeVariant(make('sticky', { strokeColor: '#b45309' }), false, false, null);
+    expect(stroked.style.borderColor).toBe('#b45309');
+    expect(stroked.style.borderWidth).toBe(1);
+    expect(stroked.style.borderStyle).toBe('solid');
+  });
+
+  it('a sticky is square-cornered and wears the paper-peel class, not a halo', () => {
+    // Paper look (spec/09): sharp corners (a real sticky is die-cut square),
+    // and the peel is cast by the .lvd-sticky-peel pseudo-element — a shadow
+    // caster inset below the glued top strip, so the shadow starts partway
+    // DOWN THE SIDES and offsets increasingly toward the bottom. A wrapper
+    // box-shadow can't start partway down a side, which is why no default
+    // inline boxShadow (and no uniform shadow-md halo) is set here; the
+    // note's own shape never changes.
+    const { className, style } = describeVariant(make('sticky'), false, false, null);
+    expect(style.borderRadius).toBeUndefined();
+    expect(className).not.toContain('rounded');
+    expect(className).not.toContain('shadow-md');
+    expect(className).toContain('lvd-sticky-peel');
+    expect(style.boxShadow).toBeUndefined();
+  });
+
+  it('a user-set shadow (spec/86) replaces the peel outright', () => {
+    const userShadow = { offsetX: 0, offsetY: 4, blur: 12, opacity: 0.25 };
     const { className, style } = describeVariant(
-      make('sticky', { fillColor: '#ffd' }),
+      make('sticky', { shadow: userShadow }),
       false,
       false,
       null,
     );
-    expect(className).toContain('border');
-    expect(style.backgroundColor).toBe('#ffd');
+    expect(className).not.toContain('lvd-sticky-peel');
+    expect(style.boxShadow).toBe('0px 4px 12px rgba(15, 23, 42, 0.25)');
   });
 
   it('text / freehand / table carry no body border or fill', () => {

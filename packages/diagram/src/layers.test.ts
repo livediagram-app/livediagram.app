@@ -352,3 +352,46 @@ describe('isDefaultLayerName', () => {
     expect(isDefaultLayerName('layer 1')).toBe(false);
   });
 });
+
+// The fallback (no stored preference) must land somewhere you can actually
+// work. Picking the topmost layer blindly stranded a board whose top layer
+// was hidden: every create path silently no-opped, with no toast to explain
+// it, because the user never chose that layer — nothing had happened for a
+// toast to describe.
+describe('resolveActiveLayerId — the fallback must be usable', () => {
+  it('skips a hidden top layer and lands on the topmost usable one', () => {
+    const layers = [
+      { id: 'a', name: 'A' },
+      { id: 'b', name: 'B' },
+      { id: 'c', name: 'C', visible: false },
+    ];
+    expect(resolveActiveLayerId(layers, undefined)).toBe('b');
+  });
+
+  it('skips a locked top layer too', () => {
+    const layers = [
+      { id: 'a', name: 'A' },
+      { id: 'b', name: 'B', locked: true },
+    ];
+    expect(resolveActiveLayerId(layers, undefined)).toBe('a');
+  });
+
+  it('still honours an explicit choice, hidden or not', () => {
+    // Hiding the layer you are ON is a deliberate act; the editor toasts
+    // why creation is paused rather than moving you somewhere you did not ask
+    // to be.
+    const layers = [
+      { id: 'a', name: 'A' },
+      { id: 'b', name: 'B', visible: false },
+    ];
+    expect(resolveActiveLayerId(layers, 'b')).toBe('b');
+  });
+
+  it('falls back to the top layer when every layer is unusable', () => {
+    const layers = [
+      { id: 'a', name: 'A', visible: false },
+      { id: 'b', name: 'B', visible: false },
+    ];
+    expect(resolveActiveLayerId(layers, undefined)).toBe('b');
+  });
+});

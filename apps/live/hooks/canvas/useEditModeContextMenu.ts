@@ -38,6 +38,11 @@ export function useEditModeContextMenu({
       if (isMobile) return;
       const el = elementsRef.current.find((e) => e.id === editingId);
       if (!el || !isBoxed(el)) return;
+      // Sticky notes opt out (spec/139 boards live and die by quick note
+      // capture, and it reads wrong everywhere): double-click means "type",
+      // and a menu popping open beside every note is noise — right-click /
+      // long-press still opens the element menu deliberately.
+      if (el.type === 'sticky') return;
       // The element's on-screen rect. A freshly created element (double-click
       // text, palette drop) enters edit mode on its mount commit, so this
       // effect measures while the pop-in entry animation is still at scale ~0

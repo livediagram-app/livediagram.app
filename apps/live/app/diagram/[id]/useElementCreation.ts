@@ -1,5 +1,7 @@
 import { type Dispatch, type SetStateAction } from 'react';
 import {
+  type EventStormingNoteKind,
+  eventStormingNote,
   acceptsInlineIcon,
   createAnnotation,
   type EmbedProvider,
@@ -19,7 +21,10 @@ import {
   type ShapeKind,
   type Tab,
 } from '@livediagram/diagram';
+import { takeInsertionSlot } from '@/lib/insertion-preview';
+import type { InsertionSlot } from '@/lib/insert-between';
 import { getTechIcon, isTechIconId } from '@/lib/tech-icons';
+import { buildDrawnBoxed } from '@/lib/draw-commit';
 import { getSticker, stickerDropSize } from '@/lib/stickers';
 import { track, titleCaseType } from '@/lib/telemetry';
 import type { PendingDraw } from '@/lib/draw-mode';
@@ -52,6 +57,7 @@ export function useElementCreation(opts: {
     canvasX: number,
     canvasY: number,
     make: (x: number, y: number) => T,
+    opts?: { edit?: boolean; insertion?: InsertionSlot | null },
   ) => void;
   beginDraw: (intent: PendingDraw) => void;
 }) {
@@ -251,9 +257,11 @@ export function useElementCreation(opts: {
     if (editsBlocked) return;
     beginDraw({ type: 'text' });
   };
-  const addSticky = () => {
+  // `fill` + `esKind` = an Event Storming note riding the intent
+  // (spec/139); absent for the plain sticky tile / the N shortcut.
+  const addSticky = (fill?: string, esKind?: EventStormingNoteKind) => {
     if (editsBlocked) return;
-    beginDraw({ type: 'sticky' });
+    beginDraw({ type: 'sticky', ...(fill ? { fill } : {}), ...(esKind ? { esKind } : {}) });
   };
 
   // Click-to-connect (spec/09) — arm from the selection, complete on the next
@@ -272,64 +280,110 @@ export function useElementCreation(opts: {
   // drop point. Shapes / devices use createShape; an icon carries `iconId`,
   // a sticker `stickerId` (spec/116).
   const dropPaletteItem = (
-    kind: ShapeKind,
+    kind: ShapeKind | 'sticky',
     canvasX: number,
     canvasY: number,
     art?: { iconId?: string; stickerId?: string; choice?: string },
   ) => {
+    // The insertion slot the drag was offering on an event-storming board
+    // (spec/139), consumed here so it can never outlive its own drag. Only
+    // ever set while the preview was live, so every other board reads null.
+    // The drop point already sits in the slot: the preview publishes its
+    // offset through the same snap channel the ghost and the drop follow.
+    const insertion = takeInsertionSlot();
     if (editsBlocked) return;
+    if (insertion) track('Canvas', 'Used', 'InsertBetween');
     const iconId = art?.iconId;
     const stickerId = art?.stickerId;
+    if (kind === 'sticky') {
+      // A dragged sticky lands exactly like a tapped one — the drop point is
+      // the only difference — so it goes through the same builder: fill +
+      // stationery silhouette from the note kind, and on an event-storming
+      // board the tilt, the fixed size, and the stage-layer routing
+      // (spec/139). placeBoxed re-centres and leaves sticky colours alone.
+      const esKind = art?.choice as EventStormingNoteKind | undefined;
+      const fill = esKind ? eventStormingNote(esKind).fill : undefined;
+      addBoxedAt(
+        canvasX,
+        canvasY,
+        (x, y) =>
+          buildDrawnBoxed(
+            { type: 'sticky', ...(fill ? { fill } : {}), ...(esKind ? { esKind } : {}) },
+            x,
+            y,
+            x,
+            y,
+            null,
+            activeTab,
+          ),
+        { edit: true, insertion },
+      );
+      track('Element', 'Added', 'Sticky');
+      return;
+    }
     if (stickerId) {
       // A dragged sticker lands at its flavour's natural size, square to the
       // canvas, exactly like a tapped one — the drop point is the only
       // difference.
-      addBoxedAt(canvasX, canvasY, (x, y) => {
-        const el = createShape('sticker', x, y);
-        const size = stickerDropSize(getSticker(stickerId), el);
-        return { ...el, ...size, stickerId };
-      });
+      addBoxedAt(
+        canvasX,
+        canvasY,
+        (x, y) => {
+          const el = createShape('sticker', x, y);
+          const size = stickerDropSize(getSticker(stickerId), el);
+          return { ...el, ...size, stickerId };
+        },
+        { insertion },
+      );
       track('Element', 'Added', 'Sticker');
       return;
     }
-    addBoxedAt(canvasX, canvasY, (x, y) =>
-      iconId
-        ? {
-            ...createShape('icon', x, y),
-            iconId,
-            // Tech icons land self-describing (S3, EKS, ...) on drag too,
-            // matching the click-to-add addTechIcon path — and unlocked:
-            // the mark renders at a fixed size (spec/41), so the aspect
-            // lock would only fight resizing the caption room.
-            ...(isTechIconId(iconId)
-              ? { label: getTechIcon(iconId)?.label ?? '', aspectLocked: false }
-              : {}),
-          }
-        : {
-            ...createShape(kind, x, y),
-            // The dragged tile's creation-time choice (spec/103, /105, /123,
-            // /135). Applied by the kind that owns the field, so one payload
-            // serves all four without the drop path knowing which is which.
-            ...(art?.choice && kind === 'session-button'
-              ? {
-                  session: defaultSessionConfig(art.choice as SessionTool),
-                  // Same sizing the tap path applies (draw-commit): a timer is
-                  // a wide pill, a poll has to fit its question.
-                  ...(art.choice === 'timer' ? { width: 224, height: 64 } : {}),
-                  ...(art.choice === 'poll' ? { width: 240, height: 116 } : {}),
-                }
-              : {}),
-            ...(art?.choice && kind === 'reaction-pad'
-              ? {
-                  reaction: art.choice as Reaction,
-                  label: REACTION_PAD_LABEL[art.choice as Reaction],
-                }
-              : {}),
-            ...(art?.choice && kind === 'mode-button' ? { mode: art.choice as SelectionMode } : {}),
-            ...(art?.choice && kind === 'estimate'
-              ? { estimateScale: art.choice as EstimateScale }
-              : {}),
-          },
+    addBoxedAt(
+      canvasX,
+      canvasY,
+      (x, y) =>
+        iconId
+          ? {
+              ...createShape('icon', x, y),
+              iconId,
+              // Tech icons land self-describing (S3, EKS, ...) on drag too,
+              // matching the click-to-add addTechIcon path — and unlocked:
+              // the mark renders at a fixed size (spec/41), so the aspect
+              // lock would only fight resizing the caption room.
+              ...(isTechIconId(iconId)
+                ? { label: getTechIcon(iconId)?.label ?? '', aspectLocked: false }
+                : {}),
+            }
+          : {
+              ...createShape(kind, x, y),
+              // The dragged tile's creation-time choice (spec/103, /105, /123,
+              // /135). Applied by the kind that owns the field, so one payload
+              // serves all four without the drop path knowing which is which.
+              ...(art?.choice && kind === 'session-button'
+                ? {
+                    session: defaultSessionConfig(art.choice as SessionTool),
+                    // Same sizing the tap path applies (draw-commit): a timer is
+                    // a wide pill, a poll has to fit its question.
+                    ...(art.choice === 'timer' ? { width: 224, height: 64 } : {}),
+                    ...(art.choice === 'poll' ? { width: 240, height: 116 } : {}),
+                  }
+                : {}),
+              ...(art?.choice && kind === 'reaction-pad'
+                ? {
+                    reaction: art.choice as Reaction,
+                    label: REACTION_PAD_LABEL[art.choice as Reaction],
+                  }
+                : {}),
+              ...(art?.choice && kind === 'mode-button'
+                ? { mode: art.choice as SelectionMode }
+                : {}),
+              ...(art?.choice && kind === 'estimate'
+                ? { estimateScale: art.choice as EstimateScale }
+                : {}),
+            },
+      // Shapes and icons open for typing too; takesTypedLabel filters out the
+      // kinds whose face isn't text (stickers, session buttons, ...).
+      { edit: true, insertion },
     );
     // A tech-icon id maps to its own telemetry type (see addTechIcon);
     // line-art icons + shapes use the kind.

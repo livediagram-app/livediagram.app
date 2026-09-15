@@ -27,6 +27,7 @@ import {
   PaletteDrawTab,
   PaletteBuildTab,
   PaletteWriteTab,
+  PaletteEventStormingTab,
   PaletteShapesTab,
   PaletteComponentsTab,
 } from '@/components/palette/palette-create-tabs';
@@ -90,6 +91,7 @@ export function paletteCategoryTabs(
     write: <PaletteWriteTab pendingDraw={pendingDraw} actions={tileActions} />,
     draw: <PaletteDrawTab pendingDraw={pendingDraw} actions={tileActions} />,
     devices: <DevicePickerTab pendingDraw={pendingDraw} actions={tileActions} />,
+    'event-storming': <PaletteEventStormingTab pendingDraw={pendingDraw} actions={tileActions} />,
     icons: (
       <IconPickerTab
         addIcon={addIcon}

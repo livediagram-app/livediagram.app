@@ -16,6 +16,7 @@ import {
   type DiagramGraph,
   type Element,
   type Tab,
+  stampTabKind,
 } from '@livediagram/diagram';
 import {
   TEMPLATES,
@@ -101,9 +102,12 @@ export function buildTemplateTab(
   kind: TemplateKind,
   themeId?: string,
 ): Tab {
-  return {
+  // stampTabKind fills the ordinary 'diagram' for every template that
+  // doesn't declare a board kind of its own (spec/139), so a tab minted
+  // here is indistinguishable from one the editor commits.
+  return stampTabKind({
     ...buildTab(tabId, name, buildTemplate(kind, 0, 0), 'preserve', themeId),
     templateChosen: true,
     ...templateCanvasOverrides(kind),
-  };
+  });
 }

@@ -1,6 +1,9 @@
 import { useMemo } from 'react';
 import { useStableHandlers } from '@/hooks/ui/useStableHandlers';
+import { useFontsReady } from './useFontsReady';
 import {
+  eventStormingNoteFont,
+  resolveFontStack,
   isSelectionMode,
   buildElementIndex,
   isBoxed,
@@ -11,7 +14,6 @@ import {
 } from '@livediagram/diagram';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { type QuickConnectDirection } from '@/lib/canvas';
-import { resolveFontStack } from '@/lib/fonts';
 import { ArrowDefs } from '@/components/canvas/arrow-defs';
 import { ArrowView } from '@/components/canvas/ArrowView';
 import { BoxedElementView } from '@/components/canvas/BoxedElementView';
@@ -19,6 +21,7 @@ import { LaserOverlay } from '@/components/canvas/LaserOverlay';
 import { UnionResizeHandles } from '@/components/canvas/element-parts';
 import { QuickConnectRing } from '@/components/canvas/QuickConnectRing';
 import { RemoteCursor } from '@/components/canvas/RemoteCursor';
+import { useInsertShift } from '@/hooks/canvas/useInsertShift';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 
 type Bounds = { x: number; y: number; width: number; height: number };
@@ -205,6 +208,10 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onDropIcon,
     onLinkCell,
   });
+  // Auto-fit measures the face it paints, and webfonts land after first
+  // paint — re-render this layer once they are in so every fitted label
+  // re-measures in its real face (see useFontsReady).
+  useFontsReady();
   // Resolved tab default font once; per-element falls back to it (spec/28).
   const tabFontStack = resolveFontStack(tabFont);
   // Highest dot count on the tab (spec/39), computed once so each element's
@@ -223,6 +230,10 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     () => (hasArrows ? buildElementIndex(elements) : null),
     [hasArrows, elements],
   );
+  // Insert-between preview (spec/139): while a palette drag hovers a gap on an
+  // event-storming board, the elements at and after the insertion point RENDER
+  // shifted right to show the slot opening — see useInsertShift.
+  const insertShift = useInsertShift();
   // Paint order (spec/74 + spec/09): layer bands bottom -> top, keeping
   // array order within each band with frames hoisted to the front of
   // THEIR band (a frame is a section backdrop that must sit behind its
@@ -287,10 +298,18 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
               // animation repaints every frame, so the fight is visible
               // continuously rather than only while the camera orbits).
               data-arrow-svg=""
+              // An arrow travels whole or not at all in the preview (see
+              // insert-between.ts): one that straddles the insertion point
+              // stretches, which a transform cannot express, so it waits for
+              // the drop.
+              data-insert-shift={insertShift.animates ? '' : undefined}
               style={{
                 pointerEvents: 'none',
                 overflow: 'visible',
                 ...(effOpacity < 1 ? { opacity: effOpacity } : {}),
+                ...(insertShift.xFor(element.id)
+                  ? { transform: `translateX(${insertShift.xFor(element.id)}px)` }
+                  : {}),
               }}
             >
               <ArrowView
@@ -329,6 +348,8 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             // onto its own z-plane (globals.css --iso-z): coplanar layers
             // z-fight under preserve-3d, which is the flicker.
             isoDepth={isoDepth}
+            insertShiftX={insertShift.xFor(element.id)}
+            insertShiftAnimates={insertShift.animates}
             // Resolved once here, where both the vote and the tab's layers
             // are in scope, rather than threading `layers` down to the
             // gesture hook and the overlay separately (spec/96).
@@ -416,7 +437,12 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             onLinkCell={h.onLinkCell}
             imageContext={imageContext}
             onContextSelect={h.handleElementContextSelect}
-            fontFamily={resolveFontStack(element.font) ?? tabFontStack}
+            // A workshop note writes in marker (spec/139): the notation names
+            // the face, so it outranks the tab default — but not an explicit
+            // per-element font, which is a deliberate author choice.
+            fontFamily={
+              resolveFontStack(element.font ?? eventStormingNoteFont(element)) ?? tabFontStack
+            }
           />
         );
       })}

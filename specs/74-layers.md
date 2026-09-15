@@ -2,6 +2,10 @@
 
 Photoshop-style layers per tab: named stacking bands that elements belong to, managed from a floating Layers panel. Layers give big diagrams structure (background / content / annotations), let you hide or freeze whole slices of a tab, and make z-order deliberate instead of an accident of insertion order.
 
+## Active layer: the fallback must be usable
+
+An explicit choice of active layer is honoured even when that layer is hidden or locked — hiding the layer you are ON is deliberate, and the editor toasts why creation is paused rather than moving you somewhere you did not ask to be. The FALLBACK (no stored preference) is different: it skips hidden and locked layers and lands on the topmost usable one. Taking the top layer blindly stranded any board whose top layer was hidden — every create path silently no-opped, and no toast could explain it, because the user had done nothing for a toast to describe.
+
 ## Data model (`@livediagram/diagram`)
 
 - `Layer = { id: string; name: string; visible?: boolean; locked?: boolean; opacity?: number }`. `visible` defaults to `true`, `locked` to `false`, `opacity` to `1` (absent = default, so untouched layers stay byte-light in the JSON blob). **Layer opacity** multiplies over each member element's own opacity in every renderer — canvas, image exports, server snapshots, panel previews.
@@ -14,7 +18,7 @@ Photoshop-style layers per tab: named stacking bands that elements belong to, ma
 
 - Render order is **layer bands**: all of layer 0, then all of layer 1, … Within a band, the existing `Tab.elements[]` array order still decides stacking, and frames still paint first **within their band** (a frame on an upper layer sits above everything below that layer).
 - The banding is a **stable partition applied at render/export time** (`orderByLayer`); `Tab.elements[]` itself is never re-sorted. New elements are appended to the array as today, i.e. they land **on top of their layer**.
-- **Bring to Front / Send to Back are layer moves** — they power the layers, not a per-element z-index. Bring to Front moves the selection onto the **top layer** (and to the top of that band); if the top layer holds anything outside the selection, a **new top layer is created** (same "Layer N" naming) and the selection moves there. Send to Back mirrors onto / below the bottom layer. Already frontmost / backmost = no-op. This is how layers accrue for users who never open the panel — there is no intra-band z-nudge in the UI.
+- **Bring to Front / Send to Back are layer moves** — they power the layers, not a per-element z-index. Bring to Front moves the selection onto the **top layer** (and to the top of that band); if the top layer holds anything outside the selection, a **new top layer is created** (same "Layer N" naming) and the selection moves there. Send to Back mirrors onto / below the bottom layer. Already frontmost / backmost = no-op. This is how layers accrue for users who never open the panel. The **selection popover** additionally carries an intra-band z-nudge — **Bring to front** / **Send to back** stack the selection within its OWN layer (array order inside the band, `bringManyToFront` / `sendManyToBack`, never a layer change), for the common case of two things overlapping on one layer. The element menu keeps the layer moves; the popover owns the nudge.
 - **Pruning:** when one of these two buttons empties a layer (it moved the layer's last element away), that emptied layer is deleted automatically, so casual front/back clicking never litters the panel with abandoned empty layers. Only these two ops prune, and only the layer the moved elements just left — a layer created empty from the panel always sticks around. If the pruned layer was active, the active layer falls back to the top.
 
 ## Layer operations

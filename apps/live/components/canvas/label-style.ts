@@ -76,6 +76,11 @@ export type LabelTextStyle = {
   // editor default. Applied to both the committed label and its live
   // editor so there's no font jump on commit.
   fontFamily?: string;
+  // Paint in capitals whatever was typed (an event-storming note,
+  // spec/139). A CSS transform, not a rewrite: the stored label keeps the
+  // author's casing, and the live editor wears the same rule so typing
+  // shows the note as it will read.
+  uppercase?: boolean;
 };
 
 // Build the CSS payload for a LabelTextStyle. text-decoration combines
@@ -90,6 +95,7 @@ export function labelTextStyleCss(style: LabelTextStyle): React.CSSProperties {
     fontWeight: style.bold ? 700 : undefined,
     textDecoration: decorations.length > 0 ? decorations.join(' ') : undefined,
     fontFamily: style.fontFamily,
+    textTransform: style.uppercase ? 'uppercase' : undefined,
   };
 }
 
@@ -131,4 +137,14 @@ export function effectiveRunStyle(
     css.lineHeight = '1.25';
   }
   return css;
+}
+
+// The typography a label wears, display and editor alike. They MUST agree:
+// the display label and the inline editor occupy the same box, so any
+// difference in leading or weight moves the glyphs (and can re-wrap a
+// multi-line label) the moment editing starts — a layout shift on the most
+// common interaction there is. Single-line labels run tight + medium; a
+// multi-line label (sticky, page) keeps the element's own line-height.
+export function labelTypographyClass(multiline: boolean): string {
+  return multiline ? '' : 'font-medium leading-tight';
 }

@@ -11,6 +11,7 @@
 // here, so no cycle at runtime) — elementSupportsText excludes the
 // self-drawing data shapes the same way the inline editor does.
 import { isSelfDrawingShape } from './data-shapes';
+import type { TabKind } from './tab-kind';
 import type { TabTimer, TabVote } from './session';
 
 // Layer type used by the `Tab.layers` field below (spec/74). Type-only
@@ -238,9 +239,27 @@ export type BoxedElement =
   | VideoElement;
 export type Element = BoxedElement | ArrowElement;
 
+// What KIND of board this tab is, when it is a specialised one. A board
+// kind changes how the editor presents the same underlying tab: an
+// 'event-storming' board opens the palette on its notation, fixes the note
+// silhouettes, blocks resize and swaps the element menu for verbs
+// (spec/139). Absent = an ordinary tab, which is every tab by default.
+//
+// This is deliberately a FIRST-CLASS field rather than something inferred
+// from the tab's contents or its layer ids: identity by proxy broke twice
+// (a three-layer checklist, then a single layer a facilitator can delete),
+// each time stripping a board of its own tooling with nothing on screen to
+// explain why. The editor stays one editor — a kind tunes presentation, it
+// does not fork persistence, realtime, comments or export.
+//
+// 'diagram' is an ordinary board and is written explicitly onto tabs the
+// editor commits; tabs stored before the field carry nothing, which reads
+// as 'diagram' via `tabKindOf` (see ./tab-kind).
+
 export type Tab = {
   id: TabId;
   name: string;
+  kind?: TabKind;
   elements: Element[];
   backgroundPattern?: BackgroundPattern;
   backgroundColor?: string;
@@ -265,7 +284,7 @@ export type Tab = {
   // elements inherit the same theme colours by default. Unset = brand
   // defaults.
   theme?: string;
-  // Default font-family id for this tab (see apps/live/lib/fonts.ts).
+  // Default font-family id for this tab (see packages/diagram/src/fonts.ts).
   // Every text-bearing element without its own `font` renders in this
   // one; unset = the editor default. Lets a whole tab adopt a font in
   // one move while individual elements can still override.
@@ -316,6 +335,9 @@ export type Diagram = {
 };
 
 // --- Type guards -----------------------------------------------------------
+
+export { takesTypedLabel } from './element-types';
+export { DEFAULT_TAB_KIND, stampTabKind, tabKindOf, type TabKind } from './tab-kind';
 
 export function isBoxed(element: Element): element is BoxedElement {
   return (
@@ -399,6 +421,7 @@ export * from './icon-size';
 export * from './rich-text';
 
 export * from './factories';
+export * from './event-storming';
 export * from './graph-authoring';
 export * from './mermaid';
 export * from './duplicate';
@@ -472,6 +495,13 @@ export * from './session';
 // from the package root the same way they do every other helper
 // here.
 export { recogniseShape, type RecognisedShape, type RecognisedShapeKind } from './recognise-shape';
+
+// The curated typefaces (spec/28): the catalogue, the id -> CSS stack
+// resolver, and the Google Fonts stylesheet href. Lives here rather than in
+// apps/live because the EXPORTS need it too — the SVG / PNG renderers have
+// to paint a label in the face the canvas painted it in, and they run in the
+// mcp worker as well as the browser.
+export * from './fonts';
 
 // Slide decks (spec/31): the Slide / Deck types plus the pure resolution
 // helpers a presentation is built from. Kept here rather than in apps/live

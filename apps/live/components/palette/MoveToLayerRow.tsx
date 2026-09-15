@@ -14,6 +14,7 @@ import { useLayerThumbnails } from '@/hooks/ui/useLayerThumbnails';
 // nothing until the tab actually has more than one layer.
 export function MoveToLayerRow({
   layers,
+  tabFont,
   elements,
   currentLayerId,
   onMove,
@@ -22,12 +23,14 @@ export function MoveToLayerRow({
   layers: Layer[];
   // The tab's elements, for the per-tile layer previews.
   elements: Element[];
+  // The tab default face (spec/28), so a preview matches the canvas.
+  tabFont?: string;
   // The selection's resolved layer, or null when members span layers
   // (then no tile is active).
   currentLayerId: string | null;
   onMove: (layerId: string) => void;
 }) {
-  const { thumbMarkup, thumbViewBox } = useLayerThumbnails(elements, layers);
+  const { thumbMarkup, thumbViewBox } = useLayerThumbnails(elements, layers, tabFont);
   if (layers.length <= 1) return null;
   return (
     <div className="px-2 py-1.5">

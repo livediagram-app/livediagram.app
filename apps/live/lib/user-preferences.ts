@@ -113,6 +113,12 @@ export type UserPreferences = {
   // breakage. Missing / undefined / true === notifications on, the
   // default. See hooks/useToast.tsx.
   notificationsEnabled?: boolean;
+  // Middle-mouse pan. When `false`, holding the middle button no longer
+  // drags the canvas in both axes (the browser's own middle-drag behaviour
+  // takes over instead). Missing / undefined / true === on, the default —
+  // it mirrors Figma, and the pan works from anywhere on the canvas
+  // regardless of the active tool. Lives in the Controls group.
+  middleMousePan?: boolean;
   // Minimap (spec/59). When `false`, the bottom-left canvas minimap is hidden.
   // Missing / undefined / true === shown, the default (and even then only once
   // the tab has a few elements, the Activity panel is minimised, and on

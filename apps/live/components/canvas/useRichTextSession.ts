@@ -11,6 +11,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { runsFromPlainText, runsPlainText, type TextRun } from '@livediagram/diagram';
+import { fitMultilineFontPx } from '@/lib/fit-multiline-text';
 import {
   effectiveRunStyle,
   elementRunDefaults,
@@ -28,7 +29,10 @@ export function useRichTextSession({
   initialLabel,
   initialRuns,
   textSize,
+  fitBox,
   multiline,
+  uppercase,
+  fontFamily,
   cursorAtEnd,
   onCommit,
   onCancel,
@@ -38,7 +42,10 @@ export function useRichTextSession({
   | 'initialLabel'
   | 'initialRuns'
   | 'textSize'
+  | 'fitBox'
   | 'multiline'
+  | 'uppercase'
+  | 'fontFamily'
   | 'cursorAtEnd'
   | 'onCommit'
   | 'onCancel'
@@ -56,7 +63,7 @@ export function useRichTextSession({
   const needsEndCaretRef = useRef(false);
 
   const runSizePx = multiline ? MULTI_RUN_PX : FIXED_FONT_PX;
-  const basePx = multiline
+  const staticBasePx = multiline
     ? MULTI_FONT_PX[textSize]
     : textSize === 'scale'
       ? 16
@@ -87,6 +94,31 @@ export function useRichTextSession({
     applyList,
     applyHeading,
   } = doc;
+
+  // Auto-fit (spec/139): a multi-line label on 'scale' measures its LIVE
+  // text against the box, so the size tracks what is being typed — and, on
+  // mount, lands on exactly the number the display label was already using
+  // (same pure helper, same inputs), which is what keeps double-click
+  // shift-free. `fitBox` absent (non-sticky callers) falls back to the
+  // static bucket.
+  const fitted =
+    multiline && textSize === 'scale' && fitBox
+      ? fitMultilineFontPx({
+          text: runsPlainText(currentRuns()) || initialLabel,
+          width: fitBox.width,
+          height: fitBox.height,
+          padding: fitBox.padding,
+          bold: !!element.textBold,
+          italic: !!element.textItalic,
+          // Capitals are wider: measure what the CSS transform will paint
+          // (spec/139), or the note overflows as you type.
+          uppercase: !!uppercase,
+          // Same reason for the face: the display label measured the marker,
+          // so the editor must too or the text resizes on double-click.
+          fontFamily,
+        })
+      : null;
+  const basePx = fitted ?? staticBasePx;
 
   const initialKey = useRef(JSON.stringify(runsRef.current));
 

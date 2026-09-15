@@ -56,6 +56,13 @@ export function ContextMenu({
     return () => ro.disconnect();
   }, [position.x, position.y]);
 
+  // Stamped on mount, not during render (performance.now() is impure, and a
+  // re-render must not restamp it); see the grace window below.
+  const openedAtRef = useRef(0);
+  useEffect(() => {
+    openedAtRef.current = performance.now();
+  }, []);
+
   useEffect(() => {
     // Grace window after the menu opens during which outside mouse /
     // contextmenu events are ignored. A mobile long-press opens this menu
@@ -66,24 +73,31 @@ export function ContextMenu({
     // it appears. Desktop right-click is unaffected: its mousedown fires
     // before the contextmenu that opens the menu, so nothing arrives during
     // the window. Escape (below) is never graced.
-    const openedAt = performance.now();
+    // Measured from MOUNT, not from each effect run: `onClose` is an inline
+    // callback in most hosts, so it changes identity on every render and the
+    // effect re-subscribes. Recomputing the window here meant any re-render
+    // (selecting an element, for one) handed the menu a fresh 400ms of
+    // immunity — so a left click on an element never dismissed it, and the
+    // popover could never come back.
+    const openedAt = openedAtRef.current;
     const GRACE_MS = 400;
-    const onMouse = (e: MouseEvent) => {
+    // The grace exists for ONE gesture: a mobile long-press, which opens the
+    // menu while the finger is still down and then emits its own trailing
+    // events on lift. A mouse click is never that, so it dismisses
+    // immediately — waiting out an animation before the menu will listen
+    // feels broken. Pointer events carry the pointerType that tells them
+    // apart; the mouse/contextmenu listeners below have no such luxury and
+    // keep the window.
+    const onPointer = (e: PointerEvent) => {
       if (!ref.current) return;
-      if (performance.now() - openedAt < GRACE_MS) return;
+      // The secondary button never dismisses: a right press is the START of
+      // a menu gesture whose release re-opens (or retargets) this same menu.
+      // Closing on the press would tear the menu down and build it again a
+      // few frames later — a visible flicker, and the selection popover
+      // flashing in the gap.
+      if (e.button === 2) return;
+      if (e.pointerType === 'touch' && performance.now() - openedAt < GRACE_MS) return;
       if (!(e.target instanceof Node) || ref.current.contains(e.target)) return;
-      // A mousedown on the button that OPENED this menu must not trip the
-      // outside-close, or the button's own click would just reopen it. The
-      // trigger marks itself with data-context-menu-trigger and toggles the
-      // menu in its onClick instead. A MenuFlyoutSection's panel is portalled
-      // outside this menu but marks itself data-menu-flyout, so interacting
-      // with it counts as inside the menu. Clicks anywhere else close as usual.
-      // While a label is being edited the menu rides alongside the editor
-      // (spec/09): clicks inside the editing session (the contentEditable
-      // or its floating toolbar) must not dismiss it — the user is moving
-      // the caret / formatting text, not clicking away.
-      // [data-tour-popover] (spec/79): the tour anchors its card to this
-      // menu while explaining it, so its buttons don't count as outside.
       if (
         e.target instanceof Element &&
         e.target.closest(
@@ -96,17 +110,23 @@ export function ContextMenu({
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
     };
-    // mousedown for outside-clicks; contextmenu so a SECOND right-click
-    // closes the current menu rather than stacking two on top of each
-    // other (browsers fire both contextmenu and mousedown for right
-    // clicks, and the second contextmenu otherwise leaves the first
-    // menu open while the new one opens).
-    document.addEventListener('mousedown', onMouse);
-    document.addEventListener('contextmenu', onMouse);
+    // Only the primary button dismisses. A right-click elsewhere doesn't
+    // need to close this menu: there is ONE menu state, so whatever the
+    // release opens replaces it — nothing can stack. Listening for
+    // `contextmenu` here used to close it on the PRESS (X11 fires that event
+    // on mouse-down), and an element's stopPropagation can't prevent it:
+    // Next's App Router hydrates on `document`, so React's listeners are
+    // document-level siblings of this one and both run regardless.
+    // pointerdown carries pointerType, so a mouse click can dismiss the
+    // menu the instant it opens while a touch long-press keeps its grace.
+    // CAPTURE phase: an element's own pointerdown handler calls
+    // stopPropagation, and React's root listener would swallow the event
+    // before it ever reached document — capture runs first, so the click
+    // that selects is also the click that dismisses.
+    document.addEventListener('pointerdown', onPointer, true);
     document.addEventListener('keydown', onKey);
     return () => {
-      document.removeEventListener('mousedown', onMouse);
-      document.removeEventListener('contextmenu', onMouse);
+      document.removeEventListener('pointerdown', onPointer, true);
       document.removeEventListener('keydown', onKey);
     };
   }, [onClose]);

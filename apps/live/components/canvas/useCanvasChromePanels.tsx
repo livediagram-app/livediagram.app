@@ -138,6 +138,7 @@ export function useCanvasChromePanels({
     onAddShape,
     onAddStatRow,
     onAddSticky,
+    esBoard,
     onAddTable,
     onAddTechIcon,
     onAddText,
@@ -416,6 +417,7 @@ export function useCanvasChromePanels({
     !chromeHidden && !readOnly && (isMobile || minimalPanels ? true : !layersMinimized) ? (
       <LayersPanel
         layers={layers}
+        tabFont={props.tabFont}
         activeLayerId={activeLayerId}
         counts={layerCounts}
         elements={elements}
@@ -493,6 +495,7 @@ export function useCanvasChromePanels({
         onAddAvatar={onAddAvatar}
         onAddText={onAddText}
         onAddSticky={onAddSticky}
+        esBoard={esBoard}
         onAddImage={onAddImage}
         onAddArrow={onAddArrow}
         onBeginFreehand={onBeginFreehand}
@@ -529,6 +532,7 @@ export function useCanvasChromePanels({
     !chromeHidden && !isMobile && !minimalPanels && mapEnabled && elements.length >= 4 ? (
       <Minimap
         elements={visibleLayerElements(elements, props.tabLayers)}
+        tabFont={props.tabFont}
         viewportOffset={props.viewportOffset}
         viewportZoom={viewportZoom}
         setViewportOffset={props.setViewportOffset}

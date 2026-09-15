@@ -1040,3 +1040,25 @@ describe('multi-colour (rainbow) themes', () => {
     expect(out.fillColor).toBe(slate.elementFill ?? undefined);
   });
 });
+
+// The Dark category leads with Charcoal (spec/09). It is the NEUTRAL dark
+// theme — greys on near-black, no hue — so it is the one a reader compares
+// the tinted darks (Midnight's blue, Pine's green, Plum's purple) against,
+// and the one most people actually want when they ask for "dark".
+//
+// Pinned because this drifted once already, silently: a commit claimed to
+// move Charcoal to the front and only moved it ahead of Pine, because the
+// picker orders by the THEMES array and Midnight sits earlier in it. Order
+// that matters to a user is behaviour, and behaviour gets a test.
+describe('dark theme order', () => {
+  const darkIds = () =>
+    THEMES.filter((t) => t.id !== 'brand' && themeCategory(t.id) === 'dark').map((t) => t.id);
+
+  it('leads with Charcoal', () => {
+    expect(darkIds()[0]).toBe('charcoal');
+  });
+
+  it('keeps the rest of the dark family intact behind it', () => {
+    expect(darkIds()).toEqual(['charcoal', 'midnight', 'pine', 'plum', 'abyss', 'espresso']);
+  });
+});

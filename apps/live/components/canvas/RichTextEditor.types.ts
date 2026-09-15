@@ -9,11 +9,18 @@ export type RichTextEditorProps = {
   initialRuns?: TextRun[];
   placeholder: string;
   textSize: TextSize;
+  // The box an auto-fitting ('scale') multi-line label measures against
+  // (spec/139). Absent = no auto-fit; the static size bucket applies.
+  fitBox?: { width: number; height: number; padding: number };
   alignX: TextAlignX;
   alignY: TextAlignY;
   padding: number;
   fontFamily?: string;
   multiline: boolean;
+  // Paint the live text in capitals (an event-storming note, spec/139). A
+  // CSS transform only: the committed label keeps the author's casing, and
+  // the auto-fit measures the caps so the size can't jump on commit.
+  uppercase?: boolean;
   cursorAtEnd: boolean;
   zoom: number;
   textClassName?: string;

@@ -37,3 +37,30 @@ describe('elementKindLabel', () => {
     expect(elementKindLabel(ofType('arrow'))).toBe('Arrow');
   });
 });
+
+// An event-storming note IS its kind (spec/139): "Selected Domain Event"
+// tells a facilitator what they picked up; "Selected Sticky" tells them
+// nothing the board didn't already show. The kind is stored on the element
+// from creation; notes authored before that fall back to their canonical
+// colour, which is the notation anyway.
+describe('elementKindLabel — event-storming notes', () => {
+  const note = (extra: Record<string, unknown>) =>
+    ({ id: 'n', type: 'sticky', x: 0, y: 0, width: 200, height: 200, ...extra }) as Element;
+
+  it('names the note kind when the element carries it', () => {
+    expect(elementKindLabel(note({ esKind: 'domain-event' }))).toBe('Domain Event');
+    expect(elementKindLabel(note({ esKind: 'read-model' }))).toBe('Read Model');
+    expect(elementKindLabel(note({ esKind: 'hotspot' }))).toBe('Hotspot');
+  });
+
+  it('falls back to the canonical fill for notes authored before the stamp', () => {
+    expect(elementKindLabel(note({ fillColor: '#93c5fd', fixedSize: true }))).toBe('Command');
+    expect(elementKindLabel(note({ fillColor: '#d8b4fe', fixedSize: true }))).toBe('Policy');
+  });
+
+  it('stays "Sticky" for an ordinary note', () => {
+    expect(elementKindLabel(note({}))).toBe('Sticky');
+    // A hand-picked colour on a normal sticky is not a notation claim.
+    expect(elementKindLabel(note({ fillColor: '#93c5fd' }))).toBe('Sticky');
+  });
+});

@@ -36,6 +36,9 @@ const MAP_HEIGHT: Record<MapSize, string> = {
 
 type MinimapProps = {
   elements: Element[];
+  // The tab default face (spec/28): the miniature paints what the canvas
+  // paints, so a marker board reads as one in the map too.
+  tabFont?: string;
   viewportOffset: { x: number; y: number };
   viewportZoom: number;
   setViewportOffset: (offset: { x: number; y: number }) => void;
@@ -86,6 +89,7 @@ const MAP_RATIO: Record<MapSize, number> = {
 
 export function Minimap({
   elements,
+  tabFont,
   viewportOffset,
   viewportZoom,
   setViewportOffset,
@@ -137,7 +141,13 @@ export function Minimap({
     for (const el of framesFirst(elements)) {
       if (el.type === 'arrow') continue;
       if (!isBoxed(el)) continue;
-      parts.push(svgBoxed(el, undefined, resolveIconArtLoaded, resolveStickerArtLoaded));
+      parts.push(
+        svgBoxed(el, {
+          resolveIconArt: resolveIconArtLoaded,
+          resolveStickerArt: resolveStickerArtLoaded,
+          tabFont,
+        }),
+      );
       acc(el.x, el.y);
       acc(el.x + el.width, el.y + el.height);
     }

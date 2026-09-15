@@ -23,7 +23,7 @@ import {
 } from '@livediagram/diagram';
 import { track, titleCaseType } from '@/lib/telemetry';
 import { AUTO_LAYOUT_CHOICES, type AutoLayoutChoice } from '@/lib/auto-layout-choices';
-import { FONTS } from '@/lib/fonts';
+import { FONTS } from '@livediagram/diagram';
 import { PATTERNS } from '@/components/palette/palette-controls';
 import { useTabTheme } from './useTabTheme';
 

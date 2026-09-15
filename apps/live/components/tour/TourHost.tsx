@@ -15,7 +15,7 @@ import { track } from '@/lib/telemetry';
 import { deriveNewBoxedColours } from '@/lib/themes';
 import { computeViewportCenter } from '@/lib/viewport';
 import { findTour, waitForSelector, waitForTour } from './tour-dom';
-import { TOUR_STEPS, tourStepTelemetryType, type TourApi } from './tour-steps';
+import { tourStepsFor, tourStepTelemetryType, type TourApi } from './tour-steps';
 import { TourPopover } from './TourPopover';
 
 // Orchestrates the interactive editor tour (spec/79). Mounted once in
@@ -59,8 +59,11 @@ const unionRects = (a: TourTargetRect, b: TourTargetRect): TourTargetRect => {
 export function TourHost() {
   const ctx = useEditorContext();
   const isMobile = useIsMobileViewport();
-  // The effective step list: mobile drops the desktop-only steps (search).
-  const steps = useMemo(() => TOUR_STEPS.filter((s) => !(s.mobileSkip && isMobile)), [isMobile]);
+  // The effective step list: mobile drops the desktop-only steps (search,
+  // theme dock button), an event-storming board drops the palette-header
+  // dropdowns it doesn't render (spec/139).
+  const esBoard = ctx.esBoard === true;
+  const steps = useMemo(() => tourStepsFor({ mobile: isMobile, esBoard }), [isMobile, esBoard]);
   const [pending, setPending] = useState(false);
   const [active, setActive] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);

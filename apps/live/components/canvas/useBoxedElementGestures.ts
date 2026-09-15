@@ -1,3 +1,4 @@
+import { useRightClickRelease } from '@/hooks/canvas/useRightClickRelease';
 import type { PointerEvent as ReactPointerEvent, RefObject } from 'react';
 import { isSelfDrawingShape } from '@livediagram/diagram';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
@@ -60,6 +61,14 @@ export function useBoxedElementGestures({
 }) {
   const handleShapeDown = (e: ReactPointerEvent) => {
     if (isEditing) return;
+    // Secondary / middle button: not a select, not a drag. The right button
+    // belongs to the context-menu gesture (armed here, opened on release),
+    // and the middle one to canvas pan — so we fall through WITHOUT
+    // swallowing the press. Selecting on a right press also flashed the
+    // selection popover while the button was still held, which is a left
+    // click's job. PointerEvent.button is 0 for touch / pen contact, so
+    // this only filters real mouse buttons.
+    if (e.button !== 0) return;
     // Remotely locked: swallow the press so it neither starts a drag /
     // selection nor falls through to the canvas. The not-allowed cursor
     // + the remote-selector badge tell the user why nothing happened.
@@ -178,6 +187,14 @@ export function useBoxedElementGestures({
     onContextSelect(element.id, x, y);
   };
 
+  // Right-click opens on release (see useRightClickRelease).
+  const rightClick = useRightClickRelease(() => {
+    if (isEditing || remotelyLocked) return;
+    openContextMenuBesideElement();
+  });
+
+  const handlePointerUp = rightClick.onPointerUp;
+
   const handleContextMenu = (e: React.MouseEvent) => {
     // While editing the label, right-click surfaces the browser's native
     // TEXT context menu (cut / copy / paste / select all) so it acts on the
@@ -189,9 +206,7 @@ export function useBoxedElementGestures({
       e.stopPropagation();
       return;
     }
-    e.preventDefault();
-    e.stopPropagation();
-    openContextMenuBesideElement();
+    rightClick.onContextMenu(e);
   };
 
   // Touch long-press is the phone / tablet equivalent of right-click: it
@@ -202,5 +217,5 @@ export function useBoxedElementGestures({
     openContextMenuBesideElement();
   });
 
-  return { handleShapeDown, handleDoubleClick, handleContextMenu, longPress };
+  return { handleShapeDown, handleDoubleClick, handleContextMenu, handlePointerUp, longPress };
 }

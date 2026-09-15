@@ -37,6 +37,9 @@ import { trackDuplicated } from '@/lib/element-telemetry';
 import { isTechIconId } from '@/lib/tech-icons';
 import { iconDropSide, type DragState } from '@/lib/canvas';
 import { elementHostsAtPoint } from '@/lib/dom-hit-test';
+import { applyInsertionShift, type InsertionSlot } from '@/lib/insert-between';
+import { setInsertionDragInHand, setInsertionSlot } from '@/lib/insertion-preview';
+import { landNoteInSlot, resolveNoteInsertion } from './note-insertion-drag';
 import type { EditorDragDeps, EditorDragApi } from './useEditorDrag.types';
 import { applyCollisionAvoidance } from './arrow-avoidance-apply';
 import { applyArrowDragMove } from './arrow-drag-apply';
@@ -58,6 +61,19 @@ import { useBoxedDragHandlers } from './useBoxedDragHandlers';
 // rotate / arrow-endpoint grabs are deliberate handle pulls and aren't
 // gated.
 const DRAG_ENGAGE_PX = 4;
+
+// Everything the move handler reads off a pointer event. Structural rather
+// than `PointerEvent` so the handler can be replayed from a stored position
+// when only a MODIFIER changes (see onAltChange) — a real PointerEvent keeps
+// its fields on the prototype and so can't be copied with a spread.
+type MovePointer = {
+  clientX: number;
+  clientY: number;
+  altKey: boolean;
+  ctrlKey: boolean;
+  metaKey: boolean;
+  shiftKey: boolean;
+};
 
 // Unit vector out of each anchor, for placing a tapped quick-connect arrow's
 // free end when there's nothing on that side to attach to.
@@ -118,6 +134,13 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
   // of CLONE ids to draw translucent.
   const dupSwapRef = useRef<ShiftDupSwap | null>(null);
   const [shiftDupGhostIds, setShiftDupGhostIds] = useState<ReadonlySet<string> | null>(null);
+  // Insert between (spec/139), second entry point: the slot this drag is
+  // offering while Alt is held. A ref, not state, for the same reason the
+  // duplicate swap is one — it changes at pointer rate and only the module
+  // store (which the canvas renders from) needs to wake anything up. The
+  // OTHER notes' ripple stays a render-time preview until the drop; only the
+  // dragged note itself moves for real, as it does on any move.
+  const insertSlotRef = useRef<InsertionSlot | null>(null);
 
   // Stash deps on every render so the move-effect always reads
   // fresh values without re-subscribing global pointer listeners.
@@ -155,6 +178,21 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
     // Each new gesture starts un-engaged: a body move must cross
     // DRAG_ENGAGE_PX before it nudges anything (see the move branch).
     dragEngagedRef.current = false;
+    // Tell the canvas a drag that could open a slot is in hand — for the whole
+    // gesture rather than just while Alt is down, because the board's easing
+    // must still be mounted when the slot CLOSES (or it snaps shut) and
+    // because this is what offers the gesture to someone who has never heard
+    // of it. Deliberately independent of the modifier: only the board, the
+    // kind of thing being dragged, and how many of them.
+    const movingOneNote =
+      drag.kind === 'boxed' &&
+      drag.mode === 'move' &&
+      drag.startBounds.size === 1 &&
+      depsRef.current.activeTab.elements.find((el) => el.id === drag.primaryId)?.type === 'sticky';
+    setInsertionDragInHand(movingOneNote && depsRef.current.insertGate.esBoard);
+    // The last pointer position of this drag, so pressing or releasing Alt
+    // without moving the mouse still opens / unwinds the slot (see onAltChange).
+    let lastMove: MovePointer | null = null;
     // Cancel the drag (mirroring onUp's full cleanup: snap dots gone,
     // armed checkpoint + log flag disarmed so they can't leak into the
     // next gesture — once drag is null this effect tears down and onUp
@@ -166,6 +204,11 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       checkpointPendingRef.current = false;
       logGestureRef.current = false;
       gestureTokenRef.current = undefined;
+      // An open insertion offer dies with the gesture. Only the preview is
+      // being discarded here — the dragged note's live position is restored
+      // by the checkpoint, and the other notes never moved for real.
+      insertSlotRef.current = null;
+      setInsertionSlot(null);
       // A live shift-duplicate is torn down with the gesture: the clone set
       // goes (a no-op after the Escape path's cancelToCheckpoint already
       // restored, but pinch / second-touch cancels never restore) and the
@@ -186,11 +229,22 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
         cancelDrag();
       }
     };
-    const onMove = (e: PointerEvent) => {
+    const onMove = (e: MovePointer) => {
       if (depsRef.current.isPinchingRef?.current) {
         cancelDrag();
         return;
       }
+      // A SNAPSHOT, not the event: a DOM event keeps its fields on the
+      // prototype, so spreading one to replay it with a different modifier
+      // yields an empty object and a NaN delta.
+      lastMove = {
+        clientX: e.clientX,
+        clientY: e.clientY,
+        altKey: e.altKey,
+        ctrlKey: e.ctrlKey,
+        metaKey: e.metaKey,
+        shiftKey: e.shiftKey,
+      };
       const { activeTab, zoomRef } = depsRef.current;
       // Flush the armed checkpoint on the FIRST real mutation of the
       // gesture (every branch below writes through this `tick`), so a
@@ -240,6 +294,38 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
             );
             if (travelled < DRAG_ENGAGE_PX) return;
             dragEngagedRef.current = true;
+          }
+          // Insert between (spec/139): while Alt is held on an event-storming
+          // board, a single sticky offers to take its place BETWEEN two notes
+          // rather than just land near them. The slot is the placement while
+          // it is open, so it wins over the alignment snap and over free
+          // placement (Cmd/Ctrl) alike — two placement rules at once would
+          // put the note, the marker and the drop in three different places.
+          const slot = resolveNoteInsertion({
+            gate: depsRef.current.insertGate,
+            altHeld: e.altKey,
+            shiftHeld: e.shiftKey,
+            elements: activeTab.elements,
+            primaryId: drag.primaryId,
+            startBounds: drag.startBounds,
+            dx,
+            dy,
+            inertIds: depsRef.current.layerInertIds,
+            active: insertSlotRef.current,
+          });
+          insertSlotRef.current = slot;
+          setInsertionSlot(slot);
+          if (slot) {
+            // One vertical line where the board splits, in the guide overlay's
+            // own visual language — the same marker the palette drag draws.
+            scheduleGuides(
+              [{ axis: 'x', position: slot.atX, start: slot.spanTop, end: slot.spanBottom }],
+              [],
+            );
+            // The note moves live, as any dragged note does; the ripple it is
+            // opening stays a preview until the drop.
+            tick((els) => landNoteInSlot(els, drag.primaryId, slot));
+            return;
           }
           // Alignment / distribution snapping + the guide lines live in
           // resolveBoxedMove; this handler applies the resolved
@@ -576,6 +662,20 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
           }
         }
       }
+      // Insert between (spec/139): the drop. The dragged note is already in
+      // the slot (the move ticks put it there); this adds the ripple that
+      // makes room for it. Both land inside the gesture's single checkpoint,
+      // so ONE undo puts the whole board back — including the note's original
+      // position. The notes left of the insertion point don't move, and
+      // neither does anything behind the note's OLD position: a moved note
+      // leaves its hole behind, for the author to tidy.
+      const insertion = insertSlotRef.current;
+      insertSlotRef.current = null;
+      setInsertionSlot(null);
+      if (insertion && drag?.kind === 'boxed' && drag.mode === 'move') {
+        d.tick((els) => applyInsertionShift(els, insertion));
+        track('Canvas', 'Used', 'InsertBetween');
+      }
       // Annotations open their note on DOUBLE-click now (handled in
       // BoxedElementView), so a plain click just selects — no note-open here.
       setDrag(null);
@@ -641,17 +741,36 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       }
       cancelDrag();
     };
+    // Alt pressed or released with the hand held still (spec/139): the slot
+    // opens and unwinds at the instant the key moves, not at the next twitch.
+    // Replaying the last pointer position with the new modifier state keeps
+    // one code path deciding where the note goes. (A native HTML5 drag gets
+    // no key events at all, which is why the palette path relies on
+    // `dragover.altKey` instead — a pointer drag does get them.)
+    const onAltChange = (e: KeyboardEvent) => {
+      if (e.key !== 'Alt' || e.repeat || !lastMove) return;
+      if (!(drag.kind === 'boxed' && drag.mode === 'move')) return;
+      onMove({ ...lastMove, altKey: e.type === 'keydown' });
+    };
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);
     window.addEventListener('pointerdown', onSecondTouch);
     window.addEventListener('pointerdown', onPlaceClick, true);
     window.addEventListener('keydown', onKey, true);
+    window.addEventListener('keydown', onAltChange);
+    window.addEventListener('keyup', onAltChange);
     return () => {
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
       window.removeEventListener('pointerdown', onSecondTouch);
       window.removeEventListener('pointerdown', onPlaceClick, true);
       window.removeEventListener('keydown', onKey, true);
+      window.removeEventListener('keydown', onAltChange);
+      window.removeEventListener('keyup', onAltChange);
+      // No gesture in flight: nothing may be left standing aside.
+      insertSlotRef.current = null;
+      setInsertionSlot(null);
+      setInsertionDragInHand(false);
     };
   }, [drag, scheduleGuides, scheduleSnapTargets]);
 

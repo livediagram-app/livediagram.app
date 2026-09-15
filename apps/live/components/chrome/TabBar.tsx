@@ -42,6 +42,10 @@ export type CanvasMenuActions = {
   // Push the tab font + default size onto every existing element on the tab
   // (Font category "Apply to all elements").
   onApplyFontToAll: () => void;
+  // Paste into this tab from the canvas right-click menu, and whether the
+  // in-app clipboard actually holds anything (the row greys out when not).
+  onPaste: () => void;
+  canPaste: boolean;
 };
 
 // Where the canvas right-click / footer-button menu should open. `openUp`
@@ -365,8 +369,8 @@ export function TabBar({
           onOpenSearch={onOpenSearch}
           onOpenShortcuts={onOpenShortcuts}
           onOpenSettings={onOpenSettings}
-          settingsLabel="Diagram settings"
-          settingsDescription="Configure per-diagram editor behaviour."
+          settingsLabel="Application settings"
+          settingsDescription="Your editor preferences — they follow your account, not this diagram."
         />
       </div>
       {canvasMenu && !readOnly && activeTab && onCloseCanvasMenu && canvasActions ? (

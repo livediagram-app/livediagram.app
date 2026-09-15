@@ -276,3 +276,7 @@ A `deploy-help` job in `.github/workflows/deploy.yml` mirrors `deploy-telemetry`
 (Previously listed here: surfacing the full article catalogue in editor
 search. That shipped — the registry moved to `@livediagram/help-registry` with
 per-article `keywords`, and `help-search.ts` now derives from it.)
+
+## articleCount is pinned by a test
+
+A category’s `articleCount` counts every registry entry whose `categorySlug` is exactly that category — **sub-articles included**. It is hand-maintained, and a stale one is invisible: the card simply advertises the wrong number and nothing at runtime notices. `registry-counts.test.ts` pins it, along with two things that were previously only convention: every article sits in a category that exists, and every `parentSlug` names either another article or the category’s own landing page.

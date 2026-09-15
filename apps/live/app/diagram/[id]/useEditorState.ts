@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
+  isEventStormingTab,
+  stampTabKind,
   createPinnedArrow,
   createShape,
   isBoxed,
@@ -187,7 +189,12 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     // that never materialised `layers`, and on undo/remote applies (which
     // bypass commitTabs entirely).
     rawCommitTabs((ts) => {
-      const next = mapTabs(ts);
+      // Board kind (spec/139): a committed tab says what KIND of board it
+      // is, rather than leaving a reader to know that absence means
+      // 'diagram'. Same choke point as the layer stamp below, and
+      // `stampTabKind` returns the tab unchanged when it already has one,
+      // so an untouched tab keeps its identity for the memoised views.
+      const next = mapTabs(ts).map(stampTabKind);
       const stamp = activeLayerStampRef.current;
       if (!stamp) return next;
       return next.map((t) => {
@@ -1383,6 +1390,10 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   } = layersState;
   // Refresh the commit choke point's stamp (see commitTabs above).
   activeLayerStampRef.current = { tabId: activeId, layerId: activeLayerId };
+
+  // Is this an event-storming board (spec/139)? One layer, so this is just
+  // tab data — it drives the palette, the stationery and the note menu.
+  const esBoard = isEventStormingTab(activeTab);
   // Element creation lands on the active layer, so it's additionally
   // blocked while that layer is hidden or locked (spec/74).
   const createBlocked = editsBlocked || activeLayerBlocked;
@@ -1501,6 +1512,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     commitTabs,
     emitChange,
     setSelectedId,
+    setEditingId,
     setFormatSourceId,
     setGroupSourceId,
   });
@@ -1900,6 +1912,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     deleteMultiSelected,
     narrowMultiSelection,
     duplicateSelected,
+    stackSelectedFront,
+    stackSelectedBack,
     spawnConnectSelected,
     ungroupSelected,
   } = useElementSelectionActions({
@@ -2283,13 +2297,22 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     autoRebindArrowsRef,
     alignmentGuidesRef,
     isPinchingRef,
+    // Insert between (spec/139): dragging a note already on the board into a
+    // gap, while Alt is held. Same gate the palette drag uses, so both entry
+    // points agree about when the gesture is available.
+    insertGate: {
+      esBoard,
+      readOnly: isReadOnly,
+      tabLocked: activeTabLocked,
+      createBlocked,
+    },
   });
 
   // Copy / paste (in-app element clipboard + OS-clipboard image
   // paste). `copySelection` feeds the keyboard hook below; paste is
   // driven by a native `paste` listener the hook owns. See
   // useClipboard.
-  const { copySelection } = useClipboard({
+  const { copySelection, pasteFromClipboard, hasClipboard } = useClipboard({
     isReadOnly,
     embedMode,
     selectedId,
@@ -2408,6 +2431,11 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   });
 
   return {
+    // Clipboard copy, also exposed to the event-storming note menu (spec/139),
+    // plus paste + its enabled flag for the canvas menu's Paste row.
+    copySelection,
+    pasteFromClipboard,
+    hasClipboard,
     ...panelLayout,
     // Presenting wears the zen chrome treatment (spec/31 → spec/26): header,
     // tab bar, panels and palette all gone, so a projector shows the diagram
@@ -2427,6 +2455,11 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     layers,
     activeLayerId,
     activeLayerBlocked,
+    // The whole creation gate: a locked tab, a view-only session, or a
+    // hidden / locked active layer. The canvas reads it so the
+    // insert-between preview (spec/139) never offers a slot the drop
+    // would refuse.
+    createBlocked,
     layerHiddenIds,
     layerLockedIds,
     layerInertIds,
@@ -2444,6 +2477,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     hideOtherLayersOp: layersState.hideOthers,
     layerPreviewId: layersState.previewLayerId,
     setLayerPreviewId: layersState.setPreviewLayerId,
+    // Event-storming workshop views (spec/139).
+    esBoard,
     // Menu-facing wrapper: moves the CURRENT selection (group-expanded)
     // onto the picked layer.
     moveSelectedToLayer: (layerId: string) =>
@@ -2569,6 +2604,9 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     duplicateDiagram,
     duplicateMultiSelected,
     duplicateSelected,
+    // Intra-layer z-order for the selection popover (spec/74).
+    stackSelectedFront,
+    stackSelectedBack,
     duplicateTab,
     effectiveTemplatePickerMode,
     templateGridOpen,

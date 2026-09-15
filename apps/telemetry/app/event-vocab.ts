@@ -155,6 +155,9 @@ export function eventExplanation(category: string, action: string, type: string 
   if (category === 'Canvas' && action === 'Used' && type === 'FollowMe') {
     return "Someone pinned their canvas to a peer's viewport (spec/131), following their pan, zoom and tab until they take it back.";
   }
+  if (category === 'Canvas' && action === 'Used' && type === 'InsertBetween') {
+    return 'Someone held Alt and dragged a note into the gap between two notes on an event-storming board (spec/139), and the board made room for it.';
+  }
   if (category === 'Canvas' && action === 'Zoomed' && type) {
     if (type === 'In') return 'Someone tapped the zoom-in button.';
     if (type === 'Out') return 'Someone tapped the zoom-out button.';

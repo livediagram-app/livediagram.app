@@ -43,6 +43,7 @@ export function PaletteTabBar({
   leading,
   defaultOpenId,
   storageKey,
+  hideHeader,
 }: {
   tabs: PaletteTab[];
   // Control rendered at the left of the header band (the canvas-tool
@@ -56,6 +57,13 @@ export function PaletteTabBar({
   // minimal dock unmounts the popover) and page reloads. A stale id
   // (category removed) falls back to the default.
   storageKey?: string;
+  // Hide the whole header band — both the canvas-tool picker and the
+  // category picker. Event-storming boards (spec/139) do this: the board is
+  // a low-threshold capture surface, the notation is the only category that
+  // matters there, and every control that doesn't serve "add a note, type,
+  // drag" is a distraction. Tools stay reachable by keyboard shortcut and
+  // the command palette (spec/70).
+  hideHeader?: boolean;
 }) {
   const fallbackId = defaultOpenId ?? tabs[0]?.id ?? '';
   // Selected category — always set (the dropdown has no "collapsed" state).
@@ -153,7 +161,9 @@ export function PaletteTabBar({
       {/* Header band: the canvas-tool picker (left) and the category
           picker (right) on one row, flush to the top and sides, set off
           from the panel below by a bottom border. */}
-      <div className="flex items-stretch justify-between border-b border-slate-200 dark:border-slate-700">
+      <div
+        className={`flex items-stretch justify-between border-b border-slate-200 dark:border-slate-700 ${hideHeader ? 'hidden' : ''}`}
+      >
         {leading ?? <span />}
         <PaletteDropdown
           ariaLabel="Palette category"

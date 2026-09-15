@@ -20,7 +20,7 @@ import { TourHost } from '@/components/tour/TourHost';
 import { EditorAnchoredPopovers } from '@/components/panels/EditorAnchoredPopovers';
 import { EditorSearchPanel } from '@/components/panels/EditorSearchPanel';
 import { ThemeModeBanner } from '@/components/chrome/ThemeModeBanner';
-import { ShiftHintBanner } from '@/components/chrome/ShiftHintBanner';
+import { ModifierHintBanner } from '@/components/chrome/ModifierHintBanner';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { useDismissibleBanner } from '@/hooks/ui/useDismissibleBanner';
 import { useIsOfflineDiagram } from '@/hooks/persistence/useIsOfflineDiagram';
@@ -44,6 +44,8 @@ export function EditorView() {
   // "Offline" header badge and hides server-only actions (Share).
   const isOffline = useIsOfflineDiagram(ctx.diagramId);
   const {
+    pasteFromClipboard,
+    hasClipboard,
     activeId,
     activeTab,
     addTab,
@@ -67,6 +69,7 @@ export function EditorView() {
     activeLayerId,
     canvasTool,
     drag,
+    esBoard,
     clearTabContent,
     clerkUserId,
     closeContextMenu,
@@ -155,7 +158,7 @@ export function EditorView() {
     !templateGridOpen &&
     !pendingDraw &&
     activeTab.elements.length === 0;
-  // The primary selection's flavour for the shift hint's no-drag messages.
+  // The primary selection's flavour for the modifier hint's no-drag messages.
   const shiftSelected = selectedId ? activeTab.elements.find((el) => el.id === selectedId) : null;
   const shiftSelectedKind = !shiftSelected
     ? null
@@ -354,6 +357,9 @@ export function EditorView() {
             onAutoLayout: autoLayoutTab,
             font: activeTab.font ?? null,
             onApplyFontToAll: applyTabFontToAll,
+            // Paste straight from the empty-canvas right-click (spec/09).
+            onPaste: pasteFromClipboard,
+            canPaste: hasClipboard,
             onSetFont: setTabFont,
             defaultTextSize: activeTab.defaultTextSize,
             onSetDefaultTextSize: setTabDefaultTextSize,
@@ -405,10 +411,12 @@ export function EditorView() {
       {zenMode || embedMode || showSignInBanner || showEmptyCanvasBanner ? null : (
         <ThemeModeBanner themeId={activeTab.theme} />
       )}
-      {/* Shift hint (spec/09): names what holding Shift does right now.
-          Suppressed while a mode banner owns the top slot. */}
-      <ShiftHintBanner
+      {/* Modifier hint (spec/09, spec/139): names what holding Shift does
+          right now, and offers the Alt insert-between gesture while a note is
+          on the move. Suppressed while a mode banner owns the top slot. */}
+      <ModifierHintBanner
         drag={drag}
+        esBoard={esBoard}
         selectedKind={shiftSelectedKind}
         hasElements={activeTab.elements.length > 0}
         suppressed={

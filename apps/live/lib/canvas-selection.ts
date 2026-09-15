@@ -4,7 +4,7 @@
 // selection bounds, and every "should this chrome show?" predicate the
 // Canvas render reads. Lifted out of Canvas.tsx so this decision logic
 // is unit-testable in isolation (the component itself has no tests).
-import { isFixedSizeShape } from '@livediagram/diagram';
+import { isFixedSizeElement } from '@livediagram/diagram';
 import {
   elementBounds,
   isBoxed,
@@ -64,6 +64,16 @@ export function deriveCanvasSelection(input: {
   isGroupMode: boolean;
   tabLocked: boolean;
   readOnly: boolean;
+  // Event-storming board (spec/139): a low-threshold capture surface where
+  // every control that doesn't serve "add a note, type, drag" is a
+  // distraction — the quick-connect pluses stand down.
+  esBoard?: boolean;
+  // An element context menu is open. One question, one answer: a left click
+  // asks "what is this" (popover), a right click "what can I do with it"
+  // (menu). Both at once rings the element with two toolbars repeating each
+  // other's verbs, so the menu — the deliberate, more specific gesture —
+  // owns the moment and the popover (with its pluses) stands down.
+  elementMenuOpen?: boolean;
 }): CanvasSelection {
   const {
     elements,
@@ -75,6 +85,8 @@ export function deriveCanvasSelection(input: {
     isGroupMode,
     tabLocked,
     readOnly,
+    esBoard,
+    elementMenuOpen,
   } = input;
 
   const memberIds = selectedId
@@ -107,6 +119,7 @@ export function deriveCanvasSelection(input: {
   const selectedLocked = selected ? selected.locked === true : false;
   const showPopover = !!(
     selected &&
+    !elementMenuOpen &&
     editingId !== selected.id &&
     !isPaintMode &&
     !isGroupMode &&
@@ -115,7 +128,10 @@ export function deriveCanvasSelection(input: {
   );
   const showPlus = !!(
     selected &&
+    !elementMenuOpen &&
     selectedIsBoxed &&
+    // Never on an event-storming board (spec/139).
+    !esBoard &&
     // Quick-connect works on a single element OR a multi-member group (the
     // pluses then ring the group's union bounds — spawn is already
     // group-aware and an arrow pins to the member nearest the picked side).
@@ -156,18 +172,26 @@ export function deriveCanvasSelection(input: {
   // connector to a grid is an unlikely flow and the external dots
   // clash with the table's own in-cell controls. Resize handles
   // (resizeVisible) still show.
-  const anchorVisible = (id: string) =>
-    handleVisible(id) && elements.find((el) => el.id === id)?.type !== 'table';
-
-  // Resize handles additionally skip the FIXED-SIZE kinds (spec/103): a
-  // Selection Mode button is a control at one size, so offering the handles
-  // would advertise a resize that the drag paths deliberately ignore. Anchors
-  // stay — an arrow can still point at a button.
+  // Resize handles skip the FIXED-SIZE kinds (spec/103 buttons) and any
+  // element stamped fixed at creation (spec/139 event-storming notes): both
+  // are one size for life, so offering a handle would advertise a resize the
+  // drag paths deliberately ignore.
   const resizeVisible = (id: string) => {
     if (!handleVisible(id)) return false;
     const el = elements.find((e) => e.id === id);
-    return !(el?.type === 'shape' && isFixedSizeShape(el.shape));
+    // Fixed-size elements (mode / session buttons by kind, event-storming
+    // notes by their creation stamp — spec/139) advertise no resize.
+    return !(el && isFixedSizeElement(el));
   };
+
+  // The edge "anchors" are RESIZE grips today (arrows are drawn from the
+  // quick-connect menu now, see SelectionChromeLayer), so they follow the
+  // same fixed-size rule as the corner handles. They used to be exempt on
+  // the reasoning that "an arrow can still point at a button" — true of a
+  // connector anchor, untrue of the widget that actually renders, which is
+  // why a fixed-size sticky could still be dragged wider by its edges.
+  const anchorVisible = (id: string) =>
+    resizeVisible(id) && elements.find((el) => el.id === id)?.type !== 'table';
 
   const unionResizeIds: Set<string> | null =
     multiSelectedIds.size > 1 ? multiSelectedIds : memberIds.size > 1 ? memberIds : null;

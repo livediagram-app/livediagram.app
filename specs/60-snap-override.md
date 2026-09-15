@@ -18,6 +18,13 @@ pointer exactly and can be placed off-grid.
   snaps as usual — nothing to toggle back.
 - Applies to a single element, a multi-selection move, and a dragged **arrow
   endpoint** (both share the snap sites in `useEditorDrag`).
+- **Insert between wins over it.** On an event-storming board, Alt opens an
+  insertion slot ([spec/139](139-event-storming.md)); while one is open the
+  slot IS the placement, so holding Cmd/Ctrl as well changes nothing — free
+  placement is meaningless against a gap the board has already opened, and
+  two placement rules at once would put the note, the insertion marker and
+  the drop in three different places. Release Alt and this override applies
+  again for the rest of the drag, as usual.
 
 ## Implementation
 

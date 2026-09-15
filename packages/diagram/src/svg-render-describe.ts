@@ -12,6 +12,8 @@ import {
   defaultTextAlign,
   defaultTextColor,
 } from './colors';
+import { eventStormingLabelText, eventStormingNoteFont } from './event-storming';
+import { fontIdsUsed, resolveFontStack } from './fonts';
 import { hasRichFormatting } from './rich-text';
 import { iconCaptionBand } from './icon-size';
 import { fontSizeFor, labelMaxWidth } from './svg-render-primitives';
@@ -76,12 +78,40 @@ export type ResolveStickerArt = (stickerId: string) => ExportStickerArt | undefi
 
 export type BoxedExport = { opacity: number; shape: ExportShape; label: ExportLabel | null };
 
-export function describeBoxedExport(
-  el: BoxedElement,
-  resolveImageHref?: ResolveImageHref,
-  resolveIconArt?: ResolveIconArt,
-  resolveStickerArt?: ResolveStickerArt,
-): BoxedExport {
+// What an export needs from its caller beyond the element itself: the three
+// art resolvers, and the tab's default font (spec/28) — an element without
+// its own face inherits the tab's, so a renderer that doesn't pass it paints
+// the wrong typeface for the whole board.
+export type BoxedExportOptions = {
+  resolveImageHref?: ResolveImageHref;
+  resolveIconArt?: ResolveIconArt;
+  resolveStickerArt?: ResolveStickerArt;
+  tabFont?: string;
+};
+
+// The face a label paints in: the author's own choice, else the notation's
+// (a workshop note writes in marker, spec/139), else the tab default. The
+// same ladder the canvas walks — an export that resolved it differently
+// would hand out a picture of a diagram nobody has.
+export function exportFontFamily(el: BoxedElement, tabFont?: string): string | undefined {
+  return resolveFontStack(el.font ?? eventStormingNoteFont(el)) ?? resolveFontStack(tabFont);
+}
+
+// Every font id an export of these elements will paint with — what they
+// chose, what the tab defaults to, and what the notation imposes on a
+// workshop note. The list a file's embedded (or declared) webfaces come
+// from, so an export ships exactly the faces it uses.
+export function exportFontIds(
+  elements: readonly { type: string; font?: string; esKind?: unknown; fillColor?: string }[],
+  tabFont?: string,
+): string[] {
+  const boxed = elements.filter((el) => el.type !== 'arrow') as BoxedElement[];
+  return fontIdsUsed(boxed, tabFont, boxed.map(eventStormingNoteFont));
+}
+
+export function describeBoxedExport(el: BoxedElement, opts: BoxedExportOptions = {}): BoxedExport {
+  const { resolveImageHref, resolveIconArt, resolveStickerArt } = opts;
+  const fontFamily = exportFontFamily(el, opts.tabFont);
   const opacity = el.opacity ?? 1;
   if (el.type === 'image') {
     // Mirror ImageElementView: borderRadius drives the corner clip (avatar
@@ -107,6 +137,7 @@ export function describeBoxedExport(
             size: 12,
             bold: true,
             italic: false,
+            fontFamily,
           },
     };
   }
@@ -121,7 +152,9 @@ export function describeBoxedExport(
     return { opacity, shape: { kind: 'sticker', art: stickerArt }, label: null };
   }
   const fill = el.fillColor ?? defaultFillColor(el);
-  const stroke = el.strokeColor ?? defaultStrokeColor(el);
+  // A sticky is borderless paper unless the user deliberately set a border
+  // colour (matching the canvas, spec/09 "Sticky notes read as paper").
+  const stroke = el.strokeColor ?? (el.type === 'sticky' ? 'none' : defaultStrokeColor(el));
   // Icon elements (spec/09 "Icons" line art + spec/41 Technology marks): when
   // a caller supplies the glyph resolver AND the id resolves, export the real
   // art with the caption in the bottom band (mirroring IconGlyph /
@@ -173,6 +206,7 @@ export function describeBoxedExport(
             size,
             bold: !!el.textBold,
             italic: !!el.textItalic,
+            fontFamily,
           }
         : null,
     };
@@ -190,7 +224,7 @@ export function describeBoxedExport(
   const richText = (el as { richText?: TextRun[] }).richText;
   const runs: ExportRun[] | undefined = hasRichFormatting(richText)
     ? richText!.map((run) => ({
-        text: run.text,
+        text: eventStormingLabelText(el, run.text),
         color: run.color ?? baseColor,
         size: run.size ? fontSizeFor(run.size) : baseSize,
         bold: run.bold ?? !!el.textBold,
@@ -205,9 +239,12 @@ export function describeBoxedExport(
   const alignX = el.textAlignX ?? defaults.x;
   const alignY = el.textAlignY ?? defaults.y;
   const pad = PADDING_PX[el.padding ?? defaultPadding(el)];
+  // A workshop note exports in capitals, exactly as the board paints it
+  // (spec/139) — a shared PNG that quietly restored sentence case would
+  // stop being the board people were looking at.
   const label: ExportLabel | null = el.label
     ? {
-        text: el.label,
+        text: eventStormingLabelText(el, el.label),
         x:
           alignX === 'right'
             ? el.x + el.width - pad
@@ -227,6 +264,7 @@ export function describeBoxedExport(
         size: baseSize,
         bold: !!el.textBold,
         italic: !!el.textItalic,
+        fontFamily,
         runs,
       }
     : null;

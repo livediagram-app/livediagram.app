@@ -16,6 +16,8 @@ import { useCanvasPanAndMarquee } from '@/hooks/canvas/useCanvasPanAndMarquee';
 import { useQuickRing } from '@/hooks/canvas/useQuickRing';
 import { useZoomControls } from '@/hooks/canvas/useZoomControls';
 import { usePaletteDrop } from '@/hooks/canvas/usePaletteDrop';
+import { isDarkCanvas } from '@/lib/dark-canvas';
+import { isEventStormingTab } from '@livediagram/diagram';
 import { useLongPress } from '@/hooks/ui/useLongPress';
 import { getTheme } from '@/lib/themes';
 import { CanvasSelectionToolbars } from '@/components/canvas/CanvasSelectionToolbars';
@@ -77,6 +79,8 @@ export function Canvas(props: CanvasProps) {
     readOnly,
     tabBackgroundPattern,
     tabBackgroundColor,
+    tabLayers,
+    tabKind,
     tabBackgroundOpacity,
     tabBackgroundPatternScale,
     tabBackgroundAnimationSpeed,
@@ -214,6 +218,8 @@ export function Canvas(props: CanvasProps) {
         isGroupMode,
         tabLocked,
         readOnly,
+        esBoard: isEventStormingTab({ kind: tabKind, layers: tabLayers }),
+        elementMenuOpen: props.elementMenuOpen === true,
       }),
     [
       elements,
@@ -225,6 +231,9 @@ export function Canvas(props: CanvasProps) {
       isGroupMode,
       tabLocked,
       readOnly,
+      tabLayers,
+      tabKind,
+      props.elementMenuOpen,
     ],
   );
   const {
@@ -464,6 +473,7 @@ export function Canvas(props: CanvasProps) {
   // below mounts its handlers verbatim.
   const surface = useCanvasSurfaceGestures({
     canvasTool,
+    middleMousePan: props.settings?.middleMousePan !== false,
     pendingDraw,
     viewportOffset,
     viewportZoom,
@@ -512,8 +522,13 @@ export function Canvas(props: CanvasProps) {
       onDragOver={paletteDrop.onDragOver}
       onDrop={paletteDrop.onDrop}
       onPointerDownCapture={surface.onPointerDownCapture}
+      // A dark backdrop deepens the sticky paper-peel (spec/09): the shadow
+      // ink is tuned for light paper and vanishes on a dark wall. Flagged
+      // here so the peel's CSS can respond without knowing about themes.
+      data-dark-canvas={isDarkCanvas(tabBackgroundColor) ? '' : undefined}
       onContextMenuCapture={surface.onContextMenuCapture}
       onContextMenu={surface.onContextMenu}
+      onPointerUp={surface.onContextMenuPointerUp}
       onPointerDown={surface.onPointerDown}
       // focus-visible ring only: pointer focus stays outline-free, but a
       // keyboard user Tabbing to the canvas sees where they landed.

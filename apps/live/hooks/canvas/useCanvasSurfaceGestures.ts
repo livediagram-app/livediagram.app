@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import type { PointerEvent as ReactPointerEvent, MouseEvent as ReactMouseEvent } from 'react';
 import { pointerToCanvas } from '@/lib/canvas';
 import { peerPushTarget } from '@/lib/avatar-walk';
@@ -22,6 +23,7 @@ type PanAndMarquee = ReturnType<typeof useCanvasPanAndMarquee>;
 // the draw gesture).
 export function useCanvasSurfaceGestures({
   canvasTool,
+  middleMousePan,
   pendingDraw,
   viewportOffset,
   viewportZoom,
@@ -42,6 +44,8 @@ export function useCanvasSurfaceGestures({
   onCanvasDoubleClick,
 }: {
   canvasTool: CanvasProps['canvasTool'];
+  // Settings › Controls: middle-button drag pans the canvas (default on).
+  middleMousePan: boolean;
   pendingDraw: CanvasProps['pendingDraw'];
   viewportOffset: { x: number; y: number };
   viewportZoom: number;
@@ -215,8 +219,10 @@ export function useCanvasSurfaceGestures({
     // space OR over elements — regardless of the active tool. The
     // capture phase runs before the element + background
     // pointerdown handlers, so it wins over selection / drag.
-    // Mirrors Figma + the browser's own middle-drag scroll.
-    if (e.button === 1) {
+    // Mirrors Figma + the browser's own middle-drag scroll. Switchable
+    // from Settings › Controls: off leaves the middle button to the
+    // browser (some users drive autoscroll with it).
+    if (e.button === 1 && middleMousePan) {
       e.preventDefault();
       e.stopPropagation();
       setPan({
@@ -254,6 +260,9 @@ export function useCanvasSurfaceGestures({
     spotlight.shrink();
   };
 
+  // Set by onContextMenu, consumed by the pointerup that opens the tab menu.
+  const rmbArmedRef = useRef(false);
+
   const onContextMenu = (e: ReactMouseEvent) => {
     // BoxedElementView's onContextMenu calls e.stopPropagation()
     // for right-clicks on elements, so we only reach here for
@@ -267,6 +276,15 @@ export function useCanvasSurfaceGestures({
     // the orbit gesture. Avatar mode (spec/101) is read-only and mid-
     // narration: a menu popping open would interrupt the tour.
     if (canvasTool === 'spotlight' || canvasTool === 'isometric' || canvasTool === 'avatar') return;
+    // Arm only — the tab menu opens on RELEASE, like an element's
+    // (useRightClickRelease). X11 fires `contextmenu` on press, so opening
+    // here put the menu under a held button.
+    rmbArmedRef.current = true;
+  };
+
+  const onContextMenuPointerUp = (e: ReactPointerEvent) => {
+    if (e.button !== 2 || !rmbArmedRef.current) return;
+    rmbArmedRef.current = false;
     onCanvasContextMenu?.(e.clientX, e.clientY);
   };
 
@@ -367,6 +385,7 @@ export function useCanvasSurfaceGestures({
     onPointerDownCapture,
     onContextMenuCapture,
     onContextMenu,
+    onContextMenuPointerUp,
     onPointerDown,
     onWrapperPointerDown,
     onWrapperDoubleClick,

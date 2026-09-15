@@ -18,7 +18,7 @@ import {
   expectOk,
   expectOkOrNull,
   expectOkVoid,
-  stripUiTabFields,
+  tabForWire,
   type DiagramResponse,
   type ListResponse,
 } from './core';
@@ -116,7 +116,7 @@ export async function apiCreateDiagram(
     body: JSON.stringify({
       id: d.id,
       name: d.name,
-      tabs: (d.tabs ?? []).map(stripUiTabFields),
+      tabs: (d.tabs ?? []).map(tabForWire),
     }),
   });
   const { diagram } = await expectOk<DiagramResponse>(res, 'create diagram');

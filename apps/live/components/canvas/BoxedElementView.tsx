@@ -83,6 +83,8 @@ function BoxedElementViewImpl({
   onToggleChecklistItem,
   onSetPageHeading,
   isoDepth,
+  insertShiftX,
+  insertShiftAnimates,
   chartPalette,
   onCancelEdit,
   onFollowLink,
@@ -179,7 +181,7 @@ function BoxedElementViewImpl({
   // Gesture routing (press / double-click / context menu / long-press)
   // lives in useBoxedElementGestures; the wrapper JSX mounts its
   // handlers below.
-  const { handleShapeDown, handleDoubleClick, handleContextMenu, longPress } =
+  const { handleShapeDown, handleDoubleClick, handleContextMenu, handlePointerUp, longPress } =
     useBoxedElementGestures({
       element,
       wrapperRef,
@@ -300,10 +302,19 @@ function BoxedElementViewImpl({
   const { acceptsIconDrop, dropSide, handleIconDragOver, handleIconDragLeave, handleIconDrop } =
     useIconDropTarget(element, onDropIcon);
 
+  // Insert-between preview (spec/139). A CSS translate rather than a moved
+  // `x`: it is GPU-composited, it cannot desync from the model because the
+  // model never changed, and it unwinds by dropping a style. It composes
+  // ahead of the tilt below so the note slides and stays hand-placed.
+  const insertShift = insertShiftX ? `translateX(${insertShiftX}px) ` : '';
+
   return (
     <div
       ref={wrapperRef}
       data-element-id={element.id}
+      // Carries the slot's easing (globals.css) for as long as a slot COULD
+      // be open, so the board eases shut as well as open.
+      data-insert-shift={insertShiftAnimates ? '' : undefined}
       // Screen-reader name (spec/71): same naming the change log uses,
       // so 'Square "Login"' reads consistently across both surfaces.
       role="img"
@@ -319,6 +330,7 @@ function BoxedElementViewImpl({
       }}
       onDoubleClick={handleDoubleClick}
       onContextMenu={handleContextMenu}
+      onPointerUp={handlePointerUp}
       onPointerEnter={isAnnotation ? () => setHovering(true) : undefined}
       onPointerLeave={isAnnotation ? () => setHovering(false) : undefined}
       onDragOver={acceptsIconDrop ? handleIconDragOver : undefined}
@@ -358,10 +370,12 @@ function BoxedElementViewImpl({
         // sticker) popped in flat and then snapped to its angle at the end.
         ...(isRotated
           ? ({
-              transform: `rotate(${rotation}deg)`,
+              transform: `${insertShift}rotate(${rotation}deg)`,
               '--lvd-enter-rot': `${rotation}deg`,
             } as React.CSSProperties)
-          : {}),
+          : insertShift
+            ? { transform: insertShift.trim() }
+            : {}),
         // Deliberately do NOT raise z-index on plain selection. Keeping
         // the element at its natural paint order means selecting a
         // container doesn't jump it above the content layered on top of

@@ -873,6 +873,63 @@ export function templatePreviewGroup4(kind: TemplateKind): ReactElement | null {
           />
         </svg>
       );
+    case 'event-storming':
+      // Three orange domain-event stickies marching left to right on a
+      // faint timeline — the big-picture opening move of the workshop.
+      return (
+        <svg width="76" height="40" viewBox="0 0 80 40" aria-hidden>
+          <line
+            x1="4"
+            y1="34"
+            x2="76"
+            y2="34"
+            stroke="rgb(148 163 184)"
+            strokeWidth="0.9"
+            strokeDasharray="3 2"
+          />
+          <polygon points="78,34 74,32.2 74,35.8" fill="rgb(148 163 184)" />
+          <rect
+            x="6"
+            y="8"
+            width="18"
+            height="18"
+            rx="1.5"
+            fill="rgb(253 186 116)"
+            stroke="rgb(249 115 22)"
+            strokeWidth="0.9"
+            transform="rotate(-3 15 17)"
+          />
+          <rect
+            x="31"
+            y="9"
+            width="18"
+            height="18"
+            rx="1.5"
+            fill="rgb(253 186 116)"
+            stroke="rgb(249 115 22)"
+            strokeWidth="0.9"
+            transform="rotate(2.5 40 18)"
+          />
+          <rect
+            x="56"
+            y="8"
+            width="18"
+            height="18"
+            rx="1.5"
+            fill="rgb(253 186 116)"
+            stroke="rgb(249 115 22)"
+            strokeWidth="0.9"
+            transform="rotate(-2 65 17)"
+          />
+          {/* Past-tense scribbles on each note. */}
+          <line x1="10" y1="14" x2="20" y2="14" stroke="rgb(154 52 18)" strokeWidth="1" />
+          <line x1="10" y1="18" x2="17" y2="18" stroke="rgb(154 52 18)" strokeWidth="1" />
+          <line x1="35" y1="15" x2="45" y2="15" stroke="rgb(154 52 18)" strokeWidth="1" />
+          <line x1="35" y1="19" x2="42" y2="19" stroke="rgb(154 52 18)" strokeWidth="1" />
+          <line x1="60" y1="14" x2="70" y2="14" stroke="rgb(154 52 18)" strokeWidth="1" />
+          <line x1="60" y1="18" x2="67" y2="18" stroke="rgb(154 52 18)" strokeWidth="1" />
+        </svg>
+      );
     default:
       return null;
   }

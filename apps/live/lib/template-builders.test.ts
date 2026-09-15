@@ -73,6 +73,7 @@ const ALL_KINDS = [
   'uml-class',
   'state-machine',
   'floor-plan',
+  'event-storming',
 ] as const satisfies readonly TemplateKind[];
 
 // Real exhaustiveness check: any TemplateKind missing from

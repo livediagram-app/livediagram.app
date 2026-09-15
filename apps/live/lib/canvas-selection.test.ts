@@ -221,3 +221,90 @@ describe('deriveCanvasSelection', () => {
     expect(s.showPlus).toBe(false);
   });
 });
+
+// A fixed-size element (spec/103 buttons, spec/139 event-storming notes)
+// advertises NO resize affordance — and the edge "anchor" grips are resize
+// grips today (arrows are drawn from the quick-connect menu now), so they
+// have to disappear with the corner handles. Leaving them behind is exactly
+// the bug that let an event-storming sticky be dragged wider.
+describe('deriveCanvasSelection — fixed-size elements', () => {
+  const fixedSticky = {
+    id: 'f',
+    type: 'sticky',
+    x: 0,
+    y: 0,
+    width: 200,
+    height: 200,
+    fixedSize: true,
+  } as unknown as Element;
+
+  it('hides both the corner handles and the edge grips', () => {
+    const s = derive({ elements: [fixedSticky], selectedId: 'f' });
+    expect(s.showHandlesFor('f')).toBe(false);
+    expect(s.showAnchorsFor('f')).toBe(false);
+  });
+
+  it('still shows both for an ordinary sticky', () => {
+    const plain = { ...fixedSticky, id: 'p', fixedSize: undefined } as unknown as Element;
+    const s = derive({ elements: [plain], selectedId: 'p' });
+    expect(s.showHandlesFor('p')).toBe(true);
+    expect(s.showAnchorsFor('p')).toBe(true);
+  });
+});
+
+// Event-storming boards are a low-threshold CAPTURE surface (spec/139):
+// every control that doesn't serve "add a note, type, drag" is a
+// distraction. The quick-connect pluses ring every selected note with four
+// affordances nobody reaches for mid-workshop, so they stand down there —
+// and stay exactly as they are on every other board.
+describe('deriveCanvasSelection — quick-connect on an event-storming board', () => {
+  const sticky = {
+    id: 's',
+    type: 'sticky',
+    x: 0,
+    y: 0,
+    width: 200,
+    height: 200,
+  } as unknown as Element;
+
+  it('hides the pluses when the board is event storming', () => {
+    const s = derive({ elements: [sticky], selectedId: 's', esBoard: true });
+    expect(s.showPlus).toBe(false);
+    // The rest of the single-selection chrome is untouched.
+    expect(s.showPopover).toBe(true);
+  });
+
+  it('keeps them everywhere else', () => {
+    const s = derive({ elements: [sticky], selectedId: 's' });
+    expect(s.showPlus).toBe(true);
+  });
+});
+
+// One question, one answer: a left click asks "what is this?" (the selection
+// popover) and a right click asks "what can I do with it?" (the context
+// menu). Showing both at once puts two toolbars around one element and
+// duplicates half the verbs, so the menu — the deliberate, more specific
+// gesture — wins while it is open.
+describe('deriveCanvasSelection — popover yields to an open context menu', () => {
+  const box = {
+    id: 'a',
+    type: 'shape',
+    shape: 'square',
+    x: 0,
+    y: 0,
+    width: 100,
+    height: 60,
+  } as unknown as Element;
+
+  it('hides the popover (and its pluses) while an element menu is open', () => {
+    const s = derive({ elements: [box], selectedId: 'a', elementMenuOpen: true });
+    expect(s.showPopover).toBe(false);
+    expect(s.showPlus).toBe(false);
+  });
+
+  it('brings them back once the menu closes', () => {
+    const s = derive({ elements: [box], selectedId: 'a', elementMenuOpen: false });
+    expect(s.showPopover).toBe(true);
+    expect(s.showPlus).toBe(true);
+  });
+});

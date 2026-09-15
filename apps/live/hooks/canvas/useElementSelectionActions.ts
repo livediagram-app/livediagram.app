@@ -13,7 +13,9 @@ import {
   arrowReferencesAny,
   freezeDanglingGroupEnds,
   createText,
+  bringManyToFront,
   duplicateGroupedElements,
+  sendManyToBack,
   isBoxed,
   ungroup,
   unionBoxedBounds,
@@ -316,7 +318,23 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     track('Element', 'Ungrouped');
   };
 
+  // Intra-LAYER z-order (selection popover). Distinct from the element
+  // menu's Bring to Front, which is a LAYER move (spec/74): these nudge the
+  // selection within its own band, so two notes on the same layer can be
+  // stacked without shuffling anyone between layers. Group-aware: the whole
+  // group travels, or overlapping members would separate.
+  const stackSelected = (direction: 'front' | 'back') => {
+    const ids = currentSelectionIds();
+    if (ids.size === 0) return;
+    commit((els) =>
+      direction === 'front' ? bringManyToFront(els, ids) : sendManyToBack(els, ids),
+    );
+    track('Element', 'Changed', direction === 'front' ? 'StackFront' : 'StackBack');
+  };
+
   return {
+    stackSelectedFront: () => stackSelected('front'),
+    stackSelectedBack: () => stackSelected('back'),
     deleteSelected,
     selectMarquee,
     groupMultiSelected,

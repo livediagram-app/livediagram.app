@@ -59,6 +59,21 @@ export function PaletteWriteTab({ pendingDraw, actions }: TabProps) {
   );
 }
 
+// The Event Storming notation (spec/139): one coloured-sticky tile per note
+// kind of the workshop grammar, in workshop order. Rows with a blurb, like
+// Behaviour and Data — eight identical squares in different colours don't
+// explain themselves; "Something that happened, past tense" against "An
+// intent that triggers an event" is the actual choice.
+export function PaletteEventStormingTab({ pendingDraw, actions }: TabProps) {
+  return (
+    <PaletteToolRows
+      tiles={tilesInSection('event-storming')}
+      actions={actions}
+      pendingDraw={pendingDraw}
+    />
+  );
+}
+
 // The gesture tools (spec/110): Pencil, Highlighter, Polygon, Arrow. Separate
 // from Write because these are things you pick up and drag, not things you
 // drop and type into.

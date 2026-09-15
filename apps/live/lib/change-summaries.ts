@@ -11,6 +11,7 @@
 // group falls back to the honest-but-vague "Edited X".
 
 import type { ArrowElement, BoxedElement, Element } from '@livediagram/diagram';
+import { isBoxed } from '@livediagram/diagram';
 import { article, describeMany, describeOne, kindLabel } from './element-names';
 import type { ChangeLogKind } from './api-client';
 
@@ -316,6 +317,30 @@ export function summarizeEdits(pairs: EditedPair[]): string {
 
 // --- The entry summary -------------------------------------------------------
 
+// Did this commit insert something between two others (spec/139)? The
+// signature is unmistakable: ONE element added, and every other change is the
+// same purely-horizontal slide right, by at least the width of the thing that
+// arrived, of elements that were sitting where it landed. Reading that as
+// "Added a Sticky Note & edited 2 Stickies" tells the story backwards — the
+// moves are the insertion, not a separate edit.
+//
+// Arrows are left out on purpose: one straddling the insertion point stretches
+// rather than travels, so an insertion involving them is not one uniform
+// slide, and the generic phrasing is then the honest one.
+function isInsertionRipple(added: Element, edited: EditedPair[]): boolean {
+  if (!isBoxed(added) || edited.length === 0) return false;
+  let dx: number | null = null;
+  for (const { before, after } of edited) {
+    if (!isBoxed(before) || !isBoxed(after)) return false;
+    if (!allIn(diffKeys(before, after), ['x'])) return false;
+    const moved = after.x - before.x;
+    if (moved <= 0 || before.x < added.x) return false;
+    if (dx !== null && moved !== dx) return false;
+    dx = moved;
+  }
+  return dx !== null && dx >= added.width;
+}
+
 // One-line summary for a whole commit. Pure adds / deletes name what
 // landed or left; pure edits get the sharp verb above; a mixed commit
 // spells out each part ("Added a Square & deleted an Arrow") instead
@@ -334,6 +359,12 @@ export function summarizeChange(
   }
   if (edited.length > 0 && added.length === 0 && removed.length === 0) {
     return summarizeEdits(edited);
+  }
+  if (added.length === 1 && removed.length === 0 && isInsertionRipple(added[0]!, edited)) {
+    const afters = edited.map((p) => p.after);
+    return `Inserted ${describeOne(added[0]!)}, moving ${
+      afters.length === 1 ? describeOne(afters[0]!) : describeMany(afters)
+    } right`;
   }
   // One-for-one swap reads best as a replacement — the shape
   // recogniser (sketch → shape) is the everyday case.

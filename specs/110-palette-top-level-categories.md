@@ -32,13 +32,13 @@ tools plus Frame). The **User / actor** tile was deleted outright — see below.
 **The category dropdown gets bands**, the way the canvas-tool dropdown got them
 (spec/108):
 
-| Band           | Categories                         |
-| -------------- | ---------------------------------- |
-| _(no heading)_ | Favourites, full width             |
-| **Common**     | Shapes, Write, Draw                |
-| **Structure**  | Build, Components, Devices         |
-| **Decorate**   | Icons, Stickers, Technology, Media |
-| **Dynamic**    | Data, Behaviours                   |
+| Band           | Categories                                 |
+| -------------- | ------------------------------------------ |
+| _(no heading)_ | Favourites, full width                     |
+| **Common**     | Shapes, Write, Draw                        |
+| **Structure**  | Build, Components, Devices, Event Storming |
+| **Decorate**   | Icons, Stickers, Technology, Media         |
+| **Dynamic**    | Data, Behaviours                           |
 
 ## Why flatten
 

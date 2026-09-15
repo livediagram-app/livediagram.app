@@ -3,6 +3,7 @@
 // the ~1000-line budget. Pure types; re-exported through index.ts so the
 // public `@livediagram/diagram` surface is unchanged. ElementLink + the enums
 // stay in index.ts and are imported here (type-only, so no runtime cycle).
+import type { EventStormingNoteKind } from './event-storming';
 import type { TextRun } from './rich-text';
 import type { CommentThread } from './comments';
 import type { ElementAction } from './element-action';
@@ -131,7 +132,7 @@ export type ShapeElement = {
   textItalic?: boolean;
   textUnderline?: boolean;
   textStrikethrough?: boolean;
-  // Font-family id (see apps/live/lib/fonts.ts — e.g. 'inter', 'caveat').
+  // Font-family id (see packages/diagram/src/fonts.ts — e.g. 'inter', 'caveat').
   // Unset = inherit the tab's font (Tab.font), which itself falls back to
   // the editor default. Stored as a stable id and mapped to a CSS stack
   // at render time so saved diagrams round-trip independent of the
@@ -148,6 +149,13 @@ export type ShapeElement = {
   // which must stay distinct so the timeline reads as separate tasks.
   // Stroke + text still theme normally.
   themeLockFill?: boolean;
+  // The element is one size for life: no resize handles, union-scales move
+  // it without scaling it, and the menu's Size category stays away. Set at
+  // creation on event-storming notes (spec/139 — the workshop stationery
+  // has fixed silhouettes); the fixed-size SHAPE kinds (mode-button /
+  // session-button, spec/103) get the same treatment from their kind
+  // instead. See isFixedSizeElement.
+  fixedSize?: boolean;
   // Border styling (shapes + stickies). Each is a preset bucket so
   // saved diagrams round-trip without carrying arbitrary numeric
   // values; the renderer maps to pixel widths / SVG dasharrays /
@@ -354,7 +362,7 @@ export type TextElement = {
   textItalic?: boolean;
   textUnderline?: boolean;
   textStrikethrough?: boolean;
-  // Font-family id (see apps/live/lib/fonts.ts — e.g. 'inter', 'caveat').
+  // Font-family id (see packages/diagram/src/fonts.ts — e.g. 'inter', 'caveat').
   // Unset = inherit the tab's font (Tab.font), which itself falls back to
   // the editor default. Stored as a stable id and mapped to a CSS stack
   // at render time so saved diagrams round-trip independent of the
@@ -473,7 +481,7 @@ export type TableElement = {
   textItalic?: boolean;
   textUnderline?: boolean;
   textStrikethrough?: boolean;
-  // Font-family id (see apps/live/lib/fonts.ts — e.g. 'inter', 'caveat').
+  // Font-family id (see packages/diagram/src/fonts.ts — e.g. 'inter', 'caveat').
   // Unset = inherit the tab's font (Tab.font), which itself falls back to
   // the editor default. Stored as a stable id and mapped to a CSS stack
   // at render time so saved diagrams round-trip independent of the
@@ -524,6 +532,15 @@ export type StickyElement = {
   height: number;
   label?: string;
   locked?: boolean;
+  // One size for life (spec/139 event-storming notes) — see
+  // ShapeElement.fixedSize / isFixedSizeElement.
+  fixedSize?: boolean;
+  // Which event-storming note this IS (spec/139). The colour carries the
+  // same meaning visually, but the kind is real domain data: it names the
+  // selection ("Selected Domain Event"), and anything later that reasons
+  // about the notation (filters, legends, exports) reads it rather than
+  // matching hexes. Absent on an ordinary sticky.
+  esKind?: EventStormingNoteKind;
   groupId?: ElementId;
   textSize?: TextSize;
   textAlignX?: TextAlignX;
@@ -536,7 +553,7 @@ export type StickyElement = {
   textItalic?: boolean;
   textUnderline?: boolean;
   textStrikethrough?: boolean;
-  // Font-family id (see apps/live/lib/fonts.ts — e.g. 'inter', 'caveat').
+  // Font-family id (see packages/diagram/src/fonts.ts — e.g. 'inter', 'caveat').
   // Unset = inherit the tab's font (Tab.font), which itself falls back to
   // the editor default. Stored as a stable id and mapped to a CSS stack
   // at render time so saved diagrams round-trip independent of the
@@ -635,7 +652,7 @@ export type ImageElement = {
   textItalic?: boolean;
   textUnderline?: boolean;
   textStrikethrough?: boolean;
-  // Font-family id (see apps/live/lib/fonts.ts — e.g. 'inter', 'caveat').
+  // Font-family id (see packages/diagram/src/fonts.ts — e.g. 'inter', 'caveat').
   // Unset = inherit the tab's font (Tab.font), which itself falls back to
   // the editor default. Stored as a stable id and mapped to a CSS stack
   // at render time so saved diagrams round-trip independent of the
@@ -732,7 +749,7 @@ export type FreehandElement = {
   textItalic?: boolean;
   textUnderline?: boolean;
   textStrikethrough?: boolean;
-  // Font-family id (see apps/live/lib/fonts.ts — e.g. 'inter', 'caveat').
+  // Font-family id (see packages/diagram/src/fonts.ts — e.g. 'inter', 'caveat').
   // Unset = inherit the tab's font (Tab.font), which itself falls back to
   // the editor default. Stored as a stable id and mapped to a CSS stack
   // at render time so saved diagrams round-trip independent of the
@@ -999,3 +1016,24 @@ export type VideoElement = {
   textStrikethrough?: boolean;
   font?: string;
 };
+
+// Does this element take a TYPED label — i.e. is dropping one an invitation
+// to start writing? True for the paper-and-text kinds (sticky, shape, text,
+// icon), false for the ones whose face is a picture or a control the user
+// configures instead of writes: a sticker is artwork, a session button /
+// reaction pad / mode button / estimate all render their own caption from
+// their setting, so opening a text caret on them would offer to edit
+// something that isn't theirs to edit.
+const UNTYPED_SHAPES = new Set<string>([
+  'sticker',
+  'session-button',
+  'reaction-pad',
+  'mode-button',
+  'estimate',
+]);
+
+export function takesTypedLabel(el: { type: string; shape?: string }): boolean {
+  if (el.type === 'arrow') return false;
+  if (el.type !== 'shape') return true;
+  return !UNTYPED_SHAPES.has(el.shape ?? '');
+}

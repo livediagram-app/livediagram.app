@@ -48,7 +48,13 @@ export function useSlideThumbnails(deck: Deck, tabs: Tab[]): Map<string, SlideTh
       const parts: string[] = [];
       for (const el of elements) {
         if (el.type !== 'arrow') {
-          parts.push(svgBoxed(el, undefined, resolveIconArtLoaded, resolveStickerArtLoaded));
+          parts.push(
+            svgBoxed(el, {
+              resolveIconArt: resolveIconArtLoaded,
+              resolveStickerArt: resolveStickerArtLoaded,
+              tabFont: tab.font,
+            }),
+          );
         }
       }
       for (const el of elements) {

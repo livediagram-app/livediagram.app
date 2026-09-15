@@ -30,6 +30,7 @@ import type { DockAnchor, MobilePanel } from '@/hooks/canvas/useCanvasMobileDock
 import { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import { PanelSnapSlot } from '@/components/canvas/PanelSnapSlot';
 import { useCanvasChromePanels } from './useCanvasChromePanels';
+import { usePaletteDragGuides } from '@/hooks/canvas/usePaletteDragGuides';
 import { PANEL_CORNERS, PANEL_IDS, cornerBottomInset, type PanelCorner } from '@/lib/panel-layout';
 
 // Values the Canvas computes (selection projection + layout/dock/zoom
@@ -227,6 +228,28 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // --- Corner docking (spec/63) — see useCornerDocking. ---
   const { isMobile, dock, dockLayerRef, cornerRefs, dockingActive, panelWiringFor } =
     useCornerDocking({ minimalPanels: minimalPanels === true, zenMode: zenMode === true });
+  // Alignment guides while a palette tile is being dragged in (spec/139):
+  // the same faint lines a move shows, BEFORE the element exists. The hook
+  // also publishes the snap the ghost + drop read, so all three agree.
+  //
+  // On an event-storming board, while Alt is held, it additionally offers to
+  // INSERT the note between two others (spec/139): the board is a
+  // left-to-right timeline, so making room in the middle is the board's most
+  // common edit. Never offered where the drop would be refused anyway
+  // (read-only, locked tab, blocked active layer), so the preview can't
+  // promise something it can't keep.
+  const paletteDrag = usePaletteDragGuides({
+    elements,
+    viewportZoom,
+    wrapperRef,
+    insertGate: {
+      esBoard: props.esBoard === true,
+      readOnly,
+      tabLocked: props.tabLocked,
+      createBlocked: props.createBlocked === true,
+    },
+    inertIds: props.layerInertIds,
+  });
   const { alignGuides, allSnapTargets } = computeDrawGuides({
     drawDrag,
     pendingDraw,
@@ -305,9 +328,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
       ) : null}
 
       <CanvasGuideOverlay
-        alignGuides={alignGuides}
+        alignGuides={paletteDrag.guides.length > 0 ? paletteDrag.guides : alignGuides}
         allSnapTargets={allSnapTargets}
-        distGuides={distGuides}
+        distGuides={paletteDrag.distGuides.length > 0 ? paletteDrag.distGuides : distGuides}
         drawHover={drawHover}
         viewportZoom={viewportZoom}
         marquee={marquee}

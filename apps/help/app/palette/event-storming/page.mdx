@@ -1,0 +1,46 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Event Storming Elements',
+  description:
+    'The palette Event Storming category holds the workshop note grammar: eight sticky-note kinds, each colour carrying a meaning — orange domain events, blue commands, yellow actors, purple policies, and more.',
+  path: '/help/palette/event-storming/',
+});
+
+<ArticleLayout
+  title="Event Storming Elements"
+  description="The workshop note grammar: eight sticky kinds, each colour a meaning."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  subArticles={getSubArticles('event-storming')}
+>
+
+The **Event Storming** category (under **Structure** in the palette's category picker) holds the sticky-note notation for exploring a business domain in a workshop. Every tile drops an ordinary [sticky note](/help/palette/tools/sticky-notes/) pre-filled with one of the notation's colours — because in event storming, **the colour is the meaning**: orange says "something happened" to anyone who has ever stood at one of these boards.
+
+They are normal stickies otherwise: type the fact on the note, move it, vote on it, comment on it. And because sticky notes keep their colour under every theme, the grammar survives restyling.
+
+## The note grammar
+
+- A **Domain event** (orange) is something that happened, written in the past tense — "Order placed", "Payment received". Events are the backbone of the board, laid left to right in time order.
+- A **Command** (blue) is the intent that triggers an event — "Place order".
+- An **Actor** (yellow) is who issues the command — a person or a role.
+- A **Policy** (purple) is a reaction rule: whenever X happens, then do Y.
+- A **Read model** (green) is the information an actor looks at to decide.
+- An **External system** (pink) is a third party the flow touches.
+- An **Aggregate** (pale yellow) is the thing commands act on, once the design gets that far.
+- A **Hotspot** (red) marks a conflict, question, or risk — anywhere, at any stage.
+
+## One board, one wall
+
+A board started from the [Event storming template](/help/canvas/templates/) is a single [layer](/help/canvas/layers/) — one wall of paper. Every note you drop lands on it, whatever its colour, so any two notes can be stacked in front of or behind each other. The colours carry the meaning; nothing is filed away on a plane you cannot see.
+
+On any other board the notes behave like ordinary stickies and land on the active layer.
+
+<Tip>
+  Start with orange only. The method's opening move is domain events, past tense, left to right in
+  time order — the other colours join as the story firms up.
+</Tip>
+
+</ArticleLayout>

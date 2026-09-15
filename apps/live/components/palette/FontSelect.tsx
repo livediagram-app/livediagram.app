@@ -1,4 +1,4 @@
-import { FONTS } from '@/lib/fonts';
+import { FONTS } from '@livediagram/diagram';
 import { SizeButton } from '@/components/palette/palette-controls';
 
 // Shared font picker (spec/28) used by the Tab Appearance menu's Font

@@ -1789,6 +1789,16 @@
    GPU a stable depth order. (Frames don't rotate, so overriding the
    wrapper transform is safe; their depth-extrusion column is skipped in
    IsometricDepthLayer for the same reason.) */
+/* Insert-between preview (spec/139): the slot opening and closing.
+   Only mounted while a palette drag is in flight over an event-storming
+   board, so a real move / drag never eases — the drop must land instantly
+   where the preview promised. Short and ease-out, so the board reads as
+   making room rather than sliding about. The global reduce-motion rules
+   above collapse it to ~instant. */
+[data-insert-shift] {
+  transition: transform 120ms ease-out;
+}
+
 /* Done check: the all-done flash (spec/137).
    A pulse of the card's own ring rather than a colour wash, so it reads on a
    card of any theme colour, and it RUNS OUT after a few cycles: a card that
@@ -1802,7 +1812,57 @@
   50% {
     box-shadow: 0 0 0 6px rgb(34 197 94 / 0.45);
   }
+} /* Sticky-note paper peel (spec/09): the note is glued along its top strip
+   and the rest of the sheet lifts ever so slightly off the board. The note
+   itself never changes — same flat rectangle, same fill — and no mask or
+   clip is involved anywhere, so no hard edge can exist: the lift lives in
+   ::before, a caster whose FILL is a long vertical gradient (nothing above
+   ~10%, full slate-32% ink by 77%) softened by one small blur. The caster
+   runs 3px proud of the sides and 5px below, so a whisper of shadow hugs
+   the sides — deepening continuously toward the bottom, which is why no
+   band or stripe ever appears — and throws under the bottom edge.
+
+   Negative-z pseudos paint above their own element's background, so
+   ::after repaints the sheet over the caster's interior (only the shadow
+   that escapes the note's edges survives) and carries a whisper of
+   pressed-glue shading at the top strip. Element rotation on the wrapper
+   rotates sheet and shadow together. A user-set element shadow (spec/86)
+   replaces the whole treatment — element-variant.ts drops this class when
+   one is set. Recipe hand-tuned on a live board against Miro's renderer
+   (the numbers are the winner of a 25-variant bake-off; see spec/09). */
+.lvd-sticky-peel::before {
+  content: '';
+  position: absolute;
+  z-index: -2;
+  inset: 0 -3px -5px;
+  filter: blur(2px);
+  background: linear-gradient(#0f172a00 10%, #0f172a52 77% 100%);
 }
+/* On a DARK canvas the peel's ink has to go deeper: the slate above is
+   tuned against light paper, and on a dark wall it all but disappears —
+   the note stops lifting. Same construction (gradient in the paint, one
+   blur, no mask), stronger ink and a slightly longer throw. The canvas
+   surface flags itself (see isDarkCanvas). */
+[data-dark-canvas] .lvd-sticky-peel::before {
+  inset: 0 -4px -7px;
+  background: linear-gradient(#00000000 10%, #000000a8 77% 100%);
+}
+
+.lvd-sticky-peel::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background-color: inherit;
+  /* Pressed-glue strip: a flat 4% wash over the glued band, releasing by a
+     third of the way down — hand-tuned with the peel below it. */
+  background-image: linear-gradient(#0f172a08, #0f172a08 14%, #00000000 33%);
+  /* A 1px definition halo so the sheet's edge reads against any backdrop.
+     Lives here rather than on the wrapper: an inline wrapper box-shadow
+     would override the Tailwind selection ring (rings are box-shadows). */
+  box-shadow: 0 0 1px #0f172a4a;
+}
+
 .lvd-done-complete {
   animation: lvd-done-flash 900ms ease-in-out 4;
   border-radius: inherit;

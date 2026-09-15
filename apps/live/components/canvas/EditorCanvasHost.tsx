@@ -99,6 +99,8 @@ export function EditorCanvasHost() {
     addShape,
     addStatRow,
     addSticky,
+    esBoard,
+    createBlocked,
     addTable,
     addTechIcon,
     addText,
@@ -179,7 +181,10 @@ export function EditorCanvasHost() {
     dropPaletteItem,
     duplicateDiagram,
     duplicateMultiSelected,
+    contextMenu,
     duplicateSelected,
+    stackSelectedFront,
+    stackSelectedBack,
     editCursorAtEnd,
     editingId,
     effectiveTemplatePickerMode,
@@ -402,6 +407,7 @@ export function EditorCanvasHost() {
       // knows how an element looks.
       elements={presentingElements ?? activeTab.elements}
       tabLayers={activeTab.layers}
+      tabKind={activeTab.kind}
       layerInertIds={layerInertIds}
       shiftDupGhostIds={shiftDupGhostIds}
       snapGuides={snapGuides}
@@ -545,6 +551,8 @@ export function EditorCanvasHost() {
       onAddAvatar={addAvatar}
       onAddText={addText}
       onAddSticky={addSticky}
+      esBoard={esBoard}
+      createBlocked={createBlocked}
       onAddImage={addImage}
       onAddArrow={addArrow}
       onBeginFreehand={beginFreehand}
@@ -769,7 +777,26 @@ export function EditorCanvasHost() {
               // so it can't be selected, dragged, or edited — don't pop a dead
               // context menu on it either. Same gate as selectElement.
               if (lockedByOther(id)) return;
-              setContextMenu({ mode: 'element', elementId: id, x: sx, y: sy });
+              // Right-clicking the element that already owns the menu AT THE
+              // SAME ANCHOR is a no-op: return the SAME state object so React
+              // re-renders nothing. Re-opening would restart the entrance
+              // animation and flash the selection popover in the gap, for a
+              // gesture that asked for the menu already on screen.
+              //
+              // The anchor has to be part of that comparison: selectElement
+              // runs first and retargets an open menu's elementId in place
+              // (keeping the old x / y), so an id-only check would see 'same
+              // element' for a right-click on a DIFFERENT one and strand the
+              // menu at the previous element's position.
+              setContextMenu((cur) =>
+                cur &&
+                cur.mode === 'element' &&
+                cur.elementId === id &&
+                cur.x === sx &&
+                cur.y === sy
+                  ? cur
+                  : { mode: 'element', elementId: id, x: sx, y: sy },
+              );
             }
       }
       onMultiContextMenu={
@@ -907,7 +934,12 @@ export function EditorCanvasHost() {
       onStartPencil={beginFreehand}
       onToggleLockSelected={toggleLockSelected}
       onDeleteSelected={deleteSelected}
+      // One gesture, one answer: while the element menu is open the
+      // selection popover stands down (see deriveCanvasSelection).
+      elementMenuOpen={contextMenu?.mode === 'element'}
       onDuplicateSelected={duplicateSelected}
+      onBringSelectedToFront={stackSelectedFront}
+      onSendSelectedToBack={stackSelectedBack}
       onCanvasDoubleClick={handleCanvasDoubleClick}
       tabLoadState={tabLoadState}
       onRetryTabLoad={retryActiveTabLoad}

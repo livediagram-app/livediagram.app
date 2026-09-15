@@ -1,5 +1,6 @@
 import type { Dispatch, SetStateAction } from 'react';
 import {
+  takesTypedLabel,
   isBoxed,
   joinGroups,
   selectionMembers,
@@ -7,6 +8,7 @@ import {
   type Element,
   type Tab,
 } from '@livediagram/diagram';
+import { insertElementAt, type InsertionSlot } from '@/lib/insert-between';
 import { deriveNewBoxedColours } from '@/lib/themes';
 import { inheritedSizeFor } from '@/lib/canvas';
 import { paintableArrowFields, paintableBoxedFields } from '@/lib/format-painter';
@@ -43,6 +45,7 @@ export function useElementHelpers(opts: {
   commitTabs: (updater: (tabs: Tab[]) => Tab[]) => void;
   emitChange: (tabId: string, before: Element[], after: Element[]) => void;
   setSelectedId: SetState<string | null>;
+  setEditingId: SetState<string | null>;
   setFormatSourceId: SetState<string | null>;
   setGroupSourceId: SetState<string | null>;
 }) {
@@ -61,6 +64,7 @@ export function useElementHelpers(opts: {
     commitTabs,
     emitChange,
     setSelectedId,
+    setEditingId,
     setFormatSourceId,
     setGroupSourceId,
   } = opts;
@@ -72,18 +76,33 @@ export function useElementHelpers(opts: {
   // Drag-from-palette drop: same as addBoxed but centred on an explicit
   // canvas point (the drop position) instead of the viewport centre. Size
   // inheritance is skipped — a dropped element uses its own default size.
+  // `edit` puts the new element straight into label editing. Dropping a
+  // sticky is the start of writing on it, not an end in itself — the drag
+  // said WHERE and WHAT, and the only thing left is the words, so making the
+  // user double-click their own fresh note is a step that answers nothing.
   const addBoxedAt = <T extends BoxedElement>(
     canvasX: number,
     canvasY: number,
     make: (x: number, y: number) => T,
+    // `insertion` is the slot an event-storming drag was offering (spec/139):
+    // the drop then ripples the board open and adds the note as ONE change.
+    opts?: { edit?: boolean; insertion?: InsertionSlot | null },
   ) => {
-    placeBoxed(make, { x: canvasX, y: canvasY }, /* inheritSize */ false);
+    placeBoxed(
+      make,
+      { x: canvasX, y: canvasY },
+      /* inheritSize */ false,
+      opts?.edit === true,
+      opts?.insertion ?? null,
+    );
   };
 
   const placeBoxed = <T extends BoxedElement>(
     make: (x: number, y: number) => T,
     centre: { x: number; y: number },
     inheritSize = true,
+    edit = false,
+    insertion: InsertionSlot | null = null,
   ) => {
     if (editsBlocked) return;
     const base = make(0, 0);
@@ -124,8 +143,20 @@ export function useElementHelpers(opts: {
     // and immediately work with it matches every other editor; the
     // Layer accordion's "Send to back" covers the rarer reverse case.
     const before = activeTab.elements;
-    const after = [...before, el];
-    commitTabs((ts) => patchTab(ts, activeId, { elements: after, templateChosen: true }));
+    const after = insertion ? insertElementAt(before, insertion, el) : [...before, el];
+    // Insert between (spec/139): the ripple runs against whatever the tab
+    // holds NOW, not the snapshot the drag started with, so a peer's mid-drag
+    // move isn't reverted by the drop that follows it. One commitTabs = one
+    // history entry, so a single Undo takes the ripple AND the note back.
+    commitTabs((ts) =>
+      insertion
+        ? ts.map((t) =>
+            t.id === activeId
+              ? { ...t, elements: insertElementAt(t.elements, insertion, el), templateChosen: true }
+              : t,
+          )
+        : patchTab(ts, activeId, { elements: after, templateChosen: true }),
+    );
     // Activity-log the add. commit() (the element-only setter) does
     // this on every change; addBoxed bypasses commit because it also
     // touches templateChosen on the tab, so the emitChange call has
@@ -133,6 +164,9 @@ export function useElementHelpers(opts: {
     // the Activity panel.
     emitChange(activeId, before, after);
     setSelectedId(el.id);
+    // Only kinds that take typed text: a sticker or a session button renders
+    // its own face from its setting, so a caret there edits nothing.
+    if (edit && takesTypedLabel(el)) setEditingId(el.id);
   };
 
   // Place ALREADY-BUILT elements, keeping every side effect a normal add has:

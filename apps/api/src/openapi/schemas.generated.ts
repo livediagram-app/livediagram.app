@@ -2157,6 +2157,19 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "EventStormingNoteKind": {
+    "enum": [
+      "domain-event",
+      "command",
+      "actor",
+      "policy",
+      "read-model",
+      "external-system",
+      "aggregate",
+      "hotspot"
+    ],
+    "type": "string"
+  },
   "Folder": {
     "additionalProperties": false,
     "properties": {
@@ -3112,6 +3125,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "fillColor": {
         "type": "string"
       },
+      "fixedSize": {
+        "type": "boolean"
+      },
       "font": {
         "type": "string"
       },
@@ -3554,8 +3570,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "commentThread": {
         "$ref": "#/components/schemas/CommentThread"
       },
+      "esKind": {
+        "$ref": "#/components/schemas/EventStormingNoteKind"
+      },
       "fillColor": {
         "type": "string"
+      },
+      "fixedSize": {
+        "type": "boolean"
       },
       "font": {
         "type": "string"
@@ -3695,6 +3717,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "id": {
         "$ref": "#/components/schemas/TabId"
       },
+      "kind": {
+        "$ref": "#/components/schemas/TabKind"
+      },
       "layers": {
         "items": {
           "$ref": "#/components/schemas/Layer"
@@ -3731,6 +3756,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "type": "object"
   },
   "TabId": {
+    "type": "string"
+  },
+  "TabKind": {
+    "enum": [
+      "diagram",
+      "event-storming"
+    ],
     "type": "string"
   },
   "TabSummary": {

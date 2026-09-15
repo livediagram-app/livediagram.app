@@ -1445,3 +1445,106 @@ export function RemoveIconGlyph() {
     </svg>
   );
 }
+
+// Verb glyphs for the event-storming note menu (spec/139): scissors, two
+// sheets, a plus-on-sheet, and a bin. Plain single-stroke marks, matching
+// the rest of the menu's icon weight.
+export function CutIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <circle cx="6" cy="18" r="2.6" />
+      <circle cx="18" cy="18" r="2.6" />
+      <path d="M7.8 16.2 18.5 4.5M16.2 16.2 5.5 4.5" />
+    </svg>
+  );
+}
+
+export function CopyIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <rect x="8.5" y="8.5" width="11" height="11" rx="1.6" />
+      <path d="M15.5 5.5h-9a2 2 0 0 0-2 2v9" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+export function DuplicateMenuIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <rect x="4" y="4" width="11" height="11" rx="1.6" />
+      <rect x="9" y="9" width="11" height="11" rx="1.6" />
+    </svg>
+  );
+}
+
+export function RemoveIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M4.5 6.5h15M9.5 6.5V4.8a1.3 1.3 0 0 1 1.3-1.3h2.4a1.3 1.3 0 0 1 1.3 1.3v1.7" />
+      <path d="M6.8 6.5 7.8 19a1.5 1.5 0 0 0 1.5 1.4h5.4a1.5 1.5 0 0 0 1.5-1.4l1-12.5" />
+    </svg>
+  );
+}
+
+// Paste: a clipboard with a sheet lifting off it. Deliberately NOT the
+// same clipboard glyph as Copy's two sheets — the canvas menu shows Paste
+// where the element menu shows Copy, and two near-identical clipboards
+// would read as the same verb in two places.
+export function PasteMenuIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M9 4h6v3H9z" />
+      <path d="M9 5.5H6.5A1.5 1.5 0 0 0 5 7v12a1.5 1.5 0 0 0 1.5 1.5H11" />
+      <path d="M15 5.5h2.5A1.5 1.5 0 0 1 19 7v4" />
+      <rect x="13" y="13" width="7" height="8" rx="1.2" />
+    </svg>
+  );
+}

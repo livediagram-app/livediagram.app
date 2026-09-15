@@ -51,6 +51,9 @@ export type EditorContextMenuProps = {
   // The active tab's elements — used to resolve the clicked element
   // (for the element menu) and read its link / note state.
   elements: Element[];
+  // The tab default face (spec/28), so the layer previews in here paint
+  // what the canvas paints.
+  tabFont?: string;
   onClose: () => void;
   // The element currently in text-edit mode, if any. While the menu rides
   // alongside the editor (spec/09) the target's label is still uncommitted
@@ -72,6 +75,15 @@ export type EditorContextMenuProps = {
   onRemoveLink: () => void;
   onBringToFront: () => void;
   onSendToBack: () => void;
+  // Event-storming note menu (spec/139): the notation's own short verb list
+  // replaces the styling sections — a workshop note's colour, text style and
+  // rotation ARE the notation, so there is nothing there to configure.
+  onCutElement: () => void;
+  onCopyElement: () => void;
+  onDuplicateElement: () => void;
+  onDeleteElement: () => void;
+  onStackFront: () => void;
+  onStackBack: () => void;
   // Layers (spec/74): the tab's normalised stack (bottom -> top) for the
   // Layer section's move-to dropdown, the selection's resolved layer
   // (null when members span layers), and the selection-wide move.

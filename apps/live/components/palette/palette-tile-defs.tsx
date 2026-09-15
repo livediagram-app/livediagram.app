@@ -1,5 +1,5 @@
-import type { EmbedProvider } from '@livediagram/diagram';
-import { REACTION_EMOJI } from '@livediagram/diagram';
+import type { EmbedProvider, EventStormingNoteKind } from '@livediagram/diagram';
+import { EVENT_STORMING_NOTES, REACTION_EMOJI } from '@livediagram/diagram';
 
 import type {
   ComponentKind,
@@ -53,6 +53,10 @@ export type PaletteTileSection =
   // scattered across Write, Draw, Data and Components, filed by what they look
   // like; what they have in common is that they hold other work.
   | 'build'
+  // The Event Storming notation (spec/139): a top-level category of the
+  // eight workshop note kinds, each an ordinary sticky in its semantic
+  // colour.
+  | 'event-storming'
   | 'tools'
   | 'data'
   // 'collaborate' is GONE (spec/110). The collaboration family (spec/123 to
@@ -96,7 +100,13 @@ type PaletteTileAction =
   | { type: 'sticker'; stickerId: string }
   | { type: 'polygon' }
   | { type: 'arrow' }
-  | { type: 'sticky' }
+  // `fill` rides the sticky action for the Event Storming tiles (spec/139):
+  // eight semantic colours over the one sticky type, one tile per note kind.
+  // `fill` + `esKind` ride the sticky action for the Event Storming tiles
+  // (spec/139): eight semantic colours over the one sticky type, one tile
+  // per note kind. The kind lets the commit path route the note onto its
+  // workshop stage's layer on event-storming boards.
+  | { type: 'sticky'; fill?: string; esKind?: EventStormingNoteKind }
   | { type: 'table' }
   | { type: 'image' }
   | { type: 'annotation' }
@@ -158,6 +168,7 @@ export type PaletteTileDef = {
   // 'reaction' = the Behaviour tab's session tools and reactions; 'mode' its
   // selection-mode buttons; 'move' / 'facilitate' the rest of Behaviour; and
   // 'ask' / 'record' the two halves of Collaborate.
+  // 'event-storming' = the Write tab's sticky-notation group (spec/139).
   tileGroup?:
     'embed' | 'web' | 'session' | 'reaction' | 'mode' | 'move' | 'facilitate' | 'ask' | 'record';
   label: string;
@@ -2115,6 +2126,69 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       </svg>
     ),
   },
+  // The Event Storming notation (spec/139): one tile per note kind, derived
+  // from the EVENT_STORMING_NOTES catalogue in @livediagram/diagram so the
+  // palette can never drift from the colours the template builder (and any
+  // future consumer) uses. Each tile arms the ordinary sticky gesture with
+  // the kind's canonical fill + kind riding the intent (the kind routes the
+  // note onto its stage's layer on event-storming boards). Its own top-level
+  // category in the Structure band — promoted out of the Write accordion.
+  // Tile ids keep their historical 'tools:' prefix: Favourites persist ids,
+  // so a rename would silently drop saved favourites (spec/78).
+  ...EVENT_STORMING_NOTES.map((note): PaletteTileDef => ({
+    id: `tools:es-${note.kind}`,
+    section: 'event-storming',
+    label: `Add ${note.label} note`,
+    caption: note.label,
+    blurb: note.blurb,
+    description: `Event storming: ${note.blurb.charAt(0).toLowerCase()}${note.blurb.slice(1)}.`,
+    noTint: true,
+    action: { type: 'sticky', fill: note.fill, esKind: note.kind },
+    // The glyph mirrors the note's stationery silhouette (spec/139): a
+    // standard square, a WIDE rect for the prose kinds, a small square for
+    // the actor — so the row's picture says the shape before the blurb does.
+    icon:
+      note.size === 'wide' ? (
+        <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
+          <rect
+            x="1.5"
+            y="5"
+            width="15"
+            height="9"
+            fill={note.fill}
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinejoin="round"
+          />
+        </svg>
+      ) : note.size === 'small' ? (
+        <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
+          <rect
+            x="5"
+            y="5"
+            width="8"
+            height="8"
+            fill={note.fill}
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinejoin="round"
+          />
+        </svg>
+      ) : (
+        <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
+          <rect
+            x="3"
+            y="3"
+            width="12"
+            height="12"
+            fill={note.fill}
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinejoin="round"
+          />
+        </svg>
+      ),
+  })),
 ];
 
 export function tilesInSection(section: PaletteTileSection): PaletteTileDef[] {
