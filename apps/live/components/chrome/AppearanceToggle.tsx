@@ -1,12 +1,12 @@
-import { useUiMode } from '@/hooks/ui/useUiMode';
+import { useAppearance } from '@/hooks/ui/useAppearance';
 import { Tooltip } from '@/components/primitives/Tooltip';
 
 // Light / dark chrome toggle. A self-contained feature (its own hook +
 // icons) that the tab bar happens to host in its trailing controls; kept
 // in its own module so it isn't buried in TabBar. Flips only the editor
 // chrome - diagram canvas themes are independent.
-export function UiModeToggle() {
-  const { mode, toggle } = useUiMode();
+export function AppearanceToggle() {
+  const { mode, toggle } = useAppearance();
   const isDark = mode === 'dark';
   return (
     <Tooltip

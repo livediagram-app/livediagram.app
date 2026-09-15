@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { UI_MODE_STORAGE_KEY } from '@/hooks/ui/ui-mode-storage';
+import { APPEARANCE_STORAGE_KEY } from '@/hooks/ui/appearance-storage';
 import { STORAGE_KEY as USER_PREFERENCES_STORAGE_KEY } from '@/lib/user-preferences';
 
 // The root layout inlines two `<script>` tags that run before hydration: one
@@ -10,11 +10,11 @@ import { STORAGE_KEY as USER_PREFERENCES_STORAGE_KEY } from '@/lib/user-preferen
 // interpolate a localStorage key into a SINGLE-QUOTED JavaScript string.
 //
 // That interpolation is the fragile part, and it has already broken once.
-// UI_MODE_STORAGE_KEY used to live in the `'use client'` useUiMode module;
+// APPEARANCE_STORAGE_KEY used to live in the `'use client'` useAppearance module;
 // Next substituted a client-reference stub for the value in the server layout,
 // the stub's text contains an apostrophe, the quoted string terminated early,
 // and every page load threw a SyntaxError — so dark mode never applied before
-// paint. The fix was ui-mode-storage.ts, a plain module with no client
+// paint. The fix was appearance-storage.ts, a plain module with no client
 // boundary, and its comment explains why it exists.
 //
 // Nothing enforced any of it. Folding that one-constant module back into the
@@ -27,9 +27,9 @@ const read = (rel: string) => readFileSync(fileURLToPath(new URL(rel, import.met
 
 const INLINED = [
   {
-    name: 'UI_MODE_STORAGE_KEY',
-    value: UI_MODE_STORAGE_KEY,
-    module: '../hooks/ui/ui-mode-storage.ts',
+    name: 'APPEARANCE_STORAGE_KEY',
+    value: APPEARANCE_STORAGE_KEY,
+    module: '../hooks/ui/appearance-storage.ts',
   },
   {
     name: 'USER_PREFERENCES_STORAGE_KEY',
@@ -63,7 +63,7 @@ describe('keys inlined into the pre-hydration scripts', () => {
 
   it.each(INLINED)('$name comes from a module with no client boundary', ({ module }) => {
     // A `'use client'` module hands the server layout a stub, not the string.
-    // That is the original bug, and it is why ui-mode-storage.ts is separate
+    // That is the original bug, and it is why appearance-storage.ts is separate
     // from the hook that re-exports it.
     const src = read(module);
     expect(src).not.toMatch(/^\s*['"]use client['"]/m);

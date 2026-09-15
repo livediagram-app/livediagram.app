@@ -1,14 +1,14 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { UI_MODE_STORAGE_KEY } from './ui-mode-storage';
+import { APPEARANCE_STORAGE_KEY } from './appearance-storage';
 import {
-  applyUiMode,
-  getServerUiMode,
-  getUiMode,
-  readUiMode,
-  resetUiModeForTests,
-  setUiMode,
-  subscribeUiMode,
-} from './ui-mode-store';
+  applyAppearance,
+  getServerAppearance,
+  getAppearance,
+  readAppearance,
+  resetAppearanceForTests,
+  setAppearance,
+  subscribeAppearance,
+} from './appearance-store';
 
 // The light/dark chrome store. It persists to localStorage, toggles a class on
 // <html>, and is read before paint by a script the root layout inlines — three
@@ -54,17 +54,17 @@ beforeEach(() => {
       },
     },
   };
-  resetUiModeForTests();
+  resetAppearanceForTests();
 });
 
-describe('readUiMode', () => {
+describe('readAppearance', () => {
   it('is light when nothing has been stored', () => {
-    expect(readUiMode()).toBe('light');
+    expect(readAppearance()).toBe('light');
   });
 
   it('is dark only for the exact literal', () => {
-    store[UI_MODE_STORAGE_KEY] = 'dark';
-    expect(readUiMode()).toBe('dark');
+    store[APPEARANCE_STORAGE_KEY] = 'dark';
+    expect(readAppearance()).toBe('dark');
   });
 
   it('falls back to light for anything else at all', () => {
@@ -72,8 +72,8 @@ describe('readUiMode', () => {
     // None of these should strand the editor in a mode the user cannot
     // explain, and none should throw on the way in.
     for (const junk of ['Dark', 'DARK', ' dark', 'dark ', 'true', '1', '{}', '']) {
-      store[UI_MODE_STORAGE_KEY] = junk;
-      expect(readUiMode()).toBe('light');
+      store[APPEARANCE_STORAGE_KEY] = junk;
+      expect(readAppearance()).toBe('light');
     }
   });
 
@@ -83,47 +83,47 @@ describe('readUiMode', () => {
     // read would need matchMedia, which these stubs deliberately omit, so this
     // suite would throw rather than pass if one were added.
     expect((globalThis as Record<string, unknown>).matchMedia).toBeUndefined();
-    expect(readUiMode()).toBe('light');
+    expect(readAppearance()).toBe('light');
   });
 });
 
-describe('setUiMode', () => {
+describe('setAppearance', () => {
   it('persists the choice', () => {
-    setUiMode('dark');
-    expect(store[UI_MODE_STORAGE_KEY]).toBe('dark');
-    setUiMode('light');
-    expect(store[UI_MODE_STORAGE_KEY]).toBe('light');
+    setAppearance('dark');
+    expect(store[APPEARANCE_STORAGE_KEY]).toBe('dark');
+    setAppearance('light');
+    expect(store[APPEARANCE_STORAGE_KEY]).toBe('light');
   });
 
   it('adds and removes the dark class on the document element', () => {
-    setUiMode('dark');
+    setAppearance('dark');
     expect(classes.has('dark')).toBe(true);
-    setUiMode('light');
+    setAppearance('light');
     expect(classes.has('dark')).toBe(false);
   });
 
   it('notifies subscribers', () => {
     let calls = 0;
-    const off = subscribeUiMode(() => calls++);
-    setUiMode('dark');
+    const off = subscribeAppearance(() => calls++);
+    setAppearance('dark');
     expect(calls).toBe(1);
     off();
-    setUiMode('light');
+    setAppearance('light');
     expect(calls).toBe(1);
   });
 
   it('makes the new value visible to every reader immediately', () => {
     // The whole reason this is a module store: toggling from the status bar
     // must not leave the tab bar reading a stale mode.
-    setUiMode('dark');
-    expect(getUiMode()).toBe('dark');
+    setAppearance('dark');
+    expect(getAppearance()).toBe('dark');
   });
 });
 
-describe('getUiMode', () => {
+describe('getAppearance', () => {
   it('seeds itself from storage on first read', () => {
-    store[UI_MODE_STORAGE_KEY] = 'dark';
-    expect(getUiMode()).toBe('dark');
+    store[APPEARANCE_STORAGE_KEY] = 'dark';
+    expect(getAppearance()).toBe('dark');
   });
 
   it('does not write anything while reading', () => {
@@ -131,23 +131,23 @@ describe('getUiMode', () => {
     // and React may call it more than once per render. Asserted on CALLS, not
     // on the resulting state — seeding to 'light' would call
     // classList.remove('dark'), which leaves the class set looking untouched.
-    getUiMode();
-    getUiMode();
+    getAppearance();
+    getAppearance();
     expect(Object.keys(store)).toEqual([]);
     expect(domCalls).toEqual([]);
   });
 });
 
-describe('getServerUiMode', () => {
+describe('getServerAppearance', () => {
   it('is light whatever the client store holds', () => {
-    setUiMode('dark');
-    expect(getServerUiMode()).toBe('light');
+    setAppearance('dark');
+    expect(getServerAppearance()).toBe('light');
   });
 });
 
-describe('applyUiMode', () => {
+describe('applyAppearance', () => {
   it('is a no-op without a document rather than throwing', () => {
     delete (globalThis as Record<string, unknown>).document;
-    expect(() => applyUiMode('dark')).not.toThrow();
+    expect(() => applyAppearance('dark')).not.toThrow();
   });
 });

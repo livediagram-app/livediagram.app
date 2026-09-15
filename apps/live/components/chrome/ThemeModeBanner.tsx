@@ -1,7 +1,7 @@
 'use client';
 
 // A floating bottom-centre prompt offering to match the editor's UI mode
-// (light / dark chrome, useUiMode / spec/07) to the ACTIVE TAB'S THEME:
+// (light / dark chrome, useAppearance / spec/07) to the ACTIVE TAB'S THEME:
 // viewing a dark-backdrop theme in light mode offers dark, and a
 // light-backdrop theme in dark mode offers light. Only appears on a
 // mismatch; dismissible. The "is this theme dark?" test reads the
@@ -16,10 +16,10 @@
 import { useState } from 'react';
 import { isLightColor } from '@livediagram/diagram';
 import { getTheme } from '@/lib/themes';
-import { useUiMode } from '@/hooks/ui/useUiMode';
+import { useAppearance } from '@/hooks/ui/useAppearance';
 
 export function ThemeModeBanner({ themeId }: { themeId: string | undefined }) {
-  const { mode, toggle } = useUiMode();
+  const { mode, toggle } = useAppearance();
   // The mismatch this banner was dismissed for. Keyed by theme + target
   // so dismissing it for one tab doesn't suppress it forever: switch to a
   // differently-themed tab (a new mismatch) and it offers again.

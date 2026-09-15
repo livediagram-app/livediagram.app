@@ -23,7 +23,7 @@ import { isCustomThemeId, materialiseCustomTheme } from '@/lib/custom-theme-regi
 import { shuffledThemes } from '@/lib/theme-order';
 import { THEMES, type ThemeCategory, type ThemeDefinition, type ThemeId } from '@/lib/themes';
 import { THEME_CATEGORIES, themeCategory } from '@/lib/themes-taxonomy';
-import { useUiMode } from '@/hooks/ui/useUiMode';
+import { useAppearance } from '@/hooks/ui/useAppearance';
 import { AnimatedHeightBox } from '@/components/primitives/AnimatedHeightBox';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
 import {
@@ -199,7 +199,7 @@ function BackButton({ current, onClick }: { current?: string; onClick: () => voi
 // (and never for the colour-agnostic Custom bucket), so it reads as a
 // helpful one-tap nudge rather than a persistent control.
 function ModeSwitchRow({ category }: { category: ThemeCategory | 'custom' }) {
-  const { mode, toggle } = useUiMode();
+  const { mode, toggle } = useAppearance();
   const target: 'light' | 'dark' | null =
     category === 'custom' ? null : category === 'dark' ? 'dark' : 'light';
   if (!target || mode === target) return null;

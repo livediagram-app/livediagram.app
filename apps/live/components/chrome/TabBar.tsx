@@ -7,7 +7,7 @@ import {
   type Tab,
   type TextSize,
 } from '@livediagram/diagram';
-import { useUiMode } from '@/hooks/ui/useUiMode';
+import { useAppearance } from '@/hooks/ui/useAppearance';
 import type { AutoLayoutChoice } from '@/lib/auto-layout-choices';
 import type { Participant } from '@/lib/identity';
 import { TabsLabelIcon } from '@/components/chrome/tab-bar-icons';
@@ -208,7 +208,7 @@ export function TabBar({
   // Drives the per-tab accent's legibility guard: the bar is white in
   // light mode, slate-900 in dark, so a stroke that reads on one can
   // vanish on the other.
-  const { mode } = useUiMode();
+  const { mode } = useAppearance();
   const isDark = mode === 'dark';
 
   // Distinct folder names in this diagram, for the "Add to Folder"

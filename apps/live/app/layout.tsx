@@ -5,7 +5,7 @@ import { ErrorTelemetryBoot } from '@/components/providers/ErrorTelemetryBoot';
 import { ConfirmProvider } from '@/hooks/ui/useConfirm';
 import { ToastProvider } from '@/hooks/ui/useToast';
 import { googleFontsHref } from '@livediagram/diagram';
-import { UI_MODE_STORAGE_KEY } from '@/hooks/ui/ui-mode-storage';
+import { APPEARANCE_STORAGE_KEY } from '@/hooks/ui/appearance-storage';
 import { STORAGE_KEY as USER_PREFERENCES_STORAGE_KEY } from '@/lib/user-preferences';
 import './globals.css';
 
@@ -102,12 +102,12 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         {/* Apply the persisted UI light/dark choice before first paint, so
             EVERY route honours it — including /live/new and the welcome /
             template-picker flow, which never mount the TabBar that's the
-            only caller of useUiMode. Without this they'd render light over
-            the dark body. Reads useUiMode's exported STORAGE_KEY so the two
+            only caller of useAppearance. Without this they'd render light over
+            the dark body. Reads useAppearance's exported STORAGE_KEY so the two
             can't drift; opt-in only, never auto-detects the OS (spec/07). */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `try{if(localStorage.getItem('${UI_MODE_STORAGE_KEY}')==='dark')document.documentElement.classList.add('dark')}catch(e){}`,
+            __html: `try{if(localStorage.getItem('${APPEARANCE_STORAGE_KEY}')==='dark')document.documentElement.classList.add('dark')}catch(e){}`,
           }}
         />
         {/* Apply the persisted "Reduce motion" preference (spec/20) before
