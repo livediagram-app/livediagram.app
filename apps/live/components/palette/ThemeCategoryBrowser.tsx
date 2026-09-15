@@ -20,7 +20,7 @@
 import { useState } from 'react';
 import type { CustomTheme } from '@livediagram/api-schema';
 import { isCustomThemeId, materialiseCustomTheme } from '@/lib/custom-theme-registry';
-import { shuffledThemes } from '@/lib/theme-order';
+import { darkCategorySchemes, shuffledThemes } from '@/lib/theme-order';
 import { THEMES, type ThemeCategory, type ThemeDefinition, type ThemeId } from '@/lib/themes';
 import { THEME_CATEGORIES, themeCategory } from '@/lib/themes-taxonomy';
 import { useAppearance } from '@/hooks/ui/useAppearance';
@@ -89,8 +89,13 @@ export function ThemeCategoryBrowser({
   const [themes] = useState(() => shuffledThemes(THEMES));
   const commit = onCommit ?? onSelect;
   const brandTheme = THEMES.find((t) => t.id === 'brand');
+  // Default is pulled OUT of the grouping as the quick-pick (the way Blank is
+  // for templates) — except in Dark, which it leads as its dark half, because
+  // that is the slot a reader looking for "the neutral dark one" goes to.
   const themeCategoryThemes = (category: ThemeCategory) =>
-    themes.filter((t) => t.id !== 'brand' && themeCategory(t.id) === category);
+    category === 'dark'
+      ? darkCategorySchemes(themes)
+      : themes.filter((t) => t.id !== 'brand' && themeCategory(t.id) === category);
 
   return (
     <AnimatedHeightBox viewKey={openCategory ?? 'overview'} className={className}>
@@ -146,8 +151,8 @@ export function ThemeCategoryBrowser({
           {brandTheme ? (
             <ThemeQuickPickCard
               theme={brandTheme}
-              label="Basic"
-              description="The plain, un-themed default."
+              label="Default"
+              description="Follows your appearance: light or dark."
               active={themeId === 'brand'}
               onSelect={() => onSelect('brand')}
               onCommit={() => commit('brand')}

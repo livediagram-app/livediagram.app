@@ -2,10 +2,10 @@
 
 Two vocabulary changes and one behavioural merge, settled before any code was written:
 
-| Thing                                       | Name             | Values / scope                                                       |
-| ------------------------------------------- | ---------------- | -------------------------------------------------------------------- |
-| The personal, per-browser chrome preference | **Appearance**   | Light / Dark / **System** — `localStorage`, never shared              |
-| The per-tab canvas colours                  | **Colour scheme** | The 27-entry catalogue, stored on the tab, shared with every viewer   |
+| Thing                                       | Name              | Values / scope                                                      |
+| ------------------------------------------- | ----------------- | ------------------------------------------------------------------- |
+| The personal, per-browser chrome preference | **Appearance**    | Light / Dark / **System** — `localStorage`, never shared            |
+| The per-tab canvas colours                  | **Colour scheme** | The 27-entry catalogue, stored on the tab, shared with every viewer |
 
 **Persisted names stay as they are.** `Tab.theme`, the `theme` MCP parameter, the `Theme` telemetry
 category and the `livediagram:v2:ui-mode` storage key are **data on the wire**, not vocabulary: renaming
@@ -40,14 +40,14 @@ toward per-viewer colour schemes.
 
 ## 3. The Default colour scheme
 
-- [ ] 3.1 (test first) Catalogue: one `Default` entry with a light variant (today's Basic) and a dark
+- [x] 3.1 (test first) Catalogue: one `Default` entry with a light variant (today's Basic) and a dark
       variant (today's Charcoal). Id stays `brand`. `charcoal` stays **resolvable** so existing diagrams
       keep their look, but leaves the pickers.
-- [ ] 3.2 (test first) Resolution is appearance-aware: `getTheme('brand')` returns the variant matching the
+- [x] 3.2 (test first) Resolution is appearance-aware: `getTheme('brand')` returns the variant matching the
       viewer's resolved appearance.
 - [ ] 3.3 Default leads the catalogue **and** the Dark category (`theme-order.ts`), labelled "Default" in
       both; each card previews the variant belonging to its slot.
-- [ ] 3.4 (test first) Default never bakes: applying it, resetting to it, and adding elements under it all
+- [x] 3.4 (test first) Default never bakes: applying it, resetting to it, and adding elements under it all
       leave element colours unset, in both appearances.
 - [ ] 3.5 (test first) A Default tab's backdrop re-resolves live while it is still on-theme; a hand-picked
       backdrop still wins.

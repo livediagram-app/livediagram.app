@@ -1,21 +1,66 @@
-// Preset theme catalogue (the THEMES array). Split out of themes.ts to keep
-// each file under the ~1000-line budget; themes.ts imports THEMES from here
-// and keeps the theme-resolution + element-recolouring logic. Pure data.
+// Preset colour-scheme catalogue (the THEMES array). Split out of themes.ts to
+// keep each file under the ~1000-line budget; themes.ts imports THEMES from
+// here and keeps the scheme-resolution + element-recolouring logic. Pure data.
+import {
+  DARK_CANVAS_BACKGROUND_COLOR,
+  DARK_CANVAS_PATTERN_COLOR,
+  DEFAULT_BACKGROUND_COLOR,
+  DEFAULT_PATTERN_COLOR,
+} from './canvas-colors';
 import type { ThemeDefinition } from './themes';
 
-export const THEMES: ThemeDefinition[] = [
+// The Default colour scheme, light half: the plain, un-themed canvas. `id`
+// stays 'brand' because saved diagrams reference it; the label is "Default"
+// (it was "Basic" until Charcoal merged into it).
+//
+// Element colours are null in BOTH halves, which is the whole trick: Default
+// never writes a colour onto an element, so one tab reads correctly to a light
+// viewer and a dark one at the same time. Unpainted elements take their ink
+// from the canvas they sit on (`defaultStrokeColor` and friends).
+export const DEFAULT_SCHEME_LIGHT: ThemeDefinition = {
+  id: 'brand',
+  label: 'Default',
+  backgroundColor: DEFAULT_BACKGROUND_COLOR,
+  backgroundPattern: 'grid',
+  patternColor: DEFAULT_PATTERN_COLOR,
+  elementFill: null,
+  elementStroke: null,
+  elementText: null,
+};
+
+// The Default colour scheme, dark half — the canvas that used to be a separate
+// scheme called Charcoal. Neutral grey on near-black, no hue: the zinc ramp the
+// app's own dark chrome uses, with the dots a step up from the backdrop so the
+// grid and the element outlines read as one material.
+export const DEFAULT_SCHEME_DARK: ThemeDefinition = {
+  ...DEFAULT_SCHEME_LIGHT,
+  backgroundColor: DARK_CANVAS_BACKGROUND_COLOR,
+  patternColor: DARK_CANVAS_PATTERN_COLOR,
+};
+
+// Schemes that are no longer OFFERED but must still RESOLVE, because diagrams
+// saved against them are out there and their elements carry baked colours to
+// match. Dropping an id here would silently repaint someone's board.
+export const LEGACY_THEMES: ThemeDefinition[] = [
   {
-    // `id` stays 'brand' (saved diagrams reference it); only the
-    // user-facing label is "Basic" — the plain, un-themed default.
-    id: 'brand',
-    label: 'Basic',
-    backgroundColor: '#ffffff',
+    // Merged into Default as its dark half. The entry survives with the exact
+    // colours it shipped with, so an old Charcoal tab still looks like itself —
+    // including for a viewer in light chrome, since those element colours are
+    // baked and only this backdrop keeps them legible.
+    id: 'charcoal',
+    label: 'Charcoal',
+    backgroundColor: DARK_CANVAS_BACKGROUND_COLOR,
     backgroundPattern: 'grid',
-    patternColor: '#cbd5e1',
-    elementFill: null,
-    elementStroke: null,
-    elementText: null,
+    patternColor: DARK_CANVAS_PATTERN_COLOR,
+    elementFill: '#2c2c33',
+    elementStroke: '#a1a1aa',
+    elementText: '#e4e4e7',
+    extra: true,
   },
+];
+
+export const THEMES: ThemeDefinition[] = [
+  DEFAULT_SCHEME_LIGHT,
   {
     // Pink. The id stays 'slate' for save-compatibility (see the ThemeId
     // union) — the original grey Slate was dropped for being a near-dupe
@@ -88,24 +133,6 @@ export const THEMES: ThemeDefinition[] = [
     elementFill: '#e0f2fe',
     elementStroke: '#0369a1',
     elementText: '#0c4a6e',
-  },
-  {
-    id: 'charcoal',
-    label: 'Charcoal',
-    // Neutral-grey dark theme — distinct from Midnight (which is
-    // blue-shifted slate) and from Mono (which is pure white). Sits on
-    // the zinc ramp (Tailwind's neutral-with-a-hint-of-blue family, the
-    // one the app's own dark chrome uses): backdrop between zinc-900 and
-    // zinc-800, dots + element strokes both at zinc-600 so the grid and
-    // the outlines read as one material, element fill a step above the
-    // backdrop, and zinc-200 text.
-    backgroundColor: '#2b2b33',
-    backgroundPattern: 'grid',
-    patternColor: '#636373',
-    elementFill: '#2c2c33',
-    elementStroke: '#a1a1aa',
-    elementText: '#e4e4e7',
-    extra: true,
   },
   {
     id: 'midnight',
