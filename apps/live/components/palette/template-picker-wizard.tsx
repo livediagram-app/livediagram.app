@@ -3,7 +3,7 @@ import { Fragment } from 'react';
 type WizardStep = 'template' | 'theme' | 'settings';
 const WIZARD_STEPS: { key: WizardStep; label: string }[] = [
   { key: 'template', label: 'Template' },
-  { key: 'theme', label: 'Theme' },
+  { key: 'theme', label: 'Colour scheme' },
   { key: 'settings', label: 'Settings' },
 ];
 

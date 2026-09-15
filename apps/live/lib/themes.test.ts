@@ -683,7 +683,7 @@ describe('resetThemeElement', () => {
   });
 
   it('keeps a themeLockFill fill even on a hard reset, but still resets stroke + text', () => {
-    // "Reset elements to theme" is the most aggressive transform (it
+    // "Reset elements to colour scheme" is the most aggressive transform (it
     // overwrites user customisations), yet a pinned fill must still
     // survive or the Gantt bars would merge under a reset.
     const bar: ShapeElement = {

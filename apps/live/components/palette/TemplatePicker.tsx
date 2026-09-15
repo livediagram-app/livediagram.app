@@ -312,7 +312,7 @@ export function TemplatePicker({
                       ? `Welcome to '${diagramName.trim()}'`
                       : 'Welcome to this diagram'
                     : step === 'theme'
-                      ? 'Pick a theme'
+                      ? 'Pick a colour scheme'
                       : 'Quick Start'}
               </h2>
               <p className="mt-1 text-sm text-slate-500 dark:text-slate-300">
@@ -320,7 +320,7 @@ export function TemplatePicker({
                   ? step === 'template'
                     ? 'Choose a template to start from.'
                     : step === 'theme'
-                      ? 'Pick a theme, or build your own.'
+                      ? 'Pick a colour scheme, or build your own.'
                       : 'Name your diagram and choose where it lives.'
                   : nameLocked
                     ? 'This is the name from your account; others will see it on this diagram.'
@@ -331,10 +331,10 @@ export function TemplatePicker({
               {showTemplates ? (
                 <HelpArticleLink
                   article={step === 'theme' ? 'themes' : 'templates'}
-                  title={step === 'theme' ? 'Themes' : 'Templates'}
+                  title={step === 'theme' ? 'Colour schemes' : 'Templates'}
                   description={
                     step === 'theme'
-                      ? 'How themes restyle your whole diagram.'
+                      ? 'How colour schemes restyle your whole diagram.'
                       : 'How templates give you a themed starting point.'
                   }
                   className="!h-8 !w-8 !rounded-lg !border-0 !text-sm !text-slate-400 hover:!bg-slate-100 hover:!text-slate-700 dark:!text-slate-400 dark:hover:!bg-slate-800 dark:hover:!text-slate-200"
@@ -426,7 +426,7 @@ export function TemplatePicker({
             {/* Theme picker: a two-level browse (Basic quick-pick, a card per
               colour-temperament category, plus a Custom category for the
               owner's saved themes). Reuses the exact picker the right-click
-              Tab Appearance dialog renders (spec/42, /44) so the two can't
+              Tab Look & Feel dialog renders (spec/42, /44) so the two can't
               drift. Shown as step 2 of the welcome wizard, or stacked under
               the template grid in templates mode. */}
             {showThemeSection ? (

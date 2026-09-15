@@ -60,7 +60,7 @@ toward per-viewer colour schemes.
 
 ## 4. Copy: Theme → Colour scheme
 
-- [ ] 4.1 Editor UI strings (tab / canvas menus, the Canvas & Theme dialog, the pickers, the search
+- [x] 4.1 Editor UI strings (tab / canvas menus, the Canvas & Theme dialog, the pickers, the search
       commands, tooltips).
 - [ ] 4.2 Help centre: the dark-mode article becomes the Appearance article (slug kept — it is a public
       URL), plus every article that names the control. Registry entries + keywords move with them.

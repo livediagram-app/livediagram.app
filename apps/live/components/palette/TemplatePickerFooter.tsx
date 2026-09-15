@@ -81,7 +81,7 @@ export function TemplatePickerFooter({
             commit action. Going BACK to the template step is driven by
             the step rail at the top (clicking "1 Template") — a footer
             Back button here read ambiguously against the category
-            "All templates / All themes" bar, so it's gone. */}
+            "All templates / All colour schemes" bar, so it's gone. */}
           {isWelcome && step === 'template' ? (
             /* Skip the wizard: Blank template, Basic theme (spec/14).
              Only on the first (template) step — once the user has

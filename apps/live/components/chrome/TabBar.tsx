@@ -33,7 +33,7 @@ export type CanvasMenuActions = {
   onAutoAlign: () => void;
   onAutoLayout: (choice?: AutoLayoutChoice) => void;
   // Tab font + default new-element size (spec/28), surfaced as the menu's Font
-  // category (moved out of the Tab Appearance modal). `font` null = the editor
+  // category (moved out of the Tab Look & Feel dialog). `font` null = the editor
   // default; `defaultTextSize` undefined defaults to medium.
   font: string | null;
   onSetFont: (font: string | null) => void;

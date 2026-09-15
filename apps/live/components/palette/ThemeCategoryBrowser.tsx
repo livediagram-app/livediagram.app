@@ -9,7 +9,7 @@
 //
 // Custom themes (spec/44) appear as a "Custom" category when the custom
 // props are wired: its drill-in lists the owner's saved themes (apply /
-// edit / delete) plus a "+ New theme" tile that opens the builder. The
+// edit / delete) plus a "+ New colour scheme" tile that opens the builder. The
 // builder itself is owned by the host (CustomThemePicker); this browser
 // only signals "new" / "edit" via callbacks.
 //
@@ -193,7 +193,7 @@ export function ThemeCategoryBrowser({
           {customEnabled ? (
             <ThemeCategoryCard
               label="Custom"
-              description="Your saved themes, plus build your own."
+              description="Your saved colour schemes, plus build your own."
               count={custom.length}
               themes={custom.map(materialiseCustomTheme)}
               selected={themeIsCustom}
@@ -207,7 +207,7 @@ export function ThemeCategoryBrowser({
 }
 
 function BackButton({ current, onClick }: { current?: string; onClick: () => void }) {
-  return <BackBar label="All themes" current={current} onClick={onClick} />;
+  return <BackBar label="All colour schemes" current={current} onClick={onClick} />;
 }
 
 // A full-width iOS-style switch prompting the user to match the editor's
@@ -224,7 +224,7 @@ function ModeSwitchRow({ category }: { category: ThemeCategory | 'custom' }) {
   const label = target === 'dark' ? 'Turn on Dark mode' : 'Turn on Light mode';
   const hint =
     target === 'dark'
-      ? 'Match the editor chrome to these dark themes.'
+      ? 'Match the editor chrome to these dark colour schemes.'
       : 'Switch the editor chrome back to light.';
   return (
     <button

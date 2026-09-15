@@ -63,7 +63,7 @@ export function ThemeCard({
         <button
           type="button"
           onClick={onCopy}
-          aria-label={`Copy ${theme.label} to a new theme`}
+          aria-label={`Copy ${theme.label} to a new colour scheme`}
           className="absolute right-1.5 top-1.5 flex items-center gap-1 rounded-md bg-white/90 px-1.5 py-1 text-[10px] font-semibold text-slate-600 opacity-0 shadow-sm transition hover:text-brand-600 focus:opacity-100 group-hover:opacity-100 dark:bg-slate-900/85 dark:text-slate-200"
         >
           <CopyGlyph />
@@ -215,7 +215,7 @@ export function CustomThemeCard({
   );
 }
 
-// The "+ New theme" tile in the Custom category drill-in: opens the
+// The "+ New colour scheme" tile in the Custom category drill-in: opens the
 // theme builder. Laid out like CustomThemeCard (a swatch-height block +
 // a label beneath) so it sits consistently in the grid with the saved
 // theme tiles, just dashed + a plus where the swatch would be.
@@ -270,7 +270,7 @@ export function ThemeCategoryCard({
     <PickerCard
       active={selected}
       onSelect={onOpen}
-      ariaLabel={`Browse ${label} themes`}
+      ariaLabel={`Browse ${label} colour schemes`}
       label={label}
       description={description}
       count={count}
