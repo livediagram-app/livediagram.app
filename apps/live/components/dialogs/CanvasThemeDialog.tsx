@@ -185,7 +185,7 @@ export function CanvasThemeDialog({
                 info={
                   <p className="text-[11px] leading-snug text-slate-500 dark:text-slate-400">
                     Sets the canvas backdrop and recolours every element on this tab to match the
-                    theme (sticky notes keep their amber palette).
+                    scheme (sticky notes keep their amber palette).
                   </p>
                 }
                 footer={
@@ -196,7 +196,7 @@ export function CanvasThemeDialog({
                       className="inline-flex items-center justify-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50/40 hover:text-brand-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/15 dark:hover:text-brand-200"
                     >
                       <ResetIcon />
-                      Reset elements to theme
+                      Reset elements to scheme
                     </button>
                   </div>
                 }
