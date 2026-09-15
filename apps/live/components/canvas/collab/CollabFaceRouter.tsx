@@ -13,6 +13,7 @@ import {
   type TabTimer,
 } from '@livediagram/diagram';
 import type { Participant } from '@/lib/identity';
+import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { EstimateFace } from './EstimateFace';
 import { TemperatureFace } from './TemperatureFace';
 import { IdeaBoxFace } from './IdeaBoxFace';
@@ -66,12 +67,16 @@ export function CollabFaceRouter({
   // Every other card here takes the shared button and never sees this.
   onOpenSettings?: () => void;
 }) {
+  // Which paper the canvas is, for a card that carries no fill of its own.
+  // Called `paper` here because `surface` is already this file's word for the
+  // card's own colour, four lines below.
+  const paper = useCanvasSurface();
   if (!isCollabPanelShape(element.shape)) return null;
   // No session behind this surface: still render, still readable, inert.
   const api = collab;
   // The colour showing THROUGH a card's holes and tears (spec/122's paper
   // kit): its own fill, so a punch reads as an opening rather than a dot.
-  const surface = element.fillColor ?? defaultFillColor(element);
+  const surface = element.fillColor ?? defaultFillColor(element, paper);
 
   if (element.shape === 'done-check') {
     return (

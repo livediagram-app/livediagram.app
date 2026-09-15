@@ -21,6 +21,7 @@ import { SelectedArrowHandles } from './SelectedArrowHandles';
 import { ArrowFlowOverlays, useArrowFlow } from './arrow-flow';
 import { BRAND_600 } from './arrow-handle-style';
 import { useLongPress } from '@/hooks/ui/useLongPress';
+import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 
 // The mask region + backdrop for route-behind (spec/90). Deliberately vast
 // rather than fitted to the arrow: a curve can bow well outside its chord,
@@ -125,6 +126,8 @@ function ArrowViewImpl({
   onBeginLabelDrag,
   fontFamily,
 }: ArrowViewProps) {
+  // An arrow with no stroke of its own takes the canvas's ink (spec/07).
+  const surface = useCanvasSurface();
   const isLocked = arrow.locked === true || tabLocked;
   // Open the context menu beside the arrow rather than under the cursor /
   // finger, mirroring boxed elements: `elementMenuAnchor` owns the top-right
@@ -176,7 +179,7 @@ function ArrowViewImpl({
   // Per-arrow stroke colour overrides the default; selection ring sits
   // on top in brand-600 regardless so the user can still tell what's
   // selected on a coloured arrow.
-  const baseStroke = arrow.strokeColor ?? defaultArrowStrokeColor();
+  const baseStroke = arrow.strokeColor ?? defaultArrowStrokeColor(surface);
   // Per-arrow thickness with a small selected-state bump so the user
   // can tell the difference between "selected" and "thicker stroke".
   const baseStrokeWidth = arrow.strokeWidth ?? 2;

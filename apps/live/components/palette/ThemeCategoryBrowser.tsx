@@ -21,7 +21,13 @@ import { useState } from 'react';
 import type { CustomTheme } from '@livediagram/api-schema';
 import { isCustomThemeId, materialiseCustomTheme } from '@/lib/custom-theme-registry';
 import { darkCategorySchemes, shuffledThemes } from '@/lib/theme-order';
-import { THEMES, type ThemeCategory, type ThemeDefinition, type ThemeId } from '@/lib/themes';
+import {
+  getTheme,
+  THEMES,
+  type ThemeCategory,
+  type ThemeDefinition,
+  type ThemeId,
+} from '@/lib/themes';
 import { THEME_CATEGORIES, themeCategory } from '@/lib/themes-taxonomy';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { AnimatedHeightBox } from '@/components/primitives/AnimatedHeightBox';
@@ -87,8 +93,15 @@ export function ThemeCategoryBrowser({
   // see theme-order.ts). Shuffled once per mount via lazy useState so
   // clicking around never reshuffles it underfoot.
   const [themes] = useState(() => shuffledThemes(THEMES));
+  // Re-render this browser when the viewer's chrome changes, so the Default
+  // card's preview follows it.
+  const { appearance } = useAppearance();
   const commit = onCommit ?? onSelect;
-  const brandTheme = THEMES.find((t) => t.id === 'brand');
+  // The quick-pick card previews Default as THIS viewer sees it: light chrome
+  // shows the white canvas, dark chrome the charcoal one (spec/07). The card
+  // in the Dark category is the opposite — it always shows the dark half,
+  // because it is illustrating the scheme's place among the dark canvases.
+  const defaultScheme = getTheme('brand', appearance);
   // Default is pulled OUT of the grouping as the quick-pick (the way Blank is
   // for templates) — except in Dark, which it leads as its dark half, because
   // that is the slot a reader looking for "the neutral dark one" goes to.
@@ -148,9 +161,9 @@ export function ThemeCategoryBrowser({
         </>
       ) : (
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-          {brandTheme ? (
+          {defaultScheme ? (
             <ThemeQuickPickCard
-              theme={brandTheme}
+              theme={defaultScheme}
               label="Default"
               description="Follows your appearance: light or dark."
               active={themeId === 'brand'}

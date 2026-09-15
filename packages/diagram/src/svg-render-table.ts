@@ -5,7 +5,7 @@
 // by the in-app SVG/PNG/PDF export, the api worker's live image / Explorer
 // thumbnail, and the MCP inline render via svgBoxed.
 import { BORDER_DASH_ARRAY, BORDER_STROKE_PX } from './border-style';
-import { defaultStrokeColor, defaultTextColor } from './colors';
+import { defaultStrokeColor, defaultTextColor, type CanvasSurface } from './colors';
 import { PADDING_PX, type TableElement, type TextSize } from './index';
 import { LABEL_LINE_HEIGHT, labelMeasure, r2, wrapLabel, xmlEscape } from './svg-render-primitives';
 
@@ -35,12 +35,12 @@ const cumulative = (sizes: number[]): number[] => {
   return out;
 };
 
-export function svgTableShape(el: TableElement): string {
+export function svgTableShape(el: TableElement, surface: CanvasSurface = 'light'): string {
   const rows = el.cells.length;
   const cols = el.cells[0]?.length ?? 0;
   if (rows === 0 || cols === 0) return '';
-  const stroke = el.strokeColor ?? defaultStrokeColor(el);
-  const textColor = el.textColor ?? defaultTextColor(el);
+  const stroke = el.strokeColor ?? defaultStrokeColor(el, surface);
+  const textColor = el.textColor ?? defaultTextColor(el, surface);
   const headerTextColor = el.headerTextColor ?? textColor;
   const borderW = BORDER_STROKE_PX[el.strokeWidth ?? 'thin'];
   const dash = BORDER_DASH_ARRAY[el.strokeStyle ?? 'solid'];

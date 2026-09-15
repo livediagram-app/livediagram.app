@@ -18,6 +18,7 @@ import {
   arrowStyleOf,
   BORDER_DASH_ARRAY,
   defaultArrowStrokeColor,
+  type CanvasSurface,
   endpointPosition,
   shade,
   type ArrowElement,
@@ -85,11 +86,12 @@ export function drawBoxedExtrusion(
   ctx: CanvasRenderingContext2D,
   el: BoxedElement,
   alpha = 1,
+  surface: CanvasSurface = 'light',
 ): void {
   // Frames / text / icon shapes stay flat (isoExtrudes, shared with the
   // on-screen IsometricDepthLayer so screen + export can't drift).
   if (!isoExtrudes(el)) return;
-  const { shape, opacity } = describeBoxedExport(el);
+  const { shape, opacity } = describeBoxedExport(el, { surface });
   if (shape.kind === 'none' || shape.kind === 'sticker') return; // no body to extrude
   const accent = shape.kind === 'image' ? EXPORT_IMAGE_STROKE : shape.stroke;
   const az = (ISO_TILT_DEG.z * Math.PI) / 180;
@@ -148,8 +150,10 @@ export function drawBoxed(
   // the webfonts are already loaded, so it can paint the real typeface —
   // element font, else the notation's, else this.
   tabFont?: string,
+  // The paper being exported onto, for elements with no colours of their own.
+  surface: CanvasSurface = 'light',
 ): void {
-  const { opacity, shape, label } = describeBoxedExport(el, { tabFont });
+  const { opacity, shape, label } = describeBoxedExport(el, { tabFont, surface });
   ctx.save();
   ctx.globalAlpha = opacity * alpha;
   ctx.lineWidth = 1.5;
@@ -277,10 +281,11 @@ export function drawArrow(
   arrow: ArrowElement,
   elements: Element[],
   alpha = 1,
+  surface: CanvasSurface = 'light',
 ): void {
   const from = endpointPosition(arrow.from, elements);
   const to = endpointPosition(arrow.to, elements);
-  const stroke = arrow.strokeColor ?? defaultArrowStrokeColor();
+  const stroke = arrow.strokeColor ?? defaultArrowStrokeColor(surface);
   const lineWidth = arrow.strokeWidth ?? 2;
   const style = arrowStyleOf(arrow);
   ctx.save();

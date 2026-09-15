@@ -1,4 +1,4 @@
-import { isLightColor } from '@livediagram/diagram';
+import { canvasSurface } from '@livediagram/diagram';
 
 // Is the tab's canvas a DARK wall? The sticky paper-peel (spec/09) is a fixed
 // slate ink tuned against light paper; on a dark backdrop that ink all but
@@ -7,9 +7,9 @@ import { isLightColor } from '@livediagram/diagram';
 // idea what a theme is — can deepen itself, and so can anything else that
 // needs the same answer later.
 //
-// `isLightColor` only parses `#rrggbb`; anything else (unset, 'transparent',
-// a CSS keyword) is the default white canvas, i.e. not dark.
+// The same question `canvasSurface` answers for element ink (spec/07), as the
+// boolean the CSS-facing callers want. One implementation, so the paper the
+// peel deepens against can't disagree with the paper the ink is chosen for.
 export function isDarkCanvas(backgroundColor: string | undefined | null): boolean {
-  if (!backgroundColor || !backgroundColor.startsWith('#')) return false;
-  return !isLightColor(backgroundColor);
+  return canvasSurface(backgroundColor) === 'dark';
 }

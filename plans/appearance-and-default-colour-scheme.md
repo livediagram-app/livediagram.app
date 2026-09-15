@@ -45,17 +45,17 @@ toward per-viewer colour schemes.
       keep their look, but leaves the pickers.
 - [x] 3.2 (test first) Resolution is appearance-aware: `getTheme('brand')` returns the variant matching the
       viewer's resolved appearance.
-- [ ] 3.3 Default leads the catalogue **and** the Dark category (`theme-order.ts`), labelled "Default" in
+- [x] 3.3 Default leads the catalogue **and** the Dark category (`theme-order.ts`), labelled "Default" in
       both; each card previews the variant belonging to its slot.
 - [x] 3.4 (test first) Default never bakes: applying it, resetting to it, and adding elements under it all
       leave element colours unset, in both appearances.
-- [ ] 3.5 (test first) A Default tab's backdrop re-resolves live while it is still on-theme; a hand-picked
+- [x] 3.5 (test first) A Default tab's backdrop re-resolves live while it is still on-theme; a hand-picked
       backdrop still wins.
-- [ ] 3.6 (test first) Unpainted elements take their default ink from the **canvas darkness**, so they read
+- [x] 3.6 (test first) Unpainted elements take their default ink from the **canvas darkness**, so they read
       as Charcoal's greys on a dark canvas and today's brand blues on a light one.
-- [ ] 3.7 The chrome that reads the resolved scheme (canvas backdrop, palette tint, editor accent, tab
+- [x] 3.7 The chrome that reads the resolved scheme (canvas backdrop, palette tint, editor accent, tab
       pills) re-renders when the appearance changes — `React.memo` does not block context.
-- [ ] 3.8 The theme-match nudge and the picker's mode-switch row stop firing for Default, which by
+- [x] 3.8 The theme-match nudge and the picker's mode-switch row stop firing for Default, which by
       definition already matches.
 
 ## 4. Copy: Theme → Colour scheme

@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
 import { useIsOfflineDiagram } from '@/hooks/persistence/useIsOfflineDiagram';
 import { saveOfflineToCloud } from '@/lib/offline/offline-convert';
+import { resolveTabBackdrop } from '@/lib/themes';
 
 const ExportTabDialog = dynamic(() =>
   import('@/components/dialogs/ExportTabDialog').then((m) => m.ExportTabDialog),
@@ -66,14 +67,17 @@ export function EditorTabDialogs() {
     <>
       {exportOpen ? (
         <ExportTabDialog
-          tab={
-            exportScope === 'selection'
-              ? {
-                  ...activeTab,
-                  elements: activeTab.elements.filter((el) => multiSelectedIds.has(el.id)),
-                }
-              : activeTab
-          }
+          // Export what the author is LOOKING at: a tab on the Default colour
+          // scheme paints in the viewer's appearance (spec/07), so the export
+          // takes the resolved backdrop rather than the stored one — and, from
+          // it, the ink for every element that carries no colours of its own.
+          tab={{
+            ...activeTab,
+            ...resolveTabBackdrop(activeTab),
+            ...(exportScope === 'selection'
+              ? { elements: activeTab.elements.filter((el) => multiSelectedIds.has(el.id)) }
+              : {}),
+          }}
           scope={exportScope}
           diagramName={diagramName}
           imageContext={imageContext}
