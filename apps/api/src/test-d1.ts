@@ -29,6 +29,10 @@ export type D1Response = {
   // Present-but-undefined is meaningful: it stands for a D1 answer with no
   // `results` key, which is not the same as an empty result set.
   all?: unknown[];
+  // Rows the write touched, for callers that read `meta.changes` to tell "I
+  // updated it" from "no row matched" (a scoped UPDATE is how the api
+  // enforces ownership without a prior SELECT). Defaults to 0.
+  changes?: number;
 };
 
 // Decides the response for one statement. A test usually matches on a
@@ -73,7 +77,13 @@ export function fakeD1(respond: D1Responder = () => undefined, base: Partial<Env
       },
       run: async () => {
         record('run');
-        return { success: true, meta: {} };
+        // Reported only when the test says so: an answer with no change count
+        // is a real shape, and callers reading it must fail closed.
+        const answered = answer();
+        return {
+          success: true,
+          meta: 'changes' in answered ? { changes: answered.changes } : {},
+        };
       },
     };
   }
