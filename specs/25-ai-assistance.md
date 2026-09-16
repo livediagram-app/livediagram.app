@@ -199,16 +199,22 @@ asked only to read the handwriting on the crops that came out of that.
 - Same admission sequence as `/api/ai` (shared `routes/ai-gate.ts`): key
   present → origin allow-list → Clerk-only flag → owner → method → rate limiter.
 - **Body**: `{ crops: { id, image }[] }` — at most `READ_MAX_CROPS_PER_REQUEST`
-  (16) crops per call, each a data URL of at most `CROP_MAX_BYTES` in one of
+  (6) crops per call, each a data URL of at most `CROP_MAX_BYTES` in one of
   `image/jpeg`, `image/png`, `image/webp`. The client batches a bigger run and
-  sends two batches at a time.
+  sends two batches at a time. Six, not sixteen: a 16-image request was
+  answered 503 "high demand" every time by a hosted flash model while a 5-image
+  request succeeded every time, and smaller batches also read the handwriting
+  markedly better.
 - **Never the whole photo.** A crop is one sticky; whoever is standing in front
   of the wall stays in the browser.
 - **Answer**: `{ texts: { id, text, legible }[] }`. `legible: false` with empty
   text is a real answer — the paper was there, the words were not readable — and
   it still becomes a note, empty, for the author to fill in.
-- **Errors**: the four this spec already defines, plus `crops_invalid` (400) and
-  `crops_too_large` (413).
+- **Errors**: the four this spec already defines, plus `crops_invalid` (400),
+  `crops_too_large` (413) and `ai_quota` (429). A key that has spent its quota
+  is told apart from a passing spike on purpose: one means try later, the other
+  means raise the limit, and reporting both as `ai_error` sends the author back
+  to retry something that cannot work yet.
 
 **Telemetry:** `AI / Used / PhotoNotes`, once per committed import (the editor
 fires it, because the route cannot know whether the author kept the result).
