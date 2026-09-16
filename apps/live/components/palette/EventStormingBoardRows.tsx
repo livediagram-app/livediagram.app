@@ -30,7 +30,7 @@ export function EventStormingBoardRows({ controls }: { controls: EsBoardControls
     <div className="mb-1.5 border-b border-slate-200 pb-1.5 dark:border-slate-700">
       <SettingsToggleRow
         label="Timeline lanes"
-        hint="Snap notes into rows and half-note columns"
+        hint="Snap notes into rows, lined up with their neighbours"
         checked={controls.lanesOn}
         disabled={controls.lanesDisabled}
         onToggle={controls.onToggleLanes}

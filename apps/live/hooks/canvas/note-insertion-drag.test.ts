@@ -37,7 +37,6 @@ function resolve(overrides: Partial<Parameters<typeof resolveNoteInsertion>[0]> 
     dy: TO_GAP.dy,
     inertIds: new Set<string>(),
     active: null,
-    timeline: null,
     ...overrides,
   });
 }
@@ -133,7 +132,7 @@ describe('landNoteInSlot', () => {
 // express the row's gutter in the first place.
 describe('resolveNoteInsertion — on a lanes-on board', () => {
   it('opens by the row rhythm, not a lattice', () => {
-    const slot = resolve({ timeline: { originX: 0, originY: 0, enabled: true } });
+    const slot = resolve();
     expect(slot!.shiftDx).toBe(272);
   });
 

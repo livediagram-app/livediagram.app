@@ -1,4 +1,4 @@
-import { isBoxed, type Element, type EsTimeline } from '@livediagram/diagram';
+import { isBoxed, type Element } from '@livediagram/diagram';
 import { dragClusterIds, isSingleNoteDrag } from './note-dock-drag';
 import type { ShapeBounds } from '@/lib/canvas';
 import {
@@ -37,10 +37,6 @@ type NoteInsertionInput = {
   inertIds: ReadonlySet<string>;
   // The slot currently on offer, fed back in so it survives a shaky hand.
   active: InsertionSlot | null;
-  // The board's lane stack (spec/139 Phase 6) when lanes are on: the ripple
-  // then opens by a whole number of half-note columns, so the row it pushes
-  // stays on the grid.
-  timeline: EsTimeline | null;
 };
 
 export function resolveNoteInsertion({
@@ -54,7 +50,6 @@ export function resolveNoteInsertion({
   dy,
   inertIds,
   active,
-  timeline,
 }: NoteInsertionInput): InsertionSlot | null {
   if (!canInsertBetweenOn(gate, altHeld)) return null;
   // Drag-duplicate is already holding this gesture; two meanings on one drag

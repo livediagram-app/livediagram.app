@@ -131,7 +131,7 @@ export function placeNewNotes(
   const settled: PhotoAddition[] = [];
 
   for (const note of placed) {
-    let x = note.x;
+    const x = note.x;
     let y = timeline ? note.y : snapRow(note.y, note.height, rows);
     if (timeline) {
       // Rows only: a photo already knows where the notes were ACROSS the

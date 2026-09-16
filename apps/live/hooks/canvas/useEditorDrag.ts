@@ -330,7 +330,6 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
             dy,
             inertIds: depsRef.current.layerInertIds,
             active: insertSlotRef.current,
-            timeline: laneEligible ? activeTimeline(activeTab) : null,
           });
           insertSlotRef.current = slot;
           setInsertionSlot(slot);

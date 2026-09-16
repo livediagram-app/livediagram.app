@@ -54,7 +54,6 @@ export function TimelineLanesOverlay({
   const colour = theme.elementStroke ?? deriveTextColorForBg(theme.backgroundColor);
 
   const toClientY = (canvasY: number) => rect.top + canvasY * viewportZoom;
-  const toClientX = (canvasX: number) => rect.left + canvasX * viewportZoom;
   const left = -BLEED_PX;
   const right = window.innerWidth + BLEED_PX;
 

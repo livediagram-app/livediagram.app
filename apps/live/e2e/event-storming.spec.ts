@@ -18,7 +18,9 @@ test.use({ colorScheme: 'dark' });
 
 const LANE_PITCH = 240;
 const LANE_HEIGHT = 200;
-const GRID_CELL = 100;
+// The template lays its starter row out at this gutter, and the lanes now
+// take their x rhythm from the notes rather than from a lattice.
+const NOTE_GAP = 72;
 
 type BoardNote = {
   id: string;
@@ -95,12 +97,14 @@ test('timeline lanes snap a dragged note without moving anything else', async ({
   const firstBox = (await notes.nth(0).boundingBox())!;
   const zoom = firstBox.height / (stickies(before)[0]!.height ?? 200);
 
-  // Drag the third note down a lane and across a column, landing it a few px
-  // off both — near enough for the snap, far enough to prove it happened.
+  // Drag the third note down one lane, aiming a few px off the LEFT EDGE of
+  // the note it should line up under — near enough for the neighbour snap,
+  // far enough past the ordinary alignment threshold (6px) that landing there
+  // can only be the lanes.
   await page.mouse.move(third.x + third.width / 2, third.y + third.height / 2);
   await page.mouse.down();
   await page.mouse.move(
-    third.x + third.width / 2 + (GRID_CELL + 9) * zoom,
+    third.x + third.width / 2 - (200 + NOTE_GAP - 9) * zoom,
     third.y + third.height / 2 + (LANE_PITCH + 11) * zoom,
     { steps: 12 },
   );
@@ -113,9 +117,12 @@ test('timeline lanes snap a dragged note without moving anything else', async ({
   const origin = after.esTimeline!;
   const movedId = stickies(before).sort((a, b) => b.x - a.x)[0]!.id;
   const moved = stickies(after).find((el) => el.id === movedId)!;
-  // Its left edge is ON a column and its centre is ON a lane. Exactly on —
-  // this is the whole claim, and it is not a claim screen pixels can make.
-  expect((moved.x - origin.originX) % GRID_CELL).toBeCloseTo(0, 6);
+  // Its centre is ON a lane and its left edge is EXACTLY where the note it
+  // was aimed under sits — the operator's own case, which the old half-note
+  // lattice could not express because the row's gutter is 72.
+  const byX = stickies(before).sort((a, b) => a.x - b.x);
+  const column = byX[byX.length - 2]!;
+  expect(moved.x).toBeCloseTo(column.x, 6);
   const centreOffset = moved.y + moved.height / 2 - (origin.originY + LANE_HEIGHT / 2);
   expect(centreOffset % LANE_PITCH).toBeCloseTo(0, 6);
 
