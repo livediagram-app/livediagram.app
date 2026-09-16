@@ -215,7 +215,10 @@ test('a command docks to the event it triggers, and survives a reload', async ({
   const moved = await boardTab(page);
   const movedHost = stickies(moved).find((el) => el.id === hostId)!;
   const movedCommand = stickies(moved).find((el) => el.id === command.id)!;
-  expect(movedCommand.y - movedHost.y).toBeCloseTo(command.y - stickies(docked).find((el) => el.id === hostId)!.y, 3);
+  expect(movedCommand.y - movedHost.y).toBeCloseTo(
+    command.y - stickies(docked).find((el) => el.id === hostId)!.y,
+    3,
+  );
   expect(movedCommand.esDock).toEqual(command.esDock);
 
   expectNoPageErrors(pageErrors);

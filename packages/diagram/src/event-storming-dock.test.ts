@@ -133,10 +133,10 @@ describe('findDockCandidate', () => {
     const settled = note('c', 'command', target.x, target.y, {
       esDock: { hostId: 'e', side: 'before' },
     });
-    const hit = findDockCandidate(
-      { ...target, x: target.x + 5, kind: 'command', id: 'c' },
-      [event, settled],
-    );
+    const hit = findDockCandidate({ ...target, x: target.x + 5, kind: 'command', id: 'c' }, [
+      event,
+      settled,
+    ]);
     expect(hit).toMatchObject({ hostId: 'e', side: 'before' });
   });
 

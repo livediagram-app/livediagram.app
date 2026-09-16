@@ -2149,6 +2149,29 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "EsDock": {
+    "additionalProperties": false,
+    "properties": {
+      "hostId": {
+        "$ref": "#/components/schemas/ElementId"
+      },
+      "side": {
+        "$ref": "#/components/schemas/EsDockSide"
+      }
+    },
+    "required": [
+      "hostId",
+      "side"
+    ],
+    "type": "object"
+  },
+  "EsDockSide": {
+    "enum": [
+      "before",
+      "after"
+    ],
+    "type": "string"
+  },
   "EsTimeline": {
     "additionalProperties": false,
     "properties": {
@@ -3589,6 +3612,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "commentThread": {
         "$ref": "#/components/schemas/CommentThread"
+      },
+      "esDock": {
+        "$ref": "#/components/schemas/EsDock"
       },
       "esKind": {
         "$ref": "#/components/schemas/EventStormingNoteKind"
