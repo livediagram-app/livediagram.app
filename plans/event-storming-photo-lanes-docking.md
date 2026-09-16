@@ -587,13 +587,13 @@ h: number; row: number; order: number; confidence: number }` (all box fields
 
 ### 2.3 Rendering — seam dots + affordances
 
-- [ ] `apps/live/components/canvas/DockSeams.tsx` — for the active tab's docked
+- [x] `apps/live/components/canvas/DockSeams.tsx` — for the active tab's docked
       pairs, draws the two dots per seam (`seamDots`), in the elements layer so they
       z-order with the notes (under the notes' shadows, above the backdrop), tab
       accent-neutral ink (`deriveTextColorForBg` of the backdrop at ~55% alpha; a
       touch stronger in dark). Follows the insertion ripple's `translateX` for the
       cluster (both notes shift, so the dots must too — read `useInsertShift`).
-- [ ] `apps/live/components/canvas/DockAnchors.tsx` — the hollow affordance dots on
+- [x] `apps/live/components/canvas/DockAnchors.tsx` — the hollow affordance dots on
       a HOVERED or SELECTED host's free faces (Q12). Each is a real `<button>` with
       an accessible name ("Add a command before this event"), keyboard reachable
       when the host is selected (Tab cycles them), 24px hit target around a 8px
@@ -601,13 +601,13 @@ h: number; row: number; order: number; confidence: number }` (all box fields
       in read-only, on a locked tab / element, when the creation gate is blocked.
       Hover on the affordance shows the ghost silhouette of the note that would be
       added (the palette ghost's footprint styling) — stretch, do the tooltip first.
-- [ ] Dock CANDIDATE during a drag: `apps/live/lib/dock-preview.ts` module store
+- [x] Dock CANDIDATE during a drag: `apps/live/lib/dock-preview.ts` module store
       publishing `{ hostId, side, bounds } | null`; `DockSeams` draws the two dots in
       the guides' accent while a candidate is live (the "magnets" lighting up).
-- [ ] SVG export (`svg-render.ts`): draw the seam dots for docked pairs (Q14), same
+- [x] SVG export (`svg-render.ts`): draw the seam dots for docked pairs (Q14), same
       geometry via `seamDots`; test extends `svg-render.test.ts`.
-- [ ] Component tests for all three; export test.
-- [ ] Commit: `feat(live): anchor dots for docked event-storming notes`.
+- [x] Component tests for all three; export test.
+- [x] Commit: `feat(live): anchor dots for docked event-storming notes`.
 
 ### 2.4 Anchor-add (click an affordance)
 
