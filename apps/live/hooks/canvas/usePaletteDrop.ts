@@ -28,9 +28,27 @@ type PaletteDropDeps = {
   // double-click add path: its rect already bakes in zoom, pan AND the
   // origin-center pivot, so dividing by zoom yields world coords directly.
   wrapperRef: RefObject<HTMLElement | null>;
+  // A photo dropped on an EVENT-STORMING board is a piece of wall, not a
+  // picture (spec/139 Phase 8): it is read, and nothing becomes an image
+  // element. Supplied only on such a board with the model configured, so
+  // every other board — and this one without a key — keeps today's behaviour
+  // exactly, which is that a dropped file does nothing here at all.
+  onDropPhoto?: (file: File) => void;
 };
 
-export function usePaletteDrop({ onDropPalette, viewportZoom, wrapperRef }: PaletteDropDeps) {
+export function usePaletteDrop({
+  onDropPalette,
+  viewportZoom,
+  wrapperRef,
+  onDropPhoto,
+}: PaletteDropDeps) {
+  // The one file the drop would read, or null. `image/*` only, and only when
+  // the board is one that reads photos.
+  const photoFrom = (e: ReactDragEvent<HTMLElement>): File | null => {
+    if (!onDropPhoto) return null;
+    const file = e.dataTransfer.files?.[0];
+    return file && file.type.startsWith('image/') ? file : null;
+  };
   const onDragOver = (e: ReactDragEvent<HTMLElement>) => {
     // A drag back over a floating panel (the Palette itself) is a "changed my
     // mind" — show no-drop and don't let the drop below add anything. The
@@ -38,6 +56,13 @@ export function usePaletteDrop({ onDropPalette, viewportZoom, wrapperRef }: Pale
     // not just the MIME type.
     if ((e.target as Element | null)?.closest?.('[data-floating-panel]')) {
       e.dataTransfer.dropEffect = 'none';
+      return;
+    }
+    // A photo on an event-storming board is accepted the same way a tile is,
+    // so the cursor says it will land rather than showing the no-drop sign.
+    if (onDropPhoto && e.dataTransfer.types.includes('Files')) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'copy';
       return;
     }
     // Allow dropping palette tiles (shapes / devices / icons).
@@ -59,6 +84,13 @@ export function usePaletteDrop({ onDropPalette, viewportZoom, wrapperRef }: Pale
     // `kind` or `kind|choice` — the creation-time choice a split tile
     // carries (spec/103, /105, /123, /135). Without parsing it back out, a
     // dragged Poll tile dropped a timer.
+    // A photograph of the wall, read rather than placed (spec/139 Phase 8).
+    const photo = photoFrom(e);
+    if (photo) {
+      e.preventDefault();
+      onDropPhoto?.(photo);
+      return;
+    }
     const payload = e.dataTransfer.getData(PALETTE_DND_MIME);
     const [shapeKind, dragChoice] = payload.split('|');
     // A line-art icon and a tech (brand) icon both drop as an 'icon' shape

@@ -22,6 +22,7 @@ import { UnionResizeHandles } from '@/components/canvas/element-parts';
 import { QuickConnectRing } from '@/components/canvas/QuickConnectRing';
 import { DockSeams } from '@/components/canvas/DockSeams';
 import { DockAnchors } from '@/components/canvas/DockAnchors';
+import { usePhotoDraftView } from '@/lib/photo-draft-preview';
 import { RemoteCursor } from '@/components/canvas/RemoteCursor';
 import { useInsertShift } from '@/hooks/canvas/useInsertShift';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
@@ -237,6 +238,8 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
   // event-storming board, the elements at and after the insertion point RENDER
   // shifted right to show the slot opening — see useInsertShift.
   const insertShift = useInsertShift();
+  // Session-local view state for an open photo draft (spec/139 Phase 8).
+  const draftView = usePhotoDraftView();
   // Paint order (spec/74 + spec/09): layer bands bottom -> top, keeping
   // array order within each band with frames hoisted to the front of
   // THEIR band (a frame is a section backdrop that must sit behind its
@@ -295,7 +298,13 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
         // translucent while its materialised copy holds the start
         // position, multiplied over any per-layer opacity.
         const ghostFactor = shiftDupGhostIds?.has(element.id) ? 0.45 : 1;
-        const effOpacity = ghostFactor * layerOpacity;
+        // Photo draft (spec/139 Phase 8): while one is open, everything that
+        // is NOT part of it recedes, so the notes the photo brought are the
+        // most visible thing on the board. A render-time style, local to the
+        // importing session — the board itself is untouched.
+        const isDraftNote = element.type === 'sticky' && element.esDraft === true;
+        const draftFade = draftView && !isDraftNote ? 0.5 : 1;
+        const effOpacity = ghostFactor * layerOpacity * draftFade;
         if (element.type === 'arrow') {
           return (
             <svg
@@ -366,6 +375,11 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             // gesture hook and the overlay separately (spec/96).
             votableInVote={isVotableInVote(element, tabVote, tabLayers)}
             layerOpacity={effOpacity < 1 ? effOpacity : undefined}
+            // The draft treatment, and the "already here" badge on a note the
+            // photo matched (with what it read, when that differed).
+            photoDraft={isDraftNote}
+            photoMatched={draftView?.matchedIds.has(element.id) === true}
+            photoReadAs={draftView?.differences.get(element.id)}
             isSelected={memberIds.has(element.id) || multiSelectedIds.has(element.id)}
             isMultiSelected={multiSelectedIds.has(element.id)}
             multiSelectActive={multiSelectedIds.size > 0}

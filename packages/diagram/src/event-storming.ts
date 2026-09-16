@@ -276,3 +276,35 @@ export function isEventStormingTab(tab: { kind?: string; layers?: Layer[] } | un
       l.id === ES_DESIGN_LAYER_ID,
   );
 }
+
+// Change a workshop note's KIND (spec/139). A verb, not styling: the kind IS
+// the notation, so changing it re-paints the paper, re-cuts the silhouette and
+// keeps the note where its author put it — centred on where it was, because a
+// wide policy becoming a square command must not slide sideways.
+export function changeEventStormingKind<
+  T extends {
+    type: string;
+    esKind?: EventStormingNoteKind;
+    fillColor?: string;
+    fixedSize?: boolean;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  },
+>(el: T, kind: EventStormingNoteKind): T {
+  if (!isEventStormingNote(el)) return el;
+  const note = eventStormingNote(kind);
+  const size = eventStormingNoteSize(kind);
+  const cx = el.x + el.width / 2;
+  const cy = el.y + el.height / 2;
+  return {
+    ...el,
+    esKind: kind,
+    fillColor: note.fill,
+    x: cx - size.width / 2,
+    y: cy - size.height / 2,
+    width: size.width,
+    height: size.height,
+  };
+}

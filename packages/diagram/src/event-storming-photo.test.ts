@@ -5,6 +5,7 @@ import {
   discardDraft,
   draftNotesOf,
   hasDraftNotes,
+  onlyDraftNotesChanged,
   detectDockings,
   fitPhotoTransform,
   matchDetectedNotes,
@@ -14,11 +15,11 @@ import {
   reconcilePhoto,
   UNKNOWN_KIND_FALLBACK,
   type BoardNote,
-  type Element,
   type PhotoAddition,
   type PhotoNote,
 } from './event-storming-photo';
 import { ES_DOCK_SEAM_PX } from './event-storming-dock';
+import type { Element } from './index';
 import { ES_GRID_CELL, ES_LANE_PITCH, laneCentre, type EsTimeline } from './event-storming-lanes';
 
 // Reconciling a photographed wall against the board (spec/139 Phase 8). The
@@ -522,5 +523,49 @@ describe('the photo draft', () => {
     ];
     const after = discardDraft(board);
     expect('esDock' in (after[0] as object)).toBe(false);
+  });
+});
+
+// Who owns the history while a draft is open (spec/139 Phase 8).
+describe('onlyDraftNotesChanged', () => {
+  const draft = {
+    id: 'd',
+    type: 'sticky',
+    esDraft: true,
+    x: 0,
+    y: 0,
+    width: 200,
+    height: 200,
+  } as unknown as Element;
+  const settled = {
+    id: 'a',
+    type: 'sticky',
+    x: 900,
+    y: 0,
+    width: 200,
+    height: 200,
+  } as unknown as Element;
+
+  it('is false when nothing changed', () => {
+    expect(onlyDraftNotesChanged([settled, draft], [settled, draft])).toBe(false);
+  });
+
+  it('is true for an edit to a draft note', () => {
+    const edited = { ...(draft as object), label: 'Typed' } as Element;
+    expect(onlyDraftNotesChanged([settled, draft], [settled, edited])).toBe(true);
+  });
+
+  it('is true for a draft note deleted from the batch', () => {
+    expect(onlyDraftNotesChanged([settled, draft], [settled])).toBe(true);
+  });
+
+  it('is FALSE the moment the author touches something else', () => {
+    const edited = { ...(settled as object), label: 'Their own work' } as Element;
+    expect(onlyDraftNotesChanged([settled, draft], [edited, draft])).toBe(false);
+  });
+
+  it('is false when a non-draft element arrives', () => {
+    const other = { ...(settled as object), id: 'new' } as Element;
+    expect(onlyDraftNotesChanged([settled, draft], [settled, draft, other])).toBe(false);
   });
 });

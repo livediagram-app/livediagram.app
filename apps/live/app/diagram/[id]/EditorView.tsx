@@ -21,6 +21,10 @@ import { EditorAnchoredPopovers } from '@/components/panels/EditorAnchoredPopove
 import { EditorSearchPanel } from '@/components/panels/EditorSearchPanel';
 import { ThemeModeBanner } from '@/components/chrome/ThemeModeBanner';
 import { ModifierHintBanner } from '@/components/chrome/ModifierHintBanner';
+import { PhotoDraftBar } from '@/components/chrome/PhotoDraftBar';
+import { PHOTO_ACCEPT_ATTR } from '@/lib/photo-prepare';
+import { usePhotoDraftView } from '@/lib/photo-draft-preview';
+import { draftNotesOf } from '@livediagram/diagram';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { useDismissibleBanner } from '@/hooks/ui/useDismissibleBanner';
 import { useIsOfflineDiagram } from '@/hooks/persistence/useIsOfflineDiagram';
@@ -72,6 +76,10 @@ export function EditorView() {
     esBoard,
     lanesOn,
     toggleLanes,
+    photoDraft,
+    photoImportAvailable,
+    photoPickerRef,
+    readPhotoFile,
     clearTabContent,
     clerkUserId,
     closeContextMenu,
@@ -162,6 +170,11 @@ export function EditorView() {
     activeTab.elements.length === 0;
   // The primary selection's flavour for the modifier hint's no-drag messages.
   const shiftSelected = selectedId ? activeTab.elements.find((el) => el.id === selectedId) : null;
+  // The photo draft awaiting a decision, and the session-local view state
+  // that goes with it (spec/139 Phase 8).
+  const draftNotes = draftNotesOf(activeTab.elements);
+  const draftView = usePhotoDraftView();
+
   const shiftSelectedKind = !shiftSelected
     ? null
     : shiftSelected.type === 'arrow'
@@ -431,6 +444,38 @@ export function EditorView() {
           pendingDraw !== null
         }
       />
+
+      {/* A photo import awaiting Add or Discard (spec/139 Phase 8). Derived
+          from the tab's own draft notes, so a reload mid-import comes back to
+          the same decision rather than to a board full of strays. */}
+      <PhotoDraftBar
+        draftCount={draftNotes.length}
+        read={draftView?.read ?? null}
+        matchedCount={draftView ? draftView.matchedIds.size : null}
+        busy={photoDraft.state.stage === 'committing'}
+        onAccept={photoDraft.accept}
+        onDiscard={photoDraft.discard}
+      />
+
+      {/* The one file input behind "Add from photo". Hidden, opened by the
+          palette row and the command palette; `capture` makes a phone open the
+          camera straight away, because the act is "photograph this wall". */}
+      {photoImportAvailable ? (
+        <input
+          ref={photoPickerRef}
+          type="file"
+          accept={PHOTO_ACCEPT_ATTR}
+          capture="environment"
+          className="hidden"
+          aria-hidden
+          tabIndex={-1}
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            e.target.value = '';
+            if (file) readPhotoFile?.(file);
+          }}
+        />
+      ) : null}
     </div>
   );
 }

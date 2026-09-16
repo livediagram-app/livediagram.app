@@ -10,7 +10,11 @@
 // already there, because the board is the record and the photo is a reading of
 // one moment of the wall.
 
-import { eventStormingNoteSize, type EventStormingNoteKind } from './event-storming';
+import {
+  eventStormingKindOf,
+  eventStormingNoteSize,
+  type EventStormingNoteKind,
+} from './event-storming';
 import type { Element, StickyElement } from './index';
 import {
   dockingFor,
@@ -262,6 +266,29 @@ export function reconcilePhoto(
   return { matches, additions: placed, transform, differences };
 }
 
+// The board as the reconciliation sees it: the workshop notes, and nothing
+// else. A shape or an arrow on the tab is not something a photograph of paper
+// can be matched against — and neither is a note still in DRAFT, which is not
+// on the board yet in any sense that matters.
+export function boardNotesOfElements(elements: Element[]): BoardNote[] {
+  const out: BoardNote[] = [];
+  for (const el of elements) {
+    if (el.type !== 'sticky' || el.esDraft === true) continue;
+    const kind = eventStormingKindOf(el);
+    if (!kind) continue;
+    out.push({
+      id: el.id,
+      text: el.label ?? '',
+      kind,
+      x: el.x,
+      y: el.y,
+      width: el.width,
+      height: el.height,
+    });
+  }
+  return out;
+}
+
 // ---------------------------------------------------------------------
 // The draft (spec/139 Phase 8)
 // ---------------------------------------------------------------------
@@ -300,4 +327,32 @@ export function discardDraft(elements: Element[]): Element[] {
   return stripDanglingDocks(
     elements.filter((el) => !(el.type === 'sticky' && el.esDraft === true)),
   );
+}
+
+// Does this change touch ONLY the notes a photo draft brought in?
+//
+// While a draft is open it owns the history: the landing, and every correction
+// the author makes to a draft note, are one gesture that ends at Add or
+// Discard. So an edit confined to draft notes is written without a history
+// step of its own — and an edit to anything ELSE is not, because the author's
+// unrelated work must survive a Discard.
+export function onlyDraftNotesChanged(before: Element[], after: Element[]): boolean {
+  const isDraft = (el: Element) => el.type === 'sticky' && el.esDraft === true;
+  const beforeById = new Map(before.map((el) => [el.id, el] as const));
+  const afterById = new Map(after.map((el) => [el.id, el] as const));
+  let changed = false;
+  for (const el of before) {
+    const next = afterById.get(el.id);
+    if (next === el) continue;
+    // Removed, or edited: either way it has to be a draft note.
+    if (!isDraft(el)) return false;
+    changed = true;
+  }
+  for (const el of after) {
+    if (beforeById.has(el.id)) continue;
+    // Newly arrived: a draft note joining the batch is still the gesture.
+    if (!isDraft(el)) return false;
+    changed = true;
+  }
+  return changed;
 }

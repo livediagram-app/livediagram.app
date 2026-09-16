@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  changeEventStormingKind,
   dock,
   dockKindForFace,
   eventStormingKindOf,
@@ -9,6 +10,7 @@ import {
   type BoxedElement,
   type Element,
   type EsDockSide,
+  type EventStormingNoteKind,
   type Tab,
 } from '@livediagram/diagram';
 import { buildEventStormingNote } from '@/lib/draw-commit';
@@ -47,6 +49,9 @@ export type DockActionsApi = {
   addDockedNote: (hostId: string, side: EsDockSide) => void;
   dockTo: (id: string, hostId: string, side: EsDockSide) => void;
   undock: (id: string) => void;
+  // Change a note's KIND (spec/139): a verb on this board, and it lives here
+  // because it is the same kind of act as docking — notation, not styling.
+  setEsKindOf: (id: string, kind: EventStormingNoteKind) => void;
 };
 
 export function useDockActions({
@@ -100,5 +105,15 @@ export function useDockActions({
     commit((els) => undockIn(els, id));
   };
 
-  return { addDockedNote, dockTo, undock };
+  const setEsKindOf = (id: string, kind: EventStormingNoteKind) => {
+    if (createBlocked) return;
+    track('Canvas', 'Used', 'ChangeNoteKind');
+    commit((els) =>
+      els.map((el) =>
+        el.id === id && el.type === 'sticky' ? changeEventStormingKind(el, kind) : el,
+      ),
+    );
+  };
+
+  return { addDockedNote, dockTo, undock, setEsKindOf };
 }

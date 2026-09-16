@@ -317,6 +317,9 @@ export type CanvasProps = {
   // Add a note already docked to a host's free face (spec/139 Phase 7), from
   // that face's anchor affordance. Absent when the session cannot create.
   onAddDockedNote?: (hostId: string, side: EsDockSide) => void;
+  // Read a photograph of the wall dropped on the canvas (spec/139 Phase 8).
+  // Present only on an event-storming board with the model configured.
+  onDropPhoto?: (file: File) => void;
   // True when a new element cannot land at all: a locked tab, a view-only
   // session, or a hidden / locked active layer (spec/74). The insert-between
   // preview reads it so it never offers a slot the drop would refuse.

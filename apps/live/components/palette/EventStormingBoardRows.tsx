@@ -21,6 +21,8 @@ export type EsBoardControls = {
   // greyed row would advertise something the operator cannot switch on.
   onImportPhoto?: () => void;
   photoDisabled?: boolean;
+  // Why it is disabled, when the reason is worth saying (a draft already open).
+  photoDisabledReason?: string;
 };
 
 export function EventStormingBoardRows({ controls }: { controls: EsBoardControls }) {
@@ -38,6 +40,7 @@ export function EventStormingBoardRows({ controls }: { controls: EsBoardControls
           type="button"
           onClick={controls.onImportPhoto}
           disabled={controls.photoDisabled}
+          title={controls.photoDisabledReason}
           className={`flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-left transition ${
             controls.photoDisabled
               ? 'cursor-not-allowed opacity-50'

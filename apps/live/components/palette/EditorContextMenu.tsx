@@ -16,6 +16,7 @@
 import { onMouseHover, useRevertOnUnmount } from '@/components/primitives/hover-preview';
 import {
   dockOf,
+  EVENT_STORMING_NOTES,
   eventStormingKindOf,
   isFixedSizeElement,
   arrowheadShapeOf,
@@ -186,6 +187,37 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
               label="Send to Back"
               onClick={runAndClose(props.onStackBack)}
             />
+            {/* Change kind (spec/139): the ONE styling-shaped thing this menu
+                offers, because on this board the kind is not styling — it is
+                what the note MEANS. Re-paints, re-cuts the silhouette and
+                leaves the note centred where it was. */}
+            {props.onSetEsKind ? (
+              <>
+                <MenuGroupSeparator />
+                <MenuAccordionSection
+                  title="Change kind"
+                  icon={<SquareMenuIcon />}
+                  {...sectionProps('es-kind')}
+                >
+                  <MenuTileGrid cols={2}>
+                    {EVENT_STORMING_NOTES.map((n) => (
+                      <MenuTile
+                        key={n.kind}
+                        icon={
+                          <span
+                            aria-hidden
+                            className="block h-3 w-3 rounded-[2px] border border-black/10"
+                            style={{ backgroundColor: n.fill }}
+                          />
+                        }
+                        label={n.label}
+                        onClick={runAndClose(() => props.onSetEsKind?.(n.kind))}
+                      />
+                    ))}
+                  </MenuTileGrid>
+                </MenuAccordionSection>
+              </>
+            ) : null}
             {/* Anchor docking (spec/139 Phase 7): only on a note that IS
                 docked, and only as the verb that ends the relation — docking
                 one is a gesture (drag it to a face) or a click on the host's

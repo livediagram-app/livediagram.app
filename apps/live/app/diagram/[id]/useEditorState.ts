@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
   isEventStormingTab,
+  onlyDraftNotesChanged,
   stampTabKind,
   createPinnedArrow,
   createShape,
@@ -56,7 +57,7 @@ import { useEditorComments } from '@/hooks/collab/useEditorComments';
 import { useEditorDrag } from '@/hooks/canvas/useEditorDrag';
 import { useTimelineLanes } from '@/hooks/canvas/useTimelineLanes';
 import { useDockActions } from '@/hooks/canvas/useDockActions';
-import { usePhotoImport } from '@/hooks/canvas/usePhotoImport';
+import { usePhotoDraft } from '@/hooks/canvas/usePhotoDraft';
 import { useEditorImages } from '@/hooks/canvas/useEditorImages';
 import { useEditorNotes } from '@/hooks/canvas/useEditorNotes';
 import { useElementLinks } from '@/hooks/canvas/useElementLinks';
@@ -214,7 +215,17 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     });
     return token;
   };
+  // While a photo draft is open it OWNS the history (spec/139 Phase 8): the
+  // landing and every correction the author makes to a draft note are one
+  // gesture, ending at Add (the step stands) or Discard (it is thrown away).
+  // A ref, because `commit` / `markCheckpoint` are defined long before the
+  // draft hook and read it at call time.
+  const photoDraftOpenRef = useRef(false);
   const markCheckpoint = (): number => {
+    // A gesture inside the draft (dragging a draft note) must not push a step
+    // of its own, or Undo after Add would stop at that drag instead of taking
+    // the whole import back.
+    if (photoDraftOpenRef.current) return historyTokenRef.current;
     const token = ++historyTokenRef.current;
     entryHistoryRef.current = entryHistoryPush(entryHistoryRef.current, token);
     rawMarkCheckpoint();
@@ -230,6 +241,11 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // checkpoint and DISCARD the step (no redo entry — a cancelled drag
   // never happened), popping its marker in step.
   const cancelToCheckpoint = () => {
+    // Inside a draft there is no per-gesture checkpoint to go back to — the
+    // draft's own is the only one, and popping it here would discard the whole
+    // import because a drag was cancelled. The dragged note simply stays where
+    // it was let go; Discard is how you take the import back.
+    if (photoDraftOpenRef.current) return;
     entryHistoryRef.current = entryHistoryCancel(entryHistoryRef.current);
     rawCancelToCheckpoint();
   };
@@ -1352,6 +1368,14 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     const liveTab = tabsRef.current.find((t) => t.id === activeId) ?? activeTab;
     const before = liveTab.elements;
     const after = mapElements(before);
+    // An edit confined to the notes a photo draft brought in belongs to the
+    // draft's gesture, not to the undo stack: it is written live and folded
+    // into the one step Add leaves behind. Anything touching the author's own
+    // work commits normally, so a Discard can never take it with it.
+    if (photoDraftOpenRef.current && onlyDraftNotesChanged(before, after)) {
+      tickTabs((ts) => patchTab(ts, activeId, { elements: after }));
+      return;
+    }
     commitTabs((ts) => patchTab(ts, activeId, { elements: after }));
     emitChange(activeId, before, after);
   };
@@ -1413,40 +1437,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     // the inert set itself changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [layerInertIds]);
-
-  // Photo import (spec/139 Phase 8): the run that reads a photographed wall
-  // and reconciles it against this board. Available only where the model is
-  // (`aiCapable`) — and NOT gated on the AI-panel preference, because this is
-  // not the assistant.
-  const photoImport = usePhotoImport({
-    activeTab,
-    activeId,
-    ownerId: selfParticipant.id,
-    createBlocked,
-    commitTabs,
-    setMultiSelectedIds,
-  });
-  const [photoImportOpen, setPhotoImportOpen] = useState(false);
-  const photoImportAvailable = aiCapable && esBoard;
-  const openPhotoImport = () => {
-    if (!photoImportAvailable || createBlocked) return;
-    photoImport.again();
-    setPhotoImportOpen(true);
-  };
-  const closePhotoImport = () => {
-    photoImport.reset();
-    setPhotoImportOpen(false);
-  };
-  // A pasted photo on one of these boards is far more likely a piece of wall
-  // than a picture element: open the reader with it already loaded.
-  const readPastedPhoto =
-    photoImportAvailable && !createBlocked
-      ? (file: File) => {
-          photoImport.again();
-          setPhotoImportOpen(true);
-          void photoImport.read(file);
-        }
-      : undefined;
 
   // Timeline lanes (spec/139 Phase 6): the board-level switch, and the lane
   // stack the drag resolvers snap to while it is on.
@@ -1565,6 +1555,48 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setFormatSourceId,
     setGroupSourceId,
   });
+
+  // Photo import (spec/139 Phase 8): reads a photographed wall, reconciles it
+  // against this board and lands the result as an on-canvas DRAFT. Available
+  // only where the model is (`aiCapable`) — and NOT gated on the AI-panel
+  // preference, because this is not the assistant.
+  const photoDraft = usePhotoDraft({
+    activeTab,
+    activeId,
+    ownerId: selfParticipant.id,
+    createBlocked,
+    tick,
+    markCheckpoint,
+    cancelToCheckpoint,
+    emitChange,
+    setSelectedId,
+    setMultiSelectedIds,
+    toastError: toast.error,
+  });
+  // The hidden file input the palette row and the command-palette entry open.
+  // One input, rendered once beside the canvas, so the camera-capture attribute
+  // and the accepted-type list live in exactly one place.
+  const photoPickerRef = useRef<HTMLInputElement | null>(null);
+  // Keep the history-ownership ref (declared beside `commit`) in step with
+  // whether a draft is actually open.
+  photoDraftOpenRef.current = photoDraft.draftOpen;
+  const photoImportAvailable = aiCapable && esBoard;
+  // One draft at a time: while one is open the entry points say so rather
+  // than starting a second import over the first.
+  const photoImportBlocked = createBlocked || photoDraft.draftOpen;
+  const openPhotoImport = () => {
+    if (!photoImportAvailable || photoImportBlocked) return;
+    photoPickerRef.current?.click();
+  };
+  // A photo dropped or pasted on one of these boards is a piece of WALL, not
+  // a picture element: it goes straight to the reader, and nothing on the
+  // canvas becomes an image.
+  const readPhotoFile =
+    photoImportAvailable && !photoImportBlocked
+      ? (file: File) => {
+          void photoDraft.startFromFile(file);
+        }
+      : undefined;
 
   // Anchor docking (spec/139 Phase 7): add a note already docked to a host's
   // free face, dock a loose one, undock one.
@@ -2386,7 +2418,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     ownerId: selfParticipant.id,
     diagramId,
     toast,
-    onPastePhoto: readPastedPhoto,
+    onPastePhoto: readPhotoFile,
   });
 
   // Zen / focus mode (spec/26). Flips the chrome-hidden flag and emits
@@ -2525,13 +2557,14 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     ...timelineLanes,
     // Anchor docking (spec/139 Phase 7).
     ...dockActions,
-    // Photo import (spec/139 Phase 8): the run, the dialog's open state, and
-    // the two ways in that are not a paste.
-    photoImport,
-    photoImportOpen,
+    // Photo import (spec/139 Phase 8): the draft run, whether the entry
+    // points may be offered, and the hidden file input they open.
+    photoDraft,
     photoImportAvailable,
+    photoImportBlocked,
     openPhotoImport,
-    closePhotoImport,
+    photoPickerRef,
+    readPhotoFile,
     layerHiddenIds,
     layerLockedIds,
     layerInertIds,

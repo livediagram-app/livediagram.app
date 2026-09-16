@@ -105,7 +105,11 @@ export function EditorCanvasHost() {
     toggleLanes,
     addDockedNote,
     photoImportAvailable,
+    photoImportBlocked,
     openPhotoImport,
+    photoPickerRef,
+    readPhotoFile,
+    photoDraft,
     createBlocked,
     addTable,
     addTechIcon,
@@ -564,10 +568,17 @@ export function EditorCanvasHost() {
         lanesDisabled,
         onToggleLanes: toggleLanes,
         ...(photoImportAvailable
-          ? { onImportPhoto: openPhotoImport, photoDisabled: createBlocked }
+          ? {
+              onImportPhoto: openPhotoImport,
+              photoDisabled: photoImportBlocked,
+              photoDisabledReason: photoDraft.draftOpen
+                ? 'Finish the current draft first'
+                : undefined,
+            }
           : {}),
       }}
       onAddDockedNote={createBlocked ? undefined : addDockedNote}
+      onDropPhoto={readPhotoFile}
       createBlocked={createBlocked}
       onAddImage={addImage}
       onAddArrow={addArrow}
