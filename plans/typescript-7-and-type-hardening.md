@@ -104,14 +104,14 @@ Both aliases go in **every** workspace — pnpm only links a workspace's own bin
 
 ### Phase 3 — zero- and low-cost strictness flags
 
-- [ ] `noFallthroughCasesInSwitch` (0 errors)
-- [ ] `noUnusedLocals` (0 errors)
-- [ ] `allowUnreachableCode: false` (0 errors)
-- [ ] `allowUnusedLabels: false` (0 errors)
-- [ ] `noUncheckedSideEffectImports: true` (0 errors — pin the TS 7 default)
-- [ ] `noImplicitReturns` (1 error, `DeleteAccountDialog.tsx`)
-- [ ] `noUnusedParameters` (2 errors, `useEditorDrag.insert-between.test.tsx`)
-- [ ] `erasableSyntaxOnly` (5 errors, `apps/mcp/src/api.ts` + one test)
+- [x] `noFallthroughCasesInSwitch` (0 errors)
+- [x] `noUnusedLocals` (0 errors)
+- [x] `allowUnreachableCode: false` (0 errors)
+- [x] `allowUnusedLabels: false` (0 errors)
+- [x] `noUncheckedSideEffectImports: true` (0 errors — pin the TS 7 default)
+- [x] `noImplicitReturns` (1 error, `DeleteAccountDialog.tsx`)
+- [x] `noUnusedParameters` (2 errors, `useEditorDrag.insert-between.test.tsx`)
+- [x] `erasableSyntaxOnly` (5 errors, `apps/mcp/src/api.ts` + one test)
 
 ### Phase 4 — `noPropertyAccessFromIndexSignature` (335 errors, 49 files)
 
