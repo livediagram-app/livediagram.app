@@ -55,3 +55,40 @@ describe('providerOf', () => {
     expect(providerOf({} as Env)).toBeNull();
   });
 });
+
+describe('one retry on a provider spike', () => {
+  it('retries a 5xx once, and returns the second answer', async () => {
+    let calls = 0;
+    globalThis.fetch = vi.fn(async () => {
+      calls += 1;
+      return calls === 1
+        ? new Response('busy', { status: 503 })
+        : new Response('{"ok":true}', { status: 200 });
+    }) as typeof fetch;
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const res = await chatCompletions(provider, {});
+    expect(calls).toBe(2);
+    expect(res.status).toBe(200);
+  });
+
+  it('gives up after the second 5xx rather than hammering', async () => {
+    let calls = 0;
+    globalThis.fetch = vi.fn(async () => {
+      calls += 1;
+      return new Response('busy', { status: 503 });
+    }) as typeof fetch;
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    expect((await chatCompletions(provider, {})).status).toBe(503);
+    expect(calls).toBe(2);
+  });
+
+  it('never retries a 4xx — that is our mistake, not a spike', async () => {
+    let calls = 0;
+    globalThis.fetch = vi.fn(async () => {
+      calls += 1;
+      return new Response('nope', { status: 400 });
+    }) as typeof fetch;
+    await chatCompletions(provider, {});
+    expect(calls).toBe(1);
+  });
+});

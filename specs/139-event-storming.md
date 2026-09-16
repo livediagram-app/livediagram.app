@@ -669,17 +669,49 @@ low-threshold capture surface can least afford.
   dialog stays open for another try.
 - **Telemetry:** `AI / Used / PhotoNotes` once per committed import, plus the
   ordinary `Element / Added / Sticky` per note.
-  **Live calibration is OUTSTANDING.** Everything above is built and proven
-  without a model: the detector against images the tests draw themselves, the
-  route against a stubbed provider, the reconciliation with ~50 unit tests over
-  empty / overlapping / fully-overlapping boards, and the whole client path end to
-  end in a browser (detect → read → reconcile → draft → Add → reload → Undo) with
-  only the reading call mocked. What has NOT happened is a run against real
-  photographs of real paper under real light. Three things are first guesses until
-  then: the DETECTOR's hue bands, saturation floors and split threshold; the
-  reader prompt's wording; and the matcher threshold
-  (`DEFAULT_MATCH_THRESHOLD`, currently 0.72). It needs `AI_API_KEY` /
-  `AI_BASE_URL` / `AI_MODEL` in `apps/api/.dev.vars` and two or three wall photos.
+  **Calibrated against real walls, and partly so.** Three photographs of a real
+  workshop wall (brown kraft paper, ~45 notes, a wall corner, pen handwriting)
+  were run through the detector, and they moved almost every number in it:
+
+  - The wall is BROWN KRAFT, which is the same hue as an orange domain event.
+    The first version read most of the wall as paper. The floors are now
+    measured from each photograph — the wall's own hue and saturation, with the
+    wall/paper split chosen by Otsu over the saturation histogram — and a pixel
+    near the wall's hue must clear that floor while one far from it (a purple
+    policy, a green read model) needs much less.
+  - GREY-WORLD WHITE BALANCE IS OFF BY DEFAULT, and that is a finding. On a
+    kraft wall it takes the wall for a neutral surface and corrects the brown
+    out of the whole photograph, moving every paper hue with it: detections
+    fell by three quarters with it on. Measuring the wall per photo replaces it.
+  - The hue BANDS are widened to measured paper rather than the catalogue
+    swatches: the wall's greens read h≈86 where the catalogue's read-model swatch
+    is h≈137, and its policy lilac reads h≈300 where the swatch is h≈269.
+  - PINK IS HOTSPOT. The operator's walls use pink for hotspots, and the
+    catalogue's external-system pink cannot be told from its hotspot red-pink in
+    a photograph anyway (the external-system swatch is too pale to clear the
+    paper floor at all on kraft). The whole pink band resolves to hotspot; an
+    external system read as one is re-kinded in the draft, which is a click.
+  - HANDWRITING SHATTERS A NOTE into dozens of paper fragments, so every
+    statistic taken before merging describes the fragments. The merge now runs
+    FIRST, to a fixed point, by an absolute pen-stroke gap (0.6% of the working
+    image), and only then is the note size measured.
+  - A blob is only cut into several notes when it is long against the note size
+    AND against its own other side, and only when it is SOLID: a sprawling patch
+    of wall that squeaked past the floor used to be diced into dozens of notes
+    that were never there.
+
+  **What is still outstanding, explicitly.** On the 1000px working copies the
+  detector finds 20–35 of the notes on the near wall plane with the right kinds.
+  On the FULL photograph through the real pipeline (2048px working image, live
+  Gemini Flash) one run found 8 notes and the model could read 1 of the 8 crops.
+  So: the thresholds are resolution-sensitive in a way that has not been chased
+  down, the far plane of a wall corner is largely missed, and crop quality for
+  small pen handwriting is unproven. The flow itself is proven end to end —
+  photo in, draft on the canvas, Add, Undo — with the operator's own key and
+  `gemini-3.6-flash`. Treat the DETECTOR as usable-but-partial and the reader
+  prompt as untuned; the draft's Change kind, delete and add-by-hand paths are
+  what make a partial read workable today. `packages/sticky-vision/scripts/calibrate.ts`
+  is the loop to continue in (it caches decoded photos, so a run is ~1s).
 
 - **Not in v1:** multiple photos in one run (one at a time, then "Add another
   photo" against the board as it now is), applying a matched note's text
@@ -878,9 +910,19 @@ type, kept current every session. Each should stay true on its own.
 
 Board structure (swimlanes, pivotal events). Vertical insertion, for
 boards that run top to bottom: the geometry is axis-parameterised in
-shape and horizontal in fact. Each phase lands with its own spec update
-here — this file stays the source of truth for what the type IS at any
-moment.
+shape and horizontal in fact.
+
+**A per-board colour legend (`esColourLegend`).** Every wall invents its own
+convention — the operator's uses pink for hotspots and green for read models,
+neither of which is the catalogue's. The photo import currently resolves that
+with one global decision (pink is hotspot) plus the draft's Change kind verb;
+the honest version is a legend on the board itself, which the detector reads
+instead of the catalogue and which the author sets once per wall. It is also
+what would let a board say "we don't use policies" and have the reader stop
+looking for them.
+
+Each phase lands with its own spec update here — this file stays the source of
+truth for what the type IS at any moment.
 
 ## Counts
 
