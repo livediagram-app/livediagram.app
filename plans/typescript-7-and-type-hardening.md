@@ -222,6 +222,8 @@ was to say so in the type. True, and inert. Reverted with the flag.
       Playwright's `reuseExistingServer` had attached the suite to that server
       instead of the e2e stack, so the editor had no api worker. Re-run on
       `E2E_LIVE_PORT=3402 E2E_API_PORT=8987` and it is green.
-- [x] Verify Turbopack still inlines `process.env['NEXT_PUBLIC_X']` after the
-      bracket rewrite — built with a probe key, the bundle carries
-      `let r="pk_test_…"` and no `process.env` survives in any client chunk
+- [x] Checked, while the Phase 4 bracket rewrite was still in, that Turbopack
+      inlines `process.env['NEXT_PUBLIC_X']` as readily as the dot form: a build
+      with a probe key emitted `let r="pk_test_…"` with no `process.env` left in
+      any client chunk. The rewrite is gone, but the finding is filed in
+      `LESSONS_LEARNED.md` because that failure would have been silent
