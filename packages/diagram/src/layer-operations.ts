@@ -1,5 +1,6 @@
 import type { Element, ElementId, Tab } from './index';
-import { bringManyToFront, freezeDanglingGroupEnds, sendManyToBack } from './groups';
+import { bringManyToFront, sendManyToBack } from './groups';
+import { afterElementsRemoved } from './element-removal';
 import { arrowReferencesAny } from './arrow-rebind';
 import {
   DEFAULT_LAYER_ID,
@@ -175,7 +176,9 @@ function withoutLayerElements(tab: Tab, layerId: string): Element[] {
     if (el.type === 'arrow' && arrowReferencesAny(el, doomed)) return false;
     return true;
   });
-  return freezeDanglingGroupEnds(tab.elements, survivors);
+  // Everything the removed elements leave dangling, healed in one pass
+  // (spec/09 group pins, spec/139 docked notes).
+  return afterElementsRemoved(tab.elements, survivors);
 }
 
 // Merge a layer into its neighbour (spec/74): every element on `layerId`

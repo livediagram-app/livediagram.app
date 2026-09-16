@@ -11,7 +11,7 @@
 
 import {
   arrowReferencesAny,
-  freezeDanglingGroupEnds,
+  afterElementsRemoved,
   createText,
   bringManyToFront,
   duplicateGroupedElements,
@@ -113,9 +113,10 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
         if (el.type === 'arrow' && arrowReferencesAny(el, targetIds)) return false;
         return true;
       });
-      // Arrows pinned to a group whose LAST member just went freeze to a
-      // free endpoint at the pre-delete position (spec/09 group pins).
-      return freezeDanglingGroupEnds(els, survivors);
+      // One healing pass for everything a delete leaves dangling: arrows
+      // pinned to a group whose LAST member just went (spec/09), and notes
+      // docked to a host that just went (spec/139 Phase 7).
+      return afterElementsRemoved(els, survivors);
     });
     setSelectedId(null);
     setEditingId(null);
@@ -230,9 +231,8 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
         if (el.type === 'arrow' && arrowReferencesAny(el, targetIds)) return false;
         return true;
       });
-      // See deleteSelected: freeze arrows whose group just lost its last
-      // member at the pre-delete position (spec/09 group pins).
-      return freezeDanglingGroupEnds(els, survivors);
+      // See deleteSelected: the same healing pass.
+      return afterElementsRemoved(els, survivors);
     });
     setMultiSelectedIds(new Set());
     setEditingId(null);

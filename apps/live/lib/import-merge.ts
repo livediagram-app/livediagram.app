@@ -1,4 +1,4 @@
-import type { Tab } from '@livediagram/diagram';
+import { stripDanglingDocks, type Tab } from '@livediagram/diagram';
 
 // How an imported tab lands on top of the tab receiving it (spec/27).
 //
@@ -11,11 +11,19 @@ import type { Tab } from '@livediagram/diagram';
 // were all there, but the palette, the stationery and the note menu were
 // gone, with nothing to say why (spec/139). Without `layers`, every imported
 // element's `layerId` dangles and the bands it was organised into are lost.
+// `esTimeline` is in it too, for the same reason as `kind`: a board exported
+// with timeline lanes on and re-imported without them is a different board.
+//
+// Element-to-element references are the other half of "what must travel". A
+// file can arrive with a dock pointing at a host it does not contain (a
+// hand-edited export, a partial paste), and a relation to nothing is worse
+// than no relation — so the notes come in standalone instead.
 export function mergeImportedTab(receiving: Tab, imported: Tab): Tab {
   return {
     ...receiving,
-    elements: imported.elements,
+    elements: stripDanglingDocks(imported.elements),
     kind: imported.kind ?? receiving.kind,
+    esTimeline: imported.esTimeline ?? receiving.esTimeline,
     layers: imported.layers ?? receiving.layers,
     theme: imported.theme ?? receiving.theme,
     backgroundColor: imported.backgroundColor ?? receiving.backgroundColor,

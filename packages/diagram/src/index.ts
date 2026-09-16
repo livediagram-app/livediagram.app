@@ -435,6 +435,8 @@ export * from './rich-text';
 export * from './factories';
 export * from './event-storming';
 export * from './event-storming-lanes';
+export * from './event-storming-dock';
+export * from './element-removal';
 export * from './graph-authoring';
 export * from './mermaid';
 export * from './duplicate';

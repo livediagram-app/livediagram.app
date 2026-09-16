@@ -4,6 +4,7 @@
 // public `@livediagram/diagram` surface is unchanged. ElementLink + the enums
 // stay in index.ts and are imported here (type-only, so no runtime cycle).
 import type { EventStormingNoteKind } from './event-storming';
+import type { EsDock } from './event-storming-dock';
 import type { TextRun } from './rich-text';
 import type { CommentThread } from './comments';
 import type { ElementAction } from './element-action';
@@ -541,6 +542,13 @@ export type StickyElement = {
   // about the notation (filters, legends, exports) reads it rather than
   // matching hexes. Absent on an ordinary sticky.
   esKind?: EventStormingNoteKind;
+  // Anchor docking (spec/139 Phase 7): the note this one is docked to, and
+  // which side of it this note sits on. Stored on the DOCKED note — the host
+  // carries no back-reference — so a host can be deleted without a write to
+  // its neighbours, a copy of a docked note alone is simply a new piece of
+  // paper, and every reader derives the cluster the same way. A note whose
+  // host has gone is freed by `stripDanglingDocks`.
+  esDock?: EsDock;
   groupId?: ElementId;
   textSize?: TextSize;
   textAlignX?: TextAlignX;
