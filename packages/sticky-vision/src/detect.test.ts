@@ -50,10 +50,15 @@ describe('the colour classes come from the catalogue', () => {
     expect(new Set(PAPER_CLASSES.map((c) => c.kind)).size).toBe(EVENT_STORMING_NOTES.length);
   });
 
-  it('classifies each catalogue fill as its own kind', () => {
+  it('classifies each catalogue fill as its own kind — except the two pinks', () => {
     for (const note of EVENT_STORMING_NOTES) {
       const { r, g, b } = hexToRgb(note.fill);
-      expect(classifyRgb(r, g, b), note.kind).toBe(note.kind);
+      // The catalogue's external-system pink and its hotspot red-pink are the
+      // same colour to a camera, and the operator's own walls use pink for
+      // hotspots. Pink is hotspot; an external system read as one is re-kinded
+      // in the draft, which is a click (spec/139).
+      const expected = note.kind === 'external-system' ? 'hotspot' : note.kind;
+      expect(classifyRgb(r, g, b), note.kind).toBe(expected);
     }
   });
 
@@ -79,7 +84,24 @@ describe('greyWorldBalance', () => {
     expect([...out.data.slice(0, 3)]).toEqual([128, 128, 128]);
   });
 
-  it('pulls a warm cast back towards the paper’s real hue', () => {
+  it('is NOT what the detector relies on — the floors are measured per photo', () => {
+    // On a brown kraft wall the balance takes the wall for a neutral surface
+    // and corrects the brown out of the whole photograph, moving every paper
+    // hue with it; detections on the operator's own walls fell by three
+    // quarters. So it is off by default, and a warm cast is handled by
+    // measuring the wall instead (see wallFloorsOf).
+    const image = blank(60, 60, '#9aa2ab');
+    rect(image, 10, 10, 40, 40, fillOf('actor'));
+    for (let i = 0; i < image.data.length; i += 4) {
+      image.data[i] = Math.min(255, image.data[i]! * 1.18);
+      image.data[i + 2] = image.data[i + 2]! * 0.82;
+    }
+    const found = detectStickies(image);
+    expect(found).toHaveLength(1);
+    expect(found[0]!.kind).toBe('actor');
+  });
+
+  it('still balances a scene when asked, for a caller with a neutral backdrop', () => {
     // A tungsten-ish cast over the whole scene: more red, less blue. The wall
     // is a mid grey so nothing clips — a clipped channel is a cast this cannot
     // undo, and pretending otherwise would make the test a lie.
@@ -89,11 +111,7 @@ describe('greyWorldBalance', () => {
       image.data[i] = Math.min(255, image.data[i]! * 1.18);
       image.data[i + 2] = image.data[i + 2]! * 0.82;
     }
-    // Uncorrected, the yellow paper has drifted far enough to be read as
-    // something else; corrected, it is an actor again.
-    const uncorrected = detectStickies(image, { balance: false });
-    expect(uncorrected[0]?.kind).not.toBe('actor');
-    const corrected = detectStickies(image);
+    const corrected = detectStickies(image, { balance: true });
     expect(corrected).toHaveLength(1);
     expect(corrected[0]!.kind).toBe('actor');
   });
@@ -109,7 +127,9 @@ describe('detectStickies', () => {
       const image = rect(blank(120, 120), 20, 20, 60, 60, note.fill);
       const found = detectStickies(image);
       expect(found, note.kind).toHaveLength(1);
-      expect(found[0]!.kind, note.kind).toBe(note.kind);
+      // Pink is hotspot, per the classification above.
+      const expected = note.kind === 'external-system' ? 'hotspot' : note.kind;
+      expect(found[0]!.kind, note.kind).toBe(expected);
       expect(found[0]).toMatchObject({ x: 20, y: 20, w: 60, h: 60 });
     }
   });

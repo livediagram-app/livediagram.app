@@ -1,5 +1,5 @@
 import { EVENT_STORMING_NOTES, type EventStormingNoteKind } from '@livediagram/diagram';
-import { classifyRgb } from './classify';
+import { classifyRgb, wallFloorsOf, type PaperFloors } from './classify';
 import { greyWorldBalance, type ImageBuffer } from './colour';
 import { labelComponents, type ComponentMask } from './components';
 import { fitBoxes, medianNoteSize, silhouetteOf } from './boxes';
@@ -32,8 +32,17 @@ export type DetectedSticky = {
 };
 
 export type DetectOptions = {
-  // Skip the white balance when the caller knows the image is already neutral
-  // (a rendered fixture, say). Default on.
+  // Run a grey-world white balance first. DEFAULT OFF, and that is a finding
+  // rather than an oversight: on a real workshop wall — brown kraft paper —
+  // the balance takes the wall for a neutral surface and "corrects" the brown
+  // out of the whole photograph, moving every paper hue with it. Detections on
+  // the operator's own walls dropped by three quarters with it on.
+  //
+  // It is not needed either, because everything below is measured from THIS
+  // photograph: the wall's own hue and saturation set the floors, so a warm
+  // room moves the wall and the paper together and the comparison still holds.
+  // The balance stays available (and tested) for a caller with a genuinely
+  // neutral backdrop.
   balance?: boolean;
 };
 
@@ -44,13 +53,16 @@ const KIND_BY_ID = new Map<number, EventStormingNoteKind>(
   [...CLASS_IDS].map(([kind, id]) => [id, kind]),
 );
 
-export function classMaskOf(image: ImageBuffer): ComponentMask {
+export function classMaskOf(image: ImageBuffer, floors?: PaperFloors): ComponentMask {
   const { width, height, data } = image;
+  // Measured from THIS photograph, because a brown kraft wall and an orange
+  // domain event share a hue and differ only in how dull the wall is.
+  const paperFloors = floors ?? wallFloorsOf(image);
   const classes = new Uint8Array(width * height);
   for (let i = 0, p = 0; i < data.length; i += 4, p += 1) {
     // Fully transparent pixels are not paper; a PNG export has plenty.
     if (data[i + 3]! < 128) continue;
-    const c = classifyRgb(data[i]!, data[i + 1]!, data[i + 2]!);
+    const c = classifyRgb(data[i]!, data[i + 1]!, data[i + 2]!, paperFloors);
     const id = CLASS_IDS.get(c as EventStormingNoteKind);
     if (id !== undefined) classes[p] = id;
   }
@@ -58,9 +70,11 @@ export function classMaskOf(image: ImageBuffer): ComponentMask {
 }
 
 export function detectStickies(image: ImageBuffer, opts: DetectOptions = {}): DetectedSticky[] {
-  const working = opts.balance === false ? image : greyWorldBalance(image);
+  const working = opts.balance === true ? greyWorldBalance(image) : image;
   const mask = classMaskOf(working);
-  const boxes = fitBoxes(labelComponents(mask));
+  const boxes = fitBoxes(labelComponents(mask), {
+    imageSize: Math.max(working.width, working.height),
+  });
   if (boxes.length === 0) return [];
   const noteSize = medianNoteSize(boxes);
   return clusterRows(boxes, noteSize).map((box, i) => ({
