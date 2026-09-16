@@ -238,14 +238,18 @@ describe('the slots a lane offers', () => {
       // edge to right edge — each also one step along. No brick between the two.
       const step = 200 + GAP;
       const cs = laneCandidates({ x: 10, y: ES_LANE_PITCH, ...wide }, lone);
-      expect(xs(cs, 'aligned')).toEqual([-100 - step, -step, -100, 0, -100 + step, step].sort((a, b) => a - b));
+      expect(xs(cs, 'aligned')).toEqual(
+        [-100 - step, -step, -100, 0, -100 + step, step].sort((a, b) => a - b),
+      );
       expect(xs(cs, 'staggered')).toEqual([]);
     });
 
     it('offers the same two edges to a SMALL note', () => {
       const step = 200 + GAP;
       const cs = laneCandidates({ x: 10, y: ES_LANE_PITCH, ...small }, lone);
-      expect(xs(cs, 'aligned')).toEqual([-step, 60 - step, 0, 60, step, 60 + step].sort((a, b) => a - b));
+      expect(xs(cs, 'aligned')).toEqual(
+        [-step, 60 - step, 0, 60, step, 60 + step].sort((a, b) => a - b),
+      );
       expect(xs(cs, 'staggered')).toEqual([]);
     });
 
