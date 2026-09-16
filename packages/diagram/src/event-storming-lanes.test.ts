@@ -171,7 +171,7 @@ describe('the slots a lane offers', () => {
 
   describe('in an ADJACENT lane', () => {
     it('offers exactly above or below a note', () => {
-      expect(xs(laneCandidates(below(10), lone), 'aligned')).toEqual([0]);
+      expect(xs(laneCandidates(below(10), lone), 'aligned')).toContain(0);
     });
 
     it('offers exactly above or below a GAP, centred on it', () => {
@@ -185,9 +185,24 @@ describe('the slots a lane offers', () => {
       expect(xs(cs, 'staggered')).toContain(108);
     });
 
-    it('offers NOTHING else across lanes — no rhythm slots from the row above', () => {
+    it('offers the DIAGONAL: one step along from the column, either way', () => {
+      // A note in the lane above sitting diagonally against its neighbour,
+      // still on the row's rhythm.
+      const step = 200 + GAP;
+      expect(xs(laneCandidates(below(step), lone), 'aligned')).toContain(step);
+      expect(xs(laneCandidates(below(-step), lone), 'aligned')).toContain(-step);
+    });
+
+    it('offers exactly three columns and two bricks, and nothing else', () => {
+      const step = 200 + GAP;
       const cs = laneCandidates(below(10), lone);
-      expect(xs(cs)).toEqual([-108, 0, 108]);
+      expect(xs(cs, 'aligned')).toEqual([-step, 0, step]);
+      expect(xs(cs, 'staggered')).toEqual([-108, 108]);
+    });
+
+    it('never offers same-lane rhythm slots from the row next door', () => {
+      const cs = laneCandidates(below(10), lone);
+      expect(xs(cs, 'gutter')).toEqual([]);
     });
   });
 
@@ -220,15 +235,17 @@ describe('the slots a lane offers', () => {
 
     it('lines a different silhouette up on EITHER edge, and offers no brick', () => {
       // A 300-wide policy under a 200 square: left edge to left edge, or right
-      // edge to right edge. There is no sensible brick between the two.
+      // edge to right edge — each also one step along. No brick between the two.
+      const step = 200 + GAP;
       const cs = laneCandidates({ x: 10, y: ES_LANE_PITCH, ...wide }, lone);
-      expect(xs(cs, 'aligned')).toEqual([-100, 0]);
+      expect(xs(cs, 'aligned')).toEqual([-100 - step, -step, -100, 0, -100 + step, step].sort((a, b) => a - b));
       expect(xs(cs, 'staggered')).toEqual([]);
     });
 
     it('offers the same two edges to a SMALL note', () => {
+      const step = 200 + GAP;
       const cs = laneCandidates({ x: 10, y: ES_LANE_PITCH, ...small }, lone);
-      expect(xs(cs, 'aligned')).toEqual([0, 60]);
+      expect(xs(cs, 'aligned')).toEqual([-step, 60 - step, 0, 60, step, 60 + step].sort((a, b) => a - b));
       expect(xs(cs, 'staggered')).toEqual([]);
     });
 
@@ -239,8 +256,9 @@ describe('the slots a lane offers', () => {
 
     it('offers no brick between two WIDE notes — the brick is a square thing', () => {
       const wideNeighbour = [note({ id: 'w', x: 0, y: 0, width: 300, height: 180 })];
+      const step = 200 + GAP;
       const cs = laneCandidates({ x: 10, y: ES_LANE_PITCH, ...wide }, wideNeighbour);
-      expect(xs(cs, 'aligned')).toEqual([0]);
+      expect(xs(cs, 'aligned')).toEqual([-step, 0, step]);
       expect(xs(cs, 'staggered')).toEqual([]);
     });
   });
@@ -298,9 +316,10 @@ describe('capturing a suggested slot', () => {
   });
 
   it('takes the note from up to half a note away', () => {
-    // The outermost slot this pair offers is the stagger past the right
-    // event; a hand 100px beyond it is still captured, 101 is not.
-    const outer = 200 + GAP + (200 + GAP) / 2;
+    // The outermost slot this row offers within reach; a hand 100px beyond it
+    // is still captured, 101 is not.
+    // One step past the right note of the pair, the furthest column it offers.
+    const outer = 2 * (200 + GAP);
     expect(capture(outer + 100)!.x).toBe(outer);
     expect(capture(outer + 101)).toBeNull();
   });

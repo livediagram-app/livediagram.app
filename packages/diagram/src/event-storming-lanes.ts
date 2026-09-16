@@ -195,6 +195,13 @@ function gutterCentres(neighbour: { x: number; width: number }, width: number): 
   return [rightCentre - width / 2, leftCentre - width / 2];
 }
 
+// Exactly above, or one rhythm step to either side: the diagonal.
+const DIAGONAL_STEPS = [
+  -(ES_NOTE_SIZE_PX.square.width + ES_NOTE_GAP),
+  0,
+  ES_NOTE_SIZE_PX.square.width + ES_NOTE_GAP,
+];
+
 const isSquare = (box: { width: number; height: number }): boolean =>
   box.width === ES_NOTE_SIZE_PX.square.width && box.height === ES_NOTE_SIZE_PX.square.height;
 
@@ -243,11 +250,18 @@ export function laneCandidates(
       for (const x of rhythmSlots(note, bounds.width)) offer(x, 'gutter', note.id);
       continue;
     }
-    // THE ROW NEXT DOOR: edges line up.
-    offer(note.x, 'aligned', note.id);
+    // THE ROW NEXT DOOR: edges line up — exactly above the note, or ONE STEP
+    // along from it, which is how a note sits diagonally against its
+    // neighbour and still keeps the row's rhythm. One step each way, not four:
+    // beyond the note next door and its immediate neighbours-to-be, the row
+    // above stops having an opinion.
+    for (const shift of DIAGONAL_STEPS) offer(note.x + shift, 'aligned', note.id);
     if (note.width !== bounds.width) {
-      // Different silhouettes: the other edge, and no brick.
-      offer(note.x + note.width - bounds.width, 'aligned', note.id);
+      // Different silhouettes: the other edge too, same three columns, and no
+      // brick.
+      for (const shift of DIAGONAL_STEPS) {
+        offer(note.x + note.width - bounds.width + shift, 'aligned', note.id);
+      }
       continue;
     }
     if (!isSquare(note) || !isSquare(bounds)) continue;
