@@ -301,29 +301,29 @@ if implementation reveals a default is wrong, or where marked **ASK FIRST**.
       the same left wall shifted; 919 is the right wall plane), which is the
       incremental case. Never commit them. Calibrate detector → reader → matcher
       against them in 3.7 and record the results in spec/139.
-- [ ] **Q17 — "Both their positions are already adjusted to be correct."**
+- [x] **Q17 — "Both their positions are already adjusted to be correct."**
       _Read as: in the draft, NEW notes are shown at their final reconciled
       positions (not the raw photo positions), and EXISTING notes are shown
       where they are (unmoved — the first requirement stands). If the operator
       meant that existing notes may ALSO be nudged (e.g. onto lanes) during the
       draft, that contradicts "never rearranged"; ASK if any task would need to
       move an existing note._
-- [ ] **Q18 — Detector ambiguity: actor vs aggregate.** Both are yellow; the
+- [x] **Q18 — Detector ambiguity: actor vs aggregate.** Both are yellow; the
       actor is a small saturated square, the aggregate a pale wide note.
       _Default: classify by saturation first (pale → aggregate), then by
       silhouette when saturation is borderline; when still unsure return
       `unknown`, which lands as a Domain Event draft with the badge tooltip
       naming the doubt (the existing `unknown` path)._
-- [ ] **Q19 — Reading batches.** _Default: crops are sent in batches of up to 16
+- [x] **Q19 — Reading batches.** _Default: crops are sent in batches of up to 16
       images per request (each crop labelled by index in the message so the model
       returns `{ id, text, legible }` per crop), batches in flight two at a time,
       the whole run abortable. `PHOTO_MAX_NOTES` (120) still caps a run._
-- [ ] **Q20 — Detection preview.** _Default: none in v1 — the draft on the canvas
+- [x] **Q20 — Detection preview.** _Default: none in v1 — the draft on the canvas
       IS the review. A sticky the detector missed is added by hand; a false
       positive is Deleted from the draft. Log the detection count and the
       per-kind histogram at debug level so a miss is diagnosable._
 
-- [ ] **Q21 — What the parent saw in the real photos (calibrate against these).**
+- [x] **Q21 — What the parent saw in the real photos (calibrate against these).**
   - The wall is BROWN KRAFT PAPER, not white. Grey-world white balance would be
     dragged by the brown; estimate the wall as the dominant low-saturation
     cluster instead and classify paper by saturation + value ABOVE the wall
@@ -846,31 +846,31 @@ working image */, row, order, confidence }`; `toNormalised(...)` for the
 
 ### 3.1 Spec
 
-- [ ] Spec/139 Phase 8: rewrite the "what the model is asked" paragraph to the
+- [x] Spec/139 Phase 8: rewrite the "what the model is asked" paragraph to the
       hybrid (detection in the browser, only crops sent, the model reads text
       only); add a short "how the detector works" paragraph (colour classes from
       the catalogue, components, split rule, rows) and its known limits
       (white / grey paper is not in the notation; very dim or blue-lit photos
       confuse hues; a sticky covered more than ~60% is read as a fragment).
-- [ ] Spec/25: rename the env-var table to `AI_API_KEY` / `AI_BASE_URL` /
+- [x] Spec/25: rename the env-var table to `AI_API_KEY` / `AI_BASE_URL` /
       `AI_MODEL` / `AI_VISION_MODEL`, state the OpenAI-compatible contract and the
       Gemini + local llama.cpp examples, document `POST /api/ai/read-notes` (auth,
       gates, caps, request / response, error tokens) and REMOVE `/api/ai/photo-notes`.
       Spec/06, spec/10 (deploy: the secret name), spec/11 (route list), spec/20 if
       it names the var, `specs/02` + `138` only if they mention the name in
       passing (one-word edits).
-- [ ] `apps/api/src/openapi/manifest.ts`: replace the photo-notes entry with
+- [x] `apps/api/src/openapi/manifest.ts`: replace the photo-notes entry with
       read-notes; regenerate schemas; test.
-- [ ] Commit.
+- [x] Commit.
 
 ### 3.2 API: pluggable client + the read route
 
-- [ ] `apps/api/src/ai-client.ts` — `chatCompletions(env, body)`: builds
+- [x] `apps/api/src/ai-client.ts` — `chatCompletions(env, body)`: builds
       `${AI_BASE_URL}/chat/completions` (trailing-slash tolerant), bearer
       `AI_API_KEY`, forwards the body, returns the `Response`. Both routes call it.
       Test: URL joining, header, body passthrough, a 4xx surfaces as `ai_error`
       with the provider status logged (never the key).
-- [ ] `apps/api/src/ai-provider.ts` per Edit A, TDD: each preset alone resolves;
+- [x] `apps/api/src/ai-provider.ts` per Edit A, TDD: each preset alone resolves;
       generic needs both `AI_BASE_URL` and `AI_MODEL`; two keys → `null` + one
       `console.error`; `AI_MODEL` / `AI_VISION_MODEL` overrides; trailing slash
       on `AI_BASE_URL` tolerated. `types.ts` Env grows the three key vars +
@@ -883,11 +883,11 @@ working image */, row, order, confidence }`; `toNormalised(...)` for the
       where they name the var. Grep `OPENAI_MODEL` afterwards: zero hits outside
       a historical note. Existing `ai.test.ts` + gate tests stay green with their
       env stubs renamed.
-- [ ] Discover the Gemini Flash model id rather than guessing it: with the key in
+- [x] Discover the Gemini Flash model id rather than guessing it: with the key in
       `apps/api/.dev.vars`, `GET {google base URL}/models` (bearer auth) lists what
       the key can use; pick the current stable `*-flash` id, make it the google
       preset default, and record the id + date in spec/25.
-- [ ] `apps/api/src/routes/ai-read-notes.ts` — `handleAiReadNotes(ctx)`: gate;
+- [x] `apps/api/src/routes/ai-read-notes.ts` — `handleAiReadNotes(ctx)`: gate;
       JSON body `{ crops }`; validate count ≤ `READ_MAX_CROPS_PER_REQUEST`, each
       `id` an integer, each data URL prefix in `image/jpeg|png|webp`, decoded size
       ≤ `CROP_MAX_BYTES`; build ONE user message with the crops interleaved with
@@ -898,35 +898,35 @@ working image */, row, order, confidence }`; `toNormalised(...)` for the
       strictly (drop unknown ids, clamp text length, coerce `legible`); respond
       `ReadNotesResponse`. Errors: the spec/25 tokens plus `crops_invalid` (400)
       and `crops_too_large` (413). Log provider status + crop count + legible count.
-- [ ] `index.ts`: `case 'ai'` dispatches `'read-notes'`; `'photo-notes'` is gone
+- [x] `index.ts`: `case 'ai'` dispatches `'read-notes'`; `'photo-notes'` is gone
       (404 like any unknown path).
-- [ ] DELETE `ai-photo-notes.ts`, `ai-photo-notes.test.ts`, `ai-photo-prompt.ts`
+- [x] DELETE `ai-photo-notes.ts`, `ai-photo-notes.test.ts`, `ai-photo-prompt.ts`
       (+ test) in the same commit as the read route lands.
-- [ ] Tests `ai-read-notes.test.ts`: every gate path, 400 bad JSON / bad id /
+- [x] Tests `ai-read-notes.test.ts`: every gate path, 400 bad JSON / bad id /
       bad prefix / GIF / SVG / too many crops, 413 too large, 502 provider
       failure, 200 happy path with a stubbed fetch, unknown ids dropped, a
       provider answer missing an id → that id comes back `legible: false`;
       `ai-read-prompt.test.ts` pins "verbatim" and the legible rule.
-- [ ] Commit: `feat(api): a pluggable model client that reads note crops`.
+- [x] Commit: `feat(api): a pluggable model client that reads note crops`.
 
 ### 3.3 Pure reconciliation (`event-storming-photo.ts`) — adjust only
 
-- [ ] Input type follows §5 (`DetectedNote` assembled client-side; empty text +
+- [x] Input type follows §5 (`DetectedNote` assembled client-side; empty text +
       `legible: false` allowed). A note with empty text NEVER matches an existing
       note (it always lands as a new empty draft). Adjust tests; the three
       end-to-end fixtures stay.
-- [ ] Commit.
+- [x] Commit.
 
 ### 3.4 Client: detection, crops, reading
 
-- [ ] `packages/sticky-vision` per §5, TDD module by module with synthetic
+- [x] `packages/sticky-vision` per §5, TDD module by module with synthetic
       images: single sticky per kind → right kind + box; a 3×2 grid → six boxes,
       two rows, order left→right; two overlapping same-colour events → split into
       two; a sticky with heavy handwriting → one box not five; a warm colour cast
       → still the right kinds after grey-world; a photo with no paper → `[]`;
       speck noise → dropped; 1024px working image in < 150ms in vitest (assert a
       loose bound so CI is not flaky).
-- [ ] `apps/live/lib/photo-prepare.ts` → rename to what it IS now:
+- [x] `apps/live/lib/photo-prepare.ts` → rename to what it IS now:
       `photo-detect.ts`: `detectAndCrop(file, signal)` → decode with EXIF
       orientation, working copy at `PHOTO_MAX_EDGE_PX`, `detectStickies`, then
       `cropRects` cut from the full-res bitmap (pad 6%), each re-encoded JPEG
@@ -937,22 +937,22 @@ working image */, row, order, confidence }`; `toNormalised(...)` for the
       (use Chrome's CPU throttling ×4 as the proxy), move `detectStickies` into a
       Web Worker (`sticky-vision.worker.ts`), otherwise leave it on the main
       thread and record the measurement in spec/139.
-- [ ] `apps/live/lib/api/ai.ts`: replace `apiAiPhotoNotes` with
+- [x] `apps/live/lib/api/ai.ts`: replace `apiAiPhotoNotes` with
       `apiAiReadNotes(crops, signal)` → `ReadNotesResponse`, batched per Q19,
       two in flight, abortable, typed errors. Test.
-- [ ] `usePhotoDraft.ts` `startFromFile`: `detectAndCrop` → `apiAiReadNotes` →
+- [x] `usePhotoDraft.ts` `startFromFile`: `detectAndCrop` → `apiAiReadNotes` →
       assemble `DetectedNote[]` (kind / box / row / order from the detector, text /
       legible from the model) → `reconcilePhoto` → land, exactly as 3.5 already
       says. Zero stickies detected → the Q8 toast, no model call at all. Progress
       toast copy: "Finding stickies…" then "Reading 14 stickies…".
-- [ ] Tests updated: the state machine now has a `detecting` state before
+- [x] Tests updated: the state machine now has a `detecting` state before
       `reading`; detection with no stickies never calls the api; an illegible crop
       lands as an empty draft note.
-- [ ] Commit: `feat(live): find stickies in the browser, read their text`.
+- [x] Commit: `feat(live): find stickies in the browser, read their text`.
 
 ### 3.5 The draft (on-canvas review)
 
-- [ ] `apps/live/hooks/canvas/usePhotoDraft.ts` — the state machine
+- [x] `apps/live/hooks/canvas/usePhotoDraft.ts` — the state machine
       `idle → preparing → reading → draft → committing → idle`, plus `error`
       (toast + the entry points re-enabled); every transition logged at debug
       level. `startFromFile(file)`: `preparePhoto` → `apiAiPhotoNotes` (abortable)
@@ -969,16 +969,16 @@ working image */, row, order, confidence }`; `toNormalised(...)` for the
       the armed snapshot (the cancel path), clear the store, nothing logged.
       Gates: read-only / locked tab / blocked layer → the entry points are
       disabled with a reason and `startFromFile` refuses.
-- [ ] Draft rendering, all render-time and local to the importing session:
-  - [ ] Draft notes (`esDraft` on the element, so peers and a reload see them
+- [x] Draft rendering, all render-time and local to the importing session:
+  - [x] Draft notes (`esDraft` on the element, so peers and a reload see them
         too): full opacity plus a dashed accent outline just outside the paper
         (the alignment-guide accent) — "the most visible thing on the board".
-  - [ ] While the local store says a draft is open: every NON-draft element on
+  - [x] While the local store says a draft is open: every NON-draft element on
         the tab renders at ~50% opacity (a wrapper style in
         `CanvasElementsLayer`, never a write); matched notes additionally get a
         small "already here" badge (a check glyph on the top-right corner, a
         `Tooltip` "Read as: …" when the photo text differed, Q11).
-  - [ ] Draft notes are ordinary notes: double-click types (the label editor
+  - [x] Draft notes are ordinary notes: double-click types (the label editor
         commits through `tick` while the draft is open, so it stays inside the
         gesture — verify the editor's commit path can be pointed at `tick`, or
         route its commits through the choke point that the gesture already
@@ -987,9 +987,9 @@ working image */, row, order, confidence }`; `toNormalised(...)` for the
         kind…** (a row of the eight kinds; re-kinding re-fills, re-silhouettes
         and re-centres through the one builder's silhouette rule; available on
         EVERY ES note, not only drafts — a verb, not styling).
-  - [ ] Dark scheme legibility of outline, fade and badge; reduced motion (no
+  - [x] Dark scheme legibility of outline, fade and badge; reduced motion (no
         pulse — there is no animation to begin with; keep it that way).
-- [ ] `apps/live/components/chrome/PhotoDraftBar.tsx` — a floating bar (the
+- [x] `apps/live/components/chrome/PhotoDraftBar.tsx` — a floating bar (the
       `ModifierHintBanner` / view-bar visual language, bottom-centre) shown while
       the tab has draft notes: "14 read · 9 new · 5 already on the board", the
       **Add 9 notes** primary (count live, disabled at 0), **Discard** secondary,
@@ -998,16 +998,16 @@ working image */, row, order, confidence }`; `toNormalised(...)` for the
       bar again with "Add all / Discard" and the fade off (the local store is
       gone; the notes are still drafts). WCAG AA, keyboard reachable, `aria-live`
       on the count, zero CLS (fixed height, no layout participation).
-- [ ] Reading state: a small progress toast "Reading the photo…" with Cancel
+- [x] Reading state: a small progress toast "Reading the photo…" with Cancel
       (aborts the fetch); errors as toasts with Retry (`ai_error`,
       `rate_limited`, `origin_not_allowed`, `sign_in_required`,
       `ai_not_configured`, `photo_invalid`, `photo_too_large`, network).
-- [ ] Entry points (Q7): palette row "Add from photo" (hidden without
+- [x] Entry points (Q7): palette row "Add from photo" (hidden without
       `aiEnabled`; disabled with reason while a draft is open or the gate
       blocks); command palette entry; image-file drop / paste on an ES board
       routes to `startFromFile` (branch on ES-board + `aiEnabled` + an
       `image/*` file type; everything else untouched).
-- [ ] Tests: state machine (every transition incl. abort, error, retry, refuse
+- [x] Tests: state machine (every transition incl. abort, error, retry, refuse
       on gate); landing uses the one builder (assert `fixedSize`, `esKind`,
       `esDraft`, `textSize: 'scale'`, layer id, tilt within ±1.1); a typed edit
       and a drag on a draft note stay inside the gesture (history length
@@ -1016,11 +1016,11 @@ working image */, row, order, confidence }`; `toNormalised(...)` for the
       Delete on a draft note removes it from the batch; Change kind re-builds
       the silhouette; bar counts and disabled states; drop routing on ES vs
       non-ES boards and with `aiEnabled` off; reload with drafts shows the bar.
-- [ ] Commit: `feat(live): import sticky notes from a wall photo`.
+- [x] Commit: `feat(live): import sticky notes from a wall photo`.
 
 ### 3.6 E2E (mocked model)
 
-- [ ] `photo-import.spec.ts`: the fixture image is a PNG export of an ES board
+- [x] `photo-import.spec.ts`: the fixture image is a PNG export of an ES board
       with six notes (the detector must find all six with the right kinds — this
       is a REAL detection in the browser, not mocked); route
       `**/api/ai/read-notes` → fixture texts by id (the ids are stable because the
@@ -1029,15 +1029,15 @@ working image */, row, order, confidence }`; `toNormalised(...)` for the
       mid-draft reload, dark scheme) plus: a fixture with two overlapping same
       colour notes yields two drafts; a route returning `legible: false` for one
       id yields one empty draft.
-- [ ] Green under PM2 against the real stack.
-- [ ] Commit.
+- [x] Green under PM2 against the real stack.
+- [x] Commit.
 
 ### 3.7 Live calibration (needs the operator — Q16)
 
-- [ ] ASK (question block) for the Gemini key, base URL and model id in
+- [x] ASK (question block) for the Gemini key, base URL and model id in
       `apps/api/.dev.vars` and 2–3 real wall photos in `/tmp`. Never print, log or
       commit any of it; the photos are never committed.
-- [ ] Calibrate the DETECTOR first on the real photos (hue bands, saturation
+- [x] Calibrate the DETECTOR first on the real photos (hue bands, saturation
       floors, the split threshold, the merge rule) until every visible sticky is
       one box with the right kind; then the READER prompt until the text is
       verbatim and illegible crops are marked rather than guessed; then the
@@ -1051,9 +1051,9 @@ working image */, row, order, confidence }`; `toNormalised(...)` for the
 
 - [ ] Dev server walkthrough of every path in §10 C (with the mocked route via
       playwright-cli where the real model is unavailable).
-- [ ] Spec/139 Phase 8 filled in; learnings appended (at least: "perception is the
+- [x] Spec/139 Phase 8 filled in; learnings appended (at least: "perception is the
       model's, reconciliation is ours", "existing notes are immovable").
-- [ ] Quality gate green; commit.
+- [x] Quality gate green; commit.
 
 ---
 
@@ -1131,7 +1131,7 @@ Each is one more `ES_DOCKINGS` row plus, where the face is not west / east, a
       a new command-event pair → additions on lanes, the new pair docked, nothing
       existing moved (compare element JSON before / after, byte-identical for
       matched ids).
-- [ ] Help: `apps/help/app/canvas/event-storming-boards/page.mdx` gains three
+- [x] Help: `apps/help/app/canvas/event-storming-boards/page.mdx` gains three
       sections (lanes, anchors, from a photo (the draft: outline,
       fade, badge, bar, Add / Discard / Undo)); registry `description` unchanged
       unless it no longer summarises, `keywords` gain the lane / dock / photo
@@ -1162,9 +1162,9 @@ Each is one more `ES_DOCKINGS` row plus, where the face is not west / east, a
 - [ ] PR description names the deploy step: `wrangler secret put AI_API_KEY`,
       `AI_BASE_URL` + `AI_MODEL` as `[vars]`, delete the old `OPENAI_API_KEY`
       secret.
-- [ ] `packages/sticky-vision` in the repo layout block of `CLAUDE.md` and in
+- [x] `packages/sticky-vision` in the repo layout block of `CLAUDE.md` and in
       `README.md` / `docs/architecture.md`.
-- [ ] `docs/` wiki page `docs/vision/sticky-detection.md`: how the detector
+- [x] `docs/` wiki page `docs/vision/sticky-detection.md`: how the detector
       works, its calibration constants and why, the limits — a durable
       repo-level learning.
 - [ ] Final quality gate: lint, format:check, typecheck, test and build all

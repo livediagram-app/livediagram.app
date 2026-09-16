@@ -285,7 +285,13 @@ test('a draft survives a reload, and can still be added', async ({ page, pageErr
 });
 
 test('the reader is nowhere to be seen without a model key', async ({ page, pageErrors }) => {
-  // No capabilities mock: the local api has no key, so aiEnabled is false.
+  // Say it, rather than depending on whether whoever runs this has a key in
+  // their .dev.vars: the assertion is about a deployment WITHOUT one, and a
+  // developer with a real key configured was failing this test for the one
+  // reason that is not a bug.
+  await page.route('**/api/capabilities', (route) =>
+    route.fulfill({ json: { aiEnabled: false, emailEnabled: false } }),
+  );
   await startTemplateDiagram(page, /Browse Technical templates/, /^Event storming/i);
   await page.locator('[data-canvas-a11y-root]').waitFor();
   await dismissQuickTour(page);
