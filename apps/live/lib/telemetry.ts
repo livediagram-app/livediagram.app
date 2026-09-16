@@ -15,7 +15,7 @@ import {
   STORAGE_KEY as PREFS_STORAGE_KEY,
 } from './user-preferences';
 
-const ENABLED = process.env['NEXT_PUBLIC_TELEMETRY_ENABLED'] === 'true';
+const ENABLED = process.env.NEXT_PUBLIC_TELEMETRY_ENABLED === 'true';
 
 let preferenceListenersAttached = false;
 

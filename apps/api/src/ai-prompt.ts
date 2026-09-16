@@ -155,13 +155,13 @@ export function diagramTypeHint(prompt: string): string {
 // ---------------------------------------------------------------------------
 export function extractExistingStyle(elements: unknown[]): string {
   const boxed = (elements as Record<string, unknown>[]).filter(
-    (el) => el['type'] !== 'arrow' && typeof el['x'] === 'number',
+    (el) => el.type !== 'arrow' && typeof el.x === 'number',
   );
   if (boxed.length === 0) return '';
   const sample = boxed.slice(0, 8);
   const parts: string[] = [];
 
-  const shapes = sample.map((e) => e['shape']).filter(Boolean);
+  const shapes = sample.map((e) => e.shape).filter(Boolean);
   if (shapes.length > 0) {
     const counts = new Map<unknown, number>();
     for (const s of shapes) counts.set(s, (counts.get(s) ?? 0) + 1);
@@ -169,18 +169,18 @@ export function extractExistingStyle(elements: unknown[]): string {
     if (top) parts.push(`dominant shape: "${String(top[0])}"`);
   }
 
-  const ws = sample.map((e) => Number(e['width'])).filter((n) => n > 0);
-  const hs = sample.map((e) => Number(e['height'])).filter((n) => n > 0);
+  const ws = sample.map((e) => Number(e.width)).filter((n) => n > 0);
+  const hs = sample.map((e) => Number(e.height)).filter((n) => n > 0);
   if (ws.length && hs.length) {
     const avgW = Math.round(ws.reduce((a, b) => a + b, 0) / ws.length);
     const avgH = Math.round(hs.reduce((a, b) => a + b, 0) / hs.length);
     parts.push(`typical size: ${avgW}×${avgH}`);
   }
 
-  const radii = sample.map((e) => e['borderRadius']).filter(Boolean);
+  const radii = sample.map((e) => e.borderRadius).filter(Boolean);
   if (radii.length) parts.push(`borderRadius: "${String(radii[0])}"`);
 
-  const textSizes = sample.map((e) => e['textSize']).filter(Boolean);
+  const textSizes = sample.map((e) => e.textSize).filter(Boolean);
   if (textSizes.length) {
     const tCounts = new Map<unknown, number>();
     for (const t of textSizes) tCounts.set(t, (tCounts.get(t) ?? 0) + 1);

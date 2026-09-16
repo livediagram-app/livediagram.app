@@ -13,7 +13,7 @@ import createMDX from '@next/mdx';
 // `_buildManifest.js.tmp.*` mid-flight — the corruption that left the help
 // centre serving 500s and 404ing its `app/layout.css` (unstyled page).
 // Build / CI leave the var unset and keep the default `.next/`.
-const distDir = process.env['NEXT_DISTDIR'] ?? '.next';
+const distDir = process.env.NEXT_DISTDIR ?? '.next';
 
 const nextConfig: NextConfig = {
   output: 'export',

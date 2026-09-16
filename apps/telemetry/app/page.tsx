@@ -37,7 +37,7 @@ import { MetricSearch } from './MetricSearch';
 // Same origin as the editor + api under the router (livediagram.app).
 // An origin-relative '/api' is correct even though this app is served
 // under '/telemetry' (basePath doesn't rewrite absolute fetch paths).
-const API_BASE = process.env['NEXT_PUBLIC_API_BASE'] ?? '/api';
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
 
 // Three ways to read the same summary payload (spec/22). The timeframe
 // window is global (the WindowPanel above the tabs), so it lives here

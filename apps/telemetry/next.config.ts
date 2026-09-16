@@ -7,7 +7,7 @@ import type { NextConfig } from 'next';
 // `next dev`, so a `next build` in the same checkout can't corrupt the
 // dev server's cache (the `_buildManifest.js.tmp.*` ENOENT 500s).
 // Build / CI leave it unset and keep the default `.next`.
-const distDir = process.env['NEXT_DISTDIR'] ?? '.next';
+const distDir = process.env.NEXT_DISTDIR ?? '.next';
 
 const nextConfig: NextConfig = {
   output: 'export',

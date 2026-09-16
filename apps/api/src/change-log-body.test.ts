@@ -117,7 +117,7 @@ describe('parseChangeLogEntryBody (rejections)', () => {
     // Defends against a client serialising elementIds as a CSV
     // string accidentally. Array.isArray is the only path through.
     const body = validBody();
-    (body as Record<string, unknown>)['elementIds'] = 'el-1,el-2';
+    (body as Record<string, unknown>).elementIds = 'el-1,el-2';
     expect(parseChangeLogEntryBody(body)).toBeNull();
   });
 
@@ -132,13 +132,13 @@ describe('parseChangeLogEntryBody (rejections)', () => {
 
   it('rejects when beforeState is a string', () => {
     const body = validBody();
-    (body as Record<string, unknown>)['beforeState'] = 'oops';
+    (body as Record<string, unknown>).beforeState = 'oops';
     expect(parseChangeLogEntryBody(body)).toBeNull();
   });
 
   it('rejects when afterState is a string', () => {
     const body = validBody();
-    (body as Record<string, unknown>)['afterState'] = 'oops';
+    (body as Record<string, unknown>).afterState = 'oops';
     expect(parseChangeLogEntryBody(body)).toBeNull();
   });
 
@@ -150,8 +150,8 @@ describe('parseChangeLogEntryBody (rejections)', () => {
     // bit-for-bit; tightening to reject null would be a behaviour
     // change worth its own commit.
     const body = validBody();
-    (body as Record<string, unknown>)['beforeState'] = null;
-    (body as Record<string, unknown>)['afterState'] = null;
+    (body as Record<string, unknown>).beforeState = null;
+    (body as Record<string, unknown>).afterState = null;
     const parsed = parseChangeLogEntryBody(body);
     expect(parsed).not.toBeNull();
     expect(parsed?.beforeState).toEqual({});

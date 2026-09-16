@@ -29,13 +29,16 @@ raw sum double-counts).
 | `noImplicitReturns`                  |             1 |     1 | adopt                        |
 | `noUnusedParameters`                 |             2 |     1 | adopt                        |
 | `erasableSyntaxOnly`                 |             5 |     2 | adopt                        |
-| `noPropertyAccessFromIndexSignature` |           335 |    49 | adopt (138 in one validator) |
+| `noPropertyAccessFromIndexSignature` |           335 |    49 | **decline** — see Phase 4    |
 | `exactOptionalPropertyTypes`         |           462 |   226 | **decline** — see Phase 5    |
 | `isolatedDeclarations`               |           112 |    48 | **decline** — see below      |
 
-Both declines were reached by measuring, not by taste, and each is argued where
-it was decided: `isolatedDeclarations` below, `exactOptionalPropertyTypes` in
-Phase 5 (it was planned, trialled, and dropped on the evidence).
+The three declines were reached by measuring, not by taste, and each is argued
+where it was decided: `isolatedDeclarations` below,
+`noPropertyAccessFromIndexSignature` in Phase 4, `exactOptionalPropertyTypes` in
+Phase 5. Two of them were planned as work, done or part-done, and then dropped
+on what the conversion actually looked like — the measurement that mattered came
+from reading real diffs, not from counting errors.
 
 ### Why `isolatedDeclarations` is declined
 
@@ -117,14 +120,52 @@ Both aliases go in **every** workspace — pnpm only links a workspace's own bin
 - [x] `noUnusedParameters` (2 errors, `useEditorDrag.insert-between.test.tsx`)
 - [x] `erasableSyntaxOnly` (5 errors, `apps/mcp/src/api.ts` + one test)
 
-### Phase 4 — `noPropertyAccessFromIndexSignature` (335 errors, 49 files)
+### Phase 4 — `noPropertyAccessFromIndexSignature` (335 errors, 49 files) — **declined**
 
-- [x] `packages/diagram/src/validate.ts` (138) — the untyped-JSON validator
-- [x] Remaining `packages/*` sites
-- [x] `apps/api` + `apps/mcp` sites
-- [x] `apps/live` sites
-- [x] `apps/marketing`, `apps/help`, `apps/telemetry` sites
-- [x] Turn the flag on in `tsconfig.base.json`
+Adopted, completed across all 335 sites, then reverted on review. The argument
+for it was that `noUncheckedIndexedAccess` makes an index-signature **value**
+honest (`| undefined`) while this makes the **access** honest, so running one
+without the other was half a guard rail.
+
+That analogy was wrong, and one probe shows why:
+
+```ts
+interface JWTPayload {
+  sub?: string;
+  [k: string]: unknown;
+}
+declare const payload: JWTPayload;
+
+payload.emial; // TS4111 — a typo
+payload.email; // TS4111 — correct
+payload['emial']; // no error at all
+```
+
+The flag reports the typo and the correct key identically, and brackets silence
+both. It catches nothing and **changes no types** — unlike
+`noUncheckedIndexedAccess`, which really does alter the type and really does
+catch crashes. It is a notation rule, not a safety rule, which is why it sits
+under "Additional Checks" rather than inside `strict`.
+
+Priced as notation, 335 rewrites is a bad trade:
+
+- **138 of them are in one file**, `packages/diagram/src/validate.ts`, whose
+  objects are plain `Record<string, unknown>`. There are no declared properties
+  there to be distinguished from index-signature ones, so the brackets carry no
+  information at all. `hasValidBox` went from three lines to eight once Prettier
+  reflowed it.
+- The genuine case — a type with declared members **and** an index signature,
+  like `JWTPayload` — is a small minority, and at those sites the very next
+  expression is already a `typeof … === 'string'` guard that says the same thing
+  in code.
+
+Nothing is lost by declining: no type widens, no check weakens,
+`noUncheckedIndexedAccess` keeps doing the actual work.
+
+- [x] Convert all 335 sites (driven by compiler error positions, not regex)
+- [x] Review the result on real diffs — the noise is not buying safety
+- [x] Prove the flag catches no typo and changes no type
+- [x] Revert, and record the evidence in `DECISIONS.md`
 
 ### Phase 5 — `exactOptionalPropertyTypes` (462 errors, 226 files) — **declined**
 

@@ -47,12 +47,12 @@ describe('VIEW_TOOL_KEYS (non-mutating tools)', () => {
 
   it('binds Hand to H (not P, which is now Pencil)', () => {
     expect(fired(VIEW_TOOL_KEYS, 'h')).toBe('tool:pan');
-    expect(VIEW_TOOL_KEYS['p']).toBeUndefined();
+    expect(VIEW_TOOL_KEYS.p).toBeUndefined();
   });
 
   it('binds Laser to K (not L)', () => {
     expect(fired(VIEW_TOOL_KEYS, 'k')).toBe('tool:laser');
-    expect(VIEW_TOOL_KEYS['l']).toBeUndefined();
+    expect(VIEW_TOOL_KEYS.l).toBeUndefined();
   });
 
   it('keeps Isometric on I and Zen on Z', () => {
@@ -94,7 +94,7 @@ describe('EDIT_KEYS (mutating tools / element adds)', () => {
 
   it('no longer binds Hexagon to H (H is the Hand tool now)', () => {
     // Hexagon is click-only; H must not add a shape from either table.
-    expect(EDIT_KEYS['h']).toBeUndefined();
+    expect(EDIT_KEYS.h).toBeUndefined();
   });
 
   it('does not duplicate any view-tool key in the edit table', () => {

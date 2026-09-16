@@ -13,9 +13,9 @@ describe('parseMermaid: state diagrams', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     const byId = Object.fromEntries(r.graph.nodes.map((n) => [n.id, n]));
-    expect(byId['Idle']).toMatchObject({ label: 'Idle', shape: 'stadium' });
-    expect(byId['__start__']).toMatchObject({ label: '', shape: 'circle' });
-    expect(byId['__end__']).toMatchObject({ label: '', shape: 'circle' });
+    expect(byId.Idle).toMatchObject({ label: 'Idle', shape: 'stadium' });
+    expect(byId.__start__).toMatchObject({ label: '', shape: 'circle' });
+    expect(byId.__end__).toMatchObject({ label: '', shape: 'circle' });
     expect(r.graph.edges).toEqual([
       { from: '__start__', to: 'Idle' },
       { from: 'Idle', to: 'Running', label: 'start' },
@@ -38,8 +38,8 @@ describe('parseMermaid: state diagrams', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     const byId = Object.fromEntries(r.graph.nodes.map((n) => [n.id, n]));
-    expect(byId['w']!.label).toBe('Waiting for input');
-    expect(byId['r']!.label).toBe('Actively running');
+    expect(byId.w!.label).toBe('Waiting for input');
+    expect(byId.r!.label).toBe('Actively running');
   });
 
   it('maps <<choice>> to a diamond and <<fork>>/<<join>> to squares', () => {
@@ -51,8 +51,8 @@ describe('parseMermaid: state diagrams', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     const byId = Object.fromEntries(r.graph.nodes.map((n) => [n.id, n]));
-    expect(byId['c']!.shape).toBe('diamond');
-    expect(byId['f']!.shape).toBe('square');
+    expect(byId.c!.shape).toBe('diamond');
+    expect(byId.f!.shape).toBe('square');
   });
 
   it('turns composite states into clusters, with their own [*] pair', () => {

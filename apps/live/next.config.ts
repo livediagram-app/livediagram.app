@@ -20,7 +20,7 @@ const isProdBuild = process.env.NODE_ENV === 'production';
 // (e.g. ad-hoc `next build`) should still work. `scripts/dev.mjs`
 // sets `NEXT_DISTDIR=.next-dev` before exec'ing `next dev` so dev
 // always lands in `.next-dev/`; everything else defaults to `.next/`.
-const distDir = process.env['NEXT_DISTDIR'] ?? '.next';
+const distDir = process.env.NEXT_DISTDIR ?? '.next';
 
 const nextConfig: NextConfig = {
   ...(isProdBuild ? { output: 'export' } : {}),

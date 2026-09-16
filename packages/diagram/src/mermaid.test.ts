@@ -16,10 +16,10 @@ describe('parseMermaid', () => {
     if (!r.ok) return;
     expect(r.direction).toBe('TB');
     const byId = Object.fromEntries(r.graph.nodes.map((n) => [n.id, n]));
-    expect(byId['A']).toMatchObject({ label: 'Start', shape: 'stadium' });
-    expect(byId['B']).toMatchObject({ label: 'OK?', shape: 'diamond' });
-    expect(byId['C']).toMatchObject({ label: 'Ship', shape: 'square' });
-    expect(byId['D']).toMatchObject({ label: 'Log', shape: 'cylinder' });
+    expect(byId.A).toMatchObject({ label: 'Start', shape: 'stadium' });
+    expect(byId.B).toMatchObject({ label: 'OK?', shape: 'diamond' });
+    expect(byId.C).toMatchObject({ label: 'Ship', shape: 'square' });
+    expect(byId.D).toMatchObject({ label: 'Log', shape: 'cylinder' });
     expect(r.graph.edges).toEqual([
       { from: 'A', to: 'B' },
       { from: 'B', to: 'C', label: 'yes' },
@@ -119,12 +119,12 @@ describe('parseMermaid', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     const byId = Object.fromEntries(r.graph.nodes.map((n) => [n.id, n]));
-    expect(byId['A']).toMatchObject({ label: 'Sub', shape: 'square' });
-    expect(byId['B']).toMatchObject({ label: 'Flag', shape: 'square' });
-    expect(byId['C']).toMatchObject({ label: 'Double', shape: 'circle' });
-    expect(byId['D']).toMatchObject({ label: 'Trap', shape: 'trapezoid' });
-    expect(byId['E']).toMatchObject({ label: 'PadT', shape: 'trapezoid' });
-    expect(byId['F']).toMatchObject({ label: 'Lean', shape: 'parallelogram' });
+    expect(byId.A).toMatchObject({ label: 'Sub', shape: 'square' });
+    expect(byId.B).toMatchObject({ label: 'Flag', shape: 'square' });
+    expect(byId.C).toMatchObject({ label: 'Double', shape: 'circle' });
+    expect(byId.D).toMatchObject({ label: 'Trap', shape: 'trapezoid' });
+    expect(byId.E).toMatchObject({ label: 'PadT', shape: 'trapezoid' });
+    expect(byId.F).toMatchObject({ label: 'Lean', shape: 'parallelogram' });
   });
 
   it('reads the @{ shape, label } attribute form', () => {
@@ -133,8 +133,8 @@ describe('parseMermaid', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     const byId = Object.fromEntries(r.graph.nodes.map((n) => [n.id, n]));
-    expect(byId['A']).toMatchObject({ label: 'Store', shape: 'cylinder' });
-    expect(byId['B']).toMatchObject({ label: 'B', shape: 'document' });
+    expect(byId.A).toMatchObject({ label: 'Store', shape: 'cylinder' });
+    expect(byId.B).toMatchObject({ label: 'B', shape: 'document' });
   });
 
   it('decodes <br/> and entities in labels', () => {
@@ -199,8 +199,8 @@ describe('parseMermaid', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     const byId = Object.fromEntries(r.graph.nodes.map((n) => [n.id, n]));
-    expect(byId['A']!.link).toBe('https://example.com/docs');
-    expect(byId['B']!.link).toBe('https://example.com/app');
+    expect(byId.A!.link).toBe('https://example.com/docs');
+    expect(byId.B!.link).toBe('https://example.com/app');
   });
 
   it('tolerates a bare header and trailing semicolons', () => {

@@ -49,9 +49,9 @@ describe('discovery', () => {
   it('advertises S256 + none auth + the endpoints', async () => {
     const res = await app.request('/.well-known/oauth-authorization-server', {}, env);
     const meta = (await res.json()) as Record<string, unknown>;
-    expect(meta['code_challenge_methods_supported']).toEqual(['S256']);
-    expect(meta['token_endpoint_auth_methods_supported']).toEqual(['none']);
-    expect(meta['registration_endpoint']).toContain('/oauth/register');
+    expect(meta.code_challenge_methods_supported).toEqual(['S256']);
+    expect(meta.token_endpoint_auth_methods_supported).toEqual(['none']);
+    expect(meta.registration_endpoint).toContain('/oauth/register');
   });
 });
 

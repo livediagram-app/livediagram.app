@@ -156,12 +156,12 @@ function operationFor(route: RouteSpec): Record<string, unknown> {
   };
   if (route.tokenUsable) op['x-token-usable'] = true;
   const security = securityFor(route.auth);
-  if (security) op['security'] = security;
-  if (params.length) op['parameters'] = params;
+  if (security) op.security = security;
+  if (params.length) op.parameters = params;
   if (route.requestSchema) {
     const isBinary =
-      typeof route.requestSchema !== 'string' && route.requestSchema['format'] === 'binary';
-    op['requestBody'] = {
+      typeof route.requestSchema !== 'string' && route.requestSchema.format === 'binary';
+    op.requestBody = {
       required: true,
       content: {
         [isBinary ? 'application/octet-stream' : 'application/json']: {

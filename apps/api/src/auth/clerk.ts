@@ -76,8 +76,8 @@ export async function getClerkIdentity(env: Env, request: Request): Promise<Cler
     const { payload } = await jwtVerify(token, getJWKS(jwksUrl), verifyOptions);
     if (typeof payload.sub !== 'string') return null;
     const email =
-      typeof payload['email'] === 'string' && payload['email'].length > 0
-        ? payload['email'].trim().toLowerCase()
+      typeof payload.email === 'string' && payload.email.length > 0
+        ? payload.email.trim().toLowerCase()
         : null;
     return { userId: payload.sub, email };
   } catch {

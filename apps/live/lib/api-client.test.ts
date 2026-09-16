@@ -44,7 +44,7 @@ describe('apiHeaders (hybrid identity gate, spec/04 + spec/11)', () => {
   it('guest path: no provider, no token, emits X-Owner-Id', async () => {
     const h = await call('guest-uuid-1');
     expect(h['X-Owner-Id']).toBe('guest-uuid-1');
-    expect(h['Authorization']).toBeUndefined();
+    expect(h.Authorization).toBeUndefined();
   });
 
   it('guest path: provider returning null falls back to X-Owner-Id', async () => {
@@ -55,7 +55,7 @@ describe('apiHeaders (hybrid identity gate, spec/04 + spec/11)', () => {
     setTokenProvider(async () => null);
     const h = await call('guest-uuid-2');
     expect(h['X-Owner-Id']).toBe('guest-uuid-2');
-    expect(h['Authorization']).toBeUndefined();
+    expect(h.Authorization).toBeUndefined();
   });
 
   it('bearer path: provider returning a token emits Authorization and drops X-Owner-Id', async () => {
@@ -66,7 +66,7 @@ describe('apiHeaders (hybrid identity gate, spec/04 + spec/11)', () => {
     // audit. Bearer-only is the only correct shape.
     setTokenProvider(async () => 'jwt-token-abc');
     const h = await call('client-passed-id-ignored');
-    expect(h['Authorization']).toBe('Bearer jwt-token-abc');
+    expect(h.Authorization).toBe('Bearer jwt-token-abc');
     expect(h['X-Owner-Id']).toBeUndefined();
   });
 
@@ -79,7 +79,7 @@ describe('apiHeaders (hybrid identity gate, spec/04 + spec/11)', () => {
   it('body opt adds Content-Type on bearer path too', async () => {
     setTokenProvider(async () => 'jwt-token-def');
     const h = await call('ignored', { body: true });
-    expect(h['Authorization']).toBe('Bearer jwt-token-def');
+    expect(h.Authorization).toBe('Bearer jwt-token-def');
     expect(h['Content-Type']).toBe('application/json');
     expect(h['X-Owner-Id']).toBeUndefined();
   });
@@ -105,7 +105,7 @@ describe('apiHeaders (hybrid identity gate, spec/04 + spec/11)', () => {
     // X-Share-Code; the per-link role still gates write access."
     setTokenProvider(async () => 'jwt-token-xyz');
     const h = await call('ignored', { share: 'IJKL0123' });
-    expect(h['Authorization']).toBe('Bearer jwt-token-xyz');
+    expect(h.Authorization).toBe('Bearer jwt-token-xyz');
     expect(h['X-Share-Code']).toBe('IJKL0123');
     expect(h['X-Owner-Id']).toBeUndefined();
   });

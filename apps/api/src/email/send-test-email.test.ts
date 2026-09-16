@@ -56,14 +56,14 @@ function devVars(): Record<string, string> {
 }
 
 const vars = { ...devVars(), ...process.env } as Record<string, string | undefined>;
-const TO = vars['RESEND_TEST_TO'];
-const KEY = vars['RESEND_API_KEY'];
+const TO = vars.RESEND_TEST_TO;
+const KEY = vars.RESEND_API_KEY;
 const ENABLED = process.env.RESEND_LIVE_TEST === '1' && !!TO && !!KEY;
 
 const env = {
   RESEND_API_KEY: KEY,
-  RESEND_FROM: vars['RESEND_FROM'] ?? 'livediagram <onboarding@resend.dev>',
-  APP_BASE_URL: vars['APP_BASE_URL'] ?? 'https://livediagram.app',
+  RESEND_FROM: vars.RESEND_FROM ?? 'livediagram <onboarding@resend.dev>',
+  APP_BASE_URL: vars.APP_BASE_URL ?? 'https://livediagram.app',
 } as unknown as Env;
 
 describe.skipIf(!ENABLED)('live email send (manual harness)', () => {

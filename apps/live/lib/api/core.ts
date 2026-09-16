@@ -32,7 +32,7 @@ import { getGuestSelfSig } from '../local-identity';
 // participant's id — the API uses it as the diagram-owner filter and
 // for create-time `owner_id` — unless a Clerk token provider is wired
 // up (see below), in which case a Bearer token replaces it.
-export const API_BASE = process.env['NEXT_PUBLIC_API_BASE'] ?? '/api';
+export const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
 
 // Hard cap on how long the Explorer's diagram-list spinner spins before
 // we give up and show whatever we have. Both mount paths that load the

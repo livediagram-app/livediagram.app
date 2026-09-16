@@ -73,7 +73,7 @@ describe('subpageMetadata', () => {
     // subpage links keep their social / SERP card.
     const md = subpageMetadata({ title: 't', description: 'd', path: '/privacy' });
     const og = md.openGraph as Record<string, unknown> | undefined;
-    expect(og?.['images']).toEqual([
+    expect(og?.images).toEqual([
       {
         url: '/opengraph-image',
         width: 1200,
@@ -82,7 +82,7 @@ describe('subpageMetadata', () => {
       },
     ]);
     const tw = md.twitter as Record<string, unknown> | undefined;
-    expect(tw?.['images']).toEqual(['/twitter-image']);
+    expect(tw?.images).toEqual(['/twitter-image']);
   });
 
   it('omits the shared card image when the page has its own route-level image (ownOgImage)', () => {
@@ -96,9 +96,9 @@ describe('subpageMetadata', () => {
       ownOgImage: true,
     });
     const og = md.openGraph as Record<string, unknown> | undefined;
-    expect(og?.['images']).toBeUndefined();
+    expect(og?.images).toBeUndefined();
     const tw = md.twitter as Record<string, unknown> | undefined;
-    expect(tw?.['images']).toBeUndefined();
+    expect(tw?.images).toBeUndefined();
   });
 
   it('returns a fresh object on each call (call sites compose into Next metadata at module load)', () => {
@@ -121,7 +121,7 @@ describe('subpageMetadata', () => {
     // a parse warning in Google Search Console.
     const md = subpageMetadata({ title: 't', description: 'd', path: '/faq' });
     const og = md.openGraph as Record<string, unknown> | undefined;
-    expect(og?.['modifiedTime']).toBeUndefined();
+    expect(og?.modifiedTime).toBeUndefined();
   });
 
   it('serialises modifiedTime to an ISO 8601 string for article:modified_time', () => {
@@ -140,6 +140,6 @@ describe('subpageMetadata', () => {
       modifiedTime: date,
     });
     const og = md.openGraph as Record<string, unknown> | undefined;
-    expect(og?.['modifiedTime']).toBe('2026-06-02T00:00:00.000Z');
+    expect(og?.modifiedTime).toBe('2026-06-02T00:00:00.000Z');
   });
 });

@@ -44,7 +44,7 @@ afterEach(() => {
   if (originalWindow) {
     (globalThis as unknown as { window: Window }).window = originalWindow;
   } else {
-    delete (globalThis as unknown as Record<string, unknown>)['window'];
+    delete (globalThis as unknown as Record<string, unknown>).window;
   }
 });
 

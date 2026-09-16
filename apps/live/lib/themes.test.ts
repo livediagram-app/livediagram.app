@@ -333,8 +333,8 @@ describe('recolourElementForTheme', () => {
     const out = recolourElementForTheme(text, themed) as TextElement;
     expect(out.textColor).toBe('#0f172a');
     // Spot-check: no rogue fill / stroke fields appear on a text element.
-    expect((out as unknown as Record<string, unknown>)['fillColor']).toBeUndefined();
-    expect((out as unknown as Record<string, unknown>)['strokeColor']).toBeUndefined();
+    expect((out as unknown as Record<string, unknown>).fillColor).toBeUndefined();
+    expect((out as unknown as Record<string, unknown>).strokeColor).toBeUndefined();
   });
 
   it('writes the stroke colour on arrows so themed templates have themed connectors', () => {
@@ -358,7 +358,7 @@ describe('recolourElementForTheme', () => {
     expect(out.fillColor).toBe('#e2e8f0');
     expect(out.strokeColor).toBe('#475569');
     // No text colour: freehand renders no inline label.
-    expect((out as unknown as Record<string, unknown>)['textColor']).toBeUndefined();
+    expect((out as unknown as Record<string, unknown>).textColor).toBeUndefined();
   });
 
   it('no-ops every type when the theme has no element-colour overrides (Brand)', () => {
@@ -975,12 +975,10 @@ describe('multi-colour (rainbow) themes', () => {
     const out = recolourElementsForTheme(miniMap(), rainbow);
     const byId = Object.fromEntries(out.map((el) => [el.id, el]));
     // Trunk gets the rootColor stroke.
-    expect((byId['center'] as { strokeColor?: string }).strokeColor).toBe(
-      rainbow.rootColor!.stroke,
-    );
+    expect((byId.center as { strokeColor?: string }).strokeColor).toBe(rainbow.rootColor!.stroke);
     // The two topics get the first two palette entries, and they differ.
-    expect((byId['t1'] as { strokeColor?: string }).strokeColor).toBe(rainbow.palette![0]!.stroke);
-    expect((byId['t2'] as { strokeColor?: string }).strokeColor).toBe(rainbow.palette![1]!.stroke);
+    expect((byId.t1 as { strokeColor?: string }).strokeColor).toBe(rainbow.palette![0]!.stroke);
+    expect((byId.t2 as { strokeColor?: string }).strokeColor).toBe(rainbow.palette![1]!.stroke);
   });
 
   it('colours a connector arrow by the branch it feeds into', () => {
@@ -1007,8 +1005,8 @@ describe('multi-colour (rainbow) themes', () => {
     const rainbow = THEMES.find((t) => t.id === 'rainbow')!;
     const out = switchThemeElements(miniMap(), brand, rainbow);
     const byId = Object.fromEntries(out.map((el) => [el.id, el]));
-    expect((byId['t1'] as { strokeColor?: string }).strokeColor).toBe(rainbow.palette![0]!.stroke);
-    expect((byId['t2'] as { strokeColor?: string }).strokeColor).toBe(rainbow.palette![1]!.stroke);
+    expect((byId.t1 as { strokeColor?: string }).strokeColor).toBe(rainbow.palette![0]!.stroke);
+    expect((byId.t2 as { strokeColor?: string }).strokeColor).toBe(rainbow.palette![1]!.stroke);
   });
 
   it('resetThemeElementsToTheme force-repaints every branch from the palette', () => {
@@ -1017,7 +1015,7 @@ describe('multi-colour (rainbow) themes', () => {
     const els = miniMap().map((el) => (el.id === 't1' ? { ...el, strokeColor: '#123456' } : el));
     const out = resetThemeElementsToTheme(els, rainbow);
     const byId = Object.fromEntries(out.map((el) => [el.id, el]));
-    expect((byId['t1'] as { strokeColor?: string }).strokeColor).toBe(rainbow.palette![0]!.stroke);
+    expect((byId.t1 as { strokeColor?: string }).strokeColor).toBe(rainbow.palette![0]!.stroke);
   });
 
   it('reset-to-theme keeps a preset binding, re-deriving its colours for the theme', () => {

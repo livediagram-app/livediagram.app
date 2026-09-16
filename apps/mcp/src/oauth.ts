@@ -133,13 +133,13 @@ export function registerOauthRoutes(app: Hono<{ Bindings: Env }>): void {
   // --- Authorize: validate, stash a session, hand off to the consent page ---
   app.get('/oauth/authorize', async (c) => {
     const q = c.req.query();
-    const clientId = q['client_id'];
-    const redirectUri = q['redirect_uri'];
-    const codeChallenge = q['code_challenge'];
+    const clientId = q.client_id;
+    const redirectUri = q.redirect_uri;
+    const codeChallenge = q.code_challenge;
     if (!clientId || !redirectUri || !codeChallenge) {
       return c.text('missing client_id, redirect_uri, or code_challenge', 400);
     }
-    if (q['code_challenge_method'] && q['code_challenge_method'] !== 'S256') {
+    if (q.code_challenge_method && q.code_challenge_method !== 'S256') {
       return c.text('only S256 PKCE is supported', 400);
     }
     // A real S256 challenge is base64url(SHA-256) = 43 chars; reject anything
@@ -147,7 +147,7 @@ export function registerOauthRoutes(app: Hono<{ Bindings: Env }>): void {
     if (codeChallenge.length < 43) {
       return c.text('invalid code_challenge', 400);
     }
-    if (q['response_type'] && q['response_type'] !== 'code') {
+    if (q.response_type && q.response_type !== 'code') {
       return c.text('only response_type=code is supported', 400);
     }
     const reg = await c.env.OAUTH_KV.get<ClientReg>(`client:${clientId}`, 'json');
@@ -159,7 +159,7 @@ export function registerOauthRoutes(app: Hono<{ Bindings: Env }>): void {
       clientId,
       redirectUri,
       codeChallenge,
-      state: q['state'],
+      state: q.state,
       clientName: reg.clientName,
     };
     await c.env.OAUTH_KV.put(`session:${session}`, JSON.stringify(record), {
@@ -211,10 +211,10 @@ export function registerOauthRoutes(app: Hono<{ Bindings: Env }>): void {
   // --- Token: redeem code + PKCE verifier for the lvd_ access token ---
   app.post('/oauth/token', async (c) => {
     const form = await c.req.parseBody().catch(() => ({}) as Record<string, unknown>);
-    const grantType = String(form['grant_type'] ?? '');
-    const code = String(form['code'] ?? '');
-    const verifier = String(form['code_verifier'] ?? '');
-    const redirectUri = String(form['redirect_uri'] ?? '');
+    const grantType = String(form.grant_type ?? '');
+    const code = String(form.code ?? '');
+    const verifier = String(form.code_verifier ?? '');
+    const redirectUri = String(form.redirect_uri ?? '');
     if (grantType !== 'authorization_code' || !code || !verifier) {
       return c.json({ error: 'invalid_request' }, 400);
     }

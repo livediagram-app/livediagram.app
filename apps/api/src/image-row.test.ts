@@ -50,9 +50,9 @@ describe('imageRowToSummary', () => {
     // list response, including to any share-link visitor who can
     // reach the gallery endpoint.
     const dto = imageRowToSummary(baseRow()) as Record<string, unknown>;
-    expect(dto['ownerId']).toBeUndefined();
-    expect(dto['owner_id']).toBeUndefined();
-    expect(dto['sha256']).toBeUndefined();
+    expect(dto.ownerId).toBeUndefined();
+    expect(dto.owner_id).toBeUndefined();
+    expect(dto.sha256).toBeUndefined();
   });
 
   it('converts null original_name to undefined on the wire (absent, not null)', () => {

@@ -72,8 +72,7 @@ export function useCanvasA11y(deps: CanvasA11yDeps): void {
       // anything else (palette buttons, panels, header) keeps the
       // browser's normal Tab order.
       const active = document.activeElement;
-      if (!(active instanceof HTMLElement) || active.dataset['canvasA11yRoot'] === undefined)
-        return;
+      if (!(active instanceof HTMLElement) || active.dataset.canvasA11yRoot === undefined) return;
       const els = live.elements;
       const dir = e.shiftKey ? -1 : 1;
       const i = nextTraversalIndex(

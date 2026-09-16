@@ -106,7 +106,7 @@ function base(p: Partial<Particle> & Pick<Particle, 'color' | 'kind'>): Particle
  */
 export function spawnBurst(reaction: string, scale: number, rand: () => number): Particle[] {
   const s = Math.max(0.55, Math.min(3, scale));
-  const colors = REACTION_PALETTE[reaction] ?? REACTION_PALETTE['confetti']!;
+  const colors = REACTION_PALETTE[reaction] ?? REACTION_PALETTE.confetti!;
   const out: Particle[] = [];
 
   if (reaction === 'sparkles') {

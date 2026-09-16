@@ -301,7 +301,7 @@ const accountRenderer: TimelineRenderer = (event) => {
         onClick: () => window.location.assign('/explorer/themes'),
       };
     case 'image_uploaded': {
-      const count = typeof event.snapshot['count'] === 'number' ? event.snapshot['count'] : 1;
+      const count = typeof event.snapshot.count === 'number' ? event.snapshot.count : 1;
       return {
         ...base,
         label: headline(count === 1 ? '1 image' : `${count} images`, 'uploaded'),

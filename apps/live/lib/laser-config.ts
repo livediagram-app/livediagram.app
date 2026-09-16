@@ -113,10 +113,10 @@ export function parseLaserConfig(raw: unknown): LaserConfig {
   if (!parsed || typeof parsed !== 'object') return { ...DEFAULT_LASER_CONFIG };
   const o = parsed as Record<string, unknown>;
   return {
-    width: pick(o['width'], LASER_WIDTHS, DEFAULT_LASER_CONFIG.width),
-    colour: pick(o['colour'], LASER_COLOURS, DEFAULT_LASER_CONFIG.colour),
-    trail: pick(o['trail'], LASER_TRAILS, DEFAULT_LASER_CONFIG.trail),
-    effect: pick(o['effect'], LASER_EFFECTS, DEFAULT_LASER_CONFIG.effect),
+    width: pick(o.width, LASER_WIDTHS, DEFAULT_LASER_CONFIG.width),
+    colour: pick(o.colour, LASER_COLOURS, DEFAULT_LASER_CONFIG.colour),
+    trail: pick(o.trail, LASER_TRAILS, DEFAULT_LASER_CONFIG.trail),
+    effect: pick(o.effect, LASER_EFFECTS, DEFAULT_LASER_CONFIG.effect),
   };
 }
 

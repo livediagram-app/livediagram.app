@@ -149,10 +149,10 @@ export function parseAvatarConfig(raw: unknown): AvatarConfig {
   const pick = <T extends string>(value: unknown, options: readonly { id: T }[], fallback: T): T =>
     options.some((opt) => opt.id === value) ? (value as T) : fallback;
   return {
-    gender: pick(o['gender'], AVATAR_GENDERS, DEFAULT_AVATAR_CONFIG.gender),
-    clothing: pick(o['clothing'], AVATAR_CLOTHING, DEFAULT_AVATAR_CONFIG.clothing),
-    hair: pick(o['hair'], AVATAR_HAIR, DEFAULT_AVATAR_CONFIG.hair),
-    size: pick(o['size'], AVATAR_SIZES, DEFAULT_AVATAR_CONFIG.size),
+    gender: pick(o.gender, AVATAR_GENDERS, DEFAULT_AVATAR_CONFIG.gender),
+    clothing: pick(o.clothing, AVATAR_CLOTHING, DEFAULT_AVATAR_CONFIG.clothing),
+    hair: pick(o.hair, AVATAR_HAIR, DEFAULT_AVATAR_CONFIG.hair),
+    size: pick(o.size, AVATAR_SIZES, DEFAULT_AVATAR_CONFIG.size),
   };
 }
 

@@ -4,8 +4,8 @@ import { defineConfig, devices } from '@playwright/test';
 // against the real production build + api worker (scripts/e2e-stack.mjs),
 // or a developer's already-running `pnpm dev` stack when one is up
 // (reuseExistingServer below).
-const BASE_URL = process.env['E2E_BASE_URL'] ?? 'http://localhost:3002';
-const isCI = !!process.env['CI'];
+const BASE_URL = process.env.E2E_BASE_URL ?? 'http://localhost:3002';
+const isCI = !!process.env.CI;
 
 export default defineConfig({
   testDir: './e2e',
