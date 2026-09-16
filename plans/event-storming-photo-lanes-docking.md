@@ -56,9 +56,16 @@ the board already holds: notes that are already on the board are matched and
 **left exactly as they are** (never moved, resized, re-kinded or re-worded), and
 only the **new** notes are added, placed relative to the matched neighbours they
 sat beside in the photo. On an empty board everything is added in the photo's
-layout. A review step shows what was found and what will be added; the commit is
-one undoable step. Repeating with the next photo of the next piece of wall adds
-only what is new — that is what "incremental" means here.
+layout. The result lands ON THE CANVAS as a **draft**: the new notes appear at
+their final, reconciled positions with a draft treatment that makes them the
+most visible thing on the board, the notes that were already there fade slightly
+while the draft is open, matched notes carry a small "already here" badge, and
+every draft note is an ordinary note the author can immediately type into, drag,
+re-kind or delete. A floating draft bar says what was read ("14 read · 9 new · 5
+already on the board") and offers **Add** and **Discard**. Add commits the batch
+as ONE undoable step (Undo removes every note the photo added); Discard leaves
+the board exactly as it was. Repeating with the next photo of the next piece of
+wall adds only what is new — that is what "incremental" means here.
 
 ### Why these three, on this board only
 
@@ -91,11 +98,22 @@ order is spec → pure model → editor wiring → surfaces → verification →
   whole elements, the offline store keeps the tab as-is, JSON export/import round
   trips — so both fields travel everywhere for free. Verify that, don't assume it
   (tasks below).
-- **Previews never touch the document.** Lane highlight, dock candidate, anchor
-  hover, the insertion ripple: all render-time, published on module-level
-  `useSyncExternalStore` stores exactly like `apps/live/lib/insertion-preview.ts`.
-  No commit, no tick, no broadcast, no autosave, no dirty flag until the drop /
-  click / "Add" that commits.
+- **Previews never touch the document — with one deliberate, precedented
+  exception.** Lane highlight, dock candidate, anchor hover, the insertion
+  ripple, the fade of existing notes during a photo draft: all render-time,
+  published on module-level `useSyncExternalStore` stores exactly like
+  `apps/live/lib/insertion-preview.ts`. The exception is the **photo draft's own
+  notes**, which ARE written into the document, because the author must be able
+  to type into, drag, re-kind and delete them with the ordinary machinery, and
+  duplicating the label editor, the drag, and the context menu for an overlay
+  would be the wrong kind of purity. This follows the drag gesture's precedent
+  exactly: the SUBJECT of a gesture is written live through the non-undoable
+  `tick` path with a checkpoint ARMED at the start, and the gesture's end
+  collapses everything into one undo step (`useEditorDrag`'s
+  `checkpointPendingRef` / lazy flush). A photo draft is one long gesture: the
+  draft landing and every edit to a draft note are ticks; **Add** is the drop
+  (one history step covering the whole import); **Discard** is the cancel
+  (restore the armed snapshot). Side effects on OTHER elements stay previews.
 - **One builder per note.** Palette tap, palette drag, anchor-add and photo import
   all mint a note through the same construction (`draw-commit.ts`'s
   `eventStormingBoardStickyExtras` + `esBoardLayerStamp` + `esKind` + silhouette
@@ -135,9 +153,10 @@ order is spec → pure model → editor wiring → surfaces → verification →
   these are already on the board".
 - **Existing notes are untouchable by an import.** Additions only. Text
   differences on matched notes are SHOWN in review, never applied.
-- **One undoable step** per commit (lane toggle, anchor-add, dock/undock on drop,
-  photo import), through the ordinary `commit()` choke point so layer stamping,
-  kind stamping, the activity log, autosave and realtime all happen as usual.
+- **One undoable step** per act (lane toggle, anchor-add, dock / undock on drop,
+  a photo import from landing to Add), through the ordinary `commit()` choke
+  point or the drag-style checkpoint, so layer stamping, kind stamping, the
+  activity log, autosave and realtime all happen as usual.
 - **Feature visibility.** Photo import shows only when `capabilities.aiEnabled`
   (NOT gated on the AI-panel preference `aiAssistanceEnabled` — it is not the
   assistant). Every one of the three stands down in a read-only / view-role
@@ -181,7 +200,7 @@ if implementation reveals a default is wrong, or where marked **ASK FIRST**.
       standard note (100px); a note can land exactly above the one on the lane
       above (same grid cell) or one cell (half a note) across. That is the whole
       of "either exactly above each other or staggered"._ Do not add a
-      `stagger` setting unless the operator asks.
+      `stagger` setting unless the operator asks. _Confirmed by the operator._
 - [x] **Q5 — Lane origin.** _Default: set ONCE when lanes are switched on — the
       top-left of the board's top-most, then left-most, note (`(0, 0)` on an empty
       board) — and stored (`esTimeline.originX / originY`). Existing notes are
@@ -192,29 +211,32 @@ if implementation reveals a default is wrong, or where marked **ASK FIRST**.
       notes centred vertically on the lane (so the 180-tall wide kinds and the
       140-tall actor sit centred, like on a wall). Calibrate by eye on the dev
       server the way the tilt was; record the number and why in spec/139._
-- [x] **Q7 — Photo entry points.** _Default: (a) an "Add from photo" row at the top
-      of the Event Storming palette category (camera glyph; on a phone the file
-      input carries `capture="environment"` so the camera opens straight away);
-      (b) a command-palette entry; (c) dropping or pasting an IMAGE FILE onto an
-      ES board opens the same dialog with the file preloaded and a "Place as
-      image instead" secondary action (on an ES board a photo is far more likely
-      a wall than a picture element)._ (c) is the fork most likely to surprise:
-      verify the existing image-drop path is only intercepted for `image/*`
-      files on ES boards and everything else drops exactly as today.
-- [x] **Q8 — Zero notes found.** _Default: the dialog shows "No stickies found in
-      this photo" with a one-line retake hint (fill the frame, straight on, good
-      light); nothing is committed; "Try another photo" stays available._
+- [x] **Q7 — Photo entry points.** _Operator-decided: a photo on an ES board is
+      ONLY ever analysed._ (a) An "Add from photo" row at the top of the Event
+      Storming palette category (camera glyph; on a phone the hidden file input
+      carries `capture="environment"`); (b) a command-palette entry; (c) dropping
+      or pasting an IMAGE FILE onto an ES board starts the analysis directly
+      (no image element, no "place as image instead"). Without `aiEnabled` the
+      row and the entry are absent and (c) falls through to today's behaviour
+      (an image element), because there is nothing to analyse with. Verify the
+      existing image-drop path is only intercepted for `image/*` files on ES
+      boards with `aiEnabled`, and everything else drops exactly as today.
+- [x] **Q8 — Zero notes found / not a wall.** _Default: a toast "No stickies found
+      in this photo" with a one-line retake hint (fill the frame, straight on,
+      good light); nothing lands on the board._
 - [x] **Q9 — Where the photo lands when nothing matches on a non-empty board.**
       _Default: to the RIGHT of the board's bounding box, one note width away,
       its top row aligned to the board's top row (to the nearest lane when lanes
       are on). The x axis is time; a new piece of wall is most likely a
       continuation._
-- [x] **Q10 — Several photos.** _Default: one photo per run; after committing, the
-      dialog offers "Add another photo" which starts the next run against the
-      board as it now is (so overlap between photos is deduplicated by the
-      ordinary matcher). Multi-file selection is a stretch task at the end._
-- [x] **Q11 — Matched notes whose text differs in the photo.** _Default: shown as
-      "on the board as …" in the review list; never applied._
+- [x] **Q10 — Several photos.** _Default: one photo per draft; while a draft is
+      open the entry points are disabled ("Finish the current draft first" in the
+      tooltip). After Add or Discard the next photo starts a new draft against
+      the board as it now is, so overlap between photos is deduplicated by the
+      ordinary matcher. Multi-file selection is a stretch task at the end._
+- [x] **Q11 — Matched notes whose text differs in the photo.** _Default: the
+      matched note's "already here" badge carries a tooltip "Read as: …" when the
+      photo's text differs; never applied._
 - [x] **Q12 — Anchor affordance visibility.** _Default: hollow dot on each FREE
       dockable face of a host, shown while the host is hovered or selected, with
       a tooltip naming the act ("Add a command before this event"). Spec/139
@@ -243,6 +265,13 @@ if implementation reveals a default is wrong, or where marked **ASK FIRST**.
       (they drop it into `apps/api/.dev.vars`; never print it, never commit it)
       and for two or three real wall photos to calibrate the prompt and the
       matcher thresholds against. Record the calibration in spec/139.
+- [ ] **Q17 — "Both their positions are already adjusted to be correct."**
+      _Read as: in the draft, NEW notes are shown at their final reconciled
+      positions (not the raw photo positions), and EXISTING notes are shown
+      where they are (unmoved — the first requirement stands). If the operator
+      meant that existing notes may ALSO be nudged (e.g. onto lanes) during the
+      draft, that contradicts "never rearranged"; ASK if any task would need to
+      move an existing note._
 
 ---
 
@@ -264,6 +293,12 @@ esDock?: {
   hostId: ElementId;
   side: 'before' | 'after'; // where the docked note sits relative to the host, on the x axis
 };
+
+// Photo draft (spec/139 Phase 8). Present = this note landed from a photo
+// and has not been accepted yet. Rendered with the draft treatment wherever
+// it appears; the draft bar derives its existence from these, so a draft
+// interrupted by a reload (or seen by a peer) is still a draft, not a stray.
+esDraft?: true;
 ```
 
 `packages/diagram/src/event-storming-lanes.ts`
@@ -325,6 +360,9 @@ esDock?: {
   (against an existing host or another addition).
 - `reconcilePhoto(detected, existing, options)` → `{ matches, additions,
 transform, differences }` — the one entry point the dialog calls.
+- `draftNotesOf(elements)`, `acceptDraft(elements)` (strips `esDraft` from every
+  draft note), `discardDraft(elements)` (removes every draft note and
+  `stripDanglingDocks` afterwards) — pure, tested.
 
 `@livediagram/api-schema` (`packages/api-schema/src/index.ts`)
 
@@ -772,57 +810,91 @@ h: number; row: number; order: number; confidence: number }` (all box fields
       needs its own flag (it does not — same key).
 - [x] Commit.
 
-### 3.5 The dialog
+### 3.5 The draft (on-canvas review)
 
-- [x] `apps/live/components/dialogs/PhotoImportDialog.tsx` (+ `usePhotoImport.ts`
-      state machine: `idle → preparing → reading → review → committing → done`, plus
-      `error` with retry; every transition logged at debug level). Contents:
-  - [x] **Pick**: `ImageDropZone` (reuse; `capture="environment"` on the input via a
-        prop — extend the component, don't copy it), paste support, the privacy
-        line, and the "Place as image instead" secondary action when the dialog
-        was opened by an image drop (Q7c).
-  - [x] **Reading**: the photo with a progress state; cancellable (abort the fetch).
-  - [x] **Review**: the photo with each detected note outlined in its kind colour
-        and badged NEW / ON BOARD / SKIP; a list with per-note include checkbox,
-        editable text, kind select (the catalogue's eight), the "on the board as …"
-        line for matched notes (Q11), a "Dock to …" chip where a docking was
-        detected (can be unticked); header counts ("14 read · 9 new · 5 already on
-        the board"); primary button "Add 9 notes" (disabled at 0), secondary
-        "Try another photo". `wall: false` → the Q8 empty state.
-  - [x] **Commit**: `reconcilePhoto` re-runs against the LIVE tab at click time (a
-        peer may have edited; the insert-between precedent), then ONE `commit()`
-        adding every included note through the one builder (fill, silhouette, tilt,
-        fixed, auto-fit, layer stamp, `esKind`, `esDock`), selects them, activity
-        log "Added 9 notes from a photo", `track('AI', 'Used', 'PhotoNotes')` once +
-        `Element / Added / Sticky` per note, then the Q10 "Add another photo" state.
-  - [x] Dark mode, WCAG AA (labels, focus order, `aria-live` for the count line,
-        Escape closes, focus returns to the opener), zero CLS (reserve the photo
-        area's height; no inline banners — errors are toasts).
-- [x] Entry points (Q7): palette row "Add from photo" at the top of the ES category
-      (camera glyph; hidden without `aiEnabled` or when the gate blocks); command
-      palette entry; image-file drop / paste on an ES board routes to the dialog
-      (find the existing handler, branch on ES-board + aiEnabled + an
-      `image/*` file type, everything else untouched).
-- [x] Tests: state machine (every transition incl. abort + error + retry), review
-      list editing changes what is committed, commit uses the one builder (assert
-      `fixedSize`, `esKind`, `textSize: 'scale'`, layer id, tilt within ±1.1), one
-      undo step, gate paths (read-only hides the row and refuses the drop route),
-      drop routing on ES vs non-ES boards.
-- [x] Commit: `feat(live): import sticky notes from a wall photo`.
+- [ ] `apps/live/hooks/canvas/usePhotoDraft.ts` — the state machine
+      `idle → preparing → reading → draft → committing → idle`, plus `error`
+      (toast + the entry points re-enabled); every transition logged at debug
+      level. `startFromFile(file)`: `preparePhoto` → `apiAiPhotoNotes` (abortable)
+      → `reconcilePhoto` against the LIVE tab → **land**: arm the drag-style
+      checkpoint, `tick` every addition in through the ONE builder (fill,
+      silhouette, tilt, fixed, auto-fit, layer stamp, `esKind`, `esDock`,
+      `esDraft: true`), select them all, pan / zoom so the draft and its matched
+      neighbours are in view (reuse the fit-to-selection utility if one exists),
+      publish the local draft view state (`photo-draft-preview.ts` module store:
+      `{ matchedIds, differences }`). `accept()`: `acceptDraft` via the gesture's
+      end — ONE history step from the pre-landing snapshot; activity log "Added 9
+      notes from a photo"; `track('AI', 'Used', 'PhotoNotes')` once +
+      `Element / Added / Sticky` per note; clear the store. `discard()`: restore
+      the armed snapshot (the cancel path), clear the store, nothing logged.
+      Gates: read-only / locked tab / blocked layer → the entry points are
+      disabled with a reason and `startFromFile` refuses.
+- [ ] Draft rendering, all render-time and local to the importing session:
+  - [ ] Draft notes (`esDraft` on the element, so peers and a reload see them
+        too): full opacity plus a dashed accent outline just outside the paper
+        (the alignment-guide accent) — "the most visible thing on the board".
+  - [ ] While the local store says a draft is open: every NON-draft element on
+        the tab renders at ~50% opacity (a wrapper style in
+        `CanvasElementsLayer`, never a write); matched notes additionally get a
+        small "already here" badge (a check glyph on the top-right corner, a
+        `Tooltip` "Read as: …" when the photo text differed, Q11).
+  - [ ] Draft notes are ordinary notes: double-click types (the label editor
+        commits through `tick` while the draft is open, so it stays inside the
+        gesture — verify the editor's commit path can be pointed at `tick`, or
+        route its commits through the choke point that the gesture already
+        intercepts), drag repositions (lanes / dock rungs apply), Delete removes
+        the note from the draft, context menu offers the ES verbs plus **Change
+        kind…** (a row of the eight kinds; re-kinding re-fills, re-silhouettes
+        and re-centres through the one builder's silhouette rule; available on
+        EVERY ES note, not only drafts — a verb, not styling).
+  - [ ] Dark scheme legibility of outline, fade and badge; reduced motion (no
+        pulse — there is no animation to begin with; keep it that way).
+- [ ] `apps/live/components/chrome/PhotoDraftBar.tsx` — a floating bar (the
+      `ModifierHintBanner` / view-bar visual language, bottom-centre) shown while
+      the tab has draft notes: "14 read · 9 new · 5 already on the board", the
+      **Add 9 notes** primary (count live, disabled at 0), **Discard** secondary,
+      Escape = Discard after a confirm when any draft note was edited. Data-derived
+      from `draftNotesOf(activeTab.elements)`, so a reload mid-draft shows the
+      bar again with "Add all / Discard" and the fade off (the local store is
+      gone; the notes are still drafts). WCAG AA, keyboard reachable, `aria-live`
+      on the count, zero CLS (fixed height, no layout participation).
+- [ ] Reading state: a small progress toast "Reading the photo…" with Cancel
+      (aborts the fetch); errors as toasts with Retry (`ai_error`,
+      `rate_limited`, `origin_not_allowed`, `sign_in_required`,
+      `ai_not_configured`, `photo_invalid`, `photo_too_large`, network).
+- [ ] Entry points (Q7): palette row "Add from photo" (hidden without
+      `aiEnabled`; disabled with reason while a draft is open or the gate
+      blocks); command palette entry; image-file drop / paste on an ES board
+      routes to `startFromFile` (branch on ES-board + `aiEnabled` + an
+      `image/*` file type; everything else untouched).
+- [ ] Tests: state machine (every transition incl. abort, error, retry, refuse
+      on gate); landing uses the one builder (assert `fixedSize`, `esKind`,
+      `esDraft`, `textSize: 'scale'`, layer id, tilt within ±1.1); a typed edit
+      and a drag on a draft note stay inside the gesture (history length
+      unchanged until Add); Add = exactly one history step and Undo removes
+      every added note; Discard restores the pre-landing elements byte-for-byte;
+      Delete on a draft note removes it from the batch; Change kind re-builds
+      the silhouette; bar counts and disabled states; drop routing on ES vs
+      non-ES boards and with `aiEnabled` off; reload with drafts shows the bar.
+- [ ] Commit: `feat(live): import sticky notes from a wall photo`.
 
 ### 3.6 E2E (mocked model)
 
-- [x] `apps/live/e2e/photo-import.spec.ts`: route `**/api/capabilities` →
-      `{ aiEnabled: true, … }` and `**/api/ai/photo-notes` → a fixture response
-      (`e2e/fixtures/wall-photo.json`, hand-written against a fixture image
+- [ ] `apps/live/e2e/photo-import.spec.ts`: route `**/api/capabilities` →
+      `{ aiEnabled: true, … }` and `**/api/ai/photo-notes` → fixture responses
+      (`e2e/fixtures/wall-photo*.json`, hand-written against a fixture image
       `e2e/fixtures/wall-photo.jpg` you GENERATE by exporting an ES board with six
       notes to PNG and re-encoding — no real photo needed). Cases: empty board →
-      six notes added at the photo's layout; import the same photo again → zero
-      additions; a second fixture overlapping three of the six → three added to the
-      right of the matched ones; reload keeps everything; Undo removes the batch.
+      six draft notes land with the outline, bar reads "6 read · 6 new"; type
+      into one, drag another, Delete a third; Add → five notes, one history step,
+      Undo removes all five, Redo restores; import the same photo again → bar
+      reads "6 read · 0 new · 6 already on the board", Add disabled, Discard;
+      a second fixture overlapping three of the six → three drafts land right
+      of the matched ones, existing element JSON byte-identical before and
+      after Add; reload keeps everything; reload MID-draft shows the bar again.
       Dark scheme per the testing rule.
-- [x] Run it against the real stack (`livediagram-eswall-e2e` under PM2), green.
-- [x] Commit.
+- [ ] Run it against the real stack (`livediagram-eswall-e2e` under PM2), green.
+- [ ] Commit.
 
 ### 3.7 Live calibration (needs the operator — Q16)
 
@@ -871,21 +943,24 @@ ripple with a cluster on both sides of the point; seam never a gap; lanes + dock
 undock / host deleted under a drag; read-only shows dots but no affordances; a11y
 names + keyboard on affordances; dark scheme.
 
-**C. Photo import** — no key (no UI anywhere); key + read-only (no UI); key +
-locked tab / blocked layer (row disabled with reason); pick via row / command
-palette / drop / paste; non-image drop on ES board unchanged; image drop on
-non-ES board unchanged (still an image element); HEIC / SVG / GIF rejected with
-hints; too large after encode; EXIF-rotated JPEG lands upright; abort mid-read;
-model 502 / 429 / 403 / 401 / 503 each surfaced as a toast with retry; `wall:
-false`; zero notes; notes with `unknown` kind default to Domain Event in the list
-and are flagged; review edits (text, kind, include, dock chip) respected; empty
-board → all added in layout; partial overlap → only new added, positioned by the
-fitted transform; full overlap → zero additions and the button disabled;
-duplicate texts on the board; peer edits between review and commit; one undo
-step; realtime peer receives the batch; offline board (works — the route needs
-no diagram id); lanes on → additions on lanes; docking adjacencies detected and
-tickable; "Add another photo" chains; dark scheme; keyboard-only run through the
-dialog.
+**C. Photo import** — no key (no UI anywhere; image drop still makes an image
+element); key + read-only (no UI); key + locked tab / blocked layer (row
+disabled with reason); pick via row / command palette / drop / paste; non-image
+drop on ES board unchanged; image drop on non-ES board unchanged (still an image
+element); HEIC / SVG / GIF rejected with hints; too large after encode;
+EXIF-rotated JPEG lands upright; abort mid-read; model 502 / 429 / 403 / 401 /
+503 each surfaced as a toast with retry; `wall: false`; zero notes; notes with
+`unknown` kind land as Domain Event drafts with the badge tooltip saying so;
+empty board → all land in layout; partial overlap → only new land, positioned by
+the fitted transform, existing byte-identical; full overlap → zero drafts, Add
+disabled; duplicate texts on the board; a draft note typed into / dragged /
+re-kinded / deleted before Add; a peer edits an existing note during the draft
+(their edit survives Add and Discard); Add = one undo step; Discard = board
+unchanged; reload mid-draft (bar returns, fade does not); peer sees draft notes
+with the outline but no fade; offline board (works — the route needs no diagram
+id); lanes on → drafts land on lanes; docking adjacencies land docked; second
+photo after Add dedups against the first; entry points disabled while a draft
+is open; dark scheme; keyboard-only run (row → file input → bar → Add).
 
 ---
 
@@ -915,7 +990,8 @@ Each is one more `ES_DOCKINGS` row plus, where the face is not west / east, a
       existing moved (compare element JSON before / after, byte-identical for
       matched ids).
 - [x] Help: `apps/help/app/canvas/event-storming-boards/page.mdx` gains three
-      sections (lanes, anchors, from a photo); registry `description` unchanged
+      sections (lanes, anchors, from a photo (the draft: outline,
+      fade, badge, bar, Add / Discard / Undo)); registry `description` unchanged
       unless it no longer summarises, `keywords` gain the lane / dock / photo
       words (lane lanes timeline grid stagger anchor dock docked magnet photo
       camera wall picture ocr scan import);
