@@ -13,6 +13,7 @@ import {
   laneIndexAt,
   laneTop,
   captureCandidate,
+  capturePlacement,
   laneCandidates,
   type LaneCandidate,
   prevailingNoteGap,
@@ -295,6 +296,41 @@ describe('the slots a lane offers', () => {
       // The gap centre is 236; a 140-wide note centred there starts at 166.
       expect(xs(cs, 'staggered')).toContain(166);
     });
+  });
+});
+
+describe('placing a note right behind another', () => {
+  const GAP = ES_NOTE_GAP;
+  const PITCH = 200 + GAP;
+  const square = { width: 200, height: 200 };
+  const row = [note({ id: 'a', x: 0, y: 0 }), note({ id: 'b', x: PITCH, y: 0 })];
+  const place = (x: number) => capturePlacement({ x, y: 0, ...square }, row, { gap: GAP });
+
+  it('resolves a note dropped ON TOP of its neighbour to the next slot', () => {
+    // "As close behind as possible" overshoots: the hand ends up inside the
+    // note before it, which is further from the next slot than the capture
+    // radius. That is how a row came to have gaps of 4, 16 and 60px.
+    expect(place(PITCH + 120)!.x).toBe(2 * PITCH);
+    expect(place(PITCH + 60)!.x).toBe(2 * PITCH);
+  });
+
+  it('resolves an overlap to the slot on the side the note is leaning', () => {
+    expect(place(-60)!.x).toBe(-PITCH);
+  });
+
+  it('still leaves a note alone in open space', () => {
+    // Well clear of every slot this row offers, and touching nothing.
+    expect(place(3000)).toBeNull();
+  });
+
+  it('never leaves a note lying on top of another', () => {
+    for (let x = -199; x < 200; x += 7) {
+      const placed = place(x);
+      expect(placed, `dropped at ${x}`).not.toBeNull();
+      const lands = placed!.x;
+      const clashes = row.some((r: any) => lands < r.x + r.width && lands + 200 > r.x);
+      expect(clashes, `dropped at ${x} landed at ${lands}`).toBe(false);
+    }
   });
 });
 

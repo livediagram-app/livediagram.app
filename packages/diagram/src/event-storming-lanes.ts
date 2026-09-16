@@ -326,6 +326,36 @@ export function laneCandidates(
 // Takes the whole bounds, though only the left edge decides: callers hand the
 // note they are dragging, and a parameter narrower than the thing every caller
 // has is a paper cut at each of them.
+// THE PLACEMENT, in one call: what the board offers this note, and which of
+// those offers takes it. Both drag paths ask this and nothing else.
+//
+// The extra rule here is OVERLAP. Sliding a note back until it touches the one
+// before it is how an author says "right behind this", and the gesture
+// overshoots by its nature: the hand ends up INSIDE the previous note, which
+// is further from the next slot than the capture radius. Notes were landing
+// loose at 4px, 16px, 60px — the author's "as close as possible" turned into an
+// irregular row. A footprint lying on top of a note in the same row is not a
+// resting place on a board of paper, so it is always resolved to the nearest
+// slot, however far that is.
+export function capturePlacement(
+  bounds: { x: number; y: number; width: number; height: number },
+  elements: readonly Element[],
+  opts: { gap?: number; exclude?: ReadonlySet<string>; radius?: number } = {},
+): LaneCandidate | null {
+  const candidates = laneCandidates(bounds, elements, opts);
+  const captured = captureCandidate(bounds, candidates, opts.radius);
+  if (captured) return captured;
+  const overlapsNeighbour = stickyBoxes(elements).some(
+    (n) =>
+      !(n.id && opts.exclude?.has(n.id)) &&
+      sameRow(bounds, n) &&
+      bounds.x < n.x + n.width &&
+      bounds.x + bounds.width > n.x,
+  );
+  if (!overlapsNeighbour) return null;
+  return captureCandidate(bounds, candidates, Infinity);
+}
+
 export function captureCandidate(
   bounds: { x: number; y?: number; width?: number; height?: number },
   candidates: readonly LaneCandidate[],

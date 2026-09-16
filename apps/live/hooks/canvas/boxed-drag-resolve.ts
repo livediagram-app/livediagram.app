@@ -5,8 +5,7 @@ import {
   isBoxed,
   snapResizeBounds,
   snapToAlignment,
-  captureCandidate,
-  laneCandidates,
+  capturePlacement,
   prevailingNoteGap,
   snapToLane,
   type AlignmentGuide,
@@ -104,13 +103,10 @@ export function resolveBoxedMove({
   // it is joining is settled before its neighbours are asked.
   const laneSnap = timeline ? snapToLane(candidate, timeline) : null;
   const gutterSnap = laneSnap
-    ? captureCandidate(
-        candidate,
-        laneCandidates({ ...candidate, y: laneSnap.y }, elements, {
-          gap: prevailingNoteGap(elements),
-          exclude: memberIds,
-        }),
-      )
+    ? capturePlacement({ ...candidate, y: laneSnap.y }, elements, {
+        gap: prevailingNoteGap(elements),
+        exclude: memberIds,
+      })
     : null;
   // ON A LANES BOARD, THE LANE RESOLVER IS THE ONLY SOURCE OF X.
   //

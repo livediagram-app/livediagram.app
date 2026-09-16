@@ -449,16 +449,17 @@ The rules a single note follows on a lanes-on board. This table is the contract;
 it is updated in the SAME commit as any change to it, and the rulings below
 record who asked for what.
 
-| Where                                | What is offered                                                                                                                                                                                                                           |
-| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Same lane, no neighbour in reach** | Nothing. The note is free within the lane.                                                                                                                                                                                                |
-| **Same lane, a neighbour in reach**  | The RHYTHM only: the neighbour's right edge plus a gutter, then one more empty place each step (`x = n.x + n.width + gutter + k × (w + gutter)`, `k ≥ 0`), and the mirror to its left.                                                    |
-| **Same lane — never offered**        | Touching (`n.x ± w`). One gap plus one sticky (`n.x + n.width + gutter + w`) — that is a note's edge, not a place. Half a pitch. Anything landing on a note that is already there (opening a row is the Alt insertion, a different verb). |
-| **Adjacent lane**                    | Exactly above / below a NOTE (left edges aligned), or exactly above / below a GAP (centred on it — the brick). Nothing else: a neighbouring row says which columns line up, not where along this row a note may sit.                      |
-| **Every other x snap**               | Stands down. On a lanes board the lane resolver is the only source of x — the ordinary alignment and distribution rungs were adding exactly the positions the rules above exclude.                                                        |
-| **The gutter**                       | The most REPEATED gap between notes sharing a row, ignoring anything under 24px (a seam, not a gutter) and any docked pair's seam; `ES_NOTE_GAP` (72) when there is nothing to measure.                                                   |
-| **Capture**                          | Half a standard note (100px) on x, the lane tolerance on y; nearest candidate wins, no kind outranks another; the slot is drawn before the drop.                                                                                          |
-| **Precedence**                       | An open Alt slot, then Cmd/Ctrl free placement, then a dock candidate, then these rules.                                                                                                                                                  |
+| Where                                | What is offered                                                                                                                                                                                                                                                        |
+| ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Same lane, no neighbour in reach** | Nothing. The note is free within the lane.                                                                                                                                                                                                                             |
+| **Same lane, a neighbour in reach**  | The RHYTHM only: the neighbour's right edge plus a gutter, then one more empty place each step (`x = n.x + n.width + gutter + k × (w + gutter)`, `k ≥ 0`), and the mirror to its left.                                                                                 |
+| **Same lane — never offered**        | Touching (`n.x ± w`). One gap plus one sticky (`n.x + n.width + gutter + w`) — that is a note's edge, not a place. Half a pitch. Anything landing on a note that is already there (opening a row is the Alt insertion, a different verb).                              |
+| **Adjacent lane**                    | Exactly above / below a NOTE (left edges aligned), or exactly above / below a GAP (centred on it — the brick). Nothing else: a neighbouring row says which columns line up, not where along this row a note may sit.                                                   |
+| **Every other x snap**               | Stands down. On a lanes board the lane resolver is the only source of x — the ordinary alignment and distribution rungs were adding exactly the positions the rules above exclude.                                                                                     |
+| **Dropped ON a note in the row**     | Resolved to the nearest slot, however far it is. Sliding a note back until it touches the one before it is how an author says "right behind this", and the gesture overshoots by nature; a footprint lying on another note is not a resting place on a board of paper. |
+| **The gutter**                       | The most REPEATED gap between notes sharing a row, ignoring anything under 24px (a seam, not a gutter) and any docked pair's seam; `ES_NOTE_GAP` (72) when there is nothing to measure.                                                                                |
+| **Capture**                          | Half a standard note (100px) on x, the lane tolerance on y; nearest candidate wins, no kind outranks another; the slot is drawn before the drop.                                                                                                                       |
+| **Precedence**                       | An open Alt slot, then Cmd/Ctrl free placement, then a dock candidate, then these rules.                                                                                                                                                                               |
 
 **Non-square stationery** (provisional, awaiting a ruling): a wide or small note
 takes a slot like any other. The first slot after a neighbour is that
@@ -479,6 +480,13 @@ of it lives in `rhythmSlots` and `gutterCentres` in
   neighbour tolerance was 12px, a snap rather than a suggestion, so in practice
   nothing was offered. Capture radius widened to half a note and the target
   footprint is now DRAWN before the drop.
+- **2026-09-16 — "as close behind each other as possible gives irregular
+  stuff"**: a row built that way came out with gaps of 72, 16, 4, 60, 72, 72.
+  Placing a note "right behind" another means sliding it back until it touches,
+  and the hand ends up INSIDE the previous note — 124px from the next slot,
+  past the 100px capture radius — so the note stayed where it was dropped. An
+  overlapping footprint now always resolves to the nearest slot, and the same
+  seven aims that produced that row now produce 72 every time.
 - **2026-09-16 — "two events can only be placed without the gap, or with a very
   big gap"**: the gutter was the MEDIAN of every gap on the board, so a handful
   of accidental near-touching pairs (16px, left behind while dragging) pulled a
