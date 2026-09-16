@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, type RefObject } from 'react';
-import type { AlignmentGuide, DistributionGuide, Element } from '@livediagram/diagram';
+import type { AlignmentGuide, DistributionGuide, Element, EsTimeline } from '@livediagram/diagram';
 import { pointerToCanvas } from '@/lib/canvas';
 import { paletteDragSnapAt } from '@/lib/palette-drag-snap';
 import {
@@ -13,6 +13,7 @@ import {
 } from '@/lib/insert-between';
 import { setPaletteDragSnap, usePaletteDragPreview } from '@/lib/palette-drag-preview';
 import { setInsertionSlot } from '@/lib/insertion-preview';
+import { setLanePreview } from '@/lib/lane-preview';
 
 // Alignment guides DURING a palette drag (spec/139) — the single owner of the
 // in-flight snap. It tracks the dragover cursor, converts it to canvas coords
@@ -49,6 +50,7 @@ export function usePaletteDragGuides({
   wrapperRef,
   insertGate,
   inertIds,
+  timeline,
 }: {
   elements: Element[];
   viewportZoom: number;
@@ -61,6 +63,10 @@ export function usePaletteDragGuides({
   // Elements on a hidden or locked layer: they cannot define the row, but
   // they still travel with the ripple.
   inertIds: ReadonlySet<string>;
+  // Timeline lanes (spec/139 Phase 6) when the active tab has them on, else
+  // null. Read at EVENT time like the board below, so a peer flipping the
+  // switch mid-drag is honoured on the next movement.
+  timeline: EsTimeline | null;
 }): { guides: AlignmentGuide[]; distGuides: DistributionGuide[] } {
   const preview = usePaletteDragPreview();
   const [guides, setGuides] = useState<AlignmentGuide[]>([]);
@@ -71,9 +77,9 @@ export function usePaletteDragGuides({
   // per render would otherwise resubscribe on every state change, wiping the
   // in-flight slot's hysteresis with it) — and a peer's mid-drag edit is still
   // seen, because the handler reads the ref.
-  const board = useRef({ elements, inertIds, insertGate });
+  const board = useRef({ elements, inertIds, insertGate, timeline });
   useEffect(() => {
-    board.current = { elements, inertIds, insertGate };
+    board.current = { elements, inertIds, insertGate, timeline };
   });
 
   useEffect(() => {
@@ -85,6 +91,7 @@ export function usePaletteDragGuides({
       clearGuides();
       setPaletteDragSnap(null);
       setInsertionSlot(null);
+      setLanePreview(null);
       return;
     }
     // The slot currently on offer, fed back into the resolver so it sticks
@@ -96,6 +103,7 @@ export function usePaletteDragGuides({
       clearGuides();
       setPaletteDragSnap(null);
       setInsertionSlot(null);
+      setLanePreview(null);
     };
     const onDragOver = (e: DragEvent) => {
       const target = e.target as Element2 | null;
@@ -109,7 +117,7 @@ export function usePaletteDragGuides({
         return;
       }
       const { x, y } = pointerToCanvas(e.clientX, e.clientY, rect, viewportZoom);
-      const { elements: live, inertIds: inert, insertGate: gate } = board.current;
+      const { elements: live, inertIds: inert, insertGate: gate, timeline: lanes } = board.current;
       // Alt, live: press it mid-drag and the slot opens on the next move,
       // release it and the ordinary alignment snap takes back over. Only for
       // something that will land as a NOTE — the gesture is about the note
@@ -126,6 +134,9 @@ export function usePaletteDragGuides({
             })
           : null;
       if (slot) {
+        // An open slot IS the placement, so every rung below it — the lanes
+        // included — stands down.
+        setLanePreview(null);
         // The slot IS the placement while it is open, so the alignment snap
         // yields: two placement rules fighting would put the ghost, the
         // marker and the drop in three different places. The offset carries
@@ -147,8 +158,12 @@ export function usePaletteDragGuides({
         width: preview.width,
         height: preview.height,
         elements: live,
+        // Lanes are a NOTE grammar: a shape dragged in from the palette lands
+        // exactly as it does on every other board.
+        timeline: preview.note === true ? lanes : null,
       });
       setPaletteDragSnap({ dx: snap.dx, dy: snap.dy });
+      setLanePreview(snap.lane);
       setGuides(snap.guides);
       setDistGuides(snap.distGuides);
     };
@@ -174,6 +189,7 @@ export function usePaletteDragGuides({
       clearGuides();
       setPaletteDragSnap(null);
       setInsertionSlot(null);
+      setLanePreview(null);
     };
   }, [preview, viewportZoom, wrapperRef]);
 

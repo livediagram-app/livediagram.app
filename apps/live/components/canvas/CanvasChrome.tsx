@@ -1,3 +1,4 @@
+import { activeTimeline } from '@livediagram/diagram';
 import { computeDrawGuides } from '@/components/canvas/canvas-draw-guides';
 import { CanvasGuideOverlay } from '@/components/canvas/CanvasGuideOverlay';
 import { CanvasDrawPreview } from '@/components/canvas/CanvasDrawPreview';
@@ -249,6 +250,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
       createBlocked: props.createBlocked === true,
     },
     inertIds: props.layerInertIds,
+    // Lanes are gated on the board being one AND the switch being on; the
+    // resolver decides nothing about eligibility beyond that.
+    timeline: props.esBoard === true ? activeTimeline({ esTimeline: props.tabTimeline }) : null,
   });
   const { alignGuides, allSnapTargets } = computeDrawGuides({
     drawDrag,

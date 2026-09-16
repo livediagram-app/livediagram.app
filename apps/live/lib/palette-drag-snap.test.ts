@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@livediagram/diagram';
+import {
+  ES_GRID_CELL,
+  ES_LANE_PITCH,
+  laneCentre,
+  type Element,
+  type EsTimeline,
+} from '@livediagram/diagram';
 import { paletteDragSnapAt } from './palette-drag-snap';
 
 // Alignment help BEFORE the drop (spec/139): while a palette tile is dragged
@@ -100,5 +106,54 @@ describe('paletteDragSnapAt', () => {
       elements: [neighbour],
     });
     expect(guides.some((g) => g.axis === 'x')).toBe(true);
+  });
+});
+
+// Timeline lanes (spec/139 Phase 6): the same rung the note-drag resolver
+// applies, so a note dragged in from the palette lands on the grid the board
+// has already committed to.
+describe('paletteDragSnapAt — timeline lanes', () => {
+  const TIMELINE: EsTimeline = { originX: 0, originY: 0, enabled: true };
+  const dragged = { width: 200, height: 200 };
+
+  it('centres the note on the lane and puts its left edge on the column', () => {
+    const out = paletteDragSnapAt({
+      canvasX: 3 * ES_GRID_CELL + 9 + 100,
+      canvasY: ES_LANE_PITCH + 7 + 100,
+      ...dragged,
+      elements: [],
+      timeline: TIMELINE,
+    });
+    expect(3 * ES_GRID_CELL + 9 + out.dx).toBe(3 * ES_GRID_CELL);
+    expect(ES_LANE_PITCH + 7 + 100 + out.dy).toBe(laneCentre(1, TIMELINE));
+    expect(out.lane).toEqual({ laneIndex: 1, cellIndex: 3 });
+  });
+
+  it('is inert without a timeline, exactly as every other board behaves', () => {
+    const out = paletteDragSnapAt({
+      canvasX: 3 * ES_GRID_CELL + 9 + 100,
+      canvasY: ES_LANE_PITCH + 7 + 100,
+      ...dragged,
+      elements: [],
+    });
+    expect(out).toEqual({ dx: 0, dy: 0, guides: [], distGuides: [], lane: null });
+  });
+
+  it('keeps the alignment guide on the axis the lane left alone', () => {
+    // A neighbour whose TOP edge sits mid-way between two lanes: the lane
+    // cannot claim y, so alignment still does, and its guide survives.
+    const neighbourY = ES_LANE_PITCH + 100;
+    const out = paletteDragSnapAt({
+      canvasX: 3 * ES_GRID_CELL + 9 + 100,
+      canvasY: neighbourY + 100 + 3,
+      ...dragged,
+      elements: [
+        { id: 'n', type: 'sticky', x: 900, y: neighbourY, width: 200, height: 200 } as Element,
+      ],
+      timeline: TIMELINE,
+    });
+    expect(out.lane).toEqual({ laneIndex: null, cellIndex: 3 });
+    expect(out.guides.length).toBeGreaterThan(0);
+    expect(out.guides.every((g) => g.axis === 'y')).toBe(true);
   });
 });

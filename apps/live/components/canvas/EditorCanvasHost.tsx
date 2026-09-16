@@ -411,6 +411,7 @@ export function EditorCanvasHost() {
       elements={presentingElements ?? activeTab.elements}
       tabLayers={activeTab.layers}
       tabKind={activeTab.kind}
+      tabTimeline={activeTab.esTimeline}
       layerInertIds={layerInertIds}
       shiftDupGhostIds={shiftDupGhostIds}
       snapGuides={snapGuides}

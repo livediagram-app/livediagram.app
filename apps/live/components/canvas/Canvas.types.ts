@@ -3,7 +3,7 @@
 // via inline import('...') so this file only needs the bare-named
 // types as top-level imports.
 import type { PointerEvent as ReactPointerEvent, Ref } from 'react';
-import type { EmbedProvider, EventStormingNoteKind } from '@livediagram/diagram';
+import type { EmbedProvider, EsTimeline, EventStormingNoteKind } from '@livediagram/diagram';
 import type {
   AlignmentGuide,
   BackgroundPattern,
@@ -71,6 +71,10 @@ export type CanvasProps = {
   // The tab’s board kind (spec/139), which decides whether this canvas
   // presents as an event-storming board.
   tabKind?: TabKind;
+  // The tab's timeline lane stack (spec/139 Phase 6) when lanes are on, else
+  // undefined: a note dragged in from the palette snaps onto it, and the
+  // overlay lights the lane it is landing on.
+  tabTimeline?: EsTimeline;
   // Element ids on a hidden or locked layer (spec/74) — inert to every
   // selection surface, including the right-click context menu.
   layerInertIds: Set<string>;

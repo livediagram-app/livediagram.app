@@ -2,11 +2,14 @@ import {
   alignmentGuides,
   distributionSnap,
   snapToAlignment,
+  snapToLanes,
   type AlignmentGuide,
   type DistributionGuide,
   type Element,
+  type EsTimeline,
 } from '@livediagram/diagram';
 import { ALIGN_SNAP_THRESHOLD } from '@/lib/canvas';
+import type { LanePreview } from '@/lib/lane-preview';
 
 // Alignment help BEFORE the drop (spec/139): a palette tile dragged over the
 // canvas snaps to its neighbours like a moved element does, and shows the
@@ -26,6 +29,7 @@ export function paletteDragSnapAt({
   width,
   height,
   elements,
+  timeline = null,
 }: {
   // The cursor in canvas coords. The footprint is CENTRED on it, matching
   // where the drop actually places the element.
@@ -34,11 +38,16 @@ export function paletteDragSnapAt({
   width: number;
   height: number;
   elements: Element[];
+  // Timeline lanes (spec/139 Phase 6), when this drag is eligible for them: a
+  // note, on an event-storming board, with lanes on. Null otherwise — the
+  // caller owns that decision, exactly as the note-drag path's does.
+  timeline?: EsTimeline | null;
 }): {
   dx: number;
   dy: number;
   guides: AlignmentGuide[];
   distGuides: DistributionGuide[];
+  lane: LanePreview | null;
 } {
   const candidate = {
     x: canvasX - width / 2,
@@ -46,6 +55,18 @@ export function paletteDragSnapAt({
     width,
     height,
   };
+  // The lane rung sits above alignment, the same order the note-drag resolver
+  // follows — one ladder, two entry points.
+  const laneSnap = timeline ? snapToLanes(candidate, timeline) : null;
+  if (laneSnap?.snappedX && laneSnap.snappedY) {
+    return {
+      dx: laneSnap.x - candidate.x,
+      dy: laneSnap.y - candidate.y,
+      guides: [],
+      distGuides: [],
+      lane: { laneIndex: laneSnap.laneIndex, cellIndex: laneSnap.cellIndex },
+    };
+  }
   const snap = snapToAlignment(candidate, elements, NO_EXCLUDE, ALIGN_SNAP_THRESHOLD);
   let dx = snap.dx;
   let dy = snap.dy;
@@ -65,13 +86,22 @@ export function paletteDragSnapAt({
   // exactly when a snap is in effect — the same derivation the move /
   // resize path uses.
   const snapped = { ...candidate, x: candidate.x + dx, y: candidate.y + dy };
+  const guides = alignmentGuides(snapped, elements, NO_EXCLUDE);
+  // Only for the axis distribution actually drove.
+  const distGuides = dist.guides.filter((g) =>
+    g.axis === 'x' ? !snap.snappedX && dist.dx !== 0 : !snap.snappedY && dist.dy !== 0,
+  );
+  if (!laneSnap) return { dx, dy, guides, distGuides, lane: null };
+  // One axis claimed by the lane, the other left to alignment — and the
+  // claimed axis drops its guide line, which would otherwise promise an edge
+  // the note is not landing on.
+  const keep = <T extends { axis: 'x' | 'y' }>(gs: T[]): T[] =>
+    gs.filter((g) => (g.axis === 'x' ? !laneSnap.snappedX : !laneSnap.snappedY));
   return {
-    dx,
-    dy,
-    guides: alignmentGuides(snapped, elements, NO_EXCLUDE),
-    // Only for the axis distribution actually drove.
-    distGuides: dist.guides.filter((g) =>
-      g.axis === 'x' ? !snap.snappedX && dist.dx !== 0 : !snap.snappedY && dist.dy !== 0,
-    ),
+    dx: laneSnap.snappedX ? laneSnap.x - candidate.x : dx,
+    dy: laneSnap.snappedY ? laneSnap.y - candidate.y : dy,
+    guides: keep(guides),
+    distGuides: keep(distGuides),
+    lane: { laneIndex: laneSnap.laneIndex, cellIndex: laneSnap.cellIndex },
   };
 }
