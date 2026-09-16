@@ -1,10 +1,9 @@
 import { badRequest, CORS_HEADERS, json } from '../responses';
 import { aiGate } from './ai-gate';
+import { assistantModel, chatCompletions } from '../ai-client';
 import { buildSystemPrompt, diagramTypeHint, extractExistingStyle } from '../ai-prompt';
 import type { RouteContext } from './context';
 import type { AiRequest } from '@livediagram/api-schema';
-
-const OPENAI_URL = 'https://api.openai.com/v1/chat/completions';
 
 const MAX_PROMPT_CHARS = 1000;
 const MAX_ELEMENTS = 200;
@@ -105,7 +104,7 @@ export async function handleAi(ctx: RouteContext): Promise<Response> {
   }
   if (typeof tabName === 'string' && tabName.length > 200) return badRequest('tabName too long');
 
-  const model = env.OPENAI_MODEL ?? 'gpt-4o';
+  const model = assistantModel(env);
   const isTextMode = mode === 'ask';
   const safe = sanitiseElements(elements);
   const systemPrompt = buildSystemPrompt(
@@ -140,24 +139,17 @@ export async function handleAi(ctx: RouteContext): Promise<Response> {
     { role: 'user', content: userContent },
   ];
 
-  const oaiRes = await fetch(OPENAI_URL, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${env.OPENAI_API_KEY}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model,
-      messages,
-      stream: true,
-      max_tokens: isTextMode ? MAX_TOKENS_REVIEW : MAX_TOKENS_MUTATE,
-      ...(isTextMode ? {} : { response_format: { type: 'json_object' } }),
-    }),
+  const oaiRes = await chatCompletions(env, {
+    model,
+    messages,
+    stream: true,
+    max_tokens: isTextMode ? MAX_TOKENS_REVIEW : MAX_TOKENS_MUTATE,
+    ...(isTextMode ? {} : { response_format: { type: 'json_object' } }),
   });
 
   if (!oaiRes.ok || !oaiRes.body) {
     const errText = await oaiRes.text().catch(() => '');
-    console.error('OpenAI error:', oaiRes.status, errText);
+    console.error('[ai] provider error:', oaiRes.status, errText);
     return json({ error: 'ai_error' }, { status: 502 });
   }
 

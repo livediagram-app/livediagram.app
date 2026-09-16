@@ -15,7 +15,7 @@ import type { RouteContext } from './context';
 export async function aiGate(ctx: RouteContext): Promise<Response | null> {
   const { request, env } = ctx;
 
-  if (!env.OPENAI_API_KEY) return json({ error: 'ai_not_configured' }, { status: 503 });
+  if (!env.AI_API_KEY) return json({ error: 'ai_not_configured' }, { status: 503 });
 
   // Origin allow-list (spec/25). Optional: unset accepts any Origin, matching
   // the historical OSS self-host story. When set, the request's Origin must

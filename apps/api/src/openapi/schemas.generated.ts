@@ -1649,75 +1649,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
-  "DetectedNote": {
-    "additionalProperties": false,
-    "properties": {
-      "colour": {
-        "type": "string"
-      },
-      "confidence": {
-        "type": "number"
-      },
-      "cx": {
-        "type": "number"
-      },
-      "cy": {
-        "type": "number"
-      },
-      "h": {
-        "type": "number"
-      },
-      "id": {
-        "type": "number"
-      },
-      "kind": {
-        "anyOf": [
-          {
-            "$ref": "#/components/schemas/EventStormingNoteKind"
-          },
-          {
-            "const": "unknown",
-            "type": "string"
-          }
-        ]
-      },
-      "order": {
-        "type": "number"
-      },
-      "row": {
-        "type": "number"
-      },
-      "size": {
-        "enum": [
-          "square",
-          "wide",
-          "small"
-        ],
-        "type": "string"
-      },
-      "text": {
-        "type": "string"
-      },
-      "w": {
-        "type": "number"
-      }
-    },
-    "required": [
-      "id",
-      "text",
-      "kind",
-      "colour",
-      "size",
-      "cx",
-      "cy",
-      "w",
-      "h",
-      "row",
-      "order",
-      "confidence"
-    ],
-    "type": "object"
-  },
   "Diagram": {
     "additionalProperties": false,
     "properties": {
@@ -2943,6 +2874,42 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "NoteCrop": {
+    "additionalProperties": false,
+    "properties": {
+      "id": {
+        "type": "number"
+      },
+      "image": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "image"
+    ],
+    "type": "object"
+  },
+  "NoteText": {
+    "additionalProperties": false,
+    "properties": {
+      "id": {
+        "type": "number"
+      },
+      "legible": {
+        "type": "boolean"
+      },
+      "text": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "text",
+      "legible"
+    ],
+    "type": "object"
+  },
   "Padding": {
     "enum": [
       "none",
@@ -2993,43 +2960,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "participantId",
       "value",
       "at"
-    ],
-    "type": "object"
-  },
-  "PhotoNotesRequest": {
-    "additionalProperties": false,
-    "properties": {
-      "image": {
-        "type": "string"
-      },
-      "tabName": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "image"
-    ],
-    "type": "object"
-  },
-  "PhotoNotesResponse": {
-    "additionalProperties": false,
-    "properties": {
-      "hint": {
-        "type": "string"
-      },
-      "notes": {
-        "items": {
-          "$ref": "#/components/schemas/DetectedNote"
-        },
-        "type": "array"
-      },
-      "wall": {
-        "type": "boolean"
-      }
-    },
-    "required": [
-      "notes",
-      "wall"
     ],
     "type": "object"
   },
@@ -3104,6 +3034,36 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "fireworks"
     ],
     "type": "string"
+  },
+  "ReadNotesRequest": {
+    "additionalProperties": false,
+    "properties": {
+      "crops": {
+        "items": {
+          "$ref": "#/components/schemas/NoteCrop"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "crops"
+    ],
+    "type": "object"
+  },
+  "ReadNotesResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "texts": {
+        "items": {
+          "$ref": "#/components/schemas/NoteText"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "texts"
+    ],
+    "type": "object"
   },
   "RollCallEntry": {
     "additionalProperties": false,
@@ -3721,6 +3681,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "esDock": {
         "$ref": "#/components/schemas/EsDock"
+      },
+      "esDraft": {
+        "const": true,
+        "type": "boolean"
       },
       "esKind": {
         "$ref": "#/components/schemas/EventStormingNoteKind"

@@ -108,21 +108,25 @@ export type Env = {
   // Public origin used to build links in emails (optional). Defaults to
   // "https://livediagram.app".
   APP_BASE_URL?: string;
-  // OpenAI API key for the AI assistance feature (spec/25). When absent
-  // the feature is hidden entirely — GET /api/capabilities returns
-  // { aiEnabled: false } and POST /api/ai returns 503. Set via
-  // `wrangler secret put OPENAI_API_KEY` for production; drop into
-  // `apps/api/.dev.vars` for local dev (gitignored, never commit).
-  OPENAI_API_KEY?: string;
-  // Override the OpenAI model (optional). Defaults to gpt-4o.
-  // Set in wrangler.toml [vars] if you want a different model.
-  OPENAI_MODEL?: string;
-  // The model the wall-photo reader uses (spec/139 Phase 8). Defaults to
-  // OPENAI_MODEL, else gpt-4o. Split out so a deployment can point the vision
-  // route at a cheaper or newer model without moving the assistant.
-  OPENAI_VISION_MODEL?: string;
+  // The key for the AI features (spec/25). ANY OpenAI-compatible provider:
+  // the name is `AI_` rather than `OPENAI_` because the endpoint is a
+  // configuration choice, and a variable called OPENAI_API_KEY holding a
+  // Gemini key is a lie. When absent the whole AI surface is hidden —
+  // GET /api/capabilities returns { aiEnabled: false } and the AI routes
+  // answer 503. Set via `wrangler secret put AI_API_KEY` for production; drop
+  // into `apps/api/.dev.vars` for local dev (gitignored, never commit).
+  AI_API_KEY?: string;
+  // The chat-completions base URL (optional). Defaults to OpenAI's
+  // https://api.openai.com/v1; the hosted site points it at Gemini's
+  // OpenAI-compatible endpoint, and a laptop can point it at llama.cpp.
+  AI_BASE_URL?: string;
+  // Model id for the assistant (optional). Defaults to gpt-4o.
+  AI_MODEL?: string;
+  // Model id for reading sticky-note crops (spec/139 Phase 8). Defaults to
+  // AI_MODEL, so a deployment only sets it to split the two apart.
+  AI_VISION_MODEL?: string;
   // Per-IP rate limiter for POST /api/ai. Caps AI requests at 20/60s
-  // per IP so a single client can't exhaust the OpenAI budget.
+  // per IP so a single client can't exhaust the operator's model budget.
   // Optional: absent (self-host) falls through to "allow".
   AI_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Per-token read limiter for token-authed GETs (spec/61 §3.5), keyed on the

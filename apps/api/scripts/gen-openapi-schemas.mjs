@@ -54,8 +54,8 @@ export const ROOT_TYPES = [
   'TelemetryEvent',
   'TelemetrySummary',
   'AiRequest',
-  'PhotoNotesRequest',
-  'PhotoNotesResponse',
+  'ReadNotesRequest',
+  'ReadNotesResponse',
   'CapabilitiesResponse',
   'UnfurlResult',
 ];
