@@ -418,7 +418,7 @@ esDock?: {
 
 ### 1.2 Pure model (`event-storming-lanes.ts`)
 
-- [ ] RED: `event-storming-lanes.test.ts` — lane index / top / centre round trips;
+- [x] RED: `event-storming-lanes.test.ts` — lane index / top / centre round trips;
       `snapToLanes` snaps y to the lane centre-line within threshold and leaves it
       alone beyond; snaps x to the half-note grid for square (2 cells), wide (3
       cells), small (left edge only) silhouettes; both axes independent; `null` when
@@ -426,15 +426,15 @@ esDock?: {
       `initialTimelineOrigin` picks top-most then left-most, `(0,0)` when empty,
       ignores non-sticky elements and hidden-layer elements; `visibleLaneIndices`
       covers a viewport exactly (inclusive at both edges) at any zoom.
-- [ ] GREEN: implement. Export from `index.ts`.
-- [ ] Add `esTimeline?` to `Tab` with the comment explaining WHAT it is (present =
+- [x] GREEN: implement. Export from `index.ts`.
+- [x] Add `esTimeline?` to `Tab` with the comment explaining WHAT it is (present =
       on, origin = where lanes are anchored, pitch is a constant not a field, and
       why: one rhythm per board is the point).
-- [ ] Verify the field survives the two stores: extend `apps/live/lib/api/core.test.ts`
+- [x] Verify the field survives the two stores: extend `apps/live/lib/api/core.test.ts`
       (`tabForWire` keeps it) and `apps/live/lib/offline/offline-store.test.ts`
       (`upsertTab` keeps it); the api's `rowToTab` spread test in
       `apps/api/src/tab-row.test.ts` if it enumerates fields.
-- [ ] Commit: `feat(diagram): timeline lane geometry for event-storming boards`.
+- [x] Commit: `feat(diagram): timeline lane geometry for event-storming boards`.
 
 ### 1.3 The switch (state + surfaces)
 
