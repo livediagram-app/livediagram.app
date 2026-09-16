@@ -134,21 +134,32 @@ order is spec → pure model → editor wiring → surfaces → verification →
   5. alignment + distribution snap (today's behaviour).
      Shift (drag-duplicate, spec/80) suppresses slot and dock, and lanes still
      apply to the clone.
-- **The model is pluggable; the geometry is ours.** The api worker talks to ANY
-  OpenAI-compatible chat-completions endpoint: `AI_BASE_URL` (default
-  `https://api.openai.com/v1`, the hosted site sets Gemini's
-  `https://generativelanguage.googleapis.com/v1beta/openai`), `AI_API_KEY` (the
-  one gate: absent = every AI surface hidden, the spec/25 self-host story),
-  `AI_MODEL` (default `gpt-4o`, hosted sets the current Gemini Flash id) and
-  `AI_VISION_MODEL` (default `AI_MODEL`). The `OPENAI_*` names are REMOVED, not
-  aliased — a name that says OpenAI while pointing at Gemini is a lie, and the
-  repo's rule is no compat layers. The existing assistant route (Ask / Clean)
-  moves to the same client, so one key drives both. Requests use
-  `response_format: { type: 'json_object' }` plus our own strict validation
-  (universally supported; strict `json_schema` is not, and we validate anyway).
-  Deploy step for the operator, named in the PR description: `wrangler secret put
-AI_API_KEY`, and `AI_BASE_URL` + `AI_MODEL` as `[vars]`; the old
-  `OPENAI_API_KEY` secret can be deleted.
+- **The model is pluggable; the key says whose it is; the geometry is ours.** The
+  api worker talks to any OpenAI-compatible chat-completions endpoint, and the
+  PROVIDER IS INFERRED FROM WHICH KEY IS PRESENT — a key is provider-specific, so
+  its name should say so (the operator's point). Presets, in
+  `apps/api/src/ai-provider.ts`:
+
+  | key var                      | provider | base URL (fixed)                                          | default model                                                  |
+  | ---------------------------- | -------- | --------------------------------------------------------- | -------------------------------------------------------------- |
+  | `GOOGLE_AI_STUDIO_API_KEY`   | google   | `https://generativelanguage.googleapis.com/v1beta/openai` | the current Gemini Flash id (see 3.2, discovered, not guessed) |
+  | `OPENAI_API_KEY`             | openai   | `https://api.openai.com/v1`                               | `gpt-4o` (today's behaviour)                                   |
+  | `AI_API_KEY` + `AI_BASE_URL` | generic  | from `AI_BASE_URL`                                        | none — `AI_MODEL` is REQUIRED for generic                      |
+
+  `AI_MODEL` overrides the default model for any provider; `AI_VISION_MODEL`
+  overrides it for the read route only (default = the resolved `AI_MODEL`).
+  `resolveAiProvider(env)` returns `{ provider, baseUrl, apiKey, model,
+visionModel } | null`; exactly ONE key var may be set — two or more, or a
+  generic key without `AI_BASE_URL` / `AI_MODEL`, resolves to `null` AND logs
+  one loud `console.error` naming the conflict (fail closed, never guess whose
+  budget to spend). `aiEnabled` is `resolveAiProvider(env) !== null`. No
+  `OPENAI_MODEL` any more (it becomes `AI_MODEL`); `OPENAI_API_KEY` is not an
+  alias, it is the OpenAI preset's own key, so a self-hoster on OpenAI changes
+  nothing. Requests use `response_format: { type: 'json_object' }` plus our own
+  strict validation. Deploy step for the hosted site, in the PR description:
+  `wrangler secret put GOOGLE_AI_STUDIO_API_KEY`, `wrangler secret delete
+OPENAI_API_KEY`, drop the `OPENAI_MODEL` var if set.
+
 - **Detection in the browser, reading in the model.** A new package
   `@livediagram/sticky-vision` finds the stickies in a photo with classical CV
   (colour classification against the catalogue fills, connected components,
@@ -280,15 +291,16 @@ if implementation reveals a default is wrong, or where marked **ASK FIRST**.
       cluster moves WHOLE when the HOST's left edge is at or after the insertion
       point (the group precedent), and the seam is never offered as a gap (it is
       not one)._
-- [ ] **Q16 — Live calibration needs a Gemini key and real photos.** The operator
-      chose Gemini Flash. When you reach 3.7, ASK for: `AI_API_KEY` (a Google AI
-      Studio key), `AI_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai`
-      and the current Gemini Flash model id as `AI_MODEL` in `apps/api/.dev.vars`
-      (never print, log or commit any of it), plus 2–3 real wall photos in `/tmp`
-      (never committed). The DETECTOR needs the photos as much as the reader does:
-      hue bands, saturation floors and the same-colour split heuristic are
-      calibrated against real paper under real light. Record the calibration in
-      spec/139.
+- [x] **Q16 — Live calibration: key and photos PROVIDED.** The operator's Google
+      AI Studio key is in `apps/api/.dev.vars` (worktree) as
+      `GOOGLE_AI_STUDIO_API_KEY` — never print, log, `cat` or commit that file;
+      only ever `grep -o '^[A-Z_]*='` it if you must confirm a name. Three real
+      wall photos (4000×3000 JPEG, EXIF orientation 1) are unpacked in
+      `/tmp/eswall-wall-photos/` (`20260826_024907.jpg`, `…919.jpg`, `…931.jpg`,
+      plus 1000px `preview-*.png` copies); they overlap heavily (907 and 931 are
+      the same left wall shifted; 919 is the right wall plane), which is the
+      incremental case. Never commit them. Calibrate detector → reader → matcher
+      against them in 3.7 and record the results in spec/139.
 - [ ] **Q17 — "Both their positions are already adjusted to be correct."**
       _Read as: in the draft, NEW notes are shown at their final reconciled
       positions (not the raw photo positions), and EXISTING notes are shown
@@ -310,6 +322,47 @@ if implementation reveals a default is wrong, or where marked **ASK FIRST**.
       IS the review. A sticky the detector missed is added by hand; a false
       positive is Deleted from the draft. Log the detection count and the
       per-kind histogram at debug level so a miss is diagnosable._
+
+- [ ] **Q21 — What the parent saw in the real photos (calibrate against these).**
+  - The wall is BROWN KRAFT PAPER, not white. Grey-world white balance would be
+    dragged by the brown; estimate the wall as the dominant low-saturation
+    cluster instead and classify paper by saturation + value ABOVE the wall
+    before hue. Orange paper and kraft share a hue (~25–35°) — saturation and
+    value are what separate them.
+  - The wall's colour convention differs from the catalogue: orange = events,
+    blue = commands, GREEN = read-model / data notes, yellow = actor ("Planner",
+    tilted), and PINK is used for BOTH hotspots ("Is this reliable?") and a
+    policy ("If the slot was plannable before…"). There is no purple. Nearest
+    catalogue hue would call pink `external-system`. _Answered by the operator:
+    on their walls PINK MEANS HOTSPOT. The detector's pink band defaults to
+    `hotspot` — the catalogue's `#fca5a5` red-pink AND the hot-pink magenta in
+    the photos both land as hotspot — and a pink policy is re-kinded in the
+    draft. `external-system` keeps only the band the real photos never occupy;
+    calibrate that boundary in 3.7 against the three pink notes, and if the
+    catalogue's external-system pink and the photos' hotspot pink cannot be
+    separated, HOTSPOT WINS and spec/139 says so._ A per-board colour legend
+    (`esColourLegend`) is the right later feature — listed under "Still ahead"
+    in spec/139.
+  - Handwriting is SMALL PEN, mixed case, several lines per note — not marker
+    capitals. The read prompt must not assume caps; ask for the text verbatim
+    with line breaks collapsed to single spaces. Crops come from the full-res
+    bitmap at native resolution (~250–300px per note here); never upscale.
+  - A note is ~60px wide in a 1024px working image. Prefer a 1600–2048px working
+    image for detection if the time budget allows (measure); the split rule and
+    the ink-fragment merge need the pixels.
+  - Same-colour notes TOUCHING in a row are common ("Timeslot started / Activity
+    started / Class started", three orange abutting) — the split rule is not
+    optional. Different-colour partial overlaps (blue command over orange event,
+    green over orange) are the norm for pairs; the occluded note's box is
+    partial, so silhouette from a partial box must degrade to `square`, not to
+    `small`.
+  - Yellow masking-tape strips and a radiator / fly swatter / boots are in frame:
+    min-area + aspect-ratio filters (paper is roughly square, tape is a thin
+    strip) must drop them.
+  - The photos span a WALL CORNER (two planes): rows on the right plane are
+    foreshortened. Row clustering by centre-y is fine within a plane; the
+    transform fit should be a robust (median / trimmed) estimate rather than
+    plain least squares so a corner does not skew the whole placement.
 
 ---
 
@@ -817,17 +870,23 @@ working image */, row, order, confidence }`; `toNormalised(...)` for the
       `AI_API_KEY`, forwards the body, returns the `Response`. Both routes call it.
       Test: URL joining, header, body passthrough, a 4xx surfaces as `ai_error`
       with the provider status logged (never the key).
-- [ ] Rename the env: `types.ts` (`AI_API_KEY`, `AI_BASE_URL`, `AI_MODEL`,
-      `AI_VISION_MODEL`), `ai-gate.ts`, `capabilities.ts` (`aiEnabled` on
-      `AI_API_KEY`), `ai.ts` (assistant route: model from `AI_MODEL`, URL from the
-      client), `wrangler.toml` comment block, `.env.example` (with a Gemini block
-      and a local llama.cpp block), `docs/self-hosting.md`,
+- [ ] `apps/api/src/ai-provider.ts` per Edit A, TDD: each preset alone resolves;
+      generic needs both `AI_BASE_URL` and `AI_MODEL`; two keys → `null` + one
+      `console.error`; `AI_MODEL` / `AI_VISION_MODEL` overrides; trailing slash
+      on `AI_BASE_URL` tolerated. `types.ts` Env grows the three key vars +
+      `AI_BASE_URL` / `AI_MODEL` / `AI_VISION_MODEL` and loses `OPENAI_MODEL`;
+      `ai-gate.ts`, `capabilities.ts`, `ai.ts`, `ai-client.ts` read only through
+      `resolveAiProvider`. `wrangler.toml` comment block, `.env.example` (one
+      block per row of the table), `docs/self-hosting.md`,
       `docs/local-development.md`, `docs/architecture.md`,
-      `docs/what-is-livediagram.md`, `apps/live/lib/user-preferences.ts` if it
-      names the var in a comment. Grep `OPENAI_` across the repo afterwards: the
-      only hits allowed are historical notes in specs that say the name WAS
-      `OPENAI_API_KEY`. Existing `ai.test.ts` and gate tests must stay green
-      after renaming their env stubs.
+      `docs/what-is-livediagram.md`, spec/25's env table, spec/06 / 10 / 11 / 20
+      where they name the var. Grep `OPENAI_MODEL` afterwards: zero hits outside
+      a historical note. Existing `ai.test.ts` + gate tests stay green with their
+      env stubs renamed.
+- [ ] Discover the Gemini Flash model id rather than guessing it: with the key in
+      `apps/api/.dev.vars`, `GET {google base URL}/models` (bearer auth) lists what
+      the key can use; pick the current stable `*-flash` id, make it the google
+      preset default, and record the id + date in spec/25.
 - [ ] `apps/api/src/routes/ai-read-notes.ts` — `handleAiReadNotes(ctx)`: gate;
       JSON body `{ crops }`; validate count ≤ `READ_MAX_CROPS_PER_REQUEST`, each
       `id` an integer, each data URL prefix in `image/jpeg|png|webp`, decoded size
