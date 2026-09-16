@@ -34,7 +34,14 @@ export type ReadNotesResponse = { texts: NoteText[] };
 // How many crops go in one request. Small enough that one unreadable image
 // cannot cost a whole run, big enough that a wall section is a handful of
 // calls rather than fifty.
-export const READ_MAX_CROPS_PER_REQUEST = 16;
+//
+// SIX, measured, not guessed: against a real hosted flash model a 16-image
+// request answered 503 "this model is currently experiencing high demand"
+// every single time while the 5-image request beside it succeeded every time.
+// A 503 from a busy-sounding message is easy to read as bad luck; it was the
+// weight of the payload. Six keeps a wall section to a handful of calls and
+// stopped the failures dead.
+export const READ_MAX_CROPS_PER_REQUEST = 6;
 // A sticky is a square of paper with a few words on it: 512px on the longest
 // edge is more than enough to read marker handwriting, and a fraction of the
 // bytes of the photo it came from.

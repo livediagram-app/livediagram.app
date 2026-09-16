@@ -151,8 +151,8 @@ describe('apiAiReadNotes', () => {
   it('splits a big run into batches, and puts every answer in one list', async () => {
     const spy = respondPerBatch();
     const out = await apiAiReadNotes('owner-1', crops(40));
-    // 16 per request.
-    expect(spy).toHaveBeenCalledTimes(3);
+    // READ_MAX_CROPS_PER_REQUEST per request, in order: 40 crops is 7 calls.
+    expect(spy).toHaveBeenCalledTimes(7);
     expect(out.texts).toHaveLength(40);
     expect(out.texts.map((t) => t.id)).toEqual(Array.from({ length: 40 }, (_, i) => i));
   });

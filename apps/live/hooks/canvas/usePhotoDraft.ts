@@ -122,6 +122,7 @@ const ERROR_TOASTS: Record<string, string> = {
   sign_in_required: 'Sign in to read a photo of your wall.',
   origin_not_allowed: 'Reading photos is not available from here.',
   rate_limited: 'Too many photos just now. Wait a moment and try again.',
+  ai_quota: 'The model key has used up its quota. Try again later, or raise the limit on the key.',
   ai_error: 'The reader could not finish. Try again in a moment.',
 };
 

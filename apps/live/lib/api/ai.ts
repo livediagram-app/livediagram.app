@@ -319,7 +319,9 @@ async function errorToken(res: Response): Promise<string> {
   } catch {
     /* not an envelope */
   }
-  return res.status === 413 ? 'crops_too_large' : 'ai_error';
+  if (res.status === 413) return 'crops_too_large';
+  if (res.status === 429) return 'ai_quota';
+  return 'ai_error';
 }
 
 // Re-export types so callers don't need extra imports.

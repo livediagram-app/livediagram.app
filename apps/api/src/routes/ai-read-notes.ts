@@ -84,7 +84,17 @@ export async function handleAiReadNotes(ctx: RouteContext): Promise<Response> {
   }
 
   if (!res.ok) {
-    console.error(`[ai/read-notes] provider responded ${res.status}`);
+    // Say WHAT the provider complained about, not just that it did. A bare
+    // status turns "your key is out of quota", "that payload is too big" and
+    // "we are busy" into the same unactionable line in the log.
+    const detail = await res.text().catch(() => '');
+    console.error(
+      `[ai/read-notes] provider responded ${res.status} crops=${crops.length} ${detail.slice(0, 300)}`,
+    );
+    // A key that has run out for the day is not "try again in a moment": it is
+    // "try again tomorrow, or raise the limit". Passing it through as one more
+    // ai_error sends the author back to retry something that cannot work yet.
+    if (res.status === 429) return json({ error: 'ai_quota' }, { status: 429 });
     return json({ error: 'ai_error' }, { status: 502 });
   }
 

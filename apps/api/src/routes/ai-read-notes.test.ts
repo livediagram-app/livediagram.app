@@ -275,3 +275,20 @@ describe('what leaves this worker', () => {
     );
   });
 });
+
+describe('what the author is told when the provider says no', () => {
+  it('tells quota exhaustion apart from a passing spike', async () => {
+    // A key that has run out for the day is not "try again in a moment": it is
+    // "try again tomorrow, or pay". Reporting both as one error sends the
+    // author back to retry a thing that cannot work.
+    globalThis.fetch = vi.fn(
+      async () =>
+        new Response(JSON.stringify({ error: { code: 429, message: 'exceeded your quota' } }), {
+          status: 429,
+        }),
+    ) as typeof fetch;
+    const res = await handleAiReadNotes(makeCtx());
+    expect(res.status).toBe(429);
+    expect(await res.json()).toEqual({ error: 'ai_quota' });
+  });
+});
