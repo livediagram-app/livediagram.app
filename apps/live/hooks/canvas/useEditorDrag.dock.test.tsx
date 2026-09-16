@@ -37,7 +37,14 @@ function note(id: string, kind: string, x: number, y = 500, over: Partial<Sticky
 const HOST = note('e', 'domain-event', 1000);
 const FACE = dockedBounds(HOST, 'before', 'command');
 
-function harness(opts: { elements?: Element[]; esBoard?: boolean; multiSelected?: string[] } = {}) {
+function harness(
+  opts: {
+    elements?: Element[];
+    esBoard?: boolean;
+    multiSelected?: string[];
+    lanes?: boolean;
+  } = {},
+) {
   let elements = opts.elements ?? [HOST, note('c', 'command', 0, 0)];
   const history: Element[][] = [];
   const deps = {

@@ -567,6 +567,17 @@ side }`), and the host holds nothing. So deleting a host needs no write to its
 - **Telemetry:** `Canvas / Used / DockAdd` (added from an anchor),
   `Canvas / Used / Dock` and `Canvas / Used / Undock` (by drag or menu),
   alongside the ordinary `Element / Added / Sticky` when a note is minted.
+  **What shipped, in numbers.** `ES_DOCK_SEAM_PX` 16, `ES_DOCK_SNAP_PX` 40,
+  `ES_DOCK_DOT_R` 4. The model is
+  `packages/diagram/src/event-storming-dock.ts` (catalogue, geometry, cluster,
+  `dock` / `undock` / `stripDanglingDocks`); the acts are
+  `hooks/canvas/useDockActions.ts` with the placement decision in
+  `lib/dock-add.ts`; the drag rung is `hooks/canvas/note-dock-drag.ts` published
+  through `lib/dock-preview.ts`; the surfaces are
+  `components/canvas/DockSeams.tsx` (the dots, and the pair a drag is offering)
+  and `components/canvas/DockAnchors.tsx` (the affordances). The export draws the
+  same dots through the same `seamDots`.
+
 - **Not in v1:** the further pairings the notation has (actor under a command,
   read model before it, aggregate above a command–event pair, external system
   before an event, hotspot on a corner) — each needs a `side` the geometry
@@ -758,6 +769,21 @@ type, kept current every session. Each should stay true on its own.
 - Screen pixels cannot check a grid: the notes are tilted, so their bounding
   boxes are rotation-bloated — the e2e reads the SAVED tab back from the api
   instead, which proves the placement and the persistence in one assertion.
+- The docked note holds the relation, the host holds nothing: deleting a host
+  then needs no write to its neighbours, and every reader derives the same
+  cluster from either end.
+- Magnets, not connectors: two dots in a seam say "one phrase" without drawing
+  a line, and on this board a line would be an arrow, which means something
+  else entirely.
+- A note asking whether a face is free must not count ITSELF as what is
+  occupying it, or nudging a docked note undocks it for good.
+- An affordance earns its place by being specific: four generic pluses were
+  chrome, two dots that each name a sentence of the notation are not.
+- Guard the ACT, not just the affordance: a face is only offered when free,
+  but a peer can take it between the render and the click, so the commit is
+  where "one note per face" actually lives.
+- Healing after a delete had three call sites and two jobs before it had one
+  name — that is exactly how the fourth call site forgets one of them.
 
 ## Still ahead (phased, see the plan)
 

@@ -20,7 +20,15 @@ const LANE_PITCH = 240;
 const LANE_HEIGHT = 200;
 const GRID_CELL = 100;
 
-type BoardNote = { id: string; type: string; x: number; y: number; height: number };
+type BoardNote = {
+  id: string;
+  type: string;
+  x: number;
+  y: number;
+  height: number;
+  esKind?: string;
+  esDock?: { hostId: string; side: string };
+};
 type BoardTab = {
   elements: BoardNote[];
   esTimeline?: { originX: number; originY: number; enabled: boolean };
@@ -150,5 +158,65 @@ test('an ordinary diagram has no timeline lanes', async ({ page, pageErrors }) =
   await page.locator('[data-canvas-a11y-root]').waitFor();
   await dismissQuickTour(page);
   await expect(page.getByRole('switch', { name: /timeline lanes/i })).toHaveCount(0);
+  expectNoPageErrors(pageErrors);
+});
+
+// Anchor docking (spec/139 Phase 7). The model is unit-tested to death; what
+// only a browser can answer is whether the affordance a host shows leads to a
+// docked note, whether a real drag docks and undocks one, and whether the
+// relation survives a round trip through the api.
+test('a command docks to the event it triggers, and survives a reload', async ({
+  page,
+  pageErrors,
+}) => {
+  await startTemplateDiagram(page, /Browse Technical templates/, /^Event storming/i);
+  const canvas = page.locator('[data-canvas-a11y-root]');
+  await dismissQuickTour(page);
+  const notes = canvas.getByRole('img', { name: /^Sticky note/ });
+  await expect(notes).toHaveCount(3);
+  await page.waitForTimeout(500);
+
+  // Select an event: its two free faces offer themselves. The MIDDLE one,
+  // because the first sits under the Explorer panel at this viewport and a
+  // floating panel would swallow the click.
+  await notes.nth(1).click();
+  const before = page.getByRole('button', { name: /add a command before/i });
+  const after = page.getByRole('button', { name: /add a policy after/i });
+  await expect(before).toBeVisible();
+  await expect(after).toBeVisible();
+
+  // Click the west face: a command arrives already docked, open for typing.
+  await before.click();
+  await expect(notes).toHaveCount(4);
+  await page.keyboard.type('Place order');
+  await page.keyboard.press('Escape');
+
+  const docked = await boardTab(page);
+  const command = stickies(docked).find((el) => el.esKind === 'command')!;
+  expect(command.esDock?.side).toBe('before');
+  // Seam dots are painted for the pair.
+  await expect(page.locator('[data-testid="dock-seams"] circle')).toHaveCount(2);
+
+  // The relation is board data: it comes back with the board.
+  await page.reload();
+  await canvas.waitFor();
+  await expect(page.locator('[data-testid="dock-seams"] circle')).toHaveCount(2);
+
+  // Dragging the host carries the command with it.
+  await page.waitForTimeout(500);
+  const hostId = command.esDock!.hostId;
+  const hostBox = (await notes.nth(1).boundingBox())!;
+  await page.mouse.move(hostBox.x + hostBox.width / 2, hostBox.y + hostBox.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(hostBox.x + hostBox.width / 2, hostBox.y + hostBox.height / 2 + 260, {
+    steps: 10,
+  });
+  await page.mouse.up();
+  const moved = await boardTab(page);
+  const movedHost = stickies(moved).find((el) => el.id === hostId)!;
+  const movedCommand = stickies(moved).find((el) => el.id === command.id)!;
+  expect(movedCommand.y - movedHost.y).toBeCloseTo(command.y - stickies(docked).find((el) => el.id === hostId)!.y, 3);
+  expect(movedCommand.esDock).toEqual(command.esDock);
+
   expectNoPageErrors(pageErrors);
 });

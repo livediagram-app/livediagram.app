@@ -652,34 +652,34 @@ h: number; row: number; order: number; confidence: number }` (all box fields
 
 ### 2.6 Interplay
 
-- [ ] Insert-between: `findInsertionSlot` never offers a seam as a gap; the cluster
+- [x] Insert-between: `findInsertionSlot` never offers a seam as a gap; the cluster
       shifts whole by the host's left edge (Q15); a dragged HOST excludes its whole
       cluster from the reckoning (`excludeId` → `excludeIds`); tests in
       `insert-between.test.ts` + `note-insertion-drag.test.ts`.
-- [ ] Lanes: a docked note follows its host's y (centred on the host), not its own
+- [x] Lanes: a docked note follows its host's y (centred on the host), not its own
       lane; the host snaps to lanes as usual; test.
-- [ ] Bring to front / send to back on a docked pair: unchanged (the dots are drawn
+- [x] Bring to front / send to back on a docked pair: unchanged (the dots are drawn
       under both).
-- [ ] Delete host → docked note stays, standalone; delete docked note → nothing
+- [x] Delete host → docked note stays, standalone; delete docked note → nothing
       else changes; undo restores the relation (it is on the element).
-- [ ] Realtime: two browser tabs — dock in one, the other shows the dots; undock;
+- [x] Realtime: two browser tabs — dock in one, the other shows the dots; undock;
       delete host in one while the other drags the docked note (the drop must not
       resurrect the field: `stripDanglingDocks` runs on the live tab at drop).
-- [ ] Offline board round trip; JSON export → import keeps the relation.
-- [ ] Commit.
+- [x] Offline board round trip; JSON export → import keeps the relation.
+- [x] Commit.
 
 ### 2.7 Verification
 
-- [ ] Dev server, playwright-cli: hover an event → two hollow dots (west, east);
+- [x] Dev server, playwright-cli: hover an event → two hollow dots (west, east);
       click west → a docked command opens for typing, dots in the seam; click east
       → docked policy; hover the policy → east dot → docked command; drag a
       standalone command near an event's west face → magnets light → drop docks;
       drag it away → undocks; drag the event → the cluster moves; Alt-insert
       elsewhere ripples the cluster whole; export SVG shows the dots; both colour
       schemes screenshotted.
-- [ ] Spec/139 Phase 7 filled in; learnings appended (at least: "the docked note
+- [x] Spec/139 Phase 7 filled in; learnings appended (at least: "the docked note
       holds the relation, the host holds nothing", "magnets, not connectors").
-- [ ] Quality gate green; commit.
+- [x] Quality gate green; commit.
 
 ---
 
