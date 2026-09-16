@@ -18,6 +18,7 @@ packages/
   templates/      template catalogue + pure element builders (editor Quick Start + MCP)
   help-registry/  help-centre article/category registry + search keywords (help app + editor search)
   api-schema/     wire-format DTOs the api worker emits + the live editor consumes
+  sticky-vision/  finds sticky notes in a photo of a wall (classical CV, no DOM)
   telemetry-client/ shared browser telemetry emitter (buffer / flush / page-hide beacon)
   eslint-config/  shared ESLint flat config
   prettier-config/shared Prettier config
@@ -49,6 +50,7 @@ marketing/      off-site copy + media for listings and promotion (see specs/23)
 Each app pulls these in via `workspace:*`:
 
 - **`@livediagram/diagram`** owns the diagram data model: `Tab`, every `Element` type (Shape / Text / Sticky / Image / Freehand / Table / Annotation / Link card / Arrow), defaults, geometry helpers, snap math, group operations, and the Shape Pen's shape-recognition heuristics. The single source of what a diagram IS.
+- **`@livediagram/sticky-vision`** finds the sticky notes in a photograph of an event-storming wall (spec/139 Phase 8): colour classification against the notation catalogue, connected components, box fitting and row clustering, over a plain RGBA buffer. It is deliberately classical rather than a vision model — the notation IS colour, a hue histogram knows colour exactly, and the whole photo then never has to leave the browser (only crops of individual notes go to the model, to read the handwriting). See `packages/sticky-vision/README.md` and `docs/vision/sticky-detection.md`.
 - **`@livediagram/api-schema`** owns the wire format between the api worker and the live editor: every request / response shape, plus the small shared pure helpers it backs (`sha256Hex` for image-upload dedupe, `titleCase` for display-casing preset values across the editor + telemetry dashboard). Adding a field on the server without updating the client used to be routine drift; the typechecker catches it now.
 - **`@livediagram/ui`** owns the cross-app UI primitives. The chrome (`Brand`, `SiteHeader`, `SiteFooter`, `ProductNav`), the form + feedback controls (`Button`, `TextInput`, `Select`, `EmptyState`, `Tooltip`), and the shared behaviour hooks (`useMediaQuery`, `useCopiedFlash`) plus the popover-clamping helpers. Reach for these before re-typing a class list: a control that exists here and is rebuilt in an app is the drift this package was made to stop.
 - **`@livediagram/icons`** owns the three catalogues (the line-art glyphs, the Technology brand marks, and the stickers of spec/116) plus pure SVG-markup builders for them, and `xmlEscape`, the one XML escaper every SVG builder in the monorepo shares (`@livediagram/diagram` re-exports it). The editor dynamic-imports the data modules through its icon registry so they stay out of its first-load JS; the api + mcp workers static-import `@livediagram/icons/resolve` so headless renders (the live image, Explorer thumbnails, MCP inline images) draw the real glyphs.
