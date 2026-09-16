@@ -811,7 +811,7 @@ h: number; row: number; order: number; confidence: number }` (all box fields
 
 ### 3.6 E2E (mocked model)
 
-- [ ] `apps/live/e2e/photo-import.spec.ts`: route `**/api/capabilities` →
+- [x] `apps/live/e2e/photo-import.spec.ts`: route `**/api/capabilities` →
       `{ aiEnabled: true, … }` and `**/api/ai/photo-notes` → a fixture response
       (`e2e/fixtures/wall-photo.json`, hand-written against a fixture image
       `e2e/fixtures/wall-photo.jpg` you GENERATE by exporting an ES board with six
@@ -820,8 +820,8 @@ h: number; row: number; order: number; confidence: number }` (all box fields
       additions; a second fixture overlapping three of the six → three added to the
       right of the matched ones; reload keeps everything; Undo removes the batch.
       Dark scheme per the testing rule.
-- [ ] Run it against the real stack (`livediagram-eswall-e2e` under PM2), green.
-- [ ] Commit.
+- [x] Run it against the real stack (`livediagram-eswall-e2e` under PM2), green.
+- [x] Commit.
 
 ### 3.7 Live calibration (needs the operator — Q16)
 
