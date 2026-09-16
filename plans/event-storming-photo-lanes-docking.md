@@ -611,22 +611,22 @@ h: number; row: number; order: number; confidence: number }` (all box fields
 
 ### 2.4 Anchor-add (click an affordance)
 
-- [ ] `apps/live/hooks/canvas/useDockActions.ts` — `addDockedNote(hostId, side)`:
+- [x] `apps/live/hooks/canvas/useDockActions.ts` — `addDockedNote(hostId, side)`:
       builds the note through the ONE builder (§3) at `dockedBounds`, stamps
       `esDock`, applies Q13's ripple when the footprint collides, commits as one
       step (activity log: "Added a Command before Order placed"), selects it and
       opens the label editor (the drop-then-type rule), tracks
       `Element / Added / Sticky` + `Canvas / Used / DockAdd`. Also `undock(id)` and
       `dockTo(id, hostId, side)` for the menu + drop.
-- [ ] Wire `DockAnchors` → `addDockedNote`; keyboard: Enter / Space on the focused
+- [x] Wire `DockAnchors` → `addDockedNote`; keyboard: Enter / Space on the focused
       affordance.
-- [ ] Context-menu verb on a docked note: "Undock" (ES verb list,
+- [x] Context-menu verb on a docked note: "Undock" (ES verb list,
       `EditorContextMenu.types.ts`); selection caption "Selected Command · docked
       to ORDER PLACED" if the caption helper can take a suffix cheaply — otherwise
       skip and note it.
-- [ ] Tests: hook (all three pairings; occupied face refuses; ripple only on
+- [x] Tests: hook (all three pairings; occupied face refuses; ripple only on
       collision; one undo step; gate paths); menu verb test.
-- [ ] Commit: `feat(live): add a docked note from a host's anchor`.
+- [x] Commit: `feat(live): add a docked note from a host's anchor`.
 
 ### 2.5 Magnetic docking on drag (note drag + palette drag)
 
