@@ -3,7 +3,6 @@ import {
   distributionSnap,
   snapToAlignment,
   capturePlacement,
-  prevailingNoteGap,
   snapToLane,
   type AlignmentGuide,
   type DistributionGuide,
@@ -61,9 +60,7 @@ export function paletteDragSnapAt({
   // note-drag resolver follows, two entry points.
   const laneSnap = timeline ? snapToLane(candidate, timeline) : null;
   const gutterSnap = laneSnap
-    ? capturePlacement({ ...candidate, y: laneSnap.y }, elements, {
-        gap: prevailingNoteGap(elements),
-      })
+    ? capturePlacement({ ...candidate, y: laneSnap.y }, elements, {})
     : null;
   // On a lanes board the lane resolver is the ONLY source of x: the ordinary
   // alignment and distribution snaps were adding places the rhythm does not

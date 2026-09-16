@@ -70,13 +70,11 @@ describe('resolveBoxedMove — timeline lanes', () => {
     expect(out.lane!.ghost).toMatchObject({ x: brick });
   });
 
-  it('centres a WIDE note on the gap between the events above it', () => {
-    // Across lanes the brick is CENTRED on the gap, so the note's own width
-    // decides where its left edge falls: the gap between the two events runs
-    // 200..272, centre 236, and a 300-wide policy centred there starts at 86.
+  it('lines a WIDE note up on an edge, with no brick offered', () => {
+    // Different silhouettes line up left-to-left or right-to-right; the brick
+    // is for two squares only.
     const pair = [note('l', 0, 0), note('r', 200 + ES_NOTE_GAP, 0)];
     const wide: ShapeBounds = { x: 1000, y: 1000, width: 300, height: 180 };
-    const brick = 200 + ES_NOTE_GAP / 2 - 150;
     const out = resolveBoxedMove({
       elements: [
         { id: 'drag', type: 'sticky', x: 1000, y: 1000, width: 300, height: 180 } as Element,
@@ -84,14 +82,14 @@ describe('resolveBoxedMove — timeline lanes', () => {
       ],
       startBounds: new Map([['drag', wide]]),
       primaryId: 'drag',
-      dx: brick + 30 - 1000,
+      dx: 30 - 1000,
       dy: ES_LANE_PITCH + 12 - 1000,
       noSnap: false,
       guidesOn: true,
       timeline: TIMELINE,
     });
-    expect(1000 + out.tx).toBe(brick);
-    expect(out.lane!.ghost).toMatchObject({ x: brick, width: 300, height: 180 });
+    expect(1000 + out.tx).toBe(0);
+    expect(out.lane!.ghost).toMatchObject({ x: 0, width: 300, height: 180 });
   });
 
   it('sits one gutter clear of the note beside it', () => {

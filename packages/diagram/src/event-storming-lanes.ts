@@ -66,13 +66,6 @@ export const ES_LANE_PITCH = ES_LANE_HEIGHT + ES_LANE_GAP;
 // finger's width of paper showing between them, not an airy layout.
 export const ES_NOTE_GAP = 16;
 
-// The smallest distance that counts as a gutter when measuring a board, and
-// the bucket the measurement rounds into (sub-pixel drift is not a different
-// rhythm). It has to sit UNDER the gutter itself, or the board could never
-// measure its own rhythm.
-export const MIN_MEASURED_GUTTER = 8;
-const GUTTER_BUCKET_PX = 4;
-
 // How near a suggested slot has to be before it takes the note: HALF A
 // STANDARD NOTE.
 //
@@ -151,64 +144,6 @@ type NoteBox = {
 const stickyBoxes = (elements: readonly Element[]): NoteBox[] =>
   elements.filter((el): el is Element & NoteBox => el.type === 'sticky');
 
-// Two notes joined by a docking are ONE phrase, and the 16px between them is a
-// seam rather than a gutter. Counting it would drag the board's measured
-// rhythm towards the seam, and then every note dropped beside another would be
-// offered a docked pair's spacing.
-const docked = (a: NoteBox, b: NoteBox): boolean =>
-  (a.esDock?.hostId !== undefined && a.esDock.hostId === b.id) ||
-  (b.esDock?.hostId !== undefined && b.esDock.hostId === a.id);
-
-// The gutter THIS board is working to, measured rather than assumed: the
-// median clear space between notes that sit side by side in the same row. A
-// board whose author works at 40 keeps 40; a board with nothing to measure
-// (one note, a fresh board, a row of docked pairs) gets the board default.
-//
-// Touching and overlapping pairs are excluded on purpose: a docked seam is a
-// join, not a gap, and counting it would drag the rhythm towards zero.
-export function prevailingNoteGap(elements: readonly Element[]): number {
-  const notes = stickyBoxes(elements);
-  const gaps: number[] = [];
-  for (const a of notes) {
-    for (const b of notes) {
-      if (a === b || b.x < a.x) continue;
-      // Same row: their vertical spans overlap by more than half.
-      const overlap = Math.min(a.y + a.height, b.y + b.height) - Math.max(a.y, b.y);
-      if (overlap < Math.min(a.height, b.height) / 2) continue;
-      if (docked(a, b)) continue;
-      const gap = b.x - (a.x + a.width);
-      // Sub-gutter distances are not gutters. Two notes a few pixels apart are
-      // an accident of dragging, a seam, or a near miss — and on a board with
-      // a handful of them the MEDIAN gap lands on the accidents, which is
-      // exactly how a board came to offer "right edge plus 44" as its rhythm
-      // when every deliberate gap on it was 72.
-      if (gap >= MIN_MEASURED_GUTTER && gap < ES_LANE_PITCH) gaps.push(gap);
-    }
-  }
-  if (gaps.length === 0) return ES_NOTE_GAP;
-  // The MOST REPEATED gap, not the middle one: a rhythm is a thing a board
-  // does over and over, so the spacing the author used most is the spacing
-  // they meant. Ties go to whichever is closest to the board default, because
-  // a tie carries no evidence either way.
-  const counts = new Map<number, number>();
-  for (const gap of gaps) {
-    const bucket = Math.round(gap / GUTTER_BUCKET_PX) * GUTTER_BUCKET_PX;
-    counts.set(bucket, (counts.get(bucket) ?? 0) + 1);
-  }
-  let best = ES_NOTE_GAP;
-  let bestCount = 0;
-  for (const [bucket, count] of counts) {
-    const better =
-      count > bestCount ||
-      (count === bestCount && Math.abs(bucket - ES_NOTE_GAP) < Math.abs(best - ES_NOTE_GAP));
-    if (better) {
-      best = bucket;
-      bestCount = count;
-    }
-  }
-  return best;
-}
-
 // A place the notes already on the board suggest this one could go.
 export type LaneCandidate = {
   // The left edge on offer.
@@ -228,26 +163,20 @@ const sameRow = (a: { y: number; height: number }, b: { y: number; height: numbe
 
 // THE RHYTHM, in one place.
 //
-// Where a note may sit along a row that already has one in it: the first slot
-// is the neighbour's own right edge plus a gutter, and every slot after it is
-// one more empty place with a gutter on both sides. So a wide note simply
-// occupies a longer stretch and the rhythm resumes after it, and the empty
-// places between notes are sized by the note being placed.
+// Along a row, a note sits ONE GUTTER from its neighbour — and that is the
+// whole rule. The further slots are the same thing again with a square note's
+// worth of wall left empty between them: room deliberately kept for the event
+// that has not been written yet, which is a normal thing to want on a wall and
+// otherwise impossible to hit exactly.
 //
-// The two facts this encodes — the first step is the NEIGHBOUR's silhouette,
-// every step after it is the PLACED note's — are the ones to revisit if the
-// notation's stationery should tile differently. They are deliberately not
-// spread across the file.
+// Every step is a SQUARE note plus a gutter, whatever is being placed, so the
+// places in a row are the same places whichever sticky you are holding.
 const RHYTHM_SLOTS_EACH_WAY = 4;
 
-function rhythmSlots(
-  neighbour: { x: number; width: number },
-  width: number,
-  gap: number,
-): number[] {
-  const step = width + gap;
-  const firstRight = neighbour.x + neighbour.width + gap;
-  const firstLeft = neighbour.x - gap - width;
+function rhythmSlots(neighbour: { x: number; width: number }, width: number): number[] {
+  const step = ES_NOTE_SIZE_PX.square.width + ES_NOTE_GAP;
+  const firstRight = neighbour.x + neighbour.width + ES_NOTE_GAP;
+  const firstLeft = neighbour.x - ES_NOTE_GAP - width;
   const out: number[] = [];
   for (let k = 0; k < RHYTHM_SLOTS_EACH_WAY; k += 1) {
     out.push(firstRight + k * step);
@@ -257,35 +186,36 @@ function rhythmSlots(
 }
 
 // Where a note sits when it is centred on the GAP beside a neighbour — the
-// brick, read across lanes. Two notes a gutter apart share one gap, and both
-// of them name its centre, so the pair's brick falls out of the same rule as a
-// lone note's.
-function gutterCentres(
-  neighbour: { x: number; width: number },
-  width: number,
-  gap: number,
-): number[] {
-  const rightCentre = neighbour.x + neighbour.width + gap / 2;
-  const leftCentre = neighbour.x - gap / 2;
+// brick, read across lanes, and only ever between two notes of the SAME square
+// silhouette. Two squares a gutter apart share one gap, and both of them name
+// its centre, so a pair's brick falls out of the same rule as a lone square's.
+function gutterCentres(neighbour: { x: number; width: number }, width: number): number[] {
+  const rightCentre = neighbour.x + neighbour.width + ES_NOTE_GAP / 2;
+  const leftCentre = neighbour.x - ES_NOTE_GAP / 2;
   return [rightCentre - width / 2, leftCentre - width / 2];
 }
+
+const isSquare = (box: { width: number; height: number }): boolean =>
+  box.width === ES_NOTE_SIZE_PX.square.width && box.height === ES_NOTE_SIZE_PX.square.height;
 
 // Every slot the board is offering this note, from the notes within two lanes
 // of it. Existing notes never move to make one — a candidate is a place that
 // is already free.
 //
-// Two events side by side imply four kinds of place, and this is all of them:
-// after the pair, before the pair, under each event, and under the gutter
-// between them. The stagger is measured from the NEIGHBOUR's silhouette, not
-// the dragged note's, because the rhythm belongs to the row that is already
-// there — which is what lets a 300-wide policy take its place under two square
-// events without inventing a third rhythm.
+// Two rules, and they are the whole of it:
+//   ALONG a row — one gutter from the neighbour, or one gutter plus a square
+//     note's worth of empty wall, again and again.
+//   ACROSS to the row next door — edges line up. Two notes of the same
+//     silhouette line up on the left edge, and two SQUARES may also sit in the
+//     brick pattern, centred on the gap. Notes of different silhouettes line
+//     up on the left edge or the right edge, and nothing else: there is no
+//     sensible brick between a square and a wide note, and pretending there is
+//     was what made the offers feel arbitrary.
 export function laneCandidates(
   bounds: { x: number; y: number; width: number; height: number },
   elements: readonly Element[],
-  opts: { gap?: number; exclude?: ReadonlySet<string> } = {},
+  opts: { exclude?: ReadonlySet<string> } = {},
 ): LaneCandidate[] {
-  const gap = opts.gap ?? ES_NOTE_GAP;
   const reach = ES_CANDIDATE_REACH_LANES * ES_LANE_PITCH;
   const centreY = bounds.y + bounds.height / 2;
   const notes = stickyBoxes(elements);
@@ -310,14 +240,19 @@ export function laneCandidates(
     if (sameRow(bounds, note)) {
       // ALONG THE ROW: the rhythm, and only the rhythm. Nothing touching,
       // nothing at half a pitch — in one row there is no such position.
-      for (const x of rhythmSlots(note, bounds.width, gap)) offer(x, 'gutter', note.id);
+      for (const x of rhythmSlots(note, bounds.width)) offer(x, 'gutter', note.id);
       continue;
     }
-    // THE ROW NEXT DOOR: squarely under (or over) the note, or squarely under
-    // the GAP beside it. Nothing else — a neighbouring row says which columns
-    // line up, not where along this row a note may sit.
+    // THE ROW NEXT DOOR: edges line up.
     offer(note.x, 'aligned', note.id);
-    for (const x of gutterCentres(note, bounds.width, gap)) offer(x, 'staggered', note.id);
+    if (note.width !== bounds.width) {
+      // Different silhouettes: the other edge, and no brick.
+      offer(note.x + note.width - bounds.width, 'aligned', note.id);
+      continue;
+    }
+    if (!isSquare(note) || !isSquare(bounds)) continue;
+    // Two squares: the brick as well, centred on the gap beside the note.
+    for (const x of gutterCentres(note, bounds.width)) offer(x, 'staggered', note.id);
   }
   return out;
 }
@@ -342,7 +277,7 @@ export function laneCandidates(
 export function capturePlacement(
   bounds: { x: number; y: number; width: number; height: number },
   elements: readonly Element[],
-  opts: { gap?: number; exclude?: ReadonlySet<string>; radius?: number } = {},
+  opts: { exclude?: ReadonlySet<string>; radius?: number } = {},
 ): LaneCandidate | null {
   const candidates = laneCandidates(bounds, elements, opts);
   const overlapsNeighbour = stickyBoxes(elements).some(

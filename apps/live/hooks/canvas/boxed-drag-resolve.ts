@@ -6,7 +6,6 @@ import {
   snapResizeBounds,
   snapToAlignment,
   capturePlacement,
-  prevailingNoteGap,
   snapToLane,
   type AlignmentGuide,
   type DistributionGuide,
@@ -104,7 +103,6 @@ export function resolveBoxedMove({
   const laneSnap = timeline ? snapToLane(candidate, timeline) : null;
   const gutterSnap = laneSnap
     ? capturePlacement({ ...candidate, y: laneSnap.y }, elements, {
-        gap: prevailingNoteGap(elements),
         exclude: memberIds,
       })
     : null;
