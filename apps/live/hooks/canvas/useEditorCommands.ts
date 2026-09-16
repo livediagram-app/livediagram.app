@@ -62,6 +62,8 @@ export function useEditorCommands(): {
     esBoard,
     lanesOn,
     toggleLanes,
+    photoImportAvailable,
+    openPhotoImport,
     fitToScreen,
     autoLayoutTab,
     autoAlignTab,
@@ -120,6 +122,7 @@ export function useEditorCommands(): {
       isMobile,
       esBoard,
       lanesOn,
+      photoImportAvailable,
     };
     return buildEditorCommands(cmdCtx, {
       deleteSelection: () => (isMulti ? deleteMultiSelected() : deleteSelected()),
@@ -168,6 +171,7 @@ export function useEditorCommands(): {
       redo,
       toggleZen: toggleZenMode,
       toggleTimelineLanes: toggleLanes,
+      openPhotoImport,
       fitToScreen,
       autoLayout: autoLayoutTab,
       autoAlign: autoAlignTab,
@@ -214,6 +218,8 @@ export function useEditorCommands(): {
     esBoard,
     lanesOn,
     toggleLanes,
+    photoImportAvailable,
+    openPhotoImport,
   ]);
 
   const runCommand = useCallback(

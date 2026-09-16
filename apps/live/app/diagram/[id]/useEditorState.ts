@@ -56,6 +56,7 @@ import { useEditorComments } from '@/hooks/collab/useEditorComments';
 import { useEditorDrag } from '@/hooks/canvas/useEditorDrag';
 import { useTimelineLanes } from '@/hooks/canvas/useTimelineLanes';
 import { useDockActions } from '@/hooks/canvas/useDockActions';
+import { usePhotoImport } from '@/hooks/canvas/usePhotoImport';
 import { useEditorImages } from '@/hooks/canvas/useEditorImages';
 import { useEditorNotes } from '@/hooks/canvas/useEditorNotes';
 import { useElementLinks } from '@/hooks/canvas/useElementLinks';
@@ -1413,6 +1414,40 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [layerInertIds]);
 
+  // Photo import (spec/139 Phase 8): the run that reads a photographed wall
+  // and reconciles it against this board. Available only where the model is
+  // (`aiCapable`) — and NOT gated on the AI-panel preference, because this is
+  // not the assistant.
+  const photoImport = usePhotoImport({
+    activeTab,
+    activeId,
+    ownerId: selfParticipant.id,
+    createBlocked,
+    commitTabs,
+    setMultiSelectedIds,
+  });
+  const [photoImportOpen, setPhotoImportOpen] = useState(false);
+  const photoImportAvailable = aiCapable && esBoard;
+  const openPhotoImport = () => {
+    if (!photoImportAvailable || createBlocked) return;
+    photoImport.again();
+    setPhotoImportOpen(true);
+  };
+  const closePhotoImport = () => {
+    photoImport.reset();
+    setPhotoImportOpen(false);
+  };
+  // A pasted photo on one of these boards is far more likely a piece of wall
+  // than a picture element: open the reader with it already loaded.
+  const readPastedPhoto =
+    photoImportAvailable && !createBlocked
+      ? (file: File) => {
+          photoImport.again();
+          setPhotoImportOpen(true);
+          void photoImport.read(file);
+        }
+      : undefined;
+
   // Timeline lanes (spec/139 Phase 6): the board-level switch, and the lane
   // stack the drag resolvers snap to while it is on.
   const timelineLanes = useTimelineLanes({
@@ -2351,6 +2386,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     ownerId: selfParticipant.id,
     diagramId,
     toast,
+    onPastePhoto: readPastedPhoto,
   });
 
   // Zen / focus mode (spec/26). Flips the chrome-hidden flag and emits
@@ -2489,6 +2525,13 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     ...timelineLanes,
     // Anchor docking (spec/139 Phase 7).
     ...dockActions,
+    // Photo import (spec/139 Phase 8): the run, the dialog's open state, and
+    // the two ways in that are not a paste.
+    photoImport,
+    photoImportOpen,
+    photoImportAvailable,
+    openPhotoImport,
+    closePhotoImport,
     layerHiddenIds,
     layerLockedIds,
     layerInertIds,

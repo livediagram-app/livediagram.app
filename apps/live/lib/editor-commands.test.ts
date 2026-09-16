@@ -35,6 +35,7 @@ function handlers(): CommandHandlers {
     openTemplates: vi.fn(),
     setTool: vi.fn(),
     toggleTimelineLanes: vi.fn(),
+    openPhotoImport: vi.fn(),
   };
 }
 
@@ -57,6 +58,7 @@ const base: CommandContext = {
   isMobile: false,
   esBoard: false,
   lanesOn: false,
+  photoImportAvailable: false,
 };
 
 const ids = (ctx: CommandContext) => buildEditorCommands(ctx, handlers()).map((c) => c.id);
@@ -354,5 +356,35 @@ describe('event-storming board commands', () => {
 
   it('is withheld from a view-only visitor', () => {
     expect(ids({ ...base, esBoard: true, isReadOnly: true })).not.toContain('timeline-lanes');
+  });
+});
+
+// Photo import (spec/139 Phase 8) is offered only where it can actually run:
+// an event-storming board, on a deployment that has a model key.
+describe('the photo-import command', () => {
+  it('is absent on an ordinary diagram', () => {
+    expect(ids({ ...base, photoImportAvailable: true })).not.toContain('photo-import');
+  });
+
+  it('is absent without a model key, however much of a board this is', () => {
+    expect(ids({ ...base, esBoard: true })).not.toContain('photo-import');
+  });
+
+  it('is offered on an ES board when the model is configured', () => {
+    expect(ids({ ...base, esBoard: true, photoImportAvailable: true })).toContain('photo-import');
+  });
+
+  it('is withheld from a view-only visitor', () => {
+    expect(
+      ids({ ...base, esBoard: true, photoImportAvailable: true, isReadOnly: true }),
+    ).not.toContain('photo-import');
+  });
+
+  it('opens the reader', () => {
+    const h = handlers();
+    buildEditorCommands({ ...base, esBoard: true, photoImportAvailable: true }, h)
+      .find((c) => c.id === 'photo-import')!
+      .run();
+    expect(h.openPhotoImport).toHaveBeenCalledTimes(1);
   });
 });

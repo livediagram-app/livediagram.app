@@ -29,6 +29,7 @@ const ctx: CommandContext = {
   isMobile: false,
   esBoard: false,
   lanesOn: false,
+  photoImportAvailable: false,
 };
 
 const noop = () => new Proxy({}, { get: () => vi.fn() }) as unknown as CommandHandlers;

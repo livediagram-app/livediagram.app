@@ -11,6 +11,9 @@ const ShortcutsDialog = dynamic(() =>
 const SettingsDialog = dynamic(() =>
   import('@/components/dialogs/SettingsDialog').then((m) => m.SettingsDialog),
 );
+const PhotoImportDialog = dynamic(() =>
+  import('@/components/dialogs/PhotoImportDialog').then((m) => m.PhotoImportDialog),
+);
 const CanvasThemeDialog = dynamic(() =>
   import('@/components/dialogs/CanvasThemeDialog').then((m) => m.CanvasThemeDialog),
 );
@@ -46,6 +49,9 @@ export function EditorModals() {
     setBackgroundAnimationSpeed,
     setTheme,
     resetElementsToTheme,
+    photoImport,
+    photoImportOpen,
+    closePhotoImport,
   } = useEditorContext();
 
   return (
@@ -93,6 +99,21 @@ export function EditorModals() {
           onSetTheme={setTheme}
           onResetElementsToTheme={resetElementsToTheme}
           onClose={() => setCanvasThemeTab(null)}
+        />
+      ) : null}
+      {/* Reading a photographed wall (spec/139 Phase 8). Lazy, like the other
+          heavy dialogs: the overwhelming majority of sessions never open it,
+          and on a board without a model key it does not exist at all. */}
+      {photoImportOpen ? (
+        <PhotoImportDialog
+          open
+          state={photoImport.state}
+          onPickFile={(file) => void photoImport.read(file)}
+          onSetIncluded={photoImport.setIncluded}
+          onEditNote={photoImport.editNote}
+          onCommit={photoImport.commit}
+          onAgain={photoImport.again}
+          onClose={closePhotoImport}
         />
       ) : null}
     </>

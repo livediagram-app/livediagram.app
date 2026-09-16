@@ -67,6 +67,9 @@ export type CommandContext = {
   // Are timeline lanes on right now (spec/139 Phase 6)? Names the verb
   // honestly rather than offering a switch whose direction you have to guess.
   lanesOn: boolean;
+  // Can this deployment read a photographed wall (spec/139 Phase 8)? False
+  // without a model key, where the verb would be an offer nobody can accept.
+  photoImportAvailable: boolean;
 };
 
 // The handlers the commands call. Injected by useEditorCommands; each is the
@@ -106,6 +109,8 @@ export type CommandHandlers = {
   // Timeline lanes on an event-storming board (spec/139 Phase 6) — the same
   // flip the palette's switch runs.
   toggleTimelineLanes: () => void;
+  // Open the wall-photo reader (spec/139 Phase 8).
+  openPhotoImport: () => void;
 };
 
 // The canvas tools reachable from search, in the tool dropdown's own order.
@@ -267,6 +272,14 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
         'timeline lanes lane rows grid columns snap align stagger event storming board swimlane',
       run: h.toggleTimelineLanes,
     });
+    if (ctx.photoImportAvailable) {
+      out.push({
+        id: 'photo-import',
+        name: 'Add notes from a photo',
+        keywords: 'photo camera picture wall sticky scan ocr read import capture snapshot',
+        run: h.openPhotoImport,
+      });
+    }
   }
 
   out.push({

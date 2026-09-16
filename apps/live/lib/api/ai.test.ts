@@ -126,7 +126,9 @@ describe('apiAiPhotoNotes', () => {
   });
 
   function respond(body: unknown, status = 200) {
-    const spy = vi.fn(async () => new Response(JSON.stringify(body), { status }));
+    const spy = vi.fn(
+      async (_url: string, _init?: RequestInit) => new Response(JSON.stringify(body), { status }),
+    );
     globalThis.fetch = spy as unknown as typeof fetch;
     return spy;
   }
@@ -136,7 +138,7 @@ describe('apiAiPhotoNotes', () => {
     const spy = respond(answer);
     const out = await apiAiPhotoNotes('owner-1', 'data:image/jpeg;base64,AAA', 'Order flow');
     expect(out).toEqual(answer);
-    const body = JSON.parse((spy.mock.calls[0]![1] as RequestInit).body as string);
+    const body = JSON.parse(spy.mock.calls[0]![1]!.body as string);
     expect(body).toEqual({ image: 'data:image/jpeg;base64,AAA', tabName: 'Order flow' });
   });
 
