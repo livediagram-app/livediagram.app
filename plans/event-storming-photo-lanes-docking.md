@@ -908,12 +908,12 @@ Each is one more `ES_DOCKINGS` row plus, where the face is not west / east, a
 
 ## 12. Phase 4 — Integration, the on-par tail, fold-back
 
-- [ ] Photo import × lanes × docking walkthrough on the dev server: lanes on, a
+- [x] Photo import × lanes × docking walkthrough on the dev server: lanes on, a
       board with two docked pairs, import a photo overlapping one pair and adding
       a new command-event pair → additions on lanes, the new pair docked, nothing
       existing moved (compare element JSON before / after, byte-identical for
       matched ids).
-- [ ] Help: `apps/help/app/canvas/event-storming-boards/page.mdx` gains three
+- [x] Help: `apps/help/app/canvas/event-storming-boards/page.mdx` gains three
       sections (lanes, anchors, from a photo); registry `description` unchanged
       unless it no longer summarises, `keywords` gain the lane / dock / photo
       words (lane lanes timeline grid stagger anchor dock docked magnet photo
@@ -921,26 +921,26 @@ Each is one more `ES_DOCKINGS` row plus, where the face is not west / east, a
       `apps/help/app/palette/event-storming/page.mdx` mentions the two new
       rows. No new article, so no icon / count changes — verify the registry tests
       still pass.
-- [ ] `README.md` / `docs/*`: env var `OPENAI_VISION_MODEL` in `docs/self-hosting.md` + `docs/local-development.md`; `docs/architecture.md` if it lists AI routes.
-- [ ] MCP (`apps/mcp`): verify the new fields pass through untouched when a tool
+- [x] `README.md` / `docs/*`: env var `OPENAI_VISION_MODEL` in `docs/self-hosting.md` + `docs/local-development.md`; `docs/architecture.md` if it lists AI routes.
+- [x] MCP (`apps/mcp`): verify the new fields pass through untouched when a tool
       writes a tab (no whitelist drops them); if `list_templates` / a tool describes
       ES notes, mention `esDock`; tests.
-- [ ] Telemetry dashboard (`apps/telemetry`): nothing to do unless it enumerates
+- [x] Telemetry dashboard (`apps/telemetry`): nothing to do unless it enumerates
       types — check `metrics.ts`.
-- [ ] `specs/README.md` index rows if any new spec file was created (none planned).
-- [ ] `plans/event-storming.md`: link this plan under a "Phase 6–8" line.
-- [ ] E2E smoke: add the lanes toggle + one docking to `smoke.spec.ts` if it stays
+- [x] `specs/README.md` index rows if any new spec file was created (none planned).
+- [x] `plans/event-storming.md`: link this plan under a "Phase 6–8" line.
+- [x] E2E smoke: add the lanes toggle + one docking to `smoke.spec.ts` if it stays
       under the suite's time budget; otherwise a `event-storming.spec.ts` beside the
       photo spec.
-- [ ] `~/PR_RESULTS.md` (outside the repo): the before / after deltas for the PR
+- [x] `~/PR_RESULTS.md` (outside the repo): the before / after deltas for the PR
       (elements added per import vs manual, notes snapped, tests added, bundle
       delta of the live app) — max 8 lines.
-- [ ] Fold-back: rename anything named after a plan coordinate; every new module
+- [x] Fold-back: rename anything named after a plan coordinate; every new module
       header states what the module IS today; delete any `TODO(plan)`; `DECISIONS.md`
       / `AMBIGUITIES.md` / `LESSONS_LEARNED.md` at the worktree root updated (all
       gitignored); wiki page in `docs/` if a durable repo-level learning emerged
       (e.g. "structured outputs for vision on Workers").
-- [ ] Final quality gate: lint, format:check, typecheck, test and build all
+- [x] Final quality gate: lint, format:check, typecheck, test and build all
       green; e2e green against the built stack.
 - [ ] `git fetch && git rebase origin/main` (resolve by new commits, never force);
       re-run the gate; push ONLY when the parent relays operator permission; open
