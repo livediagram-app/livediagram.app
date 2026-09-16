@@ -123,6 +123,10 @@ export function usePhotoImport(deps: PhotoImportDeps) {
   // reading their photo, and the ripple / de-overlap has to answer to that.
   const liveRef = useRef(deps);
   liveRef.current = deps;
+  // The run's own state, for the commit to read without going through an
+  // updater (see `commit`).
+  const stateRef = useRef(state);
+  stateRef.current = state;
 
   const reset = useCallback(() => {
     runRef.current += 1;
@@ -207,31 +211,38 @@ export function usePhotoImport(deps: PhotoImportDeps) {
   // Commit: re-reconcile against the LIVE tab (the insert-between precedent —
   // the drop runs against the board as it is, not the snapshot the gesture
   // started from), then add every included note in ONE step.
+  //
+  // Every side effect happens OUTSIDE the state updater, reading the run's
+  // state from a ref. React may re-run an updater (StrictMode, a batched
+  // replay), and an updater that commits would then add the notes twice — it
+  // did, and the e2e caught it.
   const commit = useCallback(() => {
     const { activeTab, activeId, commitTabs, createBlocked, setMultiSelectedIds } = liveRef.current;
     if (createBlocked) return;
-    setState((s) => ({ ...s, stage: 'committing' }));
-    setState((s) => {
-      if (!s.response) return { ...s, stage: 'error', error: 'ai_error' };
-      const fresh = reconcilePhoto(toPhotoNotes(s.response), boardNotesOf(activeTab.elements), {
-        tab: activeTab,
-      });
-      const additions = fresh.additions.filter((a) => s.included.has(a.detectedId));
-      if (additions.length === 0) return { ...s, stage: 'review' };
+    const snapshot = stateRef.current;
+    if (!snapshot.response || snapshot.stage !== 'review') return;
 
-      const built = buildAdditions(additions, s.edits, activeTab);
-      track('AI', 'Used', 'PhotoNotes');
-      for (const _ of built) track('Element', 'Added', 'Sticky');
-      commitTabs((ts) =>
-        ts.map((t) =>
-          t.id === activeId
-            ? { ...t, elements: [...t.elements, ...built], templateChosen: true }
-            : t,
-        ),
-      );
-      setMultiSelectedIds(new Set(built.map((el) => el.id)));
-      return { ...s, stage: 'done', addedCount: built.length };
-    });
+    const fresh = reconcilePhoto(
+      toPhotoNotes(snapshot.response),
+      boardNotesOf(activeTab.elements),
+      {
+        tab: activeTab,
+      },
+    );
+    const additions = fresh.additions.filter((a) => snapshot.included.has(a.detectedId));
+    if (additions.length === 0) return;
+
+    setState((s) => ({ ...s, stage: 'committing' }));
+    const built = buildAdditions(additions, snapshot.edits, activeTab);
+    track('AI', 'Used', 'PhotoNotes');
+    for (const _ of built) track('Element', 'Added', 'Sticky');
+    commitTabs((ts) =>
+      ts.map((t) =>
+        t.id === activeId ? { ...t, elements: [...t.elements, ...built], templateChosen: true } : t,
+      ),
+    );
+    setMultiSelectedIds(new Set(built.map((el) => el.id)));
+    setState((s) => ({ ...s, stage: 'done', addedCount: built.length }));
   }, []);
 
   // Start the next run against the board as it NOW is, so anything the last
