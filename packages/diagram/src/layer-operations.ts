@@ -1,4 +1,4 @@
-import { type Element, type ElementId, type Tab } from './index';
+import type { Element, ElementId, Tab } from './index';
 import { bringManyToFront, freezeDanglingGroupEnds, sendManyToBack } from './groups';
 import { arrowReferencesAny } from './arrow-rebind';
 import {

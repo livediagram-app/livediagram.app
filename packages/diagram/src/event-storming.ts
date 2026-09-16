@@ -7,7 +7,11 @@
 // rather than carrying its own hexes. Stickies are exempt from theme
 // recolouring, so a fill set from here survives every theme.
 
-import { type Layer } from './layers';
+// TYPE-only, and written as `import type` on purpose: `./layers` imports
+// `./index`, which re-exports this module, so a VALUE import here closes a
+// cycle that leaves this module's catalogue undefined for whoever enters it
+// through layers first.
+import type { Layer } from './layers';
 
 export type EventStormingNoteKind =
   | 'domain-event'

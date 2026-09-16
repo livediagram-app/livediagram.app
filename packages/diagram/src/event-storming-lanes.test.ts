@@ -154,7 +154,9 @@ describe('activeTimeline', () => {
   });
 
   it('is null while lanes are switched off, even though the origin is remembered', () => {
-    expect(activeTimeline({ esTimeline: { originX: 120, originY: 80, enabled: false } })).toBeNull();
+    expect(
+      activeTimeline({ esTimeline: { originX: 120, originY: 80, enabled: false } }),
+    ).toBeNull();
   });
 
   it('is the stack itself while lanes are on', () => {
@@ -192,12 +194,20 @@ describe('initialTimelineOrigin', () => {
 
   it('ignores notes the author cannot see', () => {
     const els = [note({ id: 'hidden', x: 0, y: -400 }), note({ id: 'b', x: 120, y: 80 })];
-    expect(initialTimelineOrigin(els, new Set(['hidden']))).toEqual({ originX: 120, originY: 80, enabled: true });
+    expect(initialTimelineOrigin(els, new Set(['hidden']))).toEqual({
+      originX: 120,
+      originY: 80,
+      enabled: true,
+    });
   });
 
   it('falls back to the canvas origin when every note is hidden', () => {
     const els = [note({ id: 'hidden', x: 40, y: 40 })];
-    expect(initialTimelineOrigin(els, new Set(['hidden']))).toEqual({ originX: 0, originY: 0, enabled: true });
+    expect(initialTimelineOrigin(els, new Set(['hidden']))).toEqual({
+      originX: 0,
+      originY: 0,
+      enabled: true,
+    });
   });
 });
 

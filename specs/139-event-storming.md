@@ -418,7 +418,7 @@ axis means anything in particular, so the whole feature is gated on
   timeline lanes on / off"), and nothing else — no keyboard shortcut in v1,
   because a board-level mode is not something you flip mid-sentence.
 - **The state is SHARED, on the tab.** `Tab.esTimeline` = `{ originX, originY,
-  enabled }`. A facilitator turning lanes on turns them on for the room, like
+enabled }`. A facilitator turning lanes on turns them on for the room, like
   the workshop stage visibility that came before it. Storing it per browser
   would mean two people in the same session dragging onto two different grids.
   `enabled` is an explicit flag rather than "the field's presence means on"
@@ -488,6 +488,20 @@ axis means anything in particular, so the whole feature is gated on
 - **Not in v1:** no keyboard shortcut, no "snap all notes to lanes" verb, no
   vertical lanes (the module is horizontal in fact, axis-shaped in form), and
   no per-lane naming — a lane is a position, not an entity.
+
+**What shipped, in numbers.** `ES_LANE_HEIGHT` 200 (one standard note),
+`ES_LANE_GAP` 40, `ES_LANE_PITCH` 240, `ES_GRID_CELL` 100, y tolerance 20
+(`ES_LANE_SNAP_Y`, half the gap), x tolerance 50 (`ES_LANE_SNAP_X`, half a
+column — so the grid always claims). The geometry is
+`packages/diagram/src/event-storming-lanes.ts`; the switch is
+`hooks/canvas/useTimelineLanes.ts`, published to the palette row
+(`components/palette/EventStormingBoardRows.tsx`), the command palette and the
+canvas menu; the lit lane is the module store `lib/lane-preview.ts` rendered by
+`components/canvas/TimelineLanesOverlay.tsx`; the two drag paths resolve it in
+`hooks/canvas/boxed-drag-resolve.ts` and `lib/palette-drag-snap.ts`. The
+overlay's ink is the ALIGNMENT GUIDES' own derivation
+(`elementStroke ?? deriveTextColorForBg(backgroundColor)`) rather than a second
+vocabulary, which is also what keeps it legible on a dark wall.
 
 ## Phase 7 (planned): anchor docking
 
@@ -679,6 +693,26 @@ type, kept current every session. Each should stay true on its own.
 - A modal that lands a beat AFTER the canvas will silently swallow a
   test's drag: checking whether it is showing yet races it, waiting for
   it does not.
+- Lanes are an aid, not a cage: they appear only during a drag, they snap
+  only within a tolerance, and switching them on moves NOT ONE note. A
+  board-level switch that rearranged an afternoon's work would be a switch
+  nobody dares press.
+- Presence is a poor switch when the value has to outlive the off: the lane
+  ORIGIN is chosen once from the board as it stood, so "off" has to keep it,
+  so the field needs an explicit `enabled` and absence means "never had
+  lanes" — one meaning per state.
+- A grid claims every point by construction (half a column is the farthest
+  anything can be from one), so only the axis with a real tolerance — y, onto
+  the lane — is where "an aid, not a cage" actually lives.
+- Two placement rules on one axis is one lie: when a lane claims an axis, the
+  alignment guide for that axis has to go with it, or the board draws a line
+  along an edge the note is not landing on.
+- A presentational control must be presentational to the SCREEN READER too:
+  the toggle inside a `role="switch"` row was still announcing its own role
+  and name, so every settings row in the editor read as two switches.
+- Screen pixels cannot check a grid: the notes are tilted, so their bounding
+  boxes are rotation-bloated — the e2e reads the SAVED tab back from the api
+  instead, which proves the placement and the persistence in one assertion.
 
 ## Still ahead (phased, see the plan)
 

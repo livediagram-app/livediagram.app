@@ -323,14 +323,14 @@ esDock?: {
   immediately right of an event, in PHOTO space → `esDock` on the addition
   (against an existing host or another addition).
 - `reconcilePhoto(detected, existing, options)` → `{ matches, additions,
-  transform, differences }` — the one entry point the dialog calls.
+transform, differences }` — the one entry point the dialog calls.
 
 `@livediagram/api-schema` (`packages/api-schema/src/index.ts`)
 
 - `PhotoNotesRequest = { image: string /* data URL, jpeg|png|webp */, tabName?: string }`
 - `DetectedNote = { id: number; text: string; kind: EventStormingNoteKind | 'unknown';
-  colour: string; size: 'square' | 'wide' | 'small'; cx: number; cy: number; w: number;
-  h: number; row: number; order: number; confidence: number }` (all box fields
+colour: string; size: 'square' | 'wide' | 'small'; cx: number; cy: number; w: number;
+h: number; row: number; order: number; confidence: number }` (all box fields
   normalised 0..1 to the image)
 - `PhotoNotesResponse = { notes: DetectedNote[]; wall: boolean; hint?: string }`
   (`wall: false` = the model judged the photo is not a sticky wall).
@@ -377,8 +377,7 @@ esDock?: {
   - [x] `apps/live/components/palette/palette-categories.tsx`, `PaletteToolRows.tsx`,
         `palette-tile-defs.tsx` (+ test), `EditorContextMenu.tsx` (+ `.types.ts`,
         the ES verb list), `CommandPalette.tsx`, `context-menu-icons.tsx`.
-  - [x] `apps/live/hooks/canvas/useClipboard.ts` + `apps/live/components/canvas/ImageDropZone.tsx`
-        + wherever the canvas accepts a dropped image file (grep `dataTransfer.files`
+  - [x] `apps/live/hooks/canvas/useClipboard.ts` + `apps/live/components/canvas/ImageDropZone.tsx` + wherever the canvas accepts a dropped image file (grep `dataTransfer.files`
         in `apps/live`), `apps/live/lib/upload-image.ts` (`UPLOAD_ACCEPT_ATTR`).
   - [x] `apps/api/src/routes/ai.ts` (+ test, how fetch is stubbed), `ai-prompt.ts`,
         `capabilities.ts`, `index.ts` (the `case 'ai'` dispatch), `types.ts` (Env),
@@ -518,28 +517,28 @@ esDock?: {
 
 ### 1.7 Interplay
 
-- [ ] Insert-between on a lanes-on board: `findInsertionSlot`'s `shiftDx` rounds UP
+- [x] Insert-between on a lanes-on board: `findInsertionSlot`'s `shiftDx` rounds UP
       to a whole number of grid cells (so a rippled row stays on the grid); test.
-- [ ] Shift-duplicate clone lands on the lane; test.
-- [ ] Undo of the lanes toggle restores the field; redo re-applies; realtime peer
+- [x] Shift-duplicate clone lands on the lane; test.
+- [x] Undo of the lanes toggle restores the field; redo re-applies; realtime peer
       receives the tab-field change (verify in two browser tabs on the dev
       server).
-- [ ] The tour (spec/79) does not point at the new palette row; the modifier hint
+- [x] The tour (spec/79) does not point at the new palette row; the modifier hint
       banner is unchanged.
-- [ ] Commit.
+- [x] Commit.
 
 ### 1.8 Verification (proof, not tests)
 
-- [ ] Dev server, playwright-cli: create an ES board, add three events, switch
+- [x] Dev server, playwright-cli: create an ES board, add three events, switch
       lanes on, drag a fourth note — the lane lights, the note lands centred on it
       and on a grid cell; drag a fifth onto the next lane exactly above; a sixth
       staggered by half a note; Ctrl-drag places freely; Alt over a gap still
       inserts. Screenshot both colour schemes into `/tmp` and eyeball them.
-- [ ] Reload: lanes still on, origin unchanged, nothing moved.
-- [ ] Non-ES board: nothing in the palette, no lanes, no store activity.
-- [ ] Spec/139 Phase 6 filled in with what SHIPPED (numbers, wording); domain
+- [x] Reload: lanes still on, origin unchanged, nothing moved.
+- [x] Non-ES board: nothing in the palette, no lanes, no store activity.
+- [x] Spec/139 Phase 6 filled in with what SHIPPED (numbers, wording); domain
       learnings appended (at least: "lanes are an aid, not a cage").
-- [ ] `pnpm lint && pnpm typecheck && pnpm test` green; commit.
+- [x] `pnpm lint && pnpm typecheck && pnpm test` green; commit.
 
 ---
 
@@ -801,8 +800,8 @@ esDock?: {
 - [ ] Entry points (Q7): palette row "Add from photo" at the top of the ES category
       (camera glyph; hidden without `aiEnabled` or when the gate blocks); command
       palette entry; image-file drop / paste on an ES board routes to the dialog
-      (find the existing handler, branch on `isEventStormingTab && aiEnabled &&
-      file.type startsWith image/`, everything else untouched).
+      (find the existing handler, branch on ES-board + aiEnabled + an
+      `image/*` file type, everything else untouched).
 - [ ] Tests: state machine (every transition incl. abort + error + retry), review
       list editing changes what is committed, commit uses the one builder (assert
       `fixedSize`, `esKind`, `textSize: 'scale'`, layer id, tilt within ±1.1), one
@@ -916,13 +915,13 @@ Each is one more `ES_DOCKINGS` row plus, where the face is not west / east, a
       matched ids).
 - [ ] Help: `apps/help/app/canvas/event-storming-boards/page.mdx` gains three
       sections (lanes, anchors, from a photo); registry `description` unchanged
-      unless it no longer summarises, `keywords` gain `lane lanes timeline grid
-      stagger anchor dock docked magnet photo camera wall picture ocr scan
-      import`; `apps/help/app/palette/event-storming/page.mdx` mentions the two new
+      unless it no longer summarises, `keywords` gain the lane / dock / photo
+      words (lane lanes timeline grid stagger anchor dock docked magnet photo
+      camera wall picture ocr scan import);
+      `apps/help/app/palette/event-storming/page.mdx` mentions the two new
       rows. No new article, so no icon / count changes — verify the registry tests
       still pass.
-- [ ] `README.md` / `docs/*`: env var `OPENAI_VISION_MODEL` in `docs/self-hosting.md`
-      + `docs/local-development.md`; `docs/architecture.md` if it lists AI routes.
+- [ ] `README.md` / `docs/*`: env var `OPENAI_VISION_MODEL` in `docs/self-hosting.md` + `docs/local-development.md`; `docs/architecture.md` if it lists AI routes.
 - [ ] MCP (`apps/mcp`): verify the new fields pass through untouched when a tool
       writes a tab (no whitelist drops them); if `list_templates` / a tool describes
       ES notes, mention `esDock`; tests.
@@ -941,8 +940,8 @@ Each is one more `ES_DOCKINGS` row plus, where the face is not west / east, a
       / `AMBIGUITIES.md` / `LESSONS_LEARNED.md` at the worktree root updated (all
       gitignored); wiki page in `docs/` if a durable repo-level learning emerged
       (e.g. "structured outputs for vision on Workers").
-- [ ] Final quality gate: `pnpm lint && pnpm format:check && pnpm typecheck &&
-      pnpm test && pnpm build` green; e2e green against the built stack.
+- [ ] Final quality gate: lint, format:check, typecheck, test and build all
+      green; e2e green against the built stack.
 - [ ] `git fetch && git rebase origin/main` (resolve by new commits, never force);
       re-run the gate; push ONLY when the parent relays operator permission; open
       the PR with a bullet description referencing spec/139 Phases 6–8, spec/25;

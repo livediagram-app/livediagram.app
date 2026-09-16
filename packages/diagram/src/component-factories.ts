@@ -5,14 +5,14 @@
 // lives beside the primitive factories rather than inside them. Split out of
 // factories.ts to keep that file focused on the per-kind primitives.
 
-import {
-  type ArrowElement,
-  type BoxedElement,
-  type Element,
-  type ElementId,
-  type ImageElement,
-  type ShapeElement,
-  type TextElement,
+import type {
+  ArrowElement,
+  BoxedElement,
+  Element,
+  ElementId,
+  ImageElement,
+  ShapeElement,
+  TextElement,
 } from './index';
 import { createImage, createPinnedArrow, createShape, createText } from './factories';
 

@@ -1,4 +1,4 @@
-import { type Anchor, type ArrowStyle, type Endpoint } from './index';
+import type { Anchor, ArrowStyle, Endpoint } from './index';
 
 // The anchor a pinned end sits on, when the endpoint carries one
 // (element-pinned or group-pinned); null for free / on-arrow ends.
