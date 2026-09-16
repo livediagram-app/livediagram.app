@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
+  acceptDraft,
   defaultPhotoScale,
+  discardDraft,
+  draftNotesOf,
+  hasDraftNotes,
   detectDockings,
   fitPhotoTransform,
   matchDetectedNotes,
@@ -10,6 +14,7 @@ import {
   reconcilePhoto,
   UNKNOWN_KIND_FALLBACK,
   type BoardNote,
+  type Element,
   type PhotoAddition,
   type PhotoNote,
 } from './event-storming-photo';
@@ -451,5 +456,71 @@ describe('reconcilePhoto', () => {
     const out = reconcilePhoto(detected, []);
     const command = out.additions.find((a) => a.kind === 'command')!;
     expect(command.dock).toEqual({ hostDetectedId: 2, side: 'before' });
+  });
+});
+
+// The draft lifecycle (spec/139 Phase 8). The notes are IN the document while
+// the author reviews them, so these three answers are what keep that honest.
+describe('the photo draft', () => {
+  const draft = (id: string, over: Record<string, unknown> = {}) =>
+    ({
+      id,
+      type: 'sticky',
+      esKind: 'domain-event',
+      fixedSize: true,
+      esDraft: true,
+      x: 0,
+      y: 0,
+      width: 200,
+      height: 200,
+      ...over,
+    }) as unknown as Element;
+  const settled = (id: string) =>
+    ({
+      id,
+      type: 'sticky',
+      esKind: 'domain-event',
+      fixedSize: true,
+      x: 900,
+      y: 0,
+      width: 200,
+      height: 200,
+    }) as unknown as Element;
+
+  it('finds the notes a photo landed', () => {
+    expect(draftNotesOf([settled('a'), draft('d')]).map((n) => n.id)).toEqual(['d']);
+    expect(hasDraftNotes([settled('a')])).toBe(false);
+  });
+
+  it('accepts by dropping the flag and nothing else', () => {
+    const after = acceptDraft([settled('a'), draft('d', { label: 'Typed by hand', x: 42 })]);
+    const accepted = after[1] as { esDraft?: unknown; label?: string; x: number };
+    expect('esDraft' in accepted).toBe(false);
+    expect(accepted).toMatchObject({ label: 'Typed by hand', x: 42 });
+    // The note that was already there is not even re-created.
+    expect(after[0]).toMatchObject({ id: 'a', x: 900 });
+    expect('esDraft' in (after[0] as object)).toBe(false);
+  });
+
+  it('leaves a board with no draft alone, object identity included', () => {
+    const board = [settled('a')];
+    expect(acceptDraft(board)).toBe(board);
+    expect(discardDraft(board)).toBe(board);
+  });
+
+  it('discards by removing the notes, leaving everything else untouched', () => {
+    const board = [settled('a'), draft('d')];
+    const after = discardDraft(board);
+    expect(after).toHaveLength(1);
+    expect(after[0]).toBe(board[0]);
+  });
+
+  it('frees a settled note docked to a draft note that is being discarded', () => {
+    const board = [
+      draft('host'),
+      { ...(settled('c') as object), esDock: { hostId: 'host', side: 'before' } } as Element,
+    ];
+    const after = discardDraft(board);
+    expect('esDock' in (after[0] as object)).toBe(false);
   });
 });

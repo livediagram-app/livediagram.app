@@ -549,6 +549,14 @@ export type StickyElement = {
   // paper, and every reader derives the cluster the same way. A note whose
   // host has gone is freed by `stripDanglingDocks`.
   esDock?: EsDock;
+  // Photo draft (spec/139 Phase 8): this note landed from a photograph of a
+  // wall and has not been accepted yet. It is an ORDINARY note in every other
+  // respect — that is the point, because the author reviews the import by
+  // typing into it, dragging it and deleting it with the machinery they
+  // already know. It lives on the ELEMENT rather than in a preview store so a
+  // draft survives a reload and a peer sees it for what it is; `acceptDraft`
+  // strips the flag, `discardDraft` removes the notes.
+  esDraft?: true;
   groupId?: ElementId;
   textSize?: TextSize;
   textAlignX?: TextAlignX;

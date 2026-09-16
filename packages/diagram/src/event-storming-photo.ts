@@ -11,7 +11,13 @@
 // one moment of the wall.
 
 import { eventStormingNoteSize, type EventStormingNoteKind } from './event-storming';
-import { dockingFor, ES_DOCK_SEAM_PX, type EsDockSide } from './event-storming-dock';
+import type { Element, StickyElement } from './index';
+import {
+  dockingFor,
+  ES_DOCK_SEAM_PX,
+  stripDanglingDocks,
+  type EsDockSide,
+} from './event-storming-dock';
 import { activeTimeline, snapToLanes, type EsTimeline } from './event-storming-lanes';
 import {
   applyPhotoTransform,
@@ -254,4 +260,44 @@ export function reconcilePhoto(
   }
 
   return { matches, additions: placed, transform, differences };
+}
+
+// ---------------------------------------------------------------------
+// The draft (spec/139 Phase 8)
+// ---------------------------------------------------------------------
+//
+// An import lands ON the board rather than in a dialog: the new notes appear at
+// their final positions carrying `esDraft`, and the author reviews them by
+// typing into them, dragging them and deleting them — the machinery they
+// already know, rather than a second copy of it inside an overlay. These three
+// functions are the whole lifecycle.
+
+export function draftNotesOf(elements: Element[]): StickyElement[] {
+  return elements.filter((el): el is StickyElement => el.type === 'sticky' && el.esDraft === true);
+}
+
+export function hasDraftNotes(elements: Element[]): boolean {
+  return elements.some((el) => el.type === 'sticky' && el.esDraft === true);
+}
+
+// Accept: the notes stay exactly where the author left them and simply stop
+// being a draft. Returns the SAME array when there is no draft, so an ordinary
+// commit never churns the memoised views.
+export function acceptDraft(elements: Element[]): Element[] {
+  if (!hasDraftNotes(elements)) return elements;
+  return elements.map((el) => {
+    if (el.type !== 'sticky' || el.esDraft !== true) return el;
+    const { esDraft: _gone, ...rest } = el;
+    void _gone;
+    return rest as StickyElement;
+  });
+}
+
+// Discard: the draft never happened. Anything a draft note was hosting is
+// freed on the way out, so a relation can't point at a note that just left.
+export function discardDraft(elements: Element[]): Element[] {
+  if (!hasDraftNotes(elements)) return elements;
+  return stripDanglingDocks(
+    elements.filter((el) => !(el.type === 'sticky' && el.esDraft === true)),
+  );
 }
