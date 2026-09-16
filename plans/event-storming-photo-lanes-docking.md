@@ -486,14 +486,14 @@ esDock?: {
 
 ### 1.5 Snapping — palette drag
 
-- [ ] `palette-drag-snap.ts`: extend the pure snap with the lane rung (same
+- [x] `palette-drag-snap.ts`: extend the pure snap with the lane rung (same
       function as 1.4 — if the two paths' snap helpers differ in shape, extract the
       lane rung into ONE helper both call; do not implement it twice).
-- [ ] `usePaletteDragGuides.ts`: publish the lit lane; `usePaletteDrop.ts` consumes
+- [x] `usePaletteDragGuides.ts`: publish the lit lane; `usePaletteDrop.ts` consumes
       the same offset for the drop; `PaletteDragGhost.tsx` lands the ghost on the
       lane (the footprint already knows its silhouette).
-- [ ] Tests extend `palette-drag-snap.test.ts` and `usePaletteDragGuides.test.tsx`.
-- [ ] Commit: `feat(live): palette notes snap to timeline lanes`.
+- [x] Tests extend `palette-drag-snap.test.ts` and `usePaletteDragGuides.test.tsx`.
+- [x] Commit: `feat(live): palette notes snap to timeline lanes`.
 
 ### 1.6 Rendering the lanes
 
