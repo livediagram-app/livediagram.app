@@ -397,6 +397,91 @@ board's behaviour changes at all.
   points are deliberately not told apart: the question the dashboard
   answers is "does anyone use this gesture".
 
+## Phase 6 (in progress): timeline lanes
+
+_Stub — filled in as the phase lands. See
+[`plans/event-storming-photo-lanes-docking.md`](../plans/event-storming-photo-lanes-docking.md)._
+
+A board-level switch. With **timeline lanes** on, the board carries an
+infinite stack of horizontal lanes (one note tall, evenly pitched, in both
+directions). They are invisible until a note is being dragged — from the
+palette or already on the board — and then only the lane the note would land
+on lights up, plus its two neighbours, fainter. The note's **y snaps onto the
+lane** and its **x snaps to a half-note grid**, so a note on one lane sits
+either exactly above a note on the lane before it or staggered by half a note,
+and nothing in between. Lanes give the y axis a grammar the way Phase 5 gave
+the x axis one: each lane is a row of the story, each column a moment.
+
+Settled before anything was built:
+
+- **Event-storming boards only** (`isEventStormingTab`). No other board's
+  behaviour changes at all.
+- **One optional tab field, no migration**: `Tab.esTimeline`. Present = on.
+- **Nothing on an existing board moves** when lanes come on. Lanes are an aid
+  during a drag, not a cage the board is poured into.
+- **The preview never touches the document.** The lit lane is published on a
+  module-level store and rendered; the drop is the first thing that writes.
+- **One snap computation per gesture** — the ghost, the lit lane and the drop
+  share one resolver on each entry point, so the preview cannot lie.
+- **Precedence** (top wins): an open insertion slot (Alt, Phase 5) → free
+  placement (Ctrl/Cmd, spec/60) → dock candidate (Phase 7) → lane + half-note
+  grid → alignment / distribution snap.
+- **Never exported.** Lanes are a drag-time aid, not board content.
+
+## Phase 7 (planned): anchor docking
+
+_Stub — filled in as the phase lands._
+
+The notation's own adjacencies become first-class. A **Command** can be added
+standalone, docked to the **Domain Event** it triggers, or docked to the
+**Policy** that issues it; a **Policy** can be standalone or docked to the
+**Domain Event** it reacts to. A docked pair sits with a small seam between
+the two notes and two visual anchor points — one dot on each facing edge — in
+that seam. A host shows a small anchor affordance on each dockable face;
+clicking it adds the compatible note already docked and opens it for typing.
+Dragging a note near a compatible face docks it magnetically; dragging it away
+undocks it, and moving a host carries everything docked to it.
+
+Settled before anything was built:
+
+- **Event-storming boards only**, and no new element type: one optional field,
+  `StickyElement.esDock`, stored on the DOCKED note and pointing at its host.
+- **The docked note holds the relation**, so a host can be deleted without a
+  write to its neighbours; a docked note whose host is gone becomes standalone.
+- **Magnets, not connectors**: the two dots say "these two are one phrase",
+  and no line is drawn between them.
+- **One undoable step** for every dock, undock and anchor-add, through the
+  ordinary commit choke point.
+
+## Phase 8 (planned): import a photo of the wall
+
+_Stub — filled in as the phase lands._
+
+Photograph a piece of a physical wall — stickies, possibly overlapping,
+possibly a region already partly on the board — and the board reads the notes
+out of it: the **kind from the paper colour**, the **text from the
+handwriting**, the **layout from the photo**. It then **reconciles** against
+what the board already holds: notes already on the board are matched and left
+exactly as they are, and only the **new** notes are added, placed relative to
+the matched neighbours they sat beside in the photo. A review step shows what
+was found and what will be added; the commit is one undoable step. Repeating
+with the next photo of the next piece of wall adds only what is new.
+
+Settled before anything was built:
+
+- **Perception is the model's job; reconciliation is ours.** The model returns
+  what it SEES. Matching against the board and placing the additions are pure,
+  deterministic, unit-tested TypeScript. The model is never asked "which of
+  these are already on the board".
+- **Existing notes are untouchable by an import.** Additions only — never a
+  move, a resize, a re-kind or a re-word. A text difference on a matched note
+  is SHOWN, never applied.
+- **The photo is never stored.** Not R2, not D1, not IndexedDB, not the change
+  log: the client downscales and re-encodes it (which also drops EXIF) and the
+  api route forwards the bytes to the model and discards them.
+- **Gated on `OPENAI_API_KEY` exactly as spec/25 is.** Without a key there is
+  no photo UI at all, and a self-host without one loses nothing else.
+
 ## Domain learnings (session log)
 
 One-liners captured as they were learned — product truths for this diagram
