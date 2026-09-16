@@ -22,6 +22,7 @@ import { insertTelemetryEvents } from './db/telemetry';
 import { clientIp } from './client-ip';
 import { MAX_BODY_BYTES, MAX_IMAGE_BYTES } from './limits';
 import { handleAccount } from './routes/account';
+import { handleAiPhotoNotes } from './routes/ai-photo-notes';
 import { handleAi } from './routes/ai';
 import { handleCapabilities } from './routes/capabilities';
 import { handleOpenapi } from './routes/openapi';
@@ -238,7 +239,11 @@ export default {
         case 'unfurl':
           return await handleUnfurl(ctx);
         case 'ai':
-          return await handleAi(ctx);
+          // Two model routes, one gate (spec/25 + spec/139 Phase 8): the
+          // assistant at /api/ai, the wall-photo reader one segment deeper.
+          if (segments[2] === undefined) return await handleAi(ctx);
+          if (segments[2] === 'photo-notes') return await handleAiPhotoNotes(ctx);
+          return notFound();
         case 'events':
           return await handleEvents(ctx);
         case 'telemetry':

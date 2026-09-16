@@ -142,6 +142,9 @@ simple = { limit = 120, period = 60 }
 #     (gitignored). `OPENAI_MODEL` can also go there to override the
 #     default (gpt-4o).
 #   - Production: `wrangler secret put OPENAI_API_KEY`.
+#     `OPENAI_VISION_MODEL` picks the model that reads a photographed
+#     sticky wall (spec/139 Phase 8); it defaults to `OPENAI_MODEL`,
+#     so a deployment only sets it to split the two apart.
 #     `OPENAI_MODEL` can be set as a plain [vars] entry if you want to
 #     override the default in production.
 #

@@ -1,12 +1,5 @@
-import {
-  badRequest,
-  CORS_HEADERS,
-  json,
-  methodNotAllowed,
-  missingAuth,
-  rateLimited,
-} from '../responses';
-import { clientIp } from '../client-ip';
+import { badRequest, CORS_HEADERS, json } from '../responses';
+import { aiGate } from './ai-gate';
 import { buildSystemPrompt, diagramTypeHint, extractExistingStyle } from '../ai-prompt';
 import type { RouteContext } from './context';
 import type { AiRequest } from '@livediagram/api-schema';
@@ -82,46 +75,9 @@ function sanitiseElements(elements: unknown[]): unknown[] {
 export async function handleAi(ctx: RouteContext): Promise<Response> {
   const { request, env } = ctx;
 
-  if (!env.OPENAI_API_KEY) return json({ error: 'ai_not_configured' }, { status: 503 });
-
-  // Origin allow-list (spec/25). Optional: when AI_ALLOWED_ORIGINS is
-  // unset the worker accepts any Origin, matching the historical OSS
-  // self-host story. When set, the request's Origin header must match
-  // one of the comma-separated entries exactly. The check runs BEFORE
-  // auth + rate-limit so a third-party site can't even probe the
-  // endpoint for state. We compare case-sensitive against the raw
-  // header value: every modern browser sends a canonical lower-case
-  // scheme + host, and we want a strict deny default.
-  if (env.AI_ALLOWED_ORIGINS && env.AI_ALLOWED_ORIGINS.length > 0) {
-    const allowed = env.AI_ALLOWED_ORIGINS.split(',')
-      .map((s) => s.trim())
-      .filter((s) => s.length > 0);
-    const origin = request.headers.get('Origin');
-    if (!origin || !allowed.includes(origin)) {
-      return json({ error: 'origin_not_allowed' }, { status: 403 });
-    }
-  }
-
-  // Clerk-only gate (spec/25). When AI_REQUIRE_CLERK="true", reject
-  // the legacy X-Owner-Id guest path so the AI feature can't be
-  // driven by an attacker minting fresh per-request UUIDs to drain
-  // the operator's OpenAI budget. The flag is opt-in so an OSS self-
-  // host that doesn't run Clerk at all (the pure-guest path) keeps
-  // the feature usable; hosted livediagram.app sets it to "true".
-  if (env.AI_REQUIRE_CLERK === 'true' && ctx.clerkUserId == null) {
-    return json({ error: 'sign_in_required' }, { status: 401 });
-  }
-
-  const owner = ctx.resolveOwner();
-  if (!owner) return missingAuth();
-
-  if (request.method !== 'POST') return methodNotAllowed();
-
-  if (env.AI_RATE_LIMITER) {
-    const ip = clientIp(request, 'unknown');
-    const { success } = await env.AI_RATE_LIMITER.limit({ key: ip });
-    if (!success) return rateLimited();
-  }
+  // The shared admission sequence (spec/25), one answer for both model routes.
+  const refused = await aiGate(ctx);
+  if (refused) return refused;
 
   let body: AiRequest;
   try {

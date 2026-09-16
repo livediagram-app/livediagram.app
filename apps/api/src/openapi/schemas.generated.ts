@@ -1649,6 +1649,75 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "DetectedNote": {
+    "additionalProperties": false,
+    "properties": {
+      "colour": {
+        "type": "string"
+      },
+      "confidence": {
+        "type": "number"
+      },
+      "cx": {
+        "type": "number"
+      },
+      "cy": {
+        "type": "number"
+      },
+      "h": {
+        "type": "number"
+      },
+      "id": {
+        "type": "number"
+      },
+      "kind": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/EventStormingNoteKind"
+          },
+          {
+            "const": "unknown",
+            "type": "string"
+          }
+        ]
+      },
+      "order": {
+        "type": "number"
+      },
+      "row": {
+        "type": "number"
+      },
+      "size": {
+        "enum": [
+          "square",
+          "wide",
+          "small"
+        ],
+        "type": "string"
+      },
+      "text": {
+        "type": "string"
+      },
+      "w": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "id",
+      "text",
+      "kind",
+      "colour",
+      "size",
+      "cx",
+      "cy",
+      "w",
+      "h",
+      "row",
+      "order",
+      "confidence"
+    ],
+    "type": "object"
+  },
   "Diagram": {
     "additionalProperties": false,
     "properties": {
@@ -2924,6 +2993,43 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "participantId",
       "value",
       "at"
+    ],
+    "type": "object"
+  },
+  "PhotoNotesRequest": {
+    "additionalProperties": false,
+    "properties": {
+      "image": {
+        "type": "string"
+      },
+      "tabName": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "image"
+    ],
+    "type": "object"
+  },
+  "PhotoNotesResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "hint": {
+        "type": "string"
+      },
+      "notes": {
+        "items": {
+          "$ref": "#/components/schemas/DetectedNote"
+        },
+        "type": "array"
+      },
+      "wall": {
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "notes",
+      "wall"
     ],
     "type": "object"
   },

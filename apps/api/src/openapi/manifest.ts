@@ -1038,6 +1038,17 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     requestSchema: 'AiRequest',
     statuses: [200, 401, 403, 500, 502, 503],
   },
+  {
+    method: 'POST',
+    path: '/ai/photo-notes',
+    segment: 'ai',
+    tag: 'AI',
+    summary: 'Read the sticky notes out of a photo of an event-storming wall.',
+    auth: 'guest-or-clerk',
+    requestSchema: 'PhotoNotesRequest',
+    responseSchema: 'PhotoNotesResponse',
+    statuses: [200, 400, 401, 403, 413, 429, 502, 503],
+  },
 
   // ---- Link unfurl ----
   {

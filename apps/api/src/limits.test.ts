@@ -41,7 +41,14 @@ describe('image cap', () => {
 // handled two errors that never arrive and none of the two that do.
 describe('spec/25 lists the AI route error tokens the route emits', () => {
   it('names each one, and invents none', () => {
-    const route = readFileSync(`${ROOT}/apps/api/src/routes/ai.ts`, 'utf8');
+    // Every file a caller of a model route can receive an envelope from: the
+    // shared admission gate and both handlers. The gate was lifted out of
+    // ai.ts when the photo route arrived (spec/139 Phase 8) and took three of
+    // the tokens with it — reading one file would have quietly stopped
+    // checking most of them.
+    const route = ['ai.ts', 'ai-gate.ts', 'ai-photo-notes.ts']
+      .map((f) => readFileSync(`${ROOT}/apps/api/src/routes/${f}`, 'utf8'))
+      .join('\n');
     const spec = readFileSync(`${ROOT}/specs/25-ai-assistance.md`, 'utf8');
     const emitted = [...route.matchAll(/error: '([a-z_]+)'/g)].map((m) => m[1]!);
     expect(new Set(emitted).size).toBeGreaterThan(3);

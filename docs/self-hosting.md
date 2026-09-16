@@ -198,6 +198,8 @@ pnpm --filter @livediagram/api exec wrangler secret put OPENAI_API_KEY
 Optional knobs (all plain `[vars]` in `apps/api/wrangler.toml`, the dashboard, or `.dev.vars`):
 
 - `OPENAI_MODEL`: model name, defaults to `gpt-4o`.
+- `OPENAI_VISION_MODEL`: model for reading a photographed sticky wall
+  (`POST /api/ai/photo-notes`, spec/139). Defaults to `OPENAI_MODEL`.
 - `AI_ALLOWED_ORIGINS`: comma-separated `Origin` allow-list for `POST /api/ai` (e.g. `https://your-host,http://localhost:3002`). Unset = no origin check. Matched verbatim, case-sensitive.
 - `AI_REQUIRE_CLERK`: set to `"true"` to reject the guest (`X-Owner-Id`) path on `/api/ai` only, requiring a verified Clerk JWT. Unset = guests can use AI (so a Clerk-less fork still works).
 

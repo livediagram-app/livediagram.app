@@ -117,6 +117,10 @@ export type Env = {
   // Override the OpenAI model (optional). Defaults to gpt-4o.
   // Set in wrangler.toml [vars] if you want a different model.
   OPENAI_MODEL?: string;
+  // The model the wall-photo reader uses (spec/139 Phase 8). Defaults to
+  // OPENAI_MODEL, else gpt-4o. Split out so a deployment can point the vision
+  // route at a cheaper or newer model without moving the assistant.
+  OPENAI_VISION_MODEL?: string;
   // Per-IP rate limiter for POST /api/ai. Caps AI requests at 20/60s
   // per IP so a single client can't exhaust the OpenAI budget.
   // Optional: absent (self-host) falls through to "allow".
