@@ -53,7 +53,44 @@ describe('resolveBoxedMove — timeline lanes', () => {
     });
     expect(START.x + out.tx).toBe(200 + ES_NOTE_GAP);
     expect(START.y + out.ty).toBe(laneCentre(0, TIMELINE) - 100);
-    expect(out.lane).toEqual({ laneIndex: 0 });
+    expect(out.lane).toMatchObject({ laneIndex: 0 });
+    // …and the offer was drawn there before the drop.
+    expect(out.lane!.ghost).toEqual({ x: 200 + ES_NOTE_GAP, y: 0, width: 200, height: 200 });
+  });
+
+  it('offers the BRICK stagger under the gutter between two events', () => {
+    const pair = [note('l', 0, 0), note('r', 200 + ES_NOTE_GAP, 0)];
+    const brick = (200 + ES_NOTE_GAP) / 2;
+    // Dropped 40px off the brick position — inside the capture radius, and
+    // nowhere near close enough for the old 12px snap.
+    const out = resolve(brick + 40 - START.x, ES_LANE_PITCH + 7 - START.y, {
+      elements: [note('drag', 1000, 1000), ...pair],
+    });
+    expect(START.x + out.tx).toBe(brick);
+    expect(out.lane!.ghost).toMatchObject({ x: brick });
+  });
+
+  it('lands a WIDE note on its left edge, staggered by the events above it', () => {
+    // The rhythm belongs to the row that is already there: a 300-wide policy
+    // staggers by half a SQUARE note plus half a gutter, not by half of itself.
+    const pair = [note('l', 0, 0), note('r', 200 + ES_NOTE_GAP, 0)];
+    const wide: ShapeBounds = { x: 1000, y: 1000, width: 300, height: 180 };
+    const brick = (200 + ES_NOTE_GAP) / 2;
+    const out = resolveBoxedMove({
+      elements: [
+        { id: 'drag', type: 'sticky', x: 1000, y: 1000, width: 300, height: 180 } as Element,
+        ...pair,
+      ],
+      startBounds: new Map([['drag', wide]]),
+      primaryId: 'drag',
+      dx: brick + 30 - 1000,
+      dy: ES_LANE_PITCH + 12 - 1000,
+      noSnap: false,
+      guidesOn: true,
+      timeline: TIMELINE,
+    });
+    expect(1000 + out.tx).toBe(brick);
+    expect(out.lane!.ghost).toMatchObject({ x: brick, width: 300, height: 180 });
   });
 
   it('sits one gutter clear of the note beside it', () => {
@@ -71,24 +108,37 @@ describe('resolveBoxedMove — timeline lanes', () => {
     expect(out.lane).toEqual({ laneIndex: 0 });
   });
 
-  it('draws no alignment guides when lane and neighbour have claimed both axes', () => {
-    const out = resolve(-1000 + 4, -1000 + 7, {
+  it('draws no alignment guides when lane and slot have claimed both axes', () => {
+    // Into the lane below a note, on its column: both axes are answered.
+    const out = resolve(4 - START.x, ES_LANE_PITCH + 7 - START.y, {
       elements: [note('drag', 1000, 1000), note('n', 0, 0)],
     });
     expect(out.guides).toEqual([]);
     expect(out.distGuides).toEqual([]);
   });
 
-  it('leaves the axis the lane did not claim to alignment', () => {
-    // y far from any lane, x on a neighbour's edge.
-    const neighbourY = ES_LANE_PITCH + 100;
-    const out = resolve(4 - START.x, neighbourY - START.y, {
-      elements: [note('drag', 1000, 1000), note('n', 0, neighbourY)],
+  it('leaves the axis the slot did not claim to alignment', () => {
+    // On a lane, but far from every slot the board is offering: the lane
+    // takes y and the ordinary alignment snap is still free to take x.
+    const out = resolve(1304 - START.x, ES_LANE_PITCH + 7 - START.y, {
+      elements: [note('drag', 1000, 1000), note('n', 900, 0), note('far', 1300, ES_LANE_PITCH)],
     });
-    expect(START.x + out.tx).toBe(0);
+    expect(START.y + out.ty).toBe(laneCentre(1, TIMELINE) - 100);
+    expect(START.x + out.tx).toBe(1300);
+    expect(out.lane).toMatchObject({ laneIndex: 1 });
+    expect(out.lane!.ghost).toBeUndefined();
+    expect(out.guides.some((g) => g.axis === 'x')).toBe(true);
+  });
+
+  it('offers nothing at all when no lane claims the note', () => {
+    // y parked between two lanes: this is an ordinary board again, and x is
+    // whatever the ordinary alignment snap makes of it.
+    const midY = ES_LANE_PITCH + 100;
+    const out = resolve(4 - START.x, midY - START.y, {
+      elements: [note('drag', 1000, 1000), note('n', 0, midY)],
+    });
     expect(out.lane).toBeNull();
-    expect(START.y + out.ty).toBe(neighbourY);
-    expect(out.guides.every((g) => g.axis === 'y')).toBe(true);
+    expect(START.y + out.ty).toBe(midY);
   });
 
   it('stands down entirely under free placement', () => {

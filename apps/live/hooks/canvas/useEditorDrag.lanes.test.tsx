@@ -170,7 +170,7 @@ describe('useEditorDrag — timeline lanes (spec/139)', () => {
     const h = harness();
     press(h, 'drag');
     move(h, DX, DY);
-    expect(getLanePreview()).toEqual({ laneIndex: 1 });
+    expect(getLanePreview()).toMatchObject({ laneIndex: 1 });
   });
 
   it('lands the note centred on that lane, lined up with the note below', () => {
@@ -260,7 +260,7 @@ describe('useEditorDrag — timeline lanes (spec/139)', () => {
     move(h, DX, DY, { shift: true });
     const cloneIds = h.result.current.shiftDupGhostIds;
     expect(cloneIds).not.toBeNull();
-    expect(getLanePreview()).toEqual({ laneIndex: 1 });
+    expect(getLanePreview()).toMatchObject({ laneIndex: 1 });
     // The original is back where it was grabbed; the clone is on the lane.
     expect(h.xOf('drag')).toBe(1000);
     const cloneId = [...cloneIds!][0]!;

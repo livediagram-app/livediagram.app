@@ -18,6 +18,10 @@ export type LanePreview = {
   // The lane the note's centre is landing on, or null when the note is too
   // far from any lane for one to claim it (lanes are an aid, not a cage).
   laneIndex: number | null;
+  // The exact footprint the drop will take, when a suggested slot has claimed
+  // the note: drawn as a dashed outline so the author sees where it is going
+  // BEFORE letting go. Absent when x is still the hand's own.
+  ghost?: { x: number; y: number; width: number; height: number };
 };
 
 let preview: LanePreview | null = null;
@@ -28,7 +32,13 @@ const listeners = new Set<() => void>();
 function same(a: LanePreview | null, b: LanePreview | null): boolean {
   if (a === b) return true;
   if (!a || !b) return false;
-  return a.laneIndex === b.laneIndex;
+  return (
+    a.laneIndex === b.laneIndex &&
+    a.ghost?.x === b.ghost?.x &&
+    a.ghost?.y === b.ghost?.y &&
+    a.ghost?.width === b.ghost?.width &&
+    a.ghost?.height === b.ghost?.height
+  );
 }
 
 export function setLanePreview(next: LanePreview | null): void {

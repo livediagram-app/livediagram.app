@@ -129,7 +129,9 @@ describe('paletteDragSnapAt — timeline lanes', () => {
     });
     expect(column + 5 + out.dx).toBe(column);
     expect(ES_LANE_PITCH + 7 + 100 + out.dy).toBe(laneCentre(1, TIMELINE));
-    expect(out.lane).toEqual({ laneIndex: 1 });
+    expect(out.lane).toMatchObject({ laneIndex: 1 });
+    // The offer is drawn where the drop will land.
+    expect(out.lane!.ghost).toMatchObject({ x: column, y: laneCentre(1, TIMELINE) - 100 });
   });
 
   it('joins a row one gutter clear of the note already in it', () => {
@@ -153,7 +155,7 @@ describe('paletteDragSnapAt — timeline lanes', () => {
       timeline: TIMELINE,
     });
     expect(out.dx).toBe(0);
-    expect(out.lane).toEqual({ laneIndex: 1 });
+    expect(out.lane).toMatchObject({ laneIndex: 1 });
   });
 
   it('is inert without a timeline, exactly as every other board behaves', () => {
@@ -166,9 +168,9 @@ describe('paletteDragSnapAt — timeline lanes', () => {
     expect(out).toEqual({ dx: 0, dy: 0, guides: [], distGuides: [], lane: null });
   });
 
-  it('keeps the alignment guide on the axis the lane left alone', () => {
-    // A neighbour whose TOP edge sits mid-way between two lanes: the lane
-    // cannot claim y, so alignment still does, and its guide survives.
+  it('falls back to ordinary alignment when no lane claims the note', () => {
+    // A neighbour whose TOP edge sits mid-way between two lanes: no lane can
+    // claim y, so no slots are offered and the board behaves as any other.
     const neighbourY = ES_LANE_PITCH + 100;
     const out = paletteDragSnapAt({
       canvasX: 900 + 100,
@@ -178,7 +180,8 @@ describe('paletteDragSnapAt — timeline lanes', () => {
       timeline: TIMELINE,
     });
     expect(out.lane).toBeNull();
+    // Alignment took both axes, exactly as it would on any other board.
     expect(out.guides.length).toBeGreaterThan(0);
-    expect(out.guides.every((g) => g.axis === 'y')).toBe(true);
+    expect(out.guides.some((g) => g.axis === 'y')).toBe(true);
   });
 });

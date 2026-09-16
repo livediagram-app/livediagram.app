@@ -5,14 +5,16 @@ import {
   ES_LANE_HEIGHT,
   ES_LANE_PITCH,
   ES_LANE_SNAP_Y,
+  ES_CANDIDATE_RADIUS_X,
   ES_NOTE_GAP,
   initialTimelineOrigin,
   laneCentre,
   laneIndexAt,
   laneTop,
+  captureCandidate,
+  laneCandidates,
   prevailingNoteGap,
   snapToLane,
-  snapToNeighbours,
   visibleLaneIndices,
   type EsTimeline,
 } from './event-storming-lanes';
@@ -113,10 +115,6 @@ describe('snapToLane', () => {
 });
 
 describe('the gutter between notes', () => {
-  const square = { width: 200, height: 200 };
-  // A row as the template and the insertion ripple actually build it.
-  const row = [note({ id: 'a', x: 0, y: 0 }), note({ id: 'b', x: 200 + ES_NOTE_GAP, y: 0 })];
-
   it('is the board OWN gap, which the template and the ripple already use', () => {
     expect(ES_NOTE_GAP).toBe(72);
   });
@@ -142,7 +140,6 @@ describe('the gutter between notes', () => {
       note({ id: 'cmd', x: 300 - 16 - 200, y: 0, esDock: { hostId: 'host', side: 'before' } }),
       note({ id: 'host2', x: 2000, y: 0 }),
       note({ id: 'cmd2', x: 2000 - 16 - 200, y: 0, esDock: { hostId: 'host2', side: 'before' } }),
-      // A real gutter elsewhere on the board, so there IS something to measure.
       note({ id: 'far', x: 1000, y: 0 }),
       note({ id: 'far2', x: 1000 + 200 + 40, y: 0 }),
     ];
@@ -153,66 +150,121 @@ describe('the gutter between notes', () => {
     const stacked = [note({ id: 'a', x: 0, y: 0 }), note({ id: 'b', x: 300, y: 400 })];
     expect(prevailingNoteGap(stacked)).toBe(ES_NOTE_GAP);
   });
+});
 
-  it('places a note one gutter to the RIGHT of the one it is dropped beside', () => {
-    const snap = snapToNeighbours({ x: 200 + ES_NOTE_GAP + 6, y: 0, ...square }, row.slice(0, 1), {
-      gap: ES_NOTE_GAP,
-    });
-    expect(snap!.x).toBe(200 + ES_NOTE_GAP);
-    expect(snap!.reason).toBe('gutter');
+// Two events side by side imply places a third note can go, and the board
+// should OFFER them: the slot after the pair, the slot before it, the columns
+// under each event, and the brick-pattern stagger under their gutter.
+describe('the slots two events suggest', () => {
+  const square = { width: 200, height: 200 };
+  const GAP = ES_NOTE_GAP;
+  // A pair in lane 0 at the board's own gutter.
+  const pair = [note({ id: 'left', x: 0, y: 0 }), note({ id: 'right', x: 200 + GAP, y: 0 })];
+  // Where a note dragged in the lane BELOW would sit.
+  const below = (x: number) => ({ x, y: ES_LANE_PITCH, ...square });
+  const beside = (x: number) => ({ x, y: 0, ...square });
+  const xsOf = (cs: { x: number }[]) => [...new Set(cs.map((c) => c.x))].sort((a, b) => a - b);
+
+  it('offers one gutter AFTER the pair, in the same lane', () => {
+    const cs = laneCandidates(beside(2 * (200 + GAP)), pair, { gap: GAP });
+    expect(xsOf(cs.filter((c) => c.kind === 'gutter'))).toContain(2 * (200 + GAP));
   });
 
-  it('places a note one gutter to the LEFT', () => {
-    const snap = snapToNeighbours({ x: -200 - ES_NOTE_GAP - 5, y: 0, ...square }, row.slice(0, 1), {
-      gap: ES_NOTE_GAP,
-    });
-    expect(snap!.x).toBe(-200 - ES_NOTE_GAP);
+  it('offers one gutter BEFORE the pair, in the same lane', () => {
+    const cs = laneCandidates(beside(-(200 + GAP)), pair, { gap: GAP });
+    expect(xsOf(cs.filter((c) => c.kind === 'gutter'))).toContain(-(200 + GAP));
   });
 
-  it('lines a note up with the LEFT EDGE of one in another row — the operators case', () => {
-    // The note below sits at the board's own rhythm; a note dragged near it
-    // in the lane above must be able to land exactly above it.
-    const below = note({ id: 'b', x: 200 + ES_NOTE_GAP, y: ES_LANE_PITCH });
-    const snap = snapToNeighbours({ x: 200 + ES_NOTE_GAP + 5, y: 0, ...square }, [below], {
-      gap: ES_NOTE_GAP,
-    });
-    expect(snap!.x).toBe(200 + ES_NOTE_GAP);
-    expect(snap!.reason).toBe('edge');
+  it('never offers the space BETWEEN the two — that is the Alt gesture', () => {
+    // A slot whose footprint would land on top of a note that is already
+    // there is not a slot; opening the row is a different verb (Phase 5).
+    const cs = laneCandidates(beside(120), pair, { gap: GAP });
+    for (const c of cs.filter((k) => k.kind === 'gutter')) {
+      expect(c.x, `gutter at ${c.x}`).not.toBe(200 + GAP - 200 - GAP + 200);
+    }
+    expect(cs.some((c) => c.x > 0 && c.x < 200 + GAP)).toBe(false);
   });
 
-  it('lines up RIGHT edges too, so a wide note can close a column', () => {
-    const below = note({ id: 'b', x: 100, y: ES_LANE_PITCH, width: 300 });
-    // A 200 square whose right edge is near the wide note's right edge (400).
-    const snap = snapToNeighbours({ x: 196, y: 0, ...square }, [below], { gap: ES_NOTE_GAP });
-    expect(snap!.x).toBe(200);
+  it('offers the ALIGNED column under each event of the pair', () => {
+    const cs = laneCandidates(below(10), pair, { gap: GAP });
+    expect(xsOf(cs.filter((c) => c.kind === 'aligned'))).toEqual([0, 200 + GAP]);
   });
 
-  it('prefers an EDGE to a gutter when both are in reach', () => {
-    // Aligning with a column that exists beats inventing a new gap beside it.
-    const beside = note({ id: 'a', x: 0, y: 0 });
-    const below = note({ id: 'b', x: 200 + ES_NOTE_GAP + 3, y: ES_LANE_PITCH });
-    const snap = snapToNeighbours({ x: 200 + ES_NOTE_GAP + 2, y: 0, ...square }, [beside, below], {
-      gap: ES_NOTE_GAP,
-    });
-    expect(snap!.reason).toBe('edge');
-    expect(snap!.x).toBe(200 + ES_NOTE_GAP + 3);
+  it('offers the STAGGER: centred under the pair gutter, the brick pattern', () => {
+    const cs = laneCandidates(below(10), pair, { gap: GAP });
+    // left.x + (left.width + gutter) / 2 — half a note plus half a gutter on.
+    expect(xsOf(cs.filter((c) => c.kind === 'staggered'))).toContain((200 + GAP) / 2);
   });
 
-  it('leaves a note alone in open space — lanes are an aid, not a cage', () => {
-    expect(snapToNeighbours({ x: 900, y: 0, ...square }, row, { gap: ES_NOTE_GAP })).toBeNull();
+  it('staggers a LONE event both ways', () => {
+    const lone = [note({ id: 'e', x: 400, y: 0 })];
+    const cs = laneCandidates(below(400), lone, { gap: GAP });
+    expect(xsOf(cs.filter((c) => c.kind === 'staggered'))).toEqual([
+      400 - (200 + GAP) / 2,
+      400 + (200 + GAP) / 2,
+    ]);
+  });
+
+  it('measures the stagger from the EVENTS silhouette, not the dragged note', () => {
+    // A 300-wide policy under two square events: it aligns on its LEFT edge,
+    // and the stagger is still half a square note plus half a gutter, because
+    // the rhythm belongs to the row above.
+    const policy = { x: 10, y: ES_LANE_PITCH, width: 300, height: 180 };
+    const cs = laneCandidates(policy, pair, { gap: GAP });
+    expect(xsOf(cs.filter((c) => c.kind === 'aligned'))).toEqual([0, 200 + GAP]);
+    expect(xsOf(cs.filter((c) => c.kind === 'staggered'))).toContain((200 + GAP) / 2);
+  });
+
+  it('ignores notes more than two lanes away', () => {
+    // Dragging in lane 1, with the only note three lanes below it.
+    const faraway = [note({ id: 'f', x: 0, y: 4 * ES_LANE_PITCH })];
+    expect(laneCandidates(below(0), faraway, { gap: GAP })).toEqual([]);
   });
 
   it('ignores the notes being dragged', () => {
-    const snap = snapToNeighbours({ x: 6, y: 0, ...square }, row, {
-      gap: ES_NOTE_GAP,
-      exclude: new Set(['a', 'b']),
-    });
-    expect(snap).toBeNull();
+    const cs = laneCandidates(below(10), pair, { gap: GAP, exclude: new Set(['left', 'right']) });
+    expect(cs).toEqual([]);
+  });
+});
+
+describe('capturing a suggested slot', () => {
+  const square = { width: 200, height: 200 };
+  const GAP = ES_NOTE_GAP;
+  const pair = [note({ id: 'left', x: 0, y: 0 }), note({ id: 'right', x: 200 + GAP, y: 0 })];
+  const capture = (x: number) =>
+    captureCandidate(
+      { x, y: ES_LANE_PITCH, ...square },
+      laneCandidates({ x, y: ES_LANE_PITCH, ...square }, pair, { gap: GAP }),
+    );
+
+  it('has a radius of half a standard note, so a slot is OFFERED not guessed', () => {
+    expect(ES_CANDIDATE_RADIUS_X).toBe(100);
   });
 
-  it('only considers notes within reach vertically, so a far row cannot pull x', () => {
-    const faraway = note({ id: 'b', x: 4, y: 12 * ES_LANE_PITCH });
-    expect(snapToNeighbours({ x: 0, y: 0, ...square }, [faraway], { gap: ES_NOTE_GAP })).toBeNull();
+  it('takes the note from up to half a note away', () => {
+    // The outermost slot this pair offers is the stagger past the right
+    // event; a hand 100px beyond it is still captured, 101 is not.
+    const outer = 200 + GAP + (200 + GAP) / 2;
+    expect(capture(outer + 100)!.x).toBe(outer);
+    expect(capture(outer + 101)).toBeNull();
+  });
+
+  it('leaves the hand alone beyond the radius, in open space', () => {
+    expect(capture(2000)).toBeNull();
+  });
+
+  it('takes the NEAREST candidate, whichever kind it is', () => {
+    const stagger = (200 + GAP) / 2;
+    expect(capture(stagger + 8)!.x).toBe(stagger);
+    expect(capture(stagger + 8)!.kind).toBe('staggered');
+    expect(capture(8)!.kind).toBe('aligned');
+  });
+
+  it('ranks an edge and a stagger equally — distance decides', () => {
+    // Exactly between the aligned 0 and the stagger 136: the nearer wins, and
+    // nothing about the KIND breaks the tie.
+    expect(capture(60)!.x).toBe(0);
+    expect(capture(80)!.x).toBe((200 + GAP) / 2);
   });
 });
 

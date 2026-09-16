@@ -73,6 +73,29 @@ describe('TimelineLanesOverlay', () => {
     expect(c.querySelectorAll('line')).toHaveLength(0);
   });
 
+  it('draws the slot the note will land in, before it lands', () => {
+    setLanePreview({ laneIndex: 1, ghost: { x: 272, y: 240, width: 200, height: 200 } });
+    const ghost = draw().querySelector('[data-testid="timeline-lane-ghost"]')!;
+    expect(ghost).toBeTruthy();
+    expect(Number(ghost.getAttribute('x'))).toBe(272);
+    expect(Number(ghost.getAttribute('y'))).toBe(240);
+    expect(Number(ghost.getAttribute('width'))).toBe(200);
+    // Dashed, so it reads as an offer rather than as a note already there.
+    expect(ghost.getAttribute('stroke-dasharray')).toBeTruthy();
+  });
+
+  it('draws no slot while x is still the hand own', () => {
+    setLanePreview({ laneIndex: 1 });
+    expect(draw().querySelector('[data-testid="timeline-lane-ghost"]')).toBeNull();
+  });
+
+  it('scales the slot into client space at any zoom', () => {
+    setLanePreview({ laneIndex: 1, ghost: { x: 272, y: 240, width: 200, height: 200 } });
+    const ghost = draw({ zoom: 2 }).querySelector('[data-testid="timeline-lane-ghost"]')!;
+    expect(Number(ghost.getAttribute('x'))).toBe(544);
+    expect(Number(ghost.getAttribute('width'))).toBe(400);
+  });
+
   it('scales into client space at any zoom', () => {
     setLanePreview({ laneIndex: 1 });
     for (const zoom of [0.5, 2]) {

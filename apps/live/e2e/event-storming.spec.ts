@@ -27,6 +27,7 @@ type BoardNote = {
   type: string;
   x: number;
   y: number;
+  width: number;
   height: number;
   esKind?: string;
   esDock?: { hostId: string; side: string };
@@ -64,7 +65,7 @@ const stickies = (tab: BoardTab) => tab.elements.filter((el) => el.type === 'sti
 // Timeline lanes (spec/139 Phase 6). Three claims, each of which has failed in
 // a prototype at some point: the switch turns lanes on for the BOARD (so it
 // survives a reload), turning them on moves NOTHING, and a note dragged
-// afterwards lands centred on a lane and on a half-note column.
+// afterwards lands centred on a lane, in a slot the board suggested.
 test('timeline lanes snap a dragged note without moving anything else', async ({
   page,
   pageErrors,
@@ -155,6 +156,72 @@ test('timeline lanes snap a dragged note without moving anything else', async ({
     'true',
   );
 
+  expectNoPageErrors(pageErrors);
+});
+
+// The slots two events suggest, taken one at a time: the ALIGNED column under
+// an event, and the STAGGERED brick under the gutter between two. Both are
+// dropped from far enough away that only a real capture radius could land
+// them, and both are read back from the document rather than the screen.
+test('a dragged note takes the slot two events suggest', async ({ page, pageErrors }) => {
+  await startTemplateDiagram(page, /Browse Technical templates/, /^Event storming/i);
+  const canvas = page.locator('[data-canvas-a11y-root]');
+  await dismissQuickTour(page);
+  const notes = canvas.getByRole('img', { name: /^Sticky note/ });
+  await expect(notes).toHaveCount(3);
+  await page.waitForTimeout(500);
+  await page.getByRole('switch', { name: /timeline lanes/i }).click();
+
+  const before = await boardTab(page);
+  const row = stickies(before).sort((a, b) => a.x - b.x);
+  const zoom = (await notes.nth(0).boundingBox())!.height / (row[0]!.height ?? 200);
+  const gutter = row[1]!.x - (row[0]!.x + row[0]!.width);
+  // The lane stack is anchored on the board's own top-left note, so every
+  // target below is measured from the origin rather than from canvas zero.
+  const origin = before.esTimeline!;
+  const laneTopY = (index: number) => origin.originY + index * LANE_PITCH;
+
+  // The note that will do the travelling is the right-most of the row.
+  const travellerId = row[row.length - 1]!.id;
+  const dragBy = async (dxCanvas: number, dyCanvas: number) => {
+    const box = (await notes.nth(2).boundingBox())!;
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(
+      box.x + box.width / 2 + dxCanvas * zoom,
+      box.y + box.height / 2 + dyCanvas * zoom,
+      { steps: 14 },
+    );
+    // The offer is on screen BEFORE the drop — that is the whole point of a
+    // capture radius this wide.
+    await expect(page.locator('[data-testid="timeline-lane-ghost"]')).toBeVisible();
+    await page.mouse.up();
+  };
+
+  // 1. ALIGNED: into the lane below, aimed 60px right of the first event's
+  //    column — way past any alignment threshold, well inside the radius.
+  const traveller = stickies(before).find((el) => el.id === travellerId)!;
+  await dragBy(row[0]!.x + 60 - traveller.x, laneTopY(1) + 6 - traveller.y);
+  let after = await boardTab(page);
+  let moved = stickies(after).find((el) => el.id === travellerId)!;
+  expect(moved.x).toBeCloseTo(row[0]!.x, 6);
+  expect(moved.y + moved.height / 2).toBeCloseTo(laneTopY(1) + LANE_HEIGHT / 2, 6);
+
+  // 2. STAGGERED: aimed 40px off the brick position under the gutter between
+  //    the two events still in the row above.
+  const brick = row[0]!.x + (row[0]!.width + gutter) / 2;
+  await dragBy(brick + 40 - moved.x, 0);
+  after = await boardTab(page);
+  moved = stickies(after).find((el) => el.id === travellerId)!;
+  expect(moved.x).toBeCloseTo(brick, 6);
+
+  // Neither event above moved to make room for either drop.
+  for (const el of [row[0]!, row[1]!]) {
+    expect(
+      stickies(after).find((a) => a.id === el.id),
+      `note ${el.id}`,
+    ).toEqual(el);
+  }
   expectNoPageErrors(pageErrors);
 });
 

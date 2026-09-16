@@ -112,7 +112,7 @@ describe('usePaletteDragGuides — timeline lanes (spec/139)', () => {
   it('lights the lane and carries the note onto it', () => {
     const { wrapperRef } = render({ esBoard: true, timeline: TIMELINE, elements: [] });
     dragOver(wrapperRef.current, CX, CY);
-    expect(getLanePreview()).toEqual({ laneIndex: 1 });
+    expect(getLanePreview()).toMatchObject({ laneIndex: 1 });
     const snap = getPaletteDragSnap();
     expect(CX + snap!.dx - 100).toBe(309);
     expect(CY + snap!.dy).toBe(laneCentre(1, TIMELINE));

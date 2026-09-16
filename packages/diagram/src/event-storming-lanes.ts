@@ -65,11 +65,21 @@ export const ES_LANE_PITCH = ES_LANE_HEIGHT + ES_LANE_GAP;
 // one rather than inventing a third rhythm.
 export const ES_NOTE_GAP = 72;
 
-// How close a note has to come before a neighbour claims its x. A real
-// threshold, deliberately small: past it the note stays exactly where the hand
-// put it, which is what "lanes are an aid, not a cage" has to mean on the axis
-// where the author does the composing.
-export const ES_NEIGHBOUR_SNAP_X = 12;
+// How near a suggested slot has to be before it takes the note: HALF A
+// STANDARD NOTE.
+//
+// It was 12px, and 12px is a snap rather than a suggestion — nobody lands
+// within 12px of anything by accident, so in practice the board never offered
+// the slots its own notes implied. A radius this wide only works because the
+// slot is DRAWN while it is live (see the preview): the author sees where the
+// note is going before letting go, so a wide capture reads as help rather than
+// as the board moving things about.
+export const ES_CANDIDATE_RADIUS_X = ES_NOTE_SIZE_PX.square.width / 2;
+
+// How far above / below a note another one can be and still suggest a slot.
+// Two lanes: a column is a relationship between neighbouring rows, and a note
+// six rows down is a different part of the story.
+export const ES_CANDIDATE_REACH_LANES = 2;
 
 // y is a REAL threshold too — half the lane gap, so a note deliberately parked
 // between two lanes stays there.
@@ -167,75 +177,93 @@ export function prevailingNoteGap(elements: readonly Element[]): number {
   return sorted[Math.floor(sorted.length / 2)]!;
 }
 
-export type NeighbourSnap = {
+// A place the notes already on the board suggest this one could go.
+export type LaneCandidate = {
+  // The left edge on offer.
   x: number;
-  // Which relationship claimed it, so the overlay can draw the right hint:
-  // an alignment line for an edge, the gutter for a gutter.
-  reason: 'edge' | 'gutter';
-  // The note that claimed it.
+  // Which relationship suggested it — kept for the spec, the tests and any
+  // future hint that wants to word itself differently per kind. None of the
+  // three outranks another: distance decides.
+  //   gutter    — one clear gutter along, in the SAME row.
+  //   aligned   — squarely under / over a note in the row next door.
+  //   staggered — the brick pattern: centred under that note's gutter.
+  kind: 'gutter' | 'aligned' | 'staggered';
   neighbourId?: string;
 };
 
-// How far above / below a note another one can be and still pull its x. Two
-// lanes: a column is a relationship between neighbouring rows, and a note six
-// rows down is a different part of the story.
-const NEIGHBOUR_REACH_LANES = 2;
+const sameRow = (a: { y: number; height: number }, b: { y: number; height: number }): boolean =>
+  Math.min(a.y + a.height, b.y + b.height) - Math.max(a.y, b.y) > Math.min(a.height, b.height) / 2;
 
-// Where the notes already on the board want this one's left edge.
+// Every slot the board is offering this note, from the notes within two lanes
+// of it. Existing notes never move to make one — a candidate is a place that
+// is already free.
 //
-// Two relationships, in order of precedence:
-//   EDGE   — left edge to a neighbour's left edge, or right edge to its right
-//            edge: the column the author can see, whatever the widths are.
-//   GUTTER — one gutter clear of the note beside it in the same row: the
-//            breathing room stickies get on a wall, which the old lattice
-//            could not express at all.
-//
-// Edges win, because aligning with a column that exists beats inventing a new
-// gap beside it. Null when nothing is within reach, and then the note stays
-// exactly where it was put.
-export function snapToNeighbours(
+// Two events side by side imply four kinds of place, and this is all of them:
+// after the pair, before the pair, under each event, and under the gutter
+// between them. The stagger is measured from the NEIGHBOUR's silhouette, not
+// the dragged note's, because the rhythm belongs to the row that is already
+// there — which is what lets a 300-wide policy take its place under two square
+// events without inventing a third rhythm.
+export function laneCandidates(
   bounds: { x: number; y: number; width: number; height: number },
   elements: readonly Element[],
-  opts: {
-    gap?: number;
-    exclude?: ReadonlySet<string>;
-    threshold?: number;
-  } = {},
-): NeighbourSnap | null {
+  opts: { gap?: number; exclude?: ReadonlySet<string> } = {},
+): LaneCandidate[] {
   const gap = opts.gap ?? ES_NOTE_GAP;
-  const threshold = opts.threshold ?? ES_NEIGHBOUR_SNAP_X;
-  const reach = NEIGHBOUR_REACH_LANES * ES_LANE_PITCH;
+  const reach = ES_CANDIDATE_REACH_LANES * ES_LANE_PITCH;
   const centreY = bounds.y + bounds.height / 2;
+  const notes = stickyBoxes(elements);
+  const live = notes.filter((n) => !(n.id && opts.exclude?.has(n.id)));
 
-  let best: (NeighbourSnap & { distance: number }) | null = null;
-  const offer = (x: number, reason: NeighbourSnap['reason'], neighbourId?: string) => {
-    const distance = Math.abs(x - bounds.x);
-    if (distance > threshold) return;
-    // Edges beat gutters at equal reach; otherwise the nearer answer wins.
-    const better =
-      !best ||
-      (reason === 'edge' && best.reason === 'gutter') ||
-      (reason === best.reason && distance < best.distance);
-    if (better) best = { x, reason, neighbourId, distance };
+  const out: LaneCandidate[] = [];
+  const offer = (x: number, kind: LaneCandidate['kind'], neighbourId?: string) => {
+    // A slot whose footprint lands on a note that is already there is not a
+    // slot. Opening the row to make one is the Alt insertion (Phase 5), a
+    // different verb with a different gesture — so the space BETWEEN two
+    // touching events is never offered here.
+    const clashes = live.some(
+      (n) =>
+        n.id !== neighbourId && sameRow(bounds, n) && x < n.x + n.width && x + bounds.width > n.x,
+    );
+    if (clashes) return;
+    out.push({ x, kind, neighbourId });
   };
 
-  for (const note of stickyBoxes(elements)) {
-    if (note.id && opts.exclude?.has(note.id)) continue;
+  for (const note of live) {
     if (Math.abs(note.y + note.height / 2 - centreY) > reach) continue;
-    offer(note.x, 'edge', note.id);
-    offer(note.x + note.width - bounds.width, 'edge', note.id);
-    // A gutter is a relationship within ONE row, so only a note this one
-    // would actually sit beside offers it.
-    const sameRow =
-      Math.min(bounds.y + bounds.height, note.y + note.height) - Math.max(bounds.y, note.y) >
-      Math.min(bounds.height, note.height) / 2;
-    if (!sameRow) continue;
-    offer(note.x + note.width + gap, 'gutter', note.id);
-    offer(note.x - gap - bounds.width, 'gutter', note.id);
+    if (sameRow(bounds, note)) {
+      // Along the row: one clear gutter either side.
+      offer(note.x + note.width + gap, 'gutter', note.id);
+      offer(note.x - gap - bounds.width, 'gutter', note.id);
+      continue;
+    }
+    // The row next door: the column under it, and the brick-pattern stagger
+    // either side of that column.
+    offer(note.x, 'aligned', note.id);
+    const half = (note.width + gap) / 2;
+    offer(note.x + half, 'staggered', note.id);
+    offer(note.x - half, 'staggered', note.id);
   }
-  if (!best) return null;
-  const { x, reason, neighbourId } = best;
-  return { x, reason, neighbourId };
+  return out;
+}
+
+// The slot that takes the note, or null when the hand is further from all of
+// them than the capture radius — and then the note stays exactly where it was
+// put. Nearest wins; no kind outranks another.
+export function captureCandidate(
+  bounds: { x: number },
+  candidates: readonly LaneCandidate[],
+  radius: number = ES_CANDIDATE_RADIUS_X,
+): LaneCandidate | null {
+  let best: LaneCandidate | null = null;
+  let bestDistance = Infinity;
+  for (const candidate of candidates) {
+    const distance = Math.abs(candidate.x - bounds.x);
+    if (distance > radius || distance >= bestDistance) continue;
+    best = candidate;
+    bestDistance = distance;
+  }
+  return best;
 }
 
 // Where the stack is anchored when lanes are switched ON: the top-left corner

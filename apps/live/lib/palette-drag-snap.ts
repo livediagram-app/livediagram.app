@@ -2,9 +2,10 @@ import {
   alignmentGuides,
   distributionSnap,
   snapToAlignment,
+  captureCandidate,
+  laneCandidates,
   prevailingNoteGap,
   snapToLane,
-  snapToNeighbours,
   type AlignmentGuide,
   type DistributionGuide,
   type Element,
@@ -60,8 +61,13 @@ export function paletteDragSnapAt({
   // Lanes claim the row, the neighbours claim x — the same ladder the
   // note-drag resolver follows, two entry points.
   const laneSnap = timeline ? snapToLane(candidate, timeline) : null;
-  const gutterSnap = timeline
-    ? snapToNeighbours(candidate, elements, { gap: prevailingNoteGap(elements) })
+  const gutterSnap = laneSnap
+    ? captureCandidate(
+        candidate,
+        laneCandidates({ ...candidate, y: laneSnap.y }, elements, {
+          gap: prevailingNoteGap(elements),
+        }),
+      )
     : null;
   if (laneSnap && gutterSnap) {
     return {
@@ -69,7 +75,10 @@ export function paletteDragSnapAt({
       dy: laneSnap.y - candidate.y,
       guides: [],
       distGuides: [],
-      lane: { laneIndex: laneSnap.laneIndex },
+      lane: {
+        laneIndex: laneSnap.laneIndex,
+        ghost: { x: gutterSnap.x, y: laneSnap.y, width, height },
+      },
     };
   }
   const snap = snapToAlignment(candidate, elements, NO_EXCLUDE, ALIGN_SNAP_THRESHOLD);

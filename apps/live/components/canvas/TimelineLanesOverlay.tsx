@@ -53,6 +53,7 @@ export function TimelineLanesOverlay({
   // washes out (the dot-grid lesson).
   const colour = theme.elementStroke ?? deriveTextColorForBg(theme.backgroundColor);
 
+  const toClientX = (canvasX: number) => rect.left + canvasX * viewportZoom;
   const toClientY = (canvasY: number) => rect.top + canvasY * viewportZoom;
   const left = -BLEED_PX;
   const right = window.innerWidth + BLEED_PX;
@@ -103,6 +104,26 @@ export function TimelineLanesOverlay({
           </g>
         );
       })}
+      {/* THE OFFER, drawn before it is taken: the exact footprint the drop will
+          land on, as a dashed outline in the same accent as the bands. A slot
+          is captured from half a note away, which is only fair if the author
+          can see which slot it is while the note is still in the air. */}
+      {preview.ghost ? (
+        <rect
+          data-testid="timeline-lane-ghost"
+          x={toClientX(preview.ghost.x)}
+          y={toClientY(preview.ghost.y)}
+          width={preview.ghost.width * viewportZoom}
+          height={preview.ghost.height * viewportZoom}
+          rx={4 * viewportZoom}
+          fill={colour}
+          fillOpacity={0.06}
+          stroke={colour}
+          strokeOpacity={0.65}
+          strokeWidth={1.5}
+          strokeDasharray="6 4"
+        />
+      ) : null}
     </svg>
   );
 }

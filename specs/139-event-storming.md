@@ -442,19 +442,34 @@ enabled }`. A facilitator turning lanes on turns them on for the room, like
   the lane gap (20px) on y, so a note parked deliberately between two lanes
   stays there; 12px on x, a real threshold, so a note placed in open space
   stays exactly where the hand put it.
-- **X is NEIGHBOUR-RELATIVE.** Two relationships, and a note takes whichever is
-  within reach:
-  - **an edge** — its left edge against a neighbour's left edge, or its right
-    edge against theirs, which is the column the author can actually see,
-    whatever the widths involved are; and
-  - **a gutter** — one clear gutter from the note beside it in the same row,
-    which is the breathing space stickies get on a wall.
-
-  Edges win when both are in reach, because lining up with a column that exists
-  beats inventing a new gap beside it. Only notes within two lanes count: a
-  column is a relationship between neighbouring rows, and a note six rows down
-  is a different part of the story.
-
+- **X is SUGGESTED by the notes already there.** Two events side by side imply
+  places a third note can go, and with lanes on the board offers them. From the
+  notes within two lanes of the cursor (existing notes never move to make room):
+  - **gutter** — one clear gutter along the SAME row, after the pair's right
+    note or before its left one. The space BETWEEN two events is never offered:
+    opening a row is the Alt insertion (Phase 5), a different verb.
+  - **aligned** — in the row next door, squarely under (or over) an event's
+    left edge: the column the author can see, whatever the widths involved are.
+  - **staggered** — the BRICK pattern: centred under the gutter between the two
+    events, so its left edge sits at `left.x + (left.width + gutter) / 2`. A
+    lone event offers the stagger on both sides. The offset is measured from the
+    NEIGHBOUR's silhouette, never the dragged note's, so a 300-wide policy takes
+    its place under two square events on the square rhythm rather than inventing
+    a third one.
+- **A suggestion, with a real capture radius.** A candidate within HALF A
+  STANDARD NOTE (100px) of the dragged note's left edge takes it, provided a
+  lane has claimed y; nearest wins, and no kind outranks another — an edge and
+  a stagger rank equal, distance decides. Beyond that the hand's x is kept
+  exactly. The first version of this used a 12px tolerance, which is a snap and
+  not a suggestion: nobody lands within 12px by accident, so in practice the
+  board never offered the slots its own notes implied.
+- **And the offer is DRAWN.** While a candidate is live, the exact footprint the
+  drop will take is outlined on the lit lane — dashed, in the same accent as the
+  lane bands, the palette ghost's visual language. A capture radius this wide is
+  only fair if the author can see which slot it is while the note is still in
+  the air, and the preview and the drop read the same resolved answer (spec/58).
+  Both drag paths (palette and a note already on the board) publish it to the
+  one preview store.
 - **The gutter is MEASURED, not assumed.** `prevailingNoteGap` takes the median
   clear space between notes sitting side by side in the same row, so a board
   whose author works at 40 keeps 40; `ES_NOTE_GAP` (72, the number the template
@@ -484,9 +499,9 @@ enabled }`. A facilitator turning lanes on turns them on for the room, like
   on the board) the lane it would land on lights as a faint band with a centre
   line, its two neighbours light at half that alpha so the rhythm reads, and a
   short tick marks the grid column. The bands span the viewport because the
-  lanes are infinite. Everything goes on release. The overlay draws NO column
-  marks: x is the neighbours' business, and the alignment guides every board
-  has already draw that line.
+  lanes are infinite. Everything goes on release. There are no column marks:
+  the board draws the SLOT it is offering instead, which says the same thing
+  about x and says it where the note is actually going.
 - **A single sticky only**, the same rule the Alt insertion follows: a
   multi-selection, a shape, an icon, an arrow or an image drags exactly as it
   does on every other board.
@@ -518,7 +533,10 @@ enabled }`. A facilitator turning lanes on turns them on for the room, like
 **What shipped, in numbers.** `ES_LANE_HEIGHT` 200 (one standard note),
 `ES_LANE_GAP` 40, `ES_LANE_PITCH` 240, `ES_NOTE_GAP` 72 (the board's own
 gutter, shared with the template and the insertion ripple), y tolerance 20
-(`ES_LANE_SNAP_Y`, half the gap), x tolerance 12 (`ES_NEIGHBOUR_SNAP_X`). The geometry is
+(`ES_LANE_SNAP_Y`, half the gap), x capture radius 100
+(`ES_CANDIDATE_RADIUS_X`, half a standard note), reach 2 lanes
+(`ES_CANDIDATE_REACH_LANES`). They sit in one constants block at the top of the
+geometry module, because they are a single model and get corrected together. The geometry is
 `packages/diagram/src/event-storming-lanes.ts`; the switch is
 `hooks/canvas/useTimelineLanes.ts`, published to the palette row
 (`components/palette/EventStormingBoardRows.tsx`), the command palette and the

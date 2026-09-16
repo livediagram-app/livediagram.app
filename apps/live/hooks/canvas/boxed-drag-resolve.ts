@@ -5,9 +5,10 @@ import {
   isBoxed,
   snapResizeBounds,
   snapToAlignment,
+  captureCandidate,
+  laneCandidates,
   prevailingNoteGap,
   snapToLane,
-  snapToNeighbours,
   type AlignmentGuide,
   type DistributionGuide,
   type Element,
@@ -96,15 +97,20 @@ export function resolveBoxedMove({
     width: primaryStart.width,
     height: primaryStart.height,
   };
-  // Lanes claim Y — the row — and nothing else. X is the neighbours' business:
-  // either this note lines up with a column that already exists, or it sits
-  // one gutter clear of the note beside it, or it stays where the hand put it.
+  // Lanes claim Y — the row. X comes from the slots the notes already there
+  // SUGGEST: one gutter along the row, squarely under a note in the row next
+  // door, or the brick-pattern stagger under that note's gutter. Candidates
+  // are measured where the note will LAND (the lane-snapped y), so which row
+  // it is joining is settled before its neighbours are asked.
   const laneSnap = timeline ? snapToLane(candidate, timeline) : null;
-  const gutterSnap = timeline
-    ? snapToNeighbours(candidate, elements, {
-        gap: prevailingNoteGap(elements),
-        exclude: memberIds,
-      })
+  const gutterSnap = laneSnap
+    ? captureCandidate(
+        candidate,
+        laneCandidates({ ...candidate, y: laneSnap.y }, elements, {
+          gap: prevailingNoteGap(elements),
+          exclude: memberIds,
+        }),
+      )
     : null;
   if (laneSnap && gutterSnap) {
     // Both axes answered: skip the alignment / distribution scans entirely
@@ -114,7 +120,18 @@ export function resolveBoxedMove({
       ty: dy + (laneSnap.y - candidate.y),
       guides: [],
       distGuides: [],
-      lane: { laneIndex: laneSnap.laneIndex },
+      lane: {
+        laneIndex: laneSnap.laneIndex,
+        // What the author sees BEFORE dropping: the footprint the note is
+        // about to take. A capture radius this wide is only fair if the offer
+        // is visible.
+        ghost: {
+          x: gutterSnap.x,
+          y: laneSnap.y,
+          width: candidate.width,
+          height: candidate.height,
+        },
+      },
     };
   }
   const snap = snapToAlignment(candidate, elements, memberIds, ALIGN_SNAP_THRESHOLD);
