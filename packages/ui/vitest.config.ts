@@ -8,4 +8,12 @@ import { defineProject } from '@livediagram/vitest-config';
 // No `resolve.dedupe` needed, unlike apps/live: a test in this package
 // resolves the one React that this package's own devDependency provides,
 // so there is no second copy to collide with.
-export default defineProject();
+export default defineProject({
+  test: {
+    // Unmount rendered trees after each test. `globals: false` stops React
+    // Testing Library registering its own cleanup, and a tree left mounted
+    // when jsdom is torn down crashes a later file in the same worker with
+    // `window is not defined`. See the setup file.
+    setupFiles: ['@livediagram/vitest-config/react-cleanup'],
+  },
+});

@@ -9,12 +9,19 @@
     ".": {
       "types": "./index.d.ts",
       "default": "./index.js"
-    }
+    },
+    "./react-cleanup": "./react-cleanup.js"
   },
   "scripts": {
     "clean": "rm -rf node_modules .turbo"
   },
   "peerDependencies": {
+    "@testing-library/react": "^16.3.3",
     "vitest": "^4.1.10"
+  },
+  "peerDependenciesMeta": {
+    "@testing-library/react": {
+      "optional": true
+    }
   }
 }
