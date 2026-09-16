@@ -600,25 +600,57 @@ A real workshop always happens on a physical wall first. Getting it onto the
 board used to cost a transcription afternoon, which is the one thing a
 low-threshold capture surface can least afford.
 
-- **Perception is the model's job; reconciliation is ours.** The model is asked
-  ONLY what it can see — text verbatim, paper colour → kind, silhouette,
-  normalised box, row and order. Matching against the board, fitting the
-  photo's coordinates onto the canvas and placing the additions are pure,
-  deterministic, unit-tested TypeScript (`event-storming-photo.ts`). The model
-  is never asked "which of these are already on the board": that is a question
-  about our data, and a model's answer to it could not be checked.
+- **Detection and reconciliation are ours; only the reading is the model's.**
+  Finding the stickies — where each one is, what colour its paper is and so
+  which KIND it is, which silhouette, which row, in what order — happens in the
+  BROWSER, with classical computer vision (`@livediagram/sticky-vision`). It is
+  deterministic, free, offline, and testable against images we draw ourselves.
+  The model is asked exactly one thing: read the handwriting on this crop, or
+  say you cannot. Matching against the board and placing the additions stay
+  pure, unit-tested TypeScript (`event-storming-photo.ts`).
+
+  The split is not squeamishness, it is where each side is actually good. A
+  vision model's sense of coordinates is famously loose, and a board laid out
+  from hallucinated boxes is worse than no import; a hue histogram's is exact.
+  And the model is never asked "which of these are already on the board" or
+  "where is this" — those are questions about our data and our geometry, and an
+  answer to either could not be checked.
+
+- **How the detector works.** Grey-world white balance (so a warm-lit wall does
+  not turn orange paper red), then every pixel is classified against the
+  notation's own catalogue fills — hue centre from `EVENT_STORMING_NOTES`, with
+  calibrated hue bands and saturation / value floors — into a note kind, the
+  wall, or ink. Connected components over that mask become candidate blobs;
+  fragments split by handwriting are merged back; a blob whose width or height
+  is about n times the median note is SPLIT at the valleys of its own
+  projection, which is how two overlapping orange events become two notes. Box
+  against median gives the silhouette, centre-y clustering gives the rows, and
+  centre-x within a row gives the order.
+
+  Its limits, honestly: white and grey paper are not in the notation, so it
+  cannot see them; a very dim or blue-lit photo moves hues far enough to
+  confuse kinds; a sticky more than about 60% covered reads as a fragment of
+  whatever is left. Every one of those lands as a draft the author can fix, or
+  as nothing at all — which is why there is no detection preview: the draft on
+  the canvas IS the review.
+
 - **Existing notes are untouchable.** An import only ever ADDS. A matched note
   is never moved, resized, re-kinded or re-worded — if the photo says something
   different, the review SHOWS it ("on the board as …") and leaves it. The board
   is the record; the photo is a reading of one moment of the wall.
-- **The photo is never stored.** Not R2, not D1, not IndexedDB, not the change
-  log. The client downscales it to 2048px on the longest edge and re-encodes it
-  as JPEG (which also drops EXIF, after honouring the orientation flag), and
-  the route forwards those bytes to the model and discards them. The dialog
-  says so in one line, where the author can read it before choosing a file.
-- **Gated on the model key exactly as spec/25 is.** No `OPENAI_API_KEY` = no
-  photo UI anywhere, and a self-host without one loses nothing else. It is NOT
-  gated on the AI-panel preference: this is not the assistant.
+- **The photo is never stored, and never even sent.** Not R2, not D1, not
+  IndexedDB, not the change log — and not the api either. The browser decodes
+  it (honouring the EXIF orientation flag), detects on a downscaled working
+  copy, cuts each detected sticky out of the full-resolution bitmap and
+  re-encodes that CROP as a small JPEG (which drops EXIF with it). Only the
+  crops leave the machine, to `POST /api/ai/read-notes`, which forwards them to
+  the model and discards them. Whoever is standing in front of the wall, and
+  whatever else is in the room, stays in the browser.
+- **Gated on the model key exactly as spec/25 is.** No `AI_API_KEY` = no photo
+  UI anywhere, and a self-host without one loses nothing else. It is NOT gated
+  on the AI-panel preference: this is not the assistant. The provider is
+  whatever `AI_BASE_URL` points at — any OpenAI-compatible endpoint, which is
+  Gemini on the hosted site and can be a local llama.cpp on a laptop.
 - **Placement composes the other two phases.** New notes land on the lanes when
   lanes are on, and a pair the photo shows adjacent in a notation pairing lands
   DOCKED. That is why photo import was built third: doing it first would have
@@ -638,17 +670,16 @@ low-threshold capture surface can least afford.
 - **Telemetry:** `AI / Used / PhotoNotes` once per committed import, plus the
   ordinary `Element / Added / Sticky` per note.
   **Live calibration is OUTSTANDING.** Everything above is built and proven
-  against a STUBBED model: the route's own tests drive every gate, clamp and
-  failure; the reconciliation has ~40 unit tests over empty / overlapping /
-  fully-overlapping boards; and `apps/live/e2e/photo-import.spec.ts` runs the
-  whole client path (prepare → POST → reconcile → review → commit → reload → undo)
-  in a browser with the model's HTTP call mocked. What has NOT happened is a run
-  against a real vision model on real photographs of real handwriting, which is
-  the only way to tune two numbers: the prompt's wording (how much occlusion
-  guidance it needs, whether "verbatim" holds) and the matcher threshold
-  (`DEFAULT_MATCH_THRESHOLD`, currently 0.72). Until that happens, treat both as
-  first guesses. It needs an `OPENAI_API_KEY` in `apps/api/.dev.vars` and two or
-  three wall photos.
+  without a model: the detector against images the tests draw themselves, the
+  route against a stubbed provider, the reconciliation with ~50 unit tests over
+  empty / overlapping / fully-overlapping boards, and the whole client path end to
+  end in a browser (detect → read → reconcile → draft → Add → reload → Undo) with
+  only the reading call mocked. What has NOT happened is a run against real
+  photographs of real paper under real light. Three things are first guesses until
+  then: the DETECTOR's hue bands, saturation floors and split threshold; the
+  reader prompt's wording; and the matcher threshold
+  (`DEFAULT_MATCH_THRESHOLD`, currently 0.72). It needs `AI_API_KEY` /
+  `AI_BASE_URL` / `AI_MODEL` in `apps/api/.dev.vars` and two or three wall photos.
 
 - **Not in v1:** multiple photos in one run (one at a time, then "Add another
   photo" against the board as it now is), applying a matched note's text

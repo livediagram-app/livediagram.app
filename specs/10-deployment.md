@@ -122,4 +122,4 @@ The workers themselves remain reachable at their default `*.workers.dev` URLs fo
 - Preview deploys for PRs.
 - Staging environment.
 - Rollback procedure (currently: `wrangler rollback` via dashboard or CLI).
-- Per-worker secrets that are **not** in the optional sync table above (e.g. `OPENAI_API_KEY`, `RESEND_API_KEY`) — those are set by hand with `wrangler secret put` and persist across deploys.
+- Per-worker secrets that are **not** in the optional sync table above (e.g. `AI_API_KEY`, `RESEND_API_KEY`) — those are set by hand with `wrangler secret put` and persist across deploys.

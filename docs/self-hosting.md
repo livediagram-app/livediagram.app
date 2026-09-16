@@ -192,14 +192,18 @@ The in-editor AI panel (spec/25) is hidden entirely unless the api worker has an
 To turn it on, set the key as a worker secret:
 
 ```bash
-pnpm --filter @livediagram/api exec wrangler secret put OPENAI_API_KEY
+pnpm --filter @livediagram/api exec wrangler secret put AI_API_KEY
 ```
 
 Optional knobs (all plain `[vars]` in `apps/api/wrangler.toml`, the dashboard, or `.dev.vars`):
 
-- `OPENAI_MODEL`: model name, defaults to `gpt-4o`.
-- `OPENAI_VISION_MODEL`: model for reading a photographed sticky wall
-  (`POST /api/ai/photo-notes`, spec/139). Defaults to `OPENAI_MODEL`.
+- `AI_BASE_URL`: any OpenAI-compatible chat-completions base. Defaults to
+  `https://api.openai.com/v1`. Gemini:
+  `https://generativelanguage.googleapis.com/v1beta/openai`. A local llama.cpp
+  server: `http://127.0.0.1:8080/v1`.
+- `AI_MODEL`: model id, defaults to `gpt-4o`.
+- `AI_VISION_MODEL`: model id for reading sticky-note crops
+  (`POST /api/ai/read-notes`, spec/139). Defaults to `AI_MODEL`.
 - `AI_ALLOWED_ORIGINS`: comma-separated `Origin` allow-list for `POST /api/ai` (e.g. `https://your-host,http://localhost:3002`). Unset = no origin check. Matched verbatim, case-sensitive.
 - `AI_REQUIRE_CLERK`: set to `"true"` to reject the guest (`X-Owner-Id`) path on `/api/ai` only, requiring a verified Clerk JWT. Unset = guests can use AI (so a Clerk-less fork still works).
 

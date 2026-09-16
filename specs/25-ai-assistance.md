@@ -3,7 +3,7 @@
 ## Overview
 
 An optional AI assistant panel in the diagram editor. Disabled by default; users opt in
-via Settings. Requires `OPENAI_API_KEY` to be configured in the api worker environment —
+via Settings. Requires `AI_API_KEY` to be configured in the api worker environment —
 if absent the feature is **hidden entirely** (no UI surface, no API routes respond). This
 keeps the OSS/self-host promise intact: contributors who don't want to provision an
 OpenAI key get zero AI surface with no extra code paths to reason about.
@@ -78,7 +78,7 @@ No auth required. Response:
 { "aiEnabled": true }
 ```
 
-`aiEnabled` is `true` iff `env.OPENAI_API_KEY` is set in the worker environment.
+`aiEnabled` is `true` iff `env.AI_API_KEY` is set in the worker environment.
 
 ### `POST /api/ai`
 
@@ -150,53 +150,60 @@ streamed body carries `"offTopic": true`, and the editor turns that into a local
 for the AI panel to render (`apps/live/lib/api/ai.ts`). A client reading only the envelope will
 never see it, and must look at the body.
 
-## POST /api/ai/photo-notes — reading a wall photo
+## Any OpenAI-compatible provider
 
-A SECOND route on the same gate, for the event-storming board's photo import
-(spec/139 Phase 8). It shares `handleAi`'s entire admission sequence —
-key present → origin allow-list → Clerk-only flag → owner → method → rate
-limiter — through `routes/ai-gate.ts`, so there is one answer to "may this
-caller use the model", not two that drift.
+The worker does not know which company it is talking to. One client
+(`apps/api/src/ai-client.ts`) posts to `${AI_BASE_URL}/chat/completions` with
+`AI_API_KEY` as a bearer token, and both AI routes go through it. That is the
+whole abstraction, and it is enough: OpenAI, Google Gemini (its
+OpenAI-compatible endpoint), Mistral, OpenRouter, a local llama.cpp server and
+Ollama all speak this wire.
 
-What differs is everything after the gate:
+The names are `AI_*` rather than `OPENAI_*` deliberately. A variable called
+`OPENAI_API_KEY` holding a Gemini key is a lie every future reader has to
+decode, and this repo does not ship compatibility aliases — the old names are
+gone, and a deployment sets the new ones once.
 
-- **Non-streaming**, with **structured outputs**
-  (`response_format: { type: 'json_schema', strict: true }`). The editor needs a
-  whole list of notes before it can reconcile anything, so a stream would only
-  add a parser.
-- **The body is one image** (`{ image, tabName? }`), a data URL of at most
-  `PHOTO_MAX_BYTES` decoded bytes in one of `image/jpeg`, `image/png`,
-  `image/webp` (`@livediagram/api-schema`). The bytes are forwarded to the
-  model and discarded: nothing is stored, logged or echoed.
-- **The prompt's legend is DERIVED** from `EVENT_STORMING_NOTES`, never a
-  hand-copied colour table — the same rule the palette tiles follow, and a test
-  reads the prompt's own source to keep it true.
-- **The response is clamped** before it is returned: notes with empty text or
-  boxes outside 0..1 are dropped, and the list is capped at `PHOTO_MAX_NOTES`.
-- **Errors** are the four this spec already defines, plus two of its own:
+Requests use `response_format: { type: 'json_object' }` rather than strict
+`json_schema`: the strict form is not universally supported, and the worker
+validates every field of every answer regardless — a schema the provider
+promises to honour does not remove the need to check.
 
-| Token             | Status | When                                           |
-| ----------------- | ------ | ---------------------------------------------- |
-| `photo_invalid`   | 400    | Not a data URL, or not an accepted image type. |
-| `photo_too_large` | 413    | The decoded image exceeds `PHOTO_MAX_BYTES`.   |
+## POST /api/ai/read-notes — reading the text on sticky crops
 
-`wall: false` in a 200 body is the model saying "this is not a sticky wall" —
-not an error, the same way `offTopic` is not.
+The model half of the event-storming photo import (spec/139 Phase 8). The
+stickies are FOUND in the browser by classical computer vision; this route is
+asked only to read the handwriting on the crops that came out of that.
+
+- Same admission sequence as `/api/ai` (shared `routes/ai-gate.ts`): key
+  present → origin allow-list → Clerk-only flag → owner → method → rate limiter.
+- **Body**: `{ crops: { id, image }[] }` — at most `READ_MAX_CROPS_PER_REQUEST`
+  (16) crops per call, each a data URL of at most `CROP_MAX_BYTES` in one of
+  `image/jpeg`, `image/png`, `image/webp`. The client batches a bigger run and
+  sends two batches at a time.
+- **Never the whole photo.** A crop is one sticky; whoever is standing in front
+  of the wall stays in the browser.
+- **Answer**: `{ texts: { id, text, legible }[] }`. `legible: false` with empty
+  text is a real answer — the paper was there, the words were not readable — and
+  it still becomes a note, empty, for the author to fill in.
+- **Errors**: the four this spec already defines, plus `crops_invalid` (400) and
+  `crops_too_large` (413).
 
 **Telemetry:** `AI / Used / PhotoNotes`, once per committed import (the editor
 fires it, because the route cannot know whether the author kept the result).
 
 ## Environment variables
 
-| Variable              | Where                 | Purpose                                                                                                                                                                                                                 |
-| --------------------- | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `OPENAI_API_KEY`      | Worker secret         | Required to enable AI. Absent = feature hidden.                                                                                                                                                                         |
-| `OPENAI_MODEL`        | Worker var (optional) | OpenAI model name. Defaults to `gpt-4o`.                                                                                                                                                                                |
-| `OPENAI_VISION_MODEL` | Worker var (optional) | Model for `/api/ai/photo-notes` (spec/139 Phase 8). Defaults to `OPENAI_MODEL`, else `gpt-4o`. Split out so a deployment can point the vision route at a cheaper or newer model without moving the assistant.           |
-| `AI_ALLOWED_ORIGINS`  | Worker var (optional) | Comma-separated `Origin` values that may call `/api/ai`. Unset = no check. Example: `https://livediagram.app,http://localhost:3002`. Entries are matched case-sensitive against the request's `Origin` header verbatim. |
-| `AI_REQUIRE_CLERK`    | Worker var (optional) | Set to `"true"` to require a verified Clerk JWT on `/api/ai` (rejects the `X-Owner-Id` guest path with 401). Unset / any other value = guests allowed.                                                                  |
+| Variable             | Where                 | Purpose                                                                                                                                                                                                                              |
+| -------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `AI_API_KEY`         | Worker secret         | Required to enable AI. Absent = every AI surface hidden.                                                                                                                                                                             |
+| `AI_BASE_URL`        | Worker var (optional) | The OpenAI-COMPATIBLE chat-completions base. Defaults to `https://api.openai.com/v1`. The hosted site points it at Gemini (`https://generativelanguage.googleapis.com/v1beta/openai`); a laptop can point it at llama.cpp or Ollama. |
+| `AI_MODEL`           | Worker var (optional) | Model id for the assistant. Defaults to `gpt-4o`.                                                                                                                                                                                    |
+| `AI_VISION_MODEL`    | Worker var (optional) | Model id for reading note crops (`/api/ai/read-notes`, spec/139 Phase 8). Defaults to `AI_MODEL`, so a deployment only sets it to split the two apart.                                                                               |
+| `AI_ALLOWED_ORIGINS` | Worker var (optional) | Comma-separated `Origin` values that may call `/api/ai`. Unset = no check. Example: `https://livediagram.app,http://localhost:3002`. Entries are matched case-sensitive against the request's `Origin` header verbatim.              |
+| `AI_REQUIRE_CLERK`   | Worker var (optional) | Set to `"true"` to require a verified Clerk JWT on `/api/ai` (rejects the `X-Owner-Id` guest path with 401). Unset / any other value = guests allowed.                                                                               |
 
-Set via `wrangler secret put OPENAI_API_KEY` for production; drop into `apps/api/.dev.vars`
+Set via `wrangler secret put AI_API_KEY` for production; drop into `apps/api/.dev.vars`
 for local dev (gitignored). The two `AI_*` flags are plain `[vars]` (no secret value), so
 operators can set them via `wrangler.toml`, the Cloudflare dashboard, or `.dev.vars` for
 local testing.
@@ -256,7 +263,7 @@ don't inflate the count.
 ## Out of scope (this spec)
 
 - Multi-tab context
-- Image or freehand element generation (READING an image is in scope — see the
-  photo-notes route above; generating one is not)
+- Image or freehand element generation (READING the text on an image is in
+  scope — see the read-notes route above; generating one is not)
 - Per-user cost attribution or quota
 - Model switching in the UI

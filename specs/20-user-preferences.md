@@ -128,7 +128,7 @@ type UserPreferences = {
   // When true, the AI Assistant panel renders in the editor.
   // Defaults to false (opt-in). Only surfaced in the Settings
   // dialog when the api worker reports aiEnabled:true (an
-  // OPENAI_API_KEY is configured). See spec/25.
+  // AI_API_KEY is configured). See spec/25.
   aiAssistanceEnabled?: boolean;
 
   // Show the AI panel's quick suggested-prompt chips (spec/25).
