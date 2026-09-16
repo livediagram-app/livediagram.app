@@ -1,7 +1,13 @@
 'use client';
 
 import { useEffect, useRef, useState, type RefObject } from 'react';
-import type { AlignmentGuide, DistributionGuide, Element, EsTimeline } from '@livediagram/diagram';
+import {
+  ES_GRID_CELL,
+  type AlignmentGuide,
+  type DistributionGuide,
+  type Element,
+  type EsTimeline,
+} from '@livediagram/diagram';
 import { pointerToCanvas } from '@/lib/canvas';
 import { paletteDragSnapAt } from '@/lib/palette-drag-snap';
 import {
@@ -131,6 +137,9 @@ export function usePaletteDragGuides({
               elements: live,
               inertIds: inert,
               active: slot,
+              // Lanes on: open the slot by whole columns, so the row it
+              // pushes is still on the grid afterwards.
+              ...(lanes ? { gridCell: ES_GRID_CELL } : {}),
             })
           : null;
       if (slot) {

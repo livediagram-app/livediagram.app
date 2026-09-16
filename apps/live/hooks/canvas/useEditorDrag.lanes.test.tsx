@@ -248,6 +248,23 @@ describe('useEditorDrag — timeline lanes (spec/139)', () => {
     expect(h.xOf('drag')).toBe(TARGET.x);
   });
 
+  it('lands a Shift-duplicate CLONE on the lane too', () => {
+    const h = harness();
+    press(h, 'drag');
+    // The first Shift frame parks the originals and hands the cursor a fresh
+    // clone; the frames after it are an ordinary note drag, grid and all.
+    move(h, DX, DY, { shift: true });
+    move(h, DX, DY, { shift: true });
+    const cloneIds = h.result.current.shiftDupGhostIds;
+    expect(cloneIds).not.toBeNull();
+    expect(getLanePreview()).toEqual({ laneIndex: 1, cellIndex: 3 });
+    // The original is back where it was grabbed; the clone is on the grid.
+    expect(h.xOf('drag')).toBe(1000);
+    const cloneId = [...cloneIds!][0]!;
+    expect(h.xOf(cloneId)).toBe(3 * ES_GRID_CELL);
+    expect(h.yOf(cloneId)).toBe(laneCentre(1, TIMELINE) - 100);
+  });
+
   it('never snaps a shape — the lanes are a note grammar', () => {
     const shape = {
       id: 'drag',

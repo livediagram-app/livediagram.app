@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element, StickyElement } from '@livediagram/diagram';
+import { ES_GRID_CELL, type Element, type StickyElement } from '@livediagram/diagram';
 import type { ShapeBounds } from '@/lib/canvas';
 import { landNoteInSlot, resolveNoteInsertion } from './note-insertion-drag';
 
@@ -37,6 +37,7 @@ function resolve(overrides: Partial<Parameters<typeof resolveNoteInsertion>[0]> 
     dy: TO_GAP.dy,
     inertIds: new Set<string>(),
     active: null,
+    timeline: null,
     ...overrides,
   });
 }
@@ -123,5 +124,19 @@ describe('landNoteInSlot', () => {
     // Nothing else is touched: the ripple is a render-time preview until the
     // drop commits it.
     expect((after.find((el) => el.id === 'b') as StickyElement).x).toBe(272);
+  });
+});
+
+// Timeline lanes (spec/139 Phase 6): the ripple opens by whole half-note
+// columns so the row it pushes stays on the grid.
+describe('resolveNoteInsertion — on a lanes-on board', () => {
+  it('rounds the ripple up to a whole number of columns', () => {
+    const slot = resolve({ timeline: { originX: 0, originY: 0, enabled: true } });
+    expect(slot!.shiftDx % ES_GRID_CELL).toBe(0);
+    expect(slot!.shiftDx).toBe(300);
+  });
+
+  it('leaves it unrounded when lanes are off', () => {
+    expect(resolve()!.shiftDx).toBe(272);
   });
 });
