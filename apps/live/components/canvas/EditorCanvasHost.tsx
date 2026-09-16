@@ -107,7 +107,6 @@ export function EditorCanvasHost() {
     photoImportAvailable,
     photoImportBlocked,
     openPhotoImport,
-    photoPickerRef,
     readPhotoFile,
     photoDraft,
     createBlocked,
