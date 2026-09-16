@@ -397,36 +397,91 @@ board's behaviour changes at all.
   points are deliberately not told apart: the question the dashboard
   answers is "does anyone use this gesture".
 
-## Phase 6 (in progress): timeline lanes
+## Phase 6 (shipped): timeline lanes
 
-_Stub — filled in as the phase lands. See
-[`plans/event-storming-photo-lanes-docking.md`](../plans/event-storming-photo-lanes-docking.md)._
+**Timeline lanes** is a board-level switch. With it on, the board carries an
+infinite stack of horizontal lanes — one note tall, evenly pitched, running in
+both directions — and a note being dragged **snaps its centre onto a lane** and
+**its left edge onto a half-note grid column**. So a note on one lane sits
+either exactly above the note on the lane before it, or staggered by half a
+note; those two arrangements, and nothing in between.
 
-A board-level switch. With **timeline lanes** on, the board carries an
-infinite stack of horizontal lanes (one note tall, evenly pitched, in both
-directions). They are invisible until a note is being dragged — from the
-palette or already on the board — and then only the lane the note would land
-on lights up, plus its two neighbours, fainter. The note's **y snaps onto the
-lane** and its **x snaps to a half-note grid**, so a note on one lane sits
-either exactly above a note on the lane before it or staggered by half a note,
-and nothing in between. Lanes give the y axis a grammar the way Phase 5 gave
-the x axis one: each lane is a row of the story, each column a moment.
+Phase 5 made the x axis a grammar the board KNOWS ("between" is a place you can
+drop something). Lanes do the same for y: each lane is a row of the story
+(events along the top, the commands that caused them underneath, the policies
+that reacted below that), each column a moment. On an ordinary diagram neither
+axis means anything in particular, so the whole feature is gated on
+`isEventStormingTab` and no other board's behaviour changes at all.
 
-Settled before anything was built:
-
-- **Event-storming boards only** (`isEventStormingTab`). No other board's
-  behaviour changes at all.
-- **One optional tab field, no migration**: `Tab.esTimeline`. Present = on.
-- **Nothing on an existing board moves** when lanes come on. Lanes are an aid
-  during a drag, not a cage the board is poured into.
-- **The preview never touches the document.** The lit lane is published on a
-  module-level store and rendered; the drop is the first thing that writes.
-- **One snap computation per gesture** — the ghost, the lit lane and the drop
-  share one resolver on each entry point, so the preview cannot lie.
-- **Precedence** (top wins): an open insertion slot (Alt, Phase 5) → free
-  placement (Ctrl/Cmd, spec/60) → dock candidate (Phase 7) → lane + half-note
-  grid → alignment / distribution snap.
-- **Never exported.** Lanes are a drag-time aid, not board content.
+- **The switch lives with the notation.** A labelled toggle row at the top of
+  the palette's Event Storming category, a command-palette entry ("Turn
+  timeline lanes on / off"), and nothing else — no keyboard shortcut in v1,
+  because a board-level mode is not something you flip mid-sentence.
+- **The state is SHARED, on the tab.** `Tab.esTimeline` — present = on. A
+  facilitator turning lanes on turns them on for the room, like the workshop
+  stage visibility that came before it. Storing it per browser would mean two
+  people in the same session dragging onto two different grids.
+- **One optional field, no migration.** The tab body travels as one JSON blob
+  (cloud, offline IndexedDB, export, realtime), so the field reaches every
+  store for free. Absence is the default and always will be.
+- **The pitch is a constant, not a field.** `ES_LANE_PITCH` = 240px: a
+  200px-tall standard note plus a 40px gap, the rhythm of stickies pressed onto
+  a wall in rows. One rhythm per board is the whole point — a board with two
+  lane heights is a board with no lanes.
+- **Notes are CENTRED on their lane**, which is what makes mixed stationery
+  read as one row: the 180-tall wide kinds (policy, external system, aggregate)
+  and the 140-tall actor sit centred against the 200-tall square kinds instead
+  of hanging from a shared top edge.
+- **The grid is HALF a note** (`ES_GRID_CELL` = 100px, half a square note's
+  width), and the note's LEFT EDGE lands on it. That is the whole of "either
+  exactly above each other or staggered": same cell = exactly above, one cell
+  across = staggered by half a note. There is no aligned / staggered mode to
+  choose — two cells per note IS the choice, made per note, by where you drop
+  it.
+- **The origin is set ONCE, when lanes are switched on**: the top-left corner
+  of the board's top-most (then left-most) note, or `(0, 0)` on an empty board.
+  So the lanes arrive already lined up with the work that is there, and
+  `esTimeline.originX / originY` keeps them there. Switching lanes off and on
+  again keeps the stored origin, so the toggle is stable rather than
+  re-anchoring the board to whatever note happens to be top-left by then.
+- **Nothing on the board moves when lanes come on.** Not one note. Lanes are an
+  aid the next drag can use, not a cage the board is poured into — a switch
+  that rearranged an afternoon's work would be unusable, and "snap everything
+  to lanes" is a separate verb nobody has asked for yet.
+- **Lanes are an aid, not a cage, during the drag too.** Each axis snaps only
+  within its own threshold — half the lane gap (20px) on y, half a cell (50px)
+  on x — so a note dropped deliberately between lanes stays where it was put.
+  A note can snap on one axis and not the other.
+- **Invisible until a note is on the move.** No permanent rules ruled across
+  the canvas: while a single note is being dragged (from the palette or already
+  on the board) the lane it would land on lights as a faint band with a centre
+  line, its two neighbours light at half that alpha so the rhythm reads, and a
+  short tick marks the grid column. The bands span the viewport because the
+  lanes are infinite. Everything goes on release.
+- **A single sticky only**, the same rule the Alt insertion follows: a
+  multi-selection, a shape, an icon, an arrow or an image drags exactly as it
+  does on every other board.
+- **Precedence** (top rung wins): an open insertion slot (Alt, Phase 5) → free
+  placement (Cmd/Ctrl, spec/60) → a dock candidate (Phase 7) → lane + grid →
+  the ordinary alignment / distribution snap. Shift-duplicate (spec/80)
+  suppresses the slot and the dock, and the clone still lands on a lane.
+- **The preview never touches the document** (the Phase 5 rule): the lit lane
+  is published on a module-level store and rendered as an overlay; the drop is
+  the first thing that writes.
+- **One snap computation per gesture.** The palette path and the note-drag path
+  each resolve the lane ONCE and the ghost, the overlay and the drop all read
+  that answer. A preview that disagrees with the drop is a lie (spec/58).
+- **A rippled row stays on the grid.** With lanes on, the Alt insertion's shift
+  distance rounds UP to a whole number of grid cells, so opening a slot in a
+  row leaves every note it pushed still sitting on a column.
+- **Never exported.** Lanes are a drag-time aid, not board content: the SVG /
+  PNG export draws none of them. Mermaid / Markdown / Excalidraw ignore the
+  field entirely.
+- **Telemetry:** `Canvas / Used / TimelineLanesOn` and `…Off`, fired BEFORE the
+  commit so the flip that turns something off still reaches the wire.
+- **Not in v1:** no keyboard shortcut, no "snap all notes to lanes" verb, no
+  vertical lanes (the module is horizontal in fact, axis-shaped in form), and
+  no per-lane naming — a lane is a position, not an entity.
 
 ## Phase 7 (planned): anchor docking
 
