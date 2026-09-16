@@ -210,9 +210,7 @@ export function fitBoxes(components: Component[], opts: { imageSize?: number } =
   // When the caller does not say how big the image was, take the extent of
   // the content as a lower bound rather than assuming a size: guessing 1000
   // for a 2048px photo is the same bug wearing a default value.
-  const imageSize =
-    opts.imageSize ??
-    raw.reduce((m, b) => Math.max(m, b.x + b.w, b.y + b.h), 0);
+  const imageSize = opts.imageSize ?? raw.reduce((m, b) => Math.max(m, b.x + b.w, b.y + b.h), 0);
   const gap = Math.max(2, Math.round(imageSize * PEN_STROKE_FRACTION));
   const merged = mergeFragments(raw, gap / MERGE_GAP_FRACTION);
   // Sensor noise and single stray pixels of paper colour, gone before anything
