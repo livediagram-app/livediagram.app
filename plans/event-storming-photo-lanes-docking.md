@@ -1,6 +1,7 @@
 # Event storming: timeline lanes, anchor docking, photo import
 
-**Status:** planned, not started.
+**Status:** SHIPPED on `es-photo-lanes-docking`, awaiting permission to push.
+Outstanding: live vision-model calibration (needs a key, see 3.7).
 **Branch / worktree:** `es-photo-lanes-docking` in `~/Repositories/livediagram-eswall`
 (a worktree off `origin/main`; the main checkout carries another agent's open PR,
 leave it alone).
@@ -942,11 +943,11 @@ Each is one more `ES_DOCKINGS` row plus, where the face is not west / east, a
       (e.g. "structured outputs for vision on Workers").
 - [x] Final quality gate: lint, format:check, typecheck, test and build all
       green; e2e green against the built stack.
-- [ ] `git fetch && git rebase origin/main` (resolve by new commits, never force);
-      re-run the gate; push ONLY when the parent relays operator permission; open
-      the PR with a bullet description referencing spec/139 Phases 6–8, spec/25;
-      title ≤ 52 chars (e.g. `Event storming: lanes, docking, photo import`).
-- [ ] Verify what was committed is what was meant (`git diff origin/main --stat`,
+- [~] `git fetch && git rebase origin/main` (resolve by new commits, never force);
+  re-run the gate; push ONLY when the parent relays operator permission; open
+  the PR with a bullet description referencing spec/139 Phases 6–8, spec/25;
+  title ≤ 52 chars (e.g. `Event storming: lanes, docking, photo import`).
+- [x] Verify what was committed is what was meant (`git diff origin/main --stat`,
       read the spec diffs once more).
 - [ ] Report back: what shipped, what is outstanding (Q16 if no key), the PM2
       processes left running / stopped, and the PR link.
