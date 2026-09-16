@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { ES_NOTE_SIZE_PX, EVENT_STORMING_NOTES } from '@livediagram/diagram';
 import { buildPhotoNotesPrompt, photoNotesSchema } from './ai-photo-prompt';
@@ -8,7 +9,10 @@ import { buildPhotoNotesPrompt, photoNotesSchema } from './ai-photo-prompt';
 // own source the way spec/25's element-vocabulary test does, because a second
 // hand-written copy is exactly what drifts.
 
-const SOURCE = readFileSync(new URL('./ai-photo-prompt.ts', import.meta.url), 'utf8');
+const SOURCE = readFileSync(
+  fileURLToPath(new URL('./ai-photo-prompt.ts', import.meta.url).href),
+  'utf8',
+);
 
 describe('buildPhotoNotesPrompt', () => {
   it('teaches every note kind, with its catalogue colour', () => {
