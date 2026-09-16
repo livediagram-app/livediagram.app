@@ -1,14 +1,21 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
-    "target": "ES2022",
-    "lib": ["ES2022"],
+    // ES2023 is the oldest browser we promise to run in, not a round number:
+    // Next.js 16 compiles to `chrome 111, edge 111, firefox 111, safari 16.4`,
+    // and Safari 16.4 is exactly where ES2023 (`toSorted`, `findLast`, the
+    // change-array-by-copy methods) landed. Raising this to ES2024 would let
+    // `Object.groupBy` and `Promise.withResolvers` compile even though they
+    // need Safari 17.4 — a runtime break with no type error, which is the one
+    // failure mode `lib` exists to prevent. The Workers apps override it,
+    // because workerd is not a browser.
+    "target": "ES2023",
+    "lib": ["ES2023"],
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
-    "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,

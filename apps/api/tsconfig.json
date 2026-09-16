@@ -2,8 +2,11 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "types": ["@cloudflare/workers-types", "node"],
-    "lib": ["ES2022"],
-    "moduleResolution": "Bundler",
+    // Higher than the repo-wide ES2023 floor on purpose: that floor exists for
+    // Safari 16.4, and this code only ever runs on workerd's V8. The types
+    // shared with the browser apps live in `packages/*` and stay at the floor.
+    "lib": ["ES2024"],
+    "target": "ES2024",
     "noEmit": true
   },
   "include": ["src/**/*.ts"],

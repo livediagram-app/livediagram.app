@@ -2,8 +2,9 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "types": ["@cloudflare/workers-types", "node"],
-    "lib": ["ES2022"],
-    "moduleResolution": "Bundler",
+    // Workers runtime, not a browser — see the note in `apps/api/tsconfig.json`.
+    "lib": ["ES2024"],
+    "target": "ES2024",
     "noEmit": true
   },
   "include": ["src/**/*.ts"],

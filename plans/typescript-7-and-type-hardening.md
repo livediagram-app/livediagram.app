@@ -97,9 +97,9 @@ Both aliases go in **every** workspace — pnpm only links a workspace's own bin
 
 ### Phase 2 — tsconfig modernisation
 
-- [ ] Raise `target` / `lib` from ES2022 to ES2024 across the base config and the
+- [x] Raise `target` / `lib` from ES2022 to ES2024 across the base config and the
       per-workspace overrides that restate it
-- [ ] Drop options TS 7 no longer honours or now defaults, keeping only those
+- [x] Drop options TS 7 no longer honours or now defaults, keeping only those
       that document a real decision
 
 ### Phase 3 — zero- and low-cost strictness flags
