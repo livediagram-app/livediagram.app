@@ -183,7 +183,7 @@ test('a dragged note takes the slot two events suggest', async ({ page, pageErro
 
   // The note that will do the travelling is the right-most of the row.
   const travellerId = row[row.length - 1]!.id;
-  const dragBy = async (dxCanvas: number, dyCanvas: number) => {
+  const dragBy = async (dxCanvas: number, dyCanvas: number, opts = { expectGhost: true }) => {
     const box = (await notes.nth(2).boundingBox())!;
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
     await page.mouse.down();
@@ -193,8 +193,10 @@ test('a dragged note takes the slot two events suggest', async ({ page, pageErro
       { steps: 14 },
     );
     // The offer is on screen BEFORE the drop — that is the whole point of a
-    // capture radius this wide.
-    await expect(page.locator('[data-testid="timeline-lane-ghost"]')).toBeVisible();
+    // capture radius this wide. When nothing is offered, nothing is drawn.
+    const ghost = page.locator('[data-testid="timeline-lane-ghost"]');
+    if (opts.expectGhost) await expect(ghost).toBeVisible();
+    else await expect(ghost).toHaveCount(0);
     await page.mouse.up();
   };
 
@@ -214,6 +216,18 @@ test('a dragged note takes the slot two events suggest', async ({ page, pageErro
   after = await boardTab(page);
   moved = stickies(after).find((el) => el.id === travellerId)!;
   expect(moved.x).toBeCloseTo(brick, 6);
+
+  // 3. NOT OFFERED: back into the row above, aimed 10px past the first
+  //    event's right edge — a touching position, which is in no rhythm. The
+  //    note stays exactly where the hand left it.
+  const touching = row[0]!.x + row[0]!.width + 10;
+  await dragBy(touching - moved.x, laneTopY(0) + 4 - moved.y, { expectGhost: false });
+  after = await boardTab(page);
+  moved = stickies(after).find((el) => el.id === travellerId)!;
+  // Where the hand left it, give or take the pointer's own rounding — and
+  // emphatically NOT snapped flush against the event beside it.
+  expect(Math.abs(moved.x - touching)).toBeLessThan(4);
+  expect(moved.x).not.toBeCloseTo(row[0]!.x + row[0]!.width, 1);
 
   // Neither event above moved to make room for either drop.
   for (const el of [row[0]!, row[1]!]) {

@@ -70,12 +70,13 @@ describe('resolveBoxedMove — timeline lanes', () => {
     expect(out.lane!.ghost).toMatchObject({ x: brick });
   });
 
-  it('lands a WIDE note on its left edge, staggered by the events above it', () => {
-    // The rhythm belongs to the row that is already there: a 300-wide policy
-    // staggers by half a SQUARE note plus half a gutter, not by half of itself.
+  it('centres a WIDE note on the gap between the events above it', () => {
+    // Across lanes the brick is CENTRED on the gap, so the note's own width
+    // decides where its left edge falls: the gap between the two events runs
+    // 200..272, centre 236, and a 300-wide policy centred there starts at 86.
     const pair = [note('l', 0, 0), note('r', 200 + ES_NOTE_GAP, 0)];
     const wide: ShapeBounds = { x: 1000, y: 1000, width: 300, height: 180 };
-    const brick = (200 + ES_NOTE_GAP) / 2;
+    const brick = 200 + ES_NOTE_GAP / 2 - 150;
     const out = resolveBoxedMove({
       elements: [
         { id: 'drag', type: 'sticky', x: 1000, y: 1000, width: 300, height: 180 } as Element,
@@ -117,22 +118,8 @@ describe('resolveBoxedMove — timeline lanes', () => {
     expect(out.distGuides).toEqual([]);
   });
 
-  it('leaves the axis the slot did not claim to alignment', () => {
-    // On a lane, but far from every slot the board is offering: the lane
-    // takes y and the ordinary alignment snap is still free to take x.
-    const out = resolve(1304 - START.x, ES_LANE_PITCH + 7 - START.y, {
-      elements: [note('drag', 1000, 1000), note('n', 900, 0), note('far', 1300, ES_LANE_PITCH)],
-    });
-    expect(START.y + out.ty).toBe(laneCentre(1, TIMELINE) - 100);
-    expect(START.x + out.tx).toBe(1300);
-    expect(out.lane).toMatchObject({ laneIndex: 1 });
-    expect(out.lane!.ghost).toBeUndefined();
-    expect(out.guides.some((g) => g.axis === 'x')).toBe(true);
-  });
-
   it('offers nothing at all when no lane claims the note', () => {
-    // y parked between two lanes: this is an ordinary board again, and x is
-    // whatever the ordinary alignment snap makes of it.
+    // y parked between two lanes: nothing is offered, and x is the hand's.
     const midY = ES_LANE_PITCH + 100;
     const out = resolve(4 - START.x, midY - START.y, {
       elements: [note('drag', 1000, 1000), note('n', 0, midY)],

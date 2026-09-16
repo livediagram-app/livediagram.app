@@ -194,6 +194,50 @@ export type LaneCandidate = {
 const sameRow = (a: { y: number; height: number }, b: { y: number; height: number }): boolean =>
   Math.min(a.y + a.height, b.y + b.height) - Math.max(a.y, b.y) > Math.min(a.height, b.height) / 2;
 
+// THE RHYTHM, in one place.
+//
+// Where a note may sit along a row that already has one in it: the first slot
+// is the neighbour's own right edge plus a gutter, and every slot after it is
+// one more empty place with a gutter on both sides. So a wide note simply
+// occupies a longer stretch and the rhythm resumes after it, and the empty
+// places between notes are sized by the note being placed.
+//
+// The two facts this encodes — the first step is the NEIGHBOUR's silhouette,
+// every step after it is the PLACED note's — are the ones to revisit if the
+// notation's stationery should tile differently. They are deliberately not
+// spread across the file.
+const RHYTHM_SLOTS_EACH_WAY = 4;
+
+function rhythmSlots(
+  neighbour: { x: number; width: number },
+  width: number,
+  gap: number,
+): number[] {
+  const step = width + gap;
+  const firstRight = neighbour.x + neighbour.width + gap;
+  const firstLeft = neighbour.x - gap - width;
+  const out: number[] = [];
+  for (let k = 0; k < RHYTHM_SLOTS_EACH_WAY; k += 1) {
+    out.push(firstRight + k * step);
+    out.push(firstLeft - k * step);
+  }
+  return out;
+}
+
+// Where a note sits when it is centred on the GAP beside a neighbour — the
+// brick, read across lanes. Two notes a gutter apart share one gap, and both
+// of them name its centre, so the pair's brick falls out of the same rule as a
+// lone note's.
+function gutterCentres(
+  neighbour: { x: number; width: number },
+  width: number,
+  gap: number,
+): number[] {
+  const rightCentre = neighbour.x + neighbour.width + gap / 2;
+  const leftCentre = neighbour.x - gap / 2;
+  return [rightCentre - width / 2, leftCentre - width / 2];
+}
+
 // Every slot the board is offering this note, from the notes within two lanes
 // of it. Existing notes never move to make one — a candidate is a place that
 // is already free.
@@ -232,17 +276,16 @@ export function laneCandidates(
   for (const note of live) {
     if (Math.abs(note.y + note.height / 2 - centreY) > reach) continue;
     if (sameRow(bounds, note)) {
-      // Along the row: one clear gutter either side.
-      offer(note.x + note.width + gap, 'gutter', note.id);
-      offer(note.x - gap - bounds.width, 'gutter', note.id);
+      // ALONG THE ROW: the rhythm, and only the rhythm. Nothing touching,
+      // nothing at half a pitch — in one row there is no such position.
+      for (const x of rhythmSlots(note, bounds.width, gap)) offer(x, 'gutter', note.id);
       continue;
     }
-    // The row next door: the column under it, and the brick-pattern stagger
-    // either side of that column.
+    // THE ROW NEXT DOOR: squarely under (or over) the note, or squarely under
+    // the GAP beside it. Nothing else — a neighbouring row says which columns
+    // line up, not where along this row a note may sit.
     offer(note.x, 'aligned', note.id);
-    const half = (note.width + gap) / 2;
-    offer(note.x + half, 'staggered', note.id);
-    offer(note.x - half, 'staggered', note.id);
+    for (const x of gutterCentres(note, bounds.width, gap)) offer(x, 'staggered', note.id);
   }
   return out;
 }

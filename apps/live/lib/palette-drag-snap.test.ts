@@ -168,9 +168,11 @@ describe('paletteDragSnapAt — timeline lanes', () => {
     expect(out).toEqual({ dx: 0, dy: 0, guides: [], distGuides: [], lane: null });
   });
 
-  it('falls back to ordinary alignment when no lane claims the note', () => {
+  it('stands every other snap down: no lane, no slot, no guides', () => {
     // A neighbour whose TOP edge sits mid-way between two lanes: no lane can
-    // claim y, so no slots are offered and the board behaves as any other.
+    // claim y, so nothing is offered — and on a lanes board the ordinary
+    // alignment snap does not step in, because it offers positions the
+    // rhythm does not have.
     const neighbourY = ES_LANE_PITCH + 100;
     const out = paletteDragSnapAt({
       canvasX: 900 + 100,
@@ -180,8 +182,8 @@ describe('paletteDragSnapAt — timeline lanes', () => {
       timeline: TIMELINE,
     });
     expect(out.lane).toBeNull();
-    // Alignment took both axes, exactly as it would on any other board.
-    expect(out.guides.length).toBeGreaterThan(0);
-    expect(out.guides.some((g) => g.axis === 'y')).toBe(true);
+    expect(out.dx).toBe(0);
+    expect(out.dy).toBe(0);
+    expect(out.guides).toEqual([]);
   });
 });

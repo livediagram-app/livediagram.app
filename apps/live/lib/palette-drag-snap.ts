@@ -69,16 +69,22 @@ export function paletteDragSnapAt({
         }),
       )
     : null;
-  if (laneSnap && gutterSnap) {
+  // On a lanes board the lane resolver is the ONLY source of x: the ordinary
+  // alignment and distribution snaps were adding places the rhythm does not
+  // have (flush against a neighbour, on top of it, half-way along), and the
+  // note-drag path gates them off for the same reason.
+  if (timeline) {
     return {
-      dx: gutterSnap.x - candidate.x,
-      dy: laneSnap.y - candidate.y,
+      dx: gutterSnap ? gutterSnap.x - candidate.x : 0,
+      dy: laneSnap ? laneSnap.y - candidate.y : 0,
       guides: [],
       distGuides: [],
-      lane: {
-        laneIndex: laneSnap.laneIndex,
-        ghost: { x: gutterSnap.x, y: laneSnap.y, width, height },
-      },
+      lane: laneSnap
+        ? {
+            laneIndex: laneSnap.laneIndex,
+            ...(gutterSnap ? { ghost: { x: gutterSnap.x, y: laneSnap.y, width, height } } : {}),
+          }
+        : null,
     };
   }
   const snap = snapToAlignment(candidate, elements, NO_EXCLUDE, ALIGN_SNAP_THRESHOLD);

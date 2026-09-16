@@ -13,6 +13,7 @@ import {
   laneTop,
   captureCandidate,
   laneCandidates,
+  type LaneCandidate,
   prevailingNoteGap,
   snapToLane,
   visibleLaneIndices,
@@ -152,78 +153,118 @@ describe('the gutter between notes', () => {
   });
 });
 
-// Two events side by side imply places a third note can go, and the board
-// should OFFER them: the slot after the pair, the slot before it, the columns
-// under each event, and the brick-pattern stagger under their gutter.
-describe('the slots two events suggest', () => {
+// THE PLACEMENT RULES (spec/139 Phase 6 "Placement rules"), stated by the
+// operator and asserted here line by line — including the positions that must
+// NOT be offered, which is where every round of this has gone wrong.
+describe('the slots a lane offers', () => {
   const square = { width: 200, height: 200 };
   const GAP = ES_NOTE_GAP;
-  // A pair in lane 0 at the board's own gutter.
-  const pair = [note({ id: 'left', x: 0, y: 0 }), note({ id: 'right', x: 200 + GAP, y: 0 })];
-  // Where a note dragged in the lane BELOW would sit.
+  const PITCH = 200 + GAP;
+  const lone = [note({ id: 'first', x: 0, y: 0 })];
+  const pair = [note({ id: 'left', x: 0, y: 0 }), note({ id: 'right', x: PITCH, y: 0 })];
+  const inRow = (x: number) => ({ x, y: 0, ...square });
   const below = (x: number) => ({ x, y: ES_LANE_PITCH, ...square });
-  const beside = (x: number) => ({ x, y: 0, ...square });
-  const xsOf = (cs: { x: number }[]) => [...new Set(cs.map((c) => c.x))].sort((a, b) => a - b);
+  const xs = (cs: LaneCandidate[], kind?: LaneCandidate['kind']) =>
+    [...new Set(cs.filter((c) => !kind || c.kind === kind).map((c) => c.x))].sort((a, b) => a - b);
 
-  it('offers one gutter AFTER the pair, in the same lane', () => {
-    const cs = laneCandidates(beside(2 * (200 + GAP)), pair, { gap: GAP });
-    expect(xsOf(cs.filter((c) => c.kind === 'gutter'))).toContain(2 * (200 + GAP));
+  describe('in the SAME lane', () => {
+    it('offers the rhythm: right after with the gap, then one empty place on', () => {
+      const cs = laneCandidates(inRow(400), lone, { gap: GAP });
+      expect(xs(cs)).toContain(PITCH);
+      expect(xs(cs)).toContain(2 * PITCH);
+    });
+
+    it('offers the same rhythm to the left', () => {
+      const cs = laneCandidates(inRow(-400), lone, { gap: GAP });
+      expect(xs(cs)).toContain(-PITCH);
+      expect(xs(cs)).toContain(-2 * PITCH);
+    });
+
+    it('NEVER offers a touching position', () => {
+      const cs = laneCandidates(inRow(210), lone, { gap: GAP });
+      expect(xs(cs)).not.toContain(200);
+      expect(xs(cs)).not.toContain(-200);
+    });
+
+    it('NEVER offers one gap plus one sticky — that is a note edge, not a slot', () => {
+      // The operator's case: from the first note's right edge, gap + sticky
+      // lands flush against where the next note ends. It is in no rhythm.
+      const cs = laneCandidates(inRow(460), lone, { gap: GAP });
+      expect(xs(cs)).not.toContain(200 + GAP + 200);
+    });
+
+    it('NEVER offers half a pitch in the same lane', () => {
+      const cs = laneCandidates(inRow(136), lone, { gap: GAP });
+      expect(xs(cs)).not.toContain(PITCH / 2);
+      expect(xs(cs)).not.toContain(200 + GAP / 2);
+    });
+
+    it('never offers a slot that lands on a note already there', () => {
+      // Between two notes a gutter apart there is no room: opening the row is
+      // the Alt insertion, a different verb.
+      const cs = laneCandidates(inRow(120), pair, { gap: GAP });
+      expect(cs.every((c) => c.x <= -PITCH || c.x >= 2 * PITCH)).toBe(true);
+    });
   });
 
-  it('offers one gutter BEFORE the pair, in the same lane', () => {
-    const cs = laneCandidates(beside(-(200 + GAP)), pair, { gap: GAP });
-    expect(xsOf(cs.filter((c) => c.kind === 'gutter'))).toContain(-(200 + GAP));
+  describe('in an ADJACENT lane', () => {
+    it('offers exactly above or below a note', () => {
+      expect(xs(laneCandidates(below(10), lone, { gap: GAP }), 'aligned')).toEqual([0]);
+    });
+
+    it('offers exactly above or below a GAP, centred on it', () => {
+      // The gap right of the lone note runs 200..272, centre 236: a 200-wide
+      // note centred there starts at 136.
+      expect(xs(laneCandidates(below(130), lone, { gap: GAP }), 'staggered')).toContain(136);
+    });
+
+    it('gives the pair ONE brick between them, named by both notes', () => {
+      const cs = laneCandidates(below(130), pair, { gap: GAP });
+      expect(xs(cs, 'staggered')).toContain(136);
+    });
+
+    it('offers NOTHING else across lanes — no rhythm slots from the row above', () => {
+      const cs = laneCandidates(below(10), lone, { gap: GAP });
+      expect(xs(cs)).toEqual([-136, 0, 136]);
+    });
   });
 
-  it('never offers the space BETWEEN the two — that is the Alt gesture', () => {
-    // A slot whose footprint would land on top of a note that is already
-    // there is not a slot; opening the row is a different verb (Phase 5).
-    const cs = laneCandidates(beside(120), pair, { gap: GAP });
-    for (const c of cs.filter((k) => k.kind === 'gutter')) {
-      expect(c.x, `gutter at ${c.x}`).not.toBe(200 + GAP - 200 - GAP + 200);
-    }
-    expect(cs.some((c) => c.x > 0 && c.x < 200 + GAP)).toBe(false);
+  describe('with nothing in reach', () => {
+    it('offers nothing at all, so the note is free within its lane', () => {
+      expect(laneCandidates(below(0), [note({ id: 'f', x: 0, y: 4 * ES_LANE_PITCH })], {})).toEqual(
+        [],
+      );
+      expect(laneCandidates(inRow(0), [], {})).toEqual([]);
+    });
   });
 
-  it('offers the ALIGNED column under each event of the pair', () => {
-    const cs = laneCandidates(below(10), pair, { gap: GAP });
-    expect(xsOf(cs.filter((c) => c.kind === 'aligned'))).toEqual([0, 200 + GAP]);
-  });
+  describe('non-square stationery, until the operator rules otherwise', () => {
+    const wide = { width: 300, height: 180 };
+    const small = { width: 140, height: 140 };
 
-  it('offers the STAGGER: centred under the pair gutter, the brick pattern', () => {
-    const cs = laneCandidates(below(10), pair, { gap: GAP });
-    // left.x + (left.width + gutter) / 2 — half a note plus half a gutter on.
-    expect(xsOf(cs.filter((c) => c.kind === 'staggered'))).toContain((200 + GAP) / 2);
-  });
+    it('resumes the rhythm after a WIDE neighbour own right edge', () => {
+      const wideNeighbour = [note({ id: 'w', x: 0, y: 0, width: 300, height: 180 })];
+      const cs = laneCandidates({ x: 400, y: 0, ...square }, wideNeighbour, { gap: GAP });
+      expect(xs(cs)).toContain(300 + GAP);
+      expect(xs(cs)).toContain(300 + GAP + PITCH);
+    });
 
-  it('staggers a LONE event both ways', () => {
-    const lone = [note({ id: 'e', x: 400, y: 0 })];
-    const cs = laneCandidates(below(400), lone, { gap: GAP });
-    expect(xsOf(cs.filter((c) => c.kind === 'staggered'))).toEqual([
-      400 - (200 + GAP) / 2,
-      400 + (200 + GAP) / 2,
-    ]);
-  });
+    it('steps by the PLACED note own width for the empty places after it', () => {
+      const cs = laneCandidates({ x: 400, y: 0, ...wide }, lone, { gap: GAP });
+      expect(xs(cs)).toContain(200 + GAP);
+      expect(xs(cs)).toContain(200 + GAP + 300 + GAP);
+    });
 
-  it('measures the stagger from the EVENTS silhouette, not the dragged note', () => {
-    // A 300-wide policy under two square events: it aligns on its LEFT edge,
-    // and the stagger is still half a square note plus half a gutter, because
-    // the rhythm belongs to the row above.
-    const policy = { x: 10, y: ES_LANE_PITCH, width: 300, height: 180 };
-    const cs = laneCandidates(policy, pair, { gap: GAP });
-    expect(xsOf(cs.filter((c) => c.kind === 'aligned'))).toEqual([0, 200 + GAP]);
-    expect(xsOf(cs.filter((c) => c.kind === 'staggered'))).toContain((200 + GAP) / 2);
-  });
+    it('aligns a wide note on its LEFT edge across lanes', () => {
+      const cs = laneCandidates({ x: 10, y: ES_LANE_PITCH, ...wide }, lone, { gap: GAP });
+      expect(xs(cs, 'aligned')).toEqual([0]);
+    });
 
-  it('ignores notes more than two lanes away', () => {
-    // Dragging in lane 1, with the only note three lanes below it.
-    const faraway = [note({ id: 'f', x: 0, y: 4 * ES_LANE_PITCH })];
-    expect(laneCandidates(below(0), faraway, { gap: GAP })).toEqual([]);
-  });
-
-  it('ignores the notes being dragged', () => {
-    const cs = laneCandidates(below(10), pair, { gap: GAP, exclude: new Set(['left', 'right']) });
-    expect(cs).toEqual([]);
+    it('centres a SMALL note on the gap it is offered, whatever its width', () => {
+      const cs = laneCandidates({ x: 150, y: ES_LANE_PITCH, ...small }, lone, { gap: GAP });
+      // The gap centre is 236; a 140-wide note centred there starts at 166.
+      expect(xs(cs, 'staggered')).toContain(166);
+    });
   });
 });
 

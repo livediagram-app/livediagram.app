@@ -112,6 +112,40 @@ export function resolveBoxedMove({
         }),
       )
     : null;
+  // ON A LANES BOARD, THE LANE RESOLVER IS THE ONLY SOURCE OF X.
+  //
+  // The ordinary alignment and distribution snaps were quietly adding places
+  // the rhythm does not have — a note landing flush against its neighbour's
+  // right edge (left-to-right edge alignment), or sitting exactly on top of
+  // it, or half-way along. The author reads those as the board offering
+  // positions it should not. With lanes on, for the single note this resolver
+  // is gated to, x is the rhythm's answer or the hand's own.
+  if (timeline) {
+    return {
+      tx: gutterSnap ? dx + (gutterSnap.x - candidate.x) : dx,
+      ty: laneSnap ? dy + (laneSnap.y - candidate.y) : dy,
+      guides: [],
+      distGuides: [],
+      lane: laneSnap
+        ? {
+            laneIndex: laneSnap.laneIndex,
+            ...(gutterSnap
+              ? {
+                  // What the author sees BEFORE dropping: the footprint the
+                  // note is about to take. A capture radius this wide is only
+                  // fair if the offer is visible.
+                  ghost: {
+                    x: gutterSnap.x,
+                    y: laneSnap.y,
+                    width: candidate.width,
+                    height: candidate.height,
+                  },
+                }
+              : {}),
+          }
+        : null,
+    };
+  }
   if (laneSnap && gutterSnap) {
     // Both axes answered: skip the alignment / distribution scans entirely
     // rather than compute answers nothing will use.

@@ -442,40 +442,48 @@ enabled }`. A facilitator turning lanes on turns them on for the room, like
   the lane gap (20px) on y, so a note parked deliberately between two lanes
   stays there; 12px on x, a real threshold, so a note placed in open space
   stays exactly where the hand put it.
-- **X is SUGGESTED by the notes already there.** Two events side by side imply
-  places a third note can go, and with lanes on the board offers them. From the
-  notes within two lanes of the cursor (existing notes never move to make room):
-  - **gutter** — one clear gutter along the SAME row, after the pair's right
-    note or before its left one. The space BETWEEN two events is never offered:
-    opening a row is the Alt insertion (Phase 5), a different verb.
-  - **aligned** — in the row next door, squarely under (or over) an event's
-    left edge: the column the author can see, whatever the widths involved are.
-  - **staggered** — the BRICK pattern: centred under the gutter between the two
-    events, so its left edge sits at `left.x + (left.width + gutter) / 2`. A
-    lone event offers the stagger on both sides. The offset is measured from the
-    NEIGHBOUR's silhouette, never the dragged note's, so a 300-wide policy takes
-    its place under two square events on the square rhythm rather than inventing
-    a third one.
-- **A suggestion, with a real capture radius.** A candidate within HALF A
-  STANDARD NOTE (100px) of the dragged note's left edge takes it, provided a
-  lane has claimed y; nearest wins, and no kind outranks another — an edge and
-  a stagger rank equal, distance decides. Beyond that the hand's x is kept
-  exactly. The first version of this used a 12px tolerance, which is a snap and
-  not a suggestion: nobody lands within 12px by accident, so in practice the
-  board never offered the slots its own notes implied.
-- **And the offer is DRAWN.** While a candidate is live, the exact footprint the
-  drop will take is outlined on the lit lane — dashed, in the same accent as the
-  lane bands, the palette ghost's visual language. A capture radius this wide is
-  only fair if the author can see which slot it is while the note is still in
-  the air, and the preview and the drop read the same resolved answer (spec/58).
-  Both drag paths (palette and a note already on the board) publish it to the
-  one preview store.
-- **The gutter is MEASURED, not assumed.** `prevailingNoteGap` takes the median
-  clear space between notes sitting side by side in the same row, so a board
-  whose author works at 40 keeps 40; `ES_NOTE_GAP` (72, the number the template
-  and the ripple already used) is the fallback when there is nothing to
-  measure. A docked pair's 16px seam is excluded on purpose — a seam is a join,
-  not a gutter, and counting it would drag the whole board's rhythm towards it.
+
+### Placement rules
+
+The rules a single note follows on a lanes-on board. This table is the contract;
+it is updated in the SAME commit as any change to it, and the rulings below
+record who asked for what.
+
+| Where                                | What is offered                                                                                                                                                                                                                           |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Same lane, no neighbour in reach** | Nothing. The note is free within the lane.                                                                                                                                                                                                |
+| **Same lane, a neighbour in reach**  | The RHYTHM only: the neighbour's right edge plus a gutter, then one more empty place each step (`x = n.x + n.width + gutter + k × (w + gutter)`, `k ≥ 0`), and the mirror to its left.                                                    |
+| **Same lane — never offered**        | Touching (`n.x ± w`). One gap plus one sticky (`n.x + n.width + gutter + w`) — that is a note's edge, not a place. Half a pitch. Anything landing on a note that is already there (opening a row is the Alt insertion, a different verb). |
+| **Adjacent lane**                    | Exactly above / below a NOTE (left edges aligned), or exactly above / below a GAP (centred on it — the brick). Nothing else: a neighbouring row says which columns line up, not where along this row a note may sit.                      |
+| **Every other x snap**               | Stands down. On a lanes board the lane resolver is the only source of x — the ordinary alignment and distribution rungs were adding exactly the positions the rules above exclude.                                                        |
+| **Capture**                          | Half a standard note (100px) on x, the lane tolerance on y; nearest candidate wins, no kind outranks another; the slot is drawn before the drop.                                                                                          |
+| **Precedence**                       | An open Alt slot, then Cmd/Ctrl free placement, then a dock candidate, then these rules.                                                                                                                                                  |
+
+**Non-square stationery** (provisional, awaiting a ruling): a wide or small note
+takes a slot like any other. The first slot after a neighbour is that
+NEIGHBOUR's right edge plus a gutter, so a wide note simply occupies a longer
+stretch and the rhythm resumes after it; the empty places after that are sized
+by the note being PLACED. Across lanes it aligns on its left edge, and its brick
+is centred on the gap, so its own width decides where its left edge falls. All
+of it lives in `rhythmSlots` and `gutterCentres` in
+`packages/diagram/src/event-storming-lanes.ts`, so a ruling is a small change.
+
+**Rulings** (each one an operator input, and what changed):
+
+- **2026-09-16 — "the lattice does not match my rows"**: x was a half-note
+  lattice (100px columns) which could not express the board's own 72px gutter,
+  so a note dragged above a row landed 28px right, then 44px left. Replaced with
+  neighbour-relative placement.
+- **2026-09-16 — "two events next to each other do not suggest the gap"**: the
+  neighbour tolerance was 12px, a snap rather than a suggestion, so in practice
+  nothing was offered. Capture radius widened to half a note and the target
+  footprint is now DRAWN before the drop.
+- **2026-09-16 — "too many snapping points"**: same-lane offers were a single
+  gutter each side, while the alignment and distribution rungs quietly added
+  touching, on-top and half-way positions. Same lane is now the rhythm only
+  (whole steps), the half-pitch is gone from a single lane, and every other x
+  rung stands down on a lanes board. The brick survives across lanes only.
+
 - **The pitch is a constant, not a field.** `ES_LANE_PITCH` = 240px: a
   200px-tall standard note plus a 40px gap, the rhythm of stickies pressed onto
   a wall in rows. One rhythm per board is the whole point — a board with two
