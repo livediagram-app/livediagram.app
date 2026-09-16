@@ -503,30 +503,75 @@ overlay's ink is the ALIGNMENT GUIDES' own derivation
 (`elementStroke ?? deriveTextColorForBg(backgroundColor)`) rather than a second
 vocabulary, which is also what keeps it legible on a dark wall.
 
-## Phase 7 (planned): anchor docking
+## Phase 7 (shipped): anchor docking
 
-_Stub — filled in as the phase lands._
+The notation's own adjacencies become something the board KNOWS, rather than
+something the eye infers from two notes being near each other. A **Command** can
+be added standalone, **docked to the Domain Event it triggers**, or **docked to
+the Policy that issues it**; a **Policy** can be standalone or **docked to the
+Domain Event it reacts to**. A docked pair sits with a small seam between the
+two notes and two anchor dots — one on each facing edge — in that seam.
 
-The notation's own adjacencies become first-class. A **Command** can be added
-standalone, docked to the **Domain Event** it triggers, or docked to the
-**Policy** that issues it; a **Policy** can be standalone or docked to the
-**Domain Event** it reacts to. A docked pair sits with a small seam between
-the two notes and two visual anchor points — one dot on each facing edge — in
-that seam. A host shows a small anchor affordance on each dockable face;
-clicking it adds the compatible note already docked and opens it for typing.
-Dragging a note near a compatible face docks it magnetically; dragging it away
-undocks it, and moving a host carries everything docked to it.
+- **The three pairings, and their sides, are a CATALOGUE** (`ES_DOCKINGS`), one
+  row per pairing, because the sides are notation rather than geometry and a
+  workshop that reads its wall the other way should cost one line:
 
-Settled before anything was built:
+  | docked note | host         | side   | reads as                                 |
+  | ----------- | ------------ | ------ | ---------------------------------------- |
+  | Command     | Domain event | before | the intent, then what happened           |
+  | Command     | Policy       | after  | "whenever X then Y", Y being the command |
+  | Policy      | Domain event | after  | the event, then the reaction it fires    |
 
-- **Event-storming boards only**, and no new element type: one optional field,
-  `StickyElement.esDock`, stored on the DOCKED note and pointing at its host.
-- **The docked note holds the relation**, so a host can be deleted without a
-  write to its neighbours; a docked note whose host is gone becomes standalone.
-- **Magnets, not connectors**: the two dots say "these two are one phrase",
-  and no line is drawn between them.
-- **One undoable step** for every dock, undock and anchor-add, through the
-  ordinary commit choke point.
+  Those are Brandolini's own placements: a command sits to the LEFT of the event
+  it causes (cause before effect, along the same left-to-right time axis the
+  board already means), and both a policy and the command a policy issues sit to
+  the RIGHT of what they follow.
+
+- **The docked note holds the relation** (`StickyElement.esDock = { hostId,
+side }`), and the host holds nothing. So deleting a host needs no write to its
+  neighbours, a copy of a docked note alone is simply a new piece of paper, and
+  every reader derives the cluster the same way. A docked note whose host has
+  gone becomes standalone on the next commit that notices
+  (`stripDanglingDocks`, the `freezeDanglingGroupEnds` precedent).
+- **Magnets, not connectors.** The two dots in the seam say "these two are one
+  phrase"; nothing is drawn between them. A line would be an arrow, and an arrow
+  on this board means something else.
+- **Three ways to dock, one result.** Click a host's anchor affordance and the
+  compatible note is added already docked and open for typing; drag a note
+  within `ES_DOCK_SNAP_PX` of a compatible free face and it docks on the drop;
+  drag a docked note away and it undocks on the drop. All three commit as ONE
+  undoable step through the ordinary choke point.
+- **The affordances earn their place.** A hollow dot on each FREE dockable face
+  of a hovered or selected host — at most two per host, never more, each naming
+  its act ("Add a command before this event"). Spec/139 retired the four
+  quick-connect pluses on this board as chrome; these are different in kind,
+  because each one is a sentence of the notation rather than a generic "connect
+  something here".
+- **A host carries its cluster.** Moving a host moves everything docked to it;
+  a docked note moved on its own leaves the host where it is (and undocks if it
+  goes far enough). A multi-selection that already contains both never
+  double-moves the docked note.
+- **Precedence**: a dock candidate sits BELOW an open insertion slot and below
+  free placement (Cmd/Ctrl), and ABOVE the lanes and the alignment snap. Shift
+  (drag-duplicate) suppresses docking entirely.
+- **Lanes and docking agree by construction**: a docked note takes its y from
+  its HOST (centred on it), so the host is what lands on the lane and the
+  cluster stays one row.
+- **The insertion ripple treats a cluster as one thing** (the group precedent):
+  it travels whole when the HOST's left edge is at or after the insertion
+  point, and the seam is never offered as a gap to insert into — it is not a
+  gap, it is a join.
+- **Exports paint the seam** (the caps precedent: notation paints wherever a
+  note paints), so an SVG or PNG of the board carries the relation. Mermaid /
+  Markdown / Excalidraw ignore it.
+- **Telemetry:** `Canvas / Used / DockAdd` (added from an anchor),
+  `Canvas / Used / Dock` and `Canvas / Used / Undock` (by drag or menu),
+  alongside the ordinary `Element / Added / Sticky` when a note is minted.
+- **Not in v1:** the further pairings the notation has (actor under a command,
+  read model before it, aggregate above a command–event pair, external system
+  before an event, hotspot on a corner) — each needs a `side` the geometry
+  does not know yet, and the aggregate needs a two-host relation. They are
+  listed in the plan so nobody re-derives them.
 
 ## Phase 8 (planned): import a photo of the wall
 
