@@ -134,23 +134,44 @@ order is spec → pure model → editor wiring → surfaces → verification →
   5. alignment + distribution snap (today's behaviour).
      Shift (drag-duplicate, spec/80) suppresses slot and dock, and lanes still
      apply to the clone.
-- **Vision provider: OpenAI, already wired.** `OPENAI_API_KEY` gates the whole
-  feature exactly as spec/25 does; when absent there is no photo UI at all. Chat
-  Completions with an `image_url` data URL and **structured outputs**
-  (`response_format: { type: 'json_schema', strict: true }`), **non-streaming**.
-  Optional `OPENAI_VISION_MODEL` var, default `OPENAI_MODEL ?? 'gpt-4o'`. No new
-  provider, no Workers AI.
-- **The photo is never stored.** Not R2, not D1, not IndexedDB, not the change
-  log. The client downscales it (longest edge ≤ 2048px, JPEG q0.85 via a canvas
-  re-encode, honouring EXIF orientation with
-  `createImageBitmap(file, { imageOrientation: 'from-image' })`) — which also
-  drops EXIF — and sends the bytes to the api route, which forwards them to the
-  model and discards them. The dialog says so in one line.
-- **Perception is the model's job; reconciliation is ours.** The model returns
-  what it SEES (text, colour → kind, silhouette, normalised box, row and order).
-  Matching against the board and placement are pure, deterministic,
-  unit-tested TypeScript in `@livediagram/diagram`. Never ask the model "which of
-  these are already on the board".
+- **The model is pluggable; the geometry is ours.** The api worker talks to ANY
+  OpenAI-compatible chat-completions endpoint: `AI_BASE_URL` (default
+  `https://api.openai.com/v1`, the hosted site sets Gemini's
+  `https://generativelanguage.googleapis.com/v1beta/openai`), `AI_API_KEY` (the
+  one gate: absent = every AI surface hidden, the spec/25 self-host story),
+  `AI_MODEL` (default `gpt-4o`, hosted sets the current Gemini Flash id) and
+  `AI_VISION_MODEL` (default `AI_MODEL`). The `OPENAI_*` names are REMOVED, not
+  aliased — a name that says OpenAI while pointing at Gemini is a lie, and the
+  repo's rule is no compat layers. The existing assistant route (Ask / Clean)
+  moves to the same client, so one key drives both. Requests use
+  `response_format: { type: 'json_object' }` plus our own strict validation
+  (universally supported; strict `json_schema` is not, and we validate anyway).
+  Deploy step for the operator, named in the PR description: `wrangler secret put
+AI_API_KEY`, and `AI_BASE_URL` + `AI_MODEL` as `[vars]`; the old
+  `OPENAI_API_KEY` secret can be deleted.
+- **Detection in the browser, reading in the model.** A new package
+  `@livediagram/sticky-vision` finds the stickies in a photo with classical CV
+  (colour classification against the catalogue fills, connected components,
+  box fitting, same-colour blob splitting, row clustering) and produces the
+  geometry the reconciler needs. The model only reads text from crops, so its
+  notoriously weak coordinate sense never enters the layout, the payload shrinks,
+  a face in the background never leaves the browser, and a fully in-browser
+  reader is a drop-in later. Kind comes from the paper colour WE measured; the
+  model is never asked what colour a note is.
+- **The photo is never stored, and never even sent.** Not R2, not D1, not
+  IndexedDB, not the change log, not the api. The browser decodes it
+  (`createImageBitmap(file, { imageOrientation: 'from-image' })`, honouring
+  EXIF), works on a downscaled copy for detection, cuts each detected sticky out
+  of the full-resolution bitmap, re-encodes each crop as a small JPEG (which drops
+  EXIF), and sends ONLY the crops to `POST /api/ai/read-notes`, which forwards
+  them to the model and discards them. The palette row's tooltip says so in one
+  line.
+- **Detection and reconciliation are ours; only reading is the model's.** The
+  detector returns what it MEASURED (box, colour → kind, silhouette, row, order);
+  the model returns the TEXT on each crop, verbatim, or marks it illegible.
+  Matching against the board and placement stay pure, deterministic, unit-tested
+  TypeScript in `@livediagram/diagram`. Never ask the model "which of these are
+  already on the board", and never ask it where anything is.
 - **Existing notes are untouchable by an import.** Additions only. Text
   differences on matched notes are SHOWN in review, never applied.
 - **One undoable step** per act (lane toggle, anchor-add, dock / undock on drop,
@@ -186,7 +207,8 @@ if implementation reveals a default is wrong, or where marked **ASK FIRST**.
       catalogue (`ES_DOCKINGS`) with one row per pairing so a side is a one-line
       change._ The parent has asked the operator; if no answer has arrived when
       Phase 2 wiring starts, ask in a `question` block and continue with the
-      pure model (which is side-agnostic) meanwhile.
+      pure model (which is side-agnostic) meanwhile. _Answered: A, the standard
+      notation. Confirmed by the operator._
 - [x] **Q2 — "Two visual anchor points".** _Default: a 16px seam between the docked
       notes, one small filled dot on each facing edge at mid-height, joined by
       nothing (two magnets, not a connector). Neutral ink, slightly stronger in
@@ -258,13 +280,15 @@ if implementation reveals a default is wrong, or where marked **ASK FIRST**.
       cluster moves WHOLE when the HOST's left edge is at or after the insertion
       point (the group precedent), and the seam is never offered as a gap (it is
       not one)._
-- [x] **Q16 — Live model calibration needs a key.** There is no
-      `apps/api/.dev.vars` in this checkout, so `OPENAI_API_KEY` is absent
-      locally. Build and prove the pipeline against a stubbed model (unit + e2e
-      with a routed `/api/ai/photo-notes`), then **ASK** the operator for a key
-      (they drop it into `apps/api/.dev.vars`; never print it, never commit it)
-      and for two or three real wall photos to calibrate the prompt and the
-      matcher thresholds against. Record the calibration in spec/139.
+- [ ] **Q16 — Live calibration needs a Gemini key and real photos.** The operator
+      chose Gemini Flash. When you reach 3.7, ASK for: `AI_API_KEY` (a Google AI
+      Studio key), `AI_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai`
+      and the current Gemini Flash model id as `AI_MODEL` in `apps/api/.dev.vars`
+      (never print, log or commit any of it), plus 2–3 real wall photos in `/tmp`
+      (never committed). The DETECTOR needs the photos as much as the reader does:
+      hue bands, saturation floors and the same-colour split heuristic are
+      calibrated against real paper under real light. Record the calibration in
+      spec/139.
 - [ ] **Q17 — "Both their positions are already adjusted to be correct."**
       _Read as: in the draft, NEW notes are shown at their final reconciled
       positions (not the raw photo positions), and EXISTING notes are shown
@@ -272,6 +296,20 @@ if implementation reveals a default is wrong, or where marked **ASK FIRST**.
       meant that existing notes may ALSO be nudged (e.g. onto lanes) during the
       draft, that contradicts "never rearranged"; ASK if any task would need to
       move an existing note._
+- [ ] **Q18 — Detector ambiguity: actor vs aggregate.** Both are yellow; the
+      actor is a small saturated square, the aggregate a pale wide note.
+      _Default: classify by saturation first (pale → aggregate), then by
+      silhouette when saturation is borderline; when still unsure return
+      `unknown`, which lands as a Domain Event draft with the badge tooltip
+      naming the doubt (the existing `unknown` path)._
+- [ ] **Q19 — Reading batches.** _Default: crops are sent in batches of up to 16
+      images per request (each crop labelled by index in the message so the model
+      returns `{ id, text, legible }` per crop), batches in flight two at a time,
+      the whole run abortable. `PHOTO_MAX_NOTES` (120) still caps a run._
+- [ ] **Q20 — Detection preview.** _Default: none in v1 — the draft on the canvas
+      IS the review. A sticky the detector missed is added by hand; a false
+      positive is Deleted from the draft. Log the detection count and the
+      per-kind histogram at debug level so a miss is diagnosable._
 
 ---
 
@@ -334,8 +372,11 @@ esDraft?: true;
 
 `packages/diagram/src/event-storming-photo.ts`
 
-- `DetectedNote` (the api DTO, re-exported from `@livediagram/api-schema`) and
-  `BoardNote` (id, text, kind, x, y, width, height).
+- `DetectedNote` is now assembled CLIENT-SIDE from a `DetectedSticky` + the
+  model's text for that id (`text: ''`, `legible: false` when the model could not
+  read it — such a note still lands as a draft with an empty label, because the
+  paper WAS there); `row` / `order` come from `rows.ts`, never from the model.
+  `BoardNote` (id, text, kind, x, y, width, height) is unchanged.
 - `normaliseNoteText(s)` — uppercase, collapse whitespace, strip punctuation,
   trim.
 - `noteTextSimilarity(a, b)` → 0..1 — normalised Levenshtein ratio with a
@@ -366,15 +407,41 @@ transform, differences }` — the one entry point the dialog calls.
 
 `@livediagram/api-schema` (`packages/api-schema/src/index.ts`)
 
-- `PhotoNotesRequest = { image: string /* data URL, jpeg|png|webp */, tabName?: string }`
-- `DetectedNote = { id: number; text: string; kind: EventStormingNoteKind | 'unknown';
-colour: string; size: 'square' | 'wide' | 'small'; cx: number; cy: number; w: number;
-h: number; row: number; order: number; confidence: number }` (all box fields
-  normalised 0..1 to the image)
-- `PhotoNotesResponse = { notes: DetectedNote[]; wall: boolean; hint?: string }`
-  (`wall: false` = the model judged the photo is not a sticky wall).
-- `PHOTO_MAX_BYTES`, `PHOTO_MAX_EDGE_PX`, `PHOTO_MAX_NOTES` (say 120) — shared
-  by the client (pre-flight) and the route (hard cap).
+- `ReadNotesRequest = { crops: { id: number; image: string /* jpeg|png|webp data URL */ }[] }`
+- `ReadNotesResponse = { texts: { id: number; text: string; legible: boolean }[] }`
+- `READ_MAX_CROPS_PER_REQUEST` (16), `CROP_MAX_EDGE_PX` (512), `CROP_MAX_BYTES`,
+  `PHOTO_MAX_NOTES` (120), `PHOTO_MAX_EDGE_PX` — shared by the client (pre-flight)
+  and the route (hard cap).
+
+`@livediagram/sticky-vision` (NEW package `packages/sticky-vision/`, pure TS over a
+`{ width, height, data: Uint8ClampedArray }` buffer — no DOM, no OpenCV, no wasm;
+vitest with synthetic images drawn in the test, each test < 200ms)
+
+- `colour.ts` — `rgbToHsv`, `greyWorldBalance(image)` (a cheap white-balance so a
+  warm-lit wall does not turn orange paper red).
+- `classify.ts` — `PaperClass` per catalogue kind with hue centre + band,
+  saturation / value floors, DERIVED from `EVENT_STORMING_NOTES` fills at module
+  init (hue from the fill; bands are the calibrated constants), plus `wall` (the
+  background) and `ink`; `classifyPixel(hsv) → kind | 'wall' | 'ink' | 'unknown'`;
+  the actor / aggregate rule (Q18). A test reads the catalogue and asserts every
+  kind has exactly one class (the spec/25 "read the source" precedent).
+- `components.ts` — `labelComponents(mask)` (union-find or two-pass), per-label
+  bbox, area, pixel count.
+- `boxes.ts` — `fitBoxes(components, { minArea, medianNoteSize })`: drop specks,
+  merge fragments of one sticky split by handwriting (same class, touching /
+  overlapping boxes), SPLIT a same-class blob whose width or height is ≈ n × the
+  median square by projecting the mask along the long axis and cutting at the
+  valleys (two overlapping orange events become two boxes), estimate silhouette
+  (`square | wide | small`) from the box against the median.
+- `rows.ts` — `clusterRows(boxes)` (1-D clustering of centre-y with a gap of half
+  the median height) and `orderInRow` (by centre-x); `row` and `order` land on
+  each sticky.
+- `detect.ts` — `detectStickies(image, options) → DetectedSticky[]` (the
+  pipeline), where `DetectedSticky = { id, kind, size, x, y, w, h /* px in the
+working image */, row, order, confidence }`; `toNormalised(...)` for the
+  reconciler; `cropRects(stickies, scale, pad)` for cutting from the full-res
+  bitmap.
+- `index.ts` re-exports; `README.md` states what the package IS and its limits.
 
 ---
 
@@ -726,89 +793,103 @@ h: number; row: number; order: number; confidence: number }` (all box fields
 
 ### 3.1 Spec
 
-- [x] Spec/139 Phase 8 section: the entry points (Q7), the flow (pick → read →
-      review → add), what the model is asked for and what it is NOT asked (§3),
-      the reconciliation rules (matched notes untouchable; additions placed by the
-      fitted transform; rows / lanes; de-overlap pushes only new notes; docking
-      adjacencies), the empty-board case, the no-match case (Q9), review dialog
-      contents, privacy (photo never stored, downscaled client-side, one line in the
-      dialog), gates, errors, telemetry, "not in v1" (multi-file, applying text
-      differences, arrows / hotspot links from the photo).
-- [x] Spec/25: `POST /api/ai/photo-notes` documented beside `/api/ai` (auth, gates,
-      caps, request / response, error tokens, `OPENAI_VISION_MODEL`); the env-var
-      table row; "Out of scope" line about image generation stays true.
-- [x] Spec/11 route list; `apps/api/src/openapi/manifest.ts` entry (+ its test);
-      spec/06 one line (photo bytes are transient).
-- [x] Commit.
+- [ ] Spec/139 Phase 8: rewrite the "what the model is asked" paragraph to the
+      hybrid (detection in the browser, only crops sent, the model reads text
+      only); add a short "how the detector works" paragraph (colour classes from
+      the catalogue, components, split rule, rows) and its known limits
+      (white / grey paper is not in the notation; very dim or blue-lit photos
+      confuse hues; a sticky covered more than ~60% is read as a fragment).
+- [ ] Spec/25: rename the env-var table to `AI_API_KEY` / `AI_BASE_URL` /
+      `AI_MODEL` / `AI_VISION_MODEL`, state the OpenAI-compatible contract and the
+      Gemini + local llama.cpp examples, document `POST /api/ai/read-notes` (auth,
+      gates, caps, request / response, error tokens) and REMOVE `/api/ai/photo-notes`.
+      Spec/06, spec/10 (deploy: the secret name), spec/11 (route list), spec/20 if
+      it names the var, `specs/02` + `138` only if they mention the name in
+      passing (one-word edits).
+- [ ] `apps/api/src/openapi/manifest.ts`: replace the photo-notes entry with
+      read-notes; regenerate schemas; test.
+- [ ] Commit.
 
-### 3.2 API route
+### 3.2 API: pluggable client + the read route
 
-- [x] Extract the shared AI gate out of `handleAi` into `apps/api/src/routes/ai-gate.ts`
-      (`aiGate(ctx)` → `Response | null`: key present, origin allow-list, Clerk-only
-      flag, owner, method, rate limiter) and make `handleAi` use it — its tests must
-      stay green unchanged (they pin the gate order).
-- [x] `apps/api/src/routes/ai-photo-notes.ts` — `handleAiPhotoNotes(ctx)`: gate;
-      JSON body `{ image, tabName? }`; validate the data URL prefix against the
-      spec/19 whitelist minus GIF (`image/jpeg|png|webp`), decoded size ≤
-      `PHOTO_MAX_BYTES`; build the prompt (`ai-photo-prompt.ts`: the legend from
-      `EVENT_STORMING_NOTES` — never a hand-copied colour table — silhouettes,
-      "read every sticky, including partially covered ones, text verbatim, do not
-      invent", row / order semantics, normalised boxes, `wall: false` when this
-      is not a sticky wall); call OpenAI non-streaming with `detail: 'high'`,
-      `max_tokens` sized for `PHOTO_MAX_NOTES`, strict JSON schema; parse, clamp
-      (drop notes with empty text or boxes outside 0..1, cap count), respond
-      `PhotoNotesResponse`. Errors: the four spec/25 tokens plus `photo_invalid`
-      (400) and `photo_too_large` (413). Log the model's status + note count (no
-      image bytes, no text) so a failure is diagnosable.
-- [x] `index.ts`: `case 'ai'` dispatches on `segments[2]` (`undefined` → `handleAi`,
-      `'photo-notes'` → new handler, else 404).
-- [x] `types.ts` Env: `OPENAI_VISION_MODEL?`; `wrangler.toml` comment block +
-      `.env.example` + `docs/self-hosting.md` + `docs/local-development.md` env var
-      notes updated in the same commit.
-- [x] RED/GREEN tests `ai-photo-notes.test.ts`: every gate path (503 no key, 403
-      origin, 401 clerk, 401 no owner, 405, 429), 400 bad JSON / bad prefix / GIF /
-      SVG, 413 too large, 502 model failure, 200 happy path with a stubbed fetch
-      returning a schema-shaped body, clamping of out-of-range boxes and over-cap
-      counts, `wall: false` passthrough; `ai-photo-prompt.test.ts` pins that the
-      legend is derived from the catalogue (the spec/25 "read the prompt's own
-      source" precedent).
-- [x] Commit: `feat(api): read sticky notes out of a wall photo`.
+- [ ] `apps/api/src/ai-client.ts` — `chatCompletions(env, body)`: builds
+      `${AI_BASE_URL}/chat/completions` (trailing-slash tolerant), bearer
+      `AI_API_KEY`, forwards the body, returns the `Response`. Both routes call it.
+      Test: URL joining, header, body passthrough, a 4xx surfaces as `ai_error`
+      with the provider status logged (never the key).
+- [ ] Rename the env: `types.ts` (`AI_API_KEY`, `AI_BASE_URL`, `AI_MODEL`,
+      `AI_VISION_MODEL`), `ai-gate.ts`, `capabilities.ts` (`aiEnabled` on
+      `AI_API_KEY`), `ai.ts` (assistant route: model from `AI_MODEL`, URL from the
+      client), `wrangler.toml` comment block, `.env.example` (with a Gemini block
+      and a local llama.cpp block), `docs/self-hosting.md`,
+      `docs/local-development.md`, `docs/architecture.md`,
+      `docs/what-is-livediagram.md`, `apps/live/lib/user-preferences.ts` if it
+      names the var in a comment. Grep `OPENAI_` across the repo afterwards: the
+      only hits allowed are historical notes in specs that say the name WAS
+      `OPENAI_API_KEY`. Existing `ai.test.ts` and gate tests must stay green
+      after renaming their env stubs.
+- [ ] `apps/api/src/routes/ai-read-notes.ts` — `handleAiReadNotes(ctx)`: gate;
+      JSON body `{ crops }`; validate count ≤ `READ_MAX_CROPS_PER_REQUEST`, each
+      `id` an integer, each data URL prefix in `image/jpeg|png|webp`, decoded size
+      ≤ `CROP_MAX_BYTES`; build ONE user message with the crops interleaved with
+      `Crop <id>:` labels and a system prompt (`ai-read-prompt.ts`: "each image is
+      one sticky note written in marker capitals; return the text VERBATIM, do not
+      correct spelling, do not invent words, `legible: false` with empty text when
+      you cannot read it"); `response_format: json_object`; parse + validate
+      strictly (drop unknown ids, clamp text length, coerce `legible`); respond
+      `ReadNotesResponse`. Errors: the spec/25 tokens plus `crops_invalid` (400)
+      and `crops_too_large` (413). Log provider status + crop count + legible count.
+- [ ] `index.ts`: `case 'ai'` dispatches `'read-notes'`; `'photo-notes'` is gone
+      (404 like any unknown path).
+- [ ] DELETE `ai-photo-notes.ts`, `ai-photo-notes.test.ts`, `ai-photo-prompt.ts`
+      (+ test) in the same commit as the read route lands.
+- [ ] Tests `ai-read-notes.test.ts`: every gate path, 400 bad JSON / bad id /
+      bad prefix / GIF / SVG / too many crops, 413 too large, 502 provider
+      failure, 200 happy path with a stubbed fetch, unknown ids dropped, a
+      provider answer missing an id → that id comes back `legible: false`;
+      `ai-read-prompt.test.ts` pins "verbatim" and the legible rule.
+- [ ] Commit: `feat(api): a pluggable model client that reads note crops`.
 
-### 3.3 Pure reconciliation (`event-storming-photo.ts`)
+### 3.3 Pure reconciliation (`event-storming-photo.ts`) — adjust only
 
-- [x] RED: `event-storming-photo.test.ts` — text normalisation; similarity (exact
-      1, case / punctuation-insensitive, truncated read ≥ floor, unrelated ≈ 0);
-      matching (one-to-one; threshold; kind bonus / penalty; `unknown` kind matches
-      on text alone; duplicate board texts resolved by geometry; nothing matches on
-      an empty board); transform (≥ 2 matches recovers a known scale + offset; 1
-      match → default scale; 0 → default scale + Q9 offset; scale clamp);
-      `defaultPhotoScale` from the median square width; placement (additions land
-      at the transformed centre, snap to an existing row within half a height,
-      snap to a lane when lanes are on, de-overlap pushes only NEW notes, existing
-      bounds are byte-identical before and after, prevailing gap reused, seam gap
-      for docked pairs); `detectDockings` for all three pairings from photo
-      adjacency (overlap or gap < a quarter note), never against an occupied face;
-      `reconcilePhoto` end to end on three fixtures: empty board, partial overlap
-      with an earlier photo, a photo of a region entirely already on the board
-      (zero additions).
-- [x] GREEN: implement. Keep each helper small and named; no god module — if the
-      file passes ~400 lines split matching / transform / placement into siblings.
-- [x] Commit: `feat(diagram): reconcile a wall photo against the board`.
+- [ ] Input type follows §5 (`DetectedNote` assembled client-side; empty text +
+      `legible: false` allowed). A note with empty text NEVER matches an existing
+      note (it always lands as a new empty draft). Adjust tests; the three
+      end-to-end fixtures stay.
+- [ ] Commit.
 
-### 3.4 Client: capability, request, pre-processing
+### 3.4 Client: detection, crops, reading
 
-- [x] `apps/live/lib/api/ai.ts`: `apiAiPhotoNotes(image: string, tabName)` →
-      `PhotoNotesResponse`, mapping error tokens to typed errors (the existing
-      `off_topic` mapping precedent); test.
-- [x] `apps/live/lib/photo-prepare.ts`: `preparePhoto(file)` → data URL —
-      `createImageBitmap` with `imageOrientation: 'from-image'`, downscale to
-      `PHOTO_MAX_EDGE_PX`, `toBlob('image/jpeg', 0.85)`, reject unsupported types
-      with the spec/19 hint wording (HEIC → "save as JPEG"), reject > `PHOTO_MAX_BYTES`
-      after encode; unit-tested with a stubbed bitmap / canvas (jsdom) and a real
-      small PNG fixture.
-- [x] `useCapabilities` already exposes `aiEnabled`; add nothing unless the route
-      needs its own flag (it does not — same key).
-- [x] Commit.
+- [ ] `packages/sticky-vision` per §5, TDD module by module with synthetic
+      images: single sticky per kind → right kind + box; a 3×2 grid → six boxes,
+      two rows, order left→right; two overlapping same-colour events → split into
+      two; a sticky with heavy handwriting → one box not five; a warm colour cast
+      → still the right kinds after grey-world; a photo with no paper → `[]`;
+      speck noise → dropped; 1024px working image in < 150ms in vitest (assert a
+      loose bound so CI is not flaky).
+- [ ] `apps/live/lib/photo-prepare.ts` → rename to what it IS now:
+      `photo-detect.ts`: `detectAndCrop(file, signal)` → decode with EXIF
+      orientation, working copy at `PHOTO_MAX_EDGE_PX`, `detectStickies`, then
+      `cropRects` cut from the full-res bitmap (pad 6%), each re-encoded JPEG
+      q0.85 with longest edge `CROP_MAX_EDGE_PX`; returns
+      `{ stickies, crops, imageSize }`. Reject unsupported types with the spec/19
+      hint wording (HEIC → "save as JPEG"). Measure the detection time on a real
+      2048px working image in the browser; if it exceeds ~300ms on a mid phone
+      (use Chrome's CPU throttling ×4 as the proxy), move `detectStickies` into a
+      Web Worker (`sticky-vision.worker.ts`), otherwise leave it on the main
+      thread and record the measurement in spec/139.
+- [ ] `apps/live/lib/api/ai.ts`: replace `apiAiPhotoNotes` with
+      `apiAiReadNotes(crops, signal)` → `ReadNotesResponse`, batched per Q19,
+      two in flight, abortable, typed errors. Test.
+- [ ] `usePhotoDraft.ts` `startFromFile`: `detectAndCrop` → `apiAiReadNotes` →
+      assemble `DetectedNote[]` (kind / box / row / order from the detector, text /
+      legible from the model) → `reconcilePhoto` → land, exactly as 3.5 already
+      says. Zero stickies detected → the Q8 toast, no model call at all. Progress
+      toast copy: "Finding stickies…" then "Reading 14 stickies…".
+- [ ] Tests updated: the state machine now has a `detecting` state before
+      `reading`; detection with no stickies never calls the api; an illegible crop
+      lands as an empty draft note.
+- [ ] Commit: `feat(live): find stickies in the browser, read their text`.
 
 ### 3.5 The draft (on-canvas review)
 
@@ -880,35 +961,32 @@ h: number; row: number; order: number; confidence: number }` (all box fields
 
 ### 3.6 E2E (mocked model)
 
-- [ ] `apps/live/e2e/photo-import.spec.ts`: route `**/api/capabilities` →
-      `{ aiEnabled: true, … }` and `**/api/ai/photo-notes` → fixture responses
-      (`e2e/fixtures/wall-photo*.json`, hand-written against a fixture image
-      `e2e/fixtures/wall-photo.jpg` you GENERATE by exporting an ES board with six
-      notes to PNG and re-encoding — no real photo needed). Cases: empty board →
-      six draft notes land with the outline, bar reads "6 read · 6 new"; type
-      into one, drag another, Delete a third; Add → five notes, one history step,
-      Undo removes all five, Redo restores; import the same photo again → bar
-      reads "6 read · 0 new · 6 already on the board", Add disabled, Discard;
-      a second fixture overlapping three of the six → three drafts land right
-      of the matched ones, existing element JSON byte-identical before and
-      after Add; reload keeps everything; reload MID-draft shows the bar again.
-      Dark scheme per the testing rule.
-- [ ] Run it against the real stack (`livediagram-eswall-e2e` under PM2), green.
+- [ ] `photo-import.spec.ts`: the fixture image is a PNG export of an ES board
+      with six notes (the detector must find all six with the right kinds — this
+      is a REAL detection in the browser, not mocked); route
+      `**/api/ai/read-notes` → fixture texts by id (the ids are stable because the
+      detector orders by row then x). Cases as before (empty board, re-import →
+      zero new, overlap → three new right of the matched, reload, Undo / Redo,
+      mid-draft reload, dark scheme) plus: a fixture with two overlapping same
+      colour notes yields two drafts; a route returning `legible: false` for one
+      id yields one empty draft.
+- [ ] Green under PM2 against the real stack.
 - [ ] Commit.
 
 ### 3.7 Live calibration (needs the operator — Q16)
 
-- [x] Ask for `OPENAI_API_KEY` in `apps/api/.dev.vars` and 2–3 real wall photos
-      (`question` block). Never print, log or commit the key; never commit the
-      photos (put them in `/tmp` or a gitignored folder).
-- [ ] Run each photo through the dialog on the dev server; read the api log for the
-      model status + counts; tune the prompt (legend wording, "verbatim", occlusion
-      guidance) and the matcher threshold until: every legible sticky is read, kinds
-      are right, a re-import adds nothing, and an overlapping second photo adds only
-      the new notes in the right places. Record the numbers + one paragraph of what
-      needed tuning in spec/139.
-- [x] If no key is available, record that the live calibration is OUTSTANDING in
-      spec/139 (explicitly, not as "verified") and in the final report.
+- [ ] ASK (question block) for the Gemini key, base URL and model id in
+      `apps/api/.dev.vars` and 2–3 real wall photos in `/tmp`. Never print, log or
+      commit any of it; the photos are never committed.
+- [ ] Calibrate the DETECTOR first on the real photos (hue bands, saturation
+      floors, the split threshold, the merge rule) until every visible sticky is
+      one box with the right kind; then the READER prompt until the text is
+      verbatim and illegible crops are marked rather than guessed; then the
+      MATCHER threshold so a re-import adds nothing and an overlapping second
+      photo adds only the new notes. Record numbers, the model id used, and one
+      paragraph of what needed tuning in spec/139.
+- [ ] If no key / photos arrive, record the calibration as OUTSTANDING in
+      spec/139 and the final report (explicitly, never "verified").
 
 ### 3.8 Verification
 
@@ -943,11 +1021,14 @@ ripple with a cluster on both sides of the point; seam never a gap; lanes + dock
 undock / host deleted under a drag; read-only shows dots but no affordances; a11y
 names + keyboard on affordances; dark scheme.
 
-**C. Photo import** — no key (no UI anywhere; image drop still makes an image
-element); key + read-only (no UI); key + locked tab / blocked layer (row
+**C. Photo import** — detector: each kind alone; grid; overlap same colour;
+overlap different colours; heavy handwriting; warm / cool cast; no paper;
+specks; a rotated (±10°) sticky still boxed; a phone photo's EXIF rotation
+honoured before detection; working-image time bound; zero detections → no api
+call; no key (no UI anywhere; image drop still makes an image element); key + read-only (no UI); key + locked tab / blocked layer (row
 disabled with reason); pick via row / command palette / drop / paste; non-image
 drop on ES board unchanged; image drop on non-ES board unchanged (still an image
-element); HEIC / SVG / GIF rejected with hints; too large after encode;
+element); HEIC / SVG / GIF rejected with hints before detection; too large after encode;
 EXIF-rotated JPEG lands upright; abort mid-read; model 502 / 429 / 403 / 401 /
 503 each surfaced as a toast with retry; `wall: false`; zero notes; notes with
 `unknown` kind land as Domain Event drafts with the badge tooltip saying so;
@@ -960,7 +1041,9 @@ unchanged; reload mid-draft (bar returns, fade does not); peer sees draft notes
 with the outline but no fade; offline board (works — the route needs no diagram
 id); lanes on → drafts land on lanes; docking adjacencies land docked; second
 photo after Add dedups against the first; entry points disabled while a draft
-is open; dark scheme; keyboard-only run (row → file input → bar → Add).
+is open; an illegible crop → empty draft note; a batch failing mid-run → toast
+with Retry, no partial landing; dark scheme; keyboard-only run (row → file input
+→ bar → Add).
 
 ---
 
@@ -1017,6 +1100,14 @@ Each is one more `ES_DOCKINGS` row plus, where the face is not west / east, a
       / `AMBIGUITIES.md` / `LESSONS_LEARNED.md` at the worktree root updated (all
       gitignored); wiki page in `docs/` if a durable repo-level learning emerged
       (e.g. "structured outputs for vision on Workers").
+- [ ] PR description names the deploy step: `wrangler secret put AI_API_KEY`,
+      `AI_BASE_URL` + `AI_MODEL` as `[vars]`, delete the old `OPENAI_API_KEY`
+      secret.
+- [ ] `packages/sticky-vision` in the repo layout block of `CLAUDE.md` and in
+      `README.md` / `docs/architecture.md`.
+- [ ] `docs/` wiki page `docs/vision/sticky-detection.md`: how the detector
+      works, its calibration constants and why, the limits — a durable
+      repo-level learning.
 - [ ] Final quality gate: lint, format:check, typecheck, test and build all
       green; e2e green against the built stack.
 - [~] `git fetch && git rebase origin/main` (resolve by new commits, never force);
