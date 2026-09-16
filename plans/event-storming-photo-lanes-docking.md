@@ -773,41 +773,41 @@ h: number; row: number; order: number; confidence: number }` (all box fields
 
 ### 3.5 The dialog
 
-- [ ] `apps/live/components/dialogs/PhotoImportDialog.tsx` (+ `usePhotoImport.ts`
+- [x] `apps/live/components/dialogs/PhotoImportDialog.tsx` (+ `usePhotoImport.ts`
       state machine: `idle → preparing → reading → review → committing → done`, plus
       `error` with retry; every transition logged at debug level). Contents:
-  - [ ] **Pick**: `ImageDropZone` (reuse; `capture="environment"` on the input via a
+  - [x] **Pick**: `ImageDropZone` (reuse; `capture="environment"` on the input via a
         prop — extend the component, don't copy it), paste support, the privacy
         line, and the "Place as image instead" secondary action when the dialog
         was opened by an image drop (Q7c).
-  - [ ] **Reading**: the photo with a progress state; cancellable (abort the fetch).
-  - [ ] **Review**: the photo with each detected note outlined in its kind colour
+  - [x] **Reading**: the photo with a progress state; cancellable (abort the fetch).
+  - [x] **Review**: the photo with each detected note outlined in its kind colour
         and badged NEW / ON BOARD / SKIP; a list with per-note include checkbox,
         editable text, kind select (the catalogue's eight), the "on the board as …"
         line for matched notes (Q11), a "Dock to …" chip where a docking was
         detected (can be unticked); header counts ("14 read · 9 new · 5 already on
         the board"); primary button "Add 9 notes" (disabled at 0), secondary
         "Try another photo". `wall: false` → the Q8 empty state.
-  - [ ] **Commit**: `reconcilePhoto` re-runs against the LIVE tab at click time (a
+  - [x] **Commit**: `reconcilePhoto` re-runs against the LIVE tab at click time (a
         peer may have edited; the insert-between precedent), then ONE `commit()`
         adding every included note through the one builder (fill, silhouette, tilt,
         fixed, auto-fit, layer stamp, `esKind`, `esDock`), selects them, activity
         log "Added 9 notes from a photo", `track('AI', 'Used', 'PhotoNotes')` once +
         `Element / Added / Sticky` per note, then the Q10 "Add another photo" state.
-  - [ ] Dark mode, WCAG AA (labels, focus order, `aria-live` for the count line,
+  - [x] Dark mode, WCAG AA (labels, focus order, `aria-live` for the count line,
         Escape closes, focus returns to the opener), zero CLS (reserve the photo
         area's height; no inline banners — errors are toasts).
-- [ ] Entry points (Q7): palette row "Add from photo" at the top of the ES category
+- [x] Entry points (Q7): palette row "Add from photo" at the top of the ES category
       (camera glyph; hidden without `aiEnabled` or when the gate blocks); command
       palette entry; image-file drop / paste on an ES board routes to the dialog
       (find the existing handler, branch on ES-board + aiEnabled + an
       `image/*` file type, everything else untouched).
-- [ ] Tests: state machine (every transition incl. abort + error + retry), review
+- [x] Tests: state machine (every transition incl. abort + error + retry), review
       list editing changes what is committed, commit uses the one builder (assert
       `fixedSize`, `esKind`, `textSize: 'scale'`, layer id, tilt within ±1.1), one
       undo step, gate paths (read-only hides the row and refuses the drop route),
       drop routing on ES vs non-ES boards.
-- [ ] Commit: `feat(live): import sticky notes from a wall photo`.
+- [x] Commit: `feat(live): import sticky notes from a wall photo`.
 
 ### 3.6 E2E (mocked model)
 
