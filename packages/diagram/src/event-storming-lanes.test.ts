@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  activeTimeline,
   ES_GRID_CELL,
   ES_LANE_GAP,
   ES_LANE_HEIGHT,
@@ -17,8 +18,8 @@ import {
 import { ES_NOTE_SIZE_PX } from './event-storming';
 import type { Element } from './index';
 
-const T: EsTimeline = { originX: 0, originY: 0 };
-const OFFSET: EsTimeline = { originX: 37, originY: -114 };
+const T: EsTimeline = { originX: 0, originY: 0, enabled: true };
+const OFFSET: EsTimeline = { originX: 37, originY: -114, enabled: true };
 
 function note(over: Partial<Element> & { id: string }): Element {
   return {
@@ -146,9 +147,25 @@ describe('snapToLanes', () => {
   });
 });
 
+describe('activeTimeline', () => {
+  it('is null for a board that has never had lanes', () => {
+    expect(activeTimeline({})).toBeNull();
+    expect(activeTimeline(undefined)).toBeNull();
+  });
+
+  it('is null while lanes are switched off, even though the origin is remembered', () => {
+    expect(activeTimeline({ esTimeline: { originX: 120, originY: 80, enabled: false } })).toBeNull();
+  });
+
+  it('is the stack itself while lanes are on', () => {
+    const t = { originX: 120, originY: 80, enabled: true };
+    expect(activeTimeline({ esTimeline: t })).toBe(t);
+  });
+});
+
 describe('initialTimelineOrigin', () => {
   it('is the canvas origin on an empty board', () => {
-    expect(initialTimelineOrigin([])).toEqual({ originX: 0, originY: 0 });
+    expect(initialTimelineOrigin([])).toEqual({ originX: 0, originY: 0, enabled: true });
   });
 
   it('takes the top-left corner of the top-most note', () => {
@@ -157,12 +174,12 @@ describe('initialTimelineOrigin', () => {
       note({ id: 'b', x: 120, y: 80 }),
       note({ id: 'c', x: 900, y: 700 }),
     ];
-    expect(initialTimelineOrigin(els)).toEqual({ originX: 120, originY: 80 });
+    expect(initialTimelineOrigin(els)).toEqual({ originX: 120, originY: 80, enabled: true });
   });
 
   it('breaks a tie on the top edge with the left-most note', () => {
     const els = [note({ id: 'a', x: 500, y: 80 }), note({ id: 'b', x: 120, y: 80 })];
-    expect(initialTimelineOrigin(els)).toEqual({ originX: 120, originY: 80 });
+    expect(initialTimelineOrigin(els)).toEqual({ originX: 120, originY: 80, enabled: true });
   });
 
   it('ignores everything that is not a note', () => {
@@ -170,17 +187,17 @@ describe('initialTimelineOrigin', () => {
       { id: 's', type: 'shape', shape: 'square', x: 0, y: -900, width: 100, height: 100 },
       note({ id: 'b', x: 120, y: 80 }),
     ] as Element[];
-    expect(initialTimelineOrigin(els)).toEqual({ originX: 120, originY: 80 });
+    expect(initialTimelineOrigin(els)).toEqual({ originX: 120, originY: 80, enabled: true });
   });
 
   it('ignores notes the author cannot see', () => {
     const els = [note({ id: 'hidden', x: 0, y: -400 }), note({ id: 'b', x: 120, y: 80 })];
-    expect(initialTimelineOrigin(els, new Set(['hidden']))).toEqual({ originX: 120, originY: 80 });
+    expect(initialTimelineOrigin(els, new Set(['hidden']))).toEqual({ originX: 120, originY: 80, enabled: true });
   });
 
   it('falls back to the canvas origin when every note is hidden', () => {
     const els = [note({ id: 'hidden', x: 40, y: 40 })];
-    expect(initialTimelineOrigin(els, new Set(['hidden']))).toEqual({ originX: 0, originY: 0 });
+    expect(initialTimelineOrigin(els, new Set(['hidden']))).toEqual({ originX: 0, originY: 0, enabled: true });
   });
 });
 

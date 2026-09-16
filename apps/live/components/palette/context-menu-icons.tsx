@@ -1548,3 +1548,25 @@ export function PasteMenuIcon() {
     </svg>
   );
 }
+
+// Timeline lanes (spec/139 Phase 6): three stacked rules with a note sitting
+// on the middle one — the rhythm the switch turns on, not a generic grid.
+export function TimelineLanesMenuIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      aria-hidden
+    >
+      <path d="M3 6h18" strokeOpacity="0.45" />
+      <path d="M3 18h18" strokeOpacity="0.45" />
+      <path d="M3 12h18" />
+      <rect x="8" y="9.4" width="5.2" height="5.2" rx="0.8" strokeOpacity="0.9" />
+    </svg>
+  );
+}

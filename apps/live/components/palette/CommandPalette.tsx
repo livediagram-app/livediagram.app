@@ -40,6 +40,7 @@ export function CommandPalette({
   onAddText,
   onAddSticky,
   esBoard,
+  esBoardControls,
   onAddTable,
   onAddAnnotation,
   onAddLinkCard,
@@ -409,6 +410,9 @@ export function CommandPalette({
             tabs={paletteCategoryTabs({
               pendingDraw,
               tileActions,
+              // Only on an ES board: the category renders elsewhere too (a
+              // favourited note kind), where a board switch means nothing.
+              esBoardControls: esBoard ? esBoardControls : undefined,
               addIcon,
               iconQuery,
               setIconQuery,

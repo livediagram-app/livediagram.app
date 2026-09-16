@@ -73,8 +73,8 @@ describe('offline transforms', () => {
   // The offline store keeps the tab as it is handed over, so a board with
   // timeline lanes on (spec/139 Phase 6) still has them after Take Offline.
   it('upsertTab keeps the timeline lane origin', () => {
-    const out = upsertTab(rec(), tab('t1', { esTimeline: { originX: 120, originY: 80 } }), 200);
-    expect(out.tabs[0]!.esTimeline).toEqual({ originX: 120, originY: 80 });
+    const out = upsertTab(rec(), tab('t1', { esTimeline: { originX: 120, originY: 80, enabled: true } }), 200);
+    expect(out.tabs[0]!.esTimeline).toEqual({ originX: 120, originY: 80, enabled: true });
   });
 
   it('removeTab drops the tab', () => {

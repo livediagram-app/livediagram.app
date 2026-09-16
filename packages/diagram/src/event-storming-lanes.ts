@@ -15,15 +15,30 @@
 import { ES_NOTE_SIZE_PX } from './event-storming';
 import type { Element, ElementId } from './index';
 
-// Where the lane stack is anchored. The PITCH is a constant, not a field: one
-// rhythm per board is the point, and a board with two lane heights is a board
-// with no lanes. Present on a tab = lanes are on.
+// Where the lane stack is anchored, and whether it is in use. The PITCH is a
+// constant, not a field: one rhythm per board is the point, and a board with
+// two lane heights is a board with no lanes.
+//
+// `enabled` is explicit rather than "presence means on" because the ORIGIN has
+// to outlive an off: it is chosen once, from the board as it stood, and
+// switching lanes off and on again must not re-anchor the whole board to
+// whatever note happens to be top-left by then. So absence means "this board
+// has never had lanes" (and therefore no origin), and the two states a board
+// that HAS had them can be in are both carried by the one field.
 export type EsTimeline = {
   // Canvas x of grid column 0.
   originX: number;
   // Canvas y of lane 0's TOP edge.
   originY: number;
+  enabled: boolean;
 };
+
+// The lane stack a tab is actually working to, or null when lanes are off.
+// ONE predicate, so the switch, the two drag resolvers, the overlay and the
+// export can't disagree about whether lanes are in play.
+export function activeTimeline(tab: { esTimeline?: EsTimeline } | undefined): EsTimeline | null {
+  return tab?.esTimeline?.enabled ? tab.esTimeline : null;
+}
 
 // A lane is one standard note tall, and the gap between two lanes is the
 // breathing room stickies get when they are pressed onto a wall in rows.
@@ -134,7 +149,7 @@ export function initialTimelineOrigin(
       best = { x: el.x, y: el.y };
     }
   }
-  return { originX: best?.x ?? 0, originY: best?.y ?? 0 };
+  return { originX: best?.x ?? 0, originY: best?.y ?? 0, enabled: true };
 }
 
 // The lanes whose BAND intersects a canvas-space viewport, in order. The stack

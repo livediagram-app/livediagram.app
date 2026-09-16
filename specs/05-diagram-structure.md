@@ -88,11 +88,11 @@ type Tab = {
   name: string;
   kind?: TabKind; // 'diagram' | 'event-storming' (spec/139); absent = 'diagram'
   elements: Element[];
-  // Timeline lanes on an event-storming board (spec/139 Phase 6). PRESENT =
-  // on; the pitch and the grid are constants, so all the tab has to carry is
-  // where the stack is anchored. Absent on every other board, and on an ES
-  // board whose author has not switched lanes on.
-  esTimeline?: { originX: number; originY: number };
+  // Timeline lanes on an event-storming board (spec/139 Phase 6). The pitch
+  // and the column width are constants, so all the tab carries is where the
+  // stack is anchored and whether it is in use. Absent = this board has never
+  // had lanes (and so has no origin yet).
+  esTimeline?: { originX: number; originY: number; enabled: boolean };
   // …plus theme, backgroundColor/Pattern/Opacity, patternColor, locked
 };
 

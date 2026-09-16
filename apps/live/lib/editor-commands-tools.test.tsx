@@ -27,6 +27,8 @@ const ctx: CommandContext = {
   canvasTool: 'none',
   canvasEmpty: false,
   isMobile: false,
+  esBoard: false,
+  lanesOn: false,
 };
 
 const noop = () => new Proxy({}, { get: () => vi.fn() }) as unknown as CommandHandlers;

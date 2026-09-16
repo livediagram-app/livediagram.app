@@ -100,6 +100,9 @@ export function EditorCanvasHost() {
     addStatRow,
     addSticky,
     esBoard,
+    lanesOn,
+    lanesDisabled,
+    toggleLanes,
     createBlocked,
     addTable,
     addTechIcon,
@@ -552,6 +555,7 @@ export function EditorCanvasHost() {
       onAddText={addText}
       onAddSticky={addSticky}
       esBoard={esBoard}
+      esBoardControls={{ lanesOn, lanesDisabled, onToggleLanes: toggleLanes }}
       createBlocked={createBlocked}
       onAddImage={addImage}
       onAddArrow={addArrow}

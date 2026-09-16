@@ -417,13 +417,23 @@ axis means anything in particular, so the whole feature is gated on
   the palette's Event Storming category, a command-palette entry ("Turn
   timeline lanes on / off"), and nothing else — no keyboard shortcut in v1,
   because a board-level mode is not something you flip mid-sentence.
-- **The state is SHARED, on the tab.** `Tab.esTimeline` — present = on. A
-  facilitator turning lanes on turns them on for the room, like the workshop
-  stage visibility that came before it. Storing it per browser would mean two
-  people in the same session dragging onto two different grids.
+- **The state is SHARED, on the tab.** `Tab.esTimeline` = `{ originX, originY,
+  enabled }`. A facilitator turning lanes on turns them on for the room, like
+  the workshop stage visibility that came before it. Storing it per browser
+  would mean two people in the same session dragging onto two different grids.
+  `enabled` is an explicit flag rather than "the field's presence means on"
+  because the ORIGIN has to outlive an off (see below); absence therefore means
+  exactly one thing — this board has never had lanes, so it has no origin yet.
+  `activeTimeline(tab)` is the one predicate everything asks.
 - **One optional field, no migration.** The tab body travels as one JSON blob
   (cloud, offline IndexedDB, export, realtime), so the field reaches every
   store for free. Absence is the default and always will be.
+- **Each axis snaps only within its own tolerance**, and independently: half
+  the lane gap (20px) on y, so a note parked deliberately between two lanes
+  stays there; half a column (50px) on x, which every x is within by
+  definition, so the grid always claims the left edge. A grid that only
+  sometimes applied would leave a row half on the columns and half off them,
+  which is worse than no grid.
 - **The pitch is a constant, not a field.** `ES_LANE_PITCH` = 240px: a
   200px-tall standard note plus a 40px gap, the rhythm of stickies pressed onto
   a wall in rows. One rhythm per board is the whole point — a board with two
@@ -448,10 +458,6 @@ axis means anything in particular, so the whole feature is gated on
   aid the next drag can use, not a cage the board is poured into — a switch
   that rearranged an afternoon's work would be unusable, and "snap everything
   to lanes" is a separate verb nobody has asked for yet.
-- **Lanes are an aid, not a cage, during the drag too.** Each axis snaps only
-  within its own threshold — half the lane gap (20px) on y, half a cell (50px)
-  on x — so a note dropped deliberately between lanes stays where it was put.
-  A note can snap on one axis and not the other.
 - **Invisible until a note is on the move.** No permanent rules ruled across
   the canvas: while a single note is being dragged (from the palette or already
   on the board) the lane it would land on lights as a faint band with a centre

@@ -3,6 +3,7 @@ import type { ShapeKind } from '@livediagram/diagram';
 import type { PendingDraw } from '@/lib/draw-mode';
 import type { UserPreferences } from '@/lib/user-preferences';
 import type { PaletteTint } from '@/components/palette/palette-controls';
+import type { EsBoardControls } from '@/components/palette/EventStormingBoardRows';
 import type { MovablePanelDockProps } from '@/components/primitives/MovablePanel';
 
 export type CanvasTool =
@@ -84,6 +85,9 @@ export type CommandPaletteProps = {
   // palette then opens on the Event Storming category instead of
   // Favourites — the notation is what the board is for.
   esBoard?: boolean;
+  // Board-level switches shown above the notation on one of those boards
+  // (spec/139 Phase 6: timeline lanes). Omitted everywhere else.
+  esBoardControls?: EsBoardControls;
   // Drop a 3x3 editable table at the viewport centre.
   onAddTable: () => void;
   // Drop a note marker (annotation) at the viewport centre. See spec/38.

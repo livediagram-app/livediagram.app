@@ -54,7 +54,7 @@ describe('rowToTab', () => {
           // Board kind + timeline lanes (spec/139): tab state with no column
           // of its own, so the blob is the only thing carrying them.
           kind: 'event-storming',
-          esTimeline: { originX: 120, originY: 80 },
+          esTimeline: { originX: 120, originY: 80, enabled: true },
         }),
       }),
     );
@@ -64,6 +64,7 @@ describe('rowToTab', () => {
     expect((dto as unknown as { esTimeline: unknown }).esTimeline).toEqual({
       originX: 120,
       originY: 80,
+      enabled: true,
     });
   });
 

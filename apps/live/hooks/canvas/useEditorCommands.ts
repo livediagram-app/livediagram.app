@@ -59,6 +59,9 @@ export function useEditorCommands(): {
     canRedo,
     zenMode,
     toggleZenMode,
+    esBoard,
+    lanesOn,
+    toggleLanes,
     fitToScreen,
     autoLayoutTab,
     autoAlignTab,
@@ -115,6 +118,8 @@ export function useEditorCommands(): {
       // has greyed out.
       canvasEmpty: activeTab.elements.length === 0,
       isMobile,
+      esBoard,
+      lanesOn,
     };
     return buildEditorCommands(cmdCtx, {
       deleteSelection: () => (isMulti ? deleteMultiSelected() : deleteSelected()),
@@ -162,6 +167,7 @@ export function useEditorCommands(): {
       undo,
       redo,
       toggleZen: toggleZenMode,
+      toggleTimelineLanes: toggleLanes,
       fitToScreen,
       autoLayout: autoLayoutTab,
       autoAlign: autoAlignTab,
@@ -205,6 +211,9 @@ export function useEditorCommands(): {
     canvasTool,
     activeTab.elements.length,
     isMobile,
+    esBoard,
+    lanesOn,
+    toggleLanes,
   ]);
 
   const runCommand = useCallback(

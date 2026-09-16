@@ -24,6 +24,7 @@ import type { UserPreferences } from '@/lib/user-preferences';
 import type { ChangeLogEntry, DiagramListItem, Folder, SharedWithItem } from '@/lib/api-client';
 import type { TeamDiagramRow, TeamFolderRow } from '@/hooks/persistence/useTeamLibrariesSweep';
 import type { CanvasTool } from '@/components/palette/CommandPalette';
+import type { EsBoardControls } from '@/components/palette/EventStormingBoardRows';
 
 // A connection-point marker shown while dragging an arrow endpoint: the
 // world-space position of a nearby shape's anchor, with `active` set on the
@@ -301,6 +302,9 @@ export type CanvasProps = {
   // palette opens on the Event Storming category instead of Favourites, and
   // a palette drag can offer to insert BETWEEN two notes.
   esBoard?: boolean;
+  // Board-level switches for the palette's Event Storming category
+  // (spec/139 Phase 6: timeline lanes). Supplied only on such a board.
+  esBoardControls?: EsBoardControls;
   // True when a new element cannot land at all: a locked tab, a view-only
   // session, or a hidden / locked active layer (spec/74). The insert-between
   // preview reads it so it never offers a slot the drop would refuse.

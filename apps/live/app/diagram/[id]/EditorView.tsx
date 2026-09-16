@@ -70,6 +70,8 @@ export function EditorView() {
     canvasTool,
     drag,
     esBoard,
+    lanesOn,
+    toggleLanes,
     clearTabContent,
     clerkUserId,
     closeContextMenu,
@@ -363,6 +365,9 @@ export function EditorView() {
             onSetFont: setTabFont,
             defaultTextSize: activeTab.defaultTextSize,
             onSetDefaultTextSize: setTabDefaultTextSize,
+            esBoard,
+            lanesOn,
+            onToggleTimelineLanes: toggleLanes,
           }}
         />
       )}

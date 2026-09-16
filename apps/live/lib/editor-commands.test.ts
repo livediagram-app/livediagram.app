@@ -34,6 +34,7 @@ function handlers(): CommandHandlers {
     openShortcuts: vi.fn(),
     openTemplates: vi.fn(),
     setTool: vi.fn(),
+    toggleTimelineLanes: vi.fn(),
   };
 }
 
@@ -54,6 +55,8 @@ const base: CommandContext = {
   canvasTool: 'select',
   canvasEmpty: false,
   isMobile: false,
+  esBoard: false,
+  lanesOn: false,
 };
 
 const ids = (ctx: CommandContext) => buildEditorCommands(ctx, handlers()).map((c) => c.id);
@@ -316,5 +319,40 @@ describe('canvas tool commands', () => {
     expect(got).toContain('tool:isometric');
     expect(got).not.toContain('tool:eraser');
     expect(got).not.toContain('tool:format');
+  });
+});
+
+// Timeline lanes (spec/139 Phase 6): a board-level verb, so it is offered only
+// where the board has lanes to turn on, and it NAMES its direction rather than
+// leaving the reader to guess which way the switch is pointing.
+describe('event-storming board commands', () => {
+  it('is not offered on an ordinary diagram', () => {
+    expect(ids(base)).not.toContain('timeline-lanes');
+  });
+
+  it('offers turning lanes on when they are off', () => {
+    const cmd = buildEditorCommands({ ...base, esBoard: true }, handlers()).find(
+      (c) => c.id === 'timeline-lanes',
+    );
+    expect(cmd?.name).toBe('Turn timeline lanes on');
+  });
+
+  it('offers turning lanes off when they are on', () => {
+    const cmd = buildEditorCommands({ ...base, esBoard: true, lanesOn: true }, handlers()).find(
+      (c) => c.id === 'timeline-lanes',
+    );
+    expect(cmd?.name).toBe('Turn timeline lanes off');
+  });
+
+  it('runs the same flip the palette switch runs', () => {
+    const h = handlers();
+    buildEditorCommands({ ...base, esBoard: true }, h)
+      .find((c) => c.id === 'timeline-lanes')!
+      .run();
+    expect(h.toggleTimelineLanes).toHaveBeenCalledTimes(1);
+  });
+
+  it('is withheld from a view-only visitor', () => {
+    expect(ids({ ...base, esBoard: true, isReadOnly: true })).not.toContain('timeline-lanes');
   });
 });

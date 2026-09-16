@@ -154,8 +154,8 @@ describe('tabForWire — board kind', () => {
   // wire like any other tab field.
   it('carries the timeline lane origin to the wire', () => {
     const out = tabForWire(
-      tab({ kind: 'event-storming', esTimeline: { originX: 120, originY: 80 } }),
+      tab({ kind: 'event-storming', esTimeline: { originX: 120, originY: 80, enabled: true } }),
     );
-    expect(out.esTimeline).toEqual({ originX: 120, originY: 80 });
+    expect(out.esTimeline).toEqual({ originX: 120, originY: 80, enabled: true });
   });
 });

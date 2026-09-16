@@ -18,6 +18,7 @@ import {
   MindmapMenuIcon,
   PaletteMenuIcon,
   PasteMenuIcon,
+  TimelineLanesMenuIcon,
   TreeMenuIcon,
 } from '@/components/palette/context-menu-icons';
 import {
@@ -72,6 +73,22 @@ export function TabCanvasMenuSections({
           onClose();
         }}
       />
+      {/* Event-storming board verbs (spec/139). A VERB row, not a styling
+          accordion: on this board the menu offers things to do, and turning
+          the lanes on is one of them. */}
+      {canvas.esBoard ? (
+        <>
+          <MenuGroupSeparator />
+          <MenuActionRow
+            icon={<TimelineLanesMenuIcon />}
+            label={canvas.lanesOn ? 'Turn timeline lanes off' : 'Turn timeline lanes on'}
+            onClick={() => {
+              canvas.onToggleTimelineLanes();
+              onClose();
+            }}
+          />
+        </>
+      ) : null}
       <MenuGroupSeparator />
       <MenuAccordionSection
         title="Look & Feel"
