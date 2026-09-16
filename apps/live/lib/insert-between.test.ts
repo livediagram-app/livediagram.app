@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  ES_GRID_CELL,
-  type ArrowElement,
-  type Element,
-  type StickyElement,
-} from '@livediagram/diagram';
+import { type ArrowElement, type Element, type StickyElement } from '@livediagram/diagram';
 import {
   DEFAULT_INSERTION_GAP,
   applyInsertionShift,
@@ -492,36 +487,31 @@ describe('insertionGhostCentre', () => {
 });
 
 // Timeline lanes (spec/139 Phase 6): with lanes on, the board has committed to
-// a half-note column rhythm, so opening a slot in a row must leave every note
-// it pushes still sitting on a column. The ripple therefore rounds UP to a
-// whole number of cells — up, never down, so the slot never narrows below the
-// note plus the row's own gap.
+// The ripple opens by the incoming note plus the row's own gap, and that is
+// the whole rule on every board. A lanes board used to round it up to a column
+// lattice, which is exactly the assumption that broke: a gutter of 72 is not a
+// multiple of a half note, so the rounding shifted rows off their own rhythm.
 describe('findInsertionSlot — on a lanes-on board', () => {
-  it('rounds the ripple up to a whole number of grid columns', () => {
+  it('opens by the row rhythm, not a lattice', () => {
     const slot = findInsertionSlot({
       cursorX: 236,
       cursorY: 100,
       incomingWidth: 200,
       elements: ROW,
-      gridCell: ES_GRID_CELL,
     });
-    // 200 + a 72 gap = 272 → the next whole column up is 300.
-    expect(slot?.shiftDx).toBe(300);
+    // 200 + the row's own 72 gap.
+    expect(slot?.shiftDx).toBe(272);
   });
 
-  it('leaves an already-aligned ripple exactly as it was', () => {
+  it('falls back to the board gap when the row has none to measure', () => {
     const flush = [note('a', 0), note('b', 200), note('c', 400)];
     const slot = findInsertionSlot({
       cursorX: 200,
       cursorY: 100,
       incomingWidth: 200,
       elements: flush,
-      gridCell: ES_GRID_CELL,
     });
-    // No gap to measure → the template's 72, so 272 → 300. A 200-wide note in
-    // a row with no gaps is 2 whole columns, and 300 is 3: the rounding is UP.
-    expect(slot!.shiftDx % ES_GRID_CELL).toBe(0);
-    expect(slot!.shiftDx).toBeGreaterThanOrEqual(272);
+    expect(slot!.shiftDx).toBe(272);
   });
 
   it('is unrounded when lanes are off', () => {

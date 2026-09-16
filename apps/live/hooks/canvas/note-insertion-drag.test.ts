@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ES_GRID_CELL, type Element, type StickyElement } from '@livediagram/diagram';
+import { type Element, type StickyElement } from '@livediagram/diagram';
 import type { ShapeBounds } from '@/lib/canvas';
 import { landNoteInSlot, resolveNoteInsertion } from './note-insertion-drag';
 
@@ -127,16 +127,17 @@ describe('landNoteInSlot', () => {
   });
 });
 
-// Timeline lanes (spec/139 Phase 6): the ripple opens by whole half-note
-// columns so the row it pushes stays on the grid.
+// Timeline lanes (spec/139 Phase 6): the ripple opens by the incoming note
+// plus the row's own gap, on a lanes board exactly as on any other. It used to
+// round up to a column lattice; the lattice is gone, because it could not
+// express the row's gutter in the first place.
 describe('resolveNoteInsertion — on a lanes-on board', () => {
-  it('rounds the ripple up to a whole number of columns', () => {
+  it('opens by the row rhythm, not a lattice', () => {
     const slot = resolve({ timeline: { originX: 0, originY: 0, enabled: true } });
-    expect(slot!.shiftDx % ES_GRID_CELL).toBe(0);
-    expect(slot!.shiftDx).toBe(300);
+    expect(slot!.shiftDx).toBe(272);
   });
 
-  it('leaves it unrounded when lanes are off', () => {
+  it('opens by the same rhythm when lanes are off', () => {
     expect(resolve()!.shiftDx).toBe(272);
   });
 });

@@ -200,12 +200,56 @@ function overlay(
   return { width: image.width, height: image.height, data };
 }
 
+// The SWEEP: the same photograph at several working resolutions.
+//
+// This is the measurement that matters most, because it is the one that
+// catches a threshold hiding in absolute pixels. A detector whose constants
+// are all relative finds the same notes in the same photo whether it is given
+// 1000px or 2048px of it; one that swings four-fold between them has a number
+// somewhere that means "pixels" when it should mean "a fraction of a note".
+//
+//   npx tsx scripts/calibrate.ts --sweep
+//
+// Reads `r<width>-<photo>.png` for each width, which are plain resizes of the
+// originals (`convert photo.jpg -resize 2048x2048 r2048-photo.png`).
+function sweep() {
+  const files = readdirSync(PHOTO_DIR).filter((f) => /^r\d+-.+\.png$/.test(f));
+  const widths = [...new Set(files.map((f) => Number(f.match(/^r(\d+)-/)![1])))].sort(
+    (a, b) => a - b,
+  );
+  const photos = [...new Set(files.map((f) => f.replace(/^r\d+-/, '')))].sort();
+  if (photos.length === 0) {
+    console.error(`no r<width>-*.png in ${PHOTO_DIR}`);
+    process.exit(1);
+  }
+
+  console.log(`\nCOUNTS BY WORKING RESOLUTION (they should agree)\n`);
+  console.log(`  ${'photo'.padEnd(26)}${widths.map((w) => `${w}px`.padStart(9)).join('')}`);
+  for (const photo of photos) {
+    const cells: string[] = [];
+    for (const w of widths) {
+      const name = `r${w}-${photo}`;
+      if (!existsSync(`${PHOTO_DIR}/${name}`)) {
+        cells.push('-'.padStart(9));
+        continue;
+      }
+      const image = load(name);
+      const found = detectStickies(image);
+      cells.push(String(found.length).padStart(9));
+      writeFileSync(`/tmp/calib-${name}`, encodePng(overlay(image, found)));
+    }
+    console.log(`  ${photo.replace('.png', '').padEnd(26)}${cells.join('')}`);
+  }
+  console.log(`\n  overlays: /tmp/calib-r<width>-<photo>.png\n`);
+}
+
 function main() {
+  if (process.argv.includes('--sweep')) return sweep();
   const names = readdirSync(PHOTO_DIR)
-    .filter((f) => f.startsWith('preview-') && f.endsWith('.png'))
+    .filter((f) => /^(preview-|r\d+-)/.test(f) && f.endsWith('.png'))
     .sort();
   if (names.length === 0) {
-    console.error(`no preview-*.png in ${PHOTO_DIR}`);
+    console.error(`no working copies in ${PHOTO_DIR}`);
     process.exit(1);
   }
 

@@ -88,11 +88,6 @@ type FindArgs = {
   // The slot currently on offer, if any. Passed back in so the offer sticks
   // through a shaky hand (see SLOT_HYSTERESIS).
   active?: InsertionSlot | null;
-  // The half-note column width, when the board has timeline lanes on
-  // (spec/139 Phase 6). The ripple then rounds UP to a whole number of
-  // columns, so a row the slot pushes right is still on the grid afterwards.
-  // Absent on every other board, where there is no grid to stay on.
-  gridCell?: number;
 };
 
 // The event-storming template's own gap, used when the row has no gap worth
@@ -232,7 +227,6 @@ export function findInsertionSlot({
   inertIds,
   excludeIds,
   active,
-  gridCell,
 }: FindArgs): InsertionSlot | null {
   // The board as the insertion sees it: everything except what is being
   // inserted. One filter up front, so no rule below has to remember.
@@ -265,10 +259,12 @@ export function findInsertionSlot({
   if (!left || !right) return null;
 
   const atX = right.x;
-  const opening = incomingWidth + medianGap(row);
-  // UP, never down: rounding down could narrow the slot below the incoming
-  // note plus the row's own rhythm, which is the one thing the width means.
-  const shiftDx = gridCell ? Math.ceil(opening / gridCell) * gridCell : opening;
+  // The incoming note plus the row's own rhythm, on every board. There used
+  // to be a rounding-up step here for boards with lanes, so a pushed row
+  // stayed on the column lattice; the lattice is gone (it could not express
+  // the row's gutter in the first place), and the opening is now the rhythm
+  // itself.
+  const shiftDx = incomingWidth + medianGap(row);
 
   const movingIds = travellingIdsFrom(elements, atX);
 

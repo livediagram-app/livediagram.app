@@ -1,4 +1,4 @@
-import { ES_GRID_CELL, isBoxed, type Element, type EsTimeline } from '@livediagram/diagram';
+import { isBoxed, type Element, type EsTimeline } from '@livediagram/diagram';
 import { dragClusterIds, isSingleNoteDrag } from './note-dock-drag';
 import type { ShapeBounds } from '@/lib/canvas';
 import {
@@ -83,7 +83,6 @@ export function resolveNoteInsertion({
     // A host drags its cluster, and a cluster is one thing to insert.
     excludeIds: dragClusterIds(elements, primaryId),
     active,
-    ...(timeline ? { gridCell: ES_GRID_CELL } : {}),
   });
 }
 

@@ -111,6 +111,15 @@ function drawTo(
   canvas.height = height;
   const ctx = canvas.getContext('2d', { willReadFrequently: true });
   if (!ctx) throw new PhotoDetectFailed('photo_unreadable');
+  // ASK FOR A PROPER DOWNSCALE. A phone photo is 4000px wide and the working
+  // image is 2048, so this call is throwing away three quarters of the
+  // pixels; at the default smoothing quality it does that by sampling rather
+  // than averaging, and the result is an aliased, speckled image whose paper
+  // edges come apart into fragments. The detector found 21 notes on a photo
+  // where the same code, given a properly resampled copy of the same
+  // photograph, found 34.
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
   ctx.drawImage(bitmap, 0, 0, width, height);
   const { data } = ctx.getImageData(0, 0, width, height);
   return { image: { width, height, data } };

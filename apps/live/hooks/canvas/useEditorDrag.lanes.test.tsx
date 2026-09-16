@@ -3,7 +3,6 @@ import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import {
-  ES_GRID_CELL,
   ES_LANE_PITCH,
   laneCentre,
   type Element,
@@ -158,8 +157,12 @@ afterEach(() => {
 });
 
 describe('useEditorDrag — timeline lanes (spec/139)', () => {
-  // Aim the note's top-left at a few px off lane 1, column 3.
-  const TARGET = { x: 3 * ES_GRID_CELL + 9, y: ES_LANE_PITCH + 7 };
+  // Aim the note's top-left a few px off lane 1, and a few px off the left
+  // edge of the note 'b' already on the board — the column that EXISTS.
+  // 9px off, which is past the ordinary alignment threshold (6) and inside
+  // the lanes neighbour threshold (12): so anything that lands on 272 here
+  // landed there because of LANES, not the guides every board has.
+  const TARGET = { x: 272 + 9, y: ES_LANE_PITCH + 7 };
   const DX = TARGET.x - 1000;
   const DY = TARGET.y - 1000;
 
@@ -167,14 +170,14 @@ describe('useEditorDrag — timeline lanes (spec/139)', () => {
     const h = harness();
     press(h, 'drag');
     move(h, DX, DY);
-    expect(getLanePreview()).toEqual({ laneIndex: 1, cellIndex: 3 });
+    expect(getLanePreview()).toEqual({ laneIndex: 1 });
   });
 
-  it('lands the note centred on that lane and on the column', () => {
+  it('lands the note centred on that lane, lined up with the note below', () => {
     const h = harness();
     press(h, 'drag');
     move(h, DX, DY);
-    expect(h.xOf('drag')).toBe(3 * ES_GRID_CELL);
+    expect(h.xOf('drag')).toBe(272);
     expect(h.yOf('drag')).toBe(laneCentre(1, TIMELINE) - 100);
   });
 
@@ -203,7 +206,7 @@ describe('useEditorDrag — timeline lanes (spec/139)', () => {
     const midY = ES_LANE_PITCH + 100;
     move(h, DX, midY - 1000);
     expect(h.yOf('drag')).toBe(midY);
-    expect(getLanePreview()).toEqual({ laneIndex: null, cellIndex: 3 });
+    expect(getLanePreview()).toBeNull();
   });
 
   it('stands down under free placement (Cmd/Ctrl)', () => {
@@ -257,11 +260,11 @@ describe('useEditorDrag — timeline lanes (spec/139)', () => {
     move(h, DX, DY, { shift: true });
     const cloneIds = h.result.current.shiftDupGhostIds;
     expect(cloneIds).not.toBeNull();
-    expect(getLanePreview()).toEqual({ laneIndex: 1, cellIndex: 3 });
-    // The original is back where it was grabbed; the clone is on the grid.
+    expect(getLanePreview()).toEqual({ laneIndex: 1 });
+    // The original is back where it was grabbed; the clone is on the lane.
     expect(h.xOf('drag')).toBe(1000);
     const cloneId = [...cloneIds!][0]!;
-    expect(h.xOf(cloneId)).toBe(3 * ES_GRID_CELL);
+    expect(h.xOf(cloneId)).toBe(272);
     expect(h.yOf(cloneId)).toBe(laneCentre(1, TIMELINE) - 100);
   });
 

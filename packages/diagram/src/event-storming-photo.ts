@@ -22,7 +22,7 @@ import {
   stripDanglingDocks,
   type EsDockSide,
 } from './event-storming-dock';
-import { activeTimeline, snapToLanes, type EsTimeline } from './event-storming-lanes';
+import { activeTimeline, snapToLane, type EsTimeline } from './event-storming-lanes';
 import {
   applyPhotoTransform,
   defaultPhotoScale,
@@ -134,11 +134,11 @@ export function placeNewNotes(
     let x = note.x;
     let y = timeline ? note.y : snapRow(note.y, note.height, rows);
     if (timeline) {
-      const snap = snapToLanes({ x, y, width: note.width, height: note.height }, timeline);
-      if (snap) {
-        x = snap.x;
-        y = snap.y;
-      }
+      // Rows only: a photo already knows where the notes were ACROSS the
+      // wall, and that is the one thing about the layout worth keeping. The
+      // lanes tidy the rows; x stays as photographed.
+      const snap = snapToLane({ x, y, width: note.width, height: note.height }, timeline, Infinity);
+      if (snap) y = snap.y;
     }
     let candidate = { ...note, x, y };
     // Push right until the spot is free. Existing notes and already-settled

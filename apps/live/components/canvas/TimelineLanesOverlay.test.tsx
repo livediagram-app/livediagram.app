@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { ES_GRID_CELL, ES_LANE_HEIGHT, laneTop, type EsTimeline } from '@livediagram/diagram';
+import { ES_LANE_HEIGHT, laneTop, type EsTimeline } from '@livediagram/diagram';
 import { setLanePreview } from '@/lib/lane-preview';
 import { TimelineLanesOverlay } from './TimelineLanesOverlay';
 
@@ -44,12 +44,12 @@ describe('TimelineLanesOverlay', () => {
   });
 
   it('draws nothing on a board whose lanes are off', () => {
-    setLanePreview({ laneIndex: 1, cellIndex: 3 });
+    setLanePreview({ laneIndex: 1 });
     expect(draw({ timeline: null }).querySelector('svg')).toBeNull();
   });
 
   it('lights the lane plus its two neighbours', () => {
-    setLanePreview({ laneIndex: 1, cellIndex: 3 });
+    setLanePreview({ laneIndex: 1 });
     const c = draw();
     expect(bands(c)).toHaveLength(3);
     expect(bands(c).map((r) => Number(r.getAttribute('y')))).toEqual([
@@ -63,29 +63,18 @@ describe('TimelineLanesOverlay', () => {
     expect(opacities[1]).toBeGreaterThan(opacities[2]!);
   });
 
-  it('marks the column the left edge is landing on', () => {
-    setLanePreview({ laneIndex: 1, cellIndex: 3 });
-    const ticks = [...draw().querySelectorAll('line')].filter(
-      (l) => l.getAttribute('x1') === l.getAttribute('x2'),
-    );
-    expect(ticks.map((l) => Number(l.getAttribute('x1')))).toEqual([
-      3 * ES_GRID_CELL,
-      4 * ES_GRID_CELL,
-    ]);
-  });
-
-  it('draws the column even when no lane claimed the note', () => {
-    setLanePreview({ laneIndex: null, cellIndex: 2 });
+  it('draws nothing when no lane claimed the note — x is not its business', () => {
+    // Lanes are ROWS. The column tick that used to live here described a
+    // lattice the board no longer has; x is answered by the neighbours, and
+    // the alignment guides already draw that.
+    setLanePreview({ laneIndex: null });
     const c = draw();
     expect(bands(c)).toHaveLength(0);
-    const ticks = [...c.querySelectorAll('line')].filter(
-      (l) => l.getAttribute('x1') === l.getAttribute('x2'),
-    );
-    expect(ticks).toHaveLength(2);
+    expect(c.querySelectorAll('line')).toHaveLength(0);
   });
 
   it('scales into client space at any zoom', () => {
-    setLanePreview({ laneIndex: 1, cellIndex: 3 });
+    setLanePreview({ laneIndex: 1 });
     for (const zoom of [0.5, 2]) {
       cleanup();
       const c = draw({ zoom });
@@ -96,7 +85,7 @@ describe('TimelineLanesOverlay', () => {
   });
 
   it('never takes a pointer event away from the drag it describes', () => {
-    setLanePreview({ laneIndex: 0, cellIndex: 0 });
+    setLanePreview({ laneIndex: 0 });
     expect(draw().querySelector('svg')!.className.baseVal).toContain('pointer-events-none');
   });
 });

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  ES_GRID_CELL,
+  ES_NOTE_GAP,
   ES_LANE_PITCH,
   laneCentre,
   type Element,
@@ -109,29 +109,56 @@ describe('paletteDragSnapAt', () => {
   });
 });
 
-// Timeline lanes (spec/139 Phase 6): the same rung the note-drag resolver
-// applies, so a note dragged in from the palette lands on the grid the board
-// has already committed to.
+// Timeline lanes (spec/139 Phase 6): the same rungs the note-drag resolver
+// applies, so a note dragged in from the palette joins the row the board has
+// already committed to and lines up with the notes already in it.
 describe('paletteDragSnapAt — timeline lanes', () => {
   const TIMELINE: EsTimeline = { originX: 0, originY: 0, enabled: true };
   const dragged = { width: 200, height: 200 };
+  const neighbour = (x: number, y: number) =>
+    ({ id: 'n', type: 'sticky', x, y, width: 200, height: 200 }) as Element;
 
-  it('centres the note on the lane and puts its left edge on the column', () => {
+  it('centres the note on the lane and lines it up with the note below', () => {
+    const column = 200 + ES_NOTE_GAP;
     const out = paletteDragSnapAt({
-      canvasX: 3 * ES_GRID_CELL + 9 + 100,
+      canvasX: column + 5 + 100,
+      canvasY: ES_LANE_PITCH + 7 + 100,
+      ...dragged,
+      elements: [neighbour(column, 2 * ES_LANE_PITCH)],
+      timeline: TIMELINE,
+    });
+    expect(column + 5 + out.dx).toBe(column);
+    expect(ES_LANE_PITCH + 7 + 100 + out.dy).toBe(laneCentre(1, TIMELINE));
+    expect(out.lane).toEqual({ laneIndex: 1 });
+  });
+
+  it('joins a row one gutter clear of the note already in it', () => {
+    const beside = neighbour(0, ES_LANE_PITCH);
+    const out = paletteDragSnapAt({
+      canvasX: 200 + ES_NOTE_GAP + 6 + 100,
+      canvasY: ES_LANE_PITCH + 7 + 100,
+      ...dragged,
+      elements: [beside],
+      timeline: TIMELINE,
+    });
+    expect(200 + ES_NOTE_GAP + 6 + out.dx).toBe(200 + ES_NOTE_GAP);
+  });
+
+  it('takes the lane and leaves x alone on an empty board', () => {
+    const out = paletteDragSnapAt({
+      canvasX: 937 + 100,
       canvasY: ES_LANE_PITCH + 7 + 100,
       ...dragged,
       elements: [],
       timeline: TIMELINE,
     });
-    expect(3 * ES_GRID_CELL + 9 + out.dx).toBe(3 * ES_GRID_CELL);
-    expect(ES_LANE_PITCH + 7 + 100 + out.dy).toBe(laneCentre(1, TIMELINE));
-    expect(out.lane).toEqual({ laneIndex: 1, cellIndex: 3 });
+    expect(out.dx).toBe(0);
+    expect(out.lane).toEqual({ laneIndex: 1 });
   });
 
   it('is inert without a timeline, exactly as every other board behaves', () => {
     const out = paletteDragSnapAt({
-      canvasX: 3 * ES_GRID_CELL + 9 + 100,
+      canvasX: 305 + 100,
       canvasY: ES_LANE_PITCH + 7 + 100,
       ...dragged,
       elements: [],
@@ -144,15 +171,13 @@ describe('paletteDragSnapAt — timeline lanes', () => {
     // cannot claim y, so alignment still does, and its guide survives.
     const neighbourY = ES_LANE_PITCH + 100;
     const out = paletteDragSnapAt({
-      canvasX: 3 * ES_GRID_CELL + 9 + 100,
+      canvasX: 900 + 100,
       canvasY: neighbourY + 100 + 3,
       ...dragged,
-      elements: [
-        { id: 'n', type: 'sticky', x: 900, y: neighbourY, width: 200, height: 200 } as Element,
-      ],
+      elements: [neighbour(900, neighbourY)],
       timeline: TIMELINE,
     });
-    expect(out.lane).toEqual({ laneIndex: null, cellIndex: 3 });
+    expect(out.lane).toBeNull();
     expect(out.guides.length).toBeGreaterThan(0);
     expect(out.guides.every((g) => g.axis === 'y')).toBe(true);
   });

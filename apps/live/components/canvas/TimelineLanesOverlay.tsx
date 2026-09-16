@@ -3,9 +3,7 @@
 import type { RefObject } from 'react';
 import {
   deriveTextColorForBg,
-  ES_GRID_CELL,
   ES_LANE_HEIGHT,
-  cellLeft,
   laneTop,
   type EsTimeline,
 } from '@livediagram/diagram';
@@ -106,40 +104,6 @@ export function TimelineLanesOverlay({
           </g>
         );
       })}
-      {/* The column tick: a short upright at the grid line the note's LEFT
-          edge is landing on, so the half-note stagger is visible as it
-          happens rather than only after the drop. */}
-      {preview.cellIndex !== null
-        ? (() => {
-            const x = toClientX(cellLeft(preview.cellIndex, timeline));
-            const laneY = toClientY(laneTop(lit ?? 0, timeline));
-            const height = ES_LANE_HEIGHT * viewportZoom;
-            return (
-              <g>
-                <line
-                  x1={x}
-                  y1={laneY}
-                  x2={x}
-                  y2={laneY + height}
-                  stroke={colour}
-                  strokeWidth={1}
-                  strokeOpacity={0.5}
-                />
-                {/* A second tick a column along, so the grid reads as a grid
-                    (one line alone says nothing about its spacing). */}
-                <line
-                  x1={x + ES_GRID_CELL * viewportZoom}
-                  y1={laneY}
-                  x2={x + ES_GRID_CELL * viewportZoom}
-                  y2={laneY + height}
-                  stroke={colour}
-                  strokeWidth={1}
-                  strokeOpacity={0.2}
-                />
-              </g>
-            );
-          })()
-        : null}
     </svg>
   );
 }

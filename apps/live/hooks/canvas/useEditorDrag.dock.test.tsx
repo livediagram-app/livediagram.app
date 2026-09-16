@@ -266,13 +266,14 @@ describe('useEditorDrag — magnetic docking (spec/139)', () => {
     });
     const h = harness({ elements: [HOST, docked], lanes: true });
     press(h, 'e');
-    // Aim the host a few px off lane 2 / column 12.
+    // Aim the host a few px off lane 2. Lanes claim the ROW; x is left where
+    // the hand put it unless a neighbour is near, and the only other note
+    // here is the one docked to this very host.
     move(h, 12 * 100 + 7 - 1000, 2 * 240 + 9 - 500);
-    // The host is on the grid…
-    expect(h.byId('e').x).toBe(12 * 100);
+    expect(h.byId('e').x).toBe(12 * 100 + 7);
     expect(h.byId('e').y).toBe(2 * 240);
     // …and the pair is still a pair, at exactly its seam.
-    expect(h.byId('c').x).toBe(12 * 100 - 16 - 200);
+    expect(h.byId('c').x).toBe(12 * 100 + 7 - 16 - 200);
     expect(h.byId('c').y).toBe(h.byId('e').y);
   });
 

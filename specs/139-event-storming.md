@@ -401,10 +401,20 @@ board's behaviour changes at all.
 
 **Timeline lanes** is a board-level switch. With it on, the board carries an
 infinite stack of horizontal lanes — one note tall, evenly pitched, running in
-both directions — and a note being dragged **snaps its centre onto a lane** and
-**its left edge onto a half-note grid column**. So a note on one lane sits
-either exactly above the note on the lane before it, or staggered by half a
-note; those two arrangements, and nothing in between.
+both directions — and a note being dragged **snaps its centre onto a lane**. A
+lane is a ROW, and rows are all it claims: **x is answered by the notes already
+on the board**, not by a grid.
+
+**X used to be a half-note lattice, and that was wrong** (found by the operator
+on a real board, fixed before the feature was used in anger). Columns every
+100px could only express gaps that were multiples of a half note, but the
+board's own gutter is 72 — the event-storming template builds its starter row
+with it, and the insertion ripple opens a slot by it — so every row the product
+itself laid out was permanently off-lattice: a note dragged in the lane above
+one landed 28px to its right, then 44px to its left, and the x tolerance was
+half a cell, which every x is within, so there was no leaving it where you put
+it either. The lattice only ever agreed with a board whose notes were touching,
+which is the one arrangement a wall rarely has.
 
 Phase 5 made the x axis a grammar the board KNOWS ("between" is a place you can
 drop something). Lanes do the same for y: each lane is a row of the story
@@ -430,10 +440,27 @@ enabled }`. A facilitator turning lanes on turns them on for the room, like
   store for free. Absence is the default and always will be.
 - **Each axis snaps only within its own tolerance**, and independently: half
   the lane gap (20px) on y, so a note parked deliberately between two lanes
-  stays there; half a column (50px) on x, which every x is within by
-  definition, so the grid always claims the left edge. A grid that only
-  sometimes applied would leave a row half on the columns and half off them,
-  which is worse than no grid.
+  stays there; 12px on x, a real threshold, so a note placed in open space
+  stays exactly where the hand put it.
+- **X is NEIGHBOUR-RELATIVE.** Two relationships, and a note takes whichever is
+  within reach:
+  - **an edge** — its left edge against a neighbour's left edge, or its right
+    edge against theirs, which is the column the author can actually see,
+    whatever the widths involved are; and
+  - **a gutter** — one clear gutter from the note beside it in the same row,
+    which is the breathing space stickies get on a wall.
+
+  Edges win when both are in reach, because lining up with a column that exists
+  beats inventing a new gap beside it. Only notes within two lanes count: a
+  column is a relationship between neighbouring rows, and a note six rows down
+  is a different part of the story.
+
+- **The gutter is MEASURED, not assumed.** `prevailingNoteGap` takes the median
+  clear space between notes sitting side by side in the same row, so a board
+  whose author works at 40 keeps 40; `ES_NOTE_GAP` (72, the number the template
+  and the ripple already used) is the fallback when there is nothing to
+  measure. A docked pair's 16px seam is excluded on purpose — a seam is a join,
+  not a gutter, and counting it would drag the whole board's rhythm towards it.
 - **The pitch is a constant, not a field.** `ES_LANE_PITCH` = 240px: a
   200px-tall standard note plus a 40px gap, the rhythm of stickies pressed onto
   a wall in rows. One rhythm per board is the whole point — a board with two
@@ -442,12 +469,6 @@ enabled }`. A facilitator turning lanes on turns them on for the room, like
   read as one row: the 180-tall wide kinds (policy, external system, aggregate)
   and the 140-tall actor sit centred against the 200-tall square kinds instead
   of hanging from a shared top edge.
-- **The grid is HALF a note** (`ES_GRID_CELL` = 100px, half a square note's
-  width), and the note's LEFT EDGE lands on it. That is the whole of "either
-  exactly above each other or staggered": same cell = exactly above, one cell
-  across = staggered by half a note. There is no aligned / staggered mode to
-  choose — two cells per note IS the choice, made per note, by where you drop
-  it.
 - **The origin is set ONCE, when lanes are switched on**: the top-left corner
   of the board's top-most (then left-most) note, or `(0, 0)` on an empty board.
   So the lanes arrive already lined up with the work that is there, and
@@ -463,13 +484,16 @@ enabled }`. A facilitator turning lanes on turns them on for the room, like
   on the board) the lane it would land on lights as a faint band with a centre
   line, its two neighbours light at half that alpha so the rhythm reads, and a
   short tick marks the grid column. The bands span the viewport because the
-  lanes are infinite. Everything goes on release.
+  lanes are infinite. Everything goes on release. The overlay draws NO column
+  marks: x is the neighbours' business, and the alignment guides every board
+  has already draw that line.
 - **A single sticky only**, the same rule the Alt insertion follows: a
   multi-selection, a shape, an icon, an arrow or an image drags exactly as it
   does on every other board.
 - **Precedence** (top rung wins): an open insertion slot (Alt, Phase 5) → free
-  placement (Cmd/Ctrl, spec/60) → a dock candidate (Phase 7) → lane + grid →
-  the ordinary alignment / distribution snap. Shift-duplicate (spec/80)
+  placement (Cmd/Ctrl, spec/60) → a dock candidate (Phase 7) → the lane (y) and
+  the neighbours (x) → the ordinary alignment / distribution snap for whichever
+  axis is left. Shift-duplicate (spec/80)
   suppresses the slot and the dock, and the clone still lands on a lane.
 - **The preview never touches the document** (the Phase 5 rule): the lit lane
   is published on a module-level store and rendered as an overlay; the drop is
@@ -477,9 +501,11 @@ enabled }`. A facilitator turning lanes on turns them on for the room, like
 - **One snap computation per gesture.** The palette path and the note-drag path
   each resolve the lane ONCE and the ghost, the overlay and the drop all read
   that answer. A preview that disagrees with the drop is a lie (spec/58).
-- **A rippled row stays on the grid.** With lanes on, the Alt insertion's shift
-  distance rounds UP to a whole number of grid cells, so opening a slot in a
-  row leaves every note it pushed still sitting on a column.
+- **A rippled row keeps its own rhythm.** The Alt insertion opens by the
+  incoming note plus the row's own gap, on a lanes board exactly as on any
+  other. It used to round that up to a whole number of columns; that rounding
+  was the lattice bug in another costume, shifting a row off the very spacing
+  it was measured from.
 - **Never exported.** Lanes are a drag-time aid, not board content: the SVG /
   PNG export draws none of them. Mermaid / Markdown / Excalidraw ignore the
   field entirely.
@@ -490,9 +516,9 @@ enabled }`. A facilitator turning lanes on turns them on for the room, like
   no per-lane naming — a lane is a position, not an entity.
 
 **What shipped, in numbers.** `ES_LANE_HEIGHT` 200 (one standard note),
-`ES_LANE_GAP` 40, `ES_LANE_PITCH` 240, `ES_GRID_CELL` 100, y tolerance 20
-(`ES_LANE_SNAP_Y`, half the gap), x tolerance 50 (`ES_LANE_SNAP_X`, half a
-column — so the grid always claims). The geometry is
+`ES_LANE_GAP` 40, `ES_LANE_PITCH` 240, `ES_NOTE_GAP` 72 (the board's own
+gutter, shared with the template and the insertion ripple), y tolerance 20
+(`ES_LANE_SNAP_Y`, half the gap), x tolerance 12 (`ES_NEIGHBOUR_SNAP_X`). The geometry is
 `packages/diagram/src/event-storming-lanes.ts`; the switch is
 `hooks/canvas/useTimelineLanes.ts`, published to the palette row
 (`components/palette/EventStormingBoardRows.tsx`), the command palette and the

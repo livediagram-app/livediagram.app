@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import {
-  ES_GRID_CELL,
   findDockCandidate,
   type AlignmentGuide,
   type DistributionGuide,
@@ -143,7 +142,6 @@ export function usePaletteDragGuides({
               active: slot,
               // Lanes on: open the slot by whole columns, so the row it
               // pushes is still on the grid afterwards.
-              ...(lanes ? { gridCell: ES_GRID_CELL } : {}),
             })
           : null;
       if (slot) {

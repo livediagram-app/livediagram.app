@@ -2,7 +2,9 @@ import {
   alignmentGuides,
   distributionSnap,
   snapToAlignment,
-  snapToLanes,
+  prevailingNoteGap,
+  snapToLane,
+  snapToNeighbours,
   type AlignmentGuide,
   type DistributionGuide,
   type Element,
@@ -55,16 +57,19 @@ export function paletteDragSnapAt({
     width,
     height,
   };
-  // The lane rung sits above alignment, the same order the note-drag resolver
-  // follows — one ladder, two entry points.
-  const laneSnap = timeline ? snapToLanes(candidate, timeline) : null;
-  if (laneSnap?.snappedX && laneSnap.snappedY) {
+  // Lanes claim the row, the neighbours claim x — the same ladder the
+  // note-drag resolver follows, two entry points.
+  const laneSnap = timeline ? snapToLane(candidate, timeline) : null;
+  const gutterSnap = timeline
+    ? snapToNeighbours(candidate, elements, { gap: prevailingNoteGap(elements) })
+    : null;
+  if (laneSnap && gutterSnap) {
     return {
-      dx: laneSnap.x - candidate.x,
+      dx: gutterSnap.x - candidate.x,
       dy: laneSnap.y - candidate.y,
       guides: [],
       distGuides: [],
-      lane: { laneIndex: laneSnap.laneIndex, cellIndex: laneSnap.cellIndex },
+      lane: { laneIndex: laneSnap.laneIndex },
     };
   }
   const snap = snapToAlignment(candidate, elements, NO_EXCLUDE, ALIGN_SNAP_THRESHOLD);
@@ -91,17 +96,17 @@ export function paletteDragSnapAt({
   const distGuides = dist.guides.filter((g) =>
     g.axis === 'x' ? !snap.snappedX && dist.dx !== 0 : !snap.snappedY && dist.dy !== 0,
   );
-  if (!laneSnap) return { dx, dy, guides, distGuides, lane: null };
+  if (!laneSnap && !gutterSnap) return { dx, dy, guides, distGuides, lane: null };
   // One axis claimed by the lane, the other left to alignment — and the
   // claimed axis drops its guide line, which would otherwise promise an edge
   // the note is not landing on.
   const keep = <T extends { axis: 'x' | 'y' }>(gs: T[]): T[] =>
-    gs.filter((g) => (g.axis === 'x' ? !laneSnap.snappedX : !laneSnap.snappedY));
+    gs.filter((g) => (g.axis === 'x' ? !gutterSnap : !laneSnap));
   return {
-    dx: laneSnap.snappedX ? laneSnap.x - candidate.x : dx,
-    dy: laneSnap.snappedY ? laneSnap.y - candidate.y : dy,
+    dx: gutterSnap ? gutterSnap.x - candidate.x : dx,
+    dy: laneSnap ? laneSnap.y - candidate.y : dy,
     guides: keep(guides),
     distGuides: keep(distGuides),
-    lane: { laneIndex: laneSnap.laneIndex, cellIndex: laneSnap.cellIndex },
+    lane: laneSnap ? { laneIndex: laneSnap.laneIndex } : null,
   };
 }

@@ -2,7 +2,6 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import {
-  ES_GRID_CELL,
   ES_LANE_PITCH,
   laneCentre,
   dockedBounds,
@@ -105,16 +104,17 @@ afterEach(() => {
 // which is exactly what the drop consumes.
 describe('usePaletteDragGuides — timeline lanes (spec/139)', () => {
   const TIMELINE: EsTimeline = { originX: 0, originY: 0, enabled: true };
-  // A cursor a few px off lane 1 / column 3, in note-centre coords.
-  const CX = 3 * ES_GRID_CELL + 9 + 100;
+  // A cursor a few px off lane 1, in note-centre coords. x has nothing to
+  // line up with on an empty board, so it stays where the cursor is.
+  const CX = 309 + 100;
   const CY = ES_LANE_PITCH + 7 + 100;
 
   it('lights the lane and carries the note onto it', () => {
     const { wrapperRef } = render({ esBoard: true, timeline: TIMELINE, elements: [] });
     dragOver(wrapperRef.current, CX, CY);
-    expect(getLanePreview()).toEqual({ laneIndex: 1, cellIndex: 3 });
+    expect(getLanePreview()).toEqual({ laneIndex: 1 });
     const snap = getPaletteDragSnap();
-    expect(CX + snap!.dx - 100).toBe(3 * ES_GRID_CELL);
+    expect(CX + snap!.dx - 100).toBe(309);
     expect(CY + snap!.dy).toBe(laneCentre(1, TIMELINE));
   });
 

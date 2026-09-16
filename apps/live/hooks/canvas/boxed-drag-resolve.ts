@@ -5,7 +5,9 @@ import {
   isBoxed,
   snapResizeBounds,
   snapToAlignment,
-  snapToLanes,
+  prevailingNoteGap,
+  snapToLane,
+  snapToNeighbours,
   type AlignmentGuide,
   type DistributionGuide,
   type Element,
@@ -94,19 +96,25 @@ export function resolveBoxedMove({
     width: primaryStart.width,
     height: primaryStart.height,
   };
-  // The lane rung sits ABOVE alignment: a board with lanes on has already
-  // said what its rhythm is, and an alignment nudge that disagreed would put
-  // the note half a column off the grid every author can see.
-  const laneSnap = timeline ? snapToLanes(candidate, timeline) : null;
-  if (laneSnap?.snappedX && laneSnap.snappedY) {
-    // Both axes claimed: skip the alignment / distribution scans entirely
+  // Lanes claim Y — the row — and nothing else. X is the neighbours' business:
+  // either this note lines up with a column that already exists, or it sits
+  // one gutter clear of the note beside it, or it stays where the hand put it.
+  const laneSnap = timeline ? snapToLane(candidate, timeline) : null;
+  const gutterSnap = timeline
+    ? snapToNeighbours(candidate, elements, {
+        gap: prevailingNoteGap(elements),
+        exclude: memberIds,
+      })
+    : null;
+  if (laneSnap && gutterSnap) {
+    // Both axes answered: skip the alignment / distribution scans entirely
     // rather than compute answers nothing will use.
     return {
-      tx: dx + (laneSnap.x - candidate.x),
+      tx: dx + (gutterSnap.x - candidate.x),
       ty: dy + (laneSnap.y - candidate.y),
       guides: [],
       distGuides: [],
-      lane: { laneIndex: laneSnap.laneIndex, cellIndex: laneSnap.cellIndex },
+      lane: { laneIndex: laneSnap.laneIndex },
     };
   }
   const snap = snapToAlignment(candidate, elements, memberIds, ALIGN_SNAP_THRESHOLD);
@@ -147,18 +155,20 @@ export function resolveBoxedMove({
         g.axis === 'x' ? !snap.snappedX && dist.dx !== 0 : !snap.snappedY && dist.dy !== 0,
       )
     : [];
-  if (!laneSnap) return { tx: dx + snapDx, ty: dy + snapDy, guides, distGuides, lane: null };
-  // One axis claimed by the lane, the other left to alignment: the claimed
-  // axis takes the lane's answer and drops its guide, because a line drawn
-  // along an edge the note is NOT landing on is a lie.
+  if (!laneSnap && !gutterSnap) {
+    return { tx: dx + snapDx, ty: dy + snapDy, guides, distGuides, lane: null };
+  }
+  // One axis claimed, the other left to alignment: the claimed axis takes its
+  // answer and drops its guide, because a line drawn along an edge the note is
+  // NOT landing on is a lie.
   const keep = <T extends { axis: 'x' | 'y' }>(gs: T[]): T[] =>
-    gs.filter((g) => (g.axis === 'x' ? !laneSnap.snappedX : !laneSnap.snappedY));
+    gs.filter((g) => (g.axis === 'x' ? !gutterSnap : !laneSnap));
   return {
-    tx: laneSnap.snappedX ? dx + (laneSnap.x - candidate.x) : dx + snapDx,
-    ty: laneSnap.snappedY ? dy + (laneSnap.y - candidate.y) : dy + snapDy,
+    tx: gutterSnap ? dx + (gutterSnap.x - candidate.x) : dx + snapDx,
+    ty: laneSnap ? dy + (laneSnap.y - candidate.y) : dy + snapDy,
     guides: keep(guides),
     distGuides: keep(distGuides),
-    lane: { laneIndex: laneSnap.laneIndex, cellIndex: laneSnap.cellIndex },
+    lane: laneSnap ? { laneIndex: laneSnap.laneIndex } : null,
   };
 }
 

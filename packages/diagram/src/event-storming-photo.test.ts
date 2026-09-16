@@ -20,7 +20,7 @@ import {
 } from './event-storming-photo';
 import { ES_DOCK_SEAM_PX } from './event-storming-dock';
 import type { Element } from './index';
-import { ES_GRID_CELL, ES_LANE_PITCH, laneCentre, type EsTimeline } from './event-storming-lanes';
+import { ES_LANE_PITCH, laneCentre, type EsTimeline } from './event-storming-lanes';
 
 // Reconciling a photographed wall against the board (spec/139 Phase 8). The
 // rule every one of these protects: an import ADDS. Whatever the photo says,
@@ -283,7 +283,7 @@ describe('placeNewNotes', () => {
     expect(out[1]!.x).toBe(out[0]!.x + out[0]!.width + ES_DOCK_SEAM_PX);
   });
 
-  it('lands on the lanes when the board has them on', () => {
+  it('lands on the lanes when the board has them on, without moving x', () => {
     const timeline: EsTimeline = { originX: 0, originY: 0, enabled: true };
     const out = placeNewNotes(
       [addition({ detectedId: 1, x: 307, y: ES_LANE_PITCH + 9 })],
@@ -291,7 +291,8 @@ describe('placeNewNotes', () => {
       [],
       { timeline },
     );
-    expect(out[0]!.x).toBe(3 * ES_GRID_CELL);
+    // Rows are tidied; x is left exactly where the wall had it.
+    expect(out[0]!.x).toBe(307);
     expect(out[0]!.y).toBe(laneCentre(1, timeline) - 100);
   });
 });
@@ -438,7 +439,7 @@ describe('reconcilePhoto', () => {
         tab: { esTimeline: timeline },
       },
     );
-    expect(out.additions[0]!.x % ES_GRID_CELL).toBe(0);
+    expect(out.additions[0]!.y).toBe(laneCentre(0, timeline) - out.additions[0]!.height / 2);
   });
 
   it('carries a docked pair in as a docked pair', () => {

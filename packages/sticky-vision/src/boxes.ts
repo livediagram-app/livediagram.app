@@ -43,10 +43,6 @@ const MAX_PAPER_ASPECT = 2.4;
 // …and anything far BIGGER than the notes around it is not a note either: a
 // radiator, a whiteboard, a patch of sunlit wall.
 const MAX_PAPER_SIZE_RATIO = 2.6;
-// Below this a blob is not evidence of anything: a few pixels of JPEG noise on
-// a paper edge. Absolute, because it is about the sensor rather than the wall.
-const MIN_MEANINGFUL_AREA_PX = 16;
-
 // How elongated a blob has to be before it is more than one note.
 //
 // The notation's own widest stationery is 300×180 — a ratio of 1.67 — so the
@@ -192,44 +188,6 @@ export function splitOversized(box: Box, noteSize: number): Box[] {
   return out;
 }
 
-// How big a note is in THIS photograph, robustly.
-//
-// Not the largest blob (one run of three touching notes is bigger than any
-// note), and not the median blob (on a wall of handwritten notes, most blobs
-// are scraps of paper between pen strokes). Notes carry the BULK of the paper
-// area, so: sort by area, take the biggest boxes until they account for most
-// of the paper in the frame, and measure those.
-export function noteScaleOf(boxes: Box[]): number {
-  const sizes = boxes
-    .filter((b) => b.w * b.h >= MIN_MEANINGFUL_AREA_PX)
-    .map((b) => Math.max(b.w, b.h));
-  if (sizes.length === 0) return 0;
-  // Where the sizes CLUSTER. Stickies are all the same size, so their long
-  // sides pile into one bucket; ink fragments spread thinly across the small
-  // ones and a radiator sits alone at the top. Neither the median (fragments
-  // win) nor the largest (the radiator wins) nor the area-weighted bulk (one
-  // big blob can be most of the paper in the frame) survived a real photo.
-  const bucketPx = 4;
-  const counts = new Map<number, number>();
-  for (const size of sizes) {
-    const bucket = Math.round(size / bucketPx);
-    counts.set(bucket, (counts.get(bucket) ?? 0) + 1);
-  }
-  let bestBucket = 0;
-  let best = -1;
-  for (const [bucket, count] of counts) {
-    // Smoothed over neighbours: a photograph's sizes are a hill, not a spike.
-    const smoothed = count + (counts.get(bucket - 1) ?? 0) + (counts.get(bucket + 1) ?? 0);
-    // Ties go to the LARGER size: a tie between a fragment cluster and a note
-    // cluster is a tie we want to lose towards the notes.
-    if (smoothed > best || (smoothed === best && bucket > bestBucket)) {
-      best = smoothed;
-      bestBucket = bucket;
-    }
-  }
-  return Math.max(bucketPx, bestBucket * bucketPx);
-}
-
 export function fitBoxes(components: Component[], opts: { imageSize?: number } = {}): Box[] {
   if (components.length === 0) return [];
   const raw = components.map(boxOf);
@@ -242,7 +200,19 @@ export function fitBoxes(components: Component[], opts: { imageSize?: number } =
   // to be biggest. What the gap actually is, though, is known without any of
   // them — it is the width of a pen stroke, a few pixels at any sane working
   // resolution.
-  const imageSize = opts.imageSize ?? 1000;
+  // Every threshold below is a FRACTION of something in the picture: of the
+  // image's long edge (the pen stroke, the noise floor) or of the note size
+  // measured from the picture itself (the speck filter, the split, the
+  // too-big filter). Nothing here may be an absolute pixel count, or the
+  // detector finds a different number of notes in the same photograph
+  // depending on how much of it the caller happened to decode.
+  //
+  // When the caller does not say how big the image was, take the extent of
+  // the content as a lower bound rather than assuming a size: guessing 1000
+  // for a 2048px photo is the same bug wearing a default value.
+  const imageSize =
+    opts.imageSize ??
+    raw.reduce((m, b) => Math.max(m, b.x + b.w, b.y + b.h), 0);
   const gap = Math.max(2, Math.round(imageSize * PEN_STROKE_FRACTION));
   const merged = mergeFragments(raw, gap / MERGE_GAP_FRACTION);
   // Sensor noise and single stray pixels of paper colour, gone before anything
