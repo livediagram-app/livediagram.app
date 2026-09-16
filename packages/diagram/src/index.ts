@@ -437,6 +437,7 @@ export * from './event-storming';
 export * from './event-storming-lanes';
 export * from './event-storming-dock';
 export * from './element-removal';
+export * from './event-storming-photo';
 export * from './graph-authoring';
 export * from './mermaid';
 export * from './duplicate';
