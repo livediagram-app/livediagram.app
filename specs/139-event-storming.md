@@ -637,6 +637,19 @@ low-threshold capture surface can least afford.
   dialog stays open for another try.
 - **Telemetry:** `AI / Used / PhotoNotes` once per committed import, plus the
   ordinary `Element / Added / Sticky` per note.
+  **Live calibration is OUTSTANDING.** Everything above is built and proven
+  against a STUBBED model: the route's own tests drive every gate, clamp and
+  failure; the reconciliation has ~40 unit tests over empty / overlapping /
+  fully-overlapping boards; and `apps/live/e2e/photo-import.spec.ts` runs the
+  whole client path (prepare → POST → reconcile → review → commit → reload → undo)
+  in a browser with the model's HTTP call mocked. What has NOT happened is a run
+  against a real vision model on real photographs of real handwriting, which is
+  the only way to tune two numbers: the prompt's wording (how much occlusion
+  guidance it needs, whether "verbatim" holds) and the matcher threshold
+  (`DEFAULT_MATCH_THRESHOLD`, currently 0.72). Until that happens, treat both as
+  first guesses. It needs an `OPENAI_API_KEY` in `apps/api/.dev.vars` and two or
+  three wall photos.
+
 - **Not in v1:** multiple photos in one run (one at a time, then "Add another
   photo" against the board as it now is), applying a matched note's text
   difference, and reading arrows / connections out of the photo.
@@ -777,6 +790,23 @@ type, kept current every session. Each should stay true on its own.
 - A modal that lands a beat AFTER the canvas will silently swallow a
   test's drag: checking whether it is showing yet races it, waiting for
   it does not.
+- Perception is the model's, reconciliation is ours: ask a model only what it
+  can SEE, and never what our own data already knows, because the second kind
+  of answer cannot be checked.
+- Existing notes are immovable: an import that could move what is already
+  there would be an import nobody dares run twice.
+- Ask the model for NORMALISED geometry and the answer survives the client's
+  downscale, the model's own resizing, and any future change to either.
+- A stationery silhouette comes from the KIND, never from the photo: a note
+  photographed at an angle would otherwise arrive slightly the wrong shape
+  and stay that way forever.
+- The review IS the feature: a model reading handwriting will get some of it
+  wrong, and an import that just happened is an import nobody can trust.
+- Re-reconcile at COMMIT time, not at review time: a peer can add the very
+  note the photo shows while the author is reading it.
+- A React state updater is not a place for side effects — it re-runs, and the
+  import added everything twice. Unit tests missed it; counting stickies on a
+  real canvas did not.
 - Lanes are an aid, not a cage: they appear only during a drag, they snap
   only within a tolerance, and switching them on moves NOT ONE note. A
   board-level switch that rearranged an afternoon's work would be a switch
