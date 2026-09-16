@@ -201,7 +201,12 @@ function PaletteTile({
           e.dataTransfer.setData(PALETTE_DND_MIME, a.esKind ? `sticky|${a.esKind}` : 'sticky');
           e.dataTransfer.effectAllowed = 'copy';
           const size = a.esKind ? eventStormingNoteSize(a.esKind) : { width: 200, height: 200 };
-          setPaletteDragPreview({ kind: 'square', ...size, note: true });
+          setPaletteDragPreview({
+            kind: 'square',
+            ...size,
+            note: true,
+            ...(a.esKind ? { esKind: a.esKind as EventStormingNoteKind } : {}),
+          });
           suppressNativeDragImage(e);
         }
       : undefined;

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import {
   ES_GRID_CELL,
+  findDockCandidate,
   type AlignmentGuide,
   type DistributionGuide,
   type Element,
@@ -20,6 +21,7 @@ import {
 import { setPaletteDragSnap, usePaletteDragPreview } from '@/lib/palette-drag-preview';
 import { setInsertionSlot } from '@/lib/insertion-preview';
 import { setLanePreview } from '@/lib/lane-preview';
+import { setDockCandidate } from '@/lib/dock-preview';
 
 // Alignment guides DURING a palette drag (spec/139) — the single owner of the
 // in-flight snap. It tracks the dragover cursor, converts it to canvas coords
@@ -98,6 +100,7 @@ export function usePaletteDragGuides({
       setPaletteDragSnap(null);
       setInsertionSlot(null);
       setLanePreview(null);
+      setDockCandidate(null);
       return;
     }
     // The slot currently on offer, fed back into the resolver so it sticks
@@ -110,6 +113,7 @@ export function usePaletteDragGuides({
       setPaletteDragSnap(null);
       setInsertionSlot(null);
       setLanePreview(null);
+      setDockCandidate(null);
     };
     const onDragOver = (e: DragEvent) => {
       const target = e.target as Element2 | null;
@@ -143,9 +147,10 @@ export function usePaletteDragGuides({
             })
           : null;
       if (slot) {
-        // An open slot IS the placement, so every rung below it — the lanes
-        // included — stands down.
+        // An open slot IS the placement, so every rung below it — the dock
+        // and the lanes included — stands down.
         setLanePreview(null);
+        setDockCandidate(null);
         // The slot IS the placement while it is open, so the alignment snap
         // yields: two placement rules fighting would put the ghost, the
         // marker and the drop in three different places. The offset carries
@@ -161,6 +166,34 @@ export function usePaletteDragGuides({
         return;
       }
       setInsertionSlot(null);
+      // Rung 3 (spec/139 Phase 7): a compatible free face within reach IS the
+      // placement — above the lanes and the alignment snap, below the slot.
+      // A palette drag carries no modifiers worth suppressing it: Alt is the
+      // slot above, and neither Ctrl nor Shift means anything on this path.
+      const dock =
+        preview.esKind !== undefined
+          ? findDockCandidate(
+              {
+                x: x - preview.width / 2,
+                y: y - preview.height / 2,
+                width: preview.width,
+                height: preview.height,
+                kind: preview.esKind,
+              },
+              live,
+              { inertIds: inert },
+            )
+          : null;
+      setDockCandidate(dock);
+      if (dock) {
+        setLanePreview(null);
+        setPaletteDragSnap({
+          dx: dock.bounds.x + dock.bounds.width / 2 - x,
+          dy: dock.bounds.y + dock.bounds.height / 2 - y,
+        });
+        clearGuides();
+        return;
+      }
       const snap = paletteDragSnapAt({
         canvasX: x,
         canvasY: y,
@@ -199,6 +232,7 @@ export function usePaletteDragGuides({
       setPaletteDragSnap(null);
       setInsertionSlot(null);
       setLanePreview(null);
+      setDockCandidate(null);
     };
   }, [preview, viewportZoom, wrapperRef]);
 

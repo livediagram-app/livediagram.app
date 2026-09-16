@@ -127,6 +127,19 @@ describe('findDockCandidate', () => {
     expect(candidateAt(2, 2, { elements: [event, taken, note('c', 'command', 0, 0)] })).toBeNull();
   });
 
+  it('lets a docked note re-dock to the face it is already on', () => {
+    // Nudging a docked note must not read its OWN relation as the thing
+    // occupying the face, or the nudge would undock it for good.
+    const settled = note('c', 'command', target.x, target.y, {
+      esDock: { hostId: 'e', side: 'before' },
+    });
+    const hit = findDockCandidate(
+      { ...target, x: target.x + 5, kind: 'command', id: 'c' },
+      [event, settled],
+    );
+    expect(hit).toMatchObject({ hostId: 'e', side: 'before' });
+  });
+
   it('never docks a note to itself', () => {
     const selfHit = findDockCandidate({ ...target, kind: 'command', id: 'e' }, [
       event,

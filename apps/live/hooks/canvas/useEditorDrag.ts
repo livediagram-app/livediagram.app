@@ -25,6 +25,8 @@ import { useEffect, useRef, useState } from 'react';
 import {
   acceptsInlineIcon,
   activeTimeline,
+  dock as dockIn,
+  undock as undockIn,
   isBoxed,
   nearestElementTowards,
   opposingAnchor,
@@ -41,6 +43,8 @@ import { elementHostsAtPoint } from '@/lib/dom-hit-test';
 import { applyInsertionShift, type InsertionSlot } from '@/lib/insert-between';
 import { setInsertionDragInHand, setInsertionSlot } from '@/lib/insertion-preview';
 import { setLanePreview } from '@/lib/lane-preview';
+import { setDockCandidate, type DockCandidate } from '@/lib/dock-preview';
+import { dockDropAction, isSingleNoteDrag, resolveNoteDock } from './note-dock-drag';
 import { landNoteInSlot, resolveNoteInsertion } from './note-insertion-drag';
 import type { EditorDragDeps, EditorDragApi } from './useEditorDrag.types';
 import { applyCollisionAvoidance } from './arrow-avoidance-apply';
@@ -143,6 +147,9 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
   // OTHER notes' ripple stays a render-time preview until the drop; only the
   // dragged note itself moves for real, as it does on any move.
   const insertSlotRef = useRef<InsertionSlot | null>(null);
+  // The dock this drag is offering, so the drop can commit exactly what the
+  // seam dots promised (spec/139 Phase 7).
+  const dockCandidateRef = useRef<DockCandidate | null>(null);
 
   // Stash deps on every render so the move-effect always reads
   // fresh values without re-subscribing global pointer listeners.
@@ -189,8 +196,10 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
     const movingOneNote =
       drag.kind === 'boxed' &&
       drag.mode === 'move' &&
-      drag.startBounds.size === 1 &&
-      depsRef.current.activeTab.elements.find((el) => el.id === drag.primaryId)?.type === 'sticky';
+      // One note — alone, or carrying the notes docked to it (spec/139 Phase
+      // 7). A cluster IS one note in the grammar: it moves, inserts and lands
+      // on a lane as one thing.
+      isSingleNoteDrag(depsRef.current.activeTab.elements, drag.primaryId, drag.startBounds);
     setInsertionDragInHand(movingOneNote && depsRef.current.insertGate.esBoard);
     // Timeline lanes (spec/139 Phase 6) apply to exactly the same thing the
     // insertion gesture does — ONE note, on one of these boards — so the two
@@ -216,6 +225,8 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       insertSlotRef.current = null;
       setInsertionSlot(null);
       setLanePreview(null);
+      dockCandidateRef.current = null;
+      setDockCandidate(null);
       // A live shift-duplicate is torn down with the gesture: the clone set
       // goes (a no-op after the Escape path's cancelToCheckpoint already
       // restored, but pinch / second-touch cancels never restore) and the
@@ -336,6 +347,41 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
             // The note moves live, as any dragged note does; the ripple it is
             // opening stays a preview until the drop.
             tick((els) => landNoteInSlot(els, drag.primaryId, slot));
+            return;
+          }
+          // Rung 3 (spec/139 Phase 7): a compatible face within reach IS the
+          // placement — the magnets win over the lanes and the alignment snap
+          // below, and lose to the open slot above and to free placement.
+          const candidate = laneEligible
+            ? resolveNoteDock({
+                gate: depsRef.current.insertGate,
+                noSnap,
+                shiftHeld: e.shiftKey,
+                elements: activeTab.elements,
+                primaryId: drag.primaryId,
+                startBounds: drag.startBounds,
+                dx,
+                dy,
+                inertIds: depsRef.current.layerInertIds,
+              })
+            : null;
+          dockCandidateRef.current = candidate;
+          setDockCandidate(candidate);
+          if (candidate) {
+            setLanePreview(null);
+            scheduleGuides([], []);
+            const start = drag.startBounds.get(drag.primaryId);
+            if (start) {
+              tick((els) =>
+                translateBoxedSelection(
+                  els,
+                  drag.startBounds,
+                  drag.startArrowEnds,
+                  candidate.bounds.x - start.x,
+                  candidate.bounds.y - start.y,
+                ),
+              );
+            }
             return;
           }
           // Alignment / distribution snapping + the guide lines live in
@@ -694,6 +740,22 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
         d.tick((els) => applyInsertionShift(els, insertion));
         track('Canvas', 'Used', 'InsertBetween');
       }
+      // Anchor docking (spec/139 Phase 7): the drop stamps the relation, or
+      // lets one go. Inside the gesture's own checkpoint, so ONE undo puts
+      // the note back where it was AND restores what it was docked to.
+      const candidate = dockCandidateRef.current;
+      dockCandidateRef.current = null;
+      setDockCandidate(null);
+      if (drag?.kind === 'boxed' && drag.mode === 'move' && dragEngagedRef.current) {
+        const action = dockDropAction(d.activeTab.elements, drag.primaryId, candidate);
+        if (action?.kind === 'dock') {
+          d.tick((els) => dockIn(els, drag.primaryId, action.hostId, action.side));
+          track('Canvas', 'Used', 'Dock');
+        } else if (action?.kind === 'undock') {
+          d.tick((els) => undockIn(els, drag.primaryId));
+          track('Canvas', 'Used', 'Undock');
+        }
+      }
       // Annotations open their note on DOUBLE-click now (handled in
       // BoxedElementView), so a plain click just selects — no note-open here.
       setDrag(null);
@@ -789,6 +851,8 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       insertSlotRef.current = null;
       setInsertionSlot(null);
       setLanePreview(null);
+      dockCandidateRef.current = null;
+      setDockCandidate(null);
       setInsertionDragInHand(false);
     };
   }, [drag, scheduleGuides, scheduleSnapTargets]);

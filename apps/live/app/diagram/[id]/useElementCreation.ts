@@ -22,6 +22,7 @@ import {
   type Tab,
 } from '@livediagram/diagram';
 import { takeInsertionSlot } from '@/lib/insertion-preview';
+import { takeDockCandidate } from '@/lib/dock-preview';
 import type { InsertionSlot } from '@/lib/insert-between';
 import { getTechIcon, isTechIconId } from '@/lib/tech-icons';
 import { buildDrawnBoxed } from '@/lib/draw-commit';
@@ -291,6 +292,10 @@ export function useElementCreation(opts: {
     // The drop point already sits in the slot: the preview publishes its
     // offset through the same snap channel the ghost and the drop follow.
     const insertion = takeInsertionSlot();
+    // The dock the drag was offering (spec/139 Phase 7), consumed here for the
+    // same reason as the slot: a candidate left behind would dock the next
+    // drag. Only ever set while an ES note was on its way in.
+    const docked = takeDockCandidate();
     if (editsBlocked) return;
     if (insertion) track('Canvas', 'Used', 'InsertBetween');
     const iconId = art?.iconId;
@@ -306,8 +311,8 @@ export function useElementCreation(opts: {
       addBoxedAt(
         canvasX,
         canvasY,
-        (x, y) =>
-          buildDrawnBoxed(
+        (x, y) => ({
+          ...buildDrawnBoxed(
             { type: 'sticky', ...(fill ? { fill } : {}), ...(esKind ? { esKind } : {}) },
             x,
             y,
@@ -316,8 +321,13 @@ export function useElementCreation(opts: {
             null,
             activeTab,
           ),
+          // Dropped ON a host's free face: it arrives docked, in the same one
+          // commit as the add.
+          ...(docked ? { esDock: { hostId: docked.hostId, side: docked.side } } : {}),
+        }),
         { edit: true, insertion },
       );
+      if (docked) track('Canvas', 'Used', 'Dock');
       track('Element', 'Added', 'Sticky');
       return;
     }

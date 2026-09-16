@@ -121,8 +121,17 @@ export function dockOf(el: Element): EsDock | null {
   return isBoxedNote(el) ? (el.esDock ?? null) : null;
 }
 
-export function isFaceFree(hostId: ElementId, side: EsDockSide, elements: Element[]): boolean {
+// Is this face free to take a note? `ignoreId` is the note ASKING — a note
+// already docked here must not read its own relation as the thing blocking it,
+// or a nudge would undock it permanently.
+export function isFaceFree(
+  hostId: ElementId,
+  side: EsDockSide,
+  elements: Element[],
+  ignoreId?: ElementId,
+): boolean {
   return !elements.some((el) => {
+    if (el.id === ignoreId) return false;
     const d = dockOf(el);
     return d?.hostId === hostId && d.side === side;
   });
@@ -145,7 +154,7 @@ export function findDockCandidate(
     if (!hostKind) continue;
     const docking = dockingFor(candidate.kind, hostKind);
     if (!docking) continue;
-    if (!isFaceFree(el.id, docking.side, elements)) continue;
+    if (!isFaceFree(el.id, docking.side, elements, candidate.id)) continue;
     const bounds = dockedBounds(el, docking.side, candidate.kind);
     const dx = Math.abs(bounds.x - candidate.x);
     const dy = Math.abs(bounds.y - candidate.y);
