@@ -497,7 +497,7 @@ esDock?: {
 
 ### 1.6 Rendering the lanes
 
-- [ ] `apps/live/components/canvas/TimelineLanesOverlay.tsx` — rendered from
+- [x] `apps/live/components/canvas/TimelineLanesOverlay.tsx` — rendered from
       `CanvasChrome` (beside `CanvasGuideOverlay`), only while a drag is in hand on
       an ES board with lanes on (`useLanePreview() !== null`). Draws the lit lane as
       a faint band (lane top → bottom, viewport-wide, in the guides' visual language:
@@ -507,14 +507,14 @@ esDock?: {
       as `CanvasGuideOverlay` does. `pointer-events: none`. Reduced motion: no
       fade; otherwise a 120ms opacity ease in / out, mounted for the whole drag so
       the unmount never snaps (the `useInsertShift` lesson).
-- [ ] Zero CLS: the overlay is absolutely positioned inside the wrapper and never
+- [x] Zero CLS: the overlay is absolutely positioned inside the wrapper and never
       affects layout.
-- [ ] Dark scheme: verify the band reads on the dark dot-grid (spec/139's
+- [x] Dark scheme: verify the band reads on the dark dot-grid (spec/139's
       "recessed dot" lesson — go darker than the backdrop if a lighter band washes
       out).
-- [ ] Component test: renders nothing without a lit lane; renders three bands +
+- [x] Component test: renders nothing without a lit lane; renders three bands +
       tick with a lit lane; converts coords at zoom 0.5 / 2.
-- [ ] Commit: `feat(live): light the timeline lane under a dragged note`.
+- [x] Commit: `feat(live): light the timeline lane under a dragged note`.
 
 ### 1.7 Interplay
 
