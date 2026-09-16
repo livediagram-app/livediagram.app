@@ -758,18 +758,18 @@ h: number; row: number; order: number; confidence: number }` (all box fields
 
 ### 3.4 Client: capability, request, pre-processing
 
-- [ ] `apps/live/lib/api/ai.ts`: `apiAiPhotoNotes(image: string, tabName)` →
+- [x] `apps/live/lib/api/ai.ts`: `apiAiPhotoNotes(image: string, tabName)` →
       `PhotoNotesResponse`, mapping error tokens to typed errors (the existing
       `off_topic` mapping precedent); test.
-- [ ] `apps/live/lib/photo-prepare.ts`: `preparePhoto(file)` → data URL —
+- [x] `apps/live/lib/photo-prepare.ts`: `preparePhoto(file)` → data URL —
       `createImageBitmap` with `imageOrientation: 'from-image'`, downscale to
       `PHOTO_MAX_EDGE_PX`, `toBlob('image/jpeg', 0.85)`, reject unsupported types
       with the spec/19 hint wording (HEIC → "save as JPEG"), reject > `PHOTO_MAX_BYTES`
       after encode; unit-tested with a stubbed bitmap / canvas (jsdom) and a real
       small PNG fixture.
-- [ ] `useCapabilities` already exposes `aiEnabled`; add nothing unless the route
+- [x] `useCapabilities` already exposes `aiEnabled`; add nothing unless the route
       needs its own flag (it does not — same key).
-- [ ] Commit.
+- [x] Commit.
 
 ### 3.5 The dialog
 
