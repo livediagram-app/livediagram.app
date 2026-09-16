@@ -343,8 +343,6 @@ export function capturePlacement(
   opts: { gap?: number; exclude?: ReadonlySet<string>; radius?: number } = {},
 ): LaneCandidate | null {
   const candidates = laneCandidates(bounds, elements, opts);
-  const captured = captureCandidate(bounds, candidates, opts.radius);
-  if (captured) return captured;
   const overlapsNeighbour = stickyBoxes(elements).some(
     (n) =>
       !(n.id && opts.exclude?.has(n.id)) &&
@@ -352,8 +350,17 @@ export function capturePlacement(
       bounds.x < n.x + n.width &&
       bounds.x + bounds.width > n.x,
   );
-  if (!overlapsNeighbour) return null;
-  return captureCandidate(bounds, candidates, Infinity);
+  if (overlapsNeighbour) {
+    // Lying on a note in this row means "right behind that one", and the
+    // answer is this ROW's rhythm at any distance — not the nearest column or
+    // brick from the row next door, which is how a row of events came out at
+    // 72, 72, 36, 12 while the row below it looked perfectly tidy.
+    const rhythm = candidates.filter((c) => c.kind === 'gutter');
+    return (
+      captureCandidate(bounds, rhythm, Infinity) ?? captureCandidate(bounds, candidates, Infinity)
+    );
+  }
+  return captureCandidate(bounds, candidates, opts.radius);
 }
 
 export function captureCandidate(
@@ -361,11 +368,25 @@ export function captureCandidate(
   candidates: readonly LaneCandidate[],
   radius: number = ES_CANDIDATE_RADIUS_X,
 ): LaneCandidate | null {
+  // THE ROW THIS NOTE IS IN COMES FIRST.
+  //
+  // A note joining a row that already has notes in it wants that row's rhythm,
+  // full stop — "place a few events behind each other and they should simply
+  // take the regular gap". The columns and bricks offered by the row NEXT DOOR
+  // are real places too, but when both are in reach they were winning on raw
+  // distance and leaving the row itself irregular: gaps of 36 and 12 in a row
+  // whose own rhythm is 72.
+  //
+  // So: rank first (own row beats next door), distance second. Within a rank
+  // nothing outranks anything — an aligned column and a brick are still equals.
+  const rank = (candidate: LaneCandidate) => (candidate.kind === 'gutter' ? 0 : 1);
   let best: LaneCandidate | null = null;
   let bestDistance = Infinity;
   for (const candidate of candidates) {
     const distance = Math.abs(candidate.x - bounds.x);
-    if (distance > radius || distance >= bestDistance) continue;
+    if (distance > radius) continue;
+    if (best && rank(candidate) > rank(best)) continue;
+    if (best && rank(candidate) === rank(best) && distance >= bestDistance) continue;
     best = candidate;
     bestDistance = distance;
   }

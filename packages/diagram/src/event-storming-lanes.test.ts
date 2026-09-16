@@ -369,6 +369,30 @@ describe('capturing a suggested slot', () => {
     expect(capture(8)!.kind).toBe('aligned');
   });
 
+  it('lets the note OWN ROW win over the row next door', () => {
+    // A row of events being built, with a row below whose bricks fall between
+    // this row's slots: the row's own rhythm takes the note, or the row comes
+    // out irregular while its neighbour looks tidy.
+    const ownRow = [note({ id: 'own', x: 0, y: 0 })];
+    const nextDoor = [note({ id: 'below', x: 60, y: ES_LANE_PITCH })];
+    const placed = capturePlacement(
+      { x: 250, y: 0, width: 200, height: 200 },
+      [...ownRow, ...nextDoor],
+      { gap: ES_NOTE_GAP },
+    );
+    expect(placed!.kind).toBe('gutter');
+    expect(placed!.x).toBe(200 + ES_NOTE_GAP);
+  });
+
+  it('still uses the row next door when this row has nothing to offer', () => {
+    const nextDoor = [note({ id: 'below', x: 300, y: ES_LANE_PITCH })];
+    const placed = capturePlacement({ x: 290, y: 0, width: 200, height: 200 }, nextDoor, {
+      gap: ES_NOTE_GAP,
+    });
+    expect(placed!.kind).toBe('aligned');
+    expect(placed!.x).toBe(300);
+  });
+
   it('ranks an edge and a stagger equally — distance decides', () => {
     // Exactly between the aligned 0 and the stagger 136: the nearer wins, and
     // nothing about the KIND breaks the tie.

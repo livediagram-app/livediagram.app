@@ -458,7 +458,7 @@ record who asked for what.
 | **Every other x snap**               | Stands down. On a lanes board the lane resolver is the only source of x — the ordinary alignment and distribution rungs were adding exactly the positions the rules above exclude.                                                                                     |
 | **Dropped ON a note in the row**     | Resolved to the nearest slot, however far it is. Sliding a note back until it touches the one before it is how an author says "right behind this", and the gesture overshoots by nature; a footprint lying on another note is not a resting place on a board of paper. |
 | **The gutter**                       | The most REPEATED gap between notes sharing a row, ignoring anything under 24px (a seam, not a gutter) and any docked pair's seam; `ES_NOTE_GAP` (72) when there is nothing to measure.                                                                                |
-| **Capture**                          | Half a standard note (100px) on x, the lane tolerance on y; nearest candidate wins, no kind outranks another; the slot is drawn before the drop.                                                                                                                       |
+| **Capture**                          | Half a standard note (100px) on x, the lane tolerance on y; the note OWN row ranks first and distance decides within a rank (an aligned column and a brick stay equals); the slot is drawn before the drop.                                                            |
 | **Precedence**                       | An open Alt slot, then Cmd/Ctrl free placement, then a dock candidate, then these rules.                                                                                                                                                                               |
 
 **Non-square stationery** (provisional, awaiting a ruling): a wide or small note
@@ -485,8 +485,10 @@ of it lives in `rhythmSlots` and `gutterCentres` in
   Placing a note "right behind" another means sliding it back until it touches,
   and the hand ends up INSIDE the previous note — 124px from the next slot,
   past the 100px capture radius — so the note stayed where it was dropped. An
-  overlapping footprint now always resolves to the nearest slot, and the same
-  seven aims that produced that row now produce 72 every time.
+  overlapping footprint now resolves to THIS row rhythm at any distance, and
+  the row own slots outrank the columns and bricks offered by the row next door
+  (those were winning on raw distance and leaving gaps of 36 and 12 behind).
+  Building the row again from the operator own aims gives 72 every time.
 - **2026-09-16 — "two events can only be placed without the gap, or with a very
   big gap"**: the gutter was the MEDIAN of every gap on the board, so a handful
   of accidental near-touching pairs (16px, left behind while dragging) pulled a
