@@ -408,8 +408,8 @@ on the board**, not by a grid.
 **X used to be a half-note lattice, and that was wrong** (found by the operator
 on a real board, fixed before the feature was used in anger). Columns every
 100px could only express gaps that were multiples of a half note, but the
-board's own gutter is 72 — the event-storming template builds its starter row
-with it, and the insertion ripple opens a slot by it — so every row the product
+board's own gutter was 72 at the time — the event-storming template built its
+starter row with it, and the insertion ripple opened a slot by it — so every row the product
 itself laid out was permanently off-lattice: a note dragged in the lane above
 one landed 28px to its right, then 44px to its left, and the x tolerance was
 half a cell, which every x is within, so there was no leaving it where you put
@@ -457,7 +457,7 @@ record who asked for what.
 | **Adjacent lane**                    | Exactly above / below a NOTE (left edges aligned), or exactly above / below a GAP (centred on it — the brick). Nothing else: a neighbouring row says which columns line up, not where along this row a note may sit.                                                   |
 | **Every other x snap**               | Stands down. On a lanes board the lane resolver is the only source of x — the ordinary alignment and distribution rungs were adding exactly the positions the rules above exclude.                                                                                     |
 | **Dropped ON a note in the row**     | Resolved to the nearest slot, however far it is. Sliding a note back until it touches the one before it is how an author says "right behind this", and the gesture overshoots by nature; a footprint lying on another note is not a resting place on a board of paper. |
-| **The gutter**                       | The most REPEATED gap between notes sharing a row, ignoring anything under 24px (a seam, not a gutter) and any docked pair's seam; `ES_NOTE_GAP` (72) when there is nothing to measure.                                                                                |
+| **The gutter**                       | The most REPEATED gap between notes sharing a row, ignoring anything under 8px (a seam, not a gutter) and any docked pair's seam; `ES_NOTE_GAP``ES_NOTE_GAP` (16) when there is nothing to measure.                                                                    |
 | **Capture**                          | Half a standard note (100px) on x, the lane tolerance on y; the note OWN row ranks first and distance decides within a rank (an aligned column and a brick stay equals); the slot is drawn before the drop.                                                            |
 | **Precedence**                       | An open Alt slot, then Cmd/Ctrl free placement, then a dock candidate, then these rules.                                                                                                                                                                               |
 
@@ -480,6 +480,12 @@ of it lives in `rhythmSlots` and `gutterCentres` in
   neighbour tolerance was 12px, a snap rather than a suggestion, so in practice
   nothing was offered. Capture radius widened to half a note and the target
   footprint is now DRAWN before the drop.
+- **2026-09-16 — "the gaps are too wide, should be 16"**: `ES_NOTE_GAP` is now
+  **16**, and it is the one number the whole board works to — the lane rhythm,
+  the event-storming template row and the insertion ripple all read it, so a row
+  the template lays out and a row the author drags out have the same rhythm.
+  `MIN_MEASURED_GUTTER` dropped to 8 with it, since the floor has to sit under
+  the gutter or a board could never measure its own.
 - **2026-09-16 — "as close behind each other as possible gives irregular
   stuff"**: a row built that way came out with gaps of 72, 16, 4, 60, 72, 72.
   Placing a note "right behind" another means sliding it back until it touches,
@@ -557,7 +563,7 @@ of it lives in `rhythmSlots` and `gutterCentres` in
   no per-lane naming — a lane is a position, not an entity.
 
 **What shipped, in numbers.** `ES_LANE_HEIGHT` 200 (one standard note),
-`ES_LANE_GAP` 40, `ES_LANE_PITCH` 240, `ES_NOTE_GAP` 72 (the board's own
+`ES_LANE_GAP` 40, `ES_LANE_PITCH` 240, `ES_NOTE_GAP` 16 (the board's own
 gutter, shared with the template and the insertion ripple), y tolerance 20
 (`ES_LANE_SNAP_Y`, half the gap), x capture radius 100
 (`ES_CANDIDATE_RADIUS_X`, half a standard note), reach 2 lanes

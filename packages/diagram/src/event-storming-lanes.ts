@@ -59,16 +59,18 @@ export const ES_LANE_HEIGHT = ES_NOTE_SIZE_PX.square.height;
 export const ES_LANE_GAP = 40;
 export const ES_LANE_PITCH = ES_LANE_HEIGHT + ES_LANE_GAP;
 
-// The gutter between two notes side by side. The board already had this
-// number in two places — the event-storming template builds its starter row
-// with it, and the insertion ripple opens a slot by it — so lanes use the same
-// one rather than inventing a third rhythm.
-export const ES_NOTE_GAP = 72;
+// THE GUTTER between two notes side by side, and the one number the whole
+// board works to: the event-storming template builds its starter row with it,
+// the insertion ripple opens a slot by it, and the lane rhythm steps by it.
+// Sixteen, which is the operator's own wall: stickies pressed up close, a
+// finger's width of paper showing between them, not an airy layout.
+export const ES_NOTE_GAP = 16;
 
 // The smallest distance that counts as a gutter when measuring a board, and
 // the bucket the measurement rounds into (sub-pixel drift is not a different
-// rhythm).
-export const MIN_MEASURED_GUTTER = 24;
+// rhythm). It has to sit UNDER the gutter itself, or the board could never
+// measure its own rhythm.
+export const MIN_MEASURED_GUTTER = 8;
 const GUTTER_BUCKET_PX = 4;
 
 // How near a suggested slot has to be before it takes the note: HALF A

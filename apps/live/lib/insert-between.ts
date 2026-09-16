@@ -1,4 +1,4 @@
-import { dockOf, isBoxed, type Element, type ElementId } from '@livediagram/diagram';
+import { ES_NOTE_GAP, dockOf, isBoxed, type Element, type ElementId } from '@livediagram/diagram';
 
 // Inserting a note BETWEEN two notes (spec/139). An event-storming wall is a
 // left-to-right timeline, so "this happened before that" is the whole
@@ -92,7 +92,7 @@ type FindArgs = {
 
 // The event-storming template's own gap, used when the row has no gap worth
 // measuring (its notes overlap or sit flush).
-export const DEFAULT_INSERTION_GAP = 72;
+export const DEFAULT_INSERTION_GAP = ES_NOTE_GAP;
 
 // How far above / below a note the cursor still counts as "in this row",
 // as a fraction of the note's height.

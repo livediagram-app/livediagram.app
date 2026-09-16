@@ -511,7 +511,7 @@ describe('findInsertionSlot — on a lanes-on board', () => {
       incomingWidth: 200,
       elements: flush,
     });
-    expect(slot!.shiftDx).toBe(272);
+    expect(slot!.shiftDx).toBe(200 + DEFAULT_INSERTION_GAP);
   });
 
   it('is unrounded when lanes are off', () => {

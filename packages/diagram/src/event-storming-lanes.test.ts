@@ -119,7 +119,7 @@ describe('snapToLane', () => {
 
 describe('the gutter between notes', () => {
   it('is the board OWN gap, which the template and the ripple already use', () => {
-    expect(ES_NOTE_GAP).toBe(72);
+    expect(ES_NOTE_GAP).toBe(16);
   });
 
   it('measures what a board actually does rather than assuming', () => {
@@ -138,12 +138,12 @@ describe('the gutter between notes', () => {
     // this is the board that reported "I can only place it without the gap".
     const withAccidents = [
       note({ id: 'a', x: 0, y: 0 }),
-      note({ id: 'b', x: 216, y: 0 }), // 16 apart: an accident
-      note({ id: 'c', x: 432, y: 0 }), // 16 again
-      note({ id: 'd', x: 704, y: 0 }), // 72: the gap the author means
-      note({ id: 'e', x: 976, y: 0 }), // 72
+      note({ id: 'b', x: 260, y: 0 }), // 60 apart: an accident
+      note({ id: 'c', x: 520, y: 0 }), // 60 again
+      note({ id: 'd', x: 736, y: 0 }), // 16: the gap the author means
+      note({ id: 'e', x: 952, y: 0 }), // 16
     ];
-    expect(prevailingNoteGap(withAccidents)).toBe(72);
+    expect(prevailingNoteGap(withAccidents)).toBe(16);
   });
 
   it('keeps a board own rhythm when the author works to a different one', () => {
@@ -156,9 +156,10 @@ describe('the gutter between notes', () => {
   });
 
   it('never measures a sub-gutter distance — that is a seam, not a rhythm', () => {
-    const nearlyTouching = [note({ id: 'a', x: 0, y: 0 }), note({ id: 'b', x: 216, y: 0 })];
+    const nearlyTouching = [note({ id: 'a', x: 0, y: 0 }), note({ id: 'b', x: 204, y: 0 })];
     expect(prevailingNoteGap(nearlyTouching)).toBe(ES_NOTE_GAP);
-    expect(MIN_MEASURED_GUTTER).toBe(24);
+    // Under the gutter itself, or a board could never measure its own rhythm.
+    expect(MIN_MEASURED_GUTTER).toBeLessThan(ES_NOTE_GAP);
   });
 
   it('ignores notes that overlap or touch — a seam is not a gap', () => {
@@ -244,19 +245,19 @@ describe('the slots a lane offers', () => {
     });
 
     it('offers exactly above or below a GAP, centred on it', () => {
-      // The gap right of the lone note runs 200..272, centre 236: a 200-wide
-      // note centred there starts at 136.
-      expect(xs(laneCandidates(below(130), lone, { gap: GAP }), 'staggered')).toContain(136);
+      // The gap right of the lone note runs 200..216, centre 208: a 200-wide
+      // note centred there starts at 108.
+      expect(xs(laneCandidates(below(100), lone, { gap: GAP }), 'staggered')).toContain(108);
     });
 
     it('gives the pair ONE brick between them, named by both notes', () => {
-      const cs = laneCandidates(below(130), pair, { gap: GAP });
-      expect(xs(cs, 'staggered')).toContain(136);
+      const cs = laneCandidates(below(100), pair, { gap: GAP });
+      expect(xs(cs, 'staggered')).toContain(108);
     });
 
     it('offers NOTHING else across lanes — no rhythm slots from the row above', () => {
       const cs = laneCandidates(below(10), lone, { gap: GAP });
-      expect(xs(cs)).toEqual([-136, 0, 136]);
+      expect(xs(cs)).toEqual([-108, 0, 108]);
     });
   });
 
@@ -293,8 +294,8 @@ describe('the slots a lane offers', () => {
 
     it('centres a SMALL note on the gap it is offered, whatever its width', () => {
       const cs = laneCandidates({ x: 150, y: ES_LANE_PITCH, ...small }, lone, { gap: GAP });
-      // The gap centre is 236; a 140-wide note centred there starts at 166.
-      expect(xs(cs, 'staggered')).toContain(166);
+      // The gap centre is 208; a 140-wide note centred there starts at 138.
+      expect(xs(cs, 'staggered')).toContain(138);
     });
   });
 });
@@ -394,10 +395,10 @@ describe('capturing a suggested slot', () => {
   });
 
   it('ranks an edge and a stagger equally — distance decides', () => {
-    // Exactly between the aligned 0 and the stagger 136: the nearer wins, and
-    // nothing about the KIND breaks the tie.
-    expect(capture(60)!.x).toBe(0);
-    expect(capture(80)!.x).toBe((200 + GAP) / 2);
+    // Between the aligned 0 and the brick at 108: the nearer wins, and nothing
+    // about the KIND breaks the tie.
+    expect(capture(40)!.x).toBe(0);
+    expect(capture(70)!.x).toBe(108);
   });
 });
 
