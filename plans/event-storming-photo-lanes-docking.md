@@ -407,14 +407,14 @@ esDock?: {
 
 ### 1.1 Spec
 
-- [ ] Spec/139 Phase 6 section: the switch, the field, the origin rule (Q5), the
+- [x] Spec/139 Phase 6 section: the switch, the field, the origin rule (Q5), the
       pitch + grid (Q4, Q6), visibility (only during a drag; the lane under the
       note + two fainter neighbours; viewport-spanning because the lanes are
       infinite), the precedence ladder (§3), what happens on existing boards
       (nothing moves), export (never), telemetry, and the "not in v1" list (no
       shortcut, no snap-all, no vertical lanes).
-- [ ] Spec/05: `Tab.esTimeline` documented beside `kind`.
-- [ ] Commit.
+- [x] Spec/05: `Tab.esTimeline` documented beside `kind`.
+- [x] Commit.
 
 ### 1.2 Pure model (`event-storming-lanes.ts`)
 

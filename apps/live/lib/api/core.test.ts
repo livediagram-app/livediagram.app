@@ -148,4 +148,14 @@ describe('tabForWire — board kind', () => {
     expect('templateChosen' in out).toBe(false);
     expect('folder' in out).toBe(false);
   });
+
+  // Timeline lanes (spec/139 Phase 6) are BOARD state, not UI state: the
+  // facilitator turns them on for the room, so the field has to reach the
+  // wire like any other tab field.
+  it('carries the timeline lane origin to the wire', () => {
+    const out = tabForWire(
+      tab({ kind: 'event-storming', esTimeline: { originX: 120, originY: 80 } }),
+    );
+    expect(out.esTimeline).toEqual({ originX: 120, originY: 80 });
+  });
 });
