@@ -912,11 +912,11 @@ h: number; row: number; order: number; confidence: number }` (all box fields
 
 ### 3.8 Verification
 
-- [x] Dev server walkthrough of every path in §10 C (with the mocked route via
+- [ ] Dev server walkthrough of every path in §10 C (with the mocked route via
       playwright-cli where the real model is unavailable).
-- [x] Spec/139 Phase 8 filled in; learnings appended (at least: "perception is the
+- [ ] Spec/139 Phase 8 filled in; learnings appended (at least: "perception is the
       model's, reconciliation is ours", "existing notes are immovable").
-- [x] Quality gate green; commit.
+- [ ] Quality gate green; commit.
 
 ---
 
@@ -984,12 +984,12 @@ Each is one more `ES_DOCKINGS` row plus, where the face is not west / east, a
 
 ## 12. Phase 4 — Integration, the on-par tail, fold-back
 
-- [x] Photo import × lanes × docking walkthrough on the dev server: lanes on, a
+- [ ] Photo import × lanes × docking walkthrough on the dev server: lanes on, a
       board with two docked pairs, import a photo overlapping one pair and adding
       a new command-event pair → additions on lanes, the new pair docked, nothing
       existing moved (compare element JSON before / after, byte-identical for
       matched ids).
-- [x] Help: `apps/help/app/canvas/event-storming-boards/page.mdx` gains three
+- [ ] Help: `apps/help/app/canvas/event-storming-boards/page.mdx` gains three
       sections (lanes, anchors, from a photo (the draft: outline,
       fade, badge, bar, Add / Discard / Undo)); registry `description` unchanged
       unless it no longer summarises, `keywords` gain the lane / dock / photo
@@ -1017,7 +1017,7 @@ Each is one more `ES_DOCKINGS` row plus, where the face is not west / east, a
       / `AMBIGUITIES.md` / `LESSONS_LEARNED.md` at the worktree root updated (all
       gitignored); wiki page in `docs/` if a durable repo-level learning emerged
       (e.g. "structured outputs for vision on Workers").
-- [x] Final quality gate: lint, format:check, typecheck, test and build all
+- [ ] Final quality gate: lint, format:check, typecheck, test and build all
       green; e2e green against the built stack.
 - [~] `git fetch && git rebase origin/main` (resolve by new commits, never force);
   re-run the gate; push ONLY when the parent relays operator permission; open
