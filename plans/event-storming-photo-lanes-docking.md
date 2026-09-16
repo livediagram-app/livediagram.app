@@ -630,25 +630,25 @@ h: number; row: number; order: number; confidence: number }` (all box fields
 
 ### 2.5 Magnetic docking on drag (note drag + palette drag)
 
-- [ ] Precedence rung 3 in BOTH resolvers (1.4 / 1.5): when the dragged thing is a
+- [x] Precedence rung 3 in BOTH resolvers (1.4 / 1.5): when the dragged thing is a
       single sticky of a dockable kind and `findDockCandidate` returns one, the
       candidate's bounds ARE the placement; publish to `dock-preview`; lanes and
       alignment stand down. Ctrl skips; Alt slot wins; Shift suppresses.
-- [ ] Drop: stamp `esDock` (`dock`), in the same checkpoint as the move (one undo
+- [x] Drop: stamp `esDock` (`dock`), in the same checkpoint as the move (one undo
       step); track `Canvas / Used / Dock`. Dragging a DOCKED note beyond
       `ES_DOCK_SNAP_PX` of its docked position and dropping → `undock` in the same
       step; track `Canvas / Used / Undock`. Dragging it back within range re-docks.
-- [ ] Host drag carries its cluster: when the primary is a host with docked notes
+- [x] Host drag carries its cluster: when the primary is a host with docked notes
       and the selection is just the host, the move translates the cluster (extend
       `startBounds` to the cluster — the group precedent in `selectionMembers`);
       a docked note is NOT carried when the host is moved as part of a
       multi-selection that already contains it (no double move); tests.
-- [ ] Modifier hint banner: while a dockable note is on the move near nothing,
+- [x] Modifier hint banner: while a dockable note is on the move near nothing,
       no hint; a candidate live → the banner is not needed (the dots say it).
       Confirm nothing regresses in `ModifierHintBanner` tests.
-- [ ] Tests mirror 1.4 / 1.5 for the dock rung, plus the undock-on-drag path and
+- [x] Tests mirror 1.4 / 1.5 for the dock rung, plus the undock-on-drag path and
       the cluster move.
-- [ ] Commit: `feat(live): notes dock magnetically to a compatible face`.
+- [x] Commit: `feat(live): notes dock magnetically to a compatible face`.
 
 ### 2.6 Interplay
 
