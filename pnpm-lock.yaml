@@ -539,6 +539,28 @@ importers:
 
   packages/prettier-config: {}
 
+  packages/sticky-vision:
+    dependencies:
+      '@livediagram/diagram':
+        specifier: workspace:*
+        version: link:../diagram
+    devDependencies:
+      '@livediagram/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@livediagram/vitest-config':
+        specifier: workspace:*
+        version: link:../vitest-config
+      eslint:
+        specifier: ^10.10.0
+        version: 10.10.0(jiti@2.7.0)
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+      vitest:
+        specifier: ^4.1.11
+        version: 4.1.11(@types/node@26.5.1)(@vitest/coverage-v8@4.1.11)(jsdom@30.0.1)(vite@7.3.5(@types/node@26.5.1)(jiti@2.7.0)(lightningcss@1.32.0))
+
   packages/tailwind-config: {}
 
   packages/telemetry-client:

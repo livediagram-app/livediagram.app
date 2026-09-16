@@ -569,3 +569,25 @@ describe('onlyDraftNotesChanged', () => {
     expect(onlyDraftNotesChanged([settled, draft], [settled, draft, other])).toBe(false);
   });
 });
+
+// An illegible crop (spec/139 Phase 8): the detector SAW the paper, the model
+// could not read it. The note still has to land — empty, for the author to
+// fill in — and it must never be mistaken for a note the board already has.
+describe('a note the model could not read', () => {
+  it('never matches anything, however empty the board note is', () => {
+    const empty = [photo({ id: 1, text: '' })];
+    expect(matchDetectedNotes(empty, [board({ id: 'a', text: 'Order placed' })])).toEqual([]);
+    expect(matchDetectedNotes(empty, [board({ id: 'a', text: '' })])).toEqual([]);
+  });
+
+  it('lands as an empty draft note of the kind the DETECTOR measured', () => {
+    const out = reconcilePhoto([photo({ id: 1, text: '', kind: 'policy' })], []);
+    expect(out.additions).toHaveLength(1);
+    expect(out.additions[0]).toMatchObject({ text: '', kind: 'policy', width: 300 });
+  });
+
+  it('does not report a difference it cannot have', () => {
+    const out = reconcilePhoto([photo({ id: 1, text: '' })], [board({ id: 'a' })]);
+    expect(out.differences).toEqual([]);
+  });
+});
