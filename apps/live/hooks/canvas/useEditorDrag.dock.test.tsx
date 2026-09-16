@@ -42,7 +42,13 @@ function harness(opts: { elements?: Element[]; esBoard?: boolean; multiSelected?
   const history: Element[][] = [];
   const deps = {
     get activeTab() {
-      return { id: 't', name: 'Board', kind: 'event-storming', elements } as Tab;
+      return {
+        id: 't',
+        name: 'Board',
+        kind: 'event-storming',
+        elements,
+        ...(opts.lanes ? { esTimeline: { originX: 0, originY: 0, enabled: true } } : {}),
+      } as Tab;
     },
     zoomRef: { current: 1 },
     selectedId: 'c',
@@ -245,6 +251,22 @@ describe('useEditorDrag — magnetic docking (spec/139)', () => {
     press(h, 'c');
     move(h, TO_FACE.dx, TO_FACE.dy);
     expect(getDockCandidate()).toBeNull();
+  });
+
+  it('lands the HOST on the lane, and the docked note follows it', () => {
+    const docked = note('c', 'command', FACE.x, FACE.y, {
+      esDock: { hostId: 'e', side: 'before' },
+    });
+    const h = harness({ elements: [HOST, docked], lanes: true });
+    press(h, 'e');
+    // Aim the host a few px off lane 2 / column 12.
+    move(h, 12 * 100 + 7 - 1000, 2 * 240 + 9 - 500);
+    // The host is on the grid…
+    expect(h.byId('e').x).toBe(12 * 100);
+    expect(h.byId('e').y).toBe(2 * 240);
+    // …and the pair is still a pair, at exactly its seam.
+    expect(h.byId('c').x).toBe(12 * 100 - 16 - 200);
+    expect(h.byId('c').y).toBe(h.byId('e').y);
   });
 
   it('never offers a pairing the notation does not have', () => {

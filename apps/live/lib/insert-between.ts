@@ -1,4 +1,4 @@
-import { isBoxed, type Element, type ElementId } from '@livediagram/diagram';
+import { dockOf, isBoxed, type Element, type ElementId } from '@livediagram/diagram';
 
 // Inserting a note BETWEEN two notes (spec/139). An event-storming wall is a
 // left-to-right timeline, so "this happened before that" is the whole
@@ -77,12 +77,14 @@ type FindArgs = {
   // row — you can't aim at a note you can't see — but they still SHIFT, so
   // the board stays consistent the moment their layer comes back.
   inertIds?: ReadonlySet<ElementId>;
-  // The note being dragged, when it is one already on the board rather than a
-  // new one from the palette. It is the thing being INSERTED, so it is out of
-  // the reckoning entirely: it neither defines the row (it is sitting under
-  // the cursor, where it would otherwise be its own neighbour) nor gets
-  // pushed aside to make room for its own arrival.
-  excludeId?: ElementId;
+  // The note(s) being dragged, when they are already on the board rather than
+  // new from the palette. They are the thing being INSERTED, so they are out
+  // of the reckoning entirely: they neither define the row (they are sitting
+  // under the cursor, where they would otherwise be their own neighbours) nor
+  // get pushed aside to make room for their own arrival. More than one when a
+  // host is dragging the notes docked to it (spec/139 Phase 7) — a cluster is
+  // one thing in this grammar.
+  excludeIds?: ReadonlySet<ElementId>;
   // The slot currently on offer, if any. Passed back in so the offer sticks
   // through a shaky hand (see SLOT_HYSTERESIS).
   active?: InsertionSlot | null;
@@ -109,6 +111,11 @@ const SLOT_HYSTERESIS = 32;
 // The vertical padding on the insertion marker, so it reads as a line THROUGH
 // the board rather than one that stops at the outermost note.
 const MARKER_PADDING = 40;
+
+// Are these two the halves of a docked pair, in either order?
+function isSeam(a: Element, b: Element): boolean {
+  return dockOf(a)?.hostId === b.id || dockOf(b)?.hostId === a.id;
+}
 
 function rowContains(el: Element & { y: number; height: number }, cursorY: number): boolean {
   const slack = el.height * ROW_TOLERANCE_RATIO;
@@ -197,7 +204,16 @@ export function travellingIdsFrom(elements: Element[], atX: number): Set<Element
   for (const el of elements) {
     if (!movable(el) || !isBoxed(el)) continue;
     const group = el.groupId ? groups.get(el.groupId) : undefined;
-    const anchorX = group ? (group.minX + group.maxX) / 2 : el.x;
+    // A docked note answers with its HOST's left edge (spec/139 Phase 7, the
+    // group precedent): the pair travels whole or stays whole, and is never
+    // torn in half by a point that falls inside its seam.
+    const host = dockOf(el)?.hostId;
+    const hostEl = host ? elements.find((h) => h.id === host) : undefined;
+    const anchorX = group
+      ? (group.minX + group.maxX) / 2
+      : hostEl && isBoxed(hostEl)
+        ? hostEl.x
+        : el.x;
     if (anchorX >= atX) movingIds.add(el.id);
   }
   // Arrows resolve after the boxes, because a pinned arrow travels exactly
@@ -214,13 +230,13 @@ export function findInsertionSlot({
   incomingWidth,
   elements: all,
   inertIds,
-  excludeId,
+  excludeIds,
   active,
   gridCell,
 }: FindArgs): InsertionSlot | null {
-  // The board as the insertion sees it: everything except the note being
+  // The board as the insertion sees it: everything except what is being
   // inserted. One filter up front, so no rule below has to remember.
-  const elements = excludeId === undefined ? all : all.filter((el) => el.id !== excludeId);
+  const elements = excludeIds === undefined ? all : all.filter((el) => !excludeIds.has(el.id));
   if (active && stillInside(active, cursorX, cursorY, elements)) return active;
 
   // Row candidates: what the author can actually see and aim at.
@@ -235,7 +251,15 @@ export function findInsertionSlot({
   // has no "between" to speak of, you can just drop there.
   const pair = row
     .map((el, i) => ({ left: row[i - 1], right: el }))
-    .find(({ left, right }) => !!left && cursorX >= left.x + left.width && cursorX <= right.x);
+    .find(
+      ({ left, right }) =>
+        !!left &&
+        cursorX >= left.x + left.width &&
+        cursorX <= right.x &&
+        // A seam is a JOIN, not a gap (spec/139 Phase 7): the two halves of a
+        // docked pair are one phrase, and nothing goes between them.
+        !isSeam(left, right),
+    );
   const left = pair?.left;
   const right = pair?.right;
   if (!left || !right) return null;

@@ -89,7 +89,7 @@ describe('findInsertionSlot', () => {
         cursorY,
         incomingWidth: 200,
         elements: WITH_D,
-        excludeId: 'd',
+        excludeIds: new Set(['d']),
       });
 
     it('never pushes the dragged note aside to make room for itself', () => {
@@ -110,7 +110,7 @@ describe('findInsertionSlot', () => {
         cursorY: 100,
         incomingWidth: 200,
         elements: overlapping,
-        excludeId: 'drag',
+        excludeIds: new Set(['drag']),
       });
       expect(slot?.leftId).toBe('a');
       expect(slot?.rightId).toBe('b');
@@ -137,7 +137,7 @@ describe('findInsertionSlot', () => {
         cursorY: 100,
         incomingWidth: 200,
         elements: ROW,
-        excludeId: 'c',
+        excludeIds: new Set(['c']),
       });
       expect(slot?.rightId).toBe('b');
       expect(slot?.shiftDx).toBe(272);
@@ -151,7 +151,7 @@ describe('findInsertionSlot', () => {
           cursorY: 100,
           incomingWidth: 200,
           elements: [note('a', 0), note('b', 272)],
-          excludeId: 'b',
+          excludeIds: new Set(['b']),
         }),
       ).toBeNull();
     });
@@ -528,5 +528,89 @@ describe('findInsertionSlot — on a lanes-on board', () => {
     expect(
       findInsertionSlot({ cursorX: 236, cursorY: 100, incomingWidth: 200, elements: ROW })?.shiftDx,
     ).toBe(272);
+  });
+});
+
+// Anchor docking (spec/139 Phase 7) meets the ripple. A docked pair is one
+// phrase: the seam between the two notes is a JOIN, not a gap you can insert
+// into, and the pair travels whole or not at all.
+describe('findInsertionSlot — docked pairs', () => {
+  const esNote = (id: string, kind: string, x: number, over: Record<string, unknown> = {}) =>
+    ({
+      id,
+      type: 'sticky',
+      esKind: kind,
+      fixedSize: true,
+      x,
+      y: 0,
+      width: 200,
+      height: 200,
+      ...over,
+    }) as Element;
+
+  // command 784..984 | seam | event 1000..1200, then a loose event at 1472.
+  const CLUSTER: Element[] = [
+    esNote('c', 'command', 784, { esDock: { hostId: 'e', side: 'before' } }),
+    esNote('e', 'domain-event', 1000),
+    esNote('far', 'domain-event', 1472),
+  ];
+
+  it('never offers the seam as a gap', () => {
+    const slot = findInsertionSlot({
+      cursorX: 992,
+      cursorY: 100,
+      incomingWidth: 200,
+      elements: CLUSTER,
+    });
+    expect(slot).toBeNull();
+  });
+
+  it('still offers the real gap after the pair', () => {
+    const slot = findInsertionSlot({
+      cursorX: 1300,
+      cursorY: 100,
+      incomingWidth: 200,
+      elements: CLUSTER,
+    });
+    expect(slot?.leftId).toBe('e');
+    expect(slot?.rightId).toBe('far');
+  });
+
+  it('moves a whole cluster when its HOST is at or after the point', () => {
+    // Insert before the pair: the host is after the point, so both halves go.
+    const before: Element[] = [esNote('first', 'domain-event', 400), ...CLUSTER];
+    const slot = findInsertionSlot({
+      cursorX: 700,
+      cursorY: 100,
+      incomingWidth: 200,
+      elements: before,
+    })!;
+    // The point is the command's left edge, which is BEFORE the host — but the
+    // pair answers with the host, so both travel and neither is torn off.
+    expect(new Set(slot.shiftedIds)).toEqual(new Set(['c', 'e', 'far']));
+  });
+
+  it('leaves a whole cluster behind when its host is before the point', () => {
+    const slot = findInsertionSlot({
+      cursorX: 1300,
+      cursorY: 100,
+      incomingWidth: 200,
+      elements: CLUSTER,
+    })!;
+    expect(new Set(slot.shiftedIds)).toEqual(new Set(['far']));
+  });
+
+  it('takes a whole cluster out of the reckoning when the host is the one dragged', () => {
+    const board = [...CLUSTER, esNote('x', 'domain-event', 1700)];
+    const slot = findInsertionSlot({
+      cursorX: 1300,
+      cursorY: 100,
+      incomingWidth: 200,
+      elements: board,
+      excludeIds: new Set(['e', 'c']),
+    });
+    // With the pair out of it, the only notes left are `far` and `x`, and the
+    // cursor is not between them.
+    expect(slot).toBeNull();
   });
 });
