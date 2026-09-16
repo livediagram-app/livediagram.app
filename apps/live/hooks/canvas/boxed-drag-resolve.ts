@@ -5,10 +5,13 @@ import {
   isBoxed,
   snapResizeBounds,
   snapToAlignment,
+  snapToLanes,
   type AlignmentGuide,
   type DistributionGuide,
   type Element,
+  type EsTimeline,
 } from '@livediagram/diagram';
+import type { LanePreview } from '@/lib/lane-preview';
 import {
   ALIGN_SNAP_THRESHOLD,
   cornerOf,
@@ -55,6 +58,7 @@ export function resolveBoxedMove({
   dy,
   noSnap,
   guidesOn,
+  timeline = null,
 }: {
   elements: Element[];
   startBounds: ReadonlyMap<string, ShapeBounds>;
@@ -67,9 +71,22 @@ export function resolveBoxedMove({
   // The user's alignment-guides preference (guides only; the snap still
   // applies when it's off).
   guidesOn: boolean;
-}): { tx: number; ty: number; guides: AlignmentGuide[]; distGuides: DistributionGuide[] } {
+  // Timeline lanes (spec/139 Phase 6), when this drag is eligible for them: a
+  // single note, on an event-storming board, with lanes on. The caller owns
+  // that decision and passes null otherwise — so the rung here is purely
+  // "where does the lane want it".
+  timeline?: EsTimeline | null;
+}): {
+  tx: number;
+  ty: number;
+  guides: AlignmentGuide[];
+  distGuides: DistributionGuide[];
+  // The lane / column claimed, for the overlay to light. Null when no lane
+  // took this frame.
+  lane: LanePreview | null;
+} {
   const primaryStart = startBounds.get(primaryId);
-  if (!primaryStart || noSnap) return { tx: dx, ty: dy, guides: [], distGuides: [] };
+  if (!primaryStart || noSnap) return { tx: dx, ty: dy, guides: [], distGuides: [], lane: null };
   const memberIds = new Set(startBounds.keys());
   const candidate = {
     x: primaryStart.x + dx,
@@ -77,6 +94,21 @@ export function resolveBoxedMove({
     width: primaryStart.width,
     height: primaryStart.height,
   };
+  // The lane rung sits ABOVE alignment: a board with lanes on has already
+  // said what its rhythm is, and an alignment nudge that disagreed would put
+  // the note half a column off the grid every author can see.
+  const laneSnap = timeline ? snapToLanes(candidate, timeline) : null;
+  if (laneSnap?.snappedX && laneSnap.snappedY) {
+    // Both axes claimed: skip the alignment / distribution scans entirely
+    // rather than compute answers nothing will use.
+    return {
+      tx: dx + (laneSnap.x - candidate.x),
+      ty: dy + (laneSnap.y - candidate.y),
+      guides: [],
+      distGuides: [],
+      lane: { laneIndex: laneSnap.laneIndex, cellIndex: laneSnap.cellIndex },
+    };
+  }
   const snap = snapToAlignment(candidate, elements, memberIds, ALIGN_SNAP_THRESHOLD);
   let snapDx = snap.dx;
   let snapDy = snap.dy;
@@ -115,7 +147,19 @@ export function resolveBoxedMove({
         g.axis === 'x' ? !snap.snappedX && dist.dx !== 0 : !snap.snappedY && dist.dy !== 0,
       )
     : [];
-  return { tx: dx + snapDx, ty: dy + snapDy, guides, distGuides };
+  if (!laneSnap) return { tx: dx + snapDx, ty: dy + snapDy, guides, distGuides, lane: null };
+  // One axis claimed by the lane, the other left to alignment: the claimed
+  // axis takes the lane's answer and drops its guide, because a line drawn
+  // along an edge the note is NOT landing on is a lie.
+  const keep = <T extends { axis: 'x' | 'y' }>(gs: T[]): T[] =>
+    gs.filter((g) => (g.axis === 'x' ? !laneSnap.snappedX : !laneSnap.snappedY));
+  return {
+    tx: laneSnap.snappedX ? dx + (laneSnap.x - candidate.x) : dx + snapDx,
+    ty: laneSnap.snappedY ? dy + (laneSnap.y - candidate.y) : dy + snapDy,
+    guides: keep(guides),
+    distGuides: keep(distGuides),
+    lane: { laneIndex: laneSnap.laneIndex, cellIndex: laneSnap.cellIndex },
+  };
 }
 
 // Apply a move frame's translation: every dragged boxed element shifts
