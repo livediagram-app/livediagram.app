@@ -55,6 +55,7 @@ import { useShortcutsEnabled } from '@/hooks/ui/useShortcutsEnabled';
 import { useEditorComments } from '@/hooks/collab/useEditorComments';
 import { useEditorDrag } from '@/hooks/canvas/useEditorDrag';
 import { useTimelineLanes } from '@/hooks/canvas/useTimelineLanes';
+import { useDockActions } from '@/hooks/canvas/useDockActions';
 import { useEditorImages } from '@/hooks/canvas/useEditorImages';
 import { useEditorNotes } from '@/hooks/canvas/useEditorNotes';
 import { useElementLinks } from '@/hooks/canvas/useElementLinks';
@@ -1530,6 +1531,16 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setGroupSourceId,
   });
 
+  // Anchor docking (spec/139 Phase 7): add a note already docked to a host's
+  // free face, dock a loose one, undock one.
+  const dockActions = useDockActions({
+    activeTab,
+    createBlocked,
+    layerInertIds,
+    commit,
+    addBoxedAt,
+  });
+
   // --- Tab actions ---------------------------------------------------------
 
   // Tab-lifecycle actions (add / import / rename / duplicate / delete /
@@ -2476,6 +2487,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     // Timeline lanes (spec/139 Phase 6): the switch's state for the palette
     // row + command palette, and the flip itself.
     ...timelineLanes,
+    // Anchor docking (spec/139 Phase 7).
+    ...dockActions,
     layerHiddenIds,
     layerLockedIds,
     layerInertIds,

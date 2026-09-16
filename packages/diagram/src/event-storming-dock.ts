@@ -74,6 +74,16 @@ export function dockableFaces(
   }));
 }
 
+// Which note kind a host's FACE takes. A face exists precisely because a
+// pairing does, so the catalogue answers this rather than any caller matching
+// on a side.
+export function dockKindForFace(
+  hostKind: EventStormingNoteKind,
+  side: EsDockSide,
+): EventStormingNoteKind | null {
+  return ES_DOCKINGS.find((d) => d.hostKind === hostKind && d.side === side)?.kind ?? null;
+}
+
 type Bounds = { x: number; y: number; width: number; height: number };
 
 // Where a note of `kind` sits when docked to this host: a seam away on the x

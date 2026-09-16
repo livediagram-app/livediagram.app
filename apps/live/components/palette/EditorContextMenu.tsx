@@ -15,6 +15,7 @@
 
 import { onMouseHover, useRevertOnUnmount } from '@/components/primitives/hover-preview';
 import {
+  dockOf,
   eventStormingKindOf,
   isFixedSizeElement,
   arrowheadShapeOf,
@@ -41,6 +42,7 @@ import {
   CutIcon,
   DuplicateMenuIcon,
   RemoveIcon,
+  UndockMenuIcon,
 } from '@/components/palette/context-menu-icons';
 import {
   MenuAccordionSection,
@@ -184,6 +186,20 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
               label="Send to Back"
               onClick={runAndClose(props.onStackBack)}
             />
+            {/* Anchor docking (spec/139 Phase 7): only on a note that IS
+                docked, and only as the verb that ends the relation — docking
+                one is a gesture (drag it to a face) or a click on the host's
+                anchor, neither of which belongs in a menu. */}
+            {props.onUndockElement && dockOf(target) ? (
+              <>
+                <MenuGroupSeparator />
+                <MenuActionRow
+                  icon={<UndockMenuIcon />}
+                  label="Undock"
+                  onClick={runAndClose(props.onUndockElement)}
+                />
+              </>
+            ) : null}
             <MenuGroupSeparator />
             <MenuActionRow
               icon={<RemoveIcon />}

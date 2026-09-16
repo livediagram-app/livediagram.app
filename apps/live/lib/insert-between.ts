@@ -183,6 +183,31 @@ function stillInside(slot: InsertionSlot, cursorX: number, cursorY: number, elem
   return withinX && withinY;
 }
 
+// Everything at or after a point on the x axis that travels WHOLE when the
+// board opens there. Boxed elements answer with their left edge; a group
+// answers with the centre of its union bounds, so a group straddling the point
+// travels rather than being torn in half; an arrow travels exactly when both
+// its ends do. A locked element never travels — the board opens around it.
+//
+// Shared by the Alt insertion (spec/139 Phase 5) and the anchor-add ripple
+// (Phase 7), which are the same act seen twice: make room HERE, by this much.
+export function travellingIdsFrom(elements: Element[], atX: number): Set<ElementId> {
+  const groups = groupBounds(elements);
+  const movingIds = new Set<ElementId>();
+  for (const el of elements) {
+    if (!movable(el) || !isBoxed(el)) continue;
+    const group = el.groupId ? groups.get(el.groupId) : undefined;
+    const anchorX = group ? (group.minX + group.maxX) / 2 : el.x;
+    if (anchorX >= atX) movingIds.add(el.id);
+  }
+  // Arrows resolve after the boxes, because a pinned arrow travels exactly
+  // when the elements it connects do.
+  for (const el of elements) {
+    if (movable(el) && arrowTravelsWhole(el, atX, movingIds)) movingIds.add(el.id);
+  }
+  return movingIds;
+}
+
 export function findInsertionSlot({
   cursorX,
   cursorY,
@@ -221,19 +246,7 @@ export function findInsertionSlot({
   // note plus the row's own rhythm, which is the one thing the width means.
   const shiftDx = gridCell ? Math.ceil(opening / gridCell) * gridCell : opening;
 
-  const groups = groupBounds(elements);
-  const movingIds = new Set<ElementId>();
-  for (const el of elements) {
-    if (!movable(el) || !isBoxed(el)) continue;
-    const group = el.groupId ? groups.get(el.groupId) : undefined;
-    const anchorX = group ? (group.minX + group.maxX) / 2 : el.x;
-    if (anchorX >= atX) movingIds.add(el.id);
-  }
-  // Arrows resolve after the boxes, because a pinned arrow travels exactly
-  // when the elements it connects do.
-  for (const el of elements) {
-    if (movable(el) && arrowTravelsWhole(el, atX, movingIds)) movingIds.add(el.id);
-  }
+  const movingIds = travellingIdsFrom(elements, atX);
 
   let spanTop = Infinity;
   let spanBottom = -Infinity;

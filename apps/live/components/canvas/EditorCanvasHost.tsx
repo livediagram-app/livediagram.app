@@ -103,6 +103,7 @@ export function EditorCanvasHost() {
     lanesOn,
     lanesDisabled,
     toggleLanes,
+    addDockedNote,
     createBlocked,
     addTable,
     addTechIcon,
@@ -557,6 +558,7 @@ export function EditorCanvasHost() {
       onAddSticky={addSticky}
       esBoard={esBoard}
       esBoardControls={{ lanesOn, lanesDisabled, onToggleLanes: toggleLanes }}
+      onAddDockedNote={createBlocked ? undefined : addDockedNote}
       createBlocked={createBlocked}
       onAddImage={addImage}
       onAddArrow={addArrow}

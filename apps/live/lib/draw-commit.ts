@@ -1,5 +1,6 @@
 import {
   defaultSessionConfig,
+  eventStormingNote,
   eventStormingNoteSize,
   eventStormingTilt,
   eventStormingBoardLayerId,
@@ -8,6 +9,7 @@ import {
   isLayerLocked,
   isLayerVisible,
   REACTION_PAD_LABEL,
+  type EventStormingNoteKind,
   type StickyElement,
 } from '@livediagram/diagram';
 import { ARROW_SNAP_THRESHOLD_PX, inheritedSizeFor } from '@/lib/canvas';
@@ -338,4 +340,29 @@ export function buildDrawnBoxed(
       ? { stickerId: intent.stickerId }
       : {}),
   } as typeof base;
+}
+
+// The ONE way a workshop note is minted (spec/139), for every entry point that
+// is not a draw gesture: the anchor-add affordance, and a photo import. It
+// goes through `buildDrawnBoxed` rather than beside it, so fill, silhouette,
+// tilt, fixed size, auto-fit, caps and layer routing can never drift between
+// how a note arrives — which is the rule the palette tap and the palette drag
+// already share, and the one this board has paid for before.
+//
+// Takes the note's CENTRE, because that is what the tap path takes.
+export function buildEventStormingNote(
+  kind: EventStormingNoteKind,
+  centreX: number,
+  centreY: number,
+  activeTab: Tab,
+): StickyElement {
+  return buildDrawnBoxed(
+    { type: 'sticky', fill: eventStormingNote(kind).fill, esKind: kind },
+    centreX,
+    centreY,
+    centreX,
+    centreY,
+    null,
+    activeTab,
+  ) as StickyElement;
 }

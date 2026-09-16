@@ -263,6 +263,10 @@ export type EditorContextMenuProps = {
   // Reset the shape back to its kind's default aspect ratio (keeps area,
   // snaps the width:height proportion back to the canonical look).
   onResetAspectRatio: () => void;
+  // Undock a docked event-storming note (spec/139 Phase 7): drop the relation
+  // and leave the note where it is. Absent when the session cannot edit, and
+  // the row only renders for a note that is actually docked.
+  onUndockElement?: () => void;
   // Set the selection's exact size in canvas pixels (spec/134). Either
   // dimension alone is allowed: the omitted one is left as-is, or carried by
   // the aspect lock when that is on.
