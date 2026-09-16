@@ -5,6 +5,8 @@ import type {
   AiMode,
   AiRequest,
   CapabilitiesResponse,
+  PhotoNotesRequest,
+  PhotoNotesResponse,
 } from '@livediagram/api-schema';
 import type { Element } from '@livediagram/diagram';
 import { API_BASE, apiHeaders } from './core';
@@ -258,6 +260,44 @@ export async function apiAiStream(
     /* no summary */
   }
   callbacks.onDone({ elements, offTopic: false, reviewText: '', summary });
+}
+
+// Read the sticky notes out of a photograph of a wall (spec/139 Phase 8).
+//
+// Non-streaming, unlike the assistant above: the editor cannot reconcile half a
+// list, so there is nothing to show until the whole answer is in. The route's
+// error tokens are mapped to thrown Errors whose message IS the token, the same
+// shape the assistant's `off_topic` refusal already takes, so one catch in the
+// dialog can render one message per cause.
+export async function apiAiPhotoNotes(
+  ownerId: string,
+  image: string,
+  tabName: string,
+  opts: { signal?: AbortSignal } = {},
+): Promise<PhotoNotesResponse> {
+  const res = await fetch(`${API_BASE}/ai/photo-notes`, {
+    method: 'POST',
+    headers: await apiHeaders(ownerId, { body: true }),
+    body: JSON.stringify({ image, tabName } satisfies PhotoNotesRequest),
+    ...(opts.signal ? { signal: opts.signal } : {}),
+  });
+  if (!res.ok) {
+    const token = await errorToken(res);
+    throw new Error(token);
+  }
+  return (await res.json()) as PhotoNotesResponse;
+}
+
+// The worker's `{ error: '<token>' }` envelope, or a status-shaped fallback
+// when the body is not one (a proxy's own 502 page, say).
+async function errorToken(res: Response): Promise<string> {
+  try {
+    const body = (await res.json()) as { error?: unknown };
+    if (typeof body.error === 'string' && body.error !== '') return body.error;
+  } catch {
+    /* not an envelope */
+  }
+  return res.status === 413 ? 'photo_too_large' : 'ai_error';
 }
 
 // Re-export types so callers don't need extra imports.

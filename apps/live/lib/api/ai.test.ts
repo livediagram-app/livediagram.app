@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { describe, it, expect } from 'vitest';
-import { extractElementsFromBuffer } from './ai';
+import { afterEach, describe, it, expect, vi } from 'vitest';
+import { apiAiPhotoNotes, extractElementsFromBuffer } from './ai';
 
 // Regression guard for the "generated nodes are inconsistently sized" bug: an
 // AI shape with no textSize (or "scale") used to fall through to the canvas
@@ -112,5 +112,57 @@ describe('AI shape vocabulary agrees with the server prompt', () => {
       return (el as { shape?: string } | undefined)?.shape !== kind;
     });
     expect(squared).toEqual([]);
+  });
+});
+
+// Reading a wall photo (spec/139 Phase 8). Non-streaming, so unlike the
+// assistant above there is no buffer to reason about — what matters is that
+// the request says what it should and that a failure arrives as its TOKEN, so
+// the dialog can say one true thing per cause.
+describe('apiAiPhotoNotes', () => {
+  const originalFetch = globalThis.fetch;
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+  });
+
+  function respond(body: unknown, status = 200) {
+    const spy = vi.fn(async () => new Response(JSON.stringify(body), { status }));
+    globalThis.fetch = spy as unknown as typeof fetch;
+    return spy;
+  }
+
+  it('sends the image and the tab name, and returns what the model found', async () => {
+    const answer = { notes: [], wall: true };
+    const spy = respond(answer);
+    const out = await apiAiPhotoNotes('owner-1', 'data:image/jpeg;base64,AAA', 'Order flow');
+    expect(out).toEqual(answer);
+    const body = JSON.parse((spy.mock.calls[0]![1] as RequestInit).body as string);
+    expect(body).toEqual({ image: 'data:image/jpeg;base64,AAA', tabName: 'Order flow' });
+  });
+
+  it('throws the route’s own token, so each cause can be told apart', async () => {
+    for (const [status, token] of [
+      [503, 'ai_not_configured'],
+      [413, 'photo_too_large'],
+      [400, 'photo_invalid'],
+      [502, 'ai_error'],
+      [429, 'rate_limited'],
+    ] as const) {
+      respond({ error: token }, status);
+      await expect(apiAiPhotoNotes('o', 'data:image/jpeg;base64,AAA', 't')).rejects.toThrow(token);
+    }
+  });
+
+  it('falls back to a usable token when the failure is not our envelope', async () => {
+    globalThis.fetch = vi.fn(
+      async () => new Response('<html>502</html>', { status: 502 }),
+    ) as never;
+    await expect(apiAiPhotoNotes('o', 'data:image/jpeg;base64,AAA', 't')).rejects.toThrow(
+      'ai_error',
+    );
+    globalThis.fetch = vi.fn(async () => new Response('too big', { status: 413 })) as never;
+    await expect(apiAiPhotoNotes('o', 'data:image/jpeg;base64,AAA', 't')).rejects.toThrow(
+      'photo_too_large',
+    );
   });
 });
