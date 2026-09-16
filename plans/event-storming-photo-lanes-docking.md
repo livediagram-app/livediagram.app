@@ -687,7 +687,7 @@ h: number; row: number; order: number; confidence: number }` (all box fields
 
 ### 3.1 Spec
 
-- [ ] Spec/139 Phase 8 section: the entry points (Q7), the flow (pick → read →
+- [x] Spec/139 Phase 8 section: the entry points (Q7), the flow (pick → read →
       review → add), what the model is asked for and what it is NOT asked (§3),
       the reconciliation rules (matched notes untouchable; additions placed by the
       fitted transform; rows / lanes; de-overlap pushes only new notes; docking
@@ -695,20 +695,20 @@ h: number; row: number; order: number; confidence: number }` (all box fields
       contents, privacy (photo never stored, downscaled client-side, one line in the
       dialog), gates, errors, telemetry, "not in v1" (multi-file, applying text
       differences, arrows / hotspot links from the photo).
-- [ ] Spec/25: `POST /api/ai/photo-notes` documented beside `/api/ai` (auth, gates,
+- [x] Spec/25: `POST /api/ai/photo-notes` documented beside `/api/ai` (auth, gates,
       caps, request / response, error tokens, `OPENAI_VISION_MODEL`); the env-var
       table row; "Out of scope" line about image generation stays true.
-- [ ] Spec/11 route list; `apps/api/src/openapi/manifest.ts` entry (+ its test);
+- [x] Spec/11 route list; `apps/api/src/openapi/manifest.ts` entry (+ its test);
       spec/06 one line (photo bytes are transient).
-- [ ] Commit.
+- [x] Commit.
 
 ### 3.2 API route
 
-- [ ] Extract the shared AI gate out of `handleAi` into `apps/api/src/routes/ai-gate.ts`
+- [x] Extract the shared AI gate out of `handleAi` into `apps/api/src/routes/ai-gate.ts`
       (`aiGate(ctx)` → `Response | null`: key present, origin allow-list, Clerk-only
       flag, owner, method, rate limiter) and make `handleAi` use it — its tests must
       stay green unchanged (they pin the gate order).
-- [ ] `apps/api/src/routes/ai-photo-notes.ts` — `handleAiPhotoNotes(ctx)`: gate;
+- [x] `apps/api/src/routes/ai-photo-notes.ts` — `handleAiPhotoNotes(ctx)`: gate;
       JSON body `{ image, tabName? }`; validate the data URL prefix against the
       spec/19 whitelist minus GIF (`image/jpeg|png|webp`), decoded size ≤
       `PHOTO_MAX_BYTES`; build the prompt (`ai-photo-prompt.ts`: the legend from
@@ -721,19 +721,19 @@ h: number; row: number; order: number; confidence: number }` (all box fields
       `PhotoNotesResponse`. Errors: the four spec/25 tokens plus `photo_invalid`
       (400) and `photo_too_large` (413). Log the model's status + note count (no
       image bytes, no text) so a failure is diagnosable.
-- [ ] `index.ts`: `case 'ai'` dispatches on `segments[2]` (`undefined` → `handleAi`,
+- [x] `index.ts`: `case 'ai'` dispatches on `segments[2]` (`undefined` → `handleAi`,
       `'photo-notes'` → new handler, else 404).
-- [ ] `types.ts` Env: `OPENAI_VISION_MODEL?`; `wrangler.toml` comment block +
+- [x] `types.ts` Env: `OPENAI_VISION_MODEL?`; `wrangler.toml` comment block +
       `.env.example` + `docs/self-hosting.md` + `docs/local-development.md` env var
       notes updated in the same commit.
-- [ ] RED/GREEN tests `ai-photo-notes.test.ts`: every gate path (503 no key, 403
+- [x] RED/GREEN tests `ai-photo-notes.test.ts`: every gate path (503 no key, 403
       origin, 401 clerk, 401 no owner, 405, 429), 400 bad JSON / bad prefix / GIF /
       SVG, 413 too large, 502 model failure, 200 happy path with a stubbed fetch
       returning a schema-shaped body, clamping of out-of-range boxes and over-cap
       counts, `wall: false` passthrough; `ai-photo-prompt.test.ts` pins that the
       legend is derived from the catalogue (the spec/25 "read the prompt's own
       source" precedent).
-- [ ] Commit: `feat(api): read sticky notes out of a wall photo`.
+- [x] Commit: `feat(api): read sticky notes out of a wall photo`.
 
 ### 3.3 Pure reconciliation (`event-storming-photo.ts`)
 
