@@ -737,7 +737,7 @@ h: number; row: number; order: number; confidence: number }` (all box fields
 
 ### 3.3 Pure reconciliation (`event-storming-photo.ts`)
 
-- [ ] RED: `event-storming-photo.test.ts` — text normalisation; similarity (exact
+- [x] RED: `event-storming-photo.test.ts` — text normalisation; similarity (exact
       1, case / punctuation-insensitive, truncated read ≥ floor, unrelated ≈ 0);
       matching (one-to-one; threshold; kind bonus / penalty; `unknown` kind matches
       on text alone; duplicate board texts resolved by geometry; nothing matches on
@@ -752,9 +752,9 @@ h: number; row: number; order: number; confidence: number }` (all box fields
       `reconcilePhoto` end to end on three fixtures: empty board, partial overlap
       with an earlier photo, a photo of a region entirely already on the board
       (zero additions).
-- [ ] GREEN: implement. Keep each helper small and named; no god module — if the
+- [x] GREEN: implement. Keep each helper small and named; no god module — if the
       file passes ~400 lines split matching / transform / placement into siblings.
-- [ ] Commit: `feat(diagram): reconcile a wall photo against the board`.
+- [x] Commit: `feat(diagram): reconcile a wall photo against the board`.
 
 ### 3.4 Client: capability, request, pre-processing
 
