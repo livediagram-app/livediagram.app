@@ -546,7 +546,7 @@ h: number; row: number; order: number; confidence: number }` (all box fields
 
 ### 2.1 Spec
 
-- [ ] Resolve Q1 (ask if unanswered). Spec/139 Phase 7 section: the catalogue
+- [x] Resolve Q1 (ask if unanswered). Spec/139 Phase 7 section: the catalogue
       (three pairings, with sides and WHY those sides — the notation), the field,
       the seam + dots (Q2), the three ways a command is added / two ways a policy is
       (§1 B), affordances (Q12), magnetic docking on drag, undocking, host moves
@@ -554,12 +554,12 @@ h: number; row: number; order: number; confidence: number }` (all box fields
       is standalone — a new piece of paper; host + docked copied together keep the
       relation with fresh ids), the ripple rule (Q13, Q15), exports (Q14),
       telemetry, and "not in v1" (the further pairings in §11).
-- [ ] Spec/05: `StickyElement.esDock`.
-- [ ] Commit.
+- [x] Spec/05: `StickyElement.esDock`.
+- [x] Commit.
 
 ### 2.2 Pure model (`event-storming-dock.ts`)
 
-- [ ] RED: `event-storming-dock.test.ts` — catalogue is total over the three
+- [x] RED: `event-storming-dock.test.ts` — catalogue is total over the three
       pairings and nothing else; `dockableFaces` per host kind; `dockedBounds` for
       both sides and mixed heights (policy 180 after event 200 → centred);
       `findDockCandidate` picks the nearest FREE compatible face within the snap
@@ -570,20 +570,20 @@ h: number; row: number; order: number; confidence: number }` (all box fields
       when the host disappears and leaves everything else untouched; `dock`
       moves the note into place and stamps the field; `undock` removes the field
       and nothing else.
-- [ ] GREEN: implement. Export from `index.ts`.
-- [ ] Add `esDock?` to `StickyElement` with the WHAT comment (stored on the docked
+- [x] GREEN: implement. Export from `index.ts`.
+- [x] Add `esDock?` to `StickyElement` with the WHAT comment (stored on the docked
       note; the host has no back-reference so a host can be deleted without a
       write to its neighbours; readers derive the cluster).
-- [ ] Wire `stripDanglingDocks` next to every `freezeDanglingGroupEnds` call site
+- [x] Wire `stripDanglingDocks` next to every `freezeDanglingGroupEnds` call site
       (`useElementSelectionActions.ts` ×2, `layer-operations.ts`) — extract ONE
       `afterElementsRemoved(before, after)` helper if that is the third caller of
       the same pair; tests.
-- [ ] `duplicate.ts`: remap `esDock.hostId` when both ends are in the copied set
+- [x] `duplicate.ts`: remap `esDock.hostId` when both ends are in the copied set
       (the `groupId` remap precedent), strip it when only the docked note is copied;
       tests.
-- [ ] Import / merge (`import-merge.ts`) and cross-tab paste: a dangling `hostId`
+- [x] Import / merge (`import-merge.ts`) and cross-tab paste: a dangling `hostId`
       is stripped on the way in; test.
-- [ ] Commit: `feat(diagram): anchor docking model for event-storming notes`.
+- [x] Commit: `feat(diagram): anchor docking model for event-storming notes`.
 
 ### 2.3 Rendering — seam dots + affordances
 
