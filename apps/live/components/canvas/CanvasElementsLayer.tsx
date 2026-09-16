@@ -20,6 +20,8 @@ import { BoxedElementView } from '@/components/canvas/BoxedElementView';
 import { LaserOverlay } from '@/components/canvas/LaserOverlay';
 import { UnionResizeHandles } from '@/components/canvas/element-parts';
 import { QuickConnectRing } from '@/components/canvas/QuickConnectRing';
+import { DockSeams } from '@/components/canvas/DockSeams';
+import { DockAnchors } from '@/components/canvas/DockAnchors';
 import { RemoteCursor } from '@/components/canvas/RemoteCursor';
 import { useInsertShift } from '@/hooks/canvas/useInsertShift';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
@@ -157,6 +159,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     showUnionResize,
     tabFont,
     tabLocked,
+    tabThemeId,
     tabSummaries,
     unionResizeBounds,
     unionResizePrimaryId,
@@ -271,6 +274,14 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
         <svg className="absolute" style={{ width: 0, height: 0, overflow: 'visible' }} aria-hidden>
           <ArrowDefs />
         </svg>
+      ) : null}
+
+      {/* Anchor docking (spec/139 Phase 7): the two dots in every docked
+          pair's seam, plus the pair a drag is currently offering. Drawn
+          BEFORE the notes so a note that overlaps one covers it, which is the
+          truth — the dots live in the seam, not on the paper. */}
+      {props.esBoard ? (
+        <DockSeams elements={elements} tabThemeId={tabThemeId} insertShift={insertShift} />
       ) : null}
 
       {/* Render elements in their natural array order so
@@ -479,6 +490,19 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
           primaryId={unionResizePrimaryId}
           zoom={viewportZoom}
           onBeginDrag={onBeginDrag}
+        />
+      ) : null}
+
+      {/* …and the affordances on the host you are pointing at or have
+          selected. They stand down while any drag is in hand: the board is
+          the drag's for the duration. */}
+      {props.esBoard && props.onAddDockedNote ? (
+        <DockAnchors
+          elements={elements}
+          selectedId={selectedId}
+          blocked={readOnly || tabLocked || props.createBlocked === true || insertShift.animates}
+          zoom={viewportZoom}
+          onAdd={props.onAddDockedNote}
         />
       ) : null}
 

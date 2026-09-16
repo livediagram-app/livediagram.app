@@ -12,12 +12,14 @@ import {
   defaultStrokeColor,
   defaultTextAlign,
   defaultTextColor,
+  isEventStormingNote,
   isLegacyModeButtonSkin,
   isOpenAction,
   isSelfDrawingShape,
   type ShapeMarker,
   type TextSize,
 } from '@livediagram/diagram';
+import { clearDockHoveredId, setDockHoveredId } from '@/lib/dock-preview';
 import { renderLabel } from '@/components/canvas/element-labels';
 import { ElementFaceRouter } from '@/components/canvas/ElementFaceRouter';
 import { MindNodeHint } from '@/components/canvas/MindNodeHint';
@@ -169,6 +171,13 @@ function BoxedElementViewImpl({
   // engine's click-vs-drag test) opens the editable note popover.
   const isAnnotation = element.type === 'annotation';
   const [hovering, setHovering] = useState(false);
+  // A workshop note (spec/139) reports the pointer being over it, so its host
+  // can offer its free docking faces on hover as well as on selection. It is
+  // published rather than held here because the affordances are drawn by the
+  // elements layer, beside the note rather than inside it — docking is board
+  // grammar, and this view is every board's.
+  const isEsNote = isEventStormingNote(element);
+  const reportsHover = isAnnotation || isEsNote;
 
   // Right-click selects the element + asks the page to open a
   // context menu at the cursor. The page also keeps showing the
@@ -331,8 +340,22 @@ function BoxedElementViewImpl({
       onDoubleClick={handleDoubleClick}
       onContextMenu={handleContextMenu}
       onPointerUp={handlePointerUp}
-      onPointerEnter={isAnnotation ? () => setHovering(true) : undefined}
-      onPointerLeave={isAnnotation ? () => setHovering(false) : undefined}
+      onPointerEnter={
+        reportsHover
+          ? () => {
+              if (isAnnotation) setHovering(true);
+              if (isEsNote) setDockHoveredId(element.id);
+            }
+          : undefined
+      }
+      onPointerLeave={
+        reportsHover
+          ? () => {
+              if (isAnnotation) setHovering(false);
+              if (isEsNote) clearDockHoveredId(element.id);
+            }
+          : undefined
+      }
       onDragOver={acceptsIconDrop ? handleIconDragOver : undefined}
       onDragLeave={acceptsIconDrop ? handleIconDragLeave : undefined}
       onDrop={acceptsIconDrop ? handleIconDrop : undefined}

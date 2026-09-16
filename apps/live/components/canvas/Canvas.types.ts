@@ -3,7 +3,12 @@
 // via inline import('...') so this file only needs the bare-named
 // types as top-level imports.
 import type { PointerEvent as ReactPointerEvent, Ref } from 'react';
-import type { EmbedProvider, EsTimeline, EventStormingNoteKind } from '@livediagram/diagram';
+import type {
+  EmbedProvider,
+  EsDockSide,
+  EsTimeline,
+  EventStormingNoteKind,
+} from '@livediagram/diagram';
 import type {
   AlignmentGuide,
   BackgroundPattern,
@@ -309,6 +314,9 @@ export type CanvasProps = {
   // Board-level switches for the palette's Event Storming category
   // (spec/139 Phase 6: timeline lanes). Supplied only on such a board.
   esBoardControls?: EsBoardControls;
+  // Add a note already docked to a host's free face (spec/139 Phase 7), from
+  // that face's anchor affordance. Absent when the session cannot create.
+  onAddDockedNote?: (hostId: string, side: EsDockSide) => void;
   // True when a new element cannot land at all: a locked tab, a view-only
   // session, or a hidden / locked active layer (spec/74). The insert-between
   // preview reads it so it never offers a slot the drop would refuse.
