@@ -150,14 +150,51 @@ streamed body carries `"offTopic": true`, and the editor turns that into a local
 for the AI panel to render (`apps/live/lib/api/ai.ts`). A client reading only the envelope will
 never see it, and must look at the body.
 
+## POST /api/ai/photo-notes — reading a wall photo
+
+A SECOND route on the same gate, for the event-storming board's photo import
+(spec/139 Phase 8). It shares `handleAi`'s entire admission sequence —
+key present → origin allow-list → Clerk-only flag → owner → method → rate
+limiter — through `routes/ai-gate.ts`, so there is one answer to "may this
+caller use the model", not two that drift.
+
+What differs is everything after the gate:
+
+- **Non-streaming**, with **structured outputs**
+  (`response_format: { type: 'json_schema', strict: true }`). The editor needs a
+  whole list of notes before it can reconcile anything, so a stream would only
+  add a parser.
+- **The body is one image** (`{ image, tabName? }`), a data URL of at most
+  `PHOTO_MAX_BYTES` decoded bytes in one of `image/jpeg`, `image/png`,
+  `image/webp` (`@livediagram/api-schema`). The bytes are forwarded to the
+  model and discarded: nothing is stored, logged or echoed.
+- **The prompt's legend is DERIVED** from `EVENT_STORMING_NOTES`, never a
+  hand-copied colour table — the same rule the palette tiles follow, and a test
+  reads the prompt's own source to keep it true.
+- **The response is clamped** before it is returned: notes with empty text or
+  boxes outside 0..1 are dropped, and the list is capped at `PHOTO_MAX_NOTES`.
+- **Errors** are the four this spec already defines, plus two of its own:
+
+| Token             | Status | When                                           |
+| ----------------- | ------ | ---------------------------------------------- |
+| `photo_invalid`   | 400    | Not a data URL, or not an accepted image type. |
+| `photo_too_large` | 413    | The decoded image exceeds `PHOTO_MAX_BYTES`.   |
+
+`wall: false` in a 200 body is the model saying "this is not a sticky wall" —
+not an error, the same way `offTopic` is not.
+
+**Telemetry:** `AI / Used / PhotoNotes`, once per committed import (the editor
+fires it, because the route cannot know whether the author kept the result).
+
 ## Environment variables
 
-| Variable             | Where                 | Purpose                                                                                                                                                                                                                 |
-| -------------------- | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `OPENAI_API_KEY`     | Worker secret         | Required to enable AI. Absent = feature hidden.                                                                                                                                                                         |
-| `OPENAI_MODEL`       | Worker var (optional) | OpenAI model name. Defaults to `gpt-4o`.                                                                                                                                                                                |
-| `AI_ALLOWED_ORIGINS` | Worker var (optional) | Comma-separated `Origin` values that may call `/api/ai`. Unset = no check. Example: `https://livediagram.app,http://localhost:3002`. Entries are matched case-sensitive against the request's `Origin` header verbatim. |
-| `AI_REQUIRE_CLERK`   | Worker var (optional) | Set to `"true"` to require a verified Clerk JWT on `/api/ai` (rejects the `X-Owner-Id` guest path with 401). Unset / any other value = guests allowed.                                                                  |
+| Variable              | Where                 | Purpose                                                                                                                                                                                                                 |
+| --------------------- | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `OPENAI_API_KEY`      | Worker secret         | Required to enable AI. Absent = feature hidden.                                                                                                                                                                         |
+| `OPENAI_MODEL`        | Worker var (optional) | OpenAI model name. Defaults to `gpt-4o`.                                                                                                                                                                                |
+| `OPENAI_VISION_MODEL` | Worker var (optional) | Model for `/api/ai/photo-notes` (spec/139 Phase 8). Defaults to `OPENAI_MODEL`, else `gpt-4o`. Split out so a deployment can point the vision route at a cheaper or newer model without moving the assistant.           |
+| `AI_ALLOWED_ORIGINS`  | Worker var (optional) | Comma-separated `Origin` values that may call `/api/ai`. Unset = no check. Example: `https://livediagram.app,http://localhost:3002`. Entries are matched case-sensitive against the request's `Origin` header verbatim. |
+| `AI_REQUIRE_CLERK`    | Worker var (optional) | Set to `"true"` to require a verified Clerk JWT on `/api/ai` (rejects the `X-Owner-Id` guest path with 401). Unset / any other value = guests allowed.                                                                  |
 
 Set via `wrangler secret put OPENAI_API_KEY` for production; drop into `apps/api/.dev.vars`
 for local dev (gitignored). The two `AI_*` flags are plain `[vars]` (no secret value), so
@@ -219,6 +256,7 @@ don't inflate the count.
 ## Out of scope (this spec)
 
 - Multi-tab context
-- Image or freehand element generation
+- Image or freehand element generation (READING an image is in scope — see the
+  photo-notes route above; generating one is not)
 - Per-user cost attribution or quota
 - Model switching in the UI

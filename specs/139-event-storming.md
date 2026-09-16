@@ -584,34 +584,62 @@ side }`), and the host holds nothing. So deleting a host needs no write to its
   does not know yet, and the aggregate needs a two-host relation. They are
   listed in the plan so nobody re-derives them.
 
-## Phase 8 (planned): import a photo of the wall
+## Phase 8 (shipped): import a photo of the wall
 
-_Stub — filled in as the phase lands._
-
-Photograph a piece of a physical wall — stickies, possibly overlapping,
+Photograph a piece of the physical wall — stickies, possibly overlapping,
 possibly a region already partly on the board — and the board reads the notes
 out of it: the **kind from the paper colour**, the **text from the
 handwriting**, the **layout from the photo**. It then **reconciles** against
-what the board already holds: notes already on the board are matched and left
-exactly as they are, and only the **new** notes are added, placed relative to
-the matched neighbours they sat beside in the photo. A review step shows what
-was found and what will be added; the commit is one undoable step. Repeating
-with the next photo of the next piece of wall adds only what is new.
+what the board already holds: notes already there are matched and left exactly
+as they are, and only the **new** ones are added, placed relative to the
+matched neighbours they sat beside in the photo. Repeating with the next photo
+of the next piece of wall adds only what is new — that is what "incremental"
+means here.
 
-Settled before anything was built:
+A real workshop always happens on a physical wall first. Getting it onto the
+board used to cost a transcription afternoon, which is the one thing a
+low-threshold capture surface can least afford.
 
-- **Perception is the model's job; reconciliation is ours.** The model returns
-  what it SEES. Matching against the board and placing the additions are pure,
-  deterministic, unit-tested TypeScript. The model is never asked "which of
-  these are already on the board".
-- **Existing notes are untouchable by an import.** Additions only — never a
-  move, a resize, a re-kind or a re-word. A text difference on a matched note
-  is SHOWN, never applied.
+- **Perception is the model's job; reconciliation is ours.** The model is asked
+  ONLY what it can see — text verbatim, paper colour → kind, silhouette,
+  normalised box, row and order. Matching against the board, fitting the
+  photo's coordinates onto the canvas and placing the additions are pure,
+  deterministic, unit-tested TypeScript (`event-storming-photo.ts`). The model
+  is never asked "which of these are already on the board": that is a question
+  about our data, and a model's answer to it could not be checked.
+- **Existing notes are untouchable.** An import only ever ADDS. A matched note
+  is never moved, resized, re-kinded or re-worded — if the photo says something
+  different, the review SHOWS it ("on the board as …") and leaves it. The board
+  is the record; the photo is a reading of one moment of the wall.
 - **The photo is never stored.** Not R2, not D1, not IndexedDB, not the change
-  log: the client downscales and re-encodes it (which also drops EXIF) and the
-  api route forwards the bytes to the model and discards them.
-- **Gated on `OPENAI_API_KEY` exactly as spec/25 is.** Without a key there is
-  no photo UI at all, and a self-host without one loses nothing else.
+  log. The client downscales it to 2048px on the longest edge and re-encodes it
+  as JPEG (which also drops EXIF, after honouring the orientation flag), and
+  the route forwards those bytes to the model and discards them. The dialog
+  says so in one line, where the author can read it before choosing a file.
+- **Gated on the model key exactly as spec/25 is.** No `OPENAI_API_KEY` = no
+  photo UI anywhere, and a self-host without one loses nothing else. It is NOT
+  gated on the AI-panel preference: this is not the assistant.
+- **Placement composes the other two phases.** New notes land on the lanes when
+  lanes are on, and a pair the photo shows adjacent in a notation pairing lands
+  DOCKED. That is why photo import was built third: doing it first would have
+  meant building its placement twice.
+- **A review step, then one undoable commit.** The dialog shows each note found
+  over the photo and in a list, badged NEW / ON BOARD, with the text and kind
+  editable and every note tickable. "Add N notes" commits the included ones
+  through the ordinary choke point in one step, so a single Undo takes the
+  whole import back.
+- **Where a photo with nothing in common lands:** to the RIGHT of the board's
+  bounding box, one note width clear, its top row aligned with the board's top
+  row (snapped to a lane when lanes are on). The x axis is time, and a fresh
+  piece of wall is most likely a continuation.
+- **Nothing found is not an error.** "No stickies found in this photo" with one
+  line of retake advice (fill the frame, straight on, good light), and the
+  dialog stays open for another try.
+- **Telemetry:** `AI / Used / PhotoNotes` once per committed import, plus the
+  ordinary `Element / Added / Sticky` per note.
+- **Not in v1:** multiple photos in one run (one at a time, then "Add another
+  photo" against the board as it now is), applying a matched note's text
+  difference, and reading arrows / connections out of the photo.
 
 ## Domain learnings (session log)
 

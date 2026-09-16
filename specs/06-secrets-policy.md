@@ -87,3 +87,14 @@ NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
 
 - Pre-commit hook scanning for likely secrets (`gitleaks` or similar) — to be added when there are enough secrets in dev that scanning earns its keep.
 - CI check that no `NEXT_PUBLIC_*`-bundled value matches a known secret-key prefix (e.g. `sk_`, Resend's `re_`).
+
+## Photo bytes are transient
+
+The event-storming photo import (spec/139 Phase 8) sends a photograph of a
+physical wall to the model through `POST /api/ai/photo-notes`. Those bytes are
+**never persisted**: not R2, not D1, not IndexedDB, not the change log, not a
+log line. The client downscales and re-encodes the image before sending (which
+also strips EXIF, after honouring the orientation flag), the route forwards it
+upstream and discards it, and the only thing that survives the request is the
+list of notes the author then chooses to add. A workshop wall is somebody's
+unreleased strategy; the safest place to keep a picture of it is nowhere.
