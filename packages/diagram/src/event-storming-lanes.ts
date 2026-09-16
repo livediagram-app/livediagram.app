@@ -250,8 +250,11 @@ export function laneCandidates(
 // The slot that takes the note, or null when the hand is further from all of
 // them than the capture radius — and then the note stays exactly where it was
 // put. Nearest wins; no kind outranks another.
+// Takes the whole bounds, though only the left edge decides: callers hand the
+// note they are dragging, and a parameter narrower than the thing every caller
+// has is a paper cut at each of them.
 export function captureCandidate(
-  bounds: { x: number },
+  bounds: { x: number; y?: number; width?: number; height?: number },
   candidates: readonly LaneCandidate[],
   radius: number = ES_CANDIDATE_RADIUS_X,
 ): LaneCandidate | null {
