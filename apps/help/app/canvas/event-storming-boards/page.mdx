@@ -54,6 +54,69 @@ It works two ways round, which is the point:
 
 This only happens on an event storming board, where left-to-right means time, and only for notes — a shape or an icon is dropped where you drop it. On an ordinary diagram, a note dropped in a gap is just a note dropped in a gap.
 
+## Timeline lanes
+
+Turn **Timeline lanes** on at the top of the Event Storming palette (or type
+"timeline lanes" into the command palette) and the board grows a rhythm: notes
+you drag snap into evenly spaced rows, and their left edges snap to a grid half
+a note wide.
+
+- **Nothing moves when you switch it on.** The lanes line themselves up with the
+  notes already there, and the board is left exactly as you arranged it.
+- **You see them only while you are dragging** — the lane a note is about to
+  land in lights up, with its neighbours fainter either side, and everything
+  disappears again when you let go.
+- **Half a note across** is the point: a note can sit exactly above the one on
+  the lane before it, or staggered by half, and those two arrangements are all
+  the grid offers.
+- Hold **Cmd / Ctrl** while dragging to ignore the lanes for that one note.
+
+It is shared with everyone in the session, like the rest of the board, and it is
+never exported — lanes are there to help you place a note, not to be part of the
+picture.
+
+## Anchoring a command to its event
+
+The notation has adjacencies of its own, and the board knows them:
+
+- a **command** belongs before the **domain event** it triggers,
+- a **command** belongs after the **policy** that issues it,
+- a **policy** belongs after the **domain event** it reacts to.
+
+Hover or select a note and any free face it has offers a small hollow dot.
+Click it and the matching note arrives already anchored, open for typing. You
+can also drag a loose note near a compatible face — it snaps into place and two
+small dots appear in the seam to show the two are one phrase. Drag it away
+again to let it go, or right-click it and choose **Undock**.
+
+Move the note a command is anchored to and the command travels with it. Delete
+it and the command simply becomes a note again — nothing is lost.
+
+## Adding notes from a photo of the wall
+
+Most sessions happen on a real wall first. If your deployment has the AI
+assistant configured, **Add from photo** at the top of the Event Storming
+palette reads that wall in:
+
+1. Take or drop a photo of a piece of the wall (you can also paste one onto the
+   board).
+2. The board reads the stickies out of it — the words from the handwriting, the
+   kind from the paper colour, the layout from the photo itself.
+3. You get a review: everything it found, what is new, and what your board
+   already has. Fix any words it misread, change a kind, untick anything you
+   do not want.
+4. **Add** puts the new notes on the board in one step, which one Undo takes
+   back.
+
+Notes your board already has are **matched and left alone** — never moved,
+never re-worded, even if the photo reads differently. That is what makes the
+next photo of the next piece of wall safe to import: only what is new is added.
+
+<Tip>
+  The photo is resized in your browser, read once, and never stored — not on the board, and not by
+  us.
+</Tip>
+
 ## One wall of paper
 
 The board is a single [layer](/help/canvas/layers/). Every note lands on it, whichever colour it is, so any two notes can be stacked in front of or behind each other and nothing is filed away on a plane you cannot see.

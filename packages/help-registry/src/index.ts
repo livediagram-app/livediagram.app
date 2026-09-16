@@ -932,7 +932,7 @@ export const articles: Article[] = [
     title: 'Event Storming Elements',
     description: 'The workshop note grammar: eight sticky kinds, each colour a meaning.',
     keywords:
-      'event storming eventstorming domain event command actor policy read model external system aggregate hotspot brandolini ddd workshop notation sticky colours colors orange blue purple big picture process design stage',
+      'event storming eventstorming domain event command actor policy read model external system aggregate hotspot brandolini ddd workshop notation sticky colours colors orange blue purple big picture process design stage timeline lanes grid snap photo camera wall import add from photo',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Elements',
@@ -1188,7 +1188,7 @@ export const articles: Article[] = [
     title: 'Event Storming Boards',
     description: 'A board built for the workshop: the notation, paper-like notes, one wall.',
     keywords:
-      'event storming eventstorming board workshop brandolini ddd domain driven design session facilitator wall sticky notes paper big picture process modelling modeling software design pass timeline domain event command aggregate hotspot insert between gap make room slot squeeze in add in the middle reorder shuffle push right alt option modifier hold key move a note rearrange resequence capitals caps uppercase upper case all caps shouting letter case marker font typeface handwriting permanent marker sharpie',
+      'event storming eventstorming board workshop brandolini ddd domain driven design session facilitator wall sticky notes paper big picture process modelling modeling software design pass timeline domain event command aggregate hotspot insert between gap make room slot squeeze in add in the middle reorder shuffle push right alt option modifier hold key move a note rearrange resequence capitals caps uppercase upper case all caps shouting letter case marker font typeface handwriting permanent marker sharpie lane lanes timeline grid rows columns stagger staggered snap align rhythm anchor anchors dock docked docking undock magnet seam attach pair adjacency photo camera wall picture ocr scan import read transcribe handwriting capture snapshot',
     category: 'Canvas',
     categorySlug: 'canvas',
     parentSlug: 'templates',
