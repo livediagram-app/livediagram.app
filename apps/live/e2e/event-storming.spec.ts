@@ -217,17 +217,18 @@ test('a dragged note takes the slot two events suggest', async ({ page, pageErro
   moved = stickies(after).find((el) => el.id === travellerId)!;
   expect(moved.x).toBeCloseTo(brick, 6);
 
-  // 3. NOT OFFERED: back into the row above, aimed 10px past the first
-  //    event's right edge — a touching position, which is in no rhythm. The
-  //    note stays exactly where the hand left it.
+  // 3. PUSHED RIGHT UP AGAINST the first event, which is how an author says
+  //    "right behind this": the note takes the next place in the row instead
+  //    of coming to rest half on top of its neighbour.
   const touching = row[0]!.x + row[0]!.width + 10;
-  await dragBy(touching - moved.x, laneTopY(0) + 4 - moved.y, { expectGhost: false });
+  await dragBy(touching - moved.x, laneTopY(0) + 4 - moved.y);
   after = await boardTab(page);
   moved = stickies(after).find((el) => el.id === travellerId)!;
-  // Where the hand left it, give or take the pointer's own rounding — and
-  // emphatically NOT snapped flush against the event beside it.
-  expect(Math.abs(moved.x - touching)).toBeLessThan(4);
-  expect(moved.x).not.toBeCloseTo(row[0]!.x + row[0]!.width, 1);
+  expect(moved.x).not.toBeCloseTo(touching, 1);
+  for (const el of [row[0]!, row[1]!]) {
+    const overlaps = moved.x < el.x + el.width && moved.x + moved.width > el.x;
+    expect(overlaps, `landed on top of ${el.id}`).toBe(false);
+  }
 
   // Neither event above moved to make room for either drop.
   for (const el of [row[0]!, row[1]!]) {

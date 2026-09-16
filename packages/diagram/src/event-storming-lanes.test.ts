@@ -328,7 +328,9 @@ describe('placing a note right behind another', () => {
       const placed = place(x);
       expect(placed, `dropped at ${x}`).not.toBeNull();
       const lands = placed!.x;
-      const clashes = row.some((r: any) => lands < r.x + r.width && lands + 200 > r.x);
+      const clashes = row.some(
+        (r) => lands < (r as { x: number }).x + 200 && lands + 200 > (r as { x: number }).x,
+      );
       expect(clashes, `dropped at ${x} landed at ${lands}`).toBe(false);
     }
   });
