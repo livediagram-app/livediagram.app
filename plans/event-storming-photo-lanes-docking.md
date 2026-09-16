@@ -1044,12 +1044,13 @@ working image */, row, order, confidence }`; `toNormalised(...)` for the
       MATCHER threshold so a re-import adds nothing and an overlapping second
       photo adds only the new notes. Record numbers, the model id used, and one
       paragraph of what needed tuning in spec/139.
-- [ ] If no key / photos arrive, record the calibration as OUTSTANDING in
-      spec/139 and the final report (explicitly, never "verified").
+- [x] If no key / photos arrive, record the calibration as OUTSTANDING in
+      spec/139 and the final report (explicitly, never "verified"). — The key and
+      photos DID arrive; what is recorded instead is the honest partial result.
 
 ### 3.8 Verification
 
-- [ ] Dev server walkthrough of every path in §10 C (with the mocked route via
+- [x] Dev server walkthrough of every path in §10 C (with the mocked route via
       playwright-cli where the real model is unavailable).
 - [x] Spec/139 Phase 8 filled in; learnings appended (at least: "perception is the
       model's, reconciliation is ours", "existing notes are immovable").
@@ -1126,7 +1127,7 @@ Each is one more `ES_DOCKINGS` row plus, where the face is not west / east, a
 
 ## 12. Phase 4 — Integration, the on-par tail, fold-back
 
-- [ ] Photo import × lanes × docking walkthrough on the dev server: lanes on, a
+- [x] Photo import × lanes × docking walkthrough on the dev server: lanes on, a
       board with two docked pairs, import a photo overlapping one pair and adding
       a new command-event pair → additions on lanes, the new pair docked, nothing
       existing moved (compare element JSON before / after, byte-identical for
@@ -1159,16 +1160,16 @@ Each is one more `ES_DOCKINGS` row plus, where the face is not west / east, a
       / `AMBIGUITIES.md` / `LESSONS_LEARNED.md` at the worktree root updated (all
       gitignored); wiki page in `docs/` if a durable repo-level learning emerged
       (e.g. "structured outputs for vision on Workers").
-- [ ] PR description names the deploy step: `wrangler secret put AI_API_KEY`,
-      `AI_BASE_URL` + `AI_MODEL` as `[vars]`, delete the old `OPENAI_API_KEY`
-      secret.
+- [x] PR description names the deploy step: `wrangler secret put GOOGLE_AI_STUDIO_API_KEY`,
+      delete the old `OPENAI_API_KEY` secret, drop the `OPENAI_MODEL` var (the
+      provider is inferred from whichever key var is set).
 - [x] `packages/sticky-vision` in the repo layout block of `CLAUDE.md` and in
       `README.md` / `docs/architecture.md`.
 - [x] `docs/` wiki page `docs/vision/sticky-detection.md`: how the detector
       works, its calibration constants and why, the limits — a durable
       repo-level learning.
-- [ ] Final quality gate: lint, format:check, typecheck, test and build all
-      green; e2e green against the built stack.
+- [x] Final quality gate: lint, format:check, typecheck, test and build all
+      green; e2e green against the built stack (19 specs, 4154 unit tests).
 - [~] `git fetch && git rebase origin/main` (resolve by new commits, never force);
   re-run the gate; push ONLY when the parent relays operator permission; open
   the PR with a bullet description referencing spec/139 Phases 6–8, spec/25;
