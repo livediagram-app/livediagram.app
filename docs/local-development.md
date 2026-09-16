@@ -17,7 +17,7 @@ cd livediagram
 pnpm install
 ```
 
-This installs every workspace at once.
+This installs every workspace at once, including both TypeScript compilers: 7 for `tsc` and 6 for the tools that import a compiler API. [Contributing](contributing.md#two-typescripts) explains the pair.
 
 ## Apply the local database migrations (once, before first `pnpm dev`)
 

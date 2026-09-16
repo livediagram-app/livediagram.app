@@ -136,7 +136,7 @@ When the right place for code is genuinely unclear, default to `packages/`.
 
 What the product runs on. Items marked ✗ haven't shipped yet — see "What's built, what's still ahead".
 
-- **Frontend:** Next.js (`output: 'export'`), React, TypeScript, Tailwind CSS — ✓
+- **Frontend:** Next.js (`output: 'export'`), React, TypeScript 7 (native/Go compiler), Tailwind CSS — ✓
 - **APIs:** Cloudflare Workers — ✓
 - **Routing edge:** Cloudflare Workers (the router app) — ✓
 - **Database:** Cloudflare D1 (via the api worker only) — ✓
@@ -152,7 +152,7 @@ What the product runs on. Items marked ✗ haven't shipped yet — see "What's b
 
 ## Shared config
 
-- **TypeScript:** every workspace's `tsconfig.json` extends `../../tsconfig.base.json`.
+- **TypeScript:** every workspace's `tsconfig.json` extends `../../tsconfig.base.json`. Two TypeScripts are installed on purpose: `@typescript/native` (an alias for `typescript@7`, the Go compiler) provides the `tsc` that `pnpm typecheck` runs, while `typescript` aliases `@typescript/typescript6` because 7.0 ships no compiler API and typescript-eslint / Next.js / Prettier import one. See [`docs/contributing.md`](docs/contributing.md#two-typescripts).
 - **ESLint:** flat config. Each workspace has `eslint.config.js`:
   ```js
   import config from '@livediagram/eslint-config';

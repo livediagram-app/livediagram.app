@@ -27,10 +27,11 @@
     "@livediagram/eslint-config": "workspace:*",
     "@livediagram/vitest-config": "workspace:*",
     "@types/node": "^26.1.2",
+    "@typescript/native": "npm:typescript@^7.0.2",
     "@vitest/coverage-v8": "^4.1.11",
     "eslint": "^10.10.0",
     "ts-json-schema-generator": "^2.9.0",
-    "typescript": "^6.0.3",
+    "typescript": "npm:@typescript/typescript6@^6.0.2",
     "vitest": "^4.1.11",
     "wrangler": "^4.131.1"
   }
