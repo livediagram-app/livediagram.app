@@ -456,6 +456,7 @@ record who asked for what.
 | **Same lane — never offered**        | Touching (`n.x ± w`). One gap plus one sticky (`n.x + n.width + gutter + w`) — that is a note's edge, not a place. Half a pitch. Anything landing on a note that is already there (opening a row is the Alt insertion, a different verb). |
 | **Adjacent lane**                    | Exactly above / below a NOTE (left edges aligned), or exactly above / below a GAP (centred on it — the brick). Nothing else: a neighbouring row says which columns line up, not where along this row a note may sit.                      |
 | **Every other x snap**               | Stands down. On a lanes board the lane resolver is the only source of x — the ordinary alignment and distribution rungs were adding exactly the positions the rules above exclude.                                                        |
+| **The gutter**                       | The most REPEATED gap between notes sharing a row, ignoring anything under 24px (a seam, not a gutter) and any docked pair's seam; `ES_NOTE_GAP` (72) when there is nothing to measure.                                                   |
 | **Capture**                          | Half a standard note (100px) on x, the lane tolerance on y; nearest candidate wins, no kind outranks another; the slot is drawn before the drop.                                                                                          |
 | **Precedence**                       | An open Alt slot, then Cmd/Ctrl free placement, then a dock candidate, then these rules.                                                                                                                                                  |
 
@@ -478,6 +479,13 @@ of it lives in `rhythmSlots` and `gutterCentres` in
   neighbour tolerance was 12px, a snap rather than a suggestion, so in practice
   nothing was offered. Capture radius widened to half a note and the target
   footprint is now DRAWN before the drop.
+- **2026-09-16 — "two events can only be placed without the gap, or with a very
+  big gap"**: the gutter was the MEDIAN of every gap on the board, so a handful
+  of accidental near-touching pairs (16px, left behind while dragging) pulled a
+  board whose deliberate gaps were all 72 down to 44 — and the whole rhythm
+  followed it. The gutter is now the most REPEATED gap, ignoring anything under
+  `MIN_MEASURED_GUTTER` (24px: a seam, not a gutter), ties going to the board
+  default.
 - **2026-09-16 — "too many snapping points"**: same-lane offers were a single
   gutter each side, while the alignment and distribution rungs quietly added
   touching, on-top and half-way positions. Same lane is now the rhythm only

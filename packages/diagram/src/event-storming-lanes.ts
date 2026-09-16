@@ -65,6 +65,12 @@ export const ES_LANE_PITCH = ES_LANE_HEIGHT + ES_LANE_GAP;
 // one rather than inventing a third rhythm.
 export const ES_NOTE_GAP = 72;
 
+// The smallest distance that counts as a gutter when measuring a board, and
+// the bucket the measurement rounds into (sub-pixel drift is not a different
+// rhythm).
+export const MIN_MEASURED_GUTTER = 24;
+const GUTTER_BUCKET_PX = 4;
+
 // How near a suggested slot has to be before it takes the note: HALF A
 // STANDARD NOTE.
 //
@@ -169,12 +175,36 @@ export function prevailingNoteGap(elements: readonly Element[]): number {
       if (overlap < Math.min(a.height, b.height) / 2) continue;
       if (docked(a, b)) continue;
       const gap = b.x - (a.x + a.width);
-      if (gap > 0 && gap < ES_LANE_PITCH) gaps.push(gap);
+      // Sub-gutter distances are not gutters. Two notes a few pixels apart are
+      // an accident of dragging, a seam, or a near miss — and on a board with
+      // a handful of them the MEDIAN gap lands on the accidents, which is
+      // exactly how a board came to offer "right edge plus 44" as its rhythm
+      // when every deliberate gap on it was 72.
+      if (gap >= MIN_MEASURED_GUTTER && gap < ES_LANE_PITCH) gaps.push(gap);
     }
   }
   if (gaps.length === 0) return ES_NOTE_GAP;
-  const sorted = gaps.sort((p, q) => p - q);
-  return sorted[Math.floor(sorted.length / 2)]!;
+  // The MOST REPEATED gap, not the middle one: a rhythm is a thing a board
+  // does over and over, so the spacing the author used most is the spacing
+  // they meant. Ties go to whichever is closest to the board default, because
+  // a tie carries no evidence either way.
+  const counts = new Map<number, number>();
+  for (const gap of gaps) {
+    const bucket = Math.round(gap / GUTTER_BUCKET_PX) * GUTTER_BUCKET_PX;
+    counts.set(bucket, (counts.get(bucket) ?? 0) + 1);
+  }
+  let best = ES_NOTE_GAP;
+  let bestCount = 0;
+  for (const [bucket, count] of counts) {
+    const better =
+      count > bestCount ||
+      (count === bestCount && Math.abs(bucket - ES_NOTE_GAP) < Math.abs(best - ES_NOTE_GAP));
+    if (better) {
+      best = bucket;
+      bestCount = count;
+    }
+  }
+  return best;
 }
 
 // A place the notes already on the board suggest this one could go.

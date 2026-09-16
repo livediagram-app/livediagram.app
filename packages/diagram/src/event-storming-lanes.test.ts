@@ -7,6 +7,7 @@ import {
   ES_LANE_SNAP_Y,
   ES_CANDIDATE_RADIUS_X,
   ES_NOTE_GAP,
+  MIN_MEASURED_GUTTER,
   initialTimelineOrigin,
   laneCentre,
   laneIndexAt,
@@ -128,6 +129,35 @@ describe('the gutter between notes', () => {
   it('falls back to the board gap when there is nothing to measure', () => {
     expect(prevailingNoteGap([])).toBe(ES_NOTE_GAP);
     expect(prevailingNoteGap([note({ id: 'a', x: 0, y: 0 })])).toBe(ES_NOTE_GAP);
+  });
+
+  it('takes the gap the board REPEATS, not the middle one', () => {
+    // A real board carries accidents: two notes left a few pixels apart while
+    // dragging. The median lands on those and the whole rhythm follows it —
+    // this is the board that reported "I can only place it without the gap".
+    const withAccidents = [
+      note({ id: 'a', x: 0, y: 0 }),
+      note({ id: 'b', x: 216, y: 0 }), // 16 apart: an accident
+      note({ id: 'c', x: 432, y: 0 }), // 16 again
+      note({ id: 'd', x: 704, y: 0 }), // 72: the gap the author means
+      note({ id: 'e', x: 976, y: 0 }), // 72
+    ];
+    expect(prevailingNoteGap(withAccidents)).toBe(72);
+  });
+
+  it('keeps a board own rhythm when the author works to a different one', () => {
+    const forty = [
+      note({ id: 'a', x: 0, y: 0 }),
+      note({ id: 'b', x: 240, y: 0 }),
+      note({ id: 'c', x: 480, y: 0 }),
+    ];
+    expect(prevailingNoteGap(forty)).toBe(40);
+  });
+
+  it('never measures a sub-gutter distance — that is a seam, not a rhythm', () => {
+    const nearlyTouching = [note({ id: 'a', x: 0, y: 0 }), note({ id: 'b', x: 216, y: 0 })];
+    expect(prevailingNoteGap(nearlyTouching)).toBe(ES_NOTE_GAP);
+    expect(MIN_MEASURED_GUTTER).toBe(24);
   });
 
   it('ignores notes that overlap or touch — a seam is not a gap', () => {
