@@ -1,5 +1,6 @@
 import { json, methodNotAllowed, missingAuth, rateLimited } from '../responses';
 import { clientIp } from '../client-ip';
+import { resolveAiProvider } from '../ai-provider';
 import type { RouteContext } from './context';
 
 // May this caller use the model at all? (spec/25.)
@@ -15,7 +16,10 @@ import type { RouteContext } from './context';
 export async function aiGate(ctx: RouteContext): Promise<Response | null> {
   const { request, env } = ctx;
 
-  if (!env.AI_API_KEY) return json({ error: 'ai_not_configured' }, { status: 503 });
+  // No usable provider — no key, or more than one, or a half-configured
+  // generic (ai-provider.ts logs which). Same answer either way: this
+  // deployment does not do AI.
+  if (!resolveAiProvider(env)) return json({ error: 'ai_not_configured' }, { status: 503 });
 
   // Origin allow-list (spec/25). Optional: unset accepts any Origin, matching
   // the historical OSS self-host story. When set, the request's Origin must

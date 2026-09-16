@@ -55,7 +55,7 @@ function makeCtx(
   });
   return {
     request,
-    env: { AI_API_KEY: 'test-key', ...opts.env } as Env,
+    env: { OPENAI_API_KEY: 'test-key', ...opts.env } as Env,
     url: new URL(request.url),
     segments: ['api', 'ai', 'read-notes'],
     clerkUserId: opts.clerkUserId ?? null,
@@ -69,7 +69,7 @@ const answer = async (res: Response) => (await res.json()) as { texts: NoteText[
 
 describe('the shared gate still guards this route', () => {
   it('503 without a key — the self-host default', async () => {
-    const res = await handleAiReadNotes(makeCtx({ env: { AI_API_KEY: undefined } }));
+    const res = await handleAiReadNotes(makeCtx({ env: { OPENAI_API_KEY: undefined } }));
     expect(res.status).toBe(503);
     expect(await res.json()).toEqual({ error: 'ai_not_configured' });
   });
@@ -107,7 +107,7 @@ describe('the shared gate still guards this route', () => {
   });
 
   it('never calls the provider when the gate refuses', async () => {
-    await handleAiReadNotes(makeCtx({ env: { AI_API_KEY: undefined } }));
+    await handleAiReadNotes(makeCtx({ env: { OPENAI_API_KEY: undefined } }));
     expect(globalThis.fetch).not.toHaveBeenCalled();
   });
 });
@@ -265,10 +265,10 @@ describe('what leaves this worker', () => {
     expect(sent.model).toBe('flash-vision');
   });
 
-  it('goes wherever the base URL points', async () => {
+  it('goes wherever the KEY says — a Google key reaches Google', async () => {
     globalThis.fetch = providerSays({ texts: [] });
     await handleAiReadNotes(
-      makeCtx({ env: { AI_BASE_URL: 'https://generativelanguage.googleapis.com/v1beta/openai' } }),
+      makeCtx({ env: { OPENAI_API_KEY: undefined, GOOGLE_AI_STUDIO_API_KEY: 'g' } }),
     );
     expect(vi.mocked(globalThis.fetch).mock.calls[0]![0]).toBe(
       'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',

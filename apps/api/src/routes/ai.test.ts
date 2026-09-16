@@ -53,7 +53,7 @@ function makeCtx(opts: {
   });
   return {
     request,
-    env: { AI_API_KEY: 'test-key', ...opts.env } as Env,
+    env: { OPENAI_API_KEY: 'test-key', ...opts.env } as Env,
     url: new URL(request.url),
     segments: ['api', 'ai'],
     clerkUserId: opts.clerkUserId ?? null,

@@ -31,13 +31,13 @@ The deploy workflow also **syncs** two of the worker secrets below from GitHub r
 
 Provisioned with `wrangler secret put` (production) or `.dev.vars` (local dev, gitignored) — **never** `[vars]`, which is plain text in a public repo. Every one is optional: absent, its feature degrades rather than breaking, which is what keeps self-hosting viable (see [03](03-open-source-and-business-model.md)).
 
-| Secret                 | Worker          | Absent means                                                                                 |
-| ---------------------- | --------------- | -------------------------------------------------------------------------------------------- |
-| `CLERK_JWKS_URL`       | api             | Pure-guest mode: `X-Owner-Id` is trusted exclusively ([04](04-auth-and-guest-access.md))     |
-| `GUEST_ID_HMAC_SECRET` | api             | Legacy unsigned guest ids; `/api/migrate` accepts any id ([04](04-auth-and-guest-access.md)) |
-| `AI_API_KEY`           | api             | The AI surface hides entirely ([25](25-ai-assistance.md))                                    |
-| `RESEND_API_KEY`       | api             | All transactional + lifecycle email is inert ([64](64-transactional-email.md))               |
-| `INTERNAL_EVENTS_KEY`  | api **and** mcp | MCP telemetry falls back to the shared anonymous rate-limit bucket ([22](22-telemetry.md))   |
+| Secret                                                       | Worker          | Absent means                                                                                 |
+| ------------------------------------------------------------ | --------------- | -------------------------------------------------------------------------------------------- |
+| `CLERK_JWKS_URL`                                             | api             | Pure-guest mode: `X-Owner-Id` is trusted exclusively ([04](04-auth-and-guest-access.md))     |
+| `GUEST_ID_HMAC_SECRET`                                       | api             | Legacy unsigned guest ids; `/api/migrate` accepts any id ([04](04-auth-and-guest-access.md)) |
+| `GOOGLE_AI_STUDIO_API_KEY` / `OPENAI_API_KEY` / `AI_API_KEY` | api             | The AI surface hides entirely ([25](25-ai-assistance.md))                                    |
+| `RESEND_API_KEY`                                             | api             | All transactional + lifecycle email is inert ([64](64-transactional-email.md))               |
+| `INTERNAL_EVENTS_KEY`                                        | api **and** mcp | MCP telemetry falls back to the shared anonymous rate-limit bucket ([22](22-telemetry.md))   |
 
 `INTERNAL_EVENTS_KEY` is the only one that must hold the **same value on two workers**. A mismatch is silent — the caller simply lands back in the throttled bucket — so verify with `wrangler secret list` on both rather than assuming. Generate it, and `GUEST_ID_HMAC_SECRET`, with `openssl rand -hex 32`.
 

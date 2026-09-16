@@ -108,22 +108,24 @@ export type Env = {
   // Public origin used to build links in emails (optional). Defaults to
   // "https://livediagram.app".
   APP_BASE_URL?: string;
-  // The key for the AI features (spec/25). ANY OpenAI-compatible provider:
-  // the name is `AI_` rather than `OPENAI_` because the endpoint is a
-  // configuration choice, and a variable called OPENAI_API_KEY holding a
-  // Gemini key is a lie. When absent the whole AI surface is hidden —
-  // GET /api/capabilities returns { aiEnabled: false } and the AI routes
-  // answer 503. Set via `wrangler secret put AI_API_KEY` for production; drop
-  // into `apps/api/.dev.vars` for local dev (gitignored, never commit).
+  // WHOSE model, and where (spec/25). The PROVIDER is inferred from which of
+  // these keys is set, because a key is provider-specific and its name should
+  // say so — see ai-provider.ts. Exactly one may be set; none = the whole AI
+  // surface is hidden (capabilities reports aiEnabled:false and the AI routes
+  // answer 503), which is the self-host default.
+  //
+  // Set via `wrangler secret put <NAME>` in production; drop into
+  // `apps/api/.dev.vars` for local dev (gitignored, never commit).
+  GOOGLE_AI_STUDIO_API_KEY?: string;
+  OPENAI_API_KEY?: string;
+  // Any other OpenAI-compatible endpoint (Mistral, OpenRouter, a local
+  // llama.cpp or Ollama). Needs AI_BASE_URL and AI_MODEL with it.
   AI_API_KEY?: string;
-  // The chat-completions base URL (optional). Defaults to OpenAI's
-  // https://api.openai.com/v1; the hosted site points it at Gemini's
-  // OpenAI-compatible endpoint, and a laptop can point it at llama.cpp.
   AI_BASE_URL?: string;
-  // Model id for the assistant (optional). Defaults to gpt-4o.
+  // Overrides the preset's default model for any provider.
   AI_MODEL?: string;
-  // Model id for reading sticky-note crops (spec/139 Phase 8). Defaults to
-  // AI_MODEL, so a deployment only sets it to split the two apart.
+  // Overrides it for the crop reader only (spec/139 Phase 8); defaults to the
+  // resolved AI_MODEL, so a deployment only sets it to split the two apart.
   AI_VISION_MODEL?: string;
   // Per-IP rate limiter for POST /api/ai. Caps AI requests at 20/60s
   // per IP so a single client can't exhaust the operator's model budget.

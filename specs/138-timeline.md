@@ -48,7 +48,7 @@ has happened since they were last here**, not just a list of files.
   need aren't earned yet. The schema doesn't preclude them (§3.4).
 - **No AI day summary.** Manager Toolkit gates one behind Pro;
   livediagram has no paid tier (spec/03), so it would be free for
-  everyone and gated only on `AI_API_KEY`. Deferred as its own
+  everyone and gated only on the model key. Deferred as its own
   decision rather than smuggled in with this one.
 - **No manual entries.** Every event is emitted by the system from a
   real write. There is no "add a note to your timeline".

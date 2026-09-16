@@ -137,21 +137,25 @@ namespace_id = "1006"
 simple = { limit = 120, period = 60 }
 
 # The AI features (spec/25) talk to ANY OpenAI-compatible chat-completions
-# endpoint, so "which provider" is configuration rather than code:
+# endpoint, and WHICH provider is inferred from which key is set — a key is
+# provider-specific, so its name says whose it is (see src/ai-provider.ts):
 #
-#   - AI_API_KEY is a SECRET, provisioned out-of-band.
-#     Local dev: drop `AI_API_KEY=...` into `apps/api/.dev.vars` (gitignored).
-#     Production: `wrangler secret put AI_API_KEY`.
-#   - AI_BASE_URL is a plain [vars] entry. Unset = OpenAI
-#     (https://api.openai.com/v1). Gemini:
-#     https://generativelanguage.googleapis.com/v1beta/openai
-#     A laptop running llama.cpp or Ollama: http://127.0.0.1:8080/v1
-#   - AI_MODEL (default gpt-4o) and AI_VISION_MODEL (defaults to AI_MODEL,
-#     used by /api/ai/read-notes, spec/139 Phase 8) are plain [vars] too.
+#   GOOGLE_AI_STUDIO_API_KEY -> Google, at its OpenAI-compatible endpoint
+#   OPENAI_API_KEY           -> OpenAI
+#   AI_API_KEY               -> anything else, with AI_BASE_URL + AI_MODEL
 #
-# When AI_API_KEY is absent the whole surface is hidden: GET /api/capabilities
-# answers { aiEnabled: false }, the editor shows no AI panel and no photo
-# import, and the AI routes answer 503. That is the self-host default.
+# All three are SECRETS, provisioned out-of-band:
+#   Local dev: drop one into `apps/api/.dev.vars` (gitignored).
+#   Production: `wrangler secret put <NAME>`.
+#
+# Exactly one may be set: two is refused rather than guessed at, because
+# guessing spends somebody's money. AI_BASE_URL / AI_MODEL / AI_VISION_MODEL
+# are plain [vars]; AI_MODEL overrides the preset's default model and
+# AI_VISION_MODEL overrides it for /api/ai/read-notes only (spec/139 Phase 8).
+#
+# With no key the whole surface is hidden: GET /api/capabilities answers
+# { aiEnabled: false }, the editor shows no AI panel and no photo import, and
+# the AI routes answer 503. That is the self-host default.
 
 # Per-owner soft caps on the image gallery (spec/19). Both default to
 # "no limit" so OSS self-host operators run their own storage budget;

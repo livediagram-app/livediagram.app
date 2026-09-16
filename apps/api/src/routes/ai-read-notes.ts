@@ -7,7 +7,7 @@ import {
   type ReadNotesResponse,
 } from '@livediagram/api-schema';
 import { CORS_HEADERS, json } from '../responses';
-import { chatCompletions, visionModel } from '../ai-client';
+import { chatCompletions, providerOf } from '../ai-client';
 import { aiGate } from './ai-gate';
 import { buildReadNotesPrompt } from './ai-read-prompt';
 import type { RouteContext } from './context';
@@ -53,7 +53,9 @@ export async function handleAiReadNotes(ctx: RouteContext): Promise<Response> {
     }
   }
 
-  const model = visionModel(env);
+  // The gate has already refused a deployment with no usable provider.
+  const provider = providerOf(env)!;
+  const model = provider.visionModel;
   // One user message: each crop introduced by the id it must be answered
   // under, so the model never has to infer which picture it is talking about.
   const content: unknown[] = [{ type: 'text', text: `Read these ${crops.length} sticky notes.` }];
@@ -64,7 +66,7 @@ export async function handleAiReadNotes(ctx: RouteContext): Promise<Response> {
 
   let res: Response;
   try {
-    res = await chatCompletions(env, {
+    res = await chatCompletions(provider, {
       model,
       max_tokens: MAX_TOKENS,
       messages: [

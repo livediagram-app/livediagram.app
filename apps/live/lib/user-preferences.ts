@@ -61,7 +61,7 @@ export type UserPreferences = {
   // AI Assistance panel (spec/25). When `true`, the AI panel is
   // rendered in the editor. Defaults to false (opt-in). Only
   // surfaced in Settings when the api worker reports aiEnabled:true
-  // (i.e. AI_API_KEY is configured). Missing / undefined / false
+  // (i.e. a model key is configured). Missing / undefined / false
   // === panel hidden.
   aiAssistanceEnabled?: boolean;
   // Show the quick suggested-prompt chips in the AI panel (spec/25).

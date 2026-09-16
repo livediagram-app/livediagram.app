@@ -1,6 +1,6 @@
 import { badRequest, CORS_HEADERS, json } from '../responses';
 import { aiGate } from './ai-gate';
-import { assistantModel, chatCompletions } from '../ai-client';
+import { chatCompletions, providerOf } from '../ai-client';
 import { buildSystemPrompt, diagramTypeHint, extractExistingStyle } from '../ai-prompt';
 import type { RouteContext } from './context';
 import type { AiRequest } from '@livediagram/api-schema';
@@ -104,7 +104,9 @@ export async function handleAi(ctx: RouteContext): Promise<Response> {
   }
   if (typeof tabName === 'string' && tabName.length > 200) return badRequest('tabName too long');
 
-  const model = assistantModel(env);
+  // The gate has already refused a deployment with no usable provider.
+  const provider = providerOf(env)!;
+  const model = provider.model;
   const isTextMode = mode === 'ask';
   const safe = sanitiseElements(elements);
   const systemPrompt = buildSystemPrompt(
@@ -139,7 +141,7 @@ export async function handleAi(ctx: RouteContext): Promise<Response> {
     { role: 'user', content: userContent },
   ];
 
-  const oaiRes = await chatCompletions(env, {
+  const oaiRes = await chatCompletions(provider, {
     model,
     messages,
     stream: true,
