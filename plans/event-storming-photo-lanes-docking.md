@@ -464,25 +464,25 @@ esDock?: {
 
 ### 1.4 Snapping — note drag
 
-- [ ] `apps/live/lib/lane-preview.ts` — a module-level store (the
+- [x] `apps/live/lib/lane-preview.ts` — a module-level store (the
       `insertion-preview.ts` pattern) publishing `{ laneIndex, cellIndex } | null`
       for the lane / cell currently lit, with `useLanePreview()`. Value-equal
       short-circuit so pointer-rate moves don't re-render the overlay.
-- [ ] `boxed-drag-resolve.ts` `resolveBoxedMove`: after the precedence ladder's
+- [x] `boxed-drag-resolve.ts` `resolveBoxedMove`: after the precedence ladder's
       earlier rungs, when `timeline` is passed and the drag is a SINGLE sticky (the
       note grammar again — a multi-selection or a shape drags as today), snap via
       `snapToLanes` and return `{ tx, ty, lane }`; alignment snap stands down on any
       axis the lane took. Threshold: the lane wins within half the lane gap on y and
       half a cell on x (tests pin the numbers).
-- [ ] `useEditorDrag.ts`: thread `activeTab.esTimeline` through `EditorDragDeps`,
+- [x] `useEditorDrag.ts`: thread `activeTab.esTimeline` through `EditorDragDeps`,
       publish the lit lane to `lane-preview` on every move, clear it on up / cancel
       / Escape. Free placement (Ctrl/Cmd) skips it; an open insertion slot wins
       over it; Shift-duplicate clones still snap.
-- [ ] RED/GREEN tests: `boxed-drag-resolve.test.ts` (existing? extend) for each
+- [x] RED/GREEN tests: `boxed-drag-resolve.test.ts` (existing? extend) for each
       ladder rung; `useEditorDrag.lanes.test.tsx` mirroring
       `useEditorDrag.insert-between.test.tsx`: a note drag lights the lane, drops
       on it, clears the store; Ctrl skips; Alt slot wins; multi-select does not snap.
-- [ ] Commit: `feat(live): notes snap to timeline lanes while dragged`.
+- [x] Commit: `feat(live): notes snap to timeline lanes while dragged`.
 
 ### 1.5 Snapping — palette drag
 
