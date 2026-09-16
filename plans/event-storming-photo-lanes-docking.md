@@ -438,29 +438,29 @@ esDock?: {
 
 ### 1.3 The switch (state + surfaces)
 
-- [ ] `apps/live/hooks/canvas/useTimelineLanes.ts` — reads `activeTab.esTimeline`,
+- [x] `apps/live/hooks/canvas/useTimelineLanes.ts` — reads `activeTab.esTimeline`,
       exposes `lanesOn`, `toggleLanes()` (commits `esTimeline` set from
       `initialTimelineOrigin(activeTab.elements)` or removed, one undo step,
       activity-log entry "Turned timeline lanes on/off"), gated: no-op + disabled
       when read-only / tab locked. Wired into `useEditorState` with the smallest
       edit; exposed on `EditorContextValue`.
-- [ ] Telemetry: add `'TimelineLanesOn' | 'TimelineLanesOff'` as `Canvas / Used`
+- [x] Telemetry: add `'TimelineLanesOn' | 'TimelineLanesOff'` as `Canvas / Used`
       types; `track` in `toggleLanes` BEFORE the commit (the settings-flip
       precedent). Spec/22 table row.
-- [ ] Palette: a switch row at the top of the Event Storming category
+- [x] Palette: a switch row at the top of the Event Storming category
       (`PaletteToolRows.tsx` / a small `EventStormingBoardRow` component if the row
       shape does not exist yet — a labelled row with a toggle, keyboard operable,
       `aria-pressed`, WCAG AA contrast in both schemes). Hidden when the active tab
       is not an ES board (the category still renders elsewhere for favourites).
-- [ ] Command palette (`CommandPalette.tsx`): "Turn timeline lanes on" / "… off",
+- [x] Command palette (`CommandPalette.tsx`): "Turn timeline lanes on" / "… off",
       ES boards only, with the same gate.
-- [ ] Empty-canvas context menu on ES boards: the same verb (check
+- [x] Empty-canvas context menu on ES boards: the same verb (check
       `EditorContextMenu` has a canvas-level menu; if not, skip and note it in the
       spec rather than inventing one).
-- [ ] Tests: hook test (toggle on sets origin from notes; off removes the field;
+- [x] Tests: hook test (toggle on sets origin from notes; off removes the field;
       on again keeps the STORED origin — Q5; disabled paths), palette row test
       (renders only on ES boards, toggles, a11y name), command palette entry test.
-- [ ] Commit: `feat(live): timeline lanes switch on event-storming boards`.
+- [x] Commit: `feat(live): timeline lanes switch on event-storming boards`.
 
 ### 1.4 Snapping — note drag
 
