@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { PhotoNotesResponse } from '@livediagram/api-schema';
+import type { ReadNotesResponse } from '@livediagram/api-schema';
 import {
   acceptDraft,
   discardDraft,
@@ -13,14 +13,15 @@ import { getPhotoDraftView, setPhotoDraftView } from '@/lib/photo-draft-preview'
 import { usePhotoDraft } from './usePhotoDraft';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn(), titleCaseType: (s: string) => s }));
-vi.mock('@/lib/api/ai', () => ({ apiAiPhotoNotes: vi.fn() }));
-vi.mock('@/lib/photo-prepare', async () => {
-  const actual = await vi.importActual<typeof import('@/lib/photo-prepare')>('@/lib/photo-prepare');
-  return { ...actual, preparePhoto: vi.fn() };
+vi.mock('@/lib/api/ai', () => ({ apiAiReadNotes: vi.fn() }));
+vi.mock('@/lib/photo-detect', async () => {
+  const actual = await vi.importActual<typeof import('@/lib/photo-detect')>('@/lib/photo-detect');
+  return { ...actual, detectAndCrop: vi.fn() };
 });
 
-import { apiAiPhotoNotes } from '@/lib/api/ai';
-import { preparePhoto, PhotoPrepareFailed } from '@/lib/photo-prepare';
+import { apiAiReadNotes } from '@/lib/api/ai';
+import { detectAndCrop, PhotoDetectFailed, type PhotoDetection } from '@/lib/photo-detect';
+import type { DetectedSticky } from '@livediagram/sticky-vision';
 import { track } from '@/lib/telemetry';
 
 // A photo import as ONE gesture (spec/139 Phase 8): the draft lands in the
@@ -28,24 +29,34 @@ import { track } from '@/lib/telemetry';
 // leaves exactly one undo step, and Discard leaves the board byte-for-byte as
 // it was.
 
-const PHOTO = { dataUrl: 'data:image/jpeg;base64,AAA', width: 1000, height: 700 };
-
-function detected(over: Partial<PhotoNotesResponse['notes'][number]> = {}) {
+// What the DETECTOR found (geometry + kind), and what the model READ (words).
+// The hybrid's whole shape is that these are two different answers.
+function sticky(over: Partial<DetectedSticky> = {}): DetectedSticky {
   return {
-    id: 1,
-    text: 'Order placed',
+    id: 0,
     kind: 'domain-event' as const,
-    colour: '#fdba74',
     size: 'square' as const,
-    cx: 0.2,
-    cy: 0.2,
-    w: 0.1,
-    h: 0.1,
+    x: 100,
+    y: 100,
+    w: 100,
+    h: 100,
     row: 0,
     order: 0,
-    confidence: 0.9,
+    confidence: 0.95,
     ...over,
   };
+}
+
+function detection(stickies: DetectedSticky[]): PhotoDetection {
+  return {
+    stickies,
+    crops: stickies.map((s) => ({ id: s.id, image: 'data:image/jpeg;base64,AAA' })),
+    imageSize: { width: 1000, height: 1000 },
+  };
+}
+
+function read(texts: { id: number; text: string; legible?: boolean }[]): ReadNotesResponse {
+  return { texts: texts.map((t) => ({ legible: t.text !== '', ...t })) };
 }
 
 function esNote(id: string, label: string, x = 0): StickyElement {
@@ -117,8 +128,8 @@ const file = () => new File([new Uint8Array([1])], 'wall.jpg', { type: 'image/jp
 
 beforeEach(() => {
   setPhotoDraftView(null);
-  vi.mocked(preparePhoto).mockResolvedValue(PHOTO);
-  vi.mocked(apiAiPhotoNotes).mockResolvedValue({ wall: true, notes: [detected()] });
+  vi.mocked(detectAndCrop).mockResolvedValue(detection([sticky()]));
+  vi.mocked(apiAiReadNotes).mockResolvedValue(read([{ id: 0, text: 'Order placed' }]));
 });
 afterEach(() => {
   cleanup();
@@ -174,10 +185,13 @@ describe('landing a draft', () => {
   });
 
   it('publishes what the photo matched, for the fade and the badges', async () => {
-    vi.mocked(apiAiPhotoNotes).mockResolvedValue({
-      wall: true,
-      notes: [detected(), detected({ id: 2, text: 'Payment received', cx: 0.6, order: 1 })],
-    });
+    vi.mocked(detectAndCrop).mockResolvedValue(detection([sticky(), sticky({ id: 1, x: 600 })]));
+    vi.mocked(apiAiReadNotes).mockResolvedValue(
+      read([
+        { id: 0, text: 'Order placed' },
+        { id: 1, text: 'Payment received' },
+      ]),
+    );
     const h = await landed({ elements: [esNote('a', 'Order placed')] });
     expect(getPhotoDraftView()?.matchedIds).toEqual(new Set(['a']));
     expect(getPhotoDraftView()?.read).toBe(2);
@@ -185,10 +199,7 @@ describe('landing a draft', () => {
   });
 
   it('records what the photo read when it differs from the board', async () => {
-    vi.mocked(apiAiPhotoNotes).mockResolvedValue({
-      wall: true,
-      notes: [detected({ text: 'Order plaeced' })],
-    });
+    vi.mocked(apiAiReadNotes).mockResolvedValue(read([{ id: 0, text: 'Order plaeced' }]));
     await landed({ elements: [esNote('a', 'Order placed')] });
     expect(getPhotoDraftView()?.differences.get('a')).toBe('Order plaeced');
   });
@@ -196,40 +207,54 @@ describe('landing a draft', () => {
   it('never touches a note already on the board', async () => {
     const existing = [esNote('a', 'Order placed')];
     const frozen = JSON.stringify(existing);
-    vi.mocked(apiAiPhotoNotes).mockResolvedValue({
-      wall: true,
-      notes: [detected(), detected({ id: 2, text: 'Payment received', cx: 0.6, order: 1 })],
-    });
+    vi.mocked(detectAndCrop).mockResolvedValue(detection([sticky(), sticky({ id: 1, x: 600 })]));
+    vi.mocked(apiAiReadNotes).mockResolvedValue(
+      read([
+        { id: 0, text: 'Order placed' },
+        { id: 1, text: 'Payment received' },
+      ]),
+    );
     const h = await landed({ elements: existing });
     expect(JSON.stringify(h.elements().filter((el) => el.id === 'a'))).toBe(frozen);
   });
 
-  it('says so and lands nothing when the photo has no stickies in it', async () => {
-    vi.mocked(apiAiPhotoNotes).mockResolvedValue({ wall: false, notes: [], hint: 'A cat.' });
+  it('says so, and never calls the model, when there is no paper in the photo', async () => {
+    vi.mocked(detectAndCrop).mockResolvedValue(detection([]));
     const h = await landed();
     expect(h.elements()).toEqual([]);
     expect(h.steps()).toBe(0);
     expect(h.toasts[0]).toMatch(/no stickies found/i);
     expect(h.api().state.stage).toBe('idle');
+    // The detector already answered: spending a model call here would be
+    // spending the operator's budget on a picture of a wall.
+    expect(apiAiReadNotes).not.toHaveBeenCalled();
+  });
+
+  it('lands an unreadable crop as an EMPTY note — the paper was there', async () => {
+    vi.mocked(apiAiReadNotes).mockResolvedValue(read([{ id: 0, text: '', legible: false }]));
+    const h = await landed();
+    expect(h.drafts()).toHaveLength(1);
+    expect((h.drafts()[0] as StickyElement).label).toBe('');
+    expect((h.drafts()[0] as StickyElement).esKind).toBe('domain-event');
   });
 
   it('toasts the failure and lands nothing when the read fails', async () => {
-    vi.mocked(apiAiPhotoNotes).mockRejectedValue(new Error('ai_not_configured'));
+    vi.mocked(apiAiReadNotes).mockRejectedValue(new Error('ai_not_configured'));
     const h = await landed();
     expect(h.toasts[0]).toMatch(/not enabled on this deployment/i);
     expect(h.elements()).toEqual([]);
   });
 
   it('names HEIC before it ever calls the model', async () => {
-    vi.mocked(preparePhoto).mockRejectedValue(new PhotoPrepareFailed('photo_unsupported_heic'));
+    vi.mocked(detectAndCrop).mockRejectedValue(new PhotoDetectFailed('photo_unsupported_heic'));
     const h = await landed();
     expect(h.toasts[0]).toMatch(/HEIC/);
-    expect(apiAiPhotoNotes).not.toHaveBeenCalled();
+    expect(apiAiReadNotes).not.toHaveBeenCalled();
   });
 
   it('refuses in a read-only / locked session', async () => {
     const h = await landed({ createBlocked: true });
-    expect(preparePhoto).not.toHaveBeenCalled();
+    expect(detectAndCrop).not.toHaveBeenCalled();
     expect(h.elements()).toEqual([]);
   });
 
@@ -242,10 +267,10 @@ describe('landing a draft', () => {
   });
 
   it('treats a cancel as a change of mind, not a failure', async () => {
-    vi.mocked(apiAiPhotoNotes).mockImplementation(async (_o, _i, _t, opts) => {
+    vi.mocked(apiAiReadNotes).mockImplementation(async (_owner, _crops, opts) => {
       await new Promise((r) => setTimeout(r, 5));
       if (opts?.signal?.aborted) throw new Error('aborted');
-      return { wall: true, notes: [detected()] };
+      return read([{ id: 0, text: 'Order placed' }]);
     });
     const h = harness();
     let pending: Promise<void>;
@@ -301,10 +326,7 @@ describe('Discard', () => {
   it('leaves the board byte-for-byte as it was', async () => {
     const existing = [esNote('a', 'Order placed', 900)];
     const frozen = JSON.stringify(existing);
-    vi.mocked(apiAiPhotoNotes).mockResolvedValue({
-      wall: true,
-      notes: [detected({ text: 'Payment received' })],
-    });
+    vi.mocked(apiAiReadNotes).mockResolvedValue(read([{ id: 0, text: 'Payment received' }]));
     const h = await landed({ elements: existing });
     expect(h.drafts()).toHaveLength(1);
     act(() => h.api().discard());

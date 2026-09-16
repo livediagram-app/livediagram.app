@@ -17,6 +17,7 @@
   "dependencies": {
     "@clerk/react": "^6.15.1",
     "@livediagram/api-schema": "workspace:*",
+    "@livediagram/sticky-vision": "workspace:*",
     "@livediagram/diagram": "workspace:*",
     "@livediagram/help-registry": "workspace:*",
     "@livediagram/icons": "workspace:*",

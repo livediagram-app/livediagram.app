@@ -22,7 +22,7 @@ import { EditorSearchPanel } from '@/components/panels/EditorSearchPanel';
 import { ThemeModeBanner } from '@/components/chrome/ThemeModeBanner';
 import { ModifierHintBanner } from '@/components/chrome/ModifierHintBanner';
 import { PhotoDraftBar } from '@/components/chrome/PhotoDraftBar';
-import { PHOTO_ACCEPT_ATTR } from '@/lib/photo-prepare';
+import { PHOTO_ACCEPT_ATTR } from '@/lib/photo-detect';
 import { usePhotoDraftView } from '@/lib/photo-draft-preview';
 import { draftNotesOf } from '@livediagram/diagram';
 import { clerkEnabled } from '@/lib/clerk-config';

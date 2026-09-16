@@ -182,6 +182,9 @@ importers:
       '@livediagram/icons':
         specifier: workspace:*
         version: link:../../packages/icons
+      '@livediagram/sticky-vision':
+        specifier: workspace:*
+        version: link:../../packages/sticky-vision
       '@livediagram/telemetry-client':
         specifier: workspace:*
         version: link:../../packages/telemetry-client

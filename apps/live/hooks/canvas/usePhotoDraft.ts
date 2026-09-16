@@ -14,11 +14,11 @@ import {
   type StickyElement,
   type Tab,
 } from '@livediagram/diagram';
-import type { PhotoNotesResponse } from '@livediagram/api-schema';
-import { apiAiPhotoNotes } from '@/lib/api/ai';
+import { toNormalised, type DetectedSticky } from '@livediagram/sticky-vision';
+import { apiAiReadNotes } from '@/lib/api/ai';
 import { buildEventStormingNote } from '@/lib/draw-commit';
 import { setPhotoDraftView } from '@/lib/photo-draft-preview';
-import { preparePhoto, PhotoPrepareFailed, type PreparedPhoto } from '@/lib/photo-prepare';
+import { detectAndCrop, PhotoDetectFailed, type PhotoDetection } from '@/lib/photo-detect';
 import { track } from '@/lib/telemetry';
 
 // A photo import, as ONE long gesture (spec/139 Phase 8).
@@ -36,29 +36,41 @@ import { track } from '@/lib/telemetry';
 // with Add (the step stands, covering the whole import) or Discard (the
 // checkpoint is restored and the step thrown away).
 
-export type PhotoDraftStage = 'idle' | 'preparing' | 'reading' | 'draft' | 'committing';
+export type PhotoDraftStage =
+  | 'idle'
+  // Decoding the photo and finding the stickies in it, here in the browser.
+  | 'detecting'
+  // Asking the model what the crops say.
+  | 'reading'
+  | 'draft'
+  | 'committing';
 
 export type PhotoDraftState = {
   stage: PhotoDraftStage;
-  photo: PreparedPhoto | null;
+  // How many stickies the detector found, for the progress line.
+  found: number;
   // The last failure's token, for the toast. Cleared by the next attempt.
   error: string | null;
 };
 
-const EMPTY: PhotoDraftState = { stage: 'idle', photo: null, error: null };
+const EMPTY: PhotoDraftState = { stage: 'idle', found: 0, error: null };
 
-function toPhotoNotes(response: PhotoNotesResponse): PhotoNote[] {
-  return response.notes.map((n) => ({
-    id: n.id,
-    text: n.text,
-    kind: n.kind,
-    size: n.size,
-    cx: n.cx,
-    cy: n.cy,
-    w: n.w,
-    h: n.h,
-    row: n.row,
-    order: n.order,
+// The detector measured the geometry and the kind; the model read the words.
+// Putting the two together is the only place they meet.
+function toPhotoNotes(
+  detection: PhotoDetection,
+  textById: Map<number, { text: string; legible: boolean }>,
+): PhotoNote[] {
+  return detection.stickies.map((sticky: DetectedSticky) => ({
+    id: sticky.id,
+    // An unreadable crop still becomes a note: the PAPER was there, and an
+    // empty note the author can type into beats a note that never arrived.
+    text: textById.get(sticky.id)?.text ?? '',
+    kind: sticky.kind,
+    size: sticky.size,
+    ...toNormalised(sticky, detection.imageSize),
+    row: sticky.row,
+    order: sticky.order,
   }));
 }
 
@@ -92,6 +104,7 @@ export type PhotoDraftApi = {
 };
 
 const ERROR_TOASTS: Record<string, string> = {
+  crops_too_large: 'Those stickies came out too large to send. Try a smaller photo.',
   photo_unsupported_heic:
     'That looks like an iPhone HEIC photo. Save or export it as JPEG and try again.',
   photo_unsupported_type: 'That file is not a photo. Use a JPEG, PNG or WebP.',
@@ -134,26 +147,39 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
       if (d.createBlocked || draftNotesOf(d.activeTab.elements).length > 0) return;
       const run = (runRef.current += 1);
       const current = () => runRef.current === run;
-      setState({ stage: 'preparing', photo: null, error: null });
-
-      let prepared: PreparedPhoto;
-      try {
-        prepared = await preparePhoto(file);
-      } catch (err) {
-        if (!current()) return;
-        fail(err instanceof PhotoPrepareFailed ? err.reason : 'photo_unreadable');
-        return;
-      }
-      if (!current()) return;
-      setState({ stage: 'reading', photo: prepared, error: null });
+      setState({ stage: 'detecting', found: 0, error: null });
 
       const controller = new AbortController();
       abortRef.current = controller;
-      let response: PhotoNotesResponse;
+
+      // Finding the stickies happens HERE, in the browser: the photograph
+      // never leaves the machine, only the crops do.
+      let detection: PhotoDetection;
       try {
-        response = await apiAiPhotoNotes(d.ownerId, prepared.dataUrl, d.activeTab.name, {
+        detection = await detectAndCrop(file, { signal: controller.signal });
+      } catch (err) {
+        abortRef.current = null;
+        if (!current()) return;
+        fail(err instanceof PhotoDetectFailed ? err.reason : 'photo_unreadable');
+        return;
+      }
+      if (!current()) return;
+
+      if (detection.stickies.length === 0) {
+        // No paper in the picture: say so, and never spend a model call on it.
+        abortRef.current = null;
+        setState(EMPTY);
+        live.current.toastError(NO_NOTES_TOAST);
+        return;
+      }
+      setState({ stage: 'reading', found: detection.stickies.length, error: null });
+
+      let textById = new Map<number, { text: string; legible: boolean }>();
+      try {
+        const answer = await apiAiReadNotes(d.ownerId, detection.crops, {
           signal: controller.signal,
         });
+        textById = new Map(answer.texts.map((t) => [t.id, { text: t.text, legible: t.legible }]));
       } catch (err) {
         // An abort is the author changing their mind, not a failure.
         if (controller.signal.aborted || !current()) {
@@ -167,11 +193,13 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
       }
       if (!current()) return;
 
-      // Reconcile against the board as it is NOW, not as it was when the
-      // photo was picked: reading takes seconds, and a peer edits in seconds.
+      // Reconcile against the board as it is NOW, not as it was when the photo
+      // was picked: reading takes seconds, and a peer edits in seconds.
       const now = live.current;
       const existing = boardNotesOfElements(now.activeTab.elements);
-      const result = reconcilePhoto(toPhotoNotes(response), existing, { tab: now.activeTab });
+      const result = reconcilePhoto(toPhotoNotes(detection, textById), existing, {
+        tab: now.activeTab,
+      });
 
       if (result.additions.length === 0 && result.matches.length === 0) {
         setState(EMPTY);
@@ -191,15 +219,12 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
         matchedIds: new Set(result.matches.map((m) => m.boardId)),
         differences: new Map(
           result.differences
-            .map((diff) => {
-              const photoNote = response.notes.find((n) => n.id === diff.detectedId);
-              return [diff.boardId, photoNote?.text ?? ''] as const;
-            })
+            .map((diff) => [diff.boardId, textById.get(diff.detectedId)?.text ?? ''] as const)
             .filter(([, text]) => text !== ''),
         ),
-        read: response.notes.length,
+        read: detection.stickies.length,
       });
-      setState({ stage: 'draft', photo: prepared, error: null });
+      setState({ stage: 'draft', found: detection.stickies.length, error: null });
     },
     [fail],
   );
