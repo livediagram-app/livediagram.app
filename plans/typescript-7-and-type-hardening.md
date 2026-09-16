@@ -30,8 +30,12 @@ raw sum double-counts).
 | `noUnusedParameters`                 |             2 |     1 | adopt                        |
 | `erasableSyntaxOnly`                 |             5 |     2 | adopt                        |
 | `noPropertyAccessFromIndexSignature` |           335 |    49 | adopt (138 in one validator) |
-| `exactOptionalPropertyTypes`         |           463 |   226 | adopt, phased per workspace  |
+| `exactOptionalPropertyTypes`         |           462 |   226 | **decline** — see Phase 5    |
 | `isolatedDeclarations`               |           112 |    48 | **decline** — see below      |
+
+Both declines were reached by measuring, not by taste, and each is argued where
+it was decided: `isolatedDeclarations` below, `exactOptionalPropertyTypes` in
+Phase 5 (it was planned, trialled, and dropped on the evidence).
 
 ### Why `isolatedDeclarations` is declined
 
@@ -122,25 +126,61 @@ Both aliases go in **every** workspace — pnpm only links a workspace's own bin
 - [x] `apps/marketing`, `apps/help`, `apps/telemetry` sites
 - [x] Turn the flag on in `tsconfig.base.json`
 
-### Phase 5 — `exactOptionalPropertyTypes` (463 errors, 226 files)
+### Phase 5 — `exactOptionalPropertyTypes` (462 errors, 226 files) — **declined**
 
-Worked bottom-up: packages first, because a fixed DTO in `packages/api-schema`
-erases consumer errors in `apps/*`.
+Planned as the headline hardening task, then measured and dropped.
 
-- [ ] `packages/api-schema`
-- [ ] `packages/diagram`
-- [ ] `packages/ui`, `packages/templates`, `packages/telemetry-client`
-- [ ] `apps/api`
-- [ ] `apps/mcp`, `apps/router`
-- [ ] `apps/live` — `lib/` + `hooks/`
-- [ ] `apps/live` — `components/` + `app/`
-- [ ] `apps/marketing`, `apps/help`, `apps/telemetry`
-- [ ] Turn the flag on in `tsconfig.base.json`
+The flag polices exactly one distinction: `prop?: T` (the key may be **absent**)
+versus `prop?: T | undefined` (absent **or** present holding no value). It earns
+its cost only in a codebase that actually makes that distinction. Three checks
+say this one does not.
+
+- **No presence protocol anywhere.** Zero `hasOwnProperty` calls in the repo,
+  and no `Object.keys`-driven merge that treats a present-but-undefined key
+  differently from a missing one. Every `'field' in el` is discriminated-union
+  narrowing across element variants, and each is immediately paired with a
+  value test (`'label' in el && typeof el.label === 'string'`), so an undefined
+  value takes the same branch as an absent key.
+- **Realtime ships whole elements, not field patches.** `ElementOp.update`
+  replaces the element by id (spec/75 Level 0), and `elementsEqual` compares via
+  `JSON.stringify`, which erases undefined-valued keys regardless. The
+  field-level CRDT that _would_ need the distinction was deliberately dropped.
+- **The one genuine case is already solved, at runtime.** `tabBroadcastOps`
+  builds a tab-meta patch where a cleared field is deliberately
+  `patch[k] = undefined`, notices `JSON.stringify` would drop it, and falls back
+  to a whole-tab op. Its test is named "falls back to a whole-tab op when a meta
+  field is cleared". A compiler flag would neither have prevented that bug nor
+  improved that code.
+
+With absent and undefined interchangeable everywhere, the honest resolution of
+all 462 errors is to widen the declarations to `?: T | undefined` — which is
+what the code already means. That is 462 edits across 226 files whose end state
+is a flag with nothing left to catch.
+
+Trialled before deciding: `packages/ui` (all 6) and part of `packages/diagram`
+were really converted, which is how the shape of the only available fix became
+clear. `buttonClassName` is representative — its parameters default `variant`
+and `size`, so callers are _meant_ to forward an undefined value, and the fix
+was to say so in the type. True, and inert. Reverted with the flag.
+
+- [x] Measure the flag across the monorepo (462 unique errors, 226 files)
+- [x] Trial the conversion on `packages/ui` + `packages/diagram` to learn the real fix
+- [x] Test whether absence-vs-undefined is load-bearing anywhere in the repo
+- [x] Decline, revert the trial, record the evidence in `DECISIONS.md`
 
 ### Phase 6 — fold back
 
-- [ ] Log the `isolatedDeclarations` decline + the alias-pair choice in `DECISIONS.md`
-- [ ] Add the TS 6/7 split to `LESSONS_LEARNED.md`
-- [ ] Re-read every comment touched by the migration; no comment may cite a
+- [x] Log the `isolatedDeclarations` decline + the alias-pair choice in `DECISIONS.md`
+- [x] Add the TS 6/7 split to `LESSONS_LEARNED.md`
+- [x] Re-read every comment touched by the migration; no comment may cite a
       "phase" or a plan coordinate — state the invariant in domain words
-- [ ] Final `pnpm lint && pnpm typecheck && pnpm test && pnpm build`
+- [x] Final `pnpm lint && pnpm typecheck && pnpm test && pnpm build` — 14/14, 14/14,
+      12/12 (3,868 tests), 7/7
+- [x] Playwright smoke, 7/7. First run failed five specs on
+      `Couldn't create the diagram`: another checkout was holding port 3002, and
+      Playwright's `reuseExistingServer` had attached the suite to that server
+      instead of the e2e stack, so the editor had no api worker. Re-run on
+      `E2E_LIVE_PORT=3402 E2E_API_PORT=8987` and it is green.
+- [x] Verify Turbopack still inlines `process.env['NEXT_PUBLIC_X']` after the
+      bracket rewrite — built with a probe key, the bundle carries
+      `let r="pk_test_…"` and no `process.env` survives in any client chunk
