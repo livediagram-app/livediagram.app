@@ -15,8 +15,8 @@ import {
   type TelemetryEmitter,
 } from '@livediagram/telemetry-client';
 
-const ENABLED = process.env.NEXT_PUBLIC_TELEMETRY_ENABLED === 'true';
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
+const ENABLED = process.env['NEXT_PUBLIC_TELEMETRY_ENABLED'] === 'true';
+const API_BASE = process.env['NEXT_PUBLIC_API_BASE'] ?? '/api';
 
 // Lazy for symmetry with the editor wrapper (which sits inside an
 // import cycle); here it simply defers work until the first event.

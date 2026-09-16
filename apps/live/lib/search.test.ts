@@ -108,9 +108,9 @@ describe('buildSearchResults', () => {
       tabs: manyTabs,
     });
     const counts = Object.fromEntries(out.map((g) => [g.key, g.items.length]));
-    expect(counts.diagrams).toBe(8);
-    expect(counts.folders).toBe(8);
-    expect(counts.tabs).toBe(8);
+    expect(counts['diagrams']).toBe(8);
+    expect(counts['folders']).toBe(8);
+    expect(counts['tabs']).toBe(8);
   });
 
   it('caps element hits at 12 total across all tabs, not per-tab', () => {

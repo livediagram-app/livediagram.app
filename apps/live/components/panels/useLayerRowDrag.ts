@@ -38,7 +38,7 @@ export function useLayerRowDrag({
     for (const child of Array.from(list.children)) {
       const r = child.getBoundingClientRect();
       if (clientY >= r.top && clientY <= r.bottom) {
-        return (child as HTMLElement).dataset.layerId ?? null;
+        return (child as HTMLElement).dataset['layerId'] ?? null;
       }
     }
     return null;

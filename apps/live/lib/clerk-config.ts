@@ -13,7 +13,7 @@
 // pages' content entirely on a no-key build via dead-code elimination
 // once tree-shaking gets aggressive.
 
-const key = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ?? '';
+const key = process.env['NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY'] ?? '';
 
 export const clerkEnabled =
   key.length > 0 && (key.startsWith('pk_test_') || key.startsWith('pk_live_'));
@@ -32,4 +32,4 @@ export const clerkPublishableKey = clerkEnabled ? key : null;
 // The handlers stay in the code so flipping this flag re-enables the
 // button without re-implementing anything.
 export const googleOAuthEnabled =
-  clerkEnabled && process.env.NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED === 'true';
+  clerkEnabled && process.env['NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED'] === 'true';

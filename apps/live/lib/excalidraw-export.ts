@@ -197,7 +197,7 @@ export function tabToExcalidrawText(tab: Tab): string {
     });
     if (labelText) {
       const label = labelElement(el, labelText, el, el.textColor ?? defaultTextColor(el));
-      container.boundElements = [{ id: label.id, type: 'text' }];
+      container['boundElements'] = [{ id: label['id'], type: 'text' }];
       out.push(container, label);
     } else {
       out.push(container);
@@ -264,7 +264,7 @@ export function tabToExcalidrawText(tab: Tab): string {
         { x: mid.x - 40, y: mid.y - 12, width: 80, height: 24 },
         el.textColor ?? el.strokeColor ?? '#64748b',
       );
-      arrowOut.boundElements = [{ id: label.id, type: 'text' }];
+      arrowOut['boundElements'] = [{ id: label['id'], type: 'text' }];
       out.push(arrowOut, label);
     } else {
       out.push(arrowOut);
@@ -280,9 +280,12 @@ export function tabToExcalidrawText(tab: Tab): string {
     }
   }
   for (const o of out) {
-    const refs = boundArrowRefs.get(o.id as string);
+    const refs = boundArrowRefs.get(o['id'] as string);
     if (refs) {
-      o.boundElements = [...((o.boundElements as { id: string; type: string }[]) ?? []), ...refs];
+      o['boundElements'] = [
+        ...((o['boundElements'] as { id: string; type: string }[]) ?? []),
+        ...refs,
+      ];
     }
   }
 

@@ -53,7 +53,7 @@ describe('sendEmail', () => {
     ];
     expect(url).toBe('https://api.resend.com/emails');
     expect(init.method).toBe('POST');
-    expect(init.headers.Authorization).toBe('Bearer re_test');
+    expect(init.headers['Authorization']).toBe('Bearer re_test');
     const body = JSON.parse(init.body as string);
     expect(body.to).toEqual(['a@b.com']);
     expect(body.subject).toBe('Hi');

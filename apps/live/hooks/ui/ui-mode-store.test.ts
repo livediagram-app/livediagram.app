@@ -29,7 +29,7 @@ beforeEach(() => {
   classes = new Set<string>();
   domCalls = [];
   const g = globalThis as Record<string, unknown>;
-  g.window = {
+  g['window'] = {
     localStorage: {
       getItem: (k: string) => (k in store ? store[k]! : null),
       setItem: (k: string, v: string) => {
@@ -40,7 +40,7 @@ beforeEach(() => {
       },
     },
   };
-  g.document = {
+  g['document'] = {
     documentElement: {
       classList: {
         add: (c: string) => {
@@ -82,7 +82,7 @@ describe('readUiMode', () => {
     // editor on first load. Asserted by construction — a prefers-color-scheme
     // read would need matchMedia, which these stubs deliberately omit, so this
     // suite would throw rather than pass if one were added.
-    expect((globalThis as Record<string, unknown>).matchMedia).toBeUndefined();
+    expect((globalThis as Record<string, unknown>)['matchMedia']).toBeUndefined();
     expect(readUiMode()).toBe('light');
   });
 });
@@ -147,7 +147,7 @@ describe('getServerUiMode', () => {
 
 describe('applyUiMode', () => {
   it('is a no-op without a document rather than throwing', () => {
-    delete (globalThis as Record<string, unknown>).document;
+    delete (globalThis as Record<string, unknown>)['document'];
     expect(() => applyUiMode('dark')).not.toThrow();
   });
 });

@@ -947,7 +947,7 @@ const SCENES: Record<string, React.ReactNode> = {
 };
 
 export function CategoryIllustration({ slug }: { slug: string }) {
-  const scene = SCENES[slug] ?? SCENES.canvas;
+  const scene = SCENES[slug] ?? SCENES['canvas'];
   return (
     <svg
       viewBox={VIEWBOX}

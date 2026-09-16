@@ -123,10 +123,10 @@ export function parseEraserConfig(raw: unknown): EraserConfig {
   if (!parsed || typeof parsed !== 'object') return { ...DEFAULT_ERASER_CONFIG };
   const o = parsed as Record<string, unknown>;
   return {
-    mode: pick(o.mode, ERASER_MODES, DEFAULT_ERASER_CONFIG.mode),
-    size: pick(o.size, ERASER_SIZES, DEFAULT_ERASER_CONFIG.size),
-    target: pick(o.target, ERASER_TARGETS, DEFAULT_ERASER_CONFIG.target),
-    groups: pick(o.groups, ERASER_GROUPS, DEFAULT_ERASER_CONFIG.groups),
+    mode: pick(o['mode'], ERASER_MODES, DEFAULT_ERASER_CONFIG.mode),
+    size: pick(o['size'], ERASER_SIZES, DEFAULT_ERASER_CONFIG.size),
+    target: pick(o['target'], ERASER_TARGETS, DEFAULT_ERASER_CONFIG.target),
+    groups: pick(o['groups'], ERASER_GROUPS, DEFAULT_ERASER_CONFIG.groups),
   };
 }
 

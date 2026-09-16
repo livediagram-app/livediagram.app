@@ -30,20 +30,20 @@ function markupBounds(svg: string): Bounds {
     Object.fromEntries([...s.matchAll(/([\w-]+)="([^"]*)"/g)].map((m) => [m[1]!, m[2]!]));
   for (const m of svg.matchAll(/<rect ([^>]*)>/g)) {
     const a = attrs(m[1]!);
-    grow(num(a.x), num(a.y));
-    grow(num(a.x) + num(a.width), num(a.y) + num(a.height));
+    grow(num(a['x']), num(a['y']));
+    grow(num(a['x']) + num(a['width']), num(a['y']) + num(a['height']));
   }
   for (const m of svg.matchAll(/<(?:circle|ellipse) ([^>]*)>/g)) {
     const a = attrs(m[1]!);
-    const rx = num(a.rx ?? a.r);
-    const ry = num(a.ry ?? a.r);
-    grow(num(a.cx) - rx, num(a.cy) - ry);
-    grow(num(a.cx) + rx, num(a.cy) + ry);
+    const rx = num(a['rx'] ?? a['r']);
+    const ry = num(a['ry'] ?? a['r']);
+    grow(num(a['cx']) - rx, num(a['cy']) - ry);
+    grow(num(a['cx']) + rx, num(a['cy']) + ry);
   }
   for (const m of svg.matchAll(/<line ([^>]*)>/g)) {
     const a = attrs(m[1]!);
-    grow(num(a.x1), num(a.y1));
-    grow(num(a.x2), num(a.y2));
+    grow(num(a['x1']), num(a['y1']));
+    grow(num(a['x2']), num(a['y2']));
   }
   for (const m of svg.matchAll(/<(?:polygon|polyline)[^>]*points="([^"]*)"/g)) {
     for (const p of m[1]!.trim().split(/\s+/)) {

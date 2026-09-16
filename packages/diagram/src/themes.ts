@@ -265,11 +265,11 @@ export function switchThemeElement(
     // preserving a genuine per-table override.
     const prevText = prev.elementText ?? deriveTextColorForBg(prev.backgroundColor);
     const nextText = next.elementText ?? deriveTextColorForBg(next.backgroundColor);
-    if (current.textColor === undefined || current.textColor === prevText) {
-      patch.textColor = nextText;
+    if (current['textColor'] === undefined || current['textColor'] === prevText) {
+      patch['textColor'] = nextText;
     }
-    if (current.fillColor === undefined || current.fillColor === prev.backgroundColor) {
-      patch.fillColor = next.backgroundColor;
+    if (current['fillColor'] === undefined || current['fillColor'] === prev.backgroundColor) {
+      patch['fillColor'] = next.backgroundColor;
     }
   }
   return { ...el, ...patch } as Element;

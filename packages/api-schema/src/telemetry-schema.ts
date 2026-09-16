@@ -183,10 +183,10 @@ export const TELEMETRY_TYPE_PATTERN = /^[A-Za-z0-9 ._-]{1,40}$/;
 export function isValidTelemetryEvent(value: unknown): value is TelemetryEvent {
   if (typeof value !== 'object' || value === null) return false;
   const e = value as Record<string, unknown>;
-  if (!TELEMETRY_CATEGORIES.includes(e.category as TelemetryCategory)) return false;
-  if (!TELEMETRY_ACTIONS.includes(e.action as TelemetryAction)) return false;
-  if (e.type === undefined || e.type === null) return true;
-  return typeof e.type === 'string' && TELEMETRY_TYPE_PATTERN.test(e.type);
+  if (!TELEMETRY_CATEGORIES.includes(e['category'] as TelemetryCategory)) return false;
+  if (!TELEMETRY_ACTIONS.includes(e['action'] as TelemetryAction)) return false;
+  if (e['type'] === undefined || e['type'] === null) return true;
+  return typeof e['type'] === 'string' && TELEMETRY_TYPE_PATTERN.test(e['type']);
 }
 
 // The fixed dashboard windows (spec/22): no custom ranges, so queries

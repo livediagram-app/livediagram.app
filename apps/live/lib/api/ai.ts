@@ -74,20 +74,20 @@ const AI_DEFAULT_SHAPE_H = 64;
 function isValidElement(el: unknown): el is Element {
   if (typeof el !== 'object' || el === null) return false;
   const obj = el as Record<string, unknown>;
-  if (typeof obj.id !== 'string' || !obj.id) return false;
-  const t = obj.type;
+  if (typeof obj['id'] !== 'string' || !obj['id']) return false;
+  const t = obj['type'];
   if (t === 'shape') {
     // Accept any shape with a position; the kind is coerced and the size
     // defaulted in normalizeAiElement, so an off-vocabulary kind or a
     // missing width/height no longer drops the whole node (which used to
     // leave its connecting arrows floating).
-    return typeof obj.x === 'number' && typeof obj.y === 'number';
+    return typeof obj['x'] === 'number' && typeof obj['y'] === 'number';
   }
   if (t === 'text' || t === 'sticky') {
-    return typeof obj.x === 'number' && typeof obj.y === 'number';
+    return typeof obj['x'] === 'number' && typeof obj['y'] === 'number';
   }
   if (t === 'arrow') {
-    return typeof obj.from === 'object' && typeof obj.to === 'object';
+    return typeof obj['from'] === 'object' && typeof obj['to'] === 'object';
   }
   return false;
 }
@@ -106,15 +106,16 @@ function normalizeAiElement(el: Element): Element {
     const patch: Record<string, unknown> = {};
     // Off-vocabulary / synonym kind ("rectangle", "box", a composite without
     // its data) → plain square, so the node renders instead of being dropped.
-    if (typeof obj.shape !== 'string' || !AI_SHAPE_KINDS.has(obj.shape)) {
-      patch.shape = 'square';
+    if (typeof obj['shape'] !== 'string' || !AI_SHAPE_KINDS.has(obj['shape'])) {
+      patch['shape'] = 'square';
     }
     // Default a missing / non-positive size so the box has area to draw.
-    if (typeof obj.width !== 'number' || obj.width <= 0) patch.width = AI_DEFAULT_SHAPE_W;
-    if (typeof obj.height !== 'number' || obj.height <= 0) patch.height = AI_DEFAULT_SHAPE_H;
+    if (typeof obj['width'] !== 'number' || obj['width'] <= 0) patch['width'] = AI_DEFAULT_SHAPE_W;
+    if (typeof obj['height'] !== 'number' || obj['height'] <= 0)
+      patch['height'] = AI_DEFAULT_SHAPE_H;
     // Pin a non-fixed textSize to 'md' (else 'scale' balloons the label).
-    const ts = obj.textSize;
-    if (ts !== 'sm' && ts !== 'md' && ts !== 'lg') patch.textSize = 'md';
+    const ts = obj['textSize'];
+    if (ts !== 'sm' && ts !== 'md' && ts !== 'lg') patch['textSize'] = 'md';
     return Object.keys(patch).length ? ({ ...el, ...patch } as Element) : el;
   }
   return el;

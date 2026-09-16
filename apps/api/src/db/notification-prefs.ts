@@ -43,12 +43,12 @@ export async function getNotificationPrefs(env: Env, ownerId: string): Promise<N
     return {
       // Only an explicit `false` opts out; anything else (missing,
       // true, or a non-boolean a misbehaving client wrote) means notify.
-      notifyDiagramJoin: blob.notifyDiagramJoin !== false,
-      notifyInviteResponse: blob.notifyInviteResponse !== false,
-      notifyComments: blob.notifyComments !== false,
-      notifyTips: blob.notifyTips !== false,
-      notifyMilestones: blob.notifyMilestones !== false,
-      notifyActionAssigned: blob.notifyActionAssigned !== false,
+      notifyDiagramJoin: blob['notifyDiagramJoin'] !== false,
+      notifyInviteResponse: blob['notifyInviteResponse'] !== false,
+      notifyComments: blob['notifyComments'] !== false,
+      notifyTips: blob['notifyTips'] !== false,
+      notifyMilestones: blob['notifyMilestones'] !== false,
+      notifyActionAssigned: blob['notifyActionAssigned'] !== false,
     };
   } catch {
     return DEFAULTS;

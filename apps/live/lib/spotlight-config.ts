@@ -118,10 +118,10 @@ export function parseSpotlightConfig(raw: unknown): SpotlightConfig {
   if (!parsed || typeof parsed !== 'object') return { ...DEFAULT_SPOTLIGHT_CONFIG };
   const o = parsed as Record<string, unknown>;
   return {
-    size: pick(o.size, SPOTLIGHT_SIZES, DEFAULT_SPOTLIGHT_CONFIG.size),
-    dim: pick(o.dim, SPOTLIGHT_DIMS, DEFAULT_SPOTLIGHT_CONFIG.dim),
-    edge: pick(o.edge, SPOTLIGHT_EDGES, DEFAULT_SPOTLIGHT_CONFIG.edge),
-    shape: pick(o.shape, SPOTLIGHT_SHAPES, DEFAULT_SPOTLIGHT_CONFIG.shape),
+    size: pick(o['size'], SPOTLIGHT_SIZES, DEFAULT_SPOTLIGHT_CONFIG.size),
+    dim: pick(o['dim'], SPOTLIGHT_DIMS, DEFAULT_SPOTLIGHT_CONFIG.dim),
+    edge: pick(o['edge'], SPOTLIGHT_EDGES, DEFAULT_SPOTLIGHT_CONFIG.edge),
+    shape: pick(o['shape'], SPOTLIGHT_SHAPES, DEFAULT_SPOTLIGHT_CONFIG.shape),
   };
 }
 

@@ -245,6 +245,6 @@ describe('buildOpenApiDocument', () => {
       expect(op, `${route.method} ${route.path} missing from document`).toBeDefined();
     }
     // Error envelope is always present for handlers to reference.
-    expect(doc.components.schemas.Error).toBeDefined();
+    expect(doc.components.schemas['Error']).toBeDefined();
   });
 });

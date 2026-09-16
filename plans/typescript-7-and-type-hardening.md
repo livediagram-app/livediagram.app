@@ -115,12 +115,12 @@ Both aliases go in **every** workspace — pnpm only links a workspace's own bin
 
 ### Phase 4 — `noPropertyAccessFromIndexSignature` (335 errors, 49 files)
 
-- [ ] `packages/diagram/src/validate.ts` (138) — the untyped-JSON validator
-- [ ] Remaining `packages/*` sites
-- [ ] `apps/api` + `apps/mcp` sites
-- [ ] `apps/live` sites
-- [ ] `apps/marketing`, `apps/help`, `apps/telemetry` sites
-- [ ] Turn the flag on in `tsconfig.base.json`
+- [x] `packages/diagram/src/validate.ts` (138) — the untyped-JSON validator
+- [x] Remaining `packages/*` sites
+- [x] `apps/api` + `apps/mcp` sites
+- [x] `apps/live` sites
+- [x] `apps/marketing`, `apps/help`, `apps/telemetry` sites
+- [x] Turn the flag on in `tsconfig.base.json`
 
 ### Phase 5 — `exactOptionalPropertyTypes` (463 errors, 226 files)
 

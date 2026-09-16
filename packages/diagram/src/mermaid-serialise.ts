@@ -31,7 +31,7 @@ function escapeLabel(label: string): string {
 // Mermaid ids must be plain tokens; map our arbitrary element ids to n1, n2…
 // deterministically by first appearance.
 function mermaidNodeText(id: string, label: string, shape: string): string {
-  const [open, close] = SHAPE_TO_BRACKET[shape] ?? SHAPE_TO_BRACKET.square!;
+  const [open, close] = SHAPE_TO_BRACKET[shape] ?? SHAPE_TO_BRACKET['square']!;
   return `${id}${open}${escapeLabel(label)}${close}`;
 }
 
