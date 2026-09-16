@@ -30,8 +30,8 @@ export type PhotoImportDialogProps = {
   onCommit: () => void;
   onAgain: () => void;
   onClose: () => void;
-  // Offered only when the dialog was opened by DROPPING an image (Q7c): the
-  // author may have meant to place a picture, not read a wall.
+  // Offered only when the dialog was opened by a pasted image: the author may
+  // have meant to place a picture, not read a wall.
   onPlaceAsImage?: () => void;
 };
 
