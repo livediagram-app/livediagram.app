@@ -89,6 +89,13 @@ type PhotoDraftDeps = {
   emitChange: (tabId: string, before: Element[], after: Element[]) => void;
   setSelectedId: (id: string | null) => void;
   setMultiSelectedIds: (ids: Set<string>) => void;
+  // Frame a rectangle of canvas (the viewport's own helper). The draft calls
+  // it so what just arrived — and the notes it was matched against — are on
+  // screen, rather than somewhere off to the right under a panel.
+  fitToBounds: (
+    bbox: { x: number; y: number; w: number; h: number },
+    opts?: { maxZoom?: number },
+  ) => void;
   toastError: (message: string) => void;
 };
 
@@ -209,14 +216,35 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
 
       // Land it. One checkpoint, then the notes go in as a tick — from here
       // the author is inside the gesture until Add or Discard.
+      const matchedIds = new Set(result.matches.map((m) => m.boardId));
       beforeRef.current = now.activeTab.elements;
       now.markCheckpoint();
       const built = buildDraftNotes(result.additions, now.activeTab);
       now.tick((els) => [...els, ...built]);
       now.setSelectedId(null);
       now.setMultiSelectedIds(new Set(built.map((el) => el.id)));
+      // Bring the draft into view, together with the notes it was matched
+      // against: an import that lands off-screen reads as an import that did
+      // nothing. A little margin, and never zoomed in past life size.
+      const framed = [...built, ...existing.filter((e) => matchedIds.has(e.id))];
+      if (framed.length > 0) {
+        const minX = Math.min(...framed.map((e) => e.x));
+        const minY = Math.min(...framed.map((e) => e.y));
+        const maxX = Math.max(...framed.map((e) => e.x + e.width));
+        const maxY = Math.max(...framed.map((e) => e.y + e.height));
+        const margin = 120;
+        now.fitToBounds(
+          {
+            x: minX - margin,
+            y: minY - margin,
+            w: maxX - minX + margin * 2,
+            h: maxY - minY + margin * 2,
+          },
+          { maxZoom: 1 },
+        );
+      }
       setPhotoDraftView({
-        matchedIds: new Set(result.matches.map((m) => m.boardId)),
+        matchedIds,
         differences: new Map(
           result.differences
             .map((diff) => [diff.boardId, textById.get(diff.detectedId)?.text ?? ''] as const)

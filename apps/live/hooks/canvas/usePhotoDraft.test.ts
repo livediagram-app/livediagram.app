@@ -80,6 +80,7 @@ function harness(opts: { elements?: Element[]; createBlocked?: boolean } = {}) {
   const snapshots: Element[][] = [];
   const logged: { before: Element[]; after: Element[] }[] = [];
   const toasts: string[] = [];
+  const framed: { x: number; y: number; w: number; h: number }[] = [];
   let selection = new Set<string>();
 
   const view = renderHook(() =>
@@ -105,6 +106,7 @@ function harness(opts: { elements?: Element[]; createBlocked?: boolean } = {}) {
       setMultiSelectedIds: (ids) => {
         selection = ids;
       },
+      fitToBounds: (bbox) => framed.push(bbox),
       toastError: (m) => toasts.push(m),
     }),
   );
@@ -120,6 +122,7 @@ function harness(opts: { elements?: Element[]; createBlocked?: boolean } = {}) {
     logged,
     toasts,
     selection: () => selection,
+    framed,
     rerender: () => view.rerender(),
   };
 }
@@ -182,6 +185,23 @@ describe('landing a draft', () => {
   it('selects the batch, so the author can see what arrived', async () => {
     const h = await landed();
     expect(h.selection()).toEqual(new Set(h.drafts().map((n) => n.id)));
+  });
+
+  it('brings the draft into view, with the notes it was matched against', async () => {
+    vi.mocked(detectAndCrop).mockResolvedValue(detection([sticky(), sticky({ id: 1, x: 600 })]));
+    vi.mocked(apiAiReadNotes).mockResolvedValue(
+      read([
+        { id: 0, text: 'Order placed' },
+        { id: 1, text: 'Payment received' },
+      ]),
+    );
+    const h = await landed({ elements: [esNote('a', 'Order placed', 4000)] });
+    // An import that lands off-screen reads as an import that did nothing.
+    expect(h.framed).toHaveLength(1);
+    const box = h.framed[0]!;
+    const draft = h.drafts()[0] as StickyElement;
+    expect(box.x).toBeLessThanOrEqual(Math.min(draft.x, 4000));
+    expect(box.x + box.w).toBeGreaterThanOrEqual(Math.max(draft.x + draft.width, 4200));
   });
 
   it('publishes what the photo matched, for the fade and the badges', async () => {

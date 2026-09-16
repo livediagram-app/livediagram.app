@@ -6,43 +6,46 @@ import {
   startTemplateDiagram,
   test,
 } from './fixtures';
+import { wallPhotoPng, type WallNote } from './fixtures/wall-photo';
 
-// Importing a photographed wall (spec/139 Phase 8), with the MODEL mocked. The
-// reconciliation is unit-tested to exhaustion; what only a browser can answer
-// is whether the draft lands ON the canvas as ordinary notes the author can
-// correct, whether Add is one undo step, whether Discard leaves nothing behind,
-// and whether what survives a reload is what should.
+// Importing a photographed wall (spec/139 Phase 8). The DETECTOR is real —
+// it runs in the browser on a PNG this test draws, which is the half of the
+// feature a mock would hide — and only the model's reading is stubbed.
+//
+// What only a browser can answer: whether a real image file becomes real
+// draft notes at the right kinds and places, whether Add is one undo step,
+// whether Discard leaves nothing, and what survives a reload.
 test.use({ colorScheme: 'dark' });
 
-// A 1x1 JPEG. Nothing looks at the pixels: the model is mocked, and the browser
-// only has to decode it far enough to re-encode it.
-const TINY_JPEG_BASE64 =
-  '/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/wAALCAABAAEBAREA/8QAFAABAAAAAAAAAAAAAAAAAAAACf/EABQQAQAAAAAAAAAAAAAAAAAAAAD/2gAIAQEAAD8AKp//2Q==';
+const ORANGE = '#fdba74'; // domain-event
+const BLUE = '#93c5fd'; // command
 
-type Detected = { id: number; text: string; kind: string; cx: number; cy: number; order?: number };
-
-function wallResponse(notes: Detected[]) {
-  return {
-    wall: true,
-    notes: notes.map((n, i) => ({
-      colour: '#fdba74',
-      size: 'square',
-      w: 0.1,
-      h: 0.1,
-      row: 0,
-      order: i,
-      confidence: 0.9,
-      ...n,
-    })),
-  };
+// A wall, drawn: three notes in a row, in reading order.
+function wall(notes: WallNote[]) {
+  return { name: 'wall.png', mimeType: 'image/png', buffer: wallPhotoPng(900, 400, notes) };
 }
 
-async function mockModel(page: Page, body: unknown) {
-  await page.route('**/api/ai/photo-notes', async (route) => {
+const THREE_EVENTS: WallNote[] = [
+  { fill: ORANGE, x: 60, y: 120, w: 180, h: 180 },
+  { fill: ORANGE, x: 340, y: 120, w: 180, h: 180 },
+  { fill: ORANGE, x: 620, y: 120, w: 180, h: 180 },
+];
+
+// The reader, stubbed: the detector's ids are stable (rows top-down, then
+// left-to-right), so a fixture can answer by index.
+async function mockReader(page: Page, texts: string[]) {
+  await page.route('**/api/ai/read-notes', async (route) => {
+    const body = route.request().postDataJSON() as { crops: { id: number }[] };
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify(body),
+      body: JSON.stringify({
+        texts: body.crops.map((c) => ({
+          id: c.id,
+          text: texts[c.id] ?? '',
+          legible: (texts[c.id] ?? '') !== '',
+        })),
+      }),
     });
   });
 }
@@ -57,21 +60,33 @@ async function mockCapabilities(page: Page) {
   });
 }
 
-async function choosePhoto(page: Page) {
-  await page.getByRole('button', { name: /add from photo/i }).click();
-  await page.setInputFiles('input[type="file"]', {
-    name: 'wall.jpg',
-    mimeType: 'image/jpeg',
-    buffer: Buffer.from(TINY_JPEG_BASE64, 'base64'),
-  });
-}
-
 async function openBoard(page: Page) {
   await mockCapabilities(page);
   await startTemplateDiagram(page, /Browse Technical templates/, /^Event storming/i);
   await page.locator('[data-canvas-a11y-root]').waitFor();
   await dismissQuickTour(page);
   await page.waitForTimeout(500);
+}
+
+async function importPhoto(page: Page, notes: WallNote[]) {
+  await page.getByRole('button', { name: /add from photo/i }).click();
+  await page.setInputFiles('input[type="file"]', wall(notes));
+}
+
+// Pan the canvas with Space + drag (the editor's own pan, whatever tool is
+// active). The floating panels overlay the left and right edges, so a note the
+// import placed at the right of the board can sit under the palette — as any
+// note dropped there would. Panning is how a person would reach it too.
+async function panBy(page: Page, dx: number, dy: number) {
+  const canvas = await page.locator('[data-canvas-a11y-root]').boundingBox();
+  const cx = canvas!.x + canvas!.width / 2;
+  const cy = canvas!.y + canvas!.height / 2;
+  await page.keyboard.down('Space');
+  await page.mouse.move(cx, cy);
+  await page.mouse.down();
+  await page.mouse.move(cx + dx, cy + dy, { steps: 8 });
+  await page.mouse.up();
+  await page.keyboard.up('Space');
 }
 
 const notes = (page: Page) =>
@@ -86,63 +101,93 @@ test('a photo lands as a draft on the canvas, and Add is one undo step', async (
 }) => {
   await openBoard(page);
   // The seed board holds Order placed / Payment received / Order shipped. The
-  // photo shows two of those plus two that are new.
-  await mockModel(
-    page,
-    wallResponse([
-      { id: 1, text: 'Order placed', kind: 'domain-event', cx: 0.15, cy: 0.2 },
-      { id: 2, text: 'Payment received', kind: 'domain-event', cx: 0.35, cy: 0.2 },
-      { id: 3, text: 'Invoice sent', kind: 'domain-event', cx: 0.55, cy: 0.2 },
-      { id: 4, text: 'Invoice paid', kind: 'domain-event', cx: 0.75, cy: 0.2 },
-    ]),
-  );
+  // photo shows two of those plus one that is new.
+  await mockReader(page, ['Order placed', 'Payment received', 'Invoice sent']);
 
-  await choosePhoto(page);
+  await importPhoto(page, THREE_EVENTS);
 
-  // The draft is ON the board: two new notes outlined, the two it matched
-  // badged, and the bar saying what was read.
   await expect(bar(page)).toBeVisible();
-  await expect(drafts(page)).toHaveCount(2);
+  await expect(drafts(page)).toHaveCount(1);
   await expect(badges(page)).toHaveCount(2);
-  await expect(bar(page)).toContainText('4 read · 2 new · 2 already on the board');
-  await expect(notes(page)).toHaveCount(5);
+  await expect(bar(page)).toContainText('3 read · 1 new · 2 already on the board');
+  await expect(notes(page)).toHaveCount(4);
 
-  // A draft note is an ORDINARY note: type into one.
-  const draftNote = notes(page).nth(3);
-  await draftNote.dblclick();
+  // A draft note is an ORDINARY note: type into it before accepting. Pan it
+  // clear of the palette first, exactly as a person reaching for it would.
+  await panBy(page, -260, 0);
+  await notes(page).nth(3).dblclick();
   await page.keyboard.press('Control+a');
   await page.keyboard.type('Invoice raised');
   await page.keyboard.press('Escape');
 
-  await page.getByRole('button', { name: /^Add 2 notes$/ }).click();
+  await page.getByRole('button', { name: /^Add 1 note$/ }).click();
   await expect(bar(page)).toHaveCount(0);
   await expect(drafts(page)).toHaveCount(0);
-  await expect(notes(page)).toHaveCount(5);
+  await expect(notes(page)).toHaveCount(4);
 
   // ONE undo takes the whole import back — the landing AND the correction.
   await page.keyboard.press('Control+z');
   await expect(notes(page)).toHaveCount(3);
   await page.keyboard.press('Control+Shift+z');
-  await expect(notes(page)).toHaveCount(5);
+  await expect(notes(page)).toHaveCount(4);
 
   // …and it survives the round trip through the api, no longer a draft.
   await page.waitForTimeout(1500);
   await page.reload();
   await page.locator('[data-canvas-a11y-root]').waitFor();
-  await expect(notes(page)).toHaveCount(5);
+  await expect(notes(page)).toHaveCount(4);
   await expect(bar(page)).toHaveCount(0);
+
+  expectNoPageErrors(pageErrors);
+});
+
+test('the detector reads the KINDS off the paper', async ({ page, pageErrors }) => {
+  await openBoard(page);
+  await mockReader(page, ['Place order', 'Order placed']);
+  // A blue command beside an orange event: two kinds, from colour alone.
+  await importPhoto(page, [
+    { fill: BLUE, x: 60, y: 120, w: 180, h: 180 },
+    { fill: ORANGE, x: 340, y: 120, w: 180, h: 180 },
+  ]);
+
+  await expect(bar(page)).toBeVisible();
+  // "Order placed" is on the board already; the command is new.
+  await expect(drafts(page)).toHaveCount(1);
+  await page.getByRole('button', { name: /^Add 1 note$/ }).click();
+
+  // It arrived as a COMMAND — the notation's blue — without the model being
+  // asked what colour anything was.
+  const added = notes(page).nth(3);
+  await expect(added).toBeVisible();
+  const fill = await added.evaluate((node) => {
+    const painted = node.querySelector('[style*="background"]') ?? node;
+    return getComputedStyle(painted as Element).backgroundColor;
+  });
+  expect(fill).toContain('147, 197, 253');
+
+  expectNoPageErrors(pageErrors);
+});
+
+test('an unreadable sticky still lands, empty', async ({ page, pageErrors }) => {
+  await openBoard(page);
+  // The model could not read the third one.
+  await mockReader(page, ['Order placed', 'Payment received', '']);
+  await importPhoto(page, THREE_EVENTS);
+
+  await expect(bar(page)).toBeVisible();
+  // The paper WAS there, so a note lands for it — with nothing on it.
+  await expect(drafts(page)).toHaveCount(1);
+  await page.getByRole('button', { name: /^Add 1 note$/ }).click();
+  await expect(notes(page)).toHaveCount(4);
 
   expectNoPageErrors(pageErrors);
 });
 
 test('Discard leaves the board exactly as it was', async ({ page, pageErrors }) => {
   await openBoard(page);
-  await mockModel(
-    page,
-    wallResponse([{ id: 1, text: 'Invoice sent', kind: 'domain-event', cx: 0.6, cy: 0.2 }]),
-  );
+  await mockReader(page, ['Invoice sent']);
+  await importPhoto(page, [{ fill: ORANGE, x: 300, y: 120, w: 180, h: 180 }]);
 
-  await choosePhoto(page);
   await expect(drafts(page)).toHaveCount(1);
   await expect(notes(page)).toHaveCount(4);
 
@@ -158,16 +203,17 @@ test('Discard leaves the board exactly as it was', async ({ page, pageErrors }) 
 
 test('a draft note can be deleted before it is added', async ({ page, pageErrors }) => {
   await openBoard(page);
-  await mockModel(
-    page,
-    wallResponse([
-      { id: 1, text: 'Invoice sent', kind: 'domain-event', cx: 0.6, cy: 0.2 },
-      { id: 2, text: 'Invoice paid', kind: 'domain-event', cx: 0.8, cy: 0.2 },
-    ]),
-  );
+  await mockReader(page, ['Invoice sent', 'Invoice paid']);
+  await importPhoto(page, [
+    { fill: ORANGE, x: 200, y: 120, w: 180, h: 180 },
+    { fill: ORANGE, x: 500, y: 120, w: 180, h: 180 },
+  ]);
 
-  await choosePhoto(page);
   await expect(drafts(page)).toHaveCount(2);
+  // Landing selects the whole batch, so clear that first: this is "delete
+  // THIS one", not "delete what just arrived".
+  await page.keyboard.press('Escape');
+  await panBy(page, -200, 0);
   await notes(page).nth(4).click();
   await page.keyboard.press('Delete');
   await expect(drafts(page)).toHaveCount(1);
@@ -180,47 +226,47 @@ test('a draft note can be deleted before it is added', async ({ page, pageErrors
 
 test('the same photo twice adds nothing the second time', async ({ page, pageErrors }) => {
   await openBoard(page);
-  await mockModel(
-    page,
-    wallResponse([{ id: 1, text: 'Invoice sent', kind: 'domain-event', cx: 0.6, cy: 0.2 }]),
-  );
+  await mockReader(page, ['Invoice sent']);
+  const one: WallNote[] = [{ fill: ORANGE, x: 300, y: 120, w: 180, h: 180 }];
 
-  await choosePhoto(page);
+  await importPhoto(page, one);
   await page.getByRole('button', { name: /^Add 1 note$/ }).click();
   await expect(notes(page)).toHaveCount(4);
 
-  // The same wall again, against the board as it now is.
-  await choosePhoto(page);
-  // Nothing new to land, so there is no draft at all — just the toast.
+  // The same wall again, against the board as it now is: nothing new, so no
+  // draft at all — just the toast.
+  await importPhoto(page, one);
   await expect(bar(page)).toHaveCount(0);
   await expect(notes(page)).toHaveCount(4);
 
   expectNoPageErrors(pageErrors);
 });
 
-test('a photo of something that is not a wall says so, and lands nothing', async ({
+test('a photo with no paper in it says so, and never calls the model', async ({
   page,
   pageErrors,
 }) => {
   await openBoard(page);
-  await mockModel(page, { wall: false, notes: [], hint: 'This looks like a cat.' });
+  let called = 0;
+  await page.route('**/api/ai/read-notes', async (route) => {
+    called += 1;
+    await route.fulfill({ status: 200, body: JSON.stringify({ texts: [] }) });
+  });
 
-  await choosePhoto(page);
+  await importPhoto(page, []);
   await expect(page.getByText(/no stickies found in this photo/i)).toBeVisible();
   await expect(bar(page)).toHaveCount(0);
   await expect(notes(page)).toHaveCount(3);
+  expect(called).toBe(0);
 
   expectNoPageErrors(pageErrors);
 });
 
 test('a draft survives a reload, and can still be added', async ({ page, pageErrors }) => {
   await openBoard(page);
-  await mockModel(
-    page,
-    wallResponse([{ id: 1, text: 'Invoice sent', kind: 'domain-event', cx: 0.6, cy: 0.2 }]),
-  );
+  await mockReader(page, ['Invoice sent']);
+  await importPhoto(page, [{ fill: ORANGE, x: 300, y: 120, w: 180, h: 180 }]);
 
-  await choosePhoto(page);
   await expect(drafts(page)).toHaveCount(1);
   await page.waitForTimeout(1500);
   await page.reload();

@@ -240,14 +240,20 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // Escape-cancel for an in-flight drag: restore the gesture's
   // checkpoint and DISCARD the step (no redo entry — a cancelled drag
   // never happened), popping its marker in step.
-  const cancelToCheckpoint = () => {
-    // Inside a draft there is no per-gesture checkpoint to go back to — the
-    // draft's own is the only one, and popping it here would discard the whole
-    // import because a drag was cancelled. The dragged note simply stays where
-    // it was let go; Discard is how you take the import back.
-    if (photoDraftOpenRef.current) return;
+  // Restore the armed checkpoint and DISCARD the step. The photo draft's own
+  // Discard calls this directly: it is the gesture's owner, so it is the one
+  // caller that always means it.
+  const cancelGesture = () => {
     entryHistoryRef.current = entryHistoryCancel(entryHistoryRef.current);
     rawCancelToCheckpoint();
+  };
+  const cancelToCheckpoint = () => {
+    // Inside a draft there is no per-gesture checkpoint for anyone ELSE to go
+    // back to — the draft's own is the only one, and popping it because a drag
+    // was cancelled would take the whole import with it. The dragged note
+    // simply stays where it was let go; Discard is how you undo the import.
+    if (photoDraftOpenRef.current) return;
+    cancelGesture();
   };
 
   // Stable id + name projection of the tabs for link-badge tooltips
@@ -1567,10 +1573,13 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     createBlocked,
     tick,
     markCheckpoint,
-    cancelToCheckpoint,
+    // The draft OWNS the gesture, so it cancels it directly rather than
+    // through the guard that keeps everyone else out of its checkpoint.
+    cancelToCheckpoint: cancelGesture,
     emitChange,
     setSelectedId,
     setMultiSelectedIds,
+    fitToBounds,
     toastError: toast.error,
   });
   // The hidden file input the palette row and the command-palette entry open.
