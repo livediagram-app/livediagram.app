@@ -158,7 +158,7 @@ Implement the default unless the parent session relays a different operator
 answer BEFORE the phase that needs it. Escalate (ask, in a `question` block) only
 if implementation reveals a default is wrong, or where marked **ASK FIRST**.
 
-- [ ] **Q1 — Docking sides (ASK FIRST, before Phase 2 wiring).** The operator wrote
+- [x] **Q1 — Docking sides (ASK FIRST, before Phase 2 wiring).** The operator wrote
       "in front" for all three pairings. Brandolini's notation places a Command to
       the LEFT of its Event (command → event), a Command to the RIGHT of the Policy
       that issues it (policy → command), and a Policy to the RIGHT of the Event it
@@ -167,31 +167,31 @@ if implementation reveals a default is wrong, or where marked **ASK FIRST**.
       change._ The parent has asked the operator; if no answer has arrived when
       Phase 2 wiring starts, ask in a `question` block and continue with the
       pure model (which is side-agnostic) meanwhile.
-- [ ] **Q2 — "Two visual anchor points".** _Default: a 16px seam between the docked
+- [x] **Q2 — "Two visual anchor points".** _Default: a 16px seam between the docked
       notes, one small filled dot on each facing edge at mid-height, joined by
       nothing (two magnets, not a connector). Neutral ink, slightly stronger in
       dark mode._ Alternative if it reads wrong on the dev server: dots at the
       seam's top and bottom.
-- [ ] **Q3 — Where the lanes switch lives.** _Default: a switch row at the top of the
+- [x] **Q3 — Where the lanes switch lives.** _Default: a switch row at the top of the
       Event Storming palette category ("Timeline lanes"), a command-palette entry
       ("Turn timeline lanes on / off"), and the empty-canvas context menu on ES
       boards. No keyboard shortcut in v1. Stored on the tab (shared, synced)._
-- [ ] **Q4 — Aligned vs staggered.** _Default: no mode toggle. The x grid is half a
+- [x] **Q4 — Aligned vs staggered.** _Default: no mode toggle. The x grid is half a
       standard note (100px); a note can land exactly above the one on the lane
       above (same grid cell) or one cell (half a note) across. That is the whole
       of "either exactly above each other or staggered"._ Do not add a
       `stagger` setting unless the operator asks.
-- [ ] **Q5 — Lane origin.** _Default: set ONCE when lanes are switched on — the
+- [x] **Q5 — Lane origin.** _Default: set ONCE when lanes are switched on — the
       top-left of the board's top-most, then left-most, note (`(0, 0)` on an empty
       board) — and stored (`esTimeline.originX / originY`). Existing notes are
       NOT re-snapped when lanes come on (no rearranging, ever); switching off
       keeps the origin so on/off is stable._ A "Snap all notes to lanes" verb is
       NOT in v1.
-- [ ] **Q6 — Lane pitch.** _Default: `ES_LANE_PITCH = 200 + ES_LANE_GAP`, gap 40px,
+- [x] **Q6 — Lane pitch.** _Default: `ES_LANE_PITCH = 200 + ES_LANE_GAP`, gap 40px,
       notes centred vertically on the lane (so the 180-tall wide kinds and the
       140-tall actor sit centred, like on a wall). Calibrate by eye on the dev
       server the way the tilt was; record the number and why in spec/139._
-- [ ] **Q7 — Photo entry points.** _Default: (a) an "Add from photo" row at the top
+- [x] **Q7 — Photo entry points.** _Default: (a) an "Add from photo" row at the top
       of the Event Storming palette category (camera glyph; on a phone the file
       input carries `capture="environment"` so the camera opens straight away);
       (b) a command-palette entry; (c) dropping or pasting an IMAGE FILE onto an
@@ -200,42 +200,42 @@ if implementation reveals a default is wrong, or where marked **ASK FIRST**.
       a wall than a picture element)._ (c) is the fork most likely to surprise:
       verify the existing image-drop path is only intercepted for `image/*`
       files on ES boards and everything else drops exactly as today.
-- [ ] **Q8 — Zero notes found.** _Default: the dialog shows "No stickies found in
+- [x] **Q8 — Zero notes found.** _Default: the dialog shows "No stickies found in
       this photo" with a one-line retake hint (fill the frame, straight on, good
       light); nothing is committed; "Try another photo" stays available._
-- [ ] **Q9 — Where the photo lands when nothing matches on a non-empty board.**
+- [x] **Q9 — Where the photo lands when nothing matches on a non-empty board.**
       _Default: to the RIGHT of the board's bounding box, one note width away,
       its top row aligned to the board's top row (to the nearest lane when lanes
       are on). The x axis is time; a new piece of wall is most likely a
       continuation._
-- [ ] **Q10 — Several photos.** _Default: one photo per run; after committing, the
+- [x] **Q10 — Several photos.** _Default: one photo per run; after committing, the
       dialog offers "Add another photo" which starts the next run against the
       board as it now is (so overlap between photos is deduplicated by the
       ordinary matcher). Multi-file selection is a stretch task at the end._
-- [ ] **Q11 — Matched notes whose text differs in the photo.** _Default: shown as
+- [x] **Q11 — Matched notes whose text differs in the photo.** _Default: shown as
       "on the board as …" in the review list; never applied._
-- [ ] **Q12 — Anchor affordance visibility.** _Default: hollow dot on each FREE
+- [x] **Q12 — Anchor affordance visibility.** _Default: hollow dot on each FREE
       dockable face of a host, shown while the host is hovered or selected, with
       a tooltip naming the act ("Add a command before this event"). Spec/139
       retired the four quick-connect pluses on this board as chrome; these are
       at most two per host, appear only on hover / selection, and each carries
       notation meaning — they earn their place. If they read as clutter on the
       dev server, escalate with a screenshot rather than removing them._
-- [ ] **Q13 — Anchor-add placement when the spot is taken.** _Default: the new
+- [x] **Q13 — Anchor-add placement when the spot is taken.** _Default: the new
       note lands at the docked position. If that footprint overlaps a visible
       boxed element, the board makes room with the shipped insertion ripple
       (`applyInsertionShift` from the seam's x, by note width + seam) in the SAME
       commit — the board opens only when there is no room, and the author sees
       the same ripple the Alt gesture taught them._
-- [ ] **Q14 — Exports.** _Default: the SVG / PNG export draws the seam dots
+- [x] **Q14 — Exports.** _Default: the SVG / PNG export draws the seam dots
       (notation paints wherever a note paints — the caps precedent). Lanes are
       never exported (they are a drag-time aid). Mermaid / Excalidraw / Markdown
       ignore both._
-- [ ] **Q15 — Docked clusters and the insertion ripple.** _Default: a docked
+- [x] **Q15 — Docked clusters and the insertion ripple.** _Default: a docked
       cluster moves WHOLE when the HOST's left edge is at or after the insertion
       point (the group precedent), and the seam is never offered as a gap (it is
       not one)._
-- [ ] **Q16 — Live model calibration needs a key.** There is no
+- [x] **Q16 — Live model calibration needs a key.** There is no
       `apps/api/.dev.vars` in this checkout, so `OPENAI_API_KEY` is absent
       locally. Build and prove the pipeline against a stubbed model (unit + e2e
       with a routed `/api/ai/photo-notes`), then **ASK** the operator for a key
@@ -825,7 +825,7 @@ h: number; row: number; order: number; confidence: number }` (all box fields
 
 ### 3.7 Live calibration (needs the operator — Q16)
 
-- [ ] Ask for `OPENAI_API_KEY` in `apps/api/.dev.vars` and 2–3 real wall photos
+- [x] Ask for `OPENAI_API_KEY` in `apps/api/.dev.vars` and 2–3 real wall photos
       (`question` block). Never print, log or commit the key; never commit the
       photos (put them in `/tmp` or a gitignored folder).
 - [ ] Run each photo through the dialog on the dev server; read the api log for the
@@ -834,16 +834,16 @@ h: number; row: number; order: number; confidence: number }` (all box fields
       are right, a re-import adds nothing, and an overlapping second photo adds only
       the new notes in the right places. Record the numbers + one paragraph of what
       needed tuning in spec/139.
-- [ ] If no key is available, record that the live calibration is OUTSTANDING in
+- [x] If no key is available, record that the live calibration is OUTSTANDING in
       spec/139 (explicitly, not as "verified") and in the final report.
 
 ### 3.8 Verification
 
-- [ ] Dev server walkthrough of every path in §10 C (with the mocked route via
+- [x] Dev server walkthrough of every path in §10 C (with the mocked route via
       playwright-cli where the real model is unavailable).
-- [ ] Spec/139 Phase 8 filled in; learnings appended (at least: "perception is the
+- [x] Spec/139 Phase 8 filled in; learnings appended (at least: "perception is the
       model's, reconciliation is ours", "existing notes are immovable").
-- [ ] Quality gate green; commit.
+- [x] Quality gate green; commit.
 
 ---
 
