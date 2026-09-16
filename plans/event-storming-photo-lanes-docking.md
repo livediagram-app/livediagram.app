@@ -341,25 +341,25 @@ esDock?: {
 
 ## 6. Phase 0 — Setup and discovery
 
-- [ ] `cd ~/Repositories/livediagram-eswall && git fetch && git status` — confirm branch
+- [x] `cd ~/Repositories/livediagram-eswall && git fetch && git status` — confirm branch
       `es-photo-lanes-docking` tracking `origin/main`, clean tree.
-- [ ] `pnpm install`; then `pnpm lint && pnpm typecheck && pnpm test` for the
+- [x] `pnpm install`; then `pnpm lint && pnpm typecheck && pnpm test` for the
       baseline (start the test run under PM2 as `livediagram-eswall-tests` and tail
       its log; never pipe live output). Fix nothing yet; note any pre-existing
       failure in `DECISIONS.md` and fix it as the FIRST task if it is real.
-- [ ] Read end to end: `specs/139-event-storming.md`, `specs/25-ai-assistance.md`,
+- [x] Read end to end: `specs/139-event-storming.md`, `specs/25-ai-assistance.md`,
       `specs/58-palette-drag-ghost.md`, `specs/60` (free placement), `specs/80`
       (drag-duplicate), `specs/74-layers.md` (the creation gate), `specs/22-telemetry.md`,
       `specs/19-images.md` (accepted formats + the HEIC hint wording), `specs/06`.
-- [ ] Read the plans this extends: `plans/event-storming.md`,
+- [x] Read the plans this extends: `plans/event-storming.md`,
       `plans/event-storming-insert-between.md`, `plans/event-storming-insert-alt-gesture.md`
       (their discovery sections list every file the drag machinery lives in).
-- [ ] Read the code the three features hook into, in this order:
-  - [ ] `packages/diagram/src/event-storming.ts` (+ test), `tab-kind.ts`,
+- [x] Read the code the three features hook into, in this order:
+  - [x] `packages/diagram/src/event-storming.ts` (+ test), `tab-kind.ts`,
         `element-types.ts` (StickyElement), `index.ts` (Tab), `duplicate.ts`,
         `groups.ts` (`freezeDanglingGroupEnds`), `layer-operations.ts`,
         `svg-render.ts` (how a sticky paints in export).
-  - [ ] `apps/live/lib/draw-commit.ts` (`eventStormingBoardStickyExtras`,
+  - [x] `apps/live/lib/draw-commit.ts` (`eventStormingBoardStickyExtras`,
         `esBoardLayerStamp`, `buildDrawnBoxed`),
         `apps/live/app/diagram/[id]/useElementCreation.ts` (`addSticky`, the palette
         drop path), `apps/live/lib/insert-between.ts`, `apps/live/lib/insertion-preview.ts`,
@@ -370,36 +370,36 @@ esDock?: {
         `apps/live/components/canvas/PaletteDragGhost.tsx`, `CanvasChrome.tsx`,
         `CanvasGuideOverlay.tsx`, `CanvasElementsLayer.tsx`, `CanvasSelectionToolbars.tsx`,
         `apps/live/components/chrome/ModifierHintBanner.tsx`.
-  - [ ] `apps/live/app/diagram/[id]/useEditorState.ts` — find `insertGate`, the
+  - [x] `apps/live/app/diagram/[id]/useEditorState.ts` — find `insertGate`, the
         `commit` choke point, `activeTab`, how `tabLocked` / read-only are exposed;
         note the file is an orchestration root (exempt from the line target) —
         add a HOOK per feature and wire it with the smallest edit.
-  - [ ] `apps/live/components/palette/palette-categories.tsx`, `PaletteToolRows.tsx`,
+  - [x] `apps/live/components/palette/palette-categories.tsx`, `PaletteToolRows.tsx`,
         `palette-tile-defs.tsx` (+ test), `EditorContextMenu.tsx` (+ `.types.ts`,
         the ES verb list), `CommandPalette.tsx`, `context-menu-icons.tsx`.
-  - [ ] `apps/live/hooks/canvas/useClipboard.ts` + `apps/live/components/canvas/ImageDropZone.tsx`
+  - [x] `apps/live/hooks/canvas/useClipboard.ts` + `apps/live/components/canvas/ImageDropZone.tsx`
         + wherever the canvas accepts a dropped image file (grep `dataTransfer.files`
         in `apps/live`), `apps/live/lib/upload-image.ts` (`UPLOAD_ACCEPT_ATTR`).
-  - [ ] `apps/api/src/routes/ai.ts` (+ test, how fetch is stubbed), `ai-prompt.ts`,
+  - [x] `apps/api/src/routes/ai.ts` (+ test, how fetch is stubbed), `ai-prompt.ts`,
         `capabilities.ts`, `index.ts` (the `case 'ai'` dispatch), `types.ts` (Env),
         `apps/api/wrangler.toml` (AI_RATE_LIMITER + the OPENAI comment block),
         `apps/api/.env.example`, `apps/api/src/openapi/manifest.ts` (the `/ai` entry),
         `apps/live/lib/api/ai.ts` (`apiGetCapabilities`, `apiAiStream`),
         `apps/live/hooks/persistence/useCapabilities.ts`.
-  - [ ] `apps/live/e2e/smoke.spec.ts` + `fixtures.ts` (`startTemplateDiagram`),
+  - [x] `apps/live/e2e/smoke.spec.ts` + `fixtures.ts` (`startTemplateDiagram`),
         `apps/live/playwright.config.ts`, `scripts/e2e-stack.mjs`.
-  - [ ] `packages/help-registry/src/index.ts` (both ES entries),
+  - [x] `packages/help-registry/src/index.ts` (both ES entries),
         `apps/help/app/canvas/event-storming-boards/page.mdx`,
         `apps/help/lib/featureIcons.tsx`, `featureColours.ts`.
-  - [ ] `packages/api-schema/src/telemetry-schema.ts` (the closed enums),
+  - [x] `packages/api-schema/src/telemetry-schema.ts` (the closed enums),
         `apps/live/lib/telemetry.ts`.
-- [ ] Start the dev stack under PM2 from the worktree (`livediagram-eswall-dev`),
+- [x] Start the dev stack under PM2 from the worktree (`livediagram-eswall-dev`),
       confirm `http://localhost:3000/new` → Technical → Event storming opens a board,
       and that `GET /api/capabilities` reports `aiEnabled: false` (no key yet).
-- [ ] Write the three spec/139 phase section STUBS (headings + the one-paragraph
+- [x] Write the three spec/139 phase section STUBS (headings + the one-paragraph
       "what" from §1 + the settled decisions that apply) so each phase below can
       fill its section as it lands (spec-first).
-- [ ] Commit: `docs(specs): stub event-storming phases 6-8`.
+- [x] Commit: `docs(specs): stub event-storming phases 6-8`.
 
 ---
 
