@@ -154,7 +154,10 @@ describe('landing a draft', () => {
     // The words are slow; the stickies must not wait for them.
     let releaseRead: (v: ReadNotesResponse) => void = () => {};
     vi.mocked(apiAiReadNotes).mockImplementation(
-      () => new Promise((resolve) => { releaseRead = resolve; }),
+      () =>
+        new Promise((resolve) => {
+          releaseRead = resolve;
+        }),
     );
     const h = harness();
     let started: Promise<void>;

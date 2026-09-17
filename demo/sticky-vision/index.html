@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>sticky-vision · detection demo</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #101216;
+      --panel: #171a21;
+      --panel-2: #1d212a;
+      --line: #2a2f3a;
+      --text: #e7eaf0;
+      --muted: #9aa3b2;
+      --accent: #7cb8ff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid var(--line);
+    }
+    h1 { margin: 0; font-size: 20px; letter-spacing: .2px; }
+    .sub { margin: 6px 0 0; color: var(--muted); font-size: 13px; max-width: 720px; line-height: 1.5; }
+    .controls {
+      display: flex; align-items: center; gap: 12px; margin-top: 14px; flex-wrap: wrap;
+    }
+    button, .file {
+      appearance: none; cursor: pointer;
+      font: inherit; font-size: 13px;
+      background: var(--panel-2); color: var(--text);
+      border: 1px solid var(--line); border-radius: 8px;
+      padding: 8px 14px;
+    }
+    button:hover, .file:hover { border-color: var(--accent); }
+    .file input { display: none; }
+    .stats { margin-left: auto; color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+    .stats b { color: var(--accent); font-weight: 600; }
+
+    main {
+      flex: 1; display: grid;
+      grid-template-columns: 1fr 360px;
+      min-height: 0;
+    }
+    .stage {
+      padding: 20px; display: flex; align-items: flex-start; justify-content: center;
+      overflow: auto;
+    }
+    .canvas-wrap { position: relative; box-shadow: 0 8px 40px rgba(0,0,0,.45); border-radius: 6px; overflow: hidden; }
+    canvas { display: block; max-width: min(100%, 1080px); height: auto; }
+    #photo { width: 100%; }
+    #overlay { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+    aside {
+      border-left: 1px solid var(--line); background: var(--panel);
+      overflow-y: auto; padding: 16px;
+    }
+    aside h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .8px; color: var(--muted); margin: 0 0 10px; }
+    #legend { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+    .legend-row { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+    .swatch { width: 12px; height: 12px; border-radius: 3px; border: 1px solid rgba(255,255,255,.25); flex: none; }
+    .legend-row .name { flex: 1; }
+    .legend-row .count { color: var(--muted); font-variant-numeric: tabular-nums; }
+
+    #list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+    #list li {
+      background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px;
+      padding: 9px 11px; font-size: 12.5px; line-height: 1.45;
+    }
+    #list .head { display: flex; align-items: center; gap: 7px; margin-bottom: 3px; }
+    #list .id { color: var(--muted); font-variant-numeric: tabular-nums; }
+    #list .kind { font-weight: 600; }
+    #list .size { color: var(--muted); font-size: 11px; border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; }
+    #list .conf { margin-left: auto; font-variant-numeric: tabular-nums; color: var(--muted); }
+    #list .meta { color: var(--muted); font-variant-numeric: tabular-nums; }
+    .empty { color: var(--muted); font-size: 13px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>sticky-vision · detection demo</h1>
+    <p class="sub">
+      Classical computer vision, running entirely in the browser. It finds the stickies in a photo of an
+      event-storming wall: where each note is, what colour its paper is (so which <em>kind</em> it is), which
+      silhouette, which row, in what order. No model, no server, deterministic.
+    </p>
+    <div class="controls">
+      <button id="synthetic">Regenerate wall</button>
+      <label class="file"><input type="file" id="file" accept="image/jpeg,image/png,image/webp">Load a real photo</label>
+      <span class="stats" id="stats"></span>
+    </div>
+  </header>
+
+  <main>
+    <div class="stage">
+      <div class="canvas-wrap">
+        <canvas id="photo"></canvas>
+        <canvas id="overlay"></canvas>
+      </div>
+    </div>
+    <aside>
+      <h2>Detected notes</h2>
+      <div id="legend"></div>
+      <ol id="list"></ol>
+    </aside>
+  </main>
+
+  <script src="./sticky-vision.bundle.js"></script>
+  <script>
+    const { detectStickies, EVENT_STORMING_NOTES } = window.StickyVisionDemo;
+
+    const photo = document.getElementById('photo');
+    const overlay = document.getElementById('overlay');
+    const pctx = photo.getContext('2d');
+    const octx = overlay.getContext('2d');
+
+    const fillOf = (kind) => (EVENT_STORMING_NOTES.find((n) => n.kind === kind) ?? { fill: '#fff' }).fill;
+    const labelOf = (kind) => (EVENT_STORMING_NOTES.find((n) => n.kind === kind) ?? { label: kind }).label;
+
+    function setCanvasSize(w, h) {
+      photo.width = overlay.width = w;
+      photo.height = overlay.height = h;
+    }
+
+    // A synthetic wall: brown kraft paper, a dozen stickies of several kinds,
+    // some with handwriting, two overlapping oranges (which must be split).
+    function drawSyntheticWall() {
+      const W = 960, H = 660;
+      setCanvasSize(W, H);
+      const g = pctx.createLinearGradient(0, 0, W, H);
+      g.addColorStop(0, '#9d927a');
+      g.addColorStop(0.55, '#8b8169');
+      g.addColorStop(1, '#7a7058');
+      pctx.fillStyle = g;
+      pctx.fillRect(0, 0, W, H);
+
+      function sticky(kind, x, y, w, h, { tilt = 0, ink = 0 } = {}) {
+        pctx.save();
+        pctx.translate(x + w / 2, y + h / 2);
+        if (tilt) pctx.rotate((tilt * Math.PI) / 180);
+        pctx.fillStyle = fillOf(kind);
+        pctx.fillRect(-w / 2, -h / 2, w, h);
+        pctx.strokeStyle = 'rgba(0,0,0,0.16)';
+        pctx.lineWidth = 1;
+        pctx.strokeRect(-w / 2, -h / 2, w, h);
+        if (ink > 0) {
+          pctx.fillStyle = '#181818';
+          for (let i = 0; i < ink; i += 1) {
+            const sy = -h / 2 + h * (0.28 + (0.5 * i) / ink);
+            pctx.fillRect(-w / 2 + w * 0.14, sy, w * 0.7, 6 + (i % 2) * 4);
+          }
+        }
+        pctx.restore();
+      }
+
+      // Row 0
+      sticky('domain-event', 30, 60, 100, 100, { ink: 3 });
+      sticky('command', 165, 60, 100, 100, { ink: 2 });
+      sticky('domain-event', 300, 60, 100, 100);
+      sticky('actor', 440, 75, 70, 70, { tilt: -5 });
+      sticky('policy', 555, 65, 150, 90, { ink: 2 });
+      sticky('domain-event', 760, 60, 100, 100, { tilt: 4 });
+
+      // Row 1 — two overlapping oranges on the left (split demo)
+      sticky('read-model', 30, 230, 100, 100, { ink: 2 });
+      sticky('domain-event', 180, 230, 100, 100);
+      sticky('domain-event', 270, 230, 100, 100, { ink: 2 });
+      sticky('command', 430, 230, 100, 100);
+      sticky('hotspot', 560, 230, 100, 100, { ink: 1 });
+      sticky('read-model', 700, 240, 100, 100);
+
+      // Row 2
+      sticky('aggregate', 30, 405, 150, 90, { ink: 2 });
+      sticky('policy', 235, 400, 150, 90);
+      sticky('actor', 440, 415, 70, 70);
+      sticky('read-model', 545, 405, 100, 100, { ink: 1 });
+      sticky('domain-event', 685, 405, 100, 100);
+      sticky('command', 820, 405, 100, 100, { ink: 2 });
+    }
+
+    function runDetection() {
+      const started = performance.now();
+      const { data } = pctx.getImageData(0, 0, photo.width, photo.height);
+      const found = detectStickies({ width: photo.width, height: photo.height, data });
+      const ms = performance.now() - started;
+      renderOverlay(found);
+      renderResults(found, ms);
+    }
+
+    function renderOverlay(found) {
+      octx.clearRect(0, 0, overlay.width, overlay.height);
+      for (const s of found) {
+        const { x, y, w, h } = s;
+        const fill = fillOf(s.kind);
+        octx.lineJoin = 'round';
+        octx.strokeStyle = 'rgba(0,0,0,0.55)';
+        octx.lineWidth = 6;
+        octx.strokeRect(x, y, w, h);
+        octx.strokeStyle = fill;
+        octx.lineWidth = 2.5;
+        octx.strokeRect(x, y, w, h);
+
+        const text = `${labelOf(s.kind)} · row ${s.row}`;
+        octx.font = '600 14px system-ui, sans-serif';
+        const tw = octx.measureText(text).width;
+        const chipH = 22;
+        octx.fillStyle = 'rgba(8,10,14,0.8)';
+        octx.fillRect(x + 3, y + 3, tw + 16, chipH);
+        octx.fillStyle = '#fff';
+        octx.textBaseline = 'middle';
+        octx.fillText(text, x + 11, y + 3 + chipH / 2);
+
+        octx.font = '600 12px system-ui, sans-serif';
+        const conf = `${Math.round(s.confidence * 100)}%`;
+        const cw = octx.measureText(conf).width;
+        octx.fillStyle = 'rgba(8,10,14,0.8)';
+        octx.fillRect(x + w - cw - 16, y + h - 24, cw + 16, 20);
+        octx.fillStyle = '#cfe0ff';
+        octx.fillText(conf, x + w - cw - 8, y + h - 14);
+      }
+    }
+
+    function renderResults(found, ms) {
+      document.getElementById('stats').innerHTML =
+        found.length === 0
+          ? 'found <b>0</b> stickies'
+          : `found <b>${found.length}</b> stickies · <b>${ms.toFixed(0)}</b> ms`;
+
+      const counts = new Map();
+      for (const s of found) counts.set(s.kind, (counts.get(s.kind) ?? 0) + 1);
+
+      const legend = document.getElementById('legend');
+      legend.innerHTML = '';
+      for (const [kind, count] of counts) {
+        const row = document.createElement('div');
+        row.className = 'legend-row';
+        const swatch = document.createElement('span');
+        swatch.className = 'swatch';
+        swatch.style.background = fillOf(kind);
+        const name = document.createElement('span');
+        name.className = 'name';
+        name.textContent = labelOf(kind);
+        const c = document.createElement('span');
+        c.className = 'count';
+        c.textContent = String(count);
+        row.append(swatch, name, c);
+        legend.appendChild(row);
+      }
+
+      const list = document.getElementById('list');
+      list.innerHTML = '';
+      if (found.length === 0) {
+        const li = document.createElement('li');
+        li.className = 'empty';
+        li.textContent = 'No stickies found in this photo.';
+        list.appendChild(li);
+        return;
+      }
+      const byRow = new Map();
+      for (const s of found) {
+        if (!byRow.has(s.row)) byRow.set(s.row, []);
+        byRow.get(s.row).push(s);
+      }
+      for (const [row, notes] of [...byRow.entries()].sort((a, b) => a[0] - b[0])) {
+        notes.sort((a, b) => a.order - b.order);
+        const h = document.createElement('li');
+        h.className = 'empty';
+        h.textContent = `Row ${row}`;
+        list.appendChild(h);
+        for (const s of notes) {
+          const li = document.createElement('li');
+          li.innerHTML = '';
+          const head = document.createElement('div');
+          head.className = 'head';
+          const swatch = document.createElement('span');
+          swatch.className = 'swatch';
+          swatch.style.background = fillOf(s.kind);
+          const kind = document.createElement('span');
+          kind.className = 'kind';
+          kind.textContent = labelOf(s.kind);
+          const size = document.createElement('span');
+          size.className = 'size';
+          size.textContent = s.size;
+          const conf = document.createElement('span');
+          conf.className = 'conf';
+          conf.textContent = `${Math.round(s.confidence * 100)}%`;
+          head.append(swatch, kind, size, conf);
+          const meta = document.createElement('div');
+          meta.className = 'meta';
+          meta.textContent = `#${s.id} · ${s.w}×${s.h}px @ ${s.x},${s.y} · order ${s.order}`;
+          li.append(head, meta);
+          list.appendChild(li);
+        }
+      }
+    }
+
+    document.getElementById('synthetic').addEventListener('click', () => {
+      drawSyntheticWall();
+      runDetection();
+    });
+
+    document.getElementById('file').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const bmp = await createImageBitmap(file, { imageOrientation: 'from-image' });
+      const maxEdge = 1000;
+      const longest = Math.max(bmp.width, bmp.height);
+      const ratio = longest > maxEdge ? maxEdge / longest : 1;
+      const w = Math.max(1, Math.round(bmp.width * ratio));
+      const h = Math.max(1, Math.round(bmp.height * ratio));
+      setCanvasSize(w, h);
+      pctx.imageSmoothingEnabled = true;
+      pctx.imageSmoothingQuality = 'high';
+      pctx.drawImage(bmp, 0, 0, w, h);
+      bmp.close();
+      runDetection();
+      e.target.value = '';
+    });
+
+    drawSyntheticWall();
+    runDetection();
+  </script>
+</body>
+</html>

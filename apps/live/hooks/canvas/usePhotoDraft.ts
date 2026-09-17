@@ -153,23 +153,26 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
   // Fit a rectangle around the given elements, with a little margin: an import
   // that lands off-screen reads as an import that did nothing. Never zoomed in
   // past life size.
-  const frameElements = useCallback((els: readonly { x: number; y: number; width: number; height: number }[]) => {
-    if (els.length === 0) return;
-    const minX = Math.min(...els.map((e) => e.x));
-    const minY = Math.min(...els.map((e) => e.y));
-    const maxX = Math.max(...els.map((e) => e.x + e.width));
-    const maxY = Math.max(...els.map((e) => e.y + e.height));
-    const margin = 120;
-    live.current.fitToBounds(
-      {
-        x: minX - margin,
-        y: minY - margin,
-        w: maxX - minX + margin * 2,
-        h: maxY - minY + margin * 2,
-      },
-      { maxZoom: 1 },
-    );
-  }, []);
+  const frameElements = useCallback(
+    (els: readonly { x: number; y: number; width: number; height: number }[]) => {
+      if (els.length === 0) return;
+      const minX = Math.min(...els.map((e) => e.x));
+      const minY = Math.min(...els.map((e) => e.y));
+      const maxX = Math.max(...els.map((e) => e.x + e.width));
+      const maxY = Math.max(...els.map((e) => e.y + e.height));
+      const margin = 120;
+      live.current.fitToBounds(
+        {
+          x: minX - margin,
+          y: minY - margin,
+          w: maxX - minX + margin * 2,
+          h: maxY - minY + margin * 2,
+        },
+        { maxZoom: 1 },
+      );
+    },
+    [],
+  );
 
   const startFromFile = useCallback(
     async (file: File) => {
