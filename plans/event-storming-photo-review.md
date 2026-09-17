@@ -6,7 +6,7 @@ OCR spike. Each task lands reviewable on the board.
 
 ## 1. Detector hardening (first)
 
-- [ ] 1.1 `closePaperMask`: morphological close (dilate then erode by ~a pen stroke) on the paper mask, majority class per closed blob, wired into `detectStickies` before `labelComponents`. TDD with a thick-strokes test that currently fragments.
+- [x] 1.1 `closePaperMask`: morphological close (dilate then erode by ~a pen stroke) on the paper mask, majority class per closed blob, wired into `detectStickies` before `labelComponents`. TDD with a thick-strokes test that currently fragments.
 - [ ] 1.2 Robust note-size estimate follows the closed blobs (verify median no longer lands on fragments); keep speck/too-big thresholds honest against it.
 - [ ] 1.3 Re-run `scripts/calibrate.ts` against the operator's wall photos (incl. the 2026-09-17 attachment) and record before/after note counts.
 
