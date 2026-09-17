@@ -14,6 +14,7 @@
 export function PhotoDraftBar({
   draftCount,
   read,
+  readFailed = false,
   matchedCount,
   busy,
   onAccept,
@@ -23,14 +24,18 @@ export function PhotoDraftBar({
   // What the photo read in total, when this session is the one that read it.
   // Null after a reload: the notes survived, the tally did not.
   read: number | null;
+  // The reader failed but the detector landed the notes blank: say so and tell
+  // the author what to do with them, rather than pretending the photo was read.
+  readFailed?: boolean;
   matchedCount: number | null;
   busy: boolean;
   onAccept: () => void;
   onDiscard: () => void;
 }) {
   if (draftCount === 0) return null;
-  const line =
-    read !== null && matchedCount !== null
+  const line = readFailed
+    ? `${read} found · the reader could not finish · type the words in yourself`
+    : read !== null && matchedCount !== null
       ? `${read} read · ${draftCount} new · ${matchedCount} already on the board`
       : `${draftCount} ${draftCount === 1 ? 'note' : 'notes'} from a photo, not added yet`;
 

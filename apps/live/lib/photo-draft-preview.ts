@@ -22,6 +22,10 @@ export type PhotoDraftView = {
   differences: ReadonlyMap<string, string>;
   // Counts for the draft bar's one line.
   read: number;
+  // True when the DETECTOR succeeded but the READER failed (quota, a spike,
+  // the model gone): the notes still landed, just without their words. The bar
+  // says so instead of pretending the photo was read.
+  readFailed?: boolean;
 };
 
 let view: PhotoDraftView | null = null;

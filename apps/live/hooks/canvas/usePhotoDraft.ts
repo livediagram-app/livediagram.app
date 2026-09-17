@@ -148,6 +148,71 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
     live.current.toastError(ERROR_TOASTS[token] ?? ERROR_TOASTS.ai_error!);
   }, []);
 
+  // Land what the detector found, whatever the reader made of it. The paper
+  // was there and the author can type its words either way; `readFailed` just
+  // changes what the bar and the toast tell them.
+  const landDraft = useCallback(
+    (
+      detection: PhotoDetection,
+      textById: Map<number, { text: string; legible: boolean }>,
+      readFailed: boolean,
+    ) => {
+      const now = live.current;
+      const existing = boardNotesOfElements(now.activeTab.elements);
+      const result = reconcilePhoto(toPhotoNotes(detection, textById), existing, {
+        tab: now.activeTab,
+      });
+
+      if (result.additions.length === 0 && result.matches.length === 0) {
+        setState(EMPTY);
+        now.toastError(NO_NOTES_TOAST);
+        return;
+      }
+
+      // One checkpoint, then the notes go in as a tick — from here the author
+      // is inside the gesture until Add or Discard.
+      const matchedIds = new Set(result.matches.map((m) => m.boardId));
+      beforeRef.current = now.activeTab.elements;
+      now.markCheckpoint();
+      const built = buildDraftNotes(result.additions, now.activeTab);
+      now.tick((els) => [...els, ...built]);
+      now.setSelectedId(null);
+      now.setMultiSelectedIds(new Set(built.map((el) => el.id)));
+      // Bring the draft into view, together with the notes it was matched
+      // against: an import that lands off-screen reads as an import that did
+      // nothing. A little margin, and never zoomed in past life size.
+      const framed = [...built, ...existing.filter((e) => matchedIds.has(e.id))];
+      if (framed.length > 0) {
+        const minX = Math.min(...framed.map((e) => e.x));
+        const minY = Math.min(...framed.map((e) => e.y));
+        const maxX = Math.max(...framed.map((e) => e.x + e.width));
+        const maxY = Math.max(...framed.map((e) => e.y + e.height));
+        const margin = 120;
+        now.fitToBounds(
+          {
+            x: minX - margin,
+            y: minY - margin,
+            w: maxX - minX + margin * 2,
+            h: maxY - minY + margin * 2,
+          },
+          { maxZoom: 1 },
+        );
+      }
+      setPhotoDraftView({
+        matchedIds,
+        differences: new Map(
+          result.differences
+            .map((diff) => [diff.boardId, textById.get(diff.detectedId)?.text ?? ''] as const)
+            .filter(([, text]) => text !== ''),
+        ),
+        read: detection.stickies.length,
+        readFailed,
+      });
+      setState({ stage: 'draft', found: detection.stickies.length, error: null });
+    },
+    [],
+  );
+
   const startFromFile = useCallback(
     async (file: File) => {
       const d = live.current;
@@ -194,7 +259,13 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
           setState(EMPTY);
           return;
         }
-        fail(err instanceof Error ? err.message : 'ai_error');
+        // The reader failed — quota, a spike, the model gone — but the
+        // DETECTOR already succeeded, and that is the valuable half. Land the
+        // notes blank and say why, so the layout is never thrown away just
+        // because the model could not read the words.
+        const token = err instanceof Error ? err.message : 'ai_error';
+        landDraft(detection, new Map(), true);
+        live.current.toastError(ERROR_TOASTS[token] ?? ERROR_TOASTS.ai_error!);
         return;
       } finally {
         abortRef.current = null;
@@ -203,59 +274,9 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
 
       // Reconcile against the board as it is NOW, not as it was when the photo
       // was picked: reading takes seconds, and a peer edits in seconds.
-      const now = live.current;
-      const existing = boardNotesOfElements(now.activeTab.elements);
-      const result = reconcilePhoto(toPhotoNotes(detection, textById), existing, {
-        tab: now.activeTab,
-      });
-
-      if (result.additions.length === 0 && result.matches.length === 0) {
-        setState(EMPTY);
-        now.toastError(NO_NOTES_TOAST);
-        return;
-      }
-
-      // Land it. One checkpoint, then the notes go in as a tick — from here
-      // the author is inside the gesture until Add or Discard.
-      const matchedIds = new Set(result.matches.map((m) => m.boardId));
-      beforeRef.current = now.activeTab.elements;
-      now.markCheckpoint();
-      const built = buildDraftNotes(result.additions, now.activeTab);
-      now.tick((els) => [...els, ...built]);
-      now.setSelectedId(null);
-      now.setMultiSelectedIds(new Set(built.map((el) => el.id)));
-      // Bring the draft into view, together with the notes it was matched
-      // against: an import that lands off-screen reads as an import that did
-      // nothing. A little margin, and never zoomed in past life size.
-      const framed = [...built, ...existing.filter((e) => matchedIds.has(e.id))];
-      if (framed.length > 0) {
-        const minX = Math.min(...framed.map((e) => e.x));
-        const minY = Math.min(...framed.map((e) => e.y));
-        const maxX = Math.max(...framed.map((e) => e.x + e.width));
-        const maxY = Math.max(...framed.map((e) => e.y + e.height));
-        const margin = 120;
-        now.fitToBounds(
-          {
-            x: minX - margin,
-            y: minY - margin,
-            w: maxX - minX + margin * 2,
-            h: maxY - minY + margin * 2,
-          },
-          { maxZoom: 1 },
-        );
-      }
-      setPhotoDraftView({
-        matchedIds,
-        differences: new Map(
-          result.differences
-            .map((diff) => [diff.boardId, textById.get(diff.detectedId)?.text ?? ''] as const)
-            .filter(([, text]) => text !== ''),
-        ),
-        read: detection.stickies.length,
-      });
-      setState({ stage: 'draft', found: detection.stickies.length, error: null });
+      landDraft(detection, textById, false);
     },
-    [fail],
+    [fail, landDraft],
   );
 
   const accept = useCallback(() => {

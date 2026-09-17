@@ -476,6 +476,12 @@ of it lives in `rhythmSlots` and `gutterCentres` in
   overlay draws its bands from it rather than from the live board. Asserted by
   a test that drags the top-most note up three lanes and reads the origin back
   unchanged.
+- **2026-09-17 — "the reader failed, so the import should still land"**: a
+  failed READ (quota, a spike, the model gone) used to throw the whole import
+  away, even though the DETECTOR had already succeeded in the browser. Now the
+  notes land blank with a bar that says the reader could not finish and the
+  words are the author's to type; the toast still names the specific reason.
+  Detection failures still land nothing, read failures land the layout.
 - **2026-09-17 — "remove the toggle, lanes are always on"**: timeline lanes are
   not a mode. The switch, the command-palette verb, the canvas-menu verb, the
   two telemetry events and the whole field are GONE; the lane

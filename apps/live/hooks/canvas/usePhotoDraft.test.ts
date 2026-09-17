@@ -258,11 +258,23 @@ describe('landing a draft', () => {
     expect((h.drafts()[0] as StickyElement).esKind).toBe('domain-event');
   });
 
-  it('toasts the failure and lands nothing when the read fails', async () => {
-    vi.mocked(apiAiReadNotes).mockRejectedValue(new Error('ai_not_configured'));
+  it('lands the notes BLANK and says why when the read fails', async () => {
+    vi.mocked(apiAiReadNotes).mockRejectedValue(new Error('ai_quota'));
     const h = await landed();
-    expect(h.toasts[0]).toMatch(/not enabled on this deployment/i);
-    expect(h.elements()).toEqual([]);
+    // The detector's work is not thrown away: the paper is on the board.
+    expect(h.drafts()).toHaveLength(1);
+    expect((h.drafts()[0] as StickyElement).label).toBe('');
+    expect(h.toasts[0]).toMatch(/quota/i);
+    expect(getPhotoDraftView()?.readFailed).toBe(true);
+    expect(h.api().state.stage).toBe('draft');
+  });
+
+  it('still keeps the blank draft through Add after a failed read', async () => {
+    vi.mocked(apiAiReadNotes).mockRejectedValue(new Error('ai_error'));
+    const h = await landed();
+    act(() => h.api().accept());
+    expect(h.drafts()).toHaveLength(0);
+    expect(h.elements()).toHaveLength(1);
   });
 
   it('names HEIC before it ever calls the model', async () => {
