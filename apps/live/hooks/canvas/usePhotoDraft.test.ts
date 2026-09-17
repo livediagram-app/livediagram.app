@@ -150,6 +150,35 @@ async function landed(opts: Parameters<typeof harness>[0] = {}) {
 }
 
 describe('landing a draft', () => {
+  it('lands the whole selection the moment detection finishes, before any text', async () => {
+    // The words are slow; the stickies must not wait for them.
+    let releaseRead: (v: ReadNotesResponse) => void = () => {};
+    vi.mocked(apiAiReadNotes).mockImplementation(
+      () => new Promise((resolve) => { releaseRead = resolve; }),
+    );
+    const h = harness();
+    let started: Promise<void>;
+    await act(async () => {
+      started = h.api().startFromFile(file());
+      // A macrotask lets the (mocked, instant) detection settle and the
+      // preview land, while the read is still pending.
+      await new Promise((r) => setTimeout(r, 0));
+    });
+    h.rerender();
+    // Reading is still pending, yet the selection is already on the board.
+    expect(h.api().state.stage).toBe('reading');
+    expect(h.drafts()).toHaveLength(1);
+    expect((h.drafts()[0] as StickyElement).label).toBe('');
+    expect(h.api().draftOpen).toBe(true);
+    await act(async () => {
+      releaseRead(read([{ id: 0, text: 'Order placed' }]));
+      await started!;
+    });
+    h.rerender();
+    expect(h.api().state.stage).toBe('draft');
+    expect((h.drafts()[0] as StickyElement).label).toBe('Order placed');
+  });
+
   it('walks idle → reading → draft and puts the notes on the board', async () => {
     const h = await landed();
     expect(h.api().state.stage).toBe('draft');

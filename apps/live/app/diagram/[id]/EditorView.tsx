@@ -460,16 +460,20 @@ export function EditorView() {
 
         {/* A photo import awaiting Add or Discard (spec/139 Phase 8). Derived
             from the tab's own draft notes, so a reload mid-import comes back to
-            the same decision rather than to a board full of strays. */}
-        <PhotoDraftBar
-          draftCount={draftNotes.length}
-          read={draftView?.read ?? null}
-          readError={draftView?.readError}
-          matchedCount={draftView ? draftView.matchedIds.size : null}
-          busy={photoDraft.state.stage === 'committing'}
-          onAccept={photoDraft.accept}
-          onDiscard={photoDraft.discard}
-        />
+            the same decision rather than to a board full of strays. Hidden
+            while the words are still being read: that moment belongs to the
+            progress strip above. */}
+        {photoDraft.state.stage !== 'reading' ? (
+          <PhotoDraftBar
+            draftCount={draftNotes.length}
+            read={draftView?.read ?? null}
+            readError={draftView?.readError}
+            matchedCount={draftView ? draftView.matchedIds.size : null}
+            busy={photoDraft.state.stage === 'committing'}
+            onAccept={photoDraft.accept}
+            onDiscard={photoDraft.discard}
+          />
+        ) : null}
 
         {/* The one file input behind "Add from photo". Hidden, opened by the
             palette row and the command palette; `capture` makes a phone open
