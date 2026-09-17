@@ -9,7 +9,7 @@
 //
 // Custom themes (spec/44) appear as a "Custom" category when the custom
 // props are wired: its drill-in lists the owner's saved themes (apply /
-// edit / delete) plus a "+ New theme" tile that opens the builder. The
+// edit / delete) plus a "+ New colour scheme" tile that opens the builder. The
 // builder itself is owned by the host (CustomThemePicker); this browser
 // only signals "new" / "edit" via callbacks.
 //
@@ -20,10 +20,16 @@
 import { useState } from 'react';
 import type { CustomTheme } from '@livediagram/api-schema';
 import { isCustomThemeId, materialiseCustomTheme } from '@/lib/custom-theme-registry';
-import { shuffledThemes } from '@/lib/theme-order';
-import { THEMES, type ThemeCategory, type ThemeDefinition, type ThemeId } from '@/lib/themes';
+import { darkCategorySchemes, shuffledThemes } from '@/lib/theme-order';
+import {
+  getTheme,
+  THEMES,
+  type ThemeCategory,
+  type ThemeDefinition,
+  type ThemeId,
+} from '@/lib/themes';
 import { THEME_CATEGORIES, themeCategory } from '@/lib/themes-taxonomy';
-import { useUiMode } from '@/hooks/ui/useUiMode';
+import { useAppearance } from '@/hooks/ui/useAppearance';
 import { AnimatedHeightBox } from '@/components/primitives/AnimatedHeightBox';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
 import {
@@ -83,14 +89,26 @@ export function ThemeCategoryBrowser({
     return themeId !== 'brand' ? themeCategory(themeId as ThemeId) : null;
   });
   // Rotate which themes greet the user on each open, with the LEADS pinned
-  // through it (Basic for the catalogue, Charcoal for the Dark category —
+  // through it (Default leads both the catalogue and the Dark category —
   // see theme-order.ts). Shuffled once per mount via lazy useState so
   // clicking around never reshuffles it underfoot.
   const [themes] = useState(() => shuffledThemes(THEMES));
+  // Re-render this browser when the viewer's chrome changes, so the Default
+  // card's preview follows it.
+  const { appearance } = useAppearance();
   const commit = onCommit ?? onSelect;
-  const brandTheme = THEMES.find((t) => t.id === 'brand');
+  // The quick-pick card previews Default as THIS viewer sees it: light chrome
+  // shows the white canvas, dark chrome the charcoal one (spec/07). The card
+  // in the Dark category is the opposite — it always shows the dark half,
+  // because it is illustrating the scheme's place among the dark canvases.
+  const defaultScheme = getTheme('brand', appearance);
+  // Default is pulled OUT of the grouping as the quick-pick (the way Blank is
+  // for templates) — except in Dark, which it leads as its dark half, because
+  // that is the slot a reader looking for "the neutral dark one" goes to.
   const themeCategoryThemes = (category: ThemeCategory) =>
-    themes.filter((t) => t.id !== 'brand' && themeCategory(t.id) === category);
+    category === 'dark'
+      ? darkCategorySchemes(themes)
+      : themes.filter((t) => t.id !== 'brand' && themeCategory(t.id) === category);
 
   return (
     <AnimatedHeightBox viewKey={openCategory ?? 'overview'} className={className}>
@@ -143,11 +161,11 @@ export function ThemeCategoryBrowser({
         </>
       ) : (
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-          {brandTheme ? (
+          {defaultScheme ? (
             <ThemeQuickPickCard
-              theme={brandTheme}
-              label="Basic"
-              description="The plain, un-themed default."
+              theme={defaultScheme}
+              label="Default"
+              description="Follows your appearance: light or dark."
               active={themeId === 'brand'}
               onSelect={() => onSelect('brand')}
               onCommit={() => commit('brand')}
@@ -175,7 +193,7 @@ export function ThemeCategoryBrowser({
           {customEnabled ? (
             <ThemeCategoryCard
               label="Custom"
-              description="Your saved themes, plus build your own."
+              description="Your saved colour schemes, plus build your own."
               count={custom.length}
               themes={custom.map(materialiseCustomTheme)}
               selected={themeIsCustom}
@@ -189,7 +207,7 @@ export function ThemeCategoryBrowser({
 }
 
 function BackButton({ current, onClick }: { current?: string; onClick: () => void }) {
-  return <BackBar label="All themes" current={current} onClick={onClick} />;
+  return <BackBar label="All colour schemes" current={current} onClick={onClick} />;
 }
 
 // A full-width iOS-style switch prompting the user to match the editor's
@@ -199,19 +217,19 @@ function BackButton({ current, onClick }: { current?: string; onClick: () => voi
 // (and never for the colour-agnostic Custom bucket), so it reads as a
 // helpful one-tap nudge rather than a persistent control.
 function ModeSwitchRow({ category }: { category: ThemeCategory | 'custom' }) {
-  const { mode, toggle } = useUiMode();
+  const { appearance, set } = useAppearance();
   const target: 'light' | 'dark' | null =
     category === 'custom' ? null : category === 'dark' ? 'dark' : 'light';
-  if (!target || mode === target) return null;
+  if (!target || appearance === target) return null;
   const label = target === 'dark' ? 'Turn on Dark mode' : 'Turn on Light mode';
   const hint =
     target === 'dark'
-      ? 'Match the editor chrome to these dark themes.'
+      ? 'Match the editor chrome to these dark colour schemes.'
       : 'Switch the editor chrome back to light.';
   return (
     <button
       type="button"
-      onClick={toggle}
+      onClick={() => set(target)}
       className="mt-3 flex w-full items-center gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-left transition hover:border-brand-300 hover:bg-brand-50/40 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-500/60 dark:hover:bg-slate-800/80"
     >
       <span className="min-w-0 flex-1">

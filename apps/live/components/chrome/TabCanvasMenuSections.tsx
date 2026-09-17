@@ -81,7 +81,7 @@ export function TabCanvasMenuSections({
         <MenuTileGrid cols={2}>
           <MenuTile
             icon={<PaletteMenuIcon />}
-            label="Change Theme"
+            label="Change colour scheme"
             onClick={() => {
               canvas.onChangeTheme();
               onClose();
@@ -98,7 +98,7 @@ export function TabCanvasMenuSections({
         </MenuTileGrid>
       </MenuAccordionSection>
       {/* Font (spec/28): the tab's default font + the size seeded onto
-            new elements. Moved out of the Tab Appearance modal so it
+            new elements. Moved out of the Tab Look & Feel dialog so it
             sits with the other tab-appearance controls. Menu stays open
             while adjusting so several tweaks land in one visit. */}
       <MenuAccordionSection title="Font" icon={<FontMenuIcon />} {...sectionProps('font')}>

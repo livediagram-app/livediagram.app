@@ -4,34 +4,34 @@ import { helpMetadata } from '@/lib/seo';
 import { MulticolourTheme } from '@/components/illustrations/canvas';
 
 export const metadata = helpMetadata({
-  title: 'Multi-Colour Themes',
+  title: 'Multi-Colour Schemes',
   description:
-    'Tint each branch of a mind map or hierarchy a different hue with a multi-colour theme, the way a rainbow mind map does.',
+    'Tint each branch of a mind map or hierarchy a different hue with a multi-colour scheme, the way a rainbow mind map does.',
   path: '/help/canvas/themes/multicolour-themes/',
 });
 
 <ArticleLayout
-  title="Multi-Colour Themes"
-  description="Give each branch of a hierarchy its own hue with a multi-colour theme, so a mind map or org chart reads as colourful at a glance."
+  title="Multi-Colour Schemes"
+  description="Give each branch of a hierarchy its own hue with a multi-colour scheme, so a mind map or org chart reads as colourful at a glance."
   categoryTitle="Canvas"
   categorySlug="canvas"
-  parentArticle={{ title: "Themes", slug: "themes" }}
-  subArticles={getSubArticles("themes").filter((a) => a.slug !== "multicolour-themes")}
+  parentArticle={{ title: "Colour Schemes", slug: "colour schemes" }}
+  subArticles={getSubArticles("colour schemes").filter((a) => a.slug !== "multicolour-colour schemes")}
 >
 
-Most themes paint every element one colour. A multi-colour theme is different: it carries a palette of several colours and gives each branch of your diagram a different one, the way a rainbow mind map tints each main branch a distinct hue. They are perfect for mind maps, org charts, and any diagram where colour helps you tell one limb from another.
+Most colour schemes paint every element one colour. A multi-colour scheme is different: it carries a palette of several colours and gives each branch of your diagram a different one, the way a rainbow mind map tints each main branch a distinct hue. They are perfect for mind maps, org charts, and any diagram where colour helps you tell one limb from another.
 
 ## What they are
 
-A multi-colour theme holds an ordered palette of colours plus a neutral trunk colour. Branches cycle through the palette, so a diagram with more branches than colours simply repeats hues rather than running out. The backdrop, the canvas background and pattern, works exactly as it does for any other theme; only the element colours change with the branch.
+A multi-colour scheme holds an ordered palette of colours plus a neutral trunk colour. Branches cycle through the palette, so a diagram with more branches than colours simply repeats hues rather than running out. The backdrop, the canvas background and pattern, works exactly as it does for any other colour scheme; only the element colours change with the branch.
 
-livediagram ships several multi-colour themes, grouped under the picker's Multi-colour category, with feels ranging from a saturated Rainbow spectrum and a soft Pastel version to a vivid Tropical palette, a warm Autumn set, and rich Jewel tones.
+livediagram ships several multi-colour schemes, grouped under the picker's Multi-colour category, with feels ranging from a saturated Rainbow spectrum and a soft Pastel version to a vivid Tropical palette, a warm Autumn set, and rich Jewel tones.
 
 ## How a branch is decided
 
 livediagram works out the branches from your arrows. An arrow whose ends are both pinned to elements defines a parent-to-child link. The roots of the hierarchy, the centre of a mind map or the top of an org chart, take the trunk colour, and each of a root's direct children starts a fresh branch hue that flows down the whole subtree beneath it. So a top-level limb and all of its sub-topics share one colour.
 
-<Figure caption="A multi-colour theme gives the neutral root a trunk colour and tints each branch its own hue.">
+<Figure caption="A multi-colour scheme gives the neutral root a trunk colour and tints each branch its own hue.">
   <MulticolourTheme />
 </Figure>
 
@@ -39,11 +39,11 @@ Elements that no arrow touches each pick up the next colour in turn, so even a f
 
 ## Adding to a multi-colour diagram
 
-A brand-new element you drop on a multi-colour tab is not wired into the hierarchy yet, so it takes the neutral trunk colour. Once you connect it in with an arrow, re-pick the theme or use **Reset elements to theme** to re-run the branch colouring and give the new limb its proper hue. This is deliberate: livediagram does not silently re-rainbow your whole canvas every time you draw an arrow, which would fight any hand-colouring you have done.
+A brand-new element you drop on a multi-colour tab is not wired into the hierarchy yet, so it takes the neutral trunk colour. Once you connect it in with an arrow, re-pick the colour scheme or use **Reset elements to colour scheme** to re-run the branch colouring and give the new limb its proper hue. This is deliberate: livediagram does not silently re-rainbow your whole canvas every time you draw an arrow, which would fight any hand-colouring you have done.
 
 <Tip>
-  Theme cards show a row of small stripes for multi-colour themes and a single dot for single-colour
-  ones, so you can spot the rainbow themes in the picker at a glance.
+  Colour scheme cards show a row of small stripes for multi-colour schemes and a single dot for single-colour
+  ones, so you can spot the rainbow colour schemes in the picker at a glance.
 </Tip>
 
 </ArticleLayout>

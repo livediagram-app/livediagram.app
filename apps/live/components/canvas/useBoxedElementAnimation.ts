@@ -6,6 +6,7 @@ import {
   type BoxedElement,
 } from '@livediagram/diagram';
 import { isSvgRenderedShape } from '@/components/canvas/shape-svg-overlay';
+import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 
 // The looping-animation slice (spec/09), lifted out of BoxedElementView:
 // which surface each animation kind rides (the wrapper box, the rendered
@@ -14,6 +15,9 @@ import { isSvgRenderedShape } from '@/components/canvas/shape-svg-overlay';
 // keyframes read. The view mounts the returned classes / style on its
 // wrapper and label nodes.
 export function useBoxedElementAnimation(element: BoxedElement, textColor: string) {
+  // The gradient animation blends the element's fill, which falls back to the
+  // canvas's own ink when the element carries none (spec/07).
+  const surface = useCanvasSurface();
   // A standalone text element has no fill or border, so the box-shadow / ring /
   // background animations (glow / pulse / trace / gradient) would animate an
   // invisible bounding rectangle around the words. For those, ride the rendered
@@ -96,7 +100,7 @@ export function useBoxedElementAnimation(element: BoxedElement, textColor: strin
         // expose the fill (shared by the wrapper CSS gradient and the SVG
         // <stop> cycle that ShapeSvgOverlay inherits).
         ...(element.animation === 'gradient'
-          ? { '--lvd-anim-bg': element.fillColor ?? defaultFillColor(element) }
+          ? { '--lvd-anim-bg': element.fillColor ?? defaultFillColor(element, surface) }
           : {}),
         // Text-native gradient blends the element's own text colour
         // toward the accent (the box version blends the fill, which a

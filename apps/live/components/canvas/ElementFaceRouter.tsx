@@ -38,6 +38,7 @@ import { ShapeInlineIconLayout } from '@/components/canvas/shape-inline-icon-lay
 import { TableView } from '@/components/canvas/TableView';
 import { VideoView } from '@/components/canvas/VideoView';
 import type { BoxedElementViewProps } from './BoxedElementView.types';
+import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 
 // WHAT AN ELEMENT SHOWS IN PLACE OF A PLAIN LABEL.
 //
@@ -142,6 +143,8 @@ export function ElementFaceRouter({
   marker,
   iconCaptionBand,
 }: ElementFaceRouterProps) {
+  // The paper under this face, for colours the element doesn't carry (spec/07).
+  const surface = useCanvasSurface();
   // The shared settings `…` (spec/09). Every Behaviours element carries one,
   // in the same corner, opening that element's own context menu — except the
   // three that draw a richer `…` of their own, which would otherwise render a
@@ -240,7 +243,9 @@ export function ElementFaceRouter({
         <RevealFace
           label={label}
           textColor={textColor}
-          strokeColor={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element)}
+          strokeColor={
+            remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)
+          }
           revealedForAll={element.revealed === true}
           revealedForMe={!!revealedForMe}
           onToggleForMe={onToggleReveal ? () => onToggleReveal(element.id) : undefined}
@@ -297,13 +302,15 @@ export function ElementFaceRouter({
         /* Portal (spec/104): the drawn portal + its label, pressable when paired. */
         <PortalFace
           label={label || 'Portal'}
-          strokeColor={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element)}
+          strokeColor={
+            remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)
+          }
           targetName={onEnterPortal?.(element).targetName ?? null}
           onEnter={onEnterPortal?.(element).travel}
         />
       ) : element.type === 'annotation' ? (
         <AnnotationGlyph
-          stroke={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element)}
+          stroke={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)}
         />
       ) : element.type === 'video' ? (
         <VideoView element={element} />
@@ -325,8 +332,10 @@ export function ElementFaceRouter({
         <>
           <FreehandSvg
             element={element}
-            fill={element.fillColor ?? defaultFillColor(element)}
-            stroke={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element)}
+            fill={element.fillColor ?? defaultFillColor(element, surface)}
+            stroke={
+              remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)
+            }
           />
           {/* Render the label on top of the SVG path so a freehand
               can carry text the same way a shape does (the Editor

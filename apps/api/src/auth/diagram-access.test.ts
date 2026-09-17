@@ -346,6 +346,21 @@ describe('team-library access (spec/35)', () => {
     expect(allowed).toBe(false);
   });
 
+  it('grants the team diagram’s own owner access without a membership lookup', async () => {
+    // The creator of a team diagram is identified by `callerId`, not by the
+    // `owner` header the team branch ignores. Without this leg, an Admin who
+    // created a diagram and then left the team could be locked out of their
+    // own work — and every access check would pay for a membership read.
+    getMembershipMock.mockResolvedValue(null);
+    expect(
+      await canEditDiagram(FAKE_ENV, 'diag-1', null, null, 'user-1', null, 'team-1', 'user-1'),
+    ).toBe(true);
+    expect(
+      await canReadDiagram(FAKE_ENV, 'diag-1', null, null, 'user-1', null, 'team-1', 'user-1'),
+    ).toBe(true);
+    expect(getMembershipMock).not.toHaveBeenCalled();
+  });
+
   it('denies a non-member, and never consults membership when the diagram has no team', async () => {
     getMembershipMock.mockResolvedValue(null);
     expect(

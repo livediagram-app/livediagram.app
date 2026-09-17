@@ -1,7 +1,7 @@
 import { FONTS } from '@livediagram/diagram';
 import { SizeButton } from '@/components/palette/palette-controls';
 
-// Shared font picker (spec/28) used by the Tab Appearance menu's Font
+// Shared font picker (spec/28) used by the Tab Look & Feel dialog's Font
 // category. A compact 2-column grid of tiles rather than a native <select>:
 // each tile renders the font's NAME in its own typeface, so the list is a
 // genuine preview ("Caveat" looks like Caveat) instead of a row of look-alike

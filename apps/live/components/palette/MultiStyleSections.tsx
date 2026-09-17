@@ -34,6 +34,7 @@ import { ShadowSection } from '@/components/palette/ShadowSection';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import type { useContextMenuScaffold } from './useContextMenuScaffold';
 import { BorderControls } from '@/components/palette/BorderControls';
+import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 
 // The multi-selection menu's style + motion sections (spec/09), each
 // applying selection-wide with display values read off the first
@@ -85,6 +86,9 @@ export function MultiStyleSections({
 }) {
   const { sectionProps, colorProps, textColorHandlers, fillColorHandlers, strokeColorHandlers } =
     scaffold;
+  // As in the single-element menu: a swatch reads the canvas's ink for any
+  // element that carries no colour of its own (spec/07).
+  const surface = useCanvasSurface();
   // Type-aware animation sets, mirroring the single menu: a selection
   // that is ALL charts gets the slice animations, ALL icons the glyph
   // animations; anything mixed falls back to the generic boxed set
@@ -168,7 +172,7 @@ export function MultiStyleSections({
               label="Text"
               value={
                 (textSrc as { textColor?: string }).textColor ??
-                defaultTextColor(textSrc as BoxedElement)
+                defaultTextColor(textSrc as BoxedElement, surface)
               }
               {...textColorHandlers}
               {...colorProps('m-text')}
@@ -178,7 +182,7 @@ export function MultiStyleSections({
           {fillSrc ? (
             <ColourRow
               label="Background"
-              value={fillSrc.fillColor ?? defaultFillColor(fillSrc)}
+              value={fillSrc.fillColor ?? defaultFillColor(fillSrc, surface)}
               {...fillColorHandlers}
               {...colorProps('m-bg')}
               presets={props.presetColors}
@@ -187,7 +191,7 @@ export function MultiStyleSections({
           {strokeSrc ? (
             <ColourRow
               label="Border"
-              value={strokeSrc.strokeColor ?? defaultStrokeColor(strokeSrc)}
+              value={strokeSrc.strokeColor ?? defaultStrokeColor(strokeSrc, surface)}
               {...strokeColorHandlers}
               {...colorProps('m-border')}
               presets={props.presetColors}
@@ -199,7 +203,7 @@ export function MultiStyleSections({
             // above — its setter recolours the arrows too.
             <ColourRow
               label="Line"
-              value={arrowSrc.strokeColor ?? defaultArrowStrokeColor()}
+              value={arrowSrc.strokeColor ?? defaultArrowStrokeColor(surface)}
               {...strokeColorHandlers}
               {...colorProps('m-border')}
               presets={props.presetColors}
@@ -207,7 +211,7 @@ export function MultiStyleSections({
           ) : null}
           <div className="px-2 pb-1 pt-1.5">
             <MenuActionButton
-              label="Reset to theme"
+              label="Reset to colour scheme"
               onClick={() => {
                 props.onResetColors();
                 onClose();

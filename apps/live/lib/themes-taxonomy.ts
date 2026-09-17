@@ -11,7 +11,10 @@ import type { ThemeId, ThemeCategory } from './themes';
 // here and the build fails, which is how this can't drift from THEMES.
 // Custom themes have no entry (their card shows just the saved name).
 const THEME_DESCRIPTIONS: Record<ThemeId, string> = {
-  brand: 'The plain, un-themed default.',
+  // The one scheme whose blurb describes a BEHAVIOUR rather than a palette:
+  // Default is the same entry in both halves, and which you see is your own
+  // appearance (spec/07).
+  brand: 'Light or dark, following your appearance.',
   slate: 'Soft pinks on a blush canvas.',
   forest: 'Deep greens on a leafy canvas.',
   sunset: 'Warm oranges and burnt amber.',

@@ -30,7 +30,7 @@ export default defineProject({
     // Unmount rendered trees after each test. `globals: false` stops React
     // Testing Library registering its own cleanup, and a tree left mounted
     // when jsdom is torn down crashes a later file in the same worker with
-    // `window is not defined`. See the setup file.
+    // `window is not defined`. The shared setup file says why in full.
     setupFiles: ['@livediagram/vitest-config/react-cleanup'],
   },
   resolve: {

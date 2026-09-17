@@ -6,7 +6,7 @@ import { BarAndLineCharts } from '@/components/illustrations/palette-data';
 export const metadata = helpMetadata({
   title: 'Bar and Line Charts',
   description:
-    'Add a multi-series bar or line chart, built from an editable data grid or imported straight from a CSV, in your theme colours.',
+    'Add a multi-series bar or line chart, built from an editable data grid or imported straight from a CSV, in your scheme colours.',
   path: '/help/palette/tools/data-elements/bar-and-line-charts/',
 });
 
@@ -19,7 +19,7 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles('data-elements').filter((a) => a.slug !== 'bar-and-line-charts')}
 >
 
-Where a [pie chart](/help/palette/tools/data-elements/pie-chart/) shows one total split into slices, **bar and line charts** plot one or more series across categories, so they suit trends over time, comparisons, and any "value per category" data. Both are ordinary canvas elements: they drop in with sample data and recolour with the active [theme](/help/canvas/themes/).
+Where a [pie chart](/help/palette/tools/data-elements/pie-chart/) shows one total split into slices, **bar and line charts** plot one or more series across categories, so they suit trends over time, comparisons, and any "value per category" data. Both are ordinary canvas elements: they drop in with sample data and recolour with the active [colour scheme](/help/canvas/themes/).
 
 <Figure caption="A bar chart for comparing categories and a line chart for a trend across them.">
   <BarAndLineCharts />
@@ -42,7 +42,7 @@ Right-click the chart and open its **Data** menu for the full editor. There you 
 - **Edit the grid** directly: a row per category, a column per series. Add or remove rows and series as your data changes.
 - **Import a CSV** with the **Import CSV** button: the header row is the series names and the first column is the categories, so you can paste a chart straight from a spreadsheet.
 
-Each series is coloured from the theme, so multi-series charts stay legible and on-brand, and the animation freezes on export so a still image looks right.
+Each series is coloured from the colour scheme, so multi-series charts stay legible and on-brand, and the animation freezes on export so a still image looks right.
 
 <Tip>
   For a single percentage rather than a series, a [progress bar or

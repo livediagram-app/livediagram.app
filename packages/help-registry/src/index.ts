@@ -471,8 +471,8 @@ export const articles: Article[] = [
   },
   {
     slug: 'fast-theming',
-    title: 'Theme a Diagram Fast',
-    description: 'Restyle an entire diagram in seconds with themes and presets.',
+    title: 'Restyle a Diagram Fast',
+    description: 'Restyle an entire diagram in seconds with colour schemes and presets.',
     keywords: 'restyle recolour recolor colors colours presets quick style scheme',
     category: 'Tips and Tricks',
     categorySlug: 'tips-and-tricks',
@@ -1169,8 +1169,8 @@ export const articles: Article[] = [
   },
   {
     slug: 'themes',
-    title: 'Themes',
-    description: 'Restyle a whole diagram, including multi-colour and custom themes.',
+    title: 'Colour Schemes',
+    description: 'Restyle a whole diagram, including multi-colour and custom colour schemes.',
     keywords: 'color colour scheme restyle recolour recolor appearance style palette',
     category: 'Canvas',
     categorySlug: 'canvas',
@@ -1386,8 +1386,9 @@ export const articles: Article[] = [
   },
   {
     slug: 'themes-library',
-    title: 'Saved Themes',
-    description: 'Your custom themes as swatch previews, ready to edit, duplicate, or reuse.',
+    title: 'Saved Colour Schemes',
+    description:
+      'Your custom colour schemes as swatch previews, ready to edit, duplicate, or reuse.',
     keywords: 'custom themes swatches colours colors library reuse manage',
     category: 'Explorer',
     categorySlug: 'explorer',
@@ -1425,10 +1426,12 @@ export const articles: Article[] = [
     categorySlug: 'tools',
   },
   {
+    // The slug stays 'dark-mode': it is a public URL, and "dark mode" is still
+    // what a reader searches for even though the control is now three-way.
     slug: 'dark-mode',
-    title: 'Light and Dark Mode',
-    description: 'Flip the editor chrome between light and dark, separate from your diagram theme.',
-    keywords: 'night theme appearance dark light switch toggle eyes',
+    title: 'Appearance: Light, Dark, System',
+    description: 'Set the editor chrome to light, dark, or your device setting.',
+    keywords: 'night theme appearance dark light system os device switch toggle cycle eyes mode',
     category: 'Tools',
     categorySlug: 'tools',
   },
@@ -1920,11 +1923,11 @@ export const articles: Article[] = [
     parentSlug: 'text-and-fonts',
   },
 
-  // ---- Sub-articles: Themes ----
+  // ---- Sub-articles: Colour Schemes ----
   {
     slug: 'changing-theme',
-    title: 'Changing the Theme',
-    description: 'Open the theme dialog and browse themes by category.',
+    title: 'Changing the Colour Scheme',
+    description: 'Open the colour scheme dialog and browse colour schemes by category.',
     keywords: 'apply browse switch restyle colours colors dialog pick',
     category: 'Canvas',
     categorySlug: 'canvas/themes',
@@ -1932,7 +1935,7 @@ export const articles: Article[] = [
   },
   {
     slug: 'multicolour-themes',
-    title: 'Multi-Colour Themes',
+    title: 'Multi-Colour Schemes',
     description: 'Tint each branch of a hierarchy its own hue.',
     keywords: 'multicolor rainbow branch hue tint colorful colourful',
     category: 'Canvas',
@@ -1941,8 +1944,8 @@ export const articles: Article[] = [
   },
   {
     slug: 'custom-themes',
-    title: 'Custom Themes',
-    description: 'Build, save, and reuse your own themes.',
+    title: 'Custom Colour Schemes',
+    description: 'Build, save, and reuse your own colour schemes.',
     keywords: 'own colors colours personalise personalize create save brand',
     category: 'Canvas',
     categorySlug: 'canvas/themes',

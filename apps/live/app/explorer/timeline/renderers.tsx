@@ -283,7 +283,10 @@ const accountRenderer: TimelineRenderer = (event) => {
         onClick: () => window.location.assign('/explorer/tokens'),
       };
     case 'theme_deleted':
-      return { ...base, label: headline(str(event.snapshot, 'themeName') ?? 'A theme', 'deleted') };
+      return {
+        ...base,
+        label: headline(str(event.snapshot, 'themeName') ?? 'A colour scheme', 'deleted'),
+      };
     case 'folder_created':
       return {
         ...base,
@@ -297,7 +300,7 @@ const accountRenderer: TimelineRenderer = (event) => {
     case 'theme_saved':
       return {
         ...base,
-        label: headline(str(event.snapshot, 'themeName') ?? 'A theme', 'saved'),
+        label: headline(str(event.snapshot, 'themeName') ?? 'A colour scheme', 'saved'),
         onClick: () => window.location.assign('/explorer/themes'),
       };
     case 'image_uploaded': {

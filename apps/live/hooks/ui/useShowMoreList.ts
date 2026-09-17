@@ -3,7 +3,7 @@
 import { useState } from 'react';
 
 // Shared "Show more" opt-in pattern used by the template picker
-// (templates + themes) and the Tab Appearance modal's background-pattern
+// (templates + themes) and the Tab Look & Feel dialog's background-pattern
 // picker. Auto-expands when the active entry sits in the hidden
 // batch so the user always sees their current selection.
 //
