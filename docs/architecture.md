@@ -90,7 +90,7 @@ Two equivalent identity paths: an `X-Owner-Id` header (a per-browser UUID from `
 
 GitHub Actions → Cloudflare Workers. Build artefacts get uploaded once, then five workers (marketing / live / telemetry / help / api) ship in parallel; the `mcp` worker deploys after `api` (it has a service binding to it), and the router deploys last because its service bindings need the others to exist.
 
-Two environments run that same sequence, from one reusable workflow (`deploy-apps.yml`) so they cannot drift:
+Two environments run that same sequence, from one reusable workflow (`deploy-reusable.yml`) so they cannot drift:
 
 |         | Production                                 | Staging                                                |
 | ------- | ------------------------------------------ | ------------------------------------------------------ |

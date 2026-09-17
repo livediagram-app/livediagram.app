@@ -1,11 +1,12 @@
-name: Deploy
+name: Deploy Production
 
 # Production deploy. Manual only. Trigger from the Actions tab (or `gh
-# workflow run Deploy`) once CI on `main` is green and you're ready to ship.
+# workflow run deploy.yml`) once CI on `main` is green and you're ready to
+# ship.
 # It is intentionally NOT chained to CI — a green build no longer deploys on
 # its own. Staging is the one that deploys automatically (spec/140).
 #
-# The steps live in `deploy-apps.yml`, which staging calls too, so the two
+# The steps live in `deploy-reusable.yml`, which staging calls too, so the two
 # environments cannot drift apart. This file is only the trigger and the
 # production-shaped inputs.
 on:
@@ -23,7 +24,7 @@ concurrency:
 jobs:
   deploy:
     name: Production
-    uses: ./.github/workflows/deploy-apps.yml
+    uses: ./.github/workflows/deploy-reusable.yml
     with:
       # Empty: the top-level wrangler.toml config, unsuffixed worker names,
       # the production D1 / R2 / KV.
