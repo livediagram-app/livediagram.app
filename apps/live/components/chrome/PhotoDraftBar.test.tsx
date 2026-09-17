@@ -16,14 +16,20 @@ describe('PhotoDraftBar', () => {
   });
 
   it('says the reader failed and the words are the author’s to type', () => {
-    render(<PhotoDraftBar {...base} draftCount={4} read={4} readFailed matchedCount={0} />);
+    render(
+      <PhotoDraftBar {...base} draftCount={4} read={4} readError="ai_quota" matchedCount={0} />,
+    );
     expect(
-      screen.getByText(/4 found · the reader could not finish · type the words in yourself/),
+      screen.getByText(
+        /4 found · the model key has used up its quota · type the words in yourself/,
+      ),
     ).toBeTruthy();
   });
 
   it('still offers Add and Discard after a failed read', () => {
-    render(<PhotoDraftBar {...base} draftCount={2} read={2} readFailed matchedCount={0} />);
+    render(
+      <PhotoDraftBar {...base} draftCount={2} read={2} readError="ai_error" matchedCount={0} />,
+    );
     expect(screen.getByRole('button', { name: /^Add 2 notes$/ })).toBeTruthy();
     expect(screen.getByRole('button', { name: /^Discard$/ })).toBeTruthy();
   });

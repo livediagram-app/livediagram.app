@@ -459,7 +459,7 @@ export function EditorView() {
         <PhotoDraftBar
           draftCount={draftNotes.length}
           read={draftView?.read ?? null}
-          readFailed={draftView?.readFailed ?? false}
+          readError={draftView?.readError}
           matchedCount={draftView ? draftView.matchedIds.size : null}
           busy={photoDraft.state.stage === 'committing'}
           onAccept={photoDraft.accept}

@@ -265,7 +265,7 @@ describe('landing a draft', () => {
     expect(h.drafts()).toHaveLength(1);
     expect((h.drafts()[0] as StickyElement).label).toBe('');
     expect(h.toasts[0]).toMatch(/quota/i);
-    expect(getPhotoDraftView()?.readFailed).toBe(true);
+    expect(getPhotoDraftView()?.readError).toBe('ai_quota');
     expect(h.api().state.stage).toBe('draft');
   });
 

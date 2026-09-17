@@ -479,9 +479,11 @@ of it lives in `rhythmSlots` and `gutterCentres` in
 - **2026-09-17 — "the reader failed, so the import should still land"**: a
   failed READ (quota, a spike, the model gone) used to throw the whole import
   away, even though the DETECTOR had already succeeded in the browser. Now the
-  notes land blank with a bar that says the reader could not finish and the
-  words are the author's to type; the toast still names the specific reason.
-  Detection failures still land nothing, read failures land the layout.
+  notes land blank, the toast names the specific reason, and the bar itself
+  says WHY (“the model key has used up its quota”, “the model is busy right
+  now”, …) followed by “type the words in yourself” — because a generic
+  “could not finish” tells the author nothing about whether retrying will
+  help. Detection failures still land nothing, read failures land the layout.
 - **2026-09-17 — "remove the toggle, lanes are always on"**: timeline lanes are
   not a mode. The switch, the command-palette verb, the canvas-menu verb, the
   two telemetry events and the whole field are GONE; the lane

@@ -11,10 +11,21 @@
 // Bottom-centre, in the modifier-hint banner's visual language: it is the same
 // kind of thing, a transient strip that says what is going on right now.
 
+// What each reader failure MEANS, in the bar's own voice: short enough for the
+// line, specific enough that the author knows whether retrying will help.
+const READ_ERROR_LINES: Record<string, string> = {
+  ai_quota: 'the model key has used up its quota',
+  rate_limited: 'the model is busy right now',
+  ai_error: 'the reader could not finish',
+  sign_in_required: 'sign in to read the photo',
+  origin_not_allowed: 'reading is not available from here',
+  ai_not_configured: 'reading is not enabled on this deployment',
+};
+
 export function PhotoDraftBar({
   draftCount,
   read,
-  readFailed = false,
+  readError,
   matchedCount,
   busy,
   onAccept,
@@ -24,17 +35,18 @@ export function PhotoDraftBar({
   // What the photo read in total, when this session is the one that read it.
   // Null after a reload: the notes survived, the tally did not.
   read: number | null;
-  // The reader failed but the detector landed the notes blank: say so and tell
-  // the author what to do with them, rather than pretending the photo was read.
-  readFailed?: boolean;
+  // The failure token when the reader could not finish but the notes landed
+  // blank. The bar names the CAUSE, not just the fact: the author deserves to
+  // know whether retrying will help, and the toast is gone in a blink.
+  readError?: string;
   matchedCount: number | null;
   busy: boolean;
   onAccept: () => void;
   onDiscard: () => void;
 }) {
   if (draftCount === 0) return null;
-  const line = readFailed
-    ? `${read} found · the reader could not finish · type the words in yourself`
+  const line = readError
+    ? `${read} found · ${READ_ERROR_LINES[readError] ?? READ_ERROR_LINES.ai_error} · type the words in yourself`
     : read !== null && matchedCount !== null
       ? `${read} read · ${draftCount} new · ${matchedCount} already on the board`
       : `${draftCount} ${draftCount === 1 ? 'note' : 'notes'} from a photo, not added yet`;

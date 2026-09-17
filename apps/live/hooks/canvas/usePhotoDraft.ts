@@ -155,7 +155,7 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
     (
       detection: PhotoDetection,
       textById: Map<number, { text: string; legible: boolean }>,
-      readFailed: boolean,
+      readError: string | null,
     ) => {
       const now = live.current;
       const existing = boardNotesOfElements(now.activeTab.elements);
@@ -206,7 +206,7 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
             .filter(([, text]) => text !== ''),
         ),
         read: detection.stickies.length,
-        readFailed,
+        ...(readError ? { readError } : {}),
       });
       setState({ stage: 'draft', found: detection.stickies.length, error: null });
     },
@@ -247,7 +247,8 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
       }
       setState({ stage: 'reading', found: detection.stickies.length, error: null });
 
-      let textById = new Map<number, { text: string; legible: boolean }>();
+      // Assigned in the try before any read; the catch returns early.
+      let textById: Map<number, { text: string; legible: boolean }>;
       try {
         const answer = await apiAiReadNotes(d.ownerId, detection.crops, {
           signal: controller.signal,
@@ -264,7 +265,7 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
         // notes blank and say why, so the layout is never thrown away just
         // because the model could not read the words.
         const token = err instanceof Error ? err.message : 'ai_error';
-        landDraft(detection, new Map(), true);
+        landDraft(detection, new Map(), token);
         live.current.toastError(ERROR_TOASTS[token] ?? ERROR_TOASTS.ai_error!);
         return;
       } finally {
@@ -274,7 +275,7 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
 
       // Reconcile against the board as it is NOW, not as it was when the photo
       // was picked: reading takes seconds, and a peer edits in seconds.
-      landDraft(detection, textById, false);
+      landDraft(detection, textById, null);
     },
     [fail, landDraft],
   );
