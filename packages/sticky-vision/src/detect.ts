@@ -1,7 +1,7 @@
 import { EVENT_STORMING_NOTES, type EventStormingNoteKind } from '@livediagram/diagram';
 import { classifyRgb, wallFloorsOf, type PaperFloors } from './classify';
 import { greyWorldBalance, type ImageBuffer } from './colour';
-import { labelComponents, type ComponentMask } from './components';
+import { closePaperMask, labelComponents, type ComponentMask } from './components';
 import { fitBoxes, medianNoteSize, silhouetteOf } from './boxes';
 import { clusterRows } from './rows';
 
@@ -72,7 +72,10 @@ export function classMaskOf(image: ImageBuffer, floors?: PaperFloors): Component
 export function detectStickies(image: ImageBuffer, opts: DetectOptions = {}): DetectedSticky[] {
   const working = opts.balance === true ? greyWorldBalance(image) : image;
   const mask = classMaskOf(working);
-  const boxes = fitBoxes(labelComponents(mask), {
+  // Fuse handwriting-shattered notes back into whole notes before labeling
+  // (spec/139 Phase 9): a morphological close by ~a pen stroke, per class.
+  const closed = closePaperMask(mask);
+  const boxes = fitBoxes(labelComponents(closed), {
     imageSize: Math.max(working.width, working.height),
   });
   if (boxes.length === 0) return [];

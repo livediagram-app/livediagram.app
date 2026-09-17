@@ -159,6 +159,19 @@ describe('detectStickies', () => {
     expect(found[0]!.confidence).toBeLessThan(1);
   });
 
+  it('keeps a note shattered by REAL handwriting as one note (morphological close)', () => {
+    // A working-size photo and a real note. Six marker strokes, 8px wide, wider
+    // than the 6px merge gap at 1000px: without a morphological close the
+    // fragments never re-join and the note is lost to the too-thin/aspect filters.
+    const image = blank(1000, 750);
+    rect(image, 100, 100, 200, 200, fillOf('command'));
+    // Strokes spanning the FULL width cut the note into separate fragments.
+    for (const y of [150, 180, 210, 240, 270]) rect(image, 100, y, 200, 8, '#111827');
+    const found = detectStickies(image);
+    expect(found).toHaveLength(1);
+    expect(found[0]!.kind).toBe('command');
+  });
+
   it('splits two overlapping notes of the SAME colour into two', () => {
     const image = blank(300, 160);
     const orange = fillOf('domain-event');
