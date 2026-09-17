@@ -28,6 +28,7 @@ import { BorderControls } from '@/components/palette/BorderControls';
 import { ShadowSection } from '@/components/palette/ShadowSection';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import type { useContextMenuScaffold } from './useContextMenuScaffold';
+import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 
 type Scaffold = ReturnType<typeof useContextMenuScaffold>;
 
@@ -58,6 +59,11 @@ export function ElementColourBorderSections({
   fillColorHandlers: Scaffold['fillColorHandlers'];
   strokeColorHandlers: Scaffold['strokeColorHandlers'];
 }) {
+  // A swatch shows the colour the element is ACTUALLY drawn in, so an element
+  // that carries no colour of its own must read the canvas's ink here too
+  // (spec/07) — otherwise the menu offers a light-canvas blue beside a grey
+  // shape.
+  const surface = useCanvasSurface();
   const borderStrokeVal: BorderStroke =
     (target as { strokeWidth?: BorderStroke }).strokeWidth ??
     (target.type === 'table' ? 'thin' : 'medium');
@@ -80,14 +86,14 @@ export function ElementColourBorderSections({
         >
           <ColourRow
             label="Line"
-            value={target.strokeColor ?? defaultArrowStrokeColor()}
+            value={target.strokeColor ?? defaultArrowStrokeColor(surface)}
             {...strokeColorHandlers}
             {...colorProps('border')}
             presets={props.presetColors}
           />
           <div className="px-2 pb-1 pt-1.5">
             <MenuActionButton
-              label="Reset to theme"
+              label="Reset to colour scheme"
               onClick={() => {
                 props.onResetColors();
                 onClose();
@@ -107,7 +113,7 @@ export function ElementColourBorderSections({
               label="Text"
               value={
                 (target as { textColor?: string }).textColor ??
-                defaultTextColor(target as BoxedElement)
+                defaultTextColor(target as BoxedElement, surface)
               }
               {...textColorHandlers}
               {...colorProps('text')}
@@ -118,7 +124,7 @@ export function ElementColourBorderSections({
                 label="Background"
                 value={
                   (target as { fillColor?: string }).fillColor ??
-                  defaultFillColor(target as BoxedElement)
+                  defaultFillColor(target as BoxedElement, surface)
                 }
                 {...fillColorHandlers}
                 {...colorProps('background')}
@@ -135,7 +141,7 @@ export function ElementColourBorderSections({
                 label={isIcon ? 'Icon' : 'Border'}
                 value={
                   (target as { strokeColor?: string }).strokeColor ??
-                  defaultStrokeColor(target as BoxedElement)
+                  defaultStrokeColor(target as BoxedElement, surface)
                 }
                 {...strokeColorHandlers}
                 {...colorProps('border')}
@@ -144,7 +150,7 @@ export function ElementColourBorderSections({
             ) : null}
             <div className="px-2 pb-1 pt-1.5">
               <MenuActionButton
-                label="Reset to theme"
+                label="Reset to colour scheme"
                 onClick={() => {
                   props.onResetColors();
                   onClose();

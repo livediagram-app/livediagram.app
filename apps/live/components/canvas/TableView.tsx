@@ -27,6 +27,7 @@ import { useTableEditing } from '@/components/canvas/useTableEditing';
 import { useTableCellInput } from '@/components/canvas/useTableCellInput';
 import { useTableAxisResize } from '@/components/canvas/useTableAxisResize';
 import { useTableCellSelection } from '@/components/canvas/useTableCellSelection';
+import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 
 // Build a CSS grid-template track list: an explicit `Npx` for each pinned
 // size, `minmax(0, 1fr)` for the rest, so unpinned tracks share the
@@ -84,6 +85,9 @@ export function TableView({
   // every other toolbar, instead of ballooning / shrinking with the table.
   zoom: number;
 }) {
+  // The paper under the grid, for the rules and text a table doesn't colour
+  // itself (spec/07).
+  const surface = useCanvasSurface();
   const rows = element.cells.length;
   const cols = element.cells[0]?.length ?? 0;
   // Counter-scale factor so floating chrome stays a fixed on-screen size
@@ -204,8 +208,8 @@ export function TableView({
     typeToEditRef.current = false;
   }, [editing]);
 
-  const stroke = element.strokeColor ?? defaultStrokeColor(element);
-  const textColor = element.textColor ?? defaultTextColor(element);
+  const stroke = element.strokeColor ?? defaultStrokeColor(element, surface);
+  const textColor = element.textColor ?? defaultTextColor(element, surface);
   // Grid line width + pattern from the Border accordion (default thin
   // solid). 'none' (0px) hides the grid lines entirely.
   const borderW = BORDER_STROKE_PX[element.strokeWidth ?? 'thin'];

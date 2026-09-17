@@ -6,9 +6,12 @@
 import { isLightColor, shade, tint, type Tab } from '@livediagram/diagram';
 import { getTheme } from './themes';
 
-// Themes without a stroke override (e.g. brand) fall through to this palette
-// default so the bar still reads.
-const DEFAULT_TAB_ACCENT = 'rgb(2 132 199)';
+// A colour scheme that paints no stroke — Default, and any unthemed tab —
+// falls through to this palette accent so the bar still reads. Written as
+// #rrggbb on purpose: that is the only notation `legibleColor` parses, and
+// while this was `rgb(2 132 199)` the most common accent in the app was the
+// one accent the legibility rule silently skipped.
+const DEFAULT_TAB_ACCENT = '#0284c7'; // brand-600
 
 // The theme's element stroke, or the palette default when the theme sets none.
 function tabAccent(tab: Tab): string {

@@ -215,7 +215,7 @@ export function ArrowStyleIcon({ style }: { style: ArrowStyle }) {
   );
 }
 
-// Small circular-arrow glyph used by the "Reset elements to theme"
+// Small circular-arrow glyph used by the "Reset elements to colour scheme"
 // button under the Theme accordion. 12×12 inside a 14×14 box.
 export function ResetIcon() {
   return (
@@ -514,7 +514,7 @@ export function EraserIcon() {
   );
 }
 
-// The bottom-dock "Theme & Canvas" button (spec/42): a paintbrush on the
+// The bottom-dock "Colour scheme & canvas" button (spec/42): a paintbrush on the
 // 20-unit dock grid (matching LayersStackIcon's stroke weight) that opens
 // the CanvasThemeDialog. Distinct from FormatPainterIcon below (the
 // element-to-element format tool): this one styles the whole tab.

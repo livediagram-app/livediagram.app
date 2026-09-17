@@ -3,7 +3,7 @@
 import { describeOne } from '@/lib/element-names';
 import { DEFAULT_BUTTON_MODE } from '@livediagram/diagram';
 import { useMemo } from 'react';
-import { DEFAULT_BACKGROUND_COLOR, DEFAULT_PATTERN_COLOR, isVoteHost } from '@livediagram/diagram';
+import { isVoteHost } from '@livediagram/diagram';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
 import { participantKey } from '@/lib/identity';
 import { resolveOwnerBadge } from '@/lib/presence-rows';
@@ -11,7 +11,8 @@ import { usePreferenceHandlers } from '@/hooks/ui/usePreferenceHandlers';
 import { useQuickConnectStart } from '@/hooks/canvas/useQuickConnectStart';
 import { useEditModeContextMenu } from '@/hooks/canvas/useEditModeContextMenu';
 import { track } from '@/lib/telemetry';
-import { getTheme, themeChartPalette, type ThemeId } from '@/lib/themes';
+import { getTheme, resolveTabBackdrop, themeChartPalette, type ThemeId } from '@/lib/themes';
+import { useAppearance } from '@/hooks/ui/useAppearance';
 import { Canvas } from '@/components/canvas/Canvas';
 import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
 
@@ -326,6 +327,13 @@ export function EditorCanvasHost() {
   // re-render on every drag frame just because the editor re-rendered.
   // Both recompute only when their real inputs change, not per frame.
   const explorerTeams = useMemo(() => teams.map((t) => ({ id: t.id, name: t.name })), [teams]);
+  // The canvas paints the backdrop the VIEWER resolves, not blindly the one
+  // the tab stores: a tab on the Default colour scheme follows this browser's
+  // appearance (spec/07). Subscribing to the appearance here is what makes the
+  // canvas repaint when it changes — resolveTabBackdrop would otherwise read a
+  // module store nothing re-renders for.
+  const { appearance } = useAppearance();
+  const backdrop = resolveTabBackdrop(activeTab, appearance);
   const activeTabChangeLog = useMemo(
     () => changeLog.filter((entry) => entry.tabId === activeId),
     [changeLog, activeId],
@@ -384,12 +392,12 @@ export function EditorCanvasHost() {
       })}
       isOwner={isOwner}
       diagramName={diagramName}
-      tabBackgroundPattern={activeTab.backgroundPattern ?? 'grid'}
-      tabBackgroundColor={activeTab.backgroundColor ?? DEFAULT_BACKGROUND_COLOR}
-      tabBackgroundOpacity={activeTab.backgroundOpacity ?? 1}
+      tabBackgroundPattern={backdrop.backgroundPattern ?? 'grid'}
+      tabBackgroundColor={backdrop.backgroundColor}
+      tabBackgroundOpacity={backdrop.backgroundOpacity ?? 1}
       tabBackgroundPatternScale={activeTab.backgroundPatternScale ?? 1}
       tabBackgroundAnimationSpeed={activeTab.backgroundAnimationSpeed ?? 1}
-      tabPatternColor={activeTab.patternColor ?? DEFAULT_PATTERN_COLOR}
+      tabPatternColor={backdrop.patternColor}
       tabFont={activeTab.font}
       mainRef={canvasMainRef}
       isPinchingRef={isPinchingRef}

@@ -3,7 +3,9 @@
 import { truncateName } from '@livediagram/diagram';
 import { track } from '@/lib/telemetry';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
-import { getTheme } from '@/lib/themes';
+import { canvasSurface } from '@livediagram/diagram';
+import { getTheme, resolveTabBackdrop } from '@/lib/themes';
+import { CanvasSurfaceProvider } from '@/components/canvas/CanvasSurfaceContext';
 import { EditorCanvasHost } from '@/components/canvas/EditorCanvasHost';
 import { PresentationHost } from '@/components/canvas/PresentationHost';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
@@ -26,6 +28,7 @@ import { useDismissibleBanner } from '@/hooks/ui/useDismissibleBanner';
 import { useIsOfflineDiagram } from '@/hooks/persistence/useIsOfflineDiagram';
 import { useDelayedReveal } from '@/hooks/ui/useDelayedReveal';
 import { useEditorAccent } from '@/hooks/ui/useEditorAccent';
+import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useEditorContext } from './EditorContext';
 
 // How long a guest edits before the sign-in nudge appears (spec/36).
@@ -135,6 +138,9 @@ export function EditorView() {
   // Retarget the brand-* accent (buttons, rings, focus) to the active tab's
   // theme so the editor chrome matches the diagram (spec/42).
   useEditorAccent(activeTab.theme);
+  // The viewer's own light / dark chrome (spec/07). Read here because the
+  // Default colour scheme resolves through it — see the canvas surface below.
+  const { appearance } = useAppearance();
   // Guest sign-in nudge (spec/36): the same banner the Explorer shows,
   // but on the editor it waits ~5 minutes into the session before
   // appearing so it never interrupts someone the moment they open a
@@ -160,6 +166,7 @@ export function EditorView() {
     activeTab.elements.length === 0;
   // The primary selection's flavour for the modifier hint's no-drag messages.
   const shiftSelected = selectedId ? activeTab.elements.find((el) => el.id === selectedId) : null;
+  const backdrop = resolveTabBackdrop(activeTab, appearance);
   const shiftSelectedKind = !shiftSelected
     ? null
     : shiftSelected.type === 'arrow'
@@ -169,263 +176,270 @@ export function EditorView() {
         : ('other' as const);
 
   return (
-    <div className="flex h-dvh flex-col">
-      {/* Arrow click-to-connect hint (spec/09): shown while the gesture
+    // Which paper the canvas is, for every element that carries no colour of
+    // its own (spec/07). Read HERE, above both the canvas and the element
+    // menus, so a swatch in a menu can't disagree with the shape it describes.
+    // Subscribing to the appearance is what re-renders this on a mode switch:
+    // a Default tab's paper is the viewer's, not the tab's.
+    <CanvasSurfaceProvider surface={canvasSurface(backdrop.backgroundColor)}>
+      <div className="flex h-dvh flex-col">
+        {/* Arrow click-to-connect hint (spec/09): shown while the gesture
           is armed so the user knows the next shape click connects, and
           gives a click target to cancel (clicking empty canvas also
           cancels). */}
-      {connectSourceId !== null ? (
-        <div className="pointer-events-none fixed inset-x-0 top-16 z-[var(--z-modal)] flex justify-center">
-          <button
-            type="button"
-            onClick={cancelConnect}
-            className="pointer-events-auto flex items-center gap-2 rounded-full border border-brand-300 bg-brand-50 px-3 py-1.5 text-xs font-medium text-brand-700 shadow-sm transition hover:bg-brand-100 dark:border-brand-500/40 dark:bg-brand-500/15 dark:text-brand-200"
-          >
-            Click a shape to connect the arrow
-            <span className="text-brand-300" aria-hidden>
-              |
-            </span>
-            <span className="text-brand-500 dark:text-brand-300">Cancel</span>
-          </button>
-        </div>
-      ) : null}
-      {/* Zen / focus mode (spec/26) hides the header entirely so the
+        {connectSourceId !== null ? (
+          <div className="pointer-events-none fixed inset-x-0 top-16 z-[var(--z-modal)] flex justify-center">
+            <button
+              type="button"
+              onClick={cancelConnect}
+              className="pointer-events-auto flex items-center gap-2 rounded-full border border-brand-300 bg-brand-50 px-3 py-1.5 text-xs font-medium text-brand-700 shadow-sm transition hover:bg-brand-100 dark:border-brand-500/40 dark:bg-brand-500/15 dark:text-brand-200"
+            >
+              Click a shape to connect the arrow
+              <span className="text-brand-300" aria-hidden>
+                |
+              </span>
+              <span className="text-brand-500 dark:text-brand-300">Cancel</span>
+            </button>
+          </div>
+        ) : null}
+        {/* Zen / focus mode (spec/26) hides the header entirely so the
           canvas gets the full height. Embeds (spec/33) never show it. */}
-      {zenMode || embedMode ? null : (
-        <EditorHeader
-          diagramName={diagramName}
-          hideTitle={anyWelcomeOpen}
-          showShare={isOwner && hydrated && !anyWelcomeOpen}
-          shareable={diagramShareable}
-          teamDiagram={!!diagramTeamId}
-          offline={isOffline}
-          // Visitors see "Make a copy" instead of "Share": same slot,
-          // different action. Hidden during the welcome flow so the
-          // first-paint chrome stays minimal, and during hydration so
-          // we don't render the button before we know whether the user
-          // is the owner.
-          onMakeCopy={!isOwner && hydrated && !anyWelcomeOpen && diagramId ? makeCopy : undefined}
-          copying={copying}
-          readOnly={isReadOnly}
-          renameNonce={renameDiagramNonce}
-          brandAccent={getTheme(activeTab.theme).elementStroke ?? undefined}
-          onOpenShare={() => {
-            setShareDialogOpen(true);
-            track('UI', 'Opened', 'Share');
-          }}
-          onRename={(next) => {
-            const prev = diagramName.trim();
-            // spec/91: capped here so the header rename can't outrun the
-            // limit the auto-namer and the Explorer renames both respect.
-            const nextTrim = truncateName(next);
-            setDiagramName(nextTrim);
-            // Keep the Explorer panel's row for THIS diagram in sync —
-            // autosave persists the name, but the in-memory list would
-            // otherwise show the old name until a reload re-fetched it.
-            if (nextTrim && diagramId)
-              setDiagramList((prev) =>
-                prev.map((d) => (d.id === diagramId ? { ...d, name: nextTrim } : d)),
-              );
-            if (nextTrim && nextTrim !== prev) track('Diagram', 'Renamed');
-          }}
-        />
-      )}
-      <EditorTabDialogs />
-      <EditorCanvasHost />
-      {/* Presenting (spec/31) renders over everything and takes the keyboard.
+        {zenMode || embedMode ? null : (
+          <EditorHeader
+            diagramName={diagramName}
+            hideTitle={anyWelcomeOpen}
+            showShare={isOwner && hydrated && !anyWelcomeOpen}
+            shareable={diagramShareable}
+            teamDiagram={!!diagramTeamId}
+            offline={isOffline}
+            // Visitors see "Make a copy" instead of "Share": same slot,
+            // different action. Hidden during the welcome flow so the
+            // first-paint chrome stays minimal, and during hydration so
+            // we don't render the button before we know whether the user
+            // is the owner.
+            onMakeCopy={!isOwner && hydrated && !anyWelcomeOpen && diagramId ? makeCopy : undefined}
+            copying={copying}
+            readOnly={isReadOnly}
+            renameNonce={renameDiagramNonce}
+            brandAccent={getTheme(activeTab.theme).elementStroke ?? undefined}
+            onOpenShare={() => {
+              setShareDialogOpen(true);
+              track('UI', 'Opened', 'Share');
+            }}
+            onRename={(next) => {
+              const prev = diagramName.trim();
+              // spec/91: capped here so the header rename can't outrun the
+              // limit the auto-namer and the Explorer renames both respect.
+              const nextTrim = truncateName(next);
+              setDiagramName(nextTrim);
+              // Keep the Explorer panel's row for THIS diagram in sync —
+              // autosave persists the name, but the in-memory list would
+              // otherwise show the old name until a reload re-fetched it.
+              if (nextTrim && diagramId)
+                setDiagramList((prev) =>
+                  prev.map((d) => (d.id === diagramId ? { ...d, name: nextTrim } : d)),
+                );
+              if (nextTrim && nextTrim !== prev) track('Diagram', 'Renamed');
+            }}
+          />
+        )}
+        <EditorTabDialogs />
+        <EditorCanvasHost />
+        {/* Presenting (spec/31) renders over everything and takes the keyboard.
           Nothing at all when no deck is running. */}
-      <PresentationHost />
-      {embedMode ? (
-        // Embed chrome (spec/33): the link-out badge + a minimal tab
-        // switcher replace the full TabBar. Same selection clears as
-        // the TabBar's onSelect so element state never leaks across a
-        // tab switch.
-        <EmbedChrome
-          tabs={tabs}
-          activeId={activeId}
-          shareCode={sessionShareCode}
-          onSelectTab={(id) => {
-            setActiveId(id);
-            setSelectedId(null);
-            setMultiSelectedIds(new Set());
-            setEditingId(null);
-            setFormatSourceId(null);
-            setGroupSourceId(null);
-          }}
-        />
-      ) : null}
-      {anyWelcomeOpen || zenMode || embedMode ? null : (
-        <TabBar
-          tabs={tabs}
-          activeId={activeId}
-          // Follow-me (spec/131): clicking a peer's avatar in the presence
-          // stack pins your view to theirs.
-          followingId={followMe.followingId}
-          onFollow={followMe.startFollowing}
-          onStopFollowing={followMe.stopFollowing}
-          onMoveTabToFolder={moveTabToFolder}
-          onRemoveTabFromFolder={removeTabFromFolder}
-          onRenameFolder={renameTabFolder}
-          activeTabHasContent={activeTab.elements.length > 0}
-          onSelect={(id) => {
-            setActiveId(id);
-            setSelectedId(null);
-            setMultiSelectedIds(new Set());
-            setEditingId(null);
-            setFormatSourceId(null);
-            setGroupSourceId(null);
-          }}
-          onAdd={addTab}
-          onRename={renameTab}
-          onDuplicate={duplicateTab}
-          onDelete={deleteTab}
-          onClearContent={clearTabContent}
-          onImportTab={() => setImportOpen(true)}
-          onExportTab={() => {
-            setExportScope('tab');
-            setExportOpen(true);
-          }}
-          timer={activeTab.timer ?? null}
-          vote={activeTab.vote ?? null}
-          onStartTimer={startTimer}
-          onPauseTimer={pauseTimer}
-          onResumeTimer={resumeTimer}
-          onResetTimer={resetTimer}
-          onClearTimer={clearTimer}
-          onStartVote={startVote}
-          onEndVote={endVote}
-          onRevealVote={revealVote}
-          onClearVote={clearVote}
-          livePoll={livePoll.poll}
-          // A poll only exists inside the realtime room (spec/88), so there
-          // is nobody to ask on a diagram that isn't shared or on a team.
-          pollConnected={diagramShareable || !!diagramTeamId}
-          onStartPoll={livePoll.startPoll}
-          voteLayers={layers}
-          activeLayerId={activeLayerId}
-          otherDiagrams={
-            // Tab linking is a server-side row insert (spec/17), so neither an
-            // offline diagram's tabs nor an offline destination can take part
-            // (spec/76) — empty list disables the menu entry.
-            isOffline
-              ? []
-              : diagramList.filter((d) => d.id !== diagramId && d.ownerId !== OFFLINE_OWNER_ID)
-          }
-          onCopyTabTo={linkActiveTabTo}
-          onToggleLockTab={toggleActiveTabLock}
-          onReorder={reorderTabs}
-          readOnly={isReadOnly}
-          renameActiveNonce={renameTabNonce}
-          participantsByTab={participantsByTab}
-          selfId={selfParticipant.id}
-          selfRole={sessionRole}
-          onOpenShortcuts={() => {
-            setShortcutsOpen(true);
-            track('UI', 'Opened', 'Shortcuts');
-          }}
-          onOpenSettings={() => {
-            // Preferences are user-scoped, not diagram-scoped, so
-            // view-role visitors can still flip them for their own
-            // browser (e.g. opt out of telemetry).
-            setSettingsOpen(true);
-            track('UI', 'Opened', 'Settings');
-          }}
-          onOpenSearch={() => {
-            setSearchOpen(true);
-            // Element search walks local tab state; pull every
-            // not-yet-visited tab's content so matches cover the
-            // whole diagram (spec/09 "Search panel"). Best-effort
-            // and fire-and-forget: results refresh as tabs land.
-            void loadAllTabs();
-          }}
-          // Canvas right-click (desktop) + long-press (touch) open the active
-          // tab's menu with the canvas sections folded in, rendered by the
-          // TabBar so it reuses every tab handler. Element / multi context
-          // menus stay on EditorContextMenu below.
-          canvasMenu={contextMenu?.mode === 'canvas' ? contextMenu : null}
-          onCloseCanvasMenu={closeContextMenu}
-          canvasActions={{
-            onChangeTheme: () => {
-              setCanvasThemeTab('theme');
-              track('UI', 'Opened', 'ThemePicker');
-            },
-            onChangeCanvas: () => {
-              setCanvasThemeTab('canvas');
-              track('UI', 'Opened', 'CanvasStyle');
-            },
-            onAutoAlign: autoAlignTab,
-            onAutoLayout: autoLayoutTab,
-            font: activeTab.font ?? null,
-            onApplyFontToAll: applyTabFontToAll,
-            // Paste straight from the empty-canvas right-click (spec/09).
-            onPaste: pasteFromClipboard,
-            canPaste: hasClipboard,
-            onSetFont: setTabFont,
-            defaultTextSize: activeTab.defaultTextSize,
-            onSetDefaultTextSize: setTabDefaultTextSize,
-          }}
-        />
-      )}
-      <EditorSearchPanel />
-      {/* Live poll (spec/88). The prompt is shown to EVERY participant
+        <PresentationHost />
+        {embedMode ? (
+          // Embed chrome (spec/33): the link-out badge + a minimal tab
+          // switcher replace the full TabBar. Same selection clears as
+          // the TabBar's onSelect so element state never leaks across a
+          // tab switch.
+          <EmbedChrome
+            tabs={tabs}
+            activeId={activeId}
+            shareCode={sessionShareCode}
+            onSelectTab={(id) => {
+              setActiveId(id);
+              setSelectedId(null);
+              setMultiSelectedIds(new Set());
+              setEditingId(null);
+              setFormatSourceId(null);
+              setGroupSourceId(null);
+            }}
+          />
+        ) : null}
+        {anyWelcomeOpen || zenMode || embedMode ? null : (
+          <TabBar
+            tabs={tabs}
+            activeId={activeId}
+            // Follow-me (spec/131): clicking a peer's avatar in the presence
+            // stack pins your view to theirs.
+            followingId={followMe.followingId}
+            onFollow={followMe.startFollowing}
+            onStopFollowing={followMe.stopFollowing}
+            onMoveTabToFolder={moveTabToFolder}
+            onRemoveTabFromFolder={removeTabFromFolder}
+            onRenameFolder={renameTabFolder}
+            activeTabHasContent={activeTab.elements.length > 0}
+            onSelect={(id) => {
+              setActiveId(id);
+              setSelectedId(null);
+              setMultiSelectedIds(new Set());
+              setEditingId(null);
+              setFormatSourceId(null);
+              setGroupSourceId(null);
+            }}
+            onAdd={addTab}
+            onRename={renameTab}
+            onDuplicate={duplicateTab}
+            onDelete={deleteTab}
+            onClearContent={clearTabContent}
+            onImportTab={() => setImportOpen(true)}
+            onExportTab={() => {
+              setExportScope('tab');
+              setExportOpen(true);
+            }}
+            timer={activeTab.timer ?? null}
+            vote={activeTab.vote ?? null}
+            onStartTimer={startTimer}
+            onPauseTimer={pauseTimer}
+            onResumeTimer={resumeTimer}
+            onResetTimer={resetTimer}
+            onClearTimer={clearTimer}
+            onStartVote={startVote}
+            onEndVote={endVote}
+            onRevealVote={revealVote}
+            onClearVote={clearVote}
+            livePoll={livePoll.poll}
+            // A poll only exists inside the realtime room (spec/88), so there
+            // is nobody to ask on a diagram that isn't shared or on a team.
+            pollConnected={diagramShareable || !!diagramTeamId}
+            onStartPoll={livePoll.startPoll}
+            voteLayers={layers}
+            activeLayerId={activeLayerId}
+            otherDiagrams={
+              // Tab linking is a server-side row insert (spec/17), so neither an
+              // offline diagram's tabs nor an offline destination can take part
+              // (spec/76) — empty list disables the menu entry.
+              isOffline
+                ? []
+                : diagramList.filter((d) => d.id !== diagramId && d.ownerId !== OFFLINE_OWNER_ID)
+            }
+            onCopyTabTo={linkActiveTabTo}
+            onToggleLockTab={toggleActiveTabLock}
+            onReorder={reorderTabs}
+            readOnly={isReadOnly}
+            renameActiveNonce={renameTabNonce}
+            participantsByTab={participantsByTab}
+            selfId={selfParticipant.id}
+            selfRole={sessionRole}
+            onOpenShortcuts={() => {
+              setShortcutsOpen(true);
+              track('UI', 'Opened', 'Shortcuts');
+            }}
+            onOpenSettings={() => {
+              // Preferences are user-scoped, not diagram-scoped, so
+              // view-role visitors can still flip them for their own
+              // browser (e.g. opt out of telemetry).
+              setSettingsOpen(true);
+              track('UI', 'Opened', 'Settings');
+            }}
+            onOpenSearch={() => {
+              setSearchOpen(true);
+              // Element search walks local tab state; pull every
+              // not-yet-visited tab's content so matches cover the
+              // whole diagram (spec/09 "Search panel"). Best-effort
+              // and fire-and-forget: results refresh as tabs land.
+              void loadAllTabs();
+            }}
+            // Canvas right-click (desktop) + long-press (touch) open the active
+            // tab's menu with the canvas sections folded in, rendered by the
+            // TabBar so it reuses every tab handler. Element / multi context
+            // menus stay on EditorContextMenu below.
+            canvasMenu={contextMenu?.mode === 'canvas' ? contextMenu : null}
+            onCloseCanvasMenu={closeContextMenu}
+            canvasActions={{
+              onChangeTheme: () => {
+                setCanvasThemeTab('theme');
+                track('UI', 'Opened', 'ThemePicker');
+              },
+              onChangeCanvas: () => {
+                setCanvasThemeTab('canvas');
+                track('UI', 'Opened', 'CanvasStyle');
+              },
+              onAutoAlign: autoAlignTab,
+              onAutoLayout: autoLayoutTab,
+              font: activeTab.font ?? null,
+              onApplyFontToAll: applyTabFontToAll,
+              // Paste straight from the empty-canvas right-click (spec/09).
+              onPaste: pasteFromClipboard,
+              canPaste: hasClipboard,
+              onSetFont: setTabFont,
+              defaultTextSize: activeTab.defaultTextSize,
+              onSetDefaultTextSize: setTabDefaultTextSize,
+            }}
+          />
+        )}
+        <EditorSearchPanel />
+        {/* Live poll (spec/88). The prompt is shown to EVERY participant
           including view-role; the results panel unlocks once you've
           responded (or if you're the host). Both vanish with the poll —
           nothing here is persisted. */}
-      <PollPromptDialog
-        // Keyed on the poll so a second poll starts with a clean free-text
-        // box rather than inheriting the first one's half-typed answer.
-        key={livePoll.poll?.id ?? 'no-poll'}
-        poll={livePoll.poll && !livePoll.myAnswer ? livePoll.poll : null}
-        onAnswer={livePoll.answerPoll}
-      />
-      <EditorModals />
-      <EditorAnchoredPopovers />
-      <EditorContextMenuHost />
-      <EditorElementDialogs />
-      {/* Interactive editor tour (spec/79): renders nothing unless the /new
-          wizard's "Show me around" handoff flag is pending. */}
-      <TourHost />
-
-      {/* Guest sign-in nudge (spec/36), delayed ~5 min. Lifted above
-          the 48px tab bar (pb-16) and over the canvas chrome (z-[var(--z-overlay)]). */}
-      {showSignInBanner ? (
-        <SignInBanner
-          onDismiss={dismissSignIn}
-          placementClassName="bottom-0 z-[var(--z-overlay)] pb-16"
+        <PollPromptDialog
+          // Keyed on the poll so a second poll starts with a clean free-text
+          // box rather than inheriting the first one's half-typed answer.
+          key={livePoll.poll?.id ?? 'no-poll'}
+          poll={livePoll.poll && !livePoll.myAnswer ? livePoll.poll : null}
+          onAnswer={livePoll.answerPoll}
         />
-      ) : null}
-      {/* Empty-canvas hint (spec/14) — replaces the old centre-of-canvas card
+        <EditorModals />
+        <EditorAnchoredPopovers />
+        <EditorContextMenuHost />
+        <EditorElementDialogs />
+        {/* Interactive editor tour (spec/79): renders nothing unless the /new
+          wizard's "Show me around" handoff flag is pending. */}
+        <TourHost />
+
+        {/* Guest sign-in nudge (spec/36), delayed ~5 min. Lifted above
+          the 48px tab bar (pb-16) and over the canvas chrome (z-[var(--z-overlay)]). */}
+        {showSignInBanner ? (
+          <SignInBanner
+            onDismiss={dismissSignIn}
+            placementClassName="bottom-0 z-[var(--z-overlay)] pb-16"
+          />
+        ) : null}
+        {/* Empty-canvas hint (spec/14) — replaces the old centre-of-canvas card
           with a subdued, dismissible bottom banner so a blank diagram reads as
           intentionally blank. */}
-      {showEmptyCanvasBanner ? (
-        <EmptyCanvasBanner
-          tabName={activeTab.name}
-          readOnly={isReadOnly}
-          onQuickStart={openTemplatePicker}
-        />
-      ) : null}
-      {/* Offer to match the editor chrome to the active tab's theme
+        {showEmptyCanvasBanner ? (
+          <EmptyCanvasBanner
+            tabName={activeTab.name}
+            readOnly={isReadOnly}
+            onQuickStart={openTemplatePicker}
+          />
+        ) : null}
+        {/* Offer to match the editor chrome to the active tab's theme
           (dark theme -> dark mode, light theme -> light mode). Hidden in
           zen / embed like the other floating prompts, and yields the
           bottom-centre slot to the sign-in / empty-canvas banners. */}
-      {zenMode || embedMode || showSignInBanner || showEmptyCanvasBanner ? null : (
-        <ThemeModeBanner themeId={activeTab.theme} />
-      )}
-      {/* Modifier hint (spec/09, spec/139): names what holding Shift does
+        {zenMode || embedMode || showSignInBanner || showEmptyCanvasBanner ? null : (
+          <ThemeModeBanner themeId={activeTab.theme} />
+        )}
+        {/* Modifier hint (spec/09, spec/139): names what holding Shift does
           right now, and offers the Alt insert-between gesture while a note is
           on the move. Suppressed while a mode banner owns the top slot. */}
-      <ModifierHintBanner
-        drag={drag}
-        esBoard={esBoard}
-        selectedKind={shiftSelectedKind}
-        hasElements={activeTab.elements.length > 0}
-        suppressed={
-          canvasTool === 'format' ||
-          formatSourceId !== null ||
-          groupSourceId !== null ||
-          pendingDraw !== null
-        }
-      />
-    </div>
+        <ModifierHintBanner
+          drag={drag}
+          esBoard={esBoard}
+          selectedKind={shiftSelectedKind}
+          hasElements={activeTab.elements.length > 0}
+          suppressed={
+            canvasTool === 'format' ||
+            formatSourceId !== null ||
+            groupSourceId !== null ||
+            pendingDraw !== null
+          }
+        />
+      </div>
+    </CanvasSurfaceProvider>
   );
 }

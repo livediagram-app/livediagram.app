@@ -2,11 +2,11 @@
 
 // The theme picker with custom-theme support (spec/44): the built-in
 // ThemeCategoryBrowser plus a "Custom" category (wired through the browser)
-// whose drill-in lists the owner's saved themes and a "+ New theme" tile.
+// whose drill-in lists the owner's saved themes and a "+ New colour scheme" tile.
 // This component owns the builder: picking New / Edit swaps the whole
 // picker for the CustomThemeBuilder with a Cancel back to browsing.
 //
-// Shared by the right-click Tab Appearance dialog (spec/42) and the
+// Shared by the right-click Tab Look & Feel dialog (spec/42) and the
 // New-diagram / template picker (spec/14) so the two surfaces, and the
 // custom-theme create/edit flow, can't drift. Selection is reported via
 // onSelect / onCommit; the host decides what that means: apply live (the
@@ -29,7 +29,7 @@ export function CustomThemePicker({
   // its own surface). Hidden while the builder is open.
   info,
   // Optional trailing content under the browser (e.g. the dialog's
-  // "Reset elements to theme" action). Hidden while the builder is open.
+  // "Reset elements to colour scheme" action). Hidden while the builder is open.
   footer,
   // Notifies the host when the builder opens / closes, so a host with its
   // own chrome (the new-diagram wizard's Back / Create footer) can hide it
@@ -91,7 +91,7 @@ export function CustomThemePicker({
     if (
       await confirm({
         title: `Delete "${theme?.name ?? 'theme'}"?`,
-        message: 'Diagrams using it fall back to the default theme. This cannot be undone.',
+        message: 'Diagrams using it fall back to the Default colour scheme. This cannot be undone.',
         confirmLabel: 'Delete',
         variant: 'danger',
       })
@@ -111,7 +111,7 @@ export function CustomThemePicker({
         // so the user doesn't lose their work, and surface why — closing
         // silently here is what read as "Save did nothing".
         if (!created) {
-          setSaveError("Couldn't save the theme. Check your connection and try again.");
+          setSaveError("Couldn't save the colour scheme. Check your connection and try again.");
           return;
         }
         // Select it so returning to the browse lands on the Custom

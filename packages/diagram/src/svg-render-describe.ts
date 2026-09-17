@@ -11,6 +11,7 @@ import {
   defaultStrokeColor,
   defaultTextAlign,
   defaultTextColor,
+  type CanvasSurface,
 } from './colors';
 import { eventStormingLabelText, eventStormingNoteFont } from './event-storming';
 import { fontIdsUsed, resolveFontStack } from './fonts';
@@ -87,6 +88,10 @@ export type BoxedExportOptions = {
   resolveIconArt?: ResolveIconArt;
   resolveStickerArt?: ResolveStickerArt;
   tabFont?: string;
+  // The paper the export is being drawn on, for elements that carry no
+  // colours of their own (spec/07). Defaults to light, so a caller that
+  // doesn't say gets exactly the output it always got.
+  surface?: CanvasSurface;
 };
 
 // The face a label paints in: the author's own choice, else the notation's
@@ -110,6 +115,7 @@ export function exportFontIds(
 }
 
 export function describeBoxedExport(el: BoxedElement, opts: BoxedExportOptions = {}): BoxedExport {
+  const surface = opts.surface ?? 'light';
   const { resolveImageHref, resolveIconArt, resolveStickerArt } = opts;
   const fontFamily = exportFontFamily(el, opts.tabFont);
   const opacity = el.opacity ?? 1;
@@ -151,10 +157,11 @@ export function describeBoxedExport(el: BoxedElement, opts: BoxedExportOptions =
   if (stickerArt) {
     return { opacity, shape: { kind: 'sticker', art: stickerArt }, label: null };
   }
-  const fill = el.fillColor ?? defaultFillColor(el);
+  const fill = el.fillColor ?? defaultFillColor(el, surface);
   // A sticky is borderless paper unless the user deliberately set a border
   // colour (matching the canvas, spec/09 "Sticky notes read as paper").
-  const stroke = el.strokeColor ?? (el.type === 'sticky' ? 'none' : defaultStrokeColor(el));
+  const stroke =
+    el.strokeColor ?? (el.type === 'sticky' ? 'none' : defaultStrokeColor(el, surface));
   // Icon elements (spec/09 "Icons" line art + spec/41 Technology marks): when
   // a caller supplies the glyph resolver AND the id resolves, export the real
   // art with the caption in the bottom band (mirroring IconGlyph /
@@ -202,7 +209,7 @@ export function describeBoxedExport(el: BoxedElement, opts: BoxedExportOptions =
             // Wraps at the caption band, so a long side caption breaks at
             // its half of the box instead of running under the glyph.
             maxWidth: Math.max(24, band.width - 16),
-            color: el.textColor ?? defaultTextColor(el),
+            color: el.textColor ?? defaultTextColor(el, surface),
             size,
             bold: !!el.textBold,
             italic: !!el.textItalic,
@@ -219,7 +226,7 @@ export function describeBoxedExport(el: BoxedElement, opts: BoxedExportOptions =
         : el.type === 'text'
           ? { kind: 'none' }
           : { kind: 'rect', fill, stroke };
-  const baseColor = el.textColor ?? defaultTextColor(el);
+  const baseColor = el.textColor ?? defaultTextColor(el, surface);
   const baseSize = fontSizeFor(el.textSize);
   const richText = (el as { richText?: TextRun[] }).richText;
   const runs: ExportRun[] | undefined = hasRichFormatting(richText)

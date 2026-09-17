@@ -10,8 +10,8 @@ import {
   type ShapeKind,
 } from './index';
 import { rederiveColorPresetForTheme } from './theme-presets';
-import { THEMES } from './themes-data';
-export { THEMES };
+import { DEFAULT_SCHEME_DARK, DEFAULT_SCHEME_LIGHT, LEGACY_THEMES, THEMES } from './themes-data';
+export { THEMES, LEGACY_THEMES, DEFAULT_SCHEME_LIGHT, DEFAULT_SCHEME_DARK };
 
 // A preset theme bundles a canvas backdrop (background colour + pattern +
 // pattern colour) with the default colours used for newly added boxed
@@ -126,12 +126,72 @@ export type ThemeDefinition = {
 // THEME_CATEGORIES order and skips empties.
 export type ThemeCategory = 'cool' | 'warm' | 'dark' | 'multicolour' | 'formal';
 
-// Resolve an id to a BUILT-IN ThemeDefinition (the catalogue), falling back to
-// the default. Custom (per-owner) themes are NOT resolved here — that needs the
-// live app's registry; apps/live/lib/themes.ts wraps this with custom-theme
-// resolution as `getTheme`. The MCP worker uses this directly (built-ins only).
-export function getBuiltInTheme(id: string | undefined): ThemeDefinition {
-  return THEMES.find((t) => t.id === id) ?? THEMES[0]!;
+// Which chrome a viewer is looking at (spec/07). The Default colour scheme is
+// the only one that reads it: every other scheme paints the same colours for
+// everybody, because those colours are stored in the diagram.
+export type Appearance = 'light' | 'dark';
+
+// The id of the Default colour scheme. Stays 'brand' — it is the value saved
+// diagrams carry, not a label.
+export const DEFAULT_SCHEME_ID = 'brand';
+
+/** The Default scheme as the given appearance paints it. */
+export function defaultScheme(appearance: Appearance = 'light'): ThemeDefinition {
+  return appearance === 'dark' ? DEFAULT_SCHEME_DARK : DEFAULT_SCHEME_LIGHT;
+}
+
+/** The colours a scheme paints the canvas with (its backdrop, minus the layout). */
+export function schemeBackdrop(scheme: ThemeDefinition): {
+  backgroundColor: string;
+  patternColor: string;
+} {
+  return { backgroundColor: scheme.backgroundColor, patternColor: scheme.patternColor };
+}
+
+// Is this canvas still one the DEFAULT scheme painted — either half of it —
+// rather than one somebody chose? Both halves count, because a tab saved by a
+// viewer in dark chrome carries the dark half and is no less untouched for it.
+// Both colours must match: a hand-picked pattern colour on an otherwise default
+// canvas is still a choice, and a choice outranks the viewer's chrome.
+export function isDefaultSchemeBackdrop(backdrop: {
+  backgroundColor: string;
+  patternColor: string;
+}): boolean {
+  return [DEFAULT_SCHEME_LIGHT, DEFAULT_SCHEME_DARK].some(
+    (half) =>
+      half.backgroundColor === backdrop.backgroundColor &&
+      half.patternColor === backdrop.patternColor,
+  );
+}
+
+// The backdrops a scheme could have painted. One for every scheme except
+// Default, which has a light and a dark half — and the preserve-customs rules
+// have to accept BOTH as "still on the scheme", or a tab saved in one
+// appearance looks hand-coloured to a viewer in the other and freezes.
+function backdropVariants(scheme: ThemeDefinition): ThemeDefinition[] {
+  return scheme.id === DEFAULT_SCHEME_ID ? [DEFAULT_SCHEME_LIGHT, DEFAULT_SCHEME_DARK] : [scheme];
+}
+
+// Resolve an id to a BUILT-IN ThemeDefinition, falling back to Default. Looks
+// through the offered catalogue and then the legacy schemes (ids that are no
+// longer listed but still resolve, so old diagrams keep their look).
+//
+// `appearance` only ever changes the answer for Default, which has a light and
+// a dark half; it defaults to light so pure callers with no viewer to ask
+// (exports, the MCP worker, tests) land somewhere predictable. Custom
+// (per-owner) themes are NOT resolved here — that needs the live app's
+// registry; apps/live/lib/themes.ts wraps this as `getTheme`, which also
+// supplies the current viewer's appearance.
+export function getBuiltInTheme(
+  id: string | undefined,
+  appearance: Appearance = 'light',
+): ThemeDefinition {
+  if (id === undefined || id === DEFAULT_SCHEME_ID) return defaultScheme(appearance);
+  return (
+    THEMES.find((t) => t.id === id) ??
+    LEGACY_THEMES.find((t) => t.id === id) ??
+    defaultScheme(appearance)
+  );
 }
 
 // Which element-colour fields each element type writes from a theme.
@@ -296,25 +356,26 @@ export function switchThemeBackdrop(
   prev: ThemeDefinition,
   next: ThemeDefinition,
 ): Required<TabBackdrop> {
+  // "Still on the previous scheme" means unset, or equal to what that scheme
+  // paints — in any of its appearances (see backdropVariants).
+  const wasOnScheme = <K extends 'backgroundColor' | 'backgroundPattern' | 'patternColor'>(
+    field: K,
+  ): boolean =>
+    current[field] === undefined ||
+    backdropVariants(prev).some((half) => current[field] === half[field]);
   // Pattern opacity follows the same preserve-customs rule, treating an
   // unset theme opacity as fully opaque (1).
   const prevOpacity = prev.backgroundOpacity ?? 1;
   const nextOpacity = next.backgroundOpacity ?? 1;
   const currentOpacity = current.backgroundOpacity ?? 1;
   return {
-    backgroundColor:
-      current.backgroundColor === undefined || current.backgroundColor === prev.backgroundColor
-        ? next.backgroundColor
-        : current.backgroundColor,
-    backgroundPattern:
-      current.backgroundPattern === undefined ||
-      current.backgroundPattern === prev.backgroundPattern
-        ? next.backgroundPattern
-        : current.backgroundPattern,
-    patternColor:
-      current.patternColor === undefined || current.patternColor === prev.patternColor
-        ? next.patternColor
-        : current.patternColor,
+    backgroundColor: wasOnScheme('backgroundColor')
+      ? next.backgroundColor
+      : current.backgroundColor!,
+    backgroundPattern: wasOnScheme('backgroundPattern')
+      ? next.backgroundPattern
+      : current.backgroundPattern!,
+    patternColor: wasOnScheme('patternColor') ? next.patternColor : current.patternColor!,
     backgroundOpacity: currentOpacity === prevOpacity ? nextOpacity : currentOpacity,
   };
 }

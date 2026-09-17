@@ -34,6 +34,7 @@ import { ReactionBurst } from '@/components/canvas/ReactionBurst';
 import { ChairView } from '@/components/canvas/collab/ChairView';
 import { isCssNativeBorderStyle } from '@/components/canvas/border-css';
 import { describeVariant } from '@/components/canvas/element-variant';
+import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { BadgeStrip, RemoteSelectorsStrip } from '@/components/canvas/element-badges';
 import { AnnotationHoverNote } from '@/components/canvas/AnnotationMarker';
 import { useBoxedElementGestures } from '@/components/canvas/useBoxedElementGestures';
@@ -131,6 +132,10 @@ function BoxedElementViewImpl({
   readOnly,
   fontFamily,
 }: BoxedElementViewProps) {
+  // Which paper this element sits on, for every colour it doesn't carry
+  // itself (spec/07): a Default tab stores no element colours at all, so on
+  // a dark canvas this is where the greys come from.
+  const surface = useCanvasSurface();
   const isLocked = element.locked === true || tabLocked;
   // Concurrent-selection lock (spec/07): another participant has this
   // element selected (remoteSelectors already excludes our own
@@ -162,7 +167,7 @@ function BoxedElementViewImpl({
   // renders in today's skin, text included, so the two halves can't disagree.
   const textColor = isLegacyModeButtonSkin(element)
     ? MODE_BUTTON_SKIN.text
-    : (element.textColor ?? defaultTextColor(element));
+    : (element.textColor ?? defaultTextColor(element, surface));
 
   // Annotation marker (spec/38): a fixed-size note circle. Hovering it
   // floats its note above everything; clicking it (handled in the drag
@@ -223,8 +228,8 @@ function BoxedElementViewImpl({
   // stars): a remote selector colour wins, else the element's own stroke, else
   // the theme default stroke. Shared by the ProgressView / RailView / RatingView
   // branches below so they all read the same accent.
-  const accent = remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element);
-  const variant = describeVariant(element, isSelected, isMultiSelected, remoteBorderColor);
+  const accent = remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface);
+  const variant = describeVariant(element, isSelected, isMultiSelected, remoteBorderColor, surface);
 
   // A comment pin (spec/136) shows its own count on its face, so the generic
   // badge is suppressed: the pin IS the badge, and two counts on one 40px
@@ -414,7 +419,7 @@ function BoxedElementViewImpl({
           shape={element.shape}
           width={element.width}
           height={element.height}
-          stroke={element.strokeColor ?? defaultStrokeColor(element)}
+          stroke={element.strokeColor ?? defaultStrokeColor(element, surface)}
           strokeWidth={BORDER_STROKE_PX[element.strokeWidth ?? DEFAULT_BORDER_STROKE]}
           dasharray={BORDER_DASH_ARRAY[element.strokeStyle ?? DEFAULT_BORDER_STYLE] ?? ''}
           radiusPx={element.borderRadius !== undefined ? BORDER_RADIUS_PX[element.borderRadius] : 8}
@@ -432,7 +437,7 @@ function BoxedElementViewImpl({
       {/* A Lane's title gutter (spec/119), behind the label. */}
       {element.type === 'shape' && element.shape === 'lane' ? (
         <LaneGutter
-          stroke={element.strokeColor ?? defaultStrokeColor(element)}
+          stroke={element.strokeColor ?? defaultStrokeColor(element, surface)}
           alignX={alignX}
           alignY={alignY}
         />
@@ -443,7 +448,7 @@ function BoxedElementViewImpl({
           width={element.width}
           height={element.height}
           fill={element.fillColor ?? '#ffffff'}
-          stroke={element.strokeColor ?? defaultStrokeColor(element)}
+          stroke={element.strokeColor ?? defaultStrokeColor(element, surface)}
         />
       ) : null}
       {/* Browser-only HTML chrome overlay. SVG handles only the
@@ -453,7 +458,7 @@ function BoxedElementViewImpl({
           ratio. */}
       {element.type === 'shape' && element.shape === 'browser' ? (
         <BrowserChrome
-          stroke={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element)}
+          stroke={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)}
           zoom={zoom}
         />
       ) : null}

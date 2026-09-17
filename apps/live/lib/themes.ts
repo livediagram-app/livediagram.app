@@ -6,14 +6,23 @@
 // consumers are unchanged — every symbol they imported is still exported here.
 import {
   getBuiltInTheme,
+  defaultScheme,
+  LEGACY_THEMES,
   THEMES,
   DEFAULT_BACKGROUND_COLOR,
   DEFAULT_PATTERN_COLOR,
+  DEFAULT_SCHEME_ID,
   deriveShapeColours,
   deriveTextColorForBg,
+  isDefaultSchemeBackdrop,
+  schemeBackdrop,
+  type Appearance,
+  type BackgroundPattern,
   type BoxedElement,
+  type Tab,
   type ThemeDefinition,
 } from '@livediagram/diagram';
+import { getResolvedAppearance } from '@/hooks/ui/appearance-store';
 import { lookupCustomTheme } from './custom-theme-registry';
 
 // Pass through the shared engine so `@/lib/themes` stays the editor's theme API.
@@ -44,12 +53,19 @@ export type {
 // fetch hasn't landed yet. Callers that must DISTINGUISH "unknown" from "the
 // default theme" (setTheme's preserve-customs diff) branch on undefined; callers
 // that always need something (getTheme) fall back to the default.
-export function resolveTheme(id: string | undefined): ThemeDefinition | undefined {
+export function resolveTheme(
+  id: string | undefined,
+  appearance: Appearance = getResolvedAppearance(),
+): ThemeDefinition | undefined {
   if (id) {
     const custom = lookupCustomTheme(id);
     if (custom) return custom;
   }
-  return THEMES.find((t) => t.id === id);
+  if (!id) return undefined;
+  // Default is the one scheme with two halves; `defaultScheme` picks the
+  // viewer's. Everything else is stored colour and reads the same for everyone.
+  if (id === DEFAULT_SCHEME_ID) return defaultScheme(appearance);
+  return THEMES.find((t) => t.id === id) ?? LEGACY_THEMES.find((t) => t.id === id);
 }
 
 // Custom themes (spec/44) win: the editor registers the owner's saved themes
@@ -58,8 +74,50 @@ export function resolveTheme(id: string | undefined): ThemeDefinition | undefine
 // when the id isn't a registered custom theme — including a deleted one, so a
 // diagram never breaks. The MCP worker, which has no registry, uses
 // getBuiltInTheme directly instead.
-export function getTheme(id: string | undefined): ThemeDefinition {
-  return resolveTheme(id) ?? getBuiltInTheme(id);
+// `appearance` defaults to the CURRENT VIEWER's (the module-level appearance
+// store, no React needed), so every one of the ~120 existing callers gets the
+// right half of Default without passing anything. Callers rendering for
+// someone else — an export, a thumbnail, a preview card pinned to one half —
+// pass it explicitly.
+export function getTheme(
+  id: string | undefined,
+  appearance: Appearance = getResolvedAppearance(),
+): ThemeDefinition {
+  return resolveTheme(id, appearance) ?? getBuiltInTheme(id, appearance);
+}
+
+// The backdrop a tab actually PAINTS, which is not always the backdrop it
+// stores. A tab on the Default scheme whose canvas is still the scheme's own
+// (nobody has hand-picked a colour) follows the viewer's appearance instead:
+// white grid in light chrome, charcoal grid in dark. Nothing is written back —
+// the diagram keeps whichever half was current when the scheme was applied,
+// and every other viewer resolves it to their own.
+//
+// Only the two COLOURS swap. The pattern, its opacity and its scale are layout
+// choices, identical in both appearances, so they pass straight through.
+export type ResolvedBackdrop = {
+  backgroundColor: string;
+  patternColor: string;
+  backgroundPattern: BackgroundPattern | undefined;
+  backgroundOpacity: number | undefined;
+};
+
+export function resolveTabBackdrop(
+  tab: Pick<
+    Tab,
+    'theme' | 'backgroundColor' | 'backgroundPattern' | 'patternColor' | 'backgroundOpacity'
+  >,
+  appearance: Appearance = getResolvedAppearance(),
+): ResolvedBackdrop {
+  const stored = {
+    backgroundColor: tab.backgroundColor ?? DEFAULT_BACKGROUND_COLOR,
+    patternColor: tab.patternColor ?? DEFAULT_PATTERN_COLOR,
+    backgroundPattern: tab.backgroundPattern,
+    backgroundOpacity: tab.backgroundOpacity,
+  };
+  const onDefault = tab.theme === undefined || tab.theme === DEFAULT_SCHEME_ID;
+  if (!onDefault || !isDefaultSchemeBackdrop(stored)) return stored;
+  return { ...stored, ...schemeBackdrop(getBuiltInTheme(DEFAULT_SCHEME_ID, appearance)) };
 }
 
 // Colour projection for a NEWLY-added boxed element, given the active tab's
@@ -79,6 +137,18 @@ export function deriveNewBoxedColours(
   const colours: { fillColor?: string; strokeColor?: string; textColor?: string } = {};
   const bg = tab.backgroundColor ?? DEFAULT_BACKGROUND_COLOR;
   const patternColor = tab.patternColor ?? DEFAULT_PATTERN_COLOR;
+  // The Default scheme paints nothing onto an element, in either appearance:
+  // its whole trick is that an element carries no colour, so it can read as
+  // dark ink to one viewer and light ink to another (spec/07). Deriving from
+  // the dark half's canvas here would bake one viewer's chrome into the
+  // diagram for everybody. A canvas the USER coloured still derives normally —
+  // that is their choice, and it is stored.
+  if (
+    (tab.theme === undefined || tab.theme === DEFAULT_SCHEME_ID) &&
+    isDefaultSchemeBackdrop({ backgroundColor: bg, patternColor })
+  ) {
+    return colours;
+  }
   // A page (spec/100) is paper, not a node in the diagram's colour scheme.
   // Tinting it with the backdrop-derived shape colours is what stopped it
   // reading as a page at all, so it keeps the fill / stroke createShape gave

@@ -1,7 +1,7 @@
 'use client';
 
 // A floating bottom-centre prompt offering to match the editor's UI mode
-// (light / dark chrome, useUiMode / spec/07) to the ACTIVE TAB'S THEME:
+// (light / dark chrome, useAppearance / spec/07) to the ACTIVE TAB'S THEME:
 // viewing a dark-backdrop theme in light mode offers dark, and a
 // light-backdrop theme in dark mode offers light. Only appears on a
 // mismatch; dismissible. The "is this theme dark?" test reads the
@@ -16,10 +16,10 @@
 import { useState } from 'react';
 import { isLightColor } from '@livediagram/diagram';
 import { getTheme } from '@/lib/themes';
-import { useUiMode } from '@/hooks/ui/useUiMode';
+import { useAppearance } from '@/hooks/ui/useAppearance';
 
 export function ThemeModeBanner({ themeId }: { themeId: string | undefined }) {
-  const { mode, toggle } = useUiMode();
+  const { appearance, set } = useAppearance();
   // The mismatch this banner was dismissed for. Keyed by theme + target
   // so dismissing it for one tab doesn't suppress it forever: switch to a
   // differently-themed tab (a new mismatch) and it offers again.
@@ -29,10 +29,12 @@ export function ThemeModeBanner({ themeId }: { themeId: string | undefined }) {
     ? 'light'
     : 'dark';
   const key = `${themeId ?? ''}:${target}`;
-  if (mode === target || dismissedKey === key) return null;
+  if (appearance === target || dismissedKey === key) return null;
 
   const toDark = target === 'dark';
-  const title = toDark ? 'This tab uses a dark theme' : 'This tab uses a light theme';
+  const title = toDark
+    ? 'This tab uses a dark colour scheme'
+    : 'This tab uses a light colour scheme';
   const sub = toDark
     ? 'Switch the editor to dark mode to match.'
     : 'Switch the editor to light mode to match.';
@@ -46,7 +48,7 @@ export function ThemeModeBanner({ themeId }: { themeId: string | undefined }) {
         </div>
         <button
           type="button"
-          onClick={toggle}
+          onClick={() => set(target)}
           aria-label={toDark ? 'Switch to dark mode' : 'Switch to light mode'}
           className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-500 text-white shadow-sm transition hover:bg-brand-600"
         >
