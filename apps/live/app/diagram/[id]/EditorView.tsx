@@ -24,6 +24,7 @@ import { EditorSearchPanel } from '@/components/panels/EditorSearchPanel';
 import { ThemeModeBanner } from '@/components/chrome/ThemeModeBanner';
 import { ModifierHintBanner } from '@/components/chrome/ModifierHintBanner';
 import { PhotoDraftBar } from '@/components/chrome/PhotoDraftBar';
+import { PhotoImportProgress } from '@/components/chrome/PhotoImportProgress';
 import { PHOTO_ACCEPT_ATTR } from '@/lib/photo-detect';
 import { usePhotoDraftView } from '@/lib/photo-draft-preview';
 import { draftNotesOf } from '@livediagram/diagram';
@@ -452,6 +453,10 @@ export function EditorView() {
             pendingDraw !== null
           }
         />
+
+        {/* What a photo import is doing BEFORE the draft lands: a progress
+            strip from the moment the file is picked, with Cancel. */}
+        <PhotoImportProgress state={photoDraft.state} onCancel={photoDraft.cancelReading} />
 
         {/* A photo import awaiting Add or Discard (spec/139 Phase 8). Derived
             from the tab's own draft notes, so a reload mid-import comes back to

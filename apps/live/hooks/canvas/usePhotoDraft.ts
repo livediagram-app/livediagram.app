@@ -49,11 +49,13 @@ export type PhotoDraftState = {
   stage: PhotoDraftStage;
   // How many stickies the detector found, for the progress line.
   found: number;
+  // How many crops the reader has finished, for the progress bar.
+  readSoFar: number;
   // The last failure's token, for the toast. Cleared by the next attempt.
   error: string | null;
 };
 
-const EMPTY: PhotoDraftState = { stage: 'idle', found: 0, error: null };
+const EMPTY: PhotoDraftState = { stage: 'idle', found: 0, readSoFar: 0, error: null };
 
 // The detector measured the geometry and the kind; the model read the words.
 // Putting the two together is the only place they meet.
@@ -208,7 +210,7 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
         read: detection.stickies.length,
         ...(readError ? { readError } : {}),
       });
-      setState({ stage: 'draft', found: detection.stickies.length, error: null });
+      setState({ stage: 'draft', found: detection.stickies.length, readSoFar: detection.stickies.length, error: null });
     },
     [],
   );
@@ -220,7 +222,7 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
       if (d.createBlocked || draftNotesOf(d.activeTab.elements).length > 0) return;
       const run = (runRef.current += 1);
       const current = () => runRef.current === run;
-      setState({ stage: 'detecting', found: 0, error: null });
+      setState({ stage: 'detecting', found: 0, readSoFar: 0, error: null });
 
       const controller = new AbortController();
       abortRef.current = controller;
@@ -245,13 +247,17 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
         live.current.toastError(NO_NOTES_TOAST);
         return;
       }
-      setState({ stage: 'reading', found: detection.stickies.length, error: null });
+      setState({ stage: 'reading', found: detection.stickies.length, readSoFar: 0, error: null });
 
       // Assigned in the try before any read; the catch returns early.
       let textById: Map<number, { text: string; legible: boolean }>;
       try {
         const answer = await apiAiReadNotes(d.ownerId, detection.crops, {
           signal: controller.signal,
+          onProgress: (readSoFar) => {
+            if (!current()) return;
+            setState((s) => (s.stage === 'reading' ? { ...s, readSoFar } : s));
+          },
         });
         textById = new Map(answer.texts.map((t) => [t.id, { text: t.text, legible: t.legible }]));
       } catch (err) {

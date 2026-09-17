@@ -275,19 +275,26 @@ export async function apiAiStream(
 export async function apiAiReadNotes(
   ownerId: string,
   crops: NoteCrop[],
-  opts: { signal?: AbortSignal } = {},
+  opts: { signal?: AbortSignal; onProgress?: (readCount: number) => void } = {},
 ): Promise<ReadNotesResponse> {
   const batches: NoteCrop[][] = [];
   for (let i = 0; i < crops.length; i += READ_MAX_CROPS_PER_REQUEST) {
     batches.push(crops.slice(i, i + READ_MAX_CROPS_PER_REQUEST));
   }
   const texts: ReadNotesResponse['texts'] = [];
+  let readCount = 0;
   // Two at a time: a whole wall in parallel is a burst any rate limiter will
   // refuse, and one at a time is a wait nobody enjoys.
   for (let i = 0; i < batches.length; i += READ_BATCH_CONCURRENCY) {
     const slice = batches.slice(i, i + READ_BATCH_CONCURRENCY);
     const answers = await Promise.all(slice.map((batch) => readBatch(ownerId, batch, opts)));
-    for (const answer of answers) texts.push(...answer.texts);
+    for (const answer of answers) {
+      texts.push(...answer.texts);
+      readCount += answer.texts.length;
+    }
+    // Report batch-by-batch, so the author watching the bar sees the run
+    // advance instead of a spinner that never moves.
+    opts.onProgress?.(readCount);
   }
   return { texts };
 }
