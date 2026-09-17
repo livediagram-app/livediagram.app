@@ -13,9 +13,7 @@ describe('PhotoImportProgress', () => {
   });
 
   it('announces detection the moment it starts', () => {
-    render(
-      <PhotoImportProgress state={{ ...idle, stage: 'detecting' }} onCancel={vi.fn()} />,
-    );
+    render(<PhotoImportProgress state={{ ...idle, stage: 'detecting' }} onCancel={vi.fn()} />);
     expect(screen.getByText('Finding the stickies…')).toBeTruthy();
   });
 
@@ -31,9 +29,7 @@ describe('PhotoImportProgress', () => {
 
   it('cancels on demand', () => {
     const onCancel = vi.fn();
-    render(
-      <PhotoImportProgress state={{ ...idle, stage: 'detecting' }} onCancel={onCancel} />,
-    );
+    render(<PhotoImportProgress state={{ ...idle, stage: 'detecting' }} onCancel={onCancel} />);
     screen.getByRole('button', { name: /^Cancel$/ }).click();
     expect(onCancel).toHaveBeenCalledTimes(1);
   });

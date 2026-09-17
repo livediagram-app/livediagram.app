@@ -210,7 +210,12 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
         read: detection.stickies.length,
         ...(readError ? { readError } : {}),
       });
-      setState({ stage: 'draft', found: detection.stickies.length, readSoFar: detection.stickies.length, error: null });
+      setState({
+        stage: 'draft',
+        found: detection.stickies.length,
+        readSoFar: detection.stickies.length,
+        error: null,
+      });
     },
     [],
   );

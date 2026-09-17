@@ -24,8 +24,7 @@ export function PhotoImportProgress({
   if (state.stage !== 'detecting' && state.stage !== 'reading') return null;
 
   const reading = state.stage === 'reading';
-  const progress =
-    reading && state.found > 0 ? Math.min(1, state.readSoFar / state.found) : null;
+  const progress = reading && state.found > 0 ? Math.min(1, state.readSoFar / state.found) : null;
 
   return (
     <div
@@ -36,7 +35,10 @@ export function PhotoImportProgress({
       className="pointer-events-none fixed bottom-20 left-1/2 z-[var(--z-chrome)] -translate-x-1/2"
     >
       <div className="pointer-events-auto flex items-center gap-3 rounded-full border border-slate-200 bg-white/95 px-4 py-2 shadow-lg backdrop-blur dark:border-slate-700 dark:bg-slate-900/95">
-        <span aria-hidden className="h-3 w-3 animate-spin rounded-full border-2 border-slate-300 border-t-brand-500 dark:border-slate-600 dark:border-t-brand-400" />
+        <span
+          aria-hidden
+          className="h-3 w-3 animate-spin rounded-full border-2 border-slate-300 border-t-brand-500 dark:border-slate-600 dark:border-t-brand-400"
+        />
         <div className="min-w-0">
           <p className="text-[11px] text-slate-600 dark:text-slate-300">
             {reading
