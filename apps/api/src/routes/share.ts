@@ -122,8 +122,7 @@ async function handleShareImage(ctx: RouteContext, code: string): Promise<Respon
   const svg = tabId
     ? await getDiagramTabImageSvg(env, d, tabId)
     : await getDiagramThumbnailSvg(env, d);
-  if (svg == null) return notFound();
-  return svgImage(svg, 'public, max-age=30, stale-while-revalidate=300');
+  return svg == null ? notFound() : svgImage(svg, 'public, max-age=30, stale-while-revalidate=300');
 }
 
 // Returns a 401/403 Response when the diagram is password-protected and

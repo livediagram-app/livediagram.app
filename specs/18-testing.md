@@ -78,16 +78,40 @@ excluded. `index.ts` is intentionally **not** excluded — in this repo a
 package's `index.ts` is its implementation (e.g. `@livediagram/diagram`), not
 a barrel of re-exports.
 
-No hard coverage threshold is enforced yet — the bar today is "logic has
-tests," not a percentage gate. A threshold can be added to `baseConfig`'s
-`coverage.thresholds` once coverage stabilises.
+There is no repo-wide percentage gate: the bar for most code is "logic has
+tests," not a number.
+
+One set of files is the exception, held at **100% statements, branches,
+functions and lines** by per-glob thresholds in `apps/api/vitest.config.ts`:
+
+| Files                                                                               | Why                                                                                                 |
+| ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `src/auth/**`                                                                       | Decides WHO a request is — Clerk verification, guest-id signatures, api tokens, the read/edit gates |
+| `src/api-token-row.ts`, `src/db/api-tokens.ts`, `src/routes/tokens.ts`              | Mint, resolve and revoke the credentials that act as an account                                     |
+| `src/db/share.ts`, `src/db/shared.ts`, `src/db/ws-tickets.ts`                       | Share links, the "shared with you" record, and the one-time realtime room tickets                   |
+| `src/routes/share.ts`, `src/routes/shared.ts`, `src/routes/diagram-share-routes.ts` | The only unauthenticated read path into a diagram, and the owner-only routes that grant it          |
+
+The rest of the worker fails visibly. These fail by serving the right response
+to the **wrong person** — an outcome no amount of production monitoring
+notices, because nothing errors. The thresholds are per-glob rather than
+per-directory-average, so a new module added under `src/auth/` is held to the
+bar on the commit that introduces it instead of being averaged away by its
+neighbours.
+
+This is the first ratchet, not the last: extend the list when a module joins
+the "decides who may see this" set.
 
 ## CI
 
-CI already runs `pnpm test` in the lint → format → typecheck → **test** →
-build sequence (`.github/workflows/ci.yml`). No CI change is needed to start
-running tests; adding a `test` script to a workspace is enough for Turborepo to
-pick it up.
+CI runs lint → format → typecheck → **test** → **coverage thresholds** →
+build (`.github/workflows/ci.yml`). No CI change is needed to start running
+tests; adding a `test` script to a workspace is enough for Turborepo to pick
+it up.
+
+Coverage is a separate step because it enforces the thresholds above — and
+because running it at all keeps the coverage tooling exercised. It previously
+did not run in CI, which is how a v4 coverage provider came to sit against a
+v5 test runner with every check green: nothing invoked the broken path.
 
 ## What's tested now, what's ahead
 
