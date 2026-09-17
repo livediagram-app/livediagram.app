@@ -29,7 +29,7 @@
     "eslint": "^10.10.0",
     "jsdom": "^30.0.1",
     "typescript": "npm:@typescript/typescript6@^6.0.2",
-    "vitest": "^4.1.11"
+    "vitest": "^5.0.0"
   },
   "dependencies": {
     "@livediagram/api-schema": "workspace:*"
