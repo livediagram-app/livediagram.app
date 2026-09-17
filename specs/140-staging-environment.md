@@ -138,21 +138,26 @@ so the staging build exercises the same code as production's.
 
 ## Integrations
 
-All four are **on** in staging, each pointed at its own tenant or its own data:
+Each is wired to its own tenant or its own data — but **only two are switched on**.
+The other two are configured and dormant, waiting on a key that is deliberately not
+set. `GET /api/capabilities` is the authoritative answer at any moment; as of the
+first deploy it returns `{"aiEnabled":false,"emailEnabled":false}` on staging against
+`{"aiEnabled":true,"emailEnabled":true}` on production.
 
-| Integration   | Staging setup                                                                                                                                                                                                     |
-| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Clerk**     | A separate **test tenant** — `pk_test_*` publishable key, its own JWKS URL. Staging sign-in cannot touch a production user.                                                                                       |
-| **Telemetry** | On. Events land in staging's own D1, so the **public** `/telemetry` dashboard on production is unaffected; staging's dashboard shows staging's own traffic, which is how you verify a new event actually lands.   |
-| **Resend**    | On, with its own API key. `APP_BASE_URL` is `https://staging.livediagram.app` so every link in a staging email points back at staging. ⚠️ Staging **sends real email to real addresses** — see the warning below. |
-| **OpenAI**    | On, with `AI_ALLOWED_ORIGINS` restricted to the staging origin so the key can't be drained from a third-party page. Spends real money per request.                                                                |
+| Integration        | Staging setup                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Clerk** — ON     | A separate **development tenant** (`ethical-crane-19.clerk.accounts.dev`), `pk_test_*` key, its own JWKS URL. Staging sign-in cannot touch a production user. Needs **no origin configuration**: Clerk dev instances reflect any `Origin` back, which is why localhost works unconfigured. Isolation here comes from being a separate tenant, not from an allow-list. Pointing staging at a Clerk _production_ instance would change that — those do lock origins down, and `staging.livediagram.app` would need adding under Domains. |
+| **Telemetry** — ON | Events land in staging's own D1, so the **public** `/telemetry` dashboard on production is unaffected; staging's dashboard shows staging's own traffic, which is how you verify a new event actually lands.                                                                                                                                                                                                                                                                                                                            |
+| **Resend** — OFF   | Wired but keyless. `APP_BASE_URL` and `RESEND_FROM` are set, so setting `RESEND_API_KEY --env staging` turns it on and every link points back at staging. Left unset on purpose: staging runs the same daily lifecycle cron as production, from the same verified domain, so switching it on mails **real people** (see the warning below). Turn it on for a specific test, then take the key off again.                                                                                                                               |
+| **OpenAI** — OFF   | Wired but keyless, same shape. `AI_ALLOWED_ORIGINS` already restricts the endpoint to the staging origin, so `wrangler secret put OPENAI_API_KEY --env staging` is all that is needed. Left unset because it spends real money per request and nothing about the AI path needs rehearsing continuously.                                                                                                                                                                                                                                |
 
 > **Email warning.** Staging runs the same daily lifecycle-email cron as production
-> (welcome / week-1 / week-2, token-expiry warnings). Any address that signs into staging
-> will receive them, from the same verified domain as production's. Use addresses you own.
-> To turn the whole thing off, simply never set `RESEND_API_KEY` on the staging worker:
-> unset makes the email feature inert and the lifecycle table untouched
-> ([spec/64](64-transactional-email.md)).
+> (welcome / week-1 / week-2, token-expiry warnings). With `RESEND_API_KEY` set, any
+> address that signs into staging receives them, from the same verified domain as
+> production's — so a staging account made with a colleague's address mails that
+> colleague. That is why the key is unset by default: absent, the email feature is inert
+> and the `email_lifecycle` table is never touched ([spec/64](64-transactional-email.md)).
+> Set it for a specific test, use addresses you own, and remove it afterwards.
 
 ## Secrets
 
@@ -231,14 +236,19 @@ cd apps/api && wrangler secret put OPENAI_API_KEY --env staging
 #    the four _STAGING entries in the table above
 ```
 
-Then, **in the Cloudflare dashboard** (the deploy token is scoped to upload worker
-scripts, not to manage DNS — same as production, [spec/10](10-deployment.md)):
+**Done** — both custom domains are attached in the Cloudflare dashboard (the deploy
+token is scoped to upload worker scripts, not to manage DNS, so this step can never be
+automated from the workflow — same as production, [spec/10](10-deployment.md)):
 
-- Workers → `livediagram-router-staging` → Domains & Routes → add `staging.livediagram.app`
-- Workers → `livediagram-mcp-staging` → Domains & Routes → add `mcp-staging.livediagram.app`
+- `staging.livediagram.app` → `livediagram-router-staging`
+- `mcp-staging.livediagram.app` → `livediagram-mcp-staging`
 
-Finally, in the **Clerk** dashboard for the test tenant, add `staging.livediagram.app`
-as an allowed origin / redirect host, or sign-in will fail there while working locally.
+Only those two workers get hostnames. The other five are reached exclusively over the
+router's service bindings and never touch DNS, exactly as in production.
+
+**Clerk needs nothing**, contrary to what this spec first said. A development instance
+is origin-permissive, so there is no allow-list to add the staging host to. That only
+becomes a step if staging is ever moved to a Clerk production instance.
 
 ## What staging is not
 
