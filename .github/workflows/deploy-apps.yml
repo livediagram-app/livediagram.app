@@ -344,15 +344,16 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
         run: pnpm exec wrangler whoami || true
 
-      # Apply any pending D1 migrations before the worker code goes
-      # live. Idempotent: wrangler tracks applied migrations in a
+      # Apply any pending D1 migrations before the new worker code is
+      # deployed. Idempotent: wrangler tracks applied migrations in a
       # bookkeeping table and skips any it's already run. Has to
       # happen BEFORE the worker deploy so the new code doesn't
       # briefly run against a schema it doesn't understand.
       #
       # If a migration's bad, this step will fail and the deploy
       # halts before the worker is updated — that's the desired
-      # safety: we'd rather block the deploy than break prod.
+      # safety: we'd rather block the deploy than leave this
+      # environment's database half-migrated.
       #
       # This is also the step staging exists for: on the staging
       # caller it runs against `livediagram-staging`, so every merge

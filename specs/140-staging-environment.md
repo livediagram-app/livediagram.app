@@ -21,6 +21,18 @@ runs against the one holding people's diagrams.
 | R2           | `livediagram-images`           | `livediagram-images-staging`               |
 | Indexable    | Yes                            | **No** — `X-Robots-Tag: noindex, nofollow` |
 
+### "live" is an app, not an environment
+
+Worth stating once, because the two readings collide constantly in this repo: **`live`
+is the name of the editor app** — `apps/live`, the `livediagram-live` worker, the
+`LIVE` service binding, the `deploy-live` job. It is a proper noun. The environments
+are **production** and **staging**, and nothing else.
+
+So `deploy-live` deploys the editor, in whichever environment the run targets; there is
+no "live environment". Phrases like "goes live" are avoided in the deploy workflow for
+exactly this reason — in a file that also contains `deploy-live`, the same word would
+be doing two jobs.
+
 Both run in the **same Cloudflare account**, under the same `CF_API_TOKEN` /
 `CF_ACCOUNT_ID`. Two accounts would isolate harder, but every binding, secret and
 dashboard step would then need doing twice by hand, and the thing most likely to break
@@ -116,7 +128,7 @@ from production's in exactly two values:
 
 | Variable                            | Production                                | Staging                               |
 | ----------------------------------- | ----------------------------------------- | ------------------------------------- |
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | `pk_live_*` (prod tenant)                 | `pk_test_*` (test tenant)             |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | `pk_live_*` (production tenant)           | `pk_test_*` (test tenant)             |
 | `NEXT_PUBLIC_MCP_ORIGIN`            | unset (defaults to `mcp.livediagram.app`) | `https://mcp-staging.livediagram.app` |
 
 Everything else matches, on purpose: `NEXT_PUBLIC_API_BASE` stays unset so staging
