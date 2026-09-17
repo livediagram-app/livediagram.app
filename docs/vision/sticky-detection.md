@@ -30,7 +30,7 @@ here, in code, where it is deterministic and testable.
    against hue bands. How saturated a pixel must be to count as paper depends on
    whether it shares the wall's hue.
 3. **Connected components** (`labelComponents`) over that mask: two-pass
-   union-find, because a 2048px frame is four million pixels and a recursive
+   union-find, because a large frame is millions of pixels and a recursive
    flood fill does not survive a phone.
 4. **Fit boxes** (`fitBoxes`): merge fragments to a fixed point, drop noise,
    measure the note size, drop specks, split runs, drop non-paper shapes.
@@ -78,10 +78,12 @@ here, in code, where it is deterministic and testable.
   a white sticky reads as wall.
 - **A wall corner.** The far, foreshortened plane of a two-plane photo is
   largely missed.
-- **Resolution sensitivity.** On 1000px working copies of the calibration photos
-  the detector finds 20–35 notes per photo; through the full pipeline at 2048px
-  one run found 8. The thresholds are relative to the image, but not yet
-  relative enough. This is the first thing to chase.
+- **Working at 1000px, always.** The detector was calibrated at 1000px and the
+  working image is now scaled there before detection (`PHOTO_MAX_EDGE_PX`); at
+  2048px it found a quarter as many, and the bigger frame was not buying
+  accuracy — the handwriting crops are cut from the full-resolution bitmap, so
+  reading keeps every pixel. Measured in the browser on three real photos: 20,
+  32 and 34 notes.
 - **A sticky more than about 60% covered** reads as a fragment of whatever is
   left, or is dropped as a speck.
 - **Per-wall colour conventions.** Every workshop invents its own (the

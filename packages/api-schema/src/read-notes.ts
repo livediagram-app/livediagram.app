@@ -47,9 +47,14 @@ export const READ_MAX_CROPS_PER_REQUEST = 6;
 // bytes of the photo it came from.
 export const CROP_MAX_EDGE_PX = 512;
 export const CROP_MAX_BYTES = 512 * 1024;
-// The working image the detector runs on. Bigger than this buys no accuracy
-// and costs real milliseconds on a phone.
-export const PHOTO_MAX_EDGE_PX = 2048;
+// The working image the detector runs on.
+//
+// ONE THOUSAND, deliberately: the detector was calibrated at this size and
+// finds the most notes here. At 2048 the working image is noisier after the
+// browser's downscale and detection DROPS (8 found where 1000px found 35).
+// This only ever feeds detection — the handwriting crops are cut from the
+// full-resolution bitmap, so reading loses nothing.
+export const PHOTO_MAX_EDGE_PX = 1000;
 // The most notes one photo may yield. A wall section holds tens, not hundreds.
 export const PHOTO_MAX_NOTES = 120;
 

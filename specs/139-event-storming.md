@@ -800,16 +800,17 @@ low-threshold capture surface can least afford.
     of wall that squeaked past the floor used to be diced into dozens of notes
     that were never there.
 
-  **What is still outstanding, explicitly.** On the 1000px working copies the
-  detector finds 20–35 of the notes on the near wall plane with the right kinds.
-  On the FULL photograph through the real pipeline (2048px working image, live
-  Gemini Flash) one run found 8 notes and the model could read 1 of the 8 crops.
-  So: the thresholds are resolution-sensitive in a way that has not been chased
-  down, the far plane of a wall corner is largely missed, and crop quality for
-  small pen handwriting is unproven. The flow itself is proven end to end —
-  photo in, draft on the canvas, Add, Undo — with the operator's own key and
-  `gemini-3.6-flash`. Treat the DETECTOR as usable-but-partial and the reader
-  prompt as untuned; the draft's Change kind, delete and add-by-hand paths are
+  **What is still outstanding, explicitly.** The working image is SCALED TO
+  1000px before detection (`PHOTO_MAX_EDGE_PX`), because that is where the
+  detector was calibrated and where it finds the most notes; at 2048 it found a
+  quarter as many. The handwriting crops are cut from the full-resolution
+  bitmap, so reading loses nothing. Measured on the three real photos through
+  the browser detector: 20, 32 and 34 notes. The far plane of a wall corner is
+  largely missed, and crop quality for small pen handwriting is unproven. The
+  flow itself is proven end to end — photo in, draft on the canvas, Add, Undo —
+  with the operator's own key and `gemini-3.6-flash`. Treat the DETECTOR as
+  usable-but-partial and the reader prompt as untuned; the draft's Change kind,
+  delete and add-by-hand paths are
   what make a partial read workable today. `packages/sticky-vision/scripts/calibrate.ts`
   is the loop to continue in (it caches decoded photos, so a run is ~1s).
 
