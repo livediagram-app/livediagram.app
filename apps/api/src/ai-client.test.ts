@@ -92,3 +92,22 @@ describe('one retry on a provider spike', () => {
     expect(calls).toBe(1);
   });
 });
+
+describe('the base URL is trimmed without a regex', () => {
+  it('drops any number of trailing slashes', () => {
+    expect(chatCompletionsUrl('https://api.example.com')).toBe(
+      'https://api.example.com/chat/completions',
+    );
+    expect(chatCompletionsUrl('https://api.example.com/v1///')).toBe(
+      'https://api.example.com/v1/chat/completions',
+    );
+  });
+
+  it('does not degrade on a pathological run of slashes', () => {
+    // The regex this replaced backtracked polynomially here
+    // (CodeQL js/polynomial-redos), and a base URL is operator configuration.
+    const started = performance.now();
+    expect(chatCompletionsUrl('https://x'.padEnd(50_000, '/'))).toBe('https://x/chat/completions');
+    expect(performance.now() - started).toBeLessThan(50);
+  });
+});

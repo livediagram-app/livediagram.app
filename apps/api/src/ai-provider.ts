@@ -64,8 +64,16 @@ const PRESETS: Preset[] = [
   { provider: 'generic', keyVar: 'AI_API_KEY' },
 ];
 
-function trimSlashes(url: string): string {
-  return url.replace(/\/+$/, '');
+// Trailing slashes off a base URL, WITHOUT a regex.
+//
+// `/\/+$/` looks harmless and is not: on a string of slashes the engine
+// backtracks polynomially, and a base URL is operator-supplied configuration
+// that reaches this on every AI request (CodeQL js/polynomial-redos). A loop
+// says the same thing in linear time and cannot be made to misbehave.
+export function trimTrailingSlashes(url: string): string {
+  let end = url.length;
+  while (end > 0 && url[end - 1] === '/') end -= 1;
+  return url.slice(0, end);
 }
 
 export function resolveAiProvider(env: Env): ResolvedAiProvider | null {
@@ -86,7 +94,7 @@ export function resolveAiProvider(env: Env): ResolvedAiProvider | null {
 
   const preset = present[0]!;
   const apiKey = env[preset.keyVar] as string;
-  const baseUrl = preset.baseUrl ?? (env.AI_BASE_URL ? trimSlashes(env.AI_BASE_URL) : '');
+  const baseUrl = preset.baseUrl ?? (env.AI_BASE_URL ? trimTrailingSlashes(env.AI_BASE_URL) : '');
   const model = env.AI_MODEL ?? preset.defaultModel ?? '';
 
   if (preset.provider === 'generic') {

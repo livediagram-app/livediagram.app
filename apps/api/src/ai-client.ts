@@ -1,4 +1,4 @@
-import { resolveAiProvider, type ResolvedAiProvider } from './ai-provider';
+import { resolveAiProvider, trimTrailingSlashes, type ResolvedAiProvider } from './ai-provider';
 import type { Env } from './types';
 
 // The one place the worker talks to a model (spec/25).
@@ -10,7 +10,7 @@ import type { Env } from './types';
 // URL (see ai-provider.ts), not a code path.
 
 export function chatCompletionsUrl(baseUrl: string): string {
-  return `${baseUrl.replace(/\/+$/, '')}/chat/completions`;
+  return `${trimTrailingSlashes(baseUrl)}/chat/completions`;
 }
 
 // One retry on a 5xx, after a breath.
