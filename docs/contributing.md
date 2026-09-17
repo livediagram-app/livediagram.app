@@ -37,7 +37,27 @@ pnpm test
 pnpm build
 ```
 
-CI runs the same five steps on every push. Failing any of them blocks the merge.
+CI runs the same five steps on every push, plus `pnpm staging:check`. Failing any of them blocks the merge.
+
+### Merging to `main` deploys
+
+A merge to `main` that passes CI **deploys automatically to staging** —
+[staging.livediagram.app](https://staging.livediagram.app), a complete copy of the
+platform with its own database ([spec/140](../specs/140-staging-environment.md)). Nobody
+presses anything. Within a few minutes your change is running somewhere public, and any
+D1 migration in it has been applied to a real remote database.
+
+Production is **not** affected: that deploy stays manual (`Deploy Production` in the
+Actions tab) and someone decides when to press it.
+
+Two things follow for you as a contributor:
+
+- **Check staging after your PR lands.** It is the cheapest place to notice that
+  something works in tests but not in a browser.
+- **If you touch a worker's bindings**, add the same change to its `[env.staging]` block
+  in `wrangler.toml`. Wrangler does not inherit bindings into a named environment, so a
+  binding added only at the top level is silently missing from staging. `pnpm
+staging:check` catches it in CI.
 
 ### Two TypeScripts
 
