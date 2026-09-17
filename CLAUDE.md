@@ -173,9 +173,9 @@ All deploys happen via **GitHub Actions** to **Cloudflare Workers** (with Static
 
 Either environment builds once, then deploys `marketing` + `live` + `telemetry` + `help` + `api` in parallel, `mcp` once `api` is up, then `router` last (its service bindings depend on the five path-routed workers existing; mcp is its own host).
 
-**Two environments** ([spec/140](specs/140-staging-environment.md)), both running those same jobs out of the reusable `deploy-apps.yml` so they can't drift:
+**Two environments** ([spec/140](specs/140-staging-environment.md)), both running those same jobs out of the reusable `deploy-reusable.yml` so they can't drift:
 
-- **Production** (`livediagram.app`) — `deploy.yml`, **manual-only** (`workflow_dispatch`, intentionally not chained to CI): trigger it from the Actions tab or `gh workflow run Deploy --ref main` once CI on `main` is green and you've decided to ship.
+- **Production** (`livediagram.app`) — `deploy.yml`, **manual-only** (`workflow_dispatch`, intentionally not chained to CI): trigger it from the Actions tab (it appears as **Deploy Production**) or `gh workflow run deploy.yml --ref main` once CI on `main` is green and you've decided to ship.
 - **Staging** (`staging.livediagram.app`) — `deploy-staging.yml`, **automatic** on every green CI run on `main`. Wrangler `[env.staging]` blocks give it `-staging` worker names and its own D1 / R2 / KV, so a migration runs against a real remote database one deploy before it reaches the one holding real diagrams. Public but `noindex`, stamped by the router.
 
 When you touch a worker's bindings, **add the same change to its `[env.staging]` block** — wrangler does not inherit `vars` / `d1_databases` / `r2_buckets` / `kv_namespaces` / `durable_objects` / `services` / `unsafe` into a named environment, so a binding added only at the top level is silently absent from staging. `pnpm staging:check` (in CI) dry-runs the staging configs and prints the resolved bindings.

@@ -1,6 +1,7 @@
-name: Deploy apps
+name: Deploy (reusable)
 
-# The deploy itself, for ONE environment. Not triggerable on its own — both
+# The deploy itself, for ONE environment. NOT triggerable on its own — it has
+# no `workflow_dispatch`, so the Actions tab lists it with no Run button. Both
 # `deploy.yml` (production, manual) and `deploy-staging.yml` (staging,
 # automatic on green CI) call it, so the two environments run byte-identical
 # steps and cannot drift (spec/140). The only differences between them are

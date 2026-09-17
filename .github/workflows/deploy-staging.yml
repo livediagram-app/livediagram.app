@@ -1,4 +1,4 @@
-name: Deploy staging
+name: Deploy Staging
 
 # Staging deploy (spec/140). Automatic: every merge to `main` that passes CI
 # lands on https://staging.livediagram.app within a few minutes.
@@ -44,7 +44,7 @@ jobs:
     if: >-
       github.event_name == 'workflow_dispatch' ||
       github.event.workflow_run.conclusion == 'success'
-    uses: ./.github/workflows/deploy-apps.yml
+    uses: ./.github/workflows/deploy-reusable.yml
     with:
       # Deploys the `[env.staging]` blocks: `-staging` worker names, staging's
       # own D1 / R2 / KV, and DEPLOY_ENV=staging on the router, which is what

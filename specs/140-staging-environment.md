@@ -10,16 +10,16 @@ runs against the one holding people's diagrams.
 
 ## The two environments
 
-|              | Production                     | Staging                                    |
-| ------------ | ------------------------------ | ------------------------------------------ |
-| Hostname     | `livediagram.app`              | `staging.livediagram.app`                  |
-| MCP host     | `mcp.livediagram.app`          | `mcp-staging.livediagram.app`              |
-| Trigger      | Manual (`workflow_dispatch`)   | Automatic, on every green CI run on `main` |
-| Workflow     | `.github/workflows/deploy.yml` | `.github/workflows/deploy-staging.yml`     |
-| Worker names | `livediagram-<app>`            | `livediagram-<app>-staging`                |
-| D1           | `livediagram`                  | `livediagram-staging`                      |
-| R2           | `livediagram-images`           | `livediagram-images-staging`               |
-| Indexable    | Yes                            | **No** — `X-Robots-Tag: noindex, nofollow` |
+|              | Production                           | Staging                                    |
+| ------------ | ------------------------------------ | ------------------------------------------ |
+| Hostname     | `livediagram.app`                    | `staging.livediagram.app`                  |
+| MCP host     | `mcp.livediagram.app`                | `mcp-staging.livediagram.app`              |
+| Trigger      | Manual (`workflow_dispatch`)         | Automatic, on every green CI run on `main` |
+| Workflow     | `deploy.yml` (**Deploy Production**) | `deploy-staging.yml` (**Deploy Staging**)  |
+| Worker names | `livediagram-<app>`                  | `livediagram-<app>-staging`                |
+| D1           | `livediagram`                        | `livediagram-staging`                      |
+| R2           | `livediagram-images`                 | `livediagram-images-staging`               |
+| Indexable    | Yes                                  | **No** — `X-Robots-Tag: noindex, nofollow` |
 
 ### "live" is an app, not an environment
 
@@ -176,7 +176,7 @@ workflow and not the other is how the environments start to differ.
 
 ## One workflow body, two callers
 
-`.github/workflows/deploy-apps.yml` holds the entire deploy — build, the five parallel
+`.github/workflows/deploy-reusable.yml` holds the entire deploy — build, the five parallel
 app deploys, mcp, router — as a `workflow_call` reusable workflow taking the target
 environment as inputs. `deploy.yml` (manual, production) and `deploy-staging.yml`
 (automatic, staging) are thin callers.
