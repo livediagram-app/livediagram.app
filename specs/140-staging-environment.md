@@ -183,19 +183,39 @@ worse than queueing.
 ## One-time setup
 
 Deploys fail loudly until these exist. Resource ids are committed to `wrangler.toml`
-once created (they are identifiers, not secrets — [spec/06](06-secrets-policy.md)).
+(they are identifiers, not secrets — [spec/06](06-secrets-policy.md)).
+
+**Done** — the three data stores exist, and their ids are committed:
+
+| Resource | Name                         | Where the id lives       |
+| -------- | ---------------------------- | ------------------------ |
+| D1       | `livediagram-staging`        | `apps/api/wrangler.toml` |
+| R2       | `livediagram-images-staging` | bound by name, no id     |
+| KV       | `mcp-oauth-kv-staging`       | `apps/mcp/wrangler.toml` |
+
+Both were created in `ENAM`, Cloudflare's default for the account rather than a
+deliberate choice; production's region was not readable from the API to mirror. If
+staging ever needs to reproduce production's read latency, that is the knob.
+
+Note the KV **title** is `mcp-oauth-kv-staging`, matching production's `mcp-oauth-kv`.
+It is not `OAUTH_KV` — that is the binding name inside `wrangler.toml`, a different
+thing, and `wrangler kv namespace create OAUTH_KV --env staging` would have produced
+`livediagram-mcp-staging-OAUTH_KV` instead.
+
+The **workers** are not on this list: a worker is its uploaded script, so all seven
+`livediagram-*-staging` workers come into existence on the first staging deploy. The
+job graph bootstraps them in the right order — the five path-routed workers first,
+then mcp (service binding to api), then router (service bindings to the five) — exactly
+as production's first deploy did ([spec/10](10-deployment.md) "First deploy").
+
+Still outstanding:
 
 ```bash
-# 1. Data stores (from apps/api, then apps/mcp)
-wrangler d1 create livediagram-staging          # → paste database_id into apps/api/wrangler.toml
-wrangler r2 bucket create livediagram-images-staging
-wrangler kv namespace create OAUTH_KV --env staging   # → paste id into apps/mcp/wrangler.toml
-
-# 2. Worker secrets not carried by the workflow
+# 1. Worker secrets not carried by the workflow
 cd apps/api && wrangler secret put RESEND_API_KEY --env staging
 cd apps/api && wrangler secret put OPENAI_API_KEY --env staging
 
-# 3. GitHub secrets — Settings → Secrets and variables → Actions
+# 2. GitHub secrets — Settings → Secrets and variables → Actions
 #    the four _STAGING entries in the table above
 ```
 

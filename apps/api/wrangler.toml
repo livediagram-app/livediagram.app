@@ -294,13 +294,13 @@ RESEND_FROM = "livediagram staging <hello@livediagram.app>"
 AI_ALLOWED_ORIGINS = "https://staging.livediagram.app"
 AI_REQUIRE_CLERK = "true"
 
-# Own database. `wrangler d1 create livediagram-staging` once, then paste the
-# id below — until then every staging deploy fails loudly at the migration
-# step, which is the intended failure mode (spec/140 "One-time setup").
+# Own database, created 2026-09-17. Empty until the first staging deploy
+# applies the migrations in `migrations/` against it — which is the whole
+# reason this environment exists (spec/140).
 [[env.staging.d1_databases]]
 binding = "DB"
 database_name = "livediagram-staging"
-database_id = "STAGING_D1_DATABASE_ID"
+database_id = "fd18e315-baad-48d5-b2c7-4a14a793e7b4"
 migrations_dir = "migrations"
 
 # Own bucket: `wrangler r2 bucket create livediagram-images-staging`. Sharing

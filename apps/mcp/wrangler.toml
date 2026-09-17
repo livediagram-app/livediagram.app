@@ -81,9 +81,10 @@ CONSENT_BASE_URL = "https://staging.livediagram.app"
 binding = "API"
 service = "livediagram-api-staging"
 
-# Own OAuth state: `wrangler kv namespace create OAUTH_KV --env staging`,
-# then paste the id here. Client registrations and authorize codes are
-# short-TTL scratch data, so there is nothing to migrate across.
+# Own OAuth state, namespace `mcp-oauth-kv-staging` (the production one is
+# `mcp-oauth-kv` — the title is NOT the binding name). Client registrations
+# and authorize codes are short-TTL scratch data, so there was nothing to
+# migrate across.
 [[env.staging.kv_namespaces]]
 binding = "OAUTH_KV"
-id = "STAGING_OAUTH_KV_ID"
+id = "0e757cbb30884d98845ac02cafdeb001"
