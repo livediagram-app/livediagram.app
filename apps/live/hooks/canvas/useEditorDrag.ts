@@ -211,8 +211,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       drag.mode === 'move' &&
       depsRef.current.insertGate.esBoard &&
       [...drag.startBounds.keys()].every(
-        (id) =>
-          depsRef.current.activeTab.elements.find((el) => el.id === id)?.type === 'sticky',
+        (id) => depsRef.current.activeTab.elements.find((el) => el.id === id)?.type === 'sticky',
       );
     // The last pointer position of this drag, so pressing or releasing Alt
     // without moving the mouse still opens / unwinds the slot (see onAltChange).

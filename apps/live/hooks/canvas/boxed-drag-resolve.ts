@@ -121,7 +121,9 @@ export function resolveBoxedMove({
     width: groupRight - groupLeft,
     height: candidate.height,
   };
-  const gutterSnap = laneSnap ? capturePlacement(groupBounds, elements, { exclude: memberIds }) : null;
+  const gutterSnap = laneSnap
+    ? capturePlacement(groupBounds, elements, { exclude: memberIds })
+    : null;
   const groupDx = gutterSnap ? gutterSnap.x - groupLeft : 0;
   // ON A LANES BOARD, THE LANE RESOLVER IS THE ONLY SOURCE OF X.
   //

@@ -3,11 +3,7 @@
 // via inline import('...') so this file only needs the bare-named
 // types as top-level imports.
 import type { PointerEvent as ReactPointerEvent, Ref } from 'react';
-import type {
-  EmbedProvider,
-  EsDockSide,
-  EventStormingNoteKind,
-} from '@livediagram/diagram';
+import type { EmbedProvider, EsDockSide, EventStormingNoteKind } from '@livediagram/diagram';
 import type {
   AlignmentGuide,
   BackgroundPattern,
