@@ -1170,14 +1170,15 @@ Each is one more `ES_DOCKINGS` row plus, where the face is not west / east, a
       repo-level learning.
 - [x] Final quality gate: lint, format:check, typecheck, test and build all
       green; e2e green against the built stack (19 specs, 4154 unit tests).
-- [~] `git fetch && git rebase origin/main` (resolve by new commits, never force);
-  re-run the gate; push ONLY when the parent relays operator permission; open
-  the PR with a bullet description referencing spec/139 Phases 6–8, spec/25;
-  title ≤ 52 chars (e.g. `Event storming: lanes, docking, photo import`).
+- [x] Rebased on origin/main, gate green, pushed with the operator permission,
+  PR #76 opened with a visual placement-rules description: 20 e2e specs, all
+  CI checks (Build & verify, CodeQL, both Analyze jobs) passing.
 - [x] Verify what was committed is what was meant (`git diff origin/main --stat`,
       read the spec diffs once more).
-- [ ] Report back: what shipped, what is outstanding (Q16 if no key), the PM2
-      processes left running / stopped, and the PR link.
+- [x] Reported: lanes (always-on, the placement rules + their rulings log),
+  docking, add-from-photo, the PR link, the one outstanding item (vertical
+  rhythm: rows 40px apart vs the 16px gutter) and the stack left running for
+  review at :3102.
 
 ---
 
