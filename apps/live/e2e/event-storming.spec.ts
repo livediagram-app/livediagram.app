@@ -34,7 +34,6 @@ type BoardNote = {
 };
 type BoardTab = {
   elements: BoardNote[];
-  esTimeline?: { originX: number; originY: number; enabled: boolean };
 };
 
 // The board as the API holds it. Screen geometry cannot answer the questions
@@ -62,10 +61,9 @@ async function boardTab(page: Page): Promise<BoardTab> {
 
 const stickies = (tab: BoardTab) => tab.elements.filter((el) => el.type === 'sticky');
 
-// Timeline lanes (spec/139 Phase 6). Three claims, each of which has failed in
-// a prototype at some point: the switch turns lanes on for the BOARD (so it
-// survives a reload), turning them on moves NOTHING, and a note dragged
-// afterwards lands centred on a lane, in a slot the board suggested.
+// Timeline lanes (spec/139 Phase 6). An event-storming board is ALWAYS on
+// lanes — there is no switch to find — and a note dragged on one lands centred
+// on a lane, in a slot the board suggested, with nothing else stirring.
 test('timeline lanes snap a dragged note without moving anything else', async ({
   page,
   pageErrors,
@@ -79,18 +77,13 @@ test('timeline lanes snap a dragged note without moving anything else', async ({
   // The opening zoom-to-fit settles a few pixels after the notes render.
   await page.waitForTimeout(500);
 
-  // The switch sits at the TOP of the notation category, above the notes.
-  const lanes = page.getByRole('switch', { name: /timeline lanes/i });
-  await expect(lanes).toBeVisible();
-  await expect(lanes).toHaveAttribute('aria-checked', 'false');
-  await lanes.click();
-  await expect(lanes).toHaveAttribute('aria-checked', 'true');
+  // No switch anywhere: lanes are what this board IS.
+  await expect(page.getByRole('switch', { name: /timeline lanes/i })).toHaveCount(0);
 
   const before = await boardTab(page);
-  expect(before.esTimeline?.enabled).toBe(true);
-  // The stack anchored itself on the top-most, then left-most note.
-  const topLeft = [...stickies(before)].sort((a, b) => a.y - b.y || a.x - b.x)[0]!;
-  expect(before.esTimeline).toMatchObject({ originX: topLeft.x, originY: topLeft.y });
+  // The stack anchors itself on the board's top-most note.
+  const topMost = [...stickies(before)].sort((a, b) => a.y - b.y)[0]!;
+  const originY = topMost.y;
 
   // Not one note moved: lanes are an aid the next drag can use, not a cage the
   // board is poured into.
@@ -115,7 +108,6 @@ test('timeline lanes snap a dragged note without moving anything else', async ({
   await expect(page.locator('[data-testid="timeline-lanes-overlay"]')).toHaveCount(0);
 
   const after = await boardTab(page);
-  const origin = after.esTimeline!;
   const movedId = stickies(before).sort((a, b) => b.x - a.x)[0]!.id;
   const moved = stickies(after).find((el) => el.id === movedId)!;
   // Its centre is ON a lane and its left edge is EXACTLY where the note it
@@ -124,7 +116,7 @@ test('timeline lanes snap a dragged note without moving anything else', async ({
   const byX = stickies(before).sort((a, b) => a.x - b.x);
   const column = byX[byX.length - 2]!;
   expect(moved.x).toBeCloseTo(column.x, 6);
-  const centreOffset = moved.y + moved.height / 2 - (origin.originY + LANE_HEIGHT / 2);
+  const centreOffset = moved.y + moved.height / 2 - (originY + LANE_HEIGHT / 2);
   expect(centreOffset % LANE_PITCH).toBeCloseTo(0, 6);
 
   // …and every OTHER note is byte-identical to before the drag.
@@ -136,25 +128,16 @@ test('timeline lanes snap a dragged note without moving anything else', async ({
     ).toEqual(el);
   }
 
-  // Undo puts the note back AND leaves the lanes on: two separate steps, with
-  // the note's move on top.
+  // Undo puts the note back, in ONE step: there is no switch flip underneath
+  // it any more.
   await page.keyboard.press('Control+z');
   await expect.poll(async () => (await notes.nth(2).boundingBox())!.x).toBeCloseTo(third.x, 0);
-  await expect(lanes).toHaveAttribute('aria-checked', 'true');
-  // One more undo and the switch itself comes back off; redo re-applies it.
-  await page.keyboard.press('Control+z');
-  await expect(lanes).toHaveAttribute('aria-checked', 'false');
-  await page.keyboard.press('Control+Shift+z');
-  await expect(lanes).toHaveAttribute('aria-checked', 'true');
 
-  // Lanes are BOARD state: they survive the round trip through the api.
+  // …and the board still snaps after a reload, with nothing stored to restore.
   await page.waitForTimeout(1500);
   await page.reload();
   await canvas.waitFor();
-  await expect(page.getByRole('switch', { name: /timeline lanes/i })).toHaveAttribute(
-    'aria-checked',
-    'true',
-  );
+  await expect(page.getByRole('switch', { name: /timeline lanes/i })).toHaveCount(0);
 
   expectNoPageErrors(pageErrors);
 });
@@ -170,16 +153,14 @@ test('a dragged note takes the slot two events suggest', async ({ page, pageErro
   const notes = canvas.getByRole('img', { name: /^Sticky note/ });
   await expect(notes).toHaveCount(3);
   await page.waitForTimeout(500);
-  await page.getByRole('switch', { name: /timeline lanes/i }).click();
-
   const before = await boardTab(page);
   const row = stickies(before).sort((a, b) => a.x - b.x);
   const zoom = (await notes.nth(0).boundingBox())!.height / (row[0]!.height ?? 200);
   const gutter = row[1]!.x - (row[0]!.x + row[0]!.width);
   // The lane stack is anchored on the board's own top-left note, so every
   // target below is measured from the origin rather than from canvas zero.
-  const origin = before.esTimeline!;
-  const laneTopY = (index: number) => origin.originY + index * LANE_PITCH;
+  const laneTopY = (index: number) =>
+    [...stickies(before)].sort((a, b) => a.y - b.y)[0]!.y + index * LANE_PITCH;
 
   // The note that will do the travelling is the right-most of the row.
   const travellerId = row[row.length - 1]!.id;
