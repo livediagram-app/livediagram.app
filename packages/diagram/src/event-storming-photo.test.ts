@@ -284,7 +284,7 @@ describe('placeNewNotes', () => {
   });
 
   it('lands on the lanes when the board has them on, without moving x', () => {
-    const timeline: EsTimeline = { originX: 0, originY: 0, enabled: true };
+    const timeline: EsTimeline = { originY: 0 };
     const out = placeNewNotes(
       [addition({ detectedId: 1, x: 307, y: ES_LANE_PITCH + 9 })],
       transform,
@@ -430,13 +430,13 @@ describe('reconcilePhoto', () => {
     expect(out.additions[0]!.kind).toBe(UNKNOWN_KIND_FALLBACK);
   });
 
-  it('lands additions on the lanes when the board has them on', () => {
-    const timeline: EsTimeline = { originX: 0, originY: 0, enabled: true };
+  it('lands additions on the lanes — every event-storming board has them', () => {
+    const timeline: EsTimeline = { originY: 0 };
     const out = reconcilePhoto(
       [photo({ id: 1, text: 'New', cx: 0.1, cy: 0.1, w: 0.1, h: 0.1 })],
       [],
       {
-        tab: { esTimeline: timeline },
+        tab: { elements: [] },
       },
     );
     expect(out.additions[0]!.y).toBe(laneCentre(0, timeline) - out.additions[0]!.height / 2);

@@ -399,8 +399,8 @@ board's behaviour changes at all.
 
 ## Phase 6 (shipped): timeline lanes
 
-**Timeline lanes** is a board-level switch. With it on, the board carries an
-infinite stack of horizontal lanes — one note tall, evenly pitched, running in
+**Timeline lanes** is what an event-storming board IS, not a mode it can be
+put into. The board carries an infinite stack of horizontal lanes — one note tall, evenly pitched, running in
 both directions — and a note being dragged **snaps its centre onto a lane**. A
 lane is a ROW, and rows are all it claims: **x is answered by the notes already
 on the board**, not by a grid.
@@ -423,21 +423,15 @@ that reacted below that), each column a moment. On an ordinary diagram neither
 axis means anything in particular, so the whole feature is gated on
 `isEventStormingTab` and no other board's behaviour changes at all.
 
-- **The switch lives with the notation.** A labelled toggle row at the top of
-  the palette's Event Storming category, a command-palette entry ("Turn
-  timeline lanes on / off"), and nothing else — no keyboard shortcut in v1,
-  because a board-level mode is not something you flip mid-sentence.
-- **The state is SHARED, on the tab.** `Tab.esTimeline` = `{ originX, originY,
-enabled }`. A facilitator turning lanes on turns them on for the room, like
-  the workshop stage visibility that came before it. Storing it per browser
-  would mean two people in the same session dragging onto two different grids.
-  `enabled` is an explicit flag rather than "the field's presence means on"
-  because the ORIGIN has to outlive an off (see below); absence therefore means
-  exactly one thing — this board has never had lanes, so it has no origin yet.
-  `activeTimeline(tab)` is the one predicate everything asks.
-- **One optional field, no migration.** The tab body travels as one JSON blob
-  (cloud, offline IndexedDB, export, realtime), so the field reaches every
-  store for free. Absence is the default and always will be.
+- **NOT A MODE, and not board state.** There is no switch, no command and no
+  menu verb: an event-storming board is a board of lanes, the way it is a board
+  of coloured paper. It was a toggle for one afternoon and the toggle was the
+  wrong shape — nobody wants half an event-storming board.
+- **The stack is DERIVED, never stored.** `activeTimeline(tab)` answers
+  `{ originY }`, anchored on the board's top-most note (zero on an empty
+  board), ignoring work on a hidden or locked layer. Nothing to persist,
+  nothing to migrate, nothing to fall out of step with the board — and moving
+  the anchor by a whole number of pitches draws exactly the same lanes.
 - **Each axis snaps only within its own tolerance**, and independently: half
   the lane gap (20px) on y, so a note parked deliberately between two lanes
   stays there; 12px on x, a real threshold, so a note placed in open space
@@ -455,7 +449,8 @@ record who asked for what.
 | **Same lane, a neighbour in reach**  | One GUTTER from the neighbour, and then the same again with a square note worth of empty wall between (room kept for an event not yet written): `x = n.x + n.width + 16 + k × (200 + 16)`, `k ≥ 0`, and the mirror to its left. Every step is a SQUARE note, whatever is being placed, so a row has one set of places whichever sticky you hold.                                                                     |
 | **Same lane — never offered**        | Touching (`n.x ± w`). One gap plus one sticky (`n.x + n.width + gutter + w`) — that is a note's edge, not a place. Half a pitch. Anything landing on a note that is already there (opening a row is the Alt insertion, a different verb).                                                                                                                                                                            |
 | **Adjacent lane**                    | EDGES LINE UP, in three columns: exactly above/below the note, and ONE rhythm step (216) to either side — the diagonal, a note sitting against its neighbour one place along. Same silhouette lines up on the left edge and, for two SQUARES, the brick as well (centred on the gap beside the note). Different silhouettes line up on the left edge or the right edge, in the same three columns, and get no brick. |
-| **Every other x snap**               | Stands down. On a lanes board the lane resolver is the only source of x — the ordinary alignment and distribution rungs were adding exactly the positions the rules above exclude.                                                                                                                                                                                                                                   |
+| **Every other x snap**               | Stands down. On an event-storming board the lane resolver is the only source of x — the ordinary alignment and distribution rungs were adding exactly the positions the rules above exclude.                                                                                                                                                                                                                         |
+| **A multi-selection**                | Placed as ONE BLOCK: the offers are asked of the selection’s outline, so its LEFT edge takes a left-edge offer and its RIGHT edge takes a right-edge one, and every note moves by the one delta — a row dragged together keeps its spacing exactly.                                                                                                                                                                  |
 | **Dropped ON a note in the row**     | Resolved to the nearest slot, however far it is. Sliding a note back until it touches the one before it is how an author says "right behind this", and the gesture overshoots by nature; a footprint lying on another note is not a resting place on a board of paper.                                                                                                                                               |
 | **The gutter**                       | Always `ES_NOTE_GAP` (16). Not measured from the board any more: one number, relative to the notes in the row, is what makes the places predictable.                                                                                                                                                                                                                                                                 |
 | **Capture**                          | Half a standard note (100px) on x, the lane tolerance on y; the note OWN row ranks first and distance decides within a rank (an aligned column and a brick stay equals); the slot is drawn before the drop.                                                                                                                                                                                                          |
@@ -471,6 +466,20 @@ of it lives in `rhythmSlots` and `gutterCentres` in
 `packages/diagram/src/event-storming-lanes.ts`, so a ruling is a small change.
 
 **Rulings** (each one an operator input, and what changed):
+
+- **2026-09-17 — "remove the toggle, lanes are always on"**: timeline lanes are
+  not a mode. The switch, the command-palette verb, the canvas-menu verb, the
+  two telemetry events and the whole field are GONE; the lane
+  stack is derived from the board (anchored on its top-most note), so there is
+  nothing to store, nothing to migrate and nothing to fall out of step. An
+  event-storming board IS a board of lanes.
+- **2026-09-17 — "a multi-selection should still snap"**: dragging several
+  notes now places the selection as one block against its own outline (left
+  edge to a left-edge offer, right edge to a right-edge one) and moves every
+  note by the one delta, so notes that were already aligned stay aligned.
+- **2026-09-17 — "a palette tile stays armed after a drag creates a note"**:
+  landing a palette drag now disarms the tile it armed (), so
+  the next click on the canvas does not silently mint a second note.
 
 - **2026-09-16 — "the lattice does not match my rows"**: x was a half-note
   lattice (100px columns) which could not express the board's own 72px gutter,
@@ -531,27 +540,20 @@ of it lives in `rhythmSlots` and `gutterCentres` in
   read as one row: the 180-tall wide kinds (policy, external system, aggregate)
   and the 140-tall actor sit centred against the 200-tall square kinds instead
   of hanging from a shared top edge.
-- **The origin is set ONCE, when lanes are switched on**: the top-left corner
-  of the board's top-most (then left-most) note, or `(0, 0)` on an empty board.
-  So the lanes arrive already lined up with the work that is there, and
-  `esTimeline.originX / originY` keeps them there. Switching lanes off and on
-  again keeps the stored origin, so the toggle is stable rather than
-  re-anchoring the board to whatever note happens to be top-left by then.
-- **Nothing on the board moves when lanes come on.** Not one note. Lanes are an
-  aid the next drag can use, not a cage the board is poured into — a switch
-  that rearranged an afternoon's work would be unusable, and "snap everything
-  to lanes" is a separate verb nobody has asked for yet.
+- **Nothing on the board ever moves to make room.** Not one note. Lanes are an
+  aid the next drag can use, not a cage the board is poured into; "snap
+  everything to lanes" is a separate verb nobody has asked for yet.
 - **Invisible until a note is on the move.** No permanent rules ruled across
   the canvas: while a single note is being dragged (from the palette or already
-  on the board) the lane it would land on lights as a faint band with a centre
+  on the board, alone or as a selection) the lane it would land on lights as a faint band with a centre
   line, its two neighbours light at half that alpha so the rhythm reads, and a
-  short tick marks the grid column. The bands span the viewport because the
-  lanes are infinite. Everything goes on release. There are no column marks:
+  the bands span the viewport because the lanes are infinite. Everything goes on release. There are no column marks:
   the board draws the SLOT it is offering instead, which says the same thing
   about x and says it where the note is actually going.
-- **A single sticky only**, the same rule the Alt insertion follows: a
-  multi-selection, a shape, an icon, an arrow or an image drags exactly as it
-  does on every other board.
+- **Notes only** — one or many. A selection of notes is placed as one block
+  (see the rules table); a shape, an icon, an arrow or an image drags exactly as
+  it does on every other board. The Alt insertion and the dock still want
+  exactly one note, which is their own rule.
 - **Precedence** (top rung wins): an open insertion slot (Alt, Phase 5) → free
   placement (Cmd/Ctrl, spec/60) → a dock candidate (Phase 7) → the lane (y) and
   the neighbours (x) → the ordinary alignment / distribution snap for whichever
@@ -583,11 +585,9 @@ gutter, shared with the template and the insertion ripple), y tolerance 20
 (`ES_LANE_SNAP_Y`, half the gap), x capture radius 100
 (`ES_CANDIDATE_RADIUS_X`, half a standard note), reach 2 lanes
 (`ES_CANDIDATE_REACH_LANES`). They sit in one constants block at the top of the
-geometry module, because they are a single model and get corrected together. The geometry is
-`packages/diagram/src/event-storming-lanes.ts`; the switch is
-`hooks/canvas/useTimelineLanes.ts`, published to the palette row
-(`components/palette/EventStormingBoardRows.tsx`), the command palette and the
-canvas menu; the lit lane is the module store `lib/lane-preview.ts` rendered by
+geometry module, because they are a single model and get corrected together. The
+geometry is `packages/diagram/src/event-storming-lanes.ts` (including
+`activeTimeline`, which derives the stack from the board itself); the lit lane is the module store `lib/lane-preview.ts` rendered by
 `components/canvas/TimelineLanesOverlay.tsx`; the two drag paths resolve it in
 `hooks/canvas/boxed-drag-resolve.ts` and `lib/palette-drag-snap.ts`. The
 overlay's ink is the ALIGNMENT GUIDES' own derivation
@@ -961,14 +961,13 @@ type, kept current every session. Each should stay true on its own.
 - A React state updater is not a place for side effects — it re-runs, and the
   import added everything twice. Unit tests missed it; counting stickies on a
   real canvas did not.
-- Lanes are an aid, not a cage: they appear only during a drag, they snap
-  only within a tolerance, and switching them on moves NOT ONE note. A
-  board-level switch that rearranged an afternoon's work would be a switch
-  nobody dares press.
-- Presence is a poor switch when the value has to outlive the off: the lane
-  ORIGIN is chosen once from the board as it stood, so "off" has to keep it,
-  so the field needs an explicit `enabled` and absence means "never had
-  lanes" — one meaning per state.
+- Lanes are an aid, not a cage: they appear only during a drag, they snap only
+  within a tolerance, and they move NOT ONE note that is already down.
+- A toggle for something the board always wants is a toggle nobody should have
+  to find. Lanes shipped with a switch, a command and a menu verb; the operator
+  asked for all three to go, and with them went the tab field, its migration
+  surface and two telemetry events. Derived state cannot drift from the board
+  it describes.
 - A grid claims every point by construction (half a column is the farthest
   anything can be from one), so only the axis with a real tolerance — y, onto
   the lane — is where "an aid, not a cage" actually lives.

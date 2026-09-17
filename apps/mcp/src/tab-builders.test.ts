@@ -95,18 +95,11 @@ describe('event-storming fields survive a tool write', () => {
     );
   });
 
-  it('carries the board’s lane stack when a tool rewrites the elements', () => {
+  it('keeps the board KIND when a tool rewrites the elements', () => {
     // The tools spread the existing tab, so a tab-level field survives an
     // element replace without anyone having to remember it.
-    const existing = {
-      id: 't1',
-      name: 'Wall',
-      kind: 'event-storming',
-      elements: [],
-      esTimeline: { originX: 120, originY: 80, enabled: true },
-    };
+    const existing = { id: 't1', name: 'Wall', kind: 'event-storming', elements: [] };
     const next = { ...existing, elements: esPair };
-    expect(next.esTimeline).toEqual({ originX: 120, originY: 80, enabled: true });
     expect(next.kind).toBe('event-storming');
   });
 });

@@ -66,7 +66,6 @@ export type CommandContext = {
   esBoard: boolean;
   // Are timeline lanes on right now (spec/139 Phase 6)? Names the verb
   // honestly rather than offering a switch whose direction you have to guess.
-  lanesOn: boolean;
   // Can this deployment read a photographed wall (spec/139 Phase 8)? False
   // without a model key, where the verb would be an offer nobody can accept.
   photoImportAvailable: boolean;
@@ -108,7 +107,6 @@ export type CommandHandlers = {
   setTool: (tool: string) => void;
   // Timeline lanes on an event-storming board (spec/139 Phase 6) — the same
   // flip the palette's switch runs.
-  toggleTimelineLanes: () => void;
   // Open the wall-photo reader (spec/139 Phase 8).
   openPhotoImport: () => void;
 };
@@ -265,13 +263,6 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
   // Event-storming board verbs (spec/139). Only on such a board: a timeline
   // lane on an ordinary diagram would be a grid for nothing.
   if (ctx.esBoard) {
-    out.push({
-      id: 'timeline-lanes',
-      name: ctx.lanesOn ? 'Turn timeline lanes off' : 'Turn timeline lanes on',
-      keywords:
-        'timeline lanes lane rows grid columns snap align stagger event storming board swimlane',
-      run: h.toggleTimelineLanes,
-    });
     if (ctx.photoImportAvailable) {
       out.push({
         id: 'photo-import',

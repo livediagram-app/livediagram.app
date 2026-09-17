@@ -209,7 +209,7 @@ export function detectDockings(
 export function reconcilePhoto(
   detected: PhotoNote[],
   existing: BoardNote[],
-  opts: { threshold?: number; tab?: { esTimeline?: EsTimeline } } = {},
+  opts: { threshold?: number; tab?: { elements?: readonly Element[] } } = {},
 ): PhotoReconciliation {
   const matches = matchDetectedNotes(detected, existing, { threshold: opts.threshold });
   const matchedDetected = new Map(matches.map((m) => [m.detectedId, m.boardId]));

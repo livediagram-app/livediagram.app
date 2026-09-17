@@ -12,7 +12,6 @@
 // self-drawing data shapes the same way the inline editor does.
 import { isSelfDrawingShape } from './data-shapes';
 import type { TabKind } from './tab-kind';
-import type { EsTimeline } from './event-storming-lanes';
 import type { TabTimer, TabVote } from './session';
 
 // Layer type used by the `Tab.layers` field below (spec/74). Type-only
@@ -261,17 +260,6 @@ export type Tab = {
   id: TabId;
   name: string;
   kind?: TabKind;
-  // Timeline lanes on an event-storming board (spec/139 Phase 6). PRESENT =
-  // lanes are on; the value says where the infinite lane stack is anchored
-  // (grid column 0's left edge, lane 0's top edge). The pitch and the column
-  // width are CONSTANTS rather than fields: one rhythm per board is the whole
-  // point, and a board with two lane heights is a board with no lanes.
-  //
-  // It lives on the TAB, so a facilitator turning lanes on turns them on for
-  // the room — the same reasoning as the workshop-stage visibility that came
-  // before it. Two people in one session dragging onto two different grids
-  // would be two boards.
-  esTimeline?: EsTimeline;
   elements: Element[];
   backgroundPattern?: BackgroundPattern;
   backgroundColor?: string;

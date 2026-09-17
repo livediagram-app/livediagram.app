@@ -101,22 +101,39 @@ export function resolveBoxedMove({
   // are measured where the note will LAND (the lane-snapped y), so which row
   // it is joining is settled before its neighbours are asked.
   const laneSnap = timeline ? snapToLane(candidate, timeline) : null;
-  const gutterSnap = laneSnap
-    ? capturePlacement({ ...candidate, y: laneSnap.y }, elements, {
-        exclude: memberIds,
-      })
-    : null;
+  // A SELECTION IS PLACED AS ONE BLOCK.
+  //
+  // Dragging three notes that are already lined up should keep them lined up
+  // and still meet the board's places: so the candidates are asked of the
+  // selection's own outline, not of the note under the cursor. Its LEFT edge
+  // is what a left-edge offer lines up, its RIGHT edge is what a right-edge
+  // offer lines up, and every note in the selection moves by the one delta —
+  // so their spacing is untouched, which is the point of dragging them
+  // together.
+  const moving = [...startBounds.values()].map((b) => ({ ...b, x: b.x + dx, y: b.y + dy }));
+  const groupLeft = Math.min(...moving.map((m) => m.x));
+  const groupRight = Math.max(...moving.map((m) => m.x + m.width));
+  const groupBounds = {
+    x: groupLeft,
+    // The row is the PRIMARY note's row: a selection spanning two rows keeps
+    // its shape and travels by the note in hand.
+    y: laneSnap ? laneSnap.y : candidate.y,
+    width: groupRight - groupLeft,
+    height: candidate.height,
+  };
+  const gutterSnap = laneSnap ? capturePlacement(groupBounds, elements, { exclude: memberIds }) : null;
+  const groupDx = gutterSnap ? gutterSnap.x - groupLeft : 0;
   // ON A LANES BOARD, THE LANE RESOLVER IS THE ONLY SOURCE OF X.
   //
   // The ordinary alignment and distribution snaps were quietly adding places
   // the rhythm does not have — a note landing flush against its neighbour's
   // right edge (left-to-right edge alignment), or sitting exactly on top of
   // it, or half-way along. The author reads those as the board offering
-  // positions it should not. With lanes on, for the single note this resolver
-  // is gated to, x is the rhythm's answer or the hand's own.
+  // positions it should not. With lanes on, x is the rhythm's answer or the
+  // hand's own.
   if (timeline) {
     return {
-      tx: gutterSnap ? dx + (gutterSnap.x - candidate.x) : dx,
+      tx: dx + groupDx,
       ty: laneSnap ? dy + (laneSnap.y - candidate.y) : dy,
       guides: [],
       distGuides: [],
@@ -131,7 +148,9 @@ export function resolveBoxedMove({
                   ghost: {
                     x: gutterSnap.x,
                     y: laneSnap.y,
-                    width: candidate.width,
+                    // The whole selection's outline, so a block of three notes
+                    // is previewed as the block it will land as.
+                    width: groupBounds.width,
                     height: candidate.height,
                   },
                 }

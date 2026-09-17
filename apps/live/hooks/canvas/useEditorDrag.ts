@@ -201,10 +201,19 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       // on a lane as one thing.
       isSingleNoteDrag(depsRef.current.activeTab.elements, drag.primaryId, drag.startBounds);
     setInsertionDragInHand(movingOneNote && depsRef.current.insertGate.esBoard);
-    // Timeline lanes (spec/139 Phase 6) apply to exactly the same thing the
-    // insertion gesture does — ONE note, on one of these boards — so the two
-    // read the same flag rather than each deciding what a note is.
+    // Timeline lanes (spec/139 Phase 6) apply to ANY notes being moved on one
+    // of these boards, one or many: a selection travels as a block and still
+    // meets the board's places. The insertion gesture and the dock still want
+    // exactly one note, so they keep their own flag.
     const laneEligible = movingOneNote && depsRef.current.insertGate.esBoard;
+    const notesEligible =
+      drag.kind === 'boxed' &&
+      drag.mode === 'move' &&
+      depsRef.current.insertGate.esBoard &&
+      [...drag.startBounds.keys()].every(
+        (id) =>
+          depsRef.current.activeTab.elements.find((el) => el.id === id)?.type === 'sticky',
+      );
     // The last pointer position of this drag, so pressing or releasing Alt
     // without moving the mouse still opens / unwinds the slot (see onAltChange).
     let lastMove: MovePointer | null = null;
@@ -396,7 +405,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
             guidesOn: depsRef.current.alignmentGuidesRef.current ?? true,
             // Free placement (Cmd/Ctrl) skips the lanes with everything else:
             // the modifier means "I know where I want this".
-            timeline: laneEligible && !noSnap ? activeTimeline(activeTab) : null,
+            timeline: notesEligible && !noSnap ? activeTimeline(activeTab) : null,
           });
           setLanePreview(move.lane);
           scheduleGuides(move.guides, move.distGuides);

@@ -15,7 +15,7 @@ import { resolveBoxedMove } from './boxed-drag-resolve';
 // reached at all), then the lane (y) and the neighbours (x), then alignment /
 // distribution for whatever is left.
 
-const TIMELINE: EsTimeline = { originX: 0, originY: 0, enabled: true };
+const TIMELINE: EsTimeline = { originY: 0 };
 
 function note(id: string, x: number, y: number): StickyElement {
   return { id, type: 'sticky', x, y, width: 200, height: 200 } as StickyElement;

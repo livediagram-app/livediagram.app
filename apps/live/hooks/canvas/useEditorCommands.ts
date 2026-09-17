@@ -60,8 +60,6 @@ export function useEditorCommands(): {
     zenMode,
     toggleZenMode,
     esBoard,
-    lanesOn,
-    toggleLanes,
     photoImportAvailable,
     openPhotoImport,
     fitToScreen,
@@ -121,7 +119,6 @@ export function useEditorCommands(): {
       canvasEmpty: activeTab.elements.length === 0,
       isMobile,
       esBoard,
-      lanesOn,
       photoImportAvailable,
     };
     return buildEditorCommands(cmdCtx, {
@@ -170,7 +167,6 @@ export function useEditorCommands(): {
       undo,
       redo,
       toggleZen: toggleZenMode,
-      toggleTimelineLanes: toggleLanes,
       openPhotoImport,
       fitToScreen,
       autoLayout: autoLayoutTab,
@@ -216,8 +212,6 @@ export function useEditorCommands(): {
     activeTab.elements.length,
     isMobile,
     esBoard,
-    lanesOn,
-    toggleLanes,
     photoImportAvailable,
     openPhotoImport,
   ]);

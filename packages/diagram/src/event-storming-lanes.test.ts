@@ -7,7 +7,7 @@ import {
   ES_LANE_SNAP_Y,
   ES_CANDIDATE_RADIUS_X,
   ES_NOTE_GAP,
-  initialTimelineOrigin,
+  laneOriginOf,
   laneCentre,
   laneIndexAt,
   laneTop,
@@ -22,8 +22,8 @@ import {
 import { ES_NOTE_SIZE_PX } from './event-storming';
 import type { Element } from './index';
 
-const T: EsTimeline = { originX: 0, originY: 0, enabled: true };
-const OFFSET: EsTimeline = { originX: 37, originY: -114, enabled: true };
+const T: EsTimeline = { originY: 0 };
+const OFFSET: EsTimeline = { originY: -114 };
 
 function note(over: Partial<Element> & { id: string }): Element {
   return {
@@ -109,7 +109,7 @@ describe('snapToLane', () => {
   });
 
   it('measures the stack from the origin', () => {
-    const snap = snapToLane({ x: OFFSET.originX + 4, y: OFFSET.originY + 4, ...square }, OFFSET);
+    const snap = snapToLane({ x: 4, y: OFFSET.originY + 4, ...square }, OFFSET);
     expect(snap!.y).toBe(OFFSET.originY);
     expect(snap!.laneIndex).toBe(0);
   });
@@ -368,67 +368,34 @@ describe('capturing a suggested slot', () => {
   });
 });
 
-describe('activeTimeline', () => {
-  it('is null for a board that has never had lanes', () => {
-    expect(activeTimeline({})).toBeNull();
-    expect(activeTimeline(undefined)).toBeNull();
-  });
-
-  it('is null while lanes are switched off, even though the origin is remembered', () => {
-    expect(
-      activeTimeline({ esTimeline: { originX: 120, originY: 80, enabled: false } }),
-    ).toBeNull();
-  });
-
-  it('is the stack itself while lanes are on', () => {
-    const t = { originX: 120, originY: 80, enabled: true };
-    expect(activeTimeline({ esTimeline: t })).toBe(t);
-  });
-});
-
-describe('initialTimelineOrigin', () => {
-  it('is the canvas origin on an empty board', () => {
-    expect(initialTimelineOrigin([])).toEqual({ originX: 0, originY: 0, enabled: true });
-  });
-
-  it('takes the top-left corner of the top-most note', () => {
-    const els = [
-      note({ id: 'a', x: 500, y: 300 }),
-      note({ id: 'b', x: 120, y: 80 }),
-      note({ id: 'c', x: 900, y: 700 }),
+describe('the lane stack of a board', () => {
+  it('anchors on the board top-most note', () => {
+    const board = [
+      note({ id: 'a', x: 40, y: 300 }),
+      note({ id: 'b', x: 900, y: 120 }),
+      note({ id: 'c', x: 10, y: 540 }),
     ];
-    expect(initialTimelineOrigin(els)).toEqual({ originX: 120, originY: 80, enabled: true });
+    expect(laneOriginOf(board)).toBe(120);
+    expect(activeTimeline({ elements: board })).toEqual({ originY: 120 });
   });
 
-  it('breaks a tie on the top edge with the left-most note', () => {
-    const els = [note({ id: 'a', x: 500, y: 80 }), note({ id: 'b', x: 120, y: 80 })];
-    expect(initialTimelineOrigin(els)).toEqual({ originX: 120, originY: 80, enabled: true });
+  it('starts at zero on an empty board', () => {
+    expect(laneOriginOf([])).toBe(0);
+    expect(activeTimeline({ elements: [] })).toEqual({ originY: 0 });
   });
 
-  it('ignores everything that is not a note', () => {
-    const els = [
-      { id: 's', type: 'shape', shape: 'square', x: 0, y: -900, width: 100, height: 100 },
-      note({ id: 'b', x: 120, y: 80 }),
-    ] as Element[];
-    expect(initialTimelineOrigin(els)).toEqual({ originX: 120, originY: 80, enabled: true });
+  it('ignores work on a hidden or locked layer', () => {
+    const board = [note({ id: 'hidden', x: 0, y: 0 }), note({ id: 'seen', x: 0, y: 240 })];
+    expect(laneOriginOf(board, new Set(['hidden']))).toBe(240);
   });
 
-  it('ignores notes the author cannot see', () => {
-    const els = [note({ id: 'hidden', x: 0, y: -400 }), note({ id: 'b', x: 120, y: 80 })];
-    expect(initialTimelineOrigin(els, new Set(['hidden']))).toEqual({
-      originX: 120,
-      originY: 80,
-      enabled: true,
-    });
-  });
-
-  it('falls back to the canvas origin when every note is hidden', () => {
-    const els = [note({ id: 'hidden', x: 40, y: 40 })];
-    expect(initialTimelineOrigin(els, new Set(['hidden']))).toEqual({
-      originX: 0,
-      originY: 0,
-      enabled: true,
-    });
+  it('is unmoved by an anchor that steps a whole number of pitches', () => {
+    // The stack repeats, so re-anchoring a pitch higher draws the same lanes.
+    const board = [note({ id: 'a', x: 0, y: 0 })];
+    const higher = [note({ id: 'a', x: 0, y: -ES_LANE_PITCH })];
+    const one = activeTimeline({ elements: board })!;
+    const two = activeTimeline({ elements: higher })!;
+    expect((laneCentre(0, one) - laneCentre(0, two)) % ES_LANE_PITCH).toBe(0);
   });
 });
 

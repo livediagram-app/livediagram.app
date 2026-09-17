@@ -27,29 +27,44 @@
 import { ES_NOTE_SIZE_PX } from './event-storming';
 import type { Element, ElementId } from './index';
 
-// Where the lane stack is anchored, and whether it is in use. The PITCH is a
-// constant, not a field: one rhythm per board is the point, and a board with
-// two lane heights is a board with no lanes.
-//
-// `enabled` is explicit rather than "presence means on" because the ORIGIN has
-// to outlive an off: it is chosen once, from the board as it stood, and
-// switching lanes off and on again must not re-anchor the whole board to
-// whatever note happens to be top-left by then. So absence means "this board
-// has never had lanes" (and therefore no origin), and the two states a board
-// that HAS had them can be in are both carried by the one field.
+// Where the lane stack is anchored. ONE number: the canvas y of lane 0's top
+// edge. There is no 'enabled' any more and no x — an event-storming board is
+// ALWAYS on lanes (that is what the board is), and x has not been a grid since
+// placement became neighbour-relative.
 export type EsTimeline = {
-  // Canvas x of grid column 0.
-  originX: number;
-  // Canvas y of lane 0's TOP edge.
   originY: number;
-  enabled: boolean;
 };
 
-// The lane stack a tab is actually working to, or null when lanes are off.
-// ONE predicate, so the switch, the two drag resolvers, the overlay and the
-// export can't disagree about whether lanes are in play.
-export function activeTimeline(tab: { esTimeline?: EsTimeline } | undefined): EsTimeline | null {
-  return tab?.esTimeline?.enabled ? tab.esTimeline : null;
+// The lane stack a board is working to. DERIVED, never stored: anchored on the
+// board's top-most note, so the lanes arrive already lined up with the work
+// that is there, and an empty board starts at zero.
+//
+// Deriving beats storing because the derivation is stable in the way that
+// matters — every snapped note sits on the stack, and moving the anchor by a
+// whole number of pitches leaves exactly the same lane lines. Nothing to
+// toggle, nothing to migrate, nothing to fall out of step with the board.
+//
+// Notes on a hidden or locked layer are ignored: you cannot line a stack up
+// with work you cannot see.
+export function activeTimeline(
+  tab: { elements?: readonly Element[] } | undefined,
+  inertIds?: ReadonlySet<ElementId>,
+): EsTimeline | null {
+  if (!tab) return null;
+  return { originY: laneOriginOf(tab.elements ?? [], inertIds) };
+}
+
+export function laneOriginOf(
+  elements: readonly Element[],
+  inertIds?: ReadonlySet<ElementId>,
+): number {
+  let top: number | null = null;
+  for (const el of elements) {
+    if (el.type !== 'sticky') continue;
+    if (inertIds?.has(el.id)) continue;
+    if (top === null || el.y < top) top = el.y;
+  }
+  return top ?? 0;
 }
 
 // A lane is one standard note tall, and the gap between two lanes is the
@@ -342,30 +357,6 @@ export function captureCandidate(
     bestDistance = distance;
   }
   return best;
-}
-
-// Where the stack is anchored when lanes are switched ON: the top-left corner
-// of the board's top-most (ties broken by left-most) note, so the lanes arrive
-// already lined up with the work that is already there. `(0, 0)` on an empty
-// board. Written ONCE and then kept, so switching lanes off and on again
-// doesn't re-anchor the board to whatever note happens to be top-left by then.
-//
-// Notes on a hidden or locked layer are ignored: you cannot line lanes up with
-// work you cannot see.
-export function initialTimelineOrigin(
-  elements: Element[],
-  inertIds?: ReadonlySet<ElementId>,
-): EsTimeline {
-  let best: { x: number; y: number } | null = null;
-  for (const el of elements) {
-    // A sticky is boxed by type, so its x / y are always there to read.
-    if (el.type !== 'sticky') continue;
-    if (inertIds?.has(el.id)) continue;
-    if (!best || el.y < best.y || (el.y === best.y && el.x < best.x)) {
-      best = { x: el.x, y: el.y };
-    }
-  }
-  return { originX: best?.x ?? 0, originY: best?.y ?? 0, enabled: true };
 }
 
 // The lanes whose BAND intersects a canvas-space viewport, in order. The stack

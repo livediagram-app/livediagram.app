@@ -51,21 +51,15 @@ describe('rowToTab', () => {
           theme: 'cobalt',
           background: { pattern: 'grid', color: '#ffffff', patternColor: '#cbd5e1' },
           locked: true,
-          // Board kind + timeline lanes (spec/139): tab state with no column
-          // of its own, so the blob is the only thing carrying them.
+          // Board kind (spec/139): tab state with no column of its own, so
+          // the blob is the only thing carrying it.
           kind: 'event-storming',
-          esTimeline: { originX: 120, originY: 80, enabled: true },
         }),
       }),
     );
     expect((dto as unknown as { theme: string }).theme).toBe('cobalt');
     expect((dto as unknown as { locked: boolean }).locked).toBe(true);
     expect((dto as unknown as { kind: string }).kind).toBe('event-storming');
-    expect((dto as unknown as { esTimeline: unknown }).esTimeline).toEqual({
-      originX: 120,
-      originY: 80,
-      enabled: true,
-    });
   });
 
   it('preserves elements from the parsed body in array order', () => {

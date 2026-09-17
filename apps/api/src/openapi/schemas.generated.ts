@@ -2172,26 +2172,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
-  "EsTimeline": {
-    "additionalProperties": false,
-    "properties": {
-      "enabled": {
-        "type": "boolean"
-      },
-      "originX": {
-        "type": "number"
-      },
-      "originY": {
-        "type": "number"
-      }
-    },
-    "required": [
-      "originX",
-      "originY",
-      "enabled"
-    ],
-    "type": "object"
-  },
   "EstimateScale": {
     "enum": [
       "fibonacci",
@@ -3823,9 +3803,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "$ref": "#/components/schemas/Element"
         },
         "type": "array"
-      },
-      "esTimeline": {
-        "$ref": "#/components/schemas/EsTimeline"
       },
       "folder": {
         "type": "string"

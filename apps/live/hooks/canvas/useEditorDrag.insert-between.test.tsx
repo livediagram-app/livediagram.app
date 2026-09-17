@@ -185,13 +185,13 @@ describe('useEditorDrag — inserting a note already on the board (spec/139)', (
   });
 
   // THE regression guard: this is what the Alt gesture exists to protect.
-  it('does nothing at all without Alt — the plain move of before', () => {
+  it('opens no slot without Alt — and nothing on the board stirs', () => {
     const h = harness();
     press(h, 'drag');
     move(h, INTO_GAP.dx, INTO_GAP.dy);
     expect(getInsertionSlot()).toBeNull();
-    // The note follows the pointer, and nothing else on the board stirs.
-    expect(h.xOf('drag')).toBe(1200 + INTO_GAP.dx);
+    // The dragged note takes a lane placement (every ES board is on lanes),
+    // and the row it was dragged over is untouched — which is the claim here.
     expect(h.xOf('b')).toBe(272);
     release(h, INTO_GAP.dx, INTO_GAP.dy);
     expect(h.xOf('b')).toBe(272);
@@ -266,8 +266,10 @@ describe('useEditorDrag — inserting a note already on the board (spec/139)', (
     expect(getInsertionSlot()?.rightId).toBe('b');
     key('keyup', 'Alt');
     expect(getInsertionSlot()).toBeNull();
-    // Placement is handed straight back to the ordinary move.
-    expect(h.xOf('drag')).toBe(1200 + INTO_GAP.dx);
+    // Placement is handed straight back to the lane rules, which is what an
+    // ordinary move on an event-storming board now is.
+    expect(h.xOf('b')).toBe(272);
+    expect(h.xOf('c')).toBe(544);
   });
 
   it('restores everything on Escape, preview included', () => {
@@ -338,9 +340,9 @@ describe('useEditorDrag — inserting a note already on the board (spec/139)', (
       press(h, 'drag');
       move(h, INTO_GAP.dx, INTO_GAP.dy, { alt: true });
       expect(getInsertionSlot()).toBeNull();
-      // ...and the selection still drags together, exactly as it does today.
-      expect(h.xOf('drag')).toBe(1200 + INTO_GAP.dx);
-      expect(h.xOf('c')).toBe(544 + INTO_GAP.dx);
+      // …and the selection still drags TOGETHER: whatever the lanes make of
+      // the block, the two notes keep the spacing they had.
+      expect(h.xOf('drag')! - h.xOf('c')!).toBe(1200 - 544);
     });
 
     // Cmd/Ctrl means free placement (spec/60). An open slot IS the placement,

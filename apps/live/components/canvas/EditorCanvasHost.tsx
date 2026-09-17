@@ -1,5 +1,6 @@
 'use client';
 
+import { dropThenDisarm } from '@/lib/palette-drop';
 import { describeOne } from '@/lib/element-names';
 import { DEFAULT_BUTTON_MODE } from '@livediagram/diagram';
 import { useMemo } from 'react';
@@ -100,9 +101,6 @@ export function EditorCanvasHost() {
     addStatRow,
     addSticky,
     esBoard,
-    lanesOn,
-    lanesDisabled,
-    toggleLanes,
     addDockedNote,
     photoImportAvailable,
     photoImportBlocked,
@@ -417,7 +415,6 @@ export function EditorCanvasHost() {
       elements={presentingElements ?? activeTab.elements}
       tabLayers={activeTab.layers}
       tabKind={activeTab.kind}
-      tabTimeline={activeTab.esTimeline}
       layerInertIds={layerInertIds}
       shiftDupGhostIds={shiftDupGhostIds}
       snapGuides={snapGuides}
@@ -563,9 +560,6 @@ export function EditorCanvasHost() {
       onAddSticky={addSticky}
       esBoard={esBoard}
       esBoardControls={{
-        lanesOn,
-        lanesDisabled,
-        onToggleLanes: toggleLanes,
         ...(photoImportAvailable
           ? {
               onImportPhoto: openPhotoImport,
@@ -954,7 +948,7 @@ export function EditorCanvasHost() {
       onPrevVoteResult={prevVoteResult}
       onDoneVoteReview={doneVoteReview}
       onToggleAspectLock={toggleAspectLockSelected}
-      onDropPalette={dropPaletteItem}
+      onDropPalette={dropThenDisarm(dropPaletteItem, cancelDrawShape)}
       onSpawnConnect={spawnConnectSelected}
       onStartArrow={handleStartArrow}
       onStartPencil={beginFreehand}

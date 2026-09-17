@@ -113,7 +113,7 @@ describe('paletteDragSnapAt', () => {
 // applies, so a note dragged in from the palette joins the row the board has
 // already committed to and lines up with the notes already in it.
 describe('paletteDragSnapAt — timeline lanes', () => {
-  const TIMELINE: EsTimeline = { originX: 0, originY: 0, enabled: true };
+  const TIMELINE: EsTimeline = { originY: 0 };
   const dragged = { width: 200, height: 200 };
   const neighbour = (x: number, y: number) =>
     ({ id: 'n', type: 'sticky', x, y, width: 200, height: 200 }) as Element;

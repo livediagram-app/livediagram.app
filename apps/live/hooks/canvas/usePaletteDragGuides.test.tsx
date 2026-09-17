@@ -103,7 +103,7 @@ afterEach(() => {
 // lane and the drop all read ONE snap, so these assert the published offset —
 // which is exactly what the drop consumes.
 describe('usePaletteDragGuides — timeline lanes (spec/139)', () => {
-  const TIMELINE: EsTimeline = { originX: 0, originY: 0, enabled: true };
+  const TIMELINE: EsTimeline = { originY: 0 };
   // A cursor a few px off lane 1, in note-centre coords. x has nothing to
   // line up with on an empty board, so it stays where the cursor is.
   const CX = 309 + 100;

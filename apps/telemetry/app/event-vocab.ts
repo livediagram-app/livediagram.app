@@ -158,12 +158,6 @@ export function eventExplanation(category: string, action: string, type: string 
   if (category === 'Canvas' && action === 'Used' && type === 'InsertBetween') {
     return 'Someone held Alt and dragged a note into the gap between two notes on an event-storming board (spec/139), and the board made room for it.';
   }
-  if (category === 'Canvas' && action === 'Used' && type === 'TimelineLanesOn') {
-    return 'Someone switched timeline lanes on for an event-storming board (spec/139), giving dragged notes a row-and-column rhythm.';
-  }
-  if (category === 'Canvas' && action === 'Used' && type === 'TimelineLanesOff') {
-    return 'Someone switched timeline lanes off again on an event-storming board (spec/139).';
-  }
   if (category === 'Canvas' && action === 'Used' && type === 'DockAdd') {
     return "Someone clicked a note's anchor on an event-storming board (spec/139) and got the matching note already docked to it.";
   }

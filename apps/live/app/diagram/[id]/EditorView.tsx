@@ -74,8 +74,6 @@ export function EditorView() {
     canvasTool,
     drag,
     esBoard,
-    lanesOn,
-    toggleLanes,
     photoDraft,
     photoImportAvailable,
     photoPickerRef,
@@ -379,8 +377,6 @@ export function EditorView() {
             defaultTextSize: activeTab.defaultTextSize,
             onSetDefaultTextSize: setTabDefaultTextSize,
             esBoard,
-            lanesOn,
-            onToggleTimelineLanes: toggleLanes,
           }}
         />
       )}

@@ -21,7 +21,7 @@ import type { EditorDragDeps } from './useEditorDrag.types';
 // driven through the real drag machine: the lit lane, the landing, the rungs
 // above it (an Alt slot, free placement), and the things that never snap.
 
-const TIMELINE: EsTimeline = { originX: 0, originY: 0, enabled: true };
+const TIMELINE: EsTimeline = { originY: 0 };
 
 function note(id: string, x: number, y = 0): StickyElement {
   return { id, type: 'sticky', x, y, width: 200, height: 200, label: id } as StickyElement;
@@ -35,7 +35,6 @@ function harness(
   opts: {
     elements?: Element[];
     esBoard?: boolean;
-    lanes?: boolean;
     multiSelected?: string[];
   } = {},
 ) {
@@ -47,7 +46,6 @@ function harness(
         id: 't',
         name: 'Tab',
         elements,
-        ...(opts.lanes === false ? {} : { esTimeline: TIMELINE }),
       } as Tab;
     },
     zoomRef: { current: 1 },
@@ -227,24 +225,19 @@ describe('useEditorDrag — timeline lanes (spec/139)', () => {
     expect(h.xOf('drag')).toBe(272);
   });
 
-  it('never snaps a multi-selection', () => {
+  it('snaps a MULTI-SELECTION as one block, keeping its spacing', () => {
+    // Two notes already a gutter apart, dragged together: the block takes a
+    // place on the board and the pair stays a pair.
     const h = harness({ multiSelected: ['drag', 'a'] });
+    const before = h.xOf('drag')! - h.xOf('a')!;
     press(h, 'drag');
     move(h, DX, DY);
-    expect(getLanePreview()).toBeNull();
-    expect(h.xOf('drag')).toBe(TARGET.x);
+    expect(getLanePreview()).not.toBeNull();
+    expect(h.xOf('drag')! - h.xOf('a')!).toBe(before);
   });
 
   it('does nothing on an ordinary board', () => {
     const h = harness({ esBoard: false });
-    press(h, 'drag');
-    move(h, DX, DY);
-    expect(getLanePreview()).toBeNull();
-    expect(h.xOf('drag')).toBe(TARGET.x);
-  });
-
-  it('does nothing while lanes are switched off', () => {
-    const h = harness({ lanes: false });
     press(h, 'drag');
     move(h, DX, DY);
     expect(getLanePreview()).toBeNull();

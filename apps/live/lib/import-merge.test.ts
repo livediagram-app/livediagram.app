@@ -38,12 +38,6 @@ describe('mergeImportedTab', () => {
   });
 
   // Timeline lanes are BOARD state (spec/139 Phase 6): a board exported with
-  // lanes on and re-imported without them would come back a different board.
-  it('carries the timeline lane stack', () => {
-    const esTimeline = { originX: 120, originY: 80, enabled: true };
-    expect(mergeImportedTab(tab(), tab({ esTimeline })).esTimeline).toEqual(esTimeline);
-  });
-
   // A dock pointing at a host the file does not contain (a hand-edited
   // export, a partial paste) must not come in as a relation to nothing.
   it('frees a docked note whose host is not in the file', () => {

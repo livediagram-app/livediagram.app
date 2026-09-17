@@ -6,7 +6,6 @@ import type { PointerEvent as ReactPointerEvent, Ref } from 'react';
 import type {
   EmbedProvider,
   EsDockSide,
-  EsTimeline,
   EventStormingNoteKind,
 } from '@livediagram/diagram';
 import type {
@@ -79,7 +78,6 @@ export type CanvasProps = {
   // The tab's timeline lane stack (spec/139 Phase 6) when lanes are on, else
   // undefined: a note dragged in from the palette snaps onto it, and the
   // overlay lights the lane it is landing on.
-  tabTimeline?: EsTimeline;
   // Element ids on a hidden or locked layer (spec/74) — inert to every
   // selection surface, including the right-click context menu.
   layerInertIds: Set<string>;

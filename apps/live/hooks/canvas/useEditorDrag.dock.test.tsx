@@ -42,7 +42,6 @@ function harness(
     elements?: Element[];
     esBoard?: boolean;
     multiSelected?: string[];
-    lanes?: boolean;
   } = {},
 ) {
   let elements = opts.elements ?? [HOST, note('c', 'command', 0, 0)];
@@ -54,7 +53,6 @@ function harness(
         name: 'Board',
         kind: 'event-storming',
         elements,
-        ...(opts.lanes ? { esTimeline: { originX: 0, originY: 0, enabled: true } } : {}),
       } as Tab;
     },
     zoomRef: { current: 1 },
@@ -264,14 +262,17 @@ describe('useEditorDrag — magnetic docking (spec/139)', () => {
     const docked = note('c', 'command', FACE.x, FACE.y, {
       esDock: { hostId: 'e', side: 'before' },
     });
-    const h = harness({ elements: [HOST, docked], lanes: true });
+    const h = harness({ elements: [HOST, docked] });
     press(h, 'e');
-    // Aim the host a few px off lane 2. Lanes claim the ROW; x is left where
-    // the hand put it unless a neighbour is near, and the only other note
-    // here is the one docked to this very host.
-    move(h, 12 * 100 + 7 - 1000, 2 * 240 + 9 - 500);
+    // Aim the host a few px off the lane two rows down. The stack is anchored
+    // on the board's top-most note, which here is the pair itself at y=500, so
+    // lane 2 is 500 + 2 pitches. Lanes claim the ROW; x is left where the hand
+    // put it unless a neighbour is near, and the only other note here is the
+    // one docked to this very host.
+    const laneTwoY = 500 + 2 * 240;
+    move(h, 12 * 100 + 7 - 1000, laneTwoY + 9 - 500);
     expect(h.byId('e').x).toBe(12 * 100 + 7);
-    expect(h.byId('e').y).toBe(2 * 240);
+    expect(h.byId('e').y).toBe(laneTwoY);
     // …and the pair is still a pair, at exactly its seam.
     expect(h.byId('c').x).toBe(12 * 100 + 7 - 16 - 200);
     expect(h.byId('c').y).toBe(h.byId('e').y);

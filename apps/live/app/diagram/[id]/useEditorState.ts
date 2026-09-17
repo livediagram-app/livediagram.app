@@ -55,7 +55,6 @@ import { useFavourites } from '@/hooks/persistence/useFavourites';
 import { useShortcutsEnabled } from '@/hooks/ui/useShortcutsEnabled';
 import { useEditorComments } from '@/hooks/collab/useEditorComments';
 import { useEditorDrag } from '@/hooks/canvas/useEditorDrag';
-import { useTimelineLanes } from '@/hooks/canvas/useTimelineLanes';
 import { useDockActions } from '@/hooks/canvas/useDockActions';
 import { usePhotoDraft } from '@/hooks/canvas/usePhotoDraft';
 import { useEditorImages } from '@/hooks/canvas/useEditorImages';
@@ -1444,18 +1443,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [layerInertIds]);
 
-  // Timeline lanes (spec/139 Phase 6): the board-level switch, and the lane
-  // stack the drag resolvers snap to while it is on.
-  const timelineLanes = useTimelineLanes({
-    activeId,
-    activeTab,
-    esBoard,
-    editsBlocked,
-    layerInertIds,
-    commitTabs,
-    emitTabMeta,
-  });
-
   // Apply AI-returned elements as a single undo block (spec/25).
   // Generate handles both modifications and additions in one pass:
   //   - Elements whose ID matches an existing element → replace in place
@@ -2561,9 +2548,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     // insert-between preview (spec/139) never offers a slot the drop
     // would refuse.
     createBlocked,
-    // Timeline lanes (spec/139 Phase 6): the switch's state for the palette
-    // row + command palette, and the flip itself.
-    ...timelineLanes,
     // Anchor docking (spec/139 Phase 7).
     ...dockActions,
     // Photo import (spec/139 Phase 8): the draft run, whether the entry

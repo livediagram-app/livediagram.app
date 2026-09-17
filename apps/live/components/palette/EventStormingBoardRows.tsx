@@ -1,7 +1,5 @@
 'use client';
 
-import { SettingsToggleRow } from '@/components/panels/SettingsToggleRow';
-
 // The BOARD-level controls at the top of the palette's Event Storming category
 // (spec/139). Everything below them adds a note; these change what the board
 // itself does, so they sit above the notation with a rule under them rather
@@ -12,10 +10,6 @@ import { SettingsToggleRow } from '@/components/panels/SettingsToggleRow';
 // on an ordinary diagram would be a switch for nothing.
 
 export type EsBoardControls = {
-  // Timeline lanes (spec/139 Phase 6).
-  lanesOn: boolean;
-  lanesDisabled: boolean;
-  onToggleLanes: () => void;
   // Photo import (spec/139 Phase 8). Absent when the deployment has no model
   // key: the whole feature is then not a thing this board can do, and a
   // greyed row would advertise something the operator cannot switch on.
@@ -28,13 +22,6 @@ export type EsBoardControls = {
 export function EventStormingBoardRows({ controls }: { controls: EsBoardControls }) {
   return (
     <div className="mb-1.5 border-b border-slate-200 pb-1.5 dark:border-slate-700">
-      <SettingsToggleRow
-        label="Timeline lanes"
-        hint="Snap notes into rows, lined up with their neighbours"
-        checked={controls.lanesOn}
-        disabled={controls.lanesDisabled}
-        onToggle={controls.onToggleLanes}
-      />
       {controls.onImportPhoto ? (
         <button
           type="button"

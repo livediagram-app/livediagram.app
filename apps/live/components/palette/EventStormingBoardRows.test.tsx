@@ -29,57 +29,29 @@ const actions = {
 } satisfies PaletteTileActions;
 
 describe('EventStormingBoardRows', () => {
-  it('reads as one switch — label, hint and control together', () => {
-    const onToggleLanes = vi.fn();
-    render(
-      <EventStormingBoardRows controls={{ lanesOn: false, lanesDisabled: false, onToggleLanes }} />,
-    );
-    const sw = screen.getByRole('switch', { name: /timeline lanes/i });
-    expect(sw.getAttribute('aria-checked')).toBe('false');
-    fireEvent.click(sw);
-    expect(onToggleLanes).toHaveBeenCalledTimes(1);
+  it('offers no lanes switch — an event-storming board is always on lanes', () => {
+    render(<EventStormingBoardRows controls={{}} />);
+    expect(screen.queryByRole('switch', { name: /timeline lanes/i })).toBeNull();
   });
 
-  it('shows the lanes as on when they are', () => {
-    render(
-      <EventStormingBoardRows
-        controls={{ lanesOn: true, lanesDisabled: false, onToggleLanes: noop }}
-      />,
-    );
-    expect(
-      screen.getByRole('switch', { name: /timeline lanes/i }).getAttribute('aria-checked'),
-    ).toBe('true');
-  });
-
-  it('stays visible but refuses the flip in a read-only / locked session', () => {
-    const onToggleLanes = vi.fn();
-    render(
-      <EventStormingBoardRows controls={{ lanesOn: true, lanesDisabled: true, onToggleLanes }} />,
-    );
-    const sw = screen.getByRole('switch', { name: /timeline lanes/i }) as HTMLButtonElement;
-    expect(sw.disabled).toBe(true);
-    fireEvent.click(sw);
-    expect(onToggleLanes).not.toHaveBeenCalled();
+  it('offers the photo row when the deployment can read a photo', () => {
+    const onImportPhoto = vi.fn();
+    render(<EventStormingBoardRows controls={{ onImportPhoto }} />);
+    fireEvent.click(screen.getByRole('button', { name: /add from photo/i }));
+    expect(onImportPhoto).toHaveBeenCalledTimes(1);
   });
 });
 
 describe('the Event Storming palette category', () => {
-  it('puts the board switch above the notation', () => {
-    render(
-      <PaletteEventStormingTab
-        pendingDraw={null}
-        actions={actions}
-        board={{ lanesOn: false, lanesDisabled: false, onToggleLanes: noop }}
-      />,
-    );
-    expect(screen.getByRole('switch', { name: /timeline lanes/i })).toBeTruthy();
-    // …and the notation is still all there underneath it.
+  it('puts the board rows above the notation', () => {
+    render(<PaletteEventStormingTab pendingDraw={null} actions={actions} board={{}} />);
+    // The notation is all there, with no board switch above it any more.
+    expect(screen.queryByRole('switch', { name: /timeline lanes/i })).toBeNull();
     expect(screen.getByRole('option', { name: /add domain event note/i })).toBeTruthy();
   });
 
-  it('shows no board switch when the category is browsed off an ES board', () => {
+  it('still shows the notation when the category is browsed off an ES board', () => {
     render(<PaletteEventStormingTab pendingDraw={null} actions={actions} />);
-    expect(screen.queryByRole('switch', { name: /timeline lanes/i })).toBeNull();
     expect(screen.getByRole('option', { name: /add domain event note/i })).toBeTruthy();
   });
 });

@@ -28,7 +28,6 @@ const ctx: CommandContext = {
   canvasEmpty: false,
   isMobile: false,
   esBoard: false,
-  lanesOn: false,
   photoImportAvailable: false,
 };
 

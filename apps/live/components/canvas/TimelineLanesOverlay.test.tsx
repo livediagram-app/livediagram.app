@@ -10,7 +10,7 @@ import { TimelineLanesOverlay } from './TimelineLanesOverlay';
 // will — canvas coords through the wrapper rect + zoom, the one inversion the
 // rest of the canvas chrome uses.
 
-const TIMELINE: EsTimeline = { originX: 0, originY: 0, enabled: true };
+const TIMELINE: EsTimeline = { originY: 0 };
 
 function wrapper(left = 0, top = 0) {
   const el = document.createElement('div');

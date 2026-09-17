@@ -251,9 +251,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
       createBlocked: props.createBlocked === true,
     },
     inertIds: props.layerInertIds,
-    // Lanes are gated on the board being one AND the switch being on; the
-    // resolver decides nothing about eligibility beyond that.
-    timeline: props.esBoard === true ? activeTimeline({ esTimeline: props.tabTimeline }) : null,
+    // Every event-storming board is on lanes; the stack is derived from the
+    // board itself, so there is nothing to gate beyond "is this that board".
+    timeline: props.esBoard === true ? activeTimeline(props, props.layerInertIds) : null,
   });
   const { alignGuides, allSnapTargets } = computeDrawGuides({
     drawDrag,
@@ -338,7 +338,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
           drop — and it publishes through its own store, so it costs nothing
           on every other board. */}
       <TimelineLanesOverlay
-        timeline={props.esBoard === true ? activeTimeline({ esTimeline: props.tabTimeline }) : null}
+        timeline={props.esBoard === true ? activeTimeline(props, props.layerInertIds) : null}
         tabThemeId={tabThemeId}
         viewportZoom={viewportZoom}
         wrapperRef={wrapperRef}
