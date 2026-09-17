@@ -138,7 +138,11 @@ Deploy order matters: the router's service bindings reference the five other wor
 Or just push to `main` and use the bundled GitHub Actions workflows:
 
 - `.github/workflows/ci.yml` runs lint / format / typecheck / test / build on every PR and push.
-- `.github/workflows/deploy.yml` is **manually triggered** from the Actions tab. It builds once then deploys all seven workers (marketing, live, telemetry, help, api, mcp, router) in the right order.
+- `.github/workflows/deploy-apps.yml` holds the deploy itself — build, then all seven workers (marketing, live, telemetry, help, api, mcp, router) in the right order. It is a reusable workflow, not directly triggerable.
+- `.github/workflows/deploy.yml` calls it for **production**, **manually** from the Actions tab.
+- `.github/workflows/deploy-staging.yml` calls it for **staging**, automatically, whenever CI goes green on `main`.
+
+Self-hosting needs only the production pair: staging is a second copy of the platform the hosted deployment runs for its own rehearsals (own hostname, own D1 / R2 / KV), and deleting `deploy-staging.yml` costs a fork nothing. Keeping it means adding the `_STAGING` secrets and staging resources from [spec/140](../specs/140-staging-environment.md); without them the workflow simply fails on every merge.
 
 See [spec/10](../specs/10-deployment.md) for the deeper deploy mechanics, including how D1 migrations run BEFORE the worker deploy so the new code never briefly runs against the old schema.
 

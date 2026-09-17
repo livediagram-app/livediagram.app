@@ -179,3 +179,61 @@ describe('bare help-article paths', () => {
     expect(missed).toEqual([]);
   });
 });
+
+// The staging environment's noindex header (spec/140). Staging is public on
+// purpose, so this header is the only thing keeping a second copy of every
+// marketing and help page out of search results — and it has to reach every
+// app on the hostname without touching any of their builds.
+describe('staging noindex header', () => {
+  const staging = (base: Env): Env => ({ ...base, DEPLOY_ENV: 'staging' });
+
+  it('marks a marketing response noindex on staging', async () => {
+    const { env } = makeEnv();
+    const res = await dispatch('/faq', staging(env));
+    expect(res.headers.get('X-Robots-Tag')).toBe('noindex, nofollow');
+  });
+
+  it('marks the api and the editor too, not just the indexable pages', async () => {
+    for (const path of ['/api/diagrams/abc', '/diagram/xyz', '/help/canvas/shadows/']) {
+      const { env } = makeEnv();
+      const res = await dispatch(path, staging(env));
+      expect(res.headers.get('X-Robots-Tag')).toBe('noindex, nofollow');
+    }
+  });
+
+  it('marks the 308 redirect for a prefix-less help article', async () => {
+    const { env } = makeEnv();
+    const res = await dispatch('/canvas/shadows/', staging(env));
+    expect(res.status).toBe(308);
+    expect(res.headers.get('X-Robots-Tag')).toBe('noindex, nofollow');
+  });
+
+  it('leaves production untouched', async () => {
+    const { env } = makeEnv();
+    const res = await dispatch('/faq', env);
+    expect(res.headers.get('X-Robots-Tag')).toBeNull();
+  });
+
+  it('keeps the response body and status intact', async () => {
+    const { env } = makeEnv();
+    const res = await dispatch('/faq', staging(env));
+    expect(res.status).toBe(200);
+    await expect(res.text()).resolves.toBe('ok');
+  });
+
+  it('passes a 101 WebSocket upgrade through UNTOUCHED', async () => {
+    // A Response carrying a `webSocket` cannot be reconstructed: wrapping it
+    // to add a header drops the socket and takes realtime collab down on
+    // staging only, on the one path a smoke test is least likely to open.
+    const socket = { accept: () => {} } as unknown as WebSocket;
+    const upgrade = { status: 101, webSocket: socket } as unknown as Response;
+    const env: Env = {
+      ...makeEnv().env,
+      API: { fetch: () => Promise.resolve(upgrade) } as unknown as Fetcher,
+      DEPLOY_ENV: 'staging',
+    };
+    const res = await dispatch('/api/diagrams/abc/ws', env);
+    expect(res).toBe(upgrade);
+    expect(res.webSocket).toBe(socket);
+  });
+});

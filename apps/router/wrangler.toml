@@ -37,3 +37,50 @@ LIVE_ORIGIN = "http://127.0.0.1:3002"
 API_ORIGIN = "http://127.0.0.1:8787"
 TELEMETRY_ORIGIN = "http://127.0.0.1:3003"
 HELP_ORIGIN = "http://127.0.0.1:3004"
+
+# ---------------------------------------------------------------------------
+# Staging (spec/140). Deploys as `livediagram-router-staging` and fronts
+# https://staging.livediagram.app (the custom domain is attached in the
+# Cloudflare dashboard — the deploy token has no zone scope, same as
+# production).
+#
+# EVERY `service` below carries the `-staging` suffix. Service bindings are
+# non-inheritable, so these five are the staging router's only downstreams —
+# but a suffix dropped from one of them is the worst failure this repo can
+# produce: a staging frontend writing to the PRODUCTION database, with
+# nothing in the UI to say so. Read them against the five above before
+# changing anything here; `pnpm staging:check` prints the resolved binding table.
+# ---------------------------------------------------------------------------
+
+# Named explicitly: wrangler would append "-staging" to the top-level
+# name on its own, but nothing in `--dry-run` prints the name it resolved,
+# and the router's service bindings depend on this exact string.
+[env.staging]
+name = "livediagram-router-staging"
+
+[[env.staging.services]]
+binding = "MARKETING"
+service = "livediagram-marketing-staging"
+
+[[env.staging.services]]
+binding = "LIVE"
+service = "livediagram-live-staging"
+
+[[env.staging.services]]
+binding = "API"
+service = "livediagram-api-staging"
+
+[[env.staging.services]]
+binding = "TELEMETRY"
+service = "livediagram-telemetry-staging"
+
+[[env.staging.services]]
+binding = "HELP"
+service = "livediagram-help-staging"
+
+# Marks this router as the staging one. The worker reads it to stamp
+# `X-Robots-Tag: noindex, nofollow` on every response, which is what keeps a
+# public staging mirror out of search results (spec/140). Set ONLY here —
+# production's router has no DEPLOY_ENV, so the header is impossible there.
+[env.staging.vars]
+DEPLOY_ENV = "staging"

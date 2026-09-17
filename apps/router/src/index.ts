@@ -16,6 +16,10 @@ export interface Env {
   API_ORIGIN?: string;
   TELEMETRY_ORIGIN?: string;
   HELP_ORIGIN?: string;
+  // Set to "staging" on the staging router only (spec/140). Marks every
+  // response noindex so the public staging mirror can't compete with
+  // production in search results. Absent in production and in local dev.
+  DEPLOY_ENV?: string;
 }
 
 const LIVE_PATH = '/live';
@@ -125,43 +129,73 @@ function forward(
   );
 }
 
+// Stamp `X-Robots-Tag: noindex, nofollow` on a staging response (spec/140).
+//
+// Staging is deliberately public — no auth wall, so a change can be shared
+// with someone before it ships — which makes keeping it out of search results
+// this header's job. Done once here rather than as a build flag threaded into
+// four static apps: every app on the hostname passes through the router, the
+// api's JSON included.
+//
+// A 101 is returned UNTOUCHED. The realtime room answers
+// `/api/diagrams/<id>/ws` with a WebSocket upgrade, and a Response carrying a
+// `webSocket` cannot be reconstructed — `new Response(body, res)` drops the
+// socket and takes realtime collab down on staging alone, on one path, which
+// is precisely the sort of breakage that survives a smoke test. Crawlers do
+// not open WebSockets, so there is nothing to mark noindex here anyway.
+function markNoIndex(response: Response): Response {
+  if (response.status === 101 || response.webSocket) return response;
+  const tagged = new Response(response.body, response);
+  tagged.headers.set('X-Robots-Tag', 'noindex, nofollow');
+  return tagged;
+}
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
-    const url = new URL(request.url);
-    // /api/* is forwarded as-is to the api worker. The API worker handles
-    // the full pathname (it expects `/api/...`) so there's no prefix
-    // stripping here, unlike the basePath apps.
-    if (hasPrefix(url.pathname, API_PATH)) {
-      return forward(request, url, env.API, env.API_ORIGIN);
+    if (env.DEPLOY_ENV === 'staging') {
+      return markNoIndex(await route(request, env));
     }
-    // `/live/*` is ONLY the live app's `_next` assets (its `assetPrefix`).
-    // Stripped in production — the worker serves them from `out/_next`.
-    if (hasPrefix(url.pathname, LIVE_PATH)) {
-      return forward(request, url, env.LIVE, env.LIVE_ORIGIN, LIVE_PATH);
-    }
-    if (hasPrefix(url.pathname, TELEMETRY_PATH)) {
-      // The public transparency dashboard (spec/22), a basePath:'/telemetry'
-      // static app — same prefix-strip as the live app's assets.
-      return forward(request, url, env.TELEMETRY, env.TELEMETRY_ORIGIN, TELEMETRY_PATH);
-    }
-    if (hasPrefix(url.pathname, HELP_PATH)) {
-      // The help centre (spec/55), a basePath:'/help' static app — same
-      // prefix-strip as telemetry.
-      return forward(request, url, env.HELP, env.HELP_ORIGIN, HELP_PATH);
-    }
-    // Clean live-app page routes (/diagram, /explorer, /new, ...) and
-    // its root-served icon: forwarded AS-IS (no strip — the worker's
-    // files are already `/live`-free).
-    if (isLivePageRoute(url.pathname)) {
-      return forward(request, url, env.LIVE, env.LIVE_ORIGIN);
-    }
-    // A help article URL that lost its `/help` prefix. Sent on with a
-    // permanent redirect rather than dropped into marketing's 404: the path
-    // is unambiguous, and these are links people have already shared.
-    if (HELP_CATEGORY_SEGMENTS.has(url.pathname.split('/')[1] ?? '')) {
-      url.pathname = `${HELP_PATH}${url.pathname}`;
-      return Response.redirect(url.toString(), 308);
-    }
-    return forward(request, url, env.MARKETING, env.MARKETING_ORIGIN);
+    return route(request, env);
   },
 } satisfies ExportedHandler<Env>;
+
+// The routing table itself. Split from `fetch` so the staging header wrapper
+// has a single return value to decorate instead of nine.
+async function route(request: Request, env: Env): Promise<Response> {
+  const url = new URL(request.url);
+  // /api/* is forwarded as-is to the api worker. The API worker handles
+  // the full pathname (it expects `/api/...`) so there's no prefix
+  // stripping here, unlike the basePath apps.
+  if (hasPrefix(url.pathname, API_PATH)) {
+    return forward(request, url, env.API, env.API_ORIGIN);
+  }
+  // `/live/*` is ONLY the live app's `_next` assets (its `assetPrefix`).
+  // Stripped in production — the worker serves them from `out/_next`.
+  if (hasPrefix(url.pathname, LIVE_PATH)) {
+    return forward(request, url, env.LIVE, env.LIVE_ORIGIN, LIVE_PATH);
+  }
+  if (hasPrefix(url.pathname, TELEMETRY_PATH)) {
+    // The public transparency dashboard (spec/22), a basePath:'/telemetry'
+    // static app — same prefix-strip as the live app's assets.
+    return forward(request, url, env.TELEMETRY, env.TELEMETRY_ORIGIN, TELEMETRY_PATH);
+  }
+  if (hasPrefix(url.pathname, HELP_PATH)) {
+    // The help centre (spec/55), a basePath:'/help' static app — same
+    // prefix-strip as telemetry.
+    return forward(request, url, env.HELP, env.HELP_ORIGIN, HELP_PATH);
+  }
+  // Clean live-app page routes (/diagram, /explorer, /new, ...) and
+  // its root-served icon: forwarded AS-IS (no strip — the worker's
+  // files are already `/live`-free).
+  if (isLivePageRoute(url.pathname)) {
+    return forward(request, url, env.LIVE, env.LIVE_ORIGIN);
+  }
+  // A help article URL that lost its `/help` prefix. Sent on with a
+  // permanent redirect rather than dropped into marketing's 404: the path
+  // is unambiguous, and these are links people have already shared.
+  if (HELP_CATEGORY_SEGMENTS.has(url.pathname.split('/')[1] ?? '')) {
+    url.pathname = `${HELP_PATH}${url.pathname}`;
+    return Response.redirect(url.toString(), 308);
+  }
+  return forward(request, url, env.MARKETING, env.MARKETING_ORIGIN);
+}

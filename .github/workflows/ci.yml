@@ -61,3 +61,15 @@ jobs:
 
       - name: Build
         run: pnpm build
+
+      # Resolve the staging wrangler configs without deploying anything
+      # (spec/140). Wrangler does NOT inherit bindings into a named
+      # environment, so a binding left out of an `[env.staging]` block is
+      # simply absent from the staging worker, and a `service =` value that
+      # lost its `-staging` suffix points the staging router at PRODUCTION.
+      # Neither is a type error and neither shows up in a test — without this
+      # step the first sign of either is a deploy. Covers the three workers
+      # that carry bindings; the four static apps have nothing in their
+      # staging block but an assets directory.
+      - name: Staging config check
+        run: pnpm staging:check

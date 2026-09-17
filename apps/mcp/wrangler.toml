@@ -57,3 +57,33 @@ service = "livediagram-api"
 [[kv_namespaces]]
 binding = "OAUTH_KV"
 id = "b6f3814b4a4e4e51b8b88412915d8d84"
+
+# ---------------------------------------------------------------------------
+# Staging (spec/140). Deploys as `livediagram-mcp-staging` on its own host,
+# `mcp-staging.livediagram.app` (attached in the Cloudflare dashboard).
+# `compatibility_flags`, `[[rules]]` and `[dev]` are inheritable and carry
+# over; vars, the service binding and KV are not, so they are restated.
+# ---------------------------------------------------------------------------
+
+# Named explicitly: wrangler would append "-staging" to the top-level
+# name on its own, but nothing in `--dry-run` prints the name it resolved,
+# and the router's service bindings depend on this exact string.
+[env.staging]
+name = "livediagram-mcp-staging"
+
+[env.staging.vars]
+# The consent page lives in the STAGING live app — a staging OAuth flow must
+# never bounce the user through production's sign-in.
+CONSENT_BASE_URL = "https://staging.livediagram.app"
+
+# Bind the staging api, not production's.
+[[env.staging.services]]
+binding = "API"
+service = "livediagram-api-staging"
+
+# Own OAuth state: `wrangler kv namespace create OAUTH_KV --env staging`,
+# then paste the id here. Client registrations and authorize codes are
+# short-TTL scratch data, so there is nothing to migrate across.
+[[env.staging.kv_namespaces]]
+binding = "OAUTH_KV"
+id = "STAGING_OAUTH_KV_ID"
