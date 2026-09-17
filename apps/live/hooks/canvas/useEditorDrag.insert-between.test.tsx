@@ -119,7 +119,6 @@ function press(h: Harness, id: string, clientX = 1300, clientY = 100) {
 }
 
 function move(
-  h: Harness,
   dx: number,
   dy: number,
   mods: { alt?: boolean; shift?: boolean; meta?: boolean; zoom?: number } = {},
@@ -138,7 +137,7 @@ function move(
   });
 }
 
-function release(h: Harness, dx: number, dy: number, mods: { alt?: boolean } = {}) {
+function release(dx: number, dy: number, mods: { alt?: boolean } = {}) {
   act(() => {
     window.dispatchEvent(
       new MouseEvent('pointerup', {
@@ -172,7 +171,7 @@ describe('useEditorDrag — inserting a note already on the board (spec/139)', (
   it('opens a slot while Alt is held over a gap', () => {
     const h = harness();
     press(h, 'drag');
-    move(h, INTO_GAP.dx, INTO_GAP.dy, { alt: true });
+    move(INTO_GAP.dx, INTO_GAP.dy, { alt: true });
     const slot = getInsertionSlot();
     expect(slot?.leftId).toBe('a');
     expect(slot?.rightId).toBe('b');
@@ -188,12 +187,12 @@ describe('useEditorDrag — inserting a note already on the board (spec/139)', (
   it('does nothing at all without Alt — the plain move of before', () => {
     const h = harness();
     press(h, 'drag');
-    move(h, INTO_GAP.dx, INTO_GAP.dy);
+    move(INTO_GAP.dx, INTO_GAP.dy);
     expect(getInsertionSlot()).toBeNull();
     // The note follows the pointer, and nothing else on the board stirs.
     expect(h.xOf('drag')).toBe(1200 + INTO_GAP.dx);
     expect(h.xOf('b')).toBe(272);
-    release(h, INTO_GAP.dx, INTO_GAP.dy);
+    release(INTO_GAP.dx, INTO_GAP.dy);
     expect(h.xOf('b')).toBe(272);
     expect(h.xOf('c')).toBe(544);
   });
@@ -201,9 +200,9 @@ describe('useEditorDrag — inserting a note already on the board (spec/139)', (
   it('commits the ripple and the note in one undoable step', () => {
     const h = harness();
     press(h, 'drag');
-    move(h, INTO_GAP.dx, INTO_GAP.dy, { alt: true });
+    move(INTO_GAP.dx, INTO_GAP.dy, { alt: true });
     const slot = getInsertionSlot()!;
-    release(h, INTO_GAP.dx, INTO_GAP.dy, { alt: true });
+    release(INTO_GAP.dx, INTO_GAP.dy, { alt: true });
     expect(h.xOf('drag')).toBe(272);
     expect(h.xOf('b')).toBe(272 + slot.shiftDx);
     expect(h.xOf('c')).toBe(544 + slot.shiftDx);
@@ -220,17 +219,17 @@ describe('useEditorDrag — inserting a note already on the board (spec/139)', (
   it('reports the insertion once, and only when one happened', () => {
     const h = harness();
     press(h, 'drag');
-    move(h, INTO_GAP.dx, INTO_GAP.dy, { alt: true });
+    move(INTO_GAP.dx, INTO_GAP.dy, { alt: true });
     expect(track).not.toHaveBeenCalledWith('Canvas', 'Used', 'InsertBetween');
-    release(h, INTO_GAP.dx, INTO_GAP.dy, { alt: true });
+    release(INTO_GAP.dx, INTO_GAP.dy, { alt: true });
     expect(track).toHaveBeenCalledExactlyOnceWith('Canvas', 'Used', 'InsertBetween');
   });
 
   it('reports nothing for an ordinary move', () => {
     const h = harness();
     press(h, 'drag');
-    move(h, INTO_GAP.dx, INTO_GAP.dy);
-    release(h, INTO_GAP.dx, INTO_GAP.dy);
+    move(INTO_GAP.dx, INTO_GAP.dy);
+    release(INTO_GAP.dx, INTO_GAP.dy);
     expect(track).not.toHaveBeenCalledWith('Canvas', 'Used', 'InsertBetween');
   });
 
@@ -240,9 +239,9 @@ describe('useEditorDrag — inserting a note already on the board (spec/139)', (
     // the source gap is the author's to tidy. Predictable beats clever.
     const h = harness({ elements: [...BOARD(), note('after', 1500)] });
     press(h, 'drag');
-    move(h, INTO_GAP.dx, INTO_GAP.dy, { alt: true });
+    move(INTO_GAP.dx, INTO_GAP.dy, { alt: true });
     const slot = getInsertionSlot()!;
-    release(h, INTO_GAP.dx, INTO_GAP.dy, { alt: true });
+    release(INTO_GAP.dx, INTO_GAP.dy, { alt: true });
     // `after` travelled with the rest of the board's right-hand side — it did
     // NOT slide left into the vacated space.
     expect(h.xOf('after')).toBe(1500 + slot.shiftDx);
@@ -260,7 +259,7 @@ describe('useEditorDrag — inserting a note already on the board (spec/139)', (
   it('opens and unwinds the moment Alt moves, with the hand held still', () => {
     const h = harness();
     press(h, 'drag');
-    move(h, INTO_GAP.dx, INTO_GAP.dy);
+    move(INTO_GAP.dx, INTO_GAP.dy);
     expect(getInsertionSlot()).toBeNull();
     key('keydown', 'Alt');
     expect(getInsertionSlot()?.rightId).toBe('b');
@@ -273,7 +272,7 @@ describe('useEditorDrag — inserting a note already on the board (spec/139)', (
   it('restores everything on Escape, preview included', () => {
     const h = harness();
     press(h, 'drag');
-    move(h, INTO_GAP.dx, INTO_GAP.dy, { alt: true });
+    move(INTO_GAP.dx, INTO_GAP.dy, { alt: true });
     expect(getInsertionSlot()).not.toBeNull();
     key('keydown', 'Escape');
     expect(getInsertionSlot()).toBeNull();
@@ -284,10 +283,10 @@ describe('useEditorDrag — inserting a note already on the board (spec/139)', (
   it('strands no preview when the drag ends away from any gap', () => {
     const h = harness();
     press(h, 'drag');
-    move(h, INTO_GAP.dx, INTO_GAP.dy, { alt: true });
-    move(h, 0, 600, { alt: true });
+    move(INTO_GAP.dx, INTO_GAP.dy, { alt: true });
+    move(0, 600, { alt: true });
     expect(getInsertionSlot()).toBeNull();
-    release(h, 0, 600, { alt: true });
+    release(0, 600, { alt: true });
     expect(getInsertionSlot()).toBeNull();
     expect(h.xOf('b')).toBe(272);
   });
@@ -296,16 +295,16 @@ describe('useEditorDrag — inserting a note already on the board (spec/139)', (
     it('does nothing on an ordinary board, Alt or no Alt', () => {
       const h = harness({ esBoard: false });
       press(h, 'drag');
-      move(h, INTO_GAP.dx, INTO_GAP.dy, { alt: true });
+      move(INTO_GAP.dx, INTO_GAP.dy, { alt: true });
       expect(getInsertionSlot()).toBeNull();
-      release(h, INTO_GAP.dx, INTO_GAP.dy, { alt: true });
+      release(INTO_GAP.dx, INTO_GAP.dy, { alt: true });
       expect(h.xOf('b')).toBe(272);
     });
 
     it('does nothing for a read-only session', () => {
       const h = harness({ readOnly: true });
       press(h, 'drag');
-      move(h, INTO_GAP.dx, INTO_GAP.dy, { alt: true });
+      move(INTO_GAP.dx, INTO_GAP.dy, { alt: true });
       expect(getInsertionSlot()).toBeNull();
     });
 
@@ -313,7 +312,7 @@ describe('useEditorDrag — inserting a note already on the board (spec/139)', (
     it('yields to a drag-duplicate when Shift joins in', () => {
       const h = harness();
       press(h, 'drag');
-      move(h, INTO_GAP.dx, INTO_GAP.dy, { alt: true, shift: true });
+      move(INTO_GAP.dx, INTO_GAP.dy, { alt: true, shift: true });
       expect(getInsertionSlot()).toBeNull();
     });
 
@@ -329,14 +328,14 @@ describe('useEditorDrag — inserting a note already on the board (spec/139)', (
       } as Element;
       const h = harness({ elements: [note('a', 0), note('b', 272), note('c', 544), shape] });
       press(h, 'drag');
-      move(h, INTO_GAP.dx, INTO_GAP.dy, { alt: true });
+      move(INTO_GAP.dx, INTO_GAP.dy, { alt: true });
       expect(getInsertionSlot()).toBeNull();
     });
 
     it('does nothing when a multi-selection is dragged', () => {
       const h = harness({ multiSelected: ['drag', 'c'] });
       press(h, 'drag');
-      move(h, INTO_GAP.dx, INTO_GAP.dy, { alt: true });
+      move(INTO_GAP.dx, INTO_GAP.dy, { alt: true });
       expect(getInsertionSlot()).toBeNull();
       // ...and the selection still drags together, exactly as it does today.
       expect(h.xOf('drag')).toBe(1200 + INTO_GAP.dx);
@@ -348,7 +347,7 @@ describe('useEditorDrag — inserting a note already on the board (spec/139)', (
     it('wins over Cmd/Ctrl free placement', () => {
       const h = harness();
       press(h, 'drag');
-      move(h, INTO_GAP.dx, INTO_GAP.dy, { alt: true, meta: true });
+      move(INTO_GAP.dx, INTO_GAP.dy, { alt: true, meta: true });
       const slot = getInsertionSlot();
       expect(slot?.rightId).toBe('b');
       expect(h.xOf('drag')).toBe(slot!.atX);
@@ -360,7 +359,7 @@ describe('useEditorDrag — inserting a note already on the board (spec/139)', (
         elements: [note('a', 0), note('b', 272), note('c', 544), locked],
       });
       press(h, 'drag');
-      move(h, INTO_GAP.dx, INTO_GAP.dy, { alt: true });
+      move(INTO_GAP.dx, INTO_GAP.dy, { alt: true });
       expect(getInsertionSlot()).toBeNull();
       expect(h.xOf('drag')).toBe(1200);
     });
@@ -371,9 +370,9 @@ describe('useEditorDrag — inserting a note already on the board (spec/139)', (
     it.each([0.25, 4])('resolves the same gap at %sx zoom', (zoom) => {
       const h = harness({ zoom });
       press(h, 'drag');
-      move(h, INTO_GAP.dx, INTO_GAP.dy, { alt: true, zoom });
+      move(INTO_GAP.dx, INTO_GAP.dy, { alt: true, zoom });
       expect(getInsertionSlot()?.rightId).toBe('b');
-      release(h, INTO_GAP.dx, INTO_GAP.dy, { alt: true });
+      release(INTO_GAP.dx, INTO_GAP.dy, { alt: true });
       expect(h.xOf('drag')).toBe(272);
       expect(h.xOf('b')).toBe(272 + 272);
     });

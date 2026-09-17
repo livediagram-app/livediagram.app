@@ -189,9 +189,10 @@ v5 test runner with every check green: nothing invoked the broken path.
   Clear filters button that cleared only half the filters. Each fails if its
   fix is reverted.
 
-  Both workspaces load a `vitest.setup.ts` that calls Testing Library's
-  `cleanup` in an `afterEach`, guarded on `typeof document` so the DOM-less
-  majority is untouched. Testing Library registers that itself only under
+  Both workspaces load the same setup file — `react-cleanup` out of
+  `@livediagram/vitest-config`, one copy for the repo rather than one per
+  workspace — which calls Testing Library's `cleanup` in an `afterEach`,
+  guarded on `typeof document` so the DOM-less majority is untouched. Testing Library registers that itself only under
   `globals: true`, which this repo does not use, so a file that rendered
   without unmounting left a live React root behind; the scheduler then woke
   on a later macrotask, after Vitest had already torn the jsdom environment

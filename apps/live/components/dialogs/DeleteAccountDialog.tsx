@@ -62,15 +62,14 @@ export function DeleteAccountDialog({
   // who cancels mid-flow and re-opens it sees a stale typed value
   // and possibly a stale error.
   useEffect(() => {
-    if (open) {
-      setTyped('');
-      setPhase('idle');
-      setErrorMsg('');
-      // Focus the input on next tick so the modal mount completes
-      // first — focusing during render is silently dropped.
-      const handle = window.setTimeout(() => inputRef.current?.focus(), 30);
-      return () => window.clearTimeout(handle);
-    }
+    if (!open) return;
+    setTyped('');
+    setPhase('idle');
+    setErrorMsg('');
+    // Focus the input on next tick so the modal mount completes
+    // first — focusing during render is silently dropped.
+    const handle = window.setTimeout(() => inputRef.current?.focus(), 30);
+    return () => window.clearTimeout(handle);
   }, [open]);
 
   // Escape closes, same convention as other modals (ShareDialog).

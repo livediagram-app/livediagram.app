@@ -5,12 +5,13 @@
 import type { Env } from './env';
 
 export class ApiError extends Error {
-  constructor(
-    readonly status: number,
-    readonly body: string,
-  ) {
+  readonly status: number;
+  readonly body: string;
+  constructor(status: number, body: string) {
     super(`api ${status}: ${body}`);
     this.name = 'ApiError';
+    this.status = status;
+    this.body = body;
   }
 }
 

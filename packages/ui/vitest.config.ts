@@ -13,7 +13,11 @@ export default defineProject({
   // default, no React import in scope), so a test that renders a component
   // has to be transformed the same way or it throws "React is not defined".
   esbuild: { jsx: 'automatic' },
-  // Unmounts React roots between tests — see vitest.setup.ts for what a root
-  // left mounted does to the run.
-  test: { setupFiles: ['./vitest.setup.ts'] },
+  test: {
+    // Unmount rendered trees after each test. `globals: false` stops React
+    // Testing Library registering its own cleanup, and a tree left mounted
+    // when jsdom is torn down crashes a later file in the same worker with
+    // `window is not defined`. The shared setup file says why in full.
+    setupFiles: ['@livediagram/vitest-config/react-cleanup'],
+  },
 });

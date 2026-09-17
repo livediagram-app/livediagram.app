@@ -1,6 +1,11 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
+  // Every workspace's tsconfig.json extends this file, but it sits outside all
+  // of them, so it is invisible to the per-package input hash. Without it here,
+  // tightening a compiler flag in the base config replays a cache hit and
+  // `pnpm typecheck` reports success on code it never checked.
+  "globalDependencies": ["tsconfig.base.json"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
