@@ -739,8 +739,11 @@ low-threshold capture surface can least afford.
   cannot see them; a very dim or blue-lit photo moves hues far enough to
   confuse kinds; a sticky more than about 60% covered reads as a fragment of
   whatever is left. Every one of those lands as a draft the author can fix, or
-  as nothing at all — which is why there is no detection preview: the draft on
-  the canvas IS the review.
+  as nothing at all.
+
+  _(The "no detection preview: the draft on the canvas IS the review" ruling is
+  REVERSED by Phase 9: a photo review overlay now shows every detected box
+  before anything lands, and the on-canvas draft is what follows it.)_
 
 - **Existing notes are untouchable.** An import only ever ADDS. A matched note
   is never moved, resized, re-kinded or re-worded — if the photo says something
@@ -759,6 +762,11 @@ low-threshold capture surface can least afford.
   on the AI-panel preference: this is not the assistant. The provider is
   whatever `AI_BASE_URL` points at — any OpenAI-compatible endpoint, which is
   Gemini on the hosted site and can be a local llama.cpp on a laptop.
+
+  _(Phase 9 makes the READER pluggable and adds an in-browser OCR reader, so
+  this gating is re-ruled there: detection is always in-browser and needs no
+  key; only the handwriting reading may use a server model, and only when one
+  is configured.)_
 - **Placement composes the other two phases.** New notes land on the lanes when
   lanes are on, and a pair the photo shows adjacent in a notation pairing lands
   DOCKED. That is why photo import was built third: doing it first would have
@@ -825,6 +833,36 @@ low-threshold capture surface can least afford.
 - **Not in v1:** multiple photos in one run (one at a time, then "Add another
   photo" against the board as it now is), applying a matched note's text
   difference, and reading arrows / connections out of the photo.
+
+## Phase 9 (in progress): review the detection, draw the misses
+
+The photo import gains a **review overlay** and a **pluggable reader**, and the
+detector is hardened against real handwriting. Decisions from the operator:
+
+- **A review overlay first** (reverses Phase 8's "no preview" ruling). After
+detection (and reading), the photo is shown overlaid with every detected box,
+coloured by kind and tickable; the author can edit kind and text per note,
+untick a false positive, and press **Add N notes** to land the ticked ones as
+the on-canvas draft (Phase 8's `esDraft` machinery). Nothing lands until Add.
+- **Drawing a box around an undetected sticky adds that note directly.** The box
+  IS the detection: the paper colour under it decides the kind, the crop is sent
+  to the reader for text when one is available, and a blank note is the
+  fallback. It is not a re-run of the detector.
+- **A pluggable reader.** Reading is behind one interface with two
+  implementations: the server vision model (Phase 8's `POST /api/ai/read-notes`,
+  best handwriting) and an **in-browser OCR reader** (no key, no server, no
+  upload). In-browser OCR for marker handwriting is a SPIKE, not a promise:
+  Tesseract.js first, a TrOCR model via transformers.js if that is not good
+  enough; the review overlay is what makes an imperfect reader workable either
+  way. With no model key, detection + in-browser OCR still import (blank text
+  wherever the reader cannot read).
+- **Detector hardening.** A morphological close (dilate then erode by ~a pen
+  stroke) runs over the paper mask before connected components, so a note
+  shattered by handwriting becomes one blob; the note-size estimate follows the
+  closed blobs rather than the fragments. This is what turns the measured
+  fragment-count (26 half-notes on the operator's wall) back into whole notes.
+
+The plan lives in `plans/event-storming-photo-review.md`.
 
 ## Domain learnings (session log)
 
