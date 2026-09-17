@@ -50,5 +50,26 @@ jobs:
       - name: Test
         run: pnpm test
 
+      # Coverage runs as its own step because it ENFORCES something: the
+      # per-file 100% thresholds on the api worker's identity / token /
+      # share-link modules (apps/api/vitest.config.ts). Without this step the
+      # thresholds are a local-only opinion, and the coverage tooling itself
+      # goes unexercised in CI — which is how a v4 coverage provider once sat
+      # against a v5 runner with every check green.
+      - name: Coverage thresholds
+        run: pnpm test:coverage
+
       - name: Build
         run: pnpm build
+
+      # Resolve the staging wrangler configs without deploying anything
+      # (spec/140). Wrangler does NOT inherit bindings into a named
+      # environment, so a binding left out of an `[env.staging]` block is
+      # simply absent from the staging worker, and a `service =` value that
+      # lost its `-staging` suffix points the staging router at PRODUCTION.
+      # Neither is a type error and neither shows up in a test — without this
+      # step the first sign of either is a deploy. Covers the three workers
+      # that carry bindings; the four static apps have nothing in their
+      # staging block but an assets directory.
+      - name: Staging config check
+        run: pnpm staging:check

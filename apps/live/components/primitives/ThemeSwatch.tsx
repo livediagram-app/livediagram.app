@@ -9,7 +9,7 @@ import type { ThemeDefinition } from '@/lib/themes';
 // others, with soft shadows, arrowheads and a faint grid — drawn in the
 // theme's actual colours, so the card previews what a diagram in this
 // theme looks like, not just its palette. Shared by the palette
-// accordion, the welcome / template picker, and the Tab Appearance +
+// accordion, the welcome / template picker, and the Tab Look & Feel dialog +
 // Explorer theme surfaces so they can't drift.
 //
 // The scene adapts to the theme kind: a single-colour theme draws one
@@ -62,7 +62,7 @@ export function ThemeSwatch({
   theme: ThemeDefinition;
   // 'sm' compact palette grid, 'md' welcome picker, 'lg' the Explorer
   // hero cards. `heightClass` overrides the height outright (used to make
-  // the Basic quick-pick match the category sampler exactly).
+  // the Default quick-pick match the category sampler exactly).
   size?: 'sm' | 'md' | 'lg';
   heightClass?: string;
   // Render the theme's ACTUAL background pattern (grid / graph / dots /

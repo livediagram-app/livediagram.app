@@ -1,0 +1,73 @@
+name: Deploy Staging
+
+# Staging deploy (spec/140). Automatic: every merge to `main` that passes CI
+# lands on https://staging.livediagram.app within a few minutes.
+#
+# Triggered by CI FINISHING, not by the push. Two reasons:
+#
+#   1. A red `main` must not reach staging. If staging can hold code that
+#      doesn't compile, its state stops telling you anything.
+#   2. The api job applies D1 migrations against a real remote database. That
+#      deserves a green test suite in front of it, and it is the whole reason
+#      this environment exists: the migration is rehearsed here one deploy
+#      before it runs against the database holding real diagrams.
+#
+# The trade-off of `workflow_run` is that it checks out the default branch by
+# default rather than the commit CI actually verified, so the exact SHA is
+# passed down and every checkout in the reusable workflow pins to it.
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  # Also dispatchable by hand, for redeploying staging after changing a
+  # staging-only secret or filling in a resource id — neither of which is a
+  # commit, so neither triggers CI.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-staging
+  # Opposite of production's: a burst of merges should leave staging holding
+  # the LAST one, not queue a deploy per commit. Staging tracks `main`; it is
+  # not a record of every step main took.
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Staging
+    # `workflow_run` fires on failure and cancellation too, so the conclusion
+    # has to be checked explicitly — `types: [completed]` means "CI stopped",
+    # not "CI passed". The dispatch path has no workflow_run to inspect.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
+    uses: ./.github/workflows/deploy-reusable.yml
+    with:
+      # Deploys the `[env.staging]` blocks: `-staging` worker names, staging's
+      # own D1 / R2 / KV, and DEPLOY_ENV=staging on the router, which is what
+      # stamps every response noindex.
+      wrangler_env: staging
+      environment_name: staging
+      environment_url: https://staging.livediagram.app
+      # Empty on a manual dispatch, which checks out the default branch —
+      # that IS `main`, so staging still tracks the right thing.
+      ref: ${{ github.event.workflow_run.head_sha }}
+      # Keeps a staging OAuth flow inside staging instead of bouncing the
+      # user through the production MCP host.
+      mcp_origin: https://mcp-staging.livediagram.app
+    secrets:
+      # Same Cloudflare account as production — the isolation is drawn at the
+      # resource (own D1 / R2 / KV), not the account (spec/140).
+      CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+      CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+      # Every value below is staging's OWN. The Clerk pair is a separate test
+      # tenant, so a staging sign-in cannot touch a production user, and the
+      # HMAC secret must differ or a guest id minted on staging would be
+      # claimable on production.
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_STAGING }}
+      CLERK_JWKS_URL: ${{ secrets.CLERK_JWKS_URL_STAGING }}
+      GUEST_ID_HMAC_SECRET: ${{ secrets.GUEST_ID_HMAC_SECRET_STAGING }}
+      INTERNAL_EVENTS_KEY: ${{ secrets.INTERNAL_EVENTS_KEY_STAGING }}

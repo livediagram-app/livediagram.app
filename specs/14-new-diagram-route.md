@@ -245,7 +245,7 @@ the picker, so returning users keep meeting options they have not
 explored instead of always seeing the same curated first rows.
 
 - **Pinned defaults stay first.** Blank diagram (templates) and the
-  `brand` theme, labelled "Basic" (theme), are always pinned to index
+  `brand` scheme, labelled "Default" (colour scheme), are always pinned to index
   0 — they are the sensible starting points, so they never get
   shuffled away. Everything else is randomised.
 - **The shuffle sets the order, not what is visible.** Both grids
@@ -253,7 +253,7 @@ explored instead of always seeing the same curated first rows.
   whole catalogue is reachable and nothing hides behind a "Show more"
   toggle. Shuffling decides which options lead a category and the
   search results, and the pinned default still opens the list.
-  ("Show more" survives only in the Tab Appearance modal's
+  ("Show more" survives only in the Tab Look & Feel dialog's
   background-pattern picker, the one caller `useShowMoreList` still
   has.)
 - **Stable within a session.** The shuffle is computed when the picker
@@ -281,7 +281,7 @@ The welcome screen is a **two-step wizard** rather than one long page:
 - A **two-segment progress rail** at the top shows the current step; clicking
   either segment ("1 Template" / "2 Theme") jumps straight to that step.
 - **Skip** (either step) commits the documented defaults straight away: the
-  **Blank** template and the **Basic** theme. (This is why the welcome screen now
+  **Blank** template and the **Default** colour scheme. (This is why the welcome screen now
   has a Skip control where it previously had none.) The header **X** still
   dismisses.
 - A bottom-left **Open Existing Diagram** button navigates to `/explorer`. The
@@ -340,7 +340,7 @@ animated `stroke-dashoffset`. It is pure SVG + CSS (no per-frame JS),
 
 Some users don't want a template, a theme, or a settings step — they want
 an empty canvas right now. Two affordances serve them, both committing the
-documented Skip defaults (Blank template, Basic theme, the template's
+documented Skip defaults (Blank template, Default colour scheme, the template's
 default diagram name) without walking the wizard:
 
 - **`/new?blank=1`** — the query param bypasses the wizard entirely. The
@@ -397,7 +397,7 @@ The theme step shows the owner's **custom themes** ([spec/44](44-custom-themes.m
 as a **Custom** category in the browse, alongside the built-in colour categories.
 Its drill-in lists the saved themes (apply / edit / delete) plus a **+ New theme**
 card that opens the builder in place. This is the same `CustomThemePicker` the
-right-click Tab Appearance dialog renders, so the two surfaces (and the
+right-click Tab Look & Feel dialog renders, so the two surfaces (and the
 create/edit flow) stay identical. The `/new` route mounts a `CustomThemeProvider`
 so the saved themes load here. The chosen theme (built-in or `custom:<uuid>`)
 flows through the unchanged create path; the theme-id types along it (`onPick`,

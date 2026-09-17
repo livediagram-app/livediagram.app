@@ -7,7 +7,7 @@ import {
   type Tab,
   type TextSize,
 } from '@livediagram/diagram';
-import { useUiMode } from '@/hooks/ui/useUiMode';
+import { useAppearance } from '@/hooks/ui/useAppearance';
 import type { AutoLayoutChoice } from '@/lib/auto-layout-choices';
 import type { Participant } from '@/lib/identity';
 import { TabsLabelIcon } from '@/components/chrome/tab-bar-icons';
@@ -33,7 +33,7 @@ export type CanvasMenuActions = {
   onAutoAlign: () => void;
   onAutoLayout: (choice?: AutoLayoutChoice) => void;
   // Tab font + default new-element size (spec/28), surfaced as the menu's Font
-  // category (moved out of the Tab Appearance modal). `font` null = the editor
+  // category (moved out of the Tab Look & Feel dialog). `font` null = the editor
   // default; `defaultTextSize` undefined defaults to medium.
   font: string | null;
   onSetFont: (font: string | null) => void;
@@ -211,8 +211,8 @@ export function TabBar({
   // Drives the per-tab accent's legibility guard: the bar is white in
   // light mode, slate-900 in dark, so a stroke that reads on one can
   // vanish on the other.
-  const { mode } = useUiMode();
-  const isDark = mode === 'dark';
+  const { appearance } = useAppearance();
+  const isDark = appearance === 'dark';
 
   // Distinct folder names in this diagram, for the "Add to Folder"
   // menu's pick list (spec/30).

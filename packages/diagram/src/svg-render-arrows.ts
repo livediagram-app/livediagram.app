@@ -18,7 +18,7 @@ import {
   type ArrowheadShape,
 } from './arrow-style';
 import { BORDER_DASH_ARRAY } from './border-style';
-import { defaultArrowStrokeColor } from './colors';
+import { defaultArrowStrokeColor, type CanvasSurface } from './colors';
 import { arrowEndpointSpread } from './arrow-endpoint-spread';
 import { endpointPosition } from './geometry';
 import { svgLabel } from './svg-render-labels';
@@ -112,7 +112,11 @@ export function svgArrowhead(
   }
 }
 
-export function svgArrow(arrow: ArrowElement, elements: Element[]): string {
+export function svgArrow(
+  arrow: ArrowElement,
+  elements: Element[],
+  surface: CanvasSurface = 'light',
+): string {
   // Same converging-fan offset the live canvas applies (see
   // arrow-endpoint-spread.ts), so exports match what's on screen.
   const rawFrom = endpointPosition(arrow.from, elements);
@@ -121,7 +125,7 @@ export function svgArrow(arrow: ArrowElement, elements: Element[]): string {
   const toSpread = arrowEndpointSpread(arrow.id, 'to', elements);
   const from = { x: rawFrom.x + fromSpread.x, y: rawFrom.y + fromSpread.y };
   const to = { x: rawTo.x + toSpread.x, y: rawTo.y + toSpread.y };
-  const stroke = arrow.strokeColor ?? defaultArrowStrokeColor();
+  const stroke = arrow.strokeColor ?? defaultArrowStrokeColor(surface);
   const lw = arrow.strokeWidth ?? 2;
   const op = arrow.opacity ?? 1;
   const opAttr = op !== 1 ? ` opacity="${r2(op)}"` : '';

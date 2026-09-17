@@ -18,7 +18,7 @@ See [Local development](local-development.md). The short version: clone, `pnpm i
 
 ## Code style
 
-- **TypeScript everywhere**. No untyped JavaScript outside generated bundles.
+- **TypeScript everywhere**. No untyped JavaScript outside generated bundles. Type-checking runs on **TypeScript 7**, the Go compiler — see [Two TypeScripts](#two-typescripts) below for why `package.json` names two of them.
 - **Tabs are spaces**: 2-space indent, Prettier-enforced.
 - **No em dashes**. Use commas, colons, or parentheses. (The repo has a hard rule against em dashes in code, comments, commits, and copy.)
 - **Reuse over duplication**. If two apps need the same thing (UI component, util, type, schema), it lives in [`packages/`](../packages/), not copied into each app. Extract on first cross-app occurrence.
@@ -37,7 +37,49 @@ pnpm test
 pnpm build
 ```
 
-CI runs the same five steps on every push. Failing any of them blocks the merge.
+CI runs the same five steps on every push, plus `pnpm staging:check`. Failing any of them blocks the merge.
+
+### Merging to `main` deploys
+
+A merge to `main` that passes CI **deploys automatically to staging** —
+[staging.livediagram.app](https://staging.livediagram.app), a complete copy of the
+platform with its own database ([spec/140](../specs/140-staging-environment.md)). Nobody
+presses anything. Within a few minutes your change is running somewhere public, and any
+D1 migration in it has been applied to a real remote database.
+
+Production is **not** affected: that deploy stays manual (`Deploy Production` in the
+Actions tab) and someone decides when to press it.
+
+Two things follow for you as a contributor:
+
+- **Check staging after your PR lands.** It is the cheapest place to notice that
+  something works in tests but not in a browser.
+- **If you touch a worker's bindings**, add the same change to its `[env.staging]` block
+  in `wrangler.toml`. Wrangler does not inherit bindings into a named environment, so a
+  binding added only at the top level is silently missing from staging. `pnpm
+staging:check` catches it in CI.
+
+### Two TypeScripts
+
+Every workspace lists two TypeScript entries, and they are not a mistake:
+
+```jsonc
+{
+  "@typescript/native": "npm:typescript@^7.0.2", // the `tsc` binary
+  "typescript": "npm:@typescript/typescript6@^6.0.2", // the compiler API, plus `tsc6`
+}
+```
+
+TypeScript 7 is the Go compiler. It type-checks this monorepo about **7x faster** than 6 did (21.4s to 2.9s cold, all fourteen projects), so `pnpm typecheck` runs 7 and `tsc` on your PATH inside a workspace _is_ 7.
+
+What 7.0 does not ship is a programmatic API; that lands in 7.1. Tools that import the compiler rather than shell out to it — typescript-eslint, Next.js, Prettier's TypeScript parser — therefore still need 6. The alias pair is Microsoft's documented answer: `typescript` keeps resolving to the 6.0 API for those tools, while `@typescript/native` supplies 7's `tsc`. Run `tsc6` if you ever need to compare the two compilers on the same file.
+
+Two consequences worth knowing before they bite you:
+
+- **`packages/eslint-config` declares the 6.0 alias as a real dependency.** Without it, `auto-install-peers` resolves typescript-eslint's `typescript` peer against the 7.0 copy and every lint run dies with `typescript-eslint does not support TS 7.0`.
+- **Editors are a separate choice.** VS Code needs the TypeScript 7 extension for the fast language server; anything that embeds the compiler in its own language service (MDX tooling, Volar-based plugins) stays on 6 until 7.1. The CLI is the source of truth either way — CI runs 7.
+
+Both aliases get dropped for a plain `typescript@7.x` once 7.1 ships an API and typescript-eslint adopts it.
 
 `pnpm build` is safe to run while a dev server is alive: every Next.js app's dev server goes through `scripts/next-dev.mjs`, which points dev at an isolated `.next-dev/` cache so a concurrent build's `.next/` can never corrupt it. The flip side is a rule for new apps: **a new Next.js app must copy the `NEXT_DISTDIR` read into its `next.config`** (see any existing app's config), or the old build/dev cache race comes back.
 

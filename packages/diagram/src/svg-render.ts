@@ -15,6 +15,7 @@ import {
   svgFreehandShape,
   svgShapeSilhouette,
 } from './svg-render-shapes';
+import { canvasSurface } from './colors';
 import { svgTableShape } from './svg-render-table';
 // Text/number primitives shared with the per-element emitters — re-exported
 // below so existing importers of this module keep resolving.
@@ -187,6 +188,7 @@ export function svgIconShape(el: BoxedElement, art: ExportIconArt, stroke: strin
 
 export function svgBoxed(el: BoxedElement, opts: BoxedExportOptions = {}): string {
   const { opacity, shape, label } = describeBoxedExport(el, opts);
+  const surface = opts.surface ?? 'light';
   const opAttr = opacity !== 1 ? ` opacity="${r2(opacity)}"` : '';
   // Rotation applies to the whole element (body + label) about its centre,
   // exactly like the canvas wrapper's CSS rotate.
@@ -206,7 +208,7 @@ export function svgBoxed(el: BoxedElement, opts: BoxedExportOptions = {}): strin
     // The real grid (tracks / headers / zebra / per-cell text), not a
     // box-with-nothing. Tables carry no element label; the cells are the
     // content.
-    return `<g${opAttr}${rotAttr}>${svgTableShape(el)}</g>`;
+    return `<g${opAttr}${rotAttr}>${svgTableShape(el, surface)}</g>`;
   }
   if (el.type === 'freehand' && shape.kind === 'rect') {
     // The sketch's actual polyline instead of its bounding box.
@@ -382,6 +384,10 @@ export function renderElementsToSvg(
   const vbW = bounds.w + padding * 2;
   const vbH = bounds.h + padding * 2;
   const bg = opts.background ?? tab.backgroundColor ?? EXPORT_BG;
+  // What you export is what you see: an element with no colours of its own is
+  // drawn in the ink of the paper it is being exported onto (spec/07), so a
+  // dark canvas exports dark-canvas elements rather than pale ones.
+  const surface = canvasSurface(bg);
   const parts: string[] = [
     `<svg xmlns="http://www.w3.org/2000/svg" width="${r2(vbW)}" height="${r2(vbH)}" viewBox="${r2(vbX)} ${r2(vbY)} ${r2(vbW)} ${r2(vbH)}">`,
     `<rect x="${r2(vbX)}" y="${r2(vbY)}" width="${r2(vbW)}" height="${r2(vbH)}" fill="${xmlEscape(bg)}"/>`,
@@ -405,11 +411,12 @@ export function renderElementsToSvg(
             resolveIconArt: opts.resolveIconArt,
             resolveStickerArt: opts.resolveStickerArt,
             tabFont: tab.font,
+            surface,
           }),
         );
     }
     for (const el of band.elements) {
-      if (el.type === 'arrow') inner.push(svgArrow(el, tab.elements));
+      if (el.type === 'arrow') inner.push(svgArrow(el, tab.elements, surface));
     }
     const opacity = layerOpacityOf(band.layer);
     parts.push(

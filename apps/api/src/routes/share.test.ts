@@ -33,6 +33,11 @@ vi.mock('../db', () => ({
 // The live-image endpoint (spec/54 + spec/67) delegates the actual
 // render-cache to ./thumbnail; stub it so this suite pins the route's
 // resolve + password-exclusion wiring, not the rendering.
+vi.mock('../email/notifications', () => ({
+  // spec/65's owner email: a seam here, tested for real in email/*.test.ts.
+  notifyDiagramJoin: vi.fn(),
+}));
+
 vi.mock('../thumbnail', () => ({
   getDiagramThumbnailSvg: vi.fn(),
   getDiagramTabImageSvg: vi.fn(),
@@ -42,7 +47,8 @@ vi.mock('../thumbnail', () => ({
 // db helpers. passwordGate is module-private to share.ts, exported
 // only for this suite (see the comment on the export).
 import { handleShare, passwordGate } from './share';
-import { getDiagram, getShareLink } from '../db';
+import { getDiagram, getParticipant, getShareLink, recordSharedAccess } from '../db';
+import { notifyDiagramJoin } from '../email/notifications';
 import { getDiagramTabImageSvg, getDiagramThumbnailSvg } from '../thumbnail';
 import type { RouteContext } from './context';
 
@@ -212,6 +218,16 @@ describe('GET /api/share/<code>/image.svg (spec/54 + spec/67 live image)', () =>
     expect(getDiagramMock).not.toHaveBeenCalled();
   });
 
+  it('404s when the link points at a diagram that no longer exists', async () => {
+    // The link outliving its diagram is the shape a deleted-then-embedded
+    // image takes; it must 404 rather than reach the render cache.
+    getShareLinkMock.mockResolvedValue(shareLink('d1'));
+    getDiagramMock.mockResolvedValue(null);
+    const res = await handleShare(imageCtx('C'));
+    expect(res.status).toBe(404);
+    expect(getThumbnailMock).not.toHaveBeenCalled();
+  });
+
   it('404s an empty diagram (the render-cache yields no snapshot)', async () => {
     getShareLinkMock.mockResolvedValue(shareLink('d1'));
     getDiagramMock.mockResolvedValue(diagram('d1'));
@@ -260,5 +276,197 @@ describe('GET /api/share/<code>/image.svg (spec/54 + spec/67 live image)', () =>
 
     expect(res.status).toBe(404);
     expect(getTabImageMock).not.toHaveBeenCalled();
+  });
+});
+
+// The resolve itself: what a visitor landing on a share link gets back, and
+// what the worker records about them. This is the only unauthenticated read
+// path into a diagram, so each branch below is either "who may see this" or
+// "what does the owner learn about who looked".
+describe('GET /api/share/<code> (spec/24 + spec/65)', () => {
+  const recordSharedAccessMock = vi.mocked(recordSharedAccess);
+  const getParticipantMock = vi.mocked(getParticipant);
+  const notifyDiagramJoinMock = vi.mocked(notifyDiagramJoin);
+
+  function resolveCtx(opts: { code?: string; visitor?: string | null; password?: string } = {}): {
+    ctx: RouteContext;
+    settled: () => Promise<unknown>;
+  } {
+    const url = new URL(`https://api.test/api/share/${opts.code ?? 'C'}`);
+    const headers = new Headers();
+    if (opts.password !== undefined) headers.set('X-Share-Password', opts.password);
+    const dispatched: Promise<unknown>[] = [];
+    return {
+      ctx: {
+        request: new Request(url, { method: 'GET', headers }),
+        env: FAKE_ENV,
+        url,
+        segments: url.pathname.replace(/^\//, '').split('/'),
+        clerkUserId: null,
+        verifiedUserId: null,
+        clerkEmail: null,
+        resolveOwner: () => opts.visitor ?? null,
+        waitUntil: (p: Promise<unknown>) => {
+          dispatched.push(p);
+        },
+      },
+      settled: () => Promise.all(dispatched),
+    };
+  }
+
+  beforeEach(() => {
+    getDiagramMock.mockReset();
+    getShareLinkMock.mockReset();
+    getSharePasswordMock.mockReset();
+    recordSharedAccessMock.mockReset();
+    getParticipantMock.mockReset();
+    notifyDiagramJoinMock.mockReset();
+    getShareLinkMock.mockResolvedValue(shareLink('d1'));
+    getDiagramMock.mockResolvedValue(diagram('d1'));
+    getSharePasswordMock.mockResolvedValue(null);
+    recordSharedAccessMock.mockResolvedValue(false);
+    getParticipantMock.mockResolvedValue(null);
+  });
+
+  it('resolves a live code to the diagram and the link’s own role', async () => {
+    // The role travels with the LINK, not the diagram: a view code must not
+    // resolve to edit just because the diagram is shareable.
+    getShareLinkMock.mockResolvedValue({ ...shareLink('d1'), role: 'view' });
+    const { ctx } = resolveCtx();
+    const res = await handleShare(ctx);
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({ role: 'view', diagram: { id: 'd1' } });
+  });
+
+  it('blanks the owner id for everyone but the owner', async () => {
+    // A guest's owner-id is a bearer value: an observer who learns it could
+    // once claim that guest's diagrams via /api/migrate. A visitor never
+    // needs it — the client only compares it to decide isOwner.
+    const { ctx } = resolveCtx({ visitor: 'someone-else' });
+    const body = (await (await handleShare(ctx)).json()) as { diagram: { ownerId: string } };
+    expect(body.diagram.ownerId).toBe('');
+  });
+
+  it('shows the owner their own id when they open their own link', async () => {
+    const { ctx } = resolveCtx({ visitor: 'o1' });
+    const body = (await (await handleShare(ctx)).json()) as { diagram: { ownerId: string } };
+    expect(body.diagram.ownerId).toBe('o1');
+    // ...and an owner opening their own link must not appear in their own
+    // "Shared with you" list.
+    expect(recordSharedAccessMock).not.toHaveBeenCalled();
+  });
+
+  it('records the visit for an identified non-owner, at the link’s role', async () => {
+    const { ctx } = resolveCtx({ visitor: 'visitor-1' });
+    await handleShare(ctx);
+    expect(recordSharedAccessMock).toHaveBeenCalledWith(FAKE_ENV, 'visitor-1', 'd1', 'view');
+  });
+
+  it('records nothing for a visitor who never identifies', async () => {
+    const { ctx } = resolveCtx({ visitor: null });
+    expect((await handleShare(ctx)).status).toBe(200);
+    expect(recordSharedAccessMock).not.toHaveBeenCalled();
+  });
+
+  it('emails the owner on a first visit, with the joiner’s display name', async () => {
+    recordSharedAccessMock.mockResolvedValue(true);
+    getParticipantMock.mockResolvedValue({
+      id: 'visitor-1',
+      name: 'Ada',
+      color: '#f00',
+      createdAt: 0,
+    });
+    const { ctx, settled } = resolveCtx({ visitor: 'visitor-1' });
+    await handleShare(ctx);
+    await settled();
+    expect(notifyDiagramJoinMock).toHaveBeenCalledWith(FAKE_ENV, expect.anything(), 'Ada');
+  });
+
+  it('stays quiet on a repeat visit', async () => {
+    // spec/65 is once per person, not once per reload.
+    recordSharedAccessMock.mockResolvedValue(false);
+    const { ctx, settled } = resolveCtx({ visitor: 'visitor-1' });
+    await handleShare(ctx);
+    await settled();
+    expect(notifyDiagramJoinMock).not.toHaveBeenCalled();
+  });
+
+  it('still emails when the joiner has no participant record', async () => {
+    recordSharedAccessMock.mockResolvedValue(true);
+    getParticipantMock.mockRejectedValue(new Error('D1 down'));
+    const { ctx, settled } = resolveCtx({ visitor: 'visitor-1' });
+    await handleShare(ctx);
+    await settled();
+    expect(notifyDiagramJoinMock).toHaveBeenCalledWith(FAKE_ENV, expect.anything(), null);
+  });
+
+  it('resolves the code even when the tracking write fails', async () => {
+    // Opening the link is the user-visible thing; the shared_with row is a
+    // nice-to-have and must never turn a working link into an error.
+    recordSharedAccessMock.mockRejectedValue(new Error('D1 down'));
+    const { ctx, settled } = resolveCtx({ visitor: 'visitor-1' });
+    expect((await handleShare(ctx)).status).toBe(200);
+    await settled();
+    expect(notifyDiagramJoinMock).not.toHaveBeenCalled();
+  });
+
+  it('swallows a failing notification rather than surfacing it', async () => {
+    recordSharedAccessMock.mockResolvedValue(true);
+    notifyDiagramJoinMock.mockRejectedValue(new Error('Resend down'));
+    const { ctx, settled } = resolveCtx({ visitor: 'visitor-1' });
+    expect((await handleShare(ctx)).status).toBe(200);
+    await expect(settled()).resolves.toBeDefined();
+  });
+
+  it('gates on the password before recording anything', async () => {
+    // A failed gate must not seed the "Shared with you" list — otherwise a
+    // wrong guess leaves a listing entry behind.
+    getSharePasswordMock.mockResolvedValue('hunter2');
+    const { ctx } = resolveCtx({ visitor: 'visitor-1' });
+    const res = await handleShare(ctx);
+    expect(res.status).toBe(401);
+    expect(recordSharedAccessMock).not.toHaveBeenCalled();
+  });
+
+  it('403s a wrong password without resolving the diagram', async () => {
+    getSharePasswordMock.mockResolvedValue('hunter2');
+    const { ctx } = resolveCtx({ visitor: 'visitor-1', password: 'wrong' });
+    expect((await handleShare(ctx)).status).toBe(403);
+    expect(recordSharedAccessMock).not.toHaveBeenCalled();
+  });
+
+  it('404s a code with no live link — expired, revoked or never issued', async () => {
+    // There is deliberately no `diagrams.shareable` fallback here: one used to
+    // resolve ANY code on a shareable diagram at a hardcoded 'edit', which was
+    // both an expiry bypass and a view→edit escalation.
+    getShareLinkMock.mockResolvedValue(null);
+    expect((await handleShare(resolveCtx().ctx)).status).toBe(404);
+  });
+
+  it('404s when the link points at a diagram that is gone', async () => {
+    getDiagramMock.mockResolvedValue(null);
+    expect((await handleShare(resolveCtx().ctx)).status).toBe(404);
+  });
+
+  it('404s everything this surface does not answer', async () => {
+    for (const [method, path] of [
+      ['POST', '/api/share/C'],
+      ['GET', '/api/share'],
+      ['GET', '/api/share/C/extra'],
+      ['GET', '/api/diagrams/d1'],
+    ] as const) {
+      const url = new URL(`https://api.test${path}`);
+      const res = await handleShare({
+        request: new Request(url, { method }),
+        env: FAKE_ENV,
+        url,
+        segments: url.pathname.replace(/^\//, '').split('/'),
+        clerkUserId: null,
+        verifiedUserId: null,
+        clerkEmail: null,
+        resolveOwner: () => null,
+      });
+      expect(res.status, `${method} ${path}`).toBe(404);
+    }
   });
 });

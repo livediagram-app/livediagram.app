@@ -84,16 +84,19 @@ YOU decide the layout; the server does not override a real arrangement.
   where you place it and never auto-arranged — so put it next to the node it
   describes, not in a loose pile.
 
-## Themes (the look)
+## Colour schemes (the look)
 Set "theme" on create_diagram / add_tab to one of these presets and the server
 paints the whole diagram + canvas with it (you still omit per-element colours):
   ${themeIds}
-Defaults to "brand" (clean, light). Rough guide: cool blues = ocean / sky;
-greens = forest / pine / olive; warm = sunset / sand / rose / mocha; neutral =
-mono / steel / cream; dark backdrops = midnight / charcoal / plum / abyss;
-multi-colour (each branch a different hue) = rainbow / pastel / tropical /
-autumn / jewel; uml = standard UML notation colours. Pick one that fits the
-subject; one theme applies to all tabs in a create_diagram call.
+Defaults to "brand", the Default scheme: the plain, un-themed canvas, which
+follows each reader's own light / dark setting in the editor and paints no
+element colours at all. Rough guide: cool blues = ocean / sky; greens = forest /
+pine / olive; warm = sunset / sand / rose / mocha; neutral = mono / steel /
+cream; dark backdrops = midnight / plum / abyss / espresso (or leave it on
+"brand", which is dark for a reader in dark mode); multi-colour (each branch a
+different hue) = rainbow / pastel / tropical / autumn / jewel; uml = standard
+UML notation colours. Pick one that fits the subject; one scheme applies to all
+tabs in a create_diagram call.
 
 ## Design rules (diagrams that read well)
 - Nodes are SHAPES, not text. Use type "shape" (shape: "square" by default,

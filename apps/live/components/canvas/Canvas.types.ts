@@ -466,7 +466,7 @@ export type CanvasProps = {
   // Everyone in the room right now (remote presence + you), the turnout
   // denominator.
   participantCount: number;
-  // Bottom-dock "Theme & Canvas" button (spec/42): opens the
+  // Bottom-dock "Colour scheme & canvas" button (spec/42): opens the
   // CanvasThemeDialog. Omitted in read-only / embed sessions (no button).
   onOpenCanvasTheme?: () => void;
   onSelectLayer: (layerId: string) => void;

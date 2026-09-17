@@ -58,7 +58,7 @@ const SECTION_HELP: Partial<
   },
   themes: {
     article: 'customThemes',
-    title: 'Custom themes',
+    title: 'Custom colour schemes',
     description: 'Build your own palette and reuse it across diagrams.',
   },
   tokens: {

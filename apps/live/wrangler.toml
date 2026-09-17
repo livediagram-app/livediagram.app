@@ -11,3 +11,17 @@ compatibility_date = "2026-05-29"
 directory = "./out"
 binding = "ASSETS"
 not_found_handling = "404-page"
+
+# Staging (spec/140): same path-rewrite worker, same static `./out`, deployed
+# as `livediagram-live-staging`. `main` is inheritable; the assets binding is
+# restated so this block describes the staging worker in full.
+# Named explicitly: wrangler would append "-staging" to the top-level
+# name on its own, but nothing in `--dry-run` prints the name it resolved,
+# and the router's service bindings depend on this exact string.
+[env.staging]
+name = "livediagram-live-staging"
+
+[env.staging.assets]
+directory = "./out"
+binding = "ASSETS"
+not_found_handling = "404-page"

@@ -25,13 +25,15 @@ vi.mock('@/lib/api/core', () => ({
   // Mirrors the real signature (action, status, code) so the type the tests
   // see and the value they construct agree.
   ApiError: class ApiError extends Error {
-    constructor(
-      public action: string,
-      public status: number,
-      public code: string | null,
-    ) {
+    action: string;
+    status: number;
+    code: string | null;
+    constructor(action: string, status: number, code: string | null) {
       super(`${action} failed: ${status}`);
       this.name = 'ApiError';
+      this.action = action;
+      this.status = status;
+      this.code = code;
     }
   },
   apiDelete: vi.fn(async () => {

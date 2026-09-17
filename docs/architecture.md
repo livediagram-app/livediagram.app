@@ -62,7 +62,7 @@ Each app pulls these in via `workspace:*`:
 
 What's running:
 
-- **Frontend**: Next.js 16 (Turbopack) with `output: 'export'`, React 19, TypeScript, Tailwind CSS 4.
+- **Frontend**: Next.js 16 (Turbopack) with `output: 'export'`, React 19, TypeScript 7 (the Go compiler; the tools that need a compiler API still get 6.0 through an alias, see [contributing](contributing.md#two-typescripts)), Tailwind CSS 4.
 - **API**: Cloudflare Workers (vanilla `fetch` handlers, not Hono).
 - **Database**: Cloudflare D1 (SQLite-on-the-edge), accessed only via the api worker.
 - **Local persistence** (optional per diagram, spec/76): Offline Mode stores a diagram only in the browser's IndexedDB, never the api. It is opt-in at create time (or by taking a cloud diagram offline) and dispatched behind the single `apps/live/lib/api-client.ts` persistence boundary on `isOfflineId(id)`, so the rest of the editor takes the same code path either way. Convertible both directions: Sync Diagram uploads it to D1, Take Offline downloads it and deletes the server copy. See [spec/76](../specs/76-offline-mode.md).
@@ -90,6 +90,17 @@ Two equivalent identity paths: an `X-Owner-Id` header (a per-browser UUID from `
 
 ## Deployment
 
-GitHub Actions → Cloudflare Workers, manually triggered after a green CI run. Build artefacts get uploaded once, then five workers (marketing / live / telemetry / help / api) ship in parallel; the `mcp` worker deploys after `api` (it has a service binding to it), and the router deploys last because its service bindings need the others to exist.
+GitHub Actions → Cloudflare Workers. Build artefacts get uploaded once, then five workers (marketing / live / telemetry / help / api) ship in parallel; the `mcp` worker deploys after `api` (it has a service binding to it), and the router deploys last because its service bindings need the others to exist.
+
+Two environments run that same sequence, from one reusable workflow (`deploy-reusable.yml`) so they cannot drift:
+
+|         | Production                                 | Staging                                                |
+| ------- | ------------------------------------------ | ------------------------------------------------------ |
+| Host    | `livediagram.app`                          | `staging.livediagram.app`                              |
+| Trigger | Manual, after a green CI run               | Automatic, on every green CI run on `main`             |
+| Workers | `livediagram-<app>`                        | `livediagram-<app>-staging` (wrangler `[env.staging]`) |
+| Data    | `livediagram` D1 + `livediagram-images` R2 | Its own D1 / R2 / KV — no production data, ever        |
+
+Staging exists mainly so a D1 migration runs against a real remote database one deploy before it reaches the one holding people's diagrams. It is public but `noindex` (the router stamps `X-Robots-Tag` when its `DEPLOY_ENV` is `staging`). See [spec/140](../specs/140-staging-environment.md).
 
 See [Self-hosting](self-hosting.md) for the step-by-step, and [spec/10](../specs/10-deployment.md) for the deeper deployment contract.

@@ -30,9 +30,11 @@ export function TemplateCard({
       label={template.title}
       description={template.description}
     >
-      {/* Preview tiles are illustrative mini-canvases (light SVG), so the
-          tile keeps a light backdrop in dark mode to stay legible. */}
-      <div className="flex h-14 w-full items-center justify-center rounded-md bg-slate-50 dark:bg-slate-200">
+      {/* An illustrative mini-canvas drawn as light-canvas art. In dark
+          chrome the whole tile is re-lit by `.preview-art-tile`
+          (globals.css) rather than redrawn, so it reads as a dark canvas
+          with its hues intact. */}
+      <div className="preview-art-tile flex h-14 w-full items-center justify-center rounded-md bg-slate-50">
         <TemplatePreview kind={template.kind} />
       </div>
     </PickerCard>
@@ -65,7 +67,8 @@ export function CategoryCard({
       description={description}
       count={count}
     >
-      <div className="grid h-14 w-full grid-cols-2 grid-rows-2 gap-0.5 overflow-hidden rounded-md bg-slate-50 p-1 dark:bg-slate-200">
+      {/* Same re-lighting as a single preview: the collage is four of them. */}
+      <div className="preview-art-tile grid h-14 w-full grid-cols-2 grid-rows-2 gap-0.5 overflow-hidden rounded-md bg-slate-50 p-1">
         {previews.slice(0, 4).map((kind) => (
           <div
             key={kind}

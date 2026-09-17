@@ -23,6 +23,8 @@ import {
 // MCP worker reuses the same element drawing. The canvas / isometric / backdrop
 // orchestration below stays here and imports the per-element drawers + helpers.
 import {
+  canvasSurface,
+  type CanvasSurface,
   boxedNeedsSvgRaster,
   contentBounds,
   describeBoxedExport,
@@ -165,7 +167,12 @@ export async function renderTabToCanvas(
   // Background colour, painted across the whole canvas BEFORE the iso tilt so
   // the triangular margins around the parallelogram fill too. The pattern (if
   // on) sits flat over it — like the editor, whose backdrop never tilts.
-  ctx.fillStyle = tab.backgroundColor ?? EXPORT_BG;
+  const bgColor = tab.backgroundColor ?? EXPORT_BG;
+  // Elements that carry no colours of their own are drawn in the ink of the
+  // paper being exported onto (spec/07), so a dark canvas exports dark-canvas
+  // elements rather than pale ones.
+  const surface = canvasSurface(bgColor);
+  ctx.fillStyle = bgColor;
   ctx.fillRect(0, 0, w / scale, h / scale);
   const bg = backgroundPatternDefs(tab, opts);
   if (bg) {
@@ -191,7 +198,7 @@ export async function renderTabToCanvas(
   // depth plane behind the element layer).
   if (iso) {
     for (const { el, alpha } of ordered) {
-      if (el.type !== 'arrow') drawBoxedExtrusion(ctx, el, alpha);
+      if (el.type !== 'arrow') drawBoxedExtrusion(ctx, el, alpha, surface);
     }
   }
   // Boxed elements first so arrows draw over them with the right
@@ -239,6 +246,7 @@ export async function renderTabToCanvas(
         resolveIconArt: resolveIconArtLoaded,
         resolveStickerArt: resolveStickerArtLoaded,
         tabFont,
+        surface,
       })}</svg>`;
     try {
       rasterImages.set(el.id, { image: await svgToImage(svg), pad });
@@ -263,13 +271,13 @@ export async function renderTabToCanvas(
       ctx.globalAlpha = 1;
       continue;
     }
-    drawBoxed(ctx, el, resolveImage, alpha, tabFont);
+    drawBoxed(ctx, el, resolveImage, alpha, tabFont, surface);
   }
   for (const { el, alpha } of ordered) {
     if (el.type !== 'arrow') continue;
     // Endpoint resolution keeps the FULL list, so an arrow pinned to a
     // hidden element still lands where the canvas draws it.
-    drawArrow(ctx, el, tab.elements, alpha);
+    drawArrow(ctx, el, tab.elements, alpha, surface);
   }
   return canvas;
 }
@@ -310,11 +318,11 @@ function svgSilhouette(
 // Isometric extrusion column for one boxed element (spec/45) — the SVG
 // counterpart of drawBoxedExtrusion. Stepped silhouette copies, dimmed toward
 // the floor, behind the element body.
-function svgBoxedExtrusion(el: BoxedElement): string {
+function svgBoxedExtrusion(el: BoxedElement, surface: CanvasSurface): string {
   // Frames / text / icon shapes stay flat (isoExtrudes, shared with the
   // on-screen IsometricDepthLayer + the canvas exporter).
   if (!isoExtrudes(el)) return '';
-  const { shape, opacity } = describeBoxedExport(el);
+  const { shape, opacity } = describeBoxedExport(el, { surface });
   if (shape.kind === 'none' || shape.kind === 'sticker') return '';
   const accent = shape.kind === 'image' ? EXPORT_IMAGE_STROKE : shape.stroke;
   const az = (ISO_TILT_DEG.z * Math.PI) / 180;
@@ -356,12 +364,15 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
   const vbY = draw.y - EXPORT_PADDING;
   const vbW = draw.w + EXPORT_PADDING * 2;
   const vbH = draw.h + EXPORT_PADDING * 2;
+  const bgColor = tab.backgroundColor ?? EXPORT_BG;
+  // See the PNG path: unpainted elements take the exported paper's ink.
+  const surface = canvasSurface(bgColor);
   const parts: string[] = [];
   parts.push(
     `<svg xmlns="http://www.w3.org/2000/svg" width="${r2(vbW)}" height="${r2(vbH)}" viewBox="${r2(vbX)} ${r2(vbY)} ${r2(vbW)} ${r2(vbH)}">`,
   );
   parts.push(
-    `<rect x="${r2(vbX)}" y="${r2(vbY)}" width="${r2(vbW)}" height="${r2(vbH)}" fill="${xmlEscape(tab.backgroundColor ?? EXPORT_BG)}"/>`,
+    `<rect x="${r2(vbX)}" y="${r2(vbY)}" width="${r2(vbW)}" height="${r2(vbH)}" fill="${xmlEscape(bgColor)}"/>`,
   );
   // Typefaces (spec/28): the real bytes when the caller pre-fetched them
   // (a download, which must stand alone), else a declaration of the Google
@@ -389,7 +400,9 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
       parts.push(
         wrapBand(
           layerOpacityOf(band.layer),
-          band.elements.filter((el) => el.type !== 'arrow').map((el) => svgBoxedExtrusion(el)),
+          band.elements
+            .filter((el) => el.type !== 'arrow')
+            .map((el) => svgBoxedExtrusion(el, surface)),
         ),
       );
     }
@@ -408,11 +421,12 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
             resolveIconArt: resolveIconArtLoaded,
             resolveStickerArt: resolveStickerArtLoaded,
             tabFont: tab.font,
+            surface,
           }),
         );
     }
     for (const el of band.elements) {
-      if (el.type === 'arrow') inner.push(svgArrow(el, tab.elements));
+      if (el.type === 'arrow') inner.push(svgArrow(el, tab.elements, surface));
     }
     parts.push(wrapBand(layerOpacityOf(band.layer), inner));
   }

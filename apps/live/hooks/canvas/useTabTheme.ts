@@ -1,7 +1,7 @@
 // Theme actions for the active tab (spec/29 + /42 + /44), lifted out of
 // useTabCanvas into a sibling hook: applying a theme with the
 // preserve-customs walk, the hard reset when a custom theme is deleted,
-// and the "Reset elements to theme" button. useTabCanvas mounts this
+// and the "Reset elements to colour scheme" button. useTabCanvas mounts this
 // and folds the three handlers into its return, so callers are
 // unchanged.
 
@@ -49,7 +49,7 @@ export function useTabTheme(deps: {
     if (editsBlocked) return;
     const theme = getTheme(id);
     // theme.label is the built-in label or the custom theme's name.
-    emitTabMeta(activeId, `Changed theme to ${theme.label}`);
+    emitTabMeta(activeId, `Changed colour scheme to ${theme.label}`);
     // Telemetry (spec/22): `type` must stay a preset, never user content,
     // so a custom theme reports the fixed 'Custom' rather than its name.
     track('Theme', 'Changed', themeTelemetryLabel(id));
@@ -148,7 +148,7 @@ export function useTabTheme(deps: {
       THEMES.find((t) => t.id === themeId)?.label ??
       themeId.charAt(0).toUpperCase() + themeId.slice(1);
     track('Theme', 'Changed', 'ResetElements'); // discrete one-shot recolour to theme
-    emitTabMeta(activeId, `Reset element colours to the ${themeLabel} theme`);
+    emitTabMeta(activeId, `Reset element colours to the ${themeLabel} colour scheme`);
     commitTabs((ts) =>
       ts.map((t) => {
         if (t.id !== activeId) return t;

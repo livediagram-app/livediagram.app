@@ -107,7 +107,7 @@ export function CustomThemeProvider({
       try {
         const theme = await apiCreateCustomTheme(ownerId, {
           id,
-          name: name.trim() || 'My theme',
+          name: name.trim() || 'My colour scheme',
           definition,
         });
         registerCustomTheme(theme);

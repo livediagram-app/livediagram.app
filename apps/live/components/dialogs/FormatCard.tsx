@@ -30,7 +30,10 @@ export function FormatCard({
       onClick={onClick}
       className="flex flex-col items-start gap-1.5 rounded-lg border border-slate-200 bg-white p-3 text-left transition hover:border-brand-300 hover:bg-brand-50/40 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/10"
     >
-      <div className="flex h-12 w-full items-center justify-center rounded-md bg-slate-50 dark:bg-slate-200">
+      {/* The format glyphs are light-canvas art like the template previews,
+          so they take the same re-lighting in dark chrome rather than sitting
+          on a light plate (`.preview-art-tile`, globals.css). */}
+      <div className="preview-art-tile flex h-12 w-full items-center justify-center rounded-md bg-slate-50">
         {children}
       </div>
       <div className="min-w-0">

@@ -1,4 +1,4 @@
-// Tests for the safe localStorage wrappers used by useUiMode,
+// Tests for the safe localStorage wrappers used by useAppearance,
 // useShortcutsEnabled, and user-preferences. These are the
 // load-bearing safety nets that turn a "render on the server" or
 // "Safari private mode threw" case into a quiet null/no-op rather
@@ -116,7 +116,7 @@ describe('writeLocalStorageSafe', () => {
   });
 
   it('silently swallows a setItem throw (quota exceeded, private mode)', () => {
-    // The callers (useUiMode / useShortcutsEnabled / user-preferences)
+    // The callers (useAppearance / useShortcutsEnabled / user-preferences)
     // all accept "session-only" degradation as their failure mode, so
     // the safety contract here is: a throw never propagates.
     const throwing: Storage = {

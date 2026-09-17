@@ -271,7 +271,7 @@ export function CommandPalette({
     },
   );
   // Per-element + tab formatting now lives in the right-click context
-  // menus (element / canvas / tab) and the Tab Appearance modal, not in a
+  // menus (element / canvas / tab) and the Tab Look & Feel dialog, not in a
   // side panel. The palette now hosts the canvas-tool toggle row at the
   // top, then a single category picker: Favourites (spec/78, open by
   // default — the user's own go-to tiles), Shapes, Tools, Components,

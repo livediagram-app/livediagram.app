@@ -29,8 +29,11 @@ export type PhotoDetectError =
   'photo_unsupported_heic' | 'photo_unsupported_type' | 'photo_unreadable' | 'crops_too_large';
 
 export class PhotoDetectFailed extends Error {
-  constructor(readonly reason: PhotoDetectError) {
+  readonly reason: PhotoDetectError;
+
+  constructor(reason: PhotoDetectError) {
     super(reason);
+    this.reason = reason;
     this.name = 'PhotoDetectFailed';
   }
 }

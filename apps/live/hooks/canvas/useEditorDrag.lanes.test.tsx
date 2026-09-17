@@ -118,7 +118,7 @@ function press(h: Harness, id: string) {
 }
 
 function move(
-  h: Harness,
+  _h: Harness,
   dx: number,
   dy: number,
   mods: { alt?: boolean; shift?: boolean; meta?: boolean } = {},
@@ -136,7 +136,7 @@ function move(
   });
 }
 
-function release(h: Harness, dx: number, dy: number) {
+function release(_h: Harness, dx: number, dy: number) {
   act(() => {
     window.dispatchEvent(
       new MouseEvent('pointerup', { clientX: START.x + dx, clientY: START.y + dy }),

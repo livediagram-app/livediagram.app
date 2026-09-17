@@ -117,7 +117,7 @@ function snapRow(y: number, height: number, rows: number[]): number {
 // resolved by pushing the arrival further along the row.
 export function placeNewNotes(
   additions: PhotoAddition[],
-  transform: PhotoTransform,
+  _transform: PhotoTransform,
   existing: BoardNote[],
   opts: { timeline?: EsTimeline | null; gap?: number } = {},
 ): PhotoAddition[] {

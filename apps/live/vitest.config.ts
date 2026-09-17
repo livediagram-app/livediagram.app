@@ -25,7 +25,14 @@ export default defineProject({
   // The e2e/ Playwright smoke suite (spec/72) uses the same `.spec.ts`
   // extension but runs under Playwright, not Vitest — keep it out of
   // the unit run (it has its own `test:e2e` script).
-  test: { exclude: [...configDefaults.exclude, 'e2e/**'] },
+  test: {
+    exclude: [...configDefaults.exclude, 'e2e/**'],
+    // Unmount rendered trees after each test. `globals: false` stops React
+    // Testing Library registering its own cleanup, and a tree left mounted
+    // when jsdom is torn down crashes a later file in the same worker with
+    // `window is not defined`. The shared setup file says why in full.
+    setupFiles: ['@livediagram/vitest-config/react-cleanup'],
+  },
   resolve: {
     // One React, shared with the workspace packages. `packages/ui` peers
     // react (correctly) but carries its own copy for its own tests, so a

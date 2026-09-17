@@ -81,7 +81,7 @@ type TemplatePickerProps = {
   // gets a fresh blank canvas (no seeded rectangle, no theme override)
   // and the empty-state card prompts the next step. Triggered by the X in
   // the header (all modes) or the Cancel button (non-welcome modes only:
-  // the welcome wizard offers Skip instead, which commits Blank + Basic).
+  // the welcome wizard offers Skip instead, which commits Blank + the Default colour scheme).
   onSkip: () => void;
   // True while the host is committing the pick (the new-diagram POST can
   // take a moment). Drives the primary button's spinner + disabled state
@@ -173,7 +173,7 @@ export function TemplatePicker({
   // A non-empty search query overrides this and shows flat results.
   const [openCategory, setOpenCategory] = useState<TemplateCategory | null>(null);
   // Initial theme is whatever the caller hands us: the /new flow passes
-  // 'brand' (so Basic is pre-selected for a fresh diagram), while a new
+  // 'brand' (so Default is pre-selected for a fresh diagram), while a new
   // tab copying an existing one passes that tab's theme.
   const [themeId, setThemeId] = useState<string>(currentThemeId);
   // Offline Mode (spec/76): "Save offline — this browser only". Welcome wizard
@@ -262,7 +262,7 @@ export function TemplatePicker({
   const showTemplateSection = showTemplates && (!isWizard || step === 'template');
   const showThemeSection = showThemes && (!isWizard || step === 'theme');
   // Skip the wizard entirely: the documented shortcut is Blank template +
-  // Basic theme (spec/14), committed straight away. Placement still honours
+  // Default colour scheme (spec/14), committed straight away. Placement still honours
   // the URL context (/new?folder=…, ?team=…) the picker was pre-seeded with,
   // so skipping doesn't silently drop the diagram into personal Unsorted.
   const skipToDefaults = () =>
@@ -312,7 +312,7 @@ export function TemplatePicker({
                       ? `Welcome to '${diagramName.trim()}'`
                       : 'Welcome to this diagram'
                     : step === 'theme'
-                      ? 'Pick a theme'
+                      ? 'Pick a colour scheme'
                       : 'Quick Start'}
               </h2>
               <p className="mt-1 text-sm text-slate-500 dark:text-slate-300">
@@ -320,7 +320,7 @@ export function TemplatePicker({
                   ? step === 'template'
                     ? 'Choose a template to start from.'
                     : step === 'theme'
-                      ? 'Pick a theme, or build your own.'
+                      ? 'Pick a colour scheme, or build your own.'
                       : 'Name your diagram and choose where it lives.'
                   : nameLocked
                     ? 'This is the name from your account; others will see it on this diagram.'
@@ -331,10 +331,10 @@ export function TemplatePicker({
               {showTemplates ? (
                 <HelpArticleLink
                   article={step === 'theme' ? 'themes' : 'templates'}
-                  title={step === 'theme' ? 'Themes' : 'Templates'}
+                  title={step === 'theme' ? 'Colour schemes' : 'Templates'}
                   description={
                     step === 'theme'
-                      ? 'How themes restyle your whole diagram.'
+                      ? 'How colour schemes restyle your whole diagram.'
                       : 'How templates give you a themed starting point.'
                   }
                   className="!h-8 !w-8 !rounded-lg !border-0 !text-sm !text-slate-400 hover:!bg-slate-100 hover:!text-slate-700 dark:!text-slate-400 dark:hover:!bg-slate-800 dark:hover:!text-slate-200"
@@ -423,10 +423,10 @@ export function TemplatePicker({
               />
             ) : null}
 
-            {/* Theme picker: a two-level browse (Basic quick-pick, a card per
+            {/* Colour-scheme picker: a two-level browse (Default quick-pick, a card per
               colour-temperament category, plus a Custom category for the
               owner's saved themes). Reuses the exact picker the right-click
-              Tab Appearance dialog renders (spec/42, /44) so the two can't
+              Tab Look & Feel dialog renders (spec/42, /44) so the two can't
               drift. Shown as step 2 of the welcome wizard, or stacked under
               the template grid in templates mode. */}
             {showThemeSection ? (

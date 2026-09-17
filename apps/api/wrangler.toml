@@ -243,3 +243,121 @@ simple = { limit = 120, period = 60 }
 # back in the shared bucket), so check `wrangler secret list` on both if
 # Mcp·Used counts look flat.
 
+
+# ---------------------------------------------------------------------------
+# Staging (spec/140). Deploys as `livediagram-api-staging` via
+# `wrangler deploy --env staging`.
+#
+# Everything below is restated ON PURPOSE. Wrangler does NOT inherit
+# bindings into a named environment: `vars`, `d1_databases`, `r2_buckets`,
+# `durable_objects`, `migrations` and `unsafe` are all non-inheritable, so a
+# block omitted here is a binding MISSING from the deployed staging worker,
+# with no warning. Only `main`, `compatibility_date`, `rules` and `triggers`
+# carry over from the production config above.
+#
+# The values that genuinely differ from production are the D1 database, the
+# R2 bucket, and the email/AI vars that name the public origin. Everything
+# else agreeing with production is the point: staging is a rehearsal.
+# ---------------------------------------------------------------------------
+
+# Named explicitly: wrangler would append "-staging" to the top-level
+# name on its own, but nothing in `--dry-run` prints the name it resolved,
+# and the router's service bindings depend on this exact string.
+[env.staging]
+name = "livediagram-api-staging"
+
+[env.staging.vars]
+TELEMETRY_ENABLED = "true"
+# Staging emits into its own D1, so the events land on STAGING's /telemetry
+# dashboard and never in production's published numbers.
+
+# Links in staging email point back at staging (spec/64). Without this a
+# welcome email sent from a staging test lands someone on production.
+APP_BASE_URL = "https://staging.livediagram.app"
+RESEND_FROM = "livediagram staging <hello@livediagram.app>"
+
+# Lock the AI endpoint to the staging origin so the OpenAI key behind it
+# can't be spent from a third-party page (spec/25). Production sets the
+# equivalent in the dashboard; staging states it here so the environment is
+# reproducible from the repo alone — see spec/140 "Known sharp edge".
+AI_ALLOWED_ORIGINS = "https://staging.livediagram.app"
+AI_REQUIRE_CLERK = "true"
+
+# Own database, created 2026-09-17. Empty until the first staging deploy
+# applies the migrations in `migrations/` against it — which is the whole
+# reason this environment exists (spec/140).
+[[env.staging.d1_databases]]
+binding = "DB"
+database_name = "livediagram-staging"
+database_id = "fd18e315-baad-48d5-b2c7-4a14a793e7b4"
+migrations_dir = "migrations"
+
+# Own bucket: `wrangler r2 bucket create livediagram-images-staging`. Sharing
+# production's would let the staging retention cron delete real image bytes.
+[[env.staging.r2_buckets]]
+binding = "IMAGES"
+bucket_name = "livediagram-images-staging"
+
+# Rate limiters. Namespace ids deliberately MATCH production's: Cloudflare
+# scopes a namespace per script, and `livediagram-api-staging` is a different
+# script, so these are already separate counters. Renumbering them would
+# imply the number carries meaning across workers, which it doesn't.
+[[env.staging.unsafe.bindings]]
+name = "WRITE_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1001"
+simple = { limit = 300, period = 60 }
+
+[[env.staging.unsafe.bindings]]
+name = "EVENTS_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1002"
+simple = { limit = 120, period = 60 }
+
+[[env.staging.unsafe.bindings]]
+name = "AI_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1003"
+simple = { limit = 20, period = 60 }
+
+[[env.staging.unsafe.bindings]]
+name = "SHARE_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1004"
+simple = { limit = 30, period = 60 }
+
+[[env.staging.unsafe.bindings]]
+name = "UNFURL_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1005"
+simple = { limit = 60, period = 60 }
+
+[[env.staging.unsafe.bindings]]
+name = "API_TOKEN_READ_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1006"
+simple = { limit = 120, period = 60 }
+
+# A different script is a different Durable Object namespace, so staging's
+# DIAGRAM_ROOM instances are separate from production's for free. The class
+# still needs its own migration tag in this environment.
+[[env.staging.durable_objects.bindings]]
+name = "DIAGRAM_ROOM"
+class_name = "DiagramRoom"
+
+[[env.staging.migrations]]
+tag = "v1"
+new_classes = ["DiagramRoom"]
+
+# The daily 03:00 UTC sweeps (retention + the spec/64 email crons) run on
+# staging too, against staging's own data. Restated rather than inherited so
+# that reading this block tells you what the staging worker actually does.
+[env.staging.triggers]
+crons = ["0 3 * * *"]
+
+# CLERK_JWKS_URL, GUEST_ID_HMAC_SECRET and INTERNAL_EVENTS_KEY come from the
+# `_STAGING` GitHub secrets via the deploy workflow. RESEND_API_KEY and
+# OPENAI_API_KEY are provisioned by hand exactly as they are for production:
+#   cd apps/api && wrangler secret put RESEND_API_KEY --env staging
+# Worker secrets are per-environment, so staging's never collide with
+# production's.

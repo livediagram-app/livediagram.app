@@ -4,7 +4,7 @@ import type { Element } from './index';
 import type { ThemeDefinition } from './themes';
 
 // Design-system defaults used when a theme defers its element colours
-// (null = "use the built-in shape colours", e.g. the Basic theme). They
+// (null = "use the built-in shape colours", e.g. the Default colour scheme). They
 // mirror defaultFillColor / defaultStrokeColor / defaultTextColor for
 // shapes (brand-50 / brand-500 / brand-800) so even a deferring theme
 // yields an on-brand ramp rather than only neutrals.

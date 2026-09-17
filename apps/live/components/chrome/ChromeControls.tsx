@@ -1,5 +1,5 @@
 import { Tooltip } from '@/components/primitives/Tooltip';
-import { UiModeToggle } from '@/components/chrome/UiModeToggle';
+import { AppearanceToggle } from '@/components/chrome/AppearanceToggle';
 import { GearIcon, GithubIcon, KeyboardIcon, SearchGlyph } from '@/components/chrome/tab-bar-icons';
 
 // The right-hand control cluster shared by the editor's bottom tab bar and
@@ -82,7 +82,7 @@ export function ChromeControls({
           </button>
         </Tooltip>
       ) : null}
-      <UiModeToggle />
+      <AppearanceToggle />
     </>
   );
 }
