@@ -142,6 +142,10 @@ export function resolveBoxedMove({
       lane: laneSnap
         ? {
             laneIndex: laneSnap.laneIndex,
+            // The frozen stack this frame resolved against: the overlay must
+            // draw its bands against the same lines the note landed on, not
+            // the board as it is half a tick later.
+            originY: timeline.originY,
             ...(gutterSnap
               ? {
                   // What the author sees BEFORE dropping: the footprint the
@@ -159,28 +163,6 @@ export function resolveBoxedMove({
               : {}),
           }
         : null,
-    };
-  }
-  if (laneSnap && gutterSnap) {
-    // Both axes answered: skip the alignment / distribution scans entirely
-    // rather than compute answers nothing will use.
-    return {
-      tx: dx + (gutterSnap.x - candidate.x),
-      ty: dy + (laneSnap.y - candidate.y),
-      guides: [],
-      distGuides: [],
-      lane: {
-        laneIndex: laneSnap.laneIndex,
-        // What the author sees BEFORE dropping: the footprint the note is
-        // about to take. A capture radius this wide is only fair if the offer
-        // is visible.
-        ghost: {
-          x: gutterSnap.x,
-          y: laneSnap.y,
-          width: candidate.width,
-          height: candidate.height,
-        },
-      },
     };
   }
   const snap = snapToAlignment(candidate, elements, memberIds, ALIGN_SNAP_THRESHOLD);
@@ -221,21 +203,9 @@ export function resolveBoxedMove({
         g.axis === 'x' ? !snap.snappedX && dist.dx !== 0 : !snap.snappedY && dist.dy !== 0,
       )
     : [];
-  if (!laneSnap && !gutterSnap) {
-    return { tx: dx + snapDx, ty: dy + snapDy, guides, distGuides, lane: null };
-  }
-  // One axis claimed, the other left to alignment: the claimed axis takes its
-  // answer and drops its guide, because a line drawn along an edge the note is
-  // NOT landing on is a lie.
-  const keep = <T extends { axis: 'x' | 'y' }>(gs: T[]): T[] =>
-    gs.filter((g) => (g.axis === 'x' ? !gutterSnap : !laneSnap));
-  return {
-    tx: gutterSnap ? dx + (gutterSnap.x - candidate.x) : dx + snapDx,
-    ty: laneSnap ? dy + (laneSnap.y - candidate.y) : dy + snapDy,
-    guides: keep(guides),
-    distGuides: keep(distGuides),
-    lane: laneSnap ? { laneIndex: laneSnap.laneIndex } : null,
-  };
+  // Timeline is null here (the early return above owns every lane frame), so
+  // x and y are the ordinary alignment / distribution answers alone.
+  return { tx: dx + snapDx, ty: dy + snapDy, guides, distGuides, lane: null };
 }
 
 // Apply a move frame's translation: every dragged boxed element shifts

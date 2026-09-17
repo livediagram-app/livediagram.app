@@ -225,6 +225,24 @@ describe('useEditorDrag — timeline lanes (spec/139)', () => {
     expect(h.xOf('drag')).toBe(272);
   });
 
+  it('NEVER drags the timeline along with the note', () => {
+    // The stack is anchored on the board's top-most note (a, at y=0). Dragging
+    // that very note UP into the higher lanes must not re-anchor the stack to
+    // it on every tick — that is the bug where the timeline chased the sticky,
+    // and this asserts the preview stays pinned to the stack the gesture began
+    // with.
+    const h = harness();
+    press(h, 'a');
+    move(h, 0, -60); // into the higher lanes, one tick at a time
+    move(h, 0, -120);
+    move(h, 0, -260);
+    const preview = getLanePreview();
+    expect(preview).not.toBeNull();
+    // a was the top-most note at drag start, so the stack began at y=0 and
+    // must still be there — not at -260 wherever the note has run off to.
+    expect(preview!.originY).toBe(0);
+  });
+
   it('snaps a MULTI-SELECTION as one block, keeping its spacing', () => {
     // Two notes already a gutter apart, dragged together: the block takes a
     // place on the board and the pair stays a pair.

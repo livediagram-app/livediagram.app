@@ -18,6 +18,15 @@ export type LanePreview = {
   // The lane the note's centre is landing on, or null when the note is too
   // far from any lane for one to claim it (lanes are an aid, not a cage).
   laneIndex: number | null;
+  // The stack this preview was resolved against, FROZEN at gesture start.
+  //
+  // The board's elements are re-committed on every move, and the stack is
+  // derived from them — so re-deriving it mid-drag would let a note dragged
+  // into the higher lanes drag the whole timeline up with it (the stack
+  // re-anchors on the moving note, forever chasing it). The preview carries
+  // the origin the gesture BEGAN with, and the overlay draws its bands from
+  // this rather than from the live board.
+  originY: number;
   // The exact footprint the drop will take, when a suggested slot has claimed
   // the note: drawn as a dashed outline so the author sees where it is going
   // BEFORE letting go. Absent when x is still the hand's own.
@@ -34,6 +43,7 @@ function same(a: LanePreview | null, b: LanePreview | null): boolean {
   if (!a || !b) return false;
   return (
     a.laneIndex === b.laneIndex &&
+    a.originY === b.originY &&
     a.ghost?.x === b.ghost?.x &&
     a.ghost?.y === b.ghost?.y &&
     a.ghost?.width === b.ghost?.width &&

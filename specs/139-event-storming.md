@@ -467,6 +467,15 @@ of it lives in `rhythmSlots` and `gutterCentres` in
 
 **Rulings** (each one an operator input, and what changed):
 
+- **2026-09-17 — "dragging in the higher lanes drags the whole timeline"**:
+  the stack is derived from the board top-most note, and the board re-commits
+  on every move — so a note dragged up into the higher lanes became the new
+  top-most note on each tick and re-anchored the stack to itself, the timeline
+  chasing the sticky. A gesture now FREEZES the stack when it begins
+  (`laneTimelineRef`), the preview carries the frozen `originY`, and the
+  overlay draws its bands from it rather than from the live board. Asserted by
+  a test that drags the top-most note up three lanes and reads the origin back
+  unchanged.
 - **2026-09-17 — "remove the toggle, lanes are always on"**: timeline lanes are
   not a mode. The switch, the command-palette verb, the canvas-menu verb, the
   two telemetry events and the whole field are GONE; the lane

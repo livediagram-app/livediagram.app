@@ -58,6 +58,12 @@ export function TimelineLanesOverlay({
   const left = -BLEED_PX;
   const right = window.innerWidth + BLEED_PX;
 
+  // The overlay draws the stack the PREVIEW resolved against, not the stack
+  // the live board currently derives. They differ exactly while a note is
+  // being dragged into the higher lanes: the board re-commits every move, so
+  // its derived stack would chase the note up and light a lane that keeps
+  // moving. The preview froze the stack at gesture start; the bands follow it.
+  const frozen: EsTimeline = { originY: preview.originY };
   const lit = preview.laneIndex;
   // The lane and its two neighbours, so the rhythm is visible rather than just
   // the one row. Fainter either side: the lit lane is the promise, the
@@ -78,7 +84,7 @@ export function TimelineLanesOverlay({
       className="pointer-events-none fixed inset-0 z-[var(--z-chrome)] h-screen w-screen motion-safe:transition-opacity motion-safe:duration-150"
     >
       {bands.map((band) => {
-        const top = toClientY(laneTop(band.index, timeline));
+        const top = toClientY(laneTop(band.index, frozen));
         const height = ES_LANE_HEIGHT * viewportZoom;
         return (
           <g key={band.index}>

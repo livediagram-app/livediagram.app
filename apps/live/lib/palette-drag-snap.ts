@@ -75,6 +75,7 @@ export function paletteDragSnapAt({
       lane: laneSnap
         ? {
             laneIndex: laneSnap.laneIndex,
+            originY: timeline.originY,
             ...(gutterSnap ? { ghost: { x: gutterSnap.x, y: laneSnap.y, width, height } } : {}),
           }
         : null,
@@ -104,17 +105,7 @@ export function paletteDragSnapAt({
   const distGuides = dist.guides.filter((g) =>
     g.axis === 'x' ? !snap.snappedX && dist.dx !== 0 : !snap.snappedY && dist.dy !== 0,
   );
-  if (!laneSnap && !gutterSnap) return { dx, dy, guides, distGuides, lane: null };
-  // One axis claimed by the lane, the other left to alignment — and the
-  // claimed axis drops its guide line, which would otherwise promise an edge
-  // the note is not landing on.
-  const keep = <T extends { axis: 'x' | 'y' }>(gs: T[]): T[] =>
-    gs.filter((g) => (g.axis === 'x' ? !gutterSnap : !laneSnap));
-  return {
-    dx: gutterSnap ? gutterSnap.x - candidate.x : dx,
-    dy: laneSnap ? laneSnap.y - candidate.y : dy,
-    guides: keep(guides),
-    distGuides: keep(distGuides),
-    lane: laneSnap ? { laneIndex: laneSnap.laneIndex } : null,
-  };
+  // Timeline is null here (the early return above owns every lane frame), so
+  // x and y are the ordinary alignment / distribution answers alone.
+  return { dx, dy, guides, distGuides, lane: null };
 }
