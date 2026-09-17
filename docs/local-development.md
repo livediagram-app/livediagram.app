@@ -56,6 +56,10 @@ The `router` dev server (`wrangler dev --env local`, port 3000) gives you the pr
 NEXT_PUBLIC_API_BASE=http://localhost:8787/api
 ```
 
+A remote api works too, and there are now two of them: `https://staging.livediagram.app/api`
+reaches [staging](../specs/140-staging-environment.md), which has its own database and is
+the one to reach for; the production api reads and writes real people's diagrams.
+
 Without it the editor loads, the canvas works, and the first save fails with **“Couldn’t create the diagram”** — which reads like a broken api worker rather than a missing variable, so it is worth setting up front. `apps/telemetry` and `apps/help` read the same variable: the dashboard needs it to show anything on `:3003`, and the help centre only loses its telemetry posts without it.
 
 The editor works in pure-guest mode without any auth setup: `pnpm dev` and open `http://localhost:3000/new`. Diagrams persist to the local D1 file the api worker creates on first start. (On `http://localhost:3002/new` instead, set `NEXT_PUBLIC_API_BASE` first — see the note above.)
