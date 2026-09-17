@@ -25,7 +25,12 @@ export default defineProject({
   // The e2e/ Playwright smoke suite (spec/72) uses the same `.spec.ts`
   // extension but runs under Playwright, not Vitest — keep it out of
   // the unit run (it has its own `test:e2e` script).
-  test: { exclude: [...configDefaults.exclude, 'e2e/**'] },
+  test: {
+    exclude: [...configDefaults.exclude, 'e2e/**'],
+    // Unmounts React roots between tests — see vitest.setup.ts for what a
+    // root left mounted does to the run.
+    setupFiles: ['./vitest.setup.ts'],
+  },
   resolve: {
     // One React, shared with the workspace packages. `packages/ui` peers
     // react (correctly) but carries its own copy for its own tests, so a

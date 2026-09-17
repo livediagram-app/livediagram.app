@@ -165,6 +165,20 @@ pick it up.
   Clear filters button that cleared only half the filters. Each fails if its
   fix is reverted.
 
+  Both workspaces load a `vitest.setup.ts` that calls Testing Library's
+  `cleanup` in an `afterEach`, guarded on `typeof document` so the DOM-less
+  majority is untouched. Testing Library registers that itself only under
+  `globals: true`, which this repo does not use, so a file that rendered
+  without unmounting left a live React root behind; the scheduler then woke
+  on a later macrotask, after Vitest had already torn the jsdom environment
+  down, and raised `ReferenceError: window is not defined` as an unhandled
+  error — a run that fails with every test passing, only on a machine slow
+  enough to lose the race. `vitest.setup.test.tsx` in each workspace is the
+  deterministic guard on that wiring. Files that must unmount **before**
+  their own teardown (a hook whose window listeners would otherwise answer
+  the next test) still call `cleanup()` themselves: after-hooks run in
+  reverse registration order, so the setup's copy runs last.
+
   One resolver note, in `apps/live/vitest.config.ts`: `resolve.dedupe` lists
   `react` and `react-dom`. `packages/ui` peers React but carries its own copy
   for its own tests, so a hook test that renders a `@livediagram/ui` hook
