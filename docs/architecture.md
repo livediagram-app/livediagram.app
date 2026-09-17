@@ -88,6 +88,17 @@ Two equivalent identity paths: an `X-Owner-Id` header (a per-browser UUID from `
 
 ## Deployment
 
-GitHub Actions → Cloudflare Workers, manually triggered after a green CI run. Build artefacts get uploaded once, then five workers (marketing / live / telemetry / help / api) ship in parallel; the `mcp` worker deploys after `api` (it has a service binding to it), and the router deploys last because its service bindings need the others to exist.
+GitHub Actions → Cloudflare Workers. Build artefacts get uploaded once, then five workers (marketing / live / telemetry / help / api) ship in parallel; the `mcp` worker deploys after `api` (it has a service binding to it), and the router deploys last because its service bindings need the others to exist.
+
+Two environments run that same sequence, from one reusable workflow (`deploy-apps.yml`) so they cannot drift:
+
+|         | Production                                 | Staging                                                |
+| ------- | ------------------------------------------ | ------------------------------------------------------ |
+| Host    | `livediagram.app`                          | `staging.livediagram.app`                              |
+| Trigger | Manual, after a green CI run               | Automatic, on every green CI run on `main`             |
+| Workers | `livediagram-<app>`                        | `livediagram-<app>-staging` (wrangler `[env.staging]`) |
+| Data    | `livediagram` D1 + `livediagram-images` R2 | Its own D1 / R2 / KV — no production data, ever        |
+
+Staging exists mainly so a D1 migration runs against a real remote database one deploy before it reaches the one holding people's diagrams. It is public but `noindex` (the router stamps `X-Robots-Tag` when its `DEPLOY_ENV` is `staging`). See [spec/140](../specs/140-staging-environment.md).
 
 See [Self-hosting](self-hosting.md) for the step-by-step, and [spec/10](../specs/10-deployment.md) for the deeper deployment contract.

@@ -169,9 +169,18 @@ What the product runs on. Items marked ✗ haven't shipped yet — see "What's b
 
 See [specs/10-deployment.md](specs/10-deployment.md).
 
-All deploys happen via **GitHub Actions** to **Cloudflare Workers** (with Static Assets for `marketing`, `live`, `telemetry`, and `help`). CI runs lint / format / typecheck / test / build on every PR and push. The deploy workflow is **manual-only** (`workflow_dispatch`, intentionally not chained to CI): trigger it from the Actions tab or `gh workflow run Deploy --ref main` once CI on `main` is green and you've decided to ship. It builds, then deploys `marketing` + `live` + `telemetry` + `help` + `api` in parallel, `mcp` once `api` is up, then `router` last (its service bindings depend on the five path-routed workers existing; mcp is its own host).
+All deploys happen via **GitHub Actions** to **Cloudflare Workers** (with Static Assets for `marketing`, `live`, `telemetry`, and `help`). CI runs lint / format / typecheck / test / build / `staging:check` on every PR and push.
 
-Worker names: `livediagram-marketing`, `livediagram-live`, `livediagram-telemetry`, `livediagram-help`, `livediagram-api`, `livediagram-mcp`, `livediagram-router`, matching the service-binding targets in `apps/router/wrangler.toml`. Deploy order: marketing + live + telemetry + help + api in parallel, then `mcp` after api (it has a service binding to api; its own host `mcp.livediagram.app`, not a router path), then router last (its service bindings depend on the other five existing).
+Either environment builds once, then deploys `marketing` + `live` + `telemetry` + `help` + `api` in parallel, `mcp` once `api` is up, then `router` last (its service bindings depend on the five path-routed workers existing; mcp is its own host).
+
+**Two environments** ([spec/140](specs/140-staging-environment.md)), both running those same jobs out of the reusable `deploy-apps.yml` so they can't drift:
+
+- **Production** (`livediagram.app`) — `deploy.yml`, **manual-only** (`workflow_dispatch`, intentionally not chained to CI): trigger it from the Actions tab or `gh workflow run Deploy --ref main` once CI on `main` is green and you've decided to ship.
+- **Staging** (`staging.livediagram.app`) — `deploy-staging.yml`, **automatic** on every green CI run on `main`. Wrangler `[env.staging]` blocks give it `-staging` worker names and its own D1 / R2 / KV, so a migration runs against a real remote database one deploy before it reaches the one holding real diagrams. Public but `noindex`, stamped by the router.
+
+When you touch a worker's bindings, **add the same change to its `[env.staging]` block** — wrangler does not inherit `vars` / `d1_databases` / `r2_buckets` / `kv_namespaces` / `durable_objects` / `services` / `unsafe` into a named environment, so a binding added only at the top level is silently absent from staging. `pnpm staging:check` (in CI) dry-runs the staging configs and prints the resolved bindings.
+
+Worker names: `livediagram-marketing`, `livediagram-live`, `livediagram-telemetry`, `livediagram-help`, `livediagram-api`, `livediagram-mcp`, `livediagram-router`, matching the service-binding targets in `apps/router/wrangler.toml` (staging's are the same names suffixed `-staging`). Deploy order: marketing + live + telemetry + help + api in parallel, then `mcp` after api (it has a service binding to api; its own host `mcp.livediagram.app`, not a router path), then router last (its service bindings depend on the other five existing).
 
 Production is live at **https://livediagram.app** (`/` → marketing; `/diagram`, `/explorer`, `/new`, `/join`, ... → editor at clean routes, with only its `_next` assets under `/live`; `/telemetry` → telemetry dashboard; `/help` → help centre; `/api/*` → api).
 
@@ -181,16 +190,17 @@ Secrets needed in the GitHub repo: `CF_API_TOKEN`, `CF_ACCOUNT_ID`. See [secrets
 
 Run from the repo root:
 
-| Command             | What it does                      |
-| ------------------- | --------------------------------- |
-| `pnpm install`      | Install all workspace deps        |
-| `pnpm dev`          | `turbo run dev` across workspaces |
-| `pnpm build`        | `turbo run build`                 |
-| `pnpm lint`         | `turbo run lint`                  |
-| `pnpm typecheck`    | `turbo run typecheck`             |
-| `pnpm test`         | `turbo run test`                  |
-| `pnpm format`       | Prettier write across the repo    |
-| `pnpm format:check` | Prettier check (CI)               |
+| Command              | What it does                                      |
+| -------------------- | ------------------------------------------------- |
+| `pnpm install`       | Install all workspace deps                        |
+| `pnpm dev`           | `turbo run dev` across workspaces                 |
+| `pnpm build`         | `turbo run build`                                 |
+| `pnpm lint`          | `turbo run lint`                                  |
+| `pnpm typecheck`     | `turbo run typecheck`                             |
+| `pnpm test`          | `turbo run test`                                  |
+| `pnpm format`        | Prettier write across the repo                    |
+| `pnpm format:check`  | Prettier check (CI)                               |
+| `pnpm staging:check` | Dry-run the `[env.staging]` wrangler configs (CI) |
 
 Run a script in a single workspace: `pnpm --filter @livediagram/<name> <script>`.
 

@@ -29,6 +29,9 @@
     "typecheck": {
       "dependsOn": ["^build"]
     },
+    "staging:check": {
+      "dependsOn": ["^build"]
+    },
     "clean": {
       "cache": false
     }
