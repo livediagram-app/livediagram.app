@@ -60,6 +60,9 @@ export type PhotoDetection = {
   crops: NoteCrop[];
   // The working image's size, for normalising the boxes.
   imageSize: { width: number; height: number };
+  // A JPEG of the WORKING image, for the review overlay to draw the boxes on.
+  // Held in memory only — never stored, never sent, and it drops EXIF with it.
+  photoUrl: string;
 };
 
 export async function detectAndCrop(
@@ -87,7 +90,7 @@ export async function detectAndCrop(
   const stickies = detectStickies(working.image).slice(0, PHOTO_MAX_NOTES);
   if (stickies.length === 0) {
     bitmap.close?.();
-    return { stickies, crops: [], imageSize: { width, height } };
+    return { stickies, crops: [], imageSize: { width, height }, photoUrl: working.dataUrl };
   }
 
   // Back up to the full-resolution bitmap to cut: 1 / ratio is exactly how far.
@@ -101,14 +104,14 @@ export async function detectAndCrop(
     crops.push({ id: rect.id, image });
   }
   bitmap.close?.();
-  return { stickies, crops, imageSize: { width, height } };
+  return { stickies, crops, imageSize: { width, height }, photoUrl: working.dataUrl };
 }
 
 function drawTo(
   bitmap: ImageBitmap,
   width: number,
   height: number,
-): { image: { width: number; height: number; data: Uint8ClampedArray } } {
+): { image: { width: number; height: number; data: Uint8ClampedArray }; dataUrl: string } {
   const canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;
@@ -125,7 +128,8 @@ function drawTo(
   ctx.imageSmoothingQuality = 'high';
   ctx.drawImage(bitmap, 0, 0, width, height);
   const { data } = ctx.getImageData(0, 0, width, height);
-  return { image: { width, height, data } };
+  const dataUrl = canvas.toDataURL('image/jpeg', JPEG_QUALITY);
+  return { image: { width, height, data }, dataUrl };
 }
 
 function encodeCrop(

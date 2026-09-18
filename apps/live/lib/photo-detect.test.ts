@@ -137,12 +137,16 @@ describe('detectAndCrop', () => {
     expect(out.crops).toHaveLength(1);
     expect(out.crops[0]!.id).toBe(out.stickies[0]!.id);
     expect(out.crops[0]!.image.startsWith('data:image/jpeg;base64,')).toBe(true);
+    // The review overlay (step 1 of the wizard) draws the working photo the
+    // boxes were found in, so it rides along too.
+    expect(out.photoUrl.startsWith('data:image/jpeg;base64,')).toBe(true);
   });
 
-  it('sends NOTHING when there is no paper in the picture', async () => {
+  it('keeps the working photo for review even when there is no paper in it', async () => {
     const out = await withStub({ width: 200, height: 200 }, blankWall);
     expect(out.stickies).toEqual([]);
     expect(out.crops).toEqual([]);
+    expect(out.photoUrl.startsWith('data:image/jpeg;base64,')).toBe(true);
   });
 
   it('reports an undecodable file rather than throwing something raw', async () => {

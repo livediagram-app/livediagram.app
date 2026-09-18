@@ -52,6 +52,7 @@ function detection(stickies: DetectedSticky[]): PhotoDetection {
     stickies,
     crops: stickies.map((s) => ({ id: s.id, image: 'data:image/jpeg;base64,AAA' })),
     imageSize: { width: 1000, height: 1000 },
+    photoUrl: 'data:image/jpeg;base64,BBB',
   };
 }
 
