@@ -13,6 +13,7 @@ import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 import { usePlacementOptions } from './usePlacementOptions';
 import { apiCreateDiagram, apiLoadSelf, apiSaveSelf, apiSetDiagramFolder } from '@/lib/api-client';
 import { offlineCreateDiagram } from '@/lib/offline/offline-store';
+import { DEFAULT_SAVE_LOCATION, isOfflineLocation } from '@/lib/save-locations';
 import { markTourPending } from '@/lib/tour-pending';
 import { randomColor, randomName, type Participant } from '@/lib/identity';
 import { titleCaseType, track } from '@/lib/telemetry';
@@ -192,7 +193,8 @@ export default function NewDiagramPage() {
   ) => {
     if (submitting) return;
     setSubmitting(true);
-    const offline = settings.offline;
+    // Save location (spec/141): only Local Browser takes the offline branch.
+    const offline = isOfflineLocation(settings.saveLocation);
     lastCreateArgs.current = { kind: templateKind, name, themeId, settings };
     // The Settings step's name field wins; fall back to the per-template
     // default when it's left blank (spec/76).
@@ -302,7 +304,7 @@ export default function NewDiagramPage() {
     track('UI', 'Used', 'JustDraw');
     const params = new URLSearchParams(window.location.search);
     void commitNewDiagram('blank', '', 'brand', {
-      offline: false,
+      saveLocation: DEFAULT_SAVE_LOCATION,
       folderId: params.get('folder'),
       teamId: params.get('team'),
     });
@@ -422,7 +424,9 @@ export default function NewDiagramPage() {
               // Empty name = "keep the resolved participant name" (commit falls
               // back to it); passing self.name here could freeze the
               // pre-bootstrap 'Guest' placeholder into the account.
-              onSkip={() => void commitNewDiagram('blank', '', 'brand', { offline: false })}
+              onSkip={() =>
+                void commitNewDiagram('blank', '', 'brand', { saveLocation: DEFAULT_SAVE_LOCATION })
+              }
             />
           </CustomThemeProvider>
         </div>

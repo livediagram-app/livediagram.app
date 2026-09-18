@@ -15,7 +15,7 @@ import {
   FolderPlaceIcon,
   NewFolderTile,
   PlacementCard,
-} from '@/components/placement/PlacementBrowser';
+} from '@/components/placement/PlacementCard';
 import { DiagramThumbnail } from '@/components/panels/DiagramThumbnail';
 import { useEscape } from '@/hooks/ui/useEscape';
 import { matches } from '@/lib/search';
