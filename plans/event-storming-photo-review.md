@@ -12,6 +12,16 @@ OCR spike. Each task lands reviewable on the board.
 
 ## 2. Review overlay (on the board, before anything lands)
 
+The review is a THREE-STEP wizard the author walks through, each step visible:
+
+- **Step 1 · Detect** — the photo with every detected box coloured by kind,
+  tickable, and missed notes drawn by hand (task 3).
+- **Step 2 · Read** — the OCR/model text per note, editable, with legibility
+  marked (task 4 feeds this).
+- **Step 3 · Place** — the ticked notes land on the canvas at their reconciled
+  lanes/docked positions as the existing `esDraft`, draggable, then Add commits
+  (Phase 8 already ships this placement; the wizard surfaces it as a step).
+
 - [ ] 2.1 New `PhotoReviewOverlay` component: the photo with every detected box coloured by kind, tickable, with per-note kind + text editing.
 - [ ] 2.2 Wire it into `usePhotoDraft`: after detect+read, show the overlay instead of landing the draft; "Add N notes" lands the ticked ones as the existing `esDraft` draft; Discard/Cancel paths unchanged.
 - [ ] 2.3 "No stickies found" and reader-failed states surface inside the overlay (keep the existing toast reasons).
