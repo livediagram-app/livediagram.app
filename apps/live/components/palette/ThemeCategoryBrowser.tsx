@@ -249,7 +249,10 @@ function ModeSwitchRow({ category }: { category: ThemeCategory | 'custom' }) {
 
 // A full-width "go back to the overview" bar. Far more obvious than a
 // small pill in the corner — the whole row is the target. Shared shape
-// with the template picker's back bar so the two browses match.
+// with the template picker's back bar so the two browses match. It mounts
+// only once you drill in, so it eases into place (slide-row-in: fade, a
+// short slide, and height from zero) rather than popping in and shoving
+// the rows beneath it down a step.
 export function BackBar({
   label,
   current,
@@ -265,7 +268,7 @@ export function BackBar({
     <button
       type="button"
       onClick={onClick}
-      className="group mb-3 flex w-full items-center gap-2.5 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-left text-sm font-semibold text-slate-700 shadow-sm transition hover:border-brand-300 hover:bg-brand-50/50 hover:text-brand-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:border-brand-500/60 dark:hover:bg-slate-800/80 dark:hover:text-brand-200"
+      className="group mb-3 flex w-full animate-slide-row-in items-center gap-2.5 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-left text-sm font-semibold text-slate-700 shadow-sm transition hover:border-brand-300 hover:bg-brand-50/50 hover:text-brand-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:border-brand-500/60 dark:hover:bg-slate-800/80 dark:hover:text-brand-200"
     >
       <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-slate-100 text-slate-500 transition group-hover:bg-brand-100 group-hover:text-brand-700 dark:bg-slate-700 dark:text-slate-200 dark:group-hover:bg-brand-500/25 dark:group-hover:text-brand-200">
         <svg
