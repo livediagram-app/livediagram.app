@@ -21,20 +21,17 @@ import { setPhotoDraftView } from '@/lib/photo-draft-preview';
 import { detectAndCrop, PhotoDetectFailed, type PhotoDetection } from '@/lib/photo-detect';
 import { track } from '@/lib/telemetry';
 
-// A photo import, as ONE long gesture (spec/139 Phase 8).
+// A photo import, as ONE long gesture (spec/139 Phase 8, Phase 9).
 //
-//   idle → preparing → reading → draft → committing → idle
-//                 ↘        ↘
+//   idle → detecting → reading → review → draft → committing → idle
+//                        ↘          ↘
 //                    error (a toast; the entry points come back)
 //
-// The review happens ON the canvas, not in a dialog: the notes land where they
-// will finally sit, carrying `esDraft`, and the author corrects them by typing,
-// dragging and deleting — the machinery they already know. That means the draft
-// is IN the document, which is the drag gesture's precedent rather than an
-// exception to the preview rule: a checkpoint is armed when the draft lands,
-// every edit after that is a non-undoable `tick`, and the gesture ends either
-// with Add (the step stands, covering the whole import) or Discard (the
-// checkpoint is restored and the step thrown away).
+// The review is a THREE-STEP wizard (spec/139 Phase 9): the photo with every
+// detected box (step 1), the words (step 2), then Add lands the ticked notes
+// on the canvas as the draft (step 3). The review itself never touches the
+// document — a checkpoint is armed only when Add lands, so the whole import is
+// still one undoable step, and Discard restores the armed snapshot.
 
 export type PhotoDraftStage =
   | 'idle'
@@ -42,6 +39,8 @@ export type PhotoDraftStage =
   | 'detecting'
   // Asking the model what the crops say.
   | 'reading'
+  // The wizard: photo + boxes + words, ticked, before anything lands.
+  | 'review'
   | 'draft'
   | 'committing';
 
@@ -56,6 +55,16 @@ export type PhotoDraftState = {
 };
 
 const EMPTY: PhotoDraftState = { stage: 'idle', found: 0, readSoFar: 0, error: null };
+
+// What the review overlay shows and, on Add, lands. `detection` carries the
+// photo (photoUrl), every detected box and the crops that were read; `textById`
+// is the reader's answer keyed by box id. `readError` is set when the reader
+// failed but the boxes are still worth showing blank.
+export type PhotoReview = {
+  detection: PhotoDetection;
+  textById: Map<number, { text: string; legible: boolean }>;
+  readError: string | null;
+};
 
 // The detector measured the geometry and the kind; the model read the words.
 // Putting the two together is the only place they meet.
@@ -103,10 +112,21 @@ type PhotoDraftDeps = {
 
 export type PhotoDraftApi = {
   state: PhotoDraftState;
+  // The review wizard's payload, set while `state.stage === 'review'`.
+  review: PhotoReview | null;
+  // True while the review wizard is open (nothing landed yet).
+  reviewOpen: boolean;
   // True while notes from a photo are awaiting Add or Discard. Derived from
   // the ELEMENTS, so a reload mid-draft still knows.
   draftOpen: boolean;
   startFromFile: (file: File) => Promise<void>;
+  // Add the ticked boxes as the on-canvas draft; the review stays put otherwise.
+  confirm: (
+    tickedIds: Set<number>,
+    texts: Map<number, { text: string; legible: boolean }>,
+  ) => void;
+  // Leave the review without adding anything.
+  cancelReview: () => void;
   accept: () => void;
   discard: () => void;
   cancelReading: () => void;
@@ -131,8 +151,13 @@ const ERROR_TOASTS: Record<string, string> = {
 export const NO_NOTES_TOAST =
   'No stickies found in this photo. Fill the frame with the wall, shoot straight on, and give it good light.';
 
+
 export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
   const [state, setState] = useState<PhotoDraftState>(EMPTY);
+  const [review, setReview] = useState<PhotoReview | null>(null);
+  // Latest review, for guards inside callbacks whose deps do not re-run on it.
+  const reviewRef = useRef<PhotoReview | null>(null);
+  reviewRef.current = review;
   const abortRef = useRef<AbortController | null>(null);
   // Which run is current. A run has two awaits before it is abortable, and
   // Cancel pressed in that window must not land a draft over a board the
@@ -177,8 +202,14 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
   const startFromFile = useCallback(
     async (file: File) => {
       const d = live.current;
-      // One draft at a time, and never where the drop would be refused.
-      if (d.createBlocked || draftNotesOf(d.activeTab.elements).length > 0) return;
+      // One draft at a time, and never where the drop would be refused — a
+      // review in progress counts as one, even though nothing has landed yet.
+      if (
+        d.createBlocked ||
+        draftNotesOf(d.activeTab.elements).length > 0 ||
+        reviewRef.current !== null
+      )
+        return;
       const run = (runRef.current += 1);
       const current = () => runRef.current === run;
       setState({ stage: 'detecting', found: 0, readSoFar: 0, error: null });
@@ -207,26 +238,6 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
         return;
       }
 
-      // LAND THE WHOLE SELECTION NOW, blank. Detection already knows every
-      // sticky and where it goes; only the words are still on their way. The
-      // author sees the selection immediately rather than a silent wait, and
-      // the words settle in at the end — the "already here" matching needs
-      // them, so that part comes once reading finishes.
-      const existing = boardNotesOfElements(live.current.activeTab.elements);
-      const preview = reconcilePhoto(toPhotoNotes(detection, new Map()), existing, {
-        tab: live.current.activeTab,
-      });
-      beforeRef.current = live.current.activeTab.elements;
-      live.current.markCheckpoint();
-      const previewNotes = buildDraftNotes(preview.additions, live.current.activeTab);
-      live.current.tick((els) => [...els, ...previewNotes]);
-      live.current.setSelectedId(null);
-      live.current.setMultiSelectedIds(new Set(previewNotes.map((el) => el.id)));
-      setPhotoDraftView({
-        matchedIds: new Set(),
-        differences: new Map(),
-        read: detection.stickies.length,
-      });
       setState({ stage: 'reading', found: detection.stickies.length, readSoFar: 0, error: null });
 
       // Assigned in the try before any read; the catch returns early.
@@ -246,18 +257,13 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
           setState(EMPTY);
           return;
         }
-        // The reader failed, but the notes are ALREADY on the board, blank.
-        // Name the failure and leave the selection for the author to fill in.
+        // The reader failed, but the DETECTOR already found the paper: show the
+        // review with blank words and the reason, so the author can type them.
         const token = err instanceof Error ? err.message : 'ai_error';
-        setPhotoDraftView({
-          matchedIds: new Set(),
-          differences: new Map(),
-          read: detection.stickies.length,
-          readError: token,
-        });
+        setReview({ detection, textById: new Map(), readError: token });
         live.current.toastError(ERROR_TOASTS[token] ?? ERROR_TOASTS.ai_error!);
         setState({
-          stage: 'draft',
+          stage: 'review',
           found: detection.stickies.length,
           readSoFar: detection.stickies.length,
           error: null,
@@ -268,48 +274,78 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
       }
       if (!current()) return;
 
-      // Finish: reconcile for real now that the words are known. The blank
-      // preview is replaced by the final notes — words on, duplicates gone —
-      // and what was already on the board lights up as "already here".
-      const now = live.current;
-      const result = reconcilePhoto(toPhotoNotes(detection, textById), existing, {
-        tab: now.activeTab,
-      });
-      if (result.additions.length === 0 && result.matches.length === 0) {
-        // Defensive: nothing usable. Fold the blank preview away.
-        now.cancelToCheckpoint();
-        setPhotoDraftView(null);
-        setState(EMPTY);
-        now.toastError(NO_NOTES_TOAST);
-        return;
-      }
-      const matchedIds = new Set(result.matches.map((m) => m.boardId));
-      const finalNotes = buildDraftNotes(result.additions, now.activeTab);
-      now.tick((els) => [
-        ...els.filter((el) => !(el.type === 'sticky' && el.esDraft === true)),
-        ...finalNotes,
-      ]);
-      now.setSelectedId(null);
-      now.setMultiSelectedIds(new Set(finalNotes.map((el) => el.id)));
-      frameElements([...finalNotes, ...existing.filter((e) => matchedIds.has(e.id))]);
-      setPhotoDraftView({
-        matchedIds,
-        differences: new Map(
-          result.differences
-            .map((diff) => [diff.boardId, textById.get(diff.detectedId)?.text ?? ''] as const)
-            .filter(([, text]) => text !== ''),
-        ),
-        read: detection.stickies.length,
-      });
+      // REVIEW, not land: the photo with every box and the words, ticked, and
+      // only Add writes. Nothing here touches the document — the checkpoint is
+      // armed by `confirm` when the ticked notes land.
+      setReview({ detection, textById, readError: null });
       setState({
-        stage: 'draft',
+        stage: 'review',
         found: detection.stickies.length,
         readSoFar: detection.stickies.length,
         error: null,
       });
     },
-    [fail, frameElements],
+    [fail],
   );
+
+  // Add the ticked boxes as the on-canvas draft. The one write of the review:
+  // arm the checkpoint, reconcile the ticked notes against the board as it is
+  // NOW (a peer may have added the very note the photo shows), and land them.
+  // `texts` is the author's edited words (step 2), seeded from the read.
+  const confirm = useCallback(
+    (tickedIds: Set<number>, texts: Map<number, { text: string; legible: boolean }>) => {
+      const d = live.current;
+      if (!review) return;
+      const detection = {
+        ...review.detection,
+        stickies: review.detection.stickies.filter((s) => tickedIds.has(s.id)),
+      };
+      if (detection.stickies.length === 0) return;
+      const existing = boardNotesOfElements(d.activeTab.elements);
+      const result = reconcilePhoto(toPhotoNotes(detection, texts), existing, {
+        tab: d.activeTab,
+      });
+      // Nothing usable in the photo at all: close the review and say so. A
+      // photo whose notes are ALL already on the board is not this case — it
+      // lands nothing but still publishes what it matched and how it differed.
+      if (result.additions.length === 0 && result.matches.length === 0) {
+        setReview(null);
+        setState(EMPTY);
+        d.toastError(NO_NOTES_TOAST);
+        return;
+      }
+      const matchedIds = new Set(result.matches.map((m) => m.boardId));
+      beforeRef.current = d.activeTab.elements;
+      d.markCheckpoint();
+      const finalNotes = buildDraftNotes(result.additions, d.activeTab);
+      d.tick((els) => [...els, ...finalNotes]);
+      d.setSelectedId(null);
+      d.setMultiSelectedIds(new Set(finalNotes.map((el) => el.id)));
+      frameElements([...finalNotes, ...existing.filter((e) => matchedIds.has(e.id))]);
+      setPhotoDraftView({
+        matchedIds,
+        differences: new Map(
+          result.differences
+            .map((diff) => [diff.boardId, texts.get(diff.detectedId)?.text ?? ''] as const)
+            .filter(([, text]) => text !== ''),
+        ),
+        read: review.detection.stickies.length,
+      });
+      setReview(null);
+      setState({
+        stage: 'draft',
+        found: review.detection.stickies.length,
+        readSoFar: review.detection.stickies.length,
+        error: null,
+      });
+    },
+    [review, frameElements],
+  );
+
+  const cancelReview = useCallback(() => {
+    setReview(null);
+    setState(EMPTY);
+  }, []);
 
   const accept = useCallback(() => {
     const d = live.current;
@@ -353,7 +389,18 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
     setState(EMPTY);
   }, []);
 
-  return { state, draftOpen, startFromFile, accept, discard, cancelReading };
+  return {
+    state,
+    review,
+    reviewOpen: review !== null,
+    draftOpen,
+    startFromFile,
+    confirm,
+    cancelReview,
+    accept,
+    discard,
+    cancelReading,
+  };
 }
 
 // Every draft note is minted through the ONE builder, then takes the position

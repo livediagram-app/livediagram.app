@@ -141,7 +141,7 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-async function landed(opts: Parameters<typeof harness>[0] = {}) {
+async function reviewed(opts: Parameters<typeof harness>[0] = {}) {
   const h = harness(opts);
   await act(async () => {
     await h.api().startFromFile(file());
@@ -150,40 +150,78 @@ async function landed(opts: Parameters<typeof harness>[0] = {}) {
   return h;
 }
 
-describe('landing a draft', () => {
-  it('lands the whole selection the moment detection finishes, before any text', async () => {
-    // The words are slow; the stickies must not wait for them.
-    let releaseRead: (v: ReadNotesResponse) => void = () => {};
-    vi.mocked(apiAiReadNotes).mockImplementation(
-      () =>
-        new Promise((resolve) => {
-          releaseRead = resolve;
-        }),
-    );
-    const h = harness();
-    let started: Promise<void>;
-    await act(async () => {
-      started = h.api().startFromFile(file());
-      // A macrotask lets the (mocked, instant) detection settle and the
-      // preview land, while the read is still pending.
-      await new Promise((r) => setTimeout(r, 0));
-    });
-    h.rerender();
-    // Reading is still pending, yet the selection is already on the board.
-    expect(h.api().state.stage).toBe('reading');
-    expect(h.drafts()).toHaveLength(1);
-    expect((h.drafts()[0] as StickyElement).label).toBe('');
-    expect(h.api().draftOpen).toBe(true);
-    await act(async () => {
-      releaseRead(read([{ id: 0, text: 'Order placed' }]));
-      await started!;
-    });
-    h.rerender();
-    expect(h.api().state.stage).toBe('draft');
-    expect((h.drafts()[0] as StickyElement).label).toBe('Order placed');
+// Through the wizard to a landed draft: review, then confirm every box.
+async function landed(opts: Parameters<typeof harness>[0] = {}) {
+  const h = await reviewed(opts);
+  const r = h.api().review;
+  act(() =>
+    h.api().confirm(new Set(r?.detection.stickies.map((s) => s.id) ?? []), r?.textById ?? new Map()),
+  );
+  h.rerender();
+  return h;
+}
+
+describe('the review wizard', () => {
+  it('shows the review after reading, before anything lands', async () => {
+    const h = await reviewed();
+    expect(h.api().state.stage).toBe('review');
+    expect(h.api().reviewOpen).toBe(true);
+    expect(h.api().review?.detection.stickies).toHaveLength(1);
+    expect(h.api().review?.detection.photoUrl).toMatch(/^data:image\/jpeg/);
+    expect(h.api().review?.textById.get(0)?.text).toBe('Order placed');
+    // Nothing landed, no checkpoint armed: the review is a preview.
+    expect(h.elements()).toEqual([]);
+    expect(h.steps()).toBe(0);
   });
 
-  it('walks idle → reading → draft and puts the notes on the board', async () => {
+  it('walks idle → reading → review → draft, and only Add writes', async () => {
+    const h = await reviewed();
+    expect(h.api().state.stage).toBe('review');
+    expect(h.elements()).toEqual([]);
+    act(() => h.api().confirm(new Set([0]), h.api().review?.textById ?? new Map()));
+    h.rerender();
+    expect(h.api().state.stage).toBe('draft');
+    expect(h.drafts()).toHaveLength(1);
+    expect(h.api().draftOpen).toBe(true);
+  });
+
+  it('lands only the ticked boxes', async () => {
+    vi.mocked(detectAndCrop).mockResolvedValue(detection([sticky(), sticky({ id: 1, x: 600 })]));
+    vi.mocked(apiAiReadNotes).mockResolvedValue(
+      read([
+        { id: 0, text: 'Order placed' },
+        { id: 1, text: 'Payment received' },
+      ]),
+    );
+    const h = await reviewed();
+    act(() => h.api().confirm(new Set([1]), h.api().review?.textById ?? new Map()));
+    h.rerender();
+    expect(h.drafts()).toHaveLength(1);
+    expect((h.drafts()[0] as StickyElement).label).toBe('Payment received');
+  });
+
+  it('cancelReview leaves the board untouched and the import idle', async () => {
+    const h = await reviewed();
+    act(() => h.api().cancelReview());
+    h.rerender();
+    expect(h.api().state.stage).toBe('idle');
+    expect(h.api().reviewOpen).toBe(false);
+    expect(h.elements()).toEqual([]);
+    expect(h.steps()).toBe(0);
+  });
+
+  it('refuses a second photo while the review is open', async () => {
+    const h = await reviewed();
+    await act(async () => {
+      await h.api().startFromFile(file());
+    });
+    expect(detectAndCrop).toHaveBeenCalledTimes(1);
+    expect(h.api().state.stage).toBe('review');
+  });
+});
+
+describe('landing a draft', () => {
+  it('puts the notes on the board after confirm', async () => {
     const h = await landed();
     expect(h.api().state.stage).toBe('draft');
     expect(h.drafts()).toHaveLength(1);
@@ -291,20 +329,23 @@ describe('landing a draft', () => {
     expect((h.drafts()[0] as StickyElement).esKind).toBe('domain-event');
   });
 
-  it('lands the notes BLANK and says why when the read fails', async () => {
+  it('shows the review BLANK and says why when the read fails', async () => {
     vi.mocked(apiAiReadNotes).mockRejectedValue(new Error('ai_quota'));
-    const h = await landed();
-    // The detector's work is not thrown away: the paper is on the board.
-    expect(h.drafts()).toHaveLength(1);
-    expect((h.drafts()[0] as StickyElement).label).toBe('');
+    const h = await reviewed();
+    // The detector's work is not thrown away: the boxes are in the review,
+    // blank, and the author can type the words themselves.
+    expect(h.api().state.stage).toBe('review');
+    expect(h.api().review?.readError).toBe('ai_quota');
+    expect(h.api().review?.textById.size).toBe(0);
+    expect(h.elements()).toEqual([]);
     expect(h.toasts[0]).toMatch(/quota/i);
-    expect(getPhotoDraftView()?.readError).toBe('ai_quota');
-    expect(h.api().state.stage).toBe('draft');
   });
 
   it('still keeps the blank draft through Add after a failed read', async () => {
     vi.mocked(apiAiReadNotes).mockRejectedValue(new Error('ai_error'));
-    const h = await landed();
+    const h = await reviewed();
+    act(() => h.api().confirm(new Set([0]), h.api().review?.textById ?? new Map()));
+    h.rerender();
     act(() => h.api().accept());
     expect(h.drafts()).toHaveLength(0);
     expect(h.elements()).toHaveLength(1);

@@ -71,6 +71,13 @@ async function openBoard(page: Page) {
 async function importPhoto(page: Page, notes: WallNote[]) {
   await page.getByRole('button', { name: /add from photo/i }).click();
   await page.setInputFiles('input[type="file"]', wall(notes));
+  // The review wizard (spec/139 Phase 9) appears after detection + reading,
+  // unless the photo had no paper in it — then a toast comes instead.
+  const overlay = page.locator('[data-testid="photo-review-overlay"]');
+  await overlay.waitFor({ state: 'visible', timeout: 10_000 }).catch(() => {});
+  if (await overlay.isVisible()) {
+    await page.getByRole('button', { name: /^Add \d+ notes?$/ }).click();
+  }
 }
 
 // Pan the canvas with Space + drag (the editor's own pan, whatever tool is
