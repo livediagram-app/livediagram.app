@@ -70,10 +70,18 @@ nothing inside shows no badge, so the badge itself is the "there's more in
 here" cue, not just a number. Both layouts show it; in a row it sits beside
 the name, on a tile it takes its own line between name and caption.
 
+**The bar.** A full-width bar sits above the rows at **every** level. Where
+there is a level above, it is the back button (chevron, the level's name,
+and a chip naming where you are). Where there is not, it is a static heading
+in the same shape: **"Choose a Space"** on the space overview, **"Choose a
+Folder"** (with the space's name as the chip) at the root of a single space.
+So the bar never appears and disappears under the rows as you move about,
+which was its own jolt.
+
 **Motion.** Drilling into a space or folder, or backing out, swaps the whole
-level, and a level that lands in one frame is a jolt. So the back bar eases
-in (fade, short slide, height from zero) and the rows beneath it enter as a
-**cascade**, each a beat (40 ms) after the one above: list rows slide in and
+level, and a level that lands in one frame is a jolt. So the bar eases in
+when the browser mounts (fade, short slide, height from zero) and the rows
+beneath it enter as a **cascade**, each a beat (40 ms) after the one above: list rows slide in and
 grow from zero height so the rows below ease down with them; tiles fade,
 since a grid track already holds their place. The cascade runs on every level
 change and on first appearance; a folder created in place only animates its

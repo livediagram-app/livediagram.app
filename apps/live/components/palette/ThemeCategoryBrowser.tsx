@@ -249,10 +249,13 @@ function ModeSwitchRow({ category }: { category: ThemeCategory | 'custom' }) {
 
 // A full-width "go back to the overview" bar. Far more obvious than a
 // small pill in the corner — the whole row is the target. Shared shape
-// with the template picker's back bar so the two browses match. It mounts
-// only once you drill in, so it eases into place (slide-row-in: fade, a
-// short slide, and height from zero) rather than popping in and shoving
-// the rows beneath it down a step.
+// with the template picker's back bar so the two browses match. When it
+// mounts it eases into place (slide-row-in: fade, a short slide, and height
+// from zero) rather than popping in and shoving the rows beneath it down.
+//
+// Without `onClick` there is nowhere to go back to, and the bar becomes a
+// static heading in the same shape ("Choose a Space"): a browse that keeps
+// the bar at every level never has it appear and disappear under the rows.
 export function BackBar({
   label,
   current,
@@ -262,8 +265,31 @@ export function BackBar({
   // The category the user has drilled into, shown as a chip on the right
   // so it's clear which group they're in (and which their selection is).
   current?: string;
-  onClick: () => void;
+  // Absent = the static heading form.
+  onClick?: () => void;
 }) {
+  const chip = current ? (
+    <span className="ml-auto rounded-md bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-200">
+      {current}
+    </span>
+  ) : null;
+  if (!onClick) {
+    return (
+      <div className="mb-3 flex w-full animate-slide-row-in items-center gap-2.5 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-left text-sm font-semibold text-slate-700 shadow-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100">
+        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-200">
+          <svg width="13" height="13" viewBox="0 0 12 12" fill="none" aria-hidden>
+            {/* Four dots: the choices below, rather than a way back. */}
+            <circle cx="3.5" cy="3.5" r="1.4" fill="currentColor" />
+            <circle cx="8.5" cy="3.5" r="1.4" fill="currentColor" />
+            <circle cx="3.5" cy="8.5" r="1.4" fill="currentColor" />
+            <circle cx="8.5" cy="8.5" r="1.4" fill="currentColor" />
+          </svg>
+        </span>
+        {label}
+        {chip}
+      </div>
+    );
+  }
   return (
     <button
       type="button"
@@ -289,11 +315,7 @@ export function BackBar({
         </svg>
       </span>
       {label}
-      {current ? (
-        <span className="ml-auto rounded-md bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-200">
-          {current}
-        </span>
-      ) : null}
+      {chip}
     </button>
   );
 }

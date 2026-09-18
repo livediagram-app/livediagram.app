@@ -131,34 +131,40 @@ export function PlacementBrowser({
     else if (next && next !== 'my-work' && placementSpace !== next) onPlacement(`team:${next}`);
   };
 
+  // The bar above the rows is at EVERY level (see BackBar): a back button
+  // where there is a level above, a static heading where there is not, so
+  // it never appears and disappears under the rows as you move about.
   if (spaceCount > 1 && space === null) {
     return (
-      <div key="overview" className={levelClass}>
-        {showPersonal ? (
-          <PlacementCard
-            label="My Work"
-            sub="Your folders"
-            icon={<MyWorkIcon />}
-            count={kidCount(folders, null)}
-            selected={placementSpace === 'my-work'}
-            onSelect={() => enterSpace('my-work')}
-            layout={layout}
-            enterIndex={0}
-          />
-        ) : null}
-        {teams.map((t, i) => (
-          <PlacementCard
-            key={t.id}
-            label={t.name}
-            sub="Team"
-            icon={<TeamPlaceIcon />}
-            count={kidCount(teamFolders[t.id] ?? [], null)}
-            selected={placementSpace === t.id}
-            onSelect={() => enterSpace(t.id)}
-            layout={layout}
-            enterIndex={(showPersonal ? 1 : 0) + i}
-          />
-        ))}
+      <div className="flex flex-col gap-2">
+        <BackBar label="Choose a Space" />
+        <div key="overview" className={levelClass}>
+          {showPersonal ? (
+            <PlacementCard
+              label="My Work"
+              sub="Your folders"
+              icon={<MyWorkIcon />}
+              count={kidCount(folders, null)}
+              selected={placementSpace === 'my-work'}
+              onSelect={() => enterSpace('my-work')}
+              layout={layout}
+              enterIndex={0}
+            />
+          ) : null}
+          {teams.map((t, i) => (
+            <PlacementCard
+              key={t.id}
+              label={t.name}
+              sub="Team"
+              icon={<TeamPlaceIcon />}
+              count={kidCount(teamFolders[t.id] ?? [], null)}
+              selected={placementSpace === t.id}
+              onSelect={() => enterSpace(t.id)}
+              layout={layout}
+              enterIndex={(showPersonal ? 1 : 0) + i}
+            />
+          ))}
+        </div>
       </div>
     );
   }
@@ -194,8 +200,9 @@ export function PlacementBrowser({
     }
   }
 
-  // Back: pop one folder level; at the space root, back to the overview
-  // (only shown when the overview exists / we're inside a folder).
+  // Back: pop one folder level; at the space root, back to the overview.
+  // With one space and nothing open there is no level above, and the bar
+  // reads as a heading instead.
   const showBack = spaceCount > 1 || stack.length > 0;
   const onBack = () => (stack.length > 0 ? setStack(stack.slice(0, -1)) : enterSpace(null));
   const backLabel =
@@ -207,9 +214,11 @@ export function PlacementBrowser({
 
   return (
     <div className="flex flex-col gap-2">
-      {showBack ? (
-        <BackBar label={backLabel} current={openFolder?.name ?? spaceName} onClick={onBack} />
-      ) : null}
+      <BackBar
+        label={showBack ? backLabel : 'Choose a Folder'}
+        current={openFolder?.name ?? spaceName}
+        onClick={showBack ? onBack : undefined}
+      />
       <div key={`${space}:${openFolder?.id ?? 'root'}`} className={levelClass}>
         {openFolder ? (
           // Save directly in the open folder.
