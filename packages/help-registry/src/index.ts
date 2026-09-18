@@ -612,7 +612,7 @@ export const articles: Article[] = [
     slug: 'offline-mode',
     title: 'Offline Mode',
     description: 'Save a diagram only in this browser, and move it to or from your account.',
-    keywords: 'local only browser private no sync device localstorage disconnect',
+    keywords: 'local only browser private no sync device localstorage disconnect save location',
     category: 'Privacy and Security',
     categorySlug: 'privacy-and-security',
     parentSlug: 'privacy-and-security',

@@ -1,4 +1,4 @@
-export { Brand } from './Brand';
+export { Brand, BrandMark } from './Brand';
 export { ProductNav, type ProductNavKey } from './ProductNav';
 export { SiteHeader } from './SiteHeader';
 export { SiteFooter } from './SiteFooter';

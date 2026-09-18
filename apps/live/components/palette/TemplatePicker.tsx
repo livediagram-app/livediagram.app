@@ -19,13 +19,15 @@ import { useModalGuard } from '@/hooks/ui/useModalGuard';
 import { TemplatePickerFooter } from './TemplatePickerFooter';
 import { parsePlacement } from '@/components/placement/PlacementBrowser';
 import { NewDiagramSettingsStep } from './template-picker-settings';
+import { DEFAULT_SAVE_LOCATION, type SaveLocationId } from '@/lib/save-locations';
 import { TemplatePickerIdentityRow } from './TemplatePickerIdentityRow';
 import { PencilIcon } from './template-picker-icons';
 import { WizardSteps } from './template-picker-wizard';
 
 // What the welcome wizard's Settings step (spec/76) hands back on Create.
 export type NewDiagramSettings = {
-  offline: boolean;
+  // Where the diagram is stored (spec/141): the api, or this browser only.
+  saveLocation: SaveLocationId;
   diagramName?: string;
   // Personal folder placement, or a team library. At most one is set.
   folderId?: string | null;
@@ -59,7 +61,7 @@ type TemplatePickerProps = {
   // 'welcome' / 'templates' modes (no identity row to lock).
   lockedName?: string | null;
   // The welcome wizard's Settings step (spec/76) collects these alongside the
-  // participant name + theme. Other modes pass just `{ offline: false }` (the
+  // participant name + theme. Other modes pass just the default location (the
   // diagram already exists, so name/folder/team don't apply).
   onPick: (kind: TemplateKind, name: string, themeId: string, settings: NewDiagramSettings) => void;
   // Personal folders + teams for the Settings step's placement picker (welcome
@@ -176,10 +178,11 @@ export function TemplatePicker({
   // 'brand' (so Default is pre-selected for a fresh diagram), while a new
   // tab copying an existing one passes that tab's theme.
   const [themeId, setThemeId] = useState<string>(currentThemeId);
-  // Offline Mode (spec/76): "Save offline — this browser only". Welcome wizard
-  // only; threaded into every onPick so Skip / guided tour / Create all honour
-  // it. False in non-welcome modes (the toggle never renders there).
-  const [offline, setOffline] = useState(false);
+  // Save location (spec/141): livediagram (cloud) or Local Browser (Offline
+  // Mode, spec/76). Welcome wizard only; threaded into every onPick so Skip /
+  // guided tour / Create all honour it. Stays at the default in non-welcome
+  // modes (the chooser never renders there).
+  const [saveLocation, setSaveLocation] = useState<SaveLocationId>(DEFAULT_SAVE_LOCATION);
   // Settings step (spec/76): diagram name (defaults per template) + placement.
   // `placement` is 'unsorted' | `folder:<id>` | `team:<id>` in one control.
   // The default name tracks the chosen template ("Untitled Mind Map", not a
@@ -198,7 +201,7 @@ export function TemplatePicker({
   // before the setPlacement state update has applied.
   const settingsFor = (p: string): NewDiagramSettings => {
     const name = diagramNameInput.trim() || templateDefaultName;
-    return { offline, diagramName: name, ...parsePlacement(p) };
+    return { saveLocation, diagramName: name, ...parsePlacement(p) };
   };
   const settings = () => settingsFor(placement);
   // Welcome mode is a two-step wizard: pick a template, then a theme
@@ -266,7 +269,7 @@ export function TemplatePicker({
   // the URL context (/new?folder=…, ?team=…) the picker was pre-seeded with,
   // so skipping doesn't silently drop the diagram into personal Unsorted.
   const skipToDefaults = () =>
-    onPick('blank', effectiveName, 'brand', { offline, ...parsePlacement(placement) });
+    onPick('blank', effectiveName, 'brand', { saveLocation, ...parsePlacement(placement) });
   // The step rail's "Just Draw" shortcut (spec/14) is the same commit with
   // its own adoption signal (spec/22).
   const justDraw = () => {
@@ -279,7 +282,7 @@ export function TemplatePicker({
   const onTemplateCommit = (kind: TemplateKind) => {
     setTemplateKind(kind);
     if (isWizard) goToStep('theme');
-    else onPick(kind, effectiveName, themeId, { offline });
+    else onPick(kind, effectiveName, themeId, { saveLocation });
   };
   // Double-clicking a destination card on the Settings step selects it AND
   // commits the wizard in one gesture (the template-card pattern). The value
@@ -443,13 +446,13 @@ export function TemplatePicker({
                 onCommit={(id) => {
                   setThemeId(id);
                   if (isWelcome) goToStep('settings');
-                  else onPick(templateKind, effectiveName, id, { offline });
+                  else onPick(templateKind, effectiveName, id, { saveLocation });
                 }}
                 onBuildingChange={setThemeBuilding}
                 browserClassName="mt-1"
               />
             ) : null}
-            {/* Settings step (spec/76): name, placement, offline. */}
+            {/* Settings step (spec/76, spec/141): name, save location, placement. */}
             {isWizard && step === 'settings' ? (
               <NewDiagramSettingsStep
                 diagramName={diagramNameInput}
@@ -465,8 +468,8 @@ export function TemplatePicker({
                 teams={teams}
                 teamFolders={teamFolders}
                 onCreateFolder={onCreateFolder}
-                offline={offline}
-                onOffline={setOffline}
+                saveLocation={saveLocation}
+                onSaveLocation={setSaveLocation}
               />
             ) : null}
           </div>

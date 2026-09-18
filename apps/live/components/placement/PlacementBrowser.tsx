@@ -10,9 +10,15 @@ import { BackBar } from '@/components/palette/ThemeCategoryBrowser';
 // directly inside it, with an optional inline New Folder tile. One space
 // collapses the overview away and the browser opens straight inside it.
 //
-// Shared by the New Diagram wizard's Save In step (spec/76) and the
+// Shared by the New Diagram wizard's folder step (spec/76, spec/141) and the
 // Move-to-folder dialog on every move surface (spec/15 + spec/35), so the
-// product has exactly ONE way to choose where a diagram lives.
+// product has exactly ONE way to choose where a diagram lives. Two layouts
+// of the same browse: `tiles` (icon over label, a grid) for the move dialog,
+// `list` (icon beside label, stacked rows, the file-explorer idiom) for the
+// wizard, where a tile grid would read as a twin of the Save location row
+// directly above it.
+
+export type PlacementLayout = 'tiles' | 'list';
 
 // A folder as the browser sees it: parentId drives the drill-down (root
 // folders show at the space level; subfolders only inside their parent).
@@ -63,6 +69,7 @@ export function PlacementBrowser({
   teamFolders,
   showPersonal = true,
   onCreateFolder,
+  layout = 'tiles',
 }: {
   placement: string;
   onPlacement: (v: string) => void;
@@ -85,7 +92,11 @@ export function PlacementBrowser({
     parentId: string | null,
     teamId: string | null,
   ) => Promise<PickerFolder | null>;
+  // Tile grid (default) or stacked rows; see the header comment.
+  layout?: PlacementLayout;
 }) {
+  const levelClass =
+    layout === 'list' ? 'flex flex-col gap-1' : 'grid grid-cols-3 gap-2 sm:grid-cols-4';
   const spaceCount = (showPersonal ? 1 : 0) + teams.length;
   // With several spaces, open on the overview so the space choice comes
   // first; a single space goes straight in and never shows a space BackBar.
@@ -113,7 +124,7 @@ export function PlacementBrowser({
 
   if (spaceCount > 1 && space === null) {
     return (
-      <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+      <div className={levelClass}>
         {showPersonal ? (
           <PlacementCard
             label="My Work"
@@ -121,6 +132,7 @@ export function PlacementBrowser({
             icon={<MyWorkIcon />}
             selected={placementSpace === 'my-work'}
             onSelect={() => enterSpace('my-work')}
+            layout={layout}
           />
         ) : null}
         {teams.map((t) => (
@@ -131,6 +143,7 @@ export function PlacementBrowser({
             icon={<TeamPlaceIcon />}
             selected={placementSpace === t.id}
             onSelect={() => enterSpace(t.id)}
+            layout={layout}
           />
         ))}
       </div>
@@ -184,7 +197,7 @@ export function PlacementBrowser({
       {showBack ? (
         <BackBar label={backLabel} current={openFolder?.name ?? spaceName} onClick={onBack} />
       ) : null}
-      <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+      <div className={levelClass}>
         {openFolder ? (
           // Save directly in the open folder.
           <PlacementCard
@@ -194,6 +207,7 @@ export function PlacementBrowser({
             selected={placement === valueFor(openFolder.id)}
             onSelect={() => onPlacement(valueFor(openFolder.id))}
             onCommit={() => onCommitPlacement?.(valueFor(openFolder.id))}
+            layout={layout}
           />
         ) : (
           <PlacementCard
@@ -203,6 +217,7 @@ export function PlacementBrowser({
             selected={placement === rootValue}
             onSelect={() => onPlacement(rootValue)}
             onCommit={() => onCommitPlacement?.(rootValue)}
+            layout={layout}
           />
         )}
         {children.map((f) =>
@@ -222,6 +237,7 @@ export function PlacementBrowser({
                 if (!selectionChain.has(f.id)) onPlacement(valueFor(f.id));
                 setStack([...stack, f]);
               }}
+              layout={layout}
             />
           ) : (
             <PlacementCard
@@ -232,11 +248,13 @@ export function PlacementBrowser({
               selected={placement === valueFor(f.id)}
               onSelect={() => onPlacement(valueFor(f.id))}
               onCommit={() => onCommitPlacement?.(valueFor(f.id))}
+              layout={layout}
             />
           ),
         )}
         {onCreateFolder ? (
           <NewFolderTile
+            layout={layout}
             onCreate={async (name) => {
               const created = await onCreateFolder(name, openFolder?.id ?? null, teamId);
               // Select the fresh folder as the destination straight away.
@@ -255,7 +273,14 @@ export function PlacementBrowser({
 // modal). Enter creates in the CURRENT level's scope and the browser selects
 // the fresh folder; Escape backs out. Exported for the tab Add-to-Folder
 // dialog (spec/30), which offers the same create-in-place affordance.
-export function NewFolderTile({ onCreate }: { onCreate: (name: string) => Promise<boolean> }) {
+export function NewFolderTile({
+  onCreate,
+  layout = 'tiles',
+}: {
+  onCreate: (name: string) => Promise<boolean>;
+  layout?: PlacementLayout;
+}) {
+  const row = layout === 'list';
   const [naming, setNaming] = useState(false);
   const [name, setName] = useState('');
   const [busy, setBusy] = useState(false);
@@ -275,21 +300,33 @@ export function NewFolderTile({ onCreate }: { onCreate: (name: string) => Promis
       <button
         type="button"
         onClick={() => setNaming(true)}
-        className="flex flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed border-slate-300 p-3 text-center transition hover:border-brand-400 hover:bg-brand-50/40 dark:border-slate-600 dark:hover:border-brand-500 dark:hover:bg-brand-500/10"
+        className={`${
+          row
+            ? 'flex items-center gap-2.5 px-3 py-2 text-left'
+            : 'flex flex-col items-center justify-center gap-1.5 p-3 text-center'
+        } rounded-lg border border-dashed border-slate-300 transition hover:border-brand-400 hover:bg-brand-50/40 dark:border-slate-600 dark:hover:border-brand-500 dark:hover:bg-brand-500/10`}
       >
-        <span className="text-slate-400">
+        <span className="shrink-0 text-slate-400">
           <NewFolderIcon />
         </span>
-        <span className="w-full truncate text-xs font-medium text-slate-500 dark:text-slate-400">
+        <span
+          className={`${row ? 'min-w-0 flex-1' : 'w-full'} truncate text-xs font-medium text-slate-500 dark:text-slate-400`}
+        >
           New Folder
         </span>
-        <span className="text-[10px] text-slate-400 dark:text-slate-500">Create here</span>
+        <span className="shrink-0 text-[10px] text-slate-400 dark:text-slate-500">Create here</span>
       </button>
     );
   }
   return (
-    <div className="flex flex-col items-center justify-center gap-1.5 rounded-lg border border-brand-300 bg-brand-50/40 p-3 dark:border-brand-500/50 dark:bg-brand-500/10">
-      <span className="text-brand-500">
+    <div
+      className={`${
+        row
+          ? 'flex items-center gap-2.5 px-3 py-1.5'
+          : 'flex flex-col items-center justify-center gap-1.5 p-3'
+      } rounded-lg border border-brand-300 bg-brand-50/40 dark:border-brand-500/50 dark:bg-brand-500/10`}
+    >
+      <span className="shrink-0 text-brand-500">
         <NewFolderIcon />
       </span>
       <input
@@ -319,9 +356,11 @@ export function NewFolderTile({ onCreate }: { onCreate: (name: string) => Promis
             setName('');
           }
         }}
-        className="w-full rounded border border-brand-300 bg-white px-1.5 py-1 text-center text-xs text-slate-800 outline-none dark:border-brand-500/50 dark:bg-slate-800 dark:text-slate-100"
+        className={`${
+          row ? 'min-w-0 flex-1 text-left' : 'w-full text-center'
+        } rounded border border-brand-300 bg-white px-1.5 py-1 text-xs text-slate-800 outline-none dark:border-brand-500/50 dark:bg-slate-800 dark:text-slate-100`}
       />
-      <span className="text-[10px] text-slate-400 dark:text-slate-500">
+      <span className="shrink-0 text-[10px] text-slate-400 dark:text-slate-500">
         {busy ? 'Creating…' : 'Enter to create'}
       </span>
     </div>
@@ -347,8 +386,10 @@ function NewFolderIcon() {
   );
 }
 
-// One selectable destination tile: icon over name over a small kind caption,
-// radio semantics (exactly one destination is ever active).
+// One selectable destination: icon, name, and a small kind caption, radio
+// semantics (exactly one destination is ever active). As a tile the three
+// stack; as a list row they sit side by side with the caption pinned right,
+// the way a file explorer's list view keeps its Type column.
 export function PlacementCard({
   label,
   sub,
@@ -356,6 +397,7 @@ export function PlacementCard({
   selected,
   onSelect,
   onCommit,
+  layout = 'tiles',
 }: {
   label: string;
   sub: string;
@@ -366,7 +408,9 @@ export function PlacementCard({
   // cards that stay mounted across the first click (drill-in cards swap the
   // level under the cursor, so a dblclick can never land on them).
   onCommit?: () => void;
+  layout?: PlacementLayout;
 }) {
+  const row = layout === 'list';
   return (
     <button
       type="button"
@@ -374,23 +418,29 @@ export function PlacementCard({
       aria-checked={selected}
       onClick={onSelect}
       onDoubleClick={onCommit}
-      className={`flex flex-col items-center gap-1.5 rounded-lg border p-3 text-center transition ${
+      className={`${
+        row
+          ? 'flex items-center gap-2.5 px-3 py-2 text-left'
+          : 'flex flex-col items-center gap-1.5 p-3 text-center'
+      } rounded-lg border transition ${
         selected
           ? 'border-brand-400 bg-brand-50 ring-1 ring-brand-200 dark:border-brand-500 dark:bg-brand-500/10 dark:ring-brand-500/30'
           : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-slate-600 dark:hover:bg-slate-700/60'
       }`}
     >
-      <span className={selected ? 'text-brand-600 dark:text-brand-300' : 'text-slate-400'}>
+      <span
+        className={`shrink-0 ${selected ? 'text-brand-600 dark:text-brand-300' : 'text-slate-400'}`}
+      >
         {icon}
       </span>
       <span
-        className={`w-full truncate text-xs font-medium ${
+        className={`${row ? 'min-w-0 flex-1' : 'w-full'} truncate text-xs font-medium ${
           selected ? 'text-brand-800 dark:text-brand-200' : 'text-slate-700 dark:text-slate-200'
         }`}
       >
         {label}
       </span>
-      <span className="text-[10px] text-slate-400 dark:text-slate-500">{sub}</span>
+      <span className="shrink-0 text-[10px] text-slate-400 dark:text-slate-500">{sub}</span>
     </button>
   );
 }

@@ -18,15 +18,15 @@ Tab bodies are stamped with their **board kind** on the way into IndexedDB (`ups
 Offline Mode is **off by default**. You choose it when creating a diagram:
 
 - The **New Diagram** wizard (spec/14) runs three steps: Template, Theme, then
-  **Settings**. The Settings step carries the **"Save Offline, This Browser
-  Only"** toggle, alongside the diagram name and where it is saved (a personal
-  folder or a team library). Off = a normal cloud diagram (today's behaviour);
-  on = the new diagram is created offline.
-- The toggle carries a one-line caveat inline (_"When enabled your diagram is
-  only stored within your Web Browser storage."_), and turning it on reveals a
-  data-loss warning and disables the folder / team placement, so the durability
-  trade-off is set at the moment of choice.
-- The template and theme choices work identically; the toggle only changes
+  **Settings**. The Settings step carries the **Save location** chooser
+  (spec/141), alongside the diagram name and where it is saved (a personal
+  folder or a team library). **livediagram** (the default) = a normal cloud
+  diagram; **Local Browser** = the new diagram is created offline.
+- The Local Browser tile is captioned _"This device only"_, and choosing it
+  reveals a data-loss warning and removes the folder / team step (there is
+  nothing to choose), so the durability trade-off is set at the moment of
+  choice.
+- The template and theme choices work identically; the location only changes
   _where the diagram is stored_.
 
 No global "offline mode" switch: the choice is **per diagram**, so a person can
@@ -44,7 +44,7 @@ have cloud diagrams and offline diagrams side by side.
   clearing site data, some private-browsing sessions, and browser
   storage-pressure eviction can delete it. We request
   `navigator.storage.persist()` to reduce eviction risk, and we surface the
-  trade-off plainly — at the toggle, on the diagram (see the badge), and in the
+  trade-off plainly — at the chooser, on the diagram (see the badge), and in the
   help article. "Offline" means _yours only_, with the responsibility that
   implies.
 
@@ -207,15 +207,16 @@ category), and — per the help-registry rule — **register it in
 category, `categorySlug`, and bump the category `articleCount`). The article
 covers:
 
-- What Offline Mode is and how to create one (the New Diagram toggle).
+- What Offline Mode is and how to create one (the New Diagram wizard's Save
+  location chooser, spec/141).
 - That it's **this-browser-only**: not synced, not backed up, and can be lost if
   you clear site data — the durability warning, stated plainly.
 - **Converting**: "Sync Diagram" (Offline → Cloud) and "Take Offline"
   (Cloud → Offline, which deletes the server copy).
 - What's unavailable offline: sharing, live collaboration, teams, and AI.
 
-Also add the standard contextual help link (spec/56) from the New Diagram toggle
-to this article.
+Also add the standard contextual help link (spec/56) from the New Diagram
+wizard's data-loss warning to this article.
 
 ## Telemetry (spec/22)
 
@@ -246,8 +247,8 @@ Track adoption without content, reusing the closed vocabulary:
   new `LocalBackend` (IndexedDB) beside the existing API calls; per-diagram
   dispatch via a local index.
 - New Diagram wizard (`TemplatePicker` / `template-picker-settings.tsx`,
-  spec/14): the **Settings** step's "Save Offline, This Browser Only" toggle +
-  data-loss warning + contextual help link.
+  spec/14): the **Settings** step's Save location chooser (spec/141, the
+  Local Browser tile) + data-loss warning + contextual help link.
 - `EditorHeader` (`SharedBadge`) — the new **Offline** badge state.
 - Explorer (row + card components, `VisibilityBadge`): merge the local index,
   show the **Offline** badge in the full-page Explorer plus a fixed offline
@@ -274,4 +275,5 @@ See [spec/03](03-open-source-and-business-model.md) (no required SaaS),
 [spec/19](19-images.md) (images),
 [spec/22](22-telemetry.md) (events),
 [spec/55](55-help-app.md) + [spec/56](56-contextual-help-links.md) (help),
-[spec/75](75-realtime-conflict-resolution.md) (realtime — the separate concern).
+[spec/75](75-realtime-conflict-resolution.md) (realtime — the separate concern),
+[spec/141](141-save-locations.md) (the Save location chooser).
