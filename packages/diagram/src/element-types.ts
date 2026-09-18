@@ -4,6 +4,7 @@
 // public `@livediagram/diagram` surface is unchanged. ElementLink + the enums
 // stay in index.ts and are imported here (type-only, so no runtime cycle).
 import type { EventStormingNoteKind } from './event-storming';
+import type { EsDock } from './event-storming-dock';
 import type { TextRun } from './rich-text';
 import type { CommentThread } from './comments';
 import type { ElementAction } from './element-action';
@@ -541,6 +542,21 @@ export type StickyElement = {
   // about the notation (filters, legends, exports) reads it rather than
   // matching hexes. Absent on an ordinary sticky.
   esKind?: EventStormingNoteKind;
+  // Anchor docking (spec/139 Phase 7): the note this one is docked to, and
+  // which side of it this note sits on. Stored on the DOCKED note — the host
+  // carries no back-reference — so a host can be deleted without a write to
+  // its neighbours, a copy of a docked note alone is simply a new piece of
+  // paper, and every reader derives the cluster the same way. A note whose
+  // host has gone is freed by `stripDanglingDocks`.
+  esDock?: EsDock;
+  // Photo draft (spec/139 Phase 8): this note landed from a photograph of a
+  // wall and has not been accepted yet. It is an ORDINARY note in every other
+  // respect — that is the point, because the author reviews the import by
+  // typing into it, dragging it and deleting it with the machinery they
+  // already know. It lives on the ELEMENT rather than in a preview store so a
+  // draft survives a reload and a peer sees it for what it is; `acceptDraft`
+  // strips the flag, `discardDraft` removes the notes.
+  esDraft?: true;
   groupId?: ElementId;
   textSize?: TextSize;
   textAlignX?: TextAlignX;

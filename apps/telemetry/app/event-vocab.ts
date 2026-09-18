@@ -158,6 +158,18 @@ export function eventExplanation(category: string, action: string, type: string 
   if (category === 'Canvas' && action === 'Used' && type === 'InsertBetween') {
     return 'Someone held Alt and dragged a note into the gap between two notes on an event-storming board (spec/139), and the board made room for it.';
   }
+  if (category === 'Canvas' && action === 'Used' && type === 'DockAdd') {
+    return "Someone clicked a note's anchor on an event-storming board (spec/139) and got the matching note already docked to it.";
+  }
+  if (category === 'Canvas' && action === 'Used' && type === 'Dock') {
+    return 'Someone dragged a note onto a compatible face on an event-storming board (spec/139) and it docked.';
+  }
+  if (category === 'Canvas' && action === 'Used' && type === 'Undock') {
+    return 'Someone pulled a docked note away from its host on an event-storming board (spec/139).';
+  }
+  if (category === 'AI' && action === 'Used' && type === 'PhotoNotes') {
+    return 'Someone imported the sticky notes from a photograph of a real wall onto an event-storming board (spec/139).';
+  }
   if (category === 'Canvas' && action === 'Zoomed' && type) {
     if (type === 'In') return 'Someone tapped the zoom-in button.';
     if (type === 'Out') return 'Someone tapped the zoom-out button.';

@@ -88,6 +88,9 @@ import {
 // Typefaces (spec/28): an export paints the face the canvas painted, and
 // declares the ones it used so the file stands on its own.
 import { googleFontsHref } from './fonts';
+// Anchor docking (spec/139 Phase 7): the seam dots a docked pair carries.
+import { dockOf, ES_DOCK_DOT_R, seamDots } from './event-storming-dock';
+import { deriveTextColorForBg } from './colors';
 
 // Bounding box of the visible content. Arrows count via free endpoints; boxed
 // elements via their rectangle. Empty / degenerate tabs default to a page.
@@ -420,6 +423,30 @@ export function renderElementsToSvg(
       opacity < 1 ? `<g opacity="${r2(opacity)}">${inner.join('\n')}</g>` : inner.join('\n'),
     );
   }
+  // Anchor docking (spec/139 Phase 7): the two dots in each docked pair's
+  // seam. Notation paints wherever a note paints (the caps precedent), so an
+  // exported picture of the board carries the relation rather than showing two
+  // notes that merely happen to be close. Drawn last, over the bands, because
+  // a seam sits between notes and belongs to neither.
+  const dots = svgDockSeams(visible, bg);
+  if (dots) parts.push(dots);
   parts.push('</svg>');
   return parts.join('\n');
+}
+
+function svgDockSeams(elements: Element[], background: string): string {
+  const ink = deriveTextColorForBg(background);
+  const out: string[] = [];
+  for (const el of elements) {
+    const d = dockOf(el);
+    if (!d) continue;
+    const host = elements.find((h) => h.id === d.hostId);
+    if (!host || host.type === 'arrow' || el.type === 'arrow') continue;
+    for (const dot of seamDots(host, el, d.side)) {
+      out.push(
+        `<circle cx="${r2(dot.x)}" cy="${r2(dot.y)}" r="${ES_DOCK_DOT_R}" fill="${xmlEscape(ink)}" fill-opacity="0.55"/>`,
+      );
+    }
+  }
+  return out.join('\n');
 }

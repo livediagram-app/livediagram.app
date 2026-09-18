@@ -16,6 +16,7 @@
 
 import {
   createSticky,
+  ES_NOTE_GAP,
   createText,
   ES_BOARD_LAYER_ID,
   eventStormingNote,
@@ -30,7 +31,10 @@ const DOMAIN_EVENT_FILL = eventStormingNote('domain-event').fill;
 export function buildEventStorming(cx: number, cy: number): Element[] {
   const stickyW = 200;
   const stickyH = 200;
-  const gap = 72;
+  // The board`s own gutter, shared with the lane rhythm and the insertion
+  // ripple: one number, so a row the template lays out and a row the author
+  // drags out have the same rhythm.
+  const gap = ES_NOTE_GAP;
 
   const events = ['Order placed', 'Payment received', 'Order shipped'];
 

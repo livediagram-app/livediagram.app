@@ -2149,6 +2149,29 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "EsDock": {
+    "additionalProperties": false,
+    "properties": {
+      "hostId": {
+        "$ref": "#/components/schemas/ElementId"
+      },
+      "side": {
+        "$ref": "#/components/schemas/EsDockSide"
+      }
+    },
+    "required": [
+      "hostId",
+      "side"
+    ],
+    "type": "object"
+  },
+  "EsDockSide": {
+    "enum": [
+      "before",
+      "after"
+    ],
+    "type": "string"
+  },
   "EstimateScale": {
     "enum": [
       "fibonacci",
@@ -2831,6 +2854,42 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "NoteCrop": {
+    "additionalProperties": false,
+    "properties": {
+      "id": {
+        "type": "number"
+      },
+      "image": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "image"
+    ],
+    "type": "object"
+  },
+  "NoteText": {
+    "additionalProperties": false,
+    "properties": {
+      "id": {
+        "type": "number"
+      },
+      "legible": {
+        "type": "boolean"
+      },
+      "text": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "text",
+      "legible"
+    ],
+    "type": "object"
+  },
   "Padding": {
     "enum": [
       "none",
@@ -2955,6 +3014,36 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "fireworks"
     ],
     "type": "string"
+  },
+  "ReadNotesRequest": {
+    "additionalProperties": false,
+    "properties": {
+      "crops": {
+        "items": {
+          "$ref": "#/components/schemas/NoteCrop"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "crops"
+    ],
+    "type": "object"
+  },
+  "ReadNotesResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "texts": {
+        "items": {
+          "$ref": "#/components/schemas/NoteText"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "texts"
+    ],
+    "type": "object"
   },
   "RollCallEntry": {
     "additionalProperties": false,
@@ -3569,6 +3658,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "commentThread": {
         "$ref": "#/components/schemas/CommentThread"
+      },
+      "esDock": {
+        "$ref": "#/components/schemas/EsDock"
+      },
+      "esDraft": {
+        "const": true,
+        "type": "boolean"
       },
       "esKind": {
         "$ref": "#/components/schemas/EventStormingNoteKind"

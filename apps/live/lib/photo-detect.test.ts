@@ -1,0 +1,161 @@
+// @vitest-environment jsdom
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { PHOTO_MAX_EDGE_PX } from '@livediagram/api-schema';
+import { eventStormingNote } from '@livediagram/diagram';
+import { detectAndCrop, photoTypeError, PhotoDetectFailed } from './photo-detect';
+
+// Everything the browser does with a photograph before anything is sent
+// (spec/139 Phase 8). jsdom has no canvas, so the drawing surface is stubbed
+// and made to hand back pixels WE control — which means the detector really
+// runs here, on an image this test drew, and only the encoder is a stand-in.
+
+type Painted = { width: number; height: number; pixels: (x: number, y: number) => number[] };
+
+// A working image with one orange sticky in the middle of a pale wall.
+function oneSticky(width: number, height: number): Painted {
+  const fill = eventStormingNote('domain-event').fill;
+  const paper = [
+    parseInt(fill.slice(1, 3), 16),
+    parseInt(fill.slice(3, 5), 16),
+    parseInt(fill.slice(5, 7), 16),
+  ];
+  return {
+    width,
+    height,
+    pixels: (x, y) =>
+      x > width * 0.25 && x < width * 0.75 && y > height * 0.25 && y < height * 0.75
+        ? paper
+        : [241, 245, 249],
+  };
+}
+
+const blankWall: Painted = { width: 64, height: 64, pixels: () => [241, 245, 249] };
+
+function stubImaging(bitmap: { width: number; height: number } | 'throw', painted?: Painted) {
+  const created: ImageBitmapOptions[] = [];
+  const encoded: { w: number; h: number }[] = [];
+  vi.stubGlobal(
+    'createImageBitmap',
+    vi.fn(async (_file: Blob, opts?: ImageBitmapOptions) => {
+      created.push(opts ?? {});
+      if (bitmap === 'throw') throw new Error('decode failed');
+      return { ...bitmap, close: vi.fn() } as unknown as ImageBitmap;
+    }),
+  );
+  vi.spyOn(document, 'createElement').mockImplementation((tag: string) => {
+    if (tag !== 'canvas') return document.createElementNS('http://www.w3.org/1999/xhtml', tag);
+    const canvas = { width: 0, height: 0 } as unknown as HTMLCanvasElement & {
+      width: number;
+      height: number;
+    };
+    Object.assign(canvas, {
+      getContext: () => ({
+        drawImage: vi.fn(),
+        getImageData: (_x: number, _y: number, w: number, h: number) => {
+          const source = painted ?? blankWall;
+          const data = new Uint8ClampedArray(w * h * 4);
+          for (let y = 0; y < h; y += 1) {
+            for (let x = 0; x < w; x += 1) {
+              // Sample the painted image at the same relative position.
+              const [r, g, b] = source.pixels(
+                Math.floor((x / w) * source.width),
+                Math.floor((y / h) * source.height),
+              ) as [number, number, number];
+              const i = (y * w + x) * 4;
+              data[i] = r;
+              data[i + 1] = g;
+              data[i + 2] = b;
+              data[i + 3] = 255;
+            }
+          }
+          return { data, width: w, height: h };
+        },
+      }),
+      toDataURL: () => {
+        encoded.push({ w: canvas.width, h: canvas.height });
+        return `data:image/jpeg;base64,${'A'.repeat(64)}`;
+      },
+    });
+    return canvas;
+  });
+  return { created, encoded };
+}
+
+const file = (type = 'image/jpeg') => new File([new Uint8Array([1])], 'wall.jpg', { type });
+
+beforeEach(() => vi.restoreAllMocks());
+afterEach(() => vi.unstubAllGlobals());
+
+describe('photoTypeError', () => {
+  it('accepts the three formats the wire contract accepts', () => {
+    for (const type of ['image/jpeg', 'image/png', 'image/webp']) {
+      expect(photoTypeError(type), type).toBeNull();
+    }
+  });
+
+  it('calls out HEIC by name — it is the iPhone default and the advice differs', () => {
+    expect(photoTypeError('image/heic')).toBe('photo_unsupported_heic');
+    expect(photoTypeError('image/heif')).toBe('photo_unsupported_heic');
+  });
+
+  it('refuses everything else, GIF and SVG included', () => {
+    expect(photoTypeError('image/gif')).toBe('photo_unsupported_type');
+    expect(photoTypeError('image/svg+xml')).toBe('photo_unsupported_type');
+  });
+});
+
+describe('detectAndCrop', () => {
+  it('refuses a HEIC before touching the decoder', async () => {
+    const { created } = stubImaging({ width: 100, height: 100 });
+    await expect(detectAndCrop(file('image/heic'))).rejects.toMatchObject({
+      reason: 'photo_unsupported_heic',
+    });
+    expect(created).toHaveLength(0);
+  });
+
+  it('honours the EXIF orientation flag, so a phone photo is upright BEFORE detection', async () => {
+    const { created } = stubImaging({ width: 400, height: 300 }, oneSticky(400, 300));
+    await detectAndCrop(file());
+    expect(created[0]).toEqual({ imageOrientation: 'from-image' });
+  });
+
+  it('detects on a downscaled working copy, keeping the aspect', async () => {
+    const out = await withStub({ width: 4000, height: 3000 }, oneSticky(400, 300));
+    expect(out.imageSize.width).toBe(PHOTO_MAX_EDGE_PX);
+    expect(out.imageSize.height).toBe(Math.round((PHOTO_MAX_EDGE_PX * 3000) / 4000));
+  });
+
+  it('never upscales a small photo', async () => {
+    const out = await withStub({ width: 640, height: 480 }, oneSticky(640, 480));
+    expect(out.imageSize).toEqual({ width: 640, height: 480 });
+  });
+
+  it('finds the sticky and cuts exactly one crop for it', async () => {
+    const out = await withStub({ width: 400, height: 300 }, oneSticky(400, 300));
+    expect(out.stickies).toHaveLength(1);
+    expect(out.stickies[0]!.kind).toBe('domain-event');
+    expect(out.crops).toHaveLength(1);
+    expect(out.crops[0]!.id).toBe(out.stickies[0]!.id);
+    expect(out.crops[0]!.image.startsWith('data:image/jpeg;base64,')).toBe(true);
+  });
+
+  it('sends NOTHING when there is no paper in the picture', async () => {
+    const out = await withStub({ width: 200, height: 200 }, blankWall);
+    expect(out.stickies).toEqual([]);
+    expect(out.crops).toEqual([]);
+  });
+
+  it('reports an undecodable file rather than throwing something raw', async () => {
+    stubImaging('throw');
+    await expect(detectAndCrop(file())).rejects.toBeInstanceOf(PhotoDetectFailed);
+    await expect(detectAndCrop(file())).rejects.toMatchObject({ reason: 'photo_unreadable' });
+  });
+});
+
+async function withStub(
+  bitmap: { width: number; height: number },
+  painted: Painted,
+): ReturnType<typeof detectAndCrop> {
+  stubImaging(bitmap, painted);
+  return detectAndCrop(file());
+}

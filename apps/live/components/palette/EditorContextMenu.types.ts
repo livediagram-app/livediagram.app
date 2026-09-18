@@ -1,3 +1,4 @@
+import type { EventStormingNoteKind } from '@livediagram/diagram';
 import type {
   AnimationSpeed,
   ArrowEnds,
@@ -263,6 +264,14 @@ export type EditorContextMenuProps = {
   // Reset the shape back to its kind's default aspect ratio (keeps area,
   // snaps the width:height proportion back to the canonical look).
   onResetAspectRatio: () => void;
+  // Undock a docked event-storming note (spec/139 Phase 7): drop the relation
+  // and leave the note where it is. Absent when the session cannot edit, and
+  // the row only renders for a note that is actually docked.
+  onUndockElement?: () => void;
+  // Change a workshop note's KIND (spec/139): a verb on this board, because
+  // the kind is the notation rather than a style. Absent when the session
+  // cannot edit.
+  onSetEsKind?: (kind: EventStormingNoteKind) => void;
   // Set the selection's exact size in canvas pixels (spec/134). Either
   // dimension alone is allowed: the omitted one is left as-is, or carried by
   // the aspect lock when that is on.

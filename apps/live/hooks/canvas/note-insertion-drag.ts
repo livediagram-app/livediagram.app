@@ -1,4 +1,5 @@
 import { isBoxed, type Element } from '@livediagram/diagram';
+import { dragClusterIds, isSingleNoteDrag } from './note-dock-drag';
 import type { ShapeBounds } from '@/lib/canvas';
 import {
   canInsertBetweenOn,
@@ -54,12 +55,13 @@ export function resolveNoteInsertion({
   // Drag-duplicate is already holding this gesture; two meanings on one drag
   // would make both unpredictable.
   if (shiftHeld) return null;
-  // One sticky at a time. A multi-selection has no single thing to insert
-  // (Q1), and the gesture is about the note grammar rather than the canvas at
-  // large (Q2) — a shape, an icon or an arrow drags exactly as it always has.
-  if (startBounds.size !== 1) return null;
+  // One note at a time — alone, or carrying what is docked to it. A
+  // multi-selection has no single thing to insert, and the gesture is about
+  // the note grammar rather than the canvas at large: a shape, an icon or an
+  // arrow drags exactly as it always has.
+  if (!isSingleNoteDrag(elements, primaryId, startBounds)) return null;
   const dragged = elements.find((el) => el.id === primaryId);
-  if (!dragged || dragged.type !== 'sticky' || !isBoxed(dragged)) return null;
+  if (!dragged || !isBoxed(dragged)) return null;
   const start = startBounds.get(primaryId);
   if (!start) return null;
 
@@ -73,7 +75,8 @@ export function resolveNoteInsertion({
     incomingWidth: start.width,
     elements,
     inertIds,
-    excludeId: primaryId,
+    // A host drags its cluster, and a cluster is one thing to insert.
+    excludeIds: dragClusterIds(elements, primaryId),
     active,
   });
 }

@@ -1,4 +1,7 @@
-import { type Element, type ElementId, type Tab } from './index';
+// TYPE-only import, written as `import type` so it is erased: `./index`
+// re-exports this module, and a value-shaped import here is what made that
+// cycle observable at runtime.
+import type { Element, ElementId, Tab } from './index';
 
 // Photoshop-style layers (spec/74). A tab optionally carries an ordered
 // `layers` array (BOTTOM -> TOP: index 0 paints lowest) and each element

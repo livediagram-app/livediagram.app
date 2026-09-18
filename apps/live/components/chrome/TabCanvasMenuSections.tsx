@@ -72,6 +72,10 @@ export function TabCanvasMenuSections({
           onClose();
         }}
       />
+      {/* Event-storming board verbs (spec/139). A VERB row, not a styling
+          accordion: on this board the menu offers things to do, and turning
+          the lanes on is one of them. */}
+      {canvas.esBoard ? <></> : null}
       <MenuGroupSeparator />
       <MenuAccordionSection
         title="Look & Feel"

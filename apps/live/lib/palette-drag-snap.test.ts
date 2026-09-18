@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@livediagram/diagram';
+import {
+  ES_NOTE_GAP,
+  ES_LANE_PITCH,
+  laneCentre,
+  type Element,
+  type EsTimeline,
+} from '@livediagram/diagram';
 import { paletteDragSnapAt } from './palette-drag-snap';
 
 // Alignment help BEFORE the drop (spec/139): while a palette tile is dragged
@@ -100,5 +106,84 @@ describe('paletteDragSnapAt', () => {
       elements: [neighbour],
     });
     expect(guides.some((g) => g.axis === 'x')).toBe(true);
+  });
+});
+
+// Timeline lanes (spec/139 Phase 6): the same rungs the note-drag resolver
+// applies, so a note dragged in from the palette joins the row the board has
+// already committed to and lines up with the notes already in it.
+describe('paletteDragSnapAt — timeline lanes', () => {
+  const TIMELINE: EsTimeline = { originY: 0 };
+  const dragged = { width: 200, height: 200 };
+  const neighbour = (x: number, y: number) =>
+    ({ id: 'n', type: 'sticky', x, y, width: 200, height: 200 }) as Element;
+
+  it('centres the note on the lane and lines it up with the note below', () => {
+    const column = 200 + ES_NOTE_GAP;
+    const out = paletteDragSnapAt({
+      canvasX: column + 5 + 100,
+      canvasY: ES_LANE_PITCH + 7 + 100,
+      ...dragged,
+      elements: [neighbour(column, 2 * ES_LANE_PITCH)],
+      timeline: TIMELINE,
+    });
+    expect(column + 5 + out.dx).toBe(column);
+    expect(ES_LANE_PITCH + 7 + 100 + out.dy).toBe(laneCentre(1, TIMELINE));
+    expect(out.lane).toMatchObject({ laneIndex: 1 });
+    // The offer is drawn where the drop will land.
+    expect(out.lane!.ghost).toMatchObject({ x: column, y: laneCentre(1, TIMELINE) - 100 });
+  });
+
+  it('joins a row one gutter clear of the note already in it', () => {
+    const beside = neighbour(0, ES_LANE_PITCH);
+    const out = paletteDragSnapAt({
+      canvasX: 200 + ES_NOTE_GAP + 6 + 100,
+      canvasY: ES_LANE_PITCH + 7 + 100,
+      ...dragged,
+      elements: [beside],
+      timeline: TIMELINE,
+    });
+    expect(200 + ES_NOTE_GAP + 6 + out.dx).toBe(200 + ES_NOTE_GAP);
+  });
+
+  it('takes the lane and leaves x alone on an empty board', () => {
+    const out = paletteDragSnapAt({
+      canvasX: 937 + 100,
+      canvasY: ES_LANE_PITCH + 7 + 100,
+      ...dragged,
+      elements: [],
+      timeline: TIMELINE,
+    });
+    expect(out.dx).toBe(0);
+    expect(out.lane).toMatchObject({ laneIndex: 1 });
+  });
+
+  it('is inert without a timeline, exactly as every other board behaves', () => {
+    const out = paletteDragSnapAt({
+      canvasX: 305 + 100,
+      canvasY: ES_LANE_PITCH + 7 + 100,
+      ...dragged,
+      elements: [],
+    });
+    expect(out).toEqual({ dx: 0, dy: 0, guides: [], distGuides: [], lane: null });
+  });
+
+  it('stands every other snap down: no lane, no slot, no guides', () => {
+    // A neighbour whose TOP edge sits mid-way between two lanes: no lane can
+    // claim y, so nothing is offered — and on a lanes board the ordinary
+    // alignment snap does not step in, because it offers positions the
+    // rhythm does not have.
+    const neighbourY = ES_LANE_PITCH + 100;
+    const out = paletteDragSnapAt({
+      canvasX: 900 + 100,
+      canvasY: neighbourY + 100 + 3,
+      ...dragged,
+      elements: [neighbour(900, neighbourY)],
+      timeline: TIMELINE,
+    });
+    expect(out.lane).toBeNull();
+    expect(out.dx).toBe(0);
+    expect(out.dy).toBe(0);
+    expect(out.guides).toEqual([]);
   });
 });

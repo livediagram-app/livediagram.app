@@ -1,5 +1,7 @@
+import { activeTimeline } from '@livediagram/diagram';
 import { computeDrawGuides } from '@/components/canvas/canvas-draw-guides';
 import { CanvasGuideOverlay } from '@/components/canvas/CanvasGuideOverlay';
+import { TimelineLanesOverlay } from '@/components/canvas/TimelineLanesOverlay';
 import { CanvasDrawPreview } from '@/components/canvas/CanvasDrawPreview';
 import { ActivityIcon, RedoIcon, UndoIcon } from '@/components/panels/ActivityPanel';
 import { LayersStackIcon } from '@/components/panels/layers-panel-icons';
@@ -249,6 +251,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
       createBlocked: props.createBlocked === true,
     },
     inertIds: props.layerInertIds,
+    // Every event-storming board is on lanes; the stack is derived from the
+    // board itself, so there is nothing to gate beyond "is this that board".
+    timeline: props.esBoard === true ? activeTimeline(props, props.layerInertIds) : null,
   });
   const { alignGuides, allSnapTargets } = computeDrawGuides({
     drawDrag,
@@ -326,6 +331,18 @@ export function CanvasChrome(props: CanvasChromeProps) {
           onSkip={onSkipTemplatePicker}
         />
       ) : null}
+
+      {/* Timeline lanes (spec/139 Phase 6): the lane a dragged note is
+          landing on, lit for the duration of the drag. Beside the guide
+          overlay because it is the same kind of thing — help BEFORE the
+          drop — and it publishes through its own store, so it costs nothing
+          on every other board. */}
+      <TimelineLanesOverlay
+        timeline={props.esBoard === true ? activeTimeline(props, props.layerInertIds) : null}
+        tabThemeId={tabThemeId}
+        viewportZoom={viewportZoom}
+        wrapperRef={wrapperRef}
+      />
 
       <CanvasGuideOverlay
         alignGuides={paletteDrag.guides.length > 0 ? paletteDrag.guides : alignGuides}

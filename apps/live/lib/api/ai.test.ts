@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { describe, it, expect } from 'vitest';
-import { extractElementsFromBuffer } from './ai';
+import { afterEach, describe, it, expect, vi } from 'vitest';
+import { apiAiReadNotes, extractElementsFromBuffer } from './ai';
 
 // Regression guard for the "generated nodes are inconsistently sized" bug: an
 // AI shape with no textSize (or "scale") used to fall through to the canvas
@@ -112,5 +112,70 @@ describe('AI shape vocabulary agrees with the server prompt', () => {
       return (el as { shape?: string } | undefined)?.shape !== kind;
     });
     expect(squared).toEqual([]);
+  });
+});
+
+// Reading sticky crops (spec/139 Phase 8). Non-streaming and BATCHED, so what
+// matters is that a run of any size becomes the right requests, that every
+// answer comes back in one list, and that a failure arrives as its TOKEN.
+describe('apiAiReadNotes', () => {
+  const originalFetch = globalThis.fetch;
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+  });
+
+  const crops = (n: number) =>
+    Array.from({ length: n }, (_, i) => ({ id: i, image: 'data:image/jpeg;base64,AAA' }));
+
+  function respondPerBatch(status = 200) {
+    const spy = vi.fn(async (_url: string, init?: RequestInit) => {
+      const body = JSON.parse(init!.body as string) as { crops: { id: number }[] };
+      return new Response(
+        JSON.stringify({
+          texts: body.crops.map((c) => ({ id: c.id, text: `note ${c.id}`, legible: true })),
+        }),
+        { status },
+      );
+    });
+    globalThis.fetch = spy as unknown as typeof fetch;
+    return spy;
+  }
+
+  it('sends one request for a small run, and returns what it read', async () => {
+    const spy = respondPerBatch();
+    const out = await apiAiReadNotes('owner-1', crops(3));
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(out.texts.map((t) => t.id)).toEqual([0, 1, 2]);
+  });
+
+  it('splits a big run into batches, and puts every answer in one list', async () => {
+    const spy = respondPerBatch();
+    const out = await apiAiReadNotes('owner-1', crops(40));
+    // READ_MAX_CROPS_PER_REQUEST per request, in order: 40 crops is 7 calls.
+    expect(spy).toHaveBeenCalledTimes(7);
+    expect(out.texts).toHaveLength(40);
+    expect(out.texts.map((t) => t.id)).toEqual(Array.from({ length: 40 }, (_, i) => i));
+  });
+
+  it('throws the route’s own token, so each cause can be told apart', async () => {
+    for (const [status, token] of [
+      [503, 'ai_not_configured'],
+      [413, 'crops_too_large'],
+      [400, 'crops_invalid'],
+      [502, 'ai_error'],
+      [429, 'rate_limited'],
+    ] as const) {
+      globalThis.fetch = vi.fn(
+        async () => new Response(JSON.stringify({ error: token }), { status }),
+      ) as unknown as typeof fetch;
+      await expect(apiAiReadNotes('o', crops(1))).rejects.toThrow(token);
+    }
+  });
+
+  it('falls back to a usable token when the failure is not our envelope', async () => {
+    globalThis.fetch = vi.fn(
+      async () => new Response('<html>502</html>', { status: 502 }),
+    ) as unknown as typeof fetch;
+    await expect(apiAiReadNotes('o', crops(1))).rejects.toThrow('ai_error');
   });
 });

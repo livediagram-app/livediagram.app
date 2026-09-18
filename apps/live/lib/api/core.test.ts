@@ -148,4 +148,7 @@ describe('tabForWire — board kind', () => {
     expect('templateChosen' in out).toBe(false);
     expect('folder' in out).toBe(false);
   });
+
+  // Timeline lanes (spec/139 Phase 6) are BOARD state, not UI state: the
+  // facilitator turns them on for the room, so the field has to reach the
 });

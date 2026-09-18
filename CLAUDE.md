@@ -56,6 +56,7 @@ packages/
   templates/      # template catalogue + pure element builders (editor Quick Start + MCP)
   help-registry/  # help-centre article/category registry + keywords (help app + editor search)
   api-schema/     # wire-format DTOs the api worker emits + the live editor consumes
+  sticky-vision/  # finds sticky notes in a wall photo (classical CV, no DOM) for the event-storming photo import
   telemetry-client/ # shared browser telemetry emitter (buffer/flush/beacon engine)
   eslint-config/  # shared ESLint flat config
   prettier-config/# shared Prettier config

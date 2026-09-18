@@ -39,6 +39,9 @@ export function EditorContextMenuHost() {
     bringSelectedToFront,
     copySelection,
     deleteSelected,
+    undock,
+    setEsKindOf,
+    createBlocked,
     duplicateSelected,
     stackSelectedFront,
     stackSelectedBack,
@@ -220,6 +223,18 @@ export function EditorContextMenuHost() {
       onCopyElement={copySelection}
       onDuplicateElement={duplicateSelected}
       onDeleteElement={deleteSelected}
+      // Undock (spec/139 Phase 7): only offered on a docked note, and only
+      // when the session can edit at all.
+      onSetEsKind={
+        createBlocked || contextMenu.mode !== 'element'
+          ? undefined
+          : (kind) => setEsKindOf(contextMenu.elementId, kind)
+      }
+      onUndockElement={
+        createBlocked || contextMenu.mode !== 'element'
+          ? undefined
+          : () => undock(contextMenu.elementId)
+      }
       onStackFront={stackSelectedFront}
       onStackBack={stackSelectedBack}
       layers={layers}

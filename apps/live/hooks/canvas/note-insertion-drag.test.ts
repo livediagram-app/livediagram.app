@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element, StickyElement } from '@livediagram/diagram';
+import { type Element, type StickyElement } from '@livediagram/diagram';
 import type { ShapeBounds } from '@/lib/canvas';
 import { landNoteInSlot, resolveNoteInsertion } from './note-insertion-drag';
 
@@ -123,5 +123,20 @@ describe('landNoteInSlot', () => {
     // Nothing else is touched: the ripple is a render-time preview until the
     // drop commits it.
     expect((after.find((el) => el.id === 'b') as StickyElement).x).toBe(272);
+  });
+});
+
+// Timeline lanes (spec/139 Phase 6): the ripple opens by the incoming note
+// plus the row's own gap, on a lanes board exactly as on any other. It used to
+// round up to a column lattice; the lattice is gone, because it could not
+// express the row's gutter in the first place.
+describe('resolveNoteInsertion — on a lanes-on board', () => {
+  it('opens by the row rhythm, not a lattice', () => {
+    const slot = resolve();
+    expect(slot!.shiftDx).toBe(272);
+  });
+
+  it('opens by the same rhythm when lanes are off', () => {
+    expect(resolve()!.shiftDx).toBe(272);
   });
 });

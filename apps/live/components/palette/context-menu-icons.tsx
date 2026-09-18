@@ -1548,3 +1548,47 @@ export function PasteMenuIcon() {
     </svg>
   );
 }
+
+// Timeline lanes (spec/139 Phase 6): three stacked rules with a note sitting
+// on the middle one — the rhythm the switch turns on, not a generic grid.
+export function TimelineLanesMenuIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      aria-hidden
+    >
+      <path d="M3 6h18" strokeOpacity="0.45" />
+      <path d="M3 18h18" strokeOpacity="0.45" />
+      <path d="M3 12h18" />
+      <rect x="8" y="9.4" width="5.2" height="5.2" rx="0.8" strokeOpacity="0.9" />
+    </svg>
+  );
+}
+
+// Undock (spec/139 Phase 7): two panels pulling apart, with the seam's dots
+// between them — the relation being let go, not a note being deleted.
+export function UndockMenuIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <rect x="2.5" y="7" width="7" height="10" rx="1" />
+      <rect x="14.5" y="7" width="7" height="10" rx="1" />
+      <circle cx="10.6" cy="12" r="0.9" fill="currentColor" stroke="none" />
+      <circle cx="13.4" cy="12" r="0.9" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}

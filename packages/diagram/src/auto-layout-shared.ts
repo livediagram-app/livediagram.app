@@ -4,7 +4,7 @@
 // edge extraction, component split, and arrow re-anchoring. Internal module,
 // not re-exported from the package index.
 
-import { type Anchor, type ArrowElement, type BoxedElement, type ElementId } from './index';
+import type { Anchor, ArrowElement, BoxedElement, ElementId } from './index';
 
 export const LAYER_GAP = 90; // gap between consecutive ranks (main axis)
 export const SIBLING_GAP = 56; // gap between peers within a rank (cross axis)

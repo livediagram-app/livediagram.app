@@ -34,6 +34,7 @@ function handlers(): CommandHandlers {
     openShortcuts: vi.fn(),
     openTemplates: vi.fn(),
     setTool: vi.fn(),
+    openPhotoImport: vi.fn(),
   };
 }
 
@@ -54,6 +55,8 @@ const base: CommandContext = {
   canvasTool: 'select',
   canvasEmpty: false,
   isMobile: false,
+  esBoard: false,
+  photoImportAvailable: false,
 };
 
 const ids = (ctx: CommandContext) => buildEditorCommands(ctx, handlers()).map((c) => c.id);
@@ -316,5 +319,44 @@ describe('canvas tool commands', () => {
     expect(got).toContain('tool:isometric');
     expect(got).not.toContain('tool:eraser');
     expect(got).not.toContain('tool:format');
+  });
+});
+
+// Timeline lanes are not a verb any more: an event-storming board is always on
+// lanes, so there is nothing to turn on or off (spec/139 Phase 6).
+describe('event-storming board commands', () => {
+  it('offers no timeline-lanes command anywhere', () => {
+    expect(ids(base)).not.toContain('timeline-lanes');
+    expect(ids({ ...base, esBoard: true })).not.toContain('timeline-lanes');
+  });
+});
+
+// Photo import (spec/139 Phase 8) is offered only where it can actually run:
+// an event-storming board, on a deployment that has a model key.
+describe('the photo-import command', () => {
+  it('is absent on an ordinary diagram', () => {
+    expect(ids({ ...base, photoImportAvailable: true })).not.toContain('photo-import');
+  });
+
+  it('is absent without a model key, however much of a board this is', () => {
+    expect(ids({ ...base, esBoard: true })).not.toContain('photo-import');
+  });
+
+  it('is offered on an ES board when the model is configured', () => {
+    expect(ids({ ...base, esBoard: true, photoImportAvailable: true })).toContain('photo-import');
+  });
+
+  it('is withheld from a view-only visitor', () => {
+    expect(
+      ids({ ...base, esBoard: true, photoImportAvailable: true, isReadOnly: true }),
+    ).not.toContain('photo-import');
+  });
+
+  it('opens the reader', () => {
+    const h = handlers();
+    buildEditorCommands({ ...base, esBoard: true, photoImportAvailable: true }, h)
+      .find((c) => c.id === 'photo-import')!
+      .run();
+    expect(h.openPhotoImport).toHaveBeenCalledTimes(1);
   });
 });

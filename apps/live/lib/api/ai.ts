@@ -5,7 +5,11 @@ import type {
   AiMode,
   AiRequest,
   CapabilitiesResponse,
+  NoteCrop,
+  ReadNotesRequest,
+  ReadNotesResponse,
 } from '@livediagram/api-schema';
+import { READ_MAX_CROPS_PER_REQUEST } from '@livediagram/api-schema';
 import type { Element } from '@livediagram/diagram';
 import { API_BASE, apiHeaders } from './core';
 
@@ -258,6 +262,66 @@ export async function apiAiStream(
     /* no summary */
   }
   callbacks.onDone({ elements, offTopic: false, reviewText: '', summary });
+}
+
+// Read the handwriting on sticky-note crops (spec/139 Phase 8).
+//
+// Non-streaming, unlike the assistant above: the editor cannot reconcile half
+// a list. Batched, because a wall section is tens of stickies and one enormous
+// request is one enormous thing to lose — and two batches in flight keeps a
+// run brisk without hammering the provider. The route's error tokens are
+// thrown as Errors whose message IS the token, the same shape the assistant's
+// `off_topic` refusal takes, so one catch renders one message per cause.
+export async function apiAiReadNotes(
+  ownerId: string,
+  crops: NoteCrop[],
+  opts: { signal?: AbortSignal } = {},
+): Promise<ReadNotesResponse> {
+  const batches: NoteCrop[][] = [];
+  for (let i = 0; i < crops.length; i += READ_MAX_CROPS_PER_REQUEST) {
+    batches.push(crops.slice(i, i + READ_MAX_CROPS_PER_REQUEST));
+  }
+  const texts: ReadNotesResponse['texts'] = [];
+  // Two at a time: a whole wall in parallel is a burst any rate limiter will
+  // refuse, and one at a time is a wait nobody enjoys.
+  for (let i = 0; i < batches.length; i += READ_BATCH_CONCURRENCY) {
+    const slice = batches.slice(i, i + READ_BATCH_CONCURRENCY);
+    const answers = await Promise.all(slice.map((batch) => readBatch(ownerId, batch, opts)));
+    for (const answer of answers) texts.push(...answer.texts);
+  }
+  return { texts };
+}
+
+// How many read requests are in flight at once.
+const READ_BATCH_CONCURRENCY = 2;
+
+async function readBatch(
+  ownerId: string,
+  crops: NoteCrop[],
+  opts: { signal?: AbortSignal },
+): Promise<ReadNotesResponse> {
+  const res = await fetch(`${API_BASE}/ai/read-notes`, {
+    method: 'POST',
+    headers: await apiHeaders(ownerId, { body: true }),
+    body: JSON.stringify({ crops } satisfies ReadNotesRequest),
+    ...(opts.signal ? { signal: opts.signal } : {}),
+  });
+  if (!res.ok) throw new Error(await errorToken(res));
+  return (await res.json()) as ReadNotesResponse;
+}
+
+// The worker's `{ error: '<token>' }` envelope, or a status-shaped fallback
+// when the body is not one (a proxy's own 502 page, say).
+async function errorToken(res: Response): Promise<string> {
+  try {
+    const body = (await res.json()) as { error?: unknown };
+    if (typeof body.error === 'string' && body.error !== '') return body.error;
+  } catch {
+    /* not an envelope */
+  }
+  if (res.status === 413) return 'crops_too_large';
+  if (res.status === 429) return 'ai_quota';
+  return 'ai_error';
 }
 
 // Re-export types so callers don't need extra imports.

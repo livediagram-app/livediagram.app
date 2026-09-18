@@ -31,17 +31,17 @@ The deploy workflow also **syncs** two of the worker secrets below from GitHub r
 
 Provisioned with `wrangler secret put` (production), `wrangler secret put --env staging` ([spec/140](140-staging-environment.md) — worker secrets are per-environment, so staging's copy of a value is never production's), or `.dev.vars` (local dev, gitignored) — **never** `[vars]`, which is plain text in a public repo. Every one is optional: absent, its feature degrades rather than breaking, which is what keeps self-hosting viable (see [03](03-open-source-and-business-model.md)).
 
-| Secret                 | Worker          | Absent means                                                                                 |
-| ---------------------- | --------------- | -------------------------------------------------------------------------------------------- |
-| `CLERK_JWKS_URL`       | api             | Pure-guest mode: `X-Owner-Id` is trusted exclusively ([04](04-auth-and-guest-access.md))     |
-| `GUEST_ID_HMAC_SECRET` | api             | Legacy unsigned guest ids; `/api/migrate` accepts any id ([04](04-auth-and-guest-access.md)) |
-| `OPENAI_API_KEY`       | api             | The AI surface hides entirely ([25](25-ai-assistance.md))                                    |
-| `RESEND_API_KEY`       | api             | All transactional + lifecycle email is inert ([64](64-transactional-email.md))               |
-| `INTERNAL_EVENTS_KEY`  | api **and** mcp | MCP telemetry falls back to the shared anonymous rate-limit bucket ([22](22-telemetry.md))   |
+| Secret                                                       | Worker          | Absent means                                                                                 |
+| ------------------------------------------------------------ | --------------- | -------------------------------------------------------------------------------------------- |
+| `CLERK_JWKS_URL`                                             | api             | Pure-guest mode: `X-Owner-Id` is trusted exclusively ([04](04-auth-and-guest-access.md))     |
+| `GUEST_ID_HMAC_SECRET`                                       | api             | Legacy unsigned guest ids; `/api/migrate` accepts any id ([04](04-auth-and-guest-access.md)) |
+| `GOOGLE_AI_STUDIO_API_KEY` / `OPENAI_API_KEY` / `AI_API_KEY` | api             | The AI surface hides entirely ([25](25-ai-assistance.md))                                    |
+| `RESEND_API_KEY`                                             | api             | All transactional + lifecycle email is inert ([64](64-transactional-email.md))               |
+| `INTERNAL_EVENTS_KEY`                                        | api **and** mcp | MCP telemetry falls back to the shared anonymous rate-limit bucket ([22](22-telemetry.md))   |
 
 `INTERNAL_EVENTS_KEY` is the only one that must hold the **same value on two workers**. A mismatch is silent — the caller simply lands back in the throttled bucket — so verify with `wrangler secret list` on both rather than assuming. Generate it, and `GUEST_ID_HMAC_SECRET`, with `openssl rand -hex 32`.
 
-Non-secret configuration (`TELEMETRY_ENABLED`, `OPENAI_MODEL`, `AI_*`, `IMAGE_MAX_*`, `RESEND_FROM`, `APP_BASE_URL`, `CONSENT_BASE_URL`) lives in `[vars]` in the relevant `wrangler.toml`, in the open, documented alongside each entry there and in the per-app `.env.example`.
+Non-secret configuration (`TELEMETRY_ENABLED`, `AI_BASE_URL`, `AI_MODEL`, `AI_*`, `IMAGE_MAX_*`, `RESEND_FROM`, `APP_BASE_URL`, `CONSENT_BASE_URL`) lives in `[vars]` in the relevant `wrangler.toml`, in the open, documented alongside each entry there and in the per-app `.env.example`.
 
 `CLERK_SECRET_KEY` is **not** used: the api verifies session JWTs against the public JWKS and makes no Clerk Admin API calls.
 
@@ -87,3 +87,18 @@ NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
 
 - Pre-commit hook scanning for likely secrets (`gitleaks` or similar) — to be added when there are enough secrets in dev that scanning earns its keep.
 - CI check that no `NEXT_PUBLIC_*`-bundled value matches a known secret-key prefix (e.g. `sk_`, Resend's `re_`).
+
+## Photo bytes never leave the browser
+
+The event-storming photo import (spec/139 Phase 8) finds the stickies in a
+photograph of a physical wall **in the browser**, with classical computer
+vision. The photograph itself is never uploaded: only the CROPS — one sticky
+each — go to `POST /api/ai/read-notes` so the model can read the handwriting,
+and the route forwards them to the provider and discards them. Nothing is
+persisted anywhere: not R2, not D1, not IndexedDB, not the change log, not a log
+line. The browser also re-encodes every crop, which drops EXIF (including the
+GPS tag) after honouring the orientation flag.
+
+A workshop wall is somebody's unreleased strategy, and the room around it is
+somebody's face. The safest place for a picture of either is the machine it was
+taken on.

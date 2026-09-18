@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Tab } from './index';
 import { isLayerVisible } from './layers';
 import {
+  changeEventStormingKind,
   eventStormingNoteSize,
   eventStormingTilt,
   ES_MAX_TILT_DEG,
@@ -236,5 +237,36 @@ describe('board kind', () => {
     expect(isEventStormingTab(tabWith({}))).toBe(false);
     expect(isEventStormingTab(tabWith({ layers: [{ id: 'own', name: 'Sketches' }] }))).toBe(false);
     expect(isEventStormingTab(undefined)).toBe(false);
+  });
+});
+
+// Changing a note's kind (spec/139): a VERB on this board, because the kind is
+// the notation — so it re-paints, re-cuts and stays put.
+describe('changeEventStormingKind', () => {
+  const note = {
+    id: 'n',
+    type: 'sticky',
+    esKind: 'domain-event' as const,
+    fixedSize: true,
+    x: 1000,
+    y: 500,
+    width: 200,
+    height: 200,
+  };
+
+  it('re-kinds, re-fills and re-cuts the silhouette', () => {
+    const out = changeEventStormingKind(note, 'policy');
+    expect(out).toMatchObject({ esKind: 'policy', fillColor: '#d8b4fe', width: 300, height: 180 });
+  });
+
+  it('keeps the note centred where it was', () => {
+    const out = changeEventStormingKind(note, 'policy');
+    expect(out.x + out.width / 2).toBe(1100);
+    expect(out.y + out.height / 2).toBe(600);
+  });
+
+  it('leaves anything that is not a workshop note alone', () => {
+    const plain = { ...note, esKind: undefined, fixedSize: false, fillColor: undefined };
+    expect(changeEventStormingKind(plain, 'policy')).toBe(plain);
   });
 });

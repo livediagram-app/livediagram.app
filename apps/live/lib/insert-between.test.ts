@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ArrowElement, Element, StickyElement } from '@livediagram/diagram';
+import { type ArrowElement, type Element, type StickyElement } from '@livediagram/diagram';
 import {
   DEFAULT_INSERTION_GAP,
   applyInsertionShift,
@@ -84,7 +84,7 @@ describe('findInsertionSlot', () => {
         cursorY,
         incomingWidth: 200,
         elements: WITH_D,
-        excludeId: 'd',
+        excludeIds: new Set(['d']),
       });
 
     it('never pushes the dragged note aside to make room for itself', () => {
@@ -105,7 +105,7 @@ describe('findInsertionSlot', () => {
         cursorY: 100,
         incomingWidth: 200,
         elements: overlapping,
-        excludeId: 'drag',
+        excludeIds: new Set(['drag']),
       });
       expect(slot?.leftId).toBe('a');
       expect(slot?.rightId).toBe('b');
@@ -132,7 +132,7 @@ describe('findInsertionSlot', () => {
         cursorY: 100,
         incomingWidth: 200,
         elements: ROW,
-        excludeId: 'c',
+        excludeIds: new Set(['c']),
       });
       expect(slot?.rightId).toBe('b');
       expect(slot?.shiftDx).toBe(272);
@@ -146,7 +146,7 @@ describe('findInsertionSlot', () => {
           cursorY: 100,
           incomingWidth: 200,
           elements: [note('a', 0), note('b', 272)],
-          excludeId: 'b',
+          excludeIds: new Set(['b']),
         }),
       ).toBeNull();
     });
@@ -483,5 +483,124 @@ describe('insertionGhostCentre', () => {
   it('centres the incoming note on the slot it opened', () => {
     const slot = slotAt(236)!;
     expect(insertionGhostCentre(slot, 200)).toEqual({ x: 372, y: 100 });
+  });
+});
+
+// Timeline lanes (spec/139 Phase 6): with lanes on, the board has committed to
+// The ripple opens by the incoming note plus the row's own gap, and that is
+// the whole rule on every board. A lanes board used to round it up to a column
+// lattice, which is exactly the assumption that broke: a gutter of 72 is not a
+// multiple of a half note, so the rounding shifted rows off their own rhythm.
+describe('findInsertionSlot — on a lanes-on board', () => {
+  it('opens by the row rhythm, not a lattice', () => {
+    const slot = findInsertionSlot({
+      cursorX: 236,
+      cursorY: 100,
+      incomingWidth: 200,
+      elements: ROW,
+    });
+    // 200 + the row's own 72 gap.
+    expect(slot?.shiftDx).toBe(272);
+  });
+
+  it('falls back to the board gap when the row has none to measure', () => {
+    const flush = [note('a', 0), note('b', 200), note('c', 400)];
+    const slot = findInsertionSlot({
+      cursorX: 200,
+      cursorY: 100,
+      incomingWidth: 200,
+      elements: flush,
+    });
+    expect(slot!.shiftDx).toBe(200 + DEFAULT_INSERTION_GAP);
+  });
+
+  it('is unrounded when lanes are off', () => {
+    expect(
+      findInsertionSlot({ cursorX: 236, cursorY: 100, incomingWidth: 200, elements: ROW })?.shiftDx,
+    ).toBe(272);
+  });
+});
+
+// Anchor docking (spec/139 Phase 7) meets the ripple. A docked pair is one
+// phrase: the seam between the two notes is a JOIN, not a gap you can insert
+// into, and the pair travels whole or not at all.
+describe('findInsertionSlot — docked pairs', () => {
+  const esNote = (id: string, kind: string, x: number, over: Record<string, unknown> = {}) =>
+    ({
+      id,
+      type: 'sticky',
+      esKind: kind,
+      fixedSize: true,
+      x,
+      y: 0,
+      width: 200,
+      height: 200,
+      ...over,
+    }) as Element;
+
+  // command 784..984 | seam | event 1000..1200, then a loose event at 1472.
+  const CLUSTER: Element[] = [
+    esNote('c', 'command', 784, { esDock: { hostId: 'e', side: 'before' } }),
+    esNote('e', 'domain-event', 1000),
+    esNote('far', 'domain-event', 1472),
+  ];
+
+  it('never offers the seam as a gap', () => {
+    const slot = findInsertionSlot({
+      cursorX: 992,
+      cursorY: 100,
+      incomingWidth: 200,
+      elements: CLUSTER,
+    });
+    expect(slot).toBeNull();
+  });
+
+  it('still offers the real gap after the pair', () => {
+    const slot = findInsertionSlot({
+      cursorX: 1300,
+      cursorY: 100,
+      incomingWidth: 200,
+      elements: CLUSTER,
+    });
+    expect(slot?.leftId).toBe('e');
+    expect(slot?.rightId).toBe('far');
+  });
+
+  it('moves a whole cluster when its HOST is at or after the point', () => {
+    // Insert before the pair: the host is after the point, so both halves go.
+    const before: Element[] = [esNote('first', 'domain-event', 400), ...CLUSTER];
+    const slot = findInsertionSlot({
+      cursorX: 700,
+      cursorY: 100,
+      incomingWidth: 200,
+      elements: before,
+    })!;
+    // The point is the command's left edge, which is BEFORE the host — but the
+    // pair answers with the host, so both travel and neither is torn off.
+    expect(new Set(slot.shiftedIds)).toEqual(new Set(['c', 'e', 'far']));
+  });
+
+  it('leaves a whole cluster behind when its host is before the point', () => {
+    const slot = findInsertionSlot({
+      cursorX: 1300,
+      cursorY: 100,
+      incomingWidth: 200,
+      elements: CLUSTER,
+    })!;
+    expect(new Set(slot.shiftedIds)).toEqual(new Set(['far']));
+  });
+
+  it('takes a whole cluster out of the reckoning when the host is the one dragged', () => {
+    const board = [...CLUSTER, esNote('x', 'domain-event', 1700)];
+    const slot = findInsertionSlot({
+      cursorX: 1300,
+      cursorY: 100,
+      incomingWidth: 200,
+      elements: board,
+      excludeIds: new Set(['e', 'c']),
+    });
+    // With the pair out of it, the only notes left are `far` and `x`, and the
+    // cursor is not between them.
+    expect(slot).toBeNull();
   });
 });

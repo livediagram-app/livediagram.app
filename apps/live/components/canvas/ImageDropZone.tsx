@@ -31,6 +31,15 @@ type ImageDropZoneProps = {
   // GalleryPane h-32 / gap-1.
   heightClass?: string;
   gapClass?: string;
+  // What the file input accepts, and the line under the prompt. The photo
+  // import (spec/139 Phase 8) takes a narrower set than an upload does and
+  // has its own cap, so it overrides both rather than owning a second copy of
+  // this component.
+  accept?: string;
+  hint?: string;
+  // On a phone, open the CAMERA rather than the photo library: the whole act
+  // is "photograph this wall", and a picker first is a step backwards.
+  capture?: boolean;
 };
 
 export function ImageDropZone({
@@ -40,6 +49,9 @@ export function ImageDropZone({
   prompt,
   heightClass = 'h-32',
   gapClass = 'gap-1',
+  accept = UPLOAD_ACCEPT_ATTR,
+  hint,
+  capture = false,
 }: ImageDropZoneProps) {
   const [dropActive, setDropActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -70,12 +82,13 @@ export function ImageDropZone({
           {uploading ? 'Uploading...' : prompt}
         </p>
         <p className="text-[11px] text-slate-500 dark:text-slate-400">
-          {IMAGE_TYPES_LABEL} up to {MAX_IMAGE_MB} MB
+          {hint ?? `${IMAGE_TYPES_LABEL} up to ${MAX_IMAGE_MB} MB`}
         </p>
         <input
           ref={fileInputRef}
           type="file"
-          accept={UPLOAD_ACCEPT_ATTR}
+          accept={accept}
+          {...(capture ? { capture: 'environment' as const } : {})}
           className="hidden"
           onChange={(e) => {
             const file = e.target.files?.[0];

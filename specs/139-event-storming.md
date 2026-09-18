@@ -397,6 +397,427 @@ board's behaviour changes at all.
   points are deliberately not told apart: the question the dashboard
   answers is "does anyone use this gesture".
 
+## Phase 6 (shipped): timeline lanes
+
+**Timeline lanes** is what an event-storming board IS, not a mode it can be
+put into. The board carries an infinite stack of horizontal lanes — one note tall, evenly pitched, running in
+both directions — and a note being dragged **snaps its centre onto a lane**. A
+lane is a ROW, and rows are all it claims: **x is answered by the notes already
+on the board**, not by a grid.
+
+**X used to be a half-note lattice, and that was wrong** (found by the operator
+on a real board, fixed before the feature was used in anger). Columns every
+100px could only express gaps that were multiples of a half note, but the
+board's own gutter was 72 at the time — the event-storming template built its
+starter row with it, and the insertion ripple opened a slot by it — so every row the product
+itself laid out was permanently off-lattice: a note dragged in the lane above
+one landed 28px to its right, then 44px to its left, and the x tolerance was
+half a cell, which every x is within, so there was no leaving it where you put
+it either. The lattice only ever agreed with a board whose notes were touching,
+which is the one arrangement a wall rarely has.
+
+Phase 5 made the x axis a grammar the board KNOWS ("between" is a place you can
+drop something). Lanes do the same for y: each lane is a row of the story
+(events along the top, the commands that caused them underneath, the policies
+that reacted below that), each column a moment. On an ordinary diagram neither
+axis means anything in particular, so the whole feature is gated on
+`isEventStormingTab` and no other board's behaviour changes at all.
+
+- **NOT A MODE, and not board state.** There is no switch, no command and no
+  menu verb: an event-storming board is a board of lanes, the way it is a board
+  of coloured paper. It was a toggle for one afternoon and the toggle was the
+  wrong shape — nobody wants half an event-storming board.
+- **The stack is DERIVED, never stored.** `activeTimeline(tab)` answers
+  `{ originY }`, anchored on the board's top-most note (zero on an empty
+  board), ignoring work on a hidden or locked layer. Nothing to persist,
+  nothing to migrate, nothing to fall out of step with the board — and moving
+  the anchor by a whole number of pitches draws exactly the same lanes.
+- **Each axis snaps only within its own tolerance**, and independently: half
+  the lane gap (20px) on y, so a note parked deliberately between two lanes
+  stays there; 12px on x, a real threshold, so a note placed in open space
+  stays exactly where the hand put it.
+
+### Placement rules
+
+The rules a single note follows on a lanes-on board. This table is the contract;
+it is updated in the SAME commit as any change to it, and the rulings below
+record who asked for what.
+
+| Where                                | What is offered                                                                                                                                                                                                                                                                                                                                                                                                      |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Same lane, no neighbour in reach** | Nothing. The note is free within the lane.                                                                                                                                                                                                                                                                                                                                                                           |
+| **Same lane, a neighbour in reach**  | One GUTTER from the neighbour, and then the same again with a square note worth of empty wall between (room kept for an event not yet written): `x = n.x + n.width + 16 + k × (200 + 16)`, `k ≥ 0`, and the mirror to its left. Every step is a SQUARE note, whatever is being placed, so a row has one set of places whichever sticky you hold.                                                                     |
+| **Same lane — never offered**        | Touching (`n.x ± w`). One gap plus one sticky (`n.x + n.width + gutter + w`) — that is a note's edge, not a place. Half a pitch. Anything landing on a note that is already there (opening a row is the Alt insertion, a different verb).                                                                                                                                                                            |
+| **Adjacent lane**                    | EDGES LINE UP, in three columns: exactly above/below the note, and ONE rhythm step (216) to either side — the diagonal, a note sitting against its neighbour one place along. Same silhouette lines up on the left edge and, for two SQUARES, the brick as well (centred on the gap beside the note). Different silhouettes line up on the left edge or the right edge, in the same three columns, and get no brick. |
+| **Every other x snap**               | Stands down. On an event-storming board the lane resolver is the only source of x — the ordinary alignment and distribution rungs were adding exactly the positions the rules above exclude.                                                                                                                                                                                                                         |
+| **A multi-selection**                | Placed as ONE BLOCK: the offers are asked of the selection’s outline, so its LEFT edge takes a left-edge offer and its RIGHT edge takes a right-edge one, and every note moves by the one delta — a row dragged together keeps its spacing exactly.                                                                                                                                                                  |
+| **Dropped ON a note in the row**     | Resolved to the nearest slot, however far it is. Sliding a note back until it touches the one before it is how an author says "right behind this", and the gesture overshoots by nature; a footprint lying on another note is not a resting place on a board of paper.                                                                                                                                               |
+| **The gutter**                       | Always `ES_NOTE_GAP` (16). Not measured from the board any more: one number, relative to the notes in the row, is what makes the places predictable.                                                                                                                                                                                                                                                                 |
+| **Capture**                          | Half a standard note (100px) on x, the lane tolerance on y; the note OWN row ranks first and distance decides within a rank (an aligned column and a brick stay equals); the slot is drawn before the drop.                                                                                                                                                                                                          |
+| **Precedence**                       | An open Alt slot, then Cmd/Ctrl free placement, then a dock candidate, then these rules.                                                                                                                                                                                                                                                                                                                             |
+
+**Non-square stationery** (provisional, awaiting a ruling): a wide or small note
+takes a slot like any other. The first slot after a neighbour is that
+NEIGHBOUR's right edge plus a gutter, so a wide note simply occupies a longer
+stretch and the rhythm resumes after it; the empty places after that are sized
+by the note being PLACED. Across lanes it aligns on its left edge, and its brick
+is centred on the gap, so its own width decides where its left edge falls. All
+of it lives in `rhythmSlots` and `gutterCentres` in
+`packages/diagram/src/event-storming-lanes.ts`, so a ruling is a small change.
+
+**Rulings** (each one an operator input, and what changed):
+
+- **2026-09-17 — "dragging in the higher lanes drags the whole timeline"**:
+  the stack is derived from the board top-most note, and the board re-commits
+  on every move — so a note dragged up into the higher lanes became the new
+  top-most note on each tick and re-anchored the stack to itself, the timeline
+  chasing the sticky. A gesture now FREEZES the stack when it begins
+  (`laneTimelineRef`), the preview carries the frozen `originY`, and the
+  overlay draws its bands from it rather than from the live board. Asserted by
+  a test that drags the top-most note up three lanes and reads the origin back
+  unchanged.
+- **2026-09-17 — "remove the toggle, lanes are always on"**: timeline lanes are
+  not a mode. The switch, the command-palette verb, the canvas-menu verb, the
+  two telemetry events and the whole field are GONE; the lane
+  stack is derived from the board (anchored on its top-most note), so there is
+  nothing to store, nothing to migrate and nothing to fall out of step. An
+  event-storming board IS a board of lanes.
+- **2026-09-17 — "a multi-selection should still snap"**: dragging several
+  notes now places the selection as one block against its own outline (left
+  edge to a left-edge offer, right edge to a right-edge one) and moves every
+  note by the one delta, so notes that were already aligned stay aligned.
+- **2026-09-17 — "a palette tile stays armed after a drag creates a note"**:
+  landing a palette drag now disarms the tile it armed (), so
+  the next click on the canvas does not silently mint a second note.
+
+- **2026-09-16 — "the lattice does not match my rows"**: x was a half-note
+  lattice (100px columns) which could not express the board's own 72px gutter,
+  so a note dragged above a row landed 28px right, then 44px left. Replaced with
+  neighbour-relative placement.
+- **2026-09-16 — "two events next to each other do not suggest the gap"**: the
+  neighbour tolerance was 12px, a snap rather than a suggestion, so in practice
+  nothing was offered. Capture radius widened to half a note and the target
+  footprint is now DRAWN before the drop.
+- **2026-09-17 — "I am missing the diagonal"**: across lanes the board only
+  offered the column exactly above/below a note (and the brick). A note placed
+  diagonally — one place along from its neighbour in the row above — is just as
+  ordinary, and had to be eyeballed. Each edge column is now offered at one
+  rhythm step either side as well. One step, not four: past the neighbours a
+  note could actually touch, the row above stops having an opinion.
+- **2026-09-17 — "that would make things a lot simpler, right?"** (operator’s
+  own simplification, and it was): across lanes, EDGES line up — same
+  silhouette on the left edge, different silhouettes on either edge — and the
+  brick survives only between two squares. Along a row the gutter is always 16
+  and every step is a square note plus a gutter, so a row offers the same
+  places whichever sticky is being placed, including the place that keeps room
+  for an event not yet written. The measured gutter (`prevailingNoteGap`, its
+  floor and its bucketing) is GONE: a constant said the same thing with none of
+  the ways to be wrong.
+- **2026-09-16 — "the gaps are too wide, should be 16"**: `ES_NOTE_GAP` is now
+  **16**, and it is the one number the whole board works to — the lane rhythm,
+  the event-storming template row and the insertion ripple all read it, so a row
+  the template lays out and a row the author drags out have the same rhythm.
+  `MIN_MEASURED_GUTTER` dropped to 8 with it, since the floor has to sit under
+  the gutter or a board could never measure its own.
+- **2026-09-16 — "as close behind each other as possible gives irregular
+  stuff"**: a row built that way came out with gaps of 72, 16, 4, 60, 72, 72.
+  Placing a note "right behind" another means sliding it back until it touches,
+  and the hand ends up INSIDE the previous note — 124px from the next slot,
+  past the 100px capture radius — so the note stayed where it was dropped. An
+  overlapping footprint now resolves to THIS row rhythm at any distance, and
+  the row own slots outrank the columns and bricks offered by the row next door
+  (those were winning on raw distance and leaving gaps of 36 and 12 behind).
+  Building the row again from the operator own aims gives 72 every time.
+- **2026-09-16 — "two events can only be placed without the gap, or with a very
+  big gap"**: the gutter was the MEDIAN of every gap on the board, so a handful
+  of accidental near-touching pairs (16px, left behind while dragging) pulled a
+  board whose deliberate gaps were all 72 down to 44 — and the whole rhythm
+  followed it. The gutter is now the most REPEATED gap, ignoring anything under
+  `MIN_MEASURED_GUTTER` (24px: a seam, not a gutter), ties going to the board
+  default.
+- **2026-09-16 — "too many snapping points"**: same-lane offers were a single
+  gutter each side, while the alignment and distribution rungs quietly added
+  touching, on-top and half-way positions. Same lane is now the rhythm only
+  (whole steps), the half-pitch is gone from a single lane, and every other x
+  rung stands down on a lanes board. The brick survives across lanes only.
+
+- **The pitch is a constant, not a field.** `ES_LANE_PITCH` = 240px: a
+  200px-tall standard note plus a 40px gap, the rhythm of stickies pressed onto
+  a wall in rows. One rhythm per board is the whole point — a board with two
+  lane heights is a board with no lanes.
+- **Notes are CENTRED on their lane**, which is what makes mixed stationery
+  read as one row: the 180-tall wide kinds (policy, external system, aggregate)
+  and the 140-tall actor sit centred against the 200-tall square kinds instead
+  of hanging from a shared top edge.
+- **Nothing on the board ever moves to make room.** Not one note. Lanes are an
+  aid the next drag can use, not a cage the board is poured into; "snap
+  everything to lanes" is a separate verb nobody has asked for yet.
+- **Invisible until a note is on the move.** No permanent rules ruled across
+  the canvas: while a single note is being dragged (from the palette or already
+  on the board, alone or as a selection) the lane it would land on lights as a faint band with a centre
+  line, its two neighbours light at half that alpha so the rhythm reads, and a
+  the bands span the viewport because the lanes are infinite. Everything goes on release. There are no column marks:
+  the board draws the SLOT it is offering instead, which says the same thing
+  about x and says it where the note is actually going.
+- **Notes only** — one or many. A selection of notes is placed as one block
+  (see the rules table); a shape, an icon, an arrow or an image drags exactly as
+  it does on every other board. The Alt insertion and the dock still want
+  exactly one note, which is their own rule.
+- **Precedence** (top rung wins): an open insertion slot (Alt, Phase 5) → free
+  placement (Cmd/Ctrl, spec/60) → a dock candidate (Phase 7) → the lane (y) and
+  the neighbours (x) → the ordinary alignment / distribution snap for whichever
+  axis is left. Shift-duplicate (spec/80)
+  suppresses the slot and the dock, and the clone still lands on a lane.
+- **The preview never touches the document** (the Phase 5 rule): the lit lane
+  is published on a module-level store and rendered as an overlay; the drop is
+  the first thing that writes.
+- **One snap computation per gesture.** The palette path and the note-drag path
+  each resolve the lane ONCE and the ghost, the overlay and the drop all read
+  that answer. A preview that disagrees with the drop is a lie (spec/58).
+- **A rippled row keeps its own rhythm.** The Alt insertion opens by the
+  incoming note plus the row's own gap, on a lanes board exactly as on any
+  other. It used to round that up to a whole number of columns; that rounding
+  was the lattice bug in another costume, shifting a row off the very spacing
+  it was measured from.
+- **Never exported.** Lanes are a drag-time aid, not board content: the SVG /
+  PNG export draws none of them. Mermaid / Markdown / Excalidraw ignore the
+  field entirely.
+- **Telemetry:** `Canvas / Used / TimelineLanesOn` and `…Off`, fired BEFORE the
+  commit so the flip that turns something off still reaches the wire.
+- **Not in v1:** no keyboard shortcut, no "snap all notes to lanes" verb, no
+  vertical lanes (the module is horizontal in fact, axis-shaped in form), and
+  no per-lane naming — a lane is a position, not an entity.
+
+**What shipped, in numbers.** `ES_LANE_HEIGHT` 200 (one standard note),
+`ES_LANE_GAP` 40, `ES_LANE_PITCH` 240, `ES_NOTE_GAP` 16 (the board's own
+gutter, shared with the template and the insertion ripple), y tolerance 20
+(`ES_LANE_SNAP_Y`, half the gap), x capture radius 100
+(`ES_CANDIDATE_RADIUS_X`, half a standard note), reach 2 lanes
+(`ES_CANDIDATE_REACH_LANES`). They sit in one constants block at the top of the
+geometry module, because they are a single model and get corrected together. The
+geometry is `packages/diagram/src/event-storming-lanes.ts` (including
+`activeTimeline`, which derives the stack from the board itself); the lit lane is the module store `lib/lane-preview.ts` rendered by
+`components/canvas/TimelineLanesOverlay.tsx`; the two drag paths resolve it in
+`hooks/canvas/boxed-drag-resolve.ts` and `lib/palette-drag-snap.ts`. The
+overlay's ink is the ALIGNMENT GUIDES' own derivation
+(`elementStroke ?? deriveTextColorForBg(backgroundColor)`) rather than a second
+vocabulary, which is also what keeps it legible on a dark wall.
+
+## Phase 7 (shipped): anchor docking
+
+The notation's own adjacencies become something the board KNOWS, rather than
+something the eye infers from two notes being near each other. A **Command** can
+be added standalone, **docked to the Domain Event it triggers**, or **docked to
+the Policy that issues it**; a **Policy** can be standalone or **docked to the
+Domain Event it reacts to**. A docked pair sits with a small seam between the
+two notes and two anchor dots — one on each facing edge — in that seam.
+
+- **The three pairings, and their sides, are a CATALOGUE** (`ES_DOCKINGS`), one
+  row per pairing, because the sides are notation rather than geometry and a
+  workshop that reads its wall the other way should cost one line:
+
+  | docked note | host         | side   | reads as                                 |
+  | ----------- | ------------ | ------ | ---------------------------------------- |
+  | Command     | Domain event | before | the intent, then what happened           |
+  | Command     | Policy       | after  | "whenever X then Y", Y being the command |
+  | Policy      | Domain event | after  | the event, then the reaction it fires    |
+
+  Those are Brandolini's own placements: a command sits to the LEFT of the event
+  it causes (cause before effect, along the same left-to-right time axis the
+  board already means), and both a policy and the command a policy issues sit to
+  the RIGHT of what they follow.
+
+- **The docked note holds the relation** (`StickyElement.esDock = { hostId,
+side }`), and the host holds nothing. So deleting a host needs no write to its
+  neighbours, a copy of a docked note alone is simply a new piece of paper, and
+  every reader derives the cluster the same way. A docked note whose host has
+  gone becomes standalone on the next commit that notices
+  (`stripDanglingDocks`, the `freezeDanglingGroupEnds` precedent).
+- **Magnets, not connectors.** The two dots in the seam say "these two are one
+  phrase"; nothing is drawn between them. A line would be an arrow, and an arrow
+  on this board means something else.
+- **Three ways to dock, one result.** Click a host's anchor affordance and the
+  compatible note is added already docked and open for typing; drag a note
+  within `ES_DOCK_SNAP_PX` of a compatible free face and it docks on the drop;
+  drag a docked note away and it undocks on the drop. All three commit as ONE
+  undoable step through the ordinary choke point.
+- **The affordances earn their place.** A hollow dot on each FREE dockable face
+  of a hovered or selected host — at most two per host, never more, each naming
+  its act ("Add a command before this event"). Spec/139 retired the four
+  quick-connect pluses on this board as chrome; these are different in kind,
+  because each one is a sentence of the notation rather than a generic "connect
+  something here".
+- **A host carries its cluster.** Moving a host moves everything docked to it;
+  a docked note moved on its own leaves the host where it is (and undocks if it
+  goes far enough). A multi-selection that already contains both never
+  double-moves the docked note.
+- **Precedence**: a dock candidate sits BELOW an open insertion slot and below
+  free placement (Cmd/Ctrl), and ABOVE the lanes and the alignment snap. Shift
+  (drag-duplicate) suppresses docking entirely.
+- **Lanes and docking agree by construction**: a docked note takes its y from
+  its HOST (centred on it), so the host is what lands on the lane and the
+  cluster stays one row.
+- **The insertion ripple treats a cluster as one thing** (the group precedent):
+  it travels whole when the HOST's left edge is at or after the insertion
+  point, and the seam is never offered as a gap to insert into — it is not a
+  gap, it is a join.
+- **Exports paint the seam** (the caps precedent: notation paints wherever a
+  note paints), so an SVG or PNG of the board carries the relation. Mermaid /
+  Markdown / Excalidraw ignore it.
+- **Telemetry:** `Canvas / Used / DockAdd` (added from an anchor),
+  `Canvas / Used / Dock` and `Canvas / Used / Undock` (by drag or menu),
+  alongside the ordinary `Element / Added / Sticky` when a note is minted.
+  **What shipped, in numbers.** `ES_DOCK_SEAM_PX` 16, `ES_DOCK_SNAP_PX` 40,
+  `ES_DOCK_DOT_R` 4. The model is
+  `packages/diagram/src/event-storming-dock.ts` (catalogue, geometry, cluster,
+  `dock` / `undock` / `stripDanglingDocks`); the acts are
+  `hooks/canvas/useDockActions.ts` with the placement decision in
+  `lib/dock-add.ts`; the drag rung is `hooks/canvas/note-dock-drag.ts` published
+  through `lib/dock-preview.ts`; the surfaces are
+  `components/canvas/DockSeams.tsx` (the dots, and the pair a drag is offering)
+  and `components/canvas/DockAnchors.tsx` (the affordances). The export draws the
+  same dots through the same `seamDots`.
+
+- **Not in v1:** the further pairings the notation has (actor under a command,
+  read model before it, aggregate above a command–event pair, external system
+  before an event, hotspot on a corner) — each needs a `side` the geometry
+  does not know yet, and the aggregate needs a two-host relation. They are
+  listed in the plan so nobody re-derives them.
+
+## Phase 8 (shipped): import a photo of the wall
+
+Photograph a piece of the physical wall — stickies, possibly overlapping,
+possibly a region already partly on the board — and the board reads the notes
+out of it: the **kind from the paper colour**, the **text from the
+handwriting**, the **layout from the photo**. It then **reconciles** against
+what the board already holds: notes already there are matched and left exactly
+as they are, and only the **new** ones are added, placed relative to the
+matched neighbours they sat beside in the photo. Repeating with the next photo
+of the next piece of wall adds only what is new — that is what "incremental"
+means here.
+
+A real workshop always happens on a physical wall first. Getting it onto the
+board used to cost a transcription afternoon, which is the one thing a
+low-threshold capture surface can least afford.
+
+- **Detection and reconciliation are ours; only the reading is the model's.**
+  Finding the stickies — where each one is, what colour its paper is and so
+  which KIND it is, which silhouette, which row, in what order — happens in the
+  BROWSER, with classical computer vision (`@livediagram/sticky-vision`). It is
+  deterministic, free, offline, and testable against images we draw ourselves.
+  The model is asked exactly one thing: read the handwriting on this crop, or
+  say you cannot. Matching against the board and placing the additions stay
+  pure, unit-tested TypeScript (`event-storming-photo.ts`).
+
+  The split is not squeamishness, it is where each side is actually good. A
+  vision model's sense of coordinates is famously loose, and a board laid out
+  from hallucinated boxes is worse than no import; a hue histogram's is exact.
+  And the model is never asked "which of these are already on the board" or
+  "where is this" — those are questions about our data and our geometry, and an
+  answer to either could not be checked.
+
+- **How the detector works.** Grey-world white balance (so a warm-lit wall does
+  not turn orange paper red), then every pixel is classified against the
+  notation's own catalogue fills — hue centre from `EVENT_STORMING_NOTES`, with
+  calibrated hue bands and saturation / value floors — into a note kind, the
+  wall, or ink. Connected components over that mask become candidate blobs;
+  fragments split by handwriting are merged back; a blob whose width or height
+  is about n times the median note is SPLIT at the valleys of its own
+  projection, which is how two overlapping orange events become two notes. Box
+  against median gives the silhouette, centre-y clustering gives the rows, and
+  centre-x within a row gives the order.
+
+  Its limits, honestly: white and grey paper are not in the notation, so it
+  cannot see them; a very dim or blue-lit photo moves hues far enough to
+  confuse kinds; a sticky more than about 60% covered reads as a fragment of
+  whatever is left. Every one of those lands as a draft the author can fix, or
+  as nothing at all — which is why there is no detection preview: the draft on
+  the canvas IS the review.
+
+- **Existing notes are untouchable.** An import only ever ADDS. A matched note
+  is never moved, resized, re-kinded or re-worded — if the photo says something
+  different, the review SHOWS it ("on the board as …") and leaves it. The board
+  is the record; the photo is a reading of one moment of the wall.
+- **The photo is never stored, and never even sent.** Not R2, not D1, not
+  IndexedDB, not the change log — and not the api either. The browser decodes
+  it (honouring the EXIF orientation flag), detects on a downscaled working
+  copy, cuts each detected sticky out of the full-resolution bitmap and
+  re-encodes that CROP as a small JPEG (which drops EXIF with it). Only the
+  crops leave the machine, to `POST /api/ai/read-notes`, which forwards them to
+  the model and discards them. Whoever is standing in front of the wall, and
+  whatever else is in the room, stays in the browser.
+- **Gated on the model key exactly as spec/25 is.** No `AI_API_KEY` = no photo
+  UI anywhere, and a self-host without one loses nothing else. It is NOT gated
+  on the AI-panel preference: this is not the assistant. The provider is
+  whatever `AI_BASE_URL` points at — any OpenAI-compatible endpoint, which is
+  Gemini on the hosted site and can be a local llama.cpp on a laptop.
+- **Placement composes the other two phases.** New notes land on the lanes when
+  lanes are on, and a pair the photo shows adjacent in a notation pairing lands
+  DOCKED. That is why photo import was built third: doing it first would have
+  meant building its placement twice.
+- **A review step, then one undoable commit.** The dialog shows each note found
+  over the photo and in a list, badged NEW / ON BOARD, with the text and kind
+  editable and every note tickable. "Add N notes" commits the included ones
+  through the ordinary choke point in one step, so a single Undo takes the
+  whole import back.
+- **Where a photo with nothing in common lands:** to the RIGHT of the board's
+  bounding box, one note width clear, its top row aligned with the board's top
+  row (snapped to a lane when lanes are on). The x axis is time, and a fresh
+  piece of wall is most likely a continuation.
+- **Nothing found is not an error.** "No stickies found in this photo" with one
+  line of retake advice (fill the frame, straight on, good light), and the
+  dialog stays open for another try.
+- **Telemetry:** `AI / Used / PhotoNotes` once per committed import, plus the
+  ordinary `Element / Added / Sticky` per note.
+  **Calibrated against real walls, and partly so.** Three photographs of a real
+  workshop wall (brown kraft paper, ~45 notes, a wall corner, pen handwriting)
+  were run through the detector, and they moved almost every number in it:
+
+  - The wall is BROWN KRAFT, which is the same hue as an orange domain event.
+    The first version read most of the wall as paper. The floors are now
+    measured from each photograph — the wall's own hue and saturation, with the
+    wall/paper split chosen by Otsu over the saturation histogram — and a pixel
+    near the wall's hue must clear that floor while one far from it (a purple
+    policy, a green read model) needs much less.
+  - GREY-WORLD WHITE BALANCE IS OFF BY DEFAULT, and that is a finding. On a
+    kraft wall it takes the wall for a neutral surface and corrects the brown
+    out of the whole photograph, moving every paper hue with it: detections
+    fell by three quarters with it on. Measuring the wall per photo replaces it.
+  - The hue BANDS are widened to measured paper rather than the catalogue
+    swatches: the wall's greens read h≈86 where the catalogue's read-model swatch
+    is h≈137, and its policy lilac reads h≈300 where the swatch is h≈269.
+  - PINK IS HOTSPOT. The operator's walls use pink for hotspots, and the
+    catalogue's external-system pink cannot be told from its hotspot red-pink in
+    a photograph anyway (the external-system swatch is too pale to clear the
+    paper floor at all on kraft). The whole pink band resolves to hotspot; an
+    external system read as one is re-kinded in the draft, which is a click.
+  - HANDWRITING SHATTERS A NOTE into dozens of paper fragments, so every
+    statistic taken before merging describes the fragments. The merge now runs
+    FIRST, to a fixed point, by an absolute pen-stroke gap (0.6% of the working
+    image), and only then is the note size measured.
+  - A blob is only cut into several notes when it is long against the note size
+    AND against its own other side, and only when it is SOLID: a sprawling patch
+    of wall that squeaked past the floor used to be diced into dozens of notes
+    that were never there.
+
+  **What is still outstanding, explicitly.** The working image is SCALED TO
+  1000px before detection (`PHOTO_MAX_EDGE_PX`), because that is where the
+  detector was calibrated and where it finds the most notes; at 2048 it found a
+  quarter as many. The handwriting crops are cut from the full-resolution
+  bitmap, so reading loses nothing. Measured on the three real photos through
+  the browser detector: 20, 32 and 34 notes. The far plane of a wall corner is
+  largely missed, and crop quality for small pen handwriting is unproven. The
+  flow itself is proven end to end — photo in, draft on the canvas, Add, Undo —
+  with the operator's own key and `gemini-3.6-flash`. Treat the DETECTOR as
+  usable-but-partial and the reader prompt as untuned; the draft's Change kind,
+  delete and add-by-hand paths are
+  what make a partial read workable today. `packages/sticky-vision/scripts/calibrate.ts`
+  is the loop to continue in (it caches decoded photos, so a run is ~1s).
+
+- **Not in v1:** multiple photos in one run (one at a time, then "Add another
+  photo" against the board as it now is), applying a matched note's text
+  difference, and reading arrows / connections out of the photo.
+
 ## Domain learnings (session log)
 
 One-liners captured as they were learned — product truths for this diagram
@@ -533,14 +954,75 @@ type, kept current every session. Each should stay true on its own.
 - A modal that lands a beat AFTER the canvas will silently swallow a
   test's drag: checking whether it is showing yet races it, waiting for
   it does not.
+- Perception is the model's, reconciliation is ours: ask a model only what it
+  can SEE, and never what our own data already knows, because the second kind
+  of answer cannot be checked.
+- Existing notes are immovable: an import that could move what is already
+  there would be an import nobody dares run twice.
+- Ask the model for NORMALISED geometry and the answer survives the client's
+  downscale, the model's own resizing, and any future change to either.
+- A stationery silhouette comes from the KIND, never from the photo: a note
+  photographed at an angle would otherwise arrive slightly the wrong shape
+  and stay that way forever.
+- The review IS the feature: a model reading handwriting will get some of it
+  wrong, and an import that just happened is an import nobody can trust.
+- Re-reconcile at COMMIT time, not at review time: a peer can add the very
+  note the photo shows while the author is reading it.
+- A React state updater is not a place for side effects — it re-runs, and the
+  import added everything twice. Unit tests missed it; counting stickies on a
+  real canvas did not.
+- Lanes are an aid, not a cage: they appear only during a drag, they snap only
+  within a tolerance, and they move NOT ONE note that is already down.
+- A toggle for something the board always wants is a toggle nobody should have
+  to find. Lanes shipped with a switch, a command and a menu verb; the operator
+  asked for all three to go, and with them went the tab field, its migration
+  surface and two telemetry events. Derived state cannot drift from the board
+  it describes.
+- A grid claims every point by construction (half a column is the farthest
+  anything can be from one), so only the axis with a real tolerance — y, onto
+  the lane — is where "an aid, not a cage" actually lives.
+- Two placement rules on one axis is one lie: when a lane claims an axis, the
+  alignment guide for that axis has to go with it, or the board draws a line
+  along an edge the note is not landing on.
+- A presentational control must be presentational to the SCREEN READER too:
+  the toggle inside a `role="switch"` row was still announcing its own role
+  and name, so every settings row in the editor read as two switches.
+- Screen pixels cannot check a grid: the notes are tilted, so their bounding
+  boxes are rotation-bloated — the e2e reads the SAVED tab back from the api
+  instead, which proves the placement and the persistence in one assertion.
+- The docked note holds the relation, the host holds nothing: deleting a host
+  then needs no write to its neighbours, and every reader derives the same
+  cluster from either end.
+- Magnets, not connectors: two dots in a seam say "one phrase" without drawing
+  a line, and on this board a line would be an arrow, which means something
+  else entirely.
+- A note asking whether a face is free must not count ITSELF as what is
+  occupying it, or nudging a docked note undocks it for good.
+- An affordance earns its place by being specific: four generic pluses were
+  chrome, two dots that each name a sentence of the notation are not.
+- Guard the ACT, not just the affordance: a face is only offered when free,
+  but a peer can take it between the render and the click, so the commit is
+  where "one note per face" actually lives.
+- Healing after a delete had three call sites and two jobs before it had one
+  name — that is exactly how the fourth call site forgets one of them.
 
 ## Still ahead (phased, see the plan)
 
 Board structure (swimlanes, pivotal events). Vertical insertion, for
 boards that run top to bottom: the geometry is axis-parameterised in
-shape and horizontal in fact. Each phase lands with its own spec update
-here — this file stays the source of truth for what the type IS at any
-moment.
+shape and horizontal in fact.
+
+**A per-board colour legend (`esColourLegend`).** Every wall invents its own
+convention — the operator's uses pink for hotspots and green for read models,
+neither of which is the catalogue's. The photo import currently resolves that
+with one global decision (pink is hotspot) plus the draft's Change kind verb;
+the honest version is a legend on the board itself, which the detector reads
+instead of the catalogue and which the author sets once per wall. It is also
+what would let a board say "we don't use policies" and have the reader stop
+looking for them.
+
+Each phase lands with its own spec update here — this file stays the source of
+truth for what the type IS at any moment.
 
 ## Counts
 

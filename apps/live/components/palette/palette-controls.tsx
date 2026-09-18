@@ -211,7 +211,9 @@ export function ToggleSwitch({
   label: string;
   // Render a non-interactive <span> instead of a <button> — for when an
   // enclosing row already owns the click (so the whole row toggles without
-  // nesting a button inside a button).
+  // nesting a button inside a button). Such a switch is PICTURE only: the
+  // row around it already carries role="switch" + aria-checked + the name, so
+  // repeating them here announced one control as two.
   presentational?: boolean;
 }) {
   const trackClass = checked
@@ -219,7 +221,7 @@ export function ToggleSwitch({
     : 'relative inline-flex h-5 w-9 shrink-0 items-center rounded-full bg-slate-300 transition dark:bg-slate-600';
   if (presentational) {
     return (
-      <span role="switch" aria-checked={checked} aria-label={label} className={trackClass}>
+      <span aria-hidden className={trackClass}>
         <span
           aria-hidden
           className={

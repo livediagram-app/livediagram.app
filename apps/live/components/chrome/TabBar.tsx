@@ -46,6 +46,9 @@ export type CanvasMenuActions = {
   // in-app clipboard actually holds anything (the row greys out when not).
   onPaste: () => void;
   canPaste: boolean;
+  // Event-storming board verbs (spec/139). `esBoard` false everywhere else,
+  // where a timeline lane would be a grid for nothing.
+  esBoard: boolean;
 };
 
 // Where the canvas right-click / footer-button menu should open. `openUp`

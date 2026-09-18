@@ -232,6 +232,21 @@ export function duplicateGroupedElements(
       }
       next = shape;
     }
+    // Anchor docking (spec/139 Phase 7) goes the other way from the
+    // references above: a dock to a host that was NOT copied is STRIPPED, not
+    // kept. That host's face is already occupied by the note being copied,
+    // and two notes on one face is not a state the board has — so a copy of a
+    // docked note alone is a new piece of paper, standalone.
+    if (next.type === 'sticky' && next.esDock !== undefined) {
+      const mapped = idMap.get(next.esDock.hostId);
+      if (mapped !== undefined) {
+        next = { ...next, esDock: { ...next.esDock, hostId: mapped } };
+      } else {
+        const { esDock: _gone, ...rest } = next;
+        void _gone;
+        next = rest as typeof next;
+      }
+    }
     // An element link pointing AT a copied element follows the copy too. The
     // tab id is deliberately untouched: a link is to an element on a named
     // tab, and duplicating within that tab does not change which tab it is.

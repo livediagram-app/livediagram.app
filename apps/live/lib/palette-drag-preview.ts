@@ -1,7 +1,7 @@
 'use client';
 
 import { useSyncExternalStore } from 'react';
-import type { ShapeKind } from '@livediagram/diagram';
+import type { EventStormingNoteKind, ShapeKind } from '@livediagram/diagram';
 
 // Shared, transient state for the palette drag-to-add ghost (spec/58). A
 // palette tile publishes what it's dragging on `dragstart` so the canvas's
@@ -22,6 +22,10 @@ type PaletteDragPreview = {
   // (spec/139) is a gesture about the note grammar, so it reads this rather
   // than the drawing kind.
   note?: boolean;
+  // The notation kind it will land as, when it is one of the event-storming
+  // tiles (spec/139). Anchor docking asks for it: only some kinds dock, and
+  // which face they take comes from the kind, not the footprint.
+  esKind?: EventStormingNoteKind;
 };
 
 let current: PaletteDragPreview | null = null;

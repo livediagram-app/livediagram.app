@@ -54,6 +54,94 @@ It works two ways round, which is the point:
 
 This only happens on an event storming board, where left-to-right means time, and only for notes — a shape or an icon is dropped where you drop it. On an ordinary diagram, a note dropped in a gap is just a note dropped in a gap.
 
+## Timeline lanes
+
+An event-storming board has a rhythm built in: notes you drag snap into evenly
+spaced rows and line themselves up with the notes already on the board. There is
+nothing to switch on.
+
+- **Nothing on the board ever moves to make room.** The rows arrange themselves
+  around the work that is already there.
+- **You see them only while you are dragging** — the lane a note is about to
+  land in lights up, with its neighbours fainter either side, and everything
+  disappears again when you let go.
+- **In the same row, the board offers you the rhythm.** The next place along is
+  one gap from your neighbour, and the one after that leaves a sticky's worth of
+  wall empty in between — room for the event nobody has written yet. Nothing
+  touching, nothing half-way.
+- **In the row above or below, edges line up.** Squarely above or below a note,
+  or one place along from it either way — the diagonal. Same size of sticky also
+  gets the brick position, centred under the gap between two squares; different
+  sizes line up on the left edge or the right edge. That is all of it.
+- **Push a note right up against another** and it takes the next place in the
+  row rather than landing half on top of it: a row stays regular however
+  impatiently you build it.
+- **The offer is outlined on the lane before you let go**, so you always drop
+  into a place you have already seen.
+- **One gap, always the same.** Stickies sit a finger's width apart, and the
+  notes already there never move to make room. Drop a note somewhere with
+  nothing near it and it stays exactly where you put it.
+- **Drag several notes together** and they travel as one block: whatever place
+  the block takes, the notes keep the spacing they already had.
+- Hold **Cmd / Ctrl** while dragging to ignore the lanes for that one note.
+
+Lanes are never exported: they are there to help you place a note, not to be
+part of the picture.
+
+## Anchoring a command to its event
+
+The notation has adjacencies of its own, and the board knows them:
+
+- a **command** belongs before the **domain event** it triggers,
+- a **command** belongs after the **policy** that issues it,
+- a **policy** belongs after the **domain event** it reacts to.
+
+Hover or select a note and any free face it has offers a small hollow dot.
+Click it and the matching note arrives already anchored, open for typing. You
+can also drag a loose note near a compatible face — it snaps into place and two
+small dots appear in the seam to show the two are one phrase. Drag it away
+again to let it go, or right-click it and choose **Undock**.
+
+Move the note a command is anchored to and the command travels with it. Delete
+it and the command simply becomes a note again — nothing is lost.
+
+## Adding notes from a photo of the wall
+
+Most sessions happen on a real wall first. If your deployment has the AI
+assistant configured, **Add from photo** at the top of the Event Storming
+palette reads that wall in:
+
+1. Take or drop a photo of a piece of the wall (you can also paste one onto the
+   board).
+2. The board reads the stickies out of it — the words from the handwriting, the
+   kind from the paper colour, the layout from the photo itself.
+3. The notes land **on the board, as a draft**: outlined, laid out where they
+   were on the wall, with the rest of the board faded behind them. This is the
+   review — you are looking at the real thing, at the size it will really be,
+   not at a list in a dialog.
+4. Fix anything from right there: double-click to correct a word it misread,
+   drag one that landed awkwardly, delete what you do not want, or right-click
+   a note and **Change kind** if the light made a colour ambiguous.
+5. **Add** keeps them, in one step that a single Undo takes back. **Discard**
+   leaves the board exactly as it was.
+
+A note your board already has is marked **"already here"** and left alone —
+never moved, never re-worded, even if the photo reads it differently. That is
+what makes the next photo of the next piece of wall safe to import: only what
+is new is added.
+
+<Tip>
+  The photo never leaves your machine. Your browser finds the stickies in it and sends only small
+  crops of individual notes to be read, so the room, the whiteboard behind, and whoever is standing
+  in front of it stay with you.
+</Tip>
+
+<Note>
+  It will not get a whole wall in one go. Handwriting in pen, a note half-covered by another, a
+  colour your team uses differently, the far side of a corner — expect to fix some and add a few
+  yourself. It is a head start on the typing, not a replacement for reading your own wall.
+</Note>
+
 ## One wall of paper
 
 The board is a single [layer](/help/canvas/layers/). Every note lands on it, whichever colour it is, so any two notes can be stacked in front of or behind each other and nothing is filed away on a plane you cannot see.

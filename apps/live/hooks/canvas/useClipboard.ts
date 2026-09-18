@@ -69,6 +69,10 @@ type ClipboardDeps = {
   // pasted images locally instead of uploading (spec/76).
   diagramId: string | null;
   toast: ReturnType<typeof useToast>;
+  // Read a pasted PHOTO as a piece of wall instead of placing it as an image
+  // (spec/139 Phase 8). Supplied only on an event-storming board with the
+  // reader available; absent everywhere else, where paste is untouched.
+  onPastePhoto?: (file: File) => void;
 };
 
 export function useClipboard(deps: ClipboardDeps) {
@@ -87,6 +91,7 @@ export function useClipboard(deps: ClipboardDeps) {
     ownerId,
     diagramId,
     toast,
+    onPastePhoto,
   } = deps;
 
   const [clipboard, setClipboard] = useState<Element[] | null>(null);
@@ -206,8 +211,8 @@ export function useClipboard(deps: ClipboardDeps) {
   // event listener is only re-registered when isReadOnly/editingId
   // changes, so without this the listener would call stale closures
   // that see clipboard=null even after the user has copied elements.
-  const pasteRef = useRef({ pasteFromClipboard, pasteImageFile });
-  pasteRef.current = { pasteFromClipboard, pasteImageFile };
+  const pasteRef = useRef({ pasteFromClipboard, pasteImageFile, onPastePhoto });
+  pasteRef.current = { pasteFromClipboard, pasteImageFile, onPastePhoto };
 
   // System-clipboard paste handler. Cmd/Ctrl+V triggers the browser's
   // native `paste` event, which carries whatever the OS clipboard
@@ -266,6 +271,16 @@ export function useClipboard(deps: ClipboardDeps) {
         if (!chosen) chosen = files[0] ?? null;
         if (chosen) {
           e.preventDefault();
+          // On an event-storming board a pasted PHOTO is far more likely a
+          // piece of wall than a picture element (spec/139 Phase 8), so it
+          // goes to the reader instead. Only for a declared image, only on
+          // that board, only when the reader is available: everything else
+          // pastes exactly as it always has.
+          const readPhoto = pasteRef.current.onPastePhoto;
+          if (readPhoto && chosen.type.startsWith('image/')) {
+            readPhoto(chosen);
+            return;
+          }
           void pasteRef.current.pasteImageFile(chosen);
           return;
         }
@@ -282,6 +297,11 @@ export function useClipboard(deps: ClipboardDeps) {
             const file = item.getAsFile();
             if (file) {
               e.preventDefault();
+              const readPhoto = pasteRef.current.onPastePhoto;
+              if (readPhoto) {
+                readPhoto(file);
+                return;
+              }
               void pasteRef.current.pasteImageFile(file);
               return;
             }

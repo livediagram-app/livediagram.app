@@ -23,6 +23,7 @@ export function SettingsToggleRow({
   checked,
   onToggle,
   help,
+  disabled = false,
 }: {
   label: string;
   hint: ReactNode;
@@ -31,14 +32,22 @@ export function SettingsToggleRow({
   // Optional help affordance rendered BESIDE the row rather than inside it,
   // so a `?` link is never nested in the row's own interactive element.
   help?: ReactNode;
+  // The setting exists here but cannot be changed right now (a view-only
+  // session, a locked tab). Shown rather than hidden: the state is still worth
+  // reading, and a control that vanishes teaches nothing about why.
+  disabled?: boolean;
 }) {
   const row = (
     <button
       type="button"
       role="switch"
       aria-checked={checked}
+      aria-disabled={disabled || undefined}
+      disabled={disabled}
       onClick={onToggle}
-      className="flex w-full items-center justify-between gap-3 rounded-md px-2 py-1.5 text-left transition hover:bg-slate-50 dark:hover:bg-slate-800"
+      className={`flex w-full items-center justify-between gap-3 rounded-md px-2 py-1.5 text-left transition ${
+        disabled ? 'cursor-not-allowed opacity-50' : 'hover:bg-slate-50 dark:hover:bg-slate-800'
+      }`}
     >
       <span className="flex min-w-0 flex-col">
         <span className="text-xs font-medium text-slate-700 dark:text-slate-200">{label}</span>

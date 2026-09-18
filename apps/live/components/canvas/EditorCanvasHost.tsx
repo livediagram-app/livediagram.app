@@ -1,5 +1,6 @@
 'use client';
 
+import { dropThenDisarm } from '@/lib/palette-drop';
 import { describeOne } from '@/lib/element-names';
 import { DEFAULT_BUTTON_MODE } from '@livediagram/diagram';
 import { useMemo } from 'react';
@@ -101,6 +102,12 @@ export function EditorCanvasHost() {
     addStatRow,
     addSticky,
     esBoard,
+    addDockedNote,
+    photoImportAvailable,
+    photoImportBlocked,
+    openPhotoImport,
+    readPhotoFile,
+    photoDraft,
     createBlocked,
     addTable,
     addTechIcon,
@@ -560,6 +567,19 @@ export function EditorCanvasHost() {
       onAddText={addText}
       onAddSticky={addSticky}
       esBoard={esBoard}
+      esBoardControls={{
+        ...(photoImportAvailable
+          ? {
+              onImportPhoto: openPhotoImport,
+              photoDisabled: photoImportBlocked,
+              photoDisabledReason: photoDraft.draftOpen
+                ? 'Finish the current draft first'
+                : undefined,
+            }
+          : {}),
+      }}
+      onAddDockedNote={createBlocked ? undefined : addDockedNote}
+      onDropPhoto={readPhotoFile}
       createBlocked={createBlocked}
       onAddImage={addImage}
       onAddArrow={addArrow}
@@ -936,7 +956,7 @@ export function EditorCanvasHost() {
       onPrevVoteResult={prevVoteResult}
       onDoneVoteReview={doneVoteReview}
       onToggleAspectLock={toggleAspectLockSelected}
-      onDropPalette={dropPaletteItem}
+      onDropPalette={dropThenDisarm(dropPaletteItem, cancelDrawShape)}
       onSpawnConnect={spawnConnectSelected}
       onStartArrow={handleStartArrow}
       onStartPencil={beginFreehand}

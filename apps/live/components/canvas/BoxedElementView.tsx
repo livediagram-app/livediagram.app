@@ -12,12 +12,14 @@ import {
   defaultStrokeColor,
   defaultTextAlign,
   defaultTextColor,
+  isEventStormingNote,
   isLegacyModeButtonSkin,
   isOpenAction,
   isSelfDrawingShape,
   type ShapeMarker,
   type TextSize,
 } from '@livediagram/diagram';
+import { clearDockHoveredId, setDockHoveredId } from '@/lib/dock-preview';
 import { renderLabel } from '@/components/canvas/element-labels';
 import { ElementFaceRouter } from '@/components/canvas/ElementFaceRouter';
 import { MindNodeHint } from '@/components/canvas/MindNodeHint';
@@ -75,6 +77,9 @@ function BoxedElementViewImpl({
   onBeginDrag,
   onShiftSelect,
   layerOpacity,
+  photoDraft = false,
+  photoMatched = false,
+  photoReadAs,
   votableInVote,
   onBeginEdit,
   onCommitLabel,
@@ -174,6 +179,13 @@ function BoxedElementViewImpl({
   // engine's click-vs-drag test) opens the editable note popover.
   const isAnnotation = element.type === 'annotation';
   const [hovering, setHovering] = useState(false);
+  // A workshop note (spec/139) reports the pointer being over it, so its host
+  // can offer its free docking faces on hover as well as on selection. It is
+  // published rather than held here because the affordances are drawn by the
+  // elements layer, beside the note rather than inside it — docking is board
+  // grammar, and this view is every board's.
+  const isEsNote = isEventStormingNote(element);
+  const reportsHover = isAnnotation || isEsNote;
 
   // Right-click selects the element + asks the page to open a
   // context menu at the cursor. The page also keeps showing the
@@ -336,8 +348,22 @@ function BoxedElementViewImpl({
       onDoubleClick={handleDoubleClick}
       onContextMenu={handleContextMenu}
       onPointerUp={handlePointerUp}
-      onPointerEnter={isAnnotation ? () => setHovering(true) : undefined}
-      onPointerLeave={isAnnotation ? () => setHovering(false) : undefined}
+      onPointerEnter={
+        reportsHover
+          ? () => {
+              if (isAnnotation) setHovering(true);
+              if (isEsNote) setDockHoveredId(element.id);
+            }
+          : undefined
+      }
+      onPointerLeave={
+        reportsHover
+          ? () => {
+              if (isAnnotation) setHovering(false);
+              if (isEsNote) clearDockHoveredId(element.id);
+            }
+          : undefined
+      }
       onDragOver={acceptsIconDrop ? handleIconDragOver : undefined}
       onDragLeave={acceptsIconDrop ? handleIconDragLeave : undefined}
       onDrop={acceptsIconDrop ? handleIconDrop : undefined}
@@ -602,6 +628,44 @@ function BoxedElementViewImpl({
         onRetractVote={onRetractVote}
         onCastVote={onCastVote}
       />
+
+      {/* Photo draft (spec/139 Phase 8): a dashed accent frame just outside
+          the paper, in the alignment guides' own language, saying "this one
+          came from the photo and has not been accepted yet". Drawn rather
+          than tinted, because a workshop note's FILL is its meaning. */}
+      {photoDraft ? (
+        <span
+          aria-hidden
+          data-photo-draft=""
+          className="pointer-events-none absolute rounded-[3px] border-2 border-dashed border-brand-500 dark:border-brand-300"
+          style={{ inset: -6 / zoom, borderWidth: Math.max(1, 2 / zoom) }}
+        />
+      ) : null}
+      {/* …and the counterpart on a note the photo matched: it is already here,
+          so nothing is being added for it. */}
+      {photoMatched ? (
+        <span
+          data-photo-matched=""
+          title={photoReadAs ? `Already here. Read as: ${photoReadAs}` : 'Already here'}
+          aria-label={photoReadAs ? `Already here, read as ${photoReadAs}` : 'Already here'}
+          className="pointer-events-auto absolute -right-2 -top-2 flex items-center justify-center rounded-full bg-slate-700 text-white shadow dark:bg-slate-200 dark:text-slate-900"
+          style={{ width: 18 / zoom, height: 18 / zoom }}
+        >
+          <svg
+            width={12 / zoom}
+            height={12 / zoom}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="3"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden
+          >
+            <path d="M5 13l4 4L19 7" />
+          </svg>
+        </span>
+      ) : null}
 
       {/* Selection chrome (resize / edge-grip handles) rides in its own
           layer ABOVE the elements — see SelectionChromeLayer for the

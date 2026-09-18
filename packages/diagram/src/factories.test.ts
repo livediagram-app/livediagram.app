@@ -28,6 +28,7 @@ import {
   type CommentThread,
   type Element,
   type ShapeElement,
+  type StickyElement,
   type TextElement,
 } from './index';
 
@@ -311,6 +312,41 @@ describe('duplicateGroupedElements', () => {
     const dupChild = newElements.find((el) => el.id === idMap.get('c')) as ShapeElement;
     expect(dupChild.mindParentId).toBe(idMap.get('p'));
     expect(dupChild.mindParentId).not.toBe('p');
+  });
+
+  // Anchor docking (spec/139 Phase 7). Unlike a mind parent, a dock to a host
+  // OUTSIDE the copied set is STRIPPED rather than kept: that face is already
+  // occupied by the note being copied, and two notes on one face is not a
+  // state the board has. A copy of a docked note alone is a new piece of paper.
+  it('re-docks a copied pair onto the copied host', () => {
+    const host = { ...shape('h'), type: 'sticky', esKind: 'domain-event' } as unknown as Element;
+    const docked = {
+      ...shape('d'),
+      type: 'sticky',
+      esKind: 'command',
+      esDock: { hostId: 'h', side: 'before' },
+    } as unknown as Element;
+    const { newElements, idMap } = duplicateGroupedElements(
+      [host, docked],
+      new Set(['h', 'd']),
+      10,
+      10,
+    );
+    const copy = newElements.find((el) => el.id === idMap.get('d')) as StickyElement;
+    expect(copy.esDock).toEqual({ hostId: idMap.get('h'), side: 'before' });
+  });
+
+  it('frees a docked note copied without its host', () => {
+    const host = { ...shape('h'), type: 'sticky', esKind: 'domain-event' } as unknown as Element;
+    const docked = {
+      ...shape('d'),
+      type: 'sticky',
+      esKind: 'command',
+      esDock: { hostId: 'h', side: 'before' },
+    } as unknown as Element;
+    const { newElements, idMap } = duplicateGroupedElements([host, docked], new Set(['d']), 10, 10);
+    const copy = newElements.find((el) => el.id === idMap.get('d')) as StickyElement;
+    expect('esDock' in copy).toBe(false);
   });
 
   it('leaves a mind parent OUTSIDE the copied set alone', () => {
