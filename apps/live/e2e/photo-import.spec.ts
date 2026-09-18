@@ -74,8 +74,15 @@ async function importPhoto(page: Page, notes: WallNote[]) {
   // The review wizard (spec/139 Phase 9) appears after detection + reading,
   // unless the photo had no paper in it — then a toast comes instead.
   const overlay = page.locator('[data-testid="photo-review-overlay"]');
-  await overlay.waitFor({ state: 'visible', timeout: 10_000 }).catch(() => {});
-  if (await overlay.isVisible()) {
+  const emptyToast = page.getByText(/no stickies found in this photo/i);
+  // Either the review opens, or (an empty photo) a toast says nothing was
+  // found. Race both so an empty photo does not wait out the overlay timeout
+  // while its toast comes and goes.
+  await Promise.race([
+    overlay.waitFor({ state: 'visible', timeout: 10_000 }).catch(() => false),
+    emptyToast.waitFor({ state: 'visible', timeout: 10_000 }).catch(() => false),
+  ]);
+  if (await overlay.isVisible().catch(() => false)) {
     await page.getByRole('button', { name: /^Add \d+ notes?$/ }).click();
   }
 }
