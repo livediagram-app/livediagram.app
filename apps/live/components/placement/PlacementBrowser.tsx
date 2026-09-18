@@ -97,6 +97,15 @@ export function PlacementBrowser({
 }) {
   const levelClass =
     layout === 'list' ? 'flex flex-col gap-1' : 'grid grid-cols-3 gap-2 sm:grid-cols-4';
+  // Rows enter as a cascade, each a beat after the one above (the entrance
+  // is on the card, see `enterIndex`). The level container is keyed on
+  // WHICH level is showing, so every drill in / back / space change
+  // remounts its rows and they cascade in again; a folder created in place
+  // only mounts its own row.
+  // Direct subfolders of a folder (null = a space's root), for the count
+  // badge: a card that holds more folders says so before you open it.
+  const kidCount = (list: PickerFolder[], parentId: string | null) =>
+    list.filter((f) => f.parentId === parentId).length;
   const spaceCount = (showPersonal ? 1 : 0) + teams.length;
   // With several spaces, open on the overview so the space choice comes
   // first; a single space goes straight in and never shows a space BackBar.
@@ -124,26 +133,30 @@ export function PlacementBrowser({
 
   if (spaceCount > 1 && space === null) {
     return (
-      <div className={levelClass}>
+      <div key="overview" className={levelClass}>
         {showPersonal ? (
           <PlacementCard
             label="My Work"
             sub="Your folders"
             icon={<MyWorkIcon />}
+            count={kidCount(folders, null)}
             selected={placementSpace === 'my-work'}
             onSelect={() => enterSpace('my-work')}
             layout={layout}
+            enterIndex={0}
           />
         ) : null}
-        {teams.map((t) => (
+        {teams.map((t, i) => (
           <PlacementCard
             key={t.id}
             label={t.name}
             sub="Team"
             icon={<TeamPlaceIcon />}
+            count={kidCount(teamFolders[t.id] ?? [], null)}
             selected={placementSpace === t.id}
             onSelect={() => enterSpace(t.id)}
             layout={layout}
+            enterIndex={(showPersonal ? 1 : 0) + i}
           />
         ))}
       </div>
@@ -197,30 +210,34 @@ export function PlacementBrowser({
       {showBack ? (
         <BackBar label={backLabel} current={openFolder?.name ?? spaceName} onClick={onBack} />
       ) : null}
-      <div className={levelClass}>
+      <div key={`${space}:${openFolder?.id ?? 'root'}`} className={levelClass}>
         {openFolder ? (
           // Save directly in the open folder.
           <PlacementCard
             label={openFolder.name}
             sub="This folder"
             icon={<FolderPlaceIcon />}
+            count={children.length}
             selected={placement === valueFor(openFolder.id)}
             onSelect={() => onPlacement(valueFor(openFolder.id))}
             onCommit={() => onCommitPlacement?.(valueFor(openFolder.id))}
             layout={layout}
+            enterIndex={0}
           />
         ) : (
           <PlacementCard
             label={isMyWork ? 'My Work' : 'Team Library'}
             sub={isMyWork ? 'Unsorted' : (team?.name ?? 'Team')}
             icon={isMyWork ? <MyWorkIcon /> : <TeamPlaceIcon />}
+            count={children.length}
             selected={placement === rootValue}
             onSelect={() => onPlacement(rootValue)}
             onCommit={() => onCommitPlacement?.(rootValue)}
             layout={layout}
+            enterIndex={0}
           />
         )}
-        {children.map((f) =>
+        {children.map((f, i) =>
           hasKids(f.id) ? (
             // A folder with subfolders drills in (its "save here" card is the
             // first tile of the next level) and gets the stacked-folders
@@ -232,29 +249,35 @@ export function PlacementBrowser({
               label={f.name}
               sub="Open folder"
               icon={<FolderStackIcon />}
+              count={kidCount(spaceFolders, f.id)}
               selected={selectionChain.has(f.id)}
               onSelect={() => {
                 if (!selectionChain.has(f.id)) onPlacement(valueFor(f.id));
                 setStack([...stack, f]);
               }}
               layout={layout}
+              enterIndex={i + 1}
             />
           ) : (
+            // A leaf: "Folder" at a space's root, "Subfolder" once you are
+            // inside a folder, so the caption says where you are.
             <PlacementCard
               key={f.id}
               label={f.name}
-              sub="Folder"
+              sub={openFolder ? 'Subfolder' : 'Folder'}
               icon={<FolderPlaceIcon />}
               selected={placement === valueFor(f.id)}
               onSelect={() => onPlacement(valueFor(f.id))}
               onCommit={() => onCommitPlacement?.(valueFor(f.id))}
               layout={layout}
+              enterIndex={i + 1}
             />
           ),
         )}
         {onCreateFolder ? (
           <NewFolderTile
             layout={layout}
+            enterIndex={children.length + 1}
             onCreate={async (name) => {
               const created = await onCreateFolder(name, openFolder?.id ?? null, teamId);
               // Select the fresh folder as the destination straight away.
@@ -268,6 +291,18 @@ export function PlacementBrowser({
   );
 }
 
+// The cascade entrance for one row / tile at `index` (see the level
+// container comment in PlacementBrowser). A list row slides in and grows
+// from zero height (slide-row-in), so the rows beneath ease down; a tile
+// fades, since a grid track already holds its place.
+function enterProps(layout: PlacementLayout, index: number | undefined) {
+  if (index === undefined) return { className: '', style: undefined };
+  return {
+    className: `stagger-enter ${layout === 'list' ? 'animate-slide-row-in' : 'animate-fade-in'}`,
+    style: { '--stagger-i': index } as React.CSSProperties,
+  };
+}
+
 // The "New Folder" tile: a dashed card that flips into a small naming form in
 // place (the popover the flow needs, without portal plumbing inside the
 // modal). Enter creates in the CURRENT level's scope and the browser selects
@@ -276,11 +311,15 @@ export function PlacementBrowser({
 export function NewFolderTile({
   onCreate,
   layout = 'tiles',
+  enterIndex,
 }: {
   onCreate: (name: string) => Promise<boolean>;
   layout?: PlacementLayout;
+  // Position in the level's cascade; absent = no entrance animation.
+  enterIndex?: number;
 }) {
   const row = layout === 'list';
+  const enter = enterProps(layout, enterIndex);
   const [naming, setNaming] = useState(false);
   const [name, setName] = useState('');
   const [busy, setBusy] = useState(false);
@@ -300,7 +339,8 @@ export function NewFolderTile({
       <button
         type="button"
         onClick={() => setNaming(true)}
-        className={`${
+        style={enter.style}
+        className={`${enter.className} ${
           row
             ? 'flex items-center gap-2.5 px-3 py-2 text-left'
             : 'flex flex-col items-center justify-center gap-1.5 p-3 text-center'
@@ -398,6 +438,8 @@ export function PlacementCard({
   onSelect,
   onCommit,
   layout = 'tiles',
+  enterIndex,
+  count,
 }: {
   label: string;
   sub: string;
@@ -409,8 +451,25 @@ export function PlacementCard({
   // level under the cursor, so a dblclick can never land on them).
   onCommit?: () => void;
   layout?: PlacementLayout;
+  // Position in the level's cascade; absent = no entrance animation.
+  enterIndex?: number;
+  // Direct subfolders inside this destination. Shown as a badge when at
+  // least one, so a card that leads somewhere says so; 0 / absent = none.
+  count?: number;
 }) {
   const row = layout === 'list';
+  const enter = enterProps(layout, enterIndex);
+  const badge = count ? (
+    <span
+      className={`shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-semibold leading-none ${
+        selected
+          ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/25 dark:text-brand-200'
+          : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-300'
+      }`}
+    >
+      {count} {count === 1 ? 'Subfolder' : 'Subfolders'}
+    </span>
+  ) : null;
   return (
     <button
       type="button"
@@ -418,7 +477,8 @@ export function PlacementCard({
       aria-checked={selected}
       onClick={onSelect}
       onDoubleClick={onCommit}
-      className={`${
+      style={enter.style}
+      className={`${enter.className} ${
         row
           ? 'flex items-center gap-2.5 px-3 py-2 text-left'
           : 'flex flex-col items-center gap-1.5 p-3 text-center'
@@ -440,6 +500,9 @@ export function PlacementCard({
       >
         {label}
       </span>
+      {/* In a row the badge sits beside the name; on a tile it takes its own
+          line between name and caption, where the narrow track has room. */}
+      {badge}
       <span className="shrink-0 text-[10px] text-slate-400 dark:text-slate-500">{sub}</span>
     </button>
   );

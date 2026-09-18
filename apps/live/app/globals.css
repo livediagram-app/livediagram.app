@@ -333,6 +333,27 @@
 }
 
 /*
+ * Staggered entrance. An item in a list or grid that should arrive one beat
+ * after the one before it: pair with any `animate-*` utility and set
+ * `--stagger-i` to the item's index. `backwards` fill keeps a delayed item
+ * at its keyframe start (invisible) until its turn, instead of showing it
+ * and then re-hiding it. Reduced motion zeroes the delay as well as the
+ * duration (above), so nothing waits on a beat it will never see.
+ */
+.stagger-enter {
+  animation-delay: calc(var(--stagger-i, 0) * 40ms);
+  animation-fill-mode: backwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .stagger-enter {
+    animation-delay: 0s !important;
+  }
+}
+:root.reduce-motion .stagger-enter {
+  animation-delay: 0s !important;
+}
+
+/*
  * Context-menu "falling stack": each direct child of a right-click menu
  * drops in just after the previous one, so the categories cascade into place
  * rather than appearing all at once. Capped at a dozen staggered children;

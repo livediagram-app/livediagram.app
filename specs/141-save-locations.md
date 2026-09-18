@@ -62,6 +62,24 @@ were drawn for that dialog. The layout is a prop on the browser, not a second
 browser, so the product still has exactly one way to choose where a diagram
 lives.
 
+**Subfolder count.** A destination that holds more folders says so with a
+small badge beside its name, "1 Subfolder" / "3 Subfolders": the space cards
+on the overview (root folders of My Work or the team), the "save here" card
+at the top of a level, and any folder row that drills in. A folder with
+nothing inside shows no badge, so the badge itself is the "there's more in
+here" cue, not just a number. Both layouts show it; in a row it sits beside
+the name, on a tile it takes its own line between name and caption.
+
+**Motion.** Drilling into a space or folder, or backing out, swaps the whole
+level, and a level that lands in one frame is a jolt. So the back bar eases
+in (fade, short slide, height from zero) and the rows beneath it enter as a
+**cascade**, each a beat (40 ms) after the one above: list rows slide in and
+grow from zero height so the rows below ease down with them; tiles fade,
+since a grid track already holds their place. The cascade runs on every level
+change and on first appearance; a folder created in place only animates its
+own row. Reduced motion (spec/20) collapses both the duration and the
+per-row delay, so nothing waits on a beat it will never see.
+
 ## The contract for adding a location
 
 A save location is one entry in a small catalogue, `apps/live/lib/save-locations.ts`:
