@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { BrandMark } from '@livediagram/ui';
-import { PlacementCard } from '@/components/placement/PlacementBrowser';
+import { PlacementCard } from '@/components/placement/PlacementCard';
 import { SAVE_LOCATIONS, type SaveLocationId } from '@/lib/save-locations';
 
 // The Save location row of the New Diagram wizard (spec/141): one tile per

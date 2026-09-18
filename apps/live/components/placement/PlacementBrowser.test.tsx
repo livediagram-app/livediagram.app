@@ -2,7 +2,8 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { useState } from 'react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { PlacementBrowser, type PickerFolder, type PlacementLayout } from './PlacementBrowser';
+import { PlacementBrowser, type PickerFolder } from './PlacementBrowser';
+import type { PlacementLayout } from './PlacementCard';
 
 // The browse the New Diagram wizard's folder step (spec/141) and the
 // move-to-folder dialog (spec/15) share. These pin the parts a reader can't

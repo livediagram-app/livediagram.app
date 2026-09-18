@@ -38,7 +38,7 @@ import {
   FALLBACK_TEXT,
   PerShapeColoursSection,
 } from './CustomThemeShapeColours';
-import { BackBar } from '@/components/palette/ThemeCategoryBrowser';
+import { BackBar } from '@/components/primitives/BackBar';
 import { ThemeSwatch } from '@/components/primitives/ThemeSwatch';
 
 export type CustomThemeDraft = { name: string; definition: CustomThemeDefinition };
