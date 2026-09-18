@@ -357,21 +357,27 @@ export function TemplatePicker({
               wizard reads as 1 of 2 at a glance. Both wizard modes. On the
               welcome flow the rail row also carries the "Just Draw" shortcut
               (spec/14) far right — straight to a blank canvas, no wizard.
-              Desktop only (sm+); mobile keeps the footer Skip. */}
+              Desktop only (sm+); mobile keeps the footer Skip. The hiding
+              is on a wrapper: Button's own `inline-flex` outranks a
+              `hidden` passed in className (same property, emitted later),
+              so the button itself can't be told to disappear. `sm:contents`
+              dissolves the wrapper on desktop so the row lays out as before. */}
           {isWizard ? (
             <div className="flex items-center justify-between gap-3">
               <WizardSteps step={step} onStep={goToStep} includeSettings={isWelcome} />
               {isWelcome ? (
-                <Button
-                  variant="secondary"
-                  size="xs"
-                  onClick={justDraw}
-                  disabled={busy}
-                  className="hidden shrink-0 gap-1.5 rounded-lg sm:inline-flex"
-                >
-                  <PencilIcon />
-                  Just Draw
-                </Button>
+                <span className="hidden sm:contents">
+                  <Button
+                    variant="secondary"
+                    size="xs"
+                    onClick={justDraw}
+                    disabled={busy}
+                    className="shrink-0 gap-1.5 rounded-lg"
+                  >
+                    <PencilIcon />
+                    Just Draw
+                  </Button>
+                </span>
               ) : null}
             </div>
           ) : null}

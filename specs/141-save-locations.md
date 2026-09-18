@@ -1,7 +1,7 @@
 # 141 — Save Locations
 
-The New Diagram wizard's Settings step (spec/14, spec/76) asks **where a new
-diagram is stored**. Until now that question was a single iOS-style toggle,
+The New Diagram wizard's third step (spec/14, spec/76; `settings` in code,
+its chip reads **Location**) asks **where a new diagram is stored**. Until now that question was a single iOS-style toggle,
 "Save Offline, This Browser Only", which could only ever answer yes or no: on
 the server, or in this browser. More stores are coming (Google Drive is the
 first candidate; GitHub is plausible), and a toggle cannot grow a third state.

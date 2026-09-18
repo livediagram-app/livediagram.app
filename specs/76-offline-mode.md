@@ -18,7 +18,7 @@ Tab bodies are stamped with their **board kind** on the way into IndexedDB (`ups
 Offline Mode is **off by default**. You choose it when creating a diagram:
 
 - The **New Diagram** wizard (spec/14) runs three steps: Template, Theme, then
-  **Settings**. The Settings step carries the **Save location** chooser
+  **Location** (the Settings step in code). It carries the **Save location** chooser
   (spec/141), alongside the diagram name and where it is saved (a personal
   folder or a team library). **livediagram** (the default) = a normal cloud
   diagram; **Local Browser** = the new diagram is created offline.

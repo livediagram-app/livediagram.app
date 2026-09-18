@@ -7,13 +7,18 @@ const WIZARD_STEPS: { key: WizardStep; label: string }[] = [
   // elsewhere: a step chip is read at a glance beside two other one-word
   // labels, and the step's own heading spells the full term.
   { key: 'theme', label: 'Theme' },
-  { key: 'settings', label: 'Settings' },
+  // The step is still "settings" in code; what it asks is where the diagram
+  // lives (name, save location, folder), so the chip says that.
+  { key: 'settings', label: 'Location' },
 ];
 
 // The wizard header for the template picker (Template -> Theme -> Settings,
 // spec/76), plus its StepChip pill. A compact, left-aligned stepper: each
 // chip jumps to that step, and the connector fills brand as you advance so
-// it reads as progress rather than a static rule. The Settings step exists
+// it reads as progress rather than a static rule. On a phone the three
+// chips have ~340px between them: the connectors shrink and the chip
+// padding tightens (sm: restores the roomy desktop rail) so the third chip
+// isn't clipped at the edge. The Settings step exists
 // only on the welcome (new-diagram) flow: the in-editor Browse-templates
 // dialog re-themes an EXISTING diagram, where name / placement / offline
 // don't apply, so it renders a two-chip rail.
@@ -29,11 +34,11 @@ export function WizardSteps({
   const steps = includeSettings ? WIZARD_STEPS : WIZARD_STEPS.filter((s) => s.key !== 'settings');
   const idx = steps.findIndex((s) => s.key === step);
   return (
-    <div className="-ml-2.5 flex items-center justify-start gap-1.5">
+    <div className="-ml-1.5 flex items-center justify-start gap-1 sm:-ml-2.5 sm:gap-1.5">
       {steps.map((s, i) => (
         <Fragment key={s.key}>
           {i > 0 ? (
-            <div className="h-1.5 w-9 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
+            <div className="h-1.5 w-3 overflow-hidden rounded-full bg-slate-200 sm:w-9 dark:bg-slate-700">
               <div
                 className={`h-full rounded-full bg-brand-500 transition-[width] duration-300 ease-out ${
                   i <= idx ? 'w-full' : 'w-0'
@@ -102,11 +107,13 @@ function StepChip({
     <button
       type="button"
       onClick={onClick}
-      className={`flex items-center gap-2 px-2.5 py-1 transition-colors ${pill}`}
+      className={`flex items-center gap-1.5 px-1.5 py-1 transition-colors sm:gap-2 sm:px-2.5 ${pill}`}
     >
       {inner}
     </button>
   ) : (
-    <div className={`flex items-center gap-2 px-2.5 py-1 ${pill}`}>{inner}</div>
+    <div className={`flex items-center gap-1.5 px-1.5 py-1 sm:gap-2 sm:px-2.5 ${pill}`}>
+      {inner}
+    </div>
   );
 }
