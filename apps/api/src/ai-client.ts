@@ -35,7 +35,19 @@ export async function chatCompletions(
       },
       body: JSON.stringify(body),
     });
-  const first = await send();
+  let first: Response;
+  try {
+    first = await send();
+  } catch (err) {
+    // A network drop is worth the same one retry as a 5xx: the reason is logged,
+    // and a spike that lasts two seconds should not cost the author their photo.
+    console.error(
+      '[ai] provider call failed; retrying once:',
+      err instanceof Error ? err.message : String(err),
+    );
+    await new Promise((resolve) => setTimeout(resolve, RETRY_AFTER_MS));
+    return send();
+  }
   if (first.status < 500) return first;
   console.error(`[ai] provider responded ${first.status}; retrying once`);
   await new Promise((resolve) => setTimeout(resolve, RETRY_AFTER_MS));

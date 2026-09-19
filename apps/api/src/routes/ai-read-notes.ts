@@ -78,8 +78,11 @@ export async function handleAiReadNotes(ctx: RouteContext): Promise<Response> {
       // in any case — a promise from a provider is not a check.
       response_format: { type: 'json_object' },
     });
-  } catch {
-    console.error('[ai/read-notes] provider call failed');
+  } catch (err) {
+    console.error(
+      '[ai/read-notes] provider call failed:',
+      err instanceof Error ? err.message : String(err),
+    );
     return json({ error: 'ai_error' }, { status: 502 });
   }
 
