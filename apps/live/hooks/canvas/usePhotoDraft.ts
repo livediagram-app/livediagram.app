@@ -123,6 +123,7 @@ export type PhotoDraftApi = {
   confirm: (
     tickedIds: Set<number>,
     texts: Map<number, { text: string; legible: boolean }>,
+    manual: DetectedSticky[],
   ) => void;
   // Leave the review without adding anything.
   cancelReview: () => void;
@@ -291,14 +292,22 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
   // Add the ticked boxes as the on-canvas draft. The one write of the review:
   // arm the checkpoint, reconcile the ticked notes against the board as it is
   // NOW (a peer may have added the very note the photo shows), and land them.
-  // `texts` is the author's edited words (step 2), seeded from the read.
+  // `texts` is the author's edited words (step 2), seeded from the read;
+  // `manual` are the boxes the author drew around missed stickies.
   const confirm = useCallback(
-    (tickedIds: Set<number>, texts: Map<number, { text: string; legible: boolean }>) => {
+    (
+      tickedIds: Set<number>,
+      texts: Map<number, { text: string; legible: boolean }>,
+      manual: DetectedSticky[],
+    ) => {
       const d = live.current;
       if (!review) return;
       const detection = {
         ...review.detection,
-        stickies: review.detection.stickies.filter((s) => tickedIds.has(s.id)),
+        stickies: [
+          ...review.detection.stickies.filter((s) => tickedIds.has(s.id)),
+          ...manual,
+        ],
       };
       if (detection.stickies.length === 0) return;
       const existing = boardNotesOfElements(d.activeTab.elements);

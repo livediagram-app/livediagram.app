@@ -63,6 +63,9 @@ export type PhotoDetection = {
   // A JPEG of the WORKING image, for the review overlay to draw the boxes on.
   // Held in memory only — never stored, never sent, and it drops EXIF with it.
   photoUrl: string;
+  // The WORKING image's raw RGBA, so a box the author draws over a missed
+  // sticky can have its paper colour classified in the browser. In memory only.
+  imageData: Uint8ClampedArray;
 };
 
 export async function detectAndCrop(
@@ -90,7 +93,13 @@ export async function detectAndCrop(
   const stickies = detectStickies(working.image).slice(0, PHOTO_MAX_NOTES);
   if (stickies.length === 0) {
     bitmap.close?.();
-    return { stickies, crops: [], imageSize: { width, height }, photoUrl: working.dataUrl };
+    return {
+      stickies,
+      crops: [],
+      imageSize: { width, height },
+      photoUrl: working.dataUrl,
+      imageData: working.image.data,
+    };
   }
 
   // Back up to the full-resolution bitmap to cut: 1 / ratio is exactly how far.
@@ -104,7 +113,13 @@ export async function detectAndCrop(
     crops.push({ id: rect.id, image });
   }
   bitmap.close?.();
-  return { stickies, crops, imageSize: { width, height }, photoUrl: working.dataUrl };
+  return {
+    stickies,
+    crops,
+    imageSize: { width, height },
+    photoUrl: working.dataUrl,
+    imageData: working.image.data,
+  };
 }
 
 function drawTo(

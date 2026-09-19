@@ -1,18 +1,52 @@
 'use client';
 
-import { useState } from 'react';
-import { EVENT_STORMING_NOTES } from '@livediagram/diagram';
+import { useRef, useState, type PointerEvent } from 'react';
+import { EVENT_STORMING_NOTES, type EventStormingNoteKind } from '@livediagram/diagram';
+import { classifyRgb, wallFloorsOf, type DetectedSticky } from '@livediagram/sticky-vision';
 import type { PhotoReview } from '@/hooks/canvas/usePhotoDraft';
 
 // Step 1 + 2 of the photo review wizard (spec/139 Phase 9): the photo with
-// every detected box drawn over it, tickable, and the words per note, editable.
-// Nothing here writes — Add hands the ticked boxes and the edited words to the
-// hook, which is the one place the draft lands. The photo is a local JPEG in
-// memory; it is never stored or sent.
+// every detected box drawn over it, tickable, the words per note editable, and
+// a drag that draws a box around a MISSED sticky to add it by hand. Nothing
+// here writes — Add hands the ticked boxes, the drawn boxes and the edited
+// words to the hook, which is the one place the draft lands.
 
 const KIND_META = new Map(EVENT_STORMING_NOTES.map((n) => [n.kind, n]));
 const fillOf = (kind: string): string => KIND_META.get(kind as never)?.fill ?? '#cbd5e1';
 const labelOf = (kind: string): string => KIND_META.get(kind as never)?.label ?? kind;
+const sizeOf = (kind: string): 'square' | 'wide' | 'small' =>
+  KIND_META.get(kind as never)?.size ?? 'square';
+
+// The dominant paper colour inside a box the author drew, classified against
+// the notation's own fills. Wall, ink and unknown pixels are ignored; the note
+// kind is the colour that actually fills the box.
+function kindOfBox(
+  imageData: Uint8ClampedArray,
+  imageSize: { width: number; height: number },
+  box: { x: number; y: number; w: number; h: number },
+): EventStormingNoteKind {
+  const floors = wallFloorsOf({ width: imageSize.width, height: imageSize.height, data: imageData });
+  const votes = new Map<string, number>();
+  const x1 = Math.min(imageSize.width, box.x + box.w);
+  const y1 = Math.min(imageSize.height, box.y + box.h);
+  for (let y = box.y; y < y1; y += 3) {
+    for (let x = box.x; x < x1; x += 3) {
+      const i = (y * imageSize.width + x) * 4;
+      const c = classifyRgb(imageData[i]!, imageData[i + 1]!, imageData[i + 2]!, floors);
+      if (c === 'wall' || c === 'ink' || c === 'unknown') continue;
+      votes.set(c, (votes.get(c) ?? 0) + 1);
+    }
+  }
+  let best: string | null = null;
+  let bestCount = -1;
+  for (const [kind, count] of votes) {
+    if (count > bestCount) {
+      bestCount = count;
+      best = kind;
+    }
+  }
+  return (best as EventStormingNoteKind | null) ?? 'domain-event';
+}
 
 export function PhotoReviewOverlay({
   review,
@@ -22,16 +56,31 @@ export function PhotoReviewOverlay({
 }: {
   review: PhotoReview;
   reading: boolean;
-  onConfirm: (ticked: Set<number>, texts: Map<number, { text: string; legible: boolean }>) => void;
+  onConfirm: (
+    ticked: Set<number>,
+    texts: Map<number, { text: string; legible: boolean }>,
+    manual: DetectedSticky[],
+  ) => void;
   onCancel: () => void;
 }) {
-  const stickies = review.detection.stickies;
+  const detected = review.detection.stickies;
   const { width, height } = review.detection.imageSize;
-  const [ticked, setTicked] = useState<Set<number>>(() => new Set(stickies.map((s) => s.id)));
+  const [ticked, setTicked] = useState<Set<number>>(() => new Set(detected.map((s) => s.id)));
   // The author's edits only; every unedited field streams straight from the
   // review as the words arrive, so the fields fill in without a re-mount.
   const [edited, setEdited] = useState<Map<number, string>>(() => new Map());
+  // Boxes the author drew around stickies the detector missed.
+  const [manual, setManual] = useState<DetectedSticky[]>([]);
+  const manualId = useRef(-1);
+  // The in-progress drag, in percentages of the photo. The REF is the source
+  // of truth (so a pointermove never reads a stale state); the state only
+  // drives the dashed rectangle's render.
+  const drawingRef = useRef<{ x1: number; y1: number; x2: number; y2: number } | null>(null);
+  const [drawing, setDrawing] = useState<{ x1: number; y1: number; x2: number; y2: number } | null>(
+    null,
+  );
 
+  const notes = [...detected, ...manual];
   const textOf = (id: number): string => edited.get(id) ?? review.textById.get(id)?.text ?? '';
 
   const toggle = (id: number) => {
@@ -52,13 +101,74 @@ export function PhotoReviewOverlay({
     });
   };
 
+  const addManual = (box: { x: number; y: number; w: number; h: number }) => {
+    if (box.w < 0.02 * width || box.h < 0.02 * height) return; // a click, not a box
+    const id = manualId.current;
+    manualId.current -= 1;
+    const kind = kindOfBox(review.detection.imageData, review.detection.imageSize, box);
+    const note: DetectedSticky = {
+      id,
+      kind,
+      size: sizeOf(kind),
+      x: box.x,
+      y: box.y,
+      w: box.w,
+      h: box.h,
+      row: 0,
+      order: 0,
+      confidence: 1,
+    };
+    setManual((prev) => [...prev, note]);
+    setTicked((prev) => new Set(prev).add(id));
+  };
+
   const confirm = () => {
     const texts = new Map<number, { text: string; legible: boolean }>();
-    for (const s of stickies) {
+    for (const s of notes) {
       const text = textOf(s.id);
       texts.set(s.id, { text, legible: text.trim() !== '' });
     }
-    onConfirm(ticked, texts);
+    const detectedTicked = new Set(detected.filter((s) => ticked.has(s.id)).map((s) => s.id));
+    onConfirm(detectedTicked, texts, manual.filter((m) => ticked.has(m.id)));
+  };
+
+  // The photo area: drag on it (not on a box) to draw a missed sticky.
+  const photoRef = useRef<HTMLDivElement | null>(null);
+  const point = (e: PointerEvent<HTMLDivElement>) => {
+    const rect = photoRef.current!.getBoundingClientRect();
+    return {
+      x: ((e.clientX - rect.left) / rect.width) * 100,
+      y: ((e.clientY - rect.top) / rect.height) * 100,
+    };
+  };
+
+  const onPointerDown = (e: PointerEvent<HTMLDivElement>) => {
+    if ((e.target as HTMLElement).closest('button')) return;
+    const p = point(e);
+    drawingRef.current = { x1: p.x, y1: p.y, x2: p.x, y2: p.y };
+    setDrawing({ ...drawingRef.current });
+  };
+  const onPointerMove = (e: PointerEvent<HTMLDivElement>) => {
+    if (!drawingRef.current) return;
+    const p = point(e);
+    drawingRef.current = { ...drawingRef.current, x2: p.x, y2: p.y };
+    setDrawing({ ...drawingRef.current });
+  };
+  const onPointerUp = () => {
+    const d = drawingRef.current;
+    if (!d) return;
+    drawingRef.current = null;
+    setDrawing(null);
+    const x1 = Math.min(d.x1, d.x2);
+    const y1 = Math.min(d.y1, d.y2);
+    const x2 = Math.max(d.x1, d.x2);
+    const y2 = Math.max(d.y1, d.y2);
+    addManual({
+      x: Math.round((x1 / 100) * width),
+      y: Math.round((y1 / 100) * height),
+      w: Math.round(((x2 - x1) / 100) * width),
+      h: Math.round(((y2 - y1) / 100) * height),
+    });
   };
 
   return (
@@ -70,18 +180,22 @@ export function PhotoReviewOverlay({
       aria-label="Review the notes found in your photo"
     >
       <div className="flex min-h-0 flex-1 gap-4 p-4">
-        {/* Step 1: the photo with every box. */}
+        {/* Step 1: the photo with every box, and drag to draw a missed one. */}
         <div className="flex min-w-0 flex-1 items-center justify-center">
-          <div className="relative overflow-hidden rounded-lg shadow-2xl">
-            {/* The image is IN FLOW so it sizes the container; the boxes are
-                absolutely positioned as a percentage of that same container,
-                so they line up with the photo at any display size. */}
+          <div
+            ref={photoRef}
+            className="relative cursor-crosshair select-none overflow-hidden rounded-lg shadow-2xl"
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+          >
             <img
               src={review.detection.photoUrl}
               alt="The photographed wall"
-              className="block h-auto w-auto max-h-[70vh] max-w-[70vw]"
+              draggable={false}
+              className="block h-auto w-auto max-h-[90vmin] max-w-[90vmin]"
             />
-            {stickies.map((s) => {
+            {notes.map((s) => {
               const active = ticked.has(s.id);
               return (
                 <button
@@ -113,11 +227,26 @@ export function PhotoReviewOverlay({
                 </button>
               );
             })}
+            {drawing ? (
+              <div
+                aria-hidden
+                className="pointer-events-none absolute border-2 border-dashed border-white"
+                style={{
+                  left: `${Math.min(drawing.x1, drawing.x2)}%`,
+                  top: `${Math.min(drawing.y1, drawing.y2)}%`,
+                  width: `${Math.abs(drawing.x2 - drawing.x1)}%`,
+                  height: `${Math.abs(drawing.y2 - drawing.y1)}%`,
+                }}
+              />
+            ) : null}
           </div>
         </div>
 
         {/* Step 2: the words, editable. */}
         <aside className="flex w-80 flex-col gap-2 overflow-y-auto rounded-lg bg-white/95 p-3 dark:bg-slate-900/95">
+          <p className="text-[11px] text-slate-500 dark:text-slate-400">
+            Drag on the photo to add a sticky the detector missed.
+          </p>
           {reading ? (
             <p className="rounded bg-slate-100 px-3 py-2 text-xs text-slate-700 dark:bg-slate-800 dark:text-slate-300">
               Reading the words…
@@ -128,7 +257,7 @@ export function PhotoReviewOverlay({
               The reader could not finish ({review.readError}). Type the words in yourself.
             </p>
           ) : null}
-          {stickies.map((s, i) => (
+          {notes.map((s, i) => (
             <label
               key={s.id}
               className={`flex items-start gap-2 rounded-md border p-2 ${
@@ -167,7 +296,7 @@ export function PhotoReviewOverlay({
       {/* The two ways out. */}
       <div className="flex items-center justify-between border-t border-white/10 px-4 py-3">
         <p className="text-sm text-slate-200">
-          {ticked.size} of {stickies.length} notes
+          {ticked.size} of {notes.length} notes
         </p>
         <div className="flex gap-2">
           <button

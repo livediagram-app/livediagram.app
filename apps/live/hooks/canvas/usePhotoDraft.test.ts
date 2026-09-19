@@ -53,6 +53,7 @@ function detection(stickies: DetectedSticky[]): PhotoDetection {
     crops: stickies.map((s) => ({ id: s.id, image: 'data:image/jpeg;base64,AAA' })),
     imageSize: { width: 1000, height: 1000 },
     photoUrl: 'data:image/jpeg;base64,BBB',
+    imageData: new Uint8ClampedArray(1000 * 1000 * 4),
   };
 }
 
@@ -155,7 +156,11 @@ async function landed(opts: Parameters<typeof harness>[0] = {}) {
   const h = await reviewed(opts);
   const r = h.api().review;
   act(() =>
-    h.api().confirm(new Set(r?.detection.stickies.map((s) => s.id) ?? []), r?.textById ?? new Map()),
+    h.api().confirm(
+      new Set(r?.detection.stickies.map((s) => s.id) ?? []),
+      r?.textById ?? new Map(),
+      [],
+    ),
   );
   h.rerender();
   return h;
@@ -178,7 +183,7 @@ describe('the review wizard', () => {
     const h = await reviewed();
     expect(h.api().state.stage).toBe('review');
     expect(h.elements()).toEqual([]);
-    act(() => h.api().confirm(new Set([0]), h.api().review?.textById ?? new Map()));
+    act(() => h.api().confirm(new Set([0]), h.api().review?.textById ?? new Map(), []));
     h.rerender();
     expect(h.api().state.stage).toBe('draft');
     expect(h.drafts()).toHaveLength(1);
@@ -194,10 +199,22 @@ describe('the review wizard', () => {
       ]),
     );
     const h = await reviewed();
-    act(() => h.api().confirm(new Set([1]), h.api().review?.textById ?? new Map()));
+    act(() => h.api().confirm(new Set([1]), h.api().review?.textById ?? new Map(), []));
     h.rerender();
     expect(h.drafts()).toHaveLength(1);
     expect((h.drafts()[0] as StickyElement).label).toBe('Payment received');
+  });
+
+  it('lands the boxes the author drew by hand, beside the detected ones', async () => {
+    const h = await reviewed();
+    const drawn = sticky({ id: -1, kind: 'command', x: 500, y: 500 });
+    act(() => h.api().confirm(new Set([0]), h.api().review?.textById ?? new Map(), [drawn]));
+    h.rerender();
+    expect(h.drafts()).toHaveLength(2);
+    expect(h.drafts().map((n) => (n as StickyElement).esKind).sort()).toEqual([
+      'command',
+      'domain-event',
+    ]);
   });
 
   it('cancelReview leaves the board untouched and the import idle', async () => {
@@ -344,7 +361,7 @@ describe('landing a draft', () => {
   it('still keeps the blank draft through Add after a failed read', async () => {
     vi.mocked(apiAiReadNotes).mockRejectedValue(new Error('ai_error'));
     const h = await reviewed();
-    act(() => h.api().confirm(new Set([0]), h.api().review?.textById ?? new Map()));
+    act(() => h.api().confirm(new Set([0]), h.api().review?.textById ?? new Map(), []));
     h.rerender();
     act(() => h.api().accept());
     expect(h.drafts()).toHaveLength(0);

@@ -68,37 +68,38 @@ async function openBoard(page: Page) {
   await page.waitForTimeout(500);
 }
 
-async function importPhoto(page: Page, notes: WallNote[]) {
+async function importToReview(page: Page, notes: WallNote[]) {
   await page.getByRole('button', { name: /add from photo/i }).click();
   await page.setInputFiles('input[type="file"]', wall(notes));
-  // The review wizard (spec/139 Phase 9) appears after detection + reading,
-  // unless the photo had no paper in it — then a toast comes instead.
+  // The review wizard (spec/139 Phase 9) appears after detection, unless the
+  // photo had no paper in it — then a toast comes instead.
   const overlay = page.locator('[data-testid="photo-review-overlay"]');
   const emptyToast = page.getByText(/no stickies found in this photo/i);
-  // Either the review opens, or (an empty photo) a toast says nothing was
-  // found. Race both so an empty photo does not wait out the overlay timeout
-  // while its toast comes and goes.
   await Promise.race([
     overlay.waitFor({ state: 'visible', timeout: 10_000 }).catch(() => false),
     emptyToast.waitFor({ state: 'visible', timeout: 10_000 }).catch(() => false),
   ]);
-  if (await overlay.isVisible().catch(() => false)) {
-    // The photo itself must be visible AND sized: a collapsed container renders
-    // the overlay with the text list but no image and no boxes (a regression
-    // this guards against).
-    const img = overlay.locator('img');
-    await expect(img).toBeVisible();
-    const imgBox = (await img.boundingBox())!;
-    expect(imgBox.width).toBeGreaterThan(50);
-    expect(imgBox.height).toBeGreaterThan(50);
-    // The photo and boxes appear immediately; the words stream in behind them.
-    // Wait for the reading stage to finish before adding, so the text lands.
-    await page
-      .getByText('Reading the words…')
-      .waitFor({ state: 'hidden', timeout: 10_000 })
-      .catch(() => {});
-    await page.getByRole('button', { name: /^Add \d+ notes?$/ }).click();
-  }
+  if (!(await overlay.isVisible().catch(() => false))) return;
+  // The photo itself must be visible AND sized: a collapsed container renders
+  // the overlay with the text list but no image and no boxes (a regression
+  // this guards against).
+  const img = overlay.locator('img');
+  await expect(img).toBeVisible();
+  const imgBox = (await img.boundingBox())!;
+  expect(imgBox.width).toBeGreaterThan(50);
+  expect(imgBox.height).toBeGreaterThan(50);
+}
+
+async function importPhoto(page: Page, notes: WallNote[]) {
+  await importToReview(page, notes);
+  const overlay = page.locator('[data-testid="photo-review-overlay"]');
+  if (!(await overlay.isVisible().catch(() => false))) return;
+  // The words stream in behind the photo; wait for them before adding.
+  await page
+    .getByText('Reading the words…')
+    .waitFor({ state: 'hidden', timeout: 10_000 })
+    .catch(() => {});
+  await page.getByRole('button', { name: /^Add \d+ notes?$/ }).click();
 }
 
 // Pan the canvas with Space + drag (the editor's own pan, whatever tool is
@@ -207,6 +208,30 @@ test('an unreadable sticky still lands, empty', async ({ page, pageErrors }) => 
   await expect(drafts(page)).toHaveCount(1);
   await page.getByRole('button', { name: /^Add 1 note$/ }).click();
   await expect(notes(page)).toHaveCount(4);
+
+  expectNoPageErrors(pageErrors);
+});
+
+test('drawing a box adds a sticky the detector missed', async ({ page, pageErrors }) => {
+  await openBoard(page);
+  // A note the board does NOT already have, so it lands as new alongside the
+  // one the author draws.
+  await mockReader(page, ['Invoice sent']);
+  await importToReview(page, [{ fill: ORANGE, x: 300, y: 120, w: 180, h: 180 }]);
+
+  const overlay = page.locator('[data-testid="photo-review-overlay"]');
+  const img = overlay.locator('img');
+  const box = (await img.boundingBox())!;
+  // Drag a box over a bare part of the wall, below the detected note.
+  await page.mouse.move(box.x + box.width * 0.1, box.y + box.height * 0.7);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width * 0.5, box.y + box.height * 0.95, { steps: 8 });
+  await page.mouse.up();
+
+  // Two notes now: the detected one and the one just drawn.
+  await expect(overlay.locator('input[type="text"]')).toHaveCount(2);
+  await page.getByRole('button', { name: /^Add 2 notes$/ }).click();
+  await expect(drafts(page)).toHaveCount(2);
 
   expectNoPageErrors(pageErrors);
 });
