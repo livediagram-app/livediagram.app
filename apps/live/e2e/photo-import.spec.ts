@@ -83,6 +83,14 @@ async function importPhoto(page: Page, notes: WallNote[]) {
     emptyToast.waitFor({ state: 'visible', timeout: 10_000 }).catch(() => false),
   ]);
   if (await overlay.isVisible().catch(() => false)) {
+    // The photo itself must be visible AND sized: a collapsed container renders
+    // the overlay with the text list but no image and no boxes (a regression
+    // this guards against).
+    const img = overlay.locator('img');
+    await expect(img).toBeVisible();
+    const imgBox = (await img.boundingBox())!;
+    expect(imgBox.width).toBeGreaterThan(50);
+    expect(imgBox.height).toBeGreaterThan(50);
     // The photo and boxes appear immediately; the words stream in behind them.
     // Wait for the reading stage to finish before adding, so the text lands.
     await page

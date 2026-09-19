@@ -72,14 +72,14 @@ export function PhotoReviewOverlay({
       <div className="flex min-h-0 flex-1 gap-4 p-4">
         {/* Step 1: the photo with every box. */}
         <div className="flex min-w-0 flex-1 items-center justify-center">
-          <div
-            className="relative overflow-hidden rounded-lg shadow-2xl"
-            style={{ aspectRatio: `${width} / ${height}`, maxWidth: '100%', maxHeight: '100%' }}
-          >
+          <div className="relative overflow-hidden rounded-lg shadow-2xl">
+            {/* The image is IN FLOW so it sizes the container; the boxes are
+                absolutely positioned as a percentage of that same container,
+                so they line up with the photo at any display size. */}
             <img
               src={review.detection.photoUrl}
               alt="The photographed wall"
-              className="absolute inset-0 h-full w-full object-fill"
+              className="block h-auto w-auto max-h-[70vh] max-w-[70vw]"
             />
             {stickies.map((s) => {
               const active = ticked.has(s.id);
