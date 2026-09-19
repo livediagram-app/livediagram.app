@@ -17,14 +17,15 @@ describe('PhotoImportProgress', () => {
     expect(screen.getByText('Finding the stickies…')).toBeTruthy();
   });
 
-  it('counts the words being read', () => {
-    render(
+  it('hands off to the review the moment detection finishes', () => {
+    // The words stream in inside the review overlay, not in this strip.
+    const { container } = render(
       <PhotoImportProgress
-        state={{ ...idle, stage: 'reading', found: 34, readSoFar: 12 }}
+        state={{ ...idle, stage: 'review', found: 34, readSoFar: 12 }}
         onCancel={vi.fn()}
       />,
     );
-    expect(screen.getByText(/Reading the words · 12 of 34/)).toBeTruthy();
+    expect(container.firstChild).toBeNull();
   });
 
   it('cancels on demand', () => {

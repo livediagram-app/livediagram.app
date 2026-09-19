@@ -37,9 +37,8 @@ export type PhotoDraftStage =
   | 'idle'
   // Decoding the photo and finding the stickies in it, here in the browser.
   | 'detecting'
-  // Asking the model what the crops say.
-  | 'reading'
-  // The wizard: photo + boxes + words, ticked, before anything lands.
+  // The wizard: photo + boxes immediately, then the words stream in behind
+  // them (a SEPARATE stage, not a gate in front of the photo).
   | 'review'
   | 'draft'
   | 'committing';
@@ -199,6 +198,41 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
     [],
   );
 
+  // The words arrive AFTER the review is already on screen: the crops are read
+  // in the background and the text fields fill in batch by batch. A failure
+  // leaves the fields blank and says why; the photo and boxes stay.
+  const readWords = useCallback(
+    async (detection: PhotoDetection, controller: AbortController, run: number) => {
+      const current = () => runRef.current === run;
+      try {
+        const answer = await apiAiReadNotes(live.current.ownerId, detection.crops, {
+          signal: controller.signal,
+          onProgress: (readSoFar) => {
+            if (!current()) return;
+            setState((s) => (s.stage === 'review' ? { ...s, readSoFar } : s));
+          },
+        });
+        if (!current()) return;
+        const textById = new Map(
+          answer.texts.map((t) => [t.id, { text: t.text, legible: t.legible }]),
+        );
+        setReview((prev) =>
+          prev && prev.detection === detection ? { ...prev, textById } : prev,
+        );
+      } catch (err) {
+        if (controller.signal.aborted || !current()) return;
+        const token = err instanceof Error ? err.message : 'ai_error';
+        setReview((prev) =>
+          prev && prev.detection === detection ? { ...prev, readError: token } : prev,
+        );
+        live.current.toastError(ERROR_TOASTS[token] ?? ERROR_TOASTS.ai_error!);
+      } finally {
+        if (abortRef.current === controller) abortRef.current = null;
+      }
+    },
+    [],
+  );
+
   const startFromFile = useCallback(
     async (file: File) => {
       const d = live.current;
@@ -238,54 +272,20 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
         return;
       }
 
-      setState({ stage: 'reading', found: detection.stickies.length, readSoFar: 0, error: null });
-
-      // Assigned in the try before any read; the catch returns early.
-      let textById: Map<number, { text: string; legible: boolean }>;
-      try {
-        const answer = await apiAiReadNotes(d.ownerId, detection.crops, {
-          signal: controller.signal,
-          onProgress: (readSoFar) => {
-            if (!current()) return;
-            setState((s) => (s.stage === 'reading' ? { ...s, readSoFar } : s));
-          },
-        });
-        textById = new Map(answer.texts.map((t) => [t.id, { text: t.text, legible: t.legible }]));
-      } catch (err) {
-        // An abort is the author changing their mind, not a failure.
-        if (controller.signal.aborted || !current()) {
-          setState(EMPTY);
-          return;
-        }
-        // The reader failed, but the DETECTOR already found the paper: show the
-        // review with blank words and the reason, so the author can type them.
-        const token = err instanceof Error ? err.message : 'ai_error';
-        setReview({ detection, textById: new Map(), readError: token });
-        live.current.toastError(ERROR_TOASTS[token] ?? ERROR_TOASTS.ai_error!);
-        setState({
-          stage: 'review',
-          found: detection.stickies.length,
-          readSoFar: detection.stickies.length,
-          error: null,
-        });
-        return;
-      } finally {
-        abortRef.current = null;
-      }
-      if (!current()) return;
-
-      // REVIEW, not land: the photo with every box and the words, ticked, and
-      // only Add writes. Nothing here touches the document — the checkpoint is
-      // armed by `confirm` when the ticked notes land.
-      setReview({ detection, textById, readError: null });
+      // Show the photo and its boxes IMMEDIATELY (detection is in-browser and
+      // fast); the words stream in behind them as a separate stage. Nothing
+      // here touches the document — the checkpoint is armed by `confirm` when
+      // the ticked notes land.
+      setReview({ detection, textById: new Map(), readError: null });
       setState({
         stage: 'review',
         found: detection.stickies.length,
-        readSoFar: detection.stickies.length,
+        readSoFar: 0,
         error: null,
       });
+      void readWords(detection, controller, run);
     },
-    [fail],
+    [fail, readWords],
   );
 
   // Add the ticked boxes as the on-canvas draft. The one write of the review:
@@ -343,6 +343,10 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
   );
 
   const cancelReview = useCallback(() => {
+    // Leaving the review also cancels the in-flight read, if it is still going.
+    runRef.current += 1;
+    abortRef.current?.abort();
+    abortRef.current = null;
     setReview(null);
     setState(EMPTY);
   }, []);

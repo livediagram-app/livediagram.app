@@ -83,6 +83,12 @@ async function importPhoto(page: Page, notes: WallNote[]) {
     emptyToast.waitFor({ state: 'visible', timeout: 10_000 }).catch(() => false),
   ]);
   if (await overlay.isVisible().catch(() => false)) {
+    // The photo and boxes appear immediately; the words stream in behind them.
+    // Wait for the reading stage to finish before adding, so the text lands.
+    await page
+      .getByText('Reading the words…')
+      .waitFor({ state: 'hidden', timeout: 10_000 })
+      .catch(() => {});
     await page.getByRole('button', { name: /^Add \d+ notes?$/ }).click();
   }
 }

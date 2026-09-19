@@ -464,6 +464,10 @@ export function EditorView() {
         {photoDraft.state.stage === 'review' && photoDraft.review ? (
           <PhotoReviewOverlay
             review={photoDraft.review}
+            reading={
+              photoDraft.state.readSoFar < photoDraft.state.found &&
+              !photoDraft.review.readError
+            }
             onConfirm={photoDraft.confirm}
             onCancel={photoDraft.cancelReview}
           />
@@ -474,7 +478,7 @@ export function EditorView() {
             the same decision rather than to a board full of strays. Hidden
             while the words are still being read: that moment belongs to the
             progress strip above. */}
-        {photoDraft.state.stage !== 'reading' ? (
+        {photoDraft.state.stage !== 'detecting' ? (
           <PhotoDraftBar
             draftCount={draftNotes.length}
             read={draftView?.read ?? null}

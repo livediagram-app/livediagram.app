@@ -21,10 +21,9 @@ export function PhotoImportProgress({
   state: PhotoDraftState;
   onCancel: () => void;
 }) {
-  if (state.stage !== 'detecting' && state.stage !== 'reading') return null;
-
-  const reading = state.stage === 'reading';
-  const progress = reading && state.found > 0 ? Math.min(1, state.readSoFar / state.found) : null;
+  // The photo appears the moment detection finishes, so this strip only covers
+  // the brief in-browser detection — the words stream in inside the review.
+  if (state.stage !== 'detecting') return null;
 
   return (
     <div
@@ -39,21 +38,9 @@ export function PhotoImportProgress({
           aria-hidden
           className="h-3 w-3 animate-spin rounded-full border-2 border-slate-300 border-t-brand-500 dark:border-slate-600 dark:border-t-brand-400"
         />
-        <div className="min-w-0">
-          <p className="text-[11px] text-slate-600 dark:text-slate-300">
-            {reading
-              ? `Reading the words · ${state.readSoFar} of ${state.found}`
-              : 'Finding the stickies…'}
-          </p>
-          {progress !== null ? (
-            <span className="mt-1 block h-1 w-56 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
-              <span
-                className="block h-full rounded-full bg-brand-500 transition-[width] duration-300"
-                style={{ width: `${Math.round(progress * 100)}%` }}
-              />
-            </span>
-          ) : null}
-        </div>
+        <p className="text-[11px] text-slate-600 dark:text-slate-300">
+          Finding the stickies…
+        </p>
         <button
           type="button"
           onClick={onCancel}

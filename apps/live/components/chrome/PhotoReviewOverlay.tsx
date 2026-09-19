@@ -16,19 +16,23 @@ const labelOf = (kind: string): string => KIND_META.get(kind as never)?.label ??
 
 export function PhotoReviewOverlay({
   review,
+  reading,
   onConfirm,
   onCancel,
 }: {
   review: PhotoReview;
+  reading: boolean;
   onConfirm: (ticked: Set<number>, texts: Map<number, { text: string; legible: boolean }>) => void;
   onCancel: () => void;
 }) {
   const stickies = review.detection.stickies;
   const { width, height } = review.detection.imageSize;
   const [ticked, setTicked] = useState<Set<number>>(() => new Set(stickies.map((s) => s.id)));
-  const [texts, setTexts] = useState<Map<number, { text: string; legible: boolean }>>(
-    () => new Map(review.textById),
-  );
+  // The author's edits only; every unedited field streams straight from the
+  // review as the words arrive, so the fields fill in without a re-mount.
+  const [edited, setEdited] = useState<Map<number, string>>(() => new Map());
+
+  const textOf = (id: number): string => edited.get(id) ?? review.textById.get(id)?.text ?? '';
 
   const toggle = (id: number) => {
     setTicked((prev) => {
@@ -40,11 +44,21 @@ export function PhotoReviewOverlay({
   };
 
   const editText = (id: number, value: string) => {
-    setTexts((prev) => {
+    setEdited((prev) => {
       const next = new Map(prev);
-      next.set(id, { text: value, legible: value.trim() !== '' });
+      if (value.trim() === '') next.delete(id);
+      else next.set(id, value);
       return next;
     });
+  };
+
+  const confirm = () => {
+    const texts = new Map<number, { text: string; legible: boolean }>();
+    for (const s of stickies) {
+      const text = textOf(s.id);
+      texts.set(s.id, { text, legible: text.trim() !== '' });
+    }
+    onConfirm(ticked, texts);
   };
 
   return (
@@ -104,6 +118,11 @@ export function PhotoReviewOverlay({
 
         {/* Step 2: the words, editable. */}
         <aside className="flex w-80 flex-col gap-2 overflow-y-auto rounded-lg bg-white/95 p-3 dark:bg-slate-900/95">
+          {reading ? (
+            <p className="rounded bg-slate-100 px-3 py-2 text-xs text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+              Reading the words…
+            </p>
+          ) : null}
           {review.readError ? (
             <p className="rounded bg-amber-100 px-3 py-2 text-xs text-amber-900 dark:bg-amber-900/30 dark:text-amber-200">
               The reader could not finish ({review.readError}). Type the words in yourself.
@@ -134,9 +153,9 @@ export function PhotoReviewOverlay({
                 </span>
                 <input
                   type="text"
-                  value={texts.get(s.id)?.text ?? ''}
+                  value={textOf(s.id)}
                   onChange={(e) => editText(s.id, e.target.value)}
-                  placeholder="Type the words…"
+                  placeholder={reading ? '…' : 'Type the words…'}
                   className="w-full rounded border border-slate-200 bg-white px-2 py-1 text-sm text-slate-900 outline-none focus:border-brand-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
                 />
               </span>
@@ -160,7 +179,7 @@ export function PhotoReviewOverlay({
           </button>
           <button
             type="button"
-            onClick={() => onConfirm(ticked, texts)}
+            onClick={confirm}
             disabled={ticked.size === 0}
             className="rounded-full bg-brand-500 px-4 py-1.5 text-sm font-semibold text-white hover:bg-brand-600 disabled:opacity-50"
           >
