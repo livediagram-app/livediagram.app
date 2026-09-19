@@ -15,7 +15,7 @@ import {
   type Tab,
 } from '@livediagram/diagram';
 import { toNormalised, type DetectedSticky } from '@livediagram/sticky-vision';
-import { apiAiReadNotes } from '@/lib/api/ai';
+import { readCropsInBrowser } from '@/lib/ocr';
 import { buildEventStormingNote } from '@/lib/draw-commit';
 import { setPhotoDraftView } from '@/lib/photo-draft-preview';
 import { detectAndCrop, PhotoDetectFailed, type PhotoDetection } from '@/lib/photo-detect';
@@ -206,7 +206,7 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
     async (detection: PhotoDetection, controller: AbortController, run: number) => {
       const current = () => runRef.current === run;
       try {
-        const answer = await apiAiReadNotes(live.current.ownerId, detection.crops, {
+        const textById = await readCropsInBrowser(detection.crops, {
           signal: controller.signal,
           onProgress: (readSoFar) => {
             if (!current()) return;
@@ -214,9 +214,6 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
           },
         });
         if (!current()) return;
-        const textById = new Map(
-          answer.texts.map((t) => [t.id, { text: t.text, legible: t.legible }]),
-        );
         setReview((prev) =>
           prev && prev.detection === detection ? { ...prev, textById } : prev,
         );

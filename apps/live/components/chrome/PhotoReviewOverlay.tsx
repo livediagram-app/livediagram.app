@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, type PointerEvent } from 'react';
+import { useEffect, useRef, useState, type PointerEvent } from 'react';
 import { EVENT_STORMING_NOTES, type EventStormingNoteKind } from '@livediagram/diagram';
 import { classifyRgb, wallFloorsOf, type DetectedSticky } from '@livediagram/sticky-vision';
 import type { PhotoReview } from '@/hooks/canvas/usePhotoDraft';
@@ -81,6 +81,26 @@ export function PhotoReviewOverlay({
   );
 
   const notes = [...detected, ...manual];
+  // Detection is revealed one box at a time, at most two a second, so the
+  // author can see the wall being read rather than a sudden result (spec/139
+  // Phase 9). The reveal is purely presentational — every box is there from
+  // the start, hidden until its turn.
+  const [revealed, setRevealed] = useState(0);
+  useEffect(() => {
+    setRevealed(0);
+    if (detected.length === 0) return;
+    const id = setInterval(() => {
+      setRevealed((r) => {
+        if (r >= detected.length) {
+          clearInterval(id);
+          return r;
+        }
+        return r + 1;
+      });
+    }, 500);
+    return () => clearInterval(id);
+  }, [detected.length]);
+
   const textOf = (id: number): string => edited.get(id) ?? review.textById.get(id)?.text ?? '';
 
   const toggle = (id: number) => {
@@ -195,8 +215,10 @@ export function PhotoReviewOverlay({
               draggable={false}
               className="block h-auto w-auto max-h-[90vmin] max-w-[90vmin]"
             />
-            {notes.map((s) => {
+            {notes.map((s, i) => {
               const active = ticked.has(s.id);
+              const detectedOne = i < detected.length;
+              const shown = !detectedOne || i < revealed;
               return (
                 <button
                   key={s.id}
@@ -204,7 +226,7 @@ export function PhotoReviewOverlay({
                   aria-pressed={active}
                   aria-label={`${labelOf(s.kind)} note, ${active ? 'ticked' : 'not ticked'}`}
                   onClick={() => toggle(s.id)}
-                  className="absolute rounded-sm border-2 transition-opacity"
+                  className="absolute rounded-sm border-2 transition-all duration-300"
                   style={{
                     left: `${(s.x / width) * 100}%`,
                     top: `${(s.y / height) * 100}%`,
@@ -212,7 +234,8 @@ export function PhotoReviewOverlay({
                     height: `${(s.h / height) * 100}%`,
                     borderColor: fillOf(s.kind),
                     background: `${fillOf(s.kind)}22`,
-                    opacity: active ? 1 : 0.35,
+                    opacity: shown ? (active ? 1 : 0.35) : 0,
+                    transform: shown ? 'scale(1)' : 'scale(0.8)',
                   }}
                 >
                   <span
@@ -247,6 +270,11 @@ export function PhotoReviewOverlay({
           <p className="text-[11px] text-slate-500 dark:text-slate-400">
             Drag on the photo to add a sticky the detector missed.
           </p>
+          {revealed < detected.length ? (
+            <p className="rounded bg-slate-100 px-3 py-2 text-xs text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+              Detecting… {revealed} of {detected.length}
+            </p>
+          ) : null}
           {reading ? (
             <p className="rounded bg-slate-100 px-3 py-2 text-xs text-slate-700 dark:bg-slate-800 dark:text-slate-300">
               Reading the words…

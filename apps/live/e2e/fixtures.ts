@@ -25,6 +25,11 @@ const IGNORED_ERROR_PATTERNS: RegExp[] = [
   // failures surface as uncaught throws via `pageerror`, which we do
   // catch; this generic line is noise.
   /Failed to load resource/i,
+  // The in-browser OCR model (Tesseract) loads its worker from a CDN, which
+  // the photo-import e2e blocks so reading is fast and blank. The worker's
+  // importScripts failure is an expected pageerror in that setup, not an app
+  // bug.
+  /tesseract\.js.*failed to load/i,
 ];
 
 function isIgnored(text: string): boolean {

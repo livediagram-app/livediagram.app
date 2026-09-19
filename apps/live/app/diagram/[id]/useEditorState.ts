@@ -1550,9 +1550,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   });
 
   // Photo import (spec/139 Phase 8): reads a photographed wall, reconciles it
-  // against this board and lands the result as an on-canvas DRAFT. Available
-  // only where the model is (`aiCapable`) — and NOT gated on the AI-panel
-  // preference, because this is not the assistant.
+  // against this board and lands the result as an on-canvas DRAFT. Detection
+  // and reading are both in-browser now (Phase 9), so this needs no model key.
   const photoDraft = usePhotoDraft({
     activeTab,
     activeId,
@@ -1576,7 +1575,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // Keep the history-ownership ref (declared beside `commit`) in step with
   // whether a draft is actually open.
   photoDraftOpenRef.current = photoDraft.draftOpen;
-  const photoImportAvailable = aiCapable && esBoard;
+  const photoImportAvailable = esBoard;
   // One draft at a time: while one is open the entry points say so rather
   // than starting a second import over the first.
   const photoImportBlocked = createBlocked || photoDraft.draftOpen;

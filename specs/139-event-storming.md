@@ -836,26 +836,31 @@ low-threshold capture surface can least afford.
 
 ## Phase 9 (in progress): review the detection, draw the misses
 
-The photo import gains a **review overlay** and a **pluggable reader**, and the
-detector is hardened against real handwriting. Decisions from the operator:
+The photo import gains a **review overlay**, an **in-browser reader**, an
+**animated detection reveal**, and the detector is hardened against real
+handwriting. Decisions from the operator:
 
-- **A review overlay first** (reverses Phase 8's "no preview" ruling). After
-detection (and reading), the photo is shown overlaid with every detected box,
-coloured by kind and tickable; the author can edit kind and text per note,
-untick a false positive, and press **Add N notes** to land the ticked ones as
-the on-canvas draft (Phase 8's `esDraft` machinery). Nothing lands until Add.
+- **A review overlay first** (reverses Phase 8's "no preview" ruling). The photo
+  is shown overlaid with every detected box, coloured by kind and tickable; the
+  author can edit kind and text per note, untick a false positive, and press
+  **Add N notes** to land the ticked ones as the on-canvas draft (Phase 8's
+  `esDraft` machinery). Nothing lands until Add.
+- **Detection is revealed one box at a time.** The boxes fade in one by one, at
+  most TWO a second, deliberately slower than the (instant) detector, so the
+  author registers the wall being read as work done FOR them — the upload feels
+  worth it. The reveal is presentational only: every box is there from the
+  start, hidden until its turn. Drawn (manual) boxes appear at once.
 - **Drawing a box around an undetected sticky adds that note directly.** The box
-  IS the detection: the paper colour under it decides the kind, the crop is sent
-  to the reader for text when one is available, and a blank note is the
-  fallback. It is not a re-run of the detector.
-- **A pluggable reader.** Reading is behind one interface with two
-  implementations: the server vision model (Phase 8's `POST /api/ai/read-notes`,
-  best handwriting) and an **in-browser OCR reader** (no key, no server, no
-  upload). In-browser OCR for marker handwriting is a SPIKE, not a promise:
-  Tesseract.js first, a TrOCR model via transformers.js if that is not good
-  enough; the review overlay is what makes an imperfect reader workable either
-  way. With no model key, detection + in-browser OCR still import (blank text
-  wherever the reader cannot read).
+  IS the detection: the paper colour under it decides the kind, and a blank note
+  is the fallback. It is not a re-run of the detector.
+- **The reader is in-browser OCR, no key.** Reading is Tesseract.js in WASM
+  (`apps/live/lib/ocr.ts`): no API key, no server, no upload, and the crops never
+  leave the machine at all. The honest limit: Tesseract is trained on PRINTED
+  text, so a marker-pen wall reads far less than a vision model would — the
+  review's editable text is what makes a partial read workable, and an empty
+  read still lands the note. If the model cannot load (offline, a blocked CDN),
+  every crop lands blank rather than failing the import. The photo import is
+  therefore NOT gated on the model key any more.
 - **Detector hardening.** A morphological close (dilate then erode by ~a pen
   stroke) runs over the paper mask before connected components, so a note
   shattered by handwriting becomes one blob; the note-size estimate follows the

@@ -17,16 +17,17 @@
   "dependencies": {
     "@clerk/react": "^6.15.1",
     "@livediagram/api-schema": "workspace:*",
-    "@livediagram/sticky-vision": "workspace:*",
     "@livediagram/diagram": "workspace:*",
     "@livediagram/help-registry": "workspace:*",
     "@livediagram/icons": "workspace:*",
+    "@livediagram/sticky-vision": "workspace:*",
     "@livediagram/telemetry-client": "workspace:*",
     "@livediagram/templates": "workspace:*",
     "@livediagram/ui": "workspace:*",
     "next": "^16.3.4",
     "react": "^19.2.8",
-    "react-dom": "^19.2.8"
+    "react-dom": "^19.2.8",
+    "tesseract.js": "^7.0.0"
   },
   "devDependencies": {
     "@livediagram/eslint-config": "workspace:*",

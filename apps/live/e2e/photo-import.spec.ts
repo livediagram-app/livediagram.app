@@ -8,46 +8,21 @@ import {
 } from './fixtures';
 import { wallPhotoPng, type WallNote } from './fixtures/wall-photo';
 
-// Importing a photographed wall (spec/139 Phase 8). The DETECTOR is real —
-// it runs in the browser on a PNG this test draws, which is the half of the
-// feature a mock would hide — and only the model's reading is stubbed.
-//
-// What only a browser can answer: whether a real image file becomes real
-// draft notes at the right kinds and places, whether Add is one undo step,
-// whether Discard leaves nothing, and what survives a reload.
+// Importing a photographed wall (spec/139 Phase 8 + 9). Both the DETECTOR and
+// the in-browser OCR are real code, but the OCR model (Tesseract, loaded from
+// a CDN) is BLOCKED in e2e — it reads blank, which is what a wall photo with
+// no lettering in it would read anyway. What only a browser can answer: a real
+// image file becomes real draft notes at the right kinds and places, the
+// review overlay shows the photo and boxes, drawing a box adds a missed note,
+// Add is one undo step, Discard leaves nothing, and a draft survives a reload.
 test.use({ colorScheme: 'dark' });
 
 const ORANGE = '#fdba74'; // domain-event
 const BLUE = '#93c5fd'; // command
 
-// A wall, drawn: three notes in a row, in reading order.
+// A wall, drawn: solid notes in a row, in reading order.
 function wall(notes: WallNote[]) {
   return { name: 'wall.png', mimeType: 'image/png', buffer: wallPhotoPng(900, 400, notes) };
-}
-
-const THREE_EVENTS: WallNote[] = [
-  { fill: ORANGE, x: 60, y: 120, w: 180, h: 180 },
-  { fill: ORANGE, x: 340, y: 120, w: 180, h: 180 },
-  { fill: ORANGE, x: 620, y: 120, w: 180, h: 180 },
-];
-
-// The reader, stubbed: the detector's ids are stable (rows top-down, then
-// left-to-right), so a fixture can answer by index.
-async function mockReader(page: Page, texts: string[]) {
-  await page.route('**/api/ai/read-notes', async (route) => {
-    const body = route.request().postDataJSON() as { crops: { id: number }[] };
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({
-        texts: body.crops.map((c) => ({
-          id: c.id,
-          text: texts[c.id] ?? '',
-          legible: (texts[c.id] ?? '') !== '',
-        })),
-      }),
-    });
-  });
 }
 
 async function mockCapabilities(page: Page) {
@@ -62,6 +37,10 @@ async function mockCapabilities(page: Page) {
 
 async function openBoard(page: Page) {
   await mockCapabilities(page);
+  // The OCR model loads from a CDN; in e2e it is blocked so reading is fast and
+  // blank (the model itself is not what these tests exercise).
+  await page.route('**/cdn.jsdelivr.net/**', (r) => r.abort());
+  await page.route('**/tessdata.projectnaptha.com/**', (r) => r.abort());
   await startTemplateDiagram(page, /Browse Technical templates/, /^Event storming/i);
   await page.locator('[data-canvas-a11y-root]').waitFor();
   await dismissQuickTour(page);
@@ -121,29 +100,21 @@ async function panBy(page: Page, dx: number, dy: number) {
 const notes = (page: Page) =>
   page.locator('[data-canvas-a11y-root]').getByRole('img', { name: /^Sticky note/ });
 const drafts = (page: Page) => page.locator('[data-photo-draft]');
-const badges = (page: Page) => page.locator('[data-photo-matched]');
 const bar = (page: Page) => page.locator('[data-testid="photo-draft-bar"]');
 
-test('a photo lands as a draft on the canvas, and Add is one undo step', async ({
+test('a photo lands as a draft, Add is one undo step, and it survives a reload', async ({
   page,
   pageErrors,
 }) => {
   await openBoard(page);
-  // The seed board holds Order placed / Payment received / Order shipped. The
-  // photo shows two of those plus one that is new.
-  await mockReader(page, ['Order placed', 'Payment received', 'Invoice sent']);
-
-  await importPhoto(page, THREE_EVENTS);
+  await importPhoto(page, [{ fill: ORANGE, x: 300, y: 120, w: 180, h: 180 }]);
 
   await expect(bar(page)).toBeVisible();
   await expect(drafts(page)).toHaveCount(1);
-  await expect(badges(page)).toHaveCount(2);
-  await expect(bar(page)).toContainText('3 read · 1 new · 2 already on the board');
+  await expect(bar(page)).toContainText('1 read · 1 new · 0 already on the board');
   await expect(notes(page)).toHaveCount(4);
 
-  // A draft note is an ORDINARY note: type into it before accepting. Pan it
-  // clear of the palette first, exactly as a person reaching for it would.
-  await panBy(page, -260, 0);
+  // A draft note is an ORDINARY note: type into it before accepting.
   await notes(page).nth(3).dblclick();
   await page.keyboard.press('Control+a');
   await page.keyboard.type('Invoice raised');
@@ -172,20 +143,13 @@ test('a photo lands as a draft on the canvas, and Add is one undo step', async (
 
 test('the detector reads the KINDS off the paper', async ({ page, pageErrors }) => {
   await openBoard(page);
-  await mockReader(page, ['Place order', 'Order placed']);
-  // A blue command beside an orange event: two kinds, from colour alone.
-  await importPhoto(page, [
-    { fill: BLUE, x: 60, y: 120, w: 180, h: 180 },
-    { fill: ORANGE, x: 340, y: 120, w: 180, h: 180 },
-  ]);
+  // A blue command: its kind comes from colour alone, no model asked.
+  await importPhoto(page, [{ fill: BLUE, x: 300, y: 120, w: 180, h: 180 }]);
 
   await expect(bar(page)).toBeVisible();
-  // "Order placed" is on the board already; the command is new.
   await expect(drafts(page)).toHaveCount(1);
   await page.getByRole('button', { name: /^Add 1 note$/ }).click();
 
-  // It arrived as a COMMAND — the notation's blue — without the model being
-  // asked what colour anything was.
   const added = notes(page).nth(3);
   await expect(added).toBeVisible();
   const fill = await added.evaluate((node) => {
@@ -197,14 +161,14 @@ test('the detector reads the KINDS off the paper', async ({ page, pageErrors }) 
   expectNoPageErrors(pageErrors);
 });
 
-test('an unreadable sticky still lands, empty', async ({ page, pageErrors }) => {
+test('a note still lands empty when the reader reads nothing', async ({
+  page,
+  pageErrors,
+}) => {
   await openBoard(page);
-  // The model could not read the third one.
-  await mockReader(page, ['Order placed', 'Payment received', '']);
-  await importPhoto(page, THREE_EVENTS);
+  await importPhoto(page, [{ fill: ORANGE, x: 300, y: 120, w: 180, h: 180 }]);
 
   await expect(bar(page)).toBeVisible();
-  // The paper WAS there, so a note lands for it — with nothing on it.
   await expect(drafts(page)).toHaveCount(1);
   await page.getByRole('button', { name: /^Add 1 note$/ }).click();
   await expect(notes(page)).toHaveCount(4);
@@ -214,9 +178,6 @@ test('an unreadable sticky still lands, empty', async ({ page, pageErrors }) => 
 
 test('drawing a box adds a sticky the detector missed', async ({ page, pageErrors }) => {
   await openBoard(page);
-  // A note the board does NOT already have, so it lands as new alongside the
-  // one the author draws.
-  await mockReader(page, ['Invoice sent']);
   await importToReview(page, [{ fill: ORANGE, x: 300, y: 120, w: 180, h: 180 }]);
 
   const overlay = page.locator('[data-testid="photo-review-overlay"]');
@@ -238,7 +199,6 @@ test('drawing a box adds a sticky the detector missed', async ({ page, pageError
 
 test('Discard leaves the board exactly as it was', async ({ page, pageErrors }) => {
   await openBoard(page);
-  await mockReader(page, ['Invoice sent']);
   await importPhoto(page, [{ fill: ORANGE, x: 300, y: 120, w: 180, h: 180 }]);
 
   await expect(drafts(page)).toHaveCount(1);
@@ -256,7 +216,6 @@ test('Discard leaves the board exactly as it was', async ({ page, pageErrors }) 
 
 test('a draft note can be deleted before it is added', async ({ page, pageErrors }) => {
   await openBoard(page);
-  await mockReader(page, ['Invoice sent', 'Invoice paid']);
   await importPhoto(page, [
     { fill: ORANGE, x: 200, y: 120, w: 180, h: 180 },
     { fill: ORANGE, x: 500, y: 120, w: 180, h: 180 },
@@ -277,47 +236,18 @@ test('a draft note can be deleted before it is added', async ({ page, pageErrors
   expectNoPageErrors(pageErrors);
 });
 
-test('the same photo twice adds nothing the second time', async ({ page, pageErrors }) => {
+test('a photo with no paper in it says so', async ({ page, pageErrors }) => {
   await openBoard(page);
-  await mockReader(page, ['Invoice sent']);
-  const one: WallNote[] = [{ fill: ORANGE, x: 300, y: 120, w: 180, h: 180 }];
-
-  await importPhoto(page, one);
-  await page.getByRole('button', { name: /^Add 1 note$/ }).click();
-  await expect(notes(page)).toHaveCount(4);
-
-  // The same wall again, against the board as it now is: nothing new, so no
-  // draft at all — just the toast.
-  await importPhoto(page, one);
-  await expect(bar(page)).toHaveCount(0);
-  await expect(notes(page)).toHaveCount(4);
-
-  expectNoPageErrors(pageErrors);
-});
-
-test('a photo with no paper in it says so, and never calls the model', async ({
-  page,
-  pageErrors,
-}) => {
-  await openBoard(page);
-  let called = 0;
-  await page.route('**/api/ai/read-notes', async (route) => {
-    called += 1;
-    await route.fulfill({ status: 200, body: JSON.stringify({ texts: [] }) });
-  });
-
   await importPhoto(page, []);
   await expect(page.getByText(/no stickies found in this photo/i)).toBeVisible();
   await expect(bar(page)).toHaveCount(0);
   await expect(notes(page)).toHaveCount(3);
-  expect(called).toBe(0);
 
   expectNoPageErrors(pageErrors);
 });
 
 test('a draft survives a reload, and can still be added', async ({ page, pageErrors }) => {
   await openBoard(page);
-  await mockReader(page, ['Invoice sent']);
   await importPhoto(page, [{ fill: ORANGE, x: 300, y: 120, w: 180, h: 180 }]);
 
   await expect(drafts(page)).toHaveCount(1);
@@ -325,11 +255,9 @@ test('a draft survives a reload, and can still be added', async ({ page, pageErr
   await page.reload();
   await page.locator('[data-canvas-a11y-root]').waitFor();
 
-  // The notes are still drafts, so the decision comes back with them — but the
-  // fade and the badges do not: they were this session's reading aid.
+  // The notes are still drafts, so the decision comes back with them.
   await expect(bar(page)).toBeVisible();
   await expect(drafts(page)).toHaveCount(1);
-  await expect(badges(page)).toHaveCount(0);
   await page.getByRole('button', { name: /^Add 1 note$/ }).click();
   await expect(drafts(page)).toHaveCount(0);
   await expect(notes(page)).toHaveCount(4);
@@ -337,17 +265,15 @@ test('a draft survives a reload, and can still be added', async ({ page, pageErr
   expectNoPageErrors(pageErrors);
 });
 
-test('the reader is nowhere to be seen without a model key', async ({ page, pageErrors }) => {
-  // Say it, rather than depending on whether whoever runs this has a key in
-  // their .dev.vars: the assertion is about a deployment WITHOUT one, and a
-  // developer with a real key configured was failing this test for the one
-  // reason that is not a bug.
+test('the photo import needs no model key', async ({ page, pageErrors }) => {
+  // A deployment WITHOUT a key: detection and OCR are both in-browser, so the
+  // entry point is still there.
   await page.route('**/api/capabilities', (route) =>
     route.fulfill({ json: { aiEnabled: false, emailEnabled: false } }),
   );
   await startTemplateDiagram(page, /Browse Technical templates/, /^Event storming/i);
   await page.locator('[data-canvas-a11y-root]').waitFor();
   await dismissQuickTour(page);
-  await expect(page.getByRole('button', { name: /add from photo/i })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: /add from photo/i })).toBeVisible();
   expectNoPageErrors(pageErrors);
 });
