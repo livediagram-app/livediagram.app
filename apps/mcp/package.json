@@ -21,8 +21,8 @@
     "@livediagram/templates": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.30.0",
     "@resvg/resvg-wasm": "^2.6.2",
-    "hono": "^4.13.7",
-    "zod": "^4.5.4"
+    "hono": "^4.13.8",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20260911.1",
