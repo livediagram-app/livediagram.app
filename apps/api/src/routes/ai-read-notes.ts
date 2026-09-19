@@ -105,9 +105,22 @@ export async function handleAiReadNotes(ctx: RouteContext): Promise<Response> {
   try {
     const completion = (await res.json()) as { choices?: { message?: { content?: string } }[] };
     const raw = completion.choices?.[0]?.message?.content;
-    payload = raw ? JSON.parse(raw) : null;
-  } catch {
-    console.error('[ai/read-notes] provider returned unparseable content');
+    if (!raw) {
+      payload = null;
+    } else {
+      payload = extractJson(raw);
+      if (payload === null) {
+        // A malformed answer has to be diagnosable: log what the model actually
+        // said (truncated), then fail rather than hand back a silent empty list.
+        console.error(`[ai/read-notes] unparseable content: ${raw.slice(0, 300)}`);
+        return json({ error: 'ai_error' }, { status: 502 });
+      }
+    }
+  } catch (err) {
+    console.error(
+      '[ai/read-notes] provider returned unparseable content:',
+      err instanceof Error ? err.message : String(err),
+    );
     return json({ error: 'ai_error' }, { status: 502 });
   }
 
@@ -118,6 +131,36 @@ export async function handleAiReadNotes(ctx: RouteContext): Promise<Response> {
   const legible = answer.texts.filter((t) => t.legible).length;
   console.log(`[ai/read-notes] ok model=${model} crops=${crops.length} legible=${legible}`);
   return json(answer, { headers: CORS_HEADERS });
+}
+
+// The model is asked for JSON and given JSON mode, but a reasoning model still
+// sometimes wraps its answer in a fence or a sentence. Take the JSON out of
+// whatever shape it arrived in, rather than trusting the mode to have worked.
+function extractJson(raw: string): unknown | null {
+  const trimmed = raw.trim();
+  try {
+    return JSON.parse(trimmed);
+  } catch {
+    /* not bare JSON */
+  }
+  const fenced = trimmed.replace(/^```(?:json)?\s*|\s*```$/g, '').trim();
+  if (fenced !== trimmed) {
+    try {
+      return JSON.parse(fenced);
+    } catch {
+      /* not a clean fence either */
+    }
+  }
+  const start = trimmed.indexOf('{');
+  const end = trimmed.lastIndexOf('}');
+  if (start !== -1 && end > start) {
+    try {
+      return JSON.parse(trimmed.slice(start, end + 1));
+    } catch {
+      /* fall through */
+    }
+  }
+  return null;
 }
 
 // `data:<mime>;base64,<payload>` — and nothing else. The mime must be one the

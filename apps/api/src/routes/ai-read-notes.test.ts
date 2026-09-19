@@ -234,6 +234,25 @@ describe('when the provider answers', () => {
     ) as typeof fetch;
     expect((await handleAiReadNotes(makeCtx())).status).toBe(502);
   });
+
+  it('recovers JSON that arrived fenced or wrapped in words', async () => {
+    const valid = { texts: [{ id: 1, text: 'Order placed', legible: true }] };
+    const says = (content: string) =>
+      vi.fn(
+        async () =>
+          new Response(JSON.stringify({ choices: [{ message: { content } }] }), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+          }),
+      ) as typeof fetch;
+
+    globalThis.fetch = says(`Here you go:\n\`\`\`json\n${JSON.stringify(valid)}\n\`\`\``);
+    expect((await answer(await handleAiReadNotes(makeCtx()))).texts[0]).toEqual({
+      id: 1,
+      text: 'Order placed',
+      legible: true,
+    });
+  });
 });
 
 describe('what leaves this worker', () => {
