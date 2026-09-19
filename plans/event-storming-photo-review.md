@@ -35,7 +35,10 @@ The review is a THREE-STEP wizard the author walks through, each step visible:
 
 - [x] 4.1 `apps/live/lib/ocr.ts`: `readCropsInBrowser(crops, opts)` with Tesseract.js in WASM — no key, no server, no upload; blank on any failure.
 - [x] 4.2 Wire `usePhotoDraft.readWords` to it, replacing `apiAiReadNotes`; drop the AI-key gate on the photo import.
-- [ ] 4.3 Measure the legible rate on real handwriting crops; if Tesseract is not good enough, spike TrOCR via transformers.js (WebGPU/WASM).
+- [x] 4.3 Measure against real handwriting crops: Tesseract and TrOCR-small/base ALL garble sub-20px glyphs; Tesseract reads clear lettering CORRECTLY. Keep Tesseract.
+- [x] 4.4 Preprocess each crop (upscale to ~320px short side, grey, PSM single block) and keep the ORIGINAL resolution up to `CROP_MAX_EDGE_PX` 1024.
+- [x] 4.5 Verify: clear marker text "Course Classes Added" reads back exactly; e2e green.
+- [ ] 4.6 Bundle the Tesseract worker + `eng.traineddata` locally so reading works offline (no CDN).
 
 ## 5. Fold-back
 

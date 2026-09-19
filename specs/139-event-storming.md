@@ -855,12 +855,15 @@ handwriting. Decisions from the operator:
   is the fallback. It is not a re-run of the detector.
 - **The reader is in-browser OCR, no key.** Reading is Tesseract.js in WASM
   (`apps/live/lib/ocr.ts`): no API key, no server, no upload, and the crops never
-  leave the machine at all. The honest limit: Tesseract is trained on PRINTED
-  text, so a marker-pen wall reads far less than a vision model would — the
-  review's editable text is what makes a partial read workable, and an empty
-  read still lands the note. If the model cannot load (offline, a blocked CDN),
-  every crop lands blank rather than failing the import. The photo import is
-  therefore NOT gated on the model key any more.
+  leave the machine at all. Each crop is upscaled (to ~320px on the short side,
+  at most 4×), greyed, and read in single-block mode, which is what lets it read
+  CLEAR lettering correctly. The honest limit: Tesseract is trained on PRINTED
+  text, so small marker handwriting reads only partly — the review's editable
+  text is what makes a partial read workable, and an empty read still lands the
+  note. If the model cannot load (offline, a blocked CDN), every crop lands
+  blank rather than failing the import. The photo import is therefore NOT gated
+  on the model key any more. Crops keep the ORIGINAL resolution up to
+  `CROP_MAX_EDGE_PX` (1024).
 - **Detector hardening.** A morphological close (dilate then erode by ~a pen
   stroke) runs over the paper mask before connected components, so a note
   shattered by handwriting becomes one blob; the note-size estimate follows the

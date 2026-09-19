@@ -42,10 +42,10 @@ export type ReadNotesResponse = { texts: NoteText[] };
 // weight of the payload. Six keeps a wall section to a handful of calls and
 // stopped the failures dead.
 export const READ_MAX_CROPS_PER_REQUEST = 6;
-// A sticky is a square of paper with a few words on it: 512px on the longest
-// edge is more than enough to read marker handwriting, and a fraction of the
-// bytes of the photo it came from.
-export const CROP_MAX_EDGE_PX = 512;
+// A sticky is a square of paper with a few words on it. The crops are kept at
+// the ORIGINAL resolution up to this cap — in-browser OCR (Phase 9) wants every
+// native pixel it can get, so the cap only stops absurdly large crops.
+export const CROP_MAX_EDGE_PX = 1024;
 export const CROP_MAX_BYTES = 512 * 1024;
 // The working image the detector runs on.
 //
