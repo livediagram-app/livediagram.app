@@ -34,13 +34,13 @@ Read before starting: [spec/139](../specs/139-event-storming.md) Phase 8 + 9,
 - [x] 0.2 TDD where there is behaviour: write the failing test first (red), make
       it pass (green), commit test + implementation together, refactor after.
 - [x] 0.3 Before every commit: `pnpm format:check`, `pnpm --filter
-  @livediagram/live typecheck`, `pnpm --filter @livediagram/live lint`, and
+@livediagram/live typecheck`, `pnpm --filter @livediagram/live lint`, and
       the relevant tests. Zero lint **errors** (the ~227 pre-existing warnings
       are the baseline; do not add to them).
 - [x] 0.4 The editor on **:3102 serves a STATIC BUILD**. Any browser check needs
       `pnpm --filter @livediagram/live build` first, or you are testing old code.
 - [x] 0.5 E2E must be run as `E2E_BASE_URL=http://localhost:3102 pnpm --filter
-  @livediagram/live test:e2e photo-import`. Without that variable Playwright
+@livediagram/live test:e2e photo-import`. Without that variable Playwright
       reuses **another checkout's** dev server on :3002 and silently tests a
       different product.
 - [x] 0.6 Anything taking more than ~10s (builds, e2e, detector sweeps) runs
@@ -83,10 +83,34 @@ kraft and the kind histograms say `command` (blue) and `actor` (yellow) — on
 201713 and 201730 most "detections" are tape marks, the shadowed frame edge and
 fragments, while whole runs of real orange notes carry no box at all.
 
-- [ ] 1.3 Quantify the shade problem specifically: for each photo report
+- [x] 1.3 Quantify the shade problem specifically: for each photo report
       detections in the **left / middle / right thirds**, and the measured
       `floors.value` / `floors.saturation` / `wallHue`. State in one sentence
       why a shaded note is being rejected (which floor it fails, by how much).
+
+**THIRDS AND FLOORS** — detections per third, the third's own median value,
+and what the frame-wide floors were set to:
+
+| photo           | L/M/R detections | median value L/M/R | global floors      | the third's OWN floors (L/M/R value) |
+| --------------- | ---------------- | ------------------ | ------------------ | ------------------------------------ |
+| 20260920_201646 | 12 / 20 / 14     | 0.51 / 0.65 / 0.55 | s≥0.31 v≥0.46 h16  | 0.46 / 0.54 / 0.38                   |
+| 20260920_201654 | 6 / 12 / 13      | 0.62 / 0.53 / 0.32 | s≥0.28 v≥0.46 h5   | 0.46 / 0.46 / 0.26                   |
+| 20260920_201707 | 3 / 12 / 5       | 0.46 / 0.52 / 0.53 | s≥0.30 v≥0.37 h20  | 0.37 / 0.46 / 0.43                   |
+| 20260920_201713 | 3 / 27 / 3       | 0.47 / 0.55 / 0.46 | s≥0.32 v≥0.38 h22  | 0.38 / 0.46 / 0.38                   |
+| 20260920_201730 | 6 / 16 / 22      | 0.37 / 0.42 / 0.23 | s≥0.28 v≥0.30 h24  | 0.30 / 0.33 / 0.20                   |
+| 20260920_201743 | 2 / 8 / 7        | 0.44 / 0.53 / 0.25 | s≥0.47 v≥0.37 h349 | 0.35 / 0.42 / 0.20                   |
+
+**Why a shaded note is rejected**, in one sentence: there is ONE pair of floors
+for the whole frame, and a frame lit from one side needs two — in the dark
+third the paper falls under the frame-wide value floor and reads as `wall` or
+`ink` (201654's right third sits at v≈0.32 against a floor of 0.46 set by its
+bright left; 201730's right third loses 36% of its pixels to `ink`), while the
+same single floor is too LOW for the lit part of the frame, so sunlit kraft
+clears it and bridges neighbouring notes into one component (325×104 and
+312×421 blobs holding six to a dozen real notes) whose fill ≈0.5 is under
+`MIN_SOLID_FILL` so it is never split and whose aspect 2.5–3.1 is over
+`MAX_PAPER_ASPECT` so the whole run is thrown away.
+
 - [ ] 1.4 Sample and print the HSV of 5–10 genuinely-missed shaded stickies
       (pick their coordinates off the overlay PNG) next to the floors they fail.
       Without this the fix is a guess.
