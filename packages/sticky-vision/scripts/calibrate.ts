@@ -1,5 +1,6 @@
 import { existsSync, writeFileSync } from 'node:fs';
-import { classifyRgb, wallFloorsOf } from '../src/classify';
+import { classifyRgb } from '../src/classify';
+import { wallFloorsOf } from '../src/floors';
 import { rgbToHsv, type ImageBuffer } from '../src/colour';
 import { classMaskOf, detectStickies, type DetectedSticky } from '../src/detect';
 import { labelComponents } from '../src/components';

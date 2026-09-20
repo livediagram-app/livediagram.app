@@ -44,6 +44,34 @@ function rect(
 
 const fillOf = (kind: Parameters<typeof eventStormingNote>[0]) => eventStormingNote(kind).fill;
 
+// Dim one part of the image the way a window does: full light on most of the
+// frame, a soft shadow edge, and half the light beyond it. Pure illumination
+// — every channel is scaled by the same factor, so hue and saturation are
+// untouched and only `value` moves, which is exactly what a shaded wall does
+// to a camera. The lit part stays the MAJORITY of the frame on purpose: that
+// is what sets a frame-wide floor too high for everything behind the shadow.
+function shade(image: ImageBuffer, darkest = 0.5): ImageBuffer {
+  const from = image.width * 0.55;
+  const to = image.width * 0.65;
+  for (let y = 0; y < image.height; y += 1) {
+    for (let x = 0; x < image.width; x += 1) {
+      const t = Math.min(1, Math.max(0, (x - from) / (to - from)));
+      const smooth = t * t * (3 - 2 * t);
+      const factor = 1 - (1 - darkest) * smooth;
+      const i = (y * image.width + x) * 4;
+      image.data[i] = image.data[i]! * factor;
+      image.data[i + 1] = image.data[i + 1]! * factor;
+      image.data[i + 2] = image.data[i + 2]! * factor;
+    }
+  }
+  return image;
+}
+
+// What the detector should call each catalogue fill. Pink is hotspot: the
+// catalogue's external-system pink and its hotspot red-pink are the same
+// colour to a camera (see the classification tests).
+const expectedKind = (kind: string) => (kind === 'external-system' ? 'hotspot' : kind);
+
 describe('the colour classes come from the catalogue', () => {
   it('has exactly one class per note kind', () => {
     expect(PAPER_CLASSES).toHaveLength(EVENT_STORMING_NOTES.length);
@@ -218,6 +246,64 @@ describe('detectStickies', () => {
     const found = detectStickies(image);
     expect(found).toHaveLength(1);
     expect(found[0]!.kind).toBe('domain-event');
+  });
+
+  it('finds the notes on the shaded half of a wall lit from one side', () => {
+    // The operator's own photographs: one wall, a window on one side, and the
+    // right-hand half at about half the light. The same eight notes are drawn
+    // twice, left bank and right bank, and the right bank is multiplied down
+    // to 50% brightness — so every note the detector misses on the right is a
+    // note it found in identical paper on the left.
+    const image = blank(1200, 520, '#e2e8f0');
+    for (const bankX of [40, 700]) {
+      EVENT_STORMING_NOTES.forEach((note, i) => {
+        const x = bankX + (i % 4) * 120;
+        const y = 40 + Math.floor(i / 4) * 260;
+        rect(image, x, y, 100, 100, note.fill);
+      });
+    }
+    shade(image);
+
+    const found = detectStickies(image);
+    const right = found.filter((s) => s.x >= 660);
+    const left = found.filter((s) => s.x < 660);
+    expect(left).toHaveLength(EVENT_STORMING_NOTES.length);
+    expect(right).toHaveLength(EVENT_STORMING_NOTES.length);
+    // …and the shade must not change what a note IS: the same eight kinds on
+    // both sides. A note found but re-coloured by the dark is a note the
+    // author has to re-kind by hand.
+    const kindsOf = (set: typeof found) => [...set].sort((a, b) => a.x - b.x).map((s) => s.kind);
+    expect(kindsOf(right)).toEqual(kindsOf(left));
+    expect(new Set(kindsOf(left))).toEqual(
+      new Set(EVENT_STORMING_NOTES.map((n) => expectedKind(n.kind))),
+    );
+  });
+
+  it('finds the same notes in the shade on a KRAFT wall, where the wall is paper-coloured', () => {
+    // The harder half of the same problem, and the operator's actual wall:
+    // brown kraft is the same hue as an orange domain event, so the floor that
+    // keeps the lit wall out is measured against a wall whose brightness
+    // halves across the frame. Asserted as a SYMMETRY rather than a count —
+    // pale paper on kraft is a separate, documented limit (the aggregate and
+    // the pale external-system pink are wall to the classifier at any
+    // brightness), and this test is about the shade, not about that.
+    const image = blank(1200, 520, '#a8907a');
+    for (const bankX of [40, 700]) {
+      EVENT_STORMING_NOTES.forEach((note, i) => {
+        rect(image, bankX + (i % 4) * 120, 40 + Math.floor(i / 4) * 260, 100, 100, note.fill);
+      });
+    }
+    shade(image);
+
+    const found = detectStickies(image);
+    const kindsOf = (from: number, to: number) =>
+      found
+        .filter((s) => s.x >= from && s.x < to)
+        .sort((a, b) => a.y - b.y || a.x - b.x)
+        .map((s) => s.kind);
+    const left = kindsOf(0, 660);
+    expect(left.length).toBeGreaterThanOrEqual(6);
+    expect(kindsOf(660, 1200)).toEqual(left);
   });
 
   it('gets through a 1024px working image quickly', () => {

@@ -21,6 +21,16 @@ const MIN_AREA_FRACTION = 0.35;
 // Two same-colour boxes this close (relative to the note size) are one note
 // the handwriting split in half.
 const MERGE_GAP_FRACTION = 0.12;
+// …and only while the result still looks like paper. The merge is
+// TRANSITIVE — each union grows the box, which brings the next fragment
+// within reach — so on a real wall a sprinkling of stray paper-coloured
+// pixels chains every note in the frame into one blob (measured: 856×497 at
+// fill 0.20, holding a dozen real notes, thrown away whole by the shape
+// filters). A note's own fragments all live inside the note, so merging them
+// keeps the box dense; two specks a hand's width apart do not. Too low and
+// the chain comes back; too high and a note shattered by heavy handwriting is
+// left in pieces.
+const MERGE_MIN_FILL = 0.3;
 // A pen stroke, as a fraction of the working image's long side. This is what
 // separates one fragment of a note from the next.
 const PEN_STROKE_FRACTION = 0.006;
@@ -112,6 +122,10 @@ function union(a: Box, b: Box): Box {
 // word written across it arrives as two or three blobs of paper.
 export function mergeFragments(boxes: Box[], noteSize: number): Box[] {
   const gap = noteSize * MERGE_GAP_FRACTION;
+  // A merge that would turn two pieces of paper into a mostly-empty rectangle
+  // is not a note being reassembled; it is two different notes, or two specks.
+  const joins = (a: Box, b: Box) =>
+    a.classId === b.classId && gapBetween(a, b) <= gap && fillRatio(union(a, b)) >= MERGE_MIN_FILL;
   let out: Box[] = boxes.map((b) => ({ ...b }));
   // To a FIXED POINT, not one pass. Merging a fragment into a box grows that
   // box, which brings the next fragment within reach — one pass leaves a note
@@ -121,7 +135,7 @@ export function mergeFragments(boxes: Box[], noteSize: number): Box[] {
   for (let pass = 0; pass < MAX_MERGE_PASSES; pass += 1) {
     const next: Box[] = [];
     for (const box of out) {
-      const hit = next.findIndex((o) => o.classId === box.classId && gapBetween(o, box) <= gap);
+      const hit = next.findIndex((o) => joins(o, box));
       if (hit === -1) next.push({ ...box });
       else next[hit] = union(next[hit]!, box);
     }
@@ -255,6 +269,7 @@ export function silhouetteOf(box: Box, noteSize: number): 'square' | 'wide' | 's
 export const BOX_CALIBRATION = {
   MIN_AREA_FRACTION,
   MERGE_GAP_FRACTION,
+  MERGE_MIN_FILL,
   SPLIT_RATIO,
   MAX_PAPER_ASPECT,
   MAX_PAPER_SIZE_RATIO,

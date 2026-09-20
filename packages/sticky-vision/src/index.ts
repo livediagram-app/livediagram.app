@@ -1,5 +1,6 @@
 export * from './colour';
 export * from './classify';
+export * from './floors';
 export * from './components';
 export * from './boxes';
 export * from './rows';

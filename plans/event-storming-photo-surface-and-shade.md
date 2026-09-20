@@ -157,12 +157,12 @@ chain breaks and the note-size median comes back to a real note.
 
 ## 2. Detector: find the stickies in the shade
 
-- [ ] 2.1 RED: a unit test in `packages/sticky-vision/src/detect.test.ts` that
+- [x] 2.1 RED: a unit test in `packages/sticky-vision/src/detect.test.ts` that
       draws a synthetic wall **with an illumination gradient** — the same eight
       notes repeated left to right, the right-hand ones multiplied down to
       ~45–55% brightness (matching the drop measured in 1.4) — and asserts every
       note is found with the right kind. It must FAIL against today's code.
-- [ ] 2.2 Implement illumination-aware floors: measure the wall **locally**
+- [x] 2.2 Implement illumination-aware floors: measure the wall **locally**
       rather than once per photo. Suggested shape (the implementer may choose
       better, but must justify it in a comment): a coarse tile grid (e.g. 8×8)
       over the working image, wall saturation/value measured per tile as today's
@@ -170,12 +170,12 @@ chain breaks and the note-size median comes back to a real note.
       there is no tile seam, with a sane fallback to the global floors for tiles
       that are almost entirely paper (a tile with no wall in it must not invent
       one).
-- [ ] 2.3 Keep `wallFloorsOf` exported and working (the review overlay uses it
+- [x] 2.3 Keep `wallFloorsOf` exported and working (the review overlay uses it
       to classify a hand-drawn box, `PhotoReviewOverlay.kindOfBox`); the local
       version is an addition, not a rename that breaks callers.
-- [ ] 2.4 Put every new constant in `CALIBRATION` in `classify.ts` beside the
+- [x] 2.4 Put every new constant in `CALIBRATION` in `classify.ts` beside the
       existing ones, each with a comment saying what it costs to get wrong.
-- [ ] 2.5 GREEN: 2.1 passes; the whole `@livediagram/sticky-vision` suite passes
+- [x] 2.5 GREEN: 2.1 passes; the whole `@livediagram/sticky-vision` suite passes
       unchanged (22 tests today) — no existing expectation may be weakened to
       accommodate the new behaviour.
 - [ ] 2.6 Re-run the six-photo sweep. Report the new table against the baseline

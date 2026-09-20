@@ -1,5 +1,6 @@
 import { EVENT_STORMING_NOTES, type EventStormingNoteKind } from '@livediagram/diagram';
-import { classifyRgb, wallFloorsOf, type PaperFloors } from './classify';
+import { classifyRgb } from './classify';
+import { localFloorsOf, type PaperFloors } from './floors';
 import { greyWorldBalance, type ImageBuffer } from './colour';
 import { closePaperMask, labelComponents, type ComponentMask } from './components';
 import { fitBoxes, medianNoteSize, silhouetteOf } from './boxes';
@@ -56,13 +57,21 @@ const KIND_BY_ID = new Map<number, EventStormingNoteKind>(
 export function classMaskOf(image: ImageBuffer, floors?: PaperFloors): ComponentMask {
   const { width, height, data } = image;
   // Measured from THIS photograph, because a brown kraft wall and an orange
-  // domain event share a hue and differ only in how dull the wall is.
-  const paperFloors = floors ?? wallFloorsOf(image);
+  // domain event share a hue and differ only in how dull the wall is — and
+  // measured PER REGION of it, because a wall with a window at one end is two
+  // different photographs as far as those floors are concerned. A caller that
+  // already knows the floors (classifying one hand-drawn box) passes them and
+  // they are used everywhere.
+  const field = floors ? null : localFloorsOf(image);
+  // One scratch object for the whole pass: a fresh one per pixel is four
+  // million allocations on a photograph.
+  const at: PaperFloors = floors ?? { saturation: 0, value: 0, wallHue: -1 };
   const classes = new Uint8Array(width * height);
   for (let i = 0, p = 0; i < data.length; i += 4, p += 1) {
     // Fully transparent pixels are not paper; a PNG export has plenty.
     if (data[i + 3]! < 128) continue;
-    const c = classifyRgb(data[i]!, data[i + 1]!, data[i + 2]!, paperFloors);
+    if (field) field.floorsInto(p % width, (p / width) | 0, at);
+    const c = classifyRgb(data[i]!, data[i + 1]!, data[i + 2]!, at);
     const id = CLASS_IDS.get(c as EventStormingNoteKind);
     if (id !== undefined) classes[p] = id;
   }
