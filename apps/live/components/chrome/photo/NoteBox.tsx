@@ -64,6 +64,8 @@ export function NoteBox({
 
   return (
     <div
+      data-testid={`note-box-${note.id}`}
+      data-shown={shown ? 'yes' : 'no'}
       // The reveal is a class rather than an inline transition so that a
       // reader who asks for less motion gets none: an inline style would win
       // over `motion-reduce`.

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { DetectedSticky } from '@livediagram/sticky-vision';
 import type { PhotoReview } from '@/hooks/canvas/usePhotoDraft';
@@ -248,6 +248,52 @@ describe('one surface, not a dialog with a list beside it', () => {
     );
     expect(screen.getAllByText('One')).toHaveLength(1);
     expect(screen.queryAllByRole('textbox')).toHaveLength(0);
+  });
+});
+
+describe('the reveal', () => {
+  const shown = () =>
+    screen.queryAllByTestId(/^note-box-/).filter((b) => b.dataset.shown === 'yes');
+
+  const revealOf = (count: number) => {
+    vi.useFakeTimers();
+    const stickies = Array.from({ length: count }, (_, i) => sticky(i));
+    render(
+      <PhotoReviewOverlay
+        review={review({ detection: found(stickies) })}
+        reading={false}
+        onConfirm={noop}
+        onCancel={noop}
+      />,
+    );
+    return {
+      advance: (ms: number) => act(() => void vi.advanceTimersByTime(ms)),
+      done: () => vi.useRealTimers(),
+    };
+  };
+
+  it('keeps a small wall at two boxes a second, as it always did', () => {
+    const clock = revealOf(6);
+    clock.advance(1000);
+    expect(shown()).toHaveLength(2);
+    clock.advance(2000);
+    expect(shown()).toHaveLength(6);
+    clock.done();
+  });
+
+  it('fits a big wall into the same budget, spread evenly over every box', () => {
+    // Recall tripled, and at a flat half-second a box a 54-note wall took
+    // twenty-seven seconds to finish. The reveal is a flourish that says the
+    // wall is being read, not a progress bar to sit through — so the whole of
+    // it fits in one budget, with the boxes spread evenly across it rather
+    // than a leisurely start and a sudden flush at the end.
+    const clock = revealOf(60);
+    clock.advance(3000);
+    expect(shown().length).toBeGreaterThanOrEqual(25);
+    expect(shown().length).toBeLessThanOrEqual(35);
+    clock.advance(3200);
+    expect(shown()).toHaveLength(60);
+    clock.done();
   });
 });
 

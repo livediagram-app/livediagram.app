@@ -26,6 +26,16 @@ import { kindOfBox } from './photo/kindOfBox';
 // At most two boxes a second, so the wall is seen being read rather than
 // arriving all at once. Presentational only: every box exists from the start.
 const REVEAL_INTERVAL_MS = 500;
+// …and the whole reveal fits in this, however many boxes there are. The
+// reveal is a flourish that says the wall is being read, not a progress bar to
+// sit through: at a flat half-second a box, a 54-note wall took twenty-seven
+// seconds before the author could do anything with it. The budget is spread
+// EVENLY over every box — a leisurely start followed by a sudden flush would
+// read as the animation giving up.
+const REVEAL_BUDGET_MS = 6000;
+
+const revealStepMs = (boxes: number) =>
+  boxes <= 0 ? REVEAL_INTERVAL_MS : Math.min(REVEAL_INTERVAL_MS, REVEAL_BUDGET_MS / boxes);
 
 export function PhotoReviewOverlay({
   review,
@@ -95,7 +105,7 @@ export function PhotoReviewOverlay({
         }
         return r + 1;
       });
-    }, REVEAL_INTERVAL_MS);
+    }, revealStepMs(detected.length));
     return () => clearInterval(id);
   }, [detected.length]);
 

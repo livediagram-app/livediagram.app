@@ -942,7 +942,10 @@ Decisions from the operator:
 - **Detection is revealed one box at a time.** The boxes fade in one by one, at
   most TWO a second, deliberately slower than the (instant) detector, so the
   author registers the wall being read as work done FOR them — the upload feels
-  worth it. The reveal is presentational only: every box is there from the
+  worth it. The WHOLE reveal fits in about six seconds, however many boxes
+  there are, spread evenly over them: it is a flourish saying the wall is being
+  read, not a progress bar to sit through, and at a flat half-second a box a
+  54-note wall took twenty-seven seconds before the author could do anything. The reveal is presentational only: every box is there from the
   start, hidden until its turn. Drawn (manual) boxes appear at once.
 - **Drawing a box around an undetected sticky adds that note directly.** The box
   IS the detection: the paper colour under it decides the kind, and a blank note
