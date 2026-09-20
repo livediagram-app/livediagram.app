@@ -339,6 +339,36 @@ describe('detectStickies', () => {
     expect(found).toHaveLength(5);
   });
 
+  it('does not weld a row of notes photographed close up into one bar', () => {
+    // The photograph this comes from: a close-up of a wall whose notes are
+    // big, well lit and plainly separate, on which the detector found FOUR of
+    // its forty-one. The notes were in the mask the whole time. What lost
+    // them was the morphological close — which exists to fuse handwriting
+    // back into its own note — reaching a fixed fraction of the FRAME: at a
+    // working width of 1000 that is 6px from every side, so it bridges a 12px
+    // gap, and a row of notes a finger apart welded into one bar at 30% fill.
+    // Every number downstream then described the weld: the note size came out
+    // at 24px against a hand-measured 55.
+    //
+    // A pen stroke is a fraction of a NOTE, not of the frame, and that is the
+    // whole fix: measure the note first, close by a fraction of it.
+    const image = blank(1000, 563, '#a8907a');
+    const orange = fillOf('domain-event');
+    for (let i = 0; i < 5; i += 1) {
+      const x = 60 + i * 110;
+      rect(image, x, 200, 100, 100, orange);
+      // …and handwriting on each, inset from the paper's edge the way a hand
+      // writes, so the close still has its real job to do.
+      for (const y of [230, 250, 270]) rect(image, x + 12, y, 76, 5, '#111827');
+    }
+    const found = detectStickies(image);
+    expect(found).toHaveLength(5);
+    for (const note of found) {
+      expect(note.w).toBeGreaterThan(80);
+      expect(note.w).toBeLessThan(130);
+    }
+  });
+
   it('gets through a 1024px working image quickly', () => {
     const image = blank(1024, 1024);
     const orange = fillOf('domain-event');

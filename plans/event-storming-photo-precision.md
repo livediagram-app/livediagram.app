@@ -133,18 +133,51 @@ how to remake them is in `docs/vision/sticky-detection.md`.
 
 Before any splitting rule is touched: the number those rules divide by.
 
-- [ ] 1b.1 Measure `medianNoteSize` per photo against the truth median. Print
+- [x] 1b.1 Measure `medianNoteSize` per photo against the truth median. Print
       the population it is taken from, and how much of that population is tape
       or junk rather than notes.
-- [ ] 1b.2 RED: a synthetic wall of notes with two long tape strips across it
+- [x] 1b.2 RED: a synthetic wall of notes with two long tape strips across it
       must estimate the same note size as the same wall without them.
-- [ ] 1b.3 Make the estimate robust: drop obvious non-notes (extreme aspect
+- [x] 1b.3 Make the estimate robust: drop obvious non-notes (extreme aspect
       ratio, far off any plausible note area) BEFORE measuring, and iterate —
       estimate, gate, re-estimate — and prefer the MODE of a size histogram to
       a plain median where the population is mixed.
-- [ ] 1b.4 GREEN, suite green, and the truth table from 1.7 does not regress on
+- [x] 1b.4 GREEN, suite green, and the truth table from 1.7 does not regress on
       any photo.
-- [ ] 1b.5 Commit.
+- [x] 1b.5 Commit.
+
+### What the note size actually was, and what broke it
+
+Measured per photo against the hand-labelled median (working size 1000px):
+
+| photo  | note size used | truth | population it came from |
+| ------ | -------------- | ----- | ----------------------- |
+| 201646 | 50             | 52    | post-close merged blobs |
+| 201707 | **24**         | 55    | post-close merged blobs |
+| 201713 | **24**         | 38    | post-close merged blobs |
+
+The operator's read was right that the statistic was poisoned, and wrong about
+what poisoned it: it is not tape in the population, it is the MORPHOLOGICAL
+CLOSE. Its radius is a fraction of the FRAME (6px at 1000px, so it bridges a
+12px gap), and photo 2 is a close-up whose notes stand a finger apart - about
+10px. The close welded a row of four notes plus the one above them into a
+305x278 blob at 30% fill, and the median was then taken from the weld. The
+same defect explains both directions of the operator's splitting complaint at
+once: at a note size of 24, a real 55px note reads as two notes and is cut,
+while a genuine 2x2 cluster is so far off the scale that no rule will touch it.
+
+A pen stroke is a fraction of a NOTE, not of the frame. So the size is now
+measured BEFORE anything is fused, from the raw blobs with the obvious
+non-notes dropped (min side over the noise floor, fill >= 0.5, aspect <= 2.4),
+and the close reaches 4% of THAT. Where no blob looks like a whole note - the
+synthetic case where handwriting cuts a note edge to edge - the estimate says
+so (0) and the frame-derived radius is used, which is the old behaviour.
+
+| photo  | note size now | truth | F1 before | F1 after |
+| ------ | ------------- | ----- | --------- | -------- |
+| 201646 | 50            | 52    | 53%       | 63%      |
+| 201707 | 49            | 55    | 9%        | **55%**  |
+| 201713 | 36            | 38    | 42%       | 57%      |
 
 ## 2. Defect 2 first: one note per note
 

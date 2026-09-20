@@ -3,14 +3,13 @@ import { classifyRgb } from './classify';
 import { localFloorsOf, type PaperFloors } from './floors';
 import { greyWorldBalance, type ImageBuffer } from './colour';
 import { closePaperMask, labelComponents, type ComponentMask } from './components';
-import { fitBoxes, medianNoteSize, silhouetteOf } from './boxes';
+import { estimateNoteSize, fitBoxes, silhouetteOf } from './boxes';
 import { clusterRows } from './rows';
 
 // Finding the stickies in a photograph of a wall (spec/139 Phase 8).
 //
 // Classical computer vision, on purpose: the notation is COLOUR, and colour is
 // something a hue histogram knows exactly and a language model guesses at. It
-// is also free, offline, instant, and testable against images the tests draw
 // themselves — none of which is true of asking a model where things are.
 //
 // Pure over a plain RGBA buffer: no DOM, no canvas, no wasm. The browser hands
@@ -47,6 +46,30 @@ export type DetectOptions = {
   balance?: boolean;
 };
 
+// Sensor noise, as a fraction of the working image's long edge: a property of
+// the camera rather than of the wall. Shared with `fitBoxes`, which uses the
+// same floor to decide what is too small to be anything.
+const NOISE_FLOOR_FRACTION = 0.008;
+
+// The morphological close's radius: a fraction of the note it is meant to put
+// back together, floored so that a very distant wall still gets a pixel of
+// reach and capped against the frame so a photo of ONE enormous note cannot
+// dilate half the picture.
+const CLOSE_NOTE_FRACTION = 0.04;
+const CLOSE_MAX_IMAGE_FRACTION = 0.006;
+
+function closeRadiusFor(noteSize: number, imageSize: number): number {
+  const cap = Math.max(2, Math.round(imageSize * CLOSE_MAX_IMAGE_FRACTION));
+  if (noteSize <= 0) return cap;
+  return Math.max(1, Math.min(cap, Math.round(noteSize * CLOSE_NOTE_FRACTION)));
+}
+
+export const DETECT_CALIBRATION = {
+  NOISE_FLOOR_FRACTION,
+  CLOSE_NOTE_FRACTION,
+  CLOSE_MAX_IMAGE_FRACTION,
+} as const;
+
 const CLASS_IDS = new Map<EventStormingNoteKind, number>(
   EVENT_STORMING_NOTES.map((n, i) => [n.kind, i + 1]),
 );
@@ -80,18 +103,37 @@ export function classMaskOf(image: ImageBuffer, floors?: PaperFloors): Component
 
 export function detectStickies(image: ImageBuffer, opts: DetectOptions = {}): DetectedSticky[] {
   const working = opts.balance === true ? greyWorldBalance(image) : image;
+  const imageSize = Math.max(working.width, working.height);
   const mask = classMaskOf(working);
+  // How big a note is on THIS wall, measured before anything is fused — see
+  // `estimateNoteSize`. Everything after this divides by it, including the
+  // close that follows, so it cannot be measured after the close.
+  const noiseFloor = Math.max(4, Math.round(imageSize * NOISE_FLOOR_FRACTION));
+  const noteSize = estimateNoteSize(
+    labelComponents(mask).map((c) => ({
+      classId: c.classId,
+      x: c.minX,
+      y: c.minY,
+      w: c.maxX - c.minX + 1,
+      h: c.maxY - c.minY + 1,
+      pixels: c.pixels,
+    })),
+    noiseFloor,
+  );
   // Fuse handwriting-shattered notes back into whole notes before labeling
-  // (spec/139 Phase 9): a morphological close by ~a pen stroke, per class.
-  const closed = closePaperMask(mask);
+  // (spec/139 Phase 9): a morphological close by ~a pen stroke, per class —
+  // and a pen stroke is a fraction of a NOTE, not of the frame. Photographed
+  // close up, a note is 55px and the gap to the note beside it is a handful,
+  // so a radius picked off the image welded four notes into a bar.
+  const closed = closePaperMask(mask, { radius: closeRadiusFor(noteSize, imageSize) });
   const boxes = fitBoxes(labelComponents(closed), {
-    imageSize: Math.max(working.width, working.height),
+    imageSize,
+    noteSize,
     // The mask goes with the components: cutting a run of touching notes
     // apart is a question about pixels, not about a bounding box.
     mask: closed,
   });
   if (boxes.length === 0) return [];
-  const noteSize = medianNoteSize(boxes);
   return clusterRows(boxes, noteSize).map((box, i) => ({
     id: i,
     kind: KIND_BY_ID.get(box.classId) ?? 'domain-event',

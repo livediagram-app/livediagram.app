@@ -122,6 +122,42 @@ export function medianNoteSize(boxes: Box[]): number {
   return median(boxes.map((b) => Math.min(b.w, b.h)));
 }
 
+// How solid, and how square, a blob has to be before it is allowed to have an
+// opinion about how big a note is on this wall. A note is a filled rectangle;
+// a strip of masking tape, a shadow line along a seam and the web left by a
+// patch of sunlit kraft are none of those, and they outnumber the notes.
+const SIZE_SAMPLE_MIN_FILL = 0.5;
+const SIZE_SAMPLE_MAX_ASPECT = 2.4;
+// Below this many note-shaped blobs there is no population to take a median
+// of, only a coincidence.
+const MIN_SIZE_SAMPLE = 3;
+
+// The note size, measured BEFORE anything is fused.
+//
+// This is the number every threshold below divides by, and it was being taken
+// after the morphological close — which is exactly where it cannot be trusted,
+// because a close that welds four notes into a bar has already destroyed the
+// population it would be measured from. Measured here instead, on the raw
+// blobs, with the obvious non-notes dropped first: on the operator's six walls
+// that lands within a few pixels of the hand-labelled median (50 vs 52, 49 vs
+// 55, 36 vs 38), where the old number was less than half of it (24 vs 55) and
+// every rule that divides by it — the close radius, the split, the too-big
+// filter — was wrong by the same factor.
+export function estimateNoteSize(boxes: Box[], noiseFloor: number): number {
+  const plausible = boxes.filter((b) => {
+    const short = Math.max(1, Math.min(b.w, b.h));
+    if (short < noiseFloor) return false;
+    if (Math.max(b.w, b.h) / short > SIZE_SAMPLE_MAX_ASPECT) return false;
+    return fillRatio(b) >= SIZE_SAMPLE_MIN_FILL;
+  });
+  // Nothing on this wall looks like a whole note — every blob is a strip of a
+  // note the handwriting cut up, or a scrap. Say so (0) rather than answer
+  // with the median of the scraps: the caller then falls back to what it can
+  // know without the wall, which is the frame's own pen stroke.
+  if (plausible.length < MIN_SIZE_SAMPLE) return 0;
+  return medianNoteSize(plausible);
+}
+
 function gapBetween(a: Box, b: Box): number {
   const dx = Math.max(0, Math.max(a.x, b.x) - Math.min(a.x + a.w, b.x + b.w));
   const dy = Math.max(0, Math.max(a.y, b.y) - Math.min(a.y + a.h, b.y + b.h));
@@ -361,7 +397,7 @@ export type PaperMask = { width: number; height: number; classes: Uint8Array };
 
 export function fitBoxes(
   components: Component[],
-  opts: { imageSize?: number; mask?: PaperMask } = {},
+  opts: { imageSize?: number; mask?: PaperMask; noteSize?: number } = {},
 ): Box[] {
   if (components.length === 0) return [];
   const raw = components.map(boxOf);
@@ -395,8 +431,10 @@ export function fitBoxes(
   const noiseFloor = Math.max(4, Math.round(imageSize * NOISE_FLOOR_FRACTION));
   const solid = merged.filter((b) => Math.min(b.w, b.h) >= noiseFloor);
   if (solid.length === 0) return [];
-  // NOW a box is a note, so the median of them is the note size.
-  const size = medianNoteSize(solid);
+  // The note size the caller measured before the close, when one was measured:
+  // by this point the blobs have been through a close and a merge, and a run
+  // of welded notes is indistinguishable from one big note to a median.
+  const size = opts.noteSize && opts.noteSize > 0 ? opts.noteSize : medianNoteSize(solid);
   const minArea = (size * MIN_AREA_FRACTION) ** 2;
   const kept = solid.filter((b) => b.w * b.h >= minArea);
   if (kept.length === 0) return [];
@@ -519,6 +557,9 @@ export function silhouetteOf(box: Box, noteSize: number): 'square' | 'wide' | 's
 }
 
 export const BOX_CALIBRATION = {
+  SIZE_SAMPLE_MIN_FILL,
+  SIZE_SAMPLE_MAX_ASPECT,
+  MIN_SIZE_SAMPLE,
   MIN_AREA_FRACTION,
   MERGE_GAP_FRACTION,
   MERGE_MIN_FILL,
