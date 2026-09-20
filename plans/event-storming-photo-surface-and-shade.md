@@ -151,7 +151,7 @@ So the local-floor work in §2 is the right fix, but it is judged on a
 different number: whether the shaded kraft stops entering the mask, so the
 chain breaks and the note-size median comes back to a real note.
 
-- [ ] 1.5 Commit the calibration-script changes (NOT the photos, NOT their
+- [x] 1.5 Commit the calibration-script changes (NOT the photos, NOT their
       crops, NOT overlay PNGs — verify with `git status` that nothing from
       `test-files/` or a cache folder is staged).
 
