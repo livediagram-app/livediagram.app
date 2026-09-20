@@ -477,14 +477,26 @@ questions at the end.
 - [x] 6.5 Update `plans/event-storming-photo-review.md` (the earlier plan) if any
       of its open items are now settled, or note there that this plan supersedes
       those parts.
-- [ ] 6.6 Final gate: format, lint, typecheck, full unit suite, e2e 9/9, and a
+- [x] 6.6 Final gate: format, lint, typecheck, full unit suite, e2e 9/9, and a
       clean `pnpm --filter @livediagram/live build`. Working tree clean except
       the deliberately-untracked scratch files that were already there
       (`apps/live/shoot-*.mts`, the stray `detect.ts` comment edit — leave both
       alone, they belong to another agent).
-- [ ] 6.7 Commit, and report what changed against the baseline table from 1.2.
+- [x] 6.7 Commit, and report what changed against the baseline table from 1.2.
 
 ---
+
+## What changed, against the baseline
+
+| measure                                     | before | after |
+| ------------------------------------------- | ------ | ----- |
+| detections across the six photos            | 191    | 457   |
+| recall on 201654 (56 notes, counted by eye) | 39%    | ~75%  |
+| boxes on nothing, 201654                    | ~9     | ~8    |
+| shaded third of 201730                      | 22     | 38    |
+| sticky-vision unit tests                    | 22     | 26    |
+| live unit tests                             | 2197   | 2204  |
+| e2e photo-import                            | 9/9    | 9/9   |
 
 ## Open questions (ask the operator rather than guessing)
 
