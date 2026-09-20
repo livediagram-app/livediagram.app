@@ -738,8 +738,11 @@ low-threshold capture surface can least afford.
   Its limits, honestly: white and grey paper are not in the notation, so it
   cannot see them; a very dim or blue-lit photo moves hues far enough to
   confuse kinds; a sticky more than about 60% covered reads as a fragment of
-  whatever is left. Every one of those lands as a draft the author can fix, or
-  as nothing at all.
+  whatever is left; and pale paper at the wall's own hue is wall to it — on
+  brown kraft that is the pale yellow aggregate (`#fef9c3`, s≈0.23), which the
+  visual demo (`pnpm demo:sticky-vision`) reproduces as the one miss in its
+  eighteen. Every one of those lands as a draft the author can fix, or as
+  nothing at all.
 
   _(The "no detection preview: the draft on the canvas IS the review" ruling is
   REVERSED by Phase 9: a photo review overlay now shows every detected box
@@ -767,6 +770,7 @@ low-threshold capture surface can least afford.
   this gating is re-ruled there: detection is always in-browser and needs no
   key; only the handwriting reading may use a server model, and only when one
   is configured.)_
+
 - **Placement composes the other two phases.** New notes land on the lanes when
   lanes are on, and a pair the photo shows adjacent in a notation pairing lands
   DOCKED. That is why photo import was built third: doing it first would have

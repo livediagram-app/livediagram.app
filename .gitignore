@@ -19,6 +19,8 @@ dist/
 .next-dev/
 out/
 *.tsbuildinfo
+# Built from source by `pnpm demo:sticky-vision:build`; a committed copy drifts.
+/demo/sticky-vision/sticky-vision.bundle.js
 
 # `next-env.d.ts` is generated, and since Next 16 it names the active
 # distDir inside itself, so `next dev` (NEXT_DISTDIR=.next-dev) and

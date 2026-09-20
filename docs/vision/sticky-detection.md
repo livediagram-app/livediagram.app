@@ -5,9 +5,10 @@ and where it still falls over. Written while calibrating it against three
 photographs of a real workshop wall; every number below was moved by that
 exercise, and several of the first guesses were badly wrong in instructive ways.
 
-Used by the event-storming photo import (spec/139 Phase 8). The model's only job
-there is reading the handwriting on each detected note; everything spatial is
-here, in code, where it is deterministic and testable.
+Used by the event-storming photo import (spec/139 Phase 8). Reading the
+handwriting on each detected note is a separate reader's job (in-browser OCR
+since Phase 9); everything spatial is here, in code, where it is deterministic
+and testable.
 
 ## Why classical CV and not a vision model
 
@@ -86,6 +87,13 @@ here, in code, where it is deterministic and testable.
   32 and 34 notes.
 - **A sticky more than about 60% covered** reads as a fragment of whatever is
   left, or is dropped as a speck.
+- **Pale paper at the wall's hue.** The pale yellow aggregate (`#fef9c3`,
+  s≈0.23) on a brown kraft wall (h≈41, s≈0.22) is inside the wall-hue
+  neighbourhood and below the per-photo saturation floor, so it IS wall to the
+  classifier. The visual demo reproduces it: 17 of 18 drawn, the aggregate
+  missed. Lowering the floor for yellow would let the kraft in; the honest fix
+  is a per-board colour legend, or measuring the wall from a region the author
+  points at.
 - **Per-wall colour conventions.** Every workshop invents its own (the
   calibration wall uses pink for hotspots and green for read models). Today that
   is one global decision plus the draft's Change kind verb; spec/139 lists a
@@ -98,6 +106,12 @@ of `preview-*.png` wall photos, and it prints per-photo detection counts, the
 measured floors, per-kind histograms and a box list, and writes an overlay PNG
 per photo so the result can be looked at rather than guessed at. It caches
 decoded photos, so a run takes about a second.
+
+`pnpm demo:sticky-vision` (repo root) bundles the package with esbuild and
+serves `demo/sticky-vision/index.html`: a synthetic kraft wall the page draws
+itself, detected live, every box overlaid with kind colour, `row · #order` and
+confidence, and each miss outlined as a dashed ghost because the page knows what
+it drew. "Load a real photo" runs the same pipeline on a photograph.
 
 Real photographs never enter the repo. The unit tests draw their own images and
 stay under 200ms.

@@ -45,6 +45,7 @@
     .file input { display: none; }
     .stats { margin-left: auto; color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
     .stats b { color: var(--accent); font-weight: 600; }
+    .stats .miss { color: #ffb08a; }
 
     main {
       flex: 1; display: grid;
@@ -133,7 +134,9 @@
 
     // A synthetic wall: brown kraft paper, a dozen stickies of several kinds,
     // some with handwriting, two overlapping oranges (which must be split).
+    // Returns what it drew, so the run can be scored against ground truth.
     function drawSyntheticWall() {
+      const drawn = [];
       const W = 960, H = 660;
       setCanvasSize(W, H);
       const g = pctx.createLinearGradient(0, 0, W, H);
@@ -144,6 +147,7 @@
       pctx.fillRect(0, 0, W, H);
 
       function sticky(kind, x, y, w, h, { tilt = 0, ink = 0 } = {}) {
+        drawn.push({ kind, x, y, w, h });
         pctx.save();
         pctx.translate(x + w / 2, y + h / 2);
         if (tilt) pctx.rotate((tilt * Math.PI) / 180);
@@ -185,19 +189,58 @@
       sticky('read-model', 545, 405, 100, 100, { ink: 1 });
       sticky('domain-event', 685, 405, 100, 100);
       sticky('command', 820, 405, 100, 100, { ink: 2 });
+      return drawn;
     }
+
+    // A drawn sticky counts as found when some detected box's centre lands
+    // inside it. Loose on purpose: the score is about misses, not box fit.
+    function missedOf(truth, found) {
+      return truth.filter(
+        (t) =>
+          !found.some((s) => {
+            const cx = s.x + s.w / 2;
+            const cy = s.y + s.h / 2;
+            return cx >= t.x && cx <= t.x + t.w && cy >= t.y && cy <= t.y + t.h;
+          }),
+      );
+    }
+
+    // Ground truth for the current image: the synthetic wall's drawn list, or
+    // null for a real photo (which has none).
+    let truth = null;
 
     function runDetection() {
       const started = performance.now();
       const { data } = pctx.getImageData(0, 0, photo.width, photo.height);
       const found = detectStickies({ width: photo.width, height: photo.height, data });
       const ms = performance.now() - started;
-      renderOverlay(found);
-      renderResults(found, ms);
+      const missed = truth ? missedOf(truth, found) : [];
+      renderOverlay(found, missed);
+      renderResults(found, ms, missed);
     }
 
-    function renderOverlay(found) {
+    function badge(text, x, y, colour, font = '600 12px system-ui, sans-serif') {
+      octx.font = font;
+      const tw = octx.measureText(text).width;
+      const h = 20;
+      octx.fillStyle = 'rgba(8,10,14,0.8)';
+      octx.fillRect(x, y, tw + 14, h);
+      octx.fillStyle = colour;
+      octx.textBaseline = 'middle';
+      octx.fillText(text, x + 7, y + h / 2);
+      return tw + 14;
+    }
+
+    function renderOverlay(found, missed) {
       octx.clearRect(0, 0, overlay.width, overlay.height);
+      for (const t of missed) {
+        octx.setLineDash([6, 5]);
+        octx.strokeStyle = 'rgba(255,255,255,0.85)';
+        octx.lineWidth = 2;
+        octx.strokeRect(t.x, t.y, t.w, t.h);
+        octx.setLineDash([]);
+        badge(`missed · ${labelOf(t.kind)}`, t.x + 3, t.y + 3, '#ffb08a');
+      }
       for (const s of found) {
         const { x, y, w, h } = s;
         const fill = fillOf(s.kind);
@@ -209,31 +252,23 @@
         octx.lineWidth = 2.5;
         octx.strokeRect(x, y, w, h);
 
-        const text = `${labelOf(s.kind)} · row ${s.row}`;
-        octx.font = '600 14px system-ui, sans-serif';
-        const tw = octx.measureText(text).width;
-        const chipH = 22;
-        octx.fillStyle = 'rgba(8,10,14,0.8)';
-        octx.fillRect(x + 3, y + 3, tw + 16, chipH);
-        octx.fillStyle = '#fff';
-        octx.textBaseline = 'middle';
-        octx.fillText(text, x + 11, y + 3 + chipH / 2);
-
-        octx.font = '600 12px system-ui, sans-serif';
+        // Kind top-left; row · order bottom-left; confidence bottom-right, or
+        // stacked above the order badge when a narrow note cannot hold both.
+        badge(labelOf(s.kind), x + 3, y + 3, '#fff');
+        const orderWidth = badge(`r${s.row} · #${s.order}`, x + 3, y + h - 23, '#cfe0ff');
         const conf = `${Math.round(s.confidence * 100)}%`;
-        const cw = octx.measureText(conf).width;
-        octx.fillStyle = 'rgba(8,10,14,0.8)';
-        octx.fillRect(x + w - cw - 16, y + h - 24, cw + 16, 20);
-        octx.fillStyle = '#cfe0ff';
-        octx.fillText(conf, x + w - cw - 8, y + h - 14);
+        octx.font = '600 12px system-ui, sans-serif';
+        const confWidth = octx.measureText(conf).width + 14;
+        const fits = orderWidth + confWidth + 8 <= w;
+        badge(conf, fits ? x + w - confWidth - 3 : x + 3, fits ? y + h - 23 : y + h - 45, '#cfe0ff');
       }
     }
 
-    function renderResults(found, ms) {
+    function renderResults(found, ms, missed) {
+      const total = truth ? ` of <b>${truth.length}</b> drawn` : '';
+      const miss = missed.length > 0 ? ` · <span class="miss">${missed.length} missed</span>` : '';
       document.getElementById('stats').innerHTML =
-        found.length === 0
-          ? 'found <b>0</b> stickies'
-          : `found <b>${found.length}</b> stickies · <b>${ms.toFixed(0)}</b> ms`;
+        `found <b>${found.length}</b>${total}${miss} · <b>${ms.toFixed(0)}</b> ms`;
 
       const counts = new Map();
       for (const s of found) counts.set(s.kind, (counts.get(s.kind) ?? 0) + 1);
@@ -304,7 +339,7 @@
     }
 
     document.getElementById('synthetic').addEventListener('click', () => {
-      drawSyntheticWall();
+      truth = drawSyntheticWall();
       runDetection();
     });
 
@@ -322,11 +357,12 @@
       pctx.imageSmoothingQuality = 'high';
       pctx.drawImage(bmp, 0, 0, w, h);
       bmp.close();
+      truth = null;
       runDetection();
       e.target.value = '';
     });
 
-    drawSyntheticWall();
+    truth = drawSyntheticWall();
     runDetection();
   </script>
 </body>

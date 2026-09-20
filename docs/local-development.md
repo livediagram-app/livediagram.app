@@ -89,6 +89,7 @@ Run from the repo root:
 | `pnpm --filter @livediagram/live test:e2e` | Playwright smoke suite (spec/72); reuses a running `pnpm dev` or boots its own stack. |
 | `pnpm format`                              | Prettier write across the repo.                                                       |
 | `pnpm format:check`                        | Prettier check (this is what CI runs).                                                |
+| `pnpm demo:sticky-vision`                  | Bundle + serve the sticky-detection demo at <http://localhost:4199> (spec/139).       |
 
 Turbo caches results, so re-running with no changes is a no-op.
 
