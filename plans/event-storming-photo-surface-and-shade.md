@@ -111,9 +111,46 @@ clears it and bridges neighbouring notes into one component (325×104 and
 `MIN_SOLID_FILL` so it is never split and whose aspect 2.5–3.1 is over
 `MAX_PAPER_ASPECT` so the whole run is thrown away.
 
-- [ ] 1.4 Sample and print the HSV of 5–10 genuinely-missed shaded stickies
+- [x] 1.4 Sample and print the HSV of 5–10 genuinely-missed shaded stickies
       (pick their coordinates off the overlay PNG) next to the floors they fail.
       Without this the fix is a guess.
+
+**TEN MISSED NOTES IN THE SHADE** — 201730's right third (median value 0.23),
+coordinates read off the overlay, HSV of the brightest pixel of a 9×9 patch
+(so handwriting does not answer for the paper), against floors s≥0.28 v≥0.30:
+
+| at       | h   | s    | v    | floors verdict | what actually happened to it                  |
+| -------- | --- | ---- | ---- | -------------- | --------------------------------------------- |
+| 701, 95  | 27  | 0.69 | 0.52 | clears both    | merged into an 856×497 blob, dropped for size |
+| 700, 140 | 28  | 0.65 | 0.56 | clears both    | same blob                                     |
+| 818, 62  | 24  | 0.76 | 0.37 | clears both    | same blob                                     |
+| 816, 102 | 24  | 0.76 | 0.39 | clears both    | same blob                                     |
+| 808, 180 | 23  | 0.77 | 0.44 | clears both    | same blob                                     |
+| 803, 240 | 26  | 0.80 | 0.45 | clears both    | same blob                                     |
+| 801, 300 | 27  | 0.74 | 0.53 | clears both    | same blob                                     |
+| 840, 377 | 30  | 0.82 | 0.47 | clears both    | same blob                                     |
+| 925, 405 | 28  | 0.77 | 0.45 | clears both    | 61×112 box, dropped: 112 > noteSize×2.6 = 44  |
+| 918, 460 | 29  | 0.79 | 0.47 | clears both    | same box                                      |
+
+**This changes the fix.** Every shaded note above CLEARS both floors and is in
+the mask as `domain-event`; none is rejected by a floor. They die downstream,
+and the mechanism is the floors all the same:
+
+1. The frame-wide floors are too LOW for the shaded kraft, which is itself
+   orange-hued, so scattered wall pixels enter the paper mask all over the
+   dark third.
+2. `mergeFragments` chains transitively (A near B, B near C …), so those
+   scattered pixels bridge every real note into ONE 856×497 box with fill 0.20
+   — the whole photograph as a single "note", dropped for size.
+3. What survives to set the scale is specks and tape, so `medianNoteSize`
+   reads **17px** where a real note is 45–60px, and `MAX_PAPER_SIZE_RATIO`
+   then rejects every genuine note as "far bigger than the notes around it"
+   (44px ceiling).
+
+So the local-floor work in §2 is the right fix, but it is judged on a
+different number: whether the shaded kraft stops entering the mask, so the
+chain breaks and the note-size median comes back to a real note.
+
 - [ ] 1.5 Commit the calibration-script changes (NOT the photos, NOT their
       crops, NOT overlay PNGs — verify with `git status` that nothing from
       `test-files/` or a cache folder is staged).
