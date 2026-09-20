@@ -157,14 +157,20 @@ to be told twice. The PROVIDER is inferred from WHICH KEY IS SET, because a key
 is provider-specific — a Google AI Studio key is useless to OpenAI — so the
 variable that holds it should say whose it is, and the endpoint follows.
 
-| key var                      | provider | base URL                                                  | default model                 |
-| ---------------------------- | -------- | --------------------------------------------------------- | ----------------------------- |
-| `GOOGLE_AI_STUDIO_API_KEY`   | google   | `https://generativelanguage.googleapis.com/v1beta/openai` | `gemini-3.6-flash`            |
-| `OPENAI_API_KEY`             | openai   | `https://api.openai.com/v1`                               | `gpt-4o`                      |
-| `AI_API_KEY` + `AI_BASE_URL` | generic  | whatever `AI_BASE_URL` says                               | none — `AI_MODEL` is REQUIRED |
+| key var                      | provider | base URL                                                  | default model                                                         |
+| ---------------------------- | -------- | --------------------------------------------------------- | --------------------------------------------------------------------- |
+| `GOOGLE_AI_STUDIO_API_KEY`   | google   | `https://generativelanguage.googleapis.com/v1beta/openai` | `gemini-3.6-flash` (assistant), `gemini-2.5-flash-lite` (crop reader) |
+| `OPENAI_API_KEY`             | openai   | `https://api.openai.com/v1`                               | `gpt-4o`                                                              |
+| `AI_API_KEY` + `AI_BASE_URL` | generic  | whatever `AI_BASE_URL` says                               | none — `AI_MODEL` is REQUIRED                                         |
 
 `AI_MODEL` overrides the default for any provider; `AI_VISION_MODEL` overrides
-it for `/api/ai/read-notes` only (default: the resolved `AI_MODEL`). The generic
+it for `/api/ai/read-notes` only. The READER has its own Google default,
+`gemini-2.5-flash-lite`, because reading handwriting is literal work: measured
+on a real wall it read 99% of the words against 95% for `gemini-3.6-flash`,
+while costing about a quarter as much and finishing four times faster
+(docs/vision/handwriting-readers.md). That default applies only when the
+operator has named NO model — setting `AI_MODEL` means it for the reader too,
+and `AI_VISION_MODEL` beats both. The generic
 row is Mistral, OpenRouter, a local llama.cpp or Ollama — anything that speaks
 the OpenAI chat-completions wire.
 

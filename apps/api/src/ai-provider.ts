@@ -38,11 +38,25 @@ export const OPENAI_BASE_URL = 'https://api.openai.com/v1';
 export const GOOGLE_DEFAULT_MODEL = 'gemini-3.6-flash';
 export const OPENAI_DEFAULT_MODEL = 'gpt-4o';
 
+// Reading the handwriting off a sticky is not the assistant's job, and it does
+// not want the assistant's model. Measured on a real workshop wall through this
+// worker's own request shape, the small cheap model read 99% of the words at
+// 0.2% character error against 95% / 1.1% for the big one — while costing about
+// a quarter as much per token and finishing the wall four times faster.
+//
+// That is not a paradox: reading a scrawl verbatim is literal work, and the
+// reasoning a larger model brings is spent on a task with nothing to reason
+// about (it also has to be paid for out of `max_tokens`). See
+// docs/vision/handwriting-readers.md for the run.
+export const GOOGLE_DEFAULT_VISION_MODEL = 'gemini-2.5-flash-lite';
+
 type Preset = {
   provider: AiProviderName;
   keyVar: keyof Env;
   baseUrl?: string;
   defaultModel?: string;
+  // What the crop READER uses when the operator has not named a model at all.
+  defaultVisionModel?: string;
 };
 
 const PRESETS: Preset[] = [
@@ -51,6 +65,7 @@ const PRESETS: Preset[] = [
     keyVar: 'GOOGLE_AI_STUDIO_API_KEY',
     baseUrl: GOOGLE_BASE_URL,
     defaultModel: GOOGLE_DEFAULT_MODEL,
+    defaultVisionModel: GOOGLE_DEFAULT_VISION_MODEL,
   },
   {
     provider: 'openai',
@@ -113,6 +128,11 @@ export function resolveAiProvider(env: Env): ResolvedAiProvider | null {
     baseUrl,
     apiKey,
     model,
-    visionModel: env.AI_VISION_MODEL ?? model,
+    // An operator who NAMED a model means it for everything, so the preset's
+    // reader default only applies when they have named nothing: overriding a
+    // deliberate choice with our own would be the surprising half of a helpful
+    // default. `AI_VISION_MODEL` beats both.
+    visionModel:
+      env.AI_VISION_MODEL ?? (env.AI_MODEL ? model : (preset.defaultVisionModel ?? model)),
   };
 }

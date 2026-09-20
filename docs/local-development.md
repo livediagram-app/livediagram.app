@@ -132,7 +132,9 @@ The AI panel (spec/25) is hidden entirely unless the api worker has an OpenAI ke
 AI_API_KEY=...            # any OpenAI-compatible provider's key
 # AI_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai  # optional; defaults to OpenAI
 # AI_MODEL=gpt-4o              # optional; defaults to gpt-4o
-# AI_VISION_MODEL=gpt-4o       # optional; reads sticky crops (spec/139)
+# AI_VISION_MODEL=gpt-4o       # optional; reads sticky crops (spec/139).
+#                              # On Google this defaults to gemini-2.5-flash-lite,
+#                              # which reads handwriting better than the big model.
 ```
 
 Restart `pnpm dev`. `GET /api/capabilities` will start reporting `{ aiEnabled: true }`, the Settings dialog grows an "AI Assistant" toggle, and the editor surfaces the panel once the user opts in. The two spend-DoS knobs `AI_ALLOWED_ORIGINS` and `AI_REQUIRE_CLERK` are hosted-only by default; leave them unset locally so the guest path keeps working. See `apps/api/.env.example` for the full set of vars the worker reads.

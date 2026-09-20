@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   GOOGLE_BASE_URL,
   GOOGLE_DEFAULT_MODEL,
+  GOOGLE_DEFAULT_VISION_MODEL,
   OPENAI_BASE_URL,
   OPENAI_DEFAULT_MODEL,
   resolveAiProvider,
@@ -25,7 +26,7 @@ describe('the presets', () => {
       baseUrl: GOOGLE_BASE_URL,
       apiKey: 'k',
       model: GOOGLE_DEFAULT_MODEL,
-      visionModel: GOOGLE_DEFAULT_MODEL,
+      visionModel: GOOGLE_DEFAULT_VISION_MODEL,
     });
   });
 
@@ -98,6 +99,30 @@ describe('the model overrides', () => {
   it('AI_MODEL overrides any preset’s default', () => {
     const out = resolveAiProvider(env({ GOOGLE_AI_STUDIO_API_KEY: 'k', AI_MODEL: 'gemini-pro' }));
     expect(out).toMatchObject({ model: 'gemini-pro', visionModel: 'gemini-pro' });
+  });
+
+  // Reading handwriting is literal work, and measured on a real wall the small
+  // cheap model does it BETTER than the big one (99% of words vs 95%) at about
+  // a quarter the cost and four times the speed — the reasoning a bigger model
+  // adds is spent on a job that does not need it. See
+  // docs/vision/handwriting-readers.md.
+  it('reads with the cheap fast model by default, and talks with the other one', () => {
+    const out = resolveAiProvider(env({ GOOGLE_AI_STUDIO_API_KEY: 'k' }));
+    expect(out).toMatchObject({
+      model: GOOGLE_DEFAULT_MODEL,
+      visionModel: GOOGLE_DEFAULT_VISION_MODEL,
+    });
+    expect(GOOGLE_DEFAULT_VISION_MODEL).not.toBe(GOOGLE_DEFAULT_MODEL);
+  });
+
+  it('an operator who names AI_MODEL means it for the reader too', () => {
+    const out = resolveAiProvider(env({ GOOGLE_AI_STUDIO_API_KEY: 'k', AI_MODEL: 'gemini-pro' }));
+    expect(out).toMatchObject({ model: 'gemini-pro', visionModel: 'gemini-pro' });
+  });
+
+  it('AI_VISION_MODEL still wins over the preset default', () => {
+    const out = resolveAiProvider(env({ GOOGLE_AI_STUDIO_API_KEY: 'k', AI_VISION_MODEL: 'mine' }));
+    expect(out).toMatchObject({ visionModel: 'mine' });
   });
 
   it('AI_VISION_MODEL splits the reader from the assistant', () => {
