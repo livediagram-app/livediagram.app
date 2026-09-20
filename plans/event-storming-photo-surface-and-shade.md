@@ -34,13 +34,13 @@ Read before starting: [spec/139](../specs/139-event-storming.md) Phase 8 + 9,
 - [x] 0.2 TDD where there is behaviour: write the failing test first (red), make
       it pass (green), commit test + implementation together, refactor after.
 - [x] 0.3 Before every commit: `pnpm format:check`, `pnpm --filter
-    @livediagram/live typecheck`, `pnpm --filter @livediagram/live lint`, and
+  @livediagram/live typecheck`, `pnpm --filter @livediagram/live lint`, and
       the relevant tests. Zero lint **errors** (the ~227 pre-existing warnings
       are the baseline; do not add to them).
 - [x] 0.4 The editor on **:3102 serves a STATIC BUILD**. Any browser check needs
       `pnpm --filter @livediagram/live build` first, or you are testing old code.
 - [x] 0.5 E2E must be run as `E2E_BASE_URL=http://localhost:3102 pnpm --filter
-    @livediagram/live test:e2e photo-import`. Without that variable Playwright
+  @livediagram/live test:e2e photo-import`. Without that variable Playwright
       reuses **another checkout's** dev server on :3002 and silently tests a
       different product.
 - [x] 0.6 Anything taking more than ~10s (builds, e2e, detector sweeps) runs
@@ -61,9 +61,28 @@ Read before starting: [spec/139](../specs/139-event-storming.md) Phase 8 + 9,
       writing a second tool; it must accept the JPEGs in `test-files/` (decode
       JPEG, not only `preview-*.png` — add decoding via the browser path or a
       pre-step that converts to PNG outside the repo).
-- [ ] 1.2 Record the BASELINE for all six photos in the plan itself (a table:
+- [x] 1.2 Record the BASELINE for all six photos in the plan itself (a table:
       photo → detections). This is the number every later task is judged
       against, so it must exist before any detector change.
+
+**BASELINE** — `npx tsx scripts/calibrate.ts`, six photos at the editor's own
+1000×563 working size, commit `f09d8df3`:
+
+| photo           | detections | by kind (top three)                    |
+| --------------- | ---------- | -------------------------------------- |
+| 20260920_201646 | 46         | domain-event 16, command 15, hotspot 5 |
+| 20260920_201654 | 31         | domain-event 19, aggregate 4, actor 3  |
+| 20260920_201707 | 20         | domain-event 7, actor 5, aggregate 5   |
+| 20260920_201713 | 33         | command 27, actor 4, aggregate 1       |
+| 20260920_201730 | 44         | command 19, actor 8, read-model 6      |
+| 20260920_201743 | 17         | actor 12, hotspot 2, read-model 1      |
+| **TOTAL**       | **191**    |                                        |
+
+The raw count flatters it. The overlays say the wall is orange paper on brown
+kraft and the kind histograms say `command` (blue) and `actor` (yellow) — on
+201713 and 201730 most "detections" are tape marks, the shadowed frame edge and
+fragments, while whole runs of real orange notes carry no box at all.
+
 - [ ] 1.3 Quantify the shade problem specifically: for each photo report
       detections in the **left / middle / right thirds**, and the measured
       `floors.value` / `floors.saturation` / `wallHue`. State in one sentence
