@@ -82,3 +82,7 @@ coverage/
 # Claude Code harness state (scheduled-task locks, worktrees,
 # session metadata). Per-user, per-checkout — never source.
 .claude/
+
+# Real photographs of somebody's workshop wall, used to calibrate the sticky
+# detector by hand. This repo is public: these never enter it (spec/139).
+/packages/sticky-vision/test-files/
