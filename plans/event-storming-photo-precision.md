@@ -95,13 +95,26 @@ precision and recall are both measured against a hand-labelled truth.
       Every task below is judged against them; a task that raises recall while
       dropping precision more is not done.
 - [x] 1.5 Commit (sweep changes only — never the photos, never the labels).
-- [ ] 1.6 Widen the truth set to the operator's photos 2 and 3 (`201707` and
+- [x] 1.6 Widen the truth set to the operator's photos 2 and 3 (`201707` and
       `201713`) as well: photo 1 alone is what let the detector overfit. Label
       them the same way.
-- [ ] 1.7 Score and report **per photo**, all three, in one table: precision,
+- [x] 1.7 Score and report **per photo**, all three, in one table: precision,
       recall, F1, spurious count, missed count. From here on no task is done on
       an average — every row has to hold.
-- [ ] 1.8 Commit.
+- [x] 1.8 Commit.
+
+### Baseline, all three labelled photos
+
+| photo                        | notes | found | matched | precision | recall | F1  |
+| ---------------------------- | ----- | ----- | ------- | --------- | ------ | --- |
+| 20260920_201646 (operator 1) | 47    | 67    | 30      | 45%       | 64%    | 53% |
+| 20260920_201707 (operator 2) | 41    | 49    | 4       | 8%        | 10%    | 9%  |
+| 20260920_201713 (operator 3) | 56    | 92    | 31      | 34%       | 55%    | 42% |
+
+Photo 2 is worse than the screenshot suggested: FOUR of its forty-one notes
+are found. It is not a shade problem or a hard photo - it is the closest,
+best-lit, largest-note wall of the three. Whatever is broken there is broken on
+the easy case, and the 49 boxes it does draw are almost all on tape and seams.
 
 ### Baseline, photo 1 (`20260920_201646`, 47 notes labelled by eye)
 
