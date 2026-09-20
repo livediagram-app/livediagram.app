@@ -78,6 +78,22 @@ Read before starting: [spec/139](../specs/139-event-storming.md) Phase 8 + 9,
 | 20260920_201743 | 17         | actor 12, hotspot 2, read-model 1      |
 | **TOTAL**       | **191**    |                                        |
 
+**GROUND TRUTH** (2.11) — 20260920_201654 counted by eye off the working image,
+in two halves: **56 notes** on the wall (30 left, 26 right; ±3, because five
+sit half outside the frame and one pink note may be two lapped). The operator
+read it as "60 or so", which agrees.
+
+Against that truth, on that photo:
+
+| build                                 | boxes | notes covered | recall  | boxes on nothing |
+| ------------------------------------- | ----- | ------------- | ------- | ---------------- |
+| baseline `f09d8df3`                   | 31    | ~22           | **39%** | ~9               |
+| local floors + merge guard `4aed6f82` | 35    | ~31           | **55%** | ~10              |
+
+Recall is counted as notes with a box ON them, so one box covering a run of
+four notes counts four — which flatters it in the other direction, and is why
+2.15 (one note, one box) matters as much as recall does.
+
 The raw count flatters it. The overlays say the wall is orange paper on brown
 kraft and the kind histograms say `command` (blue) and `actor` (yellow) — on
 201713 and 201730 most "detections" are tape marks, the shadowed frame edge and
@@ -198,7 +214,7 @@ faults, each its own task:
 3. **Low-confidence oddities.** A 34% sliver at the frame edge, and 56% / 76%
    boxes sitting on bare wall.
 
-- [ ] 2.11 Ground truth, so recall is a percentage rather than a count: count
+- [x] 2.11 Ground truth, so recall is a percentage rather than a count: count
       by eye the notes actually on the wall in 201654 (at least that photo; the
       others where practical) and add an "on the wall" column and a recall %
       to the baseline table in 1.2. Every later change is judged against it.
