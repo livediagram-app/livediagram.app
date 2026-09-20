@@ -100,10 +100,7 @@ function erodeBinary(bin: Uint8Array, width: number, height: number, radius: num
 // Each closed pixel keeps the majority of its class, which here is exact: a
 // note is one colour, so the pixels a dilation reclaims from a gap belong to
 // the class that reached them.
-export function closePaperMask(
-  mask: ComponentMask,
-  opts: { radius?: number } = {},
-): ComponentMask {
+export function closePaperMask(mask: ComponentMask, opts: { radius?: number } = {}): ComponentMask {
   const { width, height, classes } = mask;
   const n = width * height;
   const longSide = Math.max(width, height);

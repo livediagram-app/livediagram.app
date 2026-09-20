@@ -38,9 +38,7 @@ export function PhotoImportProgress({
           aria-hidden
           className="h-3 w-3 animate-spin rounded-full border-2 border-slate-300 border-t-brand-500 dark:border-slate-600 dark:border-t-brand-400"
         />
-        <p className="text-[11px] text-slate-600 dark:text-slate-300">
-          Finding the stickies…
-        </p>
+        <p className="text-[11px] text-slate-600 dark:text-slate-300">Finding the stickies…</p>
         <button
           type="button"
           onClick={onCancel}

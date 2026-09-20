@@ -151,7 +151,6 @@ const ERROR_TOASTS: Record<string, string> = {
 export const NO_NOTES_TOAST =
   'No stickies found in this photo. Fill the frame with the wall, shoot straight on, and give it good light.';
 
-
 export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
   const [state, setState] = useState<PhotoDraftState>(EMPTY);
   const [review, setReview] = useState<PhotoReview | null>(null);
@@ -214,9 +213,7 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
           },
         });
         if (!current()) return;
-        setReview((prev) =>
-          prev && prev.detection === detection ? { ...prev, textById } : prev,
-        );
+        setReview((prev) => (prev && prev.detection === detection ? { ...prev, textById } : prev));
       } catch (err) {
         if (controller.signal.aborted || !current()) return;
         const token = err instanceof Error ? err.message : 'ai_error';
@@ -301,10 +298,7 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
       if (!review) return;
       const detection = {
         ...review.detection,
-        stickies: [
-          ...review.detection.stickies.filter((s) => tickedIds.has(s.id)),
-          ...manual,
-        ],
+        stickies: [...review.detection.stickies.filter((s) => tickedIds.has(s.id)), ...manual],
       };
       if (detection.stickies.length === 0) return;
       const existing = boardNotesOfElements(d.activeTab.elements);

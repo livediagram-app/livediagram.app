@@ -158,11 +158,9 @@ async function landed(opts: Parameters<typeof harness>[0] = {}) {
   const h = await reviewed(opts);
   const r = h.api().review;
   act(() =>
-    h.api().confirm(
-      new Set(r?.detection.stickies.map((s) => s.id) ?? []),
-      r?.textById ?? new Map(),
-      [],
-    ),
+    h
+      .api()
+      .confirm(new Set(r?.detection.stickies.map((s) => s.id) ?? []), r?.textById ?? new Map(), []),
   );
   h.rerender();
   return h;
@@ -213,10 +211,12 @@ describe('the review wizard', () => {
     act(() => h.api().confirm(new Set([0]), h.api().review?.textById ?? new Map(), [drawn]));
     h.rerender();
     expect(h.drafts()).toHaveLength(2);
-    expect(h.drafts().map((n) => (n as StickyElement).esKind).sort()).toEqual([
-      'command',
-      'domain-event',
-    ]);
+    expect(
+      h
+        .drafts()
+        .map((n) => (n as StickyElement).esKind)
+        .sort(),
+    ).toEqual(['command', 'domain-event']);
   });
 
   it('cancelReview leaves the board untouched and the import idle', async () => {

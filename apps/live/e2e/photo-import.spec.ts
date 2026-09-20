@@ -161,10 +161,7 @@ test('the detector reads the KINDS off the paper', async ({ page, pageErrors }) 
   expectNoPageErrors(pageErrors);
 });
 
-test('a note still lands empty when the reader reads nothing', async ({
-  page,
-  pageErrors,
-}) => {
+test('a note still lands empty when the reader reads nothing', async ({ page, pageErrors }) => {
   await openBoard(page);
   await importPhoto(page, [{ fill: ORANGE, x: 300, y: 120, w: 180, h: 180 }]);
 

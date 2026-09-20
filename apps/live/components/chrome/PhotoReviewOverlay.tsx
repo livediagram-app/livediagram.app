@@ -25,7 +25,11 @@ function kindOfBox(
   imageSize: { width: number; height: number },
   box: { x: number; y: number; w: number; h: number },
 ): EventStormingNoteKind {
-  const floors = wallFloorsOf({ width: imageSize.width, height: imageSize.height, data: imageData });
+  const floors = wallFloorsOf({
+    width: imageSize.width,
+    height: imageSize.height,
+    data: imageData,
+  });
   const votes = new Map<string, number>();
   const x1 = Math.min(imageSize.width, box.x + box.w);
   const y1 = Math.min(imageSize.height, box.y + box.h);
@@ -149,7 +153,11 @@ export function PhotoReviewOverlay({
       texts.set(s.id, { text, legible: text.trim() !== '' });
     }
     const detectedTicked = new Set(detected.filter((s) => ticked.has(s.id)).map((s) => s.id));
-    onConfirm(detectedTicked, texts, manual.filter((m) => ticked.has(m.id)));
+    onConfirm(
+      detectedTicked,
+      texts,
+      manual.filter((m) => ticked.has(m.id)),
+    );
   };
 
   // The photo area: drag on it (not on a box) to draw a missed sticky.

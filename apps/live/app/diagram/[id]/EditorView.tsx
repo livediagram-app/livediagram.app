@@ -465,8 +465,7 @@ export function EditorView() {
           <PhotoReviewOverlay
             review={photoDraft.review}
             reading={
-              photoDraft.state.readSoFar < photoDraft.state.found &&
-              !photoDraft.review.readError
+              photoDraft.state.readSoFar < photoDraft.state.found && !photoDraft.review.readError
             }
             onConfirm={photoDraft.confirm}
             onCancel={photoDraft.cancelReview}
