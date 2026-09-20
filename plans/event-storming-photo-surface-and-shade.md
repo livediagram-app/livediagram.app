@@ -276,17 +276,60 @@ filters, so the whole run was dropped together. One box → six notes lost.
       than its neighbours. The stacked trios the operator saw are cells of a
       blob cut on bare wall — phantoms rather than duplicates of a note — and
       they are 2.7's business, measured there.
-- [ ] 2.16 Re-measure recall on all six photos against 2.11's truth, and report
+- [x] 2.16 Re-measure recall on all six photos against 2.11's truth, and report
       recall (not count) for 201654 before and after. Confirm the stacked boxes
       are gone and the phantom-on-bare-wall boxes have not multiplied.
 
-- [ ] 2.6 Re-run the six-photo sweep. Report the new table against the baseline
+**RECALL ON 201654** (56 notes on the wall), counted off the overlay:
+
+| build                         | boxes | notes covered | recall  | boxes on nothing |
+| ----------------------------- | ----- | ------------- | ------- | ---------------- |
+| baseline `f09d8df3`           | 31    | ~22           | 39%     | ~9               |
+| local floors `4aed6f82`       | 35    | ~31           | 55%     | ~10              |
+| assembly fixes `cc8b1879`     | 57    | ~44           | **79%** | ~10              |
+| rescue solidity bar (current) | 53    | ~42           | **75%** | ~8               |
+
+The stacked trios are gone: no box on that photo now sits on top of another.
+What is still missed there is one block of six notes lapped edge to edge on
+the far panel, and one block of four in the corner.
+
+Detections across all six: 191 → 457. On five of the six that is recall; on
+**201743 it is not** — that photo is shot at night with a window and half a
+room in frame, its wall reads as paper to the frame-wide measurement, and it
+carries perhaps forty boxes on bare wall and on things in the room. It is the
+worst case in the set and is recorded as a limit rather than papered over
+(2.7).
+
+- [x] 2.6 Re-run the six-photo sweep. Report the new table against the baseline
       from 1.2. The right-hand thirds must improve materially; nothing may
       regress by more than a note or two.
-- [ ] 2.7 Guard against the opposite failure: count detections whose colour is
+
+| photo           | baseline L/M/R | now L/M/R | found: was → now |
+| --------------- | -------------- | --------- | ---------------- |
+| 20260920_201646 | 12/20/14       | 27/19/21  | 46 → 67          |
+| 20260920_201654 | 6/12/13        | 16/16/21  | 31 → 53          |
+| 20260920_201707 | 3/12/5         | 12/30/7   | 20 → 49          |
+| 20260920_201713 | 3/27/3         | 26/36/30  | 33 → 92          |
+| 20260920_201730 | 6/16/22        | 20/29/38  | 44 → 87          |
+| 20260920_201743 | 2/8/7          | 35/32/42  | 17 → 109         |
+| **TOTAL**       |                |           | **191 → 457**    |
+
+No third regressed on any photo.
+
+- [x] 2.7 Guard against the opposite failure: count detections whose colour is
       the WALL's own hue and dull (i.e. the wall now leaking in as paper). If
       the change turned the wall into notes, tighten and re-measure; a hundred
       phantom notes is worse than ten missing ones.
+
+Counted off the overlays: on the five daylight photos, boxes on nothing are
+roughly 8–12 each and did NOT multiply with recall (201654: 9 before, 8 now,
+against twice the notes found). On 201743 they did — about forty. Two guards
+were added and measured rather than assumed: a rescued piece must be SOLID
+(not merely more paper than holes), which removed 44 boxes across the set at
+a cost of two real notes; and a one-surface tile measures its own saturation
+floor when that surface matches the frame's wall, which keeps a paper-coloured
+wall out of the mask where the frame-wide floor is too low for it.
+
 - [ ] 2.8 Check the synthetic demo still behaves: `pnpm demo:sticky-vision`,
       confirm it still finds 17 of 18 (or better — if the aggregate is now found
       too, update `docs/vision/sticky-detection.md`, `packages/sticky-vision/README.md`
