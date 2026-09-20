@@ -850,6 +850,20 @@ Decisions from the operator:
   author can edit kind and text per note, untick a false positive, and press
   **Add N notes** to land the ticked ones as the on-canvas draft (Phase 8's
   `esDraft` machinery). Nothing lands until Add.
+- **The PHOTOGRAPH goes up first, then the loader, then the boxes.** The overlay
+  opens on the pick — before decoding, before detection — showing the picked
+  image with "Finding the stickies…" over on the list. Only then does the
+  detector run, and the boxes arrive into a frame the author is already looking
+  at. This is a rule about ORDER, not about speed: detection takes a blink on a
+  small photo and noticeably longer on a 12-megapixel one, and the first version
+  did all of it before rendering anything at all, so picking a big photo was
+  indistinguishable from a broken button — no overlay, no spinner, no error. The
+  hook yields a frame to the browser after opening the overlay so the paint
+  actually happens before the synchronous pixel work takes the thread back.
+- **Nothing found keeps the photo up.** "No stickies found in this photo" with
+  the retake advice appears IN the overlay, over the photograph it is about, and
+  the author can still drag boxes by hand or cancel. Closing the dialog would
+  throw away the thing the advice refers to.
 - **Detection is revealed one box at a time.** The boxes fade in one by one, at
   most TWO a second, deliberately slower than the (instant) detector, so the
   author registers the wall being read as work done FOR them — the upload feels

@@ -67,9 +67,29 @@ export function PhotoReviewOverlay({
   ) => void;
   onCancel: () => void;
 }) {
-  const detected = review.detection.stickies;
-  const { width, height } = review.detection.imageSize;
+  // The photograph is up before the detector has said anything, so everything
+  // derived from a detection has to hold for "not yet". The 1x1 stand-in size
+  // is never used to place a box (there are none until detection lands); it
+  // only keeps the percentage maths total.
+  const detection = review.detection;
+  const detected = detection?.stickies ?? [];
+  const { width, height } = detection?.imageSize ?? { width: 1, height: 1 };
+  // Still looking. Distinct from "looked and found nothing", which is advice.
+  const detecting = detection === null;
+  const foundNothing = detection !== null && detected.length === 0;
+  // Everything found is ticked: the common case is "add the wall", and making
+  // the author tick thirty boxes to get there would be a toll gate.
   const [ticked, setTicked] = useState<Set<number>>(() => new Set(detected.map((s) => s.id)));
+  // The overlay MOUNTS before the detector has answered, so seeding the set
+  // once at mount seeds it from nothing: the boxes then arrive unticked and
+  // the button reads "Add 0 notes" over a wall full of them. Tick each
+  // detection as it lands instead.
+  useEffect(() => {
+    setTicked(new Set(detected.map((s) => s.id)));
+    // Identity of the detection, not of the array: this must run once when the
+    // answer arrives, and never again on a re-render that ticks a box.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [detection]);
   // The author's edits only; every unedited field streams straight from the
   // review as the words arrive, so the fields fill in without a re-mount.
   const [edited, setEdited] = useState<Map<number, string>>(() => new Map());
@@ -129,7 +149,8 @@ export function PhotoReviewOverlay({
     if (box.w < 0.02 * width || box.h < 0.02 * height) return; // a click, not a box
     const id = manualId.current;
     manualId.current -= 1;
-    const kind = kindOfBox(review.detection.imageData, review.detection.imageSize, box);
+    if (!detection) return;
+    const kind = kindOfBox(detection.imageData, detection.imageSize, box);
     const note: DetectedSticky = {
       id,
       kind,
@@ -218,7 +239,7 @@ export function PhotoReviewOverlay({
             onPointerUp={onPointerUp}
           >
             <img
-              src={review.detection.photoUrl}
+              src={review.photoUrl}
               alt="The photographed wall"
               draggable={false}
               className="block h-auto w-auto max-h-[90vmin] max-w-[90vmin]"
@@ -276,8 +297,33 @@ export function PhotoReviewOverlay({
         {/* Step 2: the words, editable. */}
         <aside className="flex w-80 flex-col gap-2 overflow-y-auto rounded-lg bg-white/95 p-3 dark:bg-slate-900/95">
           <p className="text-[11px] text-slate-500 dark:text-slate-400">
-            Drag on the photo to add a sticky the detector missed.
+            {detecting
+              ? 'Your photo is here. Finding the stickies in it…'
+              : 'Drag on the photo to add a sticky the detector missed.'}
           </p>
+          {detecting ? (
+            <p
+              data-testid="photo-finding"
+              aria-live="polite"
+              className="flex items-center gap-2 rounded bg-slate-100 px-3 py-2 text-xs text-slate-700 dark:bg-slate-800 dark:text-slate-300"
+            >
+              <span
+                aria-hidden
+                className="h-3 w-3 shrink-0 animate-spin rounded-full border-2 border-slate-300 border-t-brand-500 dark:border-slate-600 dark:border-t-brand-400"
+              />
+              Finding the stickies…
+            </p>
+          ) : null}
+          {foundNothing ? (
+            <p
+              data-testid="photo-found-nothing"
+              className="rounded bg-amber-100 px-3 py-2 text-xs text-amber-900 dark:bg-amber-900/30 dark:text-amber-200"
+            >
+              No stickies found in this photo. Fill the frame with the wall, shoot straight on, and
+              give it good light — then try another photo. You can still drag a box around a note to
+              add it by hand.
+            </p>
+          ) : null}
           {revealed < detected.length ? (
             <p className="rounded bg-slate-100 px-3 py-2 text-xs text-slate-700 dark:bg-slate-800 dark:text-slate-300">
               Detecting… {revealed} of {detected.length}

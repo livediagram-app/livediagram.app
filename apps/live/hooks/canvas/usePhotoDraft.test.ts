@@ -139,7 +139,14 @@ function harness(
 
 const file = () => new File([new Uint8Array([1])], 'wall.jpg', { type: 'image/jpeg' });
 
+// jsdom implements neither half of the object-URL API, which the overlay uses
+// to put the picked photograph on screen before anything has been decoded.
+let revoked: string[] = [];
 beforeEach(() => {
+  revoked = [];
+  let n = 0;
+  URL.createObjectURL = vi.fn(() => `blob:photo-${(n += 1)}`);
+  URL.revokeObjectURL = vi.fn((url: string) => revoked.push(url));
   setPhotoDraftView(null);
   readCrops.mockReset();
   vi.mocked(selectReader).mockImplementation((deps) => ({
@@ -171,7 +178,11 @@ async function landed(opts: Parameters<typeof harness>[0] = {}) {
   act(() =>
     h
       .api()
-      .confirm(new Set(r?.detection.stickies.map((s) => s.id) ?? []), r?.textById ?? new Map(), []),
+      .confirm(
+        new Set(r?.detection?.stickies.map((s) => s.id) ?? []),
+        r?.textById ?? new Map(),
+        [],
+      ),
   );
   h.rerender();
   return h;
@@ -182,8 +193,10 @@ describe('the review wizard', () => {
     const h = await reviewed();
     expect(h.api().state.stage).toBe('review');
     expect(h.api().reviewOpen).toBe(true);
-    expect(h.api().review?.detection.stickies).toHaveLength(1);
-    expect(h.api().review?.detection.photoUrl).toMatch(/^data:image\/jpeg/);
+    expect(h.api().review?.detection?.stickies).toHaveLength(1);
+    // The overlay draws the photo the author PICKED, which was on screen long
+    // before the detector finished with it.
+    expect(h.api().review?.photoUrl).toBeTruthy();
     expect(h.api().review?.textById.get(0)?.text).toBe('Order placed');
     // Nothing landed, no checkpoint armed: the review is a preview.
     expect(h.elements()).toEqual([]);
@@ -345,7 +358,12 @@ describe('landing a draft', () => {
     expect(h.elements()).toEqual([]);
     expect(h.steps()).toBe(0);
     expect(h.toasts[0]).toMatch(/no stickies found/i);
-    expect(h.api().state.stage).toBe('idle');
+    // The photo STAYS on screen (spec/139: the dialog stays open for another
+    // try). The advice is about this photograph, and closing the dialog throws
+    // away the thing the advice is about — along with the chance to draw the
+    // boxes by hand.
+    expect(h.api().reviewOpen).toBe(true);
+    expect(h.api().review?.detection?.stickies).toEqual([]);
     // The detector already answered: spending a model call here would be
     // spending the operator's budget on a picture of a wall.
     expect(readCrops).not.toHaveBeenCalled();
@@ -523,5 +541,73 @@ describe('choosing the reader', () => {
     });
     expect(selectReader).toHaveBeenCalledWith(expect.objectContaining({ aiEnabled: false }));
     expect(readCrops).toHaveBeenCalled();
+  });
+});
+
+// The photo goes up FIRST (spec/139 Phase 9). Detection is fast on a small
+// photo and slow on a 12-megapixel one, and the first version did all of it
+// before showing anything at all — so picking a big photo looked exactly like
+// picking no photo: no overlay, no spinner, no error, nothing. The overlay now
+// opens on the pick, with the photograph in it, and the finding happens behind
+// it where it can be seen happening.
+describe('the photo is on screen before the detector runs', () => {
+  it('opens the review with the photo while detection is still going', async () => {
+    let finish: (d: PhotoDetection) => void = () => {};
+    vi.mocked(detectAndCrop).mockReturnValue(
+      new Promise<PhotoDetection>((resolve) => {
+        finish = resolve;
+      }),
+    );
+    const h = harness();
+    await act(async () => {
+      void h.api().startFromFile(file());
+      // Let the pick settle, but do NOT let detection finish.
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(h.api().reviewOpen).toBe(true);
+    expect(h.api().review?.photoUrl).toBeTruthy();
+    // Nothing found YET: the overlay knows it is still looking.
+    expect(h.api().review?.detection).toBeNull();
+
+    await act(async () => {
+      finish(detection([sticky()]));
+      // Past the paint yield the hook takes before it starts detecting.
+      await new Promise((r) => setTimeout(r, 60));
+    });
+    expect(h.api().review?.detection?.stickies).toHaveLength(1);
+  });
+
+  it('hands the photograph back to the browser when the review closes', async () => {
+    const h = await reviewed();
+    const url = h.api().review!.photoUrl;
+    act(() => h.api().cancelReview());
+    // An object URL nobody revokes pins the whole photo in memory for the life
+    // of the tab, and a wall photo is megabytes.
+    expect(revoked).toContain(url);
+  });
+
+  it('closes the review and says why when the photo cannot be read', async () => {
+    vi.mocked(detectAndCrop).mockRejectedValue(new PhotoDetectFailed('photo_unreadable'));
+    const h = harness();
+    await act(async () => {
+      await h.api().startFromFile(file());
+    });
+    expect(h.api().reviewOpen).toBe(false);
+    expect(h.toasts.join(' ')).toMatch(/could not be opened/i);
+  });
+
+  it('keeps the photo up and says so when nothing was found', async () => {
+    vi.mocked(detectAndCrop).mockResolvedValue(detection([]));
+    const h = harness();
+    await act(async () => {
+      await h.api().startFromFile(file());
+    });
+    // The photo stays on screen: "no stickies" is advice about THIS photo, and
+    // closing the dialog throws away the thing the advice is about.
+    expect(h.api().reviewOpen).toBe(true);
+    expect(h.api().review?.detection?.stickies).toHaveLength(0);
+    expect(h.toasts.join(' ')).toMatch(/no stickies found/i);
   });
 });

@@ -18,7 +18,12 @@ import { toNormalised, type DetectedSticky } from '@livediagram/sticky-vision';
 import { selectReader } from '@/lib/reading/select';
 import { buildEventStormingNote } from '@/lib/draw-commit';
 import { setPhotoDraftView } from '@/lib/photo-draft-preview';
-import { detectAndCrop, PhotoDetectFailed, type PhotoDetection } from '@/lib/photo-detect';
+import {
+  detectAndCrop,
+  photoTypeError,
+  PhotoDetectFailed,
+  type PhotoDetection,
+} from '@/lib/photo-detect';
 import { track } from '@/lib/telemetry';
 
 // A photo import, as ONE long gesture (spec/139 Phase 8, Phase 9).
@@ -60,7 +65,15 @@ const EMPTY: PhotoDraftState = { stage: 'idle', found: 0, readSoFar: 0, error: n
 // is the reader's answer keyed by box id. `readError` is set when the reader
 // failed but the boxes are still worth showing blank.
 export type PhotoReview = {
-  detection: PhotoDetection;
+  // The photograph, shown the INSTANT it is picked — an object URL of the file
+  // itself, so there is nothing to wait for. Everything else in this object
+  // arrives later, behind it.
+  photoUrl: string;
+  // Null while the detector is still looking. The overlay is already open and
+  // showing the photo by then, which is the whole point: finding the stickies
+  // in a 12-megapixel photo takes a moment, and a moment with no feedback is
+  // indistinguishable from a broken button.
+  detection: PhotoDetection | null;
   textById: Map<number, { text: string; legible: boolean }>;
   readError: string | null;
 };
@@ -162,6 +175,10 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
   const reviewRef = useRef<PhotoReview | null>(null);
   reviewRef.current = review;
   const abortRef = useRef<AbortController | null>(null);
+  // The object URL the overlay is showing. Held so it can be handed back to
+  // the browser when the review closes: an unrevoked one pins the whole
+  // photograph in memory for the life of the tab, and a wall photo is 3MB.
+  const photoUrlRef = useRef<string | null>(null);
   // Which run is current. A run has two awaits before it is abortable, and
   // Cancel pressed in that window must not land a draft over a board the
   // author has moved on from.
@@ -177,6 +194,32 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
     setState({ ...EMPTY, error: token });
     live.current.toastError(ERROR_TOASTS[token] ?? ERROR_TOASTS.ai_error!);
   }, []);
+
+  // Close the review and give the photograph back to the browser.
+  const closeReview = useCallback(() => {
+    if (photoUrlRef.current) {
+      URL.revokeObjectURL(photoUrlRef.current);
+      photoUrlRef.current = null;
+    }
+    setReview(null);
+  }, []);
+
+  // Hand the thread back long enough for the browser to paint what was just
+  // set, before taking it again for work that will block. Two frames, because
+  // one only guarantees the render has been COMMITTED, not that pixels reached
+  // the screen. Falls back to a timeout where there are no frames (tests, and
+  // a backgrounded tab, where rAF never fires at all).
+  const nextPaint = useCallback(
+    () =>
+      new Promise<void>((resolve) => {
+        if (typeof requestAnimationFrame !== 'function') {
+          setTimeout(resolve, 0);
+          return;
+        }
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+      }),
+    [],
+  );
 
   // Fit a rectangle around the given elements, with a little margin: an import
   // that lands off-screen reads as an import that did nothing. Never zoomed in
@@ -247,12 +290,34 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
         reviewRef.current !== null
       )
         return;
+      // A file we cannot decode at all is refused before anything opens: an
+      // overlay showing a broken image is worse than a straight answer.
+      const typeError = photoTypeError(file.type);
+      if (typeError) {
+        fail(typeError);
+        return;
+      }
+
       const run = (runRef.current += 1);
       const current = () => runRef.current === run;
-      setState({ stage: 'detecting', found: 0, readSoFar: 0, error: null });
 
       const controller = new AbortController();
       abortRef.current = controller;
+
+      // THE PHOTO GOES UP FIRST. An object URL costs nothing to make and the
+      // browser decodes it for display on its own thread, so the author sees
+      // the wall they just picked while the detector is still walking it.
+      const photoUrl = URL.createObjectURL(file);
+      photoUrlRef.current = photoUrl;
+      setReview({ photoUrl, detection: null, textById: new Map(), readError: null });
+      setState({ stage: 'review', found: 0, readSoFar: 0, error: null });
+
+      // Let the browser actually PAINT that before the detector takes the
+      // thread. Detection is synchronous number-crunching over a few million
+      // pixels; without this yield React's state change and the blocking work
+      // land in the same frame and the overlay never appears until it is over.
+      await nextPaint();
+      if (!current()) return;
 
       // Finding the stickies happens HERE, in the browser: the photograph
       // never leaves the machine, only the crops do.
@@ -262,33 +327,33 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
       } catch (err) {
         abortRef.current = null;
         if (!current()) return;
+        closeReview();
         fail(err instanceof PhotoDetectFailed ? err.reason : 'photo_unreadable');
         return;
       }
       if (!current()) return;
 
-      if (detection.stickies.length === 0) {
-        // No paper in the picture: say so, and never spend a model call on it.
-        abortRef.current = null;
-        setState(EMPTY);
-        live.current.toastError(NO_NOTES_TOAST);
-        return;
-      }
-
-      // Show the photo and its boxes IMMEDIATELY (detection is in-browser and
-      // fast); the words stream in behind them as a separate stage. Nothing
-      // here touches the document — the checkpoint is armed by `confirm` when
-      // the ticked notes land.
-      setReview({ detection, textById: new Map(), readError: null });
+      setReview((prev) => (prev ? { ...prev, detection } : prev));
       setState({
         stage: 'review',
         found: detection.stickies.length,
         readSoFar: 0,
         error: null,
       });
+
+      if (detection.stickies.length === 0) {
+        // No paper in the picture. The photo STAYS on screen with the advice:
+        // "shoot straighter, fill the frame" is advice about this photograph,
+        // and closing the dialog throws away the thing it is about. Never spend
+        // a model call on it.
+        abortRef.current = null;
+        live.current.toastError(NO_NOTES_TOAST);
+        return;
+      }
+
       void readWords(detection, controller, run);
     },
-    [fail, readWords],
+    [closeReview, fail, nextPaint, readWords],
   );
 
   // Add the ticked boxes as the on-canvas draft. The one write of the review:
@@ -303,10 +368,14 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
       manual: DetectedSticky[],
     ) => {
       const d = live.current;
-      if (!review) return;
-      const detection = {
-        ...review.detection,
-        stickies: [...review.detection.stickies.filter((s) => tickedIds.has(s.id)), ...manual],
+      // Nothing to land before the detector has answered — the Add button is
+      // disabled then, and a drawn box cannot exist without the image data
+      // that classifies it.
+      if (!review?.detection) return;
+      const found = review.detection;
+      const detection: PhotoDetection = {
+        ...found,
+        stickies: [...found.stickies.filter((s) => tickedIds.has(s.id)), ...manual],
       };
       if (detection.stickies.length === 0) return;
       const existing = boardNotesOfElements(d.activeTab.elements);
@@ -337,13 +406,13 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
             .map((diff) => [diff.boardId, texts.get(diff.detectedId)?.text ?? ''] as const)
             .filter(([, text]) => text !== ''),
         ),
-        read: review.detection.stickies.length,
+        read: found.stickies.length,
       });
       setReview(null);
       setState({
         stage: 'draft',
-        found: review.detection.stickies.length,
-        readSoFar: review.detection.stickies.length,
+        found: found.stickies.length,
+        readSoFar: found.stickies.length,
         error: null,
       });
     },
@@ -355,9 +424,9 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
     runRef.current += 1;
     abortRef.current?.abort();
     abortRef.current = null;
-    setReview(null);
+    closeReview();
     setState(EMPTY);
-  }, []);
+  }, [closeReview]);
 
   const accept = useCallback(() => {
     const d = live.current;

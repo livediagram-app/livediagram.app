@@ -67,6 +67,14 @@ async function importToReview(page: Page, notes: WallNote[]) {
     emptyToast.waitFor({ state: 'visible', timeout: 10_000 }).catch(() => false),
   ]);
   if (!(await overlay.isVisible().catch(() => false))) return;
+  // The photo goes up BEFORE the detector has found anything (spec/139 Phase
+  // 9), so wait for the finding phase to END before judging what is in it. By
+  // its testid, not its words: the overlay says "finding the stickies" in two
+  // places, and a text locator matching both throws strict-mode rather than
+  // waiting — which silently let this helper read the note count too early.
+  await overlay
+    .locator('[data-testid="photo-finding"]')
+    .waitFor({ state: 'hidden', timeout: 30_000 });
   // The photo itself must be visible AND sized: a collapsed container renders
   // the overlay with the text list but no image and no boxes (a regression
   // this guards against).
@@ -81,12 +89,23 @@ async function importPhoto(page: Page, notes: WallNote[]) {
   await importToReview(page, notes);
   const overlay = page.locator('[data-testid="photo-review-overlay"]');
   if (!(await overlay.isVisible().catch(() => false))) return;
+  // Nothing found: the overlay stays open with the retake advice, and there is
+  // nothing to add (spec/139).
+  if (
+    await page
+      .locator('[data-testid="photo-found-nothing"]')
+      .isVisible()
+      .catch(() => false)
+  ) {
+    return;
+  }
+  const add = page.getByRole('button', { name: /^Add \d+ notes?$/ });
   // The words stream in behind the photo; wait for them before adding.
   await page
     .getByText('Reading the words…')
-    .waitFor({ state: 'hidden', timeout: 10_000 })
+    .waitFor({ state: 'hidden', timeout: 20_000 })
     .catch(() => {});
-  await page.getByRole('button', { name: /^Add \d+ notes?$/ }).click();
+  await add.click();
 }
 
 // Pan the canvas with Space + drag (the editor's own pan, whatever tool is
@@ -241,10 +260,20 @@ test('a draft note can be deleted before it is added', async ({ page, pageErrors
   expectNoPageErrors(pageErrors);
 });
 
-test('a photo with no paper in it says so', async ({ page, pageErrors }) => {
+test('a photo with no paper in it says so, and keeps the photo up', async ({
+  page,
+  pageErrors,
+}) => {
   await openBoard(page);
   await importPhoto(page, []);
-  await expect(page.getByText(/no stickies found in this photo/i)).toBeVisible();
+  await expect(page.getByText(/no stickies found in this photo/i).first()).toBeVisible();
+  // The photo STAYS on screen with the advice: it is advice about THIS
+  // photograph, and the author can still draw a box by hand (spec/139).
+  const overlay = page.locator('[data-testid="photo-review-overlay"]');
+  await expect(overlay).toBeVisible();
+  await expect(overlay.locator('img')).toBeVisible();
+  await page.getByRole('button', { name: /^cancel$/i }).click();
+  await expect(overlay).toBeHidden();
   await expect(bar(page)).toHaveCount(0);
   await expect(notes(page)).toHaveCount(3);
 

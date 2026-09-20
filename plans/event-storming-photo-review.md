@@ -42,6 +42,8 @@ The review is a THREE-STEP wizard the author walks through, each step visible:
 - [x] 4.6 DROPPED with Tesseract itself (4.7); the in-browser model's weights come from the HF CDN on first use and are cached, and a deployment that needs offline reading configures a server model.
 - [x] 4.7 Bench every candidate reader on one real wall and record it (`docs/vision/handwriting-readers.md`): Tesseract 17% of words, TrOCR 1%, Florence-2 8%, SmolVLM-256M ~80%, a hosted model 99%.
 - [x] 4.8 Pluggable reader (`apps/live/lib/reading/`): server model when the api reports one, SmolVLM-256M in the browser when not; one interface, chosen by capability, never a gate on the import.
+- [x] 4.10 Open the overlay on the PICK with the photograph in it, then the loader, then the boxes; yield a frame so it paints. A 12-megapixel photo showed nothing at all before this.
+- [x] 4.11 Keep the photo up when nothing is found, with the advice in the overlay rather than a toast over a closed dialog.
 - [x] 4.9 Prove the model runtime is a LAZY chunk — no editor visitor downloads it, and a static export still builds.
 
 ## 5. Fold-back
