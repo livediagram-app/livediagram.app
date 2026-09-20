@@ -7,6 +7,7 @@ import { labelComponents } from '../src/components';
 import { fitBoxes, mergeFragments } from '../src/boxes';
 import { encodePng } from './png';
 import { listPhotos, loadPhoto, workDirFor } from './photos';
+import { score, truthDir, truthFor, type Score } from './truth';
 
 // Calibrating the detector against REAL photographs of a real wall.
 //
@@ -43,6 +44,7 @@ const KIND_INK: Record<string, [number, number, number]> = {
 function overlay(
   image: ImageBuffer,
   boxes: { x: number; y: number; w: number; h: number; kind: string }[],
+  truth?: { x: number; y: number; w: number; h: number }[],
 ): ImageBuffer {
   const data = new Uint8ClampedArray(image.data);
   const put = (x: number, y: number, ink: [number, number, number]) => {
@@ -63,6 +65,19 @@ function overlay(
         put(box.x + t, y, ink);
         put(box.x + box.w - 1 - t, y, ink);
       }
+    }
+  }
+  // Hand-labelled notes as a dotted white frame UNDER the detections, so a
+  // glance at the overlay says which boxes are on paper and which notes have
+  // nothing on them at all.
+  for (const box of truth ?? []) {
+    for (let x = box.x; x < box.x + box.w; x += 3) {
+      put(x, box.y, [255, 255, 255]);
+      put(x, box.y + box.h - 1, [255, 255, 255]);
+    }
+    for (let y = box.y; y < box.y + box.h; y += 3) {
+      put(box.x, y, [255, 255, 255]);
+      put(box.x + box.w - 1, y, [255, 255, 255]);
     }
   }
   return { width: image.width, height: image.height, data };
@@ -211,10 +226,47 @@ function report(name: string) {
   if (probeArg !== -1 && name.includes(process.argv[probeArg + 2] ?? '')) {
     probe(image, floors, process.argv[probeArg + 1] ?? '');
   }
+  // Precision and recall against the hand-labelled truth, when this photo has
+  // been labelled. The lists matter more than the percentages: a named missing
+  // note is a thing to go and look at, a percentage is not.
+  const labels = truthFor(name);
+  let scored: Score | null = null;
+  if (labels) {
+    scored = score(labels, found, image.width, image.height);
+    console.log(
+      `  TRUTH ${scored.truth} notes: matched ${scored.matched}` +
+        `  precision ${(scored.precision * 100).toFixed(0)}%  recall ${(scored.recall * 100).toFixed(0)}%` +
+        `  F1 ${(scored.f1 * 100).toFixed(0)}%  kinds right ${scored.kindsRight}/${scored.matched}`,
+    );
+    const place = (b: { x: number; y: number; w: number; h: number }) =>
+      `${Math.round(b.x + b.w / 2)},${Math.round(b.y + b.h / 2)} ${Math.round(b.w)}x${Math.round(b.h)}`;
+    console.log(
+      `    missed (${scored.missed.length}): ` +
+        scored.missed
+          .map((n) =>
+            place({
+              x: n.x * image.width,
+              y: n.y * image.height,
+              w: n.w * image.width,
+              h: n.h * image.height,
+            }),
+          )
+          .join('  '),
+    );
+    console.log(
+      `    spurious (${scored.spurious.length}): ` + scored.spurious.map(place).join('  '),
+    );
+  }
   const out = `${workDirFor(PHOTO_DIR)}/overlay-${name.replace(/\.[^.]+$/, '')}.png`;
-  writeFileSync(out, encodePng(overlay(image, found)));
+  const truthBoxes = labels?.notes.map((n) => ({
+    x: Math.round(n.x * image.width),
+    y: Math.round(n.y * image.height),
+    w: Math.round(n.w * image.width),
+    h: Math.round(n.h * image.height),
+  }));
+  writeFileSync(out, encodePng(overlay(image, found, truthBoxes)));
   console.log(`  overlay: ${out}`);
-  return { name, found: found.length, thirds: [l, m, r] as const };
+  return { name, found: found.length, thirds: [l, m, r] as const, scored };
 }
 
 function main() {
@@ -228,11 +280,19 @@ function main() {
     process.exit(1);
   }
   const rows = names.map(report);
-  console.log(`\nSUMMARY (${PHOTO_DIR})\n`);
-  console.log(`  ${'photo'.padEnd(26)}${'found'.padStart(7)}${'L/M/R'.padStart(14)}`);
+  console.log(`\nSUMMARY (${PHOTO_DIR})   truth: ${truthDir()}\n`);
+  console.log(
+    `  ${'photo'.padEnd(26)}${'found'.padStart(7)}${'L/M/R'.padStart(14)}` +
+      `${'truth'.padStart(8)}${'prec'.padStart(7)}${'recall'.padStart(8)}${'F1'.padStart(6)}`,
+  );
   for (const row of rows) {
+    const s = row.scored;
     console.log(
-      `  ${row.name.replace(/\.[^.]+$/, '').padEnd(26)}${String(row.found).padStart(7)}${row.thirds.join('/').padStart(14)}`,
+      `  ${row.name.replace(/\.[^.]+$/, '').padEnd(26)}${String(row.found).padStart(7)}${row.thirds.join('/').padStart(14)}` +
+        (s
+          ? `${String(s.truth).padStart(8)}${`${(s.precision * 100).toFixed(0)}%`.padStart(7)}` +
+            `${`${(s.recall * 100).toFixed(0)}%`.padStart(8)}${`${(s.f1 * 100).toFixed(0)}%`.padStart(6)}`
+          : `${'-'.padStart(8)}${'-'.padStart(7)}${'-'.padStart(8)}${'-'.padStart(6)}`),
     );
   }
   console.log(

@@ -78,23 +78,23 @@ precision and recall are both measured against a hand-labelled truth.
 
 ## 1. Ground truth and the scoreboard
 
-- [ ] 1.1 Hand-label the real stickies in **two** of the six photos: the gym
+- [x] 1.1 Hand-label the real stickies in **two** of the six photos: the gym
       wall in the operator's screenshot (densest, has all four defects) and one
       other with a different light. A label is a box (x, y, w, h as fractions of
       the image) plus its kind. Count by eye off the photo.
-- [ ] 1.2 Store the labels **outside the repo** (e.g.
+- [x] 1.2 Store the labels **outside the repo** (e.g.
       `~/.local/share/eswall-truth/<photo>.json`) and document in the plan and
       in `docs/vision/sticky-detection.md` where they live and how to remake
       them. The photos are gitignored because the repo is public; their labels
       describe the same private wall and follow them out.
-- [ ] 1.3 Extend the calibration sweep to score against a truth file when one
+- [x] 1.3 Extend the calibration sweep to score against a truth file when one
       exists: **precision, recall, F1**, plus the raw lists of MISSED truth
       boxes and SPURIOUS detections (a detection matches a truth box when their
       centres are within half a note and the areas are within 2x).
-- [ ] 1.4 Record today's numbers for both photos in this plan as the baseline.
+- [x] 1.4 Record today's numbers for both photos in this plan as the baseline.
       Every task below is judged against them; a task that raises recall while
       dropping precision more is not done.
-- [ ] 1.5 Commit (sweep changes only — never the photos, never the labels).
+- [x] 1.5 Commit (sweep changes only — never the photos, never the labels).
 - [ ] 1.6 Widen the truth set to the operator's photos 2 and 3 (`201707` and
       `201713`) as well: photo 1 alone is what let the detector overfit. Label
       them the same way.
@@ -102,6 +102,19 @@ precision and recall are both measured against a hand-labelled truth.
       recall, F1, spurious count, missed count. From here on no task is done on
       an average — every row has to hold.
 - [ ] 1.8 Commit.
+
+### Baseline, photo 1 (`20260920_201646`, 47 notes labelled by eye)
+
+| build | found | matched | precision | recall | F1  |
+| ----- | ----- | ------- | --------- | ------ | --- |
+| today | 67    | 30      | 45%       | 64%    | 53% |
+
+The lists say the same thing the operator did. Missed: the whole 2x2 Join
+cluster (4), both ACTOR pairs (4), "App installed" and the note under it, the
+pink "Which other systems", and six of the bottom rows. Spurious: a row of
+nine boxes along y≈13 (the white ceiling strip ABOVE the paper), one on the ink word "Legend", and thirteen on the cardboard packaging at the bottom
+left. Labels live in `~/.local/share/eswall-truth/`, outside this public repo, and
+how to remake them is in `docs/vision/sticky-detection.md`.
 
 ## 1b. The note size, which is what actually broke
 

@@ -157,3 +157,33 @@ it drew. "Load a real photo" runs the same pipeline on a photograph.
 
 Real photographs never enter the repo. The unit tests draw their own images and
 stay under 200ms.
+
+### Ground truth: precision and recall, not "how many did we find"
+
+A detection COUNT cannot tell a fix from a regression once false positives are
+in play — a change that finds two more notes and invents five scores higher on
+the count and is a loss. So the sweep scores against hand-labelled notes when
+they exist:
+
+- Labels live **outside this repo**, beside the photographs they describe:
+  `~/.local/share/eswall-truth/<photo>.json`, or `$ESWALL_TRUTH_DIR`. Same
+  reason as the photos — they describe somebody's real workshop wall and the
+  repo is public.
+- A file is `{ photo, labelledOn: { width, height }, notes: [{ x, y, w, h, kind
+}] }`, every box in FRACTIONS of the image so the labels survive any working
+  size.
+- To remake one: run the sweep once so the working copy is cached under
+  `/tmp/livediagram-sticky-vision/<hash>/work-<photo>.png`, crop it into
+  overlapping tiles with a labelled grid drawn over them (25px steps, ImageMagick
+  `-draw`), read each note's CENTRE off the grid by eye, and give it a nominal
+  size for its kind (square ~52px, wide ~88x52, actor ~28x52 at the 1000px
+  working size). Centres are what the match rule uses; sizes only have to be in
+  the right order of magnitude.
+- A detection matches a label when their centres are within half a note and
+  their areas are within 2x (`scripts/truth.ts`). The area half of that rule is
+  deliberate: one box over a 2x2 cluster of touching notes scores as one
+  spurious box AND four missed notes, which is exactly what it is.
+- The sweep then prints precision / recall / F1 per photo plus the LISTS — the
+  centre of every missed note and every spurious box — and draws the labels as
+  a dotted white frame under the detections in the overlay. The lists are the
+  useful half: a named missing note is somewhere to go and look.
