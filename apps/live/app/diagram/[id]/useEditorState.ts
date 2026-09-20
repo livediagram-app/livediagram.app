@@ -56,6 +56,7 @@ import { useShortcutsEnabled } from '@/hooks/ui/useShortcutsEnabled';
 import { useEditorComments } from '@/hooks/collab/useEditorComments';
 import { useEditorDrag } from '@/hooks/canvas/useEditorDrag';
 import { useDockActions } from '@/hooks/canvas/useDockActions';
+import { usePhotoPicker } from '@/hooks/canvas/usePhotoPicker';
 import { usePhotoDraft } from '@/hooks/canvas/usePhotoDraft';
 import { useEditorImages } from '@/hooks/canvas/useEditorImages';
 import { useEditorNotes } from '@/hooks/canvas/useEditorNotes';
@@ -1570,9 +1571,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     toastError: toast.error,
   });
   // The hidden file input the palette row and the command-palette entry open.
-  // One input, rendered once beside the canvas, so the camera-capture attribute
-  // and the accepted-type list live in exactly one place.
-  const photoPickerRef = useRef<HTMLInputElement | null>(null);
   // Keep the history-ownership ref (declared beside `commit`) in step with
   // whether a draft is actually open.
   photoDraftOpenRef.current = photoDraft.draftOpen;
@@ -1580,10 +1578,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // One draft at a time: while one is open the entry points say so rather
   // than starting a second import over the first.
   const photoImportBlocked = createBlocked || photoDraft.draftOpen;
-  const openPhotoImport = () => {
-    if (!photoImportAvailable || photoImportBlocked) return;
-    photoPickerRef.current?.click();
-  };
   // A photo dropped or pasted on one of these boards is a piece of WALL, not
   // a picture element: it goes straight to the reader, and nothing on the
   // canvas becomes an image.
@@ -1593,6 +1587,16 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
           void photoDraft.startFromFile(file);
         }
       : undefined;
+  // One input, rendered once beside the canvas, so the camera-capture attribute
+  // and the accepted-type list live in exactly one place. The picker guards the
+  // dialog itself: a stray second click (a double-click in the file dialog)
+  // must not replace the chooser that is already returning a file.
+  const photoPicker = usePhotoPicker({
+    canOpen: () => photoImportAvailable && !photoImportBlocked,
+    onFile: (file) => readPhotoFile?.(file),
+  });
+  const photoPickerRef = photoPicker.inputRef;
+  const openPhotoImport = photoPicker.open;
 
   // Anchor docking (spec/139 Phase 7): add a note already docked to a host's
   // free face, dock a loose one, undock one.
@@ -2557,6 +2561,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     photoImportBlocked,
     openPhotoImport,
     photoPickerRef,
+    onPhotoPicked: photoPicker.onChange,
     readPhotoFile,
     layerHiddenIds,
     layerLockedIds,

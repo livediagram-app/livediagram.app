@@ -81,8 +81,8 @@ export function EditorView() {
     esBoard,
     photoDraft,
     photoImportAvailable,
+    onPhotoPicked,
     photoPickerRef,
-    readPhotoFile,
     clearTabContent,
     clerkUserId,
     closeContextMenu,
@@ -501,11 +501,7 @@ export function EditorView() {
             className="hidden"
             aria-hidden
             tabIndex={-1}
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              e.target.value = '';
-              if (file) readPhotoFile?.(file);
-            }}
+            onChange={onPhotoPicked}
           />
         ) : null}
       </div>

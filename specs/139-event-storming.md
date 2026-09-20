@@ -881,6 +881,18 @@ Decisions from the operator:
   synchronous pixel work that follows it otherwise land in the same frame and
   nothing paints until the work is over.
 
+- **One dialog per intent.** A file dialog is an OS window, and closing it can
+  hand the page a stray click: on Linux/GTK a DOUBLE-CLICK on a filename closes
+  the dialog on the first click and delivers the second to whatever is under the
+  cursor — typically the button that opened it, which opens a second chooser and
+  discards the first one, already on its way back with a file. No `change`
+  fires, and nothing happens at all, while selecting the file and pressing Open
+  (one click) works every time. So a pick is a STATE, not an event: while a
+  dialog is out, asking again is ignored rather than served, and the state
+  clears on the file arriving or on the window getting its focus back (a
+  cancelled dialog fires nothing else). The input is also cleared on every
+  change, so the same photo can be picked twice in a row.
+
 - **Every refusal speaks.** A pick that cannot be honoured — an import already
   open, a draft still waiting on the board, a board that cannot take notes, an
   unsupported file — says which, in a toast, every time. Silence is the one
