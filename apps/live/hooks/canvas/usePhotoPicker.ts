@@ -5,13 +5,16 @@ import { useCallback, useEffect, useRef, type ChangeEvent } from 'react';
 // Opening the photo picker exactly once per intent (spec/139 Phase 9).
 //
 // A file dialog is an OS window, and closing it can hand the page a stray
-// click. On Linux/GTK a DOUBLE-CLICK on a filename closes the dialog on the
-// first click and delivers the second to whatever now sits under the cursor —
-// which, since the dialog was opened from a button, is often that button. The
-// browser answers by opening a SECOND chooser, and the first one, already on
-// its way back with a file, is discarded: no `change` event, no photo, nothing
-// on screen. Selecting a file and pressing Open is one click, so it never
-// showed the fault.
+// click: it lands on whatever now sits under the cursor, which — since the
+// dialog was opened from a button — is often that button. The browser answers
+// by opening a SECOND chooser, and the first one, already on its way back with
+// a file, is discarded: no `change` event, no photo, nothing on screen.
+//
+// NOT to be confused with the Chrome-on-Linux double-click fault this was first
+// written to chase (spec/139): that one is Chromium setting its GTK dialog's
+// default response to Cancel, so a double-click activates Cancel and the file
+// never reaches any page. No page code can fix that one; this guard is for the
+// stray click, which page code can.
 //
 // So a pick is a state, not an event: while one dialog is out, asking again is
 // ignored rather than served. Held in a ref because it is not something the UI

@@ -881,25 +881,32 @@ Decisions from the operator:
   synchronous pixel work that follows it otherwise land in the same frame and
   nothing paints until the work is over.
 
-- **One dialog per intent.** A file dialog is an OS window, and closing it can
-  hand the page a stray click: on Linux/GTK a DOUBLE-CLICK on a filename closes
-  the dialog on the first click and delivers the second to whatever is under the
-  cursor — typically the button that opened it, which opens a second chooser and
-  discards the first one, already on its way back with a file. No `change`
-  fires, and nothing happens at all, while selecting the file and pressing Open
-  (one click) works every time. Firefox on the same desktop is unaffected, so
-  this is a Chromium-on-Linux behaviour rather than anything the page can
-  prevent — but the page can, and must, tolerate it.
+- **Double-clicking a file in Chrome's Linux dialog loses it, and no web page
+  can fix that.** On Chrome for Linux (GTK dialog, not the portal), choosing a
+  file by DOUBLE-CLICK returns nothing at all: the input fires `cancel`, never
+  `change`. Selecting the file and pressing Open works, Firefox on the same
+  desktop works, and a bare `<input type="file">` with no framework fails
+  identically — so this is not ours and cannot be worked around in the page.
 
-  So a pick is a STATE, not an event: while a dialog is out, asking again is
-  ignored rather than served. Crucially the lock OUTLIVES the dialog closing by
-  a short settle (half a second), because the events arrive as
-  `close → window focus → the stray click → change`: a lock released on focus
-  is released a moment before the click it exists to ignore, which is exactly
-  how the first version of this guard still lost the file. Anything that says
-  the dialog is gone — the file arriving, or focus returning after a cancel —
-  starts the settle rather than unlocking at once. The input is also cleared on
-  every change, so the same photo can be picked twice in a row.
+  The cause, confirmed from both sources and reproduced with a minimal GTK
+  program: Chromium sets the dialog's DEFAULT response to Cancel
+  (`select_file_dialog_linux_gtk.cc`, deliberately, so that holding Enter
+  cannot silently accept a file), and GTK 3's `file_activated` handler answers
+  a double-click by activating the dialog's default widget — which is therefore
+  Cancel. Measured: default Cancel gives response `-6 (CANCEL)`, default accept
+  gives `0 (ACCEPT)` with the file. It affects every upload in Chrome on Linux,
+  not just this import.
+
+  What the board does about it: the entry points must not be a dead end, so a
+  photo can also be DRAGGED onto the board or PASTED into it, and both go
+  through exactly the same reader as the picker.
+
+- **One dialog per intent.** A pick is a STATE, not an event: while a dialog is
+  out, asking again is ignored rather than served, and the lock outlives the
+  dialog closing by a short settle. This guards a different hazard from the one
+  above — a stray click landing on the opener as a dialog closes would otherwise
+  open a second chooser and discard the first one's file. The input is also
+  cleared on every change, so the same photo can be picked twice in a row.
 
 - **Every refusal speaks.** A pick that cannot be honoured — an import already
   open, a draft still waiting on the board, a board that cannot take notes, an
