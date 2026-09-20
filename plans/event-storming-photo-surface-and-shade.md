@@ -178,6 +178,52 @@ chain breaks and the note-size median comes back to a real note.
 - [x] 2.5 GREEN: 2.1 passes; the whole `@livediagram/sticky-vision` suite passes
       unchanged (22 tests today) — no existing expectation may be weakened to
       accommodate the new behaviour.
+
+### What the operator saw after the first pass (fold-in, worked before 2.6)
+
+The operator ran the review surface on 201654 and reported: "the current model
+seems to stop at 30 or so stickies, while this picture has 60 or so". Verified
+for us: **no cap is being hit** (`PHOTO_MAX_NOTES` is 120 and the slice is far
+above what is found) — recall really is about half the wall. Three separate
+faults, each its own task:
+
+1. **Recall is ~50%, and not only in the shade.** A cluster of clearly LIT
+   notes in the middle and left is missed. They are the pale / dull orange
+   ones: the wall's own hue family, low saturation. That is the saturation
+   floor plus the wall-hue neighbourhood rule, not brightness — local floors
+   help the shaded plane and cannot recover these.
+2. **Duplicate / stacked boxes.** Three boxes at 82%, three at 83%, three at
+   88%, each trio on nearly the same spot. One blob is becoming several
+   overlapping boxes (suspect the splitter in `boxes.ts`).
+3. **Low-confidence oddities.** A 34% sliver at the frame edge, and 56% / 76%
+   boxes sitting on bare wall.
+
+- [ ] 2.11 Ground truth, so recall is a percentage rather than a count: count
+      by eye the notes actually on the wall in 201654 (at least that photo; the
+      others where practical) and add an "on the wall" column and a recall %
+      to the baseline table in 1.2. Every later change is judged against it.
+- [ ] 2.12 RED: a unit test for **pale paper at the wall's own hue** — a kraft
+      wall with notes whose saturation sits just above the kraft's (the values
+      measured in 2.13, not a swatch), in EVEN light, asserting they are found.
+      It must fail against today's code, and it is a separate case from the
+      gradient test in 2.1.
+- [ ] 2.13 Measure it first: the HSV of 8–10 missed PALE notes in good light on
+      201654, beside the wall's own HSV in the same region and the floor and
+      wall-hue rule each one fails. State in one sentence what actually
+      separates that paper from that wall.
+- [ ] 2.14 Fix the pale-at-wall-hue case, keeping the wall out. Saturation
+      alone cannot do it (the two populations overlap); use what 2.13 shows
+      does separate them — e.g. paper is locally uniform where kraft is
+      textured, paper edges are straight, paper is brighter than the wall right
+      beside it. Justify the choice in a comment with the measurement behind
+      it, and put any new constant in the calibration table.
+- [ ] 2.15 RED + fix the duplicates: one solid note must never yield more than
+      one box. Reproduce it in a test (a single note the splitter cuts, or a
+      blob that survives twice), find the cause, fix it, and keep the test.
+- [ ] 2.16 Re-measure recall on all six photos against 2.11's truth, and report
+      recall (not count) for 201654 before and after. Confirm the stacked boxes
+      are gone and the phantom-on-bare-wall boxes have not multiplied.
+
 - [ ] 2.6 Re-run the six-photo sweep. Report the new table against the baseline
       from 1.2. The right-hand thirds must improve materially; nothing may
       regress by more than a note or two.
