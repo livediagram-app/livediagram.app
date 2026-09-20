@@ -130,6 +130,27 @@ export function closePaperMask(mask: ComponentMask, opts: { radius?: number } = 
   return { width, height, classes: out };
 }
 
+// Erode the paper mask, per class: a pixel survives only if every pixel
+// within `radius` of it says the same thing. Notes lapped over each other are
+// joined by a seam a few pixels wide — a shadow, a paper edge — and eroding
+// pulls them apart at exactly that seam, which is how a block of touching
+// notes can be counted without guessing at its arithmetic.
+export function erodePaperMask(mask: ComponentMask, radius: number): ComponentMask {
+  const { width, height, classes } = mask;
+  const n = width * height;
+  if (radius <= 0) return mask;
+  const out = new Uint8Array(n);
+  let maxClass = 0;
+  for (let i = 0; i < n; i += 1) if (classes[i]! > maxClass) maxClass = classes[i]!;
+  const bin = new Uint8Array(n);
+  for (let c = 1; c <= maxClass; c += 1) {
+    for (let i = 0; i < n; i += 1) bin[i] = classes[i] === c ? 1 : 0;
+    const eroded = erodeBinary(bin, width, height, radius);
+    for (let i = 0; i < n; i += 1) if (eroded[i] !== 0) out[i] = c;
+  }
+  return { width, height, classes: out };
+}
+
 export function labelComponents(mask: ComponentMask): Component[] {
   const { width, height, classes } = mask;
   const labels = new Int32Array(width * height);

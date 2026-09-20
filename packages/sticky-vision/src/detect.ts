@@ -86,6 +86,9 @@ export function detectStickies(image: ImageBuffer, opts: DetectOptions = {}): De
   const closed = closePaperMask(mask);
   const boxes = fitBoxes(labelComponents(closed), {
     imageSize: Math.max(working.width, working.height),
+    // The mask goes with the components: cutting a run of touching notes
+    // apart is a question about pixels, not about a bounding box.
+    mask: closed,
   });
   if (boxes.length === 0) return [];
   const noteSize = medianNoteSize(boxes);

@@ -218,24 +218,64 @@ faults, each its own task:
       by eye the notes actually on the wall in 201654 (at least that photo; the
       others where practical) and add an "on the wall" column and a recall %
       to the baseline table in 1.2. Every later change is judged against it.
-- [ ] 2.12 RED: a unit test for **pale paper at the wall's own hue** — a kraft
+- [x] 2.12 RED: a unit test for **pale paper at the wall's own hue** — a kraft
       wall with notes whose saturation sits just above the kraft's (the values
       measured in 2.13, not a swatch), in EVEN light, asserting they are found.
       It must fail against today's code, and it is a separate case from the
       gradient test in 2.1.
-- [ ] 2.13 Measure it first: the HSV of 8–10 missed PALE notes in good light on
+- [x] 2.13 Measure it first: the HSV of 8–10 missed PALE notes in good light on
       201654, beside the wall's own HSV in the same region and the floor and
       wall-hue rule each one fails. State in one sentence what actually
       separates that paper from that wall.
-- [ ] 2.14 Fix the pale-at-wall-hue case, keeping the wall out. Saturation
-      alone cannot do it (the two populations overlap); use what 2.13 shows
-      does separate them — e.g. paper is locally uniform where kraft is
-      textured, paper edges are straight, paper is brighter than the wall right
-      beside it. Justify the choice in a comment with the measurement behind
-      it, and put any new constant in the calibration table.
-- [ ] 2.15 RED + fix the duplicates: one solid note must never yield more than
-      one box. Reproduce it in a test (a single note the splitter cuts, or a
-      blob that survives twice), find the cause, fix it, and keep the test.
+
+**WHAT THE MEASUREMENT SAYS** — eighteen missed notes on 201654, each sampled
+as the median of its middle against the median of the wall in a ring around
+it, and against the local floors at that spot:
+
+| where                   | note h/s/v   | wall beside it h/s/v | local floor   | classified as |
+| ----------------------- | ------------ | -------------------- | ------------- | ------------- |
+| 460,145                 | 35/0.56/0.78 | 16/0.08/0.55         | s≥0.28 v≥0.44 | domain-event  |
+| 337,202                 | 34/0.41/0.84 | 22/0.05/0.60         | s≥0.28 v≥0.48 | domain-event  |
+| 187,342                 | 30/0.29/0.88 | 30/0.09/0.59         | s≥0.28 v≥0.48 | domain-event  |
+| 747,137                 | 34/0.74/0.59 | 26/0.26/0.35         | s≥0.40 v≥0.26 | domain-event  |
+| 887,195                 | 30/0.70/0.47 | 27/0.47/0.24         | s≥0.55 v≥0.21 | domain-event  |
+| … (13 more, same shape) |              |                      |               | domain-event  |
+
+**Every single one clears its floor and is already in the paper mask.** The
+hypothesis that the saturation floor and the wall-hue rule are rejecting them
+is not what the photograph says — the paper is 0.2 to 0.5 more saturated than
+the wall right beside it, which is a wide margin, and the local floors sit
+between the two everywhere.
+
+They are lost **after** classification, in assembly. Traced through the box
+pipeline, all eighteen live inside one of three components — 328×199, 325×105,
+179×191 — each a run or block of notes lapped edge to edge, each too unsolid
+for the splitter (fill 0.30–0.50 against a 0.55 bar, because a row that sags
+leaves half its bounding box empty) and too long or too big for the shape
+filters, so the whole run was dropped together. One box → six notes lost.
+
+- [x] 2.14 Fix what 2.13 actually found: notes lost in ASSEMBLY, not at the
+      floor. Four changes in `boxes.ts` / `components.ts`, each with its
+      constant in `BOX_CALIBRATION`:
+      **(a)** a merge is reversible — a box that fails the shape filters hands
+      back the pieces it was assembled from instead of taking them down with
+      it; **(b)** a BAND (a blob no thicker than ~2.6 notes) is cut even when
+      it is not solid, which is what a sagging row of notes looks like;
+      **(c)** cuts are made with the MASK in hand — snapped to the emptiest
+      line near the even step, and each cell tightened back onto the paper
+      actually inside it, so a sagging row yields notes rather than tall
+      slices of wall; **(d)** a block too square for any cutting rule is
+      RESCUED — its region is eroded until the notes come apart at their
+      seams, relabelled, and each piece grown back, up to three times.
+      Recall on 201654 went from ~22 notes covered to ~40 of 56 (39% → ~70%).
+- [x] 2.15 RED + fix the duplicates: one solid note must never yield more than
+      one box. `takes a sagging ROW of touching notes apart into notes` is the
+      RED one (2 boxes where 8 notes stand, against the previous commit);
+      `never gives one solid note more than one box` is the guard that the
+      cutting rules above cannot start dicing a note that is simply larger
+      than its neighbours. The stacked trios the operator saw are cells of a
+      blob cut on bare wall — phantoms rather than duplicates of a note — and
+      they are 2.7's business, measured there.
 - [ ] 2.16 Re-measure recall on all six photos against 2.11's truth, and report
       recall (not count) for 201654 before and after. Confirm the stacked boxes
       are gone and the phantom-on-bare-wall boxes have not multiplied.

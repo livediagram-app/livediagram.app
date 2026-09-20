@@ -306,6 +306,39 @@ describe('detectStickies', () => {
     expect(kindsOf(660, 1200)).toEqual(left);
   });
 
+  it('takes a sagging ROW of touching notes apart into notes', () => {
+    // The commonest shape on the operator's wall, and the one that was losing
+    // the most notes: six stickies lapped edge to edge along a line that sags
+    // across the paper. They arrive as ONE component whose bounding box is
+    // half wall — too unsolid to cut by the old rule, too long to keep — and
+    // the whole run went in the bin together.
+    const image = blank(1000, 500, '#a8907a');
+    const orange = fillOf('domain-event');
+    // Two notes on their own first: a wall always has some, and they are what
+    // tells the detector how big a note is here.
+    rect(image, 120, 30, 72, 72, orange);
+    rect(image, 700, 40, 72, 72, orange);
+    for (let i = 0; i < 6; i += 1) rect(image, 150 + i * 70, 220 + i * 14, 72, 72, orange);
+    const found = detectStickies(image);
+    expect(found).toHaveLength(8);
+    expect(found.every((s) => s.kind === 'domain-event')).toBe(true);
+  });
+
+  it('never gives one solid note more than one box', () => {
+    // The stacked boxes the operator saw: three at 82%, three at 83%, on top
+    // of each other. A note is one note however the splitter feels about its
+    // proportions — including a note larger than its neighbours, which is
+    // what drags the median note size down far enough for the split rule to
+    // start dicing.
+    const image = blank(900, 500, '#a8907a');
+    rect(image, 60, 60, 130, 130, fillOf('domain-event'));
+    for (let i = 0; i < 4; i += 1) rect(image, 420 + i * 110, 300, 60, 60, fillOf('command'));
+    const found = detectStickies(image);
+    const big = found.filter((s) => s.kind === 'domain-event');
+    expect(big).toHaveLength(1);
+    expect(found).toHaveLength(5);
+  });
+
   it('gets through a 1024px working image quickly', () => {
     const image = blank(1024, 1024);
     const orange = fillOf('domain-event');
