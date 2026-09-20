@@ -29,32 +29,32 @@ Read before starting: [spec/139](../specs/139-event-storming.md) Phase 8 + 9,
 
 ## How to work this plan
 
-- [ ] 0.1 Work **one task at a time**: read it, implement it the best way, tick
+- [x] 0.1 Work **one task at a time**: read it, implement it the best way, tick
       it, commit, move to the next. Never batch ticks or commits.
-- [ ] 0.2 TDD where there is behaviour: write the failing test first (red), make
+- [x] 0.2 TDD where there is behaviour: write the failing test first (red), make
       it pass (green), commit test + implementation together, refactor after.
-- [ ] 0.3 Before every commit: `pnpm format:check`, `pnpm --filter
+- [x] 0.3 Before every commit: `pnpm format:check`, `pnpm --filter
     @livediagram/live typecheck`, `pnpm --filter @livediagram/live lint`, and
       the relevant tests. Zero lint **errors** (the ~227 pre-existing warnings
       are the baseline; do not add to them).
-- [ ] 0.4 The editor on **:3102 serves a STATIC BUILD**. Any browser check needs
+- [x] 0.4 The editor on **:3102 serves a STATIC BUILD**. Any browser check needs
       `pnpm --filter @livediagram/live build` first, or you are testing old code.
-- [ ] 0.5 E2E must be run as `E2E_BASE_URL=http://localhost:3102 pnpm --filter
+- [x] 0.5 E2E must be run as `E2E_BASE_URL=http://localhost:3102 pnpm --filter
     @livediagram/live test:e2e photo-import`. Without that variable Playwright
       reuses **another checkout's** dev server on :3002 and silently tests a
       different product.
-- [ ] 0.6 Anything taking more than ~10s (builds, e2e, detector sweeps) runs
+- [x] 0.6 Anything taking more than ~10s (builds, e2e, detector sweeps) runs
       under PM2 with logs to file, named `livediagram-*`, launcher scripts in
       `~/.local/bin` (never `/tmp`, it is swept). Clean up your processes when
       done; never `pm2 delete all`.
-- [ ] 0.7 Record surprises in `LESSONS_LEARNED.md`, decisions in `DECISIONS.md`,
+- [x] 0.7 Record surprises in `LESSONS_LEARNED.md`, decisions in `DECISIONS.md`,
       ambiguities in `AMBIGUITIES.md` (all three are gitignored, project root).
 
 ---
 
 ## 1. Baseline: measure the real wall before changing anything
 
-- [ ] 1.1 Add a repeatable sweep over a folder of real photos that prints, per
+- [x] 1.1 Add a repeatable sweep over a folder of real photos that prints, per
       photo: detections, per-kind counts, the measured floors, and an **overlay
       PNG** per photo. Extend `packages/sticky-vision/scripts/calibrate.ts`
       (it already does most of this and caches decoded photos) rather than
