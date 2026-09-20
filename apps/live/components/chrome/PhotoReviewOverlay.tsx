@@ -76,6 +76,11 @@ export function PhotoReviewOverlay({
   const { width, height } = detection?.imageSize ?? { width: 1, height: 1 };
   // Still looking. Distinct from "looked and found nothing", which is advice.
   const detecting = detection === null;
+  // Whether the browser has actually PAINTED the photograph yet. The overlay
+  // opens before the image has been decoded, so there is a moment with a frame
+  // and no picture in it — and a frame with nothing in it, unexplained, is the
+  // same "is this broken?" as no overlay at all.
+  const [photoShown, setPhotoShown] = useState(false);
   const foundNothing = detection !== null && detected.length === 0;
   // Everything found is ticked: the common case is "add the wall", and making
   // the author tick thirty boxes to get there would be a toll gate.
@@ -233,7 +238,10 @@ export function PhotoReviewOverlay({
         <div className="flex min-w-0 flex-1 items-center justify-center">
           <div
             ref={photoRef}
-            className="relative cursor-crosshair select-none overflow-hidden rounded-lg shadow-2xl"
+            data-testid="photo-frame"
+            // A minimum size so the frame is THERE from the first paint, before
+            // the image has any dimensions of its own to give it.
+            className="relative min-h-[40vmin] min-w-[40vmin] cursor-crosshair select-none overflow-hidden rounded-lg bg-slate-800/60 shadow-2xl"
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
@@ -242,8 +250,21 @@ export function PhotoReviewOverlay({
               src={review.photoUrl}
               alt="The photographed wall"
               draggable={false}
+              onLoad={() => setPhotoShown(true)}
               className="block h-auto w-auto max-h-[90vmin] max-w-[90vmin]"
             />
+            {photoShown ? null : (
+              <div
+                data-testid="photo-loading"
+                className="absolute inset-0 flex animate-pulse items-center justify-center gap-2 text-xs text-slate-300"
+              >
+                <span
+                  aria-hidden
+                  className="h-3 w-3 shrink-0 animate-spin rounded-full border-2 border-slate-500 border-t-brand-400"
+                />
+                Loading your photo…
+              </div>
+            )}
             {notes.map((s, i) => {
               const active = ticked.has(s.id);
               const detectedOne = i < detected.length;

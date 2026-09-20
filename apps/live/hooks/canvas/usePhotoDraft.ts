@@ -165,6 +165,14 @@ const ERROR_TOASTS: Record<string, string> = {
   ai_error: 'The reader could not finish. Try again in a moment.',
 };
 
+// Why a pick was refused. One per reason: "something is in the way" is not
+// actionable, and the thing in the way is always on screen already.
+export const BUSY_TOASTS = {
+  review: 'A photo is already open. Finish or cancel that one first.',
+  draft: 'Finish the notes from the last photo — Add or Discard them — then import another.',
+  blocked: 'This board cannot take new notes right now.',
+} as const;
+
 export const NO_NOTES_TOAST =
   'No stickies found in this photo. Fill the frame with the wall, shoot straight on, and give it good light.';
 
@@ -284,12 +292,23 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
       const d = live.current;
       // One draft at a time, and never where the drop would be refused — a
       // review in progress counts as one, even though nothing has landed yet.
-      if (
-        d.createBlocked ||
-        draftNotesOf(d.activeTab.elements).length > 0 ||
-        reviewRef.current !== null
-      )
+      //
+      // Every refusal SPEAKS. Returning quietly here is how picking a photo
+      // came to look like a broken button: the author gets no overlay and no
+      // message, so the only theory left is that the click did not register,
+      // and the next move is to click again — which is refused just as quietly.
+      if (reviewRef.current !== null) {
+        d.toastError(BUSY_TOASTS.review);
         return;
+      }
+      if (draftNotesOf(d.activeTab.elements).length > 0) {
+        d.toastError(BUSY_TOASTS.draft);
+        return;
+      }
+      if (d.createBlocked) {
+        d.toastError(BUSY_TOASTS.blocked);
+        return;
+      }
       // A file we cannot decode at all is refused before anything opens: an
       // overlay showing a broken image is worse than a straight answer.
       const typeError = photoTypeError(file.type);

@@ -86,7 +86,15 @@ const MIME = {
 
 function serveFile(res, filePath) {
   const ext = path.extname(filePath);
-  res.writeHead(200, { 'Content-Type': MIME[ext] ?? 'application/octet-stream' });
+  res.writeHead(200, {
+    'Content-Type': MIME[ext] ?? 'application/octet-stream',
+    // NEVER let a browser hold on to this build. The HTML names the hashed
+    // JS chunks, so a cached page keeps running the code it was built with —
+    // and a tab left open across a rebuild then shows behaviour that no
+    // longer exists in the repo, which is indistinguishable from the fix not
+    // working. Costs nothing here: this server exists for e2e and review.
+    'Cache-Control': 'no-store, must-revalidate',
+  });
   createReadStream(filePath).pipe(res);
 }
 

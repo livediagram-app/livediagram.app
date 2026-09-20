@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { DetectedSticky } from '@livediagram/sticky-vision';
 import type { PhotoReview } from '@/hooks/canvas/usePhotoDraft';
@@ -117,5 +117,27 @@ describe('when the detection arrives', () => {
     screen.getByRole('button', { name: /^Add 2 notes$/ }).click();
     expect(onConfirm).toHaveBeenCalled();
     expect([...(onConfirm.mock.calls[0]![0] as Set<number>)]).toEqual([0, 1]);
+  });
+});
+
+describe('before the photograph itself has painted', () => {
+  it('reserves the frame and says the photo is loading', () => {
+    render(
+      <PhotoReviewOverlay review={review()} reading={false} onConfirm={noop} onCancel={noop} />,
+    );
+    // The overlay must never be an empty box: the frame the photo will fill is
+    // on screen from the first paint, with a skeleton in it, so the author can
+    // see WHERE the photo is going while the browser decodes it.
+    const frame = screen.getByTestId('photo-frame');
+    expect(frame).toBeTruthy();
+    expect(screen.getByTestId('photo-loading')).toBeTruthy();
+  });
+
+  it('drops the skeleton once the image has loaded', () => {
+    render(
+      <PhotoReviewOverlay review={review()} reading={false} onConfirm={noop} onCancel={noop} />,
+    );
+    fireEvent.load(screen.getByAltText('The photographed wall'));
+    expect(screen.queryByTestId('photo-loading')).toBeNull();
   });
 });

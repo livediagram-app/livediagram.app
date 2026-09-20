@@ -611,3 +611,35 @@ describe('the photo is on screen before the detector runs', () => {
     expect(h.toasts.join(' ')).toMatch(/no stickies found/i);
   });
 });
+
+// Picking a photo must ALWAYS answer. The first version returned silently when
+// an import was already open or a draft was still on the board, so the author
+// picked a file and got nothing at all — no overlay, no message — and the only
+// available theory was "the button is broken". Every refusal says why.
+describe('a pick is never silently dropped', () => {
+  it('says why when an import is already open', async () => {
+    const h = await reviewed();
+    h.toasts.length = 0;
+    await act(async () => {
+      await h.api().startFromFile(file());
+    });
+    expect(h.toasts.join(' ')).toMatch(/already|finish/i);
+  });
+
+  it('says why when a draft is still waiting on the board', async () => {
+    const h = await landed();
+    h.toasts.length = 0;
+    await act(async () => {
+      await h.api().startFromFile(file());
+    });
+    expect(h.toasts.join(' ')).toMatch(/already|finish/i);
+  });
+
+  it('says why when the board cannot take new notes at all', async () => {
+    const h = harness({ createBlocked: true });
+    await act(async () => {
+      await h.api().startFromFile(file());
+    });
+    expect(h.toasts.length).toBeGreaterThan(0);
+  });
+});

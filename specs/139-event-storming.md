@@ -850,16 +850,42 @@ Decisions from the operator:
   author can edit kind and text per note, untick a false positive, and press
   **Add N notes** to land the ticked ones as the on-canvas draft (Phase 8's
   `esDraft` machinery). Nothing lands until Add.
-- **The PHOTOGRAPH goes up first, then the loader, then the boxes.** The overlay
-  opens on the pick — before decoding, before detection — showing the picked
-  image with "Finding the stickies…" over on the list. Only then does the
-  detector run, and the boxes arrive into a frame the author is already looking
-  at. This is a rule about ORDER, not about speed: detection takes a blink on a
-  small photo and noticeably longer on a 12-megapixel one, and the first version
-  did all of it before rendering anything at all, so picking a big photo was
-  indistinguishable from a broken button — no overlay, no spinner, no error. The
-  hook yields a frame to the browser after opening the overlay so the paint
-  actually happens before the synchronous pixel work takes the thread back.
+- **THE AUTHOR NEVER WAITS ON AN UNEXPLAINED SCREEN.** The governing rule of the
+  whole gesture, and the one every other bullet here serves: from the moment a
+  photo is picked to the moment the notes land, there is always something on
+  screen saying what is happening. No silent gap, no frozen board, no refusal
+  without a reason. If a step cannot be made fast, it is made VISIBLE.
+
+- **The order is fixed: overlay → frame → photograph → loader → boxes → words.**
+
+  1. The overlay opens ON THE PICK. Not after decoding, not after detection —
+     the click that chooses a file is the click that opens it.
+  2. It opens with the FRAME the photo will fill already drawn, even though
+     there is no photo in it yet, so the author can see where the picture is
+     going before it arrives.
+  3. That frame holds a "Loading your photo…" skeleton until the browser has
+     actually painted the image. An empty frame, unexplained, is the same
+     question as an empty screen.
+  4. The photograph itself appears next — the file as picked, shown from an
+     object URL, which needs no decoding by us and no round trip.
+  5. ONLY THEN does the work start, with its own loader: "Finding the
+     stickies…" while the detector runs, then the boxes revealed into the frame
+     the author is already looking at, then "Reading the words…" behind them.
+
+  This is a rule about ORDER, not about speed. Detection takes a blink on a
+  small photo and noticeably longer on a 12-megapixel one; the first version did
+  all of it before rendering anything, so picking a big photo was
+  indistinguishable from a broken button — no overlay, no spinner, no error, and
+  the author's only available move was to click again. The hook yields a frame
+  to the browser after opening the overlay, because a React state change and the
+  synchronous pixel work that follows it otherwise land in the same frame and
+  nothing paints until the work is over.
+
+- **Every refusal speaks.** A pick that cannot be honoured — an import already
+  open, a draft still waiting on the board, a board that cannot take notes, an
+  unsupported file — says which, in a toast, every time. Silence is the one
+  answer that leaves the author with no move except to try again, and a refusal
+  that repeats silently reads as breakage.
 - **Nothing found keeps the photo up.** "No stickies found in this photo" with
   the retake advice appears IN the overlay, over the photograph it is about, and
   the author can still drag boxes by hand or cancel. Closing the dialog would
