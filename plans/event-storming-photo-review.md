@@ -31,14 +31,18 @@ The review is a THREE-STEP wizard the author walks through, each step visible:
 - [x] 3.1 Draw a box on the overlay around an undetected sticky: drag to draw, colour under the box decides kind, blank fallback.
 - [x] 3.2 Drawn boxes appear in the same tick list as detected ones and land through the same commit path.
 
-## 4. In-browser OCR (no key)
+## 4. Reading the handwriting (no key required)
 
 - [x] 4.1 `apps/live/lib/ocr.ts`: `readCropsInBrowser(crops, opts)` with Tesseract.js in WASM — no key, no server, no upload; blank on any failure.
 - [x] 4.2 Wire `usePhotoDraft.readWords` to it, replacing `apiAiReadNotes`; drop the AI-key gate on the photo import.
 - [x] 4.3 Measure against real handwriting crops: Tesseract and TrOCR-small/base ALL garble sub-20px glyphs; Tesseract reads clear lettering CORRECTLY. Keep Tesseract.
+- [x] 4.3b REVERSED by 4.7: measured across a WHOLE wall (28 crops, not hand-picked clear ones) Tesseract reads 1 note in 24 and invents words on every blank crop.
 - [x] 4.4 Preprocess each crop (upscale to ~320px short side, grey, PSM single block) and keep the ORIGINAL resolution up to `CROP_MAX_EDGE_PX` 1024.
 - [x] 4.5 Verify: clear marker text "Course Classes Added" reads back exactly; e2e green.
-- [ ] 4.6 Bundle the Tesseract worker + `eng.traineddata` locally so reading works offline (no CDN).
+- [x] 4.6 DROPPED with Tesseract itself (4.7); the in-browser model's weights come from the HF CDN on first use and are cached, and a deployment that needs offline reading configures a server model.
+- [x] 4.7 Bench every candidate reader on one real wall and record it (`docs/vision/handwriting-readers.md`): Tesseract 17% of words, TrOCR 1%, Florence-2 8%, SmolVLM-256M ~80%, a hosted model 99%.
+- [x] 4.8 Pluggable reader (`apps/live/lib/reading/`): server model when the api reports one, SmolVLM-256M in the browser when not; one interface, chosen by capability, never a gate on the import.
+- [x] 4.9 Prove the model runtime is a LAZY chunk — no editor visitor downloads it, and a static export still builds.
 
 ## 5. Fold-back
 

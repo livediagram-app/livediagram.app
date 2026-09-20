@@ -15,7 +15,7 @@ import {
   type Tab,
 } from '@livediagram/diagram';
 import { toNormalised, type DetectedSticky } from '@livediagram/sticky-vision';
-import { readCropsInBrowser } from '@/lib/ocr';
+import { selectReader } from '@/lib/reading/select';
 import { buildEventStormingNote } from '@/lib/draw-commit';
 import { setPhotoDraftView } from '@/lib/photo-draft-preview';
 import { detectAndCrop, PhotoDetectFailed, type PhotoDetection } from '@/lib/photo-detect';
@@ -88,6 +88,10 @@ type PhotoDraftDeps = {
   activeTab: Tab;
   activeId: string;
   ownerId: string;
+  // Whether the api has a model configured. Decides WHO reads the handwriting:
+  // the server model when there is one, the in-browser model when there is not
+  // (spec/139 Phase 9). Never a gate on the import itself — both read.
+  aiEnabled: boolean;
   createBlocked: boolean;
   // The gesture's three history verbs, exactly as the eraser and the drag use
   // them: arm one checkpoint, write through `tick`, and either leave the step
@@ -205,7 +209,11 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
     async (detection: PhotoDetection, controller: AbortController, run: number) => {
       const current = () => runRef.current === run;
       try {
-        const textById = await readCropsInBrowser(detection.crops, {
+        const { read } = selectReader({
+          aiEnabled: live.current.aiEnabled,
+          ownerId: live.current.ownerId,
+        });
+        const textById = await read(detection.crops, {
           signal: controller.signal,
           onProgress: (readSoFar) => {
             if (!current()) return;

@@ -11,16 +11,21 @@ perfectly, **words** is the share of true words present in the answer, **CER**
 is character error rate, **blanks wrong** is how many of the four empty crops
 got invented text.
 
-| Reader                                    | Runs where                | Download  | exact                                      | words | CER  | blanks wrong     | time / crop                      |
-| ----------------------------------------- | ------------------------- | --------- | ------------------------------------------ | ----- | ---- | ---------------- | -------------------------------- |
-| Tesseract.js (shipped, `lib/ocr.ts`)      | browser, WASM             | ~15 MB    | 1/24                                       | 17%   | 57%  | 4/4              | 0.05 s                           |
-| TrOCR-small-handwritten (q8 and fp32)     | browser                   | ~60 MB    | 0/24                                       | 1%    | >100 | 4/4              | 0.5 s                            |
-| Florence-2-base-ft `<OCR>`                | browser                   | ~330 MB   | 0/24                                       | 8%    | 21%  | 4/4              | 3.5 s                            |
-| SmolVLM-256M-Instruct q4                  | browser                   | ~190 MB   | 13/24                                      | 78%   | 15%  | 0/4 (says "No.") | 7 s WASM 1-thread · 0.5 s WebGPU |
-| SmolVLM-256M-Instruct q4, image splitting | browser                   | ~190 MB   | 16/24                                      | 81%   | 10%  | 0/4              | ~4× the above                    |
-| SmolVLM-500M-Instruct q4                  | browser                   | ~360 MB   | 17/24                                      | 82%   | 13%  | 0/4              | ~14 s WASM 1-thread              |
-| Qwen2.5-VL-7B Q4_K_M, llama.cpp, RTX 4090 | self-hosted `AI_BASE_URL` | 5 GB once | 22/24                                      | 96%   | 3.7% | 0/4              | 0.25 s                           |
-| Gemini 2.5 Flash-Lite / gpt-5-nano / etc. | cloud via `AI_BASE_URL`   | none      | not measured (no key on the bench machine) |       |      |                  | ~$0.001 per 40-note wall         |
+| Reader                                             | Runs where                  | Download  | exact | words | CER  | blanks wrong     | time / crop                      |
+| -------------------------------------------------- | --------------------------- | --------- | ----- | ----- | ---- | ---------------- | -------------------------------- |
+| Tesseract.js (shipped, `lib/ocr.ts`)               | browser, WASM               | ~15 MB    | 1/24  | 17%   | 57%  | 4/4              | 0.05 s                           |
+| TrOCR-small-handwritten (q8 and fp32)              | browser                     | ~60 MB    | 0/24  | 1%    | >100 | 4/4              | 0.5 s                            |
+| Florence-2-base-ft `<OCR>`                         | browser                     | ~330 MB   | 0/24  | 8%    | 21%  | 4/4              | 3.5 s                            |
+| SmolVLM-256M-Instruct q4                           | browser                     | ~190 MB   | 13/24 | 78%   | 15%  | 0/4 (says "No.") | 7 s WASM 1-thread · 0.5 s WebGPU |
+| SmolVLM-256M-Instruct q4, image splitting          | browser                     | ~190 MB   | 16/24 | 81%   | 10%  | 0/4              | ~4× the above                    |
+| SmolVLM-500M-Instruct q4                           | browser                     | ~360 MB   | 17/24 | 82%   | 13%  | 0/4              | ~14 s WASM 1-thread              |
+| Qwen2.5-VL-7B Q4_K_M, llama.cpp, RTX 4090          | self-hosted `AI_BASE_URL`   | 5 GB once | 22/24 | 96%   | 3.7% | 0/4              | 0.25 s                           |
+| **gemini-2.5-flash-lite**, batched 6               | cloud (hosted default tier) | none      | 23/24 | 99%   | 0.2% | 0/4              | 0.2 s (5.9 s for the wall)       |
+| gemini-3.6-flash, batched 6 (the worker's default) | cloud                       | none      | 22/24 | 95%   | 1.1% | 0/4              | 0.9 s (26 s for the wall)        |
+
+Cloud readings are measured through the worker's OWN request shape (its prompt,
+`response_format: json_object`, six crops per call), so the numbers describe
+what ships rather than a friendlier harness.
 
 Readings that count as "wrong" on Qwen-7B were `preparation` for
 `preparations` and `describ`/`proff` for strokes that are genuinely ambiguous
@@ -51,7 +56,20 @@ in the photo.
 - **Cloud is a rounding error in cost.** On the cheap vision tier
   (Gemini Flash-Lite, gpt-5-nano, Qwen-VL-8B) a crop is ~300 prompt tokens and
   ~20 out, so a 40-note wall is a tenth of a cent; Google's free tier makes it
-  zero at workshop volumes. Quality was not measured here.
+  zero at workshop volumes.
+- **The cheapest cloud model is also the most accurate one here.**
+  `gemini-2.5-flash-lite` reads 99% of the words at 0.2% CER, beating
+  `gemini-3.6-flash` (95% / 1.1%) while being about four times cheaper per token
+  and four times faster on the same wall. Reading a sticky is a narrow, literal
+  task, and the reasoning a bigger model adds is spent on a job that does not
+  need it. `AI_VISION_MODEL` exists precisely so the read path can differ from
+  the assistant's model.
+- **Budget headroom is not optional with a thinking model.** Reasoning tokens
+  come out of `max_tokens`: at 300 for six crops `gemini-3.6-flash` returns
+  half-written JSON with `finish_reason: "length"`, which looks exactly like a
+  malformed answer. The worker's 2000 is comfortable (~100-250 completion tokens
+  per batch of six), and it now logs the cut-off by name rather than calling it
+  unparseable.
 
 ## Browser feasibility, honestly
 

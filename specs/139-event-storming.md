@@ -840,9 +840,10 @@ low-threshold capture surface can least afford.
 
 ## Phase 9 (in progress): review the detection, draw the misses
 
-The photo import gains a **review overlay**, an **in-browser reader**, an
-**animated detection reveal**, and the detector is hardened against real
-handwriting. Decisions from the operator:
+The photo import gains a **review overlay**, a **pluggable reader** (a server
+model when one is configured, an in-browser model when not), an **animated
+detection reveal**, and the detector is hardened against real handwriting.
+Decisions from the operator:
 
 - **A review overlay first** (reverses Phase 8's "no preview" ruling). The photo
   is shown overlaid with every detected box, coloured by kind and tickable; the
@@ -857,17 +858,30 @@ handwriting. Decisions from the operator:
 - **Drawing a box around an undetected sticky adds that note directly.** The box
   IS the detection: the paper colour under it decides the kind, and a blank note
   is the fallback. It is not a re-run of the detector.
-- **The reader is in-browser OCR, no key.** Reading is Tesseract.js in WASM
-  (`apps/live/lib/ocr.ts`): no API key, no server, no upload, and the crops never
-  leave the machine at all. Each crop is upscaled (to ~320px on the short side,
-  at most 4×), greyed, and read in single-block mode, which is what lets it read
-  CLEAR lettering correctly. The honest limit: Tesseract is trained on PRINTED
-  text, so small marker handwriting reads only partly — the review's editable
-  text is what makes a partial read workable, and an empty read still lands the
-  note. If the model cannot load (offline, a blocked CDN), every crop lands
-  blank rather than failing the import. The photo import is therefore NOT gated
-  on the model key any more. Crops keep the ORIGINAL resolution up to
-  `CROP_MAX_EDGE_PX` (1024).
+- **The reader is PLUGGABLE, and the import needs no key either way.** Two
+  readers behind one interface (`apps/live/lib/reading/`), chosen by what the
+  deployment HAS rather than by what the author asks for: a model configured on
+  the api reads the crops (`POST /api/ai/read-notes`), and when there is none an
+  in-browser model reads them (`browser-reader.ts`, SmolVLM-256M through
+  transformers.js, ~190MB fetched once and cached, WebGPU where the driver
+  allows it and WASM everywhere else). Detection is in-browser in both cases,
+  and the photograph itself never leaves the machine in either — only crops of
+  individual notes, and only on the server path.
+
+  The server wins when it exists because it is markedly better, and that is
+  measured rather than assumed: on one real wall a hosted model read 99% of the
+  words against ~80% for the largest model worth downloading. Whichever reads,
+  a crop it cannot read lands a BLANK note rather than a guess, and if a reader
+  fails entirely every note still lands (the paper was found) with the reason in
+  a toast. Crops keep the ORIGINAL resolution up to `CROP_MAX_EDGE_PX` (1024).
+  See `docs/vision/handwriting-readers.md` for the measurements.
+
+  _(This REVERSES Phase 9's first ruling, "the reader is Tesseract.js in WASM".
+  Tesseract was measured on hand-picked clear crops; across a whole wall it read
+  ONE note in twenty-four and invented words on every blank crop, because it is
+  a printed-text engine and a marker scrawl on coloured paper is a different
+  problem. It is gone.)_
+
 - **Detector hardening.** A morphological close (dilate then erode by ~a pen
   stroke) runs over the paper mask before connected components, so a note
   shattered by handwriting becomes one blob; the note-size estimate follows the

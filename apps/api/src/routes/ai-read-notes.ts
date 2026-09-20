@@ -103,8 +103,22 @@ export async function handleAiReadNotes(ctx: RouteContext): Promise<Response> {
 
   let payload: unknown;
   try {
-    const completion = (await res.json()) as { choices?: { message?: { content?: string } }[] };
-    const raw = completion.choices?.[0]?.message?.content;
+    const completion = (await res.json()) as {
+      choices?: { finish_reason?: string; message?: { content?: string } }[];
+    };
+    const choice = completion.choices?.[0];
+    const raw = choice?.message?.content;
+    // A reasoning model spends part of the budget THINKING, so a batch can run
+    // out mid-answer and arrive as half-written JSON. That is indistinguishable
+    // from a malformed answer unless the provider's own reason is carried into
+    // the log — and "unparseable" would send someone after the parser rather
+    // than after MAX_TOKENS.
+    if (choice?.finish_reason === 'length') {
+      console.error(
+        `[ai/read-notes] answer truncated: finish_reason=length model=${model} crops=${crops.length} max_tokens=${MAX_TOKENS} — raise MAX_TOKENS or send fewer crops`,
+      );
+      return json({ error: 'ai_error' }, { status: 502 });
+    }
     if (!raw) {
       payload = null;
     } else {

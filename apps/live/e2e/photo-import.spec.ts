@@ -8,10 +8,11 @@ import {
 } from './fixtures';
 import { wallPhotoPng, type WallNote } from './fixtures/wall-photo';
 
-// Importing a photographed wall (spec/139 Phase 8 + 9). Both the DETECTOR and
-// the in-browser OCR are real code, but the OCR model (Tesseract, loaded from
-// a CDN) is BLOCKED in e2e — it reads blank, which is what a wall photo with
-// no lettering in it would read anyway. What only a browser can answer: a real
+// Importing a photographed wall (spec/139 Phase 8 + 9). The DETECTOR is real
+// code; the READER is stubbed to answer blank, which is what a drawn wall with
+// no lettering on it would read anyway. Which reader would have run is a
+// capability decision (server model vs in-browser model), covered in unit
+// tests — here it is stubbed so the suite never downloads a model. What only a browser can answer: a real
 // image file becomes real draft notes at the right kinds and places, the
 // review overlay shows the photo and boxes, drawing a box adds a missed note,
 // Add is one undo step, Discard leaves nothing, and a draft survives a reload.
@@ -37,10 +38,17 @@ async function mockCapabilities(page: Page) {
 
 async function openBoard(page: Page) {
   await mockCapabilities(page);
-  // The OCR model loads from a CDN; in e2e it is blocked so reading is fast and
-  // blank (the model itself is not what these tests exercise).
+  // Capabilities say a model is configured, so the SERVER reader runs: stub it
+  // to answer blank rather than calling a real provider from a test.
+  await page.route('**/api/ai/read-notes', async (route) => {
+    const crops = (JSON.parse(route.request().postData() ?? '{}').crops ?? []) as { id: number }[];
+    await route.fulfill({
+      json: { texts: crops.map((c) => ({ id: c.id, text: '', legible: false })) },
+    });
+  });
+  // Safety net: no test may pull model weights down the wire.
+  await page.route('**/huggingface.co/**', (r) => r.abort());
   await page.route('**/cdn.jsdelivr.net/**', (r) => r.abort());
-  await page.route('**/tessdata.projectnaptha.com/**', (r) => r.abort());
   await startTemplateDiagram(page, /Browse Technical templates/, /^Event storming/i);
   await page.locator('[data-canvas-a11y-root]').waitFor();
   await dismissQuickTour(page);
@@ -263,8 +271,8 @@ test('a draft survives a reload, and can still be added', async ({ page, pageErr
 });
 
 test('the photo import needs no model key', async ({ page, pageErrors }) => {
-  // A deployment WITHOUT a key: detection and OCR are both in-browser, so the
-  // entry point is still there.
+  // A deployment WITHOUT a key: detection and reading are both in-browser, so
+  // the entry point is still there.
   await page.route('**/api/capabilities', (route) =>
     route.fulfill({ json: { aiEnabled: false, emailEnabled: false } }),
   );

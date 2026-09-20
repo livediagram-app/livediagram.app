@@ -311,3 +311,31 @@ describe('what the author is told when the provider says no', () => {
     expect(await res.json()).toEqual({ error: 'ai_quota' });
   });
 });
+
+// A reasoning model spends part of its token budget THINKING, and when the
+// budget runs out the provider returns a half-written answer with
+// `finish_reason: "length"`. That reads exactly like a malformed answer, so
+// without naming it the log sends whoever is on call hunting a parser bug
+// instead of raising a limit. Measured: gemini-3.6-flash truncates at
+// max_tokens=300 for six crops and answers cleanly at 2000.
+describe('a truncated answer says so', () => {
+  it('names the cut-off rather than blaming the parser', async () => {
+    const warnings: string[] = [];
+    const spy = vi.spyOn(console, 'error').mockImplementation((...args: unknown[]) => {
+      warnings.push(args.map(String).join(' '));
+    });
+    globalThis.fetch = vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({
+            choices: [{ finish_reason: 'length', message: { content: '{"texts":[{"id":' } }],
+          }),
+          { status: 200 },
+        ),
+    ) as typeof fetch;
+
+    expect((await handleAiReadNotes(makeCtx())).status).toBe(502);
+    expect(warnings.join(' ')).toMatch(/finish_reason=length|truncated/i);
+    spy.mockRestore();
+  });
+});

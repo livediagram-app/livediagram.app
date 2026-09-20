@@ -1556,6 +1556,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     activeTab,
     activeId,
     ownerId: selfParticipant.id,
+    aiEnabled: aiCapable,
     createBlocked,
     tick,
     markCheckpoint,

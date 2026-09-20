@@ -13,13 +13,16 @@ import { getPhotoDraftView, setPhotoDraftView } from '@/lib/photo-draft-preview'
 import { usePhotoDraft } from './usePhotoDraft';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn(), titleCaseType: (s: string) => s }));
-vi.mock('@/lib/ocr', () => ({ readCropsInBrowser: vi.fn() }));
+vi.mock('@/lib/reading/select', () => ({ selectReader: vi.fn() }));
 vi.mock('@/lib/photo-detect', async () => {
   const actual = await vi.importActual<typeof import('@/lib/photo-detect')>('@/lib/photo-detect');
   return { ...actual, detectAndCrop: vi.fn() };
 });
 
-import { readCropsInBrowser } from '@/lib/ocr';
+import { selectReader } from '@/lib/reading/select';
+
+// The hook asks `selectReader` who reads; the tests drive that reader directly.
+const readCrops = vi.fn();
 import { detectAndCrop, PhotoDetectFailed, type PhotoDetection } from '@/lib/photo-detect';
 import type { DetectedSticky } from '@livediagram/sticky-vision';
 import { track } from '@/lib/telemetry';
@@ -77,7 +80,9 @@ function esNote(id: string, label: string, x = 0): StickyElement {
   } as StickyElement;
 }
 
-function harness(opts: { elements?: Element[]; createBlocked?: boolean } = {}) {
+function harness(
+  opts: { elements?: Element[]; createBlocked?: boolean; aiEnabled?: boolean } = {},
+) {
   let elements = opts.elements ?? [];
   // The editor's real history semantics, minimally: a checkpoint pushes a
   // snapshot, ticks mutate without one, cancel restores and pops.
@@ -94,6 +99,7 @@ function harness(opts: { elements?: Element[]; createBlocked?: boolean } = {}) {
       },
       activeId: 't1',
       ownerId: 'owner-1',
+      aiEnabled: opts.aiEnabled === true,
       createBlocked: opts.createBlocked === true,
       tick: (map) => {
         elements = map(elements);
@@ -135,8 +141,13 @@ const file = () => new File([new Uint8Array([1])], 'wall.jpg', { type: 'image/jp
 
 beforeEach(() => {
   setPhotoDraftView(null);
+  readCrops.mockReset();
+  vi.mocked(selectReader).mockImplementation((deps) => ({
+    kind: deps.aiEnabled ? 'server' : 'browser',
+    read: readCrops,
+  }));
   vi.mocked(detectAndCrop).mockResolvedValue(detection([sticky()]));
-  vi.mocked(readCropsInBrowser).mockResolvedValue(read([{ id: 0, text: 'Order placed' }]));
+  vi.mocked(readCrops).mockResolvedValue(read([{ id: 0, text: 'Order placed' }]));
 });
 afterEach(() => {
   cleanup();
@@ -192,7 +203,7 @@ describe('the review wizard', () => {
 
   it('lands only the ticked boxes', async () => {
     vi.mocked(detectAndCrop).mockResolvedValue(detection([sticky(), sticky({ id: 1, x: 600 })]));
-    vi.mocked(readCropsInBrowser).mockResolvedValue(
+    vi.mocked(readCrops).mockResolvedValue(
       read([
         { id: 0, text: 'Order placed' },
         { id: 1, text: 'Payment received' },
@@ -279,7 +290,7 @@ describe('landing a draft', () => {
 
   it('brings the draft into view, with the notes it was matched against', async () => {
     vi.mocked(detectAndCrop).mockResolvedValue(detection([sticky(), sticky({ id: 1, x: 600 })]));
-    vi.mocked(readCropsInBrowser).mockResolvedValue(
+    vi.mocked(readCrops).mockResolvedValue(
       read([
         { id: 0, text: 'Order placed' },
         { id: 1, text: 'Payment received' },
@@ -296,7 +307,7 @@ describe('landing a draft', () => {
 
   it('publishes what the photo matched, for the fade and the badges', async () => {
     vi.mocked(detectAndCrop).mockResolvedValue(detection([sticky(), sticky({ id: 1, x: 600 })]));
-    vi.mocked(readCropsInBrowser).mockResolvedValue(
+    vi.mocked(readCrops).mockResolvedValue(
       read([
         { id: 0, text: 'Order placed' },
         { id: 1, text: 'Payment received' },
@@ -309,7 +320,7 @@ describe('landing a draft', () => {
   });
 
   it('records what the photo read when it differs from the board', async () => {
-    vi.mocked(readCropsInBrowser).mockResolvedValue(read([{ id: 0, text: 'Order plaeced' }]));
+    vi.mocked(readCrops).mockResolvedValue(read([{ id: 0, text: 'Order plaeced' }]));
     await landed({ elements: [esNote('a', 'Order placed')] });
     expect(getPhotoDraftView()?.differences.get('a')).toBe('Order plaeced');
   });
@@ -318,7 +329,7 @@ describe('landing a draft', () => {
     const existing = [esNote('a', 'Order placed')];
     const frozen = JSON.stringify(existing);
     vi.mocked(detectAndCrop).mockResolvedValue(detection([sticky(), sticky({ id: 1, x: 600 })]));
-    vi.mocked(readCropsInBrowser).mockResolvedValue(
+    vi.mocked(readCrops).mockResolvedValue(
       read([
         { id: 0, text: 'Order placed' },
         { id: 1, text: 'Payment received' },
@@ -337,11 +348,11 @@ describe('landing a draft', () => {
     expect(h.api().state.stage).toBe('idle');
     // The detector already answered: spending a model call here would be
     // spending the operator's budget on a picture of a wall.
-    expect(readCropsInBrowser).not.toHaveBeenCalled();
+    expect(readCrops).not.toHaveBeenCalled();
   });
 
   it('lands an unreadable crop as an EMPTY note — the paper was there', async () => {
-    vi.mocked(readCropsInBrowser).mockResolvedValue(read([{ id: 0, text: '', legible: false }]));
+    vi.mocked(readCrops).mockResolvedValue(read([{ id: 0, text: '', legible: false }]));
     const h = await landed();
     expect(h.drafts()).toHaveLength(1);
     expect((h.drafts()[0] as StickyElement).label).toBe('');
@@ -349,7 +360,7 @@ describe('landing a draft', () => {
   });
 
   it('shows the review BLANK and says why when the read fails', async () => {
-    vi.mocked(readCropsInBrowser).mockRejectedValue(new Error('ai_quota'));
+    vi.mocked(readCrops).mockRejectedValue(new Error('ai_quota'));
     const h = await reviewed();
     // The detector's work is not thrown away: the boxes are in the review,
     // blank, and the author can type the words themselves.
@@ -361,7 +372,7 @@ describe('landing a draft', () => {
   });
 
   it('still keeps the blank draft through Add after a failed read', async () => {
-    vi.mocked(readCropsInBrowser).mockRejectedValue(new Error('ai_error'));
+    vi.mocked(readCrops).mockRejectedValue(new Error('ai_error'));
     const h = await reviewed();
     act(() => h.api().confirm(new Set([0]), h.api().review?.textById ?? new Map(), []));
     h.rerender();
@@ -374,7 +385,7 @@ describe('landing a draft', () => {
     vi.mocked(detectAndCrop).mockRejectedValue(new PhotoDetectFailed('photo_unsupported_heic'));
     const h = await landed();
     expect(h.toasts[0]).toMatch(/HEIC/);
-    expect(readCropsInBrowser).not.toHaveBeenCalled();
+    expect(readCrops).not.toHaveBeenCalled();
   });
 
   it('refuses in a read-only / locked session', async () => {
@@ -392,7 +403,7 @@ describe('landing a draft', () => {
   });
 
   it('treats a cancel as a change of mind, not a failure', async () => {
-    vi.mocked(readCropsInBrowser).mockImplementation(async (_crops, opts) => {
+    vi.mocked(readCrops).mockImplementation(async (_crops, opts) => {
       await new Promise((r) => setTimeout(r, 5));
       if (opts?.signal?.aborted) throw new Error('aborted');
       return read([{ id: 0, text: 'Order placed' }]);
@@ -451,7 +462,7 @@ describe('Discard', () => {
   it('leaves the board byte-for-byte as it was', async () => {
     const existing = [esNote('a', 'Order placed', 900)];
     const frozen = JSON.stringify(existing);
-    vi.mocked(readCropsInBrowser).mockResolvedValue(read([{ id: 0, text: 'Payment received' }]));
+    vi.mocked(readCrops).mockResolvedValue(read([{ id: 0, text: 'Payment received' }]));
     const h = await landed({ elements: existing });
     expect(h.drafts()).toHaveLength(1);
     act(() => h.api().discard());
@@ -487,5 +498,30 @@ describe('the pure lifecycle the hook leans on', () => {
       true,
     );
     expect(discardDraft(board).map((el) => el.id)).toEqual(['a']);
+  });
+});
+
+// WHO reads is decided by what the deployment has, not by the author (spec/139
+// Phase 9). The hook must pass the capability through and use whatever reader
+// comes back — the import works either way.
+describe('choosing the reader', () => {
+  it('asks for the server reader when the api reports a model', async () => {
+    const h = harness({ aiEnabled: true });
+    await act(async () => {
+      await h.api().startFromFile(file());
+    });
+    expect(selectReader).toHaveBeenCalledWith(
+      expect.objectContaining({ aiEnabled: true, ownerId: 'owner-1' }),
+    );
+    expect(readCrops).toHaveBeenCalled();
+  });
+
+  it('asks for the in-browser reader when no model is configured', async () => {
+    const h = harness();
+    await act(async () => {
+      await h.api().startFromFile(file());
+    });
+    expect(selectReader).toHaveBeenCalledWith(expect.objectContaining({ aiEnabled: false }));
+    expect(readCrops).toHaveBeenCalled();
   });
 });
