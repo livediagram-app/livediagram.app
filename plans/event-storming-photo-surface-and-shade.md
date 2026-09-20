@@ -409,19 +409,19 @@ The review stops being a dialog with a photo pane and a list pane. It becomes
 
 ## 4. Make the two halves meet
 
-- [ ] 4.1 Verify `usePhotoDraft` needs no change: the surface's `onConfirm`
+- [x] 4.1 Verify `usePhotoDraft` needs no change: the surface's `onConfirm`
       contract (ticked ids, edited texts, manual boxes) is unchanged. If it does
       need a change, keep the hook's public shape and update its tests in the
       same commit.
-- [ ] 4.2 Update `apps/live/e2e/photo-import.spec.ts` for the new surface: the
+- [x] 4.2 Update `apps/live/e2e/photo-import.spec.ts` for the new surface: the
       helpers that read `overlay.locator('input[type="text"]')` to count notes
       must target whatever the surface now exposes. Keep every behaviour the
       suite asserts (draft lands, one undo, Discard, reload, draw-a-box,
       no-model-key, found-nothing).
-- [ ] 4.3 Run the e2e suite (with `E2E_BASE_URL`) after a rebuild: 9/9 green.
-- [ ] 4.4 Run the full repo suite: `pnpm test` (2197+ tests), `pnpm typecheck`,
+- [x] 4.3 Run the e2e suite (with `E2E_BASE_URL`) after a rebuild: 9/9 green.
+- [x] 4.4 Run the full repo suite: `pnpm test` (2197+ tests), `pnpm typecheck`,
       `pnpm lint`, `pnpm format:check` — all green.
-- [ ] 4.5 Commit.
+- [x] 4.5 Commit.
 
 ## 5. Prove it on the real wall, in a browser
 

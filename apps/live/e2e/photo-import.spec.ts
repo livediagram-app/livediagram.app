@@ -76,7 +76,7 @@ async function importToReview(page: Page, notes: WallNote[]) {
     .locator('[data-testid="photo-finding"]')
     .waitFor({ state: 'hidden', timeout: 30_000 });
   // The photo itself must be visible AND sized: a collapsed container renders
-  // the overlay with the text list but no image and no boxes (a regression
+  // the surface with its controls but no image and no boxes (a regression
   // this guards against).
   const img = overlay.locator('img');
   await expect(img).toBeVisible();
@@ -213,8 +213,10 @@ test('drawing a box adds a sticky the detector missed', async ({ page, pageError
   await page.mouse.move(box.x + box.width * 0.5, box.y + box.height * 0.95, { steps: 8 });
   await page.mouse.up();
 
-  // Two notes now: the detected one and the one just drawn.
-  await expect(overlay.locator('input[type="text"]')).toHaveCount(2);
+  // Two notes now: the detected one and the one just drawn. Counted by the
+  // words each box carries — the surface IS the photograph, so there is no
+  // list beside it to count rows in.
+  await expect(overlay.locator('[data-testid^="note-words-"]')).toHaveCount(2);
   await page.getByRole('button', { name: /^Add 2 notes$/ }).click();
   await expect(drafts(page)).toHaveCount(2);
 
