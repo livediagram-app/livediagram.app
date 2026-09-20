@@ -330,14 +330,14 @@ a cost of two real notes; and a one-surface tile measures its own saturation
 floor when that surface matches the frame's wall, which keeps a paper-coloured
 wall out of the mask where the frame-wide floor is too low for it.
 
-- [ ] 2.8 Check the synthetic demo still behaves: `pnpm demo:sticky-vision`,
+- [x] 2.8 Check the synthetic demo still behaves: `pnpm demo:sticky-vision`,
       confirm it still finds 17 of 18 (or better — if the aggregate is now found
       too, update `docs/vision/sticky-detection.md`, `packages/sticky-vision/README.md`
       and spec/139, all three of which currently state that limit).
-- [ ] 2.9 Update `docs/vision/sticky-detection.md`: the pipeline step for floors,
+- [x] 2.9 Update `docs/vision/sticky-detection.md`: the pipeline step for floors,
       the new constants table row, and the "where it still falls over" section
       (what shade tolerance now covers and what it does not).
-- [ ] 2.10 Commit.
+- [x] 2.10 Commit.
 
 ## 3. One surface: the photo, with everything on it
 
