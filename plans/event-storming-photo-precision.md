@@ -30,6 +30,43 @@ work exposed. Everything here comes from one annotated screenshot of
    ("DS70PLUS-450BL1", "Micro-Stc", the pink tape across it) is brown, roughly
    rectangular, and is being taken for paper.
 
+## Folded in: what the operator saw on photos 2 and 3
+
+Three more screenshots, and the verdict "some of them are quite bad still!!",
+"can we please stop detecting the tape? and not miss the stickies that are
+super clearly there?", "a single sticky detected as 2 whereas other times it
+detects 4 stickies as a single one??". They name the photos by position in the
+six; the files are `20260920_201646` (photo 1, the gym wall above),
+`20260920_201707` (photo 2) and `20260920_201713` (photo 3).
+
+5. **The size statistic is poisoned, and it breaks splitting BOTH ways.** On
+   photo 1 a single note ("ROUTINE STARTED") is chopped into three boxes while
+   the 2x2 cluster stays one. Both fall out of one broken number: tape and junk
+   enter the population the median note size is measured from, so the median is
+   too small — a real note then looks like two notes and is cut, and a genuine
+   cluster is so far off the median that the guards refuse to touch it.
+6. **Photo 2 is a recall COLLAPSE, on the easiest notes there are.** Dozens of
+   large, clearly-lit orange notes are not detected at all ("5 min. Geo
+   location DETECTED", "Gym Entered", "Door NFC used", "Session Ended", "GYM
+   AUTO LEAVE LEFT", "MACHINE SCANNED (egym)", "Machine Exited tagged", and
+   more), while small boxes land on tape. The same build scores well on photo
+   1, so the pipeline is OVERFIT to photo 1. Prime suspect: an illumination
+   tile mostly covered by one big note measures that NOTE as its wall, and the
+   note then fails its own floor.
+7. **Tape is being detected everywhere.** Photo 3 strings dozens of tiny boxes
+   along the masking-tape runs and the paper seams while whole columns of real
+   notes go unboxed. Masking tape is pale yellow — the same family as the
+   `aggregate` note (`#fef9c3`) — so hue alone will never separate it. Shape
+   and size must: a tape run is long, thin and nothing like a note.
+8. **The reader gave up outright on photo 3** ("The reader could not finish
+   (ai_error)"), so every box reads "Type the words…". Observed now, not
+   suspected.
+
+The bar the operator states: **every sticky boxed exactly once, nothing that is
+not a sticky boxed at all.** And the measurement rule that follows from photo 2
+being a collapse on a build that suits photo 1: score EVERY labelled photo, and
+a change that helps one while wrecking another is not done.
+
 ## Why this needs ground truth first
 
 Until now every number has been "how many did we find". That cannot tell a fix
@@ -58,6 +95,30 @@ precision and recall are both measured against a hand-labelled truth.
       Every task below is judged against them; a task that raises recall while
       dropping precision more is not done.
 - [ ] 1.5 Commit (sweep changes only — never the photos, never the labels).
+- [ ] 1.6 Widen the truth set to the operator's photos 2 and 3 (`201707` and
+      `201713`) as well: photo 1 alone is what let the detector overfit. Label
+      them the same way.
+- [ ] 1.7 Score and report **per photo**, all three, in one table: precision,
+      recall, F1, spurious count, missed count. From here on no task is done on
+      an average — every row has to hold.
+- [ ] 1.8 Commit.
+
+## 1b. The note size, which is what actually broke
+
+Before any splitting rule is touched: the number those rules divide by.
+
+- [ ] 1b.1 Measure `medianNoteSize` per photo against the truth median. Print
+      the population it is taken from, and how much of that population is tape
+      or junk rather than notes.
+- [ ] 1b.2 RED: a synthetic wall of notes with two long tape strips across it
+      must estimate the same note size as the same wall without them.
+- [ ] 1b.3 Make the estimate robust: drop obvious non-notes (extreme aspect
+      ratio, far off any plausible note area) BEFORE measuring, and iterate —
+      estimate, gate, re-estimate — and prefer the MODE of a size histogram to
+      a plain median where the population is mixed.
+- [ ] 1b.4 GREEN, suite green, and the truth table from 1.7 does not regress on
+      any photo.
+- [ ] 1b.5 Commit.
 
 ## 2. Defect 2 first: one note per note
 
@@ -84,6 +145,13 @@ notes, so it pollutes both halves of the scoreboard.
 - [ ] 2.6 Verify in the editor on the operator's photo that
       "Join Request Rejected …" is now four notes with four separate texts.
 - [ ] 2.7 Commit.
+- [ ] 2.8 RED both directions, and pin the hysteresis: a blob within ~1.4x of
+      the note size is NEVER cut; ~1.6–2.4x cuts into two; a 2x2 cluster always
+      yields four. "ROUTINE STARTED" as one note and the Join cluster as four
+      are the same test suite, and neither may be bought with the other.
+- [ ] 2.9 GREEN, plus the per-photo truth table: the single-note-cut count and
+      the merged-cluster count both go down on all three photos.
+- [ ] 2.10 Commit.
 
 ## 3. Defects 1, 3, 4: a note is paper, not everything brown
 
@@ -125,6 +193,17 @@ the scoreboard, and each in `CALIBRATION`.
 - [ ] 3.8 GREEN, suite green, sweep re-run: precision up materially on both
       truth photos, recall not down by more than a note or two. Report the table.
 - [ ] 3.9 Commit.
+- [ ] 3.10 **Tape.** RED: a masking-tape strip (pale yellow, `#f0ead0`-ish) run
+      across a wall of notes, and a second one along a paper seam, produce NO
+      boxes — while a real pale-yellow `aggregate` note on the same wall still
+      does. Separate them on aspect ratio and size against the note estimate,
+      never on hue alone.
+- [ ] 3.11 **The big-note floor (photo 2's collapse).** RED: a wall where one
+      note is larger than an illumination tile must still be detected. Make the
+      "a tile that is all one surface must not invent a wall" guard real and
+      tested, and report which of photo 2's named missing notes come back.
+- [ ] 3.12 GREEN, suite green, per-photo truth table for all three photos.
+- [ ] 3.13 Commit.
 
 ## 4. The whole wall, end to end
 
@@ -132,7 +211,13 @@ the scoreboard, and each in `CALIBRATION`.
       file in; the file dialog's double-click is broken by a Chromium bug on
       this machine). Record detections, precision/recall where truth exists, and
       page errors.
-- [ ] 4.2 Check the words: in the operator's screenshot a great many boxes read
+- [ ] 4.2 **PROMOTED — the reader failed outright on photo 3** ("The reader
+      could not finish (ai_error)"). Find out with evidence how many crops were
+      sent, in how many batches, and what the api worker logged (it logs
+      truncation and provider status). Rate limiting and payload size at
+      60–100+ crops are the candidates. One failed batch must NOT blank every
+      note, and the failure message must say which part failed.
+- [ ] 4.2b Check the words: in the operator's screenshot a great many boxes read
       "Type the words…", i.e. the reader returned nothing for them. Find out
       whether that is the junk detections (which will now be gone), a batch
       failing, or the reader being rate-limited at ~66 crops, and fix or report
