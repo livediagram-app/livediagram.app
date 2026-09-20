@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { usePhotoPicker } from './usePhotoPicker';
 
 // Opening the file picker, once (spec/139 Phase 9).
@@ -23,6 +23,9 @@ function setup(opts: { canOpen?: boolean } = {}) {
 }
 
 const file = () => new File([new Uint8Array([1])], 'wall.jpg', { type: 'image/jpeg' });
+
+beforeEach(() => vi.useFakeTimers());
+afterEach(() => vi.useRealTimers());
 
 function change(input: HTMLInputElement, files: File[]) {
   return { target: Object.assign(input, { files, value: 'wall.jpg' }) } as never;
@@ -49,6 +52,7 @@ describe('usePhotoPicker', () => {
     act(() => h.api().open());
     act(() => h.api().onChange(change(h.input, [file()])));
     expect(h.onFile).toHaveBeenCalledTimes(1);
+    act(() => void vi.advanceTimersByTime(600));
     act(() => h.api().open());
     expect(h.clicks).toHaveBeenCalledTimes(2);
   });
@@ -59,8 +63,31 @@ describe('usePhotoPicker', () => {
     // Cancelling the OS dialog fires no `change` at all; the window simply gets
     // its focus back. Without this the button would be dead ever after.
     act(() => window.dispatchEvent(new Event('focus')));
+    act(() => void vi.advanceTimersByTime(600));
     act(() => h.api().open());
     expect(h.clicks).toHaveBeenCalledTimes(2);
+  });
+
+  // The one that matters, and the one the first version got wrong. Chrome on
+  // Linux delivers the events in this order for a double-click:
+  //   dialog closes → window FOCUS → the stray second click → change
+  // so releasing the lock on focus releases it a moment BEFORE the click it
+  // exists to ignore. The lock has to outlive the dialog closing.
+  it('ignores a click that arrives in the instant after the dialog closes', () => {
+    const h = setup();
+    act(() => h.api().open());
+    act(() => window.dispatchEvent(new Event('focus')));
+    act(() => h.api().open());
+    expect(h.clicks).toHaveBeenCalledTimes(1);
+  });
+
+  it('still delivers the file that was already on its way', () => {
+    const h = setup();
+    act(() => h.api().open());
+    act(() => window.dispatchEvent(new Event('focus')));
+    act(() => h.api().open());
+    act(() => h.api().onChange(change(h.input, [file()])));
+    expect(h.onFile).toHaveBeenCalledTimes(1);
   });
 
   it('clears the input so the SAME file can be picked twice', () => {

@@ -887,11 +887,19 @@ Decisions from the operator:
   cursor — typically the button that opened it, which opens a second chooser and
   discards the first one, already on its way back with a file. No `change`
   fires, and nothing happens at all, while selecting the file and pressing Open
-  (one click) works every time. So a pick is a STATE, not an event: while a
-  dialog is out, asking again is ignored rather than served, and the state
-  clears on the file arriving or on the window getting its focus back (a
-  cancelled dialog fires nothing else). The input is also cleared on every
-  change, so the same photo can be picked twice in a row.
+  (one click) works every time. Firefox on the same desktop is unaffected, so
+  this is a Chromium-on-Linux behaviour rather than anything the page can
+  prevent — but the page can, and must, tolerate it.
+
+  So a pick is a STATE, not an event: while a dialog is out, asking again is
+  ignored rather than served. Crucially the lock OUTLIVES the dialog closing by
+  a short settle (half a second), because the events arrive as
+  `close → window focus → the stray click → change`: a lock released on focus
+  is released a moment before the click it exists to ignore, which is exactly
+  how the first version of this guard still lost the file. Anything that says
+  the dialog is gone — the file arriving, or focus returning after a cancel —
+  starts the settle rather than unlocking at once. The input is also cleared on
+  every change, so the same photo can be picked twice in a row.
 
 - **Every refusal speaks.** A pick that cannot be honoured — an import already
   open, a draft still waiting on the board, a board that cannot take notes, an
