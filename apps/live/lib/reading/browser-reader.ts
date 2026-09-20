@@ -1,5 +1,5 @@
 import type { NoteCrop } from '@livediagram/api-schema';
-import type { ReadOptions, ReadText } from './types';
+import { normaliseRead, type ReadOptions, type ReadText } from './types';
 
 // Reading the handwriting with a model that runs HERE (spec/139 Phase 9).
 //
@@ -97,9 +97,9 @@ async function readOne(loaded: Loaded, crop: NoteCrop): Promise<ReadText> {
   const decoded = loaded.processor.batch_decode(answerTokens, {
     skip_special_tokens: true,
   })[0] as string;
-  const text = (decoded ?? '').replace(/\s+/g, ' ').trim();
-  if (text === '' || BLANK_ANSWERS.test(text)) return { text: '', legible: false };
-  return { text, legible: true };
+  const read = normaliseRead(decoded ?? '');
+  if (BLANK_ANSWERS.test(read.text)) return { text: '', legible: false };
+  return read;
 }
 
 export async function readCropsInBrowser(

@@ -14,3 +14,17 @@ export type ReadOptions = {
 // Every reader has the same shape, so the photo import does not care which one
 // it got: crops in, words out, keyed by the crop id the detector assigned.
 export type CropReader = (crops: NoteCrop[], opts: ReadOptions) => Promise<Map<number, ReadText>>;
+
+// One answer shape, whoever read it.
+//
+// A sticky's line break is LAYOUT, not content. A model reading two lines of
+// marker hands back "Machine\nFixed", and a single-line field renders that as
+// "MachineFixed" — the words welded together, which is what the review showed
+// before this existed. The note wraps to its own width on the canvas anyway,
+// so a newline is a space here and the text stays one phrase.
+export function normaliseRead(text: string): ReadText {
+  const clean = text.replace(/\s+/g, ' ').trim();
+  // Whitespace is not a reading. Saying so keeps "legible" meaning what the
+  // badge and the blank-note count claim it means.
+  return { text: clean, legible: clean !== '' };
+}

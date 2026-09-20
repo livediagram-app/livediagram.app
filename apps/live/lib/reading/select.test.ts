@@ -68,3 +68,34 @@ describe('selectReader', () => {
     expect(apiAiReadNotes).not.toHaveBeenCalled();
   });
 });
+
+// Both readers must hand the app the SAME shape. A sticky's line break is
+// layout, not content: the model returns "Machine\nFixed" for two lines of
+// marker, and a single-line field renders that as "MachineFixed" — the words
+// welded together. The note wraps to its own width on the canvas anyway, so a
+// newline is a space everywhere the text is used.
+describe('whitespace is normalised whoever read it', () => {
+  it('turns the line breaks on a note into spaces', async () => {
+    vi.mocked(apiAiReadNotes).mockResolvedValue({
+      texts: [{ id: 0, text: 'Machine\nFixed', legible: true }],
+    });
+    const out = await selectReader({ aiEnabled: true, ownerId: 'o' }).read(crops, {});
+    expect(out.get(0)!.text).toBe('Machine Fixed');
+  });
+
+  it('collapses runs of space and trims the edges', async () => {
+    vi.mocked(apiAiReadNotes).mockResolvedValue({
+      texts: [{ id: 0, text: '  Course   Schedule\n\n Updated \n', legible: true }],
+    });
+    const out = await selectReader({ aiEnabled: true, ownerId: 'o' }).read(crops, {});
+    expect(out.get(0)!.text).toBe('Course Schedule Updated');
+  });
+
+  it('a note that is only whitespace is not legible', async () => {
+    vi.mocked(apiAiReadNotes).mockResolvedValue({
+      texts: [{ id: 0, text: '\n  \n', legible: true }],
+    });
+    const out = await selectReader({ aiEnabled: true, ownerId: 'o' }).read(crops, {});
+    expect(out.get(0)).toEqual({ text: '', legible: false });
+  });
+});

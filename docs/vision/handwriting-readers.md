@@ -6,22 +6,28 @@ photo; 24 were labelled by eye (verbatim, casing as written) and 4 were
 labelled blank (two pieces of tape, the photographer's two shoes). Every reader
 got the same crops, cut exactly as `apps/live/lib/photo-detect.ts` cuts them.
 
+**What shipped** (spec/139 Phase 9): the reader is pluggable. A model configured
+on the api reads the crops — Google defaults to `gemini-2.5-flash-lite` for this
+route, the cheapest tier and, measured here, also the most accurate. With no
+model configured the browser reads them with SmolVLM-256M, which keeps the photo
+import working with no key at all. Detection is in-browser either way.
+
 Scoring is case- and punctuation-insensitive: **exact** is whole notes read
 perfectly, **words** is the share of true words present in the answer, **CER**
 is character error rate, **blanks wrong** is how many of the four empty crops
 got invented text.
 
-| Reader                                             | Runs where                  | Download  | exact | words | CER  | blanks wrong     | time / crop                      |
-| -------------------------------------------------- | --------------------------- | --------- | ----- | ----- | ---- | ---------------- | -------------------------------- |
-| Tesseract.js (shipped, `lib/ocr.ts`)               | browser, WASM               | ~15 MB    | 1/24  | 17%   | 57%  | 4/4              | 0.05 s                           |
-| TrOCR-small-handwritten (q8 and fp32)              | browser                     | ~60 MB    | 0/24  | 1%    | >100 | 4/4              | 0.5 s                            |
-| Florence-2-base-ft `<OCR>`                         | browser                     | ~330 MB   | 0/24  | 8%    | 21%  | 4/4              | 3.5 s                            |
-| SmolVLM-256M-Instruct q4                           | browser                     | ~190 MB   | 13/24 | 78%   | 15%  | 0/4 (says "No.") | 7 s WASM 1-thread · 0.5 s WebGPU |
-| SmolVLM-256M-Instruct q4, image splitting          | browser                     | ~190 MB   | 16/24 | 81%   | 10%  | 0/4              | ~4× the above                    |
-| SmolVLM-500M-Instruct q4                           | browser                     | ~360 MB   | 17/24 | 82%   | 13%  | 0/4              | ~14 s WASM 1-thread              |
-| Qwen2.5-VL-7B Q4_K_M, llama.cpp, RTX 4090          | self-hosted `AI_BASE_URL`   | 5 GB once | 22/24 | 96%   | 3.7% | 0/4              | 0.25 s                           |
-| **gemini-2.5-flash-lite**, batched 6               | cloud (hosted default tier) | none      | 23/24 | 99%   | 0.2% | 0/4              | 0.2 s (5.9 s for the wall)       |
-| gemini-3.6-flash, batched 6 (the worker's default) | cloud                       | none      | 22/24 | 95%   | 1.1% | 0/4              | 0.9 s (26 s for the wall)        |
+| Reader                                            | Runs where                  | Download  | exact | words | CER  | blanks wrong     | time / crop                      |
+| ------------------------------------------------- | --------------------------- | --------- | ----- | ----- | ---- | ---------------- | -------------------------------- |
+| Tesseract.js (was shipped, now removed)           | browser, WASM               | ~15 MB    | 1/24  | 17%   | 57%  | 4/4              | 0.05 s                           |
+| TrOCR-small-handwritten (q8 and fp32)             | browser                     | ~60 MB    | 0/24  | 1%    | >100 | 4/4              | 0.5 s                            |
+| Florence-2-base-ft `<OCR>`                        | browser                     | ~330 MB   | 0/24  | 8%    | 21%  | 4/4              | 3.5 s                            |
+| SmolVLM-256M-Instruct q4                          | browser                     | ~190 MB   | 13/24 | 78%   | 15%  | 0/4 (says "No.") | 7 s WASM 1-thread · 0.5 s WebGPU |
+| SmolVLM-256M-Instruct q4, image splitting         | browser                     | ~190 MB   | 16/24 | 81%   | 10%  | 0/4              | ~4× the above                    |
+| SmolVLM-500M-Instruct q4                          | browser                     | ~360 MB   | 17/24 | 82%   | 13%  | 0/4              | ~14 s WASM 1-thread              |
+| Qwen2.5-VL-7B Q4_K_M, llama.cpp, RTX 4090         | self-hosted `AI_BASE_URL`   | 5 GB once | 22/24 | 96%   | 3.7% | 0/4              | 0.25 s                           |
+| **gemini-2.5-flash-lite**, batched 6              | cloud (hosted default tier) | none      | 23/24 | 99%   | 0.2% | 0/4              | 0.2 s (5.9 s for the wall)       |
+| gemini-3.6-flash, batched 6 (the assistant model) | cloud                       | none      | 22/24 | 95%   | 1.1% | 0/4              | 0.9 s (26 s for the wall)        |
 
 Cloud readings are measured through the worker's OWN request shape (its prompt,
 `response_format: json_object`, six crops per call), so the numbers describe
@@ -86,10 +92,61 @@ in the photo.
 - The model must be fetched once (190-360 MB) and cached (Cache Storage);
   first use on a phone over mobile data is the cost to design around.
 
+## When to revisit this
+
+The in-browser number is the one that will move: small vision-language models
+are improving fast, and the gap measured here (~80% in the browser against 99%
+from a hosted model) is the whole reason the reader is pluggable rather than
+fixed. This page exists so that the next look is a MEASUREMENT against the same
+wall, not a fresh argument from first principles.
+
+Worth re-running when any of these is true:
+
+- A sub-500MB VLM claims handwriting ability (the size ceiling is the phone
+  download, not the accuracy).
+- transformers.js or ONNX Runtime ships a WebGPU release that no longer needs
+  `shader-f16`, or Chrome exposes it on Linux/NVIDIA — that unblocks the 14x
+  speed-up and changes the 200-second wall into a 15-second one.
+- A browser ships a built-in multimodal model (Chrome's Prompt API and friends)
+  that a page may use without downloading weights itself.
+- The hosted reader's provider changes its cheap tier — the cheapest model being
+  the most accurate one is a happy accident of this moment, not a law.
+
+What would actually change the shipped decision: an in-browser reader within a
+few points of the hosted one, at a download a phone will tolerate. At that point
+the server path becomes the fallback rather than the default, and the photo
+import stops needing a key for full quality.
+
 ## Reproducing
 
-The bench lived in a scratch folder (`/tmp/ocr-bench`) with its own
-`package.json` so nothing leaked into the repo: `crop.mts` cuts crops with the
-real detector, `truth.json` is the hand labelling, `score.mts` scores,
-`bench-*.mts` are one per reader, `browser.html` + Playwright for the in-browser
-runs. Real photographs never enter the repo.
+`scripts/read-bench.mts` is the loop, kept in the repo precisely so this is
+cheap to redo:
+
+```sh
+# First run: cuts the crops with the REAL detector and writes a skeleton to label
+pnpm bench:readers --photo ~/wall.png --truth ~/wall-truth.json
+
+# Fill in each note's words by eye from the crops it wrote ("" for a blank one),
+# then score any OpenAI-compatible reader against them:
+GOOGLE_AI_STUDIO_API_KEY=... pnpm bench:readers \
+  --photo ~/wall.png --truth ~/wall-truth.json --model gemini-2.5-flash-lite
+
+# A local llama.cpp, or anything else that speaks the same wire:
+pnpm bench:readers --photo ~/wall.png --truth ~/wall-truth.json \
+  --base http://127.0.0.1:4271/v1 --model qwen2.5-vl-7b --key-var NONE
+```
+
+It cuts crops at the resolution production uses, sends them through the api
+worker's own prompt and request shape (six per call, JSON mode, the same token
+budget), and appends a scored row to `read-bench-results.md` beside the truth
+file. Labels are keyed by each note's POSITION rather than its index, because an
+index silently rots the moment the detector finds one sticky more than last time
+— which is exactly the run where you are trying to learn whether something
+helped. A label that matches no detection is reported, not quietly scored.
+
+In-browser readers are measured IN a browser (node cannot stand in for WebGPU):
+point a Playwright run at the editor with no model configured on the api, which
+is the path that selects them.
+
+Real photographs never enter the repo — keep the wall PNG and its labels
+outside it.

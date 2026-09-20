@@ -1,6 +1,6 @@
 import { apiAiReadNotes } from '@/lib/api/ai';
 import { readCropsInBrowser } from './browser-reader';
-import type { CropReader, ReadText } from './types';
+import { normaliseRead, type CropReader, type ReadText } from './types';
 
 // WHO reads the handwriting (spec/139 Phase 9).
 //
@@ -30,7 +30,12 @@ export function selectReader(deps: { aiEnabled: boolean; ownerId: string }): Sel
       read: async (crops, opts) => {
         const answer = await apiAiReadNotes(deps.ownerId, crops, opts);
         const out = new Map<number, ReadText>();
-        for (const t of answer.texts) out.set(t.id, { text: t.text, legible: t.legible });
+        for (const t of answer.texts) {
+          const read = normaliseRead(t.text);
+          // The provider's own "I could not read this" still wins: it knows
+          // something the text alone does not.
+          out.set(t.id, t.legible ? read : { text: read.text, legible: false });
+        }
         return out;
       },
     };
