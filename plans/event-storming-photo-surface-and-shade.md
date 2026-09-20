@@ -425,19 +425,39 @@ The review stops being a dialog with a photo pane and a list pane. It becomes
 
 ## 5. Prove it on the real wall, in a browser
 
-- [ ] 5.1 Rebuild, then drive the editor with Playwright against each of the six
+- [x] 5.1 Rebuild, then drive the editor with Playwright against each of the six
       photos in turn (drag-and-drop the file in — **note: on this machine
       choosing a file by double-click in Chrome's dialog is broken by a browser
       bug, so automation and the operator both use drop/paste**). Record per
       photo: boxes found, words read, page errors.
-- [ ] 5.2 Capture a screenshot of the new surface per photo and eyeball them:
+- [x] 5.2 Capture a screenshot of the new surface per photo and eyeball them:
       words legible over the photo, no overlap chaos where stickies are dense,
       controls not covering content.
-- [ ] 5.3 Confirm the shade improvement is visible in the editor (not just in
+- [x] 5.3 Confirm the shade improvement is visible in the editor (not just in
       the sweep) on whichever photo has the strongest gradient.
-- [ ] 5.4 Post a `shot` to the Spinner wall for the new surface, and a `review`
+- [x] 5.4 Post a `shot` to the Spinner wall for the new surface, and a `review`
       when the feature is complete (summary, URL, numbered do/expect steps).
-- [ ] 5.5 Commit anything the run fixed.
+- [x] 5.5 Commit anything the run fixed.
+
+**IN THE BROWSER, ON ALL SIX** (Playwright, fresh static build on :3102, the
+reader stubbed to answer a word per crop so the chips can be judged):
+
+| photo           | boxes on the surface | words shown | page errors |
+| --------------- | -------------------- | ----------- | ----------- |
+| 20260920_201646 | 66                   | 66          | 0           |
+| 20260920_201654 | 54                   | 54          | 0           |
+| 20260920_201707 | 45                   | 45          | 0           |
+| 20260920_201713 | 107                  | 107         | 0           |
+| 20260920_201730 | 80                   | 80          | 0           |
+| 20260920_201743 | 120                  | 120         | 0           |
+
+The shade improvement is visible in the editor on 201730 (the photo with the
+strongest gradient): its darkest third carried 22 boxes before and 38 now.
+
+One thing the browser said that the sweep could not: at 500ms a box, a
+54-note wall takes **27 seconds** to finish revealing. The plan forbids
+touching the reveal timing, so this is asked rather than changed — see the
+questions at the end.
 
 ## 6. Fold-back
 
