@@ -6,14 +6,15 @@ These docs are the practical guide: what the app does, how to run it locally, ho
 
 ## Contents
 
-| Doc                                            | Covers                                                                                    |
-| ---------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| [What is livediagram?](what-is-livediagram.md) | The product: what it does, who it's for, what's built and what's still ahead.             |
-| [Architecture](architecture.md)                | The repo shape: seven apps, twelve packages, the Cloudflare-only deployment model.        |
-| [Local development](local-development.md)      | Clone, install, run all apps locally, scope commands to a single workspace.               |
-| [Self-hosting](self-hosting.md)                | Run your own copy on Cloudflare Workers + D1. Optional Clerk auth.                        |
-| [Contributing](contributing.md)                | How to propose changes: specs-first workflow, code style, tests, PR expectations.         |
-| [Sticky detection](vision/sticky-detection.md) | How a photograph of a wall becomes sticky notes: the pipeline, its constants, its limits. |
+| Doc                                                  | Covers                                                                                                                                          |
+| ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| [What is livediagram?](what-is-livediagram.md)       | The product: what it does, who it's for, what's built and what's still ahead.                                                                   |
+| [Architecture](architecture.md)                      | The repo shape: seven apps, twelve packages, the Cloudflare-only deployment model.                                                              |
+| [Local development](local-development.md)            | Clone, install, run all apps locally, scope commands to a single workspace.                                                                     |
+| [Self-hosting](self-hosting.md)                      | Run your own copy on Cloudflare Workers + D1. Optional Clerk auth.                                                                              |
+| [Contributing](contributing.md)                      | How to propose changes: specs-first workflow, code style, tests, PR expectations.                                                               |
+| [Sticky detection](vision/sticky-detection.md)       | How a photograph of a wall becomes sticky notes: the pipeline, its constants, its limits.                                                       |
+| [Handwriting readers](vision/handwriting-readers.md) | Which reader can read marker handwriting on a sticky crop: Tesseract, TrOCR, Florence-2, SmolVLM, Qwen-VL and cloud, measured on one real wall. |
 
 ## How docs relate to specs
 
