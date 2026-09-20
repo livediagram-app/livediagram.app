@@ -64,6 +64,13 @@ const FLOOR_SAMPLE_STRIDE = 2;
 // ONE population rather than two, so there is nothing in it to split: the tile
 // is all wall or all paper. Which one it is, only the frame can say.
 const TILE_BIMODAL_STRENGTH = 0.12;
+// How far a one-surface tile's saturation may sit from the FRAME's wall and
+// still be taken for wall itself. Within this it measures its own floor —
+// which matters on a wall whose own colour is paper-like, where the frame's
+// floor is too low and every empty tile would otherwise let the wall in;
+// beyond it the tile is full of paper and defers to the frame, or a note
+// bigger than a cell would be measured as the wall and then rejected.
+const TILE_WALL_TOLERANCE = 0.1;
 
 // Otsu's threshold over a histogram: the cut that minimises the variance
 // within the two groups it makes. Returned in the histogram's own units
@@ -287,7 +294,11 @@ export function localFloorsOf(
   const cell = Math.max(1, Math.round(longSide / tiles));
   const tilesX = Math.max(1, Math.round(image.width / cell));
   const tilesY = Math.max(1, Math.round(image.height / cell));
-  const global = opts.global ?? wallFloorsOf(image);
+  // Measured once, and kept whole: the tiles need not just the frame's floors
+  // but the frame's own WALL saturation, to tell a tile full of wall from a
+  // tile full of paper.
+  const frame = floorsOf(measure(image, 0, 0, image.width, image.height, 7));
+  const global = opts.global ?? frame.floors;
 
   const saturation = new Float64Array(tilesX * tilesY);
   const value = new Float64Array(tilesX * tilesY);
@@ -317,7 +328,10 @@ export function localFloorsOf(
       // would otherwise be measured as "the wall" and then rejected as not
       // standing out from it, which is how a big sticky disappears. The frame
       // knows which of the two it is; the cell does not, so it defers.
-      const trusted = measured.bimodal && surface.lit > 0;
+      const trusted =
+        surface.lit > 0 &&
+        (measured.bimodal ||
+          Math.abs(measured.wallSaturation - frame.wallSaturation) <= TILE_WALL_TOLERANCE);
       saturation[i] = trusted ? local.saturation : global.saturation;
       const hue = trusted && local.wallHue >= 0 ? (local.wallHue * Math.PI) / 180 : globalHue;
       const usable = (trusted && local.wallHue >= 0) || global.wallHue >= 0;
@@ -385,4 +399,5 @@ export const FLOOR_CALIBRATION = {
   FLOOR_TILES_LONG_SIDE,
   FLOOR_SAMPLE_STRIDE,
   TILE_BIMODAL_STRENGTH,
+  TILE_WALL_TOLERANCE,
 } as const;

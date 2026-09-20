@@ -461,7 +461,13 @@ function rescue(
       );
       for (const cut of cuts) {
         if (!bigEnough(cut)) continue;
-        if (isPaper(cut)) out.push(cut);
+        // A rescued piece has to be SOLID, not merely more paper than holes.
+        // The ordinary bar is for a note the detector already believes in;
+        // this one is for a piece cut out of something that failed every
+        // other test, and a sunlit patch of kraft wall will happily yield a
+        // hundred note-sized scraps of web if the bar is set where a real
+        // note only just clears it.
+        if (isPaper(cut) && fillRatio(cut) >= MIN_SOLID_FILL) out.push(cut);
         else next.push(cut);
       }
     }
