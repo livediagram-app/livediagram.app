@@ -344,68 +344,68 @@ wall out of the mask where the frame-wide floor is too low for it.
 The review stops being a dialog with a photo pane and a list pane. It becomes
 **the photograph**, with every control drawn on top of it.
 
-- [ ] 3.1 Decide and write down (in the component's header comment) the layout
+- [x] 3.1 Decide and write down (in the component's header comment) the layout
       contract: the photo is the surface, sized to fit the viewport with its
       aspect ratio intact; every control floats over it; **there is no sidebar
       and no separate footer strip**. Keep a dimmed backdrop behind the photo
       only as far as it is needed for contrast at the photo's edges.
-- [ ] 3.2 RED: component tests for the new surface (extend
+- [x] 3.2 RED: component tests for the new surface (extend
       `apps/live/components/chrome/PhotoReviewOverlay.test.tsx`, renaming the
       file if the component is renamed): a box shows **the words read for that
       note**, not its kind label; before the words arrive it shows a quiet
       placeholder, not "Domain event".
-- [ ] 3.3 Implement the word chip on each box: the read text, legible over a
+- [x] 3.3 Implement the word chip on each box: the read text, legible over a
       photograph (solid/blurred backing, not text straight on the image),
       truncated to the box's width with the full text available via `title`
       and to screen readers.
-- [ ] 3.4 Keep the kind as **colour only** (border + tint), as now. The kind
+- [x] 3.4 Keep the kind as **colour only** (border + tint), as now. The kind
       name must not appear on the box. Confidence: keep it, but make it
       unobtrusive — or drop it if it crowds the words (state the choice in
       DECISIONS.md either way).
-- [ ] 3.5 Keep the reveal animation exactly as it is (≤2 boxes/second, drawn
+- [x] 3.5 Keep the reveal animation exactly as it is (≤2 boxes/second, drawn
       boxes appear at once). It is explicitly liked; do not "improve" its
       timing.
-- [ ] 3.6 Editing: clicking a box's words turns them into an input **in place**
+- [x] 3.6 Editing: clicking a box's words turns them into an input **in place**
       over the photo; Enter/blur commits, Escape reverts. No list, no sidebar.
       The edited text must reach `onConfirm` exactly as the sidebar's input did.
-- [ ] 3.7 Ticking: a box is included by default and can be excluded — keep a
+- [x] 3.7 Ticking: a box is included by default and can be excluded — keep a
       visible, accessible control (not "click the box" alone, which collides
       with "click to edit"). A small tick affordance on the box, dimming the
       whole box when excluded.
-- [ ] 3.8 Keep drawing a box around a missed sticky (drag on empty photo),
+- [x] 3.8 Keep drawing a box around a missed sticky (drag on empty photo),
       including `kindOfBox` colour classification and the dashed preview.
       Dragging must not be swallowed by the new per-box controls.
-- [ ] 3.9 Status, on the photo, not beside it: "Finding the stickies…" while
+- [x] 3.9 Status, on the photo, not beside it: "Finding the stickies…" while
       detecting (keep `data-testid="photo-finding"`), "Detecting N of M" during
       the reveal, "Reading the words…" while the reader runs, the reader-failed
       note, and the found-nothing advice (keep
       `data-testid="photo-found-nothing"`). Small floating pills; no panel.
-- [ ] 3.10 Actions, on the photo: **Add N notes** and **Cancel**, floating,
+- [x] 3.10 Actions, on the photo: **Add N notes** and **Cancel**, floating,
       always reachable, never covering a box's words at the bottom edge (offset
       the photo's usable area or let the bar sit over the dimmed margin).
-- [ ] 3.11 Keep `data-testid="photo-review-overlay"` on the root (the hook's
+- [x] 3.11 Keep `data-testid="photo-review-overlay"` on the root (the hook's
       state machine, the e2e suite and `usePhotoDraft` tests all key off the
       review being open), or change it and update every caller in the same task.
-- [ ] 3.12 Keep the "photo goes up first" contract from spec/139 intact: the
+- [x] 3.12 Keep the "photo goes up first" contract from spec/139 intact: the
       surface opens on the pick, with the frame drawn and the
       `data-testid="photo-loading"` skeleton until the image paints, then the
       photo, then the loader, then boxes. Do not regress this while moving the
       furniture.
-- [ ] 3.13 Accessibility (WCAG 2.2 AA, non-negotiable): every box is reachable
+- [x] 3.13 Accessibility (WCAG 2.2 AA, non-negotiable): every box is reachable
       by keyboard in reading order, with a visible focus ring that survives
       being over a photograph; the words chip meets 4.5:1 against its own
       backing; the tick control has an accessible name that includes the note's
       words; Escape cancels the review; the dialog keeps `role="dialog"` +
       `aria-modal` + a label; the reveal animation respects
       `prefers-reduced-motion`.
-- [ ] 3.14 Zero CLS: nothing may shift when a box's words arrive, when the
+- [x] 3.14 Zero CLS: nothing may shift when a box's words arrive, when the
       reveal advances, or when a status pill appears/disappears.
-- [ ] 3.15 GREEN: the component suite passes, including the existing cases
+- [x] 3.15 GREEN: the component suite passes, including the existing cases
       (photo shown while detecting, retake advice, ticked-on-arrival, Add hands
       over the ticked ids).
-- [ ] 3.16 Delete the sidebar code and any now-unused helpers/labels
+- [x] 3.16 Delete the sidebar code and any now-unused helpers/labels
       (`labelOf` if nothing else uses it). No dead code left behind.
-- [ ] 3.17 Commit.
+- [x] 3.17 Commit.
 
 ## 4. Make the two halves meet
 
