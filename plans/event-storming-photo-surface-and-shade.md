@@ -461,20 +461,20 @@ questions at the end.
 
 ## 6. Fold-back
 
-- [ ] 6.1 Rewrite spec/139 Phase 9's review bullets to describe what now exists:
+- [x] 6.1 Rewrite spec/139 Phase 9's review bullets to describe what now exists:
       one surface (the photograph) with the boxes carrying the **words**, the
       kind carried by colour alone, no sidebar, the reveal, the in-place editing,
       drawing a missed box, and the status pills. Delete the sidebar/wizard
       wording — the spec must describe the thing, not its history.
-- [ ] 6.2 Fold the shade work into spec/139's detector paragraph and its honest
+- [x] 6.2 Fold the shade work into spec/139's detector paragraph and its honest
       limits (local floors, what a gradient can still defeat).
-- [ ] 6.3 Re-check `docs/vision/sticky-detection.md`, `packages/sticky-vision/README.md`
+- [x] 6.3 Re-check `docs/vision/sticky-detection.md`, `packages/sticky-vision/README.md`
       and `docs/README.md` for statements the change has falsified.
-- [ ] 6.4 Rename anything whose name now lies (e.g. `PhotoReviewOverlay` if it is
+- [x] 6.4 Rename anything whose name now lies (e.g. `PhotoReviewOverlay` if it is
       no longer an overlay with a sidebar; the `photo-review-overlay` testid if
       you changed it), and rewrite comments that cite plan coordinates rather
       than domain words.
-- [ ] 6.5 Update `plans/event-storming-photo-review.md` (the earlier plan) if any
+- [x] 6.5 Update `plans/event-storming-photo-review.md` (the earlier plan) if any
       of its open items are now settled, or note there that this plan supersedes
       those parts.
 - [ ] 6.6 Final gate: format, lint, typecheck, full unit suite, e2e 9/9, and a

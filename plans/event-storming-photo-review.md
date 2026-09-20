@@ -48,6 +48,13 @@ The review is a THREE-STEP wizard the author walks through, each step visible:
 
 ## 5. Fold-back
 
+> **Superseded in part.** `plans/event-storming-photo-surface-and-shade.md`
+> replaced this plan's review UI: the overlay's sidebar and per-note list are
+> gone, the photograph is the whole surface, and each box carries the words
+> read off that sticky rather than its kind. Its detector work (local floors,
+> reversible merges, the block rescue) also supersedes the "detector
+> hardening" bullets above. What remains open here is 5.2 and 5.3 only.
+
 - [x] 5.1 Rewrite spec/139 Phase 8/9 to match what shipped (overlay, animation, in-browser OCR, box drawing).
 - [ ] 5.2 Update help article + telemetry (`AI / Used / PhotoNotes` already exists; add a review-step event if the schema needs it).
 - [ ] 5.3 Delete this plan once complete (the spec survives).

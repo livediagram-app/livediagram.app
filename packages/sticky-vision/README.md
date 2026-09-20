@@ -20,8 +20,11 @@ package never sees text; it only finds paper.
 ## The pipeline
 
 1. **Measure the wall.** The floors every later step compares against are
-   taken from THIS photograph: the wall's own hue, and the saturation split
-   (Otsu) between the wall and the paper on it. A grey-world white balance is
+   taken from THIS photograph, on a coarse GRID of it (eight cells over the
+   long side, blended between cell centres): the wall's own hue, and the
+   saturation split (Otsu) between the wall and the paper on it. One pair of
+   floors for a whole frame cannot serve a wall with a window at one end — it
+   is too high for the shaded end and too low for the lit one at the same time. A grey-world white balance is
    available (`balance: true`) but OFF by default — on a brown kraft wall it
    takes the wall for neutral and corrects every paper hue along with it.
 2. **Classify** every pixel against the notation's own catalogue fills
@@ -35,8 +38,13 @@ package never sees text; it only finds paper.
 4. **Connected components** over the closed mask: the pixels that touch and
    say the same thing.
 5. **Fit boxes**: drop specks, merge what is still fragmented, and split a blob
-   longer than any real silhouette (and solid enough to be paper) into the
-   number of notes its length implies.
+   longer than any real silhouette into the number of notes its length implies.
+   The merge is REVERSIBLE (a box that fails the shape tests hands back the
+   pieces it was assembled from), cuts are snapped to the emptiest line in the
+   mask and each piece tightened onto its own paper, and a block too square for
+   any cutting rule is eroded until the notes come apart at their seams. On a
+   real wall the notes are lapped edge to edge, and without those three a whole
+   row of them was thrown away as one over-sized blob.
 6. **Rows**: cluster the centre-y values, because a wall sags; order by
    centre-x within each row.
 
@@ -49,6 +57,12 @@ package never sees text; it only finds paper.
   clipped channel.
 - **A sticky more than about 60% covered.** What is left reads as a fragment,
   or is dropped as a speck.
+- **A photograph that is half room.** A window, furniture and a lit doorway in
+  frame give the grid nothing wall-like to measure in those cells, and boxes
+  land on things that are not notes. Fill the frame with the wall.
+- **A shade CLIFF**, as opposed to a gradient: the floors are blended between
+  cell centres, so a shadow edge sharper than about an eighth of the frame is
+  averaged across that blend.
 - **Pale paper that shares the wall's hue.** On a brown kraft wall the pale
   yellow aggregate (`#fef9c3`, saturation 0.23) sits at the wall's own hue and
   saturation, so the per-photo floor reads it as wall. The demo below shows

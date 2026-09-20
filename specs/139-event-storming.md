@@ -845,11 +845,33 @@ model when one is configured, an in-browser model when not), an **animated
 detection reveal**, and the detector is hardened against real handwriting.
 Decisions from the operator:
 
-- **A review overlay first** (reverses Phase 8's "no preview" ruling). The photo
-  is shown overlaid with every detected box, coloured by kind and tickable; the
-  author can edit kind and text per note, untick a false positive, and press
-  **Add N notes** to land the ticked ones as the on-canvas draft (Phase 8's
-  `esDraft` machinery). Nothing lands until Add.
+- **THE PHOTOGRAPH IS THE REVIEW** (reverses Phase 8's "no preview" ruling).
+  The picture fills the screen with its aspect ratio intact and EVERYTHING
+  floats on it: there is no sidebar and no footer strip. A list of notes beside
+  the photo asks the author to match thirty rows against thirty pieces of paper
+  by eye, when the paper is right there.
+
+  On each detected sticky sits a box in the note's own colour, and on the box:
+
+  - **the words the reader made of that handwriting**, and nothing else. The
+    KIND is the box's colour — colour is the notation's own alphabet here — so
+    printing "Domain event" over the writing only hid the one thing the author
+    has to check. Before the words arrive the chip is a quiet ellipsis, never a
+    kind name. Confidence is not shown: a note's box is one line of small text
+    wide, and the number was the least actionable thing on it.
+  - **click-to-edit, in place.** The words become an input over the photo;
+    Enter or blur commits, Escape reverts.
+  - **a tick** at its corner, on by default, which dims the box when cleared.
+    Its accessible name carries the note's words, so the boxes can be told
+    apart by ear as well as by eye.
+
+  Status is pills on the photo ("Finding the stickies…", "Detecting N of M",
+  "Reading the words…", the reader-failed note, the retake advice), and the two
+  ways out — **Add N notes** and **Cancel** — float over the dimmed margin
+  below it, never over a note's words. Nothing lands until Add, which hands the
+  ticked boxes, the boxes the author drew and the words as edited to the one
+  place a draft is written (Phase 8's `esDraft` machinery).
+
 - **THE AUTHOR NEVER WAITS ON AN UNEXPLAINED SCREEN.** The governing rule of the
   whole gesture, and the one every other bullet here serves: from the moment a
   photo is picked to the moment the notes land, there is always something on
@@ -954,6 +976,34 @@ Decisions from the operator:
   shattered by handwriting becomes one blob; the note-size estimate follows the
   closed blobs rather than the fragments. This is what turns the measured
   fragment-count (26 half-notes on the operator's wall) back into whole notes.
+
+- **The wall is measured WHERE THE LIGHT IS.** A photograph of a wall with a
+  window at one end is two photographs as far as the paper floors are
+  concerned: one frame-wide pair of floors is at once too high for the shaded
+  end, where paper reads as wall, and too low for the lit end, where kraft
+  reads as paper. The floors are measured on a coarse grid (eight cells over
+  the long side) and blended between cell centres, so there is no seam; a cell
+  holding only one surface keeps its own brightness floor but defers to the
+  frame on colour, because a note bigger than a cell would otherwise be
+  measured as "the wall" and then rejected for not standing out from it.
+
+- **A run of notes is never thrown away whole.** On a real wall the stickies
+  are lapped edge to edge, and a row or block of them arrives as ONE blob that
+  is too unsolid to cut (a row that sags leaves half its bounding box empty)
+  and too big to keep — so six real notes went in the bin together. Three
+  rules stop that: a merge is reversible (a box that fails the shape tests
+  hands back the pieces it was assembled from), cuts are made against the mask
+  (snapped to the emptiest line near the even step, each piece tightened onto
+  the paper inside it), and a block too square for any cutting rule is eroded
+  until the notes come apart at their seams and relabelled.
+
+  Measured against the six photographs of one real workshop wall: recall on the
+  densest (56 notes, counted by eye) went from 39% to about 75%, and detections
+  across the set from 191 to 457. The honest limits are unchanged in kind: pale
+  paper at the wall's own hue is still wall to the classifier, a shade CLIFF
+  sharper than an eighth of the frame is averaged across the blend, and a photo
+  that is half room — a window, furniture, a lit doorway — still puts boxes on
+  things that are not notes. Fill the frame with the wall.
 
 The plan lives in `plans/event-storming-photo-review.md`.
 
