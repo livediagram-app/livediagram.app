@@ -4,8 +4,6 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import {
   isEventStormingTab,
   stampTabKind,
-  createPinnedArrow,
-  createShape,
   isBoxed,
   resolveSlide,
   slideBounds,
@@ -872,34 +870,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // reads each pointer-move) lives in useEditorViewport. The hook
   // is invoked further down, once `activeTab` is in scope; it
   // also owns `getViewportCenter` and `fitToScreen`.
-
-  // Attach a comment panel to an element (spec/136): the panel, placed clear
-  // to its right, plus a pinned arrow from the element to it.
-  //
-  // The arrow is an ORDINARY pinned arrow, not a bespoke link. The panel is
-  // about the element, and "about" is what an arrow already says on this
-  // canvas — a second kind of connection would be a second thing to lay out,
-  // export, and explain. It also means the pair behaves like anything else:
-  // move the element and the arrow follows, delete the arrow and the panel is
-  // simply a note that floated free.
-  const attachCommentPanel = useCallback(
-    (element: Element) => {
-      if (!isBoxed(element)) return;
-      const panel = {
-        ...createShape('comment-pin', element.x + element.width + 80, element.y),
-      };
-      const arrow = createPinnedArrow(element.id, 'e', panel.id, 'w');
-      commitTabs((ts) =>
-        ts.map((tab) =>
-          tab.id !== activeId ? tab : { ...tab, elements: [...tab.elements, panel, arrow] },
-        ),
-      );
-      setSelectedId(panel.id);
-      track('Element', 'Added', 'CommentPin');
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [activeId],
-  );
 
   // Open or collapse a comment panel (spec/136). Persisted rather than local,
   // so a facilitator opening the thread they want discussed opens it for the
@@ -2805,7 +2775,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     revealedIds,
     toggleRevealForMe,
     setSessionConfigFor,
-    attachCommentPanel,
     pickerFor,
     collabElements,
     setRatingSelected,
