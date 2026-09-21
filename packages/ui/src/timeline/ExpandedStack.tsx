@@ -1,19 +1,17 @@
 'use client';
 
-// An expanded run of same-kind events (spec/138 §2.1).
+// The members of an expanded run of same-kind events (spec/138 §2.1).
 //
-// Rendered as a FRAGMENT: the stack card stays at the head of the run
-// as its toggle, and the member cards take the cells after it in the
-// day's grid. A wrapper element would make the run one oversized grid
-// item instead.
+// Rendered as a FRAGMENT: the member cards take the cells after the
+// stack card in the day's grid. A wrapper element would make the run
+// one oversized grid item instead.
 //
-// The collapsed card is the click target that opened the run, so the
-// same card, in the same cell, is what closes it: it stays put, reads
-// "click to collapse", and drops its faux layers. A reader who opened a
-// day of twelve renames to check one of them folds it back from where
-// they started, not from a footer link under the run.
+// The stack card itself is NOT rendered here. It is the run's toggle in
+// both states, and it has to be the SAME element across them so that
+// collapsing doesn't remount it and replay its arrival animation: the
+// feed renders <StackedCard> unconditionally and mounts this after it
+// only while the run is open.
 
-import { StackedCard } from './StackedCard';
 import { TimelineCard } from './TimelineCard';
 import type { TimelineStack } from './stacking';
 import { pickRenderer } from './renderers';
@@ -33,7 +31,6 @@ export function ExpandedStack({
   registry,
   ctx,
   cardSlots,
-  onCollapse,
   isNew,
   focusEventId,
 }: {
@@ -41,20 +38,11 @@ export function ExpandedStack({
   registry: TimelineRendererRegistry;
   ctx: TimelineRendererContext;
   cardSlots?: TimelineCardSlotsFor;
-  onCollapse: () => void;
   isNew?: (occurredAt: number) => boolean;
   focusEventId?: string;
 }) {
   return (
     <>
-      <StackedCard
-        stack={stack}
-        registry={registry}
-        ctx={ctx}
-        expanded
-        isNew={stack.events.some((e) => isNew?.(e.occurredAt))}
-        onToggle={onCollapse}
-      />
       {stack.events.map((event, index) => (
         // The delay restarts at zero for the run rather than continuing
         // the page's cascade: what just arrived is these cards, and

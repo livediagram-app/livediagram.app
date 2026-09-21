@@ -13,7 +13,7 @@
 // events and paging belong to the consumer, because only it knows how
 // to fetch.
 
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { TimelineGroup } from './TimelineGroup';
 import { TimelineCard } from './TimelineCard';
 import { StackedCard } from './StackedCard';
@@ -244,33 +244,36 @@ export function Timeline({
                 </div>
               );
             }
-            if (expanded.has(stack.key) || forcedOpen.has(stack.key)) {
-              return (
-                <ExpandedStack
-                  key={stack.key}
+            const open = expanded.has(stack.key) || forcedOpen.has(stack.key);
+            // One <StackedCard> element in both states, so toggling
+            // flips its props rather than remounting it: a remount would
+            // replay its arrival animation every time the run closes.
+            // The members mount after it only while the run is open.
+            return (
+              <Fragment key={stack.key}>
+                <StackedCard
                   stack={stack}
                   registry={renderers}
                   ctx={ctx}
-                  cardSlots={cardSlots}
-                  isNew={isNew}
-                  focusEventId={focusEventId}
-                  onCollapse={() => toggleStack(stack.key)}
+                  expanded={open}
+                  isNew={stack.events.some((e) => isNew(e.occurredAt))}
+                  stagger={staggerFor(fanIndex.get(stack.events[0]!.id))}
+                  onToggle={() => {
+                    toggleStack(stack.key);
+                    if (!open) onStackExpand?.();
+                  }}
                 />
-              );
-            }
-            return (
-              <StackedCard
-                key={stack.key}
-                stack={stack}
-                registry={renderers}
-                ctx={ctx}
-                isNew={stack.events.some((e) => isNew(e.occurredAt))}
-                stagger={staggerFor(fanIndex.get(stack.events[0]!.id))}
-                onToggle={() => {
-                  toggleStack(stack.key);
-                  onStackExpand?.();
-                }}
-              />
+                {open && (
+                  <ExpandedStack
+                    stack={stack}
+                    registry={renderers}
+                    ctx={ctx}
+                    cardSlots={cardSlots}
+                    isNew={isNew}
+                    focusEventId={focusEventId}
+                  />
+                )}
+              </Fragment>
             );
           })}
         </TimelineGroup>
