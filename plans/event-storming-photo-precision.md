@@ -359,13 +359,19 @@ seam are all the same colour as their surroundings, so all of them fail it.
 - **Low-confidence detections (3.6).** Kept, and no longer shown as a number:
   the gates above are the judgement, and a box that clears them is a claim the
   detector is willing to make. Confidence stays in the data for the sweep.
-- **Still there on photo 1:** the lit tan top of the cardboard packaging and
-  the pink parcel tape on it. That photograph has half a room in it, and the
-  honest limit stands - fill the frame with the wall.
+- **Still there on photo 1:** the cardboard packaging stacked in front of the
+  wall and the pink parcel tape on it, a dozen boxes, all of them in the
+  bottom-left quarter where the photograph stops being a wall and becomes a
+  room. An "is it ON the kraft?" gate was measured and REJECTED: the ring
+  around a box, relative to the frame's median brightness, separates weakly
+  (real notes p05 0.67-0.78, junk p25 0.41 but p50 0.83), so a floor tight
+  enough to take the cardboard takes notes in deep shade with it - and shade
+  recall is the thing the operator asked us not to lose. The honest limit
+  stands: fill the frame with the wall.
 
 ## 4. The whole wall, end to end
 
-- [ ] 4.1 Re-run all six photos through the editor in a real browser (drop the
+- [x] 4.1 Re-run all six photos through the editor in a real browser (drop the
       file in; the file dialog's double-click is broken by a Chromium bug on
       this machine). Record detections, precision/recall where truth exists, and
       page errors.
@@ -381,7 +387,7 @@ seam are all the same colour as their surroundings, so all of them fail it.
       failing, or the reader being rate-limited at ~66 crops, and fix or report
       it with evidence. A note whose words never arrive is still a note, but
       dozens of them mean something upstream gave up.
-- [ ] 4.3 Screenshot each photo's surface and check by eye: boxes on stickies
+- [x] 4.3 Screenshot each photo's surface and check by eye: boxes on stickies
       and nothing else, words on the right notes, dense clusters separated.
 - [ ] 4.4 Post a `shot` of the corrected surface on the operator's gym-wall
       photo, and a `review` with numbered do/expect steps for the whole import.
@@ -402,6 +408,24 @@ batch that did not stay blank, and the reason travels with the result, so the
 review says "6 notes could not be read (ai_quota). Type those in yourself."
 rather than claiming the reader gave up. A run where EVERY batch fails still
 throws its token, because that is a failure rather than a partial read.
+
+### Six photos in a real browser
+
+Dropped into the editor on the static build, reader stubbed, dark scheme:
+
+| photo  | boxes | page errors |
+| ------ | ----- | ----------- |
+| 201646 | 51    | 0           |
+| 201654 | 50    | 0           |
+| 201707 | 39    | 0           |
+| 201713 | 55    | 0           |
+| 201730 | 49    | 0           |
+| 201743 | 54    | 0           |
+
+By eye: photo 3's wall - the one that was a grid of tape boxes - is now 55
+boxes on 55 stickies and nothing on the tape, including the strips running
+across the paper seams. Photo 1 is clean across the whole wall; every box that
+is not a sticky is on the cardboard stacked in front of it.
 
 ## 5. Fold-back
 
