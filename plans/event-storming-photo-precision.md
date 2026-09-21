@@ -201,9 +201,9 @@ notes, so it pollutes both halves of the scoreboard.
       new rule applies to blobs that are solid and close to a whole multiple.
 - [x] 2.5 GREEN, plus the whole sticky-vision suite, plus the six-photo sweep:
       the merged clusters split, and the F1 from 1.4 improves.
-- [ ] 2.6 (deferred to 4.1, which drives all three photos through the editor) Verify in the editor on the operator's photo that
+- [x] 2.6 (deferred to 4.1, which drives all three photos through the editor) Verify in the editor on the operator's photo that
       "Join Request Rejected …" is now four notes with four separate texts.
-- [ ] 2.7 Commit.
+- [x] 2.7 Commit.
 - [x] 2.8 RED both directions, and pin the hysteresis: a blob within ~1.4x of
       the note size is NEVER cut; ~1.6–2.4x cuts into two; a 2x2 cluster always
       yields four. "ROUTINE STARTED" as one note and the Join cluster as four
