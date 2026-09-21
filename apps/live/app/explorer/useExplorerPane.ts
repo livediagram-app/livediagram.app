@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import type { DiagramListItem, Folder, SharedWithItem } from '@/lib/api-client';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import type { TeamDiagramRow } from '@/hooks/persistence/useTeamLibrariesSweep';
-import type { PaneDiagram, SelectedNode } from './views';
+import { sharedToPaneDiagram, type PaneDiagram, type SelectedNode } from './views';
 
 // "Recent" cap. Big enough for "what was I just working on",
 // small enough that it doesn't drown the list view.
@@ -115,15 +115,7 @@ export function useExplorerPane({
       // by recency. Team rows carry their team (badge + owner column);
       // shared rows carry the sharer + share code so the row links via
       // the share link and shows the "Shared" badge.
-      const sharedRows: PaneDiagram[] = shared.map((s) => ({
-        id: s.id,
-        name: s.name,
-        folderId: null,
-        savedAt: s.savedAt,
-        shareCode: s.shareCode,
-        ownerId: '',
-        shared: { ownerName: s.ownerName, role: s.role, shareCode: s.shareCode },
-      }));
+      const sharedRows: PaneDiagram[] = shared.map(sharedToPaneDiagram);
       const sorted = [...diagrams, ...teamDiagrams, ...sharedRows]
         // Hidden-from-Recent (spec/93). Filtered BEFORE the cap so hiding
         // one diagram promotes the next one in rather than leaving a gap.

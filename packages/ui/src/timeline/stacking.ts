@@ -2,7 +2,7 @@
 //
 // A day where you renamed six diagrams should read as one line, not
 // six. Within a day, events sharing a bucket collapse into a single
-// bubble the reader can expand.
+// card the reader can expand.
 //
 // Pure over the event list so the rules are testable without mounting
 // anything — which matters, because "why did these two not stack?" is
@@ -22,7 +22,7 @@ export type TimelineStack = {
 
 // Event types that are two halves of one moment. Without this, a day
 // where somebody joined and somebody else left shows two near-identical
-// collapsed bubbles for what a person would describe as "the team
+// collapsed cards for what a person would describe as "the team
 // changed".
 const BUCKET_ALIASES: Record<string, string> = {
   team_member_joined: 'team_membership',
@@ -52,7 +52,7 @@ export function bucketFor(event: TimelineEvent): string {
 // Group one day's events into stacks.
 //
 // Bucketing is by kind, NOT by adjacency: four member changes split by
-// an unrelated bubble still collapse into one stack of four. A reader
+// an unrelated card still collapse into one stack of four. A reader
 // scanning a day asks "what kind of thing happened", not "what ran
 // consecutively".
 //
@@ -106,6 +106,11 @@ const STACK_LABELS: Record<string, string> = {
   'account::token_created': 'API Tokens Created',
   'account::token_expiring': 'API Tokens Expiring',
   'account::theme_saved': 'Themes Saved',
+  'account::theme_deleted': 'Themes Deleted',
+  'account::folder_created': 'Folders Created',
+  'account::folder_deleted': 'Folders Deleted',
+  'account::image_uploaded': 'Images Uploaded',
+  'account::token_revoked': 'API Tokens Revoked',
   team_membership: 'Members Changed',
   sharing: 'Sharing Changed',
   filing: 'Diagrams Filed',

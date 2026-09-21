@@ -2,25 +2,17 @@
 
 // The Explorer card grid's folder cards (spec/67), split out of
 // CardView: the real FolderCard (rename / menu / child count) and the
-// synthetic Unsorted / Generated card, plus the card shell + preview
-// class constants every card shares (DiagramCard imports them back).
+// synthetic Unsorted / Generated card. The card shell + preview classes
+// every card shares live in @livediagram/ui, where the Timeline's cards
+// use them too (spec/138 §2).
 
 import { useRef, useState, type ReactNode } from 'react';
+import { CARD_PREVIEW as previewArea, CARD_SHELL as cardShell } from '@livediagram/ui';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
 import { MenuTile, MenuTileGrid, PortalMenu } from '@/components/primitives/PortalMenu';
 import { FolderIcon, MenuFolderIcon, MenuPencilIcon, MenuTrashIcon, PlusIcon } from './icons';
 import type { Folder } from '@/lib/api-client';
-
-export const cardShell =
-  'group relative flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:border-brand-300 hover:shadow dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-500/50';
-// Fixed height (not an aspect ratio): every diagram's SVG has a
-// different intrinsic shape, so an aspect-ratio box would resolve to a
-// different height per card. A fixed-height letterbox keeps every
-// preview — and therefore every card — the same height; the snapshot
-// sits centred via object-contain.
-export const previewArea =
-  'flex h-48 w-full items-center justify-center border-b border-slate-100 bg-slate-50/70 dark:border-slate-700/60 dark:bg-slate-900/30';
 
 // The plain folder mark that fills a folder card's preview box when
 // there's nothing inside to preview (spec/99). Exported so FolderPreview

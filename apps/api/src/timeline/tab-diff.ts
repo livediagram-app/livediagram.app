@@ -42,23 +42,30 @@ export function newComments(next: Element[], prev: Element[]): Comment[] {
   return added;
 }
 
-// Element ids whose thread flipped from unresolved (or absent) to
-// resolved in this save. Keyed by element id rather than a thread id
-// because a thread has none — it hangs off its element.
-export function newlyResolvedThreads(next: Element[], prev: Element[]): string[] {
+// Threads that flipped from unresolved (or absent) to resolved in this
+// save. Keyed by element id rather than a thread id because a thread
+// has none — it hangs off its element. Carries the thread's opening
+// comment, so the event can say WHAT was resolved rather than only that
+// something was.
+export function newlyResolvedThreads(
+  next: Element[],
+  prev: Element[],
+): { elementId: string; text: string | null }[] {
   const wasResolved = new Map<string, boolean>();
   for (const el of prev) {
     const thread = threadOf(el);
     if (thread) wasResolved.set(el.id, thread.resolved === true);
   }
-  const flipped: string[] = [];
+  const flipped: { elementId: string; text: string | null }[] = [];
   for (const el of next) {
     const thread = threadOf(el);
     if (!thread?.resolved) continue;
     // `false` (was open) flips; `undefined` (no thread before) means
     // the whole thread arrived resolved in one save, which is not a
     // resolution moment anyone watched happen.
-    if (wasResolved.get(el.id) === false) flipped.push(el.id);
+    if (wasResolved.get(el.id) === false) {
+      flipped.push({ elementId: el.id, text: thread.comments?.[0]?.text ?? null });
+    }
   }
   return flipped;
 }

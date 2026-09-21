@@ -261,6 +261,8 @@ export async function recordCommentResolved(
   env: Env,
   diagram: DiagramRef,
   threadKey: string,
+  // The thread's opening comment, so the feed can say what was resolved.
+  text: string | null,
   actorId: string,
 ): Promise<void> {
   await record(
@@ -271,7 +273,7 @@ export async function recordCommentResolved(
       sourceId: threadKey,
       eventType: 'comment_resolved',
       title: 'Comment Resolved',
-      description: diagram.name,
+      description: text ? truncate(text, TIMELINE_COMMENT_MAX) : diagram.name,
       snapshot: diagramSnapshot(diagram),
     },
     await audienceForDiagram(env, diagram),

@@ -293,7 +293,11 @@ export function ExplorerPane() {
           page before the feed's own skeleton. */}
       {selected.kind === 'timeline' ? (
         ownerId ? (
-          <TimelinePane feed={timeline} ownerId={ownerId} />
+          <TimelinePane
+            feed={timeline}
+            ownerId={ownerId}
+            onShowHistory={(id, name) => setHistoryFor({ id, name })}
+          />
         ) : null
       ) : loading ? (
         <SkeletonRows />

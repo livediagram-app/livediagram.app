@@ -22,7 +22,8 @@ import {
   hrefForDiagram,
   VisibilityBadge,
 } from './diagram-row-shared';
-import { cardShell, FolderCard, previewArea, SyntheticFolderCard } from './explorer-folder-cards';
+import { FolderCard, SyntheticFolderCard } from './explorer-folder-cards';
+import { CARD_GRID, CARD_PREVIEW as previewArea, CARD_SHELL as cardShell } from '@livediagram/ui';
 import { FolderPreview } from './FolderPreview';
 import { RelativeTimeChip } from '@/components/primitives/RelativeTimeChip';
 
@@ -69,7 +70,7 @@ export function CardView({
 }: CardViewProps) {
   useRelativeTimeTick();
   return (
-    <div className="lvd-cascade grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div className={`lvd-cascade ${CARD_GRID}`}>
       {showUnsortedRow ? (
         <SyntheticFolderCard
           icon={<UnsortedIcon />}

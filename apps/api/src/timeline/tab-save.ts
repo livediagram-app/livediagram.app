@@ -46,12 +46,12 @@ export async function recordTabSave(
     );
   }
 
-  for (const elementId of newlyResolvedThreads(next, prev)) {
+  for (const { elementId, text } of newlyResolvedThreads(next, prev)) {
     // The element id doubles as the thread's identity — a thread has no
     // id of its own, it hangs off its element. Namespaced with the
     // diagram id so the same element id in two diagrams (a duplicate)
     // can't collide on the timeline UNIQUE key.
-    await recordCommentResolved(env, diagram, `${diagram.id}:${elementId}`, actorId);
+    await recordCommentResolved(env, diagram, `${diagram.id}:${elementId}`, text, actorId);
   }
 
   for (const action of newActions(next, prev)) {

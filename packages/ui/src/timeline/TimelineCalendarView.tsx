@@ -2,27 +2,25 @@
 
 // The month grid (spec/138 §2.2).
 //
-// One coloured dot per source type present on a day, with a count
-// badge above one. Clicking a dot opens a popover listing that day's
-// events of that type as full bubbles — the SAME bubbles the list view
-// draws, so there is one bubble implementation rather than a calendar
-// flavour that drifts from it.
+// One coloured dot per tone present on a day, with a count badge above
+// one. Clicking a dot opens a popover listing that day's events of that
+// tone as cards — the SAME cards the list view draws, so there is one
+// card implementation rather than a calendar flavour that drifts from
+// it.
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { dateKey } from './useTimelineGrouping';
-import {
-  buildMonthCells,
-  buildWeekCells,
-  formatMonth,
-  formatWeek,
-  monthKeyOf,
-  shiftMonth,
-  shiftWeek,
-} from './monthCells';
+import { buildMonthCells, formatMonth, monthKeyOf, shiftMonth } from './monthCells';
+import { CARD_GRID } from '../cardGrid';
 import { TONE_LABELS, eventTone, toneColor, type TimelineTone } from './eventTone';
 import { pickRenderer } from './renderers';
-import { TimelineBubble } from './TimelineBubble';
-import type { TimelineEvent, TimelineRendererContext, TimelineRendererRegistry } from './types';
+import { TimelineCard } from './TimelineCard';
+import type {
+  TimelineCardSlotsFor,
+  TimelineEvent,
+  TimelineRendererContext,
+  TimelineRendererRegistry,
+} from './types';
 
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -30,24 +28,19 @@ export function TimelineCalendarView({
   events,
   monthKey,
   onMonthChange,
-  weekKey,
-  onWeekChange,
   registry,
   ctx,
+  cardSlots,
   now,
 }: {
   events: TimelineEvent[];
   monthKey: string;
   onMonthChange: (monthKey: string) => void;
-  // Present in week mode. A week is a denser read of the same data —
-  // useful when a month grid is too coarse to see a busy stretch.
-  weekKey?: string;
-  onWeekChange?: (weekKey: string) => void;
   registry: TimelineRendererRegistry;
   ctx: TimelineRendererContext;
+  cardSlots?: TimelineCardSlotsFor;
   now?: number;
 }) {
-  const isWeek = Boolean(weekKey && onWeekChange);
   const [openCell, setOpenCell] = useState<string | null>(null);
   const gridRef = useRef<HTMLDivElement>(null);
   // Read once at mount rather than on every render: `Date.now()` in the
@@ -93,7 +86,7 @@ export function TimelineCalendarView({
     return map;
   }, [events]);
 
-  // Both directions page one step at a time, months as well as weeks.
+  // Both directions page one month at a time.
   //
   // Months used to jump to the nearest month that had events and disable the
   // chevron when there wasn't one, which was right while the client held the
@@ -106,14 +99,10 @@ export function TimelineCalendarView({
   // disabled for not having loaded them.
   //
   // The cost is the honest one the original comment worried about: a quiet
-  // quarter now takes a click per month. That is the same trade the week
-  // arrows already made deliberately, and it beats a control that lies.
+  // quarter now takes a click per month. It beats a control that lies.
   const previousMonth = shiftMonth(monthKey, -1);
   const nextMonth = shiftMonth(monthKey, 1);
-  const cells = useMemo(
-    () => (isWeek && weekKey ? buildWeekCells(weekKey) : buildMonthCells(monthKey)),
-    [isWeek, weekKey, monthKey],
-  );
+  const cells = useMemo(() => buildMonthCells(monthKey), [monthKey]);
   const todayKey = dateKey(now ?? mountedAt);
 
   // Close the popover on any click outside it and on Escape. Listeners
@@ -140,23 +129,15 @@ export function TimelineCalendarView({
   return (
     <div ref={gridRef}>
       <div className="mb-3 flex items-center justify-between">
-        {/* Paging is unconditional in both modes — a step is small enough
-            that skipping empty periods would hide the shape of a quiet
+        {/* Paging is unconditional — a step is small enough that
+            skipping empty months would hide the shape of a quiet
             stretch, which is often the thing you're looking at, and the
-            visible period is fetched on demand either way. */}
-        <MonthArrow
-          direction={-1}
-          target={isWeek && weekKey ? shiftWeek(weekKey, -1) : previousMonth}
-          onPick={isWeek && onWeekChange ? onWeekChange : onMonthChange}
-        />
+            visible month is fetched on demand either way. */}
+        <MonthArrow direction={-1} target={previousMonth} onPick={onMonthChange} />
         <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
-          {isWeek && weekKey ? formatWeek(weekKey) : formatMonth(monthKey)}
+          {formatMonth(monthKey)}
         </p>
-        <MonthArrow
-          direction={1}
-          target={isWeek && weekKey ? shiftWeek(weekKey, 1) : nextMonth}
-          onPick={isWeek && onWeekChange ? onWeekChange : onMonthChange}
-        />
+        <MonthArrow direction={1} target={nextMonth} onPick={onMonthChange} />
       </div>
 
       <div className="grid grid-cols-7 gap-px text-center">
@@ -172,16 +153,14 @@ export function TimelineCalendarView({
           if (!cell.key) {
             // Pad squares carry no key of their own; the index is
             // stable because the grid is rebuilt whole per month.
-            return (
-              <div key={`pad-${index}`} className={isWeek ? 'min-h-[160px]' : 'min-h-[68px]'} />
-            );
+            return <div key={`pad-${index}`} className="min-h-[68px]" />;
           }
           const tones = tonesByDay.get(cell.key) ?? [];
           const isToday = cell.key === todayKey;
           return (
             <div
               key={cell.key}
-              className={`${isWeek ? 'min-h-[160px]' : 'min-h-[68px]'} rounded-md border p-1 text-left ${
+              className={`min-h-[68px] rounded-md border p-1 text-left ${
                 isToday
                   ? 'border-brand-400 bg-brand-50/60 dark:border-brand-500/60 dark:bg-brand-500/10'
                   : 'border-slate-200 dark:border-slate-700'
@@ -239,12 +218,13 @@ export function TimelineCalendarView({
               Close
             </button>
           </div>
-          <div className="space-y-1.5">
+          <div className={CARD_GRID}>
             {openEvents.map((event) => (
-              <TimelineBubble
+              <TimelineCard
                 key={event.id}
                 event={event}
                 rendered={pickRenderer(event, registry)(event, ctx)}
+                slots={cardSlots?.(event)}
               />
             ))}
           </div>

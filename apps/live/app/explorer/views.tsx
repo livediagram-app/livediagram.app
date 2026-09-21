@@ -45,6 +45,22 @@ export type PaneDiagram = DiagramListItem & {
   shared?: { ownerName: string | null; role: 'edit' | 'view'; shareCode: string };
 };
 
+// A diagram shared WITH the viewer, as a pane row. It lives in the
+// sharer's library, not yours, so it carries no folder and an empty
+// owner; the share code is what makes it openable. One helper so Recent
+// and the Timeline's card menus build the same row.
+export function sharedToPaneDiagram(s: SharedWithItem): PaneDiagram {
+  return {
+    id: s.id,
+    name: s.name,
+    folderId: null,
+    savedAt: s.savedAt,
+    shareCode: s.shareCode,
+    ownerId: '',
+    shared: { ownerName: s.ownerName, role: s.role, shareCode: s.shareCode },
+  };
+}
+
 // What the sidebar tree highlights and what the right pane shows.
 // "Special" nodes (`recent`, `all`, `shared`) are virtual buckets
 // with no folder row behind them; `folder` is a real owned folder and

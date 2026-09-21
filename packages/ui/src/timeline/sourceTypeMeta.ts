@@ -1,7 +1,7 @@
 // Per-source-type display metadata (spec/138 §7).
 //
 // One place decides what a source type is called, what colour it is,
-// and which glyph it wears, so the bubble, the filter chip, and the
+// and which glyph it wears, so the card, the filter chip, and the
 // calendar dot can never disagree about a kind.
 //
 // Colour is NOT here: it keys on what happened, not on where it
@@ -36,7 +36,7 @@ const ICON_PATHS: Record<string, string> = {
 };
 
 // A generic dot for anything unmapped — never null, so a new source
-// type from a newer worker renders a bubble that simply looks plain
+// type from a newer worker renders a card that simply looks plain
 // rather than one with a hole where its icon should be.
 const FALLBACK_PATH = 'M12 6a6 6 0 100 12 6 6 0 000-12z';
 
