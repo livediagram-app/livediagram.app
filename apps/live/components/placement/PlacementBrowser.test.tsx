@@ -246,7 +246,7 @@ describe('the New Team tile', () => {
     }
     render(<Host />);
     const tile = screen.getByRole('button', { name: /New Team/ });
-    expect(tile.textContent).toContain('Create a team');
+    expect(tile.textContent).toContain('Create a New Team');
     fireEvent.click(tile);
     fireEvent.change(screen.getByPlaceholderText('Team name'), { target: { value: 'Design' } });
     fireEvent.keyDown(screen.getByPlaceholderText('Team name'), { key: 'Enter' });

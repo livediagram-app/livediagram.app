@@ -84,7 +84,7 @@ its folders, which left nowhere to put that option.
 
 That option is the **New Team tile**, last on the overview after the
 team cards: the same dashed inline-name tile as New Folder (one
-`InlineCreateTile`, two skins), reading "New Team · Create a team". Type a
+`InlineCreateTile`, two skins), reading "New Team · Create a New Team". Type a
 name and the team is created (`POST /api/teams`, spec/32), joins the
 overview, and the browser enters it with its root selected, because the
 point of making a team here is to file this diagram in it. **Signed-in
