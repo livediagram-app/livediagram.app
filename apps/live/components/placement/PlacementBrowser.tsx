@@ -199,16 +199,37 @@ export function PlacementBrowser({
   // selected when the destination IS it or lives inside it, so backing out
   // of a subfolder still highlights the branch that holds the choice.
   const selectionChain = new Set<string>();
+  const byId = new Map(spaceFolders.map((f) => [f.id, f]));
+  // The folder the destination currently points at, if it's a folder in
+  // this space (undefined when the space's root is the choice).
+  let chosenFolder: PickerFolder | undefined;
   if (placementSpace === (isPersonalSpace ? 'personal-space' : teamId)) {
     const ix = placement.indexOf('folder:');
     const chosenId = ix >= 0 ? placement.slice(ix + 'folder:'.length) : null;
-    const byId = new Map(spaceFolders.map((f) => [f.id, f]));
-    let cur = chosenId ? byId.get(chosenId) : undefined;
+    chosenFolder = chosenId ? byId.get(chosenId) : undefined;
+    let cur = chosenFolder;
     while (cur) {
       selectionChain.add(cur.id);
       cur = cur.parentId ? byId.get(cur.parentId) : undefined;
     }
   }
+
+  // Where the New Folder tile creates. A folder is created UNDER the
+  // selected destination: pick a folder and the tile reads "New
+  // Subfolder"; pick the space's root and it's "New Folder" again. With
+  // nothing chosen in this space, the open folder (if any) is the parent,
+  // so drilling in never creates back at the root behind your back.
+  const newFolderParent = chosenFolder ?? openFolder;
+  // Root inward, so the browser can open the parent after creating in it.
+  const pathTo = (folder: PickerFolder): PickerFolder[] => {
+    const path: PickerFolder[] = [];
+    let cur: PickerFolder | undefined = folder;
+    while (cur) {
+      path.unshift(cur);
+      cur = cur.parentId ? byId.get(cur.parentId) : undefined;
+    }
+    return path;
+  };
 
   // Back: pop one folder level; at the space root, back to the overview.
   // With one space and nothing open there is no level above, and the bar
@@ -297,11 +318,20 @@ export function PlacementBrowser({
           <NewFolderTile
             layout={layout}
             enterIndex={children.length + 1}
+            label={newFolderParent ? 'New Subfolder' : 'New Folder'}
+            sub={newFolderParent ? `In ${newFolderParent.name}` : 'Create here'}
             onCreate={async (name) => {
-              const created = await onCreateFolder(name, openFolder?.id ?? null, teamId);
-              // Select the fresh folder as the destination straight away.
-              if (created) onPlacement(valueFor(created.id));
-              return created !== null;
+              const created = await onCreateFolder(name, newFolderParent?.id ?? null, teamId);
+              if (!created) return false;
+              // Select the fresh folder as the destination straight away,
+              // and open its parent if that isn't the level on screen, so
+              // the new row is the one highlighted rather than hidden
+              // inside a folder the reader hasn't opened.
+              onPlacement(valueFor(created.id));
+              if (newFolderParent && newFolderParent.id !== openFolder?.id) {
+                setStack(pathTo(newFolderParent));
+              }
+              return true;
             }}
           />
         ) : null}

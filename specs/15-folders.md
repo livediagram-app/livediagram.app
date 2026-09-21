@@ -40,7 +40,13 @@ In scope:
   each team, spec/35; team-scoped surfaces skip the overview and open
   straight inside their team), then the folder drill-down with a
   "here" card at every level, an inline New Folder tile, and a
-  BackBar. The New Folder tile's name field commits on Enter OR on
+  BackBar. **The tile creates under the selected destination**: with a
+  folder selected it reads "New Subfolder · In <folder>" and the new
+  folder lands inside it (the browser then opens that folder so the new
+  row is the highlighted one); with the space's root selected it reads
+  "New Folder · Create here". So selecting a folder, then the tile, then
+  a name is the whole gesture for a nested folder, without drilling in
+  first. The New Folder tile's name field commits on Enter OR on
   blur when a name has been typed (mobile keyboards give the
   single-line field no Enter key, so tapping away is the only submit
   gesture there); blurring it empty, or pressing Escape, cancels. The dialog opens with the subject's current placement

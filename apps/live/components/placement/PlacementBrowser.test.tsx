@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { useState } from 'react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { PlacementBrowser, type PickerFolder } from './PlacementBrowser';
 import type { PlacementLayout } from './PlacementCard';
 
@@ -32,7 +32,11 @@ function Harness({
   teams?: { id: string; name: string }[];
   teamFolders?: Record<string, PickerFolder[]>;
   layout?: PlacementLayout;
-  onCreateFolder?: (name: string) => Promise<PickerFolder | null>;
+  onCreateFolder?: (
+    name: string,
+    parentId: string | null,
+    teamId: string | null,
+  ) => Promise<PickerFolder | null>;
 }) {
   const [placement, setPlacement] = useState('unsorted');
   return (
@@ -145,5 +149,37 @@ describe('the cascade', () => {
       expect(tile.className).toContain('animate-fade-in');
       expect(tile.className).not.toContain('animate-slide-row-in');
     }
+  });
+});
+
+describe('the New Folder tile', () => {
+  it('creates under the selected folder, and at the root when the root is selected', async () => {
+    const onCreateFolder = vi.fn(async (name: string, parentId: string | null) => ({
+      id: `new-${parentId ?? 'root'}`,
+      name,
+      parentId,
+    }));
+    render(<Harness layout="list" onCreateFolder={onCreateFolder} />);
+    // Root selected: a plain new folder.
+    expect(screen.getByRole('button', { name: /New Folder/ }).textContent).toContain('Create here');
+
+    // Select a leaf folder: the tile becomes a subfolder of it.
+    fireEvent.click(radio(/^Epsilon/));
+    const tile = screen.getByRole('button', { name: /New Subfolder/ });
+    expect(tile.textContent).toContain('In Epsilon');
+    fireEvent.click(tile);
+    fireEvent.change(screen.getByPlaceholderText('Folder name'), { target: { value: 'Zeta' } });
+    fireEvent.keyDown(screen.getByPlaceholderText('Folder name'), { key: 'Enter' });
+    await screen.findByRole('button', { name: /New Subfolder|New Folder/ });
+    expect(onCreateFolder).toHaveBeenCalledWith('Zeta', 'e', null);
+  });
+
+  it('goes back to New Folder when the space root is selected again', () => {
+    render(<Harness layout="list" onCreateFolder={async () => null} />);
+    fireEvent.click(radio(/^Epsilon/));
+    expect(screen.getByRole('button', { name: /New Subfolder/ })).toBeTruthy();
+    fireEvent.click(radio(/^Personal Space/));
+    expect(screen.getByRole('button', { name: /New Folder/ })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /New Subfolder/ })).toBeNull();
   });
 });

@@ -32,10 +32,16 @@ function enterProps(layout: PlacementLayout, index: number | undefined) {
 // dialog (spec/30), which offers the same create-in-place affordance.
 export function NewFolderTile({
   onCreate,
+  label = 'New Folder',
+  sub = 'Create here',
   layout = 'tiles',
   enterIndex,
 }: {
   onCreate: (name: string) => Promise<boolean>;
+  // "New Folder" at a space's root, "New Subfolder" once a folder is the
+  // selected destination (the browser decides; see its tile).
+  label?: string;
+  sub?: string;
   layout?: PlacementLayout;
   // Position in the level's cascade; absent = no entrance animation.
   enterIndex?: number;
@@ -74,9 +80,9 @@ export function NewFolderTile({
         <span
           className={`${row ? 'min-w-0 flex-1' : 'w-full'} truncate text-xs font-medium text-slate-500 dark:text-slate-400`}
         >
-          New Folder
+          {label}
         </span>
-        <span className="shrink-0 text-[10px] text-slate-400 dark:text-slate-500">Create here</span>
+        <span className="shrink-0 text-[10px] text-slate-400 dark:text-slate-500">{sub}</span>
       </button>
     );
   }
