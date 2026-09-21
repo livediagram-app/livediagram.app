@@ -227,10 +227,14 @@ export function DiagramActionsMenu({
   // Viewer id for Offline Mode conversions (spec/76).
   ownerId: string | null;
   onClose: () => void;
-  onStartRename: () => void;
-  onDuplicate: () => void;
-  onMove: (anchor: HTMLElement | null) => void;
-  onDelete: () => void;
+  // Every verb is optional: a row renders only when its handler is passed,
+  // so a surface that can't offer one (the floating panel can't rename a
+  // row that isn't the open diagram) leaves it out rather than showing a
+  // row that does nothing.
+  onStartRename?: () => void;
+  onDuplicate?: () => void;
+  onMove?: (anchor: HTMLElement | null) => void;
+  onDelete?: () => void;
   onDismiss?: () => void;
   // Hide / show in Recent (spec/93). Per-user, so the label reflects THIS
   // viewer's state; omitted where the surface can't offer it.
@@ -298,23 +302,34 @@ export function DiagramActionsMenu({
           <MenuGroupSeparator />
         </>
       )}
-      <MenuActionRow plain icon={<MenuPencilIcon />} label="Rename" onClick={then(onStartRename)} />
-      <MenuActionRow
-        plain
-        icon={<MenuDuplicateIcon />}
-        label="Duplicate"
-        onClick={then(onDuplicate)}
-      />
-      <MenuActionRow
-        plain
-        icon={<MenuFolderIcon />}
-        label="Change Folder"
-        onClick={then(() => onMove(anchor))}
-      />
+      {onStartRename ? (
+        <MenuActionRow
+          plain
+          icon={<MenuPencilIcon />}
+          label="Rename"
+          onClick={then(onStartRename)}
+        />
+      ) : null}
+      {onDuplicate ? (
+        <MenuActionRow
+          plain
+          icon={<MenuDuplicateIcon />}
+          label="Duplicate"
+          onClick={then(onDuplicate)}
+        />
+      ) : null}
+      {onMove ? (
+        <MenuActionRow
+          plain
+          icon={<MenuFolderIcon />}
+          label="Change Folder"
+          onClick={then(() => onMove(anchor))}
+        />
+      ) : null}
       {/* Two groups: what changes the diagram itself (rename, copy, file),
           then what changes how YOU see it (star, history, Recent,
           where it's stored). */}
-      <MenuGroupSeparator />
+      {onStartRename || onDuplicate || onMove ? <MenuGroupSeparator /> : null}
       {onToggleFavourite ? (
         <MenuActionRow
           plain
@@ -368,14 +383,18 @@ export function DiagramActionsMenu({
           />
         )
       ) : null}
-      <MenuGroupSeparator />
-      <MenuActionRow
-        plain
-        danger
-        icon={<MenuTrashIcon />}
-        label="Delete"
-        onClick={then(onDelete)}
-      />
+      {onDelete ? (
+        <>
+          <MenuGroupSeparator />
+          <MenuActionRow
+            plain
+            danger
+            icon={<MenuTrashIcon />}
+            label="Delete"
+            onClick={then(onDelete)}
+          />
+        </>
+      ) : null}
     </PortalMenu>
   );
 }

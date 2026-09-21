@@ -42,6 +42,8 @@ function TeamFolderNode({
   onToggleExpanded,
   onOpenDiagram,
   deleteFor,
+  onDuplicateDiagram,
+  onMoveDiagramRequest,
   pendingRenameId,
   onRenameFolderCommitted,
   onRenameFolder,
@@ -65,6 +67,9 @@ function TeamFolderNode({
   // Owner-gated per-row delete, threaded down from TeamNode so nested
   // folder rows share the same ownership check (spec/35).
   deleteFor: (d: DiagramListItem) => ((anchor: HTMLElement | null) => void) | undefined;
+  // Duplicate and Change Folder for the rows, threaded like deleteFor.
+  onDuplicateDiagram?: (id: string) => void;
+  onMoveDiagramRequest?: (id: string) => void;
   // Folder management, the same verbs the personal tree has. A folder
   // just created arrives with its id pending, and opens renaming.
   pendingRenameId?: string | null;
@@ -183,6 +188,8 @@ function TeamFolderNode({
               onToggleExpanded={onToggleExpanded}
               onOpenDiagram={onOpenDiagram}
               deleteFor={deleteFor}
+              onDuplicateDiagram={onDuplicateDiagram}
+              onMoveDiagramRequest={onMoveDiagramRequest}
               pendingRenameId={pendingRenameId}
               onRenameFolderCommitted={onRenameFolderCommitted}
               onRenameFolder={onRenameFolder}
@@ -198,6 +205,8 @@ function TeamFolderNode({
                 active={d.id === currentDiagramId}
                 onOpen={() => onOpenDiagram(d.id)}
                 onDelete={deleteFor(d)}
+                onDuplicate={onDuplicateDiagram ? () => onDuplicateDiagram(d.id) : undefined}
+                onMoveRequest={onMoveDiagramRequest ? () => onMoveDiagramRequest(d.id) : undefined}
               />
             </li>
           ))}
@@ -218,6 +227,8 @@ export function TeamNode({
   onOpenTeam,
   onOpenDiagram,
   onDeleteDiagram,
+  onDuplicateDiagram,
+  onMoveDiagramRequest,
   pendingRenameId,
   onRenameFolderCommitted,
   onRenameFolder,
@@ -243,6 +254,11 @@ export function TeamNode({
   // (spec/35). Anchored to the row's menu button so Explorer can pop
   // its ConfirmPopover beside it.
   onDeleteDiagram?: (id: string, anchor: HTMLElement | null) => void;
+  // Duplicate and Change Folder on the rows (spec/35): the move picker is
+  // the panel's, opened for this team so the pick routes through the
+  // scope-aware move.
+  onDuplicateDiagram?: (id: string) => void;
+  onMoveDiagramRequest?: (id: string) => void;
   // Team-library folder management, threaded to every folder node.
   pendingRenameId?: string | null;
   onRenameFolderCommitted?: () => void;
@@ -333,6 +349,8 @@ export function TeamNode({
               onToggleExpanded={onToggleExpanded}
               onOpenDiagram={onOpenDiagram}
               deleteFor={deleteFor}
+              onDuplicateDiagram={onDuplicateDiagram}
+              onMoveDiagramRequest={onMoveDiagramRequest}
               pendingRenameId={pendingRenameId}
               onRenameFolderCommitted={onRenameFolderCommitted}
               onRenameFolder={onRenameFolder}
@@ -348,6 +366,8 @@ export function TeamNode({
                 active={d.id === currentDiagramId}
                 onOpen={() => onOpenDiagram(d.id)}
                 onDelete={deleteFor(d)}
+                onDuplicate={onDuplicateDiagram ? () => onDuplicateDiagram(d.id) : undefined}
+                onMoveRequest={onMoveDiagramRequest ? () => onMoveDiagramRequest(d.id) : undefined}
               />
             </li>
           ))}

@@ -439,6 +439,11 @@ function ExplorerImpl({
           onDeleteDiagram={openDeleteConfirm}
           onDuplicateDiagram={onDuplicateDiagram}
           onMoveDiagramRequest={onMoveDiagramToFolder ? openMovePicker : undefined}
+          // A team row's move opens the picker for that team; the pick then
+          // routes through the scope-aware onMoveDiagramTo (spec/35).
+          onMoveTeamDiagramRequest={
+            onMoveDiagramTo ? (id, teamId) => setMoveTarget({ id, teamId }) : undefined
+          }
           onMoveDiagramToFolder={onMoveDiagramToFolder}
         />
 

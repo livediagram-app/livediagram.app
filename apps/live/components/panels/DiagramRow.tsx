@@ -194,14 +194,16 @@ export function DiagramRow({
           isOpen={active}
           onOpen={onOpen}
           // Only the open diagram's row renames inline (its title is the
-          // editor's); any other row's Rename opens the diagram to rename
-          // it there.
-          onStartRename={() => (onRename ? setEditing(true) : onOpen())}
-          onDuplicate={() => onDuplicate?.()}
+          // editor's), so only it offers Rename; the menu leaves out any
+          // verb this row has no handler for.
+          onStartRename={onRename ? () => setEditing(true) : undefined}
+          onDuplicate={onDuplicate}
           // Hand the menu button up as the anchor so the panel can open the
           // move picker / delete-confirm popover beside it.
-          onMove={(anchor) => onMoveRequest?.(anchor ?? menuButtonRef.current)}
-          onDelete={() => onDelete?.(menuButtonRef.current)}
+          onMove={
+            onMoveRequest ? (anchor) => onMoveRequest(anchor ?? menuButtonRef.current) : undefined
+          }
+          onDelete={onDelete ? () => onDelete(menuButtonRef.current) : undefined}
           favourite={favourite}
           onToggleFavourite={onToggleFavourite}
           recentExcluded={recentExcluded}
