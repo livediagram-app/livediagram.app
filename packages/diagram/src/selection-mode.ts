@@ -39,7 +39,14 @@ export function isSelectionMode(value: unknown): value is SelectionMode {
 // resize handles, ignore a drag-to-draw's size, and are left alone when a
 // multi-selection is scaled — a button that is 40px on one diagram and 400 on
 // another stops looking like part of the product.
-export const FIXED_SIZE_SHAPES: ReadonlySet<string> = new Set(['mode-button', 'session-button']);
+// The Done check (spec/137) is one too: it is a roster and a button, laid
+// out for its own content, and stretching it only spreads the same three
+// things over empty card.
+export const FIXED_SIZE_SHAPES: ReadonlySet<string> = new Set([
+  'mode-button',
+  'session-button',
+  'done-check',
+]);
 
 export function isFixedSizeShape(kind: string): boolean {
   return FIXED_SIZE_SHAPES.has(kind);
