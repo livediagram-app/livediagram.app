@@ -83,7 +83,7 @@ export function ModeGroupIcon() {
   );
 }
 
-/** Behaviour → Get around: an arrow through a doorway. */
+/** Behaviour → Navigate: an arrow through a doorway. */
 export function MoveGroupIcon() {
   return (
     <svg
@@ -103,7 +103,7 @@ export function MoveGroupIcon() {
   );
 }
 
-/** Behaviour → Run the room: a raised hand over a card. */
+/** Behaviour → Tools: a raised hand over a card. */
 export function FacilitateGroupIcon() {
   return (
     <svg
@@ -123,7 +123,7 @@ export function FacilitateGroupIcon() {
   );
 }
 
-/** Collaborate → Ask the room: a question mark in a bubble. */
+/** Collaborate → Ask: a question mark in a bubble. */
 export function AskGroupIcon() {
   return (
     <svg
@@ -143,7 +143,7 @@ export function AskGroupIcon() {
   );
 }
 
-/** Collaborate → Keep a record: a page with ruled lines. */
+/** Collaborate → Record: a page with ruled lines. */
 export function RecordGroupIcon() {
   return (
     <svg

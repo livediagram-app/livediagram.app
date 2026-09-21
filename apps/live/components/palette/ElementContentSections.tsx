@@ -241,28 +241,17 @@ export function ElementContentSections({
                 onClose();
               }}
             />
+            {/* The comment PANEL element (spec/136) is not offered here: it
+                is a palette tile, and a second way in from every element's
+                menu was one more tile to read past on the way to the thread. */}
             <MenuTile
               icon={<CommentMenuIcon />}
-              label="Comments"
+              label="Add Comment"
               onClick={() => {
                 props.onOpenComments(target.id);
                 onClose();
               }}
             />
-            {/* Comment PANEL (spec/136): the same thread, but on the board and
-                joined to this element by an arrow, so the remark stays where
-                the reader can see it instead of in a popover only the person
-                who opened it has. */}
-            {props.onAttachCommentPanel ? (
-              <MenuTile
-                icon={<CommentMenuIcon />}
-                label="Comment Panel"
-                onClick={() => {
-                  props.onAttachCommentPanel!(target);
-                  onClose();
-                }}
-              />
-            ) : null}
           </MenuTileGrid>
         </MenuAccordionSection>
       ) : null}

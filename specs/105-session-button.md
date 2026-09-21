@@ -67,7 +67,7 @@ beside `LivePoll` in `@livediagram/api-schema`: the style is now a `Tab` field,
 api-schema depends on diagram and not the reverse, and re-exporting `PollStyle`
 from api-schema keeps every existing import resolving against one list.
 
-For **Vote and Poll**, the face's derived label follows that setting ("Vote — 3 dots each", "Ask the room"), and an author's own label wins over it, like any shape. A **Timer** has no label to win: `SessionTimerFace` draws the clock, showing the configured minutes until a timer is actually running and the live countdown after. The setting still drives what you see, just as the digits rather than as a sentence about them.
+For **Vote and Poll**, the face's derived label follows that setting ("Vote — 3 dots each", "Ask"), and an author's own label wins over it, like any shape. A **Timer** has no label to win: `SessionTimerFace` draws the clock, showing the configured minutes until a timer is actually running and the live countdown after. The setting still drives what you see, just as the digits rather than as a sentence about them.
 
 ## Telemetry
 

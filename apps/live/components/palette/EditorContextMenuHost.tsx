@@ -100,7 +100,6 @@ export function EditorContextMenuHost() {
     setRevealedSelected,
     setPickerSourceSelected,
     setReactionSelected,
-    attachCommentPanel,
     setPickerOptionsSelected,
     tabs,
     commitShapeColorPreset,
@@ -336,7 +335,6 @@ export function EditorContextMenuHost() {
       onToggleTableZebra={setTableZebraSelected}
       onOpenNote={openNote}
       onOpenComments={openComments}
-      onAttachCommentPanel={attachCommentPanel}
       onAssignAction={openAssignAction}
       selectionElements={ctxMemberIds
         .map((id) => activeTab.elements.find((e) => e.id === id))
