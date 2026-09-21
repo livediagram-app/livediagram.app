@@ -5,7 +5,6 @@ import {
   groupTabsIntoRuns,
   tabFolderName,
   type Tab,
-  type TextSize,
 } from '@livediagram/diagram';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import type { AutoLayoutChoice } from '@/lib/auto-layout-choices';
@@ -25,25 +24,13 @@ import type { SessionToolsProps } from '@/components/chrome/session-tools-props'
 // theme / background, and tidy the layout. (Add-element actions used to live
 // here too but were removed — the palette + quick-connect cover adding.)
 export type CanvasMenuActions = {
-  onChangeTheme: () => void;
-  onChangeCanvas: () => void;
   // Cleanup category (spec/47): Auto-align grid-snaps current positions;
   // Auto Layout recomputes positions from the arrow graph (Tidy up) in the
   // chosen style (spec/47 "Layout styles"; omitted = smart).
   onAutoAlign: () => void;
   onAutoLayout: (choice?: AutoLayoutChoice) => void;
-  // Tab font + default new-element size (spec/28), surfaced as the menu's Font
-  // category (moved out of the Tab Look & Feel dialog). `font` null = the editor
-  // default; `defaultTextSize` undefined defaults to medium.
-  font: string | null;
-  onSetFont: (font: string | null) => void;
-  defaultTextSize: TextSize | undefined;
-  onSetDefaultTextSize: (size: TextSize) => void;
-  // Push the tab font + default size onto every existing element on the tab
-  // (Font category "Apply to all elements").
-  onApplyFontToAll: () => void;
-  // Paste into this tab from the canvas right-click menu, and whether the
-  // in-app clipboard actually holds anything (the row greys out when not).
+  // Paste straight from the empty-canvas right-click (spec/09); greyed,
+  // not hidden, when the buffer is empty.
   onPaste: () => void;
   canPaste: boolean;
 };

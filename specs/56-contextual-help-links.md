@@ -33,7 +33,15 @@ is the only way the editor links to a help article. It:
 - opens `/help/<slug>/` in a new tab (`target="_blank"`,
   `rel="noreferrer noopener"`), matching the existing header Help link;
 - wraps the trigger in the shared `Tooltip` (custom tooltips only, never a
-  native `title` - see the toolbar-tooltip rule);
+  native `title` - see the toolbar-tooltip rule). The tooltip's copy comes
+  from `HELP_LINK_COPY` in `apps/live/lib/help-articles.ts`, one entry per
+  article key: a **"Learn about …"** title naming the thing the reader is
+  looking at ("Learn about the Explorer") and one line saying what the
+  article does for them ("Tips and tricks to help you get the most out of
+  the Explorer."). A surface passes its own `title` / `description` only
+  when it needs a different framing; none does today. Before this table
+  every floating panel's `?` said a bare "Learn more" with no description,
+  which told the reader nothing about where it went;
 - fires `track('UI', 'Opened', <leaf-slug>)` on click, reusing the existing
   `UI`/`Opened` telemetry pair. The `type` is the article's **leaf** slug
   (e.g. `share-link-expiry`), which fits `TELEMETRY_TYPE_PATTERN`

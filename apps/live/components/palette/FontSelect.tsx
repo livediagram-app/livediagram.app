@@ -2,7 +2,8 @@ import { FONTS } from '@livediagram/diagram';
 import { SizeButton } from '@/components/palette/palette-controls';
 
 // Shared font picker (spec/28) used by the Tab Look & Feel dialog's Font
-// category. A compact 2-column grid of tiles rather than a native <select>:
+// tab. A 3-column grid of tiles rather than a native <select> (twelve
+// options make four even rows, with room for the wider faces to breathe):
 // each tile renders the font's NAME in its own typeface, so the list is a
 // genuine preview ("Caveat" looks like Caveat) instead of a row of look-alike
 // names you have to guess between. Native <option> font-family is ignored by
@@ -22,17 +23,17 @@ export function FontSelect({
   ariaLabel?: string;
 }) {
   return (
-    <div role="group" aria-label={ariaLabel} className="grid grid-cols-2 gap-1">
+    <div role="group" aria-label={ariaLabel} className="grid grid-cols-3 gap-x-2 gap-y-1.5">
       {/* Default option in the plain UI font — it's the absence of a face, so
           there's nothing to preview. */}
       <SizeButton active={value == null} onClick={() => onChange(null)}>
-        <span className="truncate">{defaultLabel}</span>
+        <span className="truncate py-1">{defaultLabel}</span>
       </SizeButton>
       {FONTS.map((f) => (
         <SizeButton key={f.id} active={value === f.id} onClick={() => onChange(f.id)}>
           {/* The name rendered in its own face — the whole point: read the
               voice, don't guess from the label. */}
-          <span className="truncate" style={{ fontFamily: f.stack }}>
+          <span className="truncate py-1" style={{ fontFamily: f.stack }}>
             {f.label}
           </span>
         </SizeButton>

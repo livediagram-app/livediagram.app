@@ -8,13 +8,21 @@ The pattern grid, canvas/pattern colour pickers, opacity slider, and theme grid 
 
 ## Behaviour
 
-- The empty-canvas right-click menu (`EditorContextMenu`, canvas mode) keeps its **Change Theme** and **Change Canvas** items. Picking either now opens **one** dialog (`CanvasThemeDialog`) on the matching tab:
-  - **Change Canvas** → opens on the **Canvas** tab.
-  - **Change Theme** → opens on the **Theme** tab.
+- The dialog is one modal (`CanvasThemeDialog`) with three tabs. The tab / canvas context menu no longer carries a **Look & Feel** category (Change Theme / Change Canvas) or a **Font** category: those controls live here, and the paintbrush dock button is the one entry point. A menu that opened a dialog was a detour the button already skips.
 - A **paintbrush dock button** ("Theme & Canvas") sits in the bottom-right chrome cluster, to the right of the collapsed Layers dock, and opens the same dialog on the **Theme** tab — a one-click, always-visible entry beside right-click. It shows on **every viewport, mobile included** (it was originally desktop-only on the theory that the canvas menu covers mobile, but that entry is invisible until you know the long-press gesture — the dock button is the discoverable path). It stays hidden in zen mode and in read-only / embed views.
-- The dialog is titled **Tab Look & Feel** ("Appearance" now names the VIEWER's own chrome, spec/07) and has two tabs, **Theme** and **Canvas** (Theme leads the strip: the broader, more-used control), switchable from a tab strip below its header (a title + close row, consistent with the other editor dialogs). Opening on one tab does not prevent switching to the other.
+- The dialog is titled **Tab Look & Feel** ("Appearance" now names the VIEWER's own chrome, spec/07) and has three tabs, **Theme**, **Canvas** and **Font** (Theme leads the strip: the broader, more-used control; Font is last, the finest-grained), switchable from a tab strip below its header. The header is a title row with the **help icon beside the close button** on the right, where the other editor dialogs keep their window controls. Opening on one tab does not prevent switching to the others.
 - Every control applies **live** to the active tab (same setters as the accordions), so the canvas updates behind the dialog as the user clicks. There is no Apply/Cancel: the dialog is an editor, not a wizard. Closing (the X, Escape, or a backdrop click) just dismisses it; nothing is rolled back.
 - The dialog is only reachable when the tab is editable. It is not offered on read-only / embed views (the right-click menu itself is suppressed there).
+
+### Font tab
+
+The tab's typography (spec/28), moved back here from the context menu's
+Font category: the **Tab font** select (the default for every text element
+on the tab that hasn't set its own; "Default" clears it), the **Default
+size for new elements** row (Scale / Small / Medium / Large, seeded onto
+each element added next), and **Apply to all elements**, which pushes the
+pair onto everything already on the tab. Every control applies live, like
+the other two tabs.
 
 ### Canvas tab
 

@@ -4,8 +4,6 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import {
   isEventStormingTab,
   stampTabKind,
-  createPinnedArrow,
-  createShape,
   isBoxed,
   resolveSlide,
   slideBounds,
@@ -872,34 +870,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // reads each pointer-move) lives in useEditorViewport. The hook
   // is invoked further down, once `activeTab` is in scope; it
   // also owns `getViewportCenter` and `fitToScreen`.
-
-  // Attach a comment panel to an element (spec/136): the panel, placed clear
-  // to its right, plus a pinned arrow from the element to it.
-  //
-  // The arrow is an ORDINARY pinned arrow, not a bespoke link. The panel is
-  // about the element, and "about" is what an arrow already says on this
-  // canvas — a second kind of connection would be a second thing to lay out,
-  // export, and explain. It also means the pair behaves like anything else:
-  // move the element and the arrow follows, delete the arrow and the panel is
-  // simply a note that floated free.
-  const attachCommentPanel = useCallback(
-    (element: Element) => {
-      if (!isBoxed(element)) return;
-      const panel = {
-        ...createShape('comment-pin', element.x + element.width + 80, element.y),
-      };
-      const arrow = createPinnedArrow(element.id, 'e', panel.id, 'w');
-      commitTabs((ts) =>
-        ts.map((tab) =>
-          tab.id !== activeId ? tab : { ...tab, elements: [...tab.elements, panel, arrow] },
-        ),
-      );
-      setSelectedId(panel.id);
-      track('Element', 'Added', 'CommentPin');
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [activeId],
-  );
 
   // Open or collapse a comment panel (spec/136). Persisted rather than local,
   // so a facilitator opening the thread they want discussed opens it for the
@@ -1771,13 +1741,14 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // the SAME `endPoll` the plain End uses — one op, so a participant sees no
   // difference and no new op kind exists — and additionally drops the tallies
   // onto the canvas as an ordinary, undoable element.
-  const endPollKeepingResults = () => {
+  // Keep Results (spec/126): drop a chart of the tallies so far onto the
+  // active tab. The poll keeps running, so it can be kept again later
+  // (a second chart), and End is still the only thing that ends it.
+  const keepPollResults = () => {
     const poll = livePoll.poll;
     if (!poll) return;
-    const answers = livePoll.answers;
-    addBoxed((x, y) => pollResultElement(poll, answers, x, y));
-    livePoll.endPoll();
-    track('Tab', 'Ended', 'Poll');
+    addBoxed((x, y) => pollResultElement(poll, livePoll.answers, x, y));
+    track('Element', 'Added', 'PollResult');
   };
 
   // Image domain (picker state, recent-images list, placement + fill
@@ -2431,6 +2402,10 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   });
 
   return {
+    // Re-sweep the team libraries after a team-folder mutation made from
+    // the Explorer panel (spec/35), and the confirm dialog its delete uses.
+    refreshTeamLibraries,
+    confirm,
     // Clipboard copy, also exposed to the event-storming note menu (spec/139),
     // plus paste + its enabled flag for the canvas menu's Paste row.
     copySelection,
@@ -2650,7 +2625,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     // Live poll (spec/88) — the whole ephemeral surface in one object
     // rather than a dozen flattened keys, since nothing else reads into it.
     livePoll,
-    endPollKeepingResults,
+    keepPollResults,
     followMe,
     loadAllTabs,
     loadedTabIds,
@@ -2800,7 +2775,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     revealedIds,
     toggleRevealForMe,
     setSessionConfigFor,
-    attachCommentPanel,
     pickerFor,
     collabElements,
     setRatingSelected,

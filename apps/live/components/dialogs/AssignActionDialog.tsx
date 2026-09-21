@@ -201,12 +201,7 @@ export function AssignActionDialog({
               {editing ? 'Edit action' : 'Assign an action'}
             </h2>
             <div className="-mr-1.5 -mt-0.5 flex items-center gap-0.5">
-              <HelpArticleLink
-                article="assignedActions"
-                variant="icon"
-                title="Assigned actions"
-                description="Assign work on an element to yourself or a teammate and track it until done."
-              />
+              <HelpArticleLink article="assignedActions" variant="icon" />
               <button
                 type="button"
                 aria-label="Close"

@@ -139,6 +139,10 @@ export function MoveToFolderDialog({
           teamFolders={teamFolders}
           onCreateFolder={onCreateFolder}
           onCreateTeam={onCreateTeam}
+          // Rows, as in the New Diagram wizard: a four-across tile grid in a
+          // dialog this wide clipped a team called "Web Foundations" to
+          // "Web Foundati…", and a row gives every name the full width.
+          layout="list"
         />
       </div>
 

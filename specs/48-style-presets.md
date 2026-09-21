@@ -15,23 +15,39 @@ shape at once, in a single history step; the active-tile highlight reads off
 the first selected shape. The dedicated **icon** glyph is excluded — it has no
 fill / border to preset:
 
-- **Style presets** — one-click looks derived from the active theme, ordered
-  as **hierarchical tiers** so the grid reads top-down: the theme's own look
-  first (plus a card per branch hue on multi-colour themes), then the
-  **emphasis ramp** quietest → loudest (Ghost / Muted / Soft / Tinted /
-  Solid / Bold / Inked), then the **border treatments** (Outline / Dotted /
-  Frame), then the theme-independent **semantic status** set (Info / Success /
-  Warning / Danger). Each preset is a _complete_ style: it sets the shape's
-  fill, border (stroke) and text colour AND a matching border weight +
-  pattern together (Bold → thick, Outline → dashed, Dotted → dotted, Frame →
-  thick, Ghost → thin dashed) — but **never the corner radius**: radius is a
-  silhouette choice the user makes separately, and presets clobbering it
-  read as the preset breaking the shape (the radius-defined Pill preset left
-  with that rule; a stored 'pill' binding simply stops re-deriving). Text
-  colour is auto-contrasted on filled variants so labels stay readable. The
-  set is capped at 20 (five 4-wide rows). The standalone weight / pattern /
+- **Style presets** — one-click looks derived from the active theme, one
+  flat 4-wide grid ordered in **four tiers**, each tier quiet → loud so the
+  grid reads as a run of ramps. The tiers are an ordering only: headings over
+  them were tried and dropped, since they cost more menu height than they
+  earned.
+  - **Theme** — the accent at rising intensity: the theme's own look first
+    (plus a card per branch hue on multi-colour themes), then Soft / Tinted /
+    Solid / Bold.
+  - **Neutral** — theme-independent greys: Ghost / Paper / Muted / Slate /
+    Inked. Paper is a plain white card with a hairline grey edge; Slate a
+    filled mid-grey, emphasis without the accent.
+  - **Border** — line treatments: Hairline / Outline / Dotted / Dash-Dot /
+    Frame. Hairline is the accent as a thin line with the label in the same
+    colour (a line drawing); Dash-Dot carries the `dash-dot` border pattern.
+  - **Status** — the semantic set, the same under every theme: Info /
+    Success / Warning / Danger / Highlight (violet, "look here", for a
+    callout that is none of the four states).
+
+  Each preset is a _complete_ style: it sets the shape's fill, border
+  (stroke) and text colour AND a matching border weight + pattern together
+  (Bold → thick, Outline → dashed, Dotted → dotted, Dash-Dot → dash-dot,
+  Frame → thick, Ghost → thin dashed, Hairline / Paper → thin) — but **never
+  the corner radius**: radius is a silhouette choice the user makes
+  separately, and presets clobbering it read as the preset breaking the shape
+  (the radius-defined Pill preset left with that rule; a stored 'pill'
+  binding simply stops re-deriving). Text colour is auto-contrasted on filled
+  variants so labels stay readable. Twenty looks on a single-accent theme
+  (five per group); a multi-colour theme adds its branch cards. The set is
+  deduped on the colour triple but **not capped**: a cap would cut a tier
+  short (the old 20-cap dropped Danger on six-branch themes). The standalone weight / pattern /
   radius controls in the **Border** category remain for fine-tuning after a
   preset.
+
 - **Reset to default** — clears the shape's colour overrides back to the
   theme and removes border weight / pattern / radius overrides, returning the
   shape to its theme default in one click.

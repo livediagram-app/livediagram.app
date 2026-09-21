@@ -32,9 +32,7 @@ export function ThemeModeBanner({ themeId }: { themeId: string | undefined }) {
   if (appearance === target || dismissedKey === key) return null;
 
   const toDark = target === 'dark';
-  const title = toDark
-    ? 'This tab uses a dark colour scheme'
-    : 'This tab uses a light colour scheme';
+  const title = toDark ? 'This tab uses a dark theme' : 'This tab uses a light theme';
   const sub = toDark
     ? 'Switch the editor to dark mode to match.'
     : 'Switch the editor to light mode to match.';

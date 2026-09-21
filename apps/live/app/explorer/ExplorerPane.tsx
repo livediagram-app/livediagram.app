@@ -31,61 +31,20 @@ const BROWSE_KINDS = new Set([
 ]);
 
 // Each Explorer section deep-links its matching help-centre article from a
-// "?" button in the pane header (spec/56). Sections without a guide (team,
-// invites) simply omit it.
-const SECTION_HELP: Partial<
-  Record<string, { article: HelpArticleKey; title: string; description: string }>
-> = {
-  timeline: {
-    article: 'timeline',
-    title: 'Timeline',
-    description: 'Everything that has happened across your diagrams, teams and account.',
-  },
-  recent: {
-    article: 'recentDiagrams',
-    title: 'Recent',
-    description: 'Your most recently opened diagrams, personal and team, in one list.',
-  },
-  shared: {
-    article: 'sharedWithYou',
-    title: 'Shared with you',
-    description: 'Diagrams other people have shared with you, collected here.',
-  },
-  gallery: {
-    article: 'imageGallery',
-    title: 'Image gallery',
-    description: 'How uploaded images are stored and reused across diagrams.',
-  },
-  themes: {
-    article: 'customThemes',
-    title: 'Custom colour schemes',
-    description: 'Build your own palette and reuse it across diagrams.',
-  },
-  tokens: {
-    article: 'apiTokens',
-    title: 'API tokens',
-    description: 'Create tokens to call the livediagram API from your own scripts.',
-  },
-  unsorted: {
-    article: 'unsorted',
-    title: 'The Unsorted folder',
-    description: 'Where diagrams live until you file them into a folder.',
-  },
-  offline: {
-    article: 'offlineMode',
-    title: 'Offline Mode',
-    description: 'Diagrams saved only in this browser, and how to sync them.',
-  },
-  folder: {
-    article: 'folders',
-    title: 'Folders',
-    description: 'Organise diagrams into a nestable tree of folders.',
-  },
-  all: {
-    article: 'folders',
-    title: 'Folders',
-    description: 'Organise diagrams into a nestable tree of folders.',
-  },
+// Help button in the pane header (spec/56); the button's tooltip copy comes
+// from HELP_LINK_COPY. Sections without a guide (team, invites) simply omit
+// it.
+const SECTION_HELP: Partial<Record<string, HelpArticleKey>> = {
+  timeline: 'timeline',
+  recent: 'recentDiagrams',
+  shared: 'sharedWithYou',
+  gallery: 'imageGallery',
+  themes: 'customThemes',
+  tokens: 'apiTokens',
+  unsorted: 'unsorted',
+  offline: 'offlineMode',
+  folder: 'folders',
+  all: 'folders',
 };
 
 // Lazy-load the heavier panes — each is only mounted on its own
@@ -227,9 +186,7 @@ export function ExplorerPane() {
         title={hideTeamTitle ? '' : paneTitle}
         crumbs={hideTeamTitle ? [] : paneCrumbs}
         onOpenNav={() => setMobileNavOpen(true)}
-        helpArticle={sectionHelp?.article}
-        helpTitle={sectionHelp?.title}
-        helpDescription={sectionHelp?.description}
+        helpArticle={sectionHelp}
         headerActions={
           selected.kind === 'timeline' ? (
             <TimelineControls controls={timeline.controls} />
@@ -281,7 +238,7 @@ export function ExplorerPane() {
             ? undefined
             : () => createFolder(selected.kind === 'folder' ? selected.id : null)
         }
-        folderLabel={selected.kind === 'folder' ? 'New subfolder' : 'New folder'}
+        folderLabel={selected.kind === 'folder' ? 'New Subfolder' : 'New Folder'}
       />
 
       {/* Dynamic (synthetic) folders explain themselves under the breadcrumb. */}

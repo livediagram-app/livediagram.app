@@ -163,10 +163,10 @@ export function useCanvasChromePanels({
     onOpenActionForElement,
     onOpenCommentsForElement,
     onOpenDiagram,
-    onOpenShareCurrent,
     onRedo,
     onRenameCurrent,
     onRenameFolder,
+    onTeamFolders,
     onResetActivity,
     onResetCommentsPanel,
     onResetExplorer,
@@ -215,7 +215,6 @@ export function useCanvasChromePanels({
     onOpenDiagram,
     onNewDiagram,
     onRenameCurrent,
-    onOpenShareCurrent,
     onDeleteDiagram,
     onDuplicateDiagram,
     onCreateFolder,
@@ -326,14 +325,12 @@ export function useCanvasChromePanels({
       onOpenDiagram={explorerHandlers.onOpenDiagram}
       onNewDiagram={explorerHandlers.onNewDiagram}
       onRenameCurrent={explorerHandlers.onRenameCurrent}
-      // The stable wrapper is always a function, so gate on the real prop
-      // to preserve "absent = navigation fallback" downstream.
-      onOpenShareCurrent={onOpenShareCurrent ? explorerHandlers.onOpenShareCurrent : undefined}
       onDeleteDiagram={explorerHandlers.onDeleteDiagram}
       onDuplicateDiagram={explorerHandlers.onDuplicateDiagram}
       onCreateFolder={explorerHandlers.onCreateFolder}
       onRenameFolder={explorerHandlers.onRenameFolder}
       onDeleteFolder={explorerHandlers.onDeleteFolder}
+      onTeamFolders={onTeamFolders}
       onMoveDiagramToFolder={explorerHandlers.onMoveDiagramToFolder}
       onMoveDiagramTo={onMoveDiagramTo ? explorerHandlers.onMoveDiagramTo : undefined}
       onSize={onExplorerSize}
@@ -572,7 +569,7 @@ export function useCanvasChromePanels({
         answers={pollPanel.answers}
         isHost={pollPanel.isHost}
         onEnd={pollPanel.onEnd}
-        onEndAndKeep={pollPanel.onEndAndKeep}
+        onKeepResults={pollPanel.onKeepResults}
         onDismiss={pollPanel.onDismiss}
         position={pollWiring.position}
         stackBelowY={stackBelowY}

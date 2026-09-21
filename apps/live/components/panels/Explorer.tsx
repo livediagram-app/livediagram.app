@@ -43,12 +43,12 @@ function ExplorerImpl({
   onOpenDiagram,
   onNewDiagram,
   onRenameCurrent,
-  onOpenShareCurrent,
   onDeleteDiagram,
   onDuplicateDiagram,
   onCreateFolder,
   onRenameFolder,
   onDeleteFolder,
+  onTeamFolders,
   onMoveDiagramToFolder,
   onMoveDiagramTo,
   shared = [],
@@ -163,6 +163,15 @@ function ExplorerImpl({
     const folder = await onCreateFolder({ name: 'New folder', parentId });
     if (folder) {
       setExpandedFolders((prev) => ({ ...prev, [parentId]: true }));
+      setPendingRenameFolderId(folder.id);
+    }
+  };
+  // The team tree's New Subfolder: same gesture, the team's library.
+  const handleCreateTeamChild = async (teamId: string, parentId: string | null) => {
+    if (!onTeamFolders) return;
+    const folder = await onTeamFolders.create(teamId, parentId);
+    if (folder) {
+      setExpandedFolders((prev) => ({ ...prev, [parentId ?? teamId]: true }));
       setPendingRenameFolderId(folder.id);
     }
   };
@@ -334,7 +343,6 @@ function ExplorerImpl({
                     draggable={!!onMoveDiagramToFolder}
                     onOpen={() => onOpenDiagram(current.id)}
                     onRename={onRenameCurrent}
-                    onOpenShare={onOpenShareCurrent}
                     onDelete={
                       openDeleteConfirm
                         ? (anchor) => openDeleteConfirm(current.id, anchor)
@@ -356,7 +364,6 @@ function ExplorerImpl({
                     active
                     onOpen={() => onOpenDiagram(currentTeam.id)}
                     onRename={onRenameCurrent}
-                    onOpenShare={onOpenShareCurrent}
                     // Any joined member may delete a team diagram
                     // (spec/35); the api enforces team membership.
                     onDelete={
@@ -427,9 +434,16 @@ function ExplorerImpl({
           onRenameFolder={onRenameFolder}
           onDeleteFolder={onDeleteFolder}
           onCreateChild={handleCreateChild}
+          onTeamFolders={onTeamFolders}
+          onCreateTeamChild={handleCreateTeamChild}
           onDeleteDiagram={openDeleteConfirm}
           onDuplicateDiagram={onDuplicateDiagram}
           onMoveDiagramRequest={onMoveDiagramToFolder ? openMovePicker : undefined}
+          // A team row's move opens the picker for that team; the pick then
+          // routes through the scope-aware onMoveDiagramTo (spec/35).
+          onMoveTeamDiagramRequest={
+            onMoveDiagramTo ? (id, teamId) => setMoveTarget({ id, teamId }) : undefined
+          }
           onMoveDiagramToFolder={onMoveDiagramToFolder}
         />
 

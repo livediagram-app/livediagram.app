@@ -3,9 +3,8 @@ import { Fragment } from 'react';
 type WizardStep = 'template' | 'theme' | 'settings';
 const WIZARD_STEPS: { key: WizardStep; label: string }[] = [
   { key: 'template', label: 'Template' },
-  // "Theme" here on purpose, though the product says "Colour scheme"
-  // elsewhere: a step chip is read at a glance beside two other one-word
-  // labels, and the step's own heading spells the full term.
+  // One word, like the chips either side of it: a step chip is read at a
+  // glance, and the step's own heading carries the longer copy.
   { key: 'theme', label: 'Theme' },
   // The step is still "settings" in code; what it asks is where the diagram
   // lives (name, save location, folder), so the chip says that.

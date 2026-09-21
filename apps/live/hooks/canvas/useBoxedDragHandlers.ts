@@ -159,13 +159,15 @@ export function useBoxedDragHandlers({
     const fromEnd: ArrowElement['from'] = opts?.fromGroup
       ? { kind: 'pinned-group', groupId: opts.fromGroup.groupId, anchor }
       : { kind: 'pinned', elementId, anchor };
-    // A connector drawn FROM a shape inherits that shape's stroke so it
-    // visually belongs with it — and so it respects whatever theme the
-    // shape already carries (the tab's `theme` field can lag a recolour,
-    // which is why these arrows were coming out black). Falls back to
-    // the tab theme's element stroke, then the built-in arrow default.
+    // A connector drawn FROM a shape takes the TAB THEME's stroke, not the
+    // shape's own. It used to copy the shape's stroke so the pair matched,
+    // but a red box then sprouted red arrows, a green box green ones, and
+    // the connectors stopped reading as one system; the theme is the
+    // colour every arrow on the tab shares. A theme with no element
+    // stroke (Default) leaves it unset, so the built-in arrow colour
+    // applies.
     const theme = getTheme(d.activeTab.theme);
-    const inheritedStroke = element.strokeColor ?? theme.elementStroke ?? undefined;
+    const inheritedStroke = theme.elementStroke ?? undefined;
     // placeOutPx (mobile Arrow option): don't enter a drag — drop a free
     // arrow that runs straight out from the anchor by that many px and
     // select it so the user can reposition it by hand.

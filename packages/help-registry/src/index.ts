@@ -472,7 +472,7 @@ export const articles: Article[] = [
   {
     slug: 'fast-theming',
     title: 'Restyle a Diagram Fast',
-    description: 'Restyle an entire diagram in seconds with colour schemes and presets.',
+    description: 'Restyle an entire diagram in seconds with themes and presets.',
     keywords: 'restyle recolour recolor colors colours presets quick style scheme',
     category: 'Tips and Tricks',
     categorySlug: 'tips-and-tricks',
@@ -1169,8 +1169,8 @@ export const articles: Article[] = [
   },
   {
     slug: 'themes',
-    title: 'Colour Schemes',
-    description: 'Restyle a whole diagram, including multi-colour and custom colour schemes.',
+    title: 'Themes',
+    description: 'Restyle a whole diagram, including multi-colour and custom themes.',
     keywords: 'color colour scheme restyle recolour recolor appearance style palette',
     category: 'Canvas',
     categorySlug: 'canvas',
@@ -1386,9 +1386,8 @@ export const articles: Article[] = [
   },
   {
     slug: 'themes-library',
-    title: 'Saved Colour Schemes',
-    description:
-      'Your custom colour schemes as swatch previews, ready to edit, duplicate, or reuse.',
+    title: 'Saved Themes',
+    description: 'Your custom themes as swatch previews, ready to edit, duplicate, or reuse.',
     keywords: 'custom themes swatches colours colors library reuse manage',
     category: 'Explorer',
     categorySlug: 'explorer',
@@ -1923,11 +1922,11 @@ export const articles: Article[] = [
     parentSlug: 'text-and-fonts',
   },
 
-  // ---- Sub-articles: Colour Schemes ----
+  // ---- Sub-articles: Themes ----
   {
     slug: 'changing-theme',
-    title: 'Changing the Colour Scheme',
-    description: 'Open the colour scheme dialog and browse colour schemes by category.',
+    title: 'Changing the Theme',
+    description: 'Open the theme dialog and browse themes by category.',
     keywords: 'apply browse switch restyle colours colors dialog pick',
     category: 'Canvas',
     categorySlug: 'canvas/themes',
@@ -1935,7 +1934,7 @@ export const articles: Article[] = [
   },
   {
     slug: 'multicolour-themes',
-    title: 'Multi-Colour Schemes',
+    title: 'Multicolour Themes',
     description: 'Tint each branch of a hierarchy its own hue.',
     keywords: 'multicolor rainbow branch hue tint colorful colourful',
     category: 'Canvas',
@@ -1944,8 +1943,8 @@ export const articles: Article[] = [
   },
   {
     slug: 'custom-themes',
-    title: 'Custom Colour Schemes',
-    description: 'Build, save, and reuse your own colour schemes.',
+    title: 'Custom Themes',
+    description: 'Build, save, and reuse your own themes.',
     keywords: 'own colors colours personalise personalize create save brand',
     category: 'Canvas',
     categorySlug: 'canvas/themes',

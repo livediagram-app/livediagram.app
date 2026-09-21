@@ -171,7 +171,7 @@ export function ExplorerSidebar() {
       />
       <SidebarRow
         icon={<ShareIcon />}
-        label="Shared with you"
+        label="Shared with You"
         selected={selected.kind === 'shared'}
         onClick={() => go({ kind: 'shared' })}
         depth={0}
@@ -184,11 +184,11 @@ export function ExplorerSidebar() {
           mirrors the Teams section: add a root-level folder. */}
       <SidebarSectionLabel
         action={
-          <Tooltip title="New folder" description="Add a root-level folder.">
+          <Tooltip title="New Folder" description="Add a root-level folder.">
             <button
               type="button"
               onClick={() => void createFolder(null)}
-              aria-label="New folder"
+              aria-label="New Folder"
               className="-m-1.5 flex h-7 w-7 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-brand-700 dark:text-slate-500 dark:hover:bg-slate-700 dark:hover:text-brand-300"
             >
               <PlusIcon />
@@ -287,7 +287,7 @@ export function ExplorerSidebar() {
               </Tooltip>
             }
           >
-            Teams
+            Team Spaces
           </SidebarSectionLabel>
           {teams.map((t) => {
             const byParent = teamTree.get(t.id);
@@ -347,14 +347,14 @@ export function ExplorerSidebar() {
       <SidebarSectionLabel>Library</SidebarSectionLabel>
       <SidebarRow
         icon={<ImageIcon />}
-        label="Image gallery"
+        label="Image Gallery"
         selected={selected.kind === 'gallery'}
         onClick={() => go({ kind: 'gallery' })}
         depth={0}
       />
       <SidebarRow
         icon={<PaletteIcon />}
-        label="Colour schemes"
+        label="Themes"
         selected={selected.kind === 'themes'}
         onClick={() => go({ kind: 'themes' })}
         depth={0}
@@ -366,7 +366,7 @@ export function ExplorerSidebar() {
           <SidebarSectionLabel>External connections</SidebarSectionLabel>
           <SidebarRow
             icon={<KeyIcon />}
-            label="API tokens"
+            label="API Tokens"
             selected={selected.kind === 'tokens'}
             onClick={() => go({ kind: 'tokens' })}
             depth={0}

@@ -174,12 +174,12 @@ arrive at runtime rather than being drawn by the author?**
 
 | Group              | Holds                                                            |
 | ------------------ | ---------------------------------------------------------------- |
-| **Ask the room**   | the three estimate scales, Temperature, Idea box, Dot vote, Poll |
-| **Run the room**   | Reveal, Done, Picker, Timer                                      |
-| **Keep a record**  | Comment panel, Agenda, Decision record, Roll call                |
+| **Ask**            | the three estimate scales, Temperature, Idea box, Dot vote, Poll |
+| **Tools**          | Reveal, Done, Picker, Timer                                      |
+| **Record**         | Comment panel, Agenda, Decision record, Roll call                |
 | **Reactions**      | the five pads                                                    |
 | **Selection Mode** | one button per mode (8)                                          |
-| **Get around**     | Portal, Chair, Link card                                         |
+| **Navigate**       | Portal, Chair, Link card                                         |
 
 **There is no Session group.** It held the Timer, the Dot vote and the Poll —
 a group named after the machinery that runs them rather than the job they do.
@@ -192,7 +192,7 @@ group had nothing left in it, and an empty group is not a group.
 They remain one shape kind with a `session` config ([spec/105](105-session-button.md)) —
 this is a palette grouping, not a model change.
 
-The **Comment panel** is in **Keep a record**. It sat loose above the groups at
+The **Comment panel** is in **Record**. It sat loose above the groups at
 first, on the reasoning that it is the one you reach for outside a facilitated
 session and a group of one would be a click in front of the category's
 most-used tile. But a comment thread is a thing you leave behind on the board

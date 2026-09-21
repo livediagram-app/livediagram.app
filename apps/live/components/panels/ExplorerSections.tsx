@@ -1,5 +1,6 @@
 'use client';
 
+import type { TeamFolderHandlers } from './Explorer.types';
 import { useState } from 'react';
 import { DiagramRowShell } from './DiagramRowShell';
 import type { DiagramListItem, Folder } from '@/lib/api-client';
@@ -50,9 +51,12 @@ export function ExplorerSections({
   onRenameFolder,
   onDeleteFolder,
   onCreateChild,
+  onTeamFolders,
+  onCreateTeamChild,
   onDeleteDiagram,
   onDuplicateDiagram,
   onMoveDiagramRequest,
+  onMoveTeamDiagramRequest,
   onMoveDiagramToFolder,
 }: {
   loading: boolean;
@@ -83,9 +87,14 @@ export function ExplorerSections({
   onRenameFolder?: (id: string, name: string) => void;
   onDeleteFolder?: (id: string) => void;
   onCreateChild: (parentId: string) => void;
+  // Team-library folder verbs for the Teams tab (spec/35); absent = browse-only.
+  onTeamFolders?: TeamFolderHandlers;
+  onCreateTeamChild: (teamId: string, parentId: string | null) => void;
   onDeleteDiagram?: (id: string, anchor: HTMLElement | null) => void;
   onDuplicateDiagram?: (id: string) => void;
   onMoveDiagramRequest?: (diagramId: string) => void;
+  // The Teams tab's Change Folder: opens the move picker inside that team.
+  onMoveTeamDiagramRequest?: (diagramId: string, teamId: string) => void;
   onMoveDiagramToFolder?: (diagramId: string, folderId: string | null) => void;
 }) {
   // The three sections (Recent / Personal Space / Teams) are a single tab bar
@@ -109,7 +118,7 @@ export function ExplorerSections({
   const sectionTabs: ExplorerTab[] = [];
   if (loading || recents.length > 0) sectionTabs.push({ id: 'recent', label: 'Recent' });
   if (!(diagrams.length === 0 && folders.length === 0))
-    sectionTabs.push({ id: 'work', label: 'Personal Space' });
+    sectionTabs.push({ id: 'work', label: 'Personal' });
   if (teams.length > 0) sectionTabs.push({ id: 'teams', label: 'Teams' });
   // Resolve the rendered tab: the user's pick when still available,
   // else the first available section (null only on a blank account,
@@ -181,10 +190,10 @@ export function ExplorerSections({
                     item={entry.d}
                     ownerId={ownerId}
                     active={false}
-                    // Team diagrams (spec/35) open for any joined
-                    // member; their rename / move / delete live
-                    // on the /explorer page + team page, so the
-                    // panel keeps team rows open-only.
+                    // Team diagrams (spec/35) open for any joined member
+                    // and can be duplicated and re-filed from here; only
+                    // rename (the open diagram's) and the owner-gated delete
+                    // are narrower than the /explorer page's.
                     draggable={entry.kind === 'own' && !!onMoveDiagramToFolder}
                     onOpen={() => onOpenDiagram(entry.d.id)}
                     onDelete={
@@ -193,14 +202,18 @@ export function ExplorerSections({
                         : undefined
                     }
                     onDuplicate={
-                      entry.kind === 'own' && onDuplicateDiagram
-                        ? () => onDuplicateDiagram(entry.d.id)
-                        : undefined
+                      onDuplicateDiagram ? () => onDuplicateDiagram(entry.d.id) : undefined
                     }
+                    // A team row's move opens the picker inside its team, so
+                    // the pick routes through the scope-aware move (spec/35).
                     onMoveRequest={
-                      entry.kind === 'own' && onMoveDiagramRequest
-                        ? () => onMoveDiagramRequest(entry.d.id)
-                        : undefined
+                      entry.kind === 'team'
+                        ? onMoveTeamDiagramRequest && entry.d.team
+                          ? () => onMoveTeamDiagramRequest(entry.d.id, entry.d.team!.id)
+                          : undefined
+                        : onMoveDiagramRequest
+                          ? () => onMoveDiagramRequest(entry.d.id)
+                          : undefined
                     }
                     // Hiding from Recent is a per-user view choice, so it
                     // applies to team rows too even though their rename /
@@ -342,6 +355,17 @@ export function ExplorerSections({
               // Hard delete on team-library rows, any joined
               // member (spec/35); the api enforces membership.
               onDeleteDiagram={onDeleteDiagram}
+              onDuplicateDiagram={onDuplicateDiagram}
+              onMoveDiagramRequest={
+                onMoveTeamDiagramRequest ? (id) => onMoveTeamDiagramRequest(id, t.id) : undefined
+              }
+              pendingRenameId={pendingRenameFolderId}
+              onRenameFolderCommitted={onRenameFolderCommitted}
+              onRenameFolder={onTeamFolders?.rename}
+              onDeleteFolder={onTeamFolders?.delete}
+              onCreateChild={
+                onTeamFolders ? (parentId) => onCreateTeamChild(t.id, parentId) : undefined
+              }
             />
           ))}
         </ul>

@@ -71,12 +71,7 @@ export function TeamFormModal({
             {/* Help (the old inline "learn more" link, now an icon button) +
                 an explicit close, sat together top-right. */}
             <div className="-mr-1.5 -mt-0.5 flex items-center gap-0.5">
-              <HelpArticleLink
-                article="teamRolesAndInvites"
-                variant="icon"
-                title="Teams"
-                description="Admin and Member roles, and how invites work."
-              />
+              <HelpArticleLink article="teamRolesAndInvites" variant="icon" />
               <button
                 type="button"
                 onClick={onCancel}

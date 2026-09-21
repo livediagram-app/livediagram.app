@@ -62,14 +62,7 @@ export function SettingsDialog({ settings, onChange, onClose, aiCapable }: Setti
               track('UI', 'Toggled', v ? 'MinimalPanelsOn' : 'MinimalPanelsOff');
               onChange({ ...settings, minimalPanels: v });
             }}
-            help={
-              <HelpArticleLink
-                article="minimalPanels"
-                variant="text"
-                title="Minimal panels"
-                description="How the compact button bar works."
-              />
-            }
+            help={<HelpArticleLink article="minimalPanels" variant="text" />}
           />
           <ToggleRow
             label="Show minimap"
@@ -88,14 +81,7 @@ export function SettingsDialog({ settings, onChange, onClose, aiCapable }: Setti
               track('UI', 'Toggled', v ? 'TourSeenOn' : 'TourSeenOff');
               onChange({ ...settings, tourSeen: v });
             }}
-            help={
-              <HelpArticleLink
-                article="welcomeTour"
-                variant="text"
-                title="The Welcome Tour"
-                description="What the tour covers and how replaying works."
-              />
-            }
+            help={<HelpArticleLink article="welcomeTour" variant="text" />}
           />
         </SettingsGroup>
         <SettingsGroup {...groupProps('Controls')}>
@@ -141,14 +127,7 @@ export function SettingsDialog({ settings, onChange, onClose, aiCapable }: Setti
                 track('AI', 'Toggled', v ? 'AiOn' : 'AiOff');
                 onChange({ ...settings, aiAssistanceEnabled: v });
               }}
-              help={
-                <HelpArticleLink
-                  article="aiTools"
-                  variant="text"
-                  title="AI tools"
-                  description="What the Ask and Clean modes do."
-                />
-              }
+              help={<HelpArticleLink article="aiTools" variant="text" />}
             />
           </SettingsGroup>
         )}
@@ -161,14 +140,7 @@ export function SettingsDialog({ settings, onChange, onClose, aiCapable }: Setti
               track('UI', 'Toggled', v ? 'TelemetryOn' : 'TelemetryOff');
               onChange({ ...settings, telemetryEnabled: v });
             }}
-            help={
-              <HelpArticleLink
-                article="whatWeCollect"
-                variant="text"
-                title="What we collect"
-                description="Exactly which anonymous events are sent, and what isn't."
-              />
-            }
+            help={<HelpArticleLink article="whatWeCollect" variant="text" />}
           />
         </SettingsGroup>
       </div>

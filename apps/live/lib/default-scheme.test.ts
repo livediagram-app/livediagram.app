@@ -3,7 +3,7 @@ import { createShape, type Tab } from '@livediagram/diagram';
 import { resetAppearanceForTests, setAppearance } from '@/hooks/ui/appearance-store';
 import { deriveNewBoxedColours, getTheme, resolveTabBackdrop, switchThemeBackdrop } from './themes';
 
-// The Default colour scheme follows the VIEWER (spec/07): the diagram stores
+// The Default theme follows the VIEWER (spec/07): the diagram stores
 // one scheme, and light and dark chrome each render it their own way. Two
 // people on the same tab therefore see different canvases, on purpose — and
 // neither of them writes anything to the diagram by switching.

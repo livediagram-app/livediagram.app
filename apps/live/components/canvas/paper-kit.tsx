@@ -492,24 +492,6 @@ export function PadTread({ textColor }: { textColor: string }) {
 }
 
 /**
- * A quote rail: the thick rounded bar down the left edge that has meant "this
- * is somebody else talking" since email clients invented it.
- *
- * The Comment panel's alternative was a speech-bubble tail, which has to be
- * drawn OUTSIDE the element and is clipped by the canvas element's own box. A
- * rail says the same thing from inside the border.
- */
-export function QuoteRail({ textColor }: { textColor: string }) {
-  return (
-    <span
-      aria-hidden
-      className="pointer-events-none absolute bottom-2 top-2 rounded-full"
-      style={{ left: 6, width: 3, background: tint(textColor, 0.22) }}
-    />
-  );
-}
-
-/**
  * A ring of minute ticks around a dial, with the quarters called out.
  *
  * Only the top arc is drawn, because the element is a wide pill rather than a

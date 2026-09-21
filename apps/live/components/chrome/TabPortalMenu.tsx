@@ -26,6 +26,7 @@ import {
   PollMenuIcon,
   TimerMenuIcon,
   VoteMenuIcon,
+  PasteMenuIcon,
 } from '@/components/palette/context-menu-icons';
 import {
   SessionCountdownSection,
@@ -174,10 +175,21 @@ export function PortalMenu({
   useLayoutEffect(() => {
     const node = ref.current;
     if (!node || !pos) return;
-    const next = clampToViewport(node.getBoundingClientRect(), adjust);
-    if (next.x !== adjust.x || next.y !== adjust.y) setAdjust(next);
+    const clamp = () => {
+      const next = clampToViewport(node.getBoundingClientRect(), adjust);
+      if (next.x !== adjust.x || next.y !== adjust.y) setAdjust(next);
+    };
+    clamp();
+    // The menu changes height after it opens (a category unfolds, a view
+    // swaps), and a menu that fitted when it appeared can then run off the
+    // bottom of the screen. Re-clamp whenever its box changes, so it slides
+    // up to stay on screen rather than growing out of it.
+    if (typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(clamp);
+    observer.observe(node);
+    return () => observer.disconnect();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pos, view, openSection]);
+  }, [pos, adjust]);
 
   useEffect(() => {
     // Grace window after the menu opens during which outside mouse events are
@@ -316,17 +328,40 @@ export function PortalMenu({
                 description="Create a copy of this tab in this diagram."
                 onClick={onDuplicate}
               />
-              <MenuToolButton
-                icon={<TabLockIcon />}
-                label={locked ? 'Unlock tab' : 'Lock tab'}
-                description={locked ? 'Make this tab editable again.' : 'Make this tab read-only.'}
-                onClick={onToggleLock}
-                active={locked}
-              />
-              {/* Delete pinned to the right edge of the toolbar, isolated
-                  from the everyday verbs; the confirm popover anchors to
-                  this wrapper. */}
-              <div ref={deleteRowRef} className="ml-auto">
+              {/* Paste, in the toolbar rather than a row of its own:
+                  right-clicking empty canvas is overwhelmingly "put the
+                  thing I copied here". Greyed, not hidden, when the buffer
+                  is empty, so the menu keeps one shape. */}
+              {canvas ? (
+                <MenuToolButton
+                  icon={<PasteMenuIcon />}
+                  label="Paste"
+                  description={
+                    canvas.canPaste
+                      ? 'Paste what you copied onto this tab.'
+                      : 'Nothing to paste yet.'
+                  }
+                  onClick={() => {
+                    canvas.onPaste();
+                    onClose();
+                  }}
+                  disabled={!canvas.canPaste}
+                />
+              ) : null}
+              {/* Lock and Delete sit together at the right edge, apart from
+                  the everyday verbs: both change what the tab will let you
+                  do next rather than doing something to it. The confirm
+                  popover anchors to this wrapper. */}
+              <div ref={deleteRowRef} className="ml-auto flex items-center gap-0.5">
+                <MenuToolButton
+                  icon={<TabLockIcon />}
+                  label={locked ? 'Unlock tab' : 'Lock tab'}
+                  description={
+                    locked ? 'Make this tab editable again.' : 'Make this tab read-only.'
+                  }
+                  onClick={onToggleLock}
+                  active={locked}
+                />
                 <MenuToolButton
                   icon={<TrashIcon />}
                   label="Delete"

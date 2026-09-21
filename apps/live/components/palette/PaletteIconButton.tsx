@@ -11,7 +11,7 @@ import { createContext, useContext } from 'react';
 // tints line-art glyphs (all the `stroke="currentColor"` SVGs); `fill` is the
 // shape interior used by the filled tiles (shapes / devices / annotation),
 // applied via the `palette-tile-filled` rule in globals.css. Both are
-// undefined for the Default colour scheme, where the palette keeps its default look.
+// undefined for the Default theme, where the palette keeps its default look.
 //
 // `shapeColors` carries a per-shape-kind override (spec/42 Formal / UML +
 // spec/44 custom themes): a tile whose `dragKind` has an entry previews
@@ -82,7 +82,7 @@ type IconButtonProps = {
   // theme's element fill paints the shape interior on top of the stroke
   // tint, so the tile previews what gets dropped. Set on the boxed-shape
   // tiles (shapes / devices / annotation); line-art tools + icons leave it
-  // off and just take the stroke tint. No-op under the Default colour scheme.
+  // off and just take the stroke tint. No-op under the Default theme.
   filled?: boolean;
   // Opt out of the theme tint entirely — for tiles whose colours are fixed
   // regardless of theme: the sticky note (always amber), the image

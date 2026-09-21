@@ -1,12 +1,12 @@
 'use client';
 
-// The right-click "Change Canvas" / "Change colour scheme" dialog (spec/42). One
-// modal, two tabs: Canvas (pattern + colours + opacity) and Theme (the
-// category-browse picker). Opens on whichever tab the menu item picked; the
-// user can switch freely. Every control applies live to the active tab via
-// its callback — there's no Apply/Cancel, closing just dismisses. (The tab
-// font + default-size controls used to live here as a third Font tab; they
-// now sit in the tab / canvas context menu's Font category, see spec/28.)
+// The Tab Look & Feel dialog (spec/42), opened from the paintbrush dock
+// button. One modal, three tabs: Theme (the category-browse picker), Canvas
+// (pattern + colours + opacity) and Font (the tab's default font + the size
+// seeded onto new elements, spec/28). Opens on whichever tab the caller
+// picked; the user can switch freely. Every control applies live to the
+// active tab via its callback — there's no Apply/Cancel, closing just
+// dismisses.
 //
 // The tabs render shared components (CanvasStyleControls,
 // ThemeCategoryBrowser) so they're identical to the palette accordion and the
@@ -21,11 +21,14 @@ import { useFocusTrap } from '@/hooks/ui/useFocusTrap';
 import { CanvasStyleControls } from '@/components/canvas/CanvasStyleControls';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { CustomThemePicker } from '@/components/palette/CustomThemePicker';
-import { ResetIcon } from '@/components/palette/palette-icons';
+import { DotsIcon, ResetIcon, ScaleIcon } from '@/components/palette/palette-icons';
+import { FontSelect } from '@/components/palette/FontSelect';
+import { SizeButton } from '@/components/palette/palette-controls';
+import type { TextSize } from '@livediagram/diagram';
 import { Portal } from '@/components/primitives/Portal';
 import { useModalGuard } from '@/hooks/ui/useModalGuard';
 
-type CanvasThemeTab = 'canvas' | 'theme';
+export type CanvasThemeTab = 'canvas' | 'theme' | 'font';
 
 type CanvasThemeDialogProps = {
   tab: CanvasThemeTab;
@@ -48,6 +51,15 @@ type CanvasThemeDialogProps = {
   themeId: string;
   onSetTheme: (id: string) => void;
   onResetElementsToTheme: () => void;
+  // Font (spec/28). `font` null = the editor default; `defaultTextSize`
+  // undefined defaults to medium.
+  font: string | null;
+  onSetFont: (font: string | null) => void;
+  defaultTextSize: TextSize | undefined;
+  onSetDefaultTextSize: (size: TextSize) => void;
+  // Push the tab font + default size onto every existing element on the
+  // tab (clears per-element font overrides so they inherit).
+  onApplyFontToAll: () => void;
   onClose: () => void;
 };
 
@@ -69,6 +81,11 @@ export function CanvasThemeDialog({
   themeId,
   onSetTheme,
   onResetElementsToTheme,
+  font,
+  onSetFont,
+  defaultTextSize,
+  onSetDefaultTextSize,
+  onApplyFontToAll,
   onClose,
 }: CanvasThemeDialogProps) {
   // Mount-open modal: silence the canvas shortcut/paste listeners
@@ -113,27 +130,31 @@ export function CanvasThemeDialog({
               reads as a single unit rather than two stacked divider rows. */}
           <div className="flex flex-col gap-3 border-b border-slate-200 px-4 pb-3 pt-3 dark:border-slate-800">
             <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-1.5">
-                {/* "Appearance" is the VIEWER's own light / dark chrome now
-                    (spec/07), so this dialog — which is the tab's look, shared
-                    with everyone — takes the name of the menu section that
-                    opens it. */}
-                <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">
-                  Tab Look &amp; Feel
-                </h2>
+              {/* "Appearance" is the VIEWER's own light / dark chrome now
+                  (spec/07), so this dialog — which is the tab's look, shared
+                  with everyone — takes the name of the section that opens it. */}
+              <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">
+                Tab Look &amp; Feel
+              </h2>
+              {/* Help sits with the close button, where the other editor
+                  dialogs keep their window controls, not beside the title. */}
+              <div className="flex items-center gap-1">
+                {/* The chrome variant, as the panel headers use beside their
+                    own window controls: a plain glyph, no ring. */}
                 <HelpArticleLink
-                  article={tab === 'canvas' ? 'changingTheBackground' : 'changingTheme'}
-                  title={tab === 'canvas' ? 'Canvas background' : 'Colour schemes'}
-                  description={
+                  variant="chrome"
+                  article={
                     tab === 'canvas'
-                      ? 'How to change the canvas background and pattern.'
-                      : 'How to switch and customise a tab colour scheme.'
+                      ? 'changingTheBackground'
+                      : tab === 'font'
+                        ? 'choosingFonts'
+                        : 'changingTheme'
                   }
                 />
+                <DialogCloseButton compact onClick={onClose} />
               </div>
-              <DialogCloseButton compact onClick={onClose} />
             </div>
-            {/* The colour scheme leads the strip: it's the broader, more-used
+            {/* The theme leads the strip: it's the broader, more-used
                 control (the paintbrush dock button also opens here); Canvas is
                 the finer backdrop tuning. */}
             <div className="flex w-full gap-1 rounded-lg bg-slate-100 p-1 dark:bg-slate-800">
@@ -142,7 +163,7 @@ export function CanvasThemeDialog({
                 onClick={() => onTabChange('theme')}
                 icon={<ThemeTabIcon />}
               >
-                Colour scheme
+                Theme
               </TabButton>
               <TabButton
                 active={tab === 'canvas'}
@@ -151,13 +172,28 @@ export function CanvasThemeDialog({
               >
                 Canvas
               </TabButton>
+              <TabButton
+                active={tab === 'font'}
+                onClick={() => onTabChange('font')}
+                icon={<FontTabIcon />}
+              >
+                Font
+              </TabButton>
             </div>
           </div>
 
           {/* Fixed min-height so switching between tabs doesn't collapse the
               modal and make it jump around. */}
           <div className="min-h-[20rem] overflow-y-auto px-5 py-4">
-            {tab === 'canvas' ? (
+            {tab === 'font' ? (
+              <FontTab
+                font={font}
+                onSetFont={onSetFont}
+                defaultTextSize={defaultTextSize}
+                onSetDefaultTextSize={onSetDefaultTextSize}
+                onApplyFontToAll={onApplyFontToAll}
+              />
+            ) : tab === 'canvas' ? (
               <CanvasStyleControls
                 backgroundPattern={backgroundPattern}
                 backgroundColor={backgroundColor}
@@ -185,7 +221,7 @@ export function CanvasThemeDialog({
                 info={
                   <p className="text-[11px] leading-snug text-slate-500 dark:text-slate-400">
                     Sets the canvas backdrop and recolours every element on this tab to match the
-                    scheme (sticky notes keep their amber palette).
+                    theme (sticky notes keep their amber palette).
                   </p>
                 }
                 footer={
@@ -196,7 +232,7 @@ export function CanvasThemeDialog({
                       className="inline-flex items-center justify-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50/40 hover:text-brand-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/15 dark:hover:text-brand-200"
                     >
                       <ResetIcon />
-                      Reset elements to scheme
+                      Reset elements to theme
                     </button>
                   </div>
                 }
@@ -206,6 +242,75 @@ export function CanvasThemeDialog({
         </div>
       </div>
     </Portal>
+  );
+}
+
+// The tab's default font and the size seeded onto new elements
+// (spec/28). Every change applies live; "Apply to all elements" pushes
+// the pair onto everything already on the tab.
+function FontTab({
+  font,
+  onSetFont,
+  defaultTextSize,
+  onSetDefaultTextSize,
+  onApplyFontToAll,
+}: {
+  font: string | null;
+  onSetFont: (font: string | null) => void;
+  defaultTextSize: TextSize | undefined;
+  onSetDefaultTextSize: (size: TextSize) => void;
+  onApplyFontToAll: () => void;
+}) {
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-1.5">
+        <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+          Tab font
+        </span>
+        <FontSelect value={font} ariaLabel="Tab font" onChange={onSetFont} />
+        <p className="text-[11px] leading-snug text-slate-500 dark:text-slate-400">
+          The default for every text element on this tab that hasn't set its own.
+        </p>
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+          Default size for new elements
+        </span>
+        <div className="grid grid-cols-4 gap-2">
+          {(
+            [
+              ['scale', 'Scale', <ScaleIcon key="s" />],
+              ['sm', 'Small', <DotsIcon key="1" count={1} />],
+              ['md', 'Medium', <DotsIcon key="2" count={2} />],
+              ['lg', 'Large', <DotsIcon key="3" count={3} />],
+            ] as const
+          ).map(([size, label, glyph]) => (
+            <SizeButton
+              key={size}
+              active={(defaultTextSize ?? 'md') === size}
+              onClick={() => onSetDefaultTextSize(size)}
+            >
+              <span className="flex flex-col items-center gap-1 py-0.5">
+                {glyph}
+                <span className="text-[10px] font-medium">{label}</span>
+              </span>
+            </SizeButton>
+          ))}
+        </div>
+        <p className="text-[11px] leading-snug text-slate-500 dark:text-slate-400">
+          Seeded onto each element you add next; existing elements keep their size.
+        </p>
+      </div>
+      <div className="border-t border-slate-100 pt-3 dark:border-slate-800">
+        <button
+          type="button"
+          onClick={onApplyFontToAll}
+          className="inline-flex items-center justify-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50/40 hover:text-brand-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/15 dark:hover:text-brand-200"
+        >
+          Apply to all elements
+        </button>
+      </div>
+    </div>
   );
 }
 
@@ -255,6 +360,23 @@ function BackgroundTabIcon() {
       <circle cx="10" cy="6" r="0.6" fill="currentColor" stroke="none" />
       <circle cx="6" cy="10" r="0.6" fill="currentColor" stroke="none" />
       <circle cx="10" cy="10" r="0.6" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+function FontTabIcon() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M3 13L7.5 3l4.5 10M4.6 9.5h5.8" />
     </svg>
   );
 }

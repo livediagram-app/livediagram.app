@@ -206,10 +206,10 @@ export function useExplorerPane({
   const paneTitle = useMemo(() => {
     if (selected.kind === 'timeline') return 'Timeline';
     if (selected.kind === 'recent') return 'Recent';
-    if (selected.kind === 'shared') return 'Shared with you';
-    if (selected.kind === 'gallery') return 'Image gallery';
+    if (selected.kind === 'shared') return 'Shared with You';
+    if (selected.kind === 'gallery') return 'Image Gallery';
     if (selected.kind === 'themes') return 'Themes';
-    if (selected.kind === 'tokens') return 'API tokens';
+    if (selected.kind === 'tokens') return 'API Tokens';
     if (selected.kind === 'profile') return 'Profile';
     if (selected.kind === 'team') {
       return teams.find((t) => t.id === selected.id)?.name ?? 'Team';
@@ -232,10 +232,10 @@ export function useExplorerPane({
     const all: Crumb = { name: 'Personal Space', onClick: () => go({ kind: 'all' }) };
     if (selected.kind === 'timeline') return [{ name: 'Timeline' }];
     if (selected.kind === 'recent') return [{ name: 'Recent' }];
-    if (selected.kind === 'shared') return [{ name: 'Shared with you' }];
-    if (selected.kind === 'gallery') return [{ name: 'Image gallery' }];
+    if (selected.kind === 'shared') return [{ name: 'Shared with You' }];
+    if (selected.kind === 'gallery') return [{ name: 'Image Gallery' }];
     if (selected.kind === 'themes') return [{ name: 'Themes' }];
-    if (selected.kind === 'tokens') return [{ name: 'API tokens' }];
+    if (selected.kind === 'tokens') return [{ name: 'API Tokens' }];
     if (selected.kind === 'profile') return [{ name: 'Profile' }];
     if (selected.kind === 'team') return [{ name: paneTitle }];
     if (selected.kind === 'invites') return [{ name: 'Invites' }];

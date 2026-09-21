@@ -40,7 +40,7 @@ describe('THEMES catalogue', () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it('leads with the Default colour scheme', () => {
+  it('leads with the Default theme', () => {
     expect(THEMES[0]?.id).toBe('brand');
     expect(THEMES[0]?.label).toBe('Default');
   });
@@ -56,10 +56,10 @@ describe('THEMES catalogue', () => {
 
   // spec/16-marketing-site.md cites the scheme count directly in its
   // copy. If the catalogue drifts from this the spec stops being
-  // accurate. The extras include the multi-colour schemes from spec/29.
+  // accurate. The extras include the multicolour themes from spec/29.
   // Mirrors the equivalent assertions in templates.test.ts.
   // 26, not 27: Charcoal merged into Default and left the catalogue.
-  it('lists exactly 26 colour schemes (matches spec/16)', () => {
+  it('lists exactly 26 themes (matches spec/16)', () => {
     expect(THEMES).toHaveLength(26);
   });
 
@@ -141,12 +141,12 @@ describe('getTheme', () => {
 });
 
 describe('shapeColorPresets (spec/48)', () => {
-  it('returns fifteen deduped style presets (colour + border) for a single-accent theme', () => {
+  it('returns twenty deduped style presets (colour + border) for a single-accent theme', () => {
     const presets = shapeColorPresets(getTheme('slate'));
-    // theme + 7 emphasis + 3 border treatments + 4 semantic = 15.
-    expect(presets).toHaveLength(15);
+    // 5 theme + 5 neutral + 5 border + 5 status = 20.
+    expect(presets).toHaveLength(20);
     const keys = presets.map((p) => `${p.fill}|${p.stroke}|${p.text}`.toLowerCase());
-    expect(new Set(keys).size).toBe(15); // all distinct
+    expect(new Set(keys).size).toBe(20); // all distinct
     for (const p of presets) {
       expect(p.fill).toMatch(/^#[0-9a-f]{6}$/i);
       expect(p.stroke).toMatch(/^#[0-9a-f]{6}$/i);
@@ -159,27 +159,36 @@ describe('shapeColorPresets (spec/48)', () => {
     }
   });
 
-  it('caps a multi-colour (palette) theme at twenty presets', () => {
+  it('adds a card per branch on a multi-colour (palette) theme and cuts no group short', () => {
     const rainbow = THEMES.find((t) => t.palette && t.palette.length > 0);
     if (!rainbow) return; // no palette theme in the catalogue
     const presets = shapeColorPresets(rainbow);
-    expect(presets.length).toBeLessThanOrEqual(20);
-    expect(presets.length).toBeGreaterThan(0);
+    expect(presets).toHaveLength(20 + rainbow.palette!.length);
+    // The whole status group survives (a 20-cap used to drop Danger here).
+    expect(presets.map((p) => p.id)).toContain('highlight');
   });
 
-  it('assigns stable ids in hierarchical tiers (theme, emphasis, border, semantic)', () => {
+  it('assigns stable ids in four tiers (theme, neutral, border, status), each quiet to loud', () => {
     const ids = shapeColorPresets(getTheme('slate')).map((p) => p.id);
     expect(ids).toContain('theme');
     expect(ids).toContain('bold');
     expect(ids).toContain('success');
     // ids are unique
     expect(new Set(ids).size).toBe(ids.length);
-    // Tier order: the theme card leads, the quiet end of the emphasis ramp
-    // precedes the loud end, border treatments follow, semantic close.
+    // Tier order: theme, then neutral, then border, then status.
+    expect(ids.indexOf('bold')).toBeLessThan(ids.indexOf('ghost'));
+    expect(ids.indexOf('inked')).toBeLessThan(ids.indexOf('hairline'));
+    expect(ids.indexOf('frame')).toBeLessThan(ids.indexOf('info'));
+    // The theme card leads; each tier runs quiet → loud.
     expect(ids.indexOf('theme')).toBe(0);
-    expect(ids.indexOf('ghost')).toBeLessThan(ids.indexOf('solid'));
-    expect(ids.indexOf('solid')).toBeLessThan(ids.indexOf('outline'));
-    expect(ids.indexOf('outline')).toBeLessThan(ids.indexOf('info'));
+    expect(ids.indexOf('soft')).toBeLessThan(ids.indexOf('bold'));
+    expect(ids.indexOf('ghost')).toBeLessThan(ids.indexOf('inked'));
+    expect(ids.indexOf('hairline')).toBeLessThan(ids.indexOf('frame'));
+    expect(ids.indexOf('info')).toBeLessThan(ids.indexOf('highlight'));
+    // Hairline and Outline share a white fill and the accent stroke; only
+    // their text colour keeps them from deduping into one tile.
+    expect(ids).toContain('hairline');
+    expect(ids).toContain('outline');
     // The radius-defined Pill preset left with the radius itself.
     expect(ids).not.toContain('pill');
   });
@@ -683,7 +692,7 @@ describe('resetThemeElement', () => {
   });
 
   it('keeps a themeLockFill fill even on a hard reset, but still resets stroke + text', () => {
-    // "Reset elements to colour scheme" is the most aggressive transform (it
+    // "Reset elements to theme" is the most aggressive transform (it
     // overwrites user customisations), yet a pinned fill must still
     // survive or the Gantt bars would merge under a reset.
     const bar: ShapeElement = {

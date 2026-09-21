@@ -1,3 +1,4 @@
+import { useEyeDropper } from '@/hooks/ui/useEyeDropper';
 import { hexish, ToggleSwitch } from '@/components/palette/palette-controls';
 import { DirArrow } from '@/components/palette/context-menu-icons';
 import { type IconPosition } from '@livediagram/diagram';
@@ -41,6 +42,7 @@ export function ColourRow({
   // Revert an in-flight swatch preview if the menu/section unmounts mid-hover
   // (pointerleave doesn't fire on unmount).
   useRevertOnUnmount(onPreviewEnd ?? NOOP);
+  const eyeDropper = useEyeDropper();
   return (
     <div>
       <button
@@ -75,6 +77,26 @@ export function ColourRow({
               style={{ backgroundColor: c }}
             />
           ))}
+          {/* Pick a colour off the screen (spec/09 Colours): a pipette
+              before the "+", offered only where the browser has an
+              EyeDropper. Click it, then click anything on screen — an image,
+              a logo in another window, an element already on the board — and
+              that colour is applied the way a swatch click is. */}
+          {eyeDropper.supported ? (
+            <button
+              type="button"
+              aria-label={`Pick ${label} colour from the screen`}
+              title="Pick a colour from anywhere on the screen"
+              onClick={() => {
+                void eyeDropper.pick().then((hex) => {
+                  if (hex) (onCommit ?? onChange)(hex);
+                });
+              }}
+              className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md border border-dashed border-slate-300 text-slate-500 transition hover:border-brand-400 hover:text-brand-600 dark:border-slate-600 dark:hover:border-brand-500 dark:hover:text-brand-300"
+            >
+              <PipetteIcon />
+            </button>
+          ) : null}
           <label
             className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md border border-dashed border-slate-300 text-sm leading-none text-slate-500 dark:border-slate-600"
             aria-label={`Custom ${label} colour`}
@@ -172,5 +194,26 @@ export function MenuToggleRow({
       </span>
       <ToggleSwitch presentational checked={checked} label={label} />
     </button>
+  );
+}
+
+// A pipette: the tool that lifts a colour off something already there.
+function PipetteIcon() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="m2 22 1-1h3l9-9" />
+      <path d="M3 21v-3l9-9" />
+      <path d="m15 6 3.4-3.4a2.1 2.1 0 1 1 3 3L18 9l.9.9a1 1 0 0 1 0 1.4l-1.4 1.4a1 1 0 0 1-1.4 0L11.3 8.1a1 1 0 0 1 0-1.4l1.4-1.4a1 1 0 0 1 1.4 0L15 6z" />
+    </svg>
   );
 }

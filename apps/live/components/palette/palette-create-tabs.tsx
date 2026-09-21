@@ -105,7 +105,7 @@ export function PaletteDataTab({ pendingDraw, actions }: TabProps) {
 //
 // Ordered room-first: the groups a facilitator opens mid-session come before
 // the ones you set up once and forget. Collaborate used to be a separate
-// category (Ask the room / Keep a record); merging it in is spec/110's
+// category (Ask / Record); merging it in is spec/110's
 // reconciliation, which spec/137 called ahead of time when it filed the Done
 // check under Behaviour and said so.
 //
@@ -119,33 +119,33 @@ export function PaletteDataTab({ pendingDraw, actions }: TabProps) {
 export const BEHAVIOUR_GROUPS: TileGroupDef[] = [
   {
     id: 'ask',
-    label: 'Ask the room',
+    label: 'Ask',
     icon: <AskGroupIcon />,
   },
   {
     id: 'facilitate',
-    label: 'Run the room',
+    label: 'Tools',
     icon: <FacilitateGroupIcon />,
   },
   {
     id: 'record',
-    label: 'Keep a record',
+    label: 'Record',
     icon: <RecordGroupIcon />,
   },
   {
     id: 'reaction',
-    label: 'Reactions',
+    label: 'React',
     icon: <ReactionGroupIcon />,
   },
   { id: 'mode', label: 'Selection Mode', icon: <ModeGroupIcon /> },
-  { id: 'move', label: 'Get around', icon: <MoveGroupIcon /> },
+  { id: 'move', label: 'Navigate', icon: <MoveGroupIcon /> },
 ];
 
 export function PaletteBehaviourTab({ pendingDraw, actions }: TabProps) {
   // Every tile is in a group. The comment pin used to sit loose above them,
   // on the reasoning that it is the one you reach for outside a facilitated
   // session and a group of one would be a click in front of the tab's
-  // most-used tile. It is in **Keep a record** now: a comment thread is a
+  // most-used tile. It is in **Record** now: a comment thread is a
   // thing you leave behind on the board for somebody to find later, which is
   // what the agenda, the decision record and the roll call all are, and a
   // single row floating above six category tiles read as an oversight.

@@ -57,7 +57,6 @@ export function EditorView() {
     embedMode,
     autoAlignTab,
     autoLayoutTab,
-    applyTabFontToAll,
     startTimer,
     pauseTimer,
     resumeTimer,
@@ -122,12 +121,9 @@ export function EditorView() {
     setSelectedId,
     setSettingsOpen,
     setShareDialogOpen,
-    setCanvasThemeTab,
     renameDiagramNonce,
     renameTabNonce,
     setShortcutsOpen,
-    setTabFont,
-    setTabDefaultTextSize,
     tabs,
     toggleActiveTabLock,
     zenMode,
@@ -139,7 +135,7 @@ export function EditorView() {
   // theme so the editor chrome matches the diagram (spec/42).
   useEditorAccent(activeTab.theme);
   // The viewer's own light / dark chrome (spec/07). Read here because the
-  // Default colour scheme resolves through it — see the canvas surface below.
+  // Default theme resolves through it — see the canvas surface below.
   const { appearance } = useAppearance();
   // Guest sign-in nudge (spec/36): the same banner the Explorer shows,
   // but on the editor it waits ~5 minutes into the session before
@@ -358,24 +354,11 @@ export function EditorView() {
             canvasMenu={contextMenu?.mode === 'canvas' ? contextMenu : null}
             onCloseCanvasMenu={closeContextMenu}
             canvasActions={{
-              onChangeTheme: () => {
-                setCanvasThemeTab('theme');
-                track('UI', 'Opened', 'ThemePicker');
-              },
-              onChangeCanvas: () => {
-                setCanvasThemeTab('canvas');
-                track('UI', 'Opened', 'CanvasStyle');
-              },
               onAutoAlign: autoAlignTab,
               onAutoLayout: autoLayoutTab,
-              font: activeTab.font ?? null,
-              onApplyFontToAll: applyTabFontToAll,
               // Paste straight from the empty-canvas right-click (spec/09).
               onPaste: pasteFromClipboard,
               canPaste: hasClipboard,
-              onSetFont: setTabFont,
-              defaultTextSize: activeTab.defaultTextSize,
-              onSetDefaultTextSize: setTabDefaultTextSize,
             }}
           />
         )}

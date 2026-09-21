@@ -11,7 +11,23 @@ import {
   SESSION_POLL_MAX_OPTIONS,
   TIMER_MINUTES_RANGE,
   VOTE_DOTS_RANGE,
+  isFixedSizeShape,
+  isFixedSizeElement,
 } from './selection-mode';
+
+describe('fixed-size shapes', () => {
+  it('names the controls that never take resize handles', () => {
+    // The Done check (spec/137) joined the two buttons (spec/103): a roster
+    // and a button laid out for their own content, so a bigger box only
+    // spreads them over empty card.
+    for (const kind of ['mode-button', 'session-button', 'done-check']) {
+      expect(isFixedSizeShape(kind)).toBe(true);
+    }
+    expect(isFixedSizeShape('rectangle')).toBe(false);
+    expect(isFixedSizeElement({ type: 'shape', shape: 'done-check' })).toBe(true);
+    expect(isFixedSizeElement({ type: 'shape', shape: 'rectangle' })).toBe(false);
+  });
+});
 
 describe('isSessionTool / isPickerSource', () => {
   it('accepts the known tokens and nothing else', () => {

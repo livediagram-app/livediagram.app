@@ -6,7 +6,7 @@
 import { isLightColor, shade, tint, type Tab } from '@livediagram/diagram';
 import { getTheme } from './themes';
 
-// A colour scheme that paints no stroke — Default, and any unthemed tab —
+// A theme that paints no stroke — Default, and any unthemed tab —
 // falls through to this palette accent so the bar still reads. Written as
 // #rrggbb on purpose: that is the only notation `legibleColor` parses, and
 // while this was `rgb(2 132 199)` the most common accent in the app was the

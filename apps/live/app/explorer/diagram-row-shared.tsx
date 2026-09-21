@@ -219,16 +219,22 @@ export function DiagramActionsMenu({
   onShowHistory,
   favourite,
   onToggleFavourite,
+  isOpen = false,
+  onOpen,
 }: {
   diagram: PaneDiagram;
   anchor: HTMLElement | null;
   // Viewer id for Offline Mode conversions (spec/76).
   ownerId: string | null;
   onClose: () => void;
-  onStartRename: () => void;
-  onDuplicate: () => void;
-  onMove: (anchor: HTMLElement | null) => void;
-  onDelete: () => void;
+  // Every verb is optional: a row renders only when its handler is passed,
+  // so a surface that can't offer one (the floating panel can't rename a
+  // row that isn't the open diagram) leaves it out rather than showing a
+  // row that does nothing.
+  onStartRename?: () => void;
+  onDuplicate?: () => void;
+  onMove?: (anchor: HTMLElement | null) => void;
+  onDelete?: () => void;
   onDismiss?: () => void;
   // Hide / show in Recent (spec/93). Per-user, so the label reflects THIS
   // viewer's state; omitted where the surface can't offer it.
@@ -239,6 +245,13 @@ export function DiagramActionsMenu({
   // shared-with-you row isn't in your library to star.
   favourite?: boolean;
   onToggleFavourite?: () => void;
+  // True on the row for the diagram already open in this editor session,
+  // where an Open verb would do nothing. Everywhere else the menu leads
+  // with Open.
+  isOpen?: boolean;
+  // How to open it. Absent = navigate to the diagram's page; the floating
+  // panel passes its own opener so switching diagrams stays in-editor.
+  onOpen?: () => void;
 }) {
   const href = hrefForDiagram(diagram);
   const offline = diagram.ownerId === OFFLINE_OWNER_ID;
@@ -275,23 +288,48 @@ export function DiagramActionsMenu({
   return (
     <PortalMenu anchor={anchor} placement="below" onClose={onClose}>
       {header}
-      <MenuActionRow plain icon={<MenuPencilIcon />} label="Rename" onClick={then(onStartRename)} />
-      <MenuActionRow
-        plain
-        icon={<MenuDuplicateIcon />}
-        label="Duplicate"
-        onClick={then(onDuplicate)}
-      />
-      <MenuActionRow
-        plain
-        icon={<MenuFolderIcon />}
-        label="Change Folder"
-        onClick={then(() => onMove(anchor))}
-      />
+      {/* Open leads, on its own, unless this IS the open diagram: the
+          verb people reach for first sits first, and a menu on the
+          current diagram's row doesn't offer a no-op. */}
+      {isOpen ? null : (
+        <>
+          <MenuActionRow
+            plain
+            icon={<DiagramIcon />}
+            label="Open"
+            onClick={onOpen ? then(onOpen) : () => window.location.assign(href)}
+          />
+          <MenuGroupSeparator />
+        </>
+      )}
+      {onStartRename ? (
+        <MenuActionRow
+          plain
+          icon={<MenuPencilIcon />}
+          label="Rename"
+          onClick={then(onStartRename)}
+        />
+      ) : null}
+      {onDuplicate ? (
+        <MenuActionRow
+          plain
+          icon={<MenuDuplicateIcon />}
+          label="Duplicate"
+          onClick={then(onDuplicate)}
+        />
+      ) : null}
+      {onMove ? (
+        <MenuActionRow
+          plain
+          icon={<MenuFolderIcon />}
+          label="Change Folder"
+          onClick={then(() => onMove(anchor))}
+        />
+      ) : null}
       {/* Two groups: what changes the diagram itself (rename, copy, file),
           then what changes how YOU see it (star, history, Recent,
           where it's stored). */}
-      <MenuGroupSeparator />
+      {onStartRename || onDuplicate || onMove ? <MenuGroupSeparator /> : null}
       {onToggleFavourite ? (
         <MenuActionRow
           plain
@@ -345,14 +383,18 @@ export function DiagramActionsMenu({
           />
         )
       ) : null}
-      <MenuGroupSeparator />
-      <MenuActionRow
-        plain
-        danger
-        icon={<MenuTrashIcon />}
-        label="Delete"
-        onClick={then(onDelete)}
-      />
+      {onDelete ? (
+        <>
+          <MenuGroupSeparator />
+          <MenuActionRow
+            plain
+            danger
+            icon={<MenuTrashIcon />}
+            label="Delete"
+            onClick={then(onDelete)}
+          />
+        </>
+      ) : null}
     </PortalMenu>
   );
 }

@@ -86,7 +86,7 @@ type TemplatePickerProps = {
   // gets a fresh blank canvas (no seeded rectangle, no theme override)
   // and the empty-state card prompts the next step. Triggered by the X in
   // the header (all modes) or the Cancel button (non-welcome modes only:
-  // the welcome wizard offers Skip instead, which commits Blank + the Default colour scheme).
+  // the welcome wizard offers Skip instead, which commits Blank + the Default theme).
   onSkip: () => void;
   // True while the host is committing the pick (the new-diagram POST can
   // take a moment). Drives the primary button's spinner + disabled state
@@ -269,7 +269,7 @@ export function TemplatePicker({
   const showTemplateSection = showTemplates && (!isWizard || step === 'template');
   const showThemeSection = showThemes && (!isWizard || step === 'theme');
   // Skip the wizard entirely: the documented shortcut is Blank template +
-  // Default colour scheme (spec/14), committed straight away. Placement still honours
+  // Default theme (spec/14), committed straight away. Placement still honours
   // the URL context (/new?folder=…, ?team=…) the picker was pre-seeded with,
   // so skipping doesn't silently drop the diagram into personal Unsorted.
   const skipToDefaults = () =>
@@ -319,7 +319,7 @@ export function TemplatePicker({
                       ? `Welcome to '${diagramName.trim()}'`
                       : 'Welcome to this diagram'
                     : step === 'theme'
-                      ? 'Pick a colour scheme'
+                      ? 'Pick a theme'
                       : 'Quick Start'}
               </h2>
               <p className="mt-1 text-sm text-slate-500 dark:text-slate-300">
@@ -327,7 +327,7 @@ export function TemplatePicker({
                   ? step === 'template'
                     ? 'Choose a template to start from.'
                     : step === 'theme'
-                      ? 'Pick a colour scheme, or build your own.'
+                      ? 'Pick a theme, or build your own.'
                       : 'Name your diagram and choose where it lives.'
                   : nameLocked
                     ? 'This is the name from your account; others will see it on this diagram.'
@@ -338,12 +338,6 @@ export function TemplatePicker({
               {showTemplates ? (
                 <HelpArticleLink
                   article={step === 'theme' ? 'themes' : 'templates'}
-                  title={step === 'theme' ? 'Colour schemes' : 'Templates'}
-                  description={
-                    step === 'theme'
-                      ? 'How colour schemes restyle your whole diagram.'
-                      : 'How templates give you a themed starting point.'
-                  }
                   className="!h-8 !w-8 !rounded-lg !border-0 !text-sm !text-slate-400 hover:!bg-slate-100 hover:!text-slate-700 dark:!text-slate-400 dark:hover:!bg-slate-800 dark:hover:!text-slate-200"
                 />
               ) : null}

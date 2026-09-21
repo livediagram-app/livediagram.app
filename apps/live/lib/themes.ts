@@ -149,14 +149,14 @@ export function deriveNewBoxedColours(
   ) {
     return colours;
   }
-  // A page (spec/100) is paper, not a node in the diagram's colour scheme.
+  // A page (spec/100) is paper, not a node in the diagram's theme.
   // Tinting it with the backdrop-derived shape colours is what stopped it
   // reading as a page at all, so it keeps the fill / stroke createShape gave
   // it. The user can still recolour it from the menu like anything else.
   if (base.type === 'shape' && base.shape === 'page') return colours;
   // The Behaviour and Collaborate elements used to opt OUT of theme tinting on
   // the reasoning that they are controls and scenery rather than nodes in the
-  // diagram's colour scheme. Dropped: it left a board where a mode button, a
+  // diagram's theme. Dropped: it left a board where a mode button, a
   // reveal cover and a comment panel each sat in their own palette while
   // everything around them followed the tab, which reads as an oversight
   // rather than as emphasis — the theme is the whole point of picking one.

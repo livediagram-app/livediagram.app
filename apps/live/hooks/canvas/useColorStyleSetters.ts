@@ -4,7 +4,7 @@
 // fire on every drag tick of a colour / slider control, so they write
 // via the non-history tab mutator and debounce a single log entry —
 // one undoable step per picker gesture. Keeping that policy in one
-// file makes it auditable. `resetColorsSelected` (the "Reset to colour scheme"
+// file makes it auditable. `resetColorsSelected` (the "Reset to theme"
 // action) lives here too since it is the inverse of these writes.
 
 import type { Element, ElementShadow, Tab } from '@livediagram/diagram';
@@ -103,7 +103,7 @@ export function useColorStyleSetters(deps: {
   const resetColorsSelected = () => {
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
-    // "Reset to colour scheme" applies the tab's current theme colours when
+    // "Reset to theme" applies the tab's current theme colours when
     // the tab has one set. Plain delete-the-override only works when
     // the theme is the brand default (its `elementFill / Stroke / Text`
     // are all null, so falling back to the type-default produces the

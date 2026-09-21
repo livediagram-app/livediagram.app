@@ -142,7 +142,7 @@ export function TeamLibraryHeader({
                       <MenuFolderIcon />
                     </span>
                   }
-                  label={inFolder ? 'New subfolder' : 'New folder'}
+                  label={inFolder ? 'New Subfolder' : 'New Folder'}
                   onClick={() => {
                     setCreateOpen(false);
                     void createFolder(currentFolderId).then((created) => {

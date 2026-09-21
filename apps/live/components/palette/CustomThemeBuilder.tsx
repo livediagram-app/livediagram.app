@@ -8,7 +8,7 @@
 // diagram (the shared ThemeSwatch scene, with the actual pattern edge to
 // edge) so the user sees the result as they build. A built-in format
 // painter copies a colour from one box and pastes it into others.
-// Shared by the Tab Look & Feel dialog's Colour scheme tab and the Explorer Themes pane,
+// Shared by the Tab Look & Feel dialog's Theme tab and the Explorer Themes pane,
 // so the two entry points can't drift. Purely a form: it owns a draft
 // and hands the finished { name, definition } back via onSave.
 
@@ -151,11 +151,7 @@ export function CustomThemeBuilder({
       {/* Inline (in the theme browse): the shared BackBar returns. In a
           modal host (Explorer) the dialog owns the header, so no bar. */}
       {variant === 'inline' ? (
-        <BackBar
-          label="Back"
-          current={isEdit ? 'Edit colour scheme' : 'New colour scheme'}
-          onClick={onCancel}
-        />
+        <BackBar label="Back" current={isEdit ? 'Edit theme' : 'New theme'} onClick={onCancel} />
       ) : null}
 
       {/* Live preview — the in-progress theme as a real diagram scene,
@@ -190,7 +186,7 @@ export function CustomThemeBuilder({
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="My colour scheme"
+          placeholder="My theme"
           className="rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-sm text-slate-800 outline-none transition focus:border-brand-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
         />
       </label>
@@ -314,9 +310,9 @@ export function CustomThemeBuilder({
           variant="primary"
           size="xs"
           disabled={saving}
-          onClick={() => onSave({ name: name.trim() || 'My colour scheme', definition: def })}
+          onClick={() => onSave({ name: name.trim() || 'My theme', definition: def })}
         >
-          {saving ? 'Saving…' : isEdit ? 'Save changes' : 'Save colour scheme'}
+          {saving ? 'Saving…' : isEdit ? 'Save changes' : 'Save theme'}
         </Button>
       </div>
     </div>
