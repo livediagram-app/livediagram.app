@@ -110,6 +110,16 @@ The **Text colour** picker lives in the element's right-click context menu under
 
 **Theme-matching preset swatches.** Each colour picker offers a row of quick-pick swatches above the custom-colour input, derived from the active theme (`themePresetColors` in `apps/live/lib/themes.ts`) so they match it rather than a fixed rainbow. The set is a **ramp**, not just the single theme colour: the theme's accent hue is spun into light → base → dark variants (so the user has several on-theme intensities one click away without opening the swatch), plus the fill / text colours, then a neutral ramp (white → light grey → slate → ink). A multi-colour theme ([spec/29](29-multicolour-themes.md)) instead leads with a tint + base of every branch hue. Deduped, capped at 20, free-wrapping. Tints / shades are computed via `tint` / `shade` in `packages/diagram/src/colors.ts`.
 
+**Pick a colour off the screen.** Before the custom-colour "+" in every
+Colours row sits a **pipette**: click it, then click anything on screen (an
+image on the board, a logo in another window, an element already coloured
+the way you want) and that colour is applied exactly as a swatch click is,
+through the same commit (so undo and the hover-preview snapshot behave the
+same). It uses the browser's `EyeDropper` (`hooks/ui/useEyeDropper.ts`) and
+is offered only where the browser has one (Chromium); elsewhere the row
+shows no pipette rather than a button that can't work, since there is no
+fallback worth having.
+
 Arrows don't expose any colour pickers yet.
 
 Future iterations: stroke width, dash patterns, gradient fills, named theme colours, transparency.
