@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import type { DetectedSticky } from '@livediagram/sticky-vision';
-import { armTruthFromUrl, downloadTruth, truthArmed, truthOf } from '@/lib/photo-truth';
+import { downloadTruth, truthArmed, truthOf } from '@/lib/photo-truth';
 
 // "Save as truth": the corrected review, handed back as a label file
 // (docs/vision/sticky-detection.md).
@@ -12,13 +12,13 @@ import { armTruthFromUrl, downloadTruth, truthArmed, truthOf } from '@/lib/photo
 // The review already asks for exactly that work: untick what is not a note,
 // drag a box around what was missed. What is left on screen IS the labelling.
 //
-// Armed by hand — `?truth=1` on the editor's own URL, remembered from then on
-// — so an author importing their own wall never meets it. Nothing is uploaded:
-// the file goes to this machine's disk, because the labels describe somebody's
-// real workshop wall, like the photo does.
+// Armed by hand — `?truth=1` on any page of the editor, remembered from then
+// on (`TruthArmBoot`) — so an author importing their own wall never meets it.
+// Nothing is uploaded: the file goes to this machine's disk, because the labels
+// describe somebody's real workshop wall, like the photo does.
 //
-// Armed in an EFFECT rather than during render: these pages are prerendered to
-// static HTML, where there is no `localStorage` to ask.
+// The flag is read in an EFFECT rather than during render: these pages are
+// prerendered to static HTML, where there is no `localStorage` to ask.
 export function TruthExport({
   photoName,
   size,
@@ -31,10 +31,7 @@ export function TruthExport({
   ticked: Set<number>;
 }) {
   const [armed, setArmed] = useState(false);
-  useEffect(() => {
-    armTruthFromUrl(window.location.href);
-    setArmed(truthArmed());
-  }, []);
+  useEffect(() => setArmed(truthArmed()), []);
   const kept = notes.filter((note) => ticked.has(note.id));
   if (!armed) return null;
   return (
