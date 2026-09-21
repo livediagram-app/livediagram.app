@@ -209,7 +209,23 @@ they exist:
 - A file is `{ photo, labelledOn: { width, height }, notes: [{ x, y, w, h, kind
 }] }`, every box in FRACTIONS of the image so the labels survive any working
   size.
-- To remake one: run the sweep once so the working copy is cached under
+- **The cheap way to make one: correct a review and save it.** Open the editor
+  with `?truth=1` on the URL (remembered from then on), import the photo, then
+  do exactly what the import asks of you anyway — untick every box that is not
+  a sticky, drag a box around every sticky it missed — and press **Save as
+  truth**. The download is a label file named after the photograph. File it
+  where the sweep looks:
+
+  ```bash
+  pnpm --filter @livediagram/sticky-vision truth:add ~/Downloads/<photo>.json
+  ```
+
+  It refuses a file whose boxes are not fractions, because pixels would score
+  as a total miss and read like a detector regression. The one weakness of
+  this path: truth built by correcting the detector inherits its blind spots,
+  since a note it never boxed is one you have to notice yourself.
+
+- To make one from a blank slate instead: run the sweep once so the working copy is cached under
   `/tmp/livediagram-sticky-vision/<hash>/work-<photo>.png`, crop it into
   overlapping tiles with a labelled grid drawn over them (25px steps, ImageMagick
   `-draw`), read each note's CENTRE off the grid by eye, and give it a nominal
