@@ -57,11 +57,13 @@ export function themePresetColors(theme: ThemeDefinition): string[] {
     push(text);
   }
 
-  // Neutral ramp — always useful (white → light grey → slate → ink).
+  // Neutral ramp — always useful (white → light grey → slate → ink). Four,
+  // not five: with a single-accent theme's six swatches that is ten, and
+  // the pipette + custom "+" make twelve, two full rows of six in the
+  // menu. A fifth neutral pushed the "+" onto a row of its own.
   push('#ffffff');
   push('#e2e8f0');
   push('#94a3b8');
-  push('#475569');
   push('#0f172a');
   return out.slice(0, 20);
 }
