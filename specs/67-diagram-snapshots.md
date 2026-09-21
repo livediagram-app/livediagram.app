@@ -107,7 +107,7 @@ choice is diagram-wide, applying to every share link's image.
 ### Where thumbnails appear
 
 The thumbnail shows on **every** Explorer surface that lists a diagram:
-the full-page `/explorer` rows (Recent / My Work / folders / Unsorted /
+the full-page `/explorer` rows (Recent / Personal Space / folders / Unsorted /
 Generated), the team library page, the "Shared with me" list, and the
 floating in-editor Explorer panel. A single shared `DiagramThumbnail`
 component (`components/panels/DiagramThumbnail.tsx`) backs them all, fed
@@ -118,7 +118,7 @@ of those gets a 404 and the row falls back to its icon.
 
 ### List / card view
 
-The browse views (Recent / My Work / folders / Unsorted / Generated)
+The browse views (Recent / Personal Space / folders / Unsorted / Generated)
 have a **List ↔ Card** toggle at the far right of the header (device-
 local preference, `livediagram:explorer-view`). Card view renders the
 same folders + diagrams as a responsive grid of cards (1 / 2 / 3 columns

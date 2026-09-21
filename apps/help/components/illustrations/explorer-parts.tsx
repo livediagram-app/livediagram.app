@@ -412,7 +412,7 @@ export function ExplorerSidebar({
         glyph="shared"
       />
       <Label x={x + 18} y={y + 100} size={8} weight={700} tone="muted">
-        MY WORK
+        PERSONAL SPACE
       </Label>
       <SidebarRow x={x} y={y + 108} w={w} label="Unsorted" active={active === 2} glyph="folder" />
       <SidebarRow x={x} y={y + 134} w={w} label="Projects" active={active === 3} glyph="folder" />

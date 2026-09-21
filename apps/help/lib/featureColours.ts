@@ -181,7 +181,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   profile: '#0891b2',
   recent: '#0ea5e9',
   'shared-with-you': '#10b981',
-  'my-work': '#f59e0b',
+  'personal-space': '#f59e0b',
   'team-spaces': '#a855f7',
   'image-gallery': '#ec4899',
   'themes-library': '#d946ef',

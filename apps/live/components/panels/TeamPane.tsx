@@ -50,7 +50,7 @@ export function TeamPane({
   onLoadResult?: (found: boolean) => void;
   // Full move destinations + cross-scope router for the shared-diagrams
   // move picker (spec/35): passed straight through to TeamSharedDiagrams
-  // so a team diagram can be re-homed to My Work / another team.
+  // so a team diagram can be re-homed to Personal Space / another team.
   moveDests?: ComponentProps<typeof TeamSharedDiagrams>['moveDests'];
   onMoveDiagramTo?: ComponentProps<typeof TeamSharedDiagrams>['onMoveDiagramTo'];
 }) {

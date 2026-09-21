@@ -1161,10 +1161,10 @@ Quick find gains Timeline at the top and **Favourites moves into it**:
 Quick find
   ⏱  Timeline          ← new, and the landing view
   🕐  Recent
-  ★  Favourites        ← moved up from My Work › Dynamic
+  ★  Favourites        ← moved up from Personal Space › Dynamic
   ↗  Shared with you
 
-My Work
+Personal Space
   ⊞  Dynamic
      ▫ Unsorted
      ✨ Generated

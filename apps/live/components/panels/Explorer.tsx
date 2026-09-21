@@ -365,7 +365,7 @@ function ExplorerImpl({
                         : undefined
                     }
                     // Change Folder for a team diagram (spec/35): opens the
-                    // move picker on this team's tree, with My Work + the
+                    // move picker on this team's tree, with Personal Space + the
                     // other teams one Back away. Routed through the
                     // scope-aware onMoveDiagramTo.
                     onMoveRequest={
@@ -393,10 +393,10 @@ function ExplorerImpl({
           </div>
         ) : null}
 
-        {/* Recent / My Work / Teams as a single tab bar (was three
+        {/* Recent / Personal Space / Teams as a single tab bar (was three
             stacked accordions) so only one list takes vertical space.
             Shared-with-you diagrams interleave into Recent (matching the
-            /explorer page); My Work holds the folder tree + Unsorted
+            /explorer page); Personal Space holds the folder tree + Unsorted
             (spec/15); Teams mirrors it per team (spec/35). The card owns
             its own tab state and hides itself when no section has
             anything to show — see ExplorerSections. */}
@@ -440,7 +440,7 @@ function ExplorerImpl({
       {/* Move-destination modal (spec/15), the same shared placement
           browser as the /explorer page. With the scope-aware
           onMoveDiagramTo wired (signed-in sessions with teams), the picker
-          offers every space — My Work plus each team — so a team diagram
+          offers every space — Personal Space plus each team — so a team diagram
           can be re-homed to the personal tree (and vice versa) right from
           the editor. Purely personal picks keep the optimistic
           onMoveDiagramToFolder path. */}

@@ -59,7 +59,7 @@ describe('the bar above the rows', () => {
     const heading = screen.getByText('Choose a Folder');
     expect(heading.closest('button')).toBeNull();
     // The chip still says where you are.
-    expect(heading.parentElement?.textContent).toContain('My Work');
+    expect(heading.parentElement?.textContent).toContain('Personal Space');
     expect(screen.queryByRole('button', { name: /all spaces/i })).toBeNull();
   });
 
@@ -78,7 +78,7 @@ describe('the bar above the rows', () => {
   it('names the level above once inside a folder', () => {
     render(<Harness />);
     fireEvent.click(radio(/^Alpha/));
-    const back = screen.getByRole('button', { name: /My Work/ });
+    const back = screen.getByRole('button', { name: /Personal Space/ });
     expect(back.textContent).toContain('Alpha');
     fireEvent.click(radio(/^Gamma/));
     expect(screen.getByRole('button', { name: /Alpha/ }).textContent).toContain('Gamma');
@@ -89,7 +89,7 @@ describe('subfolder badges', () => {
   it('count direct subfolders, pluralised, and stay off empty folders', () => {
     render(<Harness />);
     // The save-here card at the root: two root folders.
-    expect(radio(/^My Work/).textContent).toContain('2 Subfolders');
+    expect(radio(/^Personal Space/).textContent).toContain('2 Subfolders');
     expect(radio(/^Alpha/).textContent).toContain('2 Subfolders');
     expect(radio(/^Epsilon/).textContent).not.toMatch(/\d+ Subfolder/);
 
@@ -104,7 +104,7 @@ describe('subfolder badges', () => {
     render(
       <Harness teams={[TEAM]} teamFolders={{ t1: [{ id: 'x', name: 'Ex', parentId: null }] }} />,
     );
-    expect(radio(/^My Work/).textContent).toContain('2 Subfolders');
+    expect(radio(/^Personal Space/).textContent).toContain('2 Subfolders');
     expect(radio(/^Team One/).textContent).toContain('1 Subfolder');
   });
 });

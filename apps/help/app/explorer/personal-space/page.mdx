@@ -1,26 +1,26 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { MyWorkTree } from '@/components/illustrations/explorer';
+import { PersonalSpaceTree } from '@/components/illustrations/explorer';
 
 export const metadata = helpMetadata({
-  title: 'My Work and Folders',
+  title: 'Personal Space and Folders',
   description:
-    'My Work is your own diagram library: the Dynamic buckets (Unsorted, Generated, Offline) plus the nested folders you create to group diagrams by project, customer, or topic.',
-  path: '/help/explorer/my-work/',
+    'Personal Space is your own diagram library: the Dynamic buckets (Unsorted, Generated, Offline) plus the nested folders you create to group diagrams by project, customer, or topic.',
+  path: '/help/explorer/personal-space/',
 });
 
 <ArticleLayout
-  title="My Work and Folders"
+  title="Personal Space and Folders"
   description="Your personal library, the Dynamic buckets plus folders you can nest as deep as you like. Every diagram has an obvious home."
   categoryTitle="Explorer"
   categorySlug="explorer"
 >
 
-**My Work** is your own library: the [diagrams](/explorer/all) you have created, organised however suits you. It is the tree in the middle of the Explorer sidebar, holding a collapsible **Dynamic** parent for the automatic buckets and whatever folders you have made.
+**Personal Space** is your own library: the [diagrams](/explorer/all) you have created, organised however suits you. It is the tree in the middle of the Explorer sidebar, holding a collapsible **Dynamic** parent for the automatic buckets and whatever folders you have made.
 
 ## The Dynamic buckets
 
-At the top of My Work, a collapsible **Dynamic** parent groups three live views that file themselves, so your own folders lead the tree:
+At the top of Personal Space, a collapsible **Dynamic** parent groups three live views that file themselves, so your own folders lead the tree:
 
 - **Unsorted** catches diagrams you have not filed anywhere, so a freshly created diagram always has a home without you deciding anything first.
 - **Generated** collects AI-made diagrams you have not filed yet, keeping them apart from the ones you drew.
@@ -43,12 +43,12 @@ None of the buckets can be renamed or deleted, and each shows a count badge only
 Folders give your library structure without forcing it. Every diagram is in exactly one folder, or none, and folders can nest, so you can build something like "Projects / Customer / Engagement" when you want that depth, or keep everything flat under Unsorted when you do not.
 
 <Figure caption="The Dynamic buckets sit above the folders you create, which can nest as deep as a project needs.">
-  <MyWorkTree />
+  <PersonalSpaceTree />
 </Figure>
 
 <Step n={1}>
-  Create a folder with the **New folder** action (the plus beside the My Work heading adds one at
-  the top level). Each folder's own menu offers **New subfolder** for deeper levels.
+  Create a folder with the **New folder** action (the plus beside the Personal Space heading adds
+  one at the top level). Each folder's own menu offers **New subfolder** for deeper levels.
 </Step>
 <Step n={2}>
   Move a diagram with its **Move to folder** menu item, which opens the same destination browser as
@@ -60,7 +60,7 @@ Deleting a folder is safe for its contents: the diagrams inside drop to Unsorted
 
 ## Two places to browse
 
-You will meet My Work in two forms: the **full-page Explorer**, modelled on a desktop file browser, and the compact **floating Explorer panel** in the editor for finding a diagram mid-task. Both work whether or not you are signed in: a guest sees the diagrams and folders their own browser owns, and can sign in later to carry that work into an account.
+You will meet Personal Space in two forms: the **full-page Explorer**, modelled on a desktop file browser, and the compact **floating Explorer panel** in the editor for finding a diagram mid-task. Both work whether or not you are signed in: a guest sees the diagrams and folders their own browser owns, and can sign in later to carry that work into an account.
 
 <Tip>
   Do not over-organise on day one. Start in Unsorted, and pull diagrams into folders once a real

@@ -235,7 +235,7 @@ export function PlacementCard({
 }
 
 // Tile glyphs, sized to sit above the card label.
-export function MyWorkIcon() {
+export function PersonalSpaceIcon() {
   return (
     <svg
       width="20"

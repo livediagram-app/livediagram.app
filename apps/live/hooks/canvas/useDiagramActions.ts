@@ -44,7 +44,7 @@ type DiagramActionsDeps = {
   sessionShareCode: string | null;
   // Post-move refreshes for the scope-aware mover below: the team
   // libraries sweep (a row moved within / left a team) and the personal
-  // list (a diagram landed in — or left — My Work).
+  // list (a diagram landed in — or left — Personal Space).
   refreshTeamLibraries: () => void;
   refreshDiagramList: () => Promise<void> | void;
   // Fired after a successful scope-aware move so the editor can sync any
@@ -111,7 +111,7 @@ export function useDiagramActions(deps: DiagramActionsDeps) {
         refreshTeamLibraries();
         void refreshDiagramList();
         onDiagramScopeChanged?.(id, dest.teamId);
-        toast.success(dest.teamId ? 'Moved to the team library' : 'Moved to My Work');
+        toast.success(dest.teamId ? 'Moved to the team library' : 'Moved to Personal Space');
         track('Team', 'Moved', 'Diagram');
       })
       .catch(() => {

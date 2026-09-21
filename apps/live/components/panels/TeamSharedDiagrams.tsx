@@ -290,7 +290,7 @@ export function TeamSharedDiagrams({
       {/* ---------- Move picker ---------- */}
       {/* Same shared move modal as the personal surfaces (spec/15). With
           `moveDests` (the explorer page supplies it) a DIAGRAM move offers
-          every space — My Work plus each team — so a team diagram can be
+          every space — Personal Space plus each team — so a team diagram can be
           re-homed back to the personal tree or on to another team from
           right here; the space overview + back bar come with it. This
           team's own folders come from the live lib (fresher than the
@@ -354,7 +354,7 @@ export function TeamSharedDiagrams({
               void lib.moveDiagram(moveTarget.id, dest.folderId);
               return;
             }
-            // Leaving this team (to My Work or another team): route via the
+            // Leaving this team (to Personal Space or another team): route via the
             // explorer's placement-aware mover, then refresh this library so
             // the row disappears once the move lands.
             void Promise.resolve(onMoveDiagramTo?.(moveTarget.id, dest)).then(() => lib.refresh());

@@ -46,7 +46,10 @@ const badgeBase =
 // where a favourite is a positive you actively scan for.
 export function FavouriteMarker() {
   return (
-    <Tooltip title="Favourite" description="Starred by you. Find it under My Work > Favourites.">
+    <Tooltip
+      title="Favourite"
+      description="Starred by you. Find it under Favourites in Quick find."
+    >
       <span className="inline-flex shrink-0 items-center text-amber-500 dark:text-amber-400">
         <StarIcon filled />
       </span>

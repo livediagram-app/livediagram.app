@@ -1399,7 +1399,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M8.2 10.8l6.6-3.4M8.2 13.2l6.6 3.4" {...s} />
     </Glyph>
   ),
-  'my-work': (
+  'personal-space': (
     <Glyph>
       <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" {...s} />
     </Glyph>

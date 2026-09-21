@@ -375,7 +375,7 @@ export function ExplorerPane() {
               diagrams={paneContent.diagrams}
               ownerId={ownerId}
               // The three synthetic folders live inside the Dynamic parent
-              // view; My Work (/all) leads with the single Dynamic row.
+              // view; Personal Space (/all) leads with the single Dynamic row.
               showUnsortedRow={selected.kind === 'dynamic'}
               unsortedCount={unsortedDiagrams.length}
               onOpenUnsorted={() => go({ kind: 'unsorted' })}

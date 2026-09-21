@@ -181,7 +181,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
       {/* Move-destination modal (spec/15 + spec/35): the shared
           placement browser (spec/76's Save In UI) for every diagram
           (personal or team) and for folder re-parenting. It offers
-          "My Work" plus each team as a space (for diagram moves);
+          "Personal Space" plus each team as a space (for diagram moves);
           `moveDiagramTo` routes the pick from the subject's current
           placement. Folder moves are personal-only, so they pass no
           teams. The New Folder tile creates in the picked scope. */}

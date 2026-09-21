@@ -42,7 +42,7 @@ the `PlacementCard` tile). The locations today:
 The tile glyphs: the livediagram tile carries the brand mark (the same
 `BrandMark` the site header uses, exported from `@livediagram/ui` rather than
 redrawn); Local Browser carries a browser-window glyph. The cloud-with-a-slash
-glyph stays on the offline "My Work" placeholder card below, where it still
+glyph stays on the offline "Personal Space" placeholder card below, where it still
 says what that card means.
 
 ## The folder step
@@ -64,7 +64,7 @@ lives.
 
 **Subfolder count.** A destination that holds more folders says so with a
 small badge beside its name, "1 Subfolder" / "3 Subfolders": the space cards
-on the overview (root folders of My Work or the team), the "save here" card
+on the overview (root folders of Personal Space or the team), the "save here" card
 at the top of a level, and any folder row that drills in. A folder with
 nothing inside shows no badge, so the badge itself is the "there's more in
 here" cue, not just a number. Both layouts show it; in a row it sits beside

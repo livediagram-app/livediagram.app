@@ -223,7 +223,7 @@ export function useExplorerPane({
       return teams.find((t) => t.id === selected.id)?.name ?? 'Team';
     }
     if (selected.kind === 'invites') return 'Invites';
-    if (selected.kind === 'all') return 'My Work';
+    if (selected.kind === 'all') return 'Personal Space';
     if (selected.kind === 'unsorted') return 'Unsorted';
     if (selected.kind === 'favourites') return 'Favourites';
     if (selected.kind === 'generated') return 'Generated';
@@ -237,7 +237,7 @@ export function useExplorerPane({
   // text so the user can't navigate to where they already are.
   type Crumb = { name: string; onClick?: () => void };
   const paneCrumbs = useMemo<Crumb[]>(() => {
-    const all: Crumb = { name: 'My Work', onClick: () => go({ kind: 'all' }) };
+    const all: Crumb = { name: 'Personal Space', onClick: () => go({ kind: 'all' }) };
     if (selected.kind === 'timeline') return [{ name: 'Timeline' }];
     if (selected.kind === 'recent') return [{ name: 'Recent' }];
     if (selected.kind === 'shared') return [{ name: 'Shared with you' }];
@@ -247,11 +247,11 @@ export function useExplorerPane({
     if (selected.kind === 'profile') return [{ name: 'Profile' }];
     if (selected.kind === 'team') return [{ name: paneTitle }];
     if (selected.kind === 'invites') return [{ name: 'Invites' }];
-    if (selected.kind === 'all') return [{ name: 'My Work' }];
+    if (selected.kind === 'all') return [{ name: 'Personal Space' }];
     const dynamic: Crumb = { name: 'Dynamic', onClick: () => go({ kind: 'dynamic' }) };
     if (selected.kind === 'dynamic') return [all, { name: 'Dynamic' }];
     if (selected.kind === 'unsorted') return [all, dynamic, { name: 'Unsorted' }];
-    // Favourites sits in Quick find now, not under My Work > Dynamic
+    // Favourites sits in Quick find now, not under Personal Space > Dynamic
     // (spec/138 §8.2), so its trail is a single leaf like Recent's —
     // a crumb that walks up to a parent it no longer has would be a lie.
     if (selected.kind === 'favourites') return [{ name: 'Favourites' }];
