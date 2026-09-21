@@ -20,16 +20,7 @@ type PortalMenuProps = {
   anchor: HTMLElement | null;
   placement?: Placement;
   onClose: () => void;
-  // `md` (default) is the tab / header menus' 224px. `lg` is 288px, for a
-  // three-column tile grid whose labels ("Hide from Recent") would
-  // otherwise wrap in every other tile.
-  width?: 'md' | 'lg';
   children: ReactNode;
-};
-
-const WIDTH_CLASS: Record<NonNullable<PortalMenuProps['width']>, string> = {
-  md: 'w-56',
-  lg: 'w-72',
 };
 
 // Right-align the menu's right edge with the anchor's right edge and place
@@ -47,13 +38,7 @@ const PLACEMENT_TRANSFORM: Record<Placement, string> = {
  * Used by the tab bar (above the ellipsis button) and the editor header
  * (below the diagram-title ellipsis button).
  */
-export function PortalMenu({
-  anchor,
-  placement = 'below',
-  onClose,
-  width = 'md',
-  children,
-}: PortalMenuProps) {
+export function PortalMenu({ anchor, placement = 'below', onClose, children }: PortalMenuProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
   const [adjust, setAdjust] = useState({ x: 0, y: 0 });
@@ -103,7 +88,7 @@ export function PortalMenu({
       <div
         ref={ref}
         role="menu"
-        className={`fixed z-[var(--z-popover)] flex ${WIDTH_CLASS[width]} animate-fade-in flex-col rounded-md border border-slate-200 bg-white/90 py-1 text-sm shadow-lg backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/90 dark:shadow-slate-950/40`}
+        className="fixed z-[var(--z-popover)] flex w-56 animate-fade-in flex-col rounded-md border border-slate-200 bg-white/90 py-1 text-sm shadow-lg backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/90 dark:shadow-slate-950/40"
         style={{
           left: pos.left + adjust.x,
           top: pos.top + adjust.y,

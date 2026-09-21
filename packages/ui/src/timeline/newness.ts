@@ -4,7 +4,7 @@
 // written FUTURE-dated on purpose — a token lapsing on the 12th is recorded at
 // the 12th so it renders in the Upcoming band above Today — while the seen
 // watermark is only ever written as `now`. So `occurredAt > lastSeenAt` is
-// permanently true for anything scheduled, and every Upcoming bubble wore a
+// permanently true for anything scheduled, and every Upcoming card wore a
 // New pill on every visit, forever. Something scheduled isn't news until it
 // happens.
 //

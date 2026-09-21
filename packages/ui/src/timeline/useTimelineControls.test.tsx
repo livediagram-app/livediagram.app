@@ -63,6 +63,30 @@ describe('useTimelineControls', () => {
     expect(onActorFilterChange).toHaveBeenLastCalledWith('all');
   });
 
+  describe('visibleEvents', () => {
+    it('hides the edit that shares a day with its create (spec/138 §2.1a)', () => {
+      const noon = new Date(2026, 8, 21, 12, 0).getTime();
+      const created = event({
+        id: 'c',
+        eventType: 'diagram_created',
+        title: 'Diagram Created',
+        occurredAt: noon,
+        snapshot: { diagramId: 'd1', diagramName: 'Payments' },
+      } as Partial<TimelineEvent>);
+      const edited = event({
+        id: 'e',
+        eventType: 'diagram_edited',
+        title: 'Diagram Updated',
+        occurredAt: noon + 3 * 60 * 60 * 1000,
+        snapshot: { diagramId: 'd1', diagramName: 'Payments' },
+      } as Partial<TimelineEvent>);
+      const { result } = renderHook(() => useTimelineControls([edited, created], { viewerId: ME }));
+      expect(result.current.visibleEvents.map((e) => e.id)).toEqual(['c']);
+      // The calendar's marked days come from the same list, so they agree.
+      expect(result.current.eventDates.size).toBe(1);
+    });
+  });
+
   describe('pickDate', () => {
     // The mini-calendar sits in the filter popover, which is reachable from the
     // header in every mode — but the scroll target and the pulse it drove are
