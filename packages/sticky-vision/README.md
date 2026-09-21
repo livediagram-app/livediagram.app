@@ -34,19 +34,38 @@ package never sees text; it only finds paper.
    needs much less. Actor and aggregate are two degrees apart in hue, so
    saturation is what separates them.
 3. **Close the mask** by about a pen stroke (dilate, then erode), per class, so
-   a note shattered by handwriting is one blob again.
+   a note shattered by handwriting is one blob again. A pen stroke relative to
+   the NOTE, measured from the raw blobs before anything is fused: sized off
+   the frame instead, the close bridges the few pixels between notes on a
+   close-up photograph and welds whole rows into one blob.
 4. **Connected components** over the closed mask: the pixels that touch and
    say the same thing.
 5. **Fit boxes**: drop specks, merge what is still fragmented, and split a blob
-   longer than any real silhouette into the number of notes its length implies.
-   The merge is REVERSIBLE (a box that fails the shape tests hands back the
-   pieces it was assembled from), cuts are snapped to the emptiest line in the
-   mask and each piece tightened onto its own paper, and a block too square for
-   any cutting rule is eroded until the notes come apart at their seams. On a
-   real wall the notes are lapped edge to edge, and without those three a whole
-   row of them was thrown away as one over-sized blob.
-6. **Rows**: cluster the centre-y values, because a wall sags; order by
+   bigger than any real silhouette into the notes its size implies, ONE AXIS AT
+   A TIME (a square block of four notes is not long against itself, and stayed
+   one note until the cuts were made axis by axis). The merge is REVERSIBLE (a
+   box that fails the shape tests hands back the pieces it was assembled from),
+   cuts are snapped to the emptiest line in the mask and each piece tightened
+   onto its own paper, and a block too square for any cutting rule is eroded
+   until the notes come apart at their seams. On a real wall the notes are
+   lapped edge to edge, and without those a whole row of them was thrown away
+   as one over-sized blob — or kept as one note with four people's words on it.
+6. **Does it stand out?** A note is different from the wall it is stuck to:
+   more saturated, much brighter relative to that wall, or a different hue —
+   any one of the three, compared against the dullest quarter of the ring
+   around the box, because on a dense wall the rest of the ring is other notes.
+   Nothing darker than that wall is paper. Tape, cardboard, a shadow in a paper
+   seam and the strip of ceiling above the paper are all the colour of their
+   surroundings, and this is what refuses them.
+7. **Rows**: cluster the centre-y values, because a wall sags; order by
    centre-x within each row.
+
+## How well it does it
+
+Scored against hand-labelled notes on three photographs of a real workshop
+wall (47, 41 and 56 notes; the labels live outside this repo, like the photos):
+precision 76 / 88 / 91%, recall 83 / 85 / 89%. Counting detections is not a
+score — a detector that boxes the masking tape too finds more of them.
 
 ## What it cannot do
 
@@ -57,9 +76,10 @@ package never sees text; it only finds paper.
   clipped channel.
 - **A sticky more than about 60% covered.** What is left reads as a fragment,
   or is dropped as a speck.
-- **A photograph that is half room.** A window, furniture and a lit doorway in
-  frame give the grid nothing wall-like to measure in those cells, and boxes
-  land on things that are not notes. Fill the frame with the wall.
+- **A photograph that is half room.** A window, furniture, or cardboard stacked
+  in front of the paper: the grid has nothing wall-like to measure in those
+  cells, and boxes land on things that are not notes. Fill the frame with the
+  wall.
 - **A shade CLIFF**, as opposed to a gradient: the floors are blended between
   cell centres, so a shadow edge sharper than about an eighth of the frame is
   averaged across that blend.

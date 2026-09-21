@@ -1002,13 +1002,68 @@ Decisions from the operator:
 
   Measured against the six photographs of one real workshop wall: recall on the
   densest (56 notes, counted by eye) went from 39% to about 75%, and detections
-  across the set from 191 to 457. The honest limits are unchanged in kind: pale
-  paper at the wall's own hue is still wall to the classifier, a shade CLIFF
-  sharper than an eighth of the frame is averaged across the blend, and a photo
-  that is half room — a window, furniture, a lit doorway — still puts boxes on
+  across the set from 191 to 457.
+
+- **The score is PRECISION AND RECALL, per photo.** "How many did we find" is
+  not a measure: a detector that boxes the masking tape as well finds more. So
+  three of the photographs are hand-labelled note by note (47, 41 and 56
+  notes), and the sweep matches its boxes against those labels — centres within
+  half a note, areas within a factor of two — and prints precision, recall, F1
+  and the list of what it missed and what it invented, for each photograph
+  separately. A change that lifts one wall and wrecks another is not a fix, and
+  only a per-photo table shows that. The labels never enter the repository, for
+  the same reason the photographs never do.
+
+- **ONE BOX PER NOTE.** Two failures, one cause each, and both were measured
+  before either was touched:
+
+  - **The note size is measured before anything is fused.** The close that
+    repairs a note shattered by handwriting was sized off the FRAME, and on a
+    close-up photograph — where the notes are large and the gaps between them
+    are a few pixels — it bridged those gaps and welded whole rows into one
+    blob. The median note was then taken from the welds, at a fraction of a
+    real note, and every size-dependent rule downstream was working from a
+    number that was wrong by a factor of two. The note is now measured from the
+    RAW blobs, before any close, and the close is sized from the note.
+  - **A cluster is cut one axis at a time.** The old rule asked an axis to be
+    long against the note AND against the box's other side, which a square 2×2
+    block of four notes never is — so four notes stayed one note, with four
+    people's words concatenated. Cutting one axis at a time, tightening the
+    pieces onto the mask between cuts, splits the block the way a person reads
+    it. The seam between two notes is PREFERRED, not required: requiring a
+    visible gap cost fifteen points of recall, because lapped paper has no gap.
+
+- **A note stands out from the wall it is stuck to.** Colour floors alone
+  cannot say what is not a note, because tape, cardboard, a shadow in a paper
+  seam and the strip of ceiling above the paper all pass them somewhere. So
+  every candidate is asked of the PICTURE: is the inside of this box different
+  from the ring around it, where the wall is the dullest quarter of that ring
+  (on a dense wall a note's neighbours are other notes)? More saturated, much
+  brighter relative to the wall, or a different hue — any one is enough,
+  because the eight papers differ from a wall in different ways. Brightness is
+  relative, never absolute, or half the light loses half the notes. And one
+  veto: paper is BRIGHT, so nothing darker than the darkest quarter of its own
+  wall is a note.
+
+  Measured on the three labelled photographs, the gates and the splitting
+  together: F1 53 → 80, 9 → 86 and 42 → 90.
+
+  The honest limits are unchanged in kind: pale paper at the wall's own hue is
+  still wall to the classifier, a shade CLIFF sharper than an eighth of the
+  frame is averaged across the blend, and a photo that is half room — a window,
+  furniture, cardboard stacked in front of the paper — still puts boxes on
   things that are not notes. Fill the frame with the wall.
 
-The plan lives in `plans/event-storming-photo-review.md`.
+- **A wall is read in batches, and one lost batch is one lost batch.** A
+  hundred notes is seventeen requests to the reader, and over seventeen
+  requests something eventually answers 429 or hands back a truncated line.
+  The words that DID arrive stay on their notes; the crops in the failed batch
+  stay blank and are counted ("6 notes could not be read"). Only a run where
+  every batch failed is a failure.
+
+The plans live in `plans/event-storming-photo-review.md`,
+`plans/event-storming-photo-surface-and-shade.md` and
+`plans/event-storming-photo-precision.md`.
 
 ## Domain learnings (session log)
 
