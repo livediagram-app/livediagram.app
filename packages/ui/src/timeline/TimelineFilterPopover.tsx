@@ -13,7 +13,7 @@ import { createPortal } from 'react-dom';
 import { POPOVER_VIEWPORT_MARGIN, clampIntoRange } from '../popover';
 import { buildMonthCells, formatMonth, shiftMonth } from './monthCells';
 import { CATEGORY_LABELS, type TimelineCategory } from './eventCategory';
-import { ModeIcon, TIMELINE_MODES } from './ModeIcon';
+import { MODE_LABELS, ModeIcon, TIMELINE_MODES } from './ModeIcon';
 import type { TimelineActorFilter } from './useTimelineControls';
 import type { TimelineMode } from './types';
 
@@ -129,14 +129,14 @@ export function TimelineFilterPopover({
               type="button"
               aria-pressed={mode === value}
               onClick={() => onModeChange(value)}
-              className={`flex flex-1 items-center justify-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium capitalize transition ${
+              className={`flex flex-1 items-center justify-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium transition ${
                 mode === value
                   ? 'bg-brand-600 text-white'
                   : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white'
               }`}
             >
               <ModeIcon mode={value} />
-              {value}
+              {MODE_LABELS[value]}
             </button>
           ))}
         </div>

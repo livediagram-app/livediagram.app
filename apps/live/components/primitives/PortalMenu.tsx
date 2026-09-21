@@ -187,10 +187,16 @@ export function MenuActionRow({
   onClick,
   danger = false,
   disabled = false,
+  plain = false,
 }: {
   label: string;
   icon: ReactNode;
   onClick: () => void;
+  // Sentence-case, 13px, full-contrast: the reading size for a menu
+  // that IS the list (the diagram actions menu), where the uppercase
+  // label rhythm of a category header is too quiet to scan eight verbs
+  // by. A danger row is red at rest here, not only on hover.
+  plain?: boolean;
   // Destructive verbs (Remove) tint on hover so the row reads before it is
   // clicked, matching the trash affordances elsewhere.
   danger?: boolean;
@@ -211,6 +217,28 @@ export function MenuActionRow({
       </span>
     );
   }
+  if (plain) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        className={`flex w-full cursor-pointer items-center gap-2.5 px-3 py-2 text-[13px] transition ${
+          danger
+            ? 'text-rose-600 hover:bg-rose-50 dark:text-rose-300 dark:hover:bg-rose-500/15'
+            : 'text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800'
+        }`}
+      >
+        <span
+          className={`flex w-5 shrink-0 items-center justify-center [&_svg]:h-4 [&_svg]:w-4 ${
+            danger ? 'text-rose-500 dark:text-rose-300' : 'text-slate-400 dark:text-slate-400'
+          }`}
+        >
+          {icon}
+        </span>
+        {label}
+      </button>
+    );
+  }
   return (
     <button
       type="button"
@@ -224,6 +252,21 @@ export function MenuActionRow({
       <span className="flex w-4 shrink-0 items-center justify-center">{icon}</span>
       {label}
     </button>
+  );
+}
+
+// A quiet first row naming what the menu is FOR: the diagram's name and
+// its visibility badge. A ⋯ menu opens away from its trigger (below a
+// card, beside a row), and on a grid of near-identical cards the reader
+// needs the menu itself to say which one they opened.
+export function MenuHeader({ title, aside }: { title: string; aside?: ReactNode }) {
+  return (
+    <div className="mb-1 flex items-center gap-2 border-b border-slate-100 px-3 pb-2 pt-1.5 dark:border-slate-800">
+      <span className="min-w-0 flex-1 truncate text-xs font-semibold text-slate-700 dark:text-slate-200">
+        {title}
+      </span>
+      {aside ? <span className="shrink-0">{aside}</span> : null}
+    </div>
   );
 }
 
@@ -386,5 +429,7 @@ export function MenuTile({
 // Grid wrapper for MenuTile rows (2 / 3 / 4 equal columns).
 export function MenuTileGrid({ cols = 3, children }: { cols?: 2 | 3 | 4; children: ReactNode }) {
   const colClass = cols === 2 ? 'grid-cols-2' : cols === 4 ? 'grid-cols-4' : 'grid-cols-3';
-  return <div className={`grid gap-1 px-2 py-1.5 ${colClass}`}>{children}</div>;
+  // `auto-rows-fr` so a row with one wrapped label doesn't leave its
+  // neighbours shorter: every tile in a row is the row's height.
+  return <div className={`grid auto-rows-fr gap-1 px-2 py-1.5 ${colClass}`}>{children}</div>;
 }

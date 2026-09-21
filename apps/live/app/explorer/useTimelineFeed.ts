@@ -209,12 +209,11 @@ export function useTimelineFeed(
     track('Timeline', 'Opened', ARRIVED_ON_TIMELINE ? 'Landing' : 'Nav');
   }, [enabled]);
 
-  // Calendar and week views can be paged to a period the loaded pages
-  // don't reach — a reader clicking back four months would otherwise see
-  // an empty grid and conclude nothing happened. So the visible period
-  // is fetched on demand and MERGED into the same list, which means the
-  // list view picks the events up too rather than the two views holding
-  // different data.
+  // The calendar can be paged to a month the loaded pages don't reach —
+  // a reader clicking back four months would otherwise see an empty grid
+  // and conclude nothing happened. So the visible month is fetched on
+  // demand and MERGED into the same list, which means the list view picks
+  // the events up too rather than the two views holding different data.
   //
   // Ranges already fetched are remembered, so paging back and forth over
   // the same months doesn't re-request them. Scoped to one feed's lifetime:
@@ -222,12 +221,11 @@ export function useTimelineFeed(
   // changes.
   useEffect(() => {
     if (!enabled || !ownerId) return;
-    const mode = controls.mode;
-    if (mode !== 'calendar' && mode !== 'week') return;
-    const period = mode === 'week' ? controls.weekKey : controls.monthKey;
+    if (controls.mode !== 'calendar') return;
+    const period = controls.monthKey;
     if (fetchedRanges.current.has(period)) return;
     fetchedRanges.current.add(period);
-    const { from, to } = periodBounds(mode, period);
+    const { from, to } = monthBounds(period);
     void apiListTimeline(ownerId, { from, to, limit: TIMELINE_PAGE_MAX, scope }).then((page) => {
       if (!page) {
         // Forget the range so paging away and back retries it. Leaving
@@ -242,7 +240,7 @@ export function useTimelineFeed(
       // input to place a collapsed stack at its most recent member.
       setEvents((prev) => mergeEvents(prev, page.events));
     });
-  }, [enabled, ownerId, controls.mode, controls.monthKey, controls.weekKey, scope, scopeKey]);
+  }, [enabled, ownerId, controls.mode, controls.monthKey, scope, scopeKey]);
 
   const loadMore = useCallback(() => {
     if (!cursor || loadingMore || !ownerId) return;
@@ -289,16 +287,10 @@ export function useTimelineFeed(
   };
 }
 
-// Epoch-ms bounds of the visible calendar period, in LOCAL time to match
+// Epoch-ms bounds of the visible calendar month, in LOCAL time to match
 // how the grid groups days — a UTC bound would clip an event at either
-// edge into the neighbouring period for readers west of Greenwich.
-function periodBounds(mode: 'calendar' | 'week', period: string): { from: number; to: number } {
-  if (mode === 'week') {
-    const [y, m, d] = period.split('-').map(Number);
-    const start = new Date(y!, m! - 1, d!);
-    const end = new Date(y!, m! - 1, d! + 7);
-    return { from: start.getTime(), to: end.getTime() - 1 };
-  }
+// edge into the neighbouring month for readers west of Greenwich.
+function monthBounds(period: string): { from: number; to: number } {
   const [y, m] = period.split('-').map(Number);
   return { from: new Date(y!, m! - 1, 1).getTime(), to: new Date(y!, m!, 1).getTime() - 1 };
 }

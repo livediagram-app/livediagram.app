@@ -103,7 +103,7 @@ export const TONE_LABELS: Record<TimelineTone, string> = {
 
 // Fallbacks used when the host app hasn't defined the CSS variables —
 // the components stay renderable standalone. `bold` paints the icon and
-// the calendar dot; `soft` is the bubble's whole background, so it has
+// the calendar dot; `soft` is a glyph box's whole background, so it has
 // to sit quietly under body text rather than compete with it.
 const FALLBACK: Record<TimelineTone, { bold: string; soft: string }> = {
   danger: { bold: '#dc2626', soft: 'rgba(220, 38, 38, 0.10)' },

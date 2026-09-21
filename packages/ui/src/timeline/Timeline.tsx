@@ -2,7 +2,7 @@
 
 // The feed (spec/138 §2).
 //
-// Renders the day rail, the groups, and the bubbles. It deliberately
+// Renders the day rail, the groups, and the cards. It deliberately
 // has NO header of its own: the controls live in <TimelineControls>, so
 // the host can put them in its own page-header row rather than stacking
 // a second toolbar underneath one (spec/138 §2.3). Both halves share
@@ -13,10 +13,10 @@
 // events and paging belong to the consumer, because only it knows how
 // to fetch.
 
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { TimelineGroup } from './TimelineGroup';
-import { TimelineBubble } from './TimelineBubble';
-import { StackedBubble } from './StackedBubble';
+import { TimelineCard } from './TimelineCard';
+import { StackedCard } from './StackedCard';
 import { ExpandedStack } from './ExpandedStack';
 import { isNewEvent } from './newness';
 import { TimelineCalendarView } from './TimelineCalendarView';
@@ -25,17 +25,18 @@ import { buildStacks } from './stacking';
 import { pickRenderer } from './renderers';
 import { useTimelineGrouping } from './useTimelineGrouping';
 import type { TimelineControls } from './useTimelineControls';
-import type { TimelineRendererRegistry } from './types';
+import type { TimelineCardSlotsFor, TimelineRendererRegistry } from './types';
+import { CARD_GRID } from '../cardGrid';
 
-// Per-bubble delay in the arrival cascade — large enough that bubbles
+// Per-card delay in the arrival cascade — large enough that cards
 // read as arriving in sequence rather than all at once.
 const STAGGER_MS = 35;
 
 // …and a ceiling on the total, because the cascade is only worth
-// watching for the rows a reader can actually see. Ungapped, a 50-event
-// page would start its last bubble 1.7s in, so the bottom of the feed
+// watching for the cards a reader can actually see. Ungapped, a 50-event
+// page would start its last card 1.7s in, so the bottom of the feed
 // sits blank long after the top has settled. Past the cap the remaining
-// bubbles arrive together, which is invisible: they're below the fold.
+// cards arrive together, which is invisible: they're below the fold.
 const MAX_STAGGER_MS = 700;
 
 export type TimelineProps = {
@@ -44,6 +45,12 @@ export type TimelineProps = {
   /** Compared against each event's actorId so renderers can say "You". */
   viewerId: string | null;
   renderers?: TimelineRendererRegistry;
+  /**
+   * What the host adds to a card that a renderer can't: the ⋯ menu and
+   * an inline rename (spec/138 §2.8). Omitted on feeds that have no
+   * Explorer context to build them from.
+   */
+  cardSlots?: TimelineCardSlotsFor;
   /** True while the first page is still resolving. */
   loading?: boolean;
   /** True when the feed is genuinely empty, as opposed to filtered empty. */
@@ -73,6 +80,7 @@ export function Timeline({
   controls,
   viewerId,
   renderers = {},
+  cardSlots,
   loading,
   isEmpty,
   emptyState,
@@ -190,16 +198,15 @@ export function Timeline({
     );
   }
 
-  if (controls.mode === 'calendar' || controls.mode === 'week') {
+  if (controls.mode === 'calendar') {
     return (
       <TimelineCalendarView
         events={visibleEvents}
         monthKey={controls.monthKey}
         onMonthChange={controls.setMonthKey}
-        weekKey={controls.mode === 'week' ? controls.weekKey : undefined}
-        onWeekChange={controls.mode === 'week' ? controls.setWeekKey : undefined}
         registry={renderers}
         ctx={ctx}
+        cardSlots={cardSlots}
       />
     );
   }
@@ -227,41 +234,46 @@ export function Timeline({
                   className="tl-fan-out"
                   style={{ animationDelay: `${staggerFor(fanIndex.get(event.id))}ms` }}
                 >
-                  <TimelineBubble
+                  <TimelineCard
                     event={event}
                     isNew={isNew(event.occurredAt)}
                     focused={event.id === focusEventId}
                     rendered={pickRenderer(event, renderers)(event, ctx)}
+                    slots={cardSlots?.(event)}
                   />
                 </div>
               );
             }
-            if (expanded.has(stack.key) || forcedOpen.has(stack.key)) {
-              return (
-                <ExpandedStack
-                  key={stack.key}
+            const open = expanded.has(stack.key) || forcedOpen.has(stack.key);
+            // One <StackedCard> element in both states, so toggling
+            // flips its props rather than remounting it: a remount would
+            // replay its arrival animation every time the run closes.
+            // The members mount after it only while the run is open.
+            return (
+              <Fragment key={stack.key}>
+                <StackedCard
                   stack={stack}
                   registry={renderers}
                   ctx={ctx}
-                  isNew={isNew}
-                  focusEventId={focusEventId}
-                  onCollapse={() => toggleStack(stack.key)}
+                  expanded={open}
+                  isNew={stack.events.some((e) => isNew(e.occurredAt))}
+                  stagger={staggerFor(fanIndex.get(stack.events[0]!.id))}
+                  onToggle={() => {
+                    toggleStack(stack.key);
+                    if (!open) onStackExpand?.();
+                  }}
                 />
-              );
-            }
-            return (
-              <StackedBubble
-                key={stack.key}
-                stack={stack}
-                registry={renderers}
-                ctx={ctx}
-                isNew={stack.events.some((e) => isNew(e.occurredAt))}
-                stagger={staggerFor(fanIndex.get(stack.events[0]!.id))}
-                onExpand={() => {
-                  toggleStack(stack.key);
-                  onStackExpand?.();
-                }}
-              />
+                {open && (
+                  <ExpandedStack
+                    stack={stack}
+                    registry={renderers}
+                    ctx={ctx}
+                    cardSlots={cardSlots}
+                    isNew={isNew}
+                    focusEventId={focusEventId}
+                  />
+                )}
+              </Fragment>
             );
           })}
         </TimelineGroup>
@@ -290,13 +302,16 @@ export function Timeline({
 function SkeletonFeed() {
   return (
     <div className="space-y-6" aria-hidden>
-      {[0, 1, 2].map((row) => (
+      {[0, 1].map((row) => (
         <div key={row} className="flex gap-4">
           <div className="mt-3 h-2.5 w-2.5 flex-shrink-0 rounded-full bg-slate-200 dark:bg-slate-700" />
           <div className="flex-1 space-y-2">
             <div className="h-3 w-24 rounded bg-slate-200 dark:bg-slate-700" />
-            <div className="h-14 rounded-lg bg-slate-100 dark:bg-slate-800" />
-            <div className="h-14 rounded-lg bg-slate-100 dark:bg-slate-800" />
+            <div className={CARD_GRID}>
+              {[0, 1, 2].map((card) => (
+                <div key={card} className="h-64 rounded-xl bg-slate-100 dark:bg-slate-800" />
+              ))}
+            </div>
           </div>
         </div>
       ))}

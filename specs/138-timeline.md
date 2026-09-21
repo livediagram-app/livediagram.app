@@ -2,8 +2,8 @@
 
 The Explorer's landing page becomes a chronological feed of everything
 that has happened across the user's diagrams, teams, and account —
-grouped by day, stacked when a day gets busy, and switchable into a
-calendar month grid.
+grouped by day as a grid of cards, stacked when a day gets busy, and
+switchable into a calendar month grid.
 
 Modelled on the Timeline subsystem in the Manager Toolkit monorepo
 (`specs/dashboard/timeline/spec.md` + `packages/ui/src/timeline/*` there),
@@ -106,26 +106,31 @@ would multiply every comment by twelve.
 existing `ExplorerPane` dispatch.
 
 ```
-┌──────────────────────────────────────────────────────────────┐
-│ Timeline  [≡ List|▦ Calendar] [⧩ Filter] [? Help] [+ New diagram]│
-├──────────────────────────────────────────────────────────────┤
-│  ●  ┃  [Today]  Tue, 5 Aug   2026                            │
-│  │  ┃  ┌────┬─────────────────────────────────┬─────┐        │
-│  │  ┃  │ 🗑 │ Payments architecture deleted   │     │  (red) │
-│  │  ┃  └────┴─────────────────────────────────┴─────┘        │
-│  │  ┃  ┌────┬─────────────────────────────────┬─────┐        │
-│  │  ┃  │ 💬 │ Priya commented on Payments…    │ ▤   │ (green)│
-│  │  ┃  │    │ "Per-shard or global?"          │     │        │
-│  │  ┃  └────┴─────────────────────────────────┴─────┘        │
-│  │  ┃  ┌────┬───────────────────────────────────────┐──┐─┐   │
-│  │  ┃  │ ✎  │ Diagrams Renamed                      │  │ │   │
-│  │  ┃  │    │ 3 events · click to expand            │  │ │(amber)
-│  │  ┃  └────┴───────────────────────────────────────┘──┘─┘   │
-│  ●  ┃  Mon, 4 Aug                                            │
-│  │  ┃  ┌────┬───────────────────────────────────────┐        │
-│  │  ┃  │ 👥 │ You joined Platform Guild             │(amber) │
-│  │  ┃  └────┴───────────────────────────────────────┘        │
-└──────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────┐
+│ Timeline           [≡ Cards|▦ Calendar] [⧩ Filter] [? Help] [+ New]  │
+├──────────────────────────────────────────────────────────────────────┤
+│  ●  ┃  [Today]  Tue, 5 Aug   2026                                    │
+│  │  ┃  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐            │
+│  │  ┃  │              │ │              │ │   ╔═══╗      │            │
+│  │  ┃  │  (snapshot)  │ │  (snapshot)  │ │   ║ ✎ ║ ▒▒   │  (stack)   │
+│  │  ┃  │              │ │              │ │   ╚═══╝      │            │
+│  │  ┃  ├──────────────┤ ├──────────────┤ ├──────────────┤            │
+│  │  ┃  │ Payments   ⋯ │ │ Onboarding ⋯ │ │ Diagrams     │            │
+│  │  ┃  │ 🗑 Diagram    │ │ 💬 Comment    │ │ Renamed      │            │
+│  │  ┃  │   Deleted    │ │   Added      │ │ 3 events ·   │            │
+│  │  ┃  │ 09:12        │ │ 10:40 · Priya│ │ click to open│            │
+│  │  ┃  └──────────────┘ └──────────────┘ └──────────────┘            │
+│  ●  ┃  Mon, 4 Aug                                                    │
+│  │  ┃  ┌──────────────┐                                              │
+│  │  ┃  │    ╔═══╗     │                                              │
+│  │  ┃  │    ║ 👥 ║     │  (no snapshot: the glyph on the tone tint)   │
+│  │  ┃  │    ╚═══╝     │                                              │
+│  │  ┃  ├──────────────┤                                              │
+│  │  ┃  │ Platform Guild                                              │
+│  │  ┃  │ 👥 Joined a Team                                            │
+│  │  ┃  │ 16:03                                                       │
+│  │  ┃  └──────────────┘                                              │
+└──────────────────────────────────────────────────────────────────────┘
 ```
 
 **Day rail.** A dot and a connecting line down the left, one group per
@@ -134,27 +139,52 @@ ring and its label carries a **Today** pill. Days in the future (a share
 link expiring, a token expiring) sit above Today with a violet-tinted
 dot and rail.
 
-**Bubble.** Four regions, and the layout is strict:
+**Cards, in a grid.** Each day's events render as **cards laid out in
+the same responsive grid the Explorer's Recent card view uses** (one
+column on a phone, two from `sm:`, three from `lg:`), not as one
+full-width row per event. The row layout this replaced put a 44px
+thumbnail at the far right of a line of text, which made a diagram
+event unrecognisable at a glance and a day of six events a wall of
+near-identical lines. A card leads with the picture, so a day reads the
+way Recent does: you recognise the diagram before you read a word.
 
-1. **Icon strip**, 44px, right-bordered, holding the event's glyph.
-2. **Content** — headline, optional description, optional meta line.
-3. **Preview** — for events that have one (a diagram's cached SVG
-   snapshot, spec/67). Fixed height and vertically centred, so it sits
-   _inside_ the height the content already sets: a preview that grew
-   the row would make every diagram bubble taller than every other
-   kind. Reuses the Explorer's `DiagramThumbnail`, inheriting its lazy
-   intersection-observer fetch, so a feed of fifty rows doesn't trigger
-   fifty server renders for diagrams nobody scrolls to. Suppressed on a
-   collapsed stack — one diagram's thumbnail can't speak for a run
-   spanning five.
-4. **Action strip** — contextual actions, hover-revealed. Usually
-   empty, because most bubbles make the whole row clickable instead. It
-   exists so a later star / dismiss has exactly one place to land,
-   rather than a button floating in the content row.
+A card has four regions, top to bottom:
+
+1. **Preview.** A fixed-height letterbox (the same `h-48` as a Recent
+   card, so the two grids look like one product). A diagram event shows
+   the diagram's cached SVG snapshot (spec/67), reusing the Explorer's
+   `DiagramThumbnail` and inheriting its lazy intersection-observer
+   fetch, so a feed of fifty cards doesn't trigger fifty server renders
+   for diagrams nobody scrolls to. An event with **no picture** (a team,
+   a folder, a token, a theme, a comment on a deleted diagram) fills the
+   same box with the event's **glyph, large, on the event's tone tint**.
+   The box is the same height either way, so a row of cards stays
+   aligned whatever mix of kinds it holds; a shorter card for pictureless
+   events was considered and rejected for exactly that reason.
+2. **Title row.** The **subject** of the event (the diagram's name, the
+   team's name, the token's name) as the card title, and the **⋯ menu
+   trigger** at the right for cards that have one (§2.8). The title is
+   the thing the reader scans for, and it sits in the same place on
+   every card.
+3. **Reason line.** The event's glyph in its tone colour, then the
+   **reason the card is on the timeline** in Title Case: "Diagram
+   Created", "Diagram Updated", "Comment Added", "Member Joined". This
+   is the stored event `title` verbatim (§4), which is Title Case by
+   contract, so a card never says "created" while the stack beside it
+   says "Diagrams Created". Then the time, and any quiet meta the
+   renderer adds ("by Priya", "Now: New name", the commenter's words).
+4. **Description**, when the renderer wants one (a comment's text).
+
+**A card is one big click target.** Clicking anywhere on it that isn't
+the menu opens whatever the event is about: the diagram, the team, your
+invites, your tokens. Cards that lead nowhere are dimmed to 60%, and the
+common case is a tombstone: the emit for a deleted diagram deliberately
+omits its id, so the renderer has nothing to link and the dimming is
+structural rather than a rule someone has to remember.
 
 ### Colour means what happened, not where
 
-The bubble's tint keys on the **event type**, not the source type.
+The card's tint keys on the **event type**, not the source type.
 A reader scanning a busy day asks "is any of this alarming?" long
 before they ask "was that a diagram or a team", and only the first
 question has a useful colour answer. Three tones, deliberately few —
@@ -168,7 +198,7 @@ a palette with six meanings is a legend the reader has to learn:
 
 Anything unmapped falls to a neutral slate rather than guessing, so an
 event type from a newer worker reads as plain rather than as a
-deletion. Every bubble of the same tone gets the _same_ tint — no
+deletion. Every card of the same tone gets the _same_ tint — no
 alternating stripe, which reads as "different kinds" and is the
 opposite of what the colour is doing. The rules live in
 `packages/ui/src/timeline/eventTone.ts`; the palette is a product
@@ -192,40 +222,51 @@ tokens, where the copy had silently drifted. The tests kept the half a
 compiler can't check: that no known type was classified `neutral` or
 `other` by hand, which is the other way to leave an event unclassified.
 
-**A bubble that can't be clicked is dimmed.** A row that looks
+**A card that can't be clicked is dimmed.** A row that looks
 identical to a clickable one but ignores the click reads as broken;
 60% opacity answers the question before the pointer gets there. The
 common case is a tombstone — the emit deliberately omits the deleted
 diagram's id, so the renderer has nothing to link and the dimming is
 structural rather than a rule someone has to remember.
 
-**Copy rules.** The headline names the **subject first**, then what
-happened to it:
+**Copy rules.** A card separates the **subject** from the **reason**,
+and each has one home:
 
-- "Payments architecture deleted", not "Diagram Deleted" with the name
-  on a second line. A feed is read by scanning the left edge, and the
-  subject is what the reader scans for; the category is already carried
-  by the icon and the colour. The subject is bolded so that edge stays
-  legible at a glance.
-- Where a person is the subject, they lead: "Priya commented on
-  Payments architecture", "Sam joined Platform Guild".
-- The **stored** `title` stays a generic Title Case category
-  ("Comment Added"). That is what a collapsed stack wears and what a
-  future search would index, so the two readings coexist: individual
-  rows are specific, collapsed runs stay honest (§2.1).
-- Supporting detail goes in the description or the quiet meta line —
-  a rename's new name, an edit's author, a comment's text.
+- The **title is the subject**: the diagram, the team, the token, the
+  folder. Never "Diagram Deleted" as a title with the name underneath,
+  and never a sentence. The subject is what the reader scans for, and
+  the picture above it already says what kind of thing it is.
+- The **reason line is the stored `title`**, which is a generic **Title
+  Case** category by contract ("Comment Added", "Member Joined", "Taken
+  Offline"). Every card and every collapsed stack draws its wording from
+  the same field, so the feed can't drift into a mix of "created" and
+  "Created" the way the sentence-per-row layout had. A renderer may
+  override the reason only with another Title Case phrase.
+- **People go in the meta**, not the title: "by Priya", "Priya joined",
+  "Now: Payments v2". The reader chose to look at a diagram's card; who
+  did it is the second thing they want, not the first.
+- A comment's words go in the **description** (§4.3), the one place a
+  card carries free text.
+- "You" wins over a name whenever the actor is the reader, decided at
+  render time against `viewerId` so one stored row serves the whole
+  audience.
 
 ### 2.1 Stacking
 
 When a day picks up volume the feed must not become a wall. Within one
 day-group, events sharing a `(sourceType, eventType)` bucket collapse
-into a single bubble reading **"N events - click to expand"**, rendered
-with one or two faux-card layers stepping out to the right so the pile
-reads as depth. Clicking expands the run inline.
+into a single **stack card** reading **"N events · click to expand"**,
+rendered with one or two faux-card layers stepping out behind it so the
+pile reads as depth. It takes one cell of the day's grid, like any other
+card; its preview box carries the kind's glyph and the count rather than
+one member's thumbnail, because one diagram's snapshot can't speak for a
+run spanning five. Clicking expands the run **in place**: the stack card
+stays in its cell as the head of the run, reading **"N events · click
+to collapse"** with its layers gone and a ring on it, and the member
+cards take the cells after it.
 
 - Grouping is **by bucket, not by adjacency**: four team-member events
-  split by an unrelated bubble still collapse into one stack of four.
+  split by an unrelated card still collapse into one stack of four.
   The user reads a day by _kind of activity_, not by chronological run.
 - The stack lands at the position of its **most recent** member, since
   entries arrive newest-first.
@@ -236,40 +277,76 @@ reads as depth. Clicking expands the run inline.
 - **Never stacked**: `comment_added` on a thread you are in, and any
   event whose description carries content that only makes sense
   individually. A collapsed comment hides the thing you wanted to read.
-- A stack of one is just a bubble; the faux layers only render at 2+,
+- A stack of one is just a card; the faux layers only render at 2+,
   and the second layer only at 3+.
-- **Expanding and collapsing are the same control.** The collapsed
-  bubble is its own click target, so opening a run is obvious; closing
-  it is not, because once the run is open nothing is left saying it was
-  ever a stack. So an expanded run carries a **"Collapse N events"**
-  footer, indented to the bubbles' content column and worded to mirror
-  the "N events · click to expand" the reader just clicked. Without it,
-  a reader who opened a day of twelve renames to check one of them has
-  no way back short of navigating away.
+- **Expanding and collapsing are the same control, in the same
+  place.** The collapsed card is the click target that opened the run,
+  so that card is what closes it: it stays put at the head of the run
+  and its reason line flips to "click to collapse". An earlier version
+  removed the stack card on expand and put a "Collapse N events" footer
+  under the run instead; a footer is a second control the reader has to
+  find, and once the run is open nothing else said it had ever been a
+  stack. Keeping the head card keeps the run legible as a run.
 
 The rules live in `packages/ui/src/timeline/stacking.ts` as pure
 functions over the entry list, tested directly.
 
+### 2.1a Created and updated on the same day
+
+A diagram made this morning and worked on this afternoon produces two
+events: `diagram_created` at 07:22 and the coalesced `diagram_edited`
+whose `occurred_at` walks forward through the day (§4.2). Shown side by
+side under Today they are the same card twice, "Created" and "Updated"
+with the same thumbnail, and the second one tells the reader nothing the
+first didn't: of course a new diagram was edited on the day it was made.
+
+So **the feed hides a diagram's `diagram_edited` event on any local day
+that also holds its `diagram_created` event.** The rule:
+
+- Keyed on the diagram (`snapshot.diagramId`) and the reader's local
+  `dateKey`, the same boundary the day groups use, so the two cards it
+  is collapsing are exactly the two that would have sat together.
+- Applied **client-side, in `useTimelineControls`, to `visibleEvents`**,
+  so the list, the calendar's dots, and the mini-calendar's marked days
+  all agree. The stored rows are untouched: the edit event is still
+  real, still counts for the sidebar's unread badge if a teammate made
+  it, and still reaches a per-diagram History feed on a later day. Only
+  the reading of "this day" is de-duplicated.
+- The created card keeps its own time. It doesn't borrow the edit's
+  later timestamp: the card says when the diagram was made, and "then
+  edited until 16:40" is the kind of detail the sentence-per-row layout
+  tried to carry and nobody read.
+- Only the create/edit pair. A rename, a share, or a comment on the day
+  of creation is new information and stays.
+
+Pure, in `packages/ui/src/timeline/sameDayCreate.ts`, tested directly.
+
 ### 2.2 Calendar mode
 
-A segmented control in the header switches **List** / **Week** /
-**Calendar**, each wearing its own glyph so the trio reads without
-parsing three labels (and collapsing to icons below `sm:`, where three
-labels plus Filter and Help would wrap the header row).
+A segmented control in the header switches **Cards** / **Calendar**,
+each wearing its own glyph so the pair reads without parsing the labels.
+The first mode is `list` in code and in the `Changed` telemetry token
+(it names the data shape, and the token predates the cards), but the
+button says **Cards**, because that is what the reader is looking at.
 
-**Week** is the same grid over seven days, with taller cells.
+There is no Week mode. There was one, the same grid over seven days with
+taller cells, and it went in the card redesign: it showed nothing the
+month grid's dots didn't, at a page-per-week cost the month grid doesn't
+charge, and a third mode is a third thing to explain on a header that
+also carries Filter, Help and New diagram. The month grid's day popover
+already answers "what happened on Wednesday".
 
 **Calendar** renders a month grid. Each day cell carries one
 coloured dot **per tone** present that day, with a count above one —
 so a month view answers "when did something get deleted?" at a glance,
 which "diagram vs team" would not. Dots sit in a fixed severity order
 (danger, structural, create) so the eye can rely on position. Clicking
-one opens a popover listing that day's events of that tone as full
-timeline bubbles — the same renderers, so there is one bubble
+one opens a popover listing that day's events of that tone as the
+same cards the list uses — the same renderers, so there is one card
 implementation, not two.
 
-- Navigation chevrons **page one period at a time**, in both week and
-  month mode, and are never disabled. A step is small enough that
+- Navigation chevrons **page one month at a time** and are never
+  disabled. A step is small enough that
   skipping empty periods would hide the shape of a quiet stretch, which
   is often the thing being looked at, and whichever period you land on is
   fetched on demand.
@@ -282,10 +359,9 @@ implementation, not two.
   saw both chevrons greyed out while the server held years more. Worse,
   paging is what triggers the period fetch, so the control that would
   have loaded those months was disabled for not having loaded them. The
-  cost of the honest version is a click per empty month, which is the
-  trade week mode had already made.
+  cost of the honest version is a click per empty month.
 
-- Mode is not persisted across navigation. Each mount opens on List:
+- Mode is not persisted across navigation. Each mount opens on Cards:
   someone who looked at the calendar once should not find the feed in
   calendar mode a week later wondering where their list went.
 
@@ -299,10 +375,10 @@ under a header that already has one reads as two unrelated toolbars.
 The two halves share one `useTimelineControls()` state, so a filter
 chip and the list it filters can never disagree.
 
-**On a phone the row is one button.** Below `sm:` the List / Week /
+**On a phone the row is one button.** Below `sm:` the Cards /
 Calendar switch leaves the header and moves to the top of the filter
 popover, under a **View** heading, above the filters it applies to.
-Collapsing its labels to icons bought room for a while, but three of
+Collapsing its labels to icons bought room for a while, but two of
 them beside Filter, Help and New diagram still crowded a phone header
 into a scrum of glyphs — and the mode is a thing you set occasionally,
 not a thing you need permanently on screen. One button that opens
@@ -338,7 +414,8 @@ the mode buttons in §2.2.
   for. It began as an "Others" button in the header — the wrong place,
   and a word that doesn't say others-what.
 - **Category chips** — Comments, Actions, New diagrams, Edits, Renames,
-  Deletions, Sharing, Teams, Filing, Account.
+  Deletions, Sharing, Teams, Organisation, Account. (The Organisation
+  chip's id stays `filing` in code and telemetry; only the label changed.)
 
   These key on **what happened**, not on the source type. Chips keyed on
   source type were the first attempt and were nearly useless: comments,
@@ -365,11 +442,11 @@ the mode buttons in §2.2.
   type from a newer worker is still filterable.
 
 - **Mini calendar** inside the popover: clicking a date takes the reader to
-  that day, and what that means follows the open mode. **List** scrolls the
+  that day, and what that means follows the open mode. **Cards** scrolls the
   day-group into view and pulses it with a fading box-shadow — box-shadow
   only, never a transform, because transforming the group promotes it to its
   own compositing layer and tearing that layer down at animation end makes
-  the bubbles visibly blink. **Calendar** moves the grid to that day's month;
+  the cards visibly blink. **Calendar** moves the grid to that day's month;
   **week** moves it to the week containing it.
 
   The mode split is not a nicety: the scroll target and the pulse are both
@@ -467,7 +544,7 @@ to track _last here_. `timeline_scope_state.last_seen_at` does:
   `occurred_at > last_seen_at` permanently true for them. One API token
   lapsing next week pinned the sidebar badge to "1" for seven days, two
   pinned it to "2", and no amount of reading the feed cleared it; every
-  Upcoming bubble wore a New pill on every visit for the same reason.
+  Upcoming card wore a New pill on every visit for the same reason.
   Something scheduled is not news until it happens, so it starts counting
   on the day it does. This is bounded by time rather than by switching to
   the row's arrival timestamp because a coalesced event (§3.2) advances
@@ -488,7 +565,7 @@ single "here" to have been last at.
 
 ### 2.6 Motion
 
-Bubbles fan in rather than appearing at once: each starts pulled to the
+Cards fan in rather than appearing at once: each starts pulled to the
 right with a small tilt and scale-down, then springs into place,
 staggered 35ms by position. The motion originates from the right
 because that is where a collapsed stack's faux-card layers sit, so it
@@ -498,22 +575,22 @@ motion, arriving from below, so folding a run reads as closing.
 Three details:
 
 - **No "have I animated this?" bookkeeping.** CSS keyframes fire on
-  mount only, so a bubble that re-renders keeps its end state. React
+  mount only, so a card that re-renders keeps its end state. React
   mounts a fresh node exactly when one is genuinely new.
 - **The stagger index is precomputed** into a map rather than
   incremented inside the JSX, so it is identical however many times
   React calls the render function and doesn't depend on child
   evaluation order. It is **capped at 700ms** total: ungapped, a
-  50-event page starts its last bubble 1.7s in and the bottom sits
+  50-event page starts its last card 1.7s in and the bottom sits
   blank long after the top has settled.
 - **Expansion staggers at 60ms and restarts from zero** for the run.
-  What just arrived is those bubbles; carrying the page's global offset
+  What just arrived is those cards; carrying the page's global offset
   would make a stack halfway down sit still before unfolding.
 
 Keyframes live in the shared Tailwind theme beside the empty-state ones,
 so any app rendering a Timeline gets the motion without a per-app paste.
 `prefers-reduced-motion` cancels all of it, pinning opacity to 1 —
-fill-mode `both` would otherwise strand bubbles invisible.
+fill-mode `both` would otherwise strand cards invisible.
 
 **The Explorer's own lists cascade too**, via a `lvd-cascade` class on
 the container rather than the Timeline's fan. Two differences, both
@@ -538,13 +615,56 @@ it decorates, and fast typing would feel laggy.
 `/explorer/timeline#event=<id>` scrolls to that event and rings it. The
 target may sit inside a collapsed stack, so those stacks are forced
 open — otherwise the link lands the reader on a generic "4 events"
-bubble with no idea which one they came for. That is **derived** from
+card with no idea which one they came for. That is **derived** from
 the data rather than pushed into the expanded set from an effect, so it
 costs no extra render; the reader can still collapse it afterwards.
 
 The hash is read once at module scope, like the landing-vs-nav
 telemetry: it describes how the page was _opened_, and a later in-app
 navigation should not resurrect an old target.
+
+### 2.8 The card menu
+
+A diagram card carries the **same ⋯ menu as a Recent card**, and it is
+the same component: `DiagramActionsMenu` from the Explorer, anchored to
+the same `EllipsisTriggerButton`, opening on the trigger or on
+right-click. Rename, Duplicate, Change Folder, Favourite, History, Hide
+from Recent, Open Team, Sync Diagram / Take Offline, Delete: whatever
+Recent offers that diagram, Timeline offers it too. A reader who sees
+yesterday's diagram on the feed and wants to file it shouldn't have to
+find it again in a folder first. Rename happens inline, in the card's
+title slot, exactly as it does on a Recent card.
+
+**The menu needs a diagram the event only names.** An event's snapshot
+carries the diagram's id and name, not its folder, share code, team or
+owner, and the menu's items depend on all of those. So the live app
+resolves the id against the Explorer's already-loaded lists (personal,
+team, and shared-with-you), which is the same set Recent draws from, and
+hands the menu the `PaneDiagram` it finds. When nothing is found (the
+diagram has since been deleted, or a team diagram the sidebar hasn't
+loaded), the card gets **no menu**: a menu of guesses is worse than
+none, and the card still opens the diagram on click. Tombstones have no
+id to look up and get no menu for the same reason.
+
+**Where the menu comes from.** The Timeline components in
+`@livediagram/ui` know nothing about diagrams, so they can't build this
+menu. `<Timeline>` takes an optional **`cardSlots(event)`** hook
+returning `{ title?, menu? }`; the card places `menu` in its title row
+and stops the card's own click from firing under it, and renders
+`title` in place of the subject when given (the inline rename input).
+The live app's `useTimelineCardSlots` implements it against the Explorer
+context. `ScopedTimeline` (a team's activity, a diagram's history) passes
+nothing and gets plain cards: those surfaces sit outside the Explorer
+context that supplies the handlers, and on a diagram's own history page
+every card is the same diagram.
+
+**Non-diagram cards have no menu.** A team card, a folder card, a token
+card: each is one click target that opens the one place it can lead. A
+⋯ holding a single "Open" that duplicates the card's own click is a
+control that exists to look consistent, not to do anything.
+
+Telemetry: opening a card menu fires `Timeline` / `Opened` / `Menu`
+(§10).
 
 ## 3. Data model
 
@@ -689,11 +809,11 @@ None of those are built. All of them are additive.
   `source_type = 'diagram' AND source_id = <id>`; the
   `ON DELETE CASCADE` on `timeline_event_scopes.event_id` takes the
   membership rows with them. A feed that keeps narrating a diagram
-  nobody can open any more is noise, and every one of those bubbles
+  nobody can open any more is noise, and every one of those cards
   links to a 404.
   **The tombstone survives**, because the cascade runs _before_ the
   `diagram_deleted` emit, not after. So a deleted diagram collapses
-  from a run of bubbles to exactly one — "Diagram Deleted / Payments
+  from a run of cards to exactly one — "Diagram Deleted / Payments
   architecture" — which is the row that actually answers "what
   happened to it?". `markTimelineEventsDeletedBySource(env,
 sourceType, sourceId)` is the shared helper; any future entity's
@@ -816,13 +936,13 @@ correct and matches the rest of the product's server-side surfaces.
 
 ### 4.3 Collaboration
 
-| `eventType`          | Fires when                                                  | Notes                                              |
-| -------------------- | ----------------------------------------------------------- | -------------------------------------------------- |
-| `comment_added`      | both comment paths                                          | See below                                          |
-| `comment_resolved`   | thread flips to `resolved` on tab save                      | Diffed the same way                                |
-| `action_assigned`    | an `ElementAction` appears on save, or via `/notify-action` | Audience is the assignee plus the diagram audience |
-| `action_completed`   | an action's `status` flips to `done`                        |                                                    |
-| `share_link_created` | share link minted                                           | Audience is the owner only                         |
+| `eventType`          | Fires when                                                  | Notes                                                                                                |
+| -------------------- | ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `comment_added`      | both comment paths                                          | See below                                                                                            |
+| `comment_resolved`   | thread flips to `resolved` on tab save                      | Diffed the same way; description is the thread's opening comment, so the card says what was resolved |
+| `action_assigned`    | an `ElementAction` appears on save, or via `/notify-action` | Audience is the assignee plus the diagram audience                                                   |
+| `action_completed`   | an action's `status` flips to `done`                        |                                                                                                      |
+| `share_link_created` | share link minted                                           | Audience is the owner only                                                                           |
 
 **Comments have two write paths and both must emit.** Comments live
 inside element JSON on the tab (`packages/diagram/src/comments.ts`),
@@ -933,7 +1053,7 @@ the read gate also admits every joined member of the diagram's team
 library told the diagram's owner _"opened by a visitor · Someone with the
 share link"_, under the **sharing** filter, for a diagram they had never
 shared a link for — once per teammate per day, so a twelve-person library
-could put eleven false bubbles a day on one diagram. Duplicating a
+could put eleven false cards a day on one diagram. Duplicating a
 team-library diagram reported _"copied by a visitor"_, which is simply
 untrue. Both now require a share code to have been presented. The
 teammate's own `diagram_duplicated` event is unaffected: they really did
@@ -1093,14 +1213,15 @@ domain:
 Timeline.tsx             the feed: grouping, rail, stacks. No header.
 TimelineControls.tsx     mode switch + filter trigger, for the host's header
 useTimelineControls.ts   the state both halves share, + derived filtering
-TimelineGroup.tsx        one day: dot, line, date label, Today pill
-TimelineBubble.tsx       icon / content / preview / action strip
-StackedBubble.tsx        the collapsed run with its faux-card layers
-ExpandedStack.tsx        the open run plus its "Collapse N events" footer
+TimelineGroup.tsx        one day: dot, line, date label, Today pill, the card grid
+TimelineCard.tsx         preview / title + menu slot / reason line / description
+StackedCard.tsx          the collapsed run with its faux-card layers
+ExpandedStack.tsx        the open run: the stack card as its head, then the members
 TimelineCalendarView.tsx month grid, per-tone dots, day popover
 TimelineFilterPopover.tsx chips + mini calendar, portalled
 useTimelineGrouping.ts   group-by-day (pure, exported for reuse)
 stacking.ts              bucket + alias rules (pure)
+sameDayCreate.ts         hide the edit that shares a day with the create (pure, §2.1a)
 eventTone.ts             event type -> tone, and the tone colour vars
 monthCells.ts            month-grid arithmetic (pure)
 sourceTypeMeta.ts        chip label + fallback glyph per source type
@@ -1108,11 +1229,13 @@ types.ts                 TimelineEvent, renderer contracts
 ```
 
 The **renderers** — the functions that turn a `TimelineEvent` into a
-bubble, and that know a diagram event links to `/diagram/<id>` and a
+card's parts (`subject`, `label`, `meta`, `preview`, `onClick`), and that know a diagram event links to `/diagram/<id>` and a
 team event to `/explorer/team?id=<id>` — live in
 **`apps/live/app/explorer/timeline/renderers.tsx`**, keyed by
 `sourceType`. The package takes a registry prop; it never imports a
-route.
+route. The one thing a renderer can't supply, the ⋯ menu, comes in
+through the separate `cardSlots` hook (§2.8), because it needs the
+Explorer's loaded lists and handlers rather than the event alone.
 
 This split is what lets a per-diagram timeline (§3.4) or the editor's
 Activity Panel adopt the same components later without either one
@@ -1129,9 +1252,9 @@ stronger than the same alpha over white). `eventTone` reads the var
 with a fallback baked into the package, so the components render
 standalone.
 
-**Animation.** A bubble fades in on the first mount of its event id
+**Animation.** A card fades in on the first mount of its event id
 only — the component keeps a `Set` of seen ids. Without that, every
-existing bubble re-animates on each refresh, which reads as the whole
+existing card re-animates on each refresh, which reads as the whole
 feed vanishing and coming back.
 
 ## 8. Explorer integration
@@ -1238,6 +1361,8 @@ New category `Timeline` in the closed enum in
 - `Timeline`/`Opened` with `type` `Stack` — a stacked run expanded.
   Tells us whether stacking thresholds are right.
 - `Timeline`/`Loaded` with `type` `More` — Show more.
+- `Timeline`/`Opened` with `type` `Menu` — a card's ⋯ menu opened
+  (§2.8), so we can see whether people act on the feed or only read it.
 
 No event ever carries a diagram name, team name, or comment text; the
 `type` slot is a fixed token, bounded by the existing
@@ -1249,10 +1374,19 @@ Per spec/18:
 
 - **Pure units, tested directly**: `stacking.ts` (bucketing, aliasing,
   never-stack rules, position-of-most-recent), `useTimelineGrouping`
-  (day grouping, out-of-order tolerance), `monthCells` (Monday-first
-  padding, leap years, empty-month skipping), and `eventTone` (every
-  emitted event type maps to a tone, and an unknown one falls to
-  neutral rather than to danger).
+  (day grouping, out-of-order tolerance), `sameDayCreate.ts` (the edit
+  goes when its create shares the local day, stays otherwise, and other
+  same-day kinds are untouched), `monthCells` (Monday-first padding,
+  leap years, empty-month skipping), and `eventTone` (every emitted
+  event type maps to a tone, and an unknown one falls to neutral rather
+  than to danger).
+- **The card, rendered** (jsdom): the subject is the title and the
+  stored Title Case category is the reason line; a card with no preview
+  shows the glyph box instead; the `menu` slot renders and a click on it
+  does not fire the card's own `onClick`; the `title` slot replaces the
+  subject. This is the one component in the folder with a render test,
+  because the menu slot is the one place a card's click and a child's
+  click compete.
 - **Worker route tests** alongside `teams.test.ts`: scope
   authorisation (a caller cannot read another owner's scope),
   pagination and cursor stability, filter params, and the
