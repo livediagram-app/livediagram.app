@@ -11,9 +11,19 @@ export type ReadOptions = {
   onProgress?: (readSoFar: number) => void;
 };
 
+// What a reader hands back: the words keyed by the crop id the detector
+// assigned, and — when part of the run did not answer — how many crops went
+// unread and why. A reader THROWS only when it read nothing at all; a wall
+// that lost one batch of six keeps the other ninety words and says so.
+export type ReadResult = {
+  textById: Map<number, ReadText>;
+  unread?: number;
+  failure?: string;
+};
+
 // Every reader has the same shape, so the photo import does not care which one
-// it got: crops in, words out, keyed by the crop id the detector assigned.
-export type CropReader = (crops: NoteCrop[], opts: ReadOptions) => Promise<Map<number, ReadText>>;
+// it got: crops in, words out.
+export type CropReader = (crops: NoteCrop[], opts: ReadOptions) => Promise<ReadResult>;
 
 // One answer shape, whoever read it.
 //

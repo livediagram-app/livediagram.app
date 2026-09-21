@@ -33,7 +33,7 @@ describe('selectReader', () => {
       ],
     });
     const { read } = selectReader({ aiEnabled: true, ownerId: 'owner-1' });
-    const out = await read(crops, {});
+    const { textById: out } = await read(crops, {});
     expect(out.get(0)).toEqual({ text: 'Course Created', legible: true });
     expect(out.get(1)).toEqual({ text: '', legible: false });
   });
@@ -57,7 +57,10 @@ describe('selectReader', () => {
     vi.mocked(readCropsInBrowser).mockResolvedValue(
       new Map([[0, { text: 'Machine Fixed', legible: true }]]),
     );
-    const out = await selectReader({ aiEnabled: false, ownerId: 'owner-1' }).read(crops, {});
+    const { textById: out } = await selectReader({ aiEnabled: false, ownerId: 'owner-1' }).read(
+      crops,
+      {},
+    );
     expect(readCropsInBrowser).toHaveBeenCalled();
     expect(out.get(0)).toEqual({ text: 'Machine Fixed', legible: true });
   });
@@ -79,7 +82,7 @@ describe('whitespace is normalised whoever read it', () => {
     vi.mocked(apiAiReadNotes).mockResolvedValue({
       texts: [{ id: 0, text: 'Machine\nFixed', legible: true }],
     });
-    const out = await selectReader({ aiEnabled: true, ownerId: 'o' }).read(crops, {});
+    const { textById: out } = await selectReader({ aiEnabled: true, ownerId: 'o' }).read(crops, {});
     expect(out.get(0)!.text).toBe('Machine Fixed');
   });
 
@@ -87,7 +90,7 @@ describe('whitespace is normalised whoever read it', () => {
     vi.mocked(apiAiReadNotes).mockResolvedValue({
       texts: [{ id: 0, text: '  Course   Schedule\n\n Updated \n', legible: true }],
     });
-    const out = await selectReader({ aiEnabled: true, ownerId: 'o' }).read(crops, {});
+    const { textById: out } = await selectReader({ aiEnabled: true, ownerId: 'o' }).read(crops, {});
     expect(out.get(0)!.text).toBe('Course Schedule Updated');
   });
 
@@ -95,7 +98,7 @@ describe('whitespace is normalised whoever read it', () => {
     vi.mocked(apiAiReadNotes).mockResolvedValue({
       texts: [{ id: 0, text: '\n  \n', legible: true }],
     });
-    const out = await selectReader({ aiEnabled: true, ownerId: 'o' }).read(crops, {});
+    const { textById: out } = await selectReader({ aiEnabled: true, ownerId: 'o' }).read(crops, {});
     expect(out.get(0)).toEqual({ text: '', legible: false });
   });
 });

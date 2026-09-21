@@ -272,31 +272,56 @@ export async function apiAiStream(
 // run brisk without hammering the provider. The route's error tokens are
 // thrown as Errors whose message IS the token, the same shape the assistant's
 // `off_topic` refusal takes, so one catch renders one message per cause.
+// What a run of batches comes back with: the words, and — when part of the run
+// did not answer — how many crops went unread and why. A CLIENT type: the
+// worker's wire format knows nothing about batching, because the batching is
+// ours.
+export type ReadNotesResult = ReadNotesResponse & { unread?: number; failure?: string };
+
 export async function apiAiReadNotes(
   ownerId: string,
   crops: NoteCrop[],
   opts: { signal?: AbortSignal; onProgress?: (readCount: number) => void } = {},
-): Promise<ReadNotesResponse> {
+): Promise<ReadNotesResult> {
   const batches: NoteCrop[][] = [];
   for (let i = 0; i < crops.length; i += READ_MAX_CROPS_PER_REQUEST) {
     batches.push(crops.slice(i, i + READ_MAX_CROPS_PER_REQUEST));
   }
   const texts: ReadNotesResponse['texts'] = [];
   let readCount = 0;
+  let unread = 0;
+  let failure: string | undefined;
   // Two at a time: a whole wall in parallel is a burst any rate limiter will
   // refuse, and one at a time is a wait nobody enjoys.
   for (let i = 0; i < batches.length; i += READ_BATCH_CONCURRENCY) {
     const slice = batches.slice(i, i + READ_BATCH_CONCURRENCY);
-    const answers = await Promise.all(slice.map((batch) => readBatch(ownerId, batch, opts)));
-    for (const answer of answers) {
-      texts.push(...answer.texts);
-      readCount += answer.texts.length;
-    }
+    // ONE LOST BATCH IS ONE LOST BATCH. A hundred-note wall is seventeen
+    // requests, and over seventeen requests something eventually answers 429
+    // or hands back a truncated line; throwing on the first of them threw away
+    // every word the model had already read, which is why a whole wall came
+    // back saying "Type the words…". The batches that answered are kept, the
+    // crops in the batch that did not stay blank, and the reason travels with
+    // the result so the author is told which part failed rather than that
+    // everything did.
+    const answers = await Promise.allSettled(slice.map((batch) => readBatch(ownerId, batch, opts)));
+    answers.forEach((answer, at) => {
+      if (answer.status === 'fulfilled') {
+        texts.push(...answer.value.texts);
+        readCount += answer.value.texts.length;
+        return;
+      }
+      unread += slice[at]!.length;
+      const reason = answer.reason;
+      failure ??= reason instanceof Error ? reason.message : 'ai_error';
+    });
     // Report batch-by-batch, so the author watching the bar sees the run
     // advance instead of a spinner that never moves.
     opts.onProgress?.(readCount);
   }
-  return { texts };
+  // Nothing at all came back: that is not a partial read, it is a failure, and
+  // it is told the way every other failure here is told.
+  if (texts.length === 0 && failure !== undefined) throw new Error(failure);
+  return failure === undefined ? { texts } : { texts, unread, failure };
 }
 
 // How many read requests are in flight at once.

@@ -71,7 +71,15 @@ export function PhotoStatus({
           Reading the words…
         </Pill>
       ) : null}
-      {readError ? (
+      {readError?.startsWith('partial:') ? (
+        // PART of the run is not all of it. The words that arrived are on their
+        // notes; this says how many did not, so the author knows which boxes
+        // are blank because nobody read them rather than because the paper was
+        // blank.
+        <Pill tone="warn">
+          {readError.slice('partial:'.length)} notes could not be read. Type those in yourself.
+        </Pill>
+      ) : readError ? (
         <Pill tone="warn">
           The reader could not finish ({readError}). Type the words in yourself.
         </Pill>

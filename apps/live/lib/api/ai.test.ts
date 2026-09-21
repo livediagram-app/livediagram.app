@@ -157,6 +157,39 @@ describe('apiAiReadNotes', () => {
     expect(out.texts.map((t) => t.id)).toEqual(Array.from({ length: 40 }, (_, i) => i));
   });
 
+  it('keeps the words it DID read when one batch fails', async () => {
+    // What the operator saw on a hundred-note wall: one batch failed and every
+    // box read "Type the words…", including the ninety-odd the model had
+    // already read. A run of seventeen requests will lose one sooner or later
+    // — a rate limit, a truncated answer, a provider hiccup — and losing one
+    // must cost one batch's words, not the wall's.
+    let call = 0;
+    globalThis.fetch = vi.fn(async (_url: string, init?: RequestInit) => {
+      call += 1;
+      const body = JSON.parse(init!.body as string) as { crops: { id: number }[] };
+      if (call === 2) return new Response(JSON.stringify({ error: 'ai_quota' }), { status: 429 });
+      return new Response(
+        JSON.stringify({
+          texts: body.crops.map((c) => ({ id: c.id, text: `note ${c.id}`, legible: true })),
+        }),
+        { status: 200 },
+      );
+    }) as unknown as typeof fetch;
+
+    const out = await apiAiReadNotes('owner-1', crops(18));
+    // Three batches of six, one of them lost: twelve words and a reason.
+    expect(out.texts).toHaveLength(12);
+    expect(out.unread).toBe(6);
+    expect(out.failure).toBe('ai_quota');
+  });
+
+  it('throws when EVERY batch fails, so the one message names the cause', async () => {
+    globalThis.fetch = vi.fn(
+      async () => new Response(JSON.stringify({ error: 'ai_not_configured' }), { status: 503 }),
+    ) as unknown as typeof fetch;
+    await expect(apiAiReadNotes('o', crops(12))).rejects.toThrow('ai_not_configured');
+  });
+
   it('throws the route’s own token, so each cause can be told apart', async () => {
     for (const [status, token] of [
       [503, 'ai_not_configured'],

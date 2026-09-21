@@ -36,9 +36,14 @@ export function selectReader(deps: { aiEnabled: boolean; ownerId: string }): Sel
           // something the text alone does not.
           out.set(t.id, t.legible ? read : { text: read.text, legible: false });
         }
-        return out;
+        return answer.failure === undefined
+          ? { textById: out }
+          : { textById: out, unread: answer.unread ?? 0, failure: answer.failure };
       },
     };
   }
-  return { kind: 'browser', read: (crops, opts) => readCropsInBrowser(crops, opts) };
+  return {
+    kind: 'browser',
+    read: async (crops, opts) => ({ textById: await readCropsInBrowser(crops, opts) }),
+  };
 }

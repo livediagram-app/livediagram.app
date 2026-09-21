@@ -264,7 +264,7 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
           aiEnabled: live.current.aiEnabled,
           ownerId: live.current.ownerId,
         });
-        const textById = await read(detection.crops, {
+        const answer = await read(detection.crops, {
           signal: controller.signal,
           onProgress: (readSoFar) => {
             if (!current()) return;
@@ -272,7 +272,22 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
           },
         });
         if (!current()) return;
-        setReview((prev) => (prev && prev.detection === detection ? { ...prev, textById } : prev));
+        setReview((prev) =>
+          prev && prev.detection === detection
+            ? {
+                ...prev,
+                textById: answer.textById,
+                // Part of the run is not all of it. The words that arrived are
+                // shown; the note that says so names how many did not.
+                readError: answer.failure ? `partial:${answer.unread ?? 0}` : prev.readError,
+              }
+            : prev,
+        );
+        if (answer.failure) {
+          live.current.toastError(
+            `${answer.unread ?? 0} notes could not be read (${answer.failure}). Type those in yourself.`,
+          );
+        }
       } catch (err) {
         if (controller.signal.aborted || !current()) return;
         const token = err instanceof Error ? err.message : 'ai_error';

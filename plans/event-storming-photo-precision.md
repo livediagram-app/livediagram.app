@@ -369,13 +369,13 @@ seam are all the same colour as their surroundings, so all of them fail it.
       file in; the file dialog's double-click is broken by a Chromium bug on
       this machine). Record detections, precision/recall where truth exists, and
       page errors.
-- [ ] 4.2 **PROMOTED — the reader failed outright on photo 3** ("The reader
+- [x] 4.2 **PROMOTED — the reader failed outright on photo 3** ("The reader
       could not finish (ai_error)"). Find out with evidence how many crops were
       sent, in how many batches, and what the api worker logged (it logs
       truncation and provider status). Rate limiting and payload size at
       60–100+ crops are the candidates. One failed batch must NOT blank every
       note, and the failure message must say which part failed.
-- [ ] 4.2b Check the words: in the operator's screenshot a great many boxes read
+- [x] 4.2b Check the words: in the operator's screenshot a great many boxes read
       "Type the words…", i.e. the reader returned nothing for them. Find out
       whether that is the junk detections (which will now be gone), a batch
       failing, or the reader being rate-limited at ~66 crops, and fix or report
@@ -386,6 +386,22 @@ seam are all the same colour as their surroundings, so all of them fail it.
 - [ ] 4.4 Post a `shot` of the corrected surface on the operator's gym-wall
       photo, and a `review` with numbered do/expect steps for the whole import.
 - [ ] 4.5 Commit.
+
+### The reader's ai_error, found
+
+Not rate limiting, and not payload size: a STRUCTURAL defect in how the run is
+assembled. `apiAiReadNotes` cuts the crops into batches of six, runs two at a
+time, and awaited them with `Promise.all` - so the FIRST batch to fail threw,
+and the caller's catch discarded every word the model had already read. A
+hundred-note wall is seventeen requests; over seventeen requests something
+eventually answers 429 or hands back a truncated line, and the whole wall then
+read "Type the words...".
+
+Fixed where it breaks: the batches that answered are kept, the crops in the
+batch that did not stay blank, and the reason travels with the result, so the
+review says "6 notes could not be read (ai_quota). Type those in yourself."
+rather than claiming the reader gave up. A run where EVERY batch fails still
+throws its token, because that is a failure rather than a partial read.
 
 ## 5. Fold-back
 

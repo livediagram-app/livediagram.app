@@ -60,10 +60,18 @@ function detection(stickies: DetectedSticky[]): PhotoDetection {
   };
 }
 
+// A reader's answer: the words, and — when a batch of the run failed — how
+// many crops went unread and why.
 function read(
   texts: { id: number; text: string; legible?: boolean }[],
-): Map<number, { text: string; legible: boolean }> {
-  return new Map(texts.map((t) => [t.id, { text: t.text, legible: t.text !== '' }]));
+  partial?: { unread: number; failure: string },
+): {
+  textById: Map<number, { text: string; legible: boolean }>;
+  unread?: number;
+  failure?: string;
+} {
+  const textById = new Map(texts.map((t) => [t.id, { text: t.text, legible: t.text !== '' }]));
+  return partial ? { textById, ...partial } : { textById };
 }
 
 function esNote(id: string, label: string, x = 0): StickyElement {
@@ -294,6 +302,21 @@ describe('landing a draft', () => {
     // …and the one snapshot is the board BEFORE the draft landed.
     h.undoOnce();
     expect(h.elements()).toEqual([]);
+  });
+
+  it('keeps the words that DID arrive when part of the run failed', async () => {
+    // The operator's hundred-note wall: one batch of the run answered 429 and
+    // every box on the photograph read "Type the words…", including the ones
+    // already read. What is lost is one batch, and the note that says so
+    // counts it rather than claiming the reader gave up.
+    vi.mocked(detectAndCrop).mockResolvedValue(detection([sticky(), sticky({ id: 1, x: 600 })]));
+    vi.mocked(readCrops).mockResolvedValue(
+      read([{ id: 0, text: 'Order placed' }], { unread: 1, failure: 'ai_quota' }),
+    );
+    const h = await reviewed();
+    expect(h.api().review?.textById.get(0)?.text).toBe('Order placed');
+    expect(h.api().review?.readError).toBe('partial:1');
+    expect(h.toasts.at(-1)).toContain('1 notes could not be read');
   });
 
   it('selects the batch, so the author can see what arrived', async () => {
