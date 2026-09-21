@@ -414,7 +414,8 @@ the mode buttons in §2.2.
   for. It began as an "Others" button in the header — the wrong place,
   and a word that doesn't say others-what.
 - **Category chips** — Comments, Actions, New diagrams, Edits, Renames,
-  Deletions, Sharing, Teams, Filing, Account.
+  Deletions, Sharing, Teams, Organisation, Account. (The Organisation
+  chip's id stays `filing` in code and telemetry; only the label changed.)
 
   These key on **what happened**, not on the source type. Chips keyed on
   source type were the first attempt and were nearly useless: comments,
@@ -935,13 +936,13 @@ correct and matches the rest of the product's server-side surfaces.
 
 ### 4.3 Collaboration
 
-| `eventType`          | Fires when                                                  | Notes                                              |
-| -------------------- | ----------------------------------------------------------- | -------------------------------------------------- |
-| `comment_added`      | both comment paths                                          | See below                                          |
-| `comment_resolved`   | thread flips to `resolved` on tab save                      | Diffed the same way                                |
-| `action_assigned`    | an `ElementAction` appears on save, or via `/notify-action` | Audience is the assignee plus the diagram audience |
-| `action_completed`   | an action's `status` flips to `done`                        |                                                    |
-| `share_link_created` | share link minted                                           | Audience is the owner only                         |
+| `eventType`          | Fires when                                                  | Notes                                                                                                |
+| -------------------- | ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `comment_added`      | both comment paths                                          | See below                                                                                            |
+| `comment_resolved`   | thread flips to `resolved` on tab save                      | Diffed the same way; description is the thread's opening comment, so the card says what was resolved |
+| `action_assigned`    | an `ElementAction` appears on save, or via `/notify-action` | Audience is the assignee plus the diagram audience                                                   |
+| `action_completed`   | an action's `status` flips to `done`                        |                                                                                                      |
+| `share_link_created` | share link minted                                           | Audience is the owner only                                                                           |
 
 **Comments have two write paths and both must emit.** Comments live
 inside element JSON on the tab (`packages/diagram/src/comments.ts`),

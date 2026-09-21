@@ -121,18 +121,30 @@ const diagramRenderer: TimelineRenderer = (event, ctx) => {
       };
     }
     case 'comment_added':
-      // The one event whose stored description is worth keeping: it
-      // holds the comment text, which is the whole reason to look. The
-      // commenter goes in the meta, because on a shared diagram "who
-      // said this" is the first thing worth knowing.
+    case 'comment_resolved':
+      // The stored description holds the comment's words (for a
+      // resolution, the thread's opening comment), which is the whole
+      // reason to look, so it stays. The person goes in the meta,
+      // because on a shared diagram "who" is the next thing worth
+      // knowing.
       return { ...base, meta: actorName(event, ctx), description: undefined };
     case 'action_assigned': {
-      const action = str(event.snapshot, 'actionName') ?? 'An action';
+      // The action's name is what the card is really about, so it gets
+      // the description line rather than the quiet meta; who it went to
+      // trails the time.
       const assignee = str(event.snapshot, 'assigneeName');
-      return { ...base, meta: assignee ? `${action}, to ${assignee}` : action };
+      return {
+        ...base,
+        description: str(event.snapshot, 'actionName') ?? null,
+        meta: assignee ? `To ${assignee}` : undefined,
+      };
     }
     case 'action_completed':
-      return { ...base, meta: str(event.snapshot, 'actionName') ?? undefined };
+      return {
+        ...base,
+        description: str(event.snapshot, 'actionName') ?? null,
+        meta: byActor(event, ctx),
+      };
     case 'diagram_offline':
       return { ...base, meta: 'Kept only in this browser' };
     case 'diagram_opened_by_visitor':
@@ -210,7 +222,18 @@ const accountRenderer: TimelineRenderer = (event) => {
       };
     case 'theme_deleted':
       return { ...base, subject: theme };
-    case 'folder_created':
+    case 'folder_created': {
+      // The folder's own Explorer page. A deleted folder has no id in
+      // its snapshot (there is nothing left to open), so it stays inert.
+      const folderId = str(event.snapshot, 'folderId');
+      return {
+        ...base,
+        subject: folder,
+        onClick: folderId
+          ? () => window.location.assign(`/explorer/folder?id=${encodeURIComponent(folderId)}`)
+          : undefined,
+      };
+    }
     case 'folder_deleted':
       return { ...base, subject: folder };
     case 'image_uploaded': {
