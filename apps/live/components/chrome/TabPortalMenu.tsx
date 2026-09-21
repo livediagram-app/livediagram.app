@@ -175,10 +175,21 @@ export function PortalMenu({
   useLayoutEffect(() => {
     const node = ref.current;
     if (!node || !pos) return;
-    const next = clampToViewport(node.getBoundingClientRect(), adjust);
-    if (next.x !== adjust.x || next.y !== adjust.y) setAdjust(next);
+    const clamp = () => {
+      const next = clampToViewport(node.getBoundingClientRect(), adjust);
+      if (next.x !== adjust.x || next.y !== adjust.y) setAdjust(next);
+    };
+    clamp();
+    // The menu changes height after it opens (a category unfolds, a view
+    // swaps), and a menu that fitted when it appeared can then run off the
+    // bottom of the screen. Re-clamp whenever its box changes, so it slides
+    // up to stay on screen rather than growing out of it.
+    if (typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(clamp);
+    observer.observe(node);
+    return () => observer.disconnect();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pos, view, openSection]);
+  }, [pos, adjust]);
 
   useEffect(() => {
     // Grace window after the menu opens during which outside mouse events are
