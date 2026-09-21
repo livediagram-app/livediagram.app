@@ -135,15 +135,17 @@ export function TimelineCard({
 
         {/* The time is always rendered, and always first: a day with
             twenty events is ordered but undated without it. The
-            renderer's own meta trails it. */}
-        <p className="flex flex-wrap items-center gap-x-1.5 text-[10px] text-slate-400 dark:text-slate-500">
+            renderer's own meta trails it as running text, so a long one
+            ("Rotate it before it lapses…") wraps word by word rather
+            than being clipped or dropping whole onto its own line. */}
+        <p className="break-words text-[10px] leading-snug text-slate-400 dark:text-slate-500">
           <time dateTime={new Date(event.occurredAt).toISOString()}>
             {timeLabel(event.occurredAt)}
           </time>
           {rendered.meta ? (
             <>
-              <span aria-hidden>·</span>
-              <span className="truncate">{rendered.meta}</span>
+              <span aria-hidden> · </span>
+              <span>{rendered.meta}</span>
             </>
           ) : null}
         </p>
