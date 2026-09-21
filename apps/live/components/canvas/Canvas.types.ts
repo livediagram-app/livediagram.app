@@ -453,7 +453,7 @@ export type CanvasProps = {
   // Everyone in the room right now (remote presence + you), the turnout
   // denominator.
   participantCount: number;
-  // Bottom-dock "Colour scheme & canvas" button (spec/42): opens the
+  // Bottom-dock "Theme & canvas" button (spec/42): opens the
   // CanvasThemeDialog. Omitted in read-only / embed sessions (no button).
   onOpenCanvasTheme?: () => void;
   onSelectLayer: (layerId: string) => void;
@@ -500,9 +500,6 @@ export type CanvasProps = {
   onOpenDiagram: (id: string, shareCode?: string) => void;
   onNewDiagram: () => void;
   onRenameCurrent: (name: string) => void;
-  // Opens the editor's Share dialog in place, for the Explorer's
-  // current-diagram Share tile (avoids the `?share=1` full reload).
-  onOpenShareCurrent?: () => void;
   onDeleteDiagram: (id: string) => void;
   onDuplicateDiagram: (id: string) => void;
   onCreateFolder: (input: { name: string; parentId: string | null }) => Promise<Folder | void>;

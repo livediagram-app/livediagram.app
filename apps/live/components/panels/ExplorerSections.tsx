@@ -109,7 +109,7 @@ export function ExplorerSections({
   const sectionTabs: ExplorerTab[] = [];
   if (loading || recents.length > 0) sectionTabs.push({ id: 'recent', label: 'Recent' });
   if (!(diagrams.length === 0 && folders.length === 0))
-    sectionTabs.push({ id: 'work', label: 'Personal Space' });
+    sectionTabs.push({ id: 'work', label: 'Personal' });
   if (teams.length > 0) sectionTabs.push({ id: 'teams', label: 'Teams' });
   // Resolve the rendered tab: the user's pick when still available,
   // else the first available section (null only on a blank account,

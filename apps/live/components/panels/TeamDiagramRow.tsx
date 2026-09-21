@@ -2,22 +2,15 @@ import Link from 'next/link';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
 import { useRef, useState } from 'react';
 import type { DiagramSummary } from '@livediagram/api-schema';
-import {
-  MenuDuplicateIcon,
-  MenuFolderIcon,
-  MenuPencilIcon,
-  MenuTrashIcon,
-} from '@/app/explorer/icons';
+import { DiagramActionsMenu } from '@/app/explorer/diagram-row-shared';
 import { DiagramThumbnail } from '@/components/panels/DiagramThumbnail';
-import { MenuTile, MenuTileGrid, PortalMenu } from '@/components/primitives/PortalMenu';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
 import { RelativeTimeChip } from '@/components/primitives/RelativeTimeChip';
 
 // One team-library diagram row (spec/35), lifted out of
 // TeamSharedDiagrams: thumbnail + name link (or the inline rename), the
-// relative save time, and the ellipsis menu (rename / duplicate /
-// change folder / delete). Every mutation comes through the parent's
-// handlers.
+// relative save time, and the Explorer's shared actions menu. Every
+// mutation comes through the parent's handlers.
 export function TeamDiagramRow({
   diagram,
   ownerId,
@@ -77,59 +70,18 @@ export function TeamDiagramRow({
         />
       )}
       {menuOpen ? (
-        <PortalMenu anchor={menuRef.current} placement="below" onClose={() => setMenuOpen(false)}>
-          <MenuTileGrid cols={2}>
-            <MenuTile
-              icon={
-                <span className="[&_svg]:h-5 [&_svg]:w-5">
-                  <MenuPencilIcon />
-                </span>
-              }
-              label="Rename"
-              onClick={() => {
-                onStartRename();
-                setMenuOpen(false);
-              }}
-            />
-            <MenuTile
-              icon={
-                <span className="[&_svg]:h-5 [&_svg]:w-5">
-                  <MenuDuplicateIcon />
-                </span>
-              }
-              label="Duplicate"
-              onClick={() => {
-                onDuplicate();
-                setMenuOpen(false);
-              }}
-            />
-            <MenuTile
-              icon={
-                <span className="[&_svg]:h-5 [&_svg]:w-5">
-                  <MenuFolderIcon />
-                </span>
-              }
-              label="Change Folder"
-              onClick={() => {
-                onMove(menuRef.current);
-                setMenuOpen(false);
-              }}
-            />
-            <MenuTile
-              icon={
-                <span className="[&_svg]:h-5 [&_svg]:w-5">
-                  <MenuTrashIcon />
-                </span>
-              }
-              label="Delete"
-              danger
-              onClick={() => {
-                onDelete();
-                setMenuOpen(false);
-              }}
-            />
-          </MenuTileGrid>
-        </PortalMenu>
+        // The Explorer page's own actions menu (spec/67): one menu for a
+        // diagram wherever it's listed.
+        <DiagramActionsMenu
+          diagram={diagram}
+          anchor={menuRef.current}
+          ownerId={ownerId}
+          onClose={() => setMenuOpen(false)}
+          onStartRename={onStartRename}
+          onDuplicate={onDuplicate}
+          onMove={(anchor) => onMove(anchor ?? menuRef.current)}
+          onDelete={onDelete}
+        />
       ) : null}
     </li>
   );

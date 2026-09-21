@@ -142,6 +142,13 @@ verbs scans down in one. The rows are `MenuActionRow` in its `plain`
 (sentence-case, 13px) form rather than the uppercase category-header
 form the note menu uses, because here the rows are the whole menu. A
 shared-with-you diagram's menu (Open, Dismiss) is the same shape.
+**The floating Explorer panel's rows use this same menu** (both the
+personal rows and a team library's rows). The panel used to carry its
+own toolbar-and-accordion menu with a Share section; sharing is the
+editor header's job, and a menu that looked like no other in the app was
+one people had to learn twice. A row that can't offer a verb (the panel
+has no star or history) simply doesn't pass its handler, and the menu
+leaves that tile out.
 
 The snapshot preview paints its letterbox in the diagram's own
 background colour (parsed client-side from the SVG's background rect)

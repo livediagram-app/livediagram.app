@@ -291,7 +291,6 @@ export function EditorCanvasHost() {
     toggleChecklistItem,
     setPageHeading,
     growMindNode,
-    setShareDialogOpen,
     setTextAlignSelected,
     setUserPreferences,
     setViewportOffset,
@@ -328,7 +327,7 @@ export function EditorCanvasHost() {
   // Both recompute only when their real inputs change, not per frame.
   const explorerTeams = useMemo(() => teams.map((t) => ({ id: t.id, name: t.name })), [teams]);
   // The canvas paints the backdrop the VIEWER resolves, not blindly the one
-  // the tab stores: a tab on the Default colour scheme follows this browser's
+  // the tab stores: a tab on the Default theme follows this browser's
   // appearance (spec/07). Subscribing to the appearance here is what makes the
   // canvas repaint when it changes — resolveTabBackdrop would otherwise read a
   // module store nothing re-renders for.
@@ -755,7 +754,6 @@ export function EditorCanvasHost() {
           );
         if (nextTrim && nextTrim !== prev) track('Diagram', 'Renamed');
       }}
-      onOpenShareCurrent={() => setShareDialogOpen(true)}
       onDeleteDiagram={deleteDiagram}
       onDuplicateDiagram={(id) => void duplicateDiagram(id)}
       onCreateFolder={createFolder}

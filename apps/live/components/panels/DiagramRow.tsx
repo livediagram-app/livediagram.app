@@ -4,88 +4,10 @@ import { useRef, useState } from 'react';
 import type { DiagramListItem } from '@/lib/api-client';
 import { relativeSince } from '@/lib/relative-time';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
-import {
-  MenuAccordionSection,
-  MenuGroupSeparator,
-  MenuTile,
-  MenuTileGrid,
-  MenuToolbar,
-  MenuToolButton,
-  PortalMenu,
-} from '@/components/primitives/PortalMenu';
-import {
-  DuplicateIcon,
-  FolderIcon,
-  OpenIcon,
-  PencilIcon,
-  SharedDiagramIcon,
-  TrashIcon,
-  ClockIcon,
-  StarIcon,
-} from '@/components/panels/explorer-icons';
+import { DiagramActionsMenu } from '@/app/explorer/diagram-row-shared';
 import { DiagramThumbnail } from '@/components/panels/DiagramThumbnail';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
-import { useOfflineConversion } from '@/hooks/persistence/useOfflineConversion';
 import { DIAGRAM_DRAG_MIME } from './explorer-drag-mime';
-
-// Icons for the Visibility section, matching the explorer-icons style
-// (12×12, viewBox 14, 1.4 stroke) so the tiles read like the rest.
-function VisibilityIcon() {
-  return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 14 14"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M1.5 7S3.5 3.5 7 3.5 12.5 7 12.5 7 10.5 10.5 7 10.5 1.5 7 1.5 7z" />
-      <circle cx="7" cy="7" r="1.6" />
-    </svg>
-  );
-}
-
-function CloudUpIcon() {
-  return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 14 14"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M4.2 11h5.4a2.3 2.3 0 0 0 .3-4.6 3.1 3.1 0 0 0-5.8-.7A2.2 2.2 0 0 0 4.2 11Z" />
-      <path d="M7 9.5V6m0 0L5.7 7.3M7 6l1.3 1.3" />
-    </svg>
-  );
-}
-
-function TakeOfflineIcon() {
-  return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 14 14"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M7 2v5.5m0 0L4.9 5.4M7 7.5l2.1-2.1" />
-      <path d="M2.75 9.25v1.5a1 1 0 0 0 1 1h6.5a1 1 0 0 0 1-1v-1.5" />
-    </svg>
-  );
-}
 
 export function DiagramRow({
   item,
@@ -101,7 +23,6 @@ export function DiagramRow({
   onShowHistory,
   favourite,
   onToggleFavourite,
-  onOpenShare,
   thumbnailShareCode,
   draggable: isDraggable,
 }: {
@@ -136,10 +57,6 @@ export function DiagramRow({
   // Per-user star (spec/95).
   favourite?: boolean;
   onToggleFavourite?: () => void;
-  // Opens the Share dialog in place — set only on the row for the diagram
-  // already open in this editor session, where a `?share=1` navigation
-  // would pointlessly reload the editor (see openShareSettings).
-  onOpenShare?: () => void;
   // Set true on rows the user can drag into folders. The actual
   // drop handling lives on FolderNode + UnsortedNode; this row just
   // sets the custom MIME data so a drop target knows what was
@@ -148,14 +65,6 @@ export function DiagramRow({
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [editing, setEditing] = useState(false);
-  // Which menu category is open — at most one at a time (matches the tab /
-  // element context menus).
-  const [openSection, setOpenSection] = useState<string | null>(null);
-  const sectionProps = (id: string) => ({
-    open: openSection === id,
-    onToggle: () => setOpenSection((s) => (s === id ? null : id)),
-    flush: true,
-  });
   const menuButtonRef = useRef<HTMLButtonElement>(null);
 
   const commitRename = (name: string) => {
@@ -164,33 +73,10 @@ export function DiagramRow({
     setEditing(false);
   };
 
-  // "Manage Sharing…" opens the editor's full Share dialog (sharing isn't
-  // reimplemented in the panel). When the row IS the diagram already open in
-  // this editor session, `onOpenShare` flips the dialog open in place;
-  // otherwise navigate to the diagram with `?share=1` (the editor reads it on
-  // boot), which is a full page load by necessity.
-  const openShareSettings = () => {
-    if (onOpenShare) {
-      onOpenShare();
-      return;
-    }
-    if (typeof window === 'undefined') return;
-    window.location.assign(`${window.location.origin}/diagram/${item.id}?share=1`);
-  };
-
-  // Offline Mode conversions (spec/76), shared with the full-page Explorer row
-  // via the hook. Reload after so the list reflects the moved diagram.
-  const { syncToCloud: handleSaveToCloud, takeOffline: handleTakeOffline } = useOfflineConversion(
-    item,
-    ownerId,
-    () => setMenuOpen(false),
-  );
-
-  const hasMenu = Boolean((onRename && active) || onDelete || onDuplicate || onMoveRequest);
+  const hasMenu = Boolean(onRename || onDelete || onDuplicate || onMoveRequest);
   const relative = relativeSince(item.savedAt);
   // Offline Mode (spec/76): an offline diagram's row carries ownerId
-  // 'offline'. Drives the fixed offline thumbnail, swapping the Share menu
-  // section for the conversion tiles, and the offline-only menu actions.
+  // 'offline', which drives the fixed offline thumbnail.
   const offline = item.ownerId === OFFLINE_OWNER_ID;
 
   const pillClasses = active
@@ -292,191 +178,35 @@ export function DiagramRow({
           </svg>
         </button>
       ) : null}
+      {/* The same actions menu as the Explorer page's rows and cards
+          (spec/67), so a diagram has one menu wherever it's listed. The
+          panel used to carry its own toolbar-and-accordion menu with a
+          Share section; sharing is the editor header's job, and a menu
+          that looked like no other was one people had to learn twice.
+          What this surface can't offer (a star, history, Recent) is
+          simply not passed, and the menu leaves those tiles out. */}
       {menuOpen ? (
-        <PortalMenu
+        <DiagramActionsMenu
+          diagram={item}
           anchor={menuButtonRef.current}
-          placement="below"
-          onClose={() => {
-            setMenuOpen(false);
-            setOpenSection(null);
-          }}
-        >
-          {/* Quick-action toolbar (matches the tab context menu): the verbs
-              reached for most often as a compact icon row, Delete pinned to
-              the right edge. The verbose actions group into the categories
-              below. */}
-          <MenuToolbar>
-            {!active ? (
-              <MenuToolButton
-                icon={<OpenIcon />}
-                label="Open"
-                description="Open this diagram."
-                onClick={() => {
-                  onOpen();
-                  setMenuOpen(false);
-                }}
-              />
-            ) : null}
-            {active && onRename ? (
-              <MenuToolButton
-                icon={<PencilIcon />}
-                label="Rename"
-                description="Rename this diagram."
-                onClick={() => {
-                  setEditing(true);
-                  setMenuOpen(false);
-                }}
-              />
-            ) : null}
-            {onDuplicate ? (
-              <MenuToolButton
-                icon={<DuplicateIcon />}
-                label="Duplicate"
-                description="Create a copy of this diagram."
-                onClick={() => {
-                  onDuplicate();
-                  setMenuOpen(false);
-                }}
-              />
-            ) : null}
-            {onDelete ? (
-              <div className="ml-auto">
-                <MenuToolButton
-                  icon={<TrashIcon />}
-                  label="Delete"
-                  description="Delete this diagram. It can't be recovered."
-                  danger
-                  onClick={() => {
-                    // Hand the menu button up as the anchor so the panel can
-                    // open the delete-confirm popover beside it (same pattern
-                    // as Move to folder…).
-                    onDelete(menuButtonRef.current);
-                    setMenuOpen(false);
-                  }}
-                />
-              </div>
-            ) : null}
-          </MenuToolbar>
-          {/* Separator under the toolbar (matches the tab context menu). */}
-          <MenuGroupSeparator />
-          {onMoveRequest ? (
-            <MenuAccordionSection
-              title="Organise"
-              icon={<FolderIcon />}
-              {...sectionProps('organise')}
-            >
-              <div className="px-2 py-1.5">
-                <MenuTileGrid cols={2}>
-                  <MenuTile
-                    icon={<FolderIcon />}
-                    label="Change Folder"
-                    onClick={() => {
-                      onMoveRequest(menuButtonRef.current);
-                      setMenuOpen(false);
-                    }}
-                  />
-                  {onToggleFavourite ? (
-                    <MenuTile
-                      icon={<StarIcon filled={favourite} />}
-                      label={favourite ? 'Unfavourite' : 'Favourite'}
-                      onClick={() => {
-                        onToggleFavourite();
-                        setMenuOpen(false);
-                      }}
-                    />
-                  ) : null}
-                  {onShowHistory ? (
-                    <MenuTile
-                      icon={<HistoryIcon />}
-                      label="History"
-                      onClick={() => {
-                        onShowHistory();
-                        setMenuOpen(false);
-                      }}
-                    />
-                  ) : null}
-                  {onToggleRecentExclusion ? (
-                    <MenuTile
-                      icon={<ClockIcon />}
-                      // The label says what the click does, which is also
-                      // how you learn the current state (spec/93).
-                      label={recentExcluded ? 'Show in Recent' : 'Hide from Recent'}
-                      onClick={() => {
-                        onToggleRecentExclusion();
-                        setMenuOpen(false);
-                      }}
-                    />
-                  ) : null}
-                </MenuTileGrid>
-              </div>
-            </MenuAccordionSection>
-          ) : null}
-          {/* Visibility: who can reach this diagram and where it lives.
-              Sharing and the Offline Mode conversions (spec/76) are two faces
-              of the same choice, so they share one section. Offline diagrams
-              have nothing on a server to share (the editor's Share button
-              offers the sync gate), so they show only Sync Diagram. */}
-          <MenuAccordionSection
-            title="Visibility"
-            icon={<VisibilityIcon />}
-            {...sectionProps('visibility')}
-          >
-            <div className="px-2 py-1.5">
-              <MenuTileGrid cols={2}>
-                {offline ? null : (
-                  <MenuTile
-                    icon={<SharedDiagramIcon />}
-                    label={item.shareCode ? 'Manage Sharing' : 'Share'}
-                    onClick={() => {
-                      openShareSettings();
-                      setMenuOpen(false);
-                    }}
-                  />
-                )}
-                {ownerId ? (
-                  offline ? (
-                    <MenuTile
-                      icon={<CloudUpIcon />}
-                      label="Sync Diagram"
-                      onClick={() => void handleSaveToCloud()}
-                    />
-                  ) : (
-                    <MenuTile
-                      icon={<TakeOfflineIcon />}
-                      label="Take Offline"
-                      onClick={() => void handleTakeOffline()}
-                    />
-                  )
-                ) : null}
-              </MenuTileGrid>
-            </div>
-          </MenuAccordionSection>
-        </PortalMenu>
+          ownerId={ownerId}
+          onClose={() => setMenuOpen(false)}
+          // Only the open diagram's row renames inline (its title is the
+          // editor's); any other row's Rename opens the diagram to rename
+          // it there.
+          onStartRename={() => (onRename ? setEditing(true) : onOpen())}
+          onDuplicate={() => onDuplicate?.()}
+          // Hand the menu button up as the anchor so the panel can open the
+          // move picker / delete-confirm popover beside it.
+          onMove={(anchor) => onMoveRequest?.(anchor ?? menuButtonRef.current)}
+          onDelete={() => onDelete?.(menuButtonRef.current)}
+          favourite={favourite}
+          onToggleFavourite={onToggleFavourite}
+          recentExcluded={recentExcluded}
+          onToggleRecentExclusion={onToggleRecentExclusion}
+          onShowHistory={onShowHistory}
+        />
       ) : null}
     </div>
-  );
-}
-
-// --- Teams accordion nodes (spec/35) ---------------------------------
-
-// A clock with an arrow curling back — distinct from the plain ClockIcon
-// that Recent uses, since the two now sit in the same menu.
-function HistoryIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.7"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M3 3v5h5" />
-      <path d="M3.05 13A9 9 0 1 0 6 5.3L3 8" />
-      <path d="M12 7v5l3 2" />
-    </svg>
   );
 }
