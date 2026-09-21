@@ -1,6 +1,5 @@
 'use client';
 
-import type { ReactNode } from 'react';
 // Pieces shared by the Explorer's list row (explorer-route-diagram-row)
 // and card (CardView): the visibility badge, the actions menu, and the
 // open-href helper. Extracted so the two view modes can't drift on what
@@ -11,8 +10,6 @@ import {
   MenuActionRow,
   MenuGroupSeparator,
   MenuHeader,
-  MenuTile,
-  MenuTileGrid,
   PortalMenu,
 } from '@/components/primitives/PortalMenu';
 import { Tooltip } from '@/components/primitives/Tooltip';
@@ -198,13 +195,12 @@ export function VisibilityBadge({ diagram }: { diagram: PaneDiagram }) {
 // rows get the full rename / duplicate / change-folder / (open team) /
 // delete set (spec/35).
 //
-// Shape: a header naming the diagram, a three-column tile grid of the
-// ordinary verbs, then Delete on its own row under a separator. Two
-// columns made a menu of eight verbs four rows tall with "Hide from
-// Recent" wrapping in one tile and not its neighbour; and Delete sitting
-// in the grid as just another tile put the one irreversible verb a slip
-// away from Duplicate. The row form is the same one the note menu uses
-// for destructive verbs (spec/139): it tints on hover, before the click.
+// Shape: a header naming the diagram, then one full-width row per verb
+// with its icon on the left, and Delete last under a separator. It was
+// a tile grid (icon over label, two then three columns); eight verbs in
+// a grid meant reading in two directions with labels wrapping under
+// their icons, and a list of verbs scans down in one. Delete is red at
+// rest so the one irreversible verb is found before it's read.
 export function DiagramActionsMenu({
   diagram,
   anchor,
@@ -245,7 +241,7 @@ export function DiagramActionsMenu({
   const offline = diagram.ownerId === OFFLINE_OWNER_ID;
   // Offline Mode conversions (spec/76), shared with the panel row via the hook.
   const { syncToCloud, takeOffline } = useOfflineConversion(diagram, ownerId, onClose);
-  // Run a verb, then close: every tile does this, so it's one wrapper.
+  // Run a verb, then close: every row does this, so it's one wrapper.
   const then = (fn: () => void) => () => {
     fn();
     onClose();
@@ -257,102 +253,105 @@ export function DiagramActionsMenu({
       <PortalMenu anchor={anchor} placement="below" onClose={onClose}>
         {header}
         <MenuActionRow
+          plain
           icon={<DiagramIcon />}
           label="Open"
           onClick={() => window.location.assign(href)}
         />
         <MenuGroupSeparator />
         <MenuActionRow
+          plain
+          danger
           icon={<CloseIcon />}
           label="Dismiss"
-          danger
           onClick={then(() => onDismiss?.())}
         />
       </PortalMenu>
     );
   }
   return (
-    <PortalMenu anchor={anchor} placement="below" width="lg" onClose={onClose}>
+    <PortalMenu anchor={anchor} placement="below" onClose={onClose}>
       {header}
-      <MenuTileGrid cols={3}>
-        <MenuTile
-          icon={tileIcon(<MenuPencilIcon />)}
-          label="Rename"
-          onClick={then(onStartRename)}
-        />
-        <MenuTile
-          icon={tileIcon(<MenuDuplicateIcon />)}
-          label="Duplicate"
-          onClick={then(onDuplicate)}
-        />
-        <MenuTile
-          icon={tileIcon(<MenuFolderIcon />)}
-          label="Change Folder"
-          onClick={then(() => onMove(anchor))}
-        />
-        {onToggleFavourite ? (
-          <MenuTile
-            icon={tileIcon(<StarIcon filled={favourite} />)}
-            label={favourite ? 'Unfavourite' : 'Favourite'}
-            onClick={then(onToggleFavourite)}
-          />
-        ) : null}
-        {onShowHistory ? (
-          <MenuTile
-            icon={tileIcon(<HistoryIcon />)}
-            label="History"
-            onClick={then(onShowHistory)}
-          />
-        ) : null}
-        {onToggleRecentExclusion ? (
-          <MenuTile
-            icon={tileIcon(recentExcluded ? <ClockOffIcon /> : <ClockIcon />)}
-            // The label states what the click DOES, and by doing so tells
-            // you the current state — which is why the diagram needs no
-            // badge anywhere else (spec/93).
-            label={recentExcluded ? 'Show in Recent' : 'Hide from Recent'}
-            onClick={then(onToggleRecentExclusion)}
-          />
-        ) : null}
-        {diagram.team ? (
-          <MenuTile
-            icon={tileIcon(<TeamIcon />)}
-            label="Open Team"
-            onClick={() => {
-              window.location.assign(
-                `/explorer/team?id=${encodeURIComponent(diagram.team!.id)}${
-                  diagram.folderId ? `&folder=${encodeURIComponent(diagram.folderId)}` : ''
-                }`,
-              );
-            }}
-          />
-        ) : null}
-        {ownerId ? (
-          offline ? (
-            <MenuTile
-              icon={tileIcon(<SyncIcon />)}
-              label="Sync Diagram"
-              onClick={() => void syncToCloud()}
-            />
-          ) : (
-            <MenuTile
-              icon={tileIcon(<TakeOfflineMenuIcon />)}
-              label="Take Offline"
-              onClick={() => void takeOffline()}
-            />
-          )
-        ) : null}
-      </MenuTileGrid>
+      <MenuActionRow plain icon={<MenuPencilIcon />} label="Rename" onClick={then(onStartRename)} />
+      <MenuActionRow
+        plain
+        icon={<MenuDuplicateIcon />}
+        label="Duplicate"
+        onClick={then(onDuplicate)}
+      />
+      <MenuActionRow
+        plain
+        icon={<MenuFolderIcon />}
+        label="Change Folder"
+        onClick={then(() => onMove(anchor))}
+      />
+      {/* Two groups: what changes the diagram itself (rename, copy, file),
+          then what changes how YOU see it (star, history, Recent,
+          where it's stored). */}
       <MenuGroupSeparator />
-      <MenuActionRow icon={<MenuTrashIcon />} label="Delete" danger onClick={then(onDelete)} />
+      {onToggleFavourite ? (
+        <MenuActionRow
+          plain
+          icon={<StarIcon filled={favourite} />}
+          label={favourite ? 'Unfavourite' : 'Favourite'}
+          onClick={then(onToggleFavourite)}
+        />
+      ) : null}
+      {onShowHistory ? (
+        <MenuActionRow plain icon={<HistoryIcon />} label="History" onClick={then(onShowHistory)} />
+      ) : null}
+      {onToggleRecentExclusion ? (
+        <MenuActionRow
+          plain
+          icon={recentExcluded ? <ClockOffIcon /> : <ClockIcon />}
+          // The label states what the click DOES, and by doing so tells
+          // you the current state — which is why the diagram needs no
+          // badge anywhere else (spec/93).
+          label={recentExcluded ? 'Show in Recent' : 'Hide from Recent'}
+          onClick={then(onToggleRecentExclusion)}
+        />
+      ) : null}
+      {diagram.team ? (
+        <MenuActionRow
+          plain
+          icon={<TeamIcon />}
+          label="Open Team"
+          onClick={() => {
+            window.location.assign(
+              `/explorer/team?id=${encodeURIComponent(diagram.team!.id)}${
+                diagram.folderId ? `&folder=${encodeURIComponent(diagram.folderId)}` : ''
+              }`,
+            );
+          }}
+        />
+      ) : null}
+      {ownerId ? (
+        offline ? (
+          <MenuActionRow
+            plain
+            icon={<SyncIcon />}
+            label="Sync Diagram"
+            onClick={() => void syncToCloud()}
+          />
+        ) : (
+          <MenuActionRow
+            plain
+            icon={<TakeOfflineMenuIcon />}
+            label="Take Offline"
+            onClick={() => void takeOffline()}
+          />
+        )
+      ) : null}
+      <MenuGroupSeparator />
+      <MenuActionRow
+        plain
+        danger
+        icon={<MenuTrashIcon />}
+        label="Delete"
+        onClick={then(onDelete)}
+      />
     </PortalMenu>
   );
-}
-
-// Tile glyphs are drawn at 20px whatever the icon's own attributes say;
-// the CSS override beats the intrinsic width/height.
-function tileIcon(icon: ReactNode) {
-  return <span className="[&_svg]:h-5 [&_svg]:w-5">{icon}</span>;
 }
 
 function SyncIcon() {

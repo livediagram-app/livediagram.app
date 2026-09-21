@@ -202,10 +202,16 @@ export function MenuActionRow({
   onClick,
   danger = false,
   disabled = false,
+  plain = false,
 }: {
   label: string;
   icon: ReactNode;
   onClick: () => void;
+  // Sentence-case, 13px, full-contrast: the reading size for a menu
+  // that IS the list (the diagram actions menu), where the uppercase
+  // label rhythm of a category header is too quiet to scan eight verbs
+  // by. A danger row is red at rest here, not only on hover.
+  plain?: boolean;
   // Destructive verbs (Remove) tint on hover so the row reads before it is
   // clicked, matching the trash affordances elsewhere.
   danger?: boolean;
@@ -224,6 +230,28 @@ export function MenuActionRow({
         <span className="flex w-4 shrink-0 items-center justify-center">{icon}</span>
         {label}
       </span>
+    );
+  }
+  if (plain) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        className={`flex w-full cursor-pointer items-center gap-2.5 px-3 py-2 text-[13px] transition ${
+          danger
+            ? 'text-rose-600 hover:bg-rose-50 dark:text-rose-300 dark:hover:bg-rose-500/15'
+            : 'text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800'
+        }`}
+      >
+        <span
+          className={`flex w-5 shrink-0 items-center justify-center [&_svg]:h-4 [&_svg]:w-4 ${
+            danger ? 'text-rose-500 dark:text-rose-300' : 'text-slate-400 dark:text-slate-400'
+          }`}
+        >
+          {icon}
+        </span>
+        {label}
+      </button>
     );
   }
   return (

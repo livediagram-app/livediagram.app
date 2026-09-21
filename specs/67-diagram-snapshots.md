@@ -132,16 +132,16 @@ emits `UI / Toggled / ExplorerViewList | ExplorerViewCard` (spec/22).
 card, spec/138 §2.8) has one shape wherever it opens: a **header row**
 naming the diagram with its visibility badge, because a menu opens away
 from its trigger and on a grid of near-identical cards the menu itself
-has to say which one it belongs to; a **three-column tile grid** of the
-ordinary verbs (Rename, Duplicate, Change Folder, Favourite, History,
-Hide from Recent, Open Team, Take Offline / Sync); then **Delete on its
-own row under a separator**, in the hover-tinting destructive row form
-the note menu uses (spec/139). It was a two-column grid with Delete as
-the last tile: eight verbs made it four rows tall, "Hide from Recent"
-wrapped in one tile and not its neighbour, and the one irreversible
-verb sat a slip away from Duplicate. The menu is 288px wide for the
-three columns (`PortalMenu width="lg"`); a shared-with-you diagram's
-menu (Open, Dismiss) is two rows under the same header.
+has to say which one it belongs to; then **one full-width row per
+verb, icon on the left** (Rename, Duplicate, Change Folder, Favourite,
+History, Hide from Recent, Open Team, Take Offline / Sync); then
+**Delete last, under a separator, red at rest**. It was an icon-over-
+label tile grid, two columns and then three: eight verbs in a grid read
+in two directions with labels wrapping under their icons, and a list of
+verbs scans down in one. The rows are `MenuActionRow` in its `plain`
+(sentence-case, 13px) form rather than the uppercase category-header
+form the note menu uses, because here the rows are the whole menu. A
+shared-with-you diagram's menu (Open, Dismiss) is the same shape.
 
 The snapshot preview paints its letterbox in the diagram's own
 background colour (parsed client-side from the SVG's background rect)
