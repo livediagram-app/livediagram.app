@@ -15,7 +15,7 @@ import { Tooltip } from '@/components/primitives/Tooltip';
 
 // Scales a Collaborate card's contents to the element's box (spec/122).
 //
-// The face is laid out ONCE at the kind's default size and then scaled, rather
+// The face is laid out at the kind's default size and then scaled, rather
 // than reflowed. That is the difference between "the card gets bigger" and
 // "the card gets more padding": a fist-of-five stretched to fill a wide box
 // still has 13px type and 6px bars, which is exactly what you cannot read from
@@ -23,7 +23,11 @@ import { Tooltip } from '@/components/primitives/Tooltip';
 //
 // Uniform scale on the smaller axis, so nothing distorts and nothing spills.
 // The design box is the shape's default size, which is what every face was
-// composed against.
+// composed against. Along the OTHER axis the inner box is stretched to cover
+// the whole element (in design units), so a card taller or wider than its
+// default still paints its backdrop edge to edge: a centred design-sized box
+// left the agenda's ruling and crease floating in a band in the middle of a
+// tall element, with bare card above and below.
 function CollabScale({ element, children }: { element: ShapeElement; children: React.ReactNode }) {
   const design = SHAPE_DEFAULT_SIZE[element.shape];
   const scale = Math.min(element.width / design.width, element.height / design.height);
@@ -34,15 +38,16 @@ function CollabScale({ element, children }: { element: ShapeElement; children: R
     <div className="absolute inset-0 overflow-hidden rounded-[inherit]">
       <div
         style={{
-          // The inner box is the DESIGN size; the transform maps it onto the
-          // real one. Centred, so a box with a different aspect ratio to the
-          // default leaves even margins rather than pinning to a corner.
-          width: design.width,
-          height: design.height,
+          // The element's box in design units: one axis is exactly the design
+          // size, the other is whatever the element has, so the transform maps
+          // the inner box onto the real one with nothing left over.
+          width: element.width / scale,
+          height: element.height / scale,
           position: 'absolute',
-          left: '50%',
-          top: '50%',
-          transform: `translate(-50%, -50%) scale(${scale})`,
+          left: 0,
+          top: 0,
+          transform: `scale(${scale})`,
+          transformOrigin: 'top left',
         }}
       >
         {children}

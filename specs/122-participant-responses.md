@@ -133,7 +133,7 @@ mode, none of which a per-kind colour would.
 | Agenda          | a folded programme | ruled, creased down the middle                                 |
 | Decision record | a filed record     | photocopy screen, turned-up corner                             |
 | Roll call       | a ticket stub      | perforated fold, torn bottom edge                              |
-| Comment panel   | a quoted remark    | the rail down the left edge                                    |
+| Comment panel   | a quoted remark    | none (the left-edge rail it had read as a stray bar and went)  |
 | Picker          | a reel in a window | shaded at the lip, clear in the middle                         |
 | Timer           | a dial             | minute ticks along the edge you read                           |
 | Session button  | a tally sheet      | five-bar gate marks (not on a timer)                           |
@@ -194,6 +194,9 @@ padding". Resizing one is how a facilitator makes it readable from the back of
 the room; a fist-of-five stretched to fill a wide box still had 13px type and
 6px bars, which is exactly what nobody can read from there.
 
-Uniform scale on the smaller axis, centred, so nothing distorts and a box with
-a different aspect ratio to the default leaves even margins instead of pinning
-to a corner.
+Uniform scale on the smaller axis, so nothing distorts. Along the other axis
+the inner box is stretched to the element (in design units) rather than
+centred at the design size, so a card taller or wider than its default still
+paints its backdrop edge to edge: a centred design box left the agenda's
+ruling and crease floating in a band mid-element with bare card above and
+below.
