@@ -12,7 +12,7 @@
 // the bar at every level never has it appear and disappear under the rows.
 
 const SHELL =
-  'mb-3 flex w-full animate-slide-row-in items-center gap-2.5 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-left text-sm font-semibold text-slate-700 shadow-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100';
+  'flex w-full animate-slide-row-in items-center gap-2.5 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-left text-sm font-semibold text-slate-700 shadow-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100';
 const WELL =
   'flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-200';
 
@@ -20,6 +20,7 @@ export function BackBar({
   label,
   current,
   onClick,
+  gap = 'default',
 }: {
   label: string;
   // The category the user has drilled into, shown as a chip on the right
@@ -27,7 +28,11 @@ export function BackBar({
   current?: string;
   // Absent = the static heading form.
   onClick?: () => void;
+  // Space below the bar. `tight` for a list of rows directly under it (the
+  // placement browser), where the default read as a gap in the list.
+  gap?: 'default' | 'tight';
 }) {
+  const shell = `${gap === 'tight' ? 'mb-1.5' : 'mb-3'} ${SHELL}`;
   const chip = current ? (
     <span className="ml-auto rounded-md bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-200">
       {current}
@@ -35,7 +40,7 @@ export function BackBar({
   ) : null;
   if (!onClick) {
     return (
-      <div className={SHELL}>
+      <div className={shell}>
         <span className={WELL}>
           <DotsGlyph />
         </span>
@@ -48,7 +53,7 @@ export function BackBar({
     <button
       type="button"
       onClick={onClick}
-      className={`group ${SHELL} transition hover:border-brand-300 hover:bg-brand-50/50 hover:text-brand-700 dark:hover:border-brand-500/60 dark:hover:bg-slate-800/80 dark:hover:text-brand-200`}
+      className={`group ${shell} transition hover:border-brand-300 hover:bg-brand-50/50 hover:text-brand-700 dark:hover:border-brand-500/60 dark:hover:bg-slate-800/80 dark:hover:text-brand-200`}
     >
       <span
         className={`${WELL} transition group-hover:bg-brand-100 group-hover:text-brand-700 dark:group-hover:bg-brand-500/25 dark:group-hover:text-brand-200`}

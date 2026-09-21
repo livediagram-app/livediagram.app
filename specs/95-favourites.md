@@ -5,7 +5,7 @@ Status: shipped
 ## What
 
 A **Favourite** / **Unfavourite** toggle on the diagram menu in both Explorer
-surfaces, and a **Favourites** view under **My Work → Dynamic** that collects
+surfaces, and a **Favourites** view under **Personal Space → Dynamic** that collects
 every starred diagram — personal or team — in one place.
 
 The motivating case is team folders: a shared library accumulates diagrams
@@ -46,8 +46,8 @@ star on a team you've since left doesn't inflate it.
 
 ## The view
 
-Under **My Work → Dynamic**, beside Unsorted / Generated / Offline — the issue
-asked for it "within My Work", and it behaves like the other synthetic folders
+Under **Personal Space → Dynamic**, beside Unsorted / Generated / Offline — the issue
+asked for it "within Personal Space", and it behaves like the other synthetic folders
 (a computed list, not a real folder you can move things into).
 
 - **Sorted most-recently-updated first**, exactly like Recent and every folder,

@@ -1359,12 +1359,12 @@ export const articles: Article[] = [
     categorySlug: 'explorer',
   },
   {
-    slug: 'my-work',
-    title: 'My Work and Folders',
+    slug: 'personal-space',
+    title: 'Personal Space and Folders',
     description:
       'Your own library: the Unsorted and Favourites buckets, and the folders you create.',
     keywords:
-      'personal library your diagrams own files organise organize favourite favorite star starred bookmark pin quick access',
+      'personal library my work your diagrams own files organise organize favourite favorite star starred bookmark pin quick access',
     category: 'Explorer',
     categorySlug: 'explorer',
   },

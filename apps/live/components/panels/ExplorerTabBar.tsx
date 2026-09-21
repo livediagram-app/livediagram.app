@@ -4,7 +4,7 @@ export type ExplorerTab = {
 };
 
 // Horizontal segmented tab bar for the Explorer panel's sections
-// (Recent / My Work / Teams). Replaces the three stacked accordions so
+// (Recent / Personal Space / Teams). Replaces the three stacked accordions so
 // only one section's list takes vertical space at a time — the whole
 // reason this exists is to keep the floating panel compact. Sections
 // that have nothing to show simply aren't passed in, so a solo guest

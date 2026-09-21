@@ -30,12 +30,24 @@ function enterProps(layout: PlacementLayout, index: number | undefined) {
 // modal). Enter creates in the CURRENT level's scope and the browser selects
 // the fresh folder; Escape backs out. Exported for the tab Add-to-Folder
 // dialog (spec/30), which offers the same create-in-place affordance.
-export function NewFolderTile({
+// The dashed "create one here" tile: a label at rest, an inline name field
+// once clicked. New Folder and New Team are two skins of it, so the two
+// gestures (click, type, Enter or tap away) are the same wherever a level
+// lets you add to it.
+function InlineCreateTile({
   onCreate,
+  icon,
+  label,
+  sub,
+  placeholder,
   layout = 'tiles',
   enterIndex,
 }: {
   onCreate: (name: string) => Promise<boolean>;
+  icon: ReactNode;
+  label: string;
+  sub: string;
+  placeholder: string;
   layout?: PlacementLayout;
   // Position in the level's cascade; absent = no entrance animation.
   enterIndex?: number;
@@ -62,21 +74,22 @@ export function NewFolderTile({
         type="button"
         onClick={() => setNaming(true)}
         style={enter.style}
-        className={`${enter.className} ${
+        className={`group ${enter.className} ${
           row
             ? 'flex items-center gap-2.5 px-3 py-2 text-left'
             : 'flex flex-col items-center justify-center gap-1.5 p-3 text-center'
-        } rounded-lg border border-dashed border-slate-300 transition hover:border-brand-400 hover:bg-brand-50/40 dark:border-slate-600 dark:hover:border-brand-500 dark:hover:bg-brand-500/10`}
+        } rounded-lg border border-dashed border-slate-200 bg-slate-50/60 text-slate-400 transition hover:border-brand-400 hover:bg-brand-50/40 hover:text-brand-700 dark:border-slate-700 dark:bg-slate-800/40 dark:text-slate-500 dark:hover:border-brand-500 dark:hover:bg-brand-500/10 dark:hover:text-brand-200`}
       >
-        <span className="shrink-0 text-slate-400">
-          <NewFolderIcon />
+        {/* Quieter than a destination row at rest (lighter border, a faint
+            fill, grey text): it is an action, not one of the options, and
+            it only takes on colour when the pointer reaches it. */}
+        <span className="shrink-0 text-slate-300 transition group-hover:text-brand-500 dark:text-slate-600">
+          {icon}
         </span>
-        <span
-          className={`${row ? 'min-w-0 flex-1' : 'w-full'} truncate text-xs font-medium text-slate-500 dark:text-slate-400`}
-        >
-          New Folder
+        <span className={`${row ? 'min-w-0 flex-1' : 'w-full'} truncate text-xs font-medium`}>
+          {label}
         </span>
-        <span className="shrink-0 text-[10px] text-slate-400 dark:text-slate-500">Create here</span>
+        <span className="shrink-0 text-[10px] text-slate-300 dark:text-slate-600">{sub}</span>
       </button>
     );
   }
@@ -84,18 +97,16 @@ export function NewFolderTile({
     <div
       className={`${
         row
-          ? 'flex items-center gap-2.5 px-3 py-1.5'
+          ? 'flex items-center gap-2.5 px-3 py-2'
           : 'flex flex-col items-center justify-center gap-1.5 p-3'
       } rounded-lg border border-brand-300 bg-brand-50/40 dark:border-brand-500/50 dark:bg-brand-500/10`}
     >
-      <span className="shrink-0 text-brand-500">
-        <NewFolderIcon />
-      </span>
+      <span className="shrink-0 text-brand-500">{icon}</span>
       <input
         type="text"
         autoFocus
         value={name}
-        placeholder="Folder name"
+        placeholder={placeholder}
         disabled={busy}
         onChange={(e) => setName(e.target.value)}
         onKeyDown={(e) => {
@@ -118,18 +129,76 @@ export function NewFolderTile({
             setName('');
           }
         }}
+        // No border or fill of its own: the tile is already the outlined,
+        // tinted box, and a second outline inside it read as a field in a
+        // field. The caret and the placeholder are enough to say "type".
+        // Same py-2 as a placement row, and a 16px-tall field, so the tile
+        // is exactly a row's height whether it is resting or being named.
         // leading-4 on the row form: under 640px the app's anti-zoom rule
         // (globals.css) lifts every input to 16px, and at the default line
         // height that made this row taller than its neighbours. A 16px
         // line box keeps the row at the same height as a 12px label row.
         className={`${
-          row ? 'min-w-0 flex-1 py-0.5 text-left leading-4' : 'w-full py-1 text-center'
-        } rounded border border-brand-300 bg-white px-1.5 text-xs text-slate-800 outline-none dark:border-brand-500/50 dark:bg-slate-800 dark:text-slate-100`}
+          row ? 'h-4 min-w-0 flex-1 py-0 text-left leading-4' : 'w-full py-1 text-center'
+        } bg-transparent px-0 text-xs text-slate-800 outline-none placeholder:text-slate-400 dark:text-slate-100 dark:placeholder:text-slate-500`}
       />
       <span className="shrink-0 text-[10px] text-slate-400 dark:text-slate-500">
         {busy ? 'Creating…' : 'Enter to create'}
       </span>
     </div>
+  );
+}
+
+export function NewFolderTile({
+  onCreate,
+  label = 'New Folder',
+  sub = 'Create here',
+  layout,
+  enterIndex,
+}: {
+  onCreate: (name: string) => Promise<boolean>;
+  // "New Folder" at a space's root, "New Subfolder" once a folder is the
+  // selected destination (the browser decides; see its tile).
+  label?: string;
+  sub?: string;
+  layout?: PlacementLayout;
+  enterIndex?: number;
+}) {
+  return (
+    <InlineCreateTile
+      onCreate={onCreate}
+      icon={<NewFolderIcon />}
+      label={label}
+      sub={sub}
+      placeholder="Folder name"
+      layout={layout}
+      enterIndex={enterIndex}
+    />
+  );
+}
+
+// The space overview's "start a team here" (spec/32, spec/141). Signed-in
+// only: the host passes the handler only when teams are on, so a guest
+// never sees a tile that would lead to a 401.
+export function NewTeamTile({
+  onCreate,
+  layout,
+  enterIndex,
+}: {
+  onCreate: (name: string) => Promise<boolean>;
+  layout?: PlacementLayout;
+  enterIndex?: number;
+}) {
+  return (
+    <InlineCreateTile
+      onCreate={onCreate}
+      icon={<TeamPlaceIcon />}
+      label="New Team"
+      sub="Create a New Team"
+      placeholder="Team name"
+      layout={layout}
+      enterIndex={enterIndex}
+    />
   );
 }
 
@@ -235,7 +304,7 @@ export function PlacementCard({
 }
 
 // Tile glyphs, sized to sit above the card label.
-export function MyWorkIcon() {
+export function PersonalSpaceIcon() {
   return (
     <svg
       width="20"

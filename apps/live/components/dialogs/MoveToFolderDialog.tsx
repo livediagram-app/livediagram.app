@@ -66,6 +66,9 @@ type MoveToFolderDialogProps = {
     parentId: string | null,
     teamId: string | null,
   ) => Promise<PickerFolder | null>;
+  // Inline team creation on the space overview (signed-in only; absent =
+  // tile hidden).
+  onCreateTeam?: (name: string) => Promise<{ id: string; name: string } | null>;
   onPick: (dest: MoveDestination) => void;
   onClose: () => void;
 };
@@ -78,6 +81,7 @@ export function MoveToFolderDialog({
   currentTeamId = null,
   currentFolderId = null,
   onCreateFolder,
+  onCreateTeam,
   onPick,
   onClose,
 }: MoveToFolderDialogProps) {
@@ -134,6 +138,7 @@ export function MoveToFolderDialog({
           teams={teamList}
           teamFolders={teamFolders}
           onCreateFolder={onCreateFolder}
+          onCreateTeam={onCreateTeam}
         />
       </div>
 

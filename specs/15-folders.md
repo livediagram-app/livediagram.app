@@ -36,11 +36,19 @@ In scope:
   browser** — the same two-level space -> folder tile-grid browse as
   the New Diagram wizard's Save In step (spec/76,
   `components/placement/PlacementBrowser`), so the product has exactly
-  one way to choose where a diagram lives. Spaces first (My Work +
-  each team, spec/35; team-scoped surfaces skip the overview and open
-  straight inside their team), then the folder drill-down with a
+  one way to choose where a diagram lives. Spaces first (Personal Space +
+  each team, spec/35, on an overview that is shown even when Personal
+  Space is the only space, so the choice is deliberate and the screen has
+  room for a create-team option; only team-scoped surfaces skip it and
+  open straight inside their team), then the folder drill-down with a
   "here" card at every level, an inline New Folder tile, and a
-  BackBar. The New Folder tile's name field commits on Enter OR on
+  BackBar. **The tile creates under the selected destination**: with a
+  folder selected it reads "New Subfolder · In <folder>" and the new
+  folder lands inside it (the browser then opens that folder so the new
+  row is the highlighted one); with the space's root selected it reads
+  "New Folder · Create here". So selecting a folder, then the tile, then
+  a name is the whole gesture for a nested folder, without drilling in
+  first. The New Folder tile's name field commits on Enter OR on
   blur when a name has been typed (mobile keyboards give the
   single-line field no Enter key, so tapping away is the only submit
   gesture there); blurring it empty, or pressing Escape, cancels. The dialog opens with the subject's current placement
@@ -48,7 +56,7 @@ In scope:
   stays disabled until the choice changes, and double-clicking a
   destination card commits the move in one gesture. Shared by the
   /explorer page, the floating Explorer panel, and the team library —
-  and every diagram-move surface offers every space (My Work + each
+  and every diagram-move surface offers every space (Personal Space + each
   team, spec/35), so a diagram is never trapped in a scope; only folder
   moves stay scoped to their own tree. It replaced the earlier
   filterable indented-tree modal, which itself outgrew an anchored
@@ -70,7 +78,7 @@ Every Explorer section is its own page under `/explorer` (the chrome — header,
 | Invites (spec/32) | `/explorer/invites`                                         |
 | Image gallery     | `/explorer/images`                                          |
 
-`/explorer` itself redirects to `/explorer/recent` (worker-level 302 in production, client replace in dev). Folder and team ids ride the **query string**, not a path segment: `output: 'export'` can't enumerate user-minted ids, and the `/diagram/<id>` placeholder-rewrite workaround (spec/14) is deliberately kept single-purpose. Sidebar row labels are sentence case ("Recent diagrams", "Image gallery"). Section headers, top to bottom: **"Quick find"** (Recent diagrams + Shared with you), **"My Work"** (the personal tree — Unsorted + the root folders directly, no "All diagrams" parent row; contrasts with team libraries, spec/35), **"Teams"** (spec/32), and **"Library"**.
+`/explorer` itself redirects to `/explorer/recent` (worker-level 302 in production, client replace in dev). Folder and team ids ride the **query string**, not a path segment: `output: 'export'` can't enumerate user-minted ids, and the `/diagram/<id>` placeholder-rewrite workaround (spec/14) is deliberately kept single-purpose. Sidebar row labels are sentence case ("Recent diagrams", "Image gallery"). Section headers, top to bottom: **"Quick find"** (Recent diagrams + Shared with you), **"Personal Space"** (the personal tree — Unsorted + the root folders directly, no "All diagrams" parent row; contrasts with team libraries, spec/35), **"Teams"** (spec/32), and **"Library"**.
 
 Out of scope (V1):
 
@@ -110,7 +118,7 @@ diagrams
 
 ### Dynamic (synthetic) folders
 
-Two folders in **My Work** aren't rows in the `folders` table — they're
+Two folders in **Personal Space** aren't rows in the `folders` table — they're
 live views the Explorer always shows (badge hidden at zero), each with an
 info block under its breadcrumb explaining why it exists:
 
@@ -240,7 +248,7 @@ it stays in view as the dashboard scrolls; Settings opens the same synced
   - "Recent" — virtual entry, last N most-recently-saved diagrams
     (personal + team + shared-with-you, interleaved by recency), with
     a count badge.
-  - **"My Work"** — there is no "All diagrams" parent row; Unsorted and
+  - **"Personal Space"** — there is no "All diagrams" parent row; Unsorted and
     the root folders render directly under the heading as a recursive
     tree with chevron expand/collapse and indented nesting. Each folder
     row carries an ellipsis menu with Rename, New subfolder, Change

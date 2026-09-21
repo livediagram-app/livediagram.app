@@ -431,7 +431,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       },
       {
         art: <FoldersArt />,
-        href: '/help/explorer/my-work/',
+        href: '/help/explorer/personal-space/',
         group: 'Canvas & type',
         title: 'Organise in folders',
         description:

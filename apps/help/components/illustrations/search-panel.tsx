@@ -281,7 +281,7 @@ export function SearchDiagrams() {
           rows: [{ icon: <DiagramIcon />, label: 'Onboarding flow', active: true }],
         },
         {
-          title: 'My Work',
+          title: 'Personal Space',
           rows: [{ icon: <FolderIcon accent />, label: 'Onboarding', meta: 'folder' }],
         },
         {

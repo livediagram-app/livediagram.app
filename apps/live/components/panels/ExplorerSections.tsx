@@ -17,7 +17,7 @@ import type { useExplorerViewModel } from './useExplorerViewModel';
 
 type ExplorerViewModel = ReturnType<typeof useExplorerViewModel>;
 
-// The Explorer panel's tabbed sections card (Recent / My Work / Teams),
+// The Explorer panel's tabbed sections card (Recent / Personal Space / Teams),
 // lifted out of Explorer: the tab-bar state (pick + collapse), the
 // which-tab-earns-a-slot guards, and the three section lists. Explorer
 // keeps the data + row handlers and passes them in; the card owns only
@@ -88,7 +88,7 @@ export function ExplorerSections({
   onMoveDiagramRequest?: (diagramId: string) => void;
   onMoveDiagramToFolder?: (diagramId: string, folderId: string | null) => void;
 }) {
-  // The three sections (Recent / My Work / Teams) are a single tab bar
+  // The three sections (Recent / Personal Space / Teams) are a single tab bar
   // instead of three stacked accordions, so only one list takes
   // vertical space at a time. `selectedTab` is the user's pick; the
   // section actually rendered falls back to the first available tab
@@ -109,7 +109,7 @@ export function ExplorerSections({
   const sectionTabs: ExplorerTab[] = [];
   if (loading || recents.length > 0) sectionTabs.push({ id: 'recent', label: 'Recent' });
   if (!(diagrams.length === 0 && folders.length === 0))
-    sectionTabs.push({ id: 'work', label: 'My Work' });
+    sectionTabs.push({ id: 'work', label: 'Personal Space' });
   if (teams.length > 0) sectionTabs.push({ id: 'teams', label: 'Teams' });
   // Resolve the rendered tab: the user's pick when still available,
   // else the first available section (null only on a blank account,

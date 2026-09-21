@@ -12,7 +12,7 @@ import { DialogFooter } from '@/components/dialogs/DialogFooter';
 // border/shadow stack, button rhythm) but with form fields, so it's
 // its own component rather than a ConfirmDialog contortion. The
 // caller owns open/close and the submit side-effects; `initial`
-// switches it between "New team" and "Edit team" duty.
+// switches it between "New Team" and "Edit Team" duty.
 
 export function TeamFormModal({
   open,

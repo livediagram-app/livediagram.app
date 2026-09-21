@@ -62,3 +62,24 @@ describe('the folder step', () => {
     expect(screen.getByRole('radiogroup', { name: 'Save location' })).toBeTruthy();
   });
 });
+
+describe('the folder step', () => {
+  it('offers New Team on the space overview only when the host can create teams', () => {
+    const base = {
+      diagramName: '',
+      onDiagramName: () => {},
+      placeholder: 'Untitled diagram',
+      placement: 'unsorted',
+      onPlacement: () => {},
+      folders: [],
+      teams: [],
+      saveLocation: 'livediagram' as const,
+      onSaveLocation: () => {},
+    };
+    const { unmount } = render(<NewDiagramSettingsStep {...base} />);
+    expect(screen.queryByRole('button', { name: /New Team/ })).toBeNull();
+    unmount();
+    render(<NewDiagramSettingsStep {...base} onCreateTeam={async () => null} />);
+    expect(screen.getByRole('button', { name: /New Team/ })).toBeTruthy();
+  });
+});

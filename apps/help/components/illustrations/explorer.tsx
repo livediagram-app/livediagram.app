@@ -85,7 +85,7 @@ export function ExplorerPanel() {
       <SidebarRow x={28} y={66} w={188} label="Recent" count={8} active glyph="recent" />
       <DiagramRow x={40} y={92} w={164} title="Onboarding flow" meta="edited 2m ago" active />
       <DiagramRow x={40} y={126} w={164} title="Data model" meta="edited today" />
-      <SidebarRow x={28} y={162} w={188} label="My Work" glyph="folder" />
+      <SidebarRow x={28} y={162} w={188} label="Personal Space" glyph="folder" />
       <SidebarRow x={28} y={184} w={188} label="Shared with you" count={3} glyph="shared" />
     </Scene>
   );
@@ -173,8 +173,8 @@ export function SharedWithYou() {
   );
 }
 
-/** The My Work folder tree: an Unsorted bucket plus nested project folders. */
-export function MyWorkTree() {
+/** The Personal Space folder tree: an Unsorted bucket plus nested project folders. */
+export function PersonalSpaceTree() {
   const row = (
     y: number,
     label: string,
@@ -219,7 +219,7 @@ export function MyWorkTree() {
         strokeWidth={1.5}
       />
       <Label x={40} y={32} size={11} weight={700} tone="strong">
-        My Work
+        Personal Space
       </Label>
       <line x1={24} y1={44} x2={396} y2={44} className="stroke-slate-200" strokeWidth={1.5} />
       {row(56, 'Unsorted', 0, { glyph: 'folder' })}
@@ -460,7 +460,7 @@ export function ThemesLibrary() {
 }
 
 /** The Unsorted folder: the synthetic home for diagrams not filed anywhere,
- *  shown highlighted at the top of My Work with a couple of loose docs in it. */
+ *  shown highlighted at the top of Personal Space with a couple of loose docs in it. */
 export function UnsortedFolder() {
   return (
     <Scene w={420} h={214} bg="plain">
@@ -474,7 +474,7 @@ export function UnsortedFolder() {
         strokeWidth={1.5}
       />
       <Label x={40} y={32} size={11} weight={700} tone="strong">
-        My Work
+        Personal Space
       </Label>
       <line x1={24} y1={44} x2={396} y2={44} className="stroke-slate-200" strokeWidth={1.5} />
       <SidebarRow x={40} y={54} w={336} label="Unsorted" glyph="folder" active count={2} />

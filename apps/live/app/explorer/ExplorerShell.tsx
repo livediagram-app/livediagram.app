@@ -76,6 +76,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
     moveDiagramTo,
     moveFolderToParent,
     createMoveFolder,
+    teamsEnabled,
     teamModalOpen,
     setTeamModalOpen,
     hookCreateTeam,
@@ -181,7 +182,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
       {/* Move-destination modal (spec/15 + spec/35): the shared
           placement browser (spec/76's Save In UI) for every diagram
           (personal or team) and for folder re-parenting. It offers
-          "My Work" plus each team as a space (for diagram moves);
+          "Personal Space" plus each team as a space (for diagram moves);
           `moveDiagramTo` routes the pick from the subject's current
           placement. Folder moves are personal-only, so they pass no
           teams. The New Folder tile creates in the picked scope. */}
@@ -214,6 +215,16 @@ function ShellChrome({ children }: { children: ReactNode }) {
                 currentTeamId={currentTeamId}
                 currentFolderId={currentFolderId}
                 onCreateFolder={createMoveFolder}
+                // A diagram can be moved into a team made on the spot;
+                // folder moves stay personal, and guests have no teams.
+                onCreateTeam={
+                  teamsEnabled && moveTarget.kind === 'diagram'
+                    ? async (name) => {
+                        const team = await hookCreateTeam({ name });
+                        return team ? { id: team.id, name: team.name } : null;
+                      }
+                    : undefined
+                }
                 onPick={(dest) => {
                   if (moveTarget.kind === 'folder')
                     moveFolderToParent(moveTarget.id, dest.folderId);
@@ -226,7 +237,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
         : null}
       <TeamFormModal
         open={teamModalOpen}
-        title="New team"
+        title="New Team"
         submitLabel="Create team"
         onSubmit={(values) => {
           setTeamModalOpen(false);

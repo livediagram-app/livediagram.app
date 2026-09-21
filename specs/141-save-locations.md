@@ -42,7 +42,7 @@ the `PlacementCard` tile). The locations today:
 The tile glyphs: the livediagram tile carries the brand mark (the same
 `BrandMark` the site header uses, exported from `@livediagram/ui` rather than
 redrawn); Local Browser carries a browser-window glyph. The cloud-with-a-slash
-glyph stays on the offline "My Work" placeholder card below, where it still
+glyph stays on the offline "Personal Space" placeholder card below, where it still
 says what that card means.
 
 ## The folder step
@@ -64,7 +64,7 @@ lives.
 
 **Subfolder count.** A destination that holds more folders says so with a
 small badge beside its name, "1 Subfolder" / "3 Subfolders": the space cards
-on the overview (root folders of My Work or the team), the "save here" card
+on the overview (root folders of Personal Space or the team), the "save here" card
 at the top of a level, and any folder row that drills in. A folder with
 nothing inside shows no badge, so the badge itself is the "there's more in
 here" cue, not just a number. Both layouts show it; in a row it sits beside
@@ -74,7 +74,24 @@ the name, on a tile it takes its own line between name and caption.
 there is a level above, it is the back button (chevron, the level's name,
 and a chip naming where you are). Where there is not, it is a static heading
 in the same shape: **"Choose a Space"** on the space overview, **"Choose a
-Folder"** (with the space's name as the chip) at the root of a single space.
+Folder"** (with the space's name as the chip) at the root of a team-scoped
+surface's one team. **The overview is always the first screen wherever
+Personal Space is offered**, even when it is the only space: choosing where
+a diagram lives starts with choosing the space, deliberately, and that
+screen is where a "create a team" option belongs for someone who has no
+team yet. An earlier version dropped a lone Personal Space straight into
+its folders, which left nowhere to put that option.
+
+That option is the **New Team tile**, last on the overview after the
+team cards: the same dashed inline-name tile as New Folder (one
+`InlineCreateTile`, two skins), reading "New Team · Create a New Team". Type a
+name and the team is created (`POST /api/teams`, spec/32), joins the
+overview, and the browser enters it with its root selected, because the
+point of making a team here is to file this diagram in it. **Signed-in
+only**: teams are Clerk-only, so the hosts (the wizard, the Explorer's
+move dialog) pass the create handler only when there is a Clerk user, and
+a guest never sees a tile that would lead to a 401. Folder moves pass no
+handler either, since a folder can't move into a team.
 So the bar never appears and disappears under the rows as you move about,
 which was its own jolt.
 
