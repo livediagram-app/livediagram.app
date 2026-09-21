@@ -107,7 +107,7 @@ existing `ExplorerPane` dispatch.
 
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
-│ Timeline            [≡ List|▦ Calendar] [⧩ Filter] [? Help] [+ New]  │
+│ Timeline           [≡ Cards|▦ Calendar] [⧩ Filter] [? Help] [+ New]  │
 ├──────────────────────────────────────────────────────────────────────┤
 │  ●  ┃  [Today]  Tue, 5 Aug   2026                                    │
 │  │  ┃  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐            │
@@ -323,8 +323,11 @@ Pure, in `packages/ui/src/timeline/sameDayCreate.ts`, tested directly.
 
 ### 2.2 Calendar mode
 
-A segmented control in the header switches **List** / **Calendar**,
+A segmented control in the header switches **Cards** / **Calendar**,
 each wearing its own glyph so the pair reads without parsing the labels.
+The first mode is `list` in code and in the `Changed` telemetry token
+(it names the data shape, and the token predates the cards), but the
+button says **Cards**, because that is what the reader is looking at.
 
 There is no Week mode. There was one, the same grid over seven days with
 taller cells, and it went in the card redesign: it showed nothing the
@@ -358,7 +361,7 @@ implementation, not two.
   have loaded those months was disabled for not having loaded them. The
   cost of the honest version is a click per empty month.
 
-- Mode is not persisted across navigation. Each mount opens on List:
+- Mode is not persisted across navigation. Each mount opens on Cards:
   someone who looked at the calendar once should not find the feed in
   calendar mode a week later wondering where their list went.
 
@@ -372,7 +375,7 @@ under a header that already has one reads as two unrelated toolbars.
 The two halves share one `useTimelineControls()` state, so a filter
 chip and the list it filters can never disagree.
 
-**On a phone the row is one button.** Below `sm:` the List /
+**On a phone the row is one button.** Below `sm:` the Cards /
 Calendar switch leaves the header and moves to the top of the filter
 popover, under a **View** heading, above the filters it applies to.
 Collapsing its labels to icons bought room for a while, but two of
@@ -438,7 +441,7 @@ the mode buttons in §2.2.
   type from a newer worker is still filterable.
 
 - **Mini calendar** inside the popover: clicking a date takes the reader to
-  that day, and what that means follows the open mode. **List** scrolls the
+  that day, and what that means follows the open mode. **Cards** scrolls the
   day-group into view and pulses it with a fading box-shadow — box-shadow
   only, never a transform, because transforming the group promotes it to its
   own compositing layer and tearing that layer down at animation end makes

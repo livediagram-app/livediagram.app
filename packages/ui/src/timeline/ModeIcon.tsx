@@ -20,6 +20,14 @@ export const MODE_ICONS: Record<TimelineMode, string> = {
 /** The order the switch offers them in, wherever it renders. */
 export const TIMELINE_MODES: readonly TimelineMode[] = ['list', 'calendar'];
 
+// What the switch calls each mode. The value stays `list` (it names the
+// data shape, and the telemetry token built on it), but the reader sees
+// a grid of cards, so that is the word on the button.
+export const MODE_LABELS: Record<TimelineMode, string> = {
+  list: 'Cards',
+  calendar: 'Calendar',
+};
+
 export function ModeIcon({ mode }: { mode: TimelineMode }) {
   return (
     <svg
