@@ -9,6 +9,7 @@
 // new event type from a newer worker still renders.
 
 import type { ReactNode } from 'react';
+import { TeamIcon } from '../icons';
 
 function Glyph({ d }: { d: string }) {
   return (
@@ -80,7 +81,10 @@ export const EVENT_ICONS: Record<string, ReactNode> = {
   action_completed: <Glyph d={CHECK} />,
   share_link_created: <Glyph d={LINK} />,
   share_link_expiring: <Glyph d={CLOCK} />,
-  team_created: <Glyph d={SHIELD} />,
+  // The sidebar's own two-person team mark, so a team reads as a team
+  // wherever it appears; the shield stays for role changes, which are
+  // about permissions rather than the team itself.
+  team_created: <TeamIcon />,
   team_invite_received: <Glyph d={ENVELOPE} />,
   team_invite_accepted: <Glyph d={USER_PLUS} />,
   team_invite_declined: <Glyph d={USER_MINUS} />,
