@@ -157,8 +157,8 @@ export function PlacementBrowser({
   // it never appears and disappears under the rows as you move about.
   if (hasOverview && space === null) {
     return (
-      <div className="flex flex-col gap-0.5">
-        <BackBar label="Choose a Space" />
+      <div className="flex flex-col">
+        <BackBar label="Choose a Space" gap="tight" />
         <div key="overview" className={levelClass}>
           {showPersonal ? (
             <PlacementCard
@@ -269,11 +269,12 @@ export function PlacementBrowser({
         : 'All spaces';
 
   return (
-    <div className="flex flex-col gap-0.5">
+    <div className="flex flex-col">
       <BackBar
         label={showBack ? backLabel : 'Choose a Folder'}
         current={openFolder?.name ?? spaceName}
         onClick={showBack ? onBack : undefined}
+        gap="tight"
       />
       <div key={`${space}:${openFolder?.id ?? 'root'}`} className={levelClass}>
         {openFolder ? (
