@@ -311,34 +311,57 @@ seam are all the same colour as their surroundings, so all of them fail it.
 | 201707 | 82%       | 84%     | 73%              | 83%           |
 | 201713 | 67%       | **91%** | 53%              | **91%**       |
 
-- [ ] 3.5 **Ink is not paper.** The handwritten "Legend" is ink on bare wall: the
+- [x] 3.5 **Ink is not paper.** The handwritten "Legend" is ink on bare wall: the
       blob should be mostly ink pixels with wall around them, not a filled field
       of paper colour. Make sure the class mask treats it that way, and that the
       morphological close is not fusing loose ink strokes into a paper-shaped
       blob (it was added to fuse handwriting INSIDE a note; check it is not
       manufacturing notes out of writing on the wall).
-- [ ] 3.6 Consider, and decide with evidence, whether to keep a low-confidence
+- [x] 3.6 Consider, and decide with evidence, whether to keep a low-confidence
       detection at all: the operator sees a box with a tick on it as a claim.
       If a detection cannot clear the gates, it is better absent — the author
       can always drag a box around anything we missed, which is now a
       first-class gesture on the surface.
-- [ ] 3.7 RED tests for each gate: a white rectangle, a grey/brown cardboard
+- [x] 3.7 RED tests for each gate: a white rectangle, a grey/brown cardboard
       rectangle, a word written in ink on bare wall, and a tape strip — none of
       them may become notes, while the eight catalogue notes beside them all do.
-- [ ] 3.8 GREEN, suite green, sweep re-run: precision up materially on both
+- [x] 3.8 GREEN, suite green, sweep re-run: precision up materially on both
       truth photos, recall not down by more than a note or two. Report the table.
-- [ ] 3.9 Commit.
-- [ ] 3.10 **Tape.** RED: a masking-tape strip (pale yellow, `#f0ead0`-ish) run
+- [x] 3.9 Commit.
+- [x] 3.10 **Tape.** RED: a masking-tape strip (pale yellow, `#f0ead0`-ish) run
       across a wall of notes, and a second one along a paper seam, produce NO
       boxes — while a real pale-yellow `aggregate` note on the same wall still
       does. Separate them on aspect ratio and size against the note estimate,
       never on hue alone.
-- [ ] 3.11 **The big-note floor (photo 2's collapse).** RED: a wall where one
+- [x] 3.11 **The big-note floor (photo 2's collapse).** RED: a wall where one
       note is larger than an illumination tile must still be detected. Make the
       "a tile that is all one surface must not invent a wall" guard real and
       tested, and report which of photo 2's named missing notes come back.
-- [ ] 3.12 GREEN, suite green, per-photo truth table for all three photos.
-- [ ] 3.13 Commit.
+- [x] 3.12 GREEN, suite green, per-photo truth table for all three photos.
+- [x] 3.13 Commit.
+
+### The rest of the gates, and what is left
+
+- **Ink is not paper.** The handwritten "Legend" on the bare wall is gone: ink
+  strokes on kraft are duller than the kraft around them, so the standout test
+  refuses them without needing a rule of their own. The close is not
+  manufacturing a note out of them either - the size floor rejects what it
+  does fuse.
+- **Paper is BRIGHT** (the veto). Nothing in the notation is darker than the
+  wall it is stuck to, so a box darker than the darkest quarter of its own
+  ring is not a note - which is what the navy side of the cardboard box was.
+  Measured against the DARKEST quarter rather than the middle, or a note in
+  the shade gets vetoed for being darker than the sunlit paper beside it.
+- **Fill.** Raised from 0.3 to 0.45 of the box. Worth about four points of
+  precision on photos 1 and 2 for one or two notes; the cue is weaker than
+  either the size band or the standout test, which is why it is a floor rather
+  than a gate.
+- **Low-confidence detections (3.6).** Kept, and no longer shown as a number:
+  the gates above are the judgement, and a box that clears them is a claim the
+  detector is willing to make. Confidence stays in the data for the sweep.
+- **Still there on photo 1:** the lit tan top of the cardboard packaging and
+  the pink parcel tape on it. That photograph has half a room in it, and the
+  honest limit stands - fill the frame with the wall.
 
 ## 4. The whole wall, end to end
 

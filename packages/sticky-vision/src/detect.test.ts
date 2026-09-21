@@ -456,6 +456,63 @@ describe('detectStickies', () => {
     }
   });
 
+  it('boxes the notes on a wall, and nothing else on it', () => {
+    // Everything the operator pointed at in one photograph: the strip of white
+    // wall above the paper, the cardboard packaging leaning against it, a word
+    // written on the paper itself in marker, and the masking tape holding the
+    // sheets together. None of them is a sticky; all four were being boxed.
+    const image = blank(1000, 563, '#a8907a');
+    const orange = fillOf('domain-event');
+    for (let i = 0; i < 5; i += 1) note(image, 120 + i * 130, 200, 90, 90, orange);
+    // The ceiling above the paper.
+    rect(image, 0, 0, 1000, 46, '#eef1f4');
+    // Cardboard leaning at the bottom left: brown, roughly rectangular, and
+    // very nearly the colour of the kraft it stands against.
+    rect(image, 40, 430, 150, 110, '#9d8873');
+    rect(image, 60, 450, 110, 70, '#a89177');
+    // A word in marker on the bare wall — the operator's "Legend". Ink on
+    // paper, not paper on a wall.
+    for (const [x, y, w, h] of [
+      [620, 430, 8, 46],
+      [620, 470, 40, 8],
+      [680, 430, 8, 46],
+      [680, 452, 34, 8],
+      [714, 430, 8, 46],
+      [740, 430, 8, 46],
+      [740, 430, 34, 8],
+      [740, 452, 30, 8],
+      [740, 470, 34, 8],
+    ] as const) {
+      rect(image, x, y, w, h, '#2b2b2b');
+    }
+    // Masking tape: pale yellow, which is the aggregate note's own family, so
+    // only its shape and its dullness against the wall can tell it apart.
+    rect(image, 300, 340, 240, 22, '#efe6c8');
+    rect(image, 700, 120, 26, 200, '#efe6c8');
+
+    const found = detectStickies(image);
+    expect(found).toHaveLength(5);
+    expect(found.every((s) => s.kind === 'domain-event')).toBe(true);
+  });
+
+  it('finds a note BIGGER than the patch of wall the floors are measured over', () => {
+    // Photo 2's collapse, in one picture: the frame is measured in tiles so a
+    // wall lit from one end is measured at both, and a note photographed close
+    // up can cover most of a tile. A tile that is nearly all note must not
+    // measure the NOTE as its wall — it has to defer to the frame, or the note
+    // fails a floor it set itself.
+    const image = blank(800, 400, '#a8907a');
+    const orange = fillOf('domain-event');
+    // Tiles are an eighth of the long side: 100px. These are bigger.
+    note(image, 60, 60, 150, 150, orange);
+    note(image, 260, 60, 150, 150, orange);
+    note(image, 460, 60, 150, 150, orange);
+    note(image, 160, 230, 150, 150, orange);
+    note(image, 360, 230, 150, 150, orange);
+    const found = detectStickies(image);
+    expect(found).toHaveLength(5);
+  });
+
   it('gets through a 1024px working image quickly', () => {
     const image = blank(1024, 1024);
     const orange = fillOf('domain-event');

@@ -62,7 +62,7 @@ const NOISE_FLOOR_FRACTION = 0.008;
 // more paper than holes — a note covered by its neighbour, or written on
 // edge to edge, is still a note.
 export const MIN_SOLID_FILL = 0.55;
-const MIN_PAPER_FILL = 0.3;
+const MIN_PAPER_FILL = 0.45;
 // A sticky is roughly square, and the widest silhouette the notation has is
 // 300×180. Anything longer and thinner than this is not paper: masking tape
 // along a wall, the edge of a radiator, a cable.

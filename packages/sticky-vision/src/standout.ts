@@ -18,6 +18,9 @@ const VALUE_STANDOUT_WEIGHT = 0.3;
 // …and a wall this dark is measured as if it were this dark, so a shadow
 // cannot divide by nearly nothing.
 const MIN_WALL_VALUE = 0.15;
+// How much darker than its wall a note may be, relatively. See the veto in
+// `standsOut`.
+const MIN_RELATIVE_VALUE = -0.1;
 const HUE_STANDOUT_WEIGHT = 0.25;
 // …and below this there is no hue to speak of, only noise.
 const HUE_MIN_SATURATION = 0.2;
@@ -115,6 +118,27 @@ export function standsOut(
   // and that is not a note being a different colour from its wall.
   const dH =
     satIn < HUE_MIN_SATURATION ? 0 : Math.min(Math.abs(hIn - wallH), 360 - Math.abs(hIn - wallH));
+  // …and one veto, because paper is BRIGHT. Every colour in the notation is a
+  // pale stationery fill; nothing in it is darker than the DARKEST wall around
+  // it. The dark side of a cardboard box is navy enough to pass a saturation
+  // test on its own, and it is not a command.
+  //
+  // Against the darkest quarter of the wall rather than its middle, because a
+  // wall lit from one end is brighter on one side of a note than the other,
+  // and a note in the shade must not be vetoed for being darker than the sunlit
+  // paper an inch to its left.
+  const darkWall = pick(
+    wall.map((p) => p.v),
+    0.15,
+  );
+  if (
+    pick(
+      inside.map((p) => p.v),
+      0.5,
+    ) <
+    darkWall * (1 + MIN_RELATIVE_VALUE)
+  )
+    return false;
   const stands = Math.max(dS, dV * VALUE_STANDOUT_WEIGHT, (dH / 60) * HUE_STANDOUT_WEIGHT);
   return stands >= STANDOUT_SATURATION;
 }
@@ -123,6 +147,7 @@ export const STANDOUT_CALIBRATION = {
   STANDOUT_SATURATION,
   VALUE_STANDOUT_WEIGHT,
   MIN_WALL_VALUE,
+  MIN_RELATIVE_VALUE,
   HUE_STANDOUT_WEIGHT,
   HUE_MIN_SATURATION,
   WALL_RING_QUANTILE,
