@@ -2,6 +2,7 @@ import { EVENT_STORMING_NOTES, type EventStormingNoteKind } from '@livediagram/d
 import { classifyRgb } from './classify';
 import { localFloorsOf, type PaperFloors } from './floors';
 import { greyWorldBalance, type ImageBuffer } from './colour';
+import { standsOut, STANDOUT_CALIBRATION } from './standout';
 import { closePaperMask, labelComponents, type ComponentMask } from './components';
 import { estimateNoteSize, fitBoxes, silhouetteOf } from './boxes';
 import { clusterRows } from './rows';
@@ -65,6 +66,7 @@ function closeRadiusFor(noteSize: number, imageSize: number): number {
 }
 
 export const DETECT_CALIBRATION = {
+  ...STANDOUT_CALIBRATION,
   NOISE_FLOOR_FRACTION,
   CLOSE_NOTE_FRACTION,
   CLOSE_MAX_IMAGE_FRACTION,
@@ -141,7 +143,18 @@ export function detectStickies(image: ImageBuffer, opts: DetectOptions = {}): De
     seams: mask,
   });
   if (boxes.length === 0) return [];
-  return clusterRows(boxes, noteSize).map((box, i) => ({
+  // …and now throw away what is not paper at all.
+  //
+  // Every box so far is a region that scraped past the colour floor somewhere
+  // inside it. A NOTE stands out from the wall it is stuck to: measured across
+  // the operator's hand-labelled walls, nine real notes in ten sit at least
+  // 0.05 of saturation above the floor where they lie, while half the spurious
+  // boxes — tape, a shadow in a paper seam, cardboard, the white strip of
+  // ceiling above the paper — sit AT it or below. The notation has no white,
+  // grey or brown note, so nothing true is lost by insisting on it.
+  const standing = boxes.filter((box) => standsOut(working, box));
+  if (standing.length === 0) return [];
+  return clusterRows(standing, noteSize).map((box, i) => ({
     id: i,
     kind: KIND_BY_ID.get(box.classId) ?? 'domain-event',
     size: silhouetteOf(box, noteSize),

@@ -253,23 +253,64 @@ Treat these as one problem — "this region is not a sticky" — with several
 independent cues. Add them as gates with measured thresholds, each defended by
 the scoreboard, and each in `CALIBRATION`.
 
-- [ ] 3.1 Measure first: for every SPURIOUS detection in the two truth photos,
+- [x] 3.1 Measure first: for every SPURIOUS detection in the two truth photos,
       print its size against the median note, its fill ratio (mask pixels over
       box area), its saturation and value against the paper population, and its
       edge straightness. Find which cues separate junk from notes; do not guess
       a threshold, read it off the distributions.
-- [ ] 3.2 **Size band.** A note is within a sane multiple of the median note
+- [x] 3.2 **Size band.** A note is within a sane multiple of the median note
       (after the splitting from Phase 2). Reject what is far outside it. State
       the band and why in a comment.
-- [ ] 3.3 **Fill ratio.** A sticky nearly fills its own bounding box; a patch of
+- [x] 3.3 **Fill ratio.** A sticky nearly fills its own bounding box; a patch of
       cardboard, tape or wall does not. There is already a `confidence`
       (pixels / area) — promote it to a gate with a measured floor, and keep
       reporting it.
-- [ ] 3.4 **Neutral guard.** The notation has no white, grey or brown note. A
+- [x] 3.4 **Neutral guard.** The notation has no white, grey or brown note. A
       region whose saturation sits at or below the WALL population (rather than
       the paper population) is wall, whatever the local floors made of it. This
       is what should kill the white strip above the paper, the shelf, and the
       cardboard.
+
+### What separates a note from junk, measured
+
+Every detection on the three labelled photos, scored against truth and split
+into NOTE and JUNK, then described by cue (percentiles):
+
+| cue                         | notes         | junk           |
+| --------------------------- | ------------- | -------------- |
+| min side / median note      | p10 0.78-0.98 | p50 0.67-0.85  |
+| fill (own colour / area)    | p10 0.58-0.73 | p50 0.59-0.67  |
+| aspect                      | p90 1.20-1.49 | p75 1.76-1.87  |
+| saturation over local floor | p10 0.04-0.05 | p50 -0.04-0.05 |
+
+Two gates came out of it, and the second replaced the planned "neutral guard"
+with something stronger:
+
+- **The size band.** Stationery comes in one size. Nine in ten real notes sit
+  within a quarter of the photo's median note; half the junk is under three
+  quarters of it. A floor at 0.7 (with the existing 2.6 ceiling) cost two real
+  notes and took out a third of the junk.
+- **A note stands out from the wall it is stuck to** (`src/standout.ts`). Asked
+  of the PICTURE, not of the floors: compare the box's inside against the ring
+  around it, where the wall is the DULLEST QUARTER of that ring (on a dense
+  wall a note's neighbours are other notes, so the ring as a whole is paper).
+  Three ways count, and any one is enough, because the eight papers differ
+  from a wall differently: more SATURATED (orange on kraft), much BRIGHTER
+  relative to the wall (pale yellow), or a different HUE (lilac on brown, and
+  only when there is enough colour for a hue to mean anything - a white strip
+  of ceiling reports whatever hue its noise felt like). Brightness is measured
+  RELATIVELY, because half the light halves an absolute margin: the same
+  mistake the frame-wide floors used to make.
+
+Tape, cardboard, the ceiling strip above the paper and the shadow in a paper
+seam are all the same colour as their surroundings, so all of them fail it.
+
+| photo  | F1 before | F1 now  | precision before | precision now |
+| ------ | --------- | ------- | ---------------- | ------------- |
+| 201646 | 68%       | 80%     | 55%              | 73%           |
+| 201707 | 82%       | 84%     | 73%              | 83%           |
+| 201713 | 67%       | **91%** | 53%              | **91%**       |
+
 - [ ] 3.5 **Ink is not paper.** The handwritten "Legend" is ink on bare wall: the
       blob should be mostly ink pixels with wall around them, not a filled field
       of paper colour. Make sure the class mask treats it that way, and that the

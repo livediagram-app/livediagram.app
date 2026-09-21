@@ -3,5 +3,7 @@ export * from './classify';
 export * from './floors';
 export * from './components';
 export * from './boxes';
+export * from './split';
+export * from './standout';
 export * from './rows';
 export * from './detect';

@@ -27,7 +27,7 @@ const MIN_PAPER_SATURATION = 0.28;
 // Paper is lit; the gaps between notes and the shadow under a curling corner
 // are not. Relative to the wall's own brightness rather than absolute, because
 // the whole photograph may be dim.
-const WALL_VALUE_RATIO = 0.8;
+const WALL_VALUE_RATIO = 0.7;
 // Below this value a pixel is ink, or a shadow deep enough to be unreadable.
 // No wall, however dark, sets a floor under the point where a camera stops
 // recording colour at all.
