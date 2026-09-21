@@ -24,9 +24,9 @@ export function useQuickConnectStart({
     if (selectedId === null) return;
     // On a group the pluses ring the union bounds: the arrow starts PINNED
     // TO THE GROUP's union box at the picked side's centre (a pinned-group
-    // endpoint, so it tracks the group as it moves), inheriting its stroke
-    // from the member nearest that side. A lone element pins to its own
-    // anchor as ever.
+    // endpoint, so it tracks the group as it moves); the arrow's stroke is
+    // the tab theme's, like every drawn connector. A lone element pins to
+    // its own anchor as ever.
     const sourceId = quickConnectSourceId(activeTab.elements, selectedId, direction);
     const groupStart = quickConnectGroupStart(activeTab.elements, selectedId, direction);
     const fromGroup = groupStart
