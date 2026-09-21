@@ -70,7 +70,10 @@ export function TimelineCard({
       // ref because the card a link points at usually isn't mounted when
       // the link is followed.
       data-timeline-event={event.id}
-      className={`${CARD_SHELL} ${
+      // `h-full`: the card fills its grid cell, so a card with a
+      // description (a comment) sets the row's height and its neighbours
+      // stretch to match rather than ending short.
+      className={`${CARD_SHELL} h-full ${
         focused ? 'ring-2 ring-brand-500 ring-offset-1 dark:ring-offset-slate-900 ' : ''
       }${
         interactive

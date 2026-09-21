@@ -44,10 +44,13 @@ export function StackedCard({
   return (
     // The layers step down and right into the grid gap; `mr-3 mb-3`
     // keeps the deepest one inside this cell rather than under the next.
-    <div className="tl-fan-out-up relative mb-3 mr-3" style={{ animationDelay: `${stagger}ms` }}>
+    <div
+      className="tl-fan-out-up relative mb-3 mr-3 flex h-full flex-col"
+      style={{ animationDelay: `${stagger}ms` }}
+    >
       {deep && <div aria-hidden className={`${layer} translate-x-3 translate-y-3 opacity-50`} />}
       <div aria-hidden className={`${layer} translate-x-1.5 translate-y-1.5 opacity-75`} />
-      <div className="relative">
+      <div className="relative flex-1">
         <TimelineCard
           event={anchor}
           isNew={isNew}
