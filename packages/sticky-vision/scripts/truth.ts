@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
+import type { Truth, TruthNote } from '../src/truth';
 
 // Scoring the detector against notes a human labelled, because a COUNT cannot
 // tell a fix from a regression once false positives are in play: a change that
@@ -18,12 +19,9 @@ import { homedir } from 'node:os';
 // image; centres are what matters, sizes are nominal per kind, and the match
 // rule below is loose enough for that to be honest.
 
-export type TruthNote = { x: number; y: number; w: number; h: number; kind: string };
-export type Truth = {
-  photo: string;
-  labelledOn: { width: number; height: number };
-  notes: TruthNote[];
-};
+// The FORMAT lives in `src/truth.ts`, because the editor writes labels as
+// well as reading them; the SCORING is here, because it is a tool's job.
+export type { Truth, TruthNote } from '../src/truth';
 
 export type ScoredBox = { x: number; y: number; w: number; h: number; kind: string };
 

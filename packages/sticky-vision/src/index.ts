@@ -6,4 +6,5 @@ export * from './boxes';
 export * from './split';
 export * from './standout';
 export * from './rows';
+export * from './truth';
 export * from './detect';
