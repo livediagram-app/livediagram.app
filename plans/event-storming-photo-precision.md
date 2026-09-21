@@ -184,33 +184,68 @@ so (0) and the frame-derived radius is used, which is the old behaviour.
 Do this before the false-positive work: a merged 2x2 blob is also four missing
 notes, so it pollutes both halves of the scoreboard.
 
-- [ ] 2.1 Diagnose why the cluster survives as one blob. The splitter in
+- [x] 2.1 Diagnose why the cluster survives as one blob. The splitter in
       `boxes.ts` only cuts at a **projection valley** and only when the blob is
       "solid"; touching notes of the same colour have at most a thin shadow
       seam, which is probably too shallow to qualify. Write down what you
       measure before changing anything.
-- [ ] 2.2 RED: a unit test with four same-kind notes touching in a 2x2 block
+- [x] 2.2 RED: a unit test with four same-kind notes touching in a 2x2 block
       (no gap, then a 1px gap, then a faint darker seam) that asserts **four**
       boxes, not one. It must fail today.
-- [ ] 2.3 Implement size-aware splitting: when a blob's width or height is close
+- [x] 2.3 Implement size-aware splitting: when a blob's width or height is close
       to an integer multiple of the median note size, divide it into that many
       cells — at the projection valleys when they exist, by equal division when
       they do not. A blob that is 2 notes wide and 2 notes tall yields 4.
-- [ ] 2.4 Keep the existing guard that a sprawling low-density patch is NOT
+- [x] 2.4 Keep the existing guard that a sprawling low-density patch is NOT
       diced into dozens of notes (that regression is recorded in spec/139); the
       new rule applies to blobs that are solid and close to a whole multiple.
-- [ ] 2.5 GREEN, plus the whole sticky-vision suite, plus the six-photo sweep:
+- [x] 2.5 GREEN, plus the whole sticky-vision suite, plus the six-photo sweep:
       the merged clusters split, and the F1 from 1.4 improves.
-- [ ] 2.6 Verify in the editor on the operator's photo that
+- [ ] 2.6 (deferred to 4.1, which drives all three photos through the editor) Verify in the editor on the operator's photo that
       "Join Request Rejected …" is now four notes with four separate texts.
 - [ ] 2.7 Commit.
-- [ ] 2.8 RED both directions, and pin the hysteresis: a blob within ~1.4x of
+- [x] 2.8 RED both directions, and pin the hysteresis: a blob within ~1.4x of
       the note size is NEVER cut; ~1.6–2.4x cuts into two; a 2x2 cluster always
       yields four. "ROUTINE STARTED" as one note and the Join cluster as four
       are the same test suite, and neither may be bought with the other.
-- [ ] 2.9 GREEN, plus the per-photo truth table: the single-note-cut count and
+- [x] 2.9 GREEN, plus the per-photo truth table: the single-note-cut count and
       the merged-cluster count both go down on all three photos.
-- [ ] 2.10 Commit.
+- [x] 2.10 Commit.
+
+### What the splitter was doing, and what it does now
+
+Diagnosed on photo 1's 2x2 cluster (one box, 100x111, note size 50). The split
+rule asked each axis to be long against the note size AND against the box's
+OTHER side. A square block of four notes is never long against itself, so it
+was never cut - while the same rule on a poisoned note size cut single notes
+in half. Both of the operator's complaints, from one line of code.
+
+Three changes:
+
+- **The dead band.** Under 1.67 notes an over-long blob is one note: that is
+  not a taste, it is the notation, whose widest silhouette is 127x76mm. Past
+  1.8 (that bound plus a margin for the measurement) it is as many notes as it
+  is long - the operator's own "four times the area is not one note".
+- **One axis at a time, tightening between cuts.** The grid-over-the-bounding-
+  box cut halved every note in a SAGGING row, whose bounding box is two notes
+  tall. Cutting the longer axis first and tightening each piece onto its own
+  paper gets both: a column of a sagging row tightens back to one note and is
+  not cut again, a real 2x2 block tightens to a column of two and is.
+- **Seam preferred, not required.** A cut lands on the seam between two notes
+  when the paper shows one. Requiring a seam was measured and cost 15 points
+  of recall: two notes of the same colour flush against each other have no
+  boundary in the mask at all, and refusing to cut them is exactly the
+  complaint this plan started from.
+
+| photo  | F1 before | F1 now  | recall before | recall now |
+| ------ | --------- | ------- | ------------- | ---------- |
+| 201646 | 53%       | 68%     | 64%           | **89%**    |
+| 201707 | 9%        | **82%** | 10%           | **93%**    |
+| 201713 | 42%       | 67%     | 55%           | **93%**    |
+
+Recall is now 89-93% on all three and precision is the remaining problem
+(55%, 73%, 53%) - which is Phase 3's job. Photo 1's only misses are the four
+small ACTOR notes and a sliver at the frame edge.
 
 ## 3. Defects 1, 3, 4: a note is paper, not everything brown
 

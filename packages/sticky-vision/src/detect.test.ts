@@ -44,6 +44,27 @@ function rect(
 
 const fillOf = (kind: Parameters<typeof eventStormingNote>[0]) => eventStormingNote(kind).fill;
 
+// A sticky as a CAMERA sees one: the paper, and the edge of the paper. Real
+// stationery has a thickness and a shadow, so two notes lapped over each
+// other always have a line between them — which is the only thing that tells
+// four notes in a square from one note photographed nearer, since as pixels
+// they are otherwise the same rectangle of the same colour. A fixture that
+// draws flush rectangles with no boundary is asking for a distinction that is
+// not in the image.
+function note(image: ImageBuffer, x: number, y: number, w: number, h: number, hex: string) {
+  const { r, g, b } = hexToRgb(hex);
+  const edge = `#${[r, g, b]
+    .map((c) =>
+      Math.round(c * 0.35)
+        .toString(16)
+        .padStart(2, '0'),
+    )
+    .join('')}`;
+  rect(image, x, y, w, h, edge);
+  rect(image, x + 1, y + 1, w - 2, h - 2, hex);
+  return image;
+}
+
 // Dim one part of the image the way a window does: full light on most of the
 // frame, a soft shadow edge, and half the light beyond it. Pure illumination
 // — every channel is scaled by the same factor, so hue and saturation are
@@ -203,8 +224,8 @@ describe('detectStickies', () => {
   it('splits two overlapping notes of the SAME colour into two', () => {
     const image = blank(300, 160);
     const orange = fillOf('domain-event');
-    rect(image, 20, 30, 100, 100, orange);
-    rect(image, 110, 30, 100, 100, orange);
+    note(image, 20, 30, 100, 100, orange);
+    note(image, 110, 30, 100, 100, orange);
     const found = detectStickies(image);
     expect(found).toHaveLength(2);
     expect(found.map((s) => s.row)).toEqual([0, 0]);
@@ -316,23 +337,89 @@ describe('detectStickies', () => {
     const orange = fillOf('domain-event');
     // Two notes on their own first: a wall always has some, and they are what
     // tells the detector how big a note is here.
-    rect(image, 120, 30, 72, 72, orange);
-    rect(image, 700, 40, 72, 72, orange);
-    for (let i = 0; i < 6; i += 1) rect(image, 150 + i * 70, 220 + i * 14, 72, 72, orange);
+    note(image, 120, 30, 72, 72, orange);
+    note(image, 700, 40, 72, 72, orange);
+    for (let i = 0; i < 6; i += 1) note(image, 150 + i * 70, 220 + i * 14, 72, 72, orange);
     const found = detectStickies(image);
     expect(found).toHaveLength(8);
     expect(found.every((s) => s.kind === 'domain-event')).toBe(true);
   });
 
+  it('takes a 2x2 BLOCK of touching notes apart into four notes', () => {
+    // The operator's own test, and their own arithmetic: a box four times the
+    // area of a normal note is not a note. Four stickies lapped into a square
+    // block came out as ONE box carrying two notes' words, because the split
+    // rule asked each axis to be long against the box's OTHER side as well as
+    // against the note — which a square block never is, however many notes it
+    // holds.
+    const image = blank(1000, 500, '#a8907a');
+    const orange = fillOf('domain-event');
+    note(image, 100, 60, 72, 72, orange);
+    note(image, 800, 60, 72, 72, orange);
+    for (const [ox, oy] of [
+      [0, 0],
+      [70, 2],
+      [1, 70],
+      [71, 72],
+    ] as const) {
+      note(image, 400 + ox, 250 + oy, 72, 72, orange);
+    }
+    const found = detectStickies(image);
+    expect(found).toHaveLength(6);
+    const block = found.filter((s) => s.x >= 380 && s.x <= 560);
+    expect(block).toHaveLength(4);
+    for (const note of block) {
+      expect(note.w).toBeLessThan(110);
+      expect(note.h).toBeLessThan(110);
+    }
+  });
+
+  it('leaves a note a little bigger than its neighbours whole, and cuts a pair', () => {
+    // Hysteresis, both ends of it, which is what stops the two complaints
+    // trading places — a single sticky cut in half on one wall while four
+    // lapped stickies wear one box on another.
+    //
+    // Where the band sits is not a taste: the notation has exactly two
+    // silhouettes, 76x76 and 127x76, so the widest a single note can be is
+    // 1.67 of its own height. Under that, an over-long blob is one note (drawn
+    // wide, or photographed a little nearer than its neighbours). Past it, and
+    // past a margin for the measurement, it is as many notes as it is long.
+    const wall = (pieces: number, width: number) => {
+      const image = blank(1000, 400, '#a8907a');
+      const orange = fillOf('domain-event');
+      for (let i = 0; i < 4; i += 1) note(image, 80 + i * 100, 60, 70, 70, orange);
+      // One note that wide, or that many notes lapped to the same width — the
+      // difference is the seam, and the answer has to follow the seam rather
+      // than the arithmetic.
+      for (let i = 0; i < pieces; i += 1) {
+        note(
+          image,
+          500 + i * Math.round(width / pieces),
+          220,
+          Math.round(width / pieces),
+          70,
+          orange,
+        );
+      }
+      return detectStickies(image).filter((s) => s.y > 180);
+    };
+    expect(wall(1, 70)).toHaveLength(1);
+    expect(wall(1, 95)).toHaveLength(1);
+    // The wide silhouette itself: 1.67 notes long, one note.
+    expect(wall(1, 117)).toHaveLength(1);
+    expect(wall(2, 140)).toHaveLength(2);
+  });
+
   it('never gives one solid note more than one box', () => {
     // The stacked boxes the operator saw: three at 82%, three at 83%, on top
     // of each other. A note is one note however the splitter feels about its
-    // proportions — including a note larger than its neighbours, which is
-    // what drags the median note size down far enough for the split rule to
-    // start dicing.
+    // proportions — including a note photographed nearer than its neighbours,
+    // which is what drags the median note size down far enough for the split
+    // rule to start dicing. Half again the size of the notes around it is a
+    // camera angle; twice the size is two notes (see the hysteresis test).
     const image = blank(900, 500, '#a8907a');
-    rect(image, 60, 60, 130, 130, fillOf('domain-event'));
-    for (let i = 0; i < 4; i += 1) rect(image, 420 + i * 110, 300, 60, 60, fillOf('command'));
+    note(image, 60, 60, 96, 96, fillOf('domain-event'));
+    for (let i = 0; i < 4; i += 1) note(image, 420 + i * 110, 300, 60, 60, fillOf('command'));
     const found = detectStickies(image);
     const big = found.filter((s) => s.kind === 'domain-event');
     expect(big).toHaveLength(1);

@@ -71,7 +71,10 @@ const MAX_PAPER_SIZE_RATIO = 2.6;
 // threshold has to sit above that or every policy would be sawn in half. Two
 // squares lapped over each other reach 1.9 even at a generous overlap, which
 // is where the line goes.
-const SPLIT_RATIO = 1.9;
+const SPLIT_RATIO = 1.8;
+// …and below this an over-long axis is one note, not two. The gap between the
+// two is the dead band: see `splitOversized`.
+const SPLIT_KEEP_RATIO = 1.4;
 // A blob no thicker than this (in notes) is a BAND — a row or a column of
 // notes lapped over each other — and a band gets cut even when it is not
 // solid, because a row that sags across a wall leaves half its bounding box
@@ -83,6 +86,10 @@ const SPLIT_BAND_THICKNESS = 2.6;
 // of the step. Far enough to find the seam between two lapped notes, near
 // enough that it cannot walk into the next note.
 const CUT_SNAP_FRACTION = 0.3;
+// How full the emptiest line near a proposed cut may be, as a fraction of the
+// blob's mean density along that axis, before the cut is refused for want of
+// a seam. See `cutLines`.
+const VALLEY_MAX_FILL = 0.85;
 
 // How much of a box's area is actually its own colour. A sticky is nearly
 // solid (handwriting takes a little off); a patch of wall that scraped past
@@ -220,64 +227,79 @@ export function mergeFragments(boxes: Box[], noteSize: number): Box[] {
 // the real seam where there is one. Each cut cell is then tightened back onto
 // its own pixels, which is what makes a sagging row of notes come out as
 // notes rather than as tall slices of mostly wall.
-export function splitOversized(box: Box, noteSize: number, mask?: PaperMask): Box[] {
+export function splitOversized(
+  box: Box,
+  noteSize: number,
+  mask?: PaperMask,
+  seams?: PaperMask,
+): Box[] {
   if (noteSize <= 0) return [box];
-  // Per AXIS, and as a grid: a blob can be several notes wide AND several
-  // deep. On a real wall a whole field of touching notes arrives as one blob
-  // — cutting only along its longer side left the rest of it a single box
-  // that the "too big to be paper" filter then threw away, notes and all.
+  // ONE AXIS AT A TIME, and tighten between cuts.
   //
-  // An axis is only cut when it is clearly longer than any real silhouette
-  // (the widest the notation has is 1.67 of its own height), so a wide policy
-  // is never sawn in half.
-  // …and only when the blob is SOLID, or is a BAND. A run of touching notes
-  // is a filled rectangle of paper; a sprawling patch of wall that squeaked
-  // past the colour floor is a thin web with a big bounding box, and dicing
-  // that into a grid invents dozens of notes that were never there. A row of
-  // notes that sags, though, is neither: half its bounding box is wall, and
-  // only its thickness says it is a single file of paper.
+  // A blob can be several notes wide AND several deep, so a whole field of
+  // touching notes has to come apart in both directions — but cutting both at
+  // once, as a grid over the bounding box, gets a SAGGING ROW wrong: six notes
+  // lapped along a line that drops across the paper have a bounding box two
+  // notes tall, and the grid then halves every note in the row. Cutting the
+  // longer axis first and tightening each piece onto its own paper answers
+  // that: a column of the row tightens back to one note and is not cut again,
+  // while a real 2x2 block tightens to a column of two and is.
   //
-  // With the MASK on hand none of that guesswork is needed: every cell is cut
-  // at the emptiest line near the even step and then tightened onto the paper
-  // actually inside it, so a cell of wall shrinks to a scrap and is thrown out
-  // by the size and shape filters, while a note comes out as a note. Without
-  // the mask a cell is only ever a slice of the bounding box, and the solidity
-  // gate is all that stands between a patch of wall and a dozen invented
-  // notes.
+  // The guard against dicing a patch of wall that squeaked past the colour
+  // floor is the same as it was: without a mask to tighten against, a blob is
+  // only cut if it is SOLID, or is a thin BAND (a sagging row is neither
+  // solid nor square, and only its thickness says it is a single file of
+  // paper).
   const band = Math.min(box.w, box.h) <= noteSize * SPLIT_BAND_THICKNESS;
   if (!mask && fillRatio(box) < MIN_SOLID_FILL && !band) return [box];
-  // An axis is cut only when it is long against the note size AND against the
-  // box's OWN other side. Both, because each alone gets it wrong on a real
-  // wall: the note size can be dragged down by half-notes at the frame edge
-  // (and then a single sticky is diced into four), while the box's own ratio
-  // alone cannot see a square block of four touching notes. Between the two,
-  // the common case — a ROW of notes abutting, which the operator's wall has
-  // several of — is what gets cut, and a lone note never is. A block too
-  // square for this rule is not lost: it goes to the rescue in `fitBoxes`,
-  // which takes the notes apart at their seams instead of guessing.
-  const short = Math.max(1, Math.min(box.w, box.h));
-  const cuts = (extent: number) =>
-    extent / noteSize >= SPLIT_RATIO && extent / short >= SPLIT_RATIO
-      ? Math.max(1, Math.round(extent / noteSize))
-      : 1;
-  const xs = cutLines(box, cuts(box.w), mask, true);
-  const ys = cutLines(box, cuts(box.h), mask, false);
-  if ((xs.length - 1) * (ys.length - 1) < 2) return [box];
-  const cells = (xs.length - 1) * (ys.length - 1);
+  return splitAxis(box, noteSize, mask, seams, 0);
+}
+
+// How many times a piece may be cut again after being cut. Four is past any
+// real block on a wall; it only stops a pathological loop.
+const SPLIT_MAX_DEPTH = 4;
+
+function splitAxis(
+  box: Box,
+  noteSize: number,
+  mask: PaperMask | undefined,
+  seams: PaperMask | undefined,
+  depth: number,
+): Box[] {
+  // An axis is cut on its length against the NOTE, with a dead band so the
+  // two failure modes cannot trade places. Under `SPLIT_KEEP_RATIO` an
+  // over-long axis is one note photographed nearer than its neighbours, or
+  // the notation's own wide silhouette (1.67 of its height), and is left
+  // alone. Over `SPLIT_RATIO` it is as many notes as it is long — the
+  // operator's own rule: a box four times the area of a note is not a note.
+  //
+  // The cut lands on the SEAM between two notes when the paper shows one, and
+  // on the even step when it does not. Requiring a seam was tried and cost
+  // fifteen points of recall on the operator's walls: two notes of the same
+  // colour flush against each other genuinely have no boundary in the mask,
+  // and refusing to cut them leaves two notes wearing one box, which is the
+  // complaint this work started from.
+  const ratioW = box.w / noteSize;
+  const ratioH = box.h / noteSize;
+  const horizontal = ratioW >= ratioH;
+  const ratio = horizontal ? ratioW : ratioH;
+  if (depth >= SPLIT_MAX_DEPTH || ratio < SPLIT_RATIO) return [box];
+  const pieces = Math.max(2, Math.round(ratio));
+  const lines = cutLines(box, pieces, mask, horizontal, seams);
+  if (lines.length < 3) return [box];
   const out: Box[] = [];
-  for (let iy = 0; iy + 1 < ys.length; iy += 1) {
-    for (let ix = 0; ix + 1 < xs.length; ix += 1) {
-      const cell: Box = {
-        classId: box.classId,
-        x: xs[ix]!,
-        y: ys[iy]!,
-        w: xs[ix + 1]! - xs[ix]!,
-        h: ys[iy + 1]! - ys[iy]!,
-        pixels: Math.round(box.pixels / cells),
-      };
-      const tight = mask ? tightenTo(cell, mask) : cell;
-      if (tight) out.push(tight);
-    }
+  for (let i = 0; i + 1 < lines.length; i += 1) {
+    const cell: Box = {
+      classId: box.classId,
+      x: horizontal ? lines[i]! : box.x,
+      y: horizontal ? box.y : lines[i]!,
+      w: horizontal ? lines[i + 1]! - lines[i]! : box.w,
+      h: horizontal ? box.h : lines[i + 1]! - lines[i]!,
+      pixels: Math.round(box.pixels / (lines.length - 1)),
+    };
+    const tight = mask ? tightenTo(cell, mask) : cell;
+    if (!tight) continue;
+    out.push(...splitAxis(tight, noteSize, mask, seams, depth + 1));
   }
   return out.length > 0 ? out : [box];
 }
@@ -295,6 +317,7 @@ function cutLines(
   pieces: number,
   mask: PaperMask | undefined,
   horizontal: boolean,
+  seams: PaperMask | undefined,
 ): number[] {
   const from = horizontal ? box.x : box.y;
   const extent = horizontal ? box.w : box.h;
@@ -307,9 +330,22 @@ function cutLines(
     return lines;
   }
   const reach = Math.round(step * CUT_SNAP_FRACTION);
+  // How full a line may be and still be a seam. Mean density along the axis is
+  // what a line through the middle of solid paper looks like; a seam between
+  // two lapped notes — a paper edge, its shadow — reads a good deal emptier.
+  const across = horizontal ? box.h : box.w;
+  const mean = Math.min(across, box.pixels / Math.max(1, extent));
+  const seamBar = mean * VALLEY_MAX_FILL;
   for (let i = 1; i < pieces; i += 1) {
-    const found = emptiestLine(box, Math.round(from + i * step), reach, mask, horizontal);
-    if (found.at > lines[lines.length - 1]!) lines.push(found.at);
+    const found = emptiestLine(box, Math.round(from + i * step), reach, seams ?? mask, horizontal);
+    // NO SEAM, NO CUT. Size alone cannot tell four notes lapped into a square
+    // from one note photographed nearer than its neighbours — they are the
+    // same rectangle of the same colour at the same fill, and guessing from
+    // the size is precisely how the detector came to cut single stickies in
+    // half while leaving a 2x2 cluster whole. The paper itself says which:
+    // four notes have edges between them and one note does not.
+    const cutAt = found.count > seamBar ? Math.round(from + i * step) : found.at;
+    if (cutAt > lines[lines.length - 1]!) lines.push(cutAt);
   }
   lines.push(from + extent);
   return lines;
@@ -397,7 +433,7 @@ export type PaperMask = { width: number; height: number; classes: Uint8Array };
 
 export function fitBoxes(
   components: Component[],
-  opts: { imageSize?: number; mask?: PaperMask; noteSize?: number } = {},
+  opts: { imageSize?: number; mask?: PaperMask; seams?: PaperMask; noteSize?: number } = {},
 ): Box[] {
   if (components.length === 0) return [];
   const raw = components.map(boxOf);
@@ -454,7 +490,7 @@ export function fitBoxes(
   const bigEnough = (b: Box) => Math.min(b.w, b.h) >= noiseFloor && b.w * b.h >= minArea;
 
   return kept.flatMap((box) => {
-    const pieces = splitOversized(box, size, opts.mask).filter(
+    const pieces = splitOversized(box, size, opts.mask, opts.seams).filter(
       (b) => isPaper(b) && (b === box || bigEnough(b)),
     );
     if (pieces.length > 0) return pieces;
@@ -466,14 +502,14 @@ export function fitBoxes(
     // each note on its own is plainly paper.
     const parts = partsOf(box)
       .filter(bigEnough)
-      .flatMap((part) => splitOversized(part, size, opts.mask))
+      .flatMap((part) => splitOversized(part, size, opts.mask, opts.seams))
       .filter(isPaper);
     if (parts.length > 0) return parts;
     // A block of touching notes, then: one component too square for the
     // splitter's arithmetic and too big for the filters. Rather than lose
     // eight real notes to it, pull it apart at the seams the paper itself has
     // (see `erodePaperMask`) and keep whatever comes out looking like paper.
-    return opts.mask ? rescue(box, opts.mask, size, isPaper, bigEnough) : [];
+    return opts.mask ? rescue(box, opts.mask, size, isPaper, bigEnough, opts.seams) : [];
   });
 }
 
@@ -487,6 +523,7 @@ function rescue(
   noteSize: number,
   isPaper: (b: Box) => boolean,
   bigEnough: (b: Box) => boolean,
+  seams?: PaperMask,
 ): Box[] {
   const base = Math.max(1, Math.round(noteSize * RESCUE_ERODE_FRACTION));
   const out: Box[] = [];
@@ -495,7 +532,7 @@ function rescue(
     const next: Box[] = [];
     for (const piece of pending) {
       const cuts = rescueBlock(piece, mask, base * round).flatMap((p) =>
-        splitOversized(p, noteSize, mask),
+        splitOversized(p, noteSize, mask, seams),
       );
       for (const cut of cuts) {
         if (!bigEnough(cut)) continue;
@@ -565,9 +602,11 @@ export const BOX_CALIBRATION = {
   MERGE_MIN_FILL,
   SPLIT_BAND_THICKNESS,
   CUT_SNAP_FRACTION,
+  VALLEY_MAX_FILL,
   RESCUE_ERODE_FRACTION,
   RESCUE_ROUNDS,
   SPLIT_RATIO,
+  SPLIT_KEEP_RATIO,
   MAX_PAPER_ASPECT,
   MAX_PAPER_SIZE_RATIO,
   MIN_SOLID_FILL,

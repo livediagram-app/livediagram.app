@@ -132,6 +132,13 @@ export function detectStickies(image: ImageBuffer, opts: DetectOptions = {}): De
     // The mask goes with the components: cutting a run of touching notes
     // apart is a question about pixels, not about a bounding box.
     mask: closed,
+    // …and the RAW mask goes with it too, because the close is what erases
+    // the evidence a cut needs. Two notes lapped over each other are told
+    // apart by the seam between them — a paper edge and its shadow, a few
+    // pixels of not-paper — and a close wide enough to fuse handwriting is
+    // wide enough to fill that seam in. Seams are read before it, boxes are
+    // measured after it.
+    seams: mask,
   });
   if (boxes.length === 0) return [];
   return clusterRows(boxes, noteSize).map((box, i) => ({
