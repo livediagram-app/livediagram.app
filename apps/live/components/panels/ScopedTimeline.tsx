@@ -74,7 +74,7 @@ export function TeamTimeline({ ownerId, teamId }: { ownerId: string; teamId: str
     <ScopedTimeline
       ownerId={ownerId}
       scope={{ scopeType: 'team', scopeId: teamId }}
-      title="Team activity"
+      title="Team Activity"
       emptyMessage="Nothing has happened in this team yet."
     />
   );

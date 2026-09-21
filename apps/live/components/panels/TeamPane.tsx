@@ -337,7 +337,7 @@ export function TeamPane({
 
       <TeamFormModal
         open={editOpen}
-        title="Edit team"
+        title="Edit Team"
         submitLabel="Save"
         initial={{ name: team.name, organisation: team.organisation }}
         onSubmit={(values) => {

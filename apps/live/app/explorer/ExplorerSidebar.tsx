@@ -272,14 +272,14 @@ export function ExplorerSidebar() {
           {/* New-team lives as a plus on the section label, with a tooltip. */}
           <SidebarSectionLabel
             action={
-              <Tooltip title="New team" description="Create a team and invite people by email.">
+              <Tooltip title="New Team" description="Create a team and invite people by email.">
                 <button
                   type="button"
                   onClick={() => {
                     setTeamModalOpen(true);
                     setMobileNavOpen(false);
                   }}
-                  aria-label="New team"
+                  aria-label="New Team"
                   className="-m-1.5 flex h-7 w-7 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-brand-700 dark:text-slate-500 dark:hover:bg-slate-700 dark:hover:text-brand-300"
                 >
                   <PlusIcon />

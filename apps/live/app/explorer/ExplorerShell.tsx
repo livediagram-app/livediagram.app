@@ -237,7 +237,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
         : null}
       <TeamFormModal
         open={teamModalOpen}
-        title="New team"
+        title="New Team"
         submitLabel="Create team"
         onSubmit={(values) => {
           setTeamModalOpen(false);
