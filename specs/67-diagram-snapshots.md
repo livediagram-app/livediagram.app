@@ -132,8 +132,11 @@ emits `UI / Toggled / ExplorerViewList | ExplorerViewCard` (spec/22).
 card, spec/138 §2.8) has one shape wherever it opens: a **header row**
 naming the diagram with its visibility badge, because a menu opens away
 from its trigger and on a grid of near-identical cards the menu itself
-has to say which one it belongs to; then **one full-width row per
-verb, icon on the left** (Rename, Duplicate, Change Folder, Favourite,
+has to say which one it belongs to; then **Open on its own, under a
+separator**, unless the row is the diagram already open in this editor
+(the verb people reach for first sits first, and the current diagram's
+row doesn't offer a no-op); then **one full-width row per verb, icon on
+the left** (Rename, Duplicate, Change Folder, Favourite,
 History, Hide from Recent, Open Team, Take Offline / Sync); then
 **Delete last, under a separator, red at rest**. It was an icon-over-
 label tile grid, two columns and then three: eight verbs in a grid read

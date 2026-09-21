@@ -219,6 +219,8 @@ export function DiagramActionsMenu({
   onShowHistory,
   favourite,
   onToggleFavourite,
+  isOpen = false,
+  onOpen,
 }: {
   diagram: PaneDiagram;
   anchor: HTMLElement | null;
@@ -239,6 +241,13 @@ export function DiagramActionsMenu({
   // shared-with-you row isn't in your library to star.
   favourite?: boolean;
   onToggleFavourite?: () => void;
+  // True on the row for the diagram already open in this editor session,
+  // where an Open verb would do nothing. Everywhere else the menu leads
+  // with Open.
+  isOpen?: boolean;
+  // How to open it. Absent = navigate to the diagram's page; the floating
+  // panel passes its own opener so switching diagrams stays in-editor.
+  onOpen?: () => void;
 }) {
   const href = hrefForDiagram(diagram);
   const offline = diagram.ownerId === OFFLINE_OWNER_ID;
@@ -275,6 +284,20 @@ export function DiagramActionsMenu({
   return (
     <PortalMenu anchor={anchor} placement="below" onClose={onClose}>
       {header}
+      {/* Open leads, on its own, unless this IS the open diagram: the
+          verb people reach for first sits first, and a menu on the
+          current diagram's row doesn't offer a no-op. */}
+      {isOpen ? null : (
+        <>
+          <MenuActionRow
+            plain
+            icon={<DiagramIcon />}
+            label="Open"
+            onClick={onOpen ? then(onOpen) : () => window.location.assign(href)}
+          />
+          <MenuGroupSeparator />
+        </>
+      )}
       <MenuActionRow plain icon={<MenuPencilIcon />} label="Rename" onClick={then(onStartRename)} />
       <MenuActionRow
         plain

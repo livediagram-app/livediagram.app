@@ -191,6 +191,8 @@ export function DiagramRow({
           anchor={menuButtonRef.current}
           ownerId={ownerId}
           onClose={() => setMenuOpen(false)}
+          isOpen={active}
+          onOpen={onOpen}
           // Only the open diagram's row renames inline (its title is the
           // editor's); any other row's Rename opens the diagram to rename
           // it there.
