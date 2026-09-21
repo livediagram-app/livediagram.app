@@ -126,13 +126,16 @@ function InlineCreateTile({
             setName('');
           }
         }}
+        // No border or fill of its own: the tile is already the outlined,
+        // tinted box, and a second outline inside it read as a field in a
+        // field. The caret and the placeholder are enough to say "type".
         // leading-4 on the row form: under 640px the app's anti-zoom rule
         // (globals.css) lifts every input to 16px, and at the default line
         // height that made this row taller than its neighbours. A 16px
         // line box keeps the row at the same height as a 12px label row.
         className={`${
           row ? 'min-w-0 flex-1 py-0.5 text-left leading-4' : 'w-full py-1 text-center'
-        } rounded border border-brand-300 bg-white px-1.5 text-xs text-slate-800 outline-none dark:border-brand-500/50 dark:bg-slate-800 dark:text-slate-100`}
+        } bg-transparent px-0 text-xs text-slate-800 outline-none placeholder:text-slate-400 dark:text-slate-100 dark:placeholder:text-slate-500`}
       />
       <span className="shrink-0 text-[10px] text-slate-400 dark:text-slate-500">
         {busy ? 'Creating…' : 'Enter to create'}
