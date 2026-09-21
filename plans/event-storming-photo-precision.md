@@ -429,14 +429,27 @@ is not a sticky is on the cardboard stacked in front of it.
 
 ## 5. Fold-back
 
-- [ ] 5.1 Update spec/139's detector paragraph and its honest-limits list: what
+- [x] 5.1 Update spec/139's detector paragraph and its honest-limits list: what
       the gates now reject, and what still fools them.
-- [ ] 5.2 Update `docs/vision/sticky-detection.md` (pipeline, constants table,
+- [x] 5.2 Update `docs/vision/sticky-detection.md` (pipeline, constants table,
       "where it still falls over") and `packages/sticky-vision/README.md`.
-- [ ] 5.3 Record the final precision/recall table in this plan, next to the
+- [x] 5.3 Record the final precision/recall table in this plan, next to the
       baseline from 1.4.
-- [ ] 5.4 Final gate: format, lint, typecheck, full unit suite, e2e 9/9 with
+
+### What it scored, start to end
+
+| photo  | notes | precision | recall    | F1          |
+| ------ | ----- | --------- | --------- | ----------- |
+| 201646 | 47    | 45% → 76% | 64% → 83% | 53 → **80** |
+| 201707 | 41    | 8% → 88%  | 10% → 85% | 9 → **86**  |
+| 201713 | 56    | 34% → 91% | 55% → 89% | 42 → **90** |
+
+Every photograph improved on both halves; none was traded for another. What is
+left is 12 boxes on the cardboard in photo 1's corner, 5 on photo 2 and 5 on
+photo 3, against 8, 6 and 6 notes missed.
+
+- [x] 5.4 Final gate: format, lint, typecheck, full unit suite, e2e 9/9 with
       `E2E_BASE_URL=http://localhost:3102`, clean build. Tree clean apart from
       the scratch files that belong to another agent (`apps/live/shoot-*.mts`,
       the stray `detect.ts` comment edit).
-- [ ] 5.5 Commit.
+- [x] 5.5 Commit.
