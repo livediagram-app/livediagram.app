@@ -14,9 +14,9 @@ import { apiFetchDiagramThumbnailUrl } from '@/lib/api-client';
 // lightweight (no element data); a thumbnail is fetched only once its
 // row/card scrolls into view, so a long list never fires dozens of
 // requests / server renders for things the user never reaches. While
-// idle / loading / broken it shows a blank canvas (a faint dot grid with
-// a sketched pair of nodes), so the layout never shifts and an empty or
-// access-denied diagram degrades gracefully.
+// idle / loading / broken it shows a sketch of an undrawn diagram (and,
+// where there's room, says so), so the layout never shifts and an empty
+// or access-denied diagram degrades gracefully.
 //
 // Size is controlled by the caller via `className` (a small box in a
 // row, a large preview in a card); the <img> fills it with object-fit
@@ -127,9 +127,10 @@ export function DiagramThumbnail({
           ? { backgroundColor: state.backgroundColor }
           : undefined
       }
-      className={`flex shrink-0 items-center justify-center overflow-hidden text-slate-400 dark:text-slate-500 ${
-        state.status === 'ready' ? '' : BLANK_CANVAS
-      } ${className}`}
+      // `@container`, so the placeholder can decide by its OWN width
+      // whether there is room for a caption: a card preview gets the
+      // words, a row thumb gets the sketch alone.
+      className={`@container flex shrink-0 items-center justify-center overflow-hidden text-slate-400 dark:text-slate-500 ${className}`}
     >
       {state.status === 'ready' ? (
         // A blob URL, not a remote asset, so a plain <img> is correct
@@ -137,7 +138,12 @@ export function DiagramThumbnail({
         // ImageElementView.
         <img src={state.src} alt="" className="h-full w-full object-contain" />
       ) : (
-        <BlankCanvasIllustration />
+        // `broken` is the api saying there is no snapshot, which for a
+        // diagram you can open means it has nothing drawn on it yet; the
+        // caption says so, because a bare sketch in a big preview box
+        // reads as a broken image. Idle / loading keep the sketch alone:
+        // the picture may still be coming.
+        <BlankCanvasIllustration captioned={state.status === 'broken'} />
       )}
     </span>
   );
@@ -167,34 +173,42 @@ function OfflineIllustration() {
   );
 }
 
-// The editor's own dot grid, faint, behind the placeholder: the box
-// reads as an empty canvas rather than as a missing image. Sized small
-// enough to stay a texture inside a row thumb.
-const BLANK_CANVAS =
-  '[background-image:radial-gradient(circle,rgb(148_163_184/0.35)_1px,transparent_1px)] [background-size:10px_10px] dark:[background-image:radial-gradient(circle,rgb(148_163_184/0.18)_1px,transparent_1px)]';
-
 // Placeholder shown while loading / when there's no snapshot: two nodes
 // and an arrow, the smallest thing that still says "diagram". Scales
 // with the box like the offline mark, capped so it stays a modest
 // centred sketch in a card. Inlined so the component carries no
 // cross-folder icon dependency (it's imported from both app/ and
 // components/ surfaces).
-function BlankCanvasIllustration() {
+function BlankCanvasIllustration({ captioned = false }: { captioned?: boolean }) {
   return (
-    <svg
-      viewBox="0 0 48 32"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-      className="h-full max-h-16 w-auto p-1 text-slate-300 dark:text-slate-600"
-    >
-      <rect x="3" y="10" width="15" height="12" rx="3" />
-      <rect x="30" y="10" width="15" height="12" rx="3" />
-      <path d="M18 16h11" />
-      <path d="M26 13l3 3-3 3" />
-    </svg>
+    <span className="flex h-full flex-col items-center justify-center gap-2 p-1">
+      <svg
+        viewBox="0 0 64 40"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden
+        className="h-full max-h-20 w-auto text-slate-300 dark:text-slate-600"
+      >
+        {/* Three nodes and two connectors, dashed: a diagram that hasn't
+            been drawn yet rather than a thumbnail of one that has. The
+            box is plain (no canvas dot grid) so the caption under it
+            stays readable. */}
+        <rect x="4" y="14" width="18" height="12" rx="3" strokeDasharray="3 2.5" />
+        <rect x="42" y="3" width="18" height="12" rx="3" strokeDasharray="3 2.5" />
+        <rect x="42" y="25" width="18" height="12" rx="3" strokeDasharray="3 2.5" />
+        <path d="M22 20c8 0 10-11 18-11M22 20c8 0 10 11 18 11" />
+        <path d="M37 6.5l3 2.5-3 2.5M37 28.5l3 2.5-3 2.5" />
+      </svg>
+      {captioned ? (
+        // Container-queried: only where the box is wide enough to hold
+        // the words without crowding the sketch (a card, not a row).
+        <span className="hidden text-[11px] font-medium text-slate-400 @min-[140px]:block dark:text-slate-500">
+          Nothing drawn yet
+        </span>
+      ) : null}
+    </span>
   );
 }
