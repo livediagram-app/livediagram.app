@@ -56,6 +56,7 @@ export const HELP_ARTICLES = {
   themes: 'canvas/themes',
   changingTheme: 'canvas/themes/changing-theme',
   customThemes: 'canvas/themes/custom-themes',
+  choosingFonts: 'canvas/text-and-fonts/choosing-fonts',
   // Links / activity / comments
   links: 'canvas/links',
   comments: 'collaboration/comments',

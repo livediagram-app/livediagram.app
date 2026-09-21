@@ -57,7 +57,6 @@ export function EditorView() {
     embedMode,
     autoAlignTab,
     autoLayoutTab,
-    applyTabFontToAll,
     startTimer,
     pauseTimer,
     resumeTimer,
@@ -122,12 +121,9 @@ export function EditorView() {
     setSelectedId,
     setSettingsOpen,
     setShareDialogOpen,
-    setCanvasThemeTab,
     renameDiagramNonce,
     renameTabNonce,
     setShortcutsOpen,
-    setTabFont,
-    setTabDefaultTextSize,
     tabs,
     toggleActiveTabLock,
     zenMode,
@@ -358,24 +354,11 @@ export function EditorView() {
             canvasMenu={contextMenu?.mode === 'canvas' ? contextMenu : null}
             onCloseCanvasMenu={closeContextMenu}
             canvasActions={{
-              onChangeTheme: () => {
-                setCanvasThemeTab('theme');
-                track('UI', 'Opened', 'ThemePicker');
-              },
-              onChangeCanvas: () => {
-                setCanvasThemeTab('canvas');
-                track('UI', 'Opened', 'CanvasStyle');
-              },
               onAutoAlign: autoAlignTab,
               onAutoLayout: autoLayoutTab,
-              font: activeTab.font ?? null,
-              onApplyFontToAll: applyTabFontToAll,
               // Paste straight from the empty-canvas right-click (spec/09).
               onPaste: pasteFromClipboard,
               canPaste: hasClipboard,
-              onSetFont: setTabFont,
-              defaultTextSize: activeTab.defaultTextSize,
-              onSetDefaultTextSize: setTabDefaultTextSize,
             }}
           />
         )}

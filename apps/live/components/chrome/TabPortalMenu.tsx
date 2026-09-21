@@ -26,6 +26,7 @@ import {
   PollMenuIcon,
   TimerMenuIcon,
   VoteMenuIcon,
+  PasteMenuIcon,
 } from '@/components/palette/context-menu-icons';
 import {
   SessionCountdownSection,
@@ -316,6 +317,26 @@ export function PortalMenu({
                 description="Create a copy of this tab in this diagram."
                 onClick={onDuplicate}
               />
+              {/* Paste, in the toolbar rather than a row of its own:
+                  right-clicking empty canvas is overwhelmingly "put the
+                  thing I copied here". Greyed, not hidden, when the buffer
+                  is empty, so the menu keeps one shape. */}
+              {canvas ? (
+                <MenuToolButton
+                  icon={<PasteMenuIcon />}
+                  label="Paste"
+                  description={
+                    canvas.canPaste
+                      ? 'Paste what you copied onto this tab.'
+                      : 'Nothing to paste yet.'
+                  }
+                  onClick={() => {
+                    canvas.onPaste();
+                    onClose();
+                  }}
+                  disabled={!canvas.canPaste}
+                />
+              ) : null}
               <MenuToolButton
                 icon={<TabLockIcon />}
                 label={locked ? 'Unlock tab' : 'Lock tab'}
