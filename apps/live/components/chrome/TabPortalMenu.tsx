@@ -337,17 +337,20 @@ export function PortalMenu({
                   disabled={!canvas.canPaste}
                 />
               ) : null}
-              <MenuToolButton
-                icon={<TabLockIcon />}
-                label={locked ? 'Unlock tab' : 'Lock tab'}
-                description={locked ? 'Make this tab editable again.' : 'Make this tab read-only.'}
-                onClick={onToggleLock}
-                active={locked}
-              />
-              {/* Delete pinned to the right edge of the toolbar, isolated
-                  from the everyday verbs; the confirm popover anchors to
-                  this wrapper. */}
-              <div ref={deleteRowRef} className="ml-auto">
+              {/* Lock and Delete sit together at the right edge, apart from
+                  the everyday verbs: both change what the tab will let you
+                  do next rather than doing something to it. The confirm
+                  popover anchors to this wrapper. */}
+              <div ref={deleteRowRef} className="ml-auto flex items-center gap-0.5">
+                <MenuToolButton
+                  icon={<TabLockIcon />}
+                  label={locked ? 'Unlock tab' : 'Lock tab'}
+                  description={
+                    locked ? 'Make this tab editable again.' : 'Make this tab read-only.'
+                  }
+                  onClick={onToggleLock}
+                  active={locked}
+                />
                 <MenuToolButton
                   icon={<TrashIcon />}
                   label="Delete"

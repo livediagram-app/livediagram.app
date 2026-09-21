@@ -191,7 +191,7 @@ export function SelectionPopover({
           beats a two-click context menu open + click. */}
       {onOpenComments ? (
         <PopoverButton
-          label="Comments"
+          label="Add Comment"
           description="Open the comment thread for this element."
           onClick={onOpenComments}
         >
@@ -242,7 +242,6 @@ export function SelectionPopover({
       ) : null}
       {onDelete ? (
         <>
-          <Divider />
           <Tooltip
             title="Delete"
             description={
