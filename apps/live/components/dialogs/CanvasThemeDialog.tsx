@@ -1,6 +1,6 @@
 'use client';
 
-// The right-click "Change Canvas" / "Change colour scheme" dialog (spec/42). One
+// The right-click "Change Canvas" / "Change theme" dialog (spec/42). One
 // modal, two tabs: Canvas (pattern + colours + opacity) and Theme (the
 // category-browse picker). Opens on whichever tab the menu item picked; the
 // user can switch freely. Every control applies live to the active tab via
@@ -123,17 +123,17 @@ export function CanvasThemeDialog({
                 </h2>
                 <HelpArticleLink
                   article={tab === 'canvas' ? 'changingTheBackground' : 'changingTheme'}
-                  title={tab === 'canvas' ? 'Canvas background' : 'Colour schemes'}
+                  title={tab === 'canvas' ? 'Canvas background' : 'Themes'}
                   description={
                     tab === 'canvas'
                       ? 'How to change the canvas background and pattern.'
-                      : 'How to switch and customise a tab colour scheme.'
+                      : 'How to switch and customise a tab theme.'
                   }
                 />
               </div>
               <DialogCloseButton compact onClick={onClose} />
             </div>
-            {/* The colour scheme leads the strip: it's the broader, more-used
+            {/* The theme leads the strip: it's the broader, more-used
                 control (the paintbrush dock button also opens here); Canvas is
                 the finer backdrop tuning. */}
             <div className="flex w-full gap-1 rounded-lg bg-slate-100 p-1 dark:bg-slate-800">
@@ -142,7 +142,7 @@ export function CanvasThemeDialog({
                 onClick={() => onTabChange('theme')}
                 icon={<ThemeTabIcon />}
               >
-                Colour scheme
+                Theme
               </TabButton>
               <TabButton
                 active={tab === 'canvas'}

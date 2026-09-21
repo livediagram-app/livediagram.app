@@ -274,7 +274,7 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
   });
   out.push({
     id: 'open-theme',
-    name: 'Open colour scheme',
+    name: 'Open theme',
     keywords: 'theme colour color scheme style appearance palette',
     run: h.openTheme,
   });

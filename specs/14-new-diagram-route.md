@@ -245,7 +245,7 @@ the picker, so returning users keep meeting options they have not
 explored instead of always seeing the same curated first rows.
 
 - **Pinned defaults stay first.** Blank diagram (templates) and the
-  `brand` scheme, labelled "Default" (colour scheme), are always pinned to index
+  `brand` scheme, labelled "Default" (theme), are always pinned to index
   0 — they are the sensible starting points, so they never get
   shuffled away. Everything else is randomised.
 - **The shuffle sets the order, not what is visible.** Both grids
@@ -281,7 +281,7 @@ The welcome screen is a **two-step wizard** rather than one long page:
 - A **two-segment progress rail** at the top shows the current step; clicking
   either segment ("1 Template" / "2 Theme") jumps straight to that step.
 - **Skip** (either step) commits the documented defaults straight away: the
-  **Blank** template and the **Default** colour scheme. (This is why the welcome screen now
+  **Blank** template and the **Default** theme. (This is why the welcome screen now
   has a Skip control where it previously had none.) The header **X** still
   dismisses.
 - A bottom-left **Open Existing Diagram** button navigates to `/explorer`. The
@@ -340,7 +340,7 @@ animated `stroke-dashoffset`. It is pure SVG + CSS (no per-frame JS),
 
 Some users don't want a template, a theme, or a settings step — they want
 an empty canvas right now. Two affordances serve them, both committing the
-documented Skip defaults (Blank template, Default colour scheme, the template's
+documented Skip defaults (Blank template, Default theme, the template's
 default diagram name) without walking the wizard:
 
 - **`/new?blank=1`** — the query param bypasses the wizard entirely. The

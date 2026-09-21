@@ -40,7 +40,7 @@ describe('THEMES catalogue', () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it('leads with the Default colour scheme', () => {
+  it('leads with the Default theme', () => {
     expect(THEMES[0]?.id).toBe('brand');
     expect(THEMES[0]?.label).toBe('Default');
   });
@@ -56,10 +56,10 @@ describe('THEMES catalogue', () => {
 
   // spec/16-marketing-site.md cites the scheme count directly in its
   // copy. If the catalogue drifts from this the spec stops being
-  // accurate. The extras include the multi-colour schemes from spec/29.
+  // accurate. The extras include the multicolour themes from spec/29.
   // Mirrors the equivalent assertions in templates.test.ts.
   // 26, not 27: Charcoal merged into Default and left the catalogue.
-  it('lists exactly 26 colour schemes (matches spec/16)', () => {
+  it('lists exactly 26 themes (matches spec/16)', () => {
     expect(THEMES).toHaveLength(26);
   });
 
@@ -683,7 +683,7 @@ describe('resetThemeElement', () => {
   });
 
   it('keeps a themeLockFill fill even on a hard reset, but still resets stroke + text', () => {
-    // "Reset elements to colour scheme" is the most aggressive transform (it
+    // "Reset elements to theme" is the most aggressive transform (it
     // overwrites user customisations), yet a pinned fill must still
     // survive or the Gantt bars would merge under a reset.
     const bar: ShapeElement = {

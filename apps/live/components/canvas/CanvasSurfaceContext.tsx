@@ -6,7 +6,7 @@ import type { CanvasSurface } from '@livediagram/diagram';
 // Which paper the active tab's canvas is: light or dark. Every element that
 // carries no colour of its own is drawn in that paper's ink
 // (`defaultStrokeColor` and friends in @livediagram/diagram), and the Default
-// colour scheme deliberately leaves elements uncoloured — so on a Default tab
+// theme deliberately leaves elements uncoloured — so on a Default tab
 // this context IS the element colour (spec/07, spec/09).
 //
 // A context rather than a prop chain, for two reasons. The element views are

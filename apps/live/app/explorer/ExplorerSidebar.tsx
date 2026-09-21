@@ -171,7 +171,7 @@ export function ExplorerSidebar() {
       />
       <SidebarRow
         icon={<ShareIcon />}
-        label="Shared with you"
+        label="Shared with You"
         selected={selected.kind === 'shared'}
         onClick={() => go({ kind: 'shared' })}
         depth={0}
@@ -287,7 +287,7 @@ export function ExplorerSidebar() {
               </Tooltip>
             }
           >
-            Teams
+            Team Spaces
           </SidebarSectionLabel>
           {teams.map((t) => {
             const byParent = teamTree.get(t.id);
@@ -347,14 +347,14 @@ export function ExplorerSidebar() {
       <SidebarSectionLabel>Library</SidebarSectionLabel>
       <SidebarRow
         icon={<ImageIcon />}
-        label="Image gallery"
+        label="Image Gallery"
         selected={selected.kind === 'gallery'}
         onClick={() => go({ kind: 'gallery' })}
         depth={0}
       />
       <SidebarRow
         icon={<PaletteIcon />}
-        label="Colour schemes"
+        label="Themes"
         selected={selected.kind === 'themes'}
         onClick={() => go({ kind: 'themes' })}
         depth={0}
@@ -366,7 +366,7 @@ export function ExplorerSidebar() {
           <SidebarSectionLabel>External connections</SidebarSectionLabel>
           <SidebarRow
             icon={<KeyIcon />}
-            label="API tokens"
+            label="API Tokens"
             selected={selected.kind === 'tokens'}
             onClick={() => go({ kind: 'tokens' })}
             depth={0}

@@ -93,7 +93,7 @@ export function ElementColourBorderSections({
           />
           <div className="px-2 pb-1 pt-1.5">
             <MenuActionButton
-              label="Reset to colour scheme"
+              label="Reset to theme"
               onClick={() => {
                 props.onResetColors();
                 onClose();
@@ -150,7 +150,7 @@ export function ElementColourBorderSections({
             ) : null}
             <div className="px-2 pb-1 pt-1.5">
               <MenuActionButton
-                label="Reset to colour scheme"
+                label="Reset to theme"
                 onClick={() => {
                   props.onResetColors();
                   onClose();

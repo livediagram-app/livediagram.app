@@ -45,7 +45,7 @@ export function ThemesPane() {
     if (
       await confirm({
         title: `Delete "${name}"?`,
-        message: 'Diagrams using it fall back to the Default colour scheme. This cannot be undone.',
+        message: 'Diagrams using it fall back to the Default theme. This cannot be undone.',
         confirmLabel: 'Delete',
         variant: 'danger',
       })
@@ -63,7 +63,7 @@ export function ThemesPane() {
       {themes.length === 0 ? (
         <EmptyState
           icon={<PaletteIcon />}
-          title="No custom colour schemes yet"
+          title="No custom themes yet"
           description="Build your own colour palette and reuse it across every diagram, just like a built-in one."
         >
           <button
@@ -86,22 +86,22 @@ export function ThemesPane() {
                 {t.name}
               </span>
               <div className="flex items-center gap-1">
-                <Tooltip title="Edit" description="Open this colour scheme in the builder.">
+                <Tooltip title="Edit" description="Open this theme in the builder.">
                   <IconBtn label="Edit theme" onClick={() => setBuilding(t.id)}>
                     <EditIcon />
                   </IconBtn>
                 </Tooltip>
-                <Tooltip title="Duplicate" description="Create a copy of this colour scheme.">
+                <Tooltip title="Duplicate" description="Create a copy of this theme.">
                   <IconBtn
-                    label="Duplicate colour scheme"
+                    label="Duplicate theme"
                     onClick={() => void createTheme(`${t.name} copy`, t.definition)}
                   >
                     <DuplicateIcon />
                   </IconBtn>
                 </Tooltip>
-                <Tooltip title="Delete" description="Remove this colour scheme.">
+                <Tooltip title="Delete" description="Remove this theme.">
                   <IconBtn
-                    label="Delete colour scheme"
+                    label="Delete theme"
                     danger
                     onClick={() => void confirmDelete(t.id, t.name)}
                   >
@@ -134,7 +134,7 @@ export function ThemesPane() {
 
       {building !== null ? (
         <BuilderModal
-          title={editing ? 'Edit colour scheme' : 'New colour scheme'}
+          title={editing ? 'Edit theme' : 'New theme'}
           initial={editing ? { name: editing.name, definition: editing.definition } : undefined}
           saving={saving}
           onSave={handleSave}

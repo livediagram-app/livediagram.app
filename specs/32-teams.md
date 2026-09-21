@@ -22,7 +22,7 @@ Two D1 tables, owned by the api worker (migration `0019_teams.sql`):
 Teams are keyed by Clerk user ids and invites are keyed by email, so the whole feature requires a verified Clerk session:
 
 - Every `/api/teams*` endpoint requires a verified Clerk Bearer token. The guest `X-Owner-Id` path gets `401 sign_in_required`. This does NOT violate spec/04's no-sign-in-wall rule: the canvas and everything else stays guest-accessible; only the Teams surface asks for an account.
-- In the Explorer, guests see the Teams section with a "sign in to use teams" link instead of team rows. Clerk-disabled self-host deployments (spec/03) hide the section entirely.
+- In the Explorer, guests see the Team Spaces section with a "sign in to use teams" link instead of team rows. Clerk-disabled self-host deployments (spec/03) hide the section entirely.
 
 ### Email claim
 
@@ -97,7 +97,7 @@ Wire DTOs (`Team`, `TeamListItem`, `TeamMember`, `TeamRole`) live in `@livediagr
 
 ## Explorer UI
 
-In the Explorer sidebar, a **Teams** section sits under the Folders section (above Library):
+In the Explorer sidebar, a **Team Spaces** section (labelled to mirror Personal Space, so the two kinds of library read as the same noun) sits under the Personal Space section (above Library):
 
 - One row per team the user has joined; selecting it shows the team in the right pane.
 - A "New team" affordance opens a create modal (name + organisation); submitting creates the team with the user as Admin.

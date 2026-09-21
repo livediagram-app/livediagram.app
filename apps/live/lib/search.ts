@@ -27,7 +27,7 @@ const HELP_LIMIT = 6;
 // schema change to one doesn't silently propagate to the others.
 type SearchInputDiagram = { id: string; name: string };
 type SearchInputFolder = { id: string; name: string };
-// "Shared with you" rows carry their still-live share code so picking
+// "Shared with You" rows carry their still-live share code so picking
 // one can navigate to the visitor URL (the only path a non-owner can
 // open the diagram on).
 type SearchInputShared = { id: string; name: string; shareCode: string };
@@ -171,7 +171,7 @@ type SearchInput = {
   query: string;
   diagrams: SearchInputDiagram[];
   folders: SearchInputFolder[];
-  // Diagrams shared with the current owner ("Shared with you").
+  // Diagrams shared with the current owner ("Shared with You").
   // Optional: surfaces without the list omit it.
   shared?: SearchInputShared[];
   // Team-library folders (spec/35), breadcrumb-pathed + tagged with
@@ -240,7 +240,7 @@ export function buildSearchResults(input: SearchInput): SearchGroup[] {
   if (sharedMatches.length > 0) {
     groups.push({
       key: 'shared',
-      label: 'Shared with you',
+      label: 'Shared with You',
       items: sharedMatches.map((s) => ({
         kind: 'shared',
         id: s.id,

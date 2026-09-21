@@ -3,7 +3,7 @@ import { THEMES } from '@livediagram/diagram';
 import { LEAD_THEME_IDS, darkCategorySchemes, isLeadTheme, shuffledThemes } from './theme-order';
 import { themeCategory } from './themes-taxonomy';
 
-// The picker SHUFFLES its colour schemes on each open, so that a different set
+// The picker SHUFFLES its themes on each open, so that a different set
 // greets the user each time. That rotation is deliberate — but it also meant
 // the Dark category opened on whichever dark scheme chance picked, and an
 // earlier attempt to make the neutral dark lead by reordering the catalogue

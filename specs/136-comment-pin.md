@@ -75,7 +75,7 @@ card gets.
 - **Excluded from `isSvgRenderedShape`**, which is allow-by-default: a new
   CSS-drawn kind left off that list renders as a transparent nothing.
 - **Keeps its own colours** (the Behaviour set in `themes.ts`): a pin is board
-  chrome, not a node in the diagram's colour scheme.
+  chrome, not a node in the diagram's theme.
 - **Aspect-locked and square by default**, 40×40. A stretched pin reads as a
   shape rather than a marker.
 - **Not votable** (spec/39): a comment pin IS a remark, so a dot on one means

@@ -1,7 +1,7 @@
 import { expect, test, dismissQuickTour, expectNoPageErrors } from './fixtures';
 
 // Appearance (spec/07) end to end: the three settings on the real control, and
-// the thing the merge was for — a tab on the Default colour scheme repainting
+// the thing the merge was for — a tab on the Default theme repainting
 // with the viewer, canvas AND elements, without writing to the diagram.
 //
 // Unit tests can only say the store resolves and the helpers return the right

@@ -200,7 +200,7 @@ const teamRenderer: TimelineRenderer = (event, ctx) => {
 const accountRenderer: TimelineRenderer = (event) => {
   const base = { icon: icon(event), description: null };
   const token = str(event.snapshot, 'tokenName') ?? 'API token';
-  const theme = str(event.snapshot, 'themeName') ?? 'A colour scheme';
+  const theme = str(event.snapshot, 'themeName') ?? 'A theme';
   const folder = str(event.snapshot, 'folderName') ?? 'A folder';
   const tokens = () => window.location.assign('/explorer/tokens');
   switch (event.eventType) {

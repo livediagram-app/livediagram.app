@@ -4,31 +4,31 @@ import { helpMetadata } from '@/lib/seo';
 import { CustomTheme } from '@/components/illustrations/canvas';
 
 export const metadata = helpMetadata({
-  title: 'Custom Colour Schemes',
+  title: 'Custom Themes',
   description:
-    'Build your own colour scheme from a few colours, save it to your account, reuse it across diagrams, and edit it later.',
+    'Build your own theme from a few colours, save it to your account, reuse it across diagrams, and edit it later.',
   path: '/help/canvas/themes/custom-themes/',
 });
 
 <ArticleLayout
-  title="Custom Colour Schemes"
-  description="Author your own colour scheme, save it to your account, and apply it on any diagram exactly like a built-in one."
+  title="Custom Themes"
+  description="Author your own theme, save it to your account, and apply it on any diagram exactly like a built-in one."
   categoryTitle="Canvas"
   categorySlug="canvas"
-  parentArticle={{ title: "Colour Schemes", slug: "colour schemes" }}
-  subArticles={getSubArticles("colour schemes").filter((a) => a.slug !== "custom-colour schemes")}
+  parentArticle={{ title: "Themes", slug: "themes" }}
+  subArticles={getSubArticles("themes").filter((a) => a.slug !== "custom-themes")}
 >
 
-The built-in catalogue covers a lot of ground, but sometimes you want your own palette: brand colours, a house diagram style, or a notation of your own. Custom colour schemes let you author exactly that, save it, and reuse it. A saved custom colour scheme behaves just like a built-in one: pick it on a tab and new elements adopt its colours. Custom colour schemes work for everyone, signed in or not, so the canvas keeps working without a sign-in.
+The built-in catalogue covers a lot of ground, but sometimes you want your own palette: brand colours, a house diagram style, or a notation of your own. Custom themes let you author exactly that, save it, and reuse it. A saved custom theme behaves just like a built-in one: pick it on a tab and new elements adopt its colours. Custom themes work for everyone, signed in or not, so the canvas keeps working without a sign-in.
 
-## Building a colour scheme
+## Building a theme
 
-You build a colour scheme from the **Custom** category in the Tab Look & Feel Colour scheme tab. Choose **+ New colour scheme** to open the colour scheme builder. It is fast by default and deep on demand:
+You build a theme from the **Custom** category in the Tab Look & Feel Theme tab. Choose **+ New theme** to open the theme builder. It is fast by default and deep on demand:
 
 <Step n={1}>
-  Give the colour scheme a name, then set the **Base colours**: **Background** for the canvas, **Fill** for
+  Give the theme a name, then set the **Base colours**: **Background** for the canvas, **Fill** for
   element fill, and **Stroke** for outlines. From just these three, livediagram derives sensible
-  defaults for everything else, so a usable colour scheme exists after three clicks.
+  defaults for everything else, so a usable theme exists after three clicks.
 </Step>
 
 <Step n={2}>
@@ -46,26 +46,26 @@ You build a colour scheme from the **Custom** category in the Tab Look & Feel Co
   and text, which is how you reproduce a notation like "diamonds are amber".
 </Step>
 
-A live preview shows a few sample shapes in your in-progress colour scheme, rendered the same way the canvas would, so you see the result before saving. **Save** stores the colour scheme and applies it to the active tab.
+A live preview shows a few sample shapes in your in-progress theme, rendered the same way the canvas would, so you see the result before saving. **Save** stores the theme and applies it to the active tab.
 
-<Figure caption="The colour scheme builder's colour wells for fill, border, text, and canvas, with a Save action.">
+<Figure caption="The theme builder's colour wells for fill, border, text, and canvas, with a Save action.">
   <CustomTheme />
 </Figure>
 
 ## Saving and reusing
 
-Custom colour schemes are tied to your account and listed under the **Custom** category wherever you pick a colour scheme: the Tab Look & Feel dialog and the new-diagram template picker both show them, so you can apply or author one the moment you start a diagram. If you sign up after creating colour schemes as a guest, they carry over to your account.
+Custom themes are tied to your account and listed under the **Custom** category wherever you pick a theme: the Tab Look & Feel dialog and the new-diagram template picker both show them, so you can apply or author one the moment you start a diagram. If you sign up after creating themes as a guest, they carry over to your account.
 
-## Managing your colour schemes
+## Managing your themes
 
-The [Explorer](/help/explorer/explorer-page/) has a **Colour schemes** entry under its Library section where you can manage them all in one place: each is shown as a preview card you can **Edit**, **Duplicate**, or **Delete**.
+The [Explorer](/help/explorer/explorer-page/) has a **Themes** entry under its Library section where you can manage them all in one place: each is shown as a preview card you can **Edit**, **Duplicate**, or **Delete**.
 
 ## Editing and deleting
 
-Editing a colour scheme opens the same builder again. Deleting one is safe for diagrams that still reference it: they fall back to the default look and keep rendering rather than breaking. If you delete a colour scheme that the diagram you have open is using, that tab reverts to the default colour scheme straight away so the change is visible.
+Editing a theme opens the same builder again. Deleting one is safe for diagrams that still reference it: they fall back to the default look and keep rendering rather than breaking. If you delete a theme that the diagram you have open is using, that tab reverts to the default theme straight away so the change is visible.
 
 <Tip>
-  To tweak a built-in colour scheme, start a new custom colour scheme from the same colours and edit from there. The
+  To tweak a built-in theme, start a new custom theme from the same colours and edit from there. The
   shipped catalogue stays read-only, so your edits never touch the originals.
 </Tip>
 

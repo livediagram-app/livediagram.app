@@ -94,7 +94,7 @@ A React context (`CustomThemeProvider`) tracks the list reactively so the picker
 
 **Deleting an applied theme reverts the diagram.** When a custom theme is deleted, the provider invokes an `onThemeDeleted(id)` callback (supplied by the editor only — Explorer / new-diagram have no open diagram to repaint). The editor's handler (`resetTabsUsingTheme` in `useTabCanvas`) walks every tab in the open diagram and hard-resets any still pointing at the dead id back to the default theme — backdrop and element colours — so the deletion is visible immediately rather than stranding the old colours on a now-dead id. A diagram opened _later_ with a since-deleted theme id isn't auto-reverted (a non-owner viewing a shared diagram must never have their tab's theme silently rewritten); it renders via `getTheme`'s default fallback, and the next theme pick hard-resets it through the `resolveTheme` path above.
 
-## Building a colour scheme — Tab Look & Feel
+## Building a theme — Tab Look & Feel
 
 The Theme tab of the Tab Look & Feel dialog ([spec/42](42-canvas-and-theme-dialog.md)) gains:
 
@@ -120,7 +120,7 @@ The Explorer ([spec/15](15-folders.md)) gains a **Themes** entry under its **Lib
 ## New-diagram / template picker
 
 The New-diagram theme picker ([spec/14](14-new-diagram-route.md)) shows the same
-**Custom** category and **+ New theme** builder as the Tab Look & Feel dialog's Colour scheme tab,
+**Custom** category and **+ New theme** builder as the Tab Look & Feel dialog's Theme tab,
 so a user can apply (or author) one of their saved themes at the moment they
 start a diagram. Both surfaces render one shared `CustomThemePicker` (which owns
 the builder state and wires the custom category into `ThemeCategoryBrowser`), so
@@ -139,7 +139,7 @@ New `type`s on the existing `Theme` category ([spec/22](22-telemetry.md)): `trac
 
 - DB / route / test layers copy the **folders** resource one-for-one (`db/custom-themes.ts`, `routes/custom-themes.ts`, `routes/custom-themes.test.ts`).
 - `ColorSwatch`, `CanvasStyleControls` (pattern grid), `ShapeIcon`, `elementKindLabel`, `ThemeSwatch`, `tint`/`shade`/`deriveTextColorForBg` are all reused; the builder adds no parallel colour primitives.
-- The builder component is shared between the Tab Look & Feel dialog's Colour scheme tab and the Explorer edit modal (one `CustomThemeBuilder`, two hosts), so the two entry points can't drift.
+- The builder component is shared between the Tab Look & Feel dialog's Theme tab and the Explorer edit modal (one `CustomThemeBuilder`, two hosts), so the two entry points can't drift.
 
 ## Out of scope (for now)
 

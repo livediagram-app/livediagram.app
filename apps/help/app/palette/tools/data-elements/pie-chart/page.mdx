@@ -6,13 +6,13 @@ import { PieChartWithLegend } from '@/components/illustrations/palette-data';
 export const metadata = helpMetadata({
   title: 'Pie Chart',
   description:
-    "Add an editable pie chart to the canvas and build it from simple label and value rows in your colour scheme's colours.",
+    "Add an editable pie chart to the canvas and build it from simple label and value rows in your theme's colours.",
   path: '/help/palette/tools/data-elements/pie-chart/',
 });
 
-<ArticleLayout title="Pie Chart" description="Split a total into slices you edit as plain label and value rows, drawn in your colour scheme's colours." categoryTitle="Palette" categorySlug="palette" parentArticle={{ title: "Data and Chart Elements", slug: "data-elements" }} subArticles={getSubArticles("data-elements").filter((a) => a.slug !== "pie-chart")}>
+<ArticleLayout title="Pie Chart" description="Split a total into slices you edit as plain label and value rows, drawn in your theme's colours." categoryTitle="Palette" categorySlug="palette" parentArticle={{ title: "Data and Chart Elements", slug: "data-elements" }} subArticles={getSubArticles("data-elements").filter((a) => a.slug !== "pie-chart")}>
 
-A pie chart shows how a total divides into parts. Each slice is sized by its value, coloured from your active colour scheme, and labelled, so a reader sees the breakdown at a glance. You build the chart from a short list of label and value rows, with no spreadsheet required.
+A pie chart shows how a total divides into parts. Each slice is sized by its value, coloured from your active theme, and labelled, so a reader sees the breakdown at a glance. You build the chart from a short list of label and value rows, with no spreadsheet required.
 
 <Figure caption="A pie chart of four labelled slices with the legend key beside it.">
   <PieChartWithLegend />
@@ -38,12 +38,12 @@ Right-click the chart to open its context menu and find the **Data** category. I
 - A **label** for the slice name.
 - A **value** that sizes the slice.
 
-You can add and remove rows, and the chart redraws live as you type. New slices default to variants of the active colour scheme, so the chart reads as part of your diagram out of the box, but you can override any slice's colour with its swatch.
+You can add and remove rows, and the chart redraws live as you type. New slices default to variants of the active theme, so the chart reads as part of your diagram out of the box, but you can override any slice's colour with its swatch.
 
 Two more categories tune the display. The **Chart** category has a **Legend** placement picker — **Off**, **Top**, **Left**, **Right**, or **Below** — that shows the label key and chooses which side of the chart it sits on (the **Right** by default); **Off** hides it. The **Animation** category carries chart-specific animations (None / Grow / Pop / Spin / Pulse) with a **Speed** row and a **Repeat** toggle; Grow and Pop play once as an entrance, while Spin and Pulse loop. Hovering a slice always shows a tooltip with its label and value, whether or not the legend is on.
 
 <Tip>
-  Because slice colours default to your colour scheme, changing the diagram's colour scheme restyles the chart to
+  Because slice colours default to your theme, changing the diagram's theme restyles the chart to
   match without any per-slice work.
 </Tip>
 

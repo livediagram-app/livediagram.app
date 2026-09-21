@@ -6,7 +6,7 @@ import { Tooltip } from '@/components/primitives/Tooltip';
 // A self-contained feature (its own hook + icons) that the tab bar
 // happens to host in its trailing controls; kept in its own module so
 // it isn't buried in TabBar. Flips only the editor chrome — a tab's
-// colour scheme is its own setting, except for Default, which follows
+// theme is its own setting, except for Default, which follows
 // this one (spec/07).
 //
 // The glyph shows the CURRENT setting, not the next one. As a two-state

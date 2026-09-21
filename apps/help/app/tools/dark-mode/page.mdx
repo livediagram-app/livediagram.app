@@ -5,13 +5,13 @@ import { LightDarkToggle } from '@/components/illustrations/tools';
 export const metadata = helpMetadata({
   title: 'Appearance: Light, Dark, System',
   description:
-    'Set the editor to Light, Dark, or System with the toggle on the tab bar. New visitors start on System, so it matches their device. It recolours the editor around your work, your choice is remembered, and the Default colour scheme follows it.',
+    'Set the editor to Light, Dark, or System with the toggle on the tab bar. New visitors start on System, so it matches their device. It recolours the editor around your work, your choice is remembered, and the Default theme follows it.',
   path: '/help/tools/dark-mode/',
 });
 
 <ArticleLayout
   title="Appearance: Light, Dark, System"
-  description="Three settings for the editor's own chrome — Light, Dark, or follow your device — kept separate from the colour scheme your diagram is saved with."
+  description="Three settings for the editor's own chrome — Light, Dark, or follow your device — kept separate from the theme your diagram is saved with."
   categoryTitle="Tools"
   categorySlug="tools"
 >
@@ -30,27 +30,27 @@ export const metadata = helpMetadata({
 
 **System is where everyone starts.** Open livediagram on a machine set to dark and the editor is dark from the first paint, canvas included. Pick Light or Dark yourself and that choice outranks your device from then on, in both directions — a light editor on a dark machine is perfectly allowed.
 
-## Appearance is yours; a colour scheme is the diagram's
+## Appearance is yours; a theme is the diagram's
 
 The distinction worth holding on to is _who_ each setting belongs to.
 
 Appearance belongs to **you and this browser**. It recolours the editor's interface — the tab bar, header, panels, and the backdrop around your work — and it is never saved into the diagram, so nobody you share with is affected by it.
 
-A [colour scheme](/help/canvas/themes/) belongs to **the diagram**. It sets the canvas backdrop and the colours of your elements, it is stored on the tab, and everyone who opens that tab sees it.
+A [theme](/help/canvas/themes/) belongs to **the diagram**. It sets the canvas backdrop and the colours of your elements, it is stored on the tab, and everyone who opens that tab sees it.
 
 So a light, pastel diagram can sit in a dark editor late at night, and a dark architecture diagram can sit in a light one, whichever is comfortable.
 
 ## The one that follows you: Default
 
-The **Default** colour scheme is the exception, deliberately. It is the scheme every new tab starts on, and it has a light half and a dark half: your appearance decides which one you see. Work in Dark and its canvas is charcoal with grey elements; switch to Light and the same tab is white with the familiar blue ones.
+The **Default** theme is the exception, deliberately. It is the scheme every new tab starts on, and it has a light half and a dark half: your appearance decides which one you see. Work in Dark and its canvas is charcoal with grey elements; switch to Light and the same tab is white with the familiar blue ones.
 
 Nothing is written to the diagram when you switch — the tab is not edited, and there is nothing to save. A colleague reading the same tab in light chrome sees the light half at the same moment you are looking at the dark one.
 
-Every other colour scheme is a decision somebody made and stored, so it looks the same for everyone, in either appearance.
+Every other theme is a decision somebody made and stored, so it looks the same for everyone, in either appearance.
 
 ## The match nudge
 
-Because the two are independent, they can end up mismatched: a dark-backdrop diagram in a light editor, or the reverse. When that happens, a small dismissible prompt appears above the tab bar offering to switch the editor to match in one click. It works out "light" or "dark" from the scheme's background brightness, so it is right for built-in and custom colour schemes alike. Dismiss it and it stays gone for that pairing, but it can still offer again on a differently styled tab. The colour-scheme picker offers the same one-click switch inline.
+Because the two are independent, they can end up mismatched: a dark-backdrop diagram in a light editor, or the reverse. When that happens, a small dismissible prompt appears above the tab bar offering to switch the editor to match in one click. It works out "light" or "dark" from the scheme's background brightness, so it is right for built-in and custom themes alike. Dismiss it and it stays gone for that pairing, but it can still offer again on a differently styled tab. The colour-scheme picker offers the same one-click switch inline.
 
 Tabs on the Default scheme never trigger it. They already match — that is the point of them.
 
@@ -60,7 +60,7 @@ Tabs on the Default scheme never trigger it. They already match — that is the 
 - **No flash.** It is worked out before the page first paints — your saved pick, or your device setting if you have not made one — on every screen including the welcome and new-diagram flows, so you never see a flash of the wrong one.
 
 <Tip>
-  Prefer a dark workspace? Set it once and forget it. Leave your tabs on the Default colour scheme
+  Prefer a dark workspace? Set it once and forget it. Leave your tabs on the Default theme
   and the canvas comes with you, without changing what anyone else sees.
 </Tip>
 

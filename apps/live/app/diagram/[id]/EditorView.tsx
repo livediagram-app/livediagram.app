@@ -139,7 +139,7 @@ export function EditorView() {
   // theme so the editor chrome matches the diagram (spec/42).
   useEditorAccent(activeTab.theme);
   // The viewer's own light / dark chrome (spec/07). Read here because the
-  // Default colour scheme resolves through it — see the canvas surface below.
+  // Default theme resolves through it — see the canvas surface below.
   const { appearance } = useAppearance();
   // Guest sign-in nudge (spec/36): the same banner the Explorer shows,
   // but on the editor it waits ~5 minutes into the session before

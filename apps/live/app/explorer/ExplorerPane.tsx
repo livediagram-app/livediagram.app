@@ -48,22 +48,22 @@ const SECTION_HELP: Partial<
   },
   shared: {
     article: 'sharedWithYou',
-    title: 'Shared with you',
+    title: 'Shared with You',
     description: 'Diagrams other people have shared with you, collected here.',
   },
   gallery: {
     article: 'imageGallery',
-    title: 'Image gallery',
+    title: 'Image Gallery',
     description: 'How uploaded images are stored and reused across diagrams.',
   },
   themes: {
     article: 'customThemes',
-    title: 'Custom colour schemes',
+    title: 'Custom themes',
     description: 'Build your own palette and reuse it across diagrams.',
   },
   tokens: {
     article: 'apiTokens',
-    title: 'API tokens',
+    title: 'API Tokens',
     description: 'Create tokens to call the livediagram API from your own scripts.',
   },
   unsorted: {

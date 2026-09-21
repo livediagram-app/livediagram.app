@@ -81,7 +81,7 @@ export function TabCanvasMenuSections({
         <MenuTileGrid cols={2}>
           <MenuTile
             icon={<PaletteMenuIcon />}
-            label="Change colour scheme"
+            label="Change theme"
             onClick={() => {
               canvas.onChangeTheme();
               onClose();
