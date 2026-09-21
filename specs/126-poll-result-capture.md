@@ -18,15 +18,18 @@ The ephemerality itself is still right and is unchanged. What was missing was a
 
 ## The control
 
-The host's poll panel ends a poll with two buttons rather than one:
+The host's poll panel has two buttons:
 
-- **End poll** — exactly what it did before. Nothing is written anywhere.
-- **End & keep results** — ends the poll for everyone AND drops a chart of the
-  tallies onto the active tab.
+- **Keep Results** — drops a chart of the tallies so far onto the active tab.
+  The poll keeps running, so the host can keep a second chart later; nothing
+  is sent to the room. (It replaced an "End & keep results" button and a
+  Copy-to-clipboard button: capturing and ending were one press, which made
+  "show the room the numbers, then keep going" impossible, and the chart is a
+  better record than the clipboard.)
+- **End Poll** — ends the poll for everyone (`poll-end`). Nothing is written.
 
-Both are edit-role only and both send the same `poll-end` op, so a participant
-sees no difference and no new op kind exists. The capture is done entirely by
-the host, from the tallies already in their own memory.
+Both are edit-role only. The capture is done entirely by the host, from the
+tallies already in their own memory.
 
 ## What it drops
 

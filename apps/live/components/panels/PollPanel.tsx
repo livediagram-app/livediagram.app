@@ -11,24 +11,18 @@
 // answering is what buys you the tally, so a participant who hasn't
 // answered can't be nudged by the running numbers.
 //
-// The host gets Copy results (the only way a poll outlives itself, since
-// nothing is stored) and End poll. Everyone else gets a local Dismiss,
-// which hides their own panel without ending anything — the escape hatch
-// if the host disconnects mid-poll.
+// The host gets Keep Results (a chart of the tallies so far, dropped on
+// the canvas; the poll keeps running) and End Poll. Everyone else gets a
+// local Dismiss, which hides their own panel without ending anything —
+// the escape hatch if the host disconnects mid-poll.
 //
 // It takes no mobile-dock props on purpose: the dock is a row of toggles
 // for panels that are always available, and a poll is neither always
 // there nor something you go looking for. It shows itself when a poll
 // starts and leaves when the poll ends, on every viewport.
 
-import {
-  formatPollResults,
-  tallyPoll,
-  type LivePoll,
-  type PollTallyRow,
-} from '@livediagram/api-schema';
+import { tallyPoll, type LivePoll, type PollTallyRow } from '@livediagram/api-schema';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
-import { useCopiedFlash } from '@livediagram/ui';
 import type { MovablePanelPlacementProps } from '@/components/primitives/MovablePanel.types';
 
 export function PollPanel({
@@ -36,7 +30,7 @@ export function PollPanel({
   answers,
   isHost,
   onEnd,
-  onEndAndKeep,
+  onKeepResults,
   onDismiss,
   position,
   onMoveTo,
@@ -50,26 +44,16 @@ export function PollPanel({
   answers: Map<string, string | null>;
   isHost: boolean;
   onEnd: () => void;
-  // End the poll AND drop its results onto the canvas (spec/126). Absent on a
-  // surface that can't add elements, which leaves the plain End alone.
-  onEndAndKeep?: () => void;
+  // Drop a chart of the results so far onto the canvas, leaving the poll
+  // running (spec/126). Absent on a surface that can't add elements, which
+  // leaves the plain End alone.
+  onKeepResults?: () => void;
   onDismiss: () => void;
   // Measured bottom of the Palette, so the panel stacks beneath it in
   // the legacy (non-docking) layout the same way Collaborate / AI do.
   stackBelowY?: number;
 } & MovablePanelPlacementProps) {
-  const { copied, flash } = useCopiedFlash(1500);
   const { rows, textAnswers, answered, skipped } = tallyPoll(poll, answers);
-
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(formatPollResults(poll, answers));
-      flash();
-    } catch {
-      // Clipboard denied (permissions, insecure context). Nothing to
-      // recover — the results stay on screen, which is the fallback.
-    }
-  };
 
   return (
     <MovablePanel
@@ -127,34 +111,26 @@ export function PollPanel({
               {/* Keeping the result is the LOUD action (spec/126): a poll that
                   leaves no trace is still one press away, but the board is the
                   record of the session and the tallies belong on it. So it
-                  gets the full-width primary row. */}
-              {onEndAndKeep ? (
+                  gets the primary row. It does not end the poll: keep a chart
+                  now, keep another later, end when the room is done. */}
+              {onKeepResults ? (
                 <button
                   type="button"
-                  onClick={onEndAndKeep}
-                  title="End the poll and drop the results onto the canvas"
+                  onClick={onKeepResults}
+                  title="Drop a chart of the results so far onto the canvas. The poll keeps running."
                   className="flex h-7 w-full items-center justify-center rounded-md bg-brand-500 px-2 text-[11px] font-semibold text-white transition hover:bg-brand-600"
                 >
-                  End &amp; keep results
+                  Keep Results
                 </button>
               ) : null}
-              <div className="flex items-stretch gap-1">
-                <button
-                  type="button"
-                  onClick={copy}
-                  className="flex h-7 flex-1 items-center justify-center rounded-md border border-slate-200 px-2 text-[11px] font-medium text-slate-600 transition hover:border-brand-300 hover:text-brand-700 dark:border-slate-700 dark:text-slate-300"
-                >
-                  {copied ? 'Copied' : 'Copy'}
-                </button>
-                <button
-                  type="button"
-                  onClick={onEnd}
-                  title="End the poll and leave no trace of it"
-                  className="flex h-7 flex-1 items-center justify-center rounded-md border border-slate-200 px-2 text-[11px] font-medium text-slate-600 transition hover:border-brand-300 hover:text-brand-700 dark:border-slate-700 dark:text-slate-300"
-                >
-                  End poll
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={onEnd}
+                title="End the poll for everyone"
+                className="flex h-7 w-full items-center justify-center rounded-md border border-slate-200 px-2 text-[11px] font-medium text-slate-600 transition hover:border-brand-300 hover:text-brand-700 dark:border-slate-700 dark:text-slate-300"
+              >
+                End Poll
+              </button>
             </>
           ) : (
             <button
