@@ -14,9 +14,9 @@
   "dependencies": {
     "@livediagram/api-schema": "workspace:*",
     "@livediagram/ui": "workspace:*",
-    "next": "^16.3.4",
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8"
+    "next": "^16.3.5",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
   },
   "devDependencies": {
     "@livediagram/eslint-config": "workspace:*",
