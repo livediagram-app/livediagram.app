@@ -11,7 +11,7 @@ import { clusterRows } from './rows';
 //
 // Classical computer vision, on purpose: the notation is COLOUR, and colour is
 // something a hue histogram knows exactly and a language model guesses at. It
-// is also free, offline, instant, and testable against images the tests draw2
+// is also free, offline, instant, and testable against images the tests draw
 // themselves — none of which is true of asking a model where things are.
 //
 // Pure over a plain RGBA buffer: no DOM, no canvas, no wasm. The browser hands
