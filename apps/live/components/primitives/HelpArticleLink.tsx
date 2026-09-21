@@ -2,15 +2,24 @@
 
 import type { ReactNode } from 'react';
 import { Tooltip } from '@/components/primitives/Tooltip';
-import { helpArticleHref, helpArticleLeaf, type HelpArticleKey } from '@/lib/help-articles';
+import {
+  HELP_LINK_COPY,
+  helpArticleHref,
+  helpArticleLeaf,
+  type HelpArticleKey,
+} from '@/lib/help-articles';
 import { track } from '@/lib/telemetry';
 
 type HelpArticleLinkProps = {
   /** Which help article to deep-link (key in HELP_ARTICLES). */
   article: HelpArticleKey;
-  /** Tooltip title (custom Tooltip, never a native `title`). */
+  /**
+   * Tooltip title (custom Tooltip, never a native `title`). Defaults to the
+   * article's entry in HELP_LINK_COPY ("Learn about the Explorer"); pass one
+   * only when the surface needs a different framing.
+   */
   title?: string;
-  /** Optional one-line tooltip elaboration. */
+  /** One-line tooltip elaboration; defaults from HELP_LINK_COPY too. */
   description?: string;
   /**
    * `icon` (default): a small `?` button to sit beside a control label.
@@ -36,8 +45,8 @@ type HelpArticleLinkProps = {
 // keyed by the article's leaf slug.
 export function HelpArticleLink({
   article,
-  title = 'Learn more',
-  description,
+  title = HELP_LINK_COPY[article].title,
+  description = HELP_LINK_COPY[article].description,
   variant = 'icon',
   label = 'Learn more',
   icon,

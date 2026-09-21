@@ -44,11 +44,7 @@ export function ShareOfflineGate({
         title="Share this diagram"
         subtitle="This diagram is saved offline, in this browser only."
       >
-        <HelpArticleLink
-          article="offlineMode"
-          title="Offline Mode"
-          description="What offline diagrams are and how to sync them."
-        />
+        <HelpArticleLink article="offlineMode" />
         <DialogCloseButton onClick={onClose} />
       </DialogHeader>
 

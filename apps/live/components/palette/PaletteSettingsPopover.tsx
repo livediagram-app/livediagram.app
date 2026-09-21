@@ -86,13 +86,7 @@ export function PaletteSettingsPopover({
                 !autoRebind ? 'AutoRebindOn' : 'AutoRebindOff',
               )
             }
-            help={
-              <HelpArticleLink
-                article="autoAttachArrows"
-                title="Auto-attach arrows"
-                description="How arrows re-pin to shapes as they move."
-              />
-            }
+            help={<HelpArticleLink article="autoAttachArrows" />}
           />
           <SettingsToggleRow
             label="Alignment guides"
@@ -104,13 +98,7 @@ export function PaletteSettingsPopover({
                 !alignment ? 'AlignmentGuidesOn' : 'AlignmentGuidesOff',
               )
             }
-            help={
-              <HelpArticleLink
-                article="alignmentGuides"
-                title="Alignment guides"
-                description="How snap lines help you line elements up."
-              />
-            }
+            help={<HelpArticleLink article="alignmentGuides" />}
           />
           {!isMobile ? (
             <SettingsToggleRow
@@ -123,13 +111,7 @@ export function PaletteSettingsPopover({
                   !quickAddOnHover ? 'QuickAddHoverOn' : 'QuickAddHoverOff',
                 )
               }
-              help={
-                <HelpArticleLink
-                  article="quickAddOnHover"
-                  title="Quick-add on hover"
-                  description="Open the element + menu by hovering instead of clicking."
-                />
-              }
+              help={<HelpArticleLink article="quickAddOnHover" />}
             />
           ) : null}
           {!minimalPanels ? (
@@ -139,13 +121,7 @@ export function PaletteSettingsPopover({
               <PanelOpacityRow
                 value={panelOpacity}
                 onCommit={commitOpacity}
-                help={
-                  <HelpArticleLink
-                    article="panelOpacity"
-                    title="Panel opacity"
-                    description="Make the floating panels translucent so the canvas shows through."
-                  />
-                }
+                help={<HelpArticleLink article="panelOpacity" />}
               />
             </>
           ) : null}
@@ -159,13 +135,7 @@ export function PaletteSettingsPopover({
                 checked={!!minimalPanels}
                 // Telemetry + persistence live in the caller's handler.
                 onToggle={onToggleMinimalPanels}
-                help={
-                  <HelpArticleLink
-                    article="minimalPanels"
-                    title="Minimal panels"
-                    description="The compact button bar that replaces floating panels."
-                  />
-                }
+                help={<HelpArticleLink article="minimalPanels" />}
               />
             </>
           ) : null}

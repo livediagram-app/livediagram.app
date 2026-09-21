@@ -59,20 +59,17 @@ export function PaneHeader({
   folderLabel,
   onOpenNav,
   helpArticle,
-  helpTitle,
-  helpDescription,
   headerActions,
   viewMode,
   onSetViewMode,
 }: {
   title: string;
   crumbs: { name: string; onClick?: () => void }[];
-  // Section-scoped "?" help button, rendered to the left of Create (or
-  // alone when the section has no Create action). Deep-links the matching
-  // help-centre article (spec/56) for this Explorer section.
+  // Section-scoped Help button, rendered to the left of Create (or alone
+  // when the section has no Create action). Deep-links the matching
+  // help-centre article (spec/56) for this Explorer section; its tooltip
+  // copy comes from HELP_LINK_COPY.
   helpArticle?: HelpArticleKey;
-  helpTitle?: string;
-  helpDescription?: string;
   // Mobile only: opens the section drawer (the sidebar is hidden below
   // `sm`). Renders a hamburger to the left of the title. Omitted on
   // desktop where the sidebar is always visible.
@@ -152,14 +149,7 @@ export function PaneHeader({
                 with it pushed the controls a reader actually reaches for
                 out to the right. */}
             {headerActions}
-            {helpArticle ? (
-              <HelpArticleLink
-                article={helpArticle}
-                variant="button"
-                title={helpTitle ?? 'Help'}
-                description={helpDescription}
-              />
-            ) : null}
+            {helpArticle ? <HelpArticleLink article={helpArticle} variant="button" /> : null}
             {singleCreate ? (
               <Button
                 size="xs"

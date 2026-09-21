@@ -148,12 +148,7 @@ export function SignInReasonsModal({
 
           <div className="flex shrink-0 flex-col-reverse items-center gap-2 border-t border-slate-100 px-6 py-4 sm:flex-row sm:justify-end dark:border-slate-800">
             <div className="sm:mr-auto">
-              <HelpArticleLink
-                article="guestVsAccount"
-                variant="text"
-                title="Guest vs account"
-                description="What changes when you sign in, and what stays the same."
-              />
+              <HelpArticleLink article="guestVsAccount" variant="text" />
             </div>
             <button
               type="button"

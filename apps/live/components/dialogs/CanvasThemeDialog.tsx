@@ -150,16 +150,6 @@ export function CanvasThemeDialog({
                         ? 'choosingFonts'
                         : 'changingTheme'
                   }
-                  title={
-                    tab === 'canvas' ? 'Canvas background' : tab === 'font' ? 'Fonts' : 'Themes'
-                  }
-                  description={
-                    tab === 'canvas'
-                      ? 'How to change the canvas background and pattern.'
-                      : tab === 'font'
-                        ? "How a tab's default font and text size work."
-                        : 'How to switch and customise a tab theme.'
-                  }
                 />
                 <DialogCloseButton compact onClick={onClose} />
               </div>

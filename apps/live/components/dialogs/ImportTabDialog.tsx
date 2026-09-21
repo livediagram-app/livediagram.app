@@ -85,11 +85,7 @@ export function ImportTabDialog({
             : 'Pick a format to import into the current tab.'
         }
       >
-        <HelpArticleLink
-          article="importTabs"
-          title="Importing tabs"
-          description="What you can import and how it replaces the tab."
-        />
+        <HelpArticleLink article="importTabs" />
         <DialogCloseButton onClick={onClose} />
       </DialogHeader>
       <div className="flex-1 overflow-y-auto px-6 py-5">
@@ -132,8 +128,6 @@ export function ImportTabDialog({
                 article="markdownImport"
                 variant="text"
                 label="See how it maps to a tree"
-                title="Markdown import"
-                description="How headings and lists become a themed tree diagram."
               />
             </p>
           </>

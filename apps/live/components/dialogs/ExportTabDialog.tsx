@@ -248,11 +248,7 @@ export function ExportTabDialog({
       className="max-h-[90vh]"
     >
       <DialogHeader title={isSelection ? 'Export selection' : 'Export tab'} subtitle={subtitle}>
-        <HelpArticleLink
-          article="exportingDiagrams"
-          title="Exporting diagrams"
-          description="What each export format is for and how to use it."
-        />
+        <HelpArticleLink article="exportingDiagrams" />
         <DialogCloseButton onClick={onClose} />
       </DialogHeader>
       <div className="flex-1 overflow-y-auto px-6 py-5">

@@ -114,8 +114,6 @@ export function NewDiagramSettingsStep({
               article="offlineMode"
               variant="text"
               label="Learn more"
-              title="Offline Mode"
-              description="How offline diagrams work, and moving them to or from your account."
               className="!text-amber-800 underline hover:!text-amber-900 dark:!text-amber-200 dark:hover:!text-amber-100"
             />
           </span>

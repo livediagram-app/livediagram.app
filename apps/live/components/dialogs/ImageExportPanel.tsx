@@ -140,8 +140,6 @@ export function ImageExportPanel({
           article="isometricMode"
           variant="text"
           label="What's the isometric view?"
-          title="Isometric view"
-          description="How the isometric projection works."
         />
       </div>
       {error ? (
