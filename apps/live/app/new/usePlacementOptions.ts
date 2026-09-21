@@ -2,7 +2,14 @@
 
 import { useEffect, useState } from 'react';
 import type { PickerFolder } from '@/components/placement/PlacementBrowser';
-import { apiCreateFolder, apiGetTeamLibrary, apiListFolders, apiListTeams } from '@/lib/api-client';
+import {
+  apiCreateFolder,
+  apiCreateTeam,
+  apiGetTeamLibrary,
+  apiListFolders,
+  apiListTeams,
+} from '@/lib/api-client';
+import { track } from '@/lib/telemetry';
 
 // Where a new diagram can be filed: the personal folders, the teams, and each
 // team's folders, plus the inline "New Folder" the Settings step offers
@@ -105,5 +112,21 @@ export function usePlacementOptions({
     }
   };
 
-  return { folders, teams, teamFolders, createPickerFolder };
+  // Inline team creation from the space overview (spec/32): the new team
+  // joins the picker's lists with an empty library, and the browser enters
+  // it. Only offered once signed in (the caller gates on clerkUserId).
+  const createPickerTeam = async (name: string): Promise<{ id: string; name: string } | null> => {
+    try {
+      const team = await apiCreateTeam(selfId, { id: crypto.randomUUID(), name });
+      const item = { id: team.id, name: team.name };
+      setTeams((list) => [...list, item].sort((a, b) => a.name.localeCompare(b.name)));
+      setTeamFolders((m) => ({ ...m, [team.id]: [] }));
+      track('Team', 'Created');
+      return item;
+    } catch {
+      return null;
+    }
+  };
+
+  return { folders, teams, teamFolders, createPickerFolder, createPickerTeam };
 }

@@ -28,6 +28,7 @@ function Harness({
   teamFolders = {},
   layout,
   onCreateFolder,
+  onCreateTeam,
 }: {
   teams?: { id: string; name: string }[];
   teamFolders?: Record<string, PickerFolder[]>;
@@ -37,6 +38,7 @@ function Harness({
     parentId: string | null,
     teamId: string | null,
   ) => Promise<PickerFolder | null>;
+  onCreateTeam?: (name: string) => Promise<{ id: string; name: string } | null>;
 }) {
   const [placement, setPlacement] = useState('unsorted');
   return (
@@ -48,6 +50,7 @@ function Harness({
       teamFolders={teamFolders}
       layout={layout}
       onCreateFolder={onCreateFolder}
+      onCreateTeam={onCreateTeam}
     />
   );
 }
@@ -215,5 +218,42 @@ describe('the New Folder tile', () => {
     fireEvent.click(radio(/^Personal Space/));
     expect(screen.getByRole('button', { name: /New Folder/ })).toBeTruthy();
     expect(screen.queryByRole('button', { name: /New Subfolder/ })).toBeNull();
+  });
+});
+
+describe('the New Team tile', () => {
+  it('is absent unless the host can create teams (guests cannot)', () => {
+    render(<Harness layout="list" />);
+    expect(screen.queryByRole('button', { name: /New Team/ })).toBeNull();
+  });
+
+  it('creates the team and enters it with its root selected', async () => {
+    // The host owns the team list, as the wizard's hook does: creating
+    // appends to it, and the browser reads the new card on re-render.
+    function Host() {
+      const [teams, setTeams] = useState<{ id: string; name: string }[]>([]);
+      return (
+        <Harness
+          layout="list"
+          teams={teams}
+          onCreateTeam={async (name) => {
+            const team = { id: 't-new', name };
+            setTeams((list) => [...list, team]);
+            return team;
+          }}
+        />
+      );
+    }
+    render(<Host />);
+    const tile = screen.getByRole('button', { name: /New Team/ });
+    expect(tile.textContent).toContain('Create a team');
+    fireEvent.click(tile);
+    fireEvent.change(screen.getByPlaceholderText('Team name'), { target: { value: 'Design' } });
+    fireEvent.keyDown(screen.getByPlaceholderText('Team name'), { key: 'Enter' });
+    // Inside the new team: its "here" card is the level's first row and selected.
+    const here = await screen.findByRole('radio', { name: /^Team Library/ });
+    expect(here.textContent).toContain('Design');
+    expect(here.getAttribute('aria-checked')).toBe('true');
+    expect(screen.getByRole('button', { name: /All spaces/ }).textContent).toContain('Design');
   });
 });

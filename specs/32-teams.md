@@ -114,6 +114,14 @@ The right-pane team view is **one calm card**, not a stack of panels:
 
 The pane title row reads "Recent Diagrams" for the recent section (renamed from "Recent" in the same change as this spec).
 
+**Creating a team from a placement picker.** The New Diagram wizard's
+Location step and the Explorer's Move dialog both open on the space
+overview (spec/141), and that overview carries a **New Team** tile after
+the team cards for signed-in users: an inline name field that creates the
+team and enters it, so "put this diagram in a new team" is one flow rather
+than a detour through the sidebar's New team form. The sidebar form stays
+for the organisation field and invites.
+
 ## Telemetry
 
 New category `Team` (spec/22). Events: `Team/Created`, `Team/Deleted`, `Team/Changed` (edit name/organisation), `Team/Changed/Role` (role change), `Team/Added/Member` (invite sent), `Team/Joined` (invite accepted), `Team/Declined/Invite` (the recipient turned it down), `Team/Removed/Invite` (an Admin withdrew an invitation nobody accepted), `Team/Removed/Member` (admin removes someone who had joined), `Team/Removed/Self` (leave). No `type` value carries user content.

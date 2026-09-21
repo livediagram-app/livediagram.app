@@ -25,6 +25,7 @@ export function NewDiagramSettingsStep({
   teams,
   teamFolders = {},
   onCreateFolder,
+  onCreateTeam,
   saveLocation,
   onSaveLocation,
 }: {
@@ -48,6 +49,8 @@ export function NewDiagramSettingsStep({
     parentId: string | null,
     teamId: string | null,
   ) => Promise<PickerFolder | null>;
+  // Inline team creation (the overview's "New Team" tile). Absent = hidden.
+  onCreateTeam?: (name: string) => Promise<{ id: string; name: string } | null>;
   saveLocation: SaveLocationId;
   onSaveLocation: (v: SaveLocationId) => void;
 }) {
@@ -135,6 +138,7 @@ export function NewDiagramSettingsStep({
             teams={teams}
             teamFolders={teamFolders}
             onCreateFolder={onCreateFolder}
+            onCreateTeam={onCreateTeam}
             layout="list"
           />
         </div>

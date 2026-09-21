@@ -7,6 +7,7 @@ import {
   FolderStackIcon,
   PersonalSpaceIcon,
   NewFolderTile,
+  NewTeamTile,
   PlacementCard,
   TeamPlaceIcon,
   type PlacementLayout,
@@ -82,6 +83,7 @@ export function PlacementBrowser({
   teamFolders,
   showPersonal = true,
   onCreateFolder,
+  onCreateTeam,
   layout = 'tiles',
 }: {
   placement: string;
@@ -105,6 +107,10 @@ export function PlacementBrowser({
     parentId: string | null,
     teamId: string | null,
   ) => Promise<PickerFolder | null>;
+  // Inline team creation (the overview's "New Team" tile). Absent = tile
+  // hidden; hosts pass it only for signed-in users, since teams are
+  // Clerk-only (spec/32).
+  onCreateTeam?: (name: string) => Promise<{ id: string; name: string } | null>;
   // Tile grid (default) or stacked rows; see the header comment.
   layout?: PlacementLayout;
 }) {
@@ -151,7 +157,7 @@ export function PlacementBrowser({
   // it never appears and disappears under the rows as you move about.
   if (hasOverview && space === null) {
     return (
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-0.5">
         <BackBar label="Choose a Space" />
         <div key="overview" className={levelClass}>
           {showPersonal ? (
@@ -179,6 +185,20 @@ export function PlacementBrowser({
               enterIndex={(showPersonal ? 1 : 0) + i}
             />
           ))}
+          {onCreateTeam ? (
+            <NewTeamTile
+              layout={layout}
+              enterIndex={spaceCount}
+              onCreate={async (name) => {
+                const created = await onCreateTeam(name);
+                if (!created) return false;
+                // Straight into the new team, its root selected: the point
+                // of making a team here is to file this diagram in it.
+                enterSpace(created.id);
+                return true;
+              }}
+            />
+          ) : null}
         </div>
       </div>
     );
@@ -249,7 +269,7 @@ export function PlacementBrowser({
         : 'All spaces';
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-0.5">
       <BackBar
         label={showBack ? backLabel : 'Choose a Folder'}
         current={openFolder?.name ?? spaceName}

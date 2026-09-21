@@ -67,10 +67,12 @@ export default function NewDiagramPage() {
 
   // Where this diagram can be filed, and the inline New Folder the Settings
   // step offers — see usePlacementOptions.
-  const { folders, teams, teamFolders, createPickerFolder } = usePlacementOptions({
-    selfId: self.id,
-    clerkUserId,
-  });
+  const { folders, teams, teamFolders, createPickerFolder, createPickerTeam } = usePlacementOptions(
+    {
+      selfId: self.id,
+      clerkUserId,
+    },
+  );
 
   // Placement context from the URL: /new?folder=<id> (Explorer's "new diagram
   // in this folder") and /new?team=<id>(&folder=<id>) (team library, spec/35)
@@ -417,6 +419,8 @@ export default function NewDiagramPage() {
               teamFolders={teamFolders}
               initialPlacement={initialPlacement}
               onCreateFolder={createPickerFolder}
+              // Teams are Clerk-only (spec/32): a guest gets no New Team tile.
+              onCreateTeam={clerkUserId ? createPickerTeam : undefined}
               onOpenExisting={() => window.location.assign('/explorer/recent')}
               onPick={(kind, name, themeId, settings) =>
                 void commitNewDiagram(kind, name, themeId, settings)

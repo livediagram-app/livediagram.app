@@ -81,6 +81,17 @@ a diagram lives starts with choosing the space, deliberately, and that
 screen is where a "create a team" option belongs for someone who has no
 team yet. An earlier version dropped a lone Personal Space straight into
 its folders, which left nowhere to put that option.
+
+That option is the **New Team tile**, last on the overview after the
+team cards: the same dashed inline-name tile as New Folder (one
+`InlineCreateTile`, two skins), reading "New Team · Create a team". Type a
+name and the team is created (`POST /api/teams`, spec/32), joins the
+overview, and the browser enters it with its root selected, because the
+point of making a team here is to file this diagram in it. **Signed-in
+only**: teams are Clerk-only, so the hosts (the wizard, the Explorer's
+move dialog) pass the create handler only when there is a Clerk user, and
+a guest never sees a tile that would lead to a 401. Folder moves pass no
+handler either, since a folder can't move into a team.
 So the bar never appears and disappears under the rows as you move about,
 which was its own jolt.
 

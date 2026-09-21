@@ -79,6 +79,9 @@ type TemplatePickerProps = {
     parentId: string | null,
     teamId: string | null,
   ) => Promise<{ id: string; name: string; parentId: string | null } | null>;
+  // Inline team creation from the placement browser's space overview
+  // (signed-in only; the host omits it for guests).
+  onCreateTeam?: (name: string) => Promise<{ id: string; name: string } | null>;
   // Dismiss the modal without picking a template or theme. The diagram
   // gets a fresh blank canvas (no seeded rectangle, no theme override)
   // and the empty-state card prompts the next step. Triggered by the X in
@@ -119,6 +122,7 @@ export function TemplatePicker({
   teamFolders = {},
   initialPlacement,
   onCreateFolder,
+  onCreateTeam,
 }: TemplatePickerProps) {
   // Mount-open overlay: silence the canvas shortcut/paste listeners
   // behind it (see lib/modal-guard). Harmless on /new, where no canvas
@@ -474,6 +478,7 @@ export function TemplatePicker({
                 teams={teams}
                 teamFolders={teamFolders}
                 onCreateFolder={onCreateFolder}
+                onCreateTeam={onCreateTeam}
                 saveLocation={saveLocation}
                 onSaveLocation={setSaveLocation}
               />

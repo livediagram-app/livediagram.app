@@ -30,18 +30,24 @@ function enterProps(layout: PlacementLayout, index: number | undefined) {
 // modal). Enter creates in the CURRENT level's scope and the browser selects
 // the fresh folder; Escape backs out. Exported for the tab Add-to-Folder
 // dialog (spec/30), which offers the same create-in-place affordance.
-export function NewFolderTile({
+// The dashed "create one here" tile: a label at rest, an inline name field
+// once clicked. New Folder and New Team are two skins of it, so the two
+// gestures (click, type, Enter or tap away) are the same wherever a level
+// lets you add to it.
+function InlineCreateTile({
   onCreate,
-  label = 'New Folder',
-  sub = 'Create here',
+  icon,
+  label,
+  sub,
+  placeholder,
   layout = 'tiles',
   enterIndex,
 }: {
   onCreate: (name: string) => Promise<boolean>;
-  // "New Folder" at a space's root, "New Subfolder" once a folder is the
-  // selected destination (the browser decides; see its tile).
-  label?: string;
-  sub?: string;
+  icon: ReactNode;
+  label: string;
+  sub: string;
+  placeholder: string;
   layout?: PlacementLayout;
   // Position in the level's cascade; absent = no entrance animation.
   enterIndex?: number;
@@ -74,9 +80,7 @@ export function NewFolderTile({
             : 'flex flex-col items-center justify-center gap-1.5 p-3 text-center'
         } rounded-lg border border-dashed border-slate-300 transition hover:border-brand-400 hover:bg-brand-50/40 dark:border-slate-600 dark:hover:border-brand-500 dark:hover:bg-brand-500/10`}
       >
-        <span className="shrink-0 text-slate-400">
-          <NewFolderIcon />
-        </span>
+        <span className="shrink-0 text-slate-400">{icon}</span>
         <span
           className={`${row ? 'min-w-0 flex-1' : 'w-full'} truncate text-xs font-medium text-slate-500 dark:text-slate-400`}
         >
@@ -94,14 +98,12 @@ export function NewFolderTile({
           : 'flex flex-col items-center justify-center gap-1.5 p-3'
       } rounded-lg border border-brand-300 bg-brand-50/40 dark:border-brand-500/50 dark:bg-brand-500/10`}
     >
-      <span className="shrink-0 text-brand-500">
-        <NewFolderIcon />
-      </span>
+      <span className="shrink-0 text-brand-500">{icon}</span>
       <input
         type="text"
         autoFocus
         value={name}
-        placeholder="Folder name"
+        placeholder={placeholder}
         disabled={busy}
         onChange={(e) => setName(e.target.value)}
         onKeyDown={(e) => {
@@ -136,6 +138,59 @@ export function NewFolderTile({
         {busy ? 'Creating…' : 'Enter to create'}
       </span>
     </div>
+  );
+}
+
+export function NewFolderTile({
+  onCreate,
+  label = 'New Folder',
+  sub = 'Create here',
+  layout,
+  enterIndex,
+}: {
+  onCreate: (name: string) => Promise<boolean>;
+  // "New Folder" at a space's root, "New Subfolder" once a folder is the
+  // selected destination (the browser decides; see its tile).
+  label?: string;
+  sub?: string;
+  layout?: PlacementLayout;
+  enterIndex?: number;
+}) {
+  return (
+    <InlineCreateTile
+      onCreate={onCreate}
+      icon={<NewFolderIcon />}
+      label={label}
+      sub={sub}
+      placeholder="Folder name"
+      layout={layout}
+      enterIndex={enterIndex}
+    />
+  );
+}
+
+// The space overview's "start a team here" (spec/32, spec/141). Signed-in
+// only: the host passes the handler only when teams are on, so a guest
+// never sees a tile that would lead to a 401.
+export function NewTeamTile({
+  onCreate,
+  layout,
+  enterIndex,
+}: {
+  onCreate: (name: string) => Promise<boolean>;
+  layout?: PlacementLayout;
+  enterIndex?: number;
+}) {
+  return (
+    <InlineCreateTile
+      onCreate={onCreate}
+      icon={<TeamPlaceIcon />}
+      label="New Team"
+      sub="Create a team"
+      placeholder="Team name"
+      layout={layout}
+      enterIndex={enterIndex}
+    />
   );
 }
 

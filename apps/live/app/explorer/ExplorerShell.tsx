@@ -76,6 +76,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
     moveDiagramTo,
     moveFolderToParent,
     createMoveFolder,
+    teamsEnabled,
     teamModalOpen,
     setTeamModalOpen,
     hookCreateTeam,
@@ -214,6 +215,16 @@ function ShellChrome({ children }: { children: ReactNode }) {
                 currentTeamId={currentTeamId}
                 currentFolderId={currentFolderId}
                 onCreateFolder={createMoveFolder}
+                // A diagram can be moved into a team made on the spot;
+                // folder moves stay personal, and guests have no teams.
+                onCreateTeam={
+                  teamsEnabled && moveTarget.kind === 'diagram'
+                    ? async (name) => {
+                        const team = await hookCreateTeam({ name });
+                        return team ? { id: team.id, name: team.name } : null;
+                      }
+                    : undefined
+                }
                 onPick={(dest) => {
                   if (moveTarget.kind === 'folder')
                     moveFolderToParent(moveTarget.id, dest.folderId);
