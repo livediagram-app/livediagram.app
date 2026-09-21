@@ -69,6 +69,9 @@ export type PhotoReview = {
   // itself, so there is nothing to wait for. Everything else in this object
   // arrives later, behind it.
   photoUrl: string;
+  // The file's own name. Only the ground-truth export uses it (a label file is
+  // named after the photograph it describes); it is never shown and never sent.
+  photoName: string;
   // Null while the detector is still looking. The overlay is already open and
   // showing the photo by then, which is the whole point: finding the stickies
   // in a 12-megapixel photo takes a moment, and a moment with no feedback is
@@ -343,7 +346,13 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
       // the wall they just picked while the detector is still walking it.
       const photoUrl = URL.createObjectURL(file);
       photoUrlRef.current = photoUrl;
-      setReview({ photoUrl, detection: null, textById: new Map(), readError: null });
+      setReview({
+        photoUrl,
+        photoName: file.name,
+        detection: null,
+        textById: new Map(),
+        readError: null,
+      });
       setState({ stage: 'review', found: 0, readSoFar: 0, error: null });
 
       // Let the browser actually PAINT that before the detector takes the

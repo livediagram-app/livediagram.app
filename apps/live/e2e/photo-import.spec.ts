@@ -313,3 +313,51 @@ test('the photo import needs no model key', async ({ page, pageErrors }) => {
   await expect(page.getByRole('button', { name: /add from photo/i })).toBeVisible();
   expectNoPageErrors(pageErrors);
 });
+
+// Labelling a wall from the review (docs/vision/sticky-detection.md). The
+// detector is tuned against photographs somebody labelled note by note, and
+// the corrections the author makes here ARE that labelling — so it can be
+// handed back as a file rather than done twice. Armed by hand, so a normal
+// author never meets it; only a browser can prove the download actually
+// happens and carries what is on screen.
+test('a corrected review can be saved as ground truth', async ({ page, pageErrors }) => {
+  await openBoard(page);
+  await page.evaluate(() => localStorage.setItem('livediagram:truth', '1'));
+  await importToReview(page, [
+    { fill: ORANGE, x: 200, y: 120, w: 180, h: 180 },
+    { fill: BLUE, x: 500, y: 120, w: 180, h: 180 },
+  ]);
+  const overlay = page.locator('[data-testid="photo-review-overlay"]');
+  await expect(overlay.locator('[data-testid^="note-words-"]')).toHaveCount(2);
+
+  // Untick one: a label must claim only what the author says is a note.
+  await overlay.getByRole('checkbox').first().click();
+
+  const download = page.waitForEvent('download');
+  await page.getByRole('button', { name: /save as truth/i }).click();
+  const file = await download;
+  expect(file.suggestedFilename()).toBe('wall.json');
+  const body = await file.createReadStream();
+  const text = await new Promise<string>((resolve) => {
+    let out = '';
+    body.on('data', (chunk) => (out += String(chunk)));
+    body.on('end', () => resolve(out));
+  });
+  const truth = JSON.parse(text) as {
+    photo: string;
+    labelledOn: { width: number; height: number };
+    notes: { x: number; y: number; w: number; h: number; kind: string }[];
+  };
+  expect(truth.photo).toBe('wall');
+  expect(truth.labelledOn.width).toBeGreaterThan(0);
+  // One note, and in FRACTIONS of the photograph, so the labels outlive any
+  // working size the detector is run at.
+  expect(truth.notes).toHaveLength(1);
+  for (const note of truth.notes) {
+    expect(note.x).toBeGreaterThanOrEqual(0);
+    expect(note.x + note.w).toBeLessThanOrEqual(1);
+    expect(note.y + note.h).toBeLessThanOrEqual(1);
+  }
+
+  expectNoPageErrors(pageErrors);
+});

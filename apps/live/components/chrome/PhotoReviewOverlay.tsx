@@ -5,6 +5,7 @@ import type { DetectedSticky } from '@livediagram/sticky-vision';
 import type { PhotoReview } from '@/hooks/canvas/usePhotoDraft';
 import { NoteBox, sizeOf } from './photo/NoteBox';
 import { PhotoStatus } from './photo/PhotoStatus';
+import { TruthExport } from './photo/TruthExport';
 import { kindOfBox } from './photo/kindOfBox';
 
 // Reviewing a photographed wall (spec/139 Phase 9).
@@ -291,6 +292,14 @@ export function PhotoReviewOverlay({
             ? 'Finding the stickies…'
             : `${ticked.size} of ${notes.length} · drag the photo to add one`}
         </p>
+        {detection ? (
+          <TruthExport
+            photoName={review.photoName}
+            size={detection.imageSize}
+            notes={notes}
+            ticked={ticked}
+          />
+        ) : null}
         <button
           type="button"
           onClick={onCancel}

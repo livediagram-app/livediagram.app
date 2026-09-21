@@ -27,6 +27,7 @@ const sticky = (id: number): DetectedSticky => ({
 function review(over: Partial<PhotoReview> = {}): PhotoReview {
   return {
     photoUrl: 'blob:the-photo',
+    photoName: 'wall.jpg',
     detection: null,
     textById: new Map(),
     readError: null,
@@ -316,5 +317,58 @@ describe('before the photograph itself has painted', () => {
     );
     fireEvent.load(screen.getByAltText('The photographed wall'));
     expect(screen.queryByTestId('photo-loading')).toBeNull();
+  });
+});
+
+// Exporting ground truth (docs/vision/sticky-detection.md). The corrected
+// review IS a labelling of the photograph, and the detector is tuned against
+// labelled photographs — so the work the author does here for real can be
+// handed back as a file instead of being done twice.
+describe('labelling a wall from the review', () => {
+  const armed = () => localStorage.setItem('livediagram:truth', '1');
+  afterEach(() => localStorage.clear());
+
+  it('offers nothing to a normal author: this is a calibration tool', () => {
+    render(
+      <PhotoReviewOverlay
+        review={review({ detection: found([sticky(0)]), photoName: 'wall.jpg' })}
+        reading={false}
+        onConfirm={noop}
+        onCancel={noop}
+      />,
+    );
+    expect(screen.queryByRole('button', { name: /save as truth/i })).toBeNull();
+  });
+
+  it('hands back the boxes the author LEFT ticked, as fractions of the photo', async () => {
+    armed();
+    const saved: Blob[] = [];
+    vi.spyOn(URL, 'createObjectURL').mockImplementation((blob) => {
+      saved.push(blob as Blob);
+      return 'blob:truth';
+    });
+    vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+    render(
+      <PhotoReviewOverlay
+        review={review({ detection: found([sticky(0), sticky(1)]), photoName: 'wall.jpg' })}
+        reading={false}
+        onConfirm={noop}
+        onCancel={noop}
+      />,
+    );
+    // Untick the second: it was not a sticky, and a label must not claim it was.
+    fireEvent.click(screen.getAllByRole('checkbox')[1]!);
+    fireEvent.click(screen.getByRole('button', { name: /save as truth/i }));
+    expect(saved).toHaveLength(1);
+    const truth = JSON.parse(await saved[0]!.text()) as {
+      photo: string;
+      labelledOn: { width: number; height: number };
+      notes: { x: number; y: number; w: number; h: number; kind: string }[];
+    };
+    expect(truth.photo).toBe('wall');
+    expect(truth.labelledOn).toEqual({ width: 100, height: 100 });
+    // One note, because one was unticked — and in fractions, not pixels.
+    expect(truth.notes).toEqual([{ x: 0.1, y: 0.1, w: 0.5, h: 0.5, kind: 'domain-event' }]);
+    vi.restoreAllMocks();
   });
 });
