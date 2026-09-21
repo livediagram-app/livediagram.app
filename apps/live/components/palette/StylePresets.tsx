@@ -3,8 +3,8 @@
 // One-click style presets for the selected-element context menu (spec/48).
 // Two surfaces:
 //   - ShapePresets — theme-derived style looks in hierarchical tiers (theme /
-//     emphasis ramp / border treatments / semantic status), each a complete
-//     style: colour + a matching border weight and pattern (never the radius —
+//     neutral / border treatments / semantic status), each a complete style:
+//     colour + a matching border weight and pattern (never the radius —
 //     that's the user's own silhouette choice) + a reset.
 //   - ArrowPresets — line looks in tiers (solid weights, patterns, animated
 //     flows) + a reset.
@@ -68,11 +68,18 @@ const BORDER_WIDTH_SVG: Record<BorderStroke, number> = {
   thick: 2.4,
   'extra-thick': 3.2,
 };
-// stroke-dasharray (16-unit units) for the dotted / dashed swatch outline.
+// stroke-dasharray (16-unit units) for the swatch outline, one per border
+// pattern so a Dash-Dot tile previews as dash-dot rather than as dashed.
+const SVG_BORDER_DASH: Record<BorderStyle, string | undefined> = {
+  solid: undefined,
+  dashed: '3 2',
+  dotted: '0.6 2',
+  'long-dash': '5 2',
+  'dash-dot': '3 1.5 0.6 1.5',
+  'dash-dot-dot': '3 1.5 0.6 1.5 0.6 1.5',
+};
 function svgBorderDash(style: BorderStyle): string | undefined {
-  if (style === 'dotted') return '0.6 2';
-  if (style === 'solid') return undefined;
-  return '3 2';
+  return SVG_BORDER_DASH[style];
 }
 // SVG stroke-dasharray for an arrow-line preview, scaled to the stroke width.
 function svgDash(style: BorderStyle, w: number): string | undefined {
@@ -142,21 +149,21 @@ export function ShapePresets({
 }) {
   useRevertOnUnmount(onPreviewEnd);
   const eq = (a?: string, b?: string) => (a ?? '').toLowerCase() === (b ?? '').toLowerCase();
+  // Bound by preset id when the shape carries one (tracks across themes);
+  // otherwise fall back to an exact colour-triple match.
+  const isActive = (p: ShapeColorPreset) =>
+    current.colorPreset
+      ? current.colorPreset === p.id
+      : eq(current.fillColor, p.fill) &&
+        eq(current.strokeColor, p.stroke) &&
+        eq(current.textColor, p.text);
   return (
     <div className="px-2 py-1">
       <div className="mb-1.5 grid grid-cols-4 gap-1">
         {colorPresets.map((p) => (
           <SizeButton
             key={p.id}
-            active={
-              // Bound by preset id when the shape carries one (tracks across
-              // themes); otherwise fall back to an exact colour-triple match.
-              current.colorPreset
-                ? current.colorPreset === p.id
-                : eq(current.fillColor, p.fill) &&
-                  eq(current.strokeColor, p.stroke) &&
-                  eq(current.textColor, p.text)
-            }
+            active={isActive(p)}
             onClick={() => onApplyColor(p)}
             onPointerEnter={onMouseHover(() => onPreviewColor(p))}
             onPointerLeave={onMouseHover(onPreviewEnd)}

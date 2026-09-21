@@ -79,11 +79,13 @@ export type ShapeColorPreset = {
   // Stable identity for the preset, independent of the theme it's rendered
   // for (spec/48). Stored on a shape's `colorPreset` so a theme change can
   // re-derive the same variant for the new theme. The variants are fixed
-  // tokens ('theme', the emphasis ramp 'ghost' | 'muted' | 'soft' | 'tinted' |
-  // 'solid' | 'bold' | 'inked', the border treatments 'outline' | 'dotted' |
-  // 'frame', and the semantic set 'info' | 'success' | 'warning' | 'danger');
-  // multi-colour themes' per-branch cards are 'branch-<i>'. (A legacy 'pill'
-  // binding from before radius left the presets simply stops re-deriving.)
+  // tokens: the theme tier 'theme' | 'soft' | 'tinted' | 'solid' | 'bold'
+  // (multi-colour themes' per-branch cards are 'branch-<i>'), the neutral
+  // tier 'ghost' | 'paper' | 'muted' | 'slate' | 'inked', the border tier
+  // 'hairline' | 'outline' | 'dotted' | 'dash-dot' | 'frame', and the status
+  // tier 'info' | 'success' | 'warning' | 'danger' | 'highlight'. (A legacy
+  // 'pill' binding from before radius left the presets simply stops
+  // re-deriving.)
   id: string;
   name: string;
   fill: string;
@@ -97,19 +99,21 @@ export type ShapeColorPreset = {
   borderStyle: BorderStyle;
 };
 
-// The on-theme style presets for a shape — each a complete look (colour +
-// matching border weight/pattern), ordered hierarchically so the grid reads
-// as tiers:
-//   1. Theme — the current theme's own look (plus a card per branch hue on
-//      multi-colour themes).
-//   2. The emphasis ramp, quietest → loudest: Ghost, Muted, Soft, Tinted,
-//      Solid, Bold, Inked.
-//   3. Border treatments: Outline, Dotted, Frame.
-//   4. Semantic status colours (theme-independent): Info, Success, Warning,
-//      Danger.
+// The style presets for a shape — each a complete look (colour + matching
+// border weight/pattern), one flat grid ordered in four tiers, each tier
+// quiet → loud so the grid reads as a run of ramps (the tiers are an
+// ordering only: headings over them cost more menu height than they earned):
+//   1. Theme — the accent at rising intensity: Theme (the theme's own look,
+//      plus a card per branch hue on multi-colour themes), Soft, Tinted,
+//      Solid, Bold.
+//   2. Neutral — theme-independent greys: Ghost, Paper, Muted, Slate, Inked.
+//   3. Border — line treatments: Hairline, Outline, Dotted, Dash-Dot, Frame.
+//   4. Status — semantic colours, the same under every theme: Info, Success,
+//      Warning, Danger, Highlight.
 // Filled variants pick a contrasting label colour (white on dark, a deep
 // shade on light) so text stays readable. Deduped on the exact
-// fill+stroke+text triple, capped at 20 (five 4-wide grid rows).
+// fill+stroke+text triple; not capped, so no group is ever cut short (a
+// six-branch theme shows 26 tiles).
 export function shapeColorPresets(theme: ThemeDefinition): ShapeColorPreset[] {
   const accent = theme.elementStroke ?? DEFAULT_SHAPE_STROKE;
   const baseFill = theme.elementFill ?? DEFAULT_SHAPE_FILL;
@@ -119,6 +123,7 @@ export function shapeColorPresets(theme: ThemeDefinition): ShapeColorPreset[] {
   const labelOn = (fill: string) => (isLightColor(fill) ? shade(fill, 0.6) : '#ffffff');
 
   const pool: ShapeColorPreset[] = [];
+  // ── Theme: the accent, quiet → loud ──
   // Lead with the theme's own look so "the current theme" is one click away.
   pool.push({
     id: 'theme',
@@ -144,25 +149,6 @@ export function shapeColorPresets(theme: ThemeDefinition): ShapeColorPreset[] {
     });
   }
   pool.push(
-    // ── The emphasis ramp, quietest → loudest ──
-    {
-      id: 'ghost',
-      name: 'Ghost',
-      fill: '#f8fafc',
-      stroke: '#cbd5e1',
-      text: '#64748b',
-      borderStroke: 'thin',
-      borderStyle: 'dashed',
-    },
-    {
-      id: 'muted',
-      name: 'Muted',
-      fill: '#f1f5f9',
-      stroke: '#94a3b8',
-      text: '#475569',
-      borderStroke: 'thin',
-      borderStyle: 'solid',
-    },
     {
       id: 'soft',
       name: 'Soft',
@@ -199,6 +185,46 @@ export function shapeColorPresets(theme: ThemeDefinition): ShapeColorPreset[] {
       borderStroke: 'thick',
       borderStyle: 'solid',
     },
+    // ── Neutral: greys, quiet → loud ──
+    {
+      id: 'ghost',
+      name: 'Ghost',
+      fill: '#f8fafc',
+      stroke: '#cbd5e1',
+      text: '#64748b',
+      borderStroke: 'thin',
+      borderStyle: 'dashed',
+    },
+    {
+      // A plain white card with a hairline grey edge: the quietest solid look.
+      id: 'paper',
+      name: 'Paper',
+      fill: '#ffffff',
+      stroke: '#cbd5e1',
+      text: '#334155',
+      borderStroke: 'thin',
+      borderStyle: 'solid',
+    },
+    {
+      id: 'muted',
+      name: 'Muted',
+      fill: '#f1f5f9',
+      stroke: '#94a3b8',
+      text: '#475569',
+      borderStroke: 'thin',
+      borderStyle: 'solid',
+    },
+    {
+      // A filled mid-grey: emphasis without the accent, between Muted and
+      // Inked.
+      id: 'slate',
+      name: 'Slate',
+      fill: '#64748b',
+      stroke: '#475569',
+      text: '#ffffff',
+      borderStroke: 'medium',
+      borderStyle: 'solid',
+    },
     {
       id: 'inked',
       name: 'Inked',
@@ -208,7 +234,19 @@ export function shapeColorPresets(theme: ThemeDefinition): ShapeColorPreset[] {
       borderStroke: 'medium',
       borderStyle: 'solid',
     },
-    // ── Border treatments ──
+    // ── Border: line treatments ──
+    {
+      // The accent as a thin line and the label in the same colour: a line
+      // drawing. Its text is the accent itself (Outline's is a shade of it), so
+      // the two never dedupe into one.
+      id: 'hairline',
+      name: 'Hairline',
+      fill: '#ffffff',
+      stroke: accent,
+      text: accent,
+      borderStroke: 'thin',
+      borderStyle: 'solid',
+    },
     {
       id: 'outline',
       name: 'Outline',
@@ -228,6 +266,15 @@ export function shapeColorPresets(theme: ThemeDefinition): ShapeColorPreset[] {
       borderStyle: 'dotted',
     },
     {
+      id: 'dash-dot',
+      name: 'Dash-Dot',
+      fill: tint(accent, 0.92),
+      stroke: accent,
+      text: shade(accent, 0.4),
+      borderStroke: 'medium',
+      borderStyle: 'dash-dot',
+    },
+    {
       id: 'frame',
       name: 'Frame',
       fill: '#ffffff',
@@ -236,7 +283,7 @@ export function shapeColorPresets(theme: ThemeDefinition): ShapeColorPreset[] {
       borderStroke: 'thick',
       borderStyle: 'solid',
     },
-    // ── Semantic status colours (theme-independent, spec/48) ──
+    // ── Status: semantic colours (theme-independent, spec/48) ──
     {
       id: 'info',
       name: 'Info',
@@ -273,6 +320,17 @@ export function shapeColorPresets(theme: ThemeDefinition): ShapeColorPreset[] {
       borderStroke: 'medium',
       borderStyle: 'solid',
     },
+    {
+      // Violet: "look here", for a callout that is none of the four
+      // states above.
+      id: 'highlight',
+      name: 'Highlight',
+      fill: '#ede9fe',
+      stroke: '#7c3aed',
+      text: '#4c1d95',
+      borderStroke: 'medium',
+      borderStyle: 'solid',
+    },
   );
 
   const seen = new Set<string>();
@@ -283,7 +341,7 @@ export function shapeColorPresets(theme: ThemeDefinition): ShapeColorPreset[] {
     seen.add(key);
     out.push(p);
   }
-  return out.slice(0, 20);
+  return out;
 }
 
 // Resolve a stored `colorPreset` id (spec/48) to its colours UNDER A GIVEN
