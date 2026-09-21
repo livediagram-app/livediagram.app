@@ -37,8 +37,10 @@ In scope:
   the New Diagram wizard's Save In step (spec/76,
   `components/placement/PlacementBrowser`), so the product has exactly
   one way to choose where a diagram lives. Spaces first (Personal Space +
-  each team, spec/35; team-scoped surfaces skip the overview and open
-  straight inside their team), then the folder drill-down with a
+  each team, spec/35, on an overview that is shown even when Personal
+  Space is the only space, so the choice is deliberate and the screen has
+  room for a create-team option; only team-scoped surfaces skip it and
+  open straight inside their team), then the folder drill-down with a
   "here" card at every level, an inline New Folder tile, and a
   BackBar. **The tile creates under the selected destination**: with a
   folder selected it reads "New Subfolder · In <folder>" and the new

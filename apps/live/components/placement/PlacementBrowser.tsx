@@ -116,15 +116,20 @@ export function PlacementBrowser({
   // remounts its rows and they cascade in again; a folder created in place
   // only mounts its own row.
   const spaceCount = (showPersonal ? 1 : 0) + teams.length;
-  // With several spaces, open on the overview so the space choice comes
-  // first; a single space goes straight in and never shows a space BackBar.
+  // The space overview is shown wherever the personal space is on offer,
+  // even when it is the only space: choosing where a diagram lives starts
+  // with choosing the space, deliberately, and the overview is where a
+  // "create a team" option belongs for someone who has none yet. Only a
+  // team-scoped surface (one team, no personal space) skips it and opens
+  // straight inside that team, since there is nothing to choose.
   // `undefined` = "not chosen yet", DERIVED per render rather than captured
   // at mount: teams load asynchronously, so a user who reaches the browser
-  // before the fetch resolves must still get the overview once teams land
-  // (a mount-time useState(hasTeams ? ...) would pin them into Personal Space).
+  // before the fetch resolves must still see them on the overview once they
+  // land (a mount-time useState would pin the list as it was).
+  const hasOverview = showPersonal || spaceCount > 1;
   const [chosenSpace, setChosenSpace] = useState<string | null | undefined>(undefined);
   const defaultSpace = showPersonal ? 'personal-space' : (teams[0]?.id ?? 'personal-space');
-  const space = chosenSpace === undefined ? (spaceCount > 1 ? null : defaultSpace) : chosenSpace;
+  const space = chosenSpace === undefined ? (hasOverview ? null : defaultSpace) : chosenSpace;
   // Folder drill-down inside the current space (ids from root inward).
   const [stack, setStack] = useState<PickerFolder[]>([]);
   const placementSpace = placement.startsWith('team:') ? placement.split(':')[1] : 'personal-space';
@@ -144,7 +149,7 @@ export function PlacementBrowser({
   // The bar above the rows is at EVERY level (see BackBar): a back button
   // where there is a level above, a static heading where there is not, so
   // it never appears and disappears under the rows as you move about.
-  if (spaceCount > 1 && space === null) {
+  if (hasOverview && space === null) {
     return (
       <div className="flex flex-col gap-2">
         <BackBar label="Choose a Space" />
@@ -232,9 +237,9 @@ export function PlacementBrowser({
   };
 
   // Back: pop one folder level; at the space root, back to the overview.
-  // With one space and nothing open there is no level above, and the bar
-  // reads as a heading instead.
-  const showBack = spaceCount > 1 || stack.length > 0;
+  // On a team-scoped surface with nothing open there is no level above,
+  // and the bar reads as a heading instead.
+  const showBack = hasOverview || stack.length > 0;
   const onBack = () => (stack.length > 0 ? setStack(stack.slice(0, -1)) : enterSpace(null));
   const backLabel =
     stack.length > 1

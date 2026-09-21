@@ -53,17 +53,43 @@ function Harness({
 }
 
 const radio = (name: RegExp) => screen.getByRole('radio', { name });
+// The browser opens on the space overview even with one space; most of
+// these tests are about the levels inside Personal Space.
+const enterPersonal = () => fireEvent.click(radio(/^Personal Space/));
 const staggerIndex = (el: HTMLElement) => el.style.getPropertyValue('--stagger-i');
 
 afterEach(cleanup);
 
 describe('the bar above the rows', () => {
-  it('is a heading, not a button, at the root of a single space', () => {
+  it('opens on the space overview even when Personal Space is the only space', () => {
     render(<Harness />);
+    // A heading, not a back button: there is no level above the overview.
+    expect(screen.getByText('Choose a Space').closest('button')).toBeNull();
+    expect(radio(/^Personal Space/).textContent).toContain('Your folders');
+    // Nothing inside the space is listed until it is chosen.
+    expect(screen.queryByRole('radio', { name: /^Alpha/ })).toBeNull();
+
+    enterPersonal();
+    const back = screen.getByRole('button', { name: /All spaces/ });
+    expect(back.textContent).toContain('Personal Space');
+    fireEvent.click(back);
+    expect(screen.getByText('Choose a Space')).toBeTruthy();
+  });
+
+  it('opens straight inside the team on a team-scoped surface', () => {
+    render(
+      <PlacementBrowser
+        placement="team:t1"
+        onPlacement={() => {}}
+        folders={[]}
+        teams={[TEAM]}
+        teamFolders={{ t1: [] }}
+        showPersonal={false}
+      />,
+    );
     const heading = screen.getByText('Choose a Folder');
     expect(heading.closest('button')).toBeNull();
-    // The chip still says where you are.
-    expect(heading.parentElement?.textContent).toContain('Personal Space');
+    expect(heading.parentElement?.textContent).toContain('Team One');
     expect(screen.queryByRole('button', { name: /all spaces/i })).toBeNull();
   });
 
@@ -81,6 +107,7 @@ describe('the bar above the rows', () => {
 
   it('names the level above once inside a folder', () => {
     render(<Harness />);
+    enterPersonal();
     fireEvent.click(radio(/^Alpha/));
     const back = screen.getByRole('button', { name: /Personal Space/ });
     expect(back.textContent).toContain('Alpha');
@@ -92,6 +119,7 @@ describe('the bar above the rows', () => {
 describe('subfolder badges', () => {
   it('count direct subfolders, pluralised, and stay off empty folders', () => {
     render(<Harness />);
+    enterPersonal();
     // The save-here card at the root: two root folders.
     expect(radio(/^Personal Space/).textContent).toContain('2 Subfolders');
     expect(radio(/^Alpha/).textContent).toContain('2 Subfolders');
@@ -116,6 +144,7 @@ describe('subfolder badges', () => {
 describe('the caption', () => {
   it('says Folder at a space’s root and Subfolder inside a folder', () => {
     render(<Harness />);
+    enterPersonal();
     expect(radio(/^Epsilon/).textContent).toContain('Folder');
     expect(radio(/^Epsilon/).textContent).not.toContain('Subfolder');
     fireEvent.click(radio(/^Alpha/));
@@ -126,6 +155,7 @@ describe('the caption', () => {
 describe('the cascade', () => {
   it('numbers every row of a level in order, the New Folder row last', () => {
     render(<Harness layout="list" onCreateFolder={async () => null} />);
+    enterPersonal();
     const rows = screen.getAllByRole('radio');
     expect(rows.map(staggerIndex)).toEqual(['0', '1', '2']);
     for (const row of rows) {
@@ -139,12 +169,14 @@ describe('the cascade', () => {
 
   it('starts again from zero on the next level', () => {
     render(<Harness layout="list" />);
+    enterPersonal();
     fireEvent.click(radio(/^Alpha/));
     expect(screen.getAllByRole('radio').map(staggerIndex)).toEqual(['0', '1', '2']);
   });
 
   it('fades tiles rather than sliding them, since a grid track holds their place', () => {
     render(<Harness layout="tiles" />);
+    enterPersonal();
     for (const tile of screen.getAllByRole('radio')) {
       expect(tile.className).toContain('animate-fade-in');
       expect(tile.className).not.toContain('animate-slide-row-in');
@@ -160,6 +192,7 @@ describe('the New Folder tile', () => {
       parentId,
     }));
     render(<Harness layout="list" onCreateFolder={onCreateFolder} />);
+    enterPersonal();
     // Root selected: a plain new folder.
     expect(screen.getByRole('button', { name: /New Folder/ }).textContent).toContain('Create here');
 
@@ -176,6 +209,7 @@ describe('the New Folder tile', () => {
 
   it('goes back to New Folder when the space root is selected again', () => {
     render(<Harness layout="list" onCreateFolder={async () => null} />);
+    enterPersonal();
     fireEvent.click(radio(/^Epsilon/));
     expect(screen.getByRole('button', { name: /New Subfolder/ })).toBeTruthy();
     fireEvent.click(radio(/^Personal Space/));

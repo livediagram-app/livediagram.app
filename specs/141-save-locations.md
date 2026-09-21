@@ -74,7 +74,13 @@ the name, on a tile it takes its own line between name and caption.
 there is a level above, it is the back button (chevron, the level's name,
 and a chip naming where you are). Where there is not, it is a static heading
 in the same shape: **"Choose a Space"** on the space overview, **"Choose a
-Folder"** (with the space's name as the chip) at the root of a single space.
+Folder"** (with the space's name as the chip) at the root of a team-scoped
+surface's one team. **The overview is always the first screen wherever
+Personal Space is offered**, even when it is the only space: choosing where
+a diagram lives starts with choosing the space, deliberately, and that
+screen is where a "create a team" option belongs for someone who has no
+team yet. An earlier version dropped a lone Personal Space straight into
+its folders, which left nowhere to put that option.
 So the bar never appears and disappears under the rows as you move about,
 which was its own jolt.
 
