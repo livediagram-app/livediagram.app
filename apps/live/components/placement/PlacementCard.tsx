@@ -74,19 +74,22 @@ function InlineCreateTile({
         type="button"
         onClick={() => setNaming(true)}
         style={enter.style}
-        className={`${enter.className} ${
+        className={`group ${enter.className} ${
           row
             ? 'flex items-center gap-2.5 px-3 py-2 text-left'
             : 'flex flex-col items-center justify-center gap-1.5 p-3 text-center'
-        } rounded-lg border border-dashed border-slate-300 transition hover:border-brand-400 hover:bg-brand-50/40 dark:border-slate-600 dark:hover:border-brand-500 dark:hover:bg-brand-500/10`}
+        } rounded-lg border border-dashed border-slate-200 bg-slate-50/60 text-slate-400 transition hover:border-brand-400 hover:bg-brand-50/40 hover:text-brand-700 dark:border-slate-700 dark:bg-slate-800/40 dark:text-slate-500 dark:hover:border-brand-500 dark:hover:bg-brand-500/10 dark:hover:text-brand-200`}
       >
-        <span className="shrink-0 text-slate-400">{icon}</span>
-        <span
-          className={`${row ? 'min-w-0 flex-1' : 'w-full'} truncate text-xs font-medium text-slate-500 dark:text-slate-400`}
-        >
+        {/* Quieter than a destination row at rest (lighter border, a faint
+            fill, grey text): it is an action, not one of the options, and
+            it only takes on colour when the pointer reaches it. */}
+        <span className="shrink-0 text-slate-300 transition group-hover:text-brand-500 dark:text-slate-600">
+          {icon}
+        </span>
+        <span className={`${row ? 'min-w-0 flex-1' : 'w-full'} truncate text-xs font-medium`}>
           {label}
         </span>
-        <span className="shrink-0 text-[10px] text-slate-400 dark:text-slate-500">{sub}</span>
+        <span className="shrink-0 text-[10px] text-slate-300 dark:text-slate-600">{sub}</span>
       </button>
     );
   }
