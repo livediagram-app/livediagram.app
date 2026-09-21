@@ -389,9 +389,9 @@ seam are all the same colour as their surroundings, so all of them fail it.
       dozens of them mean something upstream gave up.
 - [x] 4.3 Screenshot each photo's surface and check by eye: boxes on stickies
       and nothing else, words on the right notes, dense clusters separated.
-- [ ] 4.4 Post a `shot` of the corrected surface on the operator's gym-wall
+- [x] 4.4 Post a `shot` of the corrected surface on the operator's gym-wall
       photo, and a `review` with numbered do/expect steps for the whole import.
-- [ ] 4.5 Commit.
+- [x] 4.5 Commit.
 
 ### The reader's ai_error, found
 
