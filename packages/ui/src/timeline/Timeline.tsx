@@ -266,7 +266,7 @@ export function Timeline({
                 ctx={ctx}
                 isNew={stack.events.some((e) => isNew(e.occurredAt))}
                 stagger={staggerFor(fanIndex.get(stack.events[0]!.id))}
-                onExpand={() => {
+                onToggle={() => {
                   toggleStack(stack.key);
                   onStackExpand?.();
                 }}

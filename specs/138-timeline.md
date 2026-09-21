@@ -260,10 +260,10 @@ rendered with one or two faux-card layers stepping out behind it so the
 pile reads as depth. It takes one cell of the day's grid, like any other
 card; its preview box carries the kind's glyph and the count rather than
 one member's thumbnail, because one diagram's snapshot can't speak for a
-run spanning five. Clicking expands the run **in place**: the member
-cards take the stack's cell and the cells after it, and a
-**"Collapse N events"** footer spans the full width of the grid under
-them.
+run spanning five. Clicking expands the run **in place**: the stack card
+stays in its cell as the head of the run, reading **"N events · click
+to collapse"** with its layers gone and a ring on it, and the member
+cards take the cells after it.
 
 - Grouping is **by bucket, not by adjacency**: four team-member events
   split by an unrelated card still collapse into one stack of four.
@@ -279,14 +279,14 @@ them.
   individually. A collapsed comment hides the thing you wanted to read.
 - A stack of one is just a card; the faux layers only render at 2+,
   and the second layer only at 3+.
-- **Expanding and collapsing are the same control.** The collapsed
-  card is its own click target, so opening a run is obvious; closing
-  it is not, because once the run is open nothing is left saying it was
-  ever a stack. So an expanded run carries a **"Collapse N events"**
-  footer, spanning the grid under the run and worded to mirror the
-  "N events · click to expand" the reader just clicked. Without it, a
-  reader who opened a day of twelve renames to check one of them has
-  no way back short of navigating away.
+- **Expanding and collapsing are the same control, in the same
+  place.** The collapsed card is the click target that opened the run,
+  so that card is what closes it: it stays put at the head of the run
+  and its reason line flips to "click to collapse". An earlier version
+  removed the stack card on expand and put a "Collapse N events" footer
+  under the run instead; a footer is a second control the reader has to
+  find, and once the run is open nothing else said it had ever been a
+  stack. Keeping the head card keeps the run legible as a run.
 
 The rules live in `packages/ui/src/timeline/stacking.ts` as pure
 functions over the entry list, tested directly.
@@ -1215,7 +1215,7 @@ useTimelineControls.ts   the state both halves share, + derived filtering
 TimelineGroup.tsx        one day: dot, line, date label, Today pill, the card grid
 TimelineCard.tsx         preview / title + menu slot / reason line / description
 StackedCard.tsx          the collapsed run with its faux-card layers
-ExpandedStack.tsx        the open run's cards plus the "Collapse N events" footer
+ExpandedStack.tsx        the open run: the stack card as its head, then the members
 TimelineCalendarView.tsx month grid, per-tone dots, day popover
 TimelineFilterPopover.tsx chips + mini calendar, portalled
 useTimelineGrouping.ts   group-by-day (pure, exported for reuse)

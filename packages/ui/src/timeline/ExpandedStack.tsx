@@ -2,17 +2,18 @@
 
 // An expanded run of same-kind events (spec/138 §2.1).
 //
-// Rendered as a FRAGMENT: the member cards take the stack's cell and
-// the cells after it in the day's grid, and the footer spans the full
-// row beneath them. A wrapper element would make the run one oversized
-// grid item instead.
+// Rendered as a FRAGMENT: the stack card stays at the head of the run
+// as its toggle, and the member cards take the cells after it in the
+// day's grid. A wrapper element would make the run one oversized grid
+// item instead.
 //
-// The collapsed card is its own click target, so expanding is obvious.
-// Collapsing is not: once the run is open there is nothing left saying
-// it was ever a stack, and the reader who opened a day of twelve
-// renames to check one of them has no way back short of navigating
-// away. Hence the footer.
+// The collapsed card is the click target that opened the run, so the
+// same card, in the same cell, is what closes it: it stays put, reads
+// "click to collapse", and drops its faux layers. A reader who opened a
+// day of twelve renames to check one of them folds it back from where
+// they started, not from a footer link under the run.
 
+import { StackedCard } from './StackedCard';
 import { TimelineCard } from './TimelineCard';
 import type { TimelineStack } from './stacking';
 import { pickRenderer } from './renderers';
@@ -46,6 +47,14 @@ export function ExpandedStack({
 }) {
   return (
     <>
+      <StackedCard
+        stack={stack}
+        registry={registry}
+        ctx={ctx}
+        expanded
+        isNew={stack.events.some((e) => isNew?.(e.occurredAt))}
+        onToggle={onCollapse}
+      />
       {stack.events.map((event, index) => (
         // The delay restarts at zero for the run rather than continuing
         // the page's cascade: what just arrived is these cards, and
@@ -65,28 +74,6 @@ export function ExpandedStack({
           />
         </div>
       ))}
-      <button
-        type="button"
-        // Deliberately mirrors the "N events · click to expand" the
-        // reader just clicked, so the pair reads as one toggle rather
-        // than as an open action and an unrelated close. Spans the grid
-        // so it sits under the run it belongs to, whichever cells the
-        // run landed in.
-        onClick={onCollapse}
-        className="col-span-full flex items-center gap-1 pb-1 text-[11px] text-slate-500 transition hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100"
-      >
-        <svg
-          className="h-3 w-3"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={2}
-          viewBox="0 0 24 24"
-          aria-hidden
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
-        </svg>
-        Collapse {stack.events.length} events
-      </button>
     </>
   );
 }
