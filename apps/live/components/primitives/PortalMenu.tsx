@@ -20,7 +20,16 @@ type PortalMenuProps = {
   anchor: HTMLElement | null;
   placement?: Placement;
   onClose: () => void;
+  // `md` (default) is the tab / header menus' 224px. `lg` is 288px, for a
+  // three-column tile grid whose labels ("Hide from Recent") would
+  // otherwise wrap in every other tile.
+  width?: 'md' | 'lg';
   children: ReactNode;
+};
+
+const WIDTH_CLASS: Record<NonNullable<PortalMenuProps['width']>, string> = {
+  md: 'w-56',
+  lg: 'w-72',
 };
 
 // Right-align the menu's right edge with the anchor's right edge and place
@@ -38,7 +47,13 @@ const PLACEMENT_TRANSFORM: Record<Placement, string> = {
  * Used by the tab bar (above the ellipsis button) and the editor header
  * (below the diagram-title ellipsis button).
  */
-export function PortalMenu({ anchor, placement = 'below', onClose, children }: PortalMenuProps) {
+export function PortalMenu({
+  anchor,
+  placement = 'below',
+  onClose,
+  width = 'md',
+  children,
+}: PortalMenuProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
   const [adjust, setAdjust] = useState({ x: 0, y: 0 });
@@ -88,7 +103,7 @@ export function PortalMenu({ anchor, placement = 'below', onClose, children }: P
       <div
         ref={ref}
         role="menu"
-        className="fixed z-[var(--z-popover)] flex w-56 animate-fade-in flex-col rounded-md border border-slate-200 bg-white/90 py-1 text-sm shadow-lg backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/90 dark:shadow-slate-950/40"
+        className={`fixed z-[var(--z-popover)] flex ${WIDTH_CLASS[width]} animate-fade-in flex-col rounded-md border border-slate-200 bg-white/90 py-1 text-sm shadow-lg backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/90 dark:shadow-slate-950/40`}
         style={{
           left: pos.left + adjust.x,
           top: pos.top + adjust.y,
@@ -224,6 +239,21 @@ export function MenuActionRow({
       <span className="flex w-4 shrink-0 items-center justify-center">{icon}</span>
       {label}
     </button>
+  );
+}
+
+// A quiet first row naming what the menu is FOR: the diagram's name and
+// its visibility badge. A ⋯ menu opens away from its trigger (below a
+// card, beside a row), and on a grid of near-identical cards the reader
+// needs the menu itself to say which one they opened.
+export function MenuHeader({ title, aside }: { title: string; aside?: ReactNode }) {
+  return (
+    <div className="mb-1 flex items-center gap-2 border-b border-slate-100 px-3 pb-2 pt-1.5 dark:border-slate-800">
+      <span className="min-w-0 flex-1 truncate text-xs font-semibold text-slate-700 dark:text-slate-200">
+        {title}
+      </span>
+      {aside ? <span className="shrink-0">{aside}</span> : null}
+    </div>
   );
 }
 
@@ -386,5 +416,7 @@ export function MenuTile({
 // Grid wrapper for MenuTile rows (2 / 3 / 4 equal columns).
 export function MenuTileGrid({ cols = 3, children }: { cols?: 2 | 3 | 4; children: ReactNode }) {
   const colClass = cols === 2 ? 'grid-cols-2' : cols === 4 ? 'grid-cols-4' : 'grid-cols-3';
-  return <div className={`grid gap-1 px-2 py-1.5 ${colClass}`}>{children}</div>;
+  // `auto-rows-fr` so a row with one wrapped label doesn't leave its
+  // neighbours shorter: every tile in a row is the row's height.
+  return <div className={`grid auto-rows-fr gap-1 px-2 py-1.5 ${colClass}`}>{children}</div>;
 }

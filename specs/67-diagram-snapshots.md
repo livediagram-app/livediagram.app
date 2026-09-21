@@ -128,6 +128,21 @@ card share one badge + actions-menu module (`diagram-row-shared.tsx`) so
 they can't drift. A real switch (not a click on the already-active side)
 emits `UI / Toggled / ExplorerViewList | ExplorerViewCard` (spec/22).
 
+**The actions menu** (the ⋯ on a row or card, and on a Timeline diagram
+card, spec/138 §2.8) has one shape wherever it opens: a **header row**
+naming the diagram with its visibility badge, because a menu opens away
+from its trigger and on a grid of near-identical cards the menu itself
+has to say which one it belongs to; a **three-column tile grid** of the
+ordinary verbs (Rename, Duplicate, Change Folder, Favourite, History,
+Hide from Recent, Open Team, Take Offline / Sync); then **Delete on its
+own row under a separator**, in the hover-tinting destructive row form
+the note menu uses (spec/139). It was a two-column grid with Delete as
+the last tile: eight verbs made it four rows tall, "Hide from Recent"
+wrapped in one tile and not its neighbour, and the one irreversible
+verb sat a slip away from Duplicate. The menu is 288px wide for the
+three columns (`PortalMenu width="lg"`); a shared-with-you diagram's
+menu (Open, Dismiss) is two rows under the same header.
+
 The snapshot preview paints its letterbox in the diagram's own
 background colour (parsed client-side from the SVG's background rect)
 instead of a generic slate, so a card reads as a continuation of the

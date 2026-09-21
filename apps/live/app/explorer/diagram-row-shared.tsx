@@ -1,12 +1,20 @@
 'use client';
 
+import type { ReactNode } from 'react';
 // Pieces shared by the Explorer's list row (explorer-route-diagram-row)
 // and card (CardView): the visibility badge, the actions menu, and the
 // open-href helper. Extracted so the two view modes can't drift on what
 // a diagram's badge says or which actions its menu offers.
 
 import { SharedDotIcon } from '@/components/chrome/share-state-icons';
-import { MenuTile, MenuTileGrid, PortalMenu } from '@/components/primitives/PortalMenu';
+import {
+  MenuActionRow,
+  MenuGroupSeparator,
+  MenuHeader,
+  MenuTile,
+  MenuTileGrid,
+  PortalMenu,
+} from '@/components/primitives/PortalMenu';
 import { Tooltip } from '@/components/primitives/Tooltip';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { useOfflineConversion } from '@/hooks/persistence/useOfflineConversion';
@@ -189,6 +197,14 @@ export function VisibilityBadge({ diagram }: { diagram: PaneDiagram }) {
 // caller passes. Shared-with-me rows get Open / Dismiss; owned + team
 // rows get the full rename / duplicate / change-folder / (open team) /
 // delete set (spec/35).
+//
+// Shape: a header naming the diagram, a three-column tile grid of the
+// ordinary verbs, then Delete on its own row under a separator. Two
+// columns made a menu of eight verbs four rows tall with "Hide from
+// Recent" wrapping in one tile and not its neighbour; and Delete sitting
+// in the grid as just another tile put the one irreversible verb a slip
+// away from Duplicate. The row form is the same one the note menu uses
+// for destructive verbs (spec/139): it tints on hover, before the click.
 export function DiagramActionsMenu({
   diagram,
   anchor,
@@ -229,126 +245,78 @@ export function DiagramActionsMenu({
   const offline = diagram.ownerId === OFFLINE_OWNER_ID;
   // Offline Mode conversions (spec/76), shared with the panel row via the hook.
   const { syncToCloud, takeOffline } = useOfflineConversion(diagram, ownerId, onClose);
+  // Run a verb, then close: every tile does this, so it's one wrapper.
+  const then = (fn: () => void) => () => {
+    fn();
+    onClose();
+  };
+  const header = <MenuHeader title={diagram.name} aside={<VisibilityBadge diagram={diagram} />} />;
+
   if (diagram.shared) {
     return (
       <PortalMenu anchor={anchor} placement="below" onClose={onClose}>
-        <MenuTileGrid cols={2}>
-          <MenuTile
-            icon={
-              <span className="[&_svg]:h-5 [&_svg]:w-5">
-                <DiagramIcon />
-              </span>
-            }
-            label="Open"
-            onClick={() => window.location.assign(href)}
-          />
-          <MenuTile
-            icon={
-              <span className="[&_svg]:h-5 [&_svg]:w-5">
-                <CloseIcon />
-              </span>
-            }
-            label="Dismiss"
-            onClick={() => {
-              onDismiss?.();
-              onClose();
-            }}
-          />
-        </MenuTileGrid>
+        {header}
+        <MenuActionRow
+          icon={<DiagramIcon />}
+          label="Open"
+          onClick={() => window.location.assign(href)}
+        />
+        <MenuGroupSeparator />
+        <MenuActionRow
+          icon={<CloseIcon />}
+          label="Dismiss"
+          danger
+          onClick={then(() => onDismiss?.())}
+        />
       </PortalMenu>
     );
   }
   return (
-    <PortalMenu anchor={anchor} placement="below" onClose={onClose}>
-      <MenuTileGrid cols={2}>
+    <PortalMenu anchor={anchor} placement="below" width="lg" onClose={onClose}>
+      {header}
+      <MenuTileGrid cols={3}>
         <MenuTile
-          icon={
-            <span className="[&_svg]:h-5 [&_svg]:w-5">
-              <MenuPencilIcon />
-            </span>
-          }
+          icon={tileIcon(<MenuPencilIcon />)}
           label="Rename"
-          onClick={() => {
-            onStartRename();
-            onClose();
-          }}
+          onClick={then(onStartRename)}
         />
         <MenuTile
-          icon={
-            <span className="[&_svg]:h-5 [&_svg]:w-5">
-              <MenuDuplicateIcon />
-            </span>
-          }
+          icon={tileIcon(<MenuDuplicateIcon />)}
           label="Duplicate"
-          onClick={() => {
-            onDuplicate();
-            onClose();
-          }}
+          onClick={then(onDuplicate)}
         />
         <MenuTile
-          icon={
-            <span className="[&_svg]:h-5 [&_svg]:w-5">
-              <MenuFolderIcon />
-            </span>
-          }
+          icon={tileIcon(<MenuFolderIcon />)}
           label="Change Folder"
-          onClick={() => {
-            onMove(anchor);
-            onClose();
-          }}
+          onClick={then(() => onMove(anchor))}
         />
         {onToggleFavourite ? (
           <MenuTile
-            icon={
-              <span className="[&_svg]:h-5 [&_svg]:w-5">
-                <StarIcon filled={favourite} />
-              </span>
-            }
+            icon={tileIcon(<StarIcon filled={favourite} />)}
             label={favourite ? 'Unfavourite' : 'Favourite'}
-            onClick={() => {
-              onToggleFavourite();
-              onClose();
-            }}
+            onClick={then(onToggleFavourite)}
           />
         ) : null}
         {onShowHistory ? (
           <MenuTile
-            icon={
-              <span className="[&_svg]:h-5 [&_svg]:w-5">
-                <HistoryIcon />
-              </span>
-            }
+            icon={tileIcon(<HistoryIcon />)}
             label="History"
-            onClick={() => {
-              onShowHistory();
-              onClose();
-            }}
+            onClick={then(onShowHistory)}
           />
         ) : null}
         {onToggleRecentExclusion ? (
           <MenuTile
-            icon={
-              <span className="[&_svg]:h-5 [&_svg]:w-5">
-                {recentExcluded ? <ClockOffIcon /> : <ClockIcon />}
-              </span>
-            }
+            icon={tileIcon(recentExcluded ? <ClockOffIcon /> : <ClockIcon />)}
             // The label states what the click DOES, and by doing so tells
             // you the current state — which is why the diagram needs no
             // badge anywhere else (spec/93).
             label={recentExcluded ? 'Show in Recent' : 'Hide from Recent'}
-            onClick={() => {
-              onToggleRecentExclusion();
-              onClose();
-            }}
+            onClick={then(onToggleRecentExclusion)}
           />
         ) : null}
         {diagram.team ? (
           <MenuTile
-            icon={
-              <span className="[&_svg]:h-5 [&_svg]:w-5">
-                <TeamIcon />
-              </span>
-            }
+            icon={tileIcon(<TeamIcon />)}
             label="Open Team"
             onClick={() => {
               window.location.assign(
@@ -362,46 +330,31 @@ export function DiagramActionsMenu({
         {ownerId ? (
           offline ? (
             <MenuTile
-              icon={
-                <span className="[&_svg]:h-5 [&_svg]:w-5">
-                  <SyncIcon />
-                </span>
-              }
+              icon={tileIcon(<SyncIcon />)}
               label="Sync Diagram"
               onClick={() => void syncToCloud()}
             />
           ) : (
             <MenuTile
-              icon={
-                <span className="[&_svg]:h-5 [&_svg]:w-5">
-                  <TakeOfflineMenuIcon />
-                </span>
-              }
+              icon={tileIcon(<TakeOfflineMenuIcon />)}
               label="Take Offline"
               onClick={() => void takeOffline()}
             />
           )
         ) : null}
-        <MenuTile
-          icon={
-            <span className="[&_svg]:h-5 [&_svg]:w-5">
-              <MenuTrashIcon />
-            </span>
-          }
-          label="Delete"
-          danger
-          onClick={() => {
-            onDelete();
-            onClose();
-          }}
-        />
       </MenuTileGrid>
+      <MenuGroupSeparator />
+      <MenuActionRow icon={<MenuTrashIcon />} label="Delete" danger onClick={then(onDelete)} />
     </PortalMenu>
   );
 }
 
-// Cloud-up (sync to account) + download-to-device (take offline) icons,
-// matching the menu's icon size (spec/76).
+// Tile glyphs are drawn at 20px whatever the icon's own attributes say;
+// the CSS override beats the intrinsic width/height.
+function tileIcon(icon: ReactNode) {
+  return <span className="[&_svg]:h-5 [&_svg]:w-5">{icon}</span>;
+}
+
 function SyncIcon() {
   return (
     <svg
