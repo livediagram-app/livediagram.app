@@ -3,22 +3,19 @@
 // livediagram's timeline renderers (spec/138 §7).
 //
 // These are the half of the Timeline that knows about this product:
-// which route a bubble opens, how each event reads, and when to say
-// "You" instead of a name. The components in @livediagram/ui take this
+// which route a card opens, what its preview shows, and when to say
+// "you" instead of a name. The components in @livediagram/ui take this
 // registry as a prop and never import a route themselves, which is what
-// will let a per-diagram feed reuse them later without inheriting the
-// Explorer's copy.
+// lets a per-diagram feed reuse them without inheriting the Explorer's
+// copy.
 //
-// Copy rule: the headline names the SUBJECT FIRST, then what happened
-// to it — "Payments architecture deleted", not "Diagram Deleted" with
-// the name on a second line. A feed is read by scanning the left edge,
-// and the subject is what the reader is scanning for; the category is
-// already carried by the icon and the colour. The subject is bolded so
-// that edge stays legible at a glance.
-//
-// The generic Title Case category still lives on the stored event and
-// is what a collapsed stack wears (stackLabel), so the two readings
-// coexist: individual rows are specific, collapsed runs are honest.
+// Copy rule (spec/138 §2): a card's TITLE is the subject (the diagram,
+// the team, the token) and its REASON LINE is the stored Title Case
+// category ("Diagram Created"). Renderers therefore set `subject` and
+// leave `label` to fall back to `event.title`, so every card and every
+// collapsed stack draws its wording from the same field and the feed
+// can't drift into a mix of "created" and "Created". People and detail
+// go in `meta`.
 
 import type {
   TimelineEvent,
@@ -39,18 +36,7 @@ function icon(event: TimelineEvent) {
   return EVENT_ICONS[event.eventType] ?? <SourceTypeIcon sourceType={event.sourceType} />;
 }
 
-// The headline shape: subject, then the verb phrase. One helper so every
-// renderer produces the same rhythm.
-//
-// Deliberately unemphasised. An earlier pass bolded the subject to make
-// the left edge scannable, but a feed where every row carries bold text
-// has no emphasis at all — just noise. Word ORDER is what makes it
-// scannable; the weight was redundant on top of it.
-function headline(subject: string, rest: string): string {
-  return `${subject} ${rest}`;
-}
-
-// "You" vs a name. The stored row is viewer-agnostic — one row serves a
+// "you" vs a name. The stored row is viewer-agnostic — one row serves a
 // whole team — so the pronoun is decided here, against whoever is
 // reading.
 function isMine(event: TimelineEvent, ctx: TimelineRendererContext): boolean {
@@ -62,13 +48,15 @@ function actorName(event: TimelineEvent, ctx: TimelineRendererContext): string {
   return str(event.snapshot, 'authorName') ?? str(event.snapshot, 'memberName') ?? 'Someone';
 }
 
-// A small snapshot of the diagram on the right of the row. Reuses the
+function byActor(event: TimelineEvent, ctx: TimelineRendererContext): string {
+  return isMine(event, ctx) ? 'by you' : `by ${actorName(event, ctx)}`;
+}
+
+// The diagram's snapshot, filling the card's preview box. Reuses the
 // Explorer's own thumbnail component, so this inherits its lazy
 // intersection-observer fetch, its blob-URL auth handling, and its
-// stable placeholder — a feed of fifty rows doesn't fire fifty renders
+// stable placeholder: a feed of fifty cards doesn't fire fifty renders
 // for diagrams the reader never scrolls to.
-//
-// Fixed height, so it sits inside the row rather than setting it.
 function preview(event: TimelineEvent, ctx: TimelineRendererContext) {
   const diagramId = str(event.snapshot, 'diagramId');
   if (!diagramId) return undefined;
@@ -78,236 +66,158 @@ function preview(event: TimelineEvent, ctx: TimelineRendererContext) {
       diagramId={diagramId}
       // The event's own timestamp as the cache-bust key. The coalesced
       // edit event's timestamp walks forward through a day, so an
-      // actively-edited diagram re-fetches; a months-old bubble keeps
+      // actively-edited diagram re-fetches; a months-old card keeps
       // serving its cached snapshot rather than re-rendering on scroll.
       version={event.occurredAt}
-      className="h-8 w-11 rounded border border-slate-200 bg-white/60 dark:border-slate-700 dark:bg-slate-900/40"
+      className="h-full w-full"
     />
   );
 }
 
 const diagramRenderer: TimelineRenderer = (event, ctx) => {
-  const name = str(event.snapshot, 'diagramName') ?? 'a diagram';
+  const name = str(event.snapshot, 'diagramName') ?? 'A diagram';
   const diagramId = str(event.snapshot, 'diagramId');
   // A tombstone carries no diagramId (the emit deliberately omits it),
   // so it is structurally unclickable rather than relying on anyone
-  // remembering not to link a deleted diagram. The bubble dims itself
+  // remembering not to link a deleted diagram. The card dims itself
   // when there's no handler.
   const open = diagramId
     ? () => window.location.assign(`/diagram/${encodeURIComponent(diagramId)}`)
     : undefined;
-  // `description: null` clears the stored line: these headlines already
-  // name the diagram, and repeating it underneath is noise.
+  // `description: null` clears the stored line: the reason line already
+  // says what happened and the title already names the diagram, so
+  // repeating either underneath is noise. Comments are the exception.
   const base = {
     icon: icon(event),
+    subject: name,
     onClick: open,
     preview: preview(event, ctx),
     description: null,
   };
 
   switch (event.eventType) {
-    case 'diagram_created':
-      return { ...base, label: headline(name, 'created') };
     case 'diagram_edited':
-      return {
-        ...base,
-        label: headline(name, 'updated'),
-        meta: isMine(event, ctx) ? 'by you' : `by ${actorName(event, ctx)}`,
-      };
+      return { ...base, meta: byActor(event, ctx) };
     case 'diagram_renamed': {
       const previous = str(event.snapshot, 'previousName');
-      return {
-        ...base,
-        label: headline(previous ?? name, 'renamed'),
-        meta: previous ? `Now ${name}` : undefined,
-      };
+      return { ...base, meta: previous ? `Was ${previous}` : undefined };
     }
     case 'diagram_duplicated': {
       const source = str(event.snapshot, 'sourceName');
-      return { ...base, label: headline(source ?? name, 'duplicated'), meta: `Copy: ${name}` };
+      return { ...base, meta: source ? `Copy of ${source}` : undefined };
     }
-    case 'diagram_deleted':
-      return { ...base, label: headline(name, 'deleted') };
     case 'diagram_moved':
-      return {
-        ...base,
-        label: headline(name, 'moved'),
-        meta: `To ${str(event.snapshot, 'destination') ?? 'a folder'}`,
-      };
+      return { ...base, meta: `To ${str(event.snapshot, 'destination') ?? 'a folder'}` };
     case 'team_diagram_added':
+      return { ...base, meta: str(event.snapshot, 'teamName') ?? undefined };
+    case 'team_diagram_removed': {
+      // Who has it now. A non-owner pulling a team diagram out takes
+      // ownership of it (spec/35), so this is the part a reader of the
+      // TEAM's copy of this event actually needs.
+      const owner = str(event.snapshot, 'newOwnerName');
       return {
         ...base,
-        label: headline(name, `shared with ${str(event.snapshot, 'teamName') ?? 'a team'}`),
+        meta: owner ? `Now owned by ${owner}` : (str(event.snapshot, 'teamName') ?? undefined),
       };
-    case 'team_diagram_removed':
-      return {
-        ...base,
-        label: headline(name, `removed from ${str(event.snapshot, 'teamName') ?? 'a team'}`),
-        // Who has it now. A non-owner pulling a team diagram out takes
-        // ownership of it (spec/35), so this is the part a reader of the
-        // TEAM's copy of this event actually needs.
-        meta: str(event.snapshot, 'newOwnerName') ?? undefined,
-      };
+    }
     case 'comment_added':
-      return {
-        ...base,
-        // The commenter leads, because on a shared diagram "who said
-        // this" is the first thing worth knowing. This is the one event
-        // whose stored description is worth keeping: it holds the
-        // comment text, which is the whole reason to look.
-        label: headline(actorName(event, ctx), `commented on ${name}`),
-        description: undefined,
-      };
-    case 'comment_resolved':
-      return { ...base, label: headline(name, 'comment resolved') };
+      // The one event whose stored description is worth keeping: it
+      // holds the comment text, which is the whole reason to look. The
+      // commenter goes in the meta, because on a shared diagram "who
+      // said this" is the first thing worth knowing.
+      return { ...base, meta: actorName(event, ctx), description: undefined };
     case 'action_assigned': {
       const action = str(event.snapshot, 'actionName') ?? 'An action';
       const assignee = str(event.snapshot, 'assigneeName');
-      return {
-        ...base,
-        label: headline(action, assignee ? `assigned to ${assignee}` : 'assigned'),
-        meta: name,
-      };
+      return { ...base, meta: assignee ? `${action}, to ${assignee}` : action };
     }
     case 'action_completed':
-      return {
-        ...base,
-        label: headline(str(event.snapshot, 'actionName') ?? 'An action', 'completed'),
-        meta: name,
-      };
-    case 'share_link_created':
-      return { ...base, label: headline(name, 'share link created') };
-    case 'share_link_expiring':
-      return { ...base, label: headline(name, 'share link expires') };
+      return { ...base, meta: str(event.snapshot, 'actionName') ?? undefined };
     case 'diagram_offline':
-      return { ...base, label: headline(name, 'taken offline'), meta: 'Kept only in this browser' };
-    case 'diagram_synced':
-      return { ...base, label: headline(name, 'synced to the cloud') };
+      return { ...base, meta: 'Kept only in this browser' };
     case 'diagram_opened_by_visitor':
-      return {
-        ...base,
-        label: headline(name, 'opened by a visitor'),
-        meta: str(event.snapshot, 'visitorName') ?? 'Someone with the share link',
-      };
     case 'diagram_copied_by_visitor':
       return {
         ...base,
-        label: headline(name, 'copied by a visitor'),
         meta: str(event.snapshot, 'visitorName') ?? 'Someone with the share link',
       };
     default:
-      return { ...base, label: headline(name, event.title.toLowerCase()) };
+      return base;
   }
 };
 
 const teamRenderer: TimelineRenderer = (event, ctx) => {
   const teamId = str(event.snapshot, 'teamId');
-  const team = str(event.snapshot, 'teamName') ?? 'a team';
+  const team = str(event.snapshot, 'teamName') ?? 'A team';
   const member = str(event.snapshot, 'memberName');
   const open = teamId
     ? () => window.location.assign(`/explorer/team?id=${encodeURIComponent(teamId)}`)
     : undefined;
-  const base = { icon: icon(event), onClick: open, description: null };
+  const base = { icon: icon(event), subject: team, onClick: open, description: null };
   const who = isMine(event, ctx) ? 'You' : (member ?? 'Someone');
 
   switch (event.eventType) {
-    case 'team_created':
-      return { ...base, label: headline(team, 'created') };
     case 'team_invite_received':
       return {
         ...base,
-        label: headline(team, 'invited you'),
         meta: 'Open Invites to accept or decline',
         // A pending invite grants no access to the team page (spec/32),
         // so this points where the reader can actually act.
         onClick: () => window.location.assign('/explorer/invites'),
       };
     case 'team_invite_accepted':
-      return { ...base, label: headline(team, isMine(event, ctx) ? 'joined by you' : 'joined') };
     case 'team_invite_declined':
-      return { ...base, label: headline(team, 'invite declined'), meta: member ?? undefined };
     case 'team_member_joined':
-      return { ...base, label: headline(who, `joined ${team}`) };
     case 'team_member_left':
-      return { ...base, label: headline(who, `left ${team}`) };
     case 'team_member_removed':
-      return { ...base, label: headline(who, `removed from ${team}`) };
+      return { ...base, meta: who };
     case 'team_renamed': {
       const previous = str(event.snapshot, 'previousName');
-      return {
-        ...base,
-        label: headline(previous ?? team, 'renamed'),
-        meta: previous ? `Now ${team}` : undefined,
-      };
+      return { ...base, meta: previous ? `Was ${previous}` : undefined };
     }
-    case 'team_deleted':
-      return { ...base, label: headline(team, 'deleted') };
-    case 'team_invite_link_enabled':
-      return { ...base, label: headline(team, 'invite link turned on') };
-    case 'team_invite_link_disabled':
-      return { ...base, label: headline(team, 'invite link turned off') };
     case 'team_role_changed':
       return {
         ...base,
-        label: headline(
-          member ?? 'A member',
-          `is now ${str(event.snapshot, 'toRole') ?? 'changed'}`,
-        ),
-        meta: team,
+        meta: `${member ?? 'A member'} is now ${str(event.snapshot, 'toRole') ?? 'changed'}`,
       };
     default:
-      return { ...base, label: headline(team, event.title.toLowerCase()) };
+      return base;
   }
 };
 
 const accountRenderer: TimelineRenderer = (event) => {
   const base = { icon: icon(event), description: null };
+  const token = str(event.snapshot, 'tokenName') ?? 'API token';
+  const theme = str(event.snapshot, 'themeName') ?? 'A colour scheme';
+  const folder = str(event.snapshot, 'folderName') ?? 'A folder';
+  const tokens = () => window.location.assign('/explorer/tokens');
   switch (event.eventType) {
     case 'token_created':
-      return {
-        ...base,
-        label: headline(str(event.snapshot, 'tokenName') ?? 'API token', 'created'),
-        onClick: () => window.location.assign('/explorer/tokens'),
-      };
+    case 'token_revoked':
+      return { ...base, subject: token, onClick: tokens };
     case 'token_expiring':
       return {
         ...base,
-        label: headline(str(event.snapshot, 'tokenName') ?? 'API token', 'expires'),
+        subject: token,
         meta: 'Rotate it before it lapses to keep connected tools working',
-        onClick: () => window.location.assign('/explorer/tokens'),
-      };
-    case 'token_revoked':
-      return {
-        ...base,
-        label: headline(str(event.snapshot, 'tokenName') ?? 'API token', 'revoked'),
-        onClick: () => window.location.assign('/explorer/tokens'),
-      };
-    case 'theme_deleted':
-      return {
-        ...base,
-        label: headline(str(event.snapshot, 'themeName') ?? 'A colour scheme', 'deleted'),
-      };
-    case 'folder_created':
-      return {
-        ...base,
-        label: headline(str(event.snapshot, 'folderName') ?? 'A folder', 'created'),
-      };
-    case 'folder_deleted':
-      return {
-        ...base,
-        label: headline(str(event.snapshot, 'folderName') ?? 'A folder', 'deleted'),
+        onClick: tokens,
       };
     case 'theme_saved':
       return {
         ...base,
-        label: headline(str(event.snapshot, 'themeName') ?? 'A colour scheme', 'saved'),
+        subject: theme,
         onClick: () => window.location.assign('/explorer/themes'),
       };
+    case 'theme_deleted':
+      return { ...base, subject: theme };
+    case 'folder_created':
+    case 'folder_deleted':
+      return { ...base, subject: folder };
     case 'image_uploaded': {
       const count = typeof event.snapshot.count === 'number' ? event.snapshot.count : 1;
       return {
         ...base,
-        label: headline(count === 1 ? '1 image' : `${count} images`, 'uploaded'),
+        subject: count === 1 ? '1 image' : `${count} images`,
         onClick: () => window.location.assign('/explorer/images'),
       };
     }

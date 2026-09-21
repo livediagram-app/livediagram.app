@@ -67,20 +67,12 @@ describe('useTimelineControls', () => {
     // The mini-calendar sits in the filter popover, which is reachable from the
     // header in every mode — but the scroll target and the pulse it drove are
     // rendered by the day groups, and only LIST mode renders those. So picking
-    // a date in calendar or week mode silently did nothing.
+    // a date in calendar mode silently did nothing.
     it('moves the calendar grid to the picked day’s month', () => {
       const { result } = renderHook(() => useTimelineControls([event()], { viewerId: ME }));
       act(() => result.current.setMode('calendar'));
       act(() => result.current.pickDate('2026-03-14'));
       expect(result.current.monthKey).toBe('2026-03');
-    });
-
-    it('moves the week grid to the week containing the picked day', () => {
-      const { result } = renderHook(() => useTimelineControls([event()], { viewerId: ME }));
-      act(() => result.current.setMode('week'));
-      // A Saturday: the grid is Monday-first, so this resolves back to the 9th.
-      act(() => result.current.pickDate('2026-03-14'));
-      expect(result.current.weekKey).toBe('2026-03-09');
     });
 
     it('pulses the day group in list mode, and moves no grid', () => {

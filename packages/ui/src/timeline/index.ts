@@ -12,9 +12,9 @@ export {
   useTimelineControls,
   type TimelineControls as TimelineControlsState,
 } from './useTimelineControls';
-export { TimelineBubble } from './TimelineBubble';
+export { TimelineCard } from './TimelineCard';
 export { TimelineGroup } from './TimelineGroup';
-export { StackedBubble } from './StackedBubble';
+export { StackedCard } from './StackedCard';
 export { ExpandedStack } from './ExpandedStack';
 export { TimelineCalendarView } from './TimelineCalendarView';
 export { TimelineErrorState } from './TimelineErrorState';
@@ -28,6 +28,7 @@ export {
   type TimelineCategory,
 } from './eventCategory';
 export { buildStacks, bucketFor, stackLabel, type TimelineStack } from './stacking';
+export { collapseSameDayCreate } from './sameDayCreate';
 export {
   dateKey,
   groupByDay,
@@ -35,21 +36,12 @@ export {
   useTimelineGrouping,
   type TimelineDayGroup,
 } from './useTimelineGrouping';
-export {
-  buildMonthCells,
-  buildWeekCells,
-  formatMonth,
-  formatWeek,
-  monthKeyOf,
-  shiftMonth,
-  shiftWeek,
-  weekStartOf,
-  type MonthCell,
-} from './monthCells';
+export { buildMonthCells, formatMonth, monthKeyOf, shiftMonth, type MonthCell } from './monthCells';
 export { SOURCE_TYPE_LABELS, sourceTypeIconPath, sourceTypeLabel } from './sourceTypeMeta';
 export type {
-  TimelineBubbleAction,
-  TimelineBubbleRender,
+  TimelineCardRender,
+  TimelineCardSlots,
+  TimelineCardSlotsFor,
   TimelineEvent,
   TimelineMode,
   TimelineRenderer,
