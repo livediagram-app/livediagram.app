@@ -10,8 +10,8 @@ import { useRef, useState, type ReactNode } from 'react';
 import { CARD_PREVIEW as previewArea, CARD_SHELL as cardShell } from '@livediagram/ui';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
-import { MenuTile, MenuTileGrid, PortalMenu } from '@/components/primitives/PortalMenu';
-import { FolderIcon, MenuFolderIcon, MenuPencilIcon, MenuTrashIcon, PlusIcon } from './icons';
+import { FolderActionsMenu } from './folder-actions-menu';
+import { FolderIcon } from './icons';
 import type { Folder } from '@/lib/api-client';
 
 // The plain folder mark that fills a folder card's preview box when
@@ -112,59 +112,15 @@ export function FolderCard({
         )}
       </div>
       {menuOpen ? (
-        <PortalMenu anchor={menuRef.current} placement="below" onClose={() => setMenuOpen(false)}>
-          <MenuTileGrid cols={2}>
-            <MenuTile
-              icon={
-                <span className="[&_svg]:h-5 [&_svg]:w-5">
-                  <MenuPencilIcon />
-                </span>
-              }
-              label="Rename"
-              onClick={() => {
-                actions.rename();
-                setMenuOpen(false);
-              }}
-            />
-            <MenuTile
-              icon={
-                <span className="[&_svg]:h-5 [&_svg]:w-5">
-                  <PlusIcon />
-                </span>
-              }
-              label="New subfolder"
-              onClick={() => {
-                actions.newSubfolder();
-                setMenuOpen(false);
-              }}
-            />
-            <MenuTile
-              icon={
-                <span className="[&_svg]:h-5 [&_svg]:w-5">
-                  <MenuFolderIcon />
-                </span>
-              }
-              label="Change Folder"
-              onClick={() => {
-                actions.move();
-                setMenuOpen(false);
-              }}
-            />
-            <MenuTile
-              icon={
-                <span className="[&_svg]:h-5 [&_svg]:w-5">
-                  <MenuTrashIcon />
-                </span>
-              }
-              label="Delete"
-              danger
-              onClick={() => {
-                actions.delete();
-                setMenuOpen(false);
-              }}
-            />
-          </MenuTileGrid>
-        </PortalMenu>
+        <FolderActionsMenu
+          folder={folder}
+          anchor={menuRef.current}
+          onClose={() => setMenuOpen(false)}
+          onRename={actions.rename}
+          onNewSubfolder={actions.newSubfolder}
+          onMove={actions.move}
+          onDelete={actions.delete}
+        />
       ) : null}
     </div>
   );

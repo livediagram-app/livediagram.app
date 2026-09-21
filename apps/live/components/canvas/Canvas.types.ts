@@ -22,6 +22,7 @@ import type { PendingDraw } from '@/lib/draw-mode';
 import type { TemplateKind } from '@livediagram/templates';
 import type { UserPreferences } from '@/lib/user-preferences';
 import type { ChangeLogEntry, DiagramListItem, Folder, SharedWithItem } from '@/lib/api-client';
+import type { TeamFolderHandlers } from '@/components/panels/Explorer.types';
 import type { TeamDiagramRow, TeamFolderRow } from '@/hooks/persistence/useTeamLibrariesSweep';
 import type { CanvasTool } from '@/components/palette/CommandPalette';
 
@@ -425,9 +426,9 @@ export type CanvasProps = {
     answers: Map<string, string | null>;
     isHost: boolean;
     onEnd: () => void;
-    // End AND keep the tallies on the canvas (spec/126). Absent for a viewer
-    // who can't add elements.
-    onEndAndKeep?: () => void;
+    // Keep the tallies so far on the canvas as a chart, without ending the
+    // poll (spec/126). Absent for a viewer who can't add elements.
+    onKeepResults?: () => void;
     onDismiss: () => void;
   } | null;
   pollPanelPosition: { x: number; y: number } | null;
@@ -505,6 +506,9 @@ export type CanvasProps = {
   onCreateFolder: (input: { name: string; parentId: string | null }) => Promise<Folder | void>;
   onRenameFolder: (id: string, name: string) => void;
   onDeleteFolder: (id: string) => void;
+  // Team-library folder mutations for the Explorer panel's team tree
+  // (spec/35); absent while signed out or without teams.
+  onTeamFolders?: TeamFolderHandlers;
   onMoveDiagramToFolder: (diagramId: string, folderId: string | null) => void;
   // Scope-crossing move (spec/35): the Explorer panel's move picker routes
   // any pick that involves a team (either side) here — re-folder within a

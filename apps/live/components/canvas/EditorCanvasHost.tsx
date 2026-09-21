@@ -11,6 +11,8 @@ import { usePreferenceHandlers } from '@/hooks/ui/usePreferenceHandlers';
 import { useQuickConnectStart } from '@/hooks/canvas/useQuickConnectStart';
 import { useEditModeContextMenu } from '@/hooks/canvas/useEditModeContextMenu';
 import { track } from '@/lib/telemetry';
+import type { TeamFolderHandlers } from '@/components/panels/Explorer.types';
+import { apiCreateFolder, apiDeleteFolder, apiUpdateFolder } from '@/lib/api-client';
 import { getTheme, resolveTabBackdrop, themeChartPalette, type ThemeId } from '@/lib/themes';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { Canvas } from '@/components/canvas/Canvas';
@@ -249,6 +251,7 @@ export function EditorCanvasHost() {
     selectedId,
     selectElement,
     selectMarquee,
+    confirm,
     selfParticipant,
     setActivityMinimized,
     setActivityPosition,
@@ -267,7 +270,7 @@ export function EditorCanvasHost() {
     pickerFor,
     collabElements,
     followMe,
-    endPollKeepingResults,
+    keepPollResults,
     tabs,
     setCanvasTool,
     setCanvasThemeTab,
@@ -308,6 +311,7 @@ export function EditorCanvasHost() {
     teamDiagrams,
     teamFolders,
     teams,
+    refreshTeamLibraries,
     templateGridOpen,
     toggleAspectLockSelected,
     toggleInMultiSelect,
@@ -326,6 +330,61 @@ export function EditorCanvasHost() {
   // re-render on every drag frame just because the editor re-rendered.
   // Both recompute only when their real inputs change, not per frame.
   const explorerTeams = useMemo(() => teams.map((t) => ({ id: t.id, name: t.name })), [teams]);
+  // Team-library folder mutations for the Explorer panel's team tree
+  // (spec/35). Straight api calls plus a sweep refresh: the swept team
+  // libraries are the panel's source, so a mutation re-reads them rather
+  // than patching a copy. Teams are Clerk-only, so signed out = none.
+  const viewerId = selfParticipant?.id ?? null;
+  const onTeamFolders = useMemo<TeamFolderHandlers | undefined>(() => {
+    if (!clerkUserId || !viewerId) return undefined;
+    return {
+      create: async (teamId, parentId) => {
+        try {
+          const folder = await apiCreateFolder(viewerId, {
+            id: crypto.randomUUID(),
+            name: 'New folder',
+            parentId,
+            teamId,
+          });
+          track('Folder', 'Created');
+          refreshTeamLibraries();
+          return folder;
+        } catch {
+          return undefined;
+        }
+      },
+      rename: (id, name) => {
+        const trimmed = name.trim();
+        if (!trimmed) return;
+        void apiUpdateFolder(viewerId, id, { name: trimmed })
+          .then(() => {
+            track('Folder', 'Renamed');
+            refreshTeamLibraries();
+          })
+          .catch(() => {});
+      },
+      delete: (id) => {
+        const name = teamFolders.find((f) => f.id === id)?.name;
+        // The same confirm the personal tree's delete uses, with the same
+        // consequences spelled out: a team folder's diagrams go to the
+        // team's Unsorted and its subfolders are promoted.
+        void confirm({
+          title: name ? `Delete "${name}"?` : 'Delete this folder?',
+          message:
+            'Diagrams inside the folder move to Unsorted. Subfolders are promoted to the root. The folder row itself is removed.',
+          confirmLabel: 'Delete folder',
+        }).then((ok) => {
+          if (!ok) return;
+          void apiDeleteFolder(viewerId, id)
+            .then(() => {
+              track('Folder', 'Deleted');
+              refreshTeamLibraries();
+            })
+            .catch(() => {});
+        });
+      },
+    };
+  }, [clerkUserId, viewerId, refreshTeamLibraries, confirm, teamFolders]);
   // The canvas paints the backdrop the VIEWER resolves, not blindly the one
   // the tab stores: a tab on the Default theme follows this browser's
   // appearance (spec/07). Subscribing to the appearance here is what makes the
@@ -630,10 +689,10 @@ export function EditorCanvasHost() {
               answers: livePoll.answers,
               isHost: livePoll.isHost,
               onEnd: livePoll.endPoll,
-              // spec/126: ends the poll for the room exactly as End does (the
-              // same op), and additionally drops the tallies onto the canvas.
-              // Read-only visitors never see it — they are never the host.
-              onEndAndKeep: isReadOnly ? undefined : endPollKeepingResults,
+              // spec/126: drops the tallies so far onto the canvas without
+              // ending the poll. Read-only visitors never see it — they are
+              // never the host.
+              onKeepResults: isReadOnly ? undefined : keepPollResults,
               onDismiss: livePoll.dismissPoll,
             }
           : null
@@ -759,6 +818,7 @@ export function EditorCanvasHost() {
       onCreateFolder={createFolder}
       onRenameFolder={renameFolder}
       onDeleteFolder={deleteFolder}
+      onTeamFolders={onTeamFolders}
       onMoveDiagramToFolder={moveDiagramToFolder}
       onMoveDiagramTo={moveDiagramTo}
       onDeselect={() => {

@@ -28,7 +28,7 @@ import { RelativeTimeChip } from '@/components/primitives/RelativeTimeChip';
 // The pane header lives in its own file now; re-exported so callers keep
 // importing it from the views barrel.
 export { PaneHeader } from './PaneHeader';
-export { FolderMenuItems } from './folder-row';
+export { menuHandlers as folderMenuHandlers } from './folder-row';
 export { FolderRow };
 
 // Diagram rows render the api client's DiagramListItem directly

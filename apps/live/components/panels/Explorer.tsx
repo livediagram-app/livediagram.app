@@ -48,6 +48,7 @@ function ExplorerImpl({
   onCreateFolder,
   onRenameFolder,
   onDeleteFolder,
+  onTeamFolders,
   onMoveDiagramToFolder,
   onMoveDiagramTo,
   shared = [],
@@ -162,6 +163,15 @@ function ExplorerImpl({
     const folder = await onCreateFolder({ name: 'New folder', parentId });
     if (folder) {
       setExpandedFolders((prev) => ({ ...prev, [parentId]: true }));
+      setPendingRenameFolderId(folder.id);
+    }
+  };
+  // The team tree's New Subfolder: same gesture, the team's library.
+  const handleCreateTeamChild = async (teamId: string, parentId: string | null) => {
+    if (!onTeamFolders) return;
+    const folder = await onTeamFolders.create(teamId, parentId);
+    if (folder) {
+      setExpandedFolders((prev) => ({ ...prev, [parentId ?? teamId]: true }));
       setPendingRenameFolderId(folder.id);
     }
   };
@@ -424,6 +434,8 @@ function ExplorerImpl({
           onRenameFolder={onRenameFolder}
           onDeleteFolder={onDeleteFolder}
           onCreateChild={handleCreateChild}
+          onTeamFolders={onTeamFolders}
+          onCreateTeamChild={handleCreateTeamChild}
           onDeleteDiagram={openDeleteConfirm}
           onDuplicateDiagram={onDuplicateDiagram}
           onMoveDiagramRequest={onMoveDiagramToFolder ? openMovePicker : undefined}

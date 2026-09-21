@@ -166,6 +166,7 @@ export function useCanvasChromePanels({
     onRedo,
     onRenameCurrent,
     onRenameFolder,
+    onTeamFolders,
     onResetActivity,
     onResetCommentsPanel,
     onResetExplorer,
@@ -329,6 +330,7 @@ export function useCanvasChromePanels({
       onCreateFolder={explorerHandlers.onCreateFolder}
       onRenameFolder={explorerHandlers.onRenameFolder}
       onDeleteFolder={explorerHandlers.onDeleteFolder}
+      onTeamFolders={onTeamFolders}
       onMoveDiagramToFolder={explorerHandlers.onMoveDiagramToFolder}
       onMoveDiagramTo={onMoveDiagramTo ? explorerHandlers.onMoveDiagramTo : undefined}
       onSize={onExplorerSize}
@@ -567,7 +569,7 @@ export function useCanvasChromePanels({
         answers={pollPanel.answers}
         isHost={pollPanel.isHost}
         onEnd={pollPanel.onEnd}
-        onEndAndKeep={pollPanel.onEndAndKeep}
+        onKeepResults={pollPanel.onKeepResults}
         onDismiss={pollPanel.onDismiss}
         position={pollWiring.position}
         stackBelowY={stackBelowY}

@@ -184,11 +184,11 @@ export function ExplorerSidebar() {
           mirrors the Teams section: add a root-level folder. */}
       <SidebarSectionLabel
         action={
-          <Tooltip title="New folder" description="Add a root-level folder.">
+          <Tooltip title="New Folder" description="Add a root-level folder.">
             <button
               type="button"
               onClick={() => void createFolder(null)}
-              aria-label="New folder"
+              aria-label="New Folder"
               className="-m-1.5 flex h-7 w-7 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-brand-700 dark:text-slate-500 dark:hover:bg-slate-700 dark:hover:text-brand-300"
             >
               <PlusIcon />

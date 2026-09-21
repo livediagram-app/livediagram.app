@@ -1,5 +1,6 @@
 'use client';
 
+import type { TeamFolderHandlers } from './Explorer.types';
 import { useState } from 'react';
 import { DiagramRowShell } from './DiagramRowShell';
 import type { DiagramListItem, Folder } from '@/lib/api-client';
@@ -50,6 +51,8 @@ export function ExplorerSections({
   onRenameFolder,
   onDeleteFolder,
   onCreateChild,
+  onTeamFolders,
+  onCreateTeamChild,
   onDeleteDiagram,
   onDuplicateDiagram,
   onMoveDiagramRequest,
@@ -83,6 +86,9 @@ export function ExplorerSections({
   onRenameFolder?: (id: string, name: string) => void;
   onDeleteFolder?: (id: string) => void;
   onCreateChild: (parentId: string) => void;
+  // Team-library folder verbs for the Teams tab (spec/35); absent = browse-only.
+  onTeamFolders?: TeamFolderHandlers;
+  onCreateTeamChild: (teamId: string, parentId: string | null) => void;
   onDeleteDiagram?: (id: string, anchor: HTMLElement | null) => void;
   onDuplicateDiagram?: (id: string) => void;
   onMoveDiagramRequest?: (diagramId: string) => void;
@@ -342,6 +348,13 @@ export function ExplorerSections({
               // Hard delete on team-library rows, any joined
               // member (spec/35); the api enforces membership.
               onDeleteDiagram={onDeleteDiagram}
+              pendingRenameId={pendingRenameFolderId}
+              onRenameFolderCommitted={onRenameFolderCommitted}
+              onRenameFolder={onTeamFolders?.rename}
+              onDeleteFolder={onTeamFolders?.delete}
+              onCreateChild={
+                onTeamFolders ? (parentId) => onCreateTeamChild(t.id, parentId) : undefined
+              }
             />
           ))}
         </ul>

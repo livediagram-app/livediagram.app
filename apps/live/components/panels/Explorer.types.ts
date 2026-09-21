@@ -2,6 +2,15 @@ import type { DiagramListItem, Folder, SharedWithItem } from '@/lib/api-client';
 import type { MovablePanelDockProps } from '@/components/primitives/MovablePanel';
 import type { TeamDiagramRow, TeamFolderRow } from '@/hooks/persistence/useTeamLibrariesSweep';
 
+// Folder mutations inside a team library, for the panel's team tree.
+// Create returns the new folder so the tree can open its parent and
+// start renaming it, the way the personal tree does.
+export type TeamFolderHandlers = {
+  create: (teamId: string, parentId: string | null) => Promise<{ id: string } | undefined>;
+  rename: (id: string, name: string) => void;
+  delete: (id: string) => void;
+};
+
 export type ExplorerProps = {
   position: { x: number; y: number } | null;
   // Every diagram known to the local store. Current diagram is marked
@@ -69,6 +78,10 @@ export type ExplorerProps = {
   onCreateFolder?: (input: { name: string; parentId: string | null }) => Promise<Folder | void>;
   onRenameFolder?: (id: string, name: string) => void;
   onDeleteFolder?: (id: string) => void;
+  // The same three for a TEAM's folders (spec/35): the panel's team tree
+  // offers rename / new subfolder / delete like the personal tree. Absent
+  // = the team tree is browse-only.
+  onTeamFolders?: TeamFolderHandlers;
   onMoveDiagramToFolder?: (diagramId: string, folderId: string | null) => void;
   // Scope-aware move (spec/35): routes a pick that involves a team on
   // either side (re-folder within a team, personal -> team, team ->

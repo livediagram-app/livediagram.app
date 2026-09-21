@@ -121,7 +121,7 @@ export function PaneHeader({
     createMode.kind === 'single'
       ? createMode.action === 'diagram'
         ? { label: 'New diagram', onClick: onCreateDiagram! }
-        : { label: folderLabel ?? 'New folder', onClick: onCreateFolder! }
+        : { label: folderLabel ?? 'New Folder', onClick: onCreateFolder! }
       : null;
   const [createOpen, setCreateOpen] = useState(false);
   const createRef = useRef<HTMLButtonElement>(null);
@@ -223,7 +223,7 @@ export function PaneHeader({
                           <MenuFolderIcon />
                         </span>
                       }
-                      label={folderLabel ?? 'New folder'}
+                      label={folderLabel ?? 'New Folder'}
                       onClick={() => {
                         onCreateFolder();
                         setCreateOpen(false);

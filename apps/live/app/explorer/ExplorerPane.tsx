@@ -281,7 +281,7 @@ export function ExplorerPane() {
             ? undefined
             : () => createFolder(selected.kind === 'folder' ? selected.id : null)
         }
-        folderLabel={selected.kind === 'folder' ? 'New subfolder' : 'New folder'}
+        folderLabel={selected.kind === 'folder' ? 'New Subfolder' : 'New Folder'}
       />
 
       {/* Dynamic (synthetic) folders explain themselves under the breadcrumb. */}

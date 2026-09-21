@@ -6,7 +6,8 @@
 // explorer-views.tsx. Renders the shared DiagramRow (imported from there) for
 // each team diagram. Same stateless-renderer pattern as its sibling.
 
-import { useMemo } from 'react';
+import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
+import { useEffect, useMemo, useRef, useState } from 'react';
 // Row data shapes come straight from the api client (the same rows
 // apiListDiagrams / useFolders / apiListSharedWith return) so the
 // panel and the /explorer route can't drift apart on what a list
@@ -15,12 +16,15 @@ import type { DiagramListItem } from '@/lib/api-client';
 
 import { ChevronIcon, FolderIcon } from '@/components/panels/explorer-icons';
 import { DiagramRow } from '@/components/panels/explorer-views';
+import { FolderActionsMenu } from '@/app/explorer/folder-actions-menu';
 
 // Mirror of FolderNode for the panel's Teams accordion: a team expands
 // to its folder tree AND the diagrams inside each folder, which open
 // in place (any joined member may open them). Folder management
 // (rename / move / delete / new) stays on the team page, so a click on
-// a folder NAME opens that page there; the nodes carry no menus or drop
+// a folder NAME opens that page there; each folder node carries the
+// shared folder menu (Show in Explorer, rename, new subfolder, delete
+// when the host wires them) and no drop
 // targets. Folder ids are globally unique, so they share the panel's
 // one `expanded` record with the personal folder tree.
 
@@ -28,6 +32,7 @@ type TeamFolderTreeNode = { id: string; name: string; parentId: string | null };
 
 function TeamFolderNode({
   folder,
+  teamId,
   ownerId,
   depth,
   childrenByParent,
@@ -37,8 +42,15 @@ function TeamFolderNode({
   onToggleExpanded,
   onOpenDiagram,
   deleteFor,
+  pendingRenameId,
+  onRenameFolderCommitted,
+  onRenameFolder,
+  onDeleteFolder,
+  onCreateChild,
 }: {
   folder: TeamFolderTreeNode;
+  // The team the folder belongs to, for Show in Explorer's link.
+  teamId: string;
   // The VIEWER's owner id, threaded down to each DiagramRow for its
   // authenticated thumbnail fetch (team rows authorise via membership
   // server-side; they carry no share code).
@@ -53,11 +65,32 @@ function TeamFolderNode({
   // Owner-gated per-row delete, threaded down from TeamNode so nested
   // folder rows share the same ownership check (spec/35).
   deleteFor: (d: DiagramListItem) => ((anchor: HTMLElement | null) => void) | undefined;
+  // Folder management, the same verbs the personal tree has. A folder
+  // just created arrives with its id pending, and opens renaming.
+  pendingRenameId?: string | null;
+  onRenameFolderCommitted?: () => void;
+  onRenameFolder?: (id: string, name: string) => void;
+  onDeleteFolder?: (id: string) => void;
+  onCreateChild?: (parentId: string) => void;
 }) {
   const kids = childrenByParent.get(folder.id) ?? [];
   const diagramsHere = diagramsByFolder.get(folder.id) ?? [];
   const hasContent = kids.length > 0 || diagramsHere.length > 0;
   const isExpanded = expanded[folder.id] ?? false;
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const [editing, setEditing] = useState(false);
+  useEffect(() => {
+    if (pendingRenameId === folder.id) {
+      setEditing(true);
+      onRenameFolderCommitted?.();
+    }
+  }, [pendingRenameId, folder.id, onRenameFolderCommitted]);
+  const commitRename = (name: string) => {
+    const next = name.trim();
+    if (next && next !== folder.name && onRenameFolder) onRenameFolder(folder.id, next);
+    setEditing(false);
+  };
   return (
     <li>
       <div
@@ -83,13 +116,56 @@ function TeamFolderNode({
         <span className="text-slate-400 dark:text-slate-400">
           <FolderIcon />
         </span>
+        {editing ? (
+          <InlineRenameInput
+            initial={folder.name}
+            onCommit={commitRename}
+            onCancel={() => setEditing(false)}
+            className="min-w-0 flex-1 rounded border border-brand-300 bg-white px-1 py-0.5 text-xs text-slate-800 dark:border-brand-400 dark:bg-slate-800 dark:text-slate-100"
+          />
+        ) : (
+          <button
+            type="button"
+            onClick={() => onToggleExpanded(folder.id)}
+            className="min-w-0 flex-1 truncate text-left"
+          >
+            <span className="truncate">{folder.name}</span>
+          </button>
+        )}
         <button
+          ref={menuButtonRef}
           type="button"
-          onClick={() => onToggleExpanded(folder.id)}
-          className="min-w-0 flex-1 truncate text-left"
+          onClick={(e) => {
+            e.stopPropagation();
+            setMenuOpen((o) => !o);
+          }}
+          aria-label="Folder menu"
+          aria-expanded={menuOpen}
+          className={`flex h-5 w-5 shrink-0 items-center justify-center rounded text-slate-400 transition hover:bg-slate-200/70 hover:text-slate-700 sm:opacity-0 sm:group-hover:opacity-100 dark:hover:bg-slate-700 dark:hover:text-slate-200 ${
+            menuOpen ? 'sm:opacity-100' : ''
+          }`}
         >
-          <span className="truncate">{folder.name}</span>
+          <svg width="12" height="12" viewBox="0 0 14 14" aria-hidden>
+            <circle cx="3" cy="7" r="1.25" fill="currentColor" />
+            <circle cx="7" cy="7" r="1.25" fill="currentColor" />
+            <circle cx="11" cy="7" r="1.25" fill="currentColor" />
+          </svg>
         </button>
+        {menuOpen ? (
+          <FolderActionsMenu
+            folder={folder}
+            anchor={menuButtonRef.current}
+            onClose={() => setMenuOpen(false)}
+            onShowInExplorer={() =>
+              window.location.assign(
+                `/explorer/team?id=${encodeURIComponent(teamId)}&folder=${encodeURIComponent(folder.id)}`,
+              )
+            }
+            onRename={onRenameFolder ? () => setEditing(true) : undefined}
+            onNewSubfolder={onCreateChild ? () => onCreateChild(folder.id) : undefined}
+            onDelete={onDeleteFolder ? () => onDeleteFolder(folder.id) : undefined}
+          />
+        ) : null}
       </div>
       {isExpanded && hasContent ? (
         <ul className="flex flex-col gap-0.5">
@@ -97,6 +173,7 @@ function TeamFolderNode({
             <TeamFolderNode
               key={k.id}
               folder={k}
+              teamId={teamId}
               ownerId={ownerId}
               depth={depth + 1}
               childrenByParent={childrenByParent}
@@ -106,6 +183,11 @@ function TeamFolderNode({
               onToggleExpanded={onToggleExpanded}
               onOpenDiagram={onOpenDiagram}
               deleteFor={deleteFor}
+              pendingRenameId={pendingRenameId}
+              onRenameFolderCommitted={onRenameFolderCommitted}
+              onRenameFolder={onRenameFolder}
+              onDeleteFolder={onDeleteFolder}
+              onCreateChild={onCreateChild}
             />
           ))}
           {diagramsHere.map((d) => (
@@ -136,6 +218,11 @@ export function TeamNode({
   onOpenTeam,
   onOpenDiagram,
   onDeleteDiagram,
+  pendingRenameId,
+  onRenameFolderCommitted,
+  onRenameFolder,
+  onDeleteFolder,
+  onCreateChild,
 }: {
   team: { id: string; name: string };
   // The VIEWER's owner id, threaded down to each DiagramRow for its
@@ -156,6 +243,12 @@ export function TeamNode({
   // (spec/35). Anchored to the row's menu button so Explorer can pop
   // its ConfirmPopover beside it.
   onDeleteDiagram?: (id: string, anchor: HTMLElement | null) => void;
+  // Team-library folder management, threaded to every folder node.
+  pendingRenameId?: string | null;
+  onRenameFolderCommitted?: () => void;
+  onRenameFolder?: (id: string, name: string) => void;
+  onDeleteFolder?: (id: string) => void;
+  onCreateChild?: (parentId: string | null) => void;
 }) {
   const childrenByParent = useMemo(() => {
     const map = new Map<string | null, TeamFolderTreeNode[]>();
@@ -230,6 +323,7 @@ export function TeamNode({
             <TeamFolderNode
               key={f.id}
               folder={f}
+              teamId={team.id}
               ownerId={ownerId}
               depth={1}
               childrenByParent={childrenByParent}
@@ -239,6 +333,11 @@ export function TeamNode({
               onToggleExpanded={onToggleExpanded}
               onOpenDiagram={onOpenDiagram}
               deleteFor={deleteFor}
+              pendingRenameId={pendingRenameId}
+              onRenameFolderCommitted={onRenameFolderCommitted}
+              onRenameFolder={onRenameFolder}
+              onDeleteFolder={onDeleteFolder}
+              onCreateChild={onCreateChild}
             />
           ))}
           {rootDiagrams.map((d) => (

@@ -1771,13 +1771,14 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // the SAME `endPoll` the plain End uses — one op, so a participant sees no
   // difference and no new op kind exists — and additionally drops the tallies
   // onto the canvas as an ordinary, undoable element.
-  const endPollKeepingResults = () => {
+  // Keep Results (spec/126): drop a chart of the tallies so far onto the
+  // active tab. The poll keeps running, so it can be kept again later
+  // (a second chart), and End is still the only thing that ends it.
+  const keepPollResults = () => {
     const poll = livePoll.poll;
     if (!poll) return;
-    const answers = livePoll.answers;
-    addBoxed((x, y) => pollResultElement(poll, answers, x, y));
-    livePoll.endPoll();
-    track('Tab', 'Ended', 'Poll');
+    addBoxed((x, y) => pollResultElement(poll, livePoll.answers, x, y));
+    track('Element', 'Added', 'PollResult');
   };
 
   // Image domain (picker state, recent-images list, placement + fill
@@ -2431,6 +2432,10 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   });
 
   return {
+    // Re-sweep the team libraries after a team-folder mutation made from
+    // the Explorer panel (spec/35), and the confirm dialog its delete uses.
+    refreshTeamLibraries,
+    confirm,
     // Clipboard copy, also exposed to the event-storming note menu (spec/139),
     // plus paste + its enabled flag for the canvas menu's Paste row.
     copySelection,
@@ -2650,7 +2655,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     // Live poll (spec/88) — the whole ephemeral surface in one object
     // rather than a dozen flattened keys, since nothing else reads into it.
     livePoll,
-    endPollKeepingResults,
+    keepPollResults,
     followMe,
     loadAllTabs,
     loadedTabIds,
