@@ -210,6 +210,41 @@ describe('the New Folder tile', () => {
     expect(onCreateFolder).toHaveBeenCalledWith('Zeta', 'e', null);
   });
 
+  it('opens the parent after creating inside a folder that was only selected', async () => {
+    // The host owns the folder list, as the wizard's hook does: the new
+    // folder is appended, and the browser reads its row on re-render.
+    function Host() {
+      const [folders, setFolders] = useState<PickerFolder[]>(FOLDERS);
+      const [placement, setPlacement] = useState('unsorted');
+      return (
+        <PlacementBrowser
+          placement={placement}
+          onPlacement={setPlacement}
+          folders={folders}
+          teams={[]}
+          teamFolders={{}}
+          layout="list"
+          onCreateFolder={async (name, parentId) => {
+            const folder = { id: 'zeta', name, parentId };
+            setFolders((list) => [...list, folder]);
+            return folder;
+          }}
+        />
+      );
+    }
+    render(<Host />);
+    enterPersonal();
+    fireEvent.click(radio(/^Epsilon/));
+    fireEvent.click(screen.getByRole('button', { name: /New Subfolder/ }));
+    fireEvent.change(screen.getByPlaceholderText('Folder name'), { target: { value: 'Zeta' } });
+    fireEvent.keyDown(screen.getByPlaceholderText('Folder name'), { key: 'Enter' });
+    // The browser is now inside Epsilon (the bar names it), and the new
+    // folder is the selected row rather than hidden behind its parent.
+    const back = await screen.findByRole('button', { name: /Personal Space/ });
+    expect(back.textContent).toContain('Epsilon');
+    expect(screen.getByRole('radio', { name: /^Zeta/ }).getAttribute('aria-checked')).toBe('true');
+  });
+
   it('goes back to New Folder when the space root is selected again', () => {
     render(<Harness layout="list" onCreateFolder={async () => null} />);
     enterPersonal();
