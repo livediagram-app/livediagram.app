@@ -25,6 +25,7 @@
   .hero-text-in,
   .hero-comment,
   .hero-highlight,
+  .hero-slide4,
   .hero-cursor {
     animation: none;
     opacity: 1;
@@ -39,7 +40,10 @@
   /* the laser pointer (mind-map card) stays hidden */
   .hero-laser-a,
   .hero-laser-b,
-  .hero-laser-dot {
+  .hero-laser-dot,
+  .hero-slide1,
+  .hero-slide2,
+  .hero-slide3 {
     animation: none;
     opacity: 0;
   }

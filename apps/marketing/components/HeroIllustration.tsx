@@ -1,12 +1,15 @@
 'use client';
 
-// Animated hero: three editor windows on a sliding stage.
+// Animated hero: four editor windows on a sliding stage.
 //   1. Flowchart — shared, a teammate cursor, a comment thread, and the
 //      theme-recolour beat (the only window that recolours; its canvas tints
 //      to match).
-//   2. Mind map — shared, a Highlighter swipe across one node, then a laser
+//   2. Slide deck — the same flowchart presented (spec/31): four slides step
+//      through it a piece at a time and end on the whole picture, with the
+//      presenting HUD in place of the panels.
+//   3. Mind map — shared, a Highlighter swipe across one node, then a laser
 //      pointer that rings one node then another.
-//   3. Release timeline — private (amber badge, just you, no collaborators),
+//   4. Release timeline — private (amber badge, just you, no collaborators),
 //      with the Layers panel docked beside it.
 // The chrome mirrors today's editor: the Editor menu and Share button in the
 // header, the tabbed palette with its search box and labelled tiles, the zoom
@@ -24,7 +27,14 @@
 
 import { useEffect, useState, type ReactNode } from 'react';
 import { Brand } from '@livediagram/ui';
-import { FlowchartDiagram, MindMapDiagram, TimelineDiagram, type Theme } from './hero-diagrams';
+import {
+  FlowchartDiagram,
+  MindMapDiagram,
+  SLIDES,
+  SlideDeckDiagram,
+  TimelineDiagram,
+  type Theme,
+} from './hero-diagrams';
 
 // Geometry: each window is `card`% of the stage with a GAP% gutter, so the
 // centred window sits at translateX = (100 - card) / 2 - i * (card + GAP).
@@ -55,6 +65,9 @@ const CARDS: {
   shared: boolean;
   theming: boolean;
   canvasTint: string;
+  // Presenting (spec/31): the panels give way to the presenting HUD, and
+  // the canvas shows the deck's slides instead of the whole diagram.
+  presenting?: boolean;
   // Dock the Layers panel (spec/74) on this window's canvas, and minimise
   // the palette to its header bar (as the editor does), so the wide
   // timeline has the canvas to itself.
@@ -74,6 +87,22 @@ const CARDS: {
     shared: true,
     theming: true,
     canvasTint: FLOW_REST,
+  },
+  {
+    key: 'slides',
+    title: 'Quarterly planning',
+    label: 'The same flowchart presented as slides, one piece at a time',
+    tool: 'Select',
+    tabs: [
+      { name: 'Overview', color: '#0ea5e9', active: true },
+      { name: 'Roadmap', color: '#ec4899' },
+      { name: 'Launch', color: '#8b5cf6' },
+    ],
+    showCursor: false,
+    shared: true,
+    theming: false,
+    canvasTint: FLOW_REST,
+    presenting: true,
   },
   {
     key: 'mindmap',
@@ -172,6 +201,8 @@ export function HeroIllustration() {
             const diagram =
               c.key === 'mindmap' ? (
                 <MindMapDiagram playing={playing} theme={VIOLET} />
+              ) : c.key === 'slides' ? (
+                <SlideDeckDiagram />
               ) : c.key === 'timeline' ? (
                 <TimelineDiagram theme={AMBER} />
               ) : (
@@ -197,6 +228,7 @@ export function HeroIllustration() {
                   canvasTint={c.canvasTint}
                   showCursor={c.showCursor}
                   layers={c.layers ?? false}
+                  presenting={c.presenting ?? false}
                   tool={c.tool}
                   playing={playing}
                   diagram={diagram}
@@ -248,6 +280,7 @@ function EditorWindow({
   showCursor,
   layers,
   tool,
+  presenting,
 }: {
   title: string;
   tabs: TabDef[];
@@ -259,6 +292,7 @@ function EditorWindow({
   showCursor: boolean;
   layers: boolean;
   tool: 'Select' | 'Laser';
+  presenting: boolean;
 }) {
   return (
     <div className="rounded-xl border border-slate-200 bg-white p-2 shadow-xl shadow-brand-500/10">
@@ -312,6 +346,27 @@ function EditorWindow({
               tool + category pickers, the element search, and the Favourites
               grid of labelled tiles. On the timeline window it is minimised
               to its header bar, the way a panel folds in the editor. */}
+          {presenting ? (
+            <div className="absolute right-2 top-2 hidden items-center gap-2 rounded-xl bg-slate-900/75 px-2.5 py-1.5 text-[9px] font-medium text-white shadow-lg backdrop-blur sm:flex">
+              <HudChevron dir="prev" />
+              <span className="relative inline-block h-3 w-28 text-left">
+                {SLIDES.map((slide, i) => (
+                  <span
+                    key={slide.name}
+                    className={`hero-slide-hud hero-slide${i + 1} absolute inset-0 whitespace-nowrap`}
+                  >
+                    <span className="text-white/60">
+                      {i + 1} / {SLIDES.length}
+                    </span>
+                    <span className="ml-1.5">{slide.name}</span>
+                  </span>
+                ))}
+              </span>
+              <HudChevron dir="next" />
+              <span className="ml-1 border-l border-white/20 pl-2 text-white/70">Notes</span>
+              <span className="text-white/70">✕</span>
+            </div>
+          ) : null}
           {layers ? (
             <div className="absolute right-2 top-2 hidden items-center gap-3 rounded-lg border border-slate-200 bg-white px-2 py-1 shadow-md sm:flex">
               <p className="text-[8px] font-semibold uppercase tracking-wider text-slate-500">
@@ -323,7 +378,7 @@ function EditorWindow({
           <div
             className={
               'absolute right-2 top-2 w-40 flex-col rounded-lg border border-slate-200 bg-white shadow-md ' +
-              (layers ? 'hidden' : 'hidden sm:flex')
+              (layers || presenting ? 'hidden' : 'hidden sm:flex')
             }
           >
             <div className="flex items-center justify-between border-b border-slate-100 px-2 py-1">
@@ -389,7 +444,12 @@ function EditorWindow({
 
           {/* Zoom cluster (static chrome): history, undo / redo, layers, the
               look-and-feel brush, and the zoom readout. */}
-          <div className="absolute bottom-2 right-2 hidden items-center gap-1.5 text-slate-500 sm:flex">
+          <div
+            className={
+              'absolute bottom-2 right-2 items-center gap-1.5 text-slate-500 ' +
+              (presenting ? 'hidden' : 'hidden sm:flex')
+            }
+          >
             <span className="flex h-7 items-center rounded-md border border-slate-200 bg-white px-0.5 shadow-sm">
               <ToolGlyph kind="history" small />
               <ToolGlyph kind="undo" small />
@@ -411,18 +471,22 @@ function EditorWindow({
           {/* The diagram centres in the canvas left clear by the open palette
               (or, on the timeline window, by the Layers panel), so no node
               sits under a panel. */}
-          <svg
+          <div
             className={
-              'absolute inset-y-0 left-0 right-0 h-full ' + (layers ? 'sm:left-36' : 'sm:right-44')
+              'absolute inset-y-0 left-0 right-0 ' +
+              (layers ? 'sm:left-36' : presenting ? '' : 'sm:right-44')
             }
-            style={{ width: 'auto' }}
-            viewBox="0 -60 600 400"
-            preserveAspectRatio="xMidYMid meet"
           >
-            <g key={playing ? 'play' : 'idle'} className={playing ? undefined : 'hero-static'}>
-              {diagram}
-            </g>
-          </svg>
+            <svg
+              className="h-full w-full"
+              viewBox="0 -60 600 400"
+              preserveAspectRatio="xMidYMid meet"
+            >
+              <g key={playing ? 'play' : 'idle'} className={playing ? undefined : 'hero-static'}>
+                {diagram}
+              </g>
+            </svg>
+          </div>
 
           {/* Remote collaborator's cursor sweeping the canvas (flowchart card
               only; the mind-map card uses an in-canvas laser pointer, the
@@ -765,6 +829,25 @@ function Shape({ kind }: { kind: string }) {
       );
   }
   return null;
+}
+
+// The presenting HUD's previous / next arrows.
+function HudChevron({ dir }: { dir: 'prev' | 'next' }) {
+  return (
+    <svg
+      width="9"
+      height="9"
+      viewBox="0 0 12 12"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      {dir === 'prev' ? <path d="M7.5 2.5 4 6l3.5 3.5" /> : <path d="M4.5 2.5 8 6l-3.5 3.5" />}
+    </svg>
+  );
 }
 
 function MenuGlyph() {

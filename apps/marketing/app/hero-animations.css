@@ -408,6 +408,100 @@
   opacity: 0;
 }
 
+/* Slide-deck window: four slides, one per quarter of the cycle. Each fades
+   in with a small settle and out before the next; the last holds to the end
+   so the loop ends on the complete flowchart. The same classes drive the
+   presenting HUD's slide counter, so the readout changes with the slide. */
+.hero-slide,
+.hero-slide-hud {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.hero-slide1 {
+  animation: hero-slide1 16s ease-out infinite;
+}
+@keyframes hero-slide1 {
+  0% {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  4%,
+  23% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  25%,
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+}
+.hero-slide2 {
+  animation: hero-slide2 16s ease-out infinite;
+}
+@keyframes hero-slide2 {
+  0%,
+  25% {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  29%,
+  48% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50%,
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+}
+.hero-slide3 {
+  animation: hero-slide3 16s ease-out infinite;
+}
+@keyframes hero-slide3 {
+  0%,
+  50% {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  54%,
+  73% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  75%,
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+}
+.hero-slide4 {
+  animation: hero-slide4 16s ease-out infinite;
+}
+@keyframes hero-slide4 {
+  0%,
+  75% {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  79%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.hero-static .hero-slide,
+.hero-static .hero-slide-hud {
+  animation: none;
+  opacity: 0;
+}
+.hero-static .hero-slide4 {
+  opacity: 1;
+  transform: none;
+}
+
 /* Mind-map highlighter: a marker stroke that swipes across a node from the
    left, once the map has built, and stays. */
 .hero-highlight {

@@ -373,3 +373,91 @@ export function TimelineDiagram({ theme }: { theme: Theme }) {
     </>
   );
 }
+
+// Card 2 diagram: the flowchart presented as a slide deck (spec/31). Four
+// slides, each the elements the presenter picked from the same flowchart,
+// step through it a piece at a time and end on the whole picture. Every
+// slide is the subset drawn at the flowchart's own coordinates, then fitted
+// to the stage (the outer transform), and faded in and out on its beat of
+// the 16s cycle (hero-slide-N on the inner group). The peeking card settles
+// on the last slide, the complete flowchart.
+const FLOW_NODES = {
+  start: { x: 80, y: 34, w: 120, h: 44, rx: 22, label: 'Start' },
+  plan: { x: 80, y: 118, w: 120, h: 52, rx: 8, label: 'Plan' },
+  ready: { x: 220, y: 108, w: 140, h: 64, rx: 0, label: 'Ready?' },
+  ship: { x: 400, y: 118, w: 120, h: 52, rx: 8, label: 'Ship' },
+  done: { x: 400, y: 206, w: 120, h: 44, rx: 22, label: 'Done' },
+} as const;
+type FlowNode = keyof typeof FLOW_NODES;
+const FLOW_EDGES: { from: FlowNode; to: FlowNode; d: string }[] = [
+  { from: 'start', to: 'plan', d: 'M140 78 L140 118 M134 111 L140 118 L146 111' },
+  { from: 'plan', to: 'ready', d: 'M200 140 L220 140 M214 134 L220 140 L214 146' },
+  { from: 'ready', to: 'ship', d: 'M360 140 L400 140 M394 134 L400 140 L394 146' },
+  { from: 'ship', to: 'done', d: 'M460 170 L460 206 M454 199 L460 206 L466 199' },
+];
+export const SLIDES: { name: string; nodes: FlowNode[] }[] = [
+  { name: 'Kick-off', nodes: ['start', 'plan'] },
+  { name: 'The decision', nodes: ['plan', 'ready'] },
+  { name: 'Shipping', nodes: ['ready', 'ship', 'done'] },
+  { name: 'The whole flow', nodes: ['start', 'plan', 'ready', 'ship', 'done'] },
+];
+
+// Fit a slide's bounding box into the stage's safe area, centred, never
+// blown up past 1.5x so a two-box slide still reads as a diagram.
+function slideTransform(nodes: FlowNode[]): string {
+  const boxes = nodes.map((n) => FLOW_NODES[n]);
+  const minX = Math.min(...boxes.map((b) => b.x));
+  const minY = Math.min(...boxes.map((b) => b.y));
+  const maxX = Math.max(...boxes.map((b) => b.x + b.w));
+  const maxY = Math.max(...boxes.map((b) => b.y + b.h));
+  const s = Math.min(480 / (maxX - minX), 250 / (maxY - minY), 1.5);
+  const cx = (minX + maxX) / 2;
+  const cy = (minY + maxY) / 2;
+  return `translate(${(300 - s * cx).toFixed(1)} ${(140 - s * cy).toFixed(1)}) scale(${s.toFixed(3)})`;
+}
+
+export function SlideDeckDiagram() {
+  return (
+    <>
+      {SLIDES.map((slide, i) => (
+        <g key={slide.name} transform={slideTransform(slide.nodes)}>
+          <g className={`hero-slide hero-slide${i + 1}`}>
+            <g fill="none" stroke="#0284c7" strokeWidth="2" strokeLinecap="round">
+              {FLOW_EDGES.filter(
+                (e) => slide.nodes.includes(e.from) && slide.nodes.includes(e.to),
+              ).map((e) => (
+                <path key={`${e.from}-${e.to}`} d={e.d} />
+              ))}
+            </g>
+            <g fill="#dbeafe" stroke="#0284c7" strokeWidth="2" strokeLinejoin="round">
+              {slide.nodes.map((n) => {
+                const b = FLOW_NODES[n];
+                return (
+                  <g key={n}>
+                    {n === 'ready' ? (
+                      <polygon points="290,108 360,140 290,172 220,140" />
+                    ) : (
+                      <rect x={b.x} y={b.y} width={b.w} height={b.h} rx={b.rx} />
+                    )}
+                    <text
+                      x={b.x + b.w / 2}
+                      y={b.y + b.h / 2 + 5}
+                      textAnchor="middle"
+                      fontFamily="ui-sans-serif, system-ui, sans-serif"
+                      fontWeight="600"
+                      fontSize="14"
+                      fill={BLUE_TEXT}
+                      stroke="none"
+                    >
+                      {b.label}
+                    </text>
+                  </g>
+                );
+              })}
+            </g>
+          </g>
+        </g>
+      ))}
+    </>
+  );
+}
