@@ -40,9 +40,7 @@ import { getDiagramThumbnailSvg } from '../thumbnail';
 import { emailEnabled } from '../email/client';
 import { notifyMilestone } from '../email/notifications';
 import {
-  audienceForDiagram,
   recordDiagramCreated,
-  recordDiagramDeleted,
   recordDiagramDuplicated,
   recordDiagramOffline,
   recordDiagramRenamed,
@@ -263,29 +261,20 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
         allowed = membership?.status === 'joined';
       }
       if (!allowed) return forbidden();
-      // spec/138 §3.5: resolve the audience BEFORE the row goes, since
-      // the team link disappears with it; cascade this diagram's
-      // history; THEN write the tombstone, so the diagram collapses to
-      // exactly one bubble saying it was deleted rather than a run of
-      // events pointing at a 404.
-      const audience = await audienceForDiagram(env, existing);
+      // spec/138 §3.5: a deleted diagram leaves NO trace on the Timeline.
+      // Its history is swept and no tombstone is written — from the feed's
+      // point of view it never existed. (There used to be a "Diagram
+      // Deleted" card; it was noise the reader had asked to be rid of.)
+      //
       // "Take offline" (spec/76) reaches this same DELETE — the server copy
       // really does go — but the diagram is not gone, it moved into the
-      // caller's browser. Undeclared it recorded `diagram_deleted`, so the feed
-      // told the owner in danger red that a diagram they still had was deleted.
-      // The cascade above still applies either way: whatever the server held is
-      // gone, so its prior events would point at a 404.
-      //
-      // Honoured for the OWNER only, and that is the load-bearing half. This
-      // DELETE is also reachable by any joined member of the diagram's team
-      // (see the gate above, spec/35), and the Explorer offers Take Offline on
-      // a team-library row without checking who owns it. When a teammate does
-      // it the diagram moves into THEIR browser and leaves the owner's account
-      // for good — from the owner's and the team's side that is a deletion,
-      // not a diagram they can still reach. Recording `diagram_offline` there
-      // would also scope the only event to the actor (the emitter is
-      // deliberately owner-scoped), so the owner and the team would be told
-      // nothing at all while the row and its whole history disappeared.
+      // caller's browser, and THAT is worth a card. Honoured for the OWNER
+      // only: the DELETE is also reachable by any joined member of the
+      // diagram's team (see the gate above, spec/35), and the Explorer
+      // offers Take Offline on a team-library row without checking who owns
+      // it. When a teammate does it the diagram moves into THEIR browser and
+      // leaves the owner's account for good — from the owner's and the
+      // team's side that is a deletion, and a deletion records nothing.
       const conversion =
         owner === existing.ownerId
           ? readDiagramConversion(request.headers.get(DIAGRAM_CONVERSION_HEADER))
@@ -298,7 +287,7 @@ export async function handleDiagrams(ctx: RouteContext): Promise<Response> {
               ? // Owner-only: an offline diagram exists in exactly one browser,
                 // so no teammate has a stake in it.
                 recordDiagramOffline(env, existing, owner)
-              : recordDiagramDeleted(env, existing, owner, audience),
+              : undefined,
           )
           .catch((err) => console.error('timeline diagram delete failed', err)),
       );

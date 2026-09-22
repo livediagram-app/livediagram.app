@@ -47,4 +47,5 @@ export type {
   TimelineRenderer,
   TimelineRendererContext,
   TimelineRendererRegistry,
+  TimelineStackSlotsFor,
 } from './types';

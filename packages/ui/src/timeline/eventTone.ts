@@ -32,7 +32,6 @@ const TONE_BY_EVENT: Record<KnownTimelineEventType, TimelineTone> = {
   // ---- danger ----
   // Destruction and loss of access. The smallest set that earns red: if
   // everything worrying is red, nothing is.
-  diagram_deleted: 'danger',
   team_member_removed: 'danger',
   team_deleted: 'danger',
   folder_deleted: 'danger',

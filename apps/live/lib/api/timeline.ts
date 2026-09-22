@@ -19,7 +19,7 @@
 
 import type { TimelineEvent, TimelineReadResult, TimelineScopeRef } from '@livediagram/api-schema';
 import { TIMELINE_PAGE_SIZE, formatScope } from '@livediagram/api-schema';
-import { API_BASE, apiDelete, apiHeaders, apiFetch } from './core';
+import { API_BASE, apiDelete, apiHeaders, apiFetch, expectOkVoid } from './core';
 
 export type TimelinePage = {
   events: TimelineEvent[];
@@ -98,4 +98,16 @@ export async function apiDismissTimelineEvent(ownerId: string, eventId: string):
   return apiDelete(`${API_BASE}/timeline/events/${encodeURIComponent(eventId)}`, ownerId, {
     action: 'dismiss timeline event',
   });
+}
+
+// A whole stack at once (spec/138 §2.9): one request for the run, not
+// one per member. Ids the feed never held are ignored server-side, so a
+// member that vanished between render and click is not a failure.
+export async function apiDismissTimelineEvents(ownerId: string, eventIds: string[]): Promise<void> {
+  const res = await apiFetch(`${API_BASE}/timeline/events/dismiss`, {
+    method: 'POST',
+    headers: await apiHeaders(ownerId, { body: true }),
+    body: JSON.stringify({ ids: eventIds }),
+  });
+  await expectOkVoid(res, 'dismiss timeline events');
 }

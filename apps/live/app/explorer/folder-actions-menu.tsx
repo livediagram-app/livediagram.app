@@ -17,7 +17,7 @@ import {
   MenuHeader,
   PortalMenu,
 } from '@/components/primitives/PortalMenu';
-import { MenuFolderIcon, MenuPencilIcon, MenuTrashIcon, PlusIcon } from './icons';
+import { CloseIcon, MenuFolderIcon, MenuPencilIcon, MenuTrashIcon, PlusIcon } from './icons';
 import { OpenIcon } from '@/components/panels/explorer-icons';
 
 export function FolderActionsMenu({
@@ -29,6 +29,7 @@ export function FolderActionsMenu({
   onNewSubfolder,
   onMove,
   onDelete,
+  onRemoveFromTimeline,
 }: {
   folder: { id: string; name: string };
   anchor: HTMLElement | null;
@@ -41,13 +42,16 @@ export function FolderActionsMenu({
   onNewSubfolder?: () => void;
   onMove?: () => void;
   onDelete?: () => void;
+  // Timeline only (spec/138 §2.9): take THIS card off the reader's feed.
+  // Says nothing about the folder, so it sits apart from Delete.
+  onRemoveFromTimeline?: () => void;
 }) {
   // Run a verb, then close: every row does this, so it's one wrapper.
   const then = (fn: () => void) => () => {
     fn();
     onClose();
   };
-  const verbs = [onRename, onNewSubfolder, onMove].some(Boolean);
+  const verbs = [onRename, onNewSubfolder, onMove, onRemoveFromTimeline].some(Boolean);
   return (
     <PortalMenu anchor={anchor} placement="below" onClose={onClose}>
       <MenuHeader title={folder.name} />
@@ -79,6 +83,14 @@ export function FolderActionsMenu({
           icon={<MenuFolderIcon />}
           label="Change Folder"
           onClick={then(onMove)}
+        />
+      ) : null}
+      {onRemoveFromTimeline ? (
+        <MenuActionRow
+          plain
+          icon={<CloseIcon />}
+          label="Remove from Timeline"
+          onClick={then(onRemoveFromTimeline)}
         />
       ) : null}
       {onDelete ? (

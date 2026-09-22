@@ -1,5 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
-import { countUnseen, dismissTimelineEventForScope, readTimeline } from './timeline';
+import {
+  countUnseen,
+  dismissTimelineEventForScope,
+  dismissTimelineEventsForScope,
+  readTimeline,
+} from './timeline';
 import type { Env } from '../types';
 
 // Per-entry dismissal (spec/138 §2.9).
@@ -41,6 +46,28 @@ describe('dismissTimelineEventForScope', () => {
     const { env, run } = fakeDb({ deleted_at: 123 });
     expect(await dismissTimelineEventForScope(env, SCOPE, 'ev-1')).toBe(true);
     expect(run).not.toHaveBeenCalled();
+  });
+});
+
+describe('dismissTimelineEventsForScope', () => {
+  it('marks every listed membership in one statement and reports the count', async () => {
+    const { env, prepare, bind } = fakeDb();
+    (env.DB.prepare as ReturnType<typeof vi.fn>).mockReturnValue({
+      bind: bind.mockReturnValue({ run: vi.fn().mockResolvedValue({ meta: { changes: 2 } }) }),
+    });
+    expect(await dismissTimelineEventsForScope(env, SCOPE, ['ev-1', 'ev-2', 'gone'])).toBe(2);
+    expect(prepare).toHaveBeenCalledTimes(1);
+    const sql = prepare.mock.calls[0]![0] as string;
+    expect(sql).toContain('UPDATE timeline_event_scopes SET deleted_at');
+    expect(sql).toContain('deleted_at IS NULL');
+    expect(sql).toContain('event_id IN (?4, ?5, ?6)');
+    expect(bind).toHaveBeenCalledWith('user', 'u-1', expect.any(Number), 'ev-1', 'ev-2', 'gone');
+  });
+
+  it('does nothing for an empty list', async () => {
+    const { env, prepare } = fakeDb();
+    expect(await dismissTimelineEventsForScope(env, SCOPE, [])).toBe(0);
+    expect(prepare).not.toHaveBeenCalled();
   });
 });
 

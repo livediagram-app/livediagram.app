@@ -8,6 +8,7 @@
 import type { TimelineScopeRef } from '@livediagram/api-schema';
 import type { Env } from '../types';
 import { adminsForTeam, audienceForTeam, mergeScopes, userScope } from './audience';
+import { dedupeKeyOnce } from '../db/timeline';
 import { record } from './record';
 
 type TeamRef = { id: string; name: string };
@@ -71,6 +72,7 @@ export async function recordInviteAccepted(
       sourceType: 'team',
       sourceId: `${team.id}:${actorId}`,
       eventType: 'team_invite_accepted',
+      dedupeKey: dedupeKeyOnce(),
       title: 'Joined a Team',
       description: team.name,
       snapshot: { teamId: team.id, teamName: team.name, actorName },
@@ -96,6 +98,7 @@ export async function recordInviteDeclined(
       sourceType: 'team',
       sourceId: `${team.id}:${declinedBy ?? 'unknown'}:declined`,
       eventType: 'team_invite_declined',
+      dedupeKey: dedupeKeyOnce(),
       title: 'Invite Declined',
       description: declinedByName ? `${declinedByName} · ${team.name}` : team.name,
       snapshot: { teamId: team.id, teamName: team.name, actorName: declinedByName },
@@ -116,6 +119,7 @@ export async function recordMemberJoined(
       sourceType: 'team',
       sourceId: `${team.id}:${member.userId}:joined`,
       eventType: 'team_member_joined',
+      dedupeKey: dedupeKeyOnce(),
       title: 'Member Joined',
       description: member.name
         ? `${member.name} joined ${team.name}`
@@ -141,6 +145,7 @@ export async function recordMemberLeft(
       sourceType: 'team',
       sourceId: `${team.id}:${member.userId ?? 'unknown'}:left`,
       eventType: 'team_member_left',
+      dedupeKey: dedupeKeyOnce(),
       title: 'Member Left',
       description: member.name ? `${member.name} left ${team.name}` : `Someone left ${team.name}`,
       snapshot: { teamId: team.id, teamName: team.name, memberName: member.name },
@@ -163,6 +168,7 @@ export async function recordMemberRemoved(
       sourceType: 'team',
       sourceId: `${team.id}:${member.userId ?? 'unknown'}:removed`,
       eventType: 'team_member_removed',
+      dedupeKey: dedupeKeyOnce(),
       title: 'Member Removed',
       description: member.name ? `${member.name} · ${team.name}` : team.name,
       snapshot: { teamId: team.id, teamName: team.name, memberName: member.name },
@@ -190,6 +196,7 @@ export async function recordRoleChanged(
       sourceType: 'team',
       sourceId: `${team.id}:${member.userId ?? 'unknown'}:role`,
       eventType: 'team_role_changed',
+      dedupeKey: dedupeKeyOnce(),
       title: 'Role Changed',
       // The transition lives in the description; the title stays the
       // generic category so a busy day stacks cleanly.
@@ -247,6 +254,7 @@ export async function recordTeamRenamed(
       sourceType: 'team',
       sourceId: team.id,
       eventType: 'team_renamed',
+      dedupeKey: dedupeKeyOnce(),
       title: 'Team Renamed',
       description: `${previousName} → ${team.name}`,
       snapshot: { teamId: team.id, teamName: team.name, previousName },
@@ -296,6 +304,7 @@ export async function recordInviteLinkToggled(
       sourceType: 'team',
       sourceId: `${team.id}:invite-link`,
       eventType: enabled ? 'team_invite_link_enabled' : 'team_invite_link_disabled',
+      dedupeKey: dedupeKeyOnce(),
       title: enabled ? 'Invite Link Turned On' : 'Invite Link Turned Off',
       description: team.name,
       snapshot: { teamId: team.id, teamName: team.name },

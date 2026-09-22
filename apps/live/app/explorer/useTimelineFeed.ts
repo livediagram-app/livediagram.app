@@ -24,7 +24,11 @@ import {
   TIMELINE_PAGE_SIZE,
   type TimelineScopeRef,
 } from '@livediagram/api-schema';
-import { apiDismissTimelineEvent, apiListTimeline } from '@/lib/api-client';
+import {
+  apiDismissTimelineEvent,
+  apiDismissTimelineEvents,
+  apiListTimeline,
+} from '@/lib/api-client';
 import {
   mergeEvents,
   purgeEventsForSource,
@@ -62,8 +66,8 @@ export type TimelineFeed = {
   error: boolean;
   /** Re-read the first page; what the failed state's Try again calls. */
   retry: () => void;
-  /** Take one card off this reader's feed (spec/138 §2.9). */
-  dismiss: (eventId: string) => void;
+  /** Take one card, or a whole stack of them, off this reader's feed (spec/138 §2.9). */
+  dismiss: (eventIds: string | string[]) => void;
   /** Watermark from the first read; events past it render as New. */
   lastSeenAt?: number;
   /** Deep-link target from the URL hash, if the page was opened with one. */
@@ -322,14 +326,24 @@ export function useTimelineFeed(
   // path rather than a write signal — the dismissal endpoint is the
   // feed's own, and the feed already knows exactly what changed.
   const dismiss = useCallback(
-    (eventId: string) => {
+    (eventIds: string | string[]) => {
       if (!ownerId) return;
-      const removed = events.find((e) => e.id === eventId);
-      if (!removed) return;
+      const ids = new Set(typeof eventIds === 'string' ? [eventIds] : eventIds);
+      const removed = events.filter((e) => ids.has(e.id));
+      if (removed.length === 0) return;
       track('Timeline', 'Removed', 'Entry');
-      setEvents((prev) => prev.filter((e) => e.id !== eventId));
-      void apiDismissTimelineEvent(ownerId, eventId).catch(() => {
-        setEvents((prev) => mergeEvents(prev, [removed]));
+      setEvents((prev) => prev.filter((e) => !ids.has(e.id)));
+      // A stack goes in one request (spec/138 §6.2a); a single card on
+      // its own endpoint, whose 404 the client already tolerates.
+      const request =
+        removed.length === 1
+          ? apiDismissTimelineEvent(ownerId, removed[0]!.id)
+          : apiDismissTimelineEvents(
+              ownerId,
+              removed.map((e) => e.id),
+            );
+      void request.catch(() => {
+        setEvents((prev) => mergeEvents(prev, removed));
       });
     },
     [ownerId, events],

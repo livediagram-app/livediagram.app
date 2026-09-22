@@ -9,6 +9,7 @@
 
 import type { MouseEvent, ReactNode } from 'react';
 import type { TimelineEvent } from '@livediagram/api-schema';
+import type { TimelineStack } from './stacking';
 
 export type { TimelineEvent };
 
@@ -57,6 +58,14 @@ export type TimelineCardSlots = {
 };
 
 export type TimelineCardSlotsFor = (event: TimelineEvent) => TimelineCardSlots | undefined;
+
+// The same for a collapsed run (spec/138 §2.9): the host's ⋯ menu on a
+// stack card, which acts on every member at once. Only the menu and the
+// right-click apply — a stack's subject is the generic headline and is
+// not the host's to replace.
+export type TimelineStackSlotsFor = (
+  stack: TimelineStack,
+) => Pick<TimelineCardSlots, 'menu' | 'onContextMenu'> | undefined;
 
 export type TimelineRendererContext = {
   // The owner id of whoever is looking. Renderers compare it against

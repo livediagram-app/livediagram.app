@@ -45,6 +45,16 @@ function explorer(over: Partial<ExplorerStateValue> = {}): ExplorerStateValue {
     toggleFavourite: vi.fn(),
     prefs: {},
     toggleRecentExclusion: vi.fn(),
+    folderById: new Map([['f1', { id: 'f1', name: 'Q3 Plans', parentId: null }]]),
+    folderActions: vi.fn(() => ({
+      rename: vi.fn(),
+      newSubfolder: vi.fn(),
+      move: vi.fn(),
+      delete: vi.fn(),
+    })),
+    renamingFolderId: null,
+    setRenamingFolderId: vi.fn(),
+    commitRenameFolder: vi.fn(),
     ...over,
   } as unknown as ExplorerStateValue;
 }
@@ -98,6 +108,50 @@ describe('useTimelineCardSlots', () => {
       expect(s?.subject).toBeUndefined();
       expect(s?.title).toBeUndefined();
     }
+  });
+
+  // A folder card carries the folder's own Explorer menu (rename, new
+  // subfolder, move, delete) plus the remove verb, and its current name.
+  it('gives a folder the Explorer knows its folder menu and current name', () => {
+    const value = explorer();
+    const slots = slotsFor(value)(
+      event({
+        sourceType: 'account',
+        eventType: 'folder_created',
+        title: 'Folder Created',
+        snapshot: { folderId: 'f1', folderName: 'Q3' },
+      }),
+    );
+    expect(slots?.subject).toBe('Q3 Plans');
+    expect(slots?.onContextMenu).toBeTypeOf('function');
+    const menu = slots!.menu as { props: { folder?: { id: string } } };
+    expect(menu.props.folder?.id).toBe('f1');
+  });
+
+  it('puts a rename input in the title slot while that folder is being renamed', () => {
+    const slots = slotsFor(explorer({ renamingFolderId: 'f1' }))(
+      event({
+        sourceType: 'account',
+        eventType: 'folder_created',
+        snapshot: { folderId: 'f1', folderName: 'Q3' },
+      }),
+    );
+    expect(slots?.title).toBeTruthy();
+    expect(slots?.onContextMenu).toBeUndefined();
+  });
+
+  it('falls back to the one-verb menu for a folder tombstone', () => {
+    const slots = slotsFor(explorer())(
+      event({
+        sourceType: 'account',
+        eventType: 'folder_deleted',
+        snapshot: { folderName: 'Gone' },
+      }),
+    );
+    expect(slots?.menu).toBeTruthy();
+    const menu = slots!.menu as { props: { folder?: unknown; diagram?: unknown } };
+    expect(menu.props.folder).toBeUndefined();
+    expect(menu.props.diagram).toBeUndefined();
   });
 
   it('resolves a shared-with-you diagram too', () => {

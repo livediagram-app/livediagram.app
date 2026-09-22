@@ -77,10 +77,9 @@ function preview(event: TimelineEvent, ctx: TimelineRendererContext) {
 const diagramRenderer: TimelineRenderer = (event, ctx) => {
   const name = str(event.snapshot, 'diagramName') ?? 'A diagram';
   const diagramId = str(event.snapshot, 'diagramId');
-  // A tombstone carries no diagramId (the emit deliberately omits it),
-  // so it is structurally unclickable rather than relying on anyone
-  // remembering not to link a deleted diagram. The card dims itself
-  // when there's no handler.
+  // No id, no link: a row from an older worker (or one whose snapshot
+  // lost its id) must not point the reader at nothing. The card dims
+  // itself when there's no handler.
   const open = diagramId
     ? () => window.location.assign(`/diagram/${encodeURIComponent(diagramId)}`)
     : undefined;

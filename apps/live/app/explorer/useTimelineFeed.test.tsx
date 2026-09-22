@@ -14,11 +14,16 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { TimelineScopeRef } from '@livediagram/api-schema';
 import type { TimelineEvent } from '@livediagram/ui';
 
-const { apiListTimeline, apiDismissTimelineEvent } = vi.hoisted(() => ({
+const { apiListTimeline, apiDismissTimelineEvent, apiDismissTimelineEvents } = vi.hoisted(() => ({
   apiListTimeline: vi.fn(),
   apiDismissTimelineEvent: vi.fn(),
+  apiDismissTimelineEvents: vi.fn(),
 }));
-vi.mock('@/lib/api-client', () => ({ apiListTimeline, apiDismissTimelineEvent }));
+vi.mock('@/lib/api-client', () => ({
+  apiListTimeline,
+  apiDismissTimelineEvent,
+  apiDismissTimelineEvents,
+}));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 import { notifyApiWrite, resetApiWriteListeners } from '@/lib/api/write-signal';
@@ -58,6 +63,8 @@ beforeEach(() => {
   apiListTimeline.mockResolvedValue({ events: [], nextCursor: undefined, lastSeenAt: undefined });
   apiDismissTimelineEvent.mockReset();
   apiDismissTimelineEvent.mockResolvedValue(undefined);
+  apiDismissTimelineEvents.mockReset();
+  apiDismissTimelineEvents.mockResolvedValue(undefined);
 });
 
 describe('useTimelineFeed', () => {
@@ -298,6 +305,17 @@ describe('useTimelineFeed dismiss', () => {
     act(() => result.current.dismiss('b'));
     expect(result.current.events.map((e) => e.id)).toEqual(['a']);
     expect(apiDismissTimelineEvent).toHaveBeenCalledWith('me', 'b');
+  });
+
+  it('takes a whole stack off in one request', async () => {
+    apiListTimeline.mockResolvedValue({ events: [event('a', 30), event('b', 20), event('c', 10)] });
+    const { result } = renderHook(() => useTimelineFeed('me', true));
+    await waitFor(() => expect(result.current.events).toHaveLength(3));
+
+    act(() => result.current.dismiss(['b', 'c']));
+    expect(result.current.events.map((e) => e.id)).toEqual(['a']);
+    expect(apiDismissTimelineEvents).toHaveBeenCalledWith('me', ['b', 'c']);
+    expect(apiDismissTimelineEvent).not.toHaveBeenCalled();
   });
 
   it('puts the card back if the worker refused', async () => {

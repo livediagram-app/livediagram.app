@@ -16,7 +16,7 @@
 
 import { TimelineCard } from './TimelineCard';
 import { stackLabel, type TimelineStack } from './stacking';
-import type { TimelineRendererContext, TimelineRendererRegistry } from './types';
+import type { TimelineCardSlots, TimelineRendererContext, TimelineRendererRegistry } from './types';
 import { pickRenderer } from './renderers';
 
 export function StackedCard({
@@ -27,11 +27,15 @@ export function StackedCard({
   expanded = false,
   isNew,
   stagger = 0,
+  slots,
 }: {
   stack: TimelineStack;
   registry: TimelineRendererRegistry;
   ctx: TimelineRendererContext;
   onToggle: () => void;
+  /** The host's ⋯ menu for the whole run (spec/138 §2.9). The card
+   *  stops its events at the slot, so opening it never toggles the run. */
+  slots?: Pick<TimelineCardSlots, 'menu' | 'onContextMenu'>;
   /** The run is open: this card heads it and collapses it. */
   expanded?: boolean;
   /** ms of animation delay, so the feed cascades rather than popping. */
@@ -65,6 +69,7 @@ export function StackedCard({
         <TimelineCard
           event={anchor}
           isNew={isNew}
+          slots={slots}
           // Ringed while open, so the head of the run reads as the
           // control it is rather than as one more member.
           focused={expanded}

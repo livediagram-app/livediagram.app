@@ -3,12 +3,13 @@
 // GET    /api/timeline             -> { items, nextCursor?, lastSeenAt? }
 // GET    /api/timeline/unread      -> { count }
 // POST   /api/timeline/refresh     -> { lastSeenAt }
-// DELETE /api/timeline/events/:id  -> 204 (spec/138 §2.9)
+// DELETE /api/timeline/events/:id      -> 204 (spec/138 §2.9)
+// POST   /api/timeline/events/dismiss  -> { dismissed } (a whole stack)
 //
 // Nothing user-AUTHORED lives on this feed: there are no manual entries
-// and no stars, so there is no POST/PATCH for events. The one write is
-// the dismissal, which takes a card off the caller's own feed and
-// nobody else's.
+// and no stars, so nothing here creates or edits an event. The one
+// write is the dismissal, which takes a card (or a stack of them) off
+// the caller's own feed and nobody else's.
 //
 // Hybrid identity like the rest of the api (spec/04): the Clerk userId
 // when signed in, X-Owner-Id otherwise. Guests get a Timeline too — a
@@ -22,8 +23,10 @@ import {
   type TimelineScopeRef,
 } from '@livediagram/api-schema';
 import {
+  DISMISS_BATCH_MAX,
   countUnseen,
   dismissTimelineEventForScope,
+  dismissTimelineEventsForScope,
   getScopeState,
   markScopeSeen,
   readTimeline,
@@ -155,6 +158,28 @@ export async function handleTimeline(ctx: RouteContext): Promise<Response> {
     const scope: TimelineScopeRef = { scopeType: 'user', scopeId: ownerId };
     const found = await dismissTimelineEventForScope(env, scope, segments[3]);
     return found ? noContent() : notFound();
+  }
+
+  // A whole stack at once (spec/138 §2.9). A POST with an id list
+  // rather than N DELETEs: a collapsed run can hold dozens of cards, and
+  // it's one action to the reader. Ids the feed never held are ignored
+  // rather than refused — the caller is describing a stack it can see,
+  // and a member that vanished meanwhile is not an error.
+  if (
+    segments.length === 4 &&
+    segments[2] === 'events' &&
+    segments[3] === 'dismiss' &&
+    request.method === 'POST'
+  ) {
+    const body = (await request.json().catch(() => null)) as { ids?: unknown } | null;
+    const ids = Array.isArray(body?.ids)
+      ? body.ids.filter((id): id is string => typeof id === 'string' && id.length > 0)
+      : null;
+    if (!ids || ids.length === 0) return badRequest('ids required');
+    if (ids.length > DISMISS_BATCH_MAX) return badRequest('too many ids');
+    const scope: TimelineScopeRef = { scopeType: 'user', scopeId: ownerId };
+    const dismissed = await dismissTimelineEventsForScope(env, scope, ids);
+    return json({ dismissed });
   }
 
   return notFound();

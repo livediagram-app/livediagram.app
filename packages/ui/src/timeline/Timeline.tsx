@@ -25,7 +25,11 @@ import { buildStacks } from './stacking';
 import { pickRenderer } from './renderers';
 import { useTimelineGrouping } from './useTimelineGrouping';
 import type { TimelineControls } from './useTimelineControls';
-import type { TimelineCardSlotsFor, TimelineRendererRegistry } from './types';
+import type {
+  TimelineCardSlotsFor,
+  TimelineRendererRegistry,
+  TimelineStackSlotsFor,
+} from './types';
 import { CARD_GRID } from '../cardGrid';
 
 // Per-card delay in the arrival cascade — large enough that cards
@@ -51,6 +55,8 @@ export type TimelineProps = {
    * Explorer context to build them from.
    */
   cardSlots?: TimelineCardSlotsFor;
+  /** The same for a collapsed run: a menu that acts on every member (spec/138 §2.9). */
+  stackSlots?: TimelineStackSlotsFor;
   /** True while the first page is still resolving. */
   loading?: boolean;
   /** True when the feed is genuinely empty, as opposed to filtered empty. */
@@ -81,6 +87,7 @@ export function Timeline({
   viewerId,
   renderers = {},
   cardSlots,
+  stackSlots,
   loading,
   isEmpty,
   emptyState,
@@ -258,6 +265,7 @@ export function Timeline({
                   expanded={open}
                   isNew={stack.events.some((e) => isNew(e.occurredAt))}
                   stagger={staggerFor(fanIndex.get(stack.events[0]!.id))}
+                  slots={stackSlots?.(stack)}
                   onToggle={() => {
                     toggleStack(stack.key);
                     if (!open) onStackExpand?.();

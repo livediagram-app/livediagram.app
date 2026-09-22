@@ -47,12 +47,14 @@ describe('diagram cards', () => {
     expect(r.preview).toBeTruthy();
   });
 
-  it('opens the diagram on click, except for a tombstone with no id', () => {
+  it('opens the diagram on click, except when the row carries no id to open', () => {
     expect(render(event({})).onClick).toBeTypeOf('function');
+    // A row from an older worker, or one whose snapshot lost its id: the
+    // card must not link at nothing.
     const gone = render(
       event({
-        eventType: 'diagram_deleted',
-        title: 'Diagram Deleted',
+        eventType: 'diagram_renamed',
+        title: 'Diagram Renamed',
         snapshot: { diagramName: 'Old' },
       }),
     );

@@ -35,6 +35,19 @@ export function dedupeKeyForDay(actorId: string | null, at: number): string {
   return `${actorId ?? 'system'}:${new Date(at).toISOString().slice(0, 10)}`;
 }
 
+// The dedupe key for an event that can happen to the same source MORE
+// THAN ONCE and should be a fresh row each time: a rename, a move, a
+// role change. With the default '' key the UNIQUE index treats the
+// second rename of a diagram as a retry of the first and UPSERTS it —
+// so a diagram renamed three times in a day showed one card, not a
+// stack of three, and a rename this month silently moved last month's
+// card to today. '' stays right for events that genuinely happen once
+// per source (created, a tombstone, an invite), where a retry or a
+// backfill overlap SHOULD land on the existing row.
+export function dedupeKeyOnce(): string {
+  return crypto.randomUUID();
+}
+
 // Write one event and attach it to every scope that should see it.
 //
 // Idempotent twice over: the UNIQUE key on
@@ -460,6 +473,31 @@ export async function dismissTimelineEventForScope(
     .bind(scope.scopeType, scope.scopeId, eventId, Date.now())
     .run();
   return true;
+}
+
+// The same dismissal for a whole stack at once (spec/138 §2.9). One
+// UPDATE over the id list rather than a round trip per card: a day's
+// stack of forty renames is one request and one statement. Returns how
+// many rows this call actually marked; ids the scope never held, or
+// had already dismissed, simply don't count.
+export const DISMISS_BATCH_MAX = 200;
+
+export async function dismissTimelineEventsForScope(
+  env: Env,
+  scope: TimelineScopeRef,
+  eventIds: readonly string[],
+): Promise<number> {
+  const ids = eventIds.slice(0, DISMISS_BATCH_MAX);
+  if (ids.length === 0) return 0;
+  const placeholders = ids.map((_, i) => `?${i + 4}`).join(', ');
+  const res = await env.DB.prepare(
+    `UPDATE timeline_event_scopes SET deleted_at = ?3
+      WHERE scope_type = ?1 AND scope_id = ?2 AND deleted_at IS NULL
+        AND event_id IN (${placeholders})`,
+  )
+    .bind(scope.scopeType, scope.scopeId, Date.now(), ...ids)
+    .run();
+  return res.meta?.changes ?? 0;
 }
 
 // Account deletion. The FK cascade makes the order safe regardless;

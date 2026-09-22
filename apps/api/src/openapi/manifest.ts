@@ -781,6 +781,22 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     auth: 'guest-or-clerk',
     statuses: [204, 401, 404],
   },
+  {
+    method: 'POST',
+    path: '/timeline/events/dismiss',
+    segment: 'timeline',
+    tag: 'Account',
+    summary:
+      "Remove several events (a whole stack) from the caller's own feed in one call. Up to 200 ids; unknown ids are ignored.",
+    auth: 'guest-or-clerk',
+    requestSchema: {
+      type: 'object',
+      required: ['ids'],
+      properties: { ids: { type: 'array', items: { type: 'string' } } },
+    },
+    responseSchema: { type: 'object', properties: { dismissed: { type: 'number' } } },
+    statuses: [200, 400, 401],
+  },
 
   // ---- Account ----
   {

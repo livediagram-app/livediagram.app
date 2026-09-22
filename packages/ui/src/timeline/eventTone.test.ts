@@ -25,7 +25,6 @@ describe('eventTone', () => {
   });
 
   it('reserves danger for destruction and lost access', () => {
-    expect(eventTone('diagram_deleted')).toBe('danger');
     expect(eventTone('team_member_removed')).toBe('danger');
     expect(eventTone('team_deleted')).toBe('danger');
     // Revoking a token breaks whatever was using it — the same shape of
