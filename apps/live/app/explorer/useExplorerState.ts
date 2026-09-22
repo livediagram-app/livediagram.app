@@ -29,6 +29,7 @@ import { useDiagramListActions } from '@/hooks/persistence/useDiagramListActions
 import { useToast } from '@/hooks/ui/useToast';
 import { explorerPathFor, selectedFromRoute } from './routes';
 import { useTimelineUnread } from './useTimelineUnread';
+import { useActivityFeed } from './useActivityFeed';
 import { useExplorerMoves } from './useExplorerMoves';
 import { useExplorerPane } from './useExplorerPane';
 import type { SelectedNode } from './views';
@@ -349,6 +350,11 @@ export function useExplorerState() {
 
   const timelineUnread = useTimelineUnread(ownerId);
 
+  // What's outstanding for the reader (spec/142). Read once here rather
+  // than in the section, because the sidebar badge draws from the same
+  // list on every Explorer section.
+  const activity = useActivityFeed(ownerId);
+
   const {
     diagramsByFolder,
     unsortedDiagrams,
@@ -459,6 +465,9 @@ export function useExplorerState() {
     recentCount,
     // Unread Timeline events (spec/138 §2.5), for the sidebar badge.
     timelineUnread,
+    // What's outstanding for the reader (spec/142): the Activity pane's
+    // lists + the sidebar badge's count.
+    activity,
     // Per-user diagram stars (spec/95).
     favouriteIds,
     toggleFavourite,

@@ -350,10 +350,10 @@ enum-ish tokens, not user content.
 
 ## 9. Out of scope (v1)
 
-- A cross-diagram "my actions" inbox (would want a D1 table rather than
-  blob-scans; the per-element blob model is chosen deliberately to match
-  comments, and a table can be added later without moving the source of
-  truth).
+- ~~A cross-diagram "my actions" inbox~~ — shipped as the Explorer's
+  **Activity** page (spec/142), exactly the way this bullet predicted:
+  a D1 projection (`collab_actions`) written beside every tab save,
+  with the per-element blob still the source of truth.
 - Due dates, priorities, more than one action per element, and multiple
   assignees.
 - Auto-sharing the diagram with the assignee on assign (§4 caveat).

@@ -3,6 +3,7 @@
 // owner, so they live together rather than under any one resource.
 
 import { deleteTimelineForOwner, migrateTimelineOwner } from './timeline';
+import { deleteCollabIndexForOwner, recordOwnerAlias } from './collab-index';
 import { thumbnailKey } from './diagrams';
 import { detachUserFromTeams } from './teams';
 import type { Env } from '../types';
@@ -99,6 +100,9 @@ export async function deleteAccount(
   // and the scope-state row. Hard, not soft — soft delete is a
   // user-facing affordance in this product, never a retention strategy.
   await deleteTimelineForOwner(env, ownerId);
+  // Activity (spec/142): the alias rows + the backfill stamp. The index
+  // rows themselves cascade with the diagrams' tabs above.
+  await deleteCollabIndexForOwner(env, ownerId);
   return {
     diagrams: diagramsRes.meta.changes ?? 0,
     folders: foldersRes.meta.changes ?? 0,
@@ -185,6 +189,11 @@ export async function migrateOwnerId(
   // backfill would run again against the Clerk id and re-seed what
   // just migrated.
   await migrateTimelineOwner(env, fromOwnerId, toOwnerId);
+  // Activity (spec/142 §2.2): the ids INSIDE the tab blobs (comment
+  // authors, self-assigned actions) are not rewritten, so the old
+  // identity is recorded as an alias of the new one and the Activity
+  // read matches both. Cheaper and safer than touching every tab.
+  await recordOwnerAlias(env, toOwnerId, fromOwnerId);
   // images (spec/19). UPDATE OR IGNORE walks the unique (owner_id,
   // sha256) collision case (same bytes on both identities) and
   // leaves those guest rows in place so the image id stays

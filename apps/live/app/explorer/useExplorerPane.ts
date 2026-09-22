@@ -125,6 +125,7 @@ export function useExplorerPane({
     }
     if (
       selected.kind === 'timeline' ||
+      selected.kind === 'activity' ||
       selected.kind === 'shared' ||
       selected.kind === 'gallery' ||
       selected.kind === 'themes' ||
@@ -205,6 +206,7 @@ export function useExplorerPane({
 
   const paneTitle = useMemo(() => {
     if (selected.kind === 'timeline') return 'Timeline';
+    if (selected.kind === 'activity') return 'Activity';
     if (selected.kind === 'recent') return 'Recent';
     if (selected.kind === 'shared') return 'Shared with You';
     if (selected.kind === 'gallery') return 'Image Gallery';
@@ -231,6 +233,7 @@ export function useExplorerPane({
   const paneCrumbs = useMemo<Crumb[]>(() => {
     const all: Crumb = { name: 'Personal Space', onClick: () => go({ kind: 'all' }) };
     if (selected.kind === 'timeline') return [{ name: 'Timeline' }];
+    if (selected.kind === 'activity') return [{ name: 'Activity' }];
     if (selected.kind === 'recent') return [{ name: 'Recent' }];
     if (selected.kind === 'shared') return [{ name: 'Shared with You' }];
     if (selected.kind === 'gallery') return [{ name: 'Image Gallery' }];

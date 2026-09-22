@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { BoxedElement } from '@livediagram/diagram';
+import { elementDisplayLabel, type BoxedElement } from '@livediagram/diagram';
 import { useRelativeTimeTick } from '@/lib/relative-time';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import {
@@ -239,7 +239,7 @@ export function commentRowsFromElements(elements: BoxedElement[]): CommentRow[] 
     const latest = comments[comments.length - 1]!;
     rows.push({
       elementId: el.id,
-      label: elementRowLabel(el),
+      label: elementDisplayLabel(el),
       count: comments.length,
       latestAuthorName: latest.authorName,
       latestAuthorColor: latest.authorColor,
@@ -265,7 +265,7 @@ export function actionRowsFromElements(
     if (!action) continue;
     rows.push({
       elementId: el.id,
-      label: elementRowLabel(el),
+      label: elementDisplayLabel(el),
       actionName: action.name,
       status: action.status,
       assigneeName: action.assignee.name?.trim() || 'Teammate',
@@ -275,16 +275,4 @@ export function actionRowsFromElements(
   }
   rows.sort((a, b) => (a.mine === b.mine ? b.createdAt - a.createdAt : a.mine ? -1 : 1));
   return rows;
-}
-
-// Shared element-label fallbacks: tables have no single label (the
-// cells carry the text), so describe them as "Table" plus the first
-// non-empty cell rather than a stray fallback.
-function elementRowLabel(el: BoxedElement): string {
-  if (el.type === 'table') {
-    const firstCell = el.cells.flat().find((c) => c.trim().length > 0);
-    return firstCell ? `Table: ${firstCell.trim()}` : 'Table';
-  }
-  const labelSource = (el as { label?: string }).label;
-  return labelSource && labelSource.trim().length > 0 ? labelSource.trim() : 'Untitled';
 }

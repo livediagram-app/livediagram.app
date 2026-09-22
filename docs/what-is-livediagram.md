@@ -28,6 +28,7 @@ The unit of value is the team, not the individual. See [spec/00](../specs/00-pur
 - **Tabs**: every diagram is a stack of tabs (link across them; copy a tab into another diagram).
 - **Folders**: nested folders in the Explorer; full-page `/explorer` for signed-in users.
 - **Timeline**: `/explorer` opens on a day-grouped feed of everything that happened across your diagrams, teams and account (comments, assigned actions, team membership, invites, plus forward-dated expiry warnings), with an unread marker and a calendar month view. Guests included; their history migrates on sign-up. See [spec/138](../specs/138-timeline.md).
+- **Activity**: the Explorer section beside the Timeline that lists what is still _outstanding_ for you across every diagram: open actions assigned to you, open actions you assigned to others, and unresolved comment threads you are in, each row opening the diagram at that element with its popover ready. See [spec/142](../specs/142-activity-page.md).
 - **Sharing**: editor or view-only share links per diagram, with an optional password gate that applies to every link on the diagram; revoke individually or in bulk at any time.
 - **Embeds**: a read-only `/embed` view of any share link, iframe-able into wikis, Notion, and docs (copy the snippet from the Share dialog); live-updates as the diagram is edited. See [spec/33](../specs/33-embeds.md).
 - **Hybrid auth**: guests get everything (full persistence keyed to a per-browser id); signed-in users (Clerk) get cross-device sync and account self-delete.

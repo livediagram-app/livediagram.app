@@ -176,6 +176,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   // Explorer section guides
   'list-and-card-views': '#0ea5e9',
   timeline: '#8b5cf6',
+  activity: '#f43f5e',
   folders: '#f59e0b',
   unsorted: '#94a3b8',
   profile: '#0891b2',
