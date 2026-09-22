@@ -47,18 +47,24 @@ const CARDS: {
   title: string;
   // What the dot navigation says about this window while it is centred.
   label: string;
+  // The canvas tool the palette's picker names: the mind map is pointing
+  // with the laser, the others are selecting.
+  tool: 'Select' | 'Laser';
   tabs: TabDef[];
   showCursor: boolean;
   shared: boolean;
   theming: boolean;
   canvasTint: string;
-  // Dock the Layers panel (spec/74) on this window's canvas.
+  // Dock the Layers panel (spec/74) on this window's canvas, and minimise
+  // the palette to its header bar (as the editor does), so the wide
+  // timeline has the canvas to itself.
   layers?: boolean;
 }[] = [
   {
     key: 'flowchart',
     title: 'Quarterly planning',
     label: 'A flowchart, shared live, recoloured with one click',
+    tool: 'Select',
     tabs: [
       { name: 'Overview', color: '#0ea5e9', active: true },
       { name: 'Roadmap', color: '#ec4899' },
@@ -73,6 +79,7 @@ const CARDS: {
     key: 'mindmap',
     title: 'Team mind map',
     label: 'A mind map, highlighted and laser-pointed for the room',
+    tool: 'Laser',
     tabs: [
       { name: 'Ideas', color: '#0ea5e9', active: true },
       { name: 'Themes', color: '#ec4899' },
@@ -87,6 +94,7 @@ const CARDS: {
     key: 'timeline',
     title: 'Release timeline',
     label: 'A private timeline, organised into layers',
+    tool: 'Select',
     tabs: [
       { name: 'Roadmap', color: '#0ea5e9', active: true },
       { name: 'Milestones', color: '#ec4899' },
@@ -189,6 +197,7 @@ export function HeroIllustration() {
                   canvasTint={c.canvasTint}
                   showCursor={c.showCursor}
                   layers={c.layers ?? false}
+                  tool={c.tool}
                   playing={playing}
                   diagram={diagram}
                 />
@@ -238,6 +247,7 @@ function EditorWindow({
   canvasTint,
   showCursor,
   layers,
+  tool,
 }: {
   title: string;
   tabs: TabDef[];
@@ -248,6 +258,7 @@ function EditorWindow({
   canvasTint: string;
   showCursor: boolean;
   layers: boolean;
+  tool: 'Select' | 'Laser';
 }) {
   return (
     <div className="rounded-xl border border-slate-200 bg-white p-2 shadow-xl shadow-brand-500/10">
@@ -281,16 +292,10 @@ function EditorWindow({
               </span>
             )}
           </div>
-          {/* Share, then presence: a shared diagram shows collaborators; a
-              private one shows only you. */}
-          <div className="flex items-center gap-1.5">
-            <span className="mr-1 hidden items-center gap-1 rounded-md bg-brand-500 px-2 py-0.5 text-[10px] font-semibold text-white sm:inline-flex">
-              <ShareGlyph />
-              Share
-            </span>
-            <Avatar initials="TM" color="#0ea5e9" />
-            {shared ? <Avatar initials="JR" color="#ec4899" /> : null}
-          </div>
+          <span className="inline-flex items-center gap-1 rounded-md bg-brand-500 px-2 py-0.5 text-[10px] font-semibold text-white">
+            <ShareGlyph />
+            Share
+          </span>
         </div>
 
         {/* Canvas surface. Each window has its own themed canvas tint; the
@@ -305,8 +310,22 @@ function EditorWindow({
         >
           {/* Floating palette mockup (static chrome), as the editor's: the
               tool + category pickers, the element search, and the Favourites
-              grid of labelled tiles. */}
-          <div className="absolute right-2 top-2 hidden w-40 flex-col rounded-lg border border-slate-200 bg-white shadow-md sm:flex">
+              grid of labelled tiles. On the timeline window it is minimised
+              to its header bar, the way a panel folds in the editor. */}
+          {layers ? (
+            <div className="absolute right-2 top-2 hidden items-center gap-3 rounded-lg border border-slate-200 bg-white px-2 py-1 shadow-md sm:flex">
+              <p className="text-[8px] font-semibold uppercase tracking-wider text-slate-500">
+                Palette
+              </p>
+              <span className="text-[10px] leading-none text-slate-400">+</span>
+            </div>
+          ) : null}
+          <div
+            className={
+              'absolute right-2 top-2 w-40 flex-col rounded-lg border border-slate-200 bg-white shadow-md ' +
+              (layers ? 'hidden' : 'hidden sm:flex')
+            }
+          >
             <div className="flex items-center justify-between border-b border-slate-100 px-2 py-1">
               <p className="text-[8px] font-semibold uppercase tracking-wider text-slate-500">
                 Palette
@@ -318,7 +337,7 @@ function EditorWindow({
             </div>
             <div className="flex items-center justify-between border-b border-slate-100 px-2 py-1 text-[9px] font-medium text-slate-600">
               <span className="inline-flex items-center gap-0.5">
-                Select
+                {tool}
                 <ChevronGlyph />
               </span>
               <span className="inline-flex items-center gap-0.5">
@@ -370,30 +389,31 @@ function EditorWindow({
 
           {/* Zoom cluster (static chrome): history, undo / redo, layers, the
               look-and-feel brush, and the zoom readout. */}
-          <div className="absolute bottom-2 right-2 hidden items-center gap-1 text-slate-500 sm:flex">
-            <span className="flex items-center rounded-md border border-slate-200 bg-white shadow-sm">
-              <ToolGlyph kind="history" />
-              <ToolGlyph kind="undo" />
-              <ToolGlyph kind="redo" />
+          <div className="absolute bottom-2 right-2 hidden items-center gap-1.5 text-slate-500 sm:flex">
+            <span className="flex h-7 items-center rounded-md border border-slate-200 bg-white px-0.5 shadow-sm">
+              <ToolGlyph kind="history" small />
+              <ToolGlyph kind="undo" small />
+              <ToolGlyph kind="redo" small />
             </span>
-            <span className="flex items-center rounded-md border border-slate-200 bg-white shadow-sm">
-              <ToolGlyph kind="layers" />
+            <span className="flex h-7 items-center rounded-md border border-slate-200 bg-white px-0.5 shadow-sm">
+              <ToolGlyph kind="layers" small />
             </span>
-            <span className="flex items-center rounded-md border border-slate-200 bg-white shadow-sm">
-              <ToolGlyph kind="brush" />
+            <span className="flex h-7 items-center rounded-md border border-slate-200 bg-white px-0.5 shadow-sm">
+              <ToolGlyph kind="brush" small />
             </span>
-            <span className="flex items-center rounded-md border border-slate-200 bg-white px-1 text-[10px] font-medium shadow-sm">
-              <span className="px-1">−</span>
+            <span className="flex h-7 items-center rounded-md border border-slate-200 bg-white px-2 text-[9px] font-medium shadow-sm">
+              <span className="px-1.5">−</span>
               100%
-              <span className="px-1">+</span>
+              <span className="px-1.5">+</span>
             </span>
           </div>
 
-          {/* The diagram centres in the canvas left clear by the palette (and
-              the Layers panel when docked), so no node sits under a panel. */}
+          {/* The diagram centres in the canvas left clear by the open palette
+              (or, on the timeline window, by the Layers panel), so no node
+              sits under a panel. */}
           <svg
             className={
-              'absolute inset-y-0 left-0 right-0 h-full sm:right-44 ' + (layers ? 'sm:left-36' : '')
+              'absolute inset-y-0 left-0 right-0 h-full ' + (layers ? 'sm:left-36' : 'sm:right-44')
             }
             style={{ width: 'auto' }}
             viewBox="0 -60 600 400"
@@ -448,6 +468,16 @@ function EditorWindow({
               >
                 <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: t.color }} />
                 <span className={t.active ? '' : 'text-slate-500'}>{t.name}</span>
+                {/* Presence lives IN the tab, as the editor's TabPresenceStack
+                    draws it: a stack of small initials between the tab name
+                    and its ellipsis, one per person on that tab (you, and on
+                    a shared diagram whoever else is there). */}
+                {t.active ? (
+                  <span className="ml-0.5 flex items-center">
+                    <TabAvatar initials="TM" color="#0ea5e9" last={!shared} />
+                    {shared ? <TabAvatar initials="JR" color="#ec4899" last /> : null}
+                  </span>
+                ) : null}
                 {t.active ? (
                   <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
                     <circle cx="3" cy="7" r="1.25" fill="currentColor" />
@@ -462,10 +492,10 @@ function EditorWindow({
           {/* Toolbelt: hidden on mobile (it clashes with the tabs in the
               narrower windows), shown from sm up. */}
           <div className="ml-auto hidden items-center gap-1 text-slate-400 sm:flex">
-            <ToolGlyph kind="search" />
-            <ToolGlyph kind="keys" />
-            <ToolGlyph kind="sliders" />
-            <ToolGlyph kind="moon" />
+            <ToolGlyph kind="search" small />
+            <ToolGlyph kind="keys" small />
+            <ToolGlyph kind="sliders" small />
+            <ToolGlyph kind="moon" small />
           </div>
         </div>
       </div>
@@ -473,11 +503,17 @@ function EditorWindow({
   );
 }
 
-function Avatar({ initials, color }: { initials: string; color: string }) {
+// A tab's presence avatar, sized as the editor's TabPresenceStack sizes them:
+// small initials on the participant's colour, a white ring, overlapping the
+// next one by a hair (the last carries no overlap so the stack sits inside
+// the pill's padding).
+function TabAvatar({ initials, color, last }: { initials: string; color: string; last: boolean }) {
   return (
     <span
-      style={{ backgroundColor: color, boxShadow: '0 0 0 2px white, 0 0 0 4px #22c55e' }}
-      className="flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-semibold text-white"
+      style={{ backgroundColor: color }}
+      className={`inline-flex h-4 w-4 items-center justify-center rounded-full border-2 border-white text-[7px] font-semibold text-white ${
+        last ? '' : '-mr-0.5'
+      }`}
     >
       {initials}
     </span>
@@ -553,12 +589,17 @@ function PrivateDotIcon() {
 // layers, brush). Decorative, sized for the chrome.
 function ToolGlyph({
   kind,
+  small = false,
 }: {
   kind: 'search' | 'keys' | 'sliders' | 'moon' | 'history' | 'undo' | 'redo' | 'layers' | 'brush';
+  // The editor's bottom chrome draws its glyphs small inside roomy hit
+  // targets; `small` is that proportion.
+  small?: boolean;
 }) {
+  const px = small ? 11 : 15;
   const common = {
-    width: 15,
-    height: 15,
+    width: px,
+    height: px,
     viewBox: '0 0 16 16',
     fill: 'none',
     stroke: 'currentColor',
