@@ -562,6 +562,13 @@ export function templateCategory(kind: TemplateKind): TemplateCategory {
   return TEMPLATE_CATEGORY[kind];
 }
 
+// True when `value` names a template in the catalogue. The guard for a kind
+// that arrives as a plain string from outside the type system: the MCP
+// `template` argument, the `/new?template=<kind>` query (spec/14).
+export function isTemplateKind(value: unknown): value is TemplateKind {
+  return typeof value === 'string' && TEMPLATES.some((t) => t.kind === value);
+}
+
 // Default name for a freshly-created diagram: "Untitled <Template Title>" in
 // title case so a templated diagram is recognisable in the Explorer (e.g.
 // "Untitled Tree Mind Map"), while a blank one (or no template) keeps the plain
