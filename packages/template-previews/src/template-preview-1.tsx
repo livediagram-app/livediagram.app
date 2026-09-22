@@ -300,34 +300,64 @@ export function templatePreviewGroup1(kind: TemplateKind): ReactElement | null {
         </svg>
       );
     case 'swimlane':
+      // Three lanes with a header strip down the left, and one flow that
+      // hands off lane to lane: start pill, a step, a decision, a step in
+      // the next lane, the end in the last. Elbow connectors with heads,
+      // so it reads as a flow crossing lanes rather than boxes on rules.
       return (
         <svg width="80" height="50" viewBox="0 0 80 50" aria-hidden>
-          {[3, 19, 35].map((y) => (
-            <rect
-              key={y}
-              x="2"
-              y={y}
-              width="76"
-              height="13"
-              rx="1"
-              fill="none"
-              stroke="rgb(148 163 184)"
-              strokeWidth="0.8"
-            />
+          {[2, 18, 34].map((y) => (
+            <g key={y}>
+              <rect
+                x="2"
+                y={y}
+                width="76"
+                height="14"
+                rx="1"
+                fill="none"
+                stroke="rgb(148 163 184)"
+                strokeWidth="0.8"
+              />
+              <rect x="2" y={y} width="9" height="14" rx="1" fill="rgb(226 232 240)" />
+              <line
+                x1="11"
+                y1={y}
+                x2="11"
+                y2={y + 14}
+                stroke="rgb(148 163 184)"
+                strokeWidth="0.8"
+              />
+            </g>
           ))}
           <rect
-            x="8"
+            x="15"
             y="5.5"
-            width="15"
-            height="8"
-            rx="1.5"
+            width="12"
+            height="7"
+            rx="3.5"
             fill="rgb(186 230 253)"
             stroke="rgb(14 165 233)"
             strokeWidth="0.9"
           />
           <rect
-            x="33"
-            y="21.5"
+            x="34"
+            y="5"
+            width="15"
+            height="8"
+            rx="1.5"
+            fill="none"
+            stroke="rgb(14 165 233)"
+            strokeWidth="0.9"
+          />
+          <polygon
+            points="41.5,20 47.5,25 41.5,30 35.5,25"
+            fill="rgb(186 230 253)"
+            stroke="rgb(14 165 233)"
+            strokeWidth="0.9"
+          />
+          <rect
+            x="55"
+            y="21"
             width="15"
             height="8"
             rx="1.5"
@@ -336,75 +366,75 @@ export function templatePreviewGroup1(kind: TemplateKind): ReactElement | null {
             strokeWidth="0.9"
           />
           <rect
-            x="58"
+            x="56.5"
             y="37.5"
-            width="15"
-            height="8"
-            rx="1.5"
-            fill="none"
+            width="12"
+            height="7"
+            rx="3.5"
+            fill="rgb(186 230 253)"
             stroke="rgb(14 165 233)"
             strokeWidth="0.9"
           />
-          <line
-            x1="15.5"
-            y1="13.5"
-            x2="40.5"
-            y2="21.5"
-            stroke="rgb(100 116 139)"
-            strokeWidth="0.8"
-          />
-          <line x1="48" y1="25.5" x2="65.5" y2="37.5" stroke="rgb(100 116 139)" strokeWidth="0.8" />
+          <g fill="none" stroke="rgb(100 116 139)" strokeWidth="0.8">
+            <path d="M27 9 H33" />
+            <path d="M41.5 13 V19" />
+            <path d="M47.5 25 H54" />
+            <path d="M62.5 29 V36.5" />
+          </g>
+          <g fill="rgb(100 116 139)">
+            <polygon points="31.5,7.5 34,9 31.5,10.5" />
+            <polygon points="40,17.5 41.5,20 43,17.5" />
+            <polygon points="52.5,23.5 55,25 52.5,26.5" />
+            <polygon points="61,35 62.5,37.5 64,35" />
+          </g>
         </svg>
       );
     case 'decision-tree':
+      // A question at the root, two branches, four outcomes: the tree the
+      // template builds, drawn as one, with elbow connectors so the levels
+      // read top-down rather than as boxes scattered around a diamond.
       return (
         <svg width="80" height="50" viewBox="0 0 80 50" aria-hidden>
           <polygon
-            points="40,3 48,11 40,19 32,11"
+            points="40,2 47,8 40,14 33,8"
             fill="rgb(186 230 253)"
             stroke="rgb(14 165 233)"
             strokeWidth="1"
           />
-          <rect
-            x="8"
-            y="22"
-            width="18"
-            height="9"
-            rx="1.5"
-            fill="none"
-            stroke="rgb(14 165 233)"
-            strokeWidth="1"
-          />
-          <polygon
-            points="58,21 66,28 58,35 50,28"
-            fill="none"
-            stroke="rgb(14 165 233)"
-            strokeWidth="1"
-          />
-          <rect
-            x="44"
-            y="40"
-            width="16"
-            height="8"
-            rx="1.5"
-            fill="none"
-            stroke="rgb(14 165 233)"
-            strokeWidth="0.9"
-          />
-          <rect
-            x="64"
-            y="40"
-            width="14"
-            height="8"
-            rx="1.5"
-            fill="none"
-            stroke="rgb(14 165 233)"
-            strokeWidth="0.9"
-          />
-          <line x1="34" y1="14" x2="17" y2="22" stroke="rgb(100 116 139)" strokeWidth="0.8" />
-          <line x1="46" y1="14" x2="56" y2="21" stroke="rgb(100 116 139)" strokeWidth="0.8" />
-          <line x1="54" y1="33" x2="52" y2="40" stroke="rgb(100 116 139)" strokeWidth="0.8" />
-          <line x1="62" y1="33" x2="69" y2="40" stroke="rgb(100 116 139)" strokeWidth="0.8" />
+          <g fill="none" stroke="rgb(100 116 139)" strokeWidth="0.8">
+            <path d="M40 14 V18 H23 V22" />
+            <path d="M40 14 V18 H57 V22" />
+            <path d="M23 30 V35 H11 V40" />
+            <path d="M23 30 V35 H31 V40" />
+            <path d="M57 30 V35 H51 V40" />
+            <path d="M57 30 V35 H71 V40" />
+          </g>
+          {[14, 48].map((x) => (
+            <rect
+              key={x}
+              x={x}
+              y="22"
+              width="18"
+              height="8"
+              rx="1.5"
+              fill="none"
+              stroke="rgb(14 165 233)"
+              strokeWidth="1"
+            />
+          ))}
+          {[4, 24, 44, 64].map((x) => (
+            <rect
+              key={x}
+              x={x}
+              y="40"
+              width="14"
+              height="8"
+              rx="4"
+              fill="rgb(224 242 254)"
+              stroke="rgb(14 165 233)"
+              strokeWidth="0.9"
+            />
+          ))}
         </svg>
       );
     case 'approval-workflow':

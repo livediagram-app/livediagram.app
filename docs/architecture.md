@@ -16,6 +16,7 @@ packages/
   diagram/        diagram data model (Tab, Element types + helpers)
   icons/          icon catalogues (line-art + Technology marks) + SVG markup builders
   templates/      template catalogue + pure element builders (editor Quick Start + MCP)
+  template-previews/ per-template preview SVGs (editor picker + marketing template gallery)
   help-registry/  help-centre article/category registry + search keywords (help app + editor search)
   api-schema/     wire-format DTOs the api worker emits + the live editor consumes
   telemetry-client/ shared browser telemetry emitter (buffer / flush / page-hide beacon)
@@ -53,6 +54,7 @@ Each app pulls these in via `workspace:*`:
 - **`@livediagram/ui`** owns the cross-app UI primitives. The chrome (`Brand`, `SiteHeader`, `SiteFooter`, `ProductNav`), the form + feedback controls (`Button`, `TextInput`, `Select`, `EmptyState`, `Tooltip`), and the shared behaviour hooks (`useMediaQuery`, `useCopiedFlash`) plus the popover-clamping helpers. Reach for these before re-typing a class list: a control that exists here and is rebuilt in an app is the drift this package was made to stop.
 - **`@livediagram/icons`** owns the three catalogues (the line-art glyphs, the Technology brand marks, and the stickers of spec/116) plus pure SVG-markup builders for them, and `xmlEscape`, the one XML escaper every SVG builder in the monorepo shares (`@livediagram/diagram` re-exports it). The editor dynamic-imports the data modules through its icon registry so they stay out of its first-load JS; the api + mcp workers static-import `@livediagram/icons/resolve` so headless renders (the live image, Explorer thumbnails, MCP inline images) draw the real glyphs.
 - **`@livediagram/templates`** owns the template library: the catalogue (kinds, titles, categories, per-template canvas overrides) and the pure per-template element builders. Two callers: the editor's Quick Start picker (which layers its theme recolour on top in `apps/live/lib/template-builders.ts`) and the mcp worker's `list_templates` / `template` tools (spec/62), so the scaffolds can't drift between them.
+- **`@livediagram/template-previews`** owns the per-template preview illustrations: one static SVG per `TemplateKind`, rendered by the editor's template picker and by the marketing site's template gallery, so a template's card looks the same wherever it is offered and a new kind gets its artwork in one place. Its tests assert every listed template has a preview and that each drawing stays inside its viewBox.
 - **`@livediagram/help-registry`** owns the help-centre article + category registry: slugs, titles, descriptions, and per-article search keywords, plus the pure href/search helpers. Two callers: the help app's browse + search (`apps/help/lib/articles.ts` re-exports it) and the live editor's search-panel Help group (`apps/live/lib/help-search.ts`), so adding an article once makes it findable in both.
 - **`@livediagram/eslint-config`** / **`prettier-config`** / **`tailwind-config`** / **`vitest-config`** own the shared lint / format / theme / test configs so every workspace stays consistent.
 

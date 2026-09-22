@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @import '@livediagram/tailwind-config';
+@import '@livediagram/template-previews/preview-art-tile.css';
 @import './hero-animations.css';
 @import './feature-art-animations.css';
 
@@ -73,8 +74,7 @@
   .fa-spin-cont,
   .fa-beat,
   .fa-drift,
-  .fa-spot,
-  .uc-pop {
+  .fa-spot {
     animation: none !important;
     opacity: 1 !important;
     transform: none !important;

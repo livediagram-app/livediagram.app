@@ -1,9 +1,9 @@
 import type { ReactElement } from 'react';
 import type { TemplateKind } from '@livediagram/templates';
-import { templatePreviewGroup1 } from '@/components/palette/template-preview-1';
-import { templatePreviewGroup2 } from '@/components/palette/template-preview-2';
-import { templatePreviewGroup3 } from '@/components/palette/template-preview-3';
-import { templatePreviewGroup4 } from '@/components/palette/template-preview-4';
+import { templatePreviewGroup1 } from './template-preview-1';
+import { templatePreviewGroup2 } from './template-preview-2';
+import { templatePreviewGroup3 } from './template-preview-3';
+import { templatePreviewGroup4 } from './template-preview-4';
 
 // Static SVG preview tiles for the TemplatePicker (one branch per
 // TemplateKind). Lifted out of TemplatePicker.tsx (was 1214 lines, now
