@@ -272,6 +272,9 @@ export function MindMapDiagram({ playing, theme }: { playing: boolean; theme: Th
         <g>
           <ellipse className="hero-laser-ring hero-laser-a" cx="125" cy="48" rx="74" ry="30" />
           <ellipse className="hero-laser-ring hero-laser-b" cx="475" cy="232" rx="74" ry="30" />
+          {/* The trail the pointer leaves as it travels from the first ring
+              to the second, drawn under the dot and fading once it lands. */}
+          <path className="hero-laser-trail" d="M150 60 L450 220" />
           <circle className="hero-laser-dot" cx="0" cy="0" r="4.5" />
         </g>
       ) : null}
