@@ -210,7 +210,10 @@ they exist:
 }] }`, every box in FRACTIONS of the image so the labels survive any working
   size.
 - **The cheap way to make one: correct a review and save it.** Open the editor
-  with `?truth=1` on the URL (remembered from then on), import the photo, then
+  **on localhost** — that is the whole arming rule, because calibration happens
+  on the machine the photographs and the sweep are on, and the hosted site
+  never shows it. (`?truth=1` / `?truth=0` on any editor URL overrules the
+  host in either direction, and is remembered.) Import the photo, then
   do exactly what the import asks of you anyway — untick every box that is not
   a sticky, drag a box around every sticky it missed — and press **Save as
   truth**. The download is a label file named after the photograph. File it
