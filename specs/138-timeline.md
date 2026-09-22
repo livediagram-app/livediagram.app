@@ -41,11 +41,13 @@ has happened since they were last here**, not just a list of files.
   (§6.3). livediagram's realtime rooms are per-diagram; a per-user
   channel is a whole new object type for a screen the user looks at
   once a session.
-- **No favourites / starring, and no per-entry delete** in v1. The
-  Manager Toolkit timeline has both (they matter when a timeline is
-  evidence for a performance review). Here the feed is ambient — you
-  read it and move on — so the tables and the eight endpoints they
-  need aren't earned yet. The schema doesn't preclude them (§3.4).
+- **No favourites / starring.** The Manager Toolkit timeline has them
+  (they matter when a timeline is evidence for a performance review).
+  Here the feed is ambient — you read it and move on — so the table and
+  the endpoints aren't earned yet. The schema doesn't preclude them
+  (§3.4). Per-entry removal, which started out in this bullet, has
+  since shipped (§2.9): a busy day needed pruning more than it needed
+  starring.
 - **No AI day summary.** Manager Toolkit gates one behind Pro;
   livediagram has no paid tier (spec/03), so it would be free for
   everyone and gated only on `OPENAI_API_KEY`. Deferred as its own
@@ -178,9 +180,10 @@ A card has four regions, top to bottom:
 **A card is one big click target.** Clicking anywhere on it that isn't
 the menu opens whatever the event is about: the diagram, the team, your
 invites, your tokens. Cards that lead nowhere are dimmed to 60%, and the
-common case is a tombstone: the emit for a deleted diagram deliberately
-omits its id, so the renderer has nothing to link and the dimming is
-structural rather than a rule someone has to remember.
+common case is a tombstone for a folder, theme or team: the emit
+deliberately omits its id, so the renderer has nothing to link and the
+dimming is structural rather than a rule someone has to remember. (A
+deleted diagram has no tombstone at all; see §3.5.)
 
 ### Colour means what happened, not where
 
@@ -190,11 +193,11 @@ before they ask "was that a diagram or a team", and only the first
 question has a useful colour answer. Three tones, deliberately few —
 a palette with six meanings is a legend the reader has to learn:
 
-| Tone         | Colour | Covers                                                                                                                                                                                                                                                           |
-| ------------ | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `danger`     | red    | Destruction and lost access: a diagram deleted, a member removed. Kept tight — if everything worrying is red, nothing is. Note `team_member_left` is _not_ here: leaving is a departure the person chose, and colouring it like being removed misreads the room. |
-| `structural` | amber  | The shape of things changed. Nothing was lost, but something a reader might rely on moved: renames, folder and team placement, membership, roles, sharing, and the forward-dated expiry warnings.                                                                |
-| `create`     | green  | Things made, edited, said or finished — the ordinary business of using the product, and the bulk of any active day.                                                                                                                                              |
+| Tone         | Colour | Covers                                                                                                                                                                                                                                                                         |
+| ------------ | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `danger`     | red    | Destruction and lost access: a team deleted, a member removed, a token revoked. Kept tight — if everything worrying is red, nothing is. Note `team_member_left` is _not_ here: leaving is a departure the person chose, and colouring it like being removed misreads the room. |
+| `structural` | amber  | The shape of things changed. Nothing was lost, but something a reader might rely on moved: renames, folder and team placement, membership, roles, sharing, and the forward-dated expiry warnings.                                                                              |
+| `create`     | green  | Things made, edited, said or finished — the ordinary business of using the product, and the bulk of any active day.                                                                                                                                                            |
 
 Anything unmapped falls to a neutral slate rather than guessing, so an
 event type from a newer worker reads as plain rather than as a
@@ -225,15 +228,15 @@ compiler can't check: that no known type was classified `neutral` or
 **A card that can't be clicked is dimmed.** A row that looks
 identical to a clickable one but ignores the click reads as broken;
 60% opacity answers the question before the pointer gets there. The
-common case is a tombstone — the emit deliberately omits the deleted
-diagram's id, so the renderer has nothing to link and the dimming is
-structural rather than a rule someone has to remember.
+common case is a folder / theme / team tombstone — the emit deliberately
+omits the deleted thing's id, so the renderer has nothing to link and
+the dimming is structural rather than a rule someone has to remember.
 
 **Copy rules.** A card separates the **subject** from the **reason**,
 and each has one home:
 
 - The **title is the subject**: the diagram, the team, the token, the
-  folder. Never "Diagram Deleted" as a title with the name underneath,
+  folder. Never "Folder Deleted" as a title with the name underneath,
   and never a sentence. The subject is what the reader scans for, and
   the picture above it already says what kind of thing it is.
 - The **reason line is the stored `title`**, which is a generic **Title
@@ -274,9 +277,10 @@ cards take the cells after it.
   the same day read as one moment: `team_member_joined` +
   `team_member_left` → "Members Changed"; `share_link_created` +
   `share_link_expired` → "Sharing Changed".
-- **Never stacked**: `comment_added` on a thread you are in, and any
-  event whose description carries content that only makes sense
-  individually. A collapsed comment hides the thing you wanted to read.
+- **Never stacked**: `comment_added` on a thread you are in,
+  `team_invite_received`, and any event whose description carries
+  content that only makes sense individually. A collapsed comment hides
+  the thing you wanted to read; a collapsed invite hides a question.
 - A stack of one is just a card; the faux layers only render at 2+,
   and the second layer only at 3+.
 - **Expanding and collapsing are the same control, in the same
@@ -516,6 +520,59 @@ watermark is captured from the FIRST read of a visit and never moved by
 a re-read (§2.5), so a re-read can't clear the New pills the reader
 came back to look at.
 
+### 2.4b Your own actions
+
+The feed is also where the reader ACTS: every diagram card carries the
+Recent menu (§2.8), so a delete, a rename, a duplicate or a move can
+start on the Timeline. Those used to be the one kind of change the feed
+never noticed. The worker swept the deleted diagram's cards, and the
+page sat exactly as it was — the old cards up — until a browser refresh
+proved otherwise. A feed that doesn't show what you just did on it
+reads as broken.
+
+So **any successful write re-reads the feed.** The api client raises a
+module-level signal after every non-GET that returned 2xx
+(`lib/api/write-signal.ts`, from `apiFetch` in `lib/api/core.ts`), and
+the feed re-reads its first page off that signal, merged the same way
+the return-to-tab read is. Announcing from the one place every request
+passes through, rather than at each mutation's call site, is the whole
+design: the list of writes that produce a timeline event would drift
+the first time a route gained an emit, and a signal nobody has to
+remember can't.
+
+Two timings, both deliberate (`useAfterApiWrite`):
+
+- **A one-second delay** before the re-read. Every emit runs after the
+  response (`ctx.waitUntil`), so a read fired the instant the DELETE
+  resolves lands before the tombstone does and shows the feed minus
+  the thing the reader just did.
+- **At most one re-read per five seconds**, trailing. The editor
+  autosaves every ~600ms, and a diagram's History dialog reads the same
+  hook; a read per save would be a request storm. Writes inside the
+  interval collapse into one read at its end, so the last write is
+  always followed by a read.
+
+**The re-read reconciles, it doesn't just add.** A plain merge would
+leave a deleted diagram's older cards up, and would keep the stale copy
+of the coalesced edit event the worker upserts in place. Within the stretch of time the page covers, the page
+is authoritative: a loaded card the page no longer holds is gone, and a
+loaded card the page holds takes the page's copy. Cards older than the
+page's floor can't be judged from that read and stay
+(`reconcileEvents`, in `merge-events.ts`).
+
+**A DELETE that ends an entity also names it.** `apiDelete` takes an
+optional `purge: { sourceType, sourceId }`, set by the four wrappers
+that end a diagram, folder, theme or team, and the feed drops that
+entity's cards on the spot with the worker's own cascade predicate
+(§3.5): keyed on the id, or referencing it from the snapshot under
+`<sourceType>Id`. This is what covers pages the re-read won't reach — a
+diagram created three months ago has its "Created" card well below page
+one — and it is why the reader sees the cards go as the menu closes
+rather than a second later.
+
+The feed's own endpoints are excluded from the signal: dismissing a
+card (§2.9) must not make the feed re-read itself to notice.
+
 ### 2.5 Unread
 
 The premise is "what happened since I was last here", so something has
@@ -658,13 +715,97 @@ nothing and gets plain cards: those surfaces sit outside the Explorer
 context that supplies the handlers, and on a diagram's own history page
 every card is the same diagram.
 
-**Non-diagram cards have no menu.** A team card, a folder card, a token
-card: each is one click target that opens the one place it can lead. A
-⋯ holding a single "Open" that duplicates the card's own click is a
-control that exists to look consistent, not to do anything.
+**A folder card carries the Explorer's folder menu**, by the same
+argument and the same mechanism: `FolderActionsMenu`, the one the
+folder cards, rows and sidebar tree open, resolved from the Explorer's
+personal folder tree by the `folderId` the event names. Rename (inline,
+in the title slot, exactly as a folder card does it), New Subfolder,
+Change Folder, Delete — whatever a folder's card offers, its Timeline
+card offers. A folder the Explorer can't resolve (a tombstone, or a
+team folder) gets the one-verb menu below.
+
+**Every other card's menu offers what the Explorer can do with that
+kind of thing**, resolved from the Explorer's own state and run through
+the Explorer's own handlers (`useTimelineEntityMenus`):
+
+| Card                                   | Verbs                                                                                  |
+| -------------------------------------- | -------------------------------------------------------------------------------------- |
+| API token (created, expiring)          | Open Tokens · **Revoke Token** (confirmed with the Tokens pane's own warning)          |
+| Team (created, renamed, members, role) | Open Team · Edit Team _(admin)_ · Leave Team · Delete Team _(admin)_                   |
+| Invite received                        | Open Invites · **Accept Invite** · **Decline Invite**                                  |
+| Theme saved                            | Open Themes · Edit Theme (the same builder modal the Themes pane opens) · Delete Theme |
+| Images uploaded                        | Open Images                                                                            |
+| Diagram the Explorer can't resolve     | Open Diagram                                                                           |
+
+Plus **Remove from Timeline** on all of them (§2.9), and the destructive
+verbs last, red, under their own separator, the way the diagram menu
+keeps Delete. The first version gave these cards only the remove verb,
+on the argument that a ⋯ holding a single "Open" that duplicated the
+card's own click was a control that exists to look consistent. Half
+right: the reader who sees "API Token Expiring" wants to revoke it
+_there_, not go and find it. Confirm copy comes from the panes' own
+helpers (`token-copy.ts`, `team-removal.ts`, `ThemeBuilderModal.tsx`),
+so the warning a reader sees is the one they'd see on the Tokens,
+Themes or Team page.
+
+**A tombstone, or an entity the Explorer no longer holds** — a revoked
+token, an answered invite, a team the reader has left, a deleted theme —
+keeps only the "open the section" row: a menu of guesses is worse than
+none. The same `TimelineCardMenu` component renders all three shapes
+(diagram, folder, items) behind the same trigger, so they can't drift on
+how a menu opens.
+
+**Every diagram card also offers Share**, which opens the diagram with
+its Share dialog up (the editor honours `?share=1`). The natural next
+step from a share-link card, and no worse from any other; offline
+diagrams, which have nothing to share, leave it out.
 
 Telemetry: opening a card menu fires `Timeline` / `Opened` / `Menu`
 (§10).
+
+### 2.9 Remove from Timeline
+
+A busy day clutters. A reader who saved six themes, made a folder and
+renamed three diagrams before lunch has a Today full of cards that were
+all true and are all now noise, and the only way to thin it was to wait
+for tomorrow. **Every card's ⋯ menu ends with "Remove from Timeline"**,
+which takes that one card off the reader's feed.
+
+- **Off the reader's feed, nobody else's.** One event row serves its
+  whole audience (§1, Membership), so the removal is a soft
+  `deleted_at` on the reader's membership row (§3.2), never a delete of
+  the event. A teammate tidying their feed leaves yours alone, and a
+  team's shared activity feed (§3.4) is untouched: this verb only exists
+  on the personal Timeline, which is the only feed with an Explorer
+  context to build the menu from.
+- **Soft so a re-emit can't resurrect it.** `attachEventToScopes` is
+  INSERT OR IGNORE against the composite key, so the coalesced editing
+  event — which re-attaches on every save — finds the dismissed row and
+  leaves it dismissed. Removing today's "Diagram Updated" and then
+  saving again does not bring it back; the reader said they'd seen
+  enough of that one today.
+- **Invisible everywhere a membership is read.** The feed and the
+  unread count both filter `deleted_at IS NULL`; a removed card that
+  kept pinning the sidebar badge would be the same bug as §2.5's
+  future-dated one.
+- **Optimistic.** The card goes as the menu closes and comes back only
+  if the worker refused. No confirm: the action is ambient tidying,
+  and the card vanishing is its own feedback.
+- On the diagram and folder menus it sits with the other "how you see
+  it" verbs, apart from Delete: it says nothing about the thing itself.
+- **A stack card has the same ⋯**, and its one verb removes every
+  member of the run at once. A day's "Diagrams Renamed · 12 events" is
+  one thing to the reader, so it is one click to be rid of. Opening the
+  menu must not expand the run: the card stops the trigger's click at
+  the slot, the same boundary that keeps a single card's menu from
+  opening the diagram behind it. The `<Timeline>` takes a separate
+  `stackSlots(stack)` hook for this, since a stack has no single event
+  to hand `cardSlots`. The run goes in one request
+  (`POST /api/timeline/events/dismiss`, §6.2a), not one per member.
+
+`DELETE /api/timeline/events/:id` and `POST /api/timeline/events/dismiss`
+(§6.2a). Telemetry: `Timeline` / `Removed` / `Entry` for a card, `Stack`
+for a run (§10).
 
 ## 3. Data model
 
@@ -696,10 +837,23 @@ same event twice — because a client retried, or because the backfill
 covers ground a live emit already covered — updates the existing row
 rather than duplicating it.
 
-`dedupe_key` is empty for one-shot events (a diagram is created once).
-It carries `<actorId>:<YYYY-MM-DD>` for the coalesced editing event
-(§4.2), which is the one event type that deliberately extends itself
-through the day.
+`dedupe_key` is empty for events that happen **once per source** (a
+diagram is created once; a tombstone is written once; an invite arrives
+once). It carries `<actorId>:<YYYY-MM-DD>` for the coalesced events —
+the editing event (§4.2), image uploads, and a theme's saves — which
+deliberately extend one row through the day.
+
+**Events that can recur on the same source get a fresh key every time**
+(`dedupeKeyOnce()`, a UUID): a rename, a move, a share link, an offline
+/ sync toggle, a team rename, a role change, a member joining, leaving
+or being removed, an invite answered, the invite link toggled. This was
+a bug: they carried the empty key, so the UNIQUE index took the second
+rename of a diagram for a retry of the first and **upserted** it. Three
+renames in a day showed one "Diagram Renamed" card instead of a stack
+of three, and a rename this month silently moved last month's card to
+today. The idempotency the empty key buys — a retry or a backfill
+overlap landing on the existing row — only matters for events the
+backfill writes, and it writes none of these.
 
 `occurred_at` is epoch ms, matching `change_log` rather than the ISO
 strings Manager Toolkit uses. Manager Toolkit has a whole normalisation
@@ -715,6 +869,7 @@ CREATE TABLE timeline_event_scopes (
   scope_type TEXT NOT NULL,               -- v1: 'user'. Reserved: 'diagram', 'team'.
   scope_id   TEXT NOT NULL,               -- an owner id when scope_type = 'user'
   added_at   INTEGER NOT NULL,
+  deleted_at INTEGER,                     -- set by Remove from Timeline (§2.9); migration 0044
   PRIMARY KEY (scope_type, scope_id, event_id)
 );
 
@@ -797,10 +952,11 @@ Still open:
   `(scope_type, scope_id, event_id)` — per viewing scope, not on the
   membership row, so a future composite read can't bleed one scope's
   stars into another's.
-- **Per-entry dismissal** would be a `deleted_at` on the membership
-  row, soft so a re-emit doesn't resurrect what the user dismissed.
+- **Per-entry dismissal** is a `deleted_at` on the membership row,
+  soft so a re-emit doesn't resurrect what the user dismissed. Built,
+  exactly as planned here (§2.9, migration `0045_timeline_dismissal`).
 
-None of those are built. All of them are additive.
+Favourites are not built. Everything here is additive.
 
 ### 3.5 Deletion and retention
 
@@ -811,13 +967,30 @@ None of those are built. All of them are additive.
   membership rows with them. A feed that keeps narrating a diagram
   nobody can open any more is noise, and every one of those cards
   links to a 404.
-  **The tombstone survives**, because the cascade runs _before_ the
-  `diagram_deleted` emit, not after. So a deleted diagram collapses
-  from a run of cards to exactly one — "Diagram Deleted / Payments
-  architecture" — which is the row that actually answers "what
-  happened to it?". `markTimelineEventsDeletedBySource(env,
-sourceType, sourceId)` is the shared helper; any future entity's
-  delete path calls it rather than writing the DELETE inline.
+  **And a deleted diagram leaves no tombstone.** From the Timeline's
+  point of view it never existed: nothing is written in its place, and
+  there is no `diagram_deleted` event type. There was one — "Diagram
+  Deleted / Payments architecture", in danger red, surviving the sweep
+  by being written after it — and it was noise the reader had asked to
+  be rid of: the delete was their own act, and a red card for it told
+  them nothing they didn't know. Migration `0045` swept the rows already
+  written. (Folders, themes and teams keep their tombstones: those are
+  the one row that answers "what happened to it?" for a container other
+  people may have relied on.)
+  `markTimelineEventsDeletedBySource(env, sourceType, sourceId)` is the
+  shared helper; any future entity's delete path calls it rather than
+  writing the DELETE inline.
+- **Deleting a folder, a theme, or a team cascades the same way.** They
+  didn't at first: a folder delete wrote its tombstone and left "Folder
+  Created" standing beside it, and every "Theme Saved" for a deleted
+  theme stayed up, where a diagram's history had always been swept.
+  Same helper, same order — the sweep runs first, then the tombstone,
+  whose `:deleted` source id keeps it out of any later sweep. Folder and
+  theme events live under the `account` source type keyed on the
+  folder's / theme's id (§4.5), so that is what their routes sweep;
+  a team sweeps `team`. The client mirrors the cascade the moment the
+  DELETE resolves (§2.4b), so the reader doesn't wait a second for the
+  re-read to see it.
 - **Deleting an account does.** The existing account-deletion path
   hard-deletes `timeline_event_scopes WHERE scope_id = ?`, then
   `timeline_events WHERE actor_id = ?`, then the scope-state row. The
@@ -875,7 +1048,6 @@ Team events use the analogous `audienceForTeam(env, teamId)`.
 | `diagram_created`                    | `POST /api/diagrams`                  | "Diagram Created" / "Payments architecture"                  |
 | `diagram_renamed`                    | `PUT` where the name changes          | "Diagram Renamed" / "Payments v1 → Payments architecture"    |
 | `diagram_duplicated`                 | duplicate route                       | "Diagram Duplicated" / "Copy of Payments architecture"       |
-| `diagram_deleted`                    | `DELETE`                              | "Diagram Deleted" / "Payments architecture"                  |
 | `diagram_moved`                      | folder change                         | "Moved to a Folder" / "Payments architecture → Architecture" |
 | `diagram_edited`                     | tab save (coalesced)                  | "Diagram Updated" / "You worked on Payments architecture"    |
 | `diagram_snapshot`                   | snapshot taken (spec/67)              | "Snapshot Taken" / "Payments architecture"                   |
@@ -884,10 +1056,10 @@ Team events use the analogous `audienceForTeam(env, teamId)`.
 **The two Offline Mode conversions declare themselves**, because they reuse
 ordinary endpoints and are otherwise indistinguishable from them: "Take
 offline" is a plain `DELETE /diagrams/:id` (the server copy really does go)
-and "Sync diagram" a plain `POST /diagrams`. Undeclared, the worker recorded
-`diagram_deleted` and `diagram_created` — so the feed told an owner, in danger
-red, that a diagram they had just moved into this browser had been **deleted**,
-and that one they had just uploaded was brand **new**. The editor therefore
+and "Sync diagram" a plain `POST /diagrams`. Undeclared, the worker treated
+them as a deletion and a `diagram_created` — so the feed lost a diagram the
+owner had just moved into this browser, and told them one they had just
+uploaded was brand **new**. The editor therefore
 sends `X-Diagram-Conversion: offline | sync` on the request that performs it,
 and the route picks the honest event. Header name, values and the reader live in
 `packages/api-schema` beside the event types they select, since it is a
@@ -902,11 +1074,10 @@ is also reachable by any joined member of the diagram's team (spec/35), and the
 Explorer offers Take Offline on a team-library row without checking who owns it.
 When a teammate does it the diagram lands in **their** browser and leaves the
 owner's account for good; from the owner's and the team's side that is a
-deletion, not something they can still reach. Honouring it as a conversion there
-would write the one and only event to the actor, so the owner and the whole team
-would be told _nothing_ while the row and its entire history disappeared from
-the library. So a non-owner's DELETE records `diagram_deleted` and fans out to
-the team audience, exactly as it did before conversions existed. The source cascade (§3.5) runs either way:
+deletion, not something they can still reach, and a deletion records nothing
+(§3.5) — so honouring the conversion would hand the teammate an owner-scoped
+"Taken Offline" card for a diagram they took from someone else. A non-owner's
+DELETE is therefore a plain delete. The source cascade (§3.5) runs either way:
 whatever the server held is gone, so its prior events would point at a 404.
 
 **The coalesced editing event** is the one that needs care, because it
@@ -1167,8 +1338,24 @@ Stamps `last_refreshed_at`, runs the backfill if it hasn't run, and
 returns `{ lastRefreshedAt }`. Throttled to one call per scope per 5
 seconds server-side to absorb spam-clicks on the Refresh button.
 
-There is no `POST`/`PATCH`/`DELETE` for events. Nothing user-authored
-lives on this feed.
+### 6.2a `DELETE /api/timeline/events/:id`
+
+Remove from Timeline (§2.9). Marks `deleted_at` on the caller's own
+`user` membership row for that event. `204` on success, and on a repeat
+(the outcome asked for already holds); `404` when the caller's feed
+never held the event, so a guessed id learns nothing beyond "not
+yours". There is no scope parameter: the verb only ever applies to the
+caller's personal feed. In the OpenAPI manifest like every other route.
+
+`POST /api/timeline/events/dismiss` with `{ ids: string[] }` is the same
+for a whole stack: one request for the run. Up to 200 ids; ids the
+caller's feed never held are ignored rather than refused (the caller is
+describing a stack it can see, and a member that vanished meanwhile is
+not an error). Returns `{ dismissed }`, the number of rows this call
+marked.
+
+There is no other `POST`/`PATCH` for events. Nothing user-authored lives
+on this feed; the dismissal removes, it never adds.
 
 ### 6.3 Stale-read refresh
 
@@ -1363,6 +1550,9 @@ New category `Timeline` in the closed enum in
 - `Timeline`/`Loaded` with `type` `More` — Show more.
 - `Timeline`/`Opened` with `type` `Menu` — a card's ⋯ menu opened
   (§2.8), so we can see whether people act on the feed or only read it.
+- `Timeline`/`Removed` with `type` `Entry` | `Stack` — a card, or a
+  whole run, removed from the feed (§2.9). If this is common, the day
+  is too noisy and the answer is a coarser emit, not a faster menu.
 
 No event ever carries a diagram name, team name, or comment text; the
 `type` slot is a fixed token, bounded by the existing
@@ -1433,12 +1623,13 @@ Per spec/18:
 
 ## 13. Out of scope for v1
 
-- Favourites / starring, per-entry dismissal, manual entries.
+- Favourites / starring, manual entries. (Per-entry removal shipped: §2.9.)
 - An unread badge on the sidebar row.
 - Per-diagram and per-team timeline scopes (the schema is ready; the
   renderers, routes, and UI are not).
 - AI day summaries.
-- Realtime push. A fresh read on mount, plus the re-read on return to
-  the tab (§2.4a), is the whole freshness story.
+- Realtime push. A fresh read on mount, the re-read on return to the
+  tab (§2.4a), and the re-read after the reader's own write (§2.4b)
+  are the whole freshness story.
 - Cross-user search over the feed.
 - Backfilling comments and actions out of historical tab JSON.

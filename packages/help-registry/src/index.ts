@@ -1321,7 +1321,7 @@ export const articles: Article[] = [
     title: 'Timeline',
     description: 'The Explorer\u2019s landing view: a day-by-day feed of everything that happened.',
     keywords:
-      'feed activity history what happened whats new latest events log stream notifications updates recent changes calendar month view upcoming expiring stacked grouped collapse day colour color red amber green deleted preview thumbnail card cards grid menu ellipsis rename move duplicate created updated unread unseen new badge since last visit who did what other people filter local time',
+      'feed activity history what happened whats new latest events log stream notifications updates recent changes calendar month view upcoming expiring stacked grouped collapse day colour color red amber green deleted preview thumbnail card cards grid menu ellipsis rename move duplicate created updated unread unseen new badge since last visit who did what other people filter local time remove dismiss hide clutter tidy clean up refresh live update revoke token accept decline invite leave team edit theme share',
     category: 'Explorer',
     categorySlug: 'explorer',
   },

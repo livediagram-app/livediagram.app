@@ -2824,7 +2824,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "diagram_created",
       "diagram_renamed",
       "diagram_duplicated",
-      "diagram_deleted",
       "diagram_moved",
       "diagram_edited",
       "diagram_offline",

@@ -15,6 +15,7 @@ import {
   expectOk,
   type ChangeLogAppendResponse,
   type ChangeLogListResponse,
+  apiFetch,
 } from './core';
 
 // Deduped on `${ownerId}|${id}|${shareCode ?? ''}`: fires on editor
@@ -29,7 +30,7 @@ async function _apiListChangeLog(
 ): Promise<ChangeLogEntry[]> {
   // Offline Mode (spec/76): the log lives in the diagram's IndexedDB record.
   if (await isOfflineId(id)) return offlineListChangeLog(id);
-  const res = await fetch(`${API_BASE}/diagrams/${id}/log`, {
+  const res = await apiFetch(`${API_BASE}/diagrams/${id}/log`, {
     headers: await apiHeaders(ownerId, { share: shareCode ?? null }),
   });
   const { entries } = await expectOk<ChangeLogListResponse>(res, 'list change log');
@@ -47,7 +48,7 @@ export async function apiAppendChangeLogEntry(
   shareCode: string | null = null,
 ): Promise<ChangeLogEntry> {
   if (await isOfflineId(diagramId)) return offlineAppendChangeLogEntry(diagramId, entry);
-  const res = await fetch(`${API_BASE}/diagrams/${diagramId}/log`, {
+  const res = await apiFetch(`${API_BASE}/diagrams/${diagramId}/log`, {
     method: 'POST',
     headers: await apiHeaders(ownerId, { share: shareCode, body: true }),
     body: JSON.stringify(entry),

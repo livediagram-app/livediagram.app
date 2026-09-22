@@ -72,6 +72,27 @@ describe('StackedCard', () => {
     expect(onToggle).toHaveBeenCalledTimes(2);
   });
 
+  // The host's menu on a stack (spec/138 §2.9). Opening it must not
+  // expand the run: the click stops at the slot.
+  it('renders the host menu slot without letting its click toggle the run', () => {
+    const onToggle = vi.fn();
+    const onContextMenu = vi.fn((e: { preventDefault: () => void }) => e.preventDefault());
+    render(
+      <StackedCard
+        stack={stack}
+        registry={registry}
+        ctx={{ viewerId: 'me' }}
+        onToggle={onToggle}
+        slots={{ menu: <button type="button">Menu</button>, onContextMenu }}
+      />,
+    );
+    fireEvent.click(screen.getByText('Menu'));
+    expect(onToggle).not.toHaveBeenCalled();
+    fireEvent.contextMenu(screen.getByText('Diagrams Renamed'));
+    expect(onContextMenu).toHaveBeenCalledTimes(1);
+    expect(onToggle).not.toHaveBeenCalled();
+  });
+
   it('shows its faux layers only while collapsed', () => {
     const { container, rerender } = render(
       <StackedCard

@@ -7,6 +7,7 @@ import { useState } from 'react';
 import type { ApiToken } from '@livediagram/api-schema';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { EmptyState } from '@livediagram/ui';
+import { TOKEN_REVOKE_MESSAGE } from './token-copy';
 
 const DAY = 86_400_000;
 const EXPIRES_SOON = 14 * DAY;
@@ -158,7 +159,7 @@ export function TokensPane({
       {confirm ? (
         <ConfirmPopover
           anchor={confirm.anchor}
-          message="Revoke this token? Any script using it stops working immediately."
+          message={TOKEN_REVOKE_MESSAGE}
           confirmLabel="Revoke"
           onConfirm={() => {
             onRevoke(confirm.id);

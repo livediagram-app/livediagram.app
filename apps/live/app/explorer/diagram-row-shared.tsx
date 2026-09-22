@@ -22,6 +22,7 @@ import {
   MenuFolderIcon,
   MenuPencilIcon,
   MenuTrashIcon,
+  ShareIcon,
   TeamIcon,
   ClockIcon,
   ClockOffIcon,
@@ -221,6 +222,8 @@ export function DiagramActionsMenu({
   onToggleFavourite,
   isOpen = false,
   onOpen,
+  onRemoveFromTimeline,
+  onShare,
 }: {
   diagram: PaneDiagram;
   anchor: HTMLElement | null;
@@ -252,6 +255,14 @@ export function DiagramActionsMenu({
   // How to open it. Absent = navigate to the diagram's page; the floating
   // panel passes its own opener so switching diagrams stays in-editor.
   onOpen?: () => void;
+  // Timeline only (spec/138 §2.9): take THIS card off the reader's feed.
+  // Says nothing about the diagram, so it sits with the other "how you
+  // see it" verbs, not with Delete.
+  onRemoveFromTimeline?: () => void;
+  // Open the diagram with its Share dialog already up (the editor
+  // honours `?share=1`). Offered where a reader is likely to be looking
+  // at sharing — the Timeline's share-link cards — rather than everywhere.
+  onShare?: () => void;
 }) {
   const href = hrefForDiagram(diagram);
   const offline = diagram.ownerId === OFFLINE_OWNER_ID;
@@ -275,6 +286,14 @@ export function DiagramActionsMenu({
           onClick={() => window.location.assign(href)}
         />
         <MenuGroupSeparator />
+        {onRemoveFromTimeline ? (
+          <MenuActionRow
+            plain
+            icon={<CloseIcon />}
+            label="Remove from Timeline"
+            onClick={then(onRemoveFromTimeline)}
+          />
+        ) : null}
         <MenuActionRow
           plain
           danger
@@ -299,6 +318,9 @@ export function DiagramActionsMenu({
             label="Open"
             onClick={onOpen ? then(onOpen) : () => window.location.assign(href)}
           />
+          {onShare ? (
+            <MenuActionRow plain icon={<ShareIcon />} label="Share" onClick={then(onShare)} />
+          ) : null}
           <MenuGroupSeparator />
         </>
       )}
@@ -382,6 +404,14 @@ export function DiagramActionsMenu({
             onClick={() => void takeOffline()}
           />
         )
+      ) : null}
+      {onRemoveFromTimeline ? (
+        <MenuActionRow
+          plain
+          icon={<CloseIcon />}
+          label="Remove from Timeline"
+          onClick={then(onRemoveFromTimeline)}
+        />
       ) : null}
       {onDelete ? (
         <>

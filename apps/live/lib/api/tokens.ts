@@ -9,10 +9,11 @@ import {
   expectOk,
   type CreateTokenResponse,
   type TokensResponse,
+  apiFetch,
 } from './core';
 
 export async function apiListTokens(ownerId: string): Promise<ApiToken[]> {
-  const res = await fetch(`${API_BASE}/tokens`, { headers: await apiHeaders(ownerId) });
+  const res = await apiFetch(`${API_BASE}/tokens`, { headers: await apiHeaders(ownerId) });
   const { tokens } = await expectOk<TokensResponse>(res, 'list tokens');
   return tokens;
 }
@@ -20,7 +21,7 @@ export async function apiListTokens(ownerId: string): Promise<ApiToken[]> {
 // Mint a token. The returned `token` is the one-time plaintext secret — show
 // it to the user to copy, then drop it (it's never retrievable again).
 export async function apiCreateToken(ownerId: string, name: string): Promise<CreateTokenResponse> {
-  const res = await fetch(`${API_BASE}/tokens`, {
+  const res = await apiFetch(`${API_BASE}/tokens`, {
     method: 'POST',
     headers: await apiHeaders(ownerId, { body: true }),
     body: JSON.stringify({ name }),

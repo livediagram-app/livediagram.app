@@ -17,7 +17,6 @@ import type { DiagramDTO } from '../types';
 const timeline = vi.hoisted(() => ({
   audienceForDiagram: vi.fn(async () => [] as unknown[]),
   recordDiagramCreated: vi.fn(async () => {}),
-  recordDiagramDeleted: vi.fn(async () => {}),
   recordDiagramDuplicated: vi.fn(async () => {}),
   recordDiagramOffline: vi.fn(async () => {}),
   recordDiagramRenamed: vi.fn(async () => {}),

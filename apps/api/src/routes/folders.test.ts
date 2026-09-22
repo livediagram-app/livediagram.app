@@ -20,6 +20,23 @@ const { db } = vi.hoisted(() => ({
 }));
 vi.mock('../db', () => db);
 
+// The Timeline side of a delete (spec/138 §3.5): the cascade and the
+// tombstone, both off the response path.
+const { timeline } = vi.hoisted(() => ({
+  timeline: {
+    markTimelineEventsDeletedBySource: vi.fn(),
+    recordFolderCreated: vi.fn(),
+    recordFolderDeleted: vi.fn(),
+  },
+}));
+vi.mock('../db/timeline', () => ({
+  markTimelineEventsDeletedBySource: timeline.markTimelineEventsDeletedBySource,
+}));
+vi.mock('../timeline', () => ({
+  recordFolderCreated: timeline.recordFolderCreated,
+  recordFolderDeleted: timeline.recordFolderDeleted,
+}));
+
 import type { RouteContext } from './context';
 import { handleFolders } from './folders';
 
@@ -36,6 +53,9 @@ const makeCtx = (
 
 beforeEach(() => {
   for (const fn of Object.values(db)) fn.mockReset();
+  for (const fn of Object.values(timeline)) fn.mockReset();
+  timeline.markTimelineEventsDeletedBySource.mockResolvedValue(undefined);
+  timeline.recordFolderDeleted.mockResolvedValue(undefined);
 });
 
 describe('handleFolders auth', () => {
@@ -91,5 +111,30 @@ describe('handleFolders auth', () => {
     const res = await handleFolders(makeCtx('DELETE', '/api/folders/f1'));
     expect(res.status).toBe(204);
     expect(db.deleteFolder).toHaveBeenCalledWith({}, 'f1');
+  });
+
+  // Deleting a folder used to leave its "Folder Created" card on the feed
+  // beside the "Folder Deleted" one, where a diagram delete had always
+  // swept its history first. Same cascade, same order: the earlier cards
+  // go, and the tombstone is written AFTER so it isn't swept with them.
+  it('sweeps the folders earlier timeline cards before writing its tombstone', async () => {
+    db.getFolder.mockResolvedValue({ id: 'f1', name: 'Q3', ownerId: 'owner-1' });
+    const background: Promise<unknown>[] = [];
+    const ctx = makeTestRouteContext('DELETE', '/api/folders/f1', {
+      owner: 'owner-1',
+      waitUntil: (p) => background.push(p),
+    });
+    const res = await handleFolders(ctx);
+    expect(res.status).toBe(204);
+    await Promise.all(background);
+    expect(timeline.markTimelineEventsDeletedBySource).toHaveBeenCalledWith({}, 'account', 'f1');
+    expect(timeline.recordFolderDeleted).toHaveBeenCalledWith(
+      {},
+      { id: 'f1', name: 'Q3' },
+      'owner-1',
+    );
+    const sweep = timeline.markTimelineEventsDeletedBySource.mock.invocationCallOrder[0]!;
+    const tombstone = timeline.recordFolderDeleted.mock.invocationCallOrder[0]!;
+    expect(sweep).toBeLessThan(tombstone);
   });
 });

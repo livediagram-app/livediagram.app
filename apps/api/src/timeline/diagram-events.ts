@@ -8,7 +8,7 @@
 
 import { TIMELINE_COMMENT_MAX } from '@livediagram/api-schema';
 import type { TimelineScopeRef } from '@livediagram/api-schema';
-import { dedupeKeyForDay } from '../db/timeline';
+import { dedupeKeyForDay, dedupeKeyOnce } from '../db/timeline';
 import type { DiagramDTO, Env } from '../types';
 import { audienceForDiagram, mergeScopes, userScope } from './audience';
 import { record, truncate } from './record';
@@ -55,6 +55,7 @@ export async function recordDiagramRenamed(
       sourceType: 'diagram',
       sourceId: diagram.id,
       eventType: 'diagram_renamed',
+      dedupeKey: dedupeKeyOnce(),
       title: 'Diagram Renamed',
       description: `${previousName} → ${diagram.name}`,
       snapshot: { ...diagramSnapshot(diagram), previousName },
@@ -84,34 +85,9 @@ export async function recordDiagramDuplicated(
   );
 }
 
-// The tombstone. Emitted AFTER markTimelineEventsDeletedBySource has
-// cleared this diagram's history, so it survives the cascade and a
-// deleted diagram collapses to exactly one row (spec/138 §3.5). The
-// audience is resolved before the delete, since the team link is gone
-// once the row is.
-export async function recordDiagramDeleted(
-  env: Env,
-  diagram: DiagramRef,
-  actorId: string,
-  audience: TimelineScopeRef[],
-): Promise<void> {
-  await record(
-    env,
-    {
-      actorId,
-      sourceType: 'diagram',
-      sourceId: diagram.id,
-      eventType: 'diagram_deleted',
-      title: 'Diagram Deleted',
-      description: diagram.name,
-      // No diagramId in the snapshot: the renderer must NOT link a
-      // tombstone anywhere, and leaving the id out makes that
-      // structural rather than a rule someone has to remember.
-      snapshot: { diagramName: diagram.name },
-    },
-    audience,
-  );
-}
+// There is deliberately no recordDiagramDeleted. A deleted diagram is
+// swept from the feed (spec/138 §3.5) and nothing is written in its
+// place: from the Timeline's point of view it never existed.
 
 export async function recordDiagramMoved(
   env: Env,
@@ -126,6 +102,7 @@ export async function recordDiagramMoved(
       sourceType: 'diagram',
       sourceId: diagram.id,
       eventType: 'diagram_moved',
+      dedupeKey: dedupeKeyOnce(),
       title: 'Moved to a Folder',
       description: `${diagram.name} → ${destination}`,
       snapshot: { ...diagramSnapshot(diagram), destination },
@@ -150,6 +127,7 @@ export async function recordTeamDiagramAdded(
       sourceType: 'diagram',
       sourceId: diagram.id,
       eventType: 'team_diagram_added',
+      dedupeKey: dedupeKeyOnce(),
       title: 'Shared with a Team',
       description: `${diagram.name} → ${teamName}`,
       snapshot: { ...diagramSnapshot(diagram), teamName },
@@ -183,6 +161,7 @@ export async function recordTeamDiagramRemoved(
       sourceType: 'diagram',
       sourceId: diagram.id,
       eventType: 'team_diagram_removed',
+      dedupeKey: dedupeKeyOnce(),
       title: 'Removed from a Team',
       description: `${diagram.name} → ${teamName}`,
       snapshot: {
@@ -350,6 +329,7 @@ export async function recordShareLinkCreated(
       sourceType: 'diagram',
       sourceId: `${diagram.id}:${role}`,
       eventType: 'share_link_created',
+      dedupeKey: dedupeKeyOnce(),
       title: 'Share Link Created',
       description: diagram.name,
       snapshot: { ...diagramSnapshot(diagram), role },
@@ -396,6 +376,7 @@ export async function recordDiagramOffline(
       sourceType: 'diagram',
       sourceId: diagram.id,
       eventType: 'diagram_offline',
+      dedupeKey: dedupeKeyOnce(),
       title: 'Taken Offline',
       description: diagram.name,
       // No diagramId: the server copy is gone, so the row must not link
@@ -418,6 +399,7 @@ export async function recordDiagramSynced(
       sourceType: 'diagram',
       sourceId: diagram.id,
       eventType: 'diagram_synced',
+      dedupeKey: dedupeKeyOnce(),
       title: 'Synced to the Cloud',
       description: diagram.name,
       snapshot: diagramSnapshot(diagram),

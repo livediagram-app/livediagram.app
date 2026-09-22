@@ -9,11 +9,11 @@
 // UserPreferences lives in apps/live/lib/user-preferences.ts as the
 // authoritative type, and we marshal it as a plain Record so adding
 // a flag never needs an api-schema change.
-import { API_BASE, apiHeaders } from './core';
+import { API_BASE, apiHeaders, apiFetch } from './core';
 
 export async function apiGetPreferences(ownerId: string): Promise<Record<string, unknown> | null> {
   try {
-    const res = await fetch(`${API_BASE}/preferences`, {
+    const res = await apiFetch(`${API_BASE}/preferences`, {
       headers: await apiHeaders(ownerId),
     });
     if (!res.ok) return null;
@@ -34,7 +34,7 @@ export async function apiPutPreferences(
   prefs: Record<string, unknown>,
 ): Promise<void> {
   try {
-    await fetch(`${API_BASE}/preferences`, {
+    await apiFetch(`${API_BASE}/preferences`, {
       method: 'PUT',
       headers: await apiHeaders(ownerId, { body: true }),
       body: JSON.stringify({ prefs }),

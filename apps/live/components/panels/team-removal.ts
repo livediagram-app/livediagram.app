@@ -33,6 +33,16 @@ export function teamRemovalTelemetryType(kind: TeamRemovalKind): 'Self' | 'Invit
   return kind === 'invite' ? 'Invite' : 'Member';
 }
 
+// What the confirm dialog says before a team goes. Read by the team
+// pane and the Timeline's team-card menu.
+export function teamDeleteCopy(teamName: string | undefined) {
+  return {
+    title: 'Delete team?',
+    message: `"${teamName}" and its member list will be permanently deleted. Diagrams are not affected.`,
+    confirmLabel: 'Delete team',
+  };
+}
+
 export type TeamRemovalCopy = {
   title: string;
   message: string;

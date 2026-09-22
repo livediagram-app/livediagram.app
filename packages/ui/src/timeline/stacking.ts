@@ -40,10 +40,9 @@ const BUCKET_ALIASES: Record<string, string> = {
 // words. Comments are the highest-signal item on this feed and the
 // reason someone opens it, so they never fold into "4 events".
 //
-// Deletions stand alone for a different reason: a tombstone is the
-// last thing a diagram ever says, and burying it in a stack is how
-// somebody fails to notice a teammate deleted their work.
-const NEVER_STACK = new Set<string>(['comment_added', 'diagram_deleted', 'team_invite_received']);
+// An invite stands alone too: it asks for an answer, and a request
+// folded into "3 events" is one the reader never sees.
+const NEVER_STACK = new Set<string>(['comment_added', 'team_invite_received']);
 
 export function bucketFor(event: TimelineEvent): string {
   return BUCKET_ALIASES[event.eventType] ?? `${event.sourceType}::${event.eventType}`;

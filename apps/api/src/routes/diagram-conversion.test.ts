@@ -20,7 +20,6 @@ import type { DiagramDTO } from '../types';
 const timeline = vi.hoisted(() => ({
   audienceForDiagram: vi.fn(async () => [] as unknown[]),
   recordDiagramCreated: vi.fn(async () => {}),
-  recordDiagramDeleted: vi.fn(async () => {}),
   recordDiagramDuplicated: vi.fn(async () => {}),
   recordDiagramOffline: vi.fn(async () => {}),
   recordDiagramRenamed: vi.fn(async () => {}),
@@ -60,6 +59,7 @@ vi.mock('../auth/diagram-access', () => ({
   canEditDiagram: vi.fn(async () => true),
 }));
 
+import { markTimelineEventsDeletedBySource } from '../db/timeline';
 import { handleDiagrams } from './diagrams';
 
 const OWNER = 'owner-1';
@@ -112,17 +112,20 @@ describe('DELETE /diagrams/:id — take offline vs real delete', () => {
     expect((await handleDiagrams(ctx)).status).toBe(204);
     await settle();
     expect(timeline.recordDiagramOffline).toHaveBeenCalledTimes(1);
-    // The wrong one, and the reason this exists: "deleted" in danger red for a
-    // diagram the owner still has, sitting in this browser.
-    expect(timeline.recordDiagramDeleted).not.toHaveBeenCalled();
   });
 
-  it('still records a real delete when nothing is declared', async () => {
+  it('records nothing for a real delete: the diagram leaves no card behind', async () => {
+    // spec/138 §3.5: the history is swept and no tombstone follows. From the
+    // feed's point of view the diagram never existed.
     db.getDiagram.mockResolvedValue(diagram);
     const { ctx, settle } = ctxWith('DELETE', '/api/diagrams/d1');
     expect((await handleDiagrams(ctx)).status).toBe(204);
     await settle();
-    expect(timeline.recordDiagramDeleted).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(markTimelineEventsDeletedBySource)).toHaveBeenCalledWith(
+      expect.anything(),
+      'diagram',
+      'd1',
+    );
     expect(timeline.recordDiagramOffline).not.toHaveBeenCalled();
   });
 
@@ -133,7 +136,6 @@ describe('DELETE /diagrams/:id — take offline vs real delete', () => {
     const { ctx, settle } = ctxWith('DELETE', '/api/diagrams/d1', conversion('nonsense'));
     await handleDiagrams(ctx);
     await settle();
-    expect(timeline.recordDiagramDeleted).toHaveBeenCalledTimes(1);
     expect(timeline.recordDiagramOffline).not.toHaveBeenCalled();
   });
 
@@ -149,20 +151,17 @@ describe('DELETE /diagrams/:id — take offline vs real delete', () => {
 });
 
 describe("a non-owner cannot convert someone else's diagram", () => {
-  // The hole this pass exists to close, and it was in the fix that introduced
-  // the conversion. Narrowing the audience to the actor is right when the OWNER
-  // takes their own diagram offline. When a teammate does it the diagram lands
-  // in THEIR browser and leaves the owner's account for good — and since the
-  // offline event is owner-scoped, the only row written went to the teammate.
-  // The owner and the team were told nothing while the diagram and its entire
-  // history vanished from the library. Before the conversion existed they at
-  // least got `diagram_deleted`, so this was a regression, not a gap.
+  // Narrowing the audience to the actor is right when the OWNER takes their
+  // own diagram offline. When a teammate does it the diagram lands in THEIR
+  // browser and leaves the owner's account for good — that is a deletion from
+  // everyone else's side, and a deletion records nothing (spec/138 §3.5), so
+  // the teammate must not get an owner-scoped "Taken Offline" card either.
   beforeEach(() => {
     db.getDiagram.mockResolvedValue(teamDiagram);
     db.getMembership.mockResolvedValue({ status: 'joined' });
   });
 
-  it('records a real delete when a joined teammate declares a conversion', async () => {
+  it('treats a joined teammates declared conversion as a plain delete', async () => {
     const { ctx, settle } = ctxWith('DELETE', '/api/diagrams/d1', {
       owner: 'bob',
       clerkUserId: 'bob',
@@ -170,26 +169,11 @@ describe("a non-owner cannot convert someone else's diagram", () => {
     });
     expect((await handleDiagrams(ctx)).status).toBe(204);
     await settle();
-    expect(timeline.recordDiagramDeleted).toHaveBeenCalledTimes(1);
     expect(timeline.recordDiagramOffline).not.toHaveBeenCalled();
-  });
-
-  it('still reaches the team audience in that case', async () => {
-    // The point of recording it as a delete: the owner and every joined member
-    // learn the diagram left the library.
-    timeline.audienceForDiagram.mockResolvedValueOnce(['alice', 'carol'] as never);
-    const { ctx, settle } = ctxWith('DELETE', '/api/diagrams/d1', {
-      owner: 'bob',
-      clerkUserId: 'bob',
-      ...conversion('offline'),
-    });
-    await handleDiagrams(ctx);
-    await settle();
-    expect(timeline.recordDiagramDeleted).toHaveBeenCalledWith(
+    expect(vi.mocked(markTimelineEventsDeletedBySource)).toHaveBeenCalledWith(
       expect.anything(),
-      teamDiagram,
-      'bob',
-      ['alice', 'carol'],
+      'diagram',
+      'd1',
     );
   });
 
@@ -203,7 +187,6 @@ describe("a non-owner cannot convert someone else's diagram", () => {
     await handleDiagrams(ctx);
     await settle();
     expect(timeline.recordDiagramOffline).toHaveBeenCalledTimes(1);
-    expect(timeline.recordDiagramDeleted).not.toHaveBeenCalled();
   });
 });
 

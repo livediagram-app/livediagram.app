@@ -22,6 +22,7 @@ import {
   getSessionSharePassword,
   tabForWire,
   type TabResponse,
+  apiFetch,
 } from './core';
 
 // Full tab payload, including elements + per-tab metadata. Pulled
@@ -35,7 +36,7 @@ async function _apiLoadTab(
 ): Promise<Tab | null> {
   // Offline Mode (spec/76): an offline diagram's tabs come from IndexedDB.
   if (await isOfflineId(diagramId)) return offlineLoadTab(diagramId, tabId);
-  const res = await fetch(`${API_BASE}/diagrams/${diagramId}/tabs/${tabId}`, {
+  const res = await apiFetch(`${API_BASE}/diagrams/${diagramId}/tabs/${tabId}`, {
     headers: await apiHeaders(ownerId, { share: shareCode }),
   });
   const body = await expectOkOrNull<TabResponse>(res, 'load tab');
@@ -81,7 +82,7 @@ export async function apiSaveTab(
   if (await isOfflineId(diagramId)) return offlineSaveTab(diagramId, tab, Date.now());
   const headers = new Headers(await apiHeaders(ownerId, { share: shareCode, body: true }));
   if (opts.allowEmpty) headers.set('X-Allow-Empty', '1');
-  const res = await fetch(`${API_BASE}/diagrams/${diagramId}/tabs/${tab.id}`, {
+  const res = await apiFetch(`${API_BASE}/diagrams/${diagramId}/tabs/${tab.id}`, {
     method: 'PUT',
     headers,
     body: JSON.stringify(tabForWire(tab)),
@@ -158,7 +159,7 @@ export function flushDiagramSavesBeacon(args: {
     const headers = args.loadedTabIds.has(t.id)
       ? { ...jsonHeaders, 'X-Allow-Empty': '1' }
       : jsonHeaders;
-    void fetch(`${API_BASE}/diagrams/${args.diagramId}/tabs/${t.id}`, {
+    void apiFetch(`${API_BASE}/diagrams/${args.diagramId}/tabs/${t.id}`, {
       method: 'PUT',
       headers,
       body: JSON.stringify(tabForWire(t)),
@@ -166,14 +167,14 @@ export function flushDiagramSavesBeacon(args: {
     }).catch(() => {});
   }
   for (const tabId of args.deletedIds) {
-    void fetch(`${API_BASE}/diagrams/${args.diagramId}/tabs/${tabId}`, {
+    void apiFetch(`${API_BASE}/diagrams/${args.diagramId}/tabs/${tabId}`, {
       method: 'DELETE',
       headers: base,
       keepalive: true,
     }).catch(() => {});
   }
   if (args.orderChanged || args.nameChanged) {
-    void fetch(`${API_BASE}/diagrams/${args.diagramId}`, {
+    void apiFetch(`${API_BASE}/diagrams/${args.diagramId}`, {
       method: 'PUT',
       headers: jsonHeaders,
       body: JSON.stringify({
@@ -206,7 +207,7 @@ export async function apiAddComment(
   authorName: string;
   authorColor: string;
 }> {
-  const res = await fetch(
+  const res = await apiFetch(
     `${API_BASE}/diagrams/${encodeURIComponent(diagramId)}/tabs/${encodeURIComponent(tabId)}/comments`,
     {
       method: 'POST',
@@ -239,7 +240,7 @@ export async function apiDeleteComment(
   commentId: string,
   shareCode: string | null = null,
 ): Promise<void> {
-  const res = await fetch(
+  const res = await apiFetch(
     `${API_BASE}/diagrams/${encodeURIComponent(diagramId)}/tabs/${encodeURIComponent(tabId)}/comments/${encodeURIComponent(commentId)}`,
     {
       method: 'DELETE',
@@ -260,7 +261,7 @@ export async function apiLinkTab(
   diagramId: string,
   tabId: string,
 ): Promise<TabSummary> {
-  const res = await fetch(
+  const res = await apiFetch(
     `${API_BASE}/diagrams/${encodeURIComponent(diagramId)}/tabs/${encodeURIComponent(tabId)}/link`,
     {
       method: 'POST',

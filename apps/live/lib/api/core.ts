@@ -17,6 +17,7 @@ import type {
 import { stampTabKind, type Tab } from '@livediagram/diagram';
 import { readLocalStorageSafe, writeLocalStorageSafe } from '../local-storage-safe';
 import { getGuestSelfSig } from '../local-identity';
+import { notifyApiWrite } from './write-signal';
 
 // `API_BASE` resolution:
 //   1. `NEXT_PUBLIC_API_BASE` env var if set — used for local dev (e.g.
@@ -53,6 +54,26 @@ export function wsUrl(path: string): string {
   }
   const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
   return `${proto}//${window.location.host}${API_BASE}${path}`;
+}
+
+// Every api request goes through here rather than bare `fetch` so a
+// successful WRITE can be announced (write-signal.ts): the Timeline
+// re-reads itself off that signal, which is what lets a delete or a
+// rename show up on the feed without a browser refresh (spec/138
+// §2.4b). Reads stay silent, and so do the feed's own endpoints —
+// dismissing a card must not make the feed re-read itself to notice.
+//
+// Transparent otherwise: same arguments, same Response, and a network
+// failure still throws to the caller before any signal is raised.
+export async function apiFetch(input: string, init?: RequestInit): Promise<Response> {
+  const res = await fetch(input, init);
+  const method = (init?.method ?? 'GET').toUpperCase();
+  if (method !== 'GET' && res.ok && !isTimelinePath(input)) notifyApiWrite();
+  return res;
+}
+
+function isTimelinePath(url: string): boolean {
+  return url.startsWith(`${API_BASE}/timeline`);
 }
 
 // Envelope shapes the API wraps payloads in. The canonical inner
@@ -361,9 +382,15 @@ export async function apiDelete(
     // conversion header — without one the worker cannot tell "take offline"
     // from a real delete and records the wrong timeline event.
     extra?: Record<string, string>;
+    // When this DELETE ends an entity the Timeline narrates (a diagram, a
+    // folder, a theme, a team), name it in the feed's terms so the feed
+    // can drop the entity's earlier cards at once, the way the worker's
+    // cascade does server-side (spec/138 §3.5). Omit for a DELETE that
+    // merely changes something (a share link, a favourite).
+    purge?: { sourceType: string; sourceId: string };
   },
 ): Promise<void> {
-  const res = await fetch(url, {
+  const res = await apiFetch(url, {
     method: 'DELETE',
     headers: await apiHeaders(ownerId, {
       ...(opts.share === undefined ? {} : { share: opts.share }),
@@ -375,6 +402,7 @@ export async function apiDelete(
   } else {
     await expectOkVoid(res, opts.action);
   }
+  if (opts.purge && res.ok) notifyApiWrite({ purge: opts.purge });
 }
 
 // Strip fields that ride on the Tab type for the editor's convenience

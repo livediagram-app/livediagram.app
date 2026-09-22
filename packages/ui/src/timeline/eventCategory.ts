@@ -47,7 +47,6 @@ const BY_EVENT: Record<KnownTimelineEventType, TimelineCategory> = {
   // diagram, a folder, a team, or a working token are the same kind of
   // news, and someone scanning for "did anything disappear?" wants them
   // in one place.
-  diagram_deleted: 'deletions',
   folder_deleted: 'deletions',
   theme_deleted: 'deletions',
   team_deleted: 'deletions',

@@ -35,6 +35,19 @@ export function dedupeKeyForDay(actorId: string | null, at: number): string {
   return `${actorId ?? 'system'}:${new Date(at).toISOString().slice(0, 10)}`;
 }
 
+// The dedupe key for an event that can happen to the same source MORE
+// THAN ONCE and should be a fresh row each time: a rename, a move, a
+// role change. With the default '' key the UNIQUE index treats the
+// second rename of a diagram as a retry of the first and UPSERTS it —
+// so a diagram renamed three times in a day showed one card, not a
+// stack of three, and a rename this month silently moved last month's
+// card to today. '' stays right for events that genuinely happen once
+// per source (created, a tombstone, an invite), where a retry or a
+// backfill overlap SHOULD land on the existing row.
+export function dedupeKeyOnce(): string {
+  return crypto.randomUUID();
+}
+
 // Write one event and attach it to every scope that should see it.
 //
 // Idempotent twice over: the UNIQUE key on
@@ -201,7 +214,9 @@ export async function readTimeline(
   opts: ReadTimelineOptions,
 ): Promise<ReadTimelineResult> {
   const binds: unknown[] = [opts.scope.scopeType, opts.scope.scopeId];
-  let where = 's.scope_type = ?1 AND s.scope_id = ?2';
+  // A dismissed membership (spec/138 §2.9) is still a row, so the
+  // re-emit path can't resurrect it, but it is not part of the feed.
+  let where = 's.scope_type = ?1 AND s.scope_id = ?2 AND s.deleted_at IS NULL';
 
   if (opts.cursor) {
     const parsed = parseCursor(opts.cursor);
@@ -331,7 +346,7 @@ export async function countUnseen(
        SELECT e.id
          FROM timeline_event_scopes s
          JOIN timeline_events e ON e.id = s.event_id
-        WHERE s.scope_type = ?1 AND s.scope_id = ?2
+        WHERE s.scope_type = ?1 AND s.scope_id = ?2 AND s.deleted_at IS NULL
           AND e.occurred_at > ?3
           AND e.occurred_at <= ?5
           AND (e.actor_id IS NULL OR e.actor_id <> ?2)
@@ -424,6 +439,65 @@ export async function markTimelineEventsDeletedBySource(
   )
     .bind(sourceType, sourceId, `${sourceType}Id`)
     .run();
+}
+
+// Per-entry dismissal (spec/138 §2.9): take one event off ONE scope's
+// feed. Soft, on the membership row rather than the event, because the
+// event is shared by everyone it was scoped to — a teammate tidying
+// their feed must not tidy yours — and because `attachEventToScopes` is
+// INSERT OR IGNORE, so a soft-deleted row is exactly what stops a
+// re-emit (the coalesced editing event re-attaches on every save) from
+// bringing the card back.
+//
+// Returns false when the scope never held the event, so the route can
+// 404 rather than claim to have removed something that wasn't there.
+// Dismissing twice is a no-op that still reports true: the second
+// click found the row, and the outcome the caller wanted holds.
+export async function dismissTimelineEventForScope(
+  env: Env,
+  scope: TimelineScopeRef,
+  eventId: string,
+): Promise<boolean> {
+  const row = await env.DB.prepare(
+    `SELECT deleted_at FROM timeline_event_scopes
+      WHERE scope_type = ?1 AND scope_id = ?2 AND event_id = ?3`,
+  )
+    .bind(scope.scopeType, scope.scopeId, eventId)
+    .first<{ deleted_at: number | null }>();
+  if (!row) return false;
+  if (row.deleted_at !== null) return true;
+  await env.DB.prepare(
+    `UPDATE timeline_event_scopes SET deleted_at = ?4
+      WHERE scope_type = ?1 AND scope_id = ?2 AND event_id = ?3`,
+  )
+    .bind(scope.scopeType, scope.scopeId, eventId, Date.now())
+    .run();
+  return true;
+}
+
+// The same dismissal for a whole stack at once (spec/138 §2.9). One
+// UPDATE over the id list rather than a round trip per card: a day's
+// stack of forty renames is one request and one statement. Returns how
+// many rows this call actually marked; ids the scope never held, or
+// had already dismissed, simply don't count.
+export const DISMISS_BATCH_MAX = 200;
+
+export async function dismissTimelineEventsForScope(
+  env: Env,
+  scope: TimelineScopeRef,
+  eventIds: readonly string[],
+): Promise<number> {
+  const ids = eventIds.slice(0, DISMISS_BATCH_MAX);
+  if (ids.length === 0) return 0;
+  const placeholders = ids.map((_, i) => `?${i + 4}`).join(', ');
+  const res = await env.DB.prepare(
+    `UPDATE timeline_event_scopes SET deleted_at = ?3
+      WHERE scope_type = ?1 AND scope_id = ?2 AND deleted_at IS NULL
+        AND event_id IN (${placeholders})`,
+  )
+    .bind(scope.scopeType, scope.scopeId, Date.now(), ...ids)
+    .run();
+  return res.meta?.changes ?? 0;
 }
 
 // Account deletion. The FK cascade makes the order safe regardless;

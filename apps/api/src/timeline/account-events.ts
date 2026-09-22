@@ -67,6 +67,10 @@ export async function recordThemeSaved(
       sourceType: 'account',
       sourceId: theme.id,
       eventType: 'theme_saved',
+      // One card per theme per day, however many times it was saved
+      // while being tweaked — but a save next month is a new card, not
+      // last month's moved forward.
+      dedupeKey: dedupeKeyForDay(ownerId, Date.now()),
       title: 'Theme Saved',
       description: theme.name,
       snapshot: { themeName: theme.name },

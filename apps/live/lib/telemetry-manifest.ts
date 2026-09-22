@@ -143,10 +143,12 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   // — the first two measure the landing-page change, the third tells us
   // whether the stacking thresholds are right. 'Changed' carries the
   // view mode, 'Selected' a filter chip's source type, 'Loaded'/'More'
-  // a Show-more click.
+  // a Show-more click, 'Removed'/'Entry' a card taken off the feed
+  // (spec/138 §2.9).
   'Timeline·Changed',
   'Timeline·Loaded',
   'Timeline·Opened',
+  'Timeline·Removed',
   'Timeline·Selected',
   'Token·Created',
   'Token·Removed',

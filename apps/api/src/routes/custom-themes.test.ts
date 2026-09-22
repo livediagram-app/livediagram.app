@@ -17,6 +17,23 @@ const { db } = vi.hoisted(() => ({
 }));
 vi.mock('../db', () => db);
 
+// The Timeline side of a delete (spec/138 §3.5): the cascade and the
+// tombstone, both off the response path.
+const { timeline } = vi.hoisted(() => ({
+  timeline: {
+    markTimelineEventsDeletedBySource: vi.fn(),
+    recordThemeSaved: vi.fn(),
+    recordThemeDeleted: vi.fn(),
+  },
+}));
+vi.mock('../db/timeline', () => ({
+  markTimelineEventsDeletedBySource: timeline.markTimelineEventsDeletedBySource,
+}));
+vi.mock('../timeline', () => ({
+  recordThemeSaved: timeline.recordThemeSaved,
+  recordThemeDeleted: timeline.recordThemeDeleted,
+}));
+
 import type { RouteContext } from './context';
 import { handleCustomThemes } from './custom-themes';
 
@@ -42,6 +59,9 @@ const makeCtx = (
 
 beforeEach(() => {
   for (const fn of Object.values(db)) fn.mockReset();
+  for (const fn of Object.values(timeline)) fn.mockReset();
+  timeline.markTimelineEventsDeletedBySource.mockResolvedValue(undefined);
+  timeline.recordThemeDeleted.mockResolvedValue(undefined);
 });
 
 describe('handleCustomThemes auth', () => {
@@ -119,6 +139,35 @@ describe('handleCustomThemes auth', () => {
     const res = await handleCustomThemes(makeCtx('DELETE', '/api/custom-themes/custom:1'));
     expect(res.status).toBe(204);
     expect(db.deleteCustomTheme).toHaveBeenCalledWith({}, 'custom:1');
+  });
+
+  // Every "Theme Saved" card for the theme goes, then "Theme Deleted" is
+  // written — the diagram delete's cascade-then-tombstone order, which
+  // themes and folders used to skip, leaving their history beside the
+  // tombstone.
+  it('sweeps the themes earlier timeline cards before writing its tombstone', async () => {
+    db.getCustomTheme.mockResolvedValue({ id: 'custom:1', name: 'Dusk', ownerId: 'owner-1' });
+    const background: Promise<unknown>[] = [];
+    const ctx = makeTestRouteContext('DELETE', '/api/custom-themes/custom:1', {
+      owner: 'owner-1',
+      waitUntil: (p) => background.push(p),
+    });
+    const res = await handleCustomThemes(ctx);
+    expect(res.status).toBe(204);
+    await Promise.all(background);
+    expect(timeline.markTimelineEventsDeletedBySource).toHaveBeenCalledWith(
+      {},
+      'account',
+      'custom:1',
+    );
+    expect(timeline.recordThemeDeleted).toHaveBeenCalledWith(
+      {},
+      { id: 'custom:1', name: 'Dusk' },
+      'owner-1',
+    );
+    const sweep = timeline.markTimelineEventsDeletedBySource.mock.invocationCallOrder[0]!;
+    const tombstone = timeline.recordThemeDeleted.mock.invocationCallOrder[0]!;
+    expect(sweep).toBeLessThan(tombstone);
   });
 
   it('403 when deleting a theme owned by someone else', async () => {
