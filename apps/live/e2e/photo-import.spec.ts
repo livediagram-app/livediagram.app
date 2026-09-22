@@ -361,3 +361,131 @@ test('a corrected review can be saved as ground truth', async ({ page, pageError
 
   expectNoPageErrors(pageErrors);
 });
+
+// THE BOXES MUST SIT ON THE STICKIES. They are placed as percentages, so
+// whatever element those percentages are measured against has to be the
+// IMAGE — not a frame that can be bigger than it. A wide, short photo in a
+// tall window is where the two come apart: the frame has a minimum height, the
+// photo does not fill it, and every box drifts down the picture.
+test('the boxes land on the stickies at any window shape', async ({ page, pageErrors }) => {
+  await openBoard(page);
+  // A panorama: 6:1, like a photo of a long paper wall.
+  const notes = [
+    { fill: ORANGE, x: 60, y: 60, w: 120, h: 120 },
+    { fill: BLUE, x: 600, y: 60, w: 120, h: 120 },
+    { fill: ORANGE, x: 1140, y: 60, w: 120, h: 120 },
+  ];
+  await page.getByRole('button', { name: /add from photo/i }).click();
+  await page.setInputFiles('input[type="file"]', {
+    name: 'panorama.png',
+    mimeType: 'image/png',
+    buffer: wallPhotoPng(1320, 240, notes),
+  });
+  const overlay = page.locator('[data-testid="photo-review-overlay"]');
+  await overlay.waitFor({ state: 'visible', timeout: 15_000 });
+  await overlay
+    .locator('[data-testid="photo-finding"]')
+    .waitFor({ state: 'hidden', timeout: 30_000 });
+  await expect(overlay.locator('[data-testid^="note-box-"]')).toHaveCount(3);
+
+  // Four window shapes, resized one after another on the SAME open review,
+  // because that is how it was reported: the boxes go wrong when the window
+  // changes shape under them. Two of these make the frame's minimum size win
+  // over the picture, in each direction.
+  for (const viewport of [
+    { width: 1280, height: 720 },
+    { width: 900, height: 1100 },
+    { width: 1600, height: 500 },
+    { width: 700, height: 900 },
+  ]) {
+    await page.setViewportSize(viewport);
+    await page.waitForTimeout(250);
+    const img = (await overlay.locator('img').boundingBox())!;
+    for (const [at, note] of notes.entries()) {
+      const box = (await overlay.locator(`[data-testid^="note-box-"]`).nth(at).boundingBox())!;
+      // Where the sticky IS, in the rendered image.
+      const wantX = img.x + ((note.x + note.w / 2) / 1320) * img.width;
+      const wantY = img.y + ((note.y + note.h / 2) / 240) * img.height;
+      const gotX = box.x + box.width / 2;
+      const gotY = box.y + box.height / 2;
+      // Within a tenth of a note: the box outlines the paper, it does not
+      // hover near it.
+      const tolerance = (120 / 1320) * img.width * 0.5;
+      expect(
+        Math.abs(gotX - wantX),
+        `note ${at} x at ${viewport.width}x${viewport.height}`,
+      ).toBeLessThan(tolerance);
+      expect(
+        Math.abs(gotY - wantY),
+        `note ${at} y at ${viewport.width}x${viewport.height}`,
+      ).toBeLessThan(tolerance);
+    }
+  }
+
+  // And the gesture reads the same geometry: a box DRAWN in a window shape
+  // where the frame is bigger than the picture has to land under the pointer,
+  // not offset by the gap between the two.
+  const img = (await overlay.locator('img').boundingBox())!;
+  const from = { x: img.x + img.width * 0.4, y: img.y + img.height * 0.55 };
+  const to = { x: img.x + img.width * 0.5, y: img.y + img.height * 0.9 };
+  await page.mouse.move(from.x, from.y);
+  await page.mouse.down();
+  await page.mouse.move(to.x, to.y, { steps: 8 });
+  await page.mouse.up();
+  await expect(overlay.locator('[data-testid^="note-box-"]')).toHaveCount(4);
+  const drawn = (await overlay.locator('[data-testid^="note-box-"]').last().boundingBox())!;
+  expect(Math.abs(drawn.x - from.x)).toBeLessThan(6);
+  expect(Math.abs(drawn.y - from.y)).toBeLessThan(6);
+  expect(Math.abs(drawn.width - (to.x - from.x))).toBeLessThan(6);
+  expect(Math.abs(drawn.height - (to.y - from.y))).toBeLessThan(6);
+
+  expectNoPageErrors(pageErrors);
+});
+
+// The other direction: a TALL photo in a wide window, where the frame's
+// minimum WIDTH is what the picture fails to fill. Same bug, sideways.
+test('the boxes land on the stickies for a tall photo too', async ({ page, pageErrors }) => {
+  await openBoard(page);
+  const notes = [
+    { fill: ORANGE, x: 60, y: 60, w: 120, h: 120 },
+    { fill: BLUE, x: 60, y: 600, w: 120, h: 120 },
+    { fill: ORANGE, x: 60, y: 1140, w: 120, h: 120 },
+  ];
+  await page.getByRole('button', { name: /add from photo/i }).click();
+  await page.setInputFiles('input[type="file"]', {
+    name: 'tall.png',
+    mimeType: 'image/png',
+    buffer: wallPhotoPng(240, 1320, notes),
+  });
+  const overlay = page.locator('[data-testid="photo-review-overlay"]');
+  await overlay.waitFor({ state: 'visible', timeout: 15_000 });
+  await overlay
+    .locator('[data-testid="photo-finding"]')
+    .waitFor({ state: 'hidden', timeout: 30_000 });
+  await expect(overlay.locator('[data-testid^="note-box-"]')).toHaveCount(3);
+
+  for (const viewport of [
+    { width: 1600, height: 800 },
+    { width: 1400, height: 600 },
+  ]) {
+    await page.setViewportSize(viewport);
+    await page.waitForTimeout(250);
+    const img = (await overlay.locator('img').boundingBox())!;
+    for (const [at, note] of notes.entries()) {
+      const box = (await overlay.locator('[data-testid^="note-box-"]').nth(at).boundingBox())!;
+      const wantX = img.x + ((note.x + note.w / 2) / 240) * img.width;
+      const wantY = img.y + ((note.y + note.h / 2) / 1320) * img.height;
+      const tolerance = (120 / 1320) * img.height * 0.5;
+      expect(
+        Math.abs(box.x + box.width / 2 - wantX),
+        `note ${at} x at ${viewport.width}x${viewport.height}`,
+      ).toBeLessThan(tolerance);
+      expect(
+        Math.abs(box.y + box.height / 2 - wantY),
+        `note ${at} y at ${viewport.width}x${viewport.height}`,
+      ).toBeLessThan(tolerance);
+    }
+  }
+
+  expectNoPageErrors(pageErrors);
+});

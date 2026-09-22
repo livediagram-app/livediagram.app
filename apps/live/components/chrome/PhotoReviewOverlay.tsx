@@ -218,25 +218,71 @@ export function PhotoReviewOverlay({
       aria-label="Review the notes found in your photo"
     >
       <div
-        ref={photoRef}
         data-testid="photo-frame"
         // A minimum size so the frame is THERE from the first paint, before
-        // the image has any dimensions of its own to give it.
-        className="relative min-h-[40vmin] min-w-[40vmin] cursor-crosshair select-none overflow-hidden rounded-lg bg-slate-800/60 shadow-2xl"
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
+        // the image has any dimensions of its own to give it — and a flex
+        // centre, because the picture inside it is its own size.
+        className="relative flex min-h-[40vmin] min-w-[40vmin] items-center justify-center overflow-hidden rounded-lg bg-slate-800/60 shadow-2xl"
       >
-        <img
-          src={review.photoUrl}
-          alt="The photographed wall"
-          draggable={false}
-          onLoad={() => setPhotoShown(true)}
-          // Room at the bottom for the action bar, so it never covers a note's
-          // words.
-          className="block h-auto max-h-[88vh] w-auto max-w-[96vw] object-contain"
-        />
+        {/*
+          THE BOXES ARE MEASURED AGAINST THE PICTURE, NOT THE FRAME. Every box
+          is placed as a percentage, so the element those percentages resolve
+          against must be exactly the image and nothing more. This wrapper
+          shrink-wraps it (a flex item is sized by its content), so a frame
+          that is TALLER than the photo — a wide panorama in a tall window,
+          where the frame's minimum height wins — cannot push the boxes down
+          the picture. Measured before this existed: 101px of drift at
+          900×1100, and it moved as the window was resized.
+        */}
+        <div
+          ref={photoRef}
+          data-testid="photo-picture"
+          className="relative cursor-crosshair select-none"
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+        >
+          <img
+            src={review.photoUrl}
+            alt="The photographed wall"
+            draggable={false}
+            onLoad={() => setPhotoShown(true)}
+            // Room at the bottom for the action bar, so it never covers a
+            // note's words.
+            className="block h-auto max-h-[88vh] w-auto max-w-[96vw] object-contain"
+          />
+          {notes.map((s, i) => (
+            <NoteBox
+              key={s.id}
+              note={s}
+              frame={frame}
+              text={textOf(s.id)}
+              reading={reading}
+              ticked={ticked.has(s.id)}
+              // A box the author DREW appears at once; only the detector's own
+              // are revealed one at a time.
+              shown={i >= detected.length || i < revealed}
+              onToggle={() => toggle(s.id)}
+              onEdit={(value) => editText(s.id, value)}
+            />
+          ))}
+          {drawing ? (
+            <div
+              aria-hidden
+              className="pointer-events-none absolute border-2 border-dashed border-white"
+              style={{
+                left: `${Math.min(drawing.x1, drawing.x2)}%`,
+                top: `${Math.min(drawing.y1, drawing.y2)}%`,
+                width: `${Math.abs(drawing.x2 - drawing.x1)}%`,
+                height: `${Math.abs(drawing.y2 - drawing.y1)}%`,
+              }}
+            />
+          ) : null}
+        </div>
         {photoShown ? null : (
+          // On the FRAME, not on the picture: before the image has loaded the
+          // picture has no dimensions to fill, and a skeleton in a collapsed
+          // box is a blank overlay.
           <div
             data-testid="photo-loading"
             className="absolute inset-0 flex animate-pulse items-center justify-center gap-2 text-xs text-slate-300"
@@ -248,33 +294,6 @@ export function PhotoReviewOverlay({
             Loading your photo…
           </div>
         )}
-        {notes.map((s, i) => (
-          <NoteBox
-            key={s.id}
-            note={s}
-            frame={frame}
-            text={textOf(s.id)}
-            reading={reading}
-            ticked={ticked.has(s.id)}
-            // A box the author DREW appears at once; only the detector's own
-            // are revealed one at a time.
-            shown={i >= detected.length || i < revealed}
-            onToggle={() => toggle(s.id)}
-            onEdit={(value) => editText(s.id, value)}
-          />
-        ))}
-        {drawing ? (
-          <div
-            aria-hidden
-            className="pointer-events-none absolute border-2 border-dashed border-white"
-            style={{
-              left: `${Math.min(drawing.x1, drawing.x2)}%`,
-              top: `${Math.min(drawing.y1, drawing.y2)}%`,
-              width: `${Math.abs(drawing.x2 - drawing.x1)}%`,
-              height: `${Math.abs(drawing.y2 - drawing.y1)}%`,
-            }}
-          />
-        ) : null}
         <PhotoStatus
           detecting={detecting}
           foundNothing={foundNothing}
