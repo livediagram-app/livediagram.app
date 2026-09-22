@@ -25,4 +25,5 @@ export * from './account';
 export * from './images';
 export * from './telemetry';
 export * from './timeline';
+export * from './collab-index';
 export * from './ws-tickets';

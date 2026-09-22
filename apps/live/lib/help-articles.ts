@@ -71,6 +71,7 @@ export const HELP_ARTICLES = {
   sessionVoting: 'collaboration/session-tools/voting',
   imageGallery: 'explorer/image-gallery',
   timeline: 'explorer/timeline',
+  activity: 'explorer/activity',
   recentDiagrams: 'explorer/recent',
   sharedWithYou: 'explorer/shared-with-you',
   folders: 'explorer/folders',
@@ -254,6 +255,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   timeline: {
     title: 'Learn about the Timeline',
     description: 'Everything that has happened across your diagrams, teams and account.',
+  },
+  activity: {
+    title: 'Learn about Activity',
+    description: 'Open actions assigned to you or by you, and comment threads you are in.',
   },
   recentDiagrams: {
     title: 'Learn about Recent',

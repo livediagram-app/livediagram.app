@@ -164,6 +164,28 @@ export function TimelineIcon() {
   );
 }
 
+// Activity (spec/142): an inbox tray with a tick — what's waiting on
+// you, as opposed to the Timeline's spine of what happened.
+export function ActivityIcon() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M2 9.5V12a1.5 1.5 0 0 0 1.5 1.5h9A1.5 1.5 0 0 0 14 12V9.5" />
+      <path d="M2 9.5h3.2l1 1.8h3.6l1-1.8H14" />
+      <path d="M5.5 5.2 7.2 7l3.3-3.6" />
+    </svg>
+  );
+}
+
 export function ClockIcon() {
   return (
     <svg

@@ -36,6 +36,7 @@ const BROWSE_KINDS = new Set([
 // it.
 const SECTION_HELP: Partial<Record<string, HelpArticleKey>> = {
   timeline: 'timeline',
+  activity: 'activity',
   recent: 'recentDiagrams',
   shared: 'sharedWithYou',
   gallery: 'imageGallery',
@@ -73,6 +74,9 @@ const ProfilePane = dynamic(() =>
 const TimelinePane = dynamic(() =>
   import('@/components/panels/TimelinePane').then((m) => m.TimelinePane),
 );
+const ActivityPane = dynamic(() =>
+  import('@/components/panels/ActivityPane').then((m) => m.ActivityPane),
+);
 
 // The right pane for whichever /explorer/<section> route is active:
 // PaneHeader (title, breadcrumb, contextual CTAs) + the section's
@@ -93,6 +97,7 @@ export function ExplorerPane() {
     clerkUserId,
     clerkDisplayName,
     tokens,
+    activity,
     paneTitle,
     paneCrumbs,
     paneContent,
@@ -203,6 +208,10 @@ export function ExplorerPane() {
           // returning user never sees, and Timeline is now the Explorer
           // landing page (spec/138 §8.1). That made "start a new diagram" a
           // dead end on the first screen of the app.
+          //
+          // Activity does NOT: a new diagram puts nothing on an inbox of
+          // open actions and threads (spec/142 §1).
+          selected.kind === 'activity' ||
           selected.kind === 'shared' ||
           selected.kind === 'gallery' ||
           selected.kind === 'themes' ||
@@ -224,6 +233,7 @@ export function ExplorerPane() {
         }
         onCreateFolder={
           selected.kind === 'timeline' ||
+          selected.kind === 'activity' ||
           selected.kind === 'shared' ||
           selected.kind === 'gallery' ||
           selected.kind === 'themes' ||
@@ -256,6 +266,10 @@ export function ExplorerPane() {
             onShowHistory={(id, name) => setHistoryFor({ id, name })}
           />
         ) : null
+      ) : selected.kind === 'activity' ? (
+        // Like the Timeline, ahead of the diagram-list `loading` gate: the
+        // section reads its own feed (spec/142 §5).
+        <ActivityPane feed={activity} />
       ) : loading ? (
         <SkeletonRows />
       ) : selected.kind === 'profile' ? (

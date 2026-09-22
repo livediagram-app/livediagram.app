@@ -24,6 +24,12 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Action·Opened',
   'Action·Resolved',
   'Action·Unresolved',
+  // Activity (spec/142): the Explorer's cross-diagram inbox. 'Opened'
+  // once per visit, 'Selected' with type 'Action' | 'Thread' on a row
+  // click, 'Loaded'/'Retry' after a failed read.
+  'Activity·Loaded',
+  'Activity·Opened',
+  'Activity·Selected',
   'Canvas·Changed',
   'Canvas·Used',
   'Canvas·Zoomed',

@@ -5,6 +5,228 @@
 import type { ComponentSchemas } from './types';
 
 export const COMPONENT_SCHEMAS: ComponentSchemas = {
+  "ActivityAction": {
+    "additionalProperties": false,
+    "properties": {
+      "assignedToMe": {
+        "type": "boolean"
+      },
+      "assignee": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "userId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "userId",
+          "name"
+        ],
+        "type": "object"
+      },
+      "assigner": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "type": "object"
+      },
+      "createdAt": {
+        "type": "number"
+      },
+      "createdByMe": {
+        "type": "boolean"
+      },
+      "description": {
+        "type": "string"
+      },
+      "diagramId": {
+        "type": "string"
+      },
+      "diagramName": {
+        "type": "string"
+      },
+      "elementId": {
+        "type": "string"
+      },
+      "elementLabel": {
+        "type": "string"
+      },
+      "id": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "shareCode": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "tabId": {
+        "type": "string"
+      },
+      "tabName": {
+        "type": "string"
+      },
+      "teamId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "updatedAt": {
+        "type": "number"
+      },
+      "via": {
+        "enum": [
+          "own",
+          "team",
+          "shared"
+        ],
+        "type": "string"
+      }
+    },
+    "required": [
+      "assignedToMe",
+      "assignee",
+      "assigner",
+      "createdAt",
+      "createdByMe",
+      "description",
+      "diagramId",
+      "diagramName",
+      "elementId",
+      "elementLabel",
+      "id",
+      "name",
+      "shareCode",
+      "tabId",
+      "tabName",
+      "teamId",
+      "updatedAt",
+      "via"
+    ],
+    "type": "object"
+  },
+  "ActivityThread": {
+    "additionalProperties": false,
+    "properties": {
+      "commentCount": {
+        "type": "number"
+      },
+      "diagramId": {
+        "type": "string"
+      },
+      "diagramName": {
+        "type": "string"
+      },
+      "elementId": {
+        "type": "string"
+      },
+      "elementLabel": {
+        "type": "string"
+      },
+      "firstAt": {
+        "type": "number"
+      },
+      "latest": {
+        "additionalProperties": false,
+        "properties": {
+          "at": {
+            "type": "number"
+          },
+          "authorColor": {
+            "type": "string"
+          },
+          "authorName": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "text",
+          "authorName",
+          "authorColor",
+          "at"
+        ],
+        "type": "object"
+      },
+      "onYourDiagram": {
+        "type": "boolean"
+      },
+      "shareCode": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "tabId": {
+        "type": "string"
+      },
+      "tabName": {
+        "type": "string"
+      },
+      "teamId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "via": {
+        "enum": [
+          "own",
+          "team",
+          "shared"
+        ],
+        "type": "string"
+      },
+      "youCommented": {
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "commentCount",
+      "diagramId",
+      "diagramName",
+      "elementId",
+      "elementLabel",
+      "firstAt",
+      "latest",
+      "onYourDiagram",
+      "shareCode",
+      "tabId",
+      "tabName",
+      "teamId",
+      "via",
+      "youCommented"
+    ],
+    "type": "object"
+  },
   "AgendaItem": {
     "additionalProperties": false,
     "properties": {
@@ -4353,7 +4575,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "Mcp",
       "Email",
       "Error",
-      "Timeline"
+      "Timeline",
+      "Activity"
     ],
     "type": "string"
   },

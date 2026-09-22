@@ -523,3 +523,4 @@ export * from './poll';
 export * from './room-messages';
 export * from './telemetry-schema';
 export * from './timeline';
+export * from './activity';

@@ -21,6 +21,7 @@
     "@livediagram/help-registry": "workspace:*",
     "@livediagram/icons": "workspace:*",
     "@livediagram/telemetry-client": "workspace:*",
+    "@livediagram/template-previews": "workspace:*",
     "@livediagram/templates": "workspace:*",
     "@livediagram/ui": "workspace:*",
     "next": "^16.3.5",

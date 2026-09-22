@@ -1354,6 +1354,15 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M9.5 12h4" {...s} />
     </Glyph>
   ),
+  // An inbox tray with a tick above it: what is waiting on you, as opposed
+  // to the Timeline's spine of what happened.
+  activity: (
+    <Glyph>
+      <path d="M3 13.5V18a2 2 0 002 2h14a2 2 0 002-2v-4.5" {...s} />
+      <path d="M3 13.5h4.5l1.5 2.5h6l1.5-2.5H21" {...s} />
+      <path d="M8.5 7.5 11 10l4.5-5" {...s} />
+    </Glyph>
+  ),
   // One folder inside another, which is the whole point of a nestable tree.
   folders: (
     <Glyph>

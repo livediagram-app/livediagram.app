@@ -78,7 +78,7 @@ Every Explorer section is its own page under `/explorer` (the chrome — header,
 | Invites (spec/32) | `/explorer/invites`                                         |
 | Image gallery     | `/explorer/images`                                          |
 
-`/explorer` itself redirects to `/explorer/recent` (worker-level 302 in production, client replace in dev). Folder and team ids ride the **query string**, not a path segment: `output: 'export'` can't enumerate user-minted ids, and the `/diagram/<id>` placeholder-rewrite workaround (spec/14) is deliberately kept single-purpose. Sidebar row labels are sentence case ("Recent diagrams", "Image gallery"). Section headers, top to bottom: **"Quick find"** (Recent diagrams + Shared with you), **"Personal Space"** (the personal tree — Unsorted + the root folders directly, no "All diagrams" parent row; contrasts with team libraries, spec/35), **"Teams"** (spec/32), and **"Library"**.
+`/explorer` itself redirects to `/explorer/recent` (worker-level 302 in production, client replace in dev). Folder and team ids ride the **query string**, not a path segment: `output: 'export'` can't enumerate user-minted ids, and the `/diagram/<id>` placeholder-rewrite workaround (spec/14) is deliberately kept single-purpose. Sidebar row labels are sentence case ("Recent diagrams", "Image gallery"). Section headers, top to bottom: **"Quick find"** (Timeline, spec/138; Activity, spec/142; Recent diagrams; Favourites; Shared with you), **"Personal Space"** (the personal tree — Unsorted + the root folders directly, no "All diagrams" parent row; contrasts with team libraries, spec/35), **"Teams"** (spec/32), and **"Library"**.
 
 Out of scope (V1):
 

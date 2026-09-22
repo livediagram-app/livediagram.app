@@ -23,6 +23,7 @@ import {
   buildTemplate,
   templateCanvasOverrides,
   type TemplateKind,
+  isTemplateKind,
 } from '@livediagram/templates';
 
 // Layout is the model's call (spec/62 §4.3). 'preserve' keeps the coordinates
@@ -86,7 +87,7 @@ export function buildGraphTab(
 // with the valid kinds so the model can self-correct without a round
 // trip to list_templates.
 export function resolveTemplate(kind: string): TemplateKind | null {
-  return TEMPLATES.some((t) => t.kind === kind) ? (kind as TemplateKind) : null;
+  return isTemplateKind(kind) ? kind : null;
 }
 
 export const validTemplateKinds = () => TEMPLATES.map((t) => t.kind).join(', ');

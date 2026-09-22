@@ -1,0 +1,64 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { ActivityList } from '@/components/illustrations/explorer';
+
+export const metadata = helpMetadata({
+  title: 'Activity',
+  description:
+    'The Explorer’s Activity page lists everything outstanding for you across every diagram: open actions assigned to you or by you, and the comment threads you are in.',
+  path: '/help/explorer/activity/',
+});
+
+<ArticleLayout
+  title="Activity"
+  description="What is waiting on you right now, across every diagram: open actions, and the comment threads you are part of."
+  categoryTitle="Explorer"
+  categorySlug="explorer"
+>
+
+**Activity** sits under [Timeline](/help/explorer/timeline/) in the Explorer's Quick find section. Where the Timeline tells you what _happened_, Activity tells you what is still _open_: the [actions](/help/collaboration/assigned-actions/) waiting on you, the ones you handed to someone else, and the [comment](/help/collaboration/comments/) threads nobody has resolved yet.
+
+<Figure caption="Three sections, each a list of rows that open the diagram at the element in question.">
+  <ActivityList />
+</Figure>
+
+## What lands here
+
+Everything on the page comes from an element on one of your diagrams, so the row always knows where it is from.
+
+- **Assigned to You** — every open action whose assignee is you, on any diagram you can open. An action you assigned to yourself (the **Myself** row in the assign dialog) lives here too, so the page doubles as your to-do list across diagrams.
+- **You Assigned** — open actions you assigned to somebody else. They are here so you can see what you are waiting _on_, not just what is waiting on you.
+- **Open Comment Threads** — unresolved threads you are in. That means threads you wrote a comment in, and threads on diagrams you own; a row on your own diagram that you have not replied to yet carries a small **Your diagram** hint so you can tell the two apart.
+
+Done actions and resolved threads are not listed. Activity is an inbox, not a history; the Timeline and each diagram's own **Collaborate** panel keep the past.
+
+## Reading a row
+
+A row leads with a glyph for its kind (the action clipboard or the comment bubble), then the action's name or, for a thread, the element it hangs off. Under that is the action's description or the latest comment. The last line says where the row is from: a chip with the diagram's name (a team diagram's chip carries the team glyph), then the element and the tab.
+
+On the right is the person: the assignee for an action (brand-tinted and labelled **You** when that is you), or the latest commenter for a thread, with the time of the most recent change beneath. Hovering the avatar names them and, for a thread, says how many comments it holds.
+
+Rows are ordered by their most recent change, newest first, within each section.
+
+## Opening a row
+
+Click a row and the diagram opens on the right tab with the element selected, scrolled into view, and its action or comment popover already open, the same place a **Collaborate** panel row takes you inside the editor. From there you complete the action, reassign it, resolve the thread, or reply, with the editor's usual rules about who can edit what.
+
+If the element has been deleted since the page loaded, the diagram still opens on that tab; there is simply nothing left to select.
+
+## The badge
+
+The Activity row in the sidebar shows a count of the open actions **assigned to you**. It counts only work waiting on you, not work you handed out and not comment threads, and it disappears at zero. You can see from any other Explorer section whether something needs you.
+
+## Guests and signing in
+
+Activity works without an account, like the rest of the canvas. Signed out, you can still assign actions to yourself and comment on your own diagrams, and both show up here.
+
+**Your activity follows you when you sign up.** Actions you gave yourself and threads you wrote in as a guest still read as yours after you create an account, alongside the diagrams that move with you.
+
+<Tip>
+  Diagrams saved to Local Browser only (Offline Mode) never reach the server, so nothing on them
+  appears here. Sync a diagram to bring its actions and threads onto the page.
+</Tip>
+
+</ArticleLayout>

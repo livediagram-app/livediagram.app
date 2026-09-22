@@ -2,8 +2,8 @@ import type { ReactElement } from 'react';
 import type { TemplateKind } from '@livediagram/templates';
 
 // Group 4 of 4 (the roadmap / canvas / workshop / hierarchy / UML /
-// cloud batch). Static SVG preview tiles for the TemplatePicker (one
-// branch per TemplateKind). Split out of template-preview.tsx to keep
+// cloud batch). Static SVG preview tiles (one branch per TemplateKind; see
+// template-preview.tsx for who renders them). Split out of template-preview.tsx to keep
 // each file under the ~1000-line budget; TemplatePreview chains the
 // groups with ??. Shared palette: sky accents (rgb(14 165 233) stroke,
 // rgb(186 230 253) fill), slate connectors (rgb(100 116 139)), amber

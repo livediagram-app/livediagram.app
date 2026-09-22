@@ -798,6 +798,26 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [200, 400, 401],
   },
 
+  // ---- Activity (spec/142) ----
+  {
+    method: 'GET',
+    path: '/activity',
+    segment: 'activity',
+    tag: 'Account',
+    summary:
+      'What is outstanding for the caller across every diagram they can open: open actions assigned to them or by them, and unresolved comment threads they are in. Capped at 100 per kind, newest first.',
+    auth: 'guest-or-clerk',
+    responseSchema: {
+      type: 'object',
+      properties: {
+        actions: { type: 'array', items: { $ref: '#/components/schemas/ActivityAction' } },
+        threads: { type: 'array', items: { $ref: '#/components/schemas/ActivityThread' } },
+      },
+      required: ['actions', 'threads'],
+    },
+    statuses: [200, 400, 401],
+  },
+
   // ---- Account ----
   {
     method: 'DELETE',

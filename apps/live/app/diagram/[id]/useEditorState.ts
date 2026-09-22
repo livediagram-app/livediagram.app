@@ -115,6 +115,7 @@ import { usePresenceBroadcast } from './usePresenceBroadcast';
 import { useSelectionEditing } from './useSelectionEditing';
 import { useFormatTool } from './useFormatTool';
 import { useTabEntryEffects } from './useTabEntryEffects';
+import { useCollabDeepLink, useCollabDeepLinkCapture } from './useCollabDeepLink';
 import { useEditorUiState } from './editor-ui-state';
 import { useEditorPersistence } from './editor-persistence';
 import { useEditorRealtime } from './editor-realtime';
@@ -1090,6 +1091,11 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setViewportOffset,
   });
 
+  // Capture an Activity-page element deep link BEFORE the tab-entry
+  // effect below rewrites the hash to the plain #t= pin (spec/142 §1).
+  // Consumed further down by useCollabDeepLink once the tab is ready.
+  const collabDeepLink = useCollabDeepLinkCapture();
+
   // Tab-entry side effects (URL #t= pin + fit-to-screen once per tab
   // entry). See useTabEntryEffects.
   useTabEntryEffects({
@@ -1306,6 +1312,25 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // starters (beginDrag, beginEdit, ...) layer on their own isReadOnly
   // checks so a viewer can still select and inspect.
   const editsBlocked = activeTabLocked || isReadOnly || activeTabLoadState !== 'ready';
+
+  // An Activity-page row opened this diagram at one element (spec/142
+  // §1): once the pinned tab is ready, select it, bring it into view and
+  // open its popover. See useCollabDeepLink.
+  useCollabDeepLink({
+    link: collabDeepLink,
+    hydrated,
+    activeId,
+    activeTabLoadState,
+    elements: activeTab.elements,
+    select: (id) => {
+      setSelectedId(id);
+      setMultiSelectedIds(new Set());
+      setEditingId(null);
+    },
+    scrollIntoView,
+    openActionPopover,
+    openComments,
+  });
 
   const commit = (mapElements: (els: Element[]) => Element[]) => {
     if (editsBlocked) return;

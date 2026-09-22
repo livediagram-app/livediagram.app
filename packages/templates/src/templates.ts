@@ -562,6 +562,21 @@ export function templateCategory(kind: TemplateKind): TemplateCategory {
   return TEMPLATE_CATEGORY[kind];
 }
 
+// True when `value` names a template in the catalogue. The guard for a kind
+// that arrives as a plain string from outside the type system: the MCP
+// `template` argument, the `/new?template=<kind>` query (spec/14).
+export function isTemplateKind(value: unknown): value is TemplateKind {
+  return typeof value === 'string' && TEMPLATES.some((t) => t.kind === value);
+}
+
+// The editor URL that creates this template without the wizard and opens it
+// (spec/14): what an outside surface links to, such as the marketing site's
+// template gallery (spec/16). The route is the editor's; the builder lives
+// here so every caller spells the query the same way `isTemplateKind` reads.
+export function templateCreateHref(kind: TemplateKind): string {
+  return `/new?template=${encodeURIComponent(kind)}`;
+}
+
 // Default name for a freshly-created diagram: "Untitled <Template Title>" in
 // title case so a templated diagram is recognisable in the Explorer (e.g.
 // "Untitled Tree Mind Map"), while a blank one (or no template) keeps the plain

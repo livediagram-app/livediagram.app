@@ -5,6 +5,7 @@
 import { rowToTabSummary, type TabRow } from '../tab-row';
 import type { DiagramDTO, DiagramSummary, Env, TabSummaryDTO } from '../types';
 import { getParticipant } from './participants';
+import { collabIndexCopyStatements } from './collab-index';
 
 type DiagramRow = {
   id: string;
@@ -360,6 +361,10 @@ export async function copyDiagram(
         `INSERT INTO diagram_tabs (diagram_id, tab_id, order_index, added_at)
          VALUES (?, ?, ?, ?)`,
       ).bind(newId, freshTabId, row.order_index, now),
+      // The copy carries the source's actions + threads inside its
+      // data, so its index rows are copied the same way, without a
+      // parse (spec/142 §2.1).
+      ...collabIndexCopyStatements(env, row.id, freshTabId),
     ];
   });
   if (inserts.length > 0) await env.DB.batch(inserts);

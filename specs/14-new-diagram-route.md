@@ -377,6 +377,18 @@ default diagram name) without walking the wizard:
     content under that flag, and React then swaps in the creating card at
     hydration (detected pre-paint in a layout effect, so the trees always
     match).
+- **`/new?template=<kind>`** — the same bypass for a named template: the
+  page commits that template (Default theme, the template's default name)
+  the moment identity resolves and lands on the editor, with the same
+  creating card, bfcache-restore redirect, placement params and error card
+  as `?blank=1`. `blank` wins when both are present. An unknown kind is
+  ignored and the plain wizard shows (the pre-hydration guard can't
+  validate a kind, so the layout effect lifts it), so a stale link never
+  strands anyone. Both params are read by one helper,
+  `wizardBypassKind` in `apps/live/lib/new-diagram-params.ts`, so the
+  page, its restore cleanup and the guard agree on what counts. This is
+  the URL the marketing site's template gallery links every card to
+  ([spec/16](16-marketing-site.md)); it fires `UI / Used / TemplateLink`.
 - **A "Just Draw" button on the wizard's step rail** (welcome mode only):
   far right on the same line as the Template / Theme / Settings chips,
   desktop (`sm+`) only — mobile keeps the footer Skip as the compact
@@ -428,6 +440,9 @@ to carry one. Custom theme cards show just the saved name.
 - `/new?blank=1` → no wizard; blank diagram created and editor loads on
   `/diagram/<id>`.
 - `/new?blank=1&folder=<id>` → the blank diagram files into that folder.
+- `/new?template=kanban` → no wizard; a Kanban diagram created and the
+  editor loads on `/diagram/<id>`.
+- `/new?template=not-a-kind` → the plain wizard.
 - "Just Draw" on the wizard's step rail → blank diagram created
   immediately, same as Skip.
 

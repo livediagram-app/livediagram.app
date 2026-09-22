@@ -69,6 +69,9 @@ export type SelectedNode =
   // The landing view (spec/138): a day-grouped feed of everything that
   // happened, rather than a list of files.
   | { kind: 'timeline' }
+  // What is outstanding for the reader across every diagram (spec/142):
+  // open actions assigned to / by them, unresolved threads they're in.
+  | { kind: 'activity' }
   | { kind: 'recent' }
   | { kind: 'all' }
   | { kind: 'unsorted' }
