@@ -155,23 +155,6 @@ export function FlowchartDiagram() {
           strokeLinejoin="round"
         />
       </g>
-
-      {/* A comment thread pops onto the Ship box */}
-      <g transform="translate(508 102)">
-        <g className="hero-comment">
-          <circle cx="0" cy="0" r="9" fill="#f59e0b" stroke="none" />
-          <text x="0" y="3.5" textAnchor="middle" fontSize="11" fontWeight="700" fill="white">
-            1
-          </text>
-          <g transform="translate(12 -8)">
-            <rect width="96" height="46" rx="6" fill="white" stroke="#e2e8f0" strokeWidth="1" />
-            <circle cx="13" cy="14" r="5" fill="#ec4899" />
-            <rect x="23" y="10" width="58" height="6" rx="3" fill="#e2e8f0" />
-            <rect x="13" y="26" width="70" height="5" rx="2.5" fill="#f1f5f9" />
-            <rect x="13" y="35" width="50" height="5" rx="2.5" fill="#f1f5f9" />
-          </g>
-        </g>
-      </g>
     </>
   );
 }
@@ -272,6 +255,9 @@ export function MindMapDiagram({ playing, theme }: { playing: boolean; theme: Th
         <g>
           <ellipse className="hero-laser-ring hero-laser-a" cx="125" cy="48" rx="74" ry="30" />
           <ellipse className="hero-laser-ring hero-laser-b" cx="475" cy="232" rx="74" ry="30" />
+          {/* The trail the pointer leaves as it travels from the first ring
+              to the second, drawn under the dot and fading once it lands. */}
+          <path className="hero-laser-trail" d="M150 60 L450 220" />
           <circle className="hero-laser-dot" cx="0" cy="0" r="4.5" />
         </g>
       ) : null}
@@ -369,6 +355,215 @@ export function TimelineDiagram({ theme }: { theme: Theme }) {
             </g>
           );
         })}
+      </g>
+    </>
+  );
+}
+
+// Card 2 diagram: the flowchart presented as a slide deck (spec/31). Four
+// slides, each the elements the presenter picked from the same flowchart,
+// step through it a piece at a time and end on the whole picture. Every
+// slide is the subset drawn at the flowchart's own coordinates, then fitted
+// to the stage (the outer transform), and faded in and out on its beat of
+// the 16s cycle (hero-slide-N on the inner group). The peeking card settles
+// on the last slide, the complete flowchart.
+const FLOW_NODES = {
+  start: { x: 80, y: 34, w: 120, h: 44, rx: 22, label: 'Start' },
+  plan: { x: 80, y: 118, w: 120, h: 52, rx: 8, label: 'Plan' },
+  ready: { x: 220, y: 108, w: 140, h: 64, rx: 0, label: 'Ready?' },
+  ship: { x: 400, y: 118, w: 120, h: 52, rx: 8, label: 'Ship' },
+  done: { x: 400, y: 206, w: 120, h: 44, rx: 22, label: 'Done' },
+} as const;
+type FlowNode = keyof typeof FLOW_NODES;
+const FLOW_EDGES: { from: FlowNode; to: FlowNode; d: string }[] = [
+  { from: 'start', to: 'plan', d: 'M140 78 L140 118 M134 111 L140 118 L146 111' },
+  { from: 'plan', to: 'ready', d: 'M200 140 L220 140 M214 134 L220 140 L214 146' },
+  { from: 'ready', to: 'ship', d: 'M360 140 L400 140 M394 134 L400 140 L394 146' },
+  { from: 'ship', to: 'done', d: 'M460 170 L460 206 M454 199 L460 206 L466 199' },
+];
+export const SLIDES: { name: string; nodes: FlowNode[] }[] = [
+  { name: 'Kick-off', nodes: ['start', 'plan'] },
+  { name: 'The decision', nodes: ['plan', 'ready'] },
+  { name: 'Shipping', nodes: ['ready', 'ship', 'done'] },
+  { name: 'The whole flow', nodes: ['start', 'plan', 'ready', 'ship', 'done'] },
+];
+
+// Fit a slide's bounding box into the stage's safe area, centred, never
+// blown up past 1.5x so a two-box slide still reads as a diagram.
+function slideTransform(nodes: FlowNode[]): string {
+  const boxes = nodes.map((n) => FLOW_NODES[n]);
+  const minX = Math.min(...boxes.map((b) => b.x));
+  const minY = Math.min(...boxes.map((b) => b.y));
+  const maxX = Math.max(...boxes.map((b) => b.x + b.w));
+  const maxY = Math.max(...boxes.map((b) => b.y + b.h));
+  const s = Math.min(480 / (maxX - minX), 250 / (maxY - minY), 1.5);
+  const cx = (minX + maxX) / 2;
+  const cy = (minY + maxY) / 2;
+  return `translate(${(300 - s * cx).toFixed(1)} ${(140 - s * cy).toFixed(1)}) scale(${s.toFixed(3)})`;
+}
+
+export function SlideDeckDiagram() {
+  return (
+    <>
+      {SLIDES.map((slide, i) => (
+        <g key={slide.name} transform={slideTransform(slide.nodes)}>
+          <g className={`hero-slide hero-slide${i + 1}`}>
+            <g fill="none" stroke="#0284c7" strokeWidth="2" strokeLinecap="round">
+              {FLOW_EDGES.filter(
+                (e) => slide.nodes.includes(e.from) && slide.nodes.includes(e.to),
+              ).map((e) => (
+                <path key={`${e.from}-${e.to}`} d={e.d} />
+              ))}
+            </g>
+            <g fill="#dbeafe" stroke="#0284c7" strokeWidth="2" strokeLinejoin="round">
+              {slide.nodes.map((n) => {
+                const b = FLOW_NODES[n];
+                return (
+                  <g key={n}>
+                    {n === 'ready' ? (
+                      <polygon points="290,108 360,140 290,172 220,140" />
+                    ) : (
+                      <rect x={b.x} y={b.y} width={b.w} height={b.h} rx={b.rx} />
+                    )}
+                    <text
+                      x={b.x + b.w / 2}
+                      y={b.y + b.h / 2 + 5}
+                      textAnchor="middle"
+                      fontFamily="ui-sans-serif, system-ui, sans-serif"
+                      fontWeight="600"
+                      fontSize="14"
+                      fill={BLUE_TEXT}
+                      stroke="none"
+                    >
+                      {b.label}
+                    </text>
+                  </g>
+                );
+              })}
+            </g>
+          </g>
+        </g>
+      ))}
+    </>
+  );
+}
+
+// Card 5 diagram: a three-service architecture that gets talked about. The
+// services build in, then a comment pin lands on the API with its thread
+// beside it (spec/136), then an assigned action lands on the database
+// (spec/68) and, near the end of the cycle, gets ticked off. The peeking
+// card settles with both in place and the action done.
+export function ArchitectureDiagram({ theme }: { theme: Theme }) {
+  const boxes = [
+    { cls: 'hero-pop1', x: 60, label: 'Web app' },
+    { cls: 'hero-pop2', x: 240, label: 'API' },
+    { cls: 'hero-pop3', x: 420, label: 'Database' },
+  ];
+  const label = (x: number, y: number, text: string, size = 14, fill = theme.text) => (
+    <text
+      x={x}
+      y={y}
+      textAnchor="middle"
+      fontFamily="ui-sans-serif, system-ui, sans-serif"
+      fontWeight="600"
+      fontSize={size}
+      fill={fill}
+      stroke="none"
+    >
+      {text}
+    </text>
+  );
+  return (
+    <>
+      <g style={{ color: theme.stroke }} fill="none">
+        <path
+          className="hero-line1"
+          d="M180 144 L240 144 M234 138 L240 144 L234 150"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+        <path
+          className="hero-line2"
+          d="M360 144 L420 144 M414 138 L420 144 L414 150"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+      </g>
+      <g fill={theme.fill} stroke={theme.stroke} strokeWidth="2" strokeLinejoin="round">
+        {boxes.map((b) => (
+          <g key={b.label} className={b.cls}>
+            <rect x={b.x} y="118" width="120" height="52" rx="8" />
+            {label(b.x + 60, 149, b.label)}
+          </g>
+        ))}
+      </g>
+
+      {/* Comment pin on the API box, with the thread beside it. */}
+      <g className="hero-note">
+        <circle cx="360" cy="118" r="11" fill="#ec4899" stroke="white" strokeWidth="2" />
+        {label(360, 122, 'JR', 9, 'white')}
+        <g transform="translate(372 52)">
+          <rect x="0" y="0" width="150" height="52" rx="8" fill="white" stroke="#e2e8f0" />
+          <circle cx="16" cy="16" r="7" fill="#ec4899" />
+          {label(16, 19, 'JR', 7, 'white')}
+          <rect x="30" y="11" width="64" height="7" rx="3.5" fill="#cbd5e1" />
+          <rect x="10" y="30" width="118" height="6" rx="3" fill="#e2e8f0" />
+          <rect x="10" y="40" width="84" height="6" rx="3" fill="#e2e8f0" />
+        </g>
+      </g>
+
+      {/* Assigned action on the database, ticked off near the end. */}
+      {/* Positioned by an outer group: the pop animation sets a CSS transform
+          on the inner one, which would replace an SVG transform attribute. */}
+      <g transform="translate(396 190)">
+        <g className="hero-action">
+          <rect x="0" y="0" width="168" height="40" rx="8" fill="white" stroke="#e2e8f0" />
+          <rect
+            x="10"
+            y="11"
+            width="18"
+            height="18"
+            rx="4"
+            fill="none"
+            stroke="#94a3b8"
+            strokeWidth="1.5"
+          />
+          <path
+            className="hero-action-tick"
+            d="M14 20 L18 24 L25 15"
+            fill="none"
+            stroke="#16a34a"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <text
+            x="38"
+            y="17"
+            fontFamily="ui-sans-serif, system-ui, sans-serif"
+            fontWeight="600"
+            fontSize="10"
+            fill="#0f172a"
+            stroke="none"
+          >
+            Add a read replica
+          </text>
+          <text
+            x="38"
+            y="30"
+            fontFamily="ui-sans-serif, system-ui, sans-serif"
+            fontWeight="500"
+            fontSize="8.5"
+            fill="#64748b"
+            stroke="none"
+          >
+            Assigned to JR
+          </text>
+          <circle cx="152" cy="20" r="8" fill="#ec4899" />
+          {label(152, 23, 'JR', 7, 'white')}
+        </g>
       </g>
     </>
   );

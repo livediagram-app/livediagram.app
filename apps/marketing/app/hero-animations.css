@@ -408,6 +408,418 @@
   opacity: 0;
 }
 
+/* The window fade (spec/16): a light-grey veil, solid at the very start,
+   clear by 4% (0.64s), clear until 93%, solid again by 100% (the last 1.1s).
+   The stage's 16s auto-advance fires at the moment the fade completes, and
+   the next window mounts playing, so its own veil lifts. A window that stops
+   playing lifts once (hero-fade-out) rather than snapping to its frame. */
+.hero-fade {
+  opacity: 1;
+  animation: hero-fade 16s linear infinite;
+}
+@keyframes hero-fade {
+  0% {
+    opacity: 1;
+  }
+  4%,
+  93% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+.hero-fade-out {
+  opacity: 0;
+  animation: hero-fade-out 0.7s ease-out both;
+}
+@keyframes hero-fade-out {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Slide-deck window: four slides, one per quarter of the cycle. As in the
+   deck itself (spec/31), the whole surface travels: a slide leaves to the
+   left as the next arrives from the right, and the last holds to the end so
+   the loop ends on the complete flowchart. The presenting HUD's counter
+   (hero-slide-hud-N) switches with the slide. */
+.hero-slide {
+  transform: translate(600px, 0);
+}
+.hero-slide1 {
+  animation: hero-slide1 16s ease-in-out infinite;
+}
+@keyframes hero-slide1 {
+  0%,
+  22% {
+    transform: none;
+  }
+  25%,
+  100% {
+    transform: translate(-600px, 0);
+  }
+}
+.hero-slide2 {
+  animation: hero-slide2 16s ease-in-out infinite;
+}
+@keyframes hero-slide2 {
+  0%,
+  22% {
+    transform: translate(600px, 0);
+  }
+  25%,
+  47% {
+    transform: none;
+  }
+  50%,
+  100% {
+    transform: translate(-600px, 0);
+  }
+}
+.hero-slide3 {
+  animation: hero-slide3 16s ease-in-out infinite;
+}
+@keyframes hero-slide3 {
+  0%,
+  47% {
+    transform: translate(600px, 0);
+  }
+  50%,
+  72% {
+    transform: none;
+  }
+  75%,
+  100% {
+    transform: translate(-600px, 0);
+  }
+}
+.hero-slide4 {
+  animation: hero-slide4 16s ease-in-out infinite;
+}
+@keyframes hero-slide4 {
+  0%,
+  72% {
+    transform: translate(600px, 0);
+  }
+  75%,
+  100% {
+    transform: none;
+  }
+}
+.hero-slide-hud {
+  opacity: 0;
+}
+.hero-slide-hud1 {
+  animation: hero-slide-hud1 16s step-end infinite;
+}
+@keyframes hero-slide-hud1 {
+  0%,
+  23% {
+    opacity: 1;
+  }
+  25%,
+  100% {
+    opacity: 0;
+  }
+}
+.hero-slide-hud2 {
+  animation: hero-slide-hud2 16s step-end infinite;
+}
+@keyframes hero-slide-hud2 {
+  0%,
+  23% {
+    opacity: 0;
+  }
+  25%,
+  48% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+.hero-slide-hud3 {
+  animation: hero-slide-hud3 16s step-end infinite;
+}
+@keyframes hero-slide-hud3 {
+  0%,
+  48% {
+    opacity: 0;
+  }
+  50%,
+  73% {
+    opacity: 1;
+  }
+  75%,
+  100% {
+    opacity: 0;
+  }
+}
+.hero-slide-hud4 {
+  animation: hero-slide-hud4 16s step-end infinite;
+}
+@keyframes hero-slide-hud4 {
+  0%,
+  73% {
+    opacity: 0;
+  }
+  75%,
+  100% {
+    opacity: 1;
+  }
+}
+.hero-static .hero-slide {
+  animation: none;
+  transform: translate(600px, 0);
+}
+.hero-static .hero-slide4 {
+  transform: none;
+}
+
+/* Mind-map tool picker: Highlighter while the swipe happens, then Laser
+   from the moment the pointer appears. */
+.hero-tool-a,
+.hero-tool-b {
+  opacity: 0;
+}
+.hero-tool-a {
+  animation: hero-tool-a 16s step-end infinite;
+}
+.hero-tool-b {
+  animation: hero-tool-b 16s step-end infinite;
+}
+@keyframes hero-tool-a {
+  0%,
+  48% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes hero-tool-b {
+  0%,
+  48% {
+    opacity: 0;
+  }
+  50%,
+  100% {
+    opacity: 1;
+  }
+}
+
+/* Mind-map laser trail: drawn behind the dot as it travels from the first
+   ring to the second (the dot moves 64% to 70%), then fades once it lands. */
+.hero-laser-trail {
+  fill: none;
+  stroke: #f43f5e;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 340;
+  stroke-dashoffset: 340;
+  opacity: 0;
+  filter: drop-shadow(0 0 3px rgba(244, 63, 94, 0.85));
+  animation: hero-laser-trail 16s ease-in-out infinite;
+}
+@keyframes hero-laser-trail {
+  0%,
+  63% {
+    stroke-dashoffset: 340;
+    opacity: 0;
+  }
+  64% {
+    opacity: 0.9;
+  }
+  70% {
+    stroke-dashoffset: 0;
+    opacity: 0.9;
+  }
+  78%,
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+}
+
+/* Flowchart theme beat: the Look & Feel dialog opens, the pointer travels to
+   the Forest card and clicks (the selection ring moves from Default to
+   Forest), the dialog closes at 40% and the recolour keyframes above take
+   over. Positions are within the dialog (top/left, as the teammate cursor). */
+.hero-dialog {
+  opacity: 0;
+  animation: hero-dialog 16s ease-out infinite;
+}
+@keyframes hero-dialog {
+  0%,
+  25% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.96);
+  }
+  27%,
+  39% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  41%,
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+.hero-dialog-was {
+  animation: hero-dialog-was 16s step-end infinite;
+}
+@keyframes hero-dialog-was {
+  0%,
+  35% {
+    box-shadow: 0 0 0 1px #7dd3fc;
+    border-color: #38bdf8;
+  }
+  36%,
+  100% {
+    box-shadow: none;
+    border-color: #e2e8f0;
+  }
+}
+.hero-dialog-pick {
+  animation: hero-dialog-pick 16s ease-out infinite;
+}
+@keyframes hero-dialog-pick {
+  0%,
+  35% {
+    box-shadow: none;
+    border-color: #e2e8f0;
+    transform: none;
+  }
+  36% {
+    transform: scale(0.96);
+  }
+  37%,
+  100% {
+    box-shadow: 0 0 0 1px #7dd3fc;
+    border-color: #38bdf8;
+    transform: none;
+  }
+}
+.hero-dialog-cursor {
+  top: 150px;
+  left: 210px;
+  opacity: 0;
+  animation: hero-dialog-cursor 16s ease-in-out infinite;
+}
+@keyframes hero-dialog-cursor {
+  0%,
+  27% {
+    opacity: 0;
+    top: 150px;
+    left: 210px;
+  }
+  29% {
+    opacity: 1;
+  }
+  34%,
+  35.5% {
+    opacity: 1;
+    top: 92px;
+    left: 118px;
+    transform: none;
+  }
+  36% {
+    transform: scale(0.85);
+  }
+  36.5%,
+  39% {
+    opacity: 1;
+    top: 92px;
+    left: 118px;
+    transform: none;
+  }
+  41%,
+  100% {
+    opacity: 0;
+    top: 92px;
+    left: 118px;
+  }
+}
+
+/* Architecture window: the comment thread lands, then the assigned action,
+   then its tick draws. The peeking card settles with everything in place. */
+.hero-note,
+.hero-action {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.hero-note {
+  animation: hero-note 16s ease-out infinite;
+}
+.hero-action {
+  animation: hero-action 16s ease-out infinite;
+}
+@keyframes hero-note {
+  0%,
+  30% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  34% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+  37%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes hero-action {
+  0%,
+  55% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  59% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+  62%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.hero-action-tick {
+  stroke-dasharray: 20;
+  stroke-dashoffset: 20;
+  animation: hero-action-tick 16s ease-out infinite;
+}
+@keyframes hero-action-tick {
+  0%,
+  80% {
+    stroke-dashoffset: 20;
+  }
+  86%,
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+.hero-static .hero-note,
+.hero-static .hero-action {
+  animation: none;
+  opacity: 1;
+  transform: none;
+}
+.hero-static .hero-action-tick {
+  animation: none;
+  stroke-dashoffset: 0;
+}
+
 /* Mind-map highlighter: a marker stroke that swipes across a node from the
    left, once the map has built, and stays. */
 .hero-highlight {
