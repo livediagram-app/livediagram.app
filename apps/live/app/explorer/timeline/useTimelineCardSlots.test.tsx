@@ -78,9 +78,16 @@ function slotsFor(value: ExplorerStateValue, onDismiss = vi.fn()) {
   const wrapper = ({ children }: { children: ReactNode }) => (
     <ExplorerProvider value={value}>{children}</ExplorerProvider>
   );
-  return renderHook(() => useTimelineCardSlots({ onShowHistory: vi.fn(), onDismiss }), {
-    wrapper,
-  }).result.current;
+  return renderHook(
+    () =>
+      useTimelineCardSlots({
+        onShowHistory: vi.fn(),
+        onDismiss,
+        entityMenu: (event) =>
+          event.sourceType === 'team' ? { subject: 'Guild', items: [] } : null,
+      }),
+    { wrapper },
+  ).result.current;
 }
 
 describe('useTimelineCardSlots', () => {
@@ -95,10 +102,9 @@ describe('useTimelineCardSlots', () => {
   // Every card can be removed from the feed (spec/138 §2.9), so every
   // card has a menu — but only a loaded diagram's card borrows the
   // Explorer's name for the subject; the rest keep the renderer's.
-  it('gives a non-diagram event, a tombstone, and an unloaded diagram the one-verb menu', () => {
+  it('gives a tombstone and an unloaded diagram the entity menu, with no rename slot', () => {
     const slots = slotsFor(explorer());
     for (const e of [
-      event({ sourceType: 'team', snapshot: { teamId: 't1', teamName: 'Guild' } }),
       event({ snapshot: { diagramName: 'Gone' } }),
       event({ snapshot: { diagramId: 'unknown', diagramName: 'X' } }),
     ]) {
@@ -108,6 +114,14 @@ describe('useTimelineCardSlots', () => {
       expect(s?.subject).toBeUndefined();
       expect(s?.title).toBeUndefined();
     }
+  });
+
+  it('takes the subject and verbs for other entities from the entity menu', () => {
+    const s = slotsFor(explorer())(
+      event({ sourceType: 'team', snapshot: { teamId: 't1', teamName: 'Old name' } }),
+    );
+    expect(s?.subject).toBe('Guild');
+    expect((s!.menu as { props: { subject: string } }).props.subject).toBe('Guild');
   });
 
   // A folder card carries the folder's own Explorer menu (rename, new

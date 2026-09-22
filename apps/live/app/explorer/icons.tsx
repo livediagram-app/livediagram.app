@@ -401,6 +401,24 @@ export function EllipsisIcon() {
   );
 }
 
+export function MenuCheckIcon() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M3 8.5l3.2 3.2L13 4.8" />
+    </svg>
+  );
+}
+
 export function MenuPencilIcon() {
   return (
     <svg

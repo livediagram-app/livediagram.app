@@ -724,17 +724,41 @@ Change Folder, Delete — whatever a folder's card offers, its Timeline
 card offers. A folder the Explorer can't resolve (a tombstone, or a
 team folder) gets the one-verb menu below.
 
-**Every other card has the one-verb menu.** A team card, a token card,
-a tombstone for something that no longer exists: each is one click
-target that opens the one place it can lead, and a ⋯ holding a single
-"Open" that duplicated the card's own click would be a control that
-exists to look consistent. That was the rule until per-entry removal
-(§2.9) gave every card a verb of its own, so now every card has a
-menu — the diagram or folder one where the Explorer can resolve the
-subject, otherwise a menu holding just **Remove from Timeline** under
-the card's subject as a header. The same `TimelineCardMenu` component
-renders all three shapes behind the same trigger, so they can't drift
-on how a menu opens.
+**Every other card's menu offers what the Explorer can do with that
+kind of thing**, resolved from the Explorer's own state and run through
+the Explorer's own handlers (`useTimelineEntityMenus`):
+
+| Card                                   | Verbs                                                                                  |
+| -------------------------------------- | -------------------------------------------------------------------------------------- |
+| API token (created, expiring)          | Open Tokens · **Revoke Token** (confirmed with the Tokens pane's own warning)          |
+| Team (created, renamed, members, role) | Open Team · Edit Team _(admin)_ · Leave Team · Delete Team _(admin)_                   |
+| Invite received                        | Open Invites · **Accept Invite** · **Decline Invite**                                  |
+| Theme saved                            | Open Themes · Edit Theme (the same builder modal the Themes pane opens) · Delete Theme |
+| Images uploaded                        | Open Images                                                                            |
+| Diagram the Explorer can't resolve     | Open Diagram                                                                           |
+
+Plus **Remove from Timeline** on all of them (§2.9), and the destructive
+verbs last, red, under their own separator, the way the diagram menu
+keeps Delete. The first version gave these cards only the remove verb,
+on the argument that a ⋯ holding a single "Open" that duplicated the
+card's own click was a control that exists to look consistent. Half
+right: the reader who sees "API Token Expiring" wants to revoke it
+_there_, not go and find it. Confirm copy comes from the panes' own
+helpers (`token-copy.ts`, `team-removal.ts`, `ThemeBuilderModal.tsx`),
+so the warning a reader sees is the one they'd see on the Tokens,
+Themes or Team page.
+
+**A tombstone, or an entity the Explorer no longer holds** — a revoked
+token, an answered invite, a team the reader has left, a deleted theme —
+keeps only the "open the section" row: a menu of guesses is worse than
+none. The same `TimelineCardMenu` component renders all three shapes
+(diagram, folder, items) behind the same trigger, so they can't drift on
+how a menu opens.
+
+**Every diagram card also offers Share**, which opens the diagram with
+its Share dialog up (the editor honours `?share=1`). The natural next
+step from a share-link card, and no worse from any other; offline
+diagrams, which have nothing to share, leave it out.
 
 Telemetry: opening a card menu fires `Timeline` / `Opened` / `Menu`
 (§10).

@@ -23,6 +23,7 @@ import { track } from '@/lib/telemetry';
 import { useExplorer } from '../ExplorerContext';
 import { folderMenuHandlers, sharedToPaneDiagram, type PaneDiagram } from '../views';
 import { TimelineCardMenu } from './TimelineCardMenu';
+import type { TimelineEntityMenuFor } from './useTimelineEntityMenus';
 
 function idOf(snapshot: Record<string, unknown>, key: string): string | null {
   const id = snapshot[key];
@@ -47,10 +48,13 @@ function subjectOf(event: TimelineEvent): string {
 export function useTimelineCardSlots({
   onShowHistory,
   onDismiss,
+  entityMenu,
 }: {
   onShowHistory: (id: string, name: string) => void;
   /** Take one card off the reader's feed (spec/138 §2.9). */
   onDismiss: (eventId: string) => void;
+  /** The verbs for a card that isn't a resolved diagram or folder (useTimelineEntityMenus). */
+  entityMenu: TimelineEntityMenuFor;
 }): TimelineCardSlotsFor {
   const {
     ownerId,
@@ -145,9 +149,20 @@ export function useTimelineCardSlots({
       const id = event.sourceType === 'diagram' ? idOf(event.snapshot, 'diagramId') : null;
       const diagram = id ? byId.get(id) : undefined;
       if (!id || !diagram) {
+        // Everything else: the verbs the Explorer offers that kind of
+        // thing (revoke this token, accept this invite, edit this
+        // theme…), or just the remove verb when it offers none.
+        const entity = entityMenu(event);
         return {
+          subject: entity?.subject,
           onContextMenu,
-          menu: <TimelineCardMenu subject={subjectOf(event)} {...menuProps} />,
+          menu: (
+            <TimelineCardMenu
+              subject={entity?.subject ?? subjectOf(event)}
+              items={entity?.items}
+              {...menuProps}
+            />
+          ),
         };
       }
 
@@ -192,6 +207,13 @@ export function useTimelineCardSlots({
               onShowHistory: isOfflineIdSync(id)
                 ? undefined
                 : () => onShowHistory(id, diagram.name),
+              // Straight to the Share dialog (the editor honours
+              // `?share=1`): the natural next step from a share-link
+              // card, and no worse from any other. Offline diagrams have
+              // nothing to share (spec/76).
+              onShare: isOfflineIdSync(id)
+                ? undefined
+                : () => window.location.assign(`/diagram/${encodeURIComponent(id)}?share=1`),
             }}
           />
         ),
@@ -220,6 +242,7 @@ export function useTimelineCardSlots({
       renamingFolderId,
       setRenamingFolderId,
       commitRenameFolder,
+      entityMenu,
     ],
   );
 }
