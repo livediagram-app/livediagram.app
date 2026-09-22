@@ -1,7 +1,8 @@
 import { isTemplateKind, type TemplateKind } from '@livediagram/templates';
 
 // The /new query params that skip the wizard (spec/14): `?blank=1` commits
-// a blank diagram, `?template=<kind>` commits that template, both with the
+// a blank diagram, `?template=<kind>` (built by the templates package's
+// templateCreateHref) commits that template, both with the
 // Default theme and the template's default name, and land on the editor.
 // One reader for both so the page, its bfcache-restore cleanup and the
 // pre-hydration guard agree on what counts.
@@ -19,10 +20,4 @@ export function wizardBypassKind(search: string): TemplateKind | null {
   if (params.has('blank')) return 'blank';
   const template = params.get('template');
   return isTemplateKind(template) ? template : null;
-}
-
-// The URL an outside surface links to for a one-click templated diagram
-// (the marketing template gallery, spec/16).
-export function templateCreateHref(kind: TemplateKind): string {
-  return `/new?template=${encodeURIComponent(kind)}`;
 }

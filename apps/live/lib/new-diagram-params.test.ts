@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { templateCreateHref, wizardBypassKind } from './new-diagram-params';
+import { templateCreateHref } from '@livediagram/templates';
+import { wizardBypassKind } from './new-diagram-params';
 
 describe('wizardBypassKind (spec/14)', () => {
   it('reads ?blank as the blank template, whatever its value', () => {
@@ -24,7 +25,7 @@ describe('wizardBypassKind (spec/14)', () => {
     expect(wizardBypassKind('?template=kanban&blank=1')).toBe('blank');
   });
 
-  it('builds the link the template gallery uses', () => {
-    expect(templateCreateHref('swot')).toBe('/new?template=swot');
+  it('reads back the link the templates package builds for the gallery', () => {
+    expect(wizardBypassKind(templateCreateHref('swot').slice('/new'.length))).toBe('swot');
   });
 });

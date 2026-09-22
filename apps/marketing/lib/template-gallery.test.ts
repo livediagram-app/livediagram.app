@@ -1,11 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { TEMPLATES } from '@livediagram/templates';
-import {
-  filterGallery,
-  galleryTemplates,
-  groupGallery,
-  templateCreateHref,
-} from './template-gallery';
+import { filterGallery, galleryTemplates, groupGallery } from './template-gallery';
 
 describe('galleryTemplates (spec/16)', () => {
   it('has one card for every listed template except Blank', () => {
@@ -51,11 +46,5 @@ describe('groupGallery', () => {
     const groups = groupGallery(filterGallery(galleryTemplates(), 'kanban'));
     expect(groups.map((g) => g.label)).toEqual(['Agile']);
     expect(groups[0]?.templates.map((t) => t.kind)).toEqual(['kanban']);
-  });
-});
-
-describe('templateCreateHref', () => {
-  it('links into the editor bypass (spec/14)', () => {
-    expect(templateCreateHref('swot')).toBe('/new?template=swot');
   });
 });

@@ -1,15 +1,10 @@
 'use client';
 
 import { TemplatePreview } from '@livediagram/template-previews';
-import type { TemplateCategory } from '@livediagram/templates';
+import { templateCreateHref, type TemplateCategory } from '@livediagram/templates';
 import { useState } from 'react';
 import { TemplateCarousel } from '@/components/TemplateCarousel';
-import {
-  filterGallery,
-  galleryTemplates,
-  groupGallery,
-  templateCreateHref,
-} from '@/lib/template-gallery';
+import { filterGallery, galleryTemplates, groupGallery } from '@/lib/template-gallery';
 
 // "What do you want to create?" (spec/16): one card per template the editor
 // ships, each category a four-across carousel (TemplateCarousel), with a

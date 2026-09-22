@@ -5,12 +5,12 @@ import { templatePreviewGroup2 } from './template-preview-2';
 import { templatePreviewGroup3 } from './template-preview-3';
 import { templatePreviewGroup4 } from './template-preview-4';
 
-// Static SVG preview tiles for the TemplatePicker (one branch per
-// TemplateKind). Lifted out of TemplatePicker.tsx (was 1214 lines, now
-// ~360) so the picker file reads as picker logic and these stay as
-// pure-render presentational markup. Each branch is independent of the
-// rest: adding a new template kind means appending one switch case
-// here plus adding the kind to TEMPLATES in lib/templates.
+// Static SVG preview tiles, one branch per TemplateKind, rendered by the
+// editor's template picker and the marketing site's template gallery
+// (spec/16). Pure-render presentational markup, no hooks. Each branch is
+// independent of the rest: adding a new template kind means appending one
+// switch case in a group file plus adding the kind to TEMPLATES in
+// @livediagram/templates; template-preview.test.ts fails until both exist.
 
 // The per-kind SVGs are split across template-preview-{1,2,3,4}.tsx (each a
 // switch returning null for kinds it doesn't own) to keep every file under the

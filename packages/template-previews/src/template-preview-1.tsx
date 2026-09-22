@@ -1,8 +1,8 @@
 import type { ReactElement } from 'react';
 import type { TemplateKind } from '@livediagram/templates';
 
-// Group 1 of 3 (mind maps / flowcharts). Static SVG preview tiles for the TemplatePicker (one branch per
-// TemplateKind). Split out of template-preview.tsx to keep each file under the
+// Group 1 of 3 (mind maps / flowcharts). Static SVG preview tiles (one branch per
+// TemplateKind; see template-preview.tsx for who renders them). Split out of template-preview.tsx to keep each file under the
 // ~1000-line budget; TemplatePreview chains the groups with ??.
 export function templatePreviewGroup1(kind: TemplateKind): ReactElement | null {
   switch (kind) {

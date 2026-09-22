@@ -4,7 +4,6 @@ import {
   templateCategory,
   type TemplateCategory,
   type TemplateDescriptor,
-  type TemplateKind,
 } from '@livediagram/templates';
 
 // The landing page's template gallery (spec/16): one card per template the
@@ -50,9 +49,4 @@ export function groupGallery(
     label: c.label,
     templates: items.filter((t) => t.category === c.id),
   })).filter((g) => g.templates.length > 0);
-}
-
-// The editor URL that commits this template without the wizard (spec/14).
-export function templateCreateHref(kind: TemplateKind): string {
-  return `/new?template=${encodeURIComponent(kind)}`;
 }
