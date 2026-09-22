@@ -319,7 +319,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <SpotlightArt />,
         href: '/help/selection-modes/spotlight/',
-        group: 'Spotlight',
+        group: 'Presenting modes',
         title: 'Spotlight the room on one thing',
         description:
           'Switch on Spotlight and the canvas dims under a soft shroud, with only a circle of light around your cursor. Walk the room through a busy diagram one piece at a time. Left-click grows the light, right-click shrinks it, and it is a local view aid, so it never gets in a viewer’s way.',
@@ -327,7 +327,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <LaserArt />,
         href: '/help/selection-modes/laser/',
-        group: 'Laser pointer',
+        group: 'Presenting modes',
         title: 'Laser pointer for presenting',
         description:
           'Switch to the laser tool and your cursor leaves a glowing trail everyone can see. Point at the thing you mean while you talk it through. Trails fade on their own.',
@@ -335,7 +335,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <AvatarModeArt />,
         href: '/help/selection-modes/avatar-mode/',
-        group: 'Avatar mode',
+        group: 'Presenting modes',
         title: 'Walk a character through your diagram',
         description:
           'Avatar mode drops a little pixel character onto the canvas. Click to walk it to whatever you are talking about, steer with the arrow keys, and press Space to hop and wave a flag. Dress it how you like — gender, clothing, hair and size, remembered in your browser — and the box it stands on gets a ring. The canvas is read-only while you walk, and on a shared diagram everyone sees everyone else walking about in their own colour.',
@@ -343,7 +343,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <IsometricArt />,
         href: '/help/selection-modes/isometric-mode/',
-        group: 'Isometric',
+        group: 'Presenting modes',
         title: 'Tilt the board into 3D',
         description:
           'Isometric view tips the whole canvas onto an angle and lifts each layer off the one below, so a stack that reads as flat boxes becomes a scene you can see the depth of. Orbit it from the zoom cluster. It is a way of LOOKING at a diagram, not a change to it: nothing moves, and everyone else still sees it flat.',
@@ -351,7 +351,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <ZenModeArt />,
         href: '/help/tools/zen-mode/',
-        group: 'Zen',
+        group: 'Presenting modes',
         title: 'Zen mode for focus',
         description:
           'Hit Z, or the zen button by the laser pointer, and every toolbar, panel, and tab bar drops away, leaving just your canvas. Only the zoom controls stay, with an exit button right beside them. Press Z or Esc to bring it all back.',

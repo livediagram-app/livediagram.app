@@ -54,6 +54,7 @@ packages/
   diagram/        # diagram data model (Tab, Element types + element helpers)
   icons/          # icon catalogues (line-art + Technology + stickers) + SVG markup builders + xmlEscape
   templates/      # template catalogue + pure element builders (editor Quick Start + MCP)
+  template-previews/ # per-template preview SVGs (editor picker + marketing template gallery)
   help-registry/  # help-centre article/category registry + keywords (help app + editor search)
   api-schema/     # wire-format DTOs the api worker emits + the live editor consumes
   telemetry-client/ # shared browser telemetry emitter (buffer/flush/beacon engine)

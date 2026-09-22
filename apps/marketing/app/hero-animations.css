@@ -396,7 +396,8 @@
 .hero-static .hero-line4,
 .hero-static .hero-theme,
 .hero-static .hero-text-in,
-.hero-static .hero-comment {
+.hero-static .hero-comment,
+.hero-static .hero-highlight {
   animation: none;
   opacity: 1;
   transform: none;
@@ -405,6 +406,25 @@
 .hero-static .hero-text-out {
   animation: none;
   opacity: 0;
+}
+
+/* Mind-map highlighter: a marker stroke that swipes across a node from the
+   left, once the map has built, and stays. */
+.hero-highlight {
+  transform-box: fill-box;
+  transform-origin: left center;
+  transform: scaleX(0);
+  animation: hero-highlight 16s ease-out infinite;
+}
+@keyframes hero-highlight {
+  0%,
+  34% {
+    transform: scaleX(0);
+  }
+  42%,
+  100% {
+    transform: scaleX(1);
+  }
 }
 
 /* Mind-map laser pointer. After the map builds, a glowing rose laser draws a

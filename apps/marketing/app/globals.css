@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @import '@livediagram/tailwind-config';
+@import '@livediagram/template-previews/preview-art-tile.css';
 @import './hero-animations.css';
 @import './feature-art-animations.css';
 
@@ -23,6 +24,7 @@
   .hero-theme,
   .hero-text-in,
   .hero-comment,
+  .hero-highlight,
   .hero-cursor {
     animation: none;
     opacity: 1;
@@ -74,7 +76,8 @@
   .fa-beat,
   .fa-drift,
   .fa-spot,
-  .uc-pop {
+  .tg-reveal,
+  .tg-reveal .tg-reveal-track > li {
     animation: none !important;
     opacity: 1 !important;
     transform: none !important;

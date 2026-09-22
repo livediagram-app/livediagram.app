@@ -518,23 +518,6 @@
 .fa-rotate {
   animation: fa-rotate 5s ease-in-out infinite;
 }
-
-/* one-shot entrance for the use-case carousel's featured card; replays on
-   selection change via a React key remount (components/UseCaseCarousel). */
-@keyframes uc-pop {
-  0% {
-    opacity: 0;
-    transform: translateY(8px) scale(0.985);
-  }
-  100% {
-    opacity: 1;
-    transform: none;
-  }
-}
-.uc-pop {
-  animation: uc-pop 0.35s ease-out both;
-}
-
 /* ─────────────────────────────────────────────────────────────────
  * Motion-feature illustrations (spec/09 "Animated elements" + the
  * animated background patterns). These mirror the editor's own looping
@@ -680,4 +663,26 @@
 }
 .fa-drag-dup {
   animation: fa-drag-dup 4.2s ease-in-out infinite;
+}
+
+/* Template gallery (spec/16): a category opened from the chip cloud, or by a
+   search, rises into place instead of appearing in one frame. Both the row
+   and each card in it: the row fades up, the cards follow in a short
+   stagger (set per card as --tg-i), so the eye is led along the new row. */
+@keyframes tg-reveal {
+  0% {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+.tg-reveal {
+  animation: tg-reveal 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+.tg-reveal .tg-reveal-track > li {
+  animation: tg-reveal 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation-delay: calc(0.06s + var(--tg-i, 0) * 0.05s);
 }
