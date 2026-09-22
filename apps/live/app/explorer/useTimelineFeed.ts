@@ -11,7 +11,7 @@
 // (useTokens, useTeams), so visiting Recent doesn't fetch a feed
 // nobody is looking at.
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import {
   useTimelineControls,
   type TimelineCategory,
@@ -121,10 +121,17 @@ export function useTimelineFeed(
   // that effect's dependencies are the feed's identity, so its re-run is
   // exactly the moment the cache stops applying.
   const fetchedRanges = useRef(new Set<string>());
-  // A stable dependency for the effects: `scope` is an object literal at
-  // most call sites, so depending on it directly would refetch on every
-  // parent render.
-  const scopeKey = scope ? `${scope.scopeType}:${scope.scopeId}` : '';
+  // A stable scope for the effects: `scope` is an object literal at most
+  // call sites, so depending on it directly would refetch on every parent
+  // render. Rebuilt only when its two fields change, so the callbacks can
+  // list it as the dependency it really is.
+  const scopeType = scope?.scopeType;
+  const scopeId = scope?.scopeId;
+  const stableScope = useMemo<TimelineScopeRef | undefined>(
+    () => (scopeType !== undefined && scopeId !== undefined ? { scopeType, scopeId } : undefined),
+    [scopeType, scopeId],
+  );
+  const scopeKey = stableScope ? `${stableScope.scopeType}:${stableScope.scopeId}` : '';
 
   // The first page, read four ways: on arrival, on Try again, on
   // returning to the tab, and after the reader's own write lands. They
@@ -156,7 +163,10 @@ export function useTimelineFeed(
         // nothing was thrown away, so nothing needs re-fetching.
         fetchedRanges.current.clear();
       }
-      const page = await apiListTimeline(ownerId, { limit: TIMELINE_PAGE_SIZE, scope });
+      const page = await apiListTimeline(ownerId, {
+        limit: TIMELINE_PAGE_SIZE,
+        scope: stableScope,
+      });
       if (id !== requestId.current) return;
       if (!page) {
         setError(true);
@@ -195,7 +205,7 @@ export function useTimelineFeed(
       setLastSeenAt((prev) => prev ?? page.lastSeenAt);
       setLoading(false);
     },
-    [ownerId, scopeKey],
+    [ownerId, stableScope],
   );
 
   useEffect(() => {
@@ -256,47 +266,51 @@ export function useTimelineFeed(
     if (fetchedRanges.current.has(period)) return;
     fetchedRanges.current.add(period);
     const { from, to } = monthBounds(period);
-    void apiListTimeline(ownerId, { from, to, limit: TIMELINE_PAGE_MAX, scope }).then((page) => {
-      if (!page) {
-        // Forget the range so paging away and back retries it. Leaving
-        // it in the set would make one failed request look like a month
-        // in which nothing happened, permanently.
-        fetchedRanges.current.delete(period);
-        return;
-      }
-      if (page.events.length === 0) return;
-      // Same merge as the return-to-tab re-read: a fetched range can
-      // predate what's loaded, and the grouping relies on newest-first
-      // input to place a collapsed stack at its most recent member.
-      setEvents((prev) => mergeEvents(prev, page.events));
-    });
-  }, [enabled, ownerId, controls.mode, controls.monthKey, scope, scopeKey]);
+    void apiListTimeline(ownerId, { from, to, limit: TIMELINE_PAGE_MAX, scope: stableScope }).then(
+      (page) => {
+        if (!page) {
+          // Forget the range so paging away and back retries it. Leaving
+          // it in the set would make one failed request look like a month
+          // in which nothing happened, permanently.
+          fetchedRanges.current.delete(period);
+          return;
+        }
+        if (page.events.length === 0) return;
+        // Same merge as the return-to-tab re-read: a fetched range can
+        // predate what's loaded, and the grouping relies on newest-first
+        // input to place a collapsed stack at its most recent member.
+        setEvents((prev) => mergeEvents(prev, page.events));
+      },
+    );
+  }, [enabled, ownerId, controls.mode, controls.monthKey, stableScope, scopeKey]);
 
   const loadMore = useCallback(() => {
     if (!cursor || loadingMore || !ownerId) return;
     setLoadingMore(true);
-    void apiListTimeline(ownerId, { cursor, limit: TIMELINE_PAGE_SIZE, scope }).then((page) => {
-      if (!page) {
-        // The cursor is kept, so Show more simply comes back and the
-        // reader can press it again. No error state for this one: the
-        // feed above it is intact, and a failed page is not a claim
-        // that the history ended here.
+    void apiListTimeline(ownerId, { cursor, limit: TIMELINE_PAGE_SIZE, scope: stableScope }).then(
+      (page) => {
+        if (!page) {
+          // The cursor is kept, so Show more simply comes back and the
+          // reader can press it again. No error state for this one: the
+          // feed above it is intact, and a failed page is not a claim
+          // that the history ended here.
+          setLoadingMore(false);
+          return;
+        }
+        setEvents((prev) => {
+          // Dedupe on append. The feed grows at the head while a reader
+          // pages down it, and although the keyset cursor makes a repeat
+          // unlikely, a duplicate React key here would drop bubbles from
+          // the render rather than merely showing one twice.
+          const seen = new Set(prev.map((e) => e.id));
+          return [...prev, ...page.events.filter((e) => !seen.has(e.id))];
+        });
+        setCursor(page.nextCursor);
         setLoadingMore(false);
-        return;
-      }
-      setEvents((prev) => {
-        // Dedupe on append. The feed grows at the head while a reader
-        // pages down it, and although the keyset cursor makes a repeat
-        // unlikely, a duplicate React key here would drop bubbles from
-        // the render rather than merely showing one twice.
-        const seen = new Set(prev.map((e) => e.id));
-        return [...prev, ...page.events.filter((e) => !seen.has(e.id))];
-      });
-      setCursor(page.nextCursor);
-      setLoadingMore(false);
-      track('Timeline', 'Loaded', 'More');
-    });
-  }, [cursor, loadingMore, ownerId, scopeKey]);
+        track('Timeline', 'Loaded', 'More');
+      },
+    );
+  }, [cursor, loadingMore, ownerId, stableScope]);
 
   const retry = useCallback(() => {
     track('Timeline', 'Loaded', 'Retry');

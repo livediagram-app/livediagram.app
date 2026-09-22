@@ -74,7 +74,9 @@ export function useTimelineCardSlots({
     return map;
   }, [diagrams, teamDiagrams, shared]);
 
-  const recentExcluded = prefs.recentExcludedIds ?? [];
+  // Memoised: a fresh `?? []` each render would make the slot callback
+  // below a new function every render.
+  const recentExcluded = useMemo(() => prefs.recentExcludedIds ?? [], [prefs.recentExcludedIds]);
 
   // Which card's menu is open, by event id (one diagram can have several
   // cards on a day, and a menu belongs to the card it was opened from).
