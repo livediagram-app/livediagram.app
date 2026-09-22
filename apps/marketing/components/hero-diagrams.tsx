@@ -177,9 +177,10 @@ export function FlowchartDiagram() {
 }
 
 // Card 2 diagram: a mind map that builds out from a central node, then (when
-// playing) a laser pointer rings the top-left node, moves to the bottom-right
-// node and rings it. It does not recolour. Reuses the hero-pop / hero-line
-// build keyframes; the laser uses its own hero-laser-* keyframes.
+// playing) a Highlighter stroke (spec/81) swipes across the Design node and a
+// laser pointer rings the top-left node, moves to the bottom-right node and
+// rings it. It does not recolour. Reuses the hero-pop / hero-line build
+// keyframes; the highlighter and laser use their own hero-* keyframes.
 export function MindMapDiagram({ playing, theme }: { playing: boolean; theme: Theme }) {
   const nodes = [
     { cls: 'hero-pop2', x: 70, y: 30, w: 110, h: 36, label: 'Research' },
@@ -249,6 +250,21 @@ export function MindMapDiagram({ playing, theme }: { playing: boolean; theme: Th
           </g>
         ))}
       </g>
+
+      {/* Highlighter: a translucent marker swipe across Design, drawn left to
+          right after the map builds. It sits under the laser and is held
+          settled on the peeking card. */}
+      <rect
+        className="hero-highlight"
+        x="412"
+        y="36"
+        width="126"
+        height="26"
+        rx="5"
+        fill="#fde047"
+        fillOpacity="0.55"
+        stroke="none"
+      />
 
       {/* Laser pointer: rings Research (top-left), then moves to Launch
           (bottom-right) and rings it. Only on the active card. */}

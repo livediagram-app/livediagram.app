@@ -24,6 +24,7 @@
   .hero-theme,
   .hero-text-in,
   .hero-comment,
+  .hero-highlight,
   .hero-cursor {
     animation: none;
     opacity: 1;

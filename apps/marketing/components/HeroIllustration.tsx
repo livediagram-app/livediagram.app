@@ -1,11 +1,17 @@
 'use client';
 
 // Animated hero: three editor windows on a sliding stage.
-//   1. Flowchart — shared, a teammate cursor, and the theme-recolour beat
-//      (the only window that recolours; its canvas tints to match).
-//   2. Mind map — shared, with a laser pointer that rings one node then
-//      another.
-//   3. Release timeline — private (amber badge, just you, no collaborators).
+//   1. Flowchart — shared, a teammate cursor, a comment thread, and the
+//      theme-recolour beat (the only window that recolours; its canvas tints
+//      to match).
+//   2. Mind map — shared, a Highlighter swipe across one node, then a laser
+//      pointer that rings one node then another.
+//   3. Release timeline — private (amber badge, just you, no collaborators),
+//      with the Layers panel docked beside it.
+// The chrome mirrors today's editor: the Editor menu and Share button in the
+// header, the tabbed palette with its search box and labelled tiles, the zoom
+// cluster, and the bottom tab bar's toolbelt. Below the stage, a label names
+// the centred window and a row of dots moves between them.
 // The centred window plays its pure-CSS build (globals.css, hero-*); the
 // peeking windows render settled (.hero-static), blurred + faded, with the
 // stage edges masked so they fade out rather than hard-clip. The stage
@@ -39,15 +45,20 @@ const AMBER: Theme = { canvas: '#fffbeb', fill: '#fef3c7', stroke: '#b45309', te
 const CARDS: {
   key: string;
   title: string;
+  // What the dot navigation says about this window while it is centred.
+  label: string;
   tabs: TabDef[];
   showCursor: boolean;
   shared: boolean;
   theming: boolean;
   canvasTint: string;
+  // Dock the Layers panel (spec/74) on this window's canvas.
+  layers?: boolean;
 }[] = [
   {
     key: 'flowchart',
     title: 'Quarterly planning',
+    label: 'A flowchart, shared live, recoloured with one click',
     tabs: [
       { name: 'Overview', color: '#0ea5e9', active: true },
       { name: 'Roadmap', color: '#ec4899' },
@@ -61,6 +72,7 @@ const CARDS: {
   {
     key: 'mindmap',
     title: 'Team mind map',
+    label: 'A mind map, highlighted and laser-pointed for the room',
     tabs: [
       { name: 'Ideas', color: '#0ea5e9', active: true },
       { name: 'Themes', color: '#ec4899' },
@@ -74,6 +86,7 @@ const CARDS: {
   {
     key: 'timeline',
     title: 'Release timeline',
+    label: 'A private timeline, organised into layers',
     tabs: [
       { name: 'Roadmap', color: '#0ea5e9', active: true },
       { name: 'Milestones', color: '#ec4899' },
@@ -83,7 +96,28 @@ const CARDS: {
     shared: false,
     theming: false,
     canvasTint: AMBER.canvas,
+    layers: true,
   },
+];
+
+// The palette mock's Favourites grid: the editor's default go-to tiles.
+const PALETTE_TILES: { kind: string; label: string }[] = [
+  { kind: 'rect', label: 'Square' },
+  { kind: 'circle', label: 'Circle' },
+  { kind: 'diamond', label: 'Diamond' },
+  { kind: 'text', label: 'Text' },
+  { kind: 'arrow', label: 'Arrow' },
+  { kind: 'frame', label: 'Frame' },
+  { kind: 'note', label: 'Note' },
+  { kind: 'image', label: 'Image' },
+  { kind: 'pen', label: 'Shape Pen' },
+];
+
+// The Layers panel rows on the timeline window.
+const LAYER_ROWS: { name: string; swatch: string; hidden: boolean }[] = [
+  { name: 'Milestones', swatch: '#f59e0b', hidden: false },
+  { name: 'Axis', swatch: '#b45309', hidden: false },
+  { name: 'Notes', swatch: '#94a3b8', hidden: true },
 ];
 
 // Window width as a % of the stage: narrower peek (wider window) on phones.
@@ -114,50 +148,78 @@ export function HeroIllustration() {
 
   const tx = (100 - card) / 2 - active * (card + GAP);
 
+  const current = CARDS[active] ?? CARDS[0]!;
   return (
-    <div
-      aria-hidden
-      className="mx-auto mt-16 w-full max-w-6xl overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_4%,black_96%,transparent)]"
-    >
+    <div className="mx-auto mt-16 w-full max-w-6xl">
       <div
-        className="hero-track flex w-full"
-        style={{ gap: `${GAP}%`, transform: `translateX(${tx}%)` }}
+        aria-hidden
+        className="w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_4%,black_96%,transparent)]"
       >
-        {CARDS.map((c, i) => {
-          const playing = i === active;
-          const diagram =
-            c.key === 'mindmap' ? (
-              <MindMapDiagram playing={playing} theme={VIOLET} />
-            ) : c.key === 'timeline' ? (
-              <TimelineDiagram theme={AMBER} />
-            ) : (
-              <FlowchartDiagram />
+        <div
+          className="hero-track flex w-full"
+          style={{ gap: `${GAP}%`, transform: `translateX(${tx}%)` }}
+        >
+          {CARDS.map((c, i) => {
+            const playing = i === active;
+            const diagram =
+              c.key === 'mindmap' ? (
+                <MindMapDiagram playing={playing} theme={VIOLET} />
+              ) : c.key === 'timeline' ? (
+                <TimelineDiagram theme={AMBER} />
+              ) : (
+                <FlowchartDiagram />
+              );
+            return (
+              <button
+                key={c.key}
+                type="button"
+                tabIndex={-1}
+                onClick={() => setActive(i)}
+                style={{ width: `${card}%` }}
+                className={
+                  'shrink-0 text-left transition duration-500 ' +
+                  (playing ? '' : 'scale-[0.97] opacity-60 blur-[2px]')
+                }
+              >
+                <EditorWindow
+                  title={c.title}
+                  tabs={c.tabs}
+                  shared={c.shared}
+                  theming={c.theming}
+                  canvasTint={c.canvasTint}
+                  showCursor={c.showCursor}
+                  layers={c.layers ?? false}
+                  playing={playing}
+                  diagram={diagram}
+                />
+              </button>
             );
-          return (
+          })}
+        </div>
+      </div>
+
+      {/* Dot navigation: a label for the centred window, and one dot per
+          window so a visitor moves between them at their own pace (the
+          auto-advance timer resets on each choice). */}
+      <div className="mt-6 flex flex-col items-center gap-3">
+        <p className="text-sm text-slate-500" aria-live="polite">
+          {current.label}
+        </p>
+        <div className="flex items-center gap-2" role="group" aria-label="Hero examples">
+          {CARDS.map((c, i) => (
             <button
               key={c.key}
               type="button"
-              tabIndex={-1}
+              aria-label={c.label}
+              aria-current={i === active}
               onClick={() => setActive(i)}
-              style={{ width: `${card}%` }}
               className={
-                'shrink-0 text-left transition duration-500 ' +
-                (playing ? '' : 'scale-[0.97] opacity-60 blur-[2px]')
+                'h-2 rounded-full transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 ' +
+                (i === active ? 'w-7 bg-brand-500' : 'w-2 bg-slate-300 hover:bg-slate-400')
               }
-            >
-              <EditorWindow
-                title={c.title}
-                tabs={c.tabs}
-                shared={c.shared}
-                theming={c.theming}
-                canvasTint={c.canvasTint}
-                showCursor={c.showCursor}
-                playing={playing}
-                diagram={diagram}
-              />
-            </button>
-          );
-        })}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -175,6 +237,7 @@ function EditorWindow({
   theming,
   canvasTint,
   showCursor,
+  layers,
 }: {
   title: string;
   tabs: TabDef[];
@@ -184,13 +247,22 @@ function EditorWindow({
   theming: boolean;
   canvasTint: string;
   showCursor: boolean;
+  layers: boolean;
 }) {
   return (
     <div className="rounded-xl border border-slate-200 bg-white p-2 shadow-xl shadow-brand-500/10">
       <div className="overflow-hidden rounded-lg border border-slate-100">
         {/* Editor header strip (static chrome) */}
         <div className="flex items-center justify-between gap-2 border-b border-slate-100 bg-white px-3 py-2">
-          <Brand size="sm" />
+          <div className="flex items-center gap-2">
+            <Brand size="sm" />
+            {/* The Editor menu, as the real header carries it. */}
+            <span className="hidden items-center gap-1 rounded-md border border-slate-200 px-1.5 py-0.5 text-[10px] font-medium text-slate-600 sm:inline-flex">
+              <MenuGlyph />
+              Editor
+              <ChevronGlyph />
+            </span>
+          </div>
           <div className="flex min-w-0 items-center gap-2">
             <span className="hidden truncate text-xs text-slate-400 sm:inline">{title}</span>
             {shared ? (
@@ -209,9 +281,13 @@ function EditorWindow({
               </span>
             )}
           </div>
-          {/* Presence: a shared diagram shows collaborators; a private one
-              shows only you. */}
+          {/* Share, then presence: a shared diagram shows collaborators; a
+              private one shows only you. */}
           <div className="flex items-center gap-1.5">
+            <span className="mr-1 hidden items-center gap-1 rounded-md bg-brand-500 px-2 py-0.5 text-[10px] font-semibold text-white sm:inline-flex">
+              <ShareGlyph />
+              Share
+            </span>
             <Avatar initials="TM" color="#0ea5e9" />
             {shared ? <Avatar initials="JR" color="#ec4899" /> : null}
           </div>
@@ -227,21 +303,90 @@ function EditorWindow({
             (theming && playing ? ' hero-theme-canvas' : '')
           }
         >
-          {/* Floating palette mockup (static chrome) */}
-          <div className="absolute right-2 top-2 flex w-36 flex-col gap-1 rounded-lg border border-slate-200 bg-white p-1.5 shadow-md">
-            <p className="px-1 text-[8px] font-semibold uppercase tracking-wider text-slate-500">
-              Palette
-            </p>
-            <div className="flex flex-wrap gap-0.5">
-              {['rect', 'circle', 'diamond', 'cyl', 'para', 'hex', 'doc', 'pill'].map((s) => (
+          {/* Floating palette mockup (static chrome), as the editor's: the
+              tool + category pickers, the element search, and the Favourites
+              grid of labelled tiles. */}
+          <div className="absolute right-2 top-2 hidden w-40 flex-col rounded-lg border border-slate-200 bg-white shadow-md sm:flex">
+            <div className="flex items-center justify-between border-b border-slate-100 px-2 py-1">
+              <p className="text-[8px] font-semibold uppercase tracking-wider text-slate-500">
+                Palette
+              </p>
+              <span className="flex gap-1 text-slate-300">
+                <span className="h-1.5 w-1.5 rounded-full bg-current" />
+                <span className="h-1.5 w-1.5 rounded-full bg-current" />
+              </span>
+            </div>
+            <div className="flex items-center justify-between border-b border-slate-100 px-2 py-1 text-[9px] font-medium text-slate-600">
+              <span className="inline-flex items-center gap-0.5">
+                Select
+                <ChevronGlyph />
+              </span>
+              <span className="inline-flex items-center gap-0.5">
+                <StarGlyph />
+                Favourites
+                <ChevronGlyph />
+              </span>
+            </div>
+            <div className="px-1.5 pt-1.5">
+              <div className="rounded-md border border-slate-200 px-1.5 py-0.5 text-[8px] text-slate-400">
+                Search all elements
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-0.5 p-1.5">
+              {PALETTE_TILES.map((t) => (
                 <span
-                  key={s}
-                  className="flex h-6 w-6 items-center justify-center rounded text-slate-500"
+                  key={t.kind}
+                  className="flex flex-col items-center gap-0.5 rounded py-0.5 text-slate-500"
                 >
-                  <Shape kind={s} />
+                  <Shape kind={t.kind} />
+                  <span className="text-[7px] leading-none text-slate-500">{t.label}</span>
                 </span>
               ))}
             </div>
+          </div>
+
+          {/* The Layers panel (spec/74), docked on the timeline window: one
+              row per layer with its eye toggle, the hidden one dimmed. */}
+          {layers ? (
+            <div className="absolute left-2 top-2 hidden w-32 flex-col rounded-lg border border-slate-200 bg-white shadow-md sm:flex">
+              <p className="border-b border-slate-100 px-2 py-1 text-[8px] font-semibold uppercase tracking-wider text-slate-500">
+                Layers
+              </p>
+              {LAYER_ROWS.map((row) => (
+                <span
+                  key={row.name}
+                  className={
+                    'flex items-center gap-1.5 px-2 py-1 text-[9px] font-medium ' +
+                    (row.hidden ? 'text-slate-300' : 'text-slate-600')
+                  }
+                >
+                  <EyeGlyph off={row.hidden} />
+                  <span className="h-2 w-3 rounded-sm" style={{ backgroundColor: row.swatch }} />
+                  {row.name}
+                </span>
+              ))}
+            </div>
+          ) : null}
+
+          {/* Zoom cluster (static chrome): history, undo / redo, layers, the
+              look-and-feel brush, and the zoom readout. */}
+          <div className="absolute bottom-2 right-2 hidden items-center gap-1 text-slate-500 sm:flex">
+            <span className="flex items-center rounded-md border border-slate-200 bg-white shadow-sm">
+              <ToolGlyph kind="history" />
+              <ToolGlyph kind="undo" />
+              <ToolGlyph kind="redo" />
+            </span>
+            <span className="flex items-center rounded-md border border-slate-200 bg-white shadow-sm">
+              <ToolGlyph kind="layers" />
+            </span>
+            <span className="flex items-center rounded-md border border-slate-200 bg-white shadow-sm">
+              <ToolGlyph kind="brush" />
+            </span>
+            <span className="flex items-center rounded-md border border-slate-200 bg-white px-1 text-[10px] font-medium shadow-sm">
+              <span className="px-1">−</span>
+              100%
+              <span className="px-1">+</span>
+            </span>
           </div>
 
           <svg
@@ -314,7 +459,7 @@ function EditorWindow({
           <div className="ml-auto hidden items-center gap-1 text-slate-400 sm:flex">
             <ToolGlyph kind="search" />
             <ToolGlyph kind="keys" />
-            <ToolGlyph kind="gear" />
+            <ToolGlyph kind="sliders" />
             <ToolGlyph kind="moon" />
           </div>
         </div>
@@ -398,9 +543,14 @@ function PrivateDotIcon() {
   );
 }
 
-// Small toolbelt glyphs for the hero's bottom tab bar (search, keyboard
-// shortcuts, settings, dark-mode). Decorative, sized for the chrome.
-function ToolGlyph({ kind }: { kind: 'search' | 'keys' | 'gear' | 'moon' }) {
+// Small chrome glyphs: the bottom tab bar's toolbelt (search, keyboard
+// shortcuts, settings, dark-mode) and the zoom cluster (history, undo, redo,
+// layers, brush). Decorative, sized for the chrome.
+function ToolGlyph({
+  kind,
+}: {
+  kind: 'search' | 'keys' | 'sliders' | 'moon' | 'history' | 'undo' | 'redo' | 'layers' | 'brush';
+}) {
   const common = {
     width: 15,
     height: 15,
@@ -424,10 +574,36 @@ function ToolGlyph({ kind }: { kind: 'search' | 'keys' | 'gear' | 'moon' }) {
           <rect x="1.5" y="4" width="13" height="8" rx="1.5" />
           <path d="M4 7h.01M7 7h.01M10 7h.01M5 9.5h6" />
         </svg>
-      ) : kind === 'gear' ? (
+      ) : kind === 'sliders' ? (
         <svg {...common}>
-          <circle cx="8" cy="8" r="2.2" />
-          <path d="M8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2M3.4 3.4l1.4 1.4M11.2 11.2l1.4 1.4M12.6 3.4l-1.4 1.4M4.8 11.2l-1.4 1.4" />
+          <path d="M2 5h12M2 11h12" />
+          <circle cx="6" cy="5" r="1.6" fill="white" />
+          <circle cx="10.5" cy="11" r="1.6" fill="white" />
+        </svg>
+      ) : kind === 'history' ? (
+        <svg {...common}>
+          <path d="M2.5 8a5.5 5.5 0 1 0 1.6-3.9" />
+          <path d="M2.5 3v3h3M8 5.5V8l2 1.5" />
+        </svg>
+      ) : kind === 'undo' ? (
+        <svg {...common}>
+          <path d="M6 4 3 7l3 3" />
+          <path d="M3 7h6.5a3.5 3.5 0 0 1 0 7H7" />
+        </svg>
+      ) : kind === 'redo' ? (
+        <svg {...common}>
+          <path d="M10 4l3 3-3 3" />
+          <path d="M13 7H6.5a3.5 3.5 0 0 0 0 7H9" />
+        </svg>
+      ) : kind === 'layers' ? (
+        <svg {...common}>
+          <path d="M8 2.5 14 5.5 8 8.5 2 5.5z" strokeLinejoin="round" />
+          <path d="M2 8.5l6 3 6-3M2 11.5l6 3 6-3" />
+        </svg>
+      ) : kind === 'brush' ? (
+        <svg {...common}>
+          <path d="M13.5 2.5 7 9l-1 1 .5 .5 1-1 6.5-6.5z" strokeLinejoin="round" />
+          <path d="M6 10c-1.5 0-2.5 1-2.5 2.5S2 14 2 14s2 .2 3.5-1S6 10 6 10z" />
         </svg>
       ) : (
         <svg {...common}>
@@ -501,6 +677,136 @@ function Shape({ kind }: { kind: string }) {
           <rect x="2" y="5" width="12" height="6" rx="3" />
         </svg>
       );
+    case 'text':
+      return (
+        <svg {...common} strokeLinecap="round">
+          <path d="M3.5 4h9M8 4v9M6 13h4" />
+        </svg>
+      );
+    case 'arrow':
+      return (
+        <svg {...common} strokeLinecap="round" strokeLinejoin="round">
+          <path d="M3 8h9M9 4.5 12.5 8 9 11.5" />
+        </svg>
+      );
+    case 'frame':
+      return (
+        <svg {...common} strokeLinejoin="round">
+          <path d="M3 5.5V13h10V5.5M3 5.5V3h4l1 2.5h5" />
+        </svg>
+      );
+    case 'note':
+      return (
+        <svg {...common} strokeLinejoin="round">
+          <path d="M3 3h10v6l-4 4H3z" />
+          <path d="M9 13V9h4" />
+        </svg>
+      );
+    case 'image':
+      return (
+        <svg {...common} strokeLinejoin="round">
+          <rect x="2.5" y="3" width="11" height="10" rx="1.5" />
+          <path d="M2.5 11l3.5-3.5 3 3 2-2 2.5 2.5" />
+          <circle cx="10.5" cy="6" r="1" />
+        </svg>
+      );
+    case 'pen':
+      return (
+        <svg {...common} strokeLinecap="round" strokeLinejoin="round">
+          <path d="M3 13c1-4 3-6 6-8l2 2c-2 3-4 5-8 6z" />
+          <path d="M9 5l2 2" />
+        </svg>
+      );
   }
   return null;
+}
+
+function MenuGlyph() {
+  return (
+    <svg
+      width="9"
+      height="9"
+      viewBox="0 0 12 12"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      aria-hidden
+    >
+      <path d="M2 3h8M2 6h8M2 9h8" />
+    </svg>
+  );
+}
+
+function ChevronGlyph() {
+  return (
+    <svg
+      width="8"
+      height="8"
+      viewBox="0 0 12 12"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M3 4.5l3 3 3-3" />
+    </svg>
+  );
+}
+
+function StarGlyph() {
+  return (
+    <svg
+      width="8"
+      height="8"
+      viewBox="0 0 12 12"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.4"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M6 1.5l1.4 2.9 3.1.4-2.3 2.2.6 3.1L6 8.6 3.2 10.1l.6-3.1L1.5 4.8l3.1-.4z" />
+    </svg>
+  );
+}
+
+function ShareGlyph() {
+  return (
+    <svg
+      width="9"
+      height="9"
+      viewBox="0 0 12 12"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      aria-hidden
+    >
+      <path d="M6 7.5V1.5M3.5 4 6 1.5 8.5 4" />
+      <path d="M2.5 6.5v3.5h7V6.5" />
+    </svg>
+  );
+}
+
+function EyeGlyph({ off }: { off: boolean }) {
+  return (
+    <svg
+      width="10"
+      height="10"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M1.5 8s2.5-4.5 6.5-4.5S14.5 8 14.5 8 12 12.5 8 12.5 1.5 8 1.5 8z" />
+      <circle cx="8" cy="8" r="2" />
+      {off ? <path d="M2.5 13.5l11-11" /> : null}
+    </svg>
+  );
 }
