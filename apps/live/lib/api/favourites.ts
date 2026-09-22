@@ -10,11 +10,11 @@
 // would duplicate that and have to re-derive the team-visibility rules the
 // diagram list already applies.
 
-import { API_BASE, apiHeaders } from './core';
+import { API_BASE, apiHeaders, apiFetch } from './core';
 
 export async function apiListFavourites(ownerId: string): Promise<string[]> {
   try {
-    const res = await fetch(`${API_BASE}/favourites`, { headers: await apiHeaders(ownerId) });
+    const res = await apiFetch(`${API_BASE}/favourites`, { headers: await apiHeaders(ownerId) });
     if (!res.ok) return [];
     const body = (await res.json()) as { ids?: unknown };
     if (!Array.isArray(body.ids)) return [];
@@ -35,7 +35,7 @@ export async function apiSetFavourite(
   favourite: boolean,
 ): Promise<void> {
   try {
-    await fetch(`${API_BASE}/favourites/${encodeURIComponent(diagramId)}`, {
+    await apiFetch(`${API_BASE}/favourites/${encodeURIComponent(diagramId)}`, {
       method: favourite ? 'PUT' : 'DELETE',
       headers: await apiHeaders(ownerId),
     });

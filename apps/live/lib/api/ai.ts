@@ -7,13 +7,13 @@ import type {
   CapabilitiesResponse,
 } from '@livediagram/api-schema';
 import type { Element } from '@livediagram/diagram';
-import { API_BASE, apiHeaders } from './core';
+import { API_BASE, apiHeaders, apiFetch } from './core';
 
 // Fetch server capabilities once at editor mount. Returns everything
 // fail-closed (false) on any network error so callers degrade gracefully.
 export async function apiGetCapabilities(): Promise<CapabilitiesResponse> {
   try {
-    const res = await fetch(`${API_BASE}/capabilities`);
+    const res = await apiFetch(`${API_BASE}/capabilities`);
     if (!res.ok) return { aiEnabled: false, emailEnabled: false };
     return (await res.json()) as CapabilitiesResponse;
   } catch {
@@ -188,7 +188,7 @@ export async function apiAiStream(
     }) => void;
   },
 ): Promise<void> {
-  const res = await fetch(`${API_BASE}/ai`, {
+  const res = await apiFetch(`${API_BASE}/ai`, {
     method: 'POST',
     headers: await apiHeaders(ownerId, { body: true }),
     body: JSON.stringify(payload),

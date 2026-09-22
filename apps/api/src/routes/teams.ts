@@ -67,6 +67,7 @@ import {
   recordTeamDeleted,
   recordTeamRenamed,
 } from '../timeline';
+import { markTimelineEventsDeletedBySource } from '../db/timeline';
 import { handleTeamActionRoutes } from './team-action-routes';
 import type { RouteContext } from './context';
 
@@ -258,7 +259,14 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
       // with the team, so afterwards there is nobody left to tell.
       const audience = await audienceForTeam(env, teamId);
       await deleteTeam(env, teamId);
-      ctx.waitUntil?.(recordTeamDeleted(env, team, userId, audience));
+      // Cascade, then tombstone (spec/138 §3.5): the team's own history
+      // (renames, joins, role changes) goes with it, and "Team Deleted"
+      // is the one card every former member keeps.
+      ctx.waitUntil?.(
+        markTimelineEventsDeletedBySource(env, 'team', teamId)
+          .then(() => recordTeamDeleted(env, team, userId, audience))
+          .catch((err) => console.error('timeline team delete failed', err)),
+      );
       return noContent();
     }
     return notFound();

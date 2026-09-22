@@ -33,7 +33,7 @@ export function TimelinePane({
   /** Opens one diagram's History dialog, which the pane above owns. */
   onShowHistory: (id: string, name: string) => void;
 }) {
-  const cardSlots = useTimelineCardSlots({ onShowHistory });
+  const cardSlots = useTimelineCardSlots({ onShowHistory, onDismiss: feed.dismiss });
   return (
     <Timeline
       controls={feed.controls}

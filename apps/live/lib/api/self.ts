@@ -8,6 +8,7 @@ import {
   expectOkOrNull,
   expectOkVoid,
   type ParticipantResponse,
+  apiFetch,
 } from './core';
 
 // Deduped by id: the editor's hydration effect AND /live/new's
@@ -15,7 +16,7 @@ import {
 // in dev doubles each. With dedup, all four collapse to one fetch
 // when they land in the same tick.
 async function _apiLoadSelf(id: string): Promise<Participant | null> {
-  const res = await fetch(`${API_BASE}/participants/${id}`);
+  const res = await apiFetch(`${API_BASE}/participants/${id}`);
   const body = await expectOkOrNull<ParticipantResponse>(res, 'load self');
   if (!body) return null;
   const { participant } = body;
@@ -44,7 +45,7 @@ export async function apiDeleteAccount(): Promise<{
   // resolved Clerk id wins), but apiHeaders' signature wants
   // something — pass an empty string. The registered token
   // provider attaches the Bearer; the endpoint refuses if absent.
-  const res = await fetch(`${API_BASE}/account`, {
+  const res = await apiFetch(`${API_BASE}/account`, {
     method: 'DELETE',
     headers: await apiHeaders(''),
   });
@@ -69,7 +70,7 @@ export async function apiMigrateGuestData(
   guestOwnerId: string,
   guestSignature: string | null,
 ): Promise<{ diagrams: number; folders: number; shared: number; images: number } | null> {
-  const res = await fetch(`${API_BASE}/migrate`, {
+  const res = await apiFetch(`${API_BASE}/migrate`, {
     method: 'POST',
     // `apiHeaders` reads the registered token provider; the Clerk
     // Bearer will be on every call from the editor / new-diagram
@@ -101,7 +102,7 @@ export async function apiMintGuestId(): Promise<{
   ownerSig: string | null;
 } | null> {
   try {
-    const res = await fetch(`${API_BASE}/guest-id`, {
+    const res = await apiFetch(`${API_BASE}/guest-id`, {
       method: 'POST',
       headers: await apiHeaders('', { body: true }),
       body: '{}',
@@ -124,7 +125,7 @@ export async function apiUpgradeGuestId(
   toSignature: string,
 ): Promise<boolean> {
   try {
-    const res = await fetch(`${API_BASE}/migrate`, {
+    const res = await apiFetch(`${API_BASE}/migrate`, {
       method: 'POST',
       headers: await apiHeaders(fromOwnerId, { body: true }),
       body: JSON.stringify({ toOwnerId, toSignature }),
@@ -142,7 +143,7 @@ export async function apiSaveSelf(p: Participant): Promise<void> {
   // value as `p.id` (a guest's localStorage UUID is also their
   // X-Owner-Id; a signed-in user's Clerk userId is also their
   // participant id, see editor-page.tsx identity bootstrap).
-  const res = await fetch(`${API_BASE}/participants/${p.id}`, {
+  const res = await apiFetch(`${API_BASE}/participants/${p.id}`, {
     method: 'PUT',
     headers: await apiHeaders(p.id, { body: true }),
     body: JSON.stringify({ name: p.name, color: p.color }),

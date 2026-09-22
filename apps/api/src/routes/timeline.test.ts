@@ -15,6 +15,7 @@ const { store } = vi.hoisted(() => ({
     getScopeState: vi.fn(),
     markScopeSeen: vi.fn(),
     countUnseen: vi.fn(),
+    dismissTimelineEventForScope: vi.fn(),
   },
 }));
 vi.mock('../db/timeline', () => store);
@@ -328,5 +329,35 @@ describe('handleTimeline refresh', () => {
   it('400s with no owner', async () => {
     const res = await handleTimeline(makeCtx('POST', '/api/timeline/refresh', { owner: null }));
     expect(res.status).toBe(400);
+  });
+});
+
+// Per-entry dismissal (spec/138 §2.9). The only write on the feed, and
+// it is always against the caller's own scope: there is no parameter
+// that could point it at somebody else's.
+describe('handleTimeline dismiss', () => {
+  it('204 and soft-deletes the membership in the callers own scope', async () => {
+    store.dismissTimelineEventForScope.mockResolvedValue(true);
+    const res = await handleTimeline(makeCtx('DELETE', '/api/timeline/events/ev-1'));
+    expect(res.status).toBe(204);
+    expect(store.dismissTimelineEventForScope).toHaveBeenCalledWith(
+      {},
+      { scopeType: 'user', scopeId: 'owner-1' },
+      'ev-1',
+    );
+  });
+
+  it('404 when the callers feed never held the event', async () => {
+    store.dismissTimelineEventForScope.mockResolvedValue(false);
+    const res = await handleTimeline(makeCtx('DELETE', '/api/timeline/events/ev-x'));
+    expect(res.status).toBe(404);
+  });
+
+  it('400 without an owner — a feed to remove from has to belong to someone', async () => {
+    const res = await handleTimeline(
+      makeCtx('DELETE', '/api/timeline/events/ev-1', { owner: null }),
+    );
+    expect(res.status).toBe(400);
+    expect(store.dismissTimelineEventForScope).not.toHaveBeenCalled();
   });
 });

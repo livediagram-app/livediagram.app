@@ -41,11 +41,13 @@ has happened since they were last here**, not just a list of files.
   (§6.3). livediagram's realtime rooms are per-diagram; a per-user
   channel is a whole new object type for a screen the user looks at
   once a session.
-- **No favourites / starring, and no per-entry delete** in v1. The
-  Manager Toolkit timeline has both (they matter when a timeline is
-  evidence for a performance review). Here the feed is ambient — you
-  read it and move on — so the tables and the eight endpoints they
-  need aren't earned yet. The schema doesn't preclude them (§3.4).
+- **No favourites / starring.** The Manager Toolkit timeline has them
+  (they matter when a timeline is evidence for a performance review).
+  Here the feed is ambient — you read it and move on — so the table and
+  the endpoints aren't earned yet. The schema doesn't preclude them
+  (§3.4). Per-entry removal, which started out in this bullet, has
+  since shipped (§2.9): a busy day needed pruning more than it needed
+  starring.
 - **No AI day summary.** Manager Toolkit gates one behind Pro;
   livediagram has no paid tier (spec/03), so it would be free for
   everyone and gated only on `OPENAI_API_KEY`. Deferred as its own
@@ -516,6 +518,60 @@ watermark is captured from the FIRST read of a visit and never moved by
 a re-read (§2.5), so a re-read can't clear the New pills the reader
 came back to look at.
 
+### 2.4b Your own actions
+
+The feed is also where the reader ACTS: every diagram card carries the
+Recent menu (§2.8), so a delete, a rename, a duplicate or a move can
+start on the Timeline. Those used to be the one kind of change the feed
+never noticed. The worker swept the deleted diagram's cards and wrote
+its tombstone, and the page sat exactly as it was — the old cards up,
+no "Diagram Deleted" — until a browser refresh proved otherwise. A
+feed that doesn't show what you just did on it reads as broken.
+
+So **any successful write re-reads the feed.** The api client raises a
+module-level signal after every non-GET that returned 2xx
+(`lib/api/write-signal.ts`, from `apiFetch` in `lib/api/core.ts`), and
+the feed re-reads its first page off that signal, merged the same way
+the return-to-tab read is. Announcing from the one place every request
+passes through, rather than at each mutation's call site, is the whole
+design: the list of writes that produce a timeline event would drift
+the first time a route gained an emit, and a signal nobody has to
+remember can't.
+
+Two timings, both deliberate (`useAfterApiWrite`):
+
+- **A one-second delay** before the re-read. Every emit runs after the
+  response (`ctx.waitUntil`), so a read fired the instant the DELETE
+  resolves lands before the tombstone does and shows the feed minus
+  the thing the reader just did.
+- **At most one re-read per five seconds**, trailing. The editor
+  autosaves every ~600ms, and a diagram's History dialog reads the same
+  hook; a read per save would be a request storm. Writes inside the
+  interval collapse into one read at its end, so the last write is
+  always followed by a read.
+
+**The re-read reconciles, it doesn't just add.** A plain merge would
+leave the deleted diagram's older cards up beside its tombstone, and
+would keep the stale copy of the coalesced edit event the worker
+upserts in place. Within the stretch of time the page covers, the page
+is authoritative: a loaded card the page no longer holds is gone, and a
+loaded card the page holds takes the page's copy. Cards older than the
+page's floor can't be judged from that read and stay
+(`reconcileEvents`, in `merge-events.ts`).
+
+**A DELETE that ends an entity also names it.** `apiDelete` takes an
+optional `purge: { sourceType, sourceId }`, set by the four wrappers
+that end a diagram, folder, theme or team, and the feed drops that
+entity's cards on the spot with the worker's own cascade predicate
+(§3.5): keyed on the id, or referencing it from the snapshot under
+`<sourceType>Id`. This is what covers pages the re-read won't reach — a
+diagram created three months ago has its "Created" card well below page
+one — and it is why the reader sees the cards go as the menu closes,
+before the tombstone arrives a second later.
+
+The feed's own endpoints are excluded from the signal: dismissing a
+card (§2.9) must not make the feed re-read itself to notice.
+
 ### 2.5 Unread
 
 The premise is "what happened since I was last here", so something has
@@ -658,13 +714,57 @@ nothing and gets plain cards: those surfaces sit outside the Explorer
 context that supplies the handlers, and on a diagram's own history page
 every card is the same diagram.
 
-**Non-diagram cards have no menu.** A team card, a folder card, a token
-card: each is one click target that opens the one place it can lead. A
-⋯ holding a single "Open" that duplicates the card's own click is a
-control that exists to look consistent, not to do anything.
+**Every other card has the one-verb menu.** A team card, a folder card,
+a token card, a tombstone for a diagram that no longer exists: each is
+one click target that opens the one place it can lead, and a ⋯ holding
+a single "Open" that duplicated the card's own click would be a control
+that exists to look consistent. That was the rule until per-entry
+removal (§2.9) gave every card a verb of its own, so now every card has
+a menu — the diagram one where the Explorer can resolve the diagram,
+otherwise a menu holding just **Remove from Timeline** under the card's
+subject as a header. The same `TimelineCardMenu` component renders both
+shapes behind the same trigger, so the two can't drift on how a menu
+opens.
 
 Telemetry: opening a card menu fires `Timeline` / `Opened` / `Menu`
 (§10).
+
+### 2.9 Remove from Timeline
+
+A busy day clutters. A reader who saved six themes, made a folder and
+renamed three diagrams before lunch has a Today full of cards that were
+all true and are all now noise, and the only way to thin it was to wait
+for tomorrow. **Every card's ⋯ menu ends with "Remove from Timeline"**,
+which takes that one card off the reader's feed.
+
+- **Off the reader's feed, nobody else's.** One event row serves its
+  whole audience (§1, Membership), so the removal is a soft
+  `deleted_at` on the reader's membership row (§3.2), never a delete of
+  the event. A teammate tidying their feed leaves yours alone, and a
+  team's shared activity feed (§3.4) is untouched: this verb only exists
+  on the personal Timeline, which is the only feed with an Explorer
+  context to build the menu from.
+- **Soft so a re-emit can't resurrect it.** `attachEventToScopes` is
+  INSERT OR IGNORE against the composite key, so the coalesced editing
+  event — which re-attaches on every save — finds the dismissed row and
+  leaves it dismissed. Removing today's "Diagram Updated" and then
+  saving again does not bring it back; the reader said they'd seen
+  enough of that one today.
+- **Invisible everywhere a membership is read.** The feed and the
+  unread count both filter `deleted_at IS NULL`; a removed card that
+  kept pinning the sidebar badge would be the same bug as §2.5's
+  future-dated one.
+- **Optimistic.** The card goes as the menu closes and comes back only
+  if the worker refused. No confirm: the action is ambient tidying,
+  and the card vanishing is its own feedback.
+- On the diagram menu it sits with the other "how you see it" verbs
+  (History, Hide from Recent), not with Delete: it says nothing about
+  the diagram.
+- Stack cards have no menu. A stack is several events; expand it and
+  remove the ones you mean.
+
+`DELETE /api/timeline/events/:id` (§6.2a). Telemetry: `Timeline` /
+`Removed` / `Entry` (§10).
 
 ## 3. Data model
 
@@ -715,6 +815,7 @@ CREATE TABLE timeline_event_scopes (
   scope_type TEXT NOT NULL,               -- v1: 'user'. Reserved: 'diagram', 'team'.
   scope_id   TEXT NOT NULL,               -- an owner id when scope_type = 'user'
   added_at   INTEGER NOT NULL,
+  deleted_at INTEGER,                     -- set by Remove from Timeline (§2.9); migration 0044
   PRIMARY KEY (scope_type, scope_id, event_id)
 );
 
@@ -797,10 +898,11 @@ Still open:
   `(scope_type, scope_id, event_id)` — per viewing scope, not on the
   membership row, so a future composite read can't bleed one scope's
   stars into another's.
-- **Per-entry dismissal** would be a `deleted_at` on the membership
-  row, soft so a re-emit doesn't resurrect what the user dismissed.
+- **Per-entry dismissal** is a `deleted_at` on the membership row,
+  soft so a re-emit doesn't resurrect what the user dismissed. Built,
+  exactly as planned here (§2.9, migration `0044_timeline_dismissal`).
 
-None of those are built. All of them are additive.
+Favourites are not built. Everything here is additive.
 
 ### 3.5 Deletion and retention
 
@@ -818,6 +920,17 @@ None of those are built. All of them are additive.
   happened to it?". `markTimelineEventsDeletedBySource(env,
 sourceType, sourceId)` is the shared helper; any future entity's
   delete path calls it rather than writing the DELETE inline.
+- **Deleting a folder, a theme, or a team cascades the same way.** They
+  didn't at first: a folder delete wrote its tombstone and left "Folder
+  Created" standing beside it, and every "Theme Saved" for a deleted
+  theme stayed up, where a diagram's history had always been swept.
+  Same helper, same order — the sweep runs first, then the tombstone,
+  whose `:deleted` source id keeps it out of any later sweep. Folder and
+  theme events live under the `account` source type keyed on the
+  folder's / theme's id (§4.5), so that is what their routes sweep;
+  a team sweeps `team`. The client mirrors the cascade the moment the
+  DELETE resolves (§2.4b), so the reader doesn't wait a second for the
+  re-read to see it.
 - **Deleting an account does.** The existing account-deletion path
   hard-deletes `timeline_event_scopes WHERE scope_id = ?`, then
   `timeline_events WHERE actor_id = ?`, then the scope-state row. The
@@ -1167,8 +1280,17 @@ Stamps `last_refreshed_at`, runs the backfill if it hasn't run, and
 returns `{ lastRefreshedAt }`. Throttled to one call per scope per 5
 seconds server-side to absorb spam-clicks on the Refresh button.
 
-There is no `POST`/`PATCH`/`DELETE` for events. Nothing user-authored
-lives on this feed.
+### 6.2a `DELETE /api/timeline/events/:id`
+
+Remove from Timeline (§2.9). Marks `deleted_at` on the caller's own
+`user` membership row for that event. `204` on success, and on a repeat
+(the outcome asked for already holds); `404` when the caller's feed
+never held the event, so a guessed id learns nothing beyond "not
+yours". There is no scope parameter: the verb only ever applies to the
+caller's personal feed. In the OpenAPI manifest like every other route.
+
+There is no `POST`/`PATCH` for events. Nothing user-authored lives on
+this feed; the dismissal removes, it never adds.
 
 ### 6.3 Stale-read refresh
 
@@ -1363,6 +1485,9 @@ New category `Timeline` in the closed enum in
 - `Timeline`/`Loaded` with `type` `More` — Show more.
 - `Timeline`/`Opened` with `type` `Menu` — a card's ⋯ menu opened
   (§2.8), so we can see whether people act on the feed or only read it.
+- `Timeline`/`Removed` with `type` `Entry` — a card removed from the
+  feed (§2.9). If this is common, the day is too noisy and the answer
+  is a coarser emit, not a faster menu.
 
 No event ever carries a diagram name, team name, or comment text; the
 `type` slot is a fixed token, bounded by the existing
@@ -1433,12 +1558,13 @@ Per spec/18:
 
 ## 13. Out of scope for v1
 
-- Favourites / starring, per-entry dismissal, manual entries.
+- Favourites / starring, manual entries. (Per-entry removal shipped: §2.9.)
 - An unread badge on the sidebar row.
 - Per-diagram and per-team timeline scopes (the schema is ready; the
   renderers, routes, and UI are not).
 - AI day summaries.
-- Realtime push. A fresh read on mount, plus the re-read on return to
-  the tab (§2.4a), is the whole freshness story.
+- Realtime push. A fresh read on mount, the re-read on return to the
+  tab (§2.4a), and the re-read after the reader's own write (§2.4b)
+  are the whole freshness story.
 - Cross-user search over the feed.
 - Backfilling comments and actions out of historical tab JSON.

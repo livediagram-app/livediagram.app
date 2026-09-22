@@ -1,8 +1,9 @@
 // @vitest-environment jsdom
 
-// The Explorer's additions to a Timeline card (spec/138 §2.8): a menu
-// only for a diagram the Explorer has loaded, a rename input in the
-// title slot while that diagram is being renamed, and the diagram's
+// The Explorer's additions to a Timeline card (spec/138 §2.8, §2.9): a
+// menu on every card (each can be removed from the feed), the full
+// diagram menu for a diagram the Explorer has loaded, a rename input in
+// the title slot while that diagram is being renamed, and the diagram's
 // CURRENT name as the subject.
 
 import { renderHook } from '@testing-library/react';
@@ -63,12 +64,13 @@ function event(over: Partial<TimelineEvent>): TimelineEvent {
   } as TimelineEvent;
 }
 
-function slotsFor(value: ExplorerStateValue) {
+function slotsFor(value: ExplorerStateValue, onDismiss = vi.fn()) {
   const wrapper = ({ children }: { children: ReactNode }) => (
     <ExplorerProvider value={value}>{children}</ExplorerProvider>
   );
-  return renderHook(() => useTimelineCardSlots({ onShowHistory: vi.fn() }), { wrapper }).result
-    .current;
+  return renderHook(() => useTimelineCardSlots({ onShowHistory: vi.fn(), onDismiss }), {
+    wrapper,
+  }).result.current;
 }
 
 describe('useTimelineCardSlots', () => {
@@ -80,11 +82,22 @@ describe('useTimelineCardSlots', () => {
     expect(slots?.title).toBeUndefined();
   });
 
-  it('adds nothing for a non-diagram event, a tombstone, or a diagram it has not loaded', () => {
+  // Every card can be removed from the feed (spec/138 §2.9), so every
+  // card has a menu — but only a loaded diagram's card borrows the
+  // Explorer's name for the subject; the rest keep the renderer's.
+  it('gives a non-diagram event, a tombstone, and an unloaded diagram the one-verb menu', () => {
     const slots = slotsFor(explorer());
-    expect(slots(event({ sourceType: 'team', snapshot: { teamId: 't1' } }))).toBeUndefined();
-    expect(slots(event({ snapshot: { diagramName: 'Gone' } }))).toBeUndefined();
-    expect(slots(event({ snapshot: { diagramId: 'unknown', diagramName: 'X' } }))).toBeUndefined();
+    for (const e of [
+      event({ sourceType: 'team', snapshot: { teamId: 't1', teamName: 'Guild' } }),
+      event({ snapshot: { diagramName: 'Gone' } }),
+      event({ snapshot: { diagramId: 'unknown', diagramName: 'X' } }),
+    ]) {
+      const s = slots(e);
+      expect(s?.menu).toBeTruthy();
+      expect(s?.onContextMenu).toBeTypeOf('function');
+      expect(s?.subject).toBeUndefined();
+      expect(s?.title).toBeUndefined();
+    }
   });
 
   it('resolves a shared-with-you diagram too', () => {

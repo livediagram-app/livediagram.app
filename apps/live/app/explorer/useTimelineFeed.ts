@@ -24,8 +24,13 @@ import {
   TIMELINE_PAGE_SIZE,
   type TimelineScopeRef,
 } from '@livediagram/api-schema';
-import { apiListTimeline } from '@/lib/api-client';
-import { mergeEvents } from '@/app/explorer/timeline/merge-events';
+import { apiDismissTimelineEvent, apiListTimeline } from '@/lib/api-client';
+import {
+  mergeEvents,
+  purgeEventsForSource,
+  reconcileEvents,
+} from '@/app/explorer/timeline/merge-events';
+import { useAfterApiWrite } from '@/hooks/persistence/useAfterApiWrite';
 import { useReturnToTab } from '@/hooks/ui/useReturnToTab';
 import { track } from '@/lib/telemetry';
 
@@ -57,6 +62,8 @@ export type TimelineFeed = {
   error: boolean;
   /** Re-read the first page; what the failed state's Try again calls. */
   retry: () => void;
+  /** Take one card off this reader's feed (spec/138 §2.9). */
+  dismiss: (eventId: string) => void;
   /** Watermark from the first read; events past it render as New. */
   lastSeenAt?: number;
   /** Deep-link target from the URL hash, if the page was opened with one. */
@@ -119,15 +126,18 @@ export function useTimelineFeed(
   // parent render.
   const scopeKey = scope ? `${scope.scopeType}:${scope.scopeId}` : '';
 
-  // The first page, read three ways: on arrival, on Try again, and on
-  // returning to the tab. They differ only in what happens to the list
-  // that's already there.
+  // The first page, read four ways: on arrival, on Try again, on
+  // returning to the tab, and after the reader's own write lands. They
+  // differ only in what happens to the list that's already there.
   //
   //   'replace' — this is a different feed (or the reader asked for it
   //               fresh): show the skeleton and take the new page whole.
   //   'merge'   — same feed, later: keep every loaded page and slot the
   //               new events in at the head, so someone who had
-  //               scrolled a long way down keeps their place.
+  //               scrolled a long way down keeps their place. Within
+  //               the stretch the page covers it is authoritative
+  //               (reconcileEvents), so a card the server has since
+  //               swept or the reader dismissed elsewhere goes too.
   const load = useCallback(
     async (mode: 'replace' | 'merge') => {
       if (!ownerId) return;
@@ -169,7 +179,7 @@ export function useTimelineFeed(
         setEvents(page.events);
         setCursor(page.nextCursor);
       } else {
-        setEvents((prev) => mergeEvents(prev, page.events));
+        setEvents((prev) => reconcileEvents(prev, page));
         // The cursor is a keyset position at the TAIL of what's loaded,
         // so events arriving at the head don't invalidate it. Replacing
         // it here would re-page ground the reader already has. The one
@@ -198,6 +208,26 @@ export function useTimelineFeed(
   // the reader pressing anything — which is the case they used to
   // "fix" with a browser refresh.
   useReturnToTab(() => void load('merge'), { enabled: enabled && !!ownerId });
+
+  // The reader's own actions (spec/138 §2.4b). Deleting a diagram from a
+  // card's menu used to leave the feed exactly as it was until a browser
+  // refresh: the worker had swept the diagram's cards and written its
+  // tombstone, and nothing on the client asked. Now any successful
+  // write re-reads the first page a beat later (the emit runs after the
+  // response), and a DELETE that ended an entity drops its cards at
+  // once — the client half of the worker's cascade (§3.5), which also
+  // covers loaded pages the re-read won't reach.
+  useAfterApiWrite(
+    (signal) => {
+      if (signal.purge) {
+        const { sourceType, sourceId } = signal.purge;
+        setEvents((prev) => purgeEventsForSource(prev, sourceType, sourceId));
+        return;
+      }
+      void load('merge');
+    },
+    { enabled: enabled && !!ownerId },
+  );
 
   // Once per arrival, not once per fetch: the effect above also re-runs
   // when the owner id changes, and a guest signing in should not read
@@ -273,6 +303,24 @@ export function useTimelineFeed(
     void load('replace');
   }, [load]);
 
+  // Per-card removal (spec/138 §2.9). Optimistic: the card goes as the
+  // menu closes, and comes back only if the worker refused. Its own
+  // path rather than a write signal — the dismissal endpoint is the
+  // feed's own, and the feed already knows exactly what changed.
+  const dismiss = useCallback(
+    (eventId: string) => {
+      if (!ownerId) return;
+      const removed = events.find((e) => e.id === eventId);
+      if (!removed) return;
+      track('Timeline', 'Removed', 'Entry');
+      setEvents((prev) => prev.filter((e) => e.id !== eventId));
+      void apiDismissTimelineEvent(ownerId, eventId).catch(() => {
+        setEvents((prev) => mergeEvents(prev, [removed]));
+      });
+    },
+    [ownerId, events],
+  );
+
   return {
     events,
     controls,
@@ -282,6 +330,7 @@ export function useTimelineFeed(
     loadMore,
     error,
     retry,
+    dismiss,
     lastSeenAt,
     focusEventId: FOCUS_EVENT_ID,
   };

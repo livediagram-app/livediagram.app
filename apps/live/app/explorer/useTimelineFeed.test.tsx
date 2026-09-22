@@ -14,10 +14,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { TimelineScopeRef } from '@livediagram/api-schema';
 import type { TimelineEvent } from '@livediagram/ui';
 
-const apiListTimeline = vi.hoisted(() => vi.fn());
-vi.mock('@/lib/api-client', () => ({ apiListTimeline }));
+const { apiListTimeline, apiDismissTimelineEvent } = vi.hoisted(() => ({
+  apiListTimeline: vi.fn(),
+  apiDismissTimelineEvent: vi.fn(),
+}));
+vi.mock('@/lib/api-client', () => ({ apiListTimeline, apiDismissTimelineEvent }));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
+import { notifyApiWrite, resetApiWriteListeners } from '@/lib/api/write-signal';
 import { useTimelineFeed } from './useTimelineFeed';
 
 const TEAM_A: TimelineScopeRef = { scopeType: 'team', scopeId: 'team-a' };
@@ -36,7 +40,7 @@ function periodCallsFor(scopeId: string) {
   return callsFor(scopeId).filter(([, opts]) => (opts as { from?: number }).from !== undefined);
 }
 
-function event(id: string, occurredAt: number): TimelineEvent {
+function event(id: string, occurredAt: number, over: Partial<TimelineEvent> = {}): TimelineEvent {
   return {
     id,
     sourceType: 'diagram',
@@ -44,12 +48,16 @@ function event(id: string, occurredAt: number): TimelineEvent {
     eventType: 'diagram_updated',
     title: id,
     occurredAt,
+    ...over,
   } as TimelineEvent;
 }
 
 beforeEach(() => {
+  resetApiWriteListeners();
   apiListTimeline.mockReset();
   apiListTimeline.mockResolvedValue({ events: [], nextCursor: undefined, lastSeenAt: undefined });
+  apiDismissTimelineEvent.mockReset();
+  apiDismissTimelineEvent.mockResolvedValue(undefined);
 });
 
 describe('useTimelineFeed', () => {
@@ -209,5 +217,97 @@ describe('useTimelineFeed on return to the tab', () => {
     comeBack();
     comeBack();
     expect(apiListTimeline.mock.calls).toHaveLength(reads);
+  });
+});
+
+// The reader's own actions (spec/138 §2.4b). The bug this was reported
+// for: delete a diagram from a card's menu and the feed sat unchanged —
+// no tombstone, the deleted diagram's cards still up — until a browser
+// refresh.
+describe('useTimelineFeed after the readers own write', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('re-reads a beat after a write and shows what the worker recorded', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    apiListTimeline.mockResolvedValue({ events: [event('old', 10)] });
+    const { result } = renderHook(() => useTimelineFeed('me', true));
+    await waitFor(() => expect(result.current.events).toHaveLength(1));
+    const reads = apiListTimeline.mock.calls.length;
+
+    // The rename's event is written off the response path, so the feed
+    // must not ask before it could have landed.
+    apiListTimeline.mockResolvedValue({ events: [event('renamed', 20), event('old', 10)] });
+    act(() => notifyApiWrite());
+    expect(apiListTimeline.mock.calls).toHaveLength(reads);
+    await act(async () => {
+      vi.advanceTimersByTime(1_100);
+    });
+    await waitFor(() => expect(result.current.events.map((e) => e.id)).toEqual(['renamed', 'old']));
+  });
+
+  it('drops a deleted entitys cards at once, then the re-read brings the tombstone', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    apiListTimeline.mockResolvedValue({
+      events: [
+        event('b-edit', 30, { sourceId: 'd-b' }),
+        event('a', 20),
+        event('b-made', 10, { sourceId: 'd-b' }),
+      ],
+    });
+    const { result } = renderHook(() => useTimelineFeed('me', true));
+    await waitFor(() => expect(result.current.events).toHaveLength(3));
+
+    act(() => notifyApiWrite({ purge: { sourceType: 'diagram', sourceId: 'd-b' } }));
+    expect(result.current.events.map((e) => e.id)).toEqual(['a']);
+
+    apiListTimeline.mockResolvedValue({
+      events: [event('b-gone', 40, { sourceId: 'd-b:deleted' }), event('a', 20)],
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(1_100);
+    });
+    await waitFor(() => expect(result.current.events.map((e) => e.id)).toEqual(['b-gone', 'a']));
+  });
+
+  it('lets the re-read drop a card the worker has since swept', async () => {
+    // A cascade the client did not see coming (a teammate deleted it):
+    // the page is authoritative for the stretch it covers.
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    apiListTimeline.mockResolvedValue({ events: [event('a', 30), event('swept', 20)] });
+    const { result } = renderHook(() => useTimelineFeed('me', true));
+    await waitFor(() => expect(result.current.events).toHaveLength(2));
+
+    apiListTimeline.mockResolvedValue({ events: [event('a', 30)] });
+    act(() => notifyApiWrite());
+    await act(async () => {
+      vi.advanceTimersByTime(1_100);
+    });
+    await waitFor(() => expect(result.current.events.map((e) => e.id)).toEqual(['a']));
+  });
+});
+
+// Per-card removal (spec/138 §2.9).
+describe('useTimelineFeed dismiss', () => {
+  it('takes the card off at once and tells the worker', async () => {
+    apiListTimeline.mockResolvedValue({ events: [event('a', 30), event('b', 20)] });
+    const { result } = renderHook(() => useTimelineFeed('me', true));
+    await waitFor(() => expect(result.current.events).toHaveLength(2));
+
+    act(() => result.current.dismiss('b'));
+    expect(result.current.events.map((e) => e.id)).toEqual(['a']);
+    expect(apiDismissTimelineEvent).toHaveBeenCalledWith('me', 'b');
+  });
+
+  it('puts the card back if the worker refused', async () => {
+    apiListTimeline.mockResolvedValue({ events: [event('a', 30), event('b', 20)] });
+    apiDismissTimelineEvent.mockRejectedValue(new Error('dismiss failed: 500'));
+    const { result } = renderHook(() => useTimelineFeed('me', true));
+    await waitFor(() => expect(result.current.events).toHaveLength(2));
+
+    act(() => result.current.dismiss('b'));
+    expect(result.current.events.map((e) => e.id)).toEqual(['a']);
+    await waitFor(() => expect(result.current.events.map((e) => e.id)).toEqual(['a', 'b']));
   });
 });

@@ -1,33 +1,52 @@
 'use client';
 
 // What the Explorer adds to a Timeline card that a renderer can't
-// (spec/138 §2.8): the ⋯ menu, and the inline rename that one of its
-// items starts.
+// (spec/138 §2.8, §2.9): the ⋯ menu, and the inline rename that one of
+// its items starts.
 //
-// An event only NAMES a diagram; the menu's items depend on its folder,
-// team, share and owner, so the id is resolved against the Explorer's
-// already-loaded lists (personal, team, shared-with-you), the same set
-// Recent draws from. Nothing found means no menu: a menu of guesses is
-// worse than none, and the card still opens the diagram on click.
+// Every card gets a menu, because every card can be removed from the
+// reader's own feed. A card about a diagram the Explorer has loaded gets
+// the full diagram menu on top: an event only NAMES a diagram, and the
+// menu's items depend on its folder, team, share and owner, so the id
+// is resolved against the Explorer's already-loaded lists (personal,
+// team, shared-with-you), the same set Recent draws from. Nothing found
+// (a tombstone, or a team diagram the sidebar hasn't loaded) means the
+// one-verb menu: a menu of guesses is worse than none, and the card
+// still opens the diagram on click.
 
 import { useCallback, useMemo, useState } from 'react';
-import type { TimelineCardSlotsFor } from '@livediagram/ui';
+import type { TimelineCardSlotsFor, TimelineEvent } from '@livediagram/ui';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
 import { isOfflineIdSync } from '@/lib/offline/offline-store';
 import { track } from '@/lib/telemetry';
 import { useExplorer } from '../ExplorerContext';
 import { sharedToPaneDiagram, type PaneDiagram } from '../views';
-import { TimelineDiagramMenu } from './TimelineDiagramMenu';
+import { TimelineCardMenu } from './TimelineCardMenu';
 
 function diagramIdOf(snapshot: Record<string, unknown>): string | null {
   const id = snapshot['diagramId'];
   return typeof id === 'string' && id.length > 0 ? id : null;
 }
 
+// The card's subject as the menu header should name it. Renderers
+// build the on-card subject from the same snapshot keys; this is the
+// plain-string reading of it, for a menu that can't take a node.
+const SUBJECT_KEYS = ['diagramName', 'teamName', 'folderName', 'themeName', 'tokenName'];
+function subjectOf(event: TimelineEvent): string {
+  for (const key of SUBJECT_KEYS) {
+    const v = event.snapshot?.[key];
+    if (typeof v === 'string' && v.length > 0) return v;
+  }
+  return event.description || event.title;
+}
+
 export function useTimelineCardSlots({
   onShowHistory,
+  onDismiss,
 }: {
   onShowHistory: (id: string, name: string) => void;
+  /** Take one card off the reader's feed (spec/138 §2.9). */
+  onDismiss: (eventId: string) => void;
 }): TimelineCardSlotsFor {
   const {
     ownerId,
@@ -69,10 +88,24 @@ export function useTimelineCardSlots({
 
   return useCallback(
     (event) => {
-      if (event.sourceType !== 'diagram') return undefined;
-      const id = diagramIdOf(event.snapshot);
+      const id = event.sourceType === 'diagram' ? diagramIdOf(event.snapshot) : null;
       const diagram = id ? byId.get(id) : undefined;
-      if (!id || !diagram) return undefined;
+      const menuProps = {
+        open: menuFor === event.id,
+        onOpenChange: (open: boolean) => openMenu(open ? event.id : null),
+        onRemove: () => onDismiss(event.id),
+      };
+      const onContextMenu = (e: { preventDefault: () => void }) => {
+        e.preventDefault();
+        openMenu(event.id);
+      };
+
+      if (!id || !diagram) {
+        return {
+          onContextMenu,
+          menu: <TimelineCardMenu subject={subjectOf(event)} {...menuProps} />,
+        };
+      }
 
       const title =
         renamingDiagramId === id ? (
@@ -91,30 +124,31 @@ export function useTimelineCardSlots({
         // way its preview shows the current picture.
         subject: diagram.name,
         title,
-        onContextMenu: title
-          ? undefined
-          : (e) => {
-              e.preventDefault();
-              openMenu(event.id);
-            },
+        // Right-click is off while renaming: the card's own gesture would
+        // fight the input's.
+        onContextMenu: title ? undefined : onContextMenu,
         menu: (
-          <TimelineDiagramMenu
+          <TimelineCardMenu
+            subject={diagram.name}
             diagram={diagram}
-            open={menuFor === event.id}
-            onOpenChange={(open) => openMenu(open ? event.id : null)}
-            ownerId={ownerId}
-            onStartRename={() => setRenamingDiagramId(id)}
-            onDuplicate={() => void duplicateDiagram(id)}
-            onMove={(anchor) => openMovePickerForDiagram(id, anchor)}
-            onDelete={() => void deleteDiagram(id)}
-            onDismiss={diagram.shared ? () => dismissShared(id) : undefined}
-            favourite={favouriteIds.has(id)}
-            onToggleFavourite={() => toggleFavourite(id)}
-            recentExcluded={recentExcluded.includes(id)}
-            onToggleRecentExclusion={() => toggleRecentExclusion(id)}
-            // Offline diagrams never reach the worker, so they have no
-            // server history to show (spec/76).
-            onShowHistory={isOfflineIdSync(id) ? undefined : () => onShowHistory(id, diagram.name)}
+            {...menuProps}
+            handlers={{
+              ownerId,
+              onStartRename: () => setRenamingDiagramId(id),
+              onDuplicate: () => void duplicateDiagram(id),
+              onMove: (anchor) => openMovePickerForDiagram(id, anchor),
+              onDelete: () => void deleteDiagram(id),
+              onDismiss: diagram.shared ? () => dismissShared(id) : undefined,
+              favourite: favouriteIds.has(id),
+              onToggleFavourite: () => toggleFavourite(id),
+              recentExcluded: recentExcluded.includes(id),
+              onToggleRecentExclusion: () => toggleRecentExclusion(id),
+              // Offline diagrams never reach the worker, so they have no
+              // server history to show (spec/76).
+              onShowHistory: isOfflineIdSync(id)
+                ? undefined
+                : () => onShowHistory(id, diagram.name),
+            }}
           />
         ),
       };
@@ -136,6 +170,7 @@ export function useTimelineCardSlots({
       recentExcluded,
       toggleRecentExclusion,
       onShowHistory,
+      onDismiss,
     ],
   );
 }

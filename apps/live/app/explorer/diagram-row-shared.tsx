@@ -221,6 +221,7 @@ export function DiagramActionsMenu({
   onToggleFavourite,
   isOpen = false,
   onOpen,
+  onRemoveFromTimeline,
 }: {
   diagram: PaneDiagram;
   anchor: HTMLElement | null;
@@ -252,6 +253,10 @@ export function DiagramActionsMenu({
   // How to open it. Absent = navigate to the diagram's page; the floating
   // panel passes its own opener so switching diagrams stays in-editor.
   onOpen?: () => void;
+  // Timeline only (spec/138 §2.9): take THIS card off the reader's feed.
+  // Says nothing about the diagram, so it sits with the other "how you
+  // see it" verbs, not with Delete.
+  onRemoveFromTimeline?: () => void;
 }) {
   const href = hrefForDiagram(diagram);
   const offline = diagram.ownerId === OFFLINE_OWNER_ID;
@@ -275,6 +280,14 @@ export function DiagramActionsMenu({
           onClick={() => window.location.assign(href)}
         />
         <MenuGroupSeparator />
+        {onRemoveFromTimeline ? (
+          <MenuActionRow
+            plain
+            icon={<CloseIcon />}
+            label="Remove from Timeline"
+            onClick={then(onRemoveFromTimeline)}
+          />
+        ) : null}
         <MenuActionRow
           plain
           danger
@@ -382,6 +395,14 @@ export function DiagramActionsMenu({
             onClick={() => void takeOffline()}
           />
         )
+      ) : null}
+      {onRemoveFromTimeline ? (
+        <MenuActionRow
+          plain
+          icon={<CloseIcon />}
+          label="Remove from Timeline"
+          onClick={then(onRemoveFromTimeline)}
+        />
       ) : null}
       {onDelete ? (
         <>

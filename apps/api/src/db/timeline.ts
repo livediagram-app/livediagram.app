@@ -201,7 +201,9 @@ export async function readTimeline(
   opts: ReadTimelineOptions,
 ): Promise<ReadTimelineResult> {
   const binds: unknown[] = [opts.scope.scopeType, opts.scope.scopeId];
-  let where = 's.scope_type = ?1 AND s.scope_id = ?2';
+  // A dismissed membership (spec/138 §2.9) is still a row, so the
+  // re-emit path can't resurrect it, but it is not part of the feed.
+  let where = 's.scope_type = ?1 AND s.scope_id = ?2 AND s.deleted_at IS NULL';
 
   if (opts.cursor) {
     const parsed = parseCursor(opts.cursor);
@@ -331,7 +333,7 @@ export async function countUnseen(
        SELECT e.id
          FROM timeline_event_scopes s
          JOIN timeline_events e ON e.id = s.event_id
-        WHERE s.scope_type = ?1 AND s.scope_id = ?2
+        WHERE s.scope_type = ?1 AND s.scope_id = ?2 AND s.deleted_at IS NULL
           AND e.occurred_at > ?3
           AND e.occurred_at <= ?5
           AND (e.actor_id IS NULL OR e.actor_id <> ?2)
@@ -424,6 +426,40 @@ export async function markTimelineEventsDeletedBySource(
   )
     .bind(sourceType, sourceId, `${sourceType}Id`)
     .run();
+}
+
+// Per-entry dismissal (spec/138 §2.9): take one event off ONE scope's
+// feed. Soft, on the membership row rather than the event, because the
+// event is shared by everyone it was scoped to — a teammate tidying
+// their feed must not tidy yours — and because `attachEventToScopes` is
+// INSERT OR IGNORE, so a soft-deleted row is exactly what stops a
+// re-emit (the coalesced editing event re-attaches on every save) from
+// bringing the card back.
+//
+// Returns false when the scope never held the event, so the route can
+// 404 rather than claim to have removed something that wasn't there.
+// Dismissing twice is a no-op that still reports true: the second
+// click found the row, and the outcome the caller wanted holds.
+export async function dismissTimelineEventForScope(
+  env: Env,
+  scope: TimelineScopeRef,
+  eventId: string,
+): Promise<boolean> {
+  const row = await env.DB.prepare(
+    `SELECT deleted_at FROM timeline_event_scopes
+      WHERE scope_type = ?1 AND scope_id = ?2 AND event_id = ?3`,
+  )
+    .bind(scope.scopeType, scope.scopeId, eventId)
+    .first<{ deleted_at: number | null }>();
+  if (!row) return false;
+  if (row.deleted_at !== null) return true;
+  await env.DB.prepare(
+    `UPDATE timeline_event_scopes SET deleted_at = ?4
+      WHERE scope_type = ?1 AND scope_id = ?2 AND event_id = ?3`,
+  )
+    .bind(scope.scopeType, scope.scopeId, eventId, Date.now())
+    .run();
+  return true;
 }
 
 // Account deletion. The FK cascade makes the order safe regardless;

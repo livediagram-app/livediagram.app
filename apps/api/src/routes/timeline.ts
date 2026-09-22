@@ -1,12 +1,14 @@
 // /api/timeline — the Explorer's landing feed (spec/138).
 //
-// GET  /api/timeline          -> { items, nextCursor?, lastSeenAt? }
-// GET  /api/timeline/unread   -> { count }
-// POST /api/timeline/refresh  -> { lastSeenAt }
+// GET    /api/timeline             -> { items, nextCursor?, lastSeenAt? }
+// GET    /api/timeline/unread      -> { count }
+// POST   /api/timeline/refresh     -> { lastSeenAt }
+// DELETE /api/timeline/events/:id  -> 204 (spec/138 §2.9)
 //
-// Read-only by design. Nothing user-authored lives on this feed: there
-// are no manual entries, no stars, and no per-entry dismissal in v1
-// (spec/138 non-goals), so there is no POST/PATCH/DELETE for events.
+// Nothing user-AUTHORED lives on this feed: there are no manual entries
+// and no stars, so there is no POST/PATCH for events. The one write is
+// the dismissal, which takes a card off the caller's own feed and
+// nobody else's.
 //
 // Hybrid identity like the rest of the api (spec/04): the Clerk userId
 // when signed in, X-Owner-Id otherwise. Guests get a Timeline too — a
@@ -19,10 +21,16 @@ import {
   parseScope,
   type TimelineScopeRef,
 } from '@livediagram/api-schema';
-import { countUnseen, getScopeState, markScopeSeen, readTimeline } from '../db/timeline';
+import {
+  countUnseen,
+  dismissTimelineEventForScope,
+  getScopeState,
+  markScopeSeen,
+  readTimeline,
+} from '../db/timeline';
 import { getDiagram, getMembership } from '../db';
 import { backfillUserScope } from '../timeline';
-import { badRequest, forbidden, json, missingAuth, notFound } from '../responses';
+import { badRequest, forbidden, json, missingAuth, noContent, notFound } from '../responses';
 import { gateRead, type RouteContext } from './context';
 
 // The seed endpoint costs a scope-state write and, on a first call, a
@@ -130,6 +138,23 @@ export async function handleTimeline(ctx: RouteContext): Promise<Response> {
     }
     await markScopeSeen(env, scope);
     return json({ lastSeenAt: now });
+  }
+
+  // Per-entry dismissal (spec/138 §2.9). Always against the caller's
+  // OWN user scope: a card is removed from "my timeline", never from a
+  // team's shared feed, so there is no scope parameter to authorise —
+  // the identity that resolved the owner is the whole gate. 404 when
+  // this scope never held the event, so a guessed id learns nothing
+  // beyond "not yours".
+  if (
+    segments.length === 4 &&
+    segments[2] === 'events' &&
+    segments[3] &&
+    request.method === 'DELETE'
+  ) {
+    const scope: TimelineScopeRef = { scopeType: 'user', scopeId: ownerId };
+    const found = await dismissTimelineEventForScope(env, scope, segments[3]);
+    return found ? noContent() : notFound();
   }
 
   return notFound();

@@ -771,6 +771,16 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     responseSchema: { type: 'object', properties: { lastSeenAt: { type: 'number' } } },
     statuses: [200, 400, 401],
   },
+  {
+    method: 'DELETE',
+    path: '/timeline/events/{id}',
+    segment: 'timeline',
+    tag: 'Account',
+    summary:
+      "Remove one event from the caller's own feed. Other readers of the same event keep it. 404 when the feed never held it.",
+    auth: 'guest-or-clerk',
+    statuses: [204, 401, 404],
+  },
 
   // ---- Account ----
   {
