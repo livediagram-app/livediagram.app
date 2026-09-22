@@ -1,9 +1,9 @@
 'use client';
 
-// Animated hero: four editor windows on a sliding stage.
-//   1. Flowchart — shared, a teammate cursor, a comment thread, and the
-//      theme-recolour beat (the only window that recolours; its canvas tints
-//      to match).
+// Animated hero: five editor windows on a sliding stage.
+//   1. Flowchart — shared, a teammate cursor, and the theme beat: the Tab
+//      Look & Feel dialog opens, a theme card is picked, and the diagram
+//      recolours (the only window that recolours; its canvas tints to match).
 //   2. Slide deck — the same flowchart presented (spec/31): full screen, so
 //      no header, tab bar or panels, only the canvas and the presenting HUD;
 //      four slides travel across it a piece at a time and end on the whole
@@ -12,6 +12,8 @@
 //      pointer that rings one node then another.
 //   4. Release timeline — private (amber badge, just you, no collaborators),
 //      with the Layers panel docked beside it.
+//   5. Architecture — shared; a comment thread lands on one service and an
+//      assigned action on another, ticked off by the end.
 // The chrome mirrors today's editor: the Editor menu and Share button in the
 // header, the tabbed palette with its search box and labelled tiles, the zoom
 // cluster, and the bottom tab bar's toolbelt. Below the stage, a label names
@@ -29,6 +31,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { Brand } from '@livediagram/ui';
 import {
+  ArchitectureDiagram,
   FlowchartDiagram,
   MindMapDiagram,
   SLIDES,
@@ -52,6 +55,7 @@ type TabDef = { name: string; color: string; active?: boolean };
 const FLOW_REST = '#eff6ff'; // blue-50 resting tint of the flowchart canvas
 const VIOLET: Theme = { canvas: '#f5f3ff', fill: '#ede9fe', stroke: '#7c3aed', text: '#4c1d95' };
 const AMBER: Theme = { canvas: '#fffbeb', fill: '#fef3c7', stroke: '#b45309', text: '#78350f' };
+const TEAL: Theme = { canvas: '#f0fdfa', fill: '#ccfbf1', stroke: '#0d9488', text: '#134e4a' };
 
 const CARDS: {
   key: string;
@@ -77,7 +81,7 @@ const CARDS: {
   {
     key: 'flowchart',
     title: 'Quarterly planning',
-    label: 'A flowchart, shared live, recoloured with one click',
+    label: 'A flowchart, shared live, restyled from the Look & Feel dialog',
     tool: 'Select',
     tabs: [
       { name: 'Overview', color: '#0ea5e9', active: true },
@@ -136,6 +140,32 @@ const CARDS: {
     canvasTint: AMBER.canvas,
     layers: true,
   },
+  {
+    key: 'comments',
+    title: 'Platform architecture',
+    label: 'An architecture diagram, discussed in comments and turned into actions',
+    tool: 'Select',
+    tabs: [
+      { name: 'Services', color: '#0ea5e9', active: true },
+      { name: 'Data', color: '#ec4899' },
+      { name: 'Infra', color: '#8b5cf6' },
+    ],
+    showCursor: false,
+    shared: true,
+    theming: false,
+    canvasTint: TEAL.canvas,
+  },
+];
+
+// The theme cards the Look & Feel dialog mock offers; Default is what the
+// flowchart wears until Forest is picked and the recolour follows.
+const THEME_CARDS: { name: string; swatch: string; current?: boolean; picked?: boolean }[] = [
+  { name: 'Default', swatch: '#0284c7', current: true },
+  { name: 'Forest', swatch: '#16a34a', picked: true },
+  { name: 'Ocean', swatch: '#0891b2' },
+  { name: 'Sunset', swatch: '#ea580c' },
+  { name: 'Lavender', swatch: '#7c3aed' },
+  { name: 'Rose', swatch: '#e11d48' },
 ];
 
 // The palette mock's Favourites grid: the editor's default go-to tiles.
@@ -204,6 +234,8 @@ export function HeroIllustration() {
                 <MindMapDiagram playing={playing} theme={VIOLET} />
               ) : c.key === 'slides' ? (
                 <SlideDeckDiagram />
+              ) : c.key === 'comments' ? (
+                <ArchitectureDiagram theme={TEAL} />
               ) : c.key === 'timeline' ? (
                 <TimelineDiagram theme={AMBER} />
               ) : (
@@ -508,6 +540,59 @@ function EditorWindow({
               </g>
             </svg>
           </div>
+
+          {/* The Tab Look & Feel dialog (spec/42): opens over the canvas,
+              a theme card is picked (the selection ring moves, the pointer
+              dips), it closes, and the recolour follows. Themed window only. */}
+          {theming && playing ? (
+            <div className="hero-dialog absolute left-1/2 top-1/2 z-10 hidden w-64 -translate-x-1/2 -translate-y-1/2 flex-col rounded-xl border border-slate-200 bg-white shadow-2xl sm:flex">
+              <div className="flex items-center justify-between px-3 py-2">
+                <span className="text-[11px] font-semibold text-slate-800">
+                  Tab Look &amp; Feel
+                </span>
+                <span className="flex items-center gap-2 text-[10px] text-slate-400">
+                  <span>?</span>
+                  <span>✕</span>
+                </span>
+              </div>
+              <div className="mx-3 flex rounded-md bg-slate-100 p-0.5 text-[9px] font-medium text-slate-500">
+                <span className="flex-1 rounded bg-white py-0.5 text-center text-slate-800 shadow-sm">
+                  Theme
+                </span>
+                <span className="flex-1 py-0.5 text-center">Canvas</span>
+                <span className="flex-1 py-0.5 text-center">Font</span>
+              </div>
+              <div className="grid grid-cols-3 gap-1.5 p-3">
+                {THEME_CARDS.map((t) => (
+                  <span
+                    key={t.name}
+                    className={`flex flex-col items-center gap-1 rounded-lg border py-1.5 text-[8px] font-medium text-slate-600 ${
+                      t.picked
+                        ? 'hero-dialog-pick border-slate-200'
+                        : t.current
+                          ? 'hero-dialog-was border-brand-400 ring-1 ring-brand-300'
+                          : 'border-slate-200'
+                    }`}
+                  >
+                    <span className="h-4 w-4 rounded-full" style={{ backgroundColor: t.swatch }} />
+                    {t.name}
+                  </span>
+                ))}
+              </div>
+              <span className="hero-dialog-cursor pointer-events-none absolute" aria-hidden>
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 16 16"
+                  fill="#0f172a"
+                  stroke="white"
+                  strokeWidth="1"
+                >
+                  <path d="M2 1 L14 8 L8 9 L11 14 L9 15 L6 10 L2 14 Z" />
+                </svg>
+              </span>
+            </div>
+          ) : null}
 
           {/* Remote collaborator's cursor sweeping the canvas (flowchart card
               only; the mind-map card uses an in-canvas laser pointer, the

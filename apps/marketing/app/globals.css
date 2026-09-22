@@ -28,6 +28,8 @@
   .hero-slide4,
   .hero-slide-hud4,
   .hero-tool-b,
+  .hero-note,
+  .hero-action,
   .hero-cursor {
     animation: none;
     opacity: 1;
@@ -45,7 +47,9 @@
   .hero-laser-dot,
   .hero-laser-trail,
   .hero-slide-hud,
-  .hero-tool-a {
+  .hero-tool-a,
+  .hero-dialog,
+  .hero-dialog-cursor {
     animation: none;
     opacity: 0;
   }

@@ -613,6 +613,179 @@
   }
 }
 
+/* Flowchart theme beat: the Look & Feel dialog opens, the pointer travels to
+   the Forest card and clicks (the selection ring moves from Default to
+   Forest), the dialog closes at 40% and the recolour keyframes above take
+   over. Positions are within the dialog (top/left, as the teammate cursor). */
+.hero-dialog {
+  opacity: 0;
+  animation: hero-dialog 16s ease-out infinite;
+}
+@keyframes hero-dialog {
+  0%,
+  25% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.96);
+  }
+  27%,
+  39% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  41%,
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+.hero-dialog-was {
+  animation: hero-dialog-was 16s step-end infinite;
+}
+@keyframes hero-dialog-was {
+  0%,
+  35% {
+    box-shadow: 0 0 0 1px #7dd3fc;
+    border-color: #38bdf8;
+  }
+  36%,
+  100% {
+    box-shadow: none;
+    border-color: #e2e8f0;
+  }
+}
+.hero-dialog-pick {
+  animation: hero-dialog-pick 16s ease-out infinite;
+}
+@keyframes hero-dialog-pick {
+  0%,
+  35% {
+    box-shadow: none;
+    border-color: #e2e8f0;
+    transform: none;
+  }
+  36% {
+    transform: scale(0.96);
+  }
+  37%,
+  100% {
+    box-shadow: 0 0 0 1px #7dd3fc;
+    border-color: #38bdf8;
+    transform: none;
+  }
+}
+.hero-dialog-cursor {
+  top: 150px;
+  left: 210px;
+  opacity: 0;
+  animation: hero-dialog-cursor 16s ease-in-out infinite;
+}
+@keyframes hero-dialog-cursor {
+  0%,
+  27% {
+    opacity: 0;
+    top: 150px;
+    left: 210px;
+  }
+  29% {
+    opacity: 1;
+  }
+  34%,
+  35.5% {
+    opacity: 1;
+    top: 92px;
+    left: 118px;
+    transform: none;
+  }
+  36% {
+    transform: scale(0.85);
+  }
+  36.5%,
+  39% {
+    opacity: 1;
+    top: 92px;
+    left: 118px;
+    transform: none;
+  }
+  41%,
+  100% {
+    opacity: 0;
+    top: 92px;
+    left: 118px;
+  }
+}
+
+/* Architecture window: the comment thread lands, then the assigned action,
+   then its tick draws. The peeking card settles with everything in place. */
+.hero-note,
+.hero-action {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.hero-note {
+  animation: hero-note 16s ease-out infinite;
+}
+.hero-action {
+  animation: hero-action 16s ease-out infinite;
+}
+@keyframes hero-note {
+  0%,
+  30% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  34% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+  37%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes hero-action {
+  0%,
+  55% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  59% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+  62%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.hero-action-tick {
+  stroke-dasharray: 20;
+  stroke-dashoffset: 20;
+  animation: hero-action-tick 16s ease-out infinite;
+}
+@keyframes hero-action-tick {
+  0%,
+  80% {
+    stroke-dashoffset: 20;
+  }
+  86%,
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+.hero-static .hero-note,
+.hero-static .hero-action {
+  animation: none;
+  opacity: 1;
+  transform: none;
+}
+.hero-static .hero-action-tick {
+  animation: none;
+  stroke-dashoffset: 0;
+}
+
 /* Mind-map highlighter: a marker stroke that swipes across a node from the
    left, once the map has built, and stays. */
 .hero-highlight {
