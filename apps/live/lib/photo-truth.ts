@@ -8,12 +8,24 @@ import { truthFrom, type Truth } from '@livediagram/sticky-vision';
 // what is not a note, drag a box around what was missed. What is on screen
 // when they are done IS a labelling, and this hands it back as a file.
 //
-// It is a CALIBRATION affordance, not a feature. Nobody importing a photo of
-// their own wall should ever meet it, so it stays off until someone arms it by
-// hand — `?truth=1` on any editor URL, remembered from then on, because the
-// editor is reached from /new and a parameter does not survive that hop.
+// It is a CALIBRATION affordance, not a feature, so WHERE the editor is being
+// served decides whether it shows: calibration happens on a developer's own
+// machine, against photographs on that machine's disk, so localhost has it and
+// the hosted site never does. A flag overrules the host either way, for a
+// self-host that wants it off on localhost or a developer labelling against a
+// deployed build.
+//
+// The flag alone was not enough, and failing it taught the lesson: `?truth=1`
+// is typed on /new, and the editor is three navigations later at
+// /diagram/<id>, so any reload of the page you are actually looking at loses
+// it. A rule that depends on remembering to re-type a parameter is a rule that
+// is off when you need it.
 
 export const TRUTH_ARMED_KEY = 'livediagram:truth';
+
+// Served from this machine: a development or self-hosted-locally build, where
+// the photographs and the sweep are.
+const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]', '::1', '0.0.0.0']);
 
 // A browser can refuse storage entirely (private mode, a locked-down profile).
 // Not being able to label is not a reason to take the editor down.
@@ -25,9 +37,20 @@ function storage(): Storage | null {
   }
 }
 
+// The rule itself, free of the browser: the flag wins where it is set, and
+// otherwise the host decides.
+export function truthArmedOn(hostname: string, flag: string | null): boolean {
+  if (flag === '1') return true;
+  if (flag === '0') return false;
+  return LOCAL_HOSTS.has(hostname) || hostname.endsWith('.local');
+}
+
 export function truthArmed(): boolean {
   try {
-    return storage()?.getItem(TRUTH_ARMED_KEY) === '1';
+    return truthArmedOn(
+      globalThis.location?.hostname ?? '',
+      storage()?.getItem(TRUTH_ARMED_KEY) ?? null,
+    );
   } catch {
     return false;
   }
@@ -44,7 +67,10 @@ export function armTruthFromUrl(href: string): void {
   }
   if (value === null) return;
   try {
+    // Both directions are remembered, because on localhost the flag's job is
+    // usually to turn the thing OFF.
     if (value === '1') storage()?.setItem(TRUTH_ARMED_KEY, '1');
+    else if (value === '0') storage()?.setItem(TRUTH_ARMED_KEY, '0');
     else storage()?.removeItem(TRUTH_ARMED_KEY);
   } catch {
     /* a browser that refuses storage cannot be armed, and that is fine */

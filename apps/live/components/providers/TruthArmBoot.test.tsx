@@ -23,11 +23,13 @@ describe('TruthArmBoot', () => {
     expect(localStorage.getItem(TRUTH_ARMED_KEY)).toBe('1');
   });
 
-  it('disarms on ?truth=0', () => {
+  it('remembers being turned OFF, which is what the flag is for on localhost', () => {
     localStorage.setItem(TRUTH_ARMED_KEY, '1');
     window.history.replaceState({}, '', '/diagram/abc/?truth=0');
     render(<TruthArmBoot />);
-    expect(localStorage.getItem(TRUTH_ARMED_KEY)).toBeNull();
+    // Not "forget the flag": on a machine where the host alone would arm it,
+    // forgetting means arming, and the author asked for the opposite.
+    expect(localStorage.getItem(TRUTH_ARMED_KEY)).toBe('0');
   });
 
   it('leaves an armed browser armed on every other page', () => {
