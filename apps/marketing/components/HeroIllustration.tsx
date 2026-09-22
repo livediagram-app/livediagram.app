@@ -389,8 +389,13 @@ function EditorWindow({
             </span>
           </div>
 
+          {/* The diagram centres in the canvas left clear by the palette (and
+              the Layers panel when docked), so no node sits under a panel. */}
           <svg
-            className="absolute inset-0 h-full w-full"
+            className={
+              'absolute inset-y-0 left-0 right-0 h-full sm:right-44 ' + (layers ? 'sm:left-36' : '')
+            }
+            style={{ width: 'auto' }}
             viewBox="0 -60 600 400"
             preserveAspectRatio="xMidYMid meet"
           >
