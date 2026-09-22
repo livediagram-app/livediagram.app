@@ -56,6 +56,7 @@ export * from './api/room';
 export * from './api/images';
 export * from './api/favourites';
 export * from './api/timeline';
+export * from './api/activity';
 export * from './api/preferences';
 export * from './api/ai';
 export * from './api/unfurl';

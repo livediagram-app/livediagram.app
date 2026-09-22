@@ -461,6 +461,11 @@ export * from './theme-presets';
 // used by selection captions and any surface that names what's selected.
 export * from './element-kind-label';
 
+// The name a boxed element goes by in a list of elements (the Collaborate
+// Panel's rows, the Activity page's rows): its label, a table's first cell,
+// or "Untitled".
+export * from './element-display-label';
+
 export * from './anchor-choice';
 export * from './geometry';
 export * from './arrow-rebind';

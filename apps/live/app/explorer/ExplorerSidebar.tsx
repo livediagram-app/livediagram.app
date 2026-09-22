@@ -8,6 +8,7 @@ import { clerkEnabled } from '@/lib/clerk-config';
 import { useExplorer } from './ExplorerContext';
 import { useMemo, useState } from 'react';
 import {
+  ActivityIcon,
   ClockIcon,
   DynamicFolderIcon,
   ImageIcon,
@@ -68,6 +69,7 @@ export function ExplorerSidebar() {
     tokens,
     recentCount,
     timelineUnread,
+    activity,
     createFolder,
     setTeamModalOpen,
   } = useExplorer();
@@ -147,6 +149,17 @@ export function ExplorerSidebar() {
         }}
         depth={0}
         badge={timelineUnread.count > 0 ? timelineUnread.count : undefined}
+      />
+      {/* What's outstanding for the reader (spec/142). The badge counts
+          only the open actions ASSIGNED TO them — work waiting on them,
+          not work they handed out — and hides at zero. */}
+      <SidebarRow
+        icon={<ActivityIcon />}
+        label="Activity"
+        selected={selected.kind === 'activity'}
+        onClick={() => go({ kind: 'activity' })}
+        depth={0}
+        badge={activity.assignedToMe.length > 0 ? activity.assignedToMe.length : undefined}
       />
       <SidebarRow
         icon={<ClockIcon />}

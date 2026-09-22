@@ -8,6 +8,7 @@ import type { SelectedNode } from './views';
 
 const STATIC_NODES: SelectedNode[] = [
   { kind: 'timeline' },
+  { kind: 'activity' },
   { kind: 'recent' },
   { kind: 'favourites' },
   { kind: 'themes' },

@@ -85,6 +85,12 @@ export const TELEMETRY_CATEGORIES = [
   // only signal we get for a feed nobody could load. Never a diagram
   // name, team name, or comment text.
   'Timeline',
+  // Activity page (spec/142): the Explorer's cross-diagram inbox of open
+  // actions + comment threads. 'Opened' once per visit; 'Selected' with
+  // `type` 'Action' | 'Thread' on a row click (which kind of row sends
+  // people back into a diagram); 'Loaded'/'Retry' when a failed read is
+  // retried. Never an action name, comment text, or diagram name.
+  'Activity',
 ] as const;
 export type TelemetryCategory = (typeof TELEMETRY_CATEGORIES)[number];
 

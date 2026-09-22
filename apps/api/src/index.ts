@@ -37,6 +37,7 @@ import { handleGuestId } from './routes/guest-id';
 import { handleParticipants } from './routes/participants';
 import { handleFavourites } from './routes/favourites';
 import { handleTimeline } from './routes/timeline';
+import { handleActivity } from './routes/activity';
 import { handlePreferences } from './routes/preferences';
 import { handleShare } from './routes/share';
 import { handleTeams } from './routes/teams';
@@ -267,6 +268,8 @@ export default {
           return await handleFavourites(ctx);
         case 'timeline':
           return await handleTimeline(ctx);
+        case 'activity':
+          return await handleActivity(ctx);
         case 'preferences':
           return await handlePreferences(ctx);
         case 'migrate':

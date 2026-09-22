@@ -173,7 +173,7 @@ export const categories: Category[] = [
     title: 'Explorer',
     description:
       'Organise everything you build: how the Explorer keeps your diagrams, folders, teams, and assets easy to find and manage.',
-    articleCount: 13,
+    articleCount: 14,
     kind: 'feature',
   },
   {
@@ -1322,6 +1322,16 @@ export const articles: Article[] = [
     description: 'The Explorer\u2019s landing view: a day-by-day feed of everything that happened.',
     keywords:
       'feed activity history what happened whats new latest events log stream notifications updates recent changes calendar month view upcoming expiring stacked grouped collapse day colour color red amber green deleted preview thumbnail card cards grid menu ellipsis rename move duplicate created updated unread unseen new badge since last visit who did what other people filter local time',
+    category: 'Explorer',
+    categorySlug: 'explorer',
+  },
+  {
+    slug: 'activity',
+    title: 'Activity',
+    description:
+      'What is outstanding for you across every diagram: open actions and comment threads.',
+    keywords:
+      'inbox to do todo tasks my actions assigned to me assigned by me outstanding waiting open threads unresolved comments replies pending work queue what needs me badge count cross diagram all diagrams',
     category: 'Explorer',
     categorySlug: 'explorer',
   },
