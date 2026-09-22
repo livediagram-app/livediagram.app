@@ -25,14 +25,18 @@ const FIRST_CATEGORY = groupGallery(ALL)[0]?.id;
 
 export function TemplateGallery() {
   const [query, setQuery] = useState('');
-  const [openIds, setOpenIds] = useState<ReadonlySet<TemplateCategory>>(
-    () => new Set(FIRST_CATEGORY ? [FIRST_CATEGORY] : []),
+  // The open categories in the order they were opened: a newly opened one
+  // always lands at the bottom, right above the cloud it came from, rather
+  // than slotting into catalogue order somewhere the visitor isn't looking.
+  const [openIds, setOpenIds] = useState<readonly TemplateCategory[]>(() =>
+    FIRST_CATEGORY ? [FIRST_CATEGORY] : [],
   );
   const searching = query.trim() !== '';
   const groups = groupGallery(filterGallery(ALL, query));
-  const open = searching ? groups : groups.filter((g) => openIds.has(g.id));
-  const folded = searching ? [] : groups.filter((g) => !openIds.has(g.id));
-  const openCategory = (id: TemplateCategory) => setOpenIds((prev) => new Set([...prev, id]));
+  const open = searching ? groups : openIds.flatMap((id) => groups.filter((g) => g.id === id));
+  const folded = searching ? [] : groups.filter((g) => !openIds.includes(g.id));
+  const openCategory = (id: TemplateCategory) =>
+    setOpenIds((prev) => (prev.includes(id) ? prev : [...prev, id]));
 
   return (
     <section className="border-t border-slate-800 bg-slate-900">
