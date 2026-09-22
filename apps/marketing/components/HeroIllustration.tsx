@@ -4,9 +4,10 @@
 //   1. Flowchart — shared, a teammate cursor, a comment thread, and the
 //      theme-recolour beat (the only window that recolours; its canvas tints
 //      to match).
-//   2. Slide deck — the same flowchart presented (spec/31): four slides step
-//      through it a piece at a time and end on the whole picture, with the
-//      presenting HUD in place of the panels.
+//   2. Slide deck — the same flowchart presented (spec/31): full screen, so
+//      no header, tab bar or panels, only the canvas and the presenting HUD;
+//      four slides travel across it a piece at a time and end on the whole
+//      picture.
 //   3. Mind map — shared, a Highlighter swipe across one node, then a laser
 //      pointer that rings one node then another.
 //   4. Release timeline — private (amber badge, just you, no collaborators),
@@ -57,9 +58,9 @@ const CARDS: {
   title: string;
   // What the dot navigation says about this window while it is centred.
   label: string;
-  // The canvas tool the palette's picker names: the mind map is pointing
-  // with the laser, the others are selecting.
-  tool: 'Select' | 'Laser';
+  // The canvas tool the palette's picker names. A pair is two beats: the
+  // mind map reads Highlighter while the swipe happens, then Laser.
+  tool: string | [string, string];
   tabs: TabDef[];
   showCursor: boolean;
   shared: boolean;
@@ -108,7 +109,7 @@ const CARDS: {
     key: 'mindmap',
     title: 'Team mind map',
     label: 'A mind map, highlighted and laser-pointed for the room',
-    tool: 'Laser',
+    tool: ['Highlighter', 'Laser'],
     tabs: [
       { name: 'Ideas', color: '#0ea5e9', active: true },
       { name: 'Themes', color: '#ec4899' },
@@ -291,46 +292,52 @@ function EditorWindow({
   canvasTint: string;
   showCursor: boolean;
   layers: boolean;
-  tool: 'Select' | 'Laser';
+  tool: string | [string, string];
   presenting: boolean;
 }) {
   return (
     <div className="rounded-xl border border-slate-200 bg-white p-2 shadow-xl shadow-brand-500/10">
       <div className="overflow-hidden rounded-lg border border-slate-100">
-        {/* Editor header strip (static chrome) */}
-        <div className="flex items-center justify-between gap-2 border-b border-slate-100 bg-white px-3 py-2">
-          <div className="flex items-center gap-2">
-            <Brand size="sm" />
-            {/* The Editor menu, as the real header carries it. */}
-            <span className="hidden items-center gap-1 rounded-md border border-slate-200 px-1.5 py-0.5 text-[10px] font-medium text-slate-600 sm:inline-flex">
-              <MenuGlyph />
-              Editor
-              <ChevronGlyph />
-            </span>
-          </div>
-          <div className="flex min-w-0 items-center gap-2">
-            <span className="hidden truncate text-xs text-slate-400 sm:inline">{title}</span>
-            {shared ? (
-              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-700 ring-1 ring-emerald-200">
-                <span className="text-emerald-500">
-                  <SharedDotIcon />
+        {/* Presenting is full screen (spec/31): no header, no tab bar, no
+            panels, just the slide's canvas and the HUD. */}
+        {presenting ? null : (
+          <>
+            {/* Editor header strip (static chrome) */}
+            <div className="flex items-center justify-between gap-2 border-b border-slate-100 bg-white px-3 py-2">
+              <div className="flex items-center gap-2">
+                <Brand size="sm" />
+                {/* The Editor menu, as the real header carries it. */}
+                <span className="hidden items-center gap-1 rounded-md border border-slate-200 px-1.5 py-0.5 text-[10px] font-medium text-slate-600 sm:inline-flex">
+                  <MenuGlyph />
+                  Editor
+                  <ChevronGlyph />
                 </span>
-                Shared
+              </div>
+              <div className="flex min-w-0 items-center gap-2">
+                <span className="hidden truncate text-xs text-slate-400 sm:inline">{title}</span>
+                {shared ? (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-700 ring-1 ring-emerald-200">
+                    <span className="text-emerald-500">
+                      <SharedDotIcon />
+                    </span>
+                    Shared
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-700 ring-1 ring-amber-200">
+                    <span className="text-amber-500">
+                      <PrivateDotIcon />
+                    </span>
+                    Private
+                  </span>
+                )}
+              </div>
+              <span className="inline-flex items-center gap-1 rounded-md bg-brand-500 px-2 py-0.5 text-[10px] font-semibold text-white">
+                <ShareGlyph />
+                Share
               </span>
-            ) : (
-              <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-700 ring-1 ring-amber-200">
-                <span className="text-amber-500">
-                  <PrivateDotIcon />
-                </span>
-                Private
-              </span>
-            )}
-          </div>
-          <span className="inline-flex items-center gap-1 rounded-md bg-brand-500 px-2 py-0.5 text-[10px] font-semibold text-white">
-            <ShareGlyph />
-            Share
-          </span>
-        </div>
+            </div>
+          </>
+        )}
 
         {/* Canvas surface. Each window has its own themed canvas tint; the
             flowchart additionally animates blue→green (overriding the resting
@@ -338,7 +345,8 @@ function EditorWindow({
         <div
           style={{ backgroundColor: canvasTint }}
           className={
-            'relative h-[300px] bg-[radial-gradient(circle_at_center,_#cbd5e1_1.2px,_transparent_1.2px)] bg-[size:24px_24px] sm:h-[360px]' +
+            'relative bg-[radial-gradient(circle_at_center,_#cbd5e1_1.2px,_transparent_1.2px)] bg-[size:24px_24px] ' +
+            (presenting ? 'h-[382px] sm:h-[442px]' : 'h-[300px] sm:h-[360px]') +
             (theming && playing ? ' hero-theme-canvas' : '')
           }
         >
@@ -350,13 +358,15 @@ function EditorWindow({
             <div className="absolute right-2 top-2 hidden items-center gap-2 rounded-xl bg-slate-900/75 px-2.5 py-1.5 text-[9px] font-medium text-white shadow-lg backdrop-blur sm:flex">
               <HudChevron dir="prev" />
               <span className="relative inline-block h-3 w-28 text-left">
-                {SLIDES.map((slide, i) => (
+                {(playing ? SLIDES : SLIDES.slice(-1)).map((slide, i) => (
                   <span
                     key={slide.name}
-                    className={`hero-slide-hud hero-slide${i + 1} absolute inset-0 whitespace-nowrap`}
+                    className={`absolute inset-0 whitespace-nowrap ${
+                      playing ? `hero-slide-hud hero-slide-hud${i + 1}` : ''
+                    }`}
                   >
                     <span className="text-white/60">
-                      {i + 1} / {SLIDES.length}
+                      {SLIDES.indexOf(slide) + 1} / {SLIDES.length}
                     </span>
                     <span className="ml-1.5">{slide.name}</span>
                   </span>
@@ -392,7 +402,18 @@ function EditorWindow({
             </div>
             <div className="flex items-center justify-between border-b border-slate-100 px-2 py-1 text-[9px] font-medium text-slate-600">
               <span className="inline-flex items-center gap-0.5">
-                {tool}
+                {typeof tool === 'string' ? (
+                  tool
+                ) : playing ? (
+                  // Two beats: the first name shows, then the second takes
+                  // over when its tool comes into play (hero-tool-a / -b).
+                  <span className="relative inline-block h-3 w-14">
+                    <span className="hero-tool-a absolute inset-0">{tool[0]}</span>
+                    <span className="hero-tool-b absolute inset-0">{tool[1]}</span>
+                  </span>
+                ) : (
+                  tool[1]
+                )}
                 <ChevronGlyph />
               </span>
               <span className="inline-flex items-center gap-0.5">
@@ -513,55 +534,65 @@ function EditorWindow({
           ) : null}
         </div>
 
-        {/* Bottom tab bar (static chrome): colour-coded tabs relevant to this
-            diagram + the toolbelt the page advertises. */}
-        <div className="flex items-center gap-2 border-t border-slate-100 bg-white px-2 py-2">
-          <span
-            className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400"
-            aria-hidden
-          >
-            <TabsLabelIcon />
-            Tabs
-          </span>
-          <div className="flex min-w-0 items-center gap-1">
-            {tabs.map((t) => (
+        {presenting ? null : (
+          <>
+            {/* Bottom tab bar (static chrome): colour-coded tabs relevant to this
+                diagram + the toolbelt the page advertises. */}
+            <div className="flex items-center gap-2 border-t border-slate-100 bg-white px-2 py-2">
               <span
-                key={t.name}
-                style={{ color: t.color, ...(t.active ? { backgroundColor: `${t.color}1a` } : {}) }}
-                className="flex items-center gap-2 rounded-md px-2 py-1 text-xs font-medium"
+                className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400"
+                aria-hidden
               >
-                <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: t.color }} />
-                <span className={t.active ? '' : 'text-slate-500'}>{t.name}</span>
-                {/* Presence lives IN the tab, as the editor's TabPresenceStack
-                    draws it: a stack of small initials between the tab name
-                    and its ellipsis, one per person on that tab (you, and on
-                    a shared diagram whoever else is there). */}
-                {t.active ? (
-                  <span className="ml-0.5 flex items-center">
-                    <TabAvatar initials="TM" color="#0ea5e9" last={!shared} />
-                    {shared ? <TabAvatar initials="JR" color="#ec4899" last /> : null}
-                  </span>
-                ) : null}
-                {t.active ? (
-                  <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
-                    <circle cx="3" cy="7" r="1.25" fill="currentColor" />
-                    <circle cx="7" cy="7" r="1.25" fill="currentColor" />
-                    <circle cx="11" cy="7" r="1.25" fill="currentColor" />
-                  </svg>
-                ) : null}
+                <TabsLabelIcon />
+                Tabs
               </span>
-            ))}
-            <span className="px-1 text-base leading-none text-slate-400">+</span>
-          </div>
-          {/* Toolbelt: hidden on mobile (it clashes with the tabs in the
-              narrower windows), shown from sm up. */}
-          <div className="ml-auto hidden items-center gap-1 text-slate-400 sm:flex">
-            <ToolGlyph kind="search" small />
-            <ToolGlyph kind="keys" small />
-            <ToolGlyph kind="sliders" small />
-            <ToolGlyph kind="moon" small />
-          </div>
-        </div>
+              <div className="flex min-w-0 items-center gap-1">
+                {tabs.map((t) => (
+                  <span
+                    key={t.name}
+                    style={{
+                      color: t.color,
+                      ...(t.active ? { backgroundColor: `${t.color}1a` } : {}),
+                    }}
+                    className="flex items-center gap-2 rounded-md px-2 py-1 text-xs font-medium"
+                  >
+                    <span
+                      className="h-2.5 w-2.5 rounded-full"
+                      style={{ backgroundColor: t.color }}
+                    />
+                    <span className={t.active ? '' : 'text-slate-500'}>{t.name}</span>
+                    {/* Presence lives IN the tab, as the editor's TabPresenceStack
+                        draws it: a stack of small initials between the tab name
+                        and its ellipsis, one per person on that tab (you, and on
+                        a shared diagram whoever else is there). */}
+                    {t.active ? (
+                      <span className="ml-0.5 flex items-center">
+                        <TabAvatar initials="TM" color="#0ea5e9" last={!shared} />
+                        {shared ? <TabAvatar initials="JR" color="#ec4899" last /> : null}
+                      </span>
+                    ) : null}
+                    {t.active ? (
+                      <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
+                        <circle cx="3" cy="7" r="1.25" fill="currentColor" />
+                        <circle cx="7" cy="7" r="1.25" fill="currentColor" />
+                        <circle cx="11" cy="7" r="1.25" fill="currentColor" />
+                      </svg>
+                    ) : null}
+                  </span>
+                ))}
+                <span className="px-1 text-base leading-none text-slate-400">+</span>
+              </div>
+              {/* Toolbelt: hidden on mobile (it clashes with the tabs in the
+                  narrower windows), shown from sm up. */}
+              <div className="ml-auto hidden items-center gap-1 text-slate-400 sm:flex">
+                <ToolGlyph kind="search" small />
+                <ToolGlyph kind="keys" small />
+                <ToolGlyph kind="sliders" small />
+                <ToolGlyph kind="moon" small />
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

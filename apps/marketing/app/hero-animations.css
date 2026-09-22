@@ -408,98 +408,209 @@
   opacity: 0;
 }
 
-/* Slide-deck window: four slides, one per quarter of the cycle. Each fades
-   in with a small settle and out before the next; the last holds to the end
-   so the loop ends on the complete flowchart. The same classes drive the
-   presenting HUD's slide counter, so the readout changes with the slide. */
-.hero-slide,
-.hero-slide-hud {
-  opacity: 0;
-  transform-box: fill-box;
-  transform-origin: center;
+/* Slide-deck window: four slides, one per quarter of the cycle. As in the
+   deck itself (spec/31), the whole surface travels: a slide leaves to the
+   left as the next arrives from the right, and the last holds to the end so
+   the loop ends on the complete flowchart. The presenting HUD's counter
+   (hero-slide-hud-N) switches with the slide. */
+.hero-slide {
+  transform: translate(600px, 0);
 }
 .hero-slide1 {
-  animation: hero-slide1 16s ease-out infinite;
+  animation: hero-slide1 16s ease-in-out infinite;
 }
 @keyframes hero-slide1 {
-  0% {
-    opacity: 0;
-    transform: scale(0.96);
+  0%,
+  22% {
+    transform: none;
   }
-  4%,
+  25%,
+  100% {
+    transform: translate(-600px, 0);
+  }
+}
+.hero-slide2 {
+  animation: hero-slide2 16s ease-in-out infinite;
+}
+@keyframes hero-slide2 {
+  0%,
+  22% {
+    transform: translate(600px, 0);
+  }
+  25%,
+  47% {
+    transform: none;
+  }
+  50%,
+  100% {
+    transform: translate(-600px, 0);
+  }
+}
+.hero-slide3 {
+  animation: hero-slide3 16s ease-in-out infinite;
+}
+@keyframes hero-slide3 {
+  0%,
+  47% {
+    transform: translate(600px, 0);
+  }
+  50%,
+  72% {
+    transform: none;
+  }
+  75%,
+  100% {
+    transform: translate(-600px, 0);
+  }
+}
+.hero-slide4 {
+  animation: hero-slide4 16s ease-in-out infinite;
+}
+@keyframes hero-slide4 {
+  0%,
+  72% {
+    transform: translate(600px, 0);
+  }
+  75%,
+  100% {
+    transform: none;
+  }
+}
+.hero-slide-hud {
+  opacity: 0;
+}
+.hero-slide-hud1 {
+  animation: hero-slide-hud1 16s step-end infinite;
+}
+@keyframes hero-slide-hud1 {
+  0%,
   23% {
     opacity: 1;
-    transform: scale(1);
   }
   25%,
   100% {
     opacity: 0;
-    transform: scale(1);
   }
 }
-.hero-slide2 {
-  animation: hero-slide2 16s ease-out infinite;
+.hero-slide-hud2 {
+  animation: hero-slide-hud2 16s step-end infinite;
 }
-@keyframes hero-slide2 {
+@keyframes hero-slide-hud2 {
   0%,
-  25% {
+  23% {
     opacity: 0;
-    transform: scale(0.96);
   }
-  29%,
+  25%,
   48% {
     opacity: 1;
-    transform: scale(1);
   }
   50%,
   100% {
     opacity: 0;
-    transform: scale(1);
   }
 }
-.hero-slide3 {
-  animation: hero-slide3 16s ease-out infinite;
+.hero-slide-hud3 {
+  animation: hero-slide-hud3 16s step-end infinite;
 }
-@keyframes hero-slide3 {
+@keyframes hero-slide-hud3 {
   0%,
-  50% {
+  48% {
     opacity: 0;
-    transform: scale(0.96);
   }
-  54%,
+  50%,
   73% {
     opacity: 1;
-    transform: scale(1);
   }
   75%,
   100% {
     opacity: 0;
-    transform: scale(1);
   }
 }
-.hero-slide4 {
-  animation: hero-slide4 16s ease-out infinite;
+.hero-slide-hud4 {
+  animation: hero-slide-hud4 16s step-end infinite;
 }
-@keyframes hero-slide4 {
+@keyframes hero-slide-hud4 {
   0%,
-  75% {
+  73% {
     opacity: 0;
-    transform: scale(0.96);
   }
-  79%,
+  75%,
   100% {
     opacity: 1;
-    transform: scale(1);
   }
 }
-.hero-static .hero-slide,
-.hero-static .hero-slide-hud {
+.hero-static .hero-slide {
   animation: none;
-  opacity: 0;
+  transform: translate(600px, 0);
 }
 .hero-static .hero-slide4 {
-  opacity: 1;
   transform: none;
+}
+
+/* Mind-map tool picker: Highlighter while the swipe happens, then Laser
+   from the moment the pointer appears. */
+.hero-tool-a,
+.hero-tool-b {
+  opacity: 0;
+}
+.hero-tool-a {
+  animation: hero-tool-a 16s step-end infinite;
+}
+.hero-tool-b {
+  animation: hero-tool-b 16s step-end infinite;
+}
+@keyframes hero-tool-a {
+  0%,
+  48% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes hero-tool-b {
+  0%,
+  48% {
+    opacity: 0;
+  }
+  50%,
+  100% {
+    opacity: 1;
+  }
+}
+
+/* Mind-map laser trail: drawn behind the dot as it travels from the first
+   ring to the second (the dot moves 64% to 70%), then fades once it lands. */
+.hero-laser-trail {
+  fill: none;
+  stroke: #f43f5e;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 340;
+  stroke-dashoffset: 340;
+  opacity: 0;
+  filter: drop-shadow(0 0 3px rgba(244, 63, 94, 0.85));
+  animation: hero-laser-trail 16s ease-in-out infinite;
+}
+@keyframes hero-laser-trail {
+  0%,
+  63% {
+    stroke-dashoffset: 340;
+    opacity: 0;
+  }
+  64% {
+    opacity: 0.9;
+  }
+  70% {
+    stroke-dashoffset: 0;
+    opacity: 0.9;
+  }
+  78%,
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
 }
 
 /* Mind-map highlighter: a marker stroke that swipes across a node from the
