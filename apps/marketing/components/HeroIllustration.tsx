@@ -22,7 +22,10 @@
 // peeking windows render settled (.hero-static), blurred + faded, with the
 // stage edges masked so they fade out rather than hard-clip. The stage
 // auto-advances every 16s and centres a window when clicked (timer resets on
-// interaction). Windows are wider on mobile (less peek, more legible).
+// interaction). Every window ends the same way: over its last second it
+// fades to a light grey, the stage moves on, and the next window lifts from
+// that grey (hero-fade), so no build is ever seen snapping back to its first
+// frame. Windows are wider on mobile (less peek, more legible).
 //
 // It's the page's third 'use client' boundary; with JS off it renders the
 // first window centred, and reduced-motion settles every build, the canvas
@@ -329,7 +332,20 @@ function EditorWindow({
 }) {
   return (
     <div className="rounded-xl border border-slate-200 bg-white p-2 shadow-xl shadow-brand-500/10">
-      <div className="overflow-hidden rounded-lg border border-slate-100">
+      <div className="relative overflow-hidden rounded-lg border border-slate-100">
+        {/* The fade. While playing it lifts from light grey over the first
+            beat and drops back to it over the last second, timed to the 16s cycle,
+            so the window's ending is the same whatever its last beat was and
+            the stage advances behind the grey. When the window stops playing
+            it is remounted to lift once more, so the peeking card doesn't
+            snap from grey to its settled frame. */}
+        <div
+          key={playing ? 'play' : 'idle'}
+          aria-hidden
+          className={`pointer-events-none absolute inset-0 z-20 bg-slate-200 ${
+            playing ? 'hero-fade' : 'hero-fade-out'
+          }`}
+        />
         {/* Presenting is full screen (spec/31): no header, no tab bar, no
             panels, just the slide's canvas and the HUD. */}
         {presenting ? null : (

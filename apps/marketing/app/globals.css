@@ -49,7 +49,9 @@
   .hero-slide-hud,
   .hero-tool-a,
   .hero-dialog,
-  .hero-dialog-cursor {
+  .hero-dialog-cursor,
+  .hero-fade,
+  .hero-fade-out {
     animation: none;
     opacity: 0;
   }

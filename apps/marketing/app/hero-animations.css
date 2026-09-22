@@ -408,6 +408,40 @@
   opacity: 0;
 }
 
+/* The window fade (spec/16): a light-grey veil, solid at the very start,
+   clear by 4% (0.64s), clear until 93%, solid again by 100% (the last 1.1s).
+   The stage's 16s auto-advance fires at the moment the fade completes, and
+   the next window mounts playing, so its own veil lifts. A window that stops
+   playing lifts once (hero-fade-out) rather than snapping to its frame. */
+.hero-fade {
+  opacity: 1;
+  animation: hero-fade 16s linear infinite;
+}
+@keyframes hero-fade {
+  0% {
+    opacity: 1;
+  }
+  4%,
+  93% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+.hero-fade-out {
+  opacity: 0;
+  animation: hero-fade-out 0.7s ease-out both;
+}
+@keyframes hero-fade-out {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
 /* Slide-deck window: four slides, one per quarter of the cycle. As in the
    deck itself (spec/31), the whole surface travels: a slide leaves to the
    left as the next arrives from the right, and the last holds to the end so
