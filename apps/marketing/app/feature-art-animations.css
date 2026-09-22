@@ -518,23 +518,6 @@
 .fa-rotate {
   animation: fa-rotate 5s ease-in-out infinite;
 }
-
-/* one-shot entrance for the use-case carousel's featured card; replays on
-   selection change via a React key remount (components/UseCaseCarousel). */
-@keyframes uc-pop {
-  0% {
-    opacity: 0;
-    transform: translateY(8px) scale(0.985);
-  }
-  100% {
-    opacity: 1;
-    transform: none;
-  }
-}
-.uc-pop {
-  animation: uc-pop 0.35s ease-out both;
-}
-
 /* ─────────────────────────────────────────────────────────────────
  * Motion-feature illustrations (spec/09 "Animated elements" + the
  * animated background patterns). These mirror the editor's own looping

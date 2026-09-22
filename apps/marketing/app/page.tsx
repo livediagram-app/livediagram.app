@@ -7,21 +7,19 @@ import { Hero } from '@/components/Hero';
 import { PrivacySection } from '@/components/PrivacySection';
 import { StartDrawingCta } from '@/components/StartDrawingCta';
 import { LANDING_SECTIONS } from '@/lib/landing-content';
-// Lazy-load UseCaseCarousel: the 470-line `'use client'` rotator
-// sits below several feature sections (well below the fold) and
-// carries its own state + sketch components, none of which the
-// initial paint needs. The static-export HTML still inlines its
-// markup (next/dynamic defaults to ssr: true), so SEO and first
-// scroll are unchanged; what shrinks is the hydration JS chunk
-// the browser fetches before the user has any reason to look at
-// the carousel.
-const UseCaseCarousel = dynamic(() =>
-  import('@/components/UseCaseCarousel').then((m) => m.UseCaseCarousel),
+// Lazy-load TemplateGallery: the `'use client'` gallery (search state +
+// forty-odd preview SVGs) sits below several feature sections (well below
+// the fold), none of which the initial paint needs. The static-export HTML
+// still inlines its markup (next/dynamic defaults to ssr: true), so SEO
+// and first scroll are unchanged; what shrinks is the hydration JS chunk
+// the browser fetches before the user has any reason to look at it.
+const TemplateGallery = dynamic(() =>
+  import('@/components/TemplateGallery').then((m) => m.TemplateGallery),
 );
 
 // Non-feature interludes that render after a given section's anchor id.
 const INTERLUDES: Record<string, ReactNode> = {
-  collaboration: <UseCaseCarousel />,
+  collaboration: <TemplateGallery />,
   reliability: <PrivacySection />,
 };
 
