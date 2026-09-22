@@ -1,4 +1,5 @@
 import { CtaLink } from '@/components/CtaLink';
+import { featureHref } from '@/lib/feature-anchor';
 import type { LandingSection } from '@/lib/landing-content';
 import { SectionShowcase } from '@/components/SectionShowcase';
 
@@ -39,14 +40,18 @@ export function FeatureCategoryBlock({
           <p className="mt-4 text-lg leading-relaxed text-slate-600">{section.description}</p>
 
           {/* A badge per feature: the whole category at a glance, no cards.
-              Hidden on mobile, where they only add height and echo the showcase. */}
+              Each links to that feature's card on the category page, so a
+              visitor jumps to the one they care about. Hidden on mobile,
+              where they only add height and echo the showcase. */}
           <ul className="mt-6 hidden flex-wrap gap-2 sm:flex">
             {section.items.map((item) => (
-              <li
-                key={item.title}
-                className="rounded-full border border-slate-200 bg-white/70 px-3 py-1 text-sm text-slate-600"
-              >
-                {item.title}
+              <li key={item.title}>
+                <a
+                  href={featureHref(section.id, item.title)}
+                  className="block rounded-full border border-slate-200 bg-white/70 px-3 py-1 text-sm text-slate-600 transition hover:border-brand-300 hover:bg-white hover:text-brand-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
+                >
+                  {item.title}
+                </a>
               </li>
             ))}
           </ul>
