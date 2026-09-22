@@ -84,7 +84,7 @@ const CARDS: {
   {
     key: 'flowchart',
     title: 'Quarterly planning',
-    label: 'A flowchart, shared live, restyled from the Look & Feel dialog',
+    label: 'A flowchart, shared live, restyled in a single click',
     tool: 'Select',
     tabs: [
       { name: 'Overview', color: '#0ea5e9', active: true },
