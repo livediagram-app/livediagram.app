@@ -155,23 +155,6 @@ export function FlowchartDiagram() {
           strokeLinejoin="round"
         />
       </g>
-
-      {/* A comment thread pops onto the Ship box */}
-      <g transform="translate(508 102)">
-        <g className="hero-comment">
-          <circle cx="0" cy="0" r="9" fill="#f59e0b" stroke="none" />
-          <text x="0" y="3.5" textAnchor="middle" fontSize="11" fontWeight="700" fill="white">
-            1
-          </text>
-          <g transform="translate(12 -8)">
-            <rect width="96" height="46" rx="6" fill="white" stroke="#e2e8f0" strokeWidth="1" />
-            <circle cx="13" cy="14" r="5" fill="#ec4899" />
-            <rect x="23" y="10" width="58" height="6" rx="3" fill="#e2e8f0" />
-            <rect x="13" y="26" width="70" height="5" rx="2.5" fill="#f1f5f9" />
-            <rect x="13" y="35" width="50" height="5" rx="2.5" fill="#f1f5f9" />
-          </g>
-        </g>
-      </g>
     </>
   );
 }
@@ -461,6 +444,127 @@ export function SlideDeckDiagram() {
           </g>
         </g>
       ))}
+    </>
+  );
+}
+
+// Card 5 diagram: a three-service architecture that gets talked about. The
+// services build in, then a comment pin lands on the API with its thread
+// beside it (spec/136), then an assigned action lands on the database
+// (spec/68) and, near the end of the cycle, gets ticked off. The peeking
+// card settles with both in place and the action done.
+export function ArchitectureDiagram({ theme }: { theme: Theme }) {
+  const boxes = [
+    { cls: 'hero-pop1', x: 60, label: 'Web app' },
+    { cls: 'hero-pop2', x: 240, label: 'API' },
+    { cls: 'hero-pop3', x: 420, label: 'Database' },
+  ];
+  const label = (x: number, y: number, text: string, size = 14, fill = theme.text) => (
+    <text
+      x={x}
+      y={y}
+      textAnchor="middle"
+      fontFamily="ui-sans-serif, system-ui, sans-serif"
+      fontWeight="600"
+      fontSize={size}
+      fill={fill}
+      stroke="none"
+    >
+      {text}
+    </text>
+  );
+  return (
+    <>
+      <g style={{ color: theme.stroke }} fill="none">
+        <path
+          className="hero-line1"
+          d="M180 144 L240 144 M234 138 L240 144 L234 150"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+        <path
+          className="hero-line2"
+          d="M360 144 L420 144 M414 138 L420 144 L414 150"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+      </g>
+      <g fill={theme.fill} stroke={theme.stroke} strokeWidth="2" strokeLinejoin="round">
+        {boxes.map((b) => (
+          <g key={b.label} className={b.cls}>
+            <rect x={b.x} y="118" width="120" height="52" rx="8" />
+            {label(b.x + 60, 149, b.label)}
+          </g>
+        ))}
+      </g>
+
+      {/* Comment pin on the API box, with the thread beside it. */}
+      <g className="hero-note">
+        <circle cx="360" cy="118" r="11" fill="#ec4899" stroke="white" strokeWidth="2" />
+        {label(360, 122, 'JR', 9, 'white')}
+        <g transform="translate(372 52)">
+          <rect x="0" y="0" width="150" height="52" rx="8" fill="white" stroke="#e2e8f0" />
+          <circle cx="16" cy="16" r="7" fill="#ec4899" />
+          {label(16, 19, 'JR', 7, 'white')}
+          <rect x="30" y="11" width="64" height="7" rx="3.5" fill="#cbd5e1" />
+          <rect x="10" y="30" width="118" height="6" rx="3" fill="#e2e8f0" />
+          <rect x="10" y="40" width="84" height="6" rx="3" fill="#e2e8f0" />
+        </g>
+      </g>
+
+      {/* Assigned action on the database, ticked off near the end. */}
+      {/* Positioned by an outer group: the pop animation sets a CSS transform
+          on the inner one, which would replace an SVG transform attribute. */}
+      <g transform="translate(396 190)">
+        <g className="hero-action">
+          <rect x="0" y="0" width="168" height="40" rx="8" fill="white" stroke="#e2e8f0" />
+          <rect
+            x="10"
+            y="11"
+            width="18"
+            height="18"
+            rx="4"
+            fill="none"
+            stroke="#94a3b8"
+            strokeWidth="1.5"
+          />
+          <path
+            className="hero-action-tick"
+            d="M14 20 L18 24 L25 15"
+            fill="none"
+            stroke="#16a34a"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <text
+            x="38"
+            y="17"
+            fontFamily="ui-sans-serif, system-ui, sans-serif"
+            fontWeight="600"
+            fontSize="10"
+            fill="#0f172a"
+            stroke="none"
+          >
+            Add a read replica
+          </text>
+          <text
+            x="38"
+            y="30"
+            fontFamily="ui-sans-serif, system-ui, sans-serif"
+            fontWeight="500"
+            fontSize="8.5"
+            fill="#64748b"
+            stroke="none"
+          >
+            Assigned to JR
+          </text>
+          <circle cx="152" cy="20" r="8" fill="#ec4899" />
+          {label(152, 23, 'JR', 7, 'white')}
+        </g>
+      </g>
     </>
   );
 }
