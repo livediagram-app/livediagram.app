@@ -74,7 +74,9 @@
   .fa-spin-cont,
   .fa-beat,
   .fa-drift,
-  .fa-spot {
+  .fa-spot,
+  .tg-reveal,
+  .tg-reveal .tg-reveal-track > li {
     animation: none !important;
     opacity: 1 !important;
     transform: none !important;

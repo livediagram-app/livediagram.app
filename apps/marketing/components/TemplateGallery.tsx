@@ -2,7 +2,7 @@
 
 import { TemplatePreview } from '@livediagram/template-previews';
 import { templateCreateHref, type TemplateCategory } from '@livediagram/templates';
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 import { TemplateCarousel } from '@/components/TemplateCarousel';
 import { filterGallery, galleryTemplates, groupGallery } from '@/lib/template-gallery';
 
@@ -85,9 +85,10 @@ export function TemplateGallery() {
                 key={group.id}
                 label={group.label}
                 itemsKey={group.templates.map((t) => t.kind).join(',')}
+                reveal={group.id !== FIRST_CATEGORY}
               >
-                {group.templates.map((t) => (
-                  <li key={t.kind}>
+                {group.templates.map((t, i) => (
+                  <li key={t.kind} style={{ '--tg-i': i } as CSSProperties}>
                     <a
                       href={templateCreateHref(t.kind)}
                       aria-label={`Create a ${t.title}`}

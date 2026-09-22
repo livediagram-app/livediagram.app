@@ -13,12 +13,16 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 export function TemplateCarousel({
   label,
   itemsKey,
+  reveal = false,
   children,
 }: {
   label: string;
   // Changes when the row's cards change (a filter), so the track rewinds
   // rather than staying scrolled past cards that are no longer there.
   itemsKey: string;
+  // Rise into place on mount (a category the visitor just opened, or one a
+  // search revealed); the category open on page load sits still.
+  reveal?: boolean;
   children: ReactNode;
 }) {
   const track = useRef<HTMLUListElement>(null);
@@ -50,7 +54,7 @@ export function TemplateCarousel({
 
   const paged = canPrev || canNext;
   return (
-    <div>
+    <div className={reveal ? 'tg-reveal' : undefined}>
       <div className="flex items-center justify-between gap-4">
         <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">{label}</h3>
         {paged ? (
@@ -76,7 +80,7 @@ export function TemplateCarousel({
       <ul
         ref={track}
         onScroll={measure}
-        className="mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [&>li]:shrink-0 [&>li]:snap-start [&>li]:basis-full sm:[&>li]:basis-[calc((100%-0.75rem)/2)] lg:[&>li]:basis-[calc((100%-2.25rem)/4)]"
+        className="tg-reveal-track mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [&>li]:shrink-0 [&>li]:snap-start [&>li]:basis-full sm:[&>li]:basis-[calc((100%-0.75rem)/2)] lg:[&>li]:basis-[calc((100%-2.25rem)/4)]"
       >
         {children}
       </ul>
