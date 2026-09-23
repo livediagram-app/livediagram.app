@@ -354,7 +354,11 @@ describe('labelling a wall from the review', () => {
     vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
     render(
       <PhotoReviewOverlay
-        review={review({ detection: found([sticky(0), sticky(1)]), photoName: 'wall.jpg' })}
+        review={review({
+          detection: found([sticky(0), sticky(1)]),
+          photoName: 'wall.jpg',
+          textById: new Map([[0, { text: 'Order placed', legible: true }]]),
+        })}
         reading={false}
         onConfirm={noop}
         onCancel={noop}
@@ -367,12 +371,16 @@ describe('labelling a wall from the review', () => {
     const truth = JSON.parse(await saved[0]!.text()) as {
       photo: string;
       labelledOn: { width: number; height: number };
-      notes: { x: number; y: number; w: number; h: number; kind: string }[];
+      notes: { x: number; y: number; w: number; h: number; kind: string; text?: string }[];
     };
     expect(truth.photo).toBe('wall');
     expect(truth.labelledOn).toEqual({ width: 100, height: 100 });
     // One note, because one was unticked — and in fractions, not pixels.
-    expect(truth.notes).toEqual([{ x: 0.1, y: 0.1, w: 0.5, h: 0.5, kind: 'domain-event' }]);
+    // The words travel with the box: they are the reader's ground truth, and
+    // where an author says something about a box.
+    expect(truth.notes).toEqual([
+      { x: 0.1, y: 0.1, w: 0.5, h: 0.5, kind: 'domain-event', text: 'Order placed' },
+    ]);
     vi.restoreAllMocks();
   });
 });

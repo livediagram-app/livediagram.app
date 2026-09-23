@@ -313,6 +313,7 @@ export function PhotoReviewOverlay({
             size={detection.imageSize}
             notes={notes}
             ticked={ticked}
+            textOf={textOf}
           />
         ) : null}
         <button

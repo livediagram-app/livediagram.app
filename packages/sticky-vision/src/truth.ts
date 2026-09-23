@@ -13,7 +13,17 @@
 // 4000. The labels themselves never enter this repository — they describe
 // somebody's real workshop wall, exactly like the photographs do.
 
-export type TruthNote = { x: number; y: number; w: number; h: number; kind: string };
+export type TruthNote = {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  kind: string;
+  // The words on the note as the author left them in the review: ground truth
+  // for the handwriting reader, and where an author annotates a box. Absent
+  // when the note was left blank. The detector's scorer ignores it.
+  text?: string;
+};
 
 export type Truth = {
   // The photograph's file name without its extension, which is also the
@@ -37,7 +47,7 @@ const round = (value: number) => Number(value.toFixed(PLACES));
 export function truthFrom(
   fileName: string,
   size: { width: number; height: number },
-  boxes: readonly { x: number; y: number; w: number; h: number; kind: string }[],
+  boxes: readonly { x: number; y: number; w: number; h: number; kind: string; text?: string }[],
 ): Truth {
   if (size.width <= 0 || size.height <= 0) {
     throw new Error(`truthFrom needs a real image size, got ${size.width}x${size.height}`);
@@ -49,6 +59,7 @@ export function truthFrom(
       w: round(box.w / size.width),
       h: round(box.h / size.height),
       kind: box.kind,
+      ...(box.text !== undefined && box.text.trim() !== '' ? { text: box.text.trim() } : {}),
     }))
     // Down the wall, then across it: the same wall labelled twice produces the
     // same file, so a diff between two labellings is a real disagreement

@@ -42,6 +42,18 @@ describe('truthFrom', () => {
     ]);
   });
 
+  it('keeps the words on each note, as the author left them', () => {
+    // The words are ground truth too — for the handwriting reader — and they
+    // are where an author says something about a box ("this one is wrong").
+    // A label that dropped them lost both.
+    const truth = truthFrom('a.jpg', size, [
+      { x: 100, y: 100, w: 50, h: 50, kind: 'command', text: 'Place order' },
+      { x: 300, y: 100, w: 50, h: 50, kind: 'command', text: '  ' },
+      { x: 500, y: 100, w: 50, h: 50, kind: 'command' },
+    ]);
+    expect(truth.notes.map((n) => n.text)).toEqual(['Place order', undefined, undefined]);
+  });
+
   it('refuses an image with no size, rather than writing Infinity into a label', () => {
     expect(() => truthFrom('a.jpg', { width: 0, height: 500 }, [])).toThrow(/size/i);
   });

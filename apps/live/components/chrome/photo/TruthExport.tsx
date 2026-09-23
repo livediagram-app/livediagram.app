@@ -24,15 +24,20 @@ export function TruthExport({
   size,
   notes,
   ticked,
+  textOf,
 }: {
   photoName: string;
   size: { width: number; height: number };
   notes: DetectedSticky[];
   ticked: Set<number>;
+  // The words on each note as they stand in the review, edits included.
+  textOf: (id: number) => string;
 }) {
   const [armed, setArmed] = useState(false);
   useEffect(() => setArmed(truthArmed()), []);
-  const kept = notes.filter((note) => ticked.has(note.id));
+  const kept = notes
+    .filter((note) => ticked.has(note.id))
+    .map((note) => ({ ...note, text: textOf(note.id) }));
   if (!armed) return null;
   return (
     <button

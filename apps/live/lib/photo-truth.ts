@@ -101,7 +101,7 @@ export function armTruthFromUrl(href: string): void {
 export function truthOf(
   fileName: string,
   size: { width: number; height: number },
-  boxes: readonly { x: number; y: number; w: number; h: number; kind: string }[],
+  boxes: readonly { x: number; y: number; w: number; h: number; kind: string; text?: string }[],
 ): Truth {
   return truthFrom(fileName, size, boxes);
 }
