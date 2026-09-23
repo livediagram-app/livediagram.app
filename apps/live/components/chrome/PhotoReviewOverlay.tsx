@@ -1,12 +1,13 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState, type PointerEvent } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { DetectedSticky } from '@livediagram/sticky-vision';
 import type { PhotoReview } from '@/hooks/canvas/usePhotoDraft';
 import { NoteBox, sizeOf } from './photo/NoteBox';
 import { PhotoStatus } from './photo/PhotoStatus';
 import { TruthExport } from './photo/TruthExport';
 import { ZoomControls } from './photo/ZoomControls';
+import { useDrawBox } from './photo/useDrawBox';
 import { usePhotoView } from './photo/usePhotoView';
 import { kindOfBox } from './photo/kindOfBox';
 
@@ -37,8 +38,6 @@ const REVEAL_INTERVAL_MS = 500;
 // read as the animation giving up.
 const REVEAL_BUDGET_MS = 6000;
 
-// A drag shorter than this on screen, either way, is a click.
-const DRAW_MIN_SCREEN_PX = 6;
 // …and a box needs this much of the working image to classify its paper.
 const MIN_BOX_PX = 3;
 
@@ -92,14 +91,6 @@ export function PhotoReviewOverlay({
   // Boxes the author drew around stickies the detector missed.
   const [manual, setManual] = useState<DetectedSticky[]>([]);
   const manualId = useRef(-1);
-  // The in-progress drag, in percentages of the photo. The REF is the source
-  // of truth (so a pointermove never reads a stale state); the state only
-  // drives the dashed rectangle's render.
-  const drawingRef = useRef<{ x1: number; y1: number; x2: number; y2: number } | null>(null);
-  const [drawing, setDrawing] = useState<{ x1: number; y1: number; x2: number; y2: number } | null>(
-    null,
-  );
-
   const notes = [...detected, ...manual];
   const [revealed, setRevealed] = useState(0);
   useEffect(() => {
@@ -181,59 +172,10 @@ export function PhotoReviewOverlay({
   // The photo area: drag on it (not on a box's controls) to draw a sticky the
   // detector missed.
   const photoRef = useRef<HTMLDivElement | null>(null);
-  const photoView = usePhotoView();
-  // Where the drag started ON SCREEN, to tell a click from a drag.
-  const dragStart = useRef<{ x: number; y: number } | null>(null);
-  const point = (e: PointerEvent<HTMLDivElement>) => {
-    const rect = photoRef.current!.getBoundingClientRect();
-    return {
-      x: ((e.clientX - rect.left) / rect.width) * 100,
-      y: ((e.clientY - rect.top) / rect.height) * 100,
-    };
-  };
-
-  const onPointerDown = (e: PointerEvent<HTMLDivElement>) => {
-    if ((e.target as HTMLElement).closest('button, input')) return;
-    dragStart.current = { x: e.clientX, y: e.clientY };
-    const p = point(e);
-    drawingRef.current = { x1: p.x, y1: p.y, x2: p.x, y2: p.y };
-    setDrawing({ ...drawingRef.current });
-  };
-  const onPointerMove = (e: PointerEvent<HTMLDivElement>) => {
-    if (!drawingRef.current) return;
-    const p = point(e);
-    drawingRef.current = { ...drawingRef.current, x2: p.x, y2: p.y };
-    setDrawing({ ...drawingRef.current });
-  };
-  const onPointerUp = (e: PointerEvent<HTMLDivElement>) => {
-    const d = drawingRef.current;
-    if (!d) return;
-    drawingRef.current = null;
-    setDrawing(null);
-    // A click, not a box. Measured on SCREEN, because a fixed share of the
-    // photo was a click at one zoom and a whole sticky at another: on a
-    // three-hundred-note whiteboard a note is 1.5% of the photo, and a "2% is
-    // a click" rule made those notes impossible to draw round.
-    const start = dragStart.current;
-    dragStart.current = null;
-    if (
-      start &&
-      (Math.abs(e.clientX - start.x) < DRAW_MIN_SCREEN_PX ||
-        Math.abs(e.clientY - start.y) < DRAW_MIN_SCREEN_PX)
-    ) {
-      return;
-    }
-    const x1 = Math.min(d.x1, d.x2);
-    const y1 = Math.min(d.y1, d.y2);
-    const x2 = Math.max(d.x1, d.x2);
-    const y2 = Math.max(d.y1, d.y2);
-    addManual({
-      x: Math.round((x1 / 100) * frame.width),
-      y: Math.round((y1 / 100) * frame.height),
-      w: Math.round(((x2 - x1) / 100) * frame.width),
-      h: Math.round(((y2 - y1) / 100) * frame.height),
-    });
-  };
+  const draw = useDrawBox({ pictureRef: photoRef, frame, onBox: addManual });
+  // A second finger turns a one-finger drag into a pinch: the box that finger
+  // started is not a box.
+  const photoView = usePhotoView({ onGesture: draw.cancel });
 
   return (
     <div
@@ -270,7 +212,8 @@ export function PhotoReviewOverlay({
         <div
           ref={photoView.viewportRef}
           data-testid="photo-viewport"
-          className="relative overflow-hidden"
+          // `touch-none`: a pinch here zooms the PHOTO, never the whole page.
+          className="relative touch-none overflow-hidden"
           style={photoView.hand ? { cursor: photoView.hand } : undefined}
           {...photoView.viewportHandlers}
         >
@@ -282,9 +225,7 @@ export function PhotoReviewOverlay({
               transform: `translate(${photoView.view.x}px, ${photoView.view.y}px) scale(${photoView.view.zoom})`,
               transformOrigin: '0 0',
             }}
-            onPointerDown={onPointerDown}
-            onPointerMove={onPointerMove}
-            onPointerUp={onPointerUp}
+            {...draw.handlers}
           >
             <img
               src={review.photoUrl}
@@ -311,15 +252,15 @@ export function PhotoReviewOverlay({
                 zoom={photoView.view.zoom}
               />
             ))}
-            {drawing ? (
+            {draw.drawing ? (
               <div
                 aria-hidden
                 className="pointer-events-none absolute border-2 border-dashed border-white"
                 style={{
-                  left: `${Math.min(drawing.x1, drawing.x2)}%`,
-                  top: `${Math.min(drawing.y1, drawing.y2)}%`,
-                  width: `${Math.abs(drawing.x2 - drawing.x1)}%`,
-                  height: `${Math.abs(drawing.y2 - drawing.y1)}%`,
+                  left: `${Math.min(draw.drawing.x1, draw.drawing.x2)}%`,
+                  top: `${Math.min(draw.drawing.y1, draw.drawing.y2)}%`,
+                  width: `${Math.abs(draw.drawing.x2 - draw.drawing.x1)}%`,
+                  height: `${Math.abs(draw.drawing.y2 - draw.drawing.y1)}%`,
                 }}
               />
             ) : null}

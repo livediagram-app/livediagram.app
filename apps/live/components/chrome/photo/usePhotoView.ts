@@ -1,29 +1,46 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState, type PointerEvent } from 'react';
-import { FIT, clampView, panBy, zoomAt, type PhotoView } from '@/lib/photo-view';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type MouseEvent,
+  type PointerEvent,
+} from 'react';
+import { FIT, clampView, panBy, pinchStep, zoomAt, type PhotoView } from '@/lib/photo-view';
 
-// Zoom and pan on the photograph under review, with the canvas's own gestures
-// so nothing has to be learnt twice (see useCanvasPinchZoom):
+// Zoom and pan on the photograph under review, the way a photo viewer works:
 //
-//   Ctrl/Cmd + wheel, trackpad pinch   zoom about the pointer
-//   wheel, two-finger drag             pan (Shift + wheel pans sideways)
-//   Space + drag, middle-button drag   pan
+//   scroll wheel, trackpad pinch       zoom about the pointer
+//   two-finger pinch on a touch screen zoom about the fingers, and pan with them
+//   middle-button drag, Space + drag   pan
 //   + / − / 0                          zoom in, zoom out, whole photo
 //
-// A plain drag is not taken: on this surface it draws a box round a missed
-// note, and that stays the gesture it always was.
+// The WHEEL zooms here, where on the canvas it pans: the canvas is a board you
+// travel across, this is one photograph you look INTO, and the operator asked
+// for the wheel to do what it does in every photo viewer.
+//
+// A plain drag (one finger, left button) is not taken: on this surface it
+// draws a box round a missed note, and that stays the gesture it always was.
 
 // One step of the + and − buttons and keys.
 const ZOOM_STEP = 1.5;
 // The canvas's own wheel rate, so a pinch feels the same on both surfaces.
 const WHEEL_ZOOM_RATE = 200;
+// A wheel reporting in LINES (Firefox, a notched mouse) rather than pixels:
+// roughly how many pixels one line is.
+const LINE_PX = 16;
 
 const typingIn = (target: EventTarget | null) =>
   target instanceof HTMLElement &&
   (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
 
-export function usePhotoView() {
+export function usePhotoView(opts: { onGesture?: () => void } = {}) {
+  // Told when a two-finger gesture takes over, so a box the first finger
+  // started drawing is dropped rather than landed.
+  const onGesture = useRef(opts.onGesture);
+  onGesture.current = opts.onGesture;
   const [view, setView] = useState<PhotoView>(FIT);
   // The frame the picture sits in. Its size IS the fitted picture's size.
   const viewportRef = useRef<HTMLDivElement | null>(null);
@@ -52,17 +69,13 @@ export function usePhotoView() {
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
       const rect = el.getBoundingClientRect();
-      if (e.ctrlKey || e.metaKey) {
-        zoomBy(Math.exp(-e.deltaY / WHEEL_ZOOM_RATE), {
-          x: e.clientX - rect.left,
-          y: e.clientY - rect.top,
-        });
-        return;
-      }
-      // A mouse wheel only scrolls one way; Shift turns it sideways.
-      const dx = e.shiftKey && e.deltaX === 0 ? e.deltaY : e.deltaX;
-      const dy = e.shiftKey && e.deltaX === 0 ? 0 : e.deltaY;
-      setView((v) => panBy(v, size(), -dx, -dy));
+      // Every wheel zooms: a mouse wheel, and a trackpad pinch (which arrives
+      // as Ctrl + wheel). Up and away is in, as in every photo viewer.
+      const dy = e.deltaMode === 1 ? e.deltaY * LINE_PX : e.deltaY;
+      zoomBy(Math.exp(-dy / WHEEL_ZOOM_RATE), {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      });
     };
     el.addEventListener('wheel', onWheel, { passive: false });
     return () => el.removeEventListener('wheel', onWheel);
@@ -107,9 +120,31 @@ export function usePhotoView() {
     return () => observer.disconnect();
   }, []);
 
+  // Fingers on a touch screen, by pointer id, in frame pixels.
+  const touches = useRef(new Map<number, { x: number; y: number }>());
+  const fingers = () => {
+    const [a, b] = [...touches.current.values()];
+    return a && b ? { a, b } : null;
+  };
+  const inFrame = (e: PointerEvent<HTMLDivElement>) => {
+    const rect = viewportRef.current!.getBoundingClientRect();
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  };
+
   // Pointer panning, in the CAPTURE phase so it wins over the drag that draws
-  // a box: with Space held or the middle button down, the drag is the hand's.
+  // a box: two fingers, the middle button, or Space held make the drag the
+  // hand's.
   const onPointerDownCapture = (e: PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType === 'touch') {
+      touches.current.set(e.pointerId, inFrame(e));
+      if (touches.current.size === 2) {
+        // The second finger: this was never a box being drawn.
+        e.stopPropagation();
+        onGesture.current?.();
+        setPanning(true);
+      }
+      return;
+    }
     if (!(spaceHeld || e.button === 1)) return;
     e.preventDefault();
     e.stopPropagation();
@@ -118,6 +153,16 @@ export function usePhotoView() {
     e.currentTarget.setPointerCapture?.(e.pointerId);
   };
   const onPointerMoveCapture = (e: PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType === 'touch' && touches.current.has(e.pointerId)) {
+      const before = fingers();
+      touches.current.set(e.pointerId, inFrame(e));
+      const after = fingers();
+      if (before && after) {
+        e.stopPropagation();
+        setView((v) => pinchStep(v, size(), before, after));
+      }
+      return;
+    }
     const from = panFrom.current;
     if (!from) return;
     e.stopPropagation();
@@ -125,6 +170,17 @@ export function usePhotoView() {
     setView((v) => panBy(v, size(), e.clientX - from.x, e.clientY - from.y));
   };
   const onPointerUpCapture = (e: PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType === 'touch' && touches.current.has(e.pointerId)) {
+      const wasPinch = touches.current.size >= 2;
+      touches.current.delete(e.pointerId);
+      if (wasPinch) {
+        // Lifting one finger of a pinch ends the gesture; it is not the end
+        // of a drag that should land a box.
+        e.stopPropagation();
+        if (touches.current.size < 2) setPanning(false);
+      }
+      return;
+    }
     if (!panFrom.current) return;
     e.stopPropagation();
     panFrom.current = null;
@@ -139,6 +195,19 @@ export function usePhotoView() {
     fit,
     // What the pointer is about to do, for the cursor.
     hand: panning ? ('grabbing' as const) : spaceHeld ? ('grab' as const) : null,
-    viewportHandlers: { onPointerDownCapture, onPointerMoveCapture, onPointerUpCapture },
+    viewportHandlers: {
+      onPointerDownCapture,
+      onPointerMoveCapture,
+      onPointerUpCapture,
+      onPointerCancelCapture: onPointerUpCapture,
+      // The middle button's own browser habits — autoscroll on Windows, paste
+      // on Linux — are not what a drag on the photo means.
+      onMouseDownCapture: (e: MouseEvent<HTMLDivElement>) => {
+        if (e.button === 1) e.preventDefault();
+      },
+      onAuxClickCapture: (e: MouseEvent<HTMLDivElement>) => {
+        if (e.button === 1) e.preventDefault();
+      },
+    },
   };
 }

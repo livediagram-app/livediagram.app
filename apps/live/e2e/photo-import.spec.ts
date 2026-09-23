@@ -539,14 +539,12 @@ test('the photo zooms and pans, and the boxes stay on their stickies', async ({
     .first()
     .boundingBox())!;
 
-  // Ctrl + wheel over the blue note: it zooms ABOUT the pointer.
+  // The plain scroll wheel over the blue note: it zooms ABOUT the pointer.
   const img = overlay.locator('img');
   const blue = (await boxes.nth(1).boundingBox())!;
   const cursor = { x: blue.x + blue.width / 2, y: blue.y + blue.height / 2 };
   await page.mouse.move(cursor.x, cursor.y);
-  await page.keyboard.down('Control');
   for (let i = 0; i < 2; i += 1) await page.mouse.wheel(0, -120);
-  await page.keyboard.up('Control');
   await expect(level).not.toHaveText('100%');
   const zoomedBlue = (await boxes.nth(1).boundingBox())!;
   expect(zoomedBlue.width).toBeGreaterThan(blue.width * 2);
@@ -562,13 +560,11 @@ test('the photo zooms and pans, and the boxes stay on their stickies', async ({
   const pillZoomed = (await overlay.getByTestId('note-words-1').boundingBox())!;
   expect(Math.abs(pillZoomed.height - pillAtFit.height)).toBeLessThan(2);
 
-  // Space + drag moves the photo, and draws nothing.
+  // A MIDDLE-button drag moves the photo, and draws nothing.
   await page.mouse.move(cursor.x, cursor.y);
-  await page.keyboard.down('Space');
-  await page.mouse.down();
+  await page.mouse.down({ button: 'middle' });
   await page.mouse.move(cursor.x + 150, cursor.y + 60, { steps: 6 });
-  await page.mouse.up();
-  await page.keyboard.up('Space');
+  await page.mouse.up({ button: 'middle' });
   const panned = (await boxes.nth(1).boundingBox())!;
   expect(panned.x - zoomedBlue.x).toBeGreaterThan(100);
   await expect(boxes).toHaveCount(2);
@@ -596,6 +592,51 @@ test('the photo zooms and pans, and the boxes stay on their stickies', async ({
   // Back to the whole photo.
   await overlay.getByRole('button', { name: 'Show the whole photo' }).click();
   await expect(level).toHaveText('100%');
+
+  expectNoPageErrors(pageErrors);
+});
+
+// A phone: two fingers pinch the photo bigger, and draw no box doing it.
+test('a two-finger pinch zooms the photo on a touch screen', async ({ page, pageErrors }) => {
+  await openBoard(page);
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.getByRole('button', { name: /add from photo/i }).click();
+  await page.setInputFiles('input[type="file"]', {
+    name: 'phone.png',
+    mimeType: 'image/png',
+    buffer: wallPhotoPng(900, 400, [{ fill: ORANGE, x: 400, y: 150, w: 80, h: 80 }]),
+  });
+  const overlay = page.locator('[data-testid="photo-review-overlay"]');
+  await overlay.waitFor({ state: 'visible', timeout: 15_000 });
+  await overlay
+    .locator('[data-testid="photo-finding"]')
+    .waitFor({ state: 'hidden', timeout: 30_000 });
+  const boxes = overlay.locator('[data-testid^="note-box-"]');
+  await expect(boxes).toHaveCount(1);
+  const vp = (await overlay.getByTestId('photo-viewport').boundingBox())!;
+  const mid = { x: vp.x + vp.width / 2, y: vp.y + vp.height * 0.8 };
+
+  // Real touch points, through the browser's own input pipeline.
+  const cdp = await page.context().newCDPSession(page);
+  const touch = (type: 'touchStart' | 'touchMove' | 'touchEnd', spread: number) =>
+    cdp.send('Input.dispatchTouchEvent', {
+      type,
+      touchPoints:
+        type === 'touchEnd'
+          ? []
+          : [
+              { x: mid.x - spread, y: mid.y, id: 1 },
+              { x: mid.x + spread, y: mid.y, id: 2 },
+            ],
+    });
+  await touch('touchStart', 40);
+  for (const spread of [60, 90, 120, 160]) await touch('touchMove', spread);
+  await touch('touchEnd', 0);
+
+  const level = await overlay.getByTestId('photo-zoom-level').textContent();
+  expect(parseInt(level ?? '100', 10)).toBeGreaterThan(250);
+  // The pinch drew nothing.
+  await expect(boxes).toHaveCount(1);
 
   expectNoPageErrors(pageErrors);
 });

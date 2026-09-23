@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { FIT, PHOTO_ZOOM_MAX, clampView, panBy, zoomAt } from './photo-view';
+import { FIT, PHOTO_ZOOM_MAX, clampView, panBy, pinchStep, zoomAt } from './photo-view';
 
 // Zooming and panning the photograph under review (spec/139 Phase 9). The
 // picture is laid out at its FITTED size; the view is a zoom and an offset on
@@ -70,5 +70,34 @@ describe('clampView', () => {
       x: 0,
       y: 0,
     });
+  });
+});
+
+// Two fingers on a phone: the spread zooms and the midpoint drags, in one
+// movement, the way every photo app on a phone works.
+describe('pinchStep', () => {
+  it('zooms by how far the fingers spread, about the point between them', () => {
+    const before = { a: { x: 400, y: 200 }, b: { x: 600, y: 200 } }; // 200 apart, mid 500,200
+    const after = { a: { x: 300, y: 200 }, b: { x: 700, y: 200 } }; // 400 apart, same mid
+    const view = pinchStep(FIT, size, before, after);
+    expect(view.zoom).toBeCloseTo(2);
+    // The photo point between the fingers stays between them.
+    expect(view.x + 500 * view.zoom).toBeCloseTo(500);
+    expect(view.y + 200 * view.zoom).toBeCloseTo(200);
+  });
+
+  it('moves the photo with the fingers when they move together', () => {
+    const zoomed = zoomAt(FIT, size, 2, { x: 500, y: 250 });
+    const before = { a: { x: 400, y: 200 }, b: { x: 600, y: 200 } };
+    const after = { a: { x: 430, y: 180 }, b: { x: 630, y: 180 } };
+    const view = pinchStep(zoomed, size, before, after);
+    expect(view.zoom).toBeCloseTo(2);
+    expect(view.x - zoomed.x).toBeCloseTo(30);
+    expect(view.y - zoomed.y).toBeCloseTo(-20);
+  });
+
+  it('ignores two fingers on the same spot, rather than dividing by nothing', () => {
+    const same = { a: { x: 10, y: 10 }, b: { x: 10, y: 10 } };
+    expect(pinchStep(FIT, size, same, same)).toEqual(FIT);
   });
 });

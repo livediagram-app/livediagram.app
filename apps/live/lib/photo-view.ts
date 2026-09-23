@@ -54,3 +54,22 @@ export function zoomAt(
 export function panBy(view: PhotoView, size: Size, dx: number, dy: number): PhotoView {
   return clampView({ ...view, x: view.x + dx, y: view.y + dy }, size);
 }
+
+type Point = { x: number; y: number };
+type Fingers = { a: Point; b: Point };
+
+const between = (f: Fingers): Point => ({ x: (f.a.x + f.b.x) / 2, y: (f.a.y + f.b.y) / 2 });
+const spread = (f: Fingers) => Math.hypot(f.a.x - f.b.x, f.a.y - f.b.y);
+
+// One movement of a two-finger pinch, in frame pixels: the change in spread
+// zooms about the point between the fingers, and the travel of that point
+// pans — so the photo stays pinned under both fingers, as on any phone.
+export function pinchStep(view: PhotoView, size: Size, before: Fingers, after: Fingers): PhotoView {
+  const from = spread(before);
+  const to = spread(after);
+  if (from === 0 || to === 0) return view;
+  const mid = between(before);
+  const next = between(after);
+  const zoomed = zoomAt(view, size, to / from, mid);
+  return panBy(zoomed, size, next.x - mid.x, next.y - mid.y);
+}

@@ -46,7 +46,7 @@ export function ZoomControls({
       <button
         type="button"
         aria-label="Zoom in"
-        title="Zoom in (+). Or Ctrl + scroll; drag with Space held to move around."
+        title="Zoom in (+). Or scroll, or pinch; drag with the middle button to move around."
         disabled={zoom >= PHOTO_ZOOM_MAX}
         onClick={onZoomIn}
         className={button}

@@ -872,10 +872,13 @@ Decisions from the operator:
   ticked boxes, the boxes the author drew and the words as edited to the one
   place a draft is written (Phase 8's `esDraft` machinery).
 
-  **The photograph zooms and pans**, with the canvas's own gestures so nothing
-  is learnt twice: Ctrl/Cmd + wheel or a pinch zooms about the pointer, the
-  wheel and Space + drag pan, `+` `−` `0` from the keyboard, and visible
-  controls (−, the level, +, Fit) for anyone who knows none of those. A
+  **The photograph zooms and pans** the way a photo viewer does: the scroll
+  wheel (and a trackpad pinch) zooms about the pointer, two fingers on a touch
+  screen pinch-zoom and pan together, a middle-button drag (or Space + drag)
+  pans, `+` `−` `0` work from the keyboard, and visible controls (−, the
+  level, +, Fit) serve anyone who knows none of those. The wheel ZOOMS here
+  where on the canvas it pans: the canvas is a board you travel across, this is
+  one photograph you look into. A
   whiteboard of three hundred notes puts each sticky at about fifteen pixels
   when the photo fits the window; up to 800% it is a hand's width. The boxes
   zoom with the photo; their CONTROLS do not — the tick, the word pill and the
