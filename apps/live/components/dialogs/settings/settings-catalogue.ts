@@ -144,31 +144,6 @@ export type SettingsCategorySpec = {
 
 export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
   {
-    id: 'account',
-    label: 'Account',
-    rows: [
-      {
-        kind: 'identity',
-        key: 'identity',
-        section: 'You',
-        label: 'Guest',
-        keywords: 'account profile identity name email signed in sign in avatar joined',
-        description:
-          'Your name and email come from your account and are changed there, not here. Signing in keeps your diagrams across browsers and devices; without it they belong to this browser alone.',
-        helpArticle: 'guestVsAccount',
-      },
-      {
-        kind: 'deleteAccount',
-        key: 'deleteAccount',
-        section: 'Danger Zone',
-        label: 'Delete Account',
-        keywords: 'delete account remove wipe erase close cancel data gdpr',
-        description:
-          'Removes your diagrams, folders, and the account itself, everywhere. There is no undo and no recovery, so you are asked to type your email to confirm.',
-      },
-    ],
-  },
-  {
     id: 'editor',
     label: 'Editor',
     rows: [
@@ -525,7 +500,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
   },
   {
     id: 'ai',
-    label: 'AI',
+    label: 'AI Tools',
     requiresAi: true,
     rows: [
       {
@@ -562,6 +537,31 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         description:
           'Tokens let your own scripts, and AI tools connected over MCP, call the livediagram API as you. Each one expires six months after it is created, and you can revoke any of them at any time.',
         alsoIn: 'the Explorer’s API Tokens page',
+      },
+    ],
+  },
+  {
+    id: 'account',
+    label: 'Account',
+    rows: [
+      {
+        kind: 'identity',
+        key: 'identity',
+        section: 'You',
+        label: 'Guest',
+        keywords: 'account profile identity name email signed in sign in avatar joined',
+        description:
+          'Your name and email come from your account and are changed there, not here. Signing in keeps your diagrams across browsers and devices; without it they belong to this browser alone.',
+        helpArticle: 'guestVsAccount',
+      },
+      {
+        kind: 'deleteAccount',
+        key: 'deleteAccount',
+        section: 'Danger Zone',
+        label: 'Delete Account',
+        keywords: 'delete account remove wipe erase close cancel data gdpr',
+        description:
+          'Removes your diagrams, folders, and the account itself, everywhere. There is no undo and no recovery, so you are asked to type your email to confirm.',
       },
     ],
   },

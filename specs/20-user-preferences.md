@@ -351,8 +351,11 @@ and the dialog stays as the one complete, browsable index of them.
   **Appearance** (theme; minimal panel layout, minimap, panel opacity),
   **Controls** (middle-mouse pan), **Panels** (Layers, Activity and minimap
   settings), **Notifications** (in-editor, plus the six email preferences),
-  **Accessibility** (reduce motion, show welcome tour), **AI** (assistant,
-  suggested prompts, API tokens), **Privacy** (telemetry). Preferences whose
+  **Accessibility** (reduce motion, show welcome tour), **AI Tools** (assistant,
+  suggested prompts, API tokens), **Account** (identity, delete account, see
+  spec/65), **Privacy** (telemetry). Editor leads because it is what most
+  people came to change; Account and Privacy sit at the end, where the
+  account-shaped things belong. Preferences whose
   day-to-day home used to be a panel's own gear popover live here now, and
   only here - see **UI placement** below.
 
