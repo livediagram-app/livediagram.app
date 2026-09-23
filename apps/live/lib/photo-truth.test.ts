@@ -79,6 +79,22 @@ describe('truthArmed on localhost', () => {
     expect(truthArmedOn('[::1]', null)).toBe(true);
   });
 
+  it('is on for this machine by any name it answers to on the network', () => {
+    // Reached from a phone or a second laptop, a dev machine is its LAN
+    // address or its bare machine name, never "localhost".
+    expect(truthArmedOn('192.168.1.133', null)).toBe(true);
+    expect(truthArmedOn('10.0.3.1', null)).toBe(true);
+    expect(truthArmedOn('172.19.0.1', null)).toBe(true);
+    expect(truthArmedOn('PCWebber', null)).toBe(true);
+    expect(truthArmedOn('devbox.localhost', null)).toBe(true);
+  });
+
+  it('is off for every public address, which is where the hosted site lives', () => {
+    expect(truthArmedOn('172.32.0.1', null)).toBe(false); // just outside 172.16/12
+    expect(truthArmedOn('8.8.8.8', null)).toBe(false);
+    expect(truthArmedOn('livediagram.example.com', null)).toBe(false);
+  });
+
   it('lets the flag overrule the host, in both directions', () => {
     expect(truthArmedOn('livediagram.app', '1')).toBe(true);
     expect(truthArmedOn('localhost', '0')).toBe(false);

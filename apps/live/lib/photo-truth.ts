@@ -23,9 +23,28 @@ import { truthFrom, type Truth } from '@livediagram/sticky-vision';
 
 export const TRUTH_ARMED_KEY = 'livediagram:truth';
 
-// Served from this machine: a development or self-hosted-locally build, where
-// the photographs and the sweep are.
+// Served from this machine or its own network: a development build, where the
+// photographs and the sweep are. By ANY name the machine answers to: reached
+// from a second device it is its LAN address or its bare machine name, never
+// "localhost".
 const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]', '::1', '0.0.0.0']);
+
+// RFC 1918 private ranges: never where the hosted site lives.
+function isPrivateIpv4(hostname: string): boolean {
+  const parts = hostname.split('.').map(Number);
+  if (parts.length !== 4 || parts.some((p) => !Number.isInteger(p) || p < 0 || p > 255)) {
+    return false;
+  }
+  const [a, b] = parts as [number, number, number, number];
+  return a === 10 || a === 127 || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168);
+}
+
+function isLocalHost(hostname: string): boolean {
+  if (LOCAL_HOSTS.has(hostname) || isPrivateIpv4(hostname)) return true;
+  if (hostname.endsWith('.local') || hostname.endsWith('.localhost')) return true;
+  // A bare machine name ("PCWebber"): no public site is reachable without a dot.
+  return hostname !== '' && !hostname.includes('.') && !hostname.includes(':');
+}
 
 // A browser can refuse storage entirely (private mode, a locked-down profile).
 // Not being able to label is not a reason to take the editor down.
@@ -42,7 +61,7 @@ function storage(): Storage | null {
 export function truthArmedOn(hostname: string, flag: string | null): boolean {
   if (flag === '1') return true;
   if (flag === '0') return false;
-  return LOCAL_HOSTS.has(hostname) || hostname.endsWith('.local');
+  return isLocalHost(hostname);
 }
 
 export function truthArmed(): boolean {
