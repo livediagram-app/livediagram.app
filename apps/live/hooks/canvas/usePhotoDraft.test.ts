@@ -57,6 +57,7 @@ function detection(stickies: DetectedSticky[]): PhotoDetection {
     imageSize: { width: 1000, height: 1000 },
     photoUrl: 'data:image/jpeg;base64,BBB',
     imageData: new Uint8ClampedArray(1000 * 1000 * 4),
+    dropped: 0,
   };
 }
 

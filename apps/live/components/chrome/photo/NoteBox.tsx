@@ -27,6 +27,7 @@ export function NoteBox({
   shown,
   onToggle,
   onEdit,
+  zoom = 1,
 }: {
   note: DetectedSticky;
   // The working image's size, so the box can be placed as a percentage and
@@ -38,6 +39,9 @@ export function NoteBox({
   shown: boolean;
   onToggle: () => void;
   onEdit: (value: string) => void;
+  // How far the photo is zoomed. The box grows with the photo; its controls
+  // do not — see `chrome` below.
+  zoom?: number;
 }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(text);
@@ -57,6 +61,13 @@ export function NoteBox({
   };
 
   const colour = fillOf(note.kind);
+  // THE CONTROLS KEEP THEIR SIZE ON SCREEN. The box is on the photo and zooms
+  // with it; the tick and the word pill are UI, and zooming them too makes a
+  // pill four times as big at 400% — covering exactly the notes the zoom was
+  // for. So they are scaled back down by the zoom: the pill is drawn `zoom`
+  // times as wide, then shrunk by `zoom`, which leaves it the box's width on
+  // screen with its text at the one size text should be.
+  const chrome = zoom === 1 ? undefined : `scale(${1 / zoom})`;
   // An ellipsis rather than a kind name: the reader is still working, and a
   // word that is not the note's own words would only have to be unlearned.
   const words = text.trim() === '' ? (reading ? '…' : '') : text;
@@ -83,8 +94,16 @@ export function NoteBox({
     >
       <div
         aria-hidden
-        className={`absolute inset-0 rounded-sm border-2 ${ticked ? '' : 'opacity-30'}`}
-        style={{ borderColor: colour, background: `${colour}22` }}
+        className={`absolute inset-0 ${ticked ? '' : 'opacity-30'}`}
+        // The outline stays two pixels ON SCREEN at any zoom. Drawn as an inset
+        // shadow, not a border: a browser rounds a border thinner than one
+        // pixel UP to one before the zoom multiplies it, so at 800% a 2/8px
+        // border was a fat 8px band; a shadow's spread is painted as given.
+        style={{
+          background: `${colour}22`,
+          boxShadow: `inset 0 0 0 ${2 / zoom}px ${colour}`,
+          borderRadius: 2 / zoom,
+        }}
       />
       <button
         type="button"
@@ -92,6 +111,13 @@ export function NoteBox({
         aria-checked={ticked}
         aria-label={`Include ${label}`}
         onClick={onToggle}
+        // Its offset off the corner is 6px ON SCREEN too, or at 800% the tick floats
+        // 48px away from the note it belongs to.
+        style={
+          chrome
+            ? { transform: chrome, transformOrigin: 'top left', left: -6 / zoom, top: -6 / zoom }
+            : undefined
+        }
         className="absolute -left-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-sm border border-white/70 bg-slate-900/80 text-[9px] font-bold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
       >
         {ticked ? '✓' : ''}
@@ -109,6 +135,11 @@ export function NoteBox({
           }}
           onPointerDown={(e) => e.stopPropagation()}
           aria-label="The words on this note"
+          style={
+            chrome
+              ? { transform: chrome, transformOrigin: 'bottom left', width: `${zoom * 100}%` }
+              : undefined
+          }
           className="absolute inset-x-0 bottom-0 w-full rounded-b-sm border border-brand-400 bg-white px-1 py-0.5 text-[11px] leading-tight text-slate-900 outline-none"
         />
       ) : (
@@ -118,6 +149,11 @@ export function NoteBox({
           title={words === '' ? 'Type the words on this note' : words}
           onClick={open}
           onPointerDown={(e) => e.stopPropagation()}
+          style={
+            chrome
+              ? { transform: chrome, transformOrigin: 'bottom left', width: `${zoom * 100}%` }
+              : undefined
+          }
           className={`absolute inset-x-0 bottom-0 block w-full truncate rounded-b-sm bg-slate-900/85 px-1 py-0.5 text-left text-[11px] leading-tight text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-white ${
             ticked ? '' : 'opacity-40'
           }`}

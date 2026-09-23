@@ -42,6 +42,7 @@ function found(stickies: DetectedSticky[]): PhotoReview['detection'] {
     imageSize: { width: 100, height: 100 },
     photoUrl: 'data:image/jpeg;base64,xx',
     imageData: new Uint8ClampedArray(100 * 100 * 4),
+    dropped: 0,
   };
 }
 
@@ -373,5 +374,96 @@ describe('labelling a wall from the review', () => {
     // One note, because one was unticked — and in fractions, not pixels.
     expect(truth.notes).toEqual([{ x: 0.1, y: 0.1, w: 0.5, h: 0.5, kind: 'domain-event' }]);
     vi.restoreAllMocks();
+  });
+});
+
+// Zooming into the photograph (spec/139 Phase 9). A wall of three hundred
+// notes puts each sticky at about fifteen pixels when the whole photo fits the
+// window, which is too small to judge, tick or draw round.
+describe('zooming into the photo', () => {
+  const picture = () => screen.getByTestId('photo-picture');
+  const open = () =>
+    render(
+      <PhotoReviewOverlay
+        review={review({ detection: found([sticky(0)]) })}
+        reading={false}
+        onConfirm={noop}
+        onCancel={noop}
+      />,
+    );
+
+  it('starts with the whole photo in view', () => {
+    open();
+    expect(picture().style.transform).toContain('scale(1)');
+    expect(screen.getByTestId('photo-zoom-level').textContent).toBe('100%');
+  });
+
+  it('zooms in and back out from the controls', () => {
+    open();
+    fireEvent.click(screen.getByRole('button', { name: 'Zoom in' }));
+    expect(screen.getByTestId('photo-zoom-level').textContent).toBe('150%');
+    expect(picture().style.transform).toContain('scale(1.5)');
+    fireEvent.click(screen.getByRole('button', { name: 'Show the whole photo' }));
+    expect(screen.getByTestId('photo-zoom-level').textContent).toBe('100%');
+  });
+
+  it('zooms from the keyboard, but never while the words are being typed', () => {
+    open();
+    fireEvent.keyDown(window, { key: '+' });
+    expect(screen.getByTestId('photo-zoom-level').textContent).toBe('150%');
+    fireEvent.keyDown(window, { key: '0' });
+    expect(screen.getByTestId('photo-zoom-level').textContent).toBe('100%');
+    // Editing a note's words: "+" and "0" are characters, not commands.
+    fireEvent.click(screen.getByTestId('note-words-0'));
+    const input = screen.getByRole('textbox', { name: /the words on this note/i });
+    fireEvent.keyDown(input, { key: '+' });
+    expect(screen.getByTestId('photo-zoom-level').textContent).toBe('100%');
+  });
+
+  it('keeps the tick and the words the same size on screen at any zoom', () => {
+    // Everything on the photo scales with it — except the controls on each
+    // box, or at 400% a word pill is four times as big and covers the very
+    // notes the zoom was for.
+    open();
+    fireEvent.click(screen.getByRole('button', { name: 'Zoom in' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Zoom in' }));
+    const tick = screen.getByRole('checkbox');
+    expect(tick.style.transform).toBe(`scale(${1 / 2.25})`);
+    expect(screen.getByTestId('note-words-0').style.transform).toBe(`scale(${1 / 2.25})`);
+    // …and so does the outline: two pixels on screen, drawn as a shadow so the
+    // browser cannot round it up to a whole pixel of PHOTO first.
+    const outline = screen.getByTestId('note-box-0').firstElementChild as HTMLElement;
+    expect(outline.style.boxShadow).toContain(`${2 / 2.25}px`);
+    expect(outline.style.borderWidth).toBe('');
+  });
+});
+
+// A wall with more notes than one photo may yield. The cut used to be silent,
+// and it kept the first notes in READING order — so the right half of a big
+// wall simply had no boxes on it, and nothing said why.
+describe('a wall with more notes than the review holds', () => {
+  it('says how many were left out, and what to do about it', () => {
+    const detection = { ...found([sticky(0)])!, dropped: 37 };
+    render(
+      <PhotoReviewOverlay
+        review={review({ detection })}
+        reading={false}
+        onConfirm={noop}
+        onCancel={noop}
+      />,
+    );
+    expect(screen.getByTestId('photo-dropped').textContent).toMatch(/37 more/);
+  });
+
+  it('says nothing when nothing was left out', () => {
+    render(
+      <PhotoReviewOverlay
+        review={review({ detection: found([sticky(0)]) })}
+        reading={false}
+        onConfirm={noop}
+        onCancel={noop}
+      />,
+    );
+    expect(screen.queryByTestId('photo-dropped')).toBeNull();
   });
 });

@@ -66,6 +66,10 @@ export type PhotoDetection = {
   // The WORKING image's raw RGBA, so a box the author draws over a missed
   // sticky can have its paper colour classified in the browser. In memory only.
   imageData: Uint8ClampedArray;
+  // Notes found beyond PHOTO_MAX_NOTES and left out. Said out loud in the
+  // review: a silent cut keeps the first notes in READING order, so what goes
+  // missing is the whole far end of the wall.
+  dropped: number;
 };
 
 export async function detectAndCrop(
@@ -90,7 +94,9 @@ export async function detectAndCrop(
   const height = Math.max(1, Math.round(bitmap.height * ratio));
 
   const working = drawTo(bitmap, width, height);
-  const stickies = detectStickies(working.image).slice(0, PHOTO_MAX_NOTES);
+  const found = detectStickies(working.image);
+  const stickies = found.slice(0, PHOTO_MAX_NOTES);
+  const dropped = found.length - stickies.length;
   if (stickies.length === 0) {
     bitmap.close?.();
     return {
@@ -99,6 +105,7 @@ export async function detectAndCrop(
       imageSize: { width, height },
       photoUrl: working.dataUrl,
       imageData: working.image.data,
+      dropped,
     };
   }
 
@@ -119,6 +126,7 @@ export async function detectAndCrop(
     imageSize: { width, height },
     photoUrl: working.dataUrl,
     imageData: working.image.data,
+    dropped,
   };
 }
 

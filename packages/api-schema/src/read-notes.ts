@@ -55,8 +55,11 @@ export const CROP_MAX_BYTES = 512 * 1024;
 // This only ever feeds detection — the handwriting crops are cut from the
 // full-resolution bitmap, so reading loses nothing.
 export const PHOTO_MAX_EDGE_PX = 1000;
-// The most notes one photo may yield. A wall section holds tens, not hundreds.
-export const PHOTO_MAX_NOTES = 120;
+// The most notes one photo may yield. Above the densest real wall measured: a
+// whiteboard photographed whole held about three hundred notes (the detector
+// found 217 of them). The first guess here was 120 — "a wall section holds
+// tens, not hundreds" — and it cut that wall off halfway across.
+export const PHOTO_MAX_NOTES = 400;
 
 // What a crop may be, on the wire. GIF is absent (animation means nothing here
 // and the first frame is a trap), and SVG is absent for the same reason

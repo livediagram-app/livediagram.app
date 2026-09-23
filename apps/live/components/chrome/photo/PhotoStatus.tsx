@@ -31,6 +31,7 @@ function Pill({
 export function PhotoStatus({
   detecting,
   foundNothing,
+  dropped = 0,
   revealed,
   detected,
   reading,
@@ -38,6 +39,8 @@ export function PhotoStatus({
 }: {
   detecting: boolean;
   foundNothing: boolean;
+  // Notes found beyond what one photo may yield, and left out.
+  dropped?: number;
   revealed: number;
   detected: number;
   reading: boolean;
@@ -82,6 +85,12 @@ export function PhotoStatus({
       ) : readError ? (
         <Pill tone="warn">
           The reader could not finish ({readError}). Type the words in yourself.
+        </Pill>
+      ) : null}
+      {dropped > 0 ? (
+        <Pill tone="warn" testId="photo-dropped">
+          {dropped} more notes were found than one photo can bring in. Photograph the wall in
+          sections to get them all.
         </Pill>
       ) : null}
       {foundNothing ? (

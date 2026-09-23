@@ -506,3 +506,96 @@ test('?truth=1 arms the export from /new/, trailing slash and all', async ({
 
   expectNoPageErrors(pageErrors);
 });
+
+// Zooming into a dense wall (spec/139 Phase 9). At fit, a whiteboard of three
+// hundred notes has stickies fifteen pixels across: too small to judge, tick
+// or draw round. The review zooms and pans with the canvas's own gestures.
+test('the photo zooms and pans, and the boxes stay on their stickies', async ({
+  page,
+  pageErrors,
+}) => {
+  await openBoard(page);
+  await page.setViewportSize({ width: 1280, height: 800 });
+  const notes = [
+    { fill: ORANGE, x: 100, y: 100, w: 60, h: 60 },
+    { fill: BLUE, x: 700, y: 250, w: 60, h: 60 },
+  ];
+  await page.getByRole('button', { name: /add from photo/i }).click();
+  await page.setInputFiles('input[type="file"]', {
+    name: 'dense.png',
+    mimeType: 'image/png',
+    buffer: wallPhotoPng(900, 400, notes),
+  });
+  const overlay = page.locator('[data-testid="photo-review-overlay"]');
+  await overlay.waitFor({ state: 'visible', timeout: 15_000 });
+  await overlay
+    .locator('[data-testid="photo-finding"]')
+    .waitFor({ state: 'hidden', timeout: 30_000 });
+  const boxes = overlay.locator('[data-testid^="note-box-"]');
+  await expect(boxes).toHaveCount(2);
+  const level = overlay.getByTestId('photo-zoom-level');
+  const pillAtFit = (await overlay
+    .getByTestId(/^note-words-/)
+    .first()
+    .boundingBox())!;
+
+  // Ctrl + wheel over the blue note: it zooms ABOUT the pointer.
+  const img = overlay.locator('img');
+  const blue = (await boxes.nth(1).boundingBox())!;
+  const cursor = { x: blue.x + blue.width / 2, y: blue.y + blue.height / 2 };
+  await page.mouse.move(cursor.x, cursor.y);
+  await page.keyboard.down('Control');
+  for (let i = 0; i < 2; i += 1) await page.mouse.wheel(0, -120);
+  await page.keyboard.up('Control');
+  await expect(level).not.toHaveText('100%');
+  const zoomedBlue = (await boxes.nth(1).boundingBox())!;
+  expect(zoomedBlue.width).toBeGreaterThan(blue.width * 2);
+  // Still under the pointer.
+  expect(Math.abs(zoomedBlue.x + zoomedBlue.width / 2 - cursor.x)).toBeLessThan(6);
+  expect(Math.abs(zoomedBlue.y + zoomedBlue.height / 2 - cursor.y)).toBeLessThan(6);
+  // And ON its sticky: the same fraction of the (transformed) image.
+  const zImg = (await img.boundingBox())!;
+  const wantX = zImg.x + ((700 + 30) / 900) * zImg.width;
+  expect(Math.abs(zoomedBlue.x + zoomedBlue.width / 2 - wantX)).toBeLessThan(6);
+
+  // The word pill does NOT grow with the photo.
+  const pillZoomed = (await overlay.getByTestId('note-words-1').boundingBox())!;
+  expect(Math.abs(pillZoomed.height - pillAtFit.height)).toBeLessThan(2);
+
+  // Space + drag moves the photo, and draws nothing.
+  await page.mouse.move(cursor.x, cursor.y);
+  await page.keyboard.down('Space');
+  await page.mouse.down();
+  await page.mouse.move(cursor.x + 150, cursor.y + 60, { steps: 6 });
+  await page.mouse.up();
+  await page.keyboard.up('Space');
+  const panned = (await boxes.nth(1).boundingBox())!;
+  expect(panned.x - zoomedBlue.x).toBeGreaterThan(100);
+  await expect(boxes).toHaveCount(2);
+
+  // A note that is small IN THE PHOTO but big on screen can be drawn round:
+  // a bare patch just left of the blue note, 40px on screen — under 2% of the
+  // photo's width at this zoom, which the old click rule threw away.
+  const viewport = (await overlay.getByTestId('photo-viewport').boundingBox())!;
+  const from = { x: panned.x - 60, y: panned.y + 10 };
+  const to = { x: from.x + 40, y: from.y + 40 };
+  expect(from.x).toBeGreaterThan(viewport.x);
+  expect(to.x).toBeLessThan(panned.x);
+  expect(to.y).toBeLessThan(viewport.y + viewport.height);
+  const shownWidth = (await img.boundingBox())!.width;
+  expect((40 / shownWidth) * 900).toBeLessThan(0.02 * 900);
+  await page.mouse.move(from.x, from.y);
+  await page.mouse.down();
+  await page.mouse.move(to.x, to.y, { steps: 6 });
+  await page.mouse.up();
+  await expect(boxes).toHaveCount(3);
+  const drawn = (await boxes.last().boundingBox())!;
+  expect(Math.abs(drawn.x - from.x)).toBeLessThan(6);
+  expect(Math.abs(drawn.width - (to.x - from.x))).toBeLessThan(6);
+
+  // Back to the whole photo.
+  await overlay.getByRole('button', { name: 'Show the whole photo' }).click();
+  await expect(level).toHaveText('100%');
+
+  expectNoPageErrors(pageErrors);
+});
