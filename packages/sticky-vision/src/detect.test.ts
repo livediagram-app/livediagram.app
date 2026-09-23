@@ -513,6 +513,22 @@ describe('detectStickies', () => {
     expect(found).toHaveLength(5);
   });
 
+  it('finds a saturated blue note on a WHITE wall, though it is darker than the wall', () => {
+    // A whiteboard: the wall is nearly white, and the blue stickies on it, as
+    // a phone photographs them, are a mid blue — much DARKER than the wall.
+    // A rule that paper is never darker than its wall is true on brown kraft
+    // and false here; it cost two thirds of the blue notes on a real
+    // whiteboard (spec/139).
+    const image = blank(1000, 600, '#f1f3f5');
+    const orange = fillOf('domain-event');
+    for (let i = 0; i < 4; i += 1) note(image, 80 + i * 120, 100, 70, 70, orange);
+    const blue = '#3b72c8';
+    for (let i = 0; i < 4; i += 1) note(image, 80 + i * 120, 300, 70, 70, blue);
+    const found = detectStickies(image);
+    expect(found.filter((n) => n.kind === 'command')).toHaveLength(4);
+    expect(found).toHaveLength(8);
+  });
+
   it('gets through a 1024px working image quickly', () => {
     const image = blank(1024, 1024);
     const orange = fillOf('domain-event');

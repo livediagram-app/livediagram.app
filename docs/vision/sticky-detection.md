@@ -88,9 +88,11 @@ and testable.
    wall a note's neighbours are other notes)? More saturated, much brighter
    RELATIVE to the wall, or a different hue; any one is enough, because the
    eight papers differ from a wall in different ways. Hue only counts when
-   there is enough saturation for a hue to mean anything. One veto: paper is
-   bright, so nothing darker than the darkest quarter of its own wall is a
-   note — which is what the navy side of a cardboard box was.
+   there is enough saturation for a hue to mean anything. There is NO "paper
+   is brighter than its wall" veto: true on kraft, false on a whiteboard,
+   where a blue sticky is far darker than the wall — it cost two thirds of the
+   blue notes on a real one and, once the fill floor took the cardboard it was
+   added for, bought nothing anywhere.
 6. **Rows** (`clusterRows`): cluster centre-y, order by centre-x within a row.
 
 ## The constants, and what they cost to learn
@@ -110,7 +112,6 @@ and testable.
 | `CLOSE_NOTE_FRACTION`                       | 0.04              | The close repairs handwriting INSIDE a note, so it is sized from the note — capped at 0.6% of the frame.                   |
 | `STANDOUT_SATURATION`                       | 0.15              | How far above its own wall a note sits in saturation. Measured: notes p10 0.04–0.05, junk p50 around zero.                 |
 | `WALL_RING_QUANTILE`                        | 0.25              | Which part of the ring around a box IS the wall. On a dense wall the rest of the ring is other notes.                      |
-| `MIN_RELATIVE_VALUE`                        | -0.1              | Paper is bright. Against the DARKEST quarter of the ring, or a note in the shade is vetoed for the sunlit paper beside it. |
 | `FLOOR_TILES_LONG_SIDE`                     | 8                 | Cells about two notes across. Fewer and a shadow edge falls inside one cell; more and a cell can be all paper.             |
 | `TILE_BIMODAL_STRENGTH`                     | 0.12              | Below this share of its own variance a cell's histogram is one surface, and there is nothing in it to split.               |
 | `TILE_WALL_TOLERANCE`                       | 0.1               | How far a one-surface cell may sit from the frame's wall and still be taken for wall, on a paper-coloured wall.            |

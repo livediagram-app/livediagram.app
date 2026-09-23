@@ -1062,9 +1062,10 @@ Decisions from the operator:
   (on a dense wall a note's neighbours are other notes)? More saturated, much
   brighter relative to the wall, or a different hue — any one is enough,
   because the eight papers differ from a wall in different ways. Brightness is
-  relative, never absolute, or half the light loses half the notes. And one
-  veto: paper is BRIGHT, so nothing darker than the darkest quarter of its own
-  wall is a note.
+  relative, never absolute, or half the light loses half the notes. A note may
+  be DARKER than its wall: a blue sticky on a whiteboard is, and a rule that
+  paper is brighter than its wall cost two thirds of a real whiteboard's blue
+  notes.
 
   Measured on the three labelled photographs, the gates and the splitting
   together: F1 53 → 80, 9 → 86 and 42 → 90.

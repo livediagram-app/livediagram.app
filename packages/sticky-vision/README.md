@@ -54,7 +54,7 @@ package never sees text; it only finds paper.
    more saturated, much brighter relative to that wall, or a different hue —
    any one of the three, compared against the dullest quarter of the ring
    around the box, because on a dense wall the rest of the ring is other notes.
-   Nothing darker than that wall is paper. Tape, cardboard, a shadow in a paper
+   A note may be darker than its wall — a blue sticky on a whiteboard is. Tape, cardboard, a shadow in a paper
    seam and the strip of ceiling above the paper are all the colour of their
    surroundings, and this is what refuses them.
 7. **Rows**: cluster the centre-y values, because a wall sags; order by
