@@ -640,3 +640,29 @@ test('a two-finger pinch zooms the photo on a touch screen', async ({ page, page
 
   expectNoPageErrors(pageErrors);
 });
+
+// Every tick can be clicked. A box's tick sits at its top-left corner, and a
+// box the author DRAWS is added last, so it paints over the detector's boxes
+// — including their ticks. A wrong detected box with a hand-drawn box over its
+// corner could not be cleared, which is how one ended up in a hand-made label.
+test('a tick under a box the author drew can still be cleared', async ({ page, pageErrors }) => {
+  await openBoard(page);
+  await importToReview(page, [{ fill: ORANGE, x: 300, y: 120, w: 180, h: 180 }]);
+  const overlay = page.locator('[data-testid="photo-review-overlay"]');
+  await expect(overlay.locator('[data-shown="no"]')).toHaveCount(0);
+  const detectedTick = overlay.getByRole('checkbox').first();
+  const t = (await detectedTick.boundingBox())!;
+
+  // Draw a box whose body covers the detected box's tick.
+  await page.mouse.move(t.x - 40, t.y - 40);
+  await page.mouse.down();
+  await page.mouse.move(t.x + 60, t.y + 60, { steps: 6 });
+  await page.mouse.up();
+  await expect(overlay.locator('[data-testid^="note-box-"]')).toHaveCount(2);
+
+  await detectedTick.click({ timeout: 3000 });
+  await expect(detectedTick).toHaveAttribute('aria-checked', 'false');
+  await expect(page.getByRole('button', { name: /^Add 1 note$/ })).toBeVisible();
+
+  expectNoPageErrors(pageErrors);
+});

@@ -80,7 +80,10 @@ export function NoteBox({
       // The reveal is a class rather than an inline transition so that a
       // reader who asks for less motion gets none: an inline style would win
       // over `motion-reduce`.
-      className="absolute transition-[opacity,transform] duration-300 motion-reduce:transition-none"
+      // The box's BODY takes no clicks: only its tick and its word pill do.
+      // A box drawn over another's corner must not bury that box's tick, and a
+      // drag that starts over a box still draws — the photo is underneath.
+      className="pointer-events-none absolute transition-[opacity,transform] duration-300 motion-reduce:transition-none"
       style={{
         left: `${(note.x / frame.width) * 100}%`,
         top: `${(note.y / frame.height) * 100}%`,
@@ -89,7 +92,10 @@ export function NoteBox({
         // The reveal is opacity and scale only, so nothing on the surface
         // moves as boxes arrive.
         opacity: shown ? 1 : 0,
-        transform: shown ? 'scale(1)' : 'scale(0.8)',
+        // NO transform once shown: any transform makes the box a stacking
+        // context, and a tick inside one cannot rise above the boxes drawn
+        // after it.
+        transform: shown ? undefined : 'scale(0.8)',
       }}
     >
       <div
@@ -118,7 +124,7 @@ export function NoteBox({
             ? { transform: chrome, transformOrigin: 'top left', left: -6 / zoom, top: -6 / zoom }
             : undefined
         }
-        className="absolute -left-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-sm border border-white/70 bg-slate-900/80 text-[9px] font-bold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+        className="pointer-events-auto absolute -left-1.5 -top-1.5 z-20 flex h-4 w-4 items-center justify-center rounded-sm border border-white/70 bg-slate-900/80 text-[9px] font-bold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
       >
         {ticked ? '✓' : ''}
       </button>
@@ -140,7 +146,7 @@ export function NoteBox({
               ? { transform: chrome, transformOrigin: 'bottom left', width: `${zoom * 100}%` }
               : undefined
           }
-          className="absolute inset-x-0 bottom-0 w-full rounded-b-sm border border-brand-400 bg-white px-1 py-0.5 text-[11px] leading-tight text-slate-900 outline-none"
+          className="pointer-events-auto absolute inset-x-0 bottom-0 z-10 w-full rounded-b-sm border border-brand-400 bg-white px-1 py-0.5 text-[11px] leading-tight text-slate-900 outline-none"
         />
       ) : (
         <button
@@ -154,7 +160,7 @@ export function NoteBox({
               ? { transform: chrome, transformOrigin: 'bottom left', width: `${zoom * 100}%` }
               : undefined
           }
-          className={`absolute inset-x-0 bottom-0 block w-full truncate rounded-b-sm bg-slate-900/85 px-1 py-0.5 text-left text-[11px] leading-tight text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-white ${
+          className={`pointer-events-auto absolute inset-x-0 bottom-0 z-10 block w-full truncate rounded-b-sm bg-slate-900/85 px-1 py-0.5 text-left text-[11px] leading-tight text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-white ${
             ticked ? '' : 'opacity-40'
           }`}
         >
