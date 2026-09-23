@@ -63,9 +63,6 @@ const TeamPane = dynamic(() => import('@/components/panels/TeamPane').then((m) =
 const TeamInvitesPane = dynamic(() =>
   import('@/components/panels/TeamInvitesPane').then((m) => m.TeamInvitesPane),
 );
-const ProfilePane = dynamic(() =>
-  import('@/components/panels/ProfilePane').then((m) => m.ProfilePane),
-);
 // The Timeline is the landing route, so it's the one lazy pane most
 // visitors DO load. Split anyway: the calendar grid + filter popover
 // are only reached by someone who switches modes, and holding them out
@@ -216,7 +213,6 @@ export function ExplorerPane() {
           selected.kind === 'gallery' ||
           selected.kind === 'themes' ||
           selected.kind === 'tokens' ||
-          selected.kind === 'profile' ||
           selected.kind === 'team' ||
           selected.kind === 'invites' ||
           // Generated / Offline are read-through dynamic views, not places
@@ -238,7 +234,6 @@ export function ExplorerPane() {
           selected.kind === 'gallery' ||
           selected.kind === 'themes' ||
           selected.kind === 'tokens' ||
-          selected.kind === 'profile' ||
           selected.kind === 'team' ||
           selected.kind === 'invites' ||
           selected.kind === 'recent' ||
@@ -272,8 +267,6 @@ export function ExplorerPane() {
         <ActivityPane feed={activity} />
       ) : loading ? (
         <SkeletonRows />
-      ) : selected.kind === 'profile' ? (
-        <ProfilePane />
       ) : selected.kind === 'invites' ? (
         <TeamInvitesPane
           invites={invites}

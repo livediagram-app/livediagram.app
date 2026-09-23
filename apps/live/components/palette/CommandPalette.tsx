@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import { MOBILE_BREAKPOINT_PX, isMobileViewportSync } from '@/lib/responsive';
 import { PaletteTintProvider } from '@/components/palette/palette-controls';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
-import { PaletteSettingsPopover } from '@/components/palette/PaletteSettingsPopover';
 import { PaletteTabBar } from '@/components/palette/PaletteTabBar';
 import { PaletteGroupProvider } from '@/components/palette/palette-group-state';
 import { PaletteDropdown } from '@/components/palette/PaletteDropdown';
@@ -28,10 +27,6 @@ export function CommandPalette({
   onToggleZen,
   onMoveTo,
   onReset,
-  minimalPanels,
-  onToggleMinimalPanels,
-  settings,
-  onChangeSettings,
   canvasEmpty,
   onAddShape,
   onAddIcon,
@@ -326,24 +321,11 @@ export function CommandPalette({
       growBody
       onMoveTo={onMoveTo}
       {...dock}
-      // The settings popover is the palette's only header affordance besides
-      // minimise: it now hosts the panel-layout toggle and the reset-position
-      // action that each used to be their own header button.
-      headerActions={
-        <PaletteSettingsPopover
-          settings={settings}
-          onChange={onChangeSettings}
-          minimalPanels={minimalPanels}
-          onToggleMinimalPanels={onToggleMinimalPanels}
-          onResetPosition={onReset}
-          // Reset is offered only once the palette has left its home
-          // (free-dragged, or docked in a corner other than its top-right
-          // default): at rest the option would be a no-op.
-          resettable={
-            position !== null || (dock?.docked === true && dock.dockedCorner !== 'top-right')
-          }
-        />
-      }
+      // Reset-position is the panel header's own button (MovablePanel shows
+      // it only once the palette has left its home corner). The settings
+      // popover that used to carry it, and the preferences inside it, moved
+      // to the Settings dialog (spec/20).
+      onReset={onReset}
       collapsible
       // The category / canvas-tool dropdowns portal their menus to
       // <body>, so a mobile tap on a menu option lands outside the panel

@@ -17,10 +17,10 @@ const MUTED = '#475569';
 const ACCOUNT_FOOTER =
   'You’re receiving this because you have a livediagram account. The editor is free and open source.';
 
-// spec/64: footer for an opt-out notification email — the reason, plus a link to
-// the profile page where the recipient can turn the category off in one click.
+// spec/64: footer for an opt-out notification email, the reason plus a link to
+// the settings where the recipient can turn the category off in one click.
 function manageNotificationsFooter(env: Env, reason: string): string {
-  const href = `${appBaseUrl(env)}/explorer/profile`;
+  const href = profilePath(env);
   return `${reason} <a href="${href}" style="color:${BRAND};text-decoration:underline">Manage your notifications</a> to turn these off.`;
 }
 
@@ -52,11 +52,15 @@ export type RenderedEmail = {
   unsubscribeUrl?: string;
 };
 
-// Profile page where every opt-out category can be turned off. Used by both the
-// footer link and the List-Unsubscribe header (spec/64). Module-private: only
-// the templates in this file build URLs with it.
+// Where every opt-out category can be turned off: the Settings dialog's
+// Notifications category, deep-linked (spec/20). Used by both the footer link
+// and the List-Unsubscribe header (spec/64). Module-private: only the
+// templates in this file build URLs with it.
+//
+// The old `/explorer/profile` URL still redirects here, which matters because
+// every email already sent carries it and an unsubscribe link cannot rot.
 function profilePath(env: Env): string {
-  return `${appBaseUrl(env)}/explorer/profile`;
+  return `${appBaseUrl(env)}/explorer?settings=notifications`;
 }
 
 type Section = {

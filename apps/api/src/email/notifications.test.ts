@@ -50,8 +50,8 @@ describe('commentNotificationEmail', () => {
     expect(e.html).toContain('Roadmap');
     expect(e.html).toContain('https://app.test/diagram/d1');
     // Footer links to the profile so the owner can turn it off (per request).
-    expect(e.html).toContain('https://app.test/explorer/profile');
-    expect(e.unsubscribeUrl).toBe('https://app.test/explorer/profile');
+    expect(e.html).toContain('https://app.test/explorer?settings=notifications');
+    expect(e.unsubscribeUrl).toBe('https://app.test/explorer?settings=notifications');
   });
 
   it('falls back to "Someone" / "your diagram" when unknown', () => {
@@ -107,7 +107,7 @@ describe('actionAssignedEmail (spec/68)', () => {
     expect(e.html).toContain('Review the copy');
     expect(e.html).toContain('Hero only');
     expect(e.html).toContain('https://app.test/diagram/d1');
-    expect(e.unsubscribeUrl).toBe('https://app.test/explorer/profile');
+    expect(e.unsubscribeUrl).toBe('https://app.test/explorer?settings=notifications');
   });
 
   it('escapes user-influenced strings and truncates a long description', () => {

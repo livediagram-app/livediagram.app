@@ -101,15 +101,16 @@ function AuthControlsEnabled() {
               ) : null}
             </div>
           ) : null}
-          {/* Profile (spec/65): account home in the Explorer — identity,
-              email notifications, and account deletion all live there. */}
+          {/* Account (spec/20): identity, email notifications and account
+              deletion all live in the Settings dialog now, so this deep-links
+              at its Account category rather than a separate profile page. */}
           <Link
-            href="/explorer/profile"
+            href="/explorer?settings=account"
             role="menuitem"
             onClick={() => setMenuOpen(false)}
             className="block w-full rounded px-3 py-2 text-left text-sm text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-700"
           >
-            Profile
+            Account
           </Link>
           <button
             type="button"

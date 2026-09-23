@@ -132,7 +132,7 @@ type UserPreferences = {
   aiAssistanceEnabled?: boolean;
 
   // Show the AI panel's quick suggested-prompt chips (spec/25).
-  // Toggled from the AI panel's settings popover; they take vertical
+  // Toggled from the Settings dialog's AI category; they take vertical
   // space, so it can hide them. Undefined / true === shown.
   aiSuggestedPrompts?: boolean;
 
@@ -172,7 +172,7 @@ type UserPreferences = {
 
   // Email notification preferences (spec/65). Account-level email
   // settings that share this synced blob rather than a parallel store,
-  // surfaced on the Explorer profile page (only when the deployment has
+  // surfaced in the Settings dialog's Notifications category (only when the deployment has
   // email configured — capabilities.emailEnabled). The api worker reads
   // these server-side before sending the matching transactional email
   // (spec/64), so a missing key === undefined === notify (opt-out, not
@@ -207,8 +207,8 @@ Missing key === undefined === default behaviour. Concretely:
   anchors stay where they were drawn). Setting it to `true` is the
   only state that changes behaviour. The derivation lives in ONE
   place, `autoRebindArrowsEnabled(prefs)` in
-  `apps/live/lib/user-preferences.ts`, shared by the palette
-  settings popover and the editor-preferences hook so the default
+  `apps/live/lib/user-preferences.ts`, shared by the Settings
+  dialog's row and the editor-preferences hook so the default
   can't drift between consumers.
   - Per-endpoint override: dragging an arrow's endpoint onto an
     anchor by hand marks that endpoint `manual` (a flag on the
@@ -260,7 +260,7 @@ Missing key === undefined === default behaviour. Concretely:
   matching email notification is on (the default; spec/65). Setting
   either to `false` is the only state that suppresses its email. Read
   server-side by the api worker before sending; flipped from the
-  Explorer profile page. Emit `UI`/`Toggled`/`NotifyDiagramJoin{On,Off}`
+  Settings dialog. Emit `UI`/`Toggled`/`NotifyDiagramJoin{On,Off}`
   and `NotifyInviteResponse{On,Off}` (spec/22).
 - `notificationsEnabled` undefined / true → notifications on (the
   default). Setting it to `false` suppresses the success + info toasts
@@ -279,52 +279,44 @@ on" state.
 
 ## UI placement
 
-Global preferences (draw-to-add, minimal-panels, AI, telemetry) sit
-in the Settings dialog. Canvas-behaviour preferences (`autoRebindArrows`,
-`alignmentGuides`) sit in a Palette settings popover, next to the canvas
-they affect. There are no per-tool preferences left: the one there was
-(`recogniseShapes`, flipped from the pencil's banner) became two palette
-tiles instead (spec/115), which is the same idea taken further — the
-setting is not near the tool, it IS the tool.
+**Every preference lives in the Settings dialog**, and for almost all of them
+that is the only control.
 
-The Palette popover is the first step in retiring the Settings dialog
-entirely: settings move out to the surfaces they govern, so the user
-flips them where they see their effect rather than in a context-free
-modal.
+- The **Settings dialog** lists all of them, grouped and searchable by eye.
+  It is the answer to "I half-remember a setting about layer previews" from
+  someone who does not know which panel owns it, and the place a new reader
+  goes to see what the editor can be told to do.
+- **One setting, one control.** The Palette / Layers / Activity / AI / Map
+  gear popovers that used to carry a subset each are gone: once every
+  preference had a row in the dialog, those were five second homes for
+  settings that already had one. A handful of preferences DO keep a second,
+  in-context control where that control is the thing itself rather than a
+  settings menu: the Appearance cycle button in the footer, the Explorer's
+  its API Tokens page, and each of those rows says
+  **"Also in ..."** so the pair reads as deliberate.
+- There are no per-tool preferences left: the one there was
+  (`recogniseShapes`, flipped from the pencil's banner) became two palette
+  tiles instead (spec/115), which is that idea taken to its end: the setting
+  is not near the tool, it IS the tool.
 
-- **Palette settings popover**: `apps/live/components/palette/PaletteSettingsPopover.tsx`.
-  Trigger: a sliders (gear) icon button in the Palette header — the only
-  header affordance besides minimise (desktop floating panel only; the
-  mobile dock palette has no header). Opens a small portal-rendered popover
-  anchored under the button with iOS-style switches (`ToggleSwitch` from
-  `palette-controls`) and concise labels:
-  - "Auto-attach arrows" (`autoRebindArrows`) and "Alignment guides"
-    (`alignmentGuides`) — reads / writes the lifted `userPreferences` state
-    in editor-page through the same `setUserPreferences` +
-    `writeUserPreferences` round-trip as the Settings dialog, emitting the
-    same `AutoRebind*` / `AlignmentGuides*` telemetry before persisting.
-  - "Quick-add on hover" (`quickAddOnHover`) — same round-trip; off by
-    default. Threads through `CanvasElementsLayer` to `QuickConnectRing` as
-    `openOnHover`, which opens the `+` menu on pointer-enter and closes it a
-    beat after the pointer leaves both the `+` and the menu. Emits
-    `UI`/`Toggled`/`QuickAddHover{On,Off}`.
-  - "Panel opacity" (`panelOpacity`) — a slider (not a toggle), shown only
-    while `minimalPanels` is off (it does nothing in the dock layout). The
-    drag previews live by writing the `--lvd-panel-opacity` custom property
-    imperatively; the persisted value is committed on release (one
-    `writeUserPreferences` / D1 PUT, not one per tick) and emits
-    `UI`/`Changed`/`PanelOpacity`.
-  - "Minimal panels" (`minimalPanels`) — the panel-layout toggle that used
-    to be its own header button. Turning it on docks the panels (and so
-    hides this popover); the Settings dialog's Editor group remains the
-    way back out, since the docked palette has no header to reopen the
-    popover from.
-  - A "Reset position" action (not a toggle) that snaps the Palette back to
-    its default corner, replacing the old reset-position header button. It
-    is disabled when the panel is already at the default corner, and closes
-    the popover when fired.
+This **replaces the earlier plan to retire the Settings dialog entirely** by
+pushing every setting out to its own surface. That plan solved the wrong
+problem: a setting is easy to flip when you are already looking at its
+surface, and impossible to find when you are not. Contextual controls stay,
+and the dialog stays as the one complete, browsable index of them.
 
-  Closes on outside click or Escape.
+- **Panel settings popovers**: removed. The Palette, Layers, Activity, AI and
+  Map panels each carried a gear popover holding their own preferences plus a
+  Reset-position row. Every one of those preferences now has a row in the
+  Settings dialog, so the popovers were five second homes for settings that
+  already had one: the duplication the reuse principle exists to stop. The
+  panels kept the standard **Reset position** button in their header
+  (`MovablePanel`'s `onReset`, shown once the panel has left its default
+  corner), which is the only non-preference thing the popovers held.
+
+  The **Slide Deck** popover stays: its contents (auto-advance, speed,
+  transition, slide size, loop, hide pointer) are deck state rather than user
+  preferences, so they have no home in Settings and should not get one.
 
 - **Settings dialog**: `apps/live/components/dialogs/SettingsDialog.tsx`,
   lazy-loaded via `next/dynamic` (matches the other on-demand
@@ -334,15 +326,88 @@ modal.
   toggle. Visible in every role: view-role visitors can still
   flip their own telemetry preference and (harmlessly) their own
   auto-rebind preference, even though they can't edit elements.
-  Toggles are organised into collapsible groups (Editor,
-  Controls, Notifications, Accessibility, AI, Privacy) so the growing list stays scannable; only
-  the first group (Editor) is open by default and the rest start
-  collapsed, so the dialog opens compact and the user expands what they
-  need. (`autoRebindArrows` and `alignmentGuides` have moved out to the
-  Palette settings popover described above; element add is a single
-  always-on tap-or-drag gesture with no setting — see
-  [spec/09](09-canvas-and-palette.md).) The Editor group holds `minimalPanels`, whose
-  description notes the dock layout is always on for mobile. The
+  **Shaped like the iOS Settings app**, in both of that app's forms, because
+  it had outgrown a single scrolling accordion: six groups of long paragraphs
+  on one screen, where finding a setting meant opening groups until one held
+  it.
+
+  - **Desktop** takes the iPadOS split view: the categories in a fixed left
+    rail, the selected category's settings in the pane beside it. A category
+    is always selected (Editor on open) - the pane is never empty. The dialog
+    is capped at `42rem` tall; unbounded, a long category stretched it from
+    the top of the screen to the bottom and read as a page, not a modal.
+  - **Phone** (below the `sm:` breakpoint, via `useIsMobileViewport`) takes
+    the iPhone push navigation: a root list of the same categories, each a
+    tappable row, which pushes that category's pane with a back control in
+    the header. One screen at a time.
+
+  Crossing the breakpoint mid-session re-selects a category, so a resize
+  never leaves the desktop layout with an empty pane. The backdrop is the
+  see-through `desktop-light` one, not the default dim+blur: this is where
+  you flip things whose effect is on the canvas behind it.
+
+  **It is the central place to find every preference.** Categories:
+  **Editor** (quick-add on hover, alignment guides, auto-attach arrows),
+  **Appearance** (theme; minimal panel layout, minimap, panel opacity),
+  **Controls** (middle-mouse pan), **Panels** (Layers, Activity and minimap
+  settings), **Notifications** (in-editor, plus the six email preferences),
+  **Accessibility** (reduce motion, show welcome tour), **AI** (assistant,
+  suggested prompts, API tokens), **Privacy** (telemetry). Preferences whose
+  day-to-day home used to be a panel's own gear popover live here now, and
+  only here - see **UI placement** below.
+
+  Within a category, rows carry an optional **`section`** so a category
+  holding several clusters (Panels covers Layers, Activity and the minimap)
+  gets a sub-heading per cluster. Sections group CONSECUTIVE runs, so one
+  cannot be split and silently re-headed further down.
+
+  Each category row carries a **coloured, rounded icon tile**, iOS-style -
+  the thing the eye navigates by once the labels blur together. Colour is a
+  second channel, never the only one: every category has its own glyph too.
+
+  A setting renders as a **one-line row** (label + control), with its
+  long-form explanation as a **grey footnote below the row**. Labels are
+  **Title Case**. Row kinds: `toggle`, `choice` (a segmented control, e.g.
+  the theme and the minimap size), `slider` (panel opacity, committing on
+  release so one drag is not one PUT per pixel), `appearance` (the one row
+  backed by the device-local store, not `UserPreferences`), and `tokens` (a
+  read-only listing of the account's API tokens plus a link to the Explorer's
+  page; minting and revoking stay there, where they have room to confirm).
+  A row is one `role="switch"` button described by its footnote; the
+  `ToggleSwitch` inside is wrapped `aria-hidden`, because `presentational`
+  still exposes `role="switch"` and would otherwise offer a screen reader two
+  nested switches of the same name.
+
+  Settings whose effect is **visual** carry a small **before/after
+  illustration** drawn from the real editor, which **rings the state
+  currently in force** so the picture doubles as a readout: minimal panel
+  layout, the minimap, alignment guides, layer thumbnails, and the minimap's
+  dimming.
+
+  **Show Welcome Tour** is inverted against the stored `tourSeen`: the row
+  asks "show me the tour?", the preference records "already seen". Because
+  `tourSeen !== true` is necessary but NOT sufficient for the offer (TourHost
+  also needs the per-tab pending flag, which only `/new` sets), closing the
+  dialog with the row on **marks that flag**, so the row's promise is true
+  for a reader who had simply never taken the tour. Turning it on from off
+  additionally relaunches in place. Its telemetry tokens still describe the
+  PREFERENCE, so the dashboard series keeps its meaning.
+
+  The dialog is **data-driven**: `settings-catalogue.ts` declares the
+  categories and, per row, its label, description, help article, section,
+  illustration, availability, how to `read` and `write` itself, and its
+  telemetry tokens (unchanged from before this rework, so history stays
+  continuous). Adding a setting is a catalogue entry, not another JSX block
+  in a file that only grows. Picking a category emits `UI` / `Opened` with a
+  `Settings<Category>` type.
+
+  Email rows are **absent, not disabled**, unless BOTH Resend is configured
+  (spec/64) and the reader is signed in - a guest has no address, so those
+  switches could never apply. A category left with no applicable rows drops
+  out entirely rather than becoming a row that pushes a blank pane.
+
+  (Element add is a single always-on tap-or-drag gesture with no setting, see
+  [spec/09](09-canvas-and-palette.md).) The
   **Controls** group holds `middleMousePan` (default on): holding the
   middle mouse button drags the canvas in both axes from anywhere, over
   empty space or elements, whatever tool is active — off leaves the middle
@@ -351,6 +416,7 @@ modal.
   notes that errors are always shown regardless. The
   Accessibility group holds `reduceMotion`, noting the OS setting is
   always respected and this only adds a user-forced override.
+
 - **Per-tool surfaces**: none today. The pencil's ModeBanner used to
   carry a `recogniseShapes` toggle; spec/115 replaced it with two
   palette tiles, so no preference is set from a tool's own chrome any

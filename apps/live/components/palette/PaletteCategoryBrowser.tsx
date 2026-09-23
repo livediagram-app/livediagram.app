@@ -1,7 +1,7 @@
 'use client';
 
 import { type ReactNode, useRef, useState } from 'react';
-import { PaletteSearchInput } from './PaletteSearchInput';
+import { SearchInput } from '@/components/primitives/SearchInput';
 import { ToolsBreadcrumb, ToolsCategoryGrid, type ToolsCategory } from './palette-tools-nav';
 import { track } from '@/lib/telemetry';
 
@@ -81,7 +81,7 @@ export function PaletteCategoryBrowser<T>({
   return (
     <div className="flex flex-col">
       <div className="mb-2 flex items-center">
-        <PaletteSearchInput
+        <SearchInput
           value={query}
           onChange={(next) => {
             onQueryChange(next);

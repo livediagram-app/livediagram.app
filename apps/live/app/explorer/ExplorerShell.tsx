@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useState, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { Brand, ProductNav } from '@livediagram/ui';
 import { AuthControls } from '@/components/chrome/AuthControls';
 import { ChromeControls } from '@/components/chrome/ChromeControls';
@@ -11,6 +11,7 @@ import { SettingsDialog } from '@/components/dialogs/SettingsDialog';
 import { SignInBanner, SIGNIN_BANNER_DISMISS_KEY } from '@/components/chrome/SignInBanner';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { HELP_SEARCH_ITEMS } from '@/lib/help-search';
+import { SETTINGS_SEARCH_ITEMS } from '@/lib/settings-search-items';
 import { writeUserPreferences } from '@/lib/user-preferences';
 import { useDismissibleBanner } from '@/hooks/ui/useDismissibleBanner';
 import { CustomThemeProvider } from '@/components/primitives/CustomThemeProvider';
@@ -69,6 +70,12 @@ function ShellChrome({ children }: { children: ReactNode }) {
     setMobileNavOpen,
     searchOpen,
     setSearchOpen,
+    settingsOpen,
+    setSettingsOpen,
+    settingsFocus,
+    setSettingsFocus,
+    settingsCategory,
+    setSettingsCategory,
     moveTarget,
     setMoveTarget,
     movePersonalFolders,
@@ -91,7 +98,6 @@ function ShellChrome({ children }: { children: ReactNode }) {
   // useExplorerState — the pane reads them too (Recent honours the
   // hidden-from-Recent list, spec/93), and a second useState here would
   // drift the moment either wrote.
-  const [settingsOpen, setSettingsOpen] = useState(false);
 
   // Guest sign-in nudge (spec/36): only when Clerk is actually wired
   // up for this deployment, the visitor isn't signed in (a guest owner
@@ -283,6 +289,11 @@ function ShellChrome({ children }: { children: ReactNode }) {
             );
           }}
           helpItems={HELP_SEARCH_ITEMS}
+          settingItems={SETTINGS_SEARCH_ITEMS}
+          onSelectSetting={(categoryId, rowKey) => {
+            setSettingsFocus({ categoryId, rowKey });
+            setSettingsOpen(true);
+          }}
           onClose={() => setSearchOpen(false)}
         />
       ) : null}
@@ -294,7 +305,13 @@ function ShellChrome({ children }: { children: ReactNode }) {
             setPrefs(next);
             writeUserPreferences(next, ownerId);
           }}
-          onClose={() => setSettingsOpen(false)}
+          onClose={() => {
+            setSettingsOpen(false);
+            setSettingsFocus(null);
+            setSettingsCategory(null);
+          }}
+          focus={settingsFocus}
+          initialCategoryId={settingsCategory}
         />
       ) : null}
 

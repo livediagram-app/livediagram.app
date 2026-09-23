@@ -6,7 +6,6 @@ import { useLayerThumbnails } from '@/hooks/ui/useLayerThumbnails';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { LayerRow } from '@/components/panels/LayerRow';
 import { LayerRowMenu } from '@/components/panels/LayerRowMenu';
-import { LayersSettingsPopover } from '@/components/panels/LayersSettingsPopover';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { Tooltip } from '@/components/primitives/Tooltip';
 import { useLayerRowDrag } from '@/components/panels/useLayerRowDrag';
@@ -58,12 +57,8 @@ export function LayersPanel({
   onHideOtherLayers,
   onPreviewLayer,
   hoverPreviewEnabled,
-  onSetHoverPreviewEnabled,
   showPreview,
-  onSetShowPreview,
   showCount,
-  onSetShowCount,
-  resettable,
 }: {
   // Normalised layers, BOTTOM -> TOP (the data order); rendered reversed.
   layers: Layer[];
@@ -98,15 +93,10 @@ export function LayersPanel({
   // The hover-solo user preference (spec/20) + its setter, surfaced in
   // the header gear alongside Reset position.
   hoverPreviewEnabled: boolean;
-  onSetHoverPreviewEnabled: (value: boolean) => void;
   // Row density (spec/74): the thumbnail and the element count are each
   // optional, so a diagram with many layers reads as a compact list.
   showPreview: boolean;
-  onSetShowPreview: (value: boolean) => void;
   showCount: boolean;
-  onSetShowCount: (value: boolean) => void;
-  // True when the panel has left its default corner (enables Reset).
-  resettable: boolean;
 } & MovablePanelPlacementProps) {
   // Inline rename: which layer id is being edited. The draft text lives
   // inside InlineRenameInput, so a re-render of this panel mid-rename
@@ -217,18 +207,7 @@ export function LayersPanel({
       onMoveTo={onMoveTo}
       {...dock}
       onMinimize={onMinimize}
-      headerActions={
-        <LayersSettingsPopover
-          hoverPreview={hoverPreviewEnabled}
-          onSetHoverPreview={onSetHoverPreviewEnabled}
-          showPreview={showPreview}
-          onSetShowPreview={onSetShowPreview}
-          showCount={showCount}
-          onSetShowCount={onSetShowCount}
-          onResetPosition={() => onReset?.()}
-          resettable={resettable}
-        />
-      }
+      onReset={onReset}
       mobileOpenOverride={mobileOpenOverride}
       mobileDockAnchor={mobileDockAnchor}
       forceDockMode={forceDockMode}

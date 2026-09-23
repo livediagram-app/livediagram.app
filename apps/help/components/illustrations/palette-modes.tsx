@@ -5,7 +5,7 @@
 // holds — except the Avatar sprite, which is deliberately pixel art.
 
 import { useId } from 'react';
-import { Scene, Shape, Arrow, SelectionBox, Panel, Tile, Label, Button } from './primitives';
+import { Scene, Shape, Arrow, SelectionBox, Panel, Tile, Label } from './primitives';
 import {
   EraserGlyph,
   HandGlyph,
@@ -300,13 +300,17 @@ export function IsometricMode() {
 /** The palette gear (settings) popover: a small menu of toggle rows and the
  *  reset action. `highlight` brand-tints one row so an article can point at its
  *  own setting. Reused across the settings articles. */
+// The Settings dialog's rows for the canvas-behaviour preferences. It drew
+// the Palette's own gear popover until that popover was removed and every
+// preference moved to Settings (spec/20): the rows and their controls are
+// the same, so only the frame and the title changed.
 export function PaletteSettings({
   highlight,
 }: {
-  highlight?: 'auto-attach' | 'guides' | 'quick-add' | 'panel-opacity' | 'minimal' | 'reset';
+  highlight?: 'auto-attach' | 'guides' | 'quick-add' | 'panel-opacity' | 'minimal';
 }) {
   // `slider` rows draw a mini opacity track instead of a toggle (Panel
-  // opacity); the order mirrors the real popover.
+  // opacity); the order mirrors the dialog.
   const rows: {
     key: 'auto-attach' | 'guides' | 'quick-add' | 'panel-opacity' | 'minimal';
     label: string;
@@ -320,8 +324,8 @@ export function PaletteSettings({
     { key: 'minimal', label: 'Minimal panels', slider: false, on: false },
   ];
   return (
-    <Scene w={400} h={302} bg="plain">
-      <Panel x={92} y={26} w={216} h={250} title="PALETTE SETTINGS">
+    <Scene w={400} h={262} bg="plain">
+      <Panel x={92} y={26} w={216} h={210} title="SETTINGS">
         {rows.map((r, i) => {
           const ry = 70 + i * 34;
           const hot = highlight === r.key;
@@ -374,16 +378,6 @@ export function PaletteSettings({
             </g>
           );
         })}
-        {/* Reset action */}
-        <line x1={100} y1={236} x2={300} y2={236} className="stroke-slate-200" strokeWidth={1.5} />
-        <Button
-          x={108}
-          y={244}
-          w={184}
-          h={22}
-          label="Reset palette position"
-          variant={highlight === 'reset' ? 'primary' : 'default'}
-        />
       </Panel>
     </Scene>
   );

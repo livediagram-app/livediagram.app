@@ -194,13 +194,14 @@ Contains:
   row that opens the "Connect an AI tool (MCP)" help article (spec/62) in a new tab — the
   calling model in an external tool generates far better than `/api/ai`, so the panel
   points power users there.
-- **Settings gear** in the panel header (a popover mirroring the Palette / Map ones,
-  `AiSettingsPopover`): **turn the AI Assistant off** (sets `aiAssistanceEnabled = false`,
-  hiding the panel; the Settings dialog flips it back on), **reset position** (snap back to
-  the default corner, spec/63), and a **Suggested prompts** toggle (`aiSuggestedPrompts`,
-  spec/20).
+- **Reset position** button in the panel header (snap back to the default corner,
+  spec/63), shown once the panel has been moved. The panel's two preferences ,
+  **AI Assistant** (`aiAssistanceEnabled`) and **Suggested Prompts**
+  (`aiSuggestedPrompts`), live in the **Settings** dialog's AI category
+  (spec/20). They used to sit in a header settings gear; that popover went when
+  every preference was centralised.
 - Quick suggested-prompt chips under the mode tabs, shown only when `aiSuggestedPrompts`
-  is on (they're handy but take vertical space, so the gear can hide them).
+  is on (they're handy but take vertical space, so Settings can hide them).
 - Scrollable response / status area
 - Prompt textarea + Send button (disabled while a request is in flight)
 - Close button (hides for the session without touching the preference)

@@ -10,6 +10,21 @@ export function useEditorDialogs() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  // Where Settings should land when it is opened from a search result
+  // (spec/20): the setting itself, not the dialog's front door. Cleared on
+  // close so the next plain open starts on the default category.
+  const [settingsFocus, setSettingsFocus] = useState<{
+    categoryId: string;
+    rowKey: string;
+  } | null>(null);
+  const openSettingsAt = useCallback((categoryId: string, rowKey: string) => {
+    setSettingsFocus({ categoryId, rowKey });
+    setSettingsOpen(true);
+  }, []);
+  const closeSettings = useCallback(() => {
+    setSettingsOpen(false);
+    setSettingsFocus(null);
+  }, []);
   // `?share=1` deep-link (the Explorer's "Manage Sharing…" row opens the
   // diagram with this param): land with the Share dialog already open.
   const [shareDialogOpen, setShareDialogOpen] = useState(
@@ -54,6 +69,9 @@ export function useEditorDialogs() {
     setShortcutsOpen,
     settingsOpen,
     setSettingsOpen,
+    settingsFocus,
+    openSettingsAt,
+    closeSettings,
     shareDialogOpen,
     setShareDialogOpen,
     canvasThemeTab,

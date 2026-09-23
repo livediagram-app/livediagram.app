@@ -6,7 +6,6 @@ import { framesFirst, ZOOM_MAX, ZOOM_MIN } from '@/lib/canvas';
 import { resolveIconArtLoaded, resolveStickerArtLoaded } from '@/lib/icon-registry';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 import { MovablePanel, type MovablePanelDockProps } from '@/components/primitives/MovablePanel';
-import { MapSettingsPopover } from '@/components/canvas/MapSettingsPopover';
 import type { MapSize } from '@/lib/user-preferences';
 
 // Panel body heights per map size. Tailwind classes rather than inline styles
@@ -55,17 +54,11 @@ type MinimapProps = {
   // so it sits beside the Enable Map toggle. `resettable` greys it out when
   // the map is already at its default corner.
   onResetPosition: () => void;
-  resettable: boolean;
   // Corner-docking bundle (spec/63), forwarded to the inner MovablePanel.
   dock?: MovablePanelDockProps;
-  // "Enable Map" toggle state in the header's settings popover.
-  enabled: boolean;
-  onSetEnabled: (value: boolean) => void;
   // Map options (spec/59), all persisted preferences.
   dimOutside: boolean;
-  onSetDimOutside: (value: boolean) => void;
   size: MapSize;
-  onSetSize: (value: MapSize) => void;
 };
 
 // Padding around the content (a fraction of its size plus a floor) so elements
@@ -99,14 +92,9 @@ export function Minimap({
   position,
   onMove,
   onResetPosition,
-  resettable,
   dock,
-  enabled,
-  onSetEnabled,
   dimOutside,
-  onSetDimOutside,
   size,
-  onSetSize,
 }: MinimapProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const draggingRef = useRef(false);
@@ -242,18 +230,7 @@ export function Minimap({
       collapsible
       flushTop
       growBody
-      headerActions={
-        <MapSettingsPopover
-          enabled={enabled}
-          onSetEnabled={onSetEnabled}
-          dimOutside={dimOutside}
-          onSetDimOutside={onSetDimOutside}
-          size={size}
-          onSetSize={onSetSize}
-          onResetPosition={onResetPosition}
-          resettable={resettable}
-        />
-      }
+      onReset={onResetPosition}
     >
       {/* Clip the map to the panel's rounded bottom so its corners don't
           square off past the border. */}

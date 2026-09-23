@@ -262,12 +262,13 @@ canvas pattern to Dots`, `Changed background opacity to 80%`. A
   `useRevertPreview`). Mouse pointers only (touch has no hover), and
   only on rows whose Revert button is available — tab-meta rows and
   read-only / locked sessions don't preview. The behaviour is a user
-  preference: a gear in the panel header (mirroring the Layers panel's
-  spec/74 gear) opens a settings popover with a "Preview revert on
-  hover" toggle backed by the synced `activityRevertHoverPreview`
-  flag — ON by default; an explicit `false` turns just the hover
-  preview off, never the Revert button. The popover also carries the
-  standard Reset-position row.
+  preference, **Preview Revert on Hover** in the Settings dialog
+  (spec/20, Panels > Activity), backed by the synced
+  `activityRevertHoverPreview` flag. ON by default; an explicit
+  `false` turns just the hover preview off, never the Revert button.
+  It used to live in a gear popover on the panel header; that popover
+  went when the preferences moved to Settings, leaving the header its
+  standard Reset-position button.
 - Empty state: "No edits yet — start drawing."
 
 ## Performance
