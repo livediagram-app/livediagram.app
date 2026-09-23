@@ -60,7 +60,7 @@ export function LineDataDialog({
         title="Chart data"
         subtitle="A row per category, a column per series. Or import a CSV (header = series names, first column = categories)."
       >
-        <HelpArticleLink article="dataElements" />
+        <HelpArticleLink article="dataElements" size="md" />
         <button
           type="button"
           onClick={onClose}

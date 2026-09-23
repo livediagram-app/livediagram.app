@@ -21,6 +21,7 @@ export function BackBar({
   current,
   onClick,
   gap = 'default',
+  disabled = false,
 }: {
   label: string;
   // The category the user has drilled into, shown as a chip on the right
@@ -31,6 +32,11 @@ export function BackBar({
   // Space below the bar. `tight` for a list of rows directly under it (the
   // placement browser), where the default read as a gap in the list.
   gap?: 'default' | 'tight';
+  // Greys the bar out and stops it firing, for a step that is mid-flight
+  // (the import panel while an import runs). It stays the button form rather
+  // than falling back to the static heading, so the row does not swap glyph
+  // and shape for the second the work takes.
+  disabled?: boolean;
 }) {
   const shell = `${gap === 'tight' ? 'mb-1.5' : 'mb-3'} ${SHELL}`;
   const chip = current ? (
@@ -53,10 +59,11 @@ export function BackBar({
     <button
       type="button"
       onClick={onClick}
-      className={`group ${shell} transition hover:border-brand-300 hover:bg-brand-50/50 hover:text-brand-700 dark:hover:border-brand-500/60 dark:hover:bg-slate-800/80 dark:hover:text-brand-200`}
+      disabled={disabled}
+      className={`group ${shell} transition disabled:cursor-not-allowed disabled:opacity-50 enabled:hover:border-brand-300 enabled:hover:bg-brand-50/50 enabled:hover:text-brand-700 dark:enabled:hover:border-brand-500/60 dark:enabled:hover:bg-slate-800/80 dark:enabled:hover:text-brand-200`}
     >
       <span
-        className={`${WELL} transition group-hover:bg-brand-100 group-hover:text-brand-700 dark:group-hover:bg-brand-500/25 dark:group-hover:text-brand-200`}
+        className={`${WELL} transition group-enabled:group-hover:bg-brand-100 group-enabled:group-hover:text-brand-700 dark:group-enabled:group-hover:bg-brand-500/25 dark:group-enabled:group-hover:text-brand-200`}
       >
         <ChevronGlyph />
       </span>
@@ -74,7 +81,7 @@ function ChevronGlyph() {
       viewBox="0 0 12 12"
       fill="none"
       aria-hidden
-      className="transition-transform duration-150 group-hover:-translate-x-0.5"
+      className="transition-transform duration-150 group-enabled:group-hover:-translate-x-0.5"
     >
       <path
         d="M7.5 2.5 4 6l3.5 3.5"

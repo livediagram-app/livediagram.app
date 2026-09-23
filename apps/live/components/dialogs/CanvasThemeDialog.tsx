@@ -139,10 +139,8 @@ export function CanvasThemeDialog({
               {/* Help sits with the close button, where the other editor
                   dialogs keep their window controls, not beside the title. */}
               <div className="flex items-center gap-1">
-                {/* The chrome variant, as the panel headers use beside their
-                    own window controls: a plain glyph, no ring. */}
                 <HelpArticleLink
-                  variant="chrome"
+                  size="md"
                   article={
                     tab === 'canvas'
                       ? 'changingTheBackground'

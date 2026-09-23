@@ -267,7 +267,7 @@ export function MovablePanel({
             <div className="flex items-center gap-1">
               {headerExtra}
               {headerActions}
-              {helpArticle ? <HelpArticleLink article={helpArticle} variant="chrome" /> : null}
+              {helpArticle ? <HelpArticleLink article={helpArticle} /> : null}
             </div>
           ) : null}
         </div>
