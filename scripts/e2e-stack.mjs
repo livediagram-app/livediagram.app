@@ -143,6 +143,18 @@ function startLiveServer() {
       res.end();
       return;
     }
+    // Cloudflare's assets layer (`html_handling` defaults to
+    // "auto-trailing-slash") answers `/new/` — whose file is `new.html`, not
+    // `new/index.html` — with a redirect to `/new`, query intact. Without
+    // this the stack answered 404, the page recovered client-side without its
+    // query string, and `?truth=1` typed on `/new/` armed nothing.
+    const bare = pathname.length > 1 && pathname.endsWith('/') ? pathname.slice(0, -1) : null;
+    if (bare && !bare.startsWith('/diagram') && existsSync(path.join(OUT_DIR, `${bare}.html`))) {
+      const search = new URL(req.url, 'http://localhost').search;
+      res.writeHead(307, { Location: `${bare}${search}` });
+      res.end();
+      return;
+    }
     const file = resolveStatic(pathname);
     if (file) return serveFile(res, file);
     const notFound = path.join(OUT_DIR, '404.html');

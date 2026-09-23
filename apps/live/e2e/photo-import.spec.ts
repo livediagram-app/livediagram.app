@@ -489,3 +489,20 @@ test('the boxes land on the stickies for a tall photo too', async ({ page, pageE
 
   expectNoPageErrors(pageErrors);
 });
+
+// `/new/`, trailing slash and all, is a URL people type. Production's asset
+// layer redirects it to `/new` and keeps the query; a server that answers 404
+// instead loses the page the arming happens on, and the export stays hidden
+// however many times it is reloaded.
+test('?truth=1 arms the export from /new/, trailing slash and all', async ({
+  page,
+  pageErrors,
+}) => {
+  const res = await page.goto('/new/?truth=1');
+  expect(res?.status()).toBe(200);
+  await page.getByText('New Diagram', { exact: false }).first().waitFor();
+  await expect.poll(() => page.evaluate(() => localStorage.getItem('livediagram:truth'))).toBe('1');
+  expect(new URL(page.url()).search).toBe('?truth=1');
+
+  expectNoPageErrors(pageErrors);
+});
