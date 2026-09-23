@@ -1,5 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
+import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import type { Truth, TruthNote } from '../src/truth';
 
 // Scoring the detector against notes a human labelled, because a COUNT cannot
@@ -37,8 +39,38 @@ export type Score = {
   spurious: ScoredBox[];
 };
 
-export const truthDir = () =>
-  process.env.ESWALL_TRUTH_DIR ?? `${homedir()}/.local/share/eswall-truth`;
+// WHERE THE TRUTH LIVES. The photographs and their labels are kept in a
+// private repository (`vision-model-truths`), because they are somebody's
+// real walls and hours of hand-labelling — too sensitive for this public repo
+// and too expensive to lose on one disk. Found, in order:
+//
+//   $VISION_TRUTHS_DIR                      an explicit checkout
+//   <this repo>/../vision-model-truths      a sibling clone, the convention
+//
+// and inside it, `event-storming/photos` and `event-storming/labels`. With no
+// checkout at all the tools fall back to the old local folders, so a fresh
+// clone of this repo still runs the sweep on whatever photos it is given.
+const REPO_ROOT = resolve(fileURLToPath(new URL('../../..', import.meta.url)));
+const TASK = 'event-storming';
+
+export function truthsRoot(): string | null {
+  const candidates = [
+    process.env.VISION_TRUTHS_DIR,
+    resolve(REPO_ROOT, '..', 'vision-model-truths'),
+  ].filter((c): c is string => c !== undefined && c !== '');
+  return candidates.find((c) => existsSync(`${c}/${TASK}`)) ?? null;
+}
+
+export const truthDir = (): string => {
+  if (process.env.ESWALL_TRUTH_DIR) return process.env.ESWALL_TRUTH_DIR;
+  const root = truthsRoot();
+  return root ? `${root}/${TASK}/labels` : `${homedir()}/.local/share/eswall-truth`;
+};
+
+export const photoDir = (): string => {
+  const root = truthsRoot();
+  return root ? `${root}/${TASK}/photos` : fileURLToPath(new URL('../test-files', import.meta.url));
+};
 
 export function truthFor(photo: string): Truth | null {
   const stem = photo.replace(/\.[^.]+$/, '');

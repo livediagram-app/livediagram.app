@@ -202,10 +202,14 @@ in play — a change that finds two more notes and invents five scores higher on
 the count and is a loss. So the sweep scores against hand-labelled notes when
 they exist:
 
-- Labels live **outside this repo**, beside the photographs they describe:
-  `~/.local/share/eswall-truth/<photo>.json`, or `$ESWALL_TRUTH_DIR`. Same
-  reason as the photos — they describe somebody's real workshop wall and the
-  repo is public.
+- Photographs and labels live **outside this repo**, in the private
+  `livediagram-app/vision-model-truths` repository (`event-storming/photos`
+  and `event-storming/labels`) — they describe somebody's real workshop wall,
+  this repo is public, and hours of hand-labelling must not live on one disk.
+  The tools find a checkout at `$VISION_TRUTHS_DIR`, or cloned beside this
+  repo as `../vision-model-truths`; with neither, they fall back to
+  `packages/sticky-vision/test-files/` and `~/.local/share/eswall-truth/`.
+  `$ESWALL_TRUTH_DIR` still overrides the labels folder alone.
 - A file is `{ photo, labelledOn: { width, height }, notes: [{ x, y, w, h, kind
 }] }`, every box in FRACTIONS of the image so the labels survive any working
   size.
@@ -223,7 +227,9 @@ they exist:
   pnpm --filter @livediagram/sticky-vision truth:add ~/Downloads/<photo>.json
   ```
 
-  It refuses a file whose boxes are not fractions, because pixels would score
+  In a `vision-model-truths` checkout it also **commits and pushes** the
+  label at once, and warns when there is no photo of that name to score it
+  against. It refuses a file whose boxes are not fractions, because pixels would score
   as a total miss and read like a detector regression. The one weakness of
   this path: truth built by correcting the detector inherits its blind spots,
   since a note it never boxed is one you have to notice yourself.

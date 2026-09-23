@@ -7,7 +7,7 @@ import { labelComponents } from '../src/components';
 import { fitBoxes, mergeFragments } from '../src/boxes';
 import { encodePng } from './png';
 import { listPhotos, loadPhoto, workDirFor } from './photos';
-import { score, truthDir, truthFor, type Score } from './truth';
+import { photoDir, score, truthDir, truthFor, type Score } from './truth';
 
 // Calibrating the detector against REAL photographs of a real wall.
 //
@@ -28,7 +28,7 @@ import { score, truthDir, truthFor, type Score } from './truth';
 
 const PHOTO_DIR = process.argv.includes('--photos')
   ? process.argv[process.argv.indexOf('--photos') + 1]!
-  : new URL('../test-files', import.meta.url).pathname;
+  : photoDir();
 
 const KIND_INK: Record<string, [number, number, number]> = {
   'domain-event': [255, 0, 0],
