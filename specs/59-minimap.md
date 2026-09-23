@@ -19,13 +19,13 @@ lets you jump the viewport anywhere with a tap or drag.
   free-floating map contradicts that intent, so it doesn't render there at all. It **stacks** with the Activity panel in the bottom-left rather than
   hiding behind it (the docking layout reflows them); the old "defer until
   Activity is minimised" rule is gone.
-- **Enable / disable + reset.** A **settings gear** in the panel header opens a
-  small popover (mirroring the Palette's) with an **Enable Map** toggle and a
-  **Reset position** action (snap back to the default corner, greyed out when
-  already there — the reset lives here rather than as a header button so the Map
-  header stays a single gear). Turning Enable off sets `showMinimap = false` and
-  hides the panel; the master **Settings** dialog's "Show minimap" toggle switches
-  it back on. (Replaces the earlier one-shot **×**.)
+- **Enable / disable + reset.** The map's preferences (**Show Minimap**, **Dim
+  Outside the View**, **Minimap Size**) live in the **Settings** dialog
+  (spec/20), Appearance for the first, Panels > Minimap for the other two.
+  The panel header keeps only the standard **Reset position** button, shown
+  once the map has left its default corner. It used to carry a settings gear
+  of its own; that popover was removed when every preference was centralised,
+  since one setting with two controls is one control too many.
 - **What it shows.** A **full-fidelity miniature of the tab**: the map is
   drawn by the SAME headless renderer the exports / live image use
   (`svgBoxed` / `svgArrow`, spec/62 §5), so every element appears with its
@@ -59,8 +59,6 @@ letterboxing handled for free.
 - `components/canvas/Minimap.tsx` — the SVG overview inside a `MovablePanel`
   (move / minimise / reset come from the shared panel). The element wireframe is
   memoised on `elements` so panning only re-renders the viewport rectangle.
-- `components/canvas/MapSettingsPopover.tsx` — the header gear + popover holding
-  the Enable Map toggle, mirroring `PaletteSettingsPopover`.
 - `hooks/ui/useIsMobileViewport.ts` — a reactive (`useSyncExternalStore`)
   version of `isMobileViewportSync` so the panel mounts / unmounts when the
   viewport crosses the `sm` breakpoint.

@@ -21,6 +21,7 @@ const ELEMENT_LIMIT = 12;
 const PALETTE_LIMIT = 10;
 const COMMAND_LIMIT = 10;
 const HELP_LIMIT = 6;
+const SETTINGS_LIMIT = 6;
 
 // Internal-only input shapes for the by-name match inputs. Several
 // share the same {id, name} shape but stay distinct so a future
@@ -114,6 +115,21 @@ type CommandItem = { kind: 'command'; id: string; name: string };
 // `href` is the absolute /help path and `leaf` the telemetry-safe slug tail.
 type HelpItem = { kind: 'help'; id: string; name: string; href: string; leaf: string };
 
+// A Settings row result. Picking it opens the Settings dialog on that row's
+// category with the row itself highlighted: the setting IS the destination,
+// so the search does not just dump you at the dialog's front door.
+type SettingItem = {
+  kind: 'setting';
+  id: string;
+  name: string;
+  // Which category pane to open, and which row to ring once it is open.
+  categoryId: string;
+  rowKey: string;
+  // The category's own label, shown as the result's trailing context so two
+  // similarly-named settings are distinguishable in the list.
+  categoryLabel: string;
+};
+
 export type SearchResultItem =
   | DiagramItem
   | SharedItem
@@ -123,7 +139,8 @@ export type SearchResultItem =
   | ElementItem
   | PaletteItem
   | CommandItem
-  | HelpItem;
+  | HelpItem
+  | SettingItem;
 
 export type SearchGroup = {
   key:
@@ -135,7 +152,8 @@ export type SearchGroup = {
     | 'elements'
     | 'palette'
     | 'commands'
-    | 'help';
+    | 'help'
+    | 'settings';
   label: string;
   items: SearchResultItem[];
 };
@@ -156,6 +174,18 @@ export type PaletteSearchItem = { id: string; name: string; keywords: string; ad
 // `keywords` widens matching beyond the title (so "shortcut" finds the
 // keyboard-shortcuts article). Catalogue lives in lib/help-search.ts so this
 // lib stays free of the help data; surfaces without help omit it.
+// A searchable Settings row the editor passes in. Built from the settings
+// catalogue in lib/settings-search-items.ts so this lib stays free of the
+// settings data, the same arrangement help and palette use.
+export type SettingSearchItem = {
+  id: string;
+  title: string;
+  keywords: string;
+  categoryId: string;
+  categoryLabel: string;
+  rowKey: string;
+};
+
 export type HelpSearchItem = {
   id: string;
   title: string;
@@ -203,6 +233,8 @@ type SearchInput = {
   // non-empty query (an empty one would dump the whole catalogue). Both the
   // editor and the Explorer pass it, since help is global.
   helpItems?: HelpSearchItem[];
+  // The settings catalogue, surfaced as "Settings" results.
+  settingItems?: SettingSearchItem[];
 };
 
 // Case-insensitive substring match. Empty query matches everything,
@@ -386,6 +418,26 @@ export function buildSearchResults(input: SearchInput): SearchGroup[] {
   // Help: matching help-centre articles, last so navigation/edit results
   // always win the default Enter. Non-empty query only (an empty one would
   // list the whole catalogue), matched on title + keywords.
+  if (q && input.settingItems && input.settingItems.length > 0) {
+    const settingMatches = input.settingItems
+      .filter((s) => matches(q, s.title) || matches(q, s.keywords))
+      .slice(0, SETTINGS_LIMIT);
+    if (settingMatches.length > 0) {
+      groups.push({
+        key: 'settings',
+        label: 'Settings',
+        items: settingMatches.map((s): SettingItem => ({
+          kind: 'setting',
+          id: s.id,
+          name: s.title,
+          categoryId: s.categoryId,
+          categoryLabel: s.categoryLabel,
+          rowKey: s.rowKey,
+        })),
+      });
+    }
+  }
+
   if (q && input.helpItems && input.helpItems.length > 0) {
     const helpMatches = input.helpItems
       .filter((h) => matches(q, h.title) || matches(q, h.keywords))

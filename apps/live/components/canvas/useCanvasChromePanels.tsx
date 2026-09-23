@@ -368,7 +368,6 @@ export function useCanvasChromePanels({
         stackBelowY={stackBelowY}
         tabName={tabName}
         settings={settings}
-        onChangeSettings={onChangeSettings}
         minimalPanels={!!minimalPanels}
         activeMobilePanel={activeMobilePanel}
         activeDockAnchor={activeDockAnchor ?? undefined}
@@ -392,8 +391,6 @@ export function useCanvasChromePanels({
       onPreviewRevert={activityHandlers.onPreviewRevert}
       onClearRevertPreview={activityHandlers.onClearRevertPreview}
       revertHoverPreview={settings?.activityRevertHoverPreview !== false}
-      onSetRevertHoverPreview={activityHandlers.onSetRevertHoverPreview}
-      resettable={activityWiring.resettable}
       onRowClick={activityHandlers.onActivityRowClick}
       onClearActivity={activityHandlers.onClearActivity}
       saveStatus={saveStatus}
@@ -440,22 +437,8 @@ export function useCanvasChromePanels({
         onHideOtherLayers={onHideOtherLayers}
         onPreviewLayer={onPreviewLayer}
         hoverPreviewEnabled={settings?.layerHoverPreview !== false}
-        onSetHoverPreviewEnabled={(v) => {
-          // Settings flip fires BEFORE the persist (spec/22).
-          track('UI', 'Toggled', v ? 'LayerHoverPreviewOn' : 'LayerHoverPreviewOff');
-          onChangeSettings({ ...settings, layerHoverPreview: v });
-        }}
         showPreview={settings?.layersShowPreview !== false}
-        onSetShowPreview={(v) => {
-          track('UI', 'Toggled', v ? 'LayerPreviewOn' : 'LayerPreviewOff');
-          onChangeSettings({ ...settings, layersShowPreview: v });
-        }}
         showCount={settings?.layersShowCount !== false}
-        onSetShowCount={(v) => {
-          track('UI', 'Toggled', v ? 'LayerCountOn' : 'LayerCountOff');
-          onChangeSettings({ ...settings, layersShowCount: v });
-        }}
-        resettable={layersWiring.resettable}
       />
     ) : null;
 
@@ -539,23 +522,9 @@ export function useCanvasChromePanels({
         position={minimapWiring.position}
         onMove={props.onMoveMap}
         onResetPosition={minimapWiring.onReset}
-        resettable={minimapWiring.resettable}
         dock={minimapWiring.dock}
-        enabled={mapEnabled}
-        onSetEnabled={(v) => {
-          track('UI', 'Toggled', v ? 'MinimapOn' : 'MinimapOff');
-          onChangeSettings({ ...settings, showMinimap: v });
-        }}
         dimOutside={settings?.mapDimOutside !== false}
-        onSetDimOutside={(v) => {
-          track('UI', 'Toggled', v ? 'MapDimOn' : 'MapDimOff');
-          onChangeSettings({ ...settings, mapDimOutside: v });
-        }}
         size={settings?.mapSize ?? 'medium'}
-        onSetSize={(v) => {
-          track('UI', 'Changed', 'MapSize');
-          onChangeSettings({ ...settings, mapSize: v });
-        }}
       />
     ) : null;
 

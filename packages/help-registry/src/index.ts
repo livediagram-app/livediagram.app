@@ -1404,9 +1404,10 @@ export const articles: Article[] = [
   },
   {
     slug: 'profile',
-    title: 'Your Profile',
-    description: 'Your account identity, email-notification toggles, and account deletion.',
-    keywords: 'account settings email delete avatar name preferences',
+    title: 'Your Account',
+    description:
+      'Your identity card, email-notification switches, and account deletion, in Settings.',
+    keywords: 'account profile settings email delete avatar name preferences identity danger zone',
     category: 'Explorer',
     categorySlug: 'explorer',
   },

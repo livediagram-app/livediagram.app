@@ -18,7 +18,7 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles("reset-palette-position")}
 >
 
-Reset Palette Position is an action (a button), not a toggle. You will find it behind the gear (settings) icon in the header of the floating palette, which opens a small settings popover.
+Reset Palette Position is an action (a button), not a toggle. You will find it in the palette's own header, beside minimise: it appears once you have moved the palette, and is the only control left there now that the palette's preferences live in [Settings](/help/user-interface/settings/).
 
 ## What it does
 
@@ -31,9 +31,5 @@ The palette is movable: you can drag it around the canvas to wherever suits your
 ## When it is available
 
 The button is disabled when the palette is already at the default position, and its hint then reads: "Already at the default corner." Once you have moved the palette, the button becomes active and its hint reads: "Snap back to the default corner."
-
-<Figure caption="The Reset palette position action sits at the foot of the palette settings popover.">
-  <PaletteSettings highlight="reset" />
-</Figure>
 
 </ArticleLayout>

@@ -1,14 +1,20 @@
 import type { Metadata } from 'next';
-import { ExplorerPane } from '../ExplorerPane';
+import { ProfileRedirect } from './ProfileRedirect';
 
-// /explorer/profile — the signed-in user's account home (spec/65): identity,
-// email-notification settings, and account deletion. Signed-in only (a guest
-// deep-linking it gets a sign-in prompt). The layout's ExplorerShell provides
-// the chrome + state; this page only pins the route and the tab title.
+// /explorer/profile is retired: everything it held (identity, the email
+// notification toggles, delete account) moved into the Settings dialog
+// (spec/20 + spec/65).
+//
+// The route SURVIVES as a redirect and must keep doing so: every notification
+// email ever sent carries this URL as its "Manage your notifications" link
+// AND as its List-Unsubscribe header (spec/64). Those are in people's inboxes
+// forever, and an unsubscribe link that 404s is the one dead link a product
+// really cannot ship.
 export const metadata: Metadata = {
-  title: 'Profile | livediagram',
+  title: 'Notification Settings | livediagram',
+  robots: { index: false, follow: false },
 };
 
-export default function Page() {
-  return <ExplorerPane />;
+export default function ProfilePage() {
+  return <ProfileRedirect />;
 }

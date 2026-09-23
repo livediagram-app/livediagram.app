@@ -84,7 +84,6 @@ export type SelectedNode =
   | { kind: 'gallery' }
   | { kind: 'themes' }
   | { kind: 'tokens' }
-  | { kind: 'profile' }
   | { kind: 'folder'; id: string }
   | { kind: 'team'; id: string }
   | { kind: 'invites' };

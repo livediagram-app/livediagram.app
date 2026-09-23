@@ -137,7 +137,7 @@ export type UserPreferences = {
   // `layerHoverPreview` above.
   activityRevertHoverPreview?: boolean;
   // Email notifications (spec/65). Account-level settings flipped from the
-  // Explorer profile page; the api worker reads them server-side before
+  // Settings dialog; the api worker reads them server-side before
   // sending the matching transactional email (spec/64). Distinct from
   // `notificationsEnabled`, which is about in-editor toasts, not email.
   // Missing / undefined / true === notify (opt-out); an explicit false

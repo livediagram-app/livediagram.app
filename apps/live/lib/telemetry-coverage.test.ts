@@ -78,11 +78,30 @@ function takeArgument(source: string): string {
   return source;
 }
 
+// The Settings dialog emits from DATA, not from a literal call site: its pane
+// calls `track(row.event.category, ...)` off the catalogue, so the scanner
+// above sees no category literal and the pairs would vanish from this guard
+// the moment a setting's only other call site was deleted, which is exactly
+// what happened when the panel gear popovers were removed (spec/20). The
+// catalogue's `event` declarations ARE the call sites, so read them too:
+// `on`/`off` tokens mean a Toggled, `changed` means a Changed.
+function cataloguePairs(source: string): string[] {
+  const pairs: string[] = [];
+  for (const match of source.matchAll(/event:\s*\{\s*category:\s*'([A-Za-z]+)'\s*,\s*([a-z]+)/g)) {
+    const [, category, firstKey] = match;
+    pairs.push(`${category}·${firstKey === 'changed' ? 'Changed' : 'Toggled'}`);
+  }
+  return pairs;
+}
+
+const CATALOGUE = join(APP_ROOT, 'components/dialogs/settings/settings-catalogue.ts');
+
 const emitted = (() => {
   const pairs = new Set<string>();
   for (const file of sourceFiles(APP_ROOT)) {
     for (const pair of pairsIn(readFileSync(file, 'utf8'))) pairs.add(pair);
   }
+  for (const pair of cataloguePairs(readFileSync(CATALOGUE, 'utf8'))) pairs.add(pair);
   return [...pairs].sort();
 })();
 

@@ -2,11 +2,16 @@
 
 import { Tooltip } from '@/components/primitives/Tooltip';
 
-// The palette's shared search box: the bordered text input with the inline
-// clear (×) button, used by the Icons + Technology pickers and the Tools
-// tab. One home (extracted on the third copy, per the reuse principle) so
-// every palette search surface stays pixel-identical.
-export function PaletteSearchInput({
+// The shared search box: a bordered text input with an inline clear (×)
+// button. Used by the Icons + Technology pickers, the palette's Tools tab,
+// and the Settings dialog.
+//
+// It lived in components/palette as PaletteSearchInput until Settings needed
+// one too. Nothing about it was ever palette-specific: the caller supplies
+// every label and owns what the keys MEAN, so it moved here rather than
+// being copied, which is what its own "extracted on the third copy" note was
+// warning against.
+export function SearchInput({
   value,
   onChange,
   placeholder,
@@ -23,7 +28,7 @@ export function PaletteSearchInput({
   clearAriaLabel: string;
   // Tooltip body for the clear button, e.g. "Clear the icon search query."
   clearDescription: string;
-  // Optional keyboard passthrough. The box stays generic — what Arrow / Enter
+  // Optional keyboard passthrough. The box stays generic, what Arrow / Enter
   // MEAN belongs to whichever results list is underneath, so the caller owns
   // it (spec/110: the Favourites search walks its results this way).
   onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;

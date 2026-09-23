@@ -46,6 +46,7 @@ export function ExplorerSidebar() {
     selected,
     go,
     setSearchOpen,
+    setSettingsOpen,
     setMobileNavOpen,
     rootFolders,
     childrenByParent,
@@ -106,13 +107,14 @@ export function ExplorerSidebar() {
           have no profile, so theirs is plain text. */}
       <SidebarSectionLabel first>
         {clerkUserId ? (
-          <Tooltip title="Profile" description="Your account, email notifications, and more.">
+          <Tooltip
+            title="Account"
+            description="Your account, email notifications, and everything else, in Settings."
+          >
             <button
               type="button"
-              onClick={() => go({ kind: 'profile' })}
-              className={`rounded transition hover:text-brand-700 hover:underline dark:hover:text-brand-300 ${
-                selected.kind === 'profile' ? 'text-brand-700 dark:text-brand-300' : ''
-              }`}
+              onClick={() => setSettingsOpen(true)}
+              className="rounded transition hover:text-brand-700 hover:underline dark:hover:text-brand-300"
             >
               Hi {clerkDisplayName ?? 'there'}
             </button>

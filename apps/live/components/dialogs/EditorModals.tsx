@@ -28,12 +28,13 @@ export function EditorModals() {
     setShortcutsEnabled,
     setShortcutsOpen,
     settingsOpen,
+    settingsFocus,
+    closeSettings,
     userPreferences,
     setUserPreferences,
     writeUserPreferences,
     selfParticipant,
     aiCapable,
-    setSettingsOpen,
     canvasThemeTab,
     isReadOnly,
     activeTab,
@@ -72,7 +73,8 @@ export function EditorModals() {
             // after that effect ran, so the id is always set here.
             writeUserPreferences(next, selfParticipant?.id ?? null);
           }}
-          onClose={() => setSettingsOpen(false)}
+          onClose={closeSettings}
+          focus={settingsFocus}
           aiCapable={aiCapable}
         />
       ) : null}

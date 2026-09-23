@@ -1,0 +1,17 @@
+'use client';
+
+import { SettingsRow } from './SettingsRow';
+import { useShortcutsEnabled } from '@/hooks/ui/useShortcutsEnabled';
+import type { SettingsShortcutsRowSpec } from './settings-catalogue';
+
+// The keyboard-shortcuts master switch. Like appearance, it is backed by its
+// own per-device localStorage store rather than UserPreferences (spec/07),
+// so it reads and writes here instead of through the catalogue. The hook
+// emits its own telemetry on set, which is why nothing is tracked here.
+//
+// It was reachable only from inside the Keyboard Shortcuts window, findable
+// if you already knew where it lived, invisible otherwise.
+export function SettingsShortcutsRow({ row }: { row: SettingsShortcutsRowSpec }) {
+  const { enabled, setEnabled } = useShortcutsEnabled();
+  return <SettingsRow row={row} checked={enabled} onChange={setEnabled} />;
+}

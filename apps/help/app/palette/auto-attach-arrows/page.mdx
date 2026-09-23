@@ -18,15 +18,15 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles("auto-attach-arrows")}
 >
 
-Auto-Attach Arrows is a toggle, and it is off by default: arrows stay pinned exactly where you drew them until you opt in. You will find it behind the gear (settings) icon in the header of the floating palette, which opens a small settings popover.
+Auto-Attach Arrows is a toggle, and it is off by default: arrows stay pinned exactly where you drew them until you opt in. You will find it in [Settings](/help/user-interface/settings/), under **Editor**.
 
-<Figure caption="The palette settings popover, with Auto-attach arrows highlighted and switched on.">
+<Figure caption="The Editor settings, with Auto-attach arrows highlighted and switched on.">
   <PaletteSettings highlight="auto-attach" />
 </Figure>
 
 ## What it does
 
-When the setting is on, arrows re-pin to the nearest face or edge of a shape as that shape moves. The connector follows along, so it keeps pointing at the right spot without you having to tidy up endpoints by hand. In the settings popover the hint reads: "Re-pin arrows to the nearest face as shapes move."
+When the setting is on, arrows re-pin to the nearest face or edge of a shape as that shape moves. The connector follows along, so it keeps pointing at the right spot without you having to tidy up endpoints by hand. Under the switch the description reads: "Re-pin arrows to the nearest face as shapes move."
 
 Re-pinning is deliberately conservative: an arrow only picks a new face when its current one has genuinely stopped making sense, such as the shape being dragged to the other side of its partner. Nudging a connected shape a little never reshuffles a layout you have already arranged.
 

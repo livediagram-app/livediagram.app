@@ -131,6 +131,32 @@ export function useExplorerState() {
   // Diagram id mid-rename. Same pattern as folders.
   const [renamingDiagramId, setRenamingDiagramId] = useState<string | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
+  // Settings lives here rather than in ExplorerShell because the sidebar's
+  // account button opens it too, now that the profile page it used to open
+  // has been folded into the dialog (spec/20 + spec/65).
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [settingsFocus, setSettingsFocus] = useState<{
+    categoryId: string;
+    rowKey: string;
+  } | null>(null);
+  // Category to open on, for the `?settings=` deep link. Distinct from
+  // `settingsFocus`, which additionally rings one row.
+  const [settingsCategory, setSettingsCategory] = useState<string | null>(null);
+  // `?settings=<category>` deep link. The Settings dialog replaced the
+  // /explorer/profile page (spec/65), and mail already in people's inboxes
+  // links at their notification preferences, so any surface can name the pane
+  // it means. The param is stripped once consumed, so a refresh or a back
+  // does not keep reopening the dialog.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const url = new URL(window.location.href);
+    const category = url.searchParams.get('settings');
+    if (!category) return;
+    setSettingsCategory(category);
+    setSettingsOpen(true);
+    url.searchParams.delete('settings');
+    window.history.replaceState({}, '', url.toString());
+  }, []);
   // Which folder branches (and which teams) are open in the sidebar.
   // Local state only; a fresh visit starts everything collapsed. Team
   // ids live in the same set so a team's folder subtree expands the
@@ -484,6 +510,12 @@ export function useExplorerState() {
     setMobileNavOpen,
     searchOpen,
     setSearchOpen,
+    settingsOpen,
+    setSettingsOpen,
+    settingsFocus,
+    setSettingsFocus,
+    settingsCategory,
+    setSettingsCategory,
     // Folder + diagram actions
     folderActions,
     createFolder,

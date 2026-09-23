@@ -81,7 +81,7 @@ Grouped by priority; each links the keyed article.
 > `HelpArticleLink` in their header. These were removed: the editor header
 > already has a prominent global Help icon, and a `?` on every panel made the
 > canvas chrome noisy. Contextual links now live only in dialogs, in-panel
-> settings (the Palette settings popover), and **empty-state messages** (the
+> settings (the Settings dialog's rows), and **empty-state messages** (the
 > empty-canvas Quick Start banner keeps its link). The articles themselves
 > (`explorerPanel`, `palette`, `reverting-changes`, `comments`, `ai-tools`)
 > stay in the registry, reachable from the help centre and the header.

@@ -6,6 +6,7 @@ import {
   buildSearchResults,
   type CommandSearchItem,
   type HelpSearchItem,
+  type SettingSearchItem,
   type PaletteAdd,
   type PaletteSearchItem,
   type SearchGroup,
@@ -79,6 +80,11 @@ type SearchPanelProps = {
   // editor and the Explorer (help is global); picking one opens the article
   // in a new tab.
   helpItems?: HelpSearchItem[];
+  // The settings catalogue (spec/20), and what to do when one is picked:
+  // open the Settings dialog on that row. Surfaces without a Settings
+  // dialog to open simply omit both and get no Settings group.
+  settingItems?: SettingSearchItem[];
+  onSelectSetting?: (categoryId: string, rowKey: string) => void;
   // Editor-only: the contextual command catalogue (delete / lock / rotate /
   // share / rename / ...) surfaced as "Actions" results, plus the dispatcher
   // that runs the picked command's id. The editor builds the list selection-
@@ -110,6 +116,8 @@ export function SearchPanel({
   paletteItems,
   onAddPaletteItem,
   helpItems,
+  settingItems,
+  onSelectSetting,
   commandItems,
   onRunCommand,
   onClose,
@@ -160,6 +168,7 @@ export function SearchPanel({
         paletteItems,
         commandItems,
         helpItems,
+        settingItems,
       }),
     [
       query,
@@ -174,6 +183,7 @@ export function SearchPanel({
       paletteItems,
       commandItems,
       helpItems,
+      settingItems,
     ],
   );
 
@@ -192,6 +202,12 @@ export function SearchPanel({
     if (item.kind === 'help') {
       window.open(item.href, '_blank', 'noopener,noreferrer');
       track('UI', 'Opened', item.leaf);
+      onClose();
+      return;
+    }
+    if (item.kind === 'setting' && onSelectSetting) {
+      onSelectSetting(item.categoryId, item.rowKey);
+      track('Search', 'Selected', 'Setting');
       onClose();
       return;
     }
@@ -306,6 +322,14 @@ export function SearchPanel({
                         {item.kind === 'element' ? (
                           <span className="shrink-0 text-[10px] text-slate-400 dark:text-slate-400">
                             on {item.tabName}
+                          </span>
+                        ) : null}
+                        {/* Which Settings category it lives in: "Theme" alone
+                            does not say where picking it will land you, and
+                            two settings can read alike out of context. */}
+                        {item.kind === 'setting' ? (
+                          <span className="shrink-0 text-[10px] text-slate-400 dark:text-slate-400">
+                            in {item.categoryLabel}
                           </span>
                         ) : null}
                         {(item.kind === 'folder' || item.kind === 'diagram') && item.team ? (

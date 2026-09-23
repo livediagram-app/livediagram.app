@@ -21,7 +21,7 @@ import {
   type PaletteTileActions,
 } from './PaletteTileGrid';
 import { PaletteToolRows } from './PaletteToolRows';
-import { PaletteSearchInput } from './PaletteSearchInput';
+import { SearchInput } from '@/components/primitives/SearchInput';
 import { PaletteFavouritesDialog } from '@/components/dialogs/PaletteFavouritesDialog';
 import { PaletteFavouritesReorder } from './PaletteFavouritesReorder';
 
@@ -216,7 +216,7 @@ export function PaletteFavouritesTab({
       {/* No search while reordering: the mode's only verb is "move this one
           there", and a filtered grid cannot express a full order. */}
       <div className={`mb-2 flex items-center${reordering ? ' hidden' : ''}`}>
-        <PaletteSearchInput
+        <SearchInput
           value={query}
           onChange={(next) => {
             setQuery(next);
