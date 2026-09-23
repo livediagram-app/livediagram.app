@@ -666,3 +666,87 @@ test('a tick under a box the author drew can still be cleared', async ({ page, p
 
   expectNoPageErrors(pageErrors);
 });
+
+// Correcting boxes, then saving and reopening the label (spec/139 Phase 9).
+// Real pointer drags, at a zoom, so the pixels-to-photo conversion is proven
+// where it can go wrong.
+test('boxes can be moved, resized, re-kinded, deleted, saved and reopened', async ({
+  page,
+  pageErrors,
+}) => {
+  await openBoard(page);
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await importToReview(page, [
+    { fill: ORANGE, x: 150, y: 120, w: 120, h: 120 },
+    { fill: ORANGE, x: 500, y: 120, w: 120, h: 120 },
+  ]);
+  const overlay = page.locator('[data-testid="photo-review-overlay"]');
+  await expect(overlay.locator('[data-shown="no"]')).toHaveCount(0);
+  const boxes = overlay.locator('[data-testid^="note-box-"]');
+  await expect(boxes).toHaveCount(2);
+  await overlay.getByRole('button', { name: 'Zoom in' }).click();
+  const first = boxes.first();
+  const before = (await first.boundingBox())!;
+
+  // Move: drag the body 60px right, 30px down.
+  const body = overlay.getByTestId(/^note-body-/).first();
+  const b = (await body.boundingBox())!;
+  await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(b.x + b.width / 2 + 60, b.y + b.height / 2 + 30, { steps: 8 });
+  await page.mouse.up();
+  const moved = (await first.boundingBox())!;
+  expect(moved.x - before.x).toBeCloseTo(60, -1);
+  expect(moved.y - before.y).toBeCloseTo(30, -1);
+  await expect(first).toHaveAttribute('data-selected', 'yes');
+  // A move is not a draw.
+  await expect(boxes).toHaveCount(2);
+
+  // Resize: drag the bottom-right handle 40px out.
+  const handle = (await overlay.getByTestId('box-handle-se').boundingBox())!;
+  await page.mouse.move(handle.x + handle.width / 2, handle.y + handle.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(handle.x + handle.width / 2 + 40, handle.y + handle.height / 2 + 40, {
+    steps: 8,
+  });
+  await page.mouse.up();
+  const grown = (await first.boundingBox())!;
+  expect(grown.width - moved.width).toBeCloseTo(40, -1);
+  expect(grown.x).toBeCloseTo(moved.x, 0);
+
+  // Re-kind it, and delete the other box.
+  await overlay.getByRole('button', { name: 'Make this a command' }).click();
+  await overlay
+    .getByTestId(/^note-body-/)
+    .nth(1)
+    .click();
+  await page.keyboard.press('Delete');
+  await expect(boxes).toHaveCount(1);
+
+  // Save, and read what was saved.
+  const download = page.waitForEvent('download');
+  await overlay.getByRole('button', { name: /save as truth/i }).click();
+  const file = await download;
+  const path = await file.path();
+  const { readFileSync } = await import('node:fs');
+  const saved = JSON.parse(readFileSync(path, 'utf8')) as {
+    notes: { x: number; y: number; w: number; h: number; kind: string }[];
+  };
+  expect(saved.notes).toHaveLength(1);
+  expect(saved.notes[0]!.kind).toBe('command');
+  // Moved right of where it was drawn (150/900 = 0.167) and grown past 120/900.
+  expect(saved.notes[0]!.x).toBeGreaterThan(0.18);
+  expect(saved.notes[0]!.w).toBeGreaterThan(0.14);
+
+  // Reopen it over a fresh import of the same photo: the correction is back.
+  await overlay.getByRole('button', { name: /^cancel$/i }).click();
+  await importToReview(page, [
+    { fill: ORANGE, x: 150, y: 120, w: 120, h: 120 },
+    { fill: ORANGE, x: 500, y: 120, w: 120, h: 120 },
+  ]);
+  await overlay.getByLabel('Open a saved label').setInputFiles(path);
+  await expect(boxes).toHaveCount(1);
+  await expect(page.getByRole('button', { name: /^Add 1 note$/ })).toBeVisible();
+
+  expectNoPageErrors(pageErrors);
+});

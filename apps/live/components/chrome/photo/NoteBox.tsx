@@ -1,8 +1,10 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type PointerEvent } from 'react';
 import { EVENT_STORMING_NOTES } from '@livediagram/diagram';
 import type { DetectedSticky } from '@livediagram/sticky-vision';
+import type { Corner } from '@/lib/photo-boxes';
+import { BoxEditControls } from './BoxEditControls';
 
 // One sticky, drawn on the photograph it was found in (spec/139 Phase 9).
 //
@@ -28,6 +30,11 @@ export function NoteBox({
   onToggle,
   onEdit,
   zoom = 1,
+  selected = false,
+  onGrab,
+  onResizeStart,
+  onKind,
+  onDelete,
 }: {
   note: DetectedSticky;
   // The working image's size, so the box can be placed as a percentage and
@@ -42,6 +49,13 @@ export function NoteBox({
   // How far the photo is zoomed. The box grows with the photo; its controls
   // do not — see `chrome` below.
   zoom?: number;
+  // Correcting the box itself: selected by a press on its body, which also
+  // starts moving it; resized from its corners; re-kinded; deleted.
+  selected?: boolean;
+  onGrab?: (e: PointerEvent) => void;
+  onResizeStart?: (e: PointerEvent, corner: Corner) => void;
+  onKind?: (kind: string) => void;
+  onDelete?: () => void;
 }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(text);
@@ -77,6 +91,7 @@ export function NoteBox({
     <div
       data-testid={`note-box-${note.id}`}
       data-shown={shown ? 'yes' : 'no'}
+      data-selected={selected ? 'yes' : undefined}
       // The reveal is a class rather than an inline transition so that a
       // reader who asks for less motion gets none: an inline style would win
       // over `motion-reduce`.
@@ -100,34 +115,47 @@ export function NoteBox({
     >
       <div
         aria-hidden
-        className={`absolute inset-0 ${ticked ? '' : 'opacity-30'}`}
+        data-testid={`note-body-${note.id}`}
+        // The BODY is how a box is picked up: pressed, it is selected, and
+        // dragged, it moves. Below the tick and the words (z-0 against their
+        // z-20 / z-10), so a body drawn over another box's corner never buries
+        // that box's tick.
+        onPointerDown={onGrab}
+        className={`absolute inset-0 z-0 ${onGrab ? 'pointer-events-auto cursor-move' : ''} ${ticked ? '' : 'opacity-30'}`}
         // The outline stays two pixels ON SCREEN at any zoom. Drawn as an inset
         // shadow, not a border: a browser rounds a border thinner than one
         // pixel UP to one before the zoom multiplies it, so at 800% a 2/8px
         // border was a fat 8px band; a shadow's spread is painted as given.
         style={{
           background: `${colour}22`,
-          boxShadow: `inset 0 0 0 ${2 / zoom}px ${colour}`,
+          boxShadow: selected
+            ? `inset 0 0 0 ${2 / zoom}px ${colour}, 0 0 0 ${2 / zoom}px white`
+            : `inset 0 0 0 ${2 / zoom}px ${colour}`,
           borderRadius: 2 / zoom,
         }}
       />
-      <button
-        type="button"
-        role="checkbox"
-        aria-checked={ticked}
-        aria-label={`Include ${label}`}
-        onClick={onToggle}
-        // Its offset off the corner is 6px ON SCREEN too, or at 800% the tick floats
-        // 48px away from the note it belongs to.
-        style={
-          chrome
-            ? { transform: chrome, transformOrigin: 'top left', left: -6 / zoom, top: -6 / zoom }
-            : undefined
-        }
-        className="pointer-events-auto absolute -left-1.5 -top-1.5 z-20 flex h-4 w-4 items-center justify-center rounded-sm border border-white/70 bg-slate-900/80 text-[9px] font-bold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-      >
-        {ticked ? '✓' : ''}
-      </button>
+      {/* While the box is selected its tick moves into the toolbar: the corner
+          belongs to the resize handle then, and one control under another is
+          one that cannot be reached. */}
+      {selected && onResizeStart && onKind && onDelete ? null : (
+        <button
+          type="button"
+          role="checkbox"
+          aria-checked={ticked}
+          aria-label={`Include ${label}`}
+          onClick={onToggle}
+          // Its offset off the corner is 6px ON SCREEN too, or at 800% the tick floats
+          // 48px away from the note it belongs to.
+          style={
+            chrome
+              ? { transform: chrome, transformOrigin: 'top left', left: -6 / zoom, top: -6 / zoom }
+              : undefined
+          }
+          className="pointer-events-auto absolute -left-1.5 -top-1.5 z-20 flex h-4 w-4 items-center justify-center rounded-sm border border-white/70 bg-slate-900/80 text-[9px] font-bold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+        >
+          {ticked ? '✓' : ''}
+        </button>
+      )}
       {editing ? (
         <input
           ref={input}
@@ -167,6 +195,18 @@ export function NoteBox({
           {words === '' ? <span className="text-slate-300">Type the words…</span> : words}
         </button>
       )}
+      {selected && onResizeStart && onKind && onDelete ? (
+        <BoxEditControls
+          ticked={ticked}
+          includeLabel={`Include ${label}`}
+          onToggle={onToggle}
+          kind={note.kind}
+          zoom={zoom}
+          onResizeStart={onResizeStart}
+          onKind={onKind}
+          onDelete={onDelete}
+        />
+      ) : null}
     </div>
   );
 }

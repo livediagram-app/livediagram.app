@@ -888,6 +888,27 @@ Decisions from the operator:
   1.5% of the photo wide can be drawn round once zoomed in. The photo is never
   zoomed out past its whole self, nor panned off its own frame.
 
+  **Every box can be corrected, not just unticked.** Clicking a box's body
+  SELECTS it; the selected box shows four corner handles to resize it, a
+  delete button, and the eight paper colours to change its kind. Dragging a
+  box's body moves it; dragging bare photo still draws a new box. Delete or
+  Backspace removes the selected box, Escape lets go of it (and only a second
+  Escape leaves the review). The controls keep their size on screen at any
+  zoom, like the tick and the words. This is for every author, not only for
+  labelling: a box that caught half of a note is fixed where it is, rather
+  than landed wrong and fixed on the board. Words already read stay with a
+  moved box; the reader is not asked again.
+
+  **What Add hands over is the boxes as they stand** — positions, sizes and
+  kinds as corrected, the unticked and deleted ones left out — so a moved box
+  lands where it was moved to.
+
+  **A saved label can be opened again** (on a development machine, where Save
+  as truth lives): dropping a label's `.json` onto the photo — or **Open
+  label** beside Save as truth — replaces the detected boxes with the
+  labelled ones, words included, ready to correct and save back. A label for
+  a different photo is refused, by name.
+
   **A photo yields at most 400 notes** (`PHOTO_MAX_NOTES`), above the densest
   wall measured; the first guess of 120 cut that wall off halfway across. A cut
   is never silent: the review says how many more were found and suggests

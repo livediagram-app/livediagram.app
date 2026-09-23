@@ -139,12 +139,9 @@ export type PhotoDraftApi = {
   // the ELEMENTS, so a reload mid-draft still knows.
   draftOpen: boolean;
   startFromFile: (file: File) => Promise<void>;
-  // Add the ticked boxes as the on-canvas draft; the review stays put otherwise.
-  confirm: (
-    tickedIds: Set<number>,
-    texts: Map<number, { text: string; legible: boolean }>,
-    manual: DetectedSticky[],
-  ) => void;
+  // Add the boxes AS THEY STAND in the review — ticked, corrected, drawn — as
+  // the on-canvas draft.
+  confirm: (kept: DetectedSticky[], texts: Map<number, { text: string; legible: boolean }>) => void;
   // Leave the review without adding anything.
   cancelReview: () => void;
   accept: () => void;
@@ -402,14 +399,10 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
   // Add the ticked boxes as the on-canvas draft. The one write of the review:
   // arm the checkpoint, reconcile the ticked notes against the board as it is
   // NOW (a peer may have added the very note the photo shows), and land them.
-  // `texts` is the author's edited words (step 2), seeded from the read;
-  // `manual` are the boxes the author drew around missed stickies.
+  // `kept` is every box that lands, as the author left it: moved, resized,
+  // re-kinded or drawn; `texts` the words on each, as edited.
   const confirm = useCallback(
-    (
-      tickedIds: Set<number>,
-      texts: Map<number, { text: string; legible: boolean }>,
-      manual: DetectedSticky[],
-    ) => {
+    (kept: DetectedSticky[], texts: Map<number, { text: string; legible: boolean }>) => {
       const d = live.current;
       // Nothing to land before the detector has answered — the Add button is
       // disabled then, and a drawn box cannot exist without the image data
@@ -418,7 +411,7 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
       const found = review.detection;
       const detection: PhotoDetection = {
         ...found,
-        stickies: [...found.stickies.filter((s) => tickedIds.has(s.id)), ...manual],
+        stickies: kept,
       };
       if (detection.stickies.length === 0) return;
       const existing = boardNotesOfElements(d.activeTab.elements);

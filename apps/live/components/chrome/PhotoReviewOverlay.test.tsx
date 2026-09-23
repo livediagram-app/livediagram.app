@@ -118,7 +118,7 @@ describe('when the detection arrives', () => {
     );
     screen.getByRole('button', { name: /^Add 2 notes$/ }).click();
     expect(onConfirm).toHaveBeenCalled();
-    expect([...(onConfirm.mock.calls[0]![0] as Set<number>)]).toEqual([0, 1]);
+    expect((onConfirm.mock.calls[0]![0] as DetectedSticky[]).map((s) => s.id)).toEqual([0, 1]);
   });
 });
 
@@ -214,7 +214,7 @@ describe('the words, on the note', () => {
     );
     fireEvent.click(screen.getByRole('checkbox', { name: /One/ }));
     screen.getByRole('button', { name: /^Add 1 note$/ }).click();
-    expect([...(onConfirm.mock.calls[0]![0] as Set<number>)]).toEqual([1]);
+    expect((onConfirm.mock.calls[0]![0] as DetectedSticky[]).map((s) => s.id)).toEqual([1]);
   });
 });
 
@@ -473,5 +473,155 @@ describe('a wall with more notes than the review holds', () => {
       />,
     );
     expect(screen.queryByTestId('photo-dropped')).toBeNull();
+  });
+});
+
+// Correcting a box, not just unticking it (spec/139 Phase 9).
+describe('correcting a box', () => {
+  const open = (onConfirm = vi.fn(), onCancel = vi.fn()) => {
+    render(
+      <PhotoReviewOverlay
+        review={review({ detection: found([sticky(0), { ...sticky(1), x: 60 }]) })}
+        reading={false}
+        onConfirm={onConfirm}
+        onCancel={onCancel}
+      />,
+    );
+    return { onConfirm, onCancel };
+  };
+  const pick = (id: number) => fireEvent.pointerDown(screen.getByTestId(`note-body-${id}`));
+
+  it('selects a box by its body, and offers to correct it', () => {
+    open();
+    expect(screen.queryByRole('toolbar', { name: /correct this box/i })).toBeNull();
+    pick(1);
+    expect(screen.getByTestId('note-box-1').dataset.selected).toBe('yes');
+    expect(screen.getByRole('toolbar', { name: /correct this box/i })).toBeTruthy();
+    expect(screen.getByTestId('box-handle-se')).toBeTruthy();
+  });
+
+  it('deletes the selected box, from its button or the Delete key', () => {
+    const { onConfirm } = open();
+    pick(1);
+    fireEvent.keyDown(window, { key: 'Delete' });
+    expect(screen.queryByTestId('note-box-1')).toBeNull();
+    pick(0);
+    fireEvent.click(screen.getByRole('button', { name: 'Delete this box' }));
+    expect(screen.queryByTestId('note-box-0')).toBeNull();
+    // Nothing left to add.
+    expect(
+      (screen.getByRole('button', { name: /^Add 0 notes$/ }) as HTMLButtonElement).disabled,
+    ).toBe(true);
+    expect(onConfirm).not.toHaveBeenCalled();
+  });
+
+  it('changes a box to another kind, and that is what lands', () => {
+    const { onConfirm } = open();
+    pick(0);
+    fireEvent.click(screen.getByRole('button', { name: 'Make this a policy' }));
+    fireEvent.click(screen.getByRole('button', { name: /^Add 2 notes$/ }));
+    const kept = onConfirm.mock.calls[0]![0] as DetectedSticky[];
+    expect(kept.find((s) => s.id === 0)).toMatchObject({ kind: 'policy', size: 'wide' });
+  });
+
+  it('lets go of a box on Escape, and only a second Escape leaves', () => {
+    const { onCancel } = open();
+    pick(0);
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(screen.getByTestId('note-box-0').dataset.selected).toBeUndefined();
+    expect(onCancel).not.toHaveBeenCalled();
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(onCancel).toHaveBeenCalled();
+  });
+
+  it('never deletes a box while its words are being typed', () => {
+    open();
+    pick(0);
+    fireEvent.click(screen.getByTestId('note-words-0'));
+    const input = screen.getByRole('textbox', { name: /the words on this note/i });
+    fireEvent.keyDown(input, { key: 'Backspace' });
+    expect(screen.getByTestId('note-box-0')).toBeTruthy();
+  });
+});
+
+// Reopening a saved label to correct it (spec/139 Phase 9).
+describe('opening a saved label over the photo', () => {
+  afterEach(() => localStorage.clear());
+  const label = (photo: string) =>
+    new File(
+      [
+        JSON.stringify({
+          photo,
+          labelledOn: { width: 100, height: 100 },
+          notes: [
+            { x: 0.2, y: 0.2, w: 0.1, h: 0.1, kind: 'command', text: 'Place order' },
+            { x: 0.5, y: 0.5, w: 0.1, h: 0.1, kind: 'policy' },
+          ],
+        }),
+      ],
+      `${photo}.json`,
+      { type: 'application/json' },
+    );
+  const open = () =>
+    render(
+      <PhotoReviewOverlay
+        review={review({ detection: found([sticky(0)]), photoName: 'wall.jpg' })}
+        reading={false}
+        onConfirm={noop}
+        onCancel={noop}
+      />,
+    );
+  const pickFile = async (file: File) => {
+    await act(async () => {
+      fireEvent.change(screen.getByLabelText('Open a saved label'), {
+        target: { files: [file] },
+      });
+      await new Promise((r) => setTimeout(r, 0));
+    });
+  };
+
+  it('lays the labelled boxes and their words over the photo, in place of the detection', async () => {
+    open();
+    await pickFile(label('wall'));
+    expect(screen.queryByTestId('note-box-0')).toBeNull();
+    expect(screen.getAllByTestId(/^note-box-/)).toHaveLength(2);
+    expect(screen.getByText('Place order')).toBeTruthy();
+    expect(screen.getByRole('button', { name: /^Add 2 notes$/ })).toBeTruthy();
+  });
+
+  it('refuses a label for another photo, and says which', async () => {
+    open();
+    await pickFile(label('another-wall'));
+    expect(screen.getByTestId('photo-label-error').textContent).toMatch(/another-wall.*wall/);
+    // The detection is untouched.
+    expect(screen.getByTestId('note-box-0')).toBeTruthy();
+  });
+
+  it('refuses a file that is not a label at all', async () => {
+    open();
+    await pickFile(new File(['not json'], 'wall.json', { type: 'application/json' }));
+    expect(screen.getByTestId('photo-label-error').textContent).toMatch(/not a saved label/i);
+  });
+});
+
+describe('the tick of a selected box', () => {
+  it('moves into the toolbar, out from under the corner handle, and still works', () => {
+    render(
+      <PhotoReviewOverlay
+        review={review({ detection: found([sticky(0)]) })}
+        reading={false}
+        onConfirm={noop}
+        onCancel={noop}
+      />,
+    );
+    fireEvent.pointerDown(screen.getByTestId('note-body-0'));
+    // Still exactly one tick for the box — now in the toolbar.
+    const ticks = screen.getAllByRole('checkbox');
+    expect(ticks).toHaveLength(1);
+    expect(screen.getByRole('toolbar', { name: /correct this box/i }).contains(ticks[0]!)).toBe(
+      true,
+    );
+    fireEvent.click(ticks[0]!);
+    expect(ticks[0]!.getAttribute('aria-checked')).toBe('false');
   });
 });

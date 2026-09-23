@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { DetectedSticky } from '@livediagram/sticky-vision';
 import { downloadTruth, truthArmed, truthOf } from '@/lib/photo-truth';
 
@@ -25,6 +25,7 @@ export function TruthExport({
   notes,
   ticked,
   textOf,
+  onOpen,
 }: {
   photoName: string;
   size: { width: number; height: number };
@@ -32,20 +33,43 @@ export function TruthExport({
   ticked: Set<number>;
   // The words on each note as they stand in the review, edits included.
   textOf: (id: number) => string;
+  // A saved label file the author picked, to lay over the photo and correct.
+  onOpen: (file: File) => void;
 }) {
+  const picker = useRef<HTMLInputElement | null>(null);
   const [armed, setArmed] = useState(false);
   useEffect(() => setArmed(truthArmed()), []);
   const kept = notes
     .filter((note) => ticked.has(note.id))
     .map((note) => ({ ...note, text: textOf(note.id) }));
   if (!armed) return null;
+  const pill =
+    'pointer-events-auto rounded-full border border-amber-300/60 bg-amber-950/80 px-3 py-1.5 text-xs font-medium text-amber-100 shadow-lg backdrop-blur hover:bg-amber-900/90';
   return (
-    <button
-      type="button"
-      onClick={() => downloadTruth(truthOf(photoName, size, kept))}
-      className="pointer-events-auto rounded-full border border-amber-300/60 bg-amber-950/80 px-3 py-1.5 text-xs font-medium text-amber-100 shadow-lg backdrop-blur hover:bg-amber-900/90"
-    >
-      Save as truth ({kept.length})
-    </button>
+    <>
+      <button type="button" onClick={() => picker.current?.click()} className={pill}>
+        Open label
+      </button>
+      <input
+        ref={picker}
+        type="file"
+        accept="application/json,.json"
+        aria-label="Open a saved label"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          // Picking the same file twice must still open it.
+          e.target.value = '';
+          if (file) onOpen(file);
+        }}
+      />
+      <button
+        type="button"
+        onClick={() => downloadTruth(truthOf(photoName, size, kept))}
+        className={pill}
+      >
+        Save as truth ({kept.length})
+      </button>
+    </>
   );
 }

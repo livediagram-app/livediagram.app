@@ -75,6 +75,14 @@ function read(
   return partial ? { textById, ...partial } : { textById };
 }
 
+// The boxes the review would hand over: these detected ones, as detected.
+function kept(
+  h: { api: () => { review: { detection: PhotoDetection | null } | null } },
+  ids: number[],
+) {
+  return (h.api().review?.detection?.stickies ?? []).filter((s) => ids.includes(s.id));
+}
+
 function esNote(id: string, label: string, x = 0): StickyElement {
   return {
     id,
@@ -184,15 +192,7 @@ async function reviewed(opts: Parameters<typeof harness>[0] = {}) {
 async function landed(opts: Parameters<typeof harness>[0] = {}) {
   const h = await reviewed(opts);
   const r = h.api().review;
-  act(() =>
-    h
-      .api()
-      .confirm(
-        new Set(r?.detection?.stickies.map((s) => s.id) ?? []),
-        r?.textById ?? new Map(),
-        [],
-      ),
-  );
+  act(() => h.api().confirm(r?.detection?.stickies ?? [], r?.textById ?? new Map()));
   h.rerender();
   return h;
 }
@@ -216,7 +216,7 @@ describe('the review wizard', () => {
     const h = await reviewed();
     expect(h.api().state.stage).toBe('review');
     expect(h.elements()).toEqual([]);
-    act(() => h.api().confirm(new Set([0]), h.api().review?.textById ?? new Map(), []));
+    act(() => h.api().confirm(kept(h, [0]), h.api().review?.textById ?? new Map()));
     h.rerender();
     expect(h.api().state.stage).toBe('draft');
     expect(h.drafts()).toHaveLength(1);
@@ -232,7 +232,7 @@ describe('the review wizard', () => {
       ]),
     );
     const h = await reviewed();
-    act(() => h.api().confirm(new Set([1]), h.api().review?.textById ?? new Map(), []));
+    act(() => h.api().confirm(kept(h, [1]), h.api().review?.textById ?? new Map()));
     h.rerender();
     expect(h.drafts()).toHaveLength(1);
     expect((h.drafts()[0] as StickyElement).label).toBe('Payment received');
@@ -241,7 +241,7 @@ describe('the review wizard', () => {
   it('lands the boxes the author drew by hand, beside the detected ones', async () => {
     const h = await reviewed();
     const drawn = sticky({ id: -1, kind: 'command', x: 500, y: 500 });
-    act(() => h.api().confirm(new Set([0]), h.api().review?.textById ?? new Map(), [drawn]));
+    act(() => h.api().confirm([...kept(h, [0]), drawn], h.api().review?.textById ?? new Map()));
     h.rerender();
     expect(h.drafts()).toHaveLength(2);
     expect(
@@ -416,7 +416,7 @@ describe('landing a draft', () => {
   it('still keeps the blank draft through Add after a failed read', async () => {
     vi.mocked(readCrops).mockRejectedValue(new Error('ai_error'));
     const h = await reviewed();
-    act(() => h.api().confirm(new Set([0]), h.api().review?.textById ?? new Map(), []));
+    act(() => h.api().confirm(kept(h, [0]), h.api().review?.textById ?? new Map()));
     h.rerender();
     act(() => h.api().accept());
     expect(h.drafts()).toHaveLength(0);

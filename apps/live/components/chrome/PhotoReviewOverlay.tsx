@@ -7,7 +7,11 @@ import { NoteBox, sizeOf } from './photo/NoteBox';
 import { PhotoStatus } from './photo/PhotoStatus';
 import { TruthExport } from './photo/TruthExport';
 import { ZoomControls } from './photo/ZoomControls';
+import { withKind } from '@/lib/photo-boxes';
+import { truthArmed } from '@/lib/photo-truth';
+import { useBoxDrag } from './photo/useBoxDrag';
 import { useDrawBox } from './photo/useDrawBox';
+import { useReviewBoxes } from './photo/useReviewBoxes';
 import { usePhotoView } from './photo/usePhotoView';
 import { kindOfBox } from './photo/kindOfBox';
 
@@ -52,10 +56,11 @@ export function PhotoReviewOverlay({
 }: {
   review: PhotoReview;
   reading: boolean;
+  // The boxes to land AS THEY STAND — ticked, corrected, drawn — and the
+  // words on each.
   onConfirm: (
-    ticked: Set<number>,
+    kept: DetectedSticky[],
     texts: Map<number, { text: string; legible: boolean }>,
-    manual: DetectedSticky[],
   ) => void;
   onCancel: () => void;
 }) {
@@ -74,24 +79,16 @@ export function PhotoReviewOverlay({
   // and no picture in it — and a frame with nothing in it, unexplained, is the
   // same "is this broken?" as no surface at all.
   const [photoShown, setPhotoShown] = useState(false);
-  // Everything found is ticked: the common case is "add the wall", and making
-  // the author tick thirty boxes to get there would be a toll gate.
-  const [ticked, setTicked] = useState<Set<number>>(() => new Set(detected.map((s) => s.id)));
-  // The surface MOUNTS before the detector has answered, so seeding the set
-  // once at mount seeds it from nothing. Tick each detection as it lands.
-  useEffect(() => {
-    setTicked(new Set(detected.map((s) => s.id)));
-    // Identity of the detection, not of the array: this must run once when the
-    // answer arrives, and never again on a re-render that ticks a box.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [detection]);
+  // The boxes as the author has corrected them, which are ticked, and which
+  // one is selected for correcting.
+  const edits = useReviewBoxes(detected, detection);
+  const notes = edits.boxes;
+  // Where each DETECTED box comes in the reveal; a drawn or reopened box is
+  // there at once.
+  const revealAt = new Map(detected.map((s, i) => [s.id, i]));
   // The author's edits only; every unedited note streams straight from the
   // review as the words arrive.
   const [edited, setEdited] = useState<Map<number, string>>(() => new Map());
-  // Boxes the author drew around stickies the detector missed.
-  const [manual, setManual] = useState<DetectedSticky[]>([]);
-  const manualId = useRef(-1);
-  const notes = [...detected, ...manual];
   const [revealed, setRevealed] = useState(0);
   useEffect(() => {
     setRevealed(0);
@@ -108,29 +105,29 @@ export function PhotoReviewOverlay({
     return () => clearInterval(id);
   }, [detected.length]);
 
-  // Escape leaves, from anywhere on the surface. An input being edited stops
-  // the event first, so Escape there reverts the words instead.
+  // Escape lets go of a selected box, and only then leaves; Delete removes the
+  // selected box. An input being edited stops the event first, so Escape
+  // there reverts the words and Backspace deletes a letter.
+  const { selected, select, remove } = edits;
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onCancel();
+      const typing = e.target instanceof HTMLInputElement;
+      if (e.key === 'Escape') {
+        if (selected !== null) select(null);
+        else onCancel();
+      } else if ((e.key === 'Delete' || e.key === 'Backspace') && !typing && selected !== null) {
+        e.preventDefault();
+        remove(selected);
+      }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [onCancel]);
+  }, [onCancel, selected, select, remove]);
 
   const textOf = useCallback(
     (id: number): string => edited.get(id) ?? review.textById.get(id)?.text ?? '',
     [edited, review.textById],
   );
-
-  const toggle = (id: number) => {
-    setTicked((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
 
   const editText = (id: number, value: string) => {
     setEdited((prev) => {
@@ -146,14 +143,28 @@ export function PhotoReviewOverlay({
     // this only refuses a box with no area to classify.
     if (box.w < MIN_BOX_PX || box.h < MIN_BOX_PX) return;
     if (!detection) return;
-    const id = manualId.current;
-    manualId.current -= 1;
     const kind = kindOfBox(detection.imageData, detection.imageSize, box);
-    setManual((prev) => [
-      ...prev,
-      { id, kind, size: sizeOf(kind), ...box, row: 0, order: 0, confidence: 1 },
-    ]);
-    setTicked((prev) => new Set(prev).add(id));
+    edits.add({ kind, size: sizeOf(kind), ...box, row: 0, order: 0, confidence: 1 });
+  };
+
+  // Reopen a saved label: its boxes replace the detection's, its words the
+  // read. A file that is not a label for THIS photo is refused out loud.
+  const [labelError, setLabelError] = useState<string | null>(null);
+  const openLabel = async (file: File) => {
+    try {
+      if (!detection) throw new Error('Wait for the photo to finish loading, then open the label.');
+      const words = edits.load(JSON.parse(await file.text()), review.photoName, frame);
+      setEdited(new Map(words));
+      setLabelError(null);
+    } catch (err) {
+      setLabelError(
+        err instanceof SyntaxError
+          ? 'That file is not a saved label.'
+          : err instanceof Error
+            ? err.message
+            : String(err),
+      );
+    }
   };
 
   const confirm = () => {
@@ -162,20 +173,22 @@ export function PhotoReviewOverlay({
       const text = textOf(s.id);
       texts.set(s.id, { text, legible: text.trim() !== '' });
     }
-    onConfirm(
-      new Set(detected.filter((s) => ticked.has(s.id)).map((s) => s.id)),
-      texts,
-      manual.filter((m) => ticked.has(m.id)),
-    );
+    onConfirm(edits.kept, texts);
   };
 
   // The photo area: drag on it (not on a box's controls) to draw a sticky the
   // detector missed.
   const photoRef = useRef<HTMLDivElement | null>(null);
   const draw = useDrawBox({ pictureRef: photoRef, frame, onBox: addManual });
+  const boxDrag = useBoxDrag({ pictureRef: photoRef, frame, onChange: edits.update });
   // A second finger turns a one-finger drag into a pinch: the box that finger
-  // started is not a box.
-  const photoView = usePhotoView({ onGesture: draw.cancel });
+  // started is not a box, and the box it grabbed is not being moved.
+  const photoView = usePhotoView({
+    onGesture: () => {
+      draw.cancel();
+      boxDrag.cancel();
+    },
+  });
 
   return (
     <div
@@ -184,6 +197,17 @@ export function PhotoReviewOverlay({
       role="dialog"
       aria-modal="true"
       aria-label="Review the notes found in your photo"
+      // A saved label dropped on the photo opens it, where labelling is on.
+      onDragOver={(e) => {
+        if (truthArmed() && e.dataTransfer.types.includes('Files')) e.preventDefault();
+      }}
+      onDrop={(e) => {
+        const file = e.dataTransfer.files[0];
+        if (!truthArmed() || !file || !/\.json$/i.test(file.name)) return;
+        e.preventDefault();
+        e.stopPropagation();
+        void openLabel(file);
+      }}
     >
       <div
         data-testid="photo-frame"
@@ -226,6 +250,12 @@ export function PhotoReviewOverlay({
               transformOrigin: '0 0',
             }}
             {...draw.handlers}
+            // A press on bare photo lets go of the selected box (and may draw
+            // a new one); a press on a box's body never reaches here.
+            onPointerDown={(e) => {
+              select(null);
+              draw.handlers.onPointerDown(e);
+            }}
           >
             <img
               src={review.photoUrl}
@@ -236,18 +266,26 @@ export function PhotoReviewOverlay({
               // note's words.
               className="block h-auto max-h-[88vh] w-auto max-w-[96vw] object-contain"
             />
-            {notes.map((s, i) => (
+            {notes.map((s) => (
               <NoteBox
                 key={s.id}
                 note={s}
                 frame={frame}
                 text={textOf(s.id)}
                 reading={reading}
-                ticked={ticked.has(s.id)}
+                ticked={edits.ticked.has(s.id)}
                 // A box the author DREW appears at once; only the detector's own
                 // are revealed one at a time.
-                shown={i >= detected.length || i < revealed}
-                onToggle={() => toggle(s.id)}
+                shown={(revealAt.get(s.id) ?? -1) < revealed}
+                onToggle={() => edits.toggle(s.id)}
+                selected={selected === s.id}
+                onGrab={(e) => {
+                  select(s.id);
+                  boxDrag.begin(e, s, 'move');
+                }}
+                onResizeStart={(e, corner) => boxDrag.begin(e, s, corner)}
+                onKind={(kind) => edits.update(s.id, withKind(s, kind))}
+                onDelete={() => remove(s.id)}
                 onEdit={(value) => editText(s.id, value)}
                 zoom={photoView.view.zoom}
               />
@@ -297,6 +335,7 @@ export function PhotoReviewOverlay({
           reading={reading}
           readError={review.readError}
           dropped={detection?.dropped ?? 0}
+          labelError={labelError}
         />
       </div>
 
@@ -305,15 +344,16 @@ export function PhotoReviewOverlay({
         <p className="pointer-events-auto rounded-full bg-slate-900/85 px-3 py-1.5 text-xs text-white shadow-lg backdrop-blur">
           {detecting
             ? 'Finding the stickies…'
-            : `${ticked.size} of ${notes.length} · drag the photo to add one`}
+            : `${edits.ticked.size} of ${notes.length} · drag the photo to add one`}
         </p>
         {detection ? (
           <TruthExport
             photoName={review.photoName}
             size={detection.imageSize}
             notes={notes}
-            ticked={ticked}
+            ticked={edits.ticked}
             textOf={textOf}
+            onOpen={(file) => void openLabel(file)}
           />
         ) : null}
         <button
@@ -326,10 +366,10 @@ export function PhotoReviewOverlay({
         <button
           type="button"
           onClick={confirm}
-          disabled={ticked.size === 0}
+          disabled={edits.ticked.size === 0}
           className="pointer-events-auto rounded-full bg-brand-500 px-4 py-1.5 text-sm font-semibold text-white shadow-lg hover:bg-brand-600 disabled:opacity-50"
         >
-          Add {ticked.size} {ticked.size === 1 ? 'note' : 'notes'}
+          Add {edits.ticked.size} {edits.ticked.size === 1 ? 'note' : 'notes'}
         </button>
       </div>
     </div>

@@ -32,6 +32,7 @@ export function PhotoStatus({
   detecting,
   foundNothing,
   dropped = 0,
+  labelError = null,
   revealed,
   detected,
   reading,
@@ -41,6 +42,8 @@ export function PhotoStatus({
   foundNothing: boolean;
   // Notes found beyond what one photo may yield, and left out.
   dropped?: number;
+  // Why a label file could not be opened over this photo.
+  labelError?: string | null;
   revealed: number;
   detected: number;
   reading: boolean;
@@ -85,6 +88,11 @@ export function PhotoStatus({
       ) : readError ? (
         <Pill tone="warn">
           The reader could not finish ({readError}). Type the words in yourself.
+        </Pill>
+      ) : null}
+      {labelError ? (
+        <Pill tone="warn" testId="photo-label-error">
+          {labelError}
         </Pill>
       ) : null}
       {dropped > 0 ? (
