@@ -872,6 +872,24 @@ Decisions from the operator:
   ticked boxes, the boxes the author drew and the words as edited to the one
   place a draft is written (Phase 8's `esDraft` machinery).
 
+  **The photograph zooms and pans**, with the canvas's own gestures so nothing
+  is learnt twice: Ctrl/Cmd + wheel or a pinch zooms about the pointer, the
+  wheel and Space + drag pan, `+` `−` `0` from the keyboard, and visible
+  controls (−, the level, +, Fit) for anyone who knows none of those. A
+  whiteboard of three hundred notes puts each sticky at about fifteen pixels
+  when the photo fits the window; up to 800% it is a hand's width. The boxes
+  zoom with the photo; their CONTROLS do not — the tick, the word pill and the
+  two-pixel outline keep their size on screen, so zooming in opens space
+  between them instead of magnifying the clutter. A plain drag still draws a
+  box, and whether it was a click or a drag is judged on SCREEN, so a note
+  1.5% of the photo wide can be drawn round once zoomed in. The photo is never
+  zoomed out past its whole self, nor panned off its own frame.
+
+  **A photo yields at most 400 notes** (`PHOTO_MAX_NOTES`), above the densest
+  wall measured; the first guess of 120 cut that wall off halfway across. A cut
+  is never silent: the review says how many more were found and suggests
+  photographing the wall in sections.
+
 - **THE AUTHOR NEVER WAITS ON AN UNEXPLAINED SCREEN.** The governing rule of the
   whole gesture, and the one every other bullet here serves: from the moment a
   photo is picked to the moment the notes land, there is always something on
