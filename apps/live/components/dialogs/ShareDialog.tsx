@@ -146,7 +146,7 @@ export function ShareDialog({
         title="Share this diagram"
         subtitle="Anyone with an editor link joins in real time; a view-only link lets people watch without changing anything."
       >
-        <HelpArticleLink article="sharing" />
+        <HelpArticleLink article="sharing" size="md" />
         <DialogCloseButton onClick={onClose} />
       </DialogHeader>
 

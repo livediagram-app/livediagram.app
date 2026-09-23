@@ -30,6 +30,11 @@ const FORMATS: {
   title: string;
   description: string;
   placeholder: string;
+  // Optional footnote for this format's paste step — a help link for a
+  // format whose mapping isn't obvious from the placeholder alone. It rides
+  // on the format rather than the picker screen so it appears once the
+  // reader has actually chosen that format and the answer is relevant.
+  note?: { article: 'markdownImport'; label: string };
 }[] = [
   {
     key: 'json',
@@ -51,6 +56,7 @@ const FORMATS: {
     description:
       'A .md outline (headings + lists), e.g. exported from XMind. Becomes a themed tree.',
     placeholder: '# Project\n\n- Research\n  - Interviews\n  - Survey\n- Build\n- Launch',
+    note: { article: 'markdownImport', label: 'See how a Markdown outline maps to a tree' },
   },
   {
     key: 'excalidraw',
@@ -85,7 +91,7 @@ export function ImportTabDialog({
             : 'Pick a format to import into the current tab.'
         }
       >
-        <HelpArticleLink article="importTabs" />
+        <HelpArticleLink article="importTabs" size="md" />
         <DialogCloseButton onClick={onClose} />
       </DialogHeader>
       <div className="flex-1 overflow-y-auto px-6 py-5">
@@ -102,35 +108,39 @@ export function ImportTabDialog({
         </div>
         {activeFormat ? (
           <TextImportPanel
+            formatTitle={activeFormat.title}
             placeholder={activeFormat.placeholder}
+            /* Quiet footnote for this format. It used to sit under the picker
+               grid, where it asked "Importing a Markdown outline?" of a reader
+               who had not picked a format yet — an answer to a question nobody
+               had. */
+            note={
+              activeFormat.note ? (
+                <HelpArticleLink
+                  article={activeFormat.note.article}
+                  variant="text"
+                  label={activeFormat.note.label}
+                />
+              ) : null
+            }
             onImportText={(text) => onImportText(activeFormat.key, text)}
             onImportFile={() => onImportFile(activeFormat.key)}
             onDone={onClose}
             onBack={() => setActive(null)}
           />
         ) : (
-          <>
-            <div className="grid grid-cols-3 gap-3">
-              {FORMATS.map((f) => (
-                <FormatCard
-                  key={f.key}
-                  title={f.title}
-                  description={f.description}
-                  onClick={() => setActive(f.key)}
-                >
-                  <FormatIcon kind={f.key} />
-                </FormatCard>
-              ))}
-            </div>
-            <p className="mt-3 text-[11px] text-slate-500 dark:text-slate-400">
-              Importing a Markdown outline?{' '}
-              <HelpArticleLink
-                article="markdownImport"
-                variant="text"
-                label="See how it maps to a tree"
-              />
-            </p>
-          </>
+          <div className="grid grid-cols-3 gap-3">
+            {FORMATS.map((f) => (
+              <FormatCard
+                key={f.key}
+                title={f.title}
+                description={f.description}
+                onClick={() => setActive(f.key)}
+              >
+                <FormatIcon kind={f.key} />
+              </FormatCard>
+            ))}
+          </div>
         )}
       </div>
     </Dialog>

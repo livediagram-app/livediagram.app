@@ -1,7 +1,14 @@
 import type { ReactNode } from 'react';
 
 // The pick-a-format tile used by both the export and import dialogs: a
-// glyph over a title and a two-line description, the whole thing a button.
+// glyph over a title and its description, the whole thing a button.
+//
+// The description is NOT clamped. It used to be `line-clamp-2`, which cut
+// every card off mid-sentence with an ellipsis ("Copy it or save a .json to
+// import…") — the tile asks the reader to choose a format and then hid the
+// half of the sentence that tells them which to choose. The cards are grid
+// items, so they already stretch to their row's height and stay level with
+// the longest one.
 //
 // ExportCard and ImportCard were character-for-character identical, down to
 // the eight hover classes and the line-clamp. Two copies of a tile is how one
@@ -38,7 +45,7 @@ export function FormatCard({
       </div>
       <div className="min-w-0">
         <p className="truncate text-xs font-semibold text-slate-900 dark:text-slate-100">{title}</p>
-        <p className="mt-0.5 line-clamp-2 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
+        <p className="mt-0.5 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
           {description}
         </p>
       </div>

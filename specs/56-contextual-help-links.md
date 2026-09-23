@@ -27,9 +27,18 @@ A single component, `HelpArticleLink` (`apps/live/components/primitives/HelpArti
 is the only way the editor links to a help article. It:
 
 - takes an `article` key (see the registry below), not a raw URL;
-- renders either a small `?` icon button (`variant="icon"`, default) for
-  placing next to a control label, or a `"Learn more"` text link
-  (`variant="text"`) for dialog headers / empty states;
+- renders either a `?` icon button (`variant="icon"`, default) for placing
+  next to a control label or in a panel's header chrome, or a `"Learn more"`
+  text link (`variant="text"`) for dialog headers / empty states;
+- draws that `?` as **one look everywhere**: a bare glyph that picks up a soft
+  rounded hover background, the same affordance the floating panels' own
+  chrome (reset / minimise) uses. It is never a ring or a bordered circle
+  around the mark — an outlined `?` in a dialog header beside a bare `?` on a
+  panel reads as two different controls for the same thing, and the drift is
+  self-propagating: `ShortcutsDialog` had already grown a row of `!important`
+  overrides to cancel the ring locally. Only the hit box varies, via
+  `size` (`sm`, the default, for panel chrome and inline control labels;
+  `md` for a dialog header, matching `DialogCloseButton`'s `h-7`);
 - opens `/help/<slug>/` in a new tab (`target="_blank"`,
   `rel="noreferrer noopener"`), matching the existing header Help link;
 - wraps the trigger in the shared `Tooltip` (custom tooltips only, never a
@@ -68,7 +77,7 @@ is.
 Grouped by priority; each links the keyed article.
 
 > **Floating-panel headers carry no help icon.** The Explorer, Palette,
-> Activity, Comments, and AI panels previously each had a `variant="chrome"`
+> Activity, Comments, and AI panels previously each had a bare-glyph
 > `HelpArticleLink` in their header. These were removed: the editor header
 > already has a prominent global Help icon, and a `?` on every panel made the
 > canvas chrome noisy. Contextual links now live only in dialogs, in-panel
@@ -89,7 +98,11 @@ Grouped by priority; each links the keyed article.
   `button` variant with a custom `label` + plug `icon` (the variant now accepts both; absent
   a custom label it still reads "Help").
 - Export dialog header -> `exporting-diagrams` (isometric toggle -> `isometric-mode`)
-- Import dialog header -> `import-tabs` (Markdown note -> `markdown-import`)
+- Import dialog header -> `import-tabs`. The Markdown note (`markdown-import`)
+  rides on the **Markdown format's own paste step**, not the format picker:
+  under the grid it asked "Importing a Markdown outline?" of a reader who had
+  not picked a format yet. A format carries its own footnote (`note` on the
+  `FORMATS` entry), so any other format can grow one the same way.
 - Team form / invite -> `team-roles-and-invites`
 
 **Medium priority**

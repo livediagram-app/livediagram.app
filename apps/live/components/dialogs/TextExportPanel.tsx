@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { BackBar } from '@/components/primitives/BackBar';
 import { Button } from '@livediagram/ui';
 import { useCopiedFlash } from '@livediagram/ui';
 
@@ -10,6 +11,7 @@ import { useCopiedFlash } from '@livediagram/ui';
 // the pre-filled text, the blurb, and the download button label + handler.
 // Shared by JSON, Mermaid, and Markdown.
 export function TextExportPanel({
+  formatTitle,
   initialText,
   blurb,
   downloadLabel,
@@ -17,6 +19,8 @@ export function TextExportPanel({
   onCopied,
   onBack,
 }: {
+  // The chosen format's name, shown as the bar's chip.
+  formatTitle: string;
   initialText: string;
   blurb: string;
   downloadLabel: string;
@@ -43,6 +47,11 @@ export function TextExportPanel({
 
   return (
     <div>
+      {/* The shared two-level "back to the overview" bar (spec/56 house
+          style), the same control the New Diagram wizard's location step
+          uses — not a small text link buried in the footer beside the
+          commit button, where the way back sat next to the way forward. */}
+      <BackBar label="All formats" current={formatTitle} onClick={onBack} />
       <p className="mb-3 text-[11px] text-slate-500 dark:text-slate-400">{blurb}</p>
       <textarea
         value={text}
@@ -50,14 +59,7 @@ export function TextExportPanel({
         spellCheck={false}
         className="h-56 w-full resize-y rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 font-mono text-xs leading-relaxed text-slate-800 focus:border-brand-400 focus:ring-2 focus:ring-brand-200 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:ring-brand-500/30"
       />
-      <div className="mt-4 flex items-center justify-between gap-3">
-        <button
-          type="button"
-          onClick={onBack}
-          className="text-xs font-medium text-slate-500 transition hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
-        >
-          ← Back
-        </button>
+      <div className="mt-4 flex items-center justify-end gap-3">
         <div className="flex items-center gap-2">
           <button
             type="button"

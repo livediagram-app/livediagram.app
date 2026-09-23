@@ -125,6 +125,7 @@ export function LinkPickerDialog({
             it points at the embed article rather than the generic links one:
             "which links work here" is the question being asked. */}
         <HelpArticleLink
+          size="md"
           article={urlOnly ? 'embedElements' : mode === 'tab' ? 'linkingTabs' : 'links'}
         />
         <DialogCloseButton onClick={onClose} />

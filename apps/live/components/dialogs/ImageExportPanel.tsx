@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { BackBar } from '@/components/primitives/BackBar';
 import { Button } from '@livediagram/ui';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
@@ -56,6 +57,11 @@ export function ImageExportPanel({
 
   return (
     <div>
+      {/* The shared two-level "back to the overview" bar (spec/56 house
+          style), the same control the New Diagram wizard's location step
+          uses — not a small text link buried in the footer beside the
+          commit button, where the way back sat next to the way forward. */}
+      <BackBar label="All formats" current={label} onClick={onBack} disabled={busy} />
       {/* Live preview — exactly what Download produces under the current
           options. The injected SVG is our own export output (no external
           content); CSS fits it inside the frame. */}
@@ -69,27 +75,45 @@ export function ImageExportPanel({
           <span className="text-xs text-slate-400 dark:text-slate-500">Preparing preview…</span>
         )}
       </div>
-      {/* Isometric toggle. */}
-      <button
-        type="button"
-        onClick={() => {
-          // Fire before the flip so an opt-out still reaches the wire.
-          track('UI', 'Toggled', 'IsometricExport');
-          setIsometric((v) => !v);
-        }}
-        aria-pressed={isometric}
-        className="flex w-full cursor-pointer items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-left transition hover:border-brand-300 hover:bg-brand-50/40 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/10"
-      >
-        <span className="flex flex-col">
-          <span className="text-xs font-semibold text-slate-900 dark:text-slate-100">
+      {/* Isometric toggle. The help `?` sits beside the LABEL, not at the
+          row's end: trailing it after the switch pushed this row's toggle
+          out of line with the one below, and a `?` at the edge reads as
+          belonging to the panel rather than to this option. It used to be a
+          "What's the isometric view?" line under the last toggle, a footnote
+          to the whole panel with nothing tying it to the one option it
+          answers for.
+
+          A link cannot nest inside a button, so the row's hit target is an
+          overlay button behind the content (the card stays one click target,
+          as every settings row in the editor is) and the content sits above
+          it, click-through except for the `?` itself. */}
+      <div className="relative flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2.5 transition hover:border-brand-300 hover:bg-brand-50/40 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/10">
+        <button
+          type="button"
+          onClick={() => {
+            // Fire before the flip so an opt-out still reaches the wire.
+            track('UI', 'Toggled', 'IsometricExport');
+            setIsometric((v) => !v);
+          }}
+          aria-pressed={isometric}
+          // The label lives outside this button (so the `?` can sit in it),
+          // so the button names itself.
+          aria-label="Isometric view"
+          className="absolute inset-0 cursor-pointer rounded-lg"
+        />
+        <span className="pointer-events-none relative flex flex-col">
+          <span className="flex items-center gap-0.5 text-xs font-semibold text-slate-900 dark:text-slate-100">
             Isometric view
+            <HelpArticleLink article="isometricMode" className="pointer-events-auto" />
           </span>
           <span className="mt-0.5 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
             Tilt the export into the isometric projection.
           </span>
         </span>
-        <ToggleSwitch presentational checked={isometric} label="Export isometric view" />
-      </button>
+        <span className="pointer-events-none relative">
+          <ToggleSwitch presentational checked={isometric} label="Export isometric view" />
+        </span>
+      </div>
       {/* Background-pattern toggle. */}
       <button
         type="button"
@@ -133,29 +157,12 @@ export function ImageExportPanel({
           <ToggleSwitch presentational checked={hiddenLayers} label="Export hidden layers" />
         </button>
       ) : null}
-      {/* Help link as a quiet footnote (same pattern as the import dialog),
-          instead of a stray `?` circle crowding the toggle. */}
-      <div className="mt-2.5">
-        <HelpArticleLink
-          article="isometricMode"
-          variant="text"
-          label="What's the isometric view?"
-        />
-      </div>
       {error ? (
         <p className="mt-4 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300">
           {error}
         </p>
       ) : null}
-      <div className="mt-4 flex items-center justify-between gap-3">
-        <button
-          type="button"
-          onClick={onBack}
-          disabled={busy}
-          className="text-xs font-medium text-slate-500 transition hover:text-slate-700 disabled:opacity-50 dark:text-slate-400 dark:hover:text-slate-200"
-        >
-          ← Back
-        </button>
+      <div className="mt-4 flex items-center justify-end gap-3">
         <Button
           variant="primary"
           size="md"

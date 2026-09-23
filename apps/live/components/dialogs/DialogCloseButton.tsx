@@ -7,6 +7,11 @@ import { CloseIcon } from '@/components/primitives/CloseIcon';
 // CanvasTheme / ThemesPane / ImagePicker's slimmer headers use. New
 // dialogs should mount one of these instead of re-typing the class
 // string — the ThemesPane copy had already dropped a dark-hover token.
+//
+// The default keeps its `-mr-2` horizontal tuck (it is always the last item
+// in the row, so only it touches the right edge), but NOT a vertical one:
+// that `-mt-1` lifts the whole action cluster, so it belongs on the row. Held
+// here it silently dropped any sibling — the help `?` — 2px below the ×.
 // Dialogs with a deliberately different close treatment (the welcome
 // picker's h-8, the sign-in modal's on-gradient white) keep their own.
 export function DialogCloseButton({
@@ -24,7 +29,7 @@ export function DialogCloseButton({
       className={
         compact
           ? 'rounded-md p-1 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100'
-          : '-mr-2 -mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200'
+          : '-mr-2 flex h-7 w-7 shrink-0 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200'
       }
     >
       {compact ? <CloseIcon size={16} strokeWidth={1.6} /> : <CloseIcon />}

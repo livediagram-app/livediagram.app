@@ -41,7 +41,7 @@ export function DialogHeader({
           <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">{subtitle}</p>
         ) : null}
       </div>
-      {children ? <div className="flex shrink-0 items-center gap-0.5">{children}</div> : null}
+      {children ? <div className="-mt-1 flex shrink-0 items-center gap-0.5">{children}</div> : null}
     </div>
   );
 }

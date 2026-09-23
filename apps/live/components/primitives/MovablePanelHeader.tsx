@@ -68,7 +68,7 @@ export function MovablePanelHeader({
             not start moving the panel. */}
         {helpArticle ? (
           <div onPointerDown={(e) => e.stopPropagation()} className="flex items-center">
-            <HelpArticleLink article={helpArticle} variant="chrome" />
+            <HelpArticleLink article={helpArticle} />
           </div>
         ) : null}
         {onReset ? (

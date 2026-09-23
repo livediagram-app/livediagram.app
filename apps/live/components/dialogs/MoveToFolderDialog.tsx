@@ -125,7 +125,9 @@ export function MoveToFolderDialog({
                 : 'Pick a destination folder.'}
           </p>
         </div>
-        <DialogCloseButton onClick={onClose} />
+        <div className="-mt-1 flex shrink-0 items-center">
+          <DialogCloseButton onClick={onClose} />
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto px-5 py-4">
