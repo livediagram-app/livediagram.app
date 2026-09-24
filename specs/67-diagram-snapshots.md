@@ -120,7 +120,12 @@ of those gets a 404 and the row falls back to its icon.
 
 The browse views (Recent / Personal Space / folders / Unsorted / Generated)
 have a **List ↔ Card** toggle at the far right of the header (device-
-local preference, `livediagram:explorer-view`). Card view renders the
+local preference, `livediagram:explorer-view`). **Card is the default**:
+a diagram is a picture, and a wall of names in one typeface makes you read
+every line to find the one you would have recognised on sight. Somebody who
+prefers the density of rows knows where the toggle is; somebody opening the
+Explorer for the first time does not know there is anything to look for, so
+the unchosen view is the one that shows them their work. Card view renders the
 same folders + diagrams as a responsive grid of cards (1 / 2 / 3 columns
 by width), each with a large snapshot and every column the list shows
 (name, owner, visibility badge, updated time, actions menu). List and
