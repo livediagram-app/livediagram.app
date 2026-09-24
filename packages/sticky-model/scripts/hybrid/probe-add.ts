@@ -1,5 +1,5 @@
 import { classMaskOf, detectStickies } from '../../../sticky-vision/src/detect';
-import { cuesOf } from '../../src/cues';
+import { CUE_OPTIONS, cuesOf } from '../../src/cues';
 import { loadHybridWalls } from './walls';
 
 // J2's candidates: every model note the classical detector has no box on,
@@ -7,13 +7,13 @@ import { loadHybridWalls } from './walls';
 // against the wall's note, paper under it), marked NOTE when it matches a
 // label no classical box matched and JUNK otherwise.
 //
-//   npx tsx scripts/hybrid/probe-add.ts [--t 0.4] [--min-core 12]
+//   npx tsx scripts/hybrid/probe-add.ts [--t 0.5] [--min-core 12]
 
 const arg = (name: string, fallback: string) => {
   const i = process.argv.indexOf(`--${name}`);
   return i === -1 ? fallback : process.argv[i + 1]!;
 };
-const t = Number(arg('t', '0.4'));
+const t = Number(arg('t', String(CUE_OPTIONS.coreThreshold)));
 const minCore = Number(arg('min-core', '12'));
 
 type R = { x: number; y: number; w: number; h: number };

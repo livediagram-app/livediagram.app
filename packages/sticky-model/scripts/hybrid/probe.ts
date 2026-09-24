@@ -1,12 +1,12 @@
 import { classMaskOf, detectStickies } from '../../../sticky-vision/src/detect';
 import { score } from '../../../sticky-vision/scripts/truth';
-import { cuesOf } from '../../src/cues';
+import { CUE_OPTIONS, cuesOf } from '../../src/cues';
 import { loadHybridWalls } from './walls';
 
 // What the boundary model sees where the classical detector goes wrong: the
 // ceiling on each hybrid rule before any rule is written (experiment J0).
 //
-//   npx tsx scripts/hybrid/probe.ts [--t 0.4] [--min-core 12]
+//   npx tsx scripts/hybrid/probe.ts [--t 0.5] [--min-core 12]
 //
 // Per wall: for every classical box that holds two labelled notes, how many
 // model cores sit inside it (J1's split); for every missed note, whether the
@@ -19,7 +19,7 @@ const arg = (name: string, fallback: string) => {
   const i = process.argv.indexOf(`--${name}`);
   return i === -1 ? fallback : process.argv[i + 1]!;
 };
-const t = Number(arg('t', '0.4'));
+const t = Number(arg('t', String(CUE_OPTIONS.coreThreshold)));
 const minCore = Number(arg('min-core', '12'));
 
 type R = { x: number; y: number; w: number; h: number };

@@ -1,7 +1,7 @@
-import type { HybridRules } from '../../../sticky-vision/src/hybrid';
+import { HYBRID_RULES, type HybridRules } from '../../../sticky-vision/src/hybrid';
 import { detectStickies } from '../../../sticky-vision/src/detect';
 import { score } from '../../../sticky-vision/scripts/truth';
-import { cuesOf } from '../../src/cues';
+import { CUE_OPTIONS, cuesOf } from '../../src/cues';
 import { mergedFloorOf, realMergedOf, table, totals, type Row } from '../report';
 import { loadHybridWalls, type HybridWall } from './walls';
 
@@ -11,9 +11,9 @@ import { loadHybridWalls, type HybridWall } from './walls';
 //
 //   npx tsx scripts/hybrid/sweep.ts [--t 0.4] [--min-core 12]
 //     [--split conf,area] [--add conf,area,paper,cover] [--drop background]
-//     [--grid split|add|drop]
+//     [--grid split|add|drop] [--kept]
 //
-// With no rule the table is the classical detector's own (the baseline, to
+// `--kept` starts from the kept rules (HYBRID_RULES). With no rule the table is the classical detector's own (the baseline, to
 // read beside). `--grid` prints one TOTAL line per setting of that rule, with
 // the other rules as given, and the per-wall F1 so a wall that pays is seen.
 
@@ -22,11 +22,11 @@ const arg = (name: string) => {
   return i === -1 ? undefined : process.argv[i + 1]!;
 };
 const nums = (name: string) => arg(name)?.split(',').map(Number);
-const t = Number(arg('t') ?? '0.4');
-const minCore = Number(arg('min-core') ?? '12');
+const t = Number(arg('t') ?? CUE_OPTIONS.coreThreshold);
+const minCore = Number(arg('min-core') ?? CUE_OPTIONS.minCorePixels);
 
 function rulesFromArgs(): HybridRules {
-  const rules: HybridRules = {};
+  const rules: HybridRules = process.argv.includes('--kept') ? { ...HYBRID_RULES } : {};
   const split = nums('split');
   if (split) rules.split = { minConfidence: split[0]!, minAreaOfMedian: split[1]! };
   const add = nums('add');

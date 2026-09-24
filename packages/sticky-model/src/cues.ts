@@ -15,6 +15,11 @@ export type CueOptions = {
   minCorePixels: number;
 };
 
+// Group J's sweep: the hybrid scores the same (94.7-94.8) for core thresholds
+// 0.45-0.6 and core floors 12-45 pixels; 0.5 is the middle, and roughly the
+// argmax.
+export const CUE_OPTIONS: CueOptions = { coreThreshold: 0.5, minCorePixels: 12 };
+
 export function coreClassesOf(probs: Float32Array, coreThreshold: number): Uint8Array {
   const n = probs.length / 3;
   const classes = new Uint8Array(n);

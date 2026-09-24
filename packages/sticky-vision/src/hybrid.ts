@@ -167,3 +167,13 @@ export function combineWithModel(
   }
   return out;
 }
+
+// The rules that won the sweep on the eight labelled walls, with group E's
+// synthetic-only boundary model (docs/vision/experiments/j-hybrid.md). Only
+// ADD: a note the model is sure of (mean core probability 0.75; the plateau
+// runs 0.7-0.8), at least 0.3 of the median box (0.2-0.4), half on paper
+// (0.4-0.6), and under 0.3 of any box (0.4 adds a note beside a neighbour
+// that is a real merge).
+export const HYBRID_RULES: HybridRules = {
+  add: { minConfidence: 0.75, minAreaOfMedian: 0.3, minPaper: 0.5, maxCover: 0.3 },
+};
