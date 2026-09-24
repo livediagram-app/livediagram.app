@@ -15,6 +15,7 @@ These docs are the practical guide: what the app does, how to run it locally, ho
 | [Contributing](contributing.md)                      | How to propose changes: specs-first workflow, code style, tests, PR expectations.                                                               |
 | [Sticky detection](vision/sticky-detection.md)       | How a photograph of a wall becomes sticky notes: the pipeline, its constants, its limits.                                                       |
 | [Handwriting readers](vision/handwriting-readers.md) | Which reader can read marker handwriting on a sticky crop: Tesseract, TrOCR, Florence-2, SmolVLM, Qwen-VL and cloud, measured on one real wall. |
+| [Resolution](vision/experiments/d-resolution.md)     | Whether more pixels per note (a bigger working image, or tiles) help the sticky detector: measured, and why 1000px stays.                       |
 
 ## How docs relate to specs
 

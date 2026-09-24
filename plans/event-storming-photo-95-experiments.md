@@ -65,13 +65,13 @@ touch another group's file stops and asks.
 
 ### D — resolution and tiling (`detect.ts`, `scripts/calibrate.ts` options)
 
-- [ ] D1 Sweep the working size (1000 / 1500 / 2000 / 2500 px long edge) with
+- [x] D1 Sweep the working size (1000 / 1500 / 2000 / 2500 px long edge) with
       the relative thresholds as they are now; per-wall table for each; time
       per photo.
-- [ ] D2 Tiled detection for small notes: detect on overlapping tiles at a
+- [x] D2 Tiled detection for small notes: detect on overlapping tiles at a
       higher resolution, merge the boxes; compare with D1 on the panorama and
       the whiteboard.
-- [ ] D3 Decide the working size (or rule: e.g. by estimated note size) and
+- [x] D3 Decide the working size (or rule: e.g. by estimated note size) and
       what it costs on a phone.
 
 ### E — a learned boundary model (new `packages/sticky-model/`, no product code)

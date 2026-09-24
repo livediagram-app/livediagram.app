@@ -49,11 +49,14 @@ export const CROP_MAX_EDGE_PX = 1024;
 export const CROP_MAX_BYTES = 512 * 1024;
 // The working image the detector runs on.
 //
-// ONE THOUSAND, deliberately: the detector was calibrated at this size and
-// finds the most notes here. At 2048 the working image is noisier after the
-// browser's downscale and detection DROPS (8 found where 1000px found 35).
-// This only ever feeds detection — the handwriting crops are cut from the
-// full-resolution bitmap, so reading loses nothing.
+// ONE THOUSAND, deliberately. Every detector threshold is relative to the
+// note size it measures, so more pixels per note buy no accuracy: swept from
+// 600 to 2500px on the eight labelled walls, 1000 scores best, larger sizes
+// lose a little (the whiteboard most), and below 1000 the night wall's note
+// size is mismeasured and it collapses. Time grows with the pixel count
+// (docs/vision/experiments/d-resolution.md). This only ever feeds detection —
+// the handwriting crops are cut from the full-resolution bitmap, so reading
+// loses nothing.
 export const PHOTO_MAX_EDGE_PX = 1000;
 // The most notes one photo may yield. Above the densest real wall measured: a
 // whiteboard photographed whole held about three hundred notes (the detector

@@ -18,8 +18,8 @@ import { cropRects, detectStickies, type DetectedSticky } from '@livediagram/sti
 //
 //  1. Decode honouring the EXIF orientation flag, or a portrait photo from a
 //     phone arrives on its side and every note is a rotated rectangle.
-//  2. Detect on a downscaled working copy: 2048px on the longest edge is more
-//     than the detector needs and a fraction of the pixels to walk.
+//  2. Detect on a downscaled working copy, PHOTO_MAX_EDGE_PX on the longest
+//     edge: where the detector scores best, and a fraction of the pixels.
 //  3. Cut each sticky out of the FULL-resolution bitmap, so the model gets the
 //     sharpest pixels of the handwriting rather than the working copy's.
 //  4. Re-encode each crop as a small JPEG — which drops EXIF with it, after
@@ -141,7 +141,7 @@ function drawTo(
   const ctx = canvas.getContext('2d', { willReadFrequently: true });
   if (!ctx) throw new PhotoDetectFailed('photo_unreadable');
   // ASK FOR A PROPER DOWNSCALE. A phone photo is 4000px wide and the working
-  // image is 2048, so this call is throwing away three quarters of the
+  // image is 1000, so this call is throwing away three quarters of the
   // pixels; at the default smoothing quality it does that by sampling rather
   // than averaging, and the result is an aliased, speckled image whose paper
   // edges come apart into fragments. The detector found 21 notes on a photo

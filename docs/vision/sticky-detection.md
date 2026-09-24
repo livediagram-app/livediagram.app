@@ -167,9 +167,11 @@ and testable.
   blended between cell centres, so a shadow edge sharper than about an eighth
   of the frame is averaged across that blend.
 - **Working at 1000px, always.** The detector was calibrated at 1000px and the
-  working image is now scaled there before detection (`PHOTO_MAX_EDGE_PX`); at
-  2048px it found a quarter as many, and the bigger frame was not buying
-  accuracy — the handwriting crops are cut from the full-resolution bitmap, so
+  working image is scaled there before detection (`PHOTO_MAX_EDGE_PX`). Every
+  threshold is relative to the measured note size, so a bigger frame buys no
+  accuracy: swept from 600 to 2500px and tiled, nothing beats 1000, and below
+  1000 the night wall's note size is mismeasured
+  ([experiments](experiments/d-resolution.md)). The handwriting crops are cut from the full-resolution bitmap, so
   reading keeps every pixel. Measured in the browser on three real photos: 20,
   32 and 34 notes.
 - **A sticky more than about 60% covered** reads as a fragment of whatever is

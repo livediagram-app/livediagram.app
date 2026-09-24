@@ -822,8 +822,9 @@ low-threshold capture surface can least afford.
 
   **What is still outstanding, explicitly.** The working image is SCALED TO
   1000px before detection (`PHOTO_MAX_EDGE_PX`), because that is where the
-  detector was calibrated and where it finds the most notes; at 2048 it found a
-  quarter as many. The handwriting crops are cut from the full-resolution
+  detector scores best: every threshold is relative to the measured note
+  size, so a larger working image (swept to 2500px, and tiled) buys no accuracy
+  and costs time in proportion to its pixels. The handwriting crops are cut from the full-resolution
   bitmap, so reading loses nothing. Measured on the three real photos through
   the browser detector: 20, 32 and 34 notes. The far plane of a wall corner is
   largely missed, and crop quality for small pen handwriting is unproven. The
