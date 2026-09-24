@@ -74,6 +74,15 @@ describe('findSeam', () => {
     expect(findSeam(s.lum, boxOf(10, 10, 44, 40), 22)).not.toBeNull();
   });
 
+  it('finds none across a box a third of a note longer than a note', () => {
+    // 1.35 notes long: a note photographed nearer than those around it, or
+    // read against a local size a little small, with a crease across it.
+    const s = scene(100, 60);
+    s.paint(10, 10, 54, 40, 200, 1);
+    s.paint(36, 10, 2, 40, 165);
+    expect(findSeam(s.lum, boxOf(10, 10, 54, 40), 40)).toBeNull();
+  });
+
   it('finds the step between two flush notes of different brightness', () => {
     // Two notes butted together, one lit a little less than the other: no
     // shadow line between them, only the paper's level changing.

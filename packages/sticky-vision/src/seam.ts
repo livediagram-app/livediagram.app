@@ -42,8 +42,10 @@ const SEAM_MIN_PIECE = 0.55;
 // notes lapped nearly flush. Measured on the eight labelled walls: of 73
 // seams found, 66 crossed a single note, most of them in boxes 1.05–1.25
 // notes long; the ones between two notes that can be told apart were in
-// boxes 1.3–1.75 long. Any value from 1.25 to 1.5 scores within a note of the best.
-const SEAM_MIN_SPAN = 1.3;
+// boxes 1.3–1.75 long. With the note size read locally (see `size-field.ts`),
+// 1.35 to 1.5 all score TOTAL 94.1 (merged 20–21); 1.3 finds one actor
+// fewer on the panorama, 1.25 costs the whiteboard a note.
+const SEAM_MIN_SPAN = 1.4;
 // How far a seam may lean, as a fraction of its length: notes are stuck on
 // by hand.
 const SEAM_MAX_TILT = 0.08;
