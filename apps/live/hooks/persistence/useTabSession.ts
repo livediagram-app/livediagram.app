@@ -138,6 +138,34 @@ export function useTabSession(deps: TabSessionDeps) {
     track('Tab', 'Changed', 'TimerReset');
   };
 
+  // Give a running countdown more time without restarting it (spec/39):
+  // "another minute, everyone". Both the end instant and the length grow by
+  // the same amount, so the dial's wedge and the progress track stay a true
+  // fraction of the whole instead of jumping back to full. A paused
+  // countdown grows its frozen remainder the same way. A stopwatch has no
+  // length to extend, so it is left alone.
+  const extendTimer = (deltaMs: number) => {
+    if (editsBlocked) return;
+    const current = deps.activeTab.timer;
+    if (!current || current.mode !== 'countdown' || deltaMs <= 0) return;
+    patchActive((t) => {
+      const timer = t.timer;
+      if (!timer || timer.mode !== 'countdown') return t;
+      const now = Date.now();
+      // A countdown already at zero restarts from now rather than from an end
+      // instant in the past, which would add time the room never sees.
+      const remaining = timerDisplayMs(timer, now);
+      const durationMs = (timer.durationMs ?? remaining) + deltaMs;
+      return {
+        ...t,
+        timer: timer.running
+          ? { ...timer, durationMs, anchorAt: now + remaining + deltaMs }
+          : { ...timer, durationMs, frozenMs: remaining + deltaMs },
+      };
+    });
+    track('Tab', 'Changed', 'TimerExtended');
+  };
+
   const clearTimer = () => {
     if (editsBlocked) return;
     // Read the mode BEFORE the patch drops it — this is the counterpart to
@@ -287,6 +315,7 @@ export function useTabSession(deps: TabSessionDeps) {
     resumeTimer,
     resetTimer,
     setTimerDuration,
+    extendTimer,
     clearTimer,
     startVote,
     endVote,

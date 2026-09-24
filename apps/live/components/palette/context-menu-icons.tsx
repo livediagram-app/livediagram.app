@@ -230,27 +230,6 @@ export function TimerMenuIcon() {
   );
 }
 
-// Hourglass - the Countdown session-tool category glyph (time running out).
-export function CountdownMenuIcon() {
-  return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M4 2h8M4 14h8" />
-      <path d="M5 2v2.5c0 1.8 3 2.7 3 3.5s-3 1.7-3 3.5V14" />
-      <path d="M11 2v2.5c0 1.8-3 2.7-3 3.5s3 1.7 3 3.5V14" />
-    </svg>
-  );
-}
-
 // Check-in-circle - the Vote session-tool category glyph (a cast dot-vote).
 // `size` defaults to the 12px the context menus use; the mobile dock passes
 // 16 so these sit at the same weight as the other dock icons, which are all

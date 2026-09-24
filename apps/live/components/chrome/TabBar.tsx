@@ -1,4 +1,5 @@
 import dynamic from 'next/dynamic';
+import { MenuErrorBoundary } from '@/components/primitives/MenuErrorBoundary';
 import { useEffect, useState, type ReactNode } from 'react';
 import {
   folderNamesInDiagram,
@@ -153,6 +154,7 @@ export function TabBar({
   onResumeTimer,
   onResetTimer,
   onClearTimer,
+  onExtendTimer,
   onStartVote,
   onEndVote,
   onRevealVote,
@@ -261,6 +263,7 @@ export function TabBar({
     onResumeTimer,
     onResetTimer,
     onClearTimer,
+    onExtendTimer,
     onStartVote,
     onEndVote,
     onRevealVote,
@@ -361,12 +364,15 @@ export function TabBar({
         />
       </div>
       {canvasMenu && !readOnly && activeTab && onCloseCanvasMenu && canvasActions ? (
-        <PortalMenu
-          point={canvasMenu}
-          onClose={onCloseCanvasMenu}
-          canvas={canvasActions}
-          {...tabMenuProps(activeTab, onCloseCanvasMenu)}
-        />
+        // A fault inside the menu closes the menu, not the editor.
+        <MenuErrorBoundary onError={onCloseCanvasMenu}>
+          <PortalMenu
+            point={canvasMenu}
+            onClose={onCloseCanvasMenu}
+            canvas={canvasActions}
+            {...tabMenuProps(activeTab, onCloseCanvasMenu)}
+          />
+        </MenuErrorBoundary>
       ) : null}
     </>
   );

@@ -94,11 +94,16 @@ when an op arrives so a hand-crafted frame can't blow up a peer's panel:
 
 ## Lifecycle
 
-1. **Compose.** Tab menu → **Collaborate → Poll**: question, style, options
-   if the style needs them, then **Start poll**. Edit-role only. Collaborate
-   is the side-flyout parent row that groups the live session tools
-   (Countdown / Stopwatch / Vote / Poll) under one entry, the same
-   parent/child pattern the element menu uses.
+1. **Compose.** Tab menu → **Collaborate → Poll** (the Session Studio,
+   spec/39): question, answer style picked from drawn tiles, answers if the
+   style needs them (Enter moves to the next, making one at the end), then
+   **Ask everyone** (or Enter in the question). A **What people see** card
+   previews the exact prompt, built from the same `pollStyleTokens` the real
+   prompt reads, so a typo is caught before it lands on every screen. The
+   button names what is missing while it can't ask ("Write a question to
+   ask", "Add at least 2 answers") instead of sitting greyed out. Edit-role
+   only. Without a room to ask (not shared, not on a team) the pane is an
+   empty state saying so rather than a form that can't be sent.
 2. **Prompt.** Every connected participant gets a modal with the question and
    a **Skip** escape (Escape and a backdrop click both skip, so dismissing is
    an answer of "no opinion" rather than a silent drop). Answering or skipping

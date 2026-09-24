@@ -70,7 +70,9 @@ function loneSection(children: ReactNode): ReactNode | null {
 }
 
 export function MenuFlyoutSection(props: MenuFlyoutSectionProps) {
-  const lone = loneSection(props.children);
+  // A panel is one purpose-built surface, not a list of sections, so there is
+  // nothing to promote: its single child is the whole point of the flyout.
+  const lone = props.panel ? null : loneSection(props.children);
   // Rendered instead of the flyout, not inside it — so the hooks below (the
   // portal, the position tracker, the outside-click) never run for a row that
   // has no panel to position.
@@ -86,6 +88,10 @@ type MenuFlyoutSectionProps = {
   onOpen?: () => void;
   open?: boolean;
   onToggle?: () => void;
+  // The children are ONE custom panel (the Collaborate row's Session Studio)
+  // rather than a stack of accordion sections: never promoted inline, drawn
+  // wider, and scrollable when it is taller than the screen.
+  panel?: boolean;
 };
 
 function Flyout({
@@ -104,6 +110,7 @@ function Flyout({
   // state (open + onToggle travel together).
   open: controlledOpen,
   onToggle,
+  panel = false,
 }: MenuFlyoutSectionProps) {
   const triggerRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -344,7 +351,11 @@ function Flyout({
             // rendered behind — tapping Collaborate on a phone appeared to do
             // nothing at all. Same reason the token exists for menus opened inside
             // a dialog.
-            className="fixed z-[var(--z-popover)] flex w-56 animate-fade-in flex-col overflow-hidden rounded-md border border-slate-200 bg-white/95 text-sm shadow-lg backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/95 dark:shadow-slate-950/40"
+            className={`fixed z-[var(--z-popover)] flex animate-fade-in flex-col rounded-md ${
+              panel
+                ? 'max-h-[calc(100dvh-1rem)] w-72 overflow-y-auto overscroll-contain'
+                : 'w-56 overflow-hidden'
+            } border border-slate-200 bg-white/95 text-sm shadow-lg backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/95 dark:shadow-slate-950/40`}
             style={{
               left: pos?.left ?? 0,
               top: pos?.top ?? 0,

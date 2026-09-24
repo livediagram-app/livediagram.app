@@ -30,26 +30,44 @@ live counts but can't control or vote. No extra gating code.
 
 Both tools can also be started by a [Session button](105-session-button.md) — a canvas element carrying "5 minute timer" or "vote, 3 dots each" — so a board can carry its own facilitation instead of relying on whoever built it. It presses through the same entry points described below, so every rule here still applies, the edit-role gate included.
 
+## The Session Studio
+
+The tab menu's **Collaborate** row opens one side-flyout panel (a
+`MenuFlyoutSection` with `panel`, so it is never promoted inline and is
+drawn wider, `w-72`, scrolling when taller than the screen). It replaced four
+stacked accordions (Timer, Stopwatch, Vote, Poll) that were strips of small
+grey buttons. A segmented switcher across the top, **Timer · Vote ·
+Poll**, carries a status dot per tool (green pulsing = running, amber = set
+up but paused / closed), and the panel **opens on whatever is live**
+(`initialStudioTool`: live beats idle, poll before vote before timer), since
+the usual reason to come back mid-session is to drive what is running. Each
+tool gets a purpose-built pane (`components/panels/session-studio/`), described
+under its section below and in spec/88 for the poll.
+
 ## Timer
 
 `tab.timer: { mode: 'countdown' | 'stopwatch'; running; durationMs?; anchorAt?; frozenMs? }`.
 
-- Controlled from the tab menu's **Collaborate** row — a side-flyout
-  parent (`MenuFlyoutSection`, the same parent/child pattern the element
-  menu uses for Style / Text / Tools) that groups every live session tool
-  under one entry instead of four top-level rows: **Timer**,
-  **Stopwatch**, **Vote**, and the ephemeral **Poll** (spec/88). The Timer
-  category was originally labelled "Countdown"; it reads **Timer** in the UI
-  (the countdown/stopwatch split is a mode, not two features), and the
-  telemetry type stays `CountdownTimer` so the series doesn't break.
-  Timer carries a duration (1 / 3 / 5 / 10 min presets); both timers offer
-  **Start / Pause / Resume / Reset / Clear**
-  (`useTabSession`). The open category shows a live big-digit clock with a
-  running/paused status and, for countdowns, a progress track.
-- **One timer per tab**: `tab.timer` is a single value, so starting either
-  tool replaces (resets) the other. When the other tool is running, the
-  Start UI says so before it happens ("Starting resets the running
-  stopwatch/countdown").
+- Controlled from the tab menu's **Collaborate** row, the **Session
+  Studio** (see below). Countdown and Stopwatch are one **Timer** tool with a
+  mode switch, since a tab runs one timer (the telemetry types stay
+  `CountdownTimer` / `StopwatchTimer`). A countdown's length is set on the
+  **dial**: drag the handle round (one lap = an hour, the wedge IS the time),
+  tap a preset (1 / 3 / 5 / 10 / 15 / 30 min), or step a minute with − / +,
+  up to `TIMER_MINUTES_RANGE.max` (2 hours; a length past one lap draws an
+  outer lap ring). The dial is a `role="slider"` and takes arrow keys (±1),
+  Page Up/Down (±5), Home / End. Dragging past twelve **sticks at the pin**
+  rather than wrapping 59 → 1 (`dialDragMinutes`). Running, the same dial is
+  the readout: the wedge drains toward twelve, turning amber in the last
+  minute and red at zero; a stopwatch sweeps a ring once a minute. Under it
+  sit round transport buttons, **Reset / Pause|Resume / End** (and **Again**
+  once a countdown hits zero, which restarts it at its length), plus
+  **+30s / +1 min / +5 min** on a countdown (`extendTimer`: the end instant
+  and the length grow together, so the wedge stays a true fraction instead of
+  jumping back to full; telemetry `Changed TimerExtended`).
+- **One timer per tab**: `tab.timer` is a single value. While one exists the
+  Timer pane shows it instead of the set-up, so there is no way to start a
+  second one by accident; ending it returns to the set-up.
 - Clients tick **locally off an absolute wall-clock anchor** (`anchorAt` =
   countdown end-time or stopwatch start instant), so there is **no per-second
   network chatter** — every client computes the same value via the pure
@@ -72,9 +90,15 @@ Both tools can also be started by a [Session button](105-session-button.md) — 
 `tab.vote: { active; revealed; votesPerPerson; votes: Record<elementId, participantId[]> }`
 — one participant id per dot, so stacking N dots on one element is N entries.
 
-- Controlled from **Tab menu → Collaborate → Vote**: a **dots-per-person**
-  stepper, then **Start vote** → **End vote** → **Show results** → **Clear**,
-  with a live "N cast" readout.
+- Controlled from **Tab menu → Collaborate → Vote** (the Session
+  Studio): the dot budget is picked as a **row of dots** (tap the fifth for
+  five each, `VOTE_DOTS_RANGE` 1-10, the same range as the Session button),
+  the privacy switches are cards that say what the room will not see, then
+  **Start vote** → **End vote** → **Show results** → **Clear vote**. Running,
+  the pane shows a three-step track (Voting · Ended · Results), live counts of
+  dots placed and distinct voters, the rules in force as chips, and ONE
+  primary button for the next step (Clear vote stays available as a
+  secondary until results are shown).
 - **Votable targets** (`isVotable`): shapes, sticky notes, and images — **not**
   the `frame` shape (a section backdrop) and not text / freehand / table /
   arrow / annotation.

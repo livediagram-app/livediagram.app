@@ -64,6 +64,7 @@ export function EditorView() {
     pauseTimer,
     resumeTimer,
     resetTimer,
+    extendTimer,
     clearTimer,
     startVote,
     endVote,
@@ -287,6 +288,7 @@ export function EditorView() {
             onPauseTimer={pauseTimer}
             onResumeTimer={resumeTimer}
             onResetTimer={resetTimer}
+            onExtendTimer={extendTimer}
             onClearTimer={clearTimer}
             onStartVote={startVote}
             onEndVote={endVote}
