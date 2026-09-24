@@ -85,6 +85,22 @@ export function applyTextColorToEl(el: Element, color: string): Element {
   return el;
 }
 
+// An arrow's arrowhead colour, when it should differ from the line's. Arrows
+// only: nothing else has a pointer to paint.
+export function applyArrowheadColorToEl(el: Element, color: string): Element {
+  return el.type === 'arrow' ? { ...el, arrowheadColor: color } : el;
+}
+
+// The heading band's fill, for the elements that HAVE a heading distinct from
+// their body: a table's header row and a lane's title gutter. A no-op on
+// anything else, so a multi-selection containing a mix only paints the ones
+// with a heading rather than parking a dead field on the rest.
+export function applyHeaderFillToEl(el: Element, color: string): Element {
+  if (el.type === 'table') return { ...el, headerFill: color };
+  if (el.type === 'shape' && el.shape === 'lane') return { ...el, headerFill: color };
+  return el;
+}
+
 // Border weight / pattern apply to any border-bearing element (shapes + the
 // freehand pen) plus tables; radius is shape-only.
 export function applyBorderStrokeToEl(el: Element, value: BorderStroke): Element {

@@ -75,15 +75,26 @@ export function useColorStyleSetters(deps: {
   const setTextColorSelected = (color: string) =>
     commitSelectedStyle('textColor', (el) => applyTextColorToEl(el, color));
 
-  // Table header-band colours (debounced like the other colour
-  // pickers). Apply only to selected tables.
-  const setTableHeaderFillSelected = (color: string) =>
+  // Heading-band colour (debounced like the other colour pickers), for the
+  // elements that have a heading distinct from their body: a table's header
+  // row and a lane's title gutter (spec/119). One field and one setter,
+  // because it is one idea wearing two silhouettes.
+  const setHeaderFillSelected = (color: string) =>
     commitSelectedStyle('headerFill', (el) =>
-      el.type === 'table' ? { ...el, headerFill: color } : el,
+      el.type === 'table' || (el.type === 'shape' && el.shape === 'lane')
+        ? { ...el, headerFill: color }
+        : el,
     );
   const setTableHeaderTextColorSelected = (color: string) =>
     commitSelectedStyle('headerTextColor', (el) =>
       el.type === 'table' ? { ...el, headerTextColor: color } : el,
+    );
+
+  // The arrowhead's own colour (spec/09 arrow styles), for a head that should
+  // not match its line.
+  const setArrowheadColorSelected = (color: string) =>
+    commitSelectedStyle('arrowheadColor', (el) =>
+      el.type === 'arrow' ? { ...el, arrowheadColor: color } : el,
     );
 
   const setOpacitySelected = (opacity: number) =>
@@ -177,7 +188,8 @@ export function useColorStyleSetters(deps: {
     setFillColorSelected,
     setStrokeColorSelected,
     setTextColorSelected,
-    setTableHeaderFillSelected,
+    setHeaderFillSelected,
+    setArrowheadColorSelected,
     setTableHeaderTextColorSelected,
     setOpacitySelected,
     setShadowSelected,

@@ -551,6 +551,9 @@ export type CanvasProps = {
   // Single combined table commit (cells + the parallel colWidths /
   // rowHeights / cellStyles arrays) applied in ONE commit, so structural
   // ops can't drop a side array or clobber each other off a stale base.
+  // A lane's title gutter, resized by dragging its seam (spec/119). One
+  // commit per gesture, so a drag is one undo step.
+  onCommitHeaderSize?: (elementId: string, px: number) => void;
   onCommitTable: (
     id: string,
     patch: Partial<

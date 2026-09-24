@@ -110,6 +110,14 @@ export type EditorContextMenuProps = {
   onCommitTextColor: (color: string) => void;
   onPreviewFillColor: (color: string) => void;
   onCommitFillColor: (color: string) => void;
+  // Heading band (a table's header row, a lane's title gutter).
+  // The arrowhead's own colour, for a head that should not match its line.
+  onSetArrowheadColor: (color: string) => void;
+  onPreviewArrowheadColor: (color: string) => void;
+  onCommitArrowheadColor: (color: string) => void;
+  onSetHeaderFill: (color: string) => void;
+  onPreviewHeaderFill: (color: string) => void;
+  onCommitHeaderFill: (color: string) => void;
   onPreviewStrokeColor: (color: string) => void;
   onCommitStrokeColor: (color: string) => void;
   onPreviewBorderStroke: (value: BorderStroke) => void;
@@ -267,6 +275,11 @@ export type EditorContextMenuProps = {
   // Preset colour swatches for the colour pickers, derived from the active
   // theme so the offered presets match it.
   presetColors: string[];
+  // The user's own palette (spec/09 Colours): colours they have used that
+  // the theme did not offer. Appended after the presets, and removable.
+  customColors: string[];
+  onAddCustomColor: (color: string) => void;
+  onRemoveCustomColor: (color: string) => void;
   // Table structure toggles (header row / column, zebra) for the Table
   // category.
   onToggleTableHeaderRow: () => void;

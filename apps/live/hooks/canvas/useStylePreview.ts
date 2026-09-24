@@ -65,6 +65,8 @@ import {
   applyShapeKindToEl,
   applyStrokeColorToEl,
   applyTextAlignToEl,
+  applyArrowheadColorToEl,
+  applyHeaderFillToEl,
   applyTextColorToEl,
   applyTextSizeToEl,
 } from '@/lib/style-presets';
@@ -217,6 +219,13 @@ export function useStylePreview(deps: {
       commitStyle((el) => applyStrokeColorToEl(el, c), 'StrokeColor'),
     previewTextColor: (c: string) => previewStyle((el) => applyTextColorToEl(el, c)),
     commitTextColor: (c: string) => commitStyle((el) => applyTextColorToEl(el, c), 'TextColor'),
+    // Heading band (a table's header row, a lane's title gutter): same flow,
+    // and a no-op on elements that have no heading to paint.
+    previewArrowheadColor: (c: string) => previewStyle((el) => applyArrowheadColorToEl(el, c)),
+    commitArrowheadColor: (c: string) =>
+      commitStyle((el) => applyArrowheadColorToEl(el, c), 'ArrowheadColor'),
+    previewHeaderFill: (c: string) => previewStyle((el) => applyHeaderFillToEl(el, c)),
+    commitHeaderFill: (c: string) => commitStyle((el) => applyHeaderFillToEl(el, c), 'HeaderFill'),
     // Border weight / pattern / radius tiles.
     previewBorderStroke: (v: BorderStroke) => previewStyle((el) => applyBorderStrokeToEl(el, v)),
     commitBorderStroke: (v: BorderStroke) =>

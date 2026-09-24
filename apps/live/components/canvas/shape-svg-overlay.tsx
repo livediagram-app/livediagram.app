@@ -221,16 +221,22 @@ export function ShapeSvgOverlay({
         />
       ) : null}
       {shape === 'frame' ? (
-        // Section container: outline ONLY (no fill, so the elements drawn
-        // inside show through) with the label in the top-left corner.
-        // Sharp corners avoid the stretched-rx warp the browser frame note
+        // Section container with the label in the top-left corner. Sharp
+        // corners avoid the stretched-rx warp the browser frame note
         // describes below.
+        //
+        // It takes the SAME fill as every other shape rather than a hardcoded
+        // `none`: a frame defaults to transparent (defaultFillColor), so the
+        // see-through look is unchanged, but a background colour picked in the
+        // context menu now actually paints. Frames sort to the front of their
+        // band and so paint BELOW their band-mates (layers.ts), which is what
+        // makes a filled frame a backdrop rather than a lid.
         <rect
           x={1}
           y={1}
           width={98}
           height={98}
-          fill="none"
+          fill={effectiveFill}
           stroke={stroke}
           strokeWidth={strokeWidth}
           strokeDasharray={traceOutline ? traceOutline.strokeDasharray : strokeDasharray}

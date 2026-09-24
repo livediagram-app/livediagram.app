@@ -141,6 +141,23 @@ export type ShapeElement = {
   fillColor?: string;
   strokeColor?: string;
   textColor?: string;
+  // Fill for an element's HEADING area, where it has one distinct from its
+  // body: a table's header row (spec/09) and a lane's title gutter
+  // (spec/119). Unset falls back to each one's own historical default, a
+  // tint of the grid stroke for a table and a 10% wash of the lane's stroke
+  // for a lane, so an unset heading looks exactly as it always did.
+  //
+  // Separate from `fillColor` because they are separate surfaces: a lane's
+  // body and its title strip are the two halves a swimlane is made of, and
+  // wanting a coloured heading over a plain body is the normal case, not an
+  // exotic one.
+  headerFill?: string;
+  // Thickness of that heading area in element-space px: a lane's gutter is
+  // 132 wide down a side and 64 tall across the top by default, and those
+  // numbers only ever suited the titles they were measured against. Drag the
+  // seam to change it. Unset keeps the default for the lane's orientation, so
+  // an untouched lane is exactly as it was.
+  headerSize?: number;
   // When set, theme transforms (recolour / switch / reset) leave this
   // shape's `fillColor` alone, so an intrinsic fill survives a theme
   // change the way a sticky note keeps its amber. Used by template
@@ -371,6 +388,17 @@ export type TextElement = {
   fillColor?: string;
   strokeColor?: string;
   textColor?: string;
+  // Fill for an element's HEADING area, where it has one distinct from its
+  // body: a table's header row (spec/09) and a lane's title gutter
+  // (spec/119). Unset falls back to each one's own historical default, a
+  // tint of the grid stroke for a table and a 10% wash of the lane's stroke
+  // for a lane, so an unset heading looks exactly as it always did.
+  //
+  // Separate from `fillColor` because they are separate surfaces: a lane's
+  // body and its title strip are the two halves a swimlane is made of, and
+  // wanting a coloured heading over a plain body is the normal case, not an
+  // exotic one.
+  headerFill?: string;
   aspectLocked?: boolean;
   opacity?: number; // 0..1, defaults to 1
   // Clockwise rotation in degrees about the element's centre. Absent
@@ -453,9 +481,10 @@ export type TableElement = {
   // (null = inherit the table defaults). Splices alongside cells
   // when rows / columns are added or removed.
   cellStyles?: (TableCellStyle | null)[][];
-  // Header-band colours, independent of the body cells. Unset =
-  // a tint of the grid stroke (fill) + the cell text colour (text).
-  headerFill?: string;
+  // Header-band TEXT colour, independent of the body cells. Unset = the cell
+  // text colour. (The band's FILL is the shared `headerFill` on the base
+  // element: a table's header row and a lane's title gutter are the same
+  // idea, so they are the same field.)
   headerTextColor?: string;
   // Per-column width override in element-space px. An entry of
   // null / undefined (or a short array) means "auto": that column
@@ -492,6 +521,17 @@ export type TableElement = {
   fillColor?: string;
   strokeColor?: string;
   textColor?: string;
+  // Fill for an element's HEADING area, where it has one distinct from its
+  // body: a table's header row (spec/09) and a lane's title gutter
+  // (spec/119). Unset falls back to each one's own historical default, a
+  // tint of the grid stroke for a table and a 10% wash of the lane's stroke
+  // for a lane, so an unset heading looks exactly as it always did.
+  //
+  // Separate from `fillColor` because they are separate surfaces: a lane's
+  // body and its title strip are the two halves a swimlane is made of, and
+  // wanting a coloured heading over a plain body is the normal case, not an
+  // exotic one.
+  headerFill?: string;
   strokeWidth?: BorderStroke;
   strokeStyle?: BorderStyle;
   aspectLocked?: boolean;
@@ -562,6 +602,17 @@ export type StickyElement = {
   fillColor?: string;
   strokeColor?: string;
   textColor?: string;
+  // Fill for an element's HEADING area, where it has one distinct from its
+  // body: a table's header row (spec/09) and a lane's title gutter
+  // (spec/119). Unset falls back to each one's own historical default, a
+  // tint of the grid stroke for a table and a 10% wash of the lane's stroke
+  // for a lane, so an unset heading looks exactly as it always did.
+  //
+  // Separate from `fillColor` because they are separate surfaces: a lane's
+  // body and its title strip are the two halves a swimlane is made of, and
+  // wanting a coloured heading over a plain body is the normal case, not an
+  // exotic one.
+  headerFill?: string;
   aspectLocked?: boolean;
   opacity?: number; // 0..1, defaults to 1
   // Drop shadow (spec/86). Absent = no shadow; see shadow.ts.
@@ -823,6 +874,17 @@ export type AnnotationElement = {
   fillColor?: string;
   strokeColor?: string;
   textColor?: string;
+  // Fill for an element's HEADING area, where it has one distinct from its
+  // body: a table's header row (spec/09) and a lane's title gutter
+  // (spec/119). Unset falls back to each one's own historical default, a
+  // tint of the grid stroke for a table and a 10% wash of the lane's stroke
+  // for a lane, so an unset heading looks exactly as it always did.
+  //
+  // Separate from `fillColor` because they are separate surfaces: a lane's
+  // body and its title strip are the two halves a swimlane is made of, and
+  // wanting a coloured heading over a plain body is the normal case, not an
+  // exotic one.
+  headerFill?: string;
   // An annotation has no editable label; declared always-undefined so the
   // generic "boxed element has a label" paths compile (mirrors Table/Image).
   label?: string;
@@ -898,6 +960,17 @@ export type LinkCardElement = {
   fillColor?: string;
   strokeColor?: string;
   textColor?: string;
+  // Fill for an element's HEADING area, where it has one distinct from its
+  // body: a table's header row (spec/09) and a lane's title gutter
+  // (spec/119). Unset falls back to each one's own historical default, a
+  // tint of the grid stroke for a table and a 10% wash of the lane's stroke
+  // for a lane, so an unset heading looks exactly as it always did.
+  //
+  // Separate from `fillColor` because they are separate surfaces: a lane's
+  // body and its title strip are the two halves a swimlane is made of, and
+  // wanting a coloured heading over a plain body is the normal case, not an
+  // exotic one.
+  headerFill?: string;
   // The URL source + everyday boxed fields.
   link?: ElementLink;
   label?: string;
@@ -976,6 +1049,17 @@ export type VideoElement = {
   fillColor?: string;
   strokeColor?: string;
   textColor?: string;
+  // Fill for an element's HEADING area, where it has one distinct from its
+  // body: a table's header row (spec/09) and a lane's title gutter
+  // (spec/119). Unset falls back to each one's own historical default, a
+  // tint of the grid stroke for a table and a 10% wash of the lane's stroke
+  // for a lane, so an unset heading looks exactly as it always did.
+  //
+  // Separate from `fillColor` because they are separate surfaces: a lane's
+  // body and its title strip are the two halves a swimlane is made of, and
+  // wanting a coloured heading over a plain body is the normal case, not an
+  // exotic one.
+  headerFill?: string;
   // The URL source + everyday boxed fields.
   link?: ElementLink;
   label?: string;

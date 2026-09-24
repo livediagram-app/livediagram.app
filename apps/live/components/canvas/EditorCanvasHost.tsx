@@ -165,6 +165,7 @@ export function EditorCanvasHost() {
     commitPolygon,
     commitLabel,
     commitTable,
+    commitHeaderSize,
     createFolder,
     deleteCurvePoint,
     deleteDiagram,
@@ -917,6 +918,7 @@ export function EditorCanvasHost() {
       onBeginEdit={beginEdit}
       onCommitLabel={commitLabel}
       onCommitTable={commitTable}
+      onCommitHeaderSize={commitHeaderSize}
       onAddRailPoint={addRailPointSelected}
       onAddTableRow={appendTableRowSelected}
       onAddTableColumn={appendTableColumnSelected}

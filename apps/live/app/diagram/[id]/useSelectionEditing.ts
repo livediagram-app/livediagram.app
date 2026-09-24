@@ -152,6 +152,14 @@ export function useSelectionEditing(opts: {
     );
   };
 
+  // A lane's title gutter, resized by dragging its seam (spec/119). One
+  // commit on release, like the table's dividers: the drag itself is live
+  // local state in the view, so a gesture is one undo step rather than one
+  // per pixel.
+  const commitHeaderSize = (elementId: string, headerSize: number) => {
+    commit((els) => els.map((el) => (el.id === elementId ? { ...el, headerSize } : el)));
+  };
+
   const commitLabel = (elementId: string, label: string, runs?: TextRun[]) => {
     // Per-range formatting (spec/09): keep `richText` only when it carries
     // real overrides, otherwise strip it so a plain label round-trips as
@@ -313,6 +321,7 @@ export function useSelectionEditing(opts: {
     beginEdit,
     commitLabel,
     commitTable,
+    commitHeaderSize,
     cancelEdit,
     typeIntoSelected,
     selectElement,

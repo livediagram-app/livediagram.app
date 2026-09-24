@@ -186,6 +186,18 @@ export function defaultTextAlign(element: BoxedElement): { x: TextAlignX; y: Tex
 // doesn't override them with explicit `fillColor` / `strokeColor` fields.
 // Hex strings so they can also seed the colour picker UI.
 export function defaultFillColor(element: BoxedElement, surface: CanvasSurface = 'light'): string {
+  // A frame is a section BACKDROP you place elements inside (spec/09), so with
+  // no explicit fill it is see-through on either surface, whatever the shape
+  // default would be. It is still fillable: set `fillColor` and the frame
+  // paints that behind its contents, which is safe because frames sort to the
+  // front of their band and therefore paint below their band-mates (layers.ts).
+  //
+  // This used to be hardcoded as `fill="none"` in the canvas renderer instead,
+  // which had two consequences: a background colour picked in the context menu
+  // did nothing, and the headless renderer (exports, the minimap) never got
+  // the memo and filled every frame with the shape default, so a frame that
+  // was transparent on the canvas exported pale blue.
+  if (element.type === 'shape' && element.shape === 'frame') return 'transparent';
   if (surface === 'dark') {
     switch (element.type) {
       case 'shape':
@@ -266,6 +278,27 @@ export function defaultStrokeColor(
     case 'video':
       return '#1e293b'; // slate-800 — a hairline barely off the player surface
   }
+}
+
+// Whether an element exposes a BACKGROUND colour control. Text and images
+// have no fill to expose; everything else does, including a frame, whose fill
+// merely defaults to transparent.
+//
+// Call sites used to ask `defaultFillColor(el) !== 'transparent'` as a proxy
+// for this, which was the same question right up until a fillable element
+// defaulted to transparent, at which point the proxy hid the very control
+// that would set it.
+export function supportsFillColor(element: Element): boolean {
+  if (!supportsColours(element)) return false;
+  return element.type !== 'text' && element.type !== 'image';
+}
+
+// Whether an element has a HEADING area distinct from its body, and so
+// exposes a heading-background control: a table's header row and a lane's
+// title gutter (spec/119). Everything else is one surface.
+export function hasHeadingBand(element: Element): boolean {
+  if (element.type === 'table') return true;
+  return element.type === 'shape' && element.shape === 'lane';
 }
 
 export function supportsColours(element: Element): boolean {

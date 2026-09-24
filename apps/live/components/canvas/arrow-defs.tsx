@@ -20,41 +20,71 @@ export function arrowheadMarkerId(shape: ArrowheadShape, size: ArrowheadSize): s
 // through the marker boundary (currentColor didn't inherit reliably).
 // The `-hollow` variants fill white and outline with the line colour;
 // `line` is an open V with no fill.
-function arrowheadMarkerShape(shape: ArrowheadShape) {
+function arrowheadMarkerShape(shape: ArrowheadShape, paint = 'context-stroke') {
   switch (shape) {
     case 'triangle':
-      return <path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke" />;
+      return <path d="M 0 0 L 10 5 L 0 10 z" fill={paint} />;
     case 'triangle-hollow':
-      return (
-        <path d="M 0.6 1 L 9.4 5 L 0.6 9 z" fill="white" stroke="context-stroke" strokeWidth={1} />
-      );
+      return <path d="M 0.6 1 L 9.4 5 L 0.6 9 z" fill="white" stroke={paint} strokeWidth={1} />;
     case 'line':
       return (
         <path
           d="M 0 0 L 10 5 L 0 10"
           fill="none"
-          stroke="context-stroke"
+          stroke={paint}
           strokeWidth={1.6}
           strokeLinecap="round"
           strokeLinejoin="round"
         />
       );
     case 'circle':
-      return <circle cx="5" cy="5" r="4.5" fill="context-stroke" />;
+      return <circle cx="5" cy="5" r="4.5" fill={paint} />;
     case 'circle-hollow':
-      return <circle cx="5" cy="5" r="4" fill="white" stroke="context-stroke" strokeWidth={1} />;
+      return <circle cx="5" cy="5" r="4" fill="white" stroke={paint} strokeWidth={1} />;
     case 'diamond':
-      return <path d="M 0 5 L 5 0 L 10 5 L 5 10 z" fill="context-stroke" />;
+      return <path d="M 0 5 L 5 0 L 10 5 L 5 10 z" fill={paint} />;
     case 'diamond-hollow':
       return (
-        <path
-          d="M 0.7 5 L 5 0.7 L 9.3 5 L 5 9.3 z"
-          fill="white"
-          stroke="context-stroke"
-          strokeWidth={1}
-        />
+        <path d="M 0.7 5 L 5 0.7 L 9.3 5 L 5 9.3 z" fill="white" stroke={paint} strokeWidth={1} />
       );
   }
+}
+
+// One arrow's own arrowhead marker, for when its heads are a different colour
+// from its line. The shared defs paint with `context-stroke`, which by
+// definition IS the line's colour, so a separate head colour needs a marker
+// that names the colour outright. Scoped to the arrow by id, and only
+// rendered when the arrow actually sets one, so the shared markers keep
+// serving every ordinary arrow.
+export function ArrowHeadMarker({
+  id,
+  shape,
+  size,
+  color,
+}: {
+  id: string;
+  shape: ArrowheadShape;
+  size: ArrowheadSize;
+  color: string;
+}) {
+  return (
+    <defs>
+      <marker
+        id={id}
+        viewBox="0 0 10 10"
+        refX="9"
+        refY="5"
+        markerWidth={ARROWHEAD_SIZE_PX[size]}
+        markerHeight={ARROWHEAD_SIZE_PX[size]}
+        orient="auto-start-reverse"
+      >
+        {/* The shared geometry, re-painted. `context-stroke` inside it would
+            resolve to the LINE's colour, which is the thing we are overriding,
+            so the fills and strokes are substituted here. */}
+        <g style={{ color }}>{arrowheadMarkerShape(shape, color)}</g>
+      </marker>
+    </defs>
+  );
 }
 
 export function ArrowDefs() {

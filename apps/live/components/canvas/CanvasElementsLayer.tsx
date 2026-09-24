@@ -1,16 +1,20 @@
 import { useMemo } from 'react';
 import { useStableHandlers } from '@/hooks/ui/useStableHandlers';
+import { useMindGrow } from '@/components/canvas/MindGrowContext';
 import { useFontsReady } from './useFontsReady';
 import {
   eventStormingNoteFont,
   resolveFontStack,
   isSelectionMode,
+  alignmentCoordinates,
   buildElementIndex,
   isBoxed,
   isRailShape,
   isVotableInVote,
   layerBands,
+  laneSeamCoordinates,
   layerOpacityOf,
+  snapSeamCoordinate,
 } from '@livediagram/diagram';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { type QuickConnectDirection } from '@/lib/canvas';
@@ -93,6 +97,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onCommitLabel,
     onSetTextAlign,
     onCommitTable,
+    onCommitHeaderSize,
     onAddRailPoint,
     onAddTableRow,
     onAddTableColumn,
@@ -192,6 +197,16 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onRetractVote: readOnly ? undefined : onRetractVote,
     onSetTextAlign: readOnly ? undefined : onSetTextAlign,
     onCommitTable,
+    onCommitHeaderSize: readOnly ? undefined : onCommitHeaderSize,
+    // The seam's snap targets (spec/119). Resolved here because this is where
+    // the sibling elements are: BoxedElementView only ever sees its own.
+    onSnapSeam: readOnly
+      ? undefined
+      : (candidate: number, axis: 'x' | 'y', excludeId: string, edgeOf, sizeOf) =>
+          snapSeamCoordinate(candidate, {
+            seams: laneSeamCoordinates(elements, axis, excludeId, edgeOf, sizeOf),
+            alignment: alignmentCoordinates(elements, axis, excludeId),
+          }).value,
     onSetRailLabel,
     onToggleChecklistItem: readOnly ? undefined : onToggleChecklistItem,
     onSetPageHeading,
@@ -261,6 +276,8 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
   const selectedElement = selectedId ? elements.find((e) => e.id === selectedId) : undefined;
   const selectedIsRail = selectedElement?.type === 'shape' && isRailShape(selectedElement.shape);
   const selectedIsTable = selectedElement?.type === 'table';
+  const selectedIsMind = selectedElement?.type === 'shape' && selectedElement.shape === 'mind-node';
+  const growMind = useMindGrow();
   return (
     <>
       {/* Shared arrowhead defs. Multiple per-arrow <svg>s below
@@ -382,6 +399,8 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             onCommitLabel={h.onCommitLabel}
             onSetTextAlign={h.onSetTextAlign}
             onCommitTable={h.onCommitTable}
+            onCommitHeaderSize={h.onCommitHeaderSize}
+            onSnapSeam={h.onSnapSeam}
             onSetRailLabel={h.onSetRailLabel}
             onToggleChecklistItem={h.onToggleChecklistItem}
             onSetPageHeading={h.onSetPageHeading}
@@ -529,6 +548,14 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
               onAddTableRow={selectedIsTable && placement === 'below' ? onAddTableRow : undefined}
               onAddTableColumn={
                 selectedIsTable && placement === 'right' ? onAddTableColumn : undefined
+              }
+              // Mind map (spec/118): Add child / Add sibling, each naming its
+              // shortcut in the tooltip. Only on a mind node, and only where
+              // there is a grower (not the share view, embed, or exports).
+              onGrowMind={
+                selectedIsMind && growMind
+                  ? (relation) => growMind(selectedElement.id, relation)
+                  : undefined
               }
             />
           ))

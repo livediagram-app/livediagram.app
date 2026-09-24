@@ -82,6 +82,8 @@ type ElementAppearanceSectionsProps = {
   colorProps: Scaffold['colorProps'];
   textColorHandlers: Scaffold['textColorHandlers'];
   fillColorHandlers: Scaffold['fillColorHandlers'];
+  headerFillHandlers: Scaffold['headerFillHandlers'];
+  arrowheadColorHandlers: Scaffold['arrowheadColorHandlers'];
   strokeColorHandlers: Scaffold['strokeColorHandlers'];
 };
 
@@ -94,6 +96,8 @@ export function ElementAppearanceSections({
   colorProps,
   textColorHandlers,
   fillColorHandlers,
+  headerFillHandlers,
+  arrowheadColorHandlers,
   strokeColorHandlers,
 }: ElementAppearanceSectionsProps) {
   const boxed = isBoxed(target);
@@ -216,6 +220,8 @@ export function ElementAppearanceSections({
             colorProps={colorProps}
             textColorHandlers={textColorHandlers}
             fillColorHandlers={fillColorHandlers}
+            headerFillHandlers={headerFillHandlers}
+            arrowheadColorHandlers={arrowheadColorHandlers}
             strokeColorHandlers={strokeColorHandlers}
           />
         </MenuFlyoutSection>

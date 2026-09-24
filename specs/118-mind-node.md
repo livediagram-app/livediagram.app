@@ -74,12 +74,19 @@ undo stack has moved on.
 
 ## Discoverability
 
-A selected mind node shows a small hint chip under it: `Tab child · Enter
-sibling`. Keyboard-driven expansion is worthless if nobody finds it, and a
-tooltip on a palette tile is read once, months before it matters.
+A selected mind node's quick-add **"+"** leads with **Add child** and **Add
+sibling**, each naming its shortcut in the tooltip ("Shortcut: Tab", "Shortcut:
+Enter"). Keyboard-driven expansion is worthless if nobody finds it, and a
+tooltip on a palette tile is read once, months before it matters. The "+" is
+where every other per-element action already lives, so the two that grow a
+mind map belong there too, and the actions work by pointer as well as by key,
+which the shortcuts alone never did.
 
-The chip is suppressed while the label is being edited (the keys mean something
-else there) and on touch viewports, where there is no keyboard to hint at.
+This **replaces a hint chip** pinned under the selected node. It announced the
+two shortcuts to everybody forever rather than to whoever was looking for
+them; it was dark enough to read as an error state in light mode; and it hung
+off the node's left edge rather than centred, because a centred one landed
+underneath the very "+" the actions now live in.
 
 ## What it is not
 

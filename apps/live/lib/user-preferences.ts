@@ -167,6 +167,13 @@ export type UserPreferences = {
   // Ids only, so the list stays small; the whole preferences blob has a
   // 4 KB server-side cap, which `toggleRecentExcluded` below budgets for.
   // Missing / undefined === nothing excluded.
+  // Colours you have used that were not already on the theme's palette
+  // (spec/09 Colours). Picking one off the OS picker or the pipette adds it
+  // here, so the next element can be given the SAME colour with one click
+  // instead of being matched by eye. Right-clicking one removes it again.
+  // Newest first, capped, and synced like every other preference so a
+  // palette you have built follows you between devices.
+  customSwatches?: string[];
   recentExcludedIds?: string[];
 };
 

@@ -516,3 +516,4 @@ export * from './fonts';
 // helpers a presentation is built from. Kept here rather than in apps/live
 // because the api and the MCP worker can answer the same questions.
 export * from './slide-deck';
+export * from './lane-seam-snapping';
