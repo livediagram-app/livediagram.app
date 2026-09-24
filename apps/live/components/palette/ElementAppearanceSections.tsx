@@ -20,6 +20,8 @@ import {
   isChartShape,
   isChecklistShape,
   isCodeBlockShape,
+  isLegendShape,
+  isMindNode,
   isLineShape,
   isProgressShape,
   isRailShape,
@@ -113,6 +115,8 @@ export function ElementAppearanceSections({
   const isChart = target.type === 'shape' && isChartShape(target.shape);
   const isLine = target.type === 'shape' && isLineShape(target.shape);
   const isCodeBlock = target.type === 'shape' && isCodeBlockShape(target.shape);
+  const isLegend = target.type === 'shape' && isLegendShape(target.shape);
+  const isMind = isMindNode(target);
   const isChecklist = target.type === 'shape' && isChecklistShape(target.shape);
   const isEntity = target.type === 'shape' && target.shape === 'entity';
   // Mode button (spec/103): its one setting is which mode it hands out.
@@ -217,6 +221,8 @@ export function ElementAppearanceSections({
         isChart={isChart}
         isLine={isLine}
         isCodeBlock={isCodeBlock}
+        isLegend={isLegend}
+        isMindNode={isMind}
         isChecklist={isChecklist}
         isEntity={isEntity}
         isModeButton={isModeButton}

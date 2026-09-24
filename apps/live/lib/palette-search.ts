@@ -70,6 +70,7 @@ export const SHAPE_KEYWORDS: Partial<Record<ShapeKind, string>> = {
   'progress-ring': 'donut ring percent gauge dial',
   'timeline-rail': 'timeline roadmap milestones track',
   rating: 'stars score review out of five',
+  legend: 'key colour code swatch label caption guide colour key',
   'pie-chart': 'donut share split proportion chart',
   'bar-chart': 'column histogram chart graph',
   'line-chart': 'trend series graph chart plot',

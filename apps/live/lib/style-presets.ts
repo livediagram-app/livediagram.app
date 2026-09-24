@@ -27,6 +27,8 @@ import {
   type IconSize,
   type Padding,
   type ShapeKind,
+  isChartShape,
+  type ChartPaletteId,
   type CodeThemeId,
   type ShapeMarker,
   type TextAlignX,
@@ -34,6 +36,7 @@ import {
   type TextSize,
 } from '@livediagram/diagram';
 import type { ShapeColorPreset } from './themes';
+import type { TablePreset } from '@livediagram/diagram';
 
 // Apply a theme-derived style preset to a shape: its colours (fill + stroke +
 // text) AND its border weight / pattern together — a preset is one complete
@@ -58,6 +61,30 @@ export function applyColorPresetToEl(el: Element, p: ShapeColorPreset): Element 
     strokeStyle: p.borderStyle,
     colorPreset: p.id,
   };
+}
+
+// A table look (spec/48): the four surfaces a table paints, plus the banding,
+// in one history step. `headerRow` / `headerColumn` are untouched: which cells
+// ARE headers is data, not a look. A no-op on anything but a table.
+export function applyTablePresetToEl(el: Element, p: TablePreset): Element {
+  if (el.type !== 'table') return el;
+  return {
+    ...el,
+    fillColor: p.fill,
+    strokeColor: p.stroke,
+    textColor: p.text,
+    headerFill: p.headerFill,
+    headerTextColor: p.headerText,
+    zebra: p.zebra,
+  };
+}
+
+// A chart's palette (spec/53). One field, like the code block's scheme: the
+// ramp is resolved at render, so this never touches the data and a slice the
+// user coloured deliberately keeps its colour.
+export function applyChartPaletteToEl(el: Element, id: ChartPaletteId): Element {
+  if (el.type !== 'shape' || !isChartShape(el.shape)) return el;
+  return { ...el, chartPalette: id };
 }
 
 // A code block's colour scheme (spec/82). Its own kind of preset: the card

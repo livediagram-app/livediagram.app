@@ -29,6 +29,19 @@ Scheme ids are stored on elements, so they are permanent: a `name` may be reword
 
 Empty blocks render a muted `// double-click to add code` placeholder line.
 
+### Wrapping
+
+`codeWrap`, absent meaning **true**: a line longer than the card wraps instead
+of running off it. The card is usually narrower than the code someone pastes
+into it, and a line running off the edge reads as truncated content rather than
+a styling choice. Wrapping breaks mid-token as well as on spaces, because code
+has long unbroken runs (a URL, a minified line) that word-wrapping alone leaves
+hanging over the edge. A **Wrap Long Lines** toggle in the menu's Code section
+turns it off for the block whose lines mean something at their full length.
+
+The headless render wraps too (word-first, mid-token as a fallback), so a
+shared thumbnail shows the same amount of code the board does.
+
 ## Syntax highlighting: lazy, hand-rolled, dependency-free
 
 - A small generic tokenizer lives in `apps/live/lib/code-tokens.ts`: one engine (comments, strings, numbers, keywords, punctuation) driven by a per-language config table. No dependency, no WASM.

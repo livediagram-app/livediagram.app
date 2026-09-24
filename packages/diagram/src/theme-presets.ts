@@ -444,3 +444,128 @@ export const STICKY_PRESETS: readonly ShapeColorPreset[] = (
   borderStroke: 'none' as const,
   borderStyle: 'solid' as const,
 }));
+
+// ── Table presets (spec/48) ─────────────────────────────────────────────
+
+/** One complete table look: the four surfaces a table paints, plus the
+ *  banding, which is a look rather than structure. */
+export type TablePreset = {
+  id: string;
+  name: string;
+  /** Cell background, grid lines, cell text. */
+  fill: string;
+  stroke: string;
+  text: string;
+  /** The header band. Its fill is the shared `headerFill`, since a table's
+   *  header row and a lane's title gutter are one idea (spec/119). */
+  headerFill: string;
+  headerText: string;
+  /** Alternating body-row tint. */
+  zebra: boolean;
+};
+
+/**
+ * Table looks, theme-derived like the shape presets.
+ *
+ * A table has FOUR colours that only read well in certain combinations (cells,
+ * grid, header band, header text), so picking them one swatch at a time meant
+ * four decisions and a fair chance of a header you cannot read. The tiers
+ * mirror the shape grid: the theme's own accent first, then neutrals that are
+ * the same under every theme.
+ *
+ * `headerRow` / `headerColumn` are deliberately untouched: which cells ARE
+ * headers is data, not a look, and a preset flipping it would silently
+ * re-read the first row of somebody's table as a heading.
+ */
+export function tableColorPresets(theme: ThemeDefinition): TablePreset[] {
+  const accent = theme.elementStroke ?? DEFAULT_SHAPE_STROKE;
+  const baseFill = theme.elementFill ?? DEFAULT_SHAPE_FILL;
+  const baseText = theme.elementText ?? DEFAULT_SHAPE_TEXT;
+  const labelOn = (fill: string) => (isLightColor(fill) ? shade(fill, 0.6) : '#ffffff');
+  return [
+    // ── Theme: the accent, quiet to loud ──
+    {
+      id: 'table-theme',
+      name: 'Theme',
+      fill: baseFill,
+      stroke: accent,
+      text: baseText,
+      headerFill: tint(accent, 0.7),
+      headerText: shade(accent, 0.5),
+      zebra: false,
+    },
+    {
+      id: 'table-banded',
+      name: 'Banded',
+      fill: baseFill,
+      stroke: tint(accent, 0.4),
+      text: baseText,
+      headerFill: tint(accent, 0.7),
+      headerText: shade(accent, 0.5),
+      zebra: true,
+    },
+    {
+      id: 'table-bold',
+      name: 'Bold Head',
+      fill: baseFill,
+      stroke: tint(accent, 0.4),
+      text: baseText,
+      headerFill: accent,
+      headerText: labelOn(accent),
+      zebra: false,
+    },
+    {
+      // Grid lines and nothing else: the table reads as structure over
+      // whatever it sits on, which is what you want over a frame or a photo.
+      id: 'table-minimal',
+      name: 'Minimal',
+      fill: 'transparent',
+      stroke: tint(accent, 0.55),
+      text: baseText,
+      headerFill: 'transparent',
+      headerText: shade(accent, 0.45),
+      zebra: false,
+    },
+    // ── Neutral: the same under every theme ──
+    {
+      id: 'table-plain',
+      name: 'Plain',
+      fill: '#ffffff',
+      stroke: '#cbd5e1',
+      text: '#0f172a',
+      headerFill: '#f1f5f9',
+      headerText: '#0f172a',
+      zebra: false,
+    },
+    {
+      id: 'table-paper',
+      name: 'Paper',
+      fill: '#f8fafc',
+      stroke: '#e2e8f0',
+      text: '#334155',
+      headerFill: '#e2e8f0',
+      headerText: '#0f172a',
+      zebra: true,
+    },
+    {
+      id: 'table-slate',
+      name: 'Slate',
+      fill: '#f1f5f9',
+      stroke: '#94a3b8',
+      text: '#0f172a',
+      headerFill: '#475569',
+      headerText: '#f8fafc',
+      zebra: false,
+    },
+    {
+      id: 'table-inked',
+      name: 'Inked',
+      fill: '#1e293b',
+      stroke: '#475569',
+      text: '#e2e8f0',
+      headerFill: '#0f172a',
+      headerText: '#f8fafc',
+      zebra: false,
+    },
+  ];
+}

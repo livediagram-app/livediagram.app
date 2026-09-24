@@ -41,7 +41,17 @@ export function CodeBlockView({ element }: { element: ShapeElement }) {
           {language}
         </span>
       ) : null}
-      <pre className="h-full w-full overflow-hidden p-3 font-mono text-xs leading-4">
+      <pre
+        className={`h-full w-full overflow-hidden p-3 font-mono text-xs leading-4 ${
+          // Wrapping is the default (spec/82): the card is usually narrower
+          // than the code pasted into it, and a line running off the edge
+          // reads as truncated content rather than a styling choice.
+          // `break-all` as well as wrapping, because code has long unbroken
+          // tokens (a URL, a minified line) that word-wrapping alone leaves
+          // hanging over the edge.
+          element.codeWrap === false ? 'whitespace-pre' : 'whitespace-pre-wrap break-all'
+        }`}
+      >
         {empty ? (
           <span className="italic" style={{ color: scheme.muted }}>
             {'// double-click to add code'}

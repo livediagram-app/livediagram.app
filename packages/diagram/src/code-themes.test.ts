@@ -6,6 +6,7 @@ import {
   isCodeThemeId,
   type CodeTheme,
 } from './code-themes';
+import { svgCodeBlockShape } from './svg-render-shapes';
 
 // The scheme ids are STORED on elements, so they are permanent. Everything
 // here is about a stored id surviving: an unknown one (older file, hand edit,
@@ -56,5 +57,42 @@ describe('code themes', () => {
     for (const theme of CODE_THEMES) expect(isCodeThemeId(theme.id)).toBe(true);
     expect(isCodeThemeId('nonsense')).toBe(false);
     expect(isCodeThemeId(undefined)).toBe(false);
+  });
+});
+
+// Long-line wrapping in the STILL render (spec/82). The canvas wraps with CSS;
+// an export has to lay the lines out itself, and it must land on the same
+// amount of code or a shared thumbnail shows a different snippet than the
+// board does.
+describe('code block wrapping (headless render)', () => {
+  const block = (over: Record<string, unknown>) =>
+    ({
+      id: 'c',
+      type: 'shape',
+      shape: 'code-block',
+      x: 0,
+      y: 0,
+      width: 200,
+      height: 300,
+      ...over,
+    }) as never;
+
+  it('breaks a long line across several lines by default', () => {
+    const svg = svgCodeBlockShape(block({ code: 'a'.repeat(200) }));
+    expect(svg.match(/<text/g)?.length).toBeGreaterThan(1);
+  });
+
+  it('keeps a long line on one line when wrapping is off', () => {
+    const svg = svgCodeBlockShape(block({ code: 'a'.repeat(200), codeWrap: false }));
+    expect(svg.match(/<text/g)?.length).toBe(1);
+  });
+
+  it('prefers a space to breaking mid-word', () => {
+    const words = 'lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor';
+    const svg = svgCodeBlockShape(block({ code: words }));
+    // No rendered line may start or end mid-word when spaces were available.
+    const lines = [...svg.matchAll(/>([^<]*)<\/text>/g)].map((m) => m[1]!);
+    expect(lines.length).toBeGreaterThan(1);
+    for (const line of lines) expect(line.startsWith(' ')).toBe(false);
   });
 });

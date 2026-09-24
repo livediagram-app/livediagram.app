@@ -10,6 +10,8 @@ import { BORDER_DASH_ARRAY, BORDER_STROKE_PX } from './border-style';
 import type { BoxedElement, FreehandElement, ShapeKind } from './index';
 import { r2, xmlEscape } from './svg-render-primitives';
 import { codeTheme } from './code-themes';
+import { chartPaletteColors } from './chart-palettes';
+import { PIE_PALETTE } from './data-shapes';
 
 // The kinds this module draws. square / circle / stadium / browser render
 // natively in svgBoxed (plain rects / ellipses); diamond has a native
@@ -251,6 +253,24 @@ const CODE_FONT_SIZE = 12;
 const CODE_LINE_HEIGHT = 16;
 const CODE_PAD = 12;
 
+// Break one source line to `width` columns, on spaces where there is one and
+// mid-token where there is not (a URL or a minified line has no spaces, and
+// leaving it long would just run off the card again).
+function wrapLine(line: string, width: number): string[] {
+  if (line.length <= width) return [line];
+  const out: string[] = [];
+  let rest = line;
+  while (rest.length > width) {
+    const slice = rest.slice(0, width + 1);
+    const at = slice.lastIndexOf(' ');
+    const cut = at > width * 0.5 ? at : width;
+    out.push(rest.slice(0, cut));
+    rest = rest.slice(at > width * 0.5 ? cut + 1 : cut);
+  }
+  out.push(rest);
+  return out;
+}
+
 export function svgCodeBlockShape(el: BoxedElement & { type: 'shape' }): string {
   const scheme = codeTheme(el.codeTheme);
   const card =
@@ -262,7 +282,13 @@ export function svgCodeBlockShape(el: BoxedElement & { type: 'shape' }): string 
   // (12px mono is ~7.2px per char).
   const maxLines = Math.max(1, Math.floor((el.height - CODE_PAD * 2) / CODE_LINE_HEIGHT));
   const maxChars = Math.max(4, Math.floor((el.width - CODE_PAD * 2) / 7.2));
-  const lines = (empty ? ['// double-click to add code'] : code.split('\n')).slice(0, maxLines);
+  const source = empty ? ['// double-click to add code'] : code.split('\n');
+  // Wrapping is the element's default (spec/82), so the still render wraps
+  // too: clipping a wrapped block at the card edge would show a different
+  // amount of code in an export than on the canvas.
+  const lines = (
+    el.codeWrap === false ? source : source.flatMap((l) => wrapLine(l, maxChars))
+  ).slice(0, maxLines);
   const textColor = xmlEscape(empty ? scheme.muted : scheme.text);
   const lineStr = lines
     .map(
@@ -327,4 +353,42 @@ export function svgChecklistShape(
         ` opacity="0.6" text-anchor="end">${doneCount}/${items.length}</text>`
       : '';
   return card + rows + footer;
+}
+
+// Legend (spec/53): the themed card + one swatch-and-label row per item. The
+// swatch falls back to the chart ramp by index, the same rule the canvas view
+// uses, so a legend beside a chart matches it in an export too.
+const LEGEND_ROW_HEIGHT = 24;
+const LEGEND_DOT = 10;
+const LEGEND_PAD = 12;
+
+export function svgLegendShape(
+  el: BoxedElement & { type: 'shape' },
+  fill: string,
+  stroke: string,
+  textColor: string,
+): string {
+  const card =
+    `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}"` +
+    ` rx="8" fill="${xmlEscape(fill)}" stroke="${xmlEscape(stroke)}" stroke-width="1.5"/>`;
+  const items = el.legendItems ?? [];
+  const colors = chartPaletteColors(el.chartPalette) ?? PIE_PALETTE;
+  const maxRows = Math.max(1, Math.floor((el.height - LEGEND_PAD * 2) / LEGEND_ROW_HEIGHT));
+  const maxChars = Math.max(4, Math.floor((el.width - LEGEND_PAD * 3 - LEGEND_DOT) / 7));
+  const rows = items
+    .slice(0, maxRows)
+    .map((item, i) => {
+      const rowY = el.y + LEGEND_PAD + LEGEND_ROW_HEIGHT * i;
+      const midY = rowY + LEGEND_ROW_HEIGHT / 2;
+      const dot =
+        `<circle cx="${r2(el.x + LEGEND_PAD + LEGEND_DOT / 2)}" cy="${r2(midY)}"` +
+        ` r="${LEGEND_DOT / 2}" fill="${xmlEscape(item.color ?? colors[i % colors.length]!)}"/>`;
+      const text =
+        `<text x="${r2(el.x + LEGEND_PAD * 2 + LEGEND_DOT)}" y="${r2(midY + 4)}"` +
+        ` font-family="system-ui, sans-serif" font-size="13" fill="${xmlEscape(textColor)}">` +
+        `${xmlEscape(item.label.slice(0, maxChars))}</text>`;
+      return dot + text;
+    })
+    .join('');
+  return card + rows;
 }

@@ -17,6 +17,7 @@ import {
 } from './selection-mode';
 import {
   CHECKLIST_DEFAULT_ITEMS,
+  LEGEND_DEFAULT_ITEMS,
   LINE_DEFAULT_CATEGORIES,
   LINE_DEFAULT_SERIES,
   PIE_DEFAULT_SLICES,
@@ -142,6 +143,9 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   'code-block': { width: 320, height: 180 },
   // Checklist: a card of starter rows (spec/83).
   checklist: { width: 240, height: 180 },
+  // Legend (spec/53): narrower than a checklist, because a key is a swatch and
+  // a word, and short enough to sit in a corner beside the thing it explains.
+  legend: { width: 180, height: 132 },
   // Mode button (spec/103): a square-ish tile, sized for an icon ABOVE its
   // label — the shape a toolbar button has, rather than a wide pill that read
   // as just another labelled box.
@@ -517,6 +521,12 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
   // Checklist: starter rows so the affordance is obvious on drop. See spec/83.
   if (kind === 'checklist') {
     return { ...base, checklistItems: CHECKLIST_DEFAULT_ITEMS.map((i) => ({ ...i })) };
+  }
+  // Legend: starter rows so the card is not an empty box on drop. Their
+  // colours are left unset, so they take the chart palette by index and a
+  // legend beside a chart matches it without being told to. See spec/53.
+  if (kind === 'legend') {
+    return { ...base, legendItems: LEGEND_DEFAULT_ITEMS.map((i) => ({ ...i })) };
   }
   return base;
 }

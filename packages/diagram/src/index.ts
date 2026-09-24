@@ -393,6 +393,7 @@ export function elementSupportsText(element: Element): boolean {
 export * from './animation';
 export * from './arrow-avoidance';
 export * from './nearest-towards';
+export * from './mind-flow';
 export * from './mind-map';
 export * from './youtube';
 export * from './arrow-path';
@@ -411,6 +412,7 @@ export * from './comments';
 export * from './element-action';
 export * from './data-shapes';
 export * from './code-themes';
+export * from './chart-palettes';
 // Per-participant responses (spec/122) + the collaboration element family
 // (spec/123 to spec/130). Both leaf modules, for the factories cycle.
 export * from './responses';

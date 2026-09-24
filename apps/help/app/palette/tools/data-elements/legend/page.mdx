@@ -1,0 +1,51 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { LegendCard } from '@/components/illustrations/palette-data';
+
+export const metadata = helpMetadata({
+  title: 'Legend',
+  description:
+    'Add a legend to the canvas: a key of colour-coded rows that says what each colour on your diagram means, with the colours and labels editable from its menu.',
+  path: '/help/palette/tools/data-elements/legend/',
+});
+
+<ArticleLayout title="Legend" description="A key of colour-coded rows, for saying what the colours on your diagram actually mean." categoryTitle="Palette" categorySlug="palette" parentArticle={{ title: "Data and Chart Elements", slug: "data-elements" }} subArticles={getSubArticles("data-elements").filter((a) => a.slug !== "legend")}>
+
+A legend is a small card of rows, each one a coloured dot and a label. It's the piece that turns a colour-coded diagram into one somebody else can read: which colour is which team, which status, which environment.
+
+<Figure caption="A legend card with a coloured dot and a label on each row.">
+  <LegendCard />
+</Figure>
+
+## Adding one
+
+<Step n={1}>Open the floating palette and switch to the **Data** category.</Step>
+
+<Step n={2}>Pick **Legend**. It drops onto the canvas with three starter rows.</Step>
+
+<Step n={3}>
+  Move, resize, recolour, group, or lock it like any other element. Its background and text colours
+  come from the Colours category, the same as every other card.
+</Step>
+
+## Editing the colours and labels
+
+Right-click the legend and open the **Legend** category in its menu. Each row gives you:
+
+- A round **colour chip**: click it to pick that row's colour.
+- A **label** field: type what the colour means.
+- A **×** to remove the row.
+
+**Add row** puts another row on the end. A new row takes the next colour from the chart palette automatically, so you only need to set a colour when you want a specific one.
+
+## Matching a chart
+
+A row you never colour follows the same palette a chart uses, in the same order. Drop a legend beside a pie or bar chart and the first row already matches the first slice, the second the second, and so on. Pick a **palette** for the legend from its Presets and the rows follow it, so a legend and a chart set to the same palette stay in step.
+
+<Tip>
+  A legend is a key, not a chart: it holds colours and words, and no values. If you want the numbers
+  as well, the pie chart's own legend shows each slice's percentage beside it.
+</Tip>
+
+</ArticleLayout>

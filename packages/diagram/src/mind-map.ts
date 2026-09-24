@@ -5,12 +5,19 @@
 // "where does the next node go".
 
 import { createPinnedArrow, createShape } from './factories';
-import type { ArrowElement, Element, ElementId, ShapeElement } from './index';
+import { bestAnchorTowards } from './anchor-choice';
+import {
+  DEFAULT_MIND_FLOW,
+  isMindFlow,
+  MIND_CHILD_GAP_X,
+  MIND_SIBLING_GAP_Y,
+  outwardAngle,
+  placeMindChild,
+  type MindFlow,
+} from './mind-flow';
+import type { Anchor, ArrowElement, Element, ElementId, ShapeElement } from './index';
 
-/** Gap between a parent and its child, left to right. */
-export const MIND_CHILD_GAP_X = 64;
-/** Gap between stacked siblings, top to bottom. */
-export const MIND_SIBLING_GAP_Y = 18;
+export { MIND_CHILD_GAP_X, MIND_SIBLING_GAP_Y };
 
 export function isMindNode(el: Element): el is ShapeElement {
   return el.type === 'shape' && el.shape === 'mind-node';
@@ -79,7 +86,7 @@ const boundsOf = (nodes: readonly ShapeElement[]): Rect => {
  * Cycle-guarded for the same reason `mindSubtree` is: `mindParentId` is stored
  * data, and a dangling or looping pointer should still draw something.
  */
-function mindRootOf(elements: Element[], node: ShapeElement): ShapeElement {
+export function mindRootOf(elements: Element[], node: ShapeElement): ShapeElement {
   const seen = new Set<ElementId>([node.id]);
   let current = node;
   for (;;) {
@@ -140,6 +147,22 @@ function makeRoom(elements: Element[], fixed: Set<ElementId>, room: Rect): MindS
   return shifts;
 }
 
+/** The flow the whole of `node`'s map grows in. Stored on the ROOT, because a
+ *  map half tree and half bubble is not a map anyone meant to draw. */
+export function mindFlowOf(elements: Element[], node: ShapeElement): MindFlow {
+  const flow = mindRootOf(elements, node).mindFlow;
+  return isMindFlow(flow) ? flow : DEFAULT_MIND_FLOW;
+}
+
+/** The direction a branch already runs in, which is what the fanned and
+ *  two-sided flows continue. East for a root: it points nowhere yet. */
+function outwardOf(elements: Element[], node: ShapeElement): number {
+  const parent = node.mindParentId
+    ? elements.find((el) => el.id === node.mindParentId && isMindNode(el))
+    : undefined;
+  return parent && isMindNode(parent) ? outwardAngle(parent, node) : 0;
+}
+
 /**
  * Push a candidate box down past the nodes that CANNOT move.
  *
@@ -152,21 +175,25 @@ function clearOfFixedNodes(
   fixed: Set<ElementId>,
   at: { x: number; y: number },
   size: { width: number; height: number },
+  axis: 'x' | 'y',
 ): { x: number; y: number } {
   const blockers = elements.filter((el) => isMindNode(el) && fixed.has(el.id)) as ShapeElement[];
-  let { y } = at;
-  // Each pass drops past at least one node, so the count bounds the loop; the
+  const out = { ...at };
+  // Each pass moves past at least one node, so the count bounds the loop; the
   // cap is belt and braces against duplicates stacked at one spot.
   for (let pass = 0; pass <= blockers.length; pass++) {
     let moved = false;
     for (const n of blockers) {
-      if (!overlaps({ ...size, x: at.x, y }, n)) continue;
-      y = n.y + n.height + MIND_SIBLING_GAP_Y;
+      if (!overlaps({ ...size, ...out }, n)) continue;
+      // Along the flow's own stacking axis, so a downward map's siblings move
+      // sideways into the next column rather than down into the next row.
+      out[axis] =
+        axis === 'y' ? n.y + n.height + MIND_SIBLING_GAP_Y : n.x + n.width + MIND_SIBLING_GAP_Y;
       moved = true;
     }
     if (!moved) break;
   }
-  return { x: at.x, y };
+  return out;
 }
 
 /**
@@ -181,17 +208,15 @@ export function nextMindChildPosition(
   parent: ShapeElement,
   size: { width: number; height: number },
 ): { x: number; y: number } {
-  const x = parent.x + parent.width + MIND_CHILD_GAP_X;
-  const subtree = mindSubtree(elements, parent.id);
-  // First child: centred on the parent, which is what makes a lone branch look
-  // deliberate rather than dropped. Later ones stack against the bottom of the
-  // whole subtree, not just the immediate children, so a branch that has grown
-  // down past its own parent doesn't drop the next sibling on a grandchild.
-  const y =
-    subtree.length === 0
-      ? parent.y + parent.height / 2 - size.height / 2
-      : Math.max(...subtree.map((n) => n.y + n.height)) + MIND_SIBLING_GAP_Y;
-  return clearOfFixedNodes(elements, treeIds(elements, parent), { x, y }, size);
+  const at = placeMindChild(
+    mindFlowOf(elements, parent),
+    parent,
+    size,
+    mindSubtree(elements, parent.id),
+    mindChildren(elements, parent.id),
+    outwardOf(elements, parent),
+  );
+  return clearOfFixedNodes(elements, treeIds(elements, parent), at, size, at.axis);
 }
 
 /** Every node of `node`'s tree, the ones a growth may not move. */
@@ -222,14 +247,25 @@ export function growMindChild(
   const size = { width: sizeFrom.width, height: sizeFrom.height };
   const at = nextMindChildPosition(elements, parent, size);
   const node: ShapeElement = { ...base, ...size, x: at.x, y: at.y, mindParentId: parent.id };
-  // East to west: the arrow always leaves the parent's right edge and enters
-  // the child's left, so a branch reads as one continuous run regardless of
-  // how far the child has been stacked down.
+  // The faces the connector uses follow the flow: a tree runs east to west, a
+  // downward map north to south, and a fanned one whichever way the child
+  // actually went. Asking the shared anchor chooser rather than hardcoding a
+  // pair means a new flow gets sensible connectors for free.
+  const [from, to] = childAnchors(parent, node);
   return {
     node,
-    arrow: createPinnedArrow(parent.id, 'e', node.id, 'w'),
+    arrow: createPinnedArrow(parent.id, from, node.id, to),
     shifts: makeRoom(elements, treeIds(elements, parent), { ...size, ...at }),
   };
+}
+
+/** The pair of faces a parent-to-child connector leaves and enters through. */
+function childAnchors(parent: ShapeElement, child: ShapeElement): [Anchor, Anchor] {
+  const centreOfBox = (n: ShapeElement) => ({ x: n.x + n.width / 2, y: n.y + n.height / 2 });
+  return [
+    bestAnchorTowards(parent, centreOfBox(child)),
+    bestAnchorTowards(child, centreOfBox(parent)),
+  ];
 }
 
 /**

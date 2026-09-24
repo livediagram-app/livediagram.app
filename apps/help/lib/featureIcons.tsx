@@ -629,6 +629,16 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M6 10.5l4-3 4.5 2.5 5-4" {...s} />
     </Glyph>
   ),
+  // Filled dots beside rules: the key's own shape, and distinct from the
+  // timeline rail below, whose dots sit ON one line rather than down a column.
+  legend: (
+    <Glyph>
+      <circle cx="5.5" cy="6.5" r="2" fill="currentColor" stroke="none" />
+      <circle cx="5.5" cy="12" r="2" fill="currentColor" stroke="none" />
+      <circle cx="5.5" cy="17.5" r="2" fill="currentColor" stroke="none" />
+      <path d="M11 6.5h9.5M11 12h9.5M11 17.5h6" {...s} />
+    </Glyph>
+  ),
   // Horizontal, and posted: the rail is a run of evenly spaced points. The
   // Explorer's `timeline` is a vertical feed, which is why this one lies flat.
   'timeline-rail': (

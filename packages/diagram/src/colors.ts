@@ -385,6 +385,8 @@ export const SELF_PAINTING_SHAPES = new Set<string>([
   'line-chart',
   'code-block',
   'checklist',
+  // Legend (spec/53): LegendView paints its own card and rows.
+  'legend',
   // Behaviour elements (spec/104, /106): the ring / cover IS the element.
   'portal',
   'reveal',

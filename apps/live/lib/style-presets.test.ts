@@ -6,8 +6,10 @@ import {
   applyBorderRadiusToEl,
   applyBorderStrokeToEl,
   applyBorderStyleToEl,
+  applyChartPaletteToEl,
   applyCodeThemeToEl,
   applyColorPresetToEl,
+  applyTablePresetToEl,
   applyFillColorToEl,
   applyRotationToEl,
   applyShadowToEl,
@@ -62,6 +64,56 @@ describe('applyColorPresetToEl', () => {
   it('is a no-op on the types with no preset grid', () => {
     const text = el('text');
     expect(applyColorPresetToEl(text, p)).toBe(text);
+  });
+});
+
+describe('applyTablePresetToEl', () => {
+  const p = {
+    id: 'table-x',
+    name: 'X',
+    fill: '#fill',
+    stroke: '#stroke',
+    text: '#text',
+    headerFill: '#head',
+    headerText: '#headtext',
+    zebra: true,
+  };
+
+  it('stamps all four surfaces and the banding in one go', () => {
+    expect(applyTablePresetToEl(el('table'), p)).toMatchObject({
+      fillColor: '#fill',
+      strokeColor: '#stroke',
+      textColor: '#text',
+      headerFill: '#head',
+      headerTextColor: '#headtext',
+      zebra: true,
+    });
+  });
+
+  it('leaves headerRow / headerColumn alone, which are data not a look', () => {
+    const applied = applyTablePresetToEl(el('table', { headerRow: true, headerColumn: false }), p);
+    expect(applied).toMatchObject({ headerRow: true, headerColumn: false });
+  });
+
+  it('is a no-op on anything that is not a table', () => {
+    const shape = el('shape');
+    expect(applyTablePresetToEl(shape, p)).toBe(shape);
+  });
+});
+
+describe('applyChartPaletteToEl', () => {
+  it('sets the palette on a chart without touching its data', () => {
+    const chart = el('shape', { shape: 'pie-chart', pieSlices: [{ label: 'A', value: 1 }] });
+    const applied = applyChartPaletteToEl(chart, 'ocean');
+    expect(applied).toMatchObject({ chartPalette: 'ocean' });
+    // The ramp is resolved at render, so a slice the user coloured on purpose
+    // is never rewritten.
+    expect(applied).toMatchObject({ pieSlices: [{ label: 'A', value: 1 }] });
+  });
+
+  it('is a no-op on a shape that is not a chart', () => {
+    const square = el('shape', { shape: 'square' });
+    expect(applyChartPaletteToEl(square, 'ocean')).toBe(square);
   });
 });
 

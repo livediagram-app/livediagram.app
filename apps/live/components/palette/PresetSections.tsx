@@ -20,7 +20,13 @@ import {
   type ShapeKind,
 } from '@livediagram/diagram';
 import { PresetsMenuGlyph } from '@/components/palette/context-menu-icons';
-import { ArrowPresets, CodeThemePresets, ShapePresets } from '@/components/palette/StylePresets';
+import {
+  ArrowPresets,
+  ChartPalettePresets,
+  CodeThemePresets,
+  ShapePresets,
+  TablePresets,
+} from '@/components/palette/StylePresets';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 
@@ -159,10 +165,72 @@ export function hasStylePresets(el: Element): boolean {
   // The code-block test leads for the same reason it does in the component:
   // `shapeSupportsPresets` narrows shapes away when it fails.
   return (
-    (el.type === 'shape' && isCodeBlockShape(el.shape)) ||
+    (el.type === 'shape' && (isCodeBlockShape(el.shape) || isChartShape(el.shape))) ||
     shapeSupportsPresets(el) ||
+    el.type === 'table' ||
     el.type === 'sticky' ||
     el.type === 'arrow'
+  );
+}
+
+// Table looks (spec/48): the four surfaces a table paints plus its banding,
+// theme-derived like the shape presets. Reset goes through the shared
+// reset-colours handler, which is what the Colours section's own reset uses.
+export function TablePresetsSection({
+  current,
+  props,
+  accordion,
+  onClose,
+}: {
+  current: { fillColor?: string; strokeColor?: string; headerFill?: string; zebra?: boolean };
+  props: EditorContextMenuProps;
+  accordion: AccordionProps;
+  onClose: () => void;
+}) {
+  return (
+    <MenuAccordionSection title="Presets" icon={<PresetsMenuGlyph />} {...accordion}>
+      <TablePresets
+        presets={props.tableColorPresets}
+        current={current}
+        onApply={props.onApplyTablePreset}
+        onPreview={props.onPreviewTablePreset}
+        onPreviewEnd={props.onPreviewStyleEnd}
+        onReset={() => {
+          props.onResetColors();
+          onClose();
+        }}
+      />
+    </MenuAccordionSection>
+  );
+}
+
+// Chart palettes (spec/53). A chart styles per slice / series from its Data
+// category, so its Presets grid is the RAMP those fall back to: one pick for
+// the whole chart, and it keeps applying as rows are added.
+export function ChartPalettePresetsSection({
+  current,
+  props,
+  accordion,
+  onClose,
+}: {
+  current: string | undefined;
+  props: EditorContextMenuProps;
+  accordion: AccordionProps;
+  onClose: () => void;
+}) {
+  return (
+    <MenuAccordionSection title="Presets" icon={<PresetsMenuGlyph />} {...accordion}>
+      <ChartPalettePresets
+        current={current}
+        onApply={props.onApplyChartPalette}
+        onPreview={props.onPreviewChartPalette}
+        onPreviewEnd={props.onPreviewStyleEnd}
+        onReset={() => {
+          props.onResetColors();
+          onClose();
+        }}
+      />
+    </MenuAccordionSection>
   );
 }
 
@@ -188,6 +256,32 @@ export function TargetPresetsSection({
   if (target.type === 'shape' && isCodeBlockShape(target.shape)) {
     return (
       <CodeThemePresetsSection current={target.codeTheme} props={props} accordion={accordion} />
+    );
+  }
+  // Charts style per slice, so the grid is their palette rather than a look.
+  if (target.type === 'shape' && isChartShape(target.shape)) {
+    return (
+      <ChartPalettePresetsSection
+        current={target.chartPalette}
+        props={props}
+        accordion={accordion}
+        onClose={onClose}
+      />
+    );
+  }
+  if (target.type === 'table') {
+    return (
+      <TablePresetsSection
+        current={{
+          fillColor: target.fillColor,
+          strokeColor: target.strokeColor,
+          headerFill: target.headerFill,
+          zebra: target.zebra,
+        }}
+        props={props}
+        accordion={accordion}
+        onClose={onClose}
+      />
     );
   }
   if (shapeSupportsPresets(target)) {

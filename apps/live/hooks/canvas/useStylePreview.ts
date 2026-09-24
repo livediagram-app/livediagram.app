@@ -33,8 +33,10 @@ import type {
   BorderRadius,
   BorderStroke,
   BorderStyle,
+  ChartPaletteId,
   CodeThemeId,
   Element,
+  TablePreset,
   ElementAnimation,
   IconAnimation,
   IconPosition,
@@ -53,8 +55,10 @@ import {
   applyBorderRadiusToEl,
   applyBorderStrokeToEl,
   applyBorderStyleToEl,
+  applyChartPaletteToEl,
   applyCodeThemeToEl,
   applyColorPresetToEl,
+  applyTablePresetToEl,
   applyFillColorToEl,
   applyFontToEl,
   applyShadowToEl,
@@ -206,6 +210,15 @@ export function useStylePreview(deps: {
       previewStyle((el) => applyColorPresetToEl(el, p)),
     commitShapeColorPreset: (p: ShapeColorPreset) =>
       commitStyle((el) => applyColorPresetToEl(el, p), 'StylePreset'),
+    // Table look (spec/48): four surfaces + the banding in one step.
+    previewTablePreset: (p: TablePreset) => previewStyle((el) => applyTablePresetToEl(el, p)),
+    commitTablePreset: (p: TablePreset) =>
+      commitStyle((el) => applyTablePresetToEl(el, p), 'TablePreset'),
+    // Chart palette (spec/53): the chart's flavour of preset.
+    previewChartPalette: (id: ChartPaletteId) =>
+      previewStyle((el) => applyChartPaletteToEl(el, id)),
+    commitChartPalette: (id: ChartPaletteId) =>
+      commitStyle((el) => applyChartPaletteToEl(el, id), 'ChartPalette'),
     // Code-block scheme (spec/82): the code block's flavour of preset.
     previewCodeTheme: (id: CodeThemeId) => previewStyle((el) => applyCodeThemeToEl(el, id)),
     commitCodeTheme: (id: CodeThemeId) =>

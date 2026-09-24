@@ -2205,6 +2205,15 @@ export const articles: Article[] = [
     parentSlug: 'data-elements',
   },
   {
+    slug: 'legend',
+    title: 'Legend',
+    description: 'A key of colour-coded rows to explain what your colours mean.',
+    keywords: 'key colour code swatch label caption guide chart key colour key color key',
+    category: 'Palette',
+    categorySlug: 'palette/tools/data-elements',
+    parentSlug: 'data-elements',
+  },
+  {
     slug: 'timeline-rail',
     title: 'Timeline Rail',
     description: 'A horizontal rail of evenly spaced, labelled points for roadmaps and processes.',

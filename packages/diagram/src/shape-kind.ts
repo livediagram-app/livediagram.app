@@ -130,6 +130,9 @@ export type ShapeKind =
   // Checklist (spec/83): checkable to-do rows. Carries `checklistItems`
   // (below); boxes toggle on-canvas like the rating's stars.
   | 'checklist'
+  // Legend (spec/53): a card of colour-coded rows (a swatch + a label), the
+  // key you put beside a chart or a colour-coded board.
+  | 'legend'
   // Curated single-colour glyph from the icon catalogue. Which glyph
   // is carried by `iconId` (a registry key resolved in the live app's
   // icon catalogue, NOT a closed enum here, so adding icons is a

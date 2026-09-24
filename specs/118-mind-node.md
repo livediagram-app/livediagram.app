@@ -104,6 +104,42 @@ consumed every Tab and pressing it on a mind node cycled the tab's elements
 instead of growing a branch: the selected element now gets first refusal on the
 key. Shift+Tab stays traversal, since only plain Tab grows.
 
+## Flows: the shape the map grows in
+
+Growth started with one arrangement, the one a keyboard-driven outline wants: a
+child to the right, siblings stacked down it. That is a **tree**, and it is only
+one of the shapes people draw. Four ship (`MindFlow` in
+`packages/diagram/src/mind-flow.ts`), picked from the **Mind Map** section of a
+selected node's menu:
+
+- **Tree** — branches right, siblings stacked down. The default, so every map
+  already drawn keeps its shape.
+- **Balanced** — branches both ways off the root, the classic hand-drawn mind
+  map. Only the root alternates: a branch keeps the side it started on, because
+  flipping deeper down folds it back over its own parent.
+- **Downward** — branches below, siblings spread across. The tree on its side,
+  which is what an org chart or a decision tree looks like.
+- **Bubble** — branches fanned around the parent, each new child taking the next
+  free angle either side of the direction the branch already runs in. Siblings
+  therefore never collide by construction, which is why this flow needs no
+  stacking rule.
+
+The flow is stored on the map's **root** (`mindFlow`) and read for the whole
+tree: a map half tree and half bubble is not a map anyone meant to draw. So a
+pick on any node sets its root's, and selecting several nodes of one map sets it
+once.
+
+The **keystrokes do not change**. Tab is still a child and Enter still a
+sibling; the flow decides only where the node lands, and which faces its
+connector leaves and enters through. Those come from the shared anchor chooser
+(`bestAnchorTowards`) rather than a hardcoded pair, so a tree runs east to west,
+a downward map north to south, and a fanned one whichever way the child actually
+went, without each flow having to say so.
+
+Collisions push along the flow's own stacking axis: a tree stacks a column, so
+something in the way moves down; a downward map spreads a row, so it moves right.
+Pushing the wrong way would shove a node straight into the next sibling's slot.
+
 ## Deleting
 
 Deleting a node leaves its children with a `mindParentId` pointing at nothing.

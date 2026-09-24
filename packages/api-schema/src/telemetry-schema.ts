@@ -316,6 +316,7 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Progress-bar',
     'Progress-ring',
     'Rating',
+    'Legend',
   ],
   // The Collaborate category (spec/123 to spec/129) — its own bucket rather
   // than more entries under `tools`, because the palette gave it its own
