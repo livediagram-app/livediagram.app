@@ -129,13 +129,13 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   build: 5,
   write: 4,
   draw: 4,
-  devices: 6,
+  devices: 7,
   icons: 0,
   stickers: 0,
   technology: 0,
   media: 8,
   components: 9,
-  data: 6,
+  data: 7,
   // Behaviours absorbed Collaborate (spec/110), so this is both families:
   // Ask (3 estimate scales + temperature + idea box), Run the
   // room (3), Session (3), Record (3), Reactions (5), Selection

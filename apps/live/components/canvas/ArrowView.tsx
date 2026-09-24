@@ -373,6 +373,7 @@ function ArrowViewImpl({
           x={labelPos.x}
           y={labelPos.y}
           text={labelText}
+          fill={arrow.labelFill}
           color={arrow.textColor ?? baseStroke}
           isEditing={isEditing}
           cursorAtEnd={editCursorAtEnd}

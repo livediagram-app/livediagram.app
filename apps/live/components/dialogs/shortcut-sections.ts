@@ -75,7 +75,11 @@ export const SHORTCUT_SECTIONS: ShortcutSection[] = [
       { keys: ['⌘', '-'], label: 'Zoom out' },
       { keys: ['⌘', '0'], label: 'Reset zoom to 100%' },
       { keys: ['⇧', '1'], label: 'Zoom to fit' },
+      // A selected mind node claims plain Tab for growth (spec/118), so the
+      // caveat is on the row rather than in a footnote nobody reads.
       { keys: ['Tab'], label: 'Select next element  (Shift: previous)' },
+      { keys: ['Tab'], label: 'On a mind node: add a child' },
+      { keys: ['Enter'], label: 'On a mind node: add a sibling' },
       { keys: ['Arrow'], label: 'Nudge selection 1 px  (Shift: 10 px)' },
       { keys: ['Shift', 'Click'], label: 'Toggle element in multi-selection' },
       { keys: ['Shift', 'drag'], label: 'Drop a duplicate (original stays put)' },

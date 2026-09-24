@@ -17,6 +17,7 @@ import {
 } from './selection-mode';
 import {
   CHECKLIST_DEFAULT_ITEMS,
+  LEGEND_DEFAULT_ITEMS,
   LINE_DEFAULT_CATEGORIES,
   LINE_DEFAULT_SERIES,
   PIE_DEFAULT_SLICES,
@@ -52,8 +53,10 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // reads as a page beside a 120px square without swallowing the canvas.
   page: { width: 420, height: 594 },
   // Mind node (spec/118): a caption-width pill. Wide enough for a phrase,
-  // short enough that a column of siblings stays readable.
-  'mind-node': { width: 170, height: 48 },
+  // short enough that a column of siblings stays readable. 170x48 fitted a
+  // couple of words and made anything longer wrap or overflow, which is not
+  // what people actually type into a mind map.
+  'mind-node': { width: 250, height: 80 },
   // Lane (spec/119): a band, not a box — wide enough to lay a flow across and
   // tall enough for a row of steps.
   lane: { width: 900, height: 200 },
@@ -105,6 +108,10 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   laptop: { width: 240, height: 150 },
   phone: { width: 90, height: 170 },
   tablet: { width: 140, height: 180 },
+  // Foldable, unfolded: the two panels side by side make a nearly square
+  // inner screen, a little wider than it is tall, which is what separates it
+  // at a glance from the portrait phone and tablet above.
+  foldable: { width: 190, height: 170 },
   // Smartwatch: a square-ish face with bands above + below, so portrait.
   smartwatch: { width: 110, height: 150 },
   // Curated glyph. Square + aspect-locked on create (set in createShape) so
@@ -136,6 +143,9 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   'code-block': { width: 320, height: 180 },
   // Checklist: a card of starter rows (spec/83).
   checklist: { width: 240, height: 180 },
+  // Legend (spec/53): narrower than a checklist, because a key is a swatch and
+  // a word, and short enough to sit in a corner beside the thing it explains.
+  legend: { width: 180, height: 132 },
   // Mode button (spec/103): a square-ish tile, sized for an icon ABOVE its
   // label — the shape a toolbar button has, rather than a wide pill that read
   // as just another labelled box.
@@ -511,6 +521,12 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
   // Checklist: starter rows so the affordance is obvious on drop. See spec/83.
   if (kind === 'checklist') {
     return { ...base, checklistItems: CHECKLIST_DEFAULT_ITEMS.map((i) => ({ ...i })) };
+  }
+  // Legend: starter rows so the card is not an empty box on drop. Their
+  // colours are left unset, so they take the chart palette by index and a
+  // legend beside a chart matches it without being told to. See spec/53.
+  if (kind === 'legend') {
+    return { ...base, legendItems: LEGEND_DEFAULT_ITEMS.map((i) => ({ ...i })) };
   }
   return base;
 }

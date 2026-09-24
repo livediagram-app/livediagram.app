@@ -33,7 +33,10 @@ import type {
   BorderRadius,
   BorderStroke,
   BorderStyle,
+  ChartPaletteId,
+  CodeThemeId,
   Element,
+  TablePreset,
   ElementAnimation,
   IconAnimation,
   IconPosition,
@@ -52,7 +55,10 @@ import {
   applyBorderRadiusToEl,
   applyBorderStrokeToEl,
   applyBorderStyleToEl,
+  applyChartPaletteToEl,
+  applyCodeThemeToEl,
   applyColorPresetToEl,
+  applyTablePresetToEl,
   applyFillColorToEl,
   applyFontToEl,
   applyShadowToEl,
@@ -66,6 +72,7 @@ import {
   applyStrokeColorToEl,
   applyTextAlignToEl,
   applyArrowheadColorToEl,
+  applyLabelFillToEl,
   applyHeaderFillToEl,
   applyTextColorToEl,
   applyTextSizeToEl,
@@ -204,6 +211,19 @@ export function useStylePreview(deps: {
       previewStyle((el) => applyColorPresetToEl(el, p)),
     commitShapeColorPreset: (p: ShapeColorPreset) =>
       commitStyle((el) => applyColorPresetToEl(el, p), 'StylePreset'),
+    // Table look (spec/48): four surfaces + the banding in one step.
+    previewTablePreset: (p: TablePreset) => previewStyle((el) => applyTablePresetToEl(el, p)),
+    commitTablePreset: (p: TablePreset) =>
+      commitStyle((el) => applyTablePresetToEl(el, p), 'TablePreset'),
+    // Chart palette (spec/53): the chart's flavour of preset.
+    previewChartPalette: (id: ChartPaletteId) =>
+      previewStyle((el) => applyChartPaletteToEl(el, id)),
+    commitChartPalette: (id: ChartPaletteId) =>
+      commitStyle((el) => applyChartPaletteToEl(el, id), 'ChartPalette'),
+    // Code-block scheme (spec/82): the code block's flavour of preset.
+    previewCodeTheme: (id: CodeThemeId) => previewStyle((el) => applyCodeThemeToEl(el, id)),
+    commitCodeTheme: (id: CodeThemeId) =>
+      commitStyle((el) => applyCodeThemeToEl(el, id), 'CodeTheme'),
     // Arrow preset
     previewArrowPreset: (p: ArrowPreset) => previewStyle((el) => applyArrowPresetToEl(el, p)),
     commitArrowPreset: (p: ArrowPreset) =>
@@ -221,6 +241,8 @@ export function useStylePreview(deps: {
     commitTextColor: (c: string) => commitStyle((el) => applyTextColorToEl(el, c), 'TextColor'),
     // Heading band (a table's header row, a lane's title gutter): same flow,
     // and a no-op on elements that have no heading to paint.
+    previewLabelFill: (c: string) => previewStyle((el) => applyLabelFillToEl(el, c)),
+    commitLabelFill: (c: string) => commitStyle((el) => applyLabelFillToEl(el, c), 'LabelFill'),
     previewArrowheadColor: (c: string) => previewStyle((el) => applyArrowheadColorToEl(el, c)),
     commitArrowheadColor: (c: string) =>
       commitStyle((el) => applyArrowheadColorToEl(el, c), 'ArrowheadColor'),

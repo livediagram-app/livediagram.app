@@ -309,6 +309,32 @@ export function ShapeSvgOverlay({
           />
         </g>
       ) : null}
+      {/* Foldable, unfolded: a near-square inner screen with the hinge
+          crease down the middle. The crease is the whole tell, without it
+          this is a tablet. */}
+      {shape === 'foldable' ? (
+        <g>
+          <rect x={2} y={2} width={96} height={96} rx={5} {...common} />
+          <rect
+            x={5}
+            y={6}
+            width={90}
+            height={88}
+            rx={3}
+            fill="none"
+            stroke={stroke}
+            strokeWidth={0.8}
+            vectorEffect="non-scaling-stroke"
+          />
+          <path
+            d="M 50 6 L 50 94"
+            fill="none"
+            stroke={stroke}
+            strokeWidth={0.8}
+            vectorEffect="non-scaling-stroke"
+          />
+        </g>
+      ) : null}
       {/* Smartwatch: a rounded square face with a strap above + below and
           a crown button on the right edge, plus an inset screen bezel. */}
       {shape === 'smartwatch' ? (

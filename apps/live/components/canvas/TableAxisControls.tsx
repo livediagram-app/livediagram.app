@@ -1,6 +1,7 @@
 import { createPortal } from 'react-dom';
 import type { TableElement } from '@livediagram/diagram';
 import { TableHeaderMenu, Trigger } from '@/components/canvas/table-menu-controls';
+import { FLOATING_CONTROL_GAP, FLOATING_CONTROL_SIZE } from '@/components/chrome/floating-controls';
 
 // The table's outside-the-edge column / row controls (spec/09 Table): the
 // ⋯ trigger strips laid out on grids mirroring the live track templates
@@ -26,6 +27,16 @@ function trackCentre(sizes: number[], i: number): number {
 // Clearance in screen px, converted to element space (the plus is a fixed
 // screen size; the trigger counter-scales too).
 const PLUS_CLEARANCE_PX = 40;
+// How far a dodging trigger steps aside: its own width plus a gap, so the
+// two controls sit side by side rather than touching.
+const PLUS_DODGE_PX = FLOATING_CONTROL_SIZE + 10;
+
+// Screen-px offset from the table edge to the NEAR side of a trigger, so a
+// trigger's centre lands on the same line as the quick-connect plus on that
+// edge: the plus is centred GAP + SIZE / 2 beyond the edge, and the trigger
+// hangs SIZE / 2 below its own top, so both work out to the same centre.
+// Counter-scaled at the call sites, like every other floating control.
+const TRIGGER_OFFSET_PX = FLOATING_CONTROL_GAP + FLOATING_CONTROL_SIZE;
 
 export function TableAxisTriggers({
   cols,
@@ -77,7 +88,7 @@ export function TableAxisTriggers({
           the table's top edge so they never crowd the first row's
           content. */}
       <div
-        className="pointer-events-none absolute inset-x-0 -top-7 grid"
+        className="pointer-events-none absolute inset-x-0 top-0 grid h-0"
         style={{ gridTemplateColumns: colTemplate }}
       >
         {Array.from({ length: cols }, (_, c) => {
@@ -88,12 +99,16 @@ export function TableAxisTriggers({
                 <div
                   className="pointer-events-auto relative"
                   style={{
-                    transform: `${
+                    // Origin top-centre so the counter-scale pins the
+                    // trigger's TOP, and one offset then places it at any
+                    // zoom (an origin on the box's far side would leave the
+                    // unscaled half-height in the sum and drift).
+                    transform: `translateY(${-TRIGGER_OFFSET_PX * invScale}px) ${
                       dodges(trackCentre(colSizes, c), elementWidth / 2)
-                        ? `translateX(${34 * invScale}px) `
+                        ? `translateX(${PLUS_DODGE_PX * invScale}px) `
                         : ''
                     }scale(${invScale})`,
-                    transformOrigin: 'bottom center',
+                    transformOrigin: 'top center',
                   }}
                   onMouseEnter={() => onHoverCol(c)}
                   onMouseLeave={onHoverLeave}
@@ -114,7 +129,7 @@ export function TableAxisTriggers({
           heights are pinned to non-uniform values. They sit OUTSIDE the
           table's left edge so they never crowd the first column. */}
       <div
-        className="pointer-events-none absolute inset-y-0 -left-7 grid"
+        className="pointer-events-none absolute inset-y-0 left-0 grid w-0"
         style={{ gridTemplateRows: rowTemplate }}
       >
         {Array.from({ length: rows }, (_, r) => {
@@ -125,12 +140,14 @@ export function TableAxisTriggers({
                 <div
                   className="pointer-events-auto relative"
                   style={{
-                    transform: `${
+                    // Left edge pinned by the origin, same reasoning as the
+                    // column triggers above.
+                    transform: `translateX(${-TRIGGER_OFFSET_PX * invScale}px) ${
                       dodges(trackCentre(rowSizes, r), elementHeight / 2)
-                        ? `translateY(${34 * invScale}px) `
+                        ? `translateY(${PLUS_DODGE_PX * invScale}px) `
                         : ''
                     }scale(${invScale})`,
-                    transformOrigin: 'center right',
+                    transformOrigin: 'center left',
                   }}
                   onMouseEnter={() => onHoverRow(r)}
                   onMouseLeave={onHoverLeave}

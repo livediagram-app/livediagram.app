@@ -1,5 +1,6 @@
 // Shared setup for the chart-family element views (pie / bar / …): resolves the
-// slice palette (theme-derived, else the built-in categorical one), the box
+// slice palette (the element's own, else theme-derived, else the built-in
+// categorical one), the box
 // size, the data (built-in defaults when the element has none), the legend
 // toggle, and a per-datum colour accessor (explicit slice colour, else the
 // palette). Each view layers its own geometry + legend width on top. Keeps the
@@ -7,6 +8,7 @@
 
 import {
   animLoops,
+  chartPaletteColors,
   PIE_DEFAULT_SLICES,
   PIE_LOOPING_ANIMS,
   PIE_PALETTE,
@@ -17,7 +19,11 @@ import type { CSSProperties } from 'react';
 import { animClass, animSpeedVars } from './icons';
 
 export function chartFrame(element: ShapeElement, palette?: readonly string[]) {
-  const colors = palette && palette.length > 0 ? palette : PIE_PALETTE;
+  // Three rungs, narrowest first (spec/53): the chart's own palette if it has
+  // been given one, then the tab theme's, then the built-in ramp. A per-datum
+  // colour beats all three, in `colorAt` below.
+  const chosen = chartPaletteColors(element.chartPalette);
+  const colors = chosen ?? (palette && palette.length > 0 ? palette : PIE_PALETTE);
   const w = Math.max(1, element.width);
   const h = Math.max(1, element.height);
   const data: readonly PieSlice[] =

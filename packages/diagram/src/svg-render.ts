@@ -11,6 +11,7 @@ import { iconBandBounds, techIconMarkBounds } from './icon-size';
 import {
   hasShapeSilhouette,
   svgChecklistShape,
+  svgLegendShape,
   svgCodeBlockShape,
   svgFreehandShape,
   svgShapeSilhouette,
@@ -215,6 +216,15 @@ export function svgBoxed(el: BoxedElement, opts: BoxedExportOptions = {}): strin
     // The dark editor card + plain mono lines (spec/82); no label.
     return `<g${opAttr}${rotAttr}${shadowAttr}>${svgCodeBlockShape(el)}</g>`;
   }
+  if (el.type === 'shape' && el.shape === 'legend' && shape.kind === 'rect') {
+    // The key card with its swatch + label rows (spec/53).
+    return `<g${opAttr}${rotAttr}${shadowAttr}>${svgLegendShape(
+      el,
+      shape.fill,
+      shape.stroke,
+      el.textColor ?? '#1e293b',
+    )}</g>`;
+  }
   if (el.type === 'shape' && el.shape === 'checklist' && shape.kind === 'rect') {
     // The themed to-do card with its rows + done-count footer (spec/83).
     return `<g${opAttr}${rotAttr}${shadowAttr}>${svgChecklistShape(
@@ -413,7 +423,7 @@ export function renderElementsToSvg(
         );
     }
     for (const el of band.elements) {
-      if (el.type === 'arrow') inner.push(svgArrow(el, tab.elements, surface));
+      if (el.type === 'arrow') inner.push(svgArrow(el, tab.elements, surface, tab.font));
     }
     const opacity = layerOpacityOf(band.layer);
     parts.push(

@@ -25,6 +25,10 @@ type ArrowLabelProps = {
   textItalic?: boolean;
   textUnderline?: boolean;
   textStrikethrough?: boolean;
+  // The plate behind the text (spec/09 "Caption"). Absent / transparent
+  // leaves the label sitting straight on the canvas, which is how it has
+  // always drawn.
+  fill?: string;
   // When true (arrow selected + editable) the label shows a dashed
   // box + move cursor and can be dragged along / across the line.
   draggable?: boolean;
@@ -58,6 +62,7 @@ export function ArrowLabel({
   textItalic,
   textUnderline,
   textStrikethrough,
+  fill,
   draggable = false,
   onStartDrag,
   onEdit,
@@ -123,10 +128,24 @@ export function ArrowLabel({
   // A touch of padding so the dashed box + drag area sit just outside
   // the label text.
   const pad = 2;
+  const plate = fill && fill !== 'transparent' ? fill : null;
   return (
     <g>
-      {/* The label sits directly on the canvas with a transparent
-          background — no fill plate behind the text. */}
+      {/* The plate, when the caption has been given one. Drawn a touch wider
+          than the text so the words are not flush against its edge, and only
+          when set: with no fill the label sits straight on the canvas, which
+          is how it has always drawn. */}
+      {plate ? (
+        <rect
+          x={x - size.width / 2 - 4}
+          y={y - size.height / 2 - 1}
+          width={size.width + 8}
+          height={size.height + 2}
+          rx={4}
+          fill={plate}
+          style={{ pointerEvents: 'none' }}
+        />
+      ) : null}
       <text
         x={x}
         y={y}

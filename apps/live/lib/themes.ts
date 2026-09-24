@@ -37,6 +37,7 @@ export {
   resetThemeElementsToTheme,
   resetArrowsToTheme,
   shapeColorPresets,
+  tableColorPresets,
   rederiveColorPresetForTheme,
   themePresetColors,
   themeChartPalette,
@@ -46,6 +47,7 @@ export type {
   ThemeDefinition,
   ThemeCategory,
   ShapeColorPreset,
+  TablePreset,
 } from '@livediagram/diagram';
 
 // Resolve an id to its real ThemeDefinition, or `undefined` when the id names

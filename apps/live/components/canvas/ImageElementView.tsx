@@ -66,8 +66,11 @@ function ImageElementViewImpl({
     // so a single click (and the drag that follows it) can still
     // move / resize the placeholder without spawning the modal.
     // View-role visitors see the same hint with no picker.
+    // text-center + a side gutter because the hint WRAPS in a narrow box: the
+    // flex centring only centres the text block, so a wrapped second line sat
+    // hard left of it, which on a round avatar read as badly misaligned.
     const placeholderBase =
-      'flex h-full w-full flex-col items-center justify-center gap-1 rounded border-2 border-dashed border-slate-300 bg-slate-50 text-slate-500 dark:border-slate-700 dark:bg-slate-800/40 dark:text-white';
+      'flex h-full w-full flex-col items-center justify-center gap-1 rounded border-2 border-dashed border-slate-300 bg-slate-50 px-2 text-center text-slate-500 dark:border-slate-700 dark:bg-slate-800/40 dark:text-white';
     if (!canOpenPicker) {
       return (
         <div className={placeholderBase} style={radiusStyle}>
@@ -90,7 +93,7 @@ function ImageElementViewImpl({
   if (state.status === 'broken') {
     return (
       <div
-        className="flex h-full w-full flex-col items-center justify-center gap-1 rounded border border-rose-200 bg-rose-50/60 text-rose-700 dark:border-rose-500/40 dark:bg-rose-500/10 dark:text-rose-300"
+        className="flex h-full w-full flex-col items-center justify-center gap-1 rounded border border-rose-200 bg-rose-50/60 px-2 text-center text-rose-700 dark:border-rose-500/40 dark:bg-rose-500/10 dark:text-rose-300"
         style={radiusStyle}
       >
         <BrokenIcon />

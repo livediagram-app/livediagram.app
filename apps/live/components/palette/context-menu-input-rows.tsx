@@ -20,6 +20,23 @@ const CHECKER =
 const isTransparent = (color: string): boolean =>
   color.toLowerCase() === TRANSPARENT || color.toLowerCase() === 'none';
 
+// The palette half of a ColourRow's props: the active theme's swatches plus
+// the user's own. One bundle, spread at every call site, because every picker
+// in the editor must offer the SAME palette (see useColourPalette) and four
+// loose props repeated at a dozen sites is how two of them ended up passing
+// only the presets, silently giving those rows no custom swatches and no way
+// to add one.
+export type ColourPalette = {
+  // Preset swatches to offer, derived from the active theme so they match it.
+  presets: string[];
+  // The user's own palette: colours they have used that the theme did not
+  // offer. Shown after the presets and removable, which the presets are not
+  // (a theme's colours are the theme's to decide).
+  customs?: string[];
+  onAddCustom?: (color: string) => void;
+  onRemoveCustom?: (color: string) => void;
+};
+
 // A small preset palette for the inline colour picker. The "+" custom chip
 // still opens the OS picker for anything off-palette.
 // One labelled colour row inside the Colours section: the label + current
@@ -51,14 +68,6 @@ export function ColourRow({
   open: boolean;
   onToggle: () => void;
   onChange: (color: string) => void;
-  // Preset swatches to offer, derived from the active theme so they match it.
-  presets: string[];
-  // The user's own palette: colours they have used that the theme did not
-  // offer. Shown after the presets and removable, which the presets are not
-  // (a theme's colours are the theme's to decide).
-  customs?: string[];
-  onAddCustom?: (color: string) => void;
-  onRemoveCustom?: (color: string) => void;
   // Hover-to-preview for the discrete swatches (desktop pointer), mirroring the
   // style-preset tiles: onPreview shows the colour live, onPreviewEnd reverts,
   // and onCommit is the click-commit that snapshots the true pre-hover value for
@@ -67,7 +76,7 @@ export function ColourRow({
   onPreview?: (color: string) => void;
   onCommit?: (color: string) => void;
   onPreviewEnd?: () => void;
-}) {
+} & ColourPalette) {
   // Revert an in-flight swatch preview if the menu/section unmounts mid-hover
   // (pointerleave doesn't fire on unmount).
   useRevertOnUnmount(onPreviewEnd ?? NOOP);

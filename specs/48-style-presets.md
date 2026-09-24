@@ -162,3 +162,47 @@ multi-selection the preset applies to every selected arrow at once.
 - Telemetry (spec/22): applying / resetting a preset fires
   `track('Element', 'Changed', …)` with a `StylePreset` / `BorderPreset` /
   `ArrowPreset` / `StyleReset` type token.
+
+## Sticky-note presets
+
+A sticky had no presets at all, so recolouring a note meant picking a fill and then hunting a readable ink to go on it: two decisions for what is really one. The Style band now opens a **Presets** grid for a sticky too, from `STICKY_PRESETS` in `packages/diagram/src/theme-presets.ts`.
+
+It is a fixed pad, deliberately **not** theme-derived: a sticky is exempt from theme recolouring ([spec/139](139-event-storming.md)) precisely because the colour of a note is the user's own shorthand rather than the board's palette. Twelve notes, in three runs of four: warm (Classic, Lemon, Peach, Rose), cool (Lilac, Sky, Mint, Teal) and neutral (Slate, Paper, Charcoal, Ink). Each pairs its paper with an ink that reads on it, and a test holds that pairing, since a preset with unreadable text is worse than no preset.
+
+A note carries **no border**: its edge against the peel shadow is its border. So a sticky preset's `stroke` is transparent with weight `none`, and applying one clears any hand-set `strokeColor` with it, which is what "one complete look" means for a note. The tiles preview as squares, which is what a note is.
+
+The presets bind by exact colour match rather than by id: `colorPreset` is a shape field, and a sticky has no use for it beyond the highlight.
+
+## Table looks
+
+A table paints **four** surfaces (cells, grid lines, header band, header text)
+that only read well in combination, so picking them one swatch at a time was
+four decisions and a fair chance of a header you cannot read the title on. The
+Presets grid offers eight complete looks from `tableColorPresets(theme)`,
+theme-derived like the shape presets: the accent tier (Theme, Banded, Bold Head,
+Minimal) then neutrals that are the same under every theme (Plain, Paper, Slate,
+Inked). A test holds that every header band pairs with a readable title colour.
+
+Banding (`zebra`) rides along, because it is a look. `headerRow` /
+`headerColumn` deliberately do **not**: which cells ARE headers is data, and a
+preset flipping it would silently re-read the first row of somebody's table as a
+heading. Reset goes through the shared reset-colours handler, the same one the
+Colours section's own reset uses.
+
+## Code-block schemes
+
+A code block's Presets grid is its **colour scheme** rather than a shape look. It paints its own card and takes no element colours, so there is nothing to reset it to but another scheme, and the grid carries no reset row. See [spec/82](82-code-block.md).
+
+## Chart palettes
+
+A chart's Presets grid is the categorical **ramp** its slices / series fall back
+to: a chart styles per slice from its Data category, so a look for it is the
+palette, not a fill and a border. Its reset clears the choice, which puts the
+chart back on the tab theme's palette. See [spec/53](53-pie-chart.md).
+
+## Which grid an element gets
+
+`TargetPresetsSection` (`components/palette/PresetSections.tsx`) is the one
+place that answers it: chart palette, table look, shape look, sticky pad, code
+scheme, or arrow line. Elements with none render nothing, so the caller mounts
+it unconditionally.

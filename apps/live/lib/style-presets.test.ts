@@ -6,7 +6,11 @@ import {
   applyBorderRadiusToEl,
   applyBorderStrokeToEl,
   applyBorderStyleToEl,
+  applyChartPaletteToEl,
+  applyCodeThemeToEl,
   applyColorPresetToEl,
+  applyLabelFillToEl,
+  applyTablePresetToEl,
   applyFillColorToEl,
   applyRotationToEl,
   applyShadowToEl,
@@ -47,9 +51,93 @@ describe('applyColorPresetToEl', () => {
     expect(applyColorPresetToEl(el('shape'), p)).not.toHaveProperty('borderRadius', 'lg');
   });
 
-  it('is a no-op on non-shapes', () => {
-    const sticky = el('sticky');
-    expect(applyColorPresetToEl(sticky, p)).toBe(sticky);
+  it('gives a sticky the paper and the ink, and no border', () => {
+    // A note's edge against its peel shadow IS its border: stamping the
+    // preset's stroke would draw a hairline box around the paper, so the
+    // sticky branch takes two of the five fields and clears any hand-set
+    // border with them.
+    const applied = applyColorPresetToEl(el('sticky', { strokeColor: '#old' }), p);
+    expect(applied).toMatchObject({ fillColor: '#fill', textColor: '#text' });
+    expect(applied).toHaveProperty('strokeColor', undefined);
+    expect(applied).not.toHaveProperty('strokeWidth');
+  });
+
+  it('is a no-op on the types with no preset grid', () => {
+    const text = el('text');
+    expect(applyColorPresetToEl(text, p)).toBe(text);
+  });
+});
+
+describe('applyLabelFillToEl', () => {
+  it('sets the caption plate on an arrow', () => {
+    expect(applyLabelFillToEl(el('arrow'), '#fff')).toMatchObject({ labelFill: '#fff' });
+  });
+
+  it('is a no-op on anything else, so a mixed selection only paints arrows', () => {
+    const shape = el('shape');
+    expect(applyLabelFillToEl(shape, '#fff')).toBe(shape);
+  });
+});
+
+describe('applyTablePresetToEl', () => {
+  const p = {
+    id: 'table-x',
+    name: 'X',
+    fill: '#fill',
+    stroke: '#stroke',
+    text: '#text',
+    headerFill: '#head',
+    headerText: '#headtext',
+    zebra: true,
+  };
+
+  it('stamps all four surfaces and the banding in one go', () => {
+    expect(applyTablePresetToEl(el('table'), p)).toMatchObject({
+      fillColor: '#fill',
+      strokeColor: '#stroke',
+      textColor: '#text',
+      headerFill: '#head',
+      headerTextColor: '#headtext',
+      zebra: true,
+    });
+  });
+
+  it('leaves headerRow / headerColumn alone, which are data not a look', () => {
+    const applied = applyTablePresetToEl(el('table', { headerRow: true, headerColumn: false }), p);
+    expect(applied).toMatchObject({ headerRow: true, headerColumn: false });
+  });
+
+  it('is a no-op on anything that is not a table', () => {
+    const shape = el('shape');
+    expect(applyTablePresetToEl(shape, p)).toBe(shape);
+  });
+});
+
+describe('applyChartPaletteToEl', () => {
+  it('sets the palette on a chart without touching its data', () => {
+    const chart = el('shape', { shape: 'pie-chart', pieSlices: [{ label: 'A', value: 1 }] });
+    const applied = applyChartPaletteToEl(chart, 'ocean');
+    expect(applied).toMatchObject({ chartPalette: 'ocean' });
+    // The ramp is resolved at render, so a slice the user coloured on purpose
+    // is never rewritten.
+    expect(applied).toMatchObject({ pieSlices: [{ label: 'A', value: 1 }] });
+  });
+
+  it('is a no-op on a shape that is not a chart', () => {
+    const square = el('shape', { shape: 'square' });
+    expect(applyChartPaletteToEl(square, 'ocean')).toBe(square);
+  });
+});
+
+describe('applyCodeThemeToEl', () => {
+  it('sets the scheme on a code block and nothing else', () => {
+    const block = el('shape', { shape: 'code-block' });
+    expect(applyCodeThemeToEl(block, 'paper')).toMatchObject({ codeTheme: 'paper' });
+  });
+
+  it('is a no-op on any other shape', () => {
+    const square = el('shape', { shape: 'square' });
+    expect(applyCodeThemeToEl(square, 'paper')).toBe(square);
   });
 });
 

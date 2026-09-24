@@ -17,7 +17,9 @@ import {
   deriveTextColorForBg,
   isLightColor,
   supportsBorderRadius,
+  supportsFillColor,
   type ArrowElement,
+  type Element,
   type ArrowThickness,
   type ArrowheadSize,
   type ShapeKind,
@@ -211,5 +213,25 @@ describe('supportsBorderRadius', () => {
 
   it('is false for non-shape elements', () => {
     expect(supportsBorderRadius(arrow())).toBe(false);
+  });
+});
+
+describe('supportsFillColor', () => {
+  // The Background row is only worth showing where a fill is actually
+  // painted. An icon's wrapper is self-painting, so the control sat there
+  // doing nothing but writing to the element on every pick.
+  const shape = (s: string): Element =>
+    ({ id: 'e', type: 'shape', shape: s, x: 0, y: 0, width: 10, height: 10 }) as Element;
+
+  it('is off for icons, whose renderers never read a fill', () => {
+    expect(supportsFillColor(shape('icon'))).toBe(false);
+  });
+
+  it('stays on for the shapes that do paint one', () => {
+    expect(supportsFillColor(shape('square'))).toBe(true);
+    // A frame's fill defaults to transparent but is real once picked.
+    expect(supportsFillColor(shape('frame'))).toBe(true);
+    // The progress track is drawn FROM fillColor, self-painting or not.
+    expect(supportsFillColor(shape('progress-bar'))).toBe(true);
   });
 });

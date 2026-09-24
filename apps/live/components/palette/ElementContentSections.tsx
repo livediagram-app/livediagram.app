@@ -13,7 +13,9 @@ import {
   LinkMenuIcon,
   NoteMenuIcon,
   RemoveIconGlyph,
+  FillColourIcon,
   TableGlyph,
+  TextColourIcon,
   TextGlyph,
 } from '@/components/palette/context-menu-icons';
 import {
@@ -49,6 +51,7 @@ type ElementContentSectionsProps = {
   sectionProps: Scaffold['sectionProps'];
   colorProps: Scaffold['colorProps'];
   textColorHandlers: Scaffold['textColorHandlers'];
+  labelFillHandlers: Scaffold['labelFillHandlers'];
 };
 
 export function ElementContentSections({
@@ -61,15 +64,23 @@ export function ElementContentSections({
   sectionProps,
   colorProps,
   textColorHandlers,
+  labelFillHandlers,
 }: ElementContentSectionsProps) {
   const boxed = isBoxed(target);
   return (
     <>
-      {/* Text — whole-element label formatting for a labelled arrow, or
-            every cell of a table (other boxed elements format via the inline
-            rich-text toolbar instead). */}
+      {/* Caption / Text: whole-element label formatting for a labelled
+            arrow, or every cell of a table (other boxed elements format via
+            the inline rich-text toolbar instead). An arrow's is called
+            Caption, because that is what the words beside a line are, and
+            because "Text" on an arrow reads as the line's own label field
+            rather than how it is painted. */}
       {(target.type === 'arrow' && target.label) || target.type === 'table' ? (
-        <MenuAccordionSection title="Text" icon={<TextGlyph />} {...sectionProps('text')}>
+        <MenuAccordionSection
+          title={target.type === 'arrow' ? 'Caption' : 'Text'}
+          icon={<TextGlyph />}
+          {...sectionProps('text')}
+        >
           {target.type === 'table' ? (
             <p className="px-3 pt-1.5 text-[10px] font-medium text-slate-500 dark:text-slate-400">
               Applies to every cell.
@@ -112,12 +123,27 @@ export function ElementContentSections({
           />
           <ContextMenuDivider />
           <ColourRow
-            label="Colour"
+            label={target.type === 'arrow' ? 'Text' : 'Colour'}
+            icon={<TextColourIcon />}
             value={target.textColor ?? '#0f172a'}
             {...textColorHandlers}
             {...colorProps('text')}
-            presets={props.presetColors}
+            {...props.colourPalette}
           />
+          {/* The plate behind the caption. Transparent by default, which is
+              how an arrow's label has always drawn; a colour here is for a
+              caption that has to stay readable over its own line or a busy
+              backdrop. */}
+          {target.type === 'arrow' ? (
+            <ColourRow
+              label="Background"
+              icon={<FillColourIcon />}
+              value={target.labelFill ?? 'transparent'}
+              {...labelFillHandlers}
+              {...colorProps('caption-bg')}
+              {...props.colourPalette}
+            />
+          ) : null}
         </MenuAccordionSection>
       ) : null}
       {/* Image — pick / change / clear the bitmap (spec/19). */}

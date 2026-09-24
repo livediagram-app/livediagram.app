@@ -295,6 +295,29 @@ export function PieChartWithLegend() {
   );
 }
 
+/** The legend element on its own: a card of round colour chips and labels,
+ *  which is what the canvas draws (the pie's key uses square chips, since
+ *  those stand for slices rather than the element's own dots). */
+export function LegendCard() {
+  return (
+    <Scene w={420} h={200}>
+      <Panel x={120} y={26} w={180} h={148} title="LEGEND">
+        {PIE_SLICES.map((s, i) => {
+          const cy = 84 + i * 26;
+          return (
+            <g key={s.label}>
+              <circle cx={144} cy={cy} r={6} className={s.cls} />
+              <Label x={160} y={cy} size={11} tone="body" weight={500}>
+                {s.label}
+              </Label>
+            </g>
+          );
+        })}
+      </Panel>
+    </Scene>
+  );
+}
+
 /** A small bar chart beside a line chart, both multi-category. */
 export function BarAndLineCharts() {
   const bars = [34, 58, 46, 72, 50];

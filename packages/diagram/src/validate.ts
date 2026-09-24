@@ -41,9 +41,14 @@ import {
   ENTITY_MAX_FIELDS,
   ENTITY_MAX_TEXT,
   CHECKLIST_MAX_TEXT,
+  LEGEND_MAX_ITEMS,
+  LEGEND_MAX_TEXT,
   CODE_LANGUAGES,
   CODE_MAX_LENGTH,
 } from './data-shapes';
+import { isCodeThemeId } from './code-themes';
+import { isChartPaletteId } from './chart-palettes';
+import { isMindFlow } from './mind-flow';
 
 // Bounds. Generous vs any real diagram, tight vs an abuse payload.
 export const MAX_ELEMENTS_PER_TAB = 10_000;
@@ -131,6 +136,7 @@ export const SHAPE_KINDS = new Set<string>([
   'laptop',
   'phone',
   'tablet',
+  'foldable',
   'smartwatch',
   'progress-bar',
   'progress-ring',
@@ -141,6 +147,7 @@ export const SHAPE_KINDS = new Set<string>([
   'line-chart',
   'code-block',
   'checklist',
+  'legend',
   'icon',
   'sticker',
 ]);
@@ -246,6 +253,14 @@ export function isValidElement(el: unknown): el is Element {
       !(CODE_LANGUAGES as readonly string[]).includes(el.codeLanguage as string)
     )
       return false;
+    // Colour scheme: a closed set of ids. An unknown one still RENDERS (the
+    // resolver falls back to the default card), but it has no business being
+    // written into a diagram.
+    if (el.codeTheme !== undefined && !isCodeThemeId(el.codeTheme as string)) return false;
+    // Mind flow (spec/118): a closed set, and only meaningful on a root.
+    if (el.mindFlow !== undefined && !isMindFlow(el.mindFlow as string)) return false;
+    // Chart palette (spec/53): likewise a closed set of ids.
+    if (el.chartPalette !== undefined && !isChartPaletteId(el.chartPalette as string)) return false;
     // Embed provider (spec/121): a creation-time hint, one of a closed set.
     if (
       el.embedProvider !== undefined &&
@@ -350,6 +365,15 @@ export function isValidElement(el: unknown): el is Element {
         if (!isObj(item)) return false;
         if (typeof item.text !== 'string' || item.text.length > CHECKLIST_MAX_TEXT) return false;
         if (typeof item.done !== 'boolean') return false;
+      }
+    }
+    // Legend (spec/53): bounded rows of { label, color? }.
+    if (el.legendItems !== undefined) {
+      if (!boundedArray(el.legendItems, LEGEND_MAX_ITEMS)) return false;
+      for (const item of el.legendItems) {
+        if (!isObj(item)) return false;
+        if (typeof item.label !== 'string' || item.label.length > LEGEND_MAX_TEXT) return false;
+        if (item.color !== undefined && typeof item.color !== 'string') return false;
       }
     }
     return true;

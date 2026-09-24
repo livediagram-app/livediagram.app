@@ -1,10 +1,16 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { resolveLayerId, selectionMembers } from '@livediagram/diagram';
+import {
+  DEFAULT_MIND_FLOW,
+  isMindNode,
+  mindFlowOf,
+  resolveLayerId,
+  selectionMembers,
+} from '@livediagram/diagram';
 import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
 import { useColourPalette } from '@/hooks/ui/useColourPalette';
-import { getTheme, shapeColorPresets } from '@/lib/themes';
+import { getTheme, shapeColorPresets, tableColorPresets } from '@/lib/themes';
 
 // Lazy like the other heavy editor chrome: the menu's chunk loads on the
 // first right-click, not with the page.
@@ -54,6 +60,15 @@ export function EditorContextMenuHost() {
     previewTextColor,
     commitTextColor,
     previewFillColor,
+    commitCodeTheme,
+    previewCodeTheme,
+    commitTablePreset,
+    previewTablePreset,
+    commitChartPalette,
+    previewChartPalette,
+    setLabelFillSelected,
+    commitLabelFill,
+    previewLabelFill,
     commitHeaderFill,
     previewHeaderFill,
     setHeaderFillSelected,
@@ -91,6 +106,9 @@ export function EditorContextMenuHost() {
     setChartLegendPositionSelected,
     setLineDataOpenForId,
     setCodeEditOpenForId,
+    setCodeWrapSelected,
+    setLegendItemsSelected,
+    setMindFlowSelected,
     setChecklistItemsSelected,
     setEntityFieldsSelected,
     setEstimateScaleSelected,
@@ -159,7 +177,7 @@ export function EditorContextMenuHost() {
     openAssignAction,
   } = useEditorContext();
 
-  const { presetColors, customColors, addCustomColor, removeCustomColor } = useColourPalette();
+  const { swatches } = useColourPalette();
 
   // A view-only session never gets an element context menu at all, so
   // nothing below needs a second `isReadOnly` guard — everything past
@@ -178,6 +196,14 @@ export function EditorContextMenuHost() {
       : ctxSelectedEl
         ? selectionMembers(activeTab.elements, ctxSelectedEl.id)
         : [];
+
+  // The flow the selected node's MAP grows in (spec/118). Resolved here
+  // because it lives on the tree's root, which the menu cannot walk to from
+  // the node in hand.
+  const menuMindFlow =
+    ctxSelectedEl && isMindNode(ctxSelectedEl)
+      ? mindFlowOf(activeTab.elements, ctxSelectedEl)
+      : DEFAULT_MIND_FLOW;
 
   // The selection's layer for the Layer section's move-to dropdown
   // (spec/74): the single resolved layer every member shares, or null
@@ -245,6 +271,9 @@ export function EditorContextMenuHost() {
       onSetArrowheadColor={setArrowheadColorSelected}
       onPreviewArrowheadColor={previewArrowheadColor}
       onCommitArrowheadColor={commitArrowheadColor}
+      onSetLabelFill={setLabelFillSelected}
+      onPreviewLabelFill={previewLabelFill}
+      onCommitLabelFill={commitLabelFill}
       onSetHeaderFill={setHeaderFillSelected}
       onPreviewHeaderFill={previewHeaderFill}
       onCommitHeaderFill={commitHeaderFill}
@@ -278,6 +307,10 @@ export function EditorContextMenuHost() {
       onSetChartLegendPosition={setChartLegendPositionSelected}
       onEditLineData={setLineDataOpenForId}
       onEditCodeBlock={setCodeEditOpenForId}
+      onSetCodeWrap={setCodeWrapSelected}
+      onSetLegendItems={setLegendItemsSelected}
+      mindFlow={menuMindFlow}
+      onSetMindFlow={setMindFlowSelected}
       onSetChecklistItems={setChecklistItemsSelected}
       onSetEntityFields={setEntityFieldsSelected}
       onSetEstimateScale={setEstimateScaleSelected}
@@ -304,6 +337,13 @@ export function EditorContextMenuHost() {
       onApplyArrowPreset={commitArrowPreset}
       onPreviewArrowPreset={previewArrowPreset}
       onPreviewStyleEnd={clearStylePreview}
+      onApplyCodeTheme={commitCodeTheme}
+      onPreviewCodeTheme={previewCodeTheme}
+      tableColorPresets={tableColorPresets(getTheme(activeTab.theme))}
+      onApplyTablePreset={commitTablePreset}
+      onPreviewTablePreset={previewTablePreset}
+      onApplyChartPalette={commitChartPalette}
+      onPreviewChartPalette={previewChartPalette}
       onResetArrowStyle={resetArrowStyleSelected}
       onSetAnimation={commitAnimation}
       onSetArrowFlow={commitArrowFlow}
@@ -344,10 +384,7 @@ export function EditorContextMenuHost() {
       onPreviewShapeKind={previewShapeKind}
       onResetAspectRatio={resetAspectRatioSelected}
       onSetSize={setSizeSelected}
-      presetColors={presetColors}
-      customColors={customColors}
-      onAddCustomColor={addCustomColor}
-      onRemoveCustomColor={removeCustomColor}
+      colourPalette={swatches}
       onToggleTableHeaderRow={setTableHeaderRowSelected}
       onToggleTableHeaderColumn={setTableHeaderColumnSelected}
       onToggleTableZebra={setTableZebraSelected}

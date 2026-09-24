@@ -17,8 +17,12 @@ import type {
   DecisionStatus,
   EstimateScale,
   Element,
+  ChartPaletteId,
+  CodeThemeId,
   ElementShadow,
   Layer,
+  LegendItem,
+  MindFlow,
   ElementAnimation,
   IconAnimation,
   IconPosition,
@@ -32,9 +36,11 @@ import type {
   RatingAnim,
   ShapeKind,
   ShapeMarker,
+  TablePreset,
   TextSize,
 } from '@livediagram/diagram';
 import type { ArrowPreset } from '@/components/palette/StylePresets';
+import type { ColourPalette } from '@/components/palette/context-menu-input-rows';
 import type { ShapeColorPreset } from '@/lib/themes';
 
 export type EditorContextMenuState =
@@ -115,6 +121,11 @@ export type EditorContextMenuProps = {
   onSetArrowheadColor: (color: string) => void;
   onPreviewArrowheadColor: (color: string) => void;
   onCommitArrowheadColor: (color: string) => void;
+  // The plate behind an arrow's caption (spec/09). Absent = none, which is
+  // how a label has always drawn.
+  onSetLabelFill: (color: string) => void;
+  onPreviewLabelFill: (color: string) => void;
+  onCommitLabelFill: (color: string) => void;
   onSetHeaderFill: (color: string) => void;
   onPreviewHeaderFill: (color: string) => void;
   onCommitHeaderFill: (color: string) => void;
@@ -160,6 +171,15 @@ export type EditorContextMenuProps = {
   // Code block (spec/82): open the code edit modal for the given element
   // (same too-big-for-the-menu rationale as the line chart's grid).
   onEditCodeBlock: (elementId: string) => void;
+  // Long-line wrapping on a code block (spec/82), on by default.
+  onSetCodeWrap: (wrap: boolean) => void;
+  // Legend rows (spec/53): the whole array, committed in one step.
+  onSetLegendItems: (items: LegendItem[]) => void;
+  // Mind-map flow (spec/118): the shape the selected node's whole map grows
+  // in. Resolved here rather than in the menu because it is stored on the
+  // tree's ROOT, which the menu has no way to walk to.
+  mindFlow: MindFlow;
+  onSetMindFlow: (flow: MindFlow) => void;
   // Checklist (spec/83): replace the selected checklist's rows.
   onSetChecklistItems: (items: ChecklistItem[]) => void;
   onSetEntityFields: (fields: EntityField[]) => void;
@@ -206,6 +226,18 @@ export type EditorContextMenuProps = {
   onPreviewShapeColorPreset: (preset: ShapeColorPreset) => void;
   onPreviewArrowPreset: (preset: ArrowPreset) => void;
   onPreviewStyleEnd: () => void;
+  // Code-block colour scheme (spec/82): the code block's flavour of preset,
+  // and the only style choice it has. Same hover-preview / click-commit flow.
+  onApplyCodeTheme: (id: CodeThemeId) => void;
+  onPreviewCodeTheme: (id: CodeThemeId) => void;
+  // Table looks (spec/48): cells + grid + header band + banding in one step.
+  // Theme-derived, like the shape presets.
+  tableColorPresets: TablePreset[];
+  onApplyTablePreset: (preset: TablePreset) => void;
+  onPreviewTablePreset: (preset: TablePreset) => void;
+  // Chart palettes (spec/53): the chart's flavour of preset.
+  onApplyChartPalette: (id: ChartPaletteId) => void;
+  onPreviewChartPalette: (id: ChartPaletteId) => void;
   // Arrow style presets (spec/48): one-click line looks (pattern / thickness /
   // optional flow animation) for the selected arrow, plus a reset.
   onApplyArrowPreset: (preset: ArrowPreset) => void;
@@ -272,14 +304,9 @@ export type EditorContextMenuProps = {
   // dimension alone is allowed: the omitted one is left as-is, or carried by
   // the aspect lock when that is on.
   onSetSize: (size: { width?: number; height?: number }) => void;
-  // Preset colour swatches for the colour pickers, derived from the active
-  // theme so the offered presets match it.
-  presetColors: string[];
-  // The user's own palette (spec/09 Colours): colours they have used that
-  // the theme did not offer. Appended after the presets, and removable.
-  customColors: string[];
-  onAddCustomColor: (color: string) => void;
-  onRemoveCustomColor: (color: string) => void;
+  // The colour palette every ColourRow in this menu offers (spec/09 Colours):
+  // the theme's swatches plus the user's own, spread straight onto the row.
+  colourPalette: ColourPalette;
   // Table structure toggles (header row / column, zebra) for the Table
   // category.
   onToggleTableHeaderRow: () => void;

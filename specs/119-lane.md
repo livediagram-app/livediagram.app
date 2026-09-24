@@ -58,6 +58,14 @@ What differs from a frame is presentation only:
     one holding "Q3". One commit per gesture, so a drag is one undo step, and
     the seam is clamped so a gutter can neither vanish nor eat the lane.
 
+    The live size during a drag is held in a ref as well as in state. Release
+    used to commit from inside a `setState` UPDATER, which React runs during
+    the render phase: committing there updates the page while the gutter is
+    rendering, and React says so. Reading the effect's closed-over state
+    instead would be wrong a different way, since `pointermove` is not a
+    discrete event and its re-render may not have flushed by the time the
+    release arrives.
+
     The drag **snaps**, to the ordinary alignment grid AND to **other lanes'
     seams** (`lane-seam-snapping.ts`). The second is the one that matters: a
     stack of swimlanes with headings a few pixels apart is the thing that

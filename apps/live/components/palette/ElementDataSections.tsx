@@ -17,7 +17,9 @@ import {
   animLoops,
   DEFAULT_ANIMATION_SPEED,
   LINE_DEFAULT_SERIES,
+  chartPaletteColors,
   PIE_DEFAULT_SLICES,
+  PIE_PALETTE,
   PIE_LOOPING_ANIMS,
   PROGRESS_LOOPING_ANIMS,
   RAIL_DEFAULT_POINTS,
@@ -75,6 +77,8 @@ import {
   EntityFieldsEditor,
   CodeSummary,
   DataMenuGlyph,
+  LegendDataEditor,
+  MindFlowTiles,
   LineDataSummary,
   PieAnimTiles,
   PieDataEditor,
@@ -104,6 +108,8 @@ type ElementDataSectionsProps = {
   isLine: boolean;
   isCodeBlock: boolean;
   isChecklist: boolean;
+  isLegend: boolean;
+  isMindNode: boolean;
   isEntity: boolean;
   isModeButton: boolean;
   isPortal: boolean;
@@ -148,6 +154,8 @@ export function ElementDataSections({
   isLine,
   isCodeBlock,
   isChecklist,
+  isLegend,
+  isMindNode,
   isEntity,
   isModeButton,
   isPortal,
@@ -165,6 +173,10 @@ export function ElementDataSections({
   flyoutProps,
 }: ElementDataSectionsProps) {
   const shapeTarget = target.type === 'shape' ? target : null;
+  // What an uncoloured slice / series shows as, so the swatches in the data
+  // rows match the chart. The chart's own palette when it has one (spec/53);
+  // otherwise the built-in ramp, which is what these rows have always used.
+  const chartFallbackPalette = chartPaletteColors(shapeTarget?.chartPalette) ?? PIE_PALETTE;
   // The Tools flyout (spec/09): the data-shape-specific controls —
   // Progress (bar / ring), Timeline rail, Rating, and the chart Data +
   // Chart sections — fold behind one "Tools" row, the same side-flyout
@@ -178,6 +190,8 @@ export function ElementDataSections({
     isChart ||
     isCodeBlock ||
     isChecklist ||
+    isLegend ||
+    isMindNode ||
     isEntity ||
     isModeButton ||
     isPortal ||
@@ -266,6 +280,7 @@ export function ElementDataSections({
             >
               {isLine ? (
                 <LineDataSummary
+                  palette={chartFallbackPalette}
                   series={
                     shapeTarget?.lineSeries ??
                     LINE_DEFAULT_SERIES.map((s) => ({ ...s, values: [...s.values] }))
@@ -274,6 +289,7 @@ export function ElementDataSections({
                 />
               ) : (
                 <PieDataEditor
+                  palette={chartFallbackPalette}
                   slices={shapeTarget?.pieSlices ?? PIE_DEFAULT_SLICES.map((s) => ({ ...s }))}
                   onChange={props.onSetPieData}
                 />
@@ -287,6 +303,8 @@ export function ElementDataSections({
               <CodeSummary
                 code={shapeTarget?.code ?? ''}
                 language={shapeTarget?.codeLanguage ?? 'plain'}
+                wrap={shapeTarget?.codeWrap !== false}
+                onSetWrap={props.onSetCodeWrap}
                 onEdit={() => target.type === 'shape' && props.onEditCodeBlock(target.id)}
               />
             </MenuAccordionSection>
@@ -347,6 +365,32 @@ export function ElementDataSections({
                 items={shapeTarget?.checklistItems ?? []}
                 onChange={props.onSetChecklistItems}
               />
+            </MenuAccordionSection>
+          ) : null}
+          {/* Legend (spec/53): the key's rows, a colour and a word each. */}
+          {isLegend ? (
+            <MenuAccordionSection
+              title="Legend"
+              icon={<DataMenuGlyph />}
+              {...sectionProps('legend')}
+            >
+              <LegendDataEditor
+                items={shapeTarget?.legendItems ?? []}
+                palette={chartFallbackPalette}
+                onChange={props.onSetLegendItems}
+              />
+            </MenuAccordionSection>
+          ) : null}
+          {/* Mind map (spec/118): the shape the whole map grows in. It sets
+            the ROOT's flow, so one pick re-shapes every branch that follows
+            rather than leaving half a map in one arrangement. */}
+          {isMindNode ? (
+            <MenuAccordionSection
+              title="Mind Map"
+              icon={<DataMenuGlyph />}
+              {...sectionProps('mind-flow')}
+            >
+              <MindFlowTiles current={props.mindFlow} onSet={props.onSetMindFlow} />
             </MenuAccordionSection>
           ) : null}
           {/* Mode button (spec/103) — which selection mode pressing it hands

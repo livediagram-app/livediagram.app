@@ -14,6 +14,9 @@ type ColorSetterProps = Pick<
   | 'onSetArrowheadColor'
   | 'onPreviewArrowheadColor'
   | 'onCommitArrowheadColor'
+  | 'onSetLabelFill'
+  | 'onPreviewLabelFill'
+  | 'onCommitLabelFill'
   | 'onSetHeaderFill'
   | 'onPreviewHeaderFill'
   | 'onCommitHeaderFill'
@@ -78,6 +81,12 @@ export function useContextMenuScaffold(p: ColorSetterProps) {
     onCommit: p.onCommitArrowheadColor,
     onPreviewEnd: p.onPreviewStyleEnd,
   };
+  const labelFillHandlers = {
+    onChange: p.onSetLabelFill,
+    onPreview: p.onPreviewLabelFill,
+    onCommit: p.onCommitLabelFill,
+    onPreviewEnd: p.onPreviewStyleEnd,
+  };
   const headerFillHandlers = {
     onChange: p.onSetHeaderFill,
     onPreview: p.onPreviewHeaderFill,
@@ -98,6 +107,7 @@ export function useContextMenuScaffold(p: ColorSetterProps) {
     fillColorHandlers,
     arrowheadColorHandlers,
     headerFillHandlers,
+    labelFillHandlers,
     strokeColorHandlers,
   };
 }

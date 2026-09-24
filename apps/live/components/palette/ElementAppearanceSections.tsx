@@ -20,6 +20,8 @@ import {
   isChartShape,
   isChecklistShape,
   isCodeBlockShape,
+  isLegendShape,
+  isMindNode,
   isLineShape,
   isProgressShape,
   isRailShape,
@@ -52,11 +54,7 @@ import { IconSizeTiles } from '@/components/palette/context-menu-tiles';
 import { isTechIconId } from '@/lib/tech-icons';
 import { AlignIcon as AlignLinesIcon } from '@/components/canvas/table-icons';
 import { AlignmentGrid } from '@/components/palette/palette-controls';
-import {
-  ArrowPresetsSection,
-  ShapePresetsSection,
-  shapeSupportsPresets,
-} from '@/components/palette/PresetSections';
+import { hasStylePresets, TargetPresetsSection } from '@/components/palette/PresetSections';
 import {
   IconPositionGrid,
   MarkersMenuGlyph,
@@ -117,6 +115,8 @@ export function ElementAppearanceSections({
   const isChart = target.type === 'shape' && isChartShape(target.shape);
   const isLine = target.type === 'shape' && isLineShape(target.shape);
   const isCodeBlock = target.type === 'shape' && isCodeBlockShape(target.shape);
+  const isLegend = target.type === 'shape' && isLegendShape(target.shape);
+  const isMind = isMindNode(target);
   const isChecklist = target.type === 'shape' && isChecklistShape(target.shape);
   const isEntity = target.type === 'shape' && target.shape === 'entity';
   // Mode button (spec/103): its one setting is which mode it hands out.
@@ -162,13 +162,16 @@ export function ElementAppearanceSections({
   // The Style flyout shows when any of its children would: presets
   // (shapes with looks / arrow line looks), Colours, or Border — the
   // same gates the sections carry inside.
-  // Code blocks keep their fixed dark identity (spec/82) — no Style band.
+  // A code block takes no element colours (spec/82) but it does pick a colour
+  // SCHEME, so the band opens for it carrying only Presets: Colours and Border
+  // gate themselves off it already.
   const showStyle =
-    !isCodeBlock &&
-    (shapeSupportsPresets(target) ||
-      target.type === 'arrow' ||
-      (boxed && supportsColours(target) && !isChart) ||
-      (borderable && !isChart));
+    isCodeBlock ||
+    hasStylePresets(target) ||
+    target.type === 'sticky' ||
+    target.type === 'arrow' ||
+    (boxed && supportsColours(target) && !isChart) ||
+    (borderable && !isChart);
   return (
     <>
       {showAppearanceGroup ? <MenuGroupSeparator /> : null}
@@ -181,32 +184,15 @@ export function ElementAppearanceSections({
             starting closed. ── */}
       {showStyle ? (
         <MenuFlyoutSection title="Style" icon={<StyleMenuGlyph />} {...flyoutProps('style')}>
-          {shapeSupportsPresets(target) ? (
-            <ShapePresetsSection
-              shape={target.shape}
-              current={{
-                fillColor: target.fillColor,
-                strokeColor: target.strokeColor,
-                textColor: target.textColor,
-                colorPreset: target.colorPreset,
-              }}
-              props={props}
-              accordion={sectionProps('presets')}
-              onClose={onClose}
-            />
-          ) : null}
-          {target.type === 'arrow' ? (
-            <ArrowPresetsSection
-              current={{
-                strokeStyle: target.strokeStyle,
-                strokeWidth: target.strokeWidth,
-                flow: target.flow,
-              }}
-              props={props}
-              accordion={sectionProps('presets')}
-              onClose={onClose}
-            />
-          ) : null}
+          {/* Which Presets grid this element gets: shape looks, a sticky's
+              pad of note colours, a code block's colour scheme, or an arrow's
+              line looks. See PresetSections. */}
+          <TargetPresetsSection
+            target={target}
+            props={props}
+            accordion={sectionProps('presets')}
+            onClose={onClose}
+          />
           {/* Colours + Border accordions — see ElementColourBorderSections. */}
           <ElementColourBorderSections
             props={props}
@@ -235,6 +221,8 @@ export function ElementAppearanceSections({
         isChart={isChart}
         isLine={isLine}
         isCodeBlock={isCodeBlock}
+        isLegend={isLegend}
+        isMindNode={isMind}
         isChecklist={isChecklist}
         isEntity={isEntity}
         isModeButton={isModeButton}

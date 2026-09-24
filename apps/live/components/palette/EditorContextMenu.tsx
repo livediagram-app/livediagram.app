@@ -87,6 +87,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
     textColorHandlers,
     fillColorHandlers,
     headerFillHandlers,
+    labelFillHandlers,
     arrowheadColorHandlers,
     strokeColorHandlers,
   } = useContextMenuScaffold(props);
@@ -363,6 +364,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
           sectionProps={sectionProps}
           colorProps={colorProps}
           textColorHandlers={textColorHandlers}
+          labelFillHandlers={labelFillHandlers}
         />
       </ContextMenu>
     );

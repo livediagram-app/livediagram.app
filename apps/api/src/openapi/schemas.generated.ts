@@ -577,6 +577,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "label": {
         "type": "string"
       },
+      "labelFill": {
+        "type": "string"
+      },
       "labelOffset": {
         "additionalProperties": false,
         "properties": {
@@ -897,6 +900,19 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "ChartPaletteId": {
+    "enum": [
+      "vivid",
+      "ocean",
+      "forest",
+      "sunset",
+      "berry",
+      "earth",
+      "grey",
+      "contrast"
+    ],
+    "type": "string"
+  },
   "ChecklistItem": {
     "additionalProperties": false,
     "properties": {
@@ -925,6 +941,19 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "html",
       "css",
       "yaml"
+    ],
+    "type": "string"
+  },
+  "CodeThemeId": {
+    "enum": [
+      "midnight",
+      "graphite",
+      "ocean",
+      "forest",
+      "plum",
+      "contrast",
+      "paper",
+      "parchment"
     ],
     "type": "string"
   },
@@ -1344,6 +1373,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
+          "foldable": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
           "frame": {
             "additionalProperties": false,
             "properties": {
@@ -1420,6 +1464,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "object"
           },
           "laptop": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "legend": {
             "additionalProperties": false,
             "properties": {
               "fill": {
@@ -2892,6 +2951,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "LegendItem": {
+    "additionalProperties": false,
+    "properties": {
+      "color": {
+        "type": "string"
+      },
+      "label": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "label"
+    ],
+    "type": "object"
+  },
   "LineSeries": {
     "additionalProperties": false,
     "properties": {
@@ -3060,6 +3134,15 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "url"
     ],
     "type": "object"
+  },
+  "MindFlow": {
+    "enum": [
+      "tree",
+      "balanced",
+      "downward",
+      "bubble"
+    ],
+    "type": "string"
   },
   "Padding": {
     "enum": [
@@ -3313,6 +3396,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "chartLegendPosition": {
         "$ref": "#/components/schemas/ChartLegendPosition"
       },
+      "chartPalette": {
+        "$ref": "#/components/schemas/ChartPaletteId"
+      },
       "checklistItems": {
         "items": {
           "$ref": "#/components/schemas/ChecklistItem"
@@ -3324,6 +3410,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "codeLanguage": {
         "$ref": "#/components/schemas/CodeLanguage"
+      },
+      "codeTheme": {
+        "$ref": "#/components/schemas/CodeThemeId"
+      },
+      "codeWrap": {
+        "type": "boolean"
       },
       "colorPreset": {
         "type": "string"
@@ -3409,6 +3501,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "layerId": {
         "type": "string"
       },
+      "legendItems": {
+        "items": {
+          "$ref": "#/components/schemas/LegendItem"
+        },
+        "type": "array"
+      },
       "lineCategories": {
         "items": {
           "type": "string"
@@ -3432,6 +3530,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "markerSize": {
         "$ref": "#/components/schemas/TextSize"
+      },
+      "mindFlow": {
+        "$ref": "#/components/schemas/MindFlow"
       },
       "mindParentId": {
         "$ref": "#/components/schemas/ElementId"
@@ -3667,6 +3768,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "laptop",
       "phone",
       "tablet",
+      "foldable",
       "smartwatch",
       "progress-bar",
       "progress-ring",
@@ -3677,6 +3779,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "line-chart",
       "code-block",
       "checklist",
+      "legend",
       "icon",
       "sticker"
     ],

@@ -27,20 +27,30 @@ import {
   type IconSize,
   type Padding,
   type ShapeKind,
+  isChartShape,
+  type ChartPaletteId,
+  type CodeThemeId,
   type ShapeMarker,
   type TextAlignX,
   type TextAlignY,
   type TextSize,
 } from '@livediagram/diagram';
 import type { ShapeColorPreset } from './themes';
+import type { TablePreset } from '@livediagram/diagram';
 
 // Apply a theme-derived style preset to a shape: its colours (fill + stroke +
 // text) AND its border weight / pattern together — a preset is one complete
 // look (spec/48). Border RADIUS is deliberately untouched: it's a silhouette
 // choice the user makes separately, and a preset clobbering it read as the
 // preset breaking the shape. Records the preset id so theme changes can
-// re-derive it. No-op on non-shapes.
+// re-derive it.
 export function applyColorPresetToEl(el: Element, p: ShapeColorPreset): Element {
+  // A sticky takes the paper and the ink and nothing else: its edge against
+  // the peel shadow IS its border, so a stroke here would draw a hairline box
+  // around the note. Any hand-set one is cleared with the pick, which is what
+  // "one complete look" means for a note.
+  if (el.type === 'sticky')
+    return { ...el, fillColor: p.fill, textColor: p.text, strokeColor: undefined };
   if (el.type !== 'shape') return el;
   return {
     ...el,
@@ -51,6 +61,38 @@ export function applyColorPresetToEl(el: Element, p: ShapeColorPreset): Element 
     strokeStyle: p.borderStyle,
     colorPreset: p.id,
   };
+}
+
+// A table look (spec/48): the four surfaces a table paints, plus the banding,
+// in one history step. `headerRow` / `headerColumn` are untouched: which cells
+// ARE headers is data, not a look. A no-op on anything but a table.
+export function applyTablePresetToEl(el: Element, p: TablePreset): Element {
+  if (el.type !== 'table') return el;
+  return {
+    ...el,
+    fillColor: p.fill,
+    strokeColor: p.stroke,
+    textColor: p.text,
+    headerFill: p.headerFill,
+    headerTextColor: p.headerText,
+    zebra: p.zebra,
+  };
+}
+
+// A chart's palette (spec/53). One field, like the code block's scheme: the
+// ramp is resolved at render, so this never touches the data and a slice the
+// user coloured deliberately keeps its colour.
+export function applyChartPaletteToEl(el: Element, id: ChartPaletteId): Element {
+  if (el.type !== 'shape' || !isChartShape(el.shape)) return el;
+  return { ...el, chartPalette: id };
+}
+
+// A code block's colour scheme (spec/82). Its own kind of preset: the card
+// paints from the scheme and takes no element colours, so this writes one
+// field and nothing else. A no-op on anything that is not a code block.
+export function applyCodeThemeToEl(el: Element, id: CodeThemeId): Element {
+  if (el.type !== 'shape' || el.shape !== 'code-block') return el;
+  return { ...el, codeTheme: id };
 }
 
 // ── Granular single-field transforms ────────────────────────────────────
@@ -83,6 +125,12 @@ export function applyTextColorToEl(el: Element, color: string): Element {
   if (el.type === 'shape') return { ...el, textColor: color, colorPreset: undefined };
   if (isBoxed(el) || el.type === 'arrow') return { ...el, textColor: color };
   return el;
+}
+
+// The plate behind an arrow's label (spec/09 "Caption"). Arrows only: nothing
+// else paints a caption onto the canvas rather than inside a box.
+export function applyLabelFillToEl(el: Element, color: string): Element {
+  return el.type === 'arrow' ? { ...el, labelFill: color } : el;
 }
 
 // An arrow's arrowhead colour, when it should differ from the line's. Arrows

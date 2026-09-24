@@ -43,6 +43,7 @@ import {
   PointerGlyph,
   StyleMenuGlyph,
   TableGlyph,
+  TextColourIcon,
   TextGlyph,
 } from '@/components/palette/context-menu-icons';
 import { MenuAccordionSection, MenuGroupSeparator } from '@/components/primitives/PortalMenu';
@@ -429,10 +430,11 @@ export function MultiSelectionContextMenu({
                 <ContextMenuDivider />
                 <ColourRow
                   label="Colour"
+                  icon={<TextColourIcon />}
                   value={contentTextSrc.textColor ?? '#0f172a'}
                   {...textColorHandlers}
                   {...colorProps('m-content-text')}
-                  presets={props.presetColors}
+                  {...props.colourPalette}
                 />
               </MenuAccordionSection>
             ) : null}

@@ -1,6 +1,11 @@
 import { type ReactNode } from 'react';
 
 import { ArrowIcon, TrashIcon } from '@/components/canvas/table-icons';
+import {
+  FLOATING_CONTROL_CLASS,
+  FLOATING_CONTROL_HOVER_CLASS,
+  FLOATING_CONTROL_SIZE,
+} from '@/components/chrome/floating-controls';
 
 // Edge-menu UI primitives for TableView: the compact "⋯" trigger that
 // opens a column / row menu from the table's top / left edge, and the
@@ -8,9 +13,13 @@ import { ArrowIcon, TrashIcon } from '@/components/canvas/table-icons';
 // big grid component isn't carrying these standalone presentational
 // pieces; both are pure (props in, markup out) with no table state.
 
-// Small "⋯" trigger that sits inside the table's top / left edge. Tapping
-// it opens the column / row menu. Kept compact but with a 24px+ hit area
-// (the padding) so it stays tappable on touch.
+// The "⋯" trigger that opens a column / row menu, sitting out beyond the
+// table's top / left edge.
+//
+// It is one of the floating canvas controls, so it takes their size and
+// their look: it lines up with the quick-connect plus on the same edge and
+// reads as part of the same set. It used to be a smaller, flatter pill on
+// its own line, which next to the plus looked like a stray.
 export function Trigger({
   open,
   vertical,
@@ -32,9 +41,12 @@ export function Trigger({
         e.stopPropagation();
         onClick(e);
       }}
-      className={`pointer-events-auto flex items-center justify-center rounded-full border border-slate-200 shadow-sm transition dark:border-slate-700 ${
-        open ? 'bg-brand-500 text-white' : 'bg-white text-brand-600 dark:bg-slate-800'
-      } ${vertical ? 'h-7 w-5' : 'h-5 w-7'}`}
+      className={`pointer-events-auto flex items-center justify-center ${
+        open
+          ? 'rounded-full border border-brand-400 bg-brand-500 text-white shadow-md'
+          : `${FLOATING_CONTROL_CLASS} ${FLOATING_CONTROL_HOVER_CLASS}`
+      }`}
+      style={{ width: FLOATING_CONTROL_SIZE, height: FLOATING_CONTROL_SIZE }}
     >
       <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden>
         {vertical ? (

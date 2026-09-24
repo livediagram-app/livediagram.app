@@ -21,6 +21,7 @@ import {
   createTable,
   createText,
   createVideo,
+  defaultIconAnimation,
   scaleElements,
   snapToArrowPoint,
   type ArrowElement,
@@ -269,7 +270,14 @@ export function buildDrawnBoxed(
     // freshly-drawn 'icon' shape (so palette icons / tech icons draw to
     // size like any shape, see draw-mode.ts).
     ...(intent.type === 'shape' && intent.iconId
-      ? { iconId: intent.iconId, ...(intent.label ? { label: intent.label } : {}) }
+      ? {
+          iconId: intent.iconId,
+          ...(intent.label ? { label: intent.label } : {}),
+          // The four animated glyphs arrive already moving (spec/09).
+          ...(defaultIconAnimation(intent.iconId)
+            ? { iconAnimation: defaultIconAnimation(intent.iconId) }
+            : {}),
+        }
       : {}),
     // Event-storming sticky (spec/139): the tile's semantic colour lands as
     // the element fill. Stickies are exempt from theme recolouring, so the

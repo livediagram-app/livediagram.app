@@ -22,7 +22,7 @@ export const LANE_GUTTER_PX = 132;
 // the wash exactly as it already runs past the 132 gutter; the band is a
 // backdrop, not a clip.
 /** Thickness of the title band along a lane's top or bottom, in element space. */
-export const LANE_BAND_PX = 64;
+const LANE_BAND_PX = 64;
 
 // A gutter narrower than this has no room for a title; wider than the lane
 // itself is not a gutter any more, it is the lane. Clamped on both sides so a
@@ -39,13 +39,16 @@ export type LaneLike = {
   headerSize?: number | undefined;
 };
 
-/** Another lane's gutter edge, for the snap resolver. */
-export function laneEdgeOfElement(el: LaneLike): LaneGutterEdge {
+/** Another lane's gutter edge, for the snap resolver. Module-local: the
+ *  resolver takes it as a callback rather than importing it. */
+function laneEdgeOfElement(el: LaneLike): LaneGutterEdge {
   return laneGutterEdge(el.textAlignX ?? 'center', el.textAlignY ?? 'middle');
 }
 
-/** Another lane's heading thickness, defaulted by orientation. */
-export function laneSizeOfElement(el: LaneLike): number {
+/** A lane's heading thickness, defaulted by orientation. The one definition
+ *  of it: the gutter reads it for its own size, and the snap resolver for
+ *  every other lane's. */
+function laneSizeOfElement(el: LaneLike): number {
   const band = isLaneBand(laneEdgeOfElement(el));
   return el.headerSize ?? (band ? LANE_BAND_PX : LANE_GUTTER_PX);
 }
@@ -131,7 +134,19 @@ export function LaneGutter({
   // commit per frame; released value is what lands in the element.
   const [dragSize, setDragSize] = useState<number | null>(null);
   const dragRef = useRef<{ start: number; from: number } | null>(null);
-  const size = dragSize ?? headerSize ?? (band ? LANE_BAND_PX : LANE_GUTTER_PX);
+  // The same live size in a ref. Release has to read the size the pointer
+  // last reached, and neither alternative works: a setState UPDATER runs
+  // during React's render phase, so committing from inside one updates the
+  // page while the gutter is rendering (React says so, loudly), and the
+  // effect's closed-over `dragSize` can lag a frame because pointermove is
+  // not a discrete event and its re-render may not have flushed yet.
+  const liveSizeRef = useRef<number | null>(null);
+  const setLiveSize = (px: number | null) => {
+    liveSizeRef.current = px;
+    setDragSize(px);
+  };
+  const size =
+    dragSize ?? laneSizeOfElement({ textAlignX: alignX, textAlignY: alignY, headerSize });
   const maxSize = Math.max(MIN_GUTTER_PX, (band ? height : width) - MIN_GUTTER_PX);
 
   // Only an edge-hugging gutter inherits the lane's corner radius; a centred
@@ -184,7 +199,7 @@ export function LaneGutter({
       // A centred strip has no single seam to line anything up with, so it
       // is sized freely rather than snapped.
       if (!onSnapSeam || edge === 'centre-x') {
-        setDragSize(raw);
+        setLiveSize(raw);
         return;
       }
       const axis = band ? 'y' : 'x';
@@ -194,14 +209,13 @@ export function LaneGutter({
       const seam = far ? origin + span - raw : origin + raw;
       const snapped = onSnapSeam(seam, axis, elementId, laneEdgeOfElement, laneSizeOfElement);
       const back = far ? origin + span - snapped : snapped - origin;
-      setDragSize(Math.min(maxSize, Math.max(MIN_GUTTER_PX, back)));
+      setLiveSize(Math.min(maxSize, Math.max(MIN_GUTTER_PX, back)));
     };
     const onUp = () => {
-      setDragSize((current) => {
-        if (current !== null) onCommitSize?.(Math.round(current));
-        return null;
-      });
+      const current = liveSizeRef.current;
+      setLiveSize(null);
       dragRef.current = null;
+      if (current !== null) onCommitSize?.(Math.round(current));
     };
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);
@@ -231,7 +245,7 @@ export function LaneGutter({
     e.preventDefault();
     e.stopPropagation();
     dragRef.current = { start: band ? e.clientY : e.clientX, from: size };
-    setDragSize(size);
+    setLiveSize(size);
   };
 
   return (

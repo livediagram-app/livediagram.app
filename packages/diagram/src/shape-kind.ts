@@ -101,6 +101,10 @@ export type ShapeKind =
   | 'laptop'
   | 'phone'
   | 'tablet'
+  // A book-style foldable phone, shown OPEN on its inner screen: a
+  // near-square panel with the hinge crease down the middle. Folded it is
+  // just `phone`, so only the unfolded state earns its own frame.
+  | 'foldable'
   | 'smartwatch'
   // Progress elements (spec/46): a horizontal bar + a donut ring that show a
   // 0–100 percentage. They carry `progress` / `progressAnim` (below).
@@ -126,6 +130,9 @@ export type ShapeKind =
   // Checklist (spec/83): checkable to-do rows. Carries `checklistItems`
   // (below); boxes toggle on-canvas like the rating's stars.
   | 'checklist'
+  // Legend (spec/53): a card of colour-coded rows (a swatch + a label), the
+  // key you put beside a chart or a colour-coded board.
+  | 'legend'
   // Curated single-colour glyph from the icon catalogue. Which glyph
   // is carried by `iconId` (a registry key resolved in the live app's
   // icon catalogue, NOT a closed enum here, so adding icons is a

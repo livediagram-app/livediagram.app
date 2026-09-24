@@ -1,20 +1,24 @@
-import type { ShapeElement } from '@livediagram/diagram';
+import { codeTheme, type CodeTheme, type ShapeElement } from '@livediagram/diagram';
 import { tokenizeLoaded, useCodeTokenizer } from '@/lib/code-highlight-registry';
 import type { CodeTokenKind } from '@/lib/code-tokens';
 
-// The code block's canvas view (spec/82): a fixed dark editor card with
-// monospace text, a muted language badge, and syntax highlighting once the
-// lazy tokenizer chunk lands (plain mono until then — degrade, never
-// blank). Deliberately ignores the element's fill / stroke / theme: the
-// dark card is its identity, the way a sticky stays amber.
+// The code block's canvas view (spec/82): an editor card with monospace text,
+// a muted language badge, and syntax highlighting once the lazy tokenizer
+// chunk lands (plain mono until then: degrade, never blank).
+//
+// The card still ignores the element's fill / stroke / theme, the way a sticky
+// stays a sticky: its colours come from its own SCHEME (code-themes.ts), which
+// the Presets grid picks. That one dark look was the whole identity for a
+// while, and it is still the default; a block on a light board just no longer
+// has to be a hole in it.
 
-const TOKEN_COLORS: Record<CodeTokenKind, string> = {
-  plain: '#e2e8f0', // slate-200
-  keyword: '#93c5fd', // blue-300
-  string: '#86efac', // green-300
-  comment: '#64748b', // slate-500
-  number: '#fca5a5', // red-300
-};
+const tokenColor = (scheme: CodeTheme): Record<CodeTokenKind, string> => ({
+  plain: scheme.text,
+  keyword: scheme.keyword,
+  string: scheme.string,
+  comment: scheme.comment,
+  number: scheme.number,
+});
 
 export function CodeBlockView({ element }: { element: ShapeElement }) {
   const loaded = useCodeTokenizer();
@@ -22,30 +26,50 @@ export function CodeBlockView({ element }: { element: ShapeElement }) {
   const empty = code.trim().length === 0;
   const language = element.codeLanguage ?? 'plain';
   const tokenLines = !empty && loaded ? tokenizeLoaded(code, language) : undefined;
+  const scheme = codeTheme(element.codeTheme);
+  const colors = tokenColor(scheme);
   return (
-    <div className="absolute inset-0 overflow-hidden rounded-lg border border-slate-700 bg-slate-900">
+    <div
+      className="absolute inset-0 overflow-hidden rounded-lg border"
+      style={{ backgroundColor: scheme.surface, borderColor: scheme.border }}
+    >
       {language !== 'plain' ? (
-        <span className="pointer-events-none absolute right-2.5 top-1.5 font-mono text-[10px] text-slate-500">
+        <span
+          className="pointer-events-none absolute right-2.5 top-1.5 font-mono text-[10px]"
+          style={{ color: scheme.muted }}
+        >
           {language}
         </span>
       ) : null}
-      <pre className="h-full w-full overflow-hidden p-3 font-mono text-xs leading-4">
+      <pre
+        className={`h-full w-full overflow-hidden p-3 font-mono text-xs leading-4 ${
+          // Wrapping is the default (spec/82): the card is usually narrower
+          // than the code pasted into it, and a line running off the edge
+          // reads as truncated content rather than a styling choice.
+          // `break-all` as well as wrapping, because code has long unbroken
+          // tokens (a URL, a minified line) that word-wrapping alone leaves
+          // hanging over the edge.
+          element.codeWrap === false ? 'whitespace-pre' : 'whitespace-pre-wrap break-all'
+        }`}
+      >
         {empty ? (
-          <span className="italic text-slate-500">{'// double-click to add code'}</span>
+          <span className="italic" style={{ color: scheme.muted }}>
+            {'// double-click to add code'}
+          </span>
         ) : tokenLines ? (
           tokenLines.map((line, i) => (
             <div key={i}>
               {line.length === 0
-                ? ' '
+                ? ' '
                 : line.map((t, j) => (
-                    <span key={j} style={{ color: TOKEN_COLORS[t.kind] }}>
+                    <span key={j} style={{ color: colors[t.kind] }}>
                       {t.text}
                     </span>
                   ))}
             </div>
           ))
         ) : (
-          <span className="text-slate-200">{code}</span>
+          <span style={{ color: scheme.text }}>{code}</span>
         )}
       </pre>
     </div>

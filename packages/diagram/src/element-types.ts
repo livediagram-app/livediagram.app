@@ -10,6 +10,9 @@ import type { ElementAction } from './element-action';
 import type { BorderStroke, BorderStyle, BorderRadius } from './border-style';
 import type { ElementShadow } from './shadow';
 import type { ShapeMarker } from './shape-marker';
+import type { CodeThemeId } from './code-themes';
+import type { MindFlow } from './mind-flow';
+import type { ChartPaletteId } from './chart-palettes';
 import type { PickerSource, SelectionMode, SessionButtonConfig } from './selection-mode';
 import type { IconSize } from './icon-size';
 import type { EmbedProvider } from './youtube';
@@ -25,6 +28,7 @@ import type {
   AnimationSpeed,
   ChecklistItem,
   EntityField,
+  LegendItem,
   Reaction,
   CodeLanguage,
   ElementAnimation,
@@ -278,10 +282,26 @@ export type ShapeElement = {
   // series (CSV-importable). Only meaningful on the 'line-chart' kind.
   lineCategories?: string[];
   lineSeries?: LineSeries[];
+  // Legend (spec/53): the colour-coded rows. Only meaningful on the 'legend'
+  // kind; bounded in validate.ts.
+  legendItems?: LegendItem[];
+  // Chart palette (spec/53): which categorical ramp the slices / series take
+  // when they carry no colour of their own. Only meaningful on the chart
+  // kinds; absent = the tab theme's palette, as before.
+  chartPalette?: ChartPaletteId;
   // Code block (spec/82): the snippet text + its highlight language. Only
   // meaningful on the 'code-block' kind; bounded in validate.ts.
   code?: string;
   codeLanguage?: CodeLanguage;
+  // Which colour scheme the card paints in (see code-themes.ts). Absent =
+  // 'midnight', the single look the block shipped with, so older diagrams are
+  // untouched.
+  codeTheme?: CodeThemeId;
+  // Whether a line longer than the card wraps instead of running off it.
+  // Absent = true: a snippet you cannot read the end of is not a snippet, and
+  // the card is usually narrower than the code someone pastes into it. Set
+  // false to keep long lines on one line (and off the card).
+  codeWrap?: boolean;
   // Record (spec/120): the rows of a UML class / ER entity box. Only
   // meaningful on the 'entity' kind; bounded in validate.ts. The element's
   // `label` is the record's TITLE, so a record needs no extra name field.
@@ -295,6 +315,10 @@ export type ShapeElement = {
   // cannot disagree with itself, and deleting a parent leaves a dangling id
   // (which reads as "this is a root now") rather than a corrupt tree.
   mindParentId?: ElementId;
+  // The shape the map grows in (spec/118). Read off the tree's ROOT and
+  // applied to the whole tree; absent = 'tree', the one arrangement growth
+  // shipped with, so every map already drawn keeps its shape.
+  mindFlow?: MindFlow;
   // Page masthead (spec/100): the fixed heading + subtitle above the body.
   // Only meaningful on the 'page' kind; bounded in validate.ts.
   //

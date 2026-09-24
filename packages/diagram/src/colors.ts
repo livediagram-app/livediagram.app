@@ -290,6 +290,12 @@ export function defaultStrokeColor(
 // that would set it.
 export function supportsFillColor(element: Element): boolean {
   if (!supportsColours(element)) return false;
+  // An icon is a glyph, not a box: the wrapper is in SELF_PAINTING_SHAPES, so
+  // it paints no background, and neither icon renderer reads fillColor (a
+  // Technology mark carries its own tile, a line-art glyph is stroke-tinted).
+  // The control was inert on both, and picking a colour still wrote to the
+  // element, autosaved, logged a change and broadcast an op for nothing.
+  if (element.type === 'shape' && element.shape === 'icon') return false;
   return element.type !== 'text' && element.type !== 'image';
 }
 
@@ -306,6 +312,11 @@ export function supportsColours(element: Element): boolean {
   // could be recoloured violet would be a worse APPROVED, and there is no
   // fill or stroke on a die-cut plate to expose anyway.
   if (element.type === 'shape' && element.shape === 'sticker') return false;
+  // A code block is an editor window (spec/82): it paints its card from its
+  // own colour scheme and ignores fill / stroke / theme entirely, so every
+  // swatch in the Colours category was inert on one. Picking a scheme is the
+  // control it actually has (Presets, see code-themes.ts).
+  if (element.type === 'shape' && element.shape === 'code-block') return false;
   return (
     element.type === 'shape' ||
     element.type === 'sticky' ||
@@ -374,6 +385,8 @@ export const SELF_PAINTING_SHAPES = new Set<string>([
   'line-chart',
   'code-block',
   'checklist',
+  // Legend (spec/53): LegendView paints its own card and rows.
+  'legend',
   // Behaviour elements (spec/104, /106): the ring / cover IS the element.
   'portal',
   'reveal',

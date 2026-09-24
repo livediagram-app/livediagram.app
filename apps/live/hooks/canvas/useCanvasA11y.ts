@@ -52,6 +52,11 @@ type CanvasA11yDeps = {
   // traversal exactly like remotely-locked ones.
   layerInertIds: Set<string>;
   scrollIntoView: (x: number, y: number, w: number, h: number) => void;
+  // Elements that claim Tab for themselves. A selected mind node grows a
+  // child on Tab (spec/118), and both handlers listen on window: this one
+  // is mounted first, so without the check it consumed every Tab and the
+  // selection walked the tab instead of the branch growing.
+  ownsTabKey: (id: string) => boolean;
 };
 
 export function useCanvasA11y(deps: CanvasA11yDeps): void {
@@ -73,6 +78,15 @@ export function useCanvasA11y(deps: CanvasA11yDeps): void {
       // browser's normal Tab order.
       const active = document.activeElement;
       if (!(active instanceof HTMLElement) || active.dataset.canvasA11yRoot === undefined) return;
+      // Shift+Tab still walks backwards through the elements: only plain
+      // Tab is the growth key, so reverse traversal never had a rival.
+      if (
+        !e.shiftKey &&
+        live.selectedId !== null &&
+        live.multiSelectedIds.size === 0 &&
+        live.ownsTabKey(live.selectedId)
+      )
+        return;
       const els = live.elements;
       const dir = e.shiftKey ? -1 : 1;
       const i = nextTraversalIndex(
