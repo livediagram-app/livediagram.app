@@ -83,6 +83,21 @@ describe('findPads', () => {
     ]);
   });
 
+  it('takes in a pad note whose only sibling is a fused note cut out of the pad', () => {
+    const pad = [sq(100, 100), sq(125, 100), sq(150, 100)];
+    const fused = { classId: 1, x: 175, y: 100, w: 13, h: 26, pixels: 13 * 26 * 0.85 };
+    const below = sq(175, 150);
+    const out = findPads([...pad, fused, below], [], FRAME, NOTE);
+    expect(out).toHaveLength(6);
+    expect(out).toContain(below);
+  });
+
+  it('still refuses a lone square far from every pad note', () => {
+    const pad = [sq(100, 100), sq(125, 100), sq(150, 100)];
+    const fused = { classId: 1, x: 175, y: 100, w: 13, h: 26, pixels: 13 * 26 * 0.85 };
+    expect(findPads([...pad, fused, sq(175, 200)], [], FRAME, NOTE)).toHaveLength(5);
+  });
+
   it('cuts nothing with no pad beside it: a strip of tape is not a row of notes', () => {
     const strip = { classId: 1, x: 175, y: 100, w: 39, h: 13, pixels: 39 * 13 * 0.9 };
     expect(findPads([strip], [], FRAME, NOTE)).toHaveLength(0);

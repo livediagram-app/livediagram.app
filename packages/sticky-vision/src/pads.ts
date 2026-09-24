@@ -152,9 +152,12 @@ export function findPads(
       taken.push(square);
     }
   }
+  // "One after another" takes in the seeds left out too: a pad note whose
+  // only sibling is a fused note cut out of the pad is as much a pad note.
+  const strays = seeds.filter((_, i) => !inPad(i));
   for (let grew = true; grew;) {
     grew = false;
-    for (const square of squares) {
+    for (const square of [...squares, ...strays]) {
       if (found.includes(square) || !pad.some((m) => siblings(m, square, FUSED_SIZE_RATIO)))
         continue;
       pad.push(square);

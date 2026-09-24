@@ -128,3 +128,25 @@ is a strip of lit kraft beside the night wall's racket handle (26×106, fill
 
 At 1.7 the column counts as three again. Night +2 notes (77 → 82 rec-A),
 +1 junk; no other wall moves.
+
+## H3: a pad note whose only sibling is a fused note (kept)
+
+**Finding.** The night wall's far board has one pink note (13×12) among its
+orange ones. It is refused by the area gate and offered to `findPads` as a
+seed, but its only sibling within reach is a square cut out of a fused row of
+three: the seeds alone link it to nobody, and the cut squares joined the pad
+one after another while seeds left out were never looked at again.
+
+**Rule.** The growth loop that lets fused squares join a pad, sibling after
+sibling, takes the seeds left out of every pad too (same size match,
+`FUSED_SIZE_RATIO`). A lone seed still makes no pad of its own.
+
+| wall           | before     | after      |
+| -------------- | ---------- | ---------- |
+| 201743 (night) | 83/83/82/2 | 84/83/85/2 |
+| **TOTAL**      | 91.6       | **91.7**   |
+
+No other wall moves. `FUSED_SIZE_RATIO` 1.3 / 1.5 / 1.7 / 1.9: 91.7 / 91.7 /
+91.6 / 91.6. Letting pad seeds be less square (`PAD_MAX_ASPECT` 1.6: no change;
+1.7: 91.5, 201713 loses its PASS to a spurious box) finds none of the partial
+window notes (9×14 on a 15px note), and is not kept.
