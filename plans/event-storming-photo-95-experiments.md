@@ -251,6 +251,27 @@ combined with H; see the integration note in i-separation.md): TOTAL 93.5.
       missing LABELS; with them fixed, 201646, 201654, the panorama and
       201730 are at or within a note of the bar. For the operator.
 
+## Round 6 — flat paper (group O, commit `85cfe9c0`)
+
+The boundary model reads a flat, textureless note (a screenshot of a digital
+board, a drawn wall) as background, and J3 drops it (pinned by
+`photo-model.spec.ts`, "a flat drawn note survives the hybrid"). Results:
+[docs/vision/experiments/o-flat.md](../docs/vision/experiments/o-flat.md).
+
+- [x] O0 Reproduce in Node: a held-out set of drawn boards
+      (`sticky-model/scripts/flat/`), scored classical vs hybrid.
+- [x] O1 A flat style in the synthetic generator (one seed in five, photo
+      walls byte-identical).
+- [ ] O2 Retrain from the kept recipe on the mix; control: the photo-only
+      recipe retrained, for the seed-to-seed noise.
+- [ ] O3 Score: drawn boards, hybrid sweep (no wall worse), plateau of the
+      flat share.
+- [ ] O4 Quantise to uint8, re-score.
+- [ ] O5 Ship the weights; flip the e2e test; editor sweep on my own stack
+      equals the Node sweep.
+- [ ] O6 Only if O3 cannot hold every wall: ask the model per photo.
+- [ ] O7 Fold-back: o-flat.md, m-editor-model.md, READMEs, spec/139.
+
 ## Not yet delegated
 
 - **D-FINE-N / RT-DETR fine-tuning**: needs PyTorch, i.e. Python, which the

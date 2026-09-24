@@ -2,6 +2,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { rngFrom } from '../src/synth/rng';
 import type { TileSource } from '../src/train/tile';
 import { makeBatch } from './data/batch';
+import { distilBatch } from './data/distil';
 import { loadRealWalls } from './data/real';
 import { readShard, shardPath, type ShardMeta } from './data/shards';
 import { registerFastGradients } from './model/fast-grads';
@@ -14,9 +15,14 @@ import { WORK_DIR } from './paths';
 //   npx tsx scripts/train.ts --out <dir> [--synth dir[,dir]] [--real all|none]
 //     [--exclude <wall>] [--init <dir>] [--steps 4000] [--batch 16] [--lr 2e-3]
 //     [--lr-end 1e-4] [--real-fraction 0.5] [--weights 1,1,3] [--widths 16,24,40,64,96]
+//     [--teacher <dir> --new dir[,dir] --new-share 0.25]
 //
 // `--exclude` leaves one real wall out, so a model is never scored on a wall
 // it was trained on. Weights land under the system temp directory by default.
+//
+// `--teacher` fine-tunes without forgetting (`data/distil.ts`): the `--new`
+// tiles are learnt from their masks, the `--synth` tiles from the teacher's
+// own probabilities; usually with `--init` set to the teacher.
 
 const arg = (name: string, fallback: string) => {
   const i = process.argv.indexOf(`--${name}`);
@@ -39,8 +45,11 @@ const realMode = arg('real', 'none');
 const seed = Number(arg('seed', '1'));
 const init = arg('init', '');
 
-function loadSynth(): TileSource[] {
-  const dirs = arg('synth', '').split(',').filter(Boolean);
+const teacherDir = arg('teacher', '');
+const newShare = Number(arg('new-share', '0.25'));
+
+function loadSynth(flag = 'synth'): TileSource[] {
+  const dirs = arg(flag, '').split(',').filter(Boolean);
   return dirs.flatMap((dir) => {
     const meta = JSON.parse(readFileSync(`${dir}/meta.json`, 'utf8')) as ShardMeta;
     if (meta.size !== size)
@@ -51,6 +60,9 @@ function loadSynth(): TileSource[] {
 
 registerFastGradients();
 const synth = loadSynth();
+const fresh = teacherDir ? loadSynth('new') : [];
+const teacher = teacherDir ? await tf.loadLayersModel(`file://${teacherDir}/model.json`) : null;
+if (teacher && fresh.length === 0) throw new Error('--teacher needs --new tiles to learn');
 const real = realMode === 'all' ? loadRealWalls().filter((w) => w.name !== exclude) : [];
 console.log(
   `synthetic tiles ${synth.length}, real walls ${real.map((w) => w.name).join(' ') || 'none'}` +
@@ -83,6 +95,9 @@ writeFileSync(
     init,
     seed,
     synth: arg('synth', ''),
+    teacher: teacherDir,
+    new: arg('new', ''),
+    newShare: teacher ? newShare : 0,
   }),
 );
 const rng = rngFrom(seed);
@@ -100,7 +115,9 @@ for (let step = 1; step <= steps; step += 1) {
   // Cosine decay from lr0 to lrEnd.
   const lr = lrEnd + 0.5 * (lr0 - lrEnd) * (1 + Math.cos((Math.PI * (step - 1)) / steps));
   (optimizer as unknown as { learningRate: number }).learningRate = lr;
-  const { x, y } = makeBatch(synth, real, spec, rng);
+  const { x, y } = teacher
+    ? distilBatch(teacher, synth, fresh, spec, newShare, rng)
+    : makeBatch(synth, real, spec, rng);
   const xs = tf.tensor4d(x, [batch, size, size, 3]);
   const ys = tf.tensor4d(y, [batch, size, size, 3]);
   const loss = (await model.trainOnBatch(xs, ys)) as number;

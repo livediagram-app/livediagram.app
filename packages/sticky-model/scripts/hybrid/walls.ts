@@ -18,9 +18,9 @@ export { WEIGHTS_DIR };
 
 export type HybridWall = { name: string; image: ImageBuffer; truth: Truth; probs: Float32Array };
 
-export async function loadHybridWalls(): Promise<HybridWall[]> {
+export async function loadHybridWalls(weights = WEIGHTS_DIR): Promise<HybridWall[]> {
   const dir = photoDir();
-  const cacheDir = `${WORK_DIR}/hybrid-probs/${WEIGHTS_DIR.replace(/[^a-z0-9]+/gi, '_')}`;
+  const cacheDir = `${WORK_DIR}/hybrid-probs/${weights.replace(/[^a-z0-9]+/gi, '_')}`;
   mkdirSync(cacheDir, { recursive: true });
   let model: Awaited<ReturnType<typeof tf.loadLayersModel>> | null = null;
   const walls: HybridWall[] = [];
@@ -33,7 +33,7 @@ export async function loadHybridWalls(): Promise<HybridWall[]> {
     if (existsSync(cache)) {
       probs = new Float32Array(new Uint8Array(readFileSync(cache)).buffer);
     } else {
-      model ??= await tf.loadLayersModel(`file://${WEIGHTS_DIR}/model.json`);
+      model ??= await tf.loadLayersModel(`file://${weights}/model.json`);
       probs = predictProbs(model, image.data, image.width, image.height);
       writeFileSync(cache, Buffer.from(probs.buffer));
     }
