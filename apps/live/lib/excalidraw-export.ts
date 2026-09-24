@@ -38,7 +38,7 @@ function chassis(
     roughness: 1,
     opacity: Math.round((el.opacity ?? 1) * 100),
     angle: 0,
-    groupIds: 'groupId' in el && el.groupId ? [el.groupId] : [],
+    groupIds: [],
     frameId: null,
     roundness: null,
     seed: seq + 1,

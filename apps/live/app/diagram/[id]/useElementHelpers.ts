@@ -2,8 +2,6 @@ import type { Dispatch, SetStateAction } from 'react';
 import {
   takesTypedLabel,
   isBoxed,
-  joinGroups,
-  selectionMembers,
   type BoxedElement,
   type Element,
   type Tab,
@@ -18,19 +16,14 @@ import { patchTab } from './editor-page-helpers';
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
 
-// Selection + placement + format/group helpers, lifted out of
-// editor-page.tsx. These back the element-creation and selection
-// handlers (addBoxed sizes/colours a new element from the selection +
-// backdrop; memberIdsOf / currentSelectionIds / selectionPrimary resolve
-// the working set; applyFormatFromSource / completeGrouping run the
-// format-painter + group modes). Returned so the still-inline handlers
-// and the Canvas consume them.
+// Selection + placement + format helpers, lifted out of editor-page.tsx.
+// These back the element-creation and selection handlers (addBoxed
+// sizes/colours a new element from the selection + backdrop;
+// currentSelectionIds / selectionPrimary resolve the working set;
+// applyFormatFromSource runs the format painter). Returned so the
+// still-inline handlers and the Canvas consume them.
 export function useElementHelpers(opts: {
   selectedId: string | null;
-  // Drill-in selection (spec/09 groups): when equal to selectedId, the
-  // selection is just that member, so member resolution must NOT expand
-  // to the whole group.
-  soloSelectedId: string | null;
   activeId: string;
   activeTab: Tab;
   editsBlocked: boolean;
@@ -39,7 +32,6 @@ export function useElementHelpers(opts: {
   // The Format Panel's settings (spec/117): which parts of a copied style
   // travel, and whether the brush stays loaded.
   formatConfig: FormatConfig;
-  groupSourceId: string | null;
   getViewportCenter: () => { x: number; y: number };
   commit: (updater: (els: Element[]) => Element[]) => void;
   commitTabs: (updater: (tabs: Tab[]) => Tab[]) => void;
@@ -47,18 +39,15 @@ export function useElementHelpers(opts: {
   setSelectedId: SetState<string | null>;
   setEditingId: SetState<string | null>;
   setFormatSourceId: SetState<string | null>;
-  setGroupSourceId: SetState<string | null>;
 }) {
   const {
     selectedId,
-    soloSelectedId,
     activeId,
     activeTab,
     editsBlocked,
     multiSelectedIds,
     formatSourceId,
     formatConfig,
-    groupSourceId,
     getViewportCenter,
     commit,
     commitTabs,
@@ -66,7 +55,6 @@ export function useElementHelpers(opts: {
     setSelectedId,
     setEditingId,
     setFormatSourceId,
-    setGroupSourceId,
   } = opts;
 
   const addBoxed = <T extends BoxedElement>(make: (x: number, y: number) => T) => {
@@ -233,23 +221,13 @@ export function useElementHelpers(opts: {
 
   // --- Selection helpers ---------------------------------------------------
 
-  const memberIdsOf = (id: string | null): Set<string> => {
-    if (!id) return new Set();
-    // A drilled-in group member stands alone: setters / delete / duplicate
-    // act on just it, not its whole group.
-    if (id === soloSelectedId && id === selectedId) return new Set([id]);
-    return new Set(selectionMembers(activeTab.elements, id));
-  };
-
-  // Unified "what's the user editing right now?" id set. An active
-  // marquee multi-selection wins; otherwise we fall back to the
-  // single-id member-resolver (which expands a group selection
-  // into its full membership). Every editor setter that used to
-  // operate on `memberIdsOf(selectedId)` now uses this so shared
-  // controls bulk-apply across either flavour of multi-selection.
+  // Unified "what's the user editing right now?" id set: an active
+  // marquee multi-selection, else the single selection. Every editor
+  // setter resolves through this so shared controls bulk-apply across a
+  // multi-selection exactly as they apply to one element.
   const currentSelectionIds = (): Set<string> => {
     if (multiSelectedIds.size > 0) return new Set(multiSelectedIds);
-    return memberIdsOf(selectedId);
+    return selectedId ? new Set([selectedId]) : new Set();
   };
 
   // First element in `activeTab.elements` (DOM/z-order) that's in
@@ -265,7 +243,6 @@ export function useElementHelpers(opts: {
   // --- Modes ---------------------------------------------------------------
 
   const exitFormatPainter = () => setFormatSourceId(null);
-  const exitGroupMode = () => setGroupSourceId(null);
 
   // `keepSource` (set by the persistent Format canvas tool) leaves the
   // source armed after a paint so the user can tap target after target;
@@ -310,23 +287,13 @@ export function useElementHelpers(opts: {
     if (!keepSource) setFormatSourceId(null);
   };
 
-  const completeGrouping = (targetId: string) => {
-    if (!groupSourceId) return;
-    track('Element', 'Grouped'); // parity with the marquee-group path
-    commit((els) => joinGroups(els, groupSourceId, targetId));
-    setSelectedId(targetId);
-  };
-
   return {
     addBoxed,
     addBoxedAt,
     placePrebuilt,
-    memberIdsOf,
     currentSelectionIds,
     selectionPrimary,
     exitFormatPainter,
-    exitGroupMode,
     applyFormatFromSource,
-    completeGrouping,
   };
 }

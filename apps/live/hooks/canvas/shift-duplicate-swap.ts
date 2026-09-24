@@ -18,7 +18,7 @@
 // drag setState all still belong to the caller and are passed in, so the
 // React-shaped parts stay where React can see them.
 
-import { duplicateGroupedElements, type ArrowElement, type Element } from '@livediagram/diagram';
+import { duplicateElements, type ArrowElement, type Element } from '@livediagram/diagram';
 import { translateBoxedSelection } from './boxed-drag-resolve';
 import type { DragState } from '@/lib/canvas';
 
@@ -85,7 +85,7 @@ export function applyShiftDuplicateSwap(args: ShiftDuplicateSwapArgs): boolean {
     // idempotent — it only appends when the clones aren't there.
     // Zero offset: the clones spawn exactly where the dragged set
     // currently sits and keep following the cursor from there.
-    const { newElements, idMap } = duplicateGroupedElements(elements, dupIds, 0, 0);
+    const { newElements, idMap } = duplicateElements(elements, dupIds, 0, 0);
     // Boundary arrows: an arrow OUTSIDE the set with exactly one
     // end pinned to a dragged element gets a copy re-pinned to the
     // clone (the other end keeps its original pin), so e.g. an

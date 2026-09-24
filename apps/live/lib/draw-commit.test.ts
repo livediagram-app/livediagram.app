@@ -1,5 +1,5 @@
 import type { ArrowElement, Element, Tab, ThemeDefinition } from '@livediagram/diagram';
-import { COMPONENT_SIZE, isBoxed } from '@livediagram/diagram';
+import { COMPONENT_SIZE } from '@livediagram/diagram';
 import { describe, expect, it } from 'vitest';
 import { ES_BOARD_LAYER_ID, eventStormingLayers } from '@livediagram/diagram';
 import {
@@ -20,15 +20,6 @@ const bareTheme = {} as unknown as ThemeDefinition;
 
 const tab = (overrides: Partial<Tab> = {}): Tab =>
   ({ id: 't', name: 'T', elements: [], ...overrides }) as unknown as Tab;
-
-const unionBox = (els: Element[]) => {
-  const boxed = els.filter(isBoxed);
-  const minX = Math.min(...boxed.map((b) => b.x));
-  const minY = Math.min(...boxed.map((b) => b.y));
-  const maxX = Math.max(...boxed.map((b) => b.x + b.width));
-  const maxY = Math.max(...boxed.map((b) => b.y + b.height));
-  return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
-};
 
 describe('buildDrawnArrow', () => {
   it('lays a flat 160px placeholder across a stray click, unsnapped', () => {
@@ -68,31 +59,22 @@ describe('buildDrawnArrow', () => {
 });
 
 describe('buildDrawnComponent', () => {
-  it('drops the natural size centred on a tap', () => {
+  it('drops one element at its natural size, centred on a tap', () => {
     const out = buildDrawnComponent('callout', 500, 300, 503, 302, themed);
-    const box = unionBox(out);
-    // Natural footprint (the union can differ a little from the nominal
-    // COMPONENT_SIZE, so bound it rather than pin it exactly).
-    expect(box.width).toBeGreaterThan(COMPONENT_SIZE.callout.width * 0.5);
-    expect(box.width).toBeLessThan(COMPONENT_SIZE.callout.width * 1.5);
-    expect(box.x + box.width / 2).toBeCloseTo(500, 0);
-    expect(box.y + box.height / 2).toBeCloseTo(300, 0);
+    if (out.type === 'arrow') throw new Error('expected a boxed element');
+    expect(out).toMatchObject(COMPONENT_SIZE.callout);
+    expect(out.x + out.width / 2).toBe(500);
+    expect(out.y + out.height / 2).toBe(300);
   });
 
-  it('scales the group uniformly to fill a dragged box', () => {
-    const natural = unionBox(buildDrawnComponent('callout', 0, 0, 3, 3, themed));
-    const def = COMPONENT_SIZE.callout;
-    const dragged = unionBox(
-      buildDrawnComponent('callout', 0, 0, def.width * 2, def.height, themed),
-    );
-    expect(dragged.width).toBeCloseTo(natural.width * 2, 5);
-    expect(dragged.height).toBeCloseTo(natural.height * 2, 5); // uniform, not per-axis
+  it('sizes to the dragged box, per axis, so the layout re-flows (spec/146)', () => {
+    const out = buildDrawnComponent('stat', 10, 20, 910, 220, themed);
+    expect(out).toMatchObject({ x: 10, y: 20, width: 900, height: 200 });
   });
 
-  it('caps the drag scale at 8x', () => {
-    const natural = unionBox(buildDrawnComponent('callout', 0, 0, 3, 3, themed));
-    const huge = unionBox(buildDrawnComponent('callout', 0, 0, 100_000, 100_000, themed));
-    expect(huge.width).toBeCloseTo(natural.width * 8, 5);
+  it('keeps an aspect-locked avatar square, centred in the dragged box', () => {
+    const out = buildDrawnComponent('avatar', 0, 0, 300, 100, themed);
+    expect(out).toMatchObject({ x: 100, y: 0, width: 100, height: 100 });
   });
 });
 

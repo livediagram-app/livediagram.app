@@ -183,6 +183,11 @@ export type EditorContextMenuProps = {
   // Checklist (spec/83): replace the selected checklist's rows.
   onSetChecklistItems: (items: ChecklistItem[]) => void;
   onSetEntityFields: (fields: EntityField[]) => void;
+  // Web components (spec/146): the rows of the selected stat row / process /
+  // header (each field only lands on its own kind), and an image's hero
+  // caption card on or off.
+  onSetWebRows: (rows: import('@livediagram/diagram').WebRows) => void;
+  onSetHeroCaption: (on: boolean) => void;
   // Mode button (spec/103): which selection mode pressing it hands out.
   onSetButtonMode: (mode: import('@livediagram/diagram').SelectionMode) => void;
   // Portal (spec/104): which portal this one leads to; null unpairs it.

@@ -53,7 +53,6 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'multicolour-themes': '#ec4899',
   'custom-themes': '#a855f7',
   'multi-select': '#8b5cf6',
-  groups: '#6366f1',
   'link-cards': '#10b981',
   'choosing-fonts': '#0284c7',
   // Activity Panel category

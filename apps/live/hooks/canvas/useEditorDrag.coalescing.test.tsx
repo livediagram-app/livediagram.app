@@ -36,8 +36,6 @@ function harness() {
     zoomRef: { current: 1 },
     selectedId: 'drag',
     setSelectedId: vi.fn(),
-    soloSelectedId: null,
-    setSoloSelectedId: vi.fn(),
     multiSelectedIds: new Set<string>(),
     setMultiSelectedIds: vi.fn(),
     editingId: null,
@@ -47,8 +45,6 @@ function harness() {
     applyFormatFromSource: vi.fn(),
     formatToolActive: false,
     setFormatSourceId: vi.fn(),
-    groupSourceId: null,
-    completeGrouping: vi.fn(),
     connectSourceId: null,
     connectArrowTo: vi.fn(),
     // Every positional write of a drag goes through `tick`, so counting them

@@ -51,7 +51,6 @@ describe('canvasCursorClass', () => {
     canvasTool: 'pan',
     spaceHeld: false,
     isPaintMode: false,
-    isGroupMode: false,
   };
 
   it('a pending draw wins over everything', () => {
@@ -104,11 +103,8 @@ describe('canvasCursorClass', () => {
     expect(canvasCursorClass({ ...rest, canvasTool: 'pan' })).toBe('cursor-grab');
     expect(canvasCursorClass({ ...rest, canvasTool: 'select' })).toBe('cursor-crosshair');
   });
-  it('format-paint mode shows copy, group mode shows crosshair', () => {
+  it('format-paint mode shows copy', () => {
     expect(canvasCursorClass({ ...rest, canvasTool: 'x', isPaintMode: true })).toBe('cursor-copy');
-    expect(canvasCursorClass({ ...rest, canvasTool: 'x', isGroupMode: true })).toBe(
-      'cursor-crosshair',
-    );
   });
   it('falls back to grab', () => {
     expect(canvasCursorClass({ ...rest, canvasTool: 'x' })).toBe('cursor-grab');

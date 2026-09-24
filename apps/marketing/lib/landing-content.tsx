@@ -31,7 +31,6 @@ import {
   IsometricArt,
   FontsArt,
   FormatPainterArt,
-  GroupArt,
   IconsArt,
   ImagesArt,
   LaserArt,
@@ -131,7 +130,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         art: <DepthArt />,
         title: 'Looks simple, runs deep',
         description:
-          'A clean canvas hides serious range: groups, locks, the format painter, arrows that track, and links across tabs.',
+          'A clean canvas hides serious range: multi-select, locks, the format painter, arrows that track, and links across tabs.',
       },
       {
         art: <MultiplayerArt />,
@@ -481,12 +480,12 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore the organising tools',
     title: 'Keep your work tidy',
     description:
-      'Work fast and stay organised: select in bulk, group and lock elements, copy a look from one to the next, and keep your canvas focused.',
+      'Work fast and stay organised: select in bulk, lock elements, copy a look from one to the next, and keep your canvas focused.',
     items: [
       {
         art: <MarqueeArt />,
         href: '/help/canvas/selecting-and-grouping/multi-select/',
-        group: 'Select, group & lock',
+        group: 'Select & lock',
         title: 'Multi-select with marquee',
         description:
           'Switch to the Select tool, drag a box, and act on everything inside at once: move, duplicate, or delete in one step, one Cmd-Z. Or grab the eraser and wipe out whatever you drag across, the whole sweep undone in a single step.',
@@ -494,23 +493,15 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <DragDuplicateArt />,
         href: '/help/tips-and-tricks/keyboard-shortcuts/',
-        group: 'Select, group & lock',
+        group: 'Select & lock',
         title: 'Shift-drag to duplicate',
         description:
           'Hold Shift and drag any element, or a whole selection, to peel off a copy: the original stays put, a translucent ghost follows your cursor, and the copy lands where you release, arrows and all.',
       },
       {
-        art: <GroupArt />,
-        href: '/help/canvas/selecting-and-grouping/groups/',
-        group: 'Select, group & lock',
-        title: 'Group elements together',
-        description:
-          'Bundle shapes into a group so they move, lock, and delete as one. Ungroup any time to work on a single piece again.',
-      },
-      {
         art: <LockArt />,
         href: '/help/canvas/locking/',
-        group: 'Select, group & lock',
+        group: 'Select & lock',
         title: 'Lock anything in place',
         description:
           'Lock an element, or a whole tab, and it turns read-only, so a finished part of the diagram cannot be nudged or edited by accident.',
@@ -518,7 +509,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <LayersArt />,
         href: '/help/canvas/layers/',
-        group: 'Select, group & lock',
+        group: 'Select & lock',
         title: 'Photoshop-style layers',
         description:
           'Split a tab into stacking layers with live previews: hide a slice, lock it, dim it, or merge it down, and keep review notes out of the export. Bring to Front quietly does the layering for you.',
@@ -526,7 +517,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <FormatPainterArt />,
         href: '/help/selection-modes/format-painter/',
-        group: 'Select, group & lock',
+        group: 'Select & lock',
         title: 'Format painter',
         description:
           "Copy one element's look, its size, colours, text style, opacity, and padding, then brush it onto the next. Consistent diagrams without re-picking every option.",
@@ -724,7 +715,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/palette/components/',
         title: 'Ready-made components',
         description:
-          'Drop in a polished composite and skip the busywork: a banner, a hero, a website-style header, an annotated callout, a row of KPI stats, or numbered process steps. Tap to place it or drag to size it; each one follows the tab theme, then ungroups into plain shapes you can edit like anything else.',
+          'Drop in a polished component and skip the busywork: a banner, a hero, a website-style header, an annotated callout, a row of KPI stats, or numbered process steps. Tap to place it or drag to size it; each one is a single element that follows the tab theme, re-flows as you resize it, and lets you retype any line in place.',
       },
     ],
   },

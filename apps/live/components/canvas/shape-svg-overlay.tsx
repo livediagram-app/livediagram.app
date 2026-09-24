@@ -1,4 +1,9 @@
-import { SHAPE_KINDS, isCollabPanelShape, type ShapeKind } from '@livediagram/diagram';
+import {
+  SHAPE_KINDS,
+  isCollabPanelShape,
+  isWebComponentShape,
+  type ShapeKind,
+} from '@livediagram/diagram';
 import { useShapeSvgAnimation, type ShapeSvgAnimation } from './useShapeSvgAnimation';
 
 // Shape-shape SVG primitives, used by both BoxedElementView (the
@@ -69,6 +74,10 @@ export function isSvgRenderedShape(kind: ShapeKind): boolean {
     // kind above. Left off this list they rendered as a transparent nothing,
     // exactly as the mind-node comment above warns.
     !isCollabPanelShape(kind) &&
+    // The web components (spec/146): a callout is a bordered card with its
+    // content on top, and the rest paint their own surfaces (they are
+    // self-painting, so the box path gives them a bare wrapper).
+    !isWebComponentShape(kind) &&
     // A chair (spec/130) draws its own furniture and wants no box behind it.
     kind !== 'chair'
   );

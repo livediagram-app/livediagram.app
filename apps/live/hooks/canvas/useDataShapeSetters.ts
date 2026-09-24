@@ -37,7 +37,11 @@ import {
 } from '@livediagram/diagram';
 import { track } from '@/lib/telemetry';
 import { useChartSetters } from '@/hooks/canvas/useChartSetters';
+import { useWebComponentSetters } from '@/hooks/canvas/useWebComponentSetters';
 import { makeShapePatcher } from '@/hooks/canvas/shape-patcher';
+
+// The kinds carrying masthead lines (see setPageHeading).
+const MASTHEAD_SHAPES = new Set<string>(['page', 'banner', 'callout']);
 
 type DataShapeSetterDeps = {
   currentSelectionIds: () => Set<string>;
@@ -240,8 +244,10 @@ export function useDataShapeSetters({ currentSelectionIds, commit }: DataShapeSe
     // Box ticks deliberately don't track: high-frequency, low-signal,
     // matching spec/39's vote-cast precedent.
   };
-  // The Page masthead (spec/100). One setter for both lines rather than two
-  // near-identical ones, since the only difference is which field.
+  // The masthead lines (spec/100): a page's heading + subtitle, and the same
+  // two fields on a banner (its subtitle) and a callout (its heading),
+  // spec/146. One setter for both lines rather than two near-identical ones,
+  // since the only difference is which field.
   const setPageHeading = (
     elementId: string,
     field: 'pageTitle' | 'pageSubtitle',
@@ -249,7 +255,7 @@ export function useDataShapeSetters({ currentSelectionIds, commit }: DataShapeSe
   ) => {
     commit((els) =>
       els.map((el) => {
-        if (el.id !== elementId || el.type !== 'shape' || el.shape !== 'page') return el;
+        if (el.id !== elementId || el.type !== 'shape' || !MASTHEAD_SHAPES.has(el.shape)) return el;
         // An empty line stores as undefined rather than '', so a page that was
         // typed into and cleared serialises the same as one never touched.
         return { ...el, [field]: value.trim() ? value : undefined };
@@ -363,9 +369,12 @@ export function useDataShapeSetters({ currentSelectionIds, commit }: DataShapeSe
 
   // Rating (spec/52) + the charts (spec/53) — see useChartSetters.
   const chartSetters = useChartSetters({ currentSelectionIds, commit });
+  // The web components (spec/146) — see useWebComponentSetters.
+  const webSetters = useWebComponentSetters({ currentSelectionIds, commit });
 
   return {
     ...chartSetters,
+    ...webSetters,
     setProgressSelected,
     setProgressAnimSelected,
     setProgressAnimSpeedSelected,

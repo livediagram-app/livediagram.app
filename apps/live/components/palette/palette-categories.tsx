@@ -93,7 +93,7 @@ export const PALETTE_CATEGORIES: {
     label: 'Components',
     group: 1,
     description:
-      'Ready-made composites that follow the tab theme: Banner, Hero, and Header. Each drops as a group you can recolour, retitle, or ungroup.',
+      'Ready-made web components that follow the tab theme: Banner, Callout, Stat row, Process, Hero, and Header. Each is one element that re-flows as you resize it, with every line of text editable in place.',
     icon: <ComponentsTabIcon />,
   },
   {

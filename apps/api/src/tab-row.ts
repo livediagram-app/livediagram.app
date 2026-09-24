@@ -1,4 +1,4 @@
-import type { Tab } from '@livediagram/diagram';
+import { migrateLegacyGroups, type Tab } from '@livediagram/diagram';
 import type { TabDTO, TabSummaryDTO } from './types';
 
 // tabs row shape as read from D1. The `data` column is the
@@ -42,6 +42,10 @@ export function rowToTab(row: TabRow): TabDTO {
   const data = JSON.parse(row.data) as Omit<Tab, 'id' | 'name'>;
   return {
     ...data,
+    // Diagrams saved while groups existed carry `groupId`s and group-pinned
+    // arrow ends; every tab read passes through here, so this is where they
+    // are frozen out (spec/146). A no-op, same array, for any other tab.
+    ...(Array.isArray(data.elements) ? { elements: migrateLegacyGroups(data.elements) } : {}),
     id: row.id,
     name: row.name,
     diagramId: row.diagram_id,

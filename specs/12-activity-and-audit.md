@@ -213,7 +213,7 @@ chart`, not `a Pie-chart`).
   (pure translation), `Restyled an Arrow` (head / line presets),
   `Changed the animation on`, `Changed the icon on`, `Edited cells in
 a Table`, `Edited the chart data on`, `Locked` / `Unlocked`,
-  `Grouped` / `Ungrouped`, `Moved X to another layer`, `Added a link
+  `Moved X to another layer`, `Added a link
 to` / `Removed the link from`, `Assigned an action on`, `Updated
 comments on`. Value-bearing changes carry the value: `Renamed
 'Login' to 'Sign in'`, `Labelled a Square 'Login'`, `Set the opacity

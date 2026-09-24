@@ -1,5 +1,5 @@
 import { type Element, type ElementId, type Tab } from './index';
-import { bringManyToFront, freezeDanglingGroupEnds, sendManyToBack } from './groups';
+import { bringManyToFront, sendManyToBack } from './layer-order';
 import { arrowReferencesAny } from './arrow-rebind';
 import {
   DEFAULT_LAYER_ID,
@@ -141,9 +141,8 @@ export function moveLayer(tab: Tab, layerId: string, toIndex: number): Tab {
 
 // Delete a layer AND everything on it (spec/74: Photoshop's rule, behind
 // the panel's confirm dialog). Arrows on OTHER layers that pin to a
-// removed element cascade with it — same rule as delete-selected — and
-// group-pinned arrow ends whose group lost its last member freeze at
-// their pre-delete position. The last remaining layer can't be deleted.
+// removed element cascade with it — same rule as delete-selected. The last
+// remaining layer can't be deleted.
 export function deleteLayer(tab: Tab, layerId: string): Tab {
   const ls = tab.layers;
   if (!ls || ls.length <= 1 || !ls.some((l) => l.id === layerId)) return tab;
@@ -163,19 +162,18 @@ export function clearLayerElements(tab: Tab, layerId: string): Tab {
 }
 
 // The tab's elements minus everything on `layerId`, with the same arrow
-// cascade + group-pin freezing as delete-selected.
+// cascade as delete-selected.
 function withoutLayerElements(tab: Tab, layerId: string): Element[] {
   const ls = tab.layers!;
   const doomed = new Set(
     tab.elements.filter((el) => resolveLayerId(el.layerId, ls) === layerId).map((el) => el.id),
   );
   if (doomed.size === 0) return tab.elements;
-  const survivors = tab.elements.filter((el) => {
+  return tab.elements.filter((el) => {
     if (doomed.has(el.id)) return false;
     if (el.type === 'arrow' && arrowReferencesAny(el, doomed)) return false;
     return true;
   });
-  return freezeDanglingGroupEnds(tab.elements, survivors);
 }
 
 // Merge a layer into its neighbour (spec/74): every element on `layerId`

@@ -21,18 +21,8 @@ export function applyCollisionAvoidance(els: Element[], arrowId: string): Elemen
   if (arrow.arrowStyle !== undefined || arrow.curveOffset || arrow.curvePoints) return els;
   const from = endpointPosition(arrow.from, els);
   const to = endpointPosition(arrow.to, els);
-  const fromId =
-    arrow.from.kind === 'pinned'
-      ? arrow.from.elementId
-      : arrow.from.kind === 'pinned-group'
-        ? arrow.from.groupId
-        : null;
-  const toId =
-    arrow.to.kind === 'pinned'
-      ? arrow.to.elementId
-      : arrow.to.kind === 'pinned-group'
-        ? arrow.to.groupId
-        : null;
+  const fromId = arrow.from.kind === 'pinned' ? arrow.from.elementId : null;
+  const toId = arrow.to.kind === 'pinned' ? arrow.to.elementId : null;
   const obstacles: AvoidanceObstacle[] = els.filter(isBoxed).map((el) => ({
     x: el.x,
     y: el.y,

@@ -154,7 +154,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
   });
 
   // Shared opening for every arrow-handle drag: refuse to start while a
-  // format-painter or group-paste gesture is live, then resolve the
+  // format-painter gesture is live, then resolve the
   // target as a typed arrow. Returns the deps snapshot + arrow, or null
   // when the drag shouldn't begin. The setSelectedId / locked / style
   // guards stay per-handler because their order differs between gestures.
@@ -458,9 +458,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       const placed = d.activeTab.elements.find(
         (el): el is ArrowElement => el.id === drag.arrowId && el.type === 'arrow',
       );
-      if (!placed || (placed.from.kind !== 'pinned' && placed.from.kind !== 'pinned-group')) {
-        return false;
-      }
+      if (!placed || placed.from.kind !== 'pinned') return false;
       const cursor = {
         x: drag.startCanvasX + (e.clientX - drag.startClientX) / d.zoomRef.current,
         y: drag.startCanvasY + (e.clientY - drag.startClientY) / d.zoomRef.current,
@@ -524,20 +522,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
           const source = d.activeTab.elements.find((el) => el.id === sourceId);
           const target =
             source && isBoxed(source)
-              ? nearestElementTowards(
-                  d.activeTab.elements,
-                  source,
-                  anchor,
-                  // Never land on a sibling of the source's own group: the
-                  // group moves as one thing, so an arrow inside it is noise.
-                  new Set(
-                    source.groupId === undefined
-                      ? []
-                      : d.activeTab.elements
-                          .filter((el) => isBoxed(el) && el.groupId === source.groupId)
-                          .map((el) => el.id),
-                  ),
-                )
+              ? nearestElementTowards(d.activeTab.elements, source, anchor)
               : null;
           const out = ANCHOR_OUT[anchor];
           d.commit((els) =>

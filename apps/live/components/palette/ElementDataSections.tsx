@@ -72,6 +72,10 @@ import {
   LegendPositionTiles,
 } from '@/components/palette/context-menu-tiles';
 import {
+  hasWebRowsSection,
+  WebRowsMenuSection,
+} from '@/components/palette/context-menu-web-editors';
+import {
   ChartMenuGlyph,
   ChecklistRowsEditor,
   EntityFieldsEditor,
@@ -184,6 +188,7 @@ export function ElementDataSections({
   // band of bespoke rows. Animation stays top-level (every boxed
   // element has it).
   const showTools =
+    hasWebRowsSection(target) ||
     isProgress ||
     isRail ||
     isRating ||
@@ -339,6 +344,15 @@ export function ElementDataSections({
               target={shapeTarget ?? undefined}
               sectionProps={sectionProps}
               onSetFacing={props.onSetChairFacing}
+            />
+          ) : null}
+          {/* Web components (spec/146) — a stat row's cards, a process's
+            steps, a header's links: add / remove / reorder. */}
+          {shapeTarget && hasWebRowsSection(shapeTarget) ? (
+            <WebRowsMenuSection
+              target={shapeTarget}
+              sectionProps={sectionProps}
+              onSetRows={props.onSetWebRows}
             />
           ) : null}
           {/* Record (spec/120) — the fields: name + optional type, add / remove. */}

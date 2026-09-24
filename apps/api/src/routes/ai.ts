@@ -46,7 +46,6 @@ function sanitiseElements(elements: unknown[]): unknown[] {
       to,
       arrowStyle,
       arrowEnds,
-      groupId,
       aspectLocked,
     } = el as Record<string, unknown>;
     return {
@@ -70,7 +69,6 @@ function sanitiseElements(elements: unknown[]): unknown[] {
       to,
       arrowStyle,
       arrowEnds,
-      groupId,
       aspectLocked,
     };
   });

@@ -29,6 +29,31 @@ const baseRow = (override: Partial<TabRow> = {}): TabRow => ({
 });
 
 describe('rowToTab', () => {
+  it('freezes a legacy group out of the stored elements (spec/146)', () => {
+    const elements = [
+      { id: 'a', type: 'shape', shape: 'square', x: 0, y: 0, width: 100, height: 40, groupId: 'g' },
+      {
+        id: 'b',
+        type: 'shape',
+        shape: 'square',
+        x: 0,
+        y: 60,
+        width: 100,
+        height: 40,
+        groupId: 'g',
+      },
+      {
+        id: 'arr',
+        type: 'arrow',
+        from: { kind: 'pinned-group', groupId: 'g', anchor: 'e' },
+        to: { kind: 'free', x: 400, y: 50 },
+      },
+    ];
+    const dto = rowToTab(baseRow({ data: bodyJson({ elements }) }));
+    expect(dto.elements.some((el) => 'groupId' in el)).toBe(false);
+    expect(dto.elements[2]).toMatchObject({ from: { kind: 'free', x: 100, y: 50 } });
+  });
+
   it('reassembles the canonical TabDTO from row columns + parsed data', () => {
     const dto = rowToTab(baseRow());
     expect(dto).toEqual({

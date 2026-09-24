@@ -30,6 +30,19 @@ export type ShapeKind =
   | 'lane'
   // Record (spec/120): a UML class / ER entity box — a title over rows.
   | 'entity'
+  // The web components (spec/146): single elements that lay themselves out,
+  // replacing the grouped composites the Components palette used to build.
+  // Banner: an accent bar, title (the label) over a subtitle line.
+  | 'banner'
+  // Callout: a card with an accent badge, a heading line and a body (label).
+  | 'callout'
+  // Stat row: KPI cards, a big value over a caption each, in `stats`.
+  | 'stat-row'
+  // Process steps: numbered circles joined by arrows, captions in
+  // `processSteps`.
+  | 'process'
+  // Header: a website header bar, logo + brand (the label) + `navLinks`.
+  | 'site-header'
   // Mode button (spec/103): a pressable pill that switches whoever clicks it
   // into a selection mode — Avatar by default. Which mode lives in the
   // element's `mode` field.

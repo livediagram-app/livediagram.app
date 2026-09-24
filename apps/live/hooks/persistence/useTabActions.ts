@@ -57,7 +57,6 @@ type TabActionsDeps = {
   setSelectedId: (id: string | null) => void;
   setEditingId: (id: string | null) => void;
   setFormatSourceId: (id: string | null) => void;
-  setGroupSourceId: (id: string | null) => void;
   // Switches the template picker into its lighter "templates" mode for
   // a freshly added tab.
   setTemplatePickerMode: (mode: 'welcome' | 'templates' | 'identity') => void;
@@ -87,7 +86,6 @@ export function useTabActions(deps: TabActionsDeps) {
     setSelectedId,
     setEditingId,
     setFormatSourceId,
-    setGroupSourceId,
     setTemplatePickerMode,
     setImportError,
     setChangeLog,
@@ -129,7 +127,6 @@ export function useTabActions(deps: TabActionsDeps) {
     setSelectedId(null);
     setEditingId(null);
     setFormatSourceId(null);
-    setGroupSourceId(null);
     // New tabs jump straight into the lighter template picker (just the
     // template grid). The welcome flow is first-run only, the user
     // already has an identity + theme by this point.
@@ -146,7 +143,6 @@ export function useTabActions(deps: TabActionsDeps) {
     setSelectedId,
     setEditingId,
     setFormatSourceId,
-    setGroupSourceId,
     setImportError,
   });
 
@@ -163,7 +159,6 @@ export function useTabActions(deps: TabActionsDeps) {
       setSelectedId(null);
       setEditingId(null);
       setFormatSourceId(null);
-      setGroupSourceId(null);
     }
   };
 

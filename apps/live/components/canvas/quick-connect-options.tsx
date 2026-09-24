@@ -14,6 +14,7 @@ export type Option = {
     | 'arrow'
     | 'pencil'
     | 'add-point'
+    | 'add-web-row'
     | 'add-row'
     | 'add-column'
     | 'mind-child'
@@ -30,6 +31,13 @@ export const ADD_POINT_OPTION: Option = {
   description: 'Add another point to the timeline rail.',
   icon: <AddPointIcon />,
 };
+
+// Web component rows (spec/146): a stat row / process / header gains one
+// more stat, step or link. The label names the thing, so the ring says what
+// it will add rather than a generic "Add".
+export function webRowOption(label: string, description: string): Option {
+  return { kind: 'add-web-row', label, description, icon: <AddPointIcon /> };
+}
 
 // Table structural adds (spec/09): offered on the matching side's ring.
 export const ADD_ROW_OPTION: Option = {

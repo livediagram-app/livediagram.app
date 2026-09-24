@@ -254,27 +254,6 @@ describe('findInsertionSlot', () => {
     expect(new Set(slot?.shiftedIds)).toEqual(new Set(['b', 'ghost']));
   });
 
-  it('moves a straddling group as one, by its centre', () => {
-    const grouped: Element[] = [
-      note('a', 0),
-      note('b', 272),
-      // A group straddling the insertion point (272): centre at 372 >= 272,
-      // so the WHOLE group travels rather than being torn in half.
-      { ...note('g1', 100, 400, 100, 100), groupId: 'g' },
-      { ...note('g2', 500, 400, 100, 100), groupId: 'g' },
-      // A group whose centre is left of the point stays put entirely.
-      { ...note('h1', -400, 400, 100, 100), groupId: 'h' },
-      { ...note('h2', 300, 400, 100, 100), groupId: 'h' },
-    ];
-    const slot = findInsertionSlot({
-      cursorX: 236,
-      cursorY: 100,
-      incomingWidth: 200,
-      elements: grouped,
-    });
-    expect(new Set(slot?.shiftedIds)).toEqual(new Set(['b', 'g1', 'g2']));
-  });
-
   it('carries an arrow whose whole span is at or after the point', () => {
     const withArrows: Element[] = [
       note('a', 0),

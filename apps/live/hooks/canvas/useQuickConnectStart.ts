@@ -1,7 +1,6 @@
 import type { PointerEvent as ReactPointerEvent } from 'react';
-import type { Anchor, Tab } from '@livediagram/diagram';
+import type { Anchor } from '@livediagram/diagram';
 import type { QuickConnectDirection } from '@/lib/canvas';
-import { quickConnectGroupStart, quickConnectSourceId } from '@/lib/quick-connect-source';
 import type { EditorDragApi } from './useEditorDrag.types';
 
 // Quick add + connect Arrow starter (spec/09), lifted out of
@@ -13,25 +12,15 @@ import type { EditorDragApi } from './useEditorDrag.types';
 // reusing addArrow's connect-from-selection path.
 export function useQuickConnectStart({
   selectedId,
-  activeTab,
   beginAnchorDrag,
 }: {
   selectedId: string | null;
-  activeTab: Tab;
   beginAnchorDrag: EditorDragApi['beginAnchorDrag'];
 }) {
   const handleStartArrow = (direction: QuickConnectDirection, e: ReactPointerEvent) => {
     if (selectedId === null) return;
-    // On a group the pluses ring the union bounds: the arrow starts PINNED
-    // TO THE GROUP's union box at the picked side's centre (a pinned-group
-    // endpoint, so it tracks the group as it moves); the arrow's stroke is
-    // the tab theme's, like every drawn connector. A lone element pins to
-    // its own anchor as ever.
-    const sourceId = quickConnectSourceId(activeTab.elements, selectedId, direction);
-    const groupStart = quickConnectGroupStart(activeTab.elements, selectedId, direction);
-    const fromGroup = groupStart
-      ? { groupId: groupStart.groupId, point: { x: groupStart.x, y: groupStart.y } }
-      : undefined;
+    // The arrow pins to the picked side's anchor; its stroke is the tab
+    // theme's, like every drawn connector.
     const anchor: Anchor =
       direction === 'right' ? 'e' : direction === 'left' ? 'w' : direction === 'below' ? 's' : 'n';
     if (e.pointerType === 'touch') {
@@ -44,10 +33,10 @@ export function useQuickConnectStart({
       // fallback: on a release that never moved, the pointer-up attaches the
       // far end to whatever sits on that side, or drops the old stub when
       // there's nothing there.
-      beginAnchorDrag(sourceId, anchor, e, { tapPlaceOutPx: 50, fromGroup });
+      beginAnchorDrag(selectedId, anchor, e, { tapPlaceOutPx: 50 });
       return;
     }
-    beginAnchorDrag(sourceId, anchor, e, { clickToPlace: true, fromGroup });
+    beginAnchorDrag(selectedId, anchor, e, { clickToPlace: true });
   };
 
   return { handleStartArrow };

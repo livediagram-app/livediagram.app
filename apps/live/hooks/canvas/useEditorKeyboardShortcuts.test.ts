@@ -129,7 +129,6 @@ function modLive(isReadOnly = false) {
     copySelection: () => calls.push('copy'),
     onCut: () => calls.push('cut'),
     onDuplicate: () => calls.push('duplicate'),
-    onGroupOrUngroup: () => calls.push('group'),
     onToggleLock: () => calls.push('lock'),
     onSelectAll: () => calls.push('select-all'),
     onBringToFront: () => calls.push('front'),
@@ -178,8 +177,13 @@ describe('runModShortcut (Cmd / Ctrl chords)', () => {
     expect(chord({ key: 'c' }).hit).toBe('copy');
     expect(chord({ key: 'x' }).hit).toBe('cut');
     expect(chord({ key: 'd' }).hit).toBe('duplicate');
-    expect(chord({ key: 'g' }).hit).toBe('group');
     expect(chord({ key: 'a' }).hit).toBe('select-all');
+  });
+
+  it('leaves Cmd+G to the browser now that there are no groups (spec/146)', () => {
+    const { hit, prevented } = chord({ key: 'g' });
+    expect(hit).toBeNull();
+    expect(prevented).toBe(false);
   });
 
   it('does not handle Cmd+V, which the native paste event owns', () => {

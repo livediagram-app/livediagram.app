@@ -19,7 +19,6 @@ import {
   type Endpoint,
 } from './index';
 import { connectorBox, endpointPosition, type ElementIndex, type Point } from './geometry';
-import { groupUnionBounds } from './groups';
 
 // Gap between adjacent fanned heads, in canvas px. Clamped down when the
 // fan would otherwise occupy more than SPREAD_EDGE_FRACTION of the target
@@ -60,7 +59,6 @@ type ConvergingEnd = {
 
 function pinKey(endpoint: Endpoint): string | null {
   if (endpoint.kind === 'pinned') return `el:${endpoint.elementId}:${endpoint.anchor}`;
-  if (endpoint.kind === 'pinned-group') return `gr:${endpoint.groupId}:${endpoint.anchor}`;
   return null;
 }
 
@@ -68,7 +66,6 @@ function pinKey(endpoint: Endpoint): string | null {
 // element rotates its edges, so the offsets must rotate with them).
 function fanFrame(
   endpoint: Endpoint,
-  elements: Element[],
   index: ElementIndex,
 ): { span: number; rotation: number; anchor: Anchor } | null {
   if (endpoint.kind === 'pinned') {
@@ -78,15 +75,6 @@ function fanFrame(
     return {
       span: spreadAxis(endpoint.anchor) === 'x' ? box.width : box.height,
       rotation: target.rotation ?? 0,
-      anchor: endpoint.anchor,
-    };
-  }
-  if (endpoint.kind === 'pinned-group') {
-    const bounds = groupUnionBounds(elements, endpoint.groupId);
-    if (!bounds) return null;
-    return {
-      span: spreadAxis(endpoint.anchor) === 'x' ? bounds.width : bounds.height,
-      rotation: 0,
       anchor: endpoint.anchor,
     };
   }
@@ -107,7 +95,7 @@ function computeSpreadMap(elements: Element[], index: ElementIndex): Map<string,
       const key = pinKey(endpoint);
       if (!key) continue;
       if (!frames.has(key)) {
-        const frame = fanFrame(endpoint, elements, index);
+        const frame = fanFrame(endpoint, index);
         if (!frame) continue;
         frames.set(key, frame);
       }

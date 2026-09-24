@@ -56,14 +56,12 @@ describe('nearestElementTowards', () => {
     }
   });
 
-  it('skips frames, arrows and excluded ids', () => {
+  it('skips frames and arrows', () => {
     const frame = box('frame', 0, 150, { shape: 'frame' });
     const arrow = { id: 'a1', type: 'arrow', from: {}, to: {} } as unknown as Element;
     const real = box('real', 0, 400);
     // The frame is nearer, but a section backdrop is not a node.
     expect(nearestElementTowards([src, frame, arrow, real], src, 's')?.id).toBe('real');
-    // And an excluded id (a group sibling) is passed over too.
-    expect(nearestElementTowards([src, real], src, 's', new Set(['real']))).toBeNull();
   });
 
   it('never returns the source itself', () => {

@@ -45,7 +45,6 @@ export function useEditorHistory(opts: {
     setEditingId: SetState<string | null>;
     setChangeLog: SetState<ChangeLogEntry[]>;
     setFormatSourceId: SetState<string | null>;
-    setGroupSourceId: SetState<string | null>;
   };
 }) {
   const {
@@ -72,7 +71,6 @@ export function useEditorHistory(opts: {
     setEditingId,
     setChangeLog,
     setFormatSourceId,
-    setGroupSourceId,
   } = set;
 
   const handleActivityRowClick = (entry: ChangeLogEntry) => {
@@ -178,7 +176,6 @@ export function useEditorHistory(opts: {
     setEditingId(null);
     setSelectedId(null);
     setFormatSourceId(null);
-    setGroupSourceId(null);
   };
 
   const redo = () => {
@@ -202,7 +199,6 @@ export function useEditorHistory(opts: {
     setEditingId(null);
     setSelectedId(null);
     setFormatSourceId(null);
-    setGroupSourceId(null);
   };
 
   return { handleActivityRowClick, clearActivityForActiveTab, revertChange, tick, undo, redo };

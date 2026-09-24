@@ -25,8 +25,6 @@ export function CanvasSelectionToolbars({
 }) {
   const {
     selected,
-    selectionScope,
-    selectedIsGrouped,
     selectionBounds,
     selectedLocked,
     showPopover,
@@ -48,7 +46,6 @@ export function CanvasSelectionToolbars({
     viewportOffset,
     multiSelectedIds,
     onDuplicateSelected,
-    onUngroup,
     onToggleLockSelected,
     onDeleteSelected,
     onOpenComments,
@@ -90,13 +87,7 @@ export function CanvasSelectionToolbars({
             bounds={selectionBounds}
             canvasOffset={viewportOffset}
             zoom={viewportZoom}
-            title={
-              selectionScope === 'group'
-                ? 'Selected Group'
-                : selected
-                  ? `Selected ${elementKindLabel(selected)}`
-                  : 'Selected Element'
-            }
+            title={selected ? `Selected ${elementKindLabel(selected)}` : 'Selected Element'}
             // In view-only mode we mount the popover with just
             // `onOpenComments`: visitors should be able to read +
             // post comments on a diagram they don't own, but no
@@ -119,11 +110,6 @@ export function CanvasSelectionToolbars({
             // are the missing nudge for two things on the same one.
             onBringToFront={readOnly || !selected ? undefined : props.onBringSelectedToFront}
             onSendToBack={readOnly || !selected ? undefined : props.onSendSelectedToBack}
-            // "Group with another" is intentionally absent from the
-            // single-element toolbar: grouping needs a multi-selection,
-            // so the action lives only on the marquee MultiSelectionToolbar.
-            // Ungroup stays here so a selected group can be broken apart.
-            onUngroup={!readOnly && selectedIsGrouped ? onUngroup : undefined}
             onToggleLock={readOnly ? undefined : onToggleLockSelected}
             onDelete={readOnly ? undefined : onDeleteSelected}
             // Comment button is VIEW-ROLE ONLY now. Editors reach
@@ -187,7 +173,6 @@ export function CanvasSelectionToolbars({
               selectedElements={elements.filter((el) => multiSelectedIds.has(el.id))}
               onDuplicate={props.onDuplicateMultiSelected}
               onDelete={props.onDeleteMultiSelected}
-              onGroup={props.onGroupMultiSelected}
               onToggleLock={props.onToggleLockMultiSelected}
               onFilter={readOnly ? undefined : props.onFilterMultiSelected}
               onExport={props.onExportMultiSelected}

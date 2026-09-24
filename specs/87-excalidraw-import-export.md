@@ -33,7 +33,7 @@ the tab's background colour, and an empty `files` map.
 ## Import mapping (`.excalidraw` → Tab)
 
 Element ids are re-minted to fresh UUIDs inside the converter (with a map so
-arrow bindings and group memberships follow), so nothing can collide with
+arrow bindings follow), so nothing can collide with
 elements already on the diagram — the JSON import's `remintElementIds` step is
 not needed on this path.
 
@@ -62,8 +62,9 @@ Property mapping, applied to every imported element where present:
 - `strokeStyle` `solid`/`dashed`/`dotted` map 1:1.
 - `opacity` 0–100 → 0–1 (100 → field omitted).
 - `angle` (radians, clockwise) → `rotation` (degrees, clockwise); 0 omitted.
-- `groupIds` → `groupId` from the **outermost** group (last entry) — our
-  groups are one level, so the outermost is what keeps things moving together.
+- `groupIds` are **dropped**: livediagram has no groups
+  ([spec/146](146-web-components-and-no-groups.md)), so grouped elements arrive
+  as separate elements in the same places.
 - `locked` → `locked`; `link` (a URL string) → `link: { kind: 'url', url }`.
 - `fontSize` → `textSize`: ≤16 `sm`, ≤22 `md`, else `lg`. `fontFamily` 1
   (hand-drawn) → `caveat`, 3 (code) → `roboto-mono`, else default.
@@ -84,7 +85,7 @@ bytes (placeholder in v1), per-point pressure on freedraw strokes.
 ## Export degradation table (Tab → `.excalidraw`)
 
 Every element exports — nothing is dropped — but only geometry, colours, label
-text, links, groups, rotation, opacity and lock survive; livediagram-only
+text, links, rotation, opacity and lock survive (`groupIds` is always empty); livediagram-only
 behaviour (animations, markers, notes, comments, actions, non-URL links,
 layers — the list flattens) does not. Kind by kind:
 

@@ -1859,7 +1859,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       </svg>
     ),
   },
-  // --- Components (spec/09) -------------------------------------------------
+  // --- Components (spec/09, spec/146): each one element that lays itself out -
   {
     id: 'components:banner',
     tileGroup: 'web',
@@ -1868,7 +1868,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     section: 'components',
     label: 'Add banner',
     description:
-      'Banner. A themed title block (accent bar with a title and subtitle) to head your diagram. Tap to drop or drag to size; drops as a group you can recolour, retitle, or ungroup.',
+      'Banner. A themed title block (an accent bar with a title and subtitle) to head your diagram. Tap to drop or drag to size; double-click to edit the title, click the subtitle once it is selected to edit it.',
     noTint: true,
     action: { type: 'component', kind: 'banner' },
     icon: (
@@ -1897,7 +1897,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     section: 'components',
     label: 'Add callout',
     description:
-      'Callout. A soft note box with an icon, title, and body for annotating a diagram. Tap to drop or drag to size.',
+      'Callout. A soft note box with an icon badge, a heading, and a body for annotating a diagram. Tap to drop or drag to size; double-click to edit the body.',
     noTint: true,
     action: { type: 'component', kind: 'callout' },
     icon: (
@@ -1926,7 +1926,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     section: 'components',
     label: 'Add stat row',
     description:
-      'Stat row. Three KPI cards (big number + caption) for dashboards / summaries. Tap to drop or drag to size.',
+      'Stat row. KPI cards (big number + caption) for dashboards and summaries. Resize to spread the cards; click a number to edit it, and add or remove stats from its menu.',
     noTint: true,
     action: { type: 'component', kind: 'stat' },
     icon: (
@@ -1956,7 +1956,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     section: 'components',
     label: 'Add process steps',
     description:
-      'Process steps. Numbered circles joined by arrows with captions, for flows. Tap to drop or drag to size.',
+      'Process steps. Numbered circles joined by arrows with captions, for flows. Resize to spread the steps; click a caption to edit it, and add or remove steps from its menu.',
     noTint: true,
     action: { type: 'component', kind: 'process' },
     icon: (
@@ -1986,7 +1986,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     section: 'components',
     label: 'Add hero',
     description:
-      'Hero. A large image with a title and supporting line on a themed caption card. Tap to drop or drag to size; double-click the image to set it.',
+      'Hero. A large image with a title and supporting line on a themed caption card. Tap to drop or drag to size; double-click the image to set it, click the caption to edit it.',
     noTint: true,
     needsImage: true,
     action: { type: 'component', kind: 'hero' },
@@ -2016,9 +2016,8 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     section: 'components',
     label: 'Add header',
     description:
-      'Header. A website-style bar with a circular avatar, brand title, and nav links. Tap to drop or drag to size; double-click the avatar to set it.',
+      'Header. A website-style bar with a logo, brand name, and nav links. Resize to make room for more links; drop an icon on it to set the logo.',
     noTint: true,
-    needsImage: true,
     action: { type: 'component', kind: 'header' },
     icon: (
       <svg

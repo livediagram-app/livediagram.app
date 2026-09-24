@@ -12,7 +12,6 @@ import {
 } from '@livediagram/diagram';
 import { ARROW_SNAP_THRESHOLD_PX, inheritedSizeFor } from '@/lib/canvas';
 import {
-  COMPONENT_SIZE,
   createComponent,
   createImage,
   createLinkCard,
@@ -22,7 +21,6 @@ import {
   createText,
   createVideo,
   defaultIconAnimation,
-  scaleElements,
   snapToArrowPoint,
   type ArrowElement,
   type ComponentKind,
@@ -165,10 +163,12 @@ export function buildDrawnArrow(
   };
 }
 
-// Component branch (spec/09): build the composite at the theme's
-// colours, then a tap drops it at its natural size centred on the tap,
-// while a drag scales the whole group uniformly to fill the dragged box
-// (keeps proportions; pinned connectors follow).
+// Component branch (spec/09, spec/146): build the component at the theme's
+// colours, then a tap drops it at its natural size centred on the tap, while
+// a drag sizes it to the dragged box like any shape. A component is one
+// element that lays itself out, so it re-flows into the box rather than
+// zooming; an aspect-locked one (the Avatar) keeps its square, fitted into
+// the box.
 export function buildDrawnComponent(
   kind: ComponentKind,
   startX: number,
@@ -176,22 +176,24 @@ export function buildDrawnComponent(
   endX: number,
   endY: number,
   theme: ThemeDefinition,
-): Element[] {
+): Element {
   const colors = {
     accent: theme.elementStroke ?? '#0284c7',
     surface: theme.elementFill ?? '#ffffff',
     ink: theme.elementText ?? '#0f172a',
   };
-  const def = COMPONENT_SIZE[kind];
-  const isTap = isDrawTap(startX, startY, endX, endY);
-  const centreX = isTap ? startX : (startX + endX) / 2;
-  const centreY = isTap ? startY : (startY + endY) / 2;
-  const made = createComponent(kind, centreX, centreY, colors);
-  if (isTap) return made;
-  const dragW = Math.max(TAP_TRAVEL_PX, Math.abs(endX - startX));
-  const dragH = Math.max(TAP_TRAVEL_PX, Math.abs(endY - startY));
-  const s = Math.min(8, Math.max(0.25, Math.max(dragW / def.width, dragH / def.height)));
-  return scaleElements(made, centreX, centreY, s);
+  if (isDrawTap(startX, startY, endX, endY)) return createComponent(kind, startX, startY, colors);
+  const made = createComponent(kind, (startX + endX) / 2, (startY + endY) / 2, colors);
+  if (made.type === 'arrow') return made;
+  const box = drawnDragBox({ type: 'component', kind }, startX, startY, endX, endY);
+  const side = Math.min(box.width, box.height);
+  const size = made.aspectLocked ? { width: side, height: side } : box;
+  return {
+    ...made,
+    ...size,
+    x: box.x + (box.width - size.width) / 2,
+    y: box.y + (box.height - size.height) / 2,
+  };
 }
 
 // Boxed branch (shape / text / sticky / image / table / link card / embed).

@@ -7,12 +7,10 @@ import {
   CommentIcon,
   DuplicateIcon,
   EllipsisIcon,
-  GroupIcon,
   LockIcon,
   SendToBackIcon,
   TextIcon,
   TrashIcon,
-  UngroupIcon,
 } from '@/components/canvas/selection-popover-icons';
 
 type Bounds = { x: number; y: number; width: number; height: number };
@@ -44,8 +42,6 @@ type SelectionPopoverProps = {
   // layers, which is what the element menu's Bring to Front does.
   onBringToFront?: () => void;
   onSendToBack?: () => void;
-  onGroup?: () => void;
-  onUngroup?: () => void;
   // Open the comment thread. The toolbar shows the Comment button
   // whenever this is passed, regardless of any other props, which
   // is how view-role visitors get the comments-only toolbar (no
@@ -56,7 +52,7 @@ type SelectionPopoverProps = {
   // full action list on touch devices that can't right-click.
   onOpenContextMenu?: (screenX: number, screenY: number) => void;
   // Small caption above (or below) the toolbar naming what's selected
-  // ("Selected Element" / "Selected Group").
+  // ("Selected Square", "Selected Element").
   title?: string;
   // Tighter gap between the popover and the element edge. Set
   // by the view-role caller because the plus duplicate button
@@ -86,8 +82,6 @@ export function SelectionPopover({
   onDuplicate,
   onBringToFront,
   onSendToBack,
-  onGroup,
-  onUngroup,
   onOpenComments,
   onOpenContextMenu,
   compact = false,
@@ -199,23 +193,6 @@ export function SelectionPopover({
         </PopoverButton>
       ) : null}
 
-      {onUngroup ? (
-        <PopoverButton
-          label="Ungroup"
-          description="Break group; members move alone."
-          onClick={onUngroup}
-        >
-          <UngroupIcon />
-        </PopoverButton>
-      ) : onGroup ? (
-        <PopoverButton
-          label="Group with another"
-          description="Click elements to group with this."
-          onClick={onGroup}
-        >
-          <GroupIcon />
-        </PopoverButton>
-      ) : null}
       {onToggleLock ? (
         <Tooltip
           title={locked ? 'Unlock' : 'Lock'}

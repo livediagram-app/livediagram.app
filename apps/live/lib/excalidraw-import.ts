@@ -4,8 +4,8 @@
 // useTabImport. Never throws on bad input — user-supplied JSON is expected
 // to be wrong sometimes.
 //
-// Ids are re-minted to fresh UUIDs here (with a map so arrow bindings and
-// group memberships follow), so the caller doesn't need the JSON path's
+// Ids are re-minted to fresh UUIDs here (with a map so arrow bindings
+// follow), so the caller doesn't need the JSON path's
 // remintElementIds step and imported elements can't collide with anything
 // already on the diagram.
 
@@ -40,7 +40,6 @@ type ExcalidrawElement = {
   strokeWidth?: number;
   strokeStyle?: string;
   opacity?: number;
-  groupIds?: string[];
   roundness?: unknown;
   isDeleted?: boolean;
   locked?: boolean;
@@ -112,7 +111,7 @@ const ARROWHEAD_MAP: Record<string, ArrowheadShape> = {
 // The fields every imported element shares. `fillColor` keeps the CSS
 // `transparent` keyword so unfilled Excalidraw shapes stay unfilled here
 // (leaving it unset would hand the fill to the theme instead).
-function commonBoxedFields(src: ExcalidrawElement, groupId: string | undefined) {
+function commonBoxedFields(src: ExcalidrawElement) {
   return {
     x: src.x ?? 0,
     y: src.y ?? 0,
@@ -124,7 +123,6 @@ function commonBoxedFields(src: ExcalidrawElement, groupId: string | undefined) 
     ...(mapStrokeStyle(src.strokeStyle) ? { strokeStyle: mapStrokeStyle(src.strokeStyle) } : {}),
     ...(mapOpacity(src.opacity) !== undefined ? { opacity: mapOpacity(src.opacity) } : {}),
     ...(mapRotation(src.angle) !== undefined ? { rotation: mapRotation(src.angle) } : {}),
-    ...(groupId ? { groupId } : {}),
     ...(src.locked ? { locked: true } : {}),
     ...(src.link ? { link: { kind: 'url' as const, url: src.link } } : {}),
   };
@@ -184,18 +182,11 @@ export function buildElementsFromExcalidraw(text: string): ExcalidrawImportResul
     (e): e is ExcalidrawElement => !!e && typeof e === 'object' && !e.isDeleted,
   );
 
-  // Fresh ids for everything, plus one shared id per Excalidraw group.
-  // Our groups are one level, so the OUTERMOST group (last groupIds entry)
-  // is the membership that keeps things moving together.
+  // Fresh ids for everything. Excalidraw's `groupIds` are not carried over:
+  // livediagram has no groups (spec/146), so grouped elements arrive as
+  // separate elements in the same places.
   const idMap = new Map<string, string>();
   for (const e of src) if (e.id) idMap.set(e.id, crypto.randomUUID());
-  const groupIdMap = new Map<string, string>();
-  const groupIdFor = (e: ExcalidrawElement): string | undefined => {
-    const outer = e.groupIds?.[e.groupIds.length - 1];
-    if (!outer) return undefined;
-    if (!groupIdMap.has(outer)) groupIdMap.set(outer, crypto.randomUUID());
-    return groupIdMap.get(outer);
-  };
 
   // Bound labels: text elements with a containerId are consumed into their
   // container rather than imported standalone.
@@ -225,8 +216,7 @@ export function buildElementsFromExcalidraw(text: string): ExcalidrawImportResul
 
   for (const e of src) {
     const id = (e.id && idMap.get(e.id)) || crypto.randomUUID();
-    const groupId = groupIdFor(e);
-    const common = commonBoxedFields(e, groupId);
+    const common = commonBoxedFields(e);
     let el: BoxedElement | null = null;
 
     switch (e.type) {

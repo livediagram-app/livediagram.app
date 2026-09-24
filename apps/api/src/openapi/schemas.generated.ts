@@ -356,9 +356,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "font": {
         "type": "string"
       },
-      "groupId": {
-        "$ref": "#/components/schemas/ElementId"
-      },
       "headerFill": {
         "type": "string"
       },
@@ -1148,6 +1145,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
+          "banner": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
           "bar-chart": {
             "additionalProperties": false,
             "properties": {
@@ -1164,6 +1176,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "object"
           },
           "browser": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "callout": {
             "additionalProperties": false,
             "properties": {
               "fill": {
@@ -1658,6 +1685,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
+          "process": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
           "progress-bar": {
             "additionalProperties": false,
             "properties": {
@@ -1763,6 +1805,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
+          "site-header": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
           "smartwatch": {
             "additionalProperties": false,
             "properties": {
@@ -1824,6 +1881,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "object"
           },
           "star": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "stat-row": {
             "additionalProperties": false,
             "properties": {
               "fill": {
@@ -2412,27 +2484,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "t"
         ],
         "type": "object"
-      },
-      {
-        "additionalProperties": false,
-        "properties": {
-          "anchor": {
-            "$ref": "#/components/schemas/Anchor"
-          },
-          "groupId": {
-            "$ref": "#/components/schemas/ElementId"
-          },
-          "kind": {
-            "const": "pinned-group",
-            "type": "string"
-          }
-        },
-        "required": [
-          "kind",
-          "groupId",
-          "anchor"
-        ],
-        "type": "object"
       }
     ]
   },
@@ -2546,9 +2597,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "font": {
         "type": "string"
-      },
-      "groupId": {
-        "$ref": "#/components/schemas/ElementId"
       },
       "height": {
         "type": "number"
@@ -2674,6 +2722,22 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "HeroCaption": {
+    "additionalProperties": false,
+    "properties": {
+      "subtitle": {
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "title",
+      "subtitle"
+    ],
+    "type": "object"
+  },
   "IconAnimation": {
     "enum": [
       "spin",
@@ -2745,11 +2809,11 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "font": {
         "type": "string"
       },
-      "groupId": {
-        "$ref": "#/components/schemas/ElementId"
-      },
       "height": {
         "type": "number"
+      },
+      "heroCaption": {
+        "$ref": "#/components/schemas/HeroCaption"
       },
       "id": {
         "$ref": "#/components/schemas/ElementId"
@@ -3029,9 +3093,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "font": {
         "type": "string"
-      },
-      "groupId": {
-        "$ref": "#/components/schemas/ElementId"
       },
       "headerFill": {
         "type": "string"
@@ -3468,9 +3529,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "font": {
         "type": "string"
       },
-      "groupId": {
-        "$ref": "#/components/schemas/ElementId"
-      },
       "headerFill": {
         "type": "string"
       },
@@ -3555,6 +3613,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "mode": {
         "$ref": "#/components/schemas/SelectionMode"
       },
+      "navLinks": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
       "note": {
         "type": "string"
       },
@@ -3605,6 +3669,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "portalTarget": {
         "$ref": "#/components/schemas/ElementId"
+      },
+      "processSteps": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
       },
       "progress": {
         "type": "number"
@@ -3677,6 +3747,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "shape": {
         "$ref": "#/components/schemas/ShapeKind"
+      },
+      "stats": {
+        "items": {
+          "$ref": "#/components/schemas/StatItem"
+        },
+        "type": "array"
       },
       "stickerId": {
         "type": "string"
@@ -3755,6 +3831,11 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "mind-node",
       "lane",
       "entity",
+      "banner",
+      "callout",
+      "stat-row",
+      "process",
+      "site-header",
       "mode-button",
       "portal",
       "session-button",
@@ -3904,6 +3985,22 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "StatItem": {
+    "additionalProperties": false,
+    "properties": {
+      "caption": {
+        "type": "string"
+      },
+      "value": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "value",
+      "caption"
+    ],
+    "type": "object"
+  },
   "StickyElement": {
     "additionalProperties": false,
     "properties": {
@@ -3936,9 +4033,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "font": {
         "type": "string"
-      },
-      "groupId": {
-        "$ref": "#/components/schemas/ElementId"
       },
       "headerFill": {
         "type": "string"
@@ -4314,9 +4408,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "font": {
         "type": "string"
-      },
-      "groupId": {
-        "$ref": "#/components/schemas/ElementId"
       },
       "headerColumn": {
         "type": "boolean"
@@ -4913,9 +5004,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "font": {
         "type": "string"
       },
-      "groupId": {
-        "$ref": "#/components/schemas/ElementId"
-      },
       "headerFill": {
         "type": "string"
       },
@@ -5196,9 +5284,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "font": {
         "type": "string"
-      },
-      "groupId": {
-        "$ref": "#/components/schemas/ElementId"
       },
       "headerFill": {
         "type": "string"

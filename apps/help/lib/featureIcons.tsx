@@ -818,9 +818,8 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   ),
   // The four that finish the Palette — the largest category in the help centre.
   //
-  // A labelled container that sits BEHIND its contents. `groups` is brackets with
-  // no container of its own, `lanes` is banded; the label tab is what makes this
-  // one a Frame.
+  // A labelled container that sits BEHIND its contents. `lanes` is banded; the
+  // label tab is what makes this one a Frame.
   frames: (
     <Glyph>
       <path d="M3.5 7.5V6a1.5 1.5 0 011.5-1.5h4.5V7.5" {...s} />
@@ -1098,15 +1097,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <rect x="12.5" y="12" width="8" height="6" rx="1" {...s} />
       <path d="M3.5 4h.01M11.5 4h.01M3.5 10h.01M11.5 10h.01" {...s} />
       <path d="M12.5 12h.01M20.5 12h.01M12.5 18h.01M20.5 18h.01" {...s} />
-    </Glyph>
-  ),
-  // Brackets embracing two elements: bound together, and no container of its own
-  // (a titled container is what a Frame is).
-  groups: (
-    <Glyph>
-      <rect x="7" y="4.5" width="10" height="6" rx="1" {...s} />
-      <rect x="7" y="13.5" width="10" height="6" rx="1" {...s} />
-      <path d="M4.5 3.5h-2v17h2M19.5 3.5h2v17h-2" {...s} />
     </Glyph>
   ),
   // A bookmarked URL as a card: its preview, and the title under it.

@@ -39,7 +39,6 @@ function setup(elements: Element[], opts: { tabLocked?: boolean; selection?: str
   const selection = new Set(opts.selection ?? []);
   const actions = buildSelectionActions({
     currentSelectionIds: () => selection,
-    memberIdsOf: (id) => new Set(id ? [id] : []),
     selectedId: opts.selection?.[0] ?? null,
     multiSelectedIds: selection,
     activeTab,
@@ -50,7 +49,6 @@ function setup(elements: Element[], opts: { tabLocked?: boolean; selection?: str
     setEditingId: () => {},
     setMultiSelectedIds: () => {},
     setFormatSourceId: () => {},
-    setGroupSourceId: () => {},
     lockedByOther: () => false,
     layerLockedIds: new Set<string>(),
     layerInertIds: new Set<string>(),
