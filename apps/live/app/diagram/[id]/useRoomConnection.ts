@@ -1,6 +1,11 @@
 import { useEffect, type Dispatch, type MutableRefObject, type SetStateAction } from 'react';
 import { applyElementOp, type Tab } from '@livediagram/diagram';
-import { CHANGE_LOG_LIST_LIMIT, type AvatarPresence, type LivePoll } from '@livediagram/api-schema';
+import {
+  CHANGE_LOG_LIST_LIMIT,
+  type AvatarPresence,
+  type FacilitatorReason,
+  type LivePoll,
+} from '@livediagram/api-schema';
 import { nextFreeColor, type Participant } from '@/lib/identity';
 import {
   apiCreateRoomTicket,
@@ -75,6 +80,15 @@ export function useRoomConnection(opts: {
     at: { x: number; y: number },
     zoom: number,
   ) => void;
+  // The facilitator baton (spec/147): the room's answer, and the token we
+  // present on every hello so a refresh keeps it.
+  receiveFacilitator: (msg: {
+    holder: string | null;
+    by?: string;
+    reason: FacilitatorReason;
+    token?: string;
+  }) => void;
+  readFacilitatorToken: () => string | null;
   receivePoll: (poll: LivePoll) => void;
   receivePollAnswer: (from: string, pollId: string, value: string | null) => void;
   receivePollEnd: (pollId: string) => void;
@@ -109,6 +123,8 @@ export function useRoomConnection(opts: {
     receiveAvatarPush,
     receiveReaction,
     receiveFocusHere,
+    receiveFacilitator,
+    readFacilitatorToken,
     receivePoll,
     receivePollAnswer,
     receivePollEnd,
@@ -428,6 +444,7 @@ export function useRoomConnection(opts: {
           }
         }
       },
+      onFacilitator: (msg) => receiveFacilitator(msg),
       onResync: () => {
         // The room couldn't bridge our reconnect gap from its op log
         // (spec/75, Level 1) -- we fell too far behind or it restarted.
@@ -474,6 +491,7 @@ export function useRoomConnection(opts: {
           // role comes from the code.
           ownerId: selfParticipant.id,
         },
+        readFacilitatorToken,
       );
       roomRef.current = openedRoom;
     })();

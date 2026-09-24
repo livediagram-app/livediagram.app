@@ -7,6 +7,7 @@
 // so it stays here next to the connect helper.
 import type {
   ParticipantPresence,
+  FacilitatorReason,
   RoomIncoming,
   RoomOp,
   RoomOutgoing,
@@ -16,6 +17,14 @@ import { getSessionSharePassword, wsUrl } from './core';
 export type RoomHandlers = {
   onPresence: (participants: ParticipantPresence[]) => void;
   onOp: (from: string, op: RoomOp) => void;
+  // Who holds the facilitator baton (spec/147), and the token when it is
+  // ours. Arrives on every change and once on connect with reason 'state'.
+  onFacilitator?: (msg: {
+    holder: string | null;
+    by?: string;
+    reason: FacilitatorReason;
+    token?: string;
+  }) => void;
   onClose?: () => void;
   // The room could not bridge our reconnect gap from its op log (spec/75,
   // Level 1): we're too far behind, or it restarted. The caller re-hydrates
@@ -74,6 +83,10 @@ export function connectRoom(
   participant: { id: string; key?: string; name: string; color: string },
   handlers: RoomHandlers,
   options: RoomAuthOptions = {},
+  // Read at every (re)connect rather than captured once: the baton can be
+  // taken while this socket is open, and the token we present has to be the
+  // one we hold NOW (spec/147).
+  readFacilitatorToken?: () => string | null,
 ): {
   send: (msg: RoomOutgoing) => void;
   close: () => void;
@@ -106,7 +119,16 @@ export function connectRoom(
     ws = new WebSocket(url);
     ws.addEventListener('open', () => {
       attempts = 0;
-      ws.send(JSON.stringify({ kind: 'hello', participant } satisfies RoomOutgoing));
+      // The baton coming home (spec/147): on a reconnect this is what tells
+      // the room we are the same facilitator it granted before the refresh.
+      const facilitatorToken = readFacilitatorToken?.();
+      ws.send(
+        JSON.stringify({
+          kind: 'hello',
+          participant,
+          ...(facilitatorToken ? { facilitatorToken } : {}),
+        } satisfies RoomOutgoing),
+      );
       // A reconnect (not the first open): ask the room for the ops we missed
       // while we were gone before resuming live traffic.
       if (opened) {
@@ -118,6 +140,7 @@ export function connectRoom(
       try {
         const msg = JSON.parse(e.data) as RoomIncoming;
         if (msg.kind === 'presence') handlers.onPresence(msg.participants);
+        else if (msg.kind === 'facilitator') handlers.onFacilitator?.(msg);
         else if (msg.kind === 'op') applyOp(msg.from, msg.op, msg.seq, msg.epoch);
         else if (msg.kind === 'catchup') {
           if (msg.resync) {

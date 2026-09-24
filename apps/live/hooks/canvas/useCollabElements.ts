@@ -31,6 +31,7 @@ export function useCollabElements({
   activeId,
   commitTabs,
   editsBlocked,
+  sessionToolsBlocked,
   selfParticipant,
   livePresence,
   startTimer,
@@ -40,6 +41,9 @@ export function useCollabElements({
   // A view-role visitor / locked tab. The room already drops their mutations
   // (spec/11), so this is about not lying to them in the UI.
   editsBlocked: boolean;
+  // Somebody else is facilitating (spec/147). Revealing, clearing, scattering,
+  // rolling and pressing an agenda item are theirs; responding is everyone's.
+  sessionToolsBlocked: boolean;
   selfParticipant: Participant;
   livePresence: Participant[];
   startTimer: (mode: TimerMode, durationMs?: number) => void;
@@ -50,6 +54,18 @@ export function useCollabElements({
   // history — the same call a dot-vote cast makes (spec/39). That is
   // deliberate and load-bearing: undo is a personal control, and one person
   // pressing Ctrl+Z must never retract another person's answer (spec/122).
+  // The same write, for a verb that runs the room rather than answering it:
+  // reveal, clear, scatter, roll, agenda. One helper rather than a flag on
+  // every call, so which side of the facilitator line a verb sits on is
+  // visible in the call itself (spec/147).
+  const patchAsFacilitator = (
+    elementId: string,
+    patch: (el: ShapeElement) => Partial<ShapeElement>,
+  ) => {
+    if (sessionToolsBlocked) return;
+    patchElement(elementId, patch);
+  };
+
   const patchElement = (elementId: string, patch: (el: ShapeElement) => Partial<ShapeElement>) => {
     if (editsBlocked) return;
     commitTabs((ts) =>
@@ -97,7 +113,7 @@ export function useCollabElements({
 
   // --- Estimate card (spec/123) --------------------------------------------
   const setResponsesRevealed = (element: ShapeElement, revealed: boolean) => {
-    patchElement(element.id, () => ({ responsesRevealed: revealed }));
+    patchAsFacilitator(element.id, () => ({ responsesRevealed: revealed }));
     track('Element', 'Changed', 'Estimate');
   };
 
@@ -105,7 +121,7 @@ export function useCollabElements({
     // Clearing un-reveals as well: the next round starts closed, or the card
     // would collect its first answer in the open. (A done check has nothing to
     // reveal, so the second field is a harmless no-op there.)
-    patchElement(element.id, () => ({ responses: [], responsesRevealed: false }));
+    patchAsFacilitator(element.id, () => ({ responses: [], responsesRevealed: false }));
     track('Element', 'Changed', element.shape === 'done-check' ? 'DoneCheck' : 'Estimate');
   };
 
@@ -129,7 +145,7 @@ export function useCollabElements({
   };
 
   const revealIdeas = (element: ShapeElement) => {
-    patchElement(element.id, () => ({ ideasRevealed: true }));
+    patchAsFacilitator(element.id, () => ({ ideasRevealed: true }));
     track('Element', 'Changed', 'Idea-box');
   };
 
@@ -138,7 +154,7 @@ export function useCollabElements({
   // card of the next round in the open, and the whole point of the element is
   // that nothing is visible until somebody decides it is.
   const clearIdeas = (element: ShapeElement) => {
-    patchElement(element.id, () => ({ ideaCards: [], ideasRevealed: false }));
+    patchAsFacilitator(element.id, () => ({ ideaCards: [], ideasRevealed: false }));
     track('Element', 'Changed', 'Idea-box');
   };
 
@@ -147,7 +163,7 @@ export function useCollabElements({
   // anything else. Created WITHOUT authorship, so the scatter doesn't undo the
   // anonymity that was the point.
   const scatterIdeas = (element: ShapeElement) => {
-    if (editsBlocked) return;
+    if (editsBlocked || sessionToolsBlocked) return;
     const cards = element.ideaCards ?? [];
     if (cards.length === 0) return;
     const stickies: Element[] = cards.map((text, i) => {
@@ -177,7 +193,8 @@ export function useCollabElements({
   // queueing: an agenda that refuses to move on because the last segment
   // overran is an agenda nobody uses twice.
   const pressAgendaItem = (element: ShapeElement, index: number) => {
-    if (editsBlocked) return;
+    // It starts that item's countdown, so it is the timer wearing a row.
+    if (editsBlocked || sessionToolsBlocked) return;
     const item = (element.agendaItems ?? [])[index];
     if (!item) return;
     startTimer('countdown', clampAgendaMinutes(item.minutes) * 60_000);
@@ -193,6 +210,7 @@ export function useCollabElements({
   // Ourselves first, then presence — presence lists the OTHERS, and a roll
   // call that omits the person taking it is wrong in the most obvious way.
   const takeRoll = (element: ShapeElement) => {
+    if (sessionToolsBlocked) return;
     const at = Date.now();
     const seen = new Set<string>();
     const entries = [selfParticipant, ...livePresence]
