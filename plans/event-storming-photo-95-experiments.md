@@ -128,7 +128,9 @@ overlapping LABELS (for the operator to review, not for the detector).
       Results: [b2-separation.md](../docs/vision/experiments/b2-separation.md).
   - [x] R1 A seam only across a box two notes can fill (the seam cut stops
         cutting single notes, so detect.ts can hand it the luminance).
-  - [ ] R2 Small-pad pairs: cut at the pad's scale where the paper shows a gap.
+  - [x] R2 Necks: take a sprawling blob apart where its paper narrows to a
+        corner or a sliver (checkerboards of two kinds), before the grid.
+  - [ ] R2b Small-pad pairs: cut at the pad's scale where the paper shows a gap.
   - [ ] R3 Cross-colour boxes: a box that spans another colour's notes.
   - [ ] R4 Heavily lapped pairs: trim the sliver of the note underneath.
   - [ ] R5 2-D seam search in sprawling blobs (cut where the seams are, not

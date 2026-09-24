@@ -112,3 +112,56 @@ is now safe to add (see Open questions).
   one option: `luminance: luminanceOf(working)` in the `fitBoxes` call. Worth
   merged 29 → 25 on its own after R1, and every later seam experiment here
   depends on it.
+
+## R2: part a sprawl at its necks before the grid (kept)
+
+**Hypothesis.** A sprawling blob of one colour is often a checkerboard: notes
+of this colour stuck in a grid with another kind between them, touching only
+at a corner or along a sliver where one is crooked. The wall's note size
+lays an even grid over such a blob that cuts through notes. The joins are far
+thinner than a note, so an erosion a fraction of a note deep leaves one core
+per note, and each pixel goes back to the core nearest it along the paper.
+
+**Built.** `necks.ts`: erode the blob's own paper by `NECK_ERODE_FRACTION` =
+0.15 note, keep cores of at least (0.25 note)², grow them back by
+breadth-first search over the paper. `splitOversized` tries it on blobs of
+at least `NECK_MIN_AREA` = 2 note areas, before the grid.
+
+**First measurement: every part taken (rejected).** Merged 29 → 37 (A),
+TOTAL 88.7 → 87.3. On the panorama the parts were columns of two small
+actors (0.9 wall notes tall, which the grid leaves whole), and on the
+whiteboard the parts' own grids fell out of step with the notes. The necks
+parted groups, not notes.
+
+**Rule.** The parts are taken only when every one is a note: at most
+`NECK_MAX_PIECE` = 1.4 notes long. Otherwise the blob goes to the grid whole.
+
+| NECK_MAX_PIECE | 1.2       | 1.3       | 1.4       | 1.5–1.7   | 2.0       | 2.5       |
+| -------------- | --------- | --------- | --------- | --------- | --------- | --------- |
+| A: TOTAL / m   | 88.7 / 29 | 88.8 / 29 | 88.9 / 29 | 88.8 / 28 | 88.9 / 28 | 88.8 / 29 |
+| L: TOTAL / m   | 88.9 / 25 | 89.1 / 25 | 89.2 / 25 | 89.1 / 24 | 89.1 / 24 | 89.0 / 25 |
+
+From 1.5 up one merged box goes, but only because two merged boxes on the
+panorama become one box holding three actors, and 201707 loses a wide note
+(rec-A 93 → 90). 1.3–1.4 find three notes and lose none. With 1.4, the
+other settings: erosion 0.12–0.2 and core 0.15–0.35 score the same (0.1:
+88.7 / 89.0); area 1.5–3 the same (1: 88.7, 4: 88.7).
+
+| wall             | A: F1 / rec-A / merged | L: F1 / rec-A / merged |
+| ---------------- | ---------------------- | ---------------------- |
+| 201646           | 81 / 90 / 2            | 81 / 90 / 2            |
+| 201654           | 98 / 98 / 3            | 98 / 98 / 3            |
+| 201707           | 94 / 93 / 2            | 94 / 95 / 1            |
+| 201713           | 97 / 96 / 0            | 97 / 96 / 0            |
+| 201730 (shade)   | 92 / 90 / 2            | 92 / 90 / 1            |
+| 201743 (night)   | 58 / 51 / 1            | 58 / 51 / 1            |
+| wall-panorama    | 78 / 64 / 9            | 78 / 64 / 9            |
+| whiteboard-dense | 92 / 88 / 10           | 93 / 89 / 8            |
+| **TOTAL**        | **88.9 / 29**          | **89.2 / 25**          |
+
+What moved: a spurious box gone on 201654 and on 201707 each, one more
+panorama note found. About 40 ms more per photo.
+
+**Verdict: kept**, for a small, clean gain. It does not touch the merged
+count: those merges are pairs a neck cannot see (flush, or at a smaller
+pad's scale).

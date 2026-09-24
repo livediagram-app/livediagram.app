@@ -1,4 +1,5 @@
 import { fillRatio, MIN_SOLID_FILL, type Box, type PaperMask } from './boxes';
+import { splitAtNecks } from './necks';
 
 // Cutting a blob that is more than one note into notes (spec/139 Phase 9).
 //
@@ -38,6 +39,19 @@ const CUT_SNAP_FRACTION = 0.3;
 // helped two walls and cost none, and 0.95 cost two.
 const VALLEY_MAX_FILL = 0.7;
 
+// A blob at least this big (in note areas) is first taken apart at its NECKS
+// (see `necks.ts`): notes of one colour that touch only at a corner or along
+// a sliver, as in a checkerboard of two kinds, part there rather than where
+// an even grid falls. Any value from 1.5 to 3 scores the same on the eight
+// labelled walls.
+const NECK_MIN_AREA = 2;
+// …and the parts are taken only when every one is a note, at most this long
+// (in notes). A part longer than that is a group of notes the necks happened
+// to fall around, and the grid over the whole blob was measured to do better
+// with it than a grid over the part: 1.3–1.4 found three notes and lost none,
+// 1.5–2.0 traded one note on 201707 for a box.
+const NECK_MAX_PIECE = 1.4;
+
 // Split a box that is plainly more than one note along its long axis. Two
 // overlapping orange events are one blob and two stickies, and a wall has
 // plenty of those — so a blob longer than any real silhouette gets cut into
@@ -74,7 +88,15 @@ export function splitOversized(
   // paper).
   const band = Math.min(box.w, box.h) <= noteSize * SPLIT_BAND_THICKNESS;
   if (!mask && fillRatio(box) < MIN_SOLID_FILL && !band) return [box];
-  return splitAxis(box, noteSize, mask, seams, 0);
+  return atNecks(box, noteSize, mask).flatMap((piece) =>
+    splitAxis(piece, noteSize, mask, seams, 0),
+  );
+}
+
+function atNecks(box: Box, noteSize: number, mask: PaperMask | undefined): Box[] {
+  if (!mask || box.w * box.h < NECK_MIN_AREA * noteSize * noteSize) return [box];
+  const parts = splitAtNecks(box, mask, noteSize);
+  return parts.every((p) => Math.max(p.w, p.h) <= noteSize * NECK_MAX_PIECE) ? parts : [box];
 }
 
 // How many times a piece may be cut again after being cut. Four is past any
@@ -244,4 +266,6 @@ export const SPLIT_CALIBRATION = {
   SPLIT_BAND_THICKNESS,
   CUT_SNAP_FRACTION,
   VALLEY_MAX_FILL,
+  NECK_MIN_AREA,
+  NECK_MAX_PIECE,
 } as const;
