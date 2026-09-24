@@ -69,7 +69,7 @@ export function FocusButtonFace({
       {onPress ? (
         <button
           type="button"
-          aria-label={`${text} — ask everyone else to look here`}
+          aria-label={`${text}: ask everyone else to look here`}
           // Press on a click, silent on a drag: the button is an element too,
           // so dragging it must move it without also asking the room to look.
           {...press}

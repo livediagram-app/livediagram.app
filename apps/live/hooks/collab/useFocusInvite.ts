@@ -8,7 +8,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 // The whole of this element's restraint lives here. A press moves NOBODY: it
 // leaves a dialog that says who wants you where, and your view is untouched
 // until you take it. That is the one place this parts company with Follow Me
-// (spec/131), which is unilateral by design — the difference is push versus
+// (spec/131), which is unilateral by design: the difference is push versus
 // pull. A follower chose to be moved and can stop whenever; a yank arrives
 // unasked, in the middle of whatever you were doing, and a board where anybody
 // can teleport everybody is a board where somebody's half-typed note is lost.
@@ -33,6 +33,8 @@ export function useFocusInvite(deps: {
   onFollowTab: (tabId: string) => void;
   /** Centre a canvas point at a given zoom. */
   onCentreOn: (at: { x: number; y: number }, zoom: number) => void;
+  /** Is this view already the one the invitation would give? */
+  isAlreadyThere: (tabId: string, at: { x: number; y: number }, zoom: number) => boolean;
 }): {
   invite: FocusInvite | null;
   /** An invitation arrived. Replaces any earlier one: the room has one current
@@ -64,6 +66,12 @@ export function useFocusInvite(deps: {
 
   const receiveFocusHere = useCallback(
     (from: string, tabId: string, at: { x: number; y: number }, zoom: number) => {
+      // Already looking at it, at about that zoom? Then there is nothing to
+      // offer. A press gets repeated (to catch latecomers, or because the
+      // first one went out before somebody joined), and a repeat has to reach
+      // the people who said no without putting a dialog over the people who
+      // came. Their view is the difference between the two, so it decides.
+      if (ref.current.isAlreadyThere(tabId, at, zoom)) return;
       setInvite({ from, tabId, at, zoom });
     },
     [],

@@ -11,6 +11,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { isBoxed, unionBoxedBounds, type Tab } from '@livediagram/diagram';
 import { computeFitToScreen, computeViewportCenter } from '@/lib/viewport';
+import { viewIsCentredOn } from '@/lib/focus-audience';
 
 // Breakpoint at which we initialise the viewport at 60% zoom rather
 // than 100%, so a mobile visitor lands on a usable overview instead
@@ -91,6 +92,8 @@ type EditorViewportApi = {
   ) => void;
   // Centre a canvas point at somebody else's zoom (spec/144).
   centreOn: (at: { x: number; y: number }, zoom: number) => void;
+  // Is that point already what this view is showing, at about that zoom?
+  isCentredOn: (at: { x: number; y: number }, zoom: number) => boolean;
 };
 
 export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
@@ -280,6 +283,26 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
     setViewportOffset({ x: rect.width / 2 - at.x, y: rect.height / 2 - at.y });
   }, []);
 
+  // The inverse question: is this view ALREADY the one centreOn would give?
+  // Bring Focus asks it before putting an invitation on screen, so a second
+  // press re-asks the people who said no without pestering the ones who came
+  // (spec/144).
+  // The rule itself is shared with the presser's side of the press, which asks
+  // the same thing of everyone else's published viewport.
+  const isCentredOn = useCallback((at: { x: number; y: number }, zoom: number) => {
+    const node = canvasMainRef.current;
+    if (!node) return false;
+    return viewIsCentredOn(
+      {
+        size: { width: node.offsetWidth, height: node.offsetHeight },
+        pan: viewportOffsetRef.current,
+        zoom: zoomRef.current,
+      },
+      at,
+      zoom,
+    );
+  }, []);
+
   const fitToBounds = useCallback(
     (bbox: { x: number; y: number; w: number; h: number }, opts?: { maxZoom?: number }) => {
       const node = canvasMainRef.current;
@@ -313,6 +336,7 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
     fitToScreen,
     fitToBounds,
     centreOn,
+    isCentredOn,
     scrollIntoView,
   };
 }

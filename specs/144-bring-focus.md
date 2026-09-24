@@ -46,9 +46,19 @@ lost, and the cost of the extra click is one click.
   room has one current "look at this" and an older one is stale by definition.
 - **It expires after 60 seconds.** Long enough to look up from what you were
   doing, short enough that it is never answering a sentence from two topics ago.
-- **Go is a one-off.** It lands you there and your view is yours again: no
-  pinning, no invitation left on screen afterwards, no gesture needed to break out. If you
-  want to stay on somebody's shoulder, that is Follow Me and it already exists.
+- **Take me there is a one-off.** It lands you there and your view is yours
+  again: no pinning, no invitation left on screen afterwards, no gesture needed
+  to break out. If you want to stay on somebody's shoulder, that is Follow Me
+  and it already exists.
+- **Nobody already there is asked.** If your view is already on that tab,
+  showing that point at about that zoom, the invitation never appears. A press
+  gets repeated (to catch a latecomer, or because half the room said no the
+  first time), and a repeat has to reach the people who declined without
+  putting a dialog over the people who came. Their view is the difference
+  between the two, so it decides: within 5% of the zoom, and within a tenth of
+  the viewport of the point, counts as already there. Someone who took it and
+  then panned away is offered it again, which is right, because they are no
+  longer looking at it.
 
 ## Where it takes you
 
@@ -59,7 +69,7 @@ canvas is a different shape. Centring the point is the correct translation of
 "come and look at this", and the zoom is what makes their view show the same
 amount of board as the presser's.
 
-If the element is on another tab, **Go switches you to it first**, through the
+If the element is on another tab, **taking it switches you there first**, through the
 same tab-switch Follow Me uses.
 
 ## Wire
@@ -85,9 +95,15 @@ renamed participant's invitation reads correctly.
   nothing, which makes it the same read-only act as following somebody, and in a
   workshop the person who spots the thing worth looking at is often not the
   owner.
-- **Nobody else in the room?** The presser is told so, rather than the press
-  doing nothing visible. A button that looks broken when it is merely alone is
-  worse than a sentence.
+- **The presser is told what the press did**, rather than watching a button do
+  nothing visible. Three sentences, because there are three outcomes: "Asked
+  everyone else to look here", "Everyone else is already looking at it" (every
+  peer whose view we know is on that tab, on that point, at about that zoom),
+  and "Nobody else is on this board right now" when the room is empty. Saying
+  the last one to a presser looking at a row of avatars reads as the feature
+  being broken, which is why the middle one exists. A peer who has published no
+  viewport counts as asked, not as already there: unknown is not the same as
+  present, and erring that way is the harmless direction.
 - **You never invite yourself.** The presser's own view does not move; they are
   already looking at it.
 - It is **not** in the change log: nothing changed.
@@ -102,3 +118,10 @@ defaults to "Bring Focus" and is edited like any label, so a board can have
 Read-only surfaces (the export, the minimap, a view-only session) render the
 face inert rather than hiding it: a viewer should still see what the board is
 offering.
+
+It is the one Behaviour element with **no `…` on its face**. The rest of the
+family carries the shared settings ellipsis (or draws a richer one of its own),
+because they hold something you set: a timer's length, a poll's question. This
+one holds nothing but a label and its colours, and those are reached by
+right-clicking the element like any other shape, so the `…` would only open the
+menu that was already one click away.

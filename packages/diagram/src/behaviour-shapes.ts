@@ -54,3 +54,17 @@ export function isBehaviourShape(kind: ShapeKind): boolean {
 export function drawsOwnElementMenu(kind: ShapeKind): boolean {
   return kind === 'session-button' || kind === 'done-check' || kind === 'idea-box';
 }
+
+/**
+ * Does this kind carry the shared settings `…` at all?
+ *
+ * Most of the family does, but a kind with nothing to set has no use for it:
+ * Bring Focus (spec/144) is a button whose whole behaviour is "press me", and
+ * its colours and label are reached the ordinary way, by right-clicking the
+ * element like any other. A `…` that opens the same menu the element already
+ * opens is one more dot on the card and one more thing to explain.
+ */
+export function carriesSharedSettingsMenu(kind: ShapeKind): boolean {
+  if (kind === 'focus-button') return false;
+  return isBehaviourShape(kind) && !drawsOwnElementMenu(kind);
+}

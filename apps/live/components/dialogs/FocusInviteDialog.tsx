@@ -5,7 +5,7 @@
 // A dialog rather than a pill in the chrome, for the same reason the poll
 // prompt is one: it is a question addressed to YOU, and the answer decides
 // where you are looking next. A banner at the top of the canvas is the shape
-// of a status line, and it was read as one — missed entirely on a busy board,
+// of a status line, and it was read as one: missed entirely on a busy board,
 // which for an element whose whole job is "everybody look here" is the element
 // not working.
 //

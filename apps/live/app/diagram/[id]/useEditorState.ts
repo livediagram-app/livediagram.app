@@ -25,6 +25,7 @@ import { useBehaviourElements } from '@/hooks/canvas/useBehaviourElements';
 import { useCollabElements } from '@/hooks/canvas/useCollabElements';
 import { useFollowMe } from '@/hooks/collab/useFollowMe';
 import { useFocusInvite } from '@/hooks/collab/useFocusInvite';
+import { FOCUS_PRESS_MESSAGE, focusPressOutcome } from '@/lib/focus-audience';
 import type { CanvasTool } from '@/components/palette/CommandPalette';
 import { useCellLinkPicker } from '@/hooks/canvas/useCellLinkPicker';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
@@ -908,21 +909,30 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // already looking at it.
   const pressFocusButton = useCallback(
     (element: ShapeElement) => {
-      const sent = broadcastFocusHere(
-        { x: element.x + element.width / 2, y: element.y + element.height / 2 },
-        zoomRef.current,
-      );
-      // A button that looks broken when it is merely alone is worse than a
-      // sentence, so say so rather than letting the press do nothing visible.
+      const at = { x: element.x + element.width / 2, y: element.y + element.height / 2 };
+      const sent = broadcastFocusHere(at, zoomRef.current);
+      const node = canvasMainRef.current;
+      // A press that moves nobody is invisible from this side, so say which
+      // kind of nobody it was: an empty room, or a room already looking at it.
+      // `livePresence` is peers ONLY (the room excludes the asker from every
+      // presence list it sends), so one other person is length 1.
       toast.info(
-        sent && livePresence.length > 1
-          ? 'Asked everyone else to look here'
-          : 'Nobody else is on this board right now',
+        FOCUS_PRESS_MESSAGE[
+          focusPressOutcome({
+            sent,
+            peerIds: livePresence.map((p) => p.id),
+            viewports: remoteViewports,
+            size: { width: node?.offsetWidth ?? 0, height: node?.offsetHeight ?? 0 },
+            tabId: activeId,
+            at,
+            zoom: zoomRef.current,
+          })
+        ],
       );
       track('Element', 'Used', 'BringFocus');
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [broadcastFocusHere, livePresence.length],
+    [broadcastFocusHere, livePresence, remoteViewports, activeId],
   );
 
   // Same trick for selfParticipant — the WS effect intentionally
@@ -954,6 +964,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     fitToScreen,
     fitToBounds,
     centreOn,
+    isCentredOn,
     scrollIntoView,
   } = useEditorViewport({ activeTab, selectedId });
 
@@ -1128,6 +1139,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
       setActiveId(tabId);
     },
     onCentreOn: centreOn,
+    isAlreadyThere: (tabId, at, zoom) => tabId === activeId && isCentredOn(at, zoom),
   });
   receiveFocusRef.current = focusInvite.receiveFocusHere;
 
