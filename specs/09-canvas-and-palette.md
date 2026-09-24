@@ -144,7 +144,7 @@ Each boxed element can have its **aspect ratio locked**. Stored as `aspectLocked
   - Whichever change is larger (in relative terms) wins; the other is derived from the source ratio.
 - The opposite-corner anchor still stays put.
 - Move/resize on locked-position elements (the other `locked` flag) is still disabled regardless of aspect lock.
-- Format painter does not currently copy aspect-lock state.
+- The format painter copies aspect-lock state (it is in the painter's **Size** group, spec/117).
 
 ### Current Tab section
 
@@ -1087,12 +1087,21 @@ Between two **boxed** elements (shape, text, sticky, table, image, freehand, ann
 - `width`, `height`, `aspectLocked`, `opacity`.
 - `fillColor`, `strokeColor`, `textColor`.
 - All **label text styling**: `textSize`, `textAlignX`, `textAlignY`, `textBold`, `textItalic`, `textUnderline`, `textStrikethrough`, `font`, `padding`.
-- Border presets (shape / table): `strokeWidth`, `strokeStyle`, `borderRadius`.
+- `headerFill` (a table's header row / a lane's title gutter), and a table's `headerTextColor`.
+- Border presets (shape / table / freehand): `strokeWidth`, `strokeStyle`, and (shape / freehand) `borderRadius`.
+- Drop shadow (shape / sticky / image / link-card / video): `shadow`.
+- The theme-preset binding and fill lock (shape): `colorPreset`, `themeLockFill` (see below).
 - Animation fields (`animation`, `animationSpeed`, `animationRepeat`) and the icon fields: glyph animation + speed + repeat (`iconAnimation`, `iconAnimationSpeed`, `iconAnimationRepeat`) and the Technology mark's fixed-size preset (`iconSize`, spec/41). Arrows carry `flow` + `flowSpeed` + `flowRepeat` the same way. The glyph identity (`iconId`) is never painted.
 
 **Whole-label rich-text collapse.** Selecting all of a label and bolding it stores the formatting as a single attributed `richText` run, not the element-level `textBold` flag (see [rich text](#text-size) / `hasRichFormatting`). The painter therefore reads the **effective** whole-label value: an attribute every run agrees on (uniform bold / colour / size) is painted onto the target's element-level field; a partially-styled label (runs disagree) has no single value, so that attribute falls back to the element field. `richText` itself is never painted — its runs are bound to the **source's** characters, not the target's.
 
-Between two **arrows** (arrow → arrow): stroke colour / width / pattern, opacity, arrow ends, arrowhead size + shape, line style, **and** the same label text styling (`textSize` / `textColor` / bold / italic / underline / strikethrough / `font`). Boxed → arrow and arrow → boxed paints are no-ops (the kinds share almost no formattable fields).
+Between two **arrows** (arrow → arrow): stroke colour / width / pattern, arrowhead colour (`arrowheadColor`), opacity, arrow ends, arrowhead size + shape, line style, route-behind, flow animation, **and** the same label text styling (`textSize` / `textColor` / bold / italic / underline / strikethrough / `font`) plus the label's backing plate (`labelFill`). Boxed → arrow and arrow → boxed paints are no-ops (the kinds share almost no formattable fields).
+
+**A default on the source is painted too.** Most style fields are optional, and absent means "the default" (the theme's arrow colour, no shadow, a solid line). The target ends up looking like the source, so a field the source leaves on its default **clears** that field on the target rather than leaving the target's own override in place: painting a theme-coloured arrow onto a red one makes it theme-coloured. This only applies to fields the source's kind actually carries: a text element has no border presets, so painting it onto a shape leaves the shape's border alone rather than resetting it.
+
+**The target's per-range formatting yields to painted text.** Painted text styling lands on the element-level fields, but a label's `richText` runs override those per character. So when a text attribute is painted, the target's runs lose that attribute (bold, italic, underline, strikethrough, colour, size), and `richText` is dropped once nothing rich is left. Links and headings in the runs stay, because they are content rather than a look.
+
+**The colour-preset binding follows the colours.** `colorPreset` (spec/48) re-derives a shape's fill, stroke and text colour on a theme change. The painter copies the source's binding only when all three colours travel; if only some do, the target's binding is cleared (as any hand-edited colour clears it), otherwise the next theme change would re-derive the target and overwrite the colours just painted.
 
 Explicitly **not** copied — these are per-element identity / content, not formatting:
 

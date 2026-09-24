@@ -11,7 +11,7 @@ import {
 import { insertElementAt, type InsertionSlot } from '@/lib/insert-between';
 import { deriveNewBoxedColours } from '@/lib/themes';
 import { inheritedSizeFor } from '@/lib/canvas';
-import { paintableArrowFields, paintableBoxedFields } from '@/lib/format-painter';
+import { applyPaint, paintableArrowFields, paintableBoxedFields } from '@/lib/format-painter';
 import { filterPaintedFields, formatPaintsAnything, type FormatConfig } from '@/lib/format-config';
 import { track } from '@/lib/telemetry';
 import { patchTab } from './editor-page-helpers';
@@ -297,15 +297,13 @@ export function useElementHelpers(opts: {
       // above still decides which parts CAN.
       const projection = filterPaintedFields(paintableBoxedFields(source), formatConfig);
       commit((els) =>
-        els.map((el) =>
-          el.id === targetId && isBoxed(el) ? ({ ...el, ...projection } as typeof el) : el,
-        ),
+        els.map((el) => (el.id === targetId && isBoxed(el) ? applyPaint(el, projection) : el)),
       );
     } else if (source.type === 'arrow' && target.type === 'arrow') {
       const projection = filterPaintedFields(paintableArrowFields(source), formatConfig);
       commit((els) =>
         els.map((el) =>
-          el.id === targetId && el.type === 'arrow' ? ({ ...el, ...projection } as typeof el) : el,
+          el.id === targetId && el.type === 'arrow' ? applyPaint(el, projection) : el,
         ),
       );
     }
