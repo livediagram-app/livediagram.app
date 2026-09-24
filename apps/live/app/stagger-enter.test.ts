@@ -19,7 +19,11 @@ function block(selector: string): string {
 describe('.stagger-enter', () => {
   it('delays by the item index and holds the keyframe start until then', () => {
     const rule = block('.stagger-enter {');
-    expect(rule).toMatch(/animation-delay:\s*calc\(var\(--stagger-i, 0\) \* \d+ms\)/);
+    // The beat is overridable per use (`--stagger-step`, the Toolbar strip
+    // uses a quicker one) but keeps a fixed default for everyone else.
+    expect(rule).toMatch(
+      /animation-delay:\s*calc\(var\(--stagger-i, 0\) \* var\(--stagger-step, \d+ms\)\)/,
+    );
     expect(rule).toContain('animation-fill-mode: backwards');
   });
 

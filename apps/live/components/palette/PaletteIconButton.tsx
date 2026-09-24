@@ -88,6 +88,11 @@ type IconButtonProps = {
   // regardless of theme: the sticky note (always amber), the image
   // placeholder + link card (neutral chrome), and Technology brand icons.
   noTint?: boolean;
+  // Show the shortcut letter permanently, small in the bottom-right corner,
+  // instead of the badge that appears only while Cmd/Ctrl is held. The
+  // Toolbar layout's strip (spec/148) sets it: a tool bar is where people
+  // learn the letters, so it shows them the whole time.
+  shortcutAlwaysVisible?: boolean;
 };
 
 export function IconButton({
@@ -107,6 +112,7 @@ export function IconButton({
   dragKind,
   filled,
   noTint,
+  shortcutAlwaysVisible,
 }: IconButtonProps) {
   // A dragKind tile is draggable and carries the palette DnD payload; an
   // explicit draggable/onDragStart (the icon grid) is used otherwise.
@@ -129,7 +135,8 @@ export function IconButton({
       }
     : onDragStart;
   const modHeld = useModKeyHeld();
-  const showBadge = !disabled && !!shortcut && modHeld;
+  const showBadge = !disabled && !!shortcut && modHeld && !shortcutAlwaysVisible;
+  const showCornerLetter = !disabled && !!shortcut && shortcutAlwaysVisible;
   const tone = active
     ? 'bg-brand-100 text-brand-700 ring-1 ring-brand-300 dark:bg-brand-500/20 dark:text-brand-200 dark:ring-brand-500/50'
     : 'text-slate-600 enabled:hover:bg-slate-100 enabled:hover:text-slate-900 dark:text-slate-100 dark:enabled:hover:bg-slate-800 dark:enabled:hover:text-white';
@@ -190,7 +197,9 @@ export function IconButton({
           <span style={glyphStyle} className={`${glyphClass}flex h-6 items-center justify-center`}>
             {children}
           </span>
-          <span className="w-full truncate text-center text-[9px] leading-none">{caption}</span>
+          {/* 10px, not 9: at 9px the caption's stems fell under a pixel wide
+              and anti-aliased to grey, which read as blur beside the glyph. */}
+          <span className="w-full truncate text-center text-[10px] leading-none">{caption}</span>
         </>
       )}
       {showBadge ? (
@@ -200,6 +209,14 @@ export function IconButton({
         >
           {shortcut}
         </kbd>
+      ) : null}
+      {showCornerLetter ? (
+        <span
+          aria-hidden
+          className="pointer-events-none absolute bottom-0 right-0.5 text-[8px] font-medium uppercase leading-none text-slate-400 dark:text-slate-500"
+        >
+          {shortcut}
+        </span>
       ) : null}
     </button>
   );

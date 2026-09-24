@@ -73,8 +73,15 @@ export type UserPreferences = {
   // (Explorer, Palette, Editor, AI) are replaced by a compact button
   // row that opens each panel as a popover on click. Always active on
   // mobile regardless of this setting. Missing / undefined / false ===
-  // standard floating panels on desktop.
+  // standard floating panels on desktop. Legacy since spec/148: kept in
+  // step with `panelLayout` (true only for 'minimal') so older
+  // readers still see a sensible layout. Read the layout through
+  // `resolvePanelLayout`, never this flag directly.
   minimalPanels?: boolean;
+  // Desktop panel layout (spec/148): 'floating' (default), 'minimal' (the
+  // dock, spec/09) or 'toolbar' (the Palette as a top strip, no Explorer
+  // panel). Missing → derived from `minimalPanels`.
+  panelLayout?: PanelLayout;
   // Panel opacity (spec/20). The opacity (0..1) of the FULL floating
   // panels (Explorer, Palette, Editor, AI) at rest, so the canvas shows
   // through; they snap back to fully opaque while hovered / focused.
@@ -204,6 +211,27 @@ export function toggleRecentExcluded(prefs: UserPreferences, diagramId: string):
 // the string wrong — see the note there.
 export const STORAGE_KEY = USER_PREFERENCES_STORAGE_KEY;
 export const PREFERENCES_CHANGED_EVENT = 'livediagram:preferences-changed';
+
+// The three desktop panel layouts (spec/148), in the order Settings offers
+// them.
+export const PANEL_LAYOUTS = ['floating', 'minimal', 'toolbar'] as const;
+export type PanelLayout = (typeof PANEL_LAYOUTS)[number];
+
+// The layout in force. `panelLayout` wins when it is one we know; otherwise
+// the legacy boolean decides, so nobody's layout moved when the choice
+// arrived. An unknown value (written by a newer client) reads as the default
+// rather than as a crash.
+export function resolvePanelLayout(prefs: UserPreferences): PanelLayout {
+  const v = prefs.panelLayout;
+  if (v && (PANEL_LAYOUTS as readonly string[]).includes(v)) return v;
+  return prefs.minimalPanels === true ? 'minimal' : 'floating';
+}
+
+// Write a layout, keeping the legacy flag in step: only Minimal docks the
+// panels, so an older reader treats Toolbar as Floating, whose panels it keeps.
+export function withPanelLayout(prefs: UserPreferences, layout: PanelLayout): UserPreferences {
+  return { ...prefs, panelLayout: layout, minimalPanels: layout === 'minimal' };
+}
 
 // The effective "Auto-attach arrows" state (spec/20): opt-in, so only
 // an explicit `true` enables the on-move rebind pass. The single home

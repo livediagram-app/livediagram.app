@@ -48,9 +48,17 @@ export function useCanvasMobileDock(mainRef: Ref<HTMLElement>) {
   const [activeDockAnchor, setActiveDockAnchor] = useState<DockAnchor | null>(null);
 
   // Open a panel under its dock button (never toggles it shut).
-  const openDockPanel = (id: MobilePanel) => {
+  //
+  // `ownButton` is a lone button OUTSIDE the dock asking to anchor a panel
+  // (the Toolbar layout's menu button, spec/148). It is passed in rather than
+  // registered in dockButtonRefs because the dock, hidden on desktop but still
+  // mounted, registers its own button under the same panel id, and a hidden
+  // button measures as a zero rect in the corner. It also switches the popover
+  // to hang from the button (computeDockAnchor's 'button') rather than tuck
+  // against the dock's right edge.
+  const openDockPanel = (id: MobilePanel, ownButton?: HTMLElement) => {
     setActiveMobilePanel(id);
-    const btn = dockButtonRefs.current[id];
+    const btn = ownButton ?? dockButtonRefs.current[id];
     const canvas = mainRef && 'current' in mainRef ? mainRef.current : null;
     if (btn && canvas) {
       setActiveDockAnchor(
@@ -58,19 +66,20 @@ export function useCanvasMobileDock(mainRef: Ref<HTMLElement>) {
           btn.getBoundingClientRect(),
           canvas.getBoundingClientRect(),
           POPOVER_WIDTH,
+          ownButton ? 'button' : 'dock',
         ),
       );
     }
   };
 
-  const handleDockButtonClick = (id: MobilePanel) => {
+  const handleDockButtonClick = (id: MobilePanel, ownButton?: HTMLElement) => {
     // Tapping the open panel's button closes it.
     if (activeMobilePanel === id) {
       setActiveMobilePanel(null);
       setActiveDockAnchor(null);
       return;
     }
-    openDockPanel(id);
+    openDockPanel(id, ownButton);
   };
 
   return {

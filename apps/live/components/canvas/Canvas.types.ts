@@ -365,6 +365,10 @@ export type CanvasProps = {
   // Minimal panel layout preference (spec/20). When true, the floating
   // panels render as dock popovers on desktop too (always on mobile).
   minimalPanels?: boolean;
+  // Toolbar layout (spec/148): the Palette as a top strip and a menu button
+  // in place of the Explorer. Implies `minimalPanels` for every other panel.
+  // Desktop only; the chrome falls back to the mobile dock below `sm`.
+  toolbarLayout?: boolean;
   // Toggle the minimal-panel layout. Surfaced in the Palette header
   // (desktop) as the one-click normal <-> minimal switch.
   onToggleMinimalPanels?: () => void;

@@ -11,6 +11,7 @@ import { LayersPanel } from '@/components/panels/LayersPanel';
 import { visibleLayerElements } from '@livediagram/diagram';
 import { CanvasAiPanel } from './CanvasAiPanel';
 import { CommandPalette } from '@/components/palette/CommandPalette';
+import { pickPaletteAddHandlers } from '@/components/palette/palette-add-handlers';
 import { Explorer } from '@/components/panels/Explorer';
 import { Minimap } from '@/components/canvas/Minimap';
 import type { CanvasChromeProps } from './CanvasChrome';
@@ -50,14 +51,25 @@ export function useCanvasChromePanels({
   chromeHidden,
   isMobile,
   dockingActive,
+  toolbarActive,
   panelWiringFor,
 }: {
   props: CanvasChromeProps;
   chromeHidden: boolean;
   isMobile: boolean;
   dockingActive: boolean;
+  // Toolbar layout on desktop (spec/148): the strip stands in for the
+  // Palette, and the Explorer opens as a popover under the menu button
+  // instead of floating in its corner.
+  toolbarActive: boolean;
   panelWiringFor: ReturnType<typeof useCornerDocking>['panelWiringFor'];
-}): { panelEls: Partial<Record<PanelId, ReactNode>> } {
+}): {
+  panelEls: Partial<Record<PanelId, ReactNode>>;
+  // The Explorer, when it belongs to the Toolbar layout's menu button rather
+  // than to a corner (then panelEls.explorer is null).
+  toolbarExplorerEl: ReactNode;
+  paletteTint: ReturnType<typeof usePaletteChrome>['paletteTint'];
+} {
   const {
     activeDockAnchor,
     activeMobilePanel,
@@ -122,29 +134,7 @@ export function useCanvasChromePanels({
     onHideOtherLayers,
     onPreviewLayer,
     onActivityRowClick,
-    onAddAnnotation,
-    onAddArrow,
-    onAddAvatar,
-    onAddBanner,
-    onAddCallout,
-    onAddHeader,
-    onAddHero,
-    onAddIcon,
-    onAddSticker,
-    onAddImage,
-    onAddLinkCard,
-    onAddVideo,
-    onAddProcess,
-    onAddShape,
-    onAddStatRow,
-    onAddSticky,
     esBoard,
-    onAddTable,
-    onAddTechIcon,
-    onAddText,
-    onBeginFreehand,
-    onBeginShapePen,
-    onBeginPolygon,
     onChangeSettings,
     onClearActivity,
     onClearRevertPreview,
@@ -336,7 +326,8 @@ export function useCanvasChromePanels({
       onSize={onExplorerSize}
       mobileOpenOverride={activeMobilePanel === 'explorer'}
       mobileDockAnchor={activeDockAnchor ?? undefined}
-      forceDockMode={!!minimalPanels}
+      // Toolbar layout: a popover under the menu button, the dock's path.
+      forceDockMode={!!minimalPanels || toolbarActive}
       onMobileClose={closeMobilePanel}
     />
   );
@@ -443,7 +434,7 @@ export function useCanvasChromePanels({
     ) : null;
 
   const paletteEl =
-    chromeHidden || readOnly ? null : (
+    chromeHidden || readOnly || toolbarActive ? null : (
       <CommandPalette
         position={paletteWiring.position}
         canvasTool={canvasTool}
@@ -458,29 +449,8 @@ export function useCanvasChromePanels({
         settings={settings}
         onChangeSettings={onChangeSettings}
         canvasEmpty={elements.length === 0}
-        onAddShape={onAddShape}
-        onAddIcon={onAddIcon}
-        onAddSticker={onAddSticker}
-        onAddTechIcon={onAddTechIcon}
-        onAddTable={onAddTable}
-        onAddAnnotation={onAddAnnotation}
-        onAddLinkCard={onAddLinkCard}
-        onAddVideo={onAddVideo}
-        onAddBanner={onAddBanner}
-        onAddHero={onAddHero}
-        onAddHeader={onAddHeader}
-        onAddCallout={onAddCallout}
-        onAddStatRow={onAddStatRow}
-        onAddProcess={onAddProcess}
-        onAddAvatar={onAddAvatar}
-        onAddText={onAddText}
-        onAddSticky={onAddSticky}
+        {...pickPaletteAddHandlers(props)}
         esBoard={esBoard}
-        onAddImage={onAddImage}
-        onAddArrow={onAddArrow}
-        onBeginFreehand={onBeginFreehand}
-        onBeginShapePen={onBeginShapePen}
-        onBeginPolygon={onBeginPolygon}
         pendingDraw={pendingDraw}
         themeTint={paletteTint}
         onSize={(size) => setPaletteBottomY(size.bottomY)}
@@ -582,7 +552,7 @@ export function useCanvasChromePanels({
 
   // Map of panel id → element for the docked-layout distribution.
   const panelEls: Partial<Record<PanelId, ReactNode>> = {
-    explorer: explorerEl,
+    explorer: toolbarActive ? null : explorerEl,
     palette: paletteEl,
     collaborate: collaborateEl,
     ai: aiEl,
@@ -599,5 +569,5 @@ export function useCanvasChromePanels({
     'slide-deck': slideDeckEl,
     format: formatEl,
   };
-  return { panelEls };
+  return { panelEls, toolbarExplorerEl: toolbarActive ? explorerEl : null, paletteTint };
 }

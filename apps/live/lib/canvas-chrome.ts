@@ -11,14 +11,25 @@
 // rightmost panels sat flush right — they no longer disagree.) `arrowOffset`
 // keeps the pointer triangle aimed at the tapped button, clamped to stay on
 // the popover.
+//
+// `from: 'button'` is for a lone button that is NOT the dock: the Toolbar
+// layout's menu button in the top-left corner (spec/148). Right-tucking its
+// popover would open the Explorer on the far side of the canvas from the
+// button that asked for it, so it hangs from the button's own left edge
+// instead, still kept on the canvas.
 export function computeDockAnchor(
   btnRect: { left: number; bottom: number; width: number },
   canvasRect: { left: number; top: number; width: number },
   popoverWidth: number,
+  from: 'dock' | 'button' = 'dock',
 ): { left: number; top: number; arrowOffset: number } {
   const centerX = btnRect.left + btnRect.width / 2 - canvasRect.left;
   const bottomY = btnRect.bottom - canvasRect.top;
-  const left = Math.max(8, canvasRect.width - popoverWidth - 8);
+  const rightTucked = canvasRect.width - popoverWidth - 8;
+  const left = Math.max(
+    8,
+    from === 'button' ? Math.min(btnRect.left - canvasRect.left, rightTucked) : rightTucked,
+  );
   const arrowOffset = Math.max(14, Math.min(popoverWidth - 14, centerX - left));
   return { left, top: bottomY, arrowOffset };
 }

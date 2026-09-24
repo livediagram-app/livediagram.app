@@ -3,7 +3,10 @@ import type { SettingsCategoryId } from './settings-icons';
 import type { TelemetryCategory } from '@livediagram/api-schema';
 import {
   autoRebindArrowsEnabled,
+  resolvePanelLayout,
+  withPanelLayout,
   type MapSize,
+  type PanelLayout,
   type UserPreferences,
 } from '@/lib/user-preferences';
 import type { SettingsIllustrationId } from './settings-illustrations';
@@ -79,7 +82,10 @@ export type SettingsToggleRowSpec = RowBase & {
 
 export type SettingsChoiceRowSpec = RowBase & {
   kind: 'choice';
-  options: { id: string; label: string }[];
+  // `desktopOnly` options are shown but can't be picked on a phone-sized
+  // viewport, with a note saying so (the panel layouts: a phone is always
+  // docked, spec/148).
+  options: { id: string; label: string; desktopOnly?: boolean }[];
   read: (prefs: UserPreferences) => string;
   write: (prefs: UserPreferences, next: string) => UserPreferences;
   // Choices fire one 'Changed' event naming the setting, not the value ,
@@ -207,20 +213,30 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         description:
           "Sets whether the editor chrome is light or dark. System follows your device. A tab's own canvas theme is a separate setting, except for Default, which follows this one. Stored on this device only, so it does not sync with your other settings.",
         alsoIn: 'the editor’s footer bar',
+        illustration: 'appearance',
       },
       {
-        kind: 'toggle',
-        key: 'minimalPanels',
-        keywords: 'compact dock button bar hide panels layout tidy',
+        // Three layouts, one choice (spec/148). Replaced the Minimal Panel
+        // Layout toggle when the Toolbar layout arrived; the key is new so
+        // the telemetry token is too, and the old On/Off tokens simply stop.
+        kind: 'choice',
+        key: 'panelLayout',
+        keywords:
+          'minimal compact dock button bar hide panels layout tidy toolbar strip top bar excalidraw floating',
         section: 'Layout',
-        label: 'Minimal Panel Layout',
+        label: 'Panel Layout',
         description:
-          'Replaces the floating Explorer, Palette, Editor, and AI panels with a compact button bar that opens each as a popover. Keeps the canvas uncluttered when you want more room to work. Always active on mobile regardless of this setting.',
-        helpArticle: 'minimalPanels',
-        illustration: 'minimalPanels',
-        read: (p) => p.minimalPanels === true,
-        write: (p, v) => ({ ...p, minimalPanels: v }),
-        event: { category: 'UI', on: 'MinimalPanelsOn', off: 'MinimalPanelsOff' },
+          'Floating shows the Explorer, Palette and other panels over the canvas. Minimal collapses them into a compact button bar that opens each as a popover. Toolbar keeps the floating panels but puts the Palette in one strip across the top of the canvas, and opens the Explorer from a button in the top-left. Mobile always uses the button bar.',
+        helpArticle: 'toolbarLayout',
+        illustration: 'panelLayout',
+        options: [
+          { id: 'floating', label: 'Floating', desktopOnly: true },
+          { id: 'minimal', label: 'Minimal' },
+          { id: 'toolbar', label: 'Toolbar', desktopOnly: true },
+        ],
+        read: (p) => resolvePanelLayout(p),
+        write: (p, v) => withPanelLayout(p, v as PanelLayout),
+        event: { category: 'UI', changed: 'PanelLayout' },
       },
       {
         kind: 'toggle',
