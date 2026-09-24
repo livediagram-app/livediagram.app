@@ -76,8 +76,13 @@ export const PAPER_CLASSES: PaperClass[] = EVENT_STORMING_NOTES.map((note) => {
 // dullness separates them.
 const WALL_HUE_NEIGHBOURHOOD_DEG = 34;
 // Far from it, much less is needed — a pale purple policy on a brown wall is
-// unmistakably not the wall, at any saturation the eye can see.
-const OFF_HUE_MIN_SATURATION = 0.18;
+// unmistakably not the wall, at any saturation the eye can see. Tuned on the
+// eight hand-labelled walls: 0.18 lost a whiteboard's greyish aggregates and
+// pale lilac policies (saturation 0.17 to 0.19 as photographed) and the soft
+// fringes of its orange notes, and 0.10 to 0.12 brought them back without
+// costing a kraft wall. The middle of that band rather than its best point:
+// 0.12 alone scored higher, as a lone spike on eight photos tends to.
+const OFF_HUE_MIN_SATURATION = 0.11;
 
 function inBand(hue: number, band: HueBand): boolean {
   return band.from <= band.to

@@ -559,6 +559,20 @@ describe('detectStickies', () => {
     expect(found).toHaveLength(6);
   });
 
+  it('finds pale yellow notes on a WHITE wall, as a phone photographs them', () => {
+    // A pale yellow aggregate as a phone actually photographs one on a
+    // whiteboard: greyer and darker than its swatch — rgb(183,183,151),
+    // saturation 0.17, measured off the operator's hand-labelled whiteboard.
+    // Its hue is nowhere near the board's, so it needs only a little colour to
+    // count; a floor of 0.18 there lost it (spec/139).
+    const image = blank(1000, 600, '#f1f3f5');
+    const orange = fillOf('domain-event');
+    for (let i = 0; i < 6; i += 1) note(image, 60 + i * 150, 80, 90, 90, orange);
+    for (let i = 0; i < 4; i += 1) note(image, 60 + i * 150, 330, 90, 90, '#b7b797');
+    const found = detectStickies(image);
+    expect(found).toHaveLength(10);
+  });
+
   it('gets through a 1024px working image quickly', () => {
     const image = blank(1024, 1024);
     const orange = fillOf('domain-event');
