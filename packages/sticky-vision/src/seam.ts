@@ -80,6 +80,13 @@ const STEP_MIN_SPAN = 1.6;
 // alike on the eight labelled walls; 0.6 parts one pair fewer, 0.8 costs the
 // whiteboard a note.
 const THIN_FRACTION = 0.7;
+
+// The note size a box's seams are measured against: its own thickness when
+// it is a column of small notes (see `THIN_FRACTION`), else the wall's.
+export function noteScaleOf(box: Box, wallNote: number): number {
+  const thickness = Math.min(box.w, box.h);
+  return thickness < wallNote * THIN_FRACTION ? thickness : wallNote;
+}
 // A pixel this much darker than the box's paper is ink, not shadow.
 const INK_BELOW_PAPER = 60;
 // The ends of a line are left out: a note's own border shadow sits there.
@@ -182,8 +189,7 @@ export function findSeam(
   mask?: PaperMask,
 ): Seam | null {
   if (wallNote <= 0) return null;
-  const thickness = Math.min(box.w, box.h);
-  const noteSize = thickness < wallNote * THIN_FRACTION ? thickness : wallNote;
+  const noteSize = noteScaleOf(box, wallNote);
   const paper = paperLevel(lum, box);
   const margin = Math.round(noteSize * SEAM_MIN_PIECE);
   let best: Seam | null = null;

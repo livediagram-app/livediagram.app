@@ -300,3 +300,39 @@ either window, and on at least half the line) costs the panorama four notes
 anywhere between the two notes' centres parts them, and a line of writing
 across a column of two actors is such a cut. It stays as it is; the span
 (1.6 notes) is the guard.
+
+## I2b: a thin neck part is a column, not a group (kept)
+
+**Hypothesis.** Round 2 takes a blob's neck parts only when every part is at
+most 1.4 notes long; a longer part is a group of notes the necks fell
+around, better left to the grid over the whole blob. A part THINNER than a
+note, though, is a column of small notes (I2), which the seam cut takes
+apart at its own scale.
+
+**Rule.** `atNecks` also takes a part thinner than `THIN_FRACTION` of the
+note, whatever its length (`noteScaleOf`, shared with the seam cut).
+
+| part taken when thinner than (notes) | 0.6  | 0.65–1.0 |
+| ------------------------------------ | ---- | -------- |
+| TOTAL                                | 91.9 | 92.0     |
+| merged                               | 22   | 22       |
+
+It shares I2's threshold (0.7), inside the plateau. One more actor found on
+the panorama (rec-A 83 → 85), nothing else moves.
+
+Also measured: the notch cut at the thin box's own scale (`chords.ts`,
+0.6–0.8): no change on any wall.
+
+| wall             | F1 / prec / rec-A / merged |
+| ---------------- | -------------------------- |
+| 201646           | 84 / 80 / 93 / 1           |
+| 201654           | 99 / 100 / 98 / 3          |
+| 201707           | 95 / 95 / 95 / 0           |
+| 201713           | 95 / 96 / 94 / 0           |
+| 201730 (shade)   | 93 / 94 / 92 / 2           |
+| 201743 (night)   | 80 / 82 / 77 / 2           |
+| wall-panorama    | 88 / 91 / 85 / 5           |
+| whiteboard-dense | 94 / 97 / 91 / 9           |
+| **TOTAL**        | **92.0 / 94 / 22**         |
+
+**Verdict: kept.** TOTAL 91.9 → 92.0.

@@ -138,3 +138,21 @@ describe('splitOversized at necks', () => {
     expect(pieces.map((p) => p.x)).toEqual([10, 47, 83]);
   });
 });
+
+describe('splitOversized at necks, with a column of small notes', () => {
+  it('takes the parts when the long one is a column thinner than a note', () => {
+    // A column of small notes (20 px wide, on a wall of 40 px notes) with a
+    // wall note lapped on its foot at a corner. The column is two notes long,
+    // but thin: a column of small notes, for the seam cut to take apart at
+    // its own scale, not a group the necks fell around.
+    const c = canvas(120, 150);
+    c.paint(10, 10, 20, 80);
+    c.paint(27, 86, 40, 40);
+    const pieces = splitOversized(c.boxAround(), 40, c.mask);
+    const note = pieces.find((p) => p.x >= 26);
+    expect(note).toBeDefined();
+    expect(Math.abs(note!.w - 40)).toBeLessThanOrEqual(3);
+    expect(Math.abs(note!.h - 40)).toBeLessThanOrEqual(3);
+    for (const p of pieces.filter((q) => q !== note)) expect(p.x + p.w).toBeLessThanOrEqual(31);
+  });
+});
