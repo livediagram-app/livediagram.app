@@ -20,6 +20,25 @@ import {
 } from './svg-render-shapes';
 import { canvasSurface } from './colors';
 import { svgTableShape } from './svg-render-table';
+import { svgBarChart, svgLineChart, svgPieChart } from './svg-render-charts';
+import {
+  svgEntityRows,
+  svgPageMasthead,
+  svgProgressBar,
+  svgProgressRing,
+  svgRating,
+  svgTimelineRail,
+} from './svg-render-data';
+import {
+  isBarShape,
+  isLineShape,
+  isPieShape,
+  isRailShape,
+  isRatingShape,
+  isSelfDrawingShape,
+} from './data-shapes';
+import { defaultPadding, defaultTextColor, SELF_PAINTING_SHAPES } from './colors';
+import { PADDING_PX } from './index';
 // Text/number primitives shared with the per-element emitters — re-exported
 // below so existing importers of this module keep resolving.
 import { labelMeasure, r2, wrapLabel, xmlEscape } from './svg-render-primitives';
@@ -81,6 +100,7 @@ import {
   EXPORT_IMAGE_FILL,
   EXPORT_IMAGE_STROKE,
   EXPORT_PADDING,
+  exportFontFamily,
   exportFontIds,
   type BoxedExportOptions,
   type ExportIconArt,
@@ -91,6 +111,8 @@ import {
 // Typefaces (spec/28): an export paints the face the canvas painted, and
 // declares the ones it used so the file stands on its own.
 import { googleFontsHref } from './fonts';
+import { getBuiltInTheme } from './themes';
+import { themeChartPalette } from './theme-presets';
 
 // Bounding box of the visible content. Arrows count via free endpoints; boxed
 // elements via their rectangle. Empty / degenerate tabs default to a page.
@@ -189,6 +211,11 @@ export function svgIconShape(el: BoxedElement, art: ExportIconArt, stroke: strin
 export function svgBoxed(el: BoxedElement, opts: BoxedExportOptions = {}): string {
   const { opacity, shape, label } = describeBoxedExport(el, opts);
   const surface = opts.surface ?? 'light';
+  // What a self-drawing element writes its own text in: the label's resolved
+  // colour and face, so a chart's key and a rail's captions read like every
+  // other label on the board.
+  const labelColor = label?.color ?? defaultTextColor(el, surface);
+  const fontFamily = label?.fontFamily ?? exportFontFamily(el, opts.tabFont);
   const opAttr = opacity !== 1 ? ` opacity="${r2(opacity)}"` : '';
   // Rotation applies to the whole element (body + label) about its centre,
   // exactly like the canvas wrapper's CSS rotate.
@@ -265,19 +292,56 @@ export function svgBoxed(el: BoxedElement, opts: BoxedExportOptions = {}): strin
             el.type === 'shape' && el.shape === 'mind-node'
             ? 12
             : 6;
+    // What a self-drawing element draws INSTEAD of a label (spec/46, /51,
+    // /52, /53, /120): its value, its plot, its rows. Every one of these fell
+    // through to the bare box, so an exported chart was an empty rectangle
+    // with its kind name in it.
+    const face =
+      el.type === 'shape'
+        ? isPieShape(el.shape)
+          ? svgPieChart(el, labelColor, opts.chartPalette, fontFamily)
+          : isBarShape(el.shape)
+            ? svgBarChart(el, labelColor, opts.chartPalette, fontFamily)
+            : isLineShape(el.shape)
+              ? svgLineChart(el, labelColor, opts.chartPalette, fontFamily)
+              : el.shape === 'progress-bar'
+                ? svgProgressBar(el, shape.stroke, shape.fill, labelColor, fontFamily)
+                : el.shape === 'progress-ring'
+                  ? svgProgressRing(el, shape.stroke, shape.fill, labelColor, fontFamily)
+                  : isRatingShape(el.shape)
+                    ? svgRating(el, shape.stroke)
+                    : isRailShape(el.shape)
+                      ? svgTimelineRail(el, shape.stroke, labelColor, fontFamily)
+                      : el.shape === 'entity'
+                        ? svgEntityRows(el, labelColor, fontFamily)
+                        : el.shape === 'page'
+                          ? svgPageMasthead(el, PADDING_PX[el.padding ?? defaultPadding(el)], fontFamily)
+                          : ''
+        : '';
+    // A SELF-PAINTING element's body is its own: the canvas gives it a
+    // wrapper with no border and no background (element-variant.ts), and the
+    // export drew one anyway, framing every chart, progress element, rating
+    // and rail in a box that is not on the board. Also gated on having drawn
+    // a face, so a self-painting kind the export cannot draw yet (portal, an
+    // unresolved icon) still renders its box rather than nothing at all. A
+    // record and a page are NOT self-painting: their rows and masthead sit
+    // inside a real box, so they keep it. A silhouette always wins: an actor
+    // IS its figure.
+    const selfPainting = el.type === 'shape' && SELF_PAINTING_SHAPES.has(el.shape);
     const box =
       silhouette ??
-      `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="${r2(rx)}" fill="${xmlEscape(shape.fill)}" stroke="${xmlEscape(shape.stroke)}" stroke-width="1.5"/>`;
+      (selfPainting && face
+        ? ''
+        : `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="${r2(rx)}" fill="${xmlEscape(shape.fill)}" stroke="${xmlEscape(shape.stroke)}" stroke-width="1.5"/>`);
     // What the canvas draws ON the box: a lane's title gutter (spec/119) and a
-    // browser frame's chrome strip (spec/09). Both were missing, so an
-    // exported swimlane was a plain box and an exported browser had no window.
+    // browser frame's chrome strip (spec/09).
     const onBox =
       el.type === 'shape' && el.shape === 'lane'
         ? svgLaneGutter(el, shape.stroke)
         : el.type === 'shape' && el.shape === 'browser'
           ? svgBrowserChrome(el, shape.stroke)
           : '';
-    shapeStr = box + onBox;
+    shapeStr = box + onBox + face;
   } else if (shape.kind === 'icon') {
     shapeStr = svgIconShape(el, shape.art, shape.stroke);
   } else if (shape.kind === 'sticker') {
@@ -289,7 +353,11 @@ export function svgBoxed(el: BoxedElement, opts: BoxedExportOptions = {}): strin
       ` viewBox="${shape.art.viewBox}" preserveAspectRatio="xMidYMid meet" overflow="visible">` +
       `${shape.art.markup}</svg>`;
   }
-  const labelStr = !label
+  // A self-drawing element renders NO standard label on the canvas (its own
+  // content is what it shows), so the export must not print one either: a
+  // chart came out with "pie-chart" centred in the middle of it.
+  const labelStr =
+    !label || (el.type === 'shape' && isSelfDrawingShape(el.shape) && el.shape !== 'legend')
     ? ''
     : label.runs
       ? svgRichWrappedLabel(
@@ -417,6 +485,10 @@ export function renderElementsToSvg(
   ];
   // Webfont declarations for the faces this tab uses (spec/28), including
   // the one the event-storming notation asks for on its notes.
+  // The categorical ramp the tab's theme gives its charts (spec/53), which is
+  // what the canvas hands them. Without it every exported chart fell back to
+  // the built-in ramp and came out in different colours to the board.
+  const chartPalette = themeChartPalette(getBuiltInTheme(tab.theme, surface === 'dark' ? 'dark' : 'light'));
   const fontDefs = svgFontDefs(exportFontIds(visible, tab.font));
   if (fontDefs) parts.push(fontDefs);
   // Element-shadow filter defs (spec/86); empty string when none.
@@ -435,6 +507,7 @@ export function renderElementsToSvg(
             resolveStickerArt: opts.resolveStickerArt,
             tabFont: tab.font,
             surface,
+            chartPalette,
           }),
         );
     }

@@ -92,6 +92,10 @@ export type BoxedExportOptions = {
   // colours of their own (spec/07). Defaults to light, so a caller that
   // doesn't say gets exactly the output it always got.
   surface?: CanvasSurface;
+  // The tab theme's categorical ramp, for the chart elements (spec/53). The
+  // canvas hands its charts the same list; without it they fall back to the
+  // built-in one, which is what a caller with no theme in hand wants.
+  chartPalette?: readonly string[];
 };
 
 // The face a label paints in: the author's own choice, else the notation's

@@ -416,6 +416,7 @@ export * from './element-action';
 export * from './data-shapes';
 export * from './code-themes';
 export * from './chart-palettes';
+export * from './chart-frame';
 // Per-participant responses (spec/122) + the collaboration element family
 // (spec/123 to spec/130). Both leaf modules, for the factories cycle.
 export * from './responses';
