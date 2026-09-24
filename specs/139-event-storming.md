@@ -1113,13 +1113,14 @@ Decisions from the operator:
     kind, so a note's box does not run down its neighbour. A pair the length
     rule leaves whole is cut along the chord between two notches of its
     outline, or along the shadow the upper note casts (only across a box at
-    least 1.3 notes long: in a shorter one, a crease or a line of writing is
+    least 1.4 notes long: in a shorter one, a crease or a line of writing is
     far likelier than a pair), or along a step in the paper's brightness
-    (across 1.6 notes or more). A box thinner than a note is a column of
-    smaller notes and is cut at its own scale. Two notes of one kind from
-    different pads are parted where their paper's colour changes. See
-    `docs/vision/experiments/b-separation.md`, `b2-separation.md` and
-    `i-separation.md`.
+    (across 1.6 notes or more). The seam cut measures a box against the note
+    size HERE, not the wall's: the median of the notes around it, weighed by
+    how near they are, so a pad of small notes stuck in a lattice, or the far
+    end of a wide photograph, is cut at its own scale. See
+    `docs/vision/experiments/b-separation.md`, `b2-separation.md`,
+    `i-separation.md` and `k-geometry.md`.
 
 - **A note stands out from the wall it is stuck to.** Colour floors alone
   cannot say what is not a note, because tape, cardboard, a shadow in a paper

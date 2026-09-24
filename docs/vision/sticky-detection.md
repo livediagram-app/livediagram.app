@@ -108,9 +108,8 @@ and testable.
      corner or a sliver, so an erosion 0.15 of a note deep leaves one core
      per note, and each pixel goes back to the core nearest it along the
      paper. The parts are taken only when every one is a note (at most 1.4
-     notes long) or a column thinner than a note (small notes, for the seam
-     cut); otherwise the grid does better over the whole. The cores grow back
-     only twice as far as the erosion took, so a strip thinner than a note's
+     notes long); otherwise the grid does better over the whole. The cores
+     grow back only twice as far as the erosion took, so a strip thinner than a note's
      edge trailing off it (a JPEG fringe of this colour along a neighbour of
      another kind) is trimmed off; and past the note's own body they follow
      no paper that touches another colour, so a shorter fringe is not
@@ -121,15 +120,16 @@ and testable.
      shadow**: a line a little darker than the paper on both sides, the whole
      way across, with ink left out and scored by its median so handwriting
      cannot pose as one (`seam.ts`, reading the photograph's brightness).
-     Only across a box at least 1.3 notes long: in a shorter box a crease, a
+     Only across a box at least 1.4 notes long: in a shorter box a crease, a
      curl or a line of writing across one note is far likelier than a pair.
      Across a box at least 1.6 notes long a STEP in the paper's brightness
-     counts too (two flush notes lit differently). A box thinner than 0.7 of
-     a note is a column of smaller notes and is measured against its own
-     thickness. Failing a shadow, two notes of one kind from different pads
-     (orange-yellow beside lemon) are parted where the two sides' median
-     paper COLOURS differ by 30 or more in an opponent channel
-     (`paper-hue.ts`), across a box at least 1.1 notes long;
+     counts too (two flush notes lit differently). "Notes" here are the note
+     size HERE (`size-field.ts`): the median short side of the plausible raw
+     blobs around the box, each weighed by a Gaussian 1.5 wall notes wide,
+     kept within half and twice the wall's size, and the wall's own size
+     where fewer than about 2.5 notes are near. A pad of small actors stuck
+     in a lattice on the panorama is cut at its own 18–20 px, not the wall's 34. Only the seam cut reads it: the splitter's grid, the necks, the size
+     floor and the too-big gate at the local size all lost notes;
      A cut stands when every piece is paper and solid, and a side thinner
      than a note (0.6 to 0.7 of one) is a sliver of the note underneath,
      dropped so it no longer inflates its neighbour's box;
@@ -218,7 +218,8 @@ and testable.
 | `WHOLE_NOTE_SIDE`                           | 0.45              | Thicker than this (in notes) a piece is a whole note and never merged with another. 0.40–0.50 score the same.                                                                                           |
 | `NOTCH_MIN_DEPTH` / `CHORD_MAX_LENGTH`      | 0.12 / 1.3        | A notch deeper than this, a chord no longer than one side of a note. Depths 0.08–0.22 score alike.                                                                                                      |
 | `SEAM_MIN_DEPTH` / `SEAM_MIN_PIECE`         | 12 / 0.55         | Median valley in luma levels along a seam; each side at least this much of a note. 8–24 and 0.5–0.7 score alike.                                                                                        |
-| `SEAM_MIN_SPAN`                             | 1.3               | A seam only across a box this many notes long: 66 of 73 seams found in shorter boxes crossed one note. 1.25–1.5 score alike.                                                                            |
+| `SEAM_MIN_SPAN`                             | 1.4               | A seam only across a box this many local notes long: 66 of 73 seams found in shorter boxes crossed one note. 1.35–1.5 score alike.                                                                      |
+| `SIZE_FIELD_SPREAD` / `_MIN_WEIGHT`         | 1.5 / 2.5         | The local note size: a Gaussian this many wall notes wide, and this much weight before it speaks. 1–1.75 and 2–3 score alike.                                                                           |
 | `NECK_ERODE_FRACTION` / `NECK_REGROW`       | 0.15 / 2          | Necks thinner than twice the erosion part; cores grow back twice as far, trimming thinner strips. 0.12–0.2 and 1.75–2.25 score alike.                                                                   |
 | `NECK_MIN_AREA` / `NECK_MAX_PIECE`          | 1.5 / 1.4         | Blobs from this many note areas are parted at necks, when every part is at most this long. 1.25–1.75 and 1.3–1.4 score alike.                                                                           |
 | `CUT_PIECE_SIZE_RATIO`                      | 0.6               | Each side of a notch or seam cut at least this thick; between this and `MIN_PAPER_SIZE_RATIO` a side is a sliver, dropped. 0.575–0.65 score alike.                                                      |

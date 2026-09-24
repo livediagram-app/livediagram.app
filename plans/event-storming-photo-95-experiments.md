@@ -189,6 +189,26 @@ had flattered the score by 0.7 and passed a different wall). Baseline: TOTAL
 - [ ] H — recall (`boxes.ts`, `detect.ts`, `classify.ts`, `floors.ts`, `lab.ts`): night 77%, panorama 77%, whiteboard 89%.
 - [ ] I — separation (`split.ts`, `contour.ts`, `seam.ts`): every merged box that is not a label overlap.
 
+## Round 4 — on the merged state (commit `5ad4347c`)
+
+Baseline: TOTAL 93.5, precision 96%, recall 91%, 23 merged (13 label
+overlaps), 2/8 walls (201707, 201713).
+
+- [x] K — **geometry, round 4** (owns `split.ts`, `contour.ts`, `seam.ts`,
+      `necks.ts`, `narrow.ts`, new geometry modules). Results:
+      [k-geometry.md](../docs/vision/experiments/k-geometry.md).
+  - [x] K0 Survey: how much the labelled note size varies across each wall,
+        and how labels draw lapped notes.
+  - [x] K1 All the cuts across a run at once: 1-D dynamic programming over
+        the paper's profile instead of the greedy `cutLines` (rejected: every
+        variant 90.9–93.3 against 93.5).
+  - [x] K2 A local note-size field: size rules use the size HERE, from
+        nearby plausible notes, not the wall's median (kept for the seam cut,
+        with `SEAM_MIN_SPAN` 1.4: 93.5 → 94.1, merged 23 → 20).
+  - [x] K3 Amodal completion: the lower note of a lapped pair completed from
+        its visible part into a box of its own (rejected on three probes).
+  - [x] K4 Fold-back: results doc, sticky-detection.md, spec/139 Phase 9.
+
 ## Not yet delegated
 
 - **D-FINE-N / RT-DETR fine-tuning**: needs PyTorch, i.e. Python, which the
