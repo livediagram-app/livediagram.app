@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { useEyeDropper } from '@/hooks/ui/useEyeDropper';
 import { hexish, ToggleSwitch } from '@/components/palette/palette-controls';
 import { DirArrow } from '@/components/palette/context-menu-icons';
@@ -5,6 +6,19 @@ import { type IconPosition } from '@livediagram/diagram';
 import { onMouseHover, useRevertOnUnmount } from '@/components/primitives/hover-preview';
 
 const NOOP = () => {};
+
+// "No colour". A real value, not an absence: it is what a frame defaults to,
+// and what you want when a shape should show the canvas through it.
+const TRANSPARENT = 'transparent';
+
+// The standard checkerboard that means "nothing here" in every graphics tool.
+// Drawn rather than described, because a plain white swatch labelled
+// Transparent is indistinguishable from a white swatch.
+const CHECKER =
+  'repeating-conic-gradient(rgb(203 213 225) 0% 25%, rgb(255 255 255) 0% 50%) 50% / 8px 8px';
+
+const isTransparent = (color: string): boolean =>
+  color.toLowerCase() === TRANSPARENT || color.toLowerCase() === 'none';
 
 // A small preset palette for the inline colour picker. The "+" custom chip
 // still opens the OS picker for anything off-palette.
@@ -14,22 +28,37 @@ const NOOP = () => {};
 // custom colour.
 export function ColourRow({
   label,
+  icon,
   value,
   open,
   onToggle,
   onChange,
   presets,
+  customs,
+  onAddCustom,
+  onRemoveCustom,
   onPreview,
   onCommit,
   onPreviewEnd,
 }: {
   label: string;
+  // A mark for what this row paints (spec/09 Colours). Every category shows
+  // one: "Text", "Background", "Border" and "Heading" are four words of
+  // similar length and shape, and at a glance in a dense menu the glyph is
+  // what tells them apart, not the reading.
+  icon?: ReactNode;
   value: string;
   open: boolean;
   onToggle: () => void;
   onChange: (color: string) => void;
-  // Preset swatches to offer — derived from the active theme so they match it.
+  // Preset swatches to offer, derived from the active theme so they match it.
   presets: string[];
+  // The user's own palette: colours they have used that the theme did not
+  // offer. Shown after the presets and removable, which the presets are not
+  // (a theme's colours are the theme's to decide).
+  customs?: string[];
+  onAddCustom?: (color: string) => void;
+  onRemoveCustom?: (color: string) => void;
   // Hover-to-preview for the discrete swatches (desktop pointer), mirroring the
   // style-preset tiles: onPreview shows the colour live, onPreviewEnd reverts,
   // and onCommit is the click-commit that snapshots the true pre-hover value for
@@ -43,6 +72,45 @@ export function ColourRow({
   // (pointerleave doesn't fire on unmount).
   useRevertOnUnmount(onPreviewEnd ?? NOOP);
   const eyeDropper = useEyeDropper();
+
+  // Commit a colour AND remember it, so the next element can be given the
+  // same one by clicking rather than by matching it off the colour wheel.
+  const pick = (color: string) => {
+    (onCommit ?? onChange)(color);
+    onAddCustom?.(color);
+  };
+
+  const swatch = (c: string, removable: boolean) => (
+    <button
+      key={c}
+      type="button"
+      aria-label={removable ? `${c} (right-click to remove)` : c}
+      title={removable ? 'Right-click to remove' : undefined}
+      onClick={() => pick(c)}
+      onContextMenu={
+        removable
+          ? (e) => {
+              // Bin a colour you are done with. Only ever a colour YOU added:
+              // the theme's own presets come back with the theme, so removing
+              // one would be a setting that silently undoes itself.
+              e.preventDefault();
+              e.stopPropagation();
+              onPreviewEnd?.();
+              onRemoveCustom?.(c);
+            }
+          : undefined
+      }
+      onPointerEnter={onPreview ? onMouseHover(() => onPreview(c)) : undefined}
+      onPointerLeave={onPreview ? onMouseHover(() => onPreviewEnd?.()) : undefined}
+      className={`h-7 w-7 cursor-pointer transition ${
+        value.toLowerCase() === c.toLowerCase()
+          ? 'relative z-10 ring-2 ring-brand-500 ring-inset'
+          : 'hover:brightness-95'
+      }`}
+      style={{ backgroundColor: c }}
+    />
+  );
+
   return (
     <div>
       <button
@@ -51,64 +119,88 @@ export function ColourRow({
         aria-expanded={open}
         className="flex w-full cursor-pointer items-center justify-between px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
       >
-        <span>{label}</span>
+        <span className="flex items-center gap-2">
+          {icon ? (
+            <span className="text-slate-400 dark:text-slate-500" aria-hidden>
+              {icon}
+            </span>
+          ) : null}
+          {label}
+        </span>
         <span
           className="h-4 w-4 rounded border border-slate-300 dark:border-slate-600"
-          style={{ backgroundColor: hexish(value) }}
+          style={
+            isTransparent(value) ? { background: CHECKER } : { backgroundColor: hexish(value) }
+          }
           aria-hidden
         />
       </button>
       {open ? (
         // Swatches are sized for a comfortable touch target on mobile.
-        <div className="flex flex-wrap items-center gap-1.5 px-3 pb-2.5 pt-1">
-          {presets.map((c) => (
-            <button
-              key={c}
-              type="button"
-              aria-label={c}
-              onClick={() => (onCommit ?? onChange)(c)}
-              onPointerEnter={onPreview ? onMouseHover(() => onPreview(c)) : undefined}
-              onPointerLeave={onPreview ? onMouseHover(() => onPreviewEnd?.()) : undefined}
-              className={`h-7 w-7 cursor-pointer rounded-md border transition ${
-                value.toLowerCase() === c.toLowerCase()
-                  ? 'border-brand-500 ring-1 ring-brand-400'
-                  : 'border-slate-300 hover:scale-110 dark:border-slate-600'
-              }`}
-              style={{ backgroundColor: c }}
-            />
-          ))}
-          {/* Pick a colour off the screen (spec/09 Colours): a pipette
-              before the "+", offered only where the browser has an
-              EyeDropper. Click it, then click anything on screen — an image,
-              a logo in another window, an element already on the board — and
-              that colour is applied the way a swatch click is. */}
-          {eyeDropper.supported ? (
-            <button
-              type="button"
-              aria-label={`Pick ${label} colour from the screen`}
-              title="Pick a colour from anywhere on the screen"
-              onClick={() => {
-                void eyeDropper.pick().then((hex) => {
-                  if (hex) (onCommit ?? onChange)(hex);
-                });
-              }}
-              className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md border border-dashed border-slate-300 text-slate-500 transition hover:border-brand-400 hover:text-brand-600 dark:border-slate-600 dark:hover:border-brand-500 dark:hover:text-brand-300"
+        <div className="flex flex-col gap-1.5 px-3 pb-2.5 pt-1">
+          {/* The two PICKERS lead the row. They open something rather than
+              applying a colour, so they are a different kind of control from
+              the swatches and sit apart from them, before the palette rather
+              than trailing off the end of it. */}
+          <div className="flex items-center gap-1.5">
+            {eyeDropper.supported ? (
+              <button
+                type="button"
+                aria-label={`Pick ${label} colour from the screen`}
+                title="Pick a colour from anywhere on the screen"
+                onClick={() => {
+                  void eyeDropper.pick().then((hex) => {
+                    if (hex) pick(hex);
+                  });
+                }}
+                className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md border border-dashed border-slate-300 text-slate-500 transition hover:border-brand-400 hover:text-brand-600 dark:border-slate-600 dark:hover:border-brand-500 dark:hover:text-brand-300"
+              >
+                <PipetteIcon />
+              </button>
+            ) : null}
+            <label
+              className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md border border-dashed border-slate-300 text-sm leading-none text-slate-500 dark:border-slate-600"
+              aria-label={`Custom ${label} colour`}
             >
-              <PipetteIcon />
-            </button>
-          ) : null}
-          <label
-            className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md border border-dashed border-slate-300 text-sm leading-none text-slate-500 dark:border-slate-600"
-            aria-label={`Custom ${label} colour`}
-          >
-            +
-            <input
-              type="color"
-              value={hexish(value)}
-              onChange={(e) => onChange(e.target.value)}
-              className="absolute h-0 w-0 opacity-0"
+              +
+              <input
+                type="color"
+                value={hexish(value)}
+                onChange={(e) => onChange(e.target.value)}
+                // The drag itself streams through onChange (debounced); only
+                // the released value is worth remembering.
+                onBlur={(e) => onAddCustom?.(e.target.value)}
+                className="absolute h-0 w-0 opacity-0"
+              />
+            </label>
+          </div>
+          {/* The palette is one CONTIGUOUS strip: no gaps, so sweeping across
+              it previews every colour in turn. Gaps between swatches meant
+              the preview snapped back to the current colour in the dead zone
+              between each pair, which read as flicker rather than as a
+              comparison. Rounding lives on the strip, not the swatches. */}
+          <div className="flex flex-wrap overflow-hidden rounded-md border border-slate-300 dark:border-slate-600">
+            {/* No colour: the one option every row needs and no theme
+                provides. */}
+            <button
+              type="button"
+              aria-label={`No ${label.toLowerCase()} colour`}
+              title="Transparent"
+              onClick={() => (onCommit ?? onChange)(TRANSPARENT)}
+              onPointerEnter={onPreview ? onMouseHover(() => onPreview(TRANSPARENT)) : undefined}
+              onPointerLeave={onPreview ? onMouseHover(() => onPreviewEnd?.()) : undefined}
+              className={`h-7 w-7 cursor-pointer transition ${
+                isTransparent(value)
+                  ? 'relative z-10 ring-2 ring-brand-500 ring-inset'
+                  : 'hover:brightness-95'
+              }`}
+              style={{ background: CHECKER }}
             />
-          </label>
+            {presets.map((c) => swatch(c, false))}
+            {(customs ?? [])
+              .filter((c) => !presets.some((p) => p.toLowerCase() === c.toLowerCase()))
+              .map((c) => swatch(c, true))}
+          </div>
         </div>
       ) : null}
     </div>

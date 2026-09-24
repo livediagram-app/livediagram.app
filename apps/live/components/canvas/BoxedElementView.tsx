@@ -20,10 +20,8 @@ import {
 } from '@livediagram/diagram';
 import { renderLabel } from '@/components/canvas/element-labels';
 import { ElementFaceRouter } from '@/components/canvas/ElementFaceRouter';
-import { MindNodeHint } from '@/components/canvas/MindNodeHint';
 import { LaneGutter } from '@/components/canvas/LaneGutter';
 import { EntityView } from '@/components/canvas/EntityView';
-import { isMobileViewportSync } from '@/lib/responsive';
 import { elementAriaLabel } from '@/lib/element-names';
 import { captionBandAlignY, captionBandClass } from '@/components/primitives/icon-band';
 import { LockBadge, SelectionChromeLayer } from '@/components/canvas/element-parts';
@@ -80,6 +78,8 @@ function BoxedElementViewImpl({
   onCommitLabel,
   onSetTextAlign,
   onCommitTable,
+  onCommitHeaderSize,
+  onSnapSeam,
   onSetRailLabel,
   onToggleChecklistItem,
   onSetPageHeading,
@@ -438,6 +438,16 @@ function BoxedElementViewImpl({
       {element.type === 'shape' && element.shape === 'lane' ? (
         <LaneGutter
           stroke={element.strokeColor ?? defaultStrokeColor(element, surface)}
+          headerFill={element.headerFill}
+          headerSize={element.headerSize}
+          width={element.width}
+          height={element.height}
+          zoom={zoom}
+          onCommitSize={onCommitHeaderSize ? (px) => onCommitHeaderSize(element.id, px) : undefined}
+          onSnapSeam={onSnapSeam}
+          elementId={element.id}
+          elementX={element.x}
+          elementY={element.y}
           alignX={alignX}
           alignY={alignY}
         />
@@ -512,21 +522,6 @@ function BoxedElementViewImpl({
           a brand ring + a translucent band on the side the icon will
           land. Cleared on drop / drag-leave. */}
       {dropSide ? <IconDropPreview side={dropSide} /> : null}
-
-      {/* Mind map (spec/118): the keys are the whole feature, and a hint on a
-          palette tile is read once, months before it matters. Suppressed while
-          editing (the keys mean something else in a label) and on touch, where
-          there is no keyboard to hint at. */}
-      {element.type === 'shape' &&
-      element.shape === 'mind-node' &&
-      isSelected &&
-      !isMultiSelected &&
-      !isEditing &&
-      !isLocked &&
-      !readOnly &&
-      !isMobileViewportSync() ? (
-        <MindNodeHint zoom={zoom} />
-      ) : null}
 
       {/* The burst (spec/135), a sibling of the label stack rather than a
           child of it: the particles leave the pad's box on purpose, and the

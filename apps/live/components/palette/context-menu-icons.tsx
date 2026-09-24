@@ -1548,3 +1548,93 @@ export function PasteMenuIcon() {
     </svg>
   );
 }
+
+// Colour-category marks (spec/09 Colours). "Text", "Background", "Border" and
+// "Heading" are four labels of similar length and shape; in a dense menu the
+// glyph is what separates them at a glance, before anyone reads a word. Each
+// draws the SURFACE it paints, not a generic paint pot.
+
+/** Text colour: a letterform over a colour bar, the underline-swatch idiom. */
+export function TextColourIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden>
+      <text
+        x="8"
+        y="10.5"
+        textAnchor="middle"
+        fill="currentColor"
+        fontSize="10"
+        fontWeight="700"
+        fontFamily="Georgia, serif"
+      >
+        A
+      </text>
+      <rect x="2.5" y="12.5" width="11" height="2.5" rx="1" fill="currentColor" />
+    </svg>
+  );
+}
+
+/** Background: a filled box, the whole face flooded. */
+export function FillColourIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden>
+      <rect
+        x="2.5"
+        y="3.5"
+        width="11"
+        height="9"
+        rx="2"
+        fill="currentColor"
+        stroke="currentColor"
+        strokeWidth="1.3"
+      />
+    </svg>
+  );
+}
+
+/** Border: the same box with only its edge drawn. */
+export function BorderColourIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden>
+      <rect
+        x="2.5"
+        y="3.5"
+        width="11"
+        height="9"
+        rx="2"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      />
+    </svg>
+  );
+}
+
+/** Heading: the box again, with just its top band filled. */
+export function HeadingColourIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden>
+      <rect
+        x="2.5"
+        y="3.5"
+        width="11"
+        height="9"
+        rx="2"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.3"
+      />
+      <path d="M2.5 5.5a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v1.5h-11Z" fill="currentColor" />
+    </svg>
+  );
+}
+
+/** Pointer: an arrowhead, for the colour of the heads rather than the line. */
+export function PointerColourIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden>
+      <path d="M2 8h7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      <path d="M8.5 4.5 14 8l-5.5 3.5Z" fill="currentColor" />
+    </svg>
+  );
+}

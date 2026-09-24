@@ -15,7 +15,7 @@ import { deriveArrowViewFrame } from './arrow-view-frame';
 import { useRightClickRelease } from '@/hooks/canvas/useRightClickRelease';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
 import { elementAriaLabel } from '@/lib/element-names';
-import { arrowheadMarkerId } from './arrow-defs';
+import { ArrowHeadMarker, arrowheadMarkerId } from './arrow-defs';
 import { ArrowLabel } from './ArrowLabel';
 import { SelectedArrowHandles } from './SelectedArrowHandles';
 import { ArrowFlowOverlays, useArrowFlow } from './arrow-flow';
@@ -145,7 +145,15 @@ function ArrowViewImpl({
   // Touch long-press opens the arrow's context menu (touch has no
   // right-click); a press that moves becomes a select / drag instead.
   const longPress = useLongPress(contextSelectBeside);
-  const markerUrl = `url(#${arrowheadMarkerId(arrowheadShapeOf(arrow), arrowheadSizeOf(arrow))})`;
+  // An arrow whose heads are a different colour from its line carries its
+  // OWN marker, because the shared ones paint with `context-stroke`, which is
+  // by definition the line's colour. Unset (the usual case) keeps using the
+  // shared defs, so nothing changes for arrows that never asked.
+  const headShape = arrowheadShapeOf(arrow);
+  const headSize = arrowheadSizeOf(arrow);
+  const ownHeadColor = arrow.arrowheadColor;
+  const ownMarkerId = ownHeadColor ? `arrowhead-${arrow.id}` : null;
+  const markerUrl = `url(#${ownMarkerId ?? arrowheadMarkerId(headShape, headSize)})`;
   // Endpoints / path / midpoint / handle points / label placement — the
   // pure per-render frame, resolved in arrow-view-frame.ts.
   const { from, to, pathD, curveAnchors, curveControl, elbowPoint, labelText, labelPos } =
@@ -197,6 +205,9 @@ function ArrowViewImpl({
     // Screen-reader name (spec/71): arrows are SVG, so the group carries
     // the same kind-plus-label name a boxed element's wrapper does.
     <g style={{ opacity }} role="img" aria-label={elementAriaLabel(arrow)}>
+      {ownMarkerId && ownHeadColor ? (
+        <ArrowHeadMarker id={ownMarkerId} shape={headShape} size={headSize} color={ownHeadColor} />
+      ) : null}
       {behindMaskId ? (
         // White paints, black cuts. The backdrop is deliberately vast
         // rather than the arrow's bbox: a curve can bow well outside the

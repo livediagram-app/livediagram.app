@@ -44,6 +44,29 @@ What differs from a frame is presentation only:
 - **A gutter** down the left (`LANE_GUTTER_PX`, 132) on a tinted strip, with a
   divider line where it meets the body. The title lives in the gutter, which is
   why the swimlane template needed separate cells before.
+
+  Both the gutter's **colour** and its **thickness** are the user's:
+
+  - **Heading** in the context menu's Colours section sets `headerFill`. Unset
+    keeps the historical look, a 10% wash of the lane's own stroke, so a
+    recoloured lane carries its gutter with it. The field is shared with a
+    table's header row, because a heading band is one idea wearing two
+    silhouettes.
+  - **Dragging the seam** between the gutter and the body sets `headerSize`.
+    132 and 64 were only ever the sizes that suited the titles they were
+    measured against; a lane holding "Q3 Marketing Programme" wants more than
+    one holding "Q3". One commit per gesture, so a drag is one undo step, and
+    the seam is clamped so a gutter can neither vanish nor eat the lane.
+
+    The drag **snaps**, to the ordinary alignment grid AND to **other lanes'
+    seams** (`lane-seam-snapping.ts`). The second is the one that matters: a
+    stack of swimlanes with headings a few pixels apart is the thing that
+    makes a board look untidy, and it is nearly impossible to fix by eye
+    because the seams are too far apart vertically to sit in one glance. Only
+    lanes whose heading runs along the same axis are offered, since a column's
+    seam and a row's seam are different lines. A centred strip has two seams
+    and no single line to align, so it is sized freely rather than snapped.
+
 - **Left-aligned, vertically centred label**, so the title reads along the
   band's leading edge rather than floating in the middle of the work.
 
@@ -54,7 +77,7 @@ title is pinned to** (`laneGutterEdge`, `LaneGutter.tsx`):
 
 | Title alignment           | Gutter                                          |
 | ------------------------- | ----------------------------------------------- |
-| Left / right (any height) | Strip down that side, 132 wide                  |
+| Left / right (any height) | Strip down that side, 132 wide by default       |
 | Centre, top or bottom     | Band across that edge, `LANE_BAND_PX` (64) tall |
 | Centre, middle            | Strip down the middle                           |
 

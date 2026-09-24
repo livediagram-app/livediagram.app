@@ -3,7 +3,8 @@
 import dynamic from 'next/dynamic';
 import { resolveLayerId, selectionMembers } from '@livediagram/diagram';
 import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
-import { getTheme, shapeColorPresets, themePresetColors } from '@/lib/themes';
+import { useColourPalette } from '@/hooks/ui/useColourPalette';
+import { getTheme, shapeColorPresets } from '@/lib/themes';
 
 // Lazy like the other heavy editor chrome: the menu's chunk loads on the
 // first right-click, not with the page.
@@ -53,6 +54,12 @@ export function EditorContextMenuHost() {
     previewTextColor,
     commitTextColor,
     previewFillColor,
+    commitHeaderFill,
+    previewHeaderFill,
+    setHeaderFillSelected,
+    setArrowheadColorSelected,
+    commitArrowheadColor,
+    previewArrowheadColor,
     commitFillColor,
     previewStrokeColor,
     commitStrokeColor,
@@ -152,6 +159,8 @@ export function EditorContextMenuHost() {
     openAssignAction,
   } = useEditorContext();
 
+  const { presetColors, customColors, addCustomColor, removeCustomColor } = useColourPalette();
+
   // A view-only session never gets an element context menu at all, so
   // nothing below needs a second `isReadOnly` guard — everything past
   // this line is running for an editor by construction.
@@ -233,6 +242,12 @@ export function EditorContextMenuHost() {
       onCommitTextColor={commitTextColor}
       onPreviewFillColor={previewFillColor}
       onCommitFillColor={commitFillColor}
+      onSetArrowheadColor={setArrowheadColorSelected}
+      onPreviewArrowheadColor={previewArrowheadColor}
+      onCommitArrowheadColor={commitArrowheadColor}
+      onSetHeaderFill={setHeaderFillSelected}
+      onPreviewHeaderFill={previewHeaderFill}
+      onCommitHeaderFill={commitHeaderFill}
       onPreviewStrokeColor={previewStrokeColor}
       onCommitStrokeColor={commitStrokeColor}
       onPreviewBorderStroke={previewBorderStroke}
@@ -329,7 +344,10 @@ export function EditorContextMenuHost() {
       onPreviewShapeKind={previewShapeKind}
       onResetAspectRatio={resetAspectRatioSelected}
       onSetSize={setSizeSelected}
-      presetColors={themePresetColors(getTheme(activeTab.theme))}
+      presetColors={presetColors}
+      customColors={customColors}
+      onAddCustomColor={addCustomColor}
+      onRemoveCustomColor={removeCustomColor}
       onToggleTableHeaderRow={setTableHeaderRowSelected}
       onToggleTableHeaderColumn={setTableHeaderColumnSelected}
       onToggleTableZebra={setTableZebraSelected}

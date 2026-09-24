@@ -12,6 +12,8 @@ import {
   ADD_COLUMN_OPTION,
   ADD_POINT_OPTION,
   ADD_ROW_OPTION,
+  MIND_CHILD_OPTION,
+  MIND_SIBLING_OPTION,
   OPTIONS,
 } from './quick-connect-options';
 import { useHoverCloseTimer } from '@/hooks/ui/useHoverCloseTimer';
@@ -66,6 +68,9 @@ type QuickConnectRingProps = {
   // on the right one. Duplicate / Pencil / Text don't apply to a grid.
   variant?: 'default' | 'table';
   onAddTableRow?: () => void;
+  // Mind-map growth (spec/118). Set only on a mind node, which is what
+  // puts Add child / Add sibling on its ring.
+  onGrowMind?: (relation: 'child' | 'sibling') => void;
   onAddTableColumn?: () => void;
 };
 
@@ -147,6 +152,7 @@ export function QuickConnectRing({
   onAddRailPoint,
   variant = 'default',
   onAddTableRow,
+  onGrowMind,
   onAddTableColumn,
 }: QuickConnectRingProps) {
   // The rail "Add point" action only appears when the selected element is a
@@ -163,7 +169,12 @@ export function QuickConnectRing({
         ]
       : onAddRailPoint
         ? [...OPTIONS, ADD_POINT_OPTION]
-        : OPTIONS;
+        : onGrowMind
+          ? // A mind node leads with its two growth actions: they are what
+            // the ring is for on a mind map, and Duplicate / Arrow / Text
+            // still follow for everything else you might want.
+            [MIND_CHILD_OPTION, MIND_SIBLING_OPTION, ...OPTIONS]
+          : OPTIONS;
   // `rendered` keeps the options mounted through the exit transition;
   // `active` drives the per-option fade/scale (off → on for enter, on →
   // off for exit).
@@ -362,6 +373,8 @@ export function QuickConnectRing({
                       else if (option.kind === 'add-point') onAddRailPoint?.();
                       else if (option.kind === 'add-row') onAddTableRow?.();
                       else if (option.kind === 'add-column') onAddTableColumn?.();
+                      else if (option.kind === 'mind-child') onGrowMind?.('child');
+                      else if (option.kind === 'mind-sibling') onGrowMind?.('sibling');
                       else onSpawn(option.kind as QuickConnectKind);
                       onClose();
                     }}

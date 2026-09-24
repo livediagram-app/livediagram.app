@@ -192,6 +192,12 @@ type UserPreferences = {
   // in Settings as "Welcome Tour Completed"; unchecking it and closing
   // Settings replays the tour. Missing / undefined === not seen.
   tourSeen?: boolean;
+  // Colours you have used that the active theme did not already offer
+  // (spec/09 Colours). Picking one off the OS picker or the pipette adds it;
+  // right-clicking a swatch removes it. Newest first, capped at 12, synced
+  // like every other preference so a palette you have built follows you
+  // between devices.
+  customSwatches?: string[];
 };
 ```
 

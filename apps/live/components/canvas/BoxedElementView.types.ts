@@ -1,3 +1,4 @@
+import type { LaneGutterEdge, LaneLike } from '@/components/canvas/LaneGutter';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import type { BoxedElement, IconPosition, TextRun } from '@livediagram/diagram';
 import type { DragMode } from '@/lib/canvas';
@@ -53,6 +54,20 @@ export type BoxedElementViewProps = {
     x: import('@livediagram/diagram').TextAlignX,
     y: import('@livediagram/diagram').TextAlignY,
   ) => void;
+  // A lane's title gutter, resized by dragging its seam (spec/119). One
+  // commit per gesture, so a drag is one undo step.
+  onCommitHeaderSize?: (elementId: string, px: number) => void;
+  // Resolve a dragged lane seam against its snap targets (spec/119): the
+  // alignment grid, and the seams of other lanes so a stack of swimlanes can
+  // be lined up exactly. Supplied by the elements layer, which is where the
+  // sibling elements live.
+  onSnapSeam?: (
+    candidate: number,
+    axis: 'x' | 'y',
+    excludeId: string,
+    edgeOf: (el: LaneLike) => LaneGutterEdge,
+    sizeOf: (el: LaneLike) => number,
+  ) => number;
   onCommitTable: (
     id: string,
     patch: Partial<

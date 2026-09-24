@@ -359,6 +359,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "groupId": {
         "$ref": "#/components/schemas/ElementId"
       },
+      "headerFill": {
+        "type": "string"
+      },
       "height": {
         "type": "number"
       },
@@ -492,6 +495,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "arrowStyle": {
         "$ref": "#/components/schemas/ArrowStyle"
+      },
+      "arrowheadColor": {
+        "type": "string"
       },
       "arrowheadShape": {
         "$ref": "#/components/schemas/ArrowheadShape"
@@ -2938,6 +2944,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "groupId": {
         "$ref": "#/components/schemas/ElementId"
       },
+      "headerFill": {
+        "type": "string"
+      },
       "height": {
         "type": "number"
       },
@@ -3354,6 +3363,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "groupId": {
         "$ref": "#/components/schemas/ElementId"
+      },
+      "headerFill": {
+        "type": "string"
+      },
+      "headerSize": {
+        "type": "number"
       },
       "height": {
         "type": "number"
@@ -3805,6 +3820,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "groupId": {
         "$ref": "#/components/schemas/ElementId"
+      },
+      "headerFill": {
+        "type": "string"
       },
       "height": {
         "type": "number"
@@ -4776,6 +4794,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "groupId": {
         "$ref": "#/components/schemas/ElementId"
       },
+      "headerFill": {
+        "type": "string"
+      },
       "height": {
         "type": "number"
       },
@@ -5056,6 +5077,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "groupId": {
         "$ref": "#/components/schemas/ElementId"
+      },
+      "headerFill": {
+        "type": "string"
       },
       "height": {
         "type": "number"

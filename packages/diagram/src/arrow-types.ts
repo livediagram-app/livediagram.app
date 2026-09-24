@@ -55,6 +55,12 @@ export type ArrowElement = {
   // default arrow slate when unset. There's no fill or text on an
   // arrow so this is the only colour field.
   strokeColor?: string;
+  // Arrowhead colour, when it should differ from the line's. Unset means the
+  // heads take the line's colour, which is the usual case and how every arrow
+  // drawn before this behaved: the shared markers inherit it through SVG's
+  // `context-stroke`. Setting this makes the arrow carry its own marker, so a
+  // red head on a grey line is a colour choice rather than two elements.
+  arrowheadColor?: string;
   opacity?: number; // 0..1, defaults to 1
   link?: ElementLink;
   arrowEnds?: ArrowEnds;

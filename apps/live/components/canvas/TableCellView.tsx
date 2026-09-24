@@ -1,5 +1,5 @@
 import type { PointerEvent as ReactPointerEvent, RefObject } from 'react';
-import type { ElementLink, TableElement } from '@livediagram/diagram';
+import type { ElementLink, TableCellStyle, TableElement } from '@livediagram/diagram';
 import { Tooltip } from '@/components/primitives/Tooltip';
 import { CellLinkIcon } from '@/components/canvas/table-icons';
 import { TableCellEditor } from '@/components/canvas/TableCellEditor';
@@ -29,6 +29,9 @@ export type TableCellCtx = {
   cols: number;
   showControls: boolean;
   selectedCell: { r: number; c: number } | null;
+  // Live hover-preview from the cell menu's colour rows, applied over the
+  // selected cells' own styles and never committed.
+  previewStyle?: Partial<TableCellStyle> | null;
   extraCells: Set<string>;
   editing: { r: number; c: number } | null;
   editorRef: RefObject<HTMLDivElement | null>;
@@ -93,6 +96,7 @@ export function TableCellView({
     cols,
     showControls,
     selectedCell,
+    previewStyle,
     extraCells,
     editing,
     editorRef,
@@ -129,9 +133,13 @@ export function TableCellView({
   const bodyRow = element.headerRow ? r - 1 : r;
   const zebraBg =
     element.zebra && !isHeader && bodyRow >= 0 && bodyRow % 2 === 1 ? `${stroke}11` : null;
-  const cs = element.cellStyles?.[r]?.[c] ?? null;
+  const stored = element.cellStyles?.[r]?.[c] ?? null;
   const isSelCell =
     (selectedCell?.r === r && selectedCell?.c === c) || extraCells.has(cellKey(r, c));
+  // A hover-preview from the cell menu's colour rows applies to the SELECTED
+  // cells only, and only until the pointer leaves: it is a look, not a
+  // change, so it never reaches cellStyles and never reaches undo.
+  const cs = isSelCell && previewStyle ? { ...(stored ?? {}), ...previewStyle } : stored;
   const cellAlignX = cs?.alignX ?? alignX;
   const cellJustify =
     cellAlignX === 'left' ? 'flex-start' : cellAlignX === 'right' ? 'flex-end' : 'center';

@@ -8,6 +8,9 @@ import {
   PaletteMenuIcon,
   RemoveIconGlyph,
 } from '@/components/palette/context-menu-icons';
+import { ColourRow } from '@/components/palette/context-menu-input-rows';
+import { FillColourIcon, TextColourIcon } from '@/components/palette/context-menu-icons';
+import { useColourPalette } from '@/hooks/ui/useColourPalette';
 import { TextSizeTiles } from '@/components/palette/context-menu-rows';
 import { MenuAccordionSection, MenuTile, MenuTileGrid } from '@/components/primitives/PortalMenu';
 import { AlignIcon, CellLinkIcon } from '@/components/canvas/table-icons';
@@ -29,6 +32,7 @@ export function TableCellMenu({
   position,
   onClose,
   applyStyle,
+  onPreviewStyle,
   onClear,
   onLinkCell,
   textColor,
@@ -43,6 +47,9 @@ export function TableCellMenu({
   onClose: () => void;
   // Apply a style patch to every selected cell (one commit).
   applyStyle: (patch: Partial<TableCellStyle>) => void;
+  // Show a patch over the selected cells without committing it, for the
+  // colour rows' hover preview. `null` clears it.
+  onPreviewStyle?: (patch: Partial<TableCellStyle> | null) => void;
   // Clear text + formatting of every selected cell (one commit).
   onClear: () => void;
   // Open the link picker for the anchor cell; absent in read-only sessions.
@@ -55,6 +62,8 @@ export function TableCellMenu({
     onToggle: () => setOpen((o) => (o === key ? null : key)),
     flush: true,
   });
+  const { presetColors, customColors, addCustomColor, removeCustomColor } = useColourPalette();
+  const [openColour, setOpenColour] = useState<string | null>(null);
   const sc = element.cellStyles?.[anchor.r]?.[anchor.c] ?? null;
   const isHeaderAnchor =
     (element.headerRow && anchor.r === 0) || (element.headerColumn && anchor.c === 0);
@@ -106,37 +115,50 @@ export function TableCellMenu({
           onSet={(size) => applyStyle({ textSize: size })}
         />
       </MenuAccordionSection>
+      {/* The SAME colour palette every other element gets (spec/09 Colours):
+          theme presets, the colours you have used, transparent, the pipette
+          and the OS picker. It used to be two bare `<input type="color">`
+          chips, so colouring a cell meant matching a colour off the wheel
+          that every other surface offered in one click. */}
       <MenuAccordionSection title="Colours" icon={<PaletteMenuIcon />} {...section('colours')}>
-        <label className="flex items-center justify-between gap-2 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800">
-          Background
-          <span
-            className="relative h-5 w-5 overflow-hidden rounded border border-slate-300"
-            style={{ backgroundColor: sc?.bg ?? '#ffffff' }}
-          >
-            <input
-              type="color"
-              className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-              value={sc?.bg ?? '#ffffff'}
-              onChange={(e) => applyStyle({ bg: e.target.value })}
-              aria-label="Cell background colour"
-            />
-          </span>
-        </label>
-        <label className="flex items-center justify-between gap-2 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800">
-          Text
-          <span
-            className="relative h-5 w-5 overflow-hidden rounded border border-slate-300"
-            style={{ backgroundColor: sc?.textColor ?? textColor }}
-          >
-            <input
-              type="color"
-              className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-              value={sc?.textColor ?? textColor}
-              onChange={(e) => applyStyle({ textColor: e.target.value })}
-              aria-label="Cell text colour"
-            />
-          </span>
-        </label>
+        <ColourRow
+          label="Background"
+          icon={<FillColourIcon />}
+          value={sc?.bg ?? 'transparent'}
+          open={openColour === 'bg'}
+          onToggle={() => setOpenColour((c) => (c === 'bg' ? null : 'bg'))}
+          onChange={(bg) => applyStyle({ bg })}
+          onPreview={(bg) => onPreviewStyle?.({ bg })}
+          onPreviewEnd={() => onPreviewStyle?.(null)}
+          onCommit={(bg) => {
+            onPreviewStyle?.(null);
+            applyStyle({ bg });
+            addCustomColor(bg);
+          }}
+          presets={presetColors}
+          customs={customColors}
+          onAddCustom={addCustomColor}
+          onRemoveCustom={removeCustomColor}
+        />
+        <ColourRow
+          label="Text"
+          icon={<TextColourIcon />}
+          value={sc?.textColor ?? textColor}
+          open={openColour === 'text'}
+          onToggle={() => setOpenColour((c) => (c === 'text' ? null : 'text'))}
+          onChange={(color) => applyStyle({ textColor: color })}
+          onPreview={(textColor) => onPreviewStyle?.({ textColor })}
+          onPreviewEnd={() => onPreviewStyle?.(null)}
+          onCommit={(color) => {
+            onPreviewStyle?.(null);
+            applyStyle({ textColor: color });
+            addCustomColor(color);
+          }}
+          presets={presetColors}
+          customs={customColors}
+          onAddCustom={addCustomColor}
+          onRemoveCustom={removeCustomColor}
+        />
       </MenuAccordionSection>
       <MenuAccordionSection
         title="Text Alignment"

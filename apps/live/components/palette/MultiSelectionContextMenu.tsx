@@ -3,7 +3,7 @@ import {
   arrowheadSizeOf,
   arrowStyleOf,
   arrowThicknessOf,
-  defaultFillColor,
+  supportsFillColor,
   defaultPadding,
   defaultStrokeColor,
   isBoxed,
@@ -113,7 +113,7 @@ export function MultiSelectionContextMenu({
         // separate row: the Border swatch's setter recolours arrows too.
         const colourable = colourSrcs.length > 0 || arrowSel.length > 0;
         const textSrc = colourSrcs[0];
-        const fillSrc = colourSrcs.find((el) => defaultFillColor(el) !== 'transparent');
+        const fillSrc = colourSrcs.find((el) => supportsFillColor(el));
         const strokeSrc = colourSrcs.find((el) => defaultStrokeColor(el) !== 'transparent');
         const borderableSel = sel.some((el) => supportsBorderControls(el));
         const borderSrc = sel.find((el) => supportsBorderControls(el)) as

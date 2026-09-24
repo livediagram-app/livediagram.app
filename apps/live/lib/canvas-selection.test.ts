@@ -189,9 +189,24 @@ describe('deriveCanvasSelection', () => {
       }) as Element;
     const grouped: Element[] = [box('t', { groupId: 'g' }), table('u', { groupId: 'g' })];
     expect(derive({ elements: grouped, selectedId: 'u' }).showPlus).toBe(true);
-    // A lone table shows the pluses too (the slimmed table ring, spec/09);
-    // annotations and frames stay excluded.
+    // A lone table shows the pluses too (the slimmed table ring, spec/09).
     expect(derive({ elements: [table('t')], selectedId: 't' }).showPlus).toBe(true);
+    // A frame shows them as well: it is a container you chain from, the same
+    // as a lane, which always did. This comment used to claim frames were
+    // excluded while asserting nothing, so the exclusion could be removed
+    // without a single test noticing.
+    const frame = box('f', { shape: 'frame', width: 600, height: 400 });
+    expect(derive({ elements: [frame], selectedId: 'f' }).showPlus).toBe(true);
+    // An annotation marker is still a note rather than a node to chain from.
+    const marker: Element = {
+      id: 'n',
+      type: 'annotation',
+      x: 0,
+      y: 0,
+      width: 24,
+      height: 24,
+    } as Element;
+    expect(derive({ elements: [marker], selectedId: 'n' }).showPlus).toBe(false);
     // Locked / read-only still suppress group pluses.
     const locked: Element[] = [
       box('a', { groupId: 'g', locked: true }),

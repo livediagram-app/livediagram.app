@@ -9,7 +9,15 @@ import type { QuickConnectKind } from '@/lib/canvas';
 const OPTION_ICON_SIZE = 16;
 
 export type Option = {
-  kind: QuickConnectKind | 'arrow' | 'pencil' | 'add-point' | 'add-row' | 'add-column';
+  kind:
+    | QuickConnectKind
+    | 'arrow'
+    | 'pencil'
+    | 'add-point'
+    | 'add-row'
+    | 'add-column'
+    | 'mind-child'
+    | 'mind-sibling';
   label: string;
   description: string;
   icon: ReactNode;
@@ -35,6 +43,28 @@ export const ADD_COLUMN_OPTION: Option = {
   label: 'Add column',
   description: 'Append a column on the right of the table.',
   icon: <AddColumnIcon />,
+};
+
+// Mind-map growth (spec/118), offered on a mind node's ring. Tab-for-child
+// and Enter-for-sibling ARE the feature, so they need to be discoverable
+// without already knowing them: the shortcut rides in the tooltip, which is
+// where every other shortcut in the ring would be found.
+//
+// They replaced a hint chip pinned under the selected node. It announced the
+// two shortcuts to everyone forever, was dark enough to read as an error in
+// light mode, and hung off the node's left edge because a centred one landed
+// underneath the very "+" these options now live in.
+export const MIND_CHILD_OPTION: Option = {
+  kind: 'mind-child',
+  label: 'Add child',
+  description: 'Branch a new node off this one. Shortcut: Tab.',
+  icon: <MindChildIcon />,
+};
+export const MIND_SIBLING_OPTION: Option = {
+  kind: 'mind-sibling',
+  label: 'Add sibling',
+  description: 'Add a node beside this one, under the same parent. Shortcut: Enter.',
+  icon: <MindSiblingIcon />,
 };
 
 // Listed order matches the spec; they fan across the arc in this order.
@@ -145,6 +175,48 @@ function AddColumnIcon() {
       <rect x="2.5" y="3" width="7" height="10" rx="1" />
       <path d="M2.5 8h7M6 3v10" />
       <path d="M11 8h3M12.5 6.5v3" />
+    </svg>
+  );
+}
+
+// A node with a branch running off it.
+function MindChildIcon() {
+  return (
+    <svg
+      width={OPTION_ICON_SIZE}
+      height={OPTION_ICON_SIZE}
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      aria-hidden
+    >
+      <rect x="1" y="6" width="5" height="4" rx="1" />
+      <path d="M6 8h3.5" />
+      <rect x="10" y="2.5" width="5" height="4" rx="1" />
+      <rect x="10" y="9.5" width="5" height="4" rx="1" />
+      <path d="M9.5 8V4.5M9.5 8v3.5" />
+    </svg>
+  );
+}
+
+// Two nodes side by side at the same level.
+function MindSiblingIcon() {
+  return (
+    <svg
+      width={OPTION_ICON_SIZE}
+      height={OPTION_ICON_SIZE}
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      aria-hidden
+    >
+      <rect x="9" y="1.5" width="6" height="4.5" rx="1" />
+      <rect x="9" y="9.5" width="6" height="4.5" rx="1" />
+      <path d="M1 8h4M5 8V3.75h4M5 8v3.75h4" />
     </svg>
   );
 }
