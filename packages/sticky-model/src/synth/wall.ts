@@ -30,15 +30,22 @@ export type SyntheticWall = {
   style: WallStyle;
 };
 
-export type SyntheticOptions = { noteSize?: number; backing?: Backing; style?: WallStyle };
+export type SyntheticOptions = {
+  noteSize?: number;
+  backing?: Backing;
+  style?: WallStyle;
+  // The share of seeds drawn flat when `style` is not given.
+  flatChance?: number;
+};
 
 // How often a wall is drawn flat. The draw comes from its own stream, salted
 // off the seed, so every photographed wall stays exactly what the photo-only
-// generator drew for that seed.
+// generator drew for that seed, and a smaller share's flat walls are a subset
+// of a larger one's.
 export const FLAT_CHANCE = 0.2;
 const STYLE_SALT = 0x5f1a7c3;
-const styleOf = (seed: number): WallStyle =>
-  rngFrom(seed ^ STYLE_SALT).chance(FLAT_CHANCE) ? 'flat' : 'photo';
+const styleOf = (seed: number, share: number): WallStyle =>
+  rngFrom(seed ^ STYLE_SALT).chance(share) ? 'flat' : 'photo';
 
 // The wall plane is larger than the frame, so the camera can turn and tilt
 // without showing an edge that is not there.
@@ -58,7 +65,7 @@ export function syntheticWall(
   height: number,
   opts: SyntheticOptions = {},
 ): SyntheticWall {
-  const style = opts.style ?? styleOf(seed);
+  const style = opts.style ?? styleOf(seed, opts.flatChance ?? FLAT_CHANCE);
   const rng = rngFrom(seed);
   if (style === 'flat') {
     const flat = paintFlatWall(rng, width, height, opts.noteSize);

@@ -99,6 +99,18 @@ describe('syntheticWall, style draw', () => {
     expect(flat / n).toBeLessThan(FLAT_CHANCE + 0.06);
   });
 
+  it('nests the flat walls of a smaller share inside a larger one', () => {
+    const flatAt = (share: number) =>
+      Array.from({ length: 200 }, (_, i) => i + 1).filter(
+        (seed) => syntheticWall(seed, 16, 16, { flatChance: share }).style === 'flat',
+      );
+    const few = flatAt(0.1);
+    const many = flatAt(0.3);
+    expect(few.length).toBeGreaterThan(0);
+    expect(many.length).toBeGreaterThan(few.length);
+    expect(few.every((seed) => many.includes(seed))).toBe(true);
+  });
+
   it('leaves every photographed wall exactly as the photo-only generator drew it', () => {
     // Hashes of the photo-only generator's walls (64px): adding the flat style
     // replaces some seeds with flat walls and changes no other wall, so a
