@@ -1,10 +1,10 @@
 # 145 — Collaborator enhancements
 
-Status: in progress
+Status: shipped
 
-A set of improvements to how you see and reach the other people in a diagram.
-Each one is its own section below; they share a spec because they share a
-surface (the presence avatars and what they open).
+Improvements to how you see and reach the other people in a diagram, centred
+on the presence avatars in the tab bar and what they open. Each improvement is
+its own numbered section, so later ones land here rather than in a new spec.
 
 ## 1. The Collaborators modal
 
@@ -34,6 +34,14 @@ result for a click whose obvious meaning is "tell me about this person".
   when the role is known, **Following** for the person you follow), and the
   status line: the presence word plus how long ago they were last active, the
   same text the avatar tooltip uses.
+- **One person, one entry.** The room mints an id per connection, so the same
+  browser open in two tabs used to show up twice (once as "You", once as a
+  peer with your name). Every tab in a browser shares one collab key
+  ([spec/122](122-participant-responses.md)), so presence collapses on it: your
+  own other tabs are left out, and a peer connected more than once appears
+  once, on the tab of their most recently active connection. This applies to
+  the tab-bar stacks too, since both read the same per-tab map. Two different
+  browsers or devices have different keys, so they still show separately.
 - Within a group: you first, then by status (online, away, offline), then by
   name.
 - **Follow lives here now.** Every row but your own has a **Follow** button

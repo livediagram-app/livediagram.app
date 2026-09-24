@@ -7,7 +7,7 @@
 // without standing up the room. `now` and the last-seen map are passed in
 // rather than read from Date.now() / a ref, keeping the functions pure.
 import type { AvatarPresence } from '@livediagram/api-schema';
-import { statusFromIdleMs, type Participant } from './identity';
+import { participantKey, statusFromIdleMs, type Participant } from './identity';
 import type { LaserPoint } from './laser-buffer';
 import type { LaserConfig } from './laser-config';
 
@@ -31,6 +31,13 @@ type RemoteSelector = { id: string; name: string; color: string };
 // first tab. Status is per-viewer (on my tab -> online, elsewhere -> away)
 // unless idle has dragged them to away/offline. Returns an empty map for
 // private (unshared) diagrams.
+//
+// One person, one avatar (spec/145): the room mints an id per socket, so the
+// same browser open in two tabs arrives as two peers. Every tab in a browser
+// shares one collab key (`participantKey`), so connections are collapsed on
+// it: our own other tabs are dropped (we already sit on our active tab), and
+// a peer with several keeps only their most recently active connection,
+// which is the tab they are actually looking at.
 export function buildParticipantsByTab(input: {
   diagramShareable: boolean;
   // A team diagram (spec/35) is collaborative for its members even
@@ -66,10 +73,23 @@ export function buildParticipantsByTab(input: {
     if (p.id === selfParticipant.id) continue;
     if (!tabFocus.has(p.id)) tabFocus.set(p.id, defaultTabId);
   }
+  const selfKey = participantKey(selfParticipant);
+  const newestByKey = new Map<string, string>();
+  for (const [id] of tabFocus) {
+    const p = livePresenceById.get(id);
+    if (!p || id === selfParticipant.id) continue;
+    const key = participantKey(p);
+    const held = newestByKey.get(key);
+    if (held === undefined || (lastSeen.get(id) ?? now) > (lastSeen.get(held) ?? now)) {
+      newestByKey.set(key, id);
+    }
+  }
   for (const [id, tabId] of tabFocus) {
     if (id === selfParticipant.id) continue;
     const p = livePresenceById.get(id);
     if (!p) continue;
+    const key = participantKey(p);
+    if (key === selfKey || newestByKey.get(key) !== id) continue;
     const lastActiveAt = lastSeen.get(id) ?? now;
     const idleStatus = statusFromIdleMs(now - lastActiveAt);
     const status =

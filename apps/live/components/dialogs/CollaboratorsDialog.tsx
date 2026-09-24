@@ -65,7 +65,15 @@ export function CollaboratorsDialog({
   }, []);
 
   return (
-    <Dialog open onClose={onClose} titleId={TITLE_ID} size="md">
+    // The panel carries the height bound so only the roster scrolls: the header
+    // (title, count, close) stays put however long the room gets.
+    <Dialog
+      open
+      onClose={onClose}
+      titleId={TITLE_ID}
+      size="md"
+      className="max-h-[min(36rem,calc(100dvh-2rem))]"
+    >
       <DialogHeader
         title={<span id={TITLE_ID}>Collaborators</span>}
         subtitle={rosterSummary(roster)}
@@ -73,7 +81,7 @@ export function CollaboratorsDialog({
         <HelpArticleLink article="livePresence" size="md" />
         <DialogCloseButton onClick={onClose} />
       </DialogHeader>
-      <div className="scrollbar-slim flex max-h-[60vh] flex-col gap-4 overflow-y-auto px-6 py-4 max-sm:max-h-none max-sm:flex-1">
+      <div className="scrollbar-slim flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-6 py-4">
         {roster.groups.map((group) => (
           <section
             key={group.tab?.id ?? 'another-tab'}
