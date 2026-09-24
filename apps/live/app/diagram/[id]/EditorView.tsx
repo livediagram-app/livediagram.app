@@ -60,6 +60,8 @@ export function EditorView() {
     embedMode,
     autoAlignTab,
     autoLayoutTab,
+    previewCleanup,
+    endCleanupPreview,
     startTimer,
     pauseTimer,
     resumeTimer,
@@ -343,6 +345,8 @@ export function EditorView() {
             canvasActions={{
               onAutoAlign: autoAlignTab,
               onAutoLayout: autoLayoutTab,
+              onPreviewCleanup: previewCleanup,
+              onEndCleanupPreview: endCleanupPreview,
               // Paste straight from the empty-canvas right-click (spec/09).
               onPaste: pasteFromClipboard,
               canPaste: hasClipboard,
