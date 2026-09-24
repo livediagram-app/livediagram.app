@@ -98,7 +98,7 @@ one undo step.
 Tab and Enter fire off the **selected** node, with no label editor open, and
 again from inside the label editor so a chain of nodes is typed without pausing.
 
-Tab is also the canvas's element-traversal key ([spec/71](71-accessibility.md)),
+Tab is also the canvas's element-traversal key ([spec/71](71-canvas-accessibility.md)),
 and both listeners sit on `window`. The traversal one is mounted first, so it
 consumed every Tab and pressing it on a mind node cycled the tab's elements
 instead of growing a branch: the selected element now gets first refusal on the
