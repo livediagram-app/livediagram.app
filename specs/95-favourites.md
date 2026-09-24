@@ -44,6 +44,28 @@ would cost a lookup per star to prevent nothing.
 The sidebar badge counts the same intersection, not the raw id count, so a
 star on a team you've since left doesn't inflate it.
 
+## An offline diagram's star lives in the browser
+
+The table's `diagram_id` is a foreign key into `diagrams`, and an offline
+diagram (spec/76) has no row there: it lives only in this browser's
+IndexedDB. Sending its star to the server is therefore not merely wasted, it
+is **rejected** with `FOREIGN KEY constraint failed`, and because the toggle
+is optimistic and the write is swallowed, the star would appear on click and
+be gone on the next reload.
+
+So a star on an offline diagram is kept on the offline record itself, and
+`apiSetFavourite` dispatches on `isOfflineId` exactly as load / save / delete
+already do. This is also what spec/76 requires of every offline row: no
+server fetch, "list, thumbnail, or otherwise".
+
+Listing is the exception that isn't a dispatch, for the same reason the
+diagram list is: the Favourites view shows both kinds in one place, so
+`apiListFavourites` **merges** the cloud ids with the local ones, and the
+local ones still answer when the cloud fetch fails.
+
+Converting a diagram between offline and cloud does not carry the star
+across; it is dropped with the copy that held it.
+
 ## The view
 
 Under **Personal Space → Dynamic**, beside Unsorted / Generated / Offline — the issue
