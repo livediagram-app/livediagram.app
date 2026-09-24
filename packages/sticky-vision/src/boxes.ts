@@ -1,5 +1,6 @@
 import { erodePaperMask, labelComponents, type Component } from './components';
 import { splitOversized, SPLIT_CALIBRATION } from './split';
+import { cutAtNotches } from './chords';
 
 // From blobs to stickies (spec/139 Phase 8).
 //
@@ -357,10 +358,22 @@ export function fitBoxes(
   };
   const bigEnough = (b: Box) => Math.min(b.w, b.h) >= noiseFloor && b.w * b.h >= minArea;
 
+  // A piece the splitter left whole may still be two lapped notes too short
+  // for its length rule; the notches in its outline say so (see `chords.ts`).
+  // A cut stands only when every piece it makes is paper, and solid: the
+  // same bar the splitter holds a blob to before cutting it.
+  const notched = (b: Box): Box[] => {
+    if (!opts.mask) return [b];
+    const cuts = cutAtNotches(b, opts.mask, size);
+    return cuts.length > 1 && cuts.every((c) => isPaper(c) && fillRatio(c) >= MIN_SOLID_FILL)
+      ? cuts
+      : [b];
+  };
+
   return kept.flatMap((box) => {
-    const pieces = splitOversized(box, size, opts.mask, opts.seams).filter(
-      (b) => isPaper(b) && (b === box || bigEnough(b)),
-    );
+    const pieces = splitOversized(box, size, opts.mask, opts.seams)
+      .flatMap(notched)
+      .filter((b) => isPaper(b) && (b === box || bigEnough(b)));
     if (pieces.length > 0) return pieces;
     // Nothing survived. If this box was ASSEMBLED, the assembly is what failed
     // — hand the pieces back instead of taking them down with it. A single
