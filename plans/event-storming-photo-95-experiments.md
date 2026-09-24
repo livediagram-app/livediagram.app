@@ -231,6 +231,26 @@ overlaps), 2/8 walls (201707, 201713).
   - [x] J5 Fold-back: results doc, sticky-detection.md, spec/139 Phase 9, what
         wiring needs.
 
+## Round 4 and 5 — geometry, the hybrid (commit `7eeb87fc`)
+
+Round 3 merged G, H and two of I's five cuts (three cost the panorama once
+combined with H; see the integration note in i-separation.md): TOTAL 93.5.
+
+- [x] K — geometry: a local note-size field; seam cut at the local size.
+      93.5 → 94.1, merged 23 → 20.
+- [x] E — merged: `packages/sticky-model`, a synthetic-only boundary U-Net.
+- [x] J — the hybrid (classical proposals + the model: add confident notes,
+      split where it sees two, drop what it calls background). HYBRID sweep:
+      **95.5**, precision 97%, recall 95%, merged 16 — every one of them an
+      overlapping LABEL (0 real). int8 weights 83 KB; WebGPU ~20 ms a photo,
+      WASM one thread ~770 ms; runtime chunk ~170–210 KB compressed, lazy.
+- [ ] M — the model in the editor (lazy chunk, Web Worker, WebGPU → WASM →
+      classical fall-back), proven by scoring the running editor's boxes.
+- [ ] N — recall on the night wall (85%) and the whiteboard (93%).
+- [ ] Labels — 13–16 merged boxes and several misses are overlapping or
+      missing LABELS; with them fixed, 201646, 201654, the panorama and
+      201730 are at or within a note of the bar. For the operator.
+
 ## Not yet delegated
 
 - **D-FINE-N / RT-DETR fine-tuning**: needs PyTorch, i.e. Python, which the
