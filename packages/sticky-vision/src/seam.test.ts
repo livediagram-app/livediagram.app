@@ -119,6 +119,20 @@ describe('cutAtSeam', () => {
     expect(Math.abs(right!.x - 50)).toBeLessThanOrEqual(1);
   });
 
+  it('cuts a column of small notes at their own scale', () => {
+    // Two small notes stacked flush, each 20 px square, on a wall whose
+    // note is 36 px: the column is not 1.3 wall notes long, but it is two
+    // notes of its own width.
+    const s = scene(60, 70);
+    s.paint(20, 10, 20, 40, 200, 1);
+    s.paint(20, 29, 20, 2, 165);
+    const pieces = cutAtSeam(boxOf(20, 10, 20, 40), s.lum, s.mask, 36);
+    expect(pieces).toHaveLength(2);
+    const [top, bottom] = [...pieces].sort((a, b) => a.y - b.y);
+    expect(Math.abs(top!.h - 20)).toBeLessThanOrEqual(1);
+    expect(Math.abs(bottom!.y - 30)).toBeLessThanOrEqual(1);
+  });
+
   it('leaves a note without a seam alone', () => {
     const s = scene(100, 60);
     s.paint(10, 10, 80, 40, 200, 1);

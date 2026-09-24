@@ -54,6 +54,15 @@ const SEAM_MAX_TILT = 0.08;
 // merged 29 → 28); at 1.7 the whiteboard's pairs, 1.68–1.74 notes long, are
 // out of reach again, and a stricter step (16 levels) gives one back.
 const STEP_MIN_SPAN = 1.6;
+// A box thinner than this (in notes) is a column, or a row, of notes smaller
+// than the wall's, each about as long as the box is thin: a pad of small
+// actors stuck in a lattice. Its seams are sought at the scale of its own
+// thickness, where the wall's note would find none (every piece of two small
+// notes is shorter than 1.3 wall notes). A single narrow note is cut only
+// where a seam as deep as one between two notes crosses it. 0.65–0.75 score
+// alike on the eight labelled walls; 0.6 parts one pair fewer, 0.8 costs the
+// whiteboard a note.
+const THIN_FRACTION = 0.7;
 // A pixel this much darker than the box's paper is ink, not shadow.
 const INK_BELOW_PAPER = 60;
 // The ends of a line are left out: a note's own border shadow sits there.
@@ -145,8 +154,10 @@ function median(values: number[]): number {
 
 // The deepest seam across the box that leaves a note either side of it, or
 // null when there is none.
-export function findSeam(lum: Luminance, box: Box, noteSize: number): Seam | null {
-  if (noteSize <= 0) return null;
+export function findSeam(lum: Luminance, box: Box, wallNote: number): Seam | null {
+  if (wallNote <= 0) return null;
+  const thickness = Math.min(box.w, box.h);
+  const noteSize = thickness < wallNote * THIN_FRACTION ? thickness : wallNote;
   const paper = paperLevel(lum, box);
   const margin = Math.round(noteSize * SEAM_MIN_PIECE);
   let best: Seam | null = null;
@@ -226,6 +237,7 @@ export const SEAM_CALIBRATION = {
   SEAM_MIN_SPAN,
   SEAM_MAX_TILT,
   STEP_MIN_SPAN,
+  THIN_FRACTION,
   INK_BELOW_PAPER,
   SEAM_INSET,
   SEAM_MIN_PAPER,

@@ -107,3 +107,70 @@ into two spurious boxes (precision 82 → 80, one box's worth).
 
 **Verdict: kept.** TOTAL 90.7 → 91.6, merged 29 → 28, no wall loses more
 than one box.
+
+## I2: small pads at their own scale (kept: thin boxes only)
+
+**Hypothesis.** The panorama's lattice of small actors is cut on the wall's
+33 px grid; at the actors' own scale (19–22 px) the seams between them are
+plain in the brightness (a dark line of shadow and a bright line of the next
+note's top edge, 20–30 levels, `region.ts` and a luminance dump). The
+question is how to know, blob by blob, that a blob is made of small notes.
+
+**The colour's own note size (rejected).** `fitBoxes` knows each colour's
+note size (`estimateNoteSizes`: 19 px for the panorama's actor yellow). In a
+scratch copy of `boxes.ts`:
+
+| variant                                                                 | TOTAL | prec | merged | panorama F1 / prec / rec-A / m |
+| ----------------------------------------------------------------------- | ----- | ---- | ------ | ------------------------------ |
+| reference (I1)                                                          | 91.6  | 94   | 28     | 84 / 90 / 81 / 11              |
+| the splitter at the colour's size                                       | 88.0  | 88   | 23     | 69 / 63 / 83 / 3               |
+| the seam cut at the colour's size                                       | 91.5  | 93   | 25     | 83 / 86 / 81 / 8               |
+| …only when the wall's size finds no cut and every piece ≤ 1.25–1.6 long | 91.6  | 94   | 28     | 84 / 90 / 81 / 11              |
+
+The panorama's yellow is also its big actors (34–40 px) and its yellow
+notes: at the colour's size they are diced (37 spurious boxes on the
+panorama). The seam cut at the colour's size finds no note more; its merged
+boxes fall only because they are cut into pieces too small to match
+anything (12×12, 36×18). Asking the pieces to be squarish refuses every cut.
+
+**The necks, regrown less far (rejected: a knife edge).** With the erosion
+at 5 px on the panorama, the regrowth steps give (TOTAL / merged, panorama
+F1 / rec-A / merged): 7 steps 90.8 / 23 (76 / 72 / 6), 8 steps 91.6 / 26
+(84 / 83 / 9), 9 steps 91.4 / 27, 10 steps (today's 2×) 91.6 / 28. Filling
+holes smaller than (0.3–0.5 note)² before eroding lowers every one of them.
+One step either way swings the panorama by ten points of recall: no plateau.
+
+**Rule (kept).** The box says it itself: a box thinner than
+`THIN_FRACTION` = 0.7 of the wall's note is a column (or row) of notes about
+as long as it is thin, so `findSeam` measures it against its own thickness
+instead of the wall's note (the piece floor, the span and the step span all
+scale with it).
+
+| THIN_FRACTION | 0.55 | 0.6  | 0.65 | 0.7  | 0.75 | 0.8  | 0.85 |
+| ------------- | ---- | ---- | ---- | ---- | ---- | ---- | ---- |
+| TOTAL         | 91.6 | 91.7 | 91.8 | 91.8 | 91.8 | 91.6 | 91.6 |
+| merged        | 28   | 27   | 26   | 26   | 26   | 27   | 27   |
+
+From 0.8 the whiteboard loses a note (its notes are 19 px, a thin piece
+there is a note). At 0.7:
+
+| wall             | F1 / prec / rec-A / merged |
+| ---------------- | -------------------------- |
+| 201646           | 84 / 80 / 93 / 1           |
+| 201654           | 99 / 100 / 98 / 3          |
+| 201707           | 95 / 95 / 95 / 0           |
+| 201713           | 95 / 96 / 94 / 0           |
+| 201730 (shade)   | 93 / 94 / 92 / 2           |
+| 201743 (night)   | 80 / 82 / 77 / 2           |
+| wall-panorama    | 86 / 91 / 83 / 9           |
+| whiteboard-dense | 94 / 97 / 91 / 9           |
+| **TOTAL**        | **91.8 / 94 / 26**         |
+
+What moved: the two columns I1 made of the lattice's first six notes (19×35
+and 20×38, two actors each) are parted, four notes found. Nothing else on
+any wall moves.
+
+**Verdict: kept.** TOTAL 91.6 → 91.8, merged 28 → 26. The rows of two actors
+left on the panorama (#2, #3, #8: 23–25 px thick, 0.70–0.76 of a note) sit
+just above the threshold; 0.75 reaches the thickness but finds no seam in
+them.
