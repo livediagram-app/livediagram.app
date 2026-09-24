@@ -1,6 +1,7 @@
 import { AMBIGUOUS_ID, CLASS, seamRadiusFor, threeClassMask, type Rect } from '../mask';
 import { paintBacking, paintDistractors, paintWallMarks, tape } from './backing';
 import { develop, light, randomView, warp } from './camera';
+import { paintFlatWall } from './flat';
 import { layoutNotes, looseNotes } from './layout';
 import { paintNote } from './notes';
 import { BACKINGS, type Backing } from './palette';
@@ -10,6 +11,11 @@ import { rngFrom } from './rng';
 
 // A procedurally generated photograph of an event-storming wall, with its
 // training mask (experiment E1). Every wall is a pure function of its seed.
+//
+// Two styles: a PHOTO of a wall (light, texture, perspective, noise) and a
+// FLAT one, as a screen draws it (`flat.ts`).
+
+export type WallStyle = 'photo' | 'flat';
 
 export type SyntheticWall = {
   width: number;
@@ -21,9 +27,18 @@ export type SyntheticWall = {
   // One box per note the photograph shows enough of to count.
   boxes: Rect[];
   noteSize: number;
+  style: WallStyle;
 };
 
-export type SyntheticOptions = { noteSize?: number; backing?: Backing };
+export type SyntheticOptions = { noteSize?: number; backing?: Backing; style?: WallStyle };
+
+// How often a wall is drawn flat. The draw comes from its own stream, salted
+// off the seed, so every photographed wall stays exactly what the photo-only
+// generator drew for that seed.
+export const FLAT_CHANCE = 0.2;
+const STYLE_SALT = 0x5f1a7c3;
+const styleOf = (seed: number): WallStyle =>
+  rngFrom(seed ^ STYLE_SALT).chance(FLAT_CHANCE) ? 'flat' : 'photo';
 
 // The wall plane is larger than the frame, so the camera can turn and tilt
 // without showing an edge that is not there.
@@ -43,7 +58,12 @@ export function syntheticWall(
   height: number,
   opts: SyntheticOptions = {},
 ): SyntheticWall {
+  const style = opts.style ?? styleOf(seed);
   const rng = rngFrom(seed);
+  if (style === 'flat') {
+    const flat = paintFlatWall(rng, width, height, opts.noteSize);
+    return finish(flat.rgb, flat.ids, width, height, flat.notes, flat.noteSize, style);
+  }
   const noteSize = opts.noteSize ?? rng.logRange(...NOTE_SIZE_RANGE);
   const backing = opts.backing ?? rng.pick(BACKINGS);
   const plane = planeOf(Math.ceil(width * PLANE_MARGIN), Math.ceil(height * PLANE_MARGIN));
@@ -76,7 +96,20 @@ export function syntheticWall(
   const { rgb: linear, ids } = warp(plane, view, width, height);
   light(linear, width, height, rng);
   const rgb = develop(linear, width, height, rng);
+  return finish(rgb, ids, width, height, notes, noteSize, style);
+}
 
+// The training target of a painted wall: the three-class mask, and a box per
+// note the frame shows enough of to count.
+function finish(
+  rgb: Uint8Array,
+  ids: Int32Array,
+  width: number,
+  height: number,
+  notes: readonly { id: number; w: number; h: number }[],
+  noteSize: number,
+  style: WallStyle,
+): SyntheticWall {
   const { boxes, radius } = visibleNotes(ids, width, notes);
   const classes = threeClassMask(ids, width, height, (id) => radius.get(id) ?? 2);
   // A sliver of a note (the L of one stacked under another) can show enough
@@ -90,6 +123,7 @@ export function syntheticWall(
     classes,
     boxes: boxes.filter((b) => cored.has(b.id)).map(({ id: _, ...rect }) => rect),
     noteSize,
+    style,
   };
 }
 

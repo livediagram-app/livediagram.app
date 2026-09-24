@@ -64,7 +64,7 @@ export function paintNote(
 }
 
 // Lines of writing across the note, kept inside its paper.
-function handwriting(plane: Plane, rng: Rng, note: NoteSpec): void {
+export function handwriting(plane: Plane, rng: Rng, note: NoteSpec): void {
   const lines = rng.int(1, 4);
   const lineH = note.h * rng.range(0.1, 0.22);
   const ink = inkColour(rng);
