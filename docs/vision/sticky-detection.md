@@ -318,6 +318,11 @@ lists the boxes a change adds and removes, tagged true, junk or merged, when the
 change is behind a temporary environment switch. The gate experiments are in
 [experiments/f-nobox.md](experiments/f-nobox.md).
 
+`scripts/pixel-probe.ts`, `scripts/kind-hues.ts`, `scripts/mixed-kinds.ts`,
+`scripts/drops-near.ts` and `scripts/mask-view.ts` look at one pixel, one
+kind, one point or one mask at a time; what each is for, and the recall
+experiments they served, are in [experiments/h-recall.md](experiments/h-recall.md).
+
 `pnpm demo:sticky-vision` (repo root) bundles the package with esbuild and
 serves `demo/sticky-vision/index.html`: a synthetic kraft wall the page draws
 itself, detected live, every box overlaid with kind colour, `row · #order` and

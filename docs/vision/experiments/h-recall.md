@@ -156,7 +156,7 @@ window notes (9×14 on a 15px note), and is not kept.
 **Finding.** `merged.ts` lists three notes that sit in some OTHER box: a
 wide note cut in half (201646's 93×56 "if … or …" note, the panorama's 65×35
 and 55×32). On 201646 the wide note is a pale periwinkle the operator labels
-a command (`scripts/h-kindhue.ts`: h 243, saturation 0.24), lapped against a
+a command (`scripts/kind-hues.ts`: h 243, saturation 0.24), lapped against a
 vivid blue command (h 196, saturation 0.97). One mask class, one blob 140×56,
 which the length rule cuts by the wall's note into three 47px slivers. The
 same pair of papers is on 201654, 201707 and 201713; the panorama and the
@@ -219,10 +219,10 @@ from each other) and loses junk; 201646 finds the periwinkle note whole;
 
 **Finding.** 201730's note in the shaded corner (labelled a hotspot, a
 lilac to the eye) is 30% of a hotspot box and 13% of a policy one: at value
-0.2 to 0.3 its pixels read h 266 to 329 (`scripts/h-px.ts`), either side of
+0.2 to 0.3 its pixels read h 266 to 329 (`scripts/pixel-probe.ts`), either side of
 the line at 305 between the two bands, speckled together. Each kind's blob is
 two-thirds holes and the fill gate refuses both. A blurred colour for dark
-pixels did not repair it (see Rejected); `scripts/h-mixed.ts` finds no other
+pixels did not repair it (see Rejected); `scripts/mixed-kinds.ts` finds no other
 note split this way between two kinds.
 
 **Rule** (`classifyHsv`). A pixel in the policy band darker than a value
@@ -288,7 +288,7 @@ for pixels darker than V would give the note one hue.
 | 1, all    | 87.7 / 40      | 90/92/88/1  | 71/70/72/2     | 73/80/72/14 | 89/95/83/16 |
 
 The lilac note is not found at any setting, and blurring welds the seams
-between flush notes (201707 loses its PASS). `scripts/h-mixed.ts` then counted
+between flush notes (201707 loses its PASS). `scripts/mixed-kinds.ts` then counted
 how many labelled notes have their paper split between classes: 17 of 645,
 and all but two are LAPPED notes of two colours whose label takes in a strip
 of the neighbour, not one note read as two kinds. A fix at the kind boundary
@@ -376,3 +376,16 @@ calls paper is dropped when a non-pale pixel of the same class lies within R.
 It is the rims: with the rule, the whiteboard no longer welds at 10. But the
 panorama's pale pinks lose their own edges with them and merge where they lap,
 and the night wall's lilac note under tungsten goes. Nothing beats 91.7 / 29.
+
+## Tools
+
+- `scripts/pixel-probe.ts <photo> x,y …`: the mean colour of a 5×5 patch at
+  each point, the local floors there and the class it gets.
+- `scripts/kind-hues.ts kind[,kind…]`: per labelled note of those kinds, the
+  median hue, saturation and a*b* of its paper (how H4 found the two blues).
+- `scripts/mixed-kinds.ts`: labelled notes whose paper is split between mask
+  classes.
+- `scripts/drops-near.ts <photo> x,y [r]`: every box a gate drops, and every
+  detection, near a point.
+- `scripts/mask-view.ts [photo]`: the class mask beside the photo, written to
+  the system temp directory.
