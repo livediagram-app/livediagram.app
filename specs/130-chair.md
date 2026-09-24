@@ -30,6 +30,10 @@ button, portal, session button, reveal zone and picker.
 - **`ShapeElement.chairFacing`** — `'n' | 'e' | 's' | 'w'`, which way the seat
   points. Absent = `'n'` (back at the top, sitter facing down the board, toward
   the reader). Set from the element's context menu.
+- **No settings `…` on its face.** Every other Behaviours card carries the
+  shared ellipsis in its corner (spec/09); a chair is furniture, not a card,
+  and its one setting is set once from the element menu, so an ellipsis over
+  the backrest only read as a control on the seat.
 - Its `label` is optional and renders under the chair: "Scribe", "Facilitator",
   "Alex" — a chair that is somebody's chair.
 - Otherwise a completely ordinary element: move, resize, rotate, theme, group,

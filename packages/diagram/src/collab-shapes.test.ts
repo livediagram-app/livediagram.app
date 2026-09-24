@@ -16,6 +16,7 @@ import {
   isDecisionStatus,
   isEstimateScale,
 } from './collab-shapes';
+import { showsSettingsMenu } from './behaviour-shapes';
 import { createShape } from './factories';
 import { isValidElement } from './validate';
 
@@ -212,5 +213,14 @@ describe('validation bounds', () => {
     expect(isValidElement(withFields({ rollCall: [{ name: 'Sam', color: '#fff', at: 1 }] }))).toBe(
       true,
     );
+  });
+});
+
+describe('the shared settings ellipsis (spec/09, spec/130)', () => {
+  it('is on every Behaviours card except the chair and the ones with their own', () => {
+    expect(showsSettingsMenu('chair')).toBe(false);
+    expect(showsSettingsMenu('done-check')).toBe(false);
+    expect(showsSettingsMenu('comment-pin')).toBe(true);
+    expect(showsSettingsMenu('square')).toBe(false);
   });
 });

@@ -9,11 +9,10 @@ import {
   defaultFillColor,
   defaultPadding,
   defaultStrokeColor,
-  drawsOwnElementMenu,
   elementKindLabel,
-  isBehaviourShape,
   isCollabPanelShape,
   isSelfDrawingShape,
+  showsSettingsMenu,
   type ShapeMarker,
   type TextAlignX,
   type TextAlignY,
@@ -151,16 +150,15 @@ export function ElementFaceRouter({
   // The paper under this face, for colours the element doesn't carry (spec/07).
   const surface = useCanvasSurface();
   // The shared settings `…` (spec/09). Every Behaviours element carries one,
-  // in the same corner, opening that element's own context menu — except the
-  // three that draw a richer `…` of their own, which would otherwise render a
-  // second ellipsis beside the first.
+  // in the same corner, opening that element's own context menu, except the
+  // three that draw a richer `…` of their own (a second ellipsis beside the
+  // first) and the chair (see showsSettingsMenu).
   const settingsMenu =
     element.type === 'shape' &&
     !isEditing &&
     !readOnly &&
     onOpenElementSettings &&
-    isBehaviourShape(element.shape) &&
-    !drawsOwnElementMenu(element.shape) ? (
+    showsSettingsMenu(element.shape) ? (
       <span className="absolute right-1 top-1 z-10">
         <ElementSettingsButton
           label={`${elementKindLabel(element)} settings`}

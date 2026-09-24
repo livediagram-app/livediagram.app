@@ -52,3 +52,15 @@ export function isBehaviourShape(kind: ShapeKind): boolean {
 export function drawsOwnElementMenu(kind: ShapeKind): boolean {
   return kind === 'session-button' || kind === 'done-check' || kind === 'idea-box';
 }
+
+/**
+ * Does this kind wear the SHARED settings `…` in its corner (spec/09)?
+ *
+ * Every Behaviours card does, except the ones that draw their own richer `…`
+ * (above) and the chair (spec/130). A chair is furniture, not a card: its one
+ * setting, which way it faces, is set once from the element menu, and an
+ * ellipsis floating over the backrest read as a control on the seat.
+ */
+export function showsSettingsMenu(kind: ShapeKind): boolean {
+  return isBehaviourShape(kind) && !drawsOwnElementMenu(kind) && kind !== 'chair';
+}
