@@ -52,8 +52,10 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // reads as a page beside a 120px square without swallowing the canvas.
   page: { width: 420, height: 594 },
   // Mind node (spec/118): a caption-width pill. Wide enough for a phrase,
-  // short enough that a column of siblings stays readable.
-  'mind-node': { width: 170, height: 48 },
+  // short enough that a column of siblings stays readable. 170x48 fitted a
+  // couple of words and made anything longer wrap or overflow, which is not
+  // what people actually type into a mind map.
+  'mind-node': { width: 250, height: 80 },
   // Lane (spec/119): a band, not a box — wide enough to lay a flow across and
   // tall enough for a row of steps.
   lane: { width: 900, height: 200 },
@@ -105,6 +107,10 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   laptop: { width: 240, height: 150 },
   phone: { width: 90, height: 170 },
   tablet: { width: 140, height: 180 },
+  // Foldable, unfolded: the two panels side by side make a nearly square
+  // inner screen, a little wider than it is tall, which is what separates it
+  // at a glance from the portrait phone and tablet above.
+  foldable: { width: 190, height: 170 },
   // Smartwatch: a square-ish face with bands above + below, so portrait.
   smartwatch: { width: 110, height: 150 },
   // Curated glyph. Square + aspect-locked on create (set in createShape) so

@@ -64,6 +64,7 @@ export const SHAPE_KEYWORDS: Partial<Record<ShapeKind, string>> = {
   laptop: 'macbook notebook computer',
   phone: 'mobile iphone android handset',
   tablet: 'ipad slate',
+  foldable: 'fold flip unfolded hinge dual screen book phone',
   smartwatch: 'watch wearable wrist',
   'progress-bar': 'bar meter percent loading completion',
   'progress-ring': 'donut ring percent gauge dial',

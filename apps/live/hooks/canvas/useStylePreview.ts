@@ -33,6 +33,7 @@ import type {
   BorderRadius,
   BorderStroke,
   BorderStyle,
+  CodeThemeId,
   Element,
   ElementAnimation,
   IconAnimation,
@@ -52,6 +53,7 @@ import {
   applyBorderRadiusToEl,
   applyBorderStrokeToEl,
   applyBorderStyleToEl,
+  applyCodeThemeToEl,
   applyColorPresetToEl,
   applyFillColorToEl,
   applyFontToEl,
@@ -204,6 +206,10 @@ export function useStylePreview(deps: {
       previewStyle((el) => applyColorPresetToEl(el, p)),
     commitShapeColorPreset: (p: ShapeColorPreset) =>
       commitStyle((el) => applyColorPresetToEl(el, p), 'StylePreset'),
+    // Code-block scheme (spec/82): the code block's flavour of preset.
+    previewCodeTheme: (id: CodeThemeId) => previewStyle((el) => applyCodeThemeToEl(el, id)),
+    commitCodeTheme: (id: CodeThemeId) =>
+      commitStyle((el) => applyCodeThemeToEl(el, id), 'CodeTheme'),
     // Arrow preset
     previewArrowPreset: (p: ArrowPreset) => previewStyle((el) => applyArrowPresetToEl(el, p)),
     commitArrowPreset: (p: ArrowPreset) =>

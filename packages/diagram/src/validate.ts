@@ -44,6 +44,7 @@ import {
   CODE_LANGUAGES,
   CODE_MAX_LENGTH,
 } from './data-shapes';
+import { isCodeThemeId } from './code-themes';
 
 // Bounds. Generous vs any real diagram, tight vs an abuse payload.
 export const MAX_ELEMENTS_PER_TAB = 10_000;
@@ -131,6 +132,7 @@ export const SHAPE_KINDS = new Set<string>([
   'laptop',
   'phone',
   'tablet',
+  'foldable',
   'smartwatch',
   'progress-bar',
   'progress-ring',
@@ -246,6 +248,10 @@ export function isValidElement(el: unknown): el is Element {
       !(CODE_LANGUAGES as readonly string[]).includes(el.codeLanguage as string)
     )
       return false;
+    // Colour scheme: a closed set of ids. An unknown one still RENDERS (the
+    // resolver falls back to the default card), but it has no business being
+    // written into a diagram.
+    if (el.codeTheme !== undefined && !isCodeThemeId(el.codeTheme as string)) return false;
     // Embed provider (spec/121): a creation-time hint, one of a closed set.
     if (
       el.embedProvider !== undefined &&

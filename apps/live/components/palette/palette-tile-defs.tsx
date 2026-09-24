@@ -2102,6 +2102,31 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
+    id: 'devices:foldable',
+    blurb: 'A foldable phone, opened out',
+    section: 'devices',
+    label: 'Add foldable',
+    caption: 'Foldable',
+    description: 'Foldable phone, unfolded. A book-style phone opened to its inner screen.',
+    filled: true,
+    action: { type: 'shape', kind: 'foldable' },
+    icon: (
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 18 18"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+        aria-hidden
+      >
+        <rect x="1.5" y="3" width="15" height="12" rx="1.2" />
+        <path d="M9 3 V15" />
+      </svg>
+    ),
+  },
+  {
     id: 'devices:smartwatch',
     blurb: 'A compact wearable screen',
     section: 'devices',

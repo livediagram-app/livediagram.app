@@ -103,10 +103,7 @@ export function ElementColourBorderSections({
             value={target.strokeColor ?? defaultArrowStrokeColor(surface)}
             {...strokeColorHandlers}
             {...colorProps('border')}
-            presets={props.presetColors}
-            customs={props.customColors}
-            onAddCustom={props.onAddCustomColor}
-            onRemoveCustom={props.onRemoveCustomColor}
+            {...props.colourPalette}
           />
           {/* The heads, separately from the line: a grey connector with a red
               head is one arrow saying two things, and doing it with a second
@@ -118,10 +115,7 @@ export function ElementColourBorderSections({
             value={target.arrowheadColor ?? target.strokeColor ?? defaultArrowStrokeColor(surface)}
             {...arrowheadColorHandlers}
             {...colorProps('pointer')}
-            presets={props.presetColors}
-            customs={props.customColors}
-            onAddCustom={props.onAddCustomColor}
-            onRemoveCustom={props.onRemoveCustomColor}
+            {...props.colourPalette}
           />
           <div className="px-2 pb-1 pt-1.5">
             <MenuActionButton
@@ -150,10 +144,7 @@ export function ElementColourBorderSections({
               }
               {...textColorHandlers}
               {...colorProps('text')}
-              presets={props.presetColors}
-              customs={props.customColors}
-              onAddCustom={props.onAddCustomColor}
-              onRemoveCustom={props.onRemoveCustomColor}
+              {...props.colourPalette}
             />
             {supportsFillColor(target) ? (
               <ColourRow
@@ -165,10 +156,7 @@ export function ElementColourBorderSections({
                 }
                 {...fillColorHandlers}
                 {...colorProps('background')}
-                presets={props.presetColors}
-                customs={props.customColors}
-                onAddCustom={props.onAddCustomColor}
-                onRemoveCustom={props.onRemoveCustomColor}
+                {...props.colourPalette}
               />
             ) : null}
             {/* Heading band: only for the elements that have one distinct
@@ -182,10 +170,7 @@ export function ElementColourBorderSections({
                 value={(target as { headerFill?: string }).headerFill ?? 'transparent'}
                 {...headerFillHandlers}
                 {...colorProps('heading')}
-                presets={props.presetColors}
-                customs={props.customColors}
-                onAddCustom={props.onAddCustomColor}
-                onRemoveCustom={props.onRemoveCustomColor}
+                {...props.colourPalette}
               />
             ) : null}
             {/* Stroke swatch: hidden for Technology icons (the brand mark
@@ -203,10 +188,7 @@ export function ElementColourBorderSections({
                 }
                 {...strokeColorHandlers}
                 {...colorProps('border')}
-                presets={props.presetColors}
-                customs={props.customColors}
-                onAddCustom={props.onAddCustomColor}
-                onRemoveCustom={props.onRemoveCustomColor}
+                {...props.colourPalette}
               />
             ) : null}
             <div className="px-2 pb-1 pt-1.5">

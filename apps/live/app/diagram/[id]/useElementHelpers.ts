@@ -178,7 +178,15 @@ export function useElementHelpers(opts: {
   // it has already worked out from the branch, so it needs neither of those —
   // but it needs all of the rest, and re-implementing them at the call site is
   // how an add path ends up missing its activity-log entry.
-  const placePrebuilt = (added: Element[], primaryId: string) => {
+  const placePrebuilt = (
+    added: Element[],
+    primaryId: string,
+    // Existing elements to move out of the way, by id. Mind-map growth
+    // (spec/118) makes room for a new node by sliding whole neighbouring
+    // trees down, and that move has to land in the SAME commit as the add or
+    // it becomes a second undo step for one keystroke.
+    shifts: readonly { id: string; dy: number }[] = [],
+  ) => {
     if (editsBlocked) return;
     const themed = added.map((el) =>
       isBoxed(el)
@@ -201,17 +209,25 @@ export function useElementHelpers(opts: {
     // (spec/118), in the same tick. A snapshot taken at render time predates
     // that commit, so writing it back silently threw the label away — every
     // node in a chain came out blank.
+    const byId = new Map(shifts.map((s) => [s.id, s.dy]));
+    const displace = (els: Element[]): Element[] =>
+      byId.size === 0
+        ? els
+        : els.map((el) => {
+            const dy = byId.get(el.id);
+            return dy === undefined || !isBoxed(el) ? el : { ...el, y: el.y + dy };
+          });
     commitTabs((ts) =>
       ts.map((t) =>
         t.id === activeId
-          ? { ...t, elements: [...t.elements, ...themed], templateChosen: true }
+          ? { ...t, elements: [...displace(t.elements), ...themed], templateChosen: true }
           : t,
       ),
     );
     // The log entry describes the ADD, which is correct even if `before` is a
     // beat stale: any label change committed just now emitted its own entry.
     const before = activeTab.elements;
-    emitChange(activeId, before, [...before, ...themed]);
+    emitChange(activeId, before, [...displace(before), ...themed]);
     setSelectedId(primaryId);
   };
 

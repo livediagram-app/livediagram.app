@@ -1053,7 +1053,7 @@ export const articles: Article[] = [
     title: 'Devices',
     description: 'Browser, phone, laptop and other wireframing frames.',
     keywords:
-      'browser phone laptop wireframe mockup frame window screen monitor smartwatch watch tablet desktop device',
+      'browser phone laptop wireframe mockup frame window screen monitor smartwatch watch tablet foldable fold unfolded desktop device',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Elements',

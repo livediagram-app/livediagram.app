@@ -27,6 +27,7 @@ import {
   type IconSize,
   type Padding,
   type ShapeKind,
+  type CodeThemeId,
   type ShapeMarker,
   type TextAlignX,
   type TextAlignY,
@@ -39,8 +40,14 @@ import type { ShapeColorPreset } from './themes';
 // look (spec/48). Border RADIUS is deliberately untouched: it's a silhouette
 // choice the user makes separately, and a preset clobbering it read as the
 // preset breaking the shape. Records the preset id so theme changes can
-// re-derive it. No-op on non-shapes.
+// re-derive it.
 export function applyColorPresetToEl(el: Element, p: ShapeColorPreset): Element {
+  // A sticky takes the paper and the ink and nothing else: its edge against
+  // the peel shadow IS its border, so a stroke here would draw a hairline box
+  // around the note. Any hand-set one is cleared with the pick, which is what
+  // "one complete look" means for a note.
+  if (el.type === 'sticky')
+    return { ...el, fillColor: p.fill, textColor: p.text, strokeColor: undefined };
   if (el.type !== 'shape') return el;
   return {
     ...el,
@@ -51,6 +58,14 @@ export function applyColorPresetToEl(el: Element, p: ShapeColorPreset): Element 
     strokeStyle: p.borderStyle,
     colorPreset: p.id,
   };
+}
+
+// A code block's colour scheme (spec/82). Its own kind of preset: the card
+// paints from the scheme and takes no element colours, so this writes one
+// field and nothing else. A no-op on anything that is not a code block.
+export function applyCodeThemeToEl(el: Element, id: CodeThemeId): Element {
+  if (el.type !== 'shape' || el.shape !== 'code-block') return el;
+  return { ...el, codeTheme: id };
 }
 
 // ── Granular single-field transforms ────────────────────────────────────

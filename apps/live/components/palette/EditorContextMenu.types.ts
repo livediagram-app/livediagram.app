@@ -17,6 +17,7 @@ import type {
   DecisionStatus,
   EstimateScale,
   Element,
+  CodeThemeId,
   ElementShadow,
   Layer,
   ElementAnimation,
@@ -35,6 +36,7 @@ import type {
   TextSize,
 } from '@livediagram/diagram';
 import type { ArrowPreset } from '@/components/palette/StylePresets';
+import type { ColourPalette } from '@/components/palette/context-menu-input-rows';
 import type { ShapeColorPreset } from '@/lib/themes';
 
 export type EditorContextMenuState =
@@ -206,6 +208,10 @@ export type EditorContextMenuProps = {
   onPreviewShapeColorPreset: (preset: ShapeColorPreset) => void;
   onPreviewArrowPreset: (preset: ArrowPreset) => void;
   onPreviewStyleEnd: () => void;
+  // Code-block colour scheme (spec/82): the code block's flavour of preset,
+  // and the only style choice it has. Same hover-preview / click-commit flow.
+  onApplyCodeTheme: (id: CodeThemeId) => void;
+  onPreviewCodeTheme: (id: CodeThemeId) => void;
   // Arrow style presets (spec/48): one-click line looks (pattern / thickness /
   // optional flow animation) for the selected arrow, plus a reset.
   onApplyArrowPreset: (preset: ArrowPreset) => void;
@@ -272,14 +278,9 @@ export type EditorContextMenuProps = {
   // dimension alone is allowed: the omitted one is left as-is, or carried by
   // the aspect lock when that is on.
   onSetSize: (size: { width?: number; height?: number }) => void;
-  // Preset colour swatches for the colour pickers, derived from the active
-  // theme so the offered presets match it.
-  presetColors: string[];
-  // The user's own palette (spec/09 Colours): colours they have used that
-  // the theme did not offer. Appended after the presets, and removable.
-  customColors: string[];
-  onAddCustomColor: (color: string) => void;
-  onRemoveCustomColor: (color: string) => void;
+  // The colour palette every ColourRow in this menu offers (spec/09 Colours):
+  // the theme's swatches plus the user's own, spread straight onto the row.
+  colourPalette: ColourPalette;
   // Table structure toggles (header row / column, zebra) for the Table
   // category.
   onToggleTableHeaderRow: () => void;

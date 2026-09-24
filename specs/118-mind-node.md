@@ -51,6 +51,9 @@ owns which.
 
 ## Placement
 
+Default size **250×80**. It was 170×48, which fitted a couple of words and made
+anything longer wrap or overflow, which is not what people type into a mind map.
+
 A child goes to the **right** of its parent, at `parent.x + width + 64`.
 
 Its `y` is the bottom of the lowest existing node in that parent's subtree,
@@ -58,9 +61,48 @@ plus a gap — not the parent's `y`. Stacking against the subtree rather than th
 immediate children is what stops a new branch from landing on top of a
 grandchild that had already grown down past its own parent.
 
-A sibling is a child of the same parent, so it takes the same path. **Enter on
-a root** makes another root, offset below it, since a root has no parent to
-attach to.
+A sibling is a child of the same parent, so it takes the same path.
+
+### Always the end of the relationship, never the first free slot
+
+A new node joins the **end** of the list it belongs to. For a child that is the
+bottom of the parent's branch, as above. **Enter on a root** makes another root
+at the bottom of the root stack — under every tree sharing that column, not in
+the gap directly below the node you pressed Enter on. Taking that gap wedges the
+new root between two trees and leaves the one below with nowhere to put its own
+siblings.
+
+"Sharing that column" is a horizontal-overlap test against each tree's bounding
+box, so a second mind map parked well off to the side is a separate map and
+stays out of the sum.
+
+### Making room
+
+A child keeps its natural slot even when another tree is parked in it: every
+other tree it would collide with **slides down**, whole, so no branch is torn
+away from its own parent. Trees are handled top-down and each displaced tree
+becomes an obstacle itself, so one shove cascades through a column instead of
+moving the pile-up one place down.
+
+Dropping the child below everything instead (the first fix) kept it clear and
+put it nowhere near its parent, with its connector raking back across the map.
+The node's own tree never moves — moving the branch you are growing from would
+be absurd — so when a cousin in that same tree holds the slot, the new node is
+the one that gives way.
+
+The displacement lands in the **same commit** as the add, so one keystroke is
+one undo step.
+
+## Keyboard
+
+Tab and Enter fire off the **selected** node, with no label editor open, and
+again from inside the label editor so a chain of nodes is typed without pausing.
+
+Tab is also the canvas's element-traversal key ([spec/71](71-accessibility.md)),
+and both listeners sit on `window`. The traversal one is mounted first, so it
+consumed every Tab and pressing it on a mind node cycled the tab's elements
+instead of growing a branch: the selected element now gets first refusal on the
+key. Shift+Tab stays traversal, since only plain Tab grows.
 
 ## Deleting
 

@@ -54,6 +54,8 @@ export function EditorContextMenuHost() {
     previewTextColor,
     commitTextColor,
     previewFillColor,
+    commitCodeTheme,
+    previewCodeTheme,
     commitHeaderFill,
     previewHeaderFill,
     setHeaderFillSelected,
@@ -159,7 +161,7 @@ export function EditorContextMenuHost() {
     openAssignAction,
   } = useEditorContext();
 
-  const { presetColors, customColors, addCustomColor, removeCustomColor } = useColourPalette();
+  const { swatches } = useColourPalette();
 
   // A view-only session never gets an element context menu at all, so
   // nothing below needs a second `isReadOnly` guard — everything past
@@ -304,6 +306,8 @@ export function EditorContextMenuHost() {
       onApplyArrowPreset={commitArrowPreset}
       onPreviewArrowPreset={previewArrowPreset}
       onPreviewStyleEnd={clearStylePreview}
+      onApplyCodeTheme={commitCodeTheme}
+      onPreviewCodeTheme={previewCodeTheme}
       onResetArrowStyle={resetArrowStyleSelected}
       onSetAnimation={commitAnimation}
       onSetArrowFlow={commitArrowFlow}
@@ -344,10 +348,7 @@ export function EditorContextMenuHost() {
       onPreviewShapeKind={previewShapeKind}
       onResetAspectRatio={resetAspectRatioSelected}
       onSetSize={setSizeSelected}
-      presetColors={presetColors}
-      customColors={customColors}
-      onAddCustomColor={addCustomColor}
-      onRemoveCustomColor={removeCustomColor}
+      colourPalette={swatches}
       onToggleTableHeaderRow={setTableHeaderRowSelected}
       onToggleTableHeaderColumn={setTableHeaderColumnSelected}
       onToggleTableZebra={setTableZebraSelected}

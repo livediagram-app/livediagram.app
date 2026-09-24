@@ -15,7 +15,17 @@ codeLanguage?: CodeLanguage; // closed set below, defaults to 'plain'
 
 ## Visual treatment
 
-A code block keeps a **fixed identity** regardless of theme, the way sticky notes stay amber: a dark editor-style card (deep slate background, rounded corners, subtle border), monospace text at a fixed size with preserved whitespace, content clipped to the card with padding, and a muted language badge in the top-right corner (hidden for `plain`). Theme switches never recolour it. Default size 320×180.
+A code block keeps a **fixed identity** regardless of theme, the way sticky notes stay amber: an editor-style card (rounded corners, subtle border), monospace text at a fixed size with preserved whitespace, content clipped to the card with padding, and a muted language badge in the top-right corner (hidden for `plain`). Theme switches never recolour it. Default size 320×180.
+
+### Colour schemes
+
+The card paints from a **scheme**, not from the element's colours: `codeTheme` (a `CodeThemeId` from `packages/diagram/src/code-themes.ts`), absent meaning `midnight`, the single dark card the element shipped with. Eight ship: Midnight, Graphite, Ocean, Forest, Plum, Contrast, then the two light ones, Paper and Parchment. Each entry holds every colour of a card, surface / border / text / muted plus the four token colours, so the canvas view, the headless render and the preset tiles cannot drift.
+
+`supportsColours` returns **false** for a code block, so the Colours and Border categories don't appear on one: the card ignored fill and stroke from the day it shipped, and every swatch in that category was inert while still writing to the element, autosaving, logging a change and broadcasting an op. The Style band opens for a code block carrying a **Presets** grid of the schemes instead, on the same hover-preview / click-commit flow as every other preset (spec/48).
+
+One fixed look was right about where the colours come from and wrong about how many there are: a block on a light, warm board was a hole in it, and a fill swatch would have "fixed" that by letting you paint the card pink and leave the syntax colours unreadable on it. A closed set of complete schemes is the only version of the choice that can't produce an unreadable card.
+
+Scheme ids are stored on elements, so they are permanent: a `name` may be reworded, an `id` never. An unknown id still renders (the resolver falls back to the default) but fails validation, so it can't be written.
 
 Empty blocks render a muted `// double-click to add code` placeholder line.
 
@@ -23,7 +33,7 @@ Empty blocks render a muted `// double-click to add code` placeholder line.
 
 - A small generic tokenizer lives in `apps/live/lib/code-tokens.ts`: one engine (comments, strings, numbers, keywords, punctuation) driven by a per-language config table. No dependency, no WASM.
 - It loads as an **async chunk** on the icon-registry pattern (`apps/live/lib/code-highlight-registry.ts`: memoized dynamic import, `useSyncExternalStore` pair, sync lookup returning undefined pre-load). Until the chunk lands, the block renders plain monospace text — it degrades, never blanks. First paints that show no code block never pay for the tokenizer.
-- Token classes map to a fixed dark-theme colour set (keyword / string / comment / number / punctuation), independent of the app theme.
+- Token classes map to the active scheme's colour set (keyword / string / comment / number / punctuation), independent of the app theme.
 
 ## Editing
 
@@ -32,7 +42,7 @@ Empty blocks render a muted `// double-click to add code` placeholder line.
 
 ## Headless render (share thumbnails, MCP, exports)
 
-`svg-render` gains a `code-block` branch: the dark card + plain monospace `<text>` lines (clipped to the box, no highlighting — the tokenizer is deliberately a live-editor-only chunk, and un-highlighted mono is a faithful degrade for a thumbnail).
+`svg-render` gains a `code-block` branch: the scheme's card + plain monospace `<text>` lines (clipped to the box, no highlighting — the tokenizer is deliberately a live-editor-only chunk, and un-highlighted mono is a faithful degrade for a thumbnail).
 
 ## Plumbing checklist (per the data-shape route)
 

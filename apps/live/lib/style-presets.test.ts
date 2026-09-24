@@ -6,6 +6,7 @@ import {
   applyBorderRadiusToEl,
   applyBorderStrokeToEl,
   applyBorderStyleToEl,
+  applyCodeThemeToEl,
   applyColorPresetToEl,
   applyFillColorToEl,
   applyRotationToEl,
@@ -47,9 +48,32 @@ describe('applyColorPresetToEl', () => {
     expect(applyColorPresetToEl(el('shape'), p)).not.toHaveProperty('borderRadius', 'lg');
   });
 
-  it('is a no-op on non-shapes', () => {
-    const sticky = el('sticky');
-    expect(applyColorPresetToEl(sticky, p)).toBe(sticky);
+  it('gives a sticky the paper and the ink, and no border', () => {
+    // A note's edge against its peel shadow IS its border: stamping the
+    // preset's stroke would draw a hairline box around the paper, so the
+    // sticky branch takes two of the five fields and clears any hand-set
+    // border with them.
+    const applied = applyColorPresetToEl(el('sticky', { strokeColor: '#old' }), p);
+    expect(applied).toMatchObject({ fillColor: '#fill', textColor: '#text' });
+    expect(applied).toHaveProperty('strokeColor', undefined);
+    expect(applied).not.toHaveProperty('strokeWidth');
+  });
+
+  it('is a no-op on the types with no preset grid', () => {
+    const text = el('text');
+    expect(applyColorPresetToEl(text, p)).toBe(text);
+  });
+});
+
+describe('applyCodeThemeToEl', () => {
+  it('sets the scheme on a code block and nothing else', () => {
+    const block = el('shape', { shape: 'code-block' });
+    expect(applyCodeThemeToEl(block, 'paper')).toMatchObject({ codeTheme: 'paper' });
+  });
+
+  it('is a no-op on any other shape', () => {
+    const square = el('shape', { shape: 'square' });
+    expect(applyCodeThemeToEl(square, 'paper')).toBe(square);
   });
 });
 

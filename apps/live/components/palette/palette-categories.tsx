@@ -100,7 +100,8 @@ export const PALETTE_CATEGORIES: {
     id: 'devices',
     label: 'Devices',
     group: 1,
-    description: 'Wireframing device frames: browser, monitor, laptop, phone, tablet, smartwatch.',
+    description:
+      'Wireframing device frames: browser, monitor, laptop, phone, tablet, foldable, smartwatch.',
     icon: <DevicesTabIcon />,
   },
   {

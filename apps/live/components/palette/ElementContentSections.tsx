@@ -14,6 +14,7 @@ import {
   NoteMenuIcon,
   RemoveIconGlyph,
   TableGlyph,
+  TextColourIcon,
   TextGlyph,
 } from '@/components/palette/context-menu-icons';
 import {
@@ -113,10 +114,11 @@ export function ElementContentSections({
           <ContextMenuDivider />
           <ColourRow
             label="Colour"
+            icon={<TextColourIcon />}
             value={target.textColor ?? '#0f172a'}
             {...textColorHandlers}
             {...colorProps('text')}
-            presets={props.presetColors}
+            {...props.colourPalette}
           />
         </MenuAccordionSection>
       ) : null}

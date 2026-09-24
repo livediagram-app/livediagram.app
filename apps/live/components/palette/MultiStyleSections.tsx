@@ -182,10 +182,7 @@ export function MultiStyleSections({
               }
               {...textColorHandlers}
               {...colorProps('m-text')}
-              presets={props.presetColors}
-              customs={props.customColors}
-              onAddCustom={props.onAddCustomColor}
-              onRemoveCustom={props.onRemoveCustomColor}
+              {...props.colourPalette}
             />
           ) : null}
           {fillSrc ? (
@@ -195,10 +192,7 @@ export function MultiStyleSections({
               value={fillSrc.fillColor ?? defaultFillColor(fillSrc, surface)}
               {...fillColorHandlers}
               {...colorProps('m-bg')}
-              presets={props.presetColors}
-              customs={props.customColors}
-              onAddCustom={props.onAddCustomColor}
-              onRemoveCustom={props.onRemoveCustomColor}
+              {...props.colourPalette}
             />
           ) : null}
           {strokeSrc ? (
@@ -208,10 +202,7 @@ export function MultiStyleSections({
               value={strokeSrc.strokeColor ?? defaultStrokeColor(strokeSrc, surface)}
               {...strokeColorHandlers}
               {...colorProps('m-border')}
-              presets={props.presetColors}
-              customs={props.customColors}
-              onAddCustom={props.onAddCustomColor}
-              onRemoveCustom={props.onRemoveCustomColor}
+              {...props.colourPalette}
             />
           ) : arrowSrc ? (
             // Arrow-only selection: no boxed stroke member, so the stroke
@@ -224,10 +215,7 @@ export function MultiStyleSections({
               value={arrowSrc.strokeColor ?? defaultArrowStrokeColor(surface)}
               {...strokeColorHandlers}
               {...colorProps('m-border')}
-              presets={props.presetColors}
-              customs={props.customColors}
-              onAddCustom={props.onAddCustomColor}
-              onRemoveCustom={props.onRemoveCustomColor}
+              {...props.colourPalette}
             />
           ) : null}
           <div className="px-2 pb-1 pt-1.5">

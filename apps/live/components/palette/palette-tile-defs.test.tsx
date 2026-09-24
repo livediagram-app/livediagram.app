@@ -129,7 +129,7 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   build: 5,
   write: 4,
   draw: 4,
-  devices: 6,
+  devices: 7,
   icons: 0,
   stickers: 0,
   technology: 0,

@@ -333,7 +333,7 @@ export const PALETTE_TELEMETRY_TYPES = {
     'CommentPin',
   ],
   components: ['Banner', 'Hero', 'Header', 'Callout', 'StatRow', 'ProcessSteps'],
-  devices: ['Browser', 'Monitor', 'Laptop', 'Phone', 'Tablet', 'Smartwatch'],
+  devices: ['Browser', 'Monitor', 'Laptop', 'Phone', 'Tablet', 'Foldable', 'Smartwatch'],
   icons: ['Icon', 'TechIcon', 'Sticker'],
 } as const satisfies Record<string, readonly string[]>;
 

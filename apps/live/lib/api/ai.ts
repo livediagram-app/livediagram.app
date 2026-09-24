@@ -56,6 +56,7 @@ const AI_SHAPE_KINDS = new Set([
   'laptop',
   'phone',
   'tablet',
+  'foldable',
   'smartwatch',
   // The prompt asks the model for this one by name, with its checklistItems
   // schema, so coercing it to a square threw away the exact composite it had

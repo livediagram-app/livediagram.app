@@ -2084,6 +2084,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     previewIconAnimation,
     commitIconAnimation,
     previewFillColor,
+    previewCodeTheme,
+    commitCodeTheme,
     previewHeaderFill,
     previewArrowheadColor,
     commitFillColor,
@@ -2208,6 +2210,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     lockedByOther,
     layerInertIds,
     scrollIntoView,
+    ownsTabKey: canGrowMindNode,
   });
 
   // Vote-results review (spec/39): the local walkthrough of revealed top
@@ -2708,6 +2711,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     commitIconAnimation,
     // Granular colour / border / rotation hover preview + click commit.
     previewFillColor,
+    previewCodeTheme,
+    commitCodeTheme,
     previewHeaderFill,
     previewArrowheadColor,
     commitFillColor,

@@ -928,6 +928,19 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "CodeThemeId": {
+    "enum": [
+      "midnight",
+      "graphite",
+      "ocean",
+      "forest",
+      "plum",
+      "contrast",
+      "paper",
+      "parchment"
+    ],
+    "type": "string"
+  },
   "Comment": {
     "additionalProperties": false,
     "properties": {
@@ -1330,6 +1343,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "object"
           },
           "estimate": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "foldable": {
             "additionalProperties": false,
             "properties": {
               "fill": {
@@ -3325,6 +3353,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "codeLanguage": {
         "$ref": "#/components/schemas/CodeLanguage"
       },
+      "codeTheme": {
+        "$ref": "#/components/schemas/CodeThemeId"
+      },
       "colorPreset": {
         "type": "string"
       },
@@ -3667,6 +3698,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "laptop",
       "phone",
       "tablet",
+      "foldable",
       "smartwatch",
       "progress-bar",
       "progress-ring",

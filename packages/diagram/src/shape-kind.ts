@@ -101,6 +101,10 @@ export type ShapeKind =
   | 'laptop'
   | 'phone'
   | 'tablet'
+  // A book-style foldable phone, shown OPEN on its inner screen: a
+  // near-square panel with the hinge crease down the middle. Folded it is
+  // just `phone`, so only the unfolded state earns its own frame.
+  | 'foldable'
   | 'smartwatch'
   // Progress elements (spec/46): a horizontal bar + a donut ring that show a
   // 0–100 percentage. They carry `progress` / `progressAnim` (below).

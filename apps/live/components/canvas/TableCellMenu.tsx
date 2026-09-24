@@ -62,7 +62,7 @@ export function TableCellMenu({
     onToggle: () => setOpen((o) => (o === key ? null : key)),
     flush: true,
   });
-  const { presetColors, customColors, addCustomColor, removeCustomColor } = useColourPalette();
+  const { swatches } = useColourPalette();
   const [openColour, setOpenColour] = useState<string | null>(null);
   const sc = element.cellStyles?.[anchor.r]?.[anchor.c] ?? null;
   const isHeaderAnchor =
@@ -130,15 +130,14 @@ export function TableCellMenu({
           onChange={(bg) => applyStyle({ bg })}
           onPreview={(bg) => onPreviewStyle?.({ bg })}
           onPreviewEnd={() => onPreviewStyle?.(null)}
+          // Remembering the colour is ColourRow's job (it calls onAddCustom
+          // after every commit), so this only has to end the preview and
+          // write the cell.
           onCommit={(bg) => {
             onPreviewStyle?.(null);
             applyStyle({ bg });
-            addCustomColor(bg);
           }}
-          presets={presetColors}
-          customs={customColors}
-          onAddCustom={addCustomColor}
-          onRemoveCustom={removeCustomColor}
+          {...swatches}
         />
         <ColourRow
           label="Text"
@@ -152,12 +151,8 @@ export function TableCellMenu({
           onCommit={(color) => {
             onPreviewStyle?.(null);
             applyStyle({ textColor: color });
-            addCustomColor(color);
           }}
-          presets={presetColors}
-          customs={customColors}
-          onAddCustom={addCustomColor}
-          onRemoveCustom={removeCustomColor}
+          {...swatches}
         />
       </MenuAccordionSection>
       <MenuAccordionSection

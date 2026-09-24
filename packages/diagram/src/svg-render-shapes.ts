@@ -9,6 +9,7 @@
 import { BORDER_DASH_ARRAY, BORDER_STROKE_PX } from './border-style';
 import type { BoxedElement, FreehandElement, ShapeKind } from './index';
 import { r2, xmlEscape } from './svg-render-primitives';
+import { codeTheme } from './code-themes';
 
 // The kinds this module draws. square / circle / stadium / browser render
 // natively in svgBoxed (plain rects / ellipses); diamond has a native
@@ -29,6 +30,7 @@ const SILHOUETTE_KINDS = new Set<string>([
   'laptop',
   'phone',
   'tablet',
+  'foldable',
   'smartwatch',
   'actor',
 ]);
@@ -153,6 +155,13 @@ function silhouetteMarkup(
         `<rect x="2" y="2" width="96" height="96" rx="6"${main}/>` +
           `<rect x="5" y="6" width="90" height="88" rx="3"${detail}/>`,
       );
+    case 'foldable':
+      return stretch(
+        `<rect x="2" y="2" width="96" height="96" rx="5"${main}/>` +
+          `<rect x="5" y="6" width="90" height="88" rx="3"${detail}/>` +
+          // The crease. It is what says "unfolded" rather than "tablet".
+          `<path d="M 50 6 L 50 94"${detail}/>`,
+      );
     case 'smartwatch':
       return stretch(
         `<rect x="36" y="0" width="28" height="20"${main}/>` +
@@ -233,22 +242,20 @@ export function svgFreehandShape(el: FreehandElement, stroke: string, fill: stri
   );
 }
 
-// Code block (spec/82): the fixed dark editor card + plain monospace lines.
-// No syntax highlighting here — the tokenizer is deliberately a live-editor
-// chunk, and un-highlighted mono is a faithful degrade for a thumbnail.
-const CODE_CARD_FILL = '#0f172a'; // slate-900
-const CODE_CARD_STROKE = '#334155'; // slate-700
-const CODE_TEXT = '#e2e8f0'; // slate-200
-const CODE_MUTED = '#64748b'; // slate-500
+// Code block (spec/82): the editor card + plain monospace lines, in whichever
+// colour scheme the element carries (see code-themes.ts). No syntax
+// highlighting here: the tokenizer is deliberately a live-editor chunk, and
+// un-highlighted mono is a faithful degrade for a thumbnail.
 const CODE_FONT = 'ui-monospace, SFMono-Regular, Menlo, monospace';
 const CODE_FONT_SIZE = 12;
 const CODE_LINE_HEIGHT = 16;
 const CODE_PAD = 12;
 
 export function svgCodeBlockShape(el: BoxedElement & { type: 'shape' }): string {
+  const scheme = codeTheme(el.codeTheme);
   const card =
     `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}"` +
-    ` rx="8" fill="${CODE_CARD_FILL}" stroke="${CODE_CARD_STROKE}" stroke-width="1.5"/>`;
+    ` rx="8" fill="${xmlEscape(scheme.surface)}" stroke="${xmlEscape(scheme.border)}" stroke-width="1.5"/>`;
   const code = (el.code ?? '').replace(/\r\n/g, '\n');
   const empty = code.trim().length === 0;
   // Clip to the card: whole lines vertically, a crude char cap horizontally
@@ -256,7 +263,7 @@ export function svgCodeBlockShape(el: BoxedElement & { type: 'shape' }): string 
   const maxLines = Math.max(1, Math.floor((el.height - CODE_PAD * 2) / CODE_LINE_HEIGHT));
   const maxChars = Math.max(4, Math.floor((el.width - CODE_PAD * 2) / 7.2));
   const lines = (empty ? ['// double-click to add code'] : code.split('\n')).slice(0, maxLines);
-  const textColor = empty ? CODE_MUTED : CODE_TEXT;
+  const textColor = xmlEscape(empty ? scheme.muted : scheme.text);
   const lineStr = lines
     .map(
       (line, i) =>
@@ -269,7 +276,7 @@ export function svgCodeBlockShape(el: BoxedElement & { type: 'shape' }): string 
   const lang = el.codeLanguage && el.codeLanguage !== 'plain' ? el.codeLanguage : null;
   const badge = lang
     ? `<text x="${r2(el.x + el.width - CODE_PAD)}" y="${r2(el.y + CODE_PAD + 2)}" font-family="${CODE_FONT}"` +
-      ` font-size="10" fill="${CODE_MUTED}" text-anchor="end">${xmlEscape(lang)}</text>`
+      ` font-size="10" fill="${xmlEscape(scheme.muted)}" text-anchor="end">${xmlEscape(lang)}</text>`
     : '';
   return card + lineStr + badge;
 }

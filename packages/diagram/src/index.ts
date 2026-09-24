@@ -410,6 +410,7 @@ export * from './comments';
 // Per-element assigned actions (spec/68).
 export * from './element-action';
 export * from './data-shapes';
+export * from './code-themes';
 // Per-participant responses (spec/122) + the collaboration element family
 // (spec/123 to spec/130). Both leaf modules, for the factories cycle.
 export * from './responses';

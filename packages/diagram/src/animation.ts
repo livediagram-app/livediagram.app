@@ -133,6 +133,25 @@ export const ICON_ANIMATIONS: readonly IconAnimation[] = [
   'float',
 ];
 
+// The catalogue's four ANIMATED icons (spec/09) arrive moving.
+//
+// They are drawn to move: a spinner that does not spin is an arc with a gap, a
+// heartbeat that does not beat is a heart. Every other glyph is static until
+// you pick an animation; these four start on the one they were drawn for, and
+// the icon menu can change or clear it like any other.
+export const DEFAULT_ICON_ANIMATION: Readonly<Record<string, IconAnimation>> = {
+  spinner: 'spin',
+  gear: 'spin',
+  heartbeat: 'beat',
+  // A broadcast arc, so the ring that travels off it rather than a scale.
+  signal: 'ping',
+};
+
+/** The animation an icon starts with, if it is one of the animated four. */
+export function defaultIconAnimation(iconId: string | undefined): IconAnimation | undefined {
+  return iconId ? DEFAULT_ICON_ANIMATION[iconId] : undefined;
+}
+
 // Progress elements (spec/46): a horizontal bar + a donut ring that display a
 // 0–100 `progress` value. `progressAnim` animates HOW the filled portion
 // behaves: 'fill' repeatedly grows it from 0 to the value, 'pulse' breathes its

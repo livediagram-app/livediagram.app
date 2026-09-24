@@ -8,6 +8,9 @@
 //     that's the user's own silhouette choice) + a reset.
 //   - ArrowPresets — line looks in tiers (solid weights, patterns, animated
 //     flows) + a reset.
+//   - CodeThemePresets: a code block's colour scheme (spec/82), the one
+//     style choice that element has: it paints its own card and takes no
+//     element colours, so there is nothing to reset it TO but another scheme.
 // Purely presentational: every apply is a callback prop. Shape presets are
 // theme-derived (passed in); arrow presets are the static table below. Lives in
 // its own file so EditorContextMenu doesn't accrete more large categories
@@ -15,6 +18,10 @@
 
 import {
   ARROW_THICKNESS_PX,
+  CODE_THEMES,
+  DEFAULT_CODE_THEME,
+  type CodeTheme,
+  type CodeThemeId,
   type ArrowFlow,
   type ArrowThickness,
   type BorderStyle,
@@ -245,6 +252,67 @@ export function ArrowPresets({
         ))}
       </div>
       <ResetButton onReset={onReset} />
+    </div>
+  );
+}
+
+// ── Code-block schemes ──────────────────────────────────────────────────
+
+// A miniature of the card itself: the surface + border, then three token-
+// coloured bars standing in for a line of code. The tile has to answer "what
+// will my block look like", and only the real colours can.
+function CodeThemeSwatch({ theme }: { theme: CodeTheme }) {
+  return (
+    <svg width="28" height="18" viewBox="0 0 28 18" aria-hidden>
+      <rect
+        x="0.75"
+        y="0.75"
+        width="26.5"
+        height="16.5"
+        rx="2.5"
+        fill={theme.surface}
+        stroke={theme.border}
+        strokeWidth="1.5"
+      />
+      <rect x="4" y="4.5" width="7" height="2" rx="1" fill={theme.keyword} />
+      <rect x="12.5" y="4.5" width="9" height="2" rx="1" fill={theme.string} />
+      <rect x="4" y="8.5" width="14" height="2" rx="1" fill={theme.text} />
+      <rect x="4" y="12.5" width="10" height="2" rx="1" fill={theme.comment} />
+    </svg>
+  );
+}
+
+export function CodeThemePresets({
+  current,
+  onApply,
+  onPreview,
+  onPreviewEnd,
+}: {
+  // The block's stored scheme id; absent means the default card.
+  current: string | undefined;
+  onApply: (id: CodeThemeId) => void;
+  onPreview: (id: CodeThemeId) => void;
+  onPreviewEnd: () => void;
+}) {
+  useRevertOnUnmount(onPreviewEnd);
+  const active = current ?? DEFAULT_CODE_THEME;
+  return (
+    <div className="px-2 py-1">
+      <div className="grid grid-cols-4 gap-1">
+        {CODE_THEMES.map((theme) => (
+          <SizeButton
+            key={theme.id}
+            active={active === theme.id}
+            onClick={() => onApply(theme.id)}
+            onPointerEnter={onMouseHover(() => onPreview(theme.id))}
+            onPointerLeave={onMouseHover(onPreviewEnd)}
+          >
+            <PresetLabel name={theme.name}>
+              <CodeThemeSwatch theme={theme} />
+            </PresetLabel>
+          </SizeButton>
+        ))}
+      </div>
     </div>
   );
 }

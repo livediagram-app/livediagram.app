@@ -10,6 +10,7 @@ import type { ElementAction } from './element-action';
 import type { BorderStroke, BorderStyle, BorderRadius } from './border-style';
 import type { ElementShadow } from './shadow';
 import type { ShapeMarker } from './shape-marker';
+import type { CodeThemeId } from './code-themes';
 import type { PickerSource, SelectionMode, SessionButtonConfig } from './selection-mode';
 import type { IconSize } from './icon-size';
 import type { EmbedProvider } from './youtube';
@@ -282,6 +283,10 @@ export type ShapeElement = {
   // meaningful on the 'code-block' kind; bounded in validate.ts.
   code?: string;
   codeLanguage?: CodeLanguage;
+  // Which colour scheme the card paints in (see code-themes.ts). Absent =
+  // 'midnight', the single look the block shipped with, so older diagrams are
+  // untouched.
+  codeTheme?: CodeThemeId;
   // Record (spec/120): the rows of a UML class / ER entity box. Only
   // meaningful on the 'entity' kind; bounded in validate.ts. The element's
   // `label` is the record's TITLE, so a record needs no extra name field.

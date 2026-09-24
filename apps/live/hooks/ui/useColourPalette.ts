@@ -4,6 +4,7 @@ import { getTheme, themePresetColors } from '@/lib/themes';
 import { addCustomSwatch, removeCustomSwatch } from '@/lib/custom-swatches';
 import { readUserPreferences } from '@/lib/user-preferences';
 import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
+import type { ColourPalette } from '@/components/palette/context-menu-input-rows';
 
 // The colour palette every picker in the editor offers (spec/09 Colours): the
 // active theme's presets, plus the colours this user has actually used.
@@ -14,10 +15,10 @@ import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
 // on the cell beside it, and a palette that differed per surface would be
 // worse than none.
 export function useColourPalette(): {
-  presetColors: string[];
-  customColors: string[];
   addCustomColor: (color: string) => void;
-  removeCustomColor: (color: string) => void;
+  // Ready to spread onto a ColourRow, so no caller has to re-assemble the
+  // same four props (and miss one).
+  swatches: ColourPalette;
 } {
   const { activeTab, userPreferences, setUserPreferences, writeUserPreferences, selfParticipant } =
     useEditorContext();
@@ -33,10 +34,17 @@ export function useColourPalette(): {
     writeUserPreferences(merged, selfParticipant?.id ?? null);
   };
 
+  const addCustomColor = (color: string) =>
+    update((current) => addCustomSwatch(current, color, presetColors));
   return {
-    presetColors,
-    customColors: userPreferences.customSwatches ?? [],
-    addCustomColor: (color) => update((current) => addCustomSwatch(current, color, presetColors)),
-    removeCustomColor: (color) => update((current) => removeCustomSwatch(current, color)),
+    // Also returned on its own: committing a colour ADDS it to the palette
+    // (spec/09 Colours), so callers need it outside the bundle too.
+    addCustomColor,
+    swatches: {
+      presets: presetColors,
+      customs: userPreferences.customSwatches ?? [],
+      onAddCustom: addCustomColor,
+      onRemoveCustom: (color) => update((current) => removeCustomSwatch(current, color)),
+    },
   };
 }

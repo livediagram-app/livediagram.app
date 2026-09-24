@@ -9,15 +9,18 @@
 
 import {
   isChartShape,
+  isCodeBlockShape,
+  STICKY_PRESETS,
   supportsColours,
   type ArrowFlow,
   type BorderStyle,
   type Element,
+  type ShapeColorPreset,
   type ShapeElement,
   type ShapeKind,
 } from '@livediagram/diagram';
 import { PresetsMenuGlyph } from '@/components/palette/context-menu-icons';
-import { ArrowPresets, ShapePresets } from '@/components/palette/StylePresets';
+import { ArrowPresets, CodeThemePresets, ShapePresets } from '@/components/palette/StylePresets';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 
@@ -47,6 +50,7 @@ export function shapeSupportsPresets(el: Element): el is ShapeElement {
 export function ShapePresetsSection({
   shape,
   current,
+  presets,
   props,
   accordion,
   onClose,
@@ -54,6 +58,10 @@ export function ShapePresetsSection({
 }: {
   // The shape's kind, so the preview tiles match it (a circle as a circle).
   shape: ShapeKind;
+  // The grid to show. Defaults to the theme-derived shape looks; a sticky
+  // passes its own pad of note colours instead, since a note is exempt from
+  // theme recolouring and wants paper colours rather than the board's.
+  presets?: ShapeColorPreset[];
   // The shape's current style, to highlight a matching preset tile. In a
   // multi-selection this reads off the first selected shape.
   current: {
@@ -74,7 +82,7 @@ export function ShapePresetsSection({
     <MenuAccordionSection title={title} icon={<PresetsMenuGlyph />} {...accordion}>
       <ShapePresets
         shape={shape}
-        colorPresets={props.shapeColorPresets}
+        colorPresets={presets ?? props.shapeColorPresets}
         current={current}
         onApplyColor={(p) => props.onApplyShapeColorPreset(p)}
         onPreviewColor={(p) => props.onPreviewShapeColorPreset(p)}
@@ -120,4 +128,116 @@ export function ArrowPresetsSection({
       />
     </MenuAccordionSection>
   );
+}
+
+// Code-block schemes (spec/82). A code block paints its own card and takes no
+// element colours, so its Presets grid is the colour SCHEME rather than the
+// shape looks: same accordion, same hover-preview, different vocabulary.
+export function CodeThemePresetsSection({
+  current,
+  props,
+  accordion,
+}: {
+  current: string | undefined;
+  props: EditorContextMenuProps;
+  accordion: AccordionProps;
+}) {
+  return (
+    <MenuAccordionSection title="Presets" icon={<PresetsMenuGlyph />} {...accordion}>
+      <CodeThemePresets
+        current={current}
+        onApply={props.onApplyCodeTheme}
+        onPreview={props.onPreviewCodeTheme}
+        onPreviewEnd={props.onPreviewStyleEnd}
+      />
+    </MenuAccordionSection>
+  );
+}
+
+/** Whether `TargetPresetsSection` would render anything for this element. */
+export function hasStylePresets(el: Element): boolean {
+  // The code-block test leads for the same reason it does in the component:
+  // `shapeSupportsPresets` narrows shapes away when it fails.
+  return (
+    (el.type === 'shape' && isCodeBlockShape(el.shape)) ||
+    shapeSupportsPresets(el) ||
+    el.type === 'sticky' ||
+    el.type === 'arrow'
+  );
+}
+
+// Which Presets grid an element gets. Four answers, and the choice is its own
+// question, so it lives with the sections rather than inside the appearance
+// menu's render: a shape's theme looks, a sticky's pad of note colours, a code
+// block's colour scheme, or an arrow's line looks. Elements with none of them
+// render nothing, which is why the caller can mount this unconditionally.
+export function TargetPresetsSection({
+  target,
+  props,
+  accordion,
+  onClose,
+}: {
+  target: Element;
+  props: EditorContextMenuProps;
+  accordion: AccordionProps;
+  onClose: () => void;
+}) {
+  // Checked before the shape branch: `shapeSupportsPresets` is a type
+  // predicate, so a failing call narrows every shape out of `target` and a
+  // later `type === 'shape'` test would be unreachable.
+  if (target.type === 'shape' && isCodeBlockShape(target.shape)) {
+    return (
+      <CodeThemePresetsSection current={target.codeTheme} props={props} accordion={accordion} />
+    );
+  }
+  if (shapeSupportsPresets(target)) {
+    return (
+      <ShapePresetsSection
+        shape={target.shape}
+        current={{
+          fillColor: target.fillColor,
+          strokeColor: target.strokeColor,
+          textColor: target.textColor,
+          colorPreset: target.colorPreset,
+        }}
+        props={props}
+        accordion={accordion}
+        onClose={onClose}
+      />
+    );
+  }
+  // A sticky's own grid rather than the theme-derived shape looks: a note is
+  // exempt from theme recolouring, so the board's palette is the wrong
+  // vocabulary for it. Previewed as a square, which is what a note is.
+  if (target.type === 'sticky') {
+    return (
+      <ShapePresetsSection
+        shape="square"
+        presets={[...STICKY_PRESETS]}
+        current={{
+          fillColor: target.fillColor,
+          strokeColor: target.strokeColor,
+          textColor: target.textColor,
+        }}
+        props={props}
+        accordion={accordion}
+        onClose={onClose}
+      />
+    );
+  }
+  if (target.type === 'arrow') {
+    return (
+      <ArrowPresetsSection
+        current={{
+          strokeStyle: target.strokeStyle,
+          strokeWidth: target.strokeWidth,
+          flow: target.flow,
+        }}
+        props={props}
+        accordion={accordion}
+        onClose={onClose}
+      />
+    );
+  }
+  return null;
 }
