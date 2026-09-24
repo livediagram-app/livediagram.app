@@ -1138,6 +1138,16 @@ Decisions from the operator:
   Measured on the three labelled photographs, the gates and the splitting
   together: F1 53 → 80, 9 → 86 and 42 → 90.
 
+- **A learned boundary model may correct the boxes, never replace them.** The
+  detector accepts what a small boundary model (trained on synthetic walls
+  only) saw in the same image, as plain numbers, and uses it only where the
+  model is near certain: split a box holding two notes, add a note on paper
+  no box has, drop a box with no note in it that the model calls background.
+  The kinds stay the colour's. The detector itself carries no ML dependency;
+  the model is optional, runs locally, and is loaded only for the photo
+  import. Not yet wired into the editor (what it needs, and the browser cost
+  measured: `docs/vision/experiments/j-hybrid.md`).
+
 - **Paper is smooth.** Standing out is not enough on its own: cardboard,
   furniture and a window frame at night differ from the wall as much as any
   note. They are told apart by their SURFACE: a box that is both dark (median

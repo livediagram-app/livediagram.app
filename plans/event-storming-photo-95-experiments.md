@@ -209,7 +209,7 @@ overlaps), 2/8 walls (201707, 201713).
         its visible part into a box of its own (rejected on three probes).
   - [x] K4 Fold-back: results doc, sticky-detection.md, spec/139 Phase 9.
 
-- [ ] J — **hybrid: the classical pipeline plus the learned boundary model**
+- [x] J — **hybrid: the classical pipeline plus the learned boundary model**
       (adds `sticky-vision/src/hybrid.ts`, `model-cues.ts`, one call in
       `detect.ts`; new files in `sticky-model`). Results:
       [j-hybrid.md](../docs/vision/experiments/j-hybrid.md).
@@ -228,7 +228,8 @@ overlaps), 2/8 walls (201707, 201713).
   - [x] J2b Where a box is, told by centres instead of an area cap: a note
         lapped by a neighbour is added (kept: 95.4 → 95.5; 201646 and 201713
         rec-A 100%).
-  - [ ] J5 Fold-back: results doc, sticky-detection.md, what wiring needs.
+  - [x] J5 Fold-back: results doc, sticky-detection.md, spec/139 Phase 9, what
+        wiring needs.
 
 ## Not yet delegated
 

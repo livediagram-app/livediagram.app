@@ -185,7 +185,20 @@ and testable.
    standing out but not for grain: on a note a few pens wide the ink margin
    leaves no clean interior, and its own edges read as grain.
 
-6. **Rows** (`clusterRows`): cluster centre-y, order by centre-x within a row.
+6. **Corrected by a boundary model, when one is given** (`combineWithModel`,
+   in `hybrid.ts`). Optional, and off in the editor today. A small learned
+   model (group E's U-Net, trained on synthetic walls only) labels every pixel
+   note core, seam or background, and hands over its notes as plain arrays
+   (`model-cues.ts`); this package never runs it. Where the model is near
+   certain it corrects the colour: a box holding two notes it is sure of is
+   split into them (flush pairs whose seam shows no shadow), a note it is sure
+   of on paper where no box is gets a box, and a box with no core in it that
+   the model calls background is dropped. The kinds still come from the colour
+   under each box. On the eight labelled walls: TOTAL F1 94.1 → 95.5, merged
+   20 → 16, no real merge left
+   ([experiments/j-hybrid.md](experiments/j-hybrid.md)).
+
+7. **Rows** (`clusterRows`): cluster centre-y, order by centre-x within a row.
 
 ## The constants, and what they cost to learn
 
@@ -342,6 +355,13 @@ serves `demo/sticky-vision/index.html`: a synthetic kraft wall the page draws
 itself, detected live, every box overlaid with kind colour, `row · #order` and
 confidence, and each miss outlined as a dashed ghost because the page knows what
 it drew. "Load a real photo" runs the same pipeline on a photograph.
+
+`packages/sticky-model/scripts/hybrid/` scores the detector corrected by the
+boundary model: `sweep.ts --kept` prints the same table with the kept rules
+(`HYBRID_RULES`), `--grid split|add|drop` sweeps one rule, `probe.ts` lists
+what the model sees at every classical failure, and `browser-bench.ts` times
+the model in headless Chromium. The model's probabilities are cached under the
+temp directory; see [experiments/j-hybrid.md](experiments/j-hybrid.md).
 
 Real photographs never enter the repo. The unit tests draw their own images and
 stay under 200ms.
