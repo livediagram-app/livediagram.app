@@ -64,7 +64,9 @@ and testable.
    paper, so a lit pixel of either kind under a saturation line gets a mask
    class of its own: a pale note lapped against a vivid one of its kind is
    then two components, not one blob the length rule cuts by the wall's note.
-   Both read back as their kind.
+   Both read back as their kind. And in deep shade (value under 0.4) a
+   pixel's hue is sensor noise, so a lilac pixel there reads as the pink it
+   cannot be told from, and a shaded lilac note is one blob, not two.
 
 3. **Connected components** (`labelComponents`) over that mask: two-pass
    union-find, because a large frame is millions of pixels and a recursive
@@ -219,6 +221,7 @@ and testable.
 | `FUSED_MIN_ASPECT` / `FUSED_SIZE_RATIO`     | 1.75 / 1.5        | A refused box this elongated beside a pad is fused pad notes; a cut square joins at this looser size match. 1.6–1.85 and 1.35–1.5 score alike.                                                  |
 | `RESCUE_ERODE_FRACTION` / `RESCUE_ROUNDS`   | 0.12 / 3          | Deep enough to break the seam between two lapped notes; three passes is where it stops paying.                                                                                                  |
 | `PALE_SHADE_MAX_SATURATION` / `_MIN_VALUE`  | 0.44 / 0.6        | A lit blue or pink pixel under this saturation is the pale paper of its kind, a mask class of its own. 0.42–0.45 and 0.55–0.65 score alike; unlit, the night room's blue-grey would be one too. |
+| `DIM_HUE_MAX_VALUE`                         | 0.4               | Below this value a policy-band pixel reads as a hotspot: a shaded lilac note reads h 266–329. 0.3–0.45 score alike.                                                                             |
 | Hue bands                                   | see `classify.ts` | Widened to measured paper, not swatches: real greens read h≈86 where the catalogue's read-model is h≈137. Green runs on to where blue begins (185): a pale mint reads h≈177.                    |
 
 ## Four things that were wrong first, and are worth not repeating

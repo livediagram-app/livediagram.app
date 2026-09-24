@@ -215,6 +215,33 @@ from each other) and loses junk; 201646 finds the periwinkle note whole;
 201654 loses a merged box. Three walls gain one spurious box each (201654,
 201713, the night wall), within the one-note allowance.
 
+## H5: lilac and pink in deep shade are one colour (kept)
+
+**Finding.** 201730's note in the shaded corner (labelled a hotspot, a
+lilac to the eye) is 30% of a hotspot box and 13% of a policy one: at value
+0.2 to 0.3 its pixels read h 266 to 329 (`scripts/h-px.ts`), either side of
+the line at 305 between the two bands, speckled together. Each kind's blob is
+two-thirds holes and the fill gate refuses both. A blurred colour for dark
+pixels did not repair it (see Rejected); `scripts/h-mixed.ts` finds no other
+note split this way between two kinds.
+
+**Rule** (`classifyHsv`). A pixel in the policy band darker than a value
+line reads as a hotspot: the pink band is the wider, and the label says pink.
+
+| `DIM_HUE_MAX_VALUE` | 0.25 | 0.3  | 0.35 | 0.4 (kept) | 0.45 | 0.5       |
+| ------------------- | ---- | ---- | ---- | ---------- | ---- | --------- |
+| TOTAL / merged      | 92.3 | 92.4 | 92.4 | 92.4 / 27  | 92.4 | 92.2 / 28 |
+| 201730 (shade)      | 92   | 94   | 94   | 94         | 94   | 94        |
+
+At 0.5 the panorama's lit lilac policies start to go pink and merge with
+their pink neighbours (rec-A 89 → 85). Reading dim pink as lilac instead
+scores the same at 0.3 to 0.4 but night pinks at 0.45 are lost; pink it is.
+
+| wall           | before (H4)      | after            |
+| -------------- | ---------------- | ---------------- |
+| 201730 (shade) | 93 / 94 / 92 / 2 | 94 / 94 / 94 / 2 |
+| **TOTAL**      | 92.3, 27         | **92.4, 27**     |
+
 ## Rejected
 
 Measured on the state named in each row; TOTAL / merged, and the walls that

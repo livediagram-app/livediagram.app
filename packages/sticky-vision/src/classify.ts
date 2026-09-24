@@ -117,6 +117,15 @@ const PALE_PAPER_MIN_LAB_DISTANCE = 12;
 // to rims welding them together.
 const PALE_PAPER_MIN_BRIGHTNESS = 0.9;
 
+// Below this brightness a pixel's hue is sensor noise: a lilac note in deep
+// shade (value 0.2 to 0.3) reads anywhere from h 266 to 329 as photographed,
+// either side of the line between policy and hotspot, and splits into two
+// thirds-full blobs of the two kinds that the fill gate then refuses. Pink it
+// is, then: the pink band is the wider. Measured on the eight labelled walls,
+// 0.3 to 0.45 score the same; 0.25 finds nothing, 0.5 reaches the lit lilac
+// policies on a white wall.
+const DIM_HUE_MAX_VALUE = 0.4;
+
 function inBand(hue: number, band: HueBand): boolean {
   return band.from <= band.to
     ? hue >= band.from && hue < band.to
@@ -148,6 +157,9 @@ export function classifyHsv(hsv: Hsv, floors: PaperFloors = DEFAULT_FLOORS): Pix
   if (YELLOW_KINDS.has(band.kind)) {
     return hsv.s <= PALE_YELLOW_MAX_SATURATION ? 'aggregate' : 'actor';
   }
+  // Lilac and pink in deep shade are one colour to the sensor (see
+  // DIM_HUE_MAX_VALUE): read as the one kind, so a shaded note is one blob.
+  if (band.kind === 'policy' && hsv.v < DIM_HUE_MAX_VALUE) return 'hotspot';
   return band.kind;
 }
 
@@ -222,6 +234,7 @@ export function isPaleShade(r: number, g: number, b: number, kind: PixelClass): 
 export { PALE_SHADE_KINDS };
 
 export const CALIBRATION = {
+  DIM_HUE_MAX_VALUE,
   PALE_SHADE_MAX_SATURATION,
   PALE_SHADE_MIN_VALUE,
   HUE_BANDS,
