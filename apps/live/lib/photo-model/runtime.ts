@@ -48,9 +48,18 @@ export type BoundaryRuntime = {
 
 type Tf = typeof import('@tensorflow/tfjs-core');
 
+type Gpu = { requestAdapter: () => Promise<unknown> };
+
 async function startWebGpu(tf: Tf): Promise<boolean> {
-  if (!('gpu' in navigator)) return false;
+  const gpu = (navigator as unknown as { gpu?: Gpu }).gpu;
+  if (!gpu) return false;
   try {
+    // A browser can expose WebGPU and still have no adapter (headless, a
+    // blocklisted driver); asking first spares it the backend's download.
+    if (!(await gpu.requestAdapter())) {
+      console.info('[photo-model] no WebGPU adapter, trying WASM');
+      return false;
+    }
     await import('@tensorflow/tfjs-backend-webgpu');
     return (await tf.setBackend('webgpu')) && (await tf.ready(), true);
   } catch (err) {
