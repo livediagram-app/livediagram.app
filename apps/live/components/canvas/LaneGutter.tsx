@@ -1,5 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
-import type { TextAlignX, TextAlignY } from '@livediagram/diagram';
+import {
+  isLaneBand,
+  laneEdgeOfElement,
+  laneGutterEdge,
+  laneSizeOfElement,
+  type LaneGutterEdge,
+  type LaneLike,
+  type TextAlignX,
+  type TextAlignY,
+} from '@livediagram/diagram';
 
 // A lane's title gutter (spec/119): the tinted strip behind its title, with a
 // divider where it meets the body.
@@ -12,70 +21,25 @@ import type { TextAlignX, TextAlignY } from '@livediagram/diagram';
 // The gutter runs along whichever EDGE the title is pinned to, so re-aligning
 // the title takes its backdrop with it.
 
-/** Thickness of the title gutter along a lane's side, in element space. */
-export const LANE_GUTTER_PX = 132;
-
-// The same idea on the other axis, and a different number because the job is
-// different: 132 buys room for words across, while a band only has to hold one
-// line down. 24 + 16 + 24 — the lg padding a lane is built with, above and
-// below a default (14px) title's line box. A longer or larger title runs past
-// the wash exactly as it already runs past the 132 gutter; the band is a
-// backdrop, not a clip.
-/** Thickness of the title band along a lane's top or bottom, in element space. */
-const LANE_BAND_PX = 64;
+// The geometry (which edge, how thick) lives in @livediagram/diagram, because
+// the headless renderer has to draw the same strip on the same edge or an
+// exported swimlane is a plain box with its title floating in the work.
+// Re-exported so this module stays the one import a lane view needs.
+export {
+  isLaneBand,
+  LANE_BAND_PX,
+  LANE_GUTTER_PX,
+  laneEdgeOfElement,
+  laneGutterEdge,
+  laneSizeOfElement,
+  type LaneGutterEdge,
+  type LaneLike,
+} from '@livediagram/diagram';
 
 // A gutter narrower than this has no room for a title; wider than the lane
 // itself is not a gutter any more, it is the lane. Clamped on both sides so a
 // wild drag cannot make the element unusable.
 const MIN_GUTTER_PX = 28;
-
-export type LaneGutterEdge = 'left' | 'right' | 'top' | 'bottom' | 'centre-x';
-
-/** The bits of a lane the snap resolver reads. Structural, so an Element
- *  satisfies it without a cast. */
-export type LaneLike = {
-  textAlignX?: TextAlignX | undefined;
-  textAlignY?: TextAlignY | undefined;
-  headerSize?: number | undefined;
-};
-
-/** Another lane's gutter edge, for the snap resolver. Module-local: the
- *  resolver takes it as a callback rather than importing it. */
-function laneEdgeOfElement(el: LaneLike): LaneGutterEdge {
-  return laneGutterEdge(el.textAlignX ?? 'center', el.textAlignY ?? 'middle');
-}
-
-/** A lane's heading thickness, defaulted by orientation. The one definition
- *  of it: the gutter reads it for its own size, and the snap resolver for
- *  every other lane's. */
-function laneSizeOfElement(el: LaneLike): number {
-  const band = isLaneBand(laneEdgeOfElement(el));
-  return el.headerSize ?? (band ? LANE_BAND_PX : LANE_GUTTER_PX);
-}
-
-/**
- * Which edge the gutter hugs, from the title's alignment alone.
- *
- * A title pinned left or right reads down that edge — the swimlane idiom — and
- * that holds at any vertical position, so the horizontal pin wins whenever
- * there is one. Only a title with no horizontal edge to hug lets the vertical
- * pin decide, which is what turns the lane on its side: centred at the top or
- * bottom, the gutter becomes a header band and the lane reads as a column.
- * Centred both ways keeps the strip down the middle, which is the one case
- * where neither axis is pinned.
- */
-export function laneGutterEdge(alignX: TextAlignX, alignY: TextAlignY): LaneGutterEdge {
-  if (alignX === 'left') return 'left';
-  if (alignX === 'right') return 'right';
-  if (alignY === 'top') return 'top';
-  if (alignY === 'bottom') return 'bottom';
-  return 'centre-x';
-}
-
-/** True when the gutter lies across the lane rather than down it. */
-export function isLaneBand(edge: LaneGutterEdge): boolean {
-  return edge === 'top' || edge === 'bottom';
-}
 
 export function LaneGutter({
   stroke,

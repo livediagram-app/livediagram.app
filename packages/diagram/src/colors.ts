@@ -390,6 +390,9 @@ export const SELF_PAINTING_SHAPES = new Set<string>([
   // Behaviour elements (spec/104, /106): the ring / cover IS the element.
   'portal',
   'reveal',
+  // A chair (spec/130) draws its own furniture and wants no box behind it,
+  // which is what the canvas does too (isSvgRenderedShape excludes it).
+  'chair',
 ]);
 
 export function supportsBorderControls(element: Element): boolean {
