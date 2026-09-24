@@ -47,6 +47,9 @@ export type PaperFloors = {
   // the classifier decides by HSV alone.
   wallA?: number;
   wallB?: number;
+  // How bright the wall is (its modal HSV value), where it was measured. Pale
+  // paper is lit like the wall; see `classifyRgb`.
+  wallValue?: number;
 };
 
 export const DEFAULT_FLOORS: PaperFloors = {
@@ -114,6 +117,7 @@ function floorsOf(surface: Surface): Measured {
       value: Math.max(VALUE_FLOOR, wallValue * WALL_VALUE_RATIO),
       wallHue,
       ...wallLabOf(surface, saturation),
+      wallValue,
     },
     bimodal,
     wallSaturation,
@@ -166,6 +170,7 @@ export function localFloorsOf(
 
   const saturation = new Float64Array(tilesX * tilesY);
   const value = new Float64Array(tilesX * tilesY);
+  const wallValue = new Float64Array(tilesX * tilesY);
   // Hue as a unit vector, so interpolating 350° with 10° gives 0° rather than
   // the 180° a linear blend would invent.
   const hueX = new Float64Array(tilesX * tilesY);
@@ -190,6 +195,7 @@ export function localFloorsOf(
       // knowable from whatever surface fills the cell, and that is precisely
       // what a shaded wall needs.
       value[i] = local.value;
+      wallValue[i] = local.wallValue ?? 0;
       // The SATURATION floor and the wall HUE are the tile's own only when
       // the tile holds two surfaces to compare — wall and paper. One surface
       // filling a cell is unknowable locally: a note bigger than the cell
@@ -241,6 +247,8 @@ export function localFloorsOf(
       saturation[i01]! * w01 +
       saturation[i11]! * w11;
     out.value = value[i00]! * w00 + value[i10]! * w10 + value[i01]! * w01 + value[i11]! * w11;
+    out.wallValue =
+      wallValue[i00]! * w00 + wallValue[i10]! * w10 + wallValue[i01]! * w01 + wallValue[i11]! * w11;
     if (wallColourKnown) {
       out.wallA = wallA[i00]! * w00 + wallA[i10]! * w10 + wallA[i01]! * w01 + wallA[i11]! * w11;
       out.wallB = wallB[i00]! * w00 + wallB[i10]! * w10 + wallB[i01]! * w01 + wallB[i11]! * w11;

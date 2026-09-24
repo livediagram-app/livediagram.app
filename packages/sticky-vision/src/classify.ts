@@ -96,6 +96,23 @@ const OFF_HUE_MIN_SATURATION = 0.11;
 // total (the kraft walls' spurious boxes fall by two thirds), and 7 is the
 // one in that band that costs no wall more than a note.
 const WALL_HUE_MIN_LAB_DISTANCE = 7;
+// The other way round: a pixel HSV calls WALL is still paper when its a*b* sits
+// this far from the wall's. A pale pink note on white paper has barely more
+// HSV saturation than the paper's own sheen, and a hue within a few tens of
+// degrees of it, so the saturation floor cannot see it; in a*b* it is 12 to 20
+// units away, while a white wall's own noise is 2 to 6. Tuned on the eight
+// hand-labelled walls: 11 to 14 all lift the total (the panorama's pale notes
+// are found whole from 11 up and start to fragment at 13); at 10 the blurred
+// rims of a whiteboard's dense orange notes join them together, and from 16
+// the pale notes are lost again.
+const PALE_PAPER_MIN_LAB_DISTANCE = 12;
+// …and only when it is lit like the wall. The rim of a note, where the paper
+// blurs into the wall, and the shadowed gap between two notes are as far from
+// the wall in a*b* as pale paper is, but darker than the wall; pale paper is
+// not. A fraction of the wall's own brightness: 0.8 to 1.1 score the same, and
+// with no brightness test at all a dense whiteboard loses a tenth of its notes
+// to rims welding them together.
+const PALE_PAPER_MIN_BRIGHTNESS = 0.9;
 
 function inBand(hue: number, band: HueBand): boolean {
   return band.from <= band.to
@@ -141,7 +158,8 @@ export function classifyRgb(
 ): PixelClass {
   const hsv = rgbToHsv({ r, g, b });
   const verdict = classifyHsv(hsv, floors);
-  if (verdict === 'wall' || verdict === 'ink' || verdict === 'unknown') return verdict;
+  if (verdict === 'wall') return paleVerdict(r, g, b, hsv, floors);
+  if (verdict === 'ink' || verdict === 'unknown') return verdict;
   // Paper to HSV; at the wall's hue, ask CIELAB whether it is the wall in
   // shade (see WALL_HUE_MIN_LAB_DISTANCE). Only these pixels pay for the
   // conversion.
@@ -155,11 +173,30 @@ export function classifyRgb(
 
 const labScratch: Lab = { l: 0, a: 0, b: 0 };
 
+// Is a pixel HSV calls wall pale paper (see PALE_PAPER_MIN_LAB_DISTANCE)? The
+// cheap tests go first, so only a lit pixel with a paper hue pays for CIELAB.
+function paleVerdict(r: number, g: number, b: number, hsv: Hsv, floors: PaperFloors): PixelClass {
+  const { wallA, wallB, wallValue } = floors;
+  if (wallA === undefined || wallB === undefined || wallValue === undefined) return 'wall';
+  if (hsv.v < wallValue * PALE_PAPER_MIN_BRIGHTNESS) return 'wall';
+  const band = HUE_BANDS.find((bb) => inBand(hsv.h, bb));
+  // Never a pale YELLOW: masking tape is exactly that colour, holds up every
+  // sheet of paper on a wall, and a diagonal strip of it has a note's bounding
+  // box. A pale aggregate is left to the saturation floor.
+  if (!band || YELLOW_KINDS.has(band.kind)) return 'wall';
+  const lab = rgbToLabInto(r, g, b, labScratch);
+  return Math.hypot(lab.a - wallA, lab.b - wallB) >= PALE_PAPER_MIN_LAB_DISTANCE
+    ? band.kind
+    : 'wall';
+}
+
 export const CALIBRATION = {
   HUE_BANDS,
   OFF_HUE_MIN_SATURATION,
   WALL_HUE_NEIGHBOURHOOD_DEG,
   WALL_HUE_MIN_LAB_DISTANCE,
+  PALE_PAPER_MIN_LAB_DISTANCE,
+  PALE_PAPER_MIN_BRIGHTNESS,
   PALE_YELLOW_MAX_SATURATION,
   // How the floors themselves are measured lives in `floors.ts`, next to the
   // code that uses each number; the whole calibrated table is here.
