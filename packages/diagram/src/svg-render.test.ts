@@ -702,3 +702,44 @@ describe('arrow captions in an export', () => {
     expect(captioned({ labelFill: 'transparent' })).not.toContain('fill="transparent"');
   });
 });
+
+// Drawn-on-the-box chrome (spec/09, spec/119). The export drew the box and
+// stopped, so a swimlane came out as a plain rectangle with its title floating
+// in the middle of the work, and a browser frame had no window at all.
+describe('chrome the canvas draws on a box', () => {
+  const laneAt = (o: Partial<ShapeElement> = {}) =>
+    shape('ln', { shape: 'lane', width: 400, height: 200, textAlignX: 'left', ...o });
+
+  it('paints a lane gutter down the edge its title is pinned to', () => {
+    const svg = renderElementsToSvg(tab([laneAt()]));
+    // The gutter's own strip, at the lane's left edge and its default width.
+    expect(svg).toContain('width="132"');
+  });
+
+  it('follows the title to the other edge', () => {
+    const svg = renderElementsToSvg(tab([laneAt({ textAlignX: 'right' })]));
+    // x = 0 + 400 - 132, i.e. the strip moved rather than a second one drawn.
+    expect(svg).toContain('x="268"');
+  });
+
+  it('paints an explicit heading colour at full strength, not as a wash', () => {
+    const washed = renderElementsToSvg(tab([laneAt()]));
+    expect(washed).toContain('opacity="0.1"');
+    const painted = renderElementsToSvg(tab([laneAt({ headerFill: '#fecdd3' })]));
+    expect(painted).toContain('fill="#fecdd3"');
+  });
+
+  it('gives a browser frame its window chrome', () => {
+    const svg = renderElementsToSvg(
+      tab([shape('br', { shape: 'browser', width: 300, height: 200 })]),
+    );
+    // Three window dots and the URL pill, the two marks that say "browser".
+    expect((svg.match(/<circle/g) ?? []).length).toBeGreaterThanOrEqual(3);
+    expect(svg).toContain('rx="10"');
+  });
+
+  it('rounds a mind node the way the canvas does', () => {
+    const svg = renderElementsToSvg(tab([shape('mn', { shape: 'mind-node' })]));
+    expect(svg).toContain('rx="12"');
+  });
+});

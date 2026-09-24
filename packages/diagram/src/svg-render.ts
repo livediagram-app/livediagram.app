@@ -11,6 +11,8 @@ import { iconBandBounds, techIconMarkBounds } from './icon-size';
 import {
   hasShapeSilhouette,
   svgChecklistShape,
+  svgLaneGutter,
+  svgBrowserChrome,
   svgLegendShape,
   svgCodeBlockShape,
   svgFreehandShape,
@@ -258,10 +260,24 @@ export function svgBoxed(el: BoxedElement, opts: BoxedExportOptions = {}): strin
         : // A sticky is die-cut paper: square corners, matching the canvas.
           el.type === 'sticky'
           ? 0
-          : 6;
-    shapeStr =
+          : // A mind node is a soft-cornered pill-ish box (spec/118), the one
+            // rect kind the canvas rounds further than the usual 6.
+            el.type === 'shape' && el.shape === 'mind-node'
+            ? 12
+            : 6;
+    const box =
       silhouette ??
       `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="${r2(rx)}" fill="${xmlEscape(shape.fill)}" stroke="${xmlEscape(shape.stroke)}" stroke-width="1.5"/>`;
+    // What the canvas draws ON the box: a lane's title gutter (spec/119) and a
+    // browser frame's chrome strip (spec/09). Both were missing, so an
+    // exported swimlane was a plain box and an exported browser had no window.
+    const onBox =
+      el.type === 'shape' && el.shape === 'lane'
+        ? svgLaneGutter(el, shape.stroke)
+        : el.type === 'shape' && el.shape === 'browser'
+          ? svgBrowserChrome(el, shape.stroke)
+          : '';
+    shapeStr = box + onBox;
   } else if (shape.kind === 'icon') {
     shapeStr = svgIconShape(el, shape.art, shape.stroke);
   } else if (shape.kind === 'sticker') {

@@ -399,6 +399,7 @@ export * from './youtube';
 export * from './arrow-path';
 export * from './arrow-label';
 export * from './label-font';
+export * from './lane-gutter';
 export * from './arrow-style';
 export * from './border-style';
 // Element drop shadows (spec/86): model, presets + render builders.
