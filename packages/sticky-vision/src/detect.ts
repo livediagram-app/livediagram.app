@@ -14,6 +14,7 @@ import {
 } from './boxes';
 import { clusterRows } from './rows';
 import { luminanceOf } from './seam';
+import { dropSurfaces } from './spill';
 import { dropBlank } from './texture';
 import { findPads } from './pads';
 
@@ -61,7 +62,7 @@ export type DetectOptions = {
   onDrop?: (box: Box, reason: DetectDropReason) => void;
 };
 
-export type DetectDropReason = DropReason | 'standout' | 'dark-grain' | 'blank';
+export type DetectDropReason = DropReason | 'standout' | 'dark-grain' | 'blank' | 'surface';
 
 // Sensor noise, as a fraction of the working image's long edge: a property of
 // the camera rather than of the wall. Shared with `fitBoxes`, which uses the
@@ -195,11 +196,15 @@ export function detectStickies(image: ImageBuffer, opts: DetectOptions = {}): De
     ...firstPass,
     ...standOut(findPads(refused, firstPass, working, noteSize), false),
   ];
-  const standing = dropBlank(working, outstanding);
-  if (standing.length < outstanding.length) {
-    const kept = new Set(standing);
+  const blankless = dropBlank(working, outstanding);
+  if (blankless.length < outstanding.length) {
+    const kept = new Set(blankless);
     for (const box of outstanding) if (!kept.has(box)) drop(box, 'blank');
   }
+  // …and a box whose colour does not STOP at its edge is a piece of a
+  // surface, not a note: a lit face of cardboard, a window pane, bare kraft
+  // (see `dropSurfaces`). A note is an object; its paper ends.
+  const standing = dropSurfaces(working, blankless, (box) => drop(box, 'surface'));
   if (standing.length === 0) return [];
   return clusterRows(standing, noteSize).map((box, i) => ({
     id: i,
