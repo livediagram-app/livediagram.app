@@ -117,7 +117,12 @@ defaults to "Bring Focus" and is edited like any label, so a board can have
 
 Read-only surfaces (the export, the minimap, a view-only session) render the
 face inert rather than hiding it: a viewer should still see what the board is
-offering.
+offering. In an export that means the chip, the target and the label, drawn by
+`svgBehaviourFace` from the same 24-unit reticle the canvas uses, so a picture
+of the board shows the button rather than an empty box with a word in it
+([spec/143](143-export-fidelity.md)). The press states are the one thing left
+out, for the reason every other control's are: nothing in a still image can be
+hovered or held.
 
 It is the one Behaviour element with **no `…` on its face**. The rest of the
 family carries the shared settings ellipsis (or draws a richer one of its own),

@@ -35,6 +35,7 @@ export const BEHAVIOUR_FACE_SHAPES = new Set<string>([
   'comment-pin',
   'portal',
   'chair',
+  'focus-button',
 ]);
 
 const PAD_X = 16;
@@ -322,6 +323,31 @@ export function svgBehaviourFace(
   const cy = el.y + el.height / 2;
   const title = label.trim();
   switch (el.shape) {
+    case 'focus-button': {
+      // Bring Focus (spec/144): the chip and its target, over the label. The
+      // press states are the one thing not reproduced, for the reason every
+      // other control here drops them: nothing in a still image can be
+      // hovered or held.
+      const gy = cy - 12;
+      return (
+        `<circle cx="${r2(cx)}" cy="${r2(gy)}" r="18" fill="${xmlEscape(color)}" opacity="0.07"/>` +
+        `<circle cx="${r2(cx)}" cy="${r2(gy)}" r="18" fill="none" stroke="${xmlEscape(color)}" stroke-width="1" opacity="0.2"/>` +
+        // The canvas glyph's own 24-unit geometry, dropped in at its size
+        // rather than re-derived: a reticle redrawn by hand in a second
+        // renderer is a reticle that drifts.
+        `<svg x="${r2(cx - 11)}" y="${r2(gy - 11)}" width="22" height="22" viewBox="0 0 24 24" overflow="visible">` +
+        `<circle cx="12" cy="12" r="7.5" fill="none" stroke="${xmlEscape(color)}" stroke-width="1.8"/>` +
+        `<circle cx="12" cy="12" r="2.2" fill="${xmlEscape(color)}"/>` +
+        `<path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3" fill="none" stroke="${xmlEscape(color)}" stroke-width="1.8" stroke-linecap="round"/>` +
+        `</svg>` +
+        text(cx, cy + 24, title || 'Bring Focus', {
+          size: 12,
+          weight: 600,
+          color,
+          anchor: 'middle',
+        })
+      );
+    }
     case 'mode-button':
       // An icon over its label, the shape a toolbar button has.
       return (
