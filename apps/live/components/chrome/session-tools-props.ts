@@ -29,7 +29,9 @@ export type SessionToolsProps = {
   onRevealVote: () => void;
   onClearVote: () => void;
   livePoll: LivePoll | null;
-  pollConnected: boolean;
+  // Shared or on a team, so a poll reaches other people. False doesn't stop
+  // a poll (it runs for just you); the composer only notes it.
+  pollHasAudience: boolean;
   onStartPoll: (draft: { question: string; style: PollStyle; options: string[] }) => void;
   // The tab's layers + the active one, for the vote's layer scope (spec/96).
   voteLayers: Layer[];

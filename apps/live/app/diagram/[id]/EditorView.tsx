@@ -295,9 +295,10 @@ export function EditorView() {
             onRevealVote={revealVote}
             onClearVote={clearVote}
             livePoll={livePoll.poll}
-            // A poll only exists inside the realtime room (spec/88), so there
-            // is nobody to ask on a diagram that isn't shared or on a team.
-            pollConnected={diagramShareable || !!diagramTeamId}
+            // A poll only reaches other people through the realtime room
+            // (spec/88). Unshared and off-team, it still runs, just for you;
+            // the composer says so rather than refusing.
+            pollHasAudience={diagramShareable || !!diagramTeamId}
             onStartPoll={livePoll.startPoll}
             voteLayers={layers}
             activeLayerId={activeLayerId}

@@ -27,15 +27,17 @@ import { StudioButton, StudioCallout, StudioLabel } from './studio-ui';
 const field =
   'w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[12px] text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-brand-400 focus:ring-2 focus:ring-brand-400/20 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100';
 
-type PollPaneProps = Pick<SessionToolsProps, 'livePoll' | 'pollConnected' | 'onStartPoll'>;
+type PollPaneProps = Pick<SessionToolsProps, 'livePoll' | 'pollHasAudience' | 'onStartPoll'>;
 
-export function PollPane({ livePoll, pollConnected, onStartPoll }: PollPaneProps) {
+export function PollPane({ livePoll, pollHasAudience, onStartPoll }: PollPaneProps) {
   if (livePoll) return <RunningPoll poll={livePoll} />;
-  if (!pollConnected) return <PollNeedsRoom />;
-  return <PollComposer onStartPoll={onStartPoll} />;
+  return <PollComposer onStartPoll={onStartPoll} hasAudience={pollHasAudience} />;
 }
 
-function PollComposer({ onStartPoll }: Pick<PollPaneProps, 'onStartPoll'>) {
+function PollComposer({
+  onStartPoll,
+  hasAudience,
+}: Pick<PollPaneProps, 'onStartPoll'> & { hasAudience: boolean }) {
   const [question, setQuestion] = useState('');
   const [style, setStyle] = useState<PollStyle>('yesNo');
   const [options, setOptions] = useState<string[]>(['', '']);
@@ -63,6 +65,14 @@ function PollComposer({ onStartPoll }: Pick<PollPaneProps, 'onStartPoll'>) {
 
   return (
     <div className="flex flex-col gap-3">
+      {/* Never a gate: a poll on an unshared diagram still runs (rehearsing
+          one, or asking the people in the room you're presenting to), it just
+          reaches nobody else, and the facilitator should know that first. */}
+      {!hasAudience ? (
+        <StudioCallout>
+          This diagram isn&apos;t shared, so only you will get this poll. Share it to ask others.
+        </StudioCallout>
+      ) : null}
       <div className="flex flex-col gap-1.5">
         <StudioLabel
           aside={
@@ -297,35 +307,6 @@ function RunningPoll({ poll }: { poll: LivePoll }) {
         Answers come in on the Poll panel, where you can end the poll or keep its results on the
         canvas.
       </StudioCallout>
-    </div>
-  );
-}
-
-function PollNeedsRoom() {
-  return (
-    <div className="flex flex-col items-center gap-2 px-2 py-4 text-center">
-      <span className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-400 dark:bg-slate-800">
-        <svg
-          width="18"
-          height="18"
-          viewBox="0 0 16 16"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          aria-hidden
-        >
-          <circle cx="5.5" cy="6" r="2" />
-          <circle cx="11" cy="6" r="2" />
-          <path d="M2 13c0-1.9 1.6-3 3.5-3s3.5 1.1 3.5 3M8.5 11.2c.6-.8 1.5-1.2 2.5-1.2 1.9 0 3 1.1 3 3" />
-        </svg>
-      </span>
-      <span className="text-[12px] font-semibold text-slate-700 dark:text-slate-200">
-        Polls need people to ask
-      </span>
-      <span className="text-[11px] leading-snug text-slate-500 dark:text-slate-400">
-        A poll only lives in the realtime room. Share this diagram, then ask the people who join it.
-      </span>
     </div>
   );
 }

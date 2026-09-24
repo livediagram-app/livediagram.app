@@ -42,7 +42,7 @@ export function EllipsisMenuButton({
   onRevealVote,
   onClearVote,
   livePoll,
-  pollConnected,
+  pollHasAudience,
   onStartPoll,
   voteLayers,
   activeLayerId,
@@ -127,7 +127,7 @@ export function EllipsisMenuButton({
             onRevealVote={onRevealVote}
             onClearVote={onClearVote}
             livePoll={livePoll}
-            pollConnected={pollConnected}
+            pollHasAudience={pollHasAudience}
             onStartPoll={onStartPoll}
             voteLayers={voteLayers}
             activeLayerId={activeLayerId}

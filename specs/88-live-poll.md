@@ -102,8 +102,10 @@ when an op arrives so a hand-crafted frame can't blow up a peer's panel:
    prompt reads, so a typo is caught before it lands on every screen. The
    button names what is missing while it can't ask ("Write a question to
    ask", "Add at least 2 answers") instead of sitting greyed out. Edit-role
-   only. Without a room to ask (not shared, not on a team) the pane is an
-   empty state saying so rather than a form that can't be sent.
+   only. A diagram that isn't shared or on a team does NOT block a poll: it
+   runs locally, just for the host (rehearsing one, or asking a room you are
+   presenting to), and the composer shows a note that only you will get it.
+   The canvas Session button behaves the same way.
 2. **Prompt.** Every connected participant gets a modal with the question and
    a **Skip** escape (Escape and a backdrop click both skip, so dismissing is
    an answer of "no opinion" rather than a silent drop). Answering or skipping
