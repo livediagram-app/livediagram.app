@@ -227,13 +227,17 @@ export function describeBoxedExport(el: BoxedElement, opts: BoxedExportOptions =
           ? { kind: 'none' }
           : { kind: 'rect', fill, stroke };
   const baseColor = el.textColor ?? defaultTextColor(el, surface);
-  const baseSize = fontSizeFor(el.textSize);
+  // A sticky's label is a block of writing rather than a name, and runs
+  // smaller at every preset. The canvas decides that the same way (its
+  // `multiline` flag is `type === 'sticky'`).
+  const multiline = el.type === 'sticky';
+  const baseSize = fontSizeFor(el.textSize, multiline);
   const richText = (el as { richText?: TextRun[] }).richText;
   const runs: ExportRun[] | undefined = hasRichFormatting(richText)
     ? richText!.map((run) => ({
         text: eventStormingLabelText(el, run.text),
         color: run.color ?? baseColor,
-        size: run.size ? fontSizeFor(run.size) : baseSize,
+        size: run.size ? fontSizeFor(run.size, multiline) : baseSize,
         bold: run.bold ?? !!el.textBold,
         italic: run.italic ?? !!el.textItalic,
       }))

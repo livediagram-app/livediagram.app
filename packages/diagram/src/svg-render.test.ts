@@ -464,6 +464,10 @@ describe('renderElementsToSvg', () => {
             iconId: 'server',
             width: 64,
             height: 64,
+            // 'sm' (14px) is the size this case was measured at; the default
+            // is 22px, at which a single word already overflows a 64px box
+            // and the test would be about overflow rather than stacking.
+            textSize: 'sm',
             label: 'restaurant hygienerating updated',
           }),
         ]),
@@ -543,7 +547,7 @@ describe('renderElementsToSvg', () => {
       // Band y0 = 36% of 100; the 48px mark centres inside the 58% band.
       expect(svg).toContain('x="26" y="41" width="48" height="48"');
       // The caption sits near the top instead of the floor.
-      expect(svg).toContain('y="14"'); // el.y + fontSize (default 14)
+      expect(svg).toContain('y="22"'); // el.y + fontSize (default md = 22)
     });
 
     it('sends a left-captioned mark to the right half, on the caption row (spec/41)', () => {
@@ -576,11 +580,11 @@ describe('renderElementsToSvg', () => {
       // The mark takes the bottom band (36..94), centred: y = 36 + (58-48)/2.
       expect(svg).toContain('y="41" width="48" height="48"');
       // The caption anchors to its band's bottom edge (the 36% line), NOT the
-      // box's vertical centre — y = 36 - 14 (font size), clear of the mark.
+      // box's vertical centre — y = 36 - 22 (font size), clear of the mark.
       // It used to render at h/2 = 50, on top of the art.
       const m = svg.match(/<text[^>]*y="([0-9.]+)"/);
       expect(m).not.toBeNull();
-      expect(parseFloat(m![1]!)).toBe(22);
+      expect(parseFloat(m![1]!)).toBe(14);
     });
 
     it('centres a side caption on the glyph row and wraps it at its half (spec/41)', () => {
