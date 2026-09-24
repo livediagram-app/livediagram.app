@@ -203,6 +203,19 @@ function union(a: Box, b: Box): Box {
   };
 }
 
+// A piece at least this thick (in notes) is a WHOLE note already, not a
+// fragment of one: two such pieces are never merged. A line of handwriting or
+// a shadow cuts a note into pieces thinner than half a note, while two narrow
+// actors or two notes a pen stroke apart are each thicker, and their union is
+// a solid rectangle the fill test happily accepts. Measured on the eight
+// labelled walls, of 62 unions of several pieces 25 joined two labelled notes;
+// any value from 0.4 to 0.5 scores the same (0.55 lets one pair back in).
+const WHOLE_NOTE_SIDE = 0.45;
+
+function isWholeNote(b: Box, noteSize: number): boolean {
+  return Math.min(b.w, b.h) >= noteSize * WHOLE_NOTE_SIDE;
+}
+
 // Merge same-colour boxes that are touching or nearly so: one sticky with a
 // word written across it arrives as two or three blobs of paper.
 export function mergeFragments(boxes: Box[], noteSize: number): Box[] {
@@ -217,6 +230,7 @@ export function mergeFragments(boxes: Box[], noteSize: number): Box[] {
   const reach = noteSize * MERGE_REACH_FRACTION;
   const joins = (a: Box, b: Box) => {
     if (a.classId !== b.classId) return false;
+    if (isWholeNote(a, noteSize) && isWholeNote(b, noteSize)) return false;
     const between = gapBetween(a, b);
     if (between > reach) return false;
     const fill = fillRatio(union(a, b));
@@ -457,6 +471,7 @@ export const BOX_CALIBRATION = {
   MERGE_MIN_FILL,
   MERGE_REACH_FRACTION,
   MERGE_REACH_MIN_FILL,
+  WHOLE_NOTE_SIDE,
   RESCUE_ERODE_FRACTION,
   RESCUE_ROUNDS,
   MAX_PAPER_ASPECT,
