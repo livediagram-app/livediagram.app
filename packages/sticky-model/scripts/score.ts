@@ -57,7 +57,7 @@ function kindOf(wall: RealWall, floors: ReturnType<typeof wallFloorsOf>, box: De
   return [...votes].sort((a, b) => b[1] - a[1])[0]?.[0] ?? 'domain-event';
 }
 
-type Decode = { mode: DecodeMode; t: number; minCore: number };
+type Decode = { mode: DecodeMode; t: number; minCore: number; minArea?: number };
 
 function scoreWall(
   wall: RealWall,
@@ -69,6 +69,7 @@ function scoreWall(
   const boxes = decodeBoxes(classes, wall.width, wall.height, {
     mode: d.mode,
     minCorePixels: d.minCore,
+    ...(d.minArea === undefined ? {} : { minAreaOfMedian: d.minArea }),
   });
   const floors = wallFloorsOf({ width: wall.width, height: wall.height, data: wall.rgba });
   const scored = boxes.map((b) => ({ ...b, kind: kindOf(wall, floors, b) }));
@@ -124,25 +125,30 @@ const base: Decode = {
   mode: arg('mode', 'grow') as DecodeMode,
   t: Number(arg('t', '0.5')),
   minCore: Number(arg('min-core', '12')),
+  ...(process.argv.includes('--min-area') ? { minArea: Number(arg('min-area', '0')) } : {}),
 };
 
 if (process.argv.includes('--sweep')) {
+  const pc = (v: number) => `${(v * 100).toFixed(1)}%`;
   console.log(
-    `  ${'mode'.padEnd(6)}${'t'.padStart(6)}${'minCore'.padStart(9)}${'prec'.padStart(7)}${'recall'.padStart(8)}${'F1'.padStart(7)}${'merged'.padStart(8)}  walls`,
+    `  ${'mode'.padEnd(6)}${'t'.padStart(6)}${'minCore'.padStart(9)}${'minArea'.padStart(9)}` +
+      `${'prec'.padStart(7)}${'recall'.padStart(8)}${'F1'.padStart(7)}${'merged'.padStart(8)}  walls`,
   );
+  const grid: Decode[] = [];
   for (const mode of ['core', 'grow'] as const) {
-    for (const t of [0.3, 0.4, 0.5, 0.6, 0.7]) {
-      for (const minCore of [4, 8, 12, 20, 30, 45]) {
-        const rows = predictions.map(
-          (p) => scoreWall(p.wall, p.probs, { mode, t, minCore }, p.ms).row,
-        );
-        const s = totals(rows);
-        console.log(
-          `  ${mode.padEnd(6)}${t.toFixed(2).padStart(6)}${String(minCore).padStart(9)}${`${(s.precision * 100).toFixed(1)}%`.padStart(7)}` +
-            `${`${(s.recall * 100).toFixed(1)}%`.padStart(8)}${`${(s.f1 * 100).toFixed(1)}%`.padStart(7)}${String(s.merged).padStart(8)}  ${s.passing}/8`,
-        );
+    for (const t of [0.3, 0.4, 0.5, 0.6]) {
+      for (const minCore of [12, 30, 45, 70, 100]) {
+        grid.push({ mode, t, minCore });
+        for (const minArea of [0.2, 0.3, 0.4, 0.5]) grid.push({ mode, t, minCore, minArea });
       }
     }
+  }
+  for (const d of grid) {
+    const s = totals(predictions.map((p) => scoreWall(p.wall, p.probs, d, p.ms).row));
+    console.log(
+      `  ${d.mode.padEnd(6)}${d.t.toFixed(2).padStart(6)}${String(d.minCore).padStart(9)}${String(d.minArea ?? '-').padStart(9)}` +
+        `${pc(s.precision).padStart(7)}${pc(s.recall).padStart(8)}${pc(s.f1).padStart(7)}${String(s.merged).padStart(8)}  ${s.passing}/8`,
+    );
   }
 } else {
   const rows: Row[] = [];

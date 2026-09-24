@@ -15,6 +15,10 @@ export type DecodeOptions = {
   mode: DecodeMode;
   // Smaller core blobs are specks of noise, not notes.
   minCorePixels: number;
+  // Boxes smaller than this fraction of the median box area are dropped: one
+  // pad of stationery per wall, so a scrap a fifth the size of every other
+  // note is tape or a fleck of reflection, not paper. Off when absent.
+  minAreaOfMedian?: number;
 };
 
 export type DecodedBox = Rect & { corePixels: number };
@@ -122,6 +126,20 @@ function growIntoSeam(
 }
 
 export function decodeBoxes(
+  classes: Uint8Array,
+  width: number,
+  height: number,
+  opts: DecodeOptions,
+): DecodedBox[] {
+  const boxes = rawBoxes(classes, width, height, opts);
+  const floor = opts.minAreaOfMedian;
+  if (floor === undefined || boxes.length === 0) return boxes;
+  const areas = boxes.map((b) => b.w * b.h).sort((a, b) => a - b);
+  const median = areas[Math.floor(areas.length / 2)]!;
+  return boxes.filter((b) => b.w * b.h >= floor * median);
+}
+
+function rawBoxes(
   classes: Uint8Array,
   width: number,
   height: number,

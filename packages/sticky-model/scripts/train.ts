@@ -4,6 +4,7 @@ import type { TileSource } from '../src/train/tile';
 import { makeBatch } from './data/batch';
 import { loadRealWalls } from './data/real';
 import { readShard, shardPath, type ShardMeta } from './data/shards';
+import { registerFastGradients } from './model/fast-grads';
 import { tf } from './model/tf';
 import { buildUNet, DEFAULT_UNET, weightedCrossEntropy, type UNetConfig } from './model/unet';
 import { WORK_DIR } from './paths';
@@ -48,6 +49,7 @@ function loadSynth(): TileSource[] {
   });
 }
 
+registerFastGradients();
 const synth = loadSynth();
 const real = realMode === 'all' ? loadRealWalls().filter((w) => w.name !== exclude) : [];
 console.log(

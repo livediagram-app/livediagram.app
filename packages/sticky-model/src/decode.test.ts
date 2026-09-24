@@ -45,6 +45,25 @@ describe('decodeBoxes', () => {
     expect(decodeBoxes(classes, 10, 10, { mode: 'core', minCorePixels: 4 })).toHaveLength(0);
   });
 
+  it("drops a box far smaller than the wall's median note, when asked", () => {
+    const notes = [
+      { x: 0, y: 0, w: 30, h: 30 },
+      { x: 40, y: 0, w: 30, h: 30 },
+      { x: 80, y: 0, w: 30, h: 30 },
+      { x: 120, y: 0, w: 12, h: 12 },
+    ];
+    const classes = classesOf(notes, 140, 40);
+    const all = decodeBoxes(classes, 140, 40, { mode: 'core', minCorePixels: 4 });
+    const kept = decodeBoxes(classes, 140, 40, {
+      mode: 'core',
+      minCorePixels: 4,
+      minAreaOfMedian: 0.3,
+    });
+    expect(all).toHaveLength(4);
+    expect(kept).toHaveLength(3);
+    expect(kept.every((b) => b.x < 120)).toBe(true);
+  });
+
   it('grows a core only into seam, never across background', () => {
     const w = 60;
     const h = 30;
