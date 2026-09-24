@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { mergeFragments, type Box } from './boxes';
+import { fitBoxes, mergeFragments, type Box } from './boxes';
 
 // Putting a note back together from the pieces handwriting cut it into, and
 // never gluing two notes together while doing it.
@@ -36,5 +36,42 @@ describe('mergeFragments', () => {
   it('still folds a sliver of a note into the note it came off', () => {
     const out = mergeFragments([box(0, 0, 50, 40), box(0, 43, 50, 7)], 50);
     expect(out).toHaveLength(1);
+  });
+});
+
+describe('fitBoxes, cutting at a seam', () => {
+  // Two notes of one colour, tops aligned, the right one lapped over the
+  // left: 70x40 together, 1.75 notes long — under the splitter's length rule,
+  // and with no notch in the outline. Only the shadow of the upper note's
+  // edge says where one ends.
+  function lapped() {
+    const width = 120;
+    const height = 60;
+    const classes = new Uint8Array(width * height);
+    const data = new Uint8Array(width * height).fill(90);
+    for (let y = 10; y < 50; y += 1)
+      for (let x = 10; x < 80; x += 1) {
+        classes[y * width + x] = 1;
+        data[y * width + x] = x === 39 || x === 40 ? 170 : 205;
+      }
+    const component = { classId: 1, minX: 10, minY: 10, maxX: 79, maxY: 49, pixels: 70 * 40 };
+    const mask = { width, height, classes };
+    return { component, mask, luminance: { width, height, data } };
+  }
+
+  it('cuts two flush lapped notes apart by the shadow between them', () => {
+    const { component, mask, luminance } = lapped();
+    const out = fitBoxes([component], { imageSize: 120, noteSize: 40, mask, luminance });
+    expect(out).toHaveLength(2);
+    const [left, right] = [...out].sort((a, b) => a.x - b.x);
+    expect(left!.x).toBe(10);
+    expect(Math.abs(left!.w - 30.5)).toBeLessThanOrEqual(1);
+    expect(right!.x + right!.w).toBe(80);
+    expect(Math.abs(right!.x - 40.5)).toBeLessThanOrEqual(1);
+  });
+
+  it('leaves them as one without the photograph to look at', () => {
+    const { component, mask } = lapped();
+    expect(fitBoxes([component], { imageSize: 120, noteSize: 40, mask })).toHaveLength(1);
   });
 });

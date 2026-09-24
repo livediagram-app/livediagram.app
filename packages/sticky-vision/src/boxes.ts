@@ -1,6 +1,7 @@
 import { erodePaperMask, labelComponents, type Component } from './components';
 import { splitOversized, SPLIT_CALIBRATION } from './split';
 import { cutAtNotches } from './chords';
+import { cutAtSeam, type Luminance } from './seam';
 
 // From blobs to stickies (spec/139 Phase 8).
 //
@@ -281,6 +282,9 @@ export function fitBoxes(
     // The note size of each paper colour on this wall, where it could be
     // measured (see `estimateNoteSizes`).
     classNoteSize?: Map<number, number>;
+    // How bright the photograph is, pixel by pixel: where it is on hand, a
+    // flush seam with no notch can still be found by its shadow (see `seam.ts`).
+    luminance?: Luminance;
   } = {},
 ): Box[] {
   if (components.length === 0) return [];
@@ -362,17 +366,23 @@ export function fitBoxes(
   // for its length rule; the notches in its outline say so (see `chords.ts`).
   // A cut stands only when every piece it makes is paper, and solid: the
   // same bar the splitter holds a blob to before cutting it.
+  const standsAsCut = (cuts: Box[]) =>
+    cuts.length > 1 && cuts.every((c) => isPaper(c) && fillRatio(c) >= MIN_SOLID_FILL);
   const notched = (b: Box): Box[] => {
     if (!opts.mask) return [b];
     const cuts = cutAtNotches(b, opts.mask, size);
-    return cuts.length > 1 && cuts.every((c) => isPaper(c) && fillRatio(c) >= MIN_SOLID_FILL)
-      ? cuts
-      : [b];
+    return standsAsCut(cuts) ? cuts : [b];
+  };
+  const seamed = (b: Box): Box[] => {
+    if (!opts.mask || !opts.luminance) return [b];
+    const cuts = cutAtSeam(b, opts.luminance, opts.mask, size);
+    return standsAsCut(cuts) ? cuts : [b];
   };
 
   return kept.flatMap((box) => {
     const pieces = splitOversized(box, size, opts.mask, opts.seams)
       .flatMap(notched)
+      .flatMap(seamed)
       .filter((b) => isPaper(b) && (b === box || bigEnough(b)));
     if (pieces.length > 0) return pieces;
     // Nothing survived. If this box was ASSEMBLED, the assembly is what failed
