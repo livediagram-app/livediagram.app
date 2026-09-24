@@ -244,9 +244,15 @@ combined with H; see the integration note in i-separation.md): TOTAL 93.5.
       **95.5**, precision 97%, recall 95%, merged 16 — every one of them an
       overlapping LABEL (0 real). int8 weights 83 KB; WebGPU ~20 ms a photo,
       WASM one thread ~770 ms; runtime chunk ~170–210 KB compressed, lazy.
-- [ ] M — the model in the editor (lazy chunk, Web Worker, WebGPU → WASM →
-      classical fall-back), proven by scoring the running editor's boxes.
-- [ ] N — recall on the night wall (85%) and the whiteboard (93%).
+- [x] M — the model in the editor (lazy chunk, Web Worker, WebGPU → WASM →
+      classical fall-back), proven by scoring the running editor's boxes:
+      the built editor equals Node's hybrid, box for box (0.0003 px).
+- [x] N — recall: a small note the model is sure of, among its own pad.
+      Hybrid 95.5 → 95.8; the night wall 85 → 90%.
+- [x] O — flat paper: retraining the model on flat walls cannot hold every
+      real wall (it lifts the night wall's lit panes); instead a flat image
+      (60% or more of neighbouring pixels exactly equal: photos 0.09–0.30,
+      drawn boards 0.95–1.00) skips the model. The flat-note e2e test passes.
 - [ ] Labels — 13–16 merged boxes and several misses are overlapping or
       missing LABELS; with them fixed, 201646, 201654, the panorama and
       201730 are at or within a note of the bar. For the operator.
