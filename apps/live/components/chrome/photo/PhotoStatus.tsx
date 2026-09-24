@@ -2,6 +2,7 @@
 
 import type { ModelDownload as Download } from '@/lib/reading/download-progress';
 import { ModelDownload } from './ModelDownload';
+import type { ReaderBackend } from '@/lib/reading/reader-protocol';
 
 // What the surface is doing, said ON the photograph (spec/139 Phase 9).
 //
@@ -37,6 +38,9 @@ export function PhotoStatus({
   dropped = 0,
   labelError = null,
   modelDownload,
+  readSoFar = 0,
+  readTotal = 0,
+  readerBackend,
   revealed,
   detected,
   reading,
@@ -50,6 +54,10 @@ export function PhotoStatus({
   labelError?: string | null;
   // The reading model's download, while it runs.
   modelDownload?: Download;
+  // How far the reader has got, and where a reader that runs HERE runs.
+  readSoFar?: number;
+  readTotal?: number;
+  readerBackend?: ReaderBackend;
   revealed: number;
   detected: number;
   reading: boolean;
@@ -75,12 +83,24 @@ export function PhotoStatus({
         </Pill>
       ) : null}
       {reading ? (
-        <Pill>
+        <Pill testId="photo-reading">
           <span
             aria-hidden
             className="h-3 w-3 shrink-0 animate-spin rounded-full border-2 border-slate-500 border-t-brand-400"
           />
           Reading the words…
+          {readTotal > 0 ? (
+            <span className="tabular-nums text-slate-300">
+              {readSoFar} of {readTotal}
+            </span>
+          ) : null}
+          {readerBackend === 'webgpu' ? (
+            <span className="text-slate-300">· on your graphics card</span>
+          ) : readerBackend === 'wasm' ? (
+            // A big wall is minutes here, not seconds: say so, rather than
+            // let a slow bar pass for a stuck one.
+            <span className="text-slate-300">· on the processor, which is slower</span>
+          ) : null}
         </Pill>
       ) : null}
       {readError?.startsWith('partial:') ? (

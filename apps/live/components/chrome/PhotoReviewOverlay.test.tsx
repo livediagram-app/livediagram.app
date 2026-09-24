@@ -762,3 +762,37 @@ describe('the reading model downloading', () => {
     expect(screen.queryByTestId('photo-model-download')).toBeNull();
   });
 });
+
+// Reading a big wall in the browser takes a while — one model generation per
+// note. Without a count, slow looks exactly like stuck.
+describe('reading progress', () => {
+  const open = (extra: {
+    readSoFar?: number;
+    readTotal?: number;
+    readerBackend?: 'webgpu' | 'wasm';
+  }) =>
+    render(
+      <PhotoReviewOverlay
+        review={review({ detection: found([sticky(0)]) })}
+        reading
+        {...extra}
+        onConfirm={noop}
+        onCancel={noop}
+      />,
+    );
+
+  it('counts the notes read so far', () => {
+    open({ readSoFar: 12, readTotal: 263 });
+    expect(screen.getByTestId('photo-reading').textContent).toMatch(/12 of 263/);
+  });
+
+  it('says it is reading on the graphics card, when it is', () => {
+    open({ readSoFar: 1, readTotal: 263, readerBackend: 'webgpu' });
+    expect(screen.getByTestId('photo-reading').textContent).toMatch(/graphics card/i);
+  });
+
+  it('warns that the processor is slower, when that is where it runs', () => {
+    open({ readSoFar: 1, readTotal: 263, readerBackend: 'wasm' });
+    expect(screen.getByTestId('photo-reading').textContent).toMatch(/processor.*slower/i);
+  });
+});

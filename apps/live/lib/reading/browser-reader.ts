@@ -1,170 +1,87 @@
 import type { NoteCrop } from '@livediagram/api-schema';
+import { BLANK_ANSWERS } from './reader-model';
+import type { ReaderRequest, ReaderResponse } from './reader-protocol';
 import { normaliseRead, type ReadOptions, type ReadText } from './types';
-import { downloadProgress, type ModelDownload, type ModelProgressEvent } from './download-progress';
 
-// Reading the handwriting with a model that runs HERE (spec/139 Phase 9).
+// Reading the handwriting with a model that runs HERE, in this browser
+// (spec/139 Phase 9) — the reader a deployment with no model key gets, which
+// is why the photo import needs no key at all. See reader-model.ts for the
+// model and why it is this one.
 //
-// A small vision-language model, not an OCR engine. That is the finding the
-// whole module rests on: measured on a real workshop wall, Tesseract read ONE
-// note in twenty-four and invented words on every blank crop, while this reads
-// about four words in five (docs/vision/handwriting-readers.md). OCR engines
-// are trained on printed text; a marker scrawl on coloured paper is a
-// different problem, and a small VLM is the smallest thing that actually does
-// it.
-//
-// Nothing leaves the machine: the weights come down once and the crops are
-// read locally. This is the reader a deployment with no model key gets, and it
-// is why the photo import needs no key at all.
+// The model runs in a WORKER (reader.worker.ts); this is the page's side: it
+// posts the crops and listens. On the page the model took the main thread
+// whole — the review's reveal froze mid-way and nothing moved while a wall of
+// hundreds of notes was read. Each note's words are handed on AS THEY ARE
+// READ, so the photo fills in note by note instead of all at once at the end.
 
-// The model, and why this one. SmolVLM-256M is the smallest that reads real
-// handwriting; the 500M variant is twice the download for about two points of
-// accuracy, which is the wrong trade on a phone. q4 for the decoder is what
-// makes it ~190MB rather than a gigabyte.
-const MODEL_ID = 'HuggingFaceTB/SmolVLM-256M-Instruct';
+type ReaderWorker = {
+  postMessage: (request: ReaderRequest) => void;
+  addEventListener: (type: 'message', fn: (e: MessageEvent<ReaderResponse>) => void) => void;
+  removeEventListener: (type: 'message', fn: (e: MessageEvent<ReaderResponse>) => void) => void;
+};
 
-// Ask for the words and nothing else. Deliberately plain: a firmer
-// instruction ("reply with only the words, nothing else") made the model drop
-// whole LINES from a multi-line note — at this size the prompt is part of the
-// measurement, so it is not to be "improved" without re-running the bench.
-const PROMPT =
-  'Read the handwriting on this sticky note. Reply with only the words written, exactly as written. If there is no writing, reply with nothing.';
+// One worker for the page, created on first use and kept: it holds the model.
+let shared: ReaderWorker | null = null;
+let nextId = 1;
 
-// What the model says when the paper is blank. It answers this consistently on
-// an empty crop, which is a better blank-detector than asking it for a
-// sentinel token (asking changed how it read real text).
-const BLANK_ANSWERS = /^(no|none|nothing|n\/a|blank|no writing|no text)\b[.!]?$/i;
-
-// A note is a phrase. Past this the model is repeating itself, which small
-// models do when they cannot read the image.
-const MAX_NEW_TOKENS = 48;
-
-type Transformers = typeof import('@huggingface/transformers');
-type Tensor = InstanceType<Transformers['Tensor']>;
-type Processor = Awaited<ReturnType<Transformers['AutoProcessor']['from_pretrained']>>;
-type VisionModel = Awaited<ReturnType<Transformers['AutoModelForVision2Seq']['from_pretrained']>>;
-
-type Loaded = { processor: Processor; model: VisionModel };
-
-let loading: Promise<Loaded> | null = null;
-
-// Who wants to hear how the download is going. The load is shared by every
-// read in the session, so its progress goes to whoever is waiting NOW, not
-// only to the read that happened to start it.
-const downloadListeners = new Set<(download: ModelDownload) => void>();
-
-// Loaded once per page and kept: the weights are the expensive part, and a
-// second import in the same session should not pay for them again. The import
-// is dynamic so the model runtime is its own chunk, fetched only when a
-// deployment with no server model actually reads a photo.
-async function load(): Promise<Loaded> {
-  loading ??= (async () => {
-    const { AutoProcessor, AutoModelForVision2Seq } = await import('@huggingface/transformers');
-    // The weights: `.onnx` files, and the external-data files beside them.
-    const progress = downloadProgress({ counts: (file) => /\.onnx(_data)?$/.test(file) });
-    const progress_callback = (event: ModelProgressEvent) => {
-      progress.update(event);
-      const now = progress.current();
-      for (const listener of downloadListeners) listener(now);
-    };
-    // The processor's few small files load first and are not reported: counted,
-    // they filled the bar to 100% before the model's own files had begun, and
-    // then it fell back. The WEIGHTS start together, so from their first
-    // event the total is the real one.
-    const processor = await AutoProcessor.from_pretrained(MODEL_ID);
-    // WebGPU where it works, WASM everywhere else. WebGPU is ~14x faster but
-    // needs `shader-f16`, which some drivers do not expose; asking for it and
-    // falling back is the only way to know, since the adapter reports a GPU
-    // either way.
-    const model = await AutoModelForVision2Seq.from_pretrained(MODEL_ID, {
-      device: 'webgpu',
-      dtype: { embed_tokens: 'fp16', vision_encoder: 'fp16', decoder_model_merged: 'q4' },
-      progress_callback,
-    }).catch(() =>
-      AutoModelForVision2Seq.from_pretrained(MODEL_ID, {
-        device: 'wasm',
-        dtype: 'q4',
-        progress_callback,
-      }),
-    );
-    // However the files arrived — from the network or the browser's cache —
-    // the bar ends here.
-    progress_callback({ status: 'ready' });
-    return { processor, model };
-  })();
-  return loading;
+export function readCropsInBrowser(
+  crops: NoteCrop[],
+  opts: ReadOptions = {},
+): Promise<Map<number, ReadText>> {
+  shared ??= new Worker(new URL('./reader.worker.ts', import.meta.url), {
+    type: 'module',
+  }) as unknown as ReaderWorker;
+  return readCropsWith(shared, crops, opts);
 }
 
-async function readOne(loaded: Loaded, crop: NoteCrop): Promise<ReadText> {
-  const { RawImage } = await import('@huggingface/transformers');
-  const image = await RawImage.fromURL(crop.image);
-  // A multimodal turn is a LIST of parts (an image and a question), which is
-  // how the library's own vision examples call it — but its published `Message`
-  // type still says `content: string`, from the text-only days. The cast is
-  // that gap, not a shortcut.
-  const messages = [
-    { role: 'user', content: [{ type: 'image' }, { type: 'text', text: PROMPT }] },
-  ] as unknown as Parameters<Processor['apply_chat_template']>[0];
-  const prompt = loaded.processor.apply_chat_template(messages, { add_generation_prompt: true });
-  // No image splitting: it tiles the crop at higher resolution, and while that
-  // helped this model slightly it costs about four times the time — too slow
-  // for the WASM path, which is the one that has to work everywhere.
-  const inputs = await loaded.processor(prompt, [image], { do_image_splitting: false });
-  const generated = await loaded.model.generate({
-    ...inputs,
-    max_new_tokens: MAX_NEW_TOKENS,
-    do_sample: false,
-  });
-  // `generate` is typed as the union of every shape it can return; asking for
-  // plain token ids (no scores, no dict) always yields the tensor.
-  const tokens = generated as Tensor;
-  // Drop the prompt's own tokens: what was asked is not what was read.
-  const answerTokens = tokens.slice(null, [inputs.input_ids.dims.at(-1), null]);
-  const decoded = loaded.processor.batch_decode(answerTokens, {
-    skip_special_tokens: true,
-  })[0] as string;
-  const read = normaliseRead(decoded ?? '');
-  if (BLANK_ANSWERS.test(read.text)) return { text: '', legible: false };
-  return read;
+// The model's own answer, as a note's words: a line break is layout, and the
+// model's "no writing" is a blank note.
+function toRead(text: string): ReadText {
+  const read = normaliseRead(text);
+  return BLANK_ANSWERS.test(read.text) ? { text: '', legible: false } : read;
 }
 
-export async function readCropsInBrowser(
+export function readCropsWith(
+  worker: ReaderWorker,
   crops: NoteCrop[],
   opts: ReadOptions = {},
 ): Promise<Map<number, ReadText>> {
   const out = new Map<number, ReadText>();
-  if (crops.length === 0) return out;
+  if (crops.length === 0) return Promise.resolve(out);
+  const id = nextId++;
 
-  const blank = () => {
-    for (const c of crops) out.set(c.id, { text: '', legible: false });
-    opts.onProgress?.(crops.length);
-    return out;
-  };
-
-  let loaded: Loaded;
-  const listener = opts.onModelDownload;
-  if (listener) downloadListeners.add(listener);
-  try {
-    loaded = await load();
-  } catch {
-    // The weights could not be fetched (offline, a blocked CDN, no storage).
-    // The paper was still found, so every note lands blank rather than the
-    // whole import failing. Let the next attempt try the download again.
-    loading = null;
-    return blank();
-  } finally {
-    if (listener) downloadListeners.delete(listener);
-  }
-
-  for (let i = 0; i < crops.length; i += 1) {
-    if (opts.signal?.aborted) break;
-    const crop = crops[i]!;
-    try {
-      out.set(crop.id, await readOne(loaded, crop));
-    } catch {
-      // One crop the model chokes on is one blank note, not a broken import.
-      out.set(crop.id, { text: '', legible: false });
-    }
-    opts.onProgress?.(i + 1);
-  }
-  return out;
+  return new Promise((resolve) => {
+    const finish = () => {
+      worker.removeEventListener('message', listen);
+      opts.signal?.removeEventListener('abort', cancel);
+      resolve(out);
+    };
+    const cancel = () => worker.postMessage({ type: 'cancel', id });
+    const listen = ({ data: message }: MessageEvent<ReaderResponse>) => {
+      if (message.type === 'download') {
+        opts.onModelDownload?.(message.download);
+      } else if (message.type === 'backend') {
+        opts.onBackend?.(message.backend);
+      } else if (message.id !== id) {
+        return;
+      } else if (message.type === 'text') {
+        const read = toRead(message.text);
+        out.set(message.cropId, read);
+        opts.onText?.(message.cropId, read);
+        opts.onProgress?.(out.size);
+      } else if (message.type === 'failed') {
+        // The weights could not be fetched (offline, a blocked CDN, no
+        // storage). The paper was still found, so every note lands blank for
+        // the author to type rather than the whole import failing.
+        for (const c of crops) if (!out.has(c.id)) out.set(c.id, { text: '', legible: false });
+        opts.onProgress?.(crops.length);
+        finish();
+      } else if (message.type === 'done') {
+        finish();
+      }
+    };
+    worker.addEventListener('message', listen);
+    opts.signal?.addEventListener('abort', cancel, { once: true });
+    worker.postMessage({ type: 'read', id, crops });
+  });
 }

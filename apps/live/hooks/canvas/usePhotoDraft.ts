@@ -17,6 +17,7 @@ import {
 import { toNormalised, type DetectedSticky } from '@livediagram/sticky-vision';
 import { selectReader } from '@/lib/reading/select';
 import type { ModelDownload } from '@/lib/reading/download-progress';
+import type { ReaderBackend } from '@/lib/reading/reader-protocol';
 import { buildEventStormingNote } from '@/lib/draw-commit';
 import { setPhotoDraftView } from '@/lib/photo-draft-preview';
 import {
@@ -59,6 +60,8 @@ export type PhotoDraftState = {
   // The reading model's download, while an in-browser reader fetches it
   // (~160 MB, once per device). Absent for a reader with nothing to download.
   modelDownload?: ModelDownload;
+  // Where an in-browser reader runs: the graphics card, or the processor.
+  readerBackend?: ReaderBackend;
   // The last failure's token, for the toast. Cleared by the next attempt.
   error: string | null;
 };
@@ -278,6 +281,20 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
           onModelDownload: (modelDownload) => {
             if (!current()) return;
             setState((s) => (s.stage === 'review' ? { ...s, modelDownload } : s));
+          },
+          onBackend: (readerBackend) => {
+            if (!current()) return;
+            setState((s) => (s.stage === 'review' ? { ...s, readerBackend } : s));
+          },
+          // Each note's words as they are read: the photo fills in note by
+          // note, rather than a wall of blanks until the last one is done.
+          onText: (cropId, read) => {
+            if (!current()) return;
+            setReview((prev) =>
+              prev && prev.detection === detection
+                ? { ...prev, textById: new Map(prev.textById).set(cropId, read) }
+                : prev,
+            );
           },
         });
         if (!current()) return;

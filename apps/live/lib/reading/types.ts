@@ -1,5 +1,6 @@
 import type { NoteCrop } from '@livediagram/api-schema';
 import type { ModelDownload } from './download-progress';
+import type { ReaderBackend } from './reader-protocol';
 
 // What a reader gives back for one crop: the words on it, and whether it could
 // read them at all. An illegible crop still becomes a note — the PAPER was
@@ -13,6 +14,12 @@ export type ReadOptions = {
   // The reading model's download, for a reader that fetches one (the
   // in-browser reader: ~160 MB, once per device). See download-progress.ts.
   onModelDownload?: (download: ModelDownload) => void;
+  // Where a reader that runs HERE runs: the graphics card or the processor —
+  // a minute or half an hour on a big wall, which the author should be told.
+  onBackend?: (backend: ReaderBackend) => void;
+  // One note's words, as soon as they are read, so the photo fills in note by
+  // note rather than all at once at the end.
+  onText?: (cropId: number, read: ReadText) => void;
 };
 
 // What a reader hands back: the words keyed by the crop id the detector
