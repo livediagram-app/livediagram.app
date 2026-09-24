@@ -182,7 +182,13 @@ export function combineWithModel(
 // 0.83 splits a note. Nothing else measured tells the two apart: the gap
 // between the cores is paper, and no darker, in both. Pieces from 0.2 to 0.3
 // of the median box; at 0.1 a speck beside a note splits it.
+//
+// DROP: a box with no model core in it whose middle the model calls
+// background at 0.97 on average: the night wall's window panes and a lit
+// ceiling strip. 0.95-0.98 drop the same boxes; from 0.93 down a real note
+// goes with them.
 export const HYBRID_RULES: HybridRules = {
   add: { minConfidence: 0.75, minAreaOfMedian: 0.3, minPaper: 0.5, maxCover: 0.3 },
   split: { minConfidence: 0.86, minAreaOfMedian: 0.25 },
+  drop: { minBackground: 0.97 },
 };
