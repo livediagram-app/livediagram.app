@@ -4191,6 +4191,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "hideCursors": {
         "type": "boolean"
       },
+      "onePerElement": {
+        "type": "boolean"
+      },
       "revealed": {
         "type": "boolean"
       },

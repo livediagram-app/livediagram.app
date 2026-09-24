@@ -37,6 +37,11 @@ export function VotePane(props: VotePaneProps) {
   return props.vote ? <LiveVote {...props} vote={props.vote} /> : <VoteSetupForm {...props} />;
 }
 
+const STACKING_OPTIONS = [
+  { value: 'stack', label: 'Any number' },
+  { value: 'one', label: 'One each' },
+] as const;
+
 function VoteSetupForm({ voteLayers, activeLayerId, onStartVote }: VotePaneProps) {
   const [dots, setDots] = useState(3);
   // Cursors hidden by default: the leak they cause is invisible to the
@@ -44,6 +49,9 @@ function VoteSetupForm({ voteLayers, activeLayerId, onStartVote }: VotePaneProps
   // because live tallies are how ordinary dot-voting works (spec/39).
   const [hideCursors, setHideCursors] = useState(true);
   const [hideCounts, setHideCounts] = useState(false);
+  // Stacking is the classic dot-vote, so it stays the default; one per item
+  // turns the budget into "pick your top N" instead of "back your favourite".
+  const [stacking, setStacking] = useState<'stack' | 'one'>('stack');
   // '' is the explicit "all layers" choice (spec/96).
   const [layerId, setLayerId] = useState(activeLayerId);
   const multiLayer = voteLayers.length > 1;
@@ -54,6 +62,24 @@ function VoteSetupForm({ voteLayers, activeLayerId, onStartVote }: VotePaneProps
         <StudioLabel aside={`${dots} each`}>Dots per person</StudioLabel>
         <DotBudgetPicker value={dots} onChange={setDots} />
       </div>
+      {/* With a single dot there is nothing to stack, so the choice would be
+          a question with one answer. */}
+      {dots > 1 ? (
+        <div className="flex flex-col gap-1.5">
+          <StudioLabel>Dots per item</StudioLabel>
+          <StudioSegmented
+            label="Dots per item"
+            value={stacking}
+            onChange={setStacking}
+            options={STACKING_OPTIONS}
+          />
+          <span className="text-[10px] leading-snug text-slate-400 dark:text-slate-500">
+            {stacking === 'one'
+              ? `Each person backs ${dots} different items, one dot apiece.`
+              : 'People can pile several dots on one item they feel strongly about.'}
+          </span>
+        </div>
+      ) : null}
       {multiLayer ? (
         <div className="flex flex-col gap-1.5">
           <StudioLabel>Votable layer</StudioLabel>
@@ -97,6 +123,7 @@ function VoteSetupForm({ voteLayers, activeLayerId, onStartVote }: VotePaneProps
             hideCursors,
             hideCounts,
             layerId: multiLayer && layerId ? layerId : undefined,
+            onePerElement: dots > 1 && stacking === 'one',
           })
         }
       >
@@ -256,6 +283,7 @@ function LiveVote({
   const host = isVoteHost(vote, selfId);
   const rules = [
     `${vote.votesPerPerson} ${vote.votesPerPerson === 1 ? 'dot' : 'dots'} each`,
+    vote.onePerElement ? 'One per item' : null,
     vote.voteLayerId
       ? `${voteLayers.find((l) => l.id === vote.voteLayerId)?.name ?? 'One layer'} only`
       : null,

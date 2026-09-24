@@ -92,6 +92,10 @@ export type TabVote = {
   // single-layer tab always gets. Set once at start, like the privacy
   // switches: changing it means ending the vote and starting another.
   voteLayerId?: string;
+  // At most ONE of a participant's dots per element (spec/39). Absent =
+  // stack freely, the classic dot-vote and the behaviour of every vote
+  // persisted before this existed. Set once at start like the rest.
+  onePerElement?: boolean;
   // Which rank the results walkthrough is currently on. SHARED, not local:
   // the host steps the room through the picks together and everyone else
   // follows. Absent until the host reveals results.
@@ -124,6 +128,9 @@ export type VoteSetup = VotePrivacy & {
   // Restrict casting to this layer. Undefined = every layer, which is
   // what a single-layer tab always gets (the picker doesn't even show).
   layerId?: string;
+  // Cap each participant at one dot per element instead of letting them
+  // stack their budget on a favourite.
+  onePerElement?: boolean;
 };
 
 // Should peer cursors / laser trails be withheld right now? Only while
@@ -193,6 +200,17 @@ export function votesSpentBy(vote: TabVote, participantId: string): number {
     for (const id of ids) if (id === participantId) n++;
   }
   return n;
+}
+
+// Can this participant place one more dot on this element? Out of budget
+// says no everywhere; a one-per-element vote also says no where they have
+// already placed one. The single rule the cast handler and the canvas
+// stepper both read, so the plus can't offer a dot the handler refuses.
+export function canCastVote(vote: TabVote, participantId: string, elementId: string): boolean {
+  if (!vote.active) return false;
+  if (votesSpentBy(vote, participantId) >= vote.votesPerPerson) return false;
+  if (vote.onePerElement && (vote.votes[elementId] ?? []).includes(participantId)) return false;
+  return true;
 }
 
 // Total dot count per element id (collapses the per-participant arrays).

@@ -93,6 +93,10 @@ under its section below and in spec/88 for the poll.
 - Controlled from **Tab menu → Collaborate → Vote** (the Session
   Studio): the dot budget is picked as a **row of dots** (tap the fifth for
   five each, `VOTE_DOTS_RANGE` 1-10, the same range as the Session button),
+  a **Dots per item** choice (**Any number**, the default and classic
+  stacking, or **One each**, which caps each participant at one dot per
+  element so the budget becomes "pick your top N"; hidden when the budget
+  is one dot, and stored as `TabVote.onePerElement`, absent = stacking),
   the privacy switches are cards that say what the room will not see, then
   **Start vote** → **End vote** → **Show results** → **Clear vote**. Running,
   the pane shows a three-step track (Voting · Ended · Results), live counts of
@@ -104,7 +108,7 @@ under its section below and in spec/88 for the poll.
   arrow / annotation.
 - **Casting**: while `vote.active`, pressing a votable element places one of
   your dots (`BoxedElementView` intercepts the pointer-down before
-  select/drag); your budget (`votesPerPerson`) is enforced via `votesSpentBy`.
+  select/drag); your budget (`votesPerPerson`), and the one-per-item rule when it is on, are enforced by `canCastVote`, the one check the cast handler and the stepper's plus both read.
   Non-votable elements still select normally so the board stays editable.
   Counts are **live**. While casting is open, every votable element carries a
   **stepper** — minus, the count, plus — reading `0` before anything lands.
@@ -112,7 +116,7 @@ under its section below and in spec/88 for the poll.
   click-to-retract count that only appeared once an element already had a
   dot, which made the first dot on a board an act of faith: nothing on
   screen said an element was a target or how to add to it. Minus is
-  disabled at zero and plus once your budget is spent, rather than
+  disabled at zero and plus once your budget is spent (or, on a one-per-item vote, once you have a dot on that element), rather than
   hidden, so the row's width — and so the plus's position — never shifts
   under the pointer mid-vote. The stepper sits INSIDE the element's
   bottom-right corner (clearance from the edge, and from a neighbour's

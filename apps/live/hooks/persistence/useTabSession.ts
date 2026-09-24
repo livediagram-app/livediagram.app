@@ -12,9 +12,9 @@
 // vote casts deliberately do NOT log.
 
 import {
+  canCastVote,
   isVoteHost,
   timerDisplayMs,
-  votesSpentBy,
   type Tab,
   type TabVote,
   type TimerMode,
@@ -197,6 +197,9 @@ export function useTabSession(deps: TabSessionDeps) {
       // Layer scope (spec/96). Undefined = every layer, which is what a
       // single-layer tab always gets since the picker never shows there.
       voteLayerId: setup?.layerId,
+      // Absent rather than false when off, so an ordinary vote's wire shape
+      // is unchanged.
+      ...(setup?.onePerElement ? { onePerElement: true } : {}),
       // A vote is one person's to run (spec/39): the starter is the only
       // one who can end / reveal / clear it or move the results focus.
       startedBy: selfId,
@@ -207,6 +210,7 @@ export function useTabSession(deps: TabSessionDeps) {
       : undefined;
     const privacyNote = [
       layerName ? `on ${layerName}` : null,
+      vote.onePerElement ? 'one dot per item' : null,
       vote.hideCursors ? 'cursors hidden' : null,
       vote.hideCounts ? 'counts hidden' : null,
     ].filter(Boolean);
@@ -269,8 +273,7 @@ export function useTabSession(deps: TabSessionDeps) {
     if (editsBlocked) return;
     patchActive((t) => {
       const vote = t.vote;
-      if (!vote || !vote.active) return t;
-      if (votesSpentBy(vote, selfId) >= vote.votesPerPerson) return t;
+      if (!vote || !canCastVote(vote, selfId, elementId)) return t;
       const existing = vote.votes[elementId] ?? [];
       return {
         ...t,
