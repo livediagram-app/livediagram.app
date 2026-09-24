@@ -3,6 +3,12 @@ import { rgbToLabInto, type Lab } from './lab';
 
 // Measuring one region of a photograph, for `floors.ts` to turn into floors.
 
+// Every channel at or above this is blown out. Tuned on the eight
+// hand-labelled walls: 240 to 253 score the same (the night photo's ceiling
+// lamp stops dragging its cells' floors, two fewer spurious boxes there), and
+// 250 sits in that band; 255 alone misses the lamp's soft edge.
+export const BLOWN_OUT = 250;
+
 // What one region of a photograph is made of: the saturation and value
 // histograms of its lit pixels, and the mean hue direction of its DULL ones —
 // which on a kraft wall is the kraft and on a whiteboard is nothing in
@@ -54,6 +60,10 @@ export function measure(
       // Black is not a surface: it is ink, or a shadow with nothing readable
       // in it, and averaging it into the wall drags every floor down.
       if (max < 24) continue;
+      // …and neither is white that the sensor clipped: a lamp, a window, glare.
+      // Its colour is unknown, and a lamp filling most of a cell would set the
+      // wall there at full brightness and every note under it would be wall.
+      if (Math.min(r, g, b) >= BLOWN_OUT) continue;
       const s = (max - Math.min(r, g, b)) / max;
       const bucket = Math.round(s * 100);
       surface.saturation[bucket]! += 1;

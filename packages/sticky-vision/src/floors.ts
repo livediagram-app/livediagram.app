@@ -1,6 +1,6 @@
 import type { ImageBuffer } from './colour';
 import { modeOf, otsu } from './histogram';
-import { hueOf, measure, wallLabOf, type Surface } from './surface';
+import { BLOWN_OUT, hueOf, measure, wallLabOf, type Surface } from './surface';
 
 // Measuring the wall a photograph was taken of, so the paper on it can be told
 // apart from it (spec/139 Phase 8).
@@ -276,6 +276,7 @@ export const FLOOR_CALIBRATION = {
   WALL_VALUE_RATIO,
   FLOOR_TILES_LONG_SIDE,
   FLOOR_SAMPLE_STRIDE,
+  BLOWN_OUT,
   TILE_BIMODAL_STRENGTH,
   TILE_WALL_TOLERANCE,
 } as const;

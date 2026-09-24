@@ -30,13 +30,13 @@ touch another group's file stops and asks.
       lightness floors per tile) instead of HSV saturation floors; keep the
       hue bands for the KIND. Measure pale-on-white (whiteboard, panorama) and
       pale-on-kraft recall.
-- [ ] A3 Wall-referenced luminance division (brightness ÷ local wall
+- [x] A3 Wall-referenced luminance division (brightness ÷ local wall
       brightness, coarse grid) before classification. Measure 201730 (shade)
       and 201743 (night).
-- [ ] A4 CLAHE on L* as an alternative or complement to A3.
-- [ ] A5 Per-photo a*b* palette from histogram peaks: kinds learnt from the
+- [x] A4 CLAHE on L* as an alternative or complement to A3.
+- [x] A5 Per-photo a*b* palette from histogram peaks: kinds learnt from the
       photo, catalogue as the prior.
-- [ ] A6 Specular glare mask (whiteboard): glare pixels excluded from floors.
+- [x] A6 Specular glare mask (whiteboard): glare pixels excluded from floors.
 
 ### B — separation (`split.ts`, new `contour.ts`, `seam.ts`)
 
