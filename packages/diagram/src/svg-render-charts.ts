@@ -11,11 +11,7 @@
 // differ. Hover, tooltips and the looping animations are the canvas's alone
 // and have no meaning in a still image.
 
-import {
-  chartFrame,
-  type ChartLegendRect,
-  type ChartRect,
-} from './chart-frame';
+import { chartFrame, type ChartLegendRect, type ChartRect } from './chart-frame';
 import { LINE_DEFAULT_CATEGORIES, LINE_DEFAULT_SERIES, type PieSlice } from './data-shapes';
 import type { BoxedElement, ShapeElement } from './index';
 import { r2, xmlEscape } from './svg-render-primitives';
@@ -187,7 +183,10 @@ export function svgLineChart(
       const color = xmlEscape(colorAt(si, s));
       const pts = categories.map((_, i) => `${r2(xAt(i))},${r2(yAt(valAt(si, i)))}`).join(' ');
       const dots = categories
-        .map((_, i) => `<circle cx="${r2(xAt(i))}" cy="${r2(yAt(valAt(si, i)))}" r="3" fill="${color}"/>`)
+        .map(
+          (_, i) =>
+            `<circle cx="${r2(xAt(i))}" cy="${r2(yAt(valAt(si, i)))}" r="3" fill="${color}"/>`,
+        )
         .join('');
       return (
         `<polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>` +

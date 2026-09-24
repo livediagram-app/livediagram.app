@@ -21,6 +21,7 @@ import {
 import { canvasSurface } from './colors';
 import { svgTableShape } from './svg-render-table';
 import { svgBarChart, svgLineChart, svgPieChart } from './svg-render-charts';
+import { BEHAVIOUR_FACE_SHAPES, svgBehaviourFace, svgCollabFace } from './svg-render-faces';
 import {
   svgEntityRows,
   svgPageMasthead,
@@ -29,6 +30,7 @@ import {
   svgRating,
   svgTimelineRail,
 } from './svg-render-data';
+import { isCollabPanelShape } from './collab-shapes';
 import {
   isBarShape,
   isLineShape,
@@ -68,7 +70,7 @@ export {
 import { svgArrow } from './svg-render-arrows';
 
 export { arrowHeadRefs, svgArrow, svgArrowhead } from './svg-render-arrows';
-import type { BoxedElement, Element, Tab } from './index';
+import type { BoxedElement, Element, ShapeKind, Tab } from './index';
 import { layerBands, layerOpacityOf, visibleLayerElements } from './layers';
 // Element drop shadows (spec/86): gate + deterministic filter defs.
 import { shadowFilterId, supportsShadow, svgShadowFilterDef } from './shadow';
@@ -315,8 +317,22 @@ export function svgBoxed(el: BoxedElement, opts: BoxedExportOptions = {}): strin
                       : el.shape === 'entity'
                         ? svgEntityRows(el, labelColor, fontFamily)
                         : el.shape === 'page'
-                          ? svgPageMasthead(el, PADDING_PX[el.padding ?? defaultPadding(el)], fontFamily)
-                          : ''
+                          ? svgPageMasthead(
+                              el,
+                              PADDING_PX[el.padding ?? defaultPadding(el)],
+                              fontFamily,
+                            )
+                          : // The Behaviour + Collaborate faces (spec/103 to
+                            // /137), which all exported as the same blank
+                            // labelled box as each other.
+                            (svgBehaviourFace(
+                              el,
+                              label?.text ?? el.label ?? '',
+                              labelColor,
+                              shape.stroke,
+                            ) ??
+                            svgCollabFace(el, label?.text ?? el.label ?? '', labelColor) ??
+                            '')
         : '';
     // A SELF-PAINTING element's body is its own: the canvas gives it a
     // wrapper with no border and no background (element-variant.ts), and the
@@ -357,36 +373,40 @@ export function svgBoxed(el: BoxedElement, opts: BoxedExportOptions = {}): strin
   // content is what it shows), so the export must not print one either: a
   // chart came out with "pie-chart" centred in the middle of it.
   const labelStr =
-    !label || (el.type === 'shape' && isSelfDrawingShape(el.shape) && el.shape !== 'legend')
-    ? ''
-    : label.runs
-      ? svgRichWrappedLabel(
-          label.runs,
-          label.x,
-          label.y,
-          label.anchor,
-          label.maxWidth,
-          label.valign,
-          label.fontFamily,
-        )
-      : svgWrappedLabel(
-          // Wrapped in the face it paints in, or a wide face breaks at the
-          // wrong words and runs out of its element.
-          wrapLabel(
-            label.text,
+    !label ||
+    (el.type === 'shape' && isSelfDrawingShape(el.shape) && el.shape !== 'legend') ||
+    // A Behaviour / Collaborate face writes its own title where its card puts
+    // it, so the generic centred label would print it a second time.
+    (el.type === 'shape' && (isCollabPanelShape(el.shape) || BEHAVIOUR_FACE_SHAPES.has(el.shape)))
+      ? ''
+      : label.runs
+        ? svgRichWrappedLabel(
+            label.runs,
+            label.x,
+            label.y,
+            label.anchor,
             label.maxWidth,
-            labelMeasure(label.size, label.bold, label.italic, label.fontFamily),
-          ),
-          label.x,
-          label.y,
-          label.anchor,
-          label.color,
-          label.size,
-          label.bold,
-          label.italic,
-          label.valign,
-          label.fontFamily,
-        );
+            label.valign,
+            label.fontFamily,
+          )
+        : svgWrappedLabel(
+            // Wrapped in the face it paints in, or a wide face breaks at the
+            // wrong words and runs out of its element.
+            wrapLabel(
+              label.text,
+              label.maxWidth,
+              labelMeasure(label.size, label.bold, label.italic, label.fontFamily),
+            ),
+            label.x,
+            label.y,
+            label.anchor,
+            label.color,
+            label.size,
+            label.bold,
+            label.italic,
+            label.valign,
+            label.fontFamily,
+          );
   return `<g${opAttr}${rotAttr}${shadowAttr}>${shapeStr}${labelStr}</g>`;
 }
 
@@ -426,6 +446,29 @@ export function svgShadowDefs(elements: Element[]): string {
 // can't reproduce natively — the caller then rasterises this element's
 // svgBoxed markup instead. Tables, freehand sketches, shape silhouettes,
 // rotation, and resolved icon art all fall in.
+/**
+ * Whether a shape's BODY is drawn by the emitters above rather than being a
+ * box with a label.
+ *
+ * The PNG / PDF export paints with canvas 2D drawers that can only manage a
+ * box and its text, and rasterises this module's markup for anything richer
+ * (see `boxedNeedsSvgRaster`). This is the list of "anything richer", so the
+ * two image exports cannot disagree about what an element looks like: they
+ * did, and a tab exported as a PNG came out with plain boxes where the same
+ * tab exported as an SVG had charts.
+ */
+function shapeHasBespokeBody(kind: ShapeKind): boolean {
+  return (
+    isSelfDrawingShape(kind) ||
+    isCollabPanelShape(kind) ||
+    BEHAVIOUR_FACE_SHAPES.has(kind) ||
+    kind === 'entity' ||
+    kind === 'page' ||
+    kind === 'lane' ||
+    kind === 'browser'
+  );
+}
+
 export function boxedNeedsSvgRaster(
   el: BoxedElement,
   resolveIconArt?: ResolveIconArt,
@@ -437,6 +480,12 @@ export function boxedNeedsSvgRaster(
   if (supportsShadow(el) && el.shadow) return true;
   if (el.type === 'table' || el.type === 'freehand') return true;
   if (el.type === 'shape' && (hasShapeSilhouette(el.shape) || el.shape === 'stadium')) return true;
+  // Anything whose BODY this module draws and the canvas drawers cannot: a
+  // chart's plot, a progress value, a card's face, a lane's gutter, a
+  // browser's chrome. Without this the PNG / PDF export kept drawing them as
+  // plain boxes while the SVG export drew them properly, which is the same
+  // inconsistency one file down.
+  if (el.type === 'shape' && shapeHasBespokeBody(el.shape)) return true;
   if (el.type === 'shape' && el.shape === 'icon' && el.iconId && resolveIconArt?.(el.iconId))
     return true;
   // A sticker is drawn art (plate + shadow + emoji or badge text) with no
@@ -488,7 +537,9 @@ export function renderElementsToSvg(
   // The categorical ramp the tab's theme gives its charts (spec/53), which is
   // what the canvas hands them. Without it every exported chart fell back to
   // the built-in ramp and came out in different colours to the board.
-  const chartPalette = themeChartPalette(getBuiltInTheme(tab.theme, surface === 'dark' ? 'dark' : 'light'));
+  const chartPalette = themeChartPalette(
+    getBuiltInTheme(tab.theme, surface === 'dark' ? 'dark' : 'light'),
+  );
   const fontDefs = svgFontDefs(exportFontIds(visible, tab.font));
   if (fontDefs) parts.push(fontDefs);
   // Element-shadow filter defs (spec/86); empty string when none.
