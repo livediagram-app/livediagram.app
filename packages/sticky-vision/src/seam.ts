@@ -1,6 +1,5 @@
 import type { Box, PaperMask } from './boxes';
 import type { ImageBuffer } from './colour';
-import { findHueSeam } from './paper-hue';
 
 // The SEAM between two notes that touch (spec/139 Phase 9, experiment B3).
 //
@@ -19,32 +18,16 @@ import { findHueSeam } from './paper-hue';
 // light falling off across one note make steps too), so it is trusted only
 // across a box long enough to be two notes (see `STEP_MIN_SPAN`).
 
-// The photograph as the seam cut reads it: how bright, one byte per pixel,
-// and, where on hand, two opponent colour channels (red − green, and yellow −
-// blue), for the seam between two pads of one kind (see `paper-hue.ts`).
-export type Luminance = {
-  width: number;
-  height: number;
-  data: Uint8Array;
-  redGreen?: Int16Array;
-  yellowBlue?: Int16Array;
-};
+export type Luminance = { width: number; height: number; data: Uint8Array };
 
-// Rec. 601 luma, and the opponent channels beside it.
+// Rec. 601 luma, one byte per pixel: all a seam needs is how bright.
 export function luminanceOf(image: ImageBuffer): Luminance {
   const { width, height, data } = image;
   const out = new Uint8Array(width * height);
-  const redGreen = new Int16Array(width * height);
-  const yellowBlue = new Int16Array(width * height);
   for (let p = 0, i = 0; p < out.length; p += 1, i += 4) {
-    const r = data[i]!;
-    const g = data[i + 1]!;
-    const b = data[i + 2]!;
-    out[p] = Math.round(0.299 * r + 0.587 * g + 0.114 * b);
-    redGreen[p] = r - g;
-    yellowBlue[p] = ((r + g) >> 1) - b;
+    out[p] = Math.round(0.299 * data[i]! + 0.587 * data[i + 1]! + 0.114 * data[i + 2]!);
   }
-  return { width, height, data: out, redGreen, yellowBlue };
+  return { width, height, data: out };
 }
 
 // How much darker than the paper either side of it a line has to be, as the
@@ -71,22 +54,6 @@ const SEAM_MAX_TILT = 0.08;
 // merged 29 → 28); at 1.7 the whiteboard's pairs, 1.68–1.74 notes long, are
 // out of reach again, and a stricter step (16 levels) gives one back.
 const STEP_MIN_SPAN = 1.6;
-// A box thinner than this (in notes) is a column, or a row, of notes smaller
-// than the wall's, each about as long as the box is thin: a pad of small
-// actors stuck in a lattice. Its seams are sought at the scale of its own
-// thickness, where the wall's note would find none (every piece of two small
-// notes is shorter than 1.3 wall notes). A single narrow note is cut only
-// where a seam as deep as one between two notes crosses it. 0.65–0.75 score
-// alike on the eight labelled walls; 0.6 parts one pair fewer, 0.8 costs the
-// whiteboard a note.
-const THIN_FRACTION = 0.7;
-
-// The note size a box's seams are measured against: its own thickness when
-// it is a column of small notes (see `THIN_FRACTION`), else the wall's.
-export function noteScaleOf(box: Box, wallNote: number): number {
-  const thickness = Math.min(box.w, box.h);
-  return thickness < wallNote * THIN_FRACTION ? thickness : wallNote;
-}
 // A pixel this much darker than the box's paper is ink, not shadow.
 const INK_BELOW_PAPER = 60;
 // The ends of a line are left out: a note's own border shadow sits there.
@@ -102,11 +69,8 @@ export type Seam = {
   at: number;
   // How far it moves over its length, in pixels.
   tilt: number;
-  // How deep: the median valley (or step) along it in brightness, or, for
-  // a seam between two pads, how far apart their colours are.
+  // The median valley depth along it.
   depth: number;
-  // What shows it: a shadow (or a step in brightness), or the paper's colour.
-  by: 'shadow' | 'hue';
 };
 
 function paperLevel(lum: Luminance, box: Box): number {
@@ -180,16 +144,9 @@ function median(values: number[]): number {
 }
 
 // The deepest seam across the box that leaves a note either side of it, or
-// null when there is none. A shadow comes first; failing one, the line
-// between two pads' colours (read from `mask`'s paper when on hand).
-export function findSeam(
-  lum: Luminance,
-  box: Box,
-  wallNote: number,
-  mask?: PaperMask,
-): Seam | null {
-  if (wallNote <= 0) return null;
-  const noteSize = noteScaleOf(box, wallNote);
+// null when there is none.
+export function findSeam(lum: Luminance, box: Box, noteSize: number): Seam | null {
+  if (noteSize <= 0) return null;
   const paper = paperLevel(lum, box);
   const margin = Math.round(noteSize * SEAM_MIN_PIECE);
   let best: Seam | null = null;
@@ -207,15 +164,11 @@ export function findSeam(
         const tilt = k % 2 === 0 ? k / 2 : -(k + 1) / 2;
         const depth = seamDepthAlong(lum, box, vertical, at, tilt, paper, steps);
         if (depth === null || depth < SEAM_MIN_DEPTH) continue;
-        if (!best || depth > best.depth) best = { vertical, at, tilt, depth, by: 'shadow' };
+        if (!best || depth > best.depth) best = { vertical, at, tilt, depth };
       }
     }
   }
-  if (best) return best;
-  // Both sides a note: the box at least two pieces' worth long.
-  const span = 2 * SEAM_MIN_PIECE * noteSize;
-  const hue = findHueSeam(lum, box, margin, span, paper - INK_BELOW_PAPER, mask);
-  return hue && { vertical: hue.vertical, at: hue.at, tilt: 0, depth: hue.step, by: 'hue' };
+  return best;
 }
 
 // Cut a box at its seam, each side tightened onto its own paper, and each
@@ -228,7 +181,7 @@ export function cutAtSeam(
   depth = 0,
 ): Box[] {
   if (depth >= SEAM_MAX_DEPTH) return [box];
-  const seam = findSeam(lum, box, noteSize, mask);
+  const seam = findSeam(lum, box, noteSize);
   if (!seam) return [box];
   const sides = [
     { minX: Infinity, minY: Infinity, maxX: -1, maxY: -1, pixels: 0 },
@@ -273,7 +226,6 @@ export const SEAM_CALIBRATION = {
   SEAM_MIN_SPAN,
   SEAM_MAX_TILT,
   STEP_MIN_SPAN,
-  THIN_FRACTION,
   INK_BELOW_PAPER,
   SEAM_INSET,
   SEAM_MIN_PAPER,

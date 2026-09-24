@@ -1,6 +1,5 @@
 import { fillRatio, MIN_SOLID_FILL, type Box, type PaperMask } from './boxes';
 import { splitAtNecks } from './necks';
-import { noteScaleOf } from './seam';
 
 // Cutting a blob that is more than one note into notes (spec/139 Phase 9).
 //
@@ -49,12 +48,10 @@ const VALLEY_MAX_FILL = 0.7;
 // a note lapped over a neighbour of another kind are no longer trimmed.
 const NECK_MIN_AREA = 1.5;
 // …and the parts are taken only when every one is a note, at most this long
-// (in notes), or a column of notes smaller than the wall's (thinner than a
-// note: see `noteScaleOf`), which the seam cut takes apart at its own scale.
-// Any other longer part is a group of notes the necks happened to fall
-// around, and the grid over the whole blob was measured to do better with it
-// than a grid over the part: 1.3–1.4 found three notes and lost none, 1.5–2.0
-// traded one note on 201707 for a box.
+// (in notes). A part longer than that is a group of notes the necks happened
+// to fall around, and the grid over the whole blob was measured to do better
+// with it than a grid over the part: 1.3–1.4 found three notes and lost none,
+// 1.5–2.0 traded one note on 201707 for a box.
 const NECK_MAX_PIECE = 1.4;
 
 // Split a box that is plainly more than one note along its long axis. Two
@@ -101,9 +98,7 @@ export function splitOversized(
 function atNecks(box: Box, noteSize: number, mask: PaperMask | undefined): Box[] {
   if (!mask || box.w * box.h < NECK_MIN_AREA * noteSize * noteSize) return [box];
   const parts = splitAtNecks(box, mask, noteSize);
-  const takes = (p: Box) =>
-    Math.max(p.w, p.h) <= noteSize * NECK_MAX_PIECE || noteScaleOf(p, noteSize) < noteSize;
-  return parts.every(takes) ? parts : [box];
+  return parts.every((p) => Math.max(p.w, p.h) <= noteSize * NECK_MAX_PIECE) ? parts : [box];
 }
 
 // How many times a piece may be cut again after being cut. Four is past any
