@@ -81,6 +81,8 @@ const MIME = {
   '.ico': 'image/x-icon',
   '.txt': 'text/plain; charset=utf-8',
   '.woff2': 'font/woff2',
+  // Cloudflare serves it so; streaming compilation needs it.
+  '.wasm': 'application/wasm',
   '.map': 'application/json; charset=utf-8',
 };
 

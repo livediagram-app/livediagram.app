@@ -6,13 +6,16 @@ import {
   startTemplateDiagram,
   test,
 } from './fixtures';
+import { openPhotoBoard } from './fixtures/photo-board';
 import { wallPhotoPng, type WallNote } from './fixtures/wall-photo';
 
 // Importing a photographed wall (spec/139 Phase 8 + 9). The DETECTOR is real
 // code; the READER is stubbed to answer blank, which is what a drawn wall with
 // no lettering on it would read anyway. Which reader would have run is a
 // capability decision (server model vs in-browser model), covered in unit
-// tests — here it is stubbed so the suite never downloads a model. What only a browser can answer: a real
+// tests — here it is stubbed so the suite never downloads a model. The
+// boundary model is blocked: these walls are drawn, not photographed, and the
+// hybrid is covered on its own in photo-model.spec.ts. What only a browser can answer: a real
 // image file becomes real draft notes at the right kinds and places, the
 // review overlay shows the photo and boxes, drawing a box adds a missed note,
 // Add is one undo step, Discard leaves nothing, and a draft survives a reload.
@@ -24,35 +27,6 @@ const BLUE = '#93c5fd'; // command
 // A wall, drawn: solid notes in a row, in reading order.
 function wall(notes: WallNote[]) {
   return { name: 'wall.png', mimeType: 'image/png', buffer: wallPhotoPng(900, 400, notes) };
-}
-
-async function mockCapabilities(page: Page) {
-  await page.route('**/api/capabilities', async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({ aiEnabled: true, emailEnabled: false }),
-    });
-  });
-}
-
-async function openBoard(page: Page) {
-  await mockCapabilities(page);
-  // Capabilities say a model is configured, so the SERVER reader runs: stub it
-  // to answer blank rather than calling a real provider from a test.
-  await page.route('**/api/ai/read-notes', async (route) => {
-    const crops = (JSON.parse(route.request().postData() ?? '{}').crops ?? []) as { id: number }[];
-    await route.fulfill({
-      json: { texts: crops.map((c) => ({ id: c.id, text: '', legible: false })) },
-    });
-  });
-  // Safety net: no test may pull model weights down the wire.
-  await page.route('**/huggingface.co/**', (r) => r.abort());
-  await page.route('**/cdn.jsdelivr.net/**', (r) => r.abort());
-  await startTemplateDiagram(page, /Browse Technical templates/, /^Event storming/i);
-  await page.locator('[data-canvas-a11y-root]').waitFor();
-  await dismissQuickTour(page);
-  await page.waitForTimeout(500);
 }
 
 async function importToReview(page: Page, notes: WallNote[]) {
@@ -133,7 +107,7 @@ test('a photo lands as a draft, Add is one undo step, and it survives a reload',
   page,
   pageErrors,
 }) => {
-  await openBoard(page);
+  await openPhotoBoard(page, { boundaryModel: false });
   await importPhoto(page, [{ fill: ORANGE, x: 300, y: 120, w: 180, h: 180 }]);
 
   await expect(bar(page)).toBeVisible();
@@ -169,7 +143,7 @@ test('a photo lands as a draft, Add is one undo step, and it survives a reload',
 });
 
 test('the detector reads the KINDS off the paper', async ({ page, pageErrors }) => {
-  await openBoard(page);
+  await openPhotoBoard(page, { boundaryModel: false });
   // A blue command: its kind comes from colour alone, no model asked.
   await importPhoto(page, [{ fill: BLUE, x: 300, y: 120, w: 180, h: 180 }]);
 
@@ -189,7 +163,7 @@ test('the detector reads the KINDS off the paper', async ({ page, pageErrors }) 
 });
 
 test('a note still lands empty when the reader reads nothing', async ({ page, pageErrors }) => {
-  await openBoard(page);
+  await openPhotoBoard(page, { boundaryModel: false });
   await importPhoto(page, [{ fill: ORANGE, x: 300, y: 120, w: 180, h: 180 }]);
 
   await expect(bar(page)).toBeVisible();
@@ -201,7 +175,7 @@ test('a note still lands empty when the reader reads nothing', async ({ page, pa
 });
 
 test('drawing a box adds a sticky the detector missed', async ({ page, pageErrors }) => {
-  await openBoard(page);
+  await openPhotoBoard(page, { boundaryModel: false });
   await importToReview(page, [{ fill: ORANGE, x: 300, y: 120, w: 180, h: 180 }]);
 
   const overlay = page.locator('[data-testid="photo-review-overlay"]');
@@ -224,7 +198,7 @@ test('drawing a box adds a sticky the detector missed', async ({ page, pageError
 });
 
 test('Discard leaves the board exactly as it was', async ({ page, pageErrors }) => {
-  await openBoard(page);
+  await openPhotoBoard(page, { boundaryModel: false });
   await importPhoto(page, [{ fill: ORANGE, x: 300, y: 120, w: 180, h: 180 }]);
 
   await expect(drafts(page)).toHaveCount(1);
@@ -241,7 +215,7 @@ test('Discard leaves the board exactly as it was', async ({ page, pageErrors }) 
 });
 
 test('a draft note can be deleted before it is added', async ({ page, pageErrors }) => {
-  await openBoard(page);
+  await openPhotoBoard(page, { boundaryModel: false });
   await importPhoto(page, [
     { fill: ORANGE, x: 200, y: 120, w: 180, h: 180 },
     { fill: ORANGE, x: 500, y: 120, w: 180, h: 180 },
@@ -266,7 +240,7 @@ test('a photo with no paper in it says so, and keeps the photo up', async ({
   page,
   pageErrors,
 }) => {
-  await openBoard(page);
+  await openPhotoBoard(page, { boundaryModel: false });
   await importPhoto(page, []);
   await expect(page.getByText(/no stickies found in this photo/i).first()).toBeVisible();
   // The photo STAYS on screen with the advice: it is advice about THIS
@@ -283,7 +257,7 @@ test('a photo with no paper in it says so, and keeps the photo up', async ({
 });
 
 test('a draft survives a reload, and can still be added', async ({ page, pageErrors }) => {
-  await openBoard(page);
+  await openPhotoBoard(page, { boundaryModel: false });
   await importPhoto(page, [{ fill: ORANGE, x: 300, y: 120, w: 180, h: 180 }]);
 
   await expect(drafts(page)).toHaveCount(1);
@@ -321,7 +295,7 @@ test('the photo import needs no model key', async ({ page, pageErrors }) => {
 // author never meets it; only a browser can prove the download actually
 // happens and carries what is on screen.
 test('a corrected review can be saved as ground truth', async ({ page, pageErrors }) => {
-  await openBoard(page);
+  await openPhotoBoard(page, { boundaryModel: false });
   await page.evaluate(() => localStorage.setItem('livediagram:truth', '1'));
   await importToReview(page, [
     { fill: ORANGE, x: 200, y: 120, w: 180, h: 180 },
@@ -368,7 +342,7 @@ test('a corrected review can be saved as ground truth', async ({ page, pageError
 // tall window is where the two come apart: the frame has a minimum height, the
 // photo does not fill it, and every box drifts down the picture.
 test('the boxes land on the stickies at any window shape', async ({ page, pageErrors }) => {
-  await openBoard(page);
+  await openPhotoBoard(page, { boundaryModel: false });
   // A panorama: 6:1, like a photo of a long paper wall.
   const notes = [
     { fill: ORANGE, x: 60, y: 60, w: 120, h: 120 },
@@ -445,7 +419,7 @@ test('the boxes land on the stickies at any window shape', async ({ page, pageEr
 // The other direction: a TALL photo in a wide window, where the frame's
 // minimum WIDTH is what the picture fails to fill. Same bug, sideways.
 test('the boxes land on the stickies for a tall photo too', async ({ page, pageErrors }) => {
-  await openBoard(page);
+  await openPhotoBoard(page, { boundaryModel: false });
   const notes = [
     { fill: ORANGE, x: 60, y: 60, w: 120, h: 120 },
     { fill: BLUE, x: 60, y: 600, w: 120, h: 120 },
@@ -514,7 +488,7 @@ test('the photo zooms and pans, and the boxes stay on their stickies', async ({
   page,
   pageErrors,
 }) => {
-  await openBoard(page);
+  await openPhotoBoard(page, { boundaryModel: false });
   await page.setViewportSize({ width: 1280, height: 800 });
   const notes = [
     { fill: ORANGE, x: 100, y: 100, w: 60, h: 60 },
@@ -598,7 +572,7 @@ test('the photo zooms and pans, and the boxes stay on their stickies', async ({
 
 // A phone: two fingers pinch the photo bigger, and draw no box doing it.
 test('a two-finger pinch zooms the photo on a touch screen', async ({ page, pageErrors }) => {
-  await openBoard(page);
+  await openPhotoBoard(page, { boundaryModel: false });
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.getByRole('button', { name: /add from photo/i }).click();
   await page.setInputFiles('input[type="file"]', {
@@ -646,7 +620,7 @@ test('a two-finger pinch zooms the photo on a touch screen', async ({ page, page
 // — including their ticks. A wrong detected box with a hand-drawn box over its
 // corner could not be cleared, which is how one ended up in a hand-made label.
 test('a tick under a box the author drew can still be cleared', async ({ page, pageErrors }) => {
-  await openBoard(page);
+  await openPhotoBoard(page, { boundaryModel: false });
   await importToReview(page, [{ fill: ORANGE, x: 300, y: 120, w: 180, h: 180 }]);
   const overlay = page.locator('[data-testid="photo-review-overlay"]');
   await expect(overlay.locator('[data-shown="no"]')).toHaveCount(0);
@@ -674,7 +648,7 @@ test('boxes can be moved, resized, re-kinded, deleted, saved and reopened', asyn
   page,
   pageErrors,
 }) => {
-  await openBoard(page);
+  await openPhotoBoard(page, { boundaryModel: false });
   await page.setViewportSize({ width: 1280, height: 800 });
   await importToReview(page, [
     { fill: ORANGE, x: 150, y: 120, w: 120, h: 120 },
@@ -755,7 +729,7 @@ test('boxes can be moved, resized, re-kinded, deleted, saved and reopened', asyn
 // blank), the review suggests a better photo or typing — and "Try another
 // photo" really does open the picker again (spec/139 Phase 9).
 test('an unread wall offers another photo, and the picker opens', async ({ page, pageErrors }) => {
-  await openBoard(page);
+  await openPhotoBoard(page, { boundaryModel: false });
   await importToReview(page, [
     { fill: ORANGE, x: 200, y: 120, w: 180, h: 180 },
     { fill: BLUE, x: 500, y: 120, w: 180, h: 180 },
