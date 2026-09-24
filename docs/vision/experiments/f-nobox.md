@@ -187,6 +187,13 @@ a far board would be worth more than any further tuning here.
   the paper mask, for pale notes surrounded by notes): 90.6 → 90.3, 201646
   precision 80 → 77, the three pale whiteboard notes still refused. The ring was
   not why they read 0.07–0.12.
+- **Hue for paler notes** (`HUE_MIN_SATURATION` 0.2). The three pale whiteboard
+  notes stand out only by hue (70 to 120 degrees off the wall) at saturation
+  0.10 to 0.19, under the floor. Lowered to 0.10 / 0.12 / 0.15 / 0.17: TOTAL
+  90.5 / 90.4 / 90.4 / 90.6; the whiteboard gains up to two notes but kraft junk
+  of a slightly different hue comes in on 201646 (precision 80 to 75). A floor
+  relative to the wall’s own saturation might separate them, but only one of the
+  eight walls is near grey, so it could not be fitted without fitting that wall.
 
 ## Where it ends
 

@@ -121,7 +121,7 @@ overlapping LABELS (for the operator to review, not for the detector).
   - [x] F4 Cut by the pad's note; pads not judged for grain: 90.2 → 90.6.
   - [x] F5 Plateau re-check; pad reach off its cliff: 90.6.
   - [x] F6 Rejected: seam-cut wiring (201713 loses 2 notes), lower fill floor,
-        aspect ceiling, ring without paper.
+        aspect ceiling, ring without paper, lower hue floor.
 - [ ] B2 — **separation, round 2** (owns `split.ts`, `contour.ts`,
       `seam.ts`): sprawling multi-note blobs still cut on an even grid (2-D
       seam search instead), the 12 same-colour merges, the 4 cross-colour ones.
