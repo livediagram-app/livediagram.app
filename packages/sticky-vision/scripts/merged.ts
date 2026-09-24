@@ -82,7 +82,22 @@ for (const name of listPhotos(DIR)) {
           .map((n) => `${n.cx.toFixed(0)},${n.cy.toFixed(0)} ${n.w.toFixed(0)}x${n.h.toFixed(0)}`)
           .join('  '),
     );
-    const key = `${arrangement(held, labelNote)}`;
+    // Why it is merged. INSEPARABLE: one held label's centre lies inside
+    // another held label's own rectangle, so ANY box the size of either note
+    // holds both centres — the labels overlap that much (a label drawn twice,
+    // a pair boxed as one as well as each, or a note lapped more than half
+    // over another). CROSS-COLOUR: the notes are of different kinds, so the
+    // box is one note whose extent covers a neighbour of another colour.
+    // Otherwise it is SAME-COLOUR, the separator's own business.
+    const within = (a: (typeof held)[number], b: (typeof held)[number]) =>
+      Math.abs(a.cx - b.cx) <= b.w / 2 && Math.abs(a.cy - b.cy) <= b.h / 2;
+    const inseparable = held.some((a) => held.some((b) => a !== b && within(a, b)));
+    const key = inseparable
+      ? 'inseparable'
+      : new Set(held.map((n) => n.kind)).size > 1
+        ? 'cross-colour'
+        : 'same-colour';
+    console.log(`      -> ${key}`);
     causes[key] = (causes[key] ?? 0) + 1;
     if (crops) {
       const pad = 8;
@@ -154,4 +169,4 @@ for (const name of listPhotos(DIR)) {
   }
   console.log(`  missed: ${JSON.stringify(where)}`);
 }
-console.log(`\nmerged ${totalMerged}  by arrangement ${JSON.stringify(causes)}`);
+console.log(`\nmerged ${totalMerged}  by cause ${JSON.stringify(causes)}`);
