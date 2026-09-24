@@ -150,6 +150,25 @@ overlapping LABELS (for the operator to review, not for the detector).
   - [x] A2.6 A floor per kind of paper (rejected).
   - [x] A2.7 Pale yellow on a bright wall (rejected).
 
+## Round 3
+
+- [x] G — **precision** (owns `standout.ts`, `texture.ts`; adds `spill.ts`):
+      every spurious box named, junk gated where it is junk, the rest handed
+      to separation. Result ([g-precision.md](../docs/vision/experiments/g-precision.md)):
+      90.7 → 91.4 with one pending line in `detect.ts`, precision 93 → 95%.
+  - [x] G0 Inventory (`scripts/spurious.ts`): 40 spurious, 12 not paper,
+        28 paper (halves, fragments, straddles, duplicates, merged).
+  - [x] G1 Higher standout bar: rejected (201654, 201713, whiteboard lose notes).
+  - [x] G2 Blank gate against the night panes: rejected (TOTAL never rises).
+  - [x] G3 Spill: a note's colour stops at its edge (`dropSurfaces`): kept,
+        awaiting its call in `detect.ts`; 90.7 → 91.4, no note lost.
+  - [x] G4 Ring against the frame's wall: rejected (far-board notes, shade).
+  - [x] G5 Saturation against the kind's notes: rejected (dull pads, pale pinks).
+  - [x] G6 Grain in the light: rejected (one box; small notes read rough).
+  - [x] G7 White objects: rejected (no plateau).
+  - [x] G8 Duplicate boxes traced to the sprawl split (for I); a dedupe of
+        identical boxes measured at +0.2 as a symptom fix.
+
 - **Held back (measured on the merged main branch):** wiring B's shadow-seam
   cut (`luminance: luminanceOf(working)` into `fitBoxes`) takes merged boxes
   29 → 25 but costs 201713 two notes (rec-A 96 → 93, PASS → FAIL). For B2 to

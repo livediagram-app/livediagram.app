@@ -17,9 +17,10 @@ import { labImageOf, type LabImage } from './lab';
 type Box = { x: number; y: number; w: number; h: number };
 
 // How close (CIE76 ΔE) a pixel's colour must be to the box's paper to count
-// as the same surface. Measured on the eight labelled walls: 12 to 16 keep
-// every note and score within 0.3 of a point, 14 best; beyond 16 the palest
-// notes on a white board start to leak into the board.
+// as the same surface. Measured on the eight labelled walls: 12 to 14.5 keep
+// every note, and 13.5 to 14.5 score best (TOTAL F1 91.4); from 15 a 15px
+// note of a far board, blurred into its unfound neighbours, spills too, and
+// from 16 the palest notes on a white board leak into the board.
 const SPILL_DELTA_E = 14;
 // How far round the box the growth may reach, in box sizes each way: far
 // enough to tell a note's worth of spill from a surface's, and a bound on
