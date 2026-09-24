@@ -90,6 +90,7 @@ export function NoteBox({
   return (
     <div
       data-testid={`note-box-${note.id}`}
+      data-kind={note.kind}
       data-shown={shown ? 'yes' : 'no'}
       data-selected={selected ? 'yes' : undefined}
       // The reveal is a class rather than an inline transition so that a

@@ -58,6 +58,7 @@ function detection(stickies: DetectedSticky[]): PhotoDetection {
     photoUrl: 'data:image/jpeg;base64,BBB',
     imageData: new Uint8ClampedArray(1000 * 1000 * 4),
     dropped: 0,
+    detector: { path: 'classical', reason: 'no-worker' },
   };
 }
 
@@ -177,6 +178,14 @@ afterEach(() => {
   cleanup();
   setPhotoDraftView(null);
   vi.clearAllMocks();
+});
+
+describe('which detector ran', () => {
+  it('is counted once per photo, as a closed token', async () => {
+    await reviewed();
+    const calls = vi.mocked(track).mock.calls.filter((c) => String(c[2]).startsWith('PhotoDetect'));
+    expect(calls).toEqual([['AI', 'Used', 'PhotoDetectClassicalNoWorker']]);
+  });
 });
 
 async function reviewed(opts: Parameters<typeof harness>[0] = {}) {

@@ -24,6 +24,7 @@ import {
   PhotoDetectFailed,
   type PhotoDetection,
 } from '@/lib/photo-detect';
+import { detectorTelemetryType } from '@/lib/photo-model/telemetry';
 import { track } from '@/lib/telemetry';
 
 // A photo import, as ONE long gesture (spec/139 Phase 8, Phase 9).
@@ -372,6 +373,7 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
         return;
       }
       if (!current()) return;
+      track('AI', 'Used', detectorTelemetryType(detection.detector));
 
       setReview((prev) => (prev ? { ...prev, detection } : prev));
       setState({

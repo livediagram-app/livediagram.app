@@ -15,11 +15,14 @@ import { usePhotoPicker } from './usePhotoPicker';
 
 function setup(opts: { canOpen?: boolean } = {}) {
   const onFile = vi.fn();
+  const onOpen = vi.fn();
   const clicks = vi.fn();
-  const view = renderHook(() => usePhotoPicker({ canOpen: () => opts.canOpen !== false, onFile }));
+  const view = renderHook(() =>
+    usePhotoPicker({ canOpen: () => opts.canOpen !== false, onFile, onOpen }),
+  );
   const input = { click: clicks, value: 'x', files: null } as unknown as HTMLInputElement;
   view.result.current.inputRef.current = input;
-  return { api: () => view.result.current, onFile, clicks, input };
+  return { api: () => view.result.current, onFile, onOpen, clicks, input };
 }
 
 const file = () => new File([new Uint8Array([1])], 'wall.jpg', { type: 'image/jpeg' });
@@ -32,6 +35,21 @@ function change(input: HTMLInputElement, files: File[]) {
 }
 
 describe('usePhotoPicker', () => {
+  it('tells its owner a pick has begun, so slow work can start while the author chooses', () => {
+    const h = setup();
+    act(() => {
+      h.api().open();
+      h.api().open();
+    });
+    expect(h.onOpen).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not report a pick the board refused', () => {
+    const h = setup({ canOpen: false });
+    act(() => h.api().open());
+    expect(h.onOpen).not.toHaveBeenCalled();
+  });
+
   it('opens the picker on a click', () => {
     const h = setup();
     act(() => h.api().open());

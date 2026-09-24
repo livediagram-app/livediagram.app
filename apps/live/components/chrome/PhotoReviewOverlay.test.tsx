@@ -43,6 +43,7 @@ function found(stickies: DetectedSticky[]): PhotoReview['detection'] {
     photoUrl: 'data:image/jpeg;base64,xx',
     imageData: new Uint8ClampedArray(100 * 100 * 4),
     dropped: 0,
+    detector: { path: 'classical', reason: 'no-worker' },
   };
 }
 
@@ -96,6 +97,19 @@ describe('when the detection arrives', () => {
     expect(
       (screen.getByRole('button', { name: /^Add 3 notes$/ }) as HTMLButtonElement).disabled,
     ).toBe(false);
+  });
+
+  it('marks each box with its kind and the overlay with the detector, for tools that score it', () => {
+    render(
+      <PhotoReviewOverlay
+        review={review({ detection: found([sticky(0)]) })}
+        reading={false}
+        onConfirm={noop}
+        onCancel={noop}
+      />,
+    );
+    expect(screen.getByTestId('note-box-0').dataset.kind).toBe(sticky(0).kind);
+    expect(screen.getByTestId('photo-review-overlay').dataset.detector).toBe('classical');
   });
 
   it('hands the ticked boxes to the caller on Add', () => {

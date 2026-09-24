@@ -212,6 +212,9 @@ export function PhotoReviewOverlay({
   return (
     <div
       data-testid="photo-review-overlay"
+      // Which detector found the boxes (hybrid / classical), for the e2e suite
+      // and the editor sweep; absent while it is still looking.
+      data-detector={detection?.detector.path}
       className="fixed inset-0 z-[var(--z-modal)] flex items-center justify-center bg-black/80 p-2"
       role="dialog"
       aria-modal="true"

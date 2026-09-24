@@ -25,3 +25,7 @@ apps/api/src/openapi/schemas.generated.ts
 # edited", and Next rewrites it verbatim on every build, so prettying it
 # just makes the tree dirty again on the next run.
 **/next-env.d.ts
+
+# The boundary model's graph, written by packages/sticky-model/scripts/hybrid/
+# quantise.ts; kept byte for byte as generated so a regeneration diffs clean.
+apps/live/lib/photo-model/weights/model.json

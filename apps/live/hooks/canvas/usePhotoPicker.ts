@@ -35,6 +35,9 @@ export function usePhotoPicker(deps: {
   // Whether a photo may be started at all right now (the board's own rules).
   canOpen: () => boolean;
   onFile: (file: File) => void;
+  // A pick has begun: work that the file will need (the boundary model's
+  // runtime) can load while the author is still choosing.
+  onOpen?: () => void;
 }): PhotoPicker {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const pendingRef = useRef(false);
@@ -75,6 +78,7 @@ export function usePhotoPicker(deps: {
     if (!live.current.canOpen()) return;
     if (pendingRef.current) return;
     pendingRef.current = true;
+    live.current.onOpen?.();
     inputRef.current?.click();
   }, []);
 

@@ -10,9 +10,13 @@ import {
 import {
   cropRects,
   detectStickies,
+  HYBRID_RULES,
   workingSizeOf,
   type DetectedSticky,
+  type ModelCues,
 } from '@livediagram/sticky-vision';
+import { boundaryCuesFor } from './photo-model/client';
+import type { BoundaryBackend, BoundaryFailure, BoundaryOutcome } from './photo-model/protocol';
 
 // Getting a photograph ready to become notes (spec/139 Phase 8) — all of it in
 // the browser.
@@ -24,7 +28,10 @@ import {
 //  1. Decode honouring the EXIF orientation flag, or a portrait photo from a
 //     phone arrives on its side and every note is a rotated rectangle.
 //  2. Detect on a downscaled working copy, PHOTO_MAX_EDGE_PX on the longest
-//     edge: where the detector scores best, and a fraction of the pixels.
+//     edge: where the detector scores best, and a fraction of the pixels. The
+//     boundary model (a worker, loaded on demand) reads the same copy first,
+//     and the detector takes its corrections; without it, for any reason,
+//     the classical detector runs alone.
 //  3. Cut each sticky out of the FULL-resolution bitmap, so the model gets the
 //     sharpest pixels of the handwriting rather than the working copy's.
 //  4. Re-encode each crop as a small JPEG — which drops EXIF with it, after
@@ -58,7 +65,13 @@ export function photoTypeError(type: string): PhotoDetectError | null {
   return 'photo_unsupported_type';
 }
 
+// Which detector found the boxes, and on what: the hybrid on a backend, or the
+// classical detector alone and why. Closed values, logged and counted.
+export type PhotoDetector =
+  { path: 'hybrid'; backend: BoundaryBackend } | { path: 'classical'; reason: BoundaryFailure };
+
 export type PhotoDetection = {
+  detector: PhotoDetector;
   // Where each sticky is, in WORKING-image pixels.
   stickies: DetectedSticky[];
   // One crop per sticky, ready to send. Same ids.
@@ -101,7 +114,8 @@ export async function detectAndCrop(
   } = workingSizeOf(bitmap.width, bitmap.height, PHOTO_MAX_EDGE_PX);
 
   const working = drawTo(bitmap, width, height);
-  const found = detectStickies(working.image);
+  const { detector, model } = await boundaryModelFor(working.image);
+  const found = detectStickies(working.image, model ? { model } : {});
   const stickies = found.slice(0, PHOTO_MAX_NOTES);
   const dropped = found.length - stickies.length;
   if (stickies.length === 0) {
@@ -113,6 +127,7 @@ export async function detectAndCrop(
       photoUrl: working.dataUrl,
       imageData: working.image.data,
       dropped,
+      detector,
     };
   }
 
@@ -134,6 +149,37 @@ export async function detectAndCrop(
     photoUrl: working.dataUrl,
     imageData: working.image.data,
     dropped,
+    detector,
+  };
+}
+
+// The model's cues for this image, or the reason there are none. Never throws:
+// a correction that cannot be had is no reason to fail the import.
+async function boundaryModelFor(image: {
+  width: number;
+  height: number;
+  data: Uint8ClampedArray;
+}): Promise<{
+  detector: PhotoDetector;
+  model: { cues: ModelCues; rules: typeof HYBRID_RULES } | null;
+}> {
+  let outcome: BoundaryOutcome;
+  try {
+    outcome = await boundaryCuesFor(image);
+  } catch (err) {
+    console.warn('[photo-detect] the boundary model threw; classical only', String(err));
+    outcome = { ok: false, reason: 'inference-failed' };
+  }
+  if (!outcome.ok) {
+    console.info(`[photo-detect] classical (${outcome.reason})`);
+    return { detector: { path: 'classical', reason: outcome.reason }, model: null };
+  }
+  console.info(
+    `[photo-detect] hybrid (${outcome.backend}, ${outcome.cues.notes.length} model notes)`,
+  );
+  return {
+    detector: { path: 'hybrid', backend: outcome.backend },
+    model: { cues: outcome.cues, rules: HYBRID_RULES },
   };
 }
 

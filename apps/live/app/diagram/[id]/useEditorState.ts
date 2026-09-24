@@ -57,6 +57,7 @@ import { useEditorComments } from '@/hooks/collab/useEditorComments';
 import { useEditorDrag } from '@/hooks/canvas/useEditorDrag';
 import { useDockActions } from '@/hooks/canvas/useDockActions';
 import { usePhotoPicker } from '@/hooks/canvas/usePhotoPicker';
+import { warmBoundaryModel } from '@/lib/photo-model/client';
 import { usePhotoDraft } from '@/hooks/canvas/usePhotoDraft';
 import { useEditorImages } from '@/hooks/canvas/useEditorImages';
 import { useEditorNotes } from '@/hooks/canvas/useEditorNotes';
@@ -1594,6 +1595,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   const photoPicker = usePhotoPicker({
     canOpen: () => photoImportAvailable && !photoImportBlocked,
     onFile: (file) => readPhotoFile?.(file),
+    onOpen: warmBoundaryModel,
   });
   const photoPickerRef = photoPicker.inputRef;
   const openPhotoImport = photoPicker.open;

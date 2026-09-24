@@ -3,6 +3,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { PHOTO_MAX_EDGE_PX } from '@livediagram/api-schema';
 import { eventStormingNote } from '@livediagram/diagram';
 import { detectAndCrop, photoTypeError, PhotoDetectFailed } from './photo-detect';
+import { boundaryCuesFor } from './photo-model/client';
+
+// The boundary model runs in a worker jsdom does not have; its answer is
+// stubbed per test, and by default it is unavailable.
+vi.mock('./photo-model/client', () => ({
+  boundaryCuesFor: vi.fn(),
+  warmBoundaryModel: vi.fn(),
+}));
 
 // Everything the browser does with a photograph before anything is sent
 // (spec/139 Phase 8). jsdom has no canvas, so the drawing surface is stubbed
@@ -83,7 +91,10 @@ function stubImaging(bitmap: { width: number; height: number } | 'throw', painte
 
 const file = (type = 'image/jpeg') => new File([new Uint8Array([1])], 'wall.jpg', { type });
 
-beforeEach(() => vi.restoreAllMocks());
+beforeEach(() => {
+  vi.restoreAllMocks();
+  vi.mocked(boundaryCuesFor).mockResolvedValue({ ok: false, reason: 'no-worker' });
+});
 afterEach(() => vi.unstubAllGlobals());
 
 describe('photoTypeError', () => {
@@ -153,6 +164,44 @@ describe('detectAndCrop', () => {
     stubImaging('throw');
     await expect(detectAndCrop(file())).rejects.toBeInstanceOf(PhotoDetectFailed);
     await expect(detectAndCrop(file())).rejects.toMatchObject({ reason: 'photo_unreadable' });
+  });
+});
+
+describe('detectAndCrop with the boundary model', () => {
+  it("hands the model's cues to the detector, and says the hybrid ran", async () => {
+    // A model that sees only background drops the one box the colour found:
+    // proof the cues reached the detector.
+    vi.mocked(boundaryCuesFor).mockImplementation(async (image) => ({
+      ok: true,
+      backend: 'wasm',
+      cues: {
+        width: image.width,
+        height: image.height,
+        notes: [],
+        background: new Uint8Array(image.width * image.height).fill(255),
+      },
+    }));
+    const out = await withStub({ width: 400, height: 300 }, oneSticky(400, 300));
+    expect(boundaryCuesFor).toHaveBeenCalledWith(
+      expect.objectContaining({ width: 400, height: 300 }),
+    );
+    expect(out.stickies).toEqual([]);
+    expect(out.detector).toEqual({ path: 'hybrid', backend: 'wasm' });
+  });
+
+  it('runs the classical detector alone when the model fails, and says why', async () => {
+    vi.mocked(boundaryCuesFor).mockResolvedValue({ ok: false, reason: 'timeout' });
+    const out = await withStub({ width: 400, height: 300 }, oneSticky(400, 300));
+    expect(out.stickies).toHaveLength(1);
+    expect(out.detector).toEqual({ path: 'classical', reason: 'timeout' });
+  });
+
+  it('never lets the model reject the import', async () => {
+    vi.mocked(boundaryCuesFor).mockRejectedValue(new Error('worker went away'));
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const out = await withStub({ width: 400, height: 300 }, oneSticky(400, 300));
+    expect(out.stickies).toHaveLength(1);
+    expect(out.detector).toEqual({ path: 'classical', reason: 'inference-failed' });
   });
 });
 
