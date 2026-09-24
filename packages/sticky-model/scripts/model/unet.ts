@@ -10,6 +10,9 @@ import { tf, type TfNode as T } from './tf';
 export type UNetConfig = {
   // Channels per scale, finest first; one entry per scale, five scales.
   widths: [number, number, number, number, number];
+  // Depthwise-separable convolutions at the two finest scales as well (all but
+  // the first layer): about a quarter of the multiply-adds, for a browser.
+  slim?: boolean;
 };
 
 export const DEFAULT_UNET: UNetConfig = { widths: [16, 24, 40, 64, 96] };
@@ -50,16 +53,17 @@ const join = (a: Layer, b: Layer, name: string) =>
 
 export function buildUNet(config: UNetConfig = DEFAULT_UNET): T.LayersModel {
   const [w0, w1, w2, w3, w4] = config.widths;
+  const fine = config.slim ? sep : conv;
   const input = tf.input({ shape: [null, null, 3], name: 'image' });
-  const s0 = conv(conv(input, w0, 'e0a'), w0, 'e0b');
-  const s1 = conv(conv(pool(s0, 'p1'), w1, 'e1a'), w1, 'e1b');
+  const s0 = fine(conv(input, w0, 'e0a'), w0, 'e0b');
+  const s1 = fine(fine(pool(s0, 'p1'), w1, 'e1a'), w1, 'e1b');
   const s2 = sep(sep(pool(s1, 'p2'), w2, 'e2a'), w2, 'e2b');
   const s3 = sep(sep(pool(s2, 'p3'), w3, 'e3a'), w3, 'e3b');
   const b = sep(sep(pool(s3, 'p4'), w4, 'b_a'), w4, 'b_b');
   const d3 = sep(sep(join(up(b, 'u3'), s3, 'c3'), w3, 'd3a'), w3, 'd3b');
   const d2 = sep(sep(join(up(d3, 'u2'), s2, 'c2'), w2, 'd2a'), w2, 'd2b');
-  const d1 = conv(join(up(d2, 'u1'), s1, 'c1'), w1, 'd1a');
-  const d0 = conv(join(up(d1, 'u0'), s0, 'c0'), w0, 'd0a');
+  const d1 = fine(join(up(d2, 'u1'), s1, 'c1'), w1, 'd1a');
+  const d0 = fine(join(up(d1, 'u0'), s0, 'c0'), w0, 'd0a');
   const out = tf.layers
     .conv2d({ filters: 3, kernelSize: 1, activation: 'softmax', name: 'classes' })
     .apply(d0) as Layer;

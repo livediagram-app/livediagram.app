@@ -58,7 +58,9 @@ console.log(
 );
 if (synth.length === 0 && real.length === 0) throw new Error('nothing to train on');
 
-const model = init ? await tf.loadLayersModel(`file://${init}/model.json`) : buildUNet({ widths });
+const model = init
+  ? await tf.loadLayersModel(`file://${init}/model.json`)
+  : buildUNet({ widths, slim: process.argv.includes('--slim') });
 console.log(`params ${model.countParams()}  ${init ? `from ${init}` : 'fresh'}`);
 const optimizer = tf.train.adam(lr0);
 model.compile({ optimizer, loss: weightedCrossEntropy });
@@ -67,6 +69,7 @@ mkdirSync(out, { recursive: true });
 writeFileSync(
   `${out}/train.json`,
   JSON.stringify({
+    slim: process.argv.includes('--slim'),
     steps,
     batch,
     lr0,
