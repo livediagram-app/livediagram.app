@@ -10,7 +10,7 @@ import { AnimatedCanvasBackground } from '@/components/canvas/AnimatedCanvasBack
 import { pointerToCanvas } from '@/lib/canvas';
 import { deriveCanvasSelection } from '@/lib/canvas-selection';
 import { canvasCursorClass } from '@/lib/canvas-chrome';
-import { useCanvasMobileDock } from '@/hooks/canvas/useCanvasMobileDock';
+import { useCanvasMobileDock, useOpenDockPanelOnChange } from '@/hooks/canvas/useCanvasMobileDock';
 import { drawIntentCursor } from '@/lib/draw-mode';
 import { useCanvasPanAndMarquee } from '@/hooks/canvas/useCanvasPanAndMarquee';
 import { useQuickRing } from '@/hooks/canvas/useQuickRing';
@@ -117,12 +117,6 @@ export function Canvas(props: CanvasProps) {
     onRetryTabLoad,
   } = props;
 
-  // Touch has no right-click, so a press-and-hold on the empty canvas opens
-  // the tab / canvas context menu (the same one desktop reaches via
-  // right-click). Element presses stopPropagation in their own pointerdown,
-  // so this only arms for the bare canvas. Movement (pan / marquee) cancels it.
-  const canvasLongPress = useLongPress((x, y) => onCanvasContextMenu?.(x, y));
-
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   // Paint mode covers BOTH painter entry points: a single-shot armed source
@@ -162,7 +156,12 @@ export function Canvas(props: CanvasProps) {
     activeDockAnchor,
     setActiveDockAnchor,
     handleDockButtonClick,
+    openDockPanel,
   } = useCanvasMobileDock(mainRef);
+  // A session panel opens under its dock button when it arrives (spec/88,
+  // spec/39): a new poll (or the one you just answered), a vote just opened.
+  useOpenDockPanelOnChange(props.pollPanel ? props.pollPanel.poll.id : null, 'poll', openDockPanel);
+  useOpenDockPanelOnChange(props.tabVote ? 'vote' : null, 'vote', openDockPanel);
 
   // Pan + marquee + held-Space machinery lives in
   // useCanvasPanAndMarquee. The hook owns the pointerdown / move
@@ -178,6 +177,22 @@ export function Canvas(props: CanvasProps) {
     onDeselect,
     onSelectMarquee,
     isPinchingRef,
+  });
+
+  // Touch has no right-click, so a press-and-hold on the empty canvas opens
+  // the tab / canvas context menu (the same one desktop reaches via
+  // right-click). Element presses stopPropagation in their own pointerdown,
+  // so this only arms for the bare canvas. Movement (pan / marquee) cancels it.
+  //
+  // The same press also armed a marquee (or a pan), still live under the
+  // finger when the hold fires. Its release reads as a sub-4px "drag", which
+  // deselects, and deselecting closes the context menu: the menu flashed
+  // open on the hold and vanished on the lift (iPhone / iPad). The hold has
+  // claimed the press, so drop whatever the press started.
+  const canvasLongPress = useLongPress((x, y) => {
+    setMarquee(null);
+    setPan(null);
+    onCanvasContextMenu?.(x, y);
   });
 
   // Palette drag-drop onto the canvas (onDragOver / onDrop), lifted into

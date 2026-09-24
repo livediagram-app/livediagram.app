@@ -42,43 +42,36 @@ function Pips({ x, y, spent, budget }: { x: number; y: number; spent: number; bu
   );
 }
 
-/** Setting a vote up: the dots-per-person stepper over Start vote. */
+/** Setting a vote up: the dot budget, drawn as the dots, over Start vote. */
 export function VoteSetup() {
   const x = 96;
   const y = 16;
   return (
-    <Scene w={420} h={200} bg="plain">
-      <Panel x={x} y={y} w={228} h={170} title="SESSION · VOTE">
+    <Scene w={420} h={208} bg="plain">
+      <Panel x={x} y={y} w={228} h={176} title="COLLABORATE · VOTE">
         <Label x={x + 16} y={y + 44} size={10} weight={600} tone="body">
           Dots per person
         </Label>
-        <rect
-          x={x + 148}
-          y={y + 34}
-          width={64}
-          height={22}
-          rx={7}
-          className="fill-white stroke-slate-300"
-          strokeWidth={1.5}
-        />
-        <Label x={x + 158} y={y + 45} size={12} weight={700} tone="muted">
-          −
-        </Label>
-        <Label x={x + 180} y={y + 45} anchor="middle" size={12} weight={700} tone="strong">
-          3
-        </Label>
-        <Label x={x + 200} y={y + 45} size={12} weight={700} tone="muted">
-          +
-        </Label>
-        <Label x={x + 16} y={y + 78} size={10} weight={600} tone="body">
+        {/* The budget as the dots themselves: three of ten filled. */}
+        {Array.from({ length: 10 }, (_, i) => (
+          <circle
+            key={i}
+            cx={x + 22 + i * 20}
+            cy={y + 60}
+            r={i < 3 ? 6 : 4}
+            className={i < 3 ? 'fill-brand-500' : 'fill-white stroke-slate-300'}
+            strokeWidth={1.2}
+          />
+        ))}
+        <Label x={x + 16} y={y + 88} size={10} weight={600} tone="body">
           Hide cursors
         </Label>
-        <Switch x={x + 184} y={y + 70} on />
-        <Label x={x + 16} y={y + 106} size={10} weight={600} tone="body">
+        <Switch x={x + 184} y={y + 80} on />
+        <Label x={x + 16} y={y + 114} size={10} weight={600} tone="body">
           Hide running counts
         </Label>
-        <Switch x={x + 184} y={y + 98} />
-        <Button x={x + 16} y={y + 124} w={196} h={26} label="Start vote" variant="primary" />
+        <Switch x={x + 184} y={y + 106} />
+        <Button x={x + 16} y={y + 132} w={196} h={26} label="Start vote" variant="primary" />
       </Panel>
     </Scene>
   );

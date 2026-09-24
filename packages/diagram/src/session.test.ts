@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { ShapeElement } from './index';
 import {
+  canCastVote,
   isVotable,
   isVotableInVote,
   isVoteHost,
@@ -227,5 +228,25 @@ describe('vote layer scoping (spec/96)', () => {
   it('with no vote, only the kind rule applies (there is no scope to fail)', () => {
     expect(isVotableInVote(shape('a'), null, layers)).toBe(true);
     expect(isVotableInVote(shape('f', { shape: 'frame' }), null, layers)).toBe(false);
+  });
+});
+
+describe('canCastVote', () => {
+  const base: TabVote = { active: true, revealed: false, votesPerPerson: 3, votes: { a: ['me'] } };
+
+  it('lets dots stack on one element by default', () => {
+    expect(canCastVote(base, 'me', 'a')).toBe(true);
+  });
+
+  it('refuses a second dot on the same element when the vote is one per element', () => {
+    const vote = { ...base, onePerElement: true };
+    expect(canCastVote(vote, 'me', 'a')).toBe(false);
+    expect(canCastVote(vote, 'me', 'b')).toBe(true);
+    expect(canCastVote(vote, 'you', 'a')).toBe(true);
+  });
+
+  it('refuses once the budget is spent, and once casting has closed', () => {
+    expect(canCastVote({ ...base, votes: { a: ['me', 'me', 'me'] } }, 'me', 'b')).toBe(false);
+    expect(canCastVote({ ...base, active: false }, 'me', 'b')).toBe(false);
   });
 });

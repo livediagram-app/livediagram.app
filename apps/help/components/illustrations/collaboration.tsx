@@ -655,69 +655,90 @@ export function SessionTools() {
 
 /** The timer set-up: countdown and stopwatch controls with duration presets. */
 export function TimerControl() {
-  const presets = ['1', '3', '5', '10'];
+  const presets = ['1', '3', '5', '10', '15', '30'];
+  // The dial: one lap is an hour, so a 5 minute wedge is a twelfth of it.
+  const cx = 210;
+  const cy = 138;
+  const r = 46;
+  const a = (5 / 60) * Math.PI * 2;
+  const ex = cx + r * Math.sin(a);
+  const ey = cy - r * Math.cos(a);
   return (
-    <Scene w={420} h={230} bg="plain">
-      <Panel x={88} y={20} w={244} h={188} title="SESSION · TIMER">
+    <Scene w={420} h={300} bg="plain">
+      <Panel x={98} y={16} w={224} h={268} title="COLLABORATE · TIMER">
         {/* Mode toggle */}
         <rect
-          x={104}
-          y={52}
-          width={212}
-          height={28}
-          rx={8}
-          className="fill-slate-100 stroke-slate-200"
-          strokeWidth={1.5}
+          x={130}
+          y={48}
+          width={78}
+          height={22}
+          rx={11}
+          className="fill-brand-50 stroke-brand-400"
+          strokeWidth={1.2}
         />
-        <rect
-          x={106}
-          y={54}
-          width={104}
-          height={24}
-          rx={6}
-          className="fill-white stroke-slate-200"
-          strokeWidth={1}
-        />
-        <Label x={158} y={66} anchor="middle" size={11} weight={700} tone="accent">
-          Timer
+        <Label x={169} y={59} anchor="middle" size={10} weight={700} tone="accent">
+          Countdown
         </Label>
-        <Label x={262} y={66} anchor="middle" size={11} weight={500} tone="muted">
+        <rect
+          x={214}
+          y={48}
+          width={76}
+          height={22}
+          rx={11}
+          className="fill-white stroke-slate-300"
+          strokeWidth={1.2}
+        />
+        <Label x={252} y={59} anchor="middle" size={10} weight={500} tone="muted">
           Stopwatch
         </Label>
-        {/* Duration presets */}
-        <Label x={104} y={100} size={8} weight={700} tone="muted">
-          MINUTES
+        {/* Dial with the 5 minute wedge and its drag handle */}
+        <circle
+          cx={cx}
+          cy={cy}
+          r={r + 10}
+          className="fill-slate-50 stroke-slate-200"
+          strokeWidth={1.5}
+        />
+        <path
+          d={`M ${cx} ${cy} L ${cx} ${cy - r} A ${r} ${r} 0 0 1 ${ex.toFixed(2)} ${ey.toFixed(2)} Z`}
+          className="fill-brand-500"
+        />
+        <circle cx={cx} cy={cy} r={28} className="fill-white" />
+        <circle cx={ex} cy={ey} r={5} className="fill-white stroke-brand-500" strokeWidth={2} />
+        <Label x={cx} y={cy - 2} anchor="middle" size={14} weight={700} tone="strong">
+          5:00
         </Label>
+        <Label x={cx} y={cy + 12} anchor="middle" size={6} weight={600} tone="muted">
+          DRAG TO SET
+        </Label>
+        {/* Presets */}
         {presets.map((p, i) => {
-          const px = 104 + i * 54;
-          const on = i === 2;
+          const px = 114 + i * 32;
+          const on = p === '5';
           return (
             <g key={p}>
               <rect
                 x={px}
-                y={110}
-                width={46}
-                height={32}
-                rx={7}
-                className={on ? 'fill-brand-500 stroke-brand-600' : 'fill-white stroke-slate-300'}
-                strokeWidth={1.5}
+                y={206}
+                width={28}
+                height={20}
+                rx={5}
+                className={on ? 'fill-brand-500' : 'fill-slate-100'}
               />
               <Label
-                x={px + 23}
-                y={126}
+                x={px + 14}
+                y={216}
                 anchor="middle"
-                size={13}
+                size={9}
                 weight={700}
                 tone={on ? 'onAccent' : 'body'}
               >
-                {p}
+                {`${p}m`}
               </Label>
             </g>
           );
         })}
-        {/* Start / Reset */}
-        <Button x={104} y={160} w={130} label="Start" variant="primary" />
-        <Button x={244} y={160} w={72} label="Reset" variant="default" />
+        <Button x={114} y={236} w={192} h={28} label="Start 5 min countdown" variant="primary" />
       </Panel>
     </Scene>
   );

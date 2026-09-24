@@ -94,11 +94,18 @@ when an op arrives so a hand-crafted frame can't blow up a peer's panel:
 
 ## Lifecycle
 
-1. **Compose.** Tab menu → **Collaborate → Poll**: question, style, options
-   if the style needs them, then **Start poll**. Edit-role only. Collaborate
-   is the side-flyout parent row that groups the live session tools
-   (Countdown / Stopwatch / Vote / Poll) under one entry, the same
-   parent/child pattern the element menu uses.
+1. **Compose.** Tab menu → **Collaborate → Poll** (the Session Studio,
+   spec/39): question, answer style picked from drawn tiles, answers if the
+   style needs them (Enter moves to the next, making one at the end), then
+   **Ask everyone** (or Enter in the question). A **What people see** card
+   previews the exact prompt, built from the same `pollStyleTokens` the real
+   prompt reads, so a typo is caught before it lands on every screen. The
+   button names what is missing while it can't ask ("Write a question to
+   ask", "Add at least 2 answers") instead of sitting greyed out. Edit-role
+   only. A diagram that isn't shared or on a team does NOT block a poll: it
+   runs locally, just for the host (rehearsing one, or asking a room you are
+   presenting to), and the composer shows a note that only you will get it.
+   The canvas Session button behaves the same way.
 2. **Prompt.** Every connected participant gets a modal with the question and
    a **Skip** escape (Escape and a backdrop click both skip, so dismissing is
    an answer of "no opinion" rather than a silent drop). Answering or skipping
@@ -110,9 +117,12 @@ when an op arrives so a hand-crafted frame can't blow up a peer's panel:
    (the corner the panels you act on live in). It registers as a real
    `PanelId` rather than floating outside the panel system, but it is the
    only panel that isn't always present — it joins and leaves its corner
-   stack with the poll. It carries no mobile-dock entry on purpose: the
-   dock is a row of toggles for panels you go looking for, and a poll
-   presents itself. Shown to the host and to anyone who has responded — so
+   stack with the poll. In the dock layout (a phone, or the minimal panel
+   preference on desktop) it lives under the dock's **Poll** button like
+   every other panel and closes with it, and it **opens by itself** when a
+   poll starts or when you answer one (keyed on the poll id, so it opens
+   once per poll rather than fighting you after you close it). The Vote
+   panel follows the same rule for its **Vote** button. Shown to the host and to anyone who has responded — so
    answering is what buys you the tally, and a participant who hasn't yet
    can't be nudged by the running numbers. The panel updates live and reports
    how many people skipped, separately from the answer counts.

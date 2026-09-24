@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 
 import { PortalMenu } from './TabPortalMenu';
+import { MenuErrorBoundary } from '@/components/primitives/MenuErrorBoundary';
 import type { CanvasMenuActions } from './TabBar';
 import type { SessionToolsProps } from '@/components/chrome/session-tools-props';
 
@@ -35,12 +36,13 @@ export function EllipsisMenuButton({
   onResumeTimer,
   onResetTimer,
   onClearTimer,
+  onExtendTimer,
   onStartVote,
   onEndVote,
   onRevealVote,
   onClearVote,
   livePoll,
-  pollConnected,
+  pollHasAudience,
   onStartPoll,
   voteLayers,
   activeLayerId,
@@ -90,44 +92,47 @@ export function EllipsisMenuButton({
         </svg>
       </button>
       {open ? (
-        <PortalMenu
-          anchor={buttonRef.current}
-          onClose={onClose}
-          canvas={canvas}
-          onRename={onRename}
-          onDuplicate={onDuplicate}
-          onClearContent={onClearContent}
-          onImport={onImport}
-          onExport={onExport}
-          onCopyTo={onCopyTo}
-          onToggleLock={onToggleLock}
-          locked={locked}
-          selfId={selfId}
-          otherDiagrams={otherDiagrams}
-          folderNames={folderNames}
-          currentFolder={currentFolder}
-          onMoveToFolder={onMoveToFolder}
-          onRemoveFromFolder={onRemoveFromFolder}
-          onDelete={onDelete}
-          canDelete={canDelete}
-          canClearContent={canClearContent}
-          timer={timer}
-          vote={vote}
-          onStartTimer={onStartTimer}
-          onPauseTimer={onPauseTimer}
-          onResumeTimer={onResumeTimer}
-          onResetTimer={onResetTimer}
-          onClearTimer={onClearTimer}
-          onStartVote={onStartVote}
-          onEndVote={onEndVote}
-          onRevealVote={onRevealVote}
-          onClearVote={onClearVote}
-          livePoll={livePoll}
-          pollConnected={pollConnected}
-          onStartPoll={onStartPoll}
-          voteLayers={voteLayers}
-          activeLayerId={activeLayerId}
-        />
+        <MenuErrorBoundary onError={onClose}>
+          <PortalMenu
+            anchor={buttonRef.current}
+            onClose={onClose}
+            canvas={canvas}
+            onRename={onRename}
+            onDuplicate={onDuplicate}
+            onClearContent={onClearContent}
+            onImport={onImport}
+            onExport={onExport}
+            onCopyTo={onCopyTo}
+            onToggleLock={onToggleLock}
+            locked={locked}
+            selfId={selfId}
+            otherDiagrams={otherDiagrams}
+            folderNames={folderNames}
+            currentFolder={currentFolder}
+            onMoveToFolder={onMoveToFolder}
+            onRemoveFromFolder={onRemoveFromFolder}
+            onDelete={onDelete}
+            canDelete={canDelete}
+            canClearContent={canClearContent}
+            timer={timer}
+            vote={vote}
+            onStartTimer={onStartTimer}
+            onPauseTimer={onPauseTimer}
+            onResumeTimer={onResumeTimer}
+            onResetTimer={onResetTimer}
+            onClearTimer={onClearTimer}
+            onExtendTimer={onExtendTimer}
+            onStartVote={onStartVote}
+            onEndVote={onEndVote}
+            onRevealVote={onRevealVote}
+            onClearVote={onClearVote}
+            livePoll={livePoll}
+            pollHasAudience={pollHasAudience}
+            onStartPoll={onStartPoll}
+            voteLayers={voteLayers}
+            activeLayerId={activeLayerId}
+          />
+        </MenuErrorBoundary>
       ) : null}
     </div>
   );
