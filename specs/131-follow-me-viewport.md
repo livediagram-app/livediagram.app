@@ -36,8 +36,10 @@ logged, never ordered (no `seq`), never replayed to a reconnecting client.
 
 ## Starting and stopping
 
-- **Start** from a peer's avatar in the presence stack: **Follow**. That stack
-  is already where you go to find out who is here.
+- **Start** from the Collaborators modal ([spec/145](145-collaborator-enhancements.md)):
+  click any avatar in a tab's presence stack, then **Follow** on that person's
+  row. The stack is where you go to find out who is here; the modal is where
+  you act on it. (Clicking the avatar used to start following directly.)
 - While following, a pill reads **"Following Alex"** with a **Stop**.
 - **Any canvas gesture of your own breaks it, instantly and silently** — pan,
   zoom, pinch, arrow keys, fit-to-screen, the minimap (spec/59). Grabbing the

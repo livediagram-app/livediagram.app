@@ -1,0 +1,61 @@
+# 145 — Collaborator enhancements
+
+Status: in progress
+
+A set of improvements to how you see and reach the other people in a diagram.
+Each one is its own section below; they share a spec because they share a
+surface (the presence avatars and what they open).
+
+## 1. The Collaborators modal
+
+### The problem
+
+The presence stack on each tab ([spec/07](07-live-app.md)) answers "who is on
+_this_ tab", three avatars at a time, and nothing more. To learn where everyone
+is you had to hover every tab in turn, and a folder's hidden members only showed
+as a merged stack on the chip. Clicking an avatar did one thing, start following
+that person ([spec/131](131-follow-me-viewport.md)), which is a surprising
+result for a click whose obvious meaning is "tell me about this person".
+
+### The behaviour
+
+- **Clicking any avatar in a tab's presence stack opens the Collaborators
+  modal**, including your own avatar, the "+N" overflow badge, and the stack on
+  a folder chip ([spec/30](30-tab-folders.md)). The "+N" popover that listed the
+  hidden participants is gone: the modal lists everyone, so it replaces it.
+- The modal lists **every person in the diagram, grouped by the tab they are
+  on**, in tab-bar order. A tab nobody is on is left out. People on a tab that
+  no longer exists (a peer's focus can briefly point at a tab just deleted) are
+  grouped under **Another Tab** rather than dropped.
+- Each group heading shows the tab's accent dot and name, **You're Here** on
+  your current tab, and a **Go to Tab** button on every other tab. Going to a
+  tab closes the modal.
+- Each row shows the avatar, the name, badges (**You**, **Editor** / **Viewer**
+  when the role is known, **Following** for the person you follow), and the
+  status line: the presence word plus how long ago they were last active, the
+  same text the avatar tooltip uses.
+- Within a group: you first, then by status (online, away, offline), then by
+  name.
+- **Follow lives here now.** Every row but your own has a **Follow** button
+  (**Stop Following** on the person you follow). Following starts exactly as it
+  did from the avatar (spec/131: it follows their tab and viewport) and closes
+  the modal so you can watch.
+- The person whose avatar you clicked is highlighted and scrolled into view, so
+  the click still reads as "tell me about _them_".
+- The subtitle counts the room: "3 people across 2 tabs", or "Just you so far"
+  when nobody else has joined yet.
+- View-role visitors get the full modal: it mutates nothing, and following is
+  already allowed for them (spec/131).
+- Available wherever the presence stack is, which is only a shared or team
+  diagram (a private diagram has no stack, spec/07). Hidden in embed mode, like
+  the tab bar.
+
+### Implementation notes
+
+- `apps/live/lib/collaborator-roster.ts` builds the grouped roster from the
+  same `participantsByTab` map the tab bar already renders, so the modal and
+  the stacks cannot disagree about who is where.
+- `CollaboratorsDialog` is its own dialog file on the shared `Dialog` shell;
+  its open flag and the clicked participant id live in `useEditorDialogs`.
+- Telemetry: `UI` / `Opened` / `Collaborators` on open. Following from the
+  modal keeps the existing `Canvas` / `Used` / `FollowMe` event.

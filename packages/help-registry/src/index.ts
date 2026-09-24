@@ -1279,7 +1279,8 @@ export const articles: Article[] = [
     slug: 'live-presence',
     title: 'Live Presence',
     description: 'Live cursors, names, selections, and who is on which tab, in real time.',
-    keywords: 'cursors online who viewing realtime collaborators avatars multiplayer',
+    keywords:
+      'cursors online who viewing realtime collaborators avatars multiplayer people participants roster room',
     category: 'Collaboration',
     categorySlug: 'collaboration',
   },

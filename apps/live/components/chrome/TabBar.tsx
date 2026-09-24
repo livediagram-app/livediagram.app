@@ -123,12 +123,12 @@ type TabBarProps = {
   // when the participant id matches `selfId`.
   selfId: string;
   selfRole: 'edit' | 'view';
-  // Follow-me (spec/131): the presence stack is the entry point, so the two
-  // acts and the current target ride down to it. Optional — a surface with no
-  // room behind it leaves the avatars as plain presence indicators.
+  // Who we follow (spec/131), for the avatar ring, and the Collaborators
+  // modal an avatar click opens (spec/145; Follow itself lives there).
+  // Optional: a surface with no room behind it leaves the avatars as plain
+  // presence indicators.
   followingId?: string | null;
-  onFollow?: (participantId: string) => void;
-  onStopFollowing?: () => void;
+  onOpenCollaborators?: (participantId: string | null) => void;
 } & SessionToolsProps;
 
 export function TabBar({
@@ -172,8 +172,7 @@ export function TabBar({
   selfId,
   selfRole,
   followingId,
-  onFollow,
-  onStopFollowing,
+  onOpenCollaborators,
   onOpenShortcuts,
   onOpenSettings,
   onOpenSearch,
@@ -292,8 +291,7 @@ export function TabBar({
     selfId,
     selfRole,
     followingId,
-    onFollow,
-    onStopFollowing,
+    onOpenCollaborators,
     canvasActions,
     tabMenuProps,
   };
@@ -335,6 +333,8 @@ export function TabBar({
                 participantsByTab={participantsByTab}
                 selfId={selfId}
                 selfRole={selfRole}
+                followingId={followingId}
+                onOpenCollaborators={onOpenCollaborators}
               />
             ),
           )}
