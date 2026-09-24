@@ -217,7 +217,8 @@ overlaps), 2/8 walls (201707, 201713).
         model sees at each classical failure, the sweep.
   - [x] J2 Add a box where the model sees a confident core on paper and no box
         is (kept: 94.1 → 94.8, merged 20).
-  - [ ] J1 Split a classical box where the model sees two or more cores in it.
+  - [x] J1 Split a classical box where the model sees two or more cores in it
+        (kept: 94.8 → 95.1, merged 20 → 16, real merges 1 → 0).
   - [ ] J3 Drop a classical box the model sees as background, only at no recall.
   - [ ] J4 The model in the browser: int8 weights, tfjs WebGL / WebGPU in
         headless Chromium on a 1000×563 image, bundle size and ms per photo.

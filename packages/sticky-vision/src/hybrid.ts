@@ -169,11 +169,20 @@ export function combineWithModel(
 }
 
 // The rules that won the sweep on the eight labelled walls, with group E's
-// synthetic-only boundary model (docs/vision/experiments/j-hybrid.md). Only
+// synthetic-only boundary model (docs/vision/experiments/j-hybrid.md).
+//
 // ADD: a note the model is sure of (mean core probability 0.75; the plateau
 // runs 0.7-0.8), at least 0.3 of the median box (0.2-0.4), half on paper
 // (0.4-0.6), and under 0.3 of any box (0.4 adds a note beside a neighbour
 // that is a real merge).
+//
+// SPLIT: only where BOTH notes are near certain. On these walls every real
+// merge's weaker core reads 0.87 or more, and every single note the model
+// sees as two (a line drawn across it) 0.84 or less; 0.84-0.87 score alike,
+// 0.83 splits a note. Nothing else measured tells the two apart: the gap
+// between the cores is paper, and no darker, in both. Pieces from 0.2 to 0.3
+// of the median box; at 0.1 a speck beside a note splits it.
 export const HYBRID_RULES: HybridRules = {
   add: { minConfidence: 0.75, minAreaOfMedian: 0.3, minPaper: 0.5, maxCover: 0.3 },
+  split: { minConfidence: 0.86, minAreaOfMedian: 0.25 },
 };
