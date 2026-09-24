@@ -79,7 +79,7 @@ const OP_LOG_LIMIT = 256;
 // DO storage key holding `{ epoch, seq }` so the room keeps its ordering
 // identity across a hibernation wake (spec/97).
 const ORDER_STATE_KEY = 'order-state';
-// The facilitator baton (spec/148). In storage rather than memory so it
+// The facilitator baton (spec/149). In storage rather than memory so it
 // survives a hibernation cycle: the holder's refresh must find the same token
 // waiting for it, and a room that forgot the baton every time it went to sleep
 // would drop the role mid-session for no reason the user could see.
@@ -116,7 +116,7 @@ type SessionAttachment = {
   verifiedRole?: 'edit' | 'view';
   presence: ParticipantPresence | null;
   //   - `isOwner`: whether the api resolved this upgrade as the diagram's
-  //     OWNER (spec/148). A boolean, never an id: it is the one thing the
+  //     OWNER (spec/149). A boolean, never an id: it is the one thing the
   //     facilitator baton needs that role alone cannot answer ("the owner can
   //     always take it back"), and carrying it as a bit keeps spec/61 §6's
   //     promise that no real identity reaches the room.
@@ -164,7 +164,7 @@ export class DiagramRoom implements DurableObject {
   // numbers: a client compares the epoch on an incoming op against the last
   // it saw to know whether the room restarted (seq reset) versus advanced.
   epoch: string = crypto.randomUUID();
-  // Who is running the session (spec/148), restored in the constructor.
+  // Who is running the session (spec/149), restored in the constructor.
   facilitator: FacilitatorState = FREE_BATON;
 
   constructor(state: DurableObjectState) {
@@ -362,7 +362,7 @@ export class DiagramRoom implements DurableObject {
       // depend on how the room had been sleeping, and the room may already have
       // told everybody that nobody is facilitating.
       this.sweepLapsedBaton();
-      // The baton coming home from a refresh (spec/148): the token is the
+      // The baton coming home from a refresh (spec/149): the token is the
       // proof, because the room has no identities to check it against. It is
       // announced to NOBODY — a refresh is not an event, and the holder's own
       // screen would otherwise report that somebody had made them the
@@ -421,13 +421,13 @@ export class DiagramRoom implements DurableObject {
       if (isSystemOpKind(opKind)) return;
       const isPresenceOp = isPresenceOpKind(opKind);
       if (sender.role !== 'edit' && !isPresenceOp) return;
-      // Running the session belongs to whoever holds the baton (spec/148).
+      // Running the session belongs to whoever holds the baton (spec/149).
       // Only these two ops can be enforced here: a poll start / end is its own
       // kind, while the timer and the dot vote ride the same `tab` /
       // `tab-meta` ops as every shape move, so telling them apart would mean
       // inspecting payloads for no gain against somebody who can already save
       // the whole document over REST. Those stay a client-side rule, which is
-      // what spec/148 says out loud: who is driving, not who is allowed.
+      // what spec/149 says out loud: who is driving, not who is allowed.
       if (opKind === 'poll-start' || opKind === 'poll-end') {
         // Same reason the hello path sweeps: a baton whose holder never came
         // back must not keep refusing polls just because no alarm has fired.
@@ -507,7 +507,7 @@ export class DiagramRoom implements DurableObject {
     }
   }
 
-  // ── Facilitator (spec/148) ───────────────────────────────────────────
+  // ── Facilitator (spec/149) ───────────────────────────────────────────
 
   /** What the baton rules need to know about one session. */
   private askerOf(session: SessionAttachment): Asker {

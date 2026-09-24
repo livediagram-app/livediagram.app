@@ -160,7 +160,7 @@ export function isSystemOpKind(kind: unknown): kind is (typeof SYSTEM_OP_KINDS)[
 }
 
 // ---------------------------------------------------------------------
-// Facilitator (spec/148)
+// Facilitator (spec/149)
 // ---------------------------------------------------------------------
 
 // Why this is a MESSAGE and not a room op: an op is relayed, and the baton is
@@ -216,7 +216,7 @@ export type ServerMessage =
       ops: { from: string; op: unknown; seq: number }[];
       resync: boolean;
     }
-  // Who holds the facilitator baton (spec/148), broadcast on every change and
+  // Who holds the facilitator baton (spec/149), broadcast on every change and
   // sent once to each joiner with `reason: 'state'`.
   //
   // `token` rides ONLY the copy sent to the new holder, and is the whole
@@ -236,12 +236,12 @@ export type ServerMessage =
 // `hello` identifies the participant on connect; `op` is any local
 // mutation the client wants rebroadcast to peers.
 export type ClientMessage =
-  // `facilitatorToken` (spec/148) is the baton coming home after a refresh:
+  // `facilitatorToken` (spec/149) is the baton coming home after a refresh:
   // the room checks it against the one it issued and, if it still matches,
   // hands the baton to this new socket. Absent on every ordinary hello.
   | { kind: 'hello'; participant: ParticipantPresence; facilitatorToken?: string }
   | { kind: 'op'; op: unknown }
-  // Ask the room to move the baton (spec/148). The room decides; the client
+  // Ask the room to move the baton (spec/149). The room decides; the client
   // learns the answer from the `facilitator` frame like everybody else.
   | ({ kind: 'facilitator' } & FacilitatorAction)
   // Sent right after re-connecting (spec/75, Level 1): "here's the last

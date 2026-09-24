@@ -41,7 +41,7 @@ export function useCollabElements({
   // A view-role visitor / locked tab. The room already drops their mutations
   // (spec/11), so this is about not lying to them in the UI.
   editsBlocked: boolean;
-  // Somebody else is facilitating (spec/148). Revealing, clearing, scattering,
+  // Somebody else is facilitating (spec/149). Revealing, clearing, scattering,
   // rolling and pressing an agenda item are theirs; responding is everyone's.
   sessionToolsBlocked: boolean;
   selfParticipant: Participant;
@@ -57,7 +57,7 @@ export function useCollabElements({
   // The same write, for a verb that runs the room rather than answering it:
   // reveal, clear, scatter, roll, agenda. One helper rather than a flag on
   // every call, so which side of the facilitator line a verb sits on is
-  // visible in the call itself (spec/148).
+  // visible in the call itself (spec/149).
   const patchAsFacilitator = (
     elementId: string,
     patch: (el: ShapeElement) => Partial<ShapeElement>,

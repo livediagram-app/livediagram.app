@@ -329,7 +329,7 @@ export function EditorCanvasHost() {
     zenMode,
   } = useEditorContext();
 
-  // Somebody else is running this session (spec/148). The facilitator verbs
+  // Somebody else is running this session (spec/149). The facilitator verbs
   // below fall away for everybody else, exactly as they do on a read-only
   // surface; the responses beside them stay, because answering is the point.
   const runBlocked = facilitator.sessionToolsBlocked;
@@ -503,7 +503,7 @@ export function EditorCanvasHost() {
       // and the person who spots the thing worth looking at is often not the
       // one with edit rights.
       // Bring Focus (spec/144) is the facilitator's while somebody holds the
-      // baton (spec/148): "everybody look here" is the same act as "everybody
+      // baton (spec/149): "everybody look here" is the same act as "everybody
       // stop and listen". Undefined renders the face inert, which is what a
       // read-only surface already gets.
       onPressFocusButton={runBlocked ? undefined : pressFocusButton}
@@ -538,7 +538,7 @@ export function EditorCanvasHost() {
       timerState={activeTab.timer ? (activeTab.timer.running ? 'running' : 'paused') : 'none'}
       revealedIds={revealedIds}
       // A cover is the facilitator's to lift while one is running the session
-      // (spec/148); with nobody facilitating it stays the private peek it has
+      // (spec/149); with nobody facilitating it stays the private peek it has
       // always been (spec/106).
       onToggleReveal={runBlocked ? undefined : toggleRevealForMe}
       onSetSessionConfig={isReadOnly || runBlocked ? undefined : setSessionConfigFor}

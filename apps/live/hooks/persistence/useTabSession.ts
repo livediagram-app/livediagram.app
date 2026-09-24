@@ -24,7 +24,7 @@ import { track } from '@/lib/telemetry';
 
 type TabSessionDeps = {
   editsBlocked: boolean;
-  // Somebody else is facilitating (spec/148), so the lifecycle verbs below are
+  // Somebody else is facilitating (spec/149), so the lifecycle verbs below are
   // theirs for now. Casting and retracting a dot stay open: answering is what
   // the room is for, and a vote only the facilitator can vote in is not a vote.
   sessionToolsBlocked: boolean;

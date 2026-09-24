@@ -26,7 +26,7 @@ export type PollAnswers = Map<string, string | null>;
 
 export function useLivePoll(deps: {
   roomRef: React.RefObject<RoomHandle | null>;
-  // Live "somebody else is facilitating" (spec/148). A ref because the poll
+  // Live "somebody else is facilitating" (spec/149). A ref because the poll
   // hook is created before the facilitator hook (which needs the room, which
   // needs this), and the value is only ever read at press time.
   sessionBlockedRef?: React.RefObject<boolean>;
@@ -113,7 +113,7 @@ export function useLivePoll(deps: {
 
   const startPoll = useCallback(
     (draft: Omit<LivePoll, 'id' | 'startedAt'>) => {
-      // Somebody else is facilitating (spec/148), so the room would refuse the
+      // Somebody else is facilitating (spec/149), so the room would refuse the
       // op anyway: the room gates `poll-start` / `poll-end` itself, because
       // unlike the timer they are their own op kinds. This keeps the local
       // panel from opening on a frame that is going to be dropped.

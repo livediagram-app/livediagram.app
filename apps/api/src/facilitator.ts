@@ -1,4 +1,4 @@
-// The facilitator baton (spec/148): who holds it, and who may move it.
+// The facilitator baton (spec/149): who holds it, and who may move it.
 //
 // Pure decisions, no sockets and no storage, so every rule can be read (and
 // tested) in one place while `diagram-room.ts` keeps the plumbing. The room is
@@ -135,7 +135,7 @@ export function graceExpired(state: FacilitatorState, now: number): boolean {
  * The room enforces this only for the ops it can see as session tools —
  * `poll-start` / `poll-end`, which are their own kinds. The timer and the vote
  * ride the same `tab` / `tab-meta` ops as every shape move, so they stay a
- * client-side rule; see spec/148 "How it is enforced, honestly".
+ * client-side rule; see spec/149 "How it is enforced, honestly".
  */
 export function mayRunSession(state: FacilitatorState, presenceId: string): boolean {
   return state.holder === null || state.holder === presenceId;

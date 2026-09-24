@@ -38,7 +38,7 @@ export function SessionStudio({
   const blocked = Boolean(session.facilitatedBy);
   return (
     <div className="flex flex-col gap-3 p-3">
-      {/* Disabled rather than hidden (spec/148): a panel that emptied itself
+      {/* Disabled rather than hidden (spec/149): a panel that emptied itself
           would teach a different editor to every participant, and somebody
           who had never seen the timer would not know there was one. A
           `fieldset` because it disables every control inside it natively,

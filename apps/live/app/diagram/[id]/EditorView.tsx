@@ -133,7 +133,7 @@ export function EditorView() {
   } = ctx;
 
   // Who is facilitating, named for the UI, or null when it is nobody or us
-  // (spec/148). Resolved from the roster we already hold so a rename reads
+  // (spec/149). Resolved from the roster we already hold so a rename reads
   // correctly, and null when we hold it: our own controls are not blocked,
   // so there is nothing to explain.
   const facilitatorName =
@@ -295,7 +295,7 @@ export function EditorView() {
             }}
             timer={activeTab.timer ?? null}
             vote={activeTab.vote ?? null}
-            // Somebody else is running this session (spec/148), so the Studio
+            // Somebody else is running this session (spec/149), so the Studio
             // says whose it is and disables its controls.
             facilitatedBy={facilitatorName}
             onStartTimer={startTimer}

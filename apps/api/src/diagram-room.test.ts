@@ -68,7 +68,7 @@ type FakeState = {
   // instances built from the same FakeState, which is exactly what a
   // hibernation wake looks like: same storage, fresh instance.
   store: Map<string, unknown>;
-  // The facilitator grace period (spec/148) is the room's only alarm.
+  // The facilitator grace period (spec/149) is the room's only alarm.
   alarms: number[];
   storage: {
     get: (key: string) => Promise<unknown>;
@@ -839,7 +839,7 @@ describe('DiagramRoom hibernation survival', () => {
     after.acceptSession(asWs(joiner), 'edit');
     sendFrame(after, joiner, { kind: 'hello', participant: { id: 'j', name: 'J', color: '#333' } });
     // The presence frame by kind, not by position: a hello is also answered
-    // with the facilitator state (spec/148), so "the last frame" is not it.
+    // with the facilitator state (spec/149), so "the last frame" is not it.
     const frame = joiner.sent
       .map((raw) => JSON.parse(raw) as { kind: string; participants?: ParticipantPresence[] })
       .findLast((f) => f.kind === 'presence')!;
@@ -1046,7 +1046,7 @@ describe('DiagramRoom op ordering + reconnect catch-up (spec/75, Level 1)', () =
   });
 });
 
-// ── The facilitator baton (spec/148) ──────────────────────────────────
+// ── The facilitator baton (spec/149) ──────────────────────────────────
 //
 // The room is the only thing that can arbitrate this, so these cover what
 // only it can get wrong: who is told, who is told the TOKEN, and the one op
