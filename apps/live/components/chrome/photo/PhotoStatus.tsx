@@ -1,5 +1,8 @@
 'use client';
 
+import type { ModelDownload as Download } from '@/lib/reading/download-progress';
+import { ModelDownload } from './ModelDownload';
+
 // What the surface is doing, said ON the photograph (spec/139 Phase 9).
 //
 // Pills rather than a panel: the photo is the whole interface, and a strip of
@@ -33,6 +36,7 @@ export function PhotoStatus({
   foundNothing,
   dropped = 0,
   labelError = null,
+  modelDownload,
   revealed,
   detected,
   reading,
@@ -44,6 +48,8 @@ export function PhotoStatus({
   dropped?: number;
   // Why a label file could not be opened over this photo.
   labelError?: string | null;
+  // The reading model's download, while it runs.
+  modelDownload?: Download;
   revealed: number;
   detected: number;
   reading: boolean;
@@ -89,6 +95,9 @@ export function PhotoStatus({
         <Pill tone="warn">
           The reader could not finish ({readError}). Type the words in yourself.
         </Pill>
+      ) : null}
+      {modelDownload && !modelDownload.done && modelDownload.total > 0 ? (
+        <ModelDownload download={modelDownload} />
       ) : null}
       {labelError ? (
         <Pill tone="warn" testId="photo-label-error">

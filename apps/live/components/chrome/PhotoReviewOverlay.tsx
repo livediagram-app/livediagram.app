@@ -8,6 +8,7 @@ import { PhotoStatus } from './photo/PhotoStatus';
 import { TruthExport } from './photo/TruthExport';
 import { UNREAD_TIP_SHARE, UnreadTip } from './photo/UnreadTip';
 import { ZoomControls } from './photo/ZoomControls';
+import type { ModelDownload as Download } from '@/lib/reading/download-progress';
 import { withKind } from '@/lib/photo-boxes';
 import { truthArmed } from '@/lib/photo-truth';
 import { useBoxDrag } from './photo/useBoxDrag';
@@ -52,12 +53,16 @@ const revealStepMs = (boxes: number) =>
 export function PhotoReviewOverlay({
   review,
   reading,
+  modelDownload,
   onConfirm,
   onCancel,
   onRetake,
 }: {
   review: PhotoReview;
   reading: boolean;
+  // The in-browser reader's model download, while it runs (first import on a
+  // device only).
+  modelDownload?: Download;
   // The boxes to land AS THEY STAND — ticked, corrected, drawn — and the
   // words on each.
   onConfirm: (
@@ -358,6 +363,7 @@ export function PhotoReviewOverlay({
           readError={review.readError}
           dropped={detection?.dropped ?? 0}
           labelError={labelError}
+          modelDownload={modelDownload}
         />
       </div>
 

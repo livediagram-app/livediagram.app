@@ -727,3 +727,38 @@ describe('the unread tip', () => {
     expect(onRetake).toHaveBeenCalled();
   });
 });
+
+// The in-browser reader's model is ~160 MB, fetched once per device. A
+// download that size with nothing moving on screen reads as a hang.
+describe('the reading model downloading', () => {
+  const MB = 1024 * 1024;
+  const open = (modelDownload?: { loaded: number; total: number; done: boolean }) =>
+    render(
+      <PhotoReviewOverlay
+        review={review({ detection: found([sticky(0)]) })}
+        reading
+        modelDownload={modelDownload}
+        onConfirm={noop}
+        onCancel={noop}
+      />,
+    );
+
+  it('shows how much of the model has arrived, as a progress bar', () => {
+    open({ loaded: 45 * MB, total: 160 * MB, done: false });
+    const bar = screen.getByRole('progressbar', { name: /reading model/i });
+    expect(bar.getAttribute('aria-valuenow')).toBe('28');
+    expect(screen.getByTestId('photo-model-download').textContent).toMatch(/45 of 160 MB/);
+    // Said once: this is a one-time cost, not every import.
+    expect(screen.getByTestId('photo-model-download').textContent).toMatch(/only the first time/i);
+  });
+
+  it('goes away when the model is ready', () => {
+    open({ loaded: 160 * MB, total: 160 * MB, done: true });
+    expect(screen.queryByTestId('photo-model-download')).toBeNull();
+  });
+
+  it('says nothing when there is no download (a server reader, or a cached model)', () => {
+    open(undefined);
+    expect(screen.queryByTestId('photo-model-download')).toBeNull();
+  });
+});

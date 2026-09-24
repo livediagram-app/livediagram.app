@@ -1,4 +1,5 @@
 import type { NoteCrop } from '@livediagram/api-schema';
+import type { ModelDownload } from './download-progress';
 
 // What a reader gives back for one crop: the words on it, and whether it could
 // read them at all. An illegible crop still becomes a note — the PAPER was
@@ -9,6 +10,9 @@ export type ReadOptions = {
   signal?: AbortSignal;
   // Crops finished so far, for the review's progress bar.
   onProgress?: (readSoFar: number) => void;
+  // The reading model's download, for a reader that fetches one (the
+  // in-browser reader: ~160 MB, once per device). See download-progress.ts.
+  onModelDownload?: (download: ModelDownload) => void;
 };
 
 // What a reader hands back: the words keyed by the crop id the detector

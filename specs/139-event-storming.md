@@ -894,6 +894,13 @@ Decisions from the operator:
   1.5% of the photo wide can be drawn round once zoomed in. The photo is never
   zoomed out past its whole self, nor panned off its own frame.
 
+  **The in-browser reader's model download is shown.** With no AI key, the
+  words are read by a model downloaded once per device (~250 MB of weights
+  from Hugging Face's CDN, the runtime from jsDelivr; kept in the browser's
+  cache). While it downloads, the review shows a progress bar with megabytes
+  and a share, and says it happens only the first time. Only the WEIGHTS are
+  counted, so the bar never fills before they have begun.
+
   **When too many notes could not be read, the review says so — and leaves
   the choice to the author.** Once the reader has finished, if 10% or more of
   the notes it was given still have no words (unread, and not typed in by the

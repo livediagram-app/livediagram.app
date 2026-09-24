@@ -1,5 +1,6 @@
 import type { NoteCrop } from '@livediagram/api-schema';
 import { normaliseRead, type ReadOptions, type ReadText } from './types';
+import { downloadProgress, type ModelDownload, type ModelProgressEvent } from './download-progress';
 
 // Reading the handwriting with a model that runs HERE (spec/139 Phase 9).
 //
@@ -46,6 +47,11 @@ type Loaded = { processor: Processor; model: VisionModel };
 
 let loading: Promise<Loaded> | null = null;
 
+// Who wants to hear how the download is going. The load is shared by every
+// read in the session, so its progress goes to whoever is waiting NOW, not
+// only to the read that happened to start it.
+const downloadListeners = new Set<(download: ModelDownload) => void>();
+
 // Loaded once per page and kept: the weights are the expensive part, and a
 // second import in the same session should not pay for them again. The import
 // is dynamic so the model runtime is its own chunk, fetched only when a
@@ -53,6 +59,17 @@ let loading: Promise<Loaded> | null = null;
 async function load(): Promise<Loaded> {
   loading ??= (async () => {
     const { AutoProcessor, AutoModelForVision2Seq } = await import('@huggingface/transformers');
+    // The weights: `.onnx` files, and the external-data files beside them.
+    const progress = downloadProgress({ counts: (file) => /\.onnx(_data)?$/.test(file) });
+    const progress_callback = (event: ModelProgressEvent) => {
+      progress.update(event);
+      const now = progress.current();
+      for (const listener of downloadListeners) listener(now);
+    };
+    // The processor's few small files load first and are not reported: counted,
+    // they filled the bar to 100% before the model's own files had begun, and
+    // then it fell back. The WEIGHTS start together, so from their first
+    // event the total is the real one.
     const processor = await AutoProcessor.from_pretrained(MODEL_ID);
     // WebGPU where it works, WASM everywhere else. WebGPU is ~14x faster but
     // needs `shader-f16`, which some drivers do not expose; asking for it and
@@ -61,9 +78,17 @@ async function load(): Promise<Loaded> {
     const model = await AutoModelForVision2Seq.from_pretrained(MODEL_ID, {
       device: 'webgpu',
       dtype: { embed_tokens: 'fp16', vision_encoder: 'fp16', decoder_model_merged: 'q4' },
+      progress_callback,
     }).catch(() =>
-      AutoModelForVision2Seq.from_pretrained(MODEL_ID, { device: 'wasm', dtype: 'q4' }),
+      AutoModelForVision2Seq.from_pretrained(MODEL_ID, {
+        device: 'wasm',
+        dtype: 'q4',
+        progress_callback,
+      }),
     );
+    // However the files arrived — from the network or the browser's cache —
+    // the bar ends here.
+    progress_callback({ status: 'ready' });
     return { processor, model };
   })();
   return loading;
@@ -116,6 +141,8 @@ export async function readCropsInBrowser(
   };
 
   let loaded: Loaded;
+  const listener = opts.onModelDownload;
+  if (listener) downloadListeners.add(listener);
   try {
     loaded = await load();
   } catch {
@@ -124,6 +151,8 @@ export async function readCropsInBrowser(
     // whole import failing. Let the next attempt try the download again.
     loading = null;
     return blank();
+  } finally {
+    if (listener) downloadListeners.delete(listener);
   }
 
   for (let i = 0; i < crops.length; i += 1) {

@@ -16,6 +16,7 @@ import {
 } from '@livediagram/diagram';
 import { toNormalised, type DetectedSticky } from '@livediagram/sticky-vision';
 import { selectReader } from '@/lib/reading/select';
+import type { ModelDownload } from '@/lib/reading/download-progress';
 import { buildEventStormingNote } from '@/lib/draw-commit';
 import { setPhotoDraftView } from '@/lib/photo-draft-preview';
 import {
@@ -55,6 +56,9 @@ export type PhotoDraftState = {
   found: number;
   // How many crops the reader has finished, for the progress bar.
   readSoFar: number;
+  // The reading model's download, while an in-browser reader fetches it
+  // (~160 MB, once per device). Absent for a reader with nothing to download.
+  modelDownload?: ModelDownload;
   // The last failure's token, for the toast. Cleared by the next attempt.
   error: string | null;
 };
@@ -270,6 +274,10 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
           onProgress: (readSoFar) => {
             if (!current()) return;
             setState((s) => (s.stage === 'review' ? { ...s, readSoFar } : s));
+          },
+          onModelDownload: (modelDownload) => {
+            if (!current()) return;
+            setState((s) => (s.stage === 'review' ? { ...s, modelDownload } : s));
           },
         });
         if (!current()) return;

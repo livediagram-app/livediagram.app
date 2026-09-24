@@ -149,6 +149,21 @@ pnpm --filter @livediagram/live exec vitest   # watch mode while developing
 
 Tests live alongside the code they cover, as `*.test.ts` / `*.test.tsx` files. The test runner is [Vitest](https://vitest.dev) with the shared config from `@livediagram/vitest-config`. See [spec/18](../specs/18-testing.md) for the testing contract.
 
+## Trying the photo import without an AI key
+
+The e2e stack (`scripts/e2e-stack.mjs`) can serve the built editor a second
+time, beside a running stack, as a deployment WITHOUT an AI key runs it — so
+the photo import reads the handwriting with the in-browser model (and shows
+its download the first time):
+
+```bash
+E2E_LIVE_PORT=3402 E2E_API_PORT=8887 E2E_LIVE_ONLY=1 E2E_NO_AI=1 node scripts/e2e-stack.mjs
+```
+
+`E2E_LIVE_ONLY=1` serves the static editor only, proxying to the api already
+on `E2E_API_PORT`; `E2E_NO_AI=1` answers `/api/capabilities` with
+`aiEnabled: false`.
+
 ## Three gotchas
 
 - **All four Next.js dev servers (`marketing`, `live`, `telemetry`, `help`) run through `scripts/next-dev.mjs`.** It frees the port, points dev at an isolated `.next-dev/` cache, and wipes that cache on every start, so a `next build` running in the same checkout can't corrupt the dev server (the recurring "unstyled help page" / `Cannot find module './NNNN.js'` failures) and a crashed restart never inherits a broken cache. All four run on Turbopack, which is also what `next build` uses under Next 16, so dev compiles the same way the deployed bundle does. If a dev server ever does get stuck, stop it and restart — the wipe-on-start clears it.

@@ -467,6 +467,7 @@ export function EditorView() {
             reading={
               photoDraft.state.readSoFar < photoDraft.state.found && !photoDraft.review.readError
             }
+            modelDownload={photoDraft.state.modelDownload}
             onConfirm={photoDraft.confirm}
             onCancel={photoDraft.cancelReview}
             // "Try another photo": leave this review and open the picker
