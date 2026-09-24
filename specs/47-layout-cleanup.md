@@ -59,6 +59,32 @@ a component's nodes are positioned:
 - **UI:** the Cleanup category shows a tile per style (Smart is the plain
   "Auto Layout" tile), and the command palette carries one command per style
   ("Auto Layout: Mindmap", ...). All styles are the same single undoable op.
+
+### Hover to see it first
+
+On a desktop pointer, hovering a Cleanup row lays the tab out **live behind the
+menu**; the layout only sticks on click, and taking the pointer off the row puts
+everything back. Five styles that can only be told apart by doing them is five
+undos to find the one you wanted, and the names ("Tree", "Mindmap") describe a
+shape the author has to imagine. Showing it is cheaper than explaining it.
+
+It is the style-preset preview ([spec/48](48-style-presets.md)) one level up:
+that one previews a look on the selected elements, this one previews a position
+on all of them, and the rules are the same ones for the same reasons.
+
+- The transforms live in `lib/tab-cleanup.ts` (`cleanupElements`), shared by the
+  preview and the command, so a preview is byte-for-byte the layout its click
+  commits.
+- The first hover snapshots the tab. Every hover lays out from that snapshot, so
+  sweeping down the rows shows each style cleanly rather than stacking them.
+- Preview and revert go through `tickTabs`: present-only, no undo snapshot, no
+  activity entry, and autosave skips the tick (`previewingRef`), so nothing
+  ephemeral is ever persisted or logged.
+- The click ends the preview first and commits second, in one React batch, so
+  undo returns to the layout the author actually had rather than to the preview.
+- **Mouse pointers only.** On touch a tap IS the commit, so a preview would be a
+  flicker. The row also reverts if the menu closes or the section collapses with
+  the pointer still on it, since `pointerleave` does not fire on unmount.
 - Tree and Mindmap consume the same directed edge set as the layered layout; on a
   graph that isn't a tree (extra in-edges, cycles) they lay out a BFS/longest-path
   spanning tree and let the extra arrows re-anchor across it (deterministic, never

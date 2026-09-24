@@ -12,9 +12,7 @@
 // useElementStyle — one debounce instance, two consumers.
 
 import { useRef } from 'react';
-import { autoAlignElements } from '@/lib/auto-align';
 import {
-  autoLayoutElements,
   isBoxed,
   type BackgroundPattern,
   type Element,
@@ -23,6 +21,7 @@ import {
 } from '@livediagram/diagram';
 import { track, titleCaseType } from '@/lib/telemetry';
 import { AUTO_LAYOUT_CHOICES, type AutoLayoutChoice } from '@/lib/auto-layout-choices';
+import { cleanupElements } from '@/lib/tab-cleanup';
 import { FONTS } from '@livediagram/diagram';
 import { PATTERNS } from '@/components/palette/palette-controls';
 import { useTabTheme } from './useTabTheme';
@@ -128,7 +127,7 @@ export function useTabCanvas(deps: TabCanvasDeps) {
     // AND fires emitChange for the activity log. Adding emitTabMeta
     // on top would duplicate the entry without adding undo coverage;
     // the diff-based summary from emitChange is the canonical line.
-    commit((els) => autoAlignElements(els));
+    commit((els) => cleanupElements(els, 'align'));
     track('Tab', 'Aligned');
   };
 
@@ -142,17 +141,13 @@ export function useTabCanvas(deps: TabCanvasDeps) {
   // the AI-apply path uses). One undoable op via `commit`.
   const autoLayoutTab = (choice: AutoLayoutChoice = 'smart') => {
     if (editsBlocked) return;
-    const els = activeTab.elements;
-    if (els.length === 0) return;
-    const boxed = els.filter(isBoxed);
-    if (boxed.length === 0) return;
-    const originX = Math.min(...boxed.map((b) => b.x));
-    const originY = Math.min(...boxed.map((b) => b.y));
-    const { options, telemetryType } = AUTO_LAYOUT_CHOICES[choice];
-    commit((current) =>
-      autoAlignElements(autoLayoutElements(current, { ...options, originX, originY })),
-    );
-    track('Tab', 'Aligned', telemetryType);
+    if (activeTab.elements.length === 0) return;
+    // Everything the layout needs, including the origin it pins to, is read
+    // inside the updater from the elements it is given: a commit taken while a
+    // hover preview is on screen (spec/47) composes after the preview's revert,
+    // so `current` is the true pre-hover state and undo returns there.
+    commit((current) => cleanupElements(current, choice));
+    track('Tab', 'Aligned', AUTO_LAYOUT_CHOICES[choice].telemetryType);
   };
 
   // Tab default font (spec/28): every text element without its own

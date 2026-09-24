@@ -116,6 +116,7 @@ import { useInlineIconMutators } from './useInlineIconMutators';
 import { usePresenceBroadcast } from './usePresenceBroadcast';
 import { useSelectionEditing } from './useSelectionEditing';
 import { useFormatTool } from './useFormatTool';
+import { useCleanupPreview } from '@/hooks/canvas/useCleanupPreview';
 import { useTabEntryEffects } from './useTabEntryEffects';
 import { useCollabDeepLink, useCollabDeepLinkCapture } from './useCollabDeepLink';
 import { useEditorUiState } from './editor-ui-state';
@@ -2210,6 +2211,16 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     previewingRef,
   });
 
+  // The same idea one level up (spec/47): hovering a Cleanup row in the tab
+  // menu lays the whole tab out behind it, and the layout only sticks on click.
+  const { previewCleanup, endCleanupPreview } = useCleanupPreview({
+    editsBlocked,
+    activeId,
+    tabsRef,
+    tickTabs,
+    previewingRef,
+  });
+
   // Element link picker state + the link read/write/follow handlers.
   // See useElementLinks.
   const {
@@ -2603,6 +2614,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     applyImageToElement,
     autoAlignTab,
     autoLayoutTab,
+    previewCleanup,
+    endCleanupPreview,
     applyTabFontToAll,
     // Live session tools (spec/39)
     startTimer,

@@ -2259,7 +2259,7 @@ export const articles: Article[] = [
     slug: 'auto-layout',
     title: 'Auto Layout',
     description: 'Tidy Up the arrow graph as a flowchart, tree, or mindmap.',
-    keywords: 'arrange flowchart tree mindmap tidy up automatic graph',
+    keywords: 'arrange flowchart tree mindmap tidy up automatic graph preview hover try before',
     category: 'Tools',
     categorySlug: 'tools/layout-cleanup',
     parentSlug: 'layout-cleanup',

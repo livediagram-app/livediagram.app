@@ -8,6 +8,7 @@ import {
 } from '@livediagram/diagram';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import type { AutoLayoutChoice } from '@/lib/auto-layout-choices';
+import type { CleanupKind } from '@/lib/tab-cleanup';
 import type { Participant } from '@/lib/identity';
 import { TabsLabelIcon } from '@/components/chrome/tab-bar-icons';
 import { TabFolderChip } from '@/components/chrome/TabFolderChip';
@@ -29,6 +30,10 @@ export type CanvasMenuActions = {
   // chosen style (spec/47 "Layout styles"; omitted = smart).
   onAutoAlign: () => void;
   onAutoLayout: (choice?: AutoLayoutChoice) => void;
+  // Hover-to-preview for those same rows (spec/47), desktop pointers only:
+  // lay the tab out live behind the menu, and put it back on the way out.
+  onPreviewCleanup: (kind: CleanupKind) => void;
+  onEndCleanupPreview: () => void;
   // Paste straight from the empty-canvas right-click (spec/09); greyed,
   // not hidden, when the buffer is empty.
   onPaste: () => void;
