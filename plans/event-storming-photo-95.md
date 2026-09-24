@@ -48,7 +48,9 @@ bundle size, effort, and links.
       per-wall recall and precision, merged-box count, actor recall
       separately, and a PASS/FAIL line against the bar. Commit.
 - [ ] 1.3 Collect all 54 reports; chase any that failed or came back thin.
-- [ ] 1.4 Synthesise `docs/vision/research.md`: the inventory of techniques,
+      (34 in; 20 hit the Antigravity quota and re-spawn automatically after it
+      resets, with a 21st angle on evaluating the reader.)
+- [x] 1.4 Synthesise `docs/vision/research.md`: the inventory of techniques,
       models and methods, de-duplicated, each scored for fit, cost, licence,
       size and expected gain against our measured failure modes. Commit.
 
@@ -74,11 +76,11 @@ bundle size, effort, and links.
 
 ## Phase 3 — the experiment plan
 
-- [ ] 3.1 From the inventory, write `plans/event-storming-photo-95-experiments.md`:
+- [x] 3.1 From the inventory, write `plans/event-storming-photo-95-experiments.md`:
       every experiment as a checkbox, grouped so groups can run in PARALLEL
       without touching the same files, each with its hypothesis, the measure
       that decides it, and the bar it must not break.
-- [ ] 3.2 Commit it.
+- [x] 3.2 Commit it.
 
 ## Phase 4 — delegated experiments
 
