@@ -221,22 +221,13 @@ function union(a: Box, b: Box): Box {
 // any value from 0.4 to 0.5 scores the same (0.55 lets one pair back in).
 const WHOLE_NOTE_SIDE = 0.45;
 
-// Judged against the colour's own note size where the wall measured one
-// smaller than its own (a pad of small actors), since a whole actor is a
-// fragment of a big note.
-function isWholeNote(b: Box, noteSize: number, classNoteSize?: Map<number, number>): boolean {
-  const own = classNoteSize?.get(b.classId);
-  const size = own !== undefined && own > 0 && own < noteSize ? own : noteSize;
-  return Math.min(b.w, b.h) >= size * WHOLE_NOTE_SIDE;
+function isWholeNote(b: Box, noteSize: number): boolean {
+  return Math.min(b.w, b.h) >= noteSize * WHOLE_NOTE_SIDE;
 }
 
 // Merge same-colour boxes that are touching or nearly so: one sticky with a
 // word written across it arrives as two or three blobs of paper.
-export function mergeFragments(
-  boxes: Box[],
-  noteSize: number,
-  classNoteSize?: Map<number, number>,
-): Box[] {
+export function mergeFragments(boxes: Box[], noteSize: number): Box[] {
   const gap = noteSize * MERGE_GAP_FRACTION;
   // A merge that would turn two pieces of paper into a mostly-empty rectangle
   // is not a note being reassembled; it is two different notes, or two specks.
@@ -248,8 +239,7 @@ export function mergeFragments(
   const reach = noteSize * MERGE_REACH_FRACTION;
   const joins = (a: Box, b: Box) => {
     if (a.classId !== b.classId) return false;
-    if (isWholeNote(a, noteSize, classNoteSize) && isWholeNote(b, noteSize, classNoteSize))
-      return false;
+    if (isWholeNote(a, noteSize) && isWholeNote(b, noteSize)) return false;
     const between = gapBetween(a, b);
     if (between > reach) return false;
     const fill = fillRatio(union(a, b));
@@ -334,7 +324,6 @@ export function fitBoxes(
   const merged = mergeFragments(
     raw,
     opts.noteSize && opts.noteSize > 0 ? opts.noteSize : gap / MERGE_GAP_FRACTION,
-    opts.classNoteSize,
   );
   // Sensor noise and single stray pixels of paper colour, gone before anything
   // is measured against them. An absolute floor relative to the IMAGE, because

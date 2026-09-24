@@ -33,14 +33,6 @@ describe('mergeFragments', () => {
     expect(out).toHaveLength(2);
   });
 
-  it('judges a small pad by its own note size, where the wall has one', () => {
-    // Two 14x22 actors 2px apart on a wall of 34px notes, where the actors'
-    // colour measured its own size, 20px: each is a whole actor.
-    const pair = [box(0, 0, 14, 22), box(16, 0, 14, 22)];
-    expect(mergeFragments(pair, 34)).toHaveLength(1);
-    expect(mergeFragments(pair, 34, new Map([[1, 20]]))).toHaveLength(2);
-  });
-
   it('still folds a sliver of a note into the note it came off', () => {
     const out = mergeFragments([box(0, 0, 50, 40), box(0, 43, 50, 7)], 50);
     expect(out).toHaveLength(1);
