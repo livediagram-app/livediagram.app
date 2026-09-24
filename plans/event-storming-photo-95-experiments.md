@@ -118,6 +118,14 @@ overlapping LABELS (for the operator to review, not for the detector).
       `colour.ts`): the panorama's no-paper notes (small pink hotspots,
       pale pink), and the night wall's classification.
 
+- **Held back (measured on the merged main branch):** wiring B's shadow-seam
+  cut (`luminance: luminanceOf(working)` into `fitBoxes`) takes merged boxes
+  29 → 25 but costs 201713 two notes (rec-A 96 → 93, PASS → FAIL). For B2 to
+  refine before it is wired.
+- **E, first result:** a synthetic-only boundary U-Net (85K params, 340 KB)
+  scores TOTAL 92.0 against the original classical 83.5 — 201707 and 201713
+  PASS, panorama 72 → 91 — with no real wall seen in training.
+
 ## Not yet delegated
 
 - **D-FINE-N / RT-DETR fine-tuning**: needs PyTorch, i.e. Python, which the
