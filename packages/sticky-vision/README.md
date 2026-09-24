@@ -62,14 +62,22 @@ package never sees text; it only finds paper.
 
 ## How well it does it
 
-Scored against 647 hand-traced notes on eight photographs — six of one kraft
-workshop wall, a white-paper panorama and a dense whiteboard (the photos and
-labels live in a private repository, never here): **precision 86%, recall
-81%, F1 83.7** across all of them. Per wall F1 runs from 94 (a dense kraft
-section) and 91 (the whiteboard) down to 72 (the panorama, two sizes of
-sticky) and 42 (a photo taken at night with half a room in it). Counting
-detections is not a score — a detector that boxes the masking tape too finds
-more of them.
+Scored against 645 hand-traced notes on eight photographs — six of one kraft
+workshop wall (one in heavy shade, one at night with a window and half a room
+in frame), a white-paper panorama with two sizes of sticky, and a whiteboard
+of about 270 small notes — on the EDITOR'S OWN PIXELS (the sweep renders each
+photo in Chromium exactly as the product does; the labels live in a private
+repository):
+
+| detector                                                      | precision | recall | F1       | merged boxes           |
+| ------------------------------------------------------------- | --------- | ------ | -------- | ---------------------- |
+| this package alone (the classical pipeline)                   | 96%       | 92%    | 94.1     | 20                     |
+| with the learned boundary model (`@livediagram/sticky-model`) | 97%       | 95%    | **95.8** | 16, all of them labels |
+
+The editor runs the second, and falls back to the first whenever the model
+cannot load. Counting detections is not a score — a detector that boxes the
+masking tape too finds more of them. How it got here, experiment by
+experiment: [docs/vision/experiments](../../docs/vision/experiments/).
 
 ## What it cannot do
 

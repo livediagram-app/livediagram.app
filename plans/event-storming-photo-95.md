@@ -88,13 +88,30 @@ bundle size, effort, and links.
       medium effort), each in its OWN git worktree and branch, so parallel
       work cannot collide. Every delegate scores against the same truth with
       the same sweep, and reports its table.
-- [ ] 4.2 Supervise: answer questions, unblock, reject anything that breaks a
+- [x] 4.2 Supervise: answer questions, unblock, reject anything that breaks a
       guard test or lowers any wall.
-- [ ] 4.3 Merge the winners onto this branch, one at a time, re-scoring after
+- [x] 4.3 Merge the winners onto this branch, one at a time, re-scoring after
       each merge (improvements interact).
 - [ ] 4.4 Iterate until the bar is met on every wall, or until a wall is shown
       — with evidence — to be beyond what a photograph of it can give, in
       which case that is recorded as a limit with the numbers.
+
+### Where it stands (the editor's own pixels, the built editor scored)
+
+| wall             | prec    | rec-A   | merged          | bar      | what is left                             |
+| ---------------- | ------- | ------- | --------------- | -------- | ---------------------------------------- |
+| 201646           | 98%     | 100%    | 1               | FAIL     | a label (an actor pair labelled twice)   |
+| 201654           | 98%     | 98%     | 2               | FAIL     | labels (two overlapping)                 |
+| 201707           | 98%     | 100%    | 0               | **PASS** |                                          |
+| 201713           | 98%     | 100%    | 0               | **PASS** |                                          |
+| 201730 (shade)   | 94%     | 94%     | 2               | FAIL     | labels, and a real note with no label    |
+| 201743 (night)   | 95%     | 90%     | 2               | FAIL     | labels; one note behind the window glass |
+| wall-panorama    | 95%     | 98%     | 1               | FAIL     | a label                                  |
+| whiteboard-dense | 97%     | 93%     | 8               | FAIL     | labels; 19 px notes under glare          |
+| **total**        | **97%** | **95%** | **16 (0 real)** | **2/8**  | F1 83.7 → **95.8**                       |
+
+Every merged box left is an overlapping LABEL; the detector merges no two
+real notes on any wall. The operator's label review decides the next four.
 
 ## Phase 5 — optional higher-quality paths
 
