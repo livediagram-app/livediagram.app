@@ -1,7 +1,7 @@
 'use client';
 
-// The Eraser Panel (spec/113): mode, size, what it may erase, and what it does
-// with a group — the fourth mode panel, on the same terms as the Laser and
+// The Eraser Panel (spec/113): mode, size and what it may erase — the fourth
+// mode panel, on the same terms as the Laser and
 // Spotlight ones.
 //
 // The preview here matters more than in the other two: this is the tool that
@@ -13,7 +13,6 @@
 import { useState } from 'react';
 import {
   eraserRadius,
-  ERASER_GROUPS,
   ERASER_MODES,
   ERASER_SIZES,
   ERASER_TARGETS,
@@ -22,7 +21,7 @@ import {
 import { ToolOptionRow } from '@/components/panels/ToolOptionRow';
 import { ModePanel, type ModePanelProps } from '@/components/panels/ModePanel';
 
-type Row = 'mode' | 'size' | 'target' | 'groups';
+type Row = 'mode' | 'size' | 'target';
 
 // The brush at its true size over a scrap of diagram, so "Large" is a size
 // rather than a word. Capped to the preview box: a 72px radius is bigger than
@@ -91,14 +90,6 @@ export function EraserPanel({
             open={openRow === 'target'}
             onToggle={() => toggle('target')}
             onPick={(id) => onChange('target', id)}
-          />
-          <ToolOptionRow
-            label="Groups"
-            options={ERASER_GROUPS}
-            value={config.groups}
-            open={openRow === 'groups'}
-            onToggle={() => toggle('groups')}
-            onPick={(id) => onChange('groups', id)}
           />
         </div>
         <p className="px-1 pt-1.5 text-[10px] leading-snug text-slate-400 dark:text-slate-500">

@@ -18,7 +18,7 @@
 // hook. Verbatim relocation — no behaviour change.
 
 import { useEffect, useRef, useState } from 'react';
-import { createFreehand, isBoxed, type Element, type Tab } from '@livediagram/diagram';
+import { createFreehand, type Element, type Tab } from '@livediagram/diagram';
 import { getTheme } from '@/lib/themes';
 import { track, titleCaseType } from '@/lib/telemetry';
 import { isTechIconId } from '@/lib/tech-icons';
@@ -172,10 +172,8 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
         endY,
         getTheme(activeTab.theme),
       );
-      commit((els) => [...els, ...placed]);
-      // Selects the group's primary member.
-      const primary = placed.find((el) => isBoxed(el) && el.groupId) ?? placed[0];
-      if (primary) setSelectedId(primary.id);
+      commit((els) => [...els, placed]);
+      setSelectedId(placed.id);
       setPendingDraw(null);
       track('Element', 'Added', componentTelemetryType(intent.kind));
       return;

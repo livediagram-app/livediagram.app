@@ -32,6 +32,7 @@ import {
   DEFAULT_DECISION_STATUS,
   DEFAULT_ESTIMATE_SCALE,
 } from './collab-shapes';
+import { NAV_DEFAULT_LINKS, PROCESS_DEFAULT_STEPS, STAT_DEFAULTS } from './web-components';
 import type { ShapeElement, ShapeKind } from './index';
 
 // --- Factories -------------------------------------------------------------
@@ -188,6 +189,14 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   decision: { width: 330, height: 220 },
   // Roll call (spec/129): two columns of names, six rows deep.
   'roll-call': { width: 300, height: 260 },
+  // Web components (spec/147), at the sizes the grouped composites they
+  // replace arrived at, so a board built from either reads the same.
+  banner: { width: 440, height: 104 },
+  callout: { width: 380, height: 116 },
+  // Three 150px cards and two 16px gaps.
+  'stat-row': { width: 482, height: 96 },
+  process: { width: 420, height: 110 },
+  'site-header': { width: 640, height: 84 },
 };
 
 // New boxed elements default to Medium text size per spec 09 ("Text size").
@@ -536,6 +545,52 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
   // Checklist: starter rows so the affordance is obvious on drop. See spec/83.
   if (kind === 'checklist') {
     return { ...base, checklistItems: CHECKLIST_DEFAULT_ITEMS.map((i) => ({ ...i })) };
+  }
+  // Web components (spec/147): the starting content each one shows on drop,
+  // so a new one reads as what it is. Colours come from the caller
+  // (createComponent maps the theme); without one the renderer's fallbacks
+  // apply, which is what an MCP- or AI-authored one gets.
+  if (kind === 'banner') {
+    return {
+      ...base,
+      label: 'Banner title',
+      pageSubtitle: 'Subtitle or description',
+      textSize: 'lg',
+      textBold: true,
+      textAlignX: 'center',
+      textAlignY: 'middle',
+      borderRadius: 'lg',
+    };
+  }
+  if (kind === 'callout') {
+    return {
+      ...base,
+      pageTitle: 'Heads up',
+      label: 'A short note with some supporting detail.',
+      textSize: 'sm',
+      textAlignX: 'left',
+      textAlignY: 'top',
+      strokeWidth: 'thin',
+      borderRadius: 'md',
+    };
+  }
+  if (kind === 'stat-row') {
+    return { ...base, stats: STAT_DEFAULTS.map((st) => ({ ...st })), borderRadius: 'md' };
+  }
+  if (kind === 'process') {
+    return { ...base, processSteps: [...PROCESS_DEFAULT_STEPS] };
+  }
+  if (kind === 'site-header') {
+    return {
+      ...base,
+      label: 'Brand',
+      navLinks: [...NAV_DEFAULT_LINKS],
+      textSize: 'md',
+      textBold: true,
+      textAlignX: 'left',
+      textAlignY: 'middle',
+      borderRadius: 'md',
+    };
   }
   // Legend: starter rows so the card is not an empty box on drop. Their
   // colours are left unset, so they take the chart palette by index and a

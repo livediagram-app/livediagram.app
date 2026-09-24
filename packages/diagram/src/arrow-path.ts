@@ -1,9 +1,7 @@
 import { type Anchor, type ArrowStyle, type Endpoint } from './index';
 
-// The anchor a pinned end sits on, when the endpoint carries one
-// (element-pinned or group-pinned); null for free / on-arrow ends.
-const anchorOf = (ep?: Endpoint): Anchor | null =>
-  ep && (ep.kind === 'pinned' || ep.kind === 'pinned-group') ? ep.anchor : null;
+// The anchor a pinned end sits on; null for free / on-arrow ends.
+const anchorOf = (ep?: Endpoint): Anchor | null => (ep && ep.kind === 'pinned' ? ep.anchor : null);
 
 // Whether an anchor sits on a horizontal edge (top / bottom, corners
 // included) as opposed to a vertical side (e / w).

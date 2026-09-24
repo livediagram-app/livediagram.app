@@ -37,9 +37,6 @@ export function nearestElementTowards(
   elements: Element[],
   source: BoxedElement,
   anchor: Anchor,
-  // Ignored as candidates: the source's own group members, which are being
-  // moved as one thing and are never what an arrow out of the group means.
-  excludeIds: ReadonlySet<string> = new Set(),
 ): BoxedElement | null {
   if (anchor !== 'n' && anchor !== 's' && anchor !== 'e' && anchor !== 'w') return null;
   const vertical = anchor === 'n' || anchor === 's';
@@ -50,7 +47,7 @@ export function nearestElementTowards(
   let best: BoxedElement | null = null;
   let bestGap = Infinity;
   for (const el of elements) {
-    if (el.id === source.id || excludeIds.has(el.id) || !isBoxed(el)) continue;
+    if (el.id === source.id || !isBoxed(el)) continue;
     // A frame is a section backdrop, not a node — an arrow into one reads as
     // pointing at the whole section rather than at anything in particular.
     if (el.type === 'shape' && el.shape === 'frame') continue;

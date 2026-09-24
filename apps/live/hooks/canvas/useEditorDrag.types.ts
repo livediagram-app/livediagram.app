@@ -28,10 +28,6 @@ export type EditorDragDeps = {
   // truth).
   selectedId: string | null;
   setSelectedId: (id: string | null) => void;
-  // Drill-in selection (spec/09 groups): solo the clicked member of an
-  // already-selected group instead of re-selecting the whole group.
-  soloSelectedId: string | null;
-  setSoloSelectedId: (id: string | null) => void;
   multiSelectedIds: Set<string>;
   // Written by the shift-duplicate identity swap (spec/80): the cursor-
   // following set becomes the fresh clones, so the selection must follow
@@ -43,9 +39,8 @@ export type EditorDragDeps = {
   // starter treats them as inert — no select, no drag, no new arrow.
   layerInertIds: Set<string>;
   // Modal interaction state. When format-painter is active, a click
-  // on an element applies the format instead of dragging; when
-  // group-source is active, the click completes a grouping. The drag
-  // dispatcher checks these and routes appropriately.
+  // on an element applies the format instead of dragging. The drag
+  // dispatcher checks this and routes appropriately.
   formatSourceId: string | null;
   applyFormatFromSource: (targetId: string, opts?: { keepSource?: boolean }) => void;
   // The persistent Format canvas tool is active. A click on an element
@@ -54,8 +49,6 @@ export type EditorDragDeps = {
   // of selecting / dragging. `setFormatSourceId` arms the source.
   formatToolActive: boolean;
   setFormatSourceId: (id: string | null) => void;
-  groupSourceId: string | null;
-  completeGrouping: (targetId: string) => void;
   // Arrow click-to-connect (spec/09): armed source + the action.
   connectSourceId: string | null;
   connectArrowTo: (targetId: string) => void;
@@ -151,7 +144,6 @@ export type EditorDragApi = {
       // Enter a real drag, but remember what a no-movement TAP should do
       // (touch quick-connect, spec/09).
       tapPlaceOutPx?: number;
-      fromGroup?: { groupId: string; point: { x: number; y: number } };
     },
   ) => void;
   beginArrowTranslate: (arrowId: string, e: ReactPointerEvent) => void;

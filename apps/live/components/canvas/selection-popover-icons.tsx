@@ -1,5 +1,5 @@
 // 16px stroke-currentColor action icons used by the floating SelectionPopover
-// toolbar (the more/paint/duplicate/group/ungroup/lock/comment/delete buttons).
+// toolbar (the more/paint/duplicate/lock/comment/delete buttons).
 // They lived inline at the bottom of SelectionPopover.tsx; pulled out here so
 // that file stays focused on the toolbar's positioning + flip logic rather than
 // its SVG vocabulary, mirroring the other per-area icon modules
@@ -47,46 +47,6 @@ export function DuplicateIcon() {
     >
       <rect x="2.5" y="2.5" width="8" height="8" rx="1.5" />
       <path d="M5.5 13.5h6a1.5 1.5 0 0 0 1.5-1.5v-6" />
-    </svg>
-  );
-}
-
-export function GroupIcon({ size = 16 }: { size?: number } = {}) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      {/* A dashed selection bracket binding two small shapes — reads as
-          "grouped", and no longer mistakable for Duplicate's overlapping
-          squares (a reported misclick). */}
-      <rect x="1.5" y="1.5" width="13" height="13" rx="2" strokeDasharray="2.6 1.9" />
-      <circle cx="5.9" cy="6" r="2" fill="currentColor" stroke="none" />
-      <rect x="8.4" y="8.4" width="4.1" height="4.1" rx="0.9" fill="currentColor" stroke="none" />
-    </svg>
-  );
-}
-
-export function UngroupIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <rect x="2" y="2" width="6" height="6" rx="1" />
-      <rect x="8" y="8" width="6" height="6" rx="1" />
     </svg>
   );
 }

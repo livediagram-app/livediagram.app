@@ -178,12 +178,10 @@ export function buildStateMachine(cx: number, cy: number): Element[] {
   };
   elements.push(initial);
 
-  // Final state: the bullseye (an outlined ring around a locked solid
-  // dot), grouped so it moves as one marker.
+  // Final state: the bullseye, an outlined ring around a locked solid dot.
   const ringSize = 38;
   const coreSize = 22;
   const finalCenterX = firstCenterX + (states.length - 1) * pitch + stateW / 2 + markerGap;
-  const finalGroup = crypto.randomUUID();
   const ring = {
     ...createShape('circle', finalCenterX - ringSize / 2, midY - ringSize / 2),
     width: ringSize,
@@ -191,7 +189,6 @@ export function buildStateMachine(cx: number, cy: number): Element[] {
     fillColor: '#ffffff',
     strokeColor: INK,
     themeLockFill: true,
-    groupId: finalGroup,
   };
   const core = {
     ...createShape('circle', finalCenterX - coreSize / 2, midY - coreSize / 2),
@@ -200,7 +197,6 @@ export function buildStateMachine(cx: number, cy: number): Element[] {
     fillColor: INK,
     strokeColor: INK,
     themeLockFill: true,
-    groupId: finalGroup,
   };
   elements.push(ring, core);
 

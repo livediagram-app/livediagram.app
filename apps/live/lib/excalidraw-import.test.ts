@@ -150,7 +150,7 @@ describe('boxed element mapping', () => {
     expect(text.textAlignX).toBe('center');
   });
 
-  it('maps common properties: opacity, angle, group, lock, link, dash', () => {
+  it('maps common properties: opacity, angle, lock, link, dash; groups are dropped', () => {
     const r = buildElementsFromExcalidraw(
       scene([
         rect({
@@ -175,9 +175,10 @@ describe('boxed element mapping', () => {
       strokeStyle: 'dashed',
       strokeWidth: 'thick',
     });
-    // Same outermost excalidraw group -> same minted groupId.
-    expect(a!.groupId).toBeDefined();
-    expect(a!.groupId).toBe(b!.groupId);
+    // livediagram has no groups (spec/147): grouped Excalidraw elements
+    // arrive as separate elements.
+    expect('groupId' in a!).toBe(false);
+    expect('groupId' in b!).toBe(false);
   });
 
   it('imports frames as frame shapes with their name', () => {

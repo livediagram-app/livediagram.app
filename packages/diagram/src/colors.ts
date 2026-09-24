@@ -9,6 +9,7 @@ import {
   type TextAlignX,
   type TextAlignY,
 } from './index';
+import { ACCENT_BAR_TEXT, isAccentBarShape } from './web-components';
 
 // Per-type default padding bucket (was beside the Padding type).
 export function defaultPadding(element: BoxedElement): Padding {
@@ -140,6 +141,9 @@ const DARK_INK = {
 } as const;
 
 export function defaultTextColor(element: BoxedElement, surface: CanvasSurface = 'light'): string {
+  // An accent-bar web component (spec/147) writes white on its bar, on any
+  // paper: the bar is the accent, not the surface.
+  if (element.type === 'shape' && isAccentBarShape(element.shape)) return ACCENT_BAR_TEXT;
   if (surface === 'dark') {
     switch (element.type) {
       case 'shape':
@@ -393,6 +397,13 @@ export const SELF_PAINTING_SHAPES = new Set<string>([
   // A chair (spec/130) draws its own furniture and wants no box behind it,
   // which is what the canvas does too (isSvgRenderedShape excludes it).
   'chair',
+  // Web components (spec/147) that lay out their own surfaces: an accent bar
+  // (banner, header), a row of cards, circles and connectors. A callout is
+  // NOT here: its card is an ordinary bordered box with content inside.
+  'banner',
+  'site-header',
+  'stat-row',
+  'process',
 ]);
 
 export function supportsBorderControls(element: Element): boolean {
@@ -409,12 +420,19 @@ export function supportsBorderControls(element: Element): boolean {
 // standalone `icon` element instead of attaching. One predicate so all
 // three fold paths (palette drag-drop, add-while-selected, drag an
 // existing icon onto a shape) agree.
+//
+// Of the web components (spec/147), the header takes the icon as its logo
+// and the callout as its badge glyph; the banner, stat row and process have
+// nowhere to put one, so an icon dropped on them stands alone.
 export function acceptsInlineIcon(element: Element): element is ShapeElement {
   return (
     element.type === 'shape' &&
     element.shape !== 'icon' &&
     element.shape !== 'sticker' &&
-    element.shape !== 'frame'
+    element.shape !== 'frame' &&
+    element.shape !== 'banner' &&
+    element.shape !== 'stat-row' &&
+    element.shape !== 'process'
   );
 }
 
@@ -426,9 +444,20 @@ export function acceptsInlineIcon(element: Element): element is ShapeElement {
 // outline (diamond / cylinder / hexagon / document / parallelogram and
 // the monitor / laptop / phone / tablet device frames) where a corner
 // radius is meaningless, so the Radius control is hidden for them.
+//
+// The web components with a rectangular surface (spec/147) take it too: the
+// banner and header bar, the callout card, and each of a stat row's cards.
 export function supportsBorderRadius(element: Element): element is ShapeElement {
-  return element.type === 'shape' && (element.shape === 'square' || element.shape === 'browser');
+  return element.type === 'shape' && RADIUS_SHAPES.has(element.shape);
 }
+const RADIUS_SHAPES = new Set<string>([
+  'square',
+  'browser',
+  'banner',
+  'callout',
+  'site-header',
+  'stat-row',
+]);
 
 // Default arrow stroke colour when the element has no explicit one set.
 // Picked out as a helper so the Selected Element controls can show the

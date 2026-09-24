@@ -1,11 +1,5 @@
 import type { Dispatch, PointerEvent as ReactPointerEvent, RefObject, SetStateAction } from 'react';
-import {
-  anchorPosition,
-  isBoxed,
-  selectionMembers,
-  type Anchor,
-  type ArrowElement,
-} from '@livediagram/diagram';
+import { anchorPosition, isBoxed, type Anchor, type ArrowElement } from '@livediagram/diagram';
 import { getTheme } from '@/lib/themes';
 import { track } from '@/lib/telemetry';
 import { withFrameContents, type DragMode, type DragState, type ShapeBounds } from '@/lib/canvas';
@@ -30,7 +24,7 @@ export function useBoxedDragHandlers({
   const beginDrag = (elementId: string, mode: DragMode, e: ReactPointerEvent) => {
     const d = depsRef.current;
     // Arrow click-to-connect (spec/09): same "armed source, next click
-    // is the action" shape as format-paint / group below. Draws a
+    // is the action" shape as format-paint below. Draws a
     // pinned connector to the clicked shape instead of selecting it.
     if (d.connectSourceId !== null && mode === 'move') {
       d.connectArrowTo(elementId);
@@ -49,10 +43,6 @@ export function useBoxedDragHandlers({
       d.applyFormatFromSource(elementId);
       return;
     }
-    if (d.groupSourceId !== null && mode === 'move') {
-      d.completeGrouping(elementId);
-      return;
-    }
     if (d.editingId === elementId) return;
     const element = d.activeTab.elements.find((el) => el.id === elementId);
     if (!element || !isBoxed(element)) return;
@@ -60,37 +50,19 @@ export function useBoxedDragHandlers({
     // unlike per-element `locked` (selectable to inspect, below), a
     // press on one doesn't even land a selection.
     if (d.layerInertIds.has(elementId)) return;
-    // Drill-in selection (spec/09 groups): if the click lands on a member
-    // of the group that is ALREADY selected (via any of its members), the
-    // selection narrows to just that member — so one element's settings /
-    // position can change without ungrouping. The first click on a group
-    // still selects the whole group; a click elsewhere resets the solo.
-    const current = d.selectedId
-      ? d.activeTab.elements.find((el) => el.id === d.selectedId)
-      : undefined;
-    const drillIn = !!(
-      element.groupId &&
-      current &&
-      isBoxed(current) &&
-      current.groupId === element.groupId
-    );
-    d.setSoloSelectedId(drillIn ? elementId : null);
     d.setSelectedId(elementId);
     // Selection above still lands so viewers can inspect; the drag
     // itself is blocked for a locked element or a read-only session.
     if (element.locked === true || d.isReadOnly) return;
 
-    // Multi-selection AND group selection both drag in lockstep: for
-    // 'move' the whole set translates together, for 'resize-*' the
-    // whole set scales together (members reposition + resize
-    // proportionally around the corner opposite the drag handle). A
-    // bare single-element drag falls through to the singleton set. A
-    // drilled-in member drags alone, like any single element.
+    // A multi-selection drags in lockstep: for 'move' the whole set
+    // translates together, for 'resize-*' the whole set scales together
+    // (members reposition + resize proportionally around the corner opposite
+    // the drag handle). A bare single-element drag falls through to the
+    // singleton set.
     const baseIds = d.multiSelectedIds.has(elementId)
       ? d.multiSelectedIds
-      : element.groupId && !drillIn
-        ? new Set(selectionMembers(d.activeTab.elements, elementId))
-        : new Set<string>([elementId]);
+      : new Set<string>([elementId]);
 
     // Frame sections (spec/09): MOVING a frame carries everything inside
     // it. Expand the move set with every boxed element whose centre lies
@@ -137,28 +109,19 @@ export function useBoxedDragHandlers({
     elementId: string,
     anchor: Anchor,
     e: ReactPointerEvent,
-    // `fromGroup` (spec/09 group quick-connect): start the arrow PINNED TO
-    // THE GROUP's union box (a `pinned-group` endpoint at this side's
-    // anchor) instead of an element anchor — the group plus buttons sit on
-    // the union bounds, and the arrow must track the group as it moves.
-    // `point` is where the endpoint currently resolves (the drag origin);
-    // `elementId` still supplies the inherited stroke.
     opts?: {
       clickToPlace?: boolean;
       placeOutPx?: number;
       tapPlaceOutPx?: number;
-      fromGroup?: { groupId: string; point: { x: number; y: number } };
     },
   ) => {
     const d = depsRef.current;
-    if (d.formatSourceId !== null || d.groupSourceId !== null || d.formatToolActive) return;
+    if (d.formatSourceId !== null || d.formatToolActive) return;
     const element = d.activeTab.elements.find((el) => el.id === elementId);
     if (!element || !isBoxed(element) || element.locked === true || d.isReadOnly) return;
     if (d.layerInertIds.has(elementId)) return;
-    const start = opts?.fromGroup?.point ?? anchorPosition(element, anchor);
-    const fromEnd: ArrowElement['from'] = opts?.fromGroup
-      ? { kind: 'pinned-group', groupId: opts.fromGroup.groupId, anchor }
-      : { kind: 'pinned', elementId, anchor };
+    const start = anchorPosition(element, anchor);
+    const fromEnd: ArrowElement['from'] = { kind: 'pinned', elementId, anchor };
     // A connector drawn FROM a shape takes the TAB THEME's stroke, not the
     // shape's own. It used to copy the shape's stroke so the pair matched,
     // but a red box then sprouted red arrows, a green box green ones, and

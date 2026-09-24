@@ -34,9 +34,8 @@ export function canvasCursorClass(input: {
   canvasTool: string;
   spaceHeld: boolean;
   isPaintMode: boolean;
-  isGroupMode: boolean;
 }): string {
-  const { pendingDraw, pan, marquee, canvasTool, spaceHeld, isPaintMode, isGroupMode } = input;
+  const { pendingDraw, pan, marquee, canvasTool, spaceHeld, isPaintMode } = input;
   if (pendingDraw) return 'cursor-crosshair';
   if (pan) return 'cursor-grabbing';
   if (marquee) return 'cursor-crosshair';
@@ -61,6 +60,5 @@ export function canvasCursorClass(input: {
   if (canvasTool === 'pan' && !spaceHeld) return 'cursor-grab';
   if (canvasTool === 'select') return 'cursor-crosshair';
   if (isPaintMode) return 'cursor-copy';
-  if (isGroupMode) return 'cursor-crosshair';
   return 'cursor-grab';
 }

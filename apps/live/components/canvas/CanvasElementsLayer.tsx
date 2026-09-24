@@ -10,6 +10,7 @@ import {
   buildElementIndex,
   isBoxed,
   isRailShape,
+  canAppendWebRow,
   isVotableInVote,
   layerBands,
   laneSeamCoordinates,
@@ -40,7 +41,6 @@ const EMPTY_REMOTE_SELECTORS: { id: string; name: string; color: string }[] = []
 // raw props.
 type ElementsExtras = {
   hasArrows: boolean;
-  memberIds: Set<string>;
   showHandles: (id: string) => boolean;
   showAnchorsFor: (id: string) => boolean;
   badgeColor: string;
@@ -50,7 +50,6 @@ type ElementsExtras = {
   unionResizeBounds: Bounds | null;
   unionResizePrimaryId: string | null;
   isPaintMode: boolean;
-  isGroupMode: boolean;
   handleArrowSelect: (id: string, e: ReactPointerEvent) => void;
   handleElementContextSelect: (id: string, sx: number, sy: number) => void;
   // Which quick-connect ring is open (lifted to Canvas so only one opens
@@ -60,6 +59,13 @@ type ElementsExtras = {
 };
 
 type CanvasElementsLayerProps = CanvasProps & ElementsExtras;
+
+// The ring action each row-carrying web component offers (spec/147).
+const WEB_ROW_ACTION: Partial<Record<string, { label: string; description: string }>> = {
+  'stat-row': { label: 'Add stat', description: 'Add another KPI card to the row.' },
+  process: { label: 'Add step', description: 'Add another step to the end of the process.' },
+  'site-header': { label: 'Add link', description: 'Add another link to the header.' },
+};
 
 // The element-rendering layer of the canvas: the shared arrow defs, every
 // element (arrows + boxed views interleaved in z-order), remote cursors,
@@ -78,10 +84,8 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     handleElementContextSelect,
     hasArrows,
     imageContext,
-    isGroupMode,
     isPaintMode,
     laserTrails,
-    memberIds,
     multiSelectedIds,
     onBeginArrowCurveDrag,
     onBeginArrowCurvePointDrag,
@@ -104,6 +108,9 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onSetRailLabel,
     onToggleChecklistItem,
     onSetPageHeading,
+    onSetWebRows,
+    onAppendWebRow,
+    onSetHeroCaptionLine,
     chartPalette,
     onSpawnConnect,
     onStartArrow,
@@ -213,6 +220,8 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onSetRailLabel,
     onToggleChecklistItem: readOnly ? undefined : onToggleChecklistItem,
     onSetPageHeading,
+    onSetWebRows: readOnly ? undefined : onSetWebRows,
+    onSetHeroCaptionLine: readOnly ? undefined : onSetHeroCaptionLine,
     onFollowLink,
     onPressModeButton,
     onPressFocusButton,
@@ -280,6 +289,15 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
   const selectedElement = selectedId ? elements.find((e) => e.id === selectedId) : undefined;
   const selectedIsRail = selectedElement?.type === 'shape' && isRailShape(selectedElement.shape);
   const selectedIsTable = selectedElement?.type === 'table';
+  // Web components (spec/147): the ring's "Add stat / step / link", while
+  // there is room for one more.
+  const webRow =
+    selectedElement?.type === 'shape' && onAppendWebRow && canAppendWebRow(selectedElement)
+      ? {
+          ...WEB_ROW_ACTION[selectedElement.shape]!,
+          onAdd: () => onAppendWebRow(selectedElement.id),
+        }
+      : undefined;
   const selectedIsMind = selectedElement?.type === 'shape' && selectedElement.shape === 'mind-node';
   const growMind = useMindGrow();
   return (
@@ -337,7 +355,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
                 arrow={element}
                 elementIndex={elementIndex!}
                 isSelected={element.id === selectedId || multiSelectedIds.has(element.id)}
-                isPaintMode={isPaintMode || isGroupMode}
+                isPaintMode={isPaintMode}
                 isEditing={element.id === editingId}
                 editCursorAtEnd={element.id === editingId && editCursorAtEnd === true}
                 tabLocked={tabLocked}
@@ -376,13 +394,13 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             // gesture hook and the overlay separately (spec/96).
             votableInVote={isVotableInVote(element, tabVote, tabLayers)}
             layerOpacity={effOpacity < 1 ? effOpacity : undefined}
-            isSelected={memberIds.has(element.id) || multiSelectedIds.has(element.id)}
+            isSelected={element.id === selectedId || multiSelectedIds.has(element.id)}
             isMultiSelected={multiSelectedIds.has(element.id)}
             multiSelectActive={multiSelectedIds.size > 0}
             remoteSelectors={remoteSelectionsByElement.get(element.id) ?? EMPTY_REMOTE_SELECTORS}
             isEditing={element.id === editingId}
             editCursorAtEnd={element.id === editingId && editCursorAtEnd === true}
-            isPaintMode={isPaintMode || isGroupMode}
+            isPaintMode={isPaintMode}
             showHandles={showHandles(element.id)}
             showAnchors={showAnchorsFor(element.id)}
             zoom={viewportZoom}
@@ -408,6 +426,8 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             onSetRailLabel={h.onSetRailLabel}
             onToggleChecklistItem={h.onToggleChecklistItem}
             onSetPageHeading={h.onSetPageHeading}
+            onSetWebRows={h.onSetWebRows}
+            onSetHeroCaptionLine={h.onSetHeroCaptionLine}
             chartPalette={chartPalette}
             onCancelEdit={h.onCancelEdit}
             onFollowLink={h.onFollowLink}
@@ -558,6 +578,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
               // Timeline rail (spec/51): the standard "+" gains an "Add point"
               // action instead of the rail drawing its own competing button.
               onAddRailPoint={selectedIsRail ? onAddRailPoint : undefined}
+              webRow={webRow}
               // Table ring (spec/09): Arrow + this side's structural add.
               variant={selectedIsTable ? 'table' : 'default'}
               onAddTableRow={selectedIsTable && placement === 'below' ? onAddTableRow : undefined}

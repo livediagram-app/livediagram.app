@@ -116,22 +116,6 @@ function movable(el: Element): boolean {
   return el.locked !== true;
 }
 
-// The x that decides whether an element is "at or after" the insertion point.
-// Boxed elements answer with their left edge; a group answers with the centre
-// of its union bounds, so a group straddling the point travels whole instead
-// of being torn in half.
-function groupBounds(elements: Element[]): Map<string, { minX: number; maxX: number }> {
-  const bounds = new Map<string, { minX: number; maxX: number }>();
-  for (const el of elements) {
-    if (!isBoxed(el) || !el.groupId) continue;
-    const seen = bounds.get(el.groupId);
-    const minX = Math.min(seen?.minX ?? Infinity, el.x);
-    const maxX = Math.max(seen?.maxX ?? -Infinity, el.x + el.width);
-    bounds.set(el.groupId, { minX, maxX });
-  }
-  return bounds;
-}
-
 // Does this arrow travel whole? Its free ends must all be at or after the
 // point, and any element it is pinned to must be travelling too — otherwise
 // one end is anchored to something that isn't moving and the arrow stretches
@@ -147,7 +131,7 @@ function arrowTravelsWhole(el: Element, atX: number, movingIds: Set<ElementId>):
       if (!movingIds.has(end.elementId)) return false;
       anchored = true;
     } else {
-      // on-arrow / pinned-group resolve from other elements, which either
+      // on-arrow ends resolve from other arrows, which either
       // move or don't; leave those arrows to follow rather than guess.
       return false;
     }
@@ -212,13 +196,10 @@ export function findInsertionSlot({
   const atX = right.x;
   const shiftDx = incomingWidth + medianGap(row);
 
-  const groups = groupBounds(elements);
+  // An element is "at or after" the insertion point by its left edge.
   const movingIds = new Set<ElementId>();
   for (const el of elements) {
-    if (!movable(el) || !isBoxed(el)) continue;
-    const group = el.groupId ? groups.get(el.groupId) : undefined;
-    const anchorX = group ? (group.minX + group.maxX) / 2 : el.x;
-    if (anchorX >= atX) movingIds.add(el.id);
+    if (movable(el) && isBoxed(el) && el.x >= atX) movingIds.add(el.id);
   }
   // Arrows resolve after the boxes, because a pinned arrow travels exactly
   // when the elements it connects do.

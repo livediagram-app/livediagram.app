@@ -421,6 +421,7 @@ export * from './chart-frame';
 // (spec/123 to spec/130). Both leaf modules, for the factories cycle.
 export * from './responses';
 export * from './collab-shapes';
+export * from './web-components';
 // The Behaviours family (spec/110): which kinds are in it, and which of them
 // draw their own `…` rather than taking the shared settings one.
 export * from './behaviour-shapes';
@@ -485,7 +486,10 @@ export * from './geometry-snapping';
 export * from './arrow-snapping';
 export * from './geometry-guides';
 
-export * from './groups';
+// Layer order + union bounds, and the load-time migration of diagrams saved
+// while groups existed (spec/147).
+export * from './layer-order';
+export * from './legacy-groups';
 
 // Photoshop-style layers (spec/74): the Layer type used by the Tab field
 // above, band-aware render ordering, and the pure layer operations.

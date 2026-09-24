@@ -83,6 +83,8 @@ function BoxedElementViewImpl({
   onSetRailLabel,
   onToggleChecklistItem,
   onSetPageHeading,
+  onSetWebRows,
+  onSetHeroCaptionLine,
   isoDepth,
   insertShiftX,
   insertShiftAnimates,
@@ -512,6 +514,8 @@ function BoxedElementViewImpl({
         onPressSessionButton={onPressSessionButton}
         onRollPicker={onRollPicker}
         onSetPageHeading={onSetPageHeading}
+        onSetWebRows={onSetWebRows}
+        onSetHeroCaptionLine={onSetHeroCaptionLine}
         onSetSessionConfig={onSetSessionConfig}
         onOpenElementSettings={onOpenElementSettings}
         onToggleReveal={onToggleReveal}

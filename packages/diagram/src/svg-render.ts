@@ -25,6 +25,8 @@ import { shapeHasBespokeBody, svgElementBody } from './svg-render-body';
 import { BEHAVIOUR_FACE_SHAPES } from './svg-render-faces';
 import { isCollabPanelShape } from './collab-shapes';
 import { isSelfDrawingShape } from './data-shapes';
+import { svgHeroCaption } from './svg-render-web';
+import { isWebComponentShape } from './web-components';
 import { defaultTextColor, SELF_PAINTING_SHAPES } from './colors';
 // Text/number primitives shared with the per-element emitters — re-exported
 // below so existing importers of this module keep resolving.
@@ -251,10 +253,13 @@ export function svgBoxed(el: BoxedElement, opts: BoxedExportOptions = {}): strin
     )}</g>`;
   }
   if (shape.kind === 'image') {
-    shapeStr = shape.href
-      ? svgImageShape(el, shape.href, shape.objectFit, shape.radius)
-      : `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="6"` +
-        ` fill="${EXPORT_IMAGE_FILL}" stroke="${EXPORT_IMAGE_STROKE}" stroke-width="1.5" stroke-dasharray="4 4"/>`;
+    shapeStr =
+      (shape.href
+        ? svgImageShape(el, shape.href, shape.objectFit, shape.radius)
+        : `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="6"` +
+          ` fill="${EXPORT_IMAGE_FILL}" stroke="${EXPORT_IMAGE_STROKE}" stroke-width="1.5" stroke-dasharray="4 4"/>`) +
+      // A hero's caption card (spec/147), over the image.
+      (el.type === 'image' ? svgHeroCaption(el, fontFamily) : '');
   } else if (shape.kind === 'ellipse') {
     shapeStr = `<ellipse cx="${r2(cx)}" cy="${r2(cy)}" rx="${r2(el.width / 2)}" ry="${r2(el.height / 2)}" fill="${xmlEscape(shape.fill)}" stroke="${xmlEscape(shape.stroke)}" stroke-width="1.5"/>`;
   } else if (shape.kind === 'diamond') {
@@ -332,7 +337,11 @@ export function svgBoxed(el: BoxedElement, opts: BoxedExportOptions = {}): strin
     (el.type === 'shape' && isSelfDrawingShape(el.shape) && el.shape !== 'legend') ||
     // A Behaviour / Collaborate face writes its own title where its card puts
     // it, so the generic centred label would print it a second time.
-    (el.type === 'shape' && (isCollabPanelShape(el.shape) || BEHAVIOUR_FACE_SHAPES.has(el.shape)))
+    (el.type === 'shape' &&
+      (isCollabPanelShape(el.shape) ||
+        BEHAVIOUR_FACE_SHAPES.has(el.shape) ||
+        // A web component (spec/147) writes its label in its own region.
+        isWebComponentShape(el.shape)))
       ? ''
       : label.runs
         ? svgRichWrappedLabel(

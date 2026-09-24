@@ -37,7 +37,6 @@ import { PANEL_CORNERS, PANEL_IDS, cornerBottomInset, type PanelCorner } from '@
 // state) and threads into the chrome alongside its own props.
 type ChromeExtras = {
   isPaintMode: boolean;
-  isGroupMode: boolean;
   // True when every element has scrolled out of view: show the nudge above
   // the Fit button (useOffscreenContent in Canvas).
   offscreenContent: boolean;

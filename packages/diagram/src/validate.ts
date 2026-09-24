@@ -46,6 +46,7 @@ import {
   CODE_LANGUAGES,
   CODE_MAX_LENGTH,
 } from './data-shapes';
+import { NAV_LINKS_MAX, PROCESS_MAX_STEPS, STATS_MAX, WEB_TEXT_MAX } from './web-components';
 import { isCodeThemeId } from './code-themes';
 import { isChartPaletteId } from './chart-palettes';
 import { isMindFlow } from './mind-flow';
@@ -97,6 +98,12 @@ export const SHAPE_KINDS = new Set<string>([
   'lane',
   // Record (spec/120).
   'entity',
+  // The web components (spec/147).
+  'banner',
+  'callout',
+  'stat-row',
+  'process',
+  'site-header',
   // Mode button (spec/103): a pressable pill that switches whoever clicks it
   // into a selection mode.
   'mode-button',
@@ -171,6 +178,14 @@ function isNum(v: unknown): v is number {
 function isNonEmptyStr(v: unknown): v is string {
   return typeof v === 'string' && v.length > 0;
 }
+// A web component's row text (spec/147).
+function isBoundedStr(v: unknown): v is string {
+  return typeof v === 'string' && v.length <= WEB_TEXT_MAX;
+}
+// A single-line heading (the page masthead's bound, spec/100).
+function isHeadingStr(v: unknown): v is string {
+  return typeof v === 'string' && v.length <= PAGE_HEADING_MAX;
+}
 function boundedArray(v: unknown, max: number): v is unknown[] {
   return Array.isArray(v) && v.length <= max;
 }
@@ -187,6 +202,10 @@ function isValidEndpoint(ep: unknown): boolean {
   if (ep.kind === 'free') return isNum(ep.x) && isNum(ep.y);
   if (ep.kind === 'pinned') return isNonEmptyStr(ep.elementId) && ANCHORS.has(ep.anchor as string);
   if (ep.kind === 'on-arrow') return isNonEmptyStr(ep.arrowId) && isNum(ep.t);
+  // LEGACY (spec/147): groups are gone and no current code writes this, but
+  // a browser still running a pre-removal build can. Accepting it keeps that
+  // save from failing; migrateLegacyGroups freezes it to a free end on the
+  // next read (rowToTab / the offline store), so nothing downstream sees it.
   if (ep.kind === 'pinned-group')
     return isNonEmptyStr(ep.groupId) && ANCHORS.has(ep.anchor as string);
   return false;
@@ -274,10 +293,10 @@ export function isValidElement(el: unknown): el is Element {
     // id shape is checked — a pointer at a deleted node is legal and simply
     // makes the child a root.
     if (el.mindParentId !== undefined && typeof el.mindParentId !== 'string') return false;
-    // Page masthead (spec/100): two bounded single-line strings.
+    // Masthead lines (spec/100, and the banner / callout of spec/147): two
+    // bounded single-line strings.
     for (const field of [el.pageTitle, el.pageSubtitle]) {
-      if (field !== undefined && (typeof field !== 'string' || field.length > PAGE_HEADING_MAX))
-        return false;
+      if (field !== undefined && !isHeadingStr(field)) return false;
     }
     // Record (spec/120): bounded rows of { name, type? }.
     if (el.entityFields !== undefined) {
@@ -288,6 +307,21 @@ export function isValidElement(el: unknown): el is Element {
         if (f.type !== undefined && (typeof f.type !== 'string' || f.type.length > ENTITY_MAX_TEXT))
           return false;
       }
+    }
+    // Web components (spec/147): bounded rows of short strings.
+    if (el.stats !== undefined) {
+      if (!boundedArray(el.stats, STATS_MAX)) return false;
+      for (const st of el.stats) {
+        if (!isObj(st) || !isBoundedStr(st.value) || !isBoundedStr(st.caption)) return false;
+      }
+    }
+    if (el.processSteps !== undefined) {
+      if (!boundedArray(el.processSteps, PROCESS_MAX_STEPS)) return false;
+      if (!el.processSteps.every(isBoundedStr)) return false;
+    }
+    if (el.navLinks !== undefined) {
+      if (!boundedArray(el.navLinks, NAV_LINKS_MAX)) return false;
+      if (!el.navLinks.every(isBoundedStr)) return false;
     }
     // Chair (spec/130): a closed facing. Occupancy is presence, never a field,
     // so there is nothing else on a chair to check.
@@ -393,7 +427,13 @@ export function isValidElement(el: unknown): el is Element {
     return true;
   }
   if (t === 'image') {
-    return el.imageId === null || typeof el.imageId === 'string';
+    if (el.imageId !== null && typeof el.imageId !== 'string') return false;
+    // Hero caption card (spec/147): two bounded single-line strings.
+    if (el.heroCaption !== undefined) {
+      const c = el.heroCaption;
+      if (!isObj(c) || !isHeadingStr(c.title) || !isHeadingStr(c.subtitle)) return false;
+    }
+    return true;
   }
   if (t === 'freehand') {
     if (typeof el.closed !== 'boolean' || !boundedArray(el.points, MAX_FREEHAND_POINTS))

@@ -2,7 +2,6 @@ import { drawBannerMessage, isMarkerIntent } from '@/lib/draw-mode';
 import { isMobileViewportSync } from '@/lib/responsive';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { ModeBanner } from '@/components/chrome/ModeBanner';
-import { GroupIcon } from '@/components/canvas/selection-popover-icons';
 import { ParticipantAvatar } from '@/components/primitives/ParticipantAvatar';
 import { TimerWidget } from '@/components/chrome/TimerWidget';
 import { TopCenterBanner, TopCenterRow, TopCenterStack } from '@/components/chrome/TopCenter';
@@ -27,7 +26,6 @@ type TopCenterChromeProps = Pick<
   | 'onExitFormatTool'
   | 'canvasTool'
   | 'formatSourceId'
-  | 'onCancelGroup'
   | 'tabTimer'
   | 'tabVote'
   | 'onPauseTimer'
@@ -41,7 +39,6 @@ type TopCenterChromeProps = Pick<
 > & {
   // From CanvasChrome's computed ChromeExtras, not CanvasProps.
   isPaintMode: boolean;
-  isGroupMode: boolean;
   // Follow-me (spec/131): who we are following, so the pill can say so and
   // offer the way out. Any canvas gesture also ends it silently — this is the
   // explicit door, not the only one.
@@ -61,9 +58,7 @@ export function TopCenterChrome({
   onExitFormatTool,
   canvasTool,
   formatSourceId,
-  onCancelGroup,
   isPaintMode,
-  isGroupMode,
   tabTimer,
   tabVote,
   onPauseTimer,
@@ -164,15 +159,6 @@ export function TopCenterChrome({
             icon={<PaintIcon />}
             message="Click an element to apply formatting"
             onAction={onCancelFormatPainter}
-          />
-        ) : null}
-
-        {isGroupMode ? (
-          <ModeBanner
-            icon={<GroupIcon size={14} />}
-            message="Click another element to add to the group"
-            actionLabel="Done"
-            onAction={onCancelGroup}
           />
         ) : null}
 

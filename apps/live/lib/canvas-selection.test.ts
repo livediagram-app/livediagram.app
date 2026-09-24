@@ -25,7 +25,6 @@ const arrow = (id: string, from = { x: 0, y: 0 }, to = { x: 50, y: 50 }): Elemen
 const base = {
   editingId: null,
   isPaintMode: false,
-  isGroupMode: false,
   tabLocked: false,
   readOnly: false,
 };
@@ -96,13 +95,10 @@ describe('deriveCanvasSelection', () => {
     expect(s.showHandlesFor('a')).toBe(false);
   });
 
-  it('format-paint / group mode suppress single-select chrome', () => {
+  it('format-paint mode suppresses single-select chrome', () => {
     const paint = derive({ elements: [box('a')], selectedId: 'a', isPaintMode: true });
     expect(paint.showPopover).toBe(false);
     expect(paint.showHandlesFor('a')).toBe(false);
-    const group = derive({ elements: [box('a')], selectedId: 'a', isGroupMode: true });
-    expect(group.showPopover).toBe(false);
-    expect(group.showHandlesFor('a')).toBe(false);
   });
 
   it('a marquee multi-selection uses union resize and hides the single popover', () => {
@@ -159,24 +155,8 @@ describe('deriveCanvasSelection', () => {
     expect(locked.showMultiToolbar).toBe(false);
   });
 
-  it('a group selection (>1 member) shows union resize, not per-element handles', () => {
-    const els: Element[] = [box('a', { groupId: 'g' }), box('b', { x: 200, groupId: 'g' })];
-    const s = derive({ elements: els, selectedId: 'a' });
-    expect(s.memberIds.size).toBe(2);
-    expect(s.selectionScope).toBe('group');
-    expect(s.showUnionResize).toBe(true);
-    expect(s.unionResizePrimaryId).toBe('a');
-    expect(s.showHandlesFor('a')).toBe(false); // memberIds.size !== 1
-    // Quick-connect pluses ring the group's union bounds (spec/09), and the
-    // bounds they anchor to are the union of both members.
-    expect(s.showPlus).toBe(true);
-    expect(s.selectionBounds).toEqual({ x: 0, y: 0, width: 300, height: 60 });
-  });
-
-  it('group pluses ignore per-type exclusions but keep the mode/lock gates', () => {
-    // A grouped table doesn't suppress the pluses — they belong to the
-    // union box, not the table.
-    const table = (id: string, overrides: Partial<Element> = {}): Element =>
+  it('pluses follow the element kind and the mode / lock gates', () => {
+    const table = (id: string): Element =>
       ({
         id,
         type: 'table',
@@ -185,19 +165,14 @@ describe('deriveCanvasSelection', () => {
         width: 100,
         height: 60,
         cells: [['', '']],
-        ...overrides,
       }) as Element;
-    const grouped: Element[] = [box('t', { groupId: 'g' }), table('u', { groupId: 'g' })];
-    expect(derive({ elements: grouped, selectedId: 'u' }).showPlus).toBe(true);
-    // A lone table shows the pluses too (the slimmed table ring, spec/09).
+    // A lone table shows the pluses (the slimmed table ring, spec/09).
     expect(derive({ elements: [table('t')], selectedId: 't' }).showPlus).toBe(true);
     // A frame shows them as well: it is a container you chain from, the same
-    // as a lane, which always did. This comment used to claim frames were
-    // excluded while asserting nothing, so the exclusion could be removed
-    // without a single test noticing.
+    // as a lane, which always did.
     const frame = box('f', { shape: 'frame', width: 600, height: 400 });
     expect(derive({ elements: [frame], selectedId: 'f' }).showPlus).toBe(true);
-    // An annotation marker is still a note rather than a node to chain from.
+    // An annotation marker is a note rather than a node to chain from.
     const marker: Element = {
       id: 'n',
       type: 'annotation',
@@ -207,27 +182,19 @@ describe('deriveCanvasSelection', () => {
       height: 24,
     } as Element;
     expect(derive({ elements: [marker], selectedId: 'n' }).showPlus).toBe(false);
-    // Locked / read-only still suppress group pluses.
-    const locked: Element[] = [
-      box('a', { groupId: 'g', locked: true }),
-      box('b', { groupId: 'g' }),
-    ];
-    expect(derive({ elements: locked, selectedId: 'a' }).showPlus).toBe(false);
-    expect(derive({ elements: grouped, selectedId: 'u', readOnly: true }).showPlus).toBe(false);
+    // Locked / read-only suppress them.
+    expect(derive({ elements: [box('a', { locked: true })], selectedId: 'a' }).showPlus).toBe(
+      false,
+    );
+    expect(derive({ elements: [box('a')], selectedId: 'a', readOnly: true }).showPlus).toBe(false);
   });
 
-  it('a drilled-in (solo) group member behaves as a single selection', () => {
-    const els: Element[] = [box('a', { groupId: 'g' }), box('b', { x: 200, groupId: 'g' })];
-    const s = derive({ elements: els, selectedId: 'a', soloSelectedId: 'a' });
-    expect(s.memberIds).toEqual(new Set(['a']));
+  it('a single selection is bounded by the element itself (no groups, spec/147)', () => {
+    const s = derive({ elements: [box('a'), box('b', { x: 200 })], selectedId: 'a' });
     expect(s.selectionScope).toBe('single');
-    expect(s.showHandlesFor('a')).toBe(true); // single-element handles
+    expect(s.showHandlesFor('a')).toBe(true);
     expect(s.showUnionResize).toBe(false);
     expect(s.selectionBounds).toEqual({ x: 0, y: 0, width: 100, height: 60 });
-    // A stale solo id (selection moved on) is ignored: group rules apply.
-    const stale = derive({ elements: els, selectedId: 'a', soloSelectedId: 'b' });
-    expect(stale.memberIds.size).toBe(2);
-    expect(stale.selectionScope).toBe('group');
   });
 
   it('a marquee multi-selection still suppresses the pluses', () => {

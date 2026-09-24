@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, type PointerEvent as ReactPointerEvent } from 'react';
-import { isBoxed, type Element } from '@livediagram/diagram';
 
 // The element / arrow selection-routing callbacks, lifted out of
 // Canvas: stable wrappers for the memo'd children (BoxedElementView /
@@ -7,9 +6,7 @@ import { isBoxed, type Element } from '@livediagram/diagram';
 // closure and defeat the memo.
 export function useCanvasSelectHandlers({
   inertIds,
-  elements,
   multiSelectedIds,
-  soloSelectedId,
   onSelect,
   onShiftSelect,
   onElementContextMenu,
@@ -18,10 +15,7 @@ export function useCanvasSelectHandlers({
   // Elements on a hidden or locked layer (spec/74): right-click and
   // arrow-click route nowhere for them.
   inertIds: Set<string>;
-  elements: Element[];
   multiSelectedIds: Set<string>;
-  // The drilled-in group member (spec/09 drill-in), when one is soloed.
-  soloSelectedId: string | null;
   onSelect: (id: string) => void;
   onShiftSelect: (id: string) => void;
   onElementContextMenu?: (id: string, screenX: number, screenY: number) => void;
@@ -37,40 +31,17 @@ export function useCanvasSelectHandlers({
     (id: string, sx: number, sy: number) => {
       if (inertIds.has(id)) return;
       // Right-clicking a member of an active multi-selection keeps the whole
-      // selection and opens a selection-wide menu. Right-clicking a grouped
-      // element selects the group (which expands to all members) and opens
-      // the same menu — EXCEPT the drilled-in solo member (spec/09
-      // drill-in): the user has already narrowed to one element, so it
-      // gets the full single-element menu (Comments / Note / Link /
-      // data editors were otherwise unreachable on grouped elements).
-      // Otherwise it's a single element.
+      // selection and opens a selection-wide menu. Otherwise it's a single
+      // element.
       const inMarquee = multiSelectedIds.size > 1 && multiSelectedIds.has(id);
-      const el = elements.find((e) => e.id === id);
-      const grouped = !!el && isBoxed(el) && !!el.groupId;
-      const drilledIn = grouped && id === soloSelectedId;
       if (inMarquee && onMultiContextMenu) {
         onMultiContextMenu(sx, sy);
         return;
       }
-      if (grouped && !drilledIn && onMultiContextMenu) {
-        onSelect(id);
-        onMultiContextMenu(sx, sy);
-        return;
-      }
-      // Re-selecting the drilled member would clear its solo state, so
-      // skip the select when it's already the solo target.
-      if (!drilledIn) onSelect(id);
+      onSelect(id);
       onElementContextMenu?.(id, sx, sy);
     },
-    [
-      onSelect,
-      onElementContextMenu,
-      onMultiContextMenu,
-      elements,
-      multiSelectedIds,
-      soloSelectedId,
-      inertIds,
-    ],
+    [onSelect, onElementContextMenu, onMultiContextMenu, multiSelectedIds, inertIds],
   );
 
   // Stable wrapper for the arrow click flow. Same rationale as

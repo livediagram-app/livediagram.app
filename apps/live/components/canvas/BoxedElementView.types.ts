@@ -1,6 +1,12 @@
 import type { LaneGutterEdge, LaneLike } from '@/components/canvas/LaneGutter';
 import type { PointerEvent as ReactPointerEvent } from 'react';
-import type { BoxedElement, IconPosition, TextRun } from '@livediagram/diagram';
+import type {
+  BoxedElement,
+  HeroCaption,
+  IconPosition,
+  TextRun,
+  WebRows,
+} from '@livediagram/diagram';
 import type { DragMode } from '@/lib/canvas';
 
 export type BoxedElementViewProps = {
@@ -219,8 +225,12 @@ export type BoxedElementViewProps = {
   // outlive the offset itself: were the transition removed in the same commit
   // as the transform, the board would snap shut instead of easing.
   insertShiftAnimates?: boolean;
-  // The Page masthead (spec/100).
+  // The Page masthead (spec/100), and the banner / callout lines (spec/147).
   onSetPageHeading: (elementId: string, field: 'pageTitle' | 'pageSubtitle', value: string) => void;
+  // The web components' rows and a hero's caption lines, edited in place
+  // (spec/147). Omitted in read-only.
+  onSetWebRows?: (elementId: string, rows: WebRows) => void;
+  onSetHeroCaptionLine?: (elementId: string, field: keyof HeroCaption, value: string) => void;
   // Live dot-vote (spec/39). `vote` is the active tab's vote session
   // (undefined when none). `selfId` is the local participant (for "my
   // dots"); `voteMax` is the highest dot count on the tab (for the

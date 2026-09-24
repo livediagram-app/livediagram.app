@@ -255,7 +255,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   );
 
   // Ephemeral selection / edit UI (active tab, single + multi selection,
-  // edit + format/group sources, the two transient picker flags). See
+  // edit + format-painter source, the two transient picker flags). See
   // editor-ui-state. Destructured here because the body references these
   // names directly throughout; the whole slice is spread into the
   // returned view-model below (the `...panelLayout` / `...dialogs`
@@ -266,15 +266,11 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setActiveId,
     selectedId,
     setSelectedId,
-    soloSelectedId,
-    setSoloSelectedId,
     editingId,
     setEditingId,
     setEditCursorAtEnd,
     formatSourceId,
     setFormatSourceId,
-    groupSourceId,
-    setGroupSourceId,
     multiSelectedIds,
     setMultiSelectedIds,
     templatePickerMode,
@@ -1528,7 +1524,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
       setEditingId,
       setChangeLog,
       setFormatSourceId,
-      setGroupSourceId,
     },
   });
 
@@ -1545,21 +1540,17 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
 
   // When a boxed element is selected, new elements inherit its size so a
   // user can rapidly build a sequence of similarly-sized nodes.
-  // Selection + placement + format/group helpers. See useElementHelpers.
+  // Selection + placement + format helpers. See useElementHelpers.
   const {
     addBoxed,
     addBoxedAt,
     placePrebuilt,
-    memberIdsOf,
     currentSelectionIds,
     selectionPrimary,
     exitFormatPainter,
-    exitGroupMode,
     applyFormatFromSource,
-    completeGrouping,
   } = useElementHelpers({
     selectedId,
-    soloSelectedId,
     activeId,
     activeTab,
     // Creation-only helpers: additionally blocked while the active layer
@@ -1568,7 +1559,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     multiSelectedIds,
     formatSourceId,
     formatConfig: formatSettings.config,
-    groupSourceId,
     getViewportCenter,
     commit,
     commitTabs,
@@ -1576,7 +1566,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setSelectedId,
     setEditingId,
     setFormatSourceId,
-    setGroupSourceId,
   });
 
   // --- Tab actions ---------------------------------------------------------
@@ -1613,7 +1602,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setSelectedId,
     setEditingId,
     setFormatSourceId,
-    setGroupSourceId,
     setTemplatePickerMode,
     setImportError,
     setChangeLog,
@@ -1963,14 +1951,13 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   const { cellLinkPickerOpenFor, setCellLinkPickerOpenFor, openCellLinkPicker, applyCellLink } =
     useCellLinkPicker({ editsBlocked, commit });
 
-  // Structural element operations (delete, marquee commit, group /
-  // ungroup, and the duplicate family). They change the element set
+  // Structural element operations (delete, marquee commit, lock, and the
+  // duplicate family). They change the element set
   // and/or the selection rather than element fields; see
   // useElementSelectionActions.
   const {
     deleteSelected,
     selectMarquee,
-    groupMultiSelected,
     toggleLockMultiSelected,
     duplicateMultiSelected,
     deleteMultiSelected,
@@ -1979,10 +1966,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     stackSelectedFront,
     stackSelectedBack,
     spawnConnectSelected,
-    ungroupSelected,
   } = useElementSelectionActions({
     currentSelectionIds,
-    memberIdsOf,
     selectedId,
     multiSelectedIds,
     activeTab,
@@ -1991,7 +1976,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setEditingId,
     setMultiSelectedIds,
     setFormatSourceId,
-    setGroupSourceId,
     lockedByOther,
     layerLockedIds,
     layerInertIds,
@@ -2067,6 +2051,11 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setMindFlowSelected,
     toggleChecklistItem,
     setPageHeading,
+    setWebRows,
+    appendWebRowTo,
+    setWebRowsSelected,
+    setHeroCaptionLine,
+    setHeroCaptionSelected,
     setChecklistItemsSelected,
     setEntityFieldsSelected,
     setEstimateScaleSelected,
@@ -2239,15 +2228,13 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setSelectedId,
     setEditingId,
     setFormatSourceId,
-    setGroupSourceId,
     openDiagram,
   });
 
-  // Selection-editing handlers (format/group modes, label edit, type-to-
-  // edit, single + shift-click select). See useSelectionEditing.
+  // Selection-editing handlers (format painter, label edit, type-to-edit,
+  // single + shift-click select). See useSelectionEditing.
   const {
     beginFormatPainter,
-    beginGroup,
     beginEdit,
     commitLabel,
     commitTable,
@@ -2263,7 +2250,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     adoptLayerName: layersState.adoptLayerNameFromLabel,
     formatSourceId,
     formatToolActive,
-    groupSourceId,
     multiSelectedIds,
     diagramName,
     tabs,
@@ -2274,9 +2260,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     lockedByOther,
     set: {
       setFormatSourceId,
-      setGroupSourceId,
       setSelectedId,
-      setSoloSelectedId,
       setEditingId,
       setEditCursorAtEnd,
       setMultiSelectedIds,
@@ -2364,8 +2348,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     zoomRef,
     selectedId,
     setSelectedId,
-    soloSelectedId,
-    setSoloSelectedId,
     multiSelectedIds,
     setMultiSelectedIds,
     editingId,
@@ -2374,8 +2356,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     applyFormatFromSource,
     formatToolActive,
     setFormatSourceId,
-    groupSourceId,
-    completeGrouping,
     connectSourceId,
     connectArrowTo,
     tick,
@@ -2411,7 +2391,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     selectedId,
     multiSelectedIds,
     editingId,
-    memberIdsOf,
     activeTab,
     commit,
     setSelectedId,
@@ -2440,8 +2419,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   useEditorKeyboardShortcuts({
     formatSourceId,
     setFormatSourceId,
-    groupSourceId,
-    setGroupSourceId,
     selectedId,
     multiSelectedIds,
     editingId,
@@ -2467,13 +2444,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     onTypeIntoSelected: typeIntoSelected,
     pendingDraw,
     onCancelDraw: cancelDrawShape,
-    onGroupOrUngroup: () => {
-      if (multiSelectedIds.size > 1) {
-        groupMultiSelected();
-      } else {
-        ungroupSelected();
-      }
-    },
     onToggleLock: () => {
       if (multiSelectedIds.size > 0) {
         toggleLockMultiSelected();
@@ -2576,7 +2546,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setLayerPreviewId: layersState.setPreviewLayerId,
     // Event-storming workshop views (spec/139).
     esBoard,
-    // Menu-facing wrapper: moves the CURRENT selection (group-expanded)
+    // Menu-facing wrapper: moves the CURRENT selection
     // onto the picked layer.
     moveSelectedToLayer: (layerId: string) =>
       layersState.moveSelectionToLayer(currentSelectionIds(), layerId),
@@ -2648,7 +2618,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     beginFreehand,
     beginShapePen,
     beginPolygon,
-    beginGroup,
     bringSelectedToFront,
     broadcastAvatar,
     broadcastAvatarPush,
@@ -2715,12 +2684,10 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     templateGridOpen,
     embedMode,
     exitFormatPainter,
-    exitGroupMode,
     extendShareLink,
     fitToScreen,
     folders,
     followLink,
-    groupMultiSelected,
     handleActivityRowClick,
     handleCanvasDoubleClick,
     hydrated,
@@ -2898,6 +2865,11 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setMindFlowSelected,
     toggleChecklistItem,
     setPageHeading,
+    setWebRows,
+    appendWebRowTo,
+    setWebRowsSelected,
+    setHeroCaptionLine,
+    setHeroCaptionSelected,
     growMindNode,
     setChecklistItemsSelected,
     setEntityFieldsSelected,
@@ -3019,7 +2991,6 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     toggleLockSelected,
     toggleTextStyleSelected,
     undo,
-    ungroupSelected,
     unresolveThread,
     updateParticipantName,
     userPreferences,

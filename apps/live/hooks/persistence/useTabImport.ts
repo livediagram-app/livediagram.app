@@ -47,7 +47,6 @@ type TabImportDeps = {
   setSelectedId: (id: string | null) => void;
   setEditingId: (id: string | null) => void;
   setFormatSourceId: (id: string | null) => void;
-  setGroupSourceId: (id: string | null) => void;
   // Surfaces an import parse error in the header (null clears it).
   setImportError: (message: string | null) => void;
 };
@@ -59,7 +58,6 @@ export function useTabImport({
   setSelectedId,
   setEditingId,
   setFormatSourceId,
-  setGroupSourceId,
   setImportError,
 }: TabImportDeps) {
   // Replace the ACTIVE tab's content with an imported tab — its
@@ -73,7 +71,6 @@ export function useTabImport({
     setSelectedId(null);
     setEditingId(null);
     setFormatSourceId(null);
-    setGroupSourceId(null);
   };
 
   // Import TEXT of a given format into the active tab (spec/27 + spec/73).

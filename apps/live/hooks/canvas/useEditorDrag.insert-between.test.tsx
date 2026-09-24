@@ -48,8 +48,6 @@ function harness(
     zoomRef: { current: opts.zoom ?? 1 },
     selectedId: 'drag',
     setSelectedId: vi.fn(),
-    soloSelectedId: null,
-    setSoloSelectedId: vi.fn(),
     multiSelectedIds: new Set<string>(opts.multiSelected ?? []),
     setMultiSelectedIds: vi.fn(),
     editingId: null,
@@ -59,8 +57,6 @@ function harness(
     applyFormatFromSource: vi.fn(),
     formatToolActive: false,
     setFormatSourceId: vi.fn(),
-    groupSourceId: null,
-    completeGrouping: vi.fn(),
     connectSourceId: null,
     connectArrowTo: vi.fn(),
     tick: (m: (els: Element[]) => Element[]) => {

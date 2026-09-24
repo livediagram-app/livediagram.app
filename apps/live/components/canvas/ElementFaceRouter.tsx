@@ -13,6 +13,7 @@ import {
   elementKindLabel,
   isCollabPanelShape,
   isSelfDrawingShape,
+  isWebComponentShape,
   type ShapeMarker,
   type TextAlignX,
   type TextAlignY,
@@ -38,6 +39,8 @@ import { SessionTimerFace } from '@/components/canvas/SessionTimerFace';
 import { ShapeInlineIconLayout } from '@/components/canvas/shape-inline-icon-layout';
 import { TableView } from '@/components/canvas/TableView';
 import { VideoView } from '@/components/canvas/VideoView';
+import { HeroCaptionCard } from '@/components/canvas/web/HeroCaptionCard';
+import { WebComponentFace } from '@/components/canvas/web/WebComponentFace';
 import type { BoxedElementViewProps } from './BoxedElementView.types';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 
@@ -86,6 +89,8 @@ type ElementFaceRouterProps = Pick<
   | 'onPressSessionButton'
   | 'onRollPicker'
   | 'onSetPageHeading'
+  | 'onSetWebRows'
+  | 'onSetHeroCaptionLine'
   | 'onSetSessionConfig'
   | 'onOpenElementSettings'
   | 'onToggleReveal'
@@ -135,6 +140,8 @@ export function ElementFaceRouter({
   onPressSessionButton,
   onRollPicker,
   onSetPageHeading,
+  onSetWebRows,
+  onSetHeroCaptionLine,
   onSetSessionConfig,
   onOpenElementSettings,
   onToggleReveal,
@@ -344,13 +351,30 @@ export function ElementFaceRouter({
           onFollow={element.link ? () => onFollowLink(element.link!) : undefined}
         />
       ) : element.type === 'image' && imageContext ? (
-        <ImageElementView
-          element={element}
-          ownerId={imageContext.ownerId}
-          diagramId={imageContext.diagramId}
-          shareCode={imageContext.shareCode}
-          canOpenPicker={!!imageContext.onOpenPicker}
-        />
+        <>
+          <ImageElementView
+            element={element}
+            ownerId={imageContext.ownerId}
+            diagramId={imageContext.diagramId}
+            shareCode={imageContext.shareCode}
+            canOpenPicker={!!imageContext.onOpenPicker}
+          />
+          {/* A hero's caption card (spec/147), over the image. */}
+          {element.heroCaption ? (
+            <HeroCaptionCard
+              element={element}
+              caption={element.heroCaption}
+              editable={isSelected && !readOnly && !isLocked}
+              zoom={zoom}
+              fontFamily={fontFamily}
+              onSetLine={
+                onSetHeroCaptionLine
+                  ? (field, value) => onSetHeroCaptionLine(element.id, field, value)
+                  : undefined
+              }
+            />
+          ) : null}
+        </>
       ) : element.type === 'freehand' ? (
         <>
           <FreehandSvg
@@ -381,6 +405,25 @@ export function ElementFaceRouter({
           onFollowLink={onFollowLink}
           fontFamily={fontFamily}
           zoom={zoom}
+        />
+      ) : element.type === 'shape' && isWebComponentShape(element.shape) ? (
+        /* The web components (spec/147): each lays out its own content and
+           places the label in its own region, so it is edited like any
+           label; the other lines edit in place once it is selected. They draw
+           an inline icon themselves (a header's logo, a callout's badge), so
+           this sits before the generic inline-icon layout. */
+        <WebComponentFace
+          kind={element.shape}
+          element={element}
+          labelNode={labelNode}
+          accent={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)}
+          fill={element.fillColor ?? defaultFillColor(element, surface)}
+          textColor={textColor}
+          fontFamily={fontFamily}
+          zoom={zoom}
+          editable={isSelected && !readOnly && !isLocked && !!onSetWebRows}
+          onSetRows={(rows) => onSetWebRows?.(element.id, rows)}
+          onSetHeading={(field, value) => onSetPageHeading(element.id, field, value)}
         />
       ) : element.type === 'shape' && (inlineIcon || marker) ? (
         <ShapeInlineIconLayout

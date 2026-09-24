@@ -34,6 +34,8 @@ import {
   svgCollabFace,
   svgFace,
 } from './svg-render-faces';
+import { svgWebComponent } from './svg-render-web';
+import { isWebComponentShape } from './web-components';
 import type { BoxedElement, ShapeKind } from './index';
 
 /** The kinds whose body these emitters draw, rather than it being a box with a
@@ -43,6 +45,7 @@ export function shapeHasBespokeBody(kind: ShapeKind): boolean {
     isSelfDrawingShape(kind) ||
     isCollabPanelShape(kind) ||
     BEHAVIOUR_FACE_SHAPES.has(kind) ||
+    isWebComponentShape(kind) ||
     kind === 'entity' ||
     kind === 'page' ||
     kind === 'lane' ||
@@ -82,6 +85,9 @@ export function svgElementBody(
   if (isRatingShape(el.shape)) return svgRating(el, stroke);
   if (isRailShape(el.shape)) return svgTimelineRail(el, stroke, labelColor, fontFamily);
   if (el.shape === 'entity') return svgEntityRows(el, labelColor, fontFamily);
+  // The web components (spec/147) lay out their own text, label included.
+  if (isWebComponentShape(el.shape))
+    return svgWebComponent(el, { stroke, fill, labelColor, label, fontFamily });
   if (el.shape === 'page')
     return svgPageMasthead(el, PADDING_PX[el.padding ?? defaultPadding(el)], fontFamily);
   // The Behaviour + Collaborate faces (spec/103 to /137), which all exported

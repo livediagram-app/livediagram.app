@@ -112,6 +112,9 @@ export const TELEMETRY_ACTIONS = [
   'Exported',
   'Locked',
   'Unlocked',
+  // HISTORICAL: the editor stopped emitting these when groups were removed
+  // (spec/147). They stay in the vocabulary so the rows already stored keep
+  // their label on the dashboard.
   'Grouped',
   'Ungrouped',
   'Duplicated',

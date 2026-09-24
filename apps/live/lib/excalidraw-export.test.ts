@@ -140,7 +140,7 @@ describe('boxed element degradation', () => {
     });
   });
 
-  it('maps rotation, opacity, group, lock and url links', () => {
+  it('maps rotation, opacity, lock and url links, and writes no groups', () => {
     const scene = parse(
       tabToExcalidrawText(
         tab([
@@ -154,7 +154,6 @@ describe('boxed element degradation', () => {
             height: 10,
             rotation: 90,
             opacity: 0.5,
-            groupId: 'g1',
             locked: true,
             link: { kind: 'url', url: 'https://example.com' },
           },
@@ -164,7 +163,7 @@ describe('boxed element degradation', () => {
     expect(scene.elements[0]).toMatchObject({
       angle: Math.PI / 2,
       opacity: 50,
-      groupIds: ['g1'],
+      groupIds: [],
       locked: true,
       link: 'https://example.com',
     });

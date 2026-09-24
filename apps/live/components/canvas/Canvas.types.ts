@@ -90,9 +90,6 @@ export type CanvasProps = {
   // a shape, so the user can see exactly where it will snap. Empty otherwise.
   snapTargets: SnapTarget[];
   selectedId: string | null;
-  // Drill-in selection (spec/09 groups): when equal to selectedId the
-  // selection is just that member, not its whole group.
-  soloSelectedId: string | null;
   multiSelectedIds: Set<string>;
   onSelectMarquee: (ids: Set<string>) => void;
   canvasTool: CanvasTool;
@@ -272,7 +269,6 @@ export type CanvasProps = {
   onCanvasPointerMove: (canvasX: number | null, canvasY: number | null) => void;
   onDuplicateMultiSelected: () => void;
   onDeleteMultiSelected: () => void;
-  onGroupMultiSelected: () => void;
   onToggleLockMultiSelected: () => void;
   // Narrows the multi-selection to just `ids` (Filter Selection menu).
   onFilterMultiSelected: (ids: Set<string>) => void;
@@ -284,7 +280,6 @@ export type CanvasProps = {
   // seeded first character isn't replaced by the next keystroke.
   editCursorAtEnd?: boolean;
   formatSourceId: string | null;
-  groupSourceId: string | null;
   palettePosition: { x: number; y: number } | null;
   explorerPosition: { x: number; y: number } | null;
   canUndo: boolean;
@@ -593,6 +588,15 @@ export type CanvasProps = {
   // Mind map (spec/118): grows the next node from the label editor.
   onGrowMindNode: (id: string, kind: 'child' | 'sibling') => void;
   onSetPageHeading: (elementId: string, field: 'pageTitle' | 'pageSubtitle', value: string) => void;
+  // The web components (spec/147): a row edited in place, one more row from
+  // the quick-connect ring, and a hero's caption line. Omitted in read-only.
+  onSetWebRows?: (elementId: string, rows: import('@livediagram/diagram').WebRows) => void;
+  onAppendWebRow?: (elementId: string) => void;
+  onSetHeroCaptionLine?: (
+    elementId: string,
+    field: keyof import('@livediagram/diagram').HeroCaption,
+    value: string,
+  ) => void;
   // Default chart slice colours derived from the active theme (spec/53), used
   // by pie charts for slices without an explicit colour.
   chartPalette: readonly string[];
@@ -611,9 +615,6 @@ export type CanvasProps = {
   // single-shot painter): drops back to the Select tool. Drives the
   // format-tool mode banner's "Done" button.
   onExitFormatTool: () => void;
-  onBeginGroup: () => void;
-  onCancelGroup: () => void;
-  onUngroup: () => void;
   onFollowLink: (link: import('@livediagram/diagram').ElementLink) => void;
   onOpenComments: (elementId: string) => void;
   // Open the element's assigned-action popover (spec/68). Available in

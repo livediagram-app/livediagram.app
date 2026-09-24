@@ -30,7 +30,6 @@ type ElementLinksDeps = {
   setSelectedId: (id: string | null) => void;
   setEditingId: (id: string | null) => void;
   setFormatSourceId: (id: string | null) => void;
-  setGroupSourceId: (id: string | null) => void;
   // Full page-load navigation to another diagram (for diagram links).
   openDiagram: (id: string) => void;
 };
@@ -44,7 +43,6 @@ export function useElementLinks(deps: ElementLinksDeps) {
     setSelectedId,
     setEditingId,
     setFormatSourceId,
-    setGroupSourceId,
     openDiagram,
   } = deps;
 
@@ -121,7 +119,6 @@ export function useElementLinks(deps: ElementLinksDeps) {
       setSelectedId(null);
       setEditingId(null);
       setFormatSourceId(null);
-      setGroupSourceId(null);
       return;
     }
     if (link.kind === 'diagram') {

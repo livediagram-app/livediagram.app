@@ -161,7 +161,7 @@ export function templatePreviewGroup3(kind: TemplateKind): ReactElement | null {
       );
     case 'live-card':
       // Left panel: hero image placeholder + bold title. Right panel:
-      // a board of grouped avatar + message rows.
+      // a board of avatar + message rows.
       return (
         <svg width="80" height="50" viewBox="0 0 80 50" aria-hidden>
           <rect

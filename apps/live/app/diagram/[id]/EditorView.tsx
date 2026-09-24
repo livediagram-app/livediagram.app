@@ -95,7 +95,6 @@ export function EditorView() {
     duplicateTab,
     templateGridOpen,
     formatSourceId,
-    groupSourceId,
     hydrated,
     setImportOpen,
     isOwner,
@@ -421,12 +420,7 @@ export function EditorView() {
           esBoard={esBoard}
           selectedKind={shiftSelectedKind}
           hasElements={activeTab.elements.length > 0}
-          suppressed={
-            canvasTool === 'format' ||
-            formatSourceId !== null ||
-            groupSourceId !== null ||
-            pendingDraw !== null
-          }
+          suppressed={canvasTool === 'format' || formatSourceId !== null || pendingDraw !== null}
         />
       </div>
     </CanvasSurfaceProvider>

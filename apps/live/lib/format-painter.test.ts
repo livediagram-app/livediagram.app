@@ -34,7 +34,6 @@ const fullyStyledShape: BoxedElement = {
   borderRadius: 'lg',
   // Identity / content fields the painter must NOT copy.
   label: 'Source label',
-  groupId: 'g1',
   locked: true,
 };
 
@@ -122,7 +121,6 @@ describe('paintableBoxedFields', () => {
     expect(out).not.toHaveProperty('x');
     expect(out).not.toHaveProperty('y');
     expect(out).not.toHaveProperty('label');
-    expect(out).not.toHaveProperty('groupId');
     expect(out).not.toHaveProperty('locked');
   });
 

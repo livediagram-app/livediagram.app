@@ -17,6 +17,7 @@ import type { PickerSource, SelectionMode, SessionButtonConfig } from './selecti
 import type { IconSize } from './icon-size';
 import type { EmbedProvider } from './youtube';
 import type { ParticipantResponse } from './responses';
+import type { HeroCaption, StatItem } from './web-components';
 import type {
   AgendaItem,
   ChairFacing,
@@ -124,7 +125,6 @@ export type ShapeElement = {
   height: number;
   label?: string;
   locked?: boolean;
-  groupId?: ElementId;
   textSize?: TextSize;
   textAlignX?: TextAlignX;
   textAlignY?: TextAlignY;
@@ -320,7 +320,10 @@ export type ShapeElement = {
   // shipped with, so every map already drawn keeps its shape.
   mindFlow?: MindFlow;
   // Page masthead (spec/100): the fixed heading + subtitle above the body.
-  // Only meaningful on the 'page' kind; bounded in validate.ts.
+  // Meaningful on the 'page' kind, and reused by two web components
+  // (spec/147) for the same job — a single-line heading beside the
+  // multi-line label: a banner's subtitle (`pageSubtitle`) and a callout's
+  // heading (`pageTitle`). Bounded in validate.ts.
   //
   // Separate fields, not the first two lines of the body: a page's title is
   // structure, not prose. Keeping them apart means the body can be reordered,
@@ -331,6 +334,12 @@ export type ShapeElement = {
   // Plain strings, not rich runs: a title has one look, set by the element.
   pageTitle?: string;
   pageSubtitle?: string;
+  // Web components (spec/147), bounded in validate.ts: a stat row's KPI
+  // cards, a process's step captions (one circle each, numbered by position)
+  // and a header's nav links. Each only meaningful on its own kind.
+  stats?: StatItem[];
+  processSteps?: string[];
+  navLinks?: string[];
   // Checklist (spec/83): the checkable rows. Only meaningful on the
   // 'checklist' kind; bounded in validate.ts.
   checklistItems?: ChecklistItem[];
@@ -391,7 +400,6 @@ export type TextElement = {
   height: number;
   label?: string;
   locked?: boolean;
-  groupId?: ElementId;
   textSize?: TextSize;
   textAlignX?: TextAlignX;
   textAlignY?: TextAlignY;
@@ -531,7 +539,6 @@ export type TableElement = {
   // per-type guard, mirroring ImageElement.
   label?: string;
   locked?: boolean;
-  groupId?: ElementId;
   // Text controls apply to every cell uniformly (a table is one styled
   // grid, not per-cell formatting — that can come later).
   textSize?: TextSize;
@@ -612,7 +619,6 @@ export type StickyElement = {
   // about the notation (filters, legends, exports) reads it rather than
   // matching hexes. Absent on an ordinary sticky.
   esKind?: EventStormingNoteKind;
-  groupId?: ElementId;
   textSize?: TextSize;
   textAlignX?: TextAlignX;
   textAlignY?: TextAlignY;
@@ -708,9 +714,14 @@ export type ImageElement = {
   naturalHeight?: number;
   // How the bitmap fills its box. Defaults to 'contain' (the whole image
   // shows, letterboxed) which suits screenshots / diagrams. 'cover' fills the
-  // box (cropping) — used by the hero + avatar composites (spec/09) so a
+  // box (cropping) — used by the hero + avatar (spec/09, spec/147) so a
   // photo fills the area / circle rather than letterboxing.
   objectFit?: 'cover' | 'contain';
+  // Hero caption card (spec/147): a themed card inset near the bottom of the
+  // image carrying a title + a supporting line, in `fillColor` with
+  // `textColor` (white by default). Present = shown; the palette's Hero is an
+  // image created with one, and any image can gain or lose it from the menu.
+  heroCaption?: HeroCaption;
   // Optional alt text (accessibility + future export-to-markdown).
   // Aliases as the element's `label` so the surrounding "boxed
   // element has a label" code paths (change log, Markdown export,
@@ -748,7 +759,6 @@ export type ImageElement = {
   borderRadius?: BorderRadius;
   padding?: Padding;
   locked?: boolean;
-  groupId?: ElementId;
   aspectLocked?: boolean;
   opacity?: number;
   // Drop shadow (spec/86). Absent = no shadow; see shadow.ts.
@@ -845,7 +855,6 @@ export type FreehandElement = {
   borderRadius?: BorderRadius;
   padding?: Padding;
   locked?: boolean;
-  groupId?: ElementId;
   aspectLocked?: boolean;
   opacity?: number;
   // Clockwise rotation in degrees about the element's centre. Absent
@@ -920,7 +929,6 @@ export type AnnotationElement = {
   // generic "boxed element has a label" paths compile (mirrors Table/Image).
   label?: string;
   locked?: boolean;
-  groupId?: ElementId;
   opacity?: number; // 0..1, defaults to 1
   link?: ElementLink;
   commentThread?: CommentThread;
@@ -1006,7 +1014,6 @@ export type LinkCardElement = {
   link?: ElementLink;
   label?: string;
   locked?: boolean;
-  groupId?: ElementId;
   opacity?: number;
   // Drop shadow (spec/86). Absent = no shadow; see shadow.ts.
   shadow?: ElementShadow;
@@ -1095,7 +1102,6 @@ export type VideoElement = {
   link?: ElementLink;
   label?: string;
   locked?: boolean;
-  groupId?: ElementId;
   opacity?: number;
   // Drop shadow (spec/86). Absent = no shadow; see shadow.ts.
   shadow?: ElementShadow;

@@ -93,14 +93,12 @@ export function Canvas(props: CanvasProps) {
     setViewportZoom,
     elements,
     selectedId,
-    soloSelectedId,
     multiSelectedIds,
     onSelectMarquee,
     canvasTool,
     onCanvasPointerMove,
     editingId,
     formatSourceId,
-    groupSourceId,
     pendingDraw,
     onCommitDraw,
     onCommitFreehand,
@@ -124,7 +122,6 @@ export function Canvas(props: CanvasProps) {
   // paint mode from its first click (copy cursor, handles/label-drag/dblclick
   // suppressed on boxed elements AND arrows), not only once a source is armed.
   const isPaintMode = formatSourceId !== null || canvasTool === 'format';
-  const isGroupMode = groupSourceId !== null;
   // Nudge above the Fit button when the whole diagram has scrolled out of view.
   const offscreenContent = useOffscreenContent(elements, viewportOffset, viewportZoom, mainRef);
 
@@ -219,18 +216,16 @@ export function Canvas(props: CanvasProps) {
 
   // Selection-display derivation (primary element, bounds, and every
   // "show this chrome?" predicate) lives in lib/canvas-selection.ts so
-  // it's unit-tested. Memoised because selectionMembers walks every
-  // element and Canvas re-renders on every drag tick.
+  // it's unit-tested. Memoised because it walks the elements and Canvas
+  // re-renders on every drag tick.
   const canvasSelection = useMemo(
     () =>
       deriveCanvasSelection({
         elements,
         selectedId,
-        soloSelectedId,
         multiSelectedIds,
         editingId,
         isPaintMode,
-        isGroupMode,
         tabLocked,
         readOnly,
         esBoard: isEventStormingTab({ kind: tabKind, layers: tabLayers }),
@@ -239,11 +234,9 @@ export function Canvas(props: CanvasProps) {
     [
       elements,
       selectedId,
-      soloSelectedId,
       multiSelectedIds,
       editingId,
       isPaintMode,
-      isGroupMode,
       tabLocked,
       readOnly,
       tabLayers,
@@ -252,7 +245,6 @@ export function Canvas(props: CanvasProps) {
     ],
   );
   const {
-    memberIds,
     selectionBounds,
     showPlus,
     showHandlesFor: showHandles,
@@ -419,7 +411,6 @@ export function Canvas(props: CanvasProps) {
     canvasTool,
     spaceHeld: spaceHeldRef.current,
     isPaintMode,
-    isGroupMode,
   });
 
   // Colour for the link / comment badges. The active theme's
@@ -457,8 +448,6 @@ export function Canvas(props: CanvasProps) {
   // views — see useCanvasSelectHandlers.
   const { handleElementContextSelect, handleArrowSelect } = useCanvasSelectHandlers({
     inertIds: props.layerInertIds,
-    soloSelectedId: props.soloSelectedId,
-    elements,
     multiSelectedIds,
     onSelect,
     onShiftSelect,
@@ -668,7 +657,6 @@ export function Canvas(props: CanvasProps) {
             onPressModeButton={pressModeButton}
             onPressFocusButton={props.onPressFocusButton}
             hasArrows={hasArrows}
-            memberIds={memberIds}
             showHandles={showHandles}
             showAnchorsFor={showAnchorsFor}
             badgeColor={badgeColor}
@@ -678,7 +666,6 @@ export function Canvas(props: CanvasProps) {
             unionResizeBounds={unionResizeBounds}
             unionResizePrimaryId={unionResizePrimaryId}
             isPaintMode={isPaintMode}
-            isGroupMode={isGroupMode}
             handleArrowSelect={handleArrowSelect}
             handleElementContextSelect={handleElementContextSelect}
             quickRingOpen={quickRingOpen}
@@ -786,7 +773,6 @@ export function Canvas(props: CanvasProps) {
       <CanvasChrome
         {...props}
         isPaintMode={isPaintMode}
-        isGroupMode={isGroupMode}
         avatarConfig={avatarLook.config}
         onChangeAvatarField={avatarLook.setField}
         laserConfig={props.laserConfig}

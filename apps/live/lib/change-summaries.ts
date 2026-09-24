@@ -143,7 +143,7 @@ function isArrowTranslation(before: ArrowElement, after: ArrowElement): boolean 
 
 // Looser check for an arrow inside a MIXED selection drag: each
 // changed endpoint either stayed on its tracked target (a pinned /
-// on-arrow / group endpoint re-anchoring as the boxes moved) or is a
+// on-arrow endpoint re-anchoring as the boxes moved) or is a
 // free point that translated; two changed free ends must share the
 // delta. Used only when boxes moved in the same commit, so the
 // endpoint-reshape ambiguity of a lone free end doesn't apply.
@@ -245,12 +245,6 @@ export function summarizeEdits(pairs: EditedPair[]): string {
     return `Changed the link on ${subject}`;
   }
   if (allIn(keys, ['layerId'])) return `Moved ${subject} to another layer`;
-  if (allIn(keys, ['groupId'])) {
-    const grouped = uniformAfter(pairs, (el) =>
-      'groupId' in el ? Boolean((el as { groupId?: string }).groupId) : false,
-    );
-    if (grouped !== undefined) return `${grouped ? 'Grouped' : 'Ungrouped'} ${subject}`;
-  }
   if (allIn(keys, TEXT_STYLE_KEYS)) return `Restyled the text on ${subject}`;
   if (allArrows && allIn(keys, ['labelOffset'])) return `Moved the label on ${subject}`;
   // strokeWidth / strokeStyle are shared between boxes and arrows, so

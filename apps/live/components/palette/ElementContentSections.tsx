@@ -180,6 +180,14 @@ export function ElementContentSections({
               />
             </div>
           )}
+          {/* The hero's caption card (spec/147): any image can carry one. */}
+          <ContextMenuDivider />
+          <MenuToggleRow
+            label="Caption Card"
+            description="A title and a line of text over the image."
+            checked={!!target.heroCaption}
+            onToggle={() => props.onSetHeroCaption(!target.heroCaption)}
+          />
         </MenuAccordionSection>
       ) : null}
       {/* Table — header row / column + zebra. */}

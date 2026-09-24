@@ -128,7 +128,6 @@ export function EditorCanvasHost() {
     beginFreehand,
     beginShapePen,
     beginPolygon,
-    beginGroup,
     highlighterColor,
     highlighterWidth,
     setHighlighterColor,
@@ -197,14 +196,11 @@ export function EditorCanvasHost() {
     endVote,
     exitFormatPainter,
     exitFormatTool,
-    exitGroupMode,
     explorerPosition,
     fitToScreen,
     folders,
     followLink,
     formatSourceId,
-    groupMultiSelected,
-    groupSourceId,
     handleActivityRowClick,
     handleCanvasDoubleClick,
     hydrated,
@@ -289,7 +285,6 @@ export function EditorCanvasHost() {
     setExportScope,
     setCodeEditOpenForId,
     setFormatSourceId,
-    setGroupSourceId,
     setLinkPickerOpenForId,
     setMapPosition,
     setMultiSelectedIds,
@@ -298,6 +293,9 @@ export function EditorCanvasHost() {
     setSelectedId,
     toggleChecklistItem,
     setPageHeading,
+    setWebRows,
+    appendWebRowTo,
+    setHeroCaptionLine,
     growMindNode,
     setTextAlignSelected,
     setUserPreferences,
@@ -308,7 +306,6 @@ export function EditorCanvasHost() {
     skipTemplatePicker,
     snapGuides,
     snapTargets,
-    soloSelectedId,
     spawnConnectSelected,
     startTimer,
     startVote,
@@ -324,7 +321,6 @@ export function EditorCanvasHost() {
     toggleLockSelected,
     toggleZenMode,
     undo,
-    ungroupSelected,
     userPreferences,
     viewportOffset,
     viewportZoom,
@@ -409,7 +405,7 @@ export function EditorCanvasHost() {
   // can't disagree); consumed here for the overlay.
   const tabLoadState = activeTabLoadState;
   // Quick add + connect Arrow starter (spec/09) — see useQuickConnectStart.
-  const { handleStartArrow } = useQuickConnectStart({ selectedId, activeTab, beginAnchorDrag });
+  const { handleStartArrow } = useQuickConnectStart({ selectedId, beginAnchorDrag });
 
   // While a label is being edited, ride the element context menu alongside
   // the editor (spec/09) — see useEditModeContextMenu.
@@ -485,7 +481,6 @@ export function EditorCanvasHost() {
       distGuides={distGuides}
       snapTargets={snapTargets}
       selectedId={selectedId}
-      soloSelectedId={soloSelectedId}
       multiSelectedIds={multiSelectedIds}
       remoteSelectionsByElement={remoteSelectionsByElement}
       remoteCursors={remoteCursorRows}
@@ -606,7 +601,6 @@ export function EditorCanvasHost() {
       onEraseStart={isReadOnly ? undefined : beginErase}
       onDuplicateMultiSelected={duplicateMultiSelected}
       onDeleteMultiSelected={deleteMultiSelected}
-      onGroupMultiSelected={groupMultiSelected}
       onToggleLockMultiSelected={toggleLockMultiSelected}
       onFilterMultiSelected={narrowMultiSelection}
       onExportMultiSelected={() => {
@@ -616,7 +610,6 @@ export function EditorCanvasHost() {
       editingId={editingId}
       editCursorAtEnd={editCursorAtEnd}
       formatSourceId={formatSourceId}
-      groupSourceId={groupSourceId}
       palettePosition={palettePosition}
       explorerPosition={explorerPosition}
       canUndo={canUndo && !activeTabLocked}
@@ -854,7 +847,6 @@ export function EditorCanvasHost() {
         setMultiSelectedIds(new Set());
         setEditingId(null);
         setFormatSourceId(null);
-        setGroupSourceId(null);
         setContextMenu(null);
       }}
       onSelect={selectElement}
@@ -947,6 +939,9 @@ export function EditorCanvasHost() {
       onSetRailLabel={isReadOnly ? undefined : setRailLabelSelected}
       onToggleChecklistItem={isReadOnly ? undefined : toggleChecklistItem}
       onSetPageHeading={setPageHeading}
+      onSetWebRows={isReadOnly ? undefined : setWebRows}
+      onAppendWebRow={isReadOnly ? undefined : appendWebRowTo}
+      onSetHeroCaptionLine={isReadOnly ? undefined : setHeroCaptionLine}
       onGrowMindNode={growMindNode}
       chartPalette={themeChartPalette(getTheme(activeTab.theme))}
       onCancelEdit={cancelEdit}
@@ -962,9 +957,6 @@ export function EditorCanvasHost() {
       onBeginFormatPainter={beginFormatPainter}
       onCancelFormatPainter={exitFormatPainter}
       onExitFormatTool={exitFormatTool}
-      onBeginGroup={beginGroup}
-      onCancelGroup={exitGroupMode}
-      onUngroup={ungroupSelected}
       onSetTextAlign={setTextAlignSelected}
       onFollowLink={followLink}
       onOpenComments={openComments}

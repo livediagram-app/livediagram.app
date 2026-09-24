@@ -1,13 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import {
-  DEFAULT_MIND_FLOW,
-  isMindNode,
-  mindFlowOf,
-  resolveLayerId,
-  selectionMembers,
-} from '@livediagram/diagram';
+import { DEFAULT_MIND_FLOW, isMindNode, mindFlowOf, resolveLayerId } from '@livediagram/diagram';
 import { useEditorContext } from '@/app/diagram/[id]/EditorContext';
 import { useColourPalette } from '@/hooks/ui/useColourPalette';
 import { getTheme, shapeColorPresets, tableColorPresets } from '@/lib/themes';
@@ -111,6 +105,8 @@ export function EditorContextMenuHost() {
     setMindFlowSelected,
     setChecklistItemsSelected,
     setEntityFieldsSelected,
+    setWebRowsSelected,
+    setHeroCaptionSelected,
     setEstimateScaleSelected,
     setAgendaItemsSelected,
     setDecisionStatusSelected,
@@ -184,18 +180,13 @@ export function EditorContextMenuHost() {
   // this line is running for an editor by construction.
   if (!contextMenu || contextMenu.mode === 'canvas' || isReadOnly) return null;
 
-  // Selection-context-menu member resolution (right-click a multi-selection
-  // or group): the marquee set when one is active, else the clicked
-  // element's group expansion.
+  // Selection-context-menu member resolution (right-click a multi-selection):
+  // the marquee set when one is active, else the clicked element.
   const ctxSelectedEl = selectedId
     ? (activeTab.elements.find((e) => e.id === selectedId) ?? null)
     : null;
   const ctxMemberIds =
-    multiSelectedIds.size > 0
-      ? [...multiSelectedIds]
-      : ctxSelectedEl
-        ? selectionMembers(activeTab.elements, ctxSelectedEl.id)
-        : [];
+    multiSelectedIds.size > 0 ? [...multiSelectedIds] : ctxSelectedEl ? [ctxSelectedEl.id] : [];
 
   // The flow the selected node's MAP grows in (spec/118). Resolved here
   // because it lives on the tree's root, which the menu cannot walk to from
@@ -313,6 +304,8 @@ export function EditorContextMenuHost() {
       onSetMindFlow={setMindFlowSelected}
       onSetChecklistItems={setChecklistItemsSelected}
       onSetEntityFields={setEntityFieldsSelected}
+      onSetWebRows={setWebRowsSelected}
+      onSetHeroCaption={setHeroCaptionSelected}
       onSetEstimateScale={setEstimateScaleSelected}
       onSetAgendaItems={setAgendaItemsSelected}
       onSetDecisionStatus={setDecisionStatusSelected}
