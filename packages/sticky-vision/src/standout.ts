@@ -48,11 +48,16 @@ export function standsOut(
 }
 
 // Which of the two tests a box fails, or null when it stands out as paper.
+// `grain: false` leaves the surface unjudged, for a box too small to measure
+// it: on a note a few pens wide, the ink margin leaves no clean interior and
+// the note's own edges read as grain.
 export function notStandingOut(
   image: ImageBuffer,
   box: { x: number; y: number; w: number; h: number },
+  opts: { grain?: boolean } = {},
 ): 'standout' | 'dark-grain' | null {
   if (standoutOf(image, box) < STANDOUT_SATURATION) return 'standout';
+  if (opts.grain === false) return null;
   return isDarkGrain(image, box) ? 'dark-grain' : null;
 }
 

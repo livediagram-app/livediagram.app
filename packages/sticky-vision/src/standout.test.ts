@@ -66,4 +66,16 @@ describe('notStandingOut', () => {
     paint(image, '#6b3a10', 30);
     expect(notStandingOut(image, BOX)).toBe('dark-grain');
   });
+
+  it('leaves the grain unjudged when asked (a pad note is too small to measure it)', () => {
+    const image = wall('#c9b8a0');
+    paint(image, '#6b3a10', 30);
+    expect(notStandingOut(image, BOX, { grain: false })).toBeNull();
+  });
+
+  it('still names a patch the colour of its wall with the grain unjudged', () => {
+    const image = wall('#b08a60');
+    paint(image, '#b08a60');
+    expect(notStandingOut(image, BOX, { grain: false })).toBe('standout');
+  });
 });

@@ -177,16 +177,19 @@ export function detectStickies(image: ImageBuffer, opts: DetectOptions = {}): De
   // pane, a patch of bare kraft, the strip above the paper. A note carries
   // writing, or at least shows an edge against its wall (see `dropBlank`).
   const drop = opts.onDrop ?? (() => {});
-  const standOut = (list: Box[]) =>
+  const standOut = (list: Box[], grain = true) =>
     list.filter((box) => {
-      const why = notStandingOut(working, box);
+      const why = notStandingOut(working, box, { grain });
       if (why !== null) drop(box, why);
       return why === null;
     });
   const firstPass = standOut(boxes);
   // Pads are judged against the notes that stand out, and must stand out
-  // themselves.
-  const outstanding = [...firstPass, ...standOut(findPads(refused, firstPass, working, noteSize))];
+  // themselves; not for grain, which a note that small cannot show.
+  const outstanding = [
+    ...firstPass,
+    ...standOut(findPads(refused, firstPass, working, noteSize), false),
+  ];
   const standing = dropBlank(working, outstanding);
   if (standing.length < outstanding.length) {
     const kept = new Set(standing);

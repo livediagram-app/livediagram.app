@@ -60,9 +60,10 @@ function siblings(a: Box, b: Box, sizeRatio = PAD_SIZE_RATIO): boolean {
   return d <= PAD_REACH * Math.max(sa, sb);
 }
 
-// Cut an elongated box into squares of its short side, along its long axis.
-function squaresOf(b: Box): Box[] {
-  const k = Math.round(Math.max(b.w, b.h) / Math.max(1, shortOf(b)));
+// Cut an elongated box into as many squares as `note` goes into its long
+// side (at least two), along its long axis.
+function squaresOf(b: Box, note: number): Box[] {
+  const k = Math.max(2, Math.round(Math.max(b.w, b.h) / Math.max(1, note)));
   const along = b.w >= b.h ? b.w : b.h;
   const edge = (i: number) => Math.round((i * along) / k);
   return Array.from({ length: k }, (_, i) => {
@@ -72,6 +73,22 @@ function squaresOf(b: Box): Box[] {
       ? { classId: b.classId, x: b.x + from, y: b.y, w: extent, h: b.h, pixels: b.pixels / k }
       : { classId: b.classId, x: b.x, y: b.y + from, w: b.w, h: extent, pixels: b.pixels / k };
   });
+}
+
+// How long a note is in the pad beside `b`: the median LONG side of the pad
+// boxes within reach, because a pad's seeds are often partial notes whose
+// short side undersells them, and a fused row's own height oversells them
+// (its notes do not quite line up). Null with no pad box in reach. Any reach
+// from 1.5 to 6 of the box's long side scores the same.
+function padNoteNear(b: Box, pad: Box[]): number | null {
+  const cx = b.x + b.w / 2;
+  const cy = b.y + b.h / 2;
+  const reach = PAD_REACH * Math.max(b.w, b.h);
+  const longs = pad
+    .filter((m) => Math.hypot(m.x + m.w / 2 - cx, m.y + m.h / 2 - cy) <= reach)
+    .map((m) => Math.max(m.w, m.h))
+    .sort((p, q) => p - q);
+  return longs.length === 0 ? null : longs[longs.length >> 1]!;
 }
 
 // The boxes, of those the size, area and aspect gates `refused`, that sit in
@@ -124,9 +141,10 @@ export function findPads(
   const squares: Box[] = [];
   for (const b of refused) {
     const aspect = Math.max(b.w, b.h) / Math.max(1, shortOf(b));
-    if (aspect < FUSED_MIN_ASPECT || Math.round(aspect) > FUSED_MAX_NOTES) continue;
-    if (fillRatio(b) < PAD_MIN_FILL) continue;
-    for (const square of squaresOf(b)) {
+    if (aspect < FUSED_MIN_ASPECT || fillRatio(b) < PAD_MIN_FILL) continue;
+    const note = padNoteNear(b, pad) ?? shortOf(b);
+    if (Math.round(Math.max(b.w, b.h) / note) > FUSED_MAX_NOTES) continue;
+    for (const square of squaresOf(b, note)) {
       if (!admissible(square)) continue;
       squares.push(square);
       taken.push(square);

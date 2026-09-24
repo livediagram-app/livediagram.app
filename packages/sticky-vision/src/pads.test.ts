@@ -93,4 +93,17 @@ describe('findPads', () => {
     const tall = { classId: 1, x: 175, y: 100, w: 14, h: 22, pixels: 14 * 22 * 0.85 };
     expect(findPads([...pad, tall], [], FRAME, NOTE)).toHaveLength(3);
   });
+
+  it('cuts a fused row by the size of the pad’s notes, not by its own height', () => {
+    // Three 15px notes fused into a row 19px tall (they do not quite line
+    // up): by its height it would be two notes, each holding one and a half.
+    const pad = [sq(100, 100, 15), sq(125, 100, 15), sq(150, 102, 15)];
+    const row = { classId: 1, x: 100, y: 125, w: 45, h: 19, pixels: 45 * 19 * 0.8 };
+    const cut = findPads([...pad, row], [], FRAME, NOTE).filter((b) => b.y === 125);
+    expect(cut.map((b) => [b.x, b.w])).toEqual([
+      [100, 15],
+      [115, 15],
+      [130, 15],
+    ]);
+  });
 });
