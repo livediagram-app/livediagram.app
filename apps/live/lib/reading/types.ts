@@ -20,6 +20,8 @@ export type ReadOptions = {
   // One note's words, as soon as they are read, so the photo fills in note by
   // note rather than all at once at the end.
   onText?: (cropId: number, read: ReadText) => void;
+  // How long a model download may sit still before it is called stalled.
+  stallMs?: number;
 };
 
 // What a reader hands back: the words keyed by the crop id the detector
@@ -30,6 +32,8 @@ export type ReadResult = {
   textById: Map<number, ReadText>;
   unread?: number;
   failure?: string;
+  // What went wrong, in the reader's own words, for the log and the author.
+  detail?: string;
 };
 
 // Every reader has the same shape, so the photo import does not care which one

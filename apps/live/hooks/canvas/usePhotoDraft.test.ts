@@ -676,3 +676,23 @@ describe('a pick is never silently dropped', () => {
     expect(h.toasts.length).toBeGreaterThan(0);
   });
 });
+
+// The in-browser reader could not start at all (spec/139 Phase 9): that is not
+// "some notes could not be read", and it is not the photograph's fault.
+describe('when the reading model cannot start', () => {
+  it('says the reader could not start, not that the photo was unreadable', async () => {
+    vi.mocked(detectAndCrop).mockResolvedValue(detection([sticky(), sticky({ id: 1, x: 600 })]));
+    vi.mocked(readCrops).mockResolvedValue({
+      ...read([
+        { id: 0, text: '' },
+        { id: 1, text: '' },
+      ]),
+      failure: 'reader_unavailable',
+      detail: 'the model download stalled',
+    });
+    const h = await reviewed();
+    expect(h.api().review?.readError).toBe('reader_unavailable');
+    expect(h.toasts.at(-1)).toMatch(/reading model couldn.t start/i);
+    expect(h.toasts.at(-1)).toMatch(/stalled/);
+  });
+});

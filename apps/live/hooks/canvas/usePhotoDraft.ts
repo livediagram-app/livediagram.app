@@ -305,11 +305,20 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
                 textById: answer.textById,
                 // Part of the run is not all of it. The words that arrived are
                 // shown; the note that says so names how many did not.
-                readError: answer.failure ? `partial:${answer.unread ?? 0}` : prev.readError,
+                // A reader that never started is its own failure, not part of a run.
+                readError: !answer.failure
+                  ? prev.readError
+                  : answer.failure === 'reader_unavailable'
+                    ? 'reader_unavailable'
+                    : `partial:${answer.unread ?? 0}`,
               }
             : prev,
         );
-        if (answer.failure) {
+        if (answer.failure === 'reader_unavailable') {
+          live.current.toastError(
+            `The reading model couldn't start in this browser (${answer.detail ?? 'unknown reason'}). Type the words in yourself, or try again later.`,
+          );
+        } else if (answer.failure) {
           live.current.toastError(
             `${answer.unread ?? 0} notes could not be read (${answer.failure}). Type those in yourself.`,
           );

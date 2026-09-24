@@ -103,7 +103,14 @@ export function PhotoStatus({
           ) : null}
         </Pill>
       ) : null}
-      {readError?.startsWith('partial:') ? (
+      {readError === 'reader_unavailable' ? (
+        // The in-browser model never started: not the photograph's fault, and
+        // not a partial read — say what it is.
+        <Pill tone="warn" testId="photo-reader-unavailable">
+          The reading model couldn&rsquo;t start in this browser. Type the words in yourself, or try
+          again later.
+        </Pill>
+      ) : readError?.startsWith('partial:') ? (
         // PART of the run is not all of it. The words that arrived are on their
         // notes; this says how many did not, so the author knows which boxes
         // are blank because nobody read them rather than because the paper was

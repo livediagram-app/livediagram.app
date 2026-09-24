@@ -1,5 +1,5 @@
 import { loadReader, readOne, type LoadedReader } from './reader-model';
-import type { ReaderRequest, ReaderResponse } from './reader-protocol';
+import type { ReaderBackend, ReaderRequest, ReaderResponse } from './reader-protocol';
 
 // The in-browser reader's worker (spec/139 Phase 9). The model reads one crop
 // at a time — a full generation each, hundreds on a big wall — and on the
@@ -15,13 +15,38 @@ const scope = self as unknown as {
 let loading: Promise<LoadedReader> | null = null;
 const cancelled = new Set<number>();
 
-function load(): Promise<LoadedReader> {
-  loading ??= loadReader((download) => scope.postMessage({ type: 'download', download })).then(
-    (loaded) => {
-      console.info(`[reader] ready on ${loaded.backend}`);
-      return loaded;
-    },
-  );
+// The graphics card only when it can run the half-precision weights the
+// WebGPU path asks for; the adapter reports a GPU either way, so ask for the
+// feature. Everything else reads on the processor.
+async function pickBackend(): Promise<ReaderBackend> {
+  const gpu = (
+    navigator as Navigator & {
+      gpu?: { requestAdapter(): Promise<{ features: Set<string> } | null> };
+    }
+  ).gpu;
+  if (!gpu) return 'wasm';
+  try {
+    const adapter = await gpu.requestAdapter();
+    return adapter?.features.has('shader-f16') ? 'webgpu' : 'wasm';
+  } catch {
+    return 'wasm';
+  }
+}
+
+let backendInUse: ReaderBackend = 'wasm';
+
+function load(forced?: ReaderBackend): Promise<LoadedReader> {
+  loading ??= (async () => {
+    backendInUse = forced ?? (await pickBackend());
+    console.info(`[reader] loading on ${backendInUse}`);
+    return loadReader(
+      (download) => scope.postMessage({ type: 'download', download }),
+      backendInUse,
+    );
+  })().then((loaded) => {
+    console.info(`[reader] ready on ${loaded.backend}`);
+    return loaded;
+  });
   return loading;
 }
 
@@ -32,12 +57,17 @@ scope.addEventListener('message', async ({ data: request }) => {
   }
   let loaded: LoadedReader;
   try {
-    loaded = await load();
+    loaded = await load(request.backend);
   } catch (err) {
     // Let the next read try the download again.
     loading = null;
-    console.warn('[reader] the model could not load:', err);
-    scope.postMessage({ type: 'failed', id: request.id, detail: String(err) });
+    console.warn(`[reader] the model could not load on ${backendInUse}:`, err);
+    scope.postMessage({
+      type: 'failed',
+      id: request.id,
+      detail: String(err),
+      backend: backendInUse,
+    });
     return;
   }
   scope.postMessage({ type: 'backend', backend: loaded.backend });

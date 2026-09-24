@@ -1,6 +1,6 @@
 import type { NoteCrop } from '@livediagram/api-schema';
 import { BLANK_ANSWERS } from './reader-model';
-import type { ReaderRequest, ReaderResponse } from './reader-protocol';
+import type { ReaderBackend, ReaderRequest, ReaderResponse } from './reader-protocol';
 import { normaliseRead, type ReadOptions, type ReadText } from './types';
 
 // Reading the handwriting with a model that runs HERE, in this browser
@@ -16,6 +16,7 @@ import { normaliseRead, type ReadOptions, type ReadText } from './types';
 
 type ReaderWorker = {
   postMessage: (request: ReaderRequest) => void;
+  terminate?: () => void;
   addEventListener: (type: 'message', fn: (e: MessageEvent<ReaderResponse>) => void) => void;
   removeEventListener: (type: 'message', fn: (e: MessageEvent<ReaderResponse>) => void) => void;
 };
@@ -24,14 +25,47 @@ type ReaderWorker = {
 let shared: ReaderWorker | null = null;
 let nextId = 1;
 
-export function readCropsInBrowser(
-  crops: NoteCrop[],
-  opts: ReadOptions = {},
-): Promise<Map<number, ReadText>> {
-  shared ??= new Worker(new URL('./reader.worker.ts', import.meta.url), {
+const newWorker = (): ReaderWorker =>
+  new Worker(new URL('./reader.worker.ts', import.meta.url), {
     type: 'module',
   }) as unknown as ReaderWorker;
-  return readCropsWith(shared, crops, opts);
+
+// A model download that sits still this long has stalled (a blocked or
+// throttled CDN, a full disk): better told than waited on for ever.
+const STALL_MS = 60_000;
+
+export type BrowserRead = {
+  textById: Map<number, ReadText>;
+  failure?: 'reader_unavailable';
+  detail?: string;
+};
+
+// Read on whatever engine the worker picks; when the model will not start on
+// the graphics card, ask a FRESH worker to read on the processor. Never the
+// same worker: switching engines in one left the runtime half on each, and
+// the reader stalled mid-download or crashed. When neither starts, say so.
+export async function readCropsInBrowser(
+  crops: NoteCrop[],
+  opts: ReadOptions = {},
+  make: () => ReaderWorker = newWorker,
+): Promise<BrowserRead> {
+  shared ??= make();
+  let result = await readCropsWith(shared, crops, opts);
+  if (result.failedBackend === 'webgpu') {
+    console.warn(
+      `[reader] the graphics card could not start the model (${result.detail}); reading on the processor`,
+    );
+    shared.terminate?.();
+    shared = make();
+    result = await readCropsWith(shared, crops, { ...opts, backend: 'wasm' });
+  }
+  if (result.failedBackend) {
+    console.warn(`[reader] the reading model could not start: ${result.detail}`);
+    shared.terminate?.();
+    shared = null;
+    return { textById: result.textById, failure: 'reader_unavailable', detail: result.detail };
+  }
+  return { textById: result.textById };
 }
 
 // The model's own answer, as a note's words: a line break is layout, and the
@@ -41,23 +75,49 @@ function toRead(text: string): ReadText {
   return BLANK_ANSWERS.test(read.text) ? { text: '', legible: false } : read;
 }
 
+type Attempt = { textById: Map<number, ReadText>; failedBackend?: ReaderBackend; detail?: string };
+
 export function readCropsWith(
   worker: ReaderWorker,
   crops: NoteCrop[],
-  opts: ReadOptions = {},
-): Promise<Map<number, ReadText>> {
+  opts: ReadOptions & { backend?: ReaderBackend } = {},
+): Promise<Attempt> {
   const out = new Map<number, ReadText>();
-  if (crops.length === 0) return Promise.resolve(out);
+  if (crops.length === 0) return Promise.resolve({ textById: out });
   const id = nextId++;
+  const stallMs = opts.stallMs ?? STALL_MS;
 
   return new Promise((resolve) => {
-    const finish = () => {
+    let stall: ReturnType<typeof setTimeout> | undefined;
+    const settle = (attempt: Omit<Attempt, 'textById'> = {}) => {
+      clearTimeout(stall);
       worker.removeEventListener('message', listen);
       opts.signal?.removeEventListener('abort', cancel);
-      resolve(out);
+      if (attempt.failedBackend) {
+        // The paper was still found: every note lands blank for the author
+        // to type, rather than the whole import failing.
+        for (const c of crops) if (!out.has(c.id)) out.set(c.id, { text: '', legible: false });
+        opts.onProgress?.(crops.length);
+        opts.onModelDownload?.({ loaded: 0, total: 0, done: true });
+      }
+      resolve({ textById: out, ...attempt });
+    };
+    const finish = () => settle();
+    // Any word from the worker is life; silence for `stallMs` is a stall.
+    const watch = () => {
+      clearTimeout(stall);
+      stall = setTimeout(
+        () =>
+          settle({
+            failedBackend: opts.backend ?? 'webgpu',
+            detail: `the model download stalled (no progress for ${Math.round(stallMs / 1000)} s)`,
+          }),
+        stallMs,
+      );
     };
     const cancel = () => worker.postMessage({ type: 'cancel', id });
     const listen = ({ data: message }: MessageEvent<ReaderResponse>) => {
+      watch();
       if (message.type === 'download') {
         opts.onModelDownload?.(message.download);
       } else if (message.type === 'backend') {
@@ -70,18 +130,21 @@ export function readCropsWith(
         opts.onText?.(message.cropId, read);
         opts.onProgress?.(out.size);
       } else if (message.type === 'failed') {
-        // The weights could not be fetched (offline, a blocked CDN, no
-        // storage). The paper was still found, so every note lands blank for
-        // the author to type rather than the whole import failing.
-        for (const c of crops) if (!out.has(c.id)) out.set(c.id, { text: '', legible: false });
-        opts.onProgress?.(crops.length);
-        finish();
+        // The weights could not be fetched or would not start (offline, a
+        // blocked CDN, no storage, an engine this browser cannot run).
+        settle({ failedBackend: message.backend, detail: message.detail });
       } else if (message.type === 'done') {
         finish();
       }
     };
     worker.addEventListener('message', listen);
     opts.signal?.addEventListener('abort', cancel, { once: true });
-    worker.postMessage({ type: 'read', id, crops });
+    watch();
+    worker.postMessage({
+      type: 'read',
+      id,
+      crops,
+      ...(opts.backend ? { backend: opts.backend } : {}),
+    });
   });
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { readCropsWith } from './browser-reader';
+import { readCropsInBrowser, readCropsWith } from './browser-reader';
 import type { ReaderRequest, ReaderResponse } from './reader-protocol';
 
 // The in-browser reader runs its model in a WORKER (spec/139 Phase 9): on the
@@ -47,7 +47,7 @@ describe('reading crops through the worker', () => {
     const onText = vi.fn();
     const onProgress = vi.fn();
     const onBackend = vi.fn();
-    const out = await readCropsWith(worker, crops, { onText, onProgress, onBackend });
+    const { textById: out } = await readCropsWith(worker, crops, { onText, onProgress, onBackend });
     expect(out.get(0)).toEqual({ text: 'Order placed', legible: true });
     // The model's "no writing" is a blank note, not two words.
     expect(out.get(1)).toEqual({ text: '', legible: false });
@@ -69,9 +69,10 @@ describe('reading crops through the worker', () => {
 
   it('lands every note blank when the model cannot load, rather than failing the import', async () => {
     const worker = fakeWorker((req, reply) => {
-      if (req.type === 'read') reply({ type: 'failed', id: req.id, detail: 'blocked CDN' });
+      if (req.type === 'read')
+        reply({ type: 'failed', id: req.id, detail: 'blocked CDN', backend: 'wasm' });
     });
-    const out = await readCropsWith(worker, crops, {});
+    const { textById: out } = await readCropsWith(worker, crops, {});
     expect([...out.values()]).toEqual([
       { text: '', legible: false },
       { text: '', legible: false },
@@ -89,5 +90,72 @@ describe('reading crops through the worker', () => {
     });
     await readCropsWith(worker, crops, { signal: controller.signal });
     expect(worker.posted.map((r) => r.type)).toEqual(['read', 'cancel']);
+  });
+});
+
+// When the model will not start on the graphics card, a FRESH worker is asked
+// to read on the processor — never the same one: switching engines in one
+// worker left the runtime half on each, and the reader stalled or crashed.
+describe('when the model will not start', () => {
+  it('retries once on the processor, in a new worker', async () => {
+    const made: ReturnType<typeof fakeWorker>[] = [];
+    const make = () => {
+      const w = fakeWorker((req, reply) => {
+        if (req.type !== 'read') return;
+        if (req.backend !== 'wasm') {
+          reply({ type: 'failed', id: req.id, detail: 'webgpu: no fp16', backend: 'webgpu' });
+          return;
+        }
+        reply({ type: 'backend', backend: 'wasm' });
+        reply({ type: 'text', id: req.id, cropId: 0, text: 'Order placed' });
+        reply({ type: 'text', id: req.id, cropId: 1, text: 'Paid' });
+        reply({ type: 'done', id: req.id });
+      });
+      made.push(w);
+      return w;
+    };
+    const result = await readCropsInBrowser(crops, {}, make);
+    expect(made).toHaveLength(2);
+    expect(made[1]!.posted[0]).toMatchObject({ type: 'read', backend: 'wasm' });
+    expect(result.textById.get(0)).toEqual({ text: 'Order placed', legible: true });
+    expect(result.failure).toBeUndefined();
+  });
+
+  it('says so — with the reason — when the processor cannot either', async () => {
+    const make = () =>
+      fakeWorker((req, reply) => {
+        if (req.type === 'read')
+          reply({
+            type: 'failed',
+            id: req.id,
+            detail: 'NetworkError',
+            backend: req.backend ?? 'webgpu',
+          });
+      });
+    const result = await readCropsInBrowser(crops, {}, make);
+    expect(result.failure).toBe('reader_unavailable');
+    expect(result.detail).toMatch(/NetworkError/);
+    expect([...result.textById.values()].every((r) => !r.legible)).toBe(true);
+  });
+
+  it('calls a download that stops moving stalled, instead of waiting for ever', async () => {
+    vi.useFakeTimers();
+    try {
+      const make = () =>
+        fakeWorker((req, reply) => {
+          if (req.type === 'read')
+            reply({ type: 'download', download: { loaded: 231, total: 252, done: false } });
+          // …and then nothing more, ever.
+        });
+      const done = readCropsInBrowser(crops, { stallMs: 60_000 }, make);
+      await vi.advanceTimersByTimeAsync(61_000);
+      // The processor retry stalls the same way.
+      await vi.advanceTimersByTimeAsync(61_000);
+      const result = await done;
+      expect(result.failure).toBe('reader_unavailable');
+      expect(result.detail).toMatch(/stalled/i);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

@@ -44,6 +44,11 @@ export function selectReader(deps: { aiEnabled: boolean; ownerId: string }): Sel
   }
   return {
     kind: 'browser',
-    read: async (crops, opts) => ({ textById: await readCropsInBrowser(crops, opts) }),
+    read: async (crops, opts) => {
+      const read = await readCropsInBrowser(crops, opts);
+      return read.failure
+        ? { textById: read.textById, failure: read.failure, detail: read.detail }
+        : { textById: read.textById };
+    },
   };
 }

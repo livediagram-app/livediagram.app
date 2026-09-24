@@ -53,7 +53,10 @@ export type LoadedReader = Loaded;
 // Loaded once by the worker, which keeps it: the weights are the expensive
 // part, and a second import in the same session should not pay for them
 // again. The import is dynamic so the model runtime is its own chunk.
-export async function loadReader(onDownload: (d: ModelDownload) => void): Promise<Loaded> {
+export async function loadReader(
+  onDownload: (d: ModelDownload) => void,
+  backend: ReaderBackend,
+): Promise<Loaded> {
   return (async () => {
     const { AutoProcessor, AutoModelForVision2Seq } = await import('@huggingface/transformers');
     // The weights: `.onnx` files, and the external-data files beside them.
@@ -67,23 +70,19 @@ export async function loadReader(onDownload: (d: ModelDownload) => void): Promis
     // then it fell back. The WEIGHTS start together, so from their first
     // event the total is the real one.
     const processor = await AutoProcessor.from_pretrained(MODEL_ID);
-    // WebGPU where it works, WASM everywhere else. WebGPU is ~14x faster but
-    // needs `shader-f16`, which some drivers do not expose; asking for it and
-    // falling back is the only way to know, since the adapter reports a GPU
-    // either way.
-    let backend: ReaderBackend = 'webgpu';
-    const model = await AutoModelForVision2Seq.from_pretrained(MODEL_ID, {
-      device: 'webgpu',
-      dtype: { embed_tokens: 'fp16', vision_encoder: 'fp16', decoder_model_merged: 'q4' },
-      progress_callback,
-    }).catch(() => {
-      backend = 'wasm';
-      return AutoModelForVision2Seq.from_pretrained(MODEL_ID, {
-        device: 'wasm',
-        dtype: 'q4',
-        progress_callback,
-      });
-    });
+    // ONE engine per load, chosen before anything is fetched (see the
+    // worker). Falling back from WebGPU to WASM inside one load left the
+    // runtime half on each: the reader stalled mid-download or crashed.
+    const model = await AutoModelForVision2Seq.from_pretrained(
+      MODEL_ID,
+      backend === 'webgpu'
+        ? {
+            device: 'webgpu',
+            dtype: { embed_tokens: 'fp16', vision_encoder: 'fp16', decoder_model_merged: 'q4' },
+            progress_callback,
+          }
+        : { device: 'wasm', dtype: 'q4', progress_callback },
+    );
     // However the files arrived — from the network or the browser's cache —
     // the bar ends here.
     progress_callback({ status: 'ready' });

@@ -7,7 +7,9 @@ import type { ModelDownload } from './download-progress';
 export type ReaderBackend = 'webgpu' | 'wasm';
 
 export type ReaderRequest =
-  { type: 'read'; id: number; crops: NoteCrop[] } | { type: 'cancel'; id: number };
+  // `backend` forces one engine; absent, the worker picks (see reader.worker.ts).
+  | { type: 'read'; id: number; crops: NoteCrop[]; backend?: ReaderBackend }
+  | { type: 'cancel'; id: number };
 
 export type ReaderResponse =
   | { type: 'download'; download: ModelDownload }
@@ -16,4 +18,5 @@ export type ReaderResponse =
   | { type: 'text'; id: number; cropId: number; text: string }
   | { type: 'done'; id: number }
   // The model could not load (offline, a blocked CDN, no storage).
-  | { type: 'failed'; id: number; detail: string };
+  // `backend` says which engine failed, so the page can try the other.
+  | { type: 'failed'; id: number; detail: string; backend: ReaderBackend };

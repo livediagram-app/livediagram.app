@@ -54,9 +54,9 @@ describe('selectReader', () => {
   });
 
   it('delegates to the in-browser model when there is no server model', async () => {
-    vi.mocked(readCropsInBrowser).mockResolvedValue(
-      new Map([[0, { text: 'Machine Fixed', legible: true }]]),
-    );
+    vi.mocked(readCropsInBrowser).mockResolvedValue({
+      textById: new Map([[0, { text: 'Machine Fixed', legible: true }]]),
+    });
     const { textById: out } = await selectReader({ aiEnabled: false, ownerId: 'owner-1' }).read(
       crops,
       {},
@@ -66,7 +66,7 @@ describe('selectReader', () => {
   });
 
   it('never sends a crop to the server when no model is configured', async () => {
-    vi.mocked(readCropsInBrowser).mockResolvedValue(new Map());
+    vi.mocked(readCropsInBrowser).mockResolvedValue({ textById: new Map() });
     await selectReader({ aiEnabled: false, ownerId: 'owner-1' }).read(crops, {});
     expect(apiAiReadNotes).not.toHaveBeenCalled();
   });
