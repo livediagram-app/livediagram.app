@@ -1,14 +1,17 @@
 import { spawn } from 'node:child_process';
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { syntheticWall } from '../src/synth/wall';
+import { syntheticWall, type WallStyle } from '../src/synth/wall';
 import { shardPath, writeShard, type ShardMeta } from './data/shards';
 import { WORK_DIR } from './paths';
 
 // Generate a synthetic training set in parallel:
 //
 //   npx tsx scripts/gen-synth.ts [--count 12000] [--size 256] [--seed 1] [--workers 16] [--out dir]
+//     [--style photo|flat]
 //
+// Each seed draws its own style (photo, or flat one time in five) unless
+// `--style` forces one.
 // Seeds run from --seed upward, so a set is reproducible from its meta.json.
 
 const arg = (name: string, fallback: string) => {
@@ -17,6 +20,7 @@ const arg = (name: string, fallback: string) => {
 };
 const size = Number(arg('size', '256'));
 const PER_SHARD = 250;
+const style = arg('style', '') as WallStyle | '';
 
 if (process.argv.includes('--worker')) {
   const shard = Number(arg('shard', '0'));
@@ -24,7 +28,9 @@ if (process.argv.includes('--worker')) {
   const out = arg('out', '');
   const tiles = [];
   for (let i = 0; i < PER_SHARD; i += 1) {
-    const w = syntheticWall(firstSeed + shard * PER_SHARD + i, size, size);
+    const w = syntheticWall(firstSeed + shard * PER_SHARD + i, size, size, {
+      style: style || undefined,
+    });
     tiles.push({ width: size, height: size, rgb: w.rgb, classes: w.classes });
   }
   writeShard(shardPath(out, shard), tiles);
@@ -59,6 +65,7 @@ if (process.argv.includes('--worker')) {
           String(size),
           '--out',
           out,
+          ...(style ? ['--style', style] : []),
         ],
         { stdio: 'inherit' },
       );
