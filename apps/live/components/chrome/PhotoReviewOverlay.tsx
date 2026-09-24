@@ -6,6 +6,7 @@ import type { PhotoReview } from '@/hooks/canvas/usePhotoDraft';
 import { NoteBox, sizeOf } from './photo/NoteBox';
 import { PhotoStatus } from './photo/PhotoStatus';
 import { TruthExport } from './photo/TruthExport';
+import { UNREAD_TIP_SHARE, UnreadTip } from './photo/UnreadTip';
 import { ZoomControls } from './photo/ZoomControls';
 import { withKind } from '@/lib/photo-boxes';
 import { truthArmed } from '@/lib/photo-truth';
@@ -53,6 +54,7 @@ export function PhotoReviewOverlay({
   reading,
   onConfirm,
   onCancel,
+  onRetake,
 }: {
   review: PhotoReview;
   reading: boolean;
@@ -63,6 +65,8 @@ export function PhotoReviewOverlay({
     texts: Map<number, { text: string; legible: boolean }>,
   ) => void;
   onCancel: () => void;
+  // Leave this review for a better photo of the same wall (the unread tip).
+  onRetake?: () => void;
 }) {
   // The photograph is up before the detector has said anything, so everything
   // derived from a detection has to hold for "not yet". The 1×1 stand-in size
@@ -166,6 +170,21 @@ export function PhotoReviewOverlay({
       );
     }
   };
+
+  // THE UNREAD TIP. Counted over the notes the READER was given — the
+  // detector's boxes still on the photo; a box the author drew or reopened
+  // from a label was never sent — once it has finished, and not when it
+  // failed outright (that has its own note). Words the author typed count.
+  const [tipDismissed, setTipDismissed] = useState(false);
+  const sentToReader = notes.filter((s) => s.id >= 0);
+  const unread = sentToReader.filter((s) => textOf(s.id).trim() === '').length;
+  const showUnreadTip =
+    !!onRetake &&
+    !reading &&
+    !review.readError &&
+    !tipDismissed &&
+    sentToReader.length > 0 &&
+    unread / sentToReader.length >= UNREAD_TIP_SHARE;
 
   const confirm = () => {
     const texts = new Map<number, { text: string; legible: boolean }>();
@@ -339,38 +358,50 @@ export function PhotoReviewOverlay({
         />
       </div>
 
-      {/* The two ways out, floating over the dimmed margin below the photo. */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center justify-center gap-3 p-3">
-        <p className="pointer-events-auto rounded-full bg-slate-900/85 px-3 py-1.5 text-xs text-white shadow-lg backdrop-blur">
-          {detecting
-            ? 'Finding the stickies…'
-            : `${edits.ticked.size} of ${notes.length} · drag the photo to add one`}
-        </p>
-        {detection ? (
-          <TruthExport
-            photoName={review.photoName}
-            size={detection.imageSize}
-            notes={notes}
-            ticked={edits.ticked}
-            textOf={textOf}
-            onOpen={(file) => void openLabel(file)}
+      {/* The two ways out, floating over the dimmed margin below the photo —
+          and, above them, the unread tip: down here with the choices it is
+          about, rather than parked on the photo over notes to draw round. */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col items-center gap-2 p-3">
+        {showUnreadTip && onRetake ? (
+          <UnreadTip
+            unread={unread}
+            total={sentToReader.length}
+            onRetake={onRetake}
+            onDismiss={() => setTipDismissed(true)}
           />
         ) : null}
-        <button
-          type="button"
-          onClick={onCancel}
-          className="pointer-events-auto rounded-full border border-white/40 bg-slate-900/70 px-4 py-1.5 text-sm text-white shadow-lg backdrop-blur hover:bg-slate-900/90"
-        >
-          Cancel
-        </button>
-        <button
-          type="button"
-          onClick={confirm}
-          disabled={edits.ticked.size === 0}
-          className="pointer-events-auto rounded-full bg-brand-500 px-4 py-1.5 text-sm font-semibold text-white shadow-lg hover:bg-brand-600 disabled:opacity-50"
-        >
-          Add {edits.ticked.size} {edits.ticked.size === 1 ? 'note' : 'notes'}
-        </button>
+        <div className="pointer-events-none flex items-center justify-center gap-3">
+          <p className="pointer-events-auto rounded-full bg-slate-900/85 px-3 py-1.5 text-xs text-white shadow-lg backdrop-blur">
+            {detecting
+              ? 'Finding the stickies…'
+              : `${edits.ticked.size} of ${notes.length} · drag the photo to add one`}
+          </p>
+          {detection ? (
+            <TruthExport
+              photoName={review.photoName}
+              size={detection.imageSize}
+              notes={notes}
+              ticked={edits.ticked}
+              textOf={textOf}
+              onOpen={(file) => void openLabel(file)}
+            />
+          ) : null}
+          <button
+            type="button"
+            onClick={onCancel}
+            className="pointer-events-auto rounded-full border border-white/40 bg-slate-900/70 px-4 py-1.5 text-sm text-white shadow-lg backdrop-blur hover:bg-slate-900/90"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={confirm}
+            disabled={edits.ticked.size === 0}
+            className="pointer-events-auto rounded-full bg-brand-500 px-4 py-1.5 text-sm font-semibold text-white shadow-lg hover:bg-brand-600 disabled:opacity-50"
+          >
+            Add {edits.ticked.size} {edits.ticked.size === 1 ? 'note' : 'notes'}
+          </button>
+        </div>
       </div>
     </div>
   );

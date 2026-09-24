@@ -469,6 +469,12 @@ export function EditorView() {
             }
             onConfirm={photoDraft.confirm}
             onCancel={photoDraft.cancelReview}
+            // "Try another photo": leave this review and open the picker
+            // again, inside the same click, so the browser allows the dialog.
+            onRetake={() => {
+              photoDraft.cancelReview();
+              photoPickerRef.current?.click();
+            }}
           />
         ) : null}
 

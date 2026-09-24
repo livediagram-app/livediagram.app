@@ -750,3 +750,25 @@ test('boxes can be moved, resized, re-kinded, deleted, saved and reopened', asyn
 
   expectNoPageErrors(pageErrors);
 });
+
+// When the reader could not read the notes (here: the stub reads every one
+// blank), the review suggests a better photo or typing — and "Try another
+// photo" really does open the picker again (spec/139 Phase 9).
+test('an unread wall offers another photo, and the picker opens', async ({ page, pageErrors }) => {
+  await openBoard(page);
+  await importToReview(page, [
+    { fill: ORANGE, x: 200, y: 120, w: 180, h: 180 },
+    { fill: BLUE, x: 500, y: 120, w: 180, h: 180 },
+  ]);
+  const tip = page.getByTestId('photo-unread-tip');
+  await expect(tip).toBeVisible({ timeout: 20_000 });
+  await expect(tip).toContainText(/2 of 2 notes couldn.t be read/i);
+
+  const chooser = page.waitForEvent('filechooser');
+  await tip.getByRole('button', { name: /try another photo/i }).click();
+  await chooser;
+  // The old review is gone: the new photo gets a review of its own.
+  await expect(page.locator('[data-testid="photo-review-overlay"]')).toHaveCount(0);
+
+  expectNoPageErrors(pageErrors);
+});

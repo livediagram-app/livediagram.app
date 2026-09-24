@@ -888,6 +888,20 @@ Decisions from the operator:
   1.5% of the photo wide can be drawn round once zoomed in. The photo is never
   zoomed out past its whole self, nor panned off its own frame.
 
+  **When too many notes could not be read, the review says so — and leaves
+  the choice to the author.** Once the reader has finished, if 10% or more of
+  the notes it was given still have no words (unread, and not typed in by the
+  author since), a tip floats with the other status pills: "_N_ of _M_ notes
+  couldn't be read automatically. A closer, sharper photo usually helps — or
+  you can type the words in yourself." with two buttons, **Try another photo**
+  (closes this review and opens the photo picker again) and **I'll type
+  them** (dismisses the tip, for the rest of this review). Never decided for
+  the author, never blocking Add, never shown for boxes the author drew (those
+  were never sent to be read), and not shown when the reader failed outright —
+  that already has its own note. Detection and reading are separate: a wall
+  whose notes are all FOUND is a success even when many are unread, and the
+  tip is the one place that says a better photo would read better.
+
   **Every box can be corrected, not just unticked.** Clicking a box's body
   SELECTS it; the selected box shows four corner handles to resize it, a
   delete button, and the eight paper colours to change its kind. Dragging a

@@ -68,9 +68,9 @@ bundle size, effort, and links.
 
 ## Phase 2 — the unread tip (product, independent of detection)
 
-- [ ] 2.1 Spec it in spec/139: the threshold (≥ 10% unread), the copy, the two
+- [x] 2.1 Spec it in spec/139: the threshold (≥ 10% unread), the copy, the two
       choices, where it sits (a floating pill: zero layout shift).
-- [ ] 2.2 RED tests, then build it; e2e; commit.
+- [x] 2.2 RED tests, then build it; e2e; commit.
 
 ## Phase 3 — the experiment plan
 

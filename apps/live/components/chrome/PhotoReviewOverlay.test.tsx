@@ -625,3 +625,91 @@ describe('the tick of a selected box', () => {
     expect(ticks[0]!.getAttribute('aria-checked')).toBe('false');
   });
 });
+
+// When too many notes could not be read (spec/139 Phase 9): the review says
+// so, politely, and leaves the choice to the author.
+describe('the unread tip', () => {
+  const stickies = Array.from({ length: 10 }, (_, i) => ({ ...sticky(i), x: i * 9 }));
+  const words = (unread: number) =>
+    new Map(
+      stickies.map((s) => [
+        s.id,
+        s.id < unread ? { text: '', legible: false } : { text: `note ${s.id}`, legible: true },
+      ]),
+    );
+  const open = (
+    over: Partial<PhotoReview> = {},
+    extra: { reading?: boolean; onRetake?: () => void } = {},
+  ) =>
+    render(
+      <PhotoReviewOverlay
+        review={review({ detection: found(stickies), ...over })}
+        reading={extra.reading ?? false}
+        onConfirm={noop}
+        onCancel={noop}
+        onRetake={extra.onRetake ?? noop}
+      />,
+    );
+  const tip = () => screen.queryByTestId('photo-unread-tip');
+
+  it('offers a better photo or typing, when a tenth or more went unread', () => {
+    open({ textById: words(1) });
+    expect(tip()?.textContent).toMatch(/1 of 10 notes couldn.t be read/i);
+    expect(screen.getByRole('button', { name: /try another photo/i })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /i.ll type them/i })).toBeTruthy();
+  });
+
+  it('stays quiet below a tenth', () => {
+    const many = Array.from({ length: 20 }, (_, i) => ({ ...sticky(i), x: i * 4 }));
+    render(
+      <PhotoReviewOverlay
+        review={review({
+          detection: found(many),
+          textById: new Map(
+            many.map((s) => [
+              s.id,
+              s.id === 0 ? { text: '', legible: false } : { text: 'x', legible: true },
+            ]),
+          ),
+        })}
+        reading={false}
+        onConfirm={noop}
+        onCancel={noop}
+        onRetake={noop}
+      />,
+    );
+    expect(tip()).toBeNull();
+  });
+
+  it('waits until the reader has finished', () => {
+    open({ textById: words(5) }, { reading: true });
+    expect(tip()).toBeNull();
+  });
+
+  it('says nothing of its own when the reader failed outright', () => {
+    open({ textById: new Map(), readError: 'ai_error' });
+    expect(tip()).toBeNull();
+  });
+
+  it('counts a note the author typed the words into as read', () => {
+    open({ textById: words(1) });
+    fireEvent.click(screen.getByTestId('note-words-0'));
+    const input = screen.getByRole('textbox', { name: /the words on this note/i });
+    fireEvent.change(input, { target: { value: 'Order placed' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    expect(tip()).toBeNull();
+  });
+
+  it('goes away when the author chooses to type them', () => {
+    open({ textById: words(3) });
+    fireEvent.click(screen.getByRole('button', { name: /i.ll type them/i }));
+    expect(tip()).toBeNull();
+  });
+
+  it('hands the choice of a new photo back to the editor', () => {
+    const onRetake = vi.fn();
+    open({ textById: words(3) }, { onRetake });
+    fireEvent.click(screen.getByRole('button', { name: /try another photo/i }));
+    expect(onRetake).toHaveBeenCalled();
+  });
+});
