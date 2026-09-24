@@ -4,7 +4,7 @@ import { localFloorsOf, type PaperFloors } from './floors';
 import { greyWorldBalance, type ImageBuffer } from './colour';
 import { standsOut, STANDOUT_CALIBRATION } from './standout';
 import { closePaperMask, labelComponents, type ComponentMask } from './components';
-import { estimateNoteSize, fitBoxes, silhouetteOf } from './boxes';
+import { estimateNoteSize, estimateNoteSizes, fitBoxes, silhouetteOf } from './boxes';
 import { clusterRows } from './rows';
 
 // Finding the stickies in a photograph of a wall (spec/139 Phase 8).
@@ -112,17 +112,16 @@ export function detectStickies(image: ImageBuffer, opts: DetectOptions = {}): De
   // `estimateNoteSize`. Everything after this divides by it, including the
   // close that follows, so it cannot be measured after the close.
   const noiseFloor = Math.max(4, Math.round(imageSize * NOISE_FLOOR_FRACTION));
-  const noteSize = estimateNoteSize(
-    labelComponents(mask).map((c) => ({
-      classId: c.classId,
-      x: c.minX,
-      y: c.minY,
-      w: c.maxX - c.minX + 1,
-      h: c.maxY - c.minY + 1,
-      pixels: c.pixels,
-    })),
-    noiseFloor,
-  );
+  const blobs = labelComponents(mask).map((c) => ({
+    classId: c.classId,
+    x: c.minX,
+    y: c.minY,
+    w: c.maxX - c.minX + 1,
+    h: c.maxY - c.minY + 1,
+    pixels: c.pixels,
+  }));
+  const noteSize = estimateNoteSize(blobs, noiseFloor);
+  const classNoteSize = estimateNoteSizes(blobs, noiseFloor);
   // Fuse handwriting-shattered notes back into whole notes before labeling
   // (spec/139 Phase 9): a morphological close by ~a pen stroke, per class —
   // and a pen stroke is a fraction of a NOTE, not of the frame. Photographed
@@ -142,6 +141,7 @@ export function detectStickies(image: ImageBuffer, opts: DetectOptions = {}): De
     // wide enough to fill that seam in. Seams are read before it, boxes are
     // measured after it.
     seams: mask,
+    classNoteSize,
   });
   if (boxes.length === 0) return [];
   // …and now throw away what is not paper at all.

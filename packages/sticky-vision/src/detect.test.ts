@@ -529,6 +529,36 @@ describe('detectStickies', () => {
     expect(found).toHaveLength(8);
   });
 
+  it('finds a pad of SMALL notes on a wall of big ones', () => {
+    // A wall of orange events with a pad of small pink hotspots among them:
+    // two sizes of stationery on one wall. A size floor set by the orange
+    // threw every small note away (spec/139).
+    const image = blank(1000, 700, '#f1f3f5');
+    const orange = fillOf('domain-event');
+    const pink = fillOf('hotspot');
+    for (let i = 0; i < 14; i += 1) {
+      note(image, 40 + (i % 7) * 135, 40 + Math.floor(i / 7) * 110, 80, 80, orange);
+    }
+    for (let i = 0; i < 12; i += 1) {
+      note(image, 50 + (i % 6) * 150, 330 + Math.floor(i / 6) * 90, 40, 40, pink);
+    }
+    const found = detectStickies(image);
+    expect(found.filter((n) => n.kind === 'hotspot')).toHaveLength(12);
+    expect(found.filter((n) => n.kind === 'domain-event')).toHaveLength(14);
+  });
+
+  it('still refuses a few small scraps of one colour among big notes', () => {
+    // Three scraps are not a pad of small notes: a scarce colour is measured
+    // against the wall's notes, not against itself.
+    const image = blank(1000, 600, '#f1f3f5');
+    const orange = fillOf('domain-event');
+    for (let i = 0; i < 6; i += 1) note(image, 60 + i * 150, 80, 90, 90, orange);
+    for (let i = 0; i < 3; i += 1) note(image, 100 + i * 250, 350, 40, 40, fillOf('hotspot'));
+    const found = detectStickies(image);
+    expect(found.filter((n) => n.kind === 'hotspot')).toHaveLength(0);
+    expect(found).toHaveLength(6);
+  });
+
   it('gets through a 1024px working image quickly', () => {
     const image = blank(1024, 1024);
     const orange = fillOf('domain-event');

@@ -120,6 +120,15 @@ const SIZE_SAMPLE_MAX_ASPECT = 2.4;
 // Below this many note-shaped blobs there is no population to take a median
 // of, only a coincidence.
 const MIN_SIZE_SAMPLE = 3;
+// …and before ONE COLOUR gets a size of its own, eight of them. A scarce
+// colour on a wall is as likely to be junk as notes — pale masking tape reads
+// as a yellow note, a cardboard corner as an orange one — and measured from
+// three or four of those scraps it came out a third of a real note, which let
+// every scrap of its colour through. Measured on the hand-labelled walls: the
+// colours that were really a smaller pad had 21 whole notes behind them; the
+// ones that were tape had 3 to 7. Any value from 8 to 20 scores the same on
+// all eight walls; 10 sits in that plateau rather than on its edge.
+const MIN_CLASS_SIZE_SAMPLE = 10;
 
 // The note size, measured BEFORE anything is fused.
 //
@@ -132,19 +141,42 @@ const MIN_SIZE_SAMPLE = 3;
 // 55, 36 vs 38), where the old number was less than half of it (24 vs 55) and
 // every rule that divides by it — the close radius, the split, the too-big
 // filter — was wrong by the same factor.
+// A raw blob that could be a whole note: bigger than noise, not a strip, and
+// mostly paper. What the note size is measured from.
+function isPlausibleNote(b: Box, noiseFloor: number): boolean {
+  const short = Math.max(1, Math.min(b.w, b.h));
+  if (short < noiseFloor) return false;
+  if (Math.max(b.w, b.h) / short > SIZE_SAMPLE_MAX_ASPECT) return false;
+  return fillRatio(b) >= SIZE_SAMPLE_MIN_FILL;
+}
+
 export function estimateNoteSize(boxes: Box[], noiseFloor: number): number {
-  const plausible = boxes.filter((b) => {
-    const short = Math.max(1, Math.min(b.w, b.h));
-    if (short < noiseFloor) return false;
-    if (Math.max(b.w, b.h) / short > SIZE_SAMPLE_MAX_ASPECT) return false;
-    return fillRatio(b) >= SIZE_SAMPLE_MIN_FILL;
-  });
+  const plausible = boxes.filter((b) => isPlausibleNote(b, noiseFloor));
   // Nothing on this wall looks like a whole note — every blob is a strip of a
   // note the handwriting cut up, or a scrap. Say so (0) rather than answer
   // with the median of the scraps: the caller then falls back to what it can
   // know without the wall, which is the frame's own pen stroke.
   if (plausible.length < MIN_SIZE_SAMPLE) return 0;
   return medianNoteSize(plausible);
+}
+
+// The note size of each paper colour, measured the same way as the wall's
+// (see `estimateNoteSize`), for every colour with enough whole notes to
+// measure. Colours too scarce to measure are absent: the wall's size stands.
+export function estimateNoteSizes(
+  boxes: Box[],
+  noiseFloor: number,
+  minSample = MIN_CLASS_SIZE_SAMPLE,
+): Map<number, number> {
+  const byClass = new Map<number, Box[]>();
+  for (const b of boxes) byClass.set(b.classId, [...(byClass.get(b.classId) ?? []), b]);
+  const sizes = new Map<number, number>();
+  for (const [classId, group] of byClass) {
+    const plausible = group.filter((g) => isPlausibleNote(g, noiseFloor));
+    if (plausible.length < minSample) continue;
+    sizes.set(classId, medianNoteSize(plausible));
+  }
+  return sizes;
 }
 
 function gapBetween(a: Box, b: Box): number {
@@ -226,7 +258,15 @@ export type PaperMask = { width: number; height: number; classes: Uint8Array };
 
 export function fitBoxes(
   components: Component[],
-  opts: { imageSize?: number; mask?: PaperMask; seams?: PaperMask; noteSize?: number } = {},
+  opts: {
+    imageSize?: number;
+    mask?: PaperMask;
+    seams?: PaperMask;
+    noteSize?: number;
+    // The note size of each paper colour on this wall, where it could be
+    // measured (see `estimateNoteSizes`).
+    classNoteSize?: Map<number, number>;
+  } = {},
 ): Box[] {
   if (components.length === 0) return [];
   const raw = components.map(boxOf);
@@ -288,7 +328,15 @@ export function fitBoxes(
     // nine in ten real notes are within a quarter of the median and half the
     // spurious boxes are under three quarters of it — scraps of tape, shadow
     // in a paper seam, a corner of cardboard.
-    if (short < size * MIN_PAPER_SIZE_RATIO) return false;
+    //
+    // Measured per paper COLOUR where the wall has enough of it: stationery
+    // comes in one size per pad, not one size per wall. A wall of big orange
+    // events with small yellow actors on it has two sizes, and a floor set by
+    // the orange threw every actor away — while an orange sliver among orange
+    // notes is still a sliver.
+    const own = opts.classNoteSize?.get(b.classId);
+    const floorSize = own !== undefined && own > 0 && own < size ? own : size;
+    if (short < floorSize * MIN_PAPER_SIZE_RATIO) return false;
     // A box that is mostly holes is wall seen through the gaps, whatever its
     // size: paper is solid.
     return fillRatio(b) >= MIN_PAPER_FILL;

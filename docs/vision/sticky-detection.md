@@ -97,28 +97,29 @@ and testable.
 
 ## The constants, and what they cost to learn
 
-| Constant                                    | Value             | Why                                                                                                                        |
-| ------------------------------------------- | ----------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `WALL_HUE_NEIGHBOURHOOD_DEG`                | 34                | Brown kraft paper and an orange domain event are the same hue. Near the wall's hue, only saturation separates them.        |
-| `OFF_HUE_MIN_SATURATION`                    | 0.18              | Far from the wall's hue, a pale lilac policy is obviously not the wall. Requiring the full floor everywhere lost them.     |
-| `MIN_PAPER_SATURATION`                      | 0.28              | A floor under the measured split, so a white-wall photo does not start calling its own shadows paper.                      |
-| `PEN_STROKE_FRACTION`                       | 0.006             | The gap the merge has to close is a pen stroke, and that is knowable without any statistic — which matters, see below.     |
-| `NOISE_FLOOR_FRACTION`                      | 0.008             | Half the merged boxes on a real photo are 1–5px of sensor noise, sitting exactly where a median would otherwise land.      |
-| `MIN_AREA_FRACTION`                         | 0.35              | A speck, relative to the median note — measured AFTER merging, never before.                                               |
-| `SPLIT_RATIO` / `SPLIT_KEEP_RATIO`          | 1.8 / 1.4         | Above the notation's widest silhouette (300×180 = 1.67), so a policy is never sawn in half, but below two notes abutting.  |
-| `MIN_SOLID_FILL` / `MIN_PAPER_FILL`         | 0.55 / 0.45       | To CUT a blob it must be convincingly solid; to KEEP one it need only be more paper than holes.                            |
-| `MAX_PAPER_ASPECT` / `MAX_PAPER_SIZE_RATIO` | 2.4 / 2.6         | Masking tape is a thin strip and a radiator is enormous; neither is paper.                                                 |
-| `MIN_PAPER_SIZE_RATIO`                      | 0.7               | Stationery comes in one size: nine notes in ten are within a quarter of the median, half the junk is under three quarters. |
-| `CLOSE_NOTE_FRACTION`                       | 0.04              | The close repairs handwriting INSIDE a note, so it is sized from the note — capped at 0.6% of the frame.                   |
-| `STANDOUT_SATURATION`                       | 0.15              | How far above its own wall a note sits in saturation. Measured: notes p10 0.04–0.05, junk p50 around zero.                 |
-| `WALL_RING_QUANTILE`                        | 0.25              | Which part of the ring around a box IS the wall. On a dense wall the rest of the ring is other notes.                      |
-| `FLOOR_TILES_LONG_SIDE`                     | 8                 | Cells about two notes across. Fewer and a shadow edge falls inside one cell; more and a cell can be all paper.             |
-| `TILE_BIMODAL_STRENGTH`                     | 0.12              | Below this share of its own variance a cell's histogram is one surface, and there is nothing in it to split.               |
-| `TILE_WALL_TOLERANCE`                       | 0.1               | How far a one-surface cell may sit from the frame's wall and still be taken for wall, on a paper-coloured wall.            |
-| `MERGE_MIN_FILL`                            | 0.3               | The merge is transitive: without a density bar, stray pixels chain every note in the frame into one blob at fill 0.2.      |
-| `SPLIT_BAND_THICKNESS`                      | 2.6               | A blob no thicker than this in notes is a single file of paper, and is cut even when it is not solid.                      |
-| `RESCUE_ERODE_FRACTION` / `RESCUE_ROUNDS`   | 0.12 / 3          | Deep enough to break the seam between two lapped notes; three passes is where it stops paying.                             |
-| Hue bands                                   | see `classify.ts` | Widened to measured paper, not swatches: real greens read h≈86 where the catalogue's read-model is h≈137.                  |
+| Constant                                    | Value             | Why                                                                                                                                                                                      |
+| ------------------------------------------- | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `WALL_HUE_NEIGHBOURHOOD_DEG`                | 34                | Brown kraft paper and an orange domain event are the same hue. Near the wall's hue, only saturation separates them.                                                                      |
+| `OFF_HUE_MIN_SATURATION`                    | 0.18              | Far from the wall's hue, a pale lilac policy is obviously not the wall. Requiring the full floor everywhere lost them.                                                                   |
+| `MIN_PAPER_SATURATION`                      | 0.28              | A floor under the measured split, so a white-wall photo does not start calling its own shadows paper.                                                                                    |
+| `PEN_STROKE_FRACTION`                       | 0.006             | The gap the merge has to close is a pen stroke, and that is knowable without any statistic — which matters, see below.                                                                   |
+| `NOISE_FLOOR_FRACTION`                      | 0.008             | Half the merged boxes on a real photo are 1–5px of sensor noise, sitting exactly where a median would otherwise land.                                                                    |
+| `MIN_AREA_FRACTION`                         | 0.35              | A speck, relative to the median note — measured AFTER merging, never before.                                                                                                             |
+| `SPLIT_RATIO` / `SPLIT_KEEP_RATIO`          | 1.8 / 1.4         | Above the notation's widest silhouette (300×180 = 1.67), so a policy is never sawn in half, but below two notes abutting.                                                                |
+| `MIN_SOLID_FILL` / `MIN_PAPER_FILL`         | 0.55 / 0.45       | To CUT a blob it must be convincingly solid; to KEEP one it need only be more paper than holes.                                                                                          |
+| `MAX_PAPER_ASPECT` / `MAX_PAPER_SIZE_RATIO` | 2.4 / 2.6         | Masking tape is a thin strip and a radiator is enormous; neither is paper.                                                                                                               |
+| `MIN_PAPER_SIZE_RATIO`                      | 0.7               | Stationery comes in one size: nine notes in ten are within a quarter of the median, half the junk is under three quarters.                                                               |
+| `MIN_CLASS_SIZE_SAMPLE`                     | 10                | A colour needs this many whole notes to be floored against its OWN size (a pad of small actors), not the wall's. Tape had 3 to 7; real small pads 21. Any value 8 to 20 scores the same. |
+| `CLOSE_NOTE_FRACTION`                       | 0.04              | The close repairs handwriting INSIDE a note, so it is sized from the note — capped at 0.6% of the frame.                                                                                 |
+| `STANDOUT_SATURATION`                       | 0.15              | How far above its own wall a note sits in saturation. Measured: notes p10 0.04–0.05, junk p50 around zero.                                                                               |
+| `WALL_RING_QUANTILE`                        | 0.25              | Which part of the ring around a box IS the wall. On a dense wall the rest of the ring is other notes.                                                                                    |
+| `FLOOR_TILES_LONG_SIDE`                     | 8                 | Cells about two notes across. Fewer and a shadow edge falls inside one cell; more and a cell can be all paper.                                                                           |
+| `TILE_BIMODAL_STRENGTH`                     | 0.12              | Below this share of its own variance a cell's histogram is one surface, and there is nothing in it to split.                                                                             |
+| `TILE_WALL_TOLERANCE`                       | 0.1               | How far a one-surface cell may sit from the frame's wall and still be taken for wall, on a paper-coloured wall.                                                                          |
+| `MERGE_MIN_FILL`                            | 0.3               | The merge is transitive: without a density bar, stray pixels chain every note in the frame into one blob at fill 0.2.                                                                    |
+| `SPLIT_BAND_THICKNESS`                      | 2.6               | A blob no thicker than this in notes is a single file of paper, and is cut even when it is not solid.                                                                                    |
+| `RESCUE_ERODE_FRACTION` / `RESCUE_ROUNDS`   | 0.12 / 3          | Deep enough to break the seam between two lapped notes; three passes is where it stops paying.                                                                                           |
+| Hue bands                                   | see `classify.ts` | Widened to measured paper, not swatches: real greens read h≈86 where the catalogue's read-model is h≈137.                                                                                |
 
 ## Four things that were wrong first, and are worth not repeating
 
@@ -156,6 +157,12 @@ and testable.
   (notes p05 0.67–0.78, junk p25 0.41 but p50 0.83), so a floor tight enough to
   take the cardboard takes notes in deep shade with it. Fill the frame with the
   wall.
+- **Two sizes of note on one wall** are handled for the SMALL ones only. The
+  lower size floor is measured per paper colour (a colour with enough whole
+  notes gets its own size), which brought a white wall's small actors and
+  hotspots back. Splitting is still measured against the wall's one size:
+  measured per colour it lost more than it gained on every labelled wall, so a
+  wall where a small pad OUTNUMBERS the big notes will see the big ones cut up.
 - **A shade gradient is handled; a shade CLIFF less so.** The floors are
   blended between cell centres, so a shadow edge sharper than about an eighth
   of the frame is averaged across that blend.

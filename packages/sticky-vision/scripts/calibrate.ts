@@ -295,8 +295,25 @@ function main() {
           : `${'-'.padStart(8)}${'-'.padStart(7)}${'-'.padStart(8)}${'-'.padStart(6)}`),
     );
   }
+  // ONE number across every labelled wall, summed over NOTES rather than
+  // averaged over photos: a wall of 274 notes counts for more than a wall of
+  // 41, because it has more notes to get wrong. It is the number a change is
+  // judged by — alongside the per-wall rows, which say whether it was paid
+  // for by one wall.
+  const scored = rows.map((r) => r.scored).filter((s): s is Score => s !== null);
+  const truth = scored.reduce((a, s) => a + s.truth, 0);
+  const detected = scored.reduce((a, s) => a + s.detected, 0);
+  const matched = scored.reduce((a, s) => a + s.matched, 0);
+  const precision = detected ? matched / detected : 0;
+  const recall = truth ? matched / truth : 0;
+  const f1 = precision + recall ? (2 * precision * recall) / (precision + recall) : 0;
   console.log(
-    `  ${'TOTAL'.padEnd(26)}${String(rows.reduce((a, r) => a + r.found, 0)).padStart(7)}\n`,
+    `  ${'TOTAL'.padEnd(26)}${String(rows.reduce((a, r) => a + r.found, 0)).padStart(7)}${''.padStart(14)}` +
+      (scored.length
+        ? `${String(truth).padStart(8)}${`${(precision * 100).toFixed(0)}%`.padStart(7)}` +
+          `${`${(recall * 100).toFixed(0)}%`.padStart(8)}${`${(f1 * 100).toFixed(1)}%`.padStart(7)}`
+        : '') +
+      '\n',
   );
 }
 

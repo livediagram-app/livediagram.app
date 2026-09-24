@@ -36,6 +36,17 @@ export function standsOut(
   image: ImageBuffer,
   box: { x: number; y: number; w: number; h: number },
 ): boolean {
+  return standoutOf(image, box) >= STANDOUT_SATURATION;
+}
+
+// HOW FAR a box stands out from its wall, in units of saturation: the
+// strongest of its three ways of standing out (see below). `standsOut` asks
+// whether it clears the bar; a caller weighing a doubtful box — one smaller
+// than stationery should be — asks how far over it is.
+export function standoutOf(
+  image: ImageBuffer,
+  box: { x: number; y: number; w: number; h: number },
+): number {
   const short = Math.min(box.w, box.h);
   const inset = Math.max(1, Math.round(short * 0.15));
   const reach = Math.max(2, Math.round(short * 0.3));
@@ -59,7 +70,8 @@ export function standsOut(
       if (s !== null) around.push(s);
     }
   }
-  if (inside.length === 0 || around.length === 0) return true;
+  // Nothing to compare: not a reason to throw paper away.
+  if (inside.length === 0 || around.length === 0) return Number.POSITIVE_INFINITY;
   const pick = (values: number[], at: number) => {
     const sorted = [...values].sort((a, b) => a - b);
     return sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * at))]!;
@@ -120,8 +132,7 @@ export function standsOut(
   // measured on a real one it cost two thirds of the blue notes, and on the
   // kraft walls — where it was added for the navy side of a cardboard box —
   // the fill floor already refuses that cardboard, so it bought nothing.
-  const stands = Math.max(dS, dV * VALUE_STANDOUT_WEIGHT, (dH / 60) * HUE_STANDOUT_WEIGHT);
-  return stands >= STANDOUT_SATURATION;
+  return Math.max(dS, dV * VALUE_STANDOUT_WEIGHT, (dH / 60) * HUE_STANDOUT_WEIGHT);
 }
 
 export const STANDOUT_CALIBRATION = {
