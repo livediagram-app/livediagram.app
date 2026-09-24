@@ -1695,7 +1695,8 @@ export const articles: Article[] = [
     slug: 'tables',
     title: 'Tables',
     description: 'An editable grid of cells for tabular content on the canvas.',
-    keywords: 'grid cells rows columns spreadsheet matrix data',
+    keywords:
+      'grid cells rows columns spreadsheet matrix data preset presets look looks style banded zebra striped header band recolour recolor',
     category: 'Palette',
     categorySlug: 'palette/tools',
     parentSlug: 'tools',
