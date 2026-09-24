@@ -186,10 +186,12 @@ export function TimerDial({
           );
         })}
         {variant === 'wedge' ? (
-          <path
-            d={wedgePath(C, C, WEDGE_R, fraction)}
-            className={`${WEDGE_FILL[tone]} transition-[d] duration-300`}
-          />
+          // No transition on `d`: the browser morphs path data point by
+          // point, and a wedge crossing half a lap (the arc's large-arc flag
+          // flips) or becoming the full-circle path has no sensible
+          // in-between, so dragging drew warped shapes. The wedge redraws on
+          // every drag frame and every clock tick anyway.
+          <path d={wedgePath(C, C, WEDGE_R, fraction)} className={WEDGE_FILL[tone]} />
         ) : (
           <circle
             cx={C}
