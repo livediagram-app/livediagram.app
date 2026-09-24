@@ -87,6 +87,10 @@ export type BoxedElementViewProps = {
   // the mode the element carries. Optional — a surface that can't change tools
   // (the read-only embed) leaves the face inert.
   onPressModeButton?: (element: import('@livediagram/diagram').ShapeElement) => void;
+  // Bring Focus (spec/144): ask everyone else in the room to come and look at
+  // this element. Absent on a surface with nobody to ask (an export, a solo
+  // board), which renders the face inert.
+  onPressFocusButton?: (element: import('@livediagram/diagram').ShapeElement) => void;
   // Session button (spec/105): press it to start the tool it carries. Absent
   // on a surface with no session to run; `sessionStartBlocked` is the softer
   // case — there IS a session, but this viewer may not start things (view

@@ -29,6 +29,9 @@ export const BEHAVIOUR_SHAPES: readonly ShapeKind[] = [
   'decision',
   'roll-call',
   'comment-pin',
+  // Bring Focus (spec/144): what it does only happens when somebody presses
+  // it, which is the whole of what makes a kind a Behaviour.
+  'focus-button',
 ];
 
 export function isBehaviourShape(kind: ShapeKind): boolean {

@@ -28,6 +28,7 @@ import { ImageElementView } from '@/components/canvas/ImageElementView';
 import { LinkCardView } from '@/components/canvas/LinkCardView';
 import { ModeButtonFace } from '@/components/canvas/ModeButtonFace';
 import { PageMasthead } from '@/components/canvas/PageMasthead';
+import { FocusButtonFace } from '@/components/canvas/FocusButtonFace';
 import { PickerFace } from '@/components/canvas/PickerFace';
 import { PortalFace } from '@/components/canvas/PortalFace';
 import { ReactionPadFace } from '@/components/canvas/ReactionPadFace';
@@ -79,6 +80,7 @@ type ElementFaceRouterProps = Pick<
   | 'onFollowLink'
   | 'onLinkCell'
   | 'onPressModeButton'
+  | 'onPressFocusButton'
   | 'onPressSessionButton'
   | 'onRollPicker'
   | 'onSetPageHeading'
@@ -125,6 +127,7 @@ export function ElementFaceRouter({
   onFollowLink,
   onLinkCell,
   onPressModeButton,
+  onPressFocusButton,
   onPressSessionButton,
   onRollPicker,
   onSetPageHeading,
@@ -237,6 +240,14 @@ export function ElementFaceRouter({
           onOpenSettings={
             onOpenElementSettings ? () => onOpenElementSettings(element.id) : undefined
           }
+        />
+      ) : element.type === 'shape' && element.shape === 'focus-button' && !isEditing ? (
+        /* Bring Focus (spec/144): asks everyone else in the room to come and
+           look at this, at your zoom, on your tab. */
+        <FocusButtonFace
+          label={label}
+          textColor={textColor}
+          onPress={onPressFocusButton ? () => onPressFocusButton(element) : undefined}
         />
       ) : element.type === 'shape' && element.shape === 'reveal' && !isEditing ? (
         /* Reveal zone (spec/106): a cover, off for me / off for everyone. */

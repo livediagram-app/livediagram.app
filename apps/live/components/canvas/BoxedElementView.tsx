@@ -90,6 +90,7 @@ function BoxedElementViewImpl({
   onCancelEdit,
   onFollowLink,
   onPressModeButton,
+  onPressFocusButton,
   onPressSessionButton,
   sessionStartBlocked,
   timerState,
@@ -499,6 +500,7 @@ function BoxedElementViewImpl({
         onFollowLink={onFollowLink}
         onLinkCell={onLinkCell}
         onPressModeButton={onPressModeButton}
+        onPressFocusButton={onPressFocusButton}
         onPressSessionButton={onPressSessionButton}
         onRollPicker={onRollPicker}
         onSetPageHeading={onSetPageHeading}

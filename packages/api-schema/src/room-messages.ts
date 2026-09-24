@@ -104,6 +104,10 @@ export const PRESENCE_OP_KINDS = [
   // sender, a view-only visitor could not be FOLLOWED at all, contradicting
   // spec/131's "the audience on a view link is exactly who most needs it".
   'viewport',
+  // "Come and look at this" (spec/144). Ephemeral for the same reason a laser
+  // is: a request to look somewhere is about a moment, and one replayed to a
+  // late joiner is answering a sentence nobody is still saying.
+  'focus-here',
 ] as const;
 
 // Room op kinds that DO change the diagram: they get a monotonic `seq` within
@@ -318,6 +322,20 @@ export type RoomOp =
   // already-throttled channel. The cost is accepted and written down: a room
   // where nobody follows anybody still carries these while people scroll.
   | { kind: 'viewport'; tabId: string; pan: { x: number; y: number }; zoom: number }
+  // --- Bring Focus (spec/144) ----------------------------------------
+  // Somebody pressed a Bring Focus element: offer everyone else a jump to it.
+  //
+  // Carries the element's CENTRE and the presser's zoom, not the presser's
+  // pan. Two people rarely have the same window size, so copying a pan lands
+  // the element off-centre (or off-screen) for anyone whose canvas is a
+  // different shape; centring the point is the correct translation of "come
+  // and look at this", and the zoom is what makes their view show the same
+  // amount of board.
+  //
+  // No sender name: the envelope already identifies the sender and the
+  // receiver resolves the name from the presence list it holds, so a renamed
+  // participant's invitation reads correctly.
+  | { kind: 'focus-here'; tabId: string; at: { x: number; y: number }; zoom: number }
   // --- Live poll (spec/88) -------------------------------------------
   // Deliberately NOT a Tab field like the timer / dot-vote: a poll is
   // ephemeral, so it exists only as these ops and the memory of the

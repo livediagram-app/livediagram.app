@@ -1,0 +1,59 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Bring Focus',
+  description:
+    'Drop a Bring Focus button on the canvas and press it to offer everyone else in the room a jump to that spot, at your zoom level and on your tab.',
+  path: '/help/palette/behaviour/bring-focus/',
+});
+
+<ArticleLayout
+  title="Bring Focus"
+  description="Press it and everyone else in the room is offered a jump to it, at your zoom, on your tab."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  parentArticle={{ title: 'Behaviour Elements', slug: 'behaviour' }}
+  subArticles={getSubArticles('behaviour').filter((a) => a.slug !== 'bring-focus')}
+>
+
+On a big board, "look at the thing in the bottom right" doesn't work: everybody is scrolled somewhere different. **Bring Focus** is the button that fixes it. Press it and everyone else in the room is offered a jump to exactly where it sits.
+
+## Adding one
+
+<Step n={1}>Open the floating palette and switch to the **Behaviours** category.</Step>
+
+<Step n={2}>Pick **Bring Focus** from the **Navigate** group, beside Portal and Chair.</Step>
+
+<Step n={3}>
+  Drop it where you want people looking, and give it a label. "The problem" or "Start here" reads
+  better than four identical buttons.
+</Step>
+
+## What happens when you press it
+
+Everyone else in the room gets a dialog:
+
+> **Sam wants you to look at something** — with a **Take me there** button
+
+Nothing on their screen moves until they press it. When they do, they land on that spot at **your** zoom level, so they see the same amount of board you do. If the button is on a different tab, it takes them there first.
+
+Your own view doesn't move: you're already looking at it.
+
+## Why it asks instead of dragging everyone
+
+A jump that arrived unasked would land in the middle of whatever somebody was doing, and half-typed notes get lost that way. The invitation costs the room one click and takes nothing away from anyone.
+
+The invitation replaces any earlier one, because the room only has one current "look at this", and it fades after a minute so it's never answering a question from two topics ago.
+
+## Who can use it
+
+Anyone in the room, including people on a view-only share link. It changes nothing on the board, so it's as safe as following somebody, and the person who spots the thing worth looking at often isn't the one with edit rights.
+
+<Tip>
+  Bring Focus is a one-off jump. If you want people to stay on your shoulder as you move around,
+  that's **Follow me** from the presence stack instead.
+</Tip>
+
+</ArticleLayout>

@@ -310,6 +310,10 @@ export const PALETTE_TELEMETRY_TYPES = {
     'DoneCheck',
     // Chair (spec/130): a Behaviour element, so it ranks with them.
     'Chair',
+    // Bring Focus (spec/144): likewise Behaviour, in the Navigate group. The
+    // token is what elementTelemetryType actually emits for the kind, which
+    // for a hyphenated one is the hyphen kept (see Pie-chart above).
+    'Focus-button',
     'Pie-chart',
     'Bar-chart',
     'Line-chart',

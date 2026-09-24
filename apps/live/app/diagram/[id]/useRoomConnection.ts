@@ -68,6 +68,13 @@ export function useRoomConnection(opts: {
   // A peer set off a reaction pad (spec/135). Purely visual: nothing is
   // written, so there is nothing here to persist, order, or undo.
   receiveReaction: (elementId: string, reaction: string) => void;
+  // Bring Focus (spec/144): somebody is asking the room to come and look.
+  receiveFocusHere: (
+    from: string,
+    tabId: string,
+    at: { x: number; y: number },
+    zoom: number,
+  ) => void;
   receivePoll: (poll: LivePoll) => void;
   receivePollAnswer: (from: string, pollId: string, value: string | null) => void;
   receivePollEnd: (pollId: string) => void;
@@ -101,6 +108,7 @@ export function useRoomConnection(opts: {
     setSelfParticipant,
     receiveAvatarPush,
     receiveReaction,
+    receiveFocusHere,
     receivePoll,
     receivePollAnswer,
     receivePollEnd,
@@ -367,6 +375,11 @@ export function useRoomConnection(opts: {
           // burst for a pad on another tab has nothing to draw itself on and
           // expires quietly.
           receiveReaction(op.elementId, op.reaction);
+        } else if (op.kind === 'focus-here') {
+          // No tab check: the invitation names its own tab and taking it is
+          // what switches you, so one sent from another tab is exactly the
+          // case this element exists for.
+          receiveFocusHere(from, op.tabId, op.at, op.zoom);
         } else if (op.kind === 'tab-focus') {
           setRemoteTabFocus((prev) => {
             const next = new Map(prev);

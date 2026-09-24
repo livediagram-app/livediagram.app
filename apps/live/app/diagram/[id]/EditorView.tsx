@@ -15,6 +15,7 @@ import { SignInBanner, SIGNIN_BANNER_DISMISS_KEY } from '@/components/chrome/Sig
 import { EmptyCanvasBanner } from '@/components/canvas/EmptyCanvasBanner';
 import { EditorModals } from '@/components/dialogs/EditorModals';
 import { PollPromptDialog } from '@/components/dialogs/PollPromptDialog';
+import { FocusInviteDialog } from '@/components/dialogs/FocusInviteDialog';
 import { EditorTabDialogs } from '@/components/dialogs/EditorTabDialogs';
 import { EditorElementDialogs } from '@/components/dialogs/EditorElementDialogs';
 import { EditorContextMenuHost } from '@/components/palette/EditorContextMenuHost';
@@ -67,6 +68,8 @@ export function EditorView() {
     revealVote,
     clearVote,
     livePoll,
+    focusInvite,
+    livePresence,
     layers,
     activeLayerId,
     canvasTool,
@@ -373,6 +376,18 @@ export function EditorView() {
           key={livePoll.poll?.id ?? 'no-poll'}
           poll={livePoll.poll && !livePoll.myAnswer ? livePoll.poll : null}
           onAnswer={livePoll.answerPoll}
+        />
+        {/* Bring Focus (spec/144). A dialog like the poll prompt above, and for
+          the same reason: it is a question addressed to you, not a status
+          line. Shown to view-role visitors too. */}
+        <FocusInviteDialog
+          from={
+            focusInvite.invite
+              ? (livePresence.find((p) => p.id === focusInvite.invite!.from)?.name ?? 'Someone')
+              : null
+          }
+          onAccept={focusInvite.acceptFocus}
+          onDismiss={focusInvite.dismissFocus}
         />
         <EditorModals />
         <EditorAnchoredPopovers />

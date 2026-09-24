@@ -89,6 +89,8 @@ type EditorViewportApi = {
     bh: number,
     opts?: { center?: boolean },
   ) => void;
+  // Centre a canvas point at somebody else's zoom (spec/144).
+  centreOn: (at: { x: number; y: number }, zoom: number) => void;
 };
 
 export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
@@ -260,6 +262,24 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
   // (spec/31): the deck decides what is on screen, so the box to fit is the
   // slide's, not the tab's. Same maths as fitToScreen, which is now the
   // special case "fit everything on this tab".
+  // Centre a canvas point at a given zoom (spec/144). The zoom is somebody
+  // else's, so this cannot go through fitToBounds, which derives one; the
+  // point of Bring Focus is that everyone ends up seeing the same amount of
+  // board as the person who pressed.
+  const centreOn = useCallback((at: { x: number; y: number }, zoom: number) => {
+    const node = canvasMainRef.current;
+    if (!node) return;
+    // offsetWidth/Height rather than the transformed rect, for the reason
+    // fitToBounds gives below.
+    const rect = { width: node.offsetWidth, height: node.offsetHeight };
+    setViewportZoom(zoom);
+    // The offset is in CANVAS units, not screen ones: the zoom is applied
+    // separately about the viewport's own centre, which is why
+    // computeFitToScreen's offset has no zoom factor in it either. Multiplying
+    // by the zoom here put everyone in the top-left corner of the board.
+    setViewportOffset({ x: rect.width / 2 - at.x, y: rect.height / 2 - at.y });
+  }, []);
+
   const fitToBounds = useCallback(
     (bbox: { x: number; y: number; w: number; h: number }, opts?: { maxZoom?: number }) => {
       const node = canvasMainRef.current;
@@ -292,6 +312,7 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
     getViewportCenter,
     fitToScreen,
     fitToBounds,
+    centreOn,
     scrollIntoView,
   };
 }

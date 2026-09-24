@@ -41,6 +41,11 @@ export function isSvgRenderedShape(kind: ShapeKind): boolean {
     kind !== 'browser' &&
     kind !== 'page' &&
     kind !== 'mode-button' &&
+    // Bring Focus (spec/144) is a filled rounded box with a glyph + label on
+    // top, same as the mode button beside it. This predicate is allow-BY-
+    // DEFAULT, so a new CSS-drawn kind left off it renders as a transparent
+    // nothing.
+    kind !== 'focus-button' &&
     kind !== 'portal' &&
     kind !== 'session-button' &&
     kind !== 'reveal' &&

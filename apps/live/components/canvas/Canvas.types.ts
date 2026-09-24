@@ -101,6 +101,10 @@ export type CanvasProps = {
   // mode the element carries. Optional — the read-only embed has no tool picker
   // to drive, so its buttons render inert.
   onPressModeButton?: (element: import('@livediagram/diagram').ShapeElement) => void;
+  // Bring Focus (spec/144): ask everyone else in the room to come and look at
+  // this element. Absent on a surface with nobody to ask (an export, a solo
+  // board), which renders the face inert.
+  onPressFocusButton?: (element: import('@livediagram/diagram').ShapeElement) => void;
   // Session button (spec/105): starts the tool the pressed element carries.
   onPressSessionButton?: (element: import('@livediagram/diagram').ShapeElement) => void;
   // True when this viewer can't start session tools (view role): the button
