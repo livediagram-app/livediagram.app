@@ -62,10 +62,14 @@ package never sees text; it only finds paper.
 
 ## How well it does it
 
-Scored against hand-labelled notes on three photographs of a real workshop
-wall (47, 41 and 56 notes; the labels live outside this repo, like the photos):
-precision 76 / 88 / 91%, recall 83 / 85 / 89%. Counting detections is not a
-score — a detector that boxes the masking tape too finds more of them.
+Scored against 647 hand-traced notes on eight photographs — six of one kraft
+workshop wall, a white-paper panorama and a dense whiteboard (the photos and
+labels live in a private repository, never here): **precision 86%, recall
+81%, F1 83.7** across all of them. Per wall F1 runs from 94 (a dense kraft
+section) and 91 (the whiteboard) down to 72 (the panorama, two sizes of
+sticky) and 42 (a photo taken at night with half a room in it). Counting
+detections is not a score — a detector that boxes the masking tape too finds
+more of them.
 
 ## What it cannot do
 

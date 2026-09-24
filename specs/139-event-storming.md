@@ -1091,6 +1091,20 @@ Decisions from the operator:
   Measured on the three labelled photographs, the gates and the splitting
   together: F1 53 → 80, 9 → 86 and 42 → 90.
 
+- **Tuned against eight hand-traced walls, not three by eye.** The author
+  labels a wall in the review itself (correct the boxes, **Save as truth**),
+  and the labels live in a private repository beside the photographs. Every
+  threshold is then judged by ONE number across every labelled note — and by
+  the per-wall rows, so a gain paid for by one wall is visible. Most of the
+  pipeline's floors turned out to decide nothing; the two that did were
+  retuned: a note's minimum size is measured against its OWN pad of paper
+  where the wall has enough of that colour (two sizes of stationery on one
+  wall), and far from the wall's hue a pixel needs less colour to be paper (a
+  whiteboard's greyish, pale notes). Every setting kept sits on a plateau of
+  equally good values, never on a lone best point, and none may break the
+  guard tests for tape, cardboard and the strip above the paper. Total F1
+  80.8 → 83.7 across 647 notes; no wall worse.
+
   The honest limits are unchanged in kind: pale paper at the wall's own hue is
   still wall to the classifier, a shade CLIFF sharper than an eighth of the
   frame is averaged across the blend, and a photo that is half room — a window,
