@@ -212,22 +212,68 @@ room issued and the baton is still free or still theirs.
 
 ## UX
 
-Everything configures from the **Collaborators modal** (spec/145), which already
-lists everyone in the diagram grouped by tab:
+### Handing it over
 
-- A **Facilitating** badge on whoever holds it.
-- Per-row actions: **Make facilitator** (owner), **Take over** (owner, when
-  somebody else holds it), **Take facilitation** (anyone, when it is free),
-  **Step down** (the holder). Greyed with the reason on a view-only row.
-- The same badge rides the presence stack avatar, so the room can see who is
-  driving without opening anything.
+Everything happens on the person's row in the **Collaborators modal**
+(spec/145), which already carries an avatar, a name with badges, a status line
+and one trailing **Follow** button. The baton adds a second verb to that row,
+beside Follow, because "make this person the facilitator" is a thing you do
+_to a person_ and the list of people is where you are already looking.
 
-A gated control that is not yours is **disabled with the reason**, not hidden:
-"Ask Alex to start the timer". Hiding it would teach a different editor to
-every participant, and the person would have no idea the feature exists.
+```
+On this tab — Board
+  (LD) Live Diagram   You  Editor  Facilitating
+       Online                                    [ Step Down ]
+  (BW) Bright Wolf    Editor
+       Online · Active 54 secs ago   [ Make Facilitator ]  [ Follow ]
+  (SP) Sam Patel      Viewer
+       Active 5 mins ago             [ Make Facilitator ]  [ Follow ]
+                                       ^ disabled: viewers cannot run a session
+```
 
-Baton changes arrive as a room notice ("Alex is facilitating"), not as an
-activity-log entry: nothing in the diagram changed.
+| Row                          | Button                            | When                                                                                                        |
+| ---------------------------- | --------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Somebody else                | **Make Facilitator**              | I may grant: the baton is free and I have edit rights, or I am the owner, or I hold it and am passing it on |
+| Somebody else, a viewer      | **Make Facilitator**, disabled    | Always. The tooltip says why, rather than hiding the button and leaving the rule unlearnable                |
+| Somebody else, holding it    | no button, **Facilitating** badge | Taking it back is done from my own row, so the baton has one home per person                                |
+| Mine, baton free             | **Take Facilitation**             | I have edit rights. This is also how a solo facilitator starts                                              |
+| Mine, somebody else holds it | **Take Over**                     | Owner only — the one row that makes "the diagram can always take back control" true                         |
+| Mine, I hold it              | **Step Down**                     | Always                                                                                                      |
+
+Self rows carry no button today; this is the first thing that gives them one,
+which is what makes claiming and stepping down possible without a second
+surface.
+
+The holder also wears the **Facilitating** badge in the presence stack, so the
+room can see who is driving without opening anything.
+
+### Telling the room
+
+Every change broadcasts, and every client raises a toast:
+
+| Who sees it                               | Wording                                |
+| ----------------------------------------- | -------------------------------------- |
+| The new holder                            | "Alex made you the facilitator"        |
+| Everybody else                            | "Alex is now facilitating"             |
+| Everybody, on a step-down or a release    | "Nobody is facilitating now"           |
+| The room, when an absent holder times out | "Alex left, so nobody is facilitating" |
+
+These go through the existing toast system, which means the **Show
+notifications** preference (spec/20, `notificationsEnabled`) already governs
+them: somebody who has turned toasts off gets none of this, exactly as they
+asked. They are `info` tone, never `error`, so the gate applies (errors are
+deliberately ungated, see `hooks/ui/useToast.tsx`).
+
+The badge and the disabled controls are the permanent record; the toast is the
+announcement. Somebody with notifications off still sees who is facilitating
+everywhere it matters.
+
+### Being told you cannot
+
+A gated control that is not yours is **disabled with the reason on it**, not
+hidden: "Ask Alex to start the timer". Hiding it would teach a different editor
+to every participant, and somebody who has never seen the control would have no
+idea the feature exists.
 
 ## Edges
 
