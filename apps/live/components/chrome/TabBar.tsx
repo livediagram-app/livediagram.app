@@ -152,6 +152,7 @@ export function TabBar({
   onClearContent,
   onImportTab,
   onExportTab,
+  facilitatedBy,
   timer,
   vote,
   onStartTimer,
@@ -261,6 +262,7 @@ export function TabBar({
       onDelete(tab.id);
       close();
     },
+    facilitatedBy,
     timer,
     vote,
     onStartTimer,

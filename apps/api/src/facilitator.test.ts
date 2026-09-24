@@ -151,3 +151,19 @@ describe('who may run the session tools', () => {
     expect(mayRunSession(held('a'), 'b')).toBe(false);
   });
 });
+
+describe('a baton nobody came back for', () => {
+  // The room can be evicted before its alarm fires, so the stored baton has to
+  // be judged again whenever it is read, not only when a timer says so.
+  it('reads as expired once the deadline has passed, however long ago', () => {
+    const away = beginGrace(held('gone'), 'gone', 0)!;
+    expect(graceExpired(away, FACILITATOR_GRACE_MS * 1000)).toBe(true);
+  });
+
+  it('still blocks the session tools until something sweeps it', () => {
+    // The state itself is unchanged: it takes a read to notice. This is why
+    // both read paths in the room sweep before they answer.
+    const away = beginGrace(held('gone'), 'gone', 0)!;
+    expect(mayRunSession(away, 'somebody-else')).toBe(false);
+  });
+});

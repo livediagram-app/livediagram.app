@@ -1,6 +1,6 @@
 # 149 — Facilitator
 
-Status: proposed
+Status: shipped
 
 ## What
 
@@ -270,10 +270,22 @@ everywhere it matters.
 
 ### Being told you cannot
 
-A gated control that is not yours is **disabled with the reason on it**, not
-hidden: "Ask Alex to start the timer". Hiding it would teach a different editor
-to every participant, and somebody who has never seen the control would have no
-idea the feature exists.
+A gated control that is not yours is **disabled with the reason on it** where
+the control has a home of its own: the Session Studio names the facilitator at
+the top ("Alex is facilitating this session. Ask them to start the timer, the
+vote or a poll.") and wraps its panes in a disabled `fieldset`, which disables
+every control inside it natively, including ones added later. Hiding the panel
+would teach a different editor to every participant, and somebody who had never
+seen the timer would not know there was one.
+
+The **card-level** verbs — an idea box's Reveal, an estimate's Clear, a done
+check's Reset everyone, the roll call, the picker's spin, a reveal zone's cover
+and a Bring Focus press — go the other way: while somebody else facilitates the
+control is simply **absent**, exactly as it is for a view-only visitor today.
+That is the shape those faces already have (each verb is drawn only when its
+handler is passed), and a card is small enough that a row of disabled buttons
+reads as breakage rather than as a rule. The Studio's line is what explains the
+board, and it names the person to ask.
 
 ## Edges
 

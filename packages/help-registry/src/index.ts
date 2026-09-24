@@ -213,7 +213,7 @@ export const categories: Category[] = [
     title: 'Collaboration',
     description:
       'Work together in real time: comments, assigned actions, live presence, teams, sharing, and session tools.',
-    articleCount: 6,
+    articleCount: 7,
     kind: 'feature',
   },
   {
@@ -1275,6 +1275,15 @@ export const articles: Article[] = [
     title: 'Comments',
     description: 'Leave threaded comments on the canvas and resolve them.',
     keywords: 'thread feedback reply resolve discussion note annotate mention',
+    category: 'Collaboration',
+    categorySlug: 'collaboration',
+  },
+  {
+    slug: 'facilitator',
+    title: 'Facilitator',
+    description: 'Give one person the timer, votes and polls for a live session.',
+    keywords:
+      'facilitator facilitate host run the room session lead moderator driver baton timer vote poll control handover take over step down chair meeting workshop',
     category: 'Collaboration',
     categorySlug: 'collaboration',
   },

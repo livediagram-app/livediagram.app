@@ -13,6 +13,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { FacilitatorReason } from '@livediagram/api-schema';
+import { track } from '@/lib/telemetry';
 
 /** Where a diagram's baton token lives while the tab is open. */
 const tokenKey = (diagramId: string) => `livediagram:facilitator:${diagramId}`;
@@ -135,16 +136,22 @@ export function useFacilitator(deps: {
     [],
   );
 
+  // Telemetry (spec/22) on the ASK rather than the answer: a refused ask is
+  // worth knowing about, and the answer arrives at every client, which would
+  // count one move as many.
   const claimFacilitator = useCallback(() => {
     ref.current.send({ kind: 'facilitator', action: 'claim' });
+    track('Facilitator', 'Started', 'Claimed');
   }, []);
 
   const grantFacilitator = useCallback((presenceId: string) => {
     ref.current.send({ kind: 'facilitator', action: 'grant', to: presenceId });
+    track('Facilitator', 'Changed', 'Granted');
   }, []);
 
   const releaseFacilitator = useCallback(() => {
     ref.current.send({ kind: 'facilitator', action: 'release' });
+    track('Facilitator', 'Ended', 'Released');
   }, []);
 
   return {

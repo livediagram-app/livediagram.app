@@ -343,6 +343,16 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M21 12a8 8 0 01-11.6 7.1L3 21l1.9-6.4A8 8 0 1121 12z" {...s} />
     </Glyph>
   ),
+  // A baton being passed: one hand open, the bar crossing to it. Not a person
+  // (live-presence has the pointer-and-dot) and not a clock (the timer's).
+  facilitator: (
+    <Glyph>
+      <path d="M5 15.5l7-7" {...s} />
+      <circle cx="4.2" cy="16.3" r="1.9" {...s} />
+      <path d="M14.5 5.5l4 4" {...s} />
+      <path d="M19.5 14.5v3.2a1.8 1.8 0 01-1.8 1.8h-3.4" {...s} />
+    </Glyph>
+  ),
   'live-presence': (
     <Glyph>
       <path d="M4 5l7 14 2.2-5.8L19 11 4 5z" {...s} />

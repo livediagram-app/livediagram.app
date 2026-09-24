@@ -67,10 +67,15 @@ export function participantBadges(
   selfId: string,
   selfRole: 'edit' | 'view',
   followingId?: string | null,
+  // Whether this person holds the facilitator baton (spec/147). Passed in
+  // rather than read off the participant: the holder is a presence id, and
+  // your own row cannot be recognised by one.
+  opts?: { isFacilitator?: boolean },
 ): string[] {
   const badges: string[] = [];
   if (p.id === selfId) badges.push('You', selfRole === 'view' ? 'Viewer' : 'Editor');
   else if (p.role) badges.push(p.role === 'view' ? 'Viewer' : 'Editor');
+  if (opts?.isFacilitator) badges.push('Facilitating');
   if (followingId && followingId === p.id) badges.push('Following');
   return badges;
 }

@@ -208,6 +208,7 @@ export function EditorCanvasHost() {
     identityOnlyScreenOpen,
     imageContext,
     isOwner,
+    facilitator,
     isPinchingRef,
     isReadOnly,
     laserTrailRows,
@@ -327,6 +328,11 @@ export function EditorCanvasHost() {
     viewportZoom,
     zenMode,
   } = useEditorContext();
+
+  // Somebody else is running this session (spec/147). The facilitator verbs
+  // below fall away for everybody else, exactly as they do on a read-only
+  // surface; the responses beside them stay, because answering is the point.
+  const runBlocked = facilitator.sessionToolsBlocked;
   // Stable references for the two list-shaped props the Explorer +
   // Activity panels take, so those (React.memo'd) panels don't
   // re-render on every drag frame just because the editor re-rendered.
@@ -496,7 +502,11 @@ export function EditorCanvasHost() {
       // nothing, which makes it the same read-only act as following somebody,
       // and the person who spots the thing worth looking at is often not the
       // one with edit rights.
-      onPressFocusButton={pressFocusButton}
+      // Bring Focus (spec/144) is the facilitator's while somebody holds the
+      // baton (spec/147): "everybody look here" is the same act as "everybody
+      // stop and listen". Undefined renders the face inert, which is what a
+      // read-only surface already gets.
+      onPressFocusButton={runBlocked ? undefined : pressFocusButton}
       reactionBursts={reactionBursts}
       onReactionBurstDone={clearReactionBurst}
       laserTrails={laserTrailRows}
@@ -524,11 +534,14 @@ export function EditorCanvasHost() {
       // see useBehaviourElements — the press resolves what to do from the
       // element and calls the tool that already exists.
       onPressSessionButton={pressSessionButton}
-      sessionStartBlocked={isReadOnly}
+      sessionStartBlocked={isReadOnly || runBlocked}
       timerState={activeTab.timer ? (activeTab.timer.running ? 'running' : 'paused') : 'none'}
       revealedIds={revealedIds}
-      onToggleReveal={toggleRevealForMe}
-      onSetSessionConfig={isReadOnly ? undefined : setSessionConfigFor}
+      // A cover is the facilitator's to lift while one is running the session
+      // (spec/147); with nobody facilitating it stays the private peek it has
+      // always been (spec/106).
+      onToggleReveal={runBlocked ? undefined : toggleRevealForMe}
+      onSetSessionConfig={isReadOnly || runBlocked ? undefined : setSessionConfigFor}
       // The `…` on a Behaviours element's face (spec/09). Anchored from the
       // ELEMENT's rect, not the trigger's, so it lands exactly where a
       // right-click on the same element would — one menu, one position,
@@ -590,14 +603,15 @@ export function EditorCanvasHost() {
         participants: [selfParticipant, ...livePresence],
         tabTimer: activeTab.timer,
         respond: isReadOnly ? undefined : collabElements.respond,
-        setResponsesRevealed: isReadOnly ? undefined : collabElements.setResponsesRevealed,
-        clearResponses: isReadOnly ? undefined : collabElements.clearResponses,
+        setResponsesRevealed:
+          isReadOnly || runBlocked ? undefined : collabElements.setResponsesRevealed,
+        clearResponses: isReadOnly || runBlocked ? undefined : collabElements.clearResponses,
         addIdea: isReadOnly ? undefined : collabElements.addIdea,
-        revealIdeas: isReadOnly ? undefined : collabElements.revealIdeas,
-        clearIdeas: isReadOnly ? undefined : collabElements.clearIdeas,
-        scatterIdeas: isReadOnly ? undefined : collabElements.scatterIdeas,
-        pressAgendaItem: isReadOnly ? undefined : collabElements.pressAgendaItem,
-        takeRoll: isReadOnly ? undefined : collabElements.takeRoll,
+        revealIdeas: isReadOnly || runBlocked ? undefined : collabElements.revealIdeas,
+        clearIdeas: isReadOnly || runBlocked ? undefined : collabElements.clearIdeas,
+        scatterIdeas: isReadOnly || runBlocked ? undefined : collabElements.scatterIdeas,
+        pressAgendaItem: isReadOnly || runBlocked ? undefined : collabElements.pressAgendaItem,
+        takeRoll: isReadOnly || runBlocked ? undefined : collabElements.takeRoll,
       }}
       onEraseStart={isReadOnly ? undefined : beginErase}
       onDuplicateMultiSelected={duplicateMultiSelected}

@@ -4817,6 +4817,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "Folder",
       "Layer",
       "Session",
+      "Facilitator",
       "AI",
       "Team",
       "Participant",

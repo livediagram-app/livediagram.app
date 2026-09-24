@@ -39,6 +39,12 @@ export const TELEMETRY_CATEGORIES = [
   // to-layer, 'Opened' for the panel. Never layer names in `type`.
   'Layer',
   'Session',
+  // The facilitator baton (spec/147): who is running a live session.
+  // 'Started' when somebody takes a free one, 'Changed' when it is handed on
+  // or taken back, 'Ended' when the holder steps down. `type` is the shape of
+  // the move ('Claimed' / 'Granted' / 'Released'), never a name: the question
+  // is whether rooms use the role at all, not who held it.
+  'Facilitator',
   'AI',
   'Team',
   // Participant lifecycle (spec/22): 'Participant'/'Created' fires

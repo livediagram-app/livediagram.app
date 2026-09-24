@@ -365,6 +365,7 @@ export class DiagramRoom implements DurableObject {
       }
       // Otherwise catch this one session up on who is running the session.
       // `state` announces nothing: nothing happened, they merely arrived.
+      this.sweepLapsedBaton();
       this.sendTo(ws, {
         kind: 'facilitator',
         holder: this.facilitator.holder,
@@ -542,11 +543,29 @@ export class DiagramRoom implements DurableObject {
     }
   }
 
+  /**
+   * Release a baton whose grace period ran out while nothing was listening.
+   *
+   * The alarm does this the moment it fires, but an alarm needs a room: if the
+   * DO is evicted before it rings (everybody left, the room went quiet), the
+   * stored baton would still name somebody who has not been here for days, and
+   * the next session would find its session tools held by a ghost. So the two
+   * paths that read the baton sweep it first. Silent on purpose — the frame
+   * the caller is about to send reports the truth, and "Alex left" is not news
+   * to somebody who never saw Alex.
+   */
+  private sweepLapsedBaton(): void {
+    if (!graceExpired(this.facilitator, Date.now())) return;
+    this.facilitator = FREE_BATON;
+    void this.state.storage.put(FACILITATOR_KEY, FREE_BATON);
+  }
+
   /** A client asked to move the baton. The room decides; silence means no. */
   private handleFacilitator(
     msg: Extract<ClientMessage, { kind: 'facilitator' }>,
     session: SessionAttachment,
   ): void {
+    this.sweepLapsedBaton();
     const asker = this.askerOf(session);
     let move: BatonMove | null = null;
     if (msg.action === 'claim') {

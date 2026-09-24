@@ -2609,6 +2609,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     applyImageToElement,
     autoAlignTab,
     autoLayoutTab,
+    // The facilitator baton (spec/147): who is running this session.
+    facilitator,
     previewCleanup,
     endCleanupPreview,
     applyTabFontToAll,
