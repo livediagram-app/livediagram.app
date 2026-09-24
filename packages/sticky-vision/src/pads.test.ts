@@ -71,4 +71,26 @@ describe('findPads', () => {
     const kept = [sq(100, 100, 40), sq(150, 100, 40)];
     expect(findPads([sq(200, 100, 14)], kept, FRAME, NOTE)).toHaveLength(0);
   });
+
+  it('cuts two pad notes the close fused into a column, beside a pad', () => {
+    const pad = [sq(100, 100), sq(125, 100), sq(150, 102)];
+    const fused = { classId: 1, x: 175, y: 100, w: 13, h: 26, pixels: 13 * 26 * 0.85 };
+    const out = findPads([...pad, fused], [], FRAME, NOTE);
+    expect(out).toHaveLength(5);
+    expect(out.filter((b) => b.x === 175).map((b) => [b.y, b.h])).toEqual([
+      [100, 13],
+      [113, 13],
+    ]);
+  });
+
+  it('cuts nothing with no pad beside it: a strip of tape is not a row of notes', () => {
+    const strip = { classId: 1, x: 175, y: 100, w: 39, h: 13, pixels: 39 * 13 * 0.9 };
+    expect(findPads([strip], [], FRAME, NOTE)).toHaveLength(0);
+  });
+
+  it('does not cut a box barely longer than it is wide', () => {
+    const pad = [sq(100, 100), sq(125, 100), sq(150, 102)];
+    const tall = { classId: 1, x: 175, y: 100, w: 14, h: 22, pixels: 14 * 22 * 0.85 };
+    expect(findPads([...pad, tall], [], FRAME, NOTE)).toHaveLength(3);
+  });
 });

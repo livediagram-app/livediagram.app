@@ -142,8 +142,8 @@ export function detectStickies(image: ImageBuffer, opts: DetectOptions = {}): De
   // close up, a note is 55px and the gap to the note beside it is a handful,
   // so a radius picked off the image welded four notes into a bar.
   const closed = closePaperMask(mask, { radius: closeRadiusFor(noteSize, imageSize) });
-  // What the size and area floors refuse is kept aside: a cluster of it may
-  // be a pad of smaller notes (see `findPads`).
+  // What the size, area and aspect gates refuse is kept aside: a cluster of
+  // it may be a pad of smaller notes (see `findPads`).
   const refused: Box[] = [];
   const boxes = fitBoxes(labelComponents(closed), {
     imageSize,
@@ -160,7 +160,7 @@ export function detectStickies(image: ImageBuffer, opts: DetectOptions = {}): De
     seams: mask,
     classNoteSize,
     onDrop: (box, reason) => {
-      if (reason === 'area' || reason === 'size-floor') refused.push(box);
+      if (reason === 'area' || reason === 'size-floor' || reason === 'aspect') refused.push(box);
       opts.onDrop?.(box, reason);
     },
   });
