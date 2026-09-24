@@ -9,10 +9,10 @@ import {
   defaultFillColor,
   defaultPadding,
   defaultStrokeColor,
+  carriesSharedSettingsMenu,
   elementKindLabel,
   isCollabPanelShape,
   isSelfDrawingShape,
-  showsSettingsMenu,
   type ShapeMarker,
   type TextAlignX,
   type TextAlignY,
@@ -28,6 +28,7 @@ import { ImageElementView } from '@/components/canvas/ImageElementView';
 import { LinkCardView } from '@/components/canvas/LinkCardView';
 import { ModeButtonFace } from '@/components/canvas/ModeButtonFace';
 import { PageMasthead } from '@/components/canvas/PageMasthead';
+import { FocusButtonFace } from '@/components/canvas/FocusButtonFace';
 import { PickerFace } from '@/components/canvas/PickerFace';
 import { PortalFace } from '@/components/canvas/PortalFace';
 import { ReactionPadFace } from '@/components/canvas/ReactionPadFace';
@@ -81,6 +82,7 @@ type ElementFaceRouterProps = Pick<
   | 'onFollowLink'
   | 'onLinkCell'
   | 'onPressModeButton'
+  | 'onPressFocusButton'
   | 'onPressSessionButton'
   | 'onRollPicker'
   | 'onSetPageHeading'
@@ -129,6 +131,7 @@ export function ElementFaceRouter({
   onFollowLink,
   onLinkCell,
   onPressModeButton,
+  onPressFocusButton,
   onPressSessionButton,
   onRollPicker,
   onSetPageHeading,
@@ -149,16 +152,14 @@ export function ElementFaceRouter({
 }: ElementFaceRouterProps) {
   // The paper under this face, for colours the element doesn't carry (spec/07).
   const surface = useCanvasSurface();
-  // The shared settings `…` (spec/09). Every Behaviours element carries one,
-  // in the same corner, opening that element's own context menu, except the
-  // three that draw a richer `…` of their own (a second ellipsis beside the
-  // first) and the chair (see showsSettingsMenu).
+  // The shared settings `…` (spec/09), in the same corner on every Behaviours
+  // element that has one: see carriesSharedSettingsMenu for who doesn't.
   const settingsMenu =
     element.type === 'shape' &&
     !isEditing &&
     !readOnly &&
     onOpenElementSettings &&
-    showsSettingsMenu(element.shape) ? (
+    carriesSharedSettingsMenu(element.shape) ? (
       <span className="absolute right-1 top-1 z-10">
         <ElementSettingsButton
           label={`${elementKindLabel(element)} settings`}
@@ -241,6 +242,14 @@ export function ElementFaceRouter({
             onOpenElementSettings ? () => onOpenElementSettings(element.id) : undefined
           }
         />
+      ) : element.type === 'shape' && element.shape === 'focus-button' && !isEditing ? (
+        /* Bring Focus (spec/144): asks everyone else in the room to come and
+           look at this, at your zoom, on your tab. */
+        <FocusButtonFace
+          label={label}
+          textColor={textColor}
+          onPress={onPressFocusButton ? () => onPressFocusButton(element) : undefined}
+        />
       ) : element.type === 'shape' && element.shape === 'reveal' && !isEditing ? (
         /* Reveal zone (spec/106): a cover, off for me / off for everyone. */
         <RevealFace
@@ -291,7 +300,7 @@ export function ElementFaceRouter({
           onUnresolve={commentActions?.unresolve}
         />
       ) : element.type === 'shape' && element.shape === 'action-card' && !isEditing ? (
-        /* Action panel (spec/145): the Comment panel's sibling. It drives the
+        /* Action panel (spec/146): the Comment panel's sibling. It drives the
            SAME action machinery the popover and the Assign Action dialog do. */
         <ActionPanelFace
           element={element}

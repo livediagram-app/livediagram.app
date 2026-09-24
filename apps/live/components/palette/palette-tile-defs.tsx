@@ -1116,6 +1116,37 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     icon: <PickerIcon />,
   },
   {
+    // Bring Focus (spec/144): Navigate, beside Portal and Chair, because all
+    // three take somebody somewhere. This is the one that takes everybody.
+    id: 'tools:focus-button',
+    tileGroup: 'move',
+    blurb: 'Ask everyone to look here',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add bring focus',
+    caption: 'Bring Focus',
+    description:
+      'Bring Focus. Press it and everyone else in the room is offered a jump to it, at your zoom, on your tab.',
+    filled: true,
+    action: { type: 'shape', kind: 'focus-button' },
+    icon: (
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        aria-hidden
+      >
+        <circle cx="12" cy="12" r="7.5" />
+        <circle cx="12" cy="12" r="2.2" fill="currentColor" stroke="none" />
+        <path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3" />
+      </svg>
+    ),
+  },
+  {
     // Chair (spec/130): Behaviour, because what it does only happens when
     // somebody interacts with it — here by walking an Avatar-mode character
     // into it rather than by pressing it.
@@ -1167,7 +1198,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
-    // Action panel (spec/145): one assigned action as a card on the board, the
+    // Action panel (spec/146): one assigned action as a card on the board, the
     // Comment panel's sibling.
     id: 'collab:action-card',
     blurb: 'An assigned action as a card on the board',

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-// The action panel (spec/145). Like the Comment panel's tests, most of what is
+// The action panel (spec/146). Like the Comment panel's tests, most of what is
 // worth pinning is that it reuses the ORDINARY `action` field and the ordinary
 // spec/68 handlers rather than growing parallel ones.
 

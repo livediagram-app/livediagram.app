@@ -161,7 +161,7 @@ const NON_VOTABLE_SHAPES = new Set([
   'reaction-pad',
   // A comment pin (spec/136) IS a remark; a dot on one means nothing.
   'comment-pin',
-  // An action panel (spec/145) is a task, not a candidate.
+  // An action panel (spec/146) is a task, not a candidate.
   'action-card',
 ]);
 

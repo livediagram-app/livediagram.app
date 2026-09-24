@@ -36,6 +36,9 @@ type TabFolderChipProps = {
   participantsByTab: Map<string, Participant[]>;
   selfId: string;
   selfRole: 'edit' | 'view';
+  // Same as the pill's stack: follow ring + the Collaborators modal (spec/145).
+  followingId?: string | null;
+  onOpenCollaborators?: (participantId: string | null) => void;
 };
 
 export function TabFolderChip({
@@ -49,6 +52,8 @@ export function TabFolderChip({
   participantsByTab,
   selfId,
   selfRole,
+  followingId,
+  onOpenCollaborators,
 }: TabFolderChipProps) {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -175,7 +180,13 @@ export function TabFolderChip({
       {folderParticipants.length > 0 ? (
         // Who's inside the hidden members, so a viewer on one isn't
         // invisible. The stack's own ml-2 spaces it off the count badge.
-        <TabPresenceStack participants={folderParticipants} selfId={selfId} selfRole={selfRole} />
+        <TabPresenceStack
+          participants={folderParticipants}
+          selfId={selfId}
+          selfRole={selfRole}
+          followingId={followingId}
+          onOpenCollaborators={onOpenCollaborators}
+        />
       ) : null}
       {open && anchor && fanTabs.length > 0
         ? createPortal(

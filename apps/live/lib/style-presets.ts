@@ -76,6 +76,10 @@ export function applyTablePresetToEl(el: Element, p: TablePreset): Element {
     headerFill: p.headerFill,
     headerTextColor: p.headerText,
     zebra: p.zebra,
+    // Records which look this is, so a theme change can re-derive it the way a
+    // shape's `colorPreset` does. Without it the four resolved colours read as
+    // hand-picked ones and the table strands on the old theme.
+    tablePreset: p.id,
   };
 }
 
@@ -104,25 +108,29 @@ export function applyCodeThemeToEl(el: Element, id: CodeThemeId): Element {
 // change its click commits. Each MUST match the per-type rules in
 // useElementStyle exactly.
 
-// Hand-editing any colour breaks a shape's colour-preset binding (spec/48), so
-// setting fill / stroke / text on a shape clears `colorPreset` (a no-op field on
-// other types). Fill applies to shapes + sticky / freehand / table.
+// Hand-editing any colour breaks the element's preset binding (spec/48), so
+// setting fill / stroke / text clears `colorPreset` on a shape and
+// `tablePreset` on a table: past that point the colours are the user's, and a
+// theme change must preserve them rather than re-deriving a look they have
+// already edited away from. Fill applies to shapes + sticky / freehand / table.
 export function applyFillColorToEl(el: Element, color: string): Element {
   if (el.type === 'shape') return { ...el, fillColor: color, colorPreset: undefined };
-  if (el.type === 'sticky' || el.type === 'freehand' || el.type === 'table')
-    return { ...el, fillColor: color };
+  if (el.type === 'table') return { ...el, fillColor: color, tablePreset: undefined };
+  if (el.type === 'sticky' || el.type === 'freehand') return { ...el, fillColor: color };
   return el;
 }
 
 export function applyStrokeColorToEl(el: Element, color: string): Element {
   if (el.type === 'shape') return { ...el, strokeColor: color, colorPreset: undefined };
-  if (el.type === 'sticky' || el.type === 'arrow' || el.type === 'freehand' || el.type === 'table')
+  if (el.type === 'table') return { ...el, strokeColor: color, tablePreset: undefined };
+  if (el.type === 'sticky' || el.type === 'arrow' || el.type === 'freehand')
     return { ...el, strokeColor: color };
   return el;
 }
 
 export function applyTextColorToEl(el: Element, color: string): Element {
   if (el.type === 'shape') return { ...el, textColor: color, colorPreset: undefined };
+  if (el.type === 'table') return { ...el, textColor: color, tablePreset: undefined };
   if (isBoxed(el) || el.type === 'arrow') return { ...el, textColor: color };
   return el;
 }
@@ -144,7 +152,7 @@ export function applyArrowheadColorToEl(el: Element, color: string): Element {
 // anything else, so a multi-selection containing a mix only paints the ones
 // with a heading rather than parking a dead field on the rest.
 export function applyHeaderFillToEl(el: Element, color: string): Element {
-  if (el.type === 'table') return { ...el, headerFill: color };
+  if (el.type === 'table') return { ...el, headerFill: color, tablePreset: undefined };
   if (el.type === 'shape' && el.shape === 'lane') return { ...el, headerFill: color };
   return el;
 }

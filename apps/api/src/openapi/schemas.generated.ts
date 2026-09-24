@@ -1388,6 +1388,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
+          "focus-button": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
           "foldable": {
             "additionalProperties": false,
             "properties": {
@@ -3796,6 +3811,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "code-block",
       "checklist",
       "legend",
+      "focus-button",
       "icon",
       "sticker"
     ],
@@ -4383,6 +4399,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "strokeWidth": {
         "$ref": "#/components/schemas/BorderStroke"
+      },
+      "tablePreset": {
+        "type": "string"
       },
       "textAlignX": {
         "$ref": "#/components/schemas/TextAlignX"

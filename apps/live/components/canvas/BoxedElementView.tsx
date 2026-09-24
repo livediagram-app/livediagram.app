@@ -90,6 +90,7 @@ function BoxedElementViewImpl({
   onCancelEdit,
   onFollowLink,
   onPressModeButton,
+  onPressFocusButton,
   onPressSessionButton,
   sessionStartBlocked,
   timerState,
@@ -240,7 +241,7 @@ function BoxedElementViewImpl({
   const commentCount = isCommentPin ? 0 : activeCommentCount(element.commentThread);
   // Assigned action (spec/68): the badge shows only while the action is
   // open; a done action stays on the element but stops shouting. An action
-  // panel (spec/145) shows its action on its face, so it is the badge.
+  // panel (spec/146) shows its action on its face, so it is the badge.
   const isActionPanel = element.type === 'shape' && element.shape === 'action-card';
   const hasOpenAction = !isActionPanel && isOpenAction(element.action);
   // Both 'tab' and 'diagram' kinds get the "linked" badge; the
@@ -507,6 +508,7 @@ function BoxedElementViewImpl({
         onFollowLink={onFollowLink}
         onLinkCell={onLinkCell}
         onPressModeButton={onPressModeButton}
+        onPressFocusButton={onPressFocusButton}
         onPressSessionButton={onPressSessionButton}
         onRollPicker={onRollPicker}
         onSetPageHeading={onSetPageHeading}

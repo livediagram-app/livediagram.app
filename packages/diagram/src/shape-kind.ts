@@ -55,7 +55,7 @@ export type ShapeKind =
   // to hold one, so a remark can be pinned to a spot on the board rather than
   // to whichever shape happens to be nearest.
   | 'comment-pin'
-  // Action panel (spec/145): the Comment panel's sibling for assigned
+  // Action panel (spec/146): the Comment panel's sibling for assigned
   // actions. A card whose whole job is to carry ONE `action` (spec/68) and
   // show it on the board, so a follow-up can live where the room can read it.
   | 'action-card'
@@ -137,6 +137,9 @@ export type ShapeKind =
   // Legend (spec/53): a card of colour-coded rows (a swatch + a label), the
   // key you put beside a chart or a colour-coded board.
   | 'legend'
+  // Bring Focus (spec/144): press it and everyone else in the room is offered
+  // a jump to it, at your zoom, on your tab.
+  | 'focus-button'
   // Curated single-colour glyph from the icon catalogue. Which glyph
   // is carried by `iconId` (a registry key resolved in the live app's
   // icon catalogue, NOT a closed enum here, so adding icons is a

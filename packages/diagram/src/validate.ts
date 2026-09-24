@@ -112,7 +112,7 @@ export const SHAPE_KINDS = new Set<string>([
   'reaction-pad',
   // Comment pin (spec/136).
   'comment-pin',
-  // Action panel (spec/145).
+  // Action panel (spec/146).
   'action-card',
   // Done check (spec/137).
   'done-check',
@@ -150,6 +150,7 @@ export const SHAPE_KINDS = new Set<string>([
   'code-block',
   'checklist',
   'legend',
+  'focus-button',
   'icon',
   'sticker',
 ]);

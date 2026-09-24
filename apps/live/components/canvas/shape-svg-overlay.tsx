@@ -41,6 +41,11 @@ export function isSvgRenderedShape(kind: ShapeKind): boolean {
     kind !== 'browser' &&
     kind !== 'page' &&
     kind !== 'mode-button' &&
+    // Bring Focus (spec/144) is a filled rounded box with a glyph + label on
+    // top, same as the mode button beside it. This predicate is allow-BY-
+    // DEFAULT, so a new CSS-drawn kind left off it renders as a transparent
+    // nothing.
+    kind !== 'focus-button' &&
     kind !== 'portal' &&
     kind !== 'session-button' &&
     kind !== 'reveal' &&
@@ -50,7 +55,7 @@ export function isSvgRenderedShape(kind: ShapeKind): boolean {
     // A comment pin (spec/136) draws its own bubble; the wrapper box behind it
     // must not also paint a square.
     kind !== 'comment-pin' &&
-    // An action panel (spec/145) is the same card, for an assigned action.
+    // An action panel (spec/146) is the same card, for an assigned action.
     kind !== 'action-card' &&
     // A mind node (spec/118) is a rounded filled box with a label, same as
     // the four above. This predicate is allow-BY-DEFAULT, so a new CSS-drawn

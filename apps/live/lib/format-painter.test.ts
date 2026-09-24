@@ -1,6 +1,6 @@
-import type { ArrowElement, BoxedElement } from '@livediagram/diagram';
+import type { ArrowElement, BoxedElement, TextRun } from '@livediagram/diagram';
 import { describe, expect, it } from 'vitest';
-import { paintableArrowFields, paintableBoxedFields } from './format-painter';
+import { applyPaint, paintableArrowFields, paintableBoxedFields } from './format-painter';
 
 // Fully-populated source shapes / arrows so the painter has something
 // for every field. The painter's whole job is to be specific about
@@ -126,11 +126,10 @@ describe('paintableBoxedFields', () => {
     expect(out).not.toHaveProperty('locked');
   });
 
-  it('drops undefined entries so a target value never gets overwritten with undefined', () => {
-    // A bare-default source: nothing customised. The painter
-    // shouldn't paint "undefined" anywhere; the result is an empty
-    // object (or only carries width / height when the shape was
-    // explicitly sized, which all boxed elements have).
+  it('names every field the source is on the default for, so the paint can reset it', () => {
+    // A bare-default source still has an opinion on every field its kind
+    // carries: "the default". Those travel as `undefined` keys, which
+    // applyPaint turns into a cleared override on the target.
     const sparse: BoxedElement = {
       id: 's',
       type: 'shape',
@@ -141,9 +140,56 @@ describe('paintableBoxedFields', () => {
       height: 50,
     };
     const out = paintableBoxedFields(sparse);
-    expect(out).toEqual({ width: 100, height: 50 });
-    // Spreading onto a target should be a width / height update only.
-    expect(Object.keys(out).sort()).toEqual(['height', 'width']);
+    expect(out.width).toBe(100);
+    expect(out).toHaveProperty('fillColor', undefined);
+    expect(out).toHaveProperty('shadow', undefined);
+    expect(out).toHaveProperty('strokeWidth', undefined);
+  });
+
+  it('leaves out fields the source kind never draws, so the target keeps its own', () => {
+    const text: BoxedElement = { id: 't', type: 'text', x: 0, y: 0, width: 100, height: 40 };
+    const out = paintableBoxedFields(text);
+    // A text element has no border presets and no shadow: no opinion.
+    expect(out).not.toHaveProperty('strokeWidth');
+    expect(out).not.toHaveProperty('borderRadius');
+    expect(out).not.toHaveProperty('shadow');
+    expect(out).not.toHaveProperty('colorPreset');
+  });
+
+  it('carries an image’s animation along with its size, opacity and shadow', () => {
+    const image: BoxedElement = {
+      id: 'img',
+      type: 'image',
+      imageId: 'x',
+      x: 0,
+      y: 0,
+      width: 120,
+      height: 80,
+      animation: 'pulse',
+    };
+    const out = paintableBoxedFields(image);
+    expect(out.animation).toBe('pulse');
+    expect(out).toHaveProperty('shadow', undefined);
+    // Images draw no text or colour, so they hold no opinion on either.
+    expect(out).not.toHaveProperty('fillColor');
+    expect(out).not.toHaveProperty('textColor');
+  });
+
+  it('carries a table’s header fill and header text colour', () => {
+    const table = {
+      id: 'tb',
+      type: 'table',
+      x: 0,
+      y: 0,
+      width: 200,
+      height: 100,
+      cells: [['a']],
+      headerFill: '#123456',
+      headerTextColor: '#ffffff',
+    } as BoxedElement;
+    const out = paintableBoxedFields(table) as Record<string, unknown>;
+    expect(out.headerFill).toBe('#123456');
+    expect(out.headerTextColor).toBe('#ffffff');
   });
 
   it('collapses a uniform richText label into whole-label text formatting', () => {
@@ -182,7 +228,8 @@ describe('paintableBoxedFields', () => {
       richText: [{ text: 'Hi ', bold: true }, { text: 'there' }],
     };
     const out = paintableBoxedFields(mixedSource);
-    expect(out).not.toHaveProperty('textBold');
+    // No single value, so the element field (unset here) is what travels.
+    expect(out.textBold).toBeUndefined();
   });
 });
 
@@ -218,13 +265,129 @@ describe('paintableArrowFields', () => {
     expect(out).not.toHaveProperty('locked');
   });
 
-  it('drops undefined arrow fields so a default arrow paints nothing', () => {
-    const bare: ArrowElement = {
-      id: 'a',
-      type: 'arrow',
-      from: { kind: 'free', x: 0, y: 0 },
-      to: { kind: 'free', x: 10, y: 10 },
+  it('carries the arrowhead colour and the label plate', () => {
+    const out = paintableArrowFields({
+      ...fullyStyledArrow,
+      arrowheadColor: '#ff0000',
+      labelFill: '#ffffff',
+    });
+    expect(out.arrowheadColor).toBe('#ff0000');
+    expect(out.labelFill).toBe('#ffffff');
+  });
+});
+
+describe('applyPaint', () => {
+  const bareArrow: ArrowElement = {
+    id: 'a',
+    type: 'arrow',
+    from: { kind: 'free', x: 0, y: 0 },
+    to: { kind: 'free', x: 10, y: 10 },
+  };
+
+  it('resets a coloured arrow when the source arrow is on the theme colour', () => {
+    // The reported bug: a default-coloured source left the target red.
+    const red: ArrowElement = { ...bareArrow, id: 'b', strokeColor: '#ff0000', strokeWidth: 4 };
+    const out = applyPaint(red, paintableArrowFields(bareArrow));
+    expect(out).not.toHaveProperty('strokeColor');
+    expect(out).not.toHaveProperty('strokeWidth');
+    // Identity and geometry stay the target's.
+    expect(out.id).toBe('b');
+    expect(out.from).toEqual(red.from);
+  });
+
+  it('sets the colours a styled source carries', () => {
+    const out = applyPaint(bareArrow, paintableArrowFields(fullyStyledArrow));
+    expect(out.strokeColor).toBe('#0ea5e9');
+    expect(out.arrowStyle).toBe('curved');
+  });
+
+  it('keeps the target’s border when the source kind has none', () => {
+    const text: BoxedElement = { id: 't', type: 'text', x: 0, y: 0, width: 100, height: 40 };
+    const out = applyPaint(fullyStyledShape, paintableBoxedFields(text)) as Record<string, unknown>;
+    expect(out.strokeWidth).toBe('thick');
+    expect(out.shadow).toEqual(fullyStyledShape.shadow);
+    // ...but its fill follows the text element's default.
+    expect(out).not.toHaveProperty('fillColor');
+  });
+
+  it('strips painted attributes from the target’s runs so the paint shows', () => {
+    const target: BoxedElement = {
+      id: 't',
+      type: 'shape',
+      shape: 'square',
+      x: 0,
+      y: 0,
+      width: 100,
+      height: 50,
+      label: 'Hello there',
+      richText: [
+        { text: 'Hello ', bold: true, color: '#ff0000' },
+        { text: 'there', link: 'https://example.com' },
+      ],
     };
-    expect(paintableArrowFields(bare)).toEqual({});
+    const out = applyPaint(target, { textBold: false, textColor: '#00ff00' }) as {
+      richText?: TextRun[];
+      textBold?: boolean;
+    };
+    expect(out.textBold).toBe(false);
+    // Bold + colour lost to the paint; the link is content and stays.
+    expect(out.richText).toEqual([
+      { text: 'Hello ' },
+      { text: 'there', link: 'https://example.com' },
+    ]);
+  });
+
+  it('drops richText entirely once nothing rich is left', () => {
+    const target: BoxedElement = {
+      id: 't',
+      type: 'shape',
+      shape: 'square',
+      x: 0,
+      y: 0,
+      width: 100,
+      height: 50,
+      label: 'Hi',
+      richText: [{ text: 'Hi', bold: true }],
+    };
+    const out = applyPaint(target, { textBold: true });
+    expect(out).not.toHaveProperty('richText');
+    expect(out.textBold).toBe(true);
+  });
+
+  it('leaves the runs alone when no text is painted', () => {
+    const runs: TextRun[] = [{ text: 'Hi', bold: true }];
+    const target = { ...fullyStyledShape, richText: runs } as BoxedElement;
+    const out = applyPaint(target, { width: 10 }) as { richText?: TextRun[] };
+    expect(out.richText).toEqual(runs);
+  });
+
+  describe('the colour-preset binding', () => {
+    const bound = { ...fullyStyledShape, colorPreset: 'bold' } as BoxedElement;
+
+    it('copies the source binding when all three colours travel', () => {
+      const out = applyPaint(fullyStyledShape, {
+        fillColor: '#1',
+        strokeColor: '#2',
+        textColor: '#3',
+        colorPreset: 'soft',
+      } as Partial<BoxedElement>) as { colorPreset?: string };
+      expect(out.colorPreset).toBe('soft');
+    });
+
+    it('clears the target binding when the source has none', () => {
+      const out = applyPaint(bound, paintableBoxedFields(fullyStyledShape));
+      expect(out).not.toHaveProperty('colorPreset');
+    });
+
+    it('clears the target binding on a partial colour paint', () => {
+      // Only the stroke travelled; a theme change must not re-derive it away.
+      const out = applyPaint(bound, { strokeColor: '#000' });
+      expect(out).not.toHaveProperty('colorPreset');
+    });
+
+    it('keeps the target binding when no colour is painted', () => {
+      const out = applyPaint(bound, { width: 10 }) as { colorPreset?: string };
+      expect(out.colorPreset).toBe('bold');
+    });
   });
 });

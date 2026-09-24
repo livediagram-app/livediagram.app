@@ -114,6 +114,59 @@ describe('buildParticipantsByTab', () => {
     // tabs[0] is t1 (the active tab) -> online
     expect(m.get('t1')!.some((x) => x.id === 'a')).toBe(true);
   });
+
+  it('drops our own other browser tabs, which share our collab key (spec/145)', () => {
+    const me = p('me', { key: 'k-me' });
+    const myOtherTab = p('sock-2', { key: 'k-me' });
+    const m = buildParticipantsByTab({
+      ...common,
+      selfParticipant: me,
+      diagramShareable: true,
+      remoteTabFocus: new Map([['sock-2', 't2']]),
+      livePresence: [me, myOtherTab],
+      livePresenceById: byId(me, myOtherTab),
+      lastSeen: new Map([['sock-2', 1000]]),
+    });
+    expect([...m.values()].flat().map((x) => x.id)).toEqual(['me']);
+  });
+
+  it("collapses a peer's several connections to their most recently active one", () => {
+    const stale = p('sock-a1', { key: 'k-a' });
+    const fresh = p('sock-a2', { key: 'k-a' });
+    const m = buildParticipantsByTab({
+      ...common,
+      diagramShareable: true,
+      remoteTabFocus: new Map([
+        ['sock-a1', 't1'],
+        ['sock-a2', 't2'],
+      ]),
+      livePresence: [self, stale, fresh],
+      livePresenceById: byId(self, stale, fresh),
+      lastSeen: new Map([
+        ['sock-a1', 500],
+        ['sock-a2', 900],
+      ]),
+    });
+    expect(m.get('t1')!.map((x) => x.id)).toEqual(['me']);
+    expect(m.get('t2')!.map((x) => x.id)).toEqual(['sock-a2']);
+  });
+
+  it('keeps peers with no collab key apart (older clients fall back to their id)', () => {
+    const a = p('a');
+    const b = p('b');
+    const m = buildParticipantsByTab({
+      ...common,
+      diagramShareable: true,
+      remoteTabFocus: new Map([
+        ['a', 't1'],
+        ['b', 't1'],
+      ]),
+      livePresence: [self, a, b],
+      livePresenceById: byId(self, a, b),
+      lastSeen: new Map(),
+    });
+    expect(m.get('t1')!.map((x) => x.id)).toEqual(['me', 'a', 'b']);
+  });
 });
 
 describe('buildRemoteCursorRows', () => {

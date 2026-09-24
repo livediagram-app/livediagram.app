@@ -137,6 +137,7 @@ export function EditorCanvasHost() {
     broadcastAvatarPush,
     avatarShove,
     fireReaction,
+    pressFocusButton,
     reactionBursts,
     clearReactionBurst,
     broadcastCursor,
@@ -495,6 +496,11 @@ export function EditorCanvasHost() {
       onAvatarPush={broadcastAvatarPush}
       avatarShove={avatarShove}
       onFireReaction={isReadOnly ? undefined : fireReaction}
+      // Bring Focus (spec/144) is live for view-role visitors too: it mutates
+      // nothing, which makes it the same read-only act as following somebody,
+      // and the person who spots the thing worth looking at is often not the
+      // one with edit rights.
+      onPressFocusButton={pressFocusButton}
       reactionBursts={reactionBursts}
       onReactionBurstDone={clearReactionBurst}
       laserTrails={laserTrailRows}
@@ -554,7 +560,7 @@ export function EditorCanvasHost() {
               unresolve: unresolveThread,
             }
       }
-      // Action panels (spec/145) drive the SAME action machinery the popover
+      // Action panels (spec/146) drive the SAME action machinery the popover
       // and the Assign Action dialog do. The viewer identity is the one the
       // popover uses: the Clerk account, else the guest participant.
       actionSelfId={clerkUserId ?? selfParticipant.id}

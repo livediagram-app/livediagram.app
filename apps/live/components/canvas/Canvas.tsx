@@ -651,6 +651,7 @@ export function Canvas(props: CanvasProps) {
             // centre: you pressed a thing on the canvas, so the character should
             // appear where you pressed it.
             onPressModeButton={pressModeButton}
+            onPressFocusButton={props.onPressFocusButton}
             hasArrows={hasArrows}
             memberIds={memberIds}
             showHandles={showHandles}

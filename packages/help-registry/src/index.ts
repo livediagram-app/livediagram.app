@@ -1041,9 +1041,9 @@ export const articles: Article[] = [
     slug: 'behaviour',
     title: 'Behaviours',
     description:
-      'Every element that comes alive with the room: comment and action panels, estimates, temperature checks, idea boxes, Done checks, pickers, session buttons, agendas, decisions, roll calls, reactions, mode buttons and portals.',
+      'Every element that comes alive with the room: comment and action panels, estimates, temperature checks, idea boxes, Done checks, pickers, session buttons, agendas, decisions, roll calls, reactions, mode buttons, portals and Bring Focus.',
     keywords:
-      'behaviour behavior behaviours behaviors interactive button portal session timer vote poll reveal hide cover picker random spinner control mode switch chair seat link card bookmark preview url reaction pad confetti celebrate sparkles hearts applause fireworks emoji burst done check finished ready waiting who progress everyone mark complete collaborate collaboration estimate temperature idea box agenda decision roll call ask the room keep a record run the room facilitate facilitation runtime live',
+      'behaviour behavior behaviours behaviors interactive button portal session timer vote poll reveal hide cover picker random spinner control mode switch chair seat link card bookmark preview url bring focus look here attention gather reaction pad confetti celebrate sparkles hearts applause fireworks emoji burst done check finished ready waiting who progress everyone mark complete collaborate collaboration estimate temperature idea box agenda decision roll call ask the room keep a record run the room facilitate facilitation runtime live',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Elements',
@@ -1279,7 +1279,8 @@ export const articles: Article[] = [
     slug: 'live-presence',
     title: 'Live Presence',
     description: 'Live cursors, names, selections, and who is on which tab, in real time.',
-    keywords: 'cursors online who viewing realtime collaborators avatars multiplayer',
+    keywords:
+      'cursors online who viewing realtime collaborators avatars multiplayer people participants roster room',
     category: 'Collaboration',
     categorySlug: 'collaboration',
   },
@@ -1769,6 +1770,16 @@ export const articles: Article[] = [
   },
 
   // ---- Sub-articles: Behaviour ----
+  {
+    slug: 'bring-focus',
+    title: 'Bring Focus',
+    description: 'Ask everyone else in the room to come and look at one spot.',
+    keywords:
+      'bring focus look here attention everyone jump navigate gather point show spotlight presenter facilitate big board find lost viewport zoom same view',
+    category: 'Palette',
+    categorySlug: 'palette/behaviour',
+    parentSlug: 'behaviour',
+  },
   {
     slug: 'mode-buttons',
     title: 'Selection Mode Buttons',

@@ -24,6 +24,7 @@ import {
   switchThemeBackdrop,
   switchThemeElement,
   switchThemeElements,
+  tableColorPresets,
   type ThemeDefinition,
 } from './themes';
 import { THEME_CATEGORIES, themeCategory } from './themes-taxonomy';
@@ -233,6 +234,48 @@ describe('colour-preset re-derivation across themes (spec/48)', () => {
     expect(rederiveColorPresetForTheme(shape, slate)).toBe(shape);
     const arrow = createPinnedArrow('a', 'e', 'b', 'w');
     expect(rederiveColorPresetForTheme(arrow, slate)).toBe(arrow);
+  });
+});
+
+describe('table-preset re-derivation across themes (spec/48)', () => {
+  // The bug this covers: a table preset writes resolved colours, so before the
+  // binding existed every one of them read as a hand-picked custom and the
+  // table kept the OLD theme's header band while the shapes around it moved.
+  const slate = getTheme('slate');
+  const midnight = getTheme('midnight');
+  const here = tableColorPresets(slate).find((p) => p.id === 'table-banded')!;
+  const there = tableColorPresets(midnight).find((p) => p.id === 'table-banded')!;
+  const painted = () => ({
+    id: 't1',
+    type: 'table' as const,
+    x: 0,
+    y: 0,
+    width: 300,
+    height: 120,
+    cells: [['a']],
+    fillColor: here.fill,
+    strokeColor: here.stroke,
+    textColor: here.text,
+    headerFill: here.headerFill,
+    headerTextColor: here.headerText,
+    zebra: here.zebra,
+    tablePreset: 'table-banded',
+  });
+
+  it('re-derives a bound table to the matching look of the new theme', () => {
+    const [out] = switchThemeElements([painted()], slate, midnight) as Array<
+      ReturnType<typeof painted>
+    >;
+    expect(out!.headerFill).toBe(there.headerFill);
+    expect(out!.headerTextColor).toBe(there.headerText);
+    expect(out!.strokeColor).toBe(there.stroke);
+    expect(out!.tablePreset).toBe('table-banded');
+  });
+
+  it('leaves a hand-coloured table to the normal preserve-customs walk', () => {
+    const custom = { ...painted(), tablePreset: undefined, headerFill: '#abcdef' };
+    const [out] = switchThemeElements([custom], slate, midnight) as Array<typeof custom>;
+    expect(out!.headerFill).toBe('#abcdef');
   });
 });
 

@@ -80,14 +80,15 @@ export function useColorStyleSetters(deps: {
   // row and a lane's title gutter (spec/119). One field and one setter,
   // because it is one idea wearing two silhouettes.
   const setHeaderFillSelected = (color: string) =>
-    commitSelectedStyle('headerFill', (el) =>
-      el.type === 'table' || (el.type === 'shape' && el.shape === 'lane')
-        ? { ...el, headerFill: color }
-        : el,
-    );
+    commitSelectedStyle('headerFill', (el) => {
+      // Hand-picking the band breaks a table's preset binding, like every
+      // other colour on it (spec/48).
+      if (el.type === 'table') return { ...el, headerFill: color, tablePreset: undefined };
+      return el.type === 'shape' && el.shape === 'lane' ? { ...el, headerFill: color } : el;
+    });
   const setTableHeaderTextColorSelected = (color: string) =>
     commitSelectedStyle('headerTextColor', (el) =>
-      el.type === 'table' ? { ...el, headerTextColor: color } : el,
+      el.type === 'table' ? { ...el, headerTextColor: color, tablePreset: undefined } : el,
     );
 
   // The arrowhead's own colour (spec/09 arrow styles), for a head that should
@@ -175,6 +176,9 @@ export function useColorStyleSetters(deps: {
             fillColor: undefined,
             headerFill: undefined,
             headerTextColor: undefined,
+            // The look goes with the colours it painted: this is the
+            // "back to plain theme colours" button, not "this theme's Banded".
+            tablePreset: undefined,
           };
         }
         if (el.type === 'arrow') {

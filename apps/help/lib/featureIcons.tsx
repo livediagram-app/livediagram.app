@@ -654,6 +654,15 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   // someone presses, and the `behaviour` family glyph above already draws that.
   // So none of them draws a button being pressed: each draws what pressing it
   // DOES, which is the only thing that tells them apart.
+  // A reticle: the mark you put over the thing you want looked at. Distinct
+  // from the reveal's eye (about seeing) and the portal's arrow (about going).
+  'bring-focus': (
+    <Glyph>
+      <circle cx="12" cy="12" r="7" {...s} />
+      <circle cx="12" cy="12" r="2" fill="currentColor" stroke="none" />
+      <path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3" {...s} />
+    </Glyph>
+  ),
   'mode-buttons': (
     <Glyph>
       <rect x="3" y="14" width="18" height="7" rx="3.5" {...s} />

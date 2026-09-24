@@ -26,7 +26,7 @@ export const DEFAULT_FORMAT_CONFIG: FormatConfig = {
 };
 
 export const FORMAT_GROUPS: readonly { id: FormatGroup; label: string; hint: string }[] = [
-  { id: 'fill', label: 'Fill', hint: 'The fill colour and its theme preset' },
+  { id: 'fill', label: 'Fill', hint: 'The fill colour, header fill, and its theme preset' },
   {
     id: 'border',
     label: 'Border',
@@ -48,6 +48,8 @@ const FIELD_GROUP: Record<string, FormatGroup> = {
   // Fill.
   fillColor: 'fill',
   colorPreset: 'fill',
+  themeLockFill: 'fill',
+  headerFill: 'fill',
   // Border — and, for an arrow, the whole line look: an arrowhead is to a
   // connector what a corner radius is to a box.
   strokeColor: 'border',
@@ -55,6 +57,7 @@ const FIELD_GROUP: Record<string, FormatGroup> = {
   strokeStyle: 'border',
   borderRadius: 'border',
   arrowEnds: 'border',
+  arrowheadColor: 'border',
   arrowheadSize: 'border',
   arrowheadShape: 'border',
   arrowStyle: 'border',
@@ -69,6 +72,8 @@ const FIELD_GROUP: Record<string, FormatGroup> = {
   textUnderline: 'text',
   textStrikethrough: 'text',
   font: 'text',
+  headerTextColor: 'text',
+  labelFill: 'text',
   // Effects.
   shadow: 'effects',
   opacity: 'effects',

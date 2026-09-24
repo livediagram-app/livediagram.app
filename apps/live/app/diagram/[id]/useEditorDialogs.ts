@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { CanvasThemeTab } from '@/components/dialogs/CanvasThemeDialog';
+import { track } from '@/lib/telemetry';
 
 // Top-level modal/dialog visibility for the editor: Search, Shortcuts,
-// Settings, the Share dialog, and the per-tab Export / Import dialogs.
+// Settings, the Share dialog, the per-tab Export / Import dialogs, and the
+// Collaborators modal.
 // Pure open/closed UI flags with no diagram-data coupling — a self-
 // contained slice composed into useEditorState and spread into its
 // view-model.
@@ -52,6 +54,15 @@ export function useEditorDialogs() {
   // tab live from `multiSelectedIds` when scope is 'selection'.
   const [exportScope, setExportScope] = useState<'tab' | 'selection'>('tab');
   const [importOpen, setImportOpen] = useState(false);
+  // The Collaborators modal (spec/145), opened from a tab's presence stack.
+  // null = closed; otherwise `focusId` is whose avatar was clicked (null from
+  // the "+N" badge), which the modal highlights.
+  const [collaborators, setCollaborators] = useState<{ focusId: string | null } | null>(null);
+  const openCollaborators = useCallback((focusId: string | null) => {
+    setCollaborators({ focusId });
+    track('UI', 'Opened', 'Collaborators');
+  }, []);
+  const closeCollaborators = useCallback(() => setCollaborators(null), []);
 
   // Rename-request nonces. The command palette (useEditorCommands) can't reach
   // into EditorHeader / TabBar's local inline-rename state, so it bumps a
@@ -82,6 +93,9 @@ export function useEditorDialogs() {
     setExportScope,
     importOpen,
     setImportOpen,
+    collaborators,
+    openCollaborators,
+    closeCollaborators,
     renameDiagramNonce,
     requestRenameDiagram,
     renameTabNonce,

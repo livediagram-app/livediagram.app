@@ -74,6 +74,7 @@ describe('every kind with a body draws one', () => {
     'decision',
     'roll-call',
     'done-check',
+    'focus-button',
   ];
 
   // A plain export is the box and its label. Anything with a body of its own

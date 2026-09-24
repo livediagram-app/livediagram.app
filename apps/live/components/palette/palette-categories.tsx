@@ -168,7 +168,7 @@ export const PALETTE_CATEGORIES: {
     label: 'Behaviours',
     group: 3,
     description:
-      'Elements that come alive with the room: ask for an estimate or a temperature, leave a comment or an action on the board, collect ideas, check who is done, run a timer, vote or poll, keep an agenda or a decision, throw a reaction, switch a mode, or jump through a portal.',
+      'Elements that come alive with the room: ask for an estimate or a temperature, leave a comment or an action on the board, collect ideas, check who is done, run a timer, vote or poll, keep an agenda or a decision, throw a reaction, switch a mode, jump through a portal, or bring everyone to look at one spot.',
     icon: <BehaviourTabIcon />,
   },
 ];
