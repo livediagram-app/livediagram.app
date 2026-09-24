@@ -158,6 +158,18 @@ overlapping LABELS (for the operator to review, not for the detector).
   scores TOTAL 92.0 against the original classical 83.5 — 201707 and 201713
   PASS, panorama 72 → 91 — with no real wall seen in training.
 
+## Round 3 — on the editor's own pixels (commit `71bb6eed`)
+
+Merged: F, B2, A2, the seam cut wired, and the sweep now renders each working
+image in headless Chromium exactly as the editor does (ImageMagick's pixels
+had flattered the score by 0.7 and passed a different wall). Baseline: TOTAL
+90.7, precision 93%, recall 88%, 29 merged (about 13 of them label overlaps),
+1/8 walls (201707).
+
+- [ ] G — precision (`standout.ts`, `texture.ts`): 201646 82%, panorama 88%, night 82%.
+- [ ] H — recall (`boxes.ts`, `detect.ts`, `classify.ts`, `floors.ts`, `lab.ts`): night 77%, panorama 77%, whiteboard 89%.
+- [ ] I — separation (`split.ts`, `contour.ts`, `seam.ts`): every merged box that is not a label overlap.
+
 ## Not yet delegated
 
 - **D-FINE-N / RT-DETR fine-tuning**: needs PyTorch, i.e. Python, which the
