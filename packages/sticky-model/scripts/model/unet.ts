@@ -16,7 +16,6 @@ export type UNetConfig = {
 };
 
 export const DEFAULT_UNET: UNetConfig = { widths: [16, 24, 40, 64, 96] };
-export const UNET_STRIDE = 16;
 
 type Layer = T.SymbolicTensor;
 

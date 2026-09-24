@@ -15,9 +15,11 @@
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf node_modules .turbo"
   },
+  "dependencies": {
+    "@livediagram/sticky-vision": "workspace:*"
+  },
   "devDependencies": {
     "@livediagram/eslint-config": "workspace:*",
-    "@livediagram/sticky-vision": "workspace:*",
     "@livediagram/vitest-config": "workspace:*",
     "@tensorflow/tfjs": "4.22.0",
     "@types/node": "^26.1.2",

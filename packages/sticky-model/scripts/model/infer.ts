@@ -1,7 +1,7 @@
 import { CLASS } from '../../src/mask';
 import { resizeChannels } from '../../src/resize';
+import { cropFromStride, padToStride, rgbOf } from '../../src/stride';
 import { tf, type TfNode } from './tf';
-import { UNET_STRIDE } from './unet';
 
 export type InferOptions = {
   // Run the model on the photo scaled by this much (1 = the working size),
@@ -11,36 +11,22 @@ export type InferOptions = {
   flips?: boolean;
 };
 
-// One pass over a float RGB image: pad to the network's stride (edge pixels
-// repeated, so the frame's edge is not a seam), predict, crop back.
+// One pass over a float RGB image, framed by `stride.ts` exactly as the
+// browser frames it.
 function predictOnce(
   model: TfNode.LayersModel,
   rgb: Float32Array,
   width: number,
   height: number,
 ): Float32Array {
-  const pw = Math.ceil(width / UNET_STRIDE) * UNET_STRIDE;
-  const ph = Math.ceil(height / UNET_STRIDE) * UNET_STRIDE;
-  const x = new Float32Array(pw * ph * 3);
-  for (let y = 0; y < ph; y += 1) {
-    const sy = Math.min(height - 1, y);
-    for (let xx = 0; xx < pw; xx += 1) {
-      const s = (sy * width + Math.min(width - 1, xx)) * 3;
-      const o = (y * pw + xx) * 3;
-      x[o] = rgb[s]!;
-      x[o + 1] = rgb[s + 1]!;
-      x[o + 2] = rgb[s + 2]!;
-    }
-  }
-  const padded = tf.tidy(() => {
-    const out = model.predict(tf.tensor4d(x, [1, ph, pw, 3])) as TfNode.Tensor;
-    return out.dataSync() as Float32Array;
+  const padded = padToStride(rgb, width, height);
+  const out = tf.tidy(() => {
+    const y = model.predict(
+      tf.tensor4d(padded.rgb, [1, padded.height, padded.width, 3]),
+    ) as TfNode.Tensor;
+    return y.dataSync() as Float32Array;
   });
-  const probs = new Float32Array(width * height * 3);
-  for (let y = 0; y < height; y += 1) {
-    probs.set(padded.subarray(y * pw * 3, y * pw * 3 + width * 3), y * width * 3);
-  }
-  return probs;
+  return cropFromStride(out, padded.width, width, height);
 }
 
 function mirror(
@@ -75,12 +61,7 @@ export function predictProbs(
   opts: InferOptions = {},
 ): Float32Array {
   const scale = opts.scale ?? 1;
-  let rgb: Float32Array = new Float32Array(width * height * 3);
-  for (let p = 0; p < width * height; p += 1) {
-    rgb[p * 3] = rgba[p * 4]! / 255;
-    rgb[p * 3 + 1] = rgba[p * 4 + 1]! / 255;
-    rgb[p * 3 + 2] = rgba[p * 4 + 2]! / 255;
-  }
+  let rgb = rgbOf(rgba.subarray(0, width * height * 4));
   const sw = Math.round(width * scale);
   const sh = Math.round(height * scale);
   if (scale !== 1) rgb = resizeChannels(rgb, width, height, 3, sw, sh);
