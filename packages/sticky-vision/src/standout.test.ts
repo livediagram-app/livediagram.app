@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { hexToRgb, type ImageBuffer } from './colour';
-import { standoutOf, standsOut, STANDOUT_CALIBRATION } from './standout';
+import { notStandingOut, standoutOf, standsOut, STANDOUT_CALIBRATION } from './standout';
 
 // Does a box hold paper (spec/139 Phase 9)? Every image is drawn here.
 
@@ -45,5 +45,25 @@ describe('standsOut', () => {
     paint(image, '#6b3a10', 30);
     expect(standoutOf(image, BOX)).toBeGreaterThan(STANDOUT_CALIBRATION.STANDOUT_SATURATION);
     expect(standsOut(image, BOX)).toBe(false);
+  });
+});
+
+describe('notStandingOut', () => {
+  it('says nothing of a note that stands out', () => {
+    const image = wall('#b08a60');
+    paint(image, '#f97316');
+    expect(notStandingOut(image, BOX)).toBeNull();
+  });
+
+  it('names a patch the colour of its wall', () => {
+    const image = wall('#b08a60');
+    paint(image, '#b08a60');
+    expect(notStandingOut(image, BOX)).toBe('standout');
+  });
+
+  it('names dark grained cardboard', () => {
+    const image = wall('#c9b8a0');
+    paint(image, '#6b3a10', 30);
+    expect(notStandingOut(image, BOX)).toBe('dark-grain');
   });
 });

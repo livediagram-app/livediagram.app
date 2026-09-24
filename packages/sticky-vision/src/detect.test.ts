@@ -251,6 +251,16 @@ describe('detectStickies', () => {
     expect(found[0]!.kind).toBe('policy');
   });
 
+  it('tells a caller which gate dropped each box, and why', () => {
+    const image = blank(200, 200);
+    rect(image, 20, 20, 100, 100, fillOf('policy'));
+    rect(image, 170, 180, 5, 5, fillOf('hotspot'));
+    const drops: { x: number; reason: string }[] = [];
+    const found = detectStickies(image, { onDrop: (b, reason) => drops.push({ x: b.x, reason }) });
+    expect(found).toHaveLength(1);
+    expect(drops).toEqual([{ x: 170, reason: 'area' }]);
+  });
+
   it('reads the silhouette off the box, against the photo’s own median', () => {
     const image = blank(500, 200);
     rect(image, 20, 40, 100, 100, fillOf('domain-event'));

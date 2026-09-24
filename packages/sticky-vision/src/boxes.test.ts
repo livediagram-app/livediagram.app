@@ -85,3 +85,47 @@ describe('fitBoxes, cutting at a seam', () => {
     expect(fitBoxes([component], { imageSize: 120, noteSize: 40, mask })).toHaveLength(1);
   });
 });
+
+describe('fitBoxes, saying why a box is dropped', () => {
+  const component = (x: number, y: number, w: number, h: number, fill = 0.95) => ({
+    classId: 1,
+    minX: x,
+    minY: y,
+    maxX: x + w - 1,
+    maxY: y + h - 1,
+    pixels: Math.round(w * h * fill),
+  });
+  const reasonsFor = (c: ReturnType<typeof component>) => {
+    const reasons: string[] = [];
+    fitBoxes([c], { imageSize: 1000, noteSize: 40, onDrop: (_b, why) => reasons.push(why) });
+    return reasons;
+  };
+
+  it('names a speck thinner than the noise floor', () => {
+    expect(reasonsFor(component(0, 0, 3, 30))).toEqual(['noise']);
+  });
+
+  it('names a box under the area floor', () => {
+    expect(reasonsFor(component(0, 0, 9, 12))).toEqual(['area']);
+  });
+
+  it('names a box under the size floor', () => {
+    expect(reasonsFor(component(0, 0, 20, 20))).toContain('size-floor');
+  });
+
+  it('names a box that is mostly holes', () => {
+    expect(reasonsFor(component(0, 0, 40, 40, 0.3))).toContain('fill');
+  });
+
+  it('names a strip too long to be paper', () => {
+    expect(reasonsFor(component(0, 0, 60, 20))).toContain('aspect');
+  });
+
+  it('names a box far bigger than the notes', () => {
+    expect(reasonsFor(component(0, 0, 110, 110, 0.5))).toContain('too-big');
+  });
+
+  it('reports nothing for a note it keeps', () => {
+    expect(reasonsFor(component(0, 0, 40, 40))).toEqual([]);
+  });
+});

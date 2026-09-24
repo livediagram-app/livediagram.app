@@ -44,7 +44,16 @@ export function standsOut(
   image: ImageBuffer,
   box: { x: number; y: number; w: number; h: number },
 ): boolean {
-  return standoutOf(image, box) >= STANDOUT_SATURATION && !isDarkGrain(image, box);
+  return notStandingOut(image, box) === null;
+}
+
+// Which of the two tests a box fails, or null when it stands out as paper.
+export function notStandingOut(
+  image: ImageBuffer,
+  box: { x: number; y: number; w: number; h: number },
+): 'standout' | 'dark-grain' | null {
+  if (standoutOf(image, box) < STANDOUT_SATURATION) return 'standout';
+  return isDarkGrain(image, box) ? 'dark-grain' : null;
 }
 
 // HOW FAR a box stands out from its wall, in units of saturation: the

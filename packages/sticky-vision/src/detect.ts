@@ -2,9 +2,16 @@ import { EVENT_STORMING_NOTES, type EventStormingNoteKind } from '@livediagram/d
 import { classifyRgb } from './classify';
 import { localFloorsOf, type PaperFloors } from './floors';
 import { greyWorldBalance, type ImageBuffer } from './colour';
-import { standsOut, STANDOUT_CALIBRATION } from './standout';
+import { notStandingOut, STANDOUT_CALIBRATION } from './standout';
 import { closePaperMask, labelComponents, type ComponentMask } from './components';
-import { estimateNoteSize, estimateNoteSizes, fitBoxes, silhouetteOf } from './boxes';
+import {
+  estimateNoteSize,
+  estimateNoteSizes,
+  fitBoxes,
+  silhouetteOf,
+  type Box,
+  type DropReason,
+} from './boxes';
 import { clusterRows } from './rows';
 import { dropBlank } from './texture';
 
@@ -47,7 +54,12 @@ export type DetectOptions = {
   // The balance stays available (and tested) for a caller with a genuinely
   // neutral backdrop.
   balance?: boolean;
+  // Told of every box a gate refuses, and which gate: how a sweep traces a
+  // missed note to the rule that lost it. Never changes what is found.
+  onDrop?: (box: Box, reason: DetectDropReason) => void;
 };
+
+export type DetectDropReason = DropReason | 'standout' | 'dark-grain' | 'blank';
 
 // Sensor noise, as a fraction of the working image's long edge: a property of
 // the camera rather than of the wall. Shared with `fitBoxes`, which uses the
@@ -143,6 +155,7 @@ export function detectStickies(image: ImageBuffer, opts: DetectOptions = {}): De
     // measured after it.
     seams: mask,
     classNoteSize,
+    onDrop: opts.onDrop,
   });
   if (boxes.length === 0) return [];
   // …and now throw away what is not paper at all.
@@ -157,10 +170,17 @@ export function detectStickies(image: ImageBuffer, opts: DetectOptions = {}): De
   // …and a box that is BLANK and EDGELESS is not a note either: a window
   // pane, a patch of bare kraft, the strip above the paper. A note carries
   // writing, or at least shows an edge against its wall (see `dropBlank`).
-  const standing = dropBlank(
-    working,
-    boxes.filter((box) => standsOut(working, box)),
-  );
+  const drop = opts.onDrop ?? (() => {});
+  const outstanding = boxes.filter((box) => {
+    const why = notStandingOut(working, box);
+    if (why !== null) drop(box, why);
+    return why === null;
+  });
+  const standing = dropBlank(working, outstanding);
+  if (standing.length < outstanding.length) {
+    const kept = new Set(standing);
+    for (const box of outstanding) if (!kept.has(box)) drop(box, 'blank');
+  }
   if (standing.length === 0) return [];
   return clusterRows(standing, noteSize).map((box, i) => ({
     id: i,

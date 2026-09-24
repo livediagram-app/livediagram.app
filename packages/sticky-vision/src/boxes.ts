@@ -279,6 +279,12 @@ const RESCUE_ROUNDS = 3;
 // real gap and each piece can be measured against real pixels.
 export type PaperMask = { width: number; height: number; classes: Uint8Array };
 
+// Why a box was dropped: which gate refused it. Reported, never acted on, so a
+// sweep can say which rule costs which note.
+export type DropReason =
+  'noise' | 'area' | 'aspect' | 'too-big' | 'size-floor' | 'fill' | 'piece-small' | 'rescue';
+export type OnDrop = (box: Box, reason: DropReason) => void;
+
 export function fitBoxes(
   components: Component[],
   opts: {
@@ -292,9 +298,18 @@ export function fitBoxes(
     // How bright the photograph is, pixel by pixel: where it is on hand, a
     // flush seam with no notch can still be found by its shadow (see `seam.ts`).
     luminance?: Luminance;
+    // Told of every box a gate refuses, and why (see `DropReason`).
+    onDrop?: OnDrop;
   } = {},
 ): Box[] {
+  const drop = opts.onDrop ?? (() => {});
   if (components.length === 0) return [];
+  // True when the box passes; otherwise reports the reason and returns false.
+  const refuse = (b: Box, reason: DropReason | false): boolean => {
+    if (reason === false) return true;
+    drop(b, reason);
+    return false;
+  };
   const raw = components.map(boxOf);
   // Merge FIRST, and by an absolute gap rather than a derived one.
   //
@@ -331,25 +346,26 @@ export function fitBoxes(
   // half the merged boxes are 1 to 5 pixels across, and they sit exactly where
   // a median would otherwise land.
   const noiseFloor = Math.max(4, Math.round(imageSize * NOISE_FLOOR_FRACTION));
-  const solid = merged.filter((b) => Math.min(b.w, b.h) >= noiseFloor);
+  const solid = merged.filter((b) => refuse(b, Math.min(b.w, b.h) < noiseFloor && 'noise'));
   if (solid.length === 0) return [];
   // The note size the caller measured before the close, when one was measured:
   // by this point the blobs have been through a close and a merge, and a run
   // of welded notes is indistinguishable from one big note to a median.
   const size = opts.noteSize && opts.noteSize > 0 ? opts.noteSize : medianNoteSize(solid);
   const minArea = (size * MIN_AREA_FRACTION) ** 2;
-  const kept = solid.filter((b) => b.w * b.h >= minArea);
+  const kept = solid.filter((b) => refuse(b, b.w * b.h < minArea && 'area'));
   if (kept.length === 0) return [];
   // Shape and scale, LAST: a blob only has its final proportions once the
   // fragments are merged and the runs are cut. A strip of tape is a strip of
   // tape at every stage, but a row of three notes only stops looking like one
   // after the split.
-  const isPaper = (b: Box) => paperAt(b, MIN_PAPER_SIZE_RATIO);
-  const paperAt = (b: Box, sizeRatio: number) => {
+  const isPaper = (b: Box) => notPaper(b, MIN_PAPER_SIZE_RATIO) === null;
+  const paperAt = (b: Box, sizeRatio: number) => notPaper(b, sizeRatio) === null;
+  const notPaper = (b: Box, sizeRatio: number): DropReason | null => {
     const long = Math.max(b.w, b.h);
     const short = Math.max(1, Math.min(b.w, b.h));
-    if (long / short > MAX_PAPER_ASPECT) return false;
-    if (long > size * MAX_PAPER_SIZE_RATIO) return false;
+    if (long / short > MAX_PAPER_ASPECT) return 'aspect';
+    if (long > size * MAX_PAPER_SIZE_RATIO) return 'too-big';
     // …and a note is not much SMALLER than the wall's other notes either.
     // Stationery comes in one size: measured against the hand-labelled walls,
     // nine in ten real notes are within a quarter of the median and half the
@@ -363,12 +379,15 @@ export function fitBoxes(
     // notes is still a sliver.
     const own = opts.classNoteSize?.get(b.classId);
     const floorSize = own !== undefined && own > 0 && own < size ? own : size;
-    if (short < floorSize * sizeRatio) return false;
+    if (short < floorSize * sizeRatio) return 'size-floor';
     // A box that is mostly holes is wall seen through the gaps, whatever its
     // size: paper is solid.
-    return fillRatio(b) >= MIN_PAPER_FILL;
+    return fillRatio(b) >= MIN_PAPER_FILL ? null : 'fill';
   };
   const bigEnough = (b: Box) => Math.min(b.w, b.h) >= noiseFloor && b.w * b.h >= minArea;
+  // Keeps a box as paper, or reports why it is not.
+  const keepPaper = (b: Box) => refuse(b, notPaper(b, MIN_PAPER_SIZE_RATIO) ?? false);
+  const keepPiece = (b: Box) => refuse(b, !bigEnough(b) && 'piece-small');
 
   // A piece the splitter left whole may still be two lapped notes too short
   // for its length rule; the notches in its outline say so (see `chords.ts`).
@@ -393,7 +412,7 @@ export function fitBoxes(
     const pieces = splitOversized(box, size, opts.mask, opts.seams)
       .flatMap(notched)
       .flatMap(seamed)
-      .filter((b) => isPaper(b) && (b === box || bigEnough(b)));
+      .filter((b) => keepPaper(b) && (b === box || keepPiece(b)));
     if (pieces.length > 0) return pieces;
     // Nothing survived. If this box was ASSEMBLED, the assembly is what failed
     // — hand the pieces back instead of taking them down with it. A single
@@ -402,15 +421,18 @@ export function fitBoxes(
     // solidity the splitter wants nor the squareness the filter wants, while
     // each note on its own is plainly paper.
     const parts = partsOf(box)
-      .filter(bigEnough)
+      .filter(keepPiece)
       .flatMap((part) => splitOversized(part, size, opts.mask, opts.seams))
-      .filter(isPaper);
+      .filter(keepPaper);
     if (parts.length > 0) return parts;
     // A block of touching notes, then: one component too square for the
     // splitter's arithmetic and too big for the filters. Rather than lose
     // eight real notes to it, pull it apart at the seams the paper itself has
     // (see `erodePaperMask`) and keep whatever comes out looking like paper.
-    return opts.mask ? rescue(box, opts.mask, size, isPaper, bigEnough, opts.seams) : [];
+    if (!opts.mask) return [];
+    const rescued = rescue(box, opts.mask, size, isPaper, bigEnough, opts.seams);
+    if (rescued.length === 0) drop(box, 'rescue');
+    return rescued;
   });
 }
 
