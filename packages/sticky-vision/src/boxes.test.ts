@@ -129,3 +129,57 @@ describe('fitBoxes, saying why a box is dropped', () => {
     expect(reasonsFor(component(0, 0, 40, 40))).toEqual([]);
   });
 });
+
+describe('fitBoxes, a narrow note', () => {
+  // A wall of 40px notes; a note a note long but thinner than the others:
+  // an actor, a note half under its neighbour, a note seen at a slant.
+  function wallWith(paint: (x: number, y: number) => boolean, w: number, h: number) {
+    const width = 100;
+    const height = 100;
+    const classes = new Uint8Array(width * height);
+    let pixels = 0;
+    for (let y = 10; y < 10 + h; y += 1)
+      for (let x = 10; x < 10 + w; x += 1)
+        if (paint(x - 10, y - 10)) {
+          classes[y * width + x] = 1;
+          pixels += 1;
+        }
+    const component = { classId: 1, minX: 10, minY: 10, maxX: 9 + w, maxY: 9 + h, pixels };
+    return { component, mask: { width, height, classes } };
+  }
+  const fit = (w: number, h: number, paint: (x: number, y: number) => boolean = () => true) => {
+    const { component, mask } = wallWith(paint, w, h);
+    const reasons: string[] = [];
+    const out = fitBoxes([component], {
+      imageSize: 1000,
+      noteSize: 40,
+      mask,
+      seams: mask,
+      onDrop: (_b, why) => reasons.push(why),
+    });
+    return { out, reasons };
+  };
+
+  it('keeps a note a full note long, though thinner than the floor', () => {
+    expect(fit(22, 40).out).toHaveLength(1);
+  });
+
+  it('keeps it without a mask to look at, too', () => {
+    const c = { classId: 1, minX: 0, minY: 0, maxX: 21, maxY: 39, pixels: 22 * 40 };
+    expect(fitBoxes([c], { imageSize: 1000, noteSize: 40 })).toHaveLength(1);
+  });
+
+  it('still drops a strip thinner than half a note', () => {
+    const { out, reasons } = fit(18, 40);
+    expect(out).toHaveLength(0);
+    expect(reasons).toContain('size-floor');
+  });
+
+  it('still drops a thin box shorter than a note', () => {
+    expect(fit(22, 30).out).toHaveLength(0);
+  });
+
+  it('drops two small squares stacked, with a line of wall between them', () => {
+    expect(fit(20, 46, (_x, y) => y !== 22 && y !== 23).out).toHaveLength(0);
+  });
+});

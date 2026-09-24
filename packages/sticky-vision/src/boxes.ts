@@ -2,6 +2,7 @@ import { erodePaperMask, labelComponents, type Component } from './components';
 import { splitOversized, SPLIT_CALIBRATION } from './split';
 import { cutAtNotches } from './chords';
 import { cutAtSeam, type Luminance } from './seam';
+import { isNarrowNote } from './narrow';
 
 // From blobs to stickies (spec/139 Phase 8).
 //
@@ -359,9 +360,11 @@ export function fitBoxes(
   // fragments are merged and the runs are cut. A strip of tape is a strip of
   // tape at every stage, but a row of three notes only stops looking like one
   // after the split.
+  // `whole`: the box is a component as the mask drew it, not a piece cut
+  // out of one, and so may be a narrow note (see `isNarrowNote`).
   const isPaper = (b: Box) => notPaper(b, MIN_PAPER_SIZE_RATIO) === null;
   const paperAt = (b: Box, sizeRatio: number) => notPaper(b, sizeRatio) === null;
-  const notPaper = (b: Box, sizeRatio: number): DropReason | null => {
+  const notPaper = (b: Box, sizeRatio: number, whole = false): DropReason | null => {
     const long = Math.max(b.w, b.h);
     const short = Math.max(1, Math.min(b.w, b.h));
     if (long / short > MAX_PAPER_ASPECT) return 'aspect';
@@ -379,14 +382,18 @@ export function fitBoxes(
     // notes is still a sliver.
     const own = opts.classNoteSize?.get(b.classId);
     const floorSize = own !== undefined && own > 0 && own < size ? own : size;
-    if (short < floorSize * sizeRatio) return 'size-floor';
+    // …unless it is a whole NARROW note: a note long, and nobody's cut piece
+    // (a piece of a cut this thin is a sliver of the note underneath).
+    const narrow = whole && isNarrowNote(b, floorSize, opts.seams);
+    if (short < floorSize * sizeRatio && !narrow) return 'size-floor';
     // A box that is mostly holes is wall seen through the gaps, whatever its
     // size: paper is solid.
     return fillRatio(b) >= MIN_PAPER_FILL ? null : 'fill';
   };
   const bigEnough = (b: Box) => Math.min(b.w, b.h) >= noiseFloor && b.w * b.h >= minArea;
   // Keeps a box as paper, or reports why it is not.
-  const keepPaper = (b: Box) => refuse(b, notPaper(b, MIN_PAPER_SIZE_RATIO) ?? false);
+  const keepPaper = (b: Box, whole = false) =>
+    refuse(b, notPaper(b, MIN_PAPER_SIZE_RATIO, whole) ?? false);
   const keepPiece = (b: Box) => refuse(b, !bigEnough(b) && 'piece-small');
 
   // A piece the splitter left whole may still be two lapped notes too short
@@ -412,7 +419,7 @@ export function fitBoxes(
     const pieces = splitOversized(box, size, opts.mask, opts.seams)
       .flatMap(notched)
       .flatMap(seamed)
-      .filter((b) => keepPaper(b) && (b === box || keepPiece(b)));
+      .filter((b) => keepPaper(b, b === box) && (b === box || keepPiece(b)));
     if (pieces.length > 0) return pieces;
     // Nothing survived. If this box was ASSEMBLED, the assembly is what failed
     // — hand the pieces back instead of taking them down with it. A single
@@ -422,8 +429,9 @@ export function fitBoxes(
     // each note on its own is plainly paper.
     const parts = partsOf(box)
       .filter(keepPiece)
-      .flatMap((part) => splitOversized(part, size, opts.mask, opts.seams))
-      .filter(keepPaper);
+      .flatMap((part) =>
+        splitOversized(part, size, opts.mask, opts.seams).filter((p) => keepPaper(p, p === part)),
+      );
     if (parts.length > 0) return parts;
     // A block of touching notes, then: one component too square for the
     // splitter's arithmetic and too big for the filters. Rather than lose
