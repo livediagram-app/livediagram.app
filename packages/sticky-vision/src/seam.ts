@@ -11,6 +11,12 @@ import type { ImageBuffer } from './colour';
 // are left out rather than counted — and it never runs the whole way across,
 // which is why a seam is scored by the MEDIAN along the line: a line through
 // one note's writing has paper under most of it, and paper has no valley.
+//
+// Two flush notes need not show a shadow at all: one may simply be lit a
+// little less than the other, so the paper's level STEPS at the seam. A step
+// is weaker evidence than a valley (the edge of a line of writing and the
+// light falling off across one note make steps too), so it is trusted only
+// across a box long enough to be two notes (see `STEP_MIN_SPAN`).
 
 export type Luminance = { width: number; height: number; data: Uint8Array };
 
@@ -41,6 +47,13 @@ const SEAM_MIN_SPAN = 1.3;
 // How far a seam may lean, as a fraction of its length: notes are stuck on
 // by hand.
 const SEAM_MAX_TILT = 0.08;
+// …and a STEP in the paper's level counts as a seam, as deep as the valley
+// has to be, only across a box at least this long (in notes). Measured on
+// the eight labelled walls: from 1.4 to 1.65 it parts flush pairs on the
+// whiteboard and the panorama's columns of actors (TOTAL 90.7 → 91.5–91.6,
+// merged 29 → 28); at 1.7 the whiteboard's pairs, 1.68–1.74 notes long, are
+// out of reach again, and a stricter step (16 levels) gives one back.
+const STEP_MIN_SPAN = 1.6;
 // A pixel this much darker than the box's paper is ink, not shadow.
 const INK_BELOW_PAPER = 60;
 // The ends of a line are left out: a note's own border shadow sits there.
@@ -84,19 +97,23 @@ function lineAt(at: number, tilt: number, t: number, length: number): number {
   return Math.round(at + (tilt * (t - length / 2)) / length);
 }
 
-function valleyAlong(
+// How strongly a line reads as a seam: the median valley along it, or,
+// where `steps` is set, the median step across it when that is larger.
+function seamDepthAlong(
   lum: Luminance,
   box: Box,
   vertical: boolean,
   at: number,
   tilt: number,
   paper: number,
+  steps: boolean,
 ): number | null {
   const length = vertical ? box.h : box.w;
   const start = vertical ? box.y : box.x;
   const inset = Math.round(length * SEAM_INSET);
   const { width, height, data } = lum;
   const dips: number[] = [];
+  const rises: number[] = [];
   let samples = 0;
   for (let t = inset; t < length - inset; t += 1) {
     const across = lineAt(at, tilt, t, length);
@@ -112,10 +129,18 @@ function valleyAlong(
     const before = (data[p - 2 * step]! + data[p - 3 * step]! + data[p - 4 * step]!) / 3;
     const after = (data[p + 2 * step]! + data[p + 3 * step]! + data[p + 4 * step]!) / 3;
     dips.push(Math.min(before, after) - centre);
+    rises.push(after - before);
   }
   if (samples === 0 || dips.length < samples * SEAM_MIN_PAPER) return null;
-  dips.sort((a, b) => a - b);
-  return dips[Math.floor(dips.length / 2)]!;
+  const dip = median(dips);
+  // Signed, so a step only counts when the paper changes the SAME way the
+  // whole length of the line, as it does from one note to the next.
+  return steps ? Math.max(dip, Math.abs(median(rises))) : dip;
+}
+
+function median(values: number[]): number {
+  values.sort((a, b) => a - b);
+  return values[Math.floor(values.length / 2)]!;
 }
 
 // The deepest seam across the box that leaves a note either side of it, or
@@ -130,13 +155,14 @@ export function findSeam(lum: Luminance, box: Box, noteSize: number): Seam | nul
     const extent = vertical ? box.w : box.h;
     const length = vertical ? box.h : box.w;
     if (extent < noteSize * SEAM_MIN_SPAN) continue;
+    const steps = extent >= noteSize * STEP_MIN_SPAN;
     const maxTilt = Math.round(length * SEAM_MAX_TILT);
     for (let at = from + margin; at <= from + extent - margin; at += 1) {
       // Upright first, leaning further each step: of two equally deep
       // lines the straighter one is the seam, the other only grazes it.
       for (let k = 0; k <= 2 * maxTilt; k += 1) {
         const tilt = k % 2 === 0 ? k / 2 : -(k + 1) / 2;
-        const depth = valleyAlong(lum, box, vertical, at, tilt, paper);
+        const depth = seamDepthAlong(lum, box, vertical, at, tilt, paper, steps);
         if (depth === null || depth < SEAM_MIN_DEPTH) continue;
         if (!best || depth > best.depth) best = { vertical, at, tilt, depth };
       }
@@ -199,6 +225,7 @@ export const SEAM_CALIBRATION = {
   SEAM_MIN_PIECE,
   SEAM_MIN_SPAN,
   SEAM_MAX_TILT,
+  STEP_MIN_SPAN,
   INK_BELOW_PAPER,
   SEAM_INSET,
   SEAM_MIN_PAPER,

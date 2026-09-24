@@ -74,6 +74,28 @@ describe('findSeam', () => {
     expect(findSeam(s.lum, boxOf(10, 10, 44, 40), 22)).not.toBeNull();
   });
 
+  it('finds the step between two flush notes of different brightness', () => {
+    // Two notes butted together, one lit a little less than the other: no
+    // shadow line between them, only the paper's level changing.
+    const s = scene(100, 60);
+    s.paint(10, 10, 40, 40, 185, 1);
+    s.paint(50, 10, 40, 40, 205, 1);
+    scribble(s.paint);
+    const seam = findSeam(s.lum, boxOf(10, 10, 80, 40), 40);
+    expect(seam).not.toBeNull();
+    expect(seam!.vertical).toBe(true);
+    expect(Math.abs(seam!.at - 49.5)).toBeLessThanOrEqual(3);
+  });
+
+  it('trusts no step across a box that one note could nearly fill', () => {
+    // 1.4 notes long: a step there is as likely a line of writing's edge or
+    // the light falling off across one note as two notes.
+    const s = scene(100, 60);
+    s.paint(10, 10, 28, 40, 185, 1);
+    s.paint(38, 10, 28, 40, 205, 1);
+    expect(findSeam(s.lum, boxOf(10, 10, 56, 40), 40)).toBeNull();
+  });
+
   it('finds none nearer the edge than a note can be thin', () => {
     const s = scene(100, 60);
     s.paint(10, 10, 80, 40, 200, 1);
