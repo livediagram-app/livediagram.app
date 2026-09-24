@@ -52,7 +52,12 @@ and testable.
    whether it shares the wall's hue, and a pixel AT the wall's hue must also sit
    at least 7 a*b* units from the wall's colour: HSV saturation climbs as kraft
    falls into shade, so shadowed kraft clears the saturation floor, but in a*b*
-   it is still the wall. Only those pixels pay for the CIELAB conversion.
+   it is still the wall. The other way round, a pixel the saturation floor calls
+   wall is still paper when it sits at least 12 a*b* units from the wall, is lit
+   at least 0.9 of the wall's brightness and has a paper hue other than yellow
+   (masking tape is pale yellow): that is pale pink paper on a white wall, whose
+   saturation is no more than the white paper's sheen. Only pixels one of these
+   tests reaches pay for the CIELAB conversion.
 3. **Connected components** (`labelComponents`) over that mask: two-pass
    union-find, because a large frame is millions of pixels and a recursive
    flood fill does not survive a phone.
@@ -165,6 +170,8 @@ and testable.
 | `WALL_HUE_NEIGHBOURHOOD_DEG`                | 34                | Brown kraft paper and an orange domain event are the same hue. Near the wall's hue, only saturation separates them.                                                                           |
 | `OFF_HUE_MIN_SATURATION`                    | 0.11              | Far from the wall's hue, a pale lilac policy is obviously not the wall. 0.18 lost a whiteboard's greyish aggregates (s≈0.17 as photographed); 0.10–0.12 is the band that holds on every wall. |
 | `WALL_HUE_MIN_LAB_DISTANCE`                 | 7                 | At the wall's hue, how far from the wall's a*b* paper sits. Orange on kraft is 30–40, shadowed kraft 2–6; 6 to 10 all lift the kraft walls, 7 costs no wall a note.                           |
+| `PALE_PAPER_MIN_LAB_DISTANCE`               | 12                | A pixel HSV calls wall is pale paper this far from the wall in a*b*. Pale pink on white is 12–20, a white wall's noise 2–6; 11–14 all lift the total, 10 welds a whiteboard's dense notes.    |
+| `PALE_PAPER_MIN_BRIGHTNESS`                 | 0.9               | …and only when lit like the wall (a fraction of its value). A note's blurred rim and the gap between notes are darker. 0.8–1.1 score the same.                                                |
 | `BLOWN_OUT`                                 | 250               | A pixel with every channel at or above this is clipped and says nothing about the wall. 240–253 score the same.                                                                               |
 | `MIN_PAPER_SATURATION`                      | 0.28              | A floor under the measured split, so a white-wall photo does not start calling its own shadows paper.                                                                                         |
 | `PEN_STROKE_FRACTION`                       | 0.006             | The gap the merge has to close is a pen stroke, and that is knowable without any statistic — which matters, see below.                                                                        |
@@ -197,7 +204,7 @@ and testable.
 | `PAD_MIN_NOTES` / `PAD_MAX_SIZE`            | 3 / 0.7           | A pad is at least three boxes, each at most this share of the wall's note.                                                                                                                    |
 | `FUSED_MIN_ASPECT` / `FUSED_SIZE_RATIO`     | 1.75 / 1.5        | A refused box this elongated beside a pad is fused pad notes; a cut square joins at this looser size match. 1.6–1.85 and 1.35–1.5 score alike.                                                |
 | `RESCUE_ERODE_FRACTION` / `RESCUE_ROUNDS`   | 0.12 / 3          | Deep enough to break the seam between two lapped notes; three passes is where it stops paying.                                                                                                |
-| Hue bands                                   | see `classify.ts` | Widened to measured paper, not swatches: real greens read h≈86 where the catalogue's read-model is h≈137.                                                                                     |
+| Hue bands                                   | see `classify.ts` | Widened to measured paper, not swatches: real greens read h≈86 where the catalogue's read-model is h≈137. Green runs on to where blue begins (185): a pale mint reads h≈177.                  |
 
 ## Four things that were wrong first, and are worth not repeating
 
@@ -257,13 +264,18 @@ and testable.
   32 and 34 notes.
 - **A sticky more than about 60% covered** reads as a fragment of whatever is
   left, or is dropped as a speck.
-- **Pale paper at the wall's hue.** The pale yellow aggregate (`#fef9c3`,
-  s≈0.23) on a brown kraft wall (h≈41, s≈0.22) is inside the wall-hue
-  neighbourhood and below the per-photo saturation floor, so it IS wall to the
-  classifier. The visual demo reproduces it: 17 of 18 drawn, the aggregate
-  missed. Lowering the floor for yellow would let the kraft in; the honest fix
-  is a per-board colour legend, or measuring the wall from a region the author
-  points at.
+- **Pale YELLOW paper at the wall's hue.** The pale yellow aggregate
+  (`#fef9c3`, s≈0.23) on a brown kraft wall (h≈41, s≈0.22) is inside the
+  wall-hue neighbourhood and below the per-photo saturation floor, so it IS
+  wall to the classifier. The visual demo reproduces it: 17 of 18 drawn, the
+  aggregate missed. Other pale paper is caught by its CIELAB distance from the
+  wall, but not yellow: masking tape is the same colour, and a diagonal strip
+  of it has a note's bounding box. The honest fix is a per-board colour legend,
+  or measuring the wall from a region the author points at.
+- **A wall measured per tile can be mostly paper.** The wall's colour is the
+  dull tail of each floor cell's histogram; in a cell crowded with pale and
+  vivid notes that tail is pale paper, and pale notes there are compared with
+  themselves ([experiments](experiments/a2-colour.md)).
 - **Per-wall colour conventions.** Every workshop invents its own (the
   calibration wall uses pink for hotspots and green for read models). Today that
   is one global decision plus the draft's Change kind verb; spec/139 lists a

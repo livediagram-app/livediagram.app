@@ -137,9 +137,18 @@ overlapping LABELS (for the operator to review, not for the detector).
   - [x] R5 2-D seam search in sprawling blobs (cut where the seams are, not
         where the grid falls).
   - [x] R6 Fold-back: spec/139 Phase 9, sticky-detection.md, results doc.
-- [ ] A2 — **colour, round 2** (owns `classify.ts`, `floors.ts`, `lab.ts`,
+- [x] A2 — **colour, round 2** (owns `classify.ts`, `floors.ts`, `lab.ts`,
       `colour.ts`): the panorama's no-paper notes (small pink hotspots,
       pale pink), and the night wall's classification.
+      Result ([a2-colour.md](../docs/vision/experiments/a2-colour.md)): 88.7 → 90.0,
+      merged 29 → 31, no-paper notes 8 → 0.
+  - [x] A2.1 Pale paper by its CIELAB distance from the wall (kept).
+  - [x] A2.2 A purer wall colour from the wall's own population (rejected).
+  - [x] A2.3 No hue gap between green and blue (kept).
+  - [x] A2.4 The night wall under tungsten with a window (diagnosed: not colour).
+  - [x] A2.5 Re-sweep of the colour constants after round 1 (no change).
+  - [x] A2.6 A floor per kind of paper (rejected).
+  - [x] A2.7 Pale yellow on a bright wall (rejected).
 
 - **Held back (measured on the merged main branch):** wiring B's shadow-seam
   cut (`luminance: luminanceOf(working)` into `fitBoxes`) takes merged boxes

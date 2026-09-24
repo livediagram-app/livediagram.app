@@ -738,8 +738,9 @@ low-threshold capture surface can least afford.
   Its limits, honestly: white and grey paper are not in the notation, so it
   cannot see them; a very dim or blue-lit photo moves hues far enough to
   confuse kinds; a sticky more than about 60% covered reads as a fragment of
-  whatever is left; and pale paper at the wall's own hue is wall to it — on
-  brown kraft that is the pale yellow aggregate (`#fef9c3`, s≈0.23), which the
+  whatever is left; and pale YELLOW paper at the wall's own hue is wall to it
+  (other pale paper is told from the wall in CIELAB; yellow is also masking
+  tape's colour) — on brown kraft that is the pale yellow aggregate (`#fef9c3`, s≈0.23), which the
   visual demo (`pnpm demo:sticky-vision`) reproduces as the one miss in its
   eighteen. Every one of those lands as a draft the author can fix, or as
   nothing at all.
@@ -799,6 +800,10 @@ low-threshold capture surface can least afford.
     wall/paper split chosen by Otsu over the saturation histogram — and a pixel
     near the wall's hue must clear that floor while one far from it (a purple
     policy, a green read model) needs much less.
+  - PALE PAPER IS JUDGED IN CIELAB. A pale pink note on white paper has no
+    more HSV saturation than the paper's own sheen, so the floor calls it wall;
+    it is paper when its a*b* sits at least 12 from the wall's and it is lit
+    like the wall. Pale yellow is left out: masking tape is that colour.
   - GREY-WORLD WHITE BALANCE IS OFF BY DEFAULT, and that is a finding. On a
     kraft wall it takes the wall for a neutral surface and corrects the brown
     out of the whole photograph, moving every paper hue with it: detections
