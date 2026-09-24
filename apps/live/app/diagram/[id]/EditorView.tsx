@@ -17,6 +17,7 @@ import { EditorModals } from '@/components/dialogs/EditorModals';
 import { PollPromptDialog } from '@/components/dialogs/PollPromptDialog';
 import { FocusInviteDialog } from '@/components/dialogs/FocusInviteDialog';
 import { EditorTabDialogs } from '@/components/dialogs/EditorTabDialogs';
+import { CollaboratorsHost } from '@/components/dialogs/CollaboratorsHost';
 import { EditorElementDialogs } from '@/components/dialogs/EditorElementDialogs';
 import { EditorContextMenuHost } from '@/components/palette/EditorContextMenuHost';
 import { TourHost } from '@/components/tour/TourHost';
@@ -31,6 +32,7 @@ import { useDelayedReveal } from '@/hooks/ui/useDelayedReveal';
 import { useEditorAccent } from '@/hooks/ui/useEditorAccent';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useEditorContext } from './EditorContext';
+import { useSelectTab } from './useSelectTab';
 
 // How long a guest edits before the sign-in nudge appears (spec/36).
 // Long enough that it never greets someone the instant they open a
@@ -112,16 +114,10 @@ export function EditorView() {
     selfParticipant,
     sessionRole,
     sessionShareCode,
-    setActiveId,
     setDiagramName,
-    setEditingId,
     setExportOpen,
     setExportScope,
-    setFormatSourceId,
-    setGroupSourceId,
-    setMultiSelectedIds,
     setSearchOpen,
-    setSelectedId,
     setSettingsOpen,
     setShareDialogOpen,
     renameDiagramNonce,
@@ -130,7 +126,9 @@ export function EditorView() {
     tabs,
     toggleActiveTabLock,
     zenMode,
+    openCollaborators,
   } = ctx;
+  const selectTab = useSelectTab();
   // Contextual command palette for the SearchPanel "Actions" group (spec/09):
   // selection-aware command list + dispatcher, built off the same editor
   // actions the menus use. Empty (undefined items) for view-only sessions.
@@ -243,6 +241,7 @@ export function EditorView() {
           />
         )}
         <EditorTabDialogs />
+        <CollaboratorsHost />
         <EditorCanvasHost />
         {/* Presenting (spec/31) renders over everything and takes the keyboard.
           Nothing at all when no deck is running. */}
@@ -256,37 +255,22 @@ export function EditorView() {
             tabs={tabs}
             activeId={activeId}
             shareCode={sessionShareCode}
-            onSelectTab={(id) => {
-              setActiveId(id);
-              setSelectedId(null);
-              setMultiSelectedIds(new Set());
-              setEditingId(null);
-              setFormatSourceId(null);
-              setGroupSourceId(null);
-            }}
+            onSelectTab={selectTab}
           />
         ) : null}
         {anyWelcomeOpen || zenMode || embedMode ? null : (
           <TabBar
             tabs={tabs}
             activeId={activeId}
-            // Follow-me (spec/131): clicking a peer's avatar in the presence
-            // stack pins your view to theirs.
+            // Clicking an avatar in a presence stack opens the Collaborators
+            // modal (spec/145), which is where Follow (spec/131) lives.
             followingId={followMe.followingId}
-            onFollow={followMe.startFollowing}
-            onStopFollowing={followMe.stopFollowing}
+            onOpenCollaborators={openCollaborators}
             onMoveTabToFolder={moveTabToFolder}
             onRemoveTabFromFolder={removeTabFromFolder}
             onRenameFolder={renameTabFolder}
             activeTabHasContent={activeTab.elements.length > 0}
-            onSelect={(id) => {
-              setActiveId(id);
-              setSelectedId(null);
-              setMultiSelectedIds(new Set());
-              setEditingId(null);
-              setFormatSourceId(null);
-              setGroupSourceId(null);
-            }}
+            onSelect={selectTab}
             onAdd={addTab}
             onRename={renameTab}
             onDuplicate={duplicateTab}

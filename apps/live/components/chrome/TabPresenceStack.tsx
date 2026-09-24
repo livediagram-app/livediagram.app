@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { Participant } from '@/lib/identity';
 import { ParticipantAvatar } from '@/components/primitives/ParticipantAvatar';
-import { PortalMenu } from '@/components/primitives/PortalMenu';
+import { participantBadges } from '@/lib/collaborator-roster';
 
 // Compact stack of participant initials, sitting between the tab
 // label and the ellipsis menu in TabBar. Rendered smaller than the
@@ -18,6 +18,10 @@ import { PortalMenu } from '@/components/primitives/PortalMenu';
 // Lifted out of TabBar.tsx (was 991 lines) so the bar file reads as
 // tab-row chrome plus its inline icons, and this lives where the
 // presence-fade animation behaviour is testable in isolation.
+//
+// Clicking any avatar, or the "+N" overflow badge, opens the Collaborators
+// modal (spec/145), which lists everyone by tab and is where Follow lives
+// (spec/131). The avatar used to start following directly.
 
 const POP_OUT_MS = 240;
 
@@ -26,26 +30,21 @@ export function TabPresenceStack({
   selfId,
   selfRole,
   followingId,
-  onFollow,
-  onStopFollowing,
+  onOpenCollaborators,
 }: {
   participants: Participant[];
   selfId: string;
   selfRole: 'edit' | 'view';
-  // Follow-me (spec/131): who we are currently following, and the two acts.
-  // Absent on a surface with no room behind it, which leaves the avatars as
-  // the plain presence indicators they have always been.
+  // Who we are following (spec/131), for the ring + tooltip chip.
   followingId?: string | null;
-  onFollow?: (participantId: string) => void;
-  onStopFollowing?: () => void;
+  // Opens the Collaborators modal with the clicked person highlighted (null
+  // from the "+N" badge). Absent leaves the avatars as plain indicators.
+  onOpenCollaborators?: (participantId: string | null) => void;
 }) {
   type Slot = { p: Participant; leaving: boolean };
   const [rendered, setRendered] = useState<Slot[]>(() =>
     participants.map((p) => ({ p, leaving: false })),
   );
-  // The "+N" overflow badge opens a popover listing the participants it hides.
-  const [overflowOpen, setOverflowOpen] = useState(false);
-  const overflowBadgeRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const incomingIds = new Set(participants.map((p) => p.id));
@@ -100,8 +99,6 @@ export function TabPresenceStack({
   const active = rendered.filter((s) => !s.leaving);
   const visibleCap = 3;
   const overflow = Math.max(0, active.length - visibleCap);
-  // The participants hidden behind the "+N" badge — listed in its popover.
-  const overflowParticipants = active.slice(visibleCap).map((s) => s.p);
   const shown = rendered
     .filter((s) => !s.leaving || rendered.indexOf(s) < visibleCap)
     .slice(0, visibleCap + leavingExtra(rendered, visibleCap));
@@ -120,36 +117,23 @@ export function TabPresenceStack({
           style={{ zIndex: slots - i, transformOrigin: 'center' }}
         >
           {(() => {
-            const badges = (() => {
-              if (slot.p.id === selfId) {
-                return ['You', selfRole === 'view' ? 'Viewer' : 'Editor'];
-              }
-              if (slot.p.role) {
-                return [slot.p.role === 'view' ? 'Viewer' : 'Editor'];
-              }
-              return undefined;
-            })();
+            const following = followingId === slot.p.id;
+            const badges = participantBadges(slot.p, selfId, selfRole, followingId);
             const avatar = (
               <ParticipantAvatar
                 participant={slot.p}
                 size={16}
                 withTooltip
-                badges={followingId === slot.p.id ? [...(badges ?? []), 'Following'] : badges}
+                badges={badges.length > 0 ? badges : undefined}
               />
             );
-            // Follow-me (spec/131): the presence stack is already where you go
-            // to find out who is here, so it is where you say "take me to
-            // them". Yourself is not followable, for obvious reasons.
-            if (!onFollow || slot.p.id === selfId) return avatar;
-            const following = followingId === slot.p.id;
+            if (!onOpenCollaborators) return avatar;
             return (
               <button
                 type="button"
-                onClick={() => (following ? onStopFollowing?.() : onFollow(slot.p.id))}
-                aria-pressed={following}
-                aria-label={
-                  following ? `Stop following ${slot.p.name}` : `Follow ${slot.p.name}'s view`
-                }
+                onClick={() => onOpenCollaborators(slot.p.id)}
+                aria-haspopup="dialog"
+                aria-label={`Collaborators, showing ${slot.p.name}`}
                 className={`inline-flex cursor-pointer rounded-full transition ${
                   following ? 'ring-2 ring-brand-400 ring-offset-1 dark:ring-offset-slate-900' : ''
                 }`}
@@ -161,56 +145,19 @@ export function TabPresenceStack({
         </span>
       ))}
       {overflow > 0 ? (
-        <>
-          <button
-            ref={overflowBadgeRef}
-            type="button"
-            onClick={() => setOverflowOpen((v) => !v)}
-            aria-haspopup="dialog"
-            aria-expanded={overflowOpen}
-            aria-label={`${overflow} more participant${overflow === 1 ? '' : 's'} on this tab`}
-            className="inline-flex h-4 w-4 animate-pop-in cursor-pointer items-center justify-center rounded-full border-2 border-white bg-slate-200 text-[8px] font-semibold text-slate-600 shadow-sm transition hover:bg-slate-300 dark:border-slate-800 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600"
-          >
-            +{overflow}
-          </button>
-          {overflowOpen ? (
-            <PortalMenu
-              anchor={overflowBadgeRef.current}
-              placement="above"
-              onClose={() => setOverflowOpen(false)}
-            >
-              <div className="scrollbar-slim max-h-64 overflow-y-auto px-1 py-1">
-                {overflowParticipants.map((p) => {
-                  const role = participantRole(p, selfId, selfRole);
-                  return (
-                    <div key={p.id} className="flex items-center gap-2 px-2 py-1.5">
-                      <ParticipantAvatar participant={p} size={20} />
-                      <span className="truncate text-xs font-medium text-slate-700 dark:text-slate-200">
-                        {p.name}
-                      </span>
-                      {role ? (
-                        <span className="ml-auto shrink-0 rounded-full bg-slate-100 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-slate-500 dark:bg-slate-800 dark:text-slate-400">
-                          {role}
-                        </span>
-                      ) : null}
-                    </div>
-                  );
-                })}
-              </div>
-            </PortalMenu>
-          ) : null}
-        </>
+        <button
+          type="button"
+          onClick={onOpenCollaborators ? () => onOpenCollaborators(null) : undefined}
+          disabled={!onOpenCollaborators}
+          aria-haspopup="dialog"
+          aria-label={`${overflow} more participant${overflow === 1 ? '' : 's'} on this tab`}
+          className="inline-flex h-4 w-4 animate-pop-in cursor-pointer items-center justify-center rounded-full border-2 border-white bg-slate-200 text-[8px] font-semibold text-slate-600 shadow-sm transition hover:bg-slate-300 disabled:cursor-default disabled:hover:bg-slate-200 dark:border-slate-800 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600"
+        >
+          +{overflow}
+        </button>
       ) : null}
     </div>
   );
-}
-
-// Role chip text for a participant row in the overflow popover: "You" for
-// the local viewer, else Viewer / Editor when the role is known, else none.
-function participantRole(p: Participant, selfId: string, selfRole: 'edit' | 'view'): string | null {
-  if (p.id === selfId) return selfRole === 'view' ? 'You · Viewer' : 'You';
-  if (p.role) return p.role === 'view' ? 'Viewer' : 'Editor';
-  return null;
 }
 
 // Helper so the visible slice keeps any leavers that occupy a slot

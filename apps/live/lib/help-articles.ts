@@ -60,6 +60,7 @@ export const HELP_ARTICLES = {
   // Links / activity / comments
   links: 'canvas/links',
   comments: 'collaboration/comments',
+  livePresence: 'collaboration/live-presence',
   assignedActions: 'collaboration/assigned-actions',
   // Explorer / data
   // Standing panels.
@@ -307,6 +308,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   templates: {
     title: 'Learn about templates',
     description: 'How templates give you a themed starting point.',
+  },
+  livePresence: {
+    title: 'Learn about live presence',
+    description: 'Who is in the diagram, where they are, and following them.',
   },
   keyboardShortcuts: {
     title: 'Learn about keyboard shortcuts',
