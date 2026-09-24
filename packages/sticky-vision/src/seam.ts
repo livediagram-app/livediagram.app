@@ -38,7 +38,6 @@ const SEAM_MIN_PIECE = 0.55;
 // notes long; the ones between two notes that can be told apart were in
 // boxes 1.3–1.75 long. Any value from 1.25 to 1.5 scores within a note of the best.
 const SEAM_MIN_SPAN = 1.3;
-const SEAM_ACROSS_SCALE = 1;
 // How far a seam may lean, as a fraction of its length: notes are stuck on
 // by hand.
 const SEAM_MAX_TILT = 0.08;
@@ -124,14 +123,13 @@ function valleyAlong(
 export function findSeam(lum: Luminance, box: Box, noteSize: number): Seam | null {
   if (noteSize <= 0) return null;
   const paper = paperLevel(lum, box);
+  const margin = Math.round(noteSize * SEAM_MIN_PIECE);
   let best: Seam | null = null;
   for (const vertical of [true, false]) {
     const from = vertical ? box.x : box.y;
     const extent = vertical ? box.w : box.h;
     const length = vertical ? box.h : box.w;
-    const scale = Math.min(noteSize, length * SEAM_ACROSS_SCALE);
-    const margin = Math.round(scale * SEAM_MIN_PIECE);
-    if (extent < scale * SEAM_MIN_SPAN) continue;
+    if (extent < noteSize * SEAM_MIN_SPAN) continue;
     const maxTilt = Math.round(length * SEAM_MAX_TILT);
     for (let at = from + margin; at <= from + extent - margin; at += 1) {
       // Upright first, leaning further each step: of two equally deep

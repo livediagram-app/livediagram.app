@@ -139,7 +139,7 @@ parted groups, not notes.
 | NECK_MAX_PIECE | 1.2       | 1.3       | 1.4       | 1.5–1.7   | 2.0       | 2.5       |
 | -------------- | --------- | --------- | --------- | --------- | --------- | --------- |
 | A: TOTAL / m   | 88.7 / 29 | 88.8 / 29 | 88.9 / 29 | 88.8 / 28 | 88.9 / 28 | 88.8 / 29 |
-| L: TOTAL / m   | 88.9 / 25 | 89.1 / 25 | 89.2 / 25 | 89.1 / 24 | 89.1 / 24 | 89.0 / 25 |
+| L: TOTAL / m   | 88.8 / 25 | 88.9 / 25 | 89.0 / 25 | 88.9 / 24 | 89.0 / 24 | 88.9 / 25 |
 
 From 1.5 up one merged box goes, but only because two merged boxes on the
 panorama become one box holding three actors, and 201707 loses a wide note
@@ -154,10 +154,10 @@ other settings: erosion 0.12–0.2 and core 0.15–0.35 score the same (0.1:
 | 201707           | 94 / 93 / 2            | 94 / 95 / 1            |
 | 201713           | 97 / 96 / 0            | 97 / 96 / 0            |
 | 201730 (shade)   | 92 / 90 / 2            | 92 / 90 / 1            |
-| 201743 (night)   | 58 / 51 / 1            | 58 / 51 / 1            |
+| 201743 (night)   | 58 / 51 / 1            | 57 / 51 / 1            |
 | wall-panorama    | 78 / 64 / 9            | 78 / 64 / 9            |
 | whiteboard-dense | 92 / 88 / 10           | 93 / 89 / 8            |
-| **TOTAL**        | **88.9 / 29**          | **89.2 / 25**          |
+| **TOTAL**        | **88.9 / 29**          | **89.0 / 25**          |
 
 What moved: a spurious box gone on 201654 and on 201707 each, one more
 panorama note found. About 40 ms more per photo.
