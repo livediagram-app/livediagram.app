@@ -14,6 +14,7 @@ import {
 } from './boxes';
 import { clusterRows } from './rows';
 import { dropBlank } from './texture';
+import { findPads } from './pads';
 
 // Finding the stickies in a photograph of a wall (spec/139 Phase 8).
 //
@@ -141,6 +142,9 @@ export function detectStickies(image: ImageBuffer, opts: DetectOptions = {}): De
   // close up, a note is 55px and the gap to the note beside it is a handful,
   // so a radius picked off the image welded four notes into a bar.
   const closed = closePaperMask(mask, { radius: closeRadiusFor(noteSize, imageSize) });
+  // What the size and area floors refuse is kept aside: a cluster of it may
+  // be a pad of smaller notes (see `findPads`).
+  const refused: Box[] = [];
   const boxes = fitBoxes(labelComponents(closed), {
     imageSize,
     noteSize,
@@ -155,9 +159,11 @@ export function detectStickies(image: ImageBuffer, opts: DetectOptions = {}): De
     // measured after it.
     seams: mask,
     classNoteSize,
-    onDrop: opts.onDrop,
+    onDrop: (box, reason) => {
+      if (reason === 'area' || reason === 'size-floor') refused.push(box);
+      opts.onDrop?.(box, reason);
+    },
   });
-  if (boxes.length === 0) return [];
   // …and now throw away what is not paper at all.
   //
   // Every box so far is a region that scraped past the colour floor somewhere
@@ -171,11 +177,16 @@ export function detectStickies(image: ImageBuffer, opts: DetectOptions = {}): De
   // pane, a patch of bare kraft, the strip above the paper. A note carries
   // writing, or at least shows an edge against its wall (see `dropBlank`).
   const drop = opts.onDrop ?? (() => {});
-  const outstanding = boxes.filter((box) => {
-    const why = notStandingOut(working, box);
-    if (why !== null) drop(box, why);
-    return why === null;
-  });
+  const standOut = (list: Box[]) =>
+    list.filter((box) => {
+      const why = notStandingOut(working, box);
+      if (why !== null) drop(box, why);
+      return why === null;
+    });
+  const firstPass = standOut(boxes);
+  // Pads are judged against the notes that stand out, and must stand out
+  // themselves.
+  const outstanding = [...firstPass, ...standOut(findPads(refused, firstPass, working, noteSize))];
   const standing = dropBlank(working, outstanding);
   if (standing.length < outstanding.length) {
     const kept = new Set(standing);

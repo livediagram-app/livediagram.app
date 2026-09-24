@@ -558,6 +558,21 @@ describe('detectStickies', () => {
     expect(found.filter((n) => n.kind === 'domain-event')).toHaveLength(14);
   });
 
+  it('finds a second, smaller board of notes of the SAME colour', () => {
+    // A far board in the photograph: its notes are the wall's colour but a
+    // third of the size, so neither the wall's floor nor its colour's
+    // measures them. They come as a cluster, where scraps come alone.
+    const image = blank(1000, 700, '#f1f3f5');
+    const orange = fillOf('domain-event');
+    for (let i = 0; i < 14; i += 1) {
+      note(image, 40 + (i % 7) * 135, 40 + Math.floor(i / 7) * 110, 80, 80, orange);
+    }
+    for (let i = 0; i < 6; i += 1) {
+      note(image, 300 + (i % 3) * 55, 400 + Math.floor(i / 3) * 55, 30, 30, orange);
+    }
+    expect(detectStickies(image)).toHaveLength(20);
+  });
+
   it('still refuses a few small scraps of one colour among big notes', () => {
     // Three scraps are not a pad of small notes: a scarce colour is measured
     // against the wall's notes, not against itself.
