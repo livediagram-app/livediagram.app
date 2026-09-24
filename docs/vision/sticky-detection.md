@@ -59,8 +59,11 @@ and testable.
    factor of two. With fewer than three plausible blobs there is nothing to
    measure and the frame-derived radius stands.
 
-   Three more things make this survivable on a real wall, where notes are
+   Four more things make this survivable on a real wall, where notes are
    lapped edge to edge:
+   - the merge never joins two **whole notes**: a piece at least 0.45 of a
+     note thick is not a fragment, and two narrow actors a pen stroke apart
+     are otherwise a solid square exactly one note in size;
    - the merge is **reversible** — a box that fails the shape filters hands
      back the pieces it was assembled from, instead of taking six real notes
      down with it;
@@ -75,6 +78,15 @@ and testable.
      not required; requiring a visible gap cost fifteen points of recall,
      because lapped paper has no gap. Seams are read from the RAW mask, since
      the close erases them;
+   - a piece the length rule leaves whole (two lapped notes are often only 1.3
+     to 1.6 notes long) is cut along the chord between two **notches** of its
+     outline (`chords.ts`, over `contour.ts`), or along the **seam's
+     shadow**: a line a little darker than the paper on both sides, the whole
+     way across, with ink left out and scored by its median so handwriting
+     cannot pose as one (`seam.ts`; it needs the photograph's brightness).
+     A cut stands when every piece is paper and solid, and a side thinner
+     than a note (0.6 to 0.7 of one) is a sliver of the note underneath,
+     dropped so it no longer inflates its neighbour's box;
    - a block too square for any cutting rule is **rescued**: its region is
      eroded until the notes come apart at their seams, relabelled, and each
      piece grown back — up to three times, and only solid pieces are kept, or a
@@ -118,6 +130,10 @@ and testable.
 | `TILE_WALL_TOLERANCE`                       | 0.1               | How far a one-surface cell may sit from the frame's wall and still be taken for wall, on a paper-coloured wall.                                                                               |
 | `MERGE_MIN_FILL`                            | 0.3               | The merge is transitive: without a density bar, stray pixels chain every note in the frame into one blob at fill 0.2.                                                                         |
 | `SPLIT_BAND_THICKNESS`                      | 2.6               | A blob no thicker than this in notes is a single file of paper, and is cut even when it is not solid.                                                                                         |
+| `WHOLE_NOTE_SIDE`                           | 0.45              | Thicker than this (in notes) a piece is a whole note and never merged with another. 0.40–0.50 score the same.                                                                                 |
+| `NOTCH_MIN_DEPTH` / `CHORD_MAX_LENGTH`      | 0.12 / 1.3        | A notch deeper than this, a chord no longer than one side of a note. Depths 0.08–0.22 score alike.                                                                                            |
+| `SEAM_MIN_DEPTH` / `SEAM_MIN_PIECE`         | 12 / 0.55         | Median valley in luma levels along a seam; each side at least this much of a note. 8–24 and 0.5–0.7 score alike.                                                                              |
+| `CUT_PIECE_SIZE_RATIO`                      | 0.6               | Each side of a notch or seam cut at least this thick; between this and `MIN_PAPER_SIZE_RATIO` a side is a sliver, dropped. 0.575–0.65 score alike.                                            |
 | `RESCUE_ERODE_FRACTION` / `RESCUE_ROUNDS`   | 0.12 / 3          | Deep enough to break the seam between two lapped notes; three passes is where it stops paying.                                                                                                |
 | Hue bands                                   | see `classify.ts` | Widened to measured paper, not swatches: real greens read h≈86 where the catalogue's read-model is h≈137.                                                                                     |
 
@@ -195,6 +211,11 @@ of `preview-*.png` wall photos, and it prints per-photo detection counts, the
 measured floors, per-kind histograms and a box list, and writes an overlay PNG
 per photo so the result can be looked at rather than guessed at. It caches
 decoded photos, so a run takes about a second.
+
+`scripts/merged.ts` lists every merged box on the labelled walls with its cause
+(inseparable labels, cross-colour, same-colour) and where each missed note
+went; the separation experiments and their tables are in
+[experiments/b-separation.md](experiments/b-separation.md).
 
 `pnpm demo:sticky-vision` (repo root) bundles the package with esbuild and
 serves `demo/sticky-vision/index.html`: a synthetic kraft wall the page draws

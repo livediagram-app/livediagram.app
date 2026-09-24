@@ -40,15 +40,15 @@ touch another group's file stops and asks.
 
 ### B — separation (`split.ts`, new `contour.ts`, `seam.ts`)
 
-- [ ] B1 Component outlines (Suzuki–Abe border following) + RDP simplification;
+- [x] B1 Component outlines (Suzuki–Abe border following) + RDP simplification;
       find reflex (concave) vertices.
-- [ ] B2 Cut merged blobs along chords between opposing notches, sized by the
+- [x] B2 Cut merged blobs along chords between opposing notches, sized by the
       note-size prior; recurse. Measure merged boxes and recall.
-- [ ] B3 Score every candidate cut by a directional brightness step (the paper
+- [x] B3 Score every candidate cut by a directional brightness step (the paper
       edge's shadow) along the chord, handwriting masked out; cut only where the
       seam is real.
-- [ ] B4 Black top-hat (1×k) seam filter to find flush seams with no notch.
-- [ ] B5 Note-size-seeded, ink-masked compact watershed as an alternative
+- [x] B4 Black top-hat (1×k) seam filter to find flush seams with no notch.
+- [x] B5 Note-size-seeded, ink-masked compact watershed as an alternative
       splitter; compare with B2+B3.
 
 ### C — junk rejection (`standout.ts`, new `texture.ts`)
