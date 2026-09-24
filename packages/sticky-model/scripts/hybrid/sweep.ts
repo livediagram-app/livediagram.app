@@ -11,7 +11,8 @@ import { loadHybridWalls, type HybridWall } from './walls';
 //
 //   npx tsx scripts/hybrid/sweep.ts [--t 0.4] [--min-core 12]
 //     [--split conf,area] [--add conf,area,paper] [--drop background]
-//     [--grid split|add|drop] [--kept]
+//     [--pad conf,paper,sizeRatio,reach,siblings]
+//     [--grid split|add|drop|pad] [--kept]
 //
 // `--kept` starts from the kept rules (HYBRID_RULES). With no rule the table is the classical detector's own (the baseline, to
 // read beside). `--grid` prints one TOTAL line per setting of that rule, with
@@ -35,6 +36,15 @@ function rulesFromArgs(): HybridRules {
       minConfidence: add[0]!,
       minAreaOfMedian: add[1]!,
       minPaper: add[2]!,
+    };
+  const pad = nums('pad');
+  if (pad)
+    rules.pad = {
+      minConfidence: pad[0]!,
+      minPaper: pad[1]!,
+      sizeRatio: pad[2]!,
+      reach: pad[3]!,
+      minSiblings: pad[4]!,
     };
   const drop = nums('drop');
   if (drop) rules.drop = { minBackground: drop[0]! };
@@ -89,6 +99,17 @@ if (!grid) {
             ...base,
             add: { minConfidence: c, minAreaOfMedian: a, minPaper: paper },
           });
+  // Each axis of the pad grid can be narrowed: --gc, --gp, --gs, --gr, --gn.
+  if (grid === 'pad')
+    for (const c of nums('gc') ?? [0.7, 0.75, 0.8])
+      for (const p of nums('gp') ?? [0.5])
+        for (const r of nums('gs') ?? [1.3, 1.5, 1.7])
+          for (const reach of nums('gr') ?? [2, 3, 4])
+            for (const k of nums('gn') ?? [2, 3])
+              settings.push({
+                ...base,
+                pad: { minConfidence: c, minPaper: p, sizeRatio: r, reach, minSiblings: k },
+              });
   if (grid === 'drop')
     for (const b of [0.6, 0.7, 0.8, 0.85, 0.9, 0.95, 0.97, 0.99])
       settings.push({ ...base, drop: { minBackground: b } });

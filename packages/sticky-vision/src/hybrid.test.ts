@@ -194,6 +194,48 @@ describe('combineWithModel', () => {
     });
   });
 
+  describe('pad (N2)', () => {
+    // Three wall notes set the median; a far board of small notes, one of
+    // them without a box, sits below them.
+    const PAD: HybridRules = {
+      pad: { minConfidence: 0.75, minPaper: 0.5, sizeRatio: 1.5, reach: 3, minSiblings: 2 },
+    };
+    const wall = [box(10, 10, 40, 40), box(55, 10, 40, 40), box(100, 10, 40, 40)];
+    const pad = [box(10, 60, 12, 12, 2), box(26, 60, 12, 12, 2), box(42, 60, 12, 12, 2)];
+    const paper = maskWith(
+      { x: 10, y: 10, w: 130, h: 40, id: 1 },
+      { x: 10, y: 60, w: 72, h: 12, id: 2 },
+      { x: 150, y: 55, w: 45, h: 30, id: 2 },
+    );
+
+    it('adds a small sure note among boxes of its own size', () => {
+      const out = combineWithModel([...wall, ...pad], cues([note(58, 60, 12, 12)]), paper, PAD);
+      expect(out).toHaveLength(7);
+      expect(out[6]).toMatchObject({ x: 58, y: 60, w: 12, h: 12, classId: 2 });
+    });
+
+    it('adds no small note that stands alone, or beside notes of another size', () => {
+      const alone = combineWithModel([...wall, ...pad], cues([note(170, 60, 12, 12)]), paper, PAD);
+      expect(alone).toHaveLength(6);
+      const besideWall = combineWithModel([...wall], cues([note(58, 60, 12, 12)]), paper, PAD);
+      expect(besideWall).toHaveLength(3);
+    });
+
+    it('adds no small note the model is unsure of, a box holds, or with no paper under it', () => {
+      const unsure = combineWithModel(
+        [...wall, ...pad],
+        cues([note(58, 60, 12, 12, 0.7)]),
+        paper,
+        PAD,
+      );
+      expect(unsure).toHaveLength(6);
+      const held = combineWithModel([...wall, ...pad], cues([note(40, 60, 12, 12)]), paper, PAD);
+      expect(held).toHaveLength(6);
+      const bare = combineWithModel([...wall, ...pad], cues([note(64, 76, 12, 12)]), paper, PAD);
+      expect(bare).toHaveLength(6);
+    });
+  });
+
   describe('drop (J3)', () => {
     it('drops a box the model sees as background with no core in it, and says so', () => {
       const dropped: Box[] = [];

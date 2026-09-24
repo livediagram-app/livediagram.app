@@ -15,6 +15,8 @@ import type { CueRect, ModelCues, ModelNote } from './model-cues';
 // - add: a note the model is sure of, on paper, where no box is (J2): no
 //   box holds its centre and it holds no box's, so a neighbour that overlaps
 //   it (lapped notes do) does not hide it;
+// - pad: a note too small for add, among boxes of its own size (N2): a far
+//   board of small notes comes as a cluster, junk that small comes alone;
 // - drop: a box the model sees as background, with no note in it (J3).
 //
 // Pure, and ML-free: the model runs elsewhere, lazily, and hands over plain
@@ -34,6 +36,20 @@ export type HybridRules = {
     // The fraction of the note's box the class mask calls paper: the model
     // finds notes, the colour says they are paper of the notation.
     minPaper: number;
+  };
+  // A note too small for `add`'s size floor, taken when it sits among boxes
+  // of its own size: a far board or a pad of small stationery comes as a
+  // cluster of like-sized notes, while junk that small comes alone.
+  pad?: {
+    minConfidence: number;
+    minPaper: number;
+    // A sibling's side (square root of its area) within this ratio of the
+    // note's, either way...
+    sizeRatio: number;
+    // ...its centre within this many of the larger side...
+    reach: number;
+    // ...and at least this many siblings.
+    minSiblings: number;
   };
   drop?: {
     // The model's mean background probability over the box's middle.
@@ -134,7 +150,7 @@ export function combineWithModel(
     n.confidence >= r.minConfidence && n.w * n.h >= r.minAreaOfMedian * median;
 
   let out = [...boxes];
-  const { drop, split, add } = rules;
+  const { drop, split, add, pad } = rules;
   if (drop) {
     out = out.filter((b) => {
       const keep =
@@ -159,6 +175,23 @@ export function combineWithModel(
       out.push(boxOn(mask, n, under.classId));
     }
   }
+  if (pad) {
+    for (const n of cues.notes) {
+      if (n.confidence < pad.minConfidence) continue;
+      if (out.some((b) => centreIn(n, b) || centreIn(b, n))) continue;
+      const side = Math.sqrt(n.w * n.h);
+      const siblings = out.filter((b) => {
+        const s = Math.sqrt(b.w * b.h);
+        if (s > side * pad.sizeRatio || s * pad.sizeRatio < side) return false;
+        const d = Math.hypot(b.x + b.w / 2 - (n.x + n.w / 2), b.y + b.h / 2 - (n.y + n.h / 2));
+        return d <= pad.reach * Math.max(s, side);
+      });
+      if (siblings.length < pad.minSiblings) continue;
+      const under = paperUnder(mask, n);
+      if (under.fraction < pad.minPaper) continue;
+      out.push(boxOn(mask, n, under.classId));
+    }
+  }
   return out;
 }
 
@@ -177,6 +210,13 @@ export function combineWithModel(
 // between the cores is paper, and no darker, in both. Pieces from 0.2 to 0.3
 // of the median box; at 0.1 a speck beside a note splits it.
 //
+// PAD: a note under ADD's size floor, taken when at least three boxes of its
+// own size (a side within 1.5 either way) stand within three sides of it:
+// the night wall's far board, seen through the window at a tenth of the
+// median box. Confidence 0.55-0.7, paper 0.4-0.5, size ratio 1.3-1.7, reach
+// 2-4 and two or three siblings all score alike; at confidence 0.72 or paper
+// 0.6 a panorama note is lost.
+//
 // DROP: a box with no model core in it whose middle the model calls
 // background at 0.97 on average: the night wall's window panes and a lit
 // ceiling strip. 0.95-0.98 drop the same boxes; from 0.93 down a real note
@@ -184,5 +224,6 @@ export function combineWithModel(
 export const HYBRID_RULES: HybridRules = {
   add: { minConfidence: 0.75, minAreaOfMedian: 0.3, minPaper: 0.5 },
   split: { minConfidence: 0.86, minAreaOfMedian: 0.25 },
+  pad: { minConfidence: 0.65, minPaper: 0.45, sizeRatio: 1.5, reach: 3, minSiblings: 3 },
   drop: { minBackground: 0.97 },
 };
