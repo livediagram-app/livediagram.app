@@ -79,17 +79,17 @@ touch another group's file stops and asks.
 
 ### E — a learned boundary model (new `packages/sticky-model/`, no product code)
 
-- [ ] E1 Procedural synthetic wall generator in TypeScript (canvas): kraft,
+- [x] E1 Procedural synthetic wall generator in TypeScript (canvas): kraft,
       white paper and whiteboard backings; the eight paper colours; lapped and
       2×2 clusters with shadow seams; handwriting strokes; tape and cardboard
       distractors; shade gradients; perspective. Emits image + 3-class mask
       (note core / seam / background) + boxes.
-- [ ] E2 A tiny 3-class U-Net (MobileNetV3-small style, ~1–2 MB) trained with
+- [x] E2 A tiny 3-class U-Net (MobileNetV3-small style, ~1–2 MB) trained with
       TensorFlow.js (tfjs-node-gpu if the GPU works, else CPU) on synthetic
       walls, plus tiles of the eight real walls with leave-one-wall-out.
-- [ ] E3 Post-process: core components + seam-aware watershed → boxes; score
+- [x] E3 Post-process: core components + seam-aware watershed → boxes; score
       with the same sweep (a script that runs the model in node).
-- [ ] E4 Report: per-wall table, model size, node inference time, and an
+- [x] E4 Report: per-wall table, model size, node inference time, and an
       honest verdict on whether it can beat the classical pipeline.
 
 ## Round 2 — after merging A, B, C, D (commit `155d4083` + label dedupe)
