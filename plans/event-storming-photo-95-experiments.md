@@ -125,6 +125,15 @@ overlapping LABELS (for the operator to review, not for the detector).
 - [ ] B2 — **separation, round 2** (owns `split.ts`, `contour.ts`,
       `seam.ts`): sprawling multi-note blobs still cut on an even grid (2-D
       seam search instead), the 12 same-colour merges, the 4 cross-colour ones.
+      Results: [b2-separation.md](../docs/vision/experiments/b2-separation.md).
+  - [x] R1 A seam only across a box two notes can fill (the seam cut stops
+        cutting single notes, so detect.ts can hand it the luminance).
+  - [ ] R2 Small-pad pairs: cut at the pad's scale where the paper shows a gap.
+  - [ ] R3 Cross-colour boxes: a box that spans another colour's notes.
+  - [ ] R4 Heavily lapped pairs: trim the sliver of the note underneath.
+  - [ ] R5 2-D seam search in sprawling blobs (cut where the seams are, not
+        where the grid falls).
+  - [ ] R6 Fold-back: spec/139 Phase 9, sticky-detection.md, results doc.
 - [ ] A2 — **colour, round 2** (owns `classify.ts`, `floors.ts`, `lab.ts`,
       `colour.ts`): the panorama's no-paper notes (small pink hotspots,
       pale pink), and the night wall's classification.

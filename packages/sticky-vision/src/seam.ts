@@ -30,6 +30,14 @@ const SEAM_MIN_DEPTH = 12;
 // A seam no nearer a side of the box than this, in notes: each side of it
 // has to be a note.
 const SEAM_MIN_PIECE = 0.55;
+// …and the box at least this long across the seam, in notes. A note with a
+// crease, a curl or a line of writing across it shows a line just like a seam,
+// and in a box barely longer than a note that line is far likelier than two
+// notes lapped nearly flush. Measured on the eight labelled walls: of 73
+// seams found, 66 crossed a single note, most of them in boxes 1.05–1.25
+// notes long; the ones between two notes that can be told apart were in
+// boxes 1.3–1.75 long. Any value from 1.25 to 1.5 scores within a note of the best.
+const SEAM_MIN_SPAN = 1.3;
 // How far a seam may lean, as a fraction of its length: notes are stuck on
 // by hand.
 const SEAM_MAX_TILT = 0.08;
@@ -121,6 +129,7 @@ export function findSeam(lum: Luminance, box: Box, noteSize: number): Seam | nul
     const from = vertical ? box.x : box.y;
     const extent = vertical ? box.w : box.h;
     const length = vertical ? box.h : box.w;
+    if (extent < noteSize * SEAM_MIN_SPAN) continue;
     const maxTilt = Math.round(length * SEAM_MAX_TILT);
     for (let at = from + margin; at <= from + extent - margin; at += 1) {
       // Upright first, leaning further each step: of two equally deep
@@ -188,6 +197,7 @@ export function cutAtSeam(
 export const SEAM_CALIBRATION = {
   SEAM_MIN_DEPTH,
   SEAM_MIN_PIECE,
+  SEAM_MIN_SPAN,
   SEAM_MAX_TILT,
   INK_BELOW_PAPER,
   SEAM_INSET,

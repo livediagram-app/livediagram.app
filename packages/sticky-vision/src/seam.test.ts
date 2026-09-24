@@ -62,6 +62,18 @@ describe('findSeam', () => {
     expect(findSeam(s.lum, boxOf(10, 10, 80, 40), 40)).toBeNull();
   });
 
+  it('finds none across a box too short to be two notes', () => {
+    // 1.2 notes long: a line across the middle leaves 0.6 of a note either
+    // side, and one note with a crease or a line of writing across it is far
+    // likelier than two notes that short.
+    const s = scene(100, 60);
+    s.paint(10, 10, 44, 40, 200, 1);
+    s.paint(31, 10, 2, 40, 165);
+    expect(findSeam(s.lum, boxOf(10, 10, 44, 40), 36)).toBeNull();
+    // …while the same seam in a box two notes long is found.
+    expect(findSeam(s.lum, boxOf(10, 10, 44, 40), 22)).not.toBeNull();
+  });
+
   it('finds none nearer the edge than a note can be thin', () => {
     const s = scene(100, 60);
     s.paint(10, 10, 80, 40, 200, 1);
