@@ -10,7 +10,7 @@ import { AnimatedCanvasBackground } from '@/components/canvas/AnimatedCanvasBack
 import { pointerToCanvas } from '@/lib/canvas';
 import { deriveCanvasSelection } from '@/lib/canvas-selection';
 import { canvasCursorClass } from '@/lib/canvas-chrome';
-import { useCanvasMobileDock } from '@/hooks/canvas/useCanvasMobileDock';
+import { useCanvasMobileDock, useOpenDockPanelOnChange } from '@/hooks/canvas/useCanvasMobileDock';
 import { drawIntentCursor } from '@/lib/draw-mode';
 import { useCanvasPanAndMarquee } from '@/hooks/canvas/useCanvasPanAndMarquee';
 import { useQuickRing } from '@/hooks/canvas/useQuickRing';
@@ -156,7 +156,12 @@ export function Canvas(props: CanvasProps) {
     activeDockAnchor,
     setActiveDockAnchor,
     handleDockButtonClick,
+    openDockPanel,
   } = useCanvasMobileDock(mainRef);
+  // A session panel opens under its dock button when it arrives (spec/88,
+  // spec/39): a new poll (or the one you just answered), a vote just opened.
+  useOpenDockPanelOnChange(props.pollPanel ? props.pollPanel.poll.id : null, 'poll', openDockPanel);
+  useOpenDockPanelOnChange(props.tabVote ? 'vote' : null, 'vote', openDockPanel);
 
   // Pan + marquee + held-Space machinery lives in
   // useCanvasPanAndMarquee. The hook owns the pointerdown / move

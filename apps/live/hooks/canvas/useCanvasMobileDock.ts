@@ -1,4 +1,4 @@
-import { useRef, useState, type Ref } from 'react';
+import { useEffect, useRef, useState, type Ref } from 'react';
 import { computeDockAnchor } from '@/lib/canvas-chrome';
 
 // Mobile dock: a compact button row that replaces the four full-width
@@ -47,13 +47,8 @@ export function useCanvasMobileDock(mainRef: Ref<HTMLElement>) {
   const dockButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const [activeDockAnchor, setActiveDockAnchor] = useState<DockAnchor | null>(null);
 
-  const handleDockButtonClick = (id: MobilePanel) => {
-    // Tapping the open panel's button closes it.
-    if (activeMobilePanel === id) {
-      setActiveMobilePanel(null);
-      setActiveDockAnchor(null);
-      return;
-    }
+  // Open a panel under its dock button (never toggles it shut).
+  const openDockPanel = (id: MobilePanel) => {
     setActiveMobilePanel(id);
     const btn = dockButtonRefs.current[id];
     const canvas = mainRef && 'current' in mainRef ? mainRef.current : null;
@@ -68,7 +63,18 @@ export function useCanvasMobileDock(mainRef: Ref<HTMLElement>) {
     }
   };
 
+  const handleDockButtonClick = (id: MobilePanel) => {
+    // Tapping the open panel's button closes it.
+    if (activeMobilePanel === id) {
+      setActiveMobilePanel(null);
+      setActiveDockAnchor(null);
+      return;
+    }
+    openDockPanel(id);
+  };
+
   return {
+    openDockPanel,
     activeMobilePanel,
     setActiveMobilePanel,
     dockButtonRefs,
@@ -76,4 +82,26 @@ export function useCanvasMobileDock(mainRef: Ref<HTMLElement>) {
     setActiveDockAnchor,
     handleDockButtonClick,
   };
+}
+
+// Open a dock panel by itself when something new appears for it: a poll that
+// just started (or that you just answered), a vote that just opened. In the
+// dock layout (phone, or the minimal panel preference) a session panel lives
+// under its button, closable like the rest, but the moment it arrives is the
+// moment you want to see it, so it opens once, keyed on `key`. The dock button
+// renders in the same commit, so its rect is measurable when this runs.
+export function useOpenDockPanelOnChange(
+  key: string | null,
+  id: MobilePanel,
+  openDockPanel: (id: MobilePanel) => void,
+) {
+  // Latest opener, kept in a ref (updated after commit) so the effect below
+  // fires on `key` alone rather than on every render's new function.
+  const openRef = useRef(openDockPanel);
+  useEffect(() => {
+    openRef.current = openDockPanel;
+  });
+  useEffect(() => {
+    if (key !== null) openRef.current(id);
+  }, [key, id]);
 }

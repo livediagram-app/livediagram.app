@@ -117,9 +117,12 @@ when an op arrives so a hand-crafted frame can't blow up a peer's panel:
    (the corner the panels you act on live in). It registers as a real
    `PanelId` rather than floating outside the panel system, but it is the
    only panel that isn't always present — it joins and leaves its corner
-   stack with the poll. It carries no mobile-dock entry on purpose: the
-   dock is a row of toggles for panels you go looking for, and a poll
-   presents itself. Shown to the host and to anyone who has responded — so
+   stack with the poll. In the dock layout (a phone, or the minimal panel
+   preference on desktop) it lives under the dock's **Poll** button like
+   every other panel and closes with it, and it **opens by itself** when a
+   poll starts or when you answer one (keyed on the poll id, so it opens
+   once per poll rather than fighting you after you close it). The Vote
+   panel follows the same rule for its **Vote** button. Shown to the host and to anyone who has responded — so
    answering is what buys you the tally, and a participant who hasn't yet
    can't be nudged by the running numbers. The panel updates live and reports
    how many people skipped, separately from the answer counts.
