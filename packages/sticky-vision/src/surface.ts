@@ -106,7 +106,7 @@ export function hueOf(surface: Surface, below: number): number {
 }
 
 // The wall's colour in a*b*: the mean of the same too-dull-to-be-paper pixels
-// the hue is taken from. Not the region's commonest colour — a cell mostly
+// the hue is taken from. Not the region's commonest colour: a cell mostly
 // covered by one note is mostly that note.
 export function wallLabOf(surface: Surface, below: number): { wallA?: number; wallB?: number } {
   let a = 0;

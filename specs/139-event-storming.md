@@ -1047,6 +1047,17 @@ Decisions from the operator:
   frame on colour, because a note bigger than a cell would otherwise be
   measured as "the wall" and then rejected for not standing out from it.
 
+- **Paper at the wall's own hue is also judged in CIELAB.** HSV saturation
+  climbs as kraft falls into shade, so a fold, the edge under a curling sheet
+  or a lamp's fall-off clears the floor the lit wall is held under. Each cell
+  therefore also measures the wall's colour in a*b* (the mean of its
+  too-dull-to-be-paper pixels), and a pixel at the wall's hue must sit at
+  least 7 a*b* units from it to be paper. Paper off the wall's hue is left to
+  the saturation floor. Blown-out pixels (every channel ≥ 250: a lamp, a
+  window, glare) are no evidence of the wall and are left out of every cell's
+  measurement. See `docs/vision/experiments/a-colour.md` for what was measured
+  and what was rejected (illumination flattening, CLAHE, a per-photo palette).
+
 - **A run of notes is never thrown away whole.** On a real wall the stickies
   are lapped edge to edge, and a row or block of them arrives as ONE blob that
   is too unsolid to cut (a row that sags leaves half its bounding box empty)

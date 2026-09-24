@@ -40,9 +40,19 @@ and testable.
    frame in one go, which is what a caller classifying a single hand-drawn box
    wants.
 
-2. **Classify each pixel** (`classifyHsv`) into a note kind, `wall` or `ink`,
+   Each cell also measures the wall's colour in CIELAB a*b* (`lab.ts`), as the
+   mean of the same too-dull-to-be-paper pixels its hue is taken from; not the
+   cell's commonest colour, because a cell mostly covered by one note is mostly
+   that note. Blown-out pixels (every channel ≥ 250) are left out of every
+   measurement: a lamp filling a cell would otherwise set the wall there at full
+   brightness.
+
+2. **Classify each pixel** (`classifyRgb`) into a note kind, `wall` or `ink`,
    against hue bands. How saturated a pixel must be to count as paper depends on
-   whether it shares the wall's hue.
+   whether it shares the wall's hue, and a pixel AT the wall's hue must also sit
+   at least 7 a*b* units from the wall's colour: HSV saturation climbs as kraft
+   falls into shade, so shadowed kraft clears the saturation floor, but in a*b*
+   it is still the wall. Only those pixels pay for the CIELAB conversion.
 3. **Connected components** (`labelComponents`) over that mask: two-pass
    union-find, because a large frame is millions of pixels and a recursive
    flood fill does not survive a phone.
@@ -113,6 +123,8 @@ and testable.
 | ------------------------------------------- | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `WALL_HUE_NEIGHBOURHOOD_DEG`                | 34                | Brown kraft paper and an orange domain event are the same hue. Near the wall's hue, only saturation separates them.                                                                           |
 | `OFF_HUE_MIN_SATURATION`                    | 0.11              | Far from the wall's hue, a pale lilac policy is obviously not the wall. 0.18 lost a whiteboard's greyish aggregates (s≈0.17 as photographed); 0.10–0.12 is the band that holds on every wall. |
+| `WALL_HUE_MIN_LAB_DISTANCE`                 | 7                 | At the wall's hue, how far from the wall's a*b* paper sits. Orange on kraft is 30–40, shadowed kraft 2–6; 6 to 10 all lift the kraft walls, 7 costs no wall a note.                           |
+| `BLOWN_OUT`                                 | 250               | A pixel with every channel at or above this is clipped and says nothing about the wall. 240–253 score the same.                                                                               |
 | `MIN_PAPER_SATURATION`                      | 0.28              | A floor under the measured split, so a white-wall photo does not start calling its own shadows paper.                                                                                         |
 | `PEN_STROKE_FRACTION`                       | 0.006             | The gap the merge has to close is a pen stroke, and that is knowable without any statistic — which matters, see below.                                                                        |
 | `NOISE_FLOOR_FRACTION`                      | 0.008             | Half the merged boxes on a real photo are 1–5px of sensor noise, sitting exactly where a median would otherwise land.                                                                         |

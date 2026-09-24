@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { ImageBuffer } from './colour';
 import { localFloorsOf, wallFloorsOf } from './floors';
 
-// A blown-out pixel — a ceiling lamp, a window, glare off a whiteboard — has
+// A blown-out pixel (a ceiling lamp, a window, glare off a whiteboard) has
 // every channel at the top of the sensor's range. It says nothing about the
 // colour of what it is a picture of, so it is no evidence of the wall.
 

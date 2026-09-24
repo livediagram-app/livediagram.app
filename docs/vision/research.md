@@ -71,3 +71,7 @@ Agreement across independent angles is the strongest signal research gives.
 
 [plans/event-storming-photo-95-experiments.md](../../plans/event-storming-photo-95-experiments.md)
 turns these into experiments, grouped so they can run in parallel.
+
+Results, one file per group:
+
+- [experiments/a-colour.md](experiments/a-colour.md) - colour and light (A1-A6)
