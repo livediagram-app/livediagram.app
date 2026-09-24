@@ -6,7 +6,7 @@ import { fillRatio, type Box } from './boxes';
 // smaller board in the photograph, or a pad of smaller stationery, comes as a
 // CLUSTER of like-sized, square, solid boxes, and that is what is kept here.
 // Every constant below sits in a plateau measured on the eight labelled walls
-// (each neighbour tried scores within 0.3 of a point).
+// (each neighbour tried scores within 0.3 of a point, unless it says so).
 
 // How square and how solid a pad note is.
 const PAD_MAX_ASPECT = 1.5;
@@ -15,10 +15,12 @@ const PAD_MIN_FILL = 0.6;
 // already clears the size floor, or is something else.
 const PAD_MAX_SIZE = 0.7;
 // Two boxes are siblings when their short sides are within this ratio of each
-// other and their centres within this many of the larger short side (a pad's
-// notes sit a note or two apart).
-const PAD_SIZE_RATIO = 1.3;
-const PAD_REACH = 3;
+// other (1.3 to 1.6 score the same) and their centres within this many of the
+// larger short side. A pad's notes sit two or three of their widths apart:
+// 2.75 no longer links the night wall's far board, 3 to 3.25 score best, and
+// 3.5 to 5 let one more scrap in; 3.25 keeps clear of the edge on both sides.
+const PAD_SIZE_RATIO = 1.45;
+const PAD_REACH = 3.25;
 // …and a pad is at least this many siblings, linked one to the next.
 const PAD_MIN_NOTES = 3;
 // A refused box at least this elongated, beside a pad, is pad notes the
