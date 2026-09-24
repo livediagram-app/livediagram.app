@@ -43,14 +43,28 @@ web and writing one report to `research/event-storming-vision/<slug>.md`
 what, evidence it would help OUR failure modes, cost to run for free, licence,
 bundle size, effort, and links.
 
-- [ ] 1.1 Spawn the nine themes (see "Research themes" below), 54 angles.
-- [ ] 1.2 While they run: extend the sweep with the bar's own measures —
+- [x] 1.1 Spawn the nine themes (see "Research themes" below), 54 angles.
+- [x] 1.2 While they run: extend the sweep with the bar's own measures —
       per-wall recall and precision, merged-box count, actor recall
       separately, and a PASS/FAIL line against the bar. Commit.
 - [ ] 1.3 Collect all 54 reports; chase any that failed or came back thin.
 - [ ] 1.4 Synthesise `docs/vision/research.md`: the inventory of techniques,
       models and methods, de-duplicated, each scored for fit, cost, licence,
       size and expected gain against our measured failure modes. Commit.
+
+### Where it starts, against the bar
+
+| wall             | prec | rec-A | actors | merged | bar     |
+| ---------------- | ---- | ----- | ------ | ------ | ------- |
+| 201646           | 76%  | 90%   | 3/7    | 4      | FAIL    |
+| 201654           | 98%  | 94%   | 0/2    | 4      | FAIL    |
+| 201707           | 79%  | 83%   | 0/0    | 2      | FAIL    |
+| 201713           | 89%  | 94%   | 0/0    | 0      | FAIL    |
+| 201730 (shade)   | 90%  | 88%   | 0/1    | 2      | FAIL    |
+| 201743 (night)   | 36%  | 54%   | 0/2    | 1      | FAIL    |
+| wall-panorama    | 85%  | 62%   | 23/36  | 10     | FAIL    |
+| whiteboard-dense | 96%  | 86%   | 18/19  | 17     | FAIL    |
+| **total**        | 85%  |       |        | **40** | **0/8** |
 
 ## Phase 2 — the unread tip (product, independent of detection)
 

@@ -37,7 +37,24 @@ export type Score = {
   kindsRight: number;
   missed: TruthNote[];
   spurious: ScoredBox[];
+  // Boxes holding the centres of TWO OR MORE labelled notes: stickies merged
+  // into one. The bar allows none.
+  merged: number;
+  // The small yellow actors, reported apart: the one kind the bar lets fall
+  // short of 95% (plans/event-storming-photo-95.md).
+  actors: { truth: number; matched: number };
+  recallWithoutActors: number;
 };
+
+// THE BAR (plans/event-storming-photo-95.md): 95% of every kind but actors
+// found, 95% of what is found real, and not one box holding two notes.
+export const BAR = { recall: 0.95, precision: 0.95, merged: 0 } as const;
+
+export function meetsBar(s: Score): boolean {
+  return (
+    s.recallWithoutActors >= BAR.recall && s.precision >= BAR.precision && s.merged <= BAR.merged
+  );
+}
 
 // WHERE THE TRUTH LIVES. The photographs and their labels are kept in a
 // private repository (`vision-model-truths`), because they are somebody's
@@ -123,6 +140,15 @@ export function score(truth: Truth, boxes: ScoredBox[], width: number, height: n
   const precision = boxes.length === 0 ? 0 : matched / boxes.length;
   const recall = labels.length === 0 ? 0 : matched / labels.length;
   const kindsRight = [...matchOf].filter(([b, l]) => boxes[b]!.kind === labels[l]!.kind).length;
+  const merged = boxes.filter(
+    (b) =>
+      labels.filter((l) => l.cx >= b.x && l.cx <= b.x + b.w && l.cy >= b.y && l.cy <= b.y + b.h)
+        .length >= 2,
+  ).length;
+  const isActor = (i: number) => labels[i]!.kind === 'actor';
+  const actorTruth = labels.filter((_, i) => isActor(i)).length;
+  const actorMatched = [...taken].filter(isActor).length;
+  const others = labels.length - actorTruth;
   return {
     truth: labels.length,
     detected: boxes.length,
@@ -133,5 +159,8 @@ export function score(truth: Truth, boxes: ScoredBox[], width: number, height: n
     kindsRight,
     missed: truth.notes.filter((_, i) => !taken.has(i)),
     spurious: boxes.filter((_, i) => !matchOf.has(i)),
+    merged,
+    actors: { truth: actorTruth, matched: actorMatched },
+    recallWithoutActors: others === 0 ? 1 : (matched - actorMatched) / others,
   };
 }

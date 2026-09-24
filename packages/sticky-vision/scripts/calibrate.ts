@@ -7,7 +7,7 @@ import { labelComponents } from '../src/components';
 import { fitBoxes, mergeFragments } from '../src/boxes';
 import { encodePng } from './png';
 import { listPhotos, loadPhoto, workDirFor } from './photos';
-import { photoDir, score, truthDir, truthFor, type Score } from './truth';
+import { BAR, meetsBar, photoDir, score, truthDir, truthFor, type Score } from './truth';
 
 // Calibrating the detector against REAL photographs of a real wall.
 //
@@ -281,9 +281,11 @@ function main() {
   }
   const rows = names.map(report);
   console.log(`\nSUMMARY (${PHOTO_DIR})   truth: ${truthDir()}\n`);
+  const pc = (v: number) => `${(v * 100).toFixed(0)}%`;
   console.log(
     `  ${'photo'.padEnd(26)}${'found'.padStart(7)}${'L/M/R'.padStart(14)}` +
-      `${'truth'.padStart(8)}${'prec'.padStart(7)}${'recall'.padStart(8)}${'F1'.padStart(6)}`,
+      `${'truth'.padStart(8)}${'prec'.padStart(7)}${'recall'.padStart(8)}${'F1'.padStart(6)}` +
+      `${'rec-A'.padStart(7)}${'actors'.padStart(9)}${'merged'.padStart(8)}  bar`,
   );
   for (const row of rows) {
     const s = row.scored;
@@ -291,7 +293,9 @@ function main() {
       `  ${row.name.replace(/\.[^.]+$/, '').padEnd(26)}${String(row.found).padStart(7)}${row.thirds.join('/').padStart(14)}` +
         (s
           ? `${String(s.truth).padStart(8)}${`${(s.precision * 100).toFixed(0)}%`.padStart(7)}` +
-            `${`${(s.recall * 100).toFixed(0)}%`.padStart(8)}${`${(s.f1 * 100).toFixed(0)}%`.padStart(6)}`
+            `${`${(s.recall * 100).toFixed(0)}%`.padStart(8)}${`${(s.f1 * 100).toFixed(0)}%`.padStart(6)}` +
+            `${pc(s.recallWithoutActors).padStart(7)}${`${s.actors.matched}/${s.actors.truth}`.padStart(9)}` +
+            `${String(s.merged).padStart(8)}  ${meetsBar(s) ? 'PASS' : 'FAIL'}`
           : `${'-'.padStart(8)}${'-'.padStart(7)}${'-'.padStart(8)}${'-'.padStart(6)}`),
     );
   }
@@ -307,13 +311,23 @@ function main() {
   const precision = detected ? matched / detected : 0;
   const recall = truth ? matched / truth : 0;
   const f1 = precision + recall ? (2 * precision * recall) / (precision + recall) : 0;
+  const mergedAll = scored.reduce((a, s) => a + s.merged, 0);
+  const passing = scored.filter(meetsBar).length;
   console.log(
     `  ${'TOTAL'.padEnd(26)}${String(rows.reduce((a, r) => a + r.found, 0)).padStart(7)}${''.padStart(14)}` +
       (scored.length
         ? `${String(truth).padStart(8)}${`${(precision * 100).toFixed(0)}%`.padStart(7)}` +
           `${`${(recall * 100).toFixed(0)}%`.padStart(8)}${`${(f1 * 100).toFixed(1)}%`.padStart(7)}`
         : '') +
+      (scored.length
+        ? `${''.padStart(16)}${String(mergedAll).padStart(8)}  ${passing}/${scored.length} walls`
+        : '') +
       '\n',
+  );
+  // THE BAR (plans/event-storming-photo-95.md), stated with the table so a
+  // run is never read against a remembered one.
+  console.log(
+    `  bar: recall without actors >= ${pc(BAR.recall)}, precision >= ${pc(BAR.precision)}, merged boxes = ${BAR.merged}, on every wall\n`,
   );
 }
 

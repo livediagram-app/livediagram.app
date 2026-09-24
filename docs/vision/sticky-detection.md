@@ -253,6 +253,12 @@ they exist:
   their areas are within 2x (`scripts/truth.ts`). The area half of that rule is
   deliberate: one box over a 2x2 cluster of touching notes scores as one
   spurious box AND four missed notes, which is exactly what it is.
+- The summary also measures THE BAR of
+  [plans/event-storming-photo-95.md](../../plans/event-storming-photo-95.md):
+  recall without the small actors (`rec-A`; actors reported apart), the count
+  of MERGED boxes (a box holding the centres of two or more labelled notes),
+  and a PASS / FAIL per wall — recall without actors ≥ 95%, precision ≥ 95%,
+  no merged box. A TOTAL row sums every labelled note.
 - The sweep then prints precision / recall / F1 per photo plus the LISTS — the
   centre of every missed note and every spurious box — and draws the labels as
   a dotted white frame under the detections in the overlay. The lists are the
