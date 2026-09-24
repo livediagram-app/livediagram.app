@@ -147,6 +147,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'shape-recognition': '#8b5cf6',
   // Palette → Collaborate elements
   'comment-panels': '#f59e0b',
+  'action-panels': '#10b981',
   'estimate-cards': '#8b5cf6',
   'temperature-checks': '#ef4444',
   'idea-boxes': '#eab308',

@@ -1,0 +1,43 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Action Panels',
+  description:
+    'A card on the board that shows one assigned action, with its name, description, assignee and status, set up and completed from the card itself.',
+  path: '/help/palette/collaborate/action-panels/',
+});
+
+<ArticleLayout
+  title="Action Panels"
+  description="One assigned action, left out on the board where the room can read it."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  parentArticle={{ title: 'Collaborate elements', slug: 'collaborate' }}
+  subArticles={getSubArticles('collaborate').filter((a) => a.slug !== 'action-panels')}
+>
+
+An action panel is a card on the board that carries one [assigned action](/help/collaboration/assigned-actions/): what needs doing, who it is assigned to, who assigned it, and whether it is done. You read it where it sits, without opening anything.
+
+## Adding one
+
+Add one from the [Collaborate](/help/palette/collaborate/) group of the palette's **Behaviours** category. A fresh panel has no action yet, so it shows a **Set Up Action** button.
+
+Press it and the usual **Assign Action** dialog opens: pick who it is for, give it a name and an optional description, and choose whether to email them. Confirm, and the card shows the action.
+
+A panel can be _about_ an element: drop one beside it and join the two with an ordinary arrow, the same way a [comment panel](/help/palette/collaborate/comment-panels/) is attached.
+
+## Working with it
+
+- **Complete** marks the action done. The card dims and shows a **Done** chip, but stays on the board as a record of what was agreed. **Reopen** brings it back.
+- **Edit** reopens the dialog with everything filled in, so you can rename it, change the description or hand it to someone else.
+- To remove the action, delete the card. To keep the card and clear its action, use **Collaborate → View Action** in the card's menu and delete it from there.
+
+It is the same action as any other: it appears in the [Collaborate panel](/help/collaboration/assigned-actions/#the-collaborate-panel) and on your Activity page, and anyone who can view the diagram can read it, while only editors can change it.
+
+## Panel or action badge
+
+You can already put an action on any element with **Assign Action** in its menu. That shows as a small badge that opens a popover for one reader at a time. A panel is the same action, left out on the board, so it is in the export and in everyone else's view.
+
+</ArticleLayout>

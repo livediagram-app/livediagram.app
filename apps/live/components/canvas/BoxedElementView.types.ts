@@ -110,6 +110,14 @@ export type BoxedElementViewProps = {
     resolve?: () => void;
     unresolve?: () => void;
   };
+  // Action panel (spec/145): who I am, and the action mutators for THIS
+  // element, bound by id the way commentActions are.
+  actionSelfId?: string | null;
+  actionActions?: {
+    configure: () => void;
+    complete: () => void;
+    reopen: () => void;
+  };
   // Per-element session settings from the element's own `…` menu (spec/105).
   onSetSessionConfig?: (
     element: import('@livediagram/diagram').ShapeElement,

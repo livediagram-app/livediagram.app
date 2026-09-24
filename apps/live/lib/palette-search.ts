@@ -56,6 +56,7 @@ export const SHAPE_KEYWORDS: Partial<Record<ShapeKind, string>> = {
   decision: 'decided outcome record resolution',
   'roll-call': 'attendance present who register',
   'comment-pin': 'annotate feedback discuss thread remark marker note',
+  'action-card': 'task todo to-do assign assignee follow-up owner action item',
   'done-check': 'complete finished tick ready everyone signed off',
   'reaction-pad': 'emoji react clap applause celebrate burst',
   actor: 'person stick figure user role uml',

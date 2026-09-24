@@ -99,6 +99,8 @@ function BoxedElementViewImpl({
   onOpenElementSettings,
   commentSelfId,
   commentActions,
+  actionSelfId,
+  actionActions,
   revealedForMe,
   onToggleReveal,
   onRollPicker,
@@ -237,8 +239,10 @@ function BoxedElementViewImpl({
   const isCommentPin = element.type === 'shape' && element.shape === 'comment-pin';
   const commentCount = isCommentPin ? 0 : activeCommentCount(element.commentThread);
   // Assigned action (spec/68): the badge shows only while the action is
-  // open; a done action stays on the element but stops shouting.
-  const hasOpenAction = isOpenAction(element.action);
+  // open; a done action stays on the element but stops shouting. An action
+  // panel (spec/145) shows its action on its face, so it is the badge.
+  const isActionPanel = element.type === 'shape' && element.shape === 'action-card';
+  const hasOpenAction = !isActionPanel && isOpenAction(element.action);
   // Both 'tab' and 'diagram' kinds get the "linked" badge; the
   // follow-handler dispatches off the kind via the parent's
   // onFollowLink callback. 'element' kind is the spec'd
@@ -487,6 +491,8 @@ function BoxedElementViewImpl({
         activeMode={activeMode}
         collab={collab}
         commentActions={commentActions}
+        actionSelfId={actionSelfId}
+        actionActions={actionActions}
         commentSelfId={commentSelfId}
         imageContext={imageContext}
         tabSummaries={tabSummaries}

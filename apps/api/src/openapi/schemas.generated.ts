@@ -1118,6 +1118,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "shapeColors": {
         "additionalProperties": false,
         "properties": {
+          "action-card": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
           "actor": {
             "additionalProperties": false,
             "properties": {
@@ -3747,6 +3762,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "picker",
       "reaction-pad",
       "comment-pin",
+      "action-card",
       "done-check",
       "chair",
       "estimate",

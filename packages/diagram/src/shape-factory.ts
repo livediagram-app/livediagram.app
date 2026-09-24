@@ -67,6 +67,9 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // Comment panel: a card, sized for a couple of comments. Collapsed it
   // shrinks to its summary bar (spec/136).
   'comment-pin': { width: 260, height: 190 },
+  // Action panel (spec/145): the Comment panel's size, which fits a name, a
+  // couple of lines of description, the assignee row and the footer.
+  'action-card': { width: 260, height: 190 },
   // Done check: taller than the other room-response panels because it stacks
   // TWO rosters (done and waiting) plus the all-done line. At 190 a two-person
   // room already overflowed by a few pixels and the body grew a scrollbar.
@@ -403,6 +406,15 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       ...base,
       // No label: the panel's content IS the thread, and a caption above it
       // would be a title for a conversation nobody has had yet.
+      label: '',
+    };
+  }
+  if (kind === 'action-card') {
+    return {
+      ...base,
+      // No label: the Assign Action dialog prefills the action's NAME from the
+      // element's label (spec/68 §2), so a default caption here would become
+      // every new action's name.
       label: '',
     };
   }

@@ -33,6 +33,7 @@ export const BEHAVIOUR_FACE_SHAPES = new Set<string>([
   'picker',
   'reaction-pad',
   'comment-pin',
+  'action-card',
   'portal',
   'chair',
 ]);
@@ -417,6 +418,56 @@ export function svgBehaviourFace(
           size: 11,
           color,
           opacity: 0.55,
+        })
+      );
+    }
+    case 'action-card': {
+      // The action panel (spec/145): its header, the action's name and who it
+      // is assigned to, or the empty state. Truncated to the card, since the
+      // export has no DOM to wrap against.
+      const action = el.action;
+      const fit = (body: string, px: number) => {
+        const max = Math.max(4, Math.floor((el.width - 24) / (px * 0.55)));
+        return body.length > max ? `${body.slice(0, max - 1)}…` : body;
+      };
+      const done = action?.status === 'done';
+      const header =
+        text(el.x + 12, el.y + 22, 'Action', { size: 12, weight: 600, color }) +
+        (done
+          ? pill(el.x + el.width - 56, el.y + 10, 44, 16, color) +
+            text(el.x + el.width - 34, el.y + 22, 'Done', {
+              size: 10,
+              weight: 600,
+              color,
+              anchor: 'middle',
+            })
+          : '');
+      if (!action) {
+        return (
+          header + text(el.x + 12, el.y + 44, 'No action yet.', { size: 11, color, opacity: 0.55 })
+        );
+      }
+      const assignee = action.assignee.name?.trim() || 'Teammate';
+      return (
+        header +
+        text(el.x + 12, el.y + 46, fit(action.name, 14), {
+          size: 14,
+          weight: 600,
+          color,
+          opacity: done ? 0.6 : 1,
+        }) +
+        (action.description
+          ? text(el.x + 12, el.y + 66, fit(action.description, 11), {
+              size: 11,
+              color,
+              opacity: 0.65,
+            })
+          : '') +
+        rule(el.x + 12, el.y + el.height - 34, el.x + el.width - 12, color) +
+        text(el.x + 12, el.y + el.height - 14, fit(`Assigned to ${assignee}`, 11), {
+          size: 11,
+          color,
+          opacity: 0.8,
         })
       );
     }

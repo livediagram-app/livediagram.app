@@ -865,6 +865,17 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M12 16.5h6" {...s} />
     </Glyph>
   ),
+  // A clipboard with its one task ticked: an action, owned and done.
+  'action-panels': (
+    <Glyph>
+      <path
+        d="M9 4.5H7a1.5 1.5 0 00-1.5 1.5v13.5A1.5 1.5 0 007 21h10a1.5 1.5 0 001.5-1.5V6A1.5 1.5 0 0017 4.5h-2"
+        {...s}
+      />
+      <rect x="9" y="3" width="6" height="3.5" rx="1" {...s} />
+      <path d="M9 13.5l2.2 2.2 4-4.5" {...s} />
+    </Glyph>
+  ),
   // Planning poker: a fanned hand with the face card still turned down.
   'estimate-cards': (
     <Glyph>

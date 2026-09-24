@@ -55,6 +55,10 @@ export type ShapeKind =
   // to hold one, so a remark can be pinned to a spot on the board rather than
   // to whichever shape happens to be nearest.
   | 'comment-pin'
+  // Action panel (spec/145): the Comment panel's sibling for assigned
+  // actions. A card whose whole job is to carry ONE `action` (spec/68) and
+  // show it on the board, so a follow-up can live where the room can read it.
+  | 'action-card'
   // Done check (spec/137): everyone marks themselves finished, and the card
   // shows who has and who has not. Live: the not-yet list is read from who is
   // actually in the room, so it shrinks as people leave rather than accusing

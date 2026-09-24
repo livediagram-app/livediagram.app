@@ -66,6 +66,7 @@ describe('every kind with a body draws one', () => {
     'session-button',
     'reaction-pad',
     'comment-pin',
+    'action-card',
     'estimate',
     'temperature',
     'idea-box',

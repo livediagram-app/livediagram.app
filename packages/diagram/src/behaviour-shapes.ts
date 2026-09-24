@@ -29,6 +29,7 @@ export const BEHAVIOUR_SHAPES: readonly ShapeKind[] = [
   'decision',
   'roll-call',
   'comment-pin',
+  'action-card',
 ];
 
 export function isBehaviourShape(kind: ShapeKind): boolean {

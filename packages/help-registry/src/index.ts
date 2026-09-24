@@ -980,9 +980,9 @@ export const articles: Article[] = [
     slug: 'collaborate',
     title: 'Collaborate elements',
     description:
-      'The Behaviours groups that collect what the room thinks: comment panels, estimates, temperature checks, idea boxes, agendas, decisions and roll calls.',
+      'The Behaviours groups that collect what the room thinks: comment panels, action panels, estimates, temperature checks, idea boxes, agendas, decisions and roll calls.',
     keywords:
-      'collaborate collaboration comment panel card pin pinned remark note thread reply discuss feedback annotate sticky question estimate estimation planning poker story points fibonacci tshirt t-shirt temperature check fist of five pulse mood vote idea box anonymous brainstorm brainwriting retro retrospective agenda run of show timebox segments decision record adr architecture decision roll call attendance register present room team workshop facilitate facilitation powers of two',
+      'collaborate collaboration comment panel action panel task assign card pin pinned remark note thread reply discuss feedback annotate sticky question estimate estimation planning poker story points fibonacci tshirt t-shirt temperature check fist of five pulse mood vote idea box anonymous brainstorm brainwriting retro retrospective agenda run of show timebox segments decision record adr architecture decision roll call attendance register present room team workshop facilitate facilitation powers of two',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Elements',
@@ -1041,7 +1041,7 @@ export const articles: Article[] = [
     slug: 'behaviour',
     title: 'Behaviours',
     description:
-      'Every element that comes alive with the room: estimates, temperature checks, idea boxes, Done checks, pickers, session buttons, agendas, decisions, roll calls, reactions, mode buttons and portals.',
+      'Every element that comes alive with the room: comment and action panels, estimates, temperature checks, idea boxes, Done checks, pickers, session buttons, agendas, decisions, roll calls, reactions, mode buttons and portals.',
     keywords:
       'behaviour behavior behaviours behaviors interactive button portal session timer vote poll reveal hide cover picker random spinner control mode switch chair seat link card bookmark preview url reaction pad confetti celebrate sparkles hearts applause fireworks emoji burst done check finished ready waiting who progress everyone mark complete collaborate collaboration estimate temperature idea box agenda decision roll call ask the room keep a record run the room facilitate facilitation runtime live',
     category: 'Palette',
@@ -1837,6 +1837,16 @@ export const articles: Article[] = [
     description: 'A whole comment thread, left out on the board.',
     keywords:
       'comment panel thread remark note reply discuss feedback annotate composer resolve reopen badge popover pinned about an element arrow export',
+    category: 'Palette',
+    categorySlug: 'palette/collaborate',
+    parentSlug: 'collaborate',
+  },
+  {
+    slug: 'action-panels',
+    title: 'Action Panels',
+    description: 'One assigned action as a card on the board, set up from the card.',
+    keywords:
+      'action panel card task todo to-do assign assignee owner follow-up action item complete done reopen email teammate board',
     category: 'Palette',
     categorySlug: 'palette/collaborate',
     parentSlug: 'collaborate',

@@ -1167,6 +1167,38 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
+    // Action panel (spec/145): one assigned action as a card on the board, the
+    // Comment panel's sibling.
+    id: 'collab:action-card',
+    blurb: 'An assigned action as a card on the board',
+    caption: 'Action',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    tileGroup: 'record',
+    label: 'Add action panel',
+    description:
+      'A card that carries one assigned action: what needs doing, who owns it, and whether it is done. Set it up from the card, and join it to what it is about with an arrow.',
+    filled: true,
+    action: { type: 'shape', kind: 'action-card' },
+    icon: (
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden
+      >
+        <path d="M9 4.5H7a1.5 1.5 0 0 0-1.5 1.5v13.5A1.5 1.5 0 0 0 7 21h10a1.5 1.5 0 0 0 1.5-1.5V6A1.5 1.5 0 0 0 17 4.5h-2" />
+        <rect x="9" y="3" width="6" height="3.5" rx="1" />
+        <path d="m9 13.5 2.2 2.2 4-4.5" />
+      </svg>
+    ),
+  },
+  {
     // Estimate cards (spec/123): one tile per SCALE, grouped. Which scale a
     // team estimates on is a standing decision, not something you change per
     // card, so it belongs at the moment you reach for one.

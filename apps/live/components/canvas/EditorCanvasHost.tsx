@@ -222,6 +222,9 @@ export function EditorCanvasHost() {
     narrowMultiSelection,
     newDiagram,
     openActionPopover,
+    openAssignActionDialog,
+    completeAction,
+    reopenAction,
     openCellLinkPicker,
     openComments,
     openDiagram,
@@ -549,6 +552,19 @@ export function EditorCanvasHost() {
               remove: deleteComment,
               resolve: resolveThread,
               unresolve: unresolveThread,
+            }
+      }
+      // Action panels (spec/145) drive the SAME action machinery the popover
+      // and the Assign Action dialog do. The viewer identity is the one the
+      // popover uses: the Clerk account, else the guest participant.
+      actionSelfId={clerkUserId ?? selfParticipant.id}
+      actionPanelActions={
+        isReadOnly
+          ? undefined
+          : {
+              configure: openAssignActionDialog,
+              complete: completeAction,
+              reopen: reopenAction,
             }
       }
       onRollPicker={pickerFor}
