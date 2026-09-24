@@ -145,8 +145,6 @@ export const ROOM_OP_KINDS = [
 ] as const;
 
 export type PresenceOpKind = (typeof PRESENCE_OP_KINDS)[number];
-export type MutationOpKind = (typeof MUTATION_OP_KINDS)[number];
-export type RoomOpKind = (typeof ROOM_OP_KINDS)[number];
 
 // Membership test for the room's ordering + role gate. Takes a loose string
 // because it reads `op.kind` off an `unknown` wire payload (see ServerMessage

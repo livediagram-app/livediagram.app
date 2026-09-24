@@ -131,24 +131,6 @@ export async function attachEventToScopes(
   await env.DB.batch(scopes.map((s) => stmt.bind(eventId, s.scopeType, s.scopeId, at)));
 }
 
-// Look up an event by its natural key. Used by the invite flow, which
-// emits scope-less and attaches the membership on a later request.
-export async function findTimelineEventId(
-  env: Env,
-  sourceType: string,
-  sourceId: string,
-  eventType: string,
-  dedupeKey = '',
-): Promise<string | null> {
-  const row = await env.DB.prepare(
-    `SELECT id FROM timeline_events
-      WHERE source_type = ?1 AND source_id = ?2 AND event_type = ?3 AND dedupe_key = ?4`,
-  )
-    .bind(sourceType, sourceId, eventType, dedupeKey)
-    .first<{ id: string }>();
-  return row?.id ?? null;
-}
-
 type TimelineRow = {
   id: string;
   actor_id: string | null;

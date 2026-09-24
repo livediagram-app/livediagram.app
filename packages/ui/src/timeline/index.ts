@@ -37,7 +37,7 @@ export {
   type TimelineDayGroup,
 } from './useTimelineGrouping';
 export { buildMonthCells, formatMonth, monthKeyOf, shiftMonth, type MonthCell } from './monthCells';
-export { SOURCE_TYPE_LABELS, sourceTypeIconPath, sourceTypeLabel } from './sourceTypeMeta';
+export { sourceTypeIconPath } from './sourceTypeMeta';
 export type {
   TimelineCardRender,
   TimelineCardSlots,

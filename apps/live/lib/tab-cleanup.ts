@@ -17,17 +17,6 @@ import { AUTO_LAYOUT_CHOICES, type AutoLayoutChoice } from '@/lib/auto-layout-ch
 /** Auto-align, or Auto Layout in one of its styles. */
 export type CleanupKind = 'align' | AutoLayoutChoice;
 
-/** The label the menu row and the activity entry use. */
-export function cleanupLabel(kind: CleanupKind): string {
-  return kind === 'align' ? 'Auto-align' : AUTO_LAYOUT_CHOICES[kind].menuLabel;
-}
-
-/** The `Tab / Aligned` telemetry type, or null for plain Auto-align, which has
- *  no type (spec/22). */
-export function cleanupTelemetryType(kind: CleanupKind): string | null {
-  return kind === 'align' ? null : AUTO_LAYOUT_CHOICES[kind].telemetryType;
-}
-
 /**
  * Run a cleanup over a tab's elements. Pure: same input, same output, no
  * commit, no telemetry.

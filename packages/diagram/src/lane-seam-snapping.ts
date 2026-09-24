@@ -19,9 +19,6 @@ import { isBoxed, type Element, type ElementId } from './index';
 /** How near a seam must come to a target before it jumps to it, in element px. */
 export const SEAM_SNAP_THRESHOLD = 8;
 
-/** The default heading thickness for a lane, by orientation. Mirrors LaneGutter. */
-export type LaneSeamDefaults = { gutter: number; band: number };
-
 /**
  * Where another lane's seam sits, in absolute canvas coordinates, on `axis`.
  *

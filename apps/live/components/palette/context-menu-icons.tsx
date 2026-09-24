@@ -170,27 +170,6 @@ export function PaletteMenuIcon() {
   );
 }
 
-export function CanvasMenuIcon() {
-  return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <rect x="2.5" y="2.5" width="11" height="11" rx="1.5" />
-      <circle cx="6" cy="6" r="0.6" fill="currentColor" />
-      <circle cx="10" cy="6" r="0.6" fill="currentColor" />
-      <circle cx="6" cy="10" r="0.6" fill="currentColor" />
-      <circle cx="10" cy="10" r="0.6" fill="currentColor" />
-    </svg>
-  );
-}
-
 export function AutoAlignIcon() {
   return (
     <svg
@@ -429,26 +408,6 @@ export function MindmapMenuIcon() {
       <circle cx="2.8" cy="13" r="1.4" />
       <circle cx="13.2" cy="13" r="1.4" />
       <path d="M6.5 6.6L3.8 4M9.5 6.6L12.2 4M6.5 9.4L3.8 12M9.5 9.4L12.2 12" />
-    </svg>
-  );
-}
-
-// Serif "A" - the Font section glyph.
-export function FontMenuIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="currentColor"
-      aria-hidden
-      fontSize="12"
-      fontWeight="600"
-      fontFamily="Georgia, serif"
-    >
-      <text x="8" y="12.5" textAnchor="middle">
-        A
-      </text>
     </svg>
   );
 }
