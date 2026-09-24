@@ -86,12 +86,24 @@ function workingPng(photoDir: string, name: string, workDir: string, edge: numbe
   return out;
 }
 
+// Where the EDITOR's pixels for a photo are cached (see scripts/chrome.ts).
+// Preferred over ImageMagick's whenever they have been rendered.
+export function chromeCacheOf(photoDir: string, edge = WORKING_EDGE_PX) {
+  const workDir = workDirFor(photoDir);
+  return (name: string) => ({
+    rgba: `${workDir}/${name}.${edge}.chrome.rgba`,
+    meta: `${workDir}/${name}.${edge}.chrome.json`,
+  });
+}
+
 // Decode once, iterate a hundred times. A raw RGBA dump beside the working PNG
 // is the difference between a six-minute loop and a two-second one.
 export function loadPhoto(photoDir: string, name: string, edge = WORKING_EDGE_PX): ImageBuffer {
   const workDir = workDirFor(photoDir);
-  const cache = `${workDir}/${name}.${edge}.rgba`;
-  const meta = `${workDir}/${name}.${edge}.json`;
+  const chrome = chromeCacheOf(photoDir, edge)(name);
+  const fromChrome = existsSync(chrome.rgba) && existsSync(chrome.meta);
+  const cache = fromChrome ? chrome.rgba : `${workDir}/${name}.${edge}.rgba`;
+  const meta = fromChrome ? chrome.meta : `${workDir}/${name}.${edge}.json`;
   if (existsSync(cache) && existsSync(meta)) {
     const { width, height } = JSON.parse(readFileSync(meta, 'utf8')) as {
       width: number;

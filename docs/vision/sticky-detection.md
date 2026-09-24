@@ -359,6 +359,13 @@ they exist:
   their areas are within 2x (`scripts/truth.ts`). The area half of that rule is
   deliberate: one box over a 2x2 cluster of touching notes scores as one
   spurious box AND four missed notes, which is exactly what it is.
+- **The sweep scores the editor's own pixels.** Each photo's working image is
+  made the product's way — decoded by a real Chromium (`createImageBitmap`,
+  EXIF applied) and drawn at the working size with high-quality smoothing
+  (`scripts/chrome.ts`), sized by the one shared rule `workingSizeOf` — and
+  cached. ImageMagick's resize is a different filter, and on small notes it
+  moved whole boxes: the same detector scored 91.4 on its pixels and 90.7 on
+  the editor's, and a different wall passed. `--magick` still forces it.
 - The summary also measures THE BAR of
   [plans/event-storming-photo-95.md](../../plans/event-storming-photo-95.md):
   recall without the small actors (`rec-A`; actors reported apart), the count

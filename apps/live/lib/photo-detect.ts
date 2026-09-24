@@ -7,7 +7,12 @@ import {
   PHOTO_MAX_NOTES,
   type NoteCrop,
 } from '@livediagram/api-schema';
-import { cropRects, detectStickies, type DetectedSticky } from '@livediagram/sticky-vision';
+import {
+  cropRects,
+  detectStickies,
+  workingSizeOf,
+  type DetectedSticky,
+} from '@livediagram/sticky-vision';
 
 // Getting a photograph ready to become notes (spec/139 Phase 8) — all of it in
 // the browser.
@@ -87,11 +92,13 @@ export async function detectAndCrop(
   }
   if (opts.signal?.aborted) throw new PhotoDetectFailed('photo_unreadable');
 
-  const longest = Math.max(bitmap.width, bitmap.height);
-  // Never UPSCALE: a small photo already holds as much detail as there is.
-  const ratio = longest > PHOTO_MAX_EDGE_PX ? PHOTO_MAX_EDGE_PX / longest : 1;
-  const width = Math.max(1, Math.round(bitmap.width * ratio));
-  const height = Math.max(1, Math.round(bitmap.height * ratio));
+  // The one working-size rule, shared with the calibration sweep so the sweep
+  // scores the image the editor detects on. Never upscales.
+  const {
+    width,
+    height,
+    scale: ratio,
+  } = workingSizeOf(bitmap.width, bitmap.height, PHOTO_MAX_EDGE_PX);
 
   const working = drawTo(bitmap, width, height);
   const found = detectStickies(working.image);

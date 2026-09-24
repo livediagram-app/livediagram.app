@@ -6,7 +6,8 @@ import { classMaskOf, detectStickies, type DetectedSticky } from '../src/detect'
 import { labelComponents } from '../src/components';
 import { fitBoxes, mergeFragments } from '../src/boxes';
 import { encodePng } from './png';
-import { listPhotos, loadPhoto, workDirFor, workingEdgeFrom } from './photos';
+import { chromeCacheOf, listPhotos, loadPhoto, workDirFor, workingEdgeFrom } from './photos';
+import { renderWorkingImages } from './chrome';
 import { BAR, meetsBar, photoDir, score, truthDir, truthFor, type Score } from './truth';
 
 // Calibrating the detector against REAL photographs of a real wall.
@@ -15,7 +16,8 @@ import { BAR, meetsBar, photoDir, score, truthDir, truthFor, type Score } from '
 // enter the repo, so nothing here can run in CI. The unit tests stay synthetic,
 // exact and fast; this is the loop you run by hand while moving a threshold.
 //
-//   npx tsx scripts/calibrate.ts [--photos <dir>] [--edge <px>] [--probe x,y,x,y <photo>]
+//   npx tsx scripts/calibrate.ts [--photos <dir>] [--edge <px>] [--magick] [--probe x,y,x,y <photo>]
+//   (--magick: resample with ImageMagick instead of the editor's own Chromium path)
 //
 // Reads every JPEG or PNG in the folder (default: this package's gitignored
 // `test-files/`), converts each ONCE to the editor's working size and caches
@@ -271,7 +273,7 @@ function report(name: string) {
   return { name, found: found.length, thirds: [l, m, r] as const, scored, took };
 }
 
-function main() {
+async function main() {
   if (!existsSync(PHOTO_DIR)) {
     console.error(`no such folder: ${PHOTO_DIR}`);
     process.exit(1);
@@ -280,6 +282,11 @@ function main() {
   if (names.length === 0) {
     console.error(`no JPEG or PNG photos in ${PHOTO_DIR}`);
     process.exit(1);
+  }
+  // The editor's own pixels first (scripts/chrome.ts), unless asked for
+  // ImageMagick's: the sweep scores the image the product detects on.
+  if (!process.argv.includes('--magick')) {
+    await renderWorkingImages(PHOTO_DIR, names, EDGE, chromeCacheOf(PHOTO_DIR, EDGE));
   }
   const rows = names.map(report);
   console.log(`\nSUMMARY (${PHOTO_DIR}, working edge ${EDGE}px)   truth: ${truthDir()}\n`);
@@ -336,4 +343,4 @@ function main() {
   );
 }
 
-main();
+void main();
