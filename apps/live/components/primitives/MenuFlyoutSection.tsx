@@ -110,7 +110,7 @@ function Flyout({
   // state (open + onToggle travel together).
   open: controlledOpen,
   onToggle,
-  panel = false,
+  panel: isPanel = false,
 }: MenuFlyoutSectionProps) {
   const triggerRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -199,8 +199,19 @@ function Flyout({
     // neither fits fall back to pinning at the top margin. Flipping keeps the
     // panel attached to the row it belongs to; the old clamp-only version slid
     // it up the screen until it no longer lined up with anything.
-    const rawTop =
-      tr.top + pr.height + m <= window.innerHeight ? tr.top : Math.max(m, tr.bottom - pr.height);
+    //
+    // A PANEL centres on the host menu instead. It is far taller than a list
+    // of sections and changes height as you use it (Choices adds an answer
+    // list and a preview), so hanging it from its row left it towering above
+    // or below the menu at a lopsided offset. Centred, it grows evenly both
+    // ways and always reads as belonging to the menu beside it; the clamp
+    // below still keeps it on screen.
+    const host = isPanel ? trigger.closest('[role="menu"]')?.getBoundingClientRect() : undefined;
+    const rawTop = host
+      ? host.top + host.height / 2 - pr.height / 2
+      : tr.top + pr.height + m <= window.innerHeight
+        ? tr.top
+        : Math.max(m, tr.bottom - pr.height);
     // ROUND to whole pixels. getBoundingClientRect returns sub-pixel floats,
     // and this used to be stored raw: a trigger sitting on a fractional
     // boundary produced a hair-different `top` on every measurement, so the
@@ -216,7 +227,7 @@ function Flyout({
       return { left, top };
     });
     return settled;
-  }, [isMobile]);
+  }, [isMobile, isPanel]);
 
   const [trackNonce, setTrackNonce] = useState(0);
   const retrack = useCallback(() => setTrackNonce((n) => n + 1), []);
@@ -352,7 +363,7 @@ function Flyout({
             // nothing at all. Same reason the token exists for menus opened inside
             // a dialog.
             className={`fixed z-[var(--z-popover)] flex animate-fade-in flex-col rounded-md ${
-              panel
+              isPanel
                 ? 'max-h-[calc(100dvh-1rem)] w-72 overflow-y-auto overscroll-contain'
                 : 'w-56 overflow-hidden'
             } border border-slate-200 bg-white/95 text-sm shadow-lg backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/95 dark:shadow-slate-950/40`}

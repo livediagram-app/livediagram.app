@@ -34,7 +34,7 @@ Both tools can also be started by a [Session button](105-session-button.md) — 
 
 The tab menu's **Collaborate** row opens one side-flyout panel (a
 `MenuFlyoutSection` with `panel`, so it is never promoted inline and is
-drawn wider, `w-72`, scrolling when taller than the screen). It replaced four
+drawn wider, `w-72`, scrolling when taller than the screen, and **vertically centred on the host menu** rather than hung from its row, so it grows evenly both ways as a pane changes height; the viewport clamp still wins near a screen edge). It replaced four
 stacked accordions (Timer, Stopwatch, Vote, Poll) that were strips of small
 grey buttons. A segmented switcher across the top, **Timer · Vote ·
 Poll**, carries a status dot per tool (green pulsing = running, amber = set
