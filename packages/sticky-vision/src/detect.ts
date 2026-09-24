@@ -19,6 +19,8 @@ import { dropSurfaces } from './spill';
 import { dropBlank } from './texture';
 import { findPads } from './pads';
 import { noteSizeField } from './size-field';
+import { combineWithModel, type HybridRules } from './hybrid';
+import type { ModelCues } from './model-cues';
 
 // Finding the stickies in a photograph of a wall (spec/139 Phase 8).
 //
@@ -62,9 +64,14 @@ export type DetectOptions = {
   // Told of every box a gate refuses, and which gate: how a sweep traces a
   // missed note to the rule that lost it. Never changes what is found.
   onDrop?: (box: Box, reason: DetectDropReason) => void;
+  // What a boundary model saw in this same image, and which of its
+  // corrections to apply (see `hybrid.ts`). The model runs elsewhere; the
+  // detector only reads its numbers. Absent, the detector is purely classical.
+  model?: { cues: ModelCues; rules: HybridRules };
 };
 
-export type DetectDropReason = DropReason | 'standout' | 'dark-grain' | 'blank' | 'surface';
+export type DetectDropReason =
+  DropReason | 'standout' | 'dark-grain' | 'blank' | 'surface' | 'model-background';
 
 // Sensor noise, as a fraction of the working image's long edge: a property of
 // the camera rather than of the wall. Shared with `fitBoxes`, which uses the
@@ -228,7 +235,12 @@ export function detectStickies(image: ImageBuffer, opts: DetectOptions = {}): De
   // …and a box whose colour does not STOP at its edge is a piece of a
   // surface, not a note: a lit face of cardboard, a window pane, bare kraft
   // (see `dropSurfaces`). A note is an object; its paper ends.
-  const standing = dropSurfaces(working, blankless, (box) => drop(box, 'surface'));
+  const surfaced = dropSurfaces(working, blankless, (box) => drop(box, 'surface'));
+  const standing = opts.model
+    ? combineWithModel(surfaced, opts.model.cues, mask, opts.model.rules, (box) =>
+        drop(box, 'model-background'),
+      )
+    : surfaced;
   if (standing.length === 0) return [];
   return clusterRows(standing, noteSize).map((box, i) => ({
     id: i,
