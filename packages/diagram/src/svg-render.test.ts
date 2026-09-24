@@ -464,6 +464,10 @@ describe('renderElementsToSvg', () => {
             iconId: 'server',
             width: 64,
             height: 64,
+            // 'sm' (14px) is the size this case was measured at; the default
+            // is 22px, at which a single word already overflows a 64px box
+            // and the test would be about overflow rather than stacking.
+            textSize: 'sm',
             label: 'restaurant hygienerating updated',
           }),
         ]),
@@ -543,7 +547,7 @@ describe('renderElementsToSvg', () => {
       // Band y0 = 36% of 100; the 48px mark centres inside the 58% band.
       expect(svg).toContain('x="26" y="41" width="48" height="48"');
       // The caption sits near the top instead of the floor.
-      expect(svg).toContain('y="14"'); // el.y + fontSize (default 14)
+      expect(svg).toContain('y="22"'); // el.y + fontSize (default md = 22)
     });
 
     it('sends a left-captioned mark to the right half, on the caption row (spec/41)', () => {
@@ -576,11 +580,11 @@ describe('renderElementsToSvg', () => {
       // The mark takes the bottom band (36..94), centred: y = 36 + (58-48)/2.
       expect(svg).toContain('y="41" width="48" height="48"');
       // The caption anchors to its band's bottom edge (the 36% line), NOT the
-      // box's vertical centre — y = 36 - 14 (font size), clear of the mark.
+      // box's vertical centre — y = 36 - 22 (font size), clear of the mark.
       // It used to render at h/2 = 50, on top of the art.
       const m = svg.match(/<text[^>]*y="([0-9.]+)"/);
       expect(m).not.toBeNull();
-      expect(parseFloat(m![1]!)).toBe(22);
+      expect(parseFloat(m![1]!)).toBe(14);
     });
 
     it('centres a side caption on the glyph row and wraps it at its half (spec/41)', () => {
@@ -696,5 +700,46 @@ describe('arrow captions in an export', () => {
     expect(captioned({ labelFill: '#ffe4e6' })).toContain('fill="#ffe4e6"');
     // Transparent is the same as none: the label sits on the canvas.
     expect(captioned({ labelFill: 'transparent' })).not.toContain('fill="transparent"');
+  });
+});
+
+// Drawn-on-the-box chrome (spec/09, spec/119). The export drew the box and
+// stopped, so a swimlane came out as a plain rectangle with its title floating
+// in the middle of the work, and a browser frame had no window at all.
+describe('chrome the canvas draws on a box', () => {
+  const laneAt = (o: Partial<ShapeElement> = {}) =>
+    shape('ln', { shape: 'lane', width: 400, height: 200, textAlignX: 'left', ...o });
+
+  it('paints a lane gutter down the edge its title is pinned to', () => {
+    const svg = renderElementsToSvg(tab([laneAt()]));
+    // The gutter's own strip, at the lane's left edge and its default width.
+    expect(svg).toContain('width="132"');
+  });
+
+  it('follows the title to the other edge', () => {
+    const svg = renderElementsToSvg(tab([laneAt({ textAlignX: 'right' })]));
+    // x = 0 + 400 - 132, i.e. the strip moved rather than a second one drawn.
+    expect(svg).toContain('x="268"');
+  });
+
+  it('paints an explicit heading colour at full strength, not as a wash', () => {
+    const washed = renderElementsToSvg(tab([laneAt()]));
+    expect(washed).toContain('opacity="0.1"');
+    const painted = renderElementsToSvg(tab([laneAt({ headerFill: '#fecdd3' })]));
+    expect(painted).toContain('fill="#fecdd3"');
+  });
+
+  it('gives a browser frame its window chrome', () => {
+    const svg = renderElementsToSvg(
+      tab([shape('br', { shape: 'browser', width: 300, height: 200 })]),
+    );
+    // Three window dots and the URL pill, the two marks that say "browser".
+    expect((svg.match(/<circle/g) ?? []).length).toBeGreaterThanOrEqual(3);
+    expect(svg).toContain('rx="10"');
+  });
+
+  it('rounds a mind node the way the canvas does', () => {
+    const svg = renderElementsToSvg(tab([shape('mn', { shape: 'mind-node' })]));
+    expect(svg).toContain('rx="12"');
   });
 });

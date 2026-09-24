@@ -11,6 +11,7 @@ import type { BoxedElement, FreehandElement, ShapeKind } from './index';
 import { r2, xmlEscape } from './svg-render-primitives';
 import { codeTheme } from './code-themes';
 import { chartPaletteColors } from './chart-palettes';
+import { isLaneBand, laneEdgeOfElement, laneSizeOfElement } from './lane-gutter';
 import { PIE_PALETTE } from './data-shapes';
 
 // The kinds this module draws. square / circle / stadium / browser render
@@ -391,4 +392,79 @@ export function svgLegendShape(
     })
     .join('');
   return card + rows;
+}
+
+// A lane's title gutter (spec/119): the tinted strip behind the title, on
+// whichever edge the title is pinned to, with the rule where it meets the
+// body. Without it an exported swimlane is a plain box with its title
+// floating in the middle of the work.
+export function svgLaneGutter(el: BoxedElement & { type: 'shape' }, stroke: string): string {
+  const edge = laneEdgeOfElement(el);
+  const size = Math.min(laneSizeOfElement(el), (isLaneBand(edge) ? el.height : el.width) - 1);
+  // An explicit heading colour paints at full strength (you picked it, you
+  // get it); with none set it is the 10% wash of the lane's own stroke the
+  // canvas falls back to, so a recoloured lane keeps its gutter in the family.
+  const fill = el.headerFill ?? stroke;
+  const wash = el.headerFill ? '' : ' opacity="0.1"';
+  const strip = (x: number, y: number, w: number, h: number) =>
+    `<rect x="${r2(x)}" y="${r2(y)}" width="${r2(w)}" height="${r2(h)}" fill="${xmlEscape(fill)}"${wash}/>`;
+  const rule = (x1: number, y1: number, x2: number, y2: number) =>
+    `<path d="M ${r2(x1)} ${r2(y1)} L ${r2(x2)} ${r2(y2)}" stroke="${xmlEscape(stroke)}" stroke-width="1"/>`;
+  if (edge === 'left')
+    return (
+      strip(el.x, el.y, size, el.height) + rule(el.x + size, el.y, el.x + size, el.y + el.height)
+    );
+  if (edge === 'right')
+    return (
+      strip(el.x + el.width - size, el.y, size, el.height) +
+      rule(el.x + el.width - size, el.y, el.x + el.width - size, el.y + el.height)
+    );
+  if (edge === 'top')
+    return (
+      strip(el.x, el.y, el.width, size) + rule(el.x, el.y + size, el.x + el.width, el.y + size)
+    );
+  if (edge === 'bottom')
+    return (
+      strip(el.x, el.y + el.height - size, el.width, size) +
+      rule(el.x, el.y + el.height - size, el.x + el.width, el.y + el.height - size)
+    );
+  // A centred strip has two seams with the body, not one.
+  const left = el.x + el.width / 2 - size / 2;
+  return (
+    strip(left, el.y, size, el.height) +
+    rule(left, el.y, left, el.y + el.height) +
+    rule(left + size, el.y, left + size, el.y + el.height)
+  );
+}
+
+// A browser frame's chrome (spec/09 Devices): the fixed-height strip pinned to
+// the top, its three window dots, the nav glyphs and the URL pill. Fixed pixel
+// geometry, like the canvas, so it doesn't deform with the box's aspect ratio.
+const BROWSER_CHROME_PX = 48;
+
+export function svgBrowserChrome(el: BoxedElement, stroke: string): string {
+  const h = Math.min(BROWSER_CHROME_PX, el.height);
+  const c = xmlEscape(stroke);
+  const midY = el.y + h / 2;
+  const dots = [0, 1, 2]
+    .map((i) => `<circle cx="${r2(el.x + 22 + i * 18)}" cy="${r2(midY)}" r="6" fill="${c}"/>`)
+    .join('');
+  const line = ` fill="none" stroke="${c}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"`;
+  // The nav group, on the canvas's own 44x14 grid, placed after the dots.
+  const nx = el.x + 78;
+  const ny = midY - 7;
+  const nav =
+    `<g transform="translate(${r2(nx)} ${r2(ny)}) scale(1.27 1.29)">` +
+    `<path d="M 7 3 L 3 7 L 7 11"${line}/>` +
+    `<path d="M 15 11 L 19 7 L 15 3"${line}/>` +
+    `<path d="M 30 4 A 4 4 0 1 1 27 11 M 30 4 L 33 4 M 30 4 L 30 7"${line}/>` +
+    `</g>`;
+  const pillX = el.x + 150;
+  const pillW = Math.max(0, el.x + el.width - 16 - pillX);
+  const pill =
+    pillW > 8
+      ? `<rect x="${r2(pillX)}" y="${r2(midY - 10)}" width="${r2(pillW)}" height="20" rx="10" fill="none" stroke="${c}" stroke-width="1"/>`
+      : '';
+  const divider = `<path d="M ${r2(el.x)} ${r2(el.y + h)} L ${r2(el.x + el.width)} ${r2(el.y + h)}" stroke="${c}" stroke-width="1"/>`;
+  return dots + nav + pill + divider;
 }

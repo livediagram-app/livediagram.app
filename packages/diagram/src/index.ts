@@ -398,6 +398,8 @@ export * from './mind-map';
 export * from './youtube';
 export * from './arrow-path';
 export * from './arrow-label';
+export * from './label-font';
+export * from './lane-gutter';
 export * from './arrow-style';
 export * from './border-style';
 // Element drop shadows (spec/86): model, presets + render builders.
@@ -414,6 +416,7 @@ export * from './element-action';
 export * from './data-shapes';
 export * from './code-themes';
 export * from './chart-palettes';
+export * from './chart-frame';
 // Per-participant responses (spec/122) + the collaboration element family
 // (spec/123 to spec/130). Both leaf modules, for the factories cycle.
 export * from './responses';

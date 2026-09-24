@@ -2,6 +2,7 @@
 // its per-element emitters: tables, shape silhouettes, freehand). Their own
 // module so the emitters never import from svg-render (which imports THEM),
 // keeping the graph cycle-free.
+import { labelFontPx } from './label-font';
 import type { BoxedElement } from './index';
 
 // XML-escape for both text nodes and attribute values. Re-exported rather
@@ -16,8 +17,11 @@ export function r2(n: number): number {
   return Math.round(n * 100) / 100;
 }
 
-export function fontSizeFor(textSize: BoxedElement['textSize']): number {
-  return textSize === 'lg' ? 20 : textSize === 'sm' ? 12 : textSize === 'scale' ? 18 : 14;
+// The canvas's own table (label-font.ts), not a second one: this used to
+// return 12 / 14 / 20 / 18 against the canvas's 14 / 22 / 32 / 16, so every
+// exported label came out about two thirds the size it was drawn at.
+export function fontSizeFor(textSize: BoxedElement['textSize'], multiline = false): number {
+  return labelFontPx(textSize, multiline);
 }
 
 // Horizontal room a label has inside its element (box width minus the
