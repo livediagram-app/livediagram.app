@@ -120,6 +120,14 @@ export type BoxedElementViewProps = {
     resolve?: () => void;
     unresolve?: () => void;
   };
+  // Action panel (spec/146): who I am, and the action mutators for THIS
+  // element, bound by id the way commentActions are.
+  actionSelfId?: string | null;
+  actionActions?: {
+    configure: () => void;
+    complete: () => void;
+    reopen: () => void;
+  };
   // Per-element session settings from the element's own `…` menu (spec/105).
   onSetSessionConfig?: (
     element: import('@livediagram/diagram').ShapeElement,
@@ -217,10 +225,10 @@ export type BoxedElementViewProps = {
   // outlive the offset itself: were the transition removed in the same commit
   // as the transform, the board would snap shut instead of easing.
   insertShiftAnimates?: boolean;
-  // The Page masthead (spec/100), and the banner / callout lines (spec/146).
+  // The Page masthead (spec/100), and the banner / callout lines (spec/147).
   onSetPageHeading: (elementId: string, field: 'pageTitle' | 'pageSubtitle', value: string) => void;
   // The web components' rows and a hero's caption lines, edited in place
-  // (spec/146). Omitted in read-only.
+  // (spec/147). Omitted in read-only.
   onSetWebRows?: (elementId: string, rows: WebRows) => void;
   onSetHeroCaptionLine?: (elementId: string, field: keyof HeroCaption, value: string) => void;
   // Live dot-vote (spec/39). `vote` is the active tab's vote session

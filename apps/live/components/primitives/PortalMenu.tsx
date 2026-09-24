@@ -185,6 +185,8 @@ export function MenuActionRow({
   label,
   icon,
   onClick,
+  onPointerEnter,
+  onPointerLeave,
   danger = false,
   disabled = false,
   plain = false,
@@ -192,6 +194,11 @@ export function MenuActionRow({
   label: string;
   icon: ReactNode;
   onClick: () => void;
+  // For a row whose result can be SHOWN before it is chosen: the Cleanup
+  // layouts preview on hover (spec/47), the same way the tiles above do.
+  // Rows without a preview pass neither, and behave exactly as they did.
+  onPointerEnter?: PointerEventHandler<HTMLButtonElement>;
+  onPointerLeave?: PointerEventHandler<HTMLButtonElement>;
   // Sentence-case, 13px, full-contrast: the reading size for a menu
   // that IS the list (the diagram actions menu), where the uppercase
   // label rhythm of a category header is too quiet to scan eight verbs
@@ -222,6 +229,8 @@ export function MenuActionRow({
       <button
         type="button"
         onClick={onClick}
+        onPointerEnter={onPointerEnter}
+        onPointerLeave={onPointerLeave}
         className={`flex w-full cursor-pointer items-center gap-2.5 px-3 py-2 text-[13px] transition ${
           danger
             ? 'text-rose-600 hover:bg-rose-50 dark:text-rose-300 dark:hover:bg-rose-500/15'
@@ -243,6 +252,8 @@ export function MenuActionRow({
     <button
       type="button"
       onClick={onClick}
+      onPointerEnter={onPointerEnter}
+      onPointerLeave={onPointerLeave}
       className={`flex w-full cursor-pointer items-center gap-2 px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider transition ${
         danger
           ? 'text-slate-400 hover:bg-rose-50 hover:text-rose-600 dark:text-slate-400 dark:hover:bg-rose-950/40 dark:hover:text-rose-300'

@@ -321,7 +321,7 @@ export type ShapeElement = {
   mindFlow?: MindFlow;
   // Page masthead (spec/100): the fixed heading + subtitle above the body.
   // Meaningful on the 'page' kind, and reused by two web components
-  // (spec/146) for the same job — a single-line heading beside the
+  // (spec/147) for the same job — a single-line heading beside the
   // multi-line label: a banner's subtitle (`pageSubtitle`) and a callout's
   // heading (`pageTitle`). Bounded in validate.ts.
   //
@@ -334,7 +334,7 @@ export type ShapeElement = {
   // Plain strings, not rich runs: a title has one look, set by the element.
   pageTitle?: string;
   pageSubtitle?: string;
-  // Web components (spec/146), bounded in validate.ts: a stat row's KPI
+  // Web components (spec/147), bounded in validate.ts: a stat row's KPI
   // cards, a process's step captions (one circle each, numbered by position)
   // and a header's nav links. Each only meaningful on its own kind.
   stats?: StatItem[];
@@ -714,10 +714,10 @@ export type ImageElement = {
   naturalHeight?: number;
   // How the bitmap fills its box. Defaults to 'contain' (the whole image
   // shows, letterboxed) which suits screenshots / diagrams. 'cover' fills the
-  // box (cropping) — used by the hero + avatar (spec/09, spec/146) so a
+  // box (cropping) — used by the hero + avatar (spec/09, spec/147) so a
   // photo fills the area / circle rather than letterboxing.
   objectFit?: 'cover' | 'contain';
-  // Hero caption card (spec/146): a themed card inset near the bottom of the
+  // Hero caption card (spec/147): a themed card inset near the bottom of the
   // image carrying a title + a supporting line, in `fillColor` with
   // `textColor` (white by default). Present = shown; the palette's Hero is an
   // image created with one, and any image can gain or lose it from the menu.

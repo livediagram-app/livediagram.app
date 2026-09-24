@@ -597,11 +597,9 @@ export function AvatarSprite({
   const sitDrop = seated ? 5 : 0;
   const bob = airborne ? 0 : mid ? -1 : 0;
   const swing = airborne ? -1 : walking ? (mid ? 1 : -1) : 0;
-  // Seated (spec/130): always face the reader. A chair's occupant drawn in
-  // profile reads as perched on the arm rather than sitting in it, and which
-  // way you happened to walk in from is not information worth keeping.
-  const facingNow = seated ? 'down' : facing;
-  const profile = facingNow === 'left' || facingNow === 'right';
+  // Seated (spec/130), `facing` is the CHAIR's: sitting down turns the figure
+  // the way the seat points, so a sitter in profile is in a sideways chair.
+  const profile = facing === 'left' || facing === 'right';
   const { base: shirtBase, dark: shirtDark } = shade(shirt);
   const box = portrait ? avatarPortraitBox(scale) : avatarBox(scale);
   // The hop is expressed in SPRITE pixels, so the whole body rises while the
@@ -630,7 +628,7 @@ export function AvatarSprite({
       )}
       <g
         transform={
-          facingNow === 'right'
+          facing === 'right'
             ? `translate(${16 - (pose?.leanX ?? 0)} ${bob - liftPx + sitDrop}) scale(-1 1)`
             : `translate(${pose?.leanX ?? 0} ${bob - liftPx + sitDrop})`
         }
@@ -674,7 +672,7 @@ export function AvatarSprite({
               pose={pose}
             />
             {config.clothing === 'hoodie' ? <Hood shirtDark={shirtDark} /> : null}
-            {facingNow === 'up' ? (
+            {facing === 'up' ? (
               <HeadBack hair={config.hair} />
             ) : (
               <HeadFront gender={config.gender} hair={config.hair} />

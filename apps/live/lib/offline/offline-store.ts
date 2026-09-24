@@ -306,7 +306,7 @@ export async function offlineLoadDiagram(id: string): Promise<Diagram | null> {
 export async function offlineLoadTab(id: string, tabId: string): Promise<Tab | null> {
   const rec = await backend.get(id);
   const tab = rec?.tabs.find((t) => t.id === tabId) ?? null;
-  // The offline twin of the api's rowToTab (spec/146): a diagram kept in
+  // The offline twin of the api's rowToTab (spec/147): a diagram kept in
   // this browser since before groups were removed still carries them.
   return tab ? { ...tab, elements: migrateLegacyGroups(tab.elements) } : null;
 }

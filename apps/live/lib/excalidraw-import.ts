@@ -183,7 +183,7 @@ export function buildElementsFromExcalidraw(text: string): ExcalidrawImportResul
   );
 
   // Fresh ids for everything. Excalidraw's `groupIds` are not carried over:
-  // livediagram has no groups (spec/146), so grouped elements arrive as
+  // livediagram has no groups (spec/147), so grouped elements arrive as
   // separate elements in the same places.
   const idMap = new Map<string, string>();
   for (const e of src) if (e.id) idMap.set(e.id, crypto.randomUUID());

@@ -258,7 +258,7 @@ export function svgBoxed(el: BoxedElement, opts: BoxedExportOptions = {}): strin
         ? svgImageShape(el, shape.href, shape.objectFit, shape.radius)
         : `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="6"` +
           ` fill="${EXPORT_IMAGE_FILL}" stroke="${EXPORT_IMAGE_STROKE}" stroke-width="1.5" stroke-dasharray="4 4"/>`) +
-      // A hero's caption card (spec/146), over the image.
+      // A hero's caption card (spec/147), over the image.
       (el.type === 'image' ? svgHeroCaption(el, fontFamily) : '');
   } else if (shape.kind === 'ellipse') {
     shapeStr = `<ellipse cx="${r2(cx)}" cy="${r2(cy)}" rx="${r2(el.width / 2)}" ry="${r2(el.height / 2)}" fill="${xmlEscape(shape.fill)}" stroke="${xmlEscape(shape.stroke)}" stroke-width="1.5"/>`;
@@ -340,7 +340,7 @@ export function svgBoxed(el: BoxedElement, opts: BoxedExportOptions = {}): strin
     (el.type === 'shape' &&
       (isCollabPanelShape(el.shape) ||
         BEHAVIOUR_FACE_SHAPES.has(el.shape) ||
-        // A web component (spec/146) writes its label in its own region.
+        // A web component (spec/147) writes its label in its own region.
         isWebComponentShape(el.shape)))
       ? ''
       : label.runs

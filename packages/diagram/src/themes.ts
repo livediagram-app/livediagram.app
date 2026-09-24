@@ -256,7 +256,7 @@ const THEME_COLOUR_FIELDS: Record<Element['type'], ThemeColourField[]> = {
 // below funnel through this so the opt-out can't apply to one and silently
 // drift from the others. Stroke + text stay themed.
 function themeColourFields(el: Element): ThemeColourField[] {
-  // An accent-bar web component (spec/146) paints its bar in the stroke
+  // An accent-bar web component (spec/147) paints its bar in the stroke
   // (unless a fill is picked) under white text, so only the stroke follows
   // the theme: the theme's element fill and ink are the pale-card pair, and
   // writing them into a bar would put pale text on a pale bar.

@@ -183,7 +183,7 @@ export type EditorContextMenuProps = {
   // Checklist (spec/83): replace the selected checklist's rows.
   onSetChecklistItems: (items: ChecklistItem[]) => void;
   onSetEntityFields: (fields: EntityField[]) => void;
-  // Web components (spec/146): the rows of the selected stat row / process /
+  // Web components (spec/147): the rows of the selected stat row / process /
   // header (each field only lands on its own kind), and an image's hero
   // caption card on or off.
   onSetWebRows: (rows: import('@livediagram/diagram').WebRows) => void;

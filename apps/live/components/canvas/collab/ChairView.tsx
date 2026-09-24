@@ -22,12 +22,18 @@ const FACING_ROTATION: Record<ChairFacing, number> = { n: 0, e: 90, s: 180, w: 2
 export function ChairView({
   element,
   sitters,
+  animClass,
 }: {
   element: ShapeElement;
   // Everyone currently seated here, from peer presence. Usually 0 or 1; two is
   // allowed and self-correcting, because enforcing one seat needs a lock and a
   // lock means a chair that gets stuck (spec/130).
   sitters: ChairSitter[];
+  // The glow / pulse / trace / gradient animation (spec/09), drawn on the
+  // chair's own silhouette: the element box is transparent, so the wrapper's
+  // box-shadow version would ring a rectangle around nothing. Mounted here
+  // rather than on the svg, whose `transform` already carries the facing.
+  animClass?: string;
 }) {
   const stroke = element.strokeColor ?? '#94a3b8';
   // The seat's surface. `transparent` is the element default (the chair is
@@ -47,7 +53,10 @@ export function ChairView({
   const ringColor = sitters[0]?.color ?? stroke;
 
   return (
-    <div className="pointer-events-none absolute inset-0" aria-hidden={false}>
+    <div
+      className={`pointer-events-none absolute inset-0 origin-center ${animClass ?? ''}`}
+      aria-hidden={false}
+    >
       <svg
         viewBox="0 0 64 72"
         className="absolute inset-0 h-full w-full"

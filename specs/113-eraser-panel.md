@@ -20,7 +20,7 @@ Three accordion rows over a live preview of the brush.
 - **Size** — **Point** (the exact pixel, today) / **Small** (18px) / **Medium** (36px) / **Large** (72px) radius. Anything the brush touches goes, hit-tested by sampling a ring of points around the pointer rather than one — the DOM hit test the eraser already uses, called a few more times.
 - **Erases** — **Anything** (default), **Drawings only** (freehand + highlighter strokes), or **Arrows only**. "Drawings only" is the one that makes sketching over a diagram safe: sweep the whole thing at Large and the diagram underneath is untouched. "Arrows only" is for rewiring without disturbing the boxes.
 
-A fourth row, **Groups** (just the piece, or the whole group), was removed with groups themselves ([spec/146](146-web-components-and-no-groups.md)). A stored config still carrying it parses fine: the unknown field is ignored.
+A fourth row, **Groups** (just the piece, or the whole group), was removed with groups themselves ([spec/147](147-web-components-and-no-groups.md)). A stored config still carrying it parses fine: the unknown field is ignored.
 
 ## The brush is visible
 

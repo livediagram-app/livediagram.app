@@ -214,7 +214,7 @@ export function eventExplanation(category: string, action: string, type: string 
   if (category === 'Element') {
     if (action === 'Deleted') return 'An element was removed from the canvas.';
     if (action === 'Duplicated') return 'An element was duplicated.';
-    // Historical: groups were removed (spec/146), so these only label old rows.
+    // Historical: groups were removed (spec/147), so these only label old rows.
     if (action === 'Grouped') return 'A multi-selection was grouped (before groups were removed).';
     if (action === 'Ungrouped')
       return 'A group was disbanded back into individual elements (before groups were removed).';

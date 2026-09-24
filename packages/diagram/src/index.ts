@@ -487,7 +487,7 @@ export * from './arrow-snapping';
 export * from './geometry-guides';
 
 // Layer order + union bounds, and the load-time migration of diagrams saved
-// while groups existed (spec/146).
+// while groups existed (spec/147).
 export * from './layer-order';
 export * from './legacy-groups';
 

@@ -193,7 +193,7 @@ export function isChartShape(kind: ShapeKind): boolean {
 // it says in its own artwork, so there is nothing to type into it — a caption
 // under a die-cut sticker is exactly the icon treatment it exists not to be.
 //
-// So are the two web components with no label (spec/146): a stat row's and a
+// So are the two web components with no label (spec/147): a stat row's and a
 // process's text is their rows, each edited in place, and there is no title to
 // type into. The banner, callout and header DO carry a label and are not here.
 export function isSelfDrawingShape(kind: ShapeKind): boolean {

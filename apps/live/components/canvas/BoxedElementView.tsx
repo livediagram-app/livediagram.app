@@ -102,6 +102,8 @@ function BoxedElementViewImpl({
   onOpenElementSettings,
   commentSelfId,
   commentActions,
+  actionSelfId,
+  actionActions,
   revealedForMe,
   onToggleReveal,
   onRollPicker,
@@ -240,8 +242,10 @@ function BoxedElementViewImpl({
   const isCommentPin = element.type === 'shape' && element.shape === 'comment-pin';
   const commentCount = isCommentPin ? 0 : activeCommentCount(element.commentThread);
   // Assigned action (spec/68): the badge shows only while the action is
-  // open; a done action stays on the element but stops shouting.
-  const hasOpenAction = isOpenAction(element.action);
+  // open; a done action stays on the element but stops shouting. An action
+  // panel (spec/146) shows its action on its face, so it is the badge.
+  const isActionPanel = element.type === 'shape' && element.shape === 'action-card';
+  const hasOpenAction = !isActionPanel && isOpenAction(element.action);
   // Both 'tab' and 'diagram' kinds get the "linked" badge; the
   // follow-handler dispatches off the kind via the parent's
   // onFollowLink callback. 'element' kind is the spec'd
@@ -266,10 +270,8 @@ function BoxedElementViewImpl({
   // Which surface each looping animation rides (wrapper box vs text
   // glyphs vs SVG outline), the pop-in entry class, and the CSS custom
   // properties the keyframes read (spec/09) — see useBoxedElementAnimation.
-  const { labelAnimClass, svgAnim, wrapperAnimClass, animStyle } = useBoxedElementAnimation(
-    element,
-    textColor,
-  );
+  const { labelAnimClass, artAnimClass, svgAnim, wrapperAnimClass, animStyle } =
+    useBoxedElementAnimation(element, textColor);
 
   // An icon element's caption is confined to its own band — the complement
   // of the glyph band (spec/41, iconCaptionBand) — so the text can never
@@ -396,7 +398,7 @@ function BoxedElementViewImpl({
     >
       <ShapeContentRouter
         element={element}
-        labelAnimClass={labelAnimClass}
+        artAnimClass={artAnimClass}
         accent={accent}
         textColor={textColor}
         remoteBorderColor={remoteBorderColor}
@@ -435,7 +437,11 @@ function BoxedElementViewImpl({
       {/* A chair (spec/130): the furniture itself, plus whoever presence says
           is sitting in it. */}
       {element.type === 'shape' && element.shape === 'chair' ? (
-        <ChairView element={element} sitters={chairSitters?.(element.id) ?? []} />
+        <ChairView
+          element={element}
+          sitters={chairSitters?.(element.id) ?? []}
+          animClass={artAnimClass}
+        />
       ) : null}
       {/* A Lane's title gutter (spec/119), behind the label. */}
       {element.type === 'shape' && element.shape === 'lane' ? (
@@ -488,6 +494,8 @@ function BoxedElementViewImpl({
         activeMode={activeMode}
         collab={collab}
         commentActions={commentActions}
+        actionSelfId={actionSelfId}
+        actionActions={actionActions}
         commentSelfId={commentSelfId}
         imageContext={imageContext}
         tabSummaries={tabSummaries}

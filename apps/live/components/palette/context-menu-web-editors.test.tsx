@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-// The web components' menu row editors (spec/146): add / remove / reorder,
+// The web components' menu row editors (spec/147): add / remove / reorder,
 // bounded by each kind's minimum and maximum.
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
@@ -31,7 +31,7 @@ function renderSection(shape: Parameters<typeof createShape>[0], patch: object =
   return onSetRows;
 }
 
-describe('WebRowsMenuSection (spec/146)', () => {
+describe('WebRowsMenuSection (spec/147)', () => {
   it('only the row-carrying kinds get a section', () => {
     expect(hasWebRowsSection(createShape('stat-row', 0, 0))).toBe(true);
     expect(hasWebRowsSection(createShape('process', 0, 0))).toBe(true);

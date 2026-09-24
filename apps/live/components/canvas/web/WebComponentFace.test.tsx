@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-// The web component faces (spec/146): what an inline edit commits, and the
+// The web component faces (spec/147): what an inline edit commits, and the
 // rule that a line is only editable once the element is selected (so the first
 // press on a component still selects and drags it).
 
@@ -48,7 +48,7 @@ function retype(name: string, text: string) {
   fireEvent.blur(line);
 }
 
-describe('web component faces (spec/146)', () => {
+describe('web component faces (spec/147)', () => {
   it('a stat value edit commits the whole row with only that value changed', () => {
     const { element, onSetRows } = renderFace('stat');
     retype('Stat 2 value', '  99.9%  ');

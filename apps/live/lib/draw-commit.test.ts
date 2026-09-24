@@ -67,7 +67,7 @@ describe('buildDrawnComponent', () => {
     expect(out.y + out.height / 2).toBe(300);
   });
 
-  it('sizes to the dragged box, per axis, so the layout re-flows (spec/146)', () => {
+  it('sizes to the dragged box, per axis, so the layout re-flows (spec/147)', () => {
     const out = buildDrawnComponent('stat', 10, 20, 910, 220, themed);
     expect(out).toMatchObject({ x: 10, y: 20, width: 900, height: 200 });
   });

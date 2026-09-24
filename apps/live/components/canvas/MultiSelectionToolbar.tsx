@@ -90,8 +90,23 @@ export function MultiSelectionToolbar({
         </button>
       </Tooltip>
       {/* Duplicate copies the selection; everything after acts ON it
-          (lock / export / delete) — the divider marks that
+          (export, then lock / delete) — the divider marks that
           boundary, same as the one after More above. */}
+      <span aria-hidden className="h-5 w-px bg-slate-200 dark:bg-slate-700" />
+      {/* Lock sits with Delete, past the last divider: they are the two that
+          decide whether these elements can still be touched, and locking is
+          what makes the Delete beside it refuse. A divider between them read
+          as Lock belonging with Export, which it does not. */}
+      <Tooltip title="Export" description="Export just these elements.">
+        <button
+          type="button"
+          onClick={onExport}
+          aria-label="Export selected elements"
+          className={TOOLBAR_BTN}
+        >
+          <ExportIcon />
+        </button>
+      </Tooltip>
       <span aria-hidden className="h-5 w-px bg-slate-200 dark:bg-slate-700" />
       <Tooltip
         title={anyLocked ? 'Unlock' : 'Lock'}
@@ -111,17 +126,6 @@ export function MultiSelectionToolbar({
           <LockIcon closed={anyLocked} />
         </button>
       </Tooltip>
-      <Tooltip title="Export" description="Export just these elements.">
-        <button
-          type="button"
-          onClick={onExport}
-          aria-label="Export selected elements"
-          className={TOOLBAR_BTN}
-        >
-          <ExportIcon />
-        </button>
-      </Tooltip>
-      <span aria-hidden className="h-5 w-px bg-slate-200 dark:bg-slate-700" />
       <Tooltip
         title="Delete"
         description={

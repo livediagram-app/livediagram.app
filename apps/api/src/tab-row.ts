@@ -44,7 +44,7 @@ export function rowToTab(row: TabRow): TabDTO {
     ...data,
     // Diagrams saved while groups existed carry `groupId`s and group-pinned
     // arrow ends; every tab read passes through here, so this is where they
-    // are frozen out (spec/146). A no-op, same array, for any other tab.
+    // are frozen out (spec/147). A no-op, same array, for any other tab.
     ...(Array.isArray(data.elements) ? { elements: migrateLegacyGroups(data.elements) } : {}),
     id: row.id,
     name: row.name,

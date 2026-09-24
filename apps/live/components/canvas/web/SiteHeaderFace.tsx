@@ -4,7 +4,7 @@ import { InlineTextLine } from '@/components/canvas/InlineTextLine';
 import { LabelRegion } from '@/components/canvas/web/LabelRegion';
 import { rectStyle, type WebFaceProps } from '@/components/canvas/web/web-face-props';
 
-// Header (spec/146): a website header bar — a round logo, the brand (the
+// Header (spec/147): a website header bar — a round logo, the brand (the
 // label) and the nav links right-aligned, each edited in place. The logo is
 // the element's inline icon when one is dropped on it, else the brand's
 // initial. Links that no longer fit a narrowed bar drop from the end (see

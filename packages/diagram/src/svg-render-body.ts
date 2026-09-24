@@ -85,7 +85,7 @@ export function svgElementBody(
   if (isRatingShape(el.shape)) return svgRating(el, stroke);
   if (isRailShape(el.shape)) return svgTimelineRail(el, stroke, labelColor, fontFamily);
   if (el.shape === 'entity') return svgEntityRows(el, labelColor, fontFamily);
-  // The web components (spec/146) lay out their own text, label included.
+  // The web components (spec/147) lay out their own text, label included.
   if (isWebComponentShape(el.shape))
     return svgWebComponent(el, { stroke, fill, labelColor, label, fontFamily });
   if (el.shape === 'page')

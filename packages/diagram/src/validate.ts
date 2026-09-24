@@ -98,7 +98,7 @@ export const SHAPE_KINDS = new Set<string>([
   'lane',
   // Record (spec/120).
   'entity',
-  // The web components (spec/146).
+  // The web components (spec/147).
   'banner',
   'callout',
   'stat-row',
@@ -119,6 +119,8 @@ export const SHAPE_KINDS = new Set<string>([
   'reaction-pad',
   // Comment pin (spec/136).
   'comment-pin',
+  // Action panel (spec/146).
+  'action-card',
   // Done check (spec/137).
   'done-check',
   // Chair (spec/130): an Avatar-mode character sits down in one.
@@ -176,7 +178,7 @@ function isNum(v: unknown): v is number {
 function isNonEmptyStr(v: unknown): v is string {
   return typeof v === 'string' && v.length > 0;
 }
-// A web component's row text (spec/146).
+// A web component's row text (spec/147).
 function isBoundedStr(v: unknown): v is string {
   return typeof v === 'string' && v.length <= WEB_TEXT_MAX;
 }
@@ -200,7 +202,7 @@ function isValidEndpoint(ep: unknown): boolean {
   if (ep.kind === 'free') return isNum(ep.x) && isNum(ep.y);
   if (ep.kind === 'pinned') return isNonEmptyStr(ep.elementId) && ANCHORS.has(ep.anchor as string);
   if (ep.kind === 'on-arrow') return isNonEmptyStr(ep.arrowId) && isNum(ep.t);
-  // LEGACY (spec/146): groups are gone and no current code writes this, but
+  // LEGACY (spec/147): groups are gone and no current code writes this, but
   // a browser still running a pre-removal build can. Accepting it keeps that
   // save from failing; migrateLegacyGroups freezes it to a free end on the
   // next read (rowToTab / the offline store), so nothing downstream sees it.
@@ -291,7 +293,7 @@ export function isValidElement(el: unknown): el is Element {
     // id shape is checked — a pointer at a deleted node is legal and simply
     // makes the child a root.
     if (el.mindParentId !== undefined && typeof el.mindParentId !== 'string') return false;
-    // Masthead lines (spec/100, and the banner / callout of spec/146): two
+    // Masthead lines (spec/100, and the banner / callout of spec/147): two
     // bounded single-line strings.
     for (const field of [el.pageTitle, el.pageSubtitle]) {
       if (field !== undefined && !isHeadingStr(field)) return false;
@@ -306,7 +308,7 @@ export function isValidElement(el: unknown): el is Element {
           return false;
       }
     }
-    // Web components (spec/146): bounded rows of short strings.
+    // Web components (spec/147): bounded rows of short strings.
     if (el.stats !== undefined) {
       if (!boundedArray(el.stats, STATS_MAX)) return false;
       for (const st of el.stats) {
@@ -426,7 +428,7 @@ export function isValidElement(el: unknown): el is Element {
   }
   if (t === 'image') {
     if (el.imageId !== null && typeof el.imageId !== 'string') return false;
-    // Hero caption card (spec/146): two bounded single-line strings.
+    // Hero caption card (spec/147): two bounded single-line strings.
     if (el.heroCaption !== undefined) {
       const c = el.heroCaption;
       if (!isObj(c) || !isHeadingStr(c.title) || !isHeadingStr(c.subtitle)) return false;

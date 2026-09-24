@@ -32,7 +32,7 @@ export const ADD_POINT_OPTION: Option = {
   icon: <AddPointIcon />,
 };
 
-// Web component rows (spec/146): a stat row / process / header gains one
+// Web component rows (spec/147): a stat row / process / header gains one
 // more stat, step or link. The label names the thing, so the ring says what
 // it will add rather than a generic "Add".
 export function webRowOption(label: string, description: string): Option {

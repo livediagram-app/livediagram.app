@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { hasLegacyGroups, isValidElement, migrateLegacyGroups, type Element } from './index';
 
-// A tab as it was stored while groups existed (spec/146): members carry a
+// A tab as it was stored while groups existed (spec/147): members carry a
 // groupId, and an arrow end can be pinned to the group's union box.
 const legacy = (): Element[] =>
   [
@@ -16,7 +16,7 @@ const legacy = (): Element[] =>
     },
   ] as unknown as Element[];
 
-describe('migrateLegacyGroups (spec/146)', () => {
+describe('migrateLegacyGroups (spec/147)', () => {
   it('freezes a group-pinned end where it resolved: the union box anchor', () => {
     const out = migrateLegacyGroups(legacy());
     const arrow = out.find((e) => e.id === 'arr');

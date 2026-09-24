@@ -29,7 +29,7 @@ const baseRow = (override: Partial<TabRow> = {}): TabRow => ({
 });
 
 describe('rowToTab', () => {
-  it('freezes a legacy group out of the stored elements (spec/146)', () => {
+  it('freezes a legacy group out of the stored elements (spec/147)', () => {
     const elements = [
       { id: 'a', type: 'shape', shape: 'square', x: 0, y: 0, width: 100, height: 40, groupId: 'g' },
       {

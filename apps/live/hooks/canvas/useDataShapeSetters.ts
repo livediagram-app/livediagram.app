@@ -246,7 +246,7 @@ export function useDataShapeSetters({ currentSelectionIds, commit }: DataShapeSe
   };
   // The masthead lines (spec/100): a page's heading + subtitle, and the same
   // two fields on a banner (its subtitle) and a callout (its heading),
-  // spec/146. One setter for both lines rather than two near-identical ones,
+  // spec/147. One setter for both lines rather than two near-identical ones,
   // since the only difference is which field.
   const setPageHeading = (
     elementId: string,
@@ -369,7 +369,7 @@ export function useDataShapeSetters({ currentSelectionIds, commit }: DataShapeSe
 
   // Rating (spec/52) + the charts (spec/53) — see useChartSetters.
   const chartSetters = useChartSetters({ currentSelectionIds, commit });
-  // The web components (spec/146) — see useWebComponentSetters.
+  // The web components (spec/147) — see useWebComponentSetters.
   const webSetters = useWebComponentSetters({ currentSelectionIds, commit });
 
   return {

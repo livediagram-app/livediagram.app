@@ -1,4 +1,4 @@
-// The web components (spec/146): Banner, Callout, Stat row, Process steps and
+// The web components (spec/147): Banner, Callout, Stat row, Process steps and
 // Header as single shape kinds, plus the Hero's caption card on an image.
 //
 // They used to be bundles of primitives held together by a shared groupId,
@@ -60,7 +60,7 @@ export const STAT_DEFAULTS: readonly StatItem[] = [
 export const PROCESS_DEFAULT_STEPS: readonly string[] = ['Plan', 'Build', 'Ship'];
 export const NAV_DEFAULT_LINKS: readonly string[] = ['Home', 'About', 'Contact'];
 
-// The Hero's caption card (spec/146): on an ImageElement, present = shown.
+// The Hero's caption card (spec/147): on an ImageElement, present = shown.
 export type HeroCaption = { title: string; subtitle: string };
 export const HERO_DEFAULT_CAPTION: HeroCaption = {
   title: 'Hero title',

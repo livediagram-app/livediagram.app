@@ -8,7 +8,7 @@
 // deterministic + reduced-motion-safe like the other element animations. The
 // first of the chart family, so the anim set is its own.
 
-import { type ShapeElement } from '@livediagram/diagram';
+import { legendFontPx, type ShapeElement } from '@livediagram/diagram';
 import { chartAnim, chartFrame } from '@/lib/chart';
 import { useChartHover } from '@/hooks/canvas/useChartHover';
 import { ChartTooltip } from '@/components/primitives/ChartTooltip';
@@ -76,6 +76,7 @@ export function PieChartView({
       legend={legend}
       textColor={textColor}
       fontFamily={fontFamily}
+      fontPx={legendFontPx(element.textSize)}
       tooltip={
         hover !== null && wedges[hover] ? (
           <ChartTooltip

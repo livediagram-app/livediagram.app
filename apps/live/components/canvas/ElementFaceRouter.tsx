@@ -23,6 +23,7 @@ import { AnnotationGlyph } from '@/components/canvas/AnnotationMarker';
 import { ElementSettingsButton } from '@/components/canvas/ElementEllipsisMenu';
 import { CollabFaceRouter } from '@/components/canvas/collab/CollabFaceRouter';
 import { CommentPanelFace } from '@/components/canvas/CommentPanelFace';
+import { ActionPanelFace } from '@/components/canvas/ActionPanelFace';
 import { FreehandSvg } from '@/components/canvas/boxed-element-overlays';
 import { ImageElementView } from '@/components/canvas/ImageElementView';
 import { LinkCardView } from '@/components/canvas/LinkCardView';
@@ -69,6 +70,8 @@ type ElementFaceRouterProps = Pick<
   | 'collab'
   | 'commentActions'
   | 'commentSelfId'
+  | 'actionActions'
+  | 'actionSelfId'
   | 'imageContext'
   | 'tabSummaries'
   | 'tabTimer'
@@ -118,6 +121,8 @@ export function ElementFaceRouter({
   collab,
   commentActions,
   commentSelfId,
+  actionActions,
+  actionSelfId,
   imageContext,
   tabSummaries,
   tabTimer,
@@ -301,6 +306,17 @@ export function ElementFaceRouter({
           onResolve={commentActions?.resolve}
           onUnresolve={commentActions?.unresolve}
         />
+      ) : element.type === 'shape' && element.shape === 'action-card' && !isEditing ? (
+        /* Action panel (spec/146): the Comment panel's sibling. It drives the
+           SAME action machinery the popover and the Assign Action dialog do. */
+        <ActionPanelFace
+          element={element}
+          textColor={textColor}
+          selfId={actionSelfId ?? null}
+          onConfigure={actionActions?.configure}
+          onComplete={actionActions?.complete}
+          onReopen={actionActions?.reopen}
+        />
       ) : element.type === 'shape' && element.shape === 'reaction-pad' && !isEditing ? (
         /* Reaction pad (spec/135): a pressable glyph. The burst it throws is
            rendered OUTSIDE this label stack, below, so it can overflow the
@@ -343,7 +359,7 @@ export function ElementFaceRouter({
             shareCode={imageContext.shareCode}
             canOpenPicker={!!imageContext.onOpenPicker}
           />
-          {/* A hero's caption card (spec/146), over the image. */}
+          {/* A hero's caption card (spec/147), over the image. */}
           {element.heroCaption ? (
             <HeroCaptionCard
               element={element}
@@ -391,7 +407,7 @@ export function ElementFaceRouter({
           zoom={zoom}
         />
       ) : element.type === 'shape' && isWebComponentShape(element.shape) ? (
-        /* The web components (spec/146): each lays out its own content and
+        /* The web components (spec/147): each lays out its own content and
            places the label in its own region, so it is edited like any
            label; the other lines edit in place once it is selected. They draw
            an inline icon themselves (a header's logo, a callout's badge), so

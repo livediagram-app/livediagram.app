@@ -1,4 +1,4 @@
-// The web components in the headless render (spec/146): banner, callout, stat
+// The web components in the headless render (spec/147): banner, callout, stat
 // row, process steps, header, and an image's hero caption card.
 //
 // Geometry comes from web-components.ts, the same pure layouts the canvas
@@ -207,7 +207,7 @@ export function svgWebComponent(
   }
 }
 
-/** An image's hero caption card (spec/146), drawn over the image. */
+/** An image's hero caption card (spec/147), drawn over the image. */
 export function svgHeroCaption(el: ImageElement, fontFamily?: string): string {
   const cap = el.heroCaption;
   if (!cap) return '';

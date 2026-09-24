@@ -126,6 +126,15 @@ export type CanvasProps = {
     resolve: (elementId: string) => void;
     unresolve: (elementId: string) => void;
   };
+  // Action panel (spec/146): who I am (for "Assigned to you"), plus the
+  // spec/68 action mutators, keyed by element id like everything else that
+  // drives an action. Absent on a read-only surface: the card renders inert.
+  actionSelfId?: string | null;
+  actionPanelActions?: {
+    configure: (elementId: string) => void;
+    complete: (elementId: string) => void;
+    reopen: (elementId: string) => void;
+  };
   onSetSessionConfig?: (
     element: import('@livediagram/diagram').ShapeElement,
     config: import('@livediagram/diagram').SessionButtonConfig,
@@ -579,7 +588,7 @@ export type CanvasProps = {
   // Mind map (spec/118): grows the next node from the label editor.
   onGrowMindNode: (id: string, kind: 'child' | 'sibling') => void;
   onSetPageHeading: (elementId: string, field: 'pageTitle' | 'pageSubtitle', value: string) => void;
-  // The web components (spec/146): a row edited in place, one more row from
+  // The web components (spec/147): a row edited in place, one more row from
   // the quick-connect ring, and a hero's caption line. Omitted in read-only.
   onSetWebRows?: (elementId: string, rows: import('@livediagram/diagram').WebRows) => void;
   onAppendWebRow?: (elementId: string) => void;

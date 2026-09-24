@@ -141,7 +141,7 @@ const DARK_INK = {
 } as const;
 
 export function defaultTextColor(element: BoxedElement, surface: CanvasSurface = 'light'): string {
-  // An accent-bar web component (spec/146) writes white on its bar, on any
+  // An accent-bar web component (spec/147) writes white on its bar, on any
   // paper: the bar is the accent, not the surface.
   if (element.type === 'shape' && isAccentBarShape(element.shape)) return ACCENT_BAR_TEXT;
   if (surface === 'dark') {
@@ -397,7 +397,7 @@ export const SELF_PAINTING_SHAPES = new Set<string>([
   // A chair (spec/130) draws its own furniture and wants no box behind it,
   // which is what the canvas does too (isSvgRenderedShape excludes it).
   'chair',
-  // Web components (spec/146) that lay out their own surfaces: an accent bar
+  // Web components (spec/147) that lay out their own surfaces: an accent bar
   // (banner, header), a row of cards, circles and connectors. A callout is
   // NOT here: its card is an ordinary bordered box with content inside.
   'banner',
@@ -421,7 +421,7 @@ export function supportsBorderControls(element: Element): boolean {
 // three fold paths (palette drag-drop, add-while-selected, drag an
 // existing icon onto a shape) agree.
 //
-// Of the web components (spec/146), the header takes the icon as its logo
+// Of the web components (spec/147), the header takes the icon as its logo
 // and the callout as its badge glyph; the banner, stat row and process have
 // nowhere to put one, so an icon dropped on them stands alone.
 export function acceptsInlineIcon(element: Element): element is ShapeElement {
@@ -445,7 +445,7 @@ export function acceptsInlineIcon(element: Element): element is ShapeElement {
 // the monitor / laptop / phone / tablet device frames) where a corner
 // radius is meaningless, so the Radius control is hidden for them.
 //
-// The web components with a rectangular surface (spec/146) take it too: the
+// The web components with a rectangular surface (spec/147) take it too: the
 // banner and header bar, the callout card, and each of a stat row's cards.
 export function supportsBorderRadius(element: Element): element is ShapeElement {
   return element.type === 'shape' && RADIUS_SHAPES.has(element.shape);

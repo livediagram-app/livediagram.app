@@ -68,6 +68,9 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // Comment panel: a card, sized for a couple of comments. Collapsed it
   // shrinks to its summary bar (spec/136).
   'comment-pin': { width: 260, height: 190 },
+  // Action panel (spec/146): the Comment panel's size, which fits a name, a
+  // couple of lines of description, the assignee row and the footer.
+  'action-card': { width: 260, height: 190 },
   // Done check: taller than the other room-response panels because it stacks
   // TWO rosters (done and waiting) plus the all-done line. At 190 a two-person
   // room already overflowed by a few pixels and the body grew a scrollbar.
@@ -186,7 +189,7 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   decision: { width: 330, height: 220 },
   // Roll call (spec/129): two columns of names, six rows deep.
   'roll-call': { width: 300, height: 260 },
-  // Web components (spec/146), at the sizes the grouped composites they
+  // Web components (spec/147), at the sizes the grouped composites they
   // replace arrived at, so a board built from either reads the same.
   banner: { width: 440, height: 104 },
   callout: { width: 380, height: 116 },
@@ -418,6 +421,15 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       label: '',
     };
   }
+  if (kind === 'action-card') {
+    return {
+      ...base,
+      // No label: the Assign Action dialog prefills the action's NAME from the
+      // element's label (spec/68 §2), so a default caption here would become
+      // every new action's name.
+      label: '',
+    };
+  }
   if (kind === 'reaction-pad') {
     return {
       ...base,
@@ -534,7 +546,7 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
   if (kind === 'checklist') {
     return { ...base, checklistItems: CHECKLIST_DEFAULT_ITEMS.map((i) => ({ ...i })) };
   }
-  // Web components (spec/146): the starting content each one shows on drop,
+  // Web components (spec/147): the starting content each one shows on drop,
   // so a new one reads as what it is. Colours come from the caller
   // (createComponent maps the theme); without one the renderer's fallbacks
   // apply, which is what an MCP- or AI-authored one gets.

@@ -180,7 +180,7 @@ describe('runModShortcut (Cmd / Ctrl chords)', () => {
     expect(chord({ key: 'a' }).hit).toBe('select-all');
   });
 
-  it('leaves Cmd+G to the browser now that there are no groups (spec/146)', () => {
+  it('leaves Cmd+G to the browser now that there are no groups (spec/147)', () => {
     const { hit, prevented } = chord({ key: 'g' });
     expect(hit).toBeNull();
     expect(prevented).toBe(false);

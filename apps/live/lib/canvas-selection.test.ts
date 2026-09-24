@@ -189,7 +189,7 @@ describe('deriveCanvasSelection', () => {
     expect(derive({ elements: [box('a')], selectedId: 'a', readOnly: true }).showPlus).toBe(false);
   });
 
-  it('a single selection is bounded by the element itself (no groups, spec/146)', () => {
+  it('a single selection is bounded by the element itself (no groups, spec/147)', () => {
     const s = derive({ elements: [box('a'), box('b', { x: 200 })], selectedId: 'a' });
     expect(s.selectionScope).toBe('single');
     expect(s.showHandlesFor('a')).toBe(true);

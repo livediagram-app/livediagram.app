@@ -15,7 +15,7 @@ type WebComponentSetterDeps = {
   commit: (mapElements: (els: Element[]) => Element[]) => void;
 };
 
-// The web components' writes (spec/146): the rows of a stat row / process /
+// The web components' writes (spec/147): the rows of a stat row / process /
 // header, and a hero image's caption card. Two addressing styles, like the
 // checklist's: the canvas edits ONE element by id (an inline edit, the "+" at
 // the end of a row), the context menu edits the selection.

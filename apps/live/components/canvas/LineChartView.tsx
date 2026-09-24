@@ -10,6 +10,7 @@
 import {
   LINE_DEFAULT_CATEGORIES,
   LINE_DEFAULT_SERIES,
+  legendFontPx,
   type ShapeElement,
 } from '@livediagram/diagram';
 import { chartAnim, chartFrame } from '@/lib/chart';
@@ -76,6 +77,7 @@ export function LineChartView({
       legend={legend}
       textColor={textColor}
       fontFamily={fontFamily}
+      fontPx={legendFontPx(element.textSize)}
       tooltip={
         hover ? (
           <ChartTooltip

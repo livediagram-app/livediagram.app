@@ -180,7 +180,7 @@ export function ElementContentSections({
               />
             </div>
           )}
-          {/* The hero's caption card (spec/146): any image can carry one. */}
+          {/* The hero's caption card (spec/147): any image can carry one. */}
           <ContextMenuDivider />
           <MenuToggleRow
             label="Caption Card"

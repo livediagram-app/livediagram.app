@@ -175,7 +175,7 @@ describe('boxed element mapping', () => {
       strokeStyle: 'dashed',
       strokeWidth: 'thick',
     });
-    // livediagram has no groups (spec/146): grouped Excalidraw elements
+    // livediagram has no groups (spec/147): grouped Excalidraw elements
     // arrive as separate elements.
     expect('groupId' in a!).toBe(false);
     expect('groupId' in b!).toBe(false);

@@ -63,7 +63,7 @@ Property mapping, applied to every imported element where present:
 - `opacity` 0–100 → 0–1 (100 → field omitted).
 - `angle` (radians, clockwise) → `rotation` (degrees, clockwise); 0 omitted.
 - `groupIds` are **dropped**: livediagram has no groups
-  ([spec/146](146-web-components-and-no-groups.md)), so grouped elements arrive
+  ([spec/147](147-web-components-and-no-groups.md)), so grouped elements arrive
   as separate elements in the same places.
 - `locked` → `locked`; `link` (a URL string) → `link: { kind: 'url', url }`.
 - `fontSize` → `textSize`: ≤16 `sm`, ≤22 `md`, else `lg`. `fontFamily` 1

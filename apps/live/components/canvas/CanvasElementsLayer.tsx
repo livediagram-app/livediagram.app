@@ -60,7 +60,7 @@ type ElementsExtras = {
 
 type CanvasElementsLayerProps = CanvasProps & ElementsExtras;
 
-// The ring action each row-carrying web component offers (spec/146).
+// The ring action each row-carrying web component offers (spec/147).
 const WEB_ROW_ACTION: Partial<Record<string, { label: string; description: string }>> = {
   'stat-row': { label: 'Add stat', description: 'Add another KPI card to the row.' },
   process: { label: 'Add step', description: 'Add another step to the end of the process.' },
@@ -130,6 +130,8 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onOpenElementSettings,
     commentSelfId,
     commentPanelActions,
+    actionSelfId,
+    actionPanelActions,
     onPauseTimer,
     onResumeTimer,
     onResetTimer,
@@ -287,7 +289,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
   const selectedElement = selectedId ? elements.find((e) => e.id === selectedId) : undefined;
   const selectedIsRail = selectedElement?.type === 'shape' && isRailShape(selectedElement.shape);
   const selectedIsTable = selectedElement?.type === 'table';
-  // Web components (spec/146): the ring's "Add stat / step / link", while
+  // Web components (spec/147): the ring's "Add stat / step / link", while
   // there is room for one more.
   const webRow =
     selectedElement?.type === 'shape' && onAppendWebRow && canAppendWebRow(selectedElement)
@@ -445,6 +447,16 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
                     remove: (id) => commentPanelActions.remove(element.id, id),
                     resolve: () => commentPanelActions.resolve(element.id),
                     unresolve: () => commentPanelActions.unresolve(element.id),
+                  }
+                : undefined
+            }
+            actionSelfId={actionSelfId}
+            actionActions={
+              actionPanelActions
+                ? {
+                    configure: () => actionPanelActions.configure(element.id),
+                    complete: () => actionPanelActions.complete(element.id),
+                    reopen: () => actionPanelActions.reopen(element.id),
                   }
                 : undefined
             }

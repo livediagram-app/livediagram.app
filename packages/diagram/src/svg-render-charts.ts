@@ -14,6 +14,7 @@
 import { chartFrame, type ChartLegendRect } from './chart-frame';
 import { LINE_DEFAULT_CATEGORIES, LINE_DEFAULT_SERIES, type PieSlice } from './data-shapes';
 import type { BoxedElement, ShapeElement } from './index';
+import { legendFontPx } from './label-font';
 import { r2, xmlEscape } from './svg-render-primitives';
 
 type Chart = BoxedElement & { type: 'shape' };
@@ -35,7 +36,11 @@ function svgChartLegend(
   const vertical = legend.pos === 'left' || legend.pos === 'right';
   if (!legend.show || (vertical ? legend.w < 48 : legend.h < 18)) return '';
   const font = fontFamily ? ` font-family="${xmlEscape(fontFamily)}"` : '';
-  const rowH = 14;
+  // Text Size (spec/53), on the canvas's scale; the swatch and row pitch keep
+  // their proportion to it, as ChartLegend's do.
+  const fontPx = legendFontPx(el.textSize);
+  const swatch = Math.round(fontPx * 0.8);
+  const rowH = Math.round(fontPx * 1.3);
   const parts: string[] = [];
   if (vertical) {
     // A column, centred in the strip.
@@ -44,15 +49,16 @@ function svgChartLegend(
       const y = top + i * rowH + rowH / 2;
       const x = el.x + legend.x + 6;
       parts.push(
-        `<rect x="${r2(x)}" y="${r2(y - 4.5)}" width="9" height="9" rx="2" fill="${xmlEscape(colorAt(i, item))}"/>`,
-        `<text x="${r2(x + 13)}" y="${r2(y)}"${font} font-size="11" fill="${xmlEscape(textColor)}" dominant-baseline="central">${xmlEscape(item.label || '—')}</text>`,
+        `<rect x="${r2(x)}" y="${r2(y - swatch / 2)}" width="${swatch}" height="${swatch}" rx="2" fill="${xmlEscape(colorAt(i, item))}"/>`,
+        `<text x="${r2(x + swatch + 4)}" y="${r2(y)}"${font} font-size="${fontPx}" fill="${xmlEscape(textColor)}" dominant-baseline="central">${xmlEscape(item.label || '—')}</text>`,
       );
     });
     return parts.join('');
   }
   // A row, wrapped and centred: measured the way the wrapped-label emitter
   // measures, off the character count, since there is no DOM to ask.
-  const itemW = (item: PieSlice) => 9 + 4 + Math.max(8, (item.label || '—').length * 5.6) + 10;
+  const itemW = (item: PieSlice) =>
+    swatch + 4 + Math.max(8, (item.label || '—').length * fontPx * 0.51) + 10;
   const rows: PieSlice[][] = [[]];
   let used = 0;
   for (const item of items) {
@@ -72,8 +78,8 @@ function svgChartLegend(
     const y = top + ri * rowH + rowH / 2;
     for (const item of row) {
       parts.push(
-        `<rect x="${r2(x)}" y="${r2(y - 4.5)}" width="9" height="9" rx="2" fill="${xmlEscape(colorAt(index, item))}"/>`,
-        `<text x="${r2(x + 13)}" y="${r2(y)}"${font} font-size="11" fill="${xmlEscape(textColor)}" dominant-baseline="central">${xmlEscape(item.label || '—')}</text>`,
+        `<rect x="${r2(x)}" y="${r2(y - swatch / 2)}" width="${swatch}" height="${swatch}" rx="2" fill="${xmlEscape(colorAt(index, item))}"/>`,
+        `<text x="${r2(x + swatch + 4)}" y="${r2(y)}"${font} font-size="${fontPx}" fill="${xmlEscape(textColor)}" dominant-baseline="central">${xmlEscape(item.label || '—')}</text>`,
       );
       x += itemW(item);
       index += 1;

@@ -60,6 +60,8 @@ export function isSvgRenderedShape(kind: ShapeKind): boolean {
     // A comment pin (spec/136) draws its own bubble; the wrapper box behind it
     // must not also paint a square.
     kind !== 'comment-pin' &&
+    // An action panel (spec/146) is the same card, for an assigned action.
+    kind !== 'action-card' &&
     // A mind node (spec/118) is a rounded filled box with a label, same as
     // the four above. This predicate is allow-BY-DEFAULT, so a new CSS-drawn
     // kind that isn't listed here renders as a transparent nothing.
@@ -74,7 +76,7 @@ export function isSvgRenderedShape(kind: ShapeKind): boolean {
     // kind above. Left off this list they rendered as a transparent nothing,
     // exactly as the mind-node comment above warns.
     !isCollabPanelShape(kind) &&
-    // The web components (spec/146): a callout is a bordered card with its
+    // The web components (spec/147): a callout is a bordered card with its
     // content on top, and the rest paint their own surfaces (they are
     // self-painting, so the box path gives them a bare wrapper).
     !isWebComponentShape(kind) &&

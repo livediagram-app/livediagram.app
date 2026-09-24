@@ -2,7 +2,7 @@ import { ACCENT_BAR_TEXT, processLayout, WEB_TEXT_MAX } from '@livediagram/diagr
 import { InlineTextLine } from '@/components/canvas/InlineTextLine';
 import { rectStyle, type WebFaceProps } from '@/components/canvas/web/web-face-props';
 
-// Process steps (spec/146): numbered accent circles spread across the width,
+// Process steps (spec/147): numbered accent circles spread across the width,
 // joined by arrows, with a caption under each edited in place. The numbers
 // are the step's position, so reordering or removing a step renumbers the
 // rest rather than leaving a gap.

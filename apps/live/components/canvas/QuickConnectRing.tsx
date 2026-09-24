@@ -64,7 +64,7 @@ type QuickConnectRingProps = {
   // Timeline rail (spec/51): when set (the selected element is a rail), the
   // ring gains an "Add point" action that appends a point to the rail.
   onAddRailPoint?: () => void;
-  // Web components (spec/146): when set (the selected element is a stat row,
+  // Web components (spec/147): when set (the selected element is a stat row,
   // process or header with room for more), the ring gains an action that
   // appends one more stat / step / link, labelled with what it adds.
   webRow?: { label: string; description: string; onAdd: () => void };

@@ -113,7 +113,7 @@ export const TELEMETRY_ACTIONS = [
   'Locked',
   'Unlocked',
   // HISTORICAL: the editor stopped emitting these when groups were removed
-  // (spec/146). They stay in the vocabulary so the rows already stored keep
+  // (spec/147). They stay in the vocabulary so the rows already stored keep
   // their label on the dashboard.
   'Grouped',
   'Ungrouped',
@@ -339,6 +339,8 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Roll-call',
     // Comment pin (spec/136).
     'CommentPin',
+    // Action panel (spec/146).
+    'ActionPanel',
   ],
   components: ['Banner', 'Hero', 'Header', 'Callout', 'StatRow', 'ProcessSteps'],
   devices: ['Browser', 'Monitor', 'Laptop', 'Phone', 'Tablet', 'Foldable', 'Smartwatch'],

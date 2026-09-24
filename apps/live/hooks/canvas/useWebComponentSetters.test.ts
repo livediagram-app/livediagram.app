@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-// The web components' writes (spec/146): the canvas addresses one element by
+// The web components' writes (spec/147): the canvas addresses one element by
 // id, the menu addresses the selection, and every write is bounded.
 
 import { renderHook } from '@testing-library/react';
@@ -32,7 +32,7 @@ function harness(elements: Element[], selection: string[] = []) {
   return { setters: result.current, get: (id: string) => current.find((e) => e.id === id) };
 }
 
-describe('useWebComponentSetters (spec/146)', () => {
+describe('useWebComponentSetters (spec/147)', () => {
   const stat = () => createComponent('stat', 0, 0, colors) as ShapeElement;
   const process = () => createComponent('process', 0, 0, colors) as ShapeElement;
 

@@ -1,4 +1,4 @@
-// Loading a diagram saved while groups existed (spec/146).
+// Loading a diagram saved while groups existed (spec/147).
 //
 // Groups are gone, but stored tabs still carry their traces: a `groupId` on
 // boxed elements, and arrow ends of kind `pinned-group` that resolved to an

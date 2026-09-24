@@ -65,8 +65,9 @@ const SHAPE_TOKENS: Record<string, string> = {
   'session-button': 'SessionButton',
   'reaction-pad': 'ReactionPad',
   'comment-pin': 'CommentPin',
+  'action-card': 'ActionPanel',
   'done-check': 'DoneCheck',
-  // The web components (spec/146) report as their palette component, so a
+  // The web components (spec/147) report as their palette component, so a
   // copied stat row lands in the same dashboard row as a dropped one.
   banner: 'Banner',
   callout: 'Callout',
@@ -84,7 +85,7 @@ export function elementTelemetryType(element: Element): string {
     case 'sticky':
       return 'Sticky';
     case 'image':
-      // A hero is an image with a caption card (spec/146).
+      // A hero is an image with a caption card (spec/147).
       return element.heroCaption ? 'Hero' : 'Image';
     case 'table':
       return 'Table';
@@ -111,7 +112,7 @@ export function elementTelemetryType(element: Element): string {
   }
 }
 
-// The palette's component tokens (spec/09, spec/146), reported straight from
+// The palette's component tokens (spec/09, spec/147), reported straight from
 // the draw path, which knows the ComponentKind it armed. They agree with what
 // elementTelemetryType says for the element that path builds (see
 // SHAPE_TOKENS), so a dropped and a copied stat row count together. Kept here

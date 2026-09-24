@@ -31,7 +31,7 @@ import {
 const colors = { accent: '#be123c', surface: '#ffe4e6', ink: '#881337' };
 const KINDS: ComponentKind[] = ['banner', 'hero', 'header', 'callout', 'stat', 'process', 'avatar'];
 
-describe('components are single elements (spec/146)', () => {
+describe('components are single elements (spec/147)', () => {
   it('every component builds exactly one element, centred on the drop point', () => {
     for (const k of KINDS) {
       const el = createComponent(k, 100, 50, colors);
@@ -103,7 +103,7 @@ describe('components are single elements (spec/146)', () => {
   });
 });
 
-describe('validation bounds the rows (spec/146)', () => {
+describe('validation bounds the rows (spec/147)', () => {
   const base = createShape('stat-row', 0, 0);
   it('accepts the defaults', () => {
     for (const k of ['banner', 'callout', 'stat-row', 'process', 'site-header'] as const) {
@@ -133,7 +133,7 @@ describe('validation bounds the rows (spec/146)', () => {
   });
 });
 
-describe('layouts re-flow with the box (spec/146)', () => {
+describe('layouts re-flow with the box (spec/147)', () => {
   it('stat cards share the width and grow their numbers with the height', () => {
     const short = statRowLayout(480, 80, 3);
     const tall = statRowLayout(480, 200, 3);
@@ -187,7 +187,7 @@ describe('layouts re-flow with the box (spec/146)', () => {
   });
 });
 
-describe('theming (spec/146)', () => {
+describe('theming (spec/147)', () => {
   const [a, b] = [THEMES[1]!, THEMES[2]!];
   it('an accent bar retheme touches only its stroke', () => {
     const banner = { ...createShape('banner', 0, 0), strokeColor: a.elementStroke ?? undefined };
@@ -199,7 +199,7 @@ describe('theming (spec/146)', () => {
   });
 });
 
-describe('headless render (spec/146)', () => {
+describe('headless render (spec/147)', () => {
   const svgOf = (elements: unknown[]) =>
     renderElementsToSvg({ id: 't', name: 'T', elements } as unknown as Tab);
 
@@ -226,7 +226,7 @@ describe('headless render (spec/146)', () => {
   });
 });
 
-describe('row writes (spec/146)', () => {
+describe('row writes (spec/147)', () => {
   it('withWebRows bounds text and count, and only lands on the matching kind', () => {
     const stat = createShape('stat-row', 0, 0);
     const long = 'y'.repeat(WEB_TEXT_MAX + 20);

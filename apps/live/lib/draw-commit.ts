@@ -163,7 +163,7 @@ export function buildDrawnArrow(
   };
 }
 
-// Component branch (spec/09, spec/146): build the component at the theme's
+// Component branch (spec/09, spec/147): build the component at the theme's
 // colours, then a tap drops it at its natural size centred on the tap, while
 // a drag sizes it to the dragged box like any shape. A component is one
 // element that lays itself out, so it re-flows into the box rather than
