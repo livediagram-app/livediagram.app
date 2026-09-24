@@ -3,6 +3,7 @@ import { splitOversized, SPLIT_CALIBRATION } from './split';
 import { cutAtNotches } from './chords';
 import { cutAtSeam, type Luminance } from './seam';
 import { cutNarrowRun, isNarrowNote } from './narrow';
+import type { NoteSizeField } from './size-field';
 
 // From blobs to stickies (spec/139 Phase 8).
 //
@@ -153,7 +154,7 @@ const MIN_CLASS_SIZE_SAMPLE = 10;
 // filter — was wrong by the same factor.
 // A raw blob that could be a whole note: bigger than noise, not a strip, and
 // mostly paper. What the note size is measured from.
-function isPlausibleNote(b: Box, noiseFloor: number): boolean {
+export function isPlausibleNote(b: Box, noiseFloor: number): boolean {
   const short = Math.max(1, Math.min(b.w, b.h));
   if (short < noiseFloor) return false;
   if (Math.max(b.w, b.h) / short > SIZE_SAMPLE_MAX_ASPECT) return false;
@@ -299,6 +300,9 @@ export function fitBoxes(
     // How bright the photograph is, pixel by pixel: where it is on hand, a
     // flush seam with no notch can still be found by its shadow (see `seam.ts`).
     luminance?: Luminance;
+    // How big a note is around each point (see `size-field.ts`): the seam
+    // cut looks for seams at the size of the notes HERE.
+    sizeField?: NoteSizeField;
     // Told of every box a gate refuses, and why (see `DropReason`).
     onDrop?: OnDrop;
   } = {},
@@ -414,7 +418,8 @@ export function fitBoxes(
   };
   const seamed = (b: Box): Box[] => {
     if (!opts.mask || !opts.luminance) return [b];
-    const cuts = cutAtSeam(b, opts.luminance, opts.mask, size);
+    const here = opts.sizeField?.sizeAt(b.x + b.w / 2, b.y + b.h / 2) ?? size;
+    const cuts = cutAtSeam(b, opts.luminance, opts.mask, here);
     return standsAsCut(cuts) ? cuts : [b];
   };
 

@@ -8,6 +8,7 @@ import {
   estimateNoteSize,
   estimateNoteSizes,
   fitBoxes,
+  isPlausibleNote,
   silhouetteOf,
   type Box,
   type DropReason,
@@ -17,6 +18,7 @@ import { luminanceOf } from './seam';
 import { dropSurfaces } from './spill';
 import { dropBlank } from './texture';
 import { findPads } from './pads';
+import { noteSizeField } from './size-field';
 
 // Finding the stickies in a photograph of a wall (spec/139 Phase 8).
 //
@@ -180,6 +182,13 @@ export function detectStickies(image: ImageBuffer, opts: DetectOptions = {}): De
     // edge's shadow actually runs (`cutAtSeam`), not merely where a
     // note-length step falls.
     luminance: luminanceOf(working),
+    // …and how big a note is around each point, read off the same raw blobs
+    // the wall's size is: a wide photograph's far end, or a pad of small
+    // notes, has seams at its own scale.
+    sizeField: noteSizeField(
+      blobs.filter((b) => isPlausibleNote(b, noiseFloor)),
+      noteSize,
+    ),
     onDrop: (box, reason) => {
       if (reason === 'area' || reason === 'size-floor' || reason === 'aspect') refused.push(box);
       opts.onDrop?.(box, reason);
