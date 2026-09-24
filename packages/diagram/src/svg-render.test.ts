@@ -657,3 +657,44 @@ describe('renderElementsToSvg — element shadows (spec/86)', () => {
     expect(svg).not.toContain('feDropShadow');
   });
 });
+
+// The arrow caption (spec/09). The export used to emit a fixed 12px near-black
+// label whatever the caption was styled as, so a diagram whose captions had
+// been sized or coloured came out of an export looking like a different
+// diagram. These pin that the styling reaches the file.
+describe('arrow captions in an export', () => {
+  const captioned = (o: Partial<ArrowElement>) =>
+    renderElementsToSvg(
+      tab([
+        shape('a'),
+        shape('b', { x: 300 }),
+        pinnedArrow('arr', 'a', 'b', { label: 'why', ...o }),
+      ]),
+    );
+
+  it('paints the caption at its own size', () => {
+    expect(captioned({ textSize: 'lg' })).toContain('font-size="20"');
+  });
+
+  it('paints the caption in its own colour', () => {
+    expect(captioned({ textColor: '#ff0000' })).toContain('fill="#ff0000"');
+  });
+
+  it('falls back to the line colour, the way the canvas does', () => {
+    // A caption with no colour of its own belongs to the arrow it labels.
+    const svg = captioned({ strokeColor: '#00ff00' });
+    expect(svg).toContain('fill="#00ff00"');
+  });
+
+  it('carries bold and italic', () => {
+    const svg = captioned({ textBold: true, textItalic: true });
+    expect(svg).toContain('font-weight="600"');
+    expect(svg).toContain('font-style="italic"');
+  });
+
+  it('draws a plate only when the caption has one', () => {
+    expect(captioned({ labelFill: '#ffe4e6' })).toContain('fill="#ffe4e6"');
+    // Transparent is the same as none: the label sits on the canvas.
+    expect(captioned({ labelFill: 'transparent' })).not.toContain('fill="transparent"');
+  });
+});

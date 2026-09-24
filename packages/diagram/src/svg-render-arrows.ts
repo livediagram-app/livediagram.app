@@ -22,6 +22,8 @@ import { defaultArrowStrokeColor, type CanvasSurface } from './colors';
 import { arrowEndpointSpread } from './arrow-endpoint-spread';
 import { endpointPosition } from './geometry';
 import { svgLabel } from './svg-render-labels';
+import { arrowLabelFontSize, arrowLabelSize } from './arrow-label';
+import { resolveFontStack } from './fonts';
 import { r2, xmlEscape } from './svg-render-primitives';
 import type { ArrowElement, Element } from './index';
 
@@ -116,6 +118,9 @@ export function svgArrow(
   arrow: ArrowElement,
   elements: Element[],
   surface: CanvasSurface = 'light',
+  // The tab's font, for a caption that has not chosen one of its own
+  // (spec/28), so an exported caption reads in the same face as the board.
+  tabFont?: string,
 ): string {
   // Same converging-fan offset the live canvas applies (see
   // arrow-endpoint-spread.ts), so exports match what's on screen.
@@ -166,8 +171,34 @@ export function svgArrow(
       arrow.labelOffset,
       arrow.curvePoints,
     );
+    // The caption as it is actually styled (spec/09): its own size, weight,
+    // slant, colour and plate. This used to emit a fixed 12px near-black
+    // label, so an export showed a different caption to the board every time
+    // one had been styled at all.
+    const fontSize = arrowLabelFontSize(arrow.textSize);
+    const y = anchor.y - 6;
+    if (arrow.labelFill && arrow.labelFill !== 'transparent') {
+      const box = arrowLabelSize(arrow.label, fontSize);
+      parts.push(
+        `<rect x="${r2(anchor.x - box.width / 2 - 4)}" y="${r2(y - box.height / 2 - 1)}"` +
+          ` width="${r2(box.width + 8)}" height="${r2(box.height + 2)}" rx="4"` +
+          ` fill="${xmlEscape(arrow.labelFill)}"/>`,
+      );
+    }
     parts.push(
-      svgLabel(arrow.label, anchor.x, anchor.y - 6, 'middle', '#0f172a', 12, false, false),
+      svgLabel(
+        arrow.label,
+        anchor.x,
+        y,
+        'middle',
+        // Falls back to the line's colour, matching the canvas: a caption with
+        // no colour of its own belongs to the arrow it labels.
+        arrow.textColor ?? stroke,
+        fontSize,
+        !!arrow.textBold,
+        !!arrow.textItalic,
+        resolveFontStack(arrow.font) ?? resolveFontStack(tabFont),
+      ),
     );
   }
   parts.push('</g>');

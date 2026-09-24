@@ -163,5 +163,11 @@ export type ArrowElement = {
   // Label colour, independent of `strokeColor` (the line). Falls back to
   // the stroke colour when unset so the label matches the line by default.
   textColor?: string;
+  // A plate behind the label (spec/09 "Caption"). Absent = none, which is how
+  // the label has always drawn: straight onto the canvas. A caption crossing
+  // its own line, another arrow, or a busy backdrop is the case this exists
+  // for, and it is a deliberate choice rather than a default because an
+  // opaque plate on an otherwise clean diagram adds a box nobody asked for.
+  labelFill?: string;
   font?: string;
 };

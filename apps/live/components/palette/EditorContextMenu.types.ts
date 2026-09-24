@@ -121,6 +121,11 @@ export type EditorContextMenuProps = {
   onSetArrowheadColor: (color: string) => void;
   onPreviewArrowheadColor: (color: string) => void;
   onCommitArrowheadColor: (color: string) => void;
+  // The plate behind an arrow's caption (spec/09). Absent = none, which is
+  // how a label has always drawn.
+  onSetLabelFill: (color: string) => void;
+  onPreviewLabelFill: (color: string) => void;
+  onCommitLabelFill: (color: string) => void;
   onSetHeaderFill: (color: string) => void;
   onPreviewHeaderFill: (color: string) => void;
   onCommitHeaderFill: (color: string) => void;

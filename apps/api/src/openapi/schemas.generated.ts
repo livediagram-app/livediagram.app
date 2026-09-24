@@ -577,6 +577,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "label": {
         "type": "string"
       },
+      "labelFill": {
+        "type": "string"
+      },
       "labelOffset": {
         "additionalProperties": false,
         "properties": {

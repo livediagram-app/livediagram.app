@@ -9,6 +9,7 @@ import {
   applyChartPaletteToEl,
   applyCodeThemeToEl,
   applyColorPresetToEl,
+  applyLabelFillToEl,
   applyTablePresetToEl,
   applyFillColorToEl,
   applyRotationToEl,
@@ -64,6 +65,17 @@ describe('applyColorPresetToEl', () => {
   it('is a no-op on the types with no preset grid', () => {
     const text = el('text');
     expect(applyColorPresetToEl(text, p)).toBe(text);
+  });
+});
+
+describe('applyLabelFillToEl', () => {
+  it('sets the caption plate on an arrow', () => {
+    expect(applyLabelFillToEl(el('arrow'), '#fff')).toMatchObject({ labelFill: '#fff' });
+  });
+
+  it('is a no-op on anything else, so a mixed selection only paints arrows', () => {
+    const shape = el('shape');
+    expect(applyLabelFillToEl(shape, '#fff')).toBe(shape);
   });
 });
 

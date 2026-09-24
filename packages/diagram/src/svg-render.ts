@@ -423,7 +423,7 @@ export function renderElementsToSvg(
         );
     }
     for (const el of band.elements) {
-      if (el.type === 'arrow') inner.push(svgArrow(el, tab.elements, surface));
+      if (el.type === 'arrow') inner.push(svgArrow(el, tab.elements, surface, tab.font));
     }
     const opacity = layerOpacityOf(band.layer);
     parts.push(

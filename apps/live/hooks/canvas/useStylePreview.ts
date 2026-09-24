@@ -72,6 +72,7 @@ import {
   applyStrokeColorToEl,
   applyTextAlignToEl,
   applyArrowheadColorToEl,
+  applyLabelFillToEl,
   applyHeaderFillToEl,
   applyTextColorToEl,
   applyTextSizeToEl,
@@ -240,6 +241,8 @@ export function useStylePreview(deps: {
     commitTextColor: (c: string) => commitStyle((el) => applyTextColorToEl(el, c), 'TextColor'),
     // Heading band (a table's header row, a lane's title gutter): same flow,
     // and a no-op on elements that have no heading to paint.
+    previewLabelFill: (c: string) => previewStyle((el) => applyLabelFillToEl(el, c)),
+    commitLabelFill: (c: string) => commitStyle((el) => applyLabelFillToEl(el, c), 'LabelFill'),
     previewArrowheadColor: (c: string) => previewStyle((el) => applyArrowheadColorToEl(el, c)),
     commitArrowheadColor: (c: string) =>
       commitStyle((el) => applyArrowheadColorToEl(el, c), 'ArrowheadColor'),

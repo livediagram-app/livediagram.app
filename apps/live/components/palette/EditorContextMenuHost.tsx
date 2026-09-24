@@ -66,6 +66,9 @@ export function EditorContextMenuHost() {
     previewTablePreset,
     commitChartPalette,
     previewChartPalette,
+    setLabelFillSelected,
+    commitLabelFill,
+    previewLabelFill,
     commitHeaderFill,
     previewHeaderFill,
     setHeaderFillSelected,
@@ -268,6 +271,9 @@ export function EditorContextMenuHost() {
       onSetArrowheadColor={setArrowheadColorSelected}
       onPreviewArrowheadColor={previewArrowheadColor}
       onCommitArrowheadColor={commitArrowheadColor}
+      onSetLabelFill={setLabelFillSelected}
+      onPreviewLabelFill={previewLabelFill}
+      onCommitLabelFill={commitLabelFill}
       onSetHeaderFill={setHeaderFillSelected}
       onPreviewHeaderFill={previewHeaderFill}
       onCommitHeaderFill={commitHeaderFill}

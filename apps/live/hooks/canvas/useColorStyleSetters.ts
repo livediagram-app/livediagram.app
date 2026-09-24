@@ -97,6 +97,12 @@ export function useColorStyleSetters(deps: {
       el.type === 'arrow' ? { ...el, arrowheadColor: color } : el,
     );
 
+  // The plate behind an arrow's label (spec/09 "Caption").
+  const setLabelFillSelected = (color: string) =>
+    commitSelectedStyle('labelFill', (el) =>
+      el.type === 'arrow' ? { ...el, labelFill: color } : el,
+    );
+
   const setOpacitySelected = (opacity: number) =>
     commitSelectedStyle('elementOpacity', (el) => ({ ...el, opacity }));
 
@@ -190,6 +196,7 @@ export function useColorStyleSetters(deps: {
     setTextColorSelected,
     setHeaderFillSelected,
     setArrowheadColorSelected,
+    setLabelFillSelected,
     setTableHeaderTextColorSelected,
     setOpacitySelected,
     setShadowSelected,

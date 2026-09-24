@@ -127,6 +127,12 @@ export function applyTextColorToEl(el: Element, color: string): Element {
   return el;
 }
 
+// The plate behind an arrow's label (spec/09 "Caption"). Arrows only: nothing
+// else paints a caption onto the canvas rather than inside a box.
+export function applyLabelFillToEl(el: Element, color: string): Element {
+  return el.type === 'arrow' ? { ...el, labelFill: color } : el;
+}
+
 // An arrow's arrowhead colour, when it should differ from the line's. Arrows
 // only: nothing else has a pointer to paint.
 export function applyArrowheadColorToEl(el: Element, color: string): Element {

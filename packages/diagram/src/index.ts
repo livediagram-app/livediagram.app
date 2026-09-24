@@ -397,6 +397,7 @@ export * from './mind-flow';
 export * from './mind-map';
 export * from './youtube';
 export * from './arrow-path';
+export * from './arrow-label';
 export * from './arrow-style';
 export * from './border-style';
 // Element drop shadows (spec/86): model, presets + render builders.
