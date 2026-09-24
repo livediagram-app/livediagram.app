@@ -25,8 +25,8 @@ touch another group's file stops and asks.
 
 ### A — colour and light (`classify.ts`, `floors.ts`, `colour.ts`, new `lab.ts`)
 
-- [ ] A1 CIELAB conversion (tested, fast: typed arrays, lookup tables).
-- [ ] A2 Classify paper by CIELAB distance from the LOCAL wall (chroma and
+- [x] A1 CIELAB conversion (tested, fast: typed arrays, lookup tables).
+- [x] A2 Classify paper by CIELAB distance from the LOCAL wall (chroma and
       lightness floors per tile) instead of HSV saturation floors; keep the
       hue bands for the KIND. Measure pale-on-white (whiteboard, panorama) and
       pale-on-kraft recall.

@@ -60,6 +60,17 @@ function convertInto(r: number, g: number, b: number, out: Planes, p: number): v
   out.b[p] = 200 * (fy - fz);
 }
 
+// The same, into a caller-owned object: the classifier and the floors ask once
+// per pixel, and a fresh object each time is garbage on a photograph.
+const SCRATCH = { l: [0], a: [0], b: [0] };
+export function rgbToLabInto(r: number, g: number, b: number, out: Lab): Lab {
+  convertInto(r | 0, g | 0, b | 0, SCRATCH, 0);
+  out.l = SCRATCH.l[0]!;
+  out.a = SCRATCH.a[0]!;
+  out.b = SCRATCH.b[0]!;
+  return out;
+}
+
 export function rgbToLab(r: number, g: number, b: number): Lab {
   const out = { l: [0], a: [0], b: [0] };
   convertInto(r | 0, g | 0, b | 0, out, 0);

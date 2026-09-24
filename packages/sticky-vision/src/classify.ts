@@ -1,5 +1,6 @@
 import { EVENT_STORMING_NOTES, type EventStormingNoteKind } from '@livediagram/diagram';
 import { hexToRgb, hueDistance, rgbToHsv, type Hsv } from './colour';
+import { rgbToLabInto, type Lab } from './lab';
 import { DEFAULT_FLOORS, FLOOR_CALIBRATION, VALUE_FLOOR, type PaperFloors } from './floors';
 
 // Which note kind a pixel's colour belongs to (spec/139 Phase 8).
@@ -83,6 +84,18 @@ const WALL_HUE_NEIGHBOURHOOD_DEG = 34;
 // costing a kraft wall. The middle of that band rather than its best point:
 // 0.12 alone scored higher, as a lone spike on eight photos tends to.
 const OFF_HUE_MIN_SATURATION = 0.11;
+// …and at the wall's hue, saturation is not enough on its own either. HSV
+// saturation is a ratio to the brightest channel, so it CLIMBS as kraft falls
+// into shade: the dark edge under a curling sheet, a fold, the fall-off of a
+// lamp all clear a floor the lit wall is held under, and each one either
+// becomes a note or welds the notes around it together. In CIELAB a*b* that
+// shadowed kraft is still where the wall is. So a pixel at the wall's hue must
+// ALSO sit this far from the wall's own a*b* (measured per tile, see
+// `floors.ts`). Orange paper on kraft is 30 to 40 away; shadowed kraft 2 to 6.
+// Tuned on the eight hand-labelled walls: every value from 6 to 10 lifts the
+// total (the kraft walls' spurious boxes fall by two thirds), and 7 is the
+// one in that band that costs no wall more than a note.
+const WALL_HUE_MIN_LAB_DISTANCE = 7;
 
 function inBand(hue: number, band: HueBand): boolean {
   return band.from <= band.to
@@ -90,15 +103,19 @@ function inBand(hue: number, band: HueBand): boolean {
     : hue >= band.from || hue < band.to;
 }
 
+function nearWallHue(hsv: Hsv, floors: PaperFloors): boolean {
+  return floors.wallHue >= 0 && hueDistance(hsv.h, floors.wallHue) <= WALL_HUE_NEIGHBOURHOOD_DEG;
+}
+
+// By HSV alone: the whole decision for a caller with no RGB to hand, and the
+// first half of it for `classifyRgb`.
 export function classifyHsv(hsv: Hsv, floors: PaperFloors = DEFAULT_FLOORS): PixelClass {
   if (hsv.v < VALUE_FLOOR) return 'ink';
   if (hsv.v < floors.value) return 'wall';
   // How saturated a pixel must be to be paper depends on whether it shares the
   // wall's hue. Kraft and orange are the same colour, differing only in how
   // dull the wall is; a purple is not the wall at any saturation.
-  const nearWallHue =
-    floors.wallHue >= 0 && hueDistance(hsv.h, floors.wallHue) <= WALL_HUE_NEIGHBOURHOOD_DEG;
-  const needed = nearWallHue
+  const needed = nearWallHue(hsv, floors)
     ? floors.saturation
     : Math.min(floors.saturation, OFF_HUE_MIN_SATURATION);
   if (hsv.s < needed) return 'wall';
@@ -122,13 +139,27 @@ export function classifyRgb(
   b: number,
   floors: PaperFloors = DEFAULT_FLOORS,
 ): PixelClass {
-  return classifyHsv(rgbToHsv({ r, g, b }), floors);
+  const hsv = rgbToHsv({ r, g, b });
+  const verdict = classifyHsv(hsv, floors);
+  if (verdict === 'wall' || verdict === 'ink' || verdict === 'unknown') return verdict;
+  // Paper to HSV; at the wall's hue, ask CIELAB whether it is the wall in
+  // shade (see WALL_HUE_MIN_LAB_DISTANCE). Only these pixels pay for the
+  // conversion.
+  if (floors.wallA === undefined || floors.wallB === undefined || !nearWallHue(hsv, floors)) {
+    return verdict;
+  }
+  const lab = rgbToLabInto(r, g, b, labScratch);
+  const distance = Math.hypot(lab.a - floors.wallA, lab.b - floors.wallB);
+  return distance < WALL_HUE_MIN_LAB_DISTANCE ? 'wall' : verdict;
 }
+
+const labScratch: Lab = { l: 0, a: 0, b: 0 };
 
 export const CALIBRATION = {
   HUE_BANDS,
   OFF_HUE_MIN_SATURATION,
   WALL_HUE_NEIGHBOURHOOD_DEG,
+  WALL_HUE_MIN_LAB_DISTANCE,
   PALE_YELLOW_MAX_SATURATION,
   // How the floors themselves are measured lives in `floors.ts`, next to the
   // code that uses each number; the whole calibrated table is here.

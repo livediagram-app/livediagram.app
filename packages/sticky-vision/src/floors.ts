@@ -1,4 +1,5 @@
 import { rgbToHsv, type ImageBuffer } from './colour';
+import { rgbToLabInto, type Lab } from './lab';
 
 // Measuring the wall a photograph was taken of, so the paper on it can be told
 // apart from it (spec/139 Phase 8).
@@ -37,7 +38,15 @@ export const SATURATION_FLOOR = 0.28;
 
 // The floors a particular PHOTOGRAPH needs, rather than the ones a swatch
 // would (see `wallFloorsOf`).
-export type PaperFloors = { saturation: number; value: number; wallHue: number };
+export type PaperFloors = {
+  saturation: number;
+  value: number;
+  wallHue: number;
+  // The wall's own colour in CIELAB a*b*, where it was measured. Without it
+  // the classifier decides by HSV alone.
+  wallA?: number;
+  wallB?: number;
+};
 
 export const DEFAULT_FLOORS: PaperFloors = {
   saturation: SATURATION_FLOOR,
@@ -154,7 +163,13 @@ type Surface = {
   hueX: Float64Array;
   hueY: Float64Array;
   hueCount: Int32Array;
+  // CIELAB a*b* summed per saturation bucket, like the hue: the wall's
+  // colour is the mean of its dull pixels.
+  labA: Float64Array;
+  labB: Float64Array;
 };
+
+const labScratch: Lab = { l: 0, a: 0, b: 0 };
 
 function measure(
   image: { data: Uint8ClampedArray; width: number; height: number },
@@ -171,6 +186,8 @@ function measure(
     hueX: new Float64Array(101),
     hueY: new Float64Array(101),
     hueCount: new Int32Array(101),
+    labA: new Float64Array(101),
+    labB: new Float64Array(101),
   };
   for (let y = y0; y < y1; y += stride) {
     for (let x = x0; x < x1; x += stride) {
@@ -191,6 +208,9 @@ function measure(
       surface.hueX[bucket]! += Math.cos(h);
       surface.hueY[bucket]! += Math.sin(h);
       surface.hueCount[bucket]! += 1;
+      rgbToLabInto(r, g, b, labScratch);
+      surface.labA[bucket]! += labScratch.a;
+      surface.labB[bucket]! += labScratch.b;
     }
   }
   return surface;
@@ -220,6 +240,22 @@ function hueOf(surface: Surface, below: number): number {
   return deg < 0 ? deg + 360 : deg;
 }
 
+// The wall's colour in a*b*: the mean of the same too-dull-to-be-paper pixels
+// the hue is taken from. Not the region's commonest colour — a cell mostly
+// covered by one note is mostly that note.
+function wallLabOf(surface: Surface, below: number): { wallA?: number; wallB?: number } {
+  let a = 0;
+  let b = 0;
+  let n = 0;
+  const limit = Math.min(100, Math.round(below * 100));
+  for (let i = 0; i < limit; i += 1) {
+    a += surface.labA[i]!;
+    b += surface.labB[i]!;
+    n += surface.hueCount[i]!;
+  }
+  return n === 0 ? {} : { wallA: a / n, wallB: b / n };
+}
+
 // What one region measures: the floors it implies, plus the two facts a
 // caller needs to decide whether to trust them — how bimodal its saturation
 // was (two surfaces, or one) and which saturation that one surface sat at.
@@ -245,11 +281,13 @@ function floorsOf(surface: Surface): Measured {
   const bimodal = split.strength >= TILE_BIMODAL_STRENGTH;
   const margin = wallSaturation + WALL_SATURATION_MARGIN;
   const saturation = Math.max(MIN_PAPER_SATURATION, bimodal ? Math.min(split.at, margin) : margin);
+  const wallHue = hueOf(surface, saturation);
   return {
     floors: {
       saturation,
       value: Math.max(VALUE_FLOOR, wallValue * WALL_VALUE_RATIO),
-      wallHue: hueOf(surface, saturation),
+      wallHue,
+      ...wallLabOf(surface, saturation),
     },
     bimodal,
     wallSaturation,
@@ -306,6 +344,10 @@ export function localFloorsOf(
   // the 180° a linear blend would invent.
   const hueX = new Float64Array(tilesX * tilesY);
   const hueY = new Float64Array(tilesX * tilesY);
+  // The wall's a*b*, blended linearly: unlike a hue it is a point, not an angle.
+  const wallA = new Float64Array(tilesX * tilesY);
+  const wallB = new Float64Array(tilesX * tilesY);
+  let wallColourKnown = true;
 
   const globalHue = (global.wallHue * Math.PI) / 180;
   for (let ty = 0; ty < tilesY; ty += 1) {
@@ -333,6 +375,12 @@ export function localFloorsOf(
         (measured.bimodal ||
           Math.abs(measured.wallSaturation - frame.wallSaturation) <= TILE_WALL_TOLERANCE);
       saturation[i] = trusted ? local.saturation : global.saturation;
+      // The wall's colour follows the same trust as its saturation: a cell
+      // full of paper would otherwise measure the paper as the wall.
+      const colour = trusted && local.wallA !== undefined ? local : global;
+      if (colour.wallA === undefined || colour.wallB === undefined) wallColourKnown = false;
+      wallA[i] = colour.wallA ?? 0;
+      wallB[i] = colour.wallB ?? 0;
       const hue = trusted && local.wallHue >= 0 ? (local.wallHue * Math.PI) / 180 : globalHue;
       const usable = (trusted && local.wallHue >= 0) || global.wallHue >= 0;
       hueX[i] = usable ? Math.cos(hue) : 0;
@@ -367,6 +415,10 @@ export function localFloorsOf(
       saturation[i01]! * w01 +
       saturation[i11]! * w11;
     out.value = value[i00]! * w00 + value[i10]! * w10 + value[i01]! * w01 + value[i11]! * w11;
+    if (wallColourKnown) {
+      out.wallA = wallA[i00]! * w00 + wallA[i10]! * w10 + wallA[i01]! * w01 + wallA[i11]! * w11;
+      out.wallB = wallB[i00]! * w00 + wallB[i10]! * w10 + wallB[i01]! * w01 + wallB[i11]! * w11;
+    }
     const hx = hueX[i00]! * w00 + hueX[i10]! * w10 + hueX[i01]! * w01 + hueX[i11]! * w11;
     const hy = hueY[i00]! * w00 + hueY[i10]! * w10 + hueY[i01]! * w01 + hueY[i11]! * w11;
     if (hx === 0 && hy === 0) {
