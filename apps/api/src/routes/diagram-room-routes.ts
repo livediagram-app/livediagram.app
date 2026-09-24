@@ -119,7 +119,7 @@ export async function handleDiagramRoomRoutes(ctx: RouteContext): Promise<Respon
     // server-resolved role is forwarded; it still gates edit vs view ops.
     const forwarded = new Request(request);
     forwarded.headers.set('X-Verified-Role', role);
-    // One more server-resolved bit, and only a bit (spec/147): whether this
+    // One more server-resolved bit, and only a bit (spec/148): whether this
     // upgrade is the diagram's OWNER. The facilitator baton needs it so the
     // owner can always take the session back, and a boolean answers that
     // without handing the room an identity it deliberately does not hold.

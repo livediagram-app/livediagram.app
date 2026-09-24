@@ -41,7 +41,7 @@ export function useBehaviourElements({
   // session tool but not start one (spec/39), and their picker roll is theirs
   // alone rather than a write everyone sees.
   editsBlocked: boolean;
-  // Somebody else is facilitating (spec/147): pressing a session button,
+  // Somebody else is facilitating (spec/148): pressing a session button,
   // spinning the picker for the room and lifting a cover are theirs.
   sessionToolsBlocked: boolean;
   selfParticipant: Participant;
@@ -62,7 +62,7 @@ export function useBehaviourElements({
   // that go with each tool all still happen exactly once, in one place.
   const pressSessionButton = (element: ShapeElement) => {
     // It starts the timer / vote / poll for the room, so it is one of the
-    // facilitator's (spec/147) rather than an ordinary press.
+    // facilitator's (spec/148) rather than an ordinary press.
     if (editsBlocked || sessionToolsBlocked) return;
     const plan = sessionButtonPlan(element.session);
     if (!plan) return;
@@ -92,7 +92,7 @@ export function useBehaviourElements({
   // reload, which is right for something whose job is to start closed.
   const [revealedIds, setRevealedIds] = useState<ReadonlySet<string>>(new Set());
   const toggleRevealForMe = (elementId: string) => {
-    // While somebody is facilitating (spec/147) a cover is theirs to lift, and
+    // While somebody is facilitating (spec/148) a cover is theirs to lift, and
     // they lift it for the room through the element's own `revealed` field
     // rather than peeking privately. The personal lift below is what a board
     // with no facilitator keeps.
@@ -128,7 +128,7 @@ export function useBehaviourElements({
         const result = picked.label;
         // A view-role visitor still gets their roll — it just stays on their
         // screen. Everyone else writes it, so the room lands on one answer.
-        // Under a facilitator (spec/147) the same is true of anybody who is
+        // Under a facilitator (spec/148) the same is true of anybody who is
         // not them: they may spin for themselves, but the room's answer is the
         // facilitator's to land.
         if (!editsBlocked && !sessionToolsBlocked) {
@@ -158,7 +158,7 @@ export function useBehaviourElements({
   const setSessionConfigFor = (element: ShapeElement, config: SessionButtonConfig) => {
     // Its configuration IS the timer's length and the poll's question, so
     // changing it mid-session changes what the next press does to everybody
-    // (spec/147). The owner who wants to edit it takes the baton back.
+    // (spec/148). The owner who wants to edit it takes the baton back.
     if (sessionToolsBlocked) return;
     if (editsBlocked) return;
     commitTabs((ts) =>

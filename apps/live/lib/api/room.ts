@@ -17,7 +17,7 @@ import { getSessionSharePassword, wsUrl } from './core';
 export type RoomHandlers = {
   onPresence: (participants: ParticipantPresence[]) => void;
   onOp: (from: string, op: RoomOp) => void;
-  // Who holds the facilitator baton (spec/147), and the token when it is
+  // Who holds the facilitator baton (spec/148), and the token when it is
   // ours. Arrives on every change and once on connect with reason 'state'.
   onFacilitator?: (msg: {
     holder: string | null;
@@ -85,7 +85,7 @@ export function connectRoom(
   options: RoomAuthOptions = {},
   // Read at every (re)connect rather than captured once: the baton can be
   // taken while this socket is open, and the token we present has to be the
-  // one we hold NOW (spec/147).
+  // one we hold NOW (spec/148).
   readFacilitatorToken?: () => string | null,
 ): {
   send: (msg: RoomOutgoing) => void;
@@ -119,7 +119,7 @@ export function connectRoom(
     ws = new WebSocket(url);
     ws.addEventListener('open', () => {
       attempts = 0;
-      // The baton coming home (spec/147): on a reconnect this is what tells
+      // The baton coming home (spec/148): on a reconnect this is what tells
       // the room we are the same facilitator it granted before the refresh.
       const facilitatorToken = readFacilitatorToken?.();
       ws.send(

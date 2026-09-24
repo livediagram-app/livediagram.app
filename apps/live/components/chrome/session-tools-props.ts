@@ -15,7 +15,7 @@ import type { LivePoll, PollStyle } from '@livediagram/api-schema';
 // state and never becomes one. That is why the poll arrives as three separate
 // props rather than a `poll` slot on the tab beside the other two.
 export type SessionToolsProps = {
-  // Who is running the session, when it is not you (spec/147). The Studio
+  // Who is running the session, when it is not you (spec/148). The Studio
   // shows the name and disables every control in one place, which is the
   // whole reason these sixteen verbs already travel as one bundle.
   facilitatedBy?: string | null;

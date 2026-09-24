@@ -114,7 +114,7 @@ describe('one dot per item', () => {
   });
 });
 
-describe('while somebody else is facilitating (spec/147)', () => {
+describe('while somebody else is facilitating (spec/148)', () => {
   it('refuses to start the timer', () => {
     const { session, tab } = harness({}, { sessionToolsBlocked: true });
     session().startTimer('countdown', 60_000);

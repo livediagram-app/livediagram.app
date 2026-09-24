@@ -72,7 +72,7 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Element·Voted',
   'Error·Api',
   'Error·Client',
-  // The facilitator baton (spec/147): taken, handed on, stepped down. The
+  // The facilitator baton (spec/148): taken, handed on, stepped down. The
   // question is whether rooms use the role at all, never who held it.
   'Facilitator·Changed',
   'Facilitator·Ended',

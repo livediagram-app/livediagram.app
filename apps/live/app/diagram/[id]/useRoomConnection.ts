@@ -80,7 +80,7 @@ export function useRoomConnection(opts: {
     at: { x: number; y: number },
     zoom: number,
   ) => void;
-  // The facilitator baton (spec/147): the room's answer, and the token we
+  // The facilitator baton (spec/148): the room's answer, and the token we
   // present on every hello so a refresh keeps it.
   receiveFacilitator: (msg: {
     holder: string | null;

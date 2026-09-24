@@ -95,7 +95,7 @@ renamed participant's invitation reads correctly.
   nothing, which makes it the same read-only act as following somebody, and in a
   workshop the person who spots the thing worth looking at is often not the
   owner. The one exception arrived with the facilitator baton
-  ([spec/147](147-facilitator.md)): while somebody is running the session it is
+  ([spec/148](148-facilitator.md)): while somebody is running the session it is
   theirs to press, because "everybody look here" is the same act as "everybody
   stop and listen". With nobody facilitating — which is every session until
   somebody takes the baton — this rule is unchanged.

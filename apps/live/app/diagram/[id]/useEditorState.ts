@@ -759,7 +759,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     ((from: string, tabId: string, at: { x: number; y: number }, zoom: number) => void) | null
   >(null);
 
-  // Who is running this session (spec/147). Declared before the room
+  // Who is running this session (spec/148). Declared before the room
   // connection because the socket hands it every answer and asks it for the
   // token on each hello.
   const facilitator = useFacilitator({
@@ -2609,7 +2609,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     applyImageToElement,
     autoAlignTab,
     autoLayoutTab,
-    // The facilitator baton (spec/147): who is running this session.
+    // The facilitator baton (spec/148): who is running this session.
     facilitator,
     previewCleanup,
     endCleanupPreview,

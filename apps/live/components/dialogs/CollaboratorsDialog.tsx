@@ -37,7 +37,7 @@ type CollaboratorsDialogProps = {
   onGoToTab: (tabId: string) => void;
   onFollow: (participantId: string) => void;
   onStopFollowing: () => void;
-  // The facilitator baton (spec/147). `facilitatorId` is a presence id, which
+  // The facilitator baton (spec/148). `facilitatorId` is a presence id, which
   // is why our OWN row reads `isFacilitator` instead: a client cannot
   // recognise its own presence id, so the two answers arrive by different
   // routes and the row asks the one that applies to it.

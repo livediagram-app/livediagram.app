@@ -10,14 +10,14 @@ A diagram is a shared surface, so everything on it is visible to everyone the mo
 
 The alternatives all fail in the same way. Hiding a layer hides it from everyone including the author; moving content off-screen is a race against panning; a second tab breaks the flow of the board. A cover you click is the smallest thing that works, and it reads as intentional — "there is something here, and it is not for you yet".
 
-## Under a facilitator (spec/147)
+## Under a facilitator (spec/148)
 
 A cover is lifted **per viewer**: uncovering it is a property of having looked,
 not a property of the diagram, which is why it is local state and why it comes
 back on a reload.
 
 That holds while nobody is facilitating. When somebody holds the baton
-([spec/147](147-facilitator.md)) the lift is **theirs**, and the element's own
+([spec/148](148-facilitator.md)) the lift is **theirs**, and the element's own
 `revealed` field — the room-wide reveal that already exists — is how they use
 it: "now let's look at the answers" is a thing said to a room, not a thing done
 privately. Everybody else's cover stays down until they say so. With no

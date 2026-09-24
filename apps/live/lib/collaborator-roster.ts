@@ -67,7 +67,7 @@ export function participantBadges(
   selfId: string,
   selfRole: 'edit' | 'view',
   followingId?: string | null,
-  // Whether this person holds the facilitator baton (spec/147). Passed in
+  // Whether this person holds the facilitator baton (spec/148). Passed in
   // rather than read off the participant: the holder is a presence id, and
   // your own row cannot be recognised by one.
   opts?: { isFacilitator?: boolean },

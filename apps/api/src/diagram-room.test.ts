@@ -68,7 +68,7 @@ type FakeState = {
   // instances built from the same FakeState, which is exactly what a
   // hibernation wake looks like: same storage, fresh instance.
   store: Map<string, unknown>;
-  // The facilitator grace period (spec/147) is the room's only alarm.
+  // The facilitator grace period (spec/148) is the room's only alarm.
   alarms: number[];
   storage: {
     get: (key: string) => Promise<unknown>;
@@ -839,7 +839,7 @@ describe('DiagramRoom hibernation survival', () => {
     after.acceptSession(asWs(joiner), 'edit');
     sendFrame(after, joiner, { kind: 'hello', participant: { id: 'j', name: 'J', color: '#333' } });
     // The presence frame by kind, not by position: a hello is also answered
-    // with the facilitator state (spec/147), so "the last frame" is not it.
+    // with the facilitator state (spec/148), so "the last frame" is not it.
     const frame = joiner.sent
       .map((raw) => JSON.parse(raw) as { kind: string; participants?: ParticipantPresence[] })
       .findLast((f) => f.kind === 'presence')!;
@@ -1046,7 +1046,7 @@ describe('DiagramRoom op ordering + reconnect catch-up (spec/75, Level 1)', () =
   });
 });
 
-// ── The facilitator baton (spec/147) ──────────────────────────────────
+// ── The facilitator baton (spec/148) ──────────────────────────────────
 //
 // The room is the only thing that can arbitrate this, so these cover what
 // only it can get wrong: who is told, who is told the TOKEN, and the one op
@@ -1126,6 +1126,82 @@ describe('DiagramRoom facilitator', () => {
 
     sendFrame(room, b, { kind: 'op', op: { kind: 'el', tabId: 't', ops: [] } });
     expect(frames(a).some((f) => f.kind === 'op')).toBe(true);
+  });
+
+  it('tells a holder their own state frame carries the token', () => {
+    // Without it the holder's own client would read "somebody else is
+    // facilitating" off its own baton: a client cannot recognise its presence
+    // id, so the token is the only thing that says the baton is theirs.
+    const { room, state } = newRoom();
+    const a = makeSocket();
+    seedSession(state, a, presence('p-a', 'edit'));
+    sendFrame(room, a, { kind: 'facilitator', action: 'claim' });
+    const token = facFrames(a).at(-1)!.token as string;
+
+    sendFrame(room, a, { kind: 'hello', participant: presence('p-a', 'edit') });
+    expect(facFrames(a).at(-1)).toMatchObject({ holder: 'p-a', reason: 'state', token });
+  });
+
+  it('announces nothing when a refresh brings the baton home', async () => {
+    // A reload is not an event. Everybody's badge still has to follow the new
+    // presence id, so the frame goes out — as state, which nobody toasts.
+    const { room, state } = newRoom();
+    const a = makeSocket();
+    const b = makeSocket();
+    seedSession(state, a, presence('p-a', 'edit'));
+    seedSession(state, b, presence('p-b', 'edit'));
+    sendFrame(room, a, { kind: 'facilitator', action: 'claim' });
+    const token = facFrames(a).at(-1)!.token as string;
+    const before = facFrames(b).length;
+
+    const back = makeSocket();
+    seedSession(state, back, presence('p-a2', 'edit'));
+    sendFrame(room, back, {
+      kind: 'hello',
+      participant: presence('p-a2', 'edit'),
+      facilitatorToken: token,
+    });
+    expect(facFrames(b).slice(before)).toEqual([
+      { kind: 'facilitator', holder: 'p-a2', reason: 'state' },
+    ]);
+  });
+
+  it('refuses a token whose grace period ran out while the room slept', async () => {
+    // The alarm is what normally releases it, and an alarm needs a room. If
+    // the DO was evicted first, the next read is what has to notice.
+    const { room, state } = newRoom();
+    const a = makeSocket();
+    seedSession(state, a, presence('p-a', 'edit'));
+    sendFrame(room, a, { kind: 'facilitator', action: 'claim' });
+    const token = facFrames(a).at(-1)!.token as string;
+    room.webSocketClose(asWs(a));
+
+    vi.setSystemTime(new Date(Date.now() + 91_000));
+    const back = makeSocket();
+    seedSession(state, back, presence('p-a2', 'edit'));
+    sendFrame(room, back, {
+      kind: 'hello',
+      participant: presence('p-a2', 'edit'),
+      facilitatorToken: token,
+    });
+    expect(room.facilitator.holder).toBeNull();
+    expect(facFrames(back).at(-1)).toMatchObject({ holder: null, reason: 'state' });
+    vi.useRealTimers();
+  });
+
+  it('stops refusing polls once a lapsed baton is read again', async () => {
+    const { room, state } = newRoom();
+    const a = makeSocket();
+    const b = makeSocket();
+    seedSession(state, a, presence('p-a', 'edit'));
+    seedSession(state, b, presence('p-b', 'edit'));
+    sendFrame(room, a, { kind: 'facilitator', action: 'claim' });
+    room.webSocketClose(asWs(a));
+
+    vi.setSystemTime(new Date(Date.now() + 91_000));
+    sendFrame(room, b, { kind: 'op', op: { kind: 'poll-start', poll: { id: 'q1' } } });
+    expect(room.facilitator.holder).toBeNull();
+    vi.useRealTimers();
   });
 
   it('gives a refreshing holder their baton back when they present the token', () => {
