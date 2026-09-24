@@ -124,8 +124,8 @@ real notes on any wall. The operator's label review decides the next four.
 
 ## Phase 6 — verify and fold back
 
-- [ ] 6.1 Browser run on all eight photos; screenshots on the wall.
-- [ ] 6.2 Full gate: format, lint, typecheck, unit, e2e, build.
+- [x] 6.1 Browser run on all eight photos; screenshots on the wall.
+- [x] 6.2 Full gate: format, lint, typecheck, unit, e2e, build.
 - [ ] 6.3 Fold back into spec/139, `docs/vision/*`, the package README, the
       help centre; record the final table here.
 
