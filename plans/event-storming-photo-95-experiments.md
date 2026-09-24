@@ -221,8 +221,10 @@ overlaps), 2/8 walls (201707, 201713).
         (kept: 94.8 → 95.1, merged 20 → 16, real merges 1 → 0).
   - [x] J3 Drop a classical box the model sees as background, only at no recall
         (kept: 95.1 → 95.4, precision 96 → 97%, night 88 → 95% precise).
-  - [ ] J4 The model in the browser: int8 weights, tfjs WebGL / WebGPU in
-        headless Chromium on a 1000×563 image, bundle size and ms per photo.
+  - [x] J4 The model in the browser: int8 weights, tfjs WebGL / WebGPU in
+        headless Chromium on a 1000×563 image, bundle size and ms per photo
+        (int8 83 KB, same score; chunk 171 KB br + weights; WebGPU 19-22 ms
+        warm on a desktop GPU, threaded WASM ~350 ms, single WASM ~770 ms).
   - [ ] J5 Fold-back: results doc, sticky-detection.md, what wiring needs.
 
 ## Not yet delegated

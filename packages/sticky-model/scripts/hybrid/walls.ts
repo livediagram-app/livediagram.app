@@ -1,11 +1,13 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { homedir } from 'node:os';
 import type { ImageBuffer } from '../../../sticky-vision/src/colour';
 import { listPhotos, loadPhoto } from '../../../sticky-vision/scripts/photos';
 import { photoDir, truthFor, type Truth } from '../../../sticky-vision/scripts/truth';
 import { predictProbs } from '../model/infer';
 import { tf } from '../model/tf';
 import { WORK_DIR } from '../paths';
+import { WEIGHTS_DIR } from './weights';
+
+export { WEIGHTS_DIR };
 
 // The eight labelled walls at the editor's working size (the sweep's own
 // Chromium pixels, cached by `sticky-vision/scripts/calibrate.ts`), each with
@@ -13,11 +15,6 @@ import { WORK_DIR } from '../paths';
 // wall, so the probabilities are cached beside the model's other outputs under
 // the temp directory: they are derived from the private photos and never
 // belong in the repo.
-
-// The synthetic-only weights (group E's kept model); override with
-// STICKY_MODEL_WEIGHTS=<dir holding model.json>.
-export const WEIGHTS_DIR =
-  process.env.STICKY_MODEL_WEIGHTS ?? `${homedir()}/.local/share/livediagram-es95/models/synth-v1`;
 
 export type HybridWall = { name: string; image: ImageBuffer; truth: Truth; probs: Float32Array };
 
