@@ -12,11 +12,8 @@ The raw reports are working notes kept out of the repository. Every claim of
 gain in them is the agent's estimate; nothing here counts until an experiment
 on the eight walls says so.
 
-Coverage: 34 of 54 angles reported in the first round (classical CV, browser
-models, prior art, training, runtime, reading). The other 20 — rectangle
-fitting and seams, light and perspective, evaluation method, VLM grounding and
-the MCP/CLI path — hit a provider quota and run again after it resets; this
-page is extended when they land.
+Coverage: all 55 angles (the 20 that first hit a provider quota ran again
+after it reset, with one more on evaluating the reader).
 
 ## What the reports agree on
 
@@ -66,6 +63,34 @@ Agreement across independent angles is the strongest signal research gives.
 | Glare         | Specular mask (V high, S low) exempted from floors                                                                                                             | 0 KB                  | ours       | S                 |
 | Small notes   | Higher working resolution (1500–2500px) with the relative thresholds; or tiled detection                                                                       | —                     | ours       | S–M               |
 | Reading       | PP-OCRv4 mobile recogniser (2.4 MB, Apache) or SmolVLM-256M in the browser as the free reader; a pre-flight photo-quality check (blur, pixels per note, glare) | 2–250 MB              | Apache     | M                 |
+
+## The second round of research (separation, light, method, reading)
+
+Mostly confirmation of what the experiment groups had by then measured
+(notch-and-seam cutting, CIELAB, wall-referenced lighting). What is new:
+
+- **Place all the cuts across a run at once** (1-D dynamic programming over
+  the paper's profile) instead of greedily one by one.
+- **A local note-size field**: note size varies across a wide or angled
+  photograph (the panorama), so size rules should use the size HERE.
+- **Amodal completion**: a note partly under another is completed from its
+  three visible corners.
+- **A gated cascade**: classical proposals, and a small model run only on the
+  ambiguous blobs — which is where the experiments were already heading
+  (group E's boundary model splits merged notes; the classical pipeline has
+  the precision).
+- **Evaluation**: Hungarian matching at IoU ≥ 0.5 as a second measure,
+  bootstrap confidence intervals per wall, and the WORST wall as the
+  objective rather than the total.
+- **The optional higher-quality path**: an MCP tool and a Node CLI that take
+  the photo with the author's own key (Gemini Flash-Lite) or a local model
+  (Qwen2.5-VL through Ollama), tiled, and write a review draft back; plus a
+  zero-install "clipboard bridge" from the review overlay.
+- **Reading**: PP-OCRv4 mobile or docTR PARSeq (2–22 MB, ONNX) as the free
+  in-browser reader; crops padded 0% at shared seams and 6% on free edges,
+  flattened, and upscaled to at least 256 px.
+- **Capture**: an in-viewfinder guide (hold steady, closer, glare, tilt 10°)
+  is the cheapest fix for the night and glare photos.
 
 ## Where each candidate is tested
 

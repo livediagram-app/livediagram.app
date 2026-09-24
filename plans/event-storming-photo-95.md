@@ -47,7 +47,7 @@ bundle size, effort, and links.
 - [x] 1.2 While they run: extend the sweep with the bar's own measures —
       per-wall recall and precision, merged-box count, actor recall
       separately, and a PASS/FAIL line against the bar. Commit.
-- [ ] 1.3 Collect all 54 reports; chase any that failed or came back thin.
+- [x] 1.3 Collect all 54 reports; chase any that failed or came back thin.
       (34 in; 20 hit the Antigravity quota and re-spawn automatically after it
       resets, with a 21st angle on evaluating the reader.)
 - [x] 1.4 Synthesise `docs/vision/research.md`: the inventory of techniques,
