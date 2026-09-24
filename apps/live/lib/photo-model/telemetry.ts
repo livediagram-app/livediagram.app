@@ -1,5 +1,5 @@
 import type { PhotoDetector } from '../photo-detect';
-import type { BoundaryBackend, BoundaryFailure } from './protocol';
+import type { BoundaryBackend, ClassicalReason } from './protocol';
 
 // Which detector found a photo's boxes, as the one closed telemetry token the
 // photo import sends per photo (spec/22): `AI`·`Used`·`PhotoDetect…`. Whether
@@ -8,12 +8,13 @@ import type { BoundaryBackend, BoundaryFailure } from './protocol';
 
 const BACKEND: Record<BoundaryBackend, string> = { webgpu: 'WebGpu', wasm: 'Wasm' };
 
-const FAILURE: Record<BoundaryFailure, string> = {
+const FAILURE: Record<ClassicalReason, string> = {
   'no-worker': 'NoWorker',
   'no-backend': 'NoBackend',
   'load-failed': 'LoadFailed',
   'inference-failed': 'InferenceFailed',
   timeout: 'Timeout',
+  'flat-image': 'FlatImage',
 };
 
 export function detectorTelemetryType(detector: PhotoDetector): string {

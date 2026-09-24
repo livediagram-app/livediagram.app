@@ -10,10 +10,9 @@ export const BOUNDARY_WEIGHTS = /\/weights\.[^/]*\.bin$/;
 // detector and its boundary model are real; both are served by the app itself.
 //
 // `boundaryModel: false` blocks the model's weights, so the classical detector
-// runs alone. Tests of the review flow on DRAWN walls want that: the model
-// learnt walls with light, noise and texture, and calls a flat, textureless
-// rectangle background, so on a drawn wall the hybrid may drop a note (docs/vision/experiments/
-// m-editor-model.md); photo-model.spec.ts pins that limit where it belongs.
+// runs alone and the model's runtime stays off the wire. A drawn wall is flat,
+// so the editor reads it with the classical detector alone either way
+// (docs/vision/experiments/o-flat.md); photo-model.spec.ts covers both paths.
 export async function openPhotoBoard(
   page: Page,
   opts: { boundaryModel?: boolean } = {},

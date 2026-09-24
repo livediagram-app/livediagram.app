@@ -15,8 +15,9 @@ import {
   type DetectedSticky,
   type ModelCues,
 } from '@livediagram/sticky-vision';
+import { isFlatImage } from '@livediagram/sticky-model';
 import { boundaryCuesFor } from './photo-model/client';
-import type { BoundaryBackend, BoundaryFailure, BoundaryOutcome } from './photo-model/protocol';
+import type { BoundaryBackend, BoundaryOutcome, ClassicalReason } from './photo-model/protocol';
 
 // Getting a photograph ready to become notes (spec/139 Phase 8) — all of it in
 // the browser.
@@ -31,7 +32,9 @@ import type { BoundaryBackend, BoundaryFailure, BoundaryOutcome } from './photo-
 //     edge: where the detector scores best, and a fraction of the pixels. The
 //     boundary model (a worker, loaded on demand) reads the same copy first,
 //     and the detector takes its corrections; without it, for any reason,
-//     the classical detector runs alone.
+//     the classical detector runs alone. A flat drawing (a screenshot, a
+//     drawn wall) is not asked of the model at all: it learnt photographs,
+//     and reads a flat note as background.
 //  3. Cut each sticky out of the FULL-resolution bitmap, so the model gets the
 //     sharpest pixels of the handwriting rather than the working copy's.
 //  4. Re-encode each crop as a small JPEG — which drops EXIF with it, after
@@ -68,7 +71,7 @@ export function photoTypeError(type: string): PhotoDetectError | null {
 // Which detector found the boxes, and on what: the hybrid on a backend, or the
 // classical detector alone and why. Closed values, logged and counted.
 export type PhotoDetector =
-  { path: 'hybrid'; backend: BoundaryBackend } | { path: 'classical'; reason: BoundaryFailure };
+  { path: 'hybrid'; backend: BoundaryBackend } | { path: 'classical'; reason: ClassicalReason };
 
 export type PhotoDetection = {
   detector: PhotoDetector;
@@ -154,7 +157,8 @@ export async function detectAndCrop(
 }
 
 // The model's cues for this image, or the reason there are none. Never throws:
-// a correction that cannot be had is no reason to fail the import.
+// a correction that cannot be had is no reason to fail the import. A flat
+// drawing is not asked at all (docs/vision/experiments/o-flat.md).
 async function boundaryModelFor(image: {
   width: number;
   height: number;
@@ -163,6 +167,10 @@ async function boundaryModelFor(image: {
   detector: PhotoDetector;
   model: { cues: ModelCues; rules: typeof HYBRID_RULES } | null;
 }> {
+  if (isFlatImage(image)) {
+    console.info('[photo-detect] classical (flat-image)');
+    return { detector: { path: 'classical', reason: 'flat-image' }, model: null };
+  }
   let outcome: BoundaryOutcome;
   try {
     outcome = await boundaryCuesFor(image);

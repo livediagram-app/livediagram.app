@@ -29,6 +29,7 @@ const { loadHybridWalls } = await import('./walls');
 const { HYBRID_RULES } = await import('../../../sticky-vision/src/hybrid');
 const { detectStickies } = await import('../../../sticky-vision/src/detect');
 const { CUE_OPTIONS, cuesOf } = await import('../../src/cues');
+const { isFlatImage } = await import('../../src/flatness');
 
 const base = process.env.E2E_BASE_URL ?? 'http://localhost:3202';
 const noModel = process.argv.includes('--no-model');
@@ -187,10 +188,12 @@ for (const wall of walls) {
     floor: mergedFloorOf(labels),
   });
 
-  // Box by box against Node, on the same pixels and weights.
-  const model = noModel
-    ? undefined
-    : { cues: cuesOf(wall.probs, width, height, CUE_OPTIONS), rules: HYBRID_RULES };
+  // Box by box against Node, on the same pixels and weights, asking the model
+  // only what the editor asks it (never a flat drawing).
+  const model =
+    noModel || isFlatImage(wall.image)
+      ? undefined
+      : { cues: cuesOf(wall.probs, width, height, CUE_OPTIONS), rules: HYBRID_RULES };
   const node: DetectedSticky[] = detectStickies(wall.image, model ? { model } : {});
   const byId = new Map(node.map((b) => [b.id, b]));
   let off = 0;

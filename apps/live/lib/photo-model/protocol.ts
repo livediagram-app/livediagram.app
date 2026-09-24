@@ -25,6 +25,12 @@ export const BOUNDARY_FAILURES = [
 ] as const;
 export type BoundaryFailure = (typeof BOUNDARY_FAILURES)[number];
 
+// Why the classical detector ran alone: the model failed (above), or it was
+// not asked, because the image is a flat drawing (a screenshot, a drawn wall)
+// and the model learnt photographs (`isFlatImage`).
+export const CLASSICAL_REASONS = [...BOUNDARY_FAILURES, 'flat-image'] as const;
+export type ClassicalReason = (typeof CLASSICAL_REASONS)[number];
+
 export type WorkerRequest =
   | { type: 'warm' }
   | { type: 'cues'; id: number; width: number; height: number; data: Uint8ClampedArray };

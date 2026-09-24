@@ -2,6 +2,7 @@ import { HYBRID_RULES, type HybridRules } from '../../../sticky-vision/src/hybri
 import { detectStickies } from '../../../sticky-vision/src/detect';
 import { score } from '../../../sticky-vision/scripts/truth';
 import { CUE_OPTIONS, cuesOf } from '../../src/cues';
+import { isFlatImage } from '../../src/flatness';
 import { mergedFloorOf, realMergedOf, table, totals, type Row } from '../report';
 import { loadHybridWalls, type HybridWall } from './walls';
 
@@ -62,7 +63,10 @@ const cues = new Map(
 function rowOf(wall: HybridWall, rules: HybridRules): Row {
   const { width, height } = wall.image;
   const started = performance.now();
-  const found = detectStickies(wall.image, { model: { cues: cues.get(wall)!, rules } });
+  // The editor asks the model nothing about a flat drawing; nor does the sweep.
+  const found = isFlatImage(wall.image)
+    ? detectStickies(wall.image)
+    : detectStickies(wall.image, { model: { cues: cues.get(wall)!, rules } });
   const ms = performance.now() - started;
   const s = score(wall.truth, found, width, height);
   const labels = wall.truth.notes.map((n) => ({

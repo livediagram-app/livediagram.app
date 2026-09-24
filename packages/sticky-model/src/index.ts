@@ -5,5 +5,6 @@
 // and read the probabilities through `cues.ts`.
 export * from './cues';
 export * from './decode';
+export * from './flatness';
 export * from './mask';
 export * from './stride';

@@ -1,6 +1,7 @@
 import { detectStickies } from '../../../sticky-vision/src/detect';
 import { HYBRID_RULES } from '../../../sticky-vision/src/hybrid';
 import { CUE_OPTIONS, cuesOf } from '../../src/cues';
+import { isFlatImage } from '../../src/flatness';
 import { predictProbs } from '../model/infer';
 import { tf } from '../model/tf';
 import { WEIGHTS_DIR } from '../hybrid/weights';
@@ -13,7 +14,9 @@ import { drawnBoards, type Board, type DrawnNote } from './boards';
 //
 // Per board: notes drawn, found by the classical detector, found by the hybrid
 // (a box matching a note at IoU 0.5 or more), and the notes the hybrid LOST
-// that the classical detector had. `--verbose` adds, per note, the model's
+// that the classical detector had, and whether the editor would ask the
+// model at all (`isFlatImage`: a flat drawing goes to the classical detector
+// alone, so what it ships loses nothing there). `--verbose` adds, per note, the model's
 // mean background over its middle half and its best core probability.
 
 type Rect = { x: number; y: number; w: number; h: number };
@@ -55,6 +58,7 @@ export type BoardResult = {
   classical: boolean[];
   hybrid: boolean[];
   extra: number;
+  flat: boolean;
 };
 
 export async function probeBoards(weights = WEIGHTS_DIR): Promise<BoardResult[]> {
@@ -79,6 +83,7 @@ export async function probeBoards(weights = WEIGHTS_DIR): Promise<BoardResult[]>
       classical: found(board.notes, classical),
       hybrid: hit,
       extra: hybrid.length - hit.filter(Boolean).length,
+      flat: isFlatImage(image),
     };
   });
 }
@@ -89,6 +94,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   let classical = 0;
   let hybrid = 0;
   let lost = 0;
+  let shippedLost = 0;
   for (const r of results) {
     const c = r.classical.filter(Boolean).length;
     const h = r.hybrid.filter(Boolean).length;
@@ -97,11 +103,12 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     classical += c;
     hybrid += h;
     lost += l;
+    if (!r.flat) shippedLost += l;
     console.log(
-      `${r.board.name.padEnd(22)} notes ${String(r.board.notes.length).padStart(3)}  classical ${String(c).padStart(3)}  hybrid ${String(h).padStart(3)}  lost ${l}  extra ${r.extra}`,
+      `${r.board.name.padEnd(22)} notes ${String(r.board.notes.length).padStart(3)}  classical ${String(c).padStart(3)}  hybrid ${String(h).padStart(3)}  lost ${l}  extra ${r.extra}  ${r.flat ? 'flat' : 'photo'}`,
     );
   }
   console.log(
-    `TOTAL notes ${drawn}  classical ${classical}  hybrid ${hybrid}  lost to the model ${lost}  (${WEIGHTS_DIR})`,
+    `TOTAL notes ${drawn}  classical ${classical}  hybrid ${hybrid}  lost to the model ${lost}  as shipped (flat images classical) ${shippedLost}  (${WEIGHTS_DIR})`,
   );
 }

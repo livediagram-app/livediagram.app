@@ -27,8 +27,16 @@ export type WallNote = {
   h: number;
 };
 
-// Draw the notes on a wall and encode the result as a PNG.
-export function wallPhotoPng(width: number, height: number, notes: WallNote[]): Buffer {
+// Draw the notes on a wall and encode the result as a PNG. As drawn, the
+// wall is flat to the bit, which the editor reads as a drawing (a screenshot)
+// and never asks the boundary model about; `grain` adds that many levels of
+// sensor-like noise either way to every pixel, so it reads as a photograph.
+export function wallPhotoPng(
+  width: number,
+  height: number,
+  notes: WallNote[],
+  opts: { grain?: number } = {},
+): Buffer {
   // One RGB triple per pixel, wall everywhere to begin with.
   const pixels = new Uint8Array(width * height * 3);
   for (let i = 0; i < pixels.length; i += 3) {
@@ -62,7 +70,17 @@ export function wallPhotoPng(width: number, height: number, notes: WallNote[]): 
       }
     }
   }
+  if (opts.grain) addGrain(pixels, opts.grain);
   return encodePng(width, height, pixels);
+}
+
+// Deterministic noise: the same wall is the same PNG every run.
+function addGrain(pixels: Uint8Array, grain: number): void {
+  for (let i = 0; i < pixels.length; i += 1) {
+    const n = Math.sin(i * 12.9898) * 43758.5453;
+    const offset = Math.round((n - Math.floor(n)) * 2 * grain) - grain;
+    pixels[i] = Math.max(0, Math.min(255, pixels[i]! + offset));
+  }
 }
 
 // Minimal PNG: one IHDR, one IDAT of zlib-deflated scanlines (filter 0), one

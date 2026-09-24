@@ -37,6 +37,19 @@ function oneSticky(width: number, height: number): Painted {
   };
 }
 
+// The same scene as a camera sees it: a few levels of sensor noise on every
+// pixel, so no two neighbours are exactly equal.
+function photographed(scene: Painted): Painted {
+  return {
+    ...scene,
+    pixels: (x, y) =>
+      scene.pixels(x, y).map((v, c) => {
+        const n = Math.sin(x * 12.9898 + y * 78.233 + c * 37.719) * 43758.5453;
+        return Math.max(0, Math.min(255, v + Math.round((n - Math.floor(n)) * 8) - 4));
+      }),
+  };
+}
+
 const blankWall: Painted = { width: 64, height: 64, pixels: () => [241, 245, 249] };
 
 function stubImaging(bitmap: { width: number; height: number } | 'throw', painted?: Painted) {
@@ -181,7 +194,7 @@ describe('detectAndCrop with the boundary model', () => {
         background: new Uint8Array(image.width * image.height).fill(255),
       },
     }));
-    const out = await withStub({ width: 400, height: 300 }, oneSticky(400, 300));
+    const out = await withStub({ width: 400, height: 300 }, photographed(oneSticky(400, 300)));
     expect(boundaryCuesFor).toHaveBeenCalledWith(
       expect.objectContaining({ width: 400, height: 300 }),
     );
@@ -191,7 +204,7 @@ describe('detectAndCrop with the boundary model', () => {
 
   it('runs the classical detector alone when the model fails, and says why', async () => {
     vi.mocked(boundaryCuesFor).mockResolvedValue({ ok: false, reason: 'timeout' });
-    const out = await withStub({ width: 400, height: 300 }, oneSticky(400, 300));
+    const out = await withStub({ width: 400, height: 300 }, photographed(oneSticky(400, 300)));
     expect(out.stickies).toHaveLength(1);
     expect(out.detector).toEqual({ path: 'classical', reason: 'timeout' });
   });
@@ -199,9 +212,28 @@ describe('detectAndCrop with the boundary model', () => {
   it('never lets the model reject the import', async () => {
     vi.mocked(boundaryCuesFor).mockRejectedValue(new Error('worker went away'));
     vi.spyOn(console, 'warn').mockImplementation(() => {});
-    const out = await withStub({ width: 400, height: 300 }, oneSticky(400, 300));
+    const out = await withStub({ width: 400, height: 300 }, photographed(oneSticky(400, 300)));
     expect(out.stickies).toHaveLength(1);
     expect(out.detector).toEqual({ path: 'classical', reason: 'inference-failed' });
+  });
+
+  it('does not ask the model about a flat drawing, and says so', async () => {
+    // The model learnt photographs; a screenshot or a drawn wall is flat to
+    // the bit, and the classical detector reads it alone.
+    vi.mocked(boundaryCuesFor).mockImplementation(async (image) => ({
+      ok: true,
+      backend: 'wasm',
+      cues: {
+        width: image.width,
+        height: image.height,
+        notes: [],
+        background: new Uint8Array(image.width * image.height).fill(255),
+      },
+    }));
+    const out = await withStub({ width: 400, height: 300 }, oneSticky(400, 300));
+    expect(boundaryCuesFor).not.toHaveBeenCalled();
+    expect(out.stickies).toHaveLength(1);
+    expect(out.detector).toEqual({ path: 'classical', reason: 'flat-image' });
   });
 });
 

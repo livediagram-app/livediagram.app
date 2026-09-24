@@ -8,10 +8,18 @@ import { wallPhotoPng, type WallNote } from './fixtures/wall-photo';
 // worker, on weights the app serves itself; when it cannot, the classical
 // detector runs alone and the import carries on. Only a browser can show
 // either: the worker, the lazy runtime, WASM and the fetch of the weights.
+//
+// The model learnt photographs, so a wall drawn flat to the bit (a screenshot)
+// is never asked of it; the walls meant to reach the model carry a few levels
+// of grain, as any photograph does.
 test.use({ colorScheme: 'dark' });
 
 const ORANGE = '#fdba74'; // domain-event
 const BLUE = '#93c5fd'; // command
+
+// Levels of sensor-like noise either way: enough that no two neighbouring
+// pixels are reliably equal, as in a photograph.
+const GRAIN = 3;
 
 const NOTES: WallNote[] = [
   { fill: ORANGE, x: 120, y: 120, w: 160, h: 160 },
@@ -19,11 +27,17 @@ const NOTES: WallNote[] = [
   { fill: ORANGE, x: 640, y: 120, w: 160, h: 160 },
 ];
 
-// Import a drawn wall and wait for the detector to answer, collecting what the
-// photo import logs on the way.
+const FLAT_PAIR: WallNote[] = [
+  { fill: ORANGE, x: 200, y: 120, w: 180, h: 180 },
+  { fill: BLUE, x: 500, y: 120, w: 180, h: 180 },
+];
+
+// Import a wall and wait for the detector to answer, collecting what the photo
+// import logs on the way.
 async function importWall(
   page: Page,
   notes: WallNote[] = NOTES,
+  grain = GRAIN,
 ): Promise<{ detector: string; log: string[] }> {
   const log: string[] = [];
   page.on('console', (m) => {
@@ -33,7 +47,7 @@ async function importWall(
   await page.setInputFiles('input[type="file"]', {
     name: 'wall.png',
     mimeType: 'image/png',
-    buffer: wallPhotoPng(900, 400, notes),
+    buffer: wallPhotoPng(900, 400, notes, { grain }),
   });
   const overlay = page.locator('[data-testid="photo-review-overlay"][data-detector]');
   await overlay.waitFor({ timeout: 20_000 });
@@ -70,19 +84,23 @@ test('the classical detector finds the notes alone when the model cannot load', 
   expectNoPageErrors(pageErrors);
 });
 
-// A KNOWN LIMIT, pinned so it cannot pass unnoticed once fixed: the model
-// learnt walls with light, noise and paper texture, and reads a flat drawn
-// rectangle as background (0.99 on this blue note), so the hybrid's drop rule
-// removes a note the colour found. Real photographs never showed it (the eight
-// labelled walls lose no note to the rule); a screenshot of a digital board
-// would. Expected to fail until the model learns flat notes; when this starts
-// passing, drop the `test.fail`.
-test('a flat drawn note survives the hybrid', async ({ page }) => {
-  test.fail(true, 'the boundary model reads flat drawn paper as background');
+// The model reads a flat, textureless note as background (0.99 over this blue
+// one's middle), which would let the hybrid drop a note the colour found. A
+// flat drawing is therefore read by the classical detector alone, and says so.
+test('a flat drawn note survives the photo import', async ({ page, pageErrors }) => {
   await openPhotoBoard(page);
-  const { detector } = await importWall(page, [
-    { fill: ORANGE, x: 200, y: 120, w: 180, h: 180 },
-    { fill: BLUE, x: 500, y: 120, w: 180, h: 180 },
-  ]);
+  const { detector, log } = await importWall(page, FLAT_PAIR, 0);
+
+  expect(detector).toBe('classical');
+  expect(log).toContainEqual('[photo-detect] classical (flat-image)');
+  expectNoPageErrors(pageErrors);
+});
+
+// The same two notes photographed reach the model, and the hybrid keeps both.
+test('the same notes photographed survive the hybrid', async ({ page, pageErrors }) => {
+  await openPhotoBoard(page);
+  const { detector } = await importWall(page, FLAT_PAIR);
+
   expect(detector).toBe('hybrid');
+  expectNoPageErrors(pageErrors);
 });
