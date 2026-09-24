@@ -101,7 +101,9 @@ bundle size, effort, and links.
 - [x] 5.1 Spec an MCP / CLI path (Claude Code, pi): hand the photo to the
       author's own model for detection or reading, as an OPTION.
 - [ ] 5.2 Build it if the research shows it earns its keep; the default path
-      stays free.
+      stays free. (Research says it does. First move the editor's private
+      `buildDraftNotes` into `packages/diagram` so the editor and the MCP tool
+      mint drafts through the ONE builder — a test in usePhotoDraft guards it.)
 
 ## Phase 6 — verify and fold back
 
