@@ -193,7 +193,37 @@ function paleVerdict(r: number, g: number, b: number, hsv: Hsv, floors: PaperFlo
     : 'wall';
 }
 
+// Two papers of one kind. The operator's walls carry a vivid blue command
+// (saturation 0.8 to 1) and a pale periwinkle one (0.24 to 0.30), a vivid pink
+// hotspot (0.75) and pale pink ones (0.2 to 0.3): the same kind, not the same
+// paper. A note of each side by side is two notes, which one mask class makes
+// one blob that the length rule then cuts by the wall's note. The pale shade
+// gets a mask class of its own, so the components come apart where the paper
+// changes. Measured on the eight labelled walls: a saturation line from 0.42
+// to 0.45 scores the same; at 0.4 two of the panorama's pale pinks are lost
+// again, from 0.48 the vivid blue's rim splits off. Other kinds were tried
+// too: a pale green costs a note, a pale orange is every orange in shade.
+const PALE_SHADE_KINDS: ReadonlySet<EventStormingNoteKind> = new Set(['command', 'hotspot']);
+const PALE_SHADE_MAX_SATURATION = 0.44;
+// …and only where it is lit: pale paper is bright paper. In shadow a vivid
+// note's own shade is as dull, and at night the room is full of dim blue-grey
+// that, as a class of its own, makes note-sized blobs out of nothing and
+// drags the note size with them. 0.55 to 0.65 score within 0.3 of a point.
+const PALE_SHADE_MIN_VALUE = 0.6;
+
+// Is this pixel, already classified as `kind`, the pale shade of it?
+export function isPaleShade(r: number, g: number, b: number, kind: PixelClass): boolean {
+  if (!PALE_SHADE_KINDS.has(kind as EventStormingNoteKind)) return false;
+  const max = Math.max(r, g, b);
+  if (max < PALE_SHADE_MIN_VALUE * 255) return false;
+  return (max - Math.min(r, g, b)) / max < PALE_SHADE_MAX_SATURATION;
+}
+
+export { PALE_SHADE_KINDS };
+
 export const CALIBRATION = {
+  PALE_SHADE_MAX_SATURATION,
+  PALE_SHADE_MIN_VALUE,
   HUE_BANDS,
   OFF_HUE_MIN_SATURATION,
   WALL_HUE_NEIGHBOURHOOD_DEG,

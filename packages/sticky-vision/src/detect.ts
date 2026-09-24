@@ -1,5 +1,5 @@
 import { EVENT_STORMING_NOTES, type EventStormingNoteKind } from '@livediagram/diagram';
-import { classifyRgb } from './classify';
+import { classifyRgb, isPaleShade, PALE_SHADE_KINDS } from './classify';
 import { localFloorsOf, type PaperFloors } from './floors';
 import { greyWorldBalance, type ImageBuffer } from './colour';
 import { notStandingOut, STANDOUT_CALIBRATION } from './standout';
@@ -99,9 +99,15 @@ export const DETECT_CALIBRATION = {
 const CLASS_IDS = new Map<EventStormingNoteKind, number>(
   EVENT_STORMING_NOTES.map((n, i) => [n.kind, i + 1]),
 );
-const KIND_BY_ID = new Map<number, EventStormingNoteKind>(
-  [...CLASS_IDS].map(([kind, id]) => [id, kind]),
+// The pale shade of a kind is a mask class of its own (see `isPaleShade`),
+// numbered after the kinds, and reads back as its kind.
+const PALE_SHADE_IDS = new Map<EventStormingNoteKind, number>(
+  [...PALE_SHADE_KINDS].map((kind, i) => [kind, EVENT_STORMING_NOTES.length + 1 + i]),
 );
+const KIND_BY_ID = new Map<number, EventStormingNoteKind>([
+  ...[...CLASS_IDS].map(([kind, id]): [number, EventStormingNoteKind] => [id, kind]),
+  ...[...PALE_SHADE_IDS].map(([kind, id]): [number, EventStormingNoteKind] => [id, kind]),
+]);
 
 export function classMaskOf(image: ImageBuffer, floors?: PaperFloors): ComponentMask {
   const { width, height, data } = image;
@@ -121,7 +127,9 @@ export function classMaskOf(image: ImageBuffer, floors?: PaperFloors): Component
     if (data[i + 3]! < 128) continue;
     if (field) field.floorsInto(p % width, (p / width) | 0, at);
     const c = classifyRgb(data[i]!, data[i + 1]!, data[i + 2]!, at);
-    const id = CLASS_IDS.get(c as EventStormingNoteKind);
+    const id = isPaleShade(data[i]!, data[i + 1]!, data[i + 2]!, c)
+      ? PALE_SHADE_IDS.get(c as EventStormingNoteKind)
+      : CLASS_IDS.get(c as EventStormingNoteKind);
     if (id !== undefined) classes[p] = id;
   }
   return { width, height, classes };
