@@ -1,4 +1,5 @@
 import { rgbToHsv, type ImageBuffer } from './colour';
+import { isDarkGrain } from './texture';
 
 // Does a box hold PAPER, or a patch of the wall that squeaked past the colour
 // floor? (spec/139 Phase 9.)
@@ -35,11 +36,15 @@ const WALL_RING_QUANTILE = 0.25;
 // The ring outside the box is read at its QUARTILE rather than its median,
 // because on a dense wall a note's neighbours are other notes: the duller
 // quarter of the ring is the wall showing between them.
+//
+// Standing out is not enough on its own: cardboard, furniture and a window
+// frame at night differ from the wall as much as any note, and are told
+// apart by their SURFACE, dark and grained where paper is smooth.
 export function standsOut(
   image: ImageBuffer,
   box: { x: number; y: number; w: number; h: number },
 ): boolean {
-  return standoutOf(image, box) >= STANDOUT_SATURATION;
+  return standoutOf(image, box) >= STANDOUT_SATURATION && !isDarkGrain(image, box);
 }
 
 // HOW FAR a box stands out from its wall, in units of saturation: the
@@ -50,6 +55,24 @@ export function standoutOf(
   image: ImageBuffer,
   box: { x: number; y: number; w: number; h: number },
 ): number {
+  const parts = standoutPartsOf(image, box);
+  return parts === null
+    ? Number.POSITIVE_INFINITY
+    : Math.max(
+        parts.saturation,
+        parts.value * VALUE_STANDOUT_WEIGHT,
+        parts.hue * HUE_STANDOUT_WEIGHT,
+      );
+}
+
+// The three ways a box can stand out from its wall, unweighted: saturation
+// above the wall's, brightness relative to the wall's, and hue distance in
+// units of 60 degrees. Null when there is nothing to compare (a box with no
+// inside, or no ring round it inside the frame).
+export function standoutPartsOf(
+  image: ImageBuffer,
+  box: { x: number; y: number; w: number; h: number },
+): { saturation: number; value: number; hue: number } | null {
   const short = Math.min(box.w, box.h);
   const inset = Math.max(1, Math.round(short * 0.15));
   const reach = Math.max(2, Math.round(short * 0.3));
@@ -73,8 +96,9 @@ export function standoutOf(
       if (s !== null) around.push(s);
     }
   }
-  // Nothing to compare: not a reason to throw paper away.
-  if (inside.length === 0 || around.length === 0) return Number.POSITIVE_INFINITY;
+  // Nothing to compare; `standoutOf` reads that as standing out, because it
+  // is not a reason to throw paper away.
+  if (inside.length === 0 || around.length === 0) return null;
   const pick = (values: number[], at: number) => {
     const sorted = [...values].sort((a, b) => a - b);
     return sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * at))]!;
@@ -135,7 +159,7 @@ export function standoutOf(
   // measured on a real one it cost two thirds of the blue notes, and on the
   // kraft walls — where it was added for the navy side of a cardboard box —
   // the fill floor already refuses that cardboard, so it bought nothing.
-  return Math.max(dS, dV * VALUE_STANDOUT_WEIGHT, (dH / 60) * HUE_STANDOUT_WEIGHT);
+  return { saturation: dS, value: dV, hue: dH / 60 };
 }
 
 export const STANDOUT_CALIBRATION = {
