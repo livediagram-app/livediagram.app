@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { EVENT_STORMING_NOTES, eventStormingNote } from '@livediagram/diagram';
 import { classifyRgb, PAPER_CLASSES } from './classify';
 import { greyWorldBalance, hexToRgb, rgbToHsv, type ImageBuffer } from './colour';
+import { standsOut } from './standout';
 import { detectStickies, cropRects, toNormalised } from './detect';
 
 // Finding stickies in a photograph (spec/139 Phase 8). Every image here is
@@ -636,5 +637,23 @@ describe('hue arithmetic', () => {
   it('measures round the circle, not across it', () => {
     expect(rgbToHsv({ r: 255, g: 0, b: 0 }).h).toBe(0);
     expect(Math.round(rgbToHsv({ r: 0, g: 255, b: 0 }).h)).toBe(120);
+  });
+});
+
+// Standing out by BRIGHTNESS alone (spec/139): pale paper on a darker wall is
+// barely more coloured than the wall and no different in hue, but it is much
+// brighter. Tuned on the eight hand-labelled walls: a box a third brighter
+// than its wall is a note.
+describe('standing out from the wall', () => {
+  it('counts a patch a third brighter than its wall, with no more colour', () => {
+    const image = blank(200, 200, '#786e64'); // v 0.47
+    rect(image, 60, 60, 80, 80, '#a2958a'); // same hue and saturation, v 0.64
+    expect(standsOut(image, { x: 60, y: 60, w: 80, h: 80 })).toBe(true);
+  });
+
+  it('does not count a patch barely brighter than its wall', () => {
+    const image = blank(200, 200, '#786e64');
+    rect(image, 60, 60, 80, 80, '#7f756a'); // 6% brighter: shade, not paper
+    expect(standsOut(image, { x: 60, y: 60, w: 80, h: 80 })).toBe(false);
   });
 });

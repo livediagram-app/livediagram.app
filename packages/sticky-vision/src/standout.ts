@@ -13,8 +13,11 @@ import { rgbToHsv, type ImageBuffer } from './colour';
 const STANDOUT_SATURATION = 0.15;
 // A note that is barely more saturated than its wall may still be much
 // brighter, or a different hue; both count, at these exchange rates. A hue is
-// converted at 60 degrees to a full unit of standing out.
-const VALUE_STANDOUT_WEIGHT = 0.3;
+// converted at 60 degrees to a full unit of standing out. Brightness at 0.5:
+// tuned on the eight hand-labelled walls, where 0.3 lost pale notes that are
+// a third brighter than a darker wall and no more coloured; 0.45 to 0.6 all
+// score the same, and 0.5 sits in that plateau.
+const VALUE_STANDOUT_WEIGHT = 0.5;
 // …and a wall this dark is measured as if it were this dark, so a shadow
 // cannot divide by nearly nothing.
 const MIN_WALL_VALUE = 0.15;
