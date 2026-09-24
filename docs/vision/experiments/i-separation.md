@@ -336,3 +336,71 @@ Also measured: the notch cut at the thin box's own scale (`chords.ts`,
 | **TOTAL**        | **92.0 / 94 / 22**         |
 
 **Verdict: kept.** TOTAL 91.9 → 92.0.
+
+## Re-swept, unchanged
+
+- `SEAM_MIN_DEPTH` after I1–I5a: 8 → 91.4, 10 → 91.6, 12 → 91.8, 14–16 →
+  91.6 (merged 24–25). 12 stays.
+- `THIN_FRACTION` 0.78–0.85, to reach the panorama's rows of two actors
+  (23–25 px thick): the rows show no seam (a valley of 5–10 levels) and 0.8
+  costs the whiteboard a note.
+
+## Measured for `boxes.ts` (group H)
+
+Two changes in `fitBoxes` pay, measured in a scratch copy (never committed):
+
+- **Seam first, on sprawls.** Run the seam cut over a blob of at least 8 note
+  areas BEFORE the splitter's grid, and the grid over its pieces: the grid
+  over the panorama's lattice of small actors otherwise lays 31 px cells over
+  a 20 px lattice, and every seam cut after it works from misplaced cells.
+  TOTAL 92.0 → 92.2 (panorama rec-A 85 → 87), merged 22; 6–10 note areas
+  score alike, 5 costs the whiteboard a note, 12 gives the gain back.
+- **A seam cut that leaves a sliver is a trim.** When a seam cut's pieces are
+  not all paper, and the ones that are not are slivers (thinner than
+  `CUT_PIECE_SIZE_RATIO`), keep the paper pieces if each is at least 0.7–0.8
+  of a note thick: 201654's lapped pair is parted (merged 22 → 21), nothing
+  lost. 0.6 costs 201713 and the panorama a note each; 0.85 parts nothing.
+  Letting ANY non-paper piece go (not only slivers) together with the seam
+  first scores 92.6 and passes 201713 (99 / 100 / 98), but only by dropping
+  the parts of a sprawl the seam cut leaves too big to be a note: notes
+  thrown away that happen, on these eight walls, to be found by another
+  blob's box. Not a rule to keep; a hint that 201713's sprawl (136×160, fill
+  0.48) is where its last misses are.
+
+Together (seam first at 8, sliver trim at 0.8): TOTAL 92.2, merged 21, one
+wall passing.
+
+Also measured and rejected, in `split.ts`: skipping the grid for thin pieces
+and leaving them to the seam cut (whiteboard −1 note, TOTAL 91.8).
+
+## Where it ended
+
+Kept, in order: I1 `a79bbeb0`, I2 `15a23c16`, I5a `ec72f3dd`, I4 `6e678925`,
+I2b `4ddb387c`.
+
+|             | TOTAL | precision | merged | walls passing |
+| ----------- | ----- | --------- | ------ | ------------- |
+| round start | 90.7  | 93        | 29     | 1 (201707)    |
+| round end   | 92.0  | 94        | 22     | 1 (201707)    |
+
+The 22 merged boxes left: 13 inseparable (overlapping labels, for the
+operator) and 9 separable:
+
+- **201654 #2**: a lapped pair whose lower note shows 0.52 of itself. The
+  seam is found; `boxes.ts` refuses the cut for the sliver (the trim above).
+- **201730 #0**: the lower note shows 12–14 px under a 36 px note, and a
+  line of writing thins the paper there, so the necks trim its strip off and
+  the box left is 1.19 notes, under the seam cut's span.
+- **Panorama, four**: the lattice of small actors (a 30×33 grid cell, a big
+  actor beside a small one, two rows of two). The seam cut runs after the
+  grid, so it inherits the grid's misplaced cells (seam first, above).
+- **Whiteboard, three**: a staggered pair inside the 108×257 carpet of flush
+  orange events, a 21×21 grid cell 6 px off its pair's seam, and a note
+  lapped 0.7 under a command. At 19 px a note, with no pixel of not-paper
+  between the notes, these are at the edge of what the photograph gives.
+
+What would come next: the seam cut before the grid on sprawls, and the
+sliver trim (both `boxes.ts`); a lattice fit for pads of small notes (a grid
+whose pitch and phase are read from the seams, not from the wall's note);
+and, for the whiteboard's carpet, the learned boundary model of group E,
+which is the one approach here that sees seams at 19 px.

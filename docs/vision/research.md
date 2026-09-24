@@ -76,3 +76,4 @@ Results, one file per group:
 
 - [experiments/a-colour.md](experiments/a-colour.md) - colour and light (A1-A6)
 - [experiments/a2-colour.md](experiments/a2-colour.md) - colour, round 2 (A2.1-A2.7)
+- [experiments/i-separation.md](experiments/i-separation.md) - separation, round 3 (I1-I5)

@@ -108,11 +108,13 @@ and testable.
      corner or a sliver, so an erosion 0.15 of a note deep leaves one core
      per note, and each pixel goes back to the core nearest it along the
      paper. The parts are taken only when every one is a note (at most 1.4
-     notes long); otherwise the grid does better over the whole. The cores
-     grow back only twice as far as the erosion took, so a strip thinner than
-     a note's edge trailing off it (a JPEG fringe of this colour along a
-     neighbour of another kind) is trimmed off, and a note's box no longer
-     runs down its neighbour;
+     notes long) or a column thinner than a note (small notes, for the seam
+     cut); otherwise the grid does better over the whole. The cores grow back
+     only twice as far as the erosion took, so a strip thinner than a note's
+     edge trailing off it (a JPEG fringe of this colour along a neighbour of
+     another kind) is trimmed off; and past the note's own body they follow
+     no paper that touches another colour, so a shorter fringe is not
+     followed either, and a note's box no longer runs down its neighbour;
    - a piece the length rule leaves whole (two lapped notes are often only 1.3
      to 1.6 notes long) is cut along the chord between two **notches** of its
      outline (`chords.ts`, over `contour.ts`), or along the **seam's
@@ -121,6 +123,13 @@ and testable.
      cannot pose as one (`seam.ts`, reading the photograph's brightness).
      Only across a box at least 1.3 notes long: in a shorter box a crease, a
      curl or a line of writing across one note is far likelier than a pair.
+     Across a box at least 1.6 notes long a STEP in the paper's brightness
+     counts too (two flush notes lit differently). A box thinner than 0.7 of
+     a note is a column of smaller notes and is measured against its own
+     thickness. Failing a shadow, two notes of one kind from different pads
+     (orange-yellow beside lemon) are parted where the two sides' median
+     paper COLOURS differ by 30 or more in an opponent channel
+     (`paper-hue.ts`), across a box at least 1.1 notes long;
      A cut stands when every piece is paper and solid, and a side thinner
      than a note (0.6 to 0.7 of one) is a sliver of the note underneath,
      dropped so it no longer inflates its neighbour's box;
@@ -223,6 +232,9 @@ and testable.
 | `PALE_SHADE_MAX_SATURATION` / `_MIN_VALUE`  | 0.44 / 0.6        | A lit blue or pink pixel under this saturation is the pale paper of its kind, a mask class of its own. 0.42–0.45 and 0.55–0.65 score alike; unlit, the night room's blue-grey would be one too. |
 | `DIM_HUE_MAX_VALUE`                         | 0.4               | Below this value a policy-band pixel reads as a hotspot: a shaded lilac note reads h 266–329. 0.3–0.45 score alike.                                                                             |
 | Hue bands                                   | see `classify.ts` | Widened to measured paper, not swatches: real greens read h≈86 where the catalogue's read-model is h≈137. Green runs on to where blue begins (185): a pale mint reads h≈177.                    |
+| `STEP_MIN_SPAN` / `THIN_FRACTION`           | 1.6 / 0.7         | Across a box this many notes long a brightness step is a seam; a box thinner than this (in notes) is measured against its own thickness. 1.4–1.65 and 0.65–0.75 score alike.                    |
+| `HUE_SEAM_MIN_STEP`                         | 30                | Two sides' median paper colours this far apart (opponent RGB levels) are two pads. 28–32 score alike; 25 cuts the lattice of small actors wrongly.                                              |
+| `NECK_FRINGE_FREE`                          | 1.5               | Past this many erosions from a core, regrowth follows no paper touching another colour. 1.5–1.6 lose nothing; 0–1.7 all part the fringes.                                                       |
 
 ## Four things that were wrong first, and are worth not repeating
 
@@ -310,7 +322,9 @@ decoded photos, so a run takes about a second.
 `scripts/merged.ts` lists every merged box on the labelled walls with its cause
 (inseparable labels, cross-colour, same-colour) and where each missed note
 went; the separation experiments and their tables are in
-[experiments/b-separation.md](experiments/b-separation.md).
+[experiments/b-separation.md](experiments/b-separation.md),
+[b2-separation.md](experiments/b2-separation.md) and
+[i-separation.md](experiments/i-separation.md).
 
 `scripts/nobox.ts` names, for every missed note whose paper is in the mask but
 which got no box, the gate that dropped it; `scripts/gate-diff.ts KEY=VALUE…`

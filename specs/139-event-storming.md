@@ -1114,8 +1114,12 @@ Decisions from the operator:
     rule leaves whole is cut along the chord between two notches of its
     outline, or along the shadow the upper note casts (only across a box at
     least 1.3 notes long: in a shorter one, a crease or a line of writing is
-    far likelier than a pair). See `docs/vision/experiments/b-separation.md`
-    and `b2-separation.md`.
+    far likelier than a pair), or along a step in the paper's brightness
+    (across 1.6 notes or more). A box thinner than a note is a column of
+    smaller notes and is cut at its own scale. Two notes of one kind from
+    different pads are parted where their paper's colour changes. See
+    `docs/vision/experiments/b-separation.md`, `b2-separation.md` and
+    `i-separation.md`.
 
 - **A note stands out from the wall it is stuck to.** Colour floors alone
   cannot say what is not a note, because tape, cardboard, a shadow in a paper
