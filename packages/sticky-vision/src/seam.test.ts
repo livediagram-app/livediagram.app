@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cutAtSeam, findSeam, type Luminance } from './seam';
+import { cutAtSeam, findSeam, luminanceOf, type Luminance } from './seam';
 import type { Box, PaperMask } from './boxes';
 
 // Finding the SEAM between two notes that touch: the paper edge and its
@@ -101,6 +101,58 @@ describe('findSeam', () => {
     s.paint(10, 10, 80, 40, 200, 1);
     s.paint(20, 10, 2, 40, 165);
     expect(findSeam(s.lum, boxOf(10, 10, 80, 40), 40)).toBeNull();
+  });
+});
+
+// Two notes of one kind from different pads: the same brightness, the same
+// class to the colour mask, but plainly different paper.
+function colourScene(width: number, height: number) {
+  const data = new Uint8ClampedArray(width * height * 4);
+  const mask: PaperMask = { width, height, classes: new Uint8Array(width * height) };
+  const paint = (x: number, y: number, w: number, h: number, rgb: number[], c?: number) => {
+    for (let yy = y; yy < y + h; yy += 1)
+      for (let xx = x; xx < x + w; xx += 1) {
+        const i = (yy * width + xx) * 4;
+        data.set([rgb[0]!, rgb[1]!, rgb[2]!, 255], i);
+        if (c !== undefined) mask.classes[yy * width + xx] = c;
+      }
+  };
+  paint(0, 0, width, height, [150, 150, 150]);
+  return { image: { width, height, data }, mask, paint };
+}
+
+const ORANGE_YELLOW = [212, 168, 20];
+const LEMON = [186, 180, 16];
+const BLUE_INK = [40, 50, 120];
+
+describe('findSeam between two pads', () => {
+  it('finds where the paper changes colour, though not brightness', () => {
+    const s = colourScene(100, 60);
+    // 1.2 notes long: too short for a shadow, long enough for two pads.
+    s.paint(10, 10, 18, 30, ORANGE_YELLOW, 1);
+    s.paint(28, 10, 18, 30, LEMON, 1);
+    const seam = findSeam(luminanceOf(s.image), boxOf(10, 10, 36, 30), 30, s.mask);
+    expect(seam).toMatchObject({ vertical: true, by: 'hue' });
+    expect(Math.abs(seam!.at - 27.5)).toBeLessThanOrEqual(1);
+  });
+
+  it('finds none in one note written on in blue', () => {
+    const s = colourScene(100, 60);
+    // 1.47 notes long: long enough for a colour seam, not for a step.
+    s.paint(10, 10, 44, 30, ORANGE_YELLOW, 1);
+    s.paint(14, 14, 12, 3, BLUE_INK);
+    s.paint(16, 20, 3, 10, BLUE_INK);
+    s.paint(22, 24, 8, 2, BLUE_INK);
+    s.paint(40, 16, 3, 16, BLUE_INK);
+    expect(findSeam(luminanceOf(s.image), boxOf(10, 10, 44, 30), 30)).toBeNull();
+  });
+
+  it('finds none across a box no longer than one note', () => {
+    const s = colourScene(100, 60);
+    // Each side would be half a note: two pads' notes are not that thin.
+    s.paint(10, 10, 15, 30, ORANGE_YELLOW, 1);
+    s.paint(25, 10, 15, 30, LEMON, 1);
+    expect(findSeam(luminanceOf(s.image), boxOf(10, 10, 30, 30), 30)).toBeNull();
   });
 });
 

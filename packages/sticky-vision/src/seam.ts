@@ -1,5 +1,6 @@
 import type { Box, PaperMask } from './boxes';
 import type { ImageBuffer } from './colour';
+import { findHueSeam } from './paper-hue';
 
 // The SEAM between two notes that touch (spec/139 Phase 9, experiment B3).
 //
@@ -18,16 +19,32 @@ import type { ImageBuffer } from './colour';
 // light falling off across one note make steps too), so it is trusted only
 // across a box long enough to be two notes (see `STEP_MIN_SPAN`).
 
-export type Luminance = { width: number; height: number; data: Uint8Array };
+// The photograph as the seam cut reads it: how bright, one byte per pixel,
+// and, where on hand, two opponent colour channels (red − green, and yellow −
+// blue), for the seam between two pads of one kind (see `paper-hue.ts`).
+export type Luminance = {
+  width: number;
+  height: number;
+  data: Uint8Array;
+  redGreen?: Int16Array;
+  yellowBlue?: Int16Array;
+};
 
-// Rec. 601 luma, one byte per pixel: all a seam needs is how bright.
+// Rec. 601 luma, and the opponent channels beside it.
 export function luminanceOf(image: ImageBuffer): Luminance {
   const { width, height, data } = image;
   const out = new Uint8Array(width * height);
+  const redGreen = new Int16Array(width * height);
+  const yellowBlue = new Int16Array(width * height);
   for (let p = 0, i = 0; p < out.length; p += 1, i += 4) {
-    out[p] = Math.round(0.299 * data[i]! + 0.587 * data[i + 1]! + 0.114 * data[i + 2]!);
+    const r = data[i]!;
+    const g = data[i + 1]!;
+    const b = data[i + 2]!;
+    out[p] = Math.round(0.299 * r + 0.587 * g + 0.114 * b);
+    redGreen[p] = r - g;
+    yellowBlue[p] = ((r + g) >> 1) - b;
   }
-  return { width, height, data: out };
+  return { width, height, data: out, redGreen, yellowBlue };
 }
 
 // How much darker than the paper either side of it a line has to be, as the
@@ -78,8 +95,11 @@ export type Seam = {
   at: number;
   // How far it moves over its length, in pixels.
   tilt: number;
-  // The median valley depth along it.
+  // How deep: the median valley (or step) along it in brightness, or, for
+  // a seam between two pads, how far apart their colours are.
   depth: number;
+  // What shows it: a shadow (or a step in brightness), or the paper's colour.
+  by: 'shadow' | 'hue';
 };
 
 function paperLevel(lum: Luminance, box: Box): number {
@@ -153,8 +173,14 @@ function median(values: number[]): number {
 }
 
 // The deepest seam across the box that leaves a note either side of it, or
-// null when there is none.
-export function findSeam(lum: Luminance, box: Box, wallNote: number): Seam | null {
+// null when there is none. A shadow comes first; failing one, the line
+// between two pads' colours (read from `mask`'s paper when on hand).
+export function findSeam(
+  lum: Luminance,
+  box: Box,
+  wallNote: number,
+  mask?: PaperMask,
+): Seam | null {
   if (wallNote <= 0) return null;
   const thickness = Math.min(box.w, box.h);
   const noteSize = thickness < wallNote * THIN_FRACTION ? thickness : wallNote;
@@ -175,11 +201,15 @@ export function findSeam(lum: Luminance, box: Box, wallNote: number): Seam | nul
         const tilt = k % 2 === 0 ? k / 2 : -(k + 1) / 2;
         const depth = seamDepthAlong(lum, box, vertical, at, tilt, paper, steps);
         if (depth === null || depth < SEAM_MIN_DEPTH) continue;
-        if (!best || depth > best.depth) best = { vertical, at, tilt, depth };
+        if (!best || depth > best.depth) best = { vertical, at, tilt, depth, by: 'shadow' };
       }
     }
   }
-  return best;
+  if (best) return best;
+  // Both sides a note: the box at least two pieces' worth long.
+  const span = 2 * SEAM_MIN_PIECE * noteSize;
+  const hue = findHueSeam(lum, box, margin, span, paper - INK_BELOW_PAPER, mask);
+  return hue && { vertical: hue.vertical, at: hue.at, tilt: 0, depth: hue.step, by: 'hue' };
 }
 
 // Cut a box at its seam, each side tightened onto its own paper, and each
@@ -192,7 +222,7 @@ export function cutAtSeam(
   depth = 0,
 ): Box[] {
   if (depth >= SEAM_MAX_DEPTH) return [box];
-  const seam = findSeam(lum, box, noteSize);
+  const seam = findSeam(lum, box, noteSize, mask);
   if (!seam) return [box];
   const sides = [
     { minX: Infinity, minY: Infinity, maxX: -1, maxY: -1, pixels: 0 },

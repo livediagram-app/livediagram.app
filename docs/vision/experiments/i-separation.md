@@ -225,3 +225,78 @@ same actor is swapped; from 1.8 one of the two fringes is followed again.
 **Verdict: kept.** Merged 26 → 24 (cross-colour 3 → 1: the one left is a
 whiteboard note lapped under a command, 0.7 of it hidden), TOTAL level, no
 wall moves otherwise.
+
+## I4: the seam between two pads of one kind (kept)
+
+**Finding.** The panorama's pair #2 (37×25, two actors side by side) shows
+no seam in brightness at all: a valley of 5–10 levels, the paper 155–160 on
+both sides. Its colours tell it at once: red − green is about 44 on the left
+note (an orange-yellow pad) and about 7 on the right (a lemon one). The colour
+mask calls both actor yellow.
+
+**Hypothesis.** A note's paper is one colour edge to edge (light changes its
+brightness far more than its hue), so a line that splits a box's paper into
+two sides of plainly different median colour runs between two pads' notes.
+
+**Probes (rejected).**
+
+| variant (with I1, I2, I5a)                                                         | TOTAL                                                | merged | notes                        |
+| ---------------------------------------------------------------------------------- | ---------------------------------------------------- | ------ | ---------------------------- |
+| reference                                                                          | 91.8                                                 | 24     |                              |
+| a local chroma STEP along the line (the brightness step's windows), from 1.1 notes | 90.4–90.9                                            | 25–26  | 201707 −3 notes, panorama −4 |
+| …from 1.3 notes                                                                    | 90.8–91.3                                            | 23–24  | 201707 −2 notes, panorama −4 |
+| sides' median colours from the box's pixels (no mask), first line at the maximum   | 92.1 at 28–30, 92.0 at 32, 91.9 at 35–80, 91.5 at 25 | 21–24  | twice the detector's time    |
+
+The local step reads the ink's own colour and the edge of a neighbour. The
+region medians work, but a median is equally far apart anywhere that leaves
+a majority of each pad on its side, so the "first" line lands at the margin,
+and computing medians per line position doubled the sweep's time.
+
+**Rule.** `paper-hue.ts`: `findHueSeam`. `luminanceOf` also carries two
+opponent channels (red − green, yellow − blue). Across a box at least
+2 × `SEAM_MIN_PIECE` = 1.1 notes long, for every upright line leaving a note
+either side, the sides are compared by the median colour of their paper (the
+mask's own colour, ink out), from running histograms; the seam goes where the
+mean of the lines' median colours differs most among the lines that pass
+`HUE_SEAM_MIN_STEP`. `findSeam` falls back to it only when there is no
+shadow.
+
+| HUE_SEAM_MIN_STEP | 22–25 | 28   | 30   | 32   | 36–80 |
+| ----------------- | ----- | ---- | ---- | ---- | ----- |
+| TOTAL             | 91.3  | 91.9 | 91.9 | 91.9 | 91.8  |
+| merged            | 24    | 23   | 22   | 23   | 24    |
+
+At 25 and below the seam cuts the first cell of the panorama's lattice of
+small actors before its columns are found, and four notes go. The span must
+be 1.1 notes unrounded: the rounded margin let 20 px boxes (1.05 notes) be
+cut on the whiteboard, which cost it a note. Seam-cut time about +20 ms per
+photo.
+
+| wall             | F1 / prec / rec-A / merged |
+| ---------------- | -------------------------- |
+| 201646           | 84 / 80 / 93 / 1           |
+| 201654           | 99 / 100 / 98 / 3          |
+| 201707           | 95 / 95 / 95 / 0           |
+| 201713           | 95 / 96 / 94 / 0           |
+| 201730 (shade)   | 93 / 94 / 92 / 2           |
+| 201743 (night)   | 80 / 82 / 77 / 2           |
+| wall-panorama    | 87 / 91 / 83 / 5           |
+| whiteboard-dense | 94 / 97 / 91 / 9           |
+| **TOTAL**        | **91.9 / 94 / 22**         |
+
+**Verdict: kept, with a caution.** TOTAL 91.8 → 91.9, merged 24 → 22, no
+wall loses anything, and 28–32 score alike; but the band is narrow, with
+harm three levels below it. It is a rule about paper, not about this wall,
+and the only pair of pads on these eight walls sits at 33–37; a ninth
+labelled wall would say whether 30 holds.
+
+## The brightness step also reads ink (measured, not changed)
+
+Writing a guard test for I4 showed that I1's step also fires beside a
+stroke of ink running along the line (the window on one side is ink, the
+other paper). Reading the step only between paper and paper (no ink in
+either window, and on at least half the line) costs the panorama four notes
+(TOTAL 91.8 → 91.3, merged 24 → 25): in a box 1.6 notes long a cut
+anywhere between the two notes' centres parts them, and a line of writing
+across a column of two actors is such a cut. It stays as it is; the span
+(1.6 notes) is the guard.
