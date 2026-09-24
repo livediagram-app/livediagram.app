@@ -139,3 +139,13 @@ describe('a self-painting element gets no box drawn round it', () => {
     expect(elementRect.test(svg)).toBe(true);
   });
 });
+
+describe('a face paints in the element typeface', () => {
+  it('wraps a card in the font its label would use (spec/28)', () => {
+    const el = { ...createShape('agenda', 0, 0), label: 'Standup', font: 'caveat' };
+    // The group carries the face, so every text mark inside inherits it: a
+    // card exported in a different typeface to the board is the same bug this
+    // file is about, in smaller type.
+    expect(svgBoxed(el)).toMatch(/<g font-family="[^"]*[Cc]aveat/);
+  });
+});

@@ -20,27 +20,12 @@ import {
 } from './svg-render-shapes';
 import { canvasSurface } from './colors';
 import { svgTableShape } from './svg-render-table';
-import { svgBarChart, svgLineChart, svgPieChart } from './svg-render-charts';
-import { BEHAVIOUR_FACE_SHAPES, svgBehaviourFace, svgCollabFace } from './svg-render-faces';
-import {
-  svgEntityRows,
-  svgPageMasthead,
-  svgProgressBar,
-  svgProgressRing,
-  svgRating,
-  svgTimelineRail,
-} from './svg-render-data';
+// Which body an element draws, and the list of kinds that have one (spec/143).
+import { shapeHasBespokeBody, svgElementBody } from './svg-render-body';
+import { BEHAVIOUR_FACE_SHAPES } from './svg-render-faces';
 import { isCollabPanelShape } from './collab-shapes';
-import {
-  isBarShape,
-  isLineShape,
-  isPieShape,
-  isRailShape,
-  isRatingShape,
-  isSelfDrawingShape,
-} from './data-shapes';
-import { defaultPadding, defaultTextColor, SELF_PAINTING_SHAPES } from './colors';
-import { PADDING_PX } from './index';
+import { isSelfDrawingShape } from './data-shapes';
+import { defaultTextColor, SELF_PAINTING_SHAPES } from './colors';
 // Text/number primitives shared with the per-element emitters — re-exported
 // below so existing importers of this module keep resolving.
 import { labelMeasure, r2, wrapLabel, xmlEscape } from './svg-render-primitives';
@@ -70,7 +55,7 @@ export {
 import { svgArrow } from './svg-render-arrows';
 
 export { arrowHeadRefs, svgArrow, svgArrowhead } from './svg-render-arrows';
-import type { BoxedElement, Element, ShapeKind, Tab } from './index';
+import type { BoxedElement, Element, Tab } from './index';
 import { layerBands, layerOpacityOf, visibleLayerElements } from './layers';
 // Element drop shadows (spec/86): gate + deterministic filter defs.
 import { shadowFilterId, supportsShadow, svgShadowFilterDef } from './shadow';
@@ -294,46 +279,16 @@ export function svgBoxed(el: BoxedElement, opts: BoxedExportOptions = {}): strin
             el.type === 'shape' && el.shape === 'mind-node'
             ? 12
             : 6;
-    // What a self-drawing element draws INSTEAD of a label (spec/46, /51,
-    // /52, /53, /120): its value, its plot, its rows. Every one of these fell
-    // through to the bare box, so an exported chart was an empty rectangle
-    // with its kind name in it.
-    const face =
-      el.type === 'shape'
-        ? isPieShape(el.shape)
-          ? svgPieChart(el, labelColor, opts.chartPalette, fontFamily)
-          : isBarShape(el.shape)
-            ? svgBarChart(el, labelColor, opts.chartPalette, fontFamily)
-            : isLineShape(el.shape)
-              ? svgLineChart(el, labelColor, opts.chartPalette, fontFamily)
-              : el.shape === 'progress-bar'
-                ? svgProgressBar(el, shape.stroke, shape.fill, labelColor, fontFamily)
-                : el.shape === 'progress-ring'
-                  ? svgProgressRing(el, shape.stroke, shape.fill, labelColor, fontFamily)
-                  : isRatingShape(el.shape)
-                    ? svgRating(el, shape.stroke)
-                    : isRailShape(el.shape)
-                      ? svgTimelineRail(el, shape.stroke, labelColor, fontFamily)
-                      : el.shape === 'entity'
-                        ? svgEntityRows(el, labelColor, fontFamily)
-                        : el.shape === 'page'
-                          ? svgPageMasthead(
-                              el,
-                              PADDING_PX[el.padding ?? defaultPadding(el)],
-                              fontFamily,
-                            )
-                          : // The Behaviour + Collaborate faces (spec/103 to
-                            // /137), which all exported as the same blank
-                            // labelled box as each other.
-                            (svgBehaviourFace(
-                              el,
-                              label?.text ?? el.label ?? '',
-                              labelColor,
-                              shape.stroke,
-                            ) ??
-                            svgCollabFace(el, label?.text ?? el.label ?? '', labelColor) ??
-                            '')
-        : '';
+    // What this element draws INSTEAD of (or under) a plain label: its plot,
+    // its value, its rows, its face. See svg-render-body.
+    const face = svgElementBody(el, {
+      labelColor,
+      fontFamily,
+      stroke: shape.stroke,
+      fill: shape.fill,
+      chartPalette: opts.chartPalette,
+      label: label?.text ?? el.label ?? '',
+    });
     // A SELF-PAINTING element's body is its own: the canvas gives it a
     // wrapper with no border and no background (element-variant.ts), and the
     // export drew one anyway, framing every chart, progress element, rating
@@ -446,29 +401,6 @@ export function svgShadowDefs(elements: Element[]): string {
 // can't reproduce natively — the caller then rasterises this element's
 // svgBoxed markup instead. Tables, freehand sketches, shape silhouettes,
 // rotation, and resolved icon art all fall in.
-/**
- * Whether a shape's BODY is drawn by the emitters above rather than being a
- * box with a label.
- *
- * The PNG / PDF export paints with canvas 2D drawers that can only manage a
- * box and its text, and rasterises this module's markup for anything richer
- * (see `boxedNeedsSvgRaster`). This is the list of "anything richer", so the
- * two image exports cannot disagree about what an element looks like: they
- * did, and a tab exported as a PNG came out with plain boxes where the same
- * tab exported as an SVG had charts.
- */
-function shapeHasBespokeBody(kind: ShapeKind): boolean {
-  return (
-    isSelfDrawingShape(kind) ||
-    isCollabPanelShape(kind) ||
-    BEHAVIOUR_FACE_SHAPES.has(kind) ||
-    kind === 'entity' ||
-    kind === 'page' ||
-    kind === 'lane' ||
-    kind === 'browser'
-  );
-}
-
 export function boxedNeedsSvgRaster(
   el: BoxedElement,
   resolveIconArt?: ResolveIconArt,

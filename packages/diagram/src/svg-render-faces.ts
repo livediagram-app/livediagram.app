@@ -42,7 +42,11 @@ const PAD_Y = 14;
 const TITLE_PX = 13;
 const BODY_PX = 11;
 
-const sans = ' font-family="system-ui, sans-serif"';
+// Every text mark below leaves its face to the group the caller wraps these
+// in (see `svgFace`), so the element's own typeface reaches all of them
+// without being threaded through twenty-odd call sites. A card exported in a
+// different face to the one on the board is this branch's bug in smaller
+// type.
 
 const text = (
   x: number,
@@ -57,7 +61,7 @@ const text = (
     uppercase?: boolean;
   },
 ): string =>
-  `<text x="${r2(x)}" y="${r2(y)}"${sans} font-size="${o.size ?? BODY_PX}"` +
+  `<text x="${r2(x)}" y="${r2(y)}" font-size="${o.size ?? BODY_PX}"` +
   ` font-weight="${o.weight ?? 400}" fill="${xmlEscape(o.color)}"` +
   `${o.anchor && o.anchor !== 'start' ? ` text-anchor="${o.anchor}"` : ''}` +
   `${o.opacity !== undefined ? ` opacity="${o.opacity}"` : ''}>` +
@@ -428,4 +432,16 @@ export function svgBehaviourFace(
     default:
       return null;
   }
+}
+
+/**
+ * A face wrapped in the element's typeface (spec/28).
+ *
+ * One group rather than an attribute on each of the twenty-odd text marks
+ * inside: SVG text inherits `font-family`, so the wrapper is both shorter and
+ * impossible to forget on a new mark.
+ */
+export function svgFace(body: string, fontFamily?: string): string {
+  if (!body) return '';
+  return `<g font-family="${xmlEscape(fontFamily ?? 'system-ui, sans-serif')}">${body}</g>`;
 }

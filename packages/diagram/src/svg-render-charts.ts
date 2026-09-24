@@ -11,7 +11,7 @@
 // differ. Hover, tooltips and the looping animations are the canvas's alone
 // and have no meaning in a still image.
 
-import { chartFrame, type ChartLegendRect, type ChartRect } from './chart-frame';
+import { chartFrame, type ChartLegendRect } from './chart-frame';
 import { LINE_DEFAULT_CATEGORIES, LINE_DEFAULT_SERIES, type PieSlice } from './data-shapes';
 import type { BoxedElement, ShapeElement } from './index';
 import { r2, xmlEscape } from './svg-render-primitives';
@@ -206,5 +206,3 @@ export function svgLineChart(
     axes + lines + labels + svgChartLegend(el, legendItems, colorAt, legend, textColor, fontFamily)
   );
 }
-
-export type { ChartRect };
