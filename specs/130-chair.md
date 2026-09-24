@@ -34,6 +34,12 @@ button, portal, session button, reveal zone and picker.
   "Alex" — a chair that is somebody's chair.
 - Otherwise a completely ordinary element: move, resize, rotate, theme, group,
   lock, copy, export.
+- **Animations (spec/09) run on the drawing, not the box.** The element box is
+  transparent, so the box versions of glow / pulse / trace / gradient would
+  ring and fill a rectangle around nothing. Those four ride the chair's own
+  silhouette instead (a drop-shadow, and a hue cycle for gradient), the same
+  way a sticker's do (spec/116). The motion animations (bounce, float, swing,
+  ...) move the whole element as they do on any other.
 
 ## Sitting
 
@@ -42,7 +48,10 @@ same `useAvatarWalk` mechanism the portal uses (not every frame it stands
 there).
 
 - The character **snaps to the chair's seat point** and switches to a seated
-  pose — legs forward, body lowered, facing the way the chair faces.
+  pose — legs forward, body lowered, **facing the way the chair faces**
+  (`n` down the board, `e` left, `s` up, `w` right: the same words the menu
+  tiles use). The seat point turns with the chair, so the sitter lands on the
+  seat rather than on the backrest of a sideways chair.
 - While seated it **ignores walk targets**: clicking elsewhere on the canvas
   does not drag it out of the chair by accident.
 - **Standing up** is any arrow key, or double-clicking the canvas. Both are

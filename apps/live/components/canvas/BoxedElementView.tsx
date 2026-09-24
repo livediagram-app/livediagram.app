@@ -263,10 +263,8 @@ function BoxedElementViewImpl({
   // Which surface each looping animation rides (wrapper box vs text
   // glyphs vs SVG outline), the pop-in entry class, and the CSS custom
   // properties the keyframes read (spec/09) — see useBoxedElementAnimation.
-  const { labelAnimClass, svgAnim, wrapperAnimClass, animStyle } = useBoxedElementAnimation(
-    element,
-    textColor,
-  );
+  const { labelAnimClass, artAnimClass, svgAnim, wrapperAnimClass, animStyle } =
+    useBoxedElementAnimation(element, textColor);
 
   // An icon element's caption is confined to its own band — the complement
   // of the glyph band (spec/41, iconCaptionBand) — so the text can never
@@ -393,7 +391,7 @@ function BoxedElementViewImpl({
     >
       <ShapeContentRouter
         element={element}
-        labelAnimClass={labelAnimClass}
+        artAnimClass={artAnimClass}
         accent={accent}
         textColor={textColor}
         remoteBorderColor={remoteBorderColor}
@@ -432,7 +430,11 @@ function BoxedElementViewImpl({
       {/* A chair (spec/130): the furniture itself, plus whoever presence says
           is sitting in it. */}
       {element.type === 'shape' && element.shape === 'chair' ? (
-        <ChairView element={element} sitters={chairSitters?.(element.id) ?? []} />
+        <ChairView
+          element={element}
+          sitters={chairSitters?.(element.id) ?? []}
+          animClass={artAnimClass}
+        />
       ) : null}
       {/* A Lane's title gutter (spec/119), behind the label. */}
       {element.type === 'shape' && element.shape === 'lane' ? (

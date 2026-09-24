@@ -32,21 +32,30 @@ export function useBoxedElementAnimation(element: BoxedElement, textColor: strin
   // drop the class on the assumption ShapeSvgOverlay would paint it — and the
   // overlay never renders for a sticker, so glow and pulse did nothing at all.
   // Routing it down this same filter path is what makes them appear.
+  //
+  // A CHAIR (spec/130) is the same case again: furniture drawn edge to edge in
+  // its own svg over a transparent box, so the box-shadow versions ringed and
+  // filled an invisible rectangle around it.
   const silhouetteAnim =
     element.animation === 'glow' ||
     element.animation === 'pulse' ||
     element.animation === 'trace' ||
     element.animation === 'gradient';
-  const isSticker = element.type === 'shape' && element.shape === 'sticker';
-  const isTextNativeAnim = (element.type === 'text' || isSticker) && silhouetteAnim;
-  // `gradient` is a background clipped to the glyphs, which an <svg> sticker
-  // has nothing to clip to — it gets a hue cycle over its own colours instead,
+  const isDrawnArt =
+    element.type === 'shape' && (element.shape === 'sticker' || element.shape === 'chair');
+  const isTextNativeAnim = (element.type === 'text' || isDrawnArt) && silhouetteAnim;
+  // `gradient` is a background clipped to the glyphs, which drawn art has
+  // nothing to clip to — it gets a hue cycle over its own colours instead,
   // which is the same idea (a colour that moves) on a surface that has one.
-  const labelAnimClass = !isTextNativeAnim
+  const silhouetteAnimClass = !isTextNativeAnim
     ? undefined
-    : isSticker && element.animation === 'gradient'
+    : isDrawnArt && element.animation === 'gradient'
       ? 'lvd-anim-sticker-gradient'
       : `lvd-anim-text-${element.animation}`;
+  // Text wears it on its glyphs; drawn art wears it on the drawing, which the
+  // art's own view mounts (StickerView, ChairView), not on the label under it.
+  const labelAnimClass = isDrawnArt ? undefined : silhouetteAnimClass;
+  const artAnimClass = isDrawnArt ? silhouetteAnimClass : undefined;
 
   // trace / gradient / pulse / glow on an SVG-rendered shape (diamond,
   // triangle, hexagon, …) render against the true outline / fill / silhouette
@@ -111,5 +120,5 @@ export function useBoxedElementAnimation(element: BoxedElement, textColor: strin
       } as React.CSSProperties)
     : {};
 
-  return { labelAnimClass, svgAnim, wrapperAnimClass, animStyle };
+  return { labelAnimClass, artAnimClass, svgAnim, wrapperAnimClass, animStyle };
 }

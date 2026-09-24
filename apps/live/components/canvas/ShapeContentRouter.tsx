@@ -48,7 +48,7 @@ type ShapeContentRouterProps = Pick<
   isLocked: boolean;
   svgAnim: 'trace' | 'gradient' | 'pulse' | 'glow' | undefined;
   // Filter-based animation class for silhouette content (a sticker's art).
-  labelAnimClass: string | undefined;
+  artAnimClass: string | undefined;
 };
 
 // The per-shape-type inner content of a boxed element: stickers, tech /
@@ -69,7 +69,7 @@ export function ShapeContentRouter({
   chartPalette,
   fontFamily,
   svgAnim,
-  labelAnimClass,
+  artAnimClass,
 }: ShapeContentRouterProps) {
   // The paper under this shape, for colours it doesn't carry (spec/07).
   const surface = useCanvasSurface();
@@ -80,7 +80,7 @@ export function ShapeContentRouter({
     // `animClass` carries the filter-based glow / pulse / trace (spec/116):
     // a sticker's silhouette needs a drop-shadow, not the wrapper's
     // box-shadow, which would ring its bounding rectangle.
-    <StickerView stickerId={element.stickerId} animClass={labelAnimClass} />
+    <StickerView stickerId={element.stickerId} animClass={artAnimClass} />
   ) : element.type === 'shape' && element.shape === 'icon' && isTechIconId(element.iconId) ? (
     // Technology (brand) icon: a fixed-colour tile + white glyph
     // (spec/41). Same shape kind as a curated icon, but the id
