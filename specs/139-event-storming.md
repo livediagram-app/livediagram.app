@@ -1152,10 +1152,15 @@ Decisions from the operator:
   on any failure (no worker, no backend, a load or inference error, the
   timeout) the classical detector runs alone and the reason is logged and
   counted (`AI`·`Used`·`PhotoDetect…`, closed values). The editor's boxes are
-  the sweep's, box for box: TOTAL 94.1 → 95.5, merged 20 → 16. The model reads
-  a flat, textureless drawn rectangle as background, so a drawn or screenshot
-  wall can lose a note to the drop rule; photographs have not. See
-  `docs/vision/experiments/j-hybrid.md` and `m-editor-model.md`.
+  the sweep's, box for box: TOTAL 94.1 → 95.5, merged 20 → 16. The model
+  learnt photographs and reads a flat, textureless note as background, so a
+  FLAT image (a screenshot of a digital board, a drawn wall: at least 60% of
+  neighbouring pixels exactly equal, where photographs show 9-30% and drawings
+  95% and more) is not asked of it: the classical detector reads it alone, and
+  says so (`classical (flat-image)`). Teaching the model flat walls instead was
+  measured and rejected: every retrain that learnt them also let a window pane
+  of the night wall through the drop rule. See
+  `docs/vision/experiments/j-hybrid.md`, `m-editor-model.md` and `o-flat.md`.
 
 - **Paper is smooth.** Standing out is not enough on its own: cardboard,
   furniture and a window frame at night differ from the wall as much as any

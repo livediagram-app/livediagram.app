@@ -186,7 +186,7 @@ and testable.
    leaves no clean interior, and its own edges read as grain.
 
 6. **Corrected by a boundary model, when one is given** (`combineWithModel`,
-   in `hybrid.ts`). Optional, and off in the editor today. A small learned
+   in `hybrid.ts`). Optional; the editor gives one when it can run it. A small learned
    model (group E's U-Net, trained on synthetic walls only) labels every pixel
    note core, seam or background, and hands over its notes as plain arrays
    (`model-cues.ts`); this package never runs it. Where the model is near
@@ -199,7 +199,11 @@ and testable.
    under each box. On the eight labelled walls: TOTAL F1 94.1 → 95.8, merged
    20 → 16, no real merge left
    ([experiments/j-hybrid.md](experiments/j-hybrid.md),
-   [experiments/n-recall.md](experiments/n-recall.md)).
+   [experiments/n-recall.md](experiments/n-recall.md)). The model learnt
+   photographs and reads a flat note as background, so the editor does not
+   ask it about a flat image, a screenshot or a drawn wall
+   (`isFlatImage` in `sticky-model`;
+   [experiments/o-flat.md](experiments/o-flat.md)).
 
 7. **Rows** (`clusterRows`): cluster centre-y, order by centre-x within a row.
 
@@ -372,6 +376,10 @@ temp directory; see [experiments/j-hybrid.md](experiments/j-hybrid.md) and
 `E2E_BASE_URL`): every labelled wall through Add from photo, the review's boxes
 scored and compared box for box with Node's; see
 [experiments/m-editor-model.md](experiments/m-editor-model.md).
+`packages/sticky-model/scripts/flat/` draws 62 flat boards (the e2e walls, four
+canvases, five note sizes, three text styles): `probe.ts` scores the classical
+detector and the hybrid on them, `diff.ts` lists where two models part on the
+labelled walls; see [experiments/o-flat.md](experiments/o-flat.md).
 
 Real photographs never enter the repo. The unit tests draw their own images and
 stay under 200ms.

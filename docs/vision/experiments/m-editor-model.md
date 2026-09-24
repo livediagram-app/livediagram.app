@@ -31,6 +31,7 @@ picker opens ──► warmBoundaryModel() ──► Worker (lazy chunk)
                                            └─ weights.bin (hashed asset), model.json
 photo chosen ──► detectAndCrop
                   ├─ working image (1000 px)
+                  ├─ isFlatImage(image)? classical alone, reason flat-image
                   ├─ boundaryCuesFor(image)  ──► worker: pad → predict → crop → cuesOf
                   │     ok: cues             ◄──
                   │     or a reason (no-worker, no-backend, load-failed,
@@ -53,7 +54,7 @@ photo chosen ──► detectAndCrop
 - `photo-detect.ts` asks for the cues and passes them on; `PhotoDetection`
   carries `detector` (`hybrid` + backend, or `classical` + reason).
 - Telemetry: `AI`·`Used`·`PhotoDetectHybridWebGpu | PhotoDetectHybridWasm |
-PhotoDetectClassical{NoWorker|NoBackend|LoadFailed|InferenceFailed|Timeout}`,
+PhotoDetectClassical{NoWorker|NoBackend|LoadFailed|InferenceFailed|Timeout|FlatImage}`,
   once per photo.
 - The review marks the overlay `data-detector` and each box `data-kind`, which
   the e2e suite and the editor sweep read.
@@ -95,17 +96,15 @@ aborted) the editor logs `classical (load-failed)` and scores TOTAL 94.1 /
 - with the weights blocked the classical detector finds every note, and says
   `classical (load-failed)`.
 
-**A limit it found.** On the review-flow suite's drawn walls (flat,
-textureless rectangles) the hybrid lost a note: the model reads a flat pale
-blue square as background (0.99 over its middle, no core in it), so J3's drop
-rule removes a note the colour found. The eight labelled photographs never
-show it (the rule drops no labelled note on any of them), but a screenshot of
-a digital board would. It is pinned in `photo-model.spec.ts` with `test.fail`,
-so it cannot start passing unnoticed; the review-flow tests in
+**A limit it found.** On a drawn wall (flat, textureless rectangles) the
+hybrid lost a note: the model reads a flat pale blue square as background
+(0.99 over its middle, no core in it), so J3's drop rule removes a note the
+colour found. The eight labelled photographs never show it; a screenshot of a
+digital board would. Group O ([o-flat.md](o-flat.md)) settles it: a flat
+image is not asked of the model (`classical (flat-image)`), and
+`photo-model.spec.ts` covers the flat wall (classical, every note) and the
+same notes with grain (the hybrid, every note). The review-flow tests in
 `photo-import.spec.ts` block the model, since what they test is the review.
-The rules are group N's and the model group E's; the fix belongs there (a
-synthetic "flat digital sticky" style in E's generator), or in a decision on
-the drop rule.
 
 ## M6: the bundle stays lazy (kept)
 
@@ -171,10 +170,7 @@ holds the review); nothing here measured a real phone.
 
 ## What to try next
 
-1. **Flat digital notes**: add a flat, textureless style to E's synthetic
-   walls (and screenshots of digital boards to the truth), then re-score the
-   hybrid; or decide whether the drop rule should need a core-free box to be
-   off the class mask's paper as well. Flip the pinned e2e test when it holds.
+1. **Flat digital notes**: settled by group O ([o-flat.md](o-flat.md)).
 2. **A real phone and a laptop's integrated GPU**, through the editor sweep
    pointed at a device (`E2E_BASE_URL`), before the timeout is tuned.
 3. **Run the classical detector in the worker too**: it is 0.2-0.5 s of main

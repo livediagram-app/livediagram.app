@@ -262,15 +262,18 @@ board, a drawn wall) as background, and J3 drops it (pinned by
       (`sticky-model/scripts/flat/`), scored classical vs hybrid.
 - [x] O1 A flat style in the synthetic generator (one seed in five, photo
       walls byte-identical).
-- [ ] O2 Retrain from the kept recipe on the mix; control: the photo-only
-      recipe retrained, for the seed-to-seed noise.
-- [ ] O3 Score: drawn boards, hybrid sweep (no wall worse), plateau of the
-      flat share.
-- [ ] O4 Quantise to uint8, re-score.
-- [ ] O5 Ship the weights; flip the e2e test; editor sweep on my own stack
-      equals the Node sweep.
-- [ ] O6 Only if O3 cannot hold every wall: ask the model per photo.
-- [ ] O7 Fold-back: o-flat.md, m-editor-model.md, READMEs, spec/139.
+- [x] O2 Retrain from the kept recipe on the mix; control: the photo-only
+      recipe retrained, for the seed-to-seed noise. Rejected: 94.5-95.2, and
+      the control itself moves every wall by a note (95.6).
+- [x] O3 Fine-tune and distil (`--teacher`), shares 1/16-1/4, lr 1e-4-5e-4,
+      two seeds. Rejected: every flat-learning model lets a night-wall pane
+      through J3; the one fp32 exception (0.003 over the rule) fails in uint8.
+- [x] O4 Quantise to uint8, re-score (the distil-e / f / g rows).
+- [x] O5 Weights NOT replaced (option 1 held no wall set); e2e flipped under O6.
+- [x] O6 Ask the model per photo: `isFlatImage` (share of equal neighbours
+      ≥ 0.6; photos 0.09-0.30, drawings ≥ 0.95). Kept: hybrid and editor
+      sweeps 95.8 / 16, 0 boxes differ; 0 drawn notes lost; e2e 4/4.
+- [x] O7 Fold-back: o-flat.md, m-editor-model.md, READMEs, spec/139.
 
 ## Not yet delegated
 
