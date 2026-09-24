@@ -192,11 +192,14 @@ and testable.
    (`model-cues.ts`); this package never runs it. Where the model is near
    certain it corrects the colour: a box holding two notes it is sure of is
    split into them (flush pairs whose seam shows no shadow), a note it is sure
-   of on paper where no box is gets a box, and a box with no core in it that
+   of on paper where no box is gets a box, a note too small for that among
+   boxes of its own size gets one too (a far board of small notes comes as a
+   cluster, junk that small comes alone), and a box with no core in it that
    the model calls background is dropped. The kinds still come from the colour
-   under each box. On the eight labelled walls: TOTAL F1 94.1 → 95.5, merged
+   under each box. On the eight labelled walls: TOTAL F1 94.1 → 95.8, merged
    20 → 16, no real merge left
-   ([experiments/j-hybrid.md](experiments/j-hybrid.md)).
+   ([experiments/j-hybrid.md](experiments/j-hybrid.md),
+   [experiments/n-recall.md](experiments/n-recall.md)).
 
 7. **Rows** (`clusterRows`): cluster centre-y, order by centre-x within a row.
 
@@ -358,10 +361,13 @@ it drew. "Load a real photo" runs the same pipeline on a photograph.
 
 `packages/sticky-model/scripts/hybrid/` scores the detector corrected by the
 boundary model: `sweep.ts --kept` prints the same table with the kept rules
-(`HYBRID_RULES`), `--grid split|add|drop` sweeps one rule, `probe.ts` lists
-what the model sees at every classical failure, and `browser-bench.ts` times
+(`HYBRID_RULES`), `--grid split|add|drop|pad` sweeps one rule, `probe.ts` lists
+what the model sees at every classical failure, `misses.ts` where each note
+the hybrid misses is lost (and how much another label covers it),
+`region.ts` every layer of one region side by side, and `browser-bench.ts` times
 the model in headless Chromium. The model's probabilities are cached under the
-temp directory; see [experiments/j-hybrid.md](experiments/j-hybrid.md).
+temp directory; see [experiments/j-hybrid.md](experiments/j-hybrid.md) and
+[experiments/n-recall.md](experiments/n-recall.md).
 
 Real photographs never enter the repo. The unit tests draw their own images and
 stay under 200ms.

@@ -1142,7 +1142,7 @@ Decisions from the operator:
   detector accepts what a small boundary model (trained on synthetic walls
   only) saw in the same image, as plain numbers, and uses it only where the
   model is near certain: split a box holding two notes, add a note on paper
-  no box has, drop a box with no note in it that the model calls background.
+  no box has (a small one only among boxes of its own size), drop a box with no note in it that the model calls background.
   The kinds stay the colour's. The detector itself carries no ML dependency;
   the model is optional, runs locally, and is loaded only for the photo
   import. Not yet wired into the editor (what it needs, and the browser cost
