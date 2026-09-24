@@ -1,6 +1,6 @@
 import { inkColour, scribble } from './backing';
 import type { NoteSpec } from './layout';
-import { eachNear, scaleAt, type Plane } from './raster';
+import { eachNear, scaleAt, stroke, type Plane } from './raster';
 import type { Rng } from './rng';
 
 // One sticky note, painted the way a camera sees it: the shadow it casts on
@@ -8,6 +8,9 @@ import type { Rng } from './rng';
 // sometimes nothing at all (two flush notes of one colour then share no visible
 // seam, which is exactly the case the model must learn to cut anyway), a
 // bottom that curls off the wall into light or shade, and handwriting.
+
+// How often a note has a line drawn right across it.
+const DIVIDER_CHANCE = 0.15;
 
 const smooth = (e0: number, e1: number, x: number) => {
   const t = Math.max(0, Math.min(1, (x - e0) / (e1 - e0)));
@@ -57,6 +60,7 @@ export function paintNote(
     if (sd < 0) plane.ids[p] = note.id;
   });
   if (rng.chance(0.9)) handwriting(plane, rng, note);
+  if (rng.chance(DIVIDER_CHANCE)) dividerLine(plane, rng, note);
 }
 
 // Lines of writing across the note, kept inside its paper.
@@ -80,4 +84,25 @@ function handwriting(plane: Plane, rng: Rng, note: NoteSpec): void {
     const y = note.cy + lx * sin + ly * cos;
     scribble(plane, rng, x, y, (u1 - u0) * note.w, lineH, ink, width);
   }
+}
+
+// A line drawn right across a note: a divider under a heading, a crossing
+// out. Ink edge to edge must never read as the seam between two notes.
+export function dividerLine(plane: Plane, rng: Rng, note: NoteSpec): void {
+  const cos = Math.cos(note.angle);
+  const sin = Math.sin(note.angle);
+  const at = (u: number, v: number): [number, number] => {
+    const lx = (u - 0.5) * note.w;
+    const ly = (v - 0.5) * note.h;
+    return [note.cx + lx * cos - ly * sin, note.cy + lx * sin + ly * cos];
+  };
+  const v0 = rng.range(0.25, 0.75);
+  const v1 = rng.chance(0.7) ? v0 + rng.range(-0.05, 0.05) : rng.range(0.1, 0.9);
+  const steps = 8;
+  const points = Array.from({ length: steps + 1 }, (_, i) => {
+    const t = i / steps;
+    return at(0.04 + 0.92 * t, v0 + (v1 - v0) * t + rng.gauss() * 0.01);
+  });
+  const width = Math.max(0.8, Math.min(note.w, note.h) * rng.range(0.02, 0.05));
+  stroke(plane, points, width, inkColour(rng), rng.range(0.8, 1));
 }

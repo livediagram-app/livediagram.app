@@ -54,14 +54,23 @@ function groupCells(rng: Rng, size: number): Cell[] {
       }
     }
   };
-  if (kind < 0.3) {
+  if (kind < 0.28) {
     cells.push({ cx: 0, cy: 0, ...noteShape(rng, size) });
-  } else if (kind < 0.55) {
+  } else if (kind < 0.5) {
     place(rng.int(2, 6), 1, spacingOf(rng).step, 0);
-  } else if (kind < 0.75) {
+  } else if (kind < 0.68) {
     place(1, rng.int(2, 4), 0, spacingOf(rng).step);
-  } else if (kind < 0.92) {
+  } else if (kind < 0.84) {
     place(rng.int(2, 3), rng.int(2, 3), spacingOf(rng).step, spacingOf(rng).step);
+  } else if (kind < 0.92) {
+    // A fanned stack: each note stuck diagonally over the last, so only an L
+    // of the one beneath shows.
+    const shape = noteShape(rng, size);
+    const sx = rng.range(0.15, 0.5) * (rng.chance(0.5) ? 1 : -1);
+    const sy = rng.range(0.15, 0.5) * (rng.chance(0.5) ? 1 : -1);
+    const n = rng.int(2, 3);
+    for (let i = 0; i < n; i += 1)
+      cells.push({ cx: i * sx * shape.w, cy: i * sy * shape.h, ...shape });
   } else {
     // A small pad (actors) beside a normal note: two sizes on one wall.
     const main = noteShape(rng, size);
@@ -86,10 +95,14 @@ function groupCells(rng: Rng, size: number): Cell[] {
 const SECOND_PAD_CHANCE = 0.2;
 const SECOND_PAD_SHARE = 0.35;
 const SECOND_PAD_SCALE: [number, number] = [0.25, 0.42];
+// Below this a note is a few pixels of colour; no labelled wall has one.
+const MIN_SECOND_PAD_PX = 8;
 
 export function layoutNotes(rng: Rng, width: number, height: number, size: number): NoteSpec[] {
   const notes: NoteSpec[] = [];
-  const secondPad = rng.chance(SECOND_PAD_CHANCE) ? size * rng.range(...SECOND_PAD_SCALE) : null;
+  const secondPad = rng.chance(SECOND_PAD_CHANCE)
+    ? Math.max(MIN_SECOND_PAD_PX, size * rng.range(...SECOND_PAD_SCALE))
+    : null;
   const taken: { x0: number; y0: number; x1: number; y1: number }[] = [];
   const target = rng.range(0.12, 0.55) * width * height;
   let covered = 0;

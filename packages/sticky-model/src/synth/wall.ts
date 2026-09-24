@@ -1,4 +1,4 @@
-import { AMBIGUOUS_ID, seamRadiusFor, threeClassMask, type Rect } from '../mask';
+import { AMBIGUOUS_ID, CLASS, seamRadiusFor, threeClassMask, type Rect } from '../mask';
 import { paintBacking, paintDistractors, paintWallMarks, tape } from './backing';
 import { develop, light, randomView, warp } from './camera';
 import { layoutNotes, looseNotes } from './layout';
@@ -30,7 +30,7 @@ export type SyntheticOptions = { noteSize?: number; backing?: Backing };
 const PLANE_MARGIN = 1.2;
 // A note the frame shows less of than this (behind a box, off the edge) is
 // not asked of the model as a note: its paper is seam, never core.
-const MIN_VISIBLE_FRACTION = 0.3;
+const MIN_VISIBLE_FRACTION = 0.2;
 // The range of note sizes, in output pixels: the real walls at the 1000px
 // working size run from ~18px (a dense whiteboard) to ~110px (a close-up).
 // How often a wall also has notes outside its arrangement (see looseNotes).
@@ -79,14 +79,25 @@ export function syntheticWall(
 
   const { boxes, radius } = visibleNotes(ids, width, notes);
   const classes = threeClassMask(ids, width, height, (id) => radius.get(id) ?? 2);
-  return { width, height, rgb, classes, boxes, noteSize };
+  // A sliver of a note (the L of one stacked under another) can show enough
+  // paper yet be seam all through: it is not asked of the model as a note.
+  const cored = new Set<number>();
+  for (let p = 0; p < ids.length; p += 1) if (classes[p] === CLASS.core) cored.add(ids[p]!);
+  return {
+    width,
+    height,
+    rgb,
+    classes,
+    boxes: boxes.filter((b) => cored.has(b.id)).map(({ id: _, ...rect }) => rect),
+    noteSize,
+  };
 }
 
 function visibleNotes(
   ids: Int32Array,
   width: number,
   notes: readonly { id: number; w: number; h: number }[],
-): { boxes: Rect[]; radius: Map<number, number> } {
+): { boxes: (Rect & { id: number })[]; radius: Map<number, number> } {
   const ext = new Map<number, { x0: number; y0: number; x1: number; y1: number; n: number }>();
   for (let p = 0; p < ids.length; p += 1) {
     const id = ids[p]!;
@@ -104,7 +115,7 @@ function visibleNotes(
     }
   }
   const byId = new Map(notes.map((n) => [n.id, n]));
-  const boxes: Rect[] = [];
+  const boxes: (Rect & { id: number })[] = [];
   const radius = new Map<number, number>();
   const hidden = new Set<number>();
   for (const [id, e] of ext) {
@@ -114,7 +125,7 @@ function visibleNotes(
       hidden.add(id);
       continue;
     }
-    boxes.push({ x: e.x0, y: e.y0, w: e.x1 - e.x0 + 1, h: e.y1 - e.y0 + 1 });
+    boxes.push({ id, x: e.x0, y: e.y0, w: e.x1 - e.x0 + 1, h: e.y1 - e.y0 + 1 });
   }
   if (hidden.size > 0) {
     for (let p = 0; p < ids.length; p += 1) if (hidden.has(ids[p]!)) ids[p] = AMBIGUOUS_ID;

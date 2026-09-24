@@ -34,3 +34,21 @@ describe('layoutNotes', () => {
     expect(smallCounts.some((n) => n >= 6)).toBe(true);
   });
 });
+
+describe('fanned stacks', () => {
+  it('lap some notes over others diagonally, both axes at once', () => {
+    let diagonal = 0;
+    for (let s = 0; s < 40; s += 1) {
+      const notes = layoutNotes(rngFrom(s), 400, 400, 40);
+      for (const a of notes) {
+        for (const b of notes) {
+          if (a === b) continue;
+          const dx = Math.abs(a.cx - b.cx) / a.w;
+          const dy = Math.abs(a.cy - b.cy) / a.h;
+          if (dx > 0.12 && dx < 0.55 && dy > 0.12 && dy < 0.55) diagonal += 1;
+        }
+      }
+    }
+    expect(diagonal).toBeGreaterThan(10);
+  });
+});
