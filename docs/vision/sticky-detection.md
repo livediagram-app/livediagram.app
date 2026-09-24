@@ -93,14 +93,34 @@ and testable.
      outline (`chords.ts`, over `contour.ts`), or along the **seam's
      shadow**: a line a little darker than the paper on both sides, the whole
      way across, with ink left out and scored by its median so handwriting
-     cannot pose as one (`seam.ts`; it needs the photograph's brightness).
+     cannot pose as one (`seam.ts`; it needs the photograph's brightness,
+     which `detectStickies` does not yet hand it, so in the product the
+     seam cut is inactive: see [experiments/f-nobox.md](experiments/f-nobox.md)).
      A cut stands when every piece is paper and solid, and a side thinner
      than a note (0.6 to 0.7 of one) is a sliver of the note underneath,
      dropped so it no longer inflates its neighbour's box;
    - a block too square for any cutting rule is **rescued**: its region is
      eroded until the notes come apart at their seams, relabelled, and each
      piece grown back — up to three times, and only solid pieces are kept, or a
-     sunlit patch of wall yields a hundred note-sized scraps.
+     sunlit patch of wall yields a hundred note-sized scraps;
+   - a whole component (not a cut piece) a note long but thinner than the
+     size floor is a **narrow note** (`narrow.ts`): an actor, a note half
+     under its neighbour, a note seen at a slant. At least half a note thick
+     and 0.9 of one long, and ONE note: two small squares the close fused
+     into a column still show a line of wall across their middle in the raw
+     mask. A cut piece that thin keeps the ordinary floor, being a sliver.
+
+   What the size, area and aspect gates refuse is not thrown away yet: a
+   **pad of small notes** (`pads.ts`) — a far board in the photograph, a pad
+   of smaller stationery — comes as a CLUSTER of like-sized, square, solid
+   boxes, where scraps come alone. At least three siblings, linked one to the
+   next (small kept notes count), none clipped by the frame, none over a kept
+   note. A refused box beside a pad and at least 1.75 times as long as wide is
+   pad notes the close fused into a row: it is cut by the pad's own note
+   length (the median long side of the pad boxes near it) and each square
+   joins the pad only as a sibling of it, never as a pad of its own, which
+   is what a strip of tape cut into squares would be. Which gate dropped
+   what is reported through `detectStickies(image, { onDrop })`.
 
 5. **Does it stand out?** (`standsOut`, in `standout.ts`). Colour floors alone
    cannot say what is NOT a note: tape, cardboard, a shadow in a paper seam and
@@ -122,7 +142,9 @@ and testable.
    over the interior with the writing masked out, divided by the paper's own
    brightness, so paper reads smooth in the sun and in the shade. The per-box
    surface features and the leave-one-wall-out study behind this gate are in
-   [experiments/c-junk.md](experiments/c-junk.md).
+   [experiments/c-junk.md](experiments/c-junk.md). Pad notes are judged for
+   standing out but not for grain: on a note a few pens wide the ink margin
+   leaves no clean interior, and its own edges read as grain.
 
 6. **Rows** (`clusterRows`): cluster centre-y, order by centre-x within a row.
 
@@ -156,6 +178,11 @@ and testable.
 | `NOTCH_MIN_DEPTH` / `CHORD_MAX_LENGTH`      | 0.12 / 1.3        | A notch deeper than this, a chord no longer than one side of a note. Depths 0.08–0.22 score alike.                                                                                            |
 | `SEAM_MIN_DEPTH` / `SEAM_MIN_PIECE`         | 12 / 0.55         | Median valley in luma levels along a seam; each side at least this much of a note. 8–24 and 0.5–0.7 score alike.                                                                              |
 | `CUT_PIECE_SIZE_RATIO`                      | 0.6               | Each side of a notch or seam cut at least this thick; between this and `MIN_PAPER_SIZE_RATIO` a side is a sliver, dropped. 0.575–0.65 score alike.                                            |
+| `NARROW_SHORT_RATIO` / `_LONG_RATIO`        | 0.5 / 0.9         | A whole narrow note is at least this thick and long, in notes of its colour. 0.45–0.55 × 0.85–0.95 score alike.                                                                               |
+| `NARROW_MIN_SEAM`                           | 0.5               | The emptiest raw-mask line across a narrow box's middle, against its mean line: one note keeps 0.6+, a fused pair 0.25 or less. 0.3–0.6 score alike.                                          |
+| `PAD_REACH` / `PAD_SIZE_RATIO`              | 3.25 / 1.45       | Pad siblings: centres within this many short sides, sizes within this ratio. Reach 2.75 loses the night wall's far board; 3.5–5 let one scrap in. Ratio 1.3–1.6 score alike.                  |
+| `PAD_MIN_NOTES` / `PAD_MAX_SIZE`            | 3 / 0.7           | A pad is at least three boxes, each at most this share of the wall's note.                                                                                                                    |
+| `FUSED_MIN_ASPECT` / `FUSED_SIZE_RATIO`     | 1.75 / 1.5        | A refused box this elongated beside a pad is fused pad notes; a cut square joins at this looser size match. 1.6–1.85 and 1.35–1.5 score alike.                                                |
 | `RESCUE_ERODE_FRACTION` / `RESCUE_ROUNDS`   | 0.12 / 3          | Deep enough to break the seam between two lapped notes; three passes is where it stops paying.                                                                                                |
 | Hue bands                                   | see `classify.ts` | Widened to measured paper, not swatches: real greens read h≈86 where the catalogue's read-model is h≈137.                                                                                     |
 
@@ -198,7 +225,10 @@ and testable.
 - **Two sizes of note on one wall** are handled for the SMALL ones only. The
   lower size floor is measured per paper colour (a colour with enough whole
   notes gets its own size), which brought a white wall's small actors and
-  hotspots back. Splitting is still measured against the wall's one size:
+  hotspots back, and a cluster of small notes of ANY colour is kept as a pad.
+  A pad whose notes are mostly fused or partial (fewer than three clean
+  ones) is not found, and two small squares fused flush with no seam in
+  either mask stay one box. Splitting is still measured against the wall's one size:
   measured per colour it lost more than it gained on every labelled wall, so a
   wall where a small pad OUTNUMBERS the big notes will see the big ones cut up.
 - **A shade gradient is handled; a shade CLIFF less so.** The floors are
@@ -238,6 +268,12 @@ decoded photos, so a run takes about a second.
 (inseparable labels, cross-colour, same-colour) and where each missed note
 went; the separation experiments and their tables are in
 [experiments/b-separation.md](experiments/b-separation.md).
+
+`scripts/nobox.ts` names, for every missed note whose paper is in the mask but
+which got no box, the gate that dropped it; `scripts/gate-diff.ts KEY=VALUE…`
+lists the boxes a change adds and removes, tagged true, junk or merged, when the
+change is behind a temporary environment switch. The gate experiments are in
+[experiments/f-nobox.md](experiments/f-nobox.md).
 
 `pnpm demo:sticky-vision` (repo root) bundles the package with esbuild and
 serves `demo/sticky-vision/index.html`: a synthetic kraft wall the page draws

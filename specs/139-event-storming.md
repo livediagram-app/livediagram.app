@@ -1126,6 +1126,18 @@ Decisions from the operator:
   in deep shade is dark — and on the eight labelled walls no note is both.
   Precision 85 → 89% (the night wall 36 → 50%), no note lost on any wall.
 
+- **Smaller than the wall's notes is not always junk.** Two kinds of note are
+  smaller than the size floor and still notes. A NARROW note — an actor, a
+  note half under its neighbour, a note seen at a slant — is a whole note long
+  and at least half a note thick, and shows no line of wall across its middle
+  (two small squares fused together do). A PAD of small notes — a far board in
+  the photograph, a pad of smaller stationery — comes as a cluster of three or
+  more like-sized, square, solid boxes, where scraps of tape and cardboard come
+  alone; notes of the pad fused into a row are cut by the pad's own note size.
+  A pad note is too small to show its surface, so it is judged for standing
+  out but not for grain. Total F1 88.7 → 90.6 (the night wall 58 → 77), no
+  wall worse.
+
 - **Tuned against eight hand-traced walls, not three by eye.** The author
   labels a wall in the review itself (correct the boxes, **Save as truth**),
   and the labels live in a private repository beside the photographs. Every

@@ -106,11 +106,22 @@ blob** — panorama 10, whiteboard 5, plus 12 same-colour and 4 cross-colour
 merged boxes; **no paper** — panorama 6; and 13 merged boxes that are
 overlapping LABELS (for the operator to review, not for the detector).
 
-- [ ] F — **no box made** (owns `boxes.ts`, `standout.ts`, `texture.ts`,
+- [x] F — **no box made** (owns `boxes.ts`, `standout.ts`, `texture.ts`,
       `detect.ts`): trace, per missed note with paper, which gate drops it
       (speck/area, size floor, fill, aspect, split pieces refused, standout,
       dark-grain, blank); fix the gates that drop notes without losing the
       precision C bought. Night and whiteboard first.
+      Result ([f-nobox.md](../docs/vision/experiments/f-nobox.md)): 88.7 → 90.6,
+      precision 94, merged 29 → 30, paper-no-box 54 → 31.
+  - [x] F0 Drop tracer (`onDrop`) and `scripts/nobox.ts`: size floor 28, area 7,
+        aspect 7, fill 6, standout 4; dark-grain and blank drop none.
+  - [x] F1 Whole narrow notes (raw-mask seam test): 88.7 → 89.3.
+  - [x] F2 Pads of small notes: 89.3 → 89.8.
+  - [x] F3 Fused pad notes cut to join a pad: 89.8 → 90.2.
+  - [x] F4 Cut by the pad's note; pads not judged for grain: 90.2 → 90.6.
+  - [x] F5 Plateau re-check; pad reach off its cliff: 90.6.
+  - [x] F6 Rejected: seam-cut wiring (201713 loses 2 notes), lower fill floor,
+        aspect ceiling, ring without paper.
 - [ ] B2 — **separation, round 2** (owns `split.ts`, `contour.ts`,
       `seam.ts`): sprawling multi-note blobs still cut on an even grid (2-D
       seam search instead), the 12 same-colour merges, the 4 cross-colour ones.
