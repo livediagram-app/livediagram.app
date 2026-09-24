@@ -123,6 +123,8 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onOpenElementSettings,
     commentSelfId,
     commentPanelActions,
+    actionSelfId,
+    actionPanelActions,
     onPauseTimer,
     onResumeTimer,
     onResetTimer,
@@ -425,6 +427,16 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
                     remove: (id) => commentPanelActions.remove(element.id, id),
                     resolve: () => commentPanelActions.resolve(element.id),
                     unresolve: () => commentPanelActions.unresolve(element.id),
+                  }
+                : undefined
+            }
+            actionSelfId={actionSelfId}
+            actionActions={
+              actionPanelActions
+                ? {
+                    configure: () => actionPanelActions.configure(element.id),
+                    complete: () => actionPanelActions.complete(element.id),
+                    reopen: () => actionPanelActions.reopen(element.id),
                   }
                 : undefined
             }

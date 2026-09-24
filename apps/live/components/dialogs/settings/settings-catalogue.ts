@@ -1,7 +1,11 @@
 import type { HelpArticleKey } from '@/lib/help-articles';
 import type { SettingsCategoryId } from './settings-icons';
 import type { TelemetryCategory } from '@livediagram/api-schema';
-import type { MapSize, UserPreferences } from '@/lib/user-preferences';
+import {
+  autoRebindArrowsEnabled,
+  type MapSize,
+  type UserPreferences,
+} from '@/lib/user-preferences';
 import type { SettingsIllustrationId } from './settings-illustrations';
 
 // The Settings dialog as DATA: the categories, and per category the rows
@@ -180,7 +184,11 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         description:
           'Re-pins an arrow to the nearest face of the shape it connects as that shape moves, so a connection follows its endpoints instead of drifting.',
         helpArticle: 'autoAttachArrows',
-        read: (p) => p.autoRebindArrows !== false,
+        // Opt-in (spec/20), and the editor gates the rebind on this same
+        // helper. Re-deriving it as `!== false` here showed the switch ON for
+        // a fresh profile while the feature was off, so the first click
+        // "turned it off" and it never ran.
+        read: autoRebindArrowsEnabled,
         write: (p, v) => ({ ...p, autoRebindArrows: v }),
         event: { category: 'UI', on: 'AutoRebindOn', off: 'AutoRebindOff' },
       },

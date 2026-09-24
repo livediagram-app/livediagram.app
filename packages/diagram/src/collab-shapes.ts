@@ -168,17 +168,43 @@ export function isChairFacing(value: unknown): value is ChairFacing {
   return (CHAIR_FACINGS as readonly string[]).includes(value as string);
 }
 
+// Which way somebody sitting in the chair looks, in the avatar's own facing
+// vocabulary (the same four words CHAIR_FACING_LABELS prints). The seat points
+// AWAY from the back, so a chair with its back at the top ('n') faces its
+// sitter down the board.
+export type ChairSitterFacing = 'down' | 'left' | 'up' | 'right';
+
+export const CHAIR_SITTER_FACING: Record<ChairFacing, ChairSitterFacing> = {
+  n: 'down',
+  e: 'left',
+  s: 'up',
+  w: 'right',
+};
+
 // Where a seated character's FEET go, in canvas coords: the middle of the
-// chair, a little below centre so the figure sits ON the seat rather than
-// floating at the box's midpoint. Shared by the walk hook (which snaps the
-// sitter here) and the chair's own face (which draws the ring there).
+// seat, a little off centre AWAY from the back so the figure sits ON the seat
+// rather than floating at the box's midpoint. The chair's drawing rotates
+// with its facing, so the seat does too. Shared by the walk hook (which snaps
+// the sitter here) and the chair's own face (which draws the ring there).
 export const CHAIR_SEAT_DROP = 0.62;
 
-export function chairSeatPoint(box: { x: number; y: number; width: number; height: number }): {
-  x: number;
-  y: number;
-} {
-  return { x: box.x + box.width / 2, y: box.y + box.height * CHAIR_SEAT_DROP };
+export function chairSeatPoint(
+  box: { x: number; y: number; width: number; height: number },
+  facing: ChairFacing = DEFAULT_CHAIR_FACING,
+): { x: number; y: number } {
+  const cx = box.x + box.width / 2;
+  const cy = box.y + box.height / 2;
+  const offset = CHAIR_SEAT_DROP - 0.5;
+  switch (facing) {
+    case 'e':
+      return { x: cx - box.width * offset, y: cy };
+    case 's':
+      return { x: cx, y: cy - box.height * offset };
+    case 'w':
+      return { x: cx + box.width * offset, y: cy };
+    default:
+      return { x: cx, y: box.y + box.height * CHAIR_SEAT_DROP };
+  }
 }
 
 // --- The family ------------------------------------------------------------

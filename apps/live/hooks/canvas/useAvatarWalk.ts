@@ -314,14 +314,17 @@ export function useAvatarWalk({
 
   // Chair (spec/130): sit down. Snaps the feet to the seat point (so the
   // figure sits ON the chair rather than wherever it happened to arrive),
-  // drops any walk in progress, and remembers the chair so the sprite draws a
-  // seated pose and peers see the seat taken.
-  const sitOn = (chairId: string, seat: AvatarPoint) => {
+  // turns the figure the way the seat points, drops any walk in progress, and
+  // remembers the chair so the sprite draws a seated pose and peers see the
+  // seat taken.
+  const sitOn = (chairId: string, seat: AvatarPoint, seatFacing: AvatarFacing) => {
     targetRef.current = null;
     arriveRef.current = null;
     heldRef.current = { ...NO_KEYS_HELD };
     posRef.current = seat;
     setPos(seat);
+    facingRef.current = seatFacing;
+    setFacing(seatFacing);
     seatedRef.current = chairId;
     setSeatedOn(chairId);
     // Remembered as "what the feet are on" so standing up and staying put

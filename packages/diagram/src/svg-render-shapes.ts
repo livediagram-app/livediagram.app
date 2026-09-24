@@ -13,6 +13,7 @@ import { codeTheme } from './code-themes';
 import { chartPaletteColors } from './chart-palettes';
 import { isLaneBand, laneEdgeOfElement, laneSizeOfElement } from './lane-gutter';
 import { PIE_PALETTE } from './data-shapes';
+import { legendFontPx } from './label-font';
 
 // The kinds this module draws. square / circle / stadium / browser render
 // natively in svgBoxed (plain rects / ellipses); diamond has a native
@@ -359,8 +360,6 @@ export function svgChecklistShape(
 // Legend (spec/53): the themed card + one swatch-and-label row per item. The
 // swatch falls back to the chart ramp by index, the same rule the canvas view
 // uses, so a legend beside a chart matches it in an export too.
-const LEGEND_ROW_HEIGHT = 24;
-const LEGEND_DOT = 10;
 const LEGEND_PAD = 12;
 
 export function svgLegendShape(
@@ -374,19 +373,24 @@ export function svgLegendShape(
     ` rx="8" fill="${xmlEscape(fill)}" stroke="${xmlEscape(stroke)}" stroke-width="1.5"/>`;
   const items = el.legendItems ?? [];
   const colors = chartPaletteColors(el.chartPalette) ?? PIE_PALETTE;
-  const maxRows = Math.max(1, Math.floor((el.height - LEGEND_PAD * 2) / LEGEND_ROW_HEIGHT));
-  const maxChars = Math.max(4, Math.floor((el.width - LEGEND_PAD * 3 - LEGEND_DOT) / 7));
+  // Text Size (spec/53): the row pitch and the dot scale with the words, the
+  // way LegendView's do.
+  const fontPx = legendFontPx(el.textSize);
+  const dotPx = Math.round(fontPx * 0.75);
+  const rowHeight = Math.max(20, Math.round(fontPx * 1.7));
+  const maxRows = Math.max(1, Math.floor((el.height - LEGEND_PAD * 2) / rowHeight));
+  const maxChars = Math.max(4, Math.floor((el.width - LEGEND_PAD * 3 - dotPx) / (fontPx * 0.54)));
   const rows = items
     .slice(0, maxRows)
     .map((item, i) => {
-      const rowY = el.y + LEGEND_PAD + LEGEND_ROW_HEIGHT * i;
-      const midY = rowY + LEGEND_ROW_HEIGHT / 2;
+      const rowY = el.y + LEGEND_PAD + rowHeight * i;
+      const midY = rowY + rowHeight / 2;
       const dot =
-        `<circle cx="${r2(el.x + LEGEND_PAD + LEGEND_DOT / 2)}" cy="${r2(midY)}"` +
-        ` r="${LEGEND_DOT / 2}" fill="${xmlEscape(item.color ?? colors[i % colors.length]!)}"/>`;
+        `<circle cx="${r2(el.x + LEGEND_PAD + dotPx / 2)}" cy="${r2(midY)}"` +
+        ` r="${dotPx / 2}" fill="${xmlEscape(item.color ?? colors[i % colors.length]!)}"/>`;
       const text =
-        `<text x="${r2(el.x + LEGEND_PAD * 2 + LEGEND_DOT)}" y="${r2(midY + 4)}"` +
-        ` font-family="system-ui, sans-serif" font-size="13" fill="${xmlEscape(textColor)}">` +
+        `<text x="${r2(el.x + LEGEND_PAD * 2 + dotPx)}" y="${r2(midY + fontPx * 0.35)}"` +
+        ` font-family="system-ui, sans-serif" font-size="${fontPx}" fill="${xmlEscape(textColor)}">` +
         `${xmlEscape(item.label.slice(0, maxChars))}</text>`;
       return dot + text;
     })

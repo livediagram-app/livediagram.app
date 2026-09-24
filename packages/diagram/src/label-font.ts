@@ -48,3 +48,25 @@ export function labelFontPx(textSize: TextSize | undefined, multiline = false): 
   const table = multiline ? NOTE_FONT_PX : LABEL_FONT_PX;
   return table[textSize ?? 'md'];
 }
+
+/**
+ * A legend's rows: a chart's key strip and the standalone Legend card
+ * (spec/53). One scale for both, so a Legend dropped beside a chart reads at
+ * the same size as the chart's own key.
+ *
+ * Its own table because a key is not a name: at the label scale a Medium
+ * legend would be 22px rows in a 72px strip. It was a fixed 11px on a chart
+ * (13px on the card) with no control at all, which read as too small.
+ * 'scale' has nothing to fit here, so it draws at the default.
+ */
+export const LEGEND_FONT_PX: Record<TextSize, number> = {
+  sm: 11,
+  md: 14,
+  lg: 18,
+  scale: 14,
+};
+
+/** The px a legend row renders at. Absent `textSize` means `md`. */
+export function legendFontPx(textSize: TextSize | undefined): number {
+  return LEGEND_FONT_PX[textSize ?? 'md'];
+}

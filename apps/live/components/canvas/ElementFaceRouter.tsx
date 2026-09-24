@@ -22,6 +22,7 @@ import { AnnotationGlyph } from '@/components/canvas/AnnotationMarker';
 import { ElementSettingsButton } from '@/components/canvas/ElementEllipsisMenu';
 import { CollabFaceRouter } from '@/components/canvas/collab/CollabFaceRouter';
 import { CommentPanelFace } from '@/components/canvas/CommentPanelFace';
+import { ActionPanelFace } from '@/components/canvas/ActionPanelFace';
 import { FreehandSvg } from '@/components/canvas/boxed-element-overlays';
 import { ImageElementView } from '@/components/canvas/ImageElementView';
 import { LinkCardView } from '@/components/canvas/LinkCardView';
@@ -66,6 +67,8 @@ type ElementFaceRouterProps = Pick<
   | 'collab'
   | 'commentActions'
   | 'commentSelfId'
+  | 'actionActions'
+  | 'actionSelfId'
   | 'imageContext'
   | 'tabSummaries'
   | 'tabTimer'
@@ -113,6 +116,8 @@ export function ElementFaceRouter({
   collab,
   commentActions,
   commentSelfId,
+  actionActions,
+  actionSelfId,
   imageContext,
   tabSummaries,
   tabTimer,
@@ -293,6 +298,17 @@ export function ElementFaceRouter({
           onDeleteComment={commentActions?.remove}
           onResolve={commentActions?.resolve}
           onUnresolve={commentActions?.unresolve}
+        />
+      ) : element.type === 'shape' && element.shape === 'action-card' && !isEditing ? (
+        /* Action panel (spec/146): the Comment panel's sibling. It drives the
+           SAME action machinery the popover and the Assign Action dialog do. */
+        <ActionPanelFace
+          element={element}
+          textColor={textColor}
+          selfId={actionSelfId ?? null}
+          onConfigure={actionActions?.configure}
+          onComplete={actionActions?.complete}
+          onReopen={actionActions?.reopen}
         />
       ) : element.type === 'shape' && element.shape === 'reaction-pad' && !isEditing ? (
         /* Reaction pad (spec/135): a pressable glyph. The burst it throws is

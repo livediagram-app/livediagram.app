@@ -336,6 +336,8 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Roll-call',
     // Comment pin (spec/136).
     'CommentPin',
+    // Action panel (spec/146).
+    'ActionPanel',
   ],
   components: ['Banner', 'Hero', 'Header', 'Callout', 'StatRow', 'ProcessSteps'],
   devices: ['Browser', 'Monitor', 'Laptop', 'Phone', 'Tablet', 'Foldable', 'Smartwatch'],

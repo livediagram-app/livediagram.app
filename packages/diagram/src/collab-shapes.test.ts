@@ -5,6 +5,9 @@ import {
   ESTIMATE_SCALE_VALUES,
   agendaTotalMinutes,
   chairSeatPoint,
+  CHAIR_FACINGS,
+  CHAIR_FACING_LABELS,
+  CHAIR_SITTER_FACING,
   clampAgendaMinutes,
   estimateValues,
   isChairFacing,
@@ -13,6 +16,7 @@ import {
   isDecisionStatus,
   isEstimateScale,
 } from './collab-shapes';
+import { carriesSharedSettingsMenu } from './behaviour-shapes';
 import { createShape } from './factories';
 import { isValidElement } from './validate';
 
@@ -83,6 +87,22 @@ describe('chair', () => {
     expect(seat.x).toBe(140);
     expect(seat.y).toBeGreaterThan(250);
     expect(seat.y).toBeLessThan(300);
+  });
+
+  it('moves the seat away from the back as the chair turns', () => {
+    const box = { x: 100, y: 200, width: 80, height: 100 };
+    // Back on the right ('e'), so the seat is left of centre, and so on.
+    expect(chairSeatPoint(box, 'e').x).toBeLessThan(140);
+    expect(chairSeatPoint(box, 's').y).toBeLessThan(250);
+    expect(chairSeatPoint(box, 'w').x).toBeGreaterThan(140);
+    expect(chairSeatPoint(box, 'n')).toEqual(chairSeatPoint(box));
+  });
+
+  it('turns the sitter the way the seat points', () => {
+    for (const facing of CHAIR_FACINGS) {
+      // The menu label and the sitter's pose must say the same thing.
+      expect(CHAIR_FACING_LABELS[facing]).toBe(`Facing ${CHAIR_SITTER_FACING[facing]}`);
+    }
   });
 });
 
@@ -193,5 +213,14 @@ describe('validation bounds', () => {
     expect(isValidElement(withFields({ rollCall: [{ name: 'Sam', color: '#fff', at: 1 }] }))).toBe(
       true,
     );
+  });
+});
+
+describe('the shared settings ellipsis (spec/09, spec/130)', () => {
+  it('is on every Behaviours card except the chair and the ones with their own', () => {
+    expect(carriesSharedSettingsMenu('chair')).toBe(false);
+    expect(carriesSharedSettingsMenu('done-check')).toBe(false);
+    expect(carriesSharedSettingsMenu('comment-pin')).toBe(true);
+    expect(carriesSharedSettingsMenu('square')).toBe(false);
   });
 });

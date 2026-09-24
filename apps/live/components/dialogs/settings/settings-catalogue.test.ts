@@ -3,7 +3,7 @@ import { HELP_ARTICLES } from '@/lib/help-articles';
 import { SETTINGS_CATEGORIES, visibleCategories } from './settings-catalogue';
 import { TELEMETRY_TYPE_PATTERN } from '@livediagram/api-schema';
 import type { SettingsRowSpec } from './settings-catalogue';
-import type { UserPreferences } from '@/lib/user-preferences';
+import { autoRebindArrowsEnabled, type UserPreferences } from '@/lib/user-preferences';
 
 const ALL_ROWS = SETTINGS_CATEGORIES.flatMap((c) => c.rows);
 const TOGGLES = ALL_ROWS.filter((r) => r.kind === 'toggle');
@@ -26,6 +26,15 @@ function tokensOf(row: SettingsRowSpec): string[] {
 }
 
 describe('settings catalogue', () => {
+  it('shows Auto-Attach Arrows in the state the editor actually runs', () => {
+    // A fresh profile has the feature OFF; the switch has to say so, or the
+    // first click flips a switch that looked on to the off it already was.
+    const row = TOGGLES.find((r) => r.key === 'autoRebindArrows')!;
+    for (const prefs of [{}, { autoRebindArrows: true }, { autoRebindArrows: false }]) {
+      expect(row.read(prefs as UserPreferences)).toBe(autoRebindArrowsEnabled(prefs));
+    }
+  });
+
   it('round-trips every toggle through read/write in both directions', () => {
     // The catalogue is the only place that knows how a setting maps onto
     // UserPreferences, so a row whose write does not land where its read

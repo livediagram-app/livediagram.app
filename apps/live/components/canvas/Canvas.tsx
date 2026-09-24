@@ -57,7 +57,7 @@ import { ReactionBurst } from '@/components/canvas/ReactionBurst';
 const AVATAR_BURST_PX = 120;
 import { useAvatarWalk } from '@/hooks/canvas/useAvatarWalk';
 import { AVATAR_SPAWN_GAP, type AvatarPoint } from '@/lib/avatar-walk';
-import { chairSeatPoint } from '@livediagram/diagram';
+import { CHAIR_SITTER_FACING, DEFAULT_CHAIR_FACING, chairSeatPoint } from '@livediagram/diagram';
 import { useAvatarConfig } from '@/hooks/canvas/useAvatarConfig';
 import { parseAvatarConfig } from '@/lib/avatar-config';
 import { reactionPose } from '@/lib/avatar-reactions';
@@ -317,7 +317,14 @@ export function Canvas(props: CanvasProps) {
     onWalkIntoPortal: (element) => enterPortalRef.current(element),
     // Chair (spec/130): walking onto one sits the character down, snapped to
     // the seat point so it sits ON the chair rather than wherever it arrived.
-    onWalkIntoChair: (element) => avatarRef.current?.sitOn(element.id, chairSeatPoint(element)),
+    onWalkIntoChair: (element) => {
+      const facing = element.chairFacing ?? DEFAULT_CHAIR_FACING;
+      avatarRef.current?.sitOn(
+        element.id,
+        chairSeatPoint(element, facing),
+        CHAIR_SITTER_FACING[facing],
+      );
+    },
     // Reaction pad (spec/135): walking onto one is the same act as pressing
     // it, so it runs the same handler.
     onWalkIntoReactionPad: (element) => props.onFireReaction?.(element),

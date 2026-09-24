@@ -65,6 +65,7 @@ const SHAPE_TOKENS: Record<string, string> = {
   'session-button': 'SessionButton',
   'reaction-pad': 'ReactionPad',
   'comment-pin': 'CommentPin',
+  'action-card': 'ActionPanel',
   'done-check': 'DoneCheck',
 };
 
