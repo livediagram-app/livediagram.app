@@ -12,15 +12,15 @@
 export type NoteSizeField = { sizeAt(x: number, y: number): number };
 
 // How wide the neighbourhood is: the Gaussian's spread, in wall notes.
-// Measured on the eight labelled walls with the seam cut reading the field:
-// 1.25 to 2 all score TOTAL 93.8–94.0 with 19–21 merged boxes; from 3 the
-// whiteboard loses a note and the panorama's pad of small actors is read at
-// the size of the big notes around it; at 1 too few notes are near.
+// Measured on the eight labelled walls with the seam cut reading the field
+// (and `SEAM_MIN_SPAN` 1.4): 1 to 1.75 all score TOTAL 94.1 with 19–21
+// merged boxes; at 2 the panorama's pad of small actors is read at the size
+// of the big notes around it (93.5, 22), and at 3 the whiteboard loses a note.
 const SIZE_FIELD_SPREAD = 1.5;
 // Below this much weight (about this many notes within a spread) the notes
 // near a point are too few to say anything, and the wall's size stands.
 // 2 to 3 score alike; at 1 a pair of scraps sets the size, at 4 the pad of
-// small actors is too sparse to count.
+// small actors is too sparse to count (measured with `SEAM_MIN_SPAN` 1.3).
 const SIZE_FIELD_MIN_WEIGHT = 2.5;
 // The local size is kept within these multiples of the wall's size, so no
 // patch of scraps or run of fused notes can take it anywhere a note is not.
