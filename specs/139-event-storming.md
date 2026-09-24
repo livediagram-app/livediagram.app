@@ -1100,6 +1100,17 @@ Decisions from the operator:
     pieces onto the mask between cuts, splits the block the way a person reads
     it. The seam between two notes is PREFERRED, not required: requiring a
     visible gap cost fifteen points of recall, because lapped paper has no gap.
+  - **A blob is parted where its paper parts.** Notes of one colour in a
+    checkerboard with another kind touch only at corners and slivers; an
+    erosion a fraction of a note deep leaves one core per note, and the blob
+    is parted there, before any grid, when every part is a note. The same
+    cores trim the strip of colour a JPEG paints along a neighbour of another
+    kind, so a note's box does not run down its neighbour. A pair the length
+    rule leaves whole is cut along the chord between two notches of its
+    outline, or along the shadow the upper note casts (only across a box at
+    least 1.3 notes long: in a shorter one, a crease or a line of writing is
+    far likelier than a pair). See `docs/vision/experiments/b-separation.md`
+    and `b2-separation.md`.
 
 - **A note stands out from the wall it is stuck to.** Colour floors alone
   cannot say what is not a note, because tape, cardboard, a shadow in a paper

@@ -88,14 +88,24 @@ and testable.
      not required; requiring a visible gap cost fifteen points of recall,
      because lapped paper has no gap. Seams are read from the RAW mask, since
      the close erases them;
+   - a sprawling blob is first taken apart at its **necks** (`necks.ts`):
+     notes of one colour in a checkerboard with another kind touch only at a
+     corner or a sliver, so an erosion 0.15 of a note deep leaves one core
+     per note, and each pixel goes back to the core nearest it along the
+     paper. The parts are taken only when every one is a note (at most 1.4
+     notes long); otherwise the grid does better over the whole. The cores
+     grow back only twice as far as the erosion took, so a strip thinner than
+     a note's edge trailing off it (a JPEG fringe of this colour along a
+     neighbour of another kind) is trimmed off, and a note's box no longer
+     runs down its neighbour;
    - a piece the length rule leaves whole (two lapped notes are often only 1.3
      to 1.6 notes long) is cut along the chord between two **notches** of its
      outline (`chords.ts`, over `contour.ts`), or along the **seam's
      shadow**: a line a little darker than the paper on both sides, the whole
      way across, with ink left out and scored by its median so handwriting
-     cannot pose as one (`seam.ts`; it needs the photograph's brightness,
-     which `detectStickies` does not yet hand it, so in the product the
-     seam cut is inactive: see [experiments/f-nobox.md](experiments/f-nobox.md)).
+     cannot pose as one (`seam.ts`, reading the photograph's brightness).
+     Only across a box at least 1.3 notes long: in a shorter box a crease, a
+     curl or a line of writing across one note is far likelier than a pair.
      A cut stands when every piece is paper and solid, and a side thinner
      than a note (0.6 to 0.7 of one) is a sliver of the note underneath,
      dropped so it no longer inflates its neighbour's box;
@@ -177,6 +187,9 @@ and testable.
 | `WHOLE_NOTE_SIDE`                           | 0.45              | Thicker than this (in notes) a piece is a whole note and never merged with another. 0.40–0.50 score the same.                                                                                 |
 | `NOTCH_MIN_DEPTH` / `CHORD_MAX_LENGTH`      | 0.12 / 1.3        | A notch deeper than this, a chord no longer than one side of a note. Depths 0.08–0.22 score alike.                                                                                            |
 | `SEAM_MIN_DEPTH` / `SEAM_MIN_PIECE`         | 12 / 0.55         | Median valley in luma levels along a seam; each side at least this much of a note. 8–24 and 0.5–0.7 score alike.                                                                              |
+| `SEAM_MIN_SPAN`                             | 1.3               | A seam only across a box this many notes long: 66 of 73 seams found in shorter boxes crossed one note. 1.25–1.5 score alike.                                                                  |
+| `NECK_ERODE_FRACTION` / `NECK_REGROW`       | 0.15 / 2          | Necks thinner than twice the erosion part; cores grow back twice as far, trimming thinner strips. 0.12–0.2 and 1.75–2.25 score alike.                                                         |
+| `NECK_MIN_AREA` / `NECK_MAX_PIECE`          | 1.5 / 1.4         | Blobs from this many note areas are parted at necks, when every part is at most this long. 1.25–1.75 and 1.3–1.4 score alike.                                                                 |
 | `CUT_PIECE_SIZE_RATIO`                      | 0.6               | Each side of a notch or seam cut at least this thick; between this and `MIN_PAPER_SIZE_RATIO` a side is a sliver, dropped. 0.575–0.65 score alike.                                            |
 | `NARROW_SHORT_RATIO` / `_LONG_RATIO`        | 0.5 / 0.9         | A whole narrow note is at least this thick and long, in notes of its colour. 0.45–0.55 × 0.85–0.95 score alike.                                                                               |
 | `NARROW_MIN_SEAM`                           | 0.5               | The emptiest raw-mask line across a narrow box's middle, against its mean line: one note keeps 0.6+, a fused pair 0.25 or less. 0.3–0.6 score alike.                                          |

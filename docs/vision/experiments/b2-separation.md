@@ -106,13 +106,6 @@ A is unchanged at every value (the seam cut is off). At 1.3:
 anything and takes merged 29 → 25 (TOTAL 88.7 → 88.8): the `detect.ts` line
 is now safe to add (see Open questions).
 
-## Open questions
-
-- **`detect.ts` (group F): hand the seam cut its luminance.** One import and
-  one option: `luminance: luminanceOf(working)` in the `fitBoxes` call. Worth
-  merged 29 → 25 on its own after R1, and every later seam experiment here
-  depends on it.
-
 ## R2: part a sprawl at its necks before the grid (kept)
 
 **Hypothesis.** A sprawling blob of one colour is often a checkerboard: notes
@@ -215,3 +208,101 @@ for a fringe, and the box left (1.08 × 1.19 notes) is too short for
 
 **Verdict: kept.** Merged 29 → 26 on the branch, 25 → 23 with luminance,
 TOTAL level.
+
+## R2b: small pads, at their own scale (rejected, every variant)
+
+The panorama's five same-colour merges are pairs of small actors (19 px)
+on a wall whose note is 34 px: 0.7–1.5 wall notes long, under every rule
+sized by the wall's note.
+
+| variant (with R1–R3)                                                  | A: TOTAL / m | L: TOTAL / m      |
+| --------------------------------------------------------------------- | ------------ | ----------------- |
+| reference                                                             | 88.9 / 26    | 89.1 / 23         |
+| seam scale = min(note, the box's side along the seam)                 | 88.9 / 26    | 89.2 / 23         |
+| …and a bright RIDGE counts as a seam too (the gap shows a paler wall) | 88.9 / 26    | 88.6 / 24         |
+| ridge only, wall-note scale                                           | 88.9 / 26    | 88.9 / 23         |
+| seam piece `SEAM_MIN_PIECE` 0.3–0.5 instead of 0.55 (before R3)       | 88.9 / 29    | 89.0–89.1 / 26–27 |
+| the colour's own note size for the seam cut (needs `boxes.ts`)        | 88.9 / 26    | 89.0 / 22         |
+| …and for the notch cut                                                | 88.9 / 26    | 89.0 / 22         |
+
+Why nothing lands, traced (`trace.ts`, `region.ts`): two of the pairs are
+cut through their left note by the grid over their sprawl before the seam
+cut sees them; the others show, in brightness, not a dark seam but a paler
+line one or two pixels wide (the light wall in the gap, blurred by the JPEG)
+a few levels above paper that is itself a few levels different from note to
+note. Counting such ridges as seams finds them in single notes too. The
+pairs' colours differ (an orange-yellow pad beside a lime one), which the
+class mask cannot see and luminance barely does.
+
+**Verdict: rejected.** The seam-scale variant gains one box in L only and
+widens the seam search to thin boxes, where creases dominate. A chroma-step
+seam (two notes of one kind from different pads) needs the colour image in
+`fitBoxes`, which is group F's.
+
+## R4: heavily lapped pairs (nothing in these files; measured for F)
+
+201654 #2 and 201730 #0 are a note with a strip of the note under it: 0.59
+and about 0.3 of a note. The seam cut finds 201654's seam, but the strip is
+under `CUT_PIECE_SIZE_RATIO` (0.6), so `boxes.ts` refuses the whole cut and
+the box keeps both centres. Letting a seam cut stand when at least one piece
+is paper, dropping the others (a TRIM), measured in a scratch copy of
+`boxes.ts`: A unchanged (the seam cut is off), L 89.1 / 23 → 89.1 / 22, no
+wall loses anything. 201730's strip is too thin for `SEAM_MIN_PIECE`, and a
+trim that reaches that close to an edge would meet the many creases and
+writing lines the seam survey found near the edges of single notes.
+
+## R5: two-dimensional seams in sprawls
+
+R2's necks are the part of this that pays. Also measured:
+
+| variant (with R1–R3)                                                            | L: TOTAL / m                     |
+| ------------------------------------------------------------------------------- | -------------------------------- |
+| reference                                                                       | 89.1 / 23                        |
+| the grid's cuts snap to the deepest shadow seam within reach (needs `boxes.ts`) | 88.3 / 22                        |
+| …only seams at least 18 / 24 / 30 / 40 deep                                     | 88.4 / 88.8 / 88.9 / 88.9, 22–23 |
+| …reach 0.3 or 0.6 of the snap window, depth 12 or 18                            | 89.0 / 23                        |
+| necks at several depths (0.15 then 0.2, 0.25, 0.3) until every part is a note   | 88.3–88.8 / 24–25                |
+
+The snap moves the grid onto handwriting lines as often as onto seams: on a
+flush sprawl (201707's orange block, the whiteboard's grid) the RAW mask has
+not one pixel of not-paper between the notes (`region.ts`), and on the
+whiteboard at 19 px a note, brightness shows no seam either. Deeper necks
+erode small notes to nothing and part groups badly. Round 1's carving (B4)
+and watershed (B5) were the other two-dimensional searches, both rejected.
+
+**Verdict: rejected**, beyond R2.
+
+## Where it ended
+
+Kept, in order: R1 (`c43e093c`), R2 (`cbfb6bc2`, with its fix
+`48a917a8`), R3 (`9553c05d`).
+
+|             | A: TOTAL / merged / passing | L: TOTAL / merged / passing |
+| ----------- | --------------------------- | --------------------------- |
+| round start | 88.7 / 29 / 1 (201713)      | 88.5 / 25 / 0               |
+| round end   | 88.9 / 26 / 1 (201713)      | 89.1 / 23 / 1 (201713)      |
+
+The 26 merged boxes left (A): 12 inseparable labels (for the operator), 2
+cross-colour on the panorama (an orange note whose own paper shows between
+the two notes lapped over its foot; the checkerboard's top row, which the
+necks leave whole because its columns are four actors long), and 12
+same-colour: five pairs of small actors on the panorama (R2b), four flush
+pairs on the whiteboard, two of which the seam cut parts in L and two too
+small to show a seam at all, 201707's two (one parted in L; the other a grid
+cell that overhangs its neighbour's seam), and the two heavily lapped pairs
+(R4).
+
+## Open questions
+
+- **`detect.ts` (group F): hand the seam cut its luminance.** One import and
+  one option: `luminance: luminanceOf(working)` in the `fitBoxes` call.
+  After R1 it costs no wall anything; at the round's end it is worth merged
+  26 → 23 and TOTAL 88.9 → 89.1, and every seam experiment here depends on
+  it.
+- **`boxes.ts` (group F): a seam cut that leaves a sliver is a trim.** When
+  a seam cut's pieces are not all paper, keep the ones that are instead of
+  refusing the cut (R4): with the luminance, merged 23 → 22, nothing lost.
+- **`boxes.ts` (group F): the colour image, for a chroma seam.** Two
+  notes of one kind from different pads (orange-yellow beside lime) differ
+  in colour far more than in brightness; the separator only gets the class
+  mask and luminance, and would need the RGB (or a*b*) image to see it.

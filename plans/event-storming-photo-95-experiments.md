@@ -130,13 +130,13 @@ overlapping LABELS (for the operator to review, not for the detector).
         cutting single notes, so detect.ts can hand it the luminance).
   - [x] R2 Necks: take a sprawling blob apart where its paper narrows to a
         corner or a sliver (checkerboards of two kinds), before the grid.
-  - [ ] R2b Small-pad pairs: cut at the pad's scale where the paper shows a gap.
+  - [x] R2b Small-pad pairs: cut at the pad's scale where the paper shows a gap.
   - [x] R3 Cross-colour boxes: trim the colour fringe a note trails along a
         neighbour of another kind (the necks' erosion, grown back only so far).
-  - [ ] R4 Heavily lapped pairs: trim the sliver of the note underneath.
-  - [ ] R5 2-D seam search in sprawling blobs (cut where the seams are, not
+  - [x] R4 Heavily lapped pairs: trim the sliver of the note underneath.
+  - [x] R5 2-D seam search in sprawling blobs (cut where the seams are, not
         where the grid falls).
-  - [ ] R6 Fold-back: spec/139 Phase 9, sticky-detection.md, results doc.
+  - [x] R6 Fold-back: spec/139 Phase 9, sticky-detection.md, results doc.
 - [ ] A2 — **colour, round 2** (owns `classify.ts`, `floors.ts`, `lab.ts`,
       `colour.ts`): the panorama's no-paper notes (small pink hotspots,
       pale pink), and the night wall's classification.
