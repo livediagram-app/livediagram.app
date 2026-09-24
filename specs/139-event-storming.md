@@ -1154,6 +1154,19 @@ Decisions from the operator:
   out but not for grain. Total F1 88.7 → 90.6 (the night wall 58 → 77), no
   wall worse.
 
+- **A note is one paper, and one paper is one blob.** The close that repairs
+  handwriting reaches one pixel at the working size, not two: two pixels
+  bridge the thin shadow between flush notes, and the runs that come out are
+  cut where a grid falls rather than where the notes are. Blue and pink each
+  come in two papers (a vivid one and a pale one, both the same kind), and
+  each paper is its own blob, so a pale note lapped against a vivid one is two
+  notes. In deep shade a lilac and a pink cannot be told apart by the sensor,
+  so a shaded lilac is read as the pink it looks like rather than split
+  between the two. A column of narrow notes end to end is counted by a narrow
+  note's own proportion. Total F1 90.7 → 92.4, merged boxes 29 → 27, walls
+  passing 1 → 2; recall without actors 95% or better on four walls of eight
+  (two before).
+
 - **Tuned against eight hand-traced walls, not three by eye.** The author
   labels a wall in the review itself (correct the boxes, **Save as truth**),
   and the labels live in a private repository beside the photographs. Every

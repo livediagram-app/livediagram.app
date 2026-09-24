@@ -377,6 +377,109 @@ It is the rims: with the rule, the whiteboard no longer welds at 10. But the
 panorama's pale pinks lose their own edges with them and merge where they lap,
 and the night wall's lilac note under tungsten goes. Nothing beats 91.7 / 29.
 
+### Partial pad notes as seeds (on H5)
+
+The night board's top-left note shows 9×14 of its 15px (the window frame
+covers the rest): too oblong to seed a pad (`PAD_MAX_ASPECT` 1.5), and too
+thin against its siblings' short sides (`PAD_SIZE_RATIO`). Siblings matched
+by their LONG sides (a partial note's long side is its true size) and seeds up
+to aspect 1.6 or 1.65 find it (92.5, night rec-A 85 → 87); either change alone
+finds nothing, and at 1.7 two scraps on 201713 cost it its PASS. A band from
+1.556 (this one box) to 1.7 (those two) is set by three boxes: not kept.
+
+### Fused pad blocks refused for standing out (on H5)
+
+The night board's other three missed notes and a yellow one are one 67×34
+blob, fill 0.55, which `standsOut` refuses. Offered to `findPads` too, cut
+into a grid of the pad's note with each cell's fill read from the mask: the
+block itself is not cut (its own pad note is not in reach), while cells of the
+window's other refused blobs come in as junk (night precision 81 → 73).
+
+### The noise floor (on H5)
+
+`NOISE_FLOOR_FRACTION` (`detect.ts` and `boxes.ts`, 0.008): 0.006: 77.2 (the
+night wall's note size is mismeasured, F1 5); 0.007: 92.2; 0.009: 92.5 (one
+spurious box fewer on 201646); 0.01: 92.1. One box on a lone value.
+
+### Note size measured on kinds, not shades (on H4)
+
+Measuring the wall's note size and the per-colour sizes with the pale shades
+folded back into their kinds: 92.2 / 28 against 92.3 / 27. The shades stay
+separate everywhere.
+
+### Salmon as pink: moving the orange band's start (on H5)
+
+The panorama's salmon notes (h 16–18) fall in the orange band, which starts
+at 12. Moving the line between pink and orange so salmon reads pink (and the
+pale-pink paper of H4 takes it):
+
+| orange from | 12 (kept) | 15        | 18        | 20        |
+| ----------- | --------- | --------- | --------- | --------- |
+| TOTAL / m   | 92.4 / 27 | 92.1 / 29 | 90.8 / 35 | 90.8 / 32 |
+
+The panorama gains two notes at 15, but orange notes on kraft in shade read
+h 14 to 20 as well: 201707 and 201730 lose notes and merges rise on every
+wall with orange on it. Salmon is not separable from shaded orange by hue.
+
+## Where it ends
+
+TOTAL F1 90.7 → **92.4**, precision 93% → 94%, recall 88% → 91%, merged boxes
+29 → **27**, walls passing 1/8 → 2/8 (201707, 201713).
+
+| wall             | before            | after             | rec-A ≥ 95%        |
+| ---------------- | ----------------- | ----------------- | ------------------ |
+| 201646           | 85 / 82 / 93 / 1  | 90 / 88 / 98 / 1  | yes (was no)       |
+| 201654           | 99 / 100 / 98 / 3 | 98 / 98 / 98 / 2  | yes                |
+| 201707           | 95 / 95 / 95 / 0  | 98 / 95 / 100 / 0 | yes, PASS          |
+| 201713           | 95 / 96 / 94 / 0  | 98 / 98 / 98 / 0  | yes, PASS (was no) |
+| 201730 (shade)   | 93 / 94 / 92 / 2  | 94 / 94 / 94 / 2  | no: 49 of 52       |
+| 201743 (night)   | 80 / 82 / 77 / 2  | 83 / 81 / 85 / 2  | no: 33 of 39       |
+| wall-panorama    | 80 / 88 / 77 / 10 | 86 / 93 / 89 / 10 | no: 42 of 47       |
+| whiteboard-dense | 93 / 96 / 89 / 11 | 93 / 96 / 89 / 10 | no: 225 of 253     |
+
+Recall without actors now reaches 95% on four walls. What stands between the
+other four and it:
+
+- **201730 (shade)**: 3 misses. One is a duplicate label (`merged.ts`:
+  inseparable); with it fixed the wall is at 49 of 51, 96%. The others are a
+  blue note 60% under a green one (a 36×14 strip, dropped as a sliver on
+  purpose) and a same-colour merged pair (group I).
+- **201743 (night)**: 6 misses. Two are duplicate labels; the other four are
+  15px notes of the board reflected in the window, one partial behind the
+  frame and three fused with a yellow note into a blob `standsOut` refuses.
+  With the labels fixed: 33 of 37, 89%.
+- **wall-panorama**: 5 misses without actors (the rest of its misses are
+  actors, most of them in the merged actor grid, group I). Two are pale salmon
+  notes (h 16–18, labelled domain events) read as orange, which has no pale
+  paper of its own (H4: every orange in shade would be one); one is refused as
+  blank (group G); one is a hotspot of a merged pair (group I); one is the
+  blue note under an actor, lost when the note size moved by a pixel in H4.
+- **whiteboard-dense**: 28 misses without actors: 8 in merged boxes and about
+  seven pieces of flush same-colour clusters under the size floor (group I:
+  the clusters are one solid region in the raw mask), five pale notes
+  `standsOut` refuses at standout 0.07–0.12 (group G), two fallen notes on
+  the carpet.
+
+## What to try next
+
+- **Flush same-colour clusters (group I).** The whiteboard's and the
+  panorama's biggest block of misses. The pale-shade split shows the lever:
+  anything that makes a note its own component beats cutting a blob. Two
+  notes of one paper differ only in the shadow line between them (B3) and,
+  on the whiteboard, in tone (a note in shade is a slightly different orange):
+  a per-component brightness clustering might part them where the seam cut
+  finds no line.
+- **A second pale paper, orange.** The panorama's salmon notes are a third
+  paper at the orange end of the pink band. Neither saturation (orange in
+  shade is desaturated) nor hue (orange in shade reads h 14 to 20) separates
+  it pixel by pixel; a whole-note decision (a component's median hue and
+  brightness against its neighbours) might.
+- **Pads from standout-refused blocks.** Needs the pad note size from pads
+  already found, a 2-D cut and each cell judged by its own pixels; the first
+  attempt cut the wrong blobs.
+- **Label fixes.** Four of the misses above are duplicate labels; fixing them
+  moves 201730 over 95% and the night wall to 89%.
+
 ## Tools
 
 - `scripts/pixel-probe.ts <photo> x,y …`: the mean colour of a 5×5 patch at
