@@ -12,6 +12,7 @@ import {
   applyLabelFillToEl,
   applyTablePresetToEl,
   applyFillColorToEl,
+  applyHeaderFillToEl,
   applyRotationToEl,
   applyShadowToEl,
   applyStrokeColorToEl,
@@ -102,6 +103,10 @@ describe('applyTablePresetToEl', () => {
     });
   });
 
+  it('records the look so a theme change can re-derive it', () => {
+    expect(applyTablePresetToEl(el('table'), p)).toMatchObject({ tablePreset: 'table-x' });
+  });
+
   it('leaves headerRow / headerColumn alone, which are data not a look', () => {
     const applied = applyTablePresetToEl(el('table', { headerRow: true, headerColumn: false }), p);
     expect(applied).toMatchObject({ headerRow: true, headerColumn: false });
@@ -138,6 +143,44 @@ describe('applyCodeThemeToEl', () => {
   it('is a no-op on any other shape', () => {
     const square = el('shape', { shape: 'square' });
     expect(applyCodeThemeToEl(square, 'paper')).toBe(square);
+  });
+});
+
+describe("colour field setters clear a table's preset binding", () => {
+  // Same rule as a shape's colorPreset: past a hand-picked colour, the look is
+  // no longer the preset's, so a theme change must preserve what was chosen
+  // rather than repainting the whole table.
+  const bound = () => el('table', { tablePreset: 'table-banded' });
+
+  it('applyFillColorToEl', () => {
+    expect(applyFillColorToEl(bound(), '#c')).toMatchObject({
+      fillColor: '#c',
+      tablePreset: undefined,
+    });
+  });
+
+  it('applyStrokeColorToEl', () => {
+    expect(applyStrokeColorToEl(bound(), '#c')).toMatchObject({
+      strokeColor: '#c',
+      tablePreset: undefined,
+    });
+  });
+
+  it('applyTextColorToEl', () => {
+    expect(applyTextColorToEl(bound(), '#c')).toMatchObject({
+      textColor: '#c',
+      tablePreset: undefined,
+    });
+  });
+
+  it('applyHeaderFillToEl, and leaves a lane gutter untouched', () => {
+    expect(applyHeaderFillToEl(bound(), '#c')).toMatchObject({
+      headerFill: '#c',
+      tablePreset: undefined,
+    });
+    expect(applyHeaderFillToEl(el('shape', { shape: 'lane' }), '#c')).toMatchObject({
+      headerFill: '#c',
+    });
   });
 });
 

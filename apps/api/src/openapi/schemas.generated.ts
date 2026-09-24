@@ -4384,6 +4384,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "strokeWidth": {
         "$ref": "#/components/schemas/BorderStroke"
       },
+      "tablePreset": {
+        "type": "string"
+      },
       "textAlignX": {
         "$ref": "#/components/schemas/TextAlignX"
       },

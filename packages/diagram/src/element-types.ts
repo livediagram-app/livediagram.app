@@ -501,6 +501,13 @@ export type TableElement = {
   headerColumn?: boolean;
   // Alternating body-row background tint (a 'zebra' table).
   zebra?: boolean;
+  // The table look this was painted with (spec/48), if any: the id of a
+  // `tableColorPresets` entry. Stored for the same reason a shape stores
+  // `colorPreset` — the colours below are resolved values, so without the id a
+  // theme change cannot tell "the theme's Banded" from four hand-picked
+  // colours, and the table strands on the old theme. Cleared the moment any of
+  // those colours (or the banding) is set by hand.
+  tablePreset?: string;
   // Per-cell style overrides, row-major + aligned with `cells`
   // (null = inherit the table defaults). Splices alongside cells
   // when rows / columns are added or removed.

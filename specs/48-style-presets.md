@@ -189,6 +189,19 @@ preset flipping it would silently re-read the first row of somebody's table as a
 heading. Reset goes through the shared reset-colours handler, the same one the
 Colours section's own reset uses.
 
+A table **binds to its look** exactly as a shape binds to its colour preset:
+`applyTablePresetToEl` records the preset's id in `tablePreset` on the table
+element, and the theme-change paths call `rederiveTablePresetForTheme` so a
+Banded table moves to the new theme's Banded instead of stranding on the old
+theme's accent. The binding is what makes that possible: a table preset writes
+RESOLVED colours into four fields, so without an id a theme change cannot tell a
+look from four hand-picked colours, and it preserves them as customs. (This is
+why a table was the one preset-styled element that did not follow a theme
+change: charts and code blocks store only an id and resolve at render, and
+shapes have always had `colorPreset`.) Hand-setting any of the colours the look
+owns (cell fill, grid, text, header band, header text) or toggling the banding
+clears the binding, because past that point the colours are the user's.
+
 ## Code-block schemes
 
 A code block's Presets grid is its **colour scheme** rather than a shape look. It paints its own card and takes no element colours, so there is nothing to reset it to but another scheme, and the grid carries no reset row. See [spec/82](82-code-block.md).

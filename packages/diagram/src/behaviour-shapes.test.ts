@@ -12,7 +12,7 @@ describe('behaviour shapes', () => {
   });
 
   it('leaves ordinary shapes alone', () => {
-    expect(isBehaviourShape('rect')).toBe(false);
+    expect(isBehaviourShape('square')).toBe(false);
   });
 
   it('never gives a kind both menus', () => {
@@ -35,6 +35,6 @@ describe('behaviour shapes', () => {
   });
 
   it('gives nothing to a shape outside the family', () => {
-    expect(carriesSharedSettingsMenu('rect')).toBe(false);
+    expect(carriesSharedSettingsMenu('square')).toBe(false);
   });
 });

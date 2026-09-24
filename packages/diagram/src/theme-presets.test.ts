@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { STICKY_PRESETS, tableColorPresets } from './theme-presets';
+import { rederiveTablePresetForTheme, STICKY_PRESETS, tableColorPresets } from './theme-presets';
 import { THEMES } from './themes-data';
+import type { TableElement } from './element-types';
+import type { Element } from './index';
 import { isLightColor } from './colors';
 
 const DEFAULT_THEME = THEMES[0]!;
@@ -51,5 +53,65 @@ describe('tableColorPresets', () => {
   it('offers at least one banded and one plain look', () => {
     expect(presets.some((p) => p.zebra)).toBe(true);
     expect(presets.some((p) => !p.zebra)).toBe(true);
+  });
+});
+
+describe('rederiveTablePresetForTheme', () => {
+  // A table preset writes RESOLVED colours, so the stored id is the only thing
+  // that tells "this theme's Banded" apart from four hand-picked colours.
+  const other = THEMES.find((t) => t.id === 'forest')!;
+  const banded = tableColorPresets(DEFAULT_THEME).find((p) => p.id === 'table-banded')!;
+  const bandedThere = tableColorPresets(other).find((p) => p.id === 'table-banded')!;
+  const table: TableElement = {
+    id: 't1',
+    type: 'table',
+    x: 0,
+    y: 0,
+    width: 300,
+    height: 120,
+    cells: [['a']],
+    fillColor: banded.fill,
+    strokeColor: banded.stroke,
+    textColor: banded.text,
+    headerFill: banded.headerFill,
+    headerTextColor: banded.headerText,
+    zebra: banded.zebra,
+    tablePreset: banded.id,
+  };
+
+  it('repaints every surface the look owns, including the header band', () => {
+    const next = rederiveTablePresetForTheme({ ...table }, other);
+    expect(next).toMatchObject({
+      fillColor: bandedThere.fill,
+      strokeColor: bandedThere.stroke,
+      textColor: bandedThere.text,
+      headerFill: bandedThere.headerFill,
+      headerTextColor: bandedThere.headerText,
+      zebra: bandedThere.zebra,
+      tablePreset: 'table-banded',
+    });
+  });
+
+  it('leaves a table with no binding alone', () => {
+    const { tablePreset: _drop, ...unbound } = table;
+    expect(rederiveTablePresetForTheme({ ...unbound }, other)).toEqual(unbound);
+  });
+
+  it('leaves a binding this theme has never heard of alone', () => {
+    const odd = { ...table, tablePreset: 'table-does-not-exist' };
+    expect(rederiveTablePresetForTheme(odd, other)).toEqual(odd);
+  });
+
+  it('is a no-op on anything that is not a table', () => {
+    const shape: Element = {
+      id: 's1',
+      type: 'shape',
+      shape: 'square',
+      x: 0,
+      y: 0,
+      width: 10,
+      height: 10,
+    };
+    expect(rederiveTablePresetForTheme(shape, other)).toBe(shape);
   });
 });
