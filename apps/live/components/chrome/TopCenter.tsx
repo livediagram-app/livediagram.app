@@ -18,13 +18,17 @@ import type {
 // "alongside, or under on mobile" behaviour the timer needs next to a
 // banner.
 
-type BannerTone = 'neutral' | 'brand' | 'danger';
+type BannerTone = 'neutral' | 'brand' | 'live' | 'danger';
 
 const TONE_CLASS: Record<BannerTone, string> = {
   neutral:
     'border-slate-200 bg-white text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100',
   brand:
     'border-brand-200 bg-brand-50 text-brand-800 dark:border-brand-500/40 dark:bg-brand-500/15 dark:text-brand-100',
+  // Solid, for a pill that reports something HAPPENING to your view right now
+  // (being followed along, spec/131) rather than a mode you turned on. It is
+  // meant to be the loudest thing on the canvas until you stop it.
+  live: 'border-brand-500 bg-brand-500 text-white',
   danger:
     'border-rose-300 bg-rose-50 text-rose-700 dark:border-rose-500/40 dark:bg-rose-500/15 dark:text-rose-200',
 };
