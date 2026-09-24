@@ -20,6 +20,25 @@ import { decodePng } from './png';
 // detector nobody runs.
 export const WORKING_EDGE_PX = 1000;
 
+// `--edge <px>` measures the detector at another working size — what the
+// resolution experiments sweep. The number it prints is then a detector the
+// editor does NOT run until PHOTO_MAX_EDGE_PX moves with it.
+export function workingEdgeFrom(argv: readonly string[]): number {
+  const at = argv.indexOf('--edge');
+  if (at === -1) return WORKING_EDGE_PX;
+  const edge = Number(argv[at + 1]);
+  if (!Number.isInteger(edge) || edge <= 0) {
+    throw new Error(`--edge wants a positive whole number of pixels, got ${argv[at + 1]}`);
+  }
+  return edge;
+}
+
+// ImageMagick's `>` shrinks only: the editor never upscales a photo, so a
+// photo smaller than the working size is measured at its own size.
+export function resizeGeometry(edge: number): string {
+  return `${edge}x${edge}>`;
+}
+
 const PHOTO_EXTENSIONS = /\.(jpe?g|png)$/i;
 
 export function workDirFor(photoDir: string): string {
@@ -52,15 +71,15 @@ function converter(): { cmd: string; auto: boolean } {
 
 // A JPEG becomes a working-size PNG once, outside the repo. PNG photos are
 // resized the same way, so every photo is measured at the editor's size.
-function workingPng(photoDir: string, name: string, workDir: string): string {
-  const out = `${workDir}/work-${name.replace(PHOTO_EXTENSIONS, '')}.png`;
+function workingPng(photoDir: string, name: string, workDir: string, edge: number): string {
+  const out = `${workDir}/work-${edge}-${name.replace(PHOTO_EXTENSIONS, '')}.png`;
   if (existsSync(out)) return out;
   const { cmd } = converter();
   execFileSync(cmd, [
     `${photoDir}/${name}`,
     '-auto-orient',
     '-resize',
-    `${WORKING_EDGE_PX}x${WORKING_EDGE_PX}`,
+    resizeGeometry(edge),
     '-strip',
     `png24:${out}`,
   ]);
@@ -69,10 +88,10 @@ function workingPng(photoDir: string, name: string, workDir: string): string {
 
 // Decode once, iterate a hundred times. A raw RGBA dump beside the working PNG
 // is the difference between a six-minute loop and a two-second one.
-export function loadPhoto(photoDir: string, name: string): ImageBuffer {
+export function loadPhoto(photoDir: string, name: string, edge = WORKING_EDGE_PX): ImageBuffer {
   const workDir = workDirFor(photoDir);
-  const cache = `${workDir}/${name}.rgba`;
-  const meta = `${workDir}/${name}.json`;
+  const cache = `${workDir}/${name}.${edge}.rgba`;
+  const meta = `${workDir}/${name}.${edge}.json`;
   if (existsSync(cache) && existsSync(meta)) {
     const { width, height } = JSON.parse(readFileSync(meta, 'utf8')) as {
       width: number;
@@ -80,7 +99,7 @@ export function loadPhoto(photoDir: string, name: string): ImageBuffer {
     };
     return { width, height, data: new Uint8ClampedArray(readFileSync(cache)) };
   }
-  const image = decodePng(workingPng(photoDir, name, workDir));
+  const image = decodePng(workingPng(photoDir, name, workDir, edge));
   writeFileSync(cache, Buffer.from(image.data.buffer));
   writeFileSync(meta, JSON.stringify({ width: image.width, height: image.height }));
   return image;

@@ -6,7 +6,7 @@ import { classMaskOf, detectStickies, type DetectedSticky } from '../src/detect'
 import { labelComponents } from '../src/components';
 import { fitBoxes, mergeFragments } from '../src/boxes';
 import { encodePng } from './png';
-import { listPhotos, loadPhoto, workDirFor } from './photos';
+import { listPhotos, loadPhoto, workDirFor, workingEdgeFrom } from './photos';
 import { BAR, meetsBar, photoDir, score, truthDir, truthFor, type Score } from './truth';
 
 // Calibrating the detector against REAL photographs of a real wall.
@@ -15,7 +15,7 @@ import { BAR, meetsBar, photoDir, score, truthDir, truthFor, type Score } from '
 // enter the repo, so nothing here can run in CI. The unit tests stay synthetic,
 // exact and fast; this is the loop you run by hand while moving a threshold.
 //
-//   npx tsx scripts/calibrate.ts [--photos <dir>] [--probe x,y,x,y <photo>]
+//   npx tsx scripts/calibrate.ts [--photos <dir>] [--edge <px>] [--probe x,y,x,y <photo>]
 //
 // Reads every JPEG or PNG in the folder (default: this package's gitignored
 // `test-files/`), converts each ONCE to the editor's working size and caches
@@ -29,6 +29,8 @@ import { BAR, meetsBar, photoDir, score, truthDir, truthFor, type Score } from '
 const PHOTO_DIR = process.argv.includes('--photos')
   ? process.argv[process.argv.indexOf('--photos') + 1]!
   : photoDir();
+
+const EDGE = workingEdgeFrom(process.argv);
 
 const KIND_INK: Record<string, [number, number, number]> = {
   'domain-event': [255, 0, 0],
@@ -148,7 +150,7 @@ function probe(image: ImageBuffer, floors: ReturnType<typeof wallFloorsOf>, spec
 }
 
 function report(name: string) {
-  const image = loadPhoto(PHOTO_DIR, name);
+  const image = loadPhoto(PHOTO_DIR, name, EDGE);
   const floors = wallFloorsOf(image);
   const started = performance.now();
   const found = detectStickies(image);
@@ -266,7 +268,7 @@ function report(name: string) {
   }));
   writeFileSync(out, encodePng(overlay(image, found, truthBoxes)));
   console.log(`  overlay: ${out}`);
-  return { name, found: found.length, thirds: [l, m, r] as const, scored };
+  return { name, found: found.length, thirds: [l, m, r] as const, scored, took };
 }
 
 function main() {
@@ -280,12 +282,12 @@ function main() {
     process.exit(1);
   }
   const rows = names.map(report);
-  console.log(`\nSUMMARY (${PHOTO_DIR})   truth: ${truthDir()}\n`);
+  console.log(`\nSUMMARY (${PHOTO_DIR}, working edge ${EDGE}px)   truth: ${truthDir()}\n`);
   const pc = (v: number) => `${(v * 100).toFixed(0)}%`;
   console.log(
     `  ${'photo'.padEnd(26)}${'found'.padStart(7)}${'L/M/R'.padStart(14)}` +
       `${'truth'.padStart(8)}${'prec'.padStart(7)}${'recall'.padStart(8)}${'F1'.padStart(6)}` +
-      `${'rec-A'.padStart(7)}${'actors'.padStart(9)}${'merged'.padStart(8)}  bar`,
+      `${'rec-A'.padStart(7)}${'actors'.padStart(9)}${'merged'.padStart(8)}${'ms'.padStart(7)}  bar`,
   );
   for (const row of rows) {
     const s = row.scored;
@@ -295,7 +297,7 @@ function main() {
           ? `${String(s.truth).padStart(8)}${`${(s.precision * 100).toFixed(0)}%`.padStart(7)}` +
             `${`${(s.recall * 100).toFixed(0)}%`.padStart(8)}${`${(s.f1 * 100).toFixed(0)}%`.padStart(6)}` +
             `${pc(s.recallWithoutActors).padStart(7)}${`${s.actors.matched}/${s.actors.truth}`.padStart(9)}` +
-            `${String(s.merged).padStart(8)}  ${meetsBar(s) ? 'PASS' : 'FAIL'}`
+            `${String(s.merged).padStart(8)}${row.took.toFixed(0).padStart(7)}  ${meetsBar(s) ? 'PASS' : 'FAIL'}`
           : `${'-'.padStart(8)}${'-'.padStart(7)}${'-'.padStart(8)}${'-'.padStart(6)}`),
     );
   }
@@ -320,7 +322,10 @@ function main() {
           `${`${(recall * 100).toFixed(0)}%`.padStart(8)}${`${(f1 * 100).toFixed(1)}%`.padStart(7)}`
         : '') +
       (scored.length
-        ? `${''.padStart(16)}${String(mergedAll).padStart(8)}  ${passing}/${scored.length} walls`
+        ? `${''.padStart(16)}${String(mergedAll).padStart(8)}${rows
+            .reduce((a, r) => a + r.took, 0)
+            .toFixed(0)
+            .padStart(7)}  ${passing}/${scored.length} walls`
         : '') +
       '\n',
   );
