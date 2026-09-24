@@ -53,15 +53,18 @@ touch another group's file stops and asks.
 
 ### C — junk rejection (`standout.ts`, new `texture.ts`)
 
-- [ ] C1 Per-box features: ink-masked substrate gradient variance, LBP
+- [x] C1 Per-box features: ink-masked substrate gradient variance, LBP
       entropy, contour straightness (RDP vertex count / residual), fill,
       aspect, standout, size ratio.
-- [ ] C2 Measure their distributions for NOTE vs JUNK on the eight walls
+- [x] C2 Measure their distributions for NOTE vs JUNK on the eight walls
       (leave-one-wall-out, so the rule is never fitted to the wall it is
       scored on).
-- [ ] C3 A gate — hand-written thresholds or a tiny decision tree compiled to
+- [x] C3 A gate — hand-written thresholds or a tiny decision tree compiled to
       TypeScript — trained leave-one-wall-out. Measure precision on 201646,
       201707, 201743 without costing recall.
+      Result ([c-junk.md](../docs/vision/experiments/c-junk.md)): dark-grain
+      gate kept (83.7 → 85.1), blank-and-edgeless gate kept pending one line
+      in `detect.ts` (→ 86.5); 201707 has no junk, only paper (B).
 
 ### D — resolution and tiling (`detect.ts`, `scripts/calibrate.ts` options)
 

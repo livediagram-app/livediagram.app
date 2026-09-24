@@ -1117,6 +1117,15 @@ Decisions from the operator:
   Measured on the three labelled photographs, the gates and the splitting
   together: F1 53 → 80, 9 → 86 and 42 → 90.
 
+- **Paper is smooth.** Standing out is not enough on its own: cardboard,
+  furniture and a window frame at night differ from the wall as much as any
+  note. They are told apart by their SURFACE: a box that is both dark (median
+  brightness under half) and grained (brightness steps across its surface once
+  the writing is set aside) is something in the room, not paper. Neither half
+  alone is enough — lit paper photographed sharply shows its fibre, and a note
+  in deep shade is dark — and on the eight labelled walls no note is both.
+  Precision 85 → 89% (the night wall 36 → 50%), no note lost on any wall.
+
 - **Tuned against eight hand-traced walls, not three by eye.** The author
   labels a wall in the review itself (correct the boxes, **Save as truth**),
   and the labels live in a private repository beside the photographs. Every

@@ -3,6 +3,7 @@ import { rgbToHsv, type ImageBuffer } from '../src/colour';
 import { detectStickies, type DetectedSticky } from '../src/detect';
 import { standoutOf, standoutPartsOf } from '../src/standout';
 import { edgeSidesOf, lbpEntropyOf, roughnessOf, valueSpreadOf } from '../src/texture';
+import { straightSidesOf } from './straightness';
 import { listPhotos, loadPhoto, workDirFor } from './photos';
 import { photoDir, score, truthFor } from './truth';
 
@@ -127,6 +128,7 @@ export function collectRows(): BoxRow[] {
       const st = insideStats(image, s);
       const parts = standoutPartsOf(image, s) ?? { saturation: 1, value: 1, hue: 1 };
       const sides = edgeSidesOf(image, s);
+      const straight = straightSidesOf(image, s);
       const edgeDist = Math.min(s.x, s.y, image.width - s.x - s.w, image.height - s.y - s.h);
       rows.push({
         wall: name.replace(/\.[^.]+$/, ''),
@@ -159,6 +161,9 @@ export function collectRows(): BoxRow[] {
           dH: parts.hue,
           inkShare: st.inkShare,
           px: Math.sqrt(s.w * s.h),
+          straight0: straight[0] ?? 1,
+          straight1: straight[1] ?? straight[0] ?? 1,
+          straightMean: straight.length ? straight.reduce((a, b) => a + b, 0) / straight.length : 1,
           spread20: valueSpreadOf(image, s, 0.2),
           spread25: valueSpreadOf(image, s, 0.25),
           spread30: valueSpreadOf(image, s, 0.3),

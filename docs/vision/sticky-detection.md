@@ -115,6 +115,15 @@ and testable.
    where a blue sticky is far darker than the wall — it cost two thirds of the
    blue notes on a real one and, once the fill floor took the cardboard it was
    added for, bought nothing anywhere.
+
+   Standing out is not enough on its own, so `standsOut` also refuses a box
+   that is **dark AND grained** (`isDarkGrain`, in `texture.ts`): cardboard,
+   furniture, a window frame at night. Roughness is the mean Sobel gradient
+   over the interior with the writing masked out, divided by the paper's own
+   brightness, so paper reads smooth in the sun and in the shade. The per-box
+   surface features and the leave-one-wall-out study behind this gate are in
+   [experiments/c-junk.md](experiments/c-junk.md).
+
 6. **Rows** (`clusterRows`): cluster centre-y, order by centre-x within a row.
 
 ## The constants, and what they cost to learn
@@ -136,6 +145,7 @@ and testable.
 | `MIN_CLASS_SIZE_SAMPLE`                     | 10                | A colour needs this many whole notes to be floored against its OWN size (a pad of small actors), not the wall's. Tape had 3 to 7; real small pads 21. Any value 8 to 20 scores the same.      |
 | `CLOSE_NOTE_FRACTION`                       | 0.04              | The close repairs handwriting INSIDE a note, so it is sized from the note — capped at 0.6% of the frame.                                                                                      |
 | `STANDOUT_SATURATION`                       | 0.15              | How far above its own wall a note sits in saturation. Measured: notes p10 0.04–0.05, junk p50 around zero.                                                                                    |
+| `DARK_GRAIN_BRIGHTNESS` / `_ROUGHNESS`      | 0.5 / 0.03        | Dark and grained is the room, not paper. No labelled note is both anywhere in 0.45–0.55 × 0.025–0.035; every leave-one-wall-out fold lands near 0.5 × 0.025 and loses no note.                |
 | `WALL_RING_QUANTILE`                        | 0.25              | Which part of the ring around a box IS the wall. On a dense wall the rest of the ring is other notes.                                                                                         |
 | `FLOOR_TILES_LONG_SIDE`                     | 8                 | Cells about two notes across. Fewer and a shadow edge falls inside one cell; more and a cell can be all paper.                                                                                |
 | `TILE_BIMODAL_STRENGTH`                     | 0.12              | Below this share of its own variance a cell's histogram is one surface, and there is nothing in it to split.                                                                                  |
