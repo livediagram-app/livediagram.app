@@ -84,7 +84,7 @@ bundle size, effort, and links.
 
 ## Phase 4 — delegated experiments
 
-- [ ] 4.1 Delegate each experiment group to its own session (Opus 5.5,
+- [x] 4.1 Delegate each experiment group to its own session (Opus 5.5,
       medium effort), each in its OWN git worktree and branch, so parallel
       work cannot collide. Every delegate scores against the same truth with
       the same sweep, and reports its table.
