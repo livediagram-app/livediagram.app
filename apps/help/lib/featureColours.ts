@@ -123,6 +123,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'timeline-rail': '#14b8a6',
   // Palette → Behaviour elements
   'bring-focus': '#0ea5e9',
+  facilitator: '#a855f7',
   'mode-buttons': '#7c3aed',
   'session-buttons': '#f43f5e',
   'done-checks': '#22c55e',

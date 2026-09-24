@@ -24,8 +24,14 @@ type RoomHandle = { send: (msg: RoomOutgoing) => void };
 // it is never rendered (spec/88 — results carry no identity).
 export type PollAnswers = Map<string, string | null>;
 
-export function useLivePoll(deps: { roomRef: React.RefObject<RoomHandle | null> }) {
-  const { roomRef } = deps;
+export function useLivePoll(deps: {
+  roomRef: React.RefObject<RoomHandle | null>;
+  // Live "somebody else is facilitating" (spec/149). A ref because the poll
+  // hook is created before the facilitator hook (which needs the room, which
+  // needs this), and the value is only ever read at press time.
+  sessionBlockedRef?: React.RefObject<boolean>;
+}) {
+  const { roomRef, sessionBlockedRef } = deps;
   const [poll, setPoll] = useState<LivePoll | null>(null);
   const [answers, setAnswers] = useState<PollAnswers>(() => new Map());
   // Have we responded yet? Answering or skipping both count, and both
@@ -107,6 +113,11 @@ export function useLivePoll(deps: { roomRef: React.RefObject<RoomHandle | null> 
 
   const startPoll = useCallback(
     (draft: Omit<LivePoll, 'id' | 'startedAt'>) => {
+      // Somebody else is facilitating (spec/149), so the room would refuse the
+      // op anyway: the room gates `poll-start` / `poll-end` itself, because
+      // unlike the timer they are their own op kinds. This keeps the local
+      // panel from opening on a frame that is going to be dropped.
+      if (sessionBlockedRef?.current) return;
       const next = sanitisePoll({ ...draft, id: crypto.randomUUID(), startedAt: Date.now() });
       if (!next) return;
       hostedPollRef.current = next.id;
@@ -137,6 +148,7 @@ export function useLivePoll(deps: { roomRef: React.RefObject<RoomHandle | null> 
   );
 
   const endPoll = useCallback(() => {
+    if (sessionBlockedRef?.current) return;
     const current = pollRef.current;
     if (!current) return;
     roomRef.current?.send({ kind: 'op', op: { kind: 'poll-end', pollId: current.id } });

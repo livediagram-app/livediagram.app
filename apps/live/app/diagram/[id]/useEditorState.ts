@@ -24,6 +24,7 @@ import { usePortalSetters } from '@/hooks/canvas/usePortalSetters';
 import { useBehaviourElements } from '@/hooks/canvas/useBehaviourElements';
 import { useCollabElements } from '@/hooks/canvas/useCollabElements';
 import { useFollowMe } from '@/hooks/collab/useFollowMe';
+import { useFacilitator } from '@/hooks/collab/useFacilitator';
 import { useFocusInvite } from '@/hooks/collab/useFocusInvite';
 import { FOCUS_PRESS_MESSAGE, focusPressOutcome } from '@/lib/focus-audience';
 import type { CanvasTool } from '@/components/palette/CommandPalette';
@@ -724,7 +725,10 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   // Live poll (spec/88): the ephemeral pulse-check. Declared before the
   // room connection because that's what feeds it inbound ops. Nothing it
   // holds is persisted — no tab field, no autosave, no change log.
-  const livePoll = useLivePoll({ roomRef });
+  // Kept in step with the facilitator hook below, which cannot be declared up
+  // here: it needs the room, and the room needs this.
+  const sessionBlockedRef = useRef(false);
+  const livePoll = useLivePoll({ roomRef, sessionBlockedRef });
   // In-place recovery when the room can't replay our reconnect gap
   // (spec/97), in place of the page reload this used to do.
   const resyncFromServer = useRoomResync({
@@ -755,6 +759,21 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     ((from: string, tabId: string, at: { x: number; y: number }, zoom: number) => void) | null
   >(null);
 
+  // Who is running this session (spec/149). Declared before the room
+  // connection because the socket hands it every answer and asks it for the
+  // token on each hello.
+  const facilitator = useFacilitator({
+    diagramId,
+    send: (msg) => roomRef.current?.send(msg),
+    // toast.info, so the Show notifications preference (spec/20) governs these
+    // exactly as it governs every other announcement.
+    onNotice: (message) => toast.info(message),
+    // Names come from the roster we already hold, so a renamed participant's
+    // announcement reads correctly.
+    nameOf: (presenceId) => livePresence.find((p) => p.id === presenceId)?.name ?? 'Somebody',
+  });
+  sessionBlockedRef.current = facilitator.sessionToolsBlocked;
+
   useRoomConnection({
     hydrated,
     diagramId,
@@ -784,6 +803,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     // taking an invitation navigates through the viewport (declared later
     // still). Same knot, and the same ref, as the portal's travel callback.
     receiveFocusHere: (from, tabId, at, zoom) => receiveFocusRef.current?.(from, tabId, at, zoom),
+    receiveFacilitator: facilitator.receiveFacilitator,
+    readFacilitatorToken: facilitator.readFacilitatorToken,
     receivePoll: livePoll.receivePoll,
     receivePollAnswer: livePoll.receiveAnswer,
     receivePollEnd: livePoll.receivePollEnd,
@@ -1777,6 +1798,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     retractVote,
   } = useTabSession({
     editsBlocked,
+    sessionToolsBlocked: facilitator.sessionToolsBlocked,
     activeId,
     activeTab,
     // The non-history mutator, per spec/39: starting a timer or
@@ -1795,6 +1817,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
       activeId,
       commitTabs,
       editsBlocked,
+      sessionToolsBlocked: facilitator.sessionToolsBlocked,
       selfParticipant,
       livePresence,
       activeTimer: activeTab.timer,
@@ -1813,6 +1836,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     activeId,
     commitTabs,
     editsBlocked,
+    sessionToolsBlocked: facilitator.sessionToolsBlocked,
     selfParticipant,
     livePresence,
     startTimer,
@@ -2585,6 +2609,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     applyImageToElement,
     autoAlignTab,
     autoLayoutTab,
+    // The facilitator baton (spec/149): who is running this session.
+    facilitator,
     previewCleanup,
     endCleanupPreview,
     applyTabFontToAll,

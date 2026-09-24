@@ -62,6 +62,7 @@ export function EditorView() {
     autoLayoutTab,
     previewCleanup,
     endCleanupPreview,
+    facilitator,
     startTimer,
     pauseTimer,
     resumeTimer,
@@ -130,6 +131,15 @@ export function EditorView() {
     zenMode,
     openCollaborators,
   } = ctx;
+
+  // Who is facilitating, named for the UI, or null when it is nobody or us
+  // (spec/149). Resolved from the roster we already hold so a rename reads
+  // correctly, and null when we hold it: our own controls are not blocked,
+  // so there is nothing to explain.
+  const facilitatorName =
+    facilitator.sessionToolsBlocked && facilitator.facilitatorId
+      ? (livePresence.find((p) => p.id === facilitator.facilitatorId)?.name ?? 'Someone else')
+      : null;
   const selectTab = useSelectTab();
   // Contextual command palette for the SearchPanel "Actions" group (spec/09):
   // selection-aware command list + dispatcher, built off the same editor
@@ -285,6 +295,9 @@ export function EditorView() {
             }}
             timer={activeTab.timer ?? null}
             vote={activeTab.vote ?? null}
+            // Somebody else is running this session (spec/149), so the Studio
+            // says whose it is and disables its controls.
+            facilitatedBy={facilitatorName}
             onStartTimer={startTimer}
             onPauseTimer={pauseTimer}
             onResumeTimer={resumeTimer}

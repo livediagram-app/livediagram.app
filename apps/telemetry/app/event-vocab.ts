@@ -33,6 +33,8 @@ export const CATEGORY_DESCRIPTIONS: Record<TelemetryCategory, string> = {
   Layer:
     'Tab layers (Photoshop-style stacking bands): add, rename, delete, restack, show / hide, lock, move elements between layers, open the panel.',
   Session: 'Account-level events when Clerk auth is configured: sign-in, sign-up, sign-out.',
+  Facilitator:
+    'The live-session baton: somebody taking the timer / votes / polls for a room, handing them on, or stepping down.',
   AI: 'The optional in-editor AI assistant: running its Ask / Clean requests on the current tab.',
   Team: 'Teams: creating and joining, renaming, role changes, member invites and removals, and the shared team library of diagrams.',
   Participant:
@@ -71,6 +73,7 @@ const CATEGORY_COLORS: Record<TelemetryCategory, string> = {
   Folder: '#a855f7',
   Layer: '#7c3aed',
   Session: '#64748b',
+  Facilitator: '#a855f7',
   AI: '#eab308',
   Team: '#2563eb',
   Participant: '#dc2626',

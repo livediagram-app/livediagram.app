@@ -1,0 +1,64 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Facilitator',
+  description:
+    'Give one person the timer, the votes and the polls for a live session, hand the role on, and take it back at any time as the diagram owner.',
+  path: '/help/collaboration/facilitator/',
+});
+
+<ArticleLayout
+  title="Facilitator"
+  description="One person runs the session tools, so two people can't start timers over each other."
+  categoryTitle="Collaboration"
+  categorySlug="collaboration"
+  subArticles={getSubArticles('facilitator')}
+>
+
+A board full of workshop tools has no idea who is running the workshop. Two people start countdowns over each other, somebody reveals the estimates while a third is still typing one, a poll ends mid-answer. Making one person the **facilitator** settles it: the tools that run the room answer to them, and everyone else gets on with the work.
+
+Nobody is the facilitator until somebody takes the role, and a session that never uses it behaves exactly as it always has.
+
+## Making someone the facilitator
+
+Click any avatar on a tab to open **Collaborators**, then use the button on the person's row:
+
+- **Make Facilitator** on somebody else's row.
+- **Take Facilitation** on your own row, when nobody is running the session.
+- **Step Down** when you're the facilitator and you're done.
+- **Take Over** on your own row, if you own the diagram and somebody else is facilitating. The owner can always take the session back.
+
+Whoever is running it wears a **Facilitating** badge in that list. A view-only visitor can't hold the role, because the tools it governs write to the diagram; their button says so.
+
+Everyone in the room gets a short notification when the role moves, so nobody has to guess. If you've turned notifications off in [Settings](/help/user-interface/settings/), you won't see those, and the badge still tells you who has it.
+
+## What the facilitator runs
+
+While somebody holds the role, these are theirs:
+
+- The **timer**: start, pause, extend, reset, clear.
+- **Dot voting**: starting a round, revealing it, ending it, stepping through the results.
+- **Polls**: asking a question and ending it.
+- **Session buttons**, both pressing one and changing what it does.
+- **Agenda** items, which start that item's countdown.
+- Revealing and clearing an **estimate**, a **temperature check** or an **idea box**, and scattering ideas onto the canvas.
+- Resetting a **done check** for a new round, taking a **roll call**, spinning a **picker**, lifting a **reveal zone** cover, and pressing **Bring Focus**.
+
+Everything else is unchanged for everyone: answering a poll, casting your dots, adding an idea, marking yourself done, commenting, drawing, following somebody, and every part of editing the diagram. A tool only the facilitator can answer wouldn't be a tool.
+
+When somebody else is facilitating, the session panel says who, and its controls are greyed until they hand it on or step down.
+
+## If they leave or refresh
+
+Refreshing changes nothing: the role comes straight back to them, usually before the page has finished loading. Same for a dropped connection or a closed laptop lid.
+
+If they leave for good, the role is released about a minute and a half later and everyone is told, so the tools open up again rather than staying locked behind somebody who has gone. The diagram's owner can also take it back at any moment, and when everyone leaves the diagram the role is simply over: the next session starts with nobody facilitating.
+
+<Tip>
+  Building the board and running the session are different jobs. Make the diagram, then hand the
+  facilitator role to whoever is running the meeting — you keep the ability to take it back.
+</Tip>
+
+</ArticleLayout>

@@ -159,6 +159,37 @@ export function isSystemOpKind(kind: unknown): kind is (typeof SYSTEM_OP_KINDS)[
   return typeof kind === 'string' && (SYSTEM_OP_KINDS as readonly string[]).includes(kind);
 }
 
+// ---------------------------------------------------------------------
+// Facilitator (spec/149)
+// ---------------------------------------------------------------------
+
+// Why this is a MESSAGE and not a room op: an op is relayed, and the baton is
+// arbitrated. Only the room can say who holds it, because only the room can see
+// every socket, and only the room can mint a token no other peer ever receives.
+// A relayed "I am the facilitator now" would be a claim anybody could make.
+
+/** What moved the baton, which is what lets each client word its own toast. */
+export type FacilitatorReason =
+  // Somebody took a free baton.
+  | 'claim'
+  // Somebody handed it to somebody else (or the owner took it back).
+  | 'grant'
+  // The holder stepped down.
+  | 'release'
+  // The holder left and did not come back inside the grace period.
+  | 'left'
+  // The state a joiner is told on connect. Announces nothing: the room is
+  // catching them up, not reporting an event.
+  | 'state';
+
+export type FacilitatorAction =
+  // Take a free baton (or, as the owner, take a held one).
+  | { action: 'claim' }
+  // Hand it to a presence id: the owner, or the holder passing it on.
+  | { action: 'grant'; to: string }
+  // Step down.
+  | { action: 'release' };
+
 // Outgoing WebSocket frames the room sends to clients.
 // `presence` is the full participant list refreshed on join / leave;
 // `op` is an arbitrary diagram change rebroadcast from another client.
@@ -184,14 +215,35 @@ export type ServerMessage =
       seq: number;
       ops: { from: string; op: unknown; seq: number }[];
       resync: boolean;
+    }
+  // Who holds the facilitator baton (spec/149), broadcast on every change and
+  // sent once to each joiner with `reason: 'state'`.
+  //
+  // `token` rides ONLY the copy sent to the new holder, and is the whole
+  // security model: the room knows no identities (spec/61 §6), so the holder
+  // proves itself by presenting the token on its next `hello` rather than by
+  // being anybody in particular. A refresh therefore keeps the baton, and no
+  // other peer can claim it, because no other peer was ever sent it.
+  | {
+      kind: 'facilitator';
+      holder: string | null;
+      by?: string;
+      reason: FacilitatorReason;
+      token?: string;
     };
 
 // Incoming WebSocket frames clients send to the room.
 // `hello` identifies the participant on connect; `op` is any local
 // mutation the client wants rebroadcast to peers.
 export type ClientMessage =
-  | { kind: 'hello'; participant: ParticipantPresence }
+  // `facilitatorToken` (spec/149) is the baton coming home after a refresh:
+  // the room checks it against the one it issued and, if it still matches,
+  // hands the baton to this new socket. Absent on every ordinary hello.
+  | { kind: 'hello'; participant: ParticipantPresence; facilitatorToken?: string }
   | { kind: 'op'; op: unknown }
+  // Ask the room to move the baton (spec/149). The room decides; the client
+  // learns the answer from the `facilitator` frame like everybody else.
+  | ({ kind: 'facilitator' } & FacilitatorAction)
   // Sent right after re-connecting (spec/75, Level 1): "here's the last
   // epoch+seq I applied — tell me what I missed, or that I must re-hydrate".
   // `epoch` is null on a client that hasn't seen an ordered op yet.
@@ -368,9 +420,10 @@ export type RoomOp =
 // The room itself still operates on `op: unknown` — the agnosticism
 // stays at the worker boundary.
 export type RoomOutgoing =
-  | { kind: 'hello'; participant: ParticipantPresence }
+  | { kind: 'hello'; participant: ParticipantPresence; facilitatorToken?: string }
   | { kind: 'op'; op: RoomOp }
-  | { kind: 'sync'; epoch: string | null; lastSeq: number };
+  | { kind: 'sync'; epoch: string | null; lastSeq: number }
+  | ({ kind: 'facilitator' } & FacilitatorAction);
 
 export type RoomIncoming =
   | { kind: 'presence'; participants: ParticipantPresence[] }
@@ -381,4 +434,11 @@ export type RoomIncoming =
       seq: number;
       ops: { from: string; op: RoomOp; seq: number }[];
       resync: boolean;
+    }
+  | {
+      kind: 'facilitator';
+      holder: string | null;
+      by?: string;
+      reason: FacilitatorReason;
+      token?: string;
     };

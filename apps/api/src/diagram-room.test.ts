@@ -68,9 +68,12 @@ type FakeState = {
   // instances built from the same FakeState, which is exactly what a
   // hibernation wake looks like: same storage, fresh instance.
   store: Map<string, unknown>;
+  // The facilitator grace period (spec/149) is the room's only alarm.
+  alarms: number[];
   storage: {
     get: (key: string) => Promise<unknown>;
     put: (key: string, value: unknown) => Promise<void>;
+    setAlarm: (when: number) => Promise<void>;
   };
   blockConcurrencyWhile: (fn: () => Promise<void>) => Promise<void>;
 };
@@ -102,10 +105,15 @@ function makeState(store: Map<string, unknown> = new Map()): FakeState {
     },
     getWebSockets: () => [...state.sockets],
     store,
+    alarms: [],
     storage: {
       get: (key) => Promise.resolve(store.get(key)),
       put: (key, value) => {
         store.set(key, value);
+        return Promise.resolve();
+      },
+      setAlarm: (when) => {
+        state.alarms.push(when);
         return Promise.resolve();
       },
     },
@@ -127,8 +135,13 @@ function presence(id: string, role?: 'edit' | 'view'): ParticipantPresence {
 
 // Seed a fully-established session directly (attachment + connected set),
 // the hibernation-API equivalent of the old `sessions.set(ws, presence)`.
-function seedSession(state: FakeState, ws: FakeSocket, p: ParticipantPresence | null): void {
-  ws.attachment = { presenceId: p?.id ?? 'pre-hello', verifiedRole: p?.role, presence: p };
+function seedSession(
+  state: FakeState,
+  ws: FakeSocket,
+  p: ParticipantPresence | null,
+  isOwner = false,
+): void {
+  ws.attachment = { presenceId: p?.id ?? 'pre-hello', verifiedRole: p?.role, presence: p, isOwner };
   state.sockets.push(asWs(ws));
 }
 
@@ -825,8 +838,12 @@ describe('DiagramRoom hibernation survival', () => {
     const joiner = makeSocket();
     after.acceptSession(asWs(joiner), 'edit');
     sendFrame(after, joiner, { kind: 'hello', participant: { id: 'j', name: 'J', color: '#333' } });
-    const frame = JSON.parse(joiner.sent.at(-1)!) as { participants: ParticipantPresence[] };
-    expect(frame.participants.find((p) => p.id === editorId)?.tabId).toBe('tab-9');
+    // The presence frame by kind, not by position: a hello is also answered
+    // with the facilitator state (spec/149), so "the last frame" is not it.
+    const frame = joiner.sent
+      .map((raw) => JSON.parse(raw) as { kind: string; participants?: ParticipantPresence[] })
+      .findLast((f) => f.kind === 'presence')!;
+    expect(frame.participants!.find((p) => p.id === editorId)?.tabId).toBe('tab-9');
   });
 });
 
@@ -1026,5 +1043,252 @@ describe('DiagramRoom op ordering + reconnect catch-up (spec/75, Level 1)', () =
     const catchup = lastCatchup(editor);
     expect(catchup.resync).toBe(false);
     expect(catchup.ops).toEqual([]);
+  });
+});
+
+// ── The facilitator baton (spec/149) ──────────────────────────────────
+//
+// The room is the only thing that can arbitrate this, so these cover what
+// only it can get wrong: who is told, who is told the TOKEN, and the one op
+// it can enforce.
+
+const frames = (ws: FakeSocket) => ws.sent.map((s) => JSON.parse(s) as Record<string, unknown>);
+const facFrames = (ws: FakeSocket) => frames(ws).filter((f) => f.kind === 'facilitator');
+
+describe('DiagramRoom facilitator', () => {
+  it('hands the baton to an editor who claims it, and the token to them alone', () => {
+    const { room, state } = newRoom();
+    const a = makeSocket();
+    const b = makeSocket();
+    seedSession(state, a, presence('p-a', 'edit'));
+    seedSession(state, b, presence('p-b', 'edit'));
+
+    sendFrame(room, a, { kind: 'facilitator', action: 'claim' });
+
+    // Everybody learns who holds it...
+    expect(facFrames(b)).toEqual([
+      { kind: 'facilitator', holder: 'p-a', reason: 'claim', by: 'p-a' },
+    ]);
+    // ...and only the holder is ever sent the token, which is the whole
+    // security model: no other socket can present it later.
+    const mine = facFrames(a);
+    expect(mine.at(-1)).toMatchObject({ holder: 'p-a', token: expect.any(String) });
+    expect(JSON.stringify(b.sent)).not.toContain(String(mine.at(-1)!.token));
+  });
+
+  it('refuses a view-role claim', () => {
+    const { room, state } = newRoom();
+    const v = makeSocket();
+    seedSession(state, v, presence('p-v', 'view'));
+    sendFrame(room, v, { kind: 'facilitator', action: 'claim' });
+    expect(facFrames(v)).toEqual([]);
+  });
+
+  it('refuses a second editor but lets the owner take it back', () => {
+    const { room, state } = newRoom();
+    const a = makeSocket();
+    const b = makeSocket();
+    const o = makeSocket();
+    seedSession(state, a, presence('p-a', 'edit'));
+    seedSession(state, b, presence('p-b', 'edit'));
+    seedSession(state, o, presence('p-o', 'edit'), true);
+
+    sendFrame(room, a, { kind: 'facilitator', action: 'claim' });
+    sendFrame(room, b, { kind: 'facilitator', action: 'claim' });
+    expect(facFrames(b).filter((f) => f.holder === 'p-b')).toEqual([]);
+
+    sendFrame(room, o, { kind: 'facilitator', action: 'claim' });
+    expect(facFrames(b).at(-1)).toMatchObject({ holder: 'p-o', reason: 'claim' });
+  });
+
+  it('drops a poll from anybody but the holder, and relays the holder’s', () => {
+    const { room, state } = newRoom();
+    const a = makeSocket();
+    const b = makeSocket();
+    seedSession(state, a, presence('p-a', 'edit'));
+    seedSession(state, b, presence('p-b', 'edit'));
+    sendFrame(room, a, { kind: 'facilitator', action: 'claim' });
+
+    sendFrame(room, b, { kind: 'op', op: { kind: 'poll-start', poll: { id: 'q1' } } });
+    expect(frames(a).some((f) => f.kind === 'op')).toBe(false);
+
+    sendFrame(room, a, { kind: 'op', op: { kind: 'poll-start', poll: { id: 'q1' } } });
+    expect(frames(b).some((f) => f.kind === 'op')).toBe(true);
+  });
+
+  it('leaves every other op alone: the baton is not an edit permission', () => {
+    const { room, state } = newRoom();
+    const a = makeSocket();
+    const b = makeSocket();
+    seedSession(state, a, presence('p-a', 'edit'));
+    seedSession(state, b, presence('p-b', 'edit'));
+    sendFrame(room, a, { kind: 'facilitator', action: 'claim' });
+
+    sendFrame(room, b, { kind: 'op', op: { kind: 'el', tabId: 't', ops: [] } });
+    expect(frames(a).some((f) => f.kind === 'op')).toBe(true);
+  });
+
+  it('tells a holder their own state frame carries the token', () => {
+    // Without it the holder's own client would read "somebody else is
+    // facilitating" off its own baton: a client cannot recognise its presence
+    // id, so the token is the only thing that says the baton is theirs.
+    const { room, state } = newRoom();
+    const a = makeSocket();
+    seedSession(state, a, presence('p-a', 'edit'));
+    sendFrame(room, a, { kind: 'facilitator', action: 'claim' });
+    const token = facFrames(a).at(-1)!.token as string;
+
+    sendFrame(room, a, { kind: 'hello', participant: presence('p-a', 'edit') });
+    expect(facFrames(a).at(-1)).toMatchObject({ holder: 'p-a', reason: 'state', token });
+  });
+
+  it('announces nothing when a refresh brings the baton home', async () => {
+    // A reload is not an event. Everybody's badge still has to follow the new
+    // presence id, so the frame goes out — as state, which nobody toasts.
+    const { room, state } = newRoom();
+    const a = makeSocket();
+    const b = makeSocket();
+    seedSession(state, a, presence('p-a', 'edit'));
+    seedSession(state, b, presence('p-b', 'edit'));
+    sendFrame(room, a, { kind: 'facilitator', action: 'claim' });
+    const token = facFrames(a).at(-1)!.token as string;
+    const before = facFrames(b).length;
+
+    const back = makeSocket();
+    seedSession(state, back, presence('p-a2', 'edit'));
+    sendFrame(room, back, {
+      kind: 'hello',
+      participant: presence('p-a2', 'edit'),
+      facilitatorToken: token,
+    });
+    expect(facFrames(b).slice(before)).toEqual([
+      { kind: 'facilitator', holder: 'p-a2', reason: 'state' },
+    ]);
+  });
+
+  it('refuses a token whose grace period ran out while the room slept', async () => {
+    // The alarm is what normally releases it, and an alarm needs a room. If
+    // the DO was evicted first, the next read is what has to notice.
+    const { room, state } = newRoom();
+    const a = makeSocket();
+    seedSession(state, a, presence('p-a', 'edit'));
+    sendFrame(room, a, { kind: 'facilitator', action: 'claim' });
+    const token = facFrames(a).at(-1)!.token as string;
+    room.webSocketClose(asWs(a));
+
+    vi.setSystemTime(new Date(Date.now() + 91_000));
+    const back = makeSocket();
+    seedSession(state, back, presence('p-a2', 'edit'));
+    sendFrame(room, back, {
+      kind: 'hello',
+      participant: presence('p-a2', 'edit'),
+      facilitatorToken: token,
+    });
+    expect(room.facilitator.holder).toBeNull();
+    expect(facFrames(back).at(-1)).toMatchObject({ holder: null, reason: 'state' });
+    vi.useRealTimers();
+  });
+
+  it('stops refusing polls once a lapsed baton is read again', async () => {
+    const { room, state } = newRoom();
+    const a = makeSocket();
+    const b = makeSocket();
+    seedSession(state, a, presence('p-a', 'edit'));
+    seedSession(state, b, presence('p-b', 'edit'));
+    sendFrame(room, a, { kind: 'facilitator', action: 'claim' });
+    room.webSocketClose(asWs(a));
+
+    vi.setSystemTime(new Date(Date.now() + 91_000));
+    sendFrame(room, b, { kind: 'op', op: { kind: 'poll-start', poll: { id: 'q1' } } });
+    expect(room.facilitator.holder).toBeNull();
+    vi.useRealTimers();
+  });
+
+  it('gives a refreshing holder their baton back when they present the token', () => {
+    const { room, state } = newRoom();
+    const a = makeSocket();
+    seedSession(state, a, presence('p-a', 'edit'));
+    sendFrame(room, a, { kind: 'facilitator', action: 'claim' });
+    const token = facFrames(a).at(-1)!.token as string;
+
+    // The refresh: a brand new socket, a brand new presence id, and the one
+    // thing that survived in sessionStorage.
+    const back = makeSocket();
+    seedSession(state, back, presence('p-a2', 'edit'));
+    sendFrame(room, back, {
+      kind: 'hello',
+      participant: presence('p-a2', 'edit'),
+      facilitatorToken: token,
+    });
+    expect(facFrames(back).at(-1)).toMatchObject({ holder: 'p-a2', token });
+  });
+
+  it('ignores a token somebody else guessed', () => {
+    const { room, state } = newRoom();
+    const a = makeSocket();
+    const thief = makeSocket();
+    seedSession(state, a, presence('p-a', 'edit'));
+    seedSession(state, thief, presence('p-t', 'edit'));
+    sendFrame(room, a, { kind: 'facilitator', action: 'claim' });
+
+    sendFrame(room, thief, {
+      kind: 'hello',
+      participant: presence('p-t', 'edit'),
+      facilitatorToken: 'not-the-token',
+    });
+    // They are told the state, and it is not them.
+    expect(facFrames(thief).at(-1)).toMatchObject({ holder: 'p-a', reason: 'state' });
+  });
+
+  it('tells a joiner who is facilitating without announcing anything', () => {
+    const { room, state } = newRoom();
+    const a = makeSocket();
+    seedSession(state, a, presence('p-a', 'edit'));
+    sendFrame(room, a, { kind: 'facilitator', action: 'claim' });
+
+    const late = makeSocket();
+    seedSession(state, late, presence('p-l', 'edit'));
+    sendFrame(room, late, { kind: 'hello', participant: presence('p-l', 'edit') });
+    expect(facFrames(late)).toEqual([{ kind: 'facilitator', holder: 'p-a', reason: 'state' }]);
+  });
+
+  it('starts a grace clock when the holder leaves, and releases when it fires', async () => {
+    const { room, state } = newRoom();
+    const a = makeSocket();
+    const b = makeSocket();
+    seedSession(state, a, presence('p-a', 'edit'));
+    seedSession(state, b, presence('p-b', 'edit'));
+    sendFrame(room, a, { kind: 'facilitator', action: 'claim' });
+
+    room.webSocketClose(asWs(a));
+    // Still theirs: a refresh and a dropped connection look identical here.
+    expect(state.alarms).toHaveLength(1);
+    expect(room.facilitator.holder).toBe('p-a');
+
+    vi.setSystemTime(new Date(Date.now() + 91_000));
+    await room.alarm();
+    expect(room.facilitator.holder).toBeNull();
+    expect(facFrames(b).at(-1)).toMatchObject({ holder: null, reason: 'left' });
+    vi.useRealTimers();
+  });
+
+  it('does nothing on an alarm whose holder came back', async () => {
+    const { room, state } = newRoom();
+    const a = makeSocket();
+    seedSession(state, a, presence('p-a', 'edit'));
+    sendFrame(room, a, { kind: 'facilitator', action: 'claim' });
+    const token = facFrames(a).at(-1)!.token as string;
+    room.webSocketClose(asWs(a));
+
+    const back = makeSocket();
+    seedSession(state, back, presence('p-a2', 'edit'));
+    sendFrame(room, back, {
+      kind: 'hello',
+      participant: presence('p-a2', 'edit'),
+      facilitatorToken: token,
+    });
+
+    await room.alarm();
+    expect(room.facilitator.holder).toBe('p-a2');
   });
 });

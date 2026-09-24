@@ -35,19 +35,37 @@ export function SessionStudio({
   };
   const [tool, setTool] = useState<StudioTool>(() => initialStudioTool(state));
 
+  const blocked = Boolean(session.facilitatedBy);
   return (
     <div className="flex flex-col gap-3 p-3">
+      {/* Disabled rather than hidden (spec/149): a panel that emptied itself
+          would teach a different editor to every participant, and somebody
+          who had never seen the timer would not know there was one. A
+          `fieldset` because it disables every control inside it natively,
+          including ones added later. */}
+      {blocked ? (
+        <p className="rounded-md bg-slate-100 px-2.5 py-2 text-[12px] leading-snug text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+          <span className="font-semibold">{session.facilitatedBy}</span> is facilitating this
+          session. Ask them to start the timer, the vote or a poll.
+        </p>
+      ) : null}
       <StudioSwitcher
         tools={STUDIO_TOOLS}
         tool={tool}
         status={(t) => studioToolStatus(t, state)}
         onChange={setTool}
       />
-      <div role="tabpanel" aria-label={tool} className="animate-fade-in" key={tool}>
+      <fieldset
+        disabled={blocked}
+        role="tabpanel"
+        aria-label={tool}
+        className="animate-fade-in min-w-0 border-0 p-0 disabled:opacity-60"
+        key={tool}
+      >
         {tool === 'timer' ? <TimerPane {...session} /> : null}
         {tool === 'vote' ? <VotePane {...session} selfId={selfId} /> : null}
         {tool === 'poll' ? <PollPane {...session} /> : null}
-      </div>
+      </fieldset>
     </div>
   );
 }

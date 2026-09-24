@@ -9,11 +9,15 @@ import { useTabSession } from './useTabSession';
 
 // useTabSession holds no React state (every handler writes through
 // commitTabs), so it runs as a plain function over a tab array we own.
-function harness(initial: Partial<Tab> = {}, opts: { editsBlocked?: boolean } = {}) {
+function harness(
+  initial: Partial<Tab> = {},
+  opts: { editsBlocked?: boolean; sessionToolsBlocked?: boolean } = {},
+) {
   let tabs: Tab[] = [{ id: 't1', name: 'Tab 1', elements: [], ...initial } as Tab];
   const session = () =>
     useTabSession({
       editsBlocked: opts.editsBlocked ?? false,
+      sessionToolsBlocked: opts.sessionToolsBlocked ?? false,
       activeId: 't1',
       activeTab: tabs[0]!,
       commitTabs: (map) => {
@@ -107,5 +111,36 @@ describe('one dot per item', () => {
     h.session().castVote('a');
     h.session().castVote('a');
     expect(h.tab().vote?.votes).toEqual({ a: ['me', 'me'] });
+  });
+});
+
+describe('while somebody else is facilitating (spec/149)', () => {
+  it('refuses to start the timer', () => {
+    const { session, tab } = harness({}, { sessionToolsBlocked: true });
+    session().startTimer('countdown', 60_000);
+    expect(tab().timer).toBeUndefined();
+  });
+
+  it('refuses to start, reveal, end or clear a vote', () => {
+    const { session, tab } = harness({}, { sessionToolsBlocked: true });
+    session().startVote(3);
+    expect(tab().vote).toBeUndefined();
+  });
+
+  it('still lets you cast and retract your own dots, which is the point of a vote', () => {
+    // Started by the facilitator, answered by the room.
+    const running = harness();
+    running.session().startVote(3);
+    const voting = harness(running.tab(), { sessionToolsBlocked: true });
+    voting.session().castVote('el-1');
+    expect(voting.tab().vote?.votes).toEqual({ 'el-1': ['me'] });
+    voting.session().retractVote('el-1');
+    expect(voting.tab().vote?.votes['el-1'] ?? []).toEqual([]);
+  });
+
+  it('changes nothing when nobody is facilitating', () => {
+    const { session, tab } = harness();
+    session().startTimer('countdown', 60_000);
+    expect(tab().timer?.running).toBe(true);
   });
 });
