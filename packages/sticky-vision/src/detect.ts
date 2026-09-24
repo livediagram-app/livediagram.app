@@ -13,6 +13,7 @@ import {
   type DropReason,
 } from './boxes';
 import { clusterRows } from './rows';
+import { luminanceOf } from './seam';
 import { dropBlank } from './texture';
 import { findPads } from './pads';
 
@@ -159,6 +160,10 @@ export function detectStickies(image: ImageBuffer, opts: DetectOptions = {}): De
     // measured after it.
     seams: mask,
     classNoteSize,
+    // …and the picture's brightness, so a merged run is cut where the paper
+    // edge's shadow actually runs (`cutAtSeam`), not merely where a
+    // note-length step falls.
+    luminance: luminanceOf(working),
     onDrop: (box, reason) => {
       if (reason === 'area' || reason === 'size-floor' || reason === 'aspect') refused.push(box);
       opts.onDrop?.(box, reason);
