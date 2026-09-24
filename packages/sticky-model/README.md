@@ -4,8 +4,15 @@ An EXPERIMENT (spec/139 Phase 9, group E of
 [plans/event-storming-photo-95-experiments.md](../../plans/event-storming-photo-95-experiments.md)):
 can a tiny learned boundary model find the sticky notes on a wall better than
 the classical pipeline in `@livediagram/sticky-vision`, above all where notes
-touch? No product code imports this package. Results and verdicts:
+touch? Results and verdicts:
 [docs/vision/experiments/e-model.md](../../docs/vision/experiments/e-model.md).
+
+The editor imports only `src/index.ts`, the browser-safe part (cues, decode,
+mask, `stride.ts`): no TensorFlow.js, no Node. It runs the network itself, in a
+Web Worker (`apps/live/lib/photo-model/`), on the uint8 weights shipped there
+(`scripts/hybrid/quantise.ts --min-elements 0` over the synthetic-only
+`synth-v1` model), and hands the cues to `sticky-vision`'s hybrid rules
+([docs/vision/experiments/m-editor-model.md](../../docs/vision/experiments/m-editor-model.md)).
 
 ## What is in it
 
@@ -19,6 +26,9 @@ touch? No product code imports this package. Results and verdicts:
 - `src/decode.ts` — model output to boxes: each core blob is a note, flooded
   back through the seam; tiny cores and boxes far below the wall's median
   are dropped.
+- `src/stride.ts` — the network's framing, shared by Node and the browser: RGBA
+  to RGB floats, edge-repeated padding to the stride of 16, the crop back.
+- `src/cues.ts` — probabilities to the plain cues the hybrid rules read.
 - `src/train/tile.ts` — training tiles: crop, zoom, the eight flips/turns.
 - `scripts/` — shards, the U-Net (TensorFlow.js), training, leave-one-wall-out,
   and scoring with the classical sweep's own scorer and bar.

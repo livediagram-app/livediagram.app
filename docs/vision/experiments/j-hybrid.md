@@ -287,7 +287,7 @@ would be its own project.
 first use, cached after), usable on a CPU through WASM (under a second),
 unusable through WebGL without a GPU or the plain-JavaScript backend.
 
-## What wiring it into the editor needs (not done)
+## What wiring it into the editor needs (done by group M: [m-editor-model.md](m-editor-model.md))
 
 1. **Ship the weights** as a static asset of `apps/live` (the uint8
    `model.json` + `weights.bin`, ~86 KB). They are synthetic-only: reproducible

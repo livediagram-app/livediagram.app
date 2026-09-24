@@ -1145,8 +1145,17 @@ Decisions from the operator:
   no box has (a small one only among boxes of its own size), drop a box with no note in it that the model calls background.
   The kinds stay the colour's. The detector itself carries no ML dependency;
   the model is optional, runs locally, and is loaded only for the photo
-  import. Not yet wired into the editor (what it needs, and the browser cost
-  measured: `docs/vision/experiments/j-hybrid.md`).
+  import: opening the photo picker starts a Web Worker loading TensorFlow.js
+  and ONE backend (WebGPU where the browser has an adapter, else WASM on one
+  thread) and the 83 KB weights, all served by the app itself; none of it is in
+  the editor's own chunks. The photo waits for the model at most 8 seconds;
+  on any failure (no worker, no backend, a load or inference error, the
+  timeout) the classical detector runs alone and the reason is logged and
+  counted (`AI`·`Used`·`PhotoDetect…`, closed values). The editor's boxes are
+  the sweep's, box for box: TOTAL 94.1 → 95.5, merged 20 → 16. The model reads
+  a flat, textureless drawn rectangle as background, so a drawn or screenshot
+  wall can lose a note to the drop rule; photographs have not. See
+  `docs/vision/experiments/j-hybrid.md` and `m-editor-model.md`.
 
 - **Paper is smooth.** Standing out is not enough on its own: cardboard,
   furniture and a window frame at night differ from the wall as much as any

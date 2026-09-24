@@ -368,6 +368,10 @@ the hybrid misses is lost (and how much another label covers it),
 the model in headless Chromium. The model's probabilities are cached under the
 temp directory; see [experiments/j-hybrid.md](experiments/j-hybrid.md) and
 [experiments/n-recall.md](experiments/n-recall.md).
+`editor-sweep.ts` scores the hybrid as the BUILT EDITOR runs it (the e2e stack,
+`E2E_BASE_URL`): every labelled wall through Add from photo, the review's boxes
+scored and compared box for box with Node's; see
+[experiments/m-editor-model.md](experiments/m-editor-model.md).
 
 Real photographs never enter the repo. The unit tests draw their own images and
 stay under 200ms.
