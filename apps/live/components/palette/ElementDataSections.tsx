@@ -51,6 +51,7 @@ import {
 } from '@/components/palette/context-menu-icons';
 import { MenuAccordionSection, MenuTile, MenuTileGrid } from '@/components/primitives/PortalMenu';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
+import { LegendTextSize } from '@/components/palette/TypographySections';
 import { PortalMenuSection } from '@/components/palette/PortalMenuSection';
 import {
   AgendaMenuSection,
@@ -379,6 +380,12 @@ export function ElementDataSections({
                 palette={chartFallbackPalette}
                 onChange={props.onSetLegendItems}
               />
+              <LegendTextSize
+                current={shapeTarget?.textSize ?? 'md'}
+                onSet={props.onSetTextSize}
+                onPreview={props.onPreviewTextSize}
+                onPreviewEnd={props.onPreviewStyleEnd}
+              />
             </MenuAccordionSection>
           ) : null}
           {/* Mind map (spec/118): the shape the whole map grows in. It sets
@@ -481,6 +488,14 @@ export function ElementDataSections({
                 onSetOff={() => props.onSetChartLegend(false)}
                 onSetPosition={props.onSetChartLegendPosition}
               />
+              {shapeTarget?.chartLegend !== false ? (
+                <LegendTextSize
+                  current={shapeTarget?.textSize ?? 'md'}
+                  onSet={props.onSetTextSize}
+                  onPreview={props.onPreviewTextSize}
+                  onPreviewEnd={props.onPreviewStyleEnd}
+                />
+              ) : null}
             </MenuAccordionSection>
           ) : null}
         </MenuFlyoutSection>

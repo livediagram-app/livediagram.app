@@ -21,6 +21,7 @@ export function ChartSurface({
   legend,
   textColor,
   fontFamily,
+  fontPx,
   tooltip,
   children,
 }: ComponentProps<typeof ChartLegend> & {
@@ -52,6 +53,7 @@ export function ChartSurface({
         legend={legend}
         textColor={textColor}
         fontFamily={fontFamily}
+        fontPx={fontPx}
       />
     </div>
   );

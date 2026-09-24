@@ -23,13 +23,18 @@ export function ChartLegend({
   legend,
   textColor,
   fontFamily,
+  fontPx,
 }: {
   items: readonly PieSlice[];
   colorAt: (index: number, item: PieSlice) => string;
   legend: LegendRect;
   textColor: string;
   fontFamily?: string;
+  // The row text size, from the chart's Text Size (legendFontPx, spec/53).
+  fontPx: number;
 }) {
+  // The swatch keeps its proportion to the words beside it.
+  const swatch = Math.round(fontPx * 0.8);
   const vertical = legend.pos === 'left' || legend.pos === 'right';
   if (!legend.show || (vertical ? legend.w < 48 : legend.h < 18)) return null;
   return (
@@ -54,9 +59,11 @@ export function ChartLegend({
         <div key={i} className="flex items-center gap-1 leading-tight">
           <span
             className="inline-block shrink-0 rounded-[2px]"
-            style={{ width: 9, height: 9, backgroundColor: colorAt(i, item) }}
+            style={{ width: swatch, height: swatch, backgroundColor: colorAt(i, item) }}
           />
-          <span className="truncate text-[11px]">{item.label || '—'}</span>
+          <span className="truncate" style={{ fontSize: fontPx }}>
+            {item.label || '—'}
+          </span>
         </div>
       ))}
     </div>

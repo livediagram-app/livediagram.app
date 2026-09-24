@@ -1,4 +1,9 @@
-import { chartPaletteColors, PIE_PALETTE, type ShapeElement } from '@livediagram/diagram';
+import {
+  chartPaletteColors,
+  legendFontPx,
+  PIE_PALETTE,
+  type ShapeElement,
+} from '@livediagram/diagram';
 
 // The legend's canvas view (spec/53): a themed card of colour-coded rows, one
 // dot and one label each. A key, not a chart, so nothing here is clickable:
@@ -23,6 +28,10 @@ export function LegendView({
 }) {
   const items = element.legendItems ?? [];
   const colors = chartPaletteColors(element.chartPalette) ?? PIE_PALETTE;
+  // Text Size (spec/53) scales the rows, and the dot keeps its proportion to
+  // the words beside it.
+  const fontPx = legendFontPx(element.textSize);
+  const dotPx = Math.round(fontPx * 0.75);
   return (
     <div
       className="absolute inset-0 overflow-hidden rounded-lg border"
@@ -32,11 +41,15 @@ export function LegendView({
         {items.map((item, index) => (
           <div key={index} className="flex min-h-5 shrink-0 items-center gap-2">
             <span
-              className="inline-block h-2.5 w-2.5 shrink-0 rounded-full"
-              style={{ backgroundColor: item.color ?? colors[index % colors.length]! }}
+              className="inline-block shrink-0 rounded-full"
+              style={{
+                width: dotPx,
+                height: dotPx,
+                backgroundColor: item.color ?? colors[index % colors.length]!,
+              }}
               aria-hidden
             />
-            <span className="truncate text-[13px] leading-tight" style={{ color: textColor }}>
+            <span className="truncate leading-tight" style={{ color: textColor, fontSize: fontPx }}>
               {item.label}
             </span>
           </div>

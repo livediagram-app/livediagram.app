@@ -38,6 +38,14 @@ the same 1-D data model, while the line chart carries a 2-D dataset (see Model).
   vertical strip for a left/right legend or a horizontal band for a top/bottom
   one, and the chart body fills the remaining `area`; `ChartLegend` stacks in a
   column on the side, or wraps in a centred row on top/bottom.
+- Under the placement tiles (while the legend is on), **Text Size** —
+  **Small / Medium / Large** — sets the key's row size. It writes the element's
+  ordinary `textSize` (a chart has no label, so the Text flyout never offers
+  it) and reads through `legendFontPx` (`label-font.ts`): 11 / 14 / 18px, with
+  Medium the default. A key is not a name, so it has its own scale rather than
+  the label one. The key was a fixed 11px with no control, which read as too
+  small; every existing chart already carries `textSize: 'md'`, so they all
+  moved to the new default without a migration.
 - The **Animation** category carries the chart-specific animations
   (None / Grow / Pop / Spin / Pulse, with a **Speed** row + **Repeat** toggle)
   in place of the boxed-element animation set — a chart animates its marks, not
@@ -123,6 +131,10 @@ added from the menu is created with no colour for the same reason, so it picks u
 the next colour rather than leaving a blank swatch to go and fill in. Setting a
 legend's own `chartPalette` re-colours every uncoloured row, so a legend and a
 chart set to the same palette stay in step.
+
+The **Legend** section also carries **Text Size** (Small / Medium / Large), on
+the same `legendFontPx` scale as a chart's key, so a Legend beside a chart can
+match it. The dot and row pitch scale with it.
 
 Self-drawing (`isSelfDrawingShape`), so no centred label editing, and its wrapper
 paints no box; `LegendView` draws the card from the element's fill + stroke, and
