@@ -24,6 +24,8 @@ import { usePortalSetters } from '@/hooks/canvas/usePortalSetters';
 import { useBehaviourElements } from '@/hooks/canvas/useBehaviourElements';
 import { useCollabElements } from '@/hooks/canvas/useCollabElements';
 import { useFollowMe } from '@/hooks/collab/useFollowMe';
+import { useFocusInvite } from '@/hooks/collab/useFocusInvite';
+import { FOCUS_PRESS_MESSAGE, focusPressOutcome } from '@/lib/focus-audience';
 import type { CanvasTool } from '@/components/palette/CommandPalette';
 import { useCellLinkPicker } from '@/hooks/canvas/useCellLinkPicker';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
@@ -752,6 +754,9 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
   }, []);
   // Reaction bursts (spec/135): ephemeral, per-client, never document state.
   const reactions = useReactionBursts();
+  const receiveFocusRef = useRef<
+    ((from: string, tabId: string, at: { x: number; y: number }, zoom: number) => void) | null
+  >(null);
 
   useRoomConnection({
     hydrated,
@@ -778,6 +783,10 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     setSelfParticipant,
     receiveAvatarPush,
     receiveReaction: reactions.receive,
+    // Filled by the hook below, which cannot be declared up here because
+    // taking an invitation navigates through the viewport (declared later
+    // still). Same knot, and the same ref, as the portal's travel callback.
+    receiveFocusHere: (from, tabId, at, zoom) => receiveFocusRef.current?.(from, tabId, at, zoom),
     receivePoll: livePoll.receivePoll,
     receivePollAnswer: livePoll.receiveAnswer,
     receivePollEnd: livePoll.receivePollEnd,
@@ -855,6 +864,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     broadcastAvatarPush,
     broadcastReaction,
     broadcastViewport,
+    broadcastFocusHere,
     localLaserTrail,
   } = useEditorBroadcast({
     roomRef,
@@ -890,6 +900,41 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     [reactions.play, broadcastReaction],
   );
 
+  // Bring Focus (spec/144): ask everyone else to come and look at this
+  // element, at our zoom, on our tab.
+  //
+  // Sends the element's CENTRE rather than our pan: two people rarely have the
+  // same window size, so copying a pan lands the element off-centre for anyone
+  // whose canvas is a different shape. Our own view does not move — we are
+  // already looking at it.
+  const pressFocusButton = useCallback(
+    (element: ShapeElement) => {
+      const at = { x: element.x + element.width / 2, y: element.y + element.height / 2 };
+      const sent = broadcastFocusHere(at, zoomRef.current);
+      const node = canvasMainRef.current;
+      // A press that moves nobody is invisible from this side, so say which
+      // kind of nobody it was: an empty room, or a room already looking at it.
+      // `livePresence` is peers ONLY (the room excludes the asker from every
+      // presence list it sends), so one other person is length 1.
+      toast.info(
+        FOCUS_PRESS_MESSAGE[
+          focusPressOutcome({
+            sent,
+            peerIds: livePresence.map((p) => p.id),
+            viewports: remoteViewports,
+            size: { width: node?.offsetWidth ?? 0, height: node?.offsetHeight ?? 0 },
+            tabId: activeId,
+            at,
+            zoom: zoomRef.current,
+          })
+        ],
+      );
+      track('Element', 'Used', 'BringFocus');
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [broadcastFocusHere, livePresence, remoteViewports, activeId],
+  );
+
   // Same trick for selfParticipant — the WS effect intentionally
   // omits selfParticipant from its dep list (re-opening the socket
   // on every name/colour change would be wasteful), so the
@@ -918,6 +963,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     getViewportCenter,
     fitToScreen,
     fitToBounds,
+    centreOn,
+    isCentredOn,
     scrollIntoView,
   } = useEditorViewport({ activeTab, selectedId });
 
@@ -1078,6 +1125,24 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     onNotice: (message) => toast.info(message),
   });
 
+  // A tab we are about to land on already aimed, so the tab-entry
+  // fit-to-screen below leaves it alone (it runs a frame later and would
+  // otherwise snap the view straight back off the element).
+  const skipTabFitRef = useRef<string | null>(null);
+
+  // Bring Focus (spec/144): the invitation somebody else's press leaves on
+  // screen, and what taking it does. Placed after the viewport because taking
+  // one navigates through it.
+  const focusInvite = useFocusInvite({
+    onFollowTab: (tabId) => {
+      if (tabId !== activeId) skipTabFitRef.current = tabId;
+      setActiveId(tabId);
+    },
+    onCentreOn: centreOn,
+    isAlreadyThere: (tabId, at, zoom) => tabId === activeId && isCentredOn(at, zoom),
+  });
+  receiveFocusRef.current = focusInvite.receiveFocusHere;
+
   // Server capabilities (spec/25). Fetched once at mount; determines
   // whether the AI panel option is shown in Settings and rendered.
   const { aiEnabled: aiCapable, emailEnabled } = useCapabilities(sharePasswordGate === null);
@@ -1103,6 +1168,7 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     activeId,
     elementCount: activeTab.elements.length,
     fitToScreen,
+    skipFitForTabRef: skipTabFitRef,
   });
 
   // Derived realtime presence rows (avatars per tab, remote cursors,
@@ -2573,6 +2639,8 @@ export function useEditorState(opts: { embed?: boolean } = {}) {
     broadcastAvatarPush,
     avatarShove,
     fireReaction,
+    pressFocusButton,
+    focusInvite,
     reactionBursts: reactions.bursts,
     clearReactionBurst: reactions.clear,
     broadcastCursor,

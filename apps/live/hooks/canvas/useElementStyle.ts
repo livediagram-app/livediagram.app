@@ -262,7 +262,16 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     track('Element', 'Toggled', telemetryType);
     commit((els) =>
       els.map((el) =>
-        ids.has(el.id) && el.type === 'table' ? { ...el, [field]: !el[field] } : el,
+        ids.has(el.id) && el.type === 'table'
+          ? {
+              ...el,
+              [field]: !el[field],
+              // Banding is part of a table's LOOK, so hand-toggling it breaks
+              // the preset binding the same way hand-picking a colour does.
+              // The two header flags are structure, not look, and leave it.
+              ...(field === 'zebra' ? { tablePreset: undefined } : {}),
+            }
+          : el,
       ),
     );
   };

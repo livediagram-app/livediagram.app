@@ -569,3 +569,31 @@ export function tableColorPresets(theme: ThemeDefinition): TablePreset[] {
     },
   ];
 }
+
+/**
+ * Re-derive a table's colours from its bound look for `theme`, the way
+ * `rederiveColorPresetForTheme` does for a shape.
+ *
+ * A table preset writes resolved colours (four surfaces plus the banding), so
+ * without the stored id a theme change sees four hand-picked colours and
+ * preserves them as customs: the table kept the OLD theme's header band while
+ * every shape around it moved. The id is what tells the two apart.
+ *
+ * A table with no binding, or one whose look the theme cannot express, is
+ * returned untouched so the caller can fall back to the ordinary preserve-
+ * customs walk.
+ */
+export function rederiveTablePresetForTheme(el: Element, theme: ThemeDefinition): Element {
+  if (el.type !== 'table' || !el.tablePreset) return el;
+  const preset = tableColorPresets(theme).find((p) => p.id === el.tablePreset);
+  if (!preset) return el;
+  return {
+    ...el,
+    fillColor: preset.fill,
+    strokeColor: preset.stroke,
+    textColor: preset.text,
+    headerFill: preset.headerFill,
+    headerTextColor: preset.headerText,
+    zebra: preset.zebra,
+  };
+}

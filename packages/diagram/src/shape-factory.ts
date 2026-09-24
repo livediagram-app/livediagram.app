@@ -150,6 +150,9 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // label — the shape a toolbar button has, rather than a wide pill that read
   // as just another labelled box.
   'mode-button': { width: 104, height: 96 },
+  // Bring Focus (spec/144): the mode button's shape, a touch wider because its
+  // label is a sentence fragment ("The problem") rather than a mode's one word.
+  'focus-button': { width: 120, height: 96 },
   // Portal (spec/104): portal-shaped — taller than it is wide, like a portal.
   portal: { width: 72, height: 112 },
   // Session button (spec/105): the Selection Mode button's tile, so a row of

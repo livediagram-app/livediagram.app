@@ -110,6 +110,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onStartPencil,
     onFollowLink,
     onPressModeButton,
+    onPressFocusButton,
     onPressSessionButton,
     sessionStartBlocked,
     timerState,
@@ -212,6 +213,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onSetPageHeading,
     onFollowLink,
     onPressModeButton,
+    onPressFocusButton,
     onPressSessionButton,
     onToggleReveal,
     onRollPicker,
@@ -408,6 +410,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             onCancelEdit={h.onCancelEdit}
             onFollowLink={h.onFollowLink}
             onPressModeButton={h.onPressModeButton}
+            onPressFocusButton={h.onPressFocusButton}
             onPressSessionButton={h.onPressSessionButton}
             sessionStartBlocked={sessionStartBlocked}
             timerState={timerState}

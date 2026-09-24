@@ -148,6 +148,7 @@ export const SHAPE_KINDS = new Set<string>([
   'code-block',
   'checklist',
   'legend',
+  'focus-button',
   'icon',
   'sticker',
 ]);

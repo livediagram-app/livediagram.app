@@ -1,6 +1,6 @@
 import type { Element } from './index';
 import { assignBranches, branchOfArrow, ROOT_BRANCH } from './hierarchy';
-import { rederiveColorPresetForTheme } from './theme-presets';
+import { rederiveColorPresetForTheme, rederiveTablePresetForTheme } from './theme-presets';
 import {
   recolourElementForTheme,
   resetThemeElement,
@@ -87,6 +87,20 @@ function elementThemeView(
   return view;
 }
 
+// A preset-bound element, re-derived for `theme`, or null when it carries no
+// binding. Shapes carry `colorPreset`, tables `tablePreset`; both mean the same
+// thing (the user picked a LOOK, not colours), so both theme walks ask this one
+// question rather than growing a branch each.
+function rederivePresetForTheme(el: Element, theme: ThemeDefinition): Element | null {
+  // A binding the theme cannot express (a 'branch-3' look under a
+  // single-accent theme) still answers: the element keeps the colours it has
+  // rather than being walked through the preserve-customs path, which is what
+  // the shape side has always done.
+  if (el.type === 'shape' && el.colorPreset) return rederiveColorPresetForTheme(el, theme);
+  if (el.type === 'table' && el.tablePreset) return rederiveTablePresetForTheme(el, theme);
+  return null;
+}
+
 // Graph-aware counterpart to `recolourElementForTheme`: paints a fresh
 // scaffold (template / Markdown import) with a theme, rainbowing the
 // branches when the theme has a palette. Used by every "apply a theme to
@@ -94,13 +108,13 @@ function elementThemeView(
 // entry point.
 export function recolourElementsForTheme(elements: Element[], theme: ThemeDefinition): Element[] {
   const branches = theme.palette ? assignBranches(elements) : null;
-  return elements.map((el) =>
-    // A shape bound to a colour preset (spec/48) takes the preset's variant for
-    // this theme, not the plain branch / base colours — so a template's Bold
-    // key element stays Bold in whatever theme it's built with.
-    el.type === 'shape' && el.colorPreset
-      ? rederiveColorPresetForTheme(el, theme)
-      : recolourElementForTheme(el, elementThemeView(theme, el, branches)),
+  return elements.map(
+    (el) =>
+      // An element bound to a preset (spec/48) takes the preset's variant for
+      // this theme, not the plain branch / base colours — so a template's Bold
+      // key element stays Bold in whatever theme it's built with.
+      rederivePresetForTheme(el, theme) ??
+      recolourElementForTheme(el, elementThemeView(theme, el, branches)),
   );
 }
 
@@ -115,18 +129,18 @@ export function switchThemeElements(
 ): Element[] {
   const prevBranches = prev.palette ? assignBranches(elements) : null;
   const nextBranches = next.palette ? assignBranches(elements) : null;
-  return elements.map((el) =>
-    // Preset-bound shapes (spec/48) re-derive their preset for the new theme
-    // instead of being preserved as a manual override — picking a new theme
-    // moves a Bold-preset shape to that theme's Bold look rather than stranding
-    // it on the previous theme's colours.
-    el.type === 'shape' && el.colorPreset
-      ? rederiveColorPresetForTheme(el, next)
-      : switchThemeElement(
-          el,
-          elementThemeView(prev, el, prevBranches),
-          elementThemeView(next, el, nextBranches),
-        ),
+  return elements.map(
+    (el) =>
+      // Preset-bound elements (spec/48) re-derive their preset for the new
+      // theme instead of being preserved as a manual override: picking a new
+      // theme moves a Bold-preset shape, or a Banded table, to that theme's
+      // version of the look rather than stranding it on the old colours.
+      rederivePresetForTheme(el, next) ??
+      switchThemeElement(
+        el,
+        elementThemeView(prev, el, prevBranches),
+        elementThemeView(next, el, nextBranches),
+      ),
   );
 }
 

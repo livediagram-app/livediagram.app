@@ -137,6 +137,7 @@ export function EditorCanvasHost() {
     broadcastAvatarPush,
     avatarShove,
     fireReaction,
+    pressFocusButton,
     reactionBursts,
     clearReactionBurst,
     broadcastCursor,
@@ -492,6 +493,11 @@ export function EditorCanvasHost() {
       onAvatarPush={broadcastAvatarPush}
       avatarShove={avatarShove}
       onFireReaction={isReadOnly ? undefined : fireReaction}
+      // Bring Focus (spec/144) is live for view-role visitors too: it mutates
+      // nothing, which makes it the same read-only act as following somebody,
+      // and the person who spots the thing worth looking at is often not the
+      // one with edit rights.
+      onPressFocusButton={pressFocusButton}
       reactionBursts={reactionBursts}
       onReactionBurstDone={clearReactionBurst}
       laserTrails={laserTrailRows}

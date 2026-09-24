@@ -133,6 +133,9 @@ export type ShapeKind =
   // Legend (spec/53): a card of colour-coded rows (a swatch + a label), the
   // key you put beside a chart or a colour-coded board.
   | 'legend'
+  // Bring Focus (spec/144): press it and everyone else in the room is offered
+  // a jump to it, at your zoom, on your tab.
+  | 'focus-button'
   // Curated single-colour glyph from the icon catalogue. Which glyph
   // is carried by `iconId` (a registry key resolved in the live app's
   // icon catalogue, NOT a closed enum here, so adding icons is a

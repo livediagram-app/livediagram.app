@@ -9,7 +9,7 @@ import {
   type Element,
   type ShapeKind,
 } from './index';
-import { rederiveColorPresetForTheme } from './theme-presets';
+import { rederiveColorPresetForTheme, rederiveTablePresetForTheme } from './theme-presets';
 import { DEFAULT_SCHEME_DARK, DEFAULT_SCHEME_LIGHT, LEGACY_THEMES, THEMES } from './themes-data';
 export { THEMES, LEGACY_THEMES, DEFAULT_SCHEME_LIGHT, DEFAULT_SCHEME_DARK };
 
@@ -402,6 +402,12 @@ export function resetThemeElement(el: Element, theme: ThemeDefinition): Element 
     const rederived = rederiveColorPresetForTheme(el, theme);
     if (rederived !== el) return rederived;
   }
+  // Same for a table's look: "reset" on a Banded table means this theme's
+  // Banded, not a stripped grid.
+  if (el.type === 'table' && el.tablePreset) {
+    const rederived = rederiveTablePresetForTheme(el, theme);
+    if (rederived !== el) return rederived;
+  }
   const fields = themeColourFields(el);
   if (fields.length === 0) return el;
   const patch: Record<string, string | undefined> = {};
@@ -412,6 +418,9 @@ export function resetThemeElement(el: Element, theme: ThemeDefinition): Element 
   // the shape is forced back to the theme look, so the preset no longer holds.
   if (el.type === 'shape' && el.colorPreset) {
     return { ...el, ...patch, colorPreset: undefined } as Element;
+  }
+  if (el.type === 'table' && el.tablePreset) {
+    return { ...el, ...patch, tablePreset: undefined } as Element;
   }
   return { ...el, ...patch } as Element;
 }
