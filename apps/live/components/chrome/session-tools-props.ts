@@ -7,7 +7,7 @@ import type { LivePoll, PollStyle } from '@livediagram/api-schema';
 // Three chrome surfaces offer the same Session category — the tab bar's
 // ellipsis menu, the tab context menu, and the standalone ellipsis button —
 // and each had declared all sixteen props by hand. None of the three reads
-// them; they thread the bundle down to the same SessionToolsSection, so the
+// them; they thread the bundle down to the same SessionStudio, so the
 // three lists could only ever be identical, and were.
 //
 // The one asymmetry worth keeping in view: the timer and the vote are Tab
@@ -22,12 +22,16 @@ export type SessionToolsProps = {
   onResumeTimer: () => void;
   onResetTimer: () => void;
   onClearTimer: () => void;
+  // Add time to a running (or paused) countdown without restarting it.
+  onExtendTimer: (deltaMs: number) => void;
   onStartVote: (votesPerPerson: number, setup?: VoteSetup) => void;
   onEndVote: () => void;
   onRevealVote: () => void;
   onClearVote: () => void;
   livePoll: LivePoll | null;
-  pollConnected: boolean;
+  // Shared or on a team, so a poll reaches other people. False doesn't stop
+  // a poll (it runs for just you); the composer only notes it.
+  pollHasAudience: boolean;
   onStartPoll: (draft: { question: string; style: PollStyle; options: string[] }) => void;
   // The tab's layers + the active one, for the vote's layer scope (spec/96).
   voteLayers: Layer[];

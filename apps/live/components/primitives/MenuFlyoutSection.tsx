@@ -70,7 +70,9 @@ function loneSection(children: ReactNode): ReactNode | null {
 }
 
 export function MenuFlyoutSection(props: MenuFlyoutSectionProps) {
-  const lone = loneSection(props.children);
+  // A panel is one purpose-built surface, not a list of sections, so there is
+  // nothing to promote: its single child is the whole point of the flyout.
+  const lone = props.panel ? null : loneSection(props.children);
   // Rendered instead of the flyout, not inside it — so the hooks below (the
   // portal, the position tracker, the outside-click) never run for a row that
   // has no panel to position.
@@ -86,6 +88,10 @@ type MenuFlyoutSectionProps = {
   onOpen?: () => void;
   open?: boolean;
   onToggle?: () => void;
+  // The children are ONE custom panel (the Collaborate row's Session Studio)
+  // rather than a stack of accordion sections: never promoted inline, drawn
+  // wider, and scrollable when it is taller than the screen.
+  panel?: boolean;
 };
 
 function Flyout({
@@ -104,6 +110,7 @@ function Flyout({
   // state (open + onToggle travel together).
   open: controlledOpen,
   onToggle,
+  panel: isPanel = false,
 }: MenuFlyoutSectionProps) {
   const triggerRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -192,8 +199,19 @@ function Flyout({
     // neither fits fall back to pinning at the top margin. Flipping keeps the
     // panel attached to the row it belongs to; the old clamp-only version slid
     // it up the screen until it no longer lined up with anything.
-    const rawTop =
-      tr.top + pr.height + m <= window.innerHeight ? tr.top : Math.max(m, tr.bottom - pr.height);
+    //
+    // A PANEL centres on the host menu instead. It is far taller than a list
+    // of sections and changes height as you use it (Choices adds an answer
+    // list and a preview), so hanging it from its row left it towering above
+    // or below the menu at a lopsided offset. Centred, it grows evenly both
+    // ways and always reads as belonging to the menu beside it; the clamp
+    // below still keeps it on screen.
+    const host = isPanel ? trigger.closest('[role="menu"]')?.getBoundingClientRect() : undefined;
+    const rawTop = host
+      ? host.top + host.height / 2 - pr.height / 2
+      : tr.top + pr.height + m <= window.innerHeight
+        ? tr.top
+        : Math.max(m, tr.bottom - pr.height);
     // ROUND to whole pixels. getBoundingClientRect returns sub-pixel floats,
     // and this used to be stored raw: a trigger sitting on a fractional
     // boundary produced a hair-different `top` on every measurement, so the
@@ -209,7 +227,7 @@ function Flyout({
       return { left, top };
     });
     return settled;
-  }, [isMobile]);
+  }, [isMobile, isPanel]);
 
   const [trackNonce, setTrackNonce] = useState(0);
   const retrack = useCallback(() => setTrackNonce((n) => n + 1), []);
@@ -344,7 +362,11 @@ function Flyout({
             // rendered behind — tapping Collaborate on a phone appeared to do
             // nothing at all. Same reason the token exists for menus opened inside
             // a dialog.
-            className="fixed z-[var(--z-popover)] flex w-56 animate-fade-in flex-col overflow-hidden rounded-md border border-slate-200 bg-white/95 text-sm shadow-lg backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/95 dark:shadow-slate-950/40"
+            className={`fixed z-[var(--z-popover)] flex animate-fade-in flex-col rounded-md ${
+              isPanel
+                ? 'max-h-[calc(100dvh-1rem)] w-72 overflow-y-auto overscroll-contain'
+                : 'w-56 overflow-hidden'
+            } border border-slate-200 bg-white/95 text-sm shadow-lg backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/95 dark:shadow-slate-950/40`}
             style={{
               left: pos?.left ?? 0,
               top: pos?.top ?? 0,

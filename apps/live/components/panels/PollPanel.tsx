@@ -16,10 +16,10 @@
 // local Dismiss, which hides their own panel without ending anything —
 // the escape hatch if the host disconnects mid-poll.
 //
-// It takes no mobile-dock props on purpose: the dock is a row of toggles
-// for panels that are always available, and a poll is neither always
-// there nor something you go looking for. It shows itself when a poll
-// starts and leaves when the poll ends, on every viewport.
+// In the dock layout (a phone, or the minimal panel preference on desktop)
+// it lives under the dock's Poll button like every other panel, closable
+// with it, and opens by itself when a poll starts or when you answer one
+// (useOpenDockPanelOnChange), since that is exactly when you want it.
 
 import { tallyPoll, type LivePoll, type PollTallyRow } from '@livediagram/api-schema';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
@@ -38,6 +38,8 @@ export function PollPanel({
   dock,
   mobileOpenOverride,
   mobileDockAnchor,
+  forceDockMode,
+  onMobileClose,
   stackBelowY,
 }: {
   poll: LivePoll;
@@ -60,6 +62,8 @@ export function PollPanel({
       helpArticle="sessionPolls"
       mobileOpenOverride={mobileOpenOverride}
       mobileDockAnchor={mobileDockAnchor}
+      forceDockMode={forceDockMode}
+      onMobileClose={onMobileClose}
       title="Poll"
       position={position}
       defaultCorner="top-right-stacked"

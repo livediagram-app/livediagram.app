@@ -219,6 +219,14 @@ const GROUPS: MetricGroup[] = [
       },
       {
         category: 'Tab',
+        action: 'Changed',
+        type: 'TimerExtended',
+        title: 'Timers Extended',
+        blurb:
+          'More time added to a running countdown. Frequent extensions mean the timebox was set too tight.',
+      },
+      {
+        category: 'Tab',
         action: 'Ended',
         type: 'CountdownTimer',
         title: 'Countdowns Finished',

@@ -20,21 +20,9 @@ import {
   MenuToolbar,
   MenuToolButton,
 } from '@/components/primitives/PortalMenu';
-import {
-  CollaborateMenuIcon,
-  CountdownMenuIcon,
-  PollMenuIcon,
-  TimerMenuIcon,
-  VoteMenuIcon,
-  PasteMenuIcon,
-} from '@/components/palette/context-menu-icons';
-import {
-  SessionCountdownSection,
-  SessionStopwatchSection,
-  SessionVoteSection,
-} from '@/components/panels/SessionToolsSection';
+import { CollaborateMenuIcon, PasteMenuIcon } from '@/components/palette/context-menu-icons';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
-import { SessionPollSection } from '@/components/panels/SessionPollSection';
+import { SessionStudio } from '@/components/panels/session-studio/SessionStudio';
 import { TabCanvasMenuSections } from './TabCanvasMenuSections';
 import {
   AddTabToDiagramDialog,
@@ -69,22 +57,7 @@ export function PortalMenu({
   onDelete,
   canClearContent,
   canDelete,
-  timer,
-  vote,
-  onStartTimer,
-  onPauseTimer,
-  onResumeTimer,
-  onResetTimer,
-  onClearTimer,
-  onStartVote,
-  onEndVote,
-  onRevealVote,
-  onClearVote,
-  livePoll,
-  pollConnected,
-  onStartPoll,
-  voteLayers,
-  activeLayerId,
+  ...session
 }: {
   // Positioned EITHER above an anchor button (tab ellipsis) OR at a screen
   // point (canvas right-click / footer button). Exactly one is provided.
@@ -434,75 +407,30 @@ export function PortalMenu({
                 sectionProps={sectionProps}
               />
             ) : null}
-            {/* ── Collaborate: the live session tools grouped under ONE
-                side-flyout row rather than four top-level categories, the
-                same parent/child pattern the element menu uses for Style /
-                Text / Tools. Countdown, Stopwatch and Vote are per-tab
-                state (spec/39, one timer per tab — each Start warns it
-                resets the other); Poll is NOT tab state at all (spec/88):
-                it lives only in the realtime room and leaves no trace on
-                the diagram. ── */}
+            {/* ── Collaborate: the live session tools (spec/39, spec/88) in
+                ONE side-flyout panel, the Session Studio: a switcher for
+                Timer / Vote / Poll over a purpose-built pane per tool.
+                Timer and vote are per-tab state; the poll lives only in the
+                realtime room and leaves no trace on the diagram. ── */}
             <MenuGroupSeparator />
             <MenuFlyoutSection
               title="Collaborate"
               icon={<CollaborateMenuIcon />}
+              panel
               {...flyoutProps('collaborate')}
             >
-              <MenuAccordionSection
-                title="Timer"
-                icon={<CountdownMenuIcon />}
-                {...sectionProps('countdown')}
-              >
-                <SessionCountdownSection
-                  timer={timer}
-                  onStartTimer={onStartTimer}
-                  onPauseTimer={onPauseTimer}
-                  onResumeTimer={onResumeTimer}
-                  onResetTimer={onResetTimer}
-                  onClearTimer={onClearTimer}
-                />
-              </MenuAccordionSection>
-              <MenuAccordionSection
-                title="Stopwatch"
-                icon={<TimerMenuIcon />}
-                {...sectionProps('stopwatch')}
-              >
-                <SessionStopwatchSection
-                  timer={timer}
-                  onStartTimer={onStartTimer}
-                  onPauseTimer={onPauseTimer}
-                  onResumeTimer={onResumeTimer}
-                  onResetTimer={onResetTimer}
-                  onClearTimer={onClearTimer}
-                />
-              </MenuAccordionSection>
-              <MenuAccordionSection title="Vote" icon={<VoteMenuIcon />} {...sectionProps('vote')}>
-                <SessionVoteSection
-                  vote={vote}
-                  selfId={selfId}
-                  layers={voteLayers}
-                  activeLayerId={activeLayerId}
-                  onStartVote={onStartVote}
-                  onEndVote={onEndVote}
-                  onRevealVote={onRevealVote}
-                  onClearVote={onClearVote}
-                />
-              </MenuAccordionSection>
-              <MenuAccordionSection title="Poll" icon={<PollMenuIcon />} {...sectionProps('poll')}>
-                <SessionPollSection
-                  poll={livePoll}
-                  connected={pollConnected}
-                  // Starting a poll puts the question on screen for everyone,
-                  // including the facilitator — and this menu sits right on
-                  // top of it. Close on start: the poll panel carries the
-                  // results and the End control from here on, so there is
-                  // nothing left in the menu to come back for.
-                  onStartPoll={(draft) => {
-                    onStartPoll(draft);
-                    onClose();
-                  }}
-                />
-              </MenuAccordionSection>
+              <SessionStudio
+                {...session}
+                selfId={selfId}
+                // Starting a poll puts the question on screen for everyone,
+                // including the facilitator, and this menu sits right on top
+                // of it. Close on start: the poll panel carries the results
+                // and the End control from here on.
+                onStartPoll={(draft) => {
+                  session.onStartPoll(draft);
+                  onClose();
+                }}
+              />
             </MenuFlyoutSection>
           </>
         ) : null}

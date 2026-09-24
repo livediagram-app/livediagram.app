@@ -547,6 +547,8 @@ export function useCanvasChromePanels({
         dock={pollWiring.dock}
         mobileOpenOverride={activeMobilePanel === 'poll'}
         mobileDockAnchor={activeDockAnchor ?? undefined}
+        forceDockMode={!!minimalPanels}
+        onMobileClose={closeMobilePanel}
       />
     ) : null;
 
@@ -572,6 +574,8 @@ export function useCanvasChromePanels({
         dock={voteWiring.dock}
         mobileOpenOverride={activeMobilePanel === 'vote'}
         mobileDockAnchor={activeDockAnchor ?? undefined}
+        forceDockMode={!!minimalPanels}
+        onMobileClose={closeMobilePanel}
         readOnly={!!readOnly}
       />
     ) : null;

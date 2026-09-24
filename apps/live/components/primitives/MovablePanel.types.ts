@@ -41,6 +41,11 @@ export type MovablePanelPlacementProps = {
   // dock has it open.
   mobileOpenOverride?: boolean;
   mobileDockAnchor?: { left: number; top: number; arrowOffset: number };
+  // The minimal-layout preference: dock behaviour on desktop too. A panel
+  // that forwards the two above but not this floats freely in minimal
+  // layout and ignores its own dock button.
+  forceDockMode?: boolean;
+  onMobileClose?: () => void;
 };
 
 export type MovablePanelProps = {

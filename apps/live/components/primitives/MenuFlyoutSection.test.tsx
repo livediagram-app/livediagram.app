@@ -44,6 +44,18 @@ describe('MenuFlyoutSection', () => {
     expect(screen.getByText('Fields')).toBeTruthy();
   });
 
+  it('keeps a panel flyout as a flyout even with one child', () => {
+    // A panel (the Session Studio) is one bespoke surface, not a lone
+    // section: promoting it inline would pour a tall panel into the menu.
+    render(
+      <MenuFlyoutSection title="Collaborate" icon={GLYPH} panel>
+        <p>Studio</p>
+      </MenuFlyoutSection>,
+    );
+    expect(flyoutTrigger('Collaborate')).toBeTruthy();
+    expect(screen.queryByText('Studio')).toBeNull();
+  });
+
   it('leaves the promoted section collapsible rather than forcing it open', () => {
     // Inside a panel with nothing else in it, an accordion was a second click
     // for no choice. In the host menu it is an ordinary row, and a row that
