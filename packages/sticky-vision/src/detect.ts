@@ -6,6 +6,7 @@ import { standsOut, STANDOUT_CALIBRATION } from './standout';
 import { closePaperMask, labelComponents, type ComponentMask } from './components';
 import { estimateNoteSize, estimateNoteSizes, fitBoxes, silhouetteOf } from './boxes';
 import { clusterRows } from './rows';
+import { dropBlank } from './texture';
 
 // Finding the stickies in a photograph of a wall (spec/139 Phase 8).
 //
@@ -153,7 +154,13 @@ export function detectStickies(image: ImageBuffer, opts: DetectOptions = {}): De
   // boxes — tape, a shadow in a paper seam, cardboard, the white strip of
   // ceiling above the paper — sit AT it or below. The notation has no white,
   // grey or brown note, so nothing true is lost by insisting on it.
-  const standing = boxes.filter((box) => standsOut(working, box));
+  // …and a box that is BLANK and EDGELESS is not a note either: a window
+  // pane, a patch of bare kraft, the strip above the paper. A note carries
+  // writing, or at least shows an edge against its wall (see `dropBlank`).
+  const standing = dropBlank(
+    working,
+    boxes.filter((box) => standsOut(working, box)),
+  );
   if (standing.length === 0) return [];
   return clusterRows(standing, noteSize).map((box, i) => ({
     id: i,
