@@ -73,10 +73,17 @@ const NOISE_FLOOR_FRACTION = 0.008;
 // back together, floored so that a very distant wall still gets a pixel of
 // reach and capped against the frame so a photo of ONE enormous note cannot
 // dilate half the picture.
-const CLOSE_NOTE_FRACTION = 0.04;
+//
+// A fiftieth of a note: one pixel on every labelled wall at the working size
+// (notes of 19 to 51px). Two pixels bridges the thin line of shadow between
+// flush notes and the gap between a note and a patch of kraft the floors call
+// paper, and the run that comes out is cut where the grid falls, not where the
+// notes are. Every fraction from 0.01 to 0.029 scores the same; from 0.03 a
+// 51px note gets two pixels again.
+const CLOSE_NOTE_FRACTION = 0.02;
 const CLOSE_MAX_IMAGE_FRACTION = 0.006;
 
-function closeRadiusFor(noteSize: number, imageSize: number): number {
+export function closeRadiusFor(noteSize: number, imageSize: number): number {
   const cap = Math.max(2, Math.round(imageSize * CLOSE_MAX_IMAGE_FRACTION));
   if (noteSize <= 0) return cap;
   return Math.max(1, Math.min(cap, Math.round(noteSize * CLOSE_NOTE_FRACTION)));
