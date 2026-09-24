@@ -225,6 +225,9 @@ overlaps), 2/8 walls (201707, 201713).
         headless Chromium on a 1000×563 image, bundle size and ms per photo
         (int8 83 KB, same score; chunk 171 KB br + weights; WebGPU 19-22 ms
         warm on a desktop GPU, threaded WASM ~350 ms, single WASM ~770 ms).
+  - [x] J2b Where a box is, told by centres instead of an area cap: a note
+        lapped by a neighbour is added (kept: 95.4 → 95.5; 201646 and 201713
+        rec-A 100%).
   - [ ] J5 Fold-back: results doc, sticky-detection.md, what wiring needs.
 
 ## Not yet delegated

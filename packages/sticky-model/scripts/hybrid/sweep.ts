@@ -10,7 +10,7 @@ import { loadHybridWalls, type HybridWall } from './walls';
 // model's cues where the rules given allow.
 //
 //   npx tsx scripts/hybrid/sweep.ts [--t 0.4] [--min-core 12]
-//     [--split conf,area] [--add conf,area,paper,cover] [--drop background]
+//     [--split conf,area] [--add conf,area,paper] [--drop background]
 //     [--grid split|add|drop] [--kept]
 //
 // `--kept` starts from the kept rules (HYBRID_RULES). With no rule the table is the classical detector's own (the baseline, to
@@ -35,7 +35,6 @@ function rulesFromArgs(): HybridRules {
       minConfidence: add[0]!,
       minAreaOfMedian: add[1]!,
       minPaper: add[2]!,
-      maxCover: add[3]!,
     };
   const drop = nums('drop');
   if (drop) rules.drop = { minBackground: drop[0]! };
@@ -85,12 +84,11 @@ if (!grid) {
   if (grid === 'add')
     for (const c of [0.65, 0.7, 0.75, 0.8, 0.85])
       for (const a of [0.1, 0.2, 0.3, 0.4])
-        for (const paper of [0.5, 0.7])
-          for (const cover of [0.2, 0.3, 0.4])
-            settings.push({
-              ...base,
-              add: { minConfidence: c, minAreaOfMedian: a, minPaper: paper, maxCover: cover },
-            });
+        for (const paper of [0.4, 0.5, 0.6])
+          settings.push({
+            ...base,
+            add: { minConfidence: c, minAreaOfMedian: a, minPaper: paper },
+          });
   if (grid === 'drop')
     for (const b of [0.6, 0.7, 0.8, 0.85, 0.9, 0.95, 0.97, 0.99])
       settings.push({ ...base, drop: { minBackground: b } });

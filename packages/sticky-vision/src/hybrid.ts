@@ -12,7 +12,9 @@ import type { CueRect, ModelCues, ModelNote } from './model-cues';
 // model only speaks where it sees something the colour cannot:
 //
 // - split: a box holding two or more notes the model is sure of (J1);
-// - add: a note the model is sure of, on paper, where no box is (J2);
+// - add: a note the model is sure of, on paper, where no box is (J2): no
+//   box holds its centre and it holds no box's, so a neighbour that overlaps
+//   it (lapped notes do) does not hide it;
 // - drop: a box the model sees as background, with no note in it (J3).
 //
 // Pure, and ML-free: the model runs elsewhere, lazily, and hands over plain
@@ -32,8 +34,6 @@ export type HybridRules = {
     // The fraction of the note's box the class mask calls paper: the model
     // finds notes, the colour says they are paper of the notation.
     minPaper: number;
-    // A note already this covered by a box is that box's business.
-    maxCover: number;
   };
   drop?: {
     // The model's mean background probability over the box's middle.
@@ -56,12 +56,6 @@ const clip = (r: CueRect, to: CueRect): CueRect => {
     w: Math.min(r.x + r.w, to.x + to.w) - x,
     h: Math.min(r.y + r.h, to.y + to.h) - y,
   };
-};
-
-// How much of `r` lies under `b`, as a fraction of `r`.
-const coverOf = (r: CueRect, b: CueRect) => {
-  const c = clip(r, b);
-  return c.w > 0 && c.h > 0 ? (c.w * c.h) / (r.w * r.h) : 0;
 };
 
 function medianArea(boxes: readonly CueRect[]): number {
@@ -159,7 +153,7 @@ export function combineWithModel(
   if (add) {
     for (const n of cues.notes) {
       if (!sure(n, add)) continue;
-      if (out.some((b) => coverOf(n, b) >= add.maxCover)) continue;
+      if (out.some((b) => centreIn(n, b) || centreIn(b, n))) continue;
       const under = paperUnder(mask, n);
       if (under.fraction < add.minPaper) continue;
       out.push(boxOn(mask, n, under.classId));
@@ -173,8 +167,8 @@ export function combineWithModel(
 //
 // ADD: a note the model is sure of (mean core probability 0.75; the plateau
 // runs 0.7-0.8), at least 0.3 of the median box (0.2-0.4), half on paper
-// (0.4-0.6), and under 0.3 of any box (0.4 adds a note beside a neighbour
-// that is a real merge).
+// (0.4-0.6). Where a box is is told by centres, not by overlap: an area cap
+// of 0.3 hid notes lapped by a neighbour, and 0.4 let in a real merge.
 //
 // SPLIT: only where BOTH notes are near certain. On these walls every real
 // merge's weaker core reads 0.87 or more, and every single note the model
@@ -188,7 +182,7 @@ export function combineWithModel(
 // ceiling strip. 0.95-0.98 drop the same boxes; from 0.93 down a real note
 // goes with them.
 export const HYBRID_RULES: HybridRules = {
-  add: { minConfidence: 0.75, minAreaOfMedian: 0.3, minPaper: 0.5, maxCover: 0.3 },
+  add: { minConfidence: 0.75, minAreaOfMedian: 0.3, minPaper: 0.5 },
   split: { minConfidence: 0.86, minAreaOfMedian: 0.25 },
   drop: { minBackground: 0.97 },
 };

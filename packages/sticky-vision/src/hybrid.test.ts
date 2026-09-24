@@ -40,7 +40,7 @@ const box = (x: number, y: number, w: number, h: number, classId = 1): Box => ({
 
 const SPLIT: HybridRules = { split: { minConfidence: 0.8, minAreaOfMedian: 0.3 } };
 const ADD: HybridRules = {
-  add: { minConfidence: 0.8, minAreaOfMedian: 0.3, minPaper: 0.5, maxCover: 0.3 },
+  add: { minConfidence: 0.8, minAreaOfMedian: 0.3, minPaper: 0.5 },
 };
 const DROP: HybridRules = { drop: { minBackground: 0.9 } };
 
@@ -143,6 +143,34 @@ describe('combineWithModel', () => {
         ADD,
       );
       expect(out).toEqual([kept]);
+    });
+
+    it("adds a note a neighbouring box overlaps, when neither holds the other's centre", () => {
+      const out = combineWithModel(
+        [kept, box(100, 10, 38, 40, 3)],
+        cues([note(10, 10, 40, 40), note(120, 10, 40, 40)]),
+        lone,
+        ADD,
+      );
+      expect(out).toHaveLength(3);
+      expect(out[2]).toMatchObject({ x: 120, y: 10, w: 40, h: 40 });
+    });
+
+    it("adds nothing where a box holds the note's centre, or the note a box's", () => {
+      const shifted = combineWithModel(
+        [kept, box(125, 10, 40, 40, 3)],
+        cues([note(10, 10, 40, 40), note(120, 10, 40, 40)]),
+        lone,
+        ADD,
+      );
+      expect(shifted).toHaveLength(2);
+      const small = combineWithModel(
+        [kept, box(130, 20, 20, 20, 3)],
+        cues([note(10, 10, 40, 40), note(120, 10, 40, 40)]),
+        lone,
+        ADD,
+      );
+      expect(small).toHaveLength(2);
     });
 
     it('adds nothing where a classical box already covers the note', () => {
