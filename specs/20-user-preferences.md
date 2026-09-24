@@ -142,8 +142,16 @@ type UserPreferences = {
   // false (floating panels) on desktop. The dock layout is ALWAYS
   // active on mobile regardless of this flag, because the floating
   // panels don't fit a phone viewport; the preference only changes
-  // desktop behaviour. See spec/09.
+  // desktop behaviour. See spec/09. Legacy since spec/148: still written
+  // (as `panelLayout !== 'floating'`) so older readers keep working, but
+  // `panelLayout` is the source of truth when set.
   minimalPanels?: boolean;
+
+  // The desktop panel layout (spec/148): 'floating' (the default),
+  // 'minimal' (the dock, spec/09) or 'toolbar' (the Palette as one strip
+  // across the top of the canvas, no Explorer panel). Missing → derived
+  // from `minimalPanels`. Mobile is always docked whatever this says.
+  panelLayout?: 'floating' | 'minimal' | 'toolbar';
 
   // Opacity (0..1) of the FULL floating panels at rest, so the canvas
   // shows through them; they snap back to fully opaque while hovered or
@@ -389,9 +397,22 @@ and the dialog stays as the one complete, browsable index of them.
 
   Settings whose effect is **visual** carry a small **before/after
   illustration** drawn from the real editor, which **rings the state
-  currently in force** so the picture doubles as a readout: minimal panel
-  layout, the minimap, alignment guides, layer thumbnails, and the minimap's
-  dimming.
+  currently in force** so the picture doubles as a readout: the minimap,
+  alignment guides, layer thumbnails, and the minimap's dimming.
+
+  Pick-one settings whose options LOOK different draw **one picture per
+  option** instead, side by side with no arrow, the one in force ringed
+  (`settings-choice-illustrations.tsx`): **Panel Layout** (Floating /
+  Minimal / Toolbar, spec/148) and **Theme** (Light / Dark / System, the
+  last drawn half light and half dark). Theme's pictures are drawn in their
+  own fixed colours and are never dimmed, since their colour is the point: a
+  dimmed light editor reads grey on a dark dialog. A test holds every
+  illustrated choice row to drawing exactly its options.
+
+  A choice option can be **desktop only** (`desktopOnly` in the catalogue).
+  On a phone-sized viewport it stays visible but can't be picked, and a note
+  under the row says why. Panel Layout's Floating and Toolbar are desktop
+  only: a phone always uses the button bar.
 
   **Show Welcome Tour** is inverted against the stored `tourSeen`: the row
   asks "show me the tour?", the preference records "already seen". Because

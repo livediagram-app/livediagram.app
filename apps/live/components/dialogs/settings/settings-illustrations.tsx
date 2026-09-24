@@ -1,4 +1,10 @@
 import type { ReactNode } from 'react';
+import {
+  CHOICE_ILLUSTRATIONS,
+  ChoiceStates,
+  type ChoiceIllustrationId,
+} from './settings-choice-illustrations';
+import { GAP, H, PANEL, PAPER, SHAPE, StateFrame, W, Window } from './settings-illustration-kit';
 
 // Small before/after drawings for the settings whose effect is VISUAL, the
 // ones whose four-line description is really trying to describe a picture. A
@@ -17,39 +23,11 @@ import type { ReactNode } from 'react';
 // Kept out of settings-catalogue.ts so that file stays plain data (.ts, no
 // JSX): a row names an illustration by id and this registry draws it.
 
-export type SettingsIllustrationId =
-  'minimalPanels' | 'showMinimap' | 'alignmentGuides' | 'layerThumbnails' | 'mapDimOutside';
+type ToggleIllustrationId = 'showMinimap' | 'alignmentGuides' | 'layerThumbnails' | 'mapDimOutside';
 
-const W = 104;
-const H = 66;
-const GAP = 18;
-
-const PAPER = 'fill-white stroke-slate-300 dark:fill-slate-900 dark:stroke-slate-600';
-const CHROME = 'fill-slate-100 stroke-slate-300 dark:fill-slate-800 dark:stroke-slate-600';
-const PANEL = 'fill-brand-500/20 stroke-brand-500/70';
-const SHAPE = 'fill-slate-200 stroke-slate-400 dark:fill-slate-700 dark:stroke-slate-500';
-
-// The editor window: the header strip and bottom tab bar both layouts keep.
-// Drawing them is what makes the halves read as the same app twice rather
-// than two unrelated boxes.
-function Window({ children }: { children?: ReactNode }) {
-  return (
-    <g strokeWidth="1">
-      <rect x="0.5" y="0.5" width={W - 1} height={H - 1} rx="3.5" className={PAPER} />
-      <path d={`M0.5 10.5h${W - 1}`} className="stroke-slate-300 dark:stroke-slate-600" />
-      <rect x="0.5" y={H - 9.5} width={W - 1} height="9" className={CHROME} />
-      <rect
-        x="5"
-        y={H - 7}
-        width="16"
-        height="4"
-        rx="1.5"
-        className="fill-brand-500/40 stroke-none"
-      />
-      {children}
-    </g>
-  );
-}
+// Toggle drawings (a before / after pair, below) plus the one-per-option
+// drawings for pick-one settings (settings-choice-illustrations.tsx).
+export type SettingsIllustrationId = ToggleIllustrationId | ChoiceIllustrationId;
 
 // Two states side by side, the live one ringed. The ring is what turns a
 // diagram into a readout: glance at it and you know which way the switch is
@@ -81,30 +59,7 @@ function StatePair({
     >
       {halves.map(([art, caption, current], i) => (
         <g key={caption} transform={`translate(${i * (W + GAP)} 0)`}>
-          {current ? (
-            <rect
-              x="-3.5"
-              y="-3.5"
-              width={W + 7}
-              height={H + 7}
-              rx="6"
-              className="fill-brand-500/5 stroke-brand-500"
-              strokeWidth="1.5"
-            />
-          ) : null}
-          <g className={current ? '' : 'opacity-60'}>{art}</g>
-          <text
-            x={W / 2}
-            y={H + 13}
-            textAnchor="middle"
-            className={
-              current
-                ? 'fill-brand-600 text-[8px] font-semibold dark:fill-brand-300'
-                : 'fill-slate-400 text-[8px] dark:fill-slate-500'
-            }
-          >
-            {caption}
-          </text>
+          <StateFrame art={art} caption={caption} current={current} />
         </g>
       ))}
       <path
@@ -117,26 +72,6 @@ function StatePair({
     </svg>
   );
 }
-
-// --- Minimal panel layout -------------------------------------------------
-
-const FloatingArt = (
-  <Window>
-    <rect x="5" y="14" width="26" height="34" rx="2.5" className={PANEL} strokeWidth="1" />
-    <rect x={W - 31} y="14" width="26" height="34" rx="2.5" className={PANEL} strokeWidth="1" />
-  </Window>
-);
-
-const MinimalArt = (
-  <Window>
-    <rect x={W - 39} y="14" width="34" height="11" rx="2.5" className={PANEL} strokeWidth="1" />
-    <path
-      d={`M${W - 28} 14v11M${W - 17} 14v11`}
-      className="stroke-brand-500/60"
-      strokeWidth="0.8"
-    />
-  </Window>
-);
 
 // --- Show minimap ---------------------------------------------------------
 
@@ -278,13 +213,7 @@ function MiniMapArt({ dim }: { dim: boolean }) {
 
 type Drawing = { off: ReactNode; on: ReactNode; labels?: [string, string]; label: string };
 
-const ILLUSTRATIONS: Record<SettingsIllustrationId, Drawing> = {
-  minimalPanels: {
-    off: FloatingArt,
-    on: MinimalArt,
-    label:
-      'The editor with Minimal Panel Layout off, the Explorer and Palette panels floating over the canvas, and with it on, the two collapsed into a short button bar in the top-right corner.',
-  },
+const ILLUSTRATIONS: Record<ToggleIllustrationId, Drawing> = {
   showMinimap: {
     off: NoMapArt,
     on: MapArt,
@@ -312,12 +241,22 @@ const ILLUSTRATIONS: Record<SettingsIllustrationId, Drawing> = {
 
 export function SettingsIllustration({
   id,
-  active,
+  active = false,
+  value = '',
 }: {
   id: SettingsIllustrationId;
-  // Which half is in force, so the drawing rings the current state.
-  active: boolean;
+  // Toggle drawings: which half is in force, so the drawing rings it.
+  active?: boolean;
+  // Choice drawings: the option in force, likewise ringed.
+  value?: string;
 }) {
+  if (isChoiceIllustration(id)) {
+    return (
+      <div className="mt-2.5 px-3.5">
+        <ChoiceStates id={id} value={value} />
+      </div>
+    );
+  }
   const drawing = ILLUSTRATIONS[id];
   return (
     <div className="mt-2.5 px-3.5">
@@ -330,4 +269,8 @@ export function SettingsIllustration({
       />
     </div>
   );
+}
+
+function isChoiceIllustration(id: SettingsIllustrationId): id is ChoiceIllustrationId {
+  return id in CHOICE_ILLUSTRATIONS;
 }

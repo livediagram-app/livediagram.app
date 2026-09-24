@@ -16,6 +16,7 @@ import { VoteBanner } from '@/components/chrome/VoteBanner';
 type TopCenterChromeProps = Pick<
   CanvasProps,
   | 'isOwner'
+  | 'toolbarLayout'
   | 'zenMode'
   | 'ownerParticipant'
   | 'selfParticipant'
@@ -47,6 +48,7 @@ type TopCenterChromeProps = Pick<
 };
 
 export function TopCenterChrome({
+  toolbarLayout,
   isOwner,
   zenMode,
   ownerParticipant,
@@ -73,7 +75,7 @@ export function TopCenterChrome({
   onStopFollowing,
 }: TopCenterChromeProps) {
   return (
-    <TopCenterStack>
+    <TopCenterStack belowToolbar={toolbarLayout === true && !readOnly}>
       {/* Follow-me (spec/131). Shown on every viewport and in Zen mode: being
           moved around by somebody else without being told why is the one state
           this feature must never leave you in. */}

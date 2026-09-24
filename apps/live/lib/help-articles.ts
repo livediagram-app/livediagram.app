@@ -81,6 +81,7 @@ export const HELP_ARTICLES = {
   palette: 'palette',
   // Settings
   minimalPanels: 'palette/minimal-panels',
+  toolbarLayout: 'palette/toolbar-layout',
   welcomeTour: 'getting-started/welcome-tour',
   whatWeCollect: 'privacy-and-security/what-we-collect',
   offlineMode: 'privacy-and-security/offline-mode',
@@ -288,6 +289,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   minimalPanels: {
     title: 'Learn about minimal panels',
     description: 'The compact button bar that replaces the floating panels.',
+  },
+  toolbarLayout: {
+    title: 'Learn about the toolbar layout',
+    description: 'The palette as one strip across the top of the canvas.',
   },
   welcomeTour: {
     title: 'Learn about the Welcome Tour',

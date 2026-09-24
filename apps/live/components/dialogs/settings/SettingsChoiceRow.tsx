@@ -21,19 +21,25 @@ export function SettingsChoiceRow({
   options,
   value,
   onChange,
+  notice,
 }: {
   // Only the shell's half of the spec is needed: label, description, help.
   row: Pick<
     SettingsRowSpec,
     'key' | 'label' | 'description' | 'helpArticle' | 'alsoIn' | 'illustration'
   >;
-  options: { id: string; label: string }[];
+  // `disabled` greys an option out and stops it being picked (a desktop-only
+  // layout on a phone); `notice` says why.
+  options: { id: string; label: string; disabled?: boolean }[];
   value: string;
   onChange: (next: string) => void;
+  notice?: React.ReactNode;
 }) {
   return (
     <SettingsRowShell
       row={row}
+      illustrationValue={value}
+      notice={notice}
       control={
         <span
           role="radiogroup"
@@ -49,8 +55,9 @@ export function SettingsChoiceRow({
                 type="button"
                 role="radio"
                 aria-checked={active}
+                disabled={option.disabled}
                 onClick={() => onChange(option.id)}
-                className={`rounded-md px-2.5 py-1 text-xs font-medium transition ${
+                className={`rounded-md px-2.5 py-1 text-xs font-medium transition disabled:cursor-not-allowed disabled:opacity-40 ${
                   active
                     ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-slate-50'
                     : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100'

@@ -1,0 +1,55 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import {
+  ToolbarLayoutOverview,
+  ToolbarMorePopover,
+} from '@/components/illustrations/toolbar-layout';
+
+export const metadata = helpMetadata({
+  title: 'Toolbar Layout',
+  description:
+    'Put the palette in one strip across the top of the canvas, with a menu button for the Explorer. The rest of the panels float as usual.',
+  path: '/help/palette/toolbar-layout/',
+});
+
+<ArticleLayout
+  title="Toolbar Layout"
+  description="Put the palette in one strip across the top of the canvas, and open the Explorer from a menu button."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  subArticles={getSubArticles("toolbar-layout")}
+>
+
+Toolbar is one of three choices in the **Panel Layout** setting (Floating, Minimal, Toolbar). You will find it in [Settings](/help/user-interface/settings/), under **Appearance**, where a small picture of each layout shows how they differ before you switch. Floating is the default.
+
+## What it does
+
+The palette becomes a single strip across the top of the canvas. From left to right it holds:
+
+- **Selection mode**: Select, Hand, Eraser, Laser and the rest, the same choices as the palette's own picker.
+- **Category**: which set of tiles the strip shows, such as Favourites, Shapes or Icons.
+- **The first ten tiles** of that category. Click one to add it, or drag it onto the canvas, exactly as from the palette. Each tile shows its keyboard shortcut in the corner.
+- **More** (the **⋯** button), when the category has more than the strip can hold.
+
+There is no floating Explorer panel. The **menu button** in the top-left corner opens the Explorer under it, and clicking it again closes it. Every other panel (Layers, Activity, Collaborate and the rest) floats and docks exactly as it does in the Floating layout.
+
+<Figure caption="The Toolbar layout: the menu button top-left, the strip across the top, and the usual bottom row.">
+  <ToolbarLayoutOverview />
+</Figure>
+
+## More
+
+**More** opens the whole category under the button: its search box, every tile, and for Favourites the Edit and Reorder controls. Adding a tile from it closes it again, so the canvas is clear to draw on.
+
+<Figure caption="More open on Shapes, with the full category hanging under the button.">
+  <ToolbarMorePopover />
+</Figure>
+
+The strip keeps the category you chose for as long as the page is open, including through Zen mode. Opening a diagram starts on Favourites again, like the floating palette.
+
+## On a phone
+
+Toolbar is desktop only. On a phone the panels always use the compact button bar from [Minimal Panels](/help/palette/minimal-panels/), whichever layout you picked, and Settings greys out Floating and Toolbar there.
+
+</ArticleLayout>

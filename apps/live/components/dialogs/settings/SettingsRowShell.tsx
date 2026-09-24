@@ -19,6 +19,12 @@ export function SettingsRowShell({
   // Which half of the row's illustration is in force, so the drawing rings
   // the current state. Toggle rows pass their checked state.
   illustrationActive = false,
+  // Choice rows: the option in force, which their drawing rings instead.
+  illustrationValue,
+  // A short info line between the card and the footnote, for a row whose
+  // options are limited right now (the desktop-only panel layouts on a
+  // phone). Not part of the description, which says what the setting IS.
+  notice,
   // A control that is its own interactive element (a slider, a segmented
   // choice) sits BESIDE the label; a whole-row switch wraps the lot, and
   // passes its own button in as `wrapper` instead.
@@ -32,6 +38,8 @@ export function SettingsRowShell({
   >;
   control?: ReactNode;
   illustrationActive?: boolean;
+  illustrationValue?: string;
+  notice?: ReactNode;
   wrapper?: (children: ReactNode) => ReactNode;
 }) {
   const label = (
@@ -56,7 +64,20 @@ export function SettingsRowShell({
         </div>
       )}
       {row.illustration ? (
-        <SettingsIllustration id={row.illustration} active={illustrationActive} />
+        <SettingsIllustration
+          id={row.illustration}
+          active={illustrationActive}
+          value={illustrationValue}
+        />
+      ) : null}
+      {notice ? (
+        <p
+          role="note"
+          className="mt-2 flex items-start gap-1.5 px-3.5 text-[11px] leading-relaxed text-slate-600 dark:text-slate-300"
+        >
+          <InfoGlyph />
+          <span>{notice}</span>
+        </p>
       ) : null}
       <p
         id={`${row.key}-description`}
@@ -77,5 +98,21 @@ export function SettingsRowShell({
         ) : null}
       </p>
     </div>
+  );
+}
+
+function InfoGlyph() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 12 12"
+      fill="none"
+      aria-hidden
+      className="mt-0.5 shrink-0 text-brand-500"
+    >
+      <circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.2" />
+      <path d="M6 5.4v3M6 3.6h.01" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+    </svg>
   );
 }

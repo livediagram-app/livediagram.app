@@ -189,7 +189,7 @@ export const categories: Category[] = [
     title: 'Palette',
     description:
       'Your launchpad for everything on the canvas: every element and palette setting explained.',
-    articleCount: 25,
+    articleCount: 26,
     kind: 'feature',
   },
   {
@@ -1129,6 +1129,16 @@ export const articles: Article[] = [
     title: 'Minimal Panels',
     description: 'Swap floating panels for a compact button bar.',
     keywords: 'compact dock hide chrome small collapse reduce clutter',
+    category: 'Palette',
+    categorySlug: 'palette',
+    group: 'Palette Settings',
+  },
+  {
+    slug: 'toolbar-layout',
+    title: 'Toolbar Layout',
+    description: 'The palette as one strip across the top of the canvas.',
+    keywords:
+      'toolbar strip top bar excalidraw panel layout floating minimal menu button explorer more tiles',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Palette Settings',

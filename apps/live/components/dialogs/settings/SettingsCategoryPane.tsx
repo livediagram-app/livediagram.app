@@ -10,6 +10,7 @@ import { SettingsSliderRow } from './SettingsSliderRow';
 import { SettingsNoteRow } from './SettingsNoteRow';
 import { SettingsTokensRow } from './SettingsTokensRow';
 import { useAppearance } from '@/hooks/ui/useAppearance';
+import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { track } from '@/lib/telemetry';
 import type { AppearanceSetting } from '@/hooks/ui/appearance-store';
 import type { SettingsAppearanceRowSpec, SettingsCategorySpec } from './settings-catalogue';
@@ -31,6 +32,7 @@ export function SettingsCategoryPane({
   // Row to scroll to and ring, when Settings was opened from a search result.
   focusRowKey?: string | null;
 }) {
+  const isMobile = useIsMobileViewport();
   // Group CONSECUTIVE rows by section, so a category holding several
   // clusters (Panels covers Layers, Activity and the minimap) gets a heading
   // per cluster instead of one undifferentiated list. Consecutive rather than
@@ -77,11 +79,22 @@ export function SettingsCategoryPane({
             }}
           />
         );
-      case 'choice':
+      case 'choice': {
+        // Desktop-only options stay visible on a phone (so the choice reads
+        // the same everywhere) but can't be picked, and a note says why.
+        const desktopOnly = row.options.filter((o) => o.desktopOnly);
+        const limited = isMobile && desktopOnly.length > 0;
         return (
           <SettingsChoiceRow
             row={row}
-            options={row.options}
+            options={row.options.map((o) => ({ ...o, disabled: isMobile && o.desktopOnly }))}
+            notice={
+              limited
+                ? `${joinLabels(desktopOnly.map((o) => o.label))} ${
+                    desktopOnly.length === 1 ? 'is' : 'are'
+                  } desktop only. On a phone the panels always use the button bar.`
+                : undefined
+            }
             value={row.read(settings)}
             onChange={(next) => {
               track(row.event.category, 'Changed', row.event.changed);
@@ -89,6 +102,7 @@ export function SettingsCategoryPane({
             }}
           />
         );
+      }
       case 'slider':
         return (
           <SettingsSliderRow
@@ -160,4 +174,10 @@ function AppearanceRow({ row }: { row: SettingsAppearanceRowSpec }) {
       onChange={(next) => set(next as AppearanceSetting)}
     />
   );
+}
+
+// "Floating", "Floating and Toolbar", "A, B and C".
+function joinLabels(labels: string[]): string {
+  if (labels.length < 2) return labels[0] ?? '';
+  return `${labels.slice(0, -1).join(', ')} and ${labels[labels.length - 1]}`;
 }

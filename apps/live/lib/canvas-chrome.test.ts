@@ -34,6 +34,19 @@ describe('computeDockAnchor', () => {
     expect(a.left).toBe(8); // 200 - 256 - 8 = -64, clamped to 8
   });
 
+  it("hangs a lone button's popover from the button itself", () => {
+    // The Toolbar layout's menu button, top-left (spec/148): the Explorer
+    // opens under it, not tucked against the far right edge.
+    const a = computeDockAnchor({ left: 16, bottom: 58, width: 36 }, canvas, popover, 'button');
+    expect(a.left).toBe(16);
+    expect(a.arrowOffset).toBe(34 - 16); // button centre 34
+  });
+
+  it("keeps a lone button's popover on the canvas near the right edge", () => {
+    const a = computeDockAnchor({ left: 900, bottom: 40, width: 40 }, canvas, popover, 'button');
+    expect(a.left).toBe(rightAligned);
+  });
+
   it('subtracts the canvas offset so the anchor is canvas-relative', () => {
     const offsetCanvas = { left: 100, top: 50, width: 1000 };
     const a = computeDockAnchor({ left: 880, bottom: 90, width: 40 }, offsetCanvas, popover);

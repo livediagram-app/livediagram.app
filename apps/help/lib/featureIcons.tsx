@@ -1241,6 +1241,15 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M3 8h18M6 14h4M6 17h7" {...s} />
     </Glyph>
   ),
+  // The strip across the top of a window, with the menu button's three bars
+  // in the corner: the two things the layout adds.
+  'toolbar-layout': (
+    <Glyph>
+      <rect x="3" y="4" width="18" height="16" rx="2" {...s} />
+      <rect x="9" y="7" width="9" height="3" rx="1" {...s} />
+      <path d="M5.5 7.5h1.5M5.5 9.5h1.5" {...s} />
+    </Glyph>
+  ),
   'reset-palette-position': (
     <Glyph>
       <path d="M3 12a9 9 0 109-9 9 9 0 00-6.4 2.6L3 8" {...s} />

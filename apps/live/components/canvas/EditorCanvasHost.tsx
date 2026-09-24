@@ -1,5 +1,6 @@
 'use client';
 
+import { resolvePanelLayout } from '@/lib/user-preferences';
 import { describeOne } from '@/lib/element-names';
 import { DEFAULT_BUTTON_MODE } from '@livediagram/diagram';
 import { useMemo } from 'react';
@@ -650,7 +651,10 @@ export function EditorCanvasHost() {
       onCommitPolygon={commitPolygon}
       settings={userPreferences}
       onChangeSettings={onChangeSettings}
-      minimalPanels={userPreferences.minimalPanels === true}
+      // Only Minimal docks the panels. Toolbar (spec/148) keeps Floating's
+      // panels and swaps the Palette + Explorer for the strip and menu button.
+      minimalPanels={resolvePanelLayout(userPreferences) === 'minimal'}
+      toolbarLayout={resolvePanelLayout(userPreferences) === 'toolbar'}
       onToggleMinimalPanels={onToggleMinimalPanels}
       onCancelDraw={cancelDrawShape}
       onUndo={undo}

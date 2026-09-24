@@ -336,13 +336,14 @@
 /*
  * Staggered entrance. An item in a list or grid that should arrive one beat
  * after the one before it: pair with any `animate-*` utility and set
- * `--stagger-i` to the item's index. `backwards` fill keeps a delayed item
+ * `--stagger-i` to the item's index (and `--stagger-step` to change the
+ * 40ms beat). `backwards` fill keeps a delayed item
  * at its keyframe start (invisible) until its turn, instead of showing it
  * and then re-hiding it. Reduced motion zeroes the delay as well as the
  * duration (above), so nothing waits on a beat it will never see.
  */
 .stagger-enter {
-  animation-delay: calc(var(--stagger-i, 0) * 40ms);
+  animation-delay: calc(var(--stagger-i, 0) * var(--stagger-step, 40ms));
   animation-fill-mode: backwards;
 }
 @media (prefers-reduced-motion: reduce) {
@@ -1929,15 +1930,17 @@
   translate: 0 0 calc(var(--iso-z, 0) * 0.01px);
 }
 
-/* The floating chrome gets its OWN compositing layer.
+/* The floating chrome gets its OWN compositing layer while isometric is on.
    Isometric puts a large preserve-3d scene on the page, and the panels sit
    above it in z but shared its repaint region — which is why the palette
    flickered too, not just the diagram. `will-change` is the promotion hint
    that doesn't touch `transform`, which MovablePanel needs for dragging.
-   Unconditional rather than gated on [data-iso]: these are a handful of small
-   panels, promoting them costs almost nothing, and a rule that only applies
-   mid-mode would itself cause a layer churn on every mode switch. */
-[data-floating-panel] {
+   Gated on the scene being there rather than unconditional: a promoted layer
+   loses sub-pixel text anti-aliasing on a 1x display, so every panel's small
+   text (the palette's tile captions most of all) read soft ALL the time to
+   buy a fix that only matters in one mode. The cost is one re-layer on
+   entering and leaving isometric, which is a deliberate, rare switch. */
+:root:has([data-iso]) [data-floating-panel] {
   will-change: transform;
 }
 

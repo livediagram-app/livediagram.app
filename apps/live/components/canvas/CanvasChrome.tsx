@@ -24,6 +24,9 @@ import { Tooltip } from '@/components/primitives/Tooltip';
 import { ZoomControls } from '@/components/chrome/ZoomControls';
 import { OffscreenContentHint } from '@/components/canvas/OffscreenContentHint';
 import { CanvasMobileDock } from '@/components/canvas/CanvasMobileDock';
+import { ToolbarPalette } from '@/components/palette/ToolbarPalette';
+import { pickPaletteAddHandlers } from '@/components/palette/palette-add-handlers';
+import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { Fragment, type Dispatch, type RefObject, type SetStateAction } from 'react';
 import type { DockAnchor, MobilePanel } from '@/hooks/canvas/useCanvasMobileDock';
@@ -60,7 +63,7 @@ type ChromeExtras = {
   dockButtonRefs: RefObject<Record<string, HTMLButtonElement | null>>;
   activeDockAnchor: DockAnchor | null;
   setActiveDockAnchor: Dispatch<SetStateAction<DockAnchor | null>>;
-  handleDockButtonClick: (id: MobilePanel) => void;
+  handleDockButtonClick: (id: MobilePanel, ownButton?: HTMLElement) => void;
   handleZoomIn: () => void;
   handleZoomOut: () => void;
   handleSetZoom: (zoom: number) => void;
@@ -186,6 +189,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
     handleZoomOut,
     marquee,
     minimalPanels,
+    toolbarLayout,
     layersMinimized,
     onToggleLayersMinimized,
     onOpenCanvasTheme,
@@ -259,12 +263,17 @@ export function CanvasChrome(props: CanvasChromeProps) {
     snapTargets,
   });
 
+  // Toolbar layout (spec/148) in force: desktop only, so a phone falls back
+  // to the dock whatever the preference says.
+  const toolbarActive = toolbarLayout === true && !isMobile;
+
   // Floating panel elements + their wiring live in useCanvasChromePanels.
-  const { panelEls } = useCanvasChromePanels({
+  const { panelEls, toolbarExplorerEl, paletteTint } = useCanvasChromePanels({
     props,
     chromeHidden,
     isMobile,
     dockingActive,
+    toolbarActive,
     panelWiringFor,
   });
   // Bucketing keys off the persisted placement ONLY (not which panel is
@@ -353,6 +362,37 @@ export function CanvasChrome(props: CanvasChromeProps) {
           active editor-mode banner, multi-selection toolbar, session timer
           and vote banner — laid out as one non-overlapping stack. */}
       <TopCenterChrome {...props} />
+
+      {/* Toolbar layout (spec/148): the menu button stands where the
+          Explorer would float and opens it as a popover (zen hides it, the
+          welcome flow doesn't, same as the Explorer), and the strip replaces
+          the Palette for edit sessions. */}
+      {toolbarActive && !zenMode ? (
+        <>
+          <ToolbarExplorerButton
+            open={activeMobilePanel === 'explorer'}
+            onToggle={(button) => handleDockButtonClick('explorer', button)}
+          />
+          {toolbarExplorerEl}
+        </>
+      ) : null}
+      {toolbarActive && !readOnly ? (
+        <ToolbarPalette
+          key={props.esBoard ? 'es-board' : 'standard'}
+          // Hidden, not unmounted, while the chrome is away (zen, welcome),
+          // so the chosen category lasts the page load.
+          hidden={chromeHidden}
+          canvasTool={canvasTool}
+          onSetCanvasTool={props.onSetCanvasTool}
+          onExitAvatarMode={props.onExitAvatarMode}
+          onToggleZen={onToggleZen}
+          canvasEmpty={elements.length === 0}
+          {...pickPaletteAddHandlers(props)}
+          pendingDraw={pendingDraw}
+          esBoard={props.esBoard}
+          themeTint={paletteTint}
+        />
+      ) : null}
 
       <CanvasMobileDock
         welcomeOpen={chromeHidden}
